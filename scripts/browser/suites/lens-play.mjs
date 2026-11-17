@@ -46,7 +46,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(800);
     };
-    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9 the slide files); LENS_LEVELS=lap only the lap level.
+    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9 and 10 the slide files); LENS_LEVELS=lap only the lap level.
     const onlyLap = process.env.LENS_LEVELS === 'lap';
     if (!process.env.LENS_LEVELS || onlyLap) await lap();
     if (onlyLap) return;
@@ -172,6 +172,43 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       assert.deepEqual(await score(), [2, 1], 'level 9 saved two misses and one hint');
       log(
         "Puddle Lens 9: a free early card, two ruled-out cards, free standing card and can't tell at stop 3, a counted hint, silt portrait, saved 2/1",
+      );
+    }
+    // Level 10 (grown-up): a scale bar in the view and three lengths ten times apart.
+    if (!only.length || only.includes(10)) {
+      await launch('puddle-lens', 10);
+      await settle();
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.measures.map((f) => f.sample)),
+        ['swimmer', 'green-ball', 'sand-grain'],
+        'the authored files',
+      );
+      assert.equal(await page.evaluate(() => neo.scene.game.stop), 2, 'level 10 starts at the hand lens');
+      assert.equal(await page.evaluate(() => neo.scene.game.choiceButtons.length), 3, 'three lengths');
+      await choose(2);
+      assert.deepEqual(await tally(), [0, 0], 'a length before both ends show beside a bar is free');
+      await turn(3);
+      await portrait('puddle-lens-10-swimmer-portrait');
+      await choose(0);
+      assert.deepEqual(await tally(), [1, 0], '20 µm for the swimmer beside its bar: a miss');
+      await choose(1);
+      await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 });
+      await settle();
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.lengths), ['200 µm'], 'the folder is stamped');
+      await turn(3);
+      const right = await page.evaluate(() => neo.scene.game.measure.slot);
+      await choose(right);
+      assert.deepEqual(await tally(), [1, 0], 'the green ball is only a dot at stop 3: even its true length is free');
+      assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'and does not close the file');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForFunction(() => neo.scene.game.stop === 4, null, { timeout: 5000 });
+      await settle();
+      assert.deepEqual(await tally(), [1, 1], 'Show a hint turns the green ball to stop 4 and counts one');
+      await auto();
+      await finished('puddle-lens');
+      assert.deepEqual(await score(), [1, 1], 'level 10 saved one miss and one hint');
+      log(
+        'Puddle Lens 10: a free early length, a wrong length beside the bar, a free length on a dot, a counted hint, swimmer portrait, saved 1/1',
       );
     }
   }

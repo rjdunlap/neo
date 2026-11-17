@@ -43,6 +43,9 @@ import {
   fileCardArt,
   fileLayer,
   folderArt,
+  BAR_Y,
+  lengthArt,
+  measureLayer,
 } from './art';
 import {
   LEVELS,
@@ -120,6 +123,15 @@ import {
   type FileAnswer,
   type FileCardId,
   type SlideFile,
+  barAt,
+  judgeSize,
+  lengthKey,
+  lengthLabel,
+  measureRoundFor,
+  measuringStop,
+  sizeChoices,
+  type MeasureFile,
+  type SizeSlot,
 } from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
@@ -134,11 +146,16 @@ const LIFE_SCALE = [30, 100, ART_R, dropScale(4)];
 const LIFE_ANSWERS: readonly LifeAnswer[] = ['alive', 'not-alive', 'cant-tell'];
 const WALL_ANSWERS: readonly WallAnswer[] = ['plant', 'animal', 'cant-tell'];
 const GREEN_ANSWERS: readonly GreenAnswer[] = ['living', 'all-through', 'cant-tell'];
-type Choice = LifeAnswer | CellClass | WallAnswer | GreenAnswer | FileCardId;
+/** Level 10's three length buttons, in rising order. */
+type SizeChoice = 'size-0' | 'size-1' | 'size-2';
+const SIZE_CHOICES: readonly SizeChoice[] = ['size-0', 'size-1', 'size-2'];
+type Choice = LifeAnswer | CellClass | WallAnswer | GreenAnswer | FileCardId | SizeChoice;
 const isCard = (kind: Choice): kind is FileCardId => kind in FILE_SAMPLES;
-/** Level 9: drop units to art units at each stop, closer in than level 5's so the one thing on the slide stays well in view. */
+const isSize = (kind: Choice): kind is SizeChoice => kind.startsWith('size-');
+const slotOf = (kind: SizeChoice) => Number(kind.slice(5)) as SizeSlot;
+/** Levels 9–10: drop units to art units at each stop, closer in than level 5's so the one thing on the slide stays well in view. */
 const FILE_SCALE = [30, 100, ART_R, dropScale(4)].map((k) => k * 0.45);
-const CHOICE_NAME: Record<Exclude<Choice, FileCardId>, LineId> = {
+const CHOICE_NAME: Record<Exclude<Choice, FileCardId | SizeChoice>, LineId> = {
   alive: 'lens.say.alive',
   'not-alive': 'lens.say.not-alive',
   'cant-tell': 'lens.say.cant-tell',
@@ -157,6 +174,7 @@ const INSTRUCT: Record<number, LineId> = {
   7: 'lens.instruct.wall',
   8: 'lens.instruct.green',
   9: 'lens.file.instruct.name',
+  10: 'lens.file.instruct.size',
 };
 
 class StopButton extends Container {
@@ -216,6 +234,9 @@ class PuddleLens implements Game {
   /** Level 9's files, and the cards that closed the files so far (stamped on the folder, for this round only). */
   readonly files: SlideFile[];
   readonly closed: FileCardId[] = [];
+  /** Level 10's files, and the lengths that closed the files so far (stamped on the folder the same way). */
+  readonly measures: MeasureFile[];
+  readonly lengths: string[] = [];
   index = 0;
   stop: Stop = 1;
   finished = false;
@@ -287,11 +308,12 @@ class PuddleLens implements Game {
     this.questions = level === 4 ? questionsFor(ctx.rng, authored) : [];
     this.lifeDrops = level === 5 ? lifeDropsFor(ctx.rng, authored) : [];
     this.sorts = level === 6 ? sortRoundFor(ctx.rng, authored) : [];
-    this.slideShape = level === 6 || level === 9 ? ctx.rng.pick(['round', 'long', 'bean'] as const) : 'round';
+    this.slideShape = level === 6 || level >= 9 ? ctx.rng.pick(['round', 'long', 'bean'] as const) : 'round';
     this.walls = level === 7 ? wallRoundFor(ctx.rng, authored) : [];
     this.greens = level === 8 ? greenRoundFor(ctx.rng, authored) : [];
     this.looks78 = level >= 7 ? looks78For(ctx.rng) : null;
     this.files = level === 9 ? fileRoundFor(ctx.rng, authored) : [];
+    this.measures = level === 10 ? measureRoundFor(ctx.rng, authored) : [];
     this.stop = firstStop(level);
     this.backdrop = new Backdrop(
       {
@@ -387,9 +409,14 @@ class PuddleLens implements Game {
     return this.files[this.index];
   }
 
-  /** The stop that decides the speck, slide or drop in hand (levels 5–8), or closes the file (9). */
+  get measure(): MeasureFile | undefined {
+    return this.measures[this.index];
+  }
+
+  /** The stop that decides the speck, slide or drop in hand (levels 5–8), closes the file (9), or shows both ends beside the bar (10). */
   get deciding(): Stop | null {
     const level = this.plan.level;
+    if (level === 10) return this.measure ? measuringStop(this.measure.sample) : null;
     if (level === 9) return this.file ? closingStop(this.file.case) : null;
     const d = this.lifeDrop;
     if (level === 5 && d) return decidingStop(d.pair);
@@ -402,6 +429,7 @@ class PuddleLens implements Game {
   /** The answer or tray that finishes the speck, slide or drop in hand. */
   get rightChoice(): Choice | null {
     const level = this.plan.level;
+    if (level === 10) return this.measure ? SIZE_CHOICES[this.measure.slot] : null;
     if (level === 9) return this.file?.case.unknown ?? null;
     const d = this.lifeDrop;
     if (level === 5 && d) return rightLife(d.pair, d.ringed, 4);
@@ -415,6 +443,7 @@ class PuddleLens implements Game {
   private get rounds(): number {
     const level = this.plan.level;
     if (level === 9) return this.files.length;
+    if (level === 10) return this.measures.length;
     return level === 5
       ? this.lifeDrops.length
       : level === 6
@@ -520,7 +549,7 @@ class PuddleLens implements Game {
       .stroke({ width: 6, color: wood.line });
     table.eventMode = 'none';
     this.board.addChild(table);
-    if (level === 9) {
+    if (level >= 9) {
       // The case folder at the table's edge, down and to the right of the lens (the paw rests down and to the left).
       const folder = new Container();
       folder.addChild(folderArt());
@@ -562,6 +591,10 @@ class PuddleLens implements Game {
           this.looks78.seed,
           this.slideShape,
         );
+        layer = f.layer;
+        this.fileNodes.push(f.mover);
+      } else if (level === 10 && this.measure) {
+        const f = measureLayer(this.measure.sample, stop, this.looks, this.slideShape);
         layer = f.layer;
         this.fileNodes.push(f.mover);
       } else layer = viewLayer(this.sample, stop, this.looks);
@@ -618,6 +651,17 @@ class PuddleLens implements Game {
     onTap(hit, (e: FederatedPointerEvent) => this.tapLens(hit.toLocal(e.global)), { cooldown: 200 });
     this.board.addChild(hit);
     this.lensHit = hit;
+    if (level === 10) {
+      // The scale bar speaks its value on a touch (no reading needed); it lies over the lens, which takes no taps at this level.
+      const k = r / ART_R;
+      const bar = new Container();
+      bar.position.set(x, y + (BAR_Y + 12) * k);
+      const w = Math.max(280 * k, 140);
+      const h = Math.max(70 * k, 64);
+      bar.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
+      onTap(bar, () => this.sayBar(), { cooldown: 300 });
+      this.board.addChild(bar);
+    }
     if (level >= 3) {
       l.stops.forEach((rect, i) => {
         const stop = STOPS[i];
@@ -637,7 +681,9 @@ class PuddleLens implements Game {
                 ? GREEN_ANSWERS
                 : level === 9 && this.file
                   ? [...this.file.cards, 'cant-tell']
-                  : [];
+                  : level === 10
+                    ? SIZE_CHOICES
+                    : [];
       l.choices.forEach((rect, i) => {
         const kind = kinds[i];
         const icon = this.choiceIcon(kind);
@@ -681,19 +727,36 @@ class PuddleLens implements Game {
     this.placeSwimmers();
   }
 
-  /** The folder shows the card that closed the last file. */
+  /** The folder shows the card, or the length, that closed the last file. */
   private stampFolder() {
-    const last = this.closed[this.closed.length - 1];
-    if (!this.folder || !last) return;
+    const card = this.closed[this.closed.length - 1];
+    const length = this.lengths[this.lengths.length - 1];
+    if (!this.folder || (!card && !length)) return;
     for (const c of this.folder.children.slice(1)) c.destroy();
-    const stamp = fileCardArt(last);
-    stamp.scale.set(0.85);
+    const stamp = card ? fileCardArt(card) : lengthArt(length, 22);
+    if (card) stamp.scale.set(0.85);
     stamp.position.set(0, 6);
     this.folder.addChild(stamp);
   }
 
+  /** Level 10: the bar in the view says its value. */
+  private sayBar() {
+    const m = this.measure;
+    const bar = m && barAt(m.sample, this.stop);
+    if (!bar || this.finished) return;
+    sfx.pop(5);
+    void this.say(`lens.file.bar.${bar.value}`);
+  }
+
+  /** The three lengths on the buttons of the file in hand, in micrometres. */
+  private get sizes(): [number, number, number] | null {
+    const m = this.measure;
+    return m ? sizeChoices(m.sample, m.slot) : null;
+  }
+
   private choiceIcon(kind: Choice): Container {
     if (isCard(kind)) return fileCardArt(kind);
+    if (isSize(kind)) return lengthArt(lengthLabel(this.sizes?.[slotOf(kind)] ?? 0));
     if (kind === 'cant-tell' || kind === 'alive' || kind === 'not-alive') return answerIcon(kind);
     if (kind === 'plant') return plantIcon();
     if (kind === 'animal') return pawArt(this.petColor, 34);
@@ -825,11 +888,11 @@ class PuddleLens implements Game {
   private placeSwimmers() {
     const life = this.plan.level === 5 ? this.lifeDrop : undefined;
     if (life) return this.placeLife(life);
-    const file = this.plan.level === 9 ? this.file : undefined;
+    const file = this.plan.level === 9 ? this.file : this.plan.level === 10 ? this.measure : undefined;
     if (file) {
-      // Level 9: the one thing in the water moves on its seeded path (a still one stays put), still while any finger is down.
+      // Levels 9–10: the one thing in the water moves on its seeded path (a still one stays put), still while any finger is down.
       const p = swimmerAt(file.path, this.swimT);
-      const swims = FILE_SAMPLES[file.case.unknown].motion === 'swims';
+      const swims = FILE_SAMPLES['case' in file ? file.case.unknown : file.sample].motion === 'swims';
       this.fileNodes.forEach((n, i) => {
         if (!n) return;
         n.position.set(p.x * FILE_SCALE[i], p.y * FILE_SCALE[i]);
@@ -1119,7 +1182,8 @@ class PuddleLens implements Game {
     const g = this.green;
     if (this.deciding === null) return;
     if (level === 9) return this.chooseCard(kind as FileAnswer);
-    if (isCard(kind)) return;
+    if (level === 10) return isSize(kind) ? this.chooseSize(kind) : undefined;
+    if (isCard(kind) || isSize(kind)) return;
     void this.say(CHOICE_NAME[kind]);
     const v =
       level === 5
@@ -1169,28 +1233,67 @@ class PuddleLens implements Game {
         this.tally.miss();
         sfx.boing();
       }
-      const e = this.epoch;
-      const at = this.index;
-      // The line is about the view she answered at: if she has turned the dial by then, it is not said.
-      const stop = this.stop;
-      const named = this.say(kind === 'cant-tell' ? 'lens.say.cant-tell' : `lens.file.card.${kind}`);
-      const spoken = this.spoken;
-      await named;
-      if (
-        this.alive &&
-        !this.finished &&
-        e === this.epoch &&
-        at === this.index &&
-        stop === this.stop &&
-        spoken === this.spoken
-      )
-        void this.say(v.line);
-      return;
+      return this.nameThen(kind === 'cant-tell' ? 'lens.say.cant-tell' : `lens.file.card.${kind}`, v.line);
     }
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
     this.closed.push(f.case.unknown);
+    this.stampFolder();
+    await this.right(
+      this.say(v.line),
+      0.6,
+      this.index + 1 >= this.rounds,
+      () => {
+        this.index++;
+        this.tally.next();
+        this.nextView();
+      },
+      () => this.askAgain(),
+    );
+  }
+
+  /** A free or missed answer's spoken name is heard out, then the line about the view, unless the dial or anything else has moved on. */
+  private async nameThen(name: LineId, line: LineId) {
+    const e = this.epoch;
+    const at = this.index;
+    // The line is about the view she answered at: if she has turned the dial by then, it is not said.
+    const stop = this.stop;
+    const named = this.say(name);
+    const spoken = this.spoken;
+    await named;
+    if (
+      this.alive &&
+      !this.finished &&
+      e === this.epoch &&
+      at === this.index &&
+      stop === this.stop &&
+      spoken === this.spoken
+    )
+      void this.say(line);
+  }
+
+  /**
+   * Level 10: one of the three lengths. Below the measuring stop every length is free; at or above it a wrong one is a miss (counted
+   * and boinged at once), and its spoken name is heard out before the line that names the bar. The true length closes the file.
+   */
+  private async chooseSize(kind: SizeChoice) {
+    const m = this.measure;
+    const sizes = this.sizes;
+    if (!m || !sizes) return;
+    const slot = slotOf(kind);
+    const v = judgeSize(m.sample, m.slot, this.stop, slot);
+    if (v.result !== 'right') {
+      if (v.result === 'miss') {
+        this.tally.miss();
+        sfx.boing();
+      }
+      return this.nameThen(`lens.file.len.${lengthKey(sizes[slot])}` as LineId, v.line);
+    }
+    this.busy = true;
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    this.lengths.push(lengthLabel(sizes[slot]));
     this.stampFolder();
     await this.right(
       this.say(v.line),
@@ -1271,6 +1374,7 @@ class PuddleLens implements Game {
       wall: this.wall,
       green: this.green,
       file: this.file?.case,
+      measure: this.measure?.sample,
     });
     if (!help) return;
     // At lap the pause sheet's hint is a grown-up showing her, not her needing help, so it is not counted.
@@ -1296,7 +1400,7 @@ class PuddleLens implements Game {
     } else if (help.do === 'turn') void this.turnTo(help.stop);
   }
 
-  /** Levels 5–8: turn to the deciding stop if the dial is below it, then say what that view shows. */
+  /** Levels 5–10: turn to the deciding stop if the dial is below it, then say what that view shows. */
   private async hintLook(stop: Stop) {
     const e = this.epoch;
     if (this.stop < stop) await this.turnTo(stop);
@@ -1304,7 +1408,11 @@ class PuddleLens implements Game {
     const d = this.lifeDrop;
     const s = this.slide;
     const f = this.file;
-    if (this.plan.level === 9 && f)
+    const bar = this.measure && barAt(this.measure.sample, Math.max(this.stop, stop) as Stop);
+    if (this.plan.level === 10) {
+      // Level 10's hint names the bar to count along, never the length.
+      if (bar) void this.say(`lens.file.see.bars.${bar.value}`);
+    } else if (this.plan.level === 9 && f)
       void this.say(fileSeeLine(f.case.unknown, Math.max(this.stop, stop) as Stop));
     else if (this.plan.level === 5 && d)
       void this.say(lookLine(PAIRS[d.pair][d.ringed], Math.max(this.stop, stop) as Stop));
@@ -1323,6 +1431,7 @@ class PuddleLens implements Game {
     this.stop = firstStop(this.plan.level);
     for (const c of CLASSES) this.sorted[c] = [];
     this.closed.length = 0;
+    this.lengths.length = 0;
     this.turnId++;
     this.swollen = false;
     this.movingSaid = this.pawSeen = this.pawSaid = false;
@@ -1441,8 +1550,11 @@ export const puddleLens: GameModule = {
     'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together. At the plant-or-animal slides, guess first: before each turn of the dial, both of you say plant, animal or can\'t tell yet.',
   coplayHintLap:
     'Say what you see each time {name} touches and the lens swells: "Look, little boxes!" Point at it together.',
-  offScreen:
-    'Look at a leaf with just your eyes. What would a lens show? Then look at a leaf and a piece of lettuce: which bends, and which stays stiff? Plants are stiff because of their walls.',
+  offScreen: {
+    all: 'Look at a leaf with just your eyes. What would a lens show? Then look at a leaf and a piece of lettuce: which bends, and which stays stiff? Plants are stiff because of their walls.',
+    grownup:
+      'Find a scale bar or a ruler in a photo, on a map or on a packet, and work out how big one thing in the picture really is.',
+  },
   hubIcon: () => new LensIcon(),
   sticker,
   create: (ctx) => new PuddleLens(ctx),

@@ -41,6 +41,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Turn the dial, compare the view with the three cards, and tap the one still standing.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Turn the dial until both ends show beside the scale bar, then choose the length.',
+    },
   ],
   finish: [
     { from: 1, to: 2, text: 'Three things looked at.' },
@@ -50,7 +55,7 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'All four slides sorted.' },
     { from: 7, to: 7, text: 'All three slides answered.' },
     { from: 8, to: 8, text: 'All three drops answered.' },
-    { from: 9, to: 9, text: 'All three files closed.' },
+    { from: 9, to: 10, text: 'All three files closed.' },
   ],
   note: [
     {
@@ -94,10 +99,20 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Each card shows the thing at the two microscope stops. A card the view already contradicts is a miss; a card that still fits is free until only one is left.',
     },
-    { from: 9, to: 9, text: 'Looking at more views never costs anything.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'The views are drawings, not one fixed magnification: trust the bar, not how big it looks. A micrometre (µm) is a thousandth of a millimetre. Tap the bar to hear its length.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'A length chosen before both ends show beside a bar is free; after that a wrong length is a miss.',
+    },
+    { from: 9, to: 10, text: 'Looking at more views never costs anything.' },
     {
       from: 9,
-      to: 9,
+      to: 10,
       text: 'Show a hint turns the dial for you and says what the view shows; the first hint on each file counts as one hint.',
     },
   ],
