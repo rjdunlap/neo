@@ -82,6 +82,8 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
   // Use the bot for coordinates and send real Chromium touches, so a covered or misplaced target cannot pass.
   async function uprightGames() {
     assert.ok(process.env.PHONE_ONLY, 'uprightgames requires PHONE_ONLY=id,id');
+    // The band played: grown-up unless `PHONE_BAND=school` (or another band) asks for a younger player's upright games.
+    const band = process.env.PHONE_BAND || 'grownup';
     const phone = await createTestContext(browser, {
       viewport: { width: 390, height: 844 },
       isMobile: true,
@@ -95,29 +97,29 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
       await p.bringToFront();
       await p.goto(new URL('/', process.env.GAME_URL || 'http://localhost:5173').href);
       await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
-      await p.evaluate(() => {
+      await p.evaluate((band) => {
         kit.store.entry.birth = null;
-        kit.store.entry.startBand = 'grownup';
-        kit.store.data.profile.band = 'grownup';
+        kit.store.entry.startBand = band;
+        kit.store.data.profile.band = band;
         kit.store.data.creatures = {
           owned: [{ id: 'pip0', species: 'sprout', name: 'Mia', look: { color: 'pink' }, metAt: 'start' }],
           companion: 'pip0',
         };
         kit.store.save();
         neo.go.start();
-      });
+      }, band);
       await p.waitForFunction(() => neo.scene.constructor.name === 'ChooserScene' && !neo.switching);
       await p.locator('.chooser__play').first().tap();
       await p.waitForFunction(() => neo.scene.constructor.name === 'DailyScene' && !neo.switching);
-      const games = await p.evaluate(async () => {
+      const games = await p.evaluate(async (band) => {
         const { GAMES } = await import('/src/games/registry.ts');
         const { levelsInOrder } = await import('/src/progress/difficulty.ts');
         kit.store.data.settings.howToCards = false;
-        return GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => ({
+        return GAMES.filter((g) => g.upright && g.bands.includes(band)).map((g) => ({
           id: g.id,
-          levels: levelsInOrder(g.levels('grownup')),
+          levels: levelsInOrder(g.levels(band)),
         }));
-      });
+      }, band);
       const ids = selectNames(
         process.env.PHONE_ONLY,
         games.map((g) => g.id),
@@ -126,11 +128,11 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
       for (const { id, levels } of games.filter((g) => ids.includes(g.id))) {
         for (const level of new Set([levels[0], levels.at(-1)])) {
           await p.evaluate(
-            ({ id, level }) => {
+            ({ id, level, band }) => {
               kit.store.stats(id).pinned = level;
-              neo.go.game(id, 'grownup');
+              neo.go.game(id, band);
             },
-            { id, level },
+            { id, level, band },
           );
           await p.waitForFunction(
             ({ id, level }) =>
@@ -225,7 +227,8 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
    * prompt shows; a game that cannot open (a layout that returns null on the upright area) is listed as such and the page
    * reloads. `PHONE_ONLY=id,id` filters. `PHONE_LEVELS=all` measures every school level of each game (and names each
    * screenshot `<id>-<level>.jpg`) instead of the top level only, to check a game before it is marked upright. About three
-   * seconds a level.
+   * seconds a level. `PHONE_BANDS=all` goes further and measures every level of every band the game lists (a game marked
+   * `upright` plays upright at every one of them), launching each at a band that plays it.
    */
   async function uprightSweep() {
     const dir = `${output}/upright-sweep`;
@@ -269,9 +272,15 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
         return GAMES.filter((g) => !g.upright && g.bands.includes('school')).map((g) => ({
           id: g.id,
           levels: levelsInOrder(g.levels('school')),
+          // Every level of every band, each with a band that plays it (school first): `PHONE_BANDS=all`.
+          allBands: ['school', ...g.bands.filter((b) => b !== 'school')]
+            .flatMap((band) => levelsInOrder(g.levels(band)).map((level) => ({ level, band })))
+            .filter((x, i, all) => all.findIndex((y) => y.level === x.level) === i)
+            .sort((x, y) => x.level - y.level),
         }));
       });
-      const everyLevel = process.env.PHONE_LEVELS === 'all';
+      const everyBand = process.env.PHONE_BANDS === 'all';
+      const everyLevel = everyBand || process.env.PHONE_LEVELS === 'all';
       const ids = selectNames(
         process.env.PHONE_ONLY,
         games.map((g) => g.id),
@@ -279,15 +288,23 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
       );
       const todo = games
         .filter((g) => ids.includes(g.id))
-        .flatMap((g) => (everyLevel ? g.levels : [g.levels.at(-1)]).map((level) => ({ id: g.id, level })));
-      for (const { id, level } of todo) {
+        .flatMap((g) =>
+          everyBand
+            ? g.allBands.map((x) => ({ id: g.id, ...x }))
+            : (everyLevel ? g.levels : [g.levels.at(-1)]).map((level) => ({
+                id: g.id,
+                level,
+                band: 'school',
+              })),
+        );
+      for (const { id, level, band } of todo) {
         pageErrors.length = 0;
         await p.evaluate(
-          ({ id, level }) => {
+          ({ id, level, band }) => {
             kit.store.stats(id).pinned = level;
-            neo.go.game(id, 'school');
+            neo.go.game(id, band);
           },
-          { id, level },
+          { id, level, band },
         );
         // A game that does not open is recorded and the sweep goes on: this is a survey.
         const opened = await p

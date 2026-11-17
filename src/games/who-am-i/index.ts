@@ -1115,6 +1115,7 @@ export const whoAmI: GameModule = {
   challenge: 'logic',
   skills: ['animals', 'attributes', 'classification', 'logic'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,

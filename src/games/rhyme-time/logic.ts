@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { spread } from '../../engine/view';
 
 /**
  * Rhyme Time: pictures that say their names. Find the one that rhymes with a word, then the two
@@ -367,3 +368,64 @@ export const spokenList = (words: readonly string[]) => {
   const the = words.map((w) => `the ${w}`);
   return `${the.slice(0, -1).join(', ')} or ${the[the.length - 1]}`;
 };
+
+// Layout ---------------------------------------------------------------------------------------------------------------
+
+/** A picture card's and a basket's touch boxes, a riddle chip's, and the round buttons' (the pet's mouth, Hear again). */
+export const CARD_HIT = 170,
+  BASKET_HIT = { w: 224, h: 220, up: 100 },
+  CHIP_HIT = 136,
+  BUTTON_HIT = 124;
+
+export interface RhymeLayout {
+  /** The picture cards' centres, left to right (the baskets level: its six, two rows of three). */
+  cards: { x: number; y: number }[];
+  /** Level 7's row under the shelf: the chips, then the pet's mouth. */
+  row: { x: number; y: number }[];
+  baskets: { x: number; y: number }[];
+  prompt: { x: number; y: number };
+  replay: { x: number; y: number };
+}
+
+/**
+ * Where everything stands. Sideways, each row starts right of the corner pet. Upright the rows sit well above the pet's
+ * corner, so they take the whole width: four cards, five chips and three baskets then stand apart on a 768-wide phone
+ * area instead of overlapping.
+ */
+export function rhymeLayout(
+  v: { w: number; h: number },
+  mode: RhymeMode,
+  cards: number,
+  row = 0,
+  baskets = 0,
+): RhymeLayout {
+  const upright = v.h > v.w;
+  const prompt = {
+    x: v.w / 2,
+    // Level 8's place stands just above the riders, its top clear of the corner buttons.
+    y: mode === 'scene' ? Math.max(250, v.h * 0.64 - 230) : Math.max(170, v.h * 0.27),
+  };
+  const replay = { x: v.w - 80, y: 90 };
+  // Starts right of the corner pet, which the bottom row would otherwise reach.
+  const rowX = upright ? spread(row, 40, v.w - 40, 165) : spread(row, 240, v.w - 50, 165);
+  const rowY = Math.min(v.h - 90, v.h * 0.42 + 250);
+  const rowAt = rowX.map((x) => ({ x, y: rowY }));
+  if (mode === 'baskets') {
+    // Baskets in a row along the top; the six pictures in two rows of three below, clear of the corner pet.
+    const bx = upright ? spread(baskets, 10, v.w - 10, 290) : spread(baskets, 200, v.w - 60, 290);
+    const by = Math.max(230, v.h * 0.3);
+    const tx = upright ? spread(3, 170, v.w - 30, 200) : spread(3, 180, v.w - 60, 200);
+    const row1 = Math.max(by + 250, v.h * 0.6);
+    const row2 = Math.min(v.h - 90, row1 + 185);
+    return {
+      cards: Array.from({ length: cards }, (_, i) => ({ x: tx[i % 3], y: i < 3 ? row1 : row2 })),
+      row: rowAt,
+      baskets: bx.map((x) => ({ x, y: by })),
+      prompt,
+      replay,
+    };
+  }
+  const xs = upright ? spread(cards, 40, v.w - 40, 200) : spread(cards, 180, v.w - 60, 200);
+  const y = v.h * (mode === 'make' ? 0.42 : 0.64);
+  return { cards: xs.map((x) => ({ x, y })), row: rowAt, baskets: [], prompt, replay };
+}

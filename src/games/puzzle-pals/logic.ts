@@ -1,4 +1,5 @@
 import type { BandLevels } from '../../progress/difficulty';
+import { spread } from '../../engine/view';
 export interface PuzzlePlan {
   cols: number;
   rows: number;
@@ -142,3 +143,116 @@ export const LEVELS: BandLevels = {
   prek: { min: 5, max: 7 },
   school: { min: 6, max: 7 },
 };
+
+// Layout ---------------------------------------------------------------------------------------------------------------
+
+export interface PuzzleLayout {
+  /** The frame's picture area: its top-left corner and width (its height follows the picture's shape). */
+  board: { x: number; y: number; w: number };
+  /** Board units per picture unit, and the smaller scale of a piece waiting in the tray. */
+  scale: number;
+  trayScale: number;
+  /** Where each waiting piece rests (its centre), in tray order. */
+  homes: { x: number; y: number }[];
+  /** The tray's cream panel. */
+  panel: { x: number; y: number; w: number; h: number };
+}
+
+/** Upright, the frame starts below the corner buttons, which it is wide enough to reach. */
+export const UPRIGHT_TOP = 236;
+
+/**
+ * The frame and the tray for `total` pieces of which `waiting` are still out. Sideways: the frame above a tray of one or
+ * two rows, right of the pet. Upright (a phone): the frame across the width under the corner buttons and the tray filling
+ * the height below it, its pieces in as many rows as keeps them biggest, so a six-, nine- or twelve-piece puzzle's pieces
+ * stay over 100 units on a 768-wide area. The tray keeps right of the pet's corner in both.
+ */
+export function puzzleLayout(
+  v: { w: number; h: number },
+  plan: Pick<PuzzlePlan, 'cols' | 'rows'>,
+  total: number,
+  waiting: number,
+): PuzzleLayout {
+  const pw = PICTURE_W / plan.cols;
+  const ph = PICTURE_H / plan.rows;
+  const aspect = PICTURE_H / PICTURE_W;
+  if (v.h > v.w) {
+    const gap = 16;
+    const left = 170,
+      right = v.w - 30;
+    const boardW = Math.min(640, v.w - 80, (v.h - UPRIGHT_TOP - 60 - 400) / aspect);
+    const scale = boardW / PICTURE_W;
+    const y0 = UPRIGHT_TOP + boardW * aspect + 60;
+    const H = v.h - 30 - y0;
+    // As many rows as the whole puzzle needs, so the pieces left do not jump about as the tray empties.
+    let best = { s: 0, perRow: total };
+    for (let perRow = total; perRow >= 1; perRow--) {
+      const rows = Math.ceil(total / perRow);
+      const s = Math.min(scale, ((right - left) / perRow - gap) / pw, (H / rows - gap) / ph);
+      if (s > best.s + 1e-9) best = { s, perRow };
+    }
+    const { s, perRow } = best;
+    const rows = Math.ceil(total / perRow);
+    const stepY = ph * s + gap;
+    const blockTop = y0 + (H - rows * stepY) / 2;
+    const homes = Array.from({ length: waiting }, (_, i) => {
+      const row = Math.floor(i / perRow);
+      const inRow = Math.min(perRow, waiting - row * perRow);
+      return {
+        x: spread(inRow, left, right, pw * s + gap + 24)[i % perRow],
+        y: blockTop + stepY * (row + 0.5),
+      };
+    });
+    return {
+      board: { x: (v.w - boardW) / 2, y: UPRIGHT_TOP, w: boardW },
+      scale,
+      trayScale: s,
+      homes,
+      panel: { x: left - 10, y: y0 - 10, w: right - left + 20, h: H + 20 },
+    };
+  }
+  const rows = trayRows(total);
+  const trayH = rows === 1 ? 210 : 240;
+  const top = 112;
+  const boardW = Math.min(640, v.w - 300, ((v.h - top - trayH - 24) * PICTURE_W) / PICTURE_H);
+  const scale = boardW / PICTURE_W;
+  // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
+  const maxH = rows === 1 ? 170 : 100;
+  const maxW = rows === 1 ? 240 : 130;
+  const perRow = Math.ceil(waiting / rows);
+  const homes = Array.from({ length: waiting }, (_, i) => {
+    const row = Math.floor(i / perRow);
+    const inRow = Math.min(perRow, waiting - row * perRow);
+    return {
+      x: spread(inRow, 180, v.w - 40, rows === 1 ? 270 : 145)[i % perRow],
+      y: rows === 1 ? v.h - trayH / 2 - 10 : v.h - trayH + 60 + row * 112,
+    };
+  });
+  return {
+    board: { x: v.w / 2 + 50 - boardW / 2, y: top, w: boardW },
+    scale,
+    trayScale: Math.min(scale, maxH / ph, maxW / pw),
+    homes,
+    panel: { x: 160, y: v.h - trayH - 6, w: v.w - 185, h: trayH - 8 },
+  };
+}
+
+/** One at a time (level 8): the frame, and where the one big waiting piece sits (right of it sideways, under it upright). */
+export function oneAtATimeLayout(v: { w: number; h: number }, cols: number) {
+  const sideways = v.w >= v.h;
+  const top = sideways ? 112 : UPRIGHT_TOP;
+  const left = 180;
+  const gap = 40;
+  const aspect = PICTURE_H / PICTURE_W;
+  const across = 1 + 1 / cols;
+  const boardW = sideways
+    ? Math.min(640, (v.w - left - 40 - gap) / across, (v.h - top - 40) / aspect)
+    : Math.min(640, v.w - 80, (v.h - top - 40 - gap) / (2 * aspect));
+  const x = sideways ? left + (v.w - left - 40 - boardW * across - gap) / 2 : (v.w - boardW) / 2;
+  const y = sideways ? Math.max(top, (v.h - boardW * aspect) / 2) : top;
+  const bh = boardW * aspect;
+  const home = sideways
+    ? { x: x + boardW + gap + boardW / cols / 2, y: y + bh / 2 }
+    : { x: x + boardW / 2, y: y + bh + gap + bh / 2 };
+  return { board: { x, y, w: boardW }, scale: boardW / PICTURE_W, home };
+}

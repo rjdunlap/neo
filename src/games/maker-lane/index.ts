@@ -730,6 +730,7 @@ export const makerLane: GameModule = {
   challenge: 'noticing',
   skills: ['where things come from', 'how things are made', 'plant or animal', 'cause and effect'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => LEVEL_NAMES[clampLevel(level)],
   music: STYLES.hub,

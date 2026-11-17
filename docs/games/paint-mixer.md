@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/paint-mixer; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `paint-mixer` · **Land:** Counting Cove · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `paint-mixer` · **Land:** Counting Cove · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, comparing, number-sense, operations
 

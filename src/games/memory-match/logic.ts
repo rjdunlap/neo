@@ -367,3 +367,41 @@ export function clockDrawing(time: number) {
     minute: hand(hands.minute, 34, 4),
   };
 }
+
+// Layout ---------------------------------------------------------------------------------------------------------------
+
+export interface BoardLayout {
+  cols: number;
+  /** A card's side, in units. */
+  size: number;
+  /** The cards' centres, in deal order. */
+  cards: { x: number; y: number }[];
+  /** The face-off scoreboard's centre. */
+  board: { x: number; y: number };
+}
+
+/**
+ * The grid of `count` cards (`pairs` across when six or fewer, else four across), under the scoreboard and right of the
+ * corner buttons and the pet. Upright the grid starts below the corner buttons and ends above the pet's corner, so it is
+ * centred on the whole width and its cards grow to fill it.
+ */
+export function boardLayout(v: { w: number; h: number }, count: number, pairs: number): BoardLayout {
+  const cols = count <= 6 ? pairs : 4;
+  const rows = Math.ceil(count / cols);
+  const upright = v.h > v.w;
+  const top = upright ? 230 : 115;
+  const size = upright
+    ? Math.min(170, (v.h - top - 190) / rows - 16, (v.w - 40) / cols - 16)
+    : Math.min(150, (v.h - 170) / rows - 16, (v.w - 240) / cols - 16);
+  const step = size + 16;
+  const cx = upright ? v.w / 2 : v.w / 2 + 40;
+  return {
+    cols,
+    size,
+    cards: Array.from({ length: count }, (_, i) => ({
+      x: cx + ((i % cols) - (cols - 1) / 2) * step,
+      y: top + size / 2 + Math.floor(i / cols) * step,
+    })),
+    board: { x: cx, y: upright ? 150 : 84 },
+  };
+}

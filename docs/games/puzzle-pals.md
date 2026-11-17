@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/puzzle-pals; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `puzzle-pals` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `puzzle-pals` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, part-whole, fine-motor
 
@@ -38,3 +38,5 @@ Level **8, One big piece at a time** (built 2026-11-13, lap's first; lap order 8
 Twelve code-drawn scenes (a cow on the farm, a duck in the pond, a pig in the mud, a cat at night, a dog in the rain, and so on) are rendered once into a texture and cut into 2 to 12 pieces. Faint pictures guide the early levels; later ones show only an empty frame. On the one- and two-piece pictures (levels 1–2, the lap levels) a piece that is tapped, picked up and let go where it was, hops into its place by itself (2026-10-24, [PR #942](https://github.com/rjdunlap/neo/pull/942)); bigger puzzles keep the carry. At levels 5–7, thick flat rims mark outer sides (two at a corner). Dropping off the frame is exploration; a wrong place is a gentle miss. After two misses, the same waiting piece and destination glow while the pet names its position: corner first, then an edge beside a placed piece, then another adjacent piece. A successful placement clears the hint; each two-miss run charges one hint. The finished picture comes alive and the animal says hello. A round draws any of the twelve; stickers and the map icon always show one of the first six, so a saved sticker never changes picture.
 
 **Built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)):** all twelve play scenes add seeded kites, different middle-edge landmarks and different foreground silhouettes; moon and rainy scenes also have a sky bird. Every piece at existing levels 1–7 has a distinct set of substantial filled visual cues, checked without counting empty drawing bounds. Saved sticker and map-icon art stays unchanged. The box lid remains a separate person-check-dependent proposal ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14)).
+
+**Upright (2026-11-17).** Pure `puzzleLayout` and `oneAtATimeLayout`: the frame sits under the corner buttons across the width and the tray fills the height below it in as many rows as keep the pieces biggest (160+ units; levels 3, 5 and 6 measured 83–98 before, and level 4 had a piece over the guide and one off the right edge); level 8's frame starts below Home. Sideways layouts are unchanged. Layout test: `src/games/upright-batch-7.test.ts`.

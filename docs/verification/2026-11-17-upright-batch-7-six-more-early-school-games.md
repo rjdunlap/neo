@@ -1,0 +1,5 @@
+# 2026-11-17 — Upright batch 7: six more early-school games (PR #1766)
+
+**Changed:** `rhyme-time`, `paint-mixer`, `who-am-i`, `puzzle-pals`, `memory-match` and `maker-lane` are `upright: true` at every level of every band; pure upright layouts for rhyme-time, memory-match and puzzle-pals, and who-am-i's level 6–7 strip moved; new `src/games/upright-batch-7.test.ts` (176 cases, four phone views); the sweep takes `PHONE_BANDS=all` and `uprightgames` takes `PHONE_BAND=<band>`.
+**Ran:** `npm run typecheck`; full `npm test` (361 files, passed, after `npm run game-docs`); `uprightsweep` with `PHONE_BANDS=all` on the six (46 level rows: 42 fit, 0 need a layout, 4 explained); `uprightgames` with `PHONE_BAND=school` (first and last school level of each game by real touches on a 390 × 844 touch phone, one sticker each, 12 plays); sideways `phone` suite on rhyme-time, who-am-i, puzzle-pals and memory-match (844 × 390), passed.
+**Not run:** `npm run build` (CI runs it), `fingerdemo`, offline, `world`, the per-game browser suites.
