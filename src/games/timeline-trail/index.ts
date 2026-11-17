@@ -3,7 +3,8 @@
  * taps or drags the older of two to the left post, level 2 drags a third picture into one of three gaps, level 3 grows a
  * line of four one card at a time, level 4 hangs a second place's pictures by the little clue picture in each card's
  * corner, level 5 grows a line of four and then pins the one thing that is in every picture to the "still here"
- * ribbon), then watch the finished line play as a flipbook of the place growing.
+ * ribbon, level 6 ends with a misty picture that fits two gaps, either of them right), then watch the finished line
+ * play as a flipbook of the place growing, in the order she hung it.
  * Rules: ./logic.ts; definitions: docs/definitions/timeline-trail.md and timeline-trail-5-7.md.
  */
 import { Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
@@ -39,7 +40,10 @@ import {
   centre,
   chipReason,
   faceOf,
+  inTray,
   lineLayout,
+  mistHides,
+  MISTY,
   nextCard,
   PLACE_IDS,
   PLACES,
@@ -171,7 +175,7 @@ class TimelineTrail implements Game {
     if (!this.layoutNow && !this.cards.length) return;
     if (this.frame) {
       // Mid-flipbook: the frame follows the new view; the rest is already out of play.
-      const l = lineLayout(this.round, this.line, this.loose.length, v);
+      const l = lineLayout(this.round, this.line, inTray(this.round, this.loose).length, v);
       if (l) {
         this.layoutNow = l;
         this.frame.position.copyFrom(centre(l.frame));
@@ -204,7 +208,8 @@ class TimelineTrail implements Game {
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
     this.ropeG.clear();
     if (this.finished) return;
-    const l = lineLayout(this.round, this.line, this.loose.length, this.view);
+    const tray = inTray(this.round, this.loose);
+    const l = lineLayout(this.round, this.line, tray.length, this.view);
     this.layoutNow = l;
     if (!l) return;
     const stages = PLACES[this.round.place].stages;
@@ -261,8 +266,8 @@ class TimelineTrail implements Game {
       node.position.copyFrom(centre(r));
       this.board.addChild(node);
     });
-    // Loose cards in the tray, draggable.
-    this.loose.forEach((stage, i) => {
+    // Loose cards in the tray, draggable (level 6's misty card only once the other is hung).
+    tray.forEach((stage, i) => {
       const r = l.tray[i];
       const node = new Container();
       node.addChild(this.makeCard(stage, CARD, false));
@@ -379,28 +384,28 @@ class TimelineTrail implements Game {
     return true;
   }
 
-  /** A picture card; the nest's now card carries the companion itself, and level 4's cards their little clue picture. */
+  /** A picture card; the nest's now card carries the companion itself, level 4's cards their little clue picture, level 6's misty card its veil. */
   private makeCard(n: number, size: number, sepia: boolean): Container {
     const f = faceOf(this.round, n);
     const last = PLACES[f.place].stages.length - 1;
     const rig = f.place === 'nest' && f.stage === last ? this.ctx.companion() : undefined;
-    return cardArt(f.place, f.stage, size, this.petColor, { sepia, rig, clue: f.clue });
+    return cardArt(f.place, f.stage, size, this.petColor, { sepia, rig, clue: f.clue, mist: !!f.could });
   }
 
-  /** Where a card's valid gap glows: its gap index, or null. */
-  private glowGap(): number | null {
+  /** Where a card's valid gap glows: its gap index, or both for the misty card; none when nothing glows. */
+  private glowGaps(): number[] {
     const stage = this.tally.glowing;
-    if (stage === null || stage < 0 || this.line.includes(stage)) return null;
-    return validGaps(this.round, this.line, stage)[0] ?? null;
+    if (stage === null || stage < 0 || this.line.includes(stage)) return [];
+    return validGaps(this.round, this.line, stage);
   }
 
   private redrawGaps() {
     const l = this.layoutNow;
     if (!l) return;
-    const lit = this.glowGap();
+    const lit = this.glowGaps();
     this.gapNodes.forEach((node, i) => {
       for (const c of node.removeChildren()) c.destroy();
-      node.addChild(gapArt(l.gaps[i].w, l.gaps[i].h, this.nearGap === i, lit === i));
+      node.addChild(gapArt(l.gaps[i].w, l.gaps[i].h, this.nearGap === i, lit.includes(i)));
     });
   }
 
@@ -461,7 +466,12 @@ class TimelineTrail implements Game {
         return this.line.includes(c.stage);
       }
       const f = faceOf(this.round, c.stage);
-      if (f.clue)
+      if (f.could)
+        void this.ctx.say('trail.mist', {
+          caption: this.captionOf(c.stage).caption,
+          hides: mistHides(f.place, f.stage),
+        });
+      else if (f.clue)
         void this.ctx.say('trail.clue', {
           caption: this.captionOf(c.stage).caption,
           clue: PLACES[f.clue.place].stages[f.clue.stage].caption,
@@ -498,7 +508,7 @@ class TimelineTrail implements Game {
             ? 'trail.not-first'
             : 'trail.not-now';
       void this.ctx.say(line, { reason: result.reason, place: this.placeName });
-      if (lit) void this.ctx.say('trail.hint-glow');
+      if (lit) void this.ctx.say(c.stage === MISTY ? 'trail.both-glow' : 'trail.hint-glow');
       this.redrawGaps();
       return;
     }
@@ -510,7 +520,9 @@ class TimelineTrail implements Game {
     this.ctx.tw.kill(c.node);
     this.ctx.tw.kill(c.node.scale);
     sfx.bell(4 + this.line.length, 0.3);
-    void this.ctx.say('trail.yes', { caption: this.captionOf(c.stage).caption });
+    // The misty card in either of its gaps: both are right, and the line keeps the side she chose.
+    if (c.stage === MISTY) void this.ctx.say('trail.both-fit');
+    else void this.ctx.say('trail.yes', { caption: this.captionOf(c.stage).caption });
     if (this.level === 1 && this.loose.length) {
       // The other picture takes the other post by itself.
       const other = this.loose[0];
@@ -520,7 +532,11 @@ class TimelineTrail implements Game {
       this.loose = [];
     }
     this.build();
-    if (this.loose.length) return;
+    if (this.loose.length) {
+      // Level 6: the misty picture comes out now, and the pet's repeated instruction turns to it.
+      if (this.loose[0] === MISTY) void this.ctx.instruct('trail.mist-ask');
+      return;
+    }
     // Level 5 asks what is still here before the flipbook; the question becomes the instruction the pet repeats.
     if (asking(this.round, this.line)) void this.ctx.instruct('trail.still-ask');
     else void this.flipbook();
@@ -549,7 +565,8 @@ class TimelineTrail implements Game {
     const inner = l.frame.w - 24;
     const steps = [4, 5, 7, 8, 9];
     let page: Container | null = null;
-    for (const [i, stage] of this.round.cards.entries()) {
+    // The line as she hung it: stage order at every level but 6, where the misty picture plays on the side she chose.
+    for (const [i, stage] of this.line.entries()) {
       if (page) {
         page.destroy({ children: true });
         page = null;
@@ -599,7 +616,7 @@ class TimelineTrail implements Game {
     if (stage === null) return;
     this.tally.help(stage);
     this.redrawGaps();
-    void this.ctx.say('trail.help');
+    void this.ctx.say(stage === MISTY ? 'trail.both-glow' : 'trail.help');
   }
 
   /** The pause sheet's Start again: the round's first state; misses and hints stay. */
@@ -617,23 +634,23 @@ class TimelineTrail implements Game {
     this.glow.clear();
     const l = this.layoutNow;
     if (!l || this.finished || this.busy) return;
-    const lit = this.glowGap();
     const chip =
       this.tally.glowing === Tally.CHIP_SET && !this.pinned
         ? l.chips[this.round.chips?.indexOf(this.round.still ?? '') ?? -1]
         : undefined;
-    const r = chip ?? (lit === null ? undefined : l.gaps[lit]);
-    if (!r) return;
     const k = 1 + 0.05 * Math.sin(this.clock * 5);
-    const p = centre(r);
-    this.glow
-      .roundRect(p.x - (r.w / 2 + 10) * k, p.y - (r.h / 2 + 10) * k, (r.w + 20) * k, (r.h + 20) * k, 24)
-      .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
+    for (const r of chip ? [chip] : this.glowGaps().map((i) => l.gaps[i])) {
+      if (!r) continue;
+      const p = centre(r);
+      this.glow
+        .roundRect(p.x - (r.w / 2 + 10) * k, p.y - (r.h / 2 + 10) * k, (r.w + 20) * k, (r.h + 20) * k, 24)
+        .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
+    }
   }
 
   /**
-   * The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap, and at
-   * level 5 it then drags the still-here chip to the ribbon.
+   * The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap (the misty
+   * card, last, to the earlier of its two), and at level 5 it then drags the still-here chip to the ribbon.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;

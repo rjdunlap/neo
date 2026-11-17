@@ -16,6 +16,9 @@ export const VOICE = {
   'trail.instruct.5': [
     'These pictures show the {place} at different times. Hang them from long ago to now, then find what is still here in every picture.',
   ],
+  'trail.instruct.6': [
+    'These pictures show the {place} at different times. Hang the loose picture where it belongs. Then comes a misty picture: something in it is hidden.',
+  ],
   'trail.clue': ['{caption}. In the little picture: {clue}.'],
   'trail.card.shore-0': ['An empty shore with one rock.'],
   'trail.card.shore-1': ['A little dock on the shore.'],
@@ -43,6 +46,10 @@ export const VOICE = {
   'trail.not-now': ['That one is from long ago. {reason} Hang it on the left post.'],
   'trail.hint-glow': ['Look, the glowing gap is where it belongs.'],
   'trail.help': ['The glowing gap is where this picture goes.'],
+  'trail.mist-ask': ['Now the misty picture. Something is hidden. Where could it go?'],
+  'trail.mist': ['{caption}. {hides}'],
+  'trail.both-fit': ['We can’t tell! Both places fit.'],
+  'trail.both-glow': ['Look, two gaps glow. We can’t tell which, so it fits in either one.'],
   'trail.still-ask': ['What is still here in every picture? Tap it, or drag it to the ribbon.'],
   'trail.still-yes': ['Yes! The {thing} is still here, in every picture.'],
   'trail.still-no': ['Not that one. {reason} What is in every picture?'],

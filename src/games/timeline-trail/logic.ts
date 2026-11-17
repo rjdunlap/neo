@@ -7,8 +7,10 @@
  * the same time, which is the only thing that orders one place's card against the other's. Level 5 grows one of two
  * later places (a village green, a bread oven) whose middle picture is the grandest, then asks which of three things is
  * still here in every picture: every stage lists what its picture `shows`, and an element in all of them is still here.
- * Everything here is pure; the scene draws it. Definitions: docs/definitions/timeline-trail.md (levels 1–4) and
- * docs/definitions/timeline-trail-5-7.md (level 5).
+ * Level 6 hangs a misty picture last: sea mist (or leaves) hides the one thing that would tell it from the picture
+ * after it, so it honestly fits two gaps, either is right, and from here on the line is the cards in the order she hung
+ * them rather than a sorted list. Everything here is pure; the scene draws it. Definitions:
+ * docs/definitions/timeline-trail.md (levels 1–4) and docs/definitions/timeline-trail-5-7.md (levels 5 and 6).
  */
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -210,6 +212,30 @@ export function chipReason(place: PlaceId, element: string): string {
   return `The ${element} is ${n === 1 ? 'only in one picture' : 'not in every picture'}.`;
 }
 
+// ——— The misty picture (level 6) ———
+
+/** Level 6's places: the two whose every stage only adds something, so hiding the added thing hides the time. */
+export const MIST_PLACES = ['shore', 'tree'] as const satisfies readonly PlaceId[];
+export type MistPlace = (typeof MIST_PLACES)[number];
+
+/** The misty card's number on the line: one past the last stage, so it never collides with a picture's own stage. */
+export const MISTY = 4;
+
+/**
+ * The stages that can be misted: the picture shows stage `k`, and the veil covers the spot where stage `k + 1`'s new
+ * thing would be, so it could be either. The tree has one (leaves over the branch where the swing would hang): its
+ * earlier stages differ by the whole tree's size, which nothing could hide.
+ */
+export const MIST_STAGES: Record<MistPlace, readonly number[]> = { shore: [0, 1, 2], tree: [2] };
+
+/** What hides the telling spot, spoken after the caption when she taps the misty card. */
+export function mistHides(place: PlaceId, k: number): string {
+  const next = PLACES[place].stages[k + 1].changes;
+  return place === 'tree'
+    ? `Leaves hide the branch where a ${next} would hang.`
+    : `Sea mist hides the spot where a ${next} would be.`;
+}
+
 // ——— Levels ———
 
 export interface Plan {
@@ -227,12 +253,13 @@ export const PLANS: readonly Plan[] = [
   { level: 3, name: 'Grow the line', cards: 4, hungAtStart: 1 },
   { level: 4, name: 'A clue inside', cards: 4, hungAtStart: 2 },
   { level: 5, name: 'Still here', cards: 4, hungAtStart: 1 },
+  { level: 6, name: 'We can’t tell', cards: 4, hungAtStart: 2 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 5 },
+  school: { min: 2, max: 6 },
 };
 
 export function planFor(level: number): Plan {
@@ -253,8 +280,10 @@ export interface Round {
   cards: number[];
   /** Stage indices hung before she starts, ascending (level 3's first card; level 2's two ends or two neighbours). */
   hung: number[];
-  /** Stage indices waiting in the tray, in their seeded tray order. */
+  /** Stage indices waiting in the tray, in their seeded tray order (level 6: the ordinary card, then `MISTY`). */
   loose: number[];
+  /** Level 6 only: the misty card shows stage `k` with the spot of stage `k + 1`'s new thing hidden. */
+  misty?: { k: number };
   /** Level 5 only: the three elements on the chips, in their seeded order; exactly one is `still`. */
   chips?: string[];
   /** Level 5 only: the element in every picture, the chip that pins to the ribbon. */
@@ -283,12 +312,17 @@ const sessionBag = new PlaceBag(new Rng());
 const laterBag = new PlaceBag<LaterPlace>(new Rng(), LATER_PLACES);
 const isLater = (p: PlaceId | undefined): p is LaterPlace =>
   p !== undefined && (LATER_PLACES as readonly PlaceId[]).includes(p);
+/** Level 6's own bag of the two places a mist can hide. */
+const mistBag = new PlaceBag<MistPlace>(new Rng(), MIST_PLACES);
+const isMist = (p: PlaceId | undefined): p is MistPlace =>
+  p !== undefined && (MIST_PLACES as readonly PlaceId[]).includes(p);
 
 /**
  * A round: the place, the stages in play and which hang first. Level 1 shows two stages at least one stage apart, both
  * loose; level 2 drops one stage of the four, hangs two of the remaining three and leaves one loose (any of the three);
  * level 3 uses every stage, hangs the first, and the three others wait in a seeded order; level 5 does the same with a
- * later place and adds three chips (the still-here element, the grand thing and one plainer thing) in a seeded order.
+ * later place and adds three chips (the still-here element, the grand thing and one plainer thing) in a seeded order;
+ * level 6 hangs two of three stages of the shore or the tree, leaves one loose and keeps the misty card for last.
  */
 export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
   const plan = planFor(level);
@@ -313,6 +347,22 @@ export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
     const [still] = stillHere(place);
     const chips = rng.shuffle([still, CHIPS[place].grand, rng.pick(CHIPS[place].others)]);
     return { level: plan.level, place, cards, hung: [cards[0]], loose, chips, still };
+  }
+  if (plan.level === 6) {
+    // The misty card could be stage k or k + 1; the line's ordinary cards are every stage but k, two of them hung, one
+    // loose, and the misty card comes last, when the stage k + 1 card is certainly on the line beside its two gaps.
+    const place = isMist(chosen) ? chosen : mistBag.next();
+    const k = rng.pick(MIST_STAGES[place]);
+    const others = PLACES[place].stages.map((_s, i) => i).filter((i) => i !== k);
+    const first = rng.pick(others);
+    return {
+      level: plan.level,
+      place,
+      cards: [...others, MISTY],
+      hung: others.filter((c) => c !== first),
+      loose: [first, MISTY],
+      misty: { k },
+    };
   }
   const place = chosen ?? sessionBag.next();
   const n = PLACES[place].stages.length;
@@ -347,10 +397,19 @@ export interface CardFace {
   stage: number;
   /** The little picture in the card's corner (level 4): the other place as it was when this picture was made. */
   clue?: { place: PlaceId; stage: number };
+  /**
+   * The misty card (level 6): the two stages it could be. `stage` is the earlier, the picture actually drawn; the veil
+   * covers where the later one's new thing would be.
+   */
+  could?: readonly [number, number];
 }
 
-/** The face of card `n`: its own place's stage n, and at level 4 its owner and clue. */
+/** The face of card `n`: its own place's stage n, at level 4 its owner and clue, and level 6's misty card its two readings. */
 export function faceOf(round: Round, n: number): CardFace {
+  if (round.misty && n === MISTY) {
+    const k = round.misty.k;
+    return { place: round.place, stage: k, could: [k, k + 1] };
+  }
   if (round.level !== 4 || !round.owners || !round.other) return { place: round.place, stage: n };
   const place = round.owners[n];
   const other = place === round.place ? round.other : round.place;
@@ -372,25 +431,35 @@ export function compareFaces(a: CardFace, b: CardFace, clues = true): number | n
 /**
  * Every gap where card `n` could hang without any picture contradicting the order: each hung card it can be compared
  * with must be on the right side of it. With the clues there is exactly one; without them (`clues: false`), a level-4
- * card of the second place fits several, because only the little picture ties the two places' times together.
+ * card of the second place fits several, because only the little picture ties the two places' times together. A misty
+ * card fits a gap when some stage it could be is no older than every card before the gap and no newer than every card
+ * after it, so hung last it fits exactly two: either side of the card it might be a second picture of.
  */
 export function fittingGaps(round: Round, line: readonly number[], n: number, clues = true): number[] {
   const me = faceOf(round, n);
+  const readings = (f: CardFace) => f.could ?? [f.stage];
   const fits: number[] = [];
   for (let gap = 0; gap <= line.length; gap++) {
-    const ok = line.every((m, i) => {
-      const c = compareFaces(me, faceOf(round, m), clues);
-      if (c === null) return true;
-      return i < gap ? c > 0 : c < 0;
-    });
+    const ok = readings(me).some((s) =>
+      line.every((m, i) => {
+        const them = faceOf(round, m);
+        return readings(them).some((t) => {
+          const c = compareFaces({ ...me, stage: s }, { ...them, stage: t }, clues);
+          // Nothing decides it, or (a misty card only) the two could be the same moment: either side is honest.
+          if (c === null || c === 0) return true;
+          return i < gap ? c > 0 : c < 0;
+        });
+      }),
+    );
     if (ok) fits.push(gap);
   }
   return fits;
 }
 
 /**
- * The gaps where a card fits given the cards already hung: exactly one at every level. Level 1 offers the two posts,
- * and the older card belongs on the left; the others are decided by what the pictures (and level 4's clues) show.
+ * The gaps where a card fits given the cards already hung: exactly one for every ordinary card at every level, exactly
+ * two for level 6's misty card. Level 1 offers the two posts, and the older card belongs on the left; the others are
+ * decided by what the pictures (and level 4's clues) show.
  */
 export function validGaps(round: Round, line: readonly number[], stage: number): number[] {
   if (round.level === 1) return [stage === Math.min(...round.cards) ? 0 : 1];
@@ -426,26 +495,29 @@ export function reasonFor(round: Round, card: number, neighbour: number, after: 
 export type Placement = { ok: true; line: number[] } | { ok: false; reason: string; line: readonly number[] };
 
 /**
- * Hang a card in a gap. The valid gap returns the new line; any other gap returns the line untouched and a reason
- * about what the picture shows, built from the hung neighbour the card is wrongly before or after.
+ * Hang a card in a gap. Any fitting gap returns the new line with the card put in at that gap, so the line is the cards
+ * in the order she hung them: for an ordinary card that is stage order (its one fitting gap is where it sorts), and the
+ * misty card stays on whichever side she chose. Any other gap returns the line untouched and a reason about what the
+ * picture shows, built from the hung neighbour the card is wrongly before or after, measured from the nearest fitting gap.
  */
 export function place(round: Round, line: readonly number[], stage: number, gap: number): Placement {
-  const [valid] = validGaps(round, line, stage);
-  if (gap === valid) {
-    const next = [...line, stage].sort((a, b) => a - b);
-    return { ok: true, line: next };
-  }
+  const valid = validGaps(round, line, stage);
+  if (valid.includes(gap)) return { ok: true, line: [...line.slice(0, gap), stage, ...line.slice(gap)] };
   if (round.level === 1) {
     // The only wrong answer: the newer picture called "long ago" (or the older one hung at "now").
     const other = round.cards.find((c) => c !== stage)!;
     return { ok: false, reason: reasonFor(round, stage, other, stage > other), line };
   }
   // Too early, the hung card just after the gap is older than this one; too late, the one just before it is newer.
-  if (gap < valid) return { ok: false, line, reason: reasonFor(round, stage, line[gap], true) };
+  if (gap < valid[0]) return { ok: false, line, reason: reasonFor(round, stage, line[gap], true) };
   return { ok: false, line, reason: reasonFor(round, stage, line[gap - 1], false) };
 }
 
-/** The loose card the ghost finger takes next: the oldest, so any line it builds is legal. */
+/** The loose cards she can reach: level 6's misty card waits out of the tray until every other card is hung. */
+export const inTray = (round: Round, loose: readonly number[]): number[] =>
+  round.misty && loose.length > 1 ? loose.filter((c) => c !== MISTY) : [...loose];
+
+/** The loose card the ghost finger takes next: the oldest (the misty card, numbered past every stage, last), so any line it builds is legal. */
 export function nextCard(round: Round, loose: readonly number[]): number | null {
   if (!loose.length) return null;
   if (round.level === 1) return Math.min(...round.cards);
@@ -456,7 +528,7 @@ export function nextCard(round: Round, loose: readonly number[]): number | null 
 
 /**
  * Keeps the round's accounting: a miss per distinct wrong drop (the same card in the same wrong gap again repeats the
- * reason and counts nothing), a glow on a card's valid gap after its second miss (one hint a card, at most), and
+ * reason and counts nothing), a glow on a card's valid gap (both, for the misty card) after its second miss (one hint a card, at most), and
  * Show a hint for the card in hand (the same single hint). Level 5's three chips count the same way as one more card:
  * a miss per distinct wrong chip, the right chip glowing after the second, one hint at most.
  */

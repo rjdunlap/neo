@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 2–5 |
+| school | 2–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 3 | Grow the line |
 | 4 | A clue inside |
 | 5 | Still here |
+| 6 | We can’t tell |
 
 <!-- end generated -->
 

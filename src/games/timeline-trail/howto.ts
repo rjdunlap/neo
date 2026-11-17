@@ -17,6 +17,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Hang the pictures, then find what is still here in every picture and pin it to the ribbon.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'Some pictures hide what would tell; when two places fit, either is right.',
+    },
   ],
   finish: 'The pictures play like a flipbook and the place grows.',
   note: 'A picture put in the wrong place slides back with a reason; after two tries on one picture its gap glows, which counts as a hint. Looking and listening are never counted. The newest picture is not always the fanciest. The place is made up for the island; no real dates are taught.',
