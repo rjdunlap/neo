@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With all 24 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3. The rule tests pin the starters.
+With all 32 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batch 4 left every starter unchanged. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -168,6 +168,34 @@ Treehouse now has a toddler game with notes, so the nothing-played starters at t
 Left out, with reasons: Fill Dump (dry beans at preschool, loose fill in spirit), Peg Garden (a marble at preschool), Pet Kitchen (a sandwich), Puzzle Pals and Tangram Town (cutting), Vine Snip (string), Quick Tricks ("keep a toy dry") and Puppet Stage ("at dinner").
 
 **Observation: the youngest-band gaps cannot be filled under the present rules.** The rule test requires every game with notes to have a kit label at every band it lists. Treehouse at lap: the only un-noted lap game whose *Try* is clear of the deferred word list is Gear Garden ("Look for something at home that turns…"), which names nothing in the kit; Stamp Studio stays out for its potato, and Rainbow Fingers, Fluffy Salon and Draw the Pattern name deferred classes. Cozy Village at lap: Weather Wardrobe, Mail Carrier, Stop and Go and Pet Says name no kit item, Teddy Doctor has plasters, and Splish Splash, Feelings Faces and Scoop Shop name deferred classes. Lantern Lake has no game below school. A fourth batch can therefore add games in bands already served, but closing the lap gaps in Treehouse and Cozy Village would need the kit rule revisited, for instance allowing notes for an idea that needs no object.
+
+## Batch 4 (built 2026-11-17, PR #1758)
+
+Eight more games in bands already served, so the table holds 32. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged (Sing-Along Barn's is long, so its opening is quoted).
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Domino Run (toddler–school) | `all` | Stand books or wooden blocks in a row. Try a wide gap and a narrow one, then a small block pushing a big one. | Does {name} stand one up, push the first one or knock the whole row down? | Stand, stand, stand. Push! Down they go. |
+| | `school` | (the same) | Does {name} change the gap after a row stops partway? | Will the wide gap work? What made it stop there? |
+| Puddle Gobble (toddler–school) | `all` | Nest cups or bowls: which ones fit inside which? Then line them up smallest to biggest. | Does {name} put one cup inside another, build a tower or try each in turn? | In it goes. Too big! This one fits. |
+| | `school` | (the same) | Does {name} hold two cups side by side before trying the fit? | Which fit inside which? How did you choose the order? |
+| Beat Builder (toddler–school) | `all` | Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other. | Does {name} bang the pot, clap along or wait for the next turn? | Boom, clap. Boom, clap. Your turn! |
+| | `school` | (the same) | Does {name} copy the beat the same way, or add a new part? | What comes next in the beat? How would you change it? |
+| Sing-Along Barn (lap–pre-K) | `all` | Sing Old MacDonald, Hot Cross Buns, … with stuffed animals: bring out one for each verse and make its sound together. (opening quoted; the line lists the nine tunes) | Does {name} look at the animal, reach for it or join in with the sound? | Here is the cow. Moo, moo! Again? |
+| Adventure Walk (toddler–school) | `all` | Make a little walk on the table with a book bridge and a cushion boulder, and let a toy go over, under and around. | Does {name} walk the toy over the bridge, hide it under or go another way? | Over the bridge. Under! Around the boulder. |
+| | `school` | (the same) | Does {name} try a second way around after the first one? | Which way did the toy go? Is there another way to get there? |
+| Village Vote (preschool–school) | `all` | With a grown-up, let toy friends choose between two toys and count their preferences. | Does {name} give each friend one choice, send every friend to one toy or choose too? | Bear picks this one. Rabbit picks that one. Which has more? |
+| | `school` | (the same) | Does {name} count each side, or line the friends up to compare? | Which toy won? What if one friend changed sides? |
+| Memory Match (preschool–school) | `all` | Hide two pairs of familiar objects under cups and take turns finding their partners. | Does {name} lift cups in turn, go back to one already seen or peek under two? | A spoon! Where is its partner? Under this cup? |
+| | `school` | (the same) | Does {name} point to where a pair is before lifting the cup? | How did you remember that one? Shall we add another pair? |
+| Block Topple (preschool–school) | `all` | Stack cardboard boxes or blocks, then roll or toss a soft ball at different heights: which stacks tip, and where? | Does {name} aim low, aim high or build the stack up again? | Roll! Did it tip? Now a taller one. |
+| | `school` | (the same) | Does {name} change where the ball hits after seeing a stack stay up? | Which stack will tip first? Where would you aim, and why? |
+
+Lands: Bubble Beach (Domino Run, Puddle Gobble), Music Mountain (Beat Builder), Barnyard (Sing-Along Barn, Adventure Walk), Cozy Village (Village Vote, preschool up), Puzzle Peaks (Memory Match) and Tinker Lab (Block Topple). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited.
+
+Left out, with reasons: Maker Lane (bread, food in spirit though not on the word list), Market Stall, Picnic Pantry, Drift Cards and Spinner Fair (coins or buttons), Jar Sort (pom-poms), Critter Sort (string), Treasure Map (egg carton and muffin tin, kitchen in spirit), plus the batch 3 exclusions, which still hold.
+
+Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Pile Match, Bolt Boards, Thought Bubbles, Robot Path, Secret Code, Logic Grid, Garden Rows, Penguin Slide, Ramp Race, Inchworm, Chain Reaction, Sense Detective, Not Always, Critter Crossing, Memory Desk, Sorting Machine, Orchard Rows, Ready for Adventure, Welcome Ways, Shape Buddies, Playdate Workshop, Read-Do and Ferry Jam.
 
 ## Open decisions
 
