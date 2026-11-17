@@ -3,7 +3,8 @@
  * taps or drags the older of two to the left post, level 2 drags a third picture into one of three gaps, level 3 grows a
  * line of four one card at a time, level 4 hangs a second place's pictures by the little clue picture in each card's
  * corner, level 5 grows a line of four and then pins the one thing that is in every picture to the "still here"
- * ribbon, level 6 ends with a misty picture that fits two gaps, either of them right), then watch the finished line
+ * ribbon, level 6 ends with a misty picture that fits two gaps, either of them right, level 7 grows a line of four and
+ * then one picture grows big and she taps the part of it that proves when it is from), then watch the finished line
  * play as a flipbook of the place growing, in the order she hung it.
  * Rules: ./logic.ts; definitions: docs/definitions/timeline-trail.md and timeline-trail-5-7.md.
  */
@@ -13,6 +14,7 @@ import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -36,10 +38,12 @@ import {
 import {
   LEVELS,
   asking,
+  bare,
   CARD,
   centre,
   chipReason,
   faceOf,
+  FRAME_BORDER,
   inTray,
   lineLayout,
   mistHides,
@@ -50,11 +54,17 @@ import {
   place,
   planFor,
   POST_PICTURE_Y,
+  proofLayout,
+  proving,
   roundFor,
+  spotAt,
+  spotReason,
   Tally,
   validGaps,
   type LaterPlace,
   type LineLayout,
+  type ProofLayout,
+  type ProofPlace,
   type Pt,
   type Round,
 } from './logic';
@@ -106,6 +116,13 @@ class TimelineTrail implements Game {
   pinned = false;
   private ribbonNode: Container | null = null;
   private nearRibbon = false;
+  /** Level 7: the question is open (the big picture is up and waits for a tap), and whether it has been answered. */
+  questioning = false;
+  proved = false;
+  proof: ProofLayout | null = null;
+  /** The big picture's frame, which takes the taps, and the small card before it. */
+  proofNode: Container | null = null;
+  beforeNode: Container | null = null;
   private nearGap: number | null = null;
   private dragging: CardNode | null = null;
   /** How far the finger itself has moved since it touched the card in hand (the card rides 40 above it). */
@@ -203,6 +220,10 @@ class TimelineTrail implements Game {
     this.frame = null;
     this.nearGap = null;
     this.dragging = null;
+    if (this.proofNode) this.ctx.tw.kill(this.proofNode.scale);
+    this.proofNode = null;
+    this.beforeNode = null;
+    this.proof = null;
     this.glow.removeFromParent();
     this.ropeG.removeFromParent();
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
@@ -293,6 +314,7 @@ class TimelineTrail implements Game {
       this.cards.push(c);
     });
     if (l.ribbon) this.buildRibbon(l);
+    if (this.questioning) this.buildQuestion();
     this.board.addChild(this.glow);
     this.redrawGaps();
   }
@@ -382,6 +404,108 @@ class TimelineTrail implements Game {
     this.build();
     void this.flipbook();
     return true;
+  }
+
+  // ——— Level 7's question ———
+
+  /** The caption of the picture before the asked one, read after "the". */
+  private get beforeCaption() {
+    return bare(PLACES[this.round.place].stages[this.round.ask! - 1].caption);
+  }
+
+  /** The line is full: the asked picture grows big in the frame, and the question becomes the instruction. */
+  private openQuestion() {
+    this.questioning = true;
+    this.build();
+    if (!this.proof) {
+      // A view too small for the big picture and the card before it: no question, straight to the flipbook.
+      this.questioning = false;
+      this.proved = true;
+      void this.flipbook();
+      return;
+    }
+    if (this.proofNode) {
+      // The picture flies up into the frame; it takes taps from the start.
+      this.proofNode.scale.set(0.3);
+      void this.ctx.tw.to(this.proofNode.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    }
+    sfx.pop(8);
+    void this.ctx.instruct('trail.proof-ask', { caption: this.beforeCaption });
+  }
+
+  /** The dimmed line, the big picture in its frame (the tap target) and the card before it, from the model. */
+  private buildQuestion() {
+    const p = proofLayout(this.round, this.view);
+    this.proof = p;
+    if (!p) return;
+    const ask = this.round.ask!;
+    // The line under the frame dims; nothing on it takes input while the question is open.
+    const dim = new Graphics().rect(0, 0, this.view.w, this.view.h).fill({ color: 0x2b3a4a, alpha: 0.35 });
+    dim.eventMode = 'none';
+    this.board.addChild(dim);
+
+    const frame = new Container();
+    const at = centre(p.frame);
+    frame.position.copyFrom(at);
+    const inner = p.frame.w - FRAME_BORDER * 2;
+    const f = faceOf(this.round, ask);
+    frame.addChild(frameArt(p.frame.w), cardArt(f.place, f.stage, inner, this.petColor, { bare: true }));
+    frame.hitArea = new Rectangle(-p.frame.w / 2, -p.frame.h / 2, p.frame.w, p.frame.h);
+    onTap(frame, (e) => {
+      const q = this.board.toLocal(e.global);
+      this.tappedPicture(q);
+    });
+    this.board.addChild(frame);
+    this.proofNode = frame;
+
+    const before = new Container();
+    before.position.copyFrom(centre(p.before));
+    before.addChild(this.makeCard(ask - 1, CARD, false));
+    before.hitArea = new Rectangle(-CARD / 2, -CARD / 2, CARD, CARD);
+    onTap(before, () => {
+      if (this.finished || this.busy) return;
+      sfx.pop(5);
+      void this.ctx.say(`trail.card.${this.captionOf(ask - 1).id}` as LineId);
+    });
+    this.board.addChild(before);
+    this.beforeNode = before;
+  }
+
+  /**
+   * A tap on the big picture: a proving spot answers; any other spot is a miss with its reason (the same thing again
+   * repeats the reason and counts nothing); any other part of the picture repeats the question, free.
+   */
+  private tappedPicture(q: Pt) {
+    const p = this.proof;
+    if (!p || !this.questioning || this.finished || this.busy) return;
+    const round = this.round;
+    const place = round.place as ProofPlace;
+    const spot = spotAt(p.spots, q);
+    if (!spot) {
+      sfx.pop(4);
+      void this.ctx.say('trail.proof-again', { caption: this.beforeCaption });
+      return;
+    }
+    const reason = spotReason(place, round.ask!, spot.element);
+    if (!spot.proves) {
+      const elements = [...new Set(p.spots.map((r) => r.element))];
+      const { lit } = this.tally.missed(Tally.PROOF, elements.indexOf(spot.element));
+      sfx.boing();
+      void this.ctx.say('trail.proof-no', { reason });
+      if (lit) void this.ctx.say('trail.proof-glow');
+      return;
+    }
+    this.tally.hung(Tally.PROOF);
+    this.questioning = false;
+    this.proved = true;
+    sfx.bell(9, 0.3);
+    this.ctx.particles.burst(spot.x + spot.w / 2, spot.y + spot.h / 2, {
+      colors: [swatch.yellow.fill, 0xffffff],
+      count: 10,
+    });
+    void this.ctx.say('trail.proof-yes', { reason });
+    this.build();
+    void this.flipbook();
   }
 
   /** A picture card; the nest's now card carries the companion itself, level 4's cards their little clue picture, level 6's misty card its veil. */
@@ -539,6 +663,7 @@ class TimelineTrail implements Game {
     }
     // Level 5 asks what is still here before the flipbook; the question becomes the instruction the pet repeats.
     if (asking(this.round, this.line)) void this.ctx.instruct('trail.still-ask');
+    else if (proving(this.round, this.line) && !this.proved) this.openQuestion();
     else void this.flipbook();
   }
 
@@ -612,6 +737,12 @@ class TimelineTrail implements Game {
       void this.ctx.say('trail.still-help');
       return;
     }
+    if (this.questioning) {
+      // The proving spots glow, once for the question.
+      this.tally.help(Tally.PROOF);
+      void this.ctx.say('trail.proof-help');
+      return;
+    }
     const stage = this.dragging?.stage ?? nextCard(this.round, this.loose);
     if (stage === null) return;
     this.tally.help(stage);
@@ -625,8 +756,10 @@ class TimelineTrail implements Game {
     this.line = [...this.round.hung];
     this.loose = [...this.round.loose];
     this.pinned = false;
+    this.questioning = false;
+    this.proved = false;
     this.build();
-    // The repeated instruction goes back to the round's first one (levels 5 and 6 change it part-way through).
+    // The repeated instruction goes back to the round's first one (levels 5 to 7 change it part-way through).
     void this.ctx.instruct(`trail.instruct.${this.level}` as LineId, { place: this.placeName });
   }
 
@@ -641,7 +774,11 @@ class TimelineTrail implements Game {
         ? l.chips[this.round.chips?.indexOf(this.round.still ?? '') ?? -1]
         : undefined;
     const k = 1 + 0.05 * Math.sin(this.clock * 5);
-    for (const r of chip ? [chip] : this.glowGaps().map((i) => l.gaps[i])) {
+    const spots =
+      this.tally.glowing === Tally.PROOF && this.questioning
+        ? (this.proof?.spots.filter((r) => r.proves) ?? [])
+        : null;
+    for (const r of spots ?? (chip ? [chip] : this.glowGaps().map((i) => l.gaps[i]))) {
       if (!r) continue;
       const p = centre(r);
       this.glow
@@ -652,10 +789,18 @@ class TimelineTrail implements Game {
 
   /**
    * The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap (the misty
-   * card, last, to the earlier of its two), and at level 5 it then drags the still-here chip to the ribbon.
+   * card, last, to the earlier of its two), at level 5 it then drags the still-here chip to the ribbon, and at level 7
+   * it then taps the first proving spot of the big picture.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
+    if (this.questioning) {
+      const spot = this.proof?.spots.find((r) => r.proves);
+      if (!spot || !this.proofNode || !this.proof) return null;
+      const c = centre(spot);
+      const o = centre(this.proof.frame);
+      return { tap: { on: this.proofNode, x: c.x - o.x, y: c.y - o.y }, pause: 0.6 };
+    }
     if (this.layoutNow.ribbon) {
       const c = this.chipNodes.find((k) => k.element === this.round.still && !k.handle.dragging);
       if (!c) return null;

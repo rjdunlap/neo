@@ -291,5 +291,124 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       "Timeline Trail 2, 3, 4, 5 and 6: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look; level 5 a wrong gap, a free chip drop, the grand chip twice (one miss), Show a hint, the still-here chip pinned; level 6 the misty card held back, a free tap, a wrong gap (one miss), Show a hint, its later gap accepted with the line in her order, passed",
     );
   }
-  return { timelineTrailPlay };
+  /** Level 7, on its own suite name (`timelinetrailproof`) so the question can be checked without replaying levels 2–6. */
+  async function timelineTrailProofPlay() {
+    const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('timeline-trail', 7);
+    await page.waitForFunction(() => neo.scene.game?.layoutNow && !neo.scene.game.busy, null, {
+      timeout: 15000,
+    });
+    await page.waitForTimeout(300);
+    const round = await page.evaluate(() => {
+      const r = neo.scene.game.round;
+      return { place: r.place, ask: r.ask, line: [...neo.scene.game.line], loose: [...neo.scene.game.loose] };
+    });
+    assert.ok(
+      ['tree', 'nest', 'green', 'oven'].includes(round.place),
+      'level 7 shows a place with something that grows',
+    );
+    assert.ok(round.ask >= 1, 'the asked picture is never the first');
+    assert.deepEqual(round.line, [0], 'level 7 opens with the first card hung');
+    assert.equal(round.loose.length, 3, 'and three loose cards');
+    // Build the line oldest first: no question until it is full.
+    for (let i = 0; i < 3; i++) {
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.questioning),
+        false,
+        'no question while cards are loose',
+      );
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const stage = Math.min(...g.loose);
+        const gap = g.line.filter((s) => s < stage).length;
+        const c = g.cards.find((k) => k.stage === stage && !k.hung);
+        const at = g.gapNodes[gap].getGlobalPosition();
+        await kit.dragTo(c.node, { x: at.x, y: at.y + 40 }, 14);
+      });
+      await page.waitForTimeout(600);
+    }
+    await page.waitForFunction(
+      () => neo.scene.game.questioning && neo.scene.game.proof && neo.scene.game.proofNode,
+    );
+    await page.waitForTimeout(700);
+    assert.deepEqual(await tally(), [0, 0], 'building the line in order counts nothing');
+    const proof = await page.evaluate(() => {
+      const g = neo.scene.game;
+      const f = g.proof.frame;
+      return {
+        frame: f,
+        spots: g.proof.spots.map((s) => ({ ...s })),
+        busy: g.busy,
+      };
+    });
+    assert.equal(proof.busy, false, 'the question waits for a tap');
+    assert.ok(proof.spots.length >= 2, 'the big picture has at least two spots');
+    for (const s of proof.spots)
+      assert.ok(Math.min(s.w, s.h) >= 100, `the ${s.element} spot is at least 100 units`);
+    /** Tap the big picture at a board point (the frame node sits at the frame's centre). */
+    const tapAt = async (x, y) => {
+      await page.evaluate(
+        ({ x, y }) => {
+          const g = neo.scene.game;
+          const f = g.proof.frame;
+          const p = g.proofNode.toGlobal({ x: x - (f.x + f.w / 2), y: y - (f.y + f.h / 2) });
+          kit.tap(p.x, p.y);
+        },
+        { x, y },
+      );
+      await page.waitForTimeout(500);
+    };
+    // The card before it says its picture (free).
+    await page.evaluate(() => kit.tapOn(neo.scene.game.beforeNode));
+    await page.waitForTimeout(400);
+    assert.deepEqual(await tally(), [0, 0], 'a tap on the card before counts nothing');
+    // A corner of the frame is no spot: the question repeats, free.
+    await tapAt(proof.frame.x + 4, proof.frame.y + 4);
+    assert.deepEqual(await tally(), [0, 0], 'a tap off every spot counts nothing');
+    assert.equal(await page.evaluate(() => neo.scene.game.questioning), true, 'and the question stays open');
+    const wrong = proof.spots.find((s) => !s.proves);
+    const right = proof.spots.find((s) => s.proves);
+    const mid = (s) => [s.x + s.w / 2, s.y + s.h / 2];
+    await tapAt(...mid(wrong));
+    assert.deepEqual(await tally(), [1, 0], 'a spot that proves nothing is a miss');
+    await tapAt(...mid(wrong));
+    assert.deepEqual(await tally(), [1, 0], 'the same thing again counts nothing more');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [1, 1], 'Show a hint counts one hint');
+    assert.equal(await page.evaluate(() => neo.scene.game.tally.glowing), -2, 'and lights the proving spots');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.questioning && !!neo.scene.game.proofNode),
+      true,
+      'the question is still open in portrait',
+    );
+    await screenshot('timeline-trail-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(600);
+    await screenshot('timeline-trail-7-landscape');
+    await tapAt(...mid(right));
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.proved),
+      true,
+      'a proving spot answers the question',
+    );
+    await finished('timeline-trail');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('timeline-trail').history.at(-1);
+        return [r.misses, r.hints];
+      }),
+      [1, 1],
+      'level 7 saved 1 miss, 1 hint',
+    );
+    log(
+      `Timeline Trail 7 (${round.place}, picture ${round.ask}): the line built oldest first, the big picture up with its spots, a free tap on the card before and off every spot, a spot that proves nothing twice (one miss), Show a hint, a portrait look, a proving spot answered, the flipbook, passed`,
+    );
+  }
+  return { timelineTrailPlay, timelineTrailProofPlay };
 }

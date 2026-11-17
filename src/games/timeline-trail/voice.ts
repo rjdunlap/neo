@@ -19,6 +19,9 @@ export const VOICE = {
   'trail.instruct.6': [
     'These pictures show the {place} at different times. Hang the loose picture where it belongs. Then comes a misty picture: something in it is hidden.',
   ],
+  'trail.instruct.7': [
+    'These pictures show the {place} at different times. Hang them from long ago to now. Then one picture grows big, and you find the part that shows when it is from.',
+  ],
   'trail.clue': ['{caption}. In the little picture: {clue}.'],
   'trail.card.shore-0': ['An empty shore with one rock.'],
   'trail.card.shore-1': ['A little dock on the shore.'],
@@ -55,6 +58,12 @@ export const VOICE = {
   'trail.still-no': ['Not that one. {reason} What is in every picture?'],
   'trail.still-glow': ['Look, the glowing one is in every picture.'],
   'trail.still-help': ['The glowing one is in every picture.'],
+  'trail.proof-ask': ['What in this picture shows it comes after the {caption}? Tap that part.'],
+  'trail.proof-yes': ['Yes! {reason} That shows it comes after.'],
+  'trail.proof-no': ['Not that part. {reason}'],
+  'trail.proof-again': ['Look for a part of the picture that shows it comes after the {caption}.'],
+  'trail.proof-glow': ['Look, the glowing part shows when it is from.'],
+  'trail.proof-help': ['The glowing part shows when it is from.'],
   'trail.flipbook': ['Watch the {place} grow!'],
   'trail.done': ['From long ago to now, the whole line is hung!'],
 } satisfies Record<string, string[]>;

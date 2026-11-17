@@ -6,7 +6,7 @@
  */
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
-import { PLACES, type LaterPlace, type PlaceId } from './logic';
+import { CARD_RIM, PLACES, type LaterPlace, type PlaceId } from './logic';
 
 const SKY = 0xcfeaff;
 const SEA = 0x6fb8e8;
@@ -414,7 +414,8 @@ function drawGreen(g: Graphics, stage: number, s: number, u: number) {
     ELEMENTS.flags(g, 2 * u, 38 * u - 46 * u * 0.9, u);
   }
   if (stage >= 2) ELEMENTS.bench(g, 0, 40 * u, u);
-  if (stage >= 3) ELEMENTS['flower bed'](g, -4 * u, 46 * u, u * 0.8);
+  // The flower bed grows at the tree's foot, clear of the bench, so level 7 can point at each.
+  if (stage >= 3) ELEMENTS['flower bed'](g, 32 * u, 46 * u, u * 0.8);
 }
 
 /** The oven's vine from its right foot: a shoot, knee high, halfway up, then over the top. It only grows. */
@@ -589,16 +590,25 @@ export function mist(placeId: PlaceId, stage: number, size: number): Graphics {
   return g;
 }
 
-/** A picture in its white card frame; `sepia` fades it to long ago. The picture sits inside, masked to the frame. */
+/**
+ * A picture in its white card frame; `sepia` fades it to long ago. The picture sits inside, masked to the frame.
+ * `bare` leaves out the rim and the peg hole, so the picture fills `size` (level 7's big picture).
+ */
 export function card(
   placeId: PlaceId,
   stage: number,
   size: number,
   color: ColorName,
-  opts: { sepia?: boolean; rig?: Container; clue?: { place: PlaceId; stage: number }; mist?: boolean } = {},
+  opts: {
+    sepia?: boolean;
+    rig?: Container;
+    clue?: { place: PlaceId; stage: number };
+    mist?: boolean;
+    bare?: boolean;
+  } = {},
 ): Container {
   const c = new Container();
-  const rim = Math.max(6, size * 0.06);
+  const rim = opts.bare ? 0 : Math.max(6, size * CARD_RIM);
   const frame = new Graphics()
     .roundRect(-size / 2, -size / 2, size, size, size * 0.1)
     .fill(swatch.white.fill)
@@ -651,12 +661,13 @@ export function card(
     c.addChild(veil);
   }
   // A peg hole at the top.
-  c.addChild(
-    new Graphics()
-      .circle(0, -size / 2 + rim, rim * 0.45)
-      .fill(swatch.white.light)
-      .stroke({ width: 2, color: swatch.white.line }),
-  );
+  if (!opts.bare)
+    c.addChild(
+      new Graphics()
+        .circle(0, -size / 2 + rim, rim * 0.45)
+        .fill(swatch.white.light)
+        .stroke({ width: 2, color: swatch.white.line }),
+    );
   c.eventMode = 'none';
   return c;
 }

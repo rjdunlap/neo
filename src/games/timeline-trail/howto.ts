@@ -22,7 +22,8 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Some pictures hide what would tell; when two places fit, either is right.',
     },
+    { from: 7, to: 7, text: 'Tap the part of the big picture that shows when it is from.' },
   ],
   finish: 'The pictures play like a flipbook and the place grows.',
-  note: 'A picture put in the wrong place slides back with a reason; after two tries on one picture its gap glows, which counts as a hint. Looking and listening are never counted. The newest picture is not always the fanciest. The place is made up for the island; no real dates are taught.',
+  note: 'A picture put in the wrong place slides back with a reason; after two tries on one picture its gap glows, which counts as a hint. Looking and listening are never counted. In the big picture, only something that grows shows when; a thing in every picture, or one that could be built any day, does not. The newest picture is not always the fanciest. The place is made up for the island; no real dates are taught.',
 };

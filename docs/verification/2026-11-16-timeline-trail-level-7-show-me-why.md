@@ -1,0 +1,5 @@
+# 2026-11-16 — Timeline Trail level 7 Show me why (PR #1728)
+
+**Changed:** `timeline-trail` level 7 Show me why (school band 2–7): after a line of four is hung, one picture grows big and she taps the spot that proves when it is from; only a thing that grows proves it, other spots are a miss with a reason; two extra voice lines, how-to step, `timelinetrailproof` browser suite.
+**Ran (all passing, 2026-11-16, dev server on port 5678):** `npm run typecheck`; full `npm test` (353 files, 7,334 passed, 1 skipped); `BROWSER_SUITE=timelinetrailproof` (the seed gave the oven's second picture: line built oldest first, free tap on the card before, free tap off every spot, a non-proving spot twice = one miss, Show a hint = one hint, portrait and landscape screenshots, a proving spot, flipbook, saved 1 miss 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=timeline-trail FINGER_LEVELS=7` (9.9 s); `npm run build`.
+**Not run:** the `timelinetrail` suite for levels 2–6 (their code paths changed only by an added branch; the suite now also plays level 7), `world`, offline.

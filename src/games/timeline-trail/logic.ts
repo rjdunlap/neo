@@ -9,8 +9,10 @@
  * still here in every picture: every stage lists what its picture `shows`, and an element in all of them is still here.
  * Level 6 hangs a misty picture last: sea mist (or leaves) hides the one thing that would tell it from the picture
  * after it, so it honestly fits two gaps, either is right, and from here on the line is the cards in the order she hung
- * them rather than a sorted list. Everything here is pure; the scene draws it. Definitions:
- * docs/definitions/timeline-trail.md (levels 1–4) and docs/definitions/timeline-trail-5-7.md (levels 5 and 6).
+ * them rather than a sorted list. Level 7 builds a line of four, then one picture grows big and she taps the part of it
+ * that proves it comes after the picture before: each askable picture has spots over named elements, and only a thing
+ * that grows (a tree, a vine, the pet, flowers) proves anything. Everything here is pure; the scene draws it.
+ * Definitions: docs/definitions/timeline-trail.md (levels 1–4) and docs/definitions/timeline-trail-5-7.md (levels 5–7).
  */
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -79,19 +81,24 @@ export const PLACES: Record<PlaceId, Place> = {
     id: 'tree',
     name: 'tree',
     stages: [
-      { id: 'tree-0', caption: 'a sapling with two leaves', changes: 'tiny sapling', shows: ['sapling'] },
+      {
+        id: 'tree-0',
+        caption: 'a sapling with two leaves',
+        changes: 'tiny sapling',
+        shows: ['grass', 'sapling'],
+      },
       {
         id: 'tree-1',
         caption: 'a young tree',
         changes: 'trunk and a small crown of leaves',
-        shows: ['trunk', 'crown'],
+        shows: ['grass', 'trunk', 'crown'],
       },
-      { id: 'tree-2', caption: 'a big tree', changes: 'big round crown', shows: ['trunk', 'crown'] },
+      { id: 'tree-2', caption: 'a big tree', changes: 'big round crown', shows: ['grass', 'trunk', 'crown'] },
       {
         id: 'tree-3',
         caption: 'the big tree with a swing',
         changes: 'swing',
-        shows: ['trunk', 'crown', 'swing'],
+        shows: ['grass', 'trunk', 'crown', 'swing'],
       },
     ],
   },
@@ -236,6 +243,127 @@ export function mistHides(place: PlaceId, k: number): string {
     : `Sea mist hides the spot where a ${next} would be.`;
 }
 
+// ——— Show me why (level 7) ———
+
+/** Level 7's places: each has something that only grows. Never the shore, whose every proof is a thing being added. */
+export const PROOF_PLACES = ['tree', 'nest', 'green', 'oven'] as const satisfies readonly PlaceId[];
+export type ProofPlace = (typeof PROOF_PLACES)[number];
+
+/** A spot on a picture: a named element and its rectangle in picture hundredths, (0, 0) the picture's centre. */
+type SpotDef = readonly [element: string, x0: number, y0: number, x1: number, y1: number];
+
+/** The grass either side of the tree, the nest's two ends, and the ground row of the green: shared rectangles. */
+const GRASS: SpotDef[] = [
+  ['grass', -50, 20, -18, 50],
+  ['grass', 18, 20, 50, 50],
+];
+const ROCK: SpotDef = ['big rock', -50, 20, -20, 50];
+const BENCH: SpotDef = ['bench', -18, 20, 18, 50];
+const OVEN: SpotDef = ['stone oven', -40, -4, -8, 32];
+const VINE: SpotDef = ['vine', -8, -5, 22, 32];
+const TABLE: SpotDef = ['table', 22, 12, 52, 42];
+
+/**
+ * The spots of every picture level 7 can ask about, by place and stage. A spot is at least 30 hundredths each way (100
+ * units in the smallest frame), spots never overlap, and one element may have two (the grass either side of the tree).
+ * Never asked: a first stage (nothing comes before it), the tree with its swing (a swing is hung, not grown) and the
+ * pet at the treehouse door (the pet stands in front of the door, so the door has no spot of its own).
+ */
+const SPOTS: Record<ProofPlace, Partial<Record<number, readonly SpotDef[]>>> = {
+  tree: {
+    1: [['crown', -16, -24, 16, 8], ['trunk', -15, 8, 15, 38], ...GRASS],
+    2: [['crown', -37, -50, 37, 12], ['trunk', -15, 12, 15, 42], ...GRASS],
+  },
+  nest: {
+    1: [
+      ['hatchling', -16, -8, 16, 28],
+      ['nest', -48, 10, -16, 40],
+      ['nest', 16, 10, 48, 40],
+    ],
+    2: [
+      ['pet', -20, -18, 20, 26],
+      ['nest', -50, 10, -20, 40],
+      ['nest', 20, 10, 50, 40],
+    ],
+  },
+  green: {
+    1: [['tree', 20, -12, 50, 36], ['merry-go-round', -20, -12, 20, 44], ROCK],
+    2: [['tree', 10, -30, 50, 20], ['tree', 20, 20, 50, 50], BENCH, ROCK],
+    3: [['tree', 8, -46, 50, 20], ['flower bed', 18, 20, 48, 50], BENCH, ROCK],
+  },
+  oven: {
+    1: [
+      ['vine', 4, 6, 34, 36],
+      ['stone oven', -32, -2, 2, 32],
+      ['striped awning', -42, -50, 18, -4],
+    ],
+    2: [VINE, OVEN, TABLE],
+    3: [VINE, OVEN, TABLE, ['sleeping cat', -32, -36, -2, -6]],
+  },
+};
+
+/** What has grown since the picture before, by place, stage and element: the only things that prove when. */
+const GROWN: Record<ProofPlace, Partial<Record<number, Record<string, string>>>> = {
+  tree: {
+    1: {
+      crown: 'The sapling has grown a round crown of leaves.',
+      trunk: 'The thin stem has grown into a trunk.',
+    },
+    2: { crown: 'The crown of leaves has grown much bigger.', trunk: 'The trunk has grown thicker.' },
+  },
+  nest: { 1: { hatchling: 'The egg has hatched.' }, 2: { pet: 'The hatchling has grown bigger.' } },
+  green: {
+    1: { tree: 'The sapling has grown into a young tree.' },
+    2: { tree: 'The tree has grown taller.' },
+    3: { tree: 'The tree has grown big.', 'flower bed': 'The flowers have grown where there were none.' },
+  },
+  oven: {
+    1: { vine: 'The vine shoot has climbed to the oven’s knee.' },
+    2: { vine: 'The vine has climbed halfway up the oven.' },
+    3: { vine: 'The vine has climbed over the top of the oven.' },
+  },
+};
+
+/** Things that could arrive on any day, so they prove nothing about when. */
+const ANY_TIME: Record<string, string> = {
+  'merry-go-round': 'A merry-go-round can be built any time',
+  bench: 'A bench can be built any time',
+  'striped awning': 'A stall can be built any time',
+  table: 'A table can be set down any time',
+  'sleeping cat': 'A cat can nap there on any day',
+};
+/** The thing that grows in each place, named when a built thing is tapped. */
+const GROWER: Record<ProofPlace, string> = { tree: 'tree', nest: 'pet', green: 'tree', oven: 'vine' };
+
+/** The stages of a place level 7 can ask about, ascending. */
+export const askable = (place: ProofPlace): number[] =>
+  Object.keys(SPOTS[place])
+    .map(Number)
+    .sort((a, b) => a - b);
+
+/** Whether tapping `element` in the picture of `stage` proves it comes after the stage before. */
+export const proves = (place: ProofPlace, stage: number, element: string) =>
+  GROWN[place][stage]?.[element] !== undefined;
+
+/**
+ * What the pet says about a tapped spot. A proving spot: what has grown. Any other: it is in every picture, or in the
+ * picture before too, so it cannot tell when; or it is a thing that could be built or turn up at any time.
+ */
+export function spotReason(place: ProofPlace, stage: number, element: string): string {
+  const grown = GROWN[place][stage]?.[element];
+  if (grown) return grown;
+  const stages = PLACES[place].stages;
+  if (stages.every((s) => s.shows.includes(element)))
+    return `The ${element} is in every picture, so it can’t tell us when.`;
+  if (stages[stage - 1].shows.includes(element))
+    return `The ${element} is in the picture before too, so it can’t tell us when.`;
+  return `${ANY_TIME[element]}; the ${GROWER[place]} shows when.`;
+}
+
+/** Level 7 asks its question once every card is hung. */
+export const proving = (round: Round, line: readonly number[]) =>
+  round.level === 7 && round.ask !== undefined && line.length === round.cards.length;
+
 // ——— Levels ———
 
 export interface Plan {
@@ -254,12 +382,13 @@ export const PLANS: readonly Plan[] = [
   { level: 4, name: 'A clue inside', cards: 4, hungAtStart: 2 },
   { level: 5, name: 'Still here', cards: 4, hungAtStart: 1 },
   { level: 6, name: 'We can’t tell', cards: 4, hungAtStart: 2 },
+  { level: 7, name: 'Show me why', cards: 4, hungAtStart: 1 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
 export function planFor(level: number): Plan {
@@ -288,6 +417,8 @@ export interface Round {
   chips?: string[];
   /** Level 5 only: the element in every picture, the chip that pins to the ribbon. */
   still?: string;
+  /** Level 7 only: the stage whose picture grows big once the line is full, to be told from the stage before it. */
+  ask?: number;
 }
 
 /** Which place the next round shows: a shuffled bag, so every place turns up before any repeats. */
@@ -316,13 +447,18 @@ const isLater = (p: PlaceId | undefined): p is LaterPlace =>
 const mistBag = new PlaceBag<MistPlace>(new Rng(), MIST_PLACES);
 const isMist = (p: PlaceId | undefined): p is MistPlace =>
   p !== undefined && (MIST_PLACES as readonly PlaceId[]).includes(p);
+/** Level 7's own bag of the four places whose pictures hold something that only grows. */
+const proofBag = new PlaceBag<ProofPlace>(new Rng(), PROOF_PLACES);
+const isProof = (p: PlaceId | undefined): p is ProofPlace =>
+  p !== undefined && (PROOF_PLACES as readonly PlaceId[]).includes(p);
 
 /**
  * A round: the place, the stages in play and which hang first. Level 1 shows two stages at least one stage apart, both
  * loose; level 2 drops one stage of the four, hangs two of the remaining three and leaves one loose (any of the three);
  * level 3 uses every stage, hangs the first, and the three others wait in a seeded order; level 5 does the same with a
  * later place and adds three chips (the still-here element, the grand thing and one plainer thing) in a seeded order;
- * level 6 hangs two of three stages of the shore or the tree, leaves one loose and keeps the misty card for last.
+ * level 6 hangs two of three stages of the shore or the tree, leaves one loose and keeps the misty card for last;
+ * level 7 is level 3's shape on a place with something that grows, plus the seeded stage it will ask about.
  */
 export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
   const plan = planFor(level);
@@ -363,6 +499,12 @@ export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
       loose: [first, MISTY],
       misty: { k },
     };
+  }
+  if (plan.level === 7) {
+    const place = isProof(chosen) ? chosen : proofBag.next();
+    const cards = PLACES[place].stages.map((_s, i) => i);
+    const loose = rng.shuffle(cards.slice(1));
+    return { level: plan.level, place, cards, hung: [cards[0]], loose, ask: rng.pick(askable(place)) };
   }
   const place = chosen ?? sessionBag.next();
   const n = PLACES[place].stages.length;
@@ -530,11 +672,14 @@ export function nextCard(round: Round, loose: readonly number[]): number | null 
  * Keeps the round's accounting: a miss per distinct wrong drop (the same card in the same wrong gap again repeats the
  * reason and counts nothing), a glow on a card's valid gap (both, for the misty card) after its second miss (one hint a card, at most), and
  * Show a hint for the card in hand (the same single hint). Level 5's three chips count the same way as one more card:
- * a miss per distinct wrong chip, the right chip glowing after the second, one hint at most.
+ * a miss per distinct wrong chip, the right chip glowing after the second, one hint at most. Level 7's question counts
+ * the same way again: a miss per distinct wrong element tapped, the proving spots glowing after the second.
  */
 export class Tally {
   /** The key level 5's chip set counts under, as a card's stage does: `missed(CHIP_SET, chip)`, `help(CHIP_SET)`. */
   static readonly CHIP_SET = -1;
+  /** The key level 7's question counts under: `missed(PROOF, element's index)`, `help(PROOF)`. */
+  static readonly PROOF = -2;
   misses = 0;
   hints = 0;
   private wrong = new Map<number, number>();
@@ -626,6 +771,13 @@ export const RIBBON_H = 100;
 export const asking = (round: Round, line: readonly number[]) =>
   round.level === 5 && line.length === round.cards.length;
 
+/** The flipbook frame, in the middle: 360 across in landscape, 420 in portrait. Level 7's big picture uses it too. */
+export function frameRect(v: View): Rect {
+  const wide = v.w >= v.h;
+  const size = wide ? 360 : 420;
+  return { x: (v.w - size) / 2, y: wide ? 100 : 180, w: size, h: size };
+}
+
 /**
  * Posts at the edges, the line between them (wrapping into two rows when its cards and gaps do not fit one), the tray
  * below and the flipbook frame in the middle. Every target keeps full size; null when the view cannot hold them.
@@ -669,8 +821,7 @@ export function lineLayout(
   const tray = trayRects(looseCount);
   if (!tray) return null;
 
-  const frameSize = wide ? 360 : 420;
-  const frame = { x: (v.w - frameSize) / 2, y: wide ? 100 : 180, w: frameSize, h: frameSize };
+  const frame = frameRect(v);
 
   const gapsN = gapCount(round, line);
   if (round.level === 1) {
@@ -746,6 +897,63 @@ export function lineLayout(
     }
   });
   return { posts, cards, gaps, rows, tray, frame, chips: [] };
+}
+
+// ——— Level 7's frame ———
+
+/** A card's white rim, as a share of its size; the big picture in level 7's frame is drawn without one. */
+export const CARD_RIM = 0.06;
+/** The frame's own border inside its rectangle: the picture fills the rest. */
+export const FRAME_BORDER = 12;
+
+export interface ProofSpot extends Rect {
+  element: string;
+  proves: boolean;
+}
+
+/** The spots of the picture of `stage`, as screen rectangles on the picture that fills `frame` inside its border. */
+export function proofSpots(place: ProofPlace, stage: number, frame: Rect): ProofSpot[] {
+  const u = (frame.w - FRAME_BORDER * 2) / 100;
+  const cx = frame.x + frame.w / 2;
+  const cy = frame.y + frame.h / 2;
+  // Whole screen units, so spots that share an edge in the table share it exactly on screen.
+  return (SPOTS[place][stage] ?? []).map(([element, x0, y0, x1, y1]) => {
+    const x = Math.round(cx + x0 * u);
+    const y = Math.round(cy + y0 * u);
+    return {
+      element,
+      proves: proves(place, stage, element),
+      x,
+      y,
+      w: Math.round(cx + x1 * u) - x,
+      h: Math.round(cy + y1 * u) - y,
+    };
+  });
+}
+
+/** The spot under a point, or null: a tap on any other part of the frame is free. */
+export const spotAt = (spots: readonly ProofSpot[], p: Pt): ProofSpot | null =>
+  spots.find((r) => p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h) ?? null;
+
+export interface ProofLayout {
+  /** The big picture's frame (the flipbook's). */
+  frame: Rect;
+  /** The picture before it, at card size: beside the frame in landscape, under it in portrait. */
+  before: Rect;
+  spots: ProofSpot[];
+}
+
+/** Level 7's question: the asked picture in the flipbook frame with its spots, and the card before it at full size. */
+export function proofLayout(round: Round, v: View): ProofLayout | null {
+  if (round.ask === undefined || !isProof(round.place)) return null;
+  const frame = frameRect(v);
+  const wide = v.w >= v.h;
+  // The frame's wooden rim reaches 16 past its rectangle.
+  const before = wide
+    ? { x: frame.x - 16 - 24 - CARD, y: frame.y + frame.h / 2 - CARD / 2, w: CARD, h: CARD }
+    : { x: frame.x + frame.w / 2 - CARD / 2, y: frame.y + frame.h + 16 + 24, w: CARD, h: CARD };
+  if (before.x < 0 || before.y + before.h > v.h) return null;
+  return { frame, before, spots: proofSpots(round.place, round.ask, frame) };
 }
 
 export const overlaps = (a: Rect, b: Rect) =>
