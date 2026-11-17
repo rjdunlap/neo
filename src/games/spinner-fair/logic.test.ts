@@ -69,6 +69,24 @@ import {
   diceLayout,
   gridSide,
   barsBox,
+  MAX_TOWER,
+  TOWER_W,
+  TOWER_H,
+  TOWER_LABEL,
+  BLOCK_H,
+  NUM_CARD,
+  numWheel,
+  towersOf,
+  range,
+  extremes,
+  rangeCards,
+  moveBlock,
+  tallerMove,
+  nearlyLevel,
+  typicalAccepted,
+  typicalCards,
+  nextMove,
+  typicalLayout,
   type Roll,
   type Kind,
   type Circle,
@@ -83,7 +101,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 7 },
+      school: { min: 3, max: 8 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -486,7 +504,7 @@ describe('level 6: watch it settle', () => {
   it('the plan and the school range', () => {
     expect(planFor(6)).toEqual({ level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 });
     expect(SETTLE_RUNS[SETTLE_RUNS.length - 1]).toBe(planFor(6).spins);
-    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
   });
   it('each set is a six-wedge wheel of the favourite and one friend, k of 1, 3 or 5, and the two sets differ', () => {
     for (let seed = 1; seed <= 300; seed++) {
@@ -590,7 +608,7 @@ describe('level 6: watch it settle', () => {
 describe('level 7: two dice', () => {
   it('the plan and the school range', () => {
     expect(planFor(7)).toEqual({ level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
     // Levels 1–6 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -774,5 +792,210 @@ describe('level 7: two dice', () => {
       expect(L.grid.cell).toBeGreaterThanOrEqual(60);
       expect(L.rolls.h).toBeGreaterThanOrEqual(80);
       expect(L.ways.h).toBeGreaterThanOrEqual(80);
+    });
+});
+
+describe('level 8: the typical spin', () => {
+  /** Every way six spins of a 1–6 wheel can stand: 46 656 tower sets. */
+  const everySix = function* () {
+    for (let n = 0; n < 6 ** 6; n++) {
+      const t: number[] = [];
+      for (let k = 0, m = n; k < 6; k++, m = Math.floor(m / 6)) t.push((m % 6) + 1);
+      yield t;
+    }
+  };
+  const sum = (t: readonly number[]) => t.reduce((a, b) => a + b, 0);
+  it('the plan and the school range', () => {
+    expect(planFor(8)).toEqual({ level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
+    // Levels 1–7 keep their numbers and asks, so saved levels and pins stay valid.
+    expect([1, 2, 3, 4, 5, 6, 7].map((l) => planFor(l).ask)).toEqual([
+      'see',
+      'most',
+      'pick',
+      'sure',
+      'fair',
+      'settle',
+      'dice',
+    ]);
+  });
+  it('the number wheel is 1–6 once each, in more than one order, and a spin gives each number about a sixth', () => {
+    const orders = new Set<string>();
+    for (const seed of SEEDS) {
+      const w = numWheel(new Rng(seed));
+      expect([...w].sort()).toEqual([1, 2, 3, 4, 5, 6]);
+      orders.add(w.join(''));
+    }
+    expect(orders.size).toBeGreaterThan(20);
+    const rng = new Rng(8);
+    const w = numWheel(rng);
+    const counts = [0, 0, 0, 0, 0, 0];
+    for (let i = 0; i < 60000; i++) counts[w[spin(rng).wedge] - 1]++;
+    for (const c of counts) expect(Math.abs(c / 60000 - 1 / 6)).toBeLessThan(0.01);
+  });
+  it('six spins are spin(rng) six times: nothing filtered, and totals that do not share out evenly are kept', () => {
+    let uneven = 0;
+    for (const seed of SEEDS) {
+      const a = new Rng(seed),
+        b = new Rng(seed);
+      const w = numWheel(a);
+      numWheel(b);
+      const spins = Array.from({ length: 6 }, () => w[spin(a).wedge]);
+      // A spin is one wedge draw and one stopping-angle draw, and nothing else touches the RNG between spins.
+      const again = Array.from({ length: 6 }, () => {
+        const wedge = b.int(0, 5);
+        b.next();
+        return w[wedge];
+      });
+      expect(towersOf(spins)).toEqual(spins);
+      expect(spins).toEqual(again);
+      if (sum(spins) % 6 !== 0) uneven++;
+    }
+    // About five sets in six have a mean that is not whole; the game never avoids them.
+    expect(uneven / SEEDS.length).toBeGreaterThan(0.7);
+  });
+  it('the range is the biggest take away the smallest, and its cards hold it with two other numbers from 0–5', () => {
+    expect(range([6, 2, 4, 4, 3, 5])).toBe(4);
+    expect(range([3, 3, 3, 3, 3, 3])).toBe(0);
+    expect(extremes([2, 6, 2, 6, 3, 3])).toEqual({ tall: 1, short: 0 });
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      for (let r = 0; r <= 5; r++) {
+        const cards = rangeCards(rng, r);
+        expect(cards).toHaveLength(3);
+        expect(new Set(cards).size).toBe(3);
+        expect(cards).toContain(r);
+        for (const c of cards) expect(c >= 0 && c <= 5).toBe(true);
+      }
+    }
+  });
+  it('a block move keeps the total, never empties below zero and never overfills a column', () => {
+    const t = [6, 2, 4, 4, 3, 5];
+    expect(moveBlock(t, 0, 1)).toEqual([5, 3, 4, 4, 3, 5]);
+    expect(moveBlock(t, 0, 0)).toBeNull();
+    expect(moveBlock([0, 6, 3, 3, 3, 3], 0, 1)).toBeNull();
+    expect(moveBlock([1, MAX_TOWER, 3, 3, 3, 3], 0, 1)).toBeNull();
+    expect(MAX_TOWER * BLOCK_H).toBeLessThanOrEqual(TOWER_H);
+    const rng = new Rng(5);
+    let towers = [6, 1, 4, 2, 5, 3];
+    for (let i = 0; i < 2000; i++) {
+      const next = moveBlock(towers, rng.int(0, 5), rng.int(0, 5));
+      if (!next) continue;
+      expect(sum(next)).toBe(21);
+      for (const h of next) expect(h >= 0 && h <= MAX_TOWER).toBe(true);
+      towers = next;
+    }
+    // A move onto a tower at least as tall is allowed (and said), not refused.
+    expect(tallerMove(t, 1, 0)).toBe(true);
+    expect(tallerMove(t, 2, 3)).toBe(true);
+    expect(tallerMove(t, 0, 1)).toBe(false);
+    expect(moveBlock(t, 1, 0)).toEqual([7, 1, 4, 4, 3, 5]);
+  });
+  it('from every set of six spins, the hinted move reaches nearly level without a taller move, within sum(|h − mean|) moves', () => {
+    for (const start of everySix()) {
+      const mean = sum(start) / 6;
+      const bound = start.reduce((a, h) => a + Math.abs(h - mean), 0);
+      let towers = start;
+      let moves = 0;
+      for (let m = nextMove(towers); m; m = nextMove(towers)) {
+        expect(tallerMove(towers, m.from, m.to)).toBe(false);
+        towers = moveBlock(towers, m.from, m.to)!;
+        moves++;
+      }
+      expect(nearlyLevel(towers)).toBe(true);
+      expect(moves).toBeLessThanOrEqual(bound);
+      expect(sum(towers)).toBe(sum(start));
+      // The right answers are exactly the heights the level towers show: one when the mean is whole, two otherwise.
+      const shown = [...new Set(towers)].sort();
+      expect(typicalAccepted(start)).toEqual(shown);
+      expect(typicalAccepted(towers)).toEqual(shown);
+      expect(shown).toEqual(Number.isInteger(mean) ? [mean] : [Math.floor(mean), Math.ceil(mean)]);
+    }
+  });
+  it('the typical cards are three numbers from 1–6 holding every accepted height', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const w = numWheel(rng);
+      const towers = Array.from({ length: 6 }, () => w[spin(rng).wedge]);
+      const cards = typicalCards(rng, towers);
+      expect(cards).toHaveLength(3);
+      expect(new Set(cards).size).toBe(3);
+      for (const c of cards) expect(c >= 1 && c <= 6).toBe(true);
+      for (const a of typicalAccepted(towers)) expect(cards).toContain(a);
+    }
+  });
+  it('help names the outline gap, a move or the level line, and following it reaches a right answer', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const w = numWheel(rng);
+      let towers = Array.from({ length: 6 }, () => w[spin(rng).wedge]);
+      // Range: the outline blocks above the shortest tower, up to the tallest, number the range.
+      const { tall, short } = extremes(towers);
+      expect(towers[tall] - towers[short]).toBe(range(towers));
+      expect(rangeCards(rng, range(towers))).toContain(range(towers));
+      for (let m = nextMove(towers); m; m = nextMove(towers)) towers = moveBlock(towers, m.from, m.to)!;
+      // Typical: the level line sits on the shortest tower's top, an accepted height.
+      expect(typicalAccepted(towers)).toContain(Math.min(...towers));
+    }
+  });
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+    [1662, 768],
+    [768, 1662],
+  ];
+  type R = { x0: number; y0: number; x1: number; y1: number };
+  const rect = (b: Box): R => ({
+    x0: b.x - b.w / 2,
+    y0: b.y - b.h / 2,
+    x1: b.x + b.w / 2,
+    y1: b.y + b.h / 2,
+  });
+  const hit = (p: R, q: R) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  for (const [w, h] of VIEWS)
+    it(`layout at ${w}x${h}`, () => {
+      const L = typicalLayout({ w, h });
+      expect(L.portrait).toBe(h > w);
+      const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
+      const corners = [
+        { x0: 0, y0: 0, x1: 120, y1: 120 },
+        { x0: w - 120, y0: 0, x1: w, y1: 120 },
+      ];
+      // The spinner with its rim and its pointer above it.
+      const s = L.spinner;
+      const spinner = { x0: s.x - s.r - 8, y0: s.y - s.r - 30, x1: s.x + s.r + 8, y1: s.y + s.r + 8 };
+      // The shell's help button sits under the home button, about (60, 170) and 40 in radius: the round spinner clears it.
+      expect(Math.hypot(s.x - 60, s.y - 170)).toBeGreaterThanOrEqual(s.r + 8 + 40);
+      // The towers with the counts under them.
+      const cols = L.towers.map(rect);
+      const towers = {
+        x0: cols[0].x0,
+        y0: cols[0].y0,
+        x1: cols[5].x1,
+        y1: L.base + TOWER_LABEL,
+      };
+      const all = [spinner, towers, ...L.cards.map(rect)];
+      for (const r of all) {
+        expect(r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h).toBe(true);
+        expect(hit(r, pet)).toBe(false);
+        for (const c of corners) expect(hit(r, c)).toBe(false);
+      }
+      all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(hit(a, b)).toBe(false)));
+      // Targets: the spinner, each tower's whole column and every card, never under 100; columns never overlap.
+      expect(2 * s.r).toBeGreaterThanOrEqual(200);
+      expect(L.towers).toHaveLength(6);
+      for (const c of L.towers) {
+        expect([c.w, c.h]).toEqual([TOWER_W, TOWER_H]);
+        expect(c.y + c.h / 2).toBe(L.base);
+      }
+      expect(Math.min(TOWER_W, TOWER_H)).toBeGreaterThanOrEqual(100);
+      cols.forEach((c, i) => i && expect(c.x0).toBeGreaterThanOrEqual(cols[i - 1].x1));
+      expect(L.cards).toHaveLength(3);
+      for (const b of L.cards) expect([b.w, b.h]).toEqual([NUM_CARD, NUM_CARD]);
+      expect(NUM_CARD).toBeGreaterThanOrEqual(100);
     });
 });

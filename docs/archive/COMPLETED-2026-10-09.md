@@ -3682,6 +3682,10 @@ Branch `claude/spinner-fair-watch-it-settle`, PR #1720, slice CS2a of the [chanc
 
 Branch `claude/spinner-fair-two-dice`, PR #1724, slice CS2b of the [chance and statistics study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), [definition](../definitions/spinner-fair-6-8.md). School only, school is now 3–7. Departures from the definition (the added lines `sf.grid-first`, `sf.most-yes`, `sf.pair-yes`, `sf.done-dice`, grid and bar sizes, a 300 × 170 tray) are in the [game page](../games/spinner-fair.md). See the [verification entry](../verification/2026-11-16-spinner-fair-level-7-two-dice.md).
 
+## Spinner Fair level 8 The typical spin (CS2c, 2026-11-16)
+
+Branch `claude/spinner-fair-typical-spin`, PR #1727, slice CS2c of the [chance and statistics study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), [definition](../definitions/spinner-fair-6-8.md). School only, school is now 3–8; CS2 is complete. Departures from the definition (landscape sizes, the seven-block column, the added lines `sf.range-none` and `sf.done-typical`, the source check where "typical" is in neither source) are in the [game page](../games/spinner-fair.md) and the definition's as-built note. See the [verification entry](../verification/2026-11-16-spinner-fair-level-8-the-typical-spin.md).
+
 ## Timeline Trail level 6 We can't tell (time-change T4b, 2026-11-16)
 
 [PR #1725](https://github.com/rjdunlap/neo/pull/1725), branch `claude/timeline-trail-we-cant-tell`, slice T4b of the [levels 5–7 definition](../definitions/timeline-trail-5-7.md#as-built-t4b). School band (`LEVELS.school` 2–6). The shore or the tree, in their own bag: two cards hang, one waits loose, and a misty card (stage k with a veil over where stage k+1's new thing would be) comes out last and fits two gaps; either is accepted and counts nothing, any other gap is a miss with a reason, and after two misses or Show a hint both gaps glow (one hint). `place()` now puts a card in at the chosen gap at every level, so the line and the flipbook keep the order she hung them. One sticker; nothing saved.

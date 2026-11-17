@@ -13,6 +13,7 @@ import {
   WEDGES as WEDGE_COUNT,
   type Card,
   type Kind,
+  type NumWheel,
   type Wheel,
 } from './logic';
 
@@ -464,4 +465,127 @@ export function diceJournalPicture(): Container {
   b.rotation = 0.1;
   c.addChild(a, b);
   return c;
+}
+
+// ---- level 8: the number wheel and its towers ----
+
+/** A number's colour on the wheel and on the blocks it stands as (yellow is kept for glows). */
+export const NUM_COLORS: readonly ColorName[] = ['teal', 'purple', 'green', 'orange', 'pink', 'blue'];
+export const numColor = (n: number) => swatch[NUM_COLORS[(n - 1) % NUM_COLORS.length]];
+
+/** A number spinner of radius `r` with the fixed pointer at the top: one wedge per number, each with its die face and its numeral. */
+export function numSpinner(w: NumWheel, r: number): SpinnerArt {
+  const node = new Container();
+  const wheel = new Container();
+  const g = new Graphics();
+  g.circle(0, 0, r + 8)
+    .fill(0xffffff)
+    .stroke({ width: 6, color: ink });
+  w.forEach((n, i) => {
+    const c = numColor(n);
+    g.moveTo(0, 0)
+      .arc(0, 0, r, rad(i * WEDGE_DEG), rad((i + 1) * WEDGE_DEG))
+      .closePath()
+      .fill(c.fill)
+      .stroke({ width: 4, color: c.line });
+  });
+  wheel.addChild(g);
+  w.forEach((n, i) => {
+    const mid = rad((i + 0.5) * WEDGE_DEG);
+    const face = new Graphics();
+    const size = r * 0.34;
+    face
+      .roundRect(-size / 2, -size / 2, size, size, size * 0.2)
+      .fill(0xffffff)
+      .stroke({ width: 3, color: ink });
+    for (const [x, y] of PIPS[n - 1]) face.circle(x * size * 0.26, y * size * 0.26, size * 0.09).fill(ink);
+    face.position.set(Math.cos(mid) * r * 0.7, Math.sin(mid) * r * 0.7);
+    face.rotation = mid + Math.PI / 2;
+    const num = label(String(n), r * 0.2);
+    num.position.set(Math.cos(mid) * r * 0.36, Math.sin(mid) * r * 0.36);
+    num.rotation = mid + Math.PI / 2;
+    wheel.addChild(face, num);
+  });
+  const hub = new Graphics();
+  hub
+    .circle(0, 0, r * 0.1)
+    .fill(swatch.red.fill)
+    .stroke({ width: 4, color: swatch.red.line });
+  wheel.addChild(hub);
+  const glow = new Graphics();
+  glow.eventMode = 'none';
+  const pointer = new Graphics();
+  pointer
+    .poly([-22, -r - 30, 22, -r - 30, 0, -r + 16])
+    .fill(swatch.red.fill)
+    .stroke({ width: 5, color: ink, join: 'round' });
+  node.addChild(wheel, glow, pointer);
+  return { node, wheel, glow };
+}
+
+/** One tower block, `w` × `h` and centred on (0, 0), in the colour of the number it was spun as, with one pip. */
+export function pipBlock(n: number, w: number, h: number): Graphics {
+  const c = numColor(n);
+  return new Graphics()
+    .roundRect(-w / 2, -h / 2 + 2, w, h - 4, 8)
+    .fill(c.fill)
+    .stroke({ width: 3, color: c.line })
+    .circle(0, 0, h * 0.16)
+    .fill(ink);
+}
+
+/** Draws a dashed outline block, `w` × `h` and centred on (x, y): a block that is not there (the gap the range counts). */
+export function drawGapBlock(g: Graphics, x: number, y: number, w: number, h: number, color: number = ink) {
+  const x0 = x - w / 2,
+    y0 = y - h / 2 + 3,
+    x1 = x + w / 2,
+    y1 = y + h / 2 - 3;
+  g.roundRect(x0, y0, w, y1 - y0, 8).fill({ color: 0xffffff, alpha: 0.55 });
+  const dash = (ax: number, ay: number, bx: number, by: number) => {
+    const len = Math.hypot(bx - ax, by - ay);
+    const n = Math.max(1, Math.round(len / 18));
+    for (let i = 0; i < n; i++) {
+      const t0 = i / n,
+        t1 = (i + 0.55) / n;
+      g.moveTo(ax + (bx - ax) * t0, ay + (by - ay) * t0).lineTo(ax + (bx - ax) * t1, ay + (by - ay) * t1);
+    }
+  };
+  dash(x0, y0, x1, y0);
+  dash(x1, y0, x1, y1);
+  dash(x1, y1, x0, y1);
+  dash(x0, y1, x0, y0);
+  g.stroke({ width: 4, color, cap: 'round' });
+}
+
+/**
+ * A number card, `size` across and centred on (0, 0): the numeral with a picture of the same number beside it, so it
+ * reads without the numeral. `gap` cards (the range, 0–5) stack that many outline blocks; `die` cards (the typical
+ * spin, 1–6) show the die face.
+ */
+export function numCard(n: number, size: number, kind: 'gap' | 'die'): Container {
+  const card = new Container();
+  card.addChild(
+    new Graphics()
+      .roundRect(-size / 2, -size / 2, size, size, 18)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.blue.line }),
+  );
+  const num = label(String(n), 60);
+  num.position.set(-size * 0.2, 0);
+  card.addChild(num);
+  const art = new Graphics();
+  if (kind === 'gap') {
+    const bh = 19;
+    for (let i = 0; i < n; i++) drawGapBlock(art, size * 0.24, ((n - 1) / 2 - i) * bh, 38, bh);
+  } else {
+    const d = 46;
+    art
+      .roundRect(size * 0.24 - d / 2, -d / 2, d, d, d * 0.2)
+      .fill(numColor(n).light)
+      .stroke({ width: 3, color: numColor(n).line });
+    for (const [x, y] of PIPS[n - 1])
+      art.circle(size * 0.24 + x * d * 0.26, y * d * 0.26, d * 0.09).fill(ink);
+  }
+  card.addChild(art);
+  return card;
 }
