@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 3–4 |
+| school | 3–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,6 +17,7 @@
 | 2 | My little show: make any two-action show and play it |
 | 3 | Fix the cue: repair the pictured order, then check the show |
 | 4 | Which signal: give the bell and the flower each a move, then check them |
+| 5 | A repeated phrase: play a two-move phrase twice with Repeat |
 
 <!-- end generated -->
 

@@ -17,16 +17,21 @@ import {
   planFor,
   PLANS,
   playRun,
+  REPEAT,
   requestFor,
   restart,
+  run,
+  shapeOf,
   SIGNALS,
   step,
   stickerRecipe,
   tapAction,
   tapSlot,
   targetOf,
+  toggleRepeat,
   trace,
   undo,
+  wanted,
   type Cue,
   type Studio,
 } from './logic';
@@ -41,8 +46,9 @@ const watched = (slots: number, ...cues: Cue[]) => {
 };
 
 describe('plans', () => {
-  it('levels 1–4 have one, two, two and two slots', () => {
-    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2, 2]);
+  it('levels 1–5 have one slot, then two', () => {
+    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2, 2, 2]);
+    expect(PLANS.map(shapeOf)).toEqual(['show', 'show', 'show', 'rows', 'repeat']);
     expect(planFor(2).slots).toBe(2);
     expect(planFor(3).request).toEqual(['W', 'T']);
     expect(planFor(99).level).toBe(1);
@@ -211,7 +217,7 @@ describe('play and step', () => {
   it('stepping a partial program to its end does not enable finish', () => {
     const s = newStudio(2);
     fill(s, 'T');
-    expect(step(s)).toEqual({ at: 0, cue: 'T' });
+    expect(step(s)).toEqual({ at: 0, cue: 'T', n: 0 });
     expect(canFinish(s)).toBe(false);
     expect(step(newStudio(2))).toBeNull();
   });
@@ -219,11 +225,11 @@ describe('play and step', () => {
   it('stepping a full trace to the end enables finish like Play', () => {
     const s = newStudio(2);
     fill(s, 'W', 'T');
-    expect(step(s)).toEqual({ at: 0, cue: 'W' });
+    expect(step(s)).toEqual({ at: 0, cue: 'W', n: 0 });
     expect(canFinish(s)).toBe(false);
-    expect(step(s)).toEqual({ at: 1, cue: 'T' });
+    expect(step(s)).toEqual({ at: 1, cue: 'T', n: 1 });
     expect(canFinish(s)).toBe(true);
-    expect(step(s)).toEqual({ at: 0, cue: 'W' });
+    expect(step(s)).toEqual({ at: 0, cue: 'W', n: 0 });
   });
 
   it('one-slot step finishes at once', () => {
@@ -536,6 +542,8 @@ describe('the demonstration', () => {
         playRun(s);
         finishRun(s);
         checkRun(s);
+      } else if (p === 'repeat') {
+        throw new Error('Repeat belongs to level 5');
       } else if ('slot' in p) {
         tapSlot(s, p.slot);
       } else if ('action' in p) {
@@ -585,14 +593,14 @@ describe('level 4: which signal', () => {
   const slotsOf: (Cue | null)[] = [null, 'W', 'T'];
   /** A studio holding exactly this binding, built with real edits (bell's row first; an empty bell row keeps the flower's empty). */
   const bound = (request: readonly Cue[], bell: Cue | null, flower: Cue | null) => {
-    const s = newStudio(2, request, true);
+    const s = newStudio(2, request, 'rows');
     if (bell) tapAction(s, bell);
     if (bell && flower) tapAction(s, flower);
     return s;
   };
 
-  it('school plays 3–4 with entry 3, and the seed picks one of two opposite requests', () => {
-    expect(LEVELS.school).toEqual({ min: 3, max: 4 });
+  it('school plays 3–5 with entry 3, and the seed picks one of two opposite requests', () => {
+    expect(LEVELS.school).toEqual({ min: 3, max: 5 });
     expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
     expect(requests).toEqual([
       ['W', 'T'],
@@ -607,7 +615,7 @@ describe('level 4: which signal', () => {
 
   it('both rows start empty, and Start again empties them keeping misses and help', () => {
     for (const request of requests) {
-      const s = newStudio(2, request, true);
+      const s = newStudio(2, request, 'rows');
       expect(s.program).toEqual([null, null]);
       expect(s.rows).toBe(true);
       fill(s, request[1], request[0]);
@@ -618,14 +626,14 @@ describe('level 4: which signal', () => {
       expect([s.misses, s.hints, s.checked]).toEqual([1, 1, false]);
     }
     // Rows need a request; a creation studio never becomes one.
-    expect(newStudio(2, undefined, true).rows).toBe(false);
+    expect(newStudio(2, undefined, 'rows').rows).toBe(false);
   });
 
   it('of all nine bindings exactly the requested one is accepted, row by row', () => {
     for (const request of requests)
       for (const bell of slotsOf)
         for (const flower of slotsOf) {
-          const s = newStudio(2, request, true);
+          const s = newStudio(2, request, 'rows');
           s.program = [bell, flower];
           const rows = checkRows(s);
           expect(rows).toEqual([bell === request[0], flower === request[1]]);
@@ -664,7 +672,7 @@ describe('level 4: which signal', () => {
   });
 
   it('names targets by signal, and level 3 by slot', () => {
-    const s = newStudio(2, requests[0], true);
+    const s = newStudio(2, requests[0], 'rows');
     expect([0, 1].map((i) => targetOf(s, i))).toEqual(SIGNALS.map((n) => `row:${n}`));
     expect(targetOf(newStudio(2, ['W', 'T']), 1)).toBe('slot:1');
   });
@@ -734,7 +742,7 @@ describe('level 4: which signal', () => {
 
   it('the demonstration fills each row as asked, fires the flower then the bell, checks and finishes unaided', () => {
     for (const request of requests) {
-      const s = newStudio(2, request, true);
+      const s = newStudio(2, request, 'rows');
       const fired = [false, false];
       const presses: string[] = [];
       for (let i = 0; i < 12; i++) {
@@ -743,7 +751,7 @@ describe('level 4: which signal', () => {
         if (p === 'check') {
           checkRun(s);
           presses.push('check');
-        } else if (p === 'play') throw new Error('Play is hidden at level 4');
+        } else if (p === 'play' || p === 'repeat') throw new Error('Play and Repeat are not at level 4');
         else if ('fire' in p) {
           expect(fire(s, p.fire)).toBe(request[p.fire]);
           fired[p.fire] = true;
@@ -754,6 +762,218 @@ describe('level 4: which signal', () => {
         } else tapSlot(s, p.slot);
       }
       expect(presses).toEqual([request[0], request[1], 'fire:flower', 'fire:bell', 'check']);
+      expect(canFinish(s)).toBe(true);
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
+  });
+});
+
+describe('level 5: a repeated phrase', () => {
+  const plan = planFor(5);
+  const phrases = plan.phrases!;
+  const slotsOf: (Cue | null)[] = [null, 'W', 'T'];
+  /** A studio holding exactly this body and cap, built with real edits (an empty first slot keeps the second empty). */
+  const made = (request: readonly Cue[], a: Cue | null, b: Cue | null, repeat: boolean) => {
+    const s = newStudio(2, request, 'repeat');
+    if (a) tapAction(s, a);
+    if (a && b) tapAction(s, b);
+    if (repeat) toggleRepeat(s);
+    return s;
+  };
+  /** Every reachable program: nine bodies, minus the hole, with the cap off and on. */
+  const all = (request: readonly Cue[]) =>
+    slotsOf.flatMap((a) =>
+      slotsOf
+        .filter((b) => a || !b)
+        .flatMap((b) => [false, true].map((repeat) => ({ a, b, repeat, s: made(request, a, b, repeat) }))),
+    );
+
+  it('the seed picks one of two opposite phrases, and the shelf starts empty with Repeat off', () => {
+    expect(phrases).toEqual([
+      ['W', 'T'],
+      ['T', 'W'],
+    ]);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(requestFor(plan, new Rng(seed))!.join(''));
+    expect(seen).toEqual(new Set(['WT', 'TW']));
+    for (const request of phrases) {
+      const s = newStudio(2, request, 'repeat');
+      expect([s.program, s.repeat, s.repeats, s.rows]).toEqual([[null, null], false, true, false]);
+      expect(wanted(s)).toEqual([...request, ...request]);
+    }
+    // Repeat needs a request, and the cap does nothing on any other level's studio.
+    const free = newStudio(2, undefined, 'repeat');
+    expect(free.repeats).toBe(false);
+    expect(toggleRepeat(free)).toBe(false);
+    const repair = newStudio(2, ['W', 'T']);
+    expect(toggleRepeat(repair)).toBe(false);
+    expect([repair.repeat, repair.undo]).toEqual([false, null]);
+  });
+
+  it('expansion is exactly two passes of a complete body, and one pass of anything else', () => {
+    for (const request of phrases)
+      for (const { a, b, repeat, s } of all(request)) {
+        const body = [a, b].filter((c): c is Cue => c !== null);
+        const complete = body.length === 2;
+        expect(run(s)).toEqual(repeat && complete ? [...body, ...body] : body);
+        expect(run(s).length).toBeLessThanOrEqual(4);
+        expect(playRun(s)).toEqual(run(s));
+      }
+  });
+
+  it('Check accepts exactly the phrase with Repeat on, and names the earliest mismatch otherwise', () => {
+    for (const request of phrases)
+      for (const { a, b, repeat, s } of all(request)) {
+        const at = checkRun(s);
+        if (!a || !b) {
+          // An incomplete body, with or without Repeat, is never checked: no miss.
+          expect(at).toBeNull();
+          expect([s.misses, s.checked]).toEqual([0, false]);
+          continue;
+        }
+        const right = a === request[0] && b === request[1];
+        const expected = a !== request[0] ? 0 : b !== request[1] ? 1 : repeat ? -1 : REPEAT;
+        expect(at).toBe(expected);
+        expect(s.checked).toBe(right && repeat);
+        expect(s.misses).toBe(right && repeat ? 0 : 1);
+        // The verdict is the played trace against the pictured one.
+        expect(run(s).join('') === wanted(s).join('')).toBe(at === -1);
+        expect(canFinish(s)).toBe(at === -1);
+      }
+  });
+
+  it('names its targets: a slot for a wrong move, the cap when the right phrase plays once', () => {
+    const s = newStudio(2, phrases[0], 'repeat');
+    expect([targetOf(s, 0), targetOf(s, 1), targetOf(s, REPEAT)]).toEqual(['slot:0', 'slot:1', 'repeat']);
+    fill(s, 'W', 'T');
+    expect(mismatch(s)).toBe(REPEAT);
+    // Outside level 5 the same number is only a slot.
+    expect(targetOf(newStudio(2, ['W', 'T']), REPEAT)).toBe('slot:2');
+  });
+
+  it('the cap is an edit: it clears a run and a Check, and Undo puts it back with the program', () => {
+    const s = made(phrases[0], 'W', 'T', true);
+    playRun(s);
+    finishRun(s);
+    expect(checkRun(s)).toBe(-1);
+    expect([s.played, s.checked]).toEqual([true, true]);
+    expect(toggleRepeat(s)).toBe(false);
+    expect([s.played, s.checked, s.stepAt, canFinish(s)]).toEqual([false, false, 0, false]);
+    expect(undo(s)).toBe(true);
+    expect([s.repeat, s.program, s.checked]).toEqual([true, ['W', 'T'], false]);
+    expect(undo(s)).toBe(false);
+    // A slot edit made while Repeat is on undoes to the old move and leaves the cap on.
+    tapSlot(s, 0);
+    tapAction(s, 'T');
+    expect([s.program, s.repeat]).toEqual([['T', 'T'], true]);
+    undo(s);
+    expect([s.program, s.repeat]).toEqual([['W', 'T'], true]);
+    // The cap lets go of a selection.
+    tapSlot(s, 1);
+    toggleRepeat(s);
+    expect(s.selected).toBeNull();
+  });
+
+  it('Step takes four presses over the two slots, then starts again; ordinary runs never check or miss', () => {
+    const s = made(phrases[0], 'W', 'T', true);
+    expect([step(s), step(s), step(s)]).toEqual([
+      { at: 0, cue: 'W', n: 0 },
+      { at: 1, cue: 'T', n: 1 },
+      { at: 0, cue: 'W', n: 2 },
+    ]);
+    expect(s.played).toBe(false);
+    expect(step(s)).toEqual({ at: 1, cue: 'T', n: 3 });
+    expect([s.played, s.checked, s.misses, canFinish(s)]).toEqual([true, false, 0, false]);
+    expect(step(s)).toEqual({ at: 0, cue: 'W', n: 0 });
+    // Repeat on a part-filled body steps its one move and is never watched.
+    const part = made(phrases[0], 'W', null, true);
+    expect(step(part)).toEqual({ at: 0, cue: 'W', n: 0 });
+    expect(part.played).toBe(false);
+  });
+
+  it('Help gives a clue, then fills or repairs each target, the cap last and once, from every program', () => {
+    for (const request of phrases)
+      for (const { a, b, repeat, s } of all(request)) {
+        const label = `${request.join('')} from ${a}${b}${repeat ? '+repeat' : ''}`;
+        let before = mismatch(s);
+        if (before < 0) {
+          expect(help(s), label).toEqual({ kind: 'check' });
+          expect(s.hints).toBe(0);
+          continue;
+        }
+        expect(help(s), label).toEqual({ kind: 'clue', at: before, cue: request[before] ?? null });
+        expect(mismatch(s)).toBe(before);
+        let repairs = 0;
+        let capRepairs = 0;
+        while (mismatch(s) >= 0) {
+          before = mismatch(s);
+          const r = help(s);
+          expect(r, label).toEqual({ kind: 'repair', at: before, cue: request[before] ?? null });
+          if (before === REPEAT) capRepairs++;
+          // Each repair fixes its own target and the next mismatch is later or gone.
+          const after = mismatch(s);
+          expect(after < 0 || after > before, label).toBe(true);
+          expect(++repairs).toBeLessThanOrEqual(3);
+        }
+        expect(capRepairs).toBe(repeat ? 0 : 1);
+        expect([s.program, s.repeat], label).toEqual([[...request], true]);
+        expect(s.hints, label).toBe(1 + repairs);
+        // Help never checks: the show still has to be checked deliberately, and nothing was a miss.
+        expect(help(s)).toEqual({ kind: 'check' });
+        expect([s.checked, s.misses, canFinish(s)]).toEqual([false, 0, false]);
+        expect(checkRun(s)).toBe(-1);
+        expect(help(s)).toEqual({ kind: 'finish' });
+        expect(canFinish(s)).toBe(true);
+      }
+  });
+
+  it('only wrong Checks miss; two bring the clue once; help identities survive Undo and Start again', () => {
+    const s = made(phrases[0], 'W', 'T', false);
+    playRun(s);
+    finishRun(s);
+    step(s);
+    toggleRepeat(s);
+    toggleRepeat(s);
+    expect([s.misses, s.hints]).toEqual([0, 0]);
+    expect(checkRun(s)).toBe(REPEAT);
+    expect([s.misses, s.hints]).toEqual([1, 0]);
+    expect(checkRun(s)).toBe(REPEAT);
+    expect([s.misses, s.hints, [...s.helped]]).toEqual([2, 1, ['clue:repeat']]);
+    // The clue was already supplied, so Help turns Repeat on: one more hint.
+    expect(help(s)).toEqual({ kind: 'repair', at: REPEAT, cue: null });
+    expect([s.repeat, s.hints]).toEqual([true, 2]);
+    // Undo and supply it again, then Start again and supply everything again: the cap's repair is charged once.
+    undo(s);
+    expect(s.repeat).toBe(false);
+    help(s);
+    expect([s.repeat, s.hints]).toEqual([true, 2]);
+    restart(s);
+    expect([s.program, s.repeat, s.misses, s.hints, s.undo]).toEqual([[null, null], false, 2, 2, null]);
+    help(s);
+    help(s);
+    help(s);
+    expect([s.program, s.repeat]).toEqual([['W', 'T'], true]);
+    expect([...s.helped].sort()).toEqual(['clue:repeat', 'repair:repeat', 'repair:slot:0', 'repair:slot:1']);
+    expect(s.hints).toBe(4);
+  });
+
+  it('the demonstration places the phrase, turns Repeat on, plays, checks and finishes unaided', () => {
+    for (const request of phrases) {
+      const s = newStudio(2, request, 'repeat');
+      const presses: string[] = [];
+      for (let i = 0; i < 12; i++) {
+        const p = demoNext(s, false);
+        if (p === 'finish') break;
+        if (p === 'repeat') toggleRepeat(s);
+        else if (p === 'play') {
+          expect(playRun(s)).toEqual([...request, ...request]);
+          finishRun(s);
+        } else if (p === 'check') checkRun(s);
+        else if ('action' in p) tapAction(s, p.action);
+        else throw new Error('the demonstration never selects or fires at level 5');
+        presses.push(typeof p === 'string' ? p : (p as { action: Cue }).action);
+      }
+      expect(presses).toEqual([request[0], request[1], 'repeat', 'play', 'check']);
       expect(canFinish(s)).toBe(true);
       expect([s.misses, s.hints]).toEqual([0, 0]);
     }
