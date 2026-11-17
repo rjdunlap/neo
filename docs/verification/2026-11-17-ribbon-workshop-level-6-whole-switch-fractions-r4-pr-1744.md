@@ -1,0 +1,5 @@
+# 2026-11-17 — Ribbon Workshop level 6 Whole Switch (fractions R4, PR #1744)
+
+**Changed:** Ribbon Workshop level 6, Whole Switch (fractions R4): its own scene `switch.ts`, shared drawings in `art.ts`, rules in `logic.ts` (10 new tests, 21 in the file), 16 `ribbon.switch.*` voice lines, level-scoped how-to, a level 6 case in the `ribbon` browser suite.
+**Ran:** `npm run typecheck`; `npm test` (356 files, 7,491 passed, 1 skipped); `BROWSER_SUITE=ribbon` (levels 1 and 3 as before; level 6 in portrait: an empty check and a ribbon tap count nothing, two wrong checks give 2 misses and the glow with 1 hint, a tap skips the measure, tag 1, a free same check on tag 2, undo, tag 2, history [6, 2, 1]; screenshot ribbon-workshop-6-portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=ribbon-workshop FINGER_LEVELS=6` (8.2 s); one headless look at an 844×390 landscape phone viewport mid-round. Docs: links and `git diff --check`.
+**Not run:** `npm run build` locally (no shared file changed; CI builds), `world`, `couch`, offline. Voice source check: every line compared with the definition, and a test asserts each half/quarter sentence names its spool (name-card labels excepted).

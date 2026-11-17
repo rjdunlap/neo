@@ -27,4 +27,26 @@ export const VOICE = {
   'ribbon.made.q': ['One quarter!'],
   'ribbon.made.hq': ['A half and a quarter make three quarters!'],
   'ribbon.made.qqq': ['Three quarters!'],
+  'ribbon.switch.ask': ['Here is a ribbon. Pick a spool to be the whole. Then pick its name.'],
+  'ribbon.switch.ask2': ["Same ribbon. Give it a different name. Don't change the ribbon. Change the whole."],
+  'ribbon.switch.whole.short': ['The short spool is the whole.'],
+  'ribbon.switch.whole.long': ['The long spool is the whole.'],
+  'ribbon.switch.name.quarter': ['A quarter.'],
+  'ribbon.switch.name.half': ['A half.'],
+  'ribbon.switch.name.threeQuarters': ['Three quarters.'],
+  'ribbon.switch.ribbon': ['The ribbon stays just as it is.'],
+  'ribbon.switch.empty.whole': ['Pick a spool first.'],
+  'ribbon.switch.empty.name': ['Pick a name card first.'],
+  'ribbon.switch.fits.short': ['Look. The ribbon fits two times in the short spool.'],
+  'ribbon.switch.fits.long': ['Look. The ribbon fits four times in the long spool.'],
+  'ribbon.switch.same': ['That is true, and you made it already. Now change the whole.'],
+  'ribbon.switch.made.short': [
+    'Yes! Two of these make the short spool. The ribbon is a half of the short spool.',
+  ],
+  'ribbon.switch.made.long': [
+    'Yes! Four of these make the long spool. The ribbon is a quarter of the long spool.',
+  ],
+  'ribbon.switch.both': [
+    'One ribbon, two names. A half of the short spool, and a quarter of the long spool. The ribbon did not change. The whole did.',
+  ],
 } satisfies Record<string, string[]>;

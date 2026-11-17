@@ -1,6 +1,8 @@
 # Ribbon Workshop, Whole Switch: level 6 (definition)
 
-**Status:** defined, not built. The build is one session, queued in [READY](../READY.md).
+**Status:** built 2026-11-17 (PR #1744); see [As built](#as-built).
+
+**Built:** level 6 (PR #1744); to build another level, read “The level” (this is the only level this definition adds).
 
 Defined 2026-11-17 as slice **R4** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and [proposed ladder](../deep-dives/subjects/fractions.md#first-games-proposed-ladder-ribbon-workshop) (the study's "7", renumbered to **6** by the [Ribbon Workshop definition](ribbon-workshop.md#levels)). It is one new level of the existing game `ribbon-workshop`, not a new game. Every [open decision](#open-decisions) has a default the build uses.
 
@@ -155,3 +157,15 @@ Each has a default the build uses. None waits on the developer.
 4. **Band.** Default: `school` only, top of the order. A `grownup` entry waits on R5.
 5. **No marks before a Check.** Default: the whole is unmarked until a measure animation runs. The alternative, marks from the start, turns the level into counting cells.
 6. **Educator review.** Default: the building session's source check of the voice table, per the [October 23 record](../archive/DECISIONS-2026-10-23.md#standing-rules).
+
+## As built
+
+Built 2026-11-17 (PR #1744) in `src/games/ribbon-workshop/switch.ts` (class `WholeSwitch`; the shared drawings moved to `art.ts`) with the rules in `logic.ts` (`SwitchBench`, `switchJudge`, `switchHint`, `switchSteps`, `switchRound`, `GiftTally.miss()`). The school order is [1, 2, 3, 6]; levels 4 and 5 stay reserved. Differences from the text above:
+
+- The ribbon and the wholes start at x = 110 (as the spool does in levels 1–3), not 100, so the long whole ends at 830 and the stacked upper whole stays clear of the help button.
+- The sentence strip sits to the right of the tag, not under it. The spool cards are a row above the name cards (five cards in one row need 1,108 units).
+- The rail has two places: the whole in play sits in the lower one, directly above the ribbon; at the finish tag 1's whole sits above it. The paper tag clips inside the whole's right end.
+- After a wrong check the name card is put back (claim 0) as an undoable change, so 28 states are reachable, not 24.
+- The hint takes the shortest route: with no accepted whole chosen it points at the spool the chosen name is already true for, else the first accepted spool card in the round's order.
+- Co-play and off-screen lines are per game in the module contract, so the level's off-screen sentence was appended to the game's line and the co-play line is unchanged (it shows only at lap and toddler bands).
+- Source check of the voice table (the stand-in for an educator review): every `ribbon.switch.*` line was compared with this definition, and a unit test asserts that every sentence that says half or quarter names the short or long spool in the same sentence, except the three name-card labels (`ribbon.switch.name.*`: "A quarter.", "A half.", "Three quarters."), which read a card aloud and make no statement about the ribbon.
