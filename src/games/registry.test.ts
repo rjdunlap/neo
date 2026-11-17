@@ -557,6 +557,7 @@ describe('game registry', () => {
       'brain-break',
       'bubble-pop',
       'crossword',
+      'drift-cards',
       'far-lights',
       'gem-swap',
       'hat-band',
@@ -581,6 +582,7 @@ describe('game registry', () => {
       'stamp-studio',
       'sudoku-garden',
       'tile-pairs',
+      'word-glue',
       'word-search',
     ];
     expect(

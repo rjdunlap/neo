@@ -955,6 +955,7 @@ export const driftCards: GameModule = {
   levels: (b) => rangeFor(BAND_LEVELS, b),
   describeLevel: (l) => dcPlan(l).name,
   music: STYLES.quiet,
+  upright: true,
   coplayHint:
     'One of you is the sea and traces the arrows aloud ("down, down, across"); the other predicts or picks the boat. Swap each card.',
   offScreen:

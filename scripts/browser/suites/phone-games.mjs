@@ -223,7 +223,9 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
    * target to measure: judge the screenshot). Writes a screenshot per game,
    * sweep.json and contact-sheet.jpg into test-results/browser/upright-sweep/. A survey, not a gate: it fails only when the
    * prompt shows; a game that cannot open (a layout that returns null on the upright area) is listed as such and the page
-   * reloads. `PHONE_ONLY=id,id` filters. About three seconds a game.
+   * reloads. `PHONE_ONLY=id,id` filters. `PHONE_LEVELS=all` measures every school level of each game (and names each
+   * screenshot `<id>-<level>.jpg`) instead of the top level only, to check a game before it is marked upright. About three
+   * seconds a level.
    */
   async function uprightSweep() {
     const dir = `${output}/upright-sweep`;
@@ -266,15 +268,19 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
         kit.store.data.settings.howToCards = false;
         return GAMES.filter((g) => !g.upright && g.bands.includes('school')).map((g) => ({
           id: g.id,
-          level: levelsInOrder(g.levels('school')).at(-1),
+          levels: levelsInOrder(g.levels('school')),
         }));
       });
+      const everyLevel = process.env.PHONE_LEVELS === 'all';
       const ids = selectNames(
         process.env.PHONE_ONLY,
         games.map((g) => g.id),
         'PHONE_ONLY',
       );
-      for (const { id, level } of games.filter((g) => ids.includes(g.id))) {
+      const todo = games
+        .filter((g) => ids.includes(g.id))
+        .flatMap((g) => (everyLevel ? g.levels : [g.levels.at(-1)]).map((level) => ({ id: g.id, level })));
+      for (const { id, level } of todo) {
         pageErrors.length = 0;
         await p.evaluate(
           ({ id, level }) => {
@@ -332,6 +338,7 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
           for (const c of neo.scene.stage?.children ?? []) walk(c);
           const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
           const wrong = { small: 0, outside: 0, chrome: 0 };
+          const culprits = [];
           let bad = 0,
             smallest = Infinity;
           for (const t of targets) {
@@ -343,13 +350,19 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
             if (small) wrong.small++;
             if (outside) wrong.outside++;
             if (chrome) wrong.chrome++;
-            if (small || outside || chrome) bad++;
+            if (small || outside || chrome) {
+              bad++;
+              culprits.push(
+                `${small ? 'small ' : ''}${outside ? 'outside ' : ''}${chrome ? 'chrome ' : ''}${[t.x0, t.y0, t.x1 - t.x0, t.y1 - t.y0].map(Math.round).join(',')}`,
+              );
+            }
           }
           return {
             view: `${Math.round(vw)} × ${Math.round(vh)}`,
             targets: targets.length,
             bad,
             wrong,
+            culprits,
             smallest: targets.length ? Math.round(smallest) : null,
           };
         });
@@ -363,8 +376,9 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
               : found.bad <= 3
                 ? 'small fix'
                 : 'needs a layout';
-        await p.screenshot({ path: `${dir}/${id}.jpg`, type: 'jpeg', quality: 60 });
-        rows.push({ id, level, verdict, ...found, errors: [...pageErrors] });
+        const shot = everyLevel ? `${id}-${level}` : id;
+        await p.screenshot({ path: `${dir}/${shot}.jpg`, type: 'jpeg', quality: 60 });
+        rows.push({ id, level, shot, verdict, ...found, errors: [...pageErrors] });
         log(
           `Upright sweep: ${id} level ${level}: ${verdict} (${found.targets} targets, ${found.bad} wrong, smallest ${found.smallest})`,
         );
@@ -378,7 +392,7 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
           return `<h2>${v} (${list.length})</h2><div class="g">${list
             .map(
               (r) =>
-                `<figure><img src="${r.id}.jpg"><figcaption><b>${r.id}</b> ${r.level}<br>${r.targets} targets, ${r.bad} wrong, min ${r.smallest ?? '–'}</figcaption></figure>`,
+                `<figure><img src="${r.shot ?? r.id}.jpg"><figcaption><b>${r.id}</b> ${r.level}<br>${r.targets} targets, ${r.bad} wrong, min ${r.smallest ?? '–'}</figcaption></figure>`,
             )
             .join('')}</div>`;
         })

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/drift-cards; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `drift-cards` · **Land:** Bubble Beach · **Ages:** school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `drift-cards` · **Land:** Bubble Beach · **Ages:** school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** ocean, currents, maps, evidence
 

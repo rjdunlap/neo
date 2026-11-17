@@ -524,10 +524,14 @@ export interface Box {
 export const PET = { w: 230, h: 230 };
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
 export const CORNER = 120;
-export const cornerButtons = (view: View): Box[] => [
-  { x: 0, y: 0, w: CORNER, h: CORNER },
-  { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER },
-];
+/** Home and "?": one in each top corner sideways, a column down the top-left upright (where "?" sits under Home). */
+export const cornerButtons = (view: View): Box[] =>
+  view.h > view.w
+    ? [{ x: 0, y: 0, w: CORNER, h: 210 }]
+    : [
+        { x: 0, y: 0, w: CORNER, h: CORNER },
+        { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER },
+      ];
 export const overlaps = (a: Box, b: Box) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (b: Box, v: View) => b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h;

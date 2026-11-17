@@ -407,6 +407,7 @@ export const orchardRows: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  uprightLevels: [7, 9],
   touchDemo: true,
   coplayHint:
     'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns. At the new levels, guess before pressing the arrow: will any be left over? At the path levels, count the part you know first, then add the other.',

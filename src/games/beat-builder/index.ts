@@ -779,6 +779,7 @@ export const beatBuilder: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
+  uprightLevels: [3, 6, 7, 8, 9],
   coplayHint: 'Clap and stomp the beat together as the playhead goes round.',
   offScreen:
     'Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other.',
