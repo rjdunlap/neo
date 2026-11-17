@@ -194,11 +194,19 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await choose(1);
       await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 });
       await settle();
-      assert.deepEqual(await page.evaluate(() => neo.scene.game.lengths), ['200 µm'], 'the folder is stamped');
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.lengths),
+        ['200 µm'],
+        'the folder is stamped',
+      );
       await turn(3);
       const right = await page.evaluate(() => neo.scene.game.measure.slot);
       await choose(right);
-      assert.deepEqual(await tally(), [1, 0], 'the green ball is only a dot at stop 3: even its true length is free');
+      assert.deepEqual(
+        await tally(),
+        [1, 0],
+        'the green ball is only a dot at stop 3: even its true length is free',
+      );
       assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'and does not close the file');
       await page.evaluate(() => neo.scene.game.askForHint());
       await page.waitForFunction(() => neo.scene.game.stop === 4, null, { timeout: 5000 });
