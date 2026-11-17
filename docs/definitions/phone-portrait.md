@@ -81,6 +81,7 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | 4 (built) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
 | 5 (built) | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
 | Grown-up catch-up (built 2026-11-17) | grown-up: games that gained the grown-up band after batch 4 | `puddle-lens` (noticing); `ribbon-workshop` (fractions; all three scenes drawn into a world scaled to the 768-wide area) |
+| 6 (claimed 2026-11-17, `claude/upright-batch-6`) | school: six early-school games that fit as is | `beat-builder`, `word-glue`, `orchard-rows`, `pattern-train`, `pixel-pictures`, `drift-cards` |
 | 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games from the sweep's fits-as-is list first (cheapest), then small fixes |
 
 The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (the upright sweep of the early-school games, built the same day and recorded [below](#the-upright-sweep-built-2026-11-09), then batches by kind).
