@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/puddle-lens; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `puddle-lens` · **Land:** Bubble Beach · **Ages:** lap–grown-up · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `puddle-lens` · **Land:** Bubble Beach · **Ages:** lap–grown-up · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** observation, magnification, scale, science
 

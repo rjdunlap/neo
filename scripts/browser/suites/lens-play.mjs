@@ -54,8 +54,12 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(800);
     };
-    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9, 10 and 11 the slide files); LENS_LEVELS=lap only the lap level.
+    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9, 10 and 11 the slide files); LENS_LEVELS=lap only the lap level;
+    // LENS_LEVELS=upright only the phone held upright.
     const onlyLap = process.env.LENS_LEVELS === 'lap';
+    const onlyUpright = process.env.LENS_LEVELS === 'upright';
+    if (!process.env.LENS_LEVELS || onlyUpright) await upright(auto, settle);
+    if (onlyUpright) return;
     if (!process.env.LENS_LEVELS || onlyLap) await lap();
     if (onlyLap) return;
     const only = (process.env.LENS_LEVELS ?? '').split(',').filter(Boolean).map(Number);
@@ -282,6 +286,88 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         'Puddle Lens 11: a ruled-out card, free answers at stop 3, cork closed, a named survivor on the open dot (a miss), not enough evidence closes it, a counted hint, a wrong not-enough-evidence, tiny-dot portrait, saved 3/1',
       );
     }
+  }
+  // A phone held upright (390 × 844, touch emulated; chunk 31): no turn prompt, every button and the lens inside the view
+  // and off Home, "?" and the guide at the first level, the hand-lens table, the dial and both ends of the grown-up
+  // ladder; level 2's glass stays on the outer thing it is let go on; the ghost finger finishes levels 9 and 11.
+  async function upright(auto, settle) {
+    const device = await page.context().newCDPSession(page);
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    const fits = (level) =>
+      page.evaluate((level) => {
+        const g = neo.scene.game;
+        const v = g.view;
+        if (!v.upright || neo.turning) return ['not on the upright area'];
+        const out = [];
+        const nodes = [...g.stopButtons, ...g.choiceButtons, ...(g.answer ? [g.answer] : [])];
+        const boxes = nodes.map((n) => {
+          const b = n.getBounds();
+          const a = g.board.toLocal({ x: b.x, y: b.y }),
+            z = g.board.toLocal({ x: b.x + b.width, y: b.y + b.height });
+          return { x0: a.x, y0: a.y, x1: z.x, y1: z.y };
+        });
+        const corners = [
+          { x0: 0, y0: 0, x1: 115, y1: 210 },
+          { x0: 0, y0: v.h - 170, x1: 150, y1: v.h },
+        ];
+        for (const b of boxes) {
+          if (b.x0 < -1 || b.y0 < -1 || b.x1 > v.w + 1 || b.y1 > v.h + 1)
+            out.push('a button leaves the view');
+          if (corners.some((k) => b.x0 < k.x1 && k.x0 < b.x1 && b.y0 < k.y1 && k.y0 < b.y1))
+            out.push('a button covers a corner');
+        }
+        const l = g.layout;
+        if (!l) out.push('no layout');
+        else if (level !== 2 && (l.lens.x - l.lens.r < 0 || l.lens.x + l.lens.r > v.w))
+          out.push('the lens leaves the view');
+        if (level >= 3 && nodes.length < 4) out.push('buttons missing');
+        return out;
+      }, level);
+    for (const level of [1, 2, 4, 9, 11]) {
+      await launch('puddle-lens', level);
+      await page.waitForFunction(() => neo.view.upright === true && !!neo.scene.game.layout, null, {
+        timeout: 8000,
+      });
+      await settle();
+      assert.deepEqual(await fits(level), [], `level ${level} fits a phone held upright`);
+      if (level === 2) {
+        // Drag the glass onto the left thing and let go: it stays there (the tall table reaches the outer things).
+        const at = await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const a = g.board.toGlobal(g.layout.rest),
+            b = g.board.toGlobal(g.layout.things[0]);
+          await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 16));
+          await kit.sleep(900);
+          return {
+            glass: { x: g.glass.x, y: g.glass.y },
+            thing: g.layout.things[0],
+            looked: [...g.tracker.looked],
+          };
+        });
+        assert.ok(
+          // The glass rides a little above the finger, so it rests just above the thing's middle, inside LOOK_NEAR.
+          Math.abs(at.glass.x - at.thing.x) < 2 && Math.abs(at.glass.y - at.thing.y) <= 50,
+          'the glass let go on the left thing stays on it',
+        );
+        assert.deepEqual(at.looked, [0], 'and the left thing is looked at');
+      }
+      await screenshot(`puddle-lens-${level}-upright-phone`);
+      if (level >= 9) {
+        await auto();
+        await finished('puddle-lens');
+      }
+    }
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+    await device.detach();
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    log(
+      'Puddle Lens upright on a 390 × 844 phone: levels 1, 2, 4, 9 and 11 lay out with no turn prompt, every button inside the view and off the corners; the level-2 glass stays on the left thing; the ghost finger finishes 9 and 11',
+    );
   }
   // Level 1 at lap: a touch anywhere swells the lens, a touch while it moves changes nothing, the next thing waits for
   // her touch (no timer), and the pause sheet's hint is not counted.

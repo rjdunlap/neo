@@ -570,6 +570,7 @@ describe('game registry', () => {
       'picnic-pantry',
       'picture-logic',
       'pond-conga',
+      'puddle-lens',
       'pyramid-solitaire',
       'sing-along-barn',
       'size-parade',
