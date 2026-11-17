@@ -5,7 +5,8 @@ import type { BandLevels } from '../../progress/difficulty';
 /**
  * Who Am I?: a row of friends on the barn's stage, one clue at a time, and she turns over every friend a clue rules out
  * until one is left (levels 2–5), or taps the one friend a single clue fits (level 1). At level 6 she asks the questions:
- * the pet answers yes or no for a secret friend, and she turns over every friend the answer rules out. The trait table
+ * the pet answers yes or no for a secret friend, and she turns over every friend the answer rules out. At level 7 she
+ * makes the riddle: she picks a friend and gives true clue cards, and the pet turns the friends over. The trait table
  * below was checked against museum, university and government sources on 2026-10-24, and the "no" answers level 6 gives
  * on 2026-11-17 (docs/definitions/who-am-i.md, decisions 1 and 11).
  */
@@ -228,9 +229,10 @@ export interface WhoPlan {
   name: string;
   /**
    * 'fit': tap the one friend the clue fits. 'turn': turn over the friends each clue rules out. 'ask': she asks the
-   * questions and turns over the friends each answer rules out (level 6; the round has no clue list).
+   * questions and turns over the friends each answer rules out (level 6; the round has no clue list). 'riddle': she picks
+   * a friend and gives the clues, and the pet turns the friends over (level 7; nothing is judged).
    */
-  mode: 'fit' | 'turn' | 'ask';
+  mode: 'fit' | 'turn' | 'ask' | 'riddle';
   friends: number;
   clues: number;
   allowed: readonly Feature[];
@@ -344,15 +346,32 @@ export const PLANS: readonly WhoPlan[] = [
     include: [],
     surprise: false,
   },
+  {
+    level: 7,
+    name: 'Make a riddle: choose clues until the pet finds your friend',
+    mode: 'riddle',
+    friends: 6,
+    // She gives the clues; the round has no clue list.
+    clues: 0,
+    allowed: SURPRISES,
+    minGroups: 4,
+    minDefining: 0,
+    // She can pick any friend: every one of the six has a tray of clues that leaves only it.
+    answers: FRIEND_IDS,
+    pool: FRIEND_IDS,
+    include: ['penguin', 'bat'],
+    surprise: false,
+  },
 ];
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 6 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 7 } };
 
 export const planFor = (level: number): WhoPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 
 export interface WhoRound {
   gallery: FriendId[];
+  /** The friend to be found. At level 7 it is hers to choose: the first friend until she picks, then her friend. */
   answer: FriendId;
   clues: Clue[];
 }
@@ -503,10 +522,29 @@ function makeAskRound(rng: Rng): WhoRound {
   return { gallery, answer: rng.pick(gallery), clues: [] };
 }
 
+/**
+ * Level 7: a level 6 gallery that always has the bat and never the frog, the turtle and the fish all together (36
+ * galleries): a four-legged mammal, a flying bird, the penguin, the bat and two of the other three. The bat is there so
+ * "I can fly" alone never picks out the duck or the owl; with all three of the others, and the questions a "no" cannot
+ * safely answer taken away, only the shell would tell the turtle from the frog.
+ */
+function makeRiddleRound(rng: Rng): WhoRound {
+  const skip = rng.pick(LONERS);
+  const gallery = rng.shuffle<FriendId>([
+    rng.pick(MAMMALS),
+    rng.pick(FLYERS),
+    'penguin',
+    'bat',
+    ...LONERS.filter((f) => f !== skip),
+  ]);
+  return { gallery, answer: gallery[0], clues: [] };
+}
+
 /** A seeded round for the level: the same seed gives the same round. Bounded; the rule tests prove it never runs out. */
 export function makeRound(level: number, rng: Rng): WhoRound {
   const plan = planFor(level);
   if (plan.mode === 'ask') return makeAskRound(rng);
+  if (plan.mode === 'riddle') return makeRiddleRound(rng);
   if (plan.group) return makeGroupRound(plan, rng);
   for (let attempt = 0; attempt < 400; attempt++) {
     const answer = rng.pick(plan.answers);
@@ -562,13 +600,19 @@ export interface WhoPlay {
   current: Asked | null;
   /** Level 6: duds asked in a row; two show the question hint by itself. */
   duds: number;
-  /** Level 6: the question hint has been counted this round. */
+  /** Levels 6 and 7: the question hint (6) or the clue hint (7) has been counted this round. */
   askHelped: boolean;
-  /** Level 6: draws the trays. */
+  /** Levels 6 and 7: draws the trays. */
   rng: Rng | null;
+  /** Level 7: the gallery index of the friend she picked for the pet to guess; null until she picks. */
+  picked: number | null;
+  /** Level 7: the five clue cards dealt for her friend, in tray order. A given card leaves the tray; the rest stay put. */
+  cards: Statement[];
+  /** Level 7: the clues she has given, in her order. */
+  given: Statement[];
 }
 
-/** `rng` draws level 6's question trays; the other modes do not use it. */
+/** `rng` draws level 6's question trays and level 7's clue trays; the other modes do not use it. */
 export function startPlay(round: WhoRound, mode: WhoPlan['mode'], rng: Rng | null = null): WhoPlay {
   const p: WhoPlay = {
     round,
@@ -589,6 +633,9 @@ export function startPlay(round: WhoRound, mode: WhoPlan['mode'], rng: Rng | nul
     duds: 0,
     askHelped: false,
     rng,
+    picked: null,
+    cards: [],
+    given: [],
   };
   if (mode === 'ask') p.tray = makeTray(round.gallery, askable(round.gallery), rng!);
   return p;
@@ -647,7 +694,8 @@ export type TapOutcome =
 
 /** Applies one tap on gallery index `i`, changing `p`. */
 export function tap(p: WhoPlay, i: number): TapOutcome {
-  if (p.done || i < 0 || i >= p.round.gallery.length) return { kind: 'ignored' };
+  // Level 7's friend cards go through `pickFriend`: nothing there is judged.
+  if (p.done || p.mode === 'riddle' || i < 0 || i >= p.round.gallery.length) return { kind: 'ignored' };
   if (p.down.has(i)) return { kind: 'peek' };
   const friend = p.round.gallery[i];
   const miss = (
@@ -730,10 +778,16 @@ function countHelp(p: WhoPlay) {
 /**
  * The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–5); true when this request counted.
  * At level 6 it is the question hint while she is choosing (once per round) and the shimmer while she is turning friends
- * over (once per answer).
+ * over (once per answer). At level 7 it is the clue hint, once per round, and only after she has picked a friend.
  */
 export function requestHelp(p: WhoPlay): boolean {
   if (p.done) return false;
+  if (p.mode === 'riddle') {
+    if (p.picked === null || p.askHelped) return false;
+    p.askHelped = true;
+    p.hints++;
+    return true;
+  }
   if (p.mode === 'ask' && !p.current) {
     if (p.askHelped) return false;
     p.askHelped = true;
@@ -747,7 +801,7 @@ export function requestHelp(p: WhoPlay): boolean {
 
 /** What the ghost finger taps next: the right friend at level 1 (after one deliberate wrong tap), else the leftmost friend the clue rules out. */
 export function botTap(p: WhoPlay, showedMiss: boolean): number | null {
-  if (p.done) return null;
+  if (p.done || p.mode === 'riddle') return null;
   if (p.mode === 'fit') {
     const wrong = p.round.gallery.findIndex((f) => f !== p.round.answer);
     return !showedMiss && wrong >= 0 ? wrong : p.round.gallery.indexOf(p.round.answer);
@@ -874,7 +928,7 @@ export function ask(p: WhoPlay, feature: Feature): AskOutcome {
 }
 
 export interface AskLayout extends GalleryLayout {
-  /** The three question cards, left to right. */
+  /** The tray's cards, left to right (level 7 in portrait: a row of three over a row of two). */
   tray: Rect[];
 }
 
@@ -883,10 +937,11 @@ export const TRAY_H = 110;
 export const ASK_STRIP = 5;
 
 /**
- * Level 6's stage: the six cards in two rows of three, the tray of three question cards in a row to the right of the
- * pet's corner (along the bottom in landscape, under the cards in portrait), and room in the strip for five answers.
+ * A stage with a tray of `n` cards: the six friend cards in two rows of three, the tray to the right of the pet's corner
+ * (along the bottom in landscape, under the cards in portrait, where more than three cards make a row of three over the
+ * rest), and room in the strip for five answers.
  */
-export function askLayout(v: View): AskLayout {
+function trayStage(v: View, n: number): AskLayout {
   const portrait = v.h > v.w;
   const sign: Rect = { x: v.w / 2 - 160, y: 24, w: 320, h: 130 };
   const strip: Rect[] = [];
@@ -904,10 +959,12 @@ export function askLayout(v: View): AskLayout {
     );
   }
   const gap = 16;
+  const rows = portrait && n > 3 ? [3, n - 3] : [n];
+  const block = rows.length * TRAY_H + (rows.length - 1) * gap;
   const left = portrait ? 30 : PET_CORNER + 20,
     right = portrait ? v.w - 30 : v.w - THUMB - 36;
   const top = portrait ? strip[0].y + THUMB + 30 : sign.y + sign.h + 30;
-  const bottom = Math.min(v.h - 24 - TRAY_H - gap, top + 2 * 300);
+  const bottom = Math.min(v.h - 24 - block - gap, top + 2 * 300);
   const w = Math.min(170, (right - left - gap * 2) / 3);
   const h = Math.min(210, (bottom - top - gap) / 2);
   const x0 = (left + right) / 2 - (3 * w + 2 * gap) / 2;
@@ -918,12 +975,153 @@ export function askLayout(v: View): AskLayout {
   // The tray starts right of the pet's corner in both orientations, so it may sit beside it.
   const tLeft = PET_CORNER + 20,
     tRight = portrait ? v.w - 30 : right;
-  const tw = Math.min(180, (tRight - tLeft - gap * 2) / 3);
-  const tx = (tLeft + tRight) / 2 - (3 * tw + 2 * gap) / 2;
-  const ty = Math.min(v.h - 24 - TRAY_H, y0 + 2 * h + gap + 24);
-  const tray: Rect[] = [0, 1, 2].map((k) => ({ x: tx + k * (tw + gap), y: ty, w: tw, h: TRAY_H }));
+  const across = rows[0];
+  const tw = Math.min(n > 3 ? 130 : 180, (tRight - tLeft - gap * (across - 1)) / across);
+  const ty = Math.min(v.h - 24 - block, y0 + 2 * h + gap + 24);
+  const tray: Rect[] = [];
+  rows.forEach((count, r) => {
+    const tx = (tLeft + tRight) / 2 - (count * tw + (count - 1) * gap) / 2;
+    for (let k = 0; k < count; k++)
+      tray.push({ x: tx + k * (tw + gap), y: ty + r * (TRAY_H + gap), w: tw, h: TRAY_H });
+  });
   return { sign, strip, cards, tray };
 }
+
+/** Level 6's stage: the six cards and a tray of three question cards. */
+export const askLayout = (v: View): AskLayout => trayStage(v, 3);
+
+// Level 7, Make a riddle ------------------------------------------------------------------------------------------------
+
+/** A clue card she can give: a feature her friend has ("I have wings") or, with `yes` false, one it lacks ("I can't fly"). */
+export interface Statement {
+  feature: Feature;
+  yes: boolean;
+}
+
+/** How many clue cards her tray holds. */
+export const RIDDLE_CARDS = 5;
+
+/** Every statement the gallery's questions allow, as it is true of the friend. Only what a "no" can safely say is here. */
+export const trueOf = (gallery: readonly FriendId[], friend: FriendId): Statement[] =>
+  askable(gallery).map((feature) => ({ feature, yes: keeps(feature, friend) }));
+
+/** The friends every one of the statements fits. */
+export const fitting = (friends: readonly FriendId[], statements: readonly Statement[]) =>
+  friends.filter((f) => statements.every((s) => fits(s, f)));
+
+/**
+ * A fair tray for her friend: five different statements, each true of it and safe to say, that together leave only her
+ * friend, where no card does that alone (so a riddle is at least two clues), with at least one "I have" card and at least
+ * one "I don't" card.
+ */
+export function validTray(
+  gallery: readonly FriendId[],
+  friend: FriendId,
+  tray: readonly Statement[],
+): boolean {
+  const open = askable(gallery);
+  const left = fitting(gallery, tray);
+  return (
+    tray.length === RIDDLE_CARDS &&
+    new Set(tray.map((s) => s.feature)).size === RIDDLE_CARDS &&
+    tray.every((s) => open.includes(s.feature) && fits(s, friend)) &&
+    left.length === 1 &&
+    left[0] === friend &&
+    tray.every((s) => fitting(gallery, [s]).length > 1) &&
+    tray.some((s) => s.yes) &&
+    tray.some((s) => !s.yes)
+  );
+}
+
+/** Every fair tray for the friend, each in table order. */
+export function riddleTrays(gallery: readonly FriendId[], friend: FriendId): Statement[][] {
+  const all = trueOf(gallery, friend);
+  const out: Statement[][] = [];
+  const grow = (from: number, chosen: Statement[]) => {
+    if (chosen.length === RIDDLE_CARDS) {
+      if (validTray(gallery, friend, chosen)) out.push(chosen);
+      return;
+    }
+    for (let k = from; k < all.length; k++) grow(k + 1, [...chosen, all[k]]);
+  };
+  grow(0, []);
+  return out;
+}
+
+/** A seeded fair tray for the friend, shuffled. Every friend of every level 7 gallery has one (a rule test counts them). */
+export function riddleTray(gallery: readonly FriendId[], friend: FriendId, rng: Rng): Statement[] {
+  const trays = riddleTrays(gallery, friend);
+  if (trays.length === 0) throw new Error(`who-am-i: no riddle tray for ${friend}`);
+  return rng.shuffle(rng.pick(trays));
+}
+
+/** The clue cards still in her tray, in tray order. */
+export const riddleLeft = (p: WhoPlay) => p.cards.filter((s) => !p.given.includes(s));
+
+export type PickOutcome =
+  /** Not a pick now: the round is over, or this is not level 7. */
+  | { kind: 'ignored' }
+  /** A face-down friend: a free look. */
+  | { kind: 'peek' }
+  /** Her friend, with a fresh tray of clue cards; `changed` when she had picked another friend before. */
+  | { kind: 'picked'; changed: boolean }
+  /** The friend she has already picked: nothing changes. */
+  | { kind: 'same' }
+  /** She has given a clue, so her friend is settled. Never a miss. */
+  | { kind: 'settled' };
+
+/** She taps friend `i` at level 7: until her first clue this picks it, as often as she likes. */
+export function pickFriend(p: WhoPlay, i: number): PickOutcome {
+  if (p.done || p.mode !== 'riddle' || i < 0 || i >= p.round.gallery.length) return { kind: 'ignored' };
+  if (p.down.has(i)) return { kind: 'peek' };
+  if (p.given.length > 0) return { kind: 'settled' };
+  if (p.picked === i) return { kind: 'same' };
+  const changed = p.picked !== null;
+  p.picked = i;
+  p.round.answer = p.round.gallery[i];
+  p.cards = riddleTray(p.round.gallery, p.round.answer, p.rng!);
+  return { kind: 'picked', changed };
+}
+
+export type ClueOutcome =
+  /** Not a clue now: the round is over, she has not picked, or the card is not in her tray. */
+  | { kind: 'ignored' }
+  /**
+   * The pet turns over every standing friend the clue does not fit (`turned`, gallery indices; empty when the clue fits
+   * everyone it was still thinking of) and thinks about who is `left`; `done` when only her friend is.
+   */
+  | { kind: 'clue'; statement: Statement; turned: number[]; left: FriendId[]; done: boolean };
+
+/** She gives the tray's clue about `feature`, changing `p`. Every card is true, so no clue is ever a miss. */
+export function giveClue(p: WhoPlay, feature: Feature): ClueOutcome {
+  if (p.done || p.mode !== 'riddle' || p.picked === null) return { kind: 'ignored' };
+  const statement = riddleLeft(p).find((s) => s.feature === feature);
+  if (!statement) return { kind: 'ignored' };
+  p.given.push(statement);
+  const turned = p.round.gallery
+    .map((_, i) => i)
+    .filter((i) => !p.down.has(i) && !fits(statement, p.round.gallery[i]));
+  for (const i of turned) p.down.add(i);
+  const left = standing(p);
+  p.done = left.length === 1;
+  return { kind: 'clue', statement, turned, left, done: p.done };
+}
+
+/** How many standing friends a clue would turn over. */
+export const turnsOver = (p: WhoPlay, s: Statement) => standing(p).filter((f) => !fits(s, f)).length;
+
+/**
+ * The tray card that turns over the most standing friends (the leftmost of equals): the clue hint and the ghost finger's
+ * choice. While two friends stand one always turns somebody over, because the cards together leave only her friend.
+ */
+export function riddleHint(p: WhoPlay): Statement | null {
+  let best: Statement | null = null;
+  for (const s of riddleLeft(p)) if (turnsOver(p, s) > (best ? turnsOver(p, best) : 0)) best = s;
+  return best;
+}
+
+/** Level 7's stage: level 6's with a tray of five clue cards (one row in landscape, three over two in portrait). */
+export const riddleLayout = (v: View): AskLayout => trayStage(v, RIDDLE_CARDS);
 
 // Layout ---------------------------------------------------------------------------------------------------------------
 
