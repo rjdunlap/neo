@@ -132,6 +132,11 @@ class TimelineTrail implements Game {
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
+  /** A card or a chip is being carried: a rebuild waits until it is let go, so the thing in hand is never destroyed. */
+  private get inHand() {
+    return !!this.dragging || this.chipNodes.some((c) => c.handle.dragging);
+  }
+
   private get level() {
     return this.round.level;
   }
@@ -173,7 +178,7 @@ class TimelineTrail implements Game {
       }
       return;
     }
-    if (this.dragging || this.busy || this.finished) {
+    if (this.inHand || this.busy || this.finished) {
       this.relayout = true;
       return;
     }
@@ -608,7 +613,7 @@ class TimelineTrail implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.relayout && !this.dragging && !this.busy && !this.finished) this.build();
+    if (this.relayout && !this.inHand && !this.busy && !this.finished) this.build();
     this.glow.clear();
     const l = this.layoutNow;
     if (!l || this.finished || this.busy) return;
