@@ -307,7 +307,8 @@ class AdventureWalk implements Game {
   private replay() {
     if (this.finished) return;
     if (this.plan.trails) {
-      if (onTrails(this.state)) void this.sayTrailCall();
+      // Not during a walk: the pick has already moved on, so the call would be the next one.
+      if (onTrails(this.state) && !this.busy) void this.sayTrailCall();
       return;
     }
     if (this.map) {

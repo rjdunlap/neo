@@ -478,6 +478,8 @@ export function goTrail(s: WalkState, trail: number): TrailStep {
   if (s.turned[trail] !== null) return { kind: 'reason', trail, stop, took, asked };
   s.misses++;
   s.turned[trail] = stop;
+  // Its flag looks again on the next tap; a second tap then repeats the reason.
+  s.looking = null;
   const left = [0, 1, 2].filter((t) => t !== walkedThere(s) && s.turned[t] === null);
   let glow = false;
   if (left.length === 1 && !s.pickHinted) {

@@ -140,7 +140,9 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.deepEqual([a.misses, a.pick, a.turned[wrong] !== null], [1, 0, true]);
     await page.evaluate(() => kit.tapOn(neo.scene.game.badgeNode));
     await page.waitForTimeout(300);
-    // A second tap on the turned-back trail repeats its reason and counts nothing.
+    // The turned-back trail still looks, and a second tap repeats its reason; neither counts.
+    await flag(wrong);
+    assert.equal((await tr()).looking, wrong);
     await flag(wrong);
     a = await tr();
     assert.deepEqual([a.misses, a.hints, a.pick], [1, 0, 0]);

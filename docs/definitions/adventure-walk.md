@@ -2,9 +2,11 @@
 
 Defined 2026-10-22 as the first packet of the [movement study's](../deep-dives/subjects/movement-exercise.md#recommended-follow-ups-requested-2026-10-14) **Adventure Walk** follow-up, from the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#movement-and-family-play-recommendations) and the notebook's [Bear Hunt Walk seed](../IDEAS.md). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
-**Status: levels 1–3 built 2026-10-23; levels 4–5 [defined 2026-11-17](#levels-45-aw3); level 4 built 2026-11-17 (AW4); level 5 not built.**
+**Status: levels 1–3 built 2026-10-23; levels 4–5 [defined 2026-11-17](#levels-45-aw3); levels 4 and 5 built 2026-11-17 (AW4, AW5).**
 
-**Built:** levels 1–4; to build level 5, read “Level 5: Which trail?” (then “The map”, “Tests, demo, card, voice and registration for 4–5”).
+**Built:** levels 1–5 (PRs #1751 for level 5); nothing in this definition is unbuilt. The level 5 as-built note follows.
+
+**Level 5 as built (2026-11-17), departures from the definition below:** school is now 3–5. Each ribbon runs along the map path between tiles (three side by side) and, on a tile, enters at the bottom and leaves at the top of its way's half, leaving the way's own picture visible in between, rather than tracing the way's curve; two trails sharing a way sit side by side. The badge replays the call at any time except while the companion is walking (the next call is not due until it arrives). The turned-back mark sits in the middle of that trail's lane on the tile. Flags are 140×120 with 50 between, in a row along the bottom, and level 5's map uses its own margins (badge top-right, flags bottom) in `mapLayout`. The cream dotted path is not drawn at level 5 (the ribbons are the path). Tile pulses during a call are timed (about 0.9 s apart), not tied to the speech. On arrival the existing `walk.arrive` line plays before the call home. Show a hint is the same single hint as the glow. `makePicnic`, `buildMap` and `homeAgain` were extracted in `index.ts` and are shared by levels 4 and 5.
 
 **Level 4 as built (2026-11-17), deviations from the definition below:** bands are pre-K 2–4 as defined, but school is 3–4 for now and widens to 3–5 when level 5 is built; map tiles are 260×200 (the minimum is 170×170), each showing both ways side by side with the walked one on a lit half with footprint dots; after a wrong tile the companion takes one step along the path toward the next landmark and stays there (not cumulative); at the glow after two misses it says only the “We get to … first.” line, not the “Not yet” line as well; the first round is not fixed, since route and shape come from the round's seed as at levels 1–3; the skill `map-reading` was added to the module now; voice lines `walk.home-start`, `walk.back`, `walk.not-yet`, `walk.first`, `walk.home` and `LANDMARK_NAMES` were added (level 5's lines are not). Incidental fixes: Show a hint threw a TypeError at level 1 (where nobody calls the way) and now repeats the walk's invitation; the friend critter is untracked in `destroy()` at every level.
 
@@ -157,10 +159,10 @@ The whole round is on the map; there are no stop screens.
 
 ### Build slices and check tiers for 4–5
 
-One level per session, in this order; each is the new-interaction tier. AW4 is built (2026-11-17); AW5 is next.
+One level per session, in this order; each is the new-interaction tier. AW4 and AW5 are built (2026-11-17).
 
 1. **AW4, level 4 (built)** (the map view, `taken`, `stepHome`, the three shapes): typecheck and unit tests; the existing `adventurewalk` browser case extended with one level-4 play (a wrong tile, a requested hint, home); one portrait screenshot of the `hook` map; `fingerdemo` at level 4; `npm run build` only if a shared file changes.
-2. **AW5, level 5** (trails, flags, look and go, the call home), after AW4: typecheck and unit tests; one level-5 play in the same browser case (a look, a wrong trail there, a replay, the right trail, the way home); one portrait screenshot with all three ribbons and flags; `fingerdemo` at level 5; build as above.
+2. **AW5, level 5 (built)** (trails, flags, look and go, the call home), after AW4: typecheck and unit tests; one level-5 play in the same browser case (a look, a wrong trail there, a replay, the right trail, the way home); one portrait screenshot with all three ribbons and flags; `fingerdemo` at level 5; build as above.
 
 Two questions a phone playtest can answer once these are built, which no automated check does: whether three ribbons on a phone-sized tile can be told apart, and whether "tap again to go" is found without the card.
 
@@ -172,7 +174,7 @@ Device and person checks stay open: whether a toddler reads the two dotted paths
 
 ## What comes next
 
-**AW3, levels 4–5, is defined [above](#levels-45-aw3)** (2026-11-17): AW4 (level 4, the way home) is built; **AW5 (level 5, which trail?) is next.** Nothing is defined past level 5: a longer map, a fourth trail or a trail she draws herself for the friend to follow would each need their own definition. Movement invitations, if ever, follow decision 4.
+**AW3, levels 4–5, is defined [above](#levels-45-aw3)** (2026-11-17): AW4 (level 4, the way home) is built; AW5 (level 5, which trail?) is built too. Nothing is defined past level 5: a longer map, a fourth trail or a trail she draws herself for the friend to follow would each need their own definition. Movement invitations, if ever, follow decision 4.
 
 ## Open decisions
 

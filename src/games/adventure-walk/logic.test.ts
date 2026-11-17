@@ -598,6 +598,11 @@ describe('Adventure Walk: which trail? (level 5)', () => {
     expect(tapFlag(s, 2).kind).toBe('look');
     const r = tapFlag(s, 2);
     expect(r).toMatchObject({ kind: 'other', stop: 1, before: [0], glow: false });
+    // The turned-back flag still looks; a second tap repeats the reason, free.
+    expect(s.looking).toBe(null);
+    expect(tapFlag(s, 2).kind).toBe('look');
+    expect(tapFlag(s, 2)).toMatchObject({ kind: 'reason', stop: 1 });
+    expect(s.misses).toBe(1);
     if (r.kind === 'other')
       expect([r.took.phrase, r.asked.phrase]).toEqual(['around the reeds', 'through the reeds']);
     tapFlag(s, 0);
