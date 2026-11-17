@@ -311,6 +311,83 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Which stack will tip first? Where would you aim, and why?',
     },
   },
+  // Batch 5 (2026-11-17): eight more in bands already served, each naming toys or books from the kit.
+  'pile-match': {
+    all: {
+      notice: 'Does {name} gather the toys in threes, in handfuls or one at a time?',
+      say: 'One, two, three. That is a set! Here is another.',
+    },
+    school: {
+      notice: 'Does {name} say how many sets there will be before gathering the toys?',
+      say: 'How many sets of three will there be? Will any be left over?',
+    },
+  },
+  'bolt-boards': {
+    all: {
+      notice: 'Does {name} take the top book, pull one from the middle or stack the books up again?',
+      say: 'Top one off. Next one. All the way down!',
+    },
+    school: {
+      notice: 'Does {name} say which book has to come off before the one below?',
+      say: 'Which one has to come off first? What is it holding down?',
+    },
+  },
+  'robot-path': {
+    all: {
+      notice: 'Does {name} move the toy one step at a time, or run it straight to the end?',
+      say: 'One step forward. Turn. One more step. There!',
+    },
+    school: {
+      notice: 'Does {name} give all the steps first, then check where the toy ends up?',
+      say: 'What steps would get it there? Which part could we do again?',
+    },
+  },
+  'secret-code': {
+    all: {
+      notice: 'Does {name} guess all three at once, or change one toy at a time?',
+      say: 'Bear is in the right spot. Try the other two.',
+    },
+    school: {
+      notice: 'Does {name} keep the toys already in the right spot when guessing again?',
+      say: 'What did that clue tell you? Which toy will you move?',
+    },
+  },
+  'garden-rows': {
+    all: {
+      notice: 'Does {name} look along the row, down the column or try each toy in the gap?',
+      say: 'This row has a car and a bear. Which one is missing?',
+    },
+    school: {
+      notice: 'Does {name} check both the row and the column before putting a toy back?',
+      say: 'How do you know it goes there? Could any other toy fit?',
+    },
+  },
+  'penguin-slide': {
+    all: {
+      notice: 'Does {name} push the car gently, push it hard or go and see what stopped it?',
+      say: 'Slide! It stopped at the wall. Again?',
+    },
+    school: {
+      notice: 'Does {name} point to where the car will stop before letting go?',
+      say: 'Where will it stop this time? What would stop it sooner?',
+    },
+  },
+  'sense-detective': {
+    all: {
+      notice: 'Does {name} shake the bag, feel it from outside or ask for a peek?',
+      say: 'Shake, shake. What could it be? Now take a peek.',
+    },
+    school: {
+      notice: 'Does {name} change the guess after the peek, or keep the first one?',
+      say: 'What did the shake tell you? What did the peek add?',
+    },
+  },
+  'ready-for-adventure': {
+    all: {
+      notice: 'Does {name} choose a toy, give it a hat or march it along?',
+      say: 'Teddy is coming to the parade. Hat on. Off we go!',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;
