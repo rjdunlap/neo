@@ -1,6 +1,6 @@
 # Timeline Trail, levels 1–4 (definition)
 
-**Built:** levels 1–4 (levels 1–3 PR #1013; level 4 PR #1709); levels 5–7 are defined in [their own packet](timeline-trail-5-7.md#build-slices-and-check-tiers) (2026-11-16); to build level 5, read that packet’s “Build slices and check tiers”.
+**Built:** levels 1–4 (levels 1–3 PR #1013; level 4 PR #1709); levels 5–7 are defined in [their own packet](timeline-trail-5-7.md#build-slices-and-check-tiers) (2026-11-16); level 5 is built (PR #1721); to build level 6, read that packet’s “Build slices and check tiers”.
 
 Defined 2026-10-23 as the first packet of the [time-and-change study's](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail) **Timeline Trail** follow-up, from the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) (slice 1 of its [build slices](../deep-dives/subjects/time-change.md#build-slices-in-order)). Written docs only; the game is built (see the Built line). Levels 5–8 (continuity, the two-gap card, pointing at proof, Island Archive) and real-object content stay in the study.
 

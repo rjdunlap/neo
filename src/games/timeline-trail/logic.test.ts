@@ -3,9 +3,18 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
 import {
+  asking,
   bare,
   CARD,
+  chipReason,
+  CHIPS,
   CLUE_PLACES,
+  detail,
+  LATER_PLACES,
+  LEVELS,
+  picturesWith,
+  RIBBON_H,
+  stillHere,
   compareFaces,
   faceOf,
   fittingGaps,
@@ -36,7 +45,8 @@ const VIEWS = {
 
 describe('the places', () => {
   it('have four stages each, every neighbour differing in a named element, with no number, date or time word', () => {
-    for (const id of PLACE_IDS) {
+    expect(PLACE_IDS).toEqual(['shore', 'tree', 'nest']);
+    for (const id of [...PLACE_IDS, ...LATER_PLACES]) {
       const p = PLACES[id];
       expect(p.stages.length).toBe(4);
       p.stages.forEach((s, i) => {
@@ -48,7 +58,38 @@ describe('the places', () => {
           expect(text).not.toMatch(/\b(year|month|week|day|hour|minute|ago|century)s?\b/i);
         }
         expect(SCRIPT[`trail.card.${s.id}` as keyof typeof SCRIPT]).toBeDefined();
+        // What changed is something the picture is listed as showing.
+        expect(
+          s.shows.some((e) => s.changes.includes(e)),
+          s.id,
+        ).toBe(true);
+        expect(new Set(s.shows).size).toBe(s.shows.length);
       });
+    }
+  });
+
+  it('list what is still here: the element in every stage, one for each later place and the rock on the shore', () => {
+    expect(stillHere('green')).toEqual(['big rock']);
+    expect(stillHere('oven')).toEqual(['stone oven']);
+    expect(stillHere('shore')).toEqual(['rock']);
+    expect(stillHere('tree')).toEqual([]);
+    for (const id of LATER_PLACES)
+      for (const e of stillHere(id)) expect(picturesWith(id, e)).toBe(PLACES[id].stages.length);
+  });
+
+  it('make the later places grander in the middle than at the end, and tell the plainer stage by the thing that grows', () => {
+    expect(LATER_PLACES.map((id) => PLACES[id].stages.map((_s, i) => detail(id, i)))).toEqual([
+      [2, 4, 3, 4],
+      [2, 5, 3, 4],
+    ]);
+    for (const id of LATER_PLACES) {
+      expect(detail(id, 1)).toBeGreaterThan(detail(id, 2));
+      expect(detail(id, 1)).toBeGreaterThanOrEqual(detail(id, 3));
+      // A reason about stage 2 never names the bench or the table: those could be built at any time.
+      expect(PLACES[id].stages[2].changes).toMatch(/taller tree|longer vine/);
+      // The grand thing is in one picture only, and no chip is the growing thing.
+      expect(picturesWith(id, CHIPS[id].grand)).toBe(1);
+      for (const e of [CHIPS[id].grand, ...CHIPS[id].others]) expect(e).not.toMatch(/tree|sapling|vine/);
     }
   });
 
@@ -128,7 +169,8 @@ describe('rounds', () => {
 
   it('clamps levels to the plans', () => {
     expect(planFor(0).level).toBe(1);
-    expect(planFor(9).level).toBe(4);
+    expect(planFor(9).level).toBe(5);
+    expect(planFor(5).name).toBe('Still here');
     expect(planFor(4).name).toBe('A clue inside');
     expect(planFor(2).name).toBe('Hang it between');
   });
@@ -326,6 +368,118 @@ describe('level 4, a clue inside', () => {
   });
 });
 
+describe('level 5, still here', () => {
+  it('takes the green and the oven in turn, the first stage hung and three loose, and is school only', () => {
+    expect(LEVELS.school).toEqual({ min: 2, max: 5 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 4 });
+    const places = Array.from({ length: 8 }, (_, i) => roundFor(5, new Rng(i)).place);
+    for (let i = 0; i < 8; i += 2) expect(new Set(places.slice(i, i + 2))).toEqual(new Set(LATER_PLACES));
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(5, new Rng(seed));
+      expect(LATER_PLACES).toContain(r.place);
+      expect(r.cards).toEqual([0, 1, 2, 3]);
+      expect(r.hung).toEqual([0]);
+      expect([...r.loose].sort()).toEqual([1, 2, 3]);
+    }
+    expect(roundFor(5, new Rng(3), 'oven').place).toBe('oven');
+    // A place from the three-place bag is not a level-5 place.
+    expect(LATER_PLACES).toContain(roundFor(5, new Rng(3), 'shore').place);
+  });
+
+  it('offers one still-here chip and two that are in some pictures but not all, one of them the grand thing', () => {
+    const thirds = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(5, new Rng(seed));
+      const n = PLACES[r.place].stages.length;
+      expect(r.chips!.length).toBe(3);
+      expect(new Set(r.chips).size).toBe(3);
+      expect(r.chips!.filter((e) => picturesWith(r.place, e) === n)).toEqual([r.still]);
+      for (const e of r.chips!) {
+        expect(picturesWith(r.place, e)).toBeGreaterThanOrEqual(1);
+        if (e !== r.still) {
+          expect(picturesWith(r.place, e)).toBeLessThan(n);
+          expect(chipReason(r.place, e)).toMatch(/only in one picture|not in every picture/);
+        }
+      }
+      const place = r.place as (typeof LATER_PLACES)[number];
+      expect(r.chips).toContain(CHIPS[place].grand);
+      thirds.add(r.chips!.find((e) => e !== r.still && e !== CHIPS[place].grand)!);
+    }
+    // Every plainer thing turns up as the third chip.
+    expect(thirds).toEqual(new Set(LATER_PLACES.flatMap((id) => CHIPS[id].others)));
+    expect(chipReason('green', 'merry-go-round')).toBe('The merry-go-round is only in one picture.');
+    expect(chipReason('green', 'bench')).toBe('The bench is not in every picture.');
+  });
+
+  it('defeats "more in the picture means later": that guess misplaces a card in every round, whatever the order', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(5, new Rng(seed));
+      for (const order of orders(r.loose)) {
+        for (const tiesLater of [true, false]) {
+          let line = [...r.hung];
+          let wrong = 0;
+          for (const card of order) {
+            const d = detail(r.place, card);
+            // The progress-only guess: after every hung picture that shows less (or as much).
+            const guess = line.filter((m) => {
+              const dm = detail(r.place, m);
+              return dm < d || (tiesLater && dm === d);
+            }).length;
+            const [valid] = validGaps(r, line, card);
+            if (guess !== valid) wrong++;
+            line = (place(r, line, card, valid) as { line: number[] }).line;
+          }
+          expect(wrong, `seed ${seed} order ${order}`).toBeGreaterThanOrEqual(1);
+          // And any legal build order fills the line, which then asks its question.
+          expect(line).toEqual([0, 1, 2, 3]);
+          expect(asking(r, line)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('gives a wrong gap a true reason, never one that says the newer picture has more', () => {
+    for (const id of LATER_PLACES) {
+      const r = roundFor(5, new Rng(1), id);
+      // The plainer stage 2 put before the grand stage 1: the growing thing is the reason.
+      const early = place(r, [0, 1], 2, 1);
+      expect(early.ok).toBe(false);
+      if (!early.ok)
+        expect(early.reason).toMatch(/already has the (taller tree|longer vine), so it comes after/);
+      // The grand stage 1 put after stage 2.
+      const late = place(r, [0, 2], 1, 2);
+      expect(late.ok).toBe(false);
+      if (!late.ok) expect(late.reason).toMatch(/has no (taller tree|longer vine) yet, so it comes before/);
+    }
+  });
+
+  it('counts the chips as one more card: a miss per distinct wrong chip, the same again nothing, a glow after two', () => {
+    const t = new Tally();
+    expect(t.missed(Tally.CHIP_SET, 0)).toEqual({ counted: true, lit: false });
+    expect(t.missed(Tally.CHIP_SET, 0)).toEqual({ counted: false, lit: false });
+    expect(t.missed(Tally.CHIP_SET, 2)).toEqual({ counted: true, lit: true });
+    expect(t.glowing).toBe(Tally.CHIP_SET);
+    // Show a hint after the glow adds nothing.
+    expect(t.help(Tally.CHIP_SET)).toBe(false);
+    expect([t.misses, t.hints]).toEqual([2, 1]);
+    t.hung(Tally.CHIP_SET);
+    expect(t.glowing).toBeNull();
+    // Show a hint first is the one hint; the glow does not count again.
+    const u = new Tally();
+    expect(u.help(Tally.CHIP_SET)).toBe(true);
+    u.missed(Tally.CHIP_SET, 1);
+    u.missed(Tally.CHIP_SET, 2);
+    expect([u.misses, u.hints]).toEqual([2, 1]);
+  });
+
+  it('has its instruction, cards and still-here lines in the script', () => {
+    for (const id of ['instruct.5', 'still-ask', 'still-yes', 'still-no', 'still-glow', 'still-help'])
+      expect(SCRIPT[`trail.${id}` as keyof typeof SCRIPT], id).toBeDefined();
+    expect(SCRIPT['trail.still-yes'][0]).toContain('{thing}');
+    expect(SCRIPT['trail.still-no'][0]).toContain('{reason}');
+  });
+});
+
 describe('misses and hints', () => {
   it('count one miss per distinct wrong drop and at most one hint per card, from the glow or Show a hint', () => {
     const t = new Tally();
@@ -361,7 +515,7 @@ describe('layout', () => {
   const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
 
   it('keeps full-size posts, gaps, cards and tray apart and on screen on the iPad, in every line state of every level', () => {
-    for (const level of [1, 2, 3, 4]) {
+    for (const level of [1, 2, 3, 4, 5]) {
       for (let seed = 0; seed < 20; seed++) {
         const r = roundFor(level, new Rng(seed));
         let line: number[] = [...r.hung];
@@ -383,13 +537,23 @@ describe('layout', () => {
             const all: Rect[] =
               level === 1
                 ? [...l.tray, ...l.gaps]
-                : [...l.cards, ...l.gaps, ...l.tray, l.posts.left, l.posts.right];
+                : [...l.cards, ...l.gaps, ...l.tray, ...l.chips, l.posts.left, l.posts.right];
+            if (l.ribbon) all.push(l.ribbon);
+            // Level 5's full line swaps its gaps for the ribbon and three chips, all full size.
+            expect(!!l.ribbon, where).toBe(asking(r, line));
+            expect(l.chips.length, where).toBe(asking(r, line) ? 3 : 0);
+            for (const c of l.chips) expect([c.w, c.h], where).toEqual([CARD, CARD]);
+            if (l.ribbon) {
+              expect(l.ribbon.h, where).toBe(RIBBON_H);
+              expect(l.ribbon.w, where).toBeGreaterThanOrEqual(4 * CARD);
+              expect(l.rows.length, where).toBe(1);
+            }
             for (const a of all) expect(inside(a, v.w, v.h), where).toBe(true);
             for (const a of all) for (const b of all) if (a !== b) expect(overlaps(a, b), where).toBe(false);
             // The pet's corner (bottom-left 150 square) and the home button (top-left 120 square) stay clear of touch targets.
             const pet = { x: 0, y: v.h - 150, w: 150, h: 150 };
             const home = { x: 0, y: 0, w: 120, h: 120 };
-            for (const a of [...l.gaps, ...l.tray]) {
+            for (const a of [...l.gaps, ...l.tray, ...l.chips]) {
               expect(overlaps(a, pet), where).toBe(false);
               expect(overlaps(a, home), where).toBe(false);
             }
@@ -414,6 +578,21 @@ describe('layout', () => {
     expect(lineLayout(r3, [0, 1, 2], 1, VIEWS.landscape)!.rows.length).toBe(2);
     const r2: Round = { level: 2, place: 'tree', cards: [0, 1, 3], hung: [0, 3], loose: [1] };
     expect(lineLayout(r2, [0, 3], 1, VIEWS.landscape)!.rows.length).toBe(1);
+  });
+
+  it("lays out level 5's ribbon and chips at full size on a phone held sideways, notch or not", () => {
+    const r = roundFor(5, new Rng(4));
+    for (const v of [VIEWS.phone, VIEWS.notch]) {
+      const l = lineLayout(r, [0, 1, 2, 3], 0, v)!;
+      expect(l).not.toBeNull();
+      expect(l.ribbon!.h).toBe(RIBBON_H);
+      expect(l.chips.map((c) => [c.w, c.h])).toEqual(Array(3).fill([CARD, CARD]));
+      const all = [...l.cards, ...l.chips, l.ribbon!];
+      for (const a of all) {
+        expect(inside(a, v.w, v.h)).toBe(true);
+        for (const b of all) if (a !== b) expect(overlaps(a, b)).toBe(false);
+      }
+    }
   });
 
   it('returns null rather than shrink on a phone', () => {

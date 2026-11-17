@@ -2,8 +2,9 @@
  * Timeline Trail: hang pictures of one island place on a clothesline between a long-ago post and a now post (level 1
  * taps or drags the older of two to the left post, level 2 drags a third picture into one of three gaps, level 3 grows a
  * line of four one card at a time, level 4 hangs a second place's pictures by the little clue picture in each card's
- * corner), then watch the finished line play as a flipbook of the place growing.
- * Rules: ./logic.ts; definition: docs/definitions/timeline-trail.md.
+ * corner, level 5 grows a line of four and then pins the one thing that is in every picture to the "still here"
+ * ribbon), then watch the finished line play as a flipbook of the place growing.
+ * Rules: ./logic.ts; definitions: docs/definitions/timeline-trail.md and timeline-trail-5-7.md.
  */
 import { Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { swatch, type ColorName } from '../../art/palette';
@@ -18,11 +19,25 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { card as cardArt, frameArt, gap as gapArt, iconArt, post as postArt, rope, stickerArt } from './art';
+import {
+  card as cardArt,
+  chip as chipArt,
+  frameArt,
+  gap as gapArt,
+  iconArt,
+  post as postArt,
+  ribbon as ribbonArt,
+  rope,
+  SPARKLE_AT,
+  sparkle,
+  stickerArt,
+} from './art';
 import {
   LEVELS,
+  asking,
   CARD,
   centre,
+  chipReason,
   faceOf,
   lineLayout,
   nextCard,
@@ -34,6 +49,7 @@ import {
   roundFor,
   Tally,
   validGaps,
+  type LaterPlace,
   type LineLayout,
   type Pt,
   type Round,
@@ -50,6 +66,15 @@ interface CardNode {
   handle: DragHandle;
   hung: boolean;
 }
+
+interface ChipNode {
+  element: string;
+  node: Container;
+  handle: DragHandle;
+}
+
+/** A chip let go this close to the ribbon's edge still pins (the chip rides above the finger). */
+const RIBBON_REACH = 40;
 
 class TimelineTrail implements Game {
   readonly round: Round;
@@ -72,6 +97,11 @@ class TimelineTrail implements Game {
   cards: CardNode[] = [];
   gapNodes: Container[] = [];
   frame: Container | null = null;
+  /** Level 5: the three chips while the question is open, and whether the right one is pinned to the ribbon. */
+  chipNodes: ChipNode[] = [];
+  pinned = false;
+  private ribbonNode: Container | null = null;
+  private nearRibbon = false;
   private nearGap: number | null = null;
   private dragging: CardNode | null = null;
   /** How far the finger itself has moved since it touched the card in hand (the card rides 40 above it). */
@@ -102,6 +132,11 @@ class TimelineTrail implements Game {
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
+  /** A card or a chip is being carried: a rebuild waits until it is let go, so the thing in hand is never destroyed. */
+  private get inHand() {
+    return !!this.dragging || this.chipNodes.some((c) => c.handle.dragging);
+  }
+
   private get level() {
     return this.round.level;
   }
@@ -125,8 +160,9 @@ class TimelineTrail implements Game {
 
   destroy() {
     this.alive = false;
-    for (const c of this.cards) c.handle.destroy();
+    for (const c of [...this.cards, ...this.chipNodes]) c.handle.destroy();
     this.cards = [];
+    this.chipNodes = [];
   }
 
   resize(v: View) {
@@ -142,7 +178,7 @@ class TimelineTrail implements Game {
       }
       return;
     }
-    if (this.dragging || this.busy || this.finished) {
+    if (this.inHand || this.busy || this.finished) {
       this.relayout = true;
       return;
     }
@@ -154,8 +190,11 @@ class TimelineTrail implements Game {
   /** The whole board from the model: posts, rope, gaps, hung cards and the tray. */
   private build() {
     this.relayout = false;
-    for (const c of this.cards) c.handle.destroy();
+    for (const c of [...this.cards, ...this.chipNodes]) c.handle.destroy();
     this.cards = [];
+    this.chipNodes = [];
+    this.ribbonNode = null;
+    this.nearRibbon = false;
     this.gapNodes = [];
     this.frame = null;
     this.nearGap = null;
@@ -248,8 +287,96 @@ class TimelineTrail implements Game {
       });
       this.cards.push(c);
     });
+    if (l.ribbon) this.buildRibbon(l);
     this.board.addChild(this.glow);
     this.redrawGaps();
+  }
+
+  /** Level 5's question: the ribbon under the full line, and either the three chips or the pinned one. */
+  private buildRibbon(l: LineLayout) {
+    const r = l.ribbon!;
+    const ribbon = new Container();
+    ribbon.eventMode = 'none';
+    ribbon.position.copyFrom(centre(r));
+    this.board.addChild(ribbon);
+    this.ribbonNode = ribbon;
+    this.redrawRibbon();
+    if (this.pinned) return;
+    (this.round.chips ?? []).forEach((element, i) => {
+      const at = l.chips[i];
+      const node = new Container();
+      node.addChild(chipArt(element, CARD));
+      node.hitArea = new Rectangle(-CARD / 2 - 6, -CARD / 2 - 6, CARD + 12, CARD + 12);
+      node.position.copyFrom(centre(at));
+      this.board.addChild(node);
+      const c: ChipNode = { element, node, handle: null as unknown as DragHandle };
+      c.handle = draggable(node, this.ctx.tw, {
+        onPick: () => {
+          if (this.finished || this.busy) c.handle.enabled = false;
+          else sfx.pop(6);
+        },
+        onMove: (x, y) => {
+          const near = this.onRibbon(x, y);
+          if (near !== this.nearRibbon) {
+            this.nearRibbon = near;
+            this.redrawRibbon();
+          }
+        },
+        onDrop: (x, y) => this.droppedChip(c, x, y),
+      });
+      this.chipNodes.push(c);
+    });
+  }
+
+  private redrawRibbon() {
+    const r = this.layoutNow?.ribbon;
+    const node = this.ribbonNode;
+    if (!r || !node) return;
+    for (const c of node.removeChildren()) c.destroy({ children: true });
+    node.addChild(ribbonArt(r.w, r.h, this.nearRibbon));
+    if (this.pinned && this.round.still) {
+      const pin = chipArt(this.round.still, CARD);
+      pin.scale.set((r.h - 12) / CARD);
+      node.addChild(pin);
+    }
+  }
+
+  private onRibbon(x: number, y: number): boolean {
+    const r = this.layoutNow?.ribbon;
+    if (!r) return false;
+    const k = RIBBON_REACH;
+    return x >= r.x - k && x <= r.x + r.w + k && y >= r.y - k && y <= r.y + r.h + k;
+  }
+
+  /** A chip tapped, or let go on the ribbon, answers; let go anywhere else it floats back, nothing said or counted. */
+  private droppedChip(c: ChipNode, x: number, y: number): boolean {
+    if (this.nearRibbon) {
+      this.nearRibbon = false;
+      this.redrawRibbon();
+    }
+    if (this.finished || this.busy || this.pinned) return false;
+    if (!c.handle.tapped && !this.onRibbon(x, y)) {
+      if (this.relayout) {
+        this.build();
+        return true;
+      }
+      return false;
+    }
+    const round = this.round;
+    if (c.element !== round.still) {
+      const { lit } = this.tally.missed(Tally.CHIP_SET, round.chips!.indexOf(c.element));
+      sfx.boing();
+      void this.ctx.say('trail.still-no', { reason: chipReason(round.place, c.element) });
+      if (lit) void this.ctx.say('trail.still-glow');
+      return false;
+    }
+    this.tally.hung(Tally.CHIP_SET);
+    this.pinned = true;
+    sfx.bell(9, 0.3);
+    void this.ctx.say('trail.still-yes', { thing: c.element });
+    this.build();
+    void this.flipbook();
+    return true;
   }
 
   /** A picture card; the nest's now card carries the companion itself, and level 4's cards their little clue picture. */
@@ -263,7 +390,7 @@ class TimelineTrail implements Game {
   /** Where a card's valid gap glows: its gap index, or null. */
   private glowGap(): number | null {
     const stage = this.tally.glowing;
-    if (stage === null || this.line.includes(stage)) return null;
+    if (stage === null || stage < 0 || this.line.includes(stage)) return null;
     return validGaps(this.round, this.line, stage)[0] ?? null;
   }
 
@@ -393,7 +520,10 @@ class TimelineTrail implements Game {
       this.loose = [];
     }
     this.build();
-    if (!this.loose.length) void this.flipbook();
+    if (this.loose.length) return;
+    // Level 5 asks what is still here before the flipbook; the question becomes the instruction the pet repeats.
+    if (asking(this.round, this.line)) void this.ctx.instruct('trail.still-ask');
+    else void this.flipbook();
   }
 
   // ——— The flipbook ———
@@ -425,6 +555,13 @@ class TimelineTrail implements Game {
         page = null;
       }
       page = this.makeCard(stage, inner, false);
+      if (this.pinned) {
+        // Level 5: what is still here gets a soft sparkle in every picture.
+        const at = SPARKLE_AT[this.round.place as LaterPlace];
+        const spark = sparkle(inner * 0.07);
+        spark.position.set((at.x * inner) / 100, (at.y * inner) / 100);
+        page.addChild(spark);
+      }
       page.scale.x = 0.05;
       frame.addChild(page);
       sfx.marimba(steps[Math.min(i, steps.length - 1)], 0.4);
@@ -452,6 +589,12 @@ class TimelineTrail implements Game {
   /** The pause sheet's hint: the gap for the card in hand (or the oldest loose one) glows, once per card. */
   askForHint() {
     if (this.finished || this.busy) return;
+    if (asking(this.round, this.line)) {
+      // The right chip glows, once for the chip set.
+      this.tally.help(Tally.CHIP_SET);
+      void this.ctx.say('trail.still-help');
+      return;
+    }
     const stage = this.dragging?.stage ?? nextCard(this.round, this.loose);
     if (stage === null) return;
     this.tally.help(stage);
@@ -464,17 +607,23 @@ class TimelineTrail implements Game {
     if (this.finished || this.busy) return;
     this.line = [...this.round.hung];
     this.loose = [...this.round.loose];
+    this.pinned = false;
     this.build();
   }
 
   update(dt: number) {
     this.clock += dt;
-    if (this.relayout && !this.dragging && !this.busy && !this.finished) this.build();
+    if (this.relayout && !this.inHand && !this.busy && !this.finished) this.build();
     this.glow.clear();
     const l = this.layoutNow;
+    if (!l || this.finished || this.busy) return;
     const lit = this.glowGap();
-    if (lit === null || !l || this.finished || this.busy) return;
-    const r = l.gaps[lit];
+    const chip =
+      this.tally.glowing === Tally.CHIP_SET && !this.pinned
+        ? l.chips[this.round.chips?.indexOf(this.round.still ?? '') ?? -1]
+        : undefined;
+    const r = chip ?? (lit === null ? undefined : l.gaps[lit]);
+    if (!r) return;
     const k = 1 + 0.05 * Math.sin(this.clock * 5);
     const p = centre(r);
     this.glow
@@ -482,9 +631,18 @@ class TimelineTrail implements Game {
       .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
   }
 
-  /** The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap. */
+  /**
+   * The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap, and at
+   * level 5 it then drags the still-here chip to the ribbon.
+   */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
+    if (this.layoutNow.ribbon) {
+      const c = this.chipNodes.find((k) => k.element === this.round.still && !k.handle.dragging);
+      if (!c) return null;
+      const to = centre(this.layoutNow.ribbon);
+      return { drag: { on: c.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.4 };
+    }
     const stage = nextCard(this.round, this.loose);
     if (stage === null) return null;
     const c = this.cards.find((k) => k.stage === stage && !k.hung && !k.handle.dragging);

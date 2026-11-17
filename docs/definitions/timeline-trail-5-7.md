@@ -90,15 +90,25 @@ A round takes the next of `tree`, `nest`, `green` and `oven` (its own bag; never
 
 Each is one level, one session, in order:
 
-1. **T4a, level 5 Still here** (a new interaction, the ribbon: new-interaction tier): typecheck, rule tests, one filtered scripted play at level 5 (one wrong gap, one wrong chip, a hint), one portrait screenshot with the ribbon and chips, `fingerdemo` at 5, `npm run build` (voice and how-to change).
+1. **T4a, level 5 Still here** (**built 2026-11-16**, [PR #1721](https://github.com/rjdunlap/neo/pull/1721); see [As built](#as-built-t4a)) (a new interaction, the ribbon: new-interaction tier): typecheck, rule tests, one filtered scripted play at level 5 (one wrong gap, one wrong chip, a hint), one portrait screenshot with the ribbon and chips, `fingerdemo` at 5, `npm run build` (voice and how-to change).
 2. **T4b, level 6 We can't tell**, after T4a (the same drag; new-levels tier, but `place()` changes for every level): typecheck, all the game's rule tests, one browser play at level 6 hanging the misty card in its later gap and one wrong gap, a regression play at level 4, `fingerdemo` at 6, `npm run build`.
 3. **T5, level 7 Show me why**, after T4b (tapping a spot: new-interaction tier): typecheck, rule tests, one scripted play at 7 (one wrong spot, one off-spot tap, the hint), one portrait screenshot of the frame and its spots, `fingerdemo` at 7, `npm run build`.
 
 Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Not established: whether a school-age player reads mist as "can't tell" rather than "broken picture"; whether the merry-go-round makes her doubt "newer is fancier"; whether the proof spots read on a phone.
 
+## As built (T4a)
+
+Level 5 landed with these deliberate differences from the text above (the definition is not rewritten):
+
+1. The ribbon is a full 100-unit drop target under a one-row, gapless line of four, not a thin strip under a two-row line, because landscape left only about 47 units for it. `lineLayout` returns `ribbon` and `chips` and still returns null rather than shrink.
+2. The growing thing (tree, vine) is never a chip, since she could fairly call it still here; the third chip is drawn from the plainer things.
+3. Element names are spoken as they are listed ("big rock", "stone oven", "striped awning").
+4. Two voice lines beyond the list: `trail.still-glow` and `trail.still-help`.
+5. `LEVELS.school` is 2–5 until T4b and T5 add levels 6 and 7; pre-K stays 1–4.
+
 ## Open decisions
 
-Each has a default the builds use; none blocks T4a.
+Each has a default the builds use; none blocked T4a.
 
 1. **Level 5's ribbon action.** Default: tap or drag a chip, with a wrong chip a miss. Alternative: all three chips free to try, as exploration, if play shows the question reads as a guess.
 2. **Level 6's two gaps.** Default: both accepted, neither a miss, and the flipbook plays her order. Alternative: the pet asks her afterwards "could it go anywhere else?" and she taps the other gap (free).

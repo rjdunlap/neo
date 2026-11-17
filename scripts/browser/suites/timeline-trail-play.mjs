@@ -148,8 +148,94 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await dragTo(last4, await validGap(last4));
     await finished('timeline-trail');
     assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
+
+    // Level 5: a later place grows a line of four (one wrong gap, one miss); the full line swaps its gaps for the ribbon
+    // and three chips; a chip let go away from the ribbon is free; the grand chip is a miss, the same again nothing;
+    // Show a hint lights the still-here chip (one hint); a portrait look; the still-here chip dragged to the ribbon finishes.
+    await launch('timeline-trail', 5);
+    await ready();
+    s = await state();
+    assert.equal(s.line.length, 1, 'level 5 opens with the first card hung');
+    assert.equal(s.loose.length, 3, 'and three loose cards');
+    const round5 = await page.evaluate(() => {
+      const r = neo.scene.game.round;
+      return { place: r.place, chips: r.chips, still: r.still };
+    });
+    assert.ok(['green', 'oven'].includes(round5.place), 'level 5 shows a later place');
+    const first5 = Math.min(...s.loose);
+    await dragTo(first5, 0);
+    assert.deepEqual(await tally(), [1, 0], 'a wrong gap counts one miss');
+    for (let i = 0; i < 3; i++) {
+      s = await state();
+      const stage = Math.min(...s.loose);
+      await dragTo(stage, await validGap(stage));
+    }
+    await page.waitForFunction(
+      () => neo.scene.game.layoutNow?.ribbon && neo.scene.game.chipNodes.length === 3,
+    );
+    await page.waitForTimeout(400);
+    const asked = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return { gaps: g.layoutNow.gaps.length, rows: g.layoutNow.rows.length, busy: g.busy, pinned: g.pinned };
+    });
+    assert.deepEqual(
+      asked,
+      { gaps: 0, rows: 1, busy: false, pinned: false },
+      'the full line shows the ribbon and waits',
+    );
+    const chipTo = async (element, where) => {
+      await page.evaluate(
+        async ({ element, where }) => {
+          const g = neo.scene.game;
+          const c = g.chipNodes.find((k) => k.element === element);
+          const at = g.ribbonNode.getGlobalPosition();
+          const to = where === 'ribbon' ? { x: at.x, y: at.y + 40 } : { x: at.x, y: 60 };
+          await kit.dragTo(c.node, to, 14);
+        },
+        { element, where },
+      );
+      await page.waitForTimeout(700);
+    };
+    const tapChip = async (element) => {
+      await page.evaluate((element) => {
+        kit.tapOn(neo.scene.game.chipNodes.find((k) => k.element === element).node);
+      }, element);
+      await page.waitForTimeout(500);
+    };
+    const grand5 = round5.place === 'green' ? 'merry-go-round' : 'striped awning';
+    assert.ok(round5.chips.includes(grand5), 'the grand thing is one of the chips');
+    await chipTo(grand5, 'away');
+    assert.deepEqual(await tally(), [1, 0], 'a chip let go away from the ribbon counts nothing');
+    await chipTo(grand5, 'ribbon');
+    assert.deepEqual(await tally(), [2, 0], 'the grand chip on the ribbon is a miss');
+    await tapChip(grand5);
+    assert.deepEqual(await tally(), [2, 0], 'the same wrong chip again counts nothing more');
+    assert.equal(await page.evaluate(() => neo.scene.game.pinned), false, 'nothing is pinned yet');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [2, 1], 'Show a hint counts one hint');
+    assert.equal((await state()).glowing, -1, 'and lights the chip set');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.chipNodes.length),
+      3,
+      'the chips are still there in portrait',
+    );
+    await screenshot('timeline-trail-5-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(600);
+    await screenshot('timeline-trail-5-landscape');
+    await chipTo(round5.still, 'ribbon');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.pinned),
+      true,
+      'the still-here chip pins to the ribbon',
+    );
+    await finished('timeline-trail');
+    assert.deepEqual(await score(), [2, 1], 'level 5 saved 2 misses, 1 hint');
     log(
-      "Timeline Trail 2, 3 and 4: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look, passed",
+      "Timeline Trail 2, 3, 4 and 5: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look; level 5 a wrong gap, a free chip drop, the grand chip twice (one miss), Show a hint, the still-here chip pinned, passed",
     );
   }
   return { timelineTrailPlay };
