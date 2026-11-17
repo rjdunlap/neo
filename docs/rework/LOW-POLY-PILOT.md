@@ -44,3 +44,11 @@ Frame rate is not in the table: headless Chrome uses software rendering, so only
 **Limits of the pre-rendered view.** Parts turn in the picture plane only: the head tilt and arm wave read well because the camera faces them, but a head turn, a walk toward the camera or a costume seen from another side each need their own renders. The ball spins as a flat disc rather than rolling. A moving part's shadow on its neighbour is baked at rest.
 
 Verification: `LAB_VIEW=3d` and `LAB_VIEW=2d` with `GAME_URL=http://localhost:4173 node scripts/sprout-preview-check.mjs` (preview running).
+
+## Phone playtest follow-up (2026-11-16)
+
+From the developer's phone: both views hold 60 fps with a 17 ms slowest frame, **Live 3D looks better**, Sprout's eyes are not liked, and Live 3D stopped working twice (how it stopped was not reported). So real-time 3D is fast enough on that phone for a scene this size, and the open questions are its reliability and the character's face.
+
+**Reliability.** The cause is not known; nothing could be reproduced in headless Chrome. One defect was found by reading the code and fixed: leaving the page frees the renderer, so a page brought back by a back swipe was a dead canvas. It now reloads instead. The page also reports what happens next time, on the readout: a count of graphics-context losses (the browser taking the GPU away; both renderers restore themselves), any script error, and a note when the previous visit ended without the page closing normally, which is what a tab killed for memory looks like.
+
+**Eyes.** `sprout-porch.py` now models three styles under the head, each with its own blink pivots, and Live 3D switches between them in place (`?eyes=Bead` opens on one): **Classic** (the original glossy ovals in a cream ring), **Bead** (small round beads set wider and lower) and **Soft** (flat ovals, no ring, one glint). The extra styles add 90 KB to the uncompressed model and stay out of the stills, so the pre-rendered view keeps Classic.
