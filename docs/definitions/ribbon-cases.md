@@ -1,6 +1,6 @@
 # Ribbon Workshop, Ribbon Cases: level 7 (definition)
 
-**Status: ready to build** as one new-interaction slice on the existing game. To build it, read "The model", "The level" and "Screen and controls"; this is the only level this definition adds.
+**Status:** built 2026-11-17 (PR #1756); see [As built](#as-built).
 
 Defined 2026-11-17 as slice **R5** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and [proposed ladder](../deep-dives/subjects/fractions.md#first-games-proposed-ladder-ribbon-workshop) (the study's "8", renumbered to **7** by the [Ribbon Workshop definition](ribbon-workshop.md#levels)). It is one new level of the existing game `ribbon-workshop`, not a new game. Every [open decision](#open-decisions) has a default the build uses. Docs only: no code, voice line or save field exists yet.
 
@@ -184,3 +184,16 @@ Each has a default the build uses. None waits on the developer.
 5. **An untouched Check on tag 2 is a miss.** Default: it is a deliberate Check of two wrong ribbons. Whole Switch's free `same` verdict does not apply, because that statement was true and these totals are not.
 6. **One case.** Default: the frozen stock and the one mirrored change. A second stock, mixed numbers past one whole, or a third gift is each a later appended level with its own definition, and waits on Three halves (4) for lengths past a whole.
 7. **Review.** Default: the building session's source check of the voice table, per the [October 23 record](../archive/DECISIONS-2026-10-23.md#standing-rules).
+
+## As built
+
+Built 2026-11-17 (PR #1756) in `src/games/ribbon-workshop/cases.ts` with the model (`CasesBench`, `casesSolve`, `casesHint`, `casesFeasible`, `casesRound`) at the end of `logic.ts`. The school order is [1, 2, 3, 6, 7] and the game gains a `grownup` ladder [6, 7]; no `SaveData` field; 12 new rule tests; the `ribbon` browser suite has a level 7 case. Departures from the text above:
+
+- Each gift stands in a fixed cell just past a whole's end (x = 670-790) for every request, not at the end of its request outline, and does not slide on tag 2: a gift at the end of a three-quarter outline would cover a too-long ribbon's fourth quarter and take its tap. The request shows as the dashed outline, its end line and the tag on the gift.
+- The spool's "1 whole" label is a 300x104 card in the top row (a tap repeats the instruction) and the spool bar sits under it at y = 180, 34 units tall; the order card (180x112) slides in beside that card. A tap on either does nothing while a right check is being shown.
+- The how-to card has four level-7 steps, not six (the card test caps steps at four: gift then pieces, take back plus scissors, the bow, move a piece when the order changes). The goal is one sentence for all levels, since `GameHowTo.goal` is a plain string.
+- The solver's cost is fewest touches, then fewer returns, then fewer snips, then tray order; on tag 2 it may select the growing gift before returning the quarter (both are three touches).
+- The state carries `nextId` for snipped quarters, and `CasesBench` (not a bare state) owns the tags, undo, restart and the tally.
+- The rule tests confirmed the enumeration: 61 arrangements (122 with the lit gift), three accepted tag-1 sharings, six touches from the start and at most seven from any reachable tag-1 state, 13 of 16 request pairs feasible.
+- Source check (done at the build): the voice table was read; every fraction named is a part of the one spool, and no line says a right sharing is the only one (a rule test asserts no `ribbon.cases.*` line contains "only"). No external source was opened; no educator or child has read the lines.
+- Incidental: `spoolBar` in `art.ts` now draws the spool for both the gift levels and this scene; the instruction tag at levels 1-3 no longer cuts the line being said while a gift ties its bow.
