@@ -2,7 +2,8 @@
  * Helper House: put a sensor where it can see, pick the rule chip the empty row needs, tap Watch and see the house run
  * a whole day by itself while a friend reacts (level 1 wakes the door, level 2 lights the lamp at dusk, level 3 turns it
  * off again by morning, level 4 keeps a chilly nook comfy with a heater and a thermometer, level 5 moves the sun sensor out
- * of the lamp's own light, levels 6–7 drag lines on a warmth gauge so the nook stays comfy and the heater can rest).
+ * of the lamp's own light, levels 6–7 drag lines on a warmth gauge so the nook stays comfy and the heater can rest,
+ * level 8 uncrosses a heater line and a fan line in a greenhouse so the two helpers never run together).
  * Rules: ./logic.ts; definition: docs/definitions/helper-house.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -25,8 +26,10 @@ import {
   actionArt,
   bubbleArt,
   cardArt,
+  caseArt,
   gaugeArt,
   gaugeLine,
+  Greenhouse,
   guessArt,
   House,
   iconArt,
@@ -34,6 +37,7 @@ import {
   lineRuleArt,
   lineTabArt,
   pauseArt,
+  plantState,
   readingArt,
   sensorArt,
   SkyMark,
@@ -57,18 +61,24 @@ import {
   helpFor,
   HOUSE_COLORS,
   houseLayout,
+  inGreenhouse,
+  isLinePiece,
   JAR,
+  LINE_PIECES,
+  lineGap,
+  linePieces,
   nextMove,
   offersSetup,
   onGauge,
   openRows,
   placeSensor,
   planFor,
+  rightLane,
   runDay,
   sameBoard,
   setLine,
   setRow,
-  solutions,
+  setupFor,
   SPECIES,
   STEPS,
   Tally,
@@ -139,6 +149,9 @@ class HelperHouse implements Game {
   private readonly board_ = new Container();
   private readonly glow = new Graphics();
   private house: House | null = null;
+  /** Level 8: the greenhouse stands where the house does. */
+  private green: Greenhouse | null = null;
+  caseNodes: Container[] = [];
   private sky: SkyMark | null = null;
   private friend: Critter | null = null;
   private bubble: Container | null = null;
@@ -151,15 +164,15 @@ class HelperHouse implements Game {
   undoButton: RoundButton | null = null;
   offerButton: RoundButton | null = null;
   private nearSocket: number | null = null;
-  /** Levels 4 and 6–7: the nook's warmth the thermometer (or the gauge) shows now. */
+  /** Levels 4 and 6–8: the warmth the thermometer (or the gauge) shows now. */
   warmthNow = 0;
-  /** Levels 6–7: the line handles on the gauge, and where a dragged one would snap. */
+  /** From level 6: the line handles on the gauge, and where a dragged one would snap. */
   lineNodes: { piece: LinePiece; node: Container; handle: DragHandle }[] = [];
   private dragGap: { piece: LinePiece; gap: number } | null = null;
   gaugeColumn: Container | null = null;
   private gaugeDyn: Graphics | null = null;
   private jar: Container | null = null;
-  /** Level 7: the pebbles dropped in the click jar so far today. */
+  /** Levels 7–8: the pebbles dropped in the click jar so far today. */
   pebbles = 0;
   /** Level 6: the guess before the round's first day is still open (never scored or saved). */
   guessOpen = false;
@@ -194,14 +207,19 @@ class HelperHouse implements Game {
     return this.brief.level;
   }
 
-  /** Level 4 is the nook: the sky stays a steady day and only the warmth changes. */
+  /** The warmth levels (4 and 6–8): a heater, and a thermometer or gauge that shows the warmth now. */
   private get nook() {
     return helperFor(this.level) === 'heater';
   }
 
-  /** Levels 6–7: lines on the warmth gauge. */
+  /** From level 6: lines on the warmth gauge. */
   private get gauge() {
     return onGauge(this.level);
+  }
+
+  /** Level 8: the greenhouse, where the sky's weather moves the warmth too. */
+  private get glass() {
+    return inGreenhouse(this.level);
   }
 
   start() {
@@ -247,7 +265,8 @@ class HelperHouse implements Game {
     this.guessButtons = [];
     this.socketNodes = [];
     this.rowNodes = [];
-    this.house = this.sky = this.friend = this.bubble = this.pulse = null;
+    this.house = this.green = this.sky = this.friend = this.bubble = this.pulse = null;
+    this.caseNodes = [];
     this.watchButton = this.stepButton = this.undoButton = this.offerButton = null;
     this.nearSocket = null;
     this.glow.removeFromParent();
@@ -258,20 +277,42 @@ class HelperHouse implements Game {
     this.layoutNow = l;
     if (!l) return;
 
-    // The house, its sky mark and the friend.
-    const house = new House(
-      {
-        w: l.house.w,
-        h: l.house.h,
-        lamp: this.level >= 2 && !this.nook,
-        heater: this.nook,
-        shed: this.level === 5,
-      },
-      this.brief.house,
-    );
+    // The house (or the greenhouse), its sky mark and the friend.
+    const house = this.glass
+      ? new Greenhouse({ w: l.house.w, h: l.house.h }, this.brief.house)
+      : new House(
+          {
+            w: l.house.w,
+            h: l.house.h,
+            lamp: this.level >= 2 && !this.nook,
+            heater: this.nook,
+            shed: this.level === 5,
+          },
+          this.brief.house,
+        );
     house.position.set(l.house.x, l.house.y);
     this.board_.addChild(house);
-    this.house = house;
+    if (house instanceof Greenhouse) this.green = house;
+    else this.house = house;
+    // The round's case card (level 8): a tap says which kind of day it is; never counted.
+    l.cases.forEach((r) => {
+      const name = this.brief.day.case;
+      if (!name) return;
+      const node = new Container();
+      node.addChild(caseArt(name, r.w, r.h));
+      node.position.copyFrom(centre(r));
+      node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+      onTap(
+        node,
+        () => {
+          sfx.pop(7);
+          void this.ctx.say(`hh.case.${name}` as LineId);
+        },
+        { cooldown: 400 },
+      );
+      this.board_.addChild(node);
+      this.caseNodes.push(node);
+    });
     const sky = new SkyMark(90);
     sky.position.set(l.house.x + l.house.w * (this.level >= 2 ? 0.14 : 0.88), l.house.y + 60);
     this.board_.addChild(sky);
@@ -400,7 +441,7 @@ class HelperHouse implements Game {
     this.showStill();
   }
 
-  /** Levels 6–7: the gauge column (a tap moves the nearer line there), its line handles, the jar and the guess. */
+  /** From level 6: the gauge column (a tap moves the nearer line there), its line handles, the jar and the guess. */
   private buildGauge(g: GaugeLayout, l: HouseLayout) {
     const column = new Container();
     column.position.set(g.column.x, g.column.y);
@@ -412,8 +453,7 @@ class HelperHouse implements Game {
     this.board_.addChild(column, dyn);
     this.gaugeColumn = column;
     this.gaugeDyn = dyn;
-    const pieces: LinePiece[] = this.level === 6 ? ['line'] : ['on-line', 'off-line'];
-    for (const piece of pieces) {
+    for (const piece of linePieces(this.level)) {
       const r = handleRect(g, piece, this.gapOf(piece));
       const node = new Container();
       node.addChild(lineTabArt(piece, r.w));
@@ -454,8 +494,7 @@ class HelperHouse implements Game {
   /** A line's gap on the board now (or while dragged, where it would snap). */
   private gapOf(piece: LinePiece): number {
     if (this.dragGap?.piece === piece) return this.dragGap.gap;
-    const lines = this.board.lines!;
-    return piece === 'off-line' ? lines.off : lines.on;
+    return lineGap(this.board, piece);
   }
 
   private pickedLine(handle: DragHandle) {
@@ -473,8 +512,7 @@ class HelperHouse implements Game {
     // The handle slides up and down its lane only; the line snaps to the nearest gap with a click.
     node.x = centre(handleRect(g, piece, 1)).x;
     const gap = gapAt(g, y);
-    const snapped = setLine(this.board, piece, gap).lines!;
-    const at = piece === 'off-line' ? snapped.off : snapped.on;
+    const at = lineGap(setLine(this.board, piece, gap), piece);
     if (this.dragGap?.gap !== at) {
       if (this.dragGap) sfx.tick();
       this.dragGap = { piece, gap: at };
@@ -503,19 +541,11 @@ class HelperHouse implements Game {
     if (this.run) this.stopRun();
     const gap = gapAt(g, y);
     const { on, off } = this.board.lines!;
-    // The nearer line; when they sit together, a tap above pulls the off line up and a tap below the on line down.
+    // The nearer line; when they sit together, a tap above pulls the off line (the fan line) up and a tap below the on line (the heater line) down.
     const dOn = Math.abs(gap - on);
     const dOff = Math.abs(gap - off);
-    const piece: LinePiece =
-      this.level === 6
-        ? 'line'
-        : dOn < dOff
-          ? 'on-line'
-          : dOff < dOn
-            ? 'off-line'
-            : gap >= off
-              ? 'off-line'
-              : 'on-line';
+    const [low, high = low] = linePieces(this.level);
+    const piece: LinePiece = dOn < dOff ? low : dOff < dOn ? high : gap >= off ? high : low;
     const next = setLine(this.board, piece, gap);
     if (sameBoard(next, this.board)) return;
     sfx.tick();
@@ -554,13 +584,13 @@ class HelperHouse implements Game {
     for (const n of this.lineNodes) {
       const gap = this.gapOf(n.piece);
       const y = gapY(g, gap) - g.column.y;
-      const toLeft = n.piece !== 'off-line';
+      const toLeft = !rightLane(n.piece);
       gaugeLine(d, toLeft ? -16 : 0, toLeft ? g.column.w : g.column.w + 16, y, glowing === n.piece);
       if (!n.handle.dragging) n.node.position.copyFrom(centre(handleRect(g, n.piece, gap)));
     }
     if (this.jar && g.jar) {
       for (const c of this.jar.removeChildren()) c.destroy({ children: true });
-      this.jar.addChild(jarArt(g.jar.w, g.jar.h, this.pebbles));
+      this.jar.addChild(jarArt(g.jar.w, g.jar.h, this.pebbles, this.glass));
     }
   }
 
@@ -586,8 +616,12 @@ class HelperHouse implements Game {
     });
     this.board.rows.forEach((row, i) => {
       const n = this.rowNodes[i];
+      // In the greenhouse each helper has its own row, and both can be lit on one step.
+      const now = this.run?.outcome.trace[this.run.step];
       const lit =
-        !!this.run && this.run.outcome.trace[this.run.step]?.matched === i && this.run.shown.has('card');
+        !!now &&
+        this.run!.shown.has('card') &&
+        (this.glass ? (i === 0 ? now.helperOn : now.fanOn) : now.matched === i);
       for (const c of n.reading.removeChildren()) c.destroy();
       n.reading.addChild(
         cardArt(l.rows[i].reading.w, l.rows[i].reading.h, lit, row.reading === null && !this.gauge),
@@ -597,7 +631,7 @@ class HelperHouse implements Game {
       for (const c of n.action.removeChildren()) c.destroy();
       n.action.addChild(
         cardArt(l.rows[i].action.w, l.rows[i].action.h, lit),
-        actionArt(row.action, 76, helperFor(this.level)),
+        actionArt(row.action, 76, this.glass && i === 1 ? 'fan' : helperFor(this.level)),
       );
     });
     const w = this.watchButton;
@@ -616,18 +650,24 @@ class HelperHouse implements Game {
 
   /** The house at rest: a dim morning, the helper off, the friend at its spot. */
   private showStill() {
-    const steady = this.level === 1 || this.nook;
-    this.sky?.set(steady ? 'bright' : 'dim');
-    this.setVeil(steady ? 'bright' : 'dim');
+    const steady = this.level === 1 || (this.nook && !this.glass);
+    // The greenhouse rests under its case's first sky.
+    const sun = steady ? 'bright' : this.glass ? this.brief.day.sun[0] : 'dim';
+    this.sky?.set(sun);
+    this.setVeil(sun);
     this.house?.setDoor(0);
     this.house?.setLamp(false);
     this.house?.setHeater(false);
     this.house?.setInside(0);
+    this.green?.setHeater(false);
+    this.green?.setFan(false);
+    this.green?.setFight(false);
     this.pebbles = 0;
     if (this.nook && this.warmthNow !== this.brief.day.warmth) {
       this.warmthNow = this.brief.day.warmth;
       this.redraw();
     }
+    this.green?.setPlants(this.warmthNow);
     if (this.friend) {
       this.friend.visible = this.level >= 2;
       this.friend.alpha = 1;
@@ -637,8 +677,12 @@ class HelperHouse implements Game {
     if (this.pulse) this.pulse.visible = false;
   }
 
-  /** The friend in the nook shivers (sad) when cool, is comfy (happy) when warm, and is startled when hot. */
+  /** The friend in the nook shivers (sad) when cool, is comfy (happy) when warm, and is startled when hot; in the greenhouse it feels what the plants feel. */
   private nookMood(warmth: number) {
+    if (this.glass) {
+      const p = plantState(warmth);
+      return p === 'cold' ? ('sad' as const) : p === 'comfy' ? ('happy' as const) : ('surprised' as const);
+    }
     const z = zoneOf(warmth);
     return z === 'cool' ? ('sad' as const) : z === 'warm' ? ('happy' as const) : ('surprised' as const);
   }
@@ -789,7 +833,7 @@ class HelperHouse implements Game {
     this.board = b;
     this.tally.changed('sensor');
     for (const i of openRows(b)) this.tally.changed(i);
-    if (b.lines) for (const p of ['line', 'on-line', 'off-line'] as const) this.tally.changed(p);
+    if (b.lines) for (const p of LINE_PIECES) this.tally.changed(p);
     sfx.pop(4);
     this.build();
   }
@@ -864,10 +908,10 @@ class HelperHouse implements Game {
       r.shown.add(name);
       return true;
     };
-    if (fire('world', 0) && !this.nook) {
+    if (fire('world', 0) && (!this.nook || this.glass)) {
       this.sky?.set(t.sun);
       this.setVeil(t.sun);
-      if (this.level >= 2 && this.friend)
+      if (this.level >= 2 && this.friend && !this.glass)
         this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : 'calm');
       if (t.arrived && this.friend) {
         this.friend.visible = true;
@@ -884,7 +928,7 @@ class HelperHouse implements Game {
     if (this.pulse?.visible && t.matched !== null) {
       const from = this.sensorPoint();
       const card = this.rowNodes[t.matched].reading.position;
-      const to = this.helperPoint();
+      const to = this.helperPoint(t);
       const k = Math.min(1, Math.max(0, (r.t - PHASES.pulse) / (PHASES.act - PHASES.pulse)));
       const a = k < 0.5 ? k * 2 : 1;
       const b = k < 0.5 ? 0 : (k - 0.5) * 2;
@@ -909,15 +953,25 @@ class HelperHouse implements Game {
         r.outcome.trace[r.step - 1].helperOn;
       // Level 7: each switch drops a pebble in the jar with a soft click, and the friend blinks awake; a ninth rolls out.
       const before = r.step > 0 ? r.outcome.trace[r.step - 1].helperOn : false;
-      const clicked = this.level === 7 && t.helperOn !== before;
+      const fanBefore = r.step > 0 ? r.outcome.trace[r.step - 1].fanOn : false;
+      // Level 8: either helper's switch drops a pebble; the jar only counts.
+      const drops =
+        (this.level >= 7 && t.helperOn !== before ? 1 : 0) + (this.glass && t.fanOn !== fanBefore ? 1 : 0);
+      const clicked = drops > 0;
       if (clicked) {
-        this.pebbles++;
-        if (this.pebbles > JAR) sfx.marimba(1, 0.3);
+        this.pebbles += drops;
+        if (this.pebbles > JAR && !this.glass) sfx.marimba(1, 0.3);
         else sfx.tick();
-        if (this.pebbles === 1 && this.daysPlayed === 0) void this.ctx.say('hh.click');
+        if (this.level === 7 && this.pebbles === 1 && this.daysPlayed === 0) void this.ctx.say('hh.click');
       }
+      // Level 8: both helpers on at once; a low tick (not a boing) and the friend looks up at the swirl.
+      const fight = t.helperOn && t.fanOn;
       this.showHelper(t);
-      if (clicked && this.friend) this.friend.setMood('surprised', 0.3);
+      if (fight) {
+        sfx.marimba(1, 0.3);
+        this.friend?.setMood('surprised', 0.4);
+      } else if (this.glass && this.friend) this.friend.setMood(this.nookMood(t.warmth));
+      else if (clicked && this.friend) this.friend.setMood('surprised', 0.3);
       else if (this.nook && this.friend) this.friend.setMood(this.nookMood(t.warmth));
       else if (flicked && this.friend) {
         sfx.marimba(1, 0.3);
@@ -952,7 +1006,13 @@ class HelperHouse implements Game {
       : centre(this.layoutNow!.bench[0] ?? this.layoutNow!.house);
   }
 
-  private helperPoint(): Pt {
+  /** Where the pulse ends: the helper the step's row drives (in the greenhouse, the fan when only the fan runs). */
+  private helperPoint(t?: Trace): Pt {
+    const gh = this.green;
+    if (gh) {
+      const at = t && t.matched === 1 ? gh.fanAt : gh.heaterAt;
+      return { x: gh.x + at.x, y: gh.y + at.y };
+    }
     const h = this.house!;
     const at = this.level === 1 ? h.doorAt : this.nook ? h.heaterAt : h.lampAt;
     return { x: h.x + at.x, y: h.y + at.y };
@@ -972,6 +1032,16 @@ class HelperHouse implements Game {
 
   private showHelper(t: Trace) {
     const { helperOn: on, opened, inside, waiting } = t;
+    const gh = this.green;
+    if (gh) {
+      gh.setHeater(on);
+      gh.setFan(t.fanOn);
+      gh.setFight(on && t.fanOn);
+      gh.setPlants(t.warmth);
+      this.warmthNow = t.warmth;
+      this.redraw();
+      return;
+    }
     const h = this.house;
     if (!h) return;
     if (this.nook) {
@@ -1039,7 +1109,7 @@ class HelperHouse implements Game {
     for (const t of this.tiles) t.handle.enabled = false;
     sfx.tada();
     this.ctx.pet.cheer();
-    const h = this.house;
+    const h = this.house ?? this.green;
     if (h) {
       const at = this.helperPoint();
       this.ctx.particles.burst(at.x, at.y, {
@@ -1056,6 +1126,9 @@ class HelperHouse implements Game {
       // The friends come out to dance in front of the door.
       this.friend.position.set(h.x + h.friendAt.x, h.y + h.friendAt.y);
     }
+    // Level 8: the jar's remark, heard in full before the finish line.
+    if (this.glass) await this.ctx.say('hh.clicks');
+    if (!this.alive) return;
     await this.ctx.say('hh.done');
     if (!this.alive) return;
     this.finished = true;
@@ -1091,7 +1164,11 @@ class HelperHouse implements Game {
             ? 'hh.help.7.on'
             : p === 'off-line'
               ? 'hh.help.7.off'
-              : this.nook
+              : p === 'heat-line'
+                ? 'hh.help.8.heat'
+                : p === 'fan-line'
+                  ? 'hh.help.8.fan'
+                  : this.nook
                 ? (`hh.help.row.4.${p === 0 ? 'on' : 'off'}` as LineId)
                 : 'hh.help.row';
     void this.ctx.say(line);
@@ -1100,14 +1177,14 @@ class HelperHouse implements Game {
   /** Shall I set it up? Yes: the accepted board, and the day plays to its finish. */
   acceptOffer() {
     if (this.finished || this.busy || this.run) return;
-    const right = solutions(this.brief)[0];
+    const right = setupFor(this.brief);
     if (!right) return;
     this.tally.offered();
     this.history.push(this.board);
     this.board = right;
     this.tally.changed('sensor');
     for (const i of openRows(right)) this.tally.changed(i);
-    if (right.lines) for (const p of ['line', 'on-line', 'off-line'] as const) this.tally.changed(p);
+    if (right.lines) for (const p of LINE_PIECES) this.tally.changed(p);
     this.build();
     void this.ctx.say('hh.help.setup');
     this.startRun();
@@ -1116,12 +1193,13 @@ class HelperHouse implements Game {
   update(dt: number) {
     this.clock += dt;
     this.stepRun(dt);
+    this.green?.update(dt);
     if (this.relayout && !this.busy && !this.finished && !this.run) this.build();
     this.glow.clear();
     const g = this.tally.glowing;
     if (g === null || this.finished || !this.layoutNow) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
-    if (g === 'line' || g === 'on-line' || g === 'off-line') {
+    if (isLinePiece(g)) {
       // The line to move: its handle glows (the line itself is drawn yellow).
       const n = this.lineNodes.find((x) => x.piece === g);
       if (n)
@@ -1157,7 +1235,8 @@ class HelperHouse implements Game {
    * The ghost finger: drag the piece the goal needs, tap Watch; at level 3, Watch first, then the bright chip, then
    * Watch; at level 4, cool to the on row, warm to the off row, then Watch; at level 5, Watch (the lamp flickers), the
    * sensor up to the roof, then Watch; at level 6 the line down to gap 4, then Watch (it skips the guess); at level 7,
-   * Watch (a pebble rolls out), the off line up one gap, then Watch.
+   * Watch (a pebble rolls out), the off line up one gap, then Watch; at level 8, Watch (the helpers fight), the fan
+   * line up one gap, the heater line down one, then Watch.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;

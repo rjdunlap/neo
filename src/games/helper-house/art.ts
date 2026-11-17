@@ -1,4 +1,4 @@
-/** Helper House's code-drawn pieces: sensors, reading and action pictures, cards, chips, sockets, the house, the sky mark, the warmth gauge and click jar, icons. */
+/** Helper House's code-drawn pieces: sensors, reading and action pictures, cards, chips, sockets, the house, the greenhouse, the sky mark, the warmth gauge and click jar, case cards, icons. */
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
@@ -8,6 +8,7 @@ import {
   JAR,
   SPOTS,
   type Action,
+  type CaseName,
   type Helper,
   type LinePiece,
   type Reading,
@@ -181,9 +182,55 @@ function heaterArt(on: boolean, w: number): Graphics {
   return g;
 }
 
-/** An action's picture: an open door, a lit lamp, a dark lamp, a warm or a cold heater. */
+/** The fan's three blades, drawn about their hub so they can spin. */
+function fanBlades(r: number): Graphics {
+  const g = new Graphics();
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2;
+    g.ellipse(Math.cos(a) * r * 0.48, Math.sin(a) * r * 0.48, r * 0.42, r * 0.2)
+      .fill(swatch.blue.fill)
+      .stroke(line(swatch.blue.line, Math.max(2, r * 0.08)));
+  }
+  g.circle(0, 0, r * 0.16).fill(METAL.line);
+  return g;
+}
+
+/** The vent fan's cage on its stand, centred on the hub; on, a breeze blows out to the left. */
+function fanBody(r: number, on: boolean): Graphics {
+  const g = new Graphics();
+  g.roundRect(-r * 0.12, r * 0.9, r * 0.24, r * 0.6, 3).fill(METAL.line);
+  g.roundRect(-r * 0.6, r * 1.4, r * 1.2, r * 0.22, 4)
+    .fill(METAL.fill)
+    .stroke(line(METAL.line, Math.max(2, r * 0.08)));
+  g.circle(0, 0, r)
+    .fill(on ? swatch.blue.light : 0xffffff)
+    .stroke(line(on ? swatch.blue.line : METAL.line, Math.max(3, r * 0.12)));
+  if (on)
+    for (const y of [-r * 0.5, 0, r * 0.5])
+      g.moveTo(-r * 1.25, y)
+        .quadraticCurveTo(-r * 1.5, y - r * 0.18, -r * 1.75, y)
+        .quadraticCurveTo(-r * 2.0, y + r * 0.18, -r * 2.25, y)
+        .stroke(line(swatch.blue.line, Math.max(3, r * 0.1)));
+  return g;
+}
+
+/** A vent fan as a still picture: spinning (tilted blades and a breeze) or resting. */
+function fanArt(on: boolean, r: number): Graphics {
+  const g = fanBody(r, on);
+  const blades = fanBlades(r);
+  blades.rotation = on ? 0.5 : 0;
+  g.addChild(blades);
+  return g;
+}
+
+/** An action's picture: an open door, a lit lamp, a dark lamp, a warm or a cold heater, a spinning or a resting fan. */
 export function actionArt(action: Action, size = 80, helper: Helper = 'lamp'): Graphics {
   const s = size * 0.42;
+  if (helper === 'fan') {
+    const g = fanArt(action === 'on', size * 0.3);
+    g.position.set(action === 'on' ? size * 0.16 : 0, -size * 0.08);
+    return g;
+  }
   if (helper === 'heater' && action !== 'open') {
     const g = heaterArt(action === 'on', size * 0.8);
     g.y = s * 0.2;
@@ -399,7 +446,10 @@ export function gaugeLine(g: Graphics, x0: number, x1: number, y: number, glow =
     .stroke(line(glow ? swatch.yellow.fill : ink, glow ? 10 : 7));
 }
 
-/** A line's handle tab: a flame for the on line, a crossed flame for the off line, both arrows for level 6's one line. */
+/**
+ * A line's handle tab: a flame for the on line (and the greenhouse's heater line), a crossed flame for the off line, a
+ * fan for the fan line, both arrows for level 6's one line.
+ */
 export function lineTabArt(piece: LinePiece, size: number, lit = false): Container {
   const c = new Container();
   c.addChild(tileArt(size, lit));
@@ -417,6 +467,10 @@ export function lineTabArt(piece: LinePiece, size: number, lit = false): Contain
       .lineTo(size * 0.32, 0)
       .stroke(line(ink, 7));
     c.addChild(g);
+  } else if (piece === 'fan-line') {
+    const fan = fanArt(false, size * 0.26);
+    fan.y = -size * 0.08;
+    c.addChild(fan);
   } else {
     c.addChild(flameArt(size * 0.28, piece === 'off-line'));
   }
@@ -446,32 +500,38 @@ export function lineRuleArt(side: 'below' | 'above', size = 80): Graphics {
   return g;
 }
 
-/** The click jar: eight cups, a pebble in each switch so far; any more roll out over the rim onto the floor. */
-export function jarArt(w: number, h: number, pebbles: number): Container {
+/**
+ * The click jar: eight cups, a pebble in each switch so far; any more roll out over the rim onto the floor. `counting`
+ * (the greenhouse) is an open jar with no cups and no rim: the pebbles only pile up, and nothing rolls out.
+ */
+export function jarArt(w: number, h: number, pebbles: number, counting = false): Container {
   const c = new Container();
   const g = new Graphics();
   const jw = w * 0.55;
   g.roundRect(0, 6, jw, h - 6, 18)
     .fill({ color: 0xe8f4ff, alpha: 0.9 })
     .stroke(line(swatch.blue.line, 5));
-  g.roundRect(-6, 0, jw + 12, 14, 7)
-    .fill(METAL.fill)
-    .stroke(line(METAL.line, 4));
-  const cols = 2;
-  const rows = JAR / cols;
+  if (!counting)
+    g.roundRect(-6, 0, jw + 12, 14, 7)
+      .fill(METAL.fill)
+      .stroke(line(METAL.line, 4));
+  const cols = counting ? 3 : 2;
+  const rows = counting ? 4 : JAR / cols;
+  const cups = cols * rows;
   const cw = (jw - 16) / cols;
   const ch = (h - 30) / rows;
-  for (let i = 0; i < JAR; i++) {
+  for (let i = 0; i < cups; i++) {
     const cx = 8 + (i % cols) * cw + cw / 2;
     const cy = h - 8 - Math.floor(i / cols) * ch - ch / 2;
-    g.circle(cx, cy, Math.min(cw, ch) * 0.36).stroke({ width: 2, color: swatch.blue.line, alpha: 0.4 });
+    if (!counting)
+      g.circle(cx, cy, Math.min(cw, ch) * 0.36).stroke({ width: 2, color: swatch.blue.line, alpha: 0.4 });
     if (i < pebbles)
       g.circle(cx, cy, Math.min(cw, ch) * 0.36)
         .fill(swatch.brown.fill)
         .stroke(line(swatch.brown.line, 3));
   }
   // The pebbles that did not fit lie on the floor beside the jar.
-  for (let i = 0; i < pebbles - JAR; i++) {
+  for (let i = 0; i < pebbles - cups; i++) {
     g.circle(jw + 22 + (i % 3) * 26, h - 12 - Math.floor(i / 3) * 24, 11)
       .fill(swatch.brown.fill)
       .stroke(line(swatch.brown.line, 3));
@@ -514,6 +574,249 @@ export function guessArt(choice: 'faster' | 'same', size: number): Container {
     c.addChild(g);
   }
   return c;
+}
+
+/** A greenhouse case's card: a sun and a moon (an ordinary day), a big sun over wavy heat, a moon with a snowflake. */
+export function caseArt(name: CaseName, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(cardArt(w, h));
+  const r = h * 0.2;
+  const night = (x: number, bw: number) =>
+    new Graphics().roundRect(x - bw / 2, -h / 2 + 12, bw, h - 24, 14).fill(NIGHT);
+  if (name === 'ordinary') {
+    const sun = sunArt(r * 0.8);
+    sun.position.set(-w * 0.22, 0);
+    const moon = moonArt(r * 0.8);
+    moon.position.set(w * 0.2, 0);
+    c.addChild(sun, night(w * 0.23, w * 0.42), moon);
+  } else if (name === 'heat-wave') {
+    const sun = sunArt(r);
+    sun.position.set(0, -h * 0.1);
+    const waves = new Graphics();
+    for (const y of [h * 0.26, h * 0.37])
+      waves
+        .moveTo(-w * 0.34, y)
+        .quadraticCurveTo(-w * 0.255, y - 9, -w * 0.17, y)
+        .quadraticCurveTo(-w * 0.085, y + 9, 0, y)
+        .quadraticCurveTo(w * 0.085, y - 9, w * 0.17, y)
+        .quadraticCurveTo(w * 0.255, y + 9, w * 0.34, y)
+        .stroke(line(swatch.red.fill, 5));
+    c.addChild(sun, waves);
+  } else {
+    const moon = moonArt(r * 0.8);
+    moon.position.set(-w * 0.2, 0);
+    const flake = new Graphics();
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI;
+      flake
+        .moveTo(-Math.cos(a) * r, -Math.sin(a) * r)
+        .lineTo(Math.cos(a) * r, Math.sin(a) * r)
+        .stroke(line(0xffffff, 5));
+    }
+    flake.position.set(w * 0.2, 0);
+    c.addChild(night(0, w - 24), moon, flake);
+  }
+  return c;
+}
+
+// ——— The greenhouse (level 8) ———
+
+/** How the seedlings look: drooping when cold, upright when comfy, curled when hot (shape, never colour alone). */
+export type PlantState = 'cold' | 'comfy' | 'hot';
+export function plantState(warmth: number): PlantState {
+  return warmth < COMFY.min ? 'cold' : warmth > COMFY.max ? 'hot' : 'comfy';
+}
+
+/** One seedling rooted at (x, y), `s` tall. */
+function seedling(g: Graphics, x: number, y: number, s: number, state: PlantState) {
+  const stem = line(swatch.green.line, Math.max(4, s * 0.09));
+  const leaf = (lx: number, ly: number, rot: number) => {
+    const l = new Graphics()
+      .ellipse(0, 0, s * 0.26, s * 0.12)
+      .fill(swatch.green.fill)
+      .stroke(line(swatch.green.line, 3));
+    l.position.set(lx, ly);
+    l.rotation = rot;
+    g.addChild(l);
+  };
+  if (state === 'cold') {
+    // The stem bends right over and the leaves hang.
+    g.moveTo(x, y)
+      .quadraticCurveTo(x, y - s * 0.75, x + s * 0.42, y - s * 0.5)
+      .stroke(stem);
+    leaf(x + s * 0.34, y - s * 0.36, Math.PI / 2 - 0.2);
+    leaf(x + s * 0.54, y - s * 0.34, Math.PI / 2 + 0.2);
+    return;
+  }
+  g.moveTo(x, y)
+    .lineTo(x, y - s)
+    .stroke(stem);
+  if (state === 'comfy') {
+    leaf(x - s * 0.24, y - s * 0.86, 0.5);
+    leaf(x + s * 0.24, y - s * 0.86, -0.5);
+    return;
+  }
+  // Hot: each leaf rolls up into a little curl.
+  for (const side of [-1, 1]) {
+    const cx = x + side * s * 0.2;
+    const cy = y - s * 0.9;
+    g.moveTo(x, y - s * 0.8)
+      .quadraticCurveTo(cx, cy - s * 0.24, cx + side * s * 0.14, cy)
+      .quadraticCurveTo(cx + side * s * 0.1, cy + s * 0.16, cx, cy + s * 0.06)
+      .quadraticCurveTo(cx - side * s * 0.04, cy - s * 0.02, cx + side * s * 0.04, cy)
+      .stroke(line(swatch.green.line, Math.max(4, s * 0.1)));
+  }
+}
+
+/**
+ * The greenhouse, drawn in a rect of w × h with its top-left at (0, 0): a glass house on the grass, the heater at its
+ * left, the vent fan at its right, a planter of seedlings between them. When both helpers run, the heater's warm puff
+ * and the fan's breeze meet in a swirl over the plants and both helpers shake.
+ */
+export class Greenhouse extends Container {
+  readonly heaterAt: { x: number; y: number };
+  readonly fanAt: { x: number; y: number };
+  readonly friendAt: { x: number; y: number };
+  readonly groundY: number;
+  private readonly heater = new Container();
+  private readonly fan = new Container();
+  private readonly blades: Graphics;
+  private readonly plants = new Graphics();
+  private readonly swirl = new Graphics();
+  private readonly helperW: number;
+  private readonly fanR: number;
+  private heaterOn = false;
+  private fanOn = false;
+  private fighting = false;
+  private clock = 0;
+  private state: PlantState | null = null;
+
+  constructor(
+    readonly geo: { w: number; h: number },
+    color: ColorName,
+  ) {
+    super();
+    this.eventMode = 'none';
+    const { w, h } = geo;
+    const sw = swatch[color];
+    const ground = h * 0.92;
+    this.groundY = ground;
+    const left = w * 0.04;
+    const right = w * 0.96;
+    const top = h * 0.4;
+    const peak = h * 0.14;
+    const g = new Graphics();
+    g.roundRect(-w * 0.05, ground - 6, w * 1.1, h * 0.12, 20).fill(0xa8dc8f);
+    // Glass walls and roof, with glazing bars.
+    const glass = { color: 0xe8f4ff, alpha: 0.6 };
+    g.rect(left, top, right - left, ground - top).fill(glass);
+    g.moveTo(left - 14, top)
+      .lineTo((left + right) / 2, peak)
+      .lineTo(right + 14, top)
+      .closePath()
+      .fill(glass)
+      .stroke(line(sw.line, 6));
+    g.rect(left, top, right - left, ground - top).stroke(line(sw.line, 6));
+    for (const k of [1 / 3, 2 / 3]) {
+      const x = left + (right - left) * k;
+      g.moveTo(x, top)
+        .lineTo(x, ground)
+        .stroke({ width: 4, color: sw.line, alpha: 0.45 });
+      g.moveTo(x, top)
+        .lineTo((left + right) / 2, peak)
+        .stroke({ width: 4, color: sw.line, alpha: 0.45 });
+    }
+    g.roundRect(left - 6, ground - 14, right - left + 12, 18, 6)
+      .fill(sw.fill)
+      .stroke(line(sw.line, 4));
+    this.addChild(g);
+    this.helperW = Math.max(64, Math.min(104, w * 0.14));
+    this.fanR = this.helperW * 0.42;
+    this.heaterAt = { x: left + this.helperW * 0.62 + 10, y: ground - 14 - this.helperW * 0.44 };
+    this.fanAt = { x: right - this.fanR - 12, y: ground - 14 - this.fanR * 1.62 };
+    this.friendAt = { x: w * 0.36, y: ground - 8 };
+    // The planter between the friend and the fan.
+    const px = w * 0.58;
+    const pw = Math.max(96, w * 0.2);
+    const box = new Graphics()
+      .roundRect(px - pw / 2, ground - 14 - 34, pw, 34, 8)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4));
+    this.plants.position.set(px, ground - 14 - 34);
+    this.fan.position.set(this.fanAt.x, this.fanAt.y);
+    this.blades = fanBlades(this.fanR);
+    this.swirl.position.set(w * 0.5, top + (ground - top) * 0.3);
+    this.swirl.visible = false;
+    this.addChild(this.plants, box, this.heater, this.fan, this.swirl);
+    this.drawSwirl(Math.max(34, w * 0.07));
+    this.setHeater(false);
+    this.setFan(false);
+    this.setPlants(COMFY.min);
+  }
+
+  private drawSwirl(r: number) {
+    // Two arms chasing each other: the heater's warm one and the fan's cool one.
+    for (const [turn, color] of [
+      [0, swatch.orange.line],
+      [Math.PI, swatch.blue.line],
+    ] as const) {
+      for (let i = 0; i <= 14; i++) {
+        const a = turn + (i / 14) * Math.PI * 1.6;
+        const d = r * (0.25 + (0.75 * i) / 14);
+        if (i === 0) this.swirl.moveTo(Math.cos(a) * d, Math.sin(a) * d);
+        else this.swirl.lineTo(Math.cos(a) * d, Math.sin(a) * d);
+      }
+      this.swirl.stroke(line(color, Math.max(5, r * 0.16)));
+    }
+  }
+
+  setHeater(on: boolean) {
+    this.heaterOn = on;
+    for (const c of this.heater.removeChildren()) c.destroy();
+    this.heater.addChild(heaterArt(on, this.helperW));
+    this.heater.position.set(this.heaterAt.x, this.heaterAt.y);
+  }
+
+  setFan(on: boolean) {
+    this.fanOn = on;
+    const blades = this.blades;
+    blades.removeFromParent();
+    for (const c of this.fan.removeChildren()) c.destroy();
+    this.fan.addChild(fanBody(this.fanR, on), blades);
+    this.fan.position.set(this.fanAt.x, this.fanAt.y);
+  }
+
+  /** Both helpers ran this step: the puff and the breeze swirl together, and the helpers shake. */
+  setFight(on: boolean) {
+    this.fighting = on;
+    this.swirl.visible = on;
+    if (!on) {
+      this.heater.position.set(this.heaterAt.x, this.heaterAt.y);
+      this.fan.position.set(this.fanAt.x, this.fanAt.y);
+    }
+  }
+
+  /** The seedlings for a warmth: drooping, upright or curled. */
+  setPlants(warmth: number) {
+    const state = plantState(warmth);
+    if (state === this.state) return;
+    this.state = state;
+    this.plants.clear();
+    for (const c of this.plants.removeChildren()) c.destroy();
+    const s = Math.max(54, this.geo.h * 0.14);
+    for (const dx of [-0.3, 0, 0.3]) seedling(this.plants, dx * Math.max(96, this.geo.w * 0.2), 0, s, state);
+  }
+
+  /** The fan's blades turn while it is on; a fight spins the swirl and shakes both helpers. */
+  update(dt: number) {
+    this.clock += dt;
+    if (this.fanOn) this.blades.rotation += dt * 14;
+    if (!this.fighting) return;
+    this.swirl.rotation += dt * 5;
+    const k = Math.sin(this.clock * 46) * 3;
+    this.heater.x = this.heaterAt.x + (this.heaterOn ? k : 0);
+    this.fan.x = this.fanAt.x - (this.fanOn ? k : 0);
+  }
 }
 
 // ——— The house ———

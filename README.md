@@ -152,7 +152,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Swap Meet](docs/games/swap-meet.md) | toddler–school | Cozy Village | 4 | trade pictured toys, with both objects crossing |
 | [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 3 | count pictured toy preferences, then everyone plays |
 | [Relay Woods](docs/games/relay-woods.md) | toddler–school | Cozy Village | 4 | pass a picture along three connected friends |
-| [Helper House](docs/games/helper-house.md) | preschool–school | Cozy Village | 7 | drag the eye or sun sensor to its socket so the house helps a friend, then watch a twelve-step day |
+| [Helper House](docs/games/helper-house.md) | preschool–school | Cozy Village | 8 | drag the eye or sun sensor to its socket so the house helps a friend, then watch a twelve-step day |
 | [Caravan Days](docs/games/caravan-days.md) | toddler–school | Cozy Village | 7 | tap the camel so it kneels, load it, and walk it to the water, the way caravans once did |
 | [Keep House](docs/games/keep-house.md) | toddler–school | Cozy Village | 6 | tap a castle door to see who lives and works inside, and put the household where its work is, the way a castle was a home and a workplace |
 | [Notice Board](docs/games/notice-board.md) | pre-K–school | Cozy Village | 3 | island friends pin made-up picture posters to a village board; tap who made it, who saw it, or whether it tells or sells |

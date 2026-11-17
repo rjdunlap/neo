@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1 |
 | pre-K | 1–3 |
-| school | 2–7 |
+| school | 2–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 5 | Where does it look? |
 | 6 | The comfy line |
 | 7 | Calm heater |
+| 8 | The greenhouse |
 
 <!-- end generated -->
 
