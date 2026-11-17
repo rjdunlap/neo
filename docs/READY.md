@@ -29,6 +29,14 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
+- **`pixel-pictures` upright at levels 3–8** (small fix; existing-game tier: typecheck, `src/games/upright-batch-6.test.ts` with those levels added to its list, `PHONE_LEVELS=all` sweep screenshots): the board overflows the right edge by about 5 units at 768 wide, so lower its x minimum of 160 in `resize` in `index.ts`, then widen `uprightLevels` to every level.
+
+- **`pattern-train` upright at level 10** (small fix; same tier): one target is 88 units wide, under the 100 minimum; widen it and its neighbours at level 10, then add 10 to `uprightLevels`.
+
+- **`beat-builder` upright at levels 4–5** (real layout; same tier): eight steps of 100 units are 800+ wide, so the grid needs two rows or a scaled container (as Ribbon Workshop's `frame.ts`) at those levels; its layout is inline in `index.ts`, so lift it into a testable function with a layout test, then add 4 and 5 to `uprightLevels`.
+
+- **`orchard-rows` upright at levels 1–6 and 8** (real layout; same tier): the sweep measured its targets too small or outside the view at those levels; give them an upright layout with a layout test, then widen `uprightLevels`.
+
 - **Upright batch 8 onward: the rest of the fits-as-is games, six at a time** (chunk 31; the existing-game tier six times over, as batches 6 and 7): after batch 7, the next six from the sweep's measured fits-as-is list, one kind of challenge each where the list allows, measured games before by-eye ones; then the small-fix games, music first (`jelly-drums`, `rhythm-neighbors`, `movie-night`), each batch rerunning `BROWSER_SUITE=uprightsweep PHONE_ONLY=…` for its games first. Each closeout queues the next six as a Next ten line while the list lasts. [Game batches](definitions/phone-portrait.md#game-batches), [the sweep](definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09)
 
 - **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)

@@ -81,7 +81,7 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | 4 (built) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
 | 5 (built) | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
 | Grown-up catch-up (built 2026-11-17) | grown-up: games that gained the grown-up band after batch 4 | `puddle-lens` (noticing); `ribbon-workshop` (fractions; all three scenes drawn into a world scaled to the 768-wide area) |
-| 6 (claimed 2026-11-17, `claude/upright-batch-6`) | school: six early-school games that fit as is | `beat-builder`, `word-glue`, `orchard-rows`, `pattern-train`, `pixel-pictures`, `drift-cards` |
+| 6 (built 2026-11-17, in part) | school: six early-school games the sweep measured as fits-as-is | whole: `drift-cards` (its Home and "?" column kept clear upright), `word-glue` (every level, four phone views in `upright-batch-6.test.ts`). Partial, through `uprightLevels` (the turn prompt still shows at the other levels): `beat-builder` levels 3, 6–9 (4 and 5 are eight 100-unit steps, 800+ wide: need a real layout), `pattern-train` levels 8, 9, 11–16 (level 10 has an 88-unit target), `pixel-pictures` levels 10–12 (levels 3–8 overflow the right edge by about 5 units at 768 wide: a small fix to the x minimum of 160), `orchard-rows` levels 7 and 9 (1–6 and 8 measured too small or outside: need a layout) |
 | 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games from the sweep's fits-as-is list first (cheapest), then small fixes |
 
 The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (the upright sweep of the early-school games, built the same day and recorded [below](#the-upright-sweep-built-2026-11-09), then batches by kind).
@@ -97,6 +97,8 @@ Batch 4 brings the grown-up upright pool to 19 games, every game that lists the 
 Batch 5 brings the upright-ready games to 25, adding the lap and toddler six (`far-lights`, left unjudged by the sweep, is now laid out). The [batch closeout](../archive/COMPLETED-2026-10-09.md#lap-and-toddler-upright-games-batch-5-chunk-31-2026-11-09) records the layouts and checks.
 
 The grown-up catch-up brings the upright-ready games to 30 and the grown-up upright games to 22 of the 22 that list the grown-up band (every grown-up game is upright). Puddle Lens level 2's hand-lens table runs the whole width on a tall view, so a dropped glass rests centred on the thing it is let go on instead of being pulled off it. Ribbon Workshop's bench, Whole Switch and Ribbon Cases keep their sideways layout and draw it into a container scaled to the 768-wide area (`frame.ts`), with the tray clear of the guide.
+
+Batch 6 brings the fully upright-ready games to 32 and puts four more on `uprightLevels`. The sweep now takes `PHONE_LEVELS=all` (every school level, screenshots named `<id>-<level>.jpg`) and lists the wrong boxes as `culprits` in `sweep.json`.
 
 ### The upright sweep (built 2026-11-09)
 
