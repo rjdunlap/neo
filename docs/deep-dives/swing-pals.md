@@ -102,6 +102,8 @@ Release timing and anything that can fall; pumping; numbers, stopwatches and the
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** *Paint the beat* is a creative level whose painting is kept only on request, as any other creation is, and needs a definition (2); the journal files "a longer rope swings slower" (3: yes, it is an observation about the world). A "default" or "lean" below that says otherwise is superseded.
+
 The definition's five decisions stand as decided on 2026-10-23. This dive adds:
 
 1. **Where level 7 plays.** Built on the default; the developer can still change it. Default: pre-K between 3 and 4 (`order: [3, 7, 4]`) and school after 6. Alternative: school only, leaving pre-K's jump.

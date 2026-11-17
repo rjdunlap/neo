@@ -96,6 +96,8 @@ Halves and quarters (decision 1); evenness grading and line limits as stars (*Sl
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the fractions rung is closed (1); nothing is filed in the journal (2). A "default" or "lean" below that says otherwise is superseded.
+
 1. **Close the fractions rung.** The [fractions study](subjects/fractions.md) has landed (2026-10-16, PR #480) and keeps equal shares in Pet Kitchen, length in Ribbon Workshop and number lines in Frog Hop; it gives Fruit Slice no rung. Close the IDEAS row as "nowhere in Fruit Slice"? Default: yes, closed; nothing in levels 1–11 names a half.
 2. **Journal.** File each fruit kind in the discovery journal the first time she slices it? Default: no, nothing is filed.
 

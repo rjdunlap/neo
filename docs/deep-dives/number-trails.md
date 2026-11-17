@@ -95,6 +95,8 @@ Level 4 *First numbers* is the appended easy entry (stable ID 4, preschool `orde
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** school opens at level 7 if the layout probe passes in the building session (1); no journal entries (2). A "default" or "lean" below that says otherwise is superseded.
+
 1. **A school window.** Lean: open school at level 7 (*Ten, and some more*) after a layout probe, school 5–7; or keep Number Trails pre-K and leave teens to another game.
 2. **Journal entries for the numerals.** Lean: ten entries `number-trails:0`–`9`, filed when the numeral was traced and its things shown (Letter Trails did the same for letters), journal total +10; or none.
 

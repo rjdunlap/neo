@@ -215,7 +215,7 @@ Each has a default under the [October 23 standing rules](../../archive/DECISIONS
 1. **Where the maze lives.** Default: a Mossy Path opening (PP1), because the stepping action is the same. The alternative is a new maze game, with its own drawn corridors and a dragged pet.
 2. **Truth-and-lie clues in the logic grid.** Default: left out. The alternative is grown-up levels only, worded as "one friend remembers it wrong".
 3. **Names.** Default: Bunny Patches for the notebook's *Garden Queens* (Queens is LinkedIn's name), Domino Pond, Sum Crates and Campsite. Trademarked product names (Wordle, Connections, Spelling Bee, Pips, Queens, Murdle, Jumble, KenKen) appear only as references.
-4. **How many to queue now.** Default: this study queues PP1 only, as the procedure asks (its first eligible definition); PP2–PP9 wait in the [packet](RECOMMENDATIONS.md#puzzle-pages-recommendations) until the developer admits more.
+4. **How many to queue now.** [Decided 2026-11-17](../../archive/DECISIONS-2026-11-17.md#games): PP2, PP9, PP3 and PP4 are admitted for definition in that order; PP5 to PP8 keep their conditions. Earlier default: this study queues PP1 only, as the procedure asks (its first eligible definition); PP2–PP9 wait in the [packet](RECOMMENDATIONS.md#puzzle-pages-recommendations) until the developer admits more.
 
 ## Build slices, in order
 

@@ -107,6 +107,8 @@ Long-term arc: a preschooler fills one striped gap in a nearly full bed; pre-K f
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the game stays pre-K and up (1: the default); level 13 stays a proposal. A "default" or "lean" below that says otherwise is superseded.
+
 1. **A preschool door (level 14 *One little gap*).** Open `preschool` on Block Garden with a 4×4 bed and one piece, or keep the game at pre-K and up (default: keep pre-K and up until a person sees a four-year-old play level 1 on an iPad).
 Decision 1 is added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md). Box clears (level 13 *Box garden*) are not a new decision: the October 23 record already keeps them a proposal, so level 13 stays a sketch until the developer reopens it.
 

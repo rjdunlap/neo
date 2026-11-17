@@ -114,6 +114,8 @@ None needed for grown-ups: 6 → 12 → 15 → 18 gems is already a gentle slope
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** levels 1–2 open to `school` (1: yes, now; the iPad condition is parked); the Zen refill is dropped (2); no couch course (3). A "default" or "lean" below that says otherwise is superseded.
+
 1. **Open levels 1–2 to the school band?** Lean: yes, after a child plays them once on the iPad; it costs one voice pass and a `LEVELS` line.
 2. **Keep the roadmap's Zen refill proposal or drop it?** Lean: drop it (reasons above); levels 5–8 give the grown-up who wants "more" finite trays instead.
 3. **A frozen Gem Swap course, *The Big Trays*?** Five frozen trays from levels 4–6 in `src/couch/courses.ts` (the [course pattern](../DESIGN.md), as Lantern Lights has), scored as swaps over par, shown on the couch puzzle shelf. The roadmap lists it as a proposal, but couch play retires at Lands stage E, so new couch-only work waits for the developer. Lean: skip unless couch play is staying; if built, after slice 2 (couch-course tier: unit tests, `couchcourse` filtered, build).

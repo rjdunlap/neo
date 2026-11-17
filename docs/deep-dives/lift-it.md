@@ -108,6 +108,8 @@ Counting the level 7 drawing, segment by segment: the rope is tied to the crate'
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the toddler entry, level 10 *One big pull*, is opened (1: yes, the youngest bands come first); pre-K stays below level 9 (2). A "default" or "lean" below that says otherwise is superseded.
+
 By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S8) the definition's six defaults stand, including no journal entry. Two new calls, neither blocking slices 1–5:
 
 1. **A toddler entry, level 10 *One big pull*?** Default: no (the definition's decision 1); if yes, it also needs a person to watch a toddler find the knot.

@@ -2,6 +2,8 @@
 
 The pick list for one bounded session each (a game item may batch several related levels and content subtasks): **Next ten** is in priority order (eligible creature-world explorations first, then content slices), and **Queued** holds the other eligible build, definition and research slices grouped by game or study, in the order its dive gives. Take the first line of Next ten that no open PR, branch or worktree claims (`scripts/overlap.sh <game-id> <path>…`), read its dive or definition before claiming, and at closeout remove the landed line (`git rm` its file in `docs/ready/next/`, or delete its Queued line here), add a line for any slice the landing unblocks (the next level of a definition or dive) if it has none, and, when Next ten now holds fewer than five lines that a routine could take (unclaimed and not waiting on a playtest, a reviewer or the developer), refill it in the same closeout from Queued (move the line into a file with `node scripts/ready.mjs add "…"` and delete it from Queued) (eligible RW items first), reserving at least three places for study definitions and one for research when available, and when Queued runs low, refill it from the dives' `## Build slices, in order` sections after checking each against `git log origin/main`.
 
+Decisions made 2026-11-17: the developer delegated the calls the refill had skipped as gated, and the [record](archive/DECISIONS-2026-11-17.md) settles them; the lines they unblock are in Next ten and under *Unblocked by the decisions of 2026-11-17* below. Only the RW08 cutover and the Portuguese reviewer still wait on the developer.
+
 Refilled 2026-11-17 after the queue ran nearly dry: every candidate was checked against `origin/main` (level tables, code and `git log`), because the [batch plans](GAME-BATCHES.md) turned out to be fully built and many dive slice lines still carry a "decision" label that each dive's own *Decided 2026-10-23* note settled. The [entry](verification/2026-11-17-ready-refill.md) lists what was skipped as gated.
 
 Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in [implementation batches](GAME-BATCHES.md), with original subtask scopes retained there. Settled October 23 identity/accounting/reviewer decisions use the [decision record](archive/DECISIONS-2026-10-23.md#standing-rules): building-session source and actual capacity checks still apply; practical-care and sensitive cultural content remain deferred. Study follow-ups and research were selected by the developer the same day; see the [study backlog](STUDY-BACKLOG.md). Each line keeps its check tier in parentheses; being ready for a rework exploration does not authorize its downstream implementation (RW02b's candidate generation runs through the [art request queue](rework/art-requests/QUEUE.md), not a session slice, and RW06–RW12 wait on the packets above them in the [sequence](rework/WORK-ITEMS.md#sequence)). Definitions and research below are explicitly selected for routine dispatch; their downstream builds still need their own ready packet. Never number Queued lines by hand; Next ten's file numbers leave gaps on purpose (a playtest fix takes `node scripts/ready.mjs add --before=NNN`).
@@ -14,13 +16,13 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Queued
 
-- **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check; status `person`): once someone has listened to the first 215 clips on a phone ([what the phone playtest can answer](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
+- **Better voice V1 (remaining): render the rest of the slot-free script in batches** (assets tier, offline check; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), no longer waiting on the listen): add line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally, the lines of the upright games first, one batch a session, each recording the size it adds to the offline cache; device speech stays the fallback, slotted lines (V3) stay on device speech and nothing is stitched until someone has listened. A listen can roll a batch back. [Roadmap](ROADMAP.md#a-better-voice)
 
-- **P5, the other residents follow** (content, status `person`: waits on a look at a short capture of Trill's walk, chime and return, and whether it reads as alive, during the phone playtest; the pilot is built, nothing else is queued until then): if it does, give the other five second-wave residents a route and one thing to use in their locations through `ResidentSpec.carriesOn` and `wanderRoute`, with the pilot's rules (nothing hungry, owed or changed while she is away; every stop clears the spots, the signpost, the guide corner and the heading). [P5](POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m)
+- **P5, the other residents follow** (content; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), the session judges it): first take a scripted capture strip of Trill's walk, chime and return and judge whether it reads as alive, recording the strip and the judgement; if it does, give the other five second-wave residents a route and one thing to use in their locations through `ResidentSpec.carriesOn` and `wanderRoute`, with the pilot's rules. A phone look can roll it back. [Pok Pok P5](POK-POK.md), [POLISH](rework/POLISH.md)
 
 
 
-- **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
+- **RW14 slice 10, the other ten backdrops** (images only; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#rework)): the session first does the screenshot review of slices 4 and 6 beside the untouched lands itself and records it; if it passes, R26's ten backdrops follow through `scripts/codex-image.sh`. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
 
@@ -42,6 +44,42 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)
 
 - **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
+
+### Unblocked by the decisions of 2026-11-17
+
+Each was skipped as gated by the refill and is settled in the [record](archive/DECISIONS-2026-11-17.md). A slice that names a probe runs it first, in the same session, and stops with a note in the dive if it fails.
+
+- **Thumb sizes of the upright grown-up games, in pixels** (docs and a test helper: typecheck and the upright layout tests): measure the smallest target of each upright `grownup` game in CSS pixels at 390 × 844, list them in the phone-portrait definition, and queue a fix line for any under about 44 that does not zoom or scroll. [Roadmap 6](ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09)
+
+- **The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](NEW-GAME.md) now asks.
+
+- **Define play first, set up after** (TotoLogic P1; docs only, after the question-on-screen definition): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
+
+- **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](TOTOLOGIC.md#proposals)
+
+- **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
+
+- **`lift-it` level 10, One big pull** (a toddler entry; new levels plus the band, land and entry tests): as the dive specifies it. [Dive](deep-dives/lift-it.md#decisions-for-the-developer)
+
+- **`puddle-gobble` level 13, Splash** (a lap entry; new levels plus the band, land and entry tests): the puddle splashes toward any touch, three shells, no growth. [Dive](deep-dives/puddle-gobble.md#decisions-for-the-developer)
+
+- **`mossy-path` level 12, Turtle walk** (a lap entry; the same tier): any touch steps the turtle along a straight corridor. [Dive](deep-dives/mossy-path.md#decisions-for-the-developer)
+
+- **`bolt-boards` lap entry** (the same tier): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](deep-dives/bolt-boards.md#decisions-for-the-developer)
+
+- **`draw-the-pattern` level 11, Spiral and eight** (a school window; probe first: a rule test that the rings and lobes stay two corridors apart, then new levels plus the band and land tests). [Dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)
+
+- **`number-trails` level 7, Ten, and some more** (a school window, school 5–7; layout probe first, then new levels plus the band and land tests): a ten-frame and the teens. [Dive](deep-dives/number-trails.md#decisions-for-the-developer)
+
+- **`swing-pals` files a discovery** (existing-game change plus the journal tests): "a longer rope swings slower", filed the first time a round shows it. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer)
+
+- **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which waits for RW10's packet). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
+
+- **Definitions, one docs-only session each, in this order where a study gives one:** Word Code (PP9), Bunny Patches (PP3) and Garden Rows' tall flowers (PP4) from the [puzzle-pages study](deep-dives/subjects/puzzle-pages.md#decisions-for-the-developer); Swing Pals *Paint the beat*, then its level 9 after a `swingLayout` probe ([dive](deep-dives/swing-pals.md#decisions-for-the-developer)); Draw the Pattern level 12 *Your pattern* ([dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)); and RW10 ([work items](rework/WORK-ITEMS.md#sequence)). [Record](archive/DECISIONS-2026-11-17.md#games)
+
+- **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Not Always 4–6 ([study](deep-dives/subjects/philosophy-reasoning.md)), Notice Board 4–5 ([study](deep-dives/subjects/media-literacy.md)), Shell Rows 4–5 ([study](deep-dives/subjects/strategy-games.md)), Swap Meet 5–6 ([study](deep-dives/subjects/money-economy.md)), Village Vote 4–6 ([study](deep-dives/subjects/community-civics.md)), Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
+
+- **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
 

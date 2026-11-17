@@ -94,6 +94,8 @@ Level 10 *Count the dots* is the between-level: appended ID 10, placed by pre-K'
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the lap entry, level 13 *Splash*, is opened (1: yes); nothing is filed in the journal (2). A "default" or "lean" below that says otherwise is superseded.
+
 1. **Lap entry.** Open lap with an appended level 13 *Splash* (lap 13, `entryLevels` [13]; level 12 is the defined *Two pails*)? Default: no, as the definition left it.
 2. **Journal.** File the finish's tidy row (the things she soaked, smallest to biggest) as a journal discovery the first time each kind is soaked? Default: no, nothing is filed.
 
