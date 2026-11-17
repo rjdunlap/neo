@@ -327,6 +327,7 @@ export const SUITES = [
   'crossword',
   'logicgrid',
   'timelinetrail',
+  'timelinetrailproof',
   'rivertablets',
   'caravandays',
   'waterroad',
@@ -501,6 +502,7 @@ export const ALL_SUITES = [
   'crossword',
   'logicgrid',
   'timelinetrail',
+  'timelinetrailproof',
   'rivertablets',
   'caravandays',
   'waterroad',
@@ -1098,6 +1100,7 @@ export async function runSuite(suite, fixture) {
     playdateWorkshopPlay,
     sproutShufflePlay,
     timelineTrailPlay,
+    timelineTrailProofPlay,
     riverTabletsPlay,
     caravanDaysPlay,
     waterRoadPlay,
@@ -1291,6 +1294,8 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'crossword') await crosswordPlay();
   if (suite === 'all' || suite === 'logicgrid') await logicGridPlay();
   if (suite === 'all' || suite === 'timelinetrail') await timelineTrailPlay();
+  if (suite === 'all' || suite === 'timelinetrail' || suite === 'timelinetrailproof')
+    await timelineTrailProofPlay();
   if (suite === 'all' || suite === 'rivertablets') await riverTabletsPlay();
   if (suite === 'all' || suite === 'caravandays') await caravanDaysPlay();
   if (suite === 'all' || suite === 'waterroad') await waterRoadPlay();

@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
 import {
+  askable,
   asking,
   bare,
   CARD,
@@ -34,9 +35,17 @@ import {
   PlaceBag,
   place,
   planFor,
+  PROOF_PLACES,
+  proofLayout,
+  proofSpots,
+  proves,
+  proving,
   roundFor,
+  spotAt,
+  spotReason,
   Tally,
   validGaps,
+  type ProofPlace,
   type Rect,
   type Round,
 } from './logic';
@@ -77,7 +86,7 @@ describe('the places', () => {
     expect(stillHere('green')).toEqual(['big rock']);
     expect(stillHere('oven')).toEqual(['stone oven']);
     expect(stillHere('shore')).toEqual(['rock']);
-    expect(stillHere('tree')).toEqual([]);
+    expect(stillHere('tree')).toEqual(['grass']);
     for (const id of LATER_PLACES)
       for (const e of stillHere(id)) expect(picturesWith(id, e)).toBe(PLACES[id].stages.length);
   });
@@ -174,7 +183,7 @@ describe('rounds', () => {
 
   it('clamps levels to the plans', () => {
     expect(planFor(0).level).toBe(1);
-    expect(planFor(9).level).toBe(6);
+    expect(planFor(9).level).toBe(7);
     expect(planFor(6).name).toBe('We can’t tell');
     expect(planFor(5).name).toBe('Still here');
     expect(planFor(4).name).toBe('A clue inside');
@@ -376,7 +385,7 @@ describe('level 4, a clue inside', () => {
 
 describe('level 5, still here', () => {
   it('takes the green and the oven in turn, the first stage hung and three loose, and is school only', () => {
-    expect(LEVELS.school).toEqual({ min: 2, max: 6 });
+    expect(LEVELS.school).toEqual({ min: 2, max: 7 });
     expect(LEVELS.prek).toEqual({ min: 1, max: 4 });
     const places = Array.from({ length: 8 }, (_, i) => roundFor(5, new Rng(i)).place);
     for (let i = 0; i < 8; i += 2) expect(new Set(places.slice(i, i + 2))).toEqual(new Set(LATER_PLACES));
@@ -623,6 +632,179 @@ describe('level 6, we can’t tell', () => {
   });
 });
 
+describe('level 7, show me why', () => {
+  it('builds a line of four of a place with something that grows, never the shore, and is school only', () => {
+    expect(planFor(7)).toMatchObject({ level: 7, name: 'Show me why', cards: 4, hungAtStart: 1 });
+    expect(LEVELS).toEqual({
+      preschool: { min: 1, max: 2 },
+      prek: { min: 1, max: 4 },
+      school: { min: 2, max: 7 },
+    });
+    expect(PROOF_PLACES).toEqual(['tree', 'nest', 'green', 'oven']);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(7, new Rng(seed));
+      seen.add(`${r.place}-${r.ask}`);
+      expect(r.place).not.toBe('shore');
+      expect(r.cards).toEqual([0, 1, 2, 3]);
+      expect(r.hung).toEqual([0]);
+      expect([...r.loose].sort()).toEqual([1, 2, 3]);
+      // The asked card is never the first: something has to come before it.
+      expect(r.ask).toBeGreaterThanOrEqual(1);
+      expect(askable(r.place as ProofPlace)).toContain(r.ask);
+      // Any build order fills the line in stage order, and only then is the question open.
+      let line = [...r.hung];
+      for (const c of r.loose) {
+        expect(proving(r, line)).toBe(false);
+        const [gap, ...more] = validGaps(r, line, c);
+        expect(more).toEqual([]);
+        line = (place(r, line, c, gap) as { line: number[] }).line;
+      }
+      expect(line).toEqual([0, 1, 2, 3]);
+      expect(proving(r, line)).toBe(true);
+    }
+    // Every askable picture of every place turns up.
+    expect([...seen].sort()).toEqual(PROOF_PLACES.flatMap((p) => askable(p).map((k) => `${p}-${k}`)).sort());
+    const again = roundFor(7, new Rng(9), 'oven');
+    expect(roundFor(7, new Rng(9), 'oven')).toEqual(again);
+    expect(again.place).toBe('oven');
+  });
+
+  it('asks about what grows: the tree, the pet, the vine and the flowers prove; a thing built or in the picture before does not', () => {
+    expect(PROOF_PLACES.map((p) => askable(p))).toEqual([
+      [1, 2],
+      [1, 2],
+      [1, 2, 3],
+      [1, 2, 3],
+    ]);
+    const frame = { x: 0, y: 0, w: 360, h: 360 };
+    const proofs: Record<string, string[]> = {};
+    for (const p of PROOF_PLACES)
+      for (const k of askable(p)) {
+        const where = `${p}-${k}`;
+        const spots = proofSpots(p, k, frame);
+        const shows = PLACES[p].stages[k].shows;
+        expect(
+          spots.some((s) => s.proves),
+          where,
+        ).toBe(true);
+        expect(
+          spots.some((s) => !s.proves),
+          where,
+        ).toBe(true);
+        for (const s of spots) {
+          expect(shows, where).toContain(s.element);
+          expect(s.proves, where).toBe(proves(p, k, s.element));
+          const reason = spotReason(p, k, s.element);
+          expect(reason, where).not.toMatch(/undefined|\d/);
+          // A thing that proves nothing gets a reason that says so; the proof says what has grown or changed.
+          if (s.proves) expect(reason, where).toMatch(/grown|climbed|hatched/);
+          else expect(reason, where).toMatch(/can’t tell us when|shows when\.$/);
+          // The look of a thing is never called old or new.
+          expect(reason, where).not.toMatch(/\b(old|new|older|newer)\b/i);
+        }
+        proofs[where] = [...new Set(spots.filter((s) => s.proves).map((s) => s.element))];
+      }
+    expect(proofs).toEqual({
+      'tree-1': ['crown', 'trunk'],
+      'tree-2': ['crown', 'trunk'],
+      'nest-1': ['hatchling'],
+      'nest-2': ['pet'],
+      'green-1': ['tree'],
+      'green-2': ['tree'],
+      'green-3': ['tree', 'flower bed'],
+      'oven-1': ['vine'],
+      'oven-2': ['vine'],
+      'oven-3': ['vine'],
+    });
+    // The grand things, the plain things and the cat prove nothing; what is still here says so in its own words.
+    expect(spotReason('green', 1, 'merry-go-round')).toBe(
+      'A merry-go-round can be built any time; the tree shows when.',
+    );
+    expect(spotReason('green', 2, 'bench')).toBe('A bench can be built any time; the tree shows when.');
+    expect(spotReason('green', 3, 'bench')).toBe(
+      'The bench is in the picture before too, so it can’t tell us when.',
+    );
+    expect(spotReason('green', 2, 'big rock')).toBe(
+      'The big rock is in every picture, so it can’t tell us when.',
+    );
+    expect(spotReason('oven', 3, 'sleeping cat')).toBe(
+      'A cat can nap there on any day; the vine shows when.',
+    );
+    expect(spotReason('nest', 1, 'nest')).toBe(
+      'The nest is in the picture before too, so it can’t tell us when.',
+    );
+    expect(spotReason('tree', 2, 'grass')).toBe('The grass is in every picture, so it can’t tell us when.');
+  });
+
+  it('keeps every spot at least 100 units, inside the frame and apart, and the card before it full size, at the four views', () => {
+    for (const [name, v] of Object.entries(VIEWS))
+      for (const p of PROOF_PLACES)
+        for (const k of askable(p)) {
+          const where = `${p}-${k} ${name}`;
+          const r: Round = { level: 7, place: p, cards: [0, 1, 2, 3], hung: [0], loose: [1, 2, 3], ask: k };
+          const l = proofLayout(r, v)!;
+          expect(l, where).not.toBeNull();
+          expect(l.frame.w, where).toBeGreaterThanOrEqual(360);
+          expect(l.spots.length, where).toBeGreaterThanOrEqual(2);
+          for (const a of l.spots) {
+            expect(Math.min(a.w, a.h), where).toBeGreaterThanOrEqual(100);
+            expect(a.x, where).toBeGreaterThanOrEqual(l.frame.x);
+            expect(a.y, where).toBeGreaterThanOrEqual(l.frame.y);
+            expect(a.x + a.w, where).toBeLessThanOrEqual(l.frame.x + l.frame.w);
+            expect(a.y + a.h, where).toBeLessThanOrEqual(l.frame.y + l.frame.h);
+            for (const b of l.spots) if (a !== b) expect(overlaps(a, b), where).toBe(false);
+            // A tap in the middle of a spot finds that spot.
+            expect(spotAt(l.spots, { x: a.x + a.w / 2, y: a.y + a.h / 2 }), where).toBe(a);
+          }
+          // A corner of the frame's border is no spot: a tap there is free.
+          expect(spotAt(l.spots, { x: l.frame.x + 2, y: l.frame.y + 2 }), where).toBeNull();
+          expect([l.before.w, l.before.h], where).toEqual([CARD, CARD]);
+          expect(l.before.x, where).toBeGreaterThanOrEqual(0);
+          expect(l.before.y + l.before.h, where).toBeLessThanOrEqual(v.h);
+          // The card before clears the frame's wooden rim, the pet's corner and the home button.
+          const rim = { x: l.frame.x - 16, y: l.frame.y - 16, w: l.frame.w + 32, h: l.frame.h + 32 };
+          expect(overlaps(l.before, rim), where).toBe(false);
+          expect(overlaps(l.before, { x: 0, y: v.h - 150, w: 150, h: 150 }), where).toBe(false);
+          expect(overlaps(l.before, { x: 0, y: 0, w: 120, h: 120 }), where).toBe(false);
+        }
+    // The shore is never asked, and a round of another level has no question.
+    expect(proofLayout(roundFor(3, new Rng(1), 'shore'), VIEWS.landscape)).toBeNull();
+  });
+
+  it('counts a miss per distinct wrong thing, the same again nothing, and lights the proof after two or on Show a hint', () => {
+    const t = new Tally();
+    // Elements of the green's last picture, by index: the tree, the flower bed, the bench, the big rock.
+    expect(t.missed(Tally.PROOF, 2)).toEqual({ counted: true, lit: false });
+    expect(t.missed(Tally.PROOF, 2)).toEqual({ counted: false, lit: false });
+    expect(t.missed(Tally.PROOF, 3)).toEqual({ counted: true, lit: true });
+    expect(t.help(Tally.PROOF)).toBe(false);
+    expect([t.misses, t.hints, t.glowing]).toEqual([2, 1, Tally.PROOF]);
+    t.hung(Tally.PROOF);
+    expect(t.glowing).toBeNull();
+    // Show a hint first is the same single hint.
+    const u = new Tally();
+    expect(u.help(Tally.PROOF)).toBe(true);
+    expect(u.help(Tally.PROOF)).toBe(false);
+    expect([u.misses, u.hints]).toEqual([0, 1]);
+  });
+
+  it('has its instruction, question lines and how-to step', () => {
+    for (const id of [
+      'trail.instruct.7',
+      'trail.proof-ask',
+      'trail.proof-yes',
+      'trail.proof-no',
+      'trail.proof-again',
+      'trail.proof-glow',
+      'trail.proof-help',
+    ])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeTruthy();
+    expect(SCRIPT['trail.proof-ask'][0]).toContain('{caption}');
+    expect(SCRIPT['trail.proof-no'][0]).toContain('{reason}');
+  });
+});
+
 describe('misses and hints', () => {
   it('count one miss per distinct wrong drop and at most one hint per card, from the glow or Show a hint', () => {
     const t = new Tally();
@@ -658,7 +840,7 @@ describe('layout', () => {
   const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
 
   it('keeps full-size posts, gaps, cards and tray apart and on screen on the iPad, in every line state of every level', () => {
-    for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
       for (let seed = 0; seed < 20; seed++) {
         const r = roundFor(level, new Rng(seed));
         let line: number[] = [...r.hung];
