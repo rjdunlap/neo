@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 2–6 |
+| school | 2–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 4 | Surprises: the penguin and the bat, 3 clues, 6 friends |
 | 5 | Which group? The clue is a bird or a mammal, 6 friends |
 | 6 | You ask: choose the questions, 6 friends |
+| 7 | Make a riddle: choose clues until the pet finds your friend |
 
 <!-- end generated -->
 

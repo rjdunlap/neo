@@ -22,14 +22,19 @@ import {
   FEATURES,
   FRIENDS,
   galleryLayout,
+  giveClue,
   GROUP_SIGNS,
   helpTargets,
   isGroup,
   lacksText,
   LEVELS,
   makeRound,
+  pickFriend,
   planFor,
   requestHelp,
+  riddleHint,
+  riddleLayout,
+  riddleLeft,
   startPlay,
   tap,
   type Asked,
@@ -39,6 +44,7 @@ import {
   type GroupClue,
   type Rect,
   type Reason,
+  type Statement,
   type WhoPlan,
   type WhoPlay,
   type WhoRound,
@@ -275,6 +281,28 @@ function questionCard(f: Feature): Container {
   return c;
 }
 
+const CLUE_W = 130;
+
+/**
+ * A clue card for level 7's tray: the feature's picture, with a cross for a feature her friend lacks ("I can't fly"),
+ * 130×110 before scaling.
+ */
+function clueCard(s: Statement): Container {
+  const c = new Container();
+  c.addChild(tile(CLUE_W, TRAY_CARD_H, 'white'));
+  const pic = featureIcon(s.feature);
+  pic.scale.set(0.8);
+  c.addChild(pic);
+  if (!s.yes) {
+    pic.scale.set(0.7);
+    pic.x = -24;
+    const m = answerMark(false, 17);
+    m.position.set(38, 18);
+    c.addChild(m);
+  }
+  return c;
+}
+
 const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
 const GROUP_WORD: Record<GroupClue, string> = { bird: 'bird', mammal: 'mammal' };
@@ -284,7 +312,11 @@ const GROUP_WORD: Record<GroupClue, string> = { bird: 'bird', mammal: 'mammal' }
  * drawn bird in flight would teach the shortcut level 5 undoes; the two groups differ by colour.
  */
 export function rosetteIcon(group: GroupClue): Graphics {
-  const c = group === 'bird' ? swatch.blue : swatch.orange;
+  return rosette(group === 'bird' ? swatch.blue : swatch.orange);
+}
+
+/** A rosette in one colour: a group clue's picture, and (small, pink) the ribbon on the friend she picks at level 7. */
+function rosette(c: (typeof swatch)[keyof typeof swatch]): Graphics {
   const g = new Graphics();
   for (const dx of [-14, 14])
     g.poly([
@@ -406,11 +438,15 @@ class WhoAmI implements Game {
   private botHeard = -1;
   /** Level 6: she asks the questions. */
   private readonly asking: boolean;
+  /** Level 7: she picks a friend and gives the clues; the pet turns the friends over. */
+  private readonly riddling: boolean;
   private readonly tray = new Container();
-  /** Level 6: the question cards on screen, left to right. */
+  /** Levels 6 and 7: the question or clue cards on screen, left to right. */
   trayCards: { feature: Feature; node: Container }[] = [];
-  /** Level 6: the question hint is showing (the most even split glows). */
+  /** Level 6: the question hint is showing (the most even split glows). Level 7: the clue hint (the card that turns over the most). */
   private trayGlow = false;
+  /** Level 7: the ribbon on the friend she picked. */
+  private ribbon: Graphics | null = null;
   /** Level 6: an answer on the sign that is not being turned for (a dud's, while the pet says so). */
   private shown: Asked | null = null;
 
@@ -419,6 +455,7 @@ class WhoAmI implements Game {
     this.plan = planFor(ctx.level);
     this.round = makeRound(this.plan.level, ctx.rng);
     this.asking = this.plan.mode === 'ask';
+    this.riddling = this.plan.mode === 'riddle';
     this.play = startPlay(this.round, this.plan.mode, ctx.rng);
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.bg, this.glow, this.signHolder, this.strip, this.tray);
@@ -456,11 +493,20 @@ class WhoAmI implements Game {
   /** What the sign says now: the clue, or, once a group clue's hint has shown what the group means, that meaning. */
   private get signLine(): LineId {
     if (this.asking) return 'whoami.instruct-ask';
+    if (this.riddling) return this.play.picked === null ? 'whoami.riddle-pick' : 'whoami.riddle-give';
     const c = this.clue;
     return isGroup(c) && this.play.meaning ? (`whoami.hint-group.${c}` as LineId) : this.clueLine(c);
   }
 
   async start() {
+    if (this.riddling) {
+      await this.ctx.say('whoami.instruct-riddle');
+      if (!this.alive) return;
+      this.busy = false;
+      // Unless she has already picked while the pet was talking.
+      if (this.play.picked === null) void this.ctx.instruct('whoami.riddle-pick');
+      return;
+    }
     if (this.asking) {
       // The instruction is itself what the pet repeats until she asks.
       await this.ctx.instruct('whoami.instruct-ask');
@@ -480,7 +526,16 @@ class WhoAmI implements Game {
   }
 
   private layout() {
-    return this.asking ? askLayout(this.view) : galleryLayout(this.view, this.cards.length);
+    return this.riddling
+      ? riddleLayout(this.view)
+      : this.asking
+        ? askLayout(this.view)
+        : galleryLayout(this.view, this.cards.length);
+  }
+
+  /** A clue card's words: "I have wings!" or "I can't fly." */
+  private statementLine(s: Statement): LineId {
+    return s.yes ? this.clueLine(s.feature) : (`whoami.deny.${s.feature}` as LineId);
   }
 
   /** Level 6: the answer on the sign now: a dud's while the pet says so, else the one she is turning friends over for. */
@@ -492,11 +547,16 @@ class WhoAmI implements Game {
   private async sayAnswer(a: Asked) {
     await this.ctx.say(a.yes ? 'whoami.yes' : 'whoami.no');
     if (!this.alive) return;
-    await this.ctx.say(a.yes ? this.clueLine(a.feature) : (`whoami.deny.${a.feature}` as LineId));
+    await this.ctx.say(this.statementLine(a));
   }
 
   /** What a tap on the sign says again, free: the clue, or at level 6 the answer (the instruction while she is choosing). */
   private repeatSign() {
+    if (this.riddling) {
+      // Her newest clue, or what to do while she has given none.
+      const last = this.play.given.at(-1);
+      return void this.ctx.say(last ? this.statementLine(last) : this.signLine);
+    }
     // While the pet is still asking her question aloud, only an answer already on the sign is said again.
     const a = this.asking ? (this.busy ? this.shown : this.answer) : null;
     if (this.asking && this.busy && !a) return;
@@ -506,10 +566,11 @@ class WhoAmI implements Game {
 
   private showSign() {
     if (this.sign) this.sign.destroy({ children: true });
-    const a = this.answer;
-    const s = this.asking
-      ? signArt(a ? a.feature : null, 320, 130, false, a?.yes)
-      : signArt(this.clue, 320, 130, this.play.meaning);
+    const a = this.riddling ? (this.play.given.at(-1) ?? null) : this.answer;
+    const s =
+      this.asking || this.riddling
+        ? signArt(a ? a.feature : null, 320, 130, false, a?.yes)
+        : signArt(this.clue, 320, 130, this.play.meaning);
     s.eventMode = 'static';
     s.hitArea = new Rectangle(-160, -65, 320, 130);
     onTap(s, () => {
@@ -526,6 +587,7 @@ class WhoAmI implements Game {
   private drawTray() {
     this.tray.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.trayCards = [];
+    if (this.riddling) return this.drawClueTray();
     if (!this.asking || this.play.done) return;
     const L = askLayout(this.view);
     this.play.tray.forEach((feature, k) => {
@@ -539,6 +601,92 @@ class WhoAmI implements Game {
       this.tray.addChild(node);
       this.trayCards.push({ feature, node });
     });
+  }
+
+  /** Level 7: her tray of clue cards. A card stays where it was dealt, and a given card leaves a gap. */
+  private drawClueTray() {
+    if (this.play.done) return;
+    const L = riddleLayout(this.view);
+    const left = riddleLeft(this.play);
+    this.play.cards.forEach((s, k) => {
+      if (!left.includes(s)) return;
+      const r = L.tray[k];
+      const node = clueCard(s);
+      node.scale.set(Math.min(r.w / CLUE_W, r.h / TRAY_CARD_H));
+      node.position.set(r.x + r.w / 2, r.y + r.h / 2);
+      node.hitArea = new Rectangle(-CLUE_W / 2, -TRAY_CARD_H / 2, CLUE_W, TRAY_CARD_H);
+      onTap(node, () => void this.give(s.feature), { cooldown: 200 });
+      this.tray.addChild(node);
+      this.trayCards.push({ feature: s.feature, node });
+    });
+  }
+
+  /** Level 7: she taps a friend. Until her first clue that picks it, as often as she likes; nothing here is judged. */
+  private pick(i: number) {
+    const out = pickFriend(this.play, i);
+    if (out.kind === 'ignored') return;
+    if (out.kind === 'peek') return void this.peek(this.cards[i]);
+    sfx.tick();
+    // Her own friend again, or any friend once a clue is given: nothing changes, and the pet says what to do.
+    if (out.kind !== 'picked') return void this.ctx.say('whoami.riddle-give');
+    this.trayGlow = false;
+    sfx.pop(9);
+    const critter = this.cards[i].art.children[0];
+    if (critter instanceof Critter) critter.hop(0.5);
+    this.placeRibbon();
+    this.drawTray();
+    void this.ctx.instruct('whoami.riddle-give');
+  }
+
+  /** Level 7: the ribbon sits on the top corner of the friend she picked. */
+  private placeRibbon() {
+    const i = this.play.picked;
+    if (i === null) return;
+    if (!this.ribbon) {
+      this.ribbon = rosette(swatch.pink);
+      this.ribbon.scale.set(0.5);
+    }
+    this.ribbon.position.set(CARD_W / 2 - 34, -CARD_H / 2 + 36);
+    this.cards[i].node.addChild(this.ribbon);
+  }
+
+  /** Level 7: the pet's thought about who is still standing, by name while there are two or three. */
+  private think(left: readonly FriendId[]) {
+    const [a, b, c] = left.map((f) => FRIENDS[f].name);
+    if (left.length === 2) return this.ctx.say('whoami.riddle-think.two', { a, b });
+    if (left.length === 3) return this.ctx.say('whoami.riddle-think.three', { a, b, c });
+    return this.ctx.say('whoami.riddle-think.many', {
+      count: COUNT_WORDS[left.length] ?? String(left.length),
+    });
+  }
+
+  /**
+   * Level 7: she taps a clue card. The clue is said for her, the pet turns over every friend it does not fit and thinks
+   * aloud about who is left. Every card is true, so nothing is a miss.
+   */
+  private async give(feature: Feature) {
+    if (this.busy || this.play.done) return;
+    const out = giveClue(this.play, feature);
+    if (out.kind === 'ignored') return;
+    this.busy = true;
+    this.trayGlow = false;
+    sfx.tick();
+    this.showSign();
+    if (this.sign) {
+      this.sign.rotation = -0.2;
+      void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 });
+    }
+    await this.ctx.say(this.statementLine(out.statement));
+    if (!this.alive) return;
+    for (const i of out.turned) {
+      sfx.whoosh();
+      await this.flip(this.cards[i], true);
+      if (!this.alive) return;
+    }
+    if (out.done) return void this.finale(this.play.picked!);
+    await (out.turned.length === 0 ? this.ctx.say('whoami.riddle-same') : this.think(out.left));
+    if (!this.alive) return;
+    this.busy = false;
   }
 
   /** Level 6: she taps a question card. The pet asks it aloud for her and answers; asking is never a miss. */
@@ -591,17 +739,15 @@ class WhoAmI implements Game {
     if (this.asking) {
       // The answers so far that told friends apart, the newest last; a dud's answer was the same for everyone.
       const told = this.play.asked.filter((a) => !a.dud && a !== this.play.current).slice(-ASK_STRIP);
-      told.forEach((a, k) => {
-        const r = L.strip[k];
-        const t = signArt(a.feature, r.w, r.h, false, a.yes);
-        t.position.set(r.x + r.w / 2, r.y + r.h / 2);
-        t.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
-        onTap(t, () => {
-          sfx.tick();
-          void this.sayAnswer(a);
-        });
-        this.strip.addChild(t);
-      });
+      told.forEach((a, k) => this.stripAnswer(a, L.strip[k], () => void this.sayAnswer(a)));
+      return;
+    }
+    if (this.riddling) {
+      // Her riddle so far, in her order; the newest clue is on the sign.
+      const earlier = this.play.given.slice(0, -1);
+      earlier.forEach((s, k) =>
+        this.stripAnswer(s, L.strip[k], () => void this.ctx.say(this.statementLine(s))),
+      );
       return;
     }
     for (let k = 0; k < this.play.clue; k++) {
@@ -618,9 +764,22 @@ class WhoAmI implements Game {
     }
   }
 
+  /** Levels 6 and 7: one answer or clue in the strip, with its tick or cross; a tap says it again. */
+  private stripAnswer(a: Statement, r: Rect, again: () => void) {
+    const t = signArt(a.feature, r.w, r.h, false, a.yes);
+    t.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    t.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+    onTap(t, () => {
+      sfx.tick();
+      again();
+    });
+    this.strip.addChild(t);
+  }
+
   private async choose(i: number) {
     const card = this.cards[i];
     if (this.busy || this.play.done) return;
+    if (this.riddling) return this.pick(i);
     const out = tap(this.play, i);
     if (out.kind === 'ignored') return;
     if (out.kind === 'peek') return void this.peek(card);
@@ -720,6 +879,14 @@ class WhoAmI implements Game {
   /** The pause sheet's Show a hint: the same glow or shimmer, counted once per round (level 1) or clue; asked again it repeats the clue. */
   askForHint() {
     if (this.busy || this.play.done) return;
+    if (this.riddling) {
+      // Before she has picked there is nothing to hint at. After, the clue that turns over the most friends glows:
+      // counted once per round, however often it shows.
+      if (this.play.picked === null) return void this.ctx.say('whoami.riddle-pick');
+      requestHelp(this.play);
+      this.trayGlow = true;
+      return void this.ctx.say('whoami.hint-riddle');
+    }
     if (this.asking && !this.play.current) {
       // The question hint: the most even split glows. Counted once per round, however often it shows.
       requestHelp(this.play);
@@ -789,6 +956,27 @@ class WhoAmI implements Game {
       life: [0.5, 0.9],
     });
     this.drawTray();
+    if (this.riddling) {
+      // The pet has found her friend, and says her riddle back in her order.
+      await this.ctx.say('whoami.riddle-know', { name: friend.name });
+      if (!this.alive) return;
+      for (const s of this.play.given) {
+        await this.ctx.say(this.statementLine(s));
+        if (!this.alive) return;
+      }
+      await this.ctx.say('whoami.riddle-back', { name: friend.name });
+      if (!this.alive) return;
+      await Promise.all(this.cards.filter((c) => c.back.visible).map((c) => this.flip(c, false)));
+      if (!this.alive) return;
+      for (const c of this.cards) {
+        const k = c.art.children[0];
+        if (k instanceof Critter) k.hop(0.6);
+      }
+      await this.ctx.say('whoami.riddle-done');
+      if (!this.alive) return;
+      // Nothing was judged: the round reports no misses, and one hint only if she asked for the glowing card.
+      return this.ctx.finish({ misses: 0, hints: this.play.hints });
+    }
     await this.ctx.say('whoami.its-me', { name: friend.name });
     if (!this.alive) return;
     if (this.asking) {
@@ -840,11 +1028,11 @@ class WhoAmI implements Game {
     const g = this.glow.clear();
     if (this.play.done) return;
     if (this.trayGlow && !this.play.current) {
-      const best = bestQuestion(this.play);
+      const best = this.riddling ? riddleHint(this.play)?.feature : bestQuestion(this.play);
       const card = this.trayCards.find((c) => c.feature === best);
       if (card) {
         const pulse = 0.6 + 0.4 * Math.sin(this.clock * 5);
-        const w = TRAY_W * card.node.scale.x + 16,
+        const w = (this.riddling ? CLUE_W : TRAY_W) * card.node.scale.x + 16,
           h = TRAY_CARD_H * card.node.scale.y + 16;
         g.roundRect(card.node.x - w / 2, card.node.y - h / 2, w, h, 22)
           .fill({ color: swatch.yellow.light, alpha: 0.5 * pulse })
@@ -866,6 +1054,13 @@ class WhoAmI implements Game {
   /** The ghost finger: tap the sign to hear each clue, then (level 1) one friend it does not fit and the one it does, or flip every friend it rules out. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.play.done || !this.sign) return null;
+    if (this.riddling) {
+      // The first friend, then at each step the clue card that turns over the most friends still standing.
+      if (this.play.picked === null) return { tap: { on: this.cards[0].node }, pause: 1.2 };
+      const best = riddleHint(this.play);
+      const card = this.trayCards.find((c) => c.feature === best?.feature);
+      return card ? { tap: { on: card.node }, pause: 1 } : null;
+    }
     if (this.botHeard !== this.play.clue) {
       this.botHeard = this.play.clue;
       return { tap: { on: this.sign } };

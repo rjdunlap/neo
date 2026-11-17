@@ -8,6 +8,20 @@ import {
   ASK_STRIP,
   askLayout,
   bestQuestion,
+  fits,
+  fitting,
+  giveClue,
+  pickFriend,
+  RIDDLE_CARDS,
+  riddleHint,
+  riddleLayout,
+  riddleLeft,
+  riddleTray,
+  riddleTrays,
+  trueOf,
+  turnsOver,
+  validTray,
+  type Statement,
   evenness,
   KINDS,
   lacksText,
@@ -126,7 +140,7 @@ describe('Who Am I? reasons', () => {
 });
 
 describe('Who Am I? rounds', () => {
-  for (const plan of PLANS.filter((p) => !p.group && p.mode !== 'ask')) {
+  for (const plan of PLANS.filter((p) => !p.group && p.mode !== 'ask' && p.mode !== 'riddle')) {
     describe(`level ${plan.level}`, () => {
       it(`builds a playable, honest round for ${SEEDS} seeds`, () => {
         const seen = new Set<FriendId>();
@@ -520,8 +534,7 @@ describe('Who Am I? level 5, Which group?', () => {
   const plan = planFor(5);
   const rounds = Array.from({ length: SEEDS }, (_, k) => roundFor(5, k + 1));
 
-  it('sits below level 6 on the school ladder and leaves pre-K alone', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 6 } });
+  it('is the one level whose first clue is a group', () => {
     expect(plan.group).toBe(true);
     expect(PLANS.filter((p) => p.group).map((p) => p.level)).toEqual([5]);
   });
@@ -861,12 +874,10 @@ describe('Who Am I? level 6, You ask', () => {
     return p.tray.find((f) => !splits(f, left)) ?? best(p);
   };
 
-  it('has an ask plan with no clue list, and school now runs 2 to 6', () => {
+  it('has an ask plan with no clue list', () => {
     expect(plan.mode).toBe('ask');
     expect(plan.friends).toBe(6);
     expect(plan.clues).toBe(0);
-    expect(LEVELS.school).toEqual({ min: 2, max: 6 });
-    expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
   });
 
   it('enumerates 68 galleries and 408 rounds', () => {
@@ -1248,6 +1259,349 @@ describe('Who Am I? level 6, You ask', () => {
         L.strip.forEach((c, i) => {
           expect(c.w, `strip ${i} w`).toBe(100);
           expect(c.h, `strip ${i} h`).toBe(100);
+        });
+        const all: [string, Rect][] = [
+          ...L.cards.map((r, i): [string, Rect] => [`card ${i}`, r]),
+          ...L.tray.map((r, i): [string, Rect] => [`tray ${i}`, r]),
+          ...L.strip.map((r, i): [string, Rect] => [`strip ${i}`, r]),
+          ['sign', L.sign],
+        ];
+        all.forEach(([n, r], i) => {
+          expect(inside(r, v.w, v.h), `${n} inside`).toBe(true);
+          expect(overlap(r, pet), `${n} pet`).toBe(false);
+          expect(overlap(r, home), `${n} home`).toBe(false);
+          all.slice(i + 1).forEach(([m, s]) => expect(overlap(r, s), `${n} / ${m}`).toBe(false));
+        });
+      });
+    }
+  });
+});
+
+describe('Who Am I? level 7, Make a riddle', () => {
+  const MAMMALS = KINDS[0],
+    FLYERS = KINDS[1];
+  const LONERS: FriendId[] = ['frog', 'turtle', 'fish'];
+  /** The 36 galleries: a four-legged mammal, a flying bird, the penguin, the bat and two of the frog, turtle and fish. */
+  const galleries: FriendId[][] = [];
+  for (const skip of LONERS)
+    for (const m of MAMMALS)
+      for (const f of FLYERS) galleries.push([m, f, 'penguin', 'bat', ...LONERS.filter((l) => l !== skip)]);
+  const pairs = galleries.flatMap((g) => g.map((friend): [FriendId[], FriendId] => [g, friend]));
+  const key = (g: readonly FriendId[]) => [...g].sort().join(',');
+  const riddle = (seed: number) => {
+    const rng = new Rng(seed);
+    return startPlay(makeRound(7, rng), 'riddle', rng);
+  };
+
+  it('is the top of the school ladder (2 to 7), and pre-K stays 1 to 2', () => {
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 7 } });
+    expect(planFor(7).mode).toBe('riddle');
+    expect(planFor(7).name).toBe('Make a riddle: choose clues until the pet finds your friend');
+    expect(PLANS).toHaveLength(7);
+  });
+
+  it('has 36 galleries and 216 pairs, and the seeded rounds draw only those, all of them', () => {
+    expect(galleries).toHaveLength(36);
+    expect(pairs).toHaveLength(216);
+    const known = new Set(galleries.map(key));
+    expect(known.size).toBe(36);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(7, seed);
+      expect(new Set(r.gallery).size, `seed ${seed}`).toBe(6);
+      expect(known.has(key(r.gallery)), `seed ${seed}`).toBe(true);
+      expect(r.gallery).toContain('bat');
+      expect(r.gallery).toContain('penguin');
+      expect(LONERS.filter((l) => r.gallery.includes(l))).toHaveLength(2);
+      expect(r.clues).toEqual([]);
+      expect(roundFor(7, seed)).toEqual(r);
+      seen.add(key(r.gallery));
+    }
+    expect(seen.size).toBe(36);
+  });
+
+  it('every pair has at least 20 fair trays, and each is fair by the table', () => {
+    let fewest = Infinity;
+    for (const [g, friend] of pairs) {
+      const trays = riddleTrays(g, friend);
+      fewest = Math.min(fewest, trays.length);
+      const open = askable(g);
+      for (const tray of trays) {
+        const ctx = `${key(g)} / ${friend}`;
+        expect(validTray(g, friend, tray), ctx).toBe(true);
+        expect(tray, ctx).toHaveLength(RIDDLE_CARDS);
+        for (const s of tray) {
+          // Each card is a question level 6 may ask, and says what the table says of her friend.
+          expect(open, ctx).toContain(s.feature);
+          expect(s.yes, ctx).toBe(FRIENDS[friend].features.includes(s.feature));
+          expect(s.feature, ctx).not.toBe('scales');
+          // No card finds her friend alone.
+          expect(g.filter((f) => fits(s, f)).length, ctx).toBeGreaterThan(1);
+        }
+        expect(fitting(g, tray), ctx).toEqual([friend]);
+        expect(tray.some((s) => s.yes) && tray.some((s) => !s.yes), ctx).toBe(true);
+      }
+    }
+    expect(fewest).toBe(20);
+  });
+
+  it('never says a "no" level 6 found unsafe: milk is never a card, nor the beak beside the turtle and the rest', () => {
+    for (const [g, friend] of pairs)
+      for (const s of trueOf(g, friend)) {
+        expect(s.feature).not.toBe('milk');
+        expect(s.feature).not.toBe('scales');
+        if (g.includes('turtle')) expect(s.feature).not.toBe('beak');
+        if (g.includes('frog')) expect(['gills', 'fins']).not.toContain(s.feature);
+        if (g.includes('fish')) expect(s.feature).not.toBe('smooth-skin');
+      }
+  });
+
+  it('the shortest riddle is two clues for 192 pairs and three for 24', () => {
+    const counts: Record<number, number> = {};
+    for (const [g, friend] of pairs) {
+      const cards = trueOf(g, friend).filter((s) => fitting(g, [s]).length > 1);
+      let best = Infinity;
+      const grow = (from: number, chosen: Statement[]) => {
+        if (chosen.length >= best) return;
+        if (chosen.length > 0 && fitting(g, chosen).length === 1) return void (best = chosen.length);
+        for (let k = from; k < cards.length; k++) grow(k + 1, [...chosen, cards[k]]);
+      };
+      grow(0, []);
+      counts[best] = (counts[best] ?? 0) + 1;
+    }
+    expect(counts).toEqual({ 2: 192, 3: 24 });
+  });
+
+  it('rejects an unfair tray: a card that is false, a card that does it alone, all of one kind, or not enough to tell', () => {
+    const g: FriendId[] = ['cat', 'duck', 'penguin', 'bat', 'frog', 'turtle'];
+    const s = (feature: Feature, yes: boolean): Statement => ({ feature, yes });
+    const fair = [s('wings', true), s('eggs', true), s('fly', false), s('fur', false), s('two-legs', true)];
+    expect(validTray(g, 'penguin', fair)).toBe(true);
+    expect(validTray(g, 'penguin', [...fair.slice(0, 4), s('fly', true)])).toBe(false);
+    expect(validTray(g, 'penguin', fair.slice(0, 4))).toBe(false);
+    // The frog alone has smooth, wet skin here.
+    expect(fitting(g, [s('smooth-skin', true)])).toEqual(['frog']);
+    expect(
+      validTray(g, 'frog', [
+        s('smooth-skin', true),
+        s('eggs', true),
+        s('fly', false),
+        s('fur', false),
+        s('wings', false),
+      ]),
+    ).toBe(false);
+    // Five "I don't" cards that would do it are still not a tray.
+    const donts = [
+      s('fur', false),
+      s('wings', false),
+      s('shell', false),
+      s('feathers', false),
+      s('fly', false),
+    ];
+    expect(fitting(g, donts)).toEqual(['frog']);
+    expect(validTray(g, 'frog', donts)).toBe(false);
+    // Five true cards that leave two friends.
+    expect(
+      validTray(g, 'duck', [
+        s('wings', true),
+        s('eggs', true),
+        s('fur', false),
+        s('two-legs', true),
+        s('feathers', true),
+      ]),
+    ).toBe(false);
+  });
+
+  it(`deals a fair, seeded tray for ${SEEDS} seeds and every friend she could pick`, () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(7, seed);
+      const friend = r.gallery[seed % 6];
+      const tray = riddleTray(r.gallery, friend, new Rng(seed));
+      expect(validTray(r.gallery, friend, tray), `seed ${seed}`).toBe(true);
+      expect(riddleTray(r.gallery, friend, new Rng(seed)), `seed ${seed}`).toEqual(tray);
+    }
+  });
+
+  it('a pick deals her tray and can be changed, free, until her first clue', () => {
+    const p = riddle(3);
+    expect(p.picked).toBeNull();
+    expect(p.cards).toEqual([]);
+    expect(giveClue(p, 'wings')).toEqual({ kind: 'ignored' });
+    expect(requestHelp(p)).toBe(false);
+    expect(riddleHint(p)).toBeNull();
+    expect(pickFriend(p, 2)).toEqual({ kind: 'picked', changed: false });
+    expect(p.round.answer).toBe(p.round.gallery[2]);
+    expect(validTray(p.round.gallery, p.round.answer, p.cards)).toBe(true);
+    expect(pickFriend(p, 2)).toEqual({ kind: 'same' });
+    expect(pickFriend(p, 4)).toEqual({ kind: 'picked', changed: true });
+    expect(p.picked).toBe(4);
+    expect(p.round.answer).toBe(p.round.gallery[4]);
+    expect(validTray(p.round.gallery, p.round.answer, p.cards)).toBe(true);
+    expect(pickFriend(p, 9)).toEqual({ kind: 'ignored' });
+    const first = riddleHint(p)!;
+    expect(giveClue(p, first.feature).kind).toBe('clue');
+    // Her friend is settled now; a face-down friend is a free look.
+    const up = p.round.gallery.findIndex((_, i) => !p.down.has(i) && i !== 4);
+    if (up >= 0) expect(pickFriend(p, up)).toEqual({ kind: 'settled' });
+    expect(pickFriend(p, 4)).toEqual({ kind: 'settled' });
+    expect(pickFriend(p, [...p.down][0])).toEqual({ kind: 'peek' });
+    expect(p.picked).toBe(4);
+    expect([p.misses, p.hints]).toEqual([0, 0]);
+    // The level's friend cards never go through the judged tap.
+    expect(tap(p, up >= 0 ? up : 4)).toEqual({ kind: 'ignored' });
+    expect(p.misses).toBe(0);
+  });
+
+  it('for every pair and several trays: the pet turns over exactly the friends a clue does not fit, never her friend, and any order of the five finishes', () => {
+    const orders = [
+      [0, 1, 2, 3, 4],
+      [4, 3, 2, 1, 0],
+      [2, 0, 4, 1, 3],
+      [3, 4, 0, 2, 1],
+    ];
+    pairs.forEach(([g, friend], n) => {
+      for (const order of orders) {
+        const rng = new Rng(1000 + n);
+        const p = startPlay({ gallery: [...g], answer: g[0], clues: [] }, 'riddle', rng);
+        const at = g.indexOf(friend);
+        expect(pickFriend(p, at).kind).toBe('picked');
+        const cards = [...p.cards];
+        let gave = 0;
+        for (const k of order) {
+          if (p.done) {
+            // The tray is closed once the pet knows.
+            expect(giveClue(p, cards[k].feature)).toEqual({ kind: 'ignored' });
+            continue;
+          }
+          const before = standing(p);
+          const expected = before.filter((f) => !fits(cards[k], f));
+          expect(turnsOver(p, cards[k])).toBe(expected.length);
+          const out = giveClue(p, cards[k].feature);
+          gave++;
+          if (out.kind !== 'clue') throw new Error('a tray card was refused');
+          expect(out.statement).toBe(cards[k]);
+          expect(out.turned.map((i) => g[i])).toEqual(expected);
+          expect(out.turned).not.toContain(at);
+          // The think-aloud names exactly the friends still standing.
+          expect(out.left).toEqual(before.filter((f) => fits(cards[k], f)));
+          expect(out.left).toEqual(standing(p));
+          expect(out.left).toContain(friend);
+          expect(out.done).toBe(out.left.length === 1);
+          expect(riddleLeft(p)).toHaveLength(RIDDLE_CARDS - gave);
+          // A card given once is gone from the tray.
+          if (!p.done) expect(giveClue(p, cards[k].feature)).toEqual({ kind: 'ignored' });
+        }
+        expect(p.done).toBe(true);
+        expect(standing(p)).toEqual([friend]);
+        expect(gave).toBeGreaterThanOrEqual(2);
+        expect([p.misses, p.hints]).toEqual([0, 0]);
+      }
+    });
+  });
+
+  it('the hint card turns over at least one friend and at least as many as any other card, and following it finishes', () => {
+    pairs.forEach(([g, friend], n) => {
+      const p = startPlay({ gallery: [...g], answer: g[0], clues: [] }, 'riddle', new Rng(n + 1));
+      pickFriend(p, g.indexOf(friend));
+      let steps = 0;
+      while (!p.done) {
+        const best = riddleHint(p)!;
+        expect(best).not.toBeNull();
+        expect(turnsOver(p, best)).toBeGreaterThanOrEqual(1);
+        for (const s of riddleLeft(p)) expect(turnsOver(p, best)).toBeGreaterThanOrEqual(turnsOver(p, s));
+        // The leftmost of equals.
+        expect(riddleLeft(p).find((s) => turnsOver(p, s) === turnsOver(p, best))).toBe(best);
+        giveClue(p, best.feature);
+        expect(++steps).toBeLessThanOrEqual(RIDDLE_CARDS);
+      }
+      expect(standing(p)).toEqual([friend]);
+    });
+  });
+
+  it('the clue hint counts once per round, only after a pick, and a clue that turns nobody over counts nothing', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const p = riddle(seed);
+      expect(requestHelp(p)).toBe(false);
+      pickFriend(p, seed % 6);
+      expect(requestHelp(p)).toBe(true);
+      expect(requestHelp(p)).toBe(false);
+      // Changing her mind keeps the one count.
+      pickFriend(p, (seed + 1) % 6);
+      expect(requestHelp(p)).toBe(false);
+      expect([p.misses, p.hints]).toEqual([0, 1]);
+      // A second clue that says no more than the first turns nobody over.
+      const best = riddleHint(p)!;
+      giveClue(p, best.feature);
+      const same = riddleLeft(p).find((s) => turnsOver(p, s) === 0);
+      if (same && !p.done) {
+        const before = standing(p);
+        const out = giveClue(p, same.feature);
+        expect(out).toMatchObject({ kind: 'clue', turned: [], left: before, done: false });
+      }
+      while (!p.done) giveClue(p, riddleHint(p)!.feature);
+      expect([p.misses, p.hints]).toEqual([0, 1]);
+      expect(requestHelp(p)).toBe(false);
+    }
+  });
+
+  it("plays the definition's first round: the penguin by wings, two legs (nobody turns), can't fly", () => {
+    const g: FriendId[] = ['cat', 'duck', 'penguin', 'bat', 'frog', 'turtle'];
+    const p = startPlay({ gallery: g, answer: g[0], clues: [] }, 'riddle', new Rng(1));
+    pickFriend(p, 2);
+    const s = (feature: Feature, yes: boolean): Statement => ({ feature, yes });
+    p.cards = [s('wings', true), s('eggs', true), s('fly', false), s('fur', false), s('two-legs', true)];
+    expect(validTray(g, 'penguin', p.cards)).toBe(true);
+    expect(giveClue(p, 'wings')).toMatchObject({
+      turned: [0, 4, 5],
+      left: ['duck', 'penguin', 'bat'],
+      done: false,
+    });
+    expect(giveClue(p, 'two-legs')).toMatchObject({
+      turned: [],
+      left: ['duck', 'penguin', 'bat'],
+      done: false,
+    });
+    expect(riddleHint(p)).toEqual(s('fly', false));
+    expect(giveClue(p, 'fly')).toMatchObject({ turned: [1, 3], left: ['penguin'], done: true });
+    expect(p.given).toEqual([s('wings', true), s('two-legs', true), s('fly', false)]);
+    expect([p.misses, p.hints]).toEqual([0, 0]);
+  });
+
+  describe('layout', () => {
+    const inside = (r: Rect, w: number, h: number) =>
+      r.x >= 0 && r.y >= 0 && r.x + r.w <= w + 1e-6 && r.y + r.h <= h + 1e-6;
+    const overlap = (a: Rect, b: Rect) =>
+      a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const views: [string, ReturnType<typeof computeView>][] = [
+      ['1024x768', computeView(1024, 768)],
+      ['1366x1024', computeView(1366, 1024)],
+      ['768x1024', computeView(768, 1024)],
+      ['1024x1366', computeView(1024, 1366)],
+      ['390x844 upright phone', computeView(390, 844, undefined, true)],
+    ];
+    for (const [name, v] of views) {
+      it(`${name} keeps cards, the five clue cards and the strip big, on screen, apart and clear of the corners`, () => {
+        const L = riddleLayout(v);
+        const pet: Rect = { x: 0, y: v.h - PET_CORNER, w: PET_CORNER, h: PET_CORNER };
+        const home: Rect = { x: 0, y: 0, w: HOME_CORNER, h: HOME_CORNER };
+        expect(L.cards).toHaveLength(6);
+        expect(L.tray).toHaveLength(RIDDLE_CARDS);
+        expect(L.strip).toHaveLength(5);
+        // One row in landscape; a row of three over a row of two in portrait.
+        const rows = new Set(L.tray.map((r) => r.y)).size;
+        expect(rows).toBe(v.h > v.w ? 2 : 1);
+        if (rows === 2) expect(L.tray.filter((r) => r.y === L.tray[0].y)).toHaveLength(3);
+        L.cards.forEach((c, i) => {
+          expect(c.w, `card ${i} w`).toBeGreaterThanOrEqual(100);
+          expect(c.h, `card ${i} h`).toBeGreaterThanOrEqual(100);
+        });
+        L.tray.forEach((c, i) => {
+          expect(c.w, `tray ${i} w`).toBeGreaterThanOrEqual(100);
+          expect(c.h, `tray ${i} h`).toBe(TRAY_H);
+          // The clue card is drawn 130 by 110 and scaled to fit, so it stays at least 100 units each way.
+          const scale = Math.min(c.w / 130, c.h / 110);
+          expect(130 * scale, `tray ${i} drawn w`).toBeGreaterThanOrEqual(100);
+          expect(110 * scale, `tray ${i} drawn h`).toBeGreaterThanOrEqual(100);
         });
         const all: [string, Rect][] = [
           ...L.cards.map((r, i): [string, Rect] => [`card ${i}`, r]),

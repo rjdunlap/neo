@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  /** Who Am I? (level 6, You ask, is described where it is played below): level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down; level 4 (Surprises) with a keeps-tap and each surprise explained once, uncounted. */
+  /** Who Am I? (levels 6, You ask, and 7, Make a riddle, are described where they are played below): level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down; level 4 (Surprises) with a keeps-tap and each surprise explained once, uncounted. */
   async function whoAmIPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -293,6 +293,123 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await finished('who-am-i');
     assert.deepEqual(await score(), [1, 1]);
     assert.ok(dudAsked, 'one dud was asked');
+    // Level 7, Make a riddle: she picks a friend (and changes her mind, free), the tray deals five true clue cards, the
+    // pause sheet's clue hint counts once (a portrait screenshot with the five-card tray), a first clue the pet turns
+    // friends over for, a second that fits everyone still standing (nobody turns, nothing counts), a tap on a friend
+    // after a clue changes nothing, then the glowing card to the end. The round saves no misses and the one hint.
+    await launch('who-am-i', 7, 'Mia', 'school');
+    await settle();
+    const riddle7 = () =>
+      page.evaluate(async () => {
+        const L = await import('/src/games/who-am-i/logic.ts');
+        const g = neo.scene.game,
+          p = g.play,
+          left = L.riddleLeft(p);
+        // A first clue that leaves two or more friends, and a second that then turns nobody over.
+        let pair = null;
+        if (p.picked !== null && p.given.length === 0)
+          for (const a of left)
+            for (const b of left) {
+              const after = p.round.gallery.filter((f) => L.fits(a, f));
+              if (
+                a !== b &&
+                !pair &&
+                after.length > 1 &&
+                after.length < 6 &&
+                after.every((f) => L.fits(b, f))
+              )
+                pair = [a.feature, b.feature];
+            }
+        return {
+          gallery: g.round.gallery,
+          picked: p.picked,
+          answer: g.round.answer,
+          fair: p.picked !== null && L.validTray(g.round.gallery, g.round.answer, p.cards),
+          cards: g.trayCards.map((c) => c.feature),
+          left: left.map((s) => s.feature),
+          given: p.given.map((s) => [s.feature, s.yes]),
+          hint: L.riddleHint(p)?.feature ?? null,
+          pair,
+          score: [p.misses, p.hints],
+          down: [...p.down],
+          standing: L.standing(p),
+          done: p.done,
+        };
+      });
+    const clueCard = (f) =>
+      page.evaluate((f) => kit.tapOn(neo.scene.game.trayCards.find((c) => c.feature === f).node), f);
+    let r = await riddle7();
+    assert.ok(
+      r.gallery.includes('bat') && r.gallery.includes('penguin'),
+      'level 7 has the bat and the penguin',
+    );
+    assert.deepEqual([r.picked, r.cards.length], [null, 0], 'no tray until she picks');
+    // The hint before a pick only says what to do.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual((await riddle7()).score, [0, 0]);
+    const pen = r.gallery.indexOf('penguin');
+    const other = (pen + 1) % 6;
+    await tapCard(other);
+    await page.waitForTimeout(400);
+    r = await riddle7();
+    assert.deepEqual([r.picked, r.cards.length, r.fair], [other, 5, true], 'a pick deals five fair cards');
+    // She changes her mind, free; a tray is dealt again until it holds a clue that will fit everyone still standing.
+    await tapCard(pen);
+    await page.waitForTimeout(400);
+    r = await riddle7();
+    for (let guard = 0; !r.pair && guard < 12; guard++) {
+      await tapCard(other);
+      await page.waitForTimeout(400);
+      await tapCard(pen);
+      await page.waitForTimeout(400);
+      r = await riddle7();
+    }
+    assert.deepEqual([r.picked, r.answer, r.fair, r.score], [pen, 'penguin', true, [0, 0]]);
+    assert.deepEqual(r.cards, r.left, 'the tray on screen is the tray in the rules');
+    assert.ok(r.pair, 'a tray with a clue that will turn nobody over');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual((await riddle7()).score, [0, 1], 'the clue hint counts once');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(1300);
+    await screenshot('who-am-i-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    await clueCard(r.pair[0]);
+    await settle();
+    let after = await riddle7();
+    assert.ok(after.down.length >= 1 && !after.down.includes(pen), 'the pet turns friends over, never hers');
+    assert.equal(after.cards.length, 4, 'a given card leaves the tray');
+    assert.ok(!after.done, 'no card finds her friend alone');
+    await clueCard(r.pair[1]);
+    await settle();
+    const same = await riddle7();
+    assert.deepEqual(
+      [same.down, same.score, same.given.length, same.cards.length],
+      [after.down, [0, 1], 2, 3],
+      'a clue that fits everyone turns nobody over and counts nothing',
+    );
+    // A friend tapped after a clue: her friend is settled.
+    await tapCard(same.gallery.findIndex((_, i) => i !== pen && !same.down.includes(i)));
+    await page.waitForTimeout(300);
+    assert.equal((await riddle7()).picked, pen);
+    await screenshot('who-am-i-7-clues');
+    after = same;
+    for (let guard = 0; !after.done && guard < 4; guard++) {
+      assert.ok(after.hint, 'a card that turns somebody over is always left');
+      await clueCard(after.hint);
+      await settle();
+      after = await riddle7();
+    }
+    assert.deepEqual(after.standing, ['penguin']);
+    await finished('who-am-i');
+    assert.deepEqual(await score(), [0, 1]);
+    log(
+      'Who Am I? 7: no tray before a pick, a pick dealing five fair clue cards, a changed mind free, the clue hint counted once (asked twice), a clue the pet turns friends over for, a clue that fits everyone (nobody turns, nothing counts), her friend settled after a clue, the glowing card to the end, portrait screenshot with the five-card tray, saved score 0 misses and 1 hint passed',
+    );
     log(
       'Who Am I? 6: three question cards with no dud at first, a friend tap before asking uncounted, the question hint counted once (asked twice), the answer true of the secret friend, a kept-friend tap as the one miss, a dud that turns nobody and counts nothing with its card replaced, best questions to the last friend, portrait screenshot with the tray, saved score passed',
     );

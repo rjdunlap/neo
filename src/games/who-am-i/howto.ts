@@ -18,11 +18,19 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Turn over every friend the answer rules out. After a no, those are the friends who have it.',
     },
-    { from: 2, to: 6, text: 'Tap a turned-over friend to peek at it.' },
+    { from: 7, to: 7, text: 'Tap a friend for the pet to guess; it will not look.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap a clue card to give the pet that clue. Every card is true of her friend; a cross means her friend does not have it.',
+    },
+    { from: 7, to: 7, text: 'Keep giving clues until only her friend is left.' },
+    { from: 2, to: 7, text: 'Tap a turned-over friend to peek at it.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'The friend who fits jumps out and says its name.' },
     { from: 2, to: 6, text: 'The last friend left jumps out and says its name.' },
+    { from: 7, to: 7, text: 'The pet finds her friend and says her riddle back.' },
   ],
   note: [
     {
@@ -44,6 +52,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: 'Asking is never counted against her, however many questions she asks, and neither is hearing an answer again or peeking. Turning over a friend the answer keeps counts as a miss, with the reason spoken; after two on one answer the friends it rules out shimmer, which counts as a hint. If she asks for the glowing question, or it shows after two questions in a row that tell nobody apart, that counts as a hint once.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Nothing is counted against her, and she can change her friend until her first clue. Asking for the glowing card counts as a hint.',
     },
     {
       from: 5,
