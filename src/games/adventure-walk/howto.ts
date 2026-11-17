@@ -8,8 +8,16 @@ export const HOW_TO: GameHowTo = {
     { from: 2, to: 2, text: 'Listen to the friend, then tap the way they ask for.' },
     { from: 3, to: 3, text: 'The friend asks for two ways at once; tap them in order.' },
     { from: 2, to: 3, text: "Tap the friend's picture to hear the way again." },
+    {
+      from: 4,
+      to: 4,
+      text: 'Walk to the picnic any way she likes, then tap the places in the order the walk home comes to them.',
+    },
   ],
-  finish: 'The friends sit down together on the picnic blanket.',
+  finish: [
+    { from: 4, to: 4, text: 'The pet walks back to its door.' },
+    { from: 1, to: 3, text: 'The friends sit down together on the picnic blanket.' },
+  ],
   note: [
     {
       from: 1,
@@ -20,6 +28,11 @@ export const HOW_TO: GameHowTo = {
       from: 2,
       to: 3,
       text: 'Taking the other way is a miss, with both ways named; after two misses at one place the asked-for way glows, which counts as a hint. Hearing the request again is never counted. Nobody is asked to move: the pet does the walking.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'The walk out is free. On the map a place that is not next is a miss; after two on one leg the next place glows, which counts as a hint. Nobody is asked to move: the pet does the walking.',
     },
   ],
 };

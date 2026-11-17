@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  /** Adventure Walk: level 1 (three free choices); level 3 in portrait (one wrong way, a replay, a requested hint, then the calls). */
+  /** Adventure Walk: level 1 (three free choices); level 3 in portrait (one wrong way, a replay, a requested hint, then the calls); level 4 in portrait (the walk out, then the way home on the hook map). */
   async function adventureWalkPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -58,9 +58,53 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     }
     await finished('adventure-walk');
     assert.deepEqual(await score(), [1, 1]);
+    // Level 4 in portrait on the hook map: a free walk out, then a wrong tile, a requested hint, a passed tile, home.
+    await launch('adventure-walk', 4);
+    await page.waitForTimeout(500);
+    const home = () =>
+      page.evaluate(() => {
+        const s = neo.scene.game.state;
+        return { home: s.home, misses: s.misses, hints: s.hints, glow: s.homeGlow, taken: s.taken };
+      });
+    const tile = (i) => page.evaluate((i) => kit.tapOn(neo.scene.game.tileNodes[i]), i);
+    await page.evaluate(() => {
+      neo.scene.game.state.shape = 'hook';
+      // On the walk out Show a hint does nothing (it used to throw where nobody calls the way).
+      neo.scene.game.askForHint();
+    });
+    for (let i = 0; i < 3; i++) {
+      await slot(i % 2);
+      await page.waitForTimeout(2600);
+    }
+    await page.waitForFunction(() => neo.scene.game.tileNodes.length === 3 && !neo.scene.game.busy, null, {
+      timeout: 15000,
+    });
+    await page.waitForTimeout(300);
+    a = await home();
+    assert.deepEqual([a.home, a.misses, a.hints], [0, 0, 0]);
+    assert.ok(a.taken.every((t) => t === 0 || t === 1));
+    await screenshot('adventure-walk-4-portrait-hook');
+    await tile(0);
+    await idle();
+    a = await home();
+    assert.deepEqual([a.home, a.misses], [0, 1]);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    a = await home();
+    assert.deepEqual([a.hints, a.glow], [1, true]);
+    await tile(2);
+    await idle();
+    await tile(2);
+    await idle();
+    a = await home();
+    assert.deepEqual([a.home, a.misses, a.glow], [1, 1, false]);
+    await tile(1);
+    await idle();
+    await tile(0);
+    await finished('adventure-walk');
+    assert.deepEqual(await score(), [1, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
-      'Adventure Walk 1 and 3: free choices, wrong way, replay, requested hint, calls followed, portrait, saved score passed',
+      'Adventure Walk 1, 3 and 4: free choices, wrong way, replay, requested hint, calls followed, portrait, the way home on the hook map (wrong tile, requested hint, passed tile), saved scores passed',
     );
   }
 

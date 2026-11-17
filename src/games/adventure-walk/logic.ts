@@ -15,6 +15,14 @@ export const PATH_WORDS: readonly PathWord[] = ['over', 'under', 'through', 'acr
 export const FRIENDS: readonly FriendId[] = ['duck', 'cow', 'pig'];
 export const FRIEND_NAMES: Record<FriendId, string> = { duck: 'Duck', cow: 'Cow', pig: 'Pig' };
 export const STOPS = 3;
+/** How a landmark is named when the companion says which place comes first on the way home. */
+export const LANDMARK_NAMES: Record<LandmarkId, string> = {
+  brook: 'the brook',
+  reeds: 'the reeds',
+  log: 'the log',
+  boulder: 'the boulder',
+  puddle: 'the puddle',
+};
 
 export interface Way {
   word: PathWord;
@@ -81,19 +89,22 @@ export interface Plan {
   calls: boolean;
   /** Stops asked for together before walking, in order (level 3: the first two, then the third). */
   groups: readonly (readonly number[])[];
+  /** After the walk out, she leads the walk home on the map (level 4). */
+  home?: boolean;
 }
 
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Pick a way', calls: false, groups: [] },
   { level: 2, name: 'Come this way', calls: true, groups: [[0], [1], [2]] },
   { level: 3, name: 'Two at once', calls: true, groups: [[0, 1], [2]] },
+  { level: 4, name: 'The way home', calls: false, groups: [], home: true },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 4 },
 };
 
 export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];
@@ -190,17 +201,38 @@ export interface WalkState {
   hinted: boolean;
   /** The asked way glows at this stop. */
   glow: boolean;
+  /** The way index she chose at each stop on the walk out, null until walked. */
+  taken: (0 | 1 | null)[];
+  /** The map's shape (level 4 draws one of the three with the round's seed; the others never show a map). */
+  shape: MapShape;
+  /** Landmarks passed on the walk home (level 4), 0 to STOPS. */
+  home: number;
+  legMisses: number;
+  legHinted: boolean;
+  /** The next landmark on the way home glows. */
+  homeGlow: boolean;
 }
 
-export const startWalk = (level: number, rng: Rng): WalkState => ({
-  route: makeRoute(level, rng),
-  stop: 0,
-  misses: 0,
-  hints: 0,
-  stopMisses: 0,
-  hinted: false,
-  glow: false,
-});
+export function startWalk(level: number, rng: Rng): WalkState {
+  const route = makeRoute(level, rng);
+  // Drawn after the route, and only where a map is shown, so levels 1-3 keep their seeded rounds.
+  const shape = planFor(level).home ? SHAPE_IDS[Math.floor(rng.next() * SHAPE_IDS.length)] : 'sweep';
+  return {
+    route,
+    stop: 0,
+    misses: 0,
+    hints: 0,
+    stopMisses: 0,
+    hinted: false,
+    glow: false,
+    taken: Array.from({ length: STOPS }, () => null),
+    shape,
+    home: 0,
+    legMisses: 0,
+    legHinted: false,
+    homeGlow: false,
+  };
+}
 
 export type Step =
   | { kind: 'go'; way: Way; arrived: boolean }
@@ -225,6 +257,7 @@ export function step(s: WalkState, slot: 0 | 1): Step {
     }
     return { kind: 'other', took: r.took, asked: r.asked, glow };
   }
+  s.taken[s.stop] = which;
   s.stop++;
   s.stopMisses = 0;
   s.hinted = false;
@@ -234,6 +267,13 @@ export function step(s: WalkState, slot: 0 | 1): Step {
 
 /** Show a hint: light the asked way (a hint, once per stop); asked again at that stop, say the request again. */
 export function askHint(s: WalkState): 'glow' | 'repeat' | 'none' {
+  if (onMap(s)) {
+    if (s.legHinted) return 'repeat';
+    s.legHinted = true;
+    s.hints++;
+    s.homeGlow = true;
+    return 'glow';
+  }
   if (s.stop >= STOPS || s.route.stops[s.stop].asked === null) return 'none';
   if (s.hinted) return 'repeat';
   s.hinted = true;
@@ -242,12 +282,59 @@ export function askHint(s: WalkState): 'glow' | 'repeat' | 'none' {
   return 'glow';
 }
 
-/** Start again: the first stop of the same seeded route, keeping misses and hints. */
+/** Start again: the first stop of the same seeded route (and the walk out again at level 4), keeping misses and hints. */
 export function restart(s: WalkState) {
   s.stop = 0;
   s.stopMisses = 0;
   s.hinted = false;
   s.glow = false;
+  s.taken.fill(null);
+  s.home = 0;
+  s.legMisses = 0;
+  s.legHinted = false;
+  s.homeGlow = false;
+}
+
+// ---- The way home (level 4) ---------------------------------------------------------------------------------------------
+
+/** The walk out is done and the walk home is not: taps on the map's tiles count. */
+export const onMap = (s: WalkState): boolean =>
+  !!planFor(s.route.level).home && s.stop >= STOPS && s.home < STOPS;
+
+/** The stop the walk home comes to next: the stops in the order 2, 1, 0. */
+export const nextHome = (s: WalkState): number => STOPS - 1 - s.home;
+
+export type HomeStep =
+  /** The next landmark: the companion goes back past it the way it came. `home` once the last one is passed. */
+  | { kind: 'back'; stop: number; way: Way; home: boolean }
+  /** A landmark further along the way home: a miss. `next` is the stop that comes first; `glow` when it lights up (a hint). */
+  | { kind: 'later'; next: number; glow: boolean }
+  /** A landmark already passed: a wiggle, nothing counted. */
+  | { kind: 'passed' }
+  | { kind: 'ignored' };
+
+/** She taps landmark `stop` on the map. A landmark that is not next is a miss; two on one leg light the next one, once (a hint). */
+export function stepHome(s: WalkState, stop: number): HomeStep {
+  if (!onMap(s) || stop < 0 || stop >= STOPS) return { kind: 'ignored' };
+  const next = nextHome(s);
+  if (stop > next) return { kind: 'passed' };
+  if (stop < next) {
+    s.misses++;
+    s.legMisses++;
+    let glow = false;
+    if (s.legMisses >= 2 && !s.legHinted) {
+      s.legHinted = true;
+      s.hints++;
+      s.homeGlow = true;
+      glow = true;
+    }
+    return { kind: 'later', next, glow };
+  }
+  s.home++;
+  s.legMisses = 0;
+  s.legHinted = false;
+  s.homeGlow = false;
+  return { kind: 'back', stop, way: waysAt(s.route.stops[stop])[s.taken[stop] ?? 0], home: s.home >= STOPS };
 }
 
 /** What a capable walker taps: the asked slot, else alternating sides so the demonstration shows both are fine. */
@@ -276,11 +363,104 @@ export interface StopLayout {
 
 const BADGE = 140;
 
+// ---- The map (level 4) --------------------------------------------------------------------------------------------------
+
+export interface Pt {
+  x: number;
+  y: number;
+}
+export type MapShape = 'sweep' | 'zigzag' | 'hook';
+export const SHAPE_IDS: readonly MapShape[] = ['sweep', 'zigzag', 'hook'];
+
+/**
+ * Each shape is five points in a unit square, drawn wide: home, the three landmarks in route order, the picnic. An upright
+ * view swaps the axes. `sweep` waves from one side to the other; `zigzag` climbs in three turns; `hook` goes out along
+ * one edge and comes back along the other, so the picnic sits beside the walk's first landmark and only following the
+ * path finds the order home.
+ */
+export const MAP_SHAPES: Record<MapShape, readonly Pt[]> = {
+  sweep: [
+    { x: 0, y: 0.6 },
+    { x: 0.22, y: 0.05 },
+    { x: 0.5, y: 0.95 },
+    { x: 0.78, y: 0.05 },
+    { x: 1, y: 0.6 },
+  ],
+  zigzag: [
+    { x: 0, y: 1 },
+    { x: 0.5, y: 1 },
+    { x: 0.1, y: 0.42 },
+    { x: 0.62, y: 0.3 },
+    { x: 1, y: 0 },
+  ],
+  hook: [
+    { x: 0, y: 1 },
+    { x: 0.42, y: 1 },
+    { x: 1, y: 0.55 },
+    { x: 0.85, y: 0 },
+    { x: 0.42, y: 0.42 },
+  ],
+};
+
+export const TILE = { w: 260, h: 200 };
+/** The walker's tap area on the map, a square of this side around its body. */
+export const MAP_WALKER = 120;
+
+export interface MapLayout {
+  /** Home, the three landmarks in route order, the picnic: the dotted path joins them. */
+  path: readonly Pt[];
+  tiles: readonly Rect[];
+  /** The room the home door and the picnic (blanket and friend) take. */
+  home: Rect;
+  picnic: Rect;
+}
+
+/** The whole path on one screen. Tiles are tap targets at level 4; the guide's corner and the home button stay clear. */
+export function mapLayout(view: View, _level: number, shape: MapShape): MapLayout {
+  const upright = view.h > view.w;
+  // The left margin clears the guide (bottom-left) and the home button (top-left) for every shape.
+  const x0 = 300;
+  const x1 = view.w - 150;
+  const y0 = 160;
+  const y1 = view.h - 140;
+  const path = MAP_SHAPES[shape].map((p) => {
+    const u = upright ? p.y : p.x;
+    const v = upright ? p.x : p.y;
+    return { x: x0 + u * (x1 - x0), y: y0 + v * (y1 - y0) };
+  });
+  const tiles = path.slice(1, 1 + STOPS).map((p) => ({ x: p.x - TILE.w / 2, y: p.y - TILE.h / 2, ...TILE }));
+  const h = path[0];
+  const p = path[STOPS + 1];
+  return {
+    path,
+    tiles,
+    home: { x: h.x - 60, y: h.y - 70, w: 120, h: 130 },
+    picnic: { x: p.x - 140, y: p.y - 95, w: 250, h: 130 },
+  };
+}
+
+/** Where the companion's feet are on the map: `-1` at home, a stop's landmark, or `STOPS` at the picnic. */
+export function mapSpot(l: MapLayout, at: number): Pt {
+  if (at < 0) return { x: l.path[0].x, y: l.path[0].y + 50 };
+  if (at >= STOPS) return { x: l.picnic.x + 65, y: l.picnic.y + 105 };
+  const t = l.tiles[at];
+  return { x: t.x + t.w / 2, y: t.y + t.h - 10 };
+}
+
+/** The walker's tap area when its feet are at `feet` (its body is above them). */
+export const walkerArea = (feet: Pt): Rect => ({
+  x: feet.x - MAP_WALKER / 2,
+  y: feet.y - 45 - MAP_WALKER / 2,
+  w: MAP_WALKER,
+  h: MAP_WALKER,
+});
+
 /** Every rectangle for one stop. Nothing is under 100; the guide's corner (bottom-left) and the home button stay clear. */
 export function stopLayout(view: View, level: number): StopLayout {
   const landscape = view.w >= view.h;
-  const trail: Rect = { x: 170, y: 22, w: Math.max(200, view.w - 340 - (level > 1 ? BADGE : 0)), h: 40 };
-  const badge: Rect | null = level > 1 ? { x: view.w - 20 - BADGE, y: 80, w: BADGE, h: BADGE } : null;
+  const calls = planFor(level).calls;
+  const trail: Rect = { x: 170, y: 22, w: Math.max(200, view.w - 340 - (calls ? BADGE : 0)), h: 40 };
+  const badge: Rect | null = calls ? { x: view.w - 20 - BADGE, y: 80, w: BADGE, h: BADGE } : null;
   let zones: readonly [Rect, Rect];
   let stand: { x: number; y: number };
   if (landscape) {
@@ -315,5 +495,7 @@ export function describeWalk(level: number): string {
     ? 'Pick either way past each landmark'
     : level === 2
       ? 'Take the way the friend calls at each landmark'
-      : 'Follow two of the friend’s calls in order, then a third';
+      : level === 3
+        ? 'Follow two of the friend’s calls in order, then a third'
+        : 'Walk to the picnic, then lead the way home on the map';
 }

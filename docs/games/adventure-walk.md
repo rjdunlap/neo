@@ -4,20 +4,21 @@
 
 **ID:** `adventure-walk` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** spatial-words, listening, following-directions, sequencing
+**Skills:** spatial-words, listening, following-directions, sequencing, map-reading
 
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1 |
 | preschool | 1–2 |
-| pre-K | 2–3 |
-| school | 3 |
+| pre-K | 2–4 |
+| school | 3–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Pick either way past each landmark |
 | 2 | Take the way the friend calls at each landmark |
 | 3 | Follow two of the friend’s calls in order, then a third |
+| 4 | Walk to the picnic, then lead the way home on the map |
 
 <!-- end generated -->
 
