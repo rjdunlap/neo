@@ -23,7 +23,7 @@ Not in the slice: a universal curriculum engine, other games or stories, cross-c
 | Pet Kitchen counts the two-miss glow as a hint (`hints++` when the second wrong try lands), so "any hint" covers the glow | `src/games/pet-kitchen/index.ts` |
 | Stamp Studio finishes with `misses: 0, hints: 0`. Song Maker 2 is free play, and its misses and hints only rise on copy levels | `src/games/stamp-studio/index.ts`, `src/games/song-maker/index.ts` |
 | `store.reset()` keeps `profile`, `settings` and `creatures` and empties `projects`. Backup and restore carry the whole `SaveData` | `src/progress/store.ts` |
-| The panel has `weekSummary()`, `picnicSummary()` and `offScreenIdeas()`. At the root, Home's held gear opens it (RW08 slice 2) | `src/parent/panel.ts`, `HomeScene.ts` |
+| The panel has `weekSummary()`, `picnicSummary()` and the At home card (`atHomeSection()`, built on `offScreenFor`). At the root, Home's held gear opens it (RW08 slice 2) | `src/parent/panel.ts`, `HomeScene.ts` |
 
 ## One vocabulary
 
@@ -119,7 +119,7 @@ Each pre-K line uses its own intention ("made the recipe twice over"). A step fi
 
 **Below the table:**
 - "The new friend and the stickers are rewards for finishing, with or without help. They aren't evidence of learning. One round is one observation; doing it in other places and on other days is what would show more."
-- One off-screen idea from `offScreenIdeas()` for the step's game at the project's band, or none if that game has no line there.
+- One off-screen idea from `offScreenFor` for the step's game at the project's band, or none if that game has no line there.
 - The status line: "Project: 2 of 3 steps done" or "finished: {friend's name} joined".
 
 **Wording rules:** AGENTS's grown-up wording rule applies. The recap names what a step asks. It never says mastery, "can now", "brain training", school readiness or an attention or behaviour benefit. Age appears only as the project's band. It shows no minutes or sticker totals, and nothing in it is a score.

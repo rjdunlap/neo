@@ -2,7 +2,7 @@
 
 Defined 2026-11-17 from the [off-screen companions study](../deep-dives/subjects/off-screen-companions.md#build-slices-in-order), slice 4, and its [recommendations packet](../deep-dives/subjects/RECOMMENDATIONS.md#off-screen-companions-recommendations). It follows the built [per-band lines](off-screen-lines.md) (slices 1–3) and freezes one build: an **At home** section on the grown-ups' page with three ideas, each a *try* line and, where one has been written, a *notice* and a *say* line, and under them one sentence of things from around the house. Plain HTML, no save field, nothing to press. Talk-about lines (slice 5), upper-school challenge lines (6), printable cards (7) and the cards other studies hand to this one (the writing, keyboard, sign, phonics, vocabulary and look-it-up cards, Puppet Problem Cards, Program the Puppet) are out of scope; each is later content for the card this build makes.
 
-**Status: defined, build claimed 2026-11-17** (branch `claude/at-home-card`; expected files: `src/content/athome.ts`, `src/content/athome.test.ts`, `src/parent/panel.ts`, the off-screen line tests, the `grownups` browser case, docs).
+**Status: built 2026-11-17** ([PR #1747](https://github.com/rjdunlap/neo/pull/1747)); see [As built](#as-built) for where the build differs from this page.
 
 Re-audited on `origin/main` at `d5c1e6ed`: 176 games, **167 with an `offScreen` line**, 20 of them band-keyed. A profile's lands list 57 games at lap (55 with a line there), 86 at toddler (81), 118 at preschool (112), 141 at pre-K (134), 165 at school (156) and 176 at `grownup` (167). The page prints at most two lines, as `<p><strong>Off-screen idea:</strong> …</p>` at the end of **This week** (`weekSummary` in `src/parent/panel.ts`, through `offScreenIdeas`), chosen from the games played in the last seven days in catalog order, else the first two games her band lists; a week with one played game shows one idea. No game has a *notice* or *say* line today.
 
@@ -26,10 +26,10 @@ For a `grownup` profile the section shows the *Try* and source lines only, with 
 One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs are the games the lands show her (`visibleGames(band, GAMES)`, catalog order), `LANDS`, her profile band and name, and a function giving each game's most recent round time; it reads no store and writes nothing. The same inputs always give the same card: no rotation, no randomness.
 
 1. **Played.** Games with a round in the last seven days and a line at her band (`offScreenFor` not `null`), most recent round first, ties in catalog order, up to three.
-2. **Starters, complete.** If fewer than three: walk `LANDS` in order, skipping a land that already has a game on the card; in each land take the first game, in the land's own order, that the lands show her, is not on the card, and has *Try*, *Notice* and *Say* at her band. Stop at three.
+2. **Starters, complete.** If fewer than three: walk `LANDS` in order, skipping a land that already has a game on the card; in each land take the first game, in the land's own order, that the lands show her and that lists her own band, is not on the card, and has *Try*, *Notice* and *Say* at her band. Stop at three.
 3. **Starters, any.** If still fewer than three: the same walk taking a game with a *Try* alone; then the same walk again without skipping lands already used.
 
-For a `grownup` profile steps 2 and 3 walk only games that list the `grownup` band, and step 2 is skipped (there are no notes to complete).
+In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
 With the first eight games below and nothing played, the card is Bounce Back, Jelly Drums and Roundup at lap, toddler, preschool and pre-K (Treehouse has no complete game, so the walk reaches Barnyard), and Bounce Back, Jelly Drums and Little Helpers at school (Roundup stops at pre-K, so the walk reaches Counting Cove). The rule tests pin both.
 
@@ -51,12 +51,12 @@ Eight games, one from each of eight lands, all reaching lap, six reaching school
 | --- | --- | --- | --- | --- |
 | Bounce Back (lap–school) | `all` | Roll a ball back and forth across the floor, counting each roll. | Does {name} watch the ball, reach for it or push it back? | Roll! Here it comes. Again? |
 | | `school` | Roll a ball at a wall from three different spots. Before each roll, point to where it will come back, then check. | Does {name} move the point after seeing the first roll come back? | Where will it come back this time? What makes you think so? |
-| Jelly Drums (lap–school) | `all` | Make a pots-and-pans band: big pot, low sound; small pot, high sound. | Does {name} go back to one pot, or try each of them? | Big pot: boom. Little pot: ting. |
+| Jelly Drums (lap–school) | `all` | Make a pots-and-pans band: big pot, low sound; small pot, high sound. | Does {name} go back to one pot, or try each one? | Big pot: boom. Little pot: ting. |
 | | `school` | Line up pots by size and guess which one will sound lowest before you tap it. Then play a tune from low to high. | Does {name} change the guess after hearing the first two pots? | Which will sound lowest? What makes you think so? |
-| Roundup (lap–pre-K) | `all` | Herd stuffed animals into a laundry-basket "pen", counting each one in. | Does {name} put the animals in, tip them out or hand one to you? | One in. Two in. All in! |
+| Roundup (lap–pre-K) | `all` | Herd stuffed animals into a laundry-basket "pen", counting each one in. | Does {name} put the animals in, tip the basket out or hand one to you? | One in. Two in. All in! |
 | Little Helpers (lap–school) | `all` | Carry a big pillow together: how many hands does it take? | Does {name} take a corner, hug the middle or watch you lift? | Two hands. Lift! We carried it together. |
 | | `school` | (the same) | Does {name} look for a way to carry it with fewer hands? | How many hands did that take? Is there another way? |
-| Color Garden (lap–pre-K) | `all` | Sort socks or blocks into piles by color together. | Does {name} start a pile, add to yours or mix them up again? | Red with red. Blue with blue. |
+| Color Garden (lap–pre-K) | `all` | Sort socks or blocks into piles by color together. | Does {name} start a pile, add to yours or mix the piles up again? | Red with red. Blue with blue. |
 | Size Parade (lap–school) | `all` | Line up three spoons or shoes from smallest to biggest, then reverse the line. | Which one does {name} pick up first: the biggest, the smallest or the nearest? | Little, bigger, biggest. |
 | | `school` | (the same) | Does {name} check by holding two side by side? | Where would a fourth one go? How do you know? |
 | Opposites (lap–school) | `all` | Play opposites with toys: put the teddy up high, then down low; open the box, close the box. | Does {name} look where the teddy went, or reach for the box? | Up high. Down low. Open. Closed. |
@@ -132,3 +132,14 @@ Each has a default the build takes; none waits on anyone.
 5. **`{name}` and no pronoun in a *Notice*.** Default: as written, so the card reads correctly for every profile.
 6. **Its own section, not inside This week.** Default: its own, so the study's "opens the gear, sees At home" holds and This week stays a record of play.
 7. **Which eight games first.** Default: the table above (one per land, all at lap, safe *Try* lines). Further batches are content, eight games at a time, under the same wording rules.
+
+## As built
+
+Built 2026-11-17 (PR #1747). Differences from this page:
+
+- Three *Notice* lines were reworded, because the table used "them" (for pots, animals, piles) and the no-pronoun rule and its test forbid it; the table above now shows the built wording.
+- A starter is always a game that lists the profile's own band (the selection text above now says so); a younger game she played this week still comes onto the card with its notes.
+- The kit line at a fresh lap profile is "a large soft ball, pots and pans, a teddy or other soft toy, a laundry basket or box": the example sentence left out the soft toy that Roundup's "stuffed animals" matches.
+- `atHomeSection()` takes no `app` argument. `atHomeCard` takes one input object, including `now` and an optional `notes` table for tests; `atHomeNoteFor` and `kitFor` take an optional table too.
+- The browser case is its own suite name, `athome` (it also runs inside `grownups` and `all`), and also checks that a grown-up profile gets *Try* lines only and no kit.
+- The deferred practical-care classes are a concrete word list, `DEFERRED_CLASSES` in `src/content/offscreen-rules.ts` (food, snack, fruit, eat, drink, juice, milk, bath, bathtub, water, ice, sun, sunny, soap, bubble, scissors, knife, knives, sand, rice, flour, mirror, torch, flashlight, cord, rope), beside the shared `UNDER_3`, `wordPattern` and `EVERY_BAND` moved out of `offscreen.test.ts`.
