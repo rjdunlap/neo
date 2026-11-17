@@ -12,6 +12,7 @@ const stroke = (color: number, width = 5) => ({
 const STONE = { fill: 0xc9c9d4, line: 0x8c8c9c };
 const WATER = { fill: 0x9fd4fb, line: swatch.blue.line };
 const PATH = 0xfff7d6;
+const FOOTPRINT = swatch.brown.fill;
 
 interface Pt {
   x: number;
@@ -19,7 +20,7 @@ interface Pt {
 }
 
 /** Dots along a polyline: the dotted path that shows where the walker will go. */
-function dotted(g: Graphics, pts: Pt[], color = PATH, r = 6) {
+export function dotted(g: Graphics, pts: Pt[], color = PATH, r = 6) {
   for (let i = 0; i < pts.length - 1; i++) {
     const a = pts[i];
     const b = pts[i + 1];
@@ -88,11 +89,12 @@ function puddle(g: Graphics) {
 }
 
 /** One way past a landmark, drawn inside about 260 × 220 units centred on (0, 0): the landmark and its dotted path. */
-export function wayPicture(key: string): Container {
+export function wayPicture(key: string, prints = false): Container {
   const c = new Container();
   const g = new Graphics();
   c.addChild(g);
-  const walk = (pts: Pt[]) => dotted(g, pts);
+  // `prints`: the way has been walked, so its dots are footprints (the map's tiles).
+  const walk = (pts: Pt[]) => (prints ? dotted(g, pts, FOOTPRINT, 8) : dotted(g, pts));
   switch (key) {
     case 'brook.over': {
       brook(g);
@@ -271,4 +273,58 @@ export function walkSticker(landmark: LandmarkId): Container {
   pic.scale.set(0.8);
   c.addChild(b, pic);
   return c;
+}
+
+/**
+ * A landmark on the map: both of its ways side by side (`first` on the left, as on the stop screen), the walked one
+ * (`taken`) on a lit half with footprints. Centred on (0, 0).
+ */
+export function mapTile(
+  landmark: LandmarkId,
+  ways: readonly [string, string],
+  taken: 0 | 1 | null,
+  w: number,
+  h: number,
+): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 24)
+    .fill(0xe9f7da)
+    .stroke(stroke(swatch.green.line, 5));
+  c.addChild(g);
+  const half = w / 2 - 8;
+  ways.forEach((key, i) => {
+    const x = (i === 0 ? -1 : 1) * (w / 4 - 2);
+    if (taken === i)
+      g.roundRect(x - half / 2, -h / 2 + 8, half, h - 16, 16).fill({
+        color: swatch.yellow.light,
+        alpha: 0.9,
+      });
+    const pic = wayPicture(key, taken === i);
+    pic.scale.set(Math.min(half / 250, (h - 20) / 220));
+    pic.position.set(x, 0);
+    c.addChild(pic);
+  });
+  g.moveTo(0, -h / 2 + 16)
+    .lineTo(0, h / 2 - 16)
+    .stroke(stroke(swatch.green.line, 2));
+  c.label = landmark;
+  return c;
+}
+
+/** The companion's little door in a grassy mound: home on the map. Centred on (0, 0), about 120 x 130. */
+export function homeDoor(): Graphics {
+  return new Graphics()
+    .ellipse(0, 20, 60, 44)
+    .fill(swatch.green.fill)
+    .stroke(stroke(swatch.green.line, 4))
+    .roundRect(-22, -6, 44, 62, 20)
+    .fill(wood.fill)
+    .stroke(stroke(wood.line, 4))
+    .circle(10, 28, 4)
+    .fill(swatch.yellow.fill)
+    .moveTo(-30, -44)
+    .lineTo(0, -66)
+    .lineTo(30, -44)
+    .stroke(stroke(swatch.red.fill, 6));
 }
