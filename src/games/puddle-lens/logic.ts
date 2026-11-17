@@ -304,7 +304,18 @@ export class LookTracker {
  * and a swimmer both move, and a green ball and a brown speck differ only in colour until the closest stop.
  */
 export type Evidence =
-  'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks' | 'wall' | 'soft-edge' | 'even';
+  | 'edge'
+  | 'inside'
+  | 'hairs'
+  | 'empty'
+  | 'ragged'
+  | 'boxes'
+  | 'cracks'
+  | 'wall'
+  | 'soft-edge'
+  | 'even'
+  /** Level 11: something is there, with no edge detail and no inside to see even at the closest stop. */
+  | 'dot';
 export type CandidateId = 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble';
 export type Motion = 'swims' | 'drifts' | 'still';
 
@@ -419,6 +430,10 @@ export interface LifeDrop {
 function makePath(rng: Rng, id: CandidateId | FileSampleId, i: number, r = LIFE_SPOT): Swimmer {
   const motion =
     id in CANDIDATES ? CANDIDATES[id as CandidateId].motion : FILE_SAMPLES[id as FileSampleId].motion;
+  return pathFor(rng, motion, i, r);
+}
+
+function pathFor(rng: Rng, motion: Motion, i: number, r: number): Swimmer {
   // At level 5 the two sit well apart, on opposite sides of the drop, so the ring round one never takes in the other.
   if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2, r);
   const a = Math.PI * i + rng.range(-0.4, 0.4);
@@ -686,18 +701,45 @@ export const greenDriftAt = (phase: number, t: number) => ({
   y: GREEN_DRIFT * Math.sin(GREEN_DRIFT_W * 0.8 * t + phase * 1.7),
 });
 
-// ----- level 9: slide files (name the slide) -----
+// ----- levels 9 and 11: slide files (name the slide, open cases) -----
 
 /**
  * The samples a case folder can hold or name. Each row restates the built evidence of the sample it reuses (`CANDIDATES`,
  * `WALL_SLIDES`, `SORT_SAMPLES`), so one comparison serves every case. Nothing shows at stops 1–2 on any row.
  */
 export type FileSampleId =
-  'swimmer' | 'green-ball' | 'silt' | 'mud-speck' | 'bubble' | 'onion-skin' | 'cheek-cells' | 'sand-grain';
+  | 'swimmer'
+  | 'green-ball'
+  | 'silt'
+  | 'mud-speck'
+  | 'bubble'
+  | 'onion-skin'
+  | 'cheek-cells'
+  | 'sand-grain'
+  | 'cork'
+  | 'red-onion'
+  | 'tiny-living'
+  | 'tiny-clay';
 
-/** The samples a card can name (the sand grain is measured, never a card), and the ones a level-9 slide can be. */
-export type FileCardId = Exclude<FileSampleId, 'sand-grain'>;
-export type FileUnknownId = Exclude<FileCardId, 'mud-speck'>;
+/**
+ * The samples a card can name: the sand grain is measured and never a card, and red onion skin is named by the onion-skin card
+ * (living plant cells), since its colour is never a clue.
+ */
+export type FileCardId = Exclude<FileSampleId, 'sand-grain' | 'red-onion'>;
+/**
+ * What a slide can be. `tiny-dot` is the unknown of an open case: it shows what the two tiny rows show (they are identical), and
+ * the model holds no hidden truth about which of them it is.
+ */
+export type FileUnknownId =
+  | 'swimmer'
+  | 'green-ball'
+  | 'silt'
+  | 'bubble'
+  | 'onion-skin'
+  | 'cheek-cells'
+  | 'cork'
+  | 'red-onion'
+  | 'tiny-dot';
 
 export interface FileSample {
   id: FileSampleId;
@@ -724,22 +766,43 @@ export const FILE_SAMPLES: Record<FileSampleId, FileSample> = {
     motion: 'still',
   },
   'sand-grain': { id: 'sand-grain', evidence: [[], [], ['cracks'], ['cracks']], motion: 'still' },
+  // Level 11. Cork is walls with nothing inside any box: cells that are no longer alive (a stated simplification, said of the
+  // whole slide). Red onion skin is onion skin in another colour. The two tiny rows are the same in every column.
+  cork: { id: 'cork', evidence: [[], [], ['wall'], ['wall', 'empty']], motion: 'still' },
+  'red-onion': { id: 'red-onion', evidence: [[], [], ['wall'], ['wall', 'inside']], motion: 'still' },
+  'tiny-living': { id: 'tiny-living', evidence: [[], [], [], ['dot']], motion: 'drifts' },
+  'tiny-clay': { id: 'tiny-clay', evidence: [[], [], [], ['dot']], motion: 'drifts' },
 };
 export const FILE_SAMPLE_IDS = Object.keys(FILE_SAMPLES) as FileSampleId[];
 
 export const fileEvidenceAt = (s: FileSampleId, stop: Stop): readonly Evidence[] =>
   FILE_SAMPLES[s].evidence[stop - 1];
 
-export type FileCaseId = 'N1' | 'N2' | 'N3' | 'N4' | 'N5' | 'N6';
+/** What an unknown slide shows at a stop. The tiny dot shows what both tiny rows show. */
+export const unknownEvidenceAt = (u: FileUnknownId, stop: Stop): readonly Evidence[] =>
+  fileEvidenceAt(u === 'tiny-dot' ? 'tiny-living' : u, stop);
 
-/** A case: an unknown slide and three field-guide cards, one of which is the unknown's own row. */
+/** How an unknown moves (drawn, never evidence). */
+export const unknownMotion = (u: FileUnknownId): Motion =>
+  FILE_SAMPLES[u === 'tiny-dot' ? 'tiny-living' : u].motion;
+
+export type NameCaseId = 'N1' | 'N2' | 'N3' | 'N4' | 'N5' | 'N6';
+export type OpenCaseId = 'O1' | 'O2' | 'O3' | 'O4' | 'O5';
+export type FileCaseId = NameCaseId | OpenCaseId;
+
+/**
+ * A case: an unknown slide and three field-guide cards. At level 9 one card is the unknown's own row; at level 11 the tiny dot
+ * has two cards that fit it at every stop, and red onion skin is named by the onion-skin card.
+ */
 export interface FileCase {
   id: FileCaseId;
   unknown: FileUnknownId;
   candidates: readonly [FileCardId, FileCardId, FileCardId];
+  /** The dot wobbles about its drift path (O2): movement that still proves nothing. */
+  jiggles?: boolean;
 }
 
-/** The level-9 cases (the definition's table, row for row). */
+/** The cases (the definition's table, row for row): N1–N6 are level 9's, O1–O5 level 11's. */
 export const FILE_CASES: Record<FileCaseId, FileCase> = {
   N1: { id: 'N1', unknown: 'green-ball', candidates: ['green-ball', 'silt', 'bubble'] },
   N2: { id: 'N2', unknown: 'bubble', candidates: ['bubble', 'swimmer', 'mud-speck'] },
@@ -747,20 +810,40 @@ export const FILE_CASES: Record<FileCaseId, FileCase> = {
   N4: { id: 'N4', unknown: 'onion-skin', candidates: ['onion-skin', 'cheek-cells', 'mud-speck'] },
   N5: { id: 'N5', unknown: 'silt', candidates: ['silt', 'green-ball', 'swimmer'] },
   N6: { id: 'N6', unknown: 'swimmer', candidates: ['swimmer', 'bubble', 'green-ball'] },
+  O1: { id: 'O1', unknown: 'tiny-dot', candidates: ['tiny-living', 'tiny-clay', 'bubble'] },
+  O2: { id: 'O2', unknown: 'tiny-dot', candidates: ['tiny-living', 'tiny-clay', 'swimmer'], jiggles: true },
+  O3: { id: 'O3', unknown: 'cork', candidates: ['cork', 'onion-skin', 'cheek-cells'] },
+  O4: { id: 'O4', unknown: 'red-onion', candidates: ['onion-skin', 'cork', 'cheek-cells'] },
+  O5: { id: 'O5', unknown: 'green-ball', candidates: ['green-ball', 'tiny-living', 'silt'] },
 };
-export const FILE_CASE_IDS = Object.keys(FILE_CASES) as FileCaseId[];
+/** Level 9's cases. */
+export const FILE_CASE_IDS: readonly NameCaseId[] = ['N1', 'N2', 'N3', 'N4', 'N5', 'N6'];
+/** Level 11's cases. */
+export const OPEN_CASE_IDS: readonly OpenCaseId[] = ['O1', 'O2', 'O3', 'O4', 'O5'];
 
 /** The cards the view has not ruled out: those whose evidence at this stop equals the unknown's. Never grows as the stop rises. */
 export function survivors(c: FileCase, stop: Stop): FileCardId[] {
-  const seen = fileEvidenceAt(c.unknown, stop);
+  const seen = unknownEvidenceAt(c.unknown, stop);
   return c.candidates.filter((id) => sameSet(fileEvidenceAt(id, stop), seen));
 }
 
-/** The lowest stop that leaves one card standing. */
+/** The lowest stop that leaves one card standing, or the closest stop, where an open case is closed as not enough evidence. */
 export const closingStop = (c: FileCase): Stop => STOPS.find((s) => survivors(c, s).length === 1) ?? 4;
+
+/** An open case: no stop on this lens leaves one card standing. */
+export const isOpenCase = (c: FileCase): boolean => survivors(c, 4).length > 1;
+
+/** What closes the file at its closing stop: the one card left standing, or can't tell (not enough evidence) on an open case. */
+export const rightClose = (c: FileCase): FileAnswer => {
+  const standing = survivors(c, 4);
+  return standing.length === 1 ? standing[0] : 'cant-tell';
+};
 
 export type FileSeeLine =
   | 'lens.file.see.only-dot'
+  | 'lens.file.see.dot'
+  | 'lens.file.see.walls-empty'
+  | 'lens.file.see.walls-inside'
   | 'lens.look.inside'
   | 'lens.look.empty'
   | 'lens.look.ragged'
@@ -771,6 +854,8 @@ export type FileSeeLine =
 /** What the view of a sample shows at a stop (a ruled-out card, and Show a hint), never the verdict. */
 export function fileSeeLine(s: FileSampleId, stop: Stop): FileSeeLine {
   const ev = fileEvidenceAt(s, stop);
+  if (ev.includes('wall') && ev.includes('empty')) return 'lens.file.see.walls-empty';
+  if (ev.includes('dot')) return 'lens.file.see.dot';
   if (ev.includes('wall')) return 'lens.wall.see.wall';
   if (ev.includes('soft-edge')) return 'lens.wall.see.soft';
   if (ev.includes('empty')) return 'lens.look.empty';
@@ -780,27 +865,44 @@ export function fileSeeLine(s: FileSampleId, stop: Stop): FileSeeLine {
   return 'lens.file.see.only-dot';
 }
 
+/**
+ * What the view of a case's unknown shows at a stop. Where a cork card is on the table, onion skin's closest view is told apart
+ * by what is inside each box (the walls alone fit both cards).
+ */
+export function caseSeeLine(c: FileCase, stop: Stop): FileSeeLine {
+  const ev = unknownEvidenceAt(c.unknown, stop);
+  if (ev.includes('wall') && ev.includes('inside') && c.candidates.includes('cork'))
+    return 'lens.file.see.walls-inside';
+  return fileSeeLine(c.unknown === 'tiny-dot' ? 'tiny-living' : c.unknown, stop);
+}
+
 export type FileAnswer = FileCardId | 'cant-tell';
 export type FileVerdict =
   | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
-  | { result: 'right'; line: `lens.file.yes.${FileUnknownId}` }
+  | { result: 'right'; line: `lens.file.yes.${Exclude<FileUnknownId, 'tiny-dot'> | 'open'}` }
   | { result: 'miss'; line: 'lens.file.can-tell-now' | FileSeeLine };
 
 /**
- * A card the view has ruled out is a miss at any stop. While more than one card stands, naming any of them is free (the same line
- * for a true and a false guess, never an answer key) and can't tell yet is right for now. With one card standing, naming it closes
- * the file and can't tell yet is a miss.
+ * A card the view has ruled out is a miss at any stop. While more than one card stands, below the closest stop, naming any of them
+ * is free (the same line for a true and a false guess, never an answer key) and can't tell yet is right for now. With one card
+ * standing, naming it closes the file and can't tell yet is a miss. At the closest stop with more than one card still standing (an
+ * open case), can't tell closes the file as not enough evidence, and naming either card is a miss: the view cannot say which.
  */
 export function judgeCase(c: FileCase, stop: Stop, answer: FileAnswer): FileVerdict {
   const standing = survivors(c, stop);
   if (answer !== 'cant-tell' && !standing.includes(answer))
-    return { result: 'miss', line: fileSeeLine(c.unknown, stop) };
-  if (standing.length > 1)
+    return { result: 'miss', line: caseSeeLine(c, stop) };
+  if (standing.length > 1) {
+    if (stop === 4)
+      return answer === 'cant-tell'
+        ? { result: 'right', line: 'lens.file.yes.open' }
+        : { result: 'miss', line: caseSeeLine(c, stop) };
     return answer === 'cant-tell'
       ? { result: 'free', line: 'lens.right-for-now' }
       : { result: 'free', line: 'lens.could-be' };
+  }
   if (answer === 'cant-tell') return { result: 'miss', line: 'lens.file.can-tell-now' };
-  return { result: 'right', line: `lens.file.yes.${c.unknown}` };
+  return { result: 'right', line: `lens.file.yes.${c.unknown as Exclude<FileUnknownId, 'tiny-dot'>}` };
 }
 
 /** A file in a round: its case, the seeded order of its three cards, and the unknown's path in the water. */
@@ -825,11 +927,38 @@ export function fileRoundFor(rng: Rng, authored: boolean): SlideFile[] {
       ids = rng.shuffle([...FILE_CASE_IDS]).slice(0, 3);
       if (ids.some((id) => closingStop(FILE_CASES[id]) === 4)) break;
     }
-  return ids.map((id) => {
-    const c = FILE_CASES[id];
-    return { case: c, cards: rng.shuffle([...c.candidates]), path: makePath(rng, c.unknown, 0, FILE_SPOT) };
-  });
+  return ids.map((id) => filed(rng, FILE_CASES[id]));
 }
+
+const filed = (rng: Rng, c: FileCase): SlideFile => ({
+  case: c,
+  cards: rng.shuffle([...c.candidates]),
+  path: pathFor(rng, unknownMotion(c.unknown), 0, FILE_SPOT),
+});
+
+/**
+ * Level 11, three files from O1–O5 with one or two open cases (never none, never all three), so closing a file as not enough
+ * evidence is neither automatic nor absent. The authored round is the cork, the drifting dot, then the green ball (O3, O1, O5).
+ */
+export function openRoundFor(rng: Rng, authored: boolean): SlideFile[] {
+  let ids: OpenCaseId[];
+  if (authored) ids = ['O3', 'O1', 'O5'];
+  else
+    for (;;) {
+      ids = rng.shuffle([...OPEN_CASE_IDS]).slice(0, 3);
+      const open = ids.filter((id) => isOpenCase(FILE_CASES[id])).length;
+      if (open >= 1 && open <= 2) break;
+    }
+  return ids.map((id) => filed(rng, FILE_CASES[id]));
+}
+
+/** How far the jiggling dot strays from its drift path, in art units. */
+export const JIGGLE_MAX = 6;
+/** The jiggling dot's wobble about its drift path at time `t`, in art units: small, slow enough to keep under the speed limit. */
+export const jiggleAt = (phase: number, t: number) => ({
+  x: 2.8 * Math.sin(1.3 * t + phase) + 1.4 * Math.sin(2.1 * t + phase * 1.7),
+  y: 2.8 * Math.sin(1.5 * t + phase * 0.6) + 1.4 * Math.sin(1.9 * t + phase * 2.3),
+});
 
 // ----- level 10: slide files (measure it) -----
 
@@ -966,7 +1095,7 @@ export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'tur
 
 /**
  * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3 and 5–8)
- * or closes the file (9), the stop that shows both ends beside the bar (10), or the lowest that shows the asked thing (4).
+ * or closes the file (9 and 11), the stop that shows both ends beside the bar (10), or the lowest that shows the asked thing (4).
  */
 export function helpFor(
   level: number,
@@ -985,7 +1114,7 @@ export function helpFor(
 ): Help | null {
   if (level === 1) return { do: 'tap-lens' };
   if (level === 10) return s.measure ? { do: 'turn', stop: measuringStop(s.measure) } : null;
-  if (level === 9) return s.file ? { do: 'turn', stop: closingStop(s.file) } : null;
+  if (level === 9 || level === 11) return s.file ? { do: 'turn', stop: closingStop(s.file) } : null;
   if (level === 7) return s.wall ? { do: 'turn', stop: wallDeciding(s.wall) } : null;
   if (level === 8) return s.green ? { do: 'turn', stop: greenDeciding(s.green) } : null;
   if (level === 5) return s.pair ? { do: 'turn', stop: decidingStop(s.pair) } : null;
@@ -1121,15 +1250,16 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     if (rest.y - GLASS_R < M) return null;
     return ok({ ...none, lens: { ...rest, r: GLASS_R }, things, rest, table, paw });
   }
-  // Level 9 has four answers (three cards and can't tell yet): full-size where the row or column fits, otherwise four in the
+  // Levels 9 and 11 have four answers (three cards and can't tell yet): full-size where the row or column fits, otherwise four in the
   // space of three, which a grown-up's targets allow.
+  const cards = level === 9 || level === 11;
   const place = (size: number): LensLayout | null => {
     let stops: Rect[];
     let answer: Rect | null = null;
     let choices: Rect[] = [];
     let area: Rect;
     const three = level >= 5;
-    const n = level === 9 ? 4 : 3;
+    const n = cards ? 4 : 3;
     if (size < MIN_GROWNUP) return null;
     const each = Array.from({ length: n }, (_, i) => i);
     const row = n * size + (n - 1) * GAP;
@@ -1197,7 +1327,7 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     const withPaw = ok({ ...none, lens, stops, answer, choices, paw });
     return withPaw ?? ok({ ...none, lens, stops, answer, choices });
   };
-  if (level !== 9) return place(ANSWER_SIZE);
+  if (!cards) return place(ANSWER_SIZE);
   return place(ANSWER_SIZE) ?? place(CARD_SIZE);
 }
 
@@ -1239,7 +1369,7 @@ export class LensTally {
 }
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -1262,6 +1392,7 @@ export const PLANS: readonly PlanInfo[] = [
   },
   { level: 9, name: 'Name the slide: look closer, then tap the card the view leaves standing' },
   { level: 10, name: 'Measure it: look closer, then read its length from the scale bar' },
+  { level: 11, name: 'Open cases: name the slide, or close the file as not enough evidence' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -1270,7 +1401,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
-  grownup: { min: 9, max: 10 },
+  grownup: { min: 9, max: 11 },
 };
 export const planFor = (level: number): PlanInfo =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

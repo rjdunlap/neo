@@ -29,6 +29,14 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.evaluate((i) => kit.tapOn(neo.scene.game.choiceButtons[i]), i);
       await settle();
     };
+    // Levels 9 and 11: tap a card (or 'cant-tell', the fourth answer) by what it names.
+    const card = async (id) => {
+      await page.evaluate((id) => {
+        const g = neo.scene.game;
+        kit.tapOn(g.choiceButtons.find((b) => b.stop === id));
+      }, id);
+      await settle();
+    };
     const auto = async () => {
       for (let i = 0; i < 40 && !(await page.evaluate(() => neo.scene.finished)); i++) {
         await settle();
@@ -46,7 +54,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(800);
     };
-    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9 and 10 the slide files); LENS_LEVELS=lap only the lap level.
+    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels (9, 10 and 11 the slide files); LENS_LEVELS=lap only the lap level.
     const onlyLap = process.env.LENS_LEVELS === 'lap';
     if (!process.env.LENS_LEVELS || onlyLap) await lap();
     if (onlyLap) return;
@@ -123,13 +131,6 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     }
     // Level 9 (grown-up): three field-guide cards and can't tell yet; the view rules cards out.
     if (!only.length || only.includes(9)) {
-      const card = async (id) => {
-        await page.evaluate((id) => {
-          const g = neo.scene.game;
-          kit.tapOn(g.choiceButtons.find((b) => b.stop === id));
-        }, id);
-        await settle();
-      };
       await launch('puddle-lens', 9);
       await settle();
       assert.deepEqual(
@@ -217,6 +218,68 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       assert.deepEqual(await score(), [1, 1], 'level 10 saved one miss and one hint');
       log(
         'Puddle Lens 10: a free early length, a wrong length beside the bar, a free length on a dot, a counted hint, swimmer portrait, saved 1/1',
+      );
+    }
+    // Level 11 (grown-up): open cases. Some files cannot be closed by any stop, and not enough evidence is then the right close.
+    if (!only.length || only.includes(11)) {
+      await launch('puddle-lens', 11);
+      await settle();
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.files.map((f) => f.case.id)),
+        ['O3', 'O1', 'O5'],
+        'the authored files',
+      );
+      assert.equal(await page.evaluate(() => neo.scene.game.stop), 2, 'level 11 starts at the hand lens');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.choiceButtons.length),
+        4,
+        'three cards and the fourth answer',
+      );
+      await turn(3);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.openShown),
+        false,
+        "below the closest stop it is can't tell yet",
+      );
+      await card('cheek-cells');
+      assert.deepEqual(await tally(), [1, 0], 'animal cells for cork at stop 3: ruled out, a miss');
+      await card('cant-tell');
+      await card('onion-skin');
+      assert.deepEqual(await tally(), [1, 0], "can't tell yet and a card still standing are free at stop 3");
+      await turn(4);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.openShown),
+        true,
+        'at the closest stop the fourth answer is the closed folder',
+      );
+      await card('cork');
+      await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 });
+      await settle();
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.closed), ['cork'], 'the folder is stamped');
+      await turn(4);
+      await portrait('puddle-lens-11-tiny-dot-portrait');
+      await card('tiny-living');
+      assert.deepEqual(await tally(), [2, 0], 'naming one of two cards that both fit the dot: a miss');
+      assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'and does not close the file');
+      await card('cant-tell');
+      await page.waitForFunction(() => neo.scene.game.index === 2, null, { timeout: 8000 });
+      await settle();
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.closed),
+        ['cork', 'cant-tell'],
+        'the file closes as not enough evidence',
+      );
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForFunction(() => neo.scene.game.stop === 4, null, { timeout: 5000 });
+      await settle();
+      assert.deepEqual(await tally(), [2, 1], 'Show a hint turns the green ball to stop 4 and counts one');
+      await card('cant-tell');
+      assert.deepEqual(await tally(), [3, 1], 'not enough evidence on a file one card can close: a miss');
+      await auto();
+      await finished('puddle-lens');
+      assert.deepEqual(await score(), [3, 1], 'level 11 saved three misses and one hint');
+      log(
+        'Puddle Lens 11: a ruled-out card, free answers at stop 3, cork closed, a named survivor on the open dot (a miss), not enough evidence closes it, a counted hint, a wrong not-enough-evidence, tiny-dot portrait, saved 3/1',
       );
     }
   }

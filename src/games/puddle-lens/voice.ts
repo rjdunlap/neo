@@ -90,6 +90,21 @@ export const VOICE = {
   'lens.file.yes.bubble': ['An air bubble: a thick edge and nothing inside.'],
   'lens.file.yes.onion-skin': ['Living plant cells: thick, straight walls, fitted together like bricks.'],
   'lens.file.yes.cheek-cells': ['Animal cells: thin, soft edges, and each one lies on its own.'],
+  'lens.file.instruct.open': ['What is on this slide? If no view can settle it, close the file.'],
+  'lens.file.card.cork': ['Cells no longer alive: walls only.'],
+  'lens.file.card.tiny-living': ['A living thing too small to show its inside.'],
+  'lens.file.card.tiny-clay': ['A speck of clay.'],
+  'lens.file.say.open': ['Not enough evidence.'],
+  'lens.file.see.dot': [
+    'Look: a dot, with no edge and nothing inside to see. Two of the cards look just like it.',
+  ],
+  'lens.file.see.walls-empty': ['Look: walls, and nothing inside any of them.'],
+  'lens.file.see.walls-inside': ['Look: walls, and something inside each one.'],
+  'lens.file.yes.cork': ["Walls, and nothing inside. These were cells once. They aren't alive now."],
+  'lens.file.yes.red-onion': [
+    'Living plant cells: thick walls, and something inside each one. The colour was never the clue.',
+  ],
+  'lens.file.yes.open': ["Right. Even this close, two cards fit. This lens can't settle it."],
   'lens.file.instruct.size': [
     'How long is it? Find the view that shows both ends beside the bar. A micrometre is a thousandth of a millimetre.',
   ],

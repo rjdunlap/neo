@@ -13,7 +13,7 @@
 | preschool | 2–3 |
 | pre-K | 3–4 |
 | school | 4–8 |
-| grown-up | 9–10 |
+| grown-up | 9–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,6 +27,7 @@
 | 8 | Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet |
 | 9 | Name the slide: look closer, then tap the card the view leaves standing |
 | 10 | Measure it: look closer, then read its length from the scale bar |
+| 11 | Open cases: name the slide, or close the file as not enough evidence |
 
 <!-- end generated -->
 

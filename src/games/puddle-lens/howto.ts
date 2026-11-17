@@ -46,6 +46,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Turn the dial until both ends show beside the scale bar, then choose the length.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Name the slide, or at the closest view close the file as not enough evidence.',
+    },
   ],
   finish: [
     { from: 1, to: 2, text: 'Three things looked at.' },
@@ -55,7 +60,7 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'All four slides sorted.' },
     { from: 7, to: 7, text: 'All three slides answered.' },
     { from: 8, to: 8, text: 'All three drops answered.' },
-    { from: 9, to: 10, text: 'All three files closed.' },
+    { from: 9, to: 11, text: 'All three files closed.' },
   ],
   note: [
     {
@@ -96,7 +101,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 9,
-      to: 9,
+      to: 11,
       text: 'Each card shows the thing at the two microscope stops. A card the view already contradicts is a miss; a card that still fits is free until only one is left.',
     },
     {
@@ -109,10 +114,21 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'A length chosen before both ends show beside a bar is free; after that a wrong length is a miss.',
     },
-    { from: 9, to: 10, text: 'Looking at more views never costs anything.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Some things are too small for any view here to show an edge or an inside. Then nobody can say from this lens whether they are alive, and saying so is the right answer.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'At the closest view the fourth button becomes a closed folder: not enough evidence. It closes a file only when two cards still fit; when one card is left it is a miss, and so is naming either of two cards that both still fit.',
+    },
+    { from: 11, to: 11, text: 'Colour and movement are drawn and never decide a file.' },
+    { from: 9, to: 11, text: 'Looking at more views never costs anything.' },
     {
       from: 9,
-      to: 9,
+      to: 11,
       text: 'Show a hint turns the dial for you and says what the view shows; the first hint on each file counts as one hint.',
     },
     {

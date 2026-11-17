@@ -523,22 +523,58 @@ export function waterLayer(stop: Stop): Container {
   return c;
 }
 
+const ONION = {
+  ground: 0xf7f1e4,
+  fill: 0xfffbf2,
+  wall: 0xb9a27a,
+  dot: 0xc9b48c,
+  piece: 0xfffbf2,
+  edge: 0xd8c8a6,
+};
+/** Red onion skin: the same drawing in purple. The colour is drawn and is never a clue. */
+const RED_ONION = {
+  ground: 0xe6d2e8,
+  fill: 0xcfa0d6,
+  wall: 0x7d4a86,
+  dot: 0x5f3568,
+  piece: 0xcfa0d6,
+  edge: 0x8f5a99,
+};
+const CORK = { fill: 0xf7edd9, wall: 0x8a6238, piece: 0xc9a06a, edge: 0x8a6238 };
+
 /** Long clear boxes side by side (onion skin), `box` long; `dots` adds a faint dot in each. */
-function onionArt(box: number, dots: boolean): Graphics {
+function onionArt(box: number, dots: boolean, c = ONION): Graphics {
   const g = new Graphics();
   const h = box * 0.32;
   const span = ART_R * 1.3;
-  g.rect(-span, -span, span * 2, span * 2).fill(0xf7f1e4);
+  g.rect(-span, -span, span * 2, span * 2).fill(c.ground);
   for (let row = -Math.ceil(span / h); row <= Math.ceil(span / h); row++) {
     const off = (((row % 3) + 3) % 3) * box * 0.33;
     for (let col = -Math.ceil(span / box) - 1; col <= Math.ceil(span / box); col++) {
       const x = col * box + off;
       const y = row * h;
       g.roundRect(x + 2, y + 2, box - 4, h - 4, h * 0.2)
-        .fill(0xfffbf2)
-        .stroke(line(0xb9a27a, Math.max(2, box * 0.025)));
-      if (dots) g.circle(x + box * 0.5, y + h * 0.5, h * 0.12).fill({ color: 0xc9b48c, alpha: 0.8 });
+        .fill(c.fill)
+        .stroke(line(c.wall, Math.max(2, box * 0.025)));
+      if (dots) g.circle(x + box * 0.5, y + h * 0.5, h * 0.12).fill({ color: c.dot, alpha: 0.8 });
     }
+  }
+  return g;
+}
+
+/** Cork: small even boxes with thick walls, `box` wide, and nothing in any box at either stop. */
+function corkArt(box: number): Graphics {
+  const g = new Graphics();
+  const h = box * 0.72;
+  const span = ART_R * 1.3;
+  const wall = Math.max(5, box * 0.11);
+  g.rect(-span, -span, span * 2, span * 2).fill(CORK.wall);
+  for (let row = -Math.ceil(span / h); row <= Math.ceil(span / h); row++) {
+    const off = (((row % 2) + 2) % 2) * box * 0.5;
+    for (let col = -Math.ceil(span / box) - 1; col <= Math.ceil(span / box); col++)
+      g.roundRect(col * box + off + wall / 2, row * h + wall / 2, box - wall, h - wall, box * 0.06).fill(
+        CORK.fill,
+      );
   }
   return g;
 }
@@ -569,12 +605,12 @@ function wispArt(len: number, width: number): Graphics {
   return g.stroke(line(0x4fa63f, width));
 }
 
-/** A thin clear piece of onion skin, seen whole. */
-function skinPieceArt(d: number): Graphics {
+/** A thin piece of onion skin (or, in its colours, red onion skin or a sliver of cork), seen whole. */
+function skinPieceArt(d: number, c: { piece: number; edge: number } = ONION): Graphics {
   const g = new Graphics();
   const pts = leafOutline('round', d).map((p) => ({ x: p.y * 0.9, y: p.x * 0.7 }));
   poly(g, pts);
-  return g.fill({ color: 0xfffbf2, alpha: 0.9 }).stroke(line(0xd8c8a6, Math.max(2, d * 0.02)));
+  return g.fill({ color: c.piece, alpha: 0.9 }).stroke(line(c.edge, Math.max(2, d * 0.02)));
 }
 
 /** One stop's view of a level-6 slide. */
@@ -620,15 +656,35 @@ export function answerIcon(kind: 'alive' | 'not-alive' | 'cant-tell'): Graphics 
   } else {
     g.moveTo(14, 14).lineTo(32, 32).stroke(line(wood.line, 11));
     g.circle(-4, -4, 24).fill(0xd6eefa).stroke(line(0x5c6f82, 7));
-    // A question curl, drawn and not lettered.
-    g.moveTo(-12, -12)
-      .quadraticCurveTo(-10, -22, -2, -22)
-      .quadraticCurveTo(8, -20, 6, -10)
-      .quadraticCurveTo(2, -4, -4, 0)
-      .lineTo(-4, 4)
-      .stroke(line(swatch.purple.line, 5));
-    g.circle(-4, 12, 3.5).fill(swatch.purple.line);
+    curl(g, -4, -4, 1);
   }
+  return g;
+}
+
+/** A question curl, drawn and not lettered, about 16k wide and 38k tall with (x, y) at the middle of its hook. */
+function curl(g: Graphics, x: number, y: number, k: number) {
+  g.moveTo(x - 8 * k, y - 8 * k)
+    .quadraticCurveTo(x - 6 * k, y - 18 * k, x + 2 * k, y - 18 * k)
+    .quadraticCurveTo(x + 12 * k, y - 16 * k, x + 10 * k, y - 6 * k)
+    .quadraticCurveTo(x + 6 * k, y, x, y + 4 * k)
+    .lineTo(x, y + 8 * k)
+    .stroke(line(swatch.purple.line, 5 * k));
+  g.circle(x, y + 16 * k, 3.5 * k).fill(swatch.purple.line);
+}
+
+/** Level 11's fourth answer at the closest stop: a closed folder with a question curl (not enough evidence). */
+export function openIcon(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-36, -34, 32, 14, 5).fill(0xe2b866).stroke(line(0xa9843c, 3));
+  g.roundRect(-36, -26, 72, 56, 7).fill(0xf0cf86).stroke(line(0xa9843c, 3));
+  curl(g, -1, 0, 0.95);
+  return g;
+}
+
+/** The stamp on the case folder for a file closed as not enough evidence: the question curl alone. */
+export function openStampArt(): Graphics {
+  const g = new Graphics();
+  curl(g, -1, -2, 0.75);
   return g;
 }
 
@@ -913,9 +969,25 @@ function inkRagged(g: Graphics, x: number, y: number, r: number, seed: number) {
   g.stroke(line(CARD_INK, 2));
 }
 
+/** Boxes `w` by `h` fitted together like bricks, in a square 22 across centred on (x, y), in ink. */
+function inkBricks(g: Graphics, x: number, y: number, w: number, h: number, width: number) {
+  g.rect(x - 11, y - 11, 22, 22);
+  for (let row = 0; row * h < 22; row++) {
+    const y0 = y - 11 + row * h;
+    if (row) g.moveTo(x - 11, y0).lineTo(x + 11, y0);
+    for (let x0 = x - 11 + (row % 2 ? w / 2 : 0); x0 < x + 11; x0 += w)
+      if (x0 > x - 11) g.moveTo(x0, y0).lineTo(x0, y0 + h);
+  }
+  g.stroke(line(CARD_INK, width));
+}
+
 /** One sample at one microscope stop, as an ink drawing inside a view 17 in radius centred on (x, y). No colour: colour is never a clue. */
 function inkView(g: Graphics, id: FileCardId, close: boolean, x: number, y: number) {
   const dot = (dx: number, dy: number, r: number) => g.circle(x + dx, y + dy, r).fill(CARD_INK);
+  // The two tiny cards are one drawing: a speck, and at the closest stop still only a dot.
+  if (id === 'tiny-living' || id === 'tiny-clay') return void dot(0, 0, close ? 2.4 : 1.2);
+  // Cork: small even boxes, thicker walls than onion skin, and nothing in any box at either stop.
+  if (id === 'cork') return inkBricks(g, x, y, close ? 11 : 7.33, close ? 7.4 : 5.5, close ? 3.4 : 2);
   if (id === 'swimmer') {
     const [a, b] = close ? [12, 7] : [8, 4.5];
     g.ellipse(x, y, a, b).stroke(line(CARD_INK, 2));
@@ -942,14 +1014,7 @@ function inkView(g: Graphics, id: FileCardId, close: boolean, x: number, y: numb
   else if (id === 'onion-skin') {
     // Bricks: thick straight walls fitted together; the closer view shows a dot in each.
     const [w, h] = close ? [22, 11] : [11, 5.5];
-    g.rect(x - 11, y - 11, 22, 22);
-    for (let row = 0; row * h < 22; row++) {
-      const y0 = y - 11 + row * h;
-      if (row) g.moveTo(x - 11, y0).lineTo(x + 11, y0);
-      for (let x0 = x - 11 + (row % 2 ? w / 2 : 0); x0 < x + 11; x0 += w)
-        if (x0 > x - 11) g.moveTo(x0, y0).lineTo(x0, y0 + h);
-    }
-    g.stroke(line(CARD_INK, 2.5));
+    inkBricks(g, x, y, w, h, 2.5);
     if (close)
       for (const [dx, dy] of [
         [0, -5.5],
@@ -988,9 +1053,22 @@ export function fileCardArt(id: FileCardId): Graphics {
   return g;
 }
 
-/** One stop's view of a level-9 file's unknown, and the part that moves on its path (a thing in water), or null (a slide of cells). */
+/** The tiny dot's colour: darker than the water's own faint flecks, so it reads as the thing on the slide. */
+const TINY = 0x566572;
+
+/** A slide of cork or red onion skin: a piece seen whole (stops 1–2), then its boxes (3–4), turned by the seeded angle. */
+function pieceLayer(id: 'cork' | 'red-onion', stop: Stop, angle: number): Container {
+  const c = new Container();
+  c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE));
+  if (stop <= 2) c.addChild(skinPieceArt(stop === 1 ? 140 : 370, id === 'cork' ? CORK : RED_ONION));
+  else if (id === 'cork') c.addChild(corkArt(stop === 3 ? 64 : 124));
+  else c.addChild(onionArt(stop === 3 ? 120 : 230, stop === 4, RED_ONION));
+  return stop >= 3 ? tilt(c, angle) : c;
+}
+
+/** One stop's view of a file's unknown (levels 9 and 11), and the part that moves on its path (a thing in water), or null (a slide of cells). */
 export function fileLayer(
-  id: FileSampleId,
+  id: Exclude<FileSampleId, 'tiny-living' | 'tiny-clay'> | 'tiny-dot',
   stop: Stop,
   looks: Looks,
   angle: number,
@@ -1000,8 +1078,18 @@ export function fileLayer(
   if (id === 'onion-skin' || id === 'cheek-cells')
     return { layer: wallLayer(id, stop, looks, angle, seed), mover: null };
   if (id === 'sand-grain') return { layer: viewLayer('sand', stop, looks), mover: null };
+  if (id === 'cork' || id === 'red-onion') return { layer: pieceLayer(id, stop, angle), mover: null };
   const layer = waterLayer(stop);
   if (stop < 2) return { layer, mover: null };
+  if (id === 'tiny-dot') {
+    // Too small for the hand lens; a speck at the first microscope stop, and at the closest still a dot: no edge, nothing inside.
+    const mover =
+      stop === 2
+        ? new Graphics()
+        : new Graphics().circle(0, 0, stop === 3 ? 3 : 6.5).fill({ color: TINY, alpha: 0.8 });
+    layer.addChild(mover);
+    return { layer, mover };
+  }
   const mover = candidateArt(id, stop, shape);
   layer.addChild(mover);
   return { layer, mover };
