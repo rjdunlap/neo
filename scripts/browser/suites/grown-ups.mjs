@@ -360,7 +360,11 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
 
     await setBand('lap');
     const lap = await read();
-    assert.deepEqual(lap.ids, ['bounce-back', 'jelly-drums', 'peekaboo-barn'], 'the lap starters, one land each');
+    assert.deepEqual(
+      lap.ids,
+      ['bounce-back', 'jelly-drums', 'peekaboo-barn'],
+      'the lap starters, one land each',
+    );
     for (const l of lap.labels) assert.deepEqual(l, ['Try:', 'Notice:', 'Say:'], 'each starter is complete');
     assert.equal(
       lap.kit,

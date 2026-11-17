@@ -44,7 +44,11 @@ describe('At-home notes', () => {
   it('has a registered game with an off-screen line behind every entry, and only band keys the game lists', () => {
     expect(noted.length).toBeGreaterThanOrEqual(16);
     // Every land has at least one game with notes, so a starter walk can find a complete idea in any of them.
-    for (const land of LANDS) expect(land.games.some((id) => id in AT_HOME_NOTES), land.id).toBe(true);
+    for (const land of LANDS)
+      expect(
+        land.games.some((id) => id in AT_HOME_NOTES),
+        land.id,
+      ).toBe(true);
     for (const g of noted) {
       expect(g.offScreen, g.id).toBeTruthy();
       const entry = AT_HOME_NOTES[g.id];
