@@ -6,6 +6,7 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
+import { frameFor, toReal, type Frame } from './frame';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { bowIcon, giftBox, ribbon } from './art';
 import {
@@ -15,7 +16,6 @@ import {
   switchHint,
   switchRound,
   TRAY_GAP,
-  TRAY_LEFT,
   WRITTEN,
   type SwitchClaim,
   type SwitchRound,
@@ -24,8 +24,6 @@ import {
 
 /** Logical units per tick at every view size: the ribbon is 180 long, the short whole 360 and the long whole 720. */
 export const SWITCH_TICK = 30;
-/** The ribbon and every whole start here, as levels 1–3's spool does: clear of the help button on the left, and the long whole ends at 830, clear of the button column. */
-const X0 = 110;
 const RIBBON_LEN = SWITCH_RIBBON * SWITCH_TICK;
 const RIBBON_TALL = 120;
 const TAG_Y = 82;
@@ -81,7 +79,15 @@ class Measure {
  * same ribbon its other name by switching the whole. See docs/definitions/whole-switch.md.
  */
 export class WholeSwitch implements Game {
+  /** The real view, and the frame the scene lays out in: the same view sideways, a scaled world upright. */
+  private real: View;
+  private frame: Frame;
   private view: View;
+  private readonly world = new Container();
+  /** Where the ribbon and every whole start, as levels 1–3's spool does. */
+  private get x0() {
+    return this.frame.x0;
+  }
   readonly bench = new SwitchBench();
   readonly round: SwitchRound;
   private readonly color: ColorName;
@@ -113,7 +119,9 @@ export class WholeSwitch implements Game {
   readonly hintLabel = 'Show a hint';
 
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
+    this.real = ctx.view;
+    this.frame = frameFor(ctx.view);
+    this.view = this.frame.view;
     this.round = switchRound(ctx.rng, COLORS.length);
     this.color = COLORS[this.round.color];
     this.catcher.eventMode = 'static';
@@ -143,8 +151,8 @@ export class WholeSwitch implements Game {
       if (this.skip() || this.busy || this.bench.done) return;
       if (this.bench.undo()) this.draw();
     });
-    ctx.stage.addChild(
-      this.catcher,
+    ctx.stage.addChild(this.catcher, this.world);
+    this.world.addChild(
       this.decor,
       this.rail,
       this.giftLayer,
@@ -259,7 +267,8 @@ export class WholeSwitch implements Game {
         for (const w of this.clips.keys()) this.marks.set(w, fitsIn(w));
         this.draw();
         this.drawGift(true, true);
-        this.ctx.particles.burst(X0 + RIBBON_LEN + 70, RIBBON_Y - 70, {
+        const at = toReal(this.frame, this.x0 + RIBBON_LEN + 70, RIBBON_Y - 70);
+        this.ctx.particles.burst(at.x, at.y, {
           colors: [swatch[this.color].fill, swatch.yellow.fill],
           count: 18,
         });
@@ -290,7 +299,7 @@ export class WholeSwitch implements Game {
       this.measure = new Measure(whole, done);
       this.ghost.visible = true;
       this.ghost.alpha = 0.55;
-      this.ghost.position.set(X0 + RIBBON_LEN / 2, RIBBON_Y);
+      this.ghost.position.set(this.x0 + RIBBON_LEN / 2, RIBBON_Y);
     });
   }
 
@@ -311,7 +320,7 @@ export class WholeSwitch implements Game {
       return;
     }
     const at = Math.min(steps - 1, Math.floor(((m.t - LIFT) / (MEASURE - LIFT)) * steps));
-    this.ghost.position.set(X0 + at * RIBBON_LEN + RIBBON_LEN / 2, RAIL_LOW);
+    this.ghost.position.set(this.x0 + at * RIBBON_LEN + RIBBON_LEN / 2, RAIL_LOW);
     if (this.marks.get(m.whole) !== at + 1) {
       this.marks.set(m.whole, at + 1);
       sfx.marimba(at * 2, 0.3);
@@ -361,7 +370,7 @@ export class WholeSwitch implements Game {
       tagC.rotation = -0.06;
       c.addChild(tagC);
     }
-    c.position.set(X0, y);
+    c.position.set(this.x0, y);
     return c;
   }
 
@@ -379,7 +388,7 @@ export class WholeSwitch implements Game {
     // No whole yet: an empty dashed rail as long as the short spool.
     const g = new Graphics();
     for (let x = 0; x < 12 * SWITCH_TICK; x += 44)
-      g.roundRect(X0 + x, RAIL_LOW - 4, 26, 8, 4).fill({ color: swatch.brown.line, alpha: 0.45 });
+      g.roundRect(this.x0 + x, RAIL_LOW - 4, 26, 8, 4).fill({ color: swatch.brown.line, alpha: 0.45 });
     this.rail.addChild(g);
   }
 
@@ -389,7 +398,7 @@ export class WholeSwitch implements Game {
       c.destroy({ children: true });
     }
     const box = giftBox(this.color, tied);
-    box.position.set(X0 + RIBBON_LEN + 70, RIBBON_Y + 20);
+    box.position.set(this.x0 + RIBBON_LEN + 70, RIBBON_Y + 20);
     this.giftLayer.addChild(box);
     if (pop) {
       box.scale.set(0.7);
@@ -511,7 +520,7 @@ export class WholeSwitch implements Game {
         w,
         SPOOL_CARD,
         whole === w,
-        TRAY_LEFT + SPOOL_CARD.w / 2 + i * (SPOOL_CARD.w + TRAY_GAP),
+        this.frame.trayLeft + SPOOL_CARD.w / 2 + i * (SPOOL_CARD.w + TRAY_GAP),
         v.h - 232,
         () => this.tapWhole(w),
       );
@@ -523,7 +532,7 @@ export class WholeSwitch implements Game {
         q,
         NAME_CARD,
         claim === q,
-        TRAY_LEFT + NAME_CARD.w / 2 + i * (NAME_CARD.w + TRAY_GAP),
+        this.frame.trayLeft + NAME_CARD.w / 2 + i * (NAME_CARD.w + TRAY_GAP),
         v.h - 90,
         () => this.tapName(q),
       );
@@ -574,14 +583,16 @@ export class WholeSwitch implements Game {
 
   private layout() {
     const v = this.view;
-    this.catcher.clear().rect(0, 0, v.w, v.h).fill(swatch.pink.light);
+    this.world.scale.set(this.frame.s);
+    this.world.position.set(0, this.frame.y);
+    this.catcher.clear().rect(0, 0, this.real.w, this.real.h).fill(swatch.pink.light);
     // The bench: a plank under the ribbon, as long as the long whole.
     this.decor
       .clear()
-      .roundRect(X0 - 14, RIBBON_Y + RIBBON_TALL / 2 + 6, 24 * SWITCH_TICK + 28, 22, 8)
+      .roundRect(this.x0 - 14, RIBBON_Y + RIBBON_TALL / 2 + 6, 24 * SWITCH_TICK + 28, 22, 8)
       .fill(wood.fill)
       .stroke({ width: 4, color: wood.line });
-    this.ribbonNode.position.set(X0 + RIBBON_LEN / 2, RIBBON_Y);
+    this.ribbonNode.position.set(this.x0 + RIBBON_LEN / 2, RIBBON_Y);
     this.tag.position.set(Math.max(300, v.w / 2 - 120), TAG_Y);
     this.strip.position.set(this.tag.x + 150 + 20 + 135, TAG_Y);
     this.undo.position.set(v.w - 80, 82);
@@ -595,7 +606,9 @@ export class WholeSwitch implements Game {
   }
 
   resize(v: View) {
-    this.view = v;
+    this.real = v;
+    this.frame = frameFor(v);
+    this.view = this.frame.view;
     this.layout();
   }
 

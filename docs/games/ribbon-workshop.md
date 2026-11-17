@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/ribbon-workshop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school–grown-up · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school–grown-up · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** fractions, equivalent-fractions, measurement
 
@@ -36,3 +36,5 @@ Level 7 *Ribbon Cases* ([definition](../definitions/ribbon-cases.md), its own sc
 Levels 1–3 (school; level 6 is above): 1 a whole from halves and quarters (two halves, a half and two quarters, or four quarters); 2 the scissors appear and gift 1 asks for a half (including a tray of only quarters), while gift 2 asks for a quarter from two halves and cannot be made without a snip; 3 three quarters, whose second gift tempts two halves (a whole, too long) until she returns one, snips the other half and uses a quarter. The scissors snip a tray half into two quarters in place. The bench holds six quarter-ticks (one and a half wholes); a place past that is refused with a shake and "no more room".
 
 Misses and hints: Check on an empty bench is free, and so is a refused overfull place. A non-empty bench that is the wrong length is one miss, and the gap (too short) or the overhang (too long) flashes. The second miss glows the solver-led next step (a place, a return or a snip) as one hint; the pause sheet's "Show a hint" counts one unless the glow is already up. The ghost finger follows the same hint path, and the demonstration plays one gift (the snip gift at levels 2–3). Touch only; no couch play.
+
+**Plays upright on a phone (2026-11-17, chunk 31).** `upright: true`; the bench (levels 1–5), Whole Switch (level 6) and Ribbon Cases (level 7) draw their unchanged sideways layout into a container scaled to the 768-wide upright area by `frame.ts` (design area 940 × 800, the bench starting at x = 40 upright against 110 sideways, the tray's left edge clearing the 150-unit guide, the world set 40% of the spare height below the top). A sideways view gets the identity frame, so it is unchanged. Quarter pieces are about 58 CSS px wide and the cards about 46 px tall on a 390-wide phone. `trayLayout` takes an optional left edge. Tested on four phone views in `src/games/upright-catch-up.test.ts`.

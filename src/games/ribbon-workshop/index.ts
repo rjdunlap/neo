@@ -10,6 +10,7 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
+import { frameFor, toReal, type Frame } from './frame';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bowIcon, dashed, giftBox, ribbon, scissorsIcon, spoolBar } from './art';
 import { RibbonCases } from './cases';
@@ -37,12 +38,18 @@ import {
   type Piece,
 } from './logic';
 
-/** Where the whole lines up: the spool and the bench both start here, so a whole on one is a whole on the other. */
-const X0 = 110;
 const SPOOL_Y = 205;
 const BENCH_Y = 370;
 class RibbonWorkshop implements Game {
+  /** The real view, and the frame the scene lays out in: the same view sideways, a scaled world upright. */
+  private real: View;
+  private frame: Frame;
   private view: View;
+  private readonly world = new Container();
+  /** Where the spool and the benches start, so a whole on one is a whole on the others. */
+  private get x0() {
+    return this.frame.x0;
+  }
   readonly plan;
   readonly gifts: GiftCase[];
   gift = 0;
@@ -77,7 +84,9 @@ class RibbonWorkshop implements Game {
   private readonly cancel = () => this.snipOff();
 
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
+    this.real = ctx.view;
+    this.frame = frameFor(ctx.view);
+    this.view = this.frame.view;
     this.plan = planFor(ctx.level);
     const gifts = roundFor(ctx.level, ctx.rng);
     // The how-to card's demonstration plays one gift: the snip gift where there is one.
@@ -108,8 +117,8 @@ class RibbonWorkshop implements Game {
       }
     });
     this.scissors.visible = this.plan.snip;
-    ctx.stage.addChild(
-      this.catcher,
+    ctx.stage.addChild(this.catcher, this.world);
+    this.world.addChild(
       this.decor,
       this.giftLayer,
       this.tag,
@@ -261,8 +270,8 @@ class RibbonWorkshop implements Game {
   }
 
   private flashMiss(v: 'short' | 'long') {
-    const end = X0 + total(this.state.bench) * UNIT,
-      goal = X0 + this.target * UNIT;
+    const end = this.x0 + total(this.state.bench) * UNIT,
+      goal = this.x0 + this.target * UNIT;
     const [a, b] = v === 'short' ? [end, goal] : [goal, end];
     this.ctx.tw.kill(this.flash);
     this.flash
@@ -281,12 +290,13 @@ class RibbonWorkshop implements Game {
     this.draw();
     // The pieces join into one ribbon and tie round the gift.
     const fused = ribbon(len, this.giftColor);
-    fused.position.set(X0 + len / 2, BENCH_Y);
+    fused.position.set(this.x0 + len / 2, BENCH_Y);
     fused.alpha = 0;
     this.benchLayer.addChild(fused);
     void this.ctx.tw.to(fused, { alpha: 1 }, { duration: 0.35 });
     this.drawGift(true);
-    this.ctx.particles.burst(X0 + len, BENCH_Y - 100, {
+    const at = toReal(this.frame, this.x0 + len, BENCH_Y - 100);
+    this.ctx.particles.burst(at.x, at.y, {
       colors: [swatch[this.giftColor].fill, swatch.yellow.fill],
       count: 18,
     });
@@ -338,7 +348,7 @@ class RibbonWorkshop implements Game {
       c.destroy({ children: true });
     }
     const box = giftBox(this.giftColor, tied);
-    box.position.set(X0 + this.target * UNIT, BENCH_Y - 82);
+    box.position.set(this.x0 + this.target * UNIT, BENCH_Y - 82);
     this.giftLayer.addChild(box);
     if (tied) {
       box.scale.set(0.7);
@@ -379,7 +389,7 @@ class RibbonWorkshop implements Game {
     }
     this.trayCards.clear();
     this.benchPieces.clear();
-    for (const spot of trayLayout(s.tray)) {
+    for (const spot of trayLayout(s.tray, this.frame.trayLeft)) {
       const p = s.tray.find((q) => q.id === spot.id)!,
         len = p.size * UNIT,
         card = new Container();
@@ -412,7 +422,7 @@ class RibbonWorkshop implements Game {
       const len = p.size * UNIT,
         piece = new Container();
       piece.addChild(ribbon(len - 4, this.colorOf(p)));
-      piece.position.set(X0 + (at + p.size / 2) * UNIT, BENCH_Y);
+      piece.position.set(this.x0 + (at + p.size / 2) * UNIT, BENCH_Y);
       at += p.size;
       onTap(piece, () => this.tapBench(p), { cooldown: 250 });
       piece.hitArea = new Rectangle(-len / 2, -60, len, 120);
@@ -430,28 +440,30 @@ class RibbonWorkshop implements Game {
 
   private layout() {
     const v = this.view;
-    this.catcher.clear().rect(0, 0, v.w, v.h).fill(swatch.pink.light);
+    this.world.scale.set(this.frame.s);
+    this.world.position.set(0, this.frame.y);
+    this.catcher.clear().rect(0, 0, this.real.w, this.real.h).fill(swatch.pink.light);
     const g = this.decor.clear();
     // The spool: one whole, the same length as a whole on the bench.
-    spoolBar(g, X0, SPOOL_Y, 4 * UNIT, 34);
+    spoolBar(g, this.x0, SPOOL_Y, 4 * UNIT, 34);
     // The bench: a plank as long as it holds, and the dashed outline of the gift's length.
-    g.roundRect(X0 - 14, BENCH_Y + 44, CAPACITY * UNIT + 28, 22, 8)
+    g.roundRect(this.x0 - 14, BENCH_Y + 44, CAPACITY * UNIT + 28, 22, 8)
       .fill(wood.fill)
       .stroke({ width: 4, color: wood.line });
-    const end = X0 + this.target * UNIT;
-    dashed(g, X0, BENCH_Y - 36, end, BENCH_Y - 36, swatch.brown.line);
-    dashed(g, X0, BENCH_Y + 36, end, BENCH_Y + 36, swatch.brown.line);
-    dashed(g, X0, BENCH_Y - 36, X0, BENCH_Y + 36, swatch.brown.line);
+    const end = this.x0 + this.target * UNIT;
+    dashed(g, this.x0, BENCH_Y - 36, end, BENCH_Y - 36, swatch.brown.line);
+    dashed(g, this.x0, BENCH_Y + 36, end, BENCH_Y + 36, swatch.brown.line);
+    dashed(g, this.x0, BENCH_Y - 36, this.x0, BENCH_Y + 36, swatch.brown.line);
     g.moveTo(end, BENCH_Y - 46)
       .lineTo(end, BENCH_Y + 46)
       .stroke({ width: 6, color: swatch.brown.line });
     if (!this.spoolLabel) {
       this.spoolLabel = label('1 whole', 30);
       this.spoolLabel.anchor?.set(0.5);
-      this.ctx.stage.addChildAt(this.spoolLabel, 2);
+      this.world.addChildAt(this.spoolLabel, 1);
     }
     // Above the spool's middle, clear of the gift that sits at a whole's end.
-    this.spoolLabel.position.set(X0 + 2 * UNIT, SPOOL_Y - 44);
+    this.spoolLabel.position.set(this.x0 + 2 * UNIT, SPOOL_Y - 44);
     this.tag.position.set(Math.max(300, v.w / 2 - 120), 82);
     this.undo.position.set(v.w - 80, 82);
     this.scissors.position.set(v.w - 80, v.h - 215);
@@ -469,7 +481,9 @@ class RibbonWorkshop implements Game {
   }
 
   resize(v: View) {
-    this.view = v;
+    this.real = v;
+    this.frame = frameFor(v);
+    this.view = this.frame.view;
     this.layout();
   }
 
@@ -516,6 +530,8 @@ export const ribbonWorkshop: GameModule = {
   },
   music: STYLES.paint,
   touchDemo: true,
+  // All three scenes lay out upright through frame.ts's scaled world (src/games/upright-catch-up.test.ts).
+  upright: true,
   coplayHint: 'Ask {name} for a length, like "make me three quarters", and watch which pieces make it.',
   offScreen:
     'Fold a paper strip in half and in half again, cut the pieces, and lay them against a whole strip. For Whole Switch, lay one strip on a strip twice as long, then on one four times as long, and say its name each time. For Ribbon Cases, cut a strip into a half and four quarters, make two three-quarter ribbons, then turn them into a whole and a half without adding any paper.',

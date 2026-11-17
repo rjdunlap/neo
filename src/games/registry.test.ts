@@ -572,6 +572,7 @@ describe('game registry', () => {
       'pond-conga',
       'puddle-lens',
       'pyramid-solitaire',
+      'ribbon-workshop',
       'sing-along-barn',
       'size-parade',
       'snowball-merge',
