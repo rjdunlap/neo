@@ -1,0 +1,6 @@
+# 2026-11-16 — Low-poly art lab: real-time 3D against pre-rendered stills (PR 1719)
+
+**Changed:** The Sprout porch preview became `art-lab/`, a third built page (unlinked, not precached, excluded from the navigation fallback) with two views of one Blender scene: Three.js live, and Cycles stills as a Pixi cut-out. Shared motion, a frame-rate and download readout. Stacked on the pilot (PR 1714).
+**Ran:** Blender 5.3 sprite render; typecheck; full units (353 files, 7,246 passed, 1 skipped); production build; `scripts/sprout-preview-check.mjs` on the preview build with `LAB_VIEW=3d` and `LAB_VIEW=2d` (hello, ball, portrait 390×844 and landscape 1000×700, no page errors), screenshots compared for matching framing. `dist/sw.js` inspected: no `artlab` or `art-lab` precache entry, `art-lab/` on the navigation denylist.
+**Probe:** `npm run test:offline` failed twice at "Root navigation did not persist Counting Cove while offline". Its screenshots show the root app running offline on a game's how-to card: the script's fixed taps no longer reach Counting Cove on the current Home. Not caused by this change and not fixed here.
+**Not run:** `world` and other browser suites: no game, save or in-game navigation change. Frame rates from headless Chrome are software rendering and say nothing about a phone.
