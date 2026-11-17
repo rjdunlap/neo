@@ -18,7 +18,7 @@ Checked against `origin/main` at `1a8fd74e` (GAMES entries, the games' `logic.ts
 | --- | --- | --- |
 | Ribbon Workshop 1–3 | One gift at a time: compose one requested length from its own tray | Two requests draw on one tray at once, so a piece given to one gift is missing from the other, and the second tag is a repair of her own first answer |
 | Ribbon Workshop 6, Whole Switch | The whole changes while the amount stays | Here the whole never changes. The requests change and the pieces are shared out again |
-| Picnic Pantry 1 (defined, not built) | Choosing which two of three dishes fit one pantry; counted tokens | Also a shared supply, but there she chooses a subset of whole-number orders. Here both requests must be met, the quantities are fractions of a length, and the pieces can be exchanged with the scissors |
+| Picnic Pantry 1 (built) | Choosing which two of three dishes fit one pantry; counted tokens | Also a shared supply, but there she chooses a subset of whole-number orders. Here both requests must be met, the quantities are fractions of a length, and the pieces can be exchanged with the scissors |
 | Pet Kitchen sharing levels | Cutting one food into equal shares | Equal partition of one object. Here the two shares are built from unlike pieces and need not be made the same way |
 | Seesaw Balance, Fruit Sums | Equal totals with whole numbers | No fractions and no shared stock |
 

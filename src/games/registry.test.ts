@@ -567,6 +567,7 @@ describe('game registry', () => {
       'marble-jump',
       'memory-desk',
       'number-nook',
+      'picnic-pantry',
       'picture-logic',
       'pond-conga',
       'pyramid-solitaire',

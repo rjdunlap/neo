@@ -2,7 +2,7 @@
 
 Defined 2026-11-17 on `claude/define-picnic-pantry` ([PR #1745](https://github.com/rjdunlap/neo/pull/1745)) as slice **C6** of the [cooking-and-recipes study](../deep-dives/subjects/cooking-recipes.md#build-slices-in-order), from its [first case and older ladder](../deep-dives/subjects/cooking-recipes.md#picnic-pantry-first-case-and-older-ladder), its [candidate row](../deep-dives/subjects/cooking-recipes.md#candidates-and-priorities) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cooking-and-recipes-recommendations). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
-**Status: ready to build** as one new-game slice. Every open call has a default the build uses ([open decisions](#open-decisions)), adopted under standing rules S2 and S8 of the [October 23 decision record](../archive/DECISIONS-2026-10-23.md#standing-rules). Every dish and token is invented puzzle data: no real recipe, quantity, cooking step, nutrition statement, allergen or dietary rule is drawn or spoken, so the deferred food-safety review gates nothing here ([the boundary](#imagined-food-not-practical-food)), and the building session's source check (S1) has no factual line to check beyond the grown-ups' wording below.
+**Status: built 2026-11-17** (level 1, slice C6b, [PR #1753](https://github.com/rjdunlap/neo/pull/1753); the game's page is [picnic-pantry](../games/picnic-pantry.md)). Read the [as-built note](#as-built) for where the build settled a detail; the sections below remain the rules it follows. Every open call used its default ([open decisions](#open-decisions)), adopted under standing rules S2 and S8 of the [October 23 decision record](../archive/DECISIONS-2026-10-23.md#standing-rules).
 
 **Fun action and purpose:** a picnic blanket with four cushions, a pantry shelf of three jars, and three dish cards. She taps a dish and its tokens hop out of the jars onto the blanket, so the jars show what is left for the next dish; a second dish either gets everything it needs or is left with empty token outlines where a jar ran dry. A ring on the basket bell lays the picnic, and four friends sit down to exactly the two dishes she chose. The learning purpose is **reasoning about a shared, limited supply**: two dishes that each fit the pantry alone may not fit it together, the reason is one ingredient they both draw on, and more than one menu can be right. It is the study's third pleasure, choosing among feasible plans, and claims nothing about real cooking, shopping or nutrition (the study's [anchors and evidence limits](../deep-dives/subjects/cooking-recipes.md#anchors-opened-and-evidence-limits)).
 
@@ -129,6 +129,16 @@ One new-game slice (start from the [scaffold command](../NEW-GAME.md)): typechec
 ### Expected files
 
 `src/games/picnic-pantry/{index,logic,art,voice,howto}.ts` and `logic.test.ts`; `src/content/lands.ts`; the generated barrels (`node scripts/content-barrels.mjs`); the `pantry` case in the browser checks and its README row; `docs/games/picnic-pantry.md` and the generated game docs; the study, backlog, recommendations and ideas rows; a verification entry.
+
+## As built
+
+- **Tokens are handed out in placement order:** the dish placed first is always whole and the outlines sit beside the second dish. On a miss, the short jar and that ingredient's tokens and outlines beside both dishes bounce.
+- **Voice:** one extra line, `pantry.another` ("The dishes are back. Is there another menu that works?"), when *Another way?* is tapped. `pantry.jar` and `pantry.left` each have a second id (`pantry.jar-none`, `pantry.left-none`) for the empty case, and `pantry.short` uses `{first}` and `{second}`.
+- **Grown-ups' wording** (what it asks, about 9 and up, the dishes are pretend) is carried by the how-to card's goal and note and the level description, because `src/parent/panel.ts` has no per-game paragraph.
+- **Hints:** the idle glow comes after 8 quiet seconds, once per picnic, and counts as a hint. The pause sheet's *Show a hint* while a picnic is laid glows *Next* and counts nothing.
+- **Music** is `STYLES.stickers`; the land order places the game after Lemonade Stand.
+- **Checks:** the browser case also takes a sideways screenshot of a laid picnic.
+- **Source check (S1):** the grown-ups' wording, co-play and off-screen lines make no factual claim about food, cooking or nutrition; a rule test reads the voice lines for value words.
 
 ## What comes next
 

@@ -314,6 +314,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Lemonade Stand](games/lemonade-stand.md)
 
+### Picnic Pantry
+
+*school* · [Picnic Pantry](games/picnic-pantry.md)
+
 ### Second Chance Shed
 
 *toddler–school* · [Second Chance Shed](games/second-chance-shed.md)
