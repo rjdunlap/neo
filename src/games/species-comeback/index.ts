@@ -174,6 +174,8 @@ class ChoiceCard extends Container {
   private h = 0;
   private glowing = false;
   private readonly sizes: number[];
+  /** Where layout put its middle, so a shake always comes back to it. */
+  homeX = 0;
   constructor(lines: readonly { text: string; size: number; color?: number }[]) {
     super();
     this.sizes = lines.map((l) => l.size);
@@ -192,6 +194,7 @@ class ChoiceCard extends Container {
   }
   place(r: Rect) {
     this.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    this.homeX = this.x;
     this.w = r.w;
     this.h = r.h;
     const shown = this.texts.filter((t) => t.text !== '');
@@ -320,6 +323,7 @@ class SpeciesComeback implements Game {
   readonly planCards = new Map<PlanChoice, ChoiceCard>();
   readonly reasonCards = new Map<ReasonId, ChoiceCard>();
   chosen: PlanChoice | null = null;
+  private restarted = false;
   private readonly hatchRng: Rng;
   private hatchlings: Turtle[] = [];
   private readonly baseCount: number;
@@ -465,9 +469,11 @@ class SpeciesComeback implements Game {
     const k = this.round.keeper;
     this.phase = k ? 'plan' : 'pair';
     await this.ctx.say('comeback.intro');
+    // Start again during the intro has already given the instruction.
+    if (this.restarted) return;
     if (!k) return this.instructPair();
     await this.sayNote();
-    if (this.phase === 'plan') this.instructPlan();
+    if (this.phase === 'plan' && !this.restarted) this.instructPlan();
   }
 
   private sayNote() {
@@ -862,7 +868,7 @@ class SpeciesComeback implements Game {
 
   private boingCard(card: ChoiceCard) {
     sfx.boing();
-    const x = card.x;
+    const x = card.homeX;
     void this.ctx.tw
       .to(card, { x: x + 10 }, { duration: 0.06 })
       .then(() => this.ctx.tw.to(card, { x: x - 10 }, { duration: 0.1 }))
@@ -1070,6 +1076,8 @@ class SpeciesComeback implements Game {
   }
 
   askForHint() {
+    // With the keeper's plan in the nests, only Spring is left: say so.
+    if (this.phase === 'ready') return void this.ctx.instruct('comeback.spring');
     const step = this.currentStep();
     if (!step) return;
     if (
@@ -1090,6 +1098,7 @@ class SpeciesComeback implements Game {
 
   restart() {
     if (this.phase === 'busy' || this.phase === 'done') return;
+    this.restarted = true;
     // The same seeded round from the start; misses and hints made so far keep counting.
     this.putDown();
     this.clearGlow();
