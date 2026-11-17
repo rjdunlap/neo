@@ -1,6 +1,6 @@
 # Spinner Fair, levels 6–8 (definition)
 
-**Built:** level 6 (PR #1720); to build level 7, read “Level 7, Two dice” under “The model (`logic.ts`)”, then “Build slices and check tiers”.
+**Built:** levels 6 and 7 (PR #1720, #1724); to build level 8, read “Level 8, The typical spin” under “The model (`logic.ts`)”, then “Build slices and check tiers”.
 
 Defined 2026-11-16 as the CS2 definition of the [chance and statistics study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order) (slice 3, its definition half), on the built levels 1–5 of the [levels 1–5 definition](spinner-fair.md). The study's decisions of 2026-10-23 stand ([record](../archive/DECISIONS-2026-10-23.md#decisions)); nothing here needs a new one. Three build slices follow (below); levels 9–10 stay CS3's.
 
@@ -109,10 +109,12 @@ The logical view is 1024 wide in both orientations (portrait taller), less the p
 Each is one level, one session:
 
 1. **CS2a, level 6 Watch it settle (built 2026-11-16, PR #1720)** (new levels on an existing interaction: taps and cards): typecheck, rule tests, one browser play at level 6 with one wrong card, `fingerdemo` at 6. `npm run build` only if voice or how-to shared files change (they do: run it).
-2. **CS2b, level 7 Two dice**, after CS2a (new levels on an existing interaction plus a journal entry): typecheck, rule tests with the journal tests, one browser play at 7 with one wrong card on each question and the journal entry filed, `fingerdemo` at 7, `npm run build` (journal and voice change).
+2. **CS2b, level 7 Two dice (built 2026-11-16, PR #1724)**, after CS2a (new levels on an existing interaction plus a journal entry): typecheck, rule tests with the journal tests, one browser play at 7 with one wrong card on each question and the journal entry filed, `fingerdemo` at 7, `npm run build` (journal and voice change).
 3. **CS2c, level 8 The typical spin**, after CS2b (the levelling drag is a new interaction: new-interaction tier): typecheck, rule tests, one scripted play at 8 (one wrong range card, one *taller* move, levelling, one wrong typical card, the hint), one portrait screenshot of the towers, `fingerdemo` at 8, `npm run build`.
 
 *As built (CS2a, 2026-11-16):* the spinner is 340 across in both orientations (not 420) and the strip narrows from 560 to 534 at a 1024-wide landscape view, as 420 plus 560 does not fit; the check run reuses the one strip, reset to zero, not a second display; the pet's lines after a run never hold input (she can start the next run over them); under reduced motion the first twelve spins still land one by one and later runs step every twelve; lines added `sf.about-yes`, `sf.done-settle`, `sf.settle-count`; school is 3–6 until CS2b and CS2c widen it. "About" was source-checked against CCSS 7.SP.C.6 (fetched 2026-11-16); "likely" is owed to CS2b and "typical" and "range" to CS2c.
+
+*As built (CS2b, 2026-11-16):* lines added beyond the definition's list are `sf.grid-first` (the first row spoken in full), `sf.most-yes`, `sf.pair-yes` and `sf.done-dice`; rows two to six say "With a {die}: {a} up to {b}"; upright, the grid's squares are 68 units below a 1150-tall view and 80 above it (the definition said 80), so both bar rows fit above the cards; in landscape the grid has a 44-unit header strip, the ways bars are 20 wide beside it and the three cards sit 7 apart in a column; the tray is 300 × 170 and sits where the grid will be; the journal source text omits "in Spinner Fair" because the journal adds the game's name; the pet says "Twelve rolls is only a few" whenever seven was not alone on top of the roll bars; school is 3–7 until CS2c widens it to 3–8. The source check for "likely" is done: CCSS 7.SP.C.5 (thecorestandards.org/Math/Content/7/SP/, fetched 2026-11-16) uses "likely", "unlikely" and "likelihood" for chance events, and 7.SP.C.8.b asks for sample spaces shown as organized lists and tables, which is the grid. "Typical" and "range" are still owed to CS2c.
 
 Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Not established: any child's or educator's reading of "about", "likely", "typical" or "range"; whether a ten-year-old reads the share strip; whether a column-wide grab on a phone feels like moving a block.
 

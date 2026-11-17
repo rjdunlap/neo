@@ -777,6 +777,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### spinner-fair 4: Two dice (CS2b)
 
+**Status: built 2026-11-16, PR #1724.**
+
 - **`spinner-fair`, level 7** (after `spinner-fair 3`; same definition): the two-dice sum grid and the journal entry `spinner-fair:two-dice`. Proof: new-levels tier with the journal tests, `fingerdemo` at 7, build.
 
 ### spinner-fair 5: The typical spin (CS2c)
