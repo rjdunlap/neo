@@ -333,6 +333,210 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     );
   }
 
+  /** Cue Studio level 6: a free watch of the seeded start, one wrong Check, clue and repair by actor, a cancelled play, idempotent help, the receiver as an undoable edit, two Steps with the delivery in the Send's step, four-view targets, one sticker. */
+  async function passing(idle) {
+    await launch('cue-studio', 6);
+    await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const st = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          program: g.s.program.slice(),
+          receiver: g.s.receiver,
+          misses: g.s.misses,
+          hints: g.s.hints,
+          checked: g.s.checked,
+        };
+      });
+    const trace = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return { badges: g.badges.map((b) => `${b.at}:${b.n}`), open: g.bird.fan.scale.x === 1 };
+      });
+    // Past a pad's 250 ms double-tap guard.
+    const again = () => page.waitForTimeout(350);
+    const start = await page.evaluate(() => {
+      const { program, receiver } = neo.scene.game.s.pass;
+      return { program: program.slice(), receiver };
+    });
+    const caseA = start.receiver === 'shell';
+    assert.deepEqual(
+      start,
+      caseA ? { program: ['W', 'S'], receiver: 'shell' } : { program: ['S', 'W'], receiver: 'leaf' },
+      'the start is one of the two authored shows',
+    );
+    const fresh = { ...start, misses: 0, hints: 0, checked: false };
+    assert.deepEqual(await st(), fresh);
+    assert.equal(await page.evaluate(() => neo.scene.game.cards.S.visible), true, 'the Send card is offered');
+    // The first Play is a free watch. A: the leaf lands with nobody listening. B: the fan opens before the wave.
+    await tap('neo.scene.game.playButton');
+    await idle();
+    assert.deepEqual(await st(), fresh);
+    assert.deepEqual(
+      await trace(),
+      caseA
+        ? { badges: ['0:1', '1:2', 'nobody:0'], open: false }
+        : { badges: ['0:1', 'fan:2', '1:3'], open: true },
+    );
+    // One wrong Check is the one miss; every command is kept.
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    assert.deepEqual(await st(), { ...fresh, misses: 1 });
+    // Help: the clue names the earliest target, then the repair sets and demonstrates it.
+    const target = caseA ? 'receiver' : 'slot:0';
+    await tap('neo.scene.game.hintButton');
+    assert.deepEqual(await st(), { ...fresh, misses: 1, hints: 1 });
+    assert.deepEqual(await page.evaluate(() => [...neo.scene.game.s.helped]), [`clue:${target}`]);
+    await again();
+    await tap('neo.scene.game.hintButton');
+    await idle();
+    assert.deepEqual(
+      await st(),
+      caseA
+        ? { ...fresh, receiver: 'leaf', misses: 1, hints: 2 }
+        : { ...fresh, program: ['W', 'W'], misses: 1, hints: 2 },
+    );
+    if (caseA)
+      assert.deepEqual(
+        await trace(),
+        { badges: ['0:1', '1:2', 'fan:3'], open: true },
+        'the repaired receiver plays the show: the fan opens third',
+      );
+    // Start again during a play cancels it: no late badge, leaf or fan, and the miss and the help are kept.
+    await tap('neo.scene.game.playButton');
+    await page.waitForTimeout(700);
+    await page.evaluate(() => neo.scene.game.restart());
+    await page.waitForTimeout(3000);
+    assert.deepEqual(await st(), { ...fresh, misses: 1, hints: 2 });
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        return [g.busy, g.running, g.s.played, g.badges.length, g.leaf.visible, g.bird.fan.scale.x < 0.2];
+      }),
+      [false, -1, false, 0, false, true],
+    );
+    // The repair already supplied is free; start B's second slot is new.
+    for (let i = 0; i < (caseA ? 1 : 2); i++) {
+      await again();
+      await tap('neo.scene.game.hintButton');
+      await idle();
+    }
+    const fixed = { program: ['W', 'S'], receiver: 'leaf', misses: 1, hints: caseA ? 2 : 3, checked: false };
+    assert.deepEqual(await st(), fixed);
+    // The receiver is an edit: it can be undone. A shell means the leaf lands with nobody listening, which is no miss.
+    await again();
+    await tap('neo.scene.game.receiver');
+    assert.deepEqual(await st(), { ...fixed, receiver: 'shell' });
+    await tap('neo.scene.game.undoButton');
+    assert.deepEqual(await st(), fixed);
+    // Step: one pet command per press, and the delivery belongs to the Send's step.
+    await again();
+    await tap('neo.scene.game.stepButton');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.running, neo.scene.game.acted]), [0, 1]);
+    await idle();
+    await again();
+    await tap('neo.scene.game.stepButton');
+    await idle();
+    assert.deepEqual(await trace(), { badges: ['0:1', '1:2', 'fan:3'], open: true });
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.s.played, neo.scene.game.s.checked]),
+      [true, false],
+      'stepping to the end never checks',
+    );
+    for (const viewport of [
+      { width: 1024, height: 768 },
+      { width: 768, height: 1024 },
+      { width: 1366, height: 768 },
+      { width: 1024, height: 1366 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(350);
+      const bad = await page.evaluate(() => {
+        const g = neo.scene.game,
+          v = neo.view;
+        const portrait = v.h > v.w;
+        const ox = Math.max(0, (v.w - 1024) / 2);
+        const oy = Math.max(0, (v.h - (portrait ? 900 : 768)) / 2);
+        const targets = {
+          slot0: g.slots[0],
+          slot1: g.slots[1],
+          receiver: g.receiver,
+          wave: g.cards.W,
+          turn: g.cards.T,
+          send: g.cards.S,
+          play: g.playButton,
+          step: g.stepButton,
+          undo: g.undoButton,
+          help: g.hintButton,
+          check: g.finishButton,
+        };
+        const boxes = Object.entries(targets).map(([name, n]) => ({
+          name,
+          target: true,
+          x: n.x - 56,
+          y: n.y - 56,
+          w: 112 * n.scale.x,
+          h: 112 * n.scale.y,
+        }));
+        boxes.push({
+          name: 'request',
+          target: true,
+          x: g.passStrip.x - 184,
+          y: g.passStrip.y - 56,
+          w: 368,
+          h: 112,
+        });
+        // Scenery that must still stand clear: the fan picture, the pet and the bird (its fan open).
+        boxes.push({ name: 'fan picture', x: g.fanTile.x - 56, y: g.fanTile.y - 56, w: 112, h: 112 });
+        const m = g.ctx.stage.worldTransform;
+        for (const [name, node] of [
+          ['pet', g.actor],
+          ['bird', g.bird.root],
+        ]) {
+          const b = node.getBounds();
+          boxes.push({
+            name,
+            x: (b.x - m.tx) / m.a,
+            y: (b.y - m.ty) / m.d,
+            w: b.width / m.a,
+            h: b.height / m.d,
+          });
+        }
+        const out = [];
+        for (const a of boxes) {
+          if (a.target && (a.w < 100 || a.h < 100)) out.push(`${a.name} small`);
+          if (a.x < 0 || a.y < 128 || a.x + a.w > v.w || a.y + a.h > v.h)
+            out.push(
+              `${a.name} outside: ${[a.x, a.y, a.w, a.h].map(Math.round)} in ${Math.round(v.w)}x${Math.round(v.h)}`,
+            );
+          // The corner guide's space.
+          if (a.x < ox + 160 && a.y + a.h > oy + (portrait ? 660 : 500)) out.push(`${a.name} on the guide`);
+          for (const b of boxes)
+            if (a !== b && !(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y))
+              out.push(
+                `${a.name} overlaps ${b.name}: ${[a.x, a.y, a.w, a.h].map(Math.round)} and ${[b.x, b.y, b.w, b.h].map(Math.round)}`,
+              );
+        }
+        return out;
+      });
+      assert.deepEqual(bad, [], `P4c targets fit without overlap at ${viewport.width}x${viewport.height}`);
+    }
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(400);
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    assert.deepEqual(await st(), { ...fixed, checked: true });
+    await screenshot('cue-studio-6-portrait');
+    await tap('neo.scene.game.finishButton');
+    await finished('cue-studio');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      `Cue Studio 6 (start ${caseA ? 'A' : 'B'}): free watch, one wrong Check, clue and repair on ${target}, cancelled play, idempotent help, receiver as an undoable edit, two Steps with the delivery in the Send's step, four-view targets and one helped sticker passed`,
+    );
+  }
+
   async function cueStudioPlay() {
     const idle = () => page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
     const state = () =>
@@ -340,7 +544,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const g = neo.scene.game;
         return { program: g.s.program.slice(), played: g.s.played, hints: g.s.hints };
       });
-    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3', '4', '5'], 'CUE_LEVELS').map(Number);
+    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3', '4', '5', '6'], 'CUE_LEVELS').map(
+      Number,
+    );
     for (const level of levels.filter((level) => level < 3)) {
       await launch('cue-studio', level);
       await idle();
@@ -409,6 +615,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
     if (levels.includes(4)) await signals(idle);
     if (levels.includes(5)) await repeated(idle);
+    if (levels.includes(6)) await passing(idle);
     if (!levels.includes(3)) return;
     await launch('cue-studio', 3);
     await idle();

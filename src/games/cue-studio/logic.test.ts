@@ -1,22 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  acts,
   canFinish,
   checkRows,
   checkRun,
   CUES,
+  delivers,
   demoNext,
   finishRun,
   fire,
   help,
   isComplete,
   isProgram,
+  isShow,
   LEVELS,
+  MOVES,
   mismatch,
   newStudio,
   planFor,
+  PASS_ACTS,
   PLANS,
   playRun,
+  RECEIVER,
+  RECEIVERS,
   REPEAT,
   requestFor,
   restart,
@@ -24,15 +31,21 @@ import {
   shapeOf,
   SIGNALS,
   step,
+  startFor,
   stickerRecipe,
   tapAction,
   tapSlot,
   targetOf,
+  toggleReceiver,
   toggleRepeat,
   trace,
   undo,
   wanted,
+  type Act,
   type Cue,
+  type Move,
+  type PassStart,
+  type Receiver,
   type Studio,
 } from './logic';
 
@@ -46,9 +59,9 @@ const watched = (slots: number, ...cues: Cue[]) => {
 };
 
 describe('plans', () => {
-  it('levels 1–5 have one slot, then two', () => {
-    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2, 2, 2]);
-    expect(PLANS.map(shapeOf)).toEqual(['show', 'show', 'show', 'rows', 'repeat']);
+  it('levels 1–6 have one slot, then two', () => {
+    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2, 2, 2, 2]);
+    expect(PLANS.map(shapeOf)).toEqual(['show', 'show', 'show', 'rows', 'repeat', 'pass']);
     expect(planFor(2).slots).toBe(2);
     expect(planFor(3).request).toEqual(['W', 'T']);
     expect(planFor(99).level).toBe(1);
@@ -542,8 +555,8 @@ describe('the demonstration', () => {
         playRun(s);
         finishRun(s);
         checkRun(s);
-      } else if (p === 'repeat') {
-        throw new Error('Repeat belongs to level 5');
+      } else if (p === 'repeat' || p === 'receiver') {
+        throw new Error('Repeat belongs to level 5 and the receiver to level 6');
       } else if ('slot' in p) {
         tapSlot(s, p.slot);
       } else if ('action' in p) {
@@ -599,8 +612,8 @@ describe('level 4: which signal', () => {
     return s;
   };
 
-  it('school plays 3–5 with entry 3, and the seed picks one of two opposite requests', () => {
-    expect(LEVELS.school).toEqual({ min: 3, max: 5 });
+  it('school plays 3–6 with entry 3, and the seed picks one of two opposite requests', () => {
+    expect(LEVELS.school).toEqual({ min: 3, max: 6 });
     expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
     expect(requests).toEqual([
       ['W', 'T'],
@@ -751,7 +764,8 @@ describe('level 4: which signal', () => {
         if (p === 'check') {
           checkRun(s);
           presses.push('check');
-        } else if (p === 'play' || p === 'repeat') throw new Error('Play and Repeat are not at level 4');
+        } else if (p === 'play' || p === 'repeat' || p === 'receiver')
+          throw new Error('Play, Repeat and the receiver are not at level 4');
         else if ('fire' in p) {
           expect(fire(s, p.fire)).toBe(request[p.fire]);
           fired[p.fire] = true;
@@ -964,6 +978,7 @@ describe('level 5: a repeated phrase', () => {
       for (let i = 0; i < 12; i++) {
         const p = demoNext(s, false);
         if (p === 'finish') break;
+        if (p === 'receiver') throw new Error('the receiver belongs to level 6');
         if (p === 'repeat') toggleRepeat(s);
         else if (p === 'play') {
           expect(playRun(s)).toEqual([...request, ...request]);
@@ -977,6 +992,395 @@ describe('level 5: a repeated phrase', () => {
       expect(canFinish(s)).toBe(true);
       expect([s.misses, s.hints]).toEqual([0, 0]);
     }
+  });
+});
+
+describe('level 6: pass the cue', () => {
+  const plan = planFor(6);
+  const starts = plan.starts!;
+  const [startA, startB] = starts;
+  const request = plan.request!;
+  const slotsOf: Move[] = [...MOVES];
+  /** A studio on a seeded start. */
+  const from = (start: PassStart) => newStudio(2, request, 'pass', start);
+  /** A studio holding exactly this show, built from a start with real edits (select a slot, tap a card, toggle the bird). */
+  const made = (start: PassStart, a: Move, b: Move, receiver: Receiver) => {
+    const s = from(start);
+    [a, b].forEach((m, i) => {
+      tapSlot(s, i);
+      tapAction(s, m);
+      s.selected = null;
+    });
+    if (s.receiver !== receiver) toggleReceiver(s);
+    return s;
+  };
+  /** The targets still wrong: each pet slot against the request, and the receiver. */
+  const wrong = (s: Studio) =>
+    s.program.filter((c, i) => c !== request[i]).length + (s.receiver === 'leaf' ? 0 : 1);
+  const everyShow = () =>
+    slotsOf.flatMap((a) =>
+      slotsOf.flatMap((b) => RECEIVERS.map((r) => ({ a, b, r, s: made(startA, a, b, r) }))),
+    );
+
+  it('the plan asks for wave then send, and the seed reaches both starts without touching other plans', () => {
+    expect(shapeOf(plan)).toBe('pass');
+    expect(request).toEqual(['W', 'S']);
+    expect(starts).toEqual([
+      { program: ['W', 'S'], receiver: 'shell' },
+      { program: ['S', 'W'], receiver: 'leaf' },
+    ]);
+    expect(PASS_ACTS).toEqual(['P:W', 'P:S', 'B:F']);
+    const seen = new Set<PassStart>();
+    for (let seed = 1; seed <= 60; seed++) seen.add(startFor(plan, new Rng(seed))!);
+    expect(seen).toEqual(new Set(starts));
+    // Same seed, same start.
+    for (let seed = 1; seed <= 20; seed++)
+      expect(startFor(plan, new Rng(seed))).toBe(startFor(plan, new Rng(seed)));
+    // Every other plan has no start and leaves the generator where it was.
+    for (const other of PLANS.filter((p) => p.level !== 6)) {
+      const rng = new Rng(7);
+      expect(startFor(other, rng)).toBeUndefined();
+      expect(rng.int(0, 1000)).toBe(new Rng(7).int(0, 1000));
+    }
+  });
+
+  it('a new studio starts on the seeded program and receiver', () => {
+    for (const start of starts) {
+      const s = from(start);
+      expect(s.program).toEqual(start.program);
+      expect(s.receiver).toBe(start.receiver);
+      expect([s.pass, s.rows, s.repeats, s.repeat]).toEqual([start, false, false, false]);
+      expect([s.misses, s.hints, s.checked, s.played, s.undo]).toEqual([0, 0, false, false, null]);
+      // The start is copied, so editing never changes the authored plan.
+      tapSlot(s, 0);
+      tapAction(s, 'T');
+      expect(start.program).not.toContain('T');
+    }
+    // A pass studio needs both a request and a start; otherwise it is a plain creation or repair studio.
+    expect(newStudio(2, request, 'pass').pass).toBeNull();
+    expect(newStudio(2, undefined, 'pass', startA).pass).toBeNull();
+    expect(newStudio(2, request, 'pass').program).toEqual(['S', 'W']);
+    expect(newStudio(2, ['W', 'T']).receiver).toBe('leaf');
+  });
+
+  it('the tagged trace is accepted exactly for [wave, send] with the bird listening, across all 18 shows', () => {
+    const all = everyShow();
+    expect(all).toHaveLength(18);
+    for (const { a, b, r, s } of all) {
+      const ok = a === 'W' && b === 'S' && r === 'leaf';
+      expect(acts(s)).toEqual(
+        trace(s.program).flatMap((m): Act[] => [
+          `P:${m}` as Act,
+          ...(m === 'S' && r === 'leaf' ? (['B:F'] as Act[]) : []),
+        ]),
+      );
+      expect(acts(s).join() === PASS_ACTS.join()).toBe(ok);
+      expect(mismatch(s) < 0).toBe(ok);
+      // The earliest tagged-trace difference decides the target.
+      const got = acts(s);
+      const first = PASS_ACTS.findIndex((x, i) => got[i] !== x);
+      const want = first < 0 ? -1 : first >= 2 ? RECEIVER : first;
+      expect(mismatch(s)).toBe(want);
+      expect(targetOf(s, mismatch(s))).toBe(
+        want < 0 ? 'slot:-1' : want === RECEIVER ? 'receiver' : `slot:${want}`,
+      );
+      expect(delivers(s)).toBe(r === 'leaf');
+      expect(run(s)).toEqual([a, b]);
+    }
+    expect(RECEIVER).toBe(3);
+    expect(targetOf(from(startA), 0)).toBe('slot:0');
+    expect(targetOf(from(startA), 1)).toBe('slot:1');
+    expect(targetOf(from(startA), RECEIVER)).toBe('receiver');
+    // The receiver target exists only where there is a bird.
+    expect(targetOf(newStudio(2, ['W', 'T']), RECEIVER)).toBe('slot:3');
+  });
+
+  it('delivery is synchronous, an unmatched Send never runs the bird, and two Sends stay within four actions', () => {
+    expect(acts(made(startA, 'S', 'W', 'leaf'))).toEqual(['P:S', 'B:F', 'P:W']);
+    expect(acts(made(startA, 'W', 'S', 'leaf'))).toEqual(['P:W', 'P:S', 'B:F']);
+    expect(acts(made(startA, 'W', 'S', 'shell'))).toEqual(['P:W', 'P:S']);
+    expect(acts(made(startA, 'S', 'S', 'leaf'))).toEqual(['P:S', 'B:F', 'P:S', 'B:F']);
+    expect(acts(made(startA, 'S', 'S', 'shell'))).toEqual(['P:S', 'P:S']);
+    for (const { s } of everyShow()) {
+      expect(acts(s).length).toBeLessThanOrEqual(4);
+      // The bird never acts without a Send before it, and every fan follows its Send at once.
+      const got = acts(s);
+      got.forEach((a, i) => a === 'B:F' && expect(got[i - 1]).toBe('P:S'));
+      expect(got.filter((a) => a === 'B:F').length).toBe(
+        delivers(s) ? s.program.filter((c) => c === 'S').length : 0,
+      );
+    }
+    // No Send, no bird; and a non-pass studio never delivers.
+    expect(acts(made(startA, 'W', 'T', 'leaf'))).toEqual(['P:W', 'P:T']);
+    expect(delivers(newStudio(2, ['W', 'T']))).toBe(false);
+    expect(acts(newStudio(2, ['W', 'T']))).toEqual(['P:T', 'P:W']);
+  });
+
+  it('Send exists only in a pass studio, and malformed programs or receivers are not shows', () => {
+    expect(isProgram(['W', 'S'], 2)).toBe(false);
+    expect(isProgram(['W', 'S'], 2, true)).toBe(true);
+    expect(isProgram(['S', null], 2, true)).toBe(true);
+    expect(isProgram([null, 'S'], 2, true)).toBe(false);
+    expect(isProgram(['W', 'X'], 2, true)).toBe(false);
+    expect(isProgram(['W'], 2, true)).toBe(false);
+    // Send cannot be added outside level 6, and nothing changes.
+    for (const s of [
+      newStudio(2, ['W', 'T']),
+      newStudio(2),
+      newStudio(2, request, 'rows'),
+      newStudio(2, ['W', 'T'], 'repeat'),
+    ]) {
+      const before = s.program.slice();
+      expect(tapAction(s, 'S')).toBe('full');
+      expect([s.program, s.undo, s.checked]).toEqual([before, null, false]);
+      expect(toggleReceiver(s)).toBe('leaf');
+      expect([s.undo, s.receiver]).toEqual([null, 'leaf']);
+    }
+    // Cards are accepted in pass studios.
+    expect(tapAction(from(startA), 'S')).toBe('full');
+    const s = from(startA);
+    tapSlot(s, 0);
+    expect(tapAction(s, 'S')).toBe('replace');
+    expect(s.program).toEqual(['S', 'S']);
+    // A malformed show is rejected without running and without a miss.
+    const bad = from(startA);
+    bad.program = ['W', 'X'] as never;
+    expect(isShow(bad)).toBe(false);
+    expect(checkRun(bad)).toBeNull();
+    const odd = from(startA);
+    odd.receiver = 'bell' as never;
+    expect(isShow(odd)).toBe(false);
+    expect(checkRun(odd)).toBeNull();
+    for (const x of [bad, odd]) expect([x.misses, x.hints, x.checked]).toEqual([0, 0, false]);
+    for (const start of starts) expect(isShow(from(start))).toBe(true);
+    // A pass program in a studio that is not level 6 is not a show either.
+    const plain = newStudio(2, ['W', 'T']);
+    plain.program = ['W', 'S'];
+    expect(isShow(plain)).toBe(false);
+    expect(checkRun(plain)).toBeNull();
+  });
+
+  it('only a completed wrong Check misses, and two of them supply the clue as one hint', () => {
+    const s = from(startA);
+    expect(checkRun(s)).toBe(RECEIVER);
+    expect([s.misses, s.hints]).toEqual([1, 0]);
+    expect(checkRun(s)).toBe(RECEIVER);
+    expect([s.misses, s.hints, [...s.helped]]).toEqual([2, 1, ['clue:receiver']]);
+    expect(checkRun(s)).toBe(RECEIVER);
+    expect([s.misses, s.hints]).toEqual([3, 1]);
+    // Start B names the first wrong slot.
+    const b = from(startB);
+    checkRun(b);
+    checkRun(b);
+    expect([b.misses, b.hints, [...b.helped]]).toEqual([2, 1, ['clue:slot:0']]);
+    // A correct Check is not a miss.
+    const ok = made(startA, 'W', 'S', 'leaf');
+    expect(checkRun(ok)).toBe(-1);
+    expect([ok.misses, ok.checked, canFinish(ok)]).toEqual([0, true, true]);
+  });
+
+  it('free actions never add a miss or a hint', () => {
+    for (const start of starts) {
+      const s = from(start);
+      toggleReceiver(s);
+      tapSlot(s, 0);
+      tapAction(s, 'T');
+      tapSlot(s, 1);
+      tapSlot(s, 1);
+      tapAction(s, 'S');
+      playRun(s);
+      step(s);
+      step(s);
+      step(s);
+      undo(s);
+      undo(s);
+      restart(s);
+      expect([s.misses, s.hints, s.helped.size]).toEqual([0, 0, 0]);
+    }
+  });
+
+  it('the receiver toggle is an edit: it clears Check and playback, and Undo restores it', () => {
+    const s = made(startA, 'W', 'S', 'leaf');
+    expect(checkRun(s)).toBe(-1);
+    finishRun(s);
+    expect([s.checked, s.played]).toEqual([true, true]);
+    s.selected = 0;
+    expect(toggleReceiver(s)).toBe('shell');
+    expect([s.checked, s.played, s.selected, s.stepAt, s.receiver, s.undoReceiver]).toEqual([
+      false,
+      false,
+      null,
+      0,
+      'shell',
+      'leaf',
+    ]);
+    expect(s.program).toEqual(['W', 'S']);
+    expect(undo(s)).toBe(true);
+    expect([s.receiver, s.checked, s.played]).toEqual(['leaf', false, false]);
+    expect(undo(s)).toBe(false);
+    // Two toggles come back to where it started.
+    const twice = from(startA);
+    toggleReceiver(twice);
+    expect(toggleReceiver(twice)).toBe('shell');
+  });
+
+  it('Help reaches a matching show from both starts: one repair for A, two for B, each reducing what is wrong', () => {
+    for (const [start, repairs] of [
+      [startA, ['repair:receiver']],
+      [startB, ['repair:slot:0', 'repair:slot:1']],
+    ] as const) {
+      const s = from(start);
+      expect(wrong(s)).toBe(repairs.length);
+      const target = mismatch(s);
+      const first = help(s);
+      expect(first).toMatchObject({ kind: 'clue', at: target });
+      expect(s.hints).toBe(1);
+      // The clue changes nothing in the show.
+      expect(s.program).toEqual(start.program);
+      expect(s.receiver).toBe(start.receiver);
+      const ids: string[] = [];
+      while (mismatch(s) >= 0) {
+        const before = wrong(s);
+        const r = help(s);
+        expect(r.kind).toBe('repair');
+        expect(wrong(s)).toBeLessThan(before);
+        ids.push([...s.helped].at(-1)!);
+      }
+      expect(ids).toEqual(repairs);
+      expect(s.hints).toBe(1 + repairs.length);
+      expect(s.program).toEqual(request);
+      expect(s.receiver).toBe('leaf');
+      expect(acts(s)).toEqual(PASS_ACTS);
+      // Correct: Check is offered, it performs the show, then Finish.
+      expect(help(s)).toEqual({ kind: 'check' });
+      expect(canFinish(s)).toBe(false);
+      expect(checkRun(s)).toBe(-1);
+      expect(help(s)).toEqual({ kind: 'finish' });
+      expect(canFinish(s)).toBe(true);
+      expect([s.misses, s.hints]).toEqual([0, 1 + repairs.length]);
+    }
+  });
+
+  it('repair describes its target: the receiver has no card, a slot has its requested one', () => {
+    const a = from(startA);
+    help(a);
+    expect(help(a)).toEqual({ kind: 'repair', at: RECEIVER, cue: null });
+    const b = from(startB);
+    help(b);
+    expect(help(b)).toEqual({ kind: 'repair', at: 0, cue: 'W' });
+    expect(help(b)).toEqual({ kind: 'repair', at: 1, cue: 'S' });
+  });
+
+  it('help identities survive Undo and Start again, so the same help is never charged twice', () => {
+    for (const start of starts) {
+      const s = from(start);
+      const ids: string[] = [];
+      while (mismatch(s) >= 0) {
+        help(s);
+        ids.push(...s.helped);
+      }
+      const hints = s.hints;
+      const set = new Set(s.helped);
+      // Walk it again after Undo and after Start again: nothing new is charged.
+      undo(s);
+      while (mismatch(s) >= 0) help(s);
+      expect([s.hints, new Set(s.helped)]).toEqual([hints, set]);
+      restart(s);
+      expect([s.program, s.receiver]).toEqual([start.program, start.receiver]);
+      expect(s.hints).toBe(hints);
+      while (mismatch(s) >= 0) help(s);
+      expect([s.hints, new Set(s.helped)]).toEqual([hints, set]);
+      // Asking for the clue again by a wrong Check after help is free too.
+      restart(s);
+      checkRun(s);
+      checkRun(s);
+      expect(s.hints).toBe(hints);
+    }
+  });
+
+  it('Step advances one pet command, with the delivery belonging to the Send, and marks played at the end', () => {
+    const s = made(startA, 'W', 'S', 'leaf');
+    expect(step(s)).toEqual({ at: 0, cue: 'W', n: 0 });
+    expect(s.played).toBe(false);
+    expect(step(s)).toEqual({ at: 1, cue: 'S', n: 1 });
+    expect(s.played).toBe(true);
+    // Two presses for a full show, even with the bird listening; the run is the pet's two commands.
+    expect(run(s)).toEqual(['W', 'S']);
+    expect(playRun(s)).toEqual(['W', 'S']);
+    // Another press starts again from the neutral pose.
+    expect(step(s)).toEqual({ at: 0, cue: 'W', n: 0 });
+    // An edit clears the finished run.
+    tapSlot(s, 1);
+    tapAction(s, 'W');
+    expect([s.played, s.stepAt]).toEqual([false, 0]);
+    // The same count with nobody listening.
+    const quiet = made(startA, 'S', 'S', 'shell');
+    expect([step(quiet)?.n, step(quiet)?.n, quiet.played]).toEqual([0, 1, true]);
+  });
+
+  it('Start again restores the seeded start and keeps misses and help', () => {
+    for (const start of starts) {
+      const s = from(start);
+      checkRun(s);
+      checkRun(s);
+      help(s);
+      toggleReceiver(s);
+      tapSlot(s, 0);
+      tapAction(s, 'T');
+      const [misses, hints, helped] = [s.misses, s.hints, new Set(s.helped)];
+      restart(s);
+      expect([s.program, s.receiver, s.undo, s.checked, s.played, s.selected]).toEqual([
+        start.program,
+        start.receiver,
+        null,
+        false,
+        false,
+        null,
+      ]);
+      expect([s.misses, s.hints, s.helped]).toEqual([misses, hints, helped]);
+      expect(s.program).not.toBe(start.program);
+    }
+  });
+
+  it('the demonstration drives real edits to a finish from both starts', () => {
+    const play = (start: PassStart) => {
+      const s = from(start);
+      const log: string[] = [];
+      let watchedIt = false;
+      for (let i = 0; i < 12; i++) {
+        const press = demoNext(s, false, [], watchedIt);
+        if (press === 'finish') {
+          log.push('finish');
+          expect(canFinish(s)).toBe(true);
+          break;
+        }
+        if (press === 'play') {
+          log.push('play');
+          playRun(s);
+          finishRun(s);
+          watchedIt = true;
+        } else if (press === 'receiver') {
+          log.push('receiver');
+          toggleReceiver(s);
+        } else if (press === 'check') {
+          log.push('check');
+          expect(checkRun(s)).toBe(-1);
+        } else if (typeof press === 'string') {
+          throw new Error(`unexpected press ${press}`);
+        } else if ('slot' in press) {
+          log.push(`slot ${press.slot}`);
+          tapSlot(s, press.slot);
+        } else if ('action' in press) {
+          log.push(`action ${press.action}`);
+          tapAction(s, press.action);
+        } else throw new Error('unexpected press');
+      }
+      expect(s.misses).toBe(0);
+      expect(s.hints).toBe(0);
+      return log;
+    };
+    expect(play(startA)).toEqual(['play', 'receiver', 'check', 'finish']);
+    expect(play(startB)).toEqual(['play', 'slot 0', 'action W', 'slot 1', 'action S', 'check', 'finish']);
   });
 });
 
