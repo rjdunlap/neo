@@ -22,6 +22,9 @@ export const VOICE = {
   'hh.instruct.7': [
     'Keep the nook comfy, with fewer clicks. Pull the two lines apart so the heater can rest between them, then tap Watch.',
   ],
+  'hh.instruct.8': [
+    'Keep the plants comfy, and never let the heater and the fan run together. Drag the two lines on the gauge, then tap Watch.',
+  ],
   'hh.guess.ask': [
     'The line is way up high. Will the nook warm up faster? Tap the hare for faster, or the two flames for the same.',
   ],
@@ -39,6 +42,13 @@ export const VOICE = {
   'hh.sensor-blind': ['The lamp stayed off in the dark. Nothing told it that it was dark.'],
   'hh.lamp-flickers': ["The lamp's own light reached its sensor, so it turned itself off."],
   'hh.heater-busy': ['The heater clicked on and off all day. Nothing lets it rest.'],
+  'hh.helpers-fight': ['The heater and the fan were on together. One warms, one cools, and nothing changes.'],
+  'hh.plants-cold': ['It got too cold for the plants. Look at when the heater came on.'],
+  'hh.plants-hot': ['It got too warm for the plants. Look at which helper was working then.'],
+  'hh.case.ordinary': ['An ordinary day.'],
+  'hh.case.heat-wave': ['A heat wave.'],
+  'hh.case.cold-snap': ['A cold snap.'],
+  'hh.clicks': ['Look at the jar. Each pebble is one time a helper switched on or off.'],
   'hh.lamp-on-at-morning': ['The lamp is still on in the morning. Nothing tells it to turn off.'],
   'hh.lamp-off-at-night': ['The lamp stayed off in the dark. A later card turned it off again.'],
   'hh.never-warms': ['The nook stayed chilly. Nothing kept the heater on while it was cool.'],
@@ -57,6 +67,12 @@ export const VOICE = {
   'hh.help.7.off': ['I moved the off line up, so the heater rests while the nook is comfy. Tap Watch!'],
   'hh.help.7.on': [
     'I moved the on line, so the heater comes back on before the nook gets chilly. Tap Watch!',
+  ],
+  'hh.help.8.fan': [
+    'I moved the fan line. Now the fan comes on only when the plants are getting too warm. Tap Watch!',
+  ],
+  'hh.help.8.heat': [
+    'I moved the heater line. Now the heater comes on only when the plants are getting too cold. Tap Watch!',
   ],
   'hh.help.done': ['Everything is in place. Tap Watch and see the day.'],
   'hh.help.setup': ['I set it up. Let us watch the day together.'],

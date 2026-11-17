@@ -11,6 +11,7 @@ export const HOW_TO: GameHowTo = {
     { from: 5, to: 5, text: "Move the sensor where the lamp's own light can't reach it." },
     { from: 6, to: 6, text: 'Drag the line so the nook stays comfy.' },
     { from: 7, to: 7, text: 'Pull the two lines apart so the heater can rest between them.' },
+    { from: 8, to: 8, text: 'Move the lines so the heater and the fan never run together.' },
     'Tap Watch and see what the helper does.',
   ],
   finish: 'The helper does its job all day by itself.',
@@ -44,6 +45,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'Watching is never counted. Between the two lines the heater keeps doing what it was doing; every switch drops a pebble in the jar, and the goal is a day with no pebble rolling out. The same trouble twice makes the line to move glow.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Watching is never counted. Below its line the heater turns on; above its line the fan turns on; where the lines cross, both run at once and cancel each other. The pebbles only count clicks. They are never scored. The same trouble twice makes the line to move glow.',
     },
   ],
 };

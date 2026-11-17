@@ -310,6 +310,50 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await finished('helper-house');
       assert.deepEqual(await score(), [0, 2], 'level 7 saved 0 misses, 2 hints');
     }
+    if (levels.includes(8)) {
+      // Level 8: the greenhouse opens with its lines crossed (heater 4, fan 3): the plants stay comfy but the helpers run
+      // together; the fighting day twice glows the fan line (one hint); the case card speaks and counts nothing; a
+      // portrait look at the first step's swirl; Show me lifts the fan line to 4; the heater line is dragged down to 3,
+      // the setup that works on every case, and Watch finishes with 2 hints.
+      await launch('helper-house', 8);
+      await settle();
+      assert.deepEqual(await lines(), { on: 4, off: 3 }, 'level 8 opens with the lines crossed');
+      assert.equal(await page.evaluate(() => neo.scene.game.caseNodes.length), 1, 'one case card');
+      await watch();
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.tally.failedDays),
+        1,
+        'the crossed lines fail the day',
+      );
+      assert.deepEqual(await tally(), [0, 0], 'a fighting day counts nothing');
+      await watch();
+      s = await state();
+      assert.deepEqual(await tally(), [0, 1], 'the same failure twice counts one hint');
+      assert.equal(s.glow, 'fan-line', 'the fan line glows');
+      await tapOn('neo.scene.game.caseNodes[0]');
+      assert.deepEqual(await tally(), [0, 1], 'the case card counts nothing');
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(800);
+      await tapOn('neo.scene.game.stepButton');
+      await page.waitForTimeout(800);
+      await screenshot('helper-house-8-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(400);
+      assert.deepEqual(await lines(), { on: 4, off: 4 }, 'Show me lifts the fan line to 4');
+      assert.deepEqual(await tally(), [0, 2], 'Show me counts one hint');
+      const to3 = await gapPoint(3, -55);
+      await page.evaluate(async (to) => {
+        const n = neo.scene.game.lineNodes[0].node;
+        await kit.dragTo(n, { x: to.x, y: to.y + 40 }, 16);
+      }, to3);
+      await page.waitForTimeout(500);
+      assert.deepEqual(await lines(), { on: 3, off: 4 }, 'the dragged heater line snaps to gap 3');
+      await watch();
+      await finished('helper-house');
+      assert.deepEqual(await score(), [0, 2], 'level 8 saved 0 misses, 2 hints');
+    }
     log(
       `Helper House ${levels.join(', ')}: failing days glow once, drags and taps, Step, portrait, Show me, passed`,
     );

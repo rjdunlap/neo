@@ -1,8 +1,8 @@
 /**
  * Helper House's rules: a house with a helper (the door at level 1, the lamp at levels 2–3 and 5, the nook's heater at
- * levels 4 and 6–7), a sensor that reads a picture, rule rows that turn a reading into an action (at levels 6–7, lines
- * on the warmth gauge), and a twelve-step day the
- * house runs by itself. The board space is tiny and fully enumerated; a day never counts a miss, and the same unmet
+ * levels 4 and 6–7, the greenhouse's heater and vent fan at level 8), a sensor that reads a picture, rule rows that
+ * turn a reading into an action (from level 6, lines on the warmth gauge), and a twelve-step day the house runs by
+ * itself. The board space is tiny and fully enumerated; a day never counts a miss, and the same unmet
  * goal twice lights a fix. Everything here is pure; the scene draws it. Definition: docs/definitions/helper-house.md.
  */
 import type { CritterName } from '../../art/critter';
@@ -29,11 +29,28 @@ export type SensorKind = 'eye' | 'sun' | 'thermo';
  */
 export type Socket = 'door' | 'window' | 'post' | 'nook' | 'lamp' | 'roof' | 'shed';
 export type Action = 'open' | 'on' | 'off';
-export type Helper = 'door' | 'lamp' | 'heater';
-/** A piece the board can change: the sensor, an editable row by its index, or a line on the gauge (levels 6–7). */
+/** The helpers a rule can drive; the vent fan works beside the heater in the greenhouse (level 8). */
+export type Helper = 'door' | 'lamp' | 'heater' | 'fan';
+/** A piece the board can change: the sensor, an editable row by its index, or a line on the gauge (from level 6). */
 export type Piece = 'sensor' | number | LinePiece;
-/** Level 6's one line, or level 7's on line and off line. */
-export type LinePiece = 'line' | 'on-line' | 'off-line';
+/** Level 6's one line, level 7's on line and off line, or the greenhouse's heater line and fan line (level 8). */
+export type LinePiece = 'line' | 'on-line' | 'off-line' | 'heat-line' | 'fan-line';
+export const LINE_PIECES: readonly LinePiece[] = ['line', 'on-line', 'off-line', 'heat-line', 'fan-line'];
+export function isLinePiece(p: Piece | null): p is LinePiece {
+  return typeof p === 'string' && p !== 'sensor';
+}
+/** The lines a level's gauge carries, left lane first. */
+export function linePieces(level: number): LinePiece[] {
+  return level === 6 ? ['line'] : inGreenhouse(level) ? ['heat-line', 'fan-line'] : ['on-line', 'off-line'];
+}
+/** Whether a line's handle rides in the gauge's right lane (the off line and the fan line). */
+export function rightLane(piece: LinePiece): boolean {
+  return piece === 'off-line' || piece === 'fan-line';
+}
+/** A line's gap on a gauge board. */
+export function lineGap(board: Board, piece: LinePiece): number {
+  return rightLane(piece) ? board.lines!.off : board.lines!.on;
+}
 
 export interface Row {
   reading: Reading | null;
@@ -51,7 +68,9 @@ export interface Board {
   /**
    * Levels 6–7: the gauge's lines, as gaps 1–6 (gap k lies between warmth k−1 and k). Warmth below the on line turns
    * the heater on, warmth at or above the off line turns it off, and between them no row matches. Level 6 keeps them
-   * together: one line.
+   * together: one line. In the greenhouse (level 8) `on` is the heater line (warmth below it turns the heater on) and
+   * `off` the fan line (warmth at or above it turns the fan on); every warmth sets both helpers, and the two lines may
+   * cross.
    */
   lines?: { on: number; off: number };
 }
@@ -64,6 +83,8 @@ export interface Day {
   arrivals: number[];
   /** Level 4: the nook's warmth before the first step (0–6); the outside is 0. */
   warmth: number;
+  /** Level 8: the greenhouse case this day is. */
+  case?: CaseName;
 }
 
 /** The nook's warmth stays within 0–6; the thermometer reads cool at 0–2, warm at 3–4, hot at 5–6. */
@@ -80,8 +101,20 @@ export const JAR = 8;
 
 /** Levels whose rows are lines on the warmth gauge. */
 export function onGauge(level: number): boolean {
-  return level === 6 || level === 7;
+  return level === 6 || level === 7 || inGreenhouse(level);
 }
+
+/** The greenhouse (level 8): a heater and a vent fan on one gauge, and weather that warms and cools the room itself. */
+export function inGreenhouse(level: number): boolean {
+  return level === 8;
+}
+
+/** How the sun moves the greenhouse's warmth each step, before either helper acts. */
+export const DRIFT: Record<SunLevel, number> = { bright: 1, dim: 0, dark: -1 };
+/** Every greenhouse case starts at warmth 3. */
+export const GREENHOUSE_START = 3;
+/** The setup accepted on every greenhouse case: the heater line at gap 3, the fan line at gap 4. */
+export const GREEN = { on: 3, off: 4 } as const;
 
 /** The row a warmth matches on a gauge board: 0 (on) below the on line, 1 (off) at or above the off line, else none. */
 export function lineMatch(lines: { on: number; off: number }, warmth: number): number | null {
@@ -89,14 +122,24 @@ export function lineMatch(lines: { on: number; off: number }, warmth: number): n
 }
 
 /** A switch is a step whose heater state after the rules differs from before them; the heater starts off. */
-export function switches(trace: readonly Trace[]): number {
+export function switches(trace: readonly Trace[], of: (t: Trace) => boolean = (t) => t.helperOn): number {
   let was = false;
   let n = 0;
   for (const t of trace) {
-    if (t.helperOn !== was) n++;
-    was = t.helperOn;
+    if (of(t) !== was) n++;
+    was = of(t);
   }
   return n;
+}
+
+/** The greenhouse's clicks: the switches of both helpers, each off before the first step. Counted, never judged. */
+export function clicks(trace: readonly Trace[]): number {
+  return switches(trace) + switches(trace, (t) => t.fanOn);
+}
+
+/** The steps on which the heater and the fan ran together. */
+export function bothOn(trace: readonly Trace[]): number {
+  return trace.filter((t) => t.helperOn && t.fanOn).length;
 }
 
 export interface Trace {
@@ -108,8 +151,10 @@ export interface Trace {
   reading: Reading;
   /** The row that set the helper this step, or null (the helper kept its state). */
   matched: number | null;
-  /** The door is open / the lamp is lit after this step. */
+  /** The door is open / the lamp is lit / the heater is on after this step. */
   helperOn: boolean;
+  /** Level 8: the vent fan is on after this step (false everywhere else). */
+  fanOn: boolean;
   /** Level 1: the door opened and let the waiting friends in this step (it shuts behind them). */
   opened: boolean;
   /** Friends still waiting at the door after this step. */
@@ -128,7 +173,10 @@ export type Failure =
   | 'lamp-off-at-night'
   | 'never-warms'
   | 'too-warm'
-  | 'heater-busy';
+  | 'heater-busy'
+  | 'plants-cold'
+  | 'plants-hot'
+  | 'helpers-fight';
 
 export interface Outcome {
   trace: Trace[];
@@ -183,12 +231,18 @@ export function runDay(board: Board, day: Day): Outcome {
     if (arrived) waiting++;
     const reading = read(board, day, step, waiting, warmth, helperOn);
     let matched: number | null = null;
-    if (board.lines) matched = lineMatch(board.lines, warmth);
+    let fanOn = false;
+    if (board.lines && inGreenhouse(board.level)) {
+      // Every warmth sets both helpers; the pulse follows the heater's row when it is on, else the fan's.
+      helperOn = warmth <= board.lines.on - 1;
+      fanOn = warmth >= board.lines.off;
+      matched = helperOn ? 0 : fanOn ? 1 : null;
+    } else if (board.lines) matched = lineMatch(board.lines, warmth);
     else
       board.rows.forEach((r, i) => {
         if (r.reading !== null && r.reading === reading) matched = i;
       });
-    if (matched !== null) {
+    if (matched !== null && !inGreenhouse(board.level)) {
       const a = board.rows[matched].action;
       helperOn = a === 'open' || a === 'on';
     }
@@ -200,7 +254,13 @@ export function runDay(board: Board, day: Day): Outcome {
       // The door shuts behind the friend: nothing is near any more, so the next step reads afresh.
       helperOn = false;
     }
-    if (helperFor(board.level) === 'heater')
+    if (inGreenhouse(board.level))
+      // The weather drifts the room, the heater adds one, the fan takes one away.
+      warmth = Math.max(
+        0,
+        Math.min(WARMTH_MAX, warmth + DRIFT[day.sun[step]] + (helperOn ? 1 : 0) - (fanOn ? 1 : 0)),
+      );
+    else if (helperFor(board.level) === 'heater')
       warmth = Math.max(0, Math.min(WARMTH_MAX, warmth + (helperOn ? 1 : -1)));
     trace.push({
       step,
@@ -209,6 +269,7 @@ export function runDay(board: Board, day: Day): Outcome {
       reading,
       matched,
       helperOn,
+      fanOn,
       opened,
       waiting,
       inside,
@@ -223,6 +284,12 @@ export function runDay(board: Board, day: Day): Outcome {
 export function judge(level: number, trace: Trace[], day: Day): Failure | null {
   const last = trace[trace.length - 1];
   if (level === 1) return last.inside >= day.arrivals.length ? null : 'friend-waiting';
+  if (inGreenhouse(level)) {
+    // The band first, as at levels 6–7; then any step with both helpers on.
+    const off = trace.find((t) => t.step >= COMFY.from && (t.warmth < COMFY.min || t.warmth > COMFY.max));
+    if (off) return off.warmth > COMFY.max ? 'plants-hot' : 'plants-cold';
+    return bothOn(trace) > 0 ? 'helpers-fight' : null;
+  }
   if (level === 4 || onGauge(level)) {
     // The first step out of the comfy band names the failure; level 7 then counts the heater's switches.
     const off = trace.find((t) => t.step >= COMFY.from && (t.warmth < COMFY.min || t.warmth > COMFY.max));
@@ -259,11 +326,29 @@ export const ARRIVALS: readonly number[][] = [
   [3, 6, 10],
 ];
 
+/** The greenhouse's three frozen days (level 8): the sun for each of the twelve steps. */
+export type CaseName = 'ordinary' | 'heat-wave' | 'cold-snap';
+export const CASE_NAMES: readonly CaseName[] = ['ordinary', 'heat-wave', 'cold-snap'];
+const B: SunLevel = 'bright';
+const D: SunLevel = 'dim';
+const K: SunLevel = 'dark';
+export const CASES: Record<CaseName, readonly SunLevel[]> = {
+  ordinary: SUN_SCRIPTS[0],
+  'heat-wave': [B, B, B, B, B, B, B, D, D, D, D, B],
+  'cold-snap': [D, D, B, D, K, K, K, K, K, K, K, D],
+};
+
+/** A greenhouse case as a day. */
+export function caseDay(name: CaseName): Day {
+  return { sun: CASES[name].slice(), arrivals: [], warmth: GREENHOUSE_START, case: name };
+}
+
 /** Level 4 starts the nook a little chilly. */
 export const START_WARMTH = 1;
 
-/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts. */
+/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts; level 8 picks one of the three greenhouse cases. */
 export function dayFor(level: number, rng: Rng): Day {
+  if (inGreenhouse(level)) return caseDay(rng.pick(CASE_NAMES));
   if (level === 1) return { sun: SUN_SCRIPTS[0].slice(), arrivals: rng.pick(ARRIVALS).slice(), warmth: 0 };
   if (level === 4 || onGauge(level))
     return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
@@ -275,7 +360,7 @@ export function dayFor(level: number, rng: Rng): Day {
 export interface Plan {
   level: number;
   name: string;
-  /** What the bench holds: sensors to place (levels 1–2 and 5), reading chips for the empty rows (levels 3–4), or nothing: the lines sit on the gauge (levels 6–7). */
+  /** What the bench holds: sensors to place (levels 1–2 and 5), reading chips for the empty rows (levels 3–4), or nothing: the lines sit on the gauge (from level 6). */
   bench: 'sensors' | 'chips' | 'lines';
 }
 
@@ -287,12 +372,13 @@ const PLANS: readonly Plan[] = [
   { level: 5, name: 'Where does it look?', bench: 'sensors' },
   { level: 6, name: 'The comfy line', bench: 'lines' },
   { level: 7, name: 'Calm heater', bench: 'lines' },
+  { level: 8, name: 'The greenhouse', bench: 'lines' },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: 8 },
 };
 export const MAX_LEVEL = PLANS.length;
 
@@ -349,6 +435,17 @@ export function startBoard(level: number): Board {
         { reading: 'dark', action: 'on', given: true },
         { reading: 'bright', action: 'off', given: true },
       ],
+    };
+  // The greenhouse's given rows: below the heater line → heater on, above the fan line → fan on. The lines start crossed.
+  if (inGreenhouse(level))
+    return {
+      level,
+      sensor: { kind: 'thermo', socket: 'nook' },
+      rows: [
+        { reading: null, action: 'on', given: true },
+        { reading: null, action: 'on', given: true },
+      ],
+      lines: { on: 4, off: 3 },
     };
   // The gauge's given rows: below the line → on, above it → off. Level 6's line starts at the top; level 7's two lines start together at level 6's lower answer.
   if (onGauge(level)) {
@@ -433,13 +530,15 @@ export function setRow(board: Board, index: number, reading: Reading | null): Bo
 
 /**
  * The board with a line moved to a gap (1–6). Level 6's one line moves both; at level 7 the two lines cannot cross: a
- * line stops at the other's gap.
+ * line stops at the other's gap. The greenhouse's two lines move freely past each other.
  */
 export function setLine(board: Board, piece: LinePiece, gap: number): Board {
   if (!board.lines) return board;
   const g = Math.max(1, Math.min(GAPS, Math.round(gap)));
   const { on, off } = board.lines;
   if (piece === 'line') return { ...board, lines: { on: g, off: g } };
+  if (piece === 'heat-line') return { ...board, lines: { on: g, off } };
+  if (piece === 'fan-line') return { ...board, lines: { on, off: g } };
   if (piece === 'on-line') return { ...board, lines: { on: Math.min(g, off), off } };
   return { ...board, lines: { on, off: Math.max(g, on) } };
 }
@@ -471,10 +570,12 @@ export function candidateBoards(brief: Brief): Board[] {
   if (brief.level === 5) return [null, ...brief.sockets].map((s) => placeSensor(start, 'sun', s));
   if (brief.level === 6)
     return Array.from({ length: GAPS }, (_, i) => ({ ...start, lines: { on: i + 1, off: i + 1 } }));
-  if (brief.level === 7) {
+  if (brief.level === 7 || inGreenhouse(brief.level)) {
+    // Level 7's lines cannot cross (21 boards); the greenhouse's can (36).
     const out: Board[] = [];
     for (let on = 1; on <= GAPS; on++)
-      for (let off = on; off <= GAPS; off++) out.push({ ...start, lines: { on, off } });
+      for (let off = inGreenhouse(brief.level) ? 1 : on; off <= GAPS; off++)
+        out.push({ ...start, lines: { on, off } });
     return out;
   }
   let out: Board[] = [start];
@@ -499,6 +600,12 @@ export function solutions(brief: Brief): Board[] {
 /** Level 7's one accepted board: the on line at gap 3, the off line at gap 4. */
 export const CALM = { on: 3, off: 4 } as const;
 
+/** The board the supported finish places: the first accepted one, or in the greenhouse the setup that works on every case. */
+export function setupFor(brief: Brief): Board | undefined {
+  if (inGreenhouse(brief.level)) return { ...brief.board, lines: { ...GREEN } };
+  return solutions(brief)[0];
+}
+
 /** Level 4's one accepted board (its day never changes): cool → on, warm → off. */
 function nookBoard(): Board {
   const day: Day = { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
@@ -519,14 +626,15 @@ function wrongRows(board: Board, right: Board): number[] {
 export function glowFor(board: Board, failure: Failure): Piece {
   if (board.lines) {
     if (board.level === 6) return 'line';
-    // Level 7: the line whose gap differs from the accepted board's (on 3, off 4); too cold points at the on line first.
-    const right = CALM;
-    const wrongOn = board.lines.on !== right.on;
-    const wrongOff = board.lines.off !== right.off;
-    const prefer: LinePiece = failure === 'never-warms' ? 'on-line' : 'off-line';
-    const preferWrong = prefer === 'on-line' ? wrongOn : wrongOff;
-    if (preferWrong || (!wrongOn && !wrongOff)) return prefer;
-    return prefer === 'on-line' ? 'off-line' : 'on-line';
+    // Levels 7–8: the line whose gap differs from the accepted board's (3 and 4); too cold points at the on line (the
+    // heater line) first, anything else at the off line (the fan line).
+    const [low, high] = linePieces(board.level);
+    const wrongOn = board.lines.on !== CALM.on;
+    const wrongOff = board.lines.off !== CALM.off;
+    const cold = failure === 'never-warms' || failure === 'plants-cold';
+    const preferWrong = cold ? wrongOn : wrongOff;
+    if (preferWrong || (!wrongOn && !wrongOff)) return cold ? low : high;
+    return cold ? high : low;
   }
   // Level 5 has no open rows: every failure points at where the sensor is.
   if (placesSensor(board.level) || failure === 'sensor-blind' || failure === 'friend-waiting')
@@ -567,12 +675,18 @@ export function helpFor(board: Board, brief: Brief, _presses: number): Help {
 
 /**
  * The gauge's Show me. Level 6: one press moves the line to the nearer accepted gap (4 from above, 3 from below).
- * Level 7: the first press sets the off line (or the one line that differs), the second the other.
+ * Level 7: the first press sets the off line (or the one line that differs), the second the other. Level 8: the first
+ * press sets the line the failure points at, the second the other.
  */
 function lineHelp(board: Board, brief: Brief): Help {
   if (meetsGoal(board, brief.day)) return { board, placed: null };
   const { on, off } = board.lines!;
   if (board.level === 6) return { board: setLine(board, 'line', on >= 4 ? 4 : 3), placed: 'line' };
+  if (inGreenhouse(board.level)) {
+    // The line the day's failure points at goes to its place in the setup that works on every case; a second press sets the other.
+    const piece = glowFor(board, runDay(board, brief.day).failure!) as LinePiece;
+    return { board: setLine(board, piece, rightLane(piece) ? GREEN.off : GREEN.on), placed: piece };
+  }
   if (off !== CALM.off) {
     // The off line first; if the on line sits above where the off line goes, it comes down with it, and the next press sets it.
     const next = { ...board, lines: { on: Math.min(on, CALM.off), off: CALM.off } };
@@ -652,6 +766,12 @@ export function nextMove(brief: Brief, board: Board, daysPlayed: number): Move {
     // Level 6: the line from the top down to gap 4 (Watch skips the guess). Level 7: Watch first (a pebble rolls out), then the off line up.
     if (brief.level === 6) return board.lines.on === 4 ? { watch: true } : { line: 'line', gap: 4 };
     if (daysPlayed === 0 && !meetsGoal(board, brief.day)) return { watch: true };
+    if (inGreenhouse(brief.level)) {
+      // Watch first (the helpers fight), the fan line up one gap, the heater line down one, then Watch.
+      if (board.lines.off !== GREEN.off) return { line: 'fan-line', gap: GREEN.off };
+      if (board.lines.on !== GREEN.on) return { line: 'heat-line', gap: GREEN.on };
+      return { watch: true };
+    }
     if (board.lines.off !== CALM.off) return { line: 'off-line', gap: CALM.off };
     if (board.lines.on !== CALM.on) return { line: 'on-line', gap: CALM.on };
     return { watch: true };
@@ -720,16 +840,23 @@ export interface HouseLayout {
   watch: Rect;
   step: Rect;
   undo: Rect;
-  /** Levels 6–7: the warmth gauge, its handle lanes and the click jar. */
+  /** From level 6: the warmth gauge, its handle lanes and the click jar. */
   gauge: GaugeLayout | null;
+  /** Level 8: the round's case card, above the house. */
+  cases: Rect[];
 }
 
-/** The gauge's tall column of seven warmth cells (0 at the bottom), a handle lane each side, and level 7's jar. */
+/** How many case cards a level shows above the house. */
+export function caseCards(level: number): number {
+  return inGreenhouse(level) ? 1 : 0;
+}
+
+/** The gauge's tall column of seven warmth cells (0 at the bottom), a handle lane each side, and the click jar (from level 7). */
 export interface GaugeLayout {
   column: Rect;
   /** Height of one warmth cell; the gaps between cells are this far apart. */
   pitch: number;
-  /** The on line's handles (level 6's one line) ride in the left lane, the off line's in the right. */
+  /** The on line's handles (level 6's one line, level 8's heater line) ride in the left lane, the off line's (the fan line's) in the right. */
   left: Rect;
   right: Rect;
   jar: Rect | null;
@@ -756,7 +883,7 @@ export function gapAt(g: GaugeLayout, y: number): number {
 
 /** A line's handle tab, centred on its gap in its lane. */
 export function handleRect(g: GaugeLayout, piece: LinePiece, gap: number): Rect {
-  const lane = piece === 'off-line' ? g.right : g.left;
+  const lane = rightLane(piece) ? g.right : g.left;
   return { x: lane.x, y: gapY(g, gap) - TILE / 2, w: TILE, h: TILE };
 }
 
@@ -870,12 +997,13 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
   if (sockets.some((s) => !inside(s, v) || sockets.some((t) => t !== s && overlaps(s, t)))) return null;
-  return { house, sockets, rows, bench, watch, step, undo, gauge: null };
+  return { house, sockets, rows, bench, watch, step, undo, gauge: null, cases: [] };
 }
 
 /**
- * Levels 6–7. Landscape: the house left with the two rule rows under it, the gauge (handle lanes either side) and the
+ * From level 6. Landscape: the house left with the two rule rows under it, the gauge (handle lanes either side) and the
  * jar under it at the right. Portrait: the house above, then the gauge beside the rule rows with the jar under them.
+ * The greenhouse's case card sits above the house, which gives up that much height.
  */
 function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   const wide = v.w >= v.h;
@@ -891,10 +1019,11 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   let rowX: number;
   let rowY: number;
   let jar: Rect;
+  const strip = caseCards(brief.level) ? CARD.h + M : 0;
   if (wide) {
     const houseX = PET_CORNER.w + M;
     const houseW = Math.round(v.w * 0.42);
-    house = { x: houseX, y: M, w: houseW, h: v.h - 2 * M - rowsH - M };
+    house = { x: houseX, y: M + strip, w: houseW, h: v.h - 2 * M - rowsH - M - strip };
     rowX = houseX;
     rowY = house.y + house.h + M;
     gx = Math.max(house.x + house.w + M, rightX - blockW - (v.w > 1100 ? JAR_BOX.w + M : 0));
@@ -907,7 +1036,12 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   } else {
     gx = M;
     gy = v.h - PET_CORNER.h - M - colH;
-    house = { x: HOME_CORNER.w + M, y: M, w: v.w - HOME_CORNER.w - 2 * M, h: Math.min(820, gy - 2 * M) };
+    house = {
+      x: HOME_CORNER.w + M,
+      y: M + strip,
+      w: v.w - HOME_CORNER.w - 2 * M,
+      h: Math.min(820, gy - 2 * M - strip),
+    };
     rowX = gx + blockW + 2 * M;
     rowY = gy;
     jar = { x: rowX, y: rowY + rowsH + M + 8, ...JAR_BOX };
@@ -918,8 +1052,14 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
     pitch: PITCH,
     left: { x: gx, y: gy, w: TILE, h: colH },
     right: { x: gx + 2 * TILE, y: gy, w: TILE, h: colH },
-    jar: brief.level === 7 ? jar : null,
+    jar: brief.level >= 7 ? jar : null,
   };
+  const cases = Array.from({ length: caseCards(brief.level) }, (_, i) => ({
+    x: house.x + i * (CARD.w + GAP),
+    y: M,
+    w: CARD.w,
+    h: CARD.h,
+  }));
   const rows = [0, 1].map((i) => {
     const y = rowY + i * (CARD.h + GAP);
     return {
@@ -932,10 +1072,10 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   const watch = { x: step.x - GAP - WATCH.w, y: by - WATCH.h / 2, w: WATCH.w, h: WATCH.h };
   const block = { x: gx, y: gy, w: blockW, h: colH };
   const rowBox = { x: rowX, y: rowY, w: rowW, h: rowsH };
-  const parts = [house, block, rowBox, ...(gauge.jar ? [gauge.jar] : []), watch, step, undo];
+  const parts = [house, block, rowBox, ...(gauge.jar ? [gauge.jar] : []), ...cases, watch, step, undo];
   if (house.h < 320 || house.w < 360) return null;
   if (!parts.every((p) => inside(p, v))) return null;
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
-  return { house, sockets: [], rows, bench: [], watch, step, undo, gauge };
+  return { house, sockets: [], rows, bench: [], watch, step, undo, gauge, cases };
 }

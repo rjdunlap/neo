@@ -4,6 +4,11 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   ARRIVALS,
+  CASES,
+  CASE_NAMES,
+  DRIFT,
+  GREEN,
+  GREENHOUSE_START,
   MAX_LEVEL,
   START_WARMTH,
   STEPS,
@@ -13,13 +18,20 @@ import {
   planFor,
   zoneOf,
   briefFor,
+  bothOn,
   candidateBoards,
+  caseCards,
+  caseDay,
+  clicks,
   complete,
   corners,
   dayFor,
   glowFor,
   helpFor,
   houseLayout,
+  inGreenhouse,
+  lineGap,
+  linePieces,
   meetsGoal,
   nextMove,
   offersSetup,
@@ -27,7 +39,10 @@ import {
   overlaps,
   placeSensor,
   read,
+  rightLane,
   runDay,
+  setupFor,
+  type CaseName,
   setRow,
   solutions,
   startBoard,
@@ -554,7 +569,7 @@ describe('level 5: where does the sensor look?', () => {
 
   it('is the fifth and last level, named Where does it look?, with the level 3 answer given and fixed', () => {
     expect(planFor(5).name).toBe('Where does it look?');
-    expect(MAX_LEVEL).toBe(7);
+    expect(MAX_LEVEL).toBe(8);
     const start = startBoard(5);
     expect(start.sensor).toEqual({ kind: 'sun', socket: 'lamp' });
     expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([
@@ -929,5 +944,407 @@ describe('levels 6-7: lines on the warmth gauge', () => {
           expect(overlaps(handleRect(g, 'on-line', 3), handleRect(g, 'off-line', 3))).toBe(false);
         }
       }
+  });
+});
+
+describe('level 8: the greenhouse', () => {
+  const brief8 = (name: CaseName, seed = 3) => ({ ...briefFor(8, new Rng(seed)), day: caseDay(name) });
+  const board = (on: number, off: number): Board => ({ ...startBoard(8), lines: { on, off } });
+  const run = (b: Board, name: CaseName) => runDay(b, caseDay(name));
+  const all = candidateBoards(brief8('ordinary'));
+  const key = (b: Board) => `${b.lines!.on},${b.lines!.off}`;
+  const acceptedOn = (name: CaseName) =>
+    all.filter((b) => meetsGoal(b, caseDay(name))).map((b) => [b.lines!.on, b.lines!.off]);
+
+  it('is a greenhouse level in the school band only, with one gauge and two free lines', () => {
+    expect(inGreenhouse(8)).toBe(true);
+    expect([1, 2, 3, 4, 5, 6, 7].some(inGreenhouse)).toBe(false);
+    expect(planFor(8).name).toBe('The greenhouse');
+    expect(linePieces(8)).toEqual(['heat-line', 'fan-line']);
+    expect(rightLane('heat-line')).toBe(false);
+    expect(rightLane('fan-line')).toBe(true);
+    expect(startBoard(8).lines).toEqual({ on: 4, off: 3 });
+    expect(lineGap(board(2, 5), 'heat-line')).toBe(2);
+    expect(lineGap(board(2, 5), 'fan-line')).toBe(5);
+    expect(caseCards(8)).toBe(1);
+    expect(caseCards(7)).toBe(0);
+    expect(GREENHOUSE_START).toBe(3);
+  });
+
+  it('has the frozen cases, each twelve steps', () => {
+    expect(CASE_NAMES).toEqual(['ordinary', 'heat-wave', 'cold-snap']);
+    expect(CASES.ordinary).toEqual(SUN_SCRIPTS[0]);
+    for (const n of CASE_NAMES) {
+      expect(CASES[n]).toHaveLength(STEPS);
+      const d = caseDay(n);
+      expect(d.case).toBe(n);
+      expect(d.warmth).toBe(GREENHOUSE_START);
+      expect(d.arrivals).toEqual([]);
+    }
+  });
+
+  it('adds the sun drift, the heater and the fan in the act phase, clamped to 0-6', () => {
+    expect(DRIFT).toEqual({ bright: 1, dim: 0, dark: -1 });
+    const step = (b: Board, sun: SunLevel, warmth: number) =>
+      runDay(b, { sun: Array(STEPS).fill(sun), arrivals: [], warmth }).trace[0];
+    // Heater only (heater line high, fan line high): on while warmth is below the heater line.
+    const heater = board(6, 6);
+    expect(step(heater, 'dark', 3).warmth).toBe(3);
+    expect(step(heater, 'dim', 3).warmth).toBe(4);
+    expect(step(heater, 'bright', 3).warmth).toBe(5);
+    // Fan only (heater line low, fan line low).
+    const fan = board(1, 1);
+    expect(step(fan, 'dark', 3).warmth).toBe(1);
+    expect(step(fan, 'dim', 3).warmth).toBe(2);
+    expect(step(fan, 'bright', 3).warmth).toBe(3);
+    // Neither (heater line 1, fan line 6): warmth 3 is between them.
+    const none = board(1, 6);
+    for (const [sun, d] of [
+      ['dark', -1],
+      ['dim', 0],
+      ['bright', 1],
+    ] as const)
+      expect(step(none, sun, 3).warmth).toBe(3 + d);
+    // Clamps.
+    expect(step(heater, 'bright', 6).warmth).toBe(6);
+    expect(step(board(6, 6), 'bright', 5).warmth).toBe(6);
+    expect(step(fan, 'dark', 0).warmth).toBe(0);
+    expect(step(none, 'dark', 0).warmth).toBe(0);
+    expect(step(none, 'bright', 6).warmth).toBe(6);
+    for (const n of CASE_NAMES)
+      for (const b of all)
+        for (const t of run(b, n).trace) {
+          expect(t.warmth).toBeGreaterThanOrEqual(0);
+          expect(t.warmth).toBeLessThanOrEqual(WARMTH_MAX);
+        }
+  });
+
+  it('sets each helper from every warmth by its line and never keeps a state', () => {
+    for (const b of all)
+      for (const n of CASE_NAMES) {
+        const { trace } = run(b, n);
+        let w = GREENHOUSE_START;
+        for (const t of trace) {
+          expect(t.helperOn, `${key(b)} ${n} ${t.step}`).toBe(w < b.lines!.on);
+          expect(t.fanOn, `${key(b)} ${n} ${t.step}`).toBe(w >= b.lines!.off);
+          w = t.warmth;
+        }
+      }
+  });
+
+  it('reproduces the twelve hand-run rows', () => {
+    const rows: [number, number, CaseName, string, number, number, Failure | null][] = [
+      [3, 4, 'ordinary', '3 4 4 4 4 4 3 2 2 2 3 4', 4, 0, null],
+      [3, 4, 'heat-wave', '4 4 4 4 4 4 4 3 3 3 3 4', 2, 0, null],
+      [3, 4, 'cold-snap', '3 3 4 3 2 2 2 2 2 2 2 3', 3, 0, null],
+      [4, 3, 'ordinary', '3 4 4 4 4 4 3 2 2 2 3 4', 6, 4, 'helpers-fight'],
+      [4, 3, 'heat-wave', '4 4 4 4 4 4 4 3 3 3 3 4', 4, 5, 'helpers-fight'],
+      [4, 3, 'cold-snap', '3 3 4 3 2 2 2 2 2 2 2 3', 5, 4, 'helpers-fight'],
+      [4, 4, 'ordinary', '4 4 4 4 4 4 3 3 3 3 4 4', 7, 0, null],
+      [4, 4, 'heat-wave', '5 5 5 5 5 5 5 4 3 4 3 5', 9, 0, 'plants-hot'],
+      [4, 4, 'cold-snap', '4 3 5 4 2 2 2 2 2 2 2 3', 9, 0, 'plants-hot'],
+      [3, 3, 'ordinary', '2 4 4 4 4 4 3 1 1 1 2 4', 7, 0, 'plants-cold'],
+      [3, 3, 'heat-wave', '3 3 3 3 3 3 3 2 3 2 3 3', 9, 0, null],
+      [3, 3, 'cold-snap', '2 3 3 2 2 2 2 2 2 2 2 3', 7, 0, null],
+    ];
+    for (const [h, f, n, w, c, both, verdict] of rows) {
+      const out = run(board(h, f), n);
+      const label = `(${h},${f}) ${n}`;
+      expect(out.trace.map((t) => t.warmth).join(' '), label).toBe(w);
+      expect(clicks(out.trace), label).toBe(c);
+      expect(bothOn(out.trace), label).toBe(both);
+      expect(out.failure, label).toBe(verdict);
+      expect(out.met, label).toBe(verdict === null);
+      expect(meetsGoal(board(h, f), caseDay(n)), label).toBe(verdict === null);
+    }
+  });
+
+  it('has 36 boards and the stated accepted sets and failure counts per case', () => {
+    expect(all).toHaveLength(36);
+    expect(new Set(all.map(key)).size).toBe(36);
+    for (const b of all)
+      expect(b.lines!.on >= 1 && b.lines!.off >= 1 && b.lines!.on <= 6 && b.lines!.off <= 6).toBe(true);
+    expect(acceptedOn('ordinary')).toEqual([
+      [3, 4],
+      [4, 4],
+    ]);
+    expect(acceptedOn('heat-wave')).toEqual([1, 2, 3].flatMap((h) => [3, 4].map((f) => [h, f])));
+    expect(acceptedOn('cold-snap')).toEqual([3, 4, 5, 6].map((f) => [3, f]));
+    const counts = (n: CaseName) => {
+      const c: Record<string, number> = { ok: 0, fight: 0, cold: 0, hot: 0 };
+      for (const b of all) {
+        const f = run(b, n).failure;
+        c[f === null ? 'ok' : f === 'helpers-fight' ? 'fight' : f === 'plants-cold' ? 'cold' : 'hot']++;
+      }
+      return c;
+    };
+    expect(counts('ordinary')).toEqual({ ok: 2, fight: 1, cold: 13, hot: 20 });
+    expect(counts('heat-wave')).toEqual({ ok: 6, fight: 5, cold: 4, hot: 21 });
+    expect(counts('cold-snap')).toEqual({ ok: 3 + 1, fight: 3, cold: 20, hot: 9 });
+    const fights = (n: CaseName) =>
+      all.filter((b) => run(b, n).failure === 'helpers-fight').map((b) => [b.lines!.on, b.lines!.off]);
+    expect(fights('ordinary')).toEqual([[4, 3]]);
+    expect(fights('heat-wave')).toEqual([
+      [3, 1],
+      [3, 2],
+      [4, 1],
+      [4, 2],
+      [4, 3],
+    ]);
+    expect(fights('cold-snap')).toEqual([
+      [4, 3],
+      [5, 3],
+      [6, 3],
+    ]);
+  });
+
+  it('accepts (3,4) on every case and nothing else on all three', () => {
+    const everywhere = all.filter((b) => CASE_NAMES.every((n) => meetsGoal(b, caseDay(n))));
+    expect(everywhere.map((b) => b.lines)).toEqual([{ on: 3, off: 4 }]);
+    expect({ ...GREEN }).toEqual({ on: 3, off: 4 });
+  });
+
+  it('fails the start board on every case with helpers-fight', () => {
+    for (const s of SEEDS) {
+      const br = briefFor(8, new Rng(s));
+      expect(br.board.lines).toEqual({ on: 4, off: 3 });
+      expect(runDay(br.board, br.day).failure).toBe('helpers-fight');
+      expect(meetsGoal(br.board, br.day)).toBe(false);
+    }
+    for (const n of CASE_NAMES) expect(run(startBoard(8), n).failure).toBe('helpers-fight');
+  });
+
+  it('names one failure per failing board, the band before the fight', () => {
+    for (const b of all)
+      for (const n of CASE_NAMES) {
+        const out = run(b, n);
+        const outOfBand = out.trace.find((t) => t.step >= 2 && (t.warmth < 2 || t.warmth > 4));
+        if (outOfBand)
+          expect(out.failure, `${key(b)} ${n}`).toBe(outOfBand.warmth > 4 ? 'plants-hot' : 'plants-cold');
+        else if (bothOn(out.trace) > 0) expect(out.failure, `${key(b)} ${n}`).toBe('helpers-fight');
+        else expect(out.failure).toBeNull();
+        expect(out.met).toBe(out.failure === null);
+      }
+    // A board that fights and also leaves the band reports the band: (4,1) on the cold snap.
+    const out = run(board(4, 1), 'cold-snap');
+    expect(bothOn(out.trace)).toBeGreaterThan(0);
+    expect(out.failure).not.toBe('helpers-fight');
+  });
+
+  it('glows a line whose gap differs from (3,4), by failure', () => {
+    for (const b of all)
+      for (const n of CASE_NAMES) {
+        const out = run(b, n);
+        if (out.failure === null) continue;
+        const g = glowFor(b, out.failure);
+        const wrongOn = b.lines!.on !== GREEN.on;
+        const wrongOff = b.lines!.off !== GREEN.off;
+        expect(['heat-line', 'fan-line']).toContain(g);
+        expect(g === 'heat-line' ? wrongOn : wrongOff, `${key(b)} ${n}`).toBe(true);
+        const prefer = out.failure === 'plants-cold' ? 'heat-line' : 'fan-line';
+        const preferWrong = prefer === 'heat-line' ? wrongOn : wrongOff;
+        if (preferWrong) expect(g, `${key(b)} ${n}`).toBe(prefer);
+      }
+    expect(glowFor(board(4, 3), 'helpers-fight')).toBe('fan-line');
+    expect(glowFor(board(1, 4), 'plants-cold')).toBe('heat-line');
+    expect(glowFor(board(3, 6), 'plants-cold')).toBe('fan-line');
+    expect(glowFor(board(5, 4), 'plants-hot')).toBe('heat-line');
+  });
+
+  it('reaches an accepted board within two Show me presses from every board on every case', () => {
+    for (const n of CASE_NAMES) {
+      const br = brief8(n);
+      for (const b of all) {
+        let cur = b;
+        let presses = 0;
+        while (!meetsGoal(cur, br.day) && presses < 2) {
+          const h = helpFor(cur, br, presses + 1);
+          expect(h.placed, `${key(b)} ${n}`).not.toBeNull();
+          expect(h.board).not.toEqual(cur);
+          cur = h.board;
+          presses++;
+        }
+        expect(meetsGoal(cur, br.day), `${key(b)} ${n}`).toBe(true);
+      }
+    }
+    for (const n of CASE_NAMES) {
+      const br = brief8(n);
+      const first = helpFor(br.board, br, 1);
+      expect(first.placed).toBe('fan-line');
+      expect(first.board.lines).toEqual({ on: 4, off: 4 });
+    }
+  });
+
+  it('gives (3,4) as the supported finish, which meets the goal on every case', () => {
+    for (const s of SEEDS.slice(0, 30)) {
+      const br = briefFor(8, new Rng(s));
+      const set = setupFor(br)!;
+      expect(set.lines).toEqual({ on: 3, off: 4 });
+      expect(meetsGoal(set, br.day)).toBe(true);
+    }
+    for (const n of CASE_NAMES) expect(meetsGoal(setupFor(brief8(n))!, caseDay(n))).toBe(true);
+  });
+
+  it('keeps the start warmth identical to the accepted answer while it fails (the overlap property)', () => {
+    for (const n of CASE_NAMES) {
+      const w = (b: Board) => run(b, n).trace.map((t) => t.warmth);
+      expect(w(startBoard(8))).toEqual(w(board(3, 4)));
+      expect(run(startBoard(8), n).failure).toBe('helpers-fight');
+      expect(run(board(3, 4), n).failure).toBeNull();
+    }
+  });
+
+  it('has a both-on step on every case for every crossed board', () => {
+    for (const b of all)
+      if (b.lines!.off < b.lines!.on)
+        for (const n of CASE_NAMES) expect(bothOn(run(b, n).trace), `${key(b)} ${n}`).toBeGreaterThan(0);
+    // And a board whose lines are not crossed never has both on.
+    for (const b of all)
+      if (b.lines!.off >= b.lines!.on) for (const n of CASE_NAMES) expect(bothOn(run(b, n).trace)).toBe(0);
+  });
+
+  it('has no single case that shows the answer', () => {
+    expect(meetsGoal(board(4, 4), caseDay('ordinary'))).toBe(true);
+    expect(meetsGoal(board(4, 4), caseDay('heat-wave'))).toBe(false);
+    expect(meetsGoal(board(3, 3), caseDay('heat-wave'))).toBe(true);
+    expect(meetsGoal(board(3, 3), caseDay('cold-snap'))).toBe(true);
+    expect(meetsGoal(board(3, 3), caseDay('ordinary'))).toBe(false);
+    for (const n of CASE_NAMES) expect(acceptedOn(n).length, n).toBeGreaterThan(1);
+  });
+
+  it('lets the two lines cross, unlike level 7', () => {
+    const b = startBoard(8);
+    expect(setLine(b, 'heat-line', 1).lines).toEqual({ on: 1, off: 3 });
+    expect(setLine(b, 'fan-line', 6).lines).toEqual({ on: 4, off: 6 });
+    expect(setLine(setLine(b, 'fan-line', 6), 'heat-line', 2).lines).toEqual({ on: 2, off: 6 });
+    expect(setLine(board(3, 4), 'heat-line', 6).lines).toEqual({ on: 6, off: 4 });
+    expect(setLine(board(3, 4), 'fan-line', 1).lines).toEqual({ on: 3, off: 1 });
+    expect(setLine(board(3, 4), 'heat-line', 9).lines).toEqual({ on: 6, off: 4 });
+    // Level 7 still stops at the other line.
+    const b7 = { ...startBoard(7), lines: { on: 3, off: 4 } };
+    expect(setLine(b7, 'on-line', 6).lines).toEqual({ on: 4, off: 4 });
+  });
+
+  it('picks a case per seed, all three across seeds, and never changes the start board', () => {
+    const seen = new Set<string>();
+    for (const br of briefs(8)) {
+      expect(CASE_NAMES).toContain(br.day.case);
+      seen.add(br.day.case!);
+      expect(br.day.sun).toEqual([...CASES[br.day.case!]]);
+      expect(br.board).toEqual(startBoard(8));
+      expect(br.day.warmth).toBe(GREENHOUSE_START);
+    }
+    expect([...seen].sort()).toEqual([...CASE_NAMES].sort());
+    const again = briefFor(8, new Rng(7));
+    expect(again.day).toEqual(briefFor(8, new Rng(7)).day);
+  });
+
+  it('plays the ghost finger: watch, fan line up, heater line down, watch', () => {
+    for (const s of SEEDS.slice(0, 30)) {
+      const br = briefFor(8, new Rng(s));
+      expect(nextMove(br, br.board, 0)).toEqual({ watch: true });
+      const fan = nextMove(br, br.board, 1);
+      expect(fan).toEqual({ line: 'fan-line', gap: 4 });
+      let b = setLine(br.board, 'fan-line', 4);
+      expect(nextMove(br, b, 1)).toEqual({ line: 'heat-line', gap: 3 });
+      b = setLine(b, 'heat-line', 3);
+      expect(nextMove(br, b, 1)).toEqual({ watch: true });
+      expect(meetsGoal(b, br.day), `${s}`).toBe(true);
+      // Followed from the start it reaches an accepted board.
+      let cur = br.board;
+      let days = 0;
+      for (let i = 0; i < 6 && !(meetsGoal(cur, br.day) && days > 0); i++) {
+        const m = nextMove(br, cur, days);
+        if ('line' in m) cur = setLine(cur, m.line, m.gap);
+        else days++;
+      }
+      expect(meetsGoal(cur, br.day)).toBe(true);
+    }
+    for (const n of CASE_NAMES) {
+      const br = brief8(n);
+      let cur = br.board;
+      let days = 0;
+      for (let i = 0; i < 6 && !(meetsGoal(cur, br.day) && days > 0); i++) {
+        const m = nextMove(br, cur, days);
+        if ('line' in m) cur = setLine(cur, m.line, m.gap);
+        else days++;
+      }
+      expect(meetsGoal(cur, br.day), n).toBe(true);
+    }
+  });
+
+  it('tallies the same failure twice as one glow and one hint, never a miss', () => {
+    const br = briefFor(8, new Rng(3));
+    const t = new Tally();
+    expect(t.failed(br.board, 'helpers-fight')).toBe(false);
+    expect(t.failed(br.board, 'helpers-fight')).toBe(true);
+    expect(t.glowing).toBe('fan-line');
+    expect(t.hints).toBe(1);
+    expect(t.misses).toBe(0);
+    t.changed('fan-line');
+    expect(t.glowing).toBeNull();
+    const t2 = new Tally();
+    t2.failed(board(1, 4), 'plants-cold');
+    t2.failed(board(1, 4), 'plants-cold');
+    expect(t2.glowing).toBe('heat-line');
+    expect(t2.hints).toBe(1);
+  });
+
+  it('lays out one case card, the gauge, the jar and full-size handles at every view', () => {
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(1366, 1024),
+      computeView(1024, 1366),
+      computeView(844, 390),
+    ];
+    const br = briefFor(8, new Rng(3));
+    for (const v of views) {
+      const l = houseLayout(br, v);
+      const label = `${v.w}x${v.h}`;
+      expect(l, label).not.toBeNull();
+      const g = l!.gauge!;
+      expect(g).not.toBeNull();
+      expect(g.jar, label).not.toBeNull();
+      expect(l!.cases, label).toHaveLength(1);
+      const card = l!.cases[0];
+      expect(card.w, label).toBeGreaterThanOrEqual(130);
+      expect(card.h, label).toBeGreaterThanOrEqual(110);
+      expect(l!.house.h, label).toBeGreaterThanOrEqual(320);
+      const inView = (r: { x: number; y: number; w: number; h: number }) =>
+        r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
+      expect(inView(card), label).toBe(true);
+      const others = [
+        l!.house,
+        g.column,
+        g.left,
+        g.right,
+        g.jar!,
+        l!.watch,
+        l!.step,
+        l!.undo,
+        ...l!.rows.flatMap((r) => [r.reading, r.action]),
+        ...corners(v),
+      ];
+      for (const o of others) expect(overlaps(card, o), `${label} card vs ${JSON.stringify(o)}`).toBe(false);
+      const avoid = [
+        l!.watch,
+        l!.step,
+        l!.undo,
+        g.jar!,
+        ...l!.rows.flatMap((r) => [r.reading, r.action]),
+        ...corners(v),
+      ];
+      const heat = Array.from({ length: GAPS }, (_, i) => handleRect(g, 'heat-line', i + 1));
+      const fan = Array.from({ length: GAPS }, (_, i) => handleRect(g, 'fan-line', i + 1));
+      for (const r of [...heat, ...fan]) {
+        expect(r.w, label).toBeGreaterThanOrEqual(110);
+        expect(inView(r), `${label} ${JSON.stringify(r)}`).toBe(true);
+        for (const a of avoid) expect(overlaps(r, a), label).toBe(false);
+        expect(overlaps(r, card), label).toBe(false);
+      }
+      for (const h of heat) for (const f of fan) expect(overlaps(h, f), label).toBe(false);
+      for (let k = 1; k < GAPS; k++) expect(gapY(g, k) - gapY(g, k + 1)).toBeGreaterThanOrEqual(60);
+    }
   });
 });
