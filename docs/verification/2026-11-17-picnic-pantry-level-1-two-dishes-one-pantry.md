@@ -1,0 +1,5 @@
+# 2026-11-17 — Picnic Pantry level 1, Two dishes, one pantry (PR #1753)
+
+**Changed:** new game `picnic-pantry` (cooking-recipes C6b; school 1–1, Cozy Village): three dish cards over a three-jar pantry, four frozen cases, two picnics per round, the repair hint and the unjudged *Another way?*; one new spoken title clip; game page, definition as-built note, study, backlog, recommendations and ideas rows.
+**Ran:** `npm run typecheck`; `npm test` (358 files, 7578 passed, 1 skipped) with 17 new rule tests (frozen cases, level 1 properties, demand/remaining/allocation agreement, repair within two edits and never through the non-fitting pair, voice value words, layout at three upright phone views and three sideways windows); `BROWSER_SUITE=pantry` (one scripted play: free bell, one miss, the pause sheet's hint counted once, a laid picnic, *Another way?*, the second picnic by the bot, one sticker; an upright 390 × 844 screenshot and a sideways laid picnic); `BROWSER_SUITE=fingerdemo FINGER_ONLY=picnic-pantry` (18.4 s); `npm run build`.
+**Not run:** `world`, offline, couch and every other browser suite (code they cover is unchanged).
