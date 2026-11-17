@@ -1,0 +1,5 @@
+# 2026-11-16 — Spinner Fair level 6 Watch it settle (PR #1720)
+
+**Changed:** `spinner-fair` level 6 (CS2a, school only, school now 3–6): two wheels, runs of 12, 60 and 240 spins on a share strip, the "about how many in 60 more" cards and a 60-spin check run; new `settle.ts`, rules in `logic.ts`, three voice lines, the `spinnerfair6` suite.
+**Ran:** `npm run typecheck`; `npm test` (353 files, 7257 passed, 1 skipped), including 49 rule tests (exactly one right card; runs equal repeated `spin(rng)`; over 2000 seeds 240 spins within 0.08 of the share and the 60-spin check in band at least 97% of the time per share; layout at six views); `BROWSER_SUITE=spinnerfair6` (upright 768×1024: both wheels' three runs to 12, 60 and 240 spins, each under 6.5 s; one wrong card saved as a miss; the check run of 60; two wrong cards on wheel 2 lighting the glow; saved 3 misses, 1 hint; portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=spinner-fair FINGER_LEVELS=6` (46.8 s); `npm run build`.
+**Not run:** `spinnerfair` and `spinnerfair45` (levels 1–5 unchanged apart from the shared plan table), other suites, the offline check, a landscape screenshot.
