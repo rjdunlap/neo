@@ -234,6 +234,83 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Who gets it next? What would show us it got to the end?',
     },
   },
+  // Batch 4 (2026-11-17): eight more in bands already served, each naming something from the kit.
+  'domino-run': {
+    all: {
+      notice: 'Does {name} stand one up, push the first one or knock the whole row down?',
+      say: 'Stand, stand, stand. Push! Down they go.',
+    },
+    school: {
+      notice: 'Does {name} change the gap after a row stops partway?',
+      say: 'Will the wide gap work? What made it stop there?',
+    },
+  },
+  'puddle-gobble': {
+    all: {
+      notice: 'Does {name} put one cup inside another, build a tower or try each in turn?',
+      say: 'In it goes. Too big! This one fits.',
+    },
+    school: {
+      notice: 'Does {name} hold two cups side by side before trying the fit?',
+      say: 'Which fit inside which? How did you choose the order?',
+    },
+  },
+  'beat-builder': {
+    all: {
+      notice: 'Does {name} bang the pot, clap along or wait for the next turn?',
+      say: 'Boom, clap. Boom, clap. Your turn!',
+    },
+    school: {
+      notice: 'Does {name} copy the beat the same way, or add a new part?',
+      say: 'What comes next in the beat? How would you change it?',
+    },
+  },
+  'sing-along-barn': {
+    all: {
+      notice: 'Does {name} look at the animal, reach for it or join in with the sound?',
+      say: 'Here is the cow. Moo, moo! Again?',
+    },
+  },
+  'adventure-walk': {
+    all: {
+      notice: 'Does {name} walk the toy over the bridge, hide it under or go another way?',
+      say: 'Over the bridge. Under! Around the boulder.',
+    },
+    school: {
+      notice: 'Does {name} try a second way around after the first one?',
+      say: 'Which way did the toy go? Is there another way to get there?',
+    },
+  },
+  'village-vote': {
+    all: {
+      notice: 'Does {name} give each friend one choice, send every friend to one toy or choose too?',
+      say: 'Bear picks this one. Rabbit picks that one. Which has more?',
+    },
+    school: {
+      notice: 'Does {name} count each side, or line the friends up to compare?',
+      say: 'Which toy won? What if one friend changed sides?',
+    },
+  },
+  'memory-match': {
+    all: {
+      notice: 'Does {name} lift cups in turn, go back to one already seen or peek under two?',
+      say: 'A spoon! Where is its partner? Under this cup?',
+    },
+    school: {
+      notice: 'Does {name} point to where a pair is before lifting the cup?',
+      say: 'How did you remember that one? Shall we add another pair?',
+    },
+  },
+  'block-topple': {
+    all: {
+      notice: 'Does {name} aim low, aim high or build the stack up again?',
+      say: 'Roll! Did it tip? Now a taller one.',
+    },
+    school: {
+      notice: 'Does {name} change where the ball hits after seeing a stack stay up?',
+      say: 'Which stack will tip first? Where would you aim, and why?',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;
