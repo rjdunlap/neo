@@ -200,7 +200,10 @@ None was played. "Opened" means the page itself was read.
 6. **Z6 · Define Enrichment Day** on Bamboo Hill (decision 4), with its accepted-answer table and the sharing rung.
 7. **Z7 · Define Species Comeback**: the family-tree model, the pairing rule (no siblings, then no shared grandparent), several valid plans, a solver test, and the release-site match; decision 6. **Defined 2026-10-19:** [definition](../../definitions/species-comeback.md) (a seeded family-tree model with a kin rule over parents and grandparents, an exact matching solver whose largest plan is the target with at least two valid plans per round, undo and a blocking-nest hint, Spring hatchlings, a release-site step with a four-need card at level 3, two keeper plans with a note and reason cards at level 4, accounting, rule tests, layout, ghost finger, voice `comeback.*`, Lantern Lake `grownup` 1–4 with invented pond turtles by default, eight defaulted decisions; the needs/recovery review is decision 1). **Built (levels 1–3, 2026-10-24):** Lantern Lake, `grownup` 1–3, PR #733; level 4 and the printed recovery card remain.
 8. **Z8 · Zoo Detective and Who Am I? cards** for the grown-ups' page, after review.
-9. **Z9 · Who Am I? levels 5–7**, then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
+9. **Z9 · Who Am I? levels 5–7** (definition). **Defined 2026-11-17:** [definition](../../definitions/who-am-i.md#levels-57-z9-defined-2026-11-17) (which group? with the group as the first clue and the penguin as an answer; you ask, a tray of yes/no questions where asking is never a miss and unsafe "no" answers are removed; make a riddle with true clue cards; school 2–7).
+10. **Z10 · Build level 5, Which group?**: rules in `logic.ts`, tests, ghost finger and how-to step, one scripted play.
+11. **Z11 · Build level 6, You ask**, after Z10: the question tray, the source check of the "no" answers, tests, one scripted play and a portrait screenshot.
+12. **Z12 · Build level 7, Make a riddle**, after Z11: the clue tray, tests, one scripted play and a portrait screenshot. Then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
 
 ## What was built
 
