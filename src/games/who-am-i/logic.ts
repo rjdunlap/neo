@@ -4,7 +4,7 @@ import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Who Am I?: a row of friends on the barn's stage, one clue at a time, and she turns over every friend a clue rules out
- * until one is left (levels 2–4), or taps the one friend a single clue fits (level 1). The trait table below was checked
+ * until one is left (levels 2–5), or taps the one friend a single clue fits (level 1). The trait table below was checked
  * against museum, university and government sources on 2026-10-24 (docs/definitions/who-am-i.md, decision 1).
  */
 
@@ -120,10 +120,23 @@ export const FRIENDS: Record<FriendId, Friend> = {
 
 export const FRIEND_IDS = Object.keys(FRIENDS) as FriendId[];
 
-export const keeps = (clue: Feature, friend: FriendId) => FRIENDS[friend].features.includes(clue);
+/** A group clue (level 5): "I'm a bird!" or "I'm a mammal!", the two groups with more than one friend. */
+export type GroupClue = 'bird' | 'mammal';
+export type Clue = Feature | GroupClue;
+export const isGroup = (clue: Clue): clue is GroupClue => clue === 'bird' || clue === 'mammal';
+/** The feature a group clue turns into once its hint has shown what the group means: it keeps exactly the same friends. */
+export const GROUP_FEATURE: Record<GroupClue, Feature> = { bird: 'feathers', mammal: 'milk' };
+/** The feature signs the group hint shows. */
+export const GROUP_SIGNS: Record<GroupClue, readonly Feature[]> = {
+  bird: ['feathers'],
+  mammal: ['fur', 'milk'],
+};
+
+export const keeps = (clue: Clue, friend: FriendId) =>
+  isGroup(clue) ? FRIENDS[friend].group === clue : FRIENDS[friend].features.includes(clue);
 
 /** The friends in `remaining` the clue is false of. */
-export const ruledOut = (remaining: readonly FriendId[], clue: Feature) =>
+export const ruledOut = (remaining: readonly FriendId[], clue: Clue) =>
   remaining.filter((f) => !keeps(clue, f));
 
 /** The pig's coat is bristly hair (its clue says "fur or hair"), so its own reason says hair. */
@@ -166,6 +179,18 @@ export const staysText = (friend: FriendId, clue: Feature) => ({
   name: FRIENDS[friend].name,
   has: hasText(friend, clue),
 });
+
+/**
+ * The spoken line for tapping a friend a group clue keeps: "Penguin has feathers, so Penguin is a bird. Penguin stays!".
+ * `has` is the group's defining features as this friend has them; null for a friend in neither group.
+ */
+export function groupHas(friend: FriendId): { name: string; has: string; group: string } | null {
+  const { name, group } = FRIENDS[friend];
+  if (group === 'bird') return { name, has: hasText(friend, 'feathers'), group: 'a bird' };
+  if (group === 'mammal')
+    return { name, has: `${hasText(friend, 'fur')} and ${FEATURES.milk.has}`, group: 'a mammal' };
+  return null;
+}
 
 // Levels ---------------------------------------------------------------------------------------------------------------
 
@@ -211,6 +236,8 @@ export interface WhoPlan {
    * nor the penguin or the fish (each of their other features picks them out at once).
    */
   answers: readonly FriendId[];
+  /** Level 5: the first clue is the answer's group, and one feature clue follows only if more than one friend still stands. */
+  group?: boolean;
 }
 
 const MAMMALS: FriendId[] = ['cow', 'pig', 'cat', 'bear', 'dog', 'bunny'];
@@ -269,9 +296,26 @@ export const PLANS: readonly WhoPlan[] = [
     include: ['penguin', 'bat'],
     surprise: true,
   },
+  {
+    level: 5,
+    name: 'Which group? The clue is a bird or a mammal, 6 friends',
+    mode: 'turn',
+    friends: 6,
+    // At most two: the group, then one feature clue when the group leaves more than one friend.
+    clues: 2,
+    allowed: SURPRISES,
+    minGroups: 3,
+    minDefining: 0,
+    // The frog, the turtle and the fish are never the answer: only a bird or a mammal has a group clue.
+    answers: ['duck', 'owl', 'penguin', 'bat', ...MAMMALS],
+    pool: FRIEND_IDS,
+    include: ['penguin', 'bat'],
+    surprise: true,
+    group: true,
+  },
 ];
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 4 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 5 } };
 
 export const planFor = (level: number): WhoPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
@@ -279,7 +323,7 @@ export const planFor = (level: number): WhoPlan =>
 export interface WhoRound {
   gallery: FriendId[];
   answer: FriendId;
-  clues: Feature[];
+  clues: Clue[];
 }
 
 /** The answer's allowed features are not all shared by any other friend in the gallery. */
@@ -293,7 +337,7 @@ export function distinguishable(
 }
 
 /** A useful clue keeps the answer and rules out at least one friend still standing. */
-export const useful = (clue: Feature, answer: FriendId, remaining: readonly FriendId[]) =>
+export const useful = (clue: Clue, answer: FriendId, remaining: readonly FriendId[]) =>
   keeps(clue, answer) && ruledOut(remaining, clue).length > 0;
 
 /**
@@ -302,7 +346,16 @@ export const useful = (clue: Feature, answer: FriendId, remaining: readonly Frie
  * face down), or `milk` while the bat and a bird both stand (the birds go, the bat stays). Names who the pet explains.
  */
 export type Surprise = 'penguin' | 'bat';
-export function surpriseAt(remaining: readonly FriendId[], clue: Feature): Surprise | null {
+export function surpriseAt(remaining: readonly FriendId[], clue: Clue): Surprise | null {
+  // Level 5's group clues: the penguin left alone is the bird that cannot fly; otherwise "a bird" turns over the bat though
+  // it flies, and "a mammal" keeps the bat while a bird goes.
+  if (clue === 'bird') {
+    const kept = remaining.filter((f) => keeps(clue, f));
+    if (kept.length === 1 && kept[0] === 'penguin') return 'penguin';
+    return remaining.includes('bat') ? 'bat' : null;
+  }
+  if (clue === 'mammal')
+    return remaining.includes('bat') && remaining.some((f) => FRIENDS[f].group === 'bird') ? 'bat' : null;
   if (clue === 'fly' && remaining.includes('penguin')) return 'penguin';
   if (!remaining.includes('bat')) return null;
   if (clue === 'feathers' || clue === 'eggs') return 'bat';
@@ -311,7 +364,7 @@ export function surpriseAt(remaining: readonly FriendId[], clue: Feature): Surpr
 }
 
 /** The surprise at each clue of a round, in order (null where there is none). */
-export function surprises(gallery: readonly FriendId[], clues: readonly Feature[]): (Surprise | null)[] {
+export function surprises(gallery: readonly FriendId[], clues: readonly Clue[]): (Surprise | null)[] {
   let left = [...gallery];
   return clues.map((c) => {
     const s = surpriseAt(left, c);
@@ -346,9 +399,62 @@ function cluesFor(plan: WhoPlan, answer: FriendId, gallery: readonly FriendId[],
 
 const groupCount = (gallery: readonly FriendId[]) => new Set(gallery.map((g) => FRIENDS[g].group)).size;
 
+/** The four kinds of answer level 5 draws from with equal chances, before it draws a gallery that allows the kind. */
+export const ANSWER_KINDS = ['flying-bird', 'penguin', 'bat', 'four-legged'] as const;
+export type AnswerKind = (typeof ANSWER_KINDS)[number];
+export const kindOf = (answer: FriendId): AnswerKind | null =>
+  answer === 'penguin'
+    ? 'penguin'
+    : answer === 'bat'
+      ? 'bat'
+      : FRIENDS[answer].group === 'bird'
+        ? 'flying-bird'
+        : FRIENDS[answer].group === 'mammal'
+          ? 'four-legged'
+          : null;
+
+const FLYERS: FriendId[] = ['duck', 'owl'];
+const LONERS: FriendId[] = ['frog', 'turtle', 'fish'];
+
+/**
+ * Level 5: the kind of answer first, then a gallery that allows it (drawing the gallery first makes the bat the answer in
+ * almost half the rounds). A flying bird is the gallery's only one; the penguin answers only with no duck or owl; a
+ * four-legged mammal only when it is the gallery's only one; the bat in any gallery.
+ */
+function makeGroupRound(plan: WhoPlan, rng: Rng): WhoRound {
+  const kind = rng.pick(ANSWER_KINDS);
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const answer: FriendId =
+      kind === 'flying-bird' ? rng.pick(FLYERS) : kind === 'four-legged' ? rng.pick(MAMMALS) : kind;
+    const must = plan.include.filter((f) => f !== answer);
+    const from =
+      kind === 'bat'
+        ? [...MAMMALS, ...FLYERS, ...LONERS]
+        : kind === 'four-legged'
+          ? [...FLYERS, ...LONERS]
+          : [...MAMMALS, ...LONERS];
+    const others = rng.shuffle(from).slice(0, plan.friends - 1 - must.length);
+    const gallery = rng.shuffle([answer, ...must, ...others]);
+    if (groupCount(gallery) < plan.minGroups) continue;
+    const group = FRIENDS[answer].group as GroupClue;
+    const clues: Clue[] = [group];
+    const left = gallery.filter((f) => keeps(group, f));
+    if (left.length > 1) {
+      const options = plan.allowed.filter((c) => useful(c, answer, left));
+      if (options.length === 0) continue;
+      const next = rng.pick(options);
+      if (left.filter((f) => keeps(next, f)).length !== 1) continue;
+      clues.push(next);
+    }
+    return { gallery, answer, clues };
+  }
+  throw new Error(`who-am-i: no round for level ${plan.level}`);
+}
+
 /** A seeded round for the level: the same seed gives the same round. Bounded; the rule tests prove it never runs out. */
 export function makeRound(level: number, rng: Rng): WhoRound {
   const plan = planFor(level);
+  if (plan.group) return makeGroupRound(plan, rng);
   for (let attempt = 0; attempt < 400; attempt++) {
     const answer = rng.pick(plan.answers);
     if (plan.mode === 'fit') {
@@ -386,8 +492,12 @@ export interface WhoPlay {
   hints: number;
   /** Misses on the clue showing (levels 2–4) or in the round (level 1). */
   wrongHere: number;
-  /** Help has been counted for this clue (levels 2–4) or this round (level 1). */
+  /** Help has been counted for this clue (levels 2–5) or this round (level 1). */
   helped: boolean;
+  /** Level 5: the hint has shown what this group clue means, so it is now judged and explained as its feature clue. */
+  meaning: boolean;
+  /** Level 5: two more misses after the meaning made the ruled-out friends shimmer, with no further count. */
+  shimmer: boolean;
   /** Surprises the pet has explained this round: each is said once, free. */
   explained: Set<Surprise>;
   done: boolean;
@@ -402,6 +512,8 @@ export const startPlay = (round: WhoRound, mode: WhoPlan['mode']): WhoPlay => ({
   hints: 0,
   wrongHere: 0,
   helped: false,
+  meaning: false,
+  shimmer: false,
   explained: new Set(),
   done: false,
 });
@@ -410,9 +522,15 @@ export const startPlay = (round: WhoRound, mode: WhoPlan['mode']): WhoPlay => ({
 export const standing = (p: WhoPlay) => p.round.gallery.filter((_, i) => !p.down.has(i));
 
 /** Gallery indices of the friends the help points at: the answer at level 1, every face-up friend the clue rules out after. */
+/** The clue as it is judged and explained now: a group clue whose meaning has been shown is its feature clue. */
+export function judged(p: WhoPlay): Clue {
+  const clue = p.round.clues[p.clue];
+  return isGroup(clue) && p.meaning ? GROUP_FEATURE[clue] : clue;
+}
+
 export function helpTargets(p: WhoPlay): number[] {
   if (p.mode === 'fit') return [p.round.gallery.indexOf(p.round.answer)];
-  const clue = p.round.clues[p.clue];
+  const clue = judged(p);
   return p.round.gallery.map((_, i) => i).filter((i) => !p.down.has(i) && !keeps(clue, p.round.gallery[i]));
 }
 
@@ -421,8 +539,19 @@ export type TapOutcome =
   | { kind: 'ignored' }
   /** A face-down friend: a free look. */
   | { kind: 'peek' }
-  /** The clue does not fit (level 1) or keeps this friend (levels 2–4). `helped` is true when this miss turned the help on. */
-  | { kind: 'miss'; reason: Reason | null; stays: { name: string; has: string } | null; helped: boolean }
+  /**
+   * The clue does not fit (level 1) or keeps this friend (levels 2–5). `helped` is true when this miss turned the help on
+   * (counted); `group` is the reason on a group clue not yet explained; `shimmer` is true when, after a group clue's
+   * meaning was shown, this miss made the ruled-out friends shimmer (not counted).
+   */
+  | {
+      kind: 'miss';
+      reason: Reason | null;
+      stays: { name: string; has: string } | null;
+      group: { name: string; has: string; group: string } | null;
+      helped: boolean;
+      shimmer: boolean;
+    }
   /**
    * A ruled-out friend turned over; `next` when that finished the clue and another arrives, `done` when one friend is left.
    * `surprise` names who the pet explains when the finished clue was a surprise step not yet explained (level 4); it counts nothing.
@@ -436,26 +565,36 @@ export function tap(p: WhoPlay, i: number): TapOutcome {
   if (p.done || i < 0 || i >= p.round.gallery.length) return { kind: 'ignored' };
   if (p.down.has(i)) return { kind: 'peek' };
   const friend = p.round.gallery[i];
-  const clue = p.round.clues[p.clue];
-  const miss = (r: Reason | null, stays: { name: string; has: string } | null): TapOutcome => {
+  const clue = judged(p);
+  const miss = (
+    r: Reason | null,
+    stays: { name: string; has: string } | null,
+    group: { name: string; has: string; group: string } | null = null,
+  ): TapOutcome => {
     p.misses++;
     p.wrongHere++;
-    let helped = false;
-    if (p.wrongHere >= 2 && !p.helped) {
-      p.helped = true;
-      p.hints++;
-      helped = true;
+    let helped = false,
+      shimmer = false;
+    if (p.wrongHere >= 2) {
+      if (!p.helped) {
+        helped = true;
+        countHelp(p);
+      } else if (p.meaning && !p.shimmer) {
+        p.shimmer = true;
+        shimmer = true;
+      }
     }
-    return { kind: 'miss', reason: r, stays, helped };
+    return { kind: 'miss', reason: r, stays, group, helped, shimmer };
   };
   if (p.mode === 'fit') {
     if (friend === p.round.answer) {
       p.done = true;
       return { kind: 'fit' };
     }
-    return miss(reason(friend, clue), null);
+    return miss(reason(friend, clue as Feature), null);
   }
-  if (keeps(clue, friend)) return miss(null, staysText(friend, clue));
+  if (keeps(clue, friend))
+    return isGroup(clue) ? miss(null, null, groupHas(friend)) : miss(null, staysText(friend, clue));
   p.down.add(i);
   if (helpTargets(p).length > 0) return { kind: 'flip', next: false, done: false, surprise: null };
   let surprise = surprises(p.round.gallery, p.round.clues)[p.clue];
@@ -468,14 +607,25 @@ export function tap(p: WhoPlay, i: number): TapOutcome {
   p.clue++;
   p.wrongHere = 0;
   p.helped = false;
+  p.meaning = false;
+  p.shimmer = false;
   return { kind: 'flip', next: true, done: false, surprise };
 }
 
-/** The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–4); true when this request counted. */
-export function requestHelp(p: WhoPlay): boolean {
-  if (p.done || p.helped) return false;
+/** Counts the help for this clue. On a group clue it shows what the group means and the misses toward a shimmer start over. */
+function countHelp(p: WhoPlay) {
   p.helped = true;
   p.hints++;
+  if (isGroup(p.round.clues[p.clue])) {
+    p.meaning = true;
+    p.wrongHere = 0;
+  }
+}
+
+/** The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–5); true when this request counted. */
+export function requestHelp(p: WhoPlay): boolean {
+  if (p.done || p.helped) return false;
+  countHelp(p);
   return true;
 }
 

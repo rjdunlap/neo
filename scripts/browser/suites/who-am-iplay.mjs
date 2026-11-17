@@ -108,6 +108,73 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       await page.evaluate(() => [...neo.scene.game.play.explained].sort()),
       [...new Set(l4.expected)].sort(),
     );
+    // Level 5, Which group?: the first clue is the answer's group. One tap on a kept friend (the group reason, a miss), the
+    // pause sheet's hint shows what the group means (one hint, the same friends still ruled out), then every clue's flips.
+    await launch('who-am-i', 5, 'Mia', 'school');
+    await settle();
+    const l5 = await page.evaluate(async () => {
+      const L = await import('/src/games/who-am-i/logic.ts');
+      const g = neo.scene.game;
+      return {
+        gallery: g.round.gallery,
+        clues: g.round.clues,
+        group: L.FRIENDS[g.round.answer].group,
+        expected: L.surprises(g.round.gallery, g.round.clues).filter(Boolean),
+        targets: L.helpTargets(g.play),
+      };
+    });
+    assert.ok(
+      l5.gallery.includes('penguin') && l5.gallery.includes('bat'),
+      'level 5 has the penguin and the bat',
+    );
+    assert.equal(l5.clues[0], l5.group, "level 5's first clue is the answer's group");
+    assert.ok(
+      ['bird', 'mammal'].includes(l5.clues[0]) && l5.clues.length <= 2,
+      'a bird or a mammal, at most two clues',
+    );
+    await tapCard(await answerAt());
+    await settle();
+    assert.deepEqual(
+      await page.evaluate(() => [
+        neo.scene.game.play.misses,
+        neo.scene.game.play.hints,
+        neo.scene.game.play.down.size,
+      ]),
+      [1, 0, 0],
+    );
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(600);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.play.hints, neo.scene.game.play.meaning]), [
+      1,
+      true,
+    ]);
+    assert.deepEqual(await targets(), l5.targets, 'the group hint rules out the same friends');
+    // Asked again it only repeats the meaning: no second count.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(200);
+    assert.equal(await page.evaluate(() => neo.scene.game.play.hints), 1);
+    await screenshot('who-am-i-5-group-hint');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(1300);
+    await screenshot('who-am-i-5-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    for (let clue = 0; clue < l5.clues.length; clue++) {
+      await settle();
+      for (const i of await targets()) {
+        await tapCard(i);
+        await page.waitForTimeout(450);
+      }
+    }
+    await finished('who-am-i');
+    assert.deepEqual(await score(), [1, 1]);
+    assert.deepEqual(
+      await page.evaluate(() => [...neo.scene.game.play.explained].sort()),
+      [...new Set(l5.expected)].sort(),
+    );
+    log(
+      'Who Am I? 5: the group clue first, a kept-friend tap with the group reason, the pause-sheet hint showing what the group means (one hint, asked twice), flips to the answer, each surprise explained once, saved score passed',
+    );
     log(
       'Who Am I? 1, 3 and 4: wrong friend reason then fit, keeps-tap miss, requested shimmer hint, flips through three clues, a free peek, portrait, saved score; level 4 with the penguin and the bat, a keeps-tap miss, each surprise explained once and uncounted passed',
     );

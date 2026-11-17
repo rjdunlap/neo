@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 2–4 |
+| school | 2–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,6 +17,7 @@
 | 2 | Turn them over: 2 clues, 4 friends |
 | 3 | Groups by features: 3 clues, 6 friends |
 | 4 | Surprises: the penguin and the bat, 3 clues, 6 friends |
+| 5 | Which group? The clue is a bird or a mammal, 6 friends |
 
 <!-- end generated -->
 
