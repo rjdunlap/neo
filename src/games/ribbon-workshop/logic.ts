@@ -280,7 +280,10 @@ export const ROW_TICKS = 4;
  * Where each tray card sits: rows filled first-fit (a card goes in the first row with room), so halves and quarters
  * worth eight ticks or fewer always take two rows. `x` is the card's centre; row 0 is the bottom row.
  */
-export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x: number }[] {
+export function trayLayout(
+  tray: readonly Piece[],
+  left = TRAY_LEFT,
+): { id: number; row: number; x: number }[] {
   const used: number[] = [],
     ends: number[] = [];
   return tray.map((p) => {
@@ -288,7 +291,7 @@ export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x
     if (row < 0) {
       row = used.length;
       used.push(0);
-      ends.push(TRAY_LEFT);
+      ends.push(left);
     }
     const x = ends[row] + (p.size * UNIT) / 2;
     used[row] += p.size;

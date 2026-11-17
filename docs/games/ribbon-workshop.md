@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/ribbon-workshop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school–grown-up · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school–grown-up · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** fractions, equivalent-fractions, measurement
 

@@ -7,6 +7,7 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
+import { frameFor, toReal, type Frame } from './frame';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { bowIcon, dashed, giftBox, ribbon, scissorsIcon, spoolBar } from './art';
 import {
@@ -24,8 +25,6 @@ import {
   type Rail,
 } from './logic';
 
-/** The spool and both benches start here, as at levels 1–3, so a whole on one is a whole on the others. */
-const X0 = 110;
 const TAG_Y = 82;
 /** The spool sits between the top controls and the benches, drawn thinner than at levels 1–3. */
 const SPOOL_Y = 180;
@@ -34,10 +33,10 @@ const RAIL_Y = [286, 422] as const;
 const ROW_TALL = 120;
 const WHOLE = RAIL_CAPACITY * UNIT;
 /**
- * Each gift stands just past a whole's end (x = 670–790) whatever its tag asks, so a ribbon that runs past its request
- * is never under the gift and its last piece can always be tapped back.
+ * Each gift stands this far past a whole's end (x = 670–790 sideways) whatever its tag asks, so a ribbon that runs past
+ * its request is never under the gift and its last piece can always be tapped back.
  */
-const GIFT_X = X0 + WHOLE + 60;
+const GIFT_PAST = 60;
 const RAILS: readonly Rail[] = [0, 1];
 const RAIL_LINE = ['ribbon.cases.rail.top', 'ribbon.cases.rail.bottom'] as const;
 
@@ -46,7 +45,18 @@ const RAIL_LINE = ['ribbon.cases.rail.top', 'ribbon.cases.rail.bottom'] as const
  * order card changes them to a whole and a half and she moves a quarter across. See docs/definitions/ribbon-cases.md.
  */
 export class RibbonCases implements Game {
+  /** The real view, and the frame the scene lays out in: the same view sideways, a scaled world upright. */
+  private real: View;
+  private frame: Frame;
   private view: View;
+  private readonly world = new Container();
+  private get giftX() {
+    return this.x0 + WHOLE + GIFT_PAST;
+  }
+  /** Where the spool and the benches start, so a whole on one is a whole on the others. */
+  private get x0() {
+    return this.frame.x0;
+  }
   readonly bench: CasesBench;
   /** A right check is being shown; touches wait. */
   busy = false;
@@ -82,7 +92,9 @@ export class RibbonCases implements Game {
   private readonly cancel = () => this.snipOff();
 
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
+    this.real = ctx.view;
+    this.frame = frameFor(ctx.view);
+    this.view = this.frame.view;
     this.bench = new CasesBench(casesRound(ctx.rng));
     const paint = new Rng(this.bench.round.paint);
     const pick = () => RAINBOW[paint.int(0, RAINBOW.length - 1)];
@@ -119,8 +131,8 @@ export class RibbonCases implements Game {
         this.draw();
       }
     });
-    ctx.stage.addChild(
-      this.catcher,
+    ctx.stage.addChild(this.catcher, this.world);
+    this.world.addChild(
       this.decor,
       ...this.rows,
       this.outline,
@@ -310,7 +322,8 @@ export class RibbonCases implements Game {
   }
 
   private sparkle(r: Rail) {
-    this.ctx.particles.burst(GIFT_X, RAIL_Y[r] - 30, {
+    const at = toReal(this.frame, this.giftX, RAIL_Y[r] - 30);
+    this.ctx.particles.burst(at.x, at.y, {
       colors: [swatch[this.giftColors[r]].fill, swatch.yellow.fill],
       count: 12,
     });
@@ -352,8 +365,8 @@ export class RibbonCases implements Game {
     this.flash.clear();
     for (const r of RAILS) {
       if (rails[r] === 'right') continue;
-      const end = X0 + total(this.state.rails[r]) * UNIT,
-        goal = X0 + this.bench.requests[r] * UNIT;
+      const end = this.x0 + total(this.state.rails[r]) * UNIT,
+        goal = this.x0 + this.bench.requests[r] * UNIT;
       const [a, b] = rails[r] === 'short' ? [end, goal] : [goal, end];
       this.flash
         .roundRect(a, RAIL_Y[r] - 46, b - a, 92, 12)
@@ -451,7 +464,7 @@ export class RibbonCases implements Game {
     tagC.position.set(24, -32);
     tagC.rotation = 0.06;
     c.addChild(box, tagC);
-    c.position.set(GIFT_X, RAIL_Y[r]);
+    c.position.set(this.giftX, RAIL_Y[r]);
     c.alpha = lit ? 1 : 0.7;
     c.hitArea = new Rectangle(-60, -60, 120, 120);
   }
@@ -467,7 +480,7 @@ export class RibbonCases implements Game {
     }
     this.trayCards.clear();
     this.railPieces.clear();
-    for (const spot of trayLayout(s.tray)) {
+    for (const spot of trayLayout(s.tray, this.frame.trayLeft)) {
       const p = s.tray.find((q) => q.id === spot.id)!,
         len = p.size * UNIT,
         card = new Container();
@@ -499,26 +512,26 @@ export class RibbonCases implements Game {
     for (const r of RAILS) {
       const y = RAIL_Y[r],
         lit = s.active === r && !this.finale,
-        end = X0 + this.requests[r] * UNIT;
+        end = this.x0 + this.requests[r] * UNIT;
       // The lit bench has a soft light under it; the other is dimmed a little, never hidden.
       if (lit)
-        o.roundRect(X0 - 24, y - ROW_TALL / 2, WHOLE + 150, ROW_TALL, 22).fill({
+        o.roundRect(this.x0 - 24, y - ROW_TALL / 2, WHOLE + 150, ROW_TALL, 22).fill({
           color: swatch.yellow.light,
           alpha: 0.75,
         });
-      o.roundRect(X0 - 14, y + 42, WHOLE + 28, 14, 6)
+      o.roundRect(this.x0 - 14, y + 42, WHOLE + 28, 14, 6)
         .fill(wood.fill)
         .stroke({ width: 3, color: wood.line });
-      dashed(o, X0, y - 36, end, y - 36, swatch.brown.line);
-      dashed(o, X0, y + 36, end, y + 36, swatch.brown.line);
-      dashed(o, X0, y - 36, X0, y + 36, swatch.brown.line);
+      dashed(o, this.x0, y - 36, end, y - 36, swatch.brown.line);
+      dashed(o, this.x0, y + 36, end, y + 36, swatch.brown.line);
+      dashed(o, this.x0, y - 36, this.x0, y + 36, swatch.brown.line);
       o.moveTo(end, y - 46)
         .lineTo(end, y + 46)
         .stroke({ width: 6, color: swatch.brown.line });
       if (this.finale) {
         const len = total(s.rails[r]) * UNIT,
           fused = ribbon(len, this.giftColors[r]);
-        fused.position.set(X0 + len / 2, y);
+        fused.position.set(this.x0 + len / 2, y);
         this.railLayer.addChild(fused);
       } else {
         let at = 0;
@@ -534,7 +547,7 @@ export class RibbonCases implements Game {
                 .lineTo(-len / 2, 26)
                 .stroke({ width: 4, color: swatch.brown.line, alpha: 0.6 }),
             );
-          piece.position.set(X0 + (at + p.size / 2) * UNIT, y);
+          piece.position.set(this.x0 + (at + p.size / 2) * UNIT, y);
           piece.alpha = lit ? 1 : 0.85;
           at += p.size;
           onTap(piece, () => this.tapRail(p), { cooldown: 250 });
@@ -547,7 +560,7 @@ export class RibbonCases implements Game {
           }
         });
       }
-      this.rows[r].hitArea = new Rectangle(X0 - 24, y - ROW_TALL / 2, WHOLE + 24, ROW_TALL);
+      this.rows[r].hitArea = new Rectangle(this.x0 - 24, y - ROW_TALL / 2, WHOLE + 24, ROW_TALL);
       this.drawGift(r);
     }
     this.scissors.alpha = this.snipping ? 1 : 0.92;
@@ -557,9 +570,11 @@ export class RibbonCases implements Game {
 
   private layout() {
     const v = this.view;
-    this.catcher.clear().rect(0, 0, v.w, v.h).fill(swatch.pink.light);
+    this.world.scale.set(this.frame.s);
+    this.world.position.set(0, this.frame.y);
+    this.catcher.clear().rect(0, 0, this.real.w, this.real.h).fill(swatch.pink.light);
     // The spool: one whole, the same length as a whole on either bench.
-    spoolBar(this.decor.clear(), X0, SPOOL_Y, WHOLE, 34);
+    spoolBar(this.decor.clear(), this.x0, SPOOL_Y, WHOLE, 34);
     this.tag.position.set(Math.max(300, v.w / 2 - 120), TAG_Y);
     this.orderCard.position.set(this.tag.x + 150 + 20 + 90, TAG_Y);
     this.undo.position.set(v.w - 80, 82);
@@ -574,7 +589,9 @@ export class RibbonCases implements Game {
   }
 
   resize(v: View) {
-    this.view = v;
+    this.real = v;
+    this.frame = frameFor(v);
+    this.view = this.frame.view;
     this.layout();
   }
 

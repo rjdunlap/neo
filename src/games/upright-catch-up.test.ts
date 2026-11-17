@@ -14,6 +14,8 @@ import {
   THING_SIZE,
   type Rect,
 } from './puddle-lens/logic';
+import { frameFor, UPRIGHT_DESIGN } from './ribbon-workshop/frame';
+import { CAPACITY, ROW_TICKS, trayLayout, UNIT, type Piece } from './ribbon-workshop/logic';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
 /**
@@ -72,5 +74,69 @@ describe.each(Object.entries(views))('Grown-up upright catch-up on %s', (_, v) =
     // A thumb on a 390-wide phone: the smallest button is at least 44 px.
     if (v === UPRIGHT_VIEWS.phone && targets.length)
       expect(Math.min(...targets.map((t) => Math.min(t.w, t.h))) * v.scale).toBeGreaterThanOrEqual(44);
+  });
+});
+
+/**
+ * Ribbon Workshop's three scenes (the bench, Whole Switch and Ribbon Cases) draw sideways layouts into a scaled world
+ * upright (ribbon-workshop/frame.ts): the targets below are the ones every scene has, in the scene's units, mapped onto
+ * the real view.
+ */
+describe.each(Object.entries(views))('Ribbon Workshop upright on %s', (name, v) => {
+  const f = frameFor(v);
+  const real = (what: string, x: number, y: number, w: number, h: number): Target => ({
+    what,
+    x: x * f.s,
+    y: y * f.s + f.y,
+    w: w * f.s,
+    h: h * f.s,
+  });
+  // Level 1's largest tray: two halves and four quarters, eight ticks in two rows.
+  const stock: Piece[] = ([2, 2, 1, 1, 1, 1] as const).map((size, id) => ({ id, size }));
+  const all = () => {
+    const out: Target[] = [];
+    const tray = stock;
+    for (const spot of trayLayout(tray, f.trayLeft)) {
+      const p = tray.find((q) => q.id === spot.id)!;
+      out.push(real(`tray card ${p.id}`, spot.x, f.view.h - 90 - spot.row * 125, p.size * UNIT, 110));
+    }
+    for (let i = 0; i < CAPACITY; i++)
+      out.push(real(`bench tick ${i}`, f.x0 + (i + 0.5) * UNIT, 370, UNIT, 120));
+    for (const [what, x, y] of [
+      ['bow', f.view.w - 80, f.view.h - 90],
+      ['scissors', f.view.w - 80, f.view.h - 215],
+      ['undo', f.view.w - 80, 82],
+    ] as const)
+      out.push(real(what, x, y, 120, 120));
+    return out;
+  };
+
+  it('scales the sideways world to the view and keeps it on the view', () => {
+    expect(f.view.w).toBeGreaterThanOrEqual(UPRIGHT_DESIGN.w - 1e-6);
+    expect(f.s).toBeLessThanOrEqual(1);
+    expect(f.s * UPRIGHT_DESIGN.w).toBeLessThanOrEqual(v.w + 1e-6);
+    expect(f.y).toBeGreaterThanOrEqual(0);
+    expect(f.y + f.view.h * f.s).toBeLessThanOrEqual(v.h + 1e-6);
+    expect(f.trayLeft * f.s).toBeGreaterThanOrEqual(150);
+  });
+
+  it('keeps the tray, the bench ticks and the buttons whole, apart and off the corners', () => {
+    // The largest tray any level starts with and a bench of six ticks.
+    expect(uprightProblems(v, all(), 64)).toEqual([]);
+    // The second row of the tray stays below the bench's plank.
+    const rows = trayLayout(stock, f.trayLeft);
+    expect(Math.max(...rows.map((r) => r.row))).toBe(1);
+    expect(f.trayLeft + ROW_TICKS * UNIT + 3 * 12).toBeLessThanOrEqual(f.view.w);
+  });
+
+  it('keeps every target a thumb wide on a 390-wide phone', () => {
+    if (v !== UPRIGHT_VIEWS.phone) return;
+    expect(name).toBe('phone');
+    expect(Math.min(...all().map((t) => Math.min(t.w, t.h))) * v.scale).toBeGreaterThanOrEqual(44);
+  });
+
+  it('leaves a sideways view as it was', () => {
+    const side = computeView(1024, 768, NO_INSETS);
+    expect(frameFor(side)).toEqual({ s: 1, y: 0, view: side, x0: 110, trayLeft: 170 });
   });
 });
