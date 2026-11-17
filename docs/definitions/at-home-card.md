@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With all 40 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batches 4 and 5 left every starter unchanged. The rule tests pin the starters.
+With all 48 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batches 4 to 6 left every starter unchanged. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -222,6 +222,33 @@ Eight more games in bands already served, so the table holds 40. Wording is copi
 Lands: Counting Cove (Pile Match), Barnyard (Bolt Boards, Ready for Adventure), Tinker Lab (Robot Path, Sense Detective) and Puzzle Peaks (Secret Code, Garden Rows, Penguin Slide). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited. The batch 4 exclusions still hold.
 
 Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Thought Bubbles, Logic Grid, Ramp Race, Inchworm, Chain Reaction, Not Always, Critter Crossing, Memory Desk, Sorting Machine, Orchard Rows, Welcome Ways, Shape Buddies, Playdate Workshop, Read-Do and Ferry Jam.
+
+## Batch 6 (built 2026-11-17, PR #1760)
+
+Eight more games in bands already served, so the table holds 48. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged.
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Thought Bubbles (pre-K, school) | `all` | Hide a toy while teddy is "asleep", then ask: where will teddy look for it? How do you know? | Does {name} point to where teddy last saw the toy, or to where the toy is now? | Teddy was asleep. Where will teddy look first? |
+| | `school` | (the same) | Does {name} explain what teddy saw and what teddy missed? | What does teddy think? What would change teddy's mind? |
+| Logic Grid (preschool–school; grownup shows no notes) | `all` | Hide a toy and give one clue at a time until someone finds it. | Does {name} go and look after each clue, or wait for one more? | It is somewhere low. It is near something soft. Found it! |
+| | `school` | (the same) | Does {name} rule places out aloud as the clues add up? | Which places did that clue rule out? What would you ask next? |
+| Ramp Race (pre-K, school) | `all` | Roll a toy car down a book propped up at different heights. Does a carpet or the kitchen floor let it roll farther? | Does {name} lift the book higher, try the other floor or chase the car? | Down it rolls! That one went far. Now a higher ramp. |
+| | `school` | (the same) | Does {name} change one thing at a time, the height or the floor? | Which will roll farther? How would we make it a fair test? |
+| Inchworm (pre-K, school) | `all` | Measure toys with LEGO bricks or spoons laid end to end. Which toy is longest? | Does {name} lay the spoons end to end, leave gaps or hold two toys side by side? | One spoon, two spoons, three. The bear is three spoons long! |
+| | `school` | (the same) | Does {name} guess a length first, or measure and then compare? | How many spoons long will it be? Would bricks give the same number? |
+| Chain Reaction (pre-K, school) | `all` | Prop up a book as a ramp for a toy ball. Change one part of the setup, predict where the ball will go, then try it. | Does {name} move the book, move the ball or point to where the ball will go? | Where will it go this time? Let it roll and see. |
+| | `school` | (the same) | Does {name} change one part at a time, or several at once? | What did you change? What did that do to where the ball went? |
+| Not Always (pre-K, school) | `all` | Line up some toys and say something about all of them, like 'all of these are soft'. Can she find one that isn't? | Does {name} check each toy in turn, or go straight to the one that does not fit? | All of these are soft. Is that true for every one? |
+| | `school` | (the same) | Does {name} make up a new "all of these" for you to test? | Is it always true? What one toy would show that it is not? |
+| Critter Crossing (pre-K, school) | `all` | Make up a secret rule ("only toys with wheels") and let her try toys at a "bridge"; say yes or no, then let her guess. | Does {name} try lots of toys, try one kind again or guess the rule straight away? | Yes, that one crosses. No, not that one. What is my rule? |
+| | `school` | (the same) | Does {name} pick a toy that would test the guess before saying it? | Which toy would test your idea? Now you make up a rule for me. |
+| Ferry Jam (pre-K, school) | `all` | Slide small boxes or toy cars on a tray with a few gaps so one of them can slide out of a notch in the edge. | Does {name} slide one car at a time, push a whole row or lift a car off the tray? | Slide this one over. Now there is a gap. Out it comes! |
+| | `school` | (the same) | Does {name} look for what is in the way before sliding anything? | Which one is blocking the way? What has to move first? |
+
+Lands: Puzzle Peaks (Logic Grid, Ferry Jam, Critter Crossing), Story Grove (Not Always, Thought Bubbles) and Tinker Lab (Ramp Race, Inchworm, Chain Reaction). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited. The batch 4 exclusions still hold.
+
+Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Memory Desk, Sorting Machine, Orchard Rows, Welcome Ways, Shape Buddies, Playdate Workshop and Read-Do.
 
 ## Open decisions
 
