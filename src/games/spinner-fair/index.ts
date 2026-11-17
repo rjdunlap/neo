@@ -34,6 +34,7 @@ import {
   type SetSpec,
 } from './logic';
 import { RaceGame } from './race';
+import { SettleGame } from './settle';
 import { SureGame } from './sure';
 
 type Phase = 'spin' | 'ask' | 'pick';
@@ -626,6 +627,7 @@ export const spinnerFair: GameModule = {
   sticker,
   create: (ctx) => {
     const ask = planFor(ctx.level).ask;
+    if (ask === 'settle') return new SettleGame(ctx);
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,

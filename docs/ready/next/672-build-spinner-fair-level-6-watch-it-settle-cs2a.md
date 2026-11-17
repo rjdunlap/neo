@@ -1,1 +1,0 @@
-**Build Spinner Fair level 6, Watch it settle (CS2a)** (new-levels tier: typecheck, rule tests, one browser play at level 6 with one wrong card, `fingerdemo` at 6, `npm run build`): the repeated-spin display and its cards; CS2b (level 7, two dice) and CS2c (level 8, the typical spin) follow in order. [Definition](../../definitions/spinner-fair-6-8.md#build-slices-and-check-tiers)

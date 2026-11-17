@@ -3669,3 +3669,7 @@ Branch `claude/animal-snack-menu-board-b`, [dive slice 8](../deep-dives/animal-s
 ## Photo Safari levels 14–15 Mystery friend and Best question (SL5, 2026-11-16)
 
 Branch `claude/photo-safari-mystery-friend-sl5`, PR #1715, slice SL5 of the [speaking-and-listening study](../deep-dives/subjects/speaking-listening.md#build-slices-in-order), [definition](../definitions/mystery-friend.md). School only, order `[4..11, 14, 15]`. Decisions taken from the definition's defaults: hosted in Photo Safari, no pre-K opening of level 14, the level-15 "better question" note on. See the [verification entry](../verification/2026-11-16-photo-safari-levels-14-15-mystery-friend-and-best-question.md).
+
+## Spinner Fair level 6 Watch it settle (CS2a, 2026-11-16)
+
+Branch `claude/spinner-fair-watch-it-settle`, PR #1720, slice CS2a of the [chance and statistics study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), [definition](../definitions/spinner-fair-6-8.md). School only, school is now 3–6. Departures from the definition (a 340 spinner, one reused strip for the check run, lines that never hold input, reduced-motion stepping) are in the [game page](../games/spinner-fair.md). See the [verification entry](../verification/2026-11-16-spinner-fair-level-6-watch-it-settle.md).

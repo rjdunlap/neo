@@ -771,6 +771,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### spinner-fair 3: Watch it settle (CS2a)
 
+**Status: built 2026-11-16, PR #1720.**
+
 - **`spinner-fair`, level 6 (chance-statistics study slice CS2)** (defined 2026-11-16, [definition](definitions/spinner-fair-6-8.md#build-slices-and-check-tiers)): repeated spins settle toward the shares. Proof: new-levels tier (typecheck, rule tests, one browser play at 6 with one wrong card, `fingerdemo`, build).
 
 ### spinner-fair 4: Two dice (CS2b)
