@@ -92,7 +92,7 @@ Each is one level, one session, in order:
 
 1. **T4a, level 5 Still here** (**built 2026-11-16**, [PR #1721](https://github.com/rjdunlap/neo/pull/1721); see [As built](#as-built-t4a)) (a new interaction, the ribbon: new-interaction tier): typecheck, rule tests, one filtered scripted play at level 5 (one wrong gap, one wrong chip, a hint), one portrait screenshot with the ribbon and chips, `fingerdemo` at 5, `npm run build` (voice and how-to change).
 2. **T4b, level 6 We can't tell** (**built 2026-11-16**, [PR #1725](https://github.com/rjdunlap/neo/pull/1725); see [As built (T4b)](#as-built-t4b)), after T4a (the same drag; new-levels tier, but `place()` changes for every level): typecheck, all the game's rule tests, one browser play at level 6 hanging the misty card in its later gap and one wrong gap, a regression play at level 4, `fingerdemo` at 6, `npm run build`.
-3. **T5, level 7 Show me why**, after T4b (tapping a spot: new-interaction tier): typecheck, rule tests, one scripted play at 7 (one wrong spot, one off-spot tap, the hint), one portrait screenshot of the frame and its spots, `fingerdemo` at 7, `npm run build`.
+3. **T5, level 7 Show me why** (**built 2026-11-16**, [PR #1728](https://github.com/rjdunlap/neo/pull/1728); see [As built (T5)](#as-built-t5)), after T4b (tapping a spot: new-interaction tier): typecheck, rule tests, one scripted play at 7 (one wrong spot, one off-spot tap, the hint), one portrait screenshot of the frame and its spots, `fingerdemo` at 7, `npm run build`.
 
 Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Not established: whether a school-age player reads mist as "can't tell" rather than "broken picture"; whether the merry-go-round makes her doubt "newer is fancier"; whether the proof spots read on a phone.
 
@@ -117,9 +117,23 @@ Level 6 landed with these deliberate differences from the text above (the defini
 5. `place()` puts a card in at the chosen gap at every level instead of sorting, so the line is the cards in the order she hung them; identical to stage order at levels 1–5.
 6. `LEVELS.school` is 2–6 until T5 adds level 7.
 
+## As built (T5)
+
+Level 7 landed with these deliberate differences from the text above (the definition is not rewritten):
+
+1. The nest's last picture (the pet at the treehouse door) is never asked: the pet stands in front of the door and there is no room for a second 100-unit spot, so the nest asks stages 1–2.
+2. The big picture is drawn without the card's white rim, so a spot of 30 hundredths is 100 units in the 360 frame; spot edges snap to whole units.
+3. One element may have two spot rectangles (grass either side of the tree, the nest's two ends, the green's tree crown and trunk), and the green's last picture has four spots, so pictures have three or four spots, not two or three. Misses are counted per element.
+4. The tree's `shows` gained `grass` (its honest still-here distractor), so `stillHere('tree')` is `['grass']`.
+5. The flower bed in the green's last picture moved to the tree's foot, clear of the bench (also visible on level 5's card).
+6. The oven's stall (awning, sign, bunting) is one spot.
+7. `trail.proof-yes` takes `{reason}` (what has grown). Two voice lines beyond the list: `trail.proof-glow` and `trail.proof-help`.
+8. The line stays visible but dimmed under the frame; a view too small for the frame and the card before skips the question and goes to the flipbook.
+9. `LEVELS.school` is 2–7.
+
 ## Open decisions
 
-Each has a default the builds use; none blocked T4a or T4b.
+Each has a default the builds use; none blocked T4a, T4b or T5.
 
 1. **Level 5's ribbon action.** Default: tap or drag a chip, with a wrong chip a miss. Alternative: all three chips free to try, as exploration, if play shows the question reads as a guess.
 2. **Level 6's two gaps.** Default: both accepted, neither a miss, and the flipbook plays her order. Alternative: the pet asks her afterwards "could it go anywhere else?" and she taps the other gap (free).
