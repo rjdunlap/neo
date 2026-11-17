@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/memory-match; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `memory-match` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `memory-match` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** memory, matching, number-sense, letters, telling-time
 

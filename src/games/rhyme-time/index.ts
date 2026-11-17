@@ -8,13 +8,15 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  rhymeLayout,
+  type RhymeLayout,
   andList,
   basketFor,
   chipsFor,
@@ -202,21 +204,18 @@ class RhymeTime implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const xs = spread(this.cards.length, 180, v.w - 60, 200);
-    const make = this.plan.mode === 'make';
-    if (this.trays) this.layoutBaskets(v);
-    else this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (make ? 0.42 : 0.64)));
     // Level 7: the sound pair, the meaning pair, then the pet's mouth, in one row under the shelf.
     const row = [...this.chips.map((c) => c.node), ...(this.guessButton ? [this.guessButton] : [])];
-    // Starts right of the corner pet, which the bottom row would otherwise reach.
-    const cx = spread(row.length, 240, v.w - 50, 165);
-    row.forEach((n, i) => n.position.set(cx[i], Math.min(v.h - 90, v.h * 0.42 + 250)));
-    // Level 8's place stands just above the riders, its top clear of the corner buttons.
-    this.prompt.position.set(
-      v.w / 2,
-      this.plan.mode === 'scene' ? Math.max(250, v.h * 0.64 - 230) : Math.max(170, v.h * 0.27),
-    );
-    this.replay.position.set(v.w - 80, 90);
+    const L = this.layout(row.length);
+    if (this.trays) this.layoutBaskets(L);
+    else this.cards.forEach((c, i) => c.node.position.copyFrom(L.cards[i]));
+    row.forEach((n, i) => n.position.copyFrom(L.row[i]));
+    this.prompt.position.copyFrom(L.prompt);
+    this.replay.position.copyFrom(L.replay);
+  }
+
+  private layout(row = 0) {
+    return rhymeLayout(this.view, this.plan.mode, this.cards.length, row, this.baskets.length);
   }
 
   update(dt: number) {
@@ -573,8 +572,7 @@ class RhymeTime implements Game {
     const scene = sceneFor(place);
     await this.wrong('rhyme.sceneNo', { word: c.word, prep: scene.prep, place }, async () => {
       const { tw } = this.ctx;
-      const xs = spread(this.cards.length, 180, this.view.w - 60, 200);
-      const home = { x: xs[this.cards.indexOf(c)], y: this.view.h * 0.64 };
+      const home = this.layout().cards[this.cards.indexOf(c)];
       void tw.to(c.bg, { alpha: 1 }, { duration: 0.3 });
       void tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.4 });
       await tw.to(
@@ -645,17 +643,12 @@ class RhymeTime implements Game {
   }
 
   /** Baskets in a row along the top; the six pictures in two rows of three below, clear of the corner pet. */
-  private layoutBaskets(v: View) {
-    const bx = spread(this.baskets.length, 200, v.w - 60, 290);
-    const by = Math.max(230, v.h * 0.3);
-    this.baskets.forEach((b, i) => b.node.position.set(bx[i], by));
-    const tx = spread(3, 180, v.w - 60, 200);
-    const row1 = Math.max(by + 250, v.h * 0.6);
-    const row2 = Math.min(v.h - 90, row1 + 185);
+  private layoutBaskets(L: RhymeLayout) {
+    this.baskets.forEach((b, i) => b.node.position.copyFrom(L.baskets[i]));
     this.cards.forEach((c, i) => {
       if (c.placed !== undefined)
         return void c.node.position.copyFrom(this.slotPoint(this.baskets[c.placed], c.slot!));
-      const home = { x: tx[i % 3], y: i < 3 ? row1 : row2 };
+      const home = { ...L.cards[i] };
       if (c.drag) c.drag.home = home;
       if (!c.drag?.dragging) c.node.position.set(home.x, home.y);
     });
@@ -971,6 +964,7 @@ export const rhymeTime: GameModule = {
   challenge: 'words',
   skills: ['rhyming', 'listening', 'phonological-awareness', 'words'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,

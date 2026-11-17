@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/who-am-i; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `who-am-i` · **Land:** Barnyard · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `who-am-i` · **Land:** Barnyard · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** animals, attributes, classification, logic
 

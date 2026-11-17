@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/rhyme-time; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `rhyme-time` · **Land:** Story Grove · **Ages:** preschool–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `rhyme-time` · **Land:** Story Grove · **Ages:** preschool–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** rhyming, listening, phonological-awareness, words
 

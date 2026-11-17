@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/maker-lane; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `maker-lane` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `maker-lane` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** where things come from, how things are made, plant or animal, cause and effect
 

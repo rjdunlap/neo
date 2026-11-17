@@ -25,6 +25,7 @@ import {
   hintPartner,
   knownMismatch,
   LEVELS,
+  boardLayout,
   makeDeck,
   nextCard,
   numberWord,
@@ -241,20 +242,15 @@ class MemoryMatch implements Game {
 
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    const cols = (this.cols = this.cards.length <= 6 ? this.plan.pairs : 4);
-    const rows = Math.ceil(this.cards.length / cols);
-    this.cardSize = Math.min(150, (v.h - 170) / rows - 16, (v.w - 240) / cols - 16);
-    const step = this.cardSize + 16;
-    const cx = v.w / 2 + 40;
+    const L = boardLayout(v, this.cards.length, this.plan.pairs);
+    this.cols = L.cols;
+    this.cardSize = L.size;
     this.views.forEach(({ node }, i) => {
       node.scale.set(this.cardSize / 140);
-      node.position.set(
-        cx + ((i % cols) - (cols - 1) / 2) * step,
-        115 + this.cardSize / 2 + Math.floor(i / cols) * step,
-      );
+      node.position.copyFrom(L.cards[i]);
     });
     this.drawHint();
-    this.board.position.set(cx, 84);
+    this.board.position.copyFrom(L.board);
     this.drawBoard();
   }
 
@@ -371,6 +367,7 @@ export const memoryMatch: GameModule = {
   challenge: 'noticing',
   skills: ['memory', 'matching', 'number-sense', 'letters', 'telling-time'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/puzzle-pals; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `puzzle-pals` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `puzzle-pals` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, part-whole, fine-motor
 

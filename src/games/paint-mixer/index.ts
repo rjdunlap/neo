@@ -651,6 +651,7 @@ export const paintMixer: GameModule = {
   challenge: 'numbers',
   skills: ['counting', 'comparing', 'number-sense', 'operations'],
   bands: ['school'],
+  upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
