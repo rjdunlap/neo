@@ -496,6 +496,10 @@ class AdventureWalk implements Game {
     this.picnic = null;
     this.friend = null;
     if (this.map) {
+      for (const n of this.tileNodes) {
+        this.ctx.tw.kill(n);
+        this.ctx.tw.kill(n.scale);
+      }
       this.map.removeChild(this.mapPath, this.door, this.tileGlow);
       this.map.destroy({ children: true });
     }
@@ -537,6 +541,7 @@ class AdventureWalk implements Game {
     await this.ctx.tw.to(this.walker, { x: feet.x, y: feet.y }, { duration: 0.35, ease: ease.outQuad });
     if (this.gone) return;
     this.busy = false;
+    this.layoutMap();
     if (glow)
       void this.ctx.say('walk.first', { place: LANDMARK_NAMES[this.state.route.stops[next].landmark] });
     else void this.ctx.say('walk.not-yet');
@@ -569,11 +574,13 @@ class AdventureWalk implements Game {
     await said;
     if (this.gone) return;
     this.at = -1;
-    const door = mapSpot(l, -1);
-    await tw.to(this.walker, { x: door.x, y: door.y }, { duration: 0.8, ease: ease.inOutSine });
+    await tw.to(this.walker, mapSpot(this.mapLay!, -1), { duration: 0.8, ease: ease.inOutSine });
     if (this.gone) return;
     this.finished = true;
     this.busy = false;
+    // A turn of the screen mid-walk: stand at this view's door.
+    this.layoutMap();
+    const door = mapSpot(this.mapLay!, -1);
     [4, 5, 6, 8, 9].forEach((s, i) => void tw.wait(i * 0.12).then(() => !this.gone && sfx.pluck(s, 0.25)));
     this.ctx.particles.burst(door.x, door.y - 40, {
       kind: 'dot',
