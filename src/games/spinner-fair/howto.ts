@@ -30,7 +30,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 8,
       to: 8,
-      text: 'Tap the spinner six times; each spin stands as a tower. Tap how far apart the tallest and shortest are, drag blocks from tall towers onto short ones until they are as level as they can be, then tap the height the level towers show.',
+      text: 'Tap the spinner six times; each spin stands as a tower. Tap how far apart the tallest and shortest are, drag blocks from tall towers onto short ones until the towers are as even as they can be, then tap the height they show.',
     },
   ],
   finish: [
@@ -78,7 +78,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 8,
       to: 8,
-      text: 'A spin is never a mistake and neither is any block she moves, whichever way it goes. Only a wrong card is a miss: the range is the outline blocks between the tallest and shortest towers, and the typical spin is the height the level towers show (when the blocks do not share out exactly, either of the two heights is right: it is about that many). After two wrong cards on a question, or a second block moved onto a taller tower, the answer or the next move glows, which counts as one hint for that wheel. Nothing in the game is won, bet or unlocked by a spin.',
+      text: 'No spin or block move is ever a mistake; only a wrong card is a miss. The range is the outline blocks between the tallest and shortest towers; the typical spin is the height the evened towers show (if they show two, either is right). After two wrong cards on a question, or a second block moved onto a taller tower, the answer or next move glows: one hint for that wheel.',
     },
   ],
 };

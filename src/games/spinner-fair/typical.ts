@@ -85,6 +85,8 @@ export class TypicalGame implements Game {
   private dead = false;
   private clock = 0;
   private talk = 0;
+  /** When the cards in play appeared, on the game's clock. */
+  private cardsAt = 0;
   private lastWedge = -1;
   /** The phase whose ask the pet last gave; a tap on the guide gives the waiting one. */
   private asked: Phase | null = null;
@@ -207,7 +209,8 @@ export class TypicalGame implements Game {
     if (this.busy || this.spinning) return;
     if (this.phase !== 'spin') {
       sfx.pop(2);
-      void this.say('sf.no-more-spins');
+      // Said without stopping the pet's lines in progress, so the next ask still follows them.
+      void this.ctx.say('sf.no-more-spins');
       return;
     }
     void this.doSpin();
@@ -311,7 +314,6 @@ export class TypicalGame implements Game {
           onPick: () => sfx.pop(4 + Math.min(6, t)),
           onDrop: (x) => this.dropBlock(t, x),
         });
-        drag.enabled = this.phase === 'level';
         this.tops[t] = { node: grip, drag };
       });
       if (!stack.length) this.tops[t] = null;
@@ -324,7 +326,11 @@ export class TypicalGame implements Game {
 
   /** A block let go over another tower joins it. Over its own tower, a full one or no tower it floats home. No move is a miss. */
   private dropBlock(from: number, x: number): boolean {
-    if (this.phase !== 'level' || this.busy || this.finished) return false;
+    // Outside levelling a block still lifts on a touch (the towers are what she is reading) and floats home.
+    if (this.phase !== 'level' || this.busy || this.finished) {
+      sfx.pop(2);
+      return false;
+    }
     const cols = this.L.towers;
     const pitch = cols[1].x - cols[0].x;
     const to = cols.findIndex((c) => Math.abs(x - c.x) <= pitch / 2);
@@ -334,7 +340,11 @@ export class TypicalGame implements Game {
 
   private move(from: number, to: number): boolean {
     const next = moveBlock(this.towers, from, to);
-    if (!next) return false;
+    if (!next) {
+      // Its own tower or a full column: a soft pop, and the block floats home.
+      sfx.pop(2);
+      return false;
+    }
     const taller = tallerMove(this.towers, from, to);
     this.towers = next;
     this.stacks[to].push(this.stacks[from].pop()!);
@@ -364,7 +374,6 @@ export class TypicalGame implements Game {
     this.phase = 'typical';
     this.glowing = false;
     this.askMisses = 0;
-    for (const t of this.tops) if (t) t.drag.enabled = false;
     this.cardNums = typicalCards(this.ctx.rng, this.towers);
     this.showCards();
     this.drawMarks();
@@ -411,6 +420,7 @@ export class TypicalGame implements Game {
 
   private showCards() {
     this.killCards();
+    this.cardsAt = this.clock;
     const kind = this.phase === 'range' ? 'gap' : 'die';
     this.cards = this.cardNums.map((n, i) => {
       const c = numCard(n, NUM_CARD, kind);
@@ -449,7 +459,8 @@ export class TypicalGame implements Game {
     card.scale.set(1.08);
     void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
     const right = this.rightCards;
-    if (this.busy || !right.length) return;
+    // Fresh cards take no answer for half a second, so a second tap meant for the last question is never a miss.
+    if (this.busy || !right.length || this.clock - this.cardsAt < 0.5) return;
     if (right.includes(this.cardNums[i])) {
       if (this.phase === 'range') this.rightRange(i);
       else void this.rightTypical(i);

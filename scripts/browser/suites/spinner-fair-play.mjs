@@ -552,6 +552,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await open(['spin'], set);
       await spinSix();
       await open(['range'], set);
+      await page.waitForTimeout(600);
       s = await state();
       const spins = s.spins;
       const range = Math.max(...spins) - Math.min(...spins);
@@ -593,6 +594,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       s = await state();
       assert.ok(Math.max(...s.towers) - Math.min(...s.towers) <= 1, 'the towers are nearly level');
       assert.equal(sum(s.towers), sum(spins), 'levelling keeps every block');
+      // Fresh cards take no answer for half a second.
+      await page.waitForTimeout(600);
       const mean = sum(spins) / 6;
       const want = Number.isInteger(mean) ? [mean] : [Math.floor(mean), Math.ceil(mean)];
       assert.deepEqual(s.right, want, 'the right cards are the heights the level towers show');

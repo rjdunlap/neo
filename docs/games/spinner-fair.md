@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–7 |
+| school | 3–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 5 | Fair or unfair? |
 | 6 | Watch it settle |
 | 7 | Two dice |
+| 8 | The typical spin |
 
 <!-- end generated -->
 
