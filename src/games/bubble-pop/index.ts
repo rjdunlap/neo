@@ -20,7 +20,11 @@ import {
   bubbleToPop,
   choosePalette,
   countRun,
+  dotAsks,
   modeCardFor,
+  pictureLine,
+  riderFor,
+  spawnSize,
   signFor,
   FRIEND_SOUND,
   FRIENDS,
@@ -37,7 +41,9 @@ import {
   staysPut,
   TAP_REACH,
   type BubblePlan,
+  type BubbleSize,
   type Friend,
+  type PictureName,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -62,11 +68,13 @@ class BubblePop implements Game {
   private lastNag = -10;
   private idle = 0;
   /** Friends already named aloud this round: the first of each says who it is, the rest only make their sound. */
-  private readonly named = new Set<Friend>();
+  private readonly named = new Set<Friend | PictureName>();
+  /** Size mode: the size to pop this round. */
+  private readonly wantSize: BubbleSize | null = null;
   /** Color mode: the color to pop, and the colors in play (target first). */
   private target: ColorName | null = null;
   private palette: ColorName[] = [];
-  /** Count mode: the numbers in the order they are popped (1, 2, 3 … unless the level starts elsewhere, counts back or skips). */
+  /** Count mode: the numbers in the order they are popped (1, 2, 3 … unless the level starts elsewhere, counts back or skips). Dots mode: the dot counts asked for, in order. */
   private readonly run: number[] = [];
   /** How many right pops finish the round. */
   private readonly goal: number;
@@ -78,7 +86,9 @@ class BubblePop implements Game {
     this.plan = planFor(ctx.level);
     this.view = ctx.view;
     if (this.plan.mode === 'count') this.run = countRun(this.plan, ctx.rng);
-    this.goal = this.plan.mode === 'count' ? this.run.length : this.plan.goal;
+    if (this.plan.mode === 'dots') this.run = dotAsks(this.plan, ctx.rng);
+    if (this.plan.mode === 'size') this.wantSize = ctx.rng.pick(['big', 'little'] as const);
+    this.goal = this.run.length || this.plan.goal;
     this.backdrop = ctx.track(new BubbleBackdrop(sceneFor(ctx.rng), ctx.view));
     const sign = signFor(this.plan, ctx.level, this.run);
     if (sign) {
@@ -114,6 +124,14 @@ class BubblePop implements Game {
       else void this.ctx.instruct('bubble.count');
       this.run.forEach((n, i) => this.spawn(n, i));
     }
+    if (p.mode === 'size') void this.ctx.instruct('bubble.size', { size: this.wantSize! });
+    if (p.mode === 'dots') {
+      void this.ctx.instruct('bubble.dots', { n: this.nextNumber });
+      // One bubble of each count, so the count asked for is always showing and no two look alike.
+      this.ctx.rng
+        .shuffle(Array.from({ length: p.dotsTo! }, (_, i) => i + 1))
+        .forEach((n, i) => this.spawn(n, i));
+    }
     if (p.mode === 'bonds') {
       void this.ctx.instruct('bubble.bonds', { n: p.sum! });
       for (const n of bondNumbers(p.sum!, p.goal, this.ctx.rng)) this.spawn(n);
@@ -131,7 +149,7 @@ class BubblePop implements Game {
     }
   }
 
-  /** Count mode: the number to find next. */
+  /** Count mode: the number to find next. Dots mode: the dot count asked for. */
   get nextNumber(): number {
     return this.run[Math.min(this.scored, this.run.length - 1)];
   }
@@ -151,7 +169,7 @@ class BubblePop implements Game {
         this.spawnIn = this.ctx.rng.range(0.35, 0.9);
       }
     }
-    if (this.phase === 'play' && p.mode === 'count') {
+    if (this.phase === 'play' && (p.mode === 'count' || p.mode === 'dots')) {
       // Stuck for a while? Gently point at the next number (not counted as a hint).
       this.idle += dt;
       if (this.idle > 6) {
@@ -185,7 +203,15 @@ class BubblePop implements Game {
       const rainbow = shown.find((b) => b.rainbow);
       return rainbow ? { tap: { on: rainbow }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
     }
-    const pick = bubbleToPop(this.plan.mode, shown, this.target, this.nextNumber, this.plan.sum, this.held);
+    const pick = bubbleToPop(
+      this.plan.mode,
+      shown,
+      this.target,
+      this.nextNumber,
+      this.plan.sum,
+      this.held,
+      this.wantSize,
+    );
     return pick ? { tap: { on: pick }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
   }
 
@@ -199,20 +225,29 @@ class BubblePop implements Game {
     const { rng } = this.ctx;
     const p = this.plan;
     const v = this.view;
-    const r = standing?.r ?? rng.range(p.radius[0], p.radius[1]);
+    let size: BubbleSize | undefined;
+    if (p.mode === 'size') {
+      const showing = this.bubbles.some((b) => !b.popped && b.size === this.wantSize);
+      size = spawnSize(this.spawned, showing, this.wantSize!, rng);
+    }
+    const [r0, r1] = size ? p.sizes![size] : p.radius;
+    const r = standing?.r ?? rng.range(r0, r1);
     let color: ColorName | null = null;
     if (p.mode === 'color') {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
       color = spawnTarget(this.spawned, targetShowing, rng) ? this.target : rng.pick(this.palette.slice(1));
     }
     if (staysPut(p.mode)) color = RAINBOW[index % RAINBOW.length];
-    const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
+    const rider = p.mode === 'free' ? riderFor(rng, this.backdrop.scene) : {};
 
     const b = new Bubble({
       r,
       color,
       number,
-      critter,
+      critter: rider.friend,
+      picture: rider.picture,
+      size,
+      pips: p.mode === 'dots',
       dots: showsDots(this.ctx.level),
       rim: LOOKS[this.backdrop.scene].rim,
     });
@@ -254,7 +289,7 @@ class BubblePop implements Game {
   }
 
   private right(b: Bubble) {
-    return isRight(this.plan.mode, b, this.target, this.nextNumber);
+    return isRight(this.plan.mode, b, this.target, this.nextNumber, this.wantSize);
   }
 
   /** Pop anywhere: any touch pops the bubble nearest it among those on the screen, the rainbow bubble last; with none showing it does nothing. */
@@ -306,6 +341,16 @@ class BubblePop implements Game {
     if (p.mode === 'color' && this.scored % 3 === 1) void this.ctx.say(`color.${this.target!}`);
     if (p.mode === 'count') {
       void this.ctx.say('count', { n: b.number! });
+    }
+    if (p.mode === 'dots') {
+      if (this.scored >= this.goal) void this.ctx.say('count', { n: b.number! });
+      else {
+        // Another bubble with as many dots takes its place, so every count is still showing, and the next one is asked for.
+        const again = this.spawn(b.number, this.spawned);
+        again.scale.set(0.3);
+        void this.ctx.tw.to(again.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+        void this.ctx.instruct('bubble.dots', { n: this.nextNumber });
+      }
     }
     if (this.scored % 5 === 0) this.ctx.pet.cheer();
     if (this.phase === 'play' && this.scored >= this.goal) void this.finale();
@@ -368,6 +413,10 @@ class BubblePop implements Game {
       this.lastNag = this.clock;
       if (this.plan.mode === 'color')
         void this.ctx.say('bubble.wrong', { wrong: b.color!, color: this.target! });
+      else if (this.plan.mode === 'size')
+        void this.ctx.say('bubble.size.wrong', { wrong: b.size!, size: this.wantSize! });
+      else if (this.plan.mode === 'dots')
+        void this.ctx.say('bubble.dots.wrong', { wrong: b.number!, n: this.nextNumber });
       else void this.ctx.say('bubble.find', { n: this.nextNumber });
     }
     if (this.missStreak >= 2) {
@@ -380,7 +429,7 @@ class BubblePop implements Game {
 
   private pop(b: Bubble) {
     b.popped = true;
-    this.ctx.tw.kill(b.scale); // a pop-anywhere bubble may still be swelling in
+    this.ctx.tw.kill(b.scale); // a pop-anywhere or dots bubble may still be swelling in
     const tint = b.color ? swatch[b.color].fill : 0x9fd8ff;
     this.ctx.particles.burst(b.x, b.y, {
       colors: [tint, 0xffffff],
@@ -390,8 +439,10 @@ class BubblePop implements Game {
       size: [0.25, 0.55],
       life: [0.4, 0.8],
     });
-    sfx.pop(stepFromUnit(b.x / this.view.w, 5, 8));
+    // Size is heard as well as seen: a big bubble pops low and a little one high.
+    sfx.pop(b.size ? (b.size === 'big' ? 2 : 10) : stepFromUnit(b.x / this.view.w, 5, 8));
     if (b.critter) this.release(b, b.friend!);
+    if (b.picture) this.releasePicture(b, b.pictureName!);
     void this.ctx.tw.to(b, { alpha: 0 }, { duration: 0.12 });
     void this.ctx.tw.to(b.scale, { x: 1.3, y: 1.3 }, { duration: 0.12 }).then(() => this.remove(b));
   }
@@ -416,6 +467,27 @@ class BubblePop implements Game {
       await this.ctx.tw.wait(1.4);
       await this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.4 });
       this.ctx.untrack(c);
+      c.destroy({ children: true });
+    });
+  }
+
+  /** A picture was inside: it drops to the ground, bounces once and is named the first time, as a friend is. */
+  private releasePicture(b: Bubble, name: PictureName) {
+    const c = b.picture!;
+    b.picture = null;
+    c.position.set(b.x, b.y);
+    this.layer.addChild(c);
+    const floor = this.view.h - 24 - 50 * c.scale.y;
+    const fall = Math.max(0.25, Math.sqrt(Math.max(0, floor - c.y) / 900));
+    void this.ctx.tw.to(c, { y: floor }, { duration: fall, ease: ease.inQuad }).then(async () => {
+      if (!this.named.has(name)) {
+        this.named.add(name);
+        void this.ctx.say(pictureLine(name));
+      }
+      await this.ctx.tw.to(c, { y: floor - 46 }, { duration: 0.18, ease: ease.outQuad });
+      await this.ctx.tw.to(c, { y: floor }, { duration: 0.18, ease: ease.inQuad });
+      await this.ctx.tw.wait(1.1);
+      await this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.4 });
       c.destroy({ children: true });
     });
   }
@@ -604,6 +676,10 @@ export const bubblePop: GameModule = {
     if (p.anywhere)
       return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
+    if (p.mode === 'size')
+      return `Pop one size, big or little, as asked (${p.goal} pops; toddler plays it between levels 3 and 4)`;
+    if (p.mode === 'dots')
+      return `Pop the bubble with the number of dots asked for, 1 to ${p.dotsTo}, no numerals (${p.goal} asks; preschool plays it between levels 6 and 7)`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;
     return countLevel(level);

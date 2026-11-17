@@ -2,7 +2,17 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { label } from '../../ui/text';
-import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, type Friend } from './logic';
+import {
+  DOT_NUMERAL_Y,
+  DOT_RADIUS,
+  PIP_RADIUS,
+  dicePips,
+  numberDots,
+  type BubbleSize,
+  type Friend,
+  type PictureName,
+} from './logic';
+import { drawPicture } from './pictures';
 
 const PLAIN_RIM = 0x8fd0ff;
 
@@ -55,6 +65,12 @@ export interface BubbleOptions {
   /** The rim of a plain bubble, so it shows against the scene it floats in. */
   rim?: number;
   critter?: Friend;
+  /** A scene picture riding inside instead of a friend. */
+  picture?: PictureName;
+  /** Size mode: which of the two sizes this bubble is. */
+  size?: BubbleSize;
+  /** Dots mode: `number` is drawn as dice pips with no numeral. */
+  pips?: boolean;
   rainbow?: boolean;
 }
 
@@ -67,6 +83,9 @@ export class Bubble extends Container {
   /** Which friend rides inside, kept after the critter itself is let out. */
   readonly friend?: Friend;
   critter: Critter | null = null;
+  readonly size?: BubbleSize;
+  readonly pictureName?: PictureName;
+  picture: Container | null = null;
   vx = 0;
   vy = 0;
   popped = false;
@@ -88,6 +107,13 @@ export class Bubble extends Container {
     this.swayAmp = 14 + Math.random() * 16;
     this.addChild(this.ring, this.shell);
 
+    this.size = o.size;
+    this.pictureName = o.picture;
+    if (o.picture) {
+      this.picture = drawPicture(o.picture);
+      this.picture.scale.set(o.r * 0.011);
+      this.shell.addChild(this.picture);
+    }
     this.friend = o.critter;
     if (o.critter) {
       this.critter = new Critter(CRITTERS[o.critter]);
@@ -97,9 +123,14 @@ export class Bubble extends Container {
     }
     const g = new Graphics();
     if (o.rainbow) drawRainbowBubble(g, o.r);
-    else drawBubble(g, o.r, o.color, undefined, !o.dots, o.rim);
+    else drawBubble(g, o.r, o.color, undefined, !o.dots && !o.pips, o.rim);
     this.shell.addChild(g);
-    if (o.number !== undefined) {
+    if (o.pips && o.number !== undefined) {
+      const pips = new Graphics();
+      pips.eventMode = 'none';
+      for (const pip of dicePips(o.number)) pips.circle(pip.x * o.r, pip.y * o.r, PIP_RADIUS * o.r).fill(ink);
+      this.shell.addChild(pips);
+    } else if (o.number !== undefined) {
       const t = label(String(o.number), o.r * 1.05, ink);
       t.y = o.r * (o.dots ? DOT_NUMERAL_Y : 0.04);
       if (o.dots) {

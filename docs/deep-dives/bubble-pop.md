@@ -1,6 +1,6 @@
 # Bubble Pop deep dive
 
-*ID `bubble-pop` · bands lap, toddler, preschool, pre-K, school · levels 1–14 on 2026-10-12 (1–11 when written on 2026-10-10) · session `claude/adoring-albattani-euqsnp` ([PR 93](https://github.com/rjdunlap/neo/pull/93))*
+*ID `bubble-pop` · bands lap, toddler, preschool, pre-K, school · levels 1–14 on 2026-10-12 (15–17 built later, below) (1–11 when written on 2026-10-10) · session `claude/adoring-albattani-euqsnp` ([PR 93](https://github.com/rjdunlap/neo/pull/93))*
 
 ## The game today
 
@@ -20,7 +20,7 @@ She taps bubbles that drift on a sunny shore. Each pop bursts into colored spark
 | 10 | bonds, sum 5 | 4 pairs, 28, 8, 58–68 | pre-K, school | which two bubbles make 5 |
 | 11 | bonds, sum 10 | 5 pairs, 32, 10, 54–62 | school | which two bubbles make 10 |
 
-The ranges are lap 1–3, toddler 1–6, preschool 4–9, pre-K 6–10 and school 10–11 (`LEVELS` in `src/games/bubble-pop/index.ts`).
+The table lists levels 1–11 as first written; levels 12–17 and the later windows are in the sections below and on the game page. Levels 15 (pop anywhere), 16 (big and little) and 17 (which one has the dots) are placed by each band's `order` (`LEVELS` in `src/games/bubble-pop/index.ts`).
 
 **What a round draws from.** Free and color bubbles are spawned one at a time below the screen and float up (`vy` about −44 to −94 px/s), swaying; they are removed when they pass the top. Color mode draws `choosePalette(rng, colors)` from the six `RAINBOW` colors; the first color is the target, and the first two bubbles are always the target so the start is errorless. Count and bonds mode place every bubble at once inside the screen and let them bounce about (`drift`), numbers 1..goal or `bondNumbers(sum, pairs, rng)`. A free-mode bubble holds a friend with 30% chance, picked from `FRIENDS` (duck, pig, cat, bunny, cow, bear, dog). There is one background (`Backdrop`, seed 3: sky, hills, clouds, sun).
 
@@ -122,6 +122,8 @@ Sketches, not levels yet: **15, Evens and odds** (pop the numbers that pair up: 
 
 > **Pop anywhere built 2026-10-13** ([PR #236](https://github.com/rjdunlap/neo/pull/236)) as level 15, the first use of a band's `order` (lap `[15, 1, 2, 3]`): plan `anywhere` (big bubbles of radius 96–118, four at a time, speed 42, eight pops), a whole-screen layer last in the stage that pops `nearestShown` and takes the rainbow bubble too, a voice line, a scoped how-to step, and the ghost finger sending its touch to that layer (`receiver`). `store.levelFor` now starts a never-finished game at the first level of the band's order, since level 1 produces no struggling rounds that would step her down to an entry placed before it. Big and little, which one has the dots and blow-then-pop are still to build.
 >
+> **Big and little, which one has the dots built 2026-11-17** ([PR #1768](https://github.com/rjdunlap/neo/pull/1768)): level 16 (toddler, `order` `[1, 2, 3, 16, 4, 5, 6]`, mode `size`) with little radius 50–54 and big 92–104 rather than the 42–48 and 84–96 above, because every bubble must draw at least 100 units across (`upright-batch-5.test.ts`); a big bubble pops low and a little one high. Level 17 (preschool, `order` `[4, 5, 6, 17, 7, 8, 9]`, mode `dots`): four drifting bubbles with pips 1–4, six asks, a popped bubble replaced by one of the same count, a wrong bubble's dots said aloud. **Still unbuilt:** blow-then-pop and the mixed numeral-and-dots round popped as a pair.
+>
 > **Opening bubble built 2026-11-12** ([PR #1564](https://github.com/rjdunlap/neo/pull/1564)): one large still bubble (`openingBubble`, 1.3 times the level's largest) stands in reach at Play, rising bubbles are gated by `roomFor` (1 + pops, up to four) and start in reach, so the first touch anywhere pops something and nothing rises into an empty screen. Plans, voice, card and bot unchanged.
 
 These are placed by [`order`, which may skip IDs](../DESIGN.md) (built): each is easier than a level that already exists, so appending it makes "step up" run backwards unless levels get an explicit order apart from their IDs. IDs are assigned when built.
@@ -149,7 +151,7 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built): each is
 3. **"Count back": here or in Bumper Garden 6?** Both are proposals. Lean: here, because count mode already has everything it needs; Bumper Garden could then take a different level 6.
 4. **Which backgrounds and what happens to the sticker.** Lean: shore, bath, night and sea in that order of cost, with the sticker and map icon staying on the shore and the friend inside, as before.
 5. **Dots on the numeral bubbles at levels 7, 8 and 10.** Lean: yes, then check the bubble is not too busy at level 9's 10 bubbles; no dots on 9 and 11 so the support fades.
-6. **The below-level-1 and between-level entries** wait on the two level-order decisions already on the roadmap; "blow, then pop" additionally needs the person check above.
+6. **The below-level-1 and between-level entries**: superseded by the *Decided 2026-10-23* note below (placed by `order`; built 2026-11-17 except "blow, then pop", which still needs the person check above).
 7. **Skip-counting words** (tens and fives) are unverified on a device, the same open question as Opposites' un- words.
 
 The level-order decisions already have a row in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); the others are added there as one row.
@@ -167,10 +169,10 @@ Each is sized for one session. Slices that add a level are built in level order 
 1. **Guards and friends who say who they are** (ready; no decision). Bound the how-to's last step (`to: 11`) and correct its goal; pin `sticker(seed)`'s list with a test; extract the "this mode drifts in place" rule into `logic.ts` and assert that every mode that needs a particular bubble uses it; give a released friend its name and sound. Tier: typecheck, the game's rule tests and the how-to test, then one filtered browser play of level 1 (`ORIGINALS_ONLY=bubbles`) since release changed. Update the GAMES.md entry and the README row.
 2. **Dots on the number bubbles** — built 2026-10-11 ([PR 159](https://github.com/rjdunlap/neo/pull/159)): levels 7, 8 and 10 show radius-relative dice dots through six, then five and some more; 9 and 11 fade the support. The numeral stays the same size, moved above the dots, and the lower decorative glint is omitted so it cannot be counted. [Build note](../archive/COMPLETED-2026-10-09.md#bubble-pop-countable-dots-2026-10-11).
 3. **Backgrounds: bath and night, then sea** — built 2026-10-12 (PR #206) as one slice: the scene is drawn by the seeded RNG, `colorGap` (CIE ΔE) tests that every colored bubble differs from everything it floats over, and plain bubbles take a scene-specific rim; the shore keeps its look and the sticker stays on it. Tier: rule tests, one screenshot of each scene (plain and colored bubbles on each).
-4. **Pictures in bubbles beyond friends** (ready after 3 for the scene-linked pool).
+4. **Pictures in bubbles beyond friends** — built 2026-11-17 ([PR #1768](https://github.com/rjdunlap/neo/pull/1768)): eight code-drawn pictures, two per scene (shore flower and shell, bath duck and boat, night star and moon, sea fish and starfish), about one bubble in seven in free play (levels 1–3 and 15), released and named like a friend; `FRIENDS` and the sticker are unchanged.
 5. **Level 12, Start at a number** — built 2026-10-12 (PR #203; decisions 1–2 taken as leaned). Tier: new level on an existing interaction: rule tests, one browser play of level 12 and `fingerdemo` at it.
 6. **Level 13, Count back** and **level 14, Count by tens and fives** — built 2026-10-12 (PR #203); the word check is still a person check.
-7. **Below level 1 and between levels: pop anywhere, big and little, which one has the dots** (wait on the level-order decisions); **blow, then pop** after a person check.
+7. **Below level 1 and between levels: pop anywhere** (built, level 15), **big and little** (level 16) and **which one has the dots** (level 17) — built 2026-11-17 (PR #1768, `order` placement as decided 2026-10-23). **Not built:** **blow, then pop** (after a person check) and the later mixed numeral-and-dots pair round of *Which one has the dots?* (queued in READY).
 8. **Sketches:** evens and odds, make 20, a journal row per picture.
 
 ## What was built in this session

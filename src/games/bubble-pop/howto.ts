@@ -10,6 +10,16 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'Tap or pat anywhere on the screen. The bubble nearest the touch pops, so there is nothing to aim at.',
     },
+    {
+      from: 16,
+      to: 16,
+      text: 'Listen for the size, big or little, then tap only the bubbles of that size.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'Listen for the number, then tap the bubble with that many dots. There are no numerals: the dots are the number.',
+    },
     { from: 4, to: 6, text: 'Listen for the color, then tap only the bubbles of that color.' },
     { from: 7, to: 9, text: 'Tap the numbered bubbles in order, starting at 1.' },
     {
@@ -45,11 +55,23 @@ export const HOW_TO: GameHowTo = {
     { to: 14, text: 'The round ends when the last bubble that was asked for is popped.' },
     {
       from: 15,
+      to: 15,
       text: 'After a few pops a rainbow bubble floats up; a touch anywhere pops it and the round ends.',
     },
+    { from: 16, text: 'The round ends when the last bubble that was asked for is popped.' },
   ],
   note: [
     { to: 14, text: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.' },
-    { from: 15, text: 'No touch is wrong: a touch with no bubble on the screen does nothing.' },
+    { from: 15, to: 15, text: 'No touch is wrong: a touch with no bubble on the screen does nothing.' },
+    {
+      from: 16,
+      to: 16,
+      text: 'A bubble of the other size only wobbles and is named ("That one\'s little"); after two in a row the right size glows.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'A wrong bubble only wobbles and its dots are counted aloud; after two in a row the right one glows.',
+    },
   ],
 };
