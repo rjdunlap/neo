@@ -234,8 +234,61 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     );
     await finished('timeline-trail');
     assert.deepEqual(await score(), [2, 1], 'level 5 saved 2 misses, 1 hint');
+
+    // Level 6: two cards hang and one waits; the misty card stays out of the tray until that one is hung; a tap on it
+    // says what the mist hides (free); a gap neither reading fits is a miss; its later gap is accepted, counts nothing,
+    // and the line (and the flipbook) keep the side she chose.
+    await launch('timeline-trail', 6);
+    await ready();
+    s = await state();
+    const round6 = await page.evaluate(() => {
+      const r = neo.scene.game.round;
+      return { place: r.place, k: r.misty.k, shown: neo.scene.game.cards.map((c) => c.stage) };
+    });
+    assert.ok(['shore', 'tree'].includes(round6.place), 'level 6 shows the shore or the tree');
+    assert.equal(s.line.length, 2, 'level 6 opens with two cards hung');
+    assert.deepEqual(s.loose.length, 2, 'one ordinary card and the misty card wait');
+    assert.equal(s.loose[1], 4, 'the misty card is last');
+    assert.deepEqual(round6.shown, [s.loose[0]], 'only the ordinary card is in the tray');
+    await dragTo(s.loose[0], await validGap(s.loose[0]));
+    s = await state();
+    assert.deepEqual(s.loose, [4], 'the ordinary card hangs and the misty card comes out');
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.cards.map((c) => c.stage)),
+      [4],
+      'the misty card is now in the tray',
+    );
+    await page.evaluate(() => kit.tapOn(neo.scene.game.cards[0].node));
+    await page.waitForTimeout(500);
+    assert.deepEqual(await tally(), [0, 0], 'a tap on the misty card counts nothing');
+    const at6 = s.line.indexOf(round6.k + 1);
+    const wrong6 = [0, 1, 2, 3].find((g) => g !== at6 && g !== at6 + 1);
+    await dragTo(4, wrong6);
+    s = await state();
+    assert.deepEqual(s.loose, [4], 'a gap neither reading fits leaves it loose');
+    assert.deepEqual(await tally(), [1, 0], 'and counts one miss');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [1, 1], 'Show a hint counts one hint');
+    assert.equal((await state()).glowing, 4, 'and lights the misty card (both its gaps)');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('timeline-trail-6-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(600);
+    const before6 = s.line;
+    await dragTo(4, at6 + 1);
+    s = await state();
+    assert.deepEqual(
+      s.line,
+      [...before6.slice(0, at6 + 1), 4, ...before6.slice(at6 + 1)],
+      'the later gap is accepted and the line keeps the side she chose',
+    );
+    assert.deepEqual(await tally(), [1, 1], 'and counts nothing');
+    await finished('timeline-trail');
+    assert.deepEqual(await score(), [1, 1], 'level 6 saved 1 miss, 1 hint');
     log(
-      "Timeline Trail 2, 3, 4 and 5: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look; level 5 a wrong gap, a free chip drop, the grand chip twice (one miss), Show a hint, the still-here chip pinned, passed",
+      "Timeline Trail 2, 3, 4, 5 and 6: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look; level 5 a wrong gap, a free chip drop, the grand chip twice (one miss), Show a hint, the still-here chip pinned; level 6 the misty card held back, a free tap, a wrong gap (one miss), Show a hint, its later gap accepted with the line in her order, passed",
     );
   }
   return { timelineTrailPlay };

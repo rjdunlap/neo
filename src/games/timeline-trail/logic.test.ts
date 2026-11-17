@@ -17,6 +17,11 @@ import {
   stillHere,
   compareFaces,
   faceOf,
+  inTray,
+  mistHides,
+  MISTY,
+  MIST_PLACES,
+  MIST_STAGES,
   fittingGaps,
   GAP_H,
   GAP_W,
@@ -169,7 +174,8 @@ describe('rounds', () => {
 
   it('clamps levels to the plans', () => {
     expect(planFor(0).level).toBe(1);
-    expect(planFor(9).level).toBe(5);
+    expect(planFor(9).level).toBe(6);
+    expect(planFor(6).name).toBe('We can’t tell');
     expect(planFor(5).name).toBe('Still here');
     expect(planFor(4).name).toBe('A clue inside');
     expect(planFor(2).name).toBe('Hang it between');
@@ -370,7 +376,7 @@ describe('level 4, a clue inside', () => {
 
 describe('level 5, still here', () => {
   it('takes the green and the oven in turn, the first stage hung and three loose, and is school only', () => {
-    expect(LEVELS.school).toEqual({ min: 2, max: 5 });
+    expect(LEVELS.school).toEqual({ min: 2, max: 6 });
     expect(LEVELS.prek).toEqual({ min: 1, max: 4 });
     const places = Array.from({ length: 8 }, (_, i) => roundFor(5, new Rng(i)).place);
     for (let i = 0; i < 8; i += 2) expect(new Set(places.slice(i, i + 2))).toEqual(new Set(LATER_PLACES));
@@ -480,6 +486,143 @@ describe('level 5, still here', () => {
   });
 });
 
+describe('level 6, we can’t tell', () => {
+  /** The round with its ordinary loose card hung: the line the misty card meets. */
+  const before = (r: Round) => {
+    const [first] = r.loose;
+    const res = place(r, r.hung, first, validGaps(r, r.hung, first)[0]);
+    if (!res.ok) throw new Error('the ordinary card has a gap');
+    return res.line;
+  };
+
+  it('takes the shore or the tree, hangs two of the three stages the mist leaves, and keeps the misty card for last', () => {
+    const places = Array.from({ length: 8 }, (_, i) => roundFor(6, new Rng(i)).place);
+    for (let i = 0; i < 8; i += 2) expect(new Set(places.slice(i, i + 2))).toEqual(new Set(MIST_PLACES));
+    const ks = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(6, new Rng(seed));
+      expect(MIST_PLACES).toContain(r.place);
+      const k = r.misty!.k;
+      ks.add(`${r.place}-${k}`);
+      expect(MIST_STAGES[r.place as 'shore' | 'tree']).toContain(k);
+      const others = [0, 1, 2, 3].filter((i) => i !== k);
+      expect(r.cards).toEqual([...others, MISTY]);
+      expect(r.hung.length).toBe(2);
+      expect(r.loose.length).toBe(2);
+      expect(r.loose[1]).toBe(MISTY);
+      expect([...r.hung, r.loose[0]].sort()).toEqual(others);
+      // The misty card waits out of the tray until the other is hung, and the ghost finger takes it last.
+      expect(inTray(r, r.loose)).toEqual([r.loose[0]]);
+      expect(inTray(r, [MISTY])).toEqual([MISTY]);
+      expect(nextCard(r, r.loose)).toBe(r.loose[0]);
+      expect(faceOf(r, MISTY)).toEqual({ place: r.place, stage: k, could: [k, k + 1] });
+    }
+    // Every misted stage turns up: three on the shore, the swing on the tree.
+    expect([...ks].sort()).toEqual(['shore-0', 'shore-1', 'shore-2', 'tree-2']);
+    expect(roundFor(6, new Rng(3), 'tree').place).toBe('tree');
+    expect(MIST_PLACES).toContain(roundFor(6, new Rng(3), 'nest').place);
+  });
+
+  it('gives the misty card exactly two gaps, either side of the card it might be, and every other card exactly one', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(6, new Rng(seed));
+      const k = r.misty!.k;
+      expect(validGaps(r, r.hung, r.loose[0]).length).toBe(1);
+      const line = before(r);
+      expect(line).toEqual([0, 1, 2, 3].filter((i) => i !== k));
+      const at = line.indexOf(k + 1);
+      expect(validGaps(r, line, MISTY)).toEqual([at, at + 1]);
+      // With the mist lifted and nothing under it, the same picture is plainly stage k and fits one gap only.
+      const clear: Round = { ...r, misty: undefined, cards: [0, 1, 2, 3], loose: [k] };
+      expect(validGaps(clear, line, k)).toEqual([at]);
+    }
+  });
+
+  it('accepts either gap, counts nothing and keeps the side she chose', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(6, new Rng(seed));
+      const line = before(r);
+      const at = line.indexOf(r.misty!.k + 1);
+      const early = place(r, line, MISTY, at);
+      const late = place(r, line, MISTY, at + 1);
+      expect(early.ok && late.ok).toBe(true);
+      if (!early.ok || !late.ok) continue;
+      expect(early.line).toEqual([...line.slice(0, at), MISTY, ...line.slice(at)]);
+      expect(late.line).toEqual([...line.slice(0, at + 1), MISTY, ...line.slice(at + 1)]);
+      expect(early.line).not.toEqual(late.line);
+      for (const full of [early.line, late.line]) {
+        expect([...full].sort()).toEqual(r.cards);
+        expect(lineLayout(r, full, 0, VIEWS.landscape)).not.toBeNull();
+      }
+    }
+  });
+
+  it('answers a third gap with a true reason from the nearest fitting gap, about what the misty picture does show', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(6, new Rng(seed));
+      const k = r.misty!.k;
+      const stages = PLACES[r.place].stages;
+      const line = before(r);
+      const valid = validGaps(r, line, MISTY);
+      for (let gap = 0; gap <= line.length; gap++) {
+        if (valid.includes(gap)) continue;
+        const res = place(r, line, MISTY, gap);
+        expect(res.ok).toBe(false);
+        if (res.ok) continue;
+        expect(res.line).toEqual(line);
+        if (gap < valid[0]) {
+          // Too early: what shows through (stage k's own thing) is already past the card after the gap.
+          expect(line[gap]).toBeLessThan(k);
+          expect(res.reason).toContain(`already has the ${stages[k].changes}`);
+          expect(res.reason).toContain(`after the ${bare(stages[line[gap]].caption)}`);
+        } else {
+          // Too late: the card before the gap shows something beyond even the later reading.
+          expect(line[gap - 1]).toBeGreaterThan(k + 1);
+          expect(res.reason).toContain(`has no ${stages[line[gap - 1]].changes} yet`);
+        }
+        // Never a claim about the hidden thing.
+        expect(res.reason).not.toContain(`already has the ${stages[k + 1].changes}`);
+        expect(res.reason).not.toContain(`has no ${stages[k + 1].changes} yet`);
+      }
+    }
+  });
+
+  it('counts two different wrong gaps as two misses and one hint, the same again nothing, and lights both gaps', () => {
+    // The shore with the dock misted has two wrong gaps past its fitting pair.
+    let r = roundFor(6, new Rng(0), 'shore');
+    for (let seed = 1; r.misty!.k !== 0; seed++) r = roundFor(6, new Rng(seed), 'shore');
+    const line = before(r);
+    expect(validGaps(r, line, MISTY)).toEqual([0, 1]);
+    const t = new Tally();
+    expect(place(r, line, MISTY, 2).ok).toBe(false);
+    expect(t.missed(MISTY, 2)).toEqual({ counted: true, lit: false });
+    expect(t.missed(MISTY, 2)).toEqual({ counted: false, lit: false });
+    expect(t.missed(MISTY, 3)).toEqual({ counted: true, lit: true });
+    expect(t.help(MISTY)).toBe(false);
+    expect([t.misses, t.hints]).toEqual([2, 1]);
+    expect(t.glowing).toBe(MISTY);
+    // The glow follows the card's fitting gaps: both of them.
+    expect(validGaps(r, line, t.glowing!)).toEqual([0, 1]);
+    t.hung(MISTY);
+    expect(t.glowing).toBeNull();
+  });
+
+  it('says what hides the telling spot, and has its lines and how-to step', () => {
+    expect(mistHides('shore', 0)).toBe('Sea mist hides the spot where a little dock would be.');
+    expect(mistHides('shore', 2)).toBe('Sea mist hides the spot where a boat and lantern would be.');
+    expect(mistHides('tree', 2)).toBe('Leaves hide the branch where a swing would hang.');
+    for (const id of [
+      'trail.instruct.6',
+      'trail.mist-ask',
+      'trail.mist',
+      'trail.both-fit',
+      'trail.both-glow',
+    ])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeTruthy();
+    expect(SCRIPT['trail.mist'][0]).toContain('{hides}');
+  });
+});
+
 describe('misses and hints', () => {
   it('count one miss per distinct wrong drop and at most one hint per card, from the glow or Show a hint', () => {
     const t = new Tally();
@@ -515,7 +658,7 @@ describe('layout', () => {
   const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
 
   it('keeps full-size posts, gaps, cards and tray apart and on screen on the iPad, in every line state of every level', () => {
-    for (const level of [1, 2, 3, 4, 5]) {
+    for (const level of [1, 2, 3, 4, 5, 6]) {
       for (let seed = 0; seed < 20; seed++) {
         const r = roundFor(level, new Rng(seed));
         let line: number[] = [...r.hung];
@@ -523,12 +666,13 @@ describe('layout', () => {
         for (;;) {
           for (const [name, v] of Object.entries({ landscape: VIEWS.landscape, portrait: VIEWS.portrait })) {
             const where = `level ${level} seed ${seed} ${name} hung ${line.length}`;
-            const l = lineLayout(r, line, loose.length, v);
+            const tray = inTray(r, loose);
+            const l = lineLayout(r, line, tray.length, v);
             expect(l, where).not.toBeNull();
             if (!l) continue;
             expect(l.gaps.length, where).toBe(gapCount(r, line));
             expect(l.cards.length, where).toBe(line.length);
-            expect(l.tray.length, where).toBe(loose.length);
+            expect(l.tray.length, where).toBe(tray.length);
             for (const g of l.gaps) {
               expect(g.w, where).toBeGreaterThanOrEqual(GAP_W);
               expect(g.h, where).toBeGreaterThanOrEqual(GAP_H);

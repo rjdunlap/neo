@@ -1,0 +1,5 @@
+# 2026-11-16 — Timeline Trail level 6 We can't tell (PR #1725)
+
+**Changed:** `timeline-trail` level 6 We can't tell (school band 2–6): the misty two-gap card on the shore or the tree, held out of the tray until the other card is hung; `place()` now puts a card at the chosen gap at every level (the line and flipbook keep her order); two extra voice lines, how-to step.
+**Ran (all passing, 2026-11-16):** `npm run typecheck`; the game's rule tests (38 in `logic.test.ts`, including the level 6 block over 500 seeds and the layout loop at level 6) and full `npm test` (353 files, 7,299 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=timelinetrail` (one scripted play of levels 2–6; at 6 the misty card held back, a free tap, one wrong gap = 1 miss, Show a hint = 1 hint with both gaps lit, the later gap accepted with the line in her order, saved 1/1; also the level 4 regression play; portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=timeline-trail FINGER_LEVELS=6`.
+**Not run:** offline, `world` and other suites (code outside the game unchanged); no check on a real phone.

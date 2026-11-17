@@ -1,6 +1,6 @@
 /**
  * Timeline Trail's code-drawn pictures: the five places at each stage, the picture cards, the two posts, the pegged
- * gaps, the clothesline, level 5's chips and ribbon, the flipbook frame, the hub icon and the sticker. The later places
+ * gaps, the clothesline, level 5's chips and ribbon, level 6's mist, the flipbook frame, the hub icon and the sticker. The later places
  * (green, oven) are built from element drawers, so a chip shows exactly the thing its picture shows.
  * Palette: src/art/palette.ts.
  */
@@ -524,13 +524,78 @@ export function sparkle(r: number): Graphics {
   return g;
 }
 
+/**
+ * Level 6's veil over a picture of `stage`, covering the spot where the next stage's new thing would be: soft sea mist
+ * on the shore (over the water for the dock, the shore end for the shed, the far end for the boat and lantern), a
+ * hanging bough of leaves on the tree (over the branch where the swing would hang). Drawn for a `size` square picture.
+ */
+export function mist(placeId: PlaceId, stage: number, size: number): Graphics {
+  const g = new Graphics();
+  const u = size / 100;
+  if (placeId === 'tree') {
+    // A low bough: overlapping leaf clumps, outlined like the crown, down to the grass.
+    const clumps: [number, number, number][] = [
+      [20, 6, 13],
+      [34, 10, 12],
+      [24, 22, 13],
+      [36, 26, 11],
+      [28, 36, 10],
+    ];
+    for (const [x, y, r] of clumps)
+      g.circle(x * u, y * u, r * u)
+        .fill(LEAF)
+        .stroke({ width: 2 * u, color: ink });
+    for (const [x, y, r] of clumps) g.circle(x * u, y * u, (r - 1.5) * u).fill(LEAF);
+    for (const [x, y] of clumps)
+      g.ellipse((x - 3) * u, (y - 3) * u, 4 * u, 2.5 * u).fill({ color: 0x8fd67f, alpha: 0.8 });
+  } else {
+    const at = [
+      { x: 11, y: 15, rx: 30, ry: 15 },
+      { x: -26, y: -13, rx: 23, ry: 24 },
+      { x: 31, y: -3, rx: 19, ry: 32 },
+    ][Math.max(0, Math.min(2, stage))];
+    // A bank of mist: a sea-blue shadow under white puffs, thick enough that nothing shows through its middle.
+    const puffs: [number, number, number][] = [
+      [0, 0, 0.8],
+      [-0.55, 0.25, 0.55],
+      [0.55, 0.2, 0.55],
+      [-0.3, -0.5, 0.55],
+      [0.35, -0.5, 0.5],
+      [0, 0.55, 0.6],
+    ];
+    for (const [dx, dy, k] of puffs)
+      g.ellipse((at.x + dx * at.rx) * u, (at.y + dy * at.ry + 2) * u, at.rx * k * u, at.ry * k * u).fill({
+        color: 0xbfe0f5,
+        alpha: 0.9,
+      });
+    for (const [dx, dy, k] of puffs)
+      g.ellipse(
+        (at.x + dx * at.rx) * u,
+        (at.y + dy * at.ry) * u,
+        at.rx * k * 0.92 * u,
+        at.ry * k * 0.92 * u,
+      ).fill({
+        color: 0xffffff,
+        alpha: 0.95,
+      });
+    // Wisps trailing off each side.
+    for (const side of [-1, 1])
+      g.ellipse((at.x + side * at.rx * 1.05) * u, (at.y + at.ry * 0.3) * u, at.rx * 0.35 * u, 3 * u).fill({
+        color: 0xffffff,
+        alpha: 0.7,
+      });
+  }
+  g.eventMode = 'none';
+  return g;
+}
+
 /** A picture in its white card frame; `sepia` fades it to long ago. The picture sits inside, masked to the frame. */
 export function card(
   placeId: PlaceId,
   stage: number,
   size: number,
   color: ColorName,
-  opts: { sepia?: boolean; rig?: Container; clue?: { place: PlaceId; stage: number } } = {},
+  opts: { sepia?: boolean; rig?: Container; clue?: { place: PlaceId; stage: number }; mist?: boolean } = {},
 ): Container {
   const c = new Container();
   const rim = Math.max(6, size * 0.06);
@@ -551,6 +616,11 @@ export function card(
     rig.position.set(-(b.x + b.width / 2) * k, inner * 0.42 - (b.y + b.height) * k);
     rig.mask = mask;
     c.addChild(rig);
+  }
+  if (opts.mist) {
+    const veil = mist(placeId, stage, inner);
+    veil.mask = mask;
+    c.addChild(veil);
   }
   if (opts.clue) {
     // Level 4's clue: a little round picture of the other place at the same time, up in this picture's sky where
