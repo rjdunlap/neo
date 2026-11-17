@@ -452,6 +452,13 @@ html.turning .playtest {
   border-top: 1px solid var(--rule);
 }
 
+/* One At-home idea: its try, notice and say lines with the game it comes from. */
+.parent__idea {
+  margin: 10px 0 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--rule);
+}
+
 /* This week's fold (U8a): every game for her age, closed, with a search at its top. */
 .parent__every {
   margin-top: 12px;

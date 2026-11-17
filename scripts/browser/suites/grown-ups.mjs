@@ -318,5 +318,87 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
     );
   }
 
-  return { grownUps };
+  /**
+   * The At-home card on the grown-ups' page, at a fresh lap profile and a school one, upright on a phone: three ideas,
+   * the kit line, nothing to press, no "Off-screen idea" left, no sideways scroll.
+   */
+  async function atHome() {
+    const gear = page.locator('.gear:not(.gear--inline)');
+    const wide = page.viewportSize();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => neo.go.start());
+    await scene('ChooserScene');
+    await gear.waitFor();
+    const box = await gear.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(2400);
+    await page.mouse.up();
+    await page.locator('.parent').waitFor();
+    const read = () =>
+      page.evaluate(() => {
+        const card = document.querySelector('[data-at-home]');
+        const ideas = [...card.querySelectorAll('[data-at-home-idea]')];
+        return {
+          ids: ideas.map((i) => i.dataset.atHomeIdea),
+          labels: ideas.map((i) => [...i.querySelectorAll('strong')].map((s) => s.textContent)),
+          kit: card.querySelector('[data-at-home-kit]')?.textContent ?? null,
+          pressable: card.querySelectorAll('input, button, a, details, select').length,
+          text: card.innerText,
+          page: document.querySelector('.parent').innerText,
+          sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          panelSideways: (() => {
+            const p = document.querySelector('.parent');
+            return p.scrollWidth - p.clientWidth;
+          })(),
+        };
+      });
+    const setBand = async (band) => {
+      await page.locator(`[data-band="${band}"]`).click();
+      await page.waitForFunction((band) => kit.store.data.profile.band === band, band);
+    };
+
+    await setBand('lap');
+    const lap = await read();
+    assert.deepEqual(lap.ids, ['bounce-back', 'jelly-drums', 'roundup'], 'the lap starters, one land each');
+    for (const l of lap.labels) assert.deepEqual(l, ['Try:', 'Notice:', 'Say:'], 'each starter is complete');
+    assert.equal(
+      lap.kit,
+      'Things from around the house: a large soft ball, pots and pans, a teddy or other soft toy, a laundry basket or box.',
+    );
+    assert.equal(lap.pressable, 0, 'nothing to press in the section');
+    assert.ok(!lap.page.includes('Off-screen idea'), 'the old lines are gone');
+    assert.ok(lap.text.includes('Nothing here is tracked, counted or due.'));
+    assert.ok(
+      lap.text.includes('From Jelly Drums.'),
+      'a starter says where it comes from, not that it was played',
+    );
+    assert.ok(lap.sideways <= 0 && lap.panelSideways <= 0, 'no sideways scroll at 390 wide');
+    await page.locator('[data-at-home]').scrollIntoViewIfNeeded();
+    await screenshot('parent-at-home-lap');
+
+    await setBand('school');
+    const school = await read();
+    assert.deepEqual(school.ids, ['bounce-back', 'jelly-drums', 'little-helpers'], 'the school starters');
+    assert.ok(school.text.includes('What makes you think so?'), "school takes the band's own Say");
+    assert.ok(school.sideways <= 0 && school.panelSideways <= 0, 'no sideways scroll at school either');
+    await page.locator('[data-at-home]').scrollIntoViewIfNeeded();
+    await screenshot('parent-at-home-school');
+
+    await setBand('grownup');
+    const grown = await read();
+    assert.equal(grown.ids.length, 3);
+    for (const l of grown.labels) assert.deepEqual(l, ['Try:'], 'a grown-up profile gets Try lines only');
+    assert.equal(grown.kit, null, 'and no kit line');
+
+    await page.locator('[data-done]').click();
+    await scene('ChooserScene');
+    await page.setViewportSize(wide);
+    assert.deepEqual(errors, []);
+    log(
+      'The At-home card passed: three complete starters and the kit line at a fresh lap profile, the school starters with their own wording, Try lines only for a grown-up profile, nothing to press, no "Off-screen idea" text and no sideways scroll at 390 wide',
+    );
+  }
+
+  return { grownUps, atHome };
 }

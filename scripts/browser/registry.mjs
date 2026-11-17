@@ -299,6 +299,7 @@ export const SUITES = [
   'couchcodedoors',
   'couchgames',
   'grownups',
+  'athome',
   'critternot',
   'feelpoke',
   'smoke',
@@ -645,6 +646,7 @@ export function createChecks(fixture) {
     'welcomeFlow',
     'hatchingAndMap',
     'grownUps',
+    'atHome',
     'subjectPlaces',
     'patterns',
     'memory',
@@ -997,6 +999,7 @@ export async function runSuite(suite, fixture) {
     welcomeFlow,
     hatchingAndMap,
     grownUps,
+    atHome,
     subjectPlaces,
     patterns,
     memory,
@@ -1275,6 +1278,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'couchcodedoors') await couchCodeDoors();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'all' || suite === 'grownups') await grownUps();
+  if (suite === 'all' || suite === 'grownups' || suite === 'athome') await atHome();
   if (suite === 'critternot') await critterNotEntry();
   if (suite === 'feelpoke') await feelingsPoke();
   if (suite === 'smoke') await smoke();
