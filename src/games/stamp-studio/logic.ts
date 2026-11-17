@@ -35,10 +35,13 @@ export interface StampPlan {
   color: boolean;
   move: boolean;
   transform: boolean;
-  prompt: 'pats' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story' | 'leaf' | 'feet';
+  prompt:
+    'pats' | 'sparkle' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story' | 'leaf' | 'feet';
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
+  /** Follow the sparkle (level 10): a glowing spot shows where to tap; this many stamps finish the picture. */
+  follow?: { count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
@@ -132,6 +135,16 @@ export const PLANS = [
     prompt: 'feet',
     name: 'Two feet: a duck foot and a cat paw each leave their own print',
     trace: { makers: ['duck', 'paw'], count: 10, tilt: false },
+  },
+  // Follow the sparkle: one glowing spot at a time, so it sits between levels 1 and 2 by `order` and has the highest ID.
+  {
+    kinds: ['star'],
+    color: false,
+    move: false,
+    transform: false,
+    prompt: 'sparkle',
+    name: 'Follow the sparkle: tap the glowing spot and a stamp lands there',
+    follow: { count: 5 },
   },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number): StampPlan =>
@@ -259,10 +272,50 @@ export function nextSize(size: number): number {
 export const stampLine = (color: ColorName, line: number) => (color === 'yellow' ? YELLOW_LINE : line);
 export const YELLOW_LINE = 0xa87a00;
 
+/**
+ * Follow the sparkle (level 10). The glow is `across` units wide at its smallest and its centre keeps `margin` from the
+ * paper's edge, so the whole glow is on the paper. `w` and `h` are the smallest room the centres ever have, across and
+ * down, in any layout (the upright paper is the narrowest, the sideways one the shortest), so spots `apart` units from
+ * each other there are at least that far apart on every paper.
+ */
+export const SPARKLE = {
+  across: 160,
+  radius: 85,
+  pulse: 0.05,
+  margin: 90,
+  apart: 200,
+  w: 398,
+  h: 298,
+} as const;
+/**
+ * One round's sparkle spots, in the order they glow, as 0 to 1 positions inside the paper's `SPARKLE.margin`
+ * (`sparklePixel`): the four corners and the middle, each nudged a little and shuffled, so every two are at least
+ * `SPARKLE.apart` units apart on the smallest paper and no spot is used twice.
+ */
+export function sparkleSpots(rng: Rng): Pt[] {
+  const nudge = (most: number) => rng.next() * most;
+  const spots = [
+    { x: nudge(0.05), y: nudge(0.05) },
+    { x: 1 - nudge(0.05), y: nudge(0.05) },
+    { x: nudge(0.05), y: 1 - nudge(0.05) },
+    { x: 1 - nudge(0.05), y: 1 - nudge(0.05) },
+    { x: 0.46 + nudge(0.08), y: 0.46 + nudge(0.08) },
+  ];
+  return rng.shuffle(spots);
+}
+/** Where a sparkle spot is on a paper of this size. */
+export const sparklePixel = (spot: Pt, width: number, height: number) =>
+  pixel(spot, width, height, SPARKLE.margin);
+/** A tap inside the glow lands on its centre; a tap anywhere else stamps where it fell. Neither is a miss. */
+export function sparkleTap(x: number, y: number, spot: Pt, width: number, height: number): Pt {
+  const p = sparklePixel(spot, width, height);
+  return Math.hypot(x - p.x, y - p.y) <= SPARKLE.radius ? p : { x, y };
+}
+
 /** Early rounds vary their existing tools without adding simultaneous choices. */
 export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
   const base = planFor(level);
-  if (level > 3) return { plan: base, color: 'purple' };
+  if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
   return {
     plan: { ...base, kinds: rng.shuffle([...STAMP_KINDS]).slice(0, base.kinds.length) },
     color: rng.pick(STAMP_COLORS),
@@ -275,6 +328,8 @@ export interface StampState {
   /** The stamp and color picked now. */
   kind: StampKind;
   color: ColorName;
+  /** Follow the sparkle: where the glowing spot is now, in the sheet's own 0 to 1 coordinates. */
+  sparkle?: Pt;
 }
 
 export type StampMove =
@@ -314,6 +369,8 @@ const DEMO_MOVE = { stamp: 0, x: 0.5, y: 0.55 } as const;
 export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   const n = st.stamps.length;
   if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
+  if (plan.follow)
+    return n < plan.follow.count && st.sparkle ? { do: 'stamp', ...st.sparkle } : { do: 'finish' };
   const last = st.stamps[n - 1];
   if (plan.transform && n === 3 && last.turns === 0) return { do: 'turn' };
   if (plan.transform && n === 4 && last.size === 1) return { do: 'grow' };
@@ -513,8 +570,8 @@ export function traceDemo(
 }
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 8, order: [7, 8, 1, 2] },
-  toddler: { min: 2, max: 9, order: [9, 2, 3] },
+  lap: { min: 1, max: 10, order: [7, 8, 1, 10, 2] },
+  toddler: { min: 2, max: 10, order: [9, 10, 2, 3] },
   preschool: { min: 3, max: 5 },
   prek: { min: 4, max: 6 },
   school: { min: 5, max: 6 },

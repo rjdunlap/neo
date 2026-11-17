@@ -314,7 +314,7 @@ describe('seeded early stamp choices', () => {
 
   it('Pat the paper is the easiest lap level and its bot pats eight times then finishes', () => {
     const plan = PLANS[6];
-    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 8, order: [7, 8, 1, 2] });
+    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 10, order: [7, 8, 1, 10, 2] });
     expect(plan.pat).toEqual({ size: 85 / 48, count: 8 });
     const st: StampState = { stamps: [], kind: 'star', color: 'purple' };
     for (let n = 0; n < 8; n++) {
@@ -392,7 +392,7 @@ describe('Trace Prints (levels 8–9)', () => {
   const leaf = planFor(8).trace!,
     feet = planFor(9).trace!;
   it('appends two levels and leaves levels 1–7 as they were', () => {
-    expect(PLANS).toHaveLength(9);
+    expect(PLANS).toHaveLength(10);
     expect(PLANS.slice(0, 7).map((p) => [p.prompt, p.kinds, p.name, 'trace' in p])).toEqual([
       ['stars', ['star'], 'Press one kind of stamp onto a picture', false],
       ['friends', ['cat', 'fish'], 'Make a picture with two kinds of stamps', false],
@@ -421,12 +421,12 @@ describe('Trace Prints (levels 8–9)', () => {
       ]);
   });
   it('puts level 8 in lap and level 9 first in toddler; a carried trace level starts another band at its easiest', () => {
-    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 8, order: [7, 8, 1, 2] });
-    expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 9, order: [9, 2, 3] });
+    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 10, order: [7, 8, 1, 10, 2] });
+    expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 10, order: [9, 10, 2, 3] });
     expect(stampStudio.levels!('preschool')).toEqual({ min: 3, max: 5 });
     expect(stampStudio.levels!('prek')).toEqual({ min: 4, max: 6 });
     expect(stampStudio.levels!('school')).toEqual({ min: 5, max: 6 });
-    expect(stampStudio.entryLevels).toEqual([7, 8, 9]);
+    expect(stampStudio.entryLevels).toEqual([7, 8, 9, 10]);
     for (const l of [8, 9])
       expect(landing(l, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);
     expect(landing(7, stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(9);
@@ -720,5 +720,131 @@ describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', (
     // A short picture of three fish (0.3 s apart) sounds the first and third.
     expect(wakeSounds(['fish', 'fish', 'fish'], wakeSchedule(3).at)).toEqual([true, false, true]);
     expect(wakeSounds(['cat', 'star', 'cat'], [0, 0.3, 0.6])).toEqual([true, true, true]);
+  });
+});
+
+import { SPARKLE, sparklePixel, sparkleSpots, sparkleTap } from './logic';
+import { firstLevel } from '../../progress/difficulty';
+
+describe('Follow the sparkle (level 10)', () => {
+  const plan = planFor(10);
+  /** The papers a round can be played on: sideways, upright, and a wider and a taller view of each. */
+  const papers = [
+    { w: 1024, h: 768 },
+    { w: 1400, h: 768 },
+    { w: 768, h: 1024, upright: true as const },
+    { w: 768, h: 1660, upright: true as const },
+  ].map((v) => stampLayout(v, 1, false).paper);
+
+  it('is one stamp and five sparkles, between levels 1 and 2 for lap and before level 2 for toddler', () => {
+    expect(plan.follow).toEqual({ count: 5 });
+    expect(plan).toMatchObject({ color: false, move: false, transform: false, prompt: 'sparkle' });
+    expect(plan.kinds).toHaveLength(1);
+    const lap = stampStudio.levels!('lap').order!;
+    expect(lap.indexOf(10)).toBe(lap.indexOf(1) + 1);
+    expect(lap.indexOf(10)).toBe(lap.indexOf(2) - 1);
+    const toddler = stampStudio.levels!('toddler').order!;
+    expect(toddler.indexOf(10)).toBe(toddler.indexOf(2) - 1);
+    // The bands' first levels are unchanged, and a level 10 carried to an older band starts it at its easiest.
+    expect(firstLevel(stampStudio.levels!('lap'), stampStudio.entryLevels)).toBe(7);
+    expect(firstLevel(stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(9);
+    expect(landing(10, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);
+    expect(stampStudio.describeLevel(10)).toMatch(/sparkle/i);
+    expect(SCRIPT['stamp.sparkle']).toBeTruthy();
+  });
+
+  it('varies the stamp and its color by round, like the first levels', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const round = roundPlan(10, new Rng(seed));
+      expect(round.plan.kinds).toHaveLength(1);
+      expect(round.plan.follow).toEqual({ count: 5 });
+      seen.add(round.plan.kinds[0] + round.color);
+    }
+    expect(seen.size).toBeGreaterThan(8);
+  });
+
+  it('measures its smallest room from the real layouts', () => {
+    expect(Math.min(...papers.map((p) => p.w)) - 2 * SPARKLE.margin).toBe(SPARKLE.w);
+    expect(Math.min(...papers.map((p) => p.h)) - 2 * SPARKLE.margin).toBe(SPARKLE.h);
+    // The glow breathes but is never under 160 units across, and never reaches past the paper.
+    expect(2 * SPARKLE.radius * (1 - SPARKLE.pulse)).toBeGreaterThanOrEqual(SPARKLE.across);
+    expect(SPARKLE.radius * (1 + SPARKLE.pulse)).toBeLessThanOrEqual(SPARKLE.margin);
+  });
+
+  it('glows at five places, each used once, 200 or more units apart and wholly on the paper, sideways and upright', () => {
+    const orders = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const spots = sparkleSpots(new Rng(seed));
+      expect(spots).toHaveLength(plan.follow!.count);
+      orders.add(
+        spots.map((s) => `${Math.round(s.x)}${Math.round(s.y)}${s.x > 0.3 && s.x < 0.7 ? 'm' : ''}`).join(),
+      );
+      for (const paper of papers) {
+        const at = spots.map((s) => sparklePixel(s, paper.w, paper.h));
+        const reach = SPARKLE.radius * (1 + SPARKLE.pulse);
+        for (const p of at) {
+          expect(p.x - reach).toBeGreaterThanOrEqual(0);
+          expect(p.x + reach).toBeLessThanOrEqual(paper.w);
+          expect(p.y - reach).toBeGreaterThanOrEqual(0);
+          expect(p.y + reach).toBeLessThanOrEqual(paper.h);
+        }
+        for (let i = 0; i < at.length; i++)
+          for (let j = i + 1; j < at.length; j++)
+            expect(Math.hypot(at[i].x - at[j].x, at[i].y - at[j].y)).toBeGreaterThanOrEqual(SPARKLE.apart);
+      }
+    }
+    // The order they glow in changes from round to round.
+    expect(orders.size).toBeGreaterThan(20);
+  });
+
+  it('upright, the paper and so every sparkle is inside the view and clear of the buttons beside and below it', () => {
+    const v = { w: 768, h: 1024, upright: true as const };
+    const l = stampLayout(v, 1, false);
+    expect(l.paper.x).toBeGreaterThanOrEqual(0);
+    expect(l.paper.x + l.paper.w).toBeLessThanOrEqual(l.finish.x - BUTTON_REACH);
+    expect(l.paper.y + l.paper.h).toBeLessThanOrEqual(v.h);
+  });
+
+  it('a tap in the glow lands on its centre, and a tap anywhere else stamps where it fell', () => {
+    const [w, h] = [674, 478];
+    const spot = sparkleSpots(new Rng(7))[0];
+    const c = sparklePixel(spot, w, h);
+    expect(sparkleTap(c.x + 50, c.y - 50, spot, w, h)).toEqual(c);
+    expect(sparkleTap(c.x + SPARKLE.radius + 1, c.y, spot, w, h)).toEqual({
+      x: c.x + SPARKLE.radius + 1,
+      y: c.y,
+    });
+    // Off the paper is a stamp too: `place` brings it to the nearest place on the paper.
+    const off = sparkleTap(-200, h + 300, spot, w, h);
+    expect(place(off.x, off.y, w, h)).toEqual({ x: 0, y: 1 });
+  });
+
+  it('the ghost finger taps the sparkle five times, then has nothing to press', () => {
+    const [w, h] = [674, 478];
+    const spots = sparkleSpots(new Rng(3));
+    const st: StampState = { stamps: [], kind: 'star', color: 'purple' };
+    for (const spot of spots) {
+      const p = sparklePixel(spot, w, h);
+      st.sparkle = place(p.x, p.y, w, h);
+      const move = stampDemo(plan, st);
+      expect(move).toEqual({ do: 'stamp', ...st.sparkle });
+      // The ghost's target is the glow's centre on the paper.
+      const back = pixel(st.sparkle, w, h);
+      expect(back.x).toBeCloseTo(p.x);
+      expect(back.y).toBeCloseTo(p.y);
+      st.stamps.push({ ...st.sparkle, size: 1, turns: 0 });
+    }
+    st.sparkle = undefined;
+    expect(stampDemo(plan, st)).toEqual({ do: 'finish' });
+  });
+
+  it('its card names the sparkle and no arrow to press', () => {
+    const card = howToFor(stampStudio, 10)!;
+    const text = [...card.steps, ...[card.finish].flat()].join(' ');
+    expect(text).toMatch(/sparkle/i);
+    expect(text).toMatch(/anywhere/i);
+    expect(text).toMatch(/fifth stamp/i);
+    expect(text).not.toMatch(/arrow removes|green arrow|counted/i);
   });
 });

@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 7, 8, 1, 2 |
-| toddler | 9, 2, 3 |
+| lap | 7, 8, 1, 10, 2 |
+| toddler | 9, 10, 2, 3 |
 | preschool | 3–5 |
 | pre-K | 4–6 |
 | school | 5–6 |
@@ -25,6 +25,7 @@
 | 7 | Pat the paper: eight big soft stamps make a picture |
 | 8 | Leaf prints: pat the mud and the leaf leaves its shape |
 | 9 | Two feet: a duck foot and a cat paw each leave their own print |
+| 10 | Follow the sparkle: tap the glowing spot and a stamp lands there |
 
 <!-- end generated -->
 

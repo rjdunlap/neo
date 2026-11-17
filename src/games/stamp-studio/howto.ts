@@ -10,6 +10,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Pat the paper, or anywhere around it, to press a big soft stamp there. Pat as often as you like.',
     },
     { from: 1, to: 1, text: 'Tap the paper to press the stamp shown.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'A sparkle glows on the paper: tap it and a stamp lands there. A tap anywhere else stamps too, and the sparkle moves on either way.',
+    },
     { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
     { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
     { from: 1, to: 3, text: 'Each stamp has its own sound, and the stamps are counted aloud up to ten.' },
@@ -34,6 +39,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'There are no arrows: the eighth pat finishes the picture by itself. After the round, the tree house button hangs it up.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'There are no arrows: the fifth stamp finishes the picture by itself. After the round, the tree house button hangs it up.',
     },
     {
       from: 1,

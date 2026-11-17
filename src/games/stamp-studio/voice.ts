@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.stamp-studio': ['Stamp studio!'],
   'stamp.pats': ['Pat the paper! Pat, pat, pat!'],
+  'stamp.sparkle': ['Tap the sparkle! A stamp lands there.'],
   'stamp.stars': ['Tap the paper to press your stamp! The green arrow finishes your picture.'],
   'stamp.friends': ['Choose a stamp, then tap the paper! The green arrow finishes your picture.'],
   'stamp.picture': [

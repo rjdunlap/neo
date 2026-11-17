@@ -1,6 +1,7 @@
 import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
+import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -34,6 +35,11 @@ import {
   wakeSounds,
   stampDemo,
   stampLayout,
+  SPARKLE,
+  sparklePixel,
+  sparkleSpots,
+  sparkleTap,
+  type Pt,
   type Stamp,
   type StampKind,
 } from './logic';
@@ -76,6 +82,10 @@ class StampStudio implements Game {
   private presses = 0;
   private readonly counted = new Set<number>();
   private readonly bar = new Graphics();
+  /** Follow the sparkle (level 10): the round's spots in the order they glow, and the glow itself. */
+  readonly spots: Pt[] = [];
+  readonly glow = new Graphics();
+  private glowTime = 0;
   private nudgeTime = 0;
   private selected: Mark | null = null;
   private readonly named = new Set<StampKind>();
@@ -90,7 +100,21 @@ class StampStudio implements Game {
     this.plan = round.plan;
     this.color = round.color;
     this.kind = this.plan.kinds[0];
-    this.paper.addChild(this.sheet, this.selection, this.bar);
+    this.paper.addChild(this.sheet, this.glow, this.selection, this.bar);
+    if (this.plan.follow) {
+      this.spots.push(...sparkleSpots(ctx.rng));
+      const gold = swatch.yellow;
+      this.glow
+        .circle(0, 0, SPARKLE.radius)
+        .fill({ color: gold.fill, alpha: 0.4 })
+        .circle(0, 0, 58)
+        .fill({ color: gold.fill, alpha: 0.55 })
+        .poly(starPoints(46, 18, 4))
+        .fill(0xffffff)
+        .stroke({ width: 4, color: gold.line, join: 'round' });
+    }
+    this.glow.eventMode = 'none';
+    this.glow.visible = false;
     this.selection.eventMode = 'none';
     this.bar.eventMode = 'none';
     ctx.stage.addChild(this.background, this.paper);
@@ -105,12 +129,16 @@ class StampStudio implements Game {
         return;
       }
       // `place` clamps, so a pat off the paper presses at the nearest place on it.
-      this.add(p.x, p.y);
+      const spot = this.sparkle();
+      const at = spot ? sparkleTap(p.x, p.y, spot, this.width, this.height) : p;
+      this.add(at.x, at.y);
     };
     // Pats close together are all kept.
     onTap(this.sheet, press, { cooldown: this.plan.pat ? 0 : undefined });
     // Pat the paper (lap): the teal around the paper presses a star too.
     if (this.plan.pat) onTap(this.background, press, { cooldown: 0 });
+    // Follow the sparkle (lap, toddler): a tap anywhere stamps too, so there is no miss.
+    if (this.plan.follow) onTap(this.background, press);
     this.plan.kinds.forEach((kind) => {
       const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => {
         if (this.done) return;
@@ -209,9 +237,19 @@ class StampStudio implements Game {
     this.bar.clear();
     for (const s of this.stamps) this.layoutStamp(s);
   }
+  /** The spot that glows now (Follow the sparkle), or null. */
+  private sparkle(): Pt | null {
+    return this.done ? null : (this.spots[this.stamps.length] ?? null);
+  }
+  private drawGlow() {
+    const spot = this.sparkle();
+    this.glow.visible = !!spot;
+    if (spot) this.glow.position.copyFrom(sparklePixel(spot, this.width, this.height));
+  }
   private complete() {
     if (this.done || !this.stamps.length) return;
     this.done = true;
+    this.glow.visible = false;
     this.finish.rotation = 0;
     this.stopScan();
     this.play.visible = false;
@@ -320,7 +358,8 @@ class StampStudio implements Game {
     }
     if (
       (this.ctx.level <= 2 && this.stamps.length === LIMIT) ||
-      (this.plan.pat && this.stamps.length >= this.plan.pat.count)
+      (this.plan.pat && this.stamps.length >= this.plan.pat.count) ||
+      (this.plan.follow && this.stamps.length >= this.plan.follow.count)
     )
       this.complete();
   }
@@ -340,10 +379,13 @@ class StampStudio implements Game {
       this.selection
         .circle(this.selected.node.x, this.selected.node.y, Math.max(70, 48 * this.selected.data.size + 12))
         .stroke({ width: 5, color: swatch.yellow.line });
-    // Pat the paper: no star button and no arrows, so only the eighth pat ends the picture and nothing takes a star away.
-    this.finish.visible = !this.plan.pat && this.stamps.length > 0;
-    this.undo.visible = !this.plan.pat && this.stamps.length > 0;
-    this.choices.forEach((b) => (b.visible = !this.plan.pat));
+    // Pat the paper and Follow the sparkle: no stamp button and no arrows, so only the last press ends the picture and
+    // nothing takes a stamp away.
+    const bare = !!(this.plan.pat || this.plan.follow);
+    this.finish.visible = !bare && this.stamps.length > 0;
+    this.undo.visible = !bare && this.stamps.length > 0;
+    this.choices.forEach((b) => (b.visible = !bare));
+    this.drawGlow();
     this.bin.visible = this.plan.move && !!this.selected;
     this.play.visible = !!this.plan.play && this.stamps.length > 0 && !this.done;
     if (this.stamps.length < 5) {
@@ -380,6 +422,11 @@ class StampStudio implements Game {
   update(dt: number) {
     if (this.scan) this.stepScan(dt);
     if (this.wake) this.stepWake(dt);
+    if (this.glow.visible) {
+      this.glowTime += dt;
+      // Never smaller than `SPARKLE.across`.
+      this.glow.scale.set(1 + SPARKLE.pulse * Math.sin(this.glowTime * 4));
+    }
     if (!this.done && this.ctx.level <= 2 && this.stamps.length >= 5) {
       this.nudgeTime += dt;
       this.finish.rotation = Math.sin(this.nudgeTime * 4) * 0.12;
@@ -410,10 +457,13 @@ class StampStudio implements Game {
   /** The ghost finger: make a small picture with what this level offers (stamps, colors, a turn, a bigger stamp, a carried stamp), then press the green arrow. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;
+    const spot = this.sparkle();
+    const at = spot && sparklePixel(spot, this.width, this.height);
     const move = stampDemo(this.plan, {
       stamps: this.stamps.map((s) => s.data),
       kind: this.kind,
       color: this.color,
+      sparkle: at ? place(at.x, at.y, this.width, this.height) : undefined,
     });
     switch (move.do) {
       case 'kind':
@@ -449,11 +499,11 @@ export const stampStudio: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [7, 8, 9],
+  entryLevels: [7, 8, 9, 10],
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
+  coplayHint: 'Let {name} choose where the picture goes. Any picture is a finished picture.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',
   hubIcon: () => {
     const c = new Container();

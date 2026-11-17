@@ -126,7 +126,14 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
         'PHONE_ONLY',
       );
       for (const { id, levels } of games.filter((g) => ids.includes(g.id))) {
-        for (const level of new Set([levels[0], levels.at(-1)])) {
+        // `PHONE_LEVELS=10,2` plays those levels of the band instead of its first and last, each with a screenshot.
+        const asked = process.env.PHONE_LEVELS?.split(',').map(Number);
+        if (asked)
+          assert.ok(
+            asked.every((l) => levels.includes(l)),
+            `${id} ${band} has no level in ${asked}`,
+          );
+        for (const level of new Set(asked ?? [levels[0], levels.at(-1)])) {
           await p.evaluate(
             ({ id, level, band }) => {
               kit.store.stats(id).pinned = level;
@@ -141,7 +148,7 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
           );
           assert.ok(await p.evaluate(() => neo.view.upright && !neo.turning && !neo.turn.visible), id);
           await p.waitForTimeout(750);
-          if (level === levels.at(-1)) await p.screenshot({ path: `${output}/${id}-${level}.png` });
+          if (asked || level === levels.at(-1)) await p.screenshot({ path: `${output}/${id}-${level}.png` });
           const before = await p.evaluate(() => kit.store.data.stickers.length);
           const deadline = Date.now() + 90_000;
           let finished = false;

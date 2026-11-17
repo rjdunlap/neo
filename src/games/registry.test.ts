@@ -375,7 +375,7 @@ describe('game registry', () => {
           : lap,
       ).toEqual(
         id === 'stamp-studio'
-          ? [7, 8, 1, 2]
+          ? [7, 8, 1, 10, 2]
           : id === 'rhythm-neighbors'
             ? [7, 1, 2]
             : id === 'fluffy-salon'
