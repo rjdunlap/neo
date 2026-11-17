@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With all 32 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batch 4 left every starter unchanged. The rule tests pin the starters.
+With all 40 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batches 4 and 5 left every starter unchanged. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -196,6 +196,32 @@ Lands: Bubble Beach (Domino Run, Puddle Gobble), Music Mountain (Beat Builder), 
 Left out, with reasons: Maker Lane (bread, food in spirit though not on the word list), Market Stall, Picnic Pantry, Drift Cards and Spinner Fair (coins or buttons), Jar Sort (pom-poms), Critter Sort (string), Treasure Map (egg carton and muffin tin, kitchen in spirit), plus the batch 3 exclusions, which still hold.
 
 Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Pile Match, Bolt Boards, Thought Bubbles, Robot Path, Secret Code, Logic Grid, Garden Rows, Penguin Slide, Ramp Race, Inchworm, Chain Reaction, Sense Detective, Not Always, Critter Crossing, Memory Desk, Sorting Machine, Orchard Rows, Ready for Adventure, Welcome Ways, Shape Buddies, Playdate Workshop, Read-Do and Ferry Jam.
+
+## Batch 5 (built 2026-11-17, PR #1759)
+
+Eight more games in bands already served, so the table holds 40. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged.
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Pile Match (preschool–school) | `all` | Tip a box of mixed toys onto the floor and gather them back in threes, saying "one, two, three" for each set. | Does {name} gather the toys in threes, in handfuls or one at a time? | One, two, three. That is a set! Here is another. |
+| | `school` | (the same) | Does {name} say how many sets there will be before gathering the toys? | How many sets of three will there be? Will any be left over? |
+| Bolt Boards (toddler–school) | `all` | Unscrew the big bolts on a toy tool bench, or stack books and take them off from the top down. | Does {name} take the top book, pull one from the middle or stack the books up again? | Top one off. Next one. All the way down! |
+| | `school` | (the same) | Does {name} say which book has to come off before the one below? | Which one has to come off first? What is it holding down? |
+| Robot Path (preschool–school) | `all` | Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again". | Does {name} move the toy one step at a time, or run it straight to the end? | One step forward. Turn. One more step. There! |
+| | `school` | (the same) | Does {name} give all the steps first, then check where the toy ends up? | What steps would get it there? Which part could we do again? |
+| Secret Code (preschool–school) | `all` | Hide three toys in a row behind your back and let her guess the order, saying which ones are in the right spot. | Does {name} guess all three at once, or change one toy at a time? | Bear is in the right spot. Try the other two. |
+| | `school` | (the same) | Does {name} keep the toys already in the right spot when guessing again? | What did that clue tell you? Which toy will you move? |
+| Garden Rows (preschool–school) | `all` | Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back. | Does {name} look along the row, down the column or try each toy in the gap? | This row has a car and a bear. Which one is missing? |
+| | `school` | (the same) | Does {name} check both the row and the column before putting a toy back? | How do you know it goes there? Could any other toy fit? |
+| Penguin Slide (preschool–school) | `all` | Slide a toy car across the floor: where does it stop, and what stops it? | Does {name} push the car gently, push it hard or go and see what stopped it? | Slide! It stopped at the wall. Again? |
+| | `school` | (the same) | Does {name} point to where the car will stop before letting go? | Where will it stop this time? What would stop it sooner? |
+| Sense Detective (pre-K, school) | `all` | Put a toy in a bag and let her guess it by shaking, then by peeking. | Does {name} shake the bag, feel it from outside or ask for a peek? | Shake, shake. What could it be? Now take a peek. |
+| | `school` | (the same) | Does {name} change the guess after the peek, or keep the first one? | What did the shake tell you? What did the peek add? |
+| Ready for Adventure (toddler–pre-K) | `all` | Which toy would you bring to a pretend parade? What would it need first? | Does {name} choose a toy, give it a hat or march it along? | Teddy is coming to the parade. Hat on. Off we go! |
+
+Lands: Counting Cove (Pile Match), Barnyard (Bolt Boards, Ready for Adventure), Tinker Lab (Robot Path, Sense Detective) and Puzzle Peaks (Secret Code, Garden Rows, Penguin Slide). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited. The batch 4 exclusions still hold.
+
+Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Thought Bubbles, Logic Grid, Ramp Race, Inchworm, Chain Reaction, Not Always, Critter Crossing, Memory Desk, Sorting Machine, Orchard Rows, Welcome Ways, Shape Buddies, Playdate Workshop, Read-Do and Ferry Jam.
 
 ## Open decisions
 
