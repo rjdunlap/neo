@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
+  ANSWER_KINDS,
   botTap,
   DEFINING,
   FEATURE_IDS,
@@ -9,11 +10,18 @@ import {
   FRIEND_IDS,
   FRIENDS,
   galleryLayout,
+  GROUP_FEATURE,
+  GROUP_SIGNS,
+  groupHas,
   HOME_CORNER,
   distinguishable,
   hasText,
   helpTargets,
+  isGroup,
+  judged,
   keeps,
+  kindOf,
+  LEVELS,
   makeRound,
   PET_CORNER,
   planFor,
@@ -28,8 +36,10 @@ import {
   surprises,
   tap,
   useful,
+  type Clue,
   type Feature,
   type FriendId,
+  type GroupClue,
   type Rect,
   type WhoRound,
 } from './logic';
@@ -104,7 +114,7 @@ describe('Who Am I? reasons', () => {
 });
 
 describe('Who Am I? rounds', () => {
-  for (const plan of PLANS) {
+  for (const plan of PLANS.filter((p) => !p.group)) {
     describe(`level ${plan.level}`, () => {
       it(`builds a playable, honest round for ${SEEDS} seeds`, () => {
         const seen = new Set<FriendId>();
@@ -129,7 +139,7 @@ describe('Who Am I? rounds', () => {
             left = left.filter((f) => keeps(c, f));
           }
           expect(left, ctx).toEqual([r.answer]);
-          const defining = r.clues.filter((c) => DEFINING.includes(FEATURES[c].family)).length;
+          const defining = r.clues.filter((c) => DEFINING.includes(FEATURES[c as Feature].family)).length;
           expect(defining, ctx).toBeGreaterThanOrEqual(plan.minDefining);
           if (plan.mode === 'fit')
             expect(
@@ -243,7 +253,7 @@ describe('Who Am I? level 4 surprises', () => {
       let left: FriendId[] = [...r.gallery];
       let wrong = 0;
       r.clues.forEach((c, k) => {
-        const bad = left.filter((f) => shortcutKeeps(c, f) !== keeps(c, f));
+        const bad = left.filter((f) => shortcutKeeps(c as Feature, f) !== keeps(c, f));
         wrong += bad.length;
         // A named surprise is always a step the shortcut gets wrong, about the friend it names.
         if (found[k]) expect(bad, `${ctx} clue ${c}`).toContain(found[k]);
@@ -492,4 +502,247 @@ describe('Who Am I? layout', () => {
       });
     }
   }
+});
+
+describe('Who Am I? level 5, Which group?', () => {
+  const plan = planFor(5);
+  const rounds = Array.from({ length: SEEDS }, (_, k) => roundFor(5, k + 1));
+
+  it('is the top of the school ladder and leaves pre-K alone', () => {
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 5 } });
+    expect(plan.group).toBe(true);
+    expect(PLANS.filter((p) => p.group).map((p) => p.level)).toEqual([5]);
+  });
+
+  it(`opens with the answer's group, then at most one useful feature clue, for ${SEEDS} seeds`, () => {
+    rounds.forEach((r, k) => {
+      const ctx = `seed ${k + 1}`;
+      expect(r.gallery, ctx).toHaveLength(6);
+      expect(new Set(r.gallery).size, ctx).toBe(6);
+      expect(r.gallery, ctx).toEqual(expect.arrayContaining(['penguin', 'bat']));
+      expect(new Set(r.gallery.map((g) => FRIENDS[g].group)).size, ctx).toBeGreaterThanOrEqual(3);
+      expect(plan.answers, ctx).toContain(r.answer);
+      expect(r.clues[0], ctx).toBe(FRIENDS[r.answer].group);
+      expect(isGroup(r.clues[0]), ctx).toBe(true);
+      expect(r.clues.length === 1 || r.clues.length === 2, ctx).toBe(true);
+      let left: FriendId[] = [...r.gallery];
+      r.clues.forEach((c, i) => {
+        if (i > 0) {
+          expect(isGroup(c), ctx).toBe(false);
+          expect(plan.allowed, ctx).toContain(c);
+        }
+        expect(useful(c, r.answer, left), ctx).toBe(true);
+        left = left.filter((f) => keeps(c, f));
+      });
+      expect(left, ctx).toEqual([r.answer]);
+      // One clue exactly when the group leaves one friend.
+      expect(r.clues.length, ctx).toBe(r.gallery.filter((f) => keeps(r.clues[0], f)).length === 1 ? 1 : 2);
+      expect(roundFor(5, k + 1), ctx).toEqual(r);
+    });
+  });
+
+  it('draws the four kinds of answer about equally, and all ten answers appear', () => {
+    const kinds = new Map<string, number>();
+    const seen = new Set<FriendId>();
+    for (const r of rounds) {
+      const kind = kindOf(r.answer)!;
+      kinds.set(kind, (kinds.get(kind) ?? 0) + 1);
+      seen.add(r.answer);
+    }
+    for (const kind of ANSWER_KINDS) {
+      const share = (kinds.get(kind) ?? 0) / SEEDS;
+      expect(share, kind).toBeGreaterThanOrEqual(0.15);
+      expect(share, kind).toBeLessThanOrEqual(0.35);
+    }
+    expect([...seen].sort()).toEqual([...plan.answers].sort());
+    expect(seen.size).toBe(10);
+    for (const f of ['frog', 'turtle', 'fish'] as const) expect(kindOf(f)).toBeNull();
+  });
+
+  it('holds what each kind of answer needs of its gallery', () => {
+    for (const r of rounds) {
+      const flyers = r.gallery.filter((f) => f === 'duck' || f === 'owl');
+      const fourLegged = r.gallery.filter((f) => FRIENDS[f].group === 'mammal' && f !== 'bat');
+      const kind = kindOf(r.answer);
+      if (kind === 'flying-bird') {
+        expect(flyers).toEqual([r.answer]);
+        expect(r.clues).toEqual(['bird', 'fly']);
+      } else if (kind === 'penguin') {
+        expect(flyers).toEqual([]);
+        expect(r.clues).toEqual(['bird']);
+      } else if (kind === 'four-legged') {
+        expect(fourLegged).toEqual([r.answer]);
+        expect(r.clues).toEqual(['mammal', 'four-legs']);
+      } else {
+        expect(r.clues[0]).toBe('mammal');
+        if (fourLegged.length === 0) expect(r.clues).toHaveLength(1);
+        else expect(['wings', 'two-legs', 'fly']).toContain(r.clues[1]);
+      }
+    }
+  });
+
+  it('counts 260 galleries and 559 rounds, as the definition enumerated', () => {
+    const others = FRIEND_IDS.filter((f) => f !== 'penguin' && f !== 'bat');
+    let galleries = 0,
+      total = 0;
+    const pick = (from: number, chosen: FriendId[]) => {
+      if (chosen.length === 4) {
+        const gallery: FriendId[] = ['penguin', 'bat', ...chosen];
+        if (new Set(gallery.map((g) => FRIENDS[g].group)).size < 3) return;
+        galleries++;
+        for (const answer of gallery) {
+          const group = FRIENDS[answer].group;
+          if (group !== 'bird' && group !== 'mammal') continue;
+          const left = gallery.filter((f) => keeps(group, f));
+          // A round is a gallery and an answer it allows; the bat's second clue can be any of three.
+          if (
+            left.length === 1 ||
+            plan.allowed.some((c) => useful(c, answer, left) && left.filter((f) => keeps(c, f)).length === 1)
+          )
+            total++;
+        }
+        return;
+      }
+      for (let i = from; i < others.length; i++) pick(i + 1, [...chosen, others[i]]);
+    };
+    pick(0, []);
+    expect(galleries).toBe(260);
+    expect(total).toBe(559);
+  });
+
+  it('names the surprise a group clue brings: the bat for a bird or a mammal, the penguin when it is left alone', () => {
+    expect(surpriseAt(['owl', 'penguin', 'bat', 'dog', 'frog', 'fish'], 'bird')).toBe('bat');
+    expect(surpriseAt(['penguin', 'bat', 'dog', 'cow', 'frog', 'fish'], 'bird')).toBe('penguin');
+    expect(surpriseAt(['penguin', 'bat', 'dog', 'cow', 'frog', 'fish'], 'mammal')).toBe('bat');
+    expect(surpriseAt(['owl', 'penguin'], 'fly')).toBe('penguin');
+    for (const r of rounds) {
+      const found = surprises(r.gallery, r.clues);
+      // The bat and the penguin are in every gallery, so the group clue always surprises.
+      expect(found[0]).toBe(r.answer === 'penguin' ? 'penguin' : 'bat');
+      if (kindOf(r.answer) === 'flying-bird') expect(found).toEqual(['bat', 'penguin']);
+    }
+  });
+
+  it('plays through with the level 2-4 flips, each surprise explained once and nothing counted', () => {
+    for (const r of rounds.slice(0, 200)) {
+      const p = flipCheck(r, 'turn');
+      expect(p.done).toBe(true);
+      expect(standing(p)).toEqual([r.answer]);
+      expect([p.misses, p.hints]).toEqual([0, 0]);
+      expect([...p.explained].sort()).toEqual(
+        [...new Set(surprises(r.gallery, r.clues).filter(Boolean))].sort(),
+      );
+    }
+  });
+
+  it('gives every bird and mammal a group reason from features the table gives it', () => {
+    for (const f of FRIEND_IDS) {
+      const g = groupHas(f);
+      const group = FRIENDS[f].group;
+      if (group !== 'bird' && group !== 'mammal') {
+        expect(g, f).toBeNull();
+        continue;
+      }
+      expect(g, f).not.toBeNull();
+      expect(g!.name).toBe(FRIENDS[f].name);
+      expect(g!.group).toBe(`a ${group}`);
+      for (const sign of GROUP_SIGNS[group]) {
+        expect(keeps(sign, f), `${f} ${sign}`).toBe(true);
+        expect(g!.has, `${f} ${sign}`).toContain(hasText(f, sign));
+      }
+    }
+    expect(groupHas('penguin')!.has).toBe('has feathers');
+    expect(groupHas('bat')!.has).toBe('has fur and feeds its babies milk');
+    expect(groupHas('pig')!.has).toBe('has bristly hair and feeds its babies milk');
+  });
+
+  it('the group hint turns the clue into its feature clue with the same friends ruled out', () => {
+    for (const group of ['bird', 'mammal'] as GroupClue[]) {
+      expect(ruledOut(FRIEND_IDS, GROUP_FEATURE[group])).toEqual(ruledOut(FRIEND_IDS, group));
+      for (const sign of GROUP_SIGNS[group])
+        for (const f of FRIEND_IDS) if (keeps(group, f)) expect(keeps(sign, f), `${f} ${sign}`).toBe(true);
+    }
+    for (const r of rounds.slice(0, 100)) {
+      const p = startPlay(r, 'turn');
+      const before = helpTargets(p);
+      expect(judged(p)).toBe(r.clues[0]);
+      expect(requestHelp(p)).toBe(true);
+      expect(p.meaning).toBe(true);
+      expect(judged(p)).toBe(GROUP_FEATURE[r.clues[0] as GroupClue]);
+      expect(helpTargets(p)).toEqual(before);
+      expect(requestHelp(p)).toBe(false);
+      for (const t of before) tap(p, t);
+      // The next clue, if any, starts fresh as an ordinary feature clue.
+      if (!p.done) {
+        expect(p.meaning).toBe(false);
+        expect(judged(p)).toBe(r.clues[1]);
+      }
+    }
+  });
+
+  it('two taps on kept friends at the group clue, then correct flips, is misses 2 and hints 1', () => {
+    const r = rounds.find((x) => x.clues.length === 2 && x.answer !== 'bat')!;
+    const p = startPlay(r, 'turn');
+    const kept = r.gallery.findIndex((g) => keeps(r.clues[0], g));
+    const first = tap(p, kept);
+    expect(first).toMatchObject({ kind: 'miss', helped: false, shimmer: false, stays: null });
+    if (first.kind === 'miss') expect(first.group).toEqual(groupHas(r.gallery[kept]));
+    expect(tap(p, kept)).toMatchObject({ kind: 'miss', helped: true, shimmer: false });
+    expect(p.meaning).toBe(true);
+    while (!p.done) tap(p, botTap(p, true)!);
+    expect([p.misses, p.hints]).toEqual([2, 1]);
+  });
+
+  it('after the meaning, a miss is explained by the feature and two more shimmer once without counting', () => {
+    const r = rounds.find((x) => x.clues.length === 2)!;
+    const p = startPlay(r, 'turn');
+    const kept = r.gallery.findIndex((g) => keeps(r.clues[0], g));
+    requestHelp(p);
+    const feature = GROUP_FEATURE[r.clues[0] as GroupClue];
+    const a = tap(p, kept);
+    expect(a).toMatchObject({ kind: 'miss', helped: false, shimmer: false, group: null });
+    if (a.kind === 'miss') expect(a.stays).toEqual(staysText(r.gallery[kept], feature));
+    expect(tap(p, kept)).toMatchObject({ kind: 'miss', helped: false, shimmer: true });
+    expect(tap(p, kept)).toMatchObject({ kind: 'miss', helped: false, shimmer: false });
+    expect([p.misses, p.hints]).toEqual([3, 1]);
+  });
+
+  it('the ghost finger never taps a kept friend', () => {
+    for (const r of rounds.slice(0, 150)) {
+      const p = startPlay(r, 'turn');
+      let guard = 0;
+      while (!p.done && guard++ < 20) {
+        const t = botTap(p, false)!;
+        expect(keeps(p.round.clues[p.clue], p.round.gallery[t])).toBe(false);
+        tap(p, t);
+      }
+      expect([p.done, p.misses, p.hints]).toEqual([true, 0, 0]);
+    }
+  });
+});
+
+describe('Who Am I? levels 1-4 are unchanged by level 5', () => {
+  // Rounds recorded from the build before level 5 was added: a saved level or pin plays exactly as it did.
+  const PINNED: [number, number, string, FriendId, string][] = [
+    [1, 1, 'fish owl cow', 'owl', 'feathers'],
+    [1, 2, 'bunny penguin cow', 'penguin', 'wings'],
+    [1, 3, 'fish pig penguin', 'penguin', 'feathers'],
+    [2, 1, 'owl bunny turtle fish', 'bunny', 'four-legs fur'],
+    [2, 2, 'bunny turtle frog duck', 'bunny', 'four-legs fur'],
+    [2, 3, 'turtle frog bunny owl', 'bunny', 'four-legs fur'],
+    [3, 1, 'cat frog duck dog turtle fish', 'turtle', 'eggs four-legs shell'],
+    [3, 2, 'cat fish frog owl duck turtle', 'turtle', 'eggs four-legs shell'],
+    [3, 3, 'penguin pig frog bunny owl turtle', 'turtle', 'eggs four-legs shell'],
+    [4, 1, 'frog fish penguin turtle bunny bat', 'turtle', 'eggs four-legs shell'],
+    [4, 2, 'bat turtle cat penguin frog pig', 'turtle', 'eggs four-legs shell'],
+    [4, 3, 'pig frog bear bat turtle penguin', 'turtle', 'eggs four-legs shell'],
+  ];
+  it('gives the same round for the same seed as before', () => {
+    for (const [level, seed, gallery, answer, clues] of PINNED) {
+      const r = roundFor(level, seed);
+      expect(r.gallery.join(' '), `level ${level} seed ${seed}`).toBe(gallery);
+      expect(r.answer).toBe(answer);
+      expect((r.clues as Clue[]).join(' ')).toBe(clues);
+    }
+  });
 });

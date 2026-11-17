@@ -17,15 +17,19 @@ import {
   botTap,
   FRIENDS,
   galleryLayout,
+  GROUP_SIGNS,
   helpTargets,
+  isGroup,
   LEVELS,
   makeRound,
   planFor,
   requestHelp,
   startPlay,
   tap,
+  type Clue,
   type Feature,
   type FriendId,
+  type GroupClue,
   type Rect,
   type Reason,
   type WhoPlan,
@@ -227,8 +231,47 @@ export function featureIcon(f: Feature): Graphics {
   return g;
 }
 
-/** A sign with a clue's picture and a small speaker mark, `w` wide. */
-function signArt(f: Feature, w: number, h: number): Container {
+const GROUP_WORD: Record<GroupClue, string> = { bird: 'bird', mammal: 'mammal' };
+
+/**
+ * A group clue's picture: a rosette, about 100 units tall, centered on (0, 0). It shows no feature and no animal, because a
+ * drawn bird in flight would teach the shortcut level 5 undoes; the two groups differ by colour.
+ */
+export function rosetteIcon(group: GroupClue): Graphics {
+  const c = group === 'bird' ? swatch.blue : swatch.orange;
+  const g = new Graphics();
+  for (const dx of [-14, 14])
+    g.poly([
+      dx - 12,
+      10,
+      dx + 12,
+      10,
+      dx + (dx < 0 ? -8 : 8) + 12,
+      50,
+      dx,
+      40,
+      dx + (dx < 0 ? -8 : 8) - 12,
+      50,
+    ])
+      .fill(c.fill)
+      .stroke(line(c.line, 3));
+  for (let k = 0; k < 10; k++) {
+    const a = (k / 10) * Math.PI * 2;
+    g.circle(Math.cos(a) * 28, -8 + Math.sin(a) * 28, 11)
+      .fill(c.light)
+      .stroke(line(c.line, 3));
+  }
+  g.circle(0, -8, 26).fill(c.fill).stroke(line(c.line, 4));
+  g.circle(0, -8, 13).fill(0xffffff).stroke(line(c.line, 3));
+  g.eventMode = 'none';
+  return g;
+}
+
+/**
+ * A sign with a clue's picture and a small speaker mark, `w` wide. A group clue's sign is its rosette with the group's
+ * word under it (support for a reader, never the task); with `meaning`, the features that define the group stand beside it.
+ */
+function signArt(f: Clue, w: number, h: number, meaning = false): Container {
   const c = new Container();
   c.addChild(
     new Graphics()
@@ -236,9 +279,34 @@ function signArt(f: Feature, w: number, h: number): Container {
       .fill(0xffffff)
       .stroke(line(wood.line, 6)),
   );
-  const pic = featureIcon(f);
-  pic.scale.set(Math.min(1, (h - 20) / 110));
-  c.addChild(pic);
+  if (isGroup(f)) {
+    const big = w > 200;
+    const badge = new Container();
+    const pic = rosetteIcon(f);
+    pic.scale.set(big ? 0.8 : Math.min(1, (h - 20) / 110));
+    badge.addChild(pic);
+    if (big) {
+      pic.y = -18;
+      const word = label(GROUP_WORD[f], meaning ? 24 : 28, ink);
+      word.y = 42;
+      badge.addChild(word);
+    }
+    c.addChild(badge);
+    if (big && meaning) {
+      badge.x = -94;
+      const signs = GROUP_SIGNS[f];
+      signs.forEach((feature, k) => {
+        const icon = featureIcon(feature);
+        icon.scale.set(0.72);
+        icon.position.set(signs.length === 1 ? 20 : -8 + k * 84, -4);
+        c.addChild(icon);
+      });
+    }
+  } else {
+    const pic = featureIcon(f);
+    pic.scale.set(Math.min(1, (h - 20) / 110));
+    c.addChild(pic);
+  }
   if (w > 200) {
     const s = new Graphics()
       .poly([0, -8, 8, -8, 18, -16, 18, 16, 8, 8, 0, 8])
@@ -313,15 +381,26 @@ class WhoAmI implements Game {
     this.showSign();
   }
 
-  private clueLine(f: Feature) {
-    return `whoami.clue.${f}` as LineId;
+  private clueLine(f: Clue) {
+    return (isGroup(f) ? `whoami.clue.group.${f}` : `whoami.clue.${f}`) as LineId;
   }
-  private get clue(): Feature {
+  private get clue(): Clue {
     return this.round.clues[this.play.clue];
+  }
+  /** What the sign says now: the clue, or, once a group clue's hint has shown what the group means, that meaning. */
+  private get signLine(): LineId {
+    const c = this.clue;
+    return isGroup(c) && this.play.meaning ? (`whoami.hint-group.${c}` as LineId) : this.clueLine(c);
   }
 
   async start() {
-    await this.ctx.say(this.plan.mode === 'fit' ? 'whoami.instruct-fit' : 'whoami.instruct-turn');
+    await this.ctx.say(
+      this.plan.mode === 'fit'
+        ? 'whoami.instruct-fit'
+        : this.plan.group
+          ? 'whoami.instruct-group'
+          : 'whoami.instruct-turn',
+    );
     if (!this.alive) return;
     this.busy = false;
     void this.ctx.instruct(this.clueLine(this.clue));
@@ -329,12 +408,12 @@ class WhoAmI implements Game {
 
   private showSign() {
     if (this.sign) this.sign.destroy({ children: true });
-    const s = signArt(this.clue, 320, 130);
+    const s = signArt(this.clue, 320, 130, this.play.meaning);
     s.eventMode = 'static';
     s.hitArea = new Rectangle(-160, -65, 320, 130);
     onTap(s, () => {
       sfx.tick();
-      void this.ctx.say(this.clueLine(this.clue));
+      void this.ctx.say(this.signLine);
     });
     this.signHolder.addChild(s);
     this.sign = s;
@@ -371,11 +450,14 @@ class WhoAmI implements Game {
       void this.wobble(card);
       const clue = this.play.clue;
       const line = out.reason ? this.reasonLine(out.reason) : null;
+      // A counted group hint changes the sign at once, so the meaning is on screen while the reason is spoken.
+      if (out.helped && this.play.meaning) this.showMeaning();
       if (line) await this.ctx.say(line.id, line.vars);
+      else if (out.group) await this.ctx.say('whoami.reason.group-stays', out.group);
       else if (out.stays) await this.ctx.say('whoami.reason.stays', out.stays);
       if (!this.alive) return;
       // She may have finished the clue while the reason was spoken: the help belonged to that clue.
-      if (out.helped && this.play.clue === clue && !this.play.done) this.showHelp();
+      if ((out.helped || out.shimmer) && this.play.clue === clue && !this.play.done) this.showHelp();
       return;
     }
     // A flip. The last one of a clue holds every tap until the next clue has been given, so nothing is judged against a clue not yet shown.
@@ -387,7 +469,7 @@ class WhoAmI implements Game {
     await this.flip(card, true);
     if (!this.alive) return;
     if (out.surprise) {
-      // Level 4: the pet explains the surprise once, free, before the next clue or the jump-out.
+      // Levels 4 and 5: the pet explains the surprise once, free, before the next clue or the jump-out.
       await this.ctx.tw.wait(0.3);
       if (!this.alive) return;
       await this.ctx.say(out.surprise === 'penguin' ? 'whoami.surprise-penguin' : 'whoami.surprise-bat');
@@ -406,7 +488,7 @@ class WhoAmI implements Game {
       await this.ctx.say('whoami.next-clue');
       if (!this.alive) return;
       this.busy = false;
-      void this.ctx.instruct(this.clueLine(this.clue));
+      void this.ctx.instruct(this.signLine);
     }
   }
 
@@ -417,16 +499,30 @@ class WhoAmI implements Game {
     return { id: 'whoami.reason.instead', vars: { name: r.name, lacks: r.lacks, has: r.has } };
   }
 
+  /** The glow or shimmer and its line; on a group clue whose meaning has just been shown (and not yet missed twice), the meaning's line instead. */
   private showHelp() {
+    if (this.play.meaning && !this.play.shimmer) return void this.ctx.say(this.signLine);
     this.glowOn = true;
     void this.ctx.say(this.plan.mode === 'fit' ? 'whoami.hint-glow' : 'whoami.hint-shimmer');
+  }
+
+  /** Level 5's group hint: the features that define the group swing in beside the rosette. */
+  private showMeaning() {
+    this.showSign();
+    sfx.pop(9);
+    if (this.sign) {
+      this.sign.rotation = -0.2;
+      void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 });
+    }
   }
 
   /** The pause sheet's Show a hint: the same glow or shimmer, counted once per round (level 1) or clue; asked again it repeats the clue. */
   askForHint() {
     if (this.busy || this.play.done) return;
-    if (requestHelp(this.play)) this.showHelp();
-    else void this.ctx.say(this.clueLine(this.clue));
+    if (requestHelp(this.play)) {
+      if (this.play.meaning) this.showMeaning();
+      this.showHelp();
+    } else void this.ctx.say(this.signLine);
   }
 
   /** A keeps-tap or a wrong friend: a half-turn that comes straight back, not a flip. */

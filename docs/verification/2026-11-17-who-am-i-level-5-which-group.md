@@ -1,0 +1,5 @@
+# 2026-11-17 — Who Am I? level 5 Which group? (PR #1749)
+
+**Changed:** `who-am-i` level 5 (school 2–5, zoo-animals Z10): the first clue is the answer's group ("I'm a bird!" or "I'm a mammal!") on a rosette sign; the penguin can be the answer; a kept-friend tap at the group clue names the defining feature; the hint shows what the group means and counts once. Levels 1–4 unchanged (12 rounds pinned by seed).
+**Ran:** `npm run typecheck`; `npx vitest run src/games/who-am-i` (55 tests; level 5 group runs 500 seeds; 260 galleries and 559 answer pairs enumerated); full `npm test` (357 files, 7547 passed, 1 skipped); `BROWSER_SUITE=whoami` (levels 1, 3, 4 and 5: group clue first, kept-friend tap with the group reason, pause-sheet hint asked twice with one count, each surprise explained once, saved score [1,1], landscape and portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=who-am-i FINGER_LEVELS=5 FINGER_BAND=school` (15.8 s).
+**Not run:** `npm run build` locally (no shared file changed; CI runs it), `world`, offline and other suites.
