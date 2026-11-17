@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  /** Who Am I?: level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down; level 4 (Surprises) with a keeps-tap and each surprise explained once, uncounted. */
+  /** Who Am I? (level 6, You ask, is described where it is played below): level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down; level 4 (Surprises) with a keeps-tap and each surprise explained once, uncounted. */
   async function whoAmIPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -171,6 +171,130 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.deepEqual(
       await page.evaluate(() => [...neo.scene.game.play.explained].sort()),
       [...new Set(l5.expected)].sort(),
+    );
+    // Level 6, You ask: the pet thinks of a secret friend and she asks from a tray of three question cards. A card tap
+    // before any question counts nothing; the pause sheet's question hint counts once; one best question (a portrait
+    // screenshot with the tray and the answer on the sign), one tap on a kept friend (a miss), the flips; then a dud (the
+    // suite places one in the tray, because an asker who follows the best question is rarely dealt one) that turns nobody
+    // over and counts nothing; then best questions to the end.
+    await launch('who-am-i', 6, 'Mia', 'school');
+    await settle();
+    const ask6 = () =>
+      page.evaluate(async () => {
+        const L = await import('/src/games/who-am-i/logic.ts');
+        const g = neo.scene.game,
+          p = g.play,
+          left = L.standing(p);
+        return {
+          gallery: g.round.gallery,
+          askable: L.askable(g.round.gallery),
+          tray: [...p.tray],
+          cards: g.trayCards.map((c) => c.feature),
+          splitting: p.tray.filter((f) => L.splits(f, left)),
+          best: L.bestQuestion(p),
+          spareDud: L.unasked(p).find((f) => !L.splits(f, left) && !p.tray.includes(f)) ?? null,
+          asked: p.asked.map((a) => [a.feature, a.yes, a.dud]),
+          current: p.current,
+          secretHas: p.current ? L.keeps(p.current.feature, g.round.answer) : null,
+          targets: L.helpTargets(p),
+          score: [p.misses, p.hints],
+          down: p.down.size,
+          standing: left.length,
+          done: p.done,
+        };
+      });
+    const askCard = (f) =>
+      page.evaluate((f) => kit.tapOn(neo.scene.game.trayCards.find((c) => c.feature === f).node), f);
+    let q = await ask6();
+    assert.equal(new Set(q.gallery).size, 6, 'level 6 has six different friends');
+    assert.equal(q.tray.length, 3, 'three question cards');
+    assert.deepEqual(q.cards, q.tray, 'the tray on screen is the tray in the rules');
+    assert.equal(q.splitting.length, 3, 'the first tray holds no dud');
+    assert.ok(!q.askable.includes('scales'), 'scales is never asked');
+    // A friend tapped before any question: nothing turns, nothing counts.
+    await tapCard(0);
+    await page.waitForTimeout(300);
+    q = await ask6();
+    assert.deepEqual([q.score, q.down, q.asked.length], [[0, 0], 0, 0]);
+    // The question hint from the pause sheet: counted once, however often it shows.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual((await ask6()).score, [0, 1]);
+    await screenshot('who-am-i-6-question-hint');
+    await askCard(q.best);
+    await settle();
+    q = await ask6();
+    assert.equal(q.asked.length, 1);
+    assert.ok(q.current && q.current.yes === q.secretHas, "the answer is the secret friend's own");
+    assert.ok(q.targets.length >= 1, 'a question that splits rules someone out');
+    // A tray card while friends still need turning only repeats the answer.
+    await askCard(q.tray[0]);
+    await page.waitForTimeout(300);
+    assert.equal((await ask6()).asked.length, 1, 'asking while turning records nothing');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(1300);
+    await screenshot('who-am-i-6-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    // The secret friend is kept by every answer: one miss, no card turns.
+    await tapCard(await answerAt());
+    await settle();
+    assert.deepEqual([(await ask6()).score, (await ask6()).down], [[1, 1], 0]);
+    for (const i of q.targets) {
+      await tapCard(i);
+      await page.waitForTimeout(450);
+    }
+    await settle();
+    q = await ask6();
+    let dudAsked = false;
+    for (let guard = 0; !q.done && guard < 8; guard++) {
+      assert.equal(q.current, null, 'choosing again after the flips');
+      assert.ok(q.splitting.length >= 1, 'the tray always holds a question that splits');
+      if (!dudAsked) {
+        let dud = q.tray.find((f) => !q.splitting.includes(f)) ?? null;
+        if (!dud && q.spareDud)
+          dud = await page.evaluate(
+            ([f, best]) => {
+              const g = neo.scene.game;
+              g.play.tray[g.play.tray.findIndex((t) => t !== best)] = f;
+              g.drawTray();
+              return f;
+            },
+            [q.spareDud, q.best],
+          );
+        if (dud) {
+          const before = q;
+          await askCard(dud);
+          await settle();
+          q = await ask6();
+          assert.deepEqual(q.asked.at(-1), [dud, q.asked.at(-1)[1], true], 'a dud is recorded as one');
+          assert.deepEqual(
+            [q.score, q.down, q.current],
+            [before.score, before.down, null],
+            'a dud changes nothing',
+          );
+          assert.ok(!q.tray.includes(dud), 'the dud card is replaced');
+          assert.equal(q.best, before.best, 'the best question is still in the tray');
+          dudAsked = true;
+        }
+      }
+      await askCard(q.best);
+      await settle();
+      q = await ask6();
+      for (const i of q.targets) {
+        await tapCard(i);
+        await page.waitForTimeout(450);
+      }
+      await settle();
+      q = await ask6();
+    }
+    await finished('who-am-i');
+    assert.deepEqual(await score(), [1, 1]);
+    assert.ok(dudAsked, 'one dud was asked');
+    log(
+      'Who Am I? 6: three question cards with no dud at first, a friend tap before asking uncounted, the question hint counted once (asked twice), the answer true of the secret friend, a kept-friend tap as the one miss, a dud that turns nobody and counts nothing with its card replaced, best questions to the last friend, portrait screenshot with the tray, saved score passed',
     );
     log(
       'Who Am I? 5: the group clue first, a kept-friend tap with the group reason, the pause-sheet hint showing what the group means (one hint, asked twice), flips to the answer, each surprise explained once, saved score passed',

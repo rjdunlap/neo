@@ -4,18 +4,25 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Listen to the clue and find the friend it is about.',
   steps: [
-    'Tap the sign any time to hear the clue again.',
+    { from: 1, to: 5, text: 'Tap the sign any time to hear the clue again.' },
+    { from: 6, to: 6, text: 'Tap the sign any time to hear the answer again.' },
     { from: 1, to: 1, text: 'Tap the friend the clue fits.' },
     {
       from: 2,
       to: 5,
       text: 'Tap each friend the clue rules out to turn it over; the next clue comes when they are all down.',
     },
-    { from: 2, to: 5, text: 'Tap a turned-over friend to peek at it.' },
+    { from: 6, to: 6, text: 'Tap a question card to ask it; the pet answers yes or no.' },
+    {
+      from: 6,
+      to: 6,
+      text: 'Turn over every friend the answer rules out. After a no, those are the friends who have it.',
+    },
+    { from: 2, to: 6, text: 'Tap a turned-over friend to peek at it.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'The friend who fits jumps out and says its name.' },
-    { from: 2, to: 5, text: 'The last friend left jumps out and says its name.' },
+    { from: 2, to: 6, text: 'The last friend left jumps out and says its name.' },
   ],
   note: [
     {
@@ -32,6 +39,11 @@ export const HOW_TO: GameHowTo = {
       from: 4,
       to: 5,
       text: 'Some clues surprise: the penguin has feathers but cannot fly, and the bat flies but feeds its babies milk. The pet explains each once, and that is never counted.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'Asking is never counted against her, however many questions she asks, and neither is hearing an answer again or peeking. Turning over a friend the answer keeps counts as a miss, with the reason spoken; after two on one answer the friends it rules out shimmer, which counts as a hint. If she asks for the glowing question, or it shows after two questions in a row that tell nobody apart, that counts as a hint once.',
     },
     {
       from: 5,

@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 2–5 |
+| school | 2–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,12 +18,13 @@
 | 3 | Groups by features: 3 clues, 6 friends |
 | 4 | Surprises: the penguin and the bat, 3 clues, 6 friends |
 | 5 | Which group? The clue is a bird or a mammal, 6 friends |
+| 6 | You ask: choose the questions, 6 friends |
 
 <!-- end generated -->
 
 **Starts as:** a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out
 
-**Grows into:** three friends and one clue, then four friends and two clues, then six friends from at least four groups and three clues (covering, babies, breathing), then level 4's surprises: the penguin and the bat in every gallery, where flying or feathers stop meaning "bird", then level 5 (school): the first clue is the answer's group ("I'm a bird!" or "I'm a mammal!") and the penguin can be the answer
+**Grows into:** three friends and one clue, then four friends and two clues, then six friends from at least four groups and three clues (covering, babies, breathing), then level 4's surprises: the penguin and the bat in every gallery, where flying or feathers stop meaning "bird", then level 5 (school): the first clue is the answer's group ("I'm a bird!" or "I'm a mammal!") and the penguin can be the answer, then level 6 (school): she asks yes/no questions of a secret friend from a tray of three and turns over every friend each answer rules out
 
 ## Design notes
 
@@ -31,4 +32,6 @@
 
 Level 5 (school 5, Z10 "Which group?"): the first clue is the answer's group, spoken "I'm a bird!" or "I'm a mammal!" on a rosette sign with the group's word under it; the gallery of six always has the penguin and the bat and at least three groups. She turns over everyone not in the group with the level 2–4 action; if more than one friend still stands, one feature clue follows. The kind of answer is drawn first with equal chances (flying bird, penguin, bat, four-legged mammal); the frog, turtle and fish are never the answer. A tap on a kept friend at the group clue is a miss with the reason ("Penguin has feathers, so Penguin is a bird. Penguin stays!"). The hint (two misses on the group clue, or the pause sheet) shows what the group means with feature signs beside the rosette and counts one hint; the clue is then judged and explained as its feature clue (feathers or milk), and two more misses shimmer the ruled-out friends with no further count. The surprises are explained once each, free. Levels 1–4 are unchanged.
 
-*Levels 6–7 are defined, not built* (slice Z9; builds Z11–Z12): you ask (a tray of yes/no questions) and make a riddle (true clue cards). See the [definition](../definitions/who-am-i.md#levels-57-z9-defined-2026-11-17).
+Level 6 (school 6, Z11 "You ask"): the pet thinks of a secret friend among six (one from each of six of the seven kinds the trait table tells apart: 68 galleries, 408 rounds). She taps one of three question cards; the pet asks it aloud and answers yes or no (a tick or a cross on the sign), and she turns over every friend the answer rules out; the tray refills and the last friend jumps out, the pet saying how many questions she asked. Asking is never a miss. A dud (the same for everyone standing) is answered, told so and its card replaced; turning over a kept friend is a miss, and two on one answer shimmer the ruled-out friends (one hint per answer). The question hint (pause sheet, or by itself after two duds in a row) glows the most even split and counts once per round. Questions the table cannot deny safely are never offered (`scales`; `beak` with the turtle; `gills` or `fins` with the frog; `smooth-skin` with the fish; `milk` with the penguin; any question the same for all six), so 8 to 10 questions per gallery; the source check is in the [definition](../definitions/who-am-i.md#level-6-no-answers-source-check-z11-2026-11-17). School is now 2–6, pre-K stays 1–2.
+
+*Level 7 is defined, not built* (slice Z9; build Z12): make a riddle (true clue cards). See the [definition](../definitions/who-am-i.md#level-7-make-a-riddle).
