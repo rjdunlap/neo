@@ -25,6 +25,9 @@ export const VOICE = {
   'hh.instruct.8': [
     'Keep the plants comfy, and never let the heater and the fan run together. Drag the two lines on the gauge, then tap Watch.',
   ],
+  'hh.instruct.9': [
+    'Make one setup that works on every kind of day. Drag the two lines on the gauge, then tap Watch.',
+  ],
   'hh.guess.ask': [
     'The line is way up high. Will the nook warm up faster? Tap the hare for faster, or the two flames for the same.',
   ],
@@ -48,6 +51,7 @@ export const VOICE = {
   'hh.case.ordinary': ['An ordinary day.'],
   'hh.case.heat-wave': ['A heat wave.'],
   'hh.case.cold-snap': ['A cold snap.'],
+  'hh.case.passed': ['That day worked. Now the next one.'],
   'hh.clicks': ['Look at the jar. Each pebble is one time a helper switched on or off.'],
   'hh.lamp-on-at-morning': ['The lamp is still on in the morning. Nothing tells it to turn off.'],
   'hh.lamp-off-at-night': ['The lamp stayed off in the dark. A later card turned it off again.'],

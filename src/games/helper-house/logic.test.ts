@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { gapAt, gapY, handleRect, setLine, switches, GAPS, PITCH } from './logic';
+import {
+  accepts,
+  allCases,
+  daysFor,
+  gapAt,
+  gapY,
+  handleRect,
+  runPass,
+  setLine,
+  switches,
+  GAPS,
+  PITCH,
+} from './logic';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
@@ -9,6 +21,7 @@ import {
   DRIFT,
   GREEN,
   GREENHOUSE_START,
+  LEVELS,
   MAX_LEVEL,
   START_WARMTH,
   STEPS,
@@ -569,7 +582,7 @@ describe('level 5: where does the sensor look?', () => {
 
   it('is the fifth and last level, named Where does it look?, with the level 3 answer given and fixed', () => {
     expect(planFor(5).name).toBe('Where does it look?');
-    expect(MAX_LEVEL).toBe(8);
+    expect(MAX_LEVEL).toBe(9);
     const start = startBoard(5);
     expect(start.sensor).toEqual({ kind: 'sun', socket: 'lamp' });
     expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([
@@ -1345,6 +1358,201 @@ describe('level 8: the greenhouse', () => {
       }
       for (const h of heat) for (const f of fan) expect(overlaps(h, f), label).toBe(false);
       for (let k = 1; k < GAPS; k++) expect(gapY(g, k) - gapY(g, k + 1)).toBeGreaterThanOrEqual(60);
+    }
+  });
+});
+
+describe('level 9: greenhouse cases', () => {
+  const br = briefFor(9, new Rng(3));
+  const board = (on: number, off: number): Board => ({ ...startBoard(9), lines: { on, off } });
+  const all = candidateBoards(br);
+  const key = (b: Board) => `${b.lines!.on},${b.lines!.off}`;
+
+  it('is the top of the school band, in the greenhouse, with three case cards and lines that start at (4,4)', () => {
+    expect(MAX_LEVEL).toBe(9);
+    expect(LEVELS.school).toEqual({ min: 2, max: 9 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 3 });
+    expect(planFor(9).name).toBe('Greenhouse cases');
+    expect(inGreenhouse(9)).toBe(true);
+    expect(allCases(9)).toBe(true);
+    expect([1, 2, 3, 4, 5, 6, 7, 8].some(allCases)).toBe(false);
+    expect(linePieces(9)).toEqual(['heat-line', 'fan-line']);
+    expect(startBoard(9).lines).toEqual({ on: 4, off: 4 });
+    expect(caseCards(9)).toBe(3);
+  });
+
+  it('watches the three cases in order, the same for every seed', () => {
+    for (const b of briefs(9)) {
+      expect(b.board).toEqual(startBoard(9));
+      expect(daysFor(b).map((d) => d.case)).toEqual(['ordinary', 'heat-wave', 'cold-snap']);
+      expect(b.day).toEqual(caseDay('ordinary'));
+      for (const d of daysFor(b)) expect(d).toEqual(caseDay(d.case!));
+    }
+    // Every other level watches its one day.
+    for (let level = 1; level <= 8; level++) {
+      const b = briefFor(level, new Rng(5));
+      expect(daysFor(b)).toEqual([b.day]);
+    }
+  });
+
+  it('accepts exactly (3,4) of the 36 boards', () => {
+    expect(all).toHaveLength(36);
+    expect(all.filter((b) => accepts(b, br)).map(key)).toEqual(['3,4']);
+    expect(solutions(br).map((b) => b.lines)).toEqual([{ on: 3, off: 4 }]);
+    for (const b of all)
+      expect(accepts(b, br), key(b)).toBe(CASE_NAMES.every((n) => meetsGoal(b, caseDay(n))));
+  });
+
+  it('stops a Watch at the end of the first failing case and reports that case', () => {
+    for (const b of all) {
+      const pass = runPass(b, br);
+      const firstBad = CASE_NAMES.findIndex((n) => !meetsGoal(b, caseDay(n)));
+      if (firstBad < 0) {
+        expect(pass.met).toBe(true);
+        expect(pass.runs).toHaveLength(3);
+        expect(pass.failure).toBeNull();
+        expect(pass.failedAt).toBeNull();
+        continue;
+      }
+      expect(pass.met, key(b)).toBe(false);
+      expect(pass.failedAt, key(b)).toBe(firstBad);
+      expect(pass.runs, key(b)).toHaveLength(firstBad + 1);
+      expect(pass.failure, key(b)).toBe(runDay(b, caseDay(CASE_NAMES[firstBad])).failure);
+      expect(pass.failure).not.toBeNull();
+      pass.runs.forEach((o, i) => {
+        expect(o).toEqual(runDay(b, caseDay(CASE_NAMES[i])));
+        expect(o.met).toBe(i < firstBad);
+      });
+    }
+  });
+
+  it('passes the ordinary day on the start board, then fails the heat wave as too hot', () => {
+    const pass = runPass(br.board, br);
+    expect(pass.runs).toHaveLength(2);
+    expect(pass.runs[0].met).toBe(true);
+    expect(pass.failedAt).toBe(1);
+    expect(pass.failure).toBe('plants-hot');
+    expect(accepts(br.board, br)).toBe(false);
+  });
+
+  it('has no single case that shows the answer: each case accepts a board another rejects', () => {
+    expect(runPass(board(4, 4), br).failedAt).toBe(1);
+    expect(runPass(board(3, 3), br).failedAt).toBe(0);
+    expect(meetsGoal(board(3, 3), caseDay('heat-wave'))).toBe(true);
+    expect(meetsGoal(board(3, 3), caseDay('cold-snap'))).toBe(true);
+    // Where a Watch stops: 34 boards on the ordinary day, (4,4) on the heat wave, none on the cold snap. The only
+    // board the first two days accept is the answer, so the third day is always its confirmation.
+    const stops = [0, 1, 2].map((i) => all.filter((x) => runPass(x, br).failedAt === i).map(key));
+    expect(stops[0]).toHaveLength(34);
+    expect(stops[1]).toEqual(['4,4']);
+    expect(stops[2]).toEqual([]);
+  });
+
+  it('glows a line that differs from (3,4) for every failing board', () => {
+    for (const b of all) {
+      const pass = runPass(b, br);
+      if (pass.met) continue;
+      const g = glowFor(b, pass.failure!);
+      expect(['heat-line', 'fan-line']).toContain(g);
+      expect(g === 'heat-line' ? b.lines!.on !== GREEN.on : b.lines!.off !== GREEN.off, key(b)).toBe(true);
+    }
+    expect(glowFor(br.board, 'plants-hot')).toBe('heat-line');
+  });
+
+  it('reaches (3,4) within two Show me presses from every board, and one from the start', () => {
+    for (const b of all) {
+      let cur = b;
+      let presses = 0;
+      while (!accepts(cur, br) && presses < 2) {
+        const h = helpFor(cur, br, presses + 1);
+        expect(h.placed, key(b)).not.toBeNull();
+        expect(h.board).not.toEqual(cur);
+        cur = h.board;
+        presses++;
+      }
+      expect(cur.lines, key(b)).toEqual({ on: 3, off: 4 });
+    }
+    const first = helpFor(br.board, br, 1);
+    expect(first.placed).toBe('heat-line');
+    expect(first.board.lines).toEqual({ on: 3, off: 4 });
+    expect(helpFor(first.board, br, 2).placed).toBeNull();
+  });
+
+  it('gives (3,4) as the supported finish', () => {
+    expect(setupFor(br)!.lines).toEqual({ on: 3, off: 4 });
+    expect(accepts(setupFor(br)!, br)).toBe(true);
+  });
+
+  it('plays the ghost finger: watch, heater line down one gap, watch', () => {
+    expect(nextMove(br, br.board, 0)).toEqual({ watch: true });
+    expect(nextMove(br, br.board, 1)).toEqual({ line: 'heat-line', gap: 3 });
+    const b = setLine(br.board, 'heat-line', 3);
+    expect(nextMove(br, b, 1)).toEqual({ watch: true });
+    expect(accepts(b, br)).toBe(true);
+    // From any board it reaches the accepted one.
+    for (const start of all) {
+      let cur = start;
+      for (let i = 0; i < 4; i++) {
+        const m = nextMove(br, cur, 1);
+        if ('line' in m) cur = setLine(cur, m.line, m.gap);
+      }
+      expect(cur.lines, key(start)).toEqual({ on: 3, off: 4 });
+    }
+  });
+
+  it('tallies the same failure name on two Watches as one glow, whichever case failed', () => {
+    const t = new Tally();
+    // (4,4) fails the heat wave as too hot; (5,6) fails the ordinary day as too hot.
+    expect(runPass(board(5, 6), br).failure).toBe('plants-hot');
+    expect(runPass(board(5, 6), br).failedAt).toBe(0);
+    expect(t.failed(board(4, 4), 'plants-hot')).toBe(false);
+    expect(t.failed(board(4, 4), 'plants-hot')).toBe(true);
+    expect(t.glowing).toBe('heat-line');
+    expect(t.hints).toBe(1);
+    expect(t.misses).toBe(0);
+  });
+
+  it('lays out three full-size case cards in one row, clear of everything, at every view', () => {
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(1366, 1024),
+      computeView(1024, 1366),
+      computeView(844, 390),
+      computeView(390, 844),
+    ];
+    for (const v of views) {
+      const l = houseLayout(br, v);
+      const label = `${v.w}x${v.h}`;
+      expect(l, label).not.toBeNull();
+      const g = l!.gauge!;
+      expect(l!.cases, label).toHaveLength(3);
+      expect(l!.house.h, label).toBeGreaterThanOrEqual(320);
+      const inView = (r: { x: number; y: number; w: number; h: number }) =>
+        r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
+      const others = [
+        l!.house,
+        g.column,
+        g.left,
+        g.right,
+        g.jar!,
+        l!.watch,
+        l!.step,
+        l!.undo,
+        ...l!.rows.flatMap((r) => [r.reading, r.action]),
+        ...corners(v),
+      ];
+      l!.cases.forEach((card, i) => {
+        expect(card.w, label).toBeGreaterThanOrEqual(130);
+        expect(card.h, label).toBeGreaterThanOrEqual(110);
+        expect(card.y, label).toBe(l!.cases[0].y);
+        expect(inView(card), label).toBe(true);
+        for (const o of others)
+          expect(overlaps(card, o), `${label} card ${i} vs ${JSON.stringify(o)}`).toBe(false);
+        l!.cases.forEach((other, j) => {
+          if (i < j) expect(overlaps(card, other), label).toBe(false);
+        });
+      });
     }
   });
 });

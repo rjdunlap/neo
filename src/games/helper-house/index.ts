@@ -27,6 +27,7 @@ import {
   bubbleArt,
   cardArt,
   caseArt,
+  leafStamp,
   gaugeArt,
   gaugeLine,
   Greenhouse,
@@ -62,6 +63,10 @@ import {
   HOUSE_COLORS,
   houseLayout,
   inGreenhouse,
+  allCases,
+  daysFor,
+  CASE_NAMES,
+  type Day,
   isLinePiece,
   JAR,
   LINE_PIECES,
@@ -103,8 +108,16 @@ import {
 
 /** The friend stands about 250 tall at scale 1. */
 const CRITTER_SCALE = 0.4;
-/** Within a step: the sensor reads, the pulse leaves the sensor, reaches the card, reaches the helper, the helper acts. */
+/**
+ * Within a step: the sensor reads, the pulse leaves the sensor, reaches the card, reaches the helper, the helper acts.
+ * Seconds at the ordinary pace (`STEP_SECONDS`); a quicker day (the demo, level 9's three cases) scales them, so the
+ * helper still acts inside its step.
+ */
 const PHASES = { read: 0.2, pulse: 0.35, card: 0.55, act: 0.75 };
+const STEP_SECONDS = 0.9;
+const QUICK_SECONDS = 0.6;
+/** Level 9: the beat between one case and the next, while its card takes the leaf stamp. */
+const CASE_BEAT = 0.8;
 
 interface Run {
   outcome: Outcome;
@@ -149,9 +162,17 @@ class HelperHouse implements Game {
   private readonly board_ = new Container();
   private readonly glow = new Graphics();
   private house: House | null = null;
-  /** Level 8: the greenhouse stands where the house does. */
+  /** Levels 8–9: the greenhouse stands where the house does. */
   private green: Greenhouse | null = null;
   caseNodes: Container[] = [];
+  /** The days one Watch plays: one, or level 9's three cases in order. */
+  private readonly days: Day[];
+  /** Level 9: the case being watched (or the one the last Watch stopped at). */
+  caseIndex = 0;
+  /** Level 9: how many cases this setup has passed in its Watch; each has a leaf stamp on its card. */
+  stamps = 0;
+  /** Level 9: the last Watch stopped at `caseIndex`, whose card stays lit until the setup changes. */
+  stopped = false;
   private sky: SkyMark | null = null;
   private friend: Critter | null = null;
   private bubble: Container | null = null;
@@ -184,9 +205,10 @@ class HelperHouse implements Game {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.rng);
     this.board = this.brief.board;
+    this.days = daysFor(this.brief);
     this.warmthNow = this.brief.day.warmth;
     this.guessOpen = this.brief.level === 6;
-    this.stepSeconds = ctx.demo ? 0.6 : 0.9;
+    this.stepSeconds = ctx.demo || allCases(this.brief.level) ? QUICK_SECONDS : STEP_SECONDS;
     this.backdrop = new Backdrop(
       {
         sky: [0xbfe6ff, 0xfff6e0],
@@ -217,9 +239,21 @@ class HelperHouse implements Game {
     return onGauge(this.level);
   }
 
-  /** Level 8: the greenhouse, where the sky's weather moves the warmth too. */
+  /** Levels 8–9: the greenhouse, where the sky's weather moves the warmth too. */
   private get glass() {
     return inGreenhouse(this.level);
+  }
+
+  /** The day on screen: the round's day, or at level 9 the case being watched. */
+  private get day(): Day {
+    return this.days[this.caseIndex];
+  }
+
+  /** A changed setup has not been watched yet: level 9's stamps go, and the next Watch starts at the first case. */
+  private unwatched() {
+    this.caseIndex = 0;
+    this.stamps = 0;
+    this.stopped = false;
   }
 
   start() {
@@ -294,12 +328,11 @@ class HelperHouse implements Game {
     this.board_.addChild(house);
     if (house instanceof Greenhouse) this.green = house;
     else this.house = house;
-    // The round's case card (level 8): a tap says which kind of day it is; never counted.
-    l.cases.forEach((r) => {
-      const name = this.brief.day.case;
+    // The case cards (level 8: the round's one; level 9: all three): a tap says which kind of day it is; never counted.
+    l.cases.forEach((r, i) => {
+      const name = allCases(this.level) ? CASE_NAMES[i] : this.brief.day.case;
       if (!name) return;
       const node = new Container();
-      node.addChild(caseArt(name, r.w, r.h));
       node.position.copyFrom(centre(r));
       node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
       onTap(
@@ -313,6 +346,7 @@ class HelperHouse implements Game {
       this.board_.addChild(node);
       this.caseNodes.push(node);
     });
+    this.drawCases();
     const sky = new SkyMark(90);
     sky.position.set(l.house.x + l.house.w * (this.level >= 2 ? 0.14 : 0.88), l.house.y + 60);
     this.board_.addChild(sky);
@@ -594,6 +628,24 @@ class HelperHouse implements Game {
     }
   }
 
+  /** The case cards: level 9 lights the case being watched and stamps a leaf on each case this setup has passed. */
+  private drawCases() {
+    const l = this.layoutNow;
+    if (!l) return;
+    const many = allCases(this.level);
+    this.caseNodes.forEach((node, i) => {
+      const r = l.cases[i];
+      const name = many ? CASE_NAMES[i] : this.brief.day.case!;
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(caseArt(name, r.w, r.h, many && (!!this.run || this.stopped) && i === this.caseIndex));
+      if (many && i < this.stamps) {
+        const stamp = leafStamp(24);
+        stamp.position.set(r.w / 2 - 22, r.h / 2 - 22);
+        node.addChild(stamp);
+      }
+    });
+  }
+
   /** Where a socket's centre is. */
   private socketAt(socket: Socket): Pt {
     const i = this.brief.sockets.indexOf(socket);
@@ -652,7 +704,7 @@ class HelperHouse implements Game {
   private showStill() {
     const steady = this.level === 1 || (this.nook && !this.glass);
     // The greenhouse rests under its case's first sky.
-    const sun = steady ? 'bright' : this.glass ? this.brief.day.sun[0] : 'dim';
+    const sun = steady ? 'bright' : this.glass ? this.day.sun[0] : 'dim';
     this.sky?.set(sun);
     this.setVeil(sun);
     this.house?.setDoor(0);
@@ -663,8 +715,8 @@ class HelperHouse implements Game {
     this.green?.setFan(false);
     this.green?.setFight(false);
     this.pebbles = 0;
-    if (this.nook && this.warmthNow !== this.brief.day.warmth) {
-      this.warmthNow = this.brief.day.warmth;
+    if (this.nook && this.warmthNow !== this.day.warmth) {
+      this.warmthNow = this.day.warmth;
       this.redraw();
     }
     this.green?.setPlants(this.warmthNow);
@@ -820,6 +872,7 @@ class HelperHouse implements Game {
     this.closeGuess();
     this.history.push(this.board);
     this.board = board;
+    this.unwatched();
     this.tally.changed(piece);
     this.build();
   }
@@ -831,6 +884,7 @@ class HelperHouse implements Game {
     if (!b) return;
     this.closeGuess();
     this.board = b;
+    this.unwatched();
     this.tally.changed('sensor');
     for (const i of openRows(b)) this.tally.changed(i);
     if (b.lines) for (const p of LINE_PIECES) this.tally.changed(p);
@@ -845,6 +899,7 @@ class HelperHouse implements Game {
     if (sameBoard(this.board, this.brief.board)) return;
     this.history.push(this.board);
     this.board = this.brief.board;
+    this.unwatched();
     this.build();
   }
 
@@ -880,9 +935,12 @@ class HelperHouse implements Game {
   }
 
   private startRun() {
-    const outcome = runDay(this.board, this.brief.day);
+    // Level 9 watches its cases in order from the first; the stamps are earned again.
+    this.unwatched();
+    const outcome = runDay(this.board, this.day);
     this.run = { outcome, step: 0, t: 0, shown: new Set(), paused: false, single: false };
     this.closeGuess();
+    this.drawCases();
     this.showStill();
     if (this.friend && this.level === 1) this.friend.visible = false;
     this.offerButton?.destroy();
@@ -894,6 +952,21 @@ class HelperHouse implements Game {
   /** A piece moved mid-day: the day stops where it is and the house goes back to rest. */
   private stopRun() {
     this.run = null;
+    this.unwatched();
+    this.drawCases();
+    this.showStill();
+    this.redraw();
+  }
+
+  /** Level 9: a case met the goal and another follows. Its card takes a leaf stamp, and the next day starts from rest after a beat. */
+  private nextCase(single: boolean) {
+    this.stamps = this.caseIndex + 1;
+    this.caseIndex++;
+    sfx.pop(9);
+    void this.ctx.say('hh.case.passed');
+    const outcome = runDay(this.board, this.day);
+    this.run = { outcome, step: 0, t: -CASE_BEAT, shown: new Set(), paused: single, single: false };
+    this.drawCases();
     this.showStill();
     this.redraw();
   }
@@ -903,8 +976,9 @@ class HelperHouse implements Game {
     if (!r || r.paused) return;
     const t = r.outcome.trace[r.step];
     r.t += dt;
+    const pace = this.stepSeconds / STEP_SECONDS;
     const fire = (name: string, at: number) => {
-      if (r.shown.has(name) || r.t < at) return false;
+      if (r.shown.has(name) || r.t < at * pace) return false;
       r.shown.add(name);
       return true;
     };
@@ -929,7 +1003,7 @@ class HelperHouse implements Game {
       const from = this.sensorPoint();
       const card = this.rowNodes[t.matched].reading.position;
       const to = this.helperPoint(t);
-      const k = Math.min(1, Math.max(0, (r.t - PHASES.pulse) / (PHASES.act - PHASES.pulse)));
+      const k = Math.min(1, Math.max(0, (r.t / pace - PHASES.pulse) / (PHASES.act - PHASES.pulse)));
       const a = k < 0.5 ? k * 2 : 1;
       const b = k < 0.5 ? 0 : (k - 0.5) * 2;
       const mid = { x: card.x, y: card.y };
@@ -987,6 +1061,14 @@ class HelperHouse implements Game {
     r.shown = new Set();
     this.redraw();
     if (r.step >= STEPS) {
+      if (r.outcome.met && this.caseIndex < this.days.length - 1) {
+        this.nextCase(r.single);
+        return;
+      }
+      if (r.outcome.met && allCases(this.level)) {
+        this.stamps = this.days.length;
+        this.drawCases();
+      }
       void this.dayEnded(r.outcome);
       return;
     }
@@ -1069,9 +1151,12 @@ class HelperHouse implements Game {
     h.setLamp(on);
   }
 
+  /** A Watch ended: the day, or at level 9 the first case that did not meet the goal (or the last, when all did). */
   private async dayEnded(o: Outcome) {
     this.run = null;
     this.daysPlayed++;
+    this.stopped = !o.met;
+    this.drawCases();
     if (this.level === 6 && this.daysPlayed === 1) {
       // The guess's answer, whichever was picked; the first day's climb stays on the gauge to compare.
       // Heard in full before the day's reason, which would otherwise cut it off.
@@ -1152,6 +1237,7 @@ class HelperHouse implements Game {
     this.closeGuess();
     this.history.push(this.board);
     this.board = h.board;
+    this.unwatched();
     this.tally.changed(h.placed);
     this.build();
     const p = h.placed;
@@ -1182,6 +1268,7 @@ class HelperHouse implements Game {
     this.tally.offered();
     this.history.push(this.board);
     this.board = right;
+    this.unwatched();
     this.tally.changed('sensor');
     for (const i of openRows(right)) this.tally.changed(i);
     if (right.lines) for (const p of LINE_PIECES) this.tally.changed(p);
@@ -1236,7 +1323,8 @@ class HelperHouse implements Game {
    * Watch; at level 4, cool to the on row, warm to the off row, then Watch; at level 5, Watch (the lamp flickers), the
    * sensor up to the roof, then Watch; at level 6 the line down to gap 4, then Watch (it skips the guess); at level 7,
    * Watch (a pebble rolls out), the off line up one gap, then Watch; at level 8, Watch (the helpers fight), the fan
-   * line up one gap, the heater line down one, then Watch.
+   * line up one gap, the heater line down one, then Watch; at level 9, Watch (the ordinary day earns its leaf, the heat
+   * wave fails), the heater line down one gap, then Watch.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;

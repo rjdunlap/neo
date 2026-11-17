@@ -354,6 +354,61 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await finished('helper-house');
       assert.deepEqual(await score(), [0, 2], 'level 8 saved 0 misses, 2 hints');
     }
+    if (levels.includes(9)) {
+      // Level 9: the lines open together at gap 4. One Watch plays the ordinary day (a leaf on its card) and stops at
+      // the end of the heat wave, which gets too hot; that counts nothing. A case card speaks and counts nothing; a
+      // portrait look at the stamped card; dragging the heater line down to 3 clears the leaf; Watch then plays all
+      // three cases and finishes with no hints.
+      await launch('helper-house', 9);
+      await settle();
+      const cases = () =>
+        page.evaluate(() => ({ stamps: neo.scene.game.stamps, at: neo.scene.game.caseIndex }));
+      assert.deepEqual(await lines(), { on: 4, off: 4 }, 'level 9 opens with both lines at gap 4');
+      assert.equal(await page.evaluate(() => neo.scene.game.caseNodes.length), 3, 'three case cards');
+      await watch();
+      assert.deepEqual(
+        await cases(),
+        { stamps: 1, at: 1 },
+        'the ordinary day passes and the heat wave stops the Watch',
+      );
+      s = await state();
+      assert.equal(s.days, 1, 'one Watch completed');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.tally.failedDays),
+        1,
+        'the Watch did not meet the goal',
+      );
+      assert.deepEqual(await tally(), [0, 0], 'a failing case counts nothing');
+      await tapOn('neo.scene.game.caseNodes[1]');
+      assert.deepEqual(await tally(), [0, 0], 'a case card counts nothing');
+      assert.deepEqual(await cases(), { stamps: 1, at: 1 }, 'a case card changes nothing');
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(800);
+      assert.deepEqual(await cases(), { stamps: 1, at: 1 }, 'the leaf survives turning the screen');
+      await screenshot('helper-house-9-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      const down3 = await gapPoint(3, -55);
+      await page.evaluate(async (to) => {
+        const n = neo.scene.game.lineNodes[0].node;
+        await kit.dragTo(n, { x: to.x, y: to.y + 40 }, 16);
+      }, down3);
+      await page.waitForTimeout(500);
+      assert.deepEqual(await lines(), { on: 3, off: 4 }, 'the dragged heater line snaps to gap 3');
+      assert.deepEqual(await cases(), { stamps: 0, at: 0 }, 'moving a line clears the leaves');
+      await tapOn('neo.scene.game.watchButton');
+      await page.waitForFunction(
+        () => neo.scene.game.caseIndex === 1 && neo.scene.game.run?.step === 6,
+        null,
+        {
+          timeout: 30000,
+        },
+      );
+      await screenshot('helper-house-9-heat-wave');
+      await settle();
+      await finished('helper-house');
+      assert.deepEqual(await score(), [0, 0], 'level 9 saved 0 misses, 0 hints');
+    }
     log(
       `Helper House ${levels.join(', ')}: failing days glow once, drags and taps, Step, portrait, Show me, passed`,
     );
