@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { ink, RAINBOW, swatch, wood } from '../../art/palette';
 import { label } from '../../ui/text';
 import { drawBubble } from './bubble';
-import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, type ModePicture } from './logic';
+import { DOT_NUMERAL_Y, DOT_RADIUS, PIP_RADIUS, dicePips, numberDots, type ModePicture } from './logic';
 
 /** A plain or colored bubble at (x, y), with a numeral (and its dots, as the round draws them) when given one. */
 function bubble(
@@ -120,6 +120,28 @@ export function modePicture(p: ModePicture): Container {
       sign(c, -32, String(p.sign), p.arrow);
       p.numbers.forEach((n, i) => bubble(c, -36 + i * 36, 22, 17, null, n));
       break;
+    case 'sizes':
+      bubble(c, -18, -6, 36, null);
+      bubble(c, 34, 26, 18, null);
+      // The size asked for is ringed.
+      c.addChild(new Graphics().circle(-18, -6, 43).stroke({ width: 4, color: ink }));
+      break;
+    case 'pips': {
+      const spots = [
+        [-26, -22],
+        [26, -18],
+        [0, 28],
+      ];
+      p.counts.slice(0, 3).forEach((n, i) => {
+        const [x, y] = spots[i];
+        bubble(c, x, y, 24, RAINBOW[(i + 2) % RAINBOW.length]);
+        const d = new Graphics();
+        for (const pip of dicePips(n)) d.circle(x + pip.x * 24, y + pip.y * 24, PIP_RADIUS * 24).fill(ink);
+        c.addChild(d);
+      });
+      c.addChild(new Graphics().circle(spots[0][0], spots[0][1], 31).stroke({ width: 4, color: ink }));
+      break;
+    }
     case 'bond':
       sign(c, -32, String(p.sum));
       p.numbers.forEach((n, i) => bubble(c, i ? 22 : -22, 22, 22, null, n));

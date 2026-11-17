@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
+import { SCRIPT } from '../../content/voice-script';
+import { SCENES } from './scenes';
 import {
   DOT_NUMERAL_Y,
+  PICTURES,
+  PIP_RADIUS,
+  SIZE_RATIO,
+  LEVELS,
+  dicePips,
+  dotAsks,
+  pictureLine,
+  riderFor,
+  spawnSize,
   DOT_RADIUS,
   numberDots,
   showsDots,
@@ -105,8 +116,11 @@ describe('bubbles she needs', () => {
     // Free and color bubbles rise and leave; color mode makes up for it by sending the asked-for color when none shows.
     expect(staysPut('free')).toBe(false);
     expect(staysPut('color')).toBe(false);
+    // Size bubbles rise and leave like colors, and the asked-for size is sent again when none shows; dot bubbles stay.
+    expect(staysPut('size')).toBe(false);
+    expect(staysPut('dots')).toBe(true);
     for (const plan of PLANS.filter((p) => staysPut(p.mode))) {
-      const bubbles = plan.mode === 'bonds' ? plan.goal * 2 : plan.goal;
+      const bubbles = plan.mode === 'bonds' ? plan.goal * 2 : plan.mode === 'dots' ? plan.dotsTo! : plan.goal;
       expect(bubbles, `${plan.mode} ${plan.goal}`).toBeLessThanOrEqual(plan.most);
     }
   });
@@ -157,6 +171,15 @@ describe('the bubble the ghost finger pops', () => {
           shown = Array.from({ length: plan.goal + 2 }, (_, i) => at(120 + (i % 6) * 140, 200 + i * 6));
         if (plan.mode === 'count')
           shown = Array.from({ length: plan.goal }, (_, i) => at(100 + i * 80, 300, { number: i + 1 }));
+        if (plan.mode === 'size')
+          shown = Array.from({ length: plan.goal * 2 }, (_, i) =>
+            at(120 + (i % 6) * 140, 200 + i * 5, { size: i % 2 ? 'little' : 'big' }),
+          );
+        const asks = plan.mode === 'dots' ? dotAsks(plan, rng) : [];
+        if (plan.mode === 'dots') {
+          shown = Array.from({ length: plan.dotsTo! }, (_, i) => at(100 + i * 160, 300, { number: i + 1 }));
+          next = asks[0];
+        }
         if (plan.mode === 'bonds')
           shown = bondNumbers(plan.sum!, plan.goal, rng).map((n, i) => at(100 + i * 90, 300, { number: n }));
         shown.push(at(500, 300, { rainbow: true, number: 99 }));
@@ -164,7 +187,7 @@ describe('the bubble the ghost finger pops', () => {
         let held: DemoBubble | null = null;
         let pops = 0;
         for (let guard = 0; guard < 80 && pops < plan.goal; guard++) {
-          const pick: DemoBubble | null = bubbleToPop(plan.mode, shown, target, next, plan.sum, held);
+          const pick: DemoBubble | null = bubbleToPop(plan.mode, shown, target, next, plan.sum, held, 'big');
           expect(pick, `${plan.mode} seed ${seed}`).not.toBeNull();
           expect(pick!.rainbow).toBeFalsy();
           if (plan.mode === 'bonds') {
@@ -177,10 +200,12 @@ describe('the bubble the ghost finger pops', () => {
             }
             continue;
           }
-          expect(isRight(plan.mode, pick!, target, next)).toBe(true);
-          shown = shown.filter((b) => b !== pick);
-          if (plan.mode === 'count') next++;
+          expect(isRight(plan.mode, pick!, target, next, 'big')).toBe(true);
+          // A popped dot bubble is replaced by one with as many dots, so it stays in the list.
+          if (plan.mode !== 'dots') shown = shown.filter((b) => b !== pick);
           pops++;
+          if (plan.mode === 'count') next++;
+          if (plan.mode === 'dots') next = asks[Math.min(pops, asks.length - 1)];
         }
         expect(pops, `${plan.mode} seed ${seed}`).toBe(plan.goal);
       }
@@ -386,5 +411,141 @@ describe("pop anywhere (level 15, lap's first level)", () => {
   it('is found through the ghost finger like level 1: the bot always has a bubble to pop', () => {
     const shown = Array.from({ length: plan.goal }, (_, i) => at(150 + i * 110, 300 + i * 8));
     expect(bubbleToPop(plan.mode, shown, null, 1, undefined, null)).not.toBeNull();
+  });
+});
+
+describe('big and little (level 16, toddler, between 3 and 4)', () => {
+  const plan = planFor(16);
+
+  it('is played by toddlers after free popping and before two colors, and by no other band', () => {
+    expect(LEVELS.toddler!.order).toEqual([1, 2, 3, 16, 4, 5, 6]);
+    for (const band of ['lap', 'preschool', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.order ?? [], band).not.toContain(16);
+  });
+
+  it('has two sizes that differ at a glance, the little one still a 100-unit target, and nothing faster than level 3', () => {
+    const { little, big } = plan.sizes!;
+    expect(big[0] / little[1]).toBeGreaterThanOrEqual(SIZE_RATIO);
+    expect(little[0] * TAP_REACH * 2).toBeGreaterThanOrEqual(100);
+    expect(plan.radius).toEqual([little[0], big[1]]);
+    expect(plan.speed).toBeLessThanOrEqual(planFor(3).speed);
+    expect(plan.most).toBeLessThanOrEqual(planFor(3).most);
+  });
+
+  it('judges by size alone, whichever size the round asks for', () => {
+    for (const want of ['big', 'little'] as const) {
+      expect(isRight('size', { color: null, size: want }, null, 1, want)).toBe(true);
+      expect(isRight('size', { color: null, size: want === 'big' ? 'little' : 'big' }, null, 1, want)).toBe(
+        false,
+      );
+    }
+  });
+
+  it('opens with two of the asked-for size, always sends one when none is showing, and sends the other size too', () => {
+    for (const want of ['big', 'little'] as const) {
+      const rng = new Rng(7);
+      expect(spawnSize(0, false, want, rng)).toBe(want);
+      expect(spawnSize(1, true, want, rng)).toBe(want);
+      for (let i = 0; i < 50; i++) expect(spawnSize(5, false, want, rng)).toBe(want);
+      const later = Array.from({ length: 200 }, () => spawnSize(5, true, want, rng));
+      expect(later).toContain('big');
+      expect(later).toContain('little');
+    }
+  });
+
+  it('the ghost finger pops only the size asked for, and waits when none is showing', () => {
+    const at = (x: number, y: number, size: 'big' | 'little'): DemoBubble => ({
+      x,
+      y,
+      r: 60,
+      color: null,
+      size,
+    });
+    const shown = [at(300, 300, 'little'), at(500, 320, 'big')];
+    expect(bubbleToPop('size', shown, null, 1, undefined, null, 'big')).toBe(shown[1]);
+    expect(bubbleToPop('size', shown, null, 1, undefined, null, 'little')).toBe(shown[0]);
+    expect(bubbleToPop('size', [shown[0]], null, 1, undefined, null, 'big')).toBeNull();
+  });
+});
+
+describe('which one has the dots (level 17, preschool, between 6 and 7)', () => {
+  const plan = planFor(17);
+
+  it('is played by preschoolers after the colors and before the numerals, and by no other band', () => {
+    expect(LEVELS.preschool!.order).toEqual([4, 5, 6, 17, 7, 8, 9]);
+    for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.order ?? [], band).not.toContain(17);
+  });
+
+  it('shows one bubble of each count from 1 to 4, all on the screen at once, with no numeral support switched on', () => {
+    expect(plan.dotsTo).toBe(4);
+    expect(plan.most).toBe(plan.dotsTo);
+    expect(showsDots(17)).toBe(false);
+    expect(signFor(plan, 17, dotAsks(plan, new Rng(1)))).toBeNull();
+  });
+
+  it('asks for every count once before any repeats, never the same count twice running, always one that is showing', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const asks = dotAsks(plan, new Rng(seed));
+      expect(asks.length).toBe(plan.goal);
+      expect([...asks.slice(0, 4)].sort()).toEqual([1, 2, 3, 4]);
+      asks.forEach((n, i) => {
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(plan.dotsTo!);
+        if (i) expect(n, `seed ${seed}`).not.toBe(asks[i - 1]);
+      });
+    }
+  });
+
+  it('with one bubble per count showing, exactly one is right for any ask', () => {
+    const shown = [1, 2, 3, 4].map((n) => ({ color: null, number: n }));
+    for (let ask = 1; ask <= 4; ask++)
+      expect(shown.filter((b) => isRight('dots', b, null, ask)).length).toBe(1);
+  });
+
+  it('draws every count 1 to 6 as a fixed dice face: that many pips, apart from each other and inside the bubble', () => {
+    for (let n = 1; n <= 6; n++) {
+      const pips = dicePips(n);
+      expect(pips).toEqual(dicePips(n));
+      expect(pips.length).toBe(n);
+      pips.forEach((a, i) => {
+        expect(Math.hypot(a.x, a.y) + PIP_RADIUS).toBeLessThan(0.7);
+        for (const b of pips.slice(i + 1))
+          expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(PIP_RADIUS * 2.4);
+      });
+    }
+    expect(dicePips(0)).toEqual([]);
+    expect(dicePips(7)).toEqual([]);
+  });
+});
+
+describe('pictures in the bubbles', () => {
+  it('are two for every scene a round can float in, each named once and each with a line of its own', () => {
+    expect(Object.keys(PICTURES).sort()).toEqual([...SCENES].sort());
+    const all = Object.values(PICTURES).flat();
+    expect(new Set(all).size).toBe(all.length);
+    for (const names of Object.values(PICTURES)) expect(names.length).toBe(2);
+    for (const name of all) expect(SCRIPT[pictureLine(name)], name).toBeDefined();
+  });
+
+  it('are not friends, so the sticker pool is untouched', () => {
+    const all: string[] = Object.values(PICTURES).flat();
+    for (const friend of FRIENDS) expect(all).not.toContain(friend);
+  });
+
+  it("ride only in a bubble with no friend, come from the round's own scene, and leave most bubbles empty", () => {
+    for (const scene of SCENES) {
+      const rng = new Rng(11);
+      const riders = Array.from({ length: 600 }, () => riderFor(rng, scene));
+      for (const r of riders) {
+        expect(r.friend && r.picture).toBeFalsy();
+        if (r.picture) expect(PICTURES[scene] as readonly string[]).toContain(r.picture);
+      }
+      const count = (key: 'friend' | 'picture') => riders.filter((r) => r[key]).length;
+      expect(count('friend')).toBeGreaterThan(120);
+      expect(count('picture')).toBeGreaterThan(40);
+      expect(count('friend') + count('picture')).toBeLessThan(330);
+      for (const name of PICTURES[scene]) expect(riders.some((r) => r.picture === name)).toBe(true);
+    }
   });
 });

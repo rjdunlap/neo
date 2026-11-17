@@ -5,14 +5,16 @@ import type { Rng } from '../../engine/random';
 import type { LineId } from '../../content/voice-script';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type BubbleMode = 'free' | 'color' | 'count' | 'bonds';
+export type BubbleMode = 'free' | 'color' | 'count' | 'bonds' | 'size' | 'dots';
+export type BubbleSize = 'big' | 'little';
 
 /**
  * Modes where a particular bubble is needed (the next number, a partner) are laid out whole and drift in place,
  * so the one she needs never floats off the top. Free and color bubbles rise and leave; color mode sends the
- * asked-for color again whenever none is showing (`spawnTarget`), so none of its rounds is stranded.
+ * asked-for color again whenever none is showing (`spawnTarget`), so none of its rounds is stranded; size mode does
+ * the same for the asked-for size. Dot bubbles drift in place, one of each count, so the count asked for is always there.
  */
-export const staysPut = (mode: BubbleMode) => mode === 'count' || mode === 'bonds';
+export const staysPut = (mode: BubbleMode) => mode === 'count' || mode === 'bonds' || mode === 'dots';
 
 /**
  * The friends that can ride in a bubble, in this order. The sticker draws from this list with `rng.pick`, so growing
@@ -41,6 +43,26 @@ export const FRIEND_SOUND: Record<Friend, AnimalSound> = {
   dog: 'woof',
 };
 
+/**
+ * Pictures that can ride in a free-play bubble, two for each scene the round can float in. They are not friends: the
+ * sticker never draws from this pool, so it can grow without changing a sticker she owns.
+ */
+export const PICTURES = {
+  shore: ['flower', 'shell'],
+  bath: ['rubber-duck', 'boat'],
+  night: ['star', 'moon'],
+  sea: ['fish', 'starfish'],
+} as const;
+export type PictureScene = keyof typeof PICTURES;
+export type PictureName = (typeof PICTURES)[PictureScene][number];
+export const pictureLine = (name: PictureName) => `bubble.picture.${name}` as const;
+
+/** What rides inside a free-play bubble: a friend in about three of ten, one of the scene's pictures in about one of seven, else nothing. */
+export function riderFor(rng: Rng, scene: PictureScene): { friend?: Friend; picture?: PictureName } {
+  if (rng.chance(0.3)) return { friend: rng.pick(FRIENDS) };
+  return rng.chance(0.2) ? { picture: rng.pick(PICTURES[scene]) } : {};
+}
+
 export interface BubblePlan {
   mode: BubbleMode;
   /** Pops (or numbers) needed before the rainbow bubble. */
@@ -63,6 +85,10 @@ export interface BubblePlan {
   steps?: number[];
   /** Free mode: a tap anywhere on the screen pops the nearest bubble that is showing (`nearestShown`); no bubble is aimed at. */
   anywhere?: boolean;
+  /** Size mode: the radius ranges of the two sizes; the round asks for one of them. */
+  sizes?: Record<BubbleSize, [number, number]>;
+  /** Dots mode: the largest dot count a bubble carries (one bubble of each count from 1 is always showing). */
+  dotsTo?: number;
 }
 
 /** One entry per level. Lap levels are pure popping; then colors; then numbers in order. */
@@ -86,13 +112,31 @@ export const PLANS: BubblePlan[] = [
   // Below level 1, for lap: a swat anywhere pops the nearest bubble (a flat palm of four or more contacts is palm
   // rejection and does nothing). Big, slow and few, so what pops is plain.
   { mode: 'free', goal: 8, speed: 42, most: 4, colors: 0, radius: [96, 118], anywhere: true },
+  // Toddler, between levels 3 and 4: two sizes and the round asks for one. Slower and fewer than level 3, because
+  // which bubble is now a choice; a little one is still drawn 100 units across (the dive's 42–48 counted the tap reach).
+  {
+    mode: 'size',
+    goal: 8,
+    speed: 50,
+    most: 5,
+    colors: 0,
+    radius: [50, 104],
+    sizes: { little: [50, 54], big: [92, 104] },
+  },
+  // Preschool, between levels 6 and 7: dot patterns with no numeral, one bubble each of 1 to 4, "pop the one with four".
+  { mode: 'dots', goal: 6, speed: 30, most: 4, colors: 0, radius: [70, 82], dotsTo: 4 },
 ];
+
+/** The two sizes must be told apart at a glance: the smallest big bubble is at least this many times the largest little one. */
+export const SIZE_RATIO = 1.7;
 
 export const LEVELS: BandLevels = {
   // Level 15 is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
   lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
-  toddler: { min: 1, max: 6 },
-  preschool: { min: 4, max: 9 },
+  // Level 16 (big and little) sits where color sits: after free popping, before two colors.
+  toddler: { min: 1, max: 16, order: [1, 2, 3, 16, 4, 5, 6] },
+  // Level 17 (which one has the dots) comes before the numerals at 7.
+  preschool: { min: 4, max: 17, order: [4, 5, 6, 17, 7, 8, 9] },
   prek: { min: 6, max: 12 },
   school: { min: 10, max: 14 },
 };
@@ -137,14 +181,41 @@ export const choosePalette = (rng: Rng, colors: number): ColorName[] =>
 export const spawnTarget = (spawned: number, targetShowing: boolean, rng: Rng) =>
   spawned < 2 || !targetShowing || rng.chance(0.55);
 
-export interface BubbleFace {
-  color: ColorName | null;
-  number?: number;
+/** Size mode: is the next bubble the size to pop? As `spawnTarget`: the first two are, and one always is while none is showing. */
+export const spawnSize = (spawned: number, wantShowing: boolean, want: BubbleSize, rng: Rng): BubbleSize =>
+  spawnTarget(spawned, wantShowing, rng) ? want : want === 'big' ? 'little' : 'big';
+
+/**
+ * Dots mode: the counts asked for, in order. Every count from 1 to the plan's most is asked once first (shuffled), then
+ * more are drawn, never the same count twice running, so each ask is a fresh look and not a repeat of the last pop.
+ */
+export function dotAsks(plan: BubblePlan, rng: Rng): number[] {
+  const to = plan.dotsTo ?? 4;
+  const asks = rng.shuffle(Array.from({ length: to }, (_, i) => i + 1)).slice(0, plan.goal);
+  while (asks.length < plan.goal) {
+    const last = asks[asks.length - 1];
+    asks.push(rng.pick(Array.from({ length: to }, (_, i) => i + 1).filter((n) => n !== last)));
+  }
+  return asks;
 }
 
-/** Whether popping this bubble counts: anything in free play, the asked-for color, or the next number. */
-export function isRight(mode: BubbleMode, b: BubbleFace, target: ColorName | null, next: number): boolean {
+export interface BubbleFace {
+  color: ColorName | null;
+  /** The numeral on it, or in dots mode how many dots it carries. */
+  number?: number;
+  size?: BubbleSize;
+}
+
+/** Whether popping this bubble counts: anything in free play, the asked-for color or size, the next number, or the dot count asked for. */
+export function isRight(
+  mode: BubbleMode,
+  b: BubbleFace,
+  target: ColorName | null,
+  next: number,
+  size: BubbleSize | null = null,
+): boolean {
   if (mode === 'free') return true;
+  if (mode === 'size') return b.size === size;
   return mode === 'color' ? b.color === target : b.number === next;
 }
 
@@ -227,6 +298,7 @@ export function bubbleToPop<T extends DemoBubble>(
   next: number,
   sum: number | undefined,
   held: T | null,
+  size: BubbleSize | null = null,
 ): T | null {
   const live = shown.filter((b) => !b.rainbow);
   const highest = (list: readonly T[]) => {
@@ -237,8 +309,9 @@ export function bubbleToPop<T extends DemoBubble>(
     );
   };
   if (mode === 'free') return highest(live);
-  if (mode === 'color') return highest(live.filter((b) => isRight(mode, b, target, next)));
-  if (mode === 'count') return live.find((b) => b.number === next) ?? null;
+  if (mode === 'color' || mode === 'size')
+    return highest(live.filter((b) => isRight(mode, b, target, next, size)));
+  if (mode === 'count' || mode === 'dots') return live.find((b) => b.number === next) ?? null;
   if (held) return live.find((b) => b !== held && held.number! + b.number! === sum) ?? null;
   return live.find((a) => live.some((b) => b !== a && a.number! + b.number! === sum)) ?? null;
 }
@@ -302,6 +375,49 @@ export function numberDots(n: number): { x: number; y: number }[] {
     : Array.from({ length: n }, (_, i) => ({ x: ((i % 5) - 2) * 0.2, y: i < 5 ? 0.49 : 0.72 }));
 }
 export const DOT_RADIUS = 0.06;
+
+/**
+ * Dots mode: the pips on a bubble with no numeral, radius-relative and centered, in the dice layout for 1 to 6 (the same
+ * shape every time, which is what makes a small quantity nameable at a glance). Empty for any other number.
+ */
+export function dicePips(n: number): { x: number; y: number }[] {
+  const [a, m] = [0.3, 0];
+  const faces: [number, number][][] = [
+    [[m, m]],
+    [
+      [-a, -a],
+      [a, a],
+    ],
+    [
+      [-a, -a],
+      [m, m],
+      [a, a],
+    ],
+    [
+      [-a, -a],
+      [a, -a],
+      [-a, a],
+      [a, a],
+    ],
+    [
+      [-a, -a],
+      [a, -a],
+      [m, m],
+      [-a, a],
+      [a, a],
+    ],
+    [
+      [-a, -a],
+      [a, -a],
+      [-a, m],
+      [a, m],
+      [-a, a],
+      [a, a],
+    ],
+  ];
+  return Number.isInteger(n) && n >= 1 && n <= 6 ? faces[n - 1].map(([x, y]) => ({ x, y })) : [];
+}
+export const PIP_RADIUS = 0.12;
 export const DOT_NUMERAL_Y = -0.3;
 
 export type SignKind = 'bond' | 'start' | 'back' | 'by';
@@ -334,7 +450,11 @@ export type ModePicture =
   | { kind: 'count'; numbers: number[]; upTo?: number; dots?: boolean }
   /** The sign the round shows above its bubbles: a number to start at, or to count back from. */
   | { kind: 'sign'; sign: number; numbers: number[]; arrow: 1 | -1 }
-  | { kind: 'bond'; numbers: [number, number]; sum: number };
+  | { kind: 'bond'; numbers: [number, number]; sum: number }
+  /** A big bubble and a little one, the asked-for size ringed. */
+  | { kind: 'sizes' }
+  /** Bubbles with dice pips and no numeral, the asked-for count ringed (the first). */
+  | { kind: 'pips'; counts: number[] };
 
 export interface BubbleModeCard {
   name: string;
@@ -375,6 +495,8 @@ export const MODE_CARDS: Record<number, BubbleModeCard> = {
     picture: { kind: 'sign', sign: 5, numbers: [5, 4, 3], arrow: -1 },
   },
   14: { name: 'Tens and fives', line: 'bubble.mode.14', picture: { kind: 'count', numbers: [10, 20, 30] } },
+  16: { name: 'Big and little', line: 'bubble.mode.16', picture: { kind: 'sizes' } },
+  17: { name: 'Which has the dots?', line: 'bubble.mode.17', picture: { kind: 'pips', counts: [4, 2, 3] } },
 };
 
 /** The card for a level, clamped like `planFor`. */
