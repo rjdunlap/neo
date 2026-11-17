@@ -24,6 +24,8 @@ export const VOICE = {
   'whoami.reason.no': ['{name} {lacks}.'],
   'whoami.reason.instead': ['{name} {lacks}. {name} {has}.'],
   'whoami.reason.stays': ['{name} {has}, so {name} stays!'],
+  'whoami.surprise-penguin': ["Penguin has feathers, so Penguin is a bird. Penguin just can't fly!"],
+  'whoami.surprise-bat': ['Bat can fly, but Bat feeds its babies milk, so Bat is a mammal.'],
   'whoami.hint-glow': ['Look at the glowing friend. Does the clue fit?'],
   'whoami.hint-shimmer': ['The shimmering friends do not fit the clue. Turn them over.'],
   'whoami.its-me': ["It's me! {name}!"],

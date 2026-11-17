@@ -22,7 +22,8 @@ export interface CritterSpec {
   horns?: boolean;
   sprout?: boolean;
   tuft?: boolean;
-  wings?: boolean;
+  /** `true`: a bird's little feathered wings. 'membrane': a bat's skin wings, scalloped between the finger bones. */
+  wings?: boolean | 'membrane';
   whiskers?: boolean;
   /** A sheep's fleece: puffs all round the body and a curl on top. */
   wool?: boolean;
@@ -342,7 +343,26 @@ export class Critter extends Container {
           .stroke(stroke(HORN.line, 5));
       }
     }
-    if (s.wings) {
+    if (s.wings === 'membrane') {
+      for (const side of [-1, 1]) {
+        back
+          .moveTo(side * 98, -150)
+          .lineTo(side * 140, -200)
+          .lineTo(side * 168, -122)
+          .quadraticCurveTo(side * 150, -118, side * 148, -84)
+          .quadraticCurveTo(side * 130, -86, side * 124, -52)
+          .quadraticCurveTo(side * 108, -62, side * 96, -50)
+          .closePath()
+          .fill(this.sw.light)
+          .stroke(stroke(this.sw.line, 5));
+        back
+          .moveTo(side * 140, -200)
+          .lineTo(side * 148, -84)
+          .moveTo(side * 140, -200)
+          .lineTo(side * 124, -52)
+          .stroke(stroke(this.sw.line, 3));
+      }
+    } else if (s.wings) {
       for (const side of [-1, 1]) {
         back
           .moveTo(side * 112, -104)

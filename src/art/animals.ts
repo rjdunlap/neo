@@ -104,6 +104,18 @@ export function owlArt(color: ColorName): Critter {
   return c;
 }
 
+/** Who Am I?'s fruit bat: a critter with pointy ears, a little nose and membrane wings. */
+export function batArt(): Critter {
+  return new Critter({
+    color: 'purple',
+    ears: 'pointy',
+    snout: 'nose',
+    noseColor: ink,
+    wings: 'membrane',
+    belly: true,
+  });
+}
+
 const henLine = (color: number, width = 5) => ({
   width,
   color,

@@ -4,7 +4,7 @@ import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Who Am I?: a row of friends on the barn's stage, one clue at a time, and she turns over every friend a clue rules out
- * until one is left (levels 2–3), or taps the one friend a single clue fits (level 1). The trait table below was checked
+ * until one is left (levels 2–4), or taps the one friend a single clue fits (level 1). The trait table below was checked
  * against museum, university and government sources on 2026-10-24 (docs/definitions/who-am-i.md, decision 1).
  */
 
@@ -26,7 +26,19 @@ export type Feature =
   | 'fly'
   | 'gills';
 export type FriendId =
-  'cow' | 'pig' | 'cat' | 'bear' | 'dog' | 'bunny' | 'duck' | 'owl' | 'penguin' | 'frog' | 'turtle' | 'fish';
+  | 'cow'
+  | 'pig'
+  | 'cat'
+  | 'bear'
+  | 'dog'
+  | 'bunny'
+  | 'duck'
+  | 'owl'
+  | 'penguin'
+  | 'frog'
+  | 'turtle'
+  | 'fish'
+  | 'bat';
 
 export interface FeatureInfo {
   family: Family;
@@ -101,6 +113,9 @@ export const FRIENDS: Record<FriendId, Friend> = {
   frog: { id: 'frog', name: 'Frog', group: 'amphibian', features: ['smooth-skin', 'four-legs', 'eggs'] },
   turtle: { id: 'turtle', name: 'Turtle', group: 'reptile', features: ['shell', 'four-legs', 'eggs'] },
   fish: { id: 'fish', name: 'Fish', group: 'fish', features: ['scales', 'fins', 'eggs', 'gills'] },
+  // The island's fruit bat, last so the earlier levels' seeded rounds are unchanged. Its clues say what this bat has and
+  // does, never what all bats do.
+  bat: { id: 'bat', name: 'Bat', group: 'mammal', features: ['fur', 'wings', 'two-legs', 'milk', 'fly'] },
 };
 
 export const FRIEND_IDS = Object.keys(FRIENDS) as FriendId[];
@@ -166,6 +181,8 @@ const BASIC: Feature[] = [
   'two-legs',
 ];
 const GROUPS: Feature[] = [...BASIC, 'scales', 'eggs', 'milk', 'gills'];
+/** Level 4 adds flying, which never defines a group: that is the surprise. */
+const SURPRISES: Feature[] = [...GROUPS, 'fly'];
 /** Families whose features define the groups; level 3 asks for at least two such clues. */
 export const DEFINING: readonly Family[] = ['covering', 'babies', 'breathing'];
 
@@ -177,18 +194,29 @@ export interface WhoPlan {
   friends: number;
   clues: number;
   allowed: readonly Feature[];
+  /** The friends a gallery is drawn from; the bat arrives at level 4. */
+  pool: readonly FriendId[];
+  /** Friends every gallery has (level 4: the penguin and the bat). */
+  include: readonly FriendId[];
+  /** At least one clue must be a surprise step (`surpriseAt`). */
+  surprise: boolean;
   /** At least this many groups among the gallery. */
   minGroups: number;
   /** At least this many clues from the defining families. */
   minDefining: number;
   /**
    * Who can be the answer. Only friends a round of exactly `clues` useful clues can end on: with the allowed features a bird or
-   * the fish is picked out by its first clue at level 2, and only the frog and the turtle take three steps at level 3.
+   * the fish is picked out by its first clue at level 2, and only the frog and the turtle take three steps at level 3. At
+   * level 4 a four-legged mammal cannot be it (fur and milk rule out the same friends, so it has two useful clues at most),
+   * nor the penguin or the fish (each of their other features picks them out at once).
    */
   answers: readonly FriendId[];
 }
 
 const MAMMALS: FriendId[] = ['cow', 'pig', 'cat', 'bear', 'dog', 'bunny'];
+/** Everyone but the bat, in table order: levels 1–3 and the sticker draw from these, so neither changed when the bat came. */
+export const BARN: FriendId[] = FRIEND_IDS.filter((f) => f !== 'bat');
+const EARLY = { pool: BARN, include: [] as FriendId[], surprise: false };
 
 export const PLANS: readonly WhoPlan[] = [
   {
@@ -200,7 +228,8 @@ export const PLANS: readonly WhoPlan[] = [
     allowed: BASIC,
     minGroups: 1,
     minDefining: 0,
-    answers: FRIEND_IDS,
+    answers: BARN,
+    ...EARLY,
   },
   {
     level: 2,
@@ -212,6 +241,7 @@ export const PLANS: readonly WhoPlan[] = [
     minGroups: 1,
     minDefining: 0,
     answers: [...MAMMALS, 'frog', 'turtle'],
+    ...EARLY,
   },
   {
     level: 3,
@@ -223,10 +253,25 @@ export const PLANS: readonly WhoPlan[] = [
     minGroups: 4,
     minDefining: 2,
     answers: ['frog', 'turtle'],
+    ...EARLY,
+  },
+  {
+    level: 4,
+    name: 'Surprises: the penguin and the bat, 3 clues, 6 friends',
+    mode: 'turn',
+    friends: 6,
+    clues: 3,
+    allowed: SURPRISES,
+    minGroups: 3,
+    minDefining: 1,
+    answers: ['duck', 'owl', 'frog', 'turtle', 'bat'],
+    pool: FRIEND_IDS,
+    include: ['penguin', 'bat'],
+    surprise: true,
   },
 ];
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 3 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 4 } };
 
 export const planFor = (level: number): WhoPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
@@ -251,6 +296,30 @@ export function distinguishable(
 export const useful = (clue: Feature, answer: FriendId, remaining: readonly FriendId[]) =>
   keeps(clue, answer) && ruledOut(remaining, clue).length > 0;
 
+/**
+ * A surprise step: a clue whose outcome differs from the shortcut "it flies or has wings, so it is a bird". `fly` while the
+ * penguin stands (it has feathers and goes face down), `feathers` or `eggs` while the bat stands (it has wings and goes
+ * face down), or `milk` while the bat and a bird both stand (the birds go, the bat stays). Names who the pet explains.
+ */
+export type Surprise = 'penguin' | 'bat';
+export function surpriseAt(remaining: readonly FriendId[], clue: Feature): Surprise | null {
+  if (clue === 'fly' && remaining.includes('penguin')) return 'penguin';
+  if (!remaining.includes('bat')) return null;
+  if (clue === 'feathers' || clue === 'eggs') return 'bat';
+  if (clue === 'milk' && remaining.some((f) => FRIENDS[f].group === 'bird')) return 'bat';
+  return null;
+}
+
+/** The surprise at each clue of a round, in order (null where there is none). */
+export function surprises(gallery: readonly FriendId[], clues: readonly Feature[]): (Surprise | null)[] {
+  let left = [...gallery];
+  return clues.map((c) => {
+    const s = surpriseAt(left, c);
+    left = left.filter((f) => keeps(c, f));
+    return s;
+  });
+}
+
 /** A clue list of exactly `n` useful clues that leaves only the answer, tried in a random order; null if there is none. */
 function cluesFor(plan: WhoPlan, answer: FriendId, gallery: readonly FriendId[], rng: Rng): Feature[] | null {
   const search = (remaining: readonly FriendId[], chosen: Feature[]): Feature[] | null => {
@@ -261,7 +330,8 @@ function cluesFor(plan: WhoPlan, answer: FriendId, gallery: readonly FriendId[],
       if (list.length === plan.clues) {
         if (
           left.length === 1 &&
-          list.filter((x) => DEFINING.includes(FEATURES[x].family)).length >= plan.minDefining
+          list.filter((x) => DEFINING.includes(FEATURES[x].family)).length >= plan.minDefining &&
+          (!plan.surprise || surprises(gallery, list).some(Boolean))
         )
           return list;
       } else if (left.length > 1) {
@@ -284,14 +354,18 @@ export function makeRound(level: number, rng: Rng): WhoRound {
     if (plan.mode === 'fit') {
       // One clue the answer has, and two friends without it.
       const clue = rng.pick(plan.allowed.filter((c) => keeps(c, answer)));
-      const others = rng.shuffle(FRIEND_IDS.filter((f) => !keeps(clue, f))).slice(0, plan.friends - 1);
+      const others = rng.shuffle(plan.pool.filter((f) => !keeps(clue, f))).slice(0, plan.friends - 1);
       if (others.length < plan.friends - 1) continue;
       return { gallery: rng.shuffle([answer, ...others]), answer, clues: [clue] };
     }
+    const apart = (f: FriendId) => distinguishable(answer, [answer, f], plan.allowed);
+    const must = plan.include.filter((f) => f !== answer);
+    if (!must.every(apart)) continue;
     const others = rng
-      .shuffle(FRIEND_IDS.filter((f) => f !== answer && distinguishable(answer, [answer, f], plan.allowed)))
-      .slice(0, plan.friends - 1);
-    const gallery = rng.shuffle([answer, ...others]);
+      .shuffle(plan.pool.filter((f) => f !== answer && !must.includes(f) && apart(f)))
+      .slice(0, plan.friends - 1 - must.length);
+    if (others.length < plan.friends - 1 - must.length) continue;
+    const gallery = rng.shuffle([answer, ...must, ...others]);
     if (groupCount(gallery) < plan.minGroups) continue;
     const clues = cluesFor(plan, answer, gallery, rng);
     if (clues) return { gallery, answer, clues };
@@ -310,10 +384,12 @@ export interface WhoPlay {
   clue: number;
   misses: number;
   hints: number;
-  /** Misses on the clue showing (levels 2–3) or in the round (level 1). */
+  /** Misses on the clue showing (levels 2–4) or in the round (level 1). */
   wrongHere: number;
-  /** Help has been counted for this clue (levels 2–3) or this round (level 1). */
+  /** Help has been counted for this clue (levels 2–4) or this round (level 1). */
   helped: boolean;
+  /** Surprises the pet has explained this round: each is said once, free. */
+  explained: Set<Surprise>;
   done: boolean;
 }
 
@@ -326,6 +402,7 @@ export const startPlay = (round: WhoRound, mode: WhoPlan['mode']): WhoPlay => ({
   hints: 0,
   wrongHere: 0,
   helped: false,
+  explained: new Set(),
   done: false,
 });
 
@@ -344,10 +421,13 @@ export type TapOutcome =
   | { kind: 'ignored' }
   /** A face-down friend: a free look. */
   | { kind: 'peek' }
-  /** The clue does not fit (level 1) or keeps this friend (levels 2–3). `helped` is true when this miss turned the help on. */
+  /** The clue does not fit (level 1) or keeps this friend (levels 2–4). `helped` is true when this miss turned the help on. */
   | { kind: 'miss'; reason: Reason | null; stays: { name: string; has: string } | null; helped: boolean }
-  /** A ruled-out friend turned over; `next` when that finished the clue and another arrives, `done` when one friend is left. */
-  | { kind: 'flip'; next: boolean; done: boolean }
+  /**
+   * A ruled-out friend turned over; `next` when that finished the clue and another arrives, `done` when one friend is left.
+   * `surprise` names who the pet explains when the finished clue was a surprise step not yet explained (level 4); it counts nothing.
+   */
+  | { kind: 'flip'; next: boolean; done: boolean; surprise: Surprise | null }
   /** Level 1: the right friend. */
   | { kind: 'fit' };
 
@@ -377,18 +457,21 @@ export function tap(p: WhoPlay, i: number): TapOutcome {
   }
   if (keeps(clue, friend)) return miss(null, staysText(friend, clue));
   p.down.add(i);
-  if (helpTargets(p).length > 0) return { kind: 'flip', next: false, done: false };
+  if (helpTargets(p).length > 0) return { kind: 'flip', next: false, done: false, surprise: null };
+  let surprise = surprises(p.round.gallery, p.round.clues)[p.clue];
+  if (surprise && p.explained.has(surprise)) surprise = null;
+  if (surprise) p.explained.add(surprise);
   if (p.clue === p.round.clues.length - 1) {
     p.done = true;
-    return { kind: 'flip', next: false, done: true };
+    return { kind: 'flip', next: false, done: true, surprise };
   }
   p.clue++;
   p.wrongHere = 0;
   p.helped = false;
-  return { kind: 'flip', next: true, done: false };
+  return { kind: 'flip', next: true, done: false, surprise };
 }
 
-/** The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–3); true when this request counted. */
+/** The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–4); true when this request counted. */
 export function requestHelp(p: WhoPlay): boolean {
   if (p.done || p.helped) return false;
   p.helped = true;

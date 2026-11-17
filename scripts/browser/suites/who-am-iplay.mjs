@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  /** Who Am I?: level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down. */
+  /** Who Am I?: level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down; level 4 (Surprises) with a keeps-tap and each surprise explained once, uncounted. */
   async function whoAmIPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -78,8 +78,35 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await finished('who-am-i');
     assert.deepEqual(await score(), [1, 1]);
     assert.ok(shot, 'portrait screenshot with three cards down');
+    // Level 4, Surprises: the penguin and the bat are always there; one keeps-tap, then every clue's flips; each surprise is
+    // explained once and counts nothing.
+    await launch('who-am-i', 4, 'Mia', 'school');
+    await settle();
+    const l4 = await page.evaluate(async () => {
+      const L = await import('/src/games/who-am-i/logic.ts');
+      const r = neo.scene.game.round;
+      return { gallery: r.gallery, expected: L.surprises(r.gallery, r.clues).filter(Boolean) };
+    });
+    assert.ok(l4.gallery.includes('penguin') && l4.gallery.includes('bat'), 'level 4 has the penguin and the bat');
+    assert.ok(l4.expected.length >= 1, 'level 4 has a surprise step');
+    await screenshot('who-am-i-4');
+    await tapCard(await answerAt());
+    await settle();
+    for (let clue = 0; clue < 3; clue++) {
+      await settle();
+      for (const i of await targets()) {
+        await tapCard(i);
+        await page.waitForTimeout(450);
+      }
+    }
+    await finished('who-am-i');
+    assert.deepEqual(await score(), [1, 0]);
+    assert.deepEqual(
+      await page.evaluate(() => [...neo.scene.game.play.explained].sort()),
+      [...new Set(l4.expected)].sort(),
+    );
     log(
-      'Who Am I? 1 and 3: wrong friend reason then fit, keeps-tap miss, requested shimmer hint, flips through three clues, a free peek, portrait, saved score passed',
+      'Who Am I? 1, 3 and 4: wrong friend reason then fit, keeps-tap miss, requested shimmer hint, flips through three clues, a free peek, portrait, saved score; level 4 with the penguin and the bat, a keeps-tap miss, each surprise explained once and uncounted passed',
     );
   }
 
