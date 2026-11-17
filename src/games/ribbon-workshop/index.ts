@@ -92,7 +92,8 @@ class RibbonWorkshop implements Game {
     onTap(
       this.tag,
       () => {
-        if (this.snipOff()) return;
+        // While a finished gift ties its bow, the tag would cut the line being said.
+        if (this.snipOff() || this.busy || this.done) return;
         this.ask();
       },
       { cooldown: 600 },

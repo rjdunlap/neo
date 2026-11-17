@@ -103,7 +103,8 @@ export class RibbonCases implements Game {
       onTap(
         card,
         () => {
-          if (this.snipOff()) return;
+          // The instruction waits while a right check is shown: the bench is already on the next tag, and its line would cut the one being said.
+          if (this.snipOff() || this.busy || this.bench.done) return;
           this.ask();
         },
         { cooldown: 600 },
