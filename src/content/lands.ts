@@ -223,6 +223,7 @@ export const LANDS: readonly Land[] = [
       'stop-and-go',
       'pet-says',
       'lemonade-stand',
+      'picnic-pantry',
       'second-chance-shed',
       'swap-meet',
       'village-vote',

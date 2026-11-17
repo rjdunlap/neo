@@ -102,6 +102,7 @@ import { VOICE as penguinSlideVoice } from '../games/penguin-slide/voice.ts';
 import { VOICE as petKitchenVoice } from '../games/pet-kitchen/voice.ts';
 import { VOICE as petSaysVoice } from '../games/pet-says/voice.ts';
 import { VOICE as photoSafariVoice } from '../games/photo-safari/voice.ts';
+import { VOICE as picnicPantryVoice } from '../games/picnic-pantry/voice.ts';
 import { VOICE as pictureGraphVoice } from '../games/picture-graph/voice.ts';
 import { VOICE as pictureLogicVoice } from '../games/picture-logic/voice.ts';
 import { VOICE as pileMatchVoice } from '../games/pile-match/voice.ts';
@@ -711,6 +712,7 @@ export const SCRIPT = {
   ...petKitchenVoice,
   ...petSaysVoice,
   ...photoSafariVoice,
+  ...picnicPantryVoice,
   ...pictureGraphVoice,
   ...pictureLogicVoice,
   ...pileMatchVoice,
