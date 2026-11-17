@@ -165,7 +165,7 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 | **5 — Define Slide Files — defined 2026-11-16 ([definition](../../definitions/puddle-lens.md#slide-files-levels-911-definition-2026-11-16))** | Grown-up cases, candidate tables, scale-bar wording | Docs only; session source check done, no separate biology reviewer (2026-10-23 decision) |
 | **5b — Build Slide Files level 9, Name the slide (SF1) — built 2026-11-16** | `FILE_SAMPLES`, the cases, `survivors`, `judgeCase`, field-guide cards; `grownup` `{9,9}` | New-interaction tier as in the [build slices](../../definitions/puddle-lens.md#build-slices-and-check-tiers) |
 | **5c — Build Slide Files level 10, Measure it (SF2) — built 2026-11-17 ([PR #1736](https://github.com/rjdunlap/neo/pull/1736))** | The scale bar and length buttons; `grownup` `{9,10}` | New-interaction tier; the cheek cell is left out (no source for its length was opened) |
-| **5d — Build Slide Files level 11, Open cases (SF3) — not built** | Cork, red onion, the tiny dot and the not-enough-evidence close; `grownup` `{9,11}` | New-levels tier with three new drawings |
+| **5d — Build Slide Files level 11, Open cases (SF3) — claimed 2026-11-17 (branch `claude/puddle-lens-open-cases`)** | Cork, red onion, the tiny dot and the not-enough-evidence close; `grownup` `{9,11}` | New-levels tier with three new drawings |
 | **6 — Content borrows** | Small stops (Zoom Walk), Lens on the litter (Leaf Litter Window), Drop Safari (Photo Safari) | Each through its own game's claim/definition workflow; stable IDs and pins kept |
 
 ## What was built and what ran
