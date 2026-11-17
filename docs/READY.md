@@ -20,8 +20,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
-- **Build Timeline Trail level 7, Show me why (T5)**, after T4b (new-interaction tier: typecheck, rule tests, one scripted play at level 7 with one wrong spot, one off-spot tap and the hint, one portrait screenshot of the frame and its spots, `fingerdemo` at 7, `npm run build`): she taps the spot in the picture that proves when it is from. [Definition](definitions/timeline-trail-5-7.md#build-slices-and-check-tiers)
-
 
 
 
