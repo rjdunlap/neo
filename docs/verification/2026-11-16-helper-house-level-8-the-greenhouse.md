@@ -1,0 +1,5 @@
+# 2026-11-16 — Helper House level 8, The greenhouse (PR #1734)
+
+**Changed:** `helper-house` level 8, The greenhouse (RA5a; `school` now 2–8): a heater line and a fan line on one warmth gauge, weather drift, three frozen cases (one per round), failures `plants-cold`, `plants-hot` and `helpers-fight`, the fight swirl, a counting-only click jar, one case card, voice lines, how-to step, `autotouch()`, 20 new rule tests.
+**Ran:** `npm run typecheck`; eslint on the game; `npm test` (354 files, 7,396 passed, 1 skipped; 79 tests in the game's `logic.test.ts`); `BROWSER_SUITE=helperhouse HH_LEVELS=8` (crossed start, the fighting day twice then the fan line glows and one hint, a case-card tap counts nothing, a portrait screenshot of the first step's swirl, Show me lifts the fan line to 4, the heater line dragged to gap 3, finish 0 misses/2 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=helper-house FINGER_LEVELS=8` (20.6 s); `npm run build`; a read-only reviewer pass found no code defects.
+**Not run:** `world`, `picnic`, `couch`, offline, any other suite, and browser plays of levels 1–7 (interactions unchanged; their rule tests ran).
