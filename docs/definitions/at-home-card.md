@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With all sixteen games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap and toddler (Peekaboo Barn comes before Roundup in Barnyard's order), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse has a complete game from preschool up and comes third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2. The rule tests pin the starters.
+With all 24 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -142,7 +142,32 @@ Eight more games, one land each, so every one of the 11 lands now has a game wit
 | | `school` | Make a ramp from a book and roll a ball off it. Mark where it lands with a sock, tilt the book and guess the new spot first. | Does {name} move the guess nearer or farther after each roll? | Where will it land now? What changed? |
 | Word Search (school, grown-up) | `all` | Hide a few words in a grid of letters on paper for someone else to find. | Does {name} hide the words across, down or both ways? | Which word was hardest to hide? Where would you look first? |
 
-Left out, with reasons: Stamp Studio (its *Try* names a potato, food in spirit though not on the word list), Teddy Doctor (plasters) and Maker Lane (bread). One wording was caught by the rule tests during the build: a school *Notice* for Photo Safari used "behind", a measuring word, and became "under, beside or on top of". The unchanged selection rule changed the nothing-played starters, as described under [Which three ideas](#which-three-ideas); Roundup and Little Helpers still come onto the card with notes when played. A third batch follows the same rules (eight games, strings tier), choosing games that reach the youngest bands not yet served in their land.
+Left out, with reasons: Stamp Studio (its *Try* names a potato, food in spirit though not on the word list), Teddy Doctor (plasters) and Maker Lane (bread). One wording was caught by the rule tests during the build: a school *Notice* for Photo Safari used "behind", a measuring word, and became "under, beside or on top of". The unchanged selection rule changed the nothing-played starters, as described under [Which three ideas](#which-three-ideas); Roundup and Little Helpers still come onto the card with notes when played.
+
+## Batch 3 (built 2026-11-17, PR #1757)
+
+Eight more games, so the table holds 24. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged (Seesaw Balance reads its `lap` and `toddler` line, spoons only, under 3).
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Recipe Workshop (toddler–pre-K) | `all` | With pretend kitchen toys, make a bowl from a picture, then tell someone what you did first. | Does {name} fill the bowl, stir it or hand it to you? | In it goes. Stir, stir. All done! |
+| Song Maker (lap–school) | `all` | Make a song with pots and spoons, then play it again the same way together. | Does {name} tap one pot, tap each in turn or watch your spoon? | Tap, tap, boom. Again? Tap, tap, boom. |
+| | `school` | (the same) | Does {name} play it back the same way, or change a part? | Was that the same song? Which part would you change? |
+| Sound Garden (lap–pre-K) | `all` | Play a pot-and-spoon drum: copy each other's taps, fast and slow. | Does {name} tap along, wait for a turn or speed up? | Tap, tap, tap. Slow, slow. Fast, fast, fast! |
+| Egg Catch (lap–school) | `all` | Roll a ball down a cardboard tube and catch it in a bowl. | Does {name} watch the tube, look in the bowl or reach for the ball? | In it goes. Here it comes. Caught it! |
+| | `school` | (the same) | Does {name} move the bowl after seeing where the first roll lands? | Where will it come out? What happens if we tilt the tube more? |
+| Bumper Garden (lap–pre-K) | `all` | Roll a ball down a tilted tray with a few cups as bumpers. Which cup does it hit first? | Does {name} follow the ball, move a cup or tip the tray? | Roll! Bump. It hit the cup. Again? |
+| Goodnight Room (lap–pre-K) | `all` | At bedtime, say goodnight to the things in her room together: "Goodnight, lamp. Goodnight, teddy." | Does {name} look at each thing, point to one or wave? | Goodnight, lamp. Goodnight, teddy. Goodnight, window. |
+| Seesaw Balance (lap–school) | `all` | Hang two cups from a coat hanger and add spoons or coins until it hangs level. | Does {name} add a spoon, take one out or swing the hanger? | One more spoon. Down it goes! Now this side. |
+| | `school` | (the same) | Does {name} even it up by adding to one cup, or by taking from the other? | Which cup will go down? What would make it hang level? |
+| Relay Woods (toddler–school) | `all` | With a grown-up, pass a drawn picture along a row of toy friends. | Does {name} pass the picture along, keep hold of it or give it to one friend? | Here you go, bear. Pass it on. Thank you! |
+| | `school` | (the same) | Does {name} give each friend a turn, or skip to the end of the row? | Who gets it next? What would show us it got to the end? |
+
+Treehouse now has a toddler game with notes, so the nothing-played starters at toddler become Bounce Back, Jelly Drums and Recipe Workshop; lap, preschool, pre-K and school are unchanged, and the lap kit line is unchanged. The rule tests pin the starters.
+
+Left out, with reasons: Fill Dump (dry beans at preschool, loose fill in spirit), Peg Garden (a marble at preschool), Pet Kitchen (a sandwich), Puzzle Pals and Tangram Town (cutting), Vine Snip (string), Quick Tricks ("keep a toy dry") and Puppet Stage ("at dinner").
+
+**Observation: the youngest-band gaps cannot be filled under the present rules.** The rule test requires every game with notes to have a kit label at every band it lists. Treehouse at lap: the only un-noted lap game whose *Try* is clear of the deferred word list is Gear Garden ("Look for something at home that turns…"), which names nothing in the kit; Stamp Studio stays out for its potato, and Rainbow Fingers, Fluffy Salon and Draw the Pattern name deferred classes. Cozy Village at lap: Weather Wardrobe, Mail Carrier, Stop and Go and Pet Says name no kit item, Teddy Doctor has plasters, and Splish Splash, Feelings Faces and Scoop Shop name deferred classes. Lantern Lake has no game below school. A fourth batch can therefore add games in bands already served, but closing the lap gaps in Treehouse and Cozy Village would need the kit rule revisited, for instance allowing notes for an idea that needs no object.
 
 ## Open decisions
 

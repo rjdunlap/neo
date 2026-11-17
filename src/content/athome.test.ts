@@ -174,10 +174,11 @@ describe('the kit list', () => {
 
 describe('the At-home card', () => {
   it('starts with three complete ideas from three lands when nothing is played', () => {
-    // Lands in order: Bubble Beach, Music Mountain, then Treehouse, whose one game with notes starts at preschool;
-    // below that the walk reaches Barnyard, where Peekaboo Barn comes before Roundup.
-    for (const band of ['lap', 'toddler'] as Band[])
-      expect(ids(card(band)), band).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
+    // Lands in order: Bubble Beach, Music Mountain, then Treehouse, where Pixel Pictures starts at preschool and Recipe
+    // Workshop (after it in the land's order) at toddler; at lap the walk reaches Barnyard, where Peekaboo Barn comes
+    // before Roundup.
+    expect(ids(card('lap'))).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
+    expect(ids(card('toddler'))).toEqual(['bounce-back', 'jelly-drums', 'recipe-workshop']);
     for (const band of ['preschool', 'prek', 'school'] as Band[])
       expect(ids(card(band)), band).toEqual(['bounce-back', 'jelly-drums', 'pixel-pictures']);
     // Roundup stops at pre-K: a school profile still sees it and can play it onto the card, but it is not suggested.
@@ -208,7 +209,7 @@ describe('the At-home card', () => {
     expect(new Set(lands).size).toBe(3);
     // A played game in a starter's land takes that land's place.
     const d = card('toddler', { 'bounce-back': NOW - DAY });
-    expect(ids(d)).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
+    expect(ids(d)).toEqual(['bounce-back', 'jelly-drums', 'recipe-workshop']);
     expect(d.ideas.map((i) => i.played)).toEqual([true, false, false]);
   });
 
@@ -232,7 +233,7 @@ describe('the At-home card', () => {
   it('skips a played game with no line at her band, and a round older than seven days', () => {
     expect(offScreenFor(byId('garden-grow'), 'toddler', NAME)).toBeNull();
     const c = card('toddler', { 'garden-grow': NOW - DAY, opposites: NOW - 8 * DAY });
-    expect(ids(c)).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
+    expect(ids(c)).toEqual(['bounce-back', 'jelly-drums', 'recipe-workshop']);
     expect(c.ideas.some((i) => i.played)).toBe(false);
     expect(card('toddler', { opposites: NOW - 7 * DAY }).ideas[0]).toMatchObject({ played: true });
   });
