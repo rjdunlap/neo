@@ -1,8 +1,8 @@
 # Puddle Lens, levels 1–4 (definition)
 
-**Built:** levels 1–10 (levels 9 and 10, SF1 and SF2, PR #1733 and #1736); to build level 11 (SF3), read “Slide Files, levels 9–11 (definition, 2026-11-16)” and its two as-built notes (the SF2 note ends with the SF3 hand-over).
+**Built:** levels 1–11 (levels 9, 10 and 11, SF1, SF2 and SF3, PR #1733, #1736 and #1739); Slide Files is complete. To change level 11, read “As built (SF3, level 11, 2026-11-17)”, then the matching parts of “Slide Files, levels 9–11 (definition, 2026-11-16)”.
 
-**Slide Files (levels 9–11, `grownup`) is defined 2026-11-16 ([below](#slide-files-levels-911-definition-2026-11-16)); levels 9 (SF1) and 10 (SF2) are built, level 11 is not.** **Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
+**Slide Files (levels 9–11, `grownup`) is defined 2026-11-16 ([below](#slide-files-levels-911-definition-2026-11-16)); levels 9 (SF1), 10 (SF2) and 11 (SF3) are built.** **Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
 
 Defined 2026-10-22 as slice 1 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/cells-microbes.md#a-first-games-ladder-puddle-lens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
@@ -157,7 +157,7 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## What comes next
 
-**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. **Puddle Lens 7–8** is [defined](#levels-78-definition-2026-11-06) (2026-11-06); built 2026-11-06 (PR #1327). Slide Files (slice 5) is next: SF1 (level 9) is built 2026-11-16 and SF2 (level 10) 2026-11-17; SF3 (level 11) also takes the dead-cell, clump, second-animal and red-onion cases set aside in 5–8).
+**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. **Puddle Lens 7–8** is [defined](#levels-78-definition-2026-11-06) (2026-11-06); built 2026-11-06 (PR #1327). Slide Files (slice 5) is built: SF1 (level 9) 2026-11-16, SF2 (level 10) and SF3 (level 11) 2026-11-17.
 
 ## Open decisions
 
@@ -575,7 +575,7 @@ One session each, in this order. Each widens `grownup` only as far as it builds,
 
 1. **SF1, level 9 *Name the slide*** (built 2026-11-16, PR #1733; new-interaction tier with a band added): `FILE_SAMPLES` for the built samples, the N cases, `survivors`, `judgeCase`, the field-guide cards, the four-answer group, `bands` and `grownup: {9,9}`. Typecheck, unit tests (above, plus registry, lands, how-to and voice), one scripted play at 9 with one free card, one ruled-out card, Show a hint and the sticker, one portrait screenshot of a file at stop 3 with its cards, `fingerdemo` at 9, `npm run build`.
 2. **SF2, level 10 *Measure it*** (built 2026-11-17, PR #1736; new-interaction tier): the bar, `unitsPerMicron`, `judgeSize`, the length buttons; `grownup: {9,10}`. Typecheck, rule tests, one scripted play at 10 with one free length and one wrong length, one portrait screenshot of the swimmer beside its bar, `fingerdemo` at 10, `npm run build`. Opens a source for the cheek-cell length or leaves the cheek cell out.
-3. **SF3, level 11 *Open cases*** (after SF1 and SF2; new-levels tier with three new drawings): `cork`, `red-onion`, the tiny dot, `dot`, the O cases and the folder button; `grownup` to `{9,11}` (SF2 has landed, so `{9,10}` widens to `{9,11}`). Typecheck, rule tests, one browser play at 11 with one named survivor on an open case and the not-enough-evidence close, one portrait screenshot of the tiny dot at stop 4, `fingerdemo` at 11, `npm run build`.
+3. **SF3, level 11 *Open cases*** (built 2026-11-17, PR #1739; after SF1 and SF2; new-levels tier with three new drawings): `cork`, `red-onion`, the tiny dot, `dot`, the O cases and the folder button; `grownup` to `{9,11}` (SF2 has landed, so `{9,10}` widens to `{9,11}`). Typecheck, rule tests, one browser play at 11 with one named survivor on an open case and the not-enough-evidence close, one portrait screenshot of the tiny dot at stop 4, `fingerdemo` at 11, `npm run build`.
 
 ### As built (SF1, level 9, 2026-11-16)
 
@@ -598,6 +598,24 @@ Seven departures from the text above, and the rest as built (`grownup` is now `{
 7. **Off-screen tip.** The scale-bar tip is now the module's `grownup` off-screen line.
 
 Also as built: the bar is drawn from the first stop where the thing shows evidence (`MEASURED`, `unitsPerMicron`, `barAt`), and touching it speaks its value. The true length is in a seeded place, never the same place on all three files. Every length is free below the measuring stop (3 for the swimmer and the grain, 4 for the green ball) with `lens.file.need-ends`; at or above it a wrong length is a miss whose line names the bar and never the answer. Glow after two misses. The folder is stamped with each closed length (this round only, nothing saved); one sticker, no journal entry. 28 new `lens.*` voice lines. The instruction line says "A micrometre is a thousandth of a millimetre", from the source row above. **For SF3:** the how-to notes are scoped `{9,9}` or `{9,10}` by level, so SF3 widens or adds notes for level 11; the `grownup` off-screen line is the scale-bar tip and still fits; cork, red onion, the tiny dot, the O cases and the folder button are all still to build.
+
+### As built (SF3, level 11, 2026-11-17)
+
+Six departures from the text above, and the rest as built (`grownup` is now `{9,11}`; no other band moved, nothing renumbered). Plan name: "Open cases: name the slide, or close the file as not enough evidence".
+1. **A walls-inside line.** `lens.file.see.walls-inside` ("Look: walls, and something inside each one.") is used where a cork card is on the table and the view is onion skin at stop 4 (O4), because the built wall line fits cork too.
+2. **Red onion's own closing line.** `lens.file.yes.red-onion` ("Living plant cells: thick walls, and something inside each one. The colour was never the clue.") rather than the plain onion-skin line.
+3. **The tiny dot is drawn** as a small speck at stop 3 (the table says "none") and a slightly larger faint dot at stop 4, nothing at the hand lens, so the built "only a dot so far" line is true at stop 3. Its evidence at stop 3 is still none.
+4. **The jiggle (O2)** is at most 6 art units about the drift path and slow, so drift plus wobble stays under the built 30-units-a-second limit (a test checks it). It shows at the two microscope stops.
+5. **Cork and red-onion slides** at stops 1–2 are a brown or purple piece seen whole (the onion-skin piece recoloured).
+6. **How-to card.** Three level-11 notes (too small to tell; the folder button's rule; colour and movement never decide); the level-9 notes on cards, hints and free looking now run 9–11.
+
+Model: new evidence mark `dot`; four new sample rows, `cork` (wall; wall and empty), `red-onion` (the same evidence as onion-skin), `tiny-living` and `tiny-clay` (identical: nothing, then `dot` at stop 4; both drift). Cases O1–O5 are as the table. `FILE_CASE_IDS` stays level 9's six; `OPEN_CASE_IDS` is level 11's five. The open unknown is its own id `tiny-dot`, which shows what both tiny rows show, so the model holds no hidden truth. Also `rightClose`, `isOpenCase`, `caseSeeLine`, `openRoundFor`, `jiggleAt`. `judgeCase`: at stop 4 with more than one card standing, the fourth answer is right (`lens.file.yes.open`) and naming either card is a miss (`lens.file.see.dot`); elsewhere unchanged.
+
+Rounds are three of O1–O5 with one or two open cases (authored O3, O1, O5: cork, the drifting dot, the green ball). The screen and layout are level 9's, four answers. At stop 4 on every level-11 file the fourth button's picture changes from the lens with "?" to a closed folder with "?" and is spoken "Not enough evidence." (on every file, so the button never shows which files are open). The case folder is stamped with the closing card, or a question mark for not enough evidence (this round only, nothing saved). The glow after two misses lands on the folder button at stop 4 of an open case. Show a hint turns to stop 4 and says the view line (the dot line on an open case), one counted hint per file; the ghost finger turns to stop 4 and taps the right close. One sticker, no journal entry. Eleven new `lens.file.*` lines (`instruct.open`, `card.cork`, `card.tiny-living`, `card.tiny-clay`, `say.open`, `see.dot`, `see.walls-empty`, `see.walls-inside`, `yes.cork`, `yes.red-onion`, `yes.open`), all device speech; none says microbe, bacteria, germ, a species, a magnification or where a slide came from, and none says the dot is or is not alive (a test).
+
+**Source check:** no new source was opened. The new lines restate rows already opened (cork, onion skin, the smallest cells, clay size).
+
+Incidental, under the ownership rule: the question-curl drawing is one shared helper (the can't-tell icon, the folder button and the stamp); the card brick drawing is one helper shared by the onion and cork cards; the browser suite's `card` helper is shared by levels 9 and 11; `levels9.test.ts` and `levels10.test.ts` were adjusted to the widened types and range (behaviour unchanged).
 
 ### Open items for Slide Files
 

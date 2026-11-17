@@ -17,6 +17,9 @@ import {
   fileEvidenceAt,
   fileRoundFor,
   fileSeeLine,
+  caseSeeLine,
+  rightClose,
+  unknownMotion,
   helpFor,
   judgeCase,
   lensLayout,
@@ -35,7 +38,7 @@ import {
   WALL_SLIDES,
   type FileAnswer,
   type FileCardId,
-  type FileCaseId,
+  type NameCaseId,
   type Stop,
 } from './logic';
 
@@ -48,7 +51,7 @@ const views = {
   'phone upright': computeView(390, 844),
 };
 /** The definition's case table: what stop 3 rules out, where the file closes, and the card that closes it. */
-const TABLE: Record<FileCaseId, { out3: FileCardId[]; closes: Stop; right: FileCardId }> = {
+const TABLE: Record<NameCaseId, { out3: FileCardId[]; closes: Stop; right: FileCardId }> = {
   N1: { out3: ['bubble'], closes: 4, right: 'green-ball' },
   N2: { out3: ['swimmer', 'mud-speck'], closes: 3, right: 'bubble' },
   N3: { out3: ['onion-skin', 'swimmer'], closes: 3, right: 'cheek-cells' },
@@ -56,7 +59,7 @@ const TABLE: Record<FileCaseId, { out3: FileCardId[]; closes: Stop; right: FileC
   N5: { out3: ['swimmer'], closes: 4, right: 'silt' },
   N6: { out3: ['bubble', 'green-ball'], closes: 3, right: 'swimmer' },
 };
-const answers = (id: FileCaseId): FileAnswer[] => [...FILE_CASES[id].candidates, 'cant-tell'];
+const answers = (id: NameCaseId): FileAnswer[] => [...FILE_CASES[id].candidates, 'cant-tell'];
 
 describe('level 9 sample table', () => {
   it('every row shows nothing at stops 1–2, something by stop 4, and never less as the stop rises', () => {
@@ -79,7 +82,7 @@ describe('level 9 sample table', () => {
     expect(fileEvidenceAt('sand-grain', SORT_SAMPLES.sand.deciding)).toEqual(SORT_SAMPLES.sand.evidence);
   });
   it('colour and motion are in no evidence set', () => {
-    const allowed = ['edge', 'inside', 'hairs', 'empty', 'ragged', 'cracks', 'wall', 'soft-edge'];
+    const allowed = ['edge', 'inside', 'hairs', 'empty', 'ragged', 'cracks', 'wall', 'soft-edge', 'dot'];
     for (const id of FILE_SAMPLE_IDS)
       for (const stop of STOPS) for (const e of fileEvidenceAt(id, stop)) expect(allowed).toContain(e);
   });
@@ -142,7 +145,7 @@ describe('level 9 judging', () => {
       for (const stop of STOPS)
         for (const s of c.candidates) {
           if (survivors(c, stop).includes(s)) continue;
-          expect(judgeCase(c, stop, s)).toEqual({ result: 'miss', line: fileSeeLine(c.unknown, stop) });
+          expect(judgeCase(c, stop, s)).toEqual({ result: 'miss', line: caseSeeLine(c, stop) });
         }
     }
   });
@@ -152,9 +155,9 @@ describe('level 9 judging', () => {
       for (const stop of STOPS)
         for (const a of answers(id)) {
           const right = judgeCase(c, stop, a).result === 'right';
-          expect(right).toBe(a === c.unknown && stop >= closingStop(c));
+          expect(right).toBe(a === rightClose(c) && stop >= closingStop(c));
         }
-      expect(judgeCase(c, 4, c.unknown).line).toBe(`lens.file.yes.${c.unknown}`);
+      expect(judgeCase(c, 4, rightClose(c)).line).toBe(`lens.file.yes.${c.unknown}`);
     }
   });
   it('every line a verdict or a card can speak exists, and none names a banned word', () => {
@@ -193,7 +196,8 @@ describe('level 9 rounds', () => {
   it('the card order varies, so the right card has no fixed place', () => {
     const places = new Set<number>();
     for (const seed of seeds(200))
-      for (const f of fileRoundFor(new Rng(seed), false)) places.add(f.cards.indexOf(f.case.unknown));
+      for (const f of fileRoundFor(new Rng(seed), false))
+        places.add(f.cards.indexOf(rightClose(f.case) as FileCardId));
     expect(places.size).toBe(3);
   });
   it('the unknown stays near the middle of the view, and a still one stays put', () => {
@@ -202,7 +206,7 @@ describe('level 9 rounds', () => {
         for (const t of [0, 3, 11, 47]) {
           const p = swimmerAt(f.path, t);
           expect(Math.hypot(p.x, p.y)).toBeLessThanOrEqual(0.56);
-          if (FILE_SAMPLES[f.case.unknown].motion === 'still') expect(p).toMatchObject(swimmerAt(f.path, 0));
+          if (unknownMotion(f.case.unknown) === 'still') expect(p).toMatchObject(swimmerAt(f.path, 0));
         }
       }
   });
@@ -220,7 +224,7 @@ describe('level 9 rounds', () => {
     expect(judgeCase(silt, 4, 'silt')).toEqual({ result: 'right', line: 'lens.file.yes.silt' });
     // The cheek cells: the hint turns to stop 3 and says the soft-edge line.
     expect(helpFor(9, { file: cheek })).toEqual({ do: 'turn', stop: 3 });
-    expect(fileSeeLine(cheek.unknown, 3)).toBe('lens.wall.see.soft');
+    expect(caseSeeLine(cheek, 3)).toBe('lens.wall.see.soft');
     expect(judgeCase(cheek, 3, 'cheek-cells').result).toBe('right');
   });
 });
