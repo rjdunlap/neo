@@ -1,10 +1,12 @@
 /**
- * Timeline Trail's code-drawn pictures: the three places at each stage, the picture cards, the two posts, the pegged
- * gaps, the clothesline, the flipbook frame, the hub icon and the sticker. Palette: src/art/palette.ts.
+ * Timeline Trail's code-drawn pictures: the five places at each stage, the picture cards, the two posts, the pegged
+ * gaps, the clothesline, level 5's chips and ribbon, the flipbook frame, the hub icon and the sticker. The later places
+ * (green, oven) are built from element drawers, so a chip shows exactly the thing its picture shows.
+ * Palette: src/art/palette.ts.
  */
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
-import { PLACES, type PlaceId } from './logic';
+import { PLACES, type LaterPlace, type PlaceId } from './logic';
 
 const SKY = 0xcfeaff;
 const SEA = 0x6fb8e8;
@@ -25,6 +27,8 @@ export function picture(placeId: PlaceId, stage: number, size: number, color: Co
   g.rect(-s, -s, size, size).fill(SKY);
   if (placeId === 'shore') drawShore(g, stage, s, u);
   else if (placeId === 'tree') drawTree(g, stage, s, u);
+  else if (placeId === 'green') drawGreen(g, stage, s, u);
+  else if (placeId === 'oven') drawOven(g, stage, s, u);
   else drawNest(g, stage, s, u, color);
   return c;
 }
@@ -190,6 +194,334 @@ function drawNest(g: Graphics, stage: number, s: number, u: number, color: Color
       .fill(swatch.red.fill)
       .stroke({ width: 1.5 * u, color: ink });
   }
+}
+
+// ——— The later places' elements: each draws one named thing about (x, y), in picture units `u` ———
+
+const STONE = 0xb5aa9a;
+type Draw = (g: Graphics, x: number, y: number, u: number) => void;
+
+const ELEMENTS: Record<string, Draw> = {
+  'big rock': (g, x, y, u) => {
+    g.ellipse(x, y, 13 * u, 9 * u)
+      .fill(STONE)
+      .stroke({ width: 2 * u, color: ink });
+    g.ellipse(x - 4 * u, y - 3 * u, 4 * u, 2 * u).fill({ color: 0xffffff, alpha: 0.35 });
+  },
+  'merry-go-round': (g, x, y, u) => {
+    // Base, centre pole, three riders on poles, a striped cone roof with a scalloped rim.
+    g.ellipse(x, y, 22 * u, 5 * u)
+      .fill(swatch.purple.fill)
+      .stroke({ width: 2 * u, color: ink });
+    g.rect(x - 1.5 * u, y - 30 * u, 3 * u, 30 * u).fill(swatch.yellow.fill);
+    const riders: ColorName[] = ['pink', 'teal', 'orange'];
+    riders.forEach((name, i) => {
+      const rx = x + (i - 1) * 13 * u;
+      g.rect(rx - 0.75 * u, y - 28 * u, 1.5 * u, 26 * u).fill(ink);
+      g.ellipse(rx, y - 10 * u, 5 * u, 4 * u)
+        .fill(swatch[name].fill)
+        .stroke({ width: 1.5 * u, color: ink });
+    });
+    const stripes: ColorName[] = ['red', 'yellow', 'red', 'yellow'];
+    stripes.forEach((name, i) => {
+      const a = x - 24 * u + i * 12 * u;
+      g.moveTo(x, y - 46 * u)
+        .lineTo(a, y - 28 * u)
+        .lineTo(a + 12 * u, y - 28 * u)
+        .fill(swatch[name].fill);
+    });
+    g.moveTo(x, y - 46 * u)
+      .lineTo(x - 24 * u, y - 28 * u)
+      .lineTo(x + 24 * u, y - 28 * u)
+      .closePath()
+      .stroke({ width: 2 * u, color: ink });
+  },
+  flags: (g, x, y, u) => {
+    // Two little flags on the roof's tip.
+    for (const [dx, name] of [
+      [-1, 'teal'],
+      [1, 'pink'],
+    ] as const) {
+      g.moveTo(x, y)
+        .lineTo(x + dx * 4 * u, y - 8 * u)
+        .stroke({ width: 1.5 * u, color: ink });
+      g.moveTo(x + dx * 4 * u, y - 8 * u)
+        .lineTo(x + dx * 11 * u, y - 6 * u)
+        .lineTo(x + dx * 4 * u, y - 3 * u)
+        .fill(swatch[name].fill)
+        .stroke({ width: 1 * u, color: ink });
+    }
+  },
+  bench: (g, x, y, u) => {
+    for (const dx of [-12, 12]) g.rect(x + dx * u - 1.5 * u, y - 14 * u, 3 * u, 14 * u).fill(wood.line);
+    g.roundRect(x - 17 * u, y - 16 * u, 34 * u, 5 * u, 2 * u)
+      .fill(wood.fill)
+      .stroke({ width: 1.5 * u, color: ink });
+    g.roundRect(x - 18 * u, y - 7 * u, 36 * u, 5 * u, 2 * u)
+      .fill(wood.fill)
+      .stroke({ width: 1.5 * u, color: ink });
+  },
+  'flower bed': (g, x, y, u) => {
+    g.ellipse(x, y, 17 * u, 5 * u)
+      .fill(0x8a5a3a)
+      .stroke({ width: 1.5 * u, color: ink });
+    const heads: ColorName[] = ['pink', 'yellow', 'purple', 'red'];
+    heads.forEach((name, i) => {
+      const fx = x + (i - 1.5) * 8 * u;
+      g.moveTo(fx, y)
+        .lineTo(fx, y - 8 * u)
+        .stroke({ width: 1.5 * u, color: LEAF });
+      g.circle(fx, y - 9 * u, 3.5 * u)
+        .fill(swatch[name].fill)
+        .stroke({ width: 1 * u, color: ink });
+    });
+  },
+  'stone oven': (g, x, y, u) => {
+    // A stone dome on the ground at y, a dark mouth and a short chimney.
+    g.rect(x + 8 * u, y - 40 * u, 7 * u, 12 * u)
+      .fill(STONE)
+      .stroke({ width: 2 * u, color: ink });
+    g.moveTo(x - 20 * u, y)
+      .lineTo(x - 20 * u, y - 14 * u)
+      .quadraticCurveTo(x - 20 * u, y - 34 * u, x, y - 34 * u)
+      .quadraticCurveTo(x + 20 * u, y - 34 * u, x + 20 * u, y - 14 * u)
+      .lineTo(x + 20 * u, y)
+      .closePath()
+      .fill(STONE)
+      .stroke({ width: 2 * u, color: ink });
+    for (const [dx, dy] of [
+      [-12, -8],
+      [12, -10],
+      [-8, -25],
+      [9, -24],
+    ])
+      g.roundRect(x + dx * u - 3 * u, y + dy * u - 2 * u, 6 * u, 4 * u, 1.5 * u).fill({
+        color: ink,
+        alpha: 0.14,
+      });
+    g.moveTo(x - 8 * u, y)
+      .lineTo(x - 8 * u, y - 9 * u)
+      .quadraticCurveTo(x, y - 20 * u, x + 8 * u, y - 9 * u)
+      .lineTo(x + 8 * u, y)
+      .closePath()
+      .fill(0x3a2a22)
+      .stroke({ width: 1.5 * u, color: ink });
+    g.ellipse(x, y - 3 * u, 4 * u, 2.5 * u).fill({ color: swatch.orange.fill, alpha: 0.85 });
+  },
+  'striped awning': (g, x, y, u) => {
+    // Two poles from the ground at y and a striped cloth with a scalloped edge between their tops.
+    for (const dx of [-27, 27]) g.rect(x + dx * u - 1.5 * u, y - 46 * u, 3 * u, 46 * u).fill(wood.line);
+    for (let i = 0; i < 6; i++) {
+      const ax = x - 30 * u + i * 10 * u;
+      g.rect(ax, y - 52 * u, 10 * u, 11 * u).fill(i % 2 ? swatch.white.fill : swatch.red.fill);
+      g.circle(ax + 5 * u, y - 41 * u, 5 * u).fill(i % 2 ? swatch.white.fill : swatch.red.fill);
+    }
+    g.rect(x - 30 * u, y - 52 * u, 60 * u, 11 * u).stroke({ width: 2 * u, color: ink });
+  },
+  sign: (g, x, y, u) => {
+    // A painted board with a loaf on it.
+    g.roundRect(x - 11 * u, y - 7 * u, 22 * u, 14 * u, 3 * u)
+      .fill(swatch.teal.fill)
+      .stroke({ width: 1.5 * u, color: ink });
+    g.ellipse(x, y, 7 * u, 4 * u)
+      .fill(0xe2a85a)
+      .stroke({ width: 1 * u, color: ink });
+  },
+  bunting: (g, x, y, u) => {
+    const names: ColorName[] = ['yellow', 'teal', 'pink', 'yellow', 'teal'];
+    names.forEach((name, i) => {
+      const bx = x + (i - 2) * 9 * u;
+      g.moveTo(bx - 4 * u, y)
+        .lineTo(bx + 4 * u, y)
+        .lineTo(bx, y + 7 * u)
+        .fill(swatch[name].fill)
+        .stroke({ width: 1 * u, color: ink });
+    });
+  },
+  table: (g, x, y, u) => {
+    for (const dx of [-9, 9]) g.rect(x + dx * u - 1.5 * u, y - 15 * u, 3 * u, 15 * u).fill(wood.line);
+    g.roundRect(x - 13 * u, y - 18 * u, 26 * u, 5 * u, 2 * u)
+      .fill(wood.light)
+      .stroke({ width: 1.5 * u, color: ink });
+  },
+  'sleeping cat': (g, x, y, u) => {
+    // Curled up: a round body, a head with two ears, closed eyes and a tail tucked round.
+    g.ellipse(x, y, 11 * u, 6 * u)
+      .fill(swatch.orange.fill)
+      .stroke({ width: 1.5 * u, color: ink });
+    g.circle(x - 9 * u, y - 2 * u, 5 * u)
+      .fill(swatch.orange.fill)
+      .stroke({ width: 1.5 * u, color: ink });
+    for (const dx of [-12, -6])
+      g.moveTo(x + dx * u - 2 * u, y - 5 * u)
+        .lineTo(x + dx * u, y - 10 * u)
+        .lineTo(x + dx * u + 2 * u, y - 5 * u)
+        .fill(swatch.orange.fill)
+        .stroke({ width: 1 * u, color: ink });
+    g.moveTo(x - 11 * u, y - 2 * u)
+      .lineTo(x - 8.5 * u, y - 1.5 * u)
+      .stroke({ width: 1 * u, color: ink });
+    g.moveTo(x + 10 * u, y + 2 * u)
+      .quadraticCurveTo(x + 15 * u, y - 6 * u, x + 6 * u, y - 5 * u)
+      .stroke({ width: 2.5 * u, color: swatch.orange.line, cap: 'round' });
+  },
+};
+
+/** Where the still-here element stands in every stage of its place, in picture units. */
+const STILL_AT: Record<LaterPlace, { x: number; y: number }> = {
+  green: { x: -34, y: 34 },
+  oven: { x: -12, y: 8 },
+};
+
+/** Where the flipbook's sparkle sits on the still-here element (beside the rock's top, on the oven's shoulder). */
+export const SPARKLE_AT: Record<LaterPlace, { x: number; y: number }> = {
+  green: { x: -24, y: 25 },
+  oven: { x: -24, y: 8 },
+};
+
+/** The green's tree at x: a sapling, then a young, taller and big tree. It only grows. */
+function growingTree(g: Graphics, stage: number, x: number, ground: number, u: number) {
+  if (stage === 0) {
+    g.moveTo(x, ground)
+      .lineTo(x, ground - 16 * u)
+      .stroke({ width: 2.5 * u, color: LEAF, cap: 'round' });
+    g.ellipse(x - 5 * u, ground - 12 * u, 6 * u, 3.5 * u)
+      .fill(LEAF)
+      .stroke({ width: 1.5 * u, color: ink });
+    g.ellipse(x + 5 * u, ground - 17 * u, 6 * u, 3.5 * u)
+      .fill(LEAF)
+      .stroke({ width: 1.5 * u, color: ink });
+    return;
+  }
+  const w = [0, 5, 8, 11][stage] * u;
+  const top = [0, 26, 40, 50][stage] * u;
+  const r = [0, 12, 16, 20][stage] * u;
+  g.roundRect(x - w / 2, ground - top, w, top, 2 * u)
+    .fill(TRUNK)
+    .stroke({ width: 2 * u, color: ink });
+  g.circle(x, ground - top - r * 0.4, r)
+    .fill(LEAF)
+    .stroke({ width: 2 * u, color: ink });
+}
+
+function drawGreen(g: Graphics, stage: number, s: number, u: number) {
+  const ground = 24 * u;
+  g.rect(-s, ground, s * 2, s - ground).fill(GRASS);
+  growingTree(g, stage, 28 * u, 34 * u, u);
+  ELEMENTS['big rock'](g, STILL_AT.green.x * u, STILL_AT.green.y * u, u);
+  if (stage === 1) {
+    ELEMENTS['merry-go-round'](g, 2 * u, 38 * u, u * 0.9);
+    ELEMENTS.flags(g, 2 * u, 38 * u - 46 * u * 0.9, u);
+  }
+  if (stage >= 2) ELEMENTS.bench(g, 0, 40 * u, u);
+  if (stage >= 3) ELEMENTS['flower bed'](g, -4 * u, 46 * u, u * 0.8);
+}
+
+/** The oven's vine from its right foot: a shoot, knee high, halfway up, then over the top. It only grows. */
+function growingVine(g: Graphics, stage: number, x: number, ground: number, u: number) {
+  const path: [number, number][] = [
+    [0, 0],
+    [1, -8],
+    [0, -16],
+    [-2, -24],
+    [-6, -31],
+    [-13, -35],
+    [-21, -35],
+  ];
+  const upTo = [1, 2, 4, 6][stage];
+  g.moveTo(x, ground);
+  for (let i = 1; i <= upTo; i++) g.lineTo(x + path[i][0] * u, ground + path[i][1] * u);
+  g.stroke({ width: 2 * u, color: 0x3f9a45, cap: 'round', join: 'round' });
+  for (let i = 1; i <= upTo; i++) {
+    const side = i % 2 ? 1 : -1;
+    g.ellipse(x + path[i][0] * u + side * 3.5 * u, ground + path[i][1] * u - 1 * u, 4 * u, 2.5 * u)
+      .fill(LEAF)
+      .stroke({ width: 1 * u, color: ink });
+  }
+}
+
+function drawOven(g: Graphics, stage: number, s: number, u: number) {
+  const ground = 30 * u;
+  g.rect(-s, 22 * u, s * 2, s - 22 * u).fill(SAND);
+  const ox = STILL_AT.oven.x * u;
+  if (stage === 1) ELEMENTS.sign(g, ox, -40 * u, u);
+  ELEMENTS['stone oven'](g, ox, ground, u);
+  if (stage >= 2) ELEMENTS.table(g, 32 * u, 36 * u, u);
+  growingVine(g, stage, ox + 23 * u, ground, u);
+  if (stage === 1) {
+    ELEMENTS['striped awning'](g, ox, ground + 4 * u, u);
+    ELEMENTS.bunting(g, ox, -30 * u, u);
+  }
+  if (stage >= 3) ELEMENTS['sleeping cat'](g, ox - 2 * u, ground - 39 * u, u * 0.85);
+}
+
+/** Where each chip's element sits on its tile (its drawer's anchor, in tile hundredths), so the thing looks centred. */
+const CHIP_ANCHOR: Record<string, { x: number; y: number; k: number }> = {
+  'big rock': { x: 0, y: 4, k: 2.4 },
+  'merry-go-round': { x: 0, y: 32, k: 1.5 },
+  bench: { x: 0, y: 18, k: 2 },
+  'flower bed': { x: 0, y: 14, k: 2.2 },
+  'stone oven': { x: -2, y: 30, k: 1.7 },
+  'striped awning': { x: 0, y: 36, k: 1.3 },
+  table: { x: 0, y: 20, k: 2.4 },
+  'sleeping cat': { x: 3, y: 6, k: 2.6 },
+};
+
+/** A level-5 chip: one element of the pictures on a cream tile, centred on (0, 0). */
+export function chip(element: string, size: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-size / 2, -size / 2, size, size, size * 0.22)
+    .fill(cream)
+    .stroke({ width: 4, color: swatch.teal.line });
+  const a = CHIP_ANCHOR[element];
+  const t = size / 100;
+  ELEMENTS[element]?.(g, a.x * t, a.y * t, a.k * t * 0.9);
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** The "still here" ribbon: a long cloth strip with notched ends and a row of small pins, `near` while a chip hovers. */
+export function ribbon(w: number, h: number, near: boolean): Graphics {
+  const g = new Graphics();
+  const n = 22;
+  g.moveTo(-w / 2, -h / 2)
+    .lineTo(w / 2, -h / 2)
+    .lineTo(w / 2 - n, 0)
+    .lineTo(w / 2, h / 2)
+    .lineTo(-w / 2, h / 2)
+    .lineTo(-w / 2 + n, 0)
+    .closePath()
+    .fill({ color: near ? swatch.yellow.light : swatch.teal.light, alpha: 0.95 })
+    .stroke({ width: 4, color: swatch.teal.line });
+  // A stitched line along each edge.
+  for (const y of [-h / 2 + 12, h / 2 - 12])
+    for (let x = -w / 2 + n + 14; x < w / 2 - n - 14; x += 22)
+      g.moveTo(x, y)
+        .lineTo(x + 10, y)
+        .stroke({ width: 3, color: swatch.teal.line, alpha: 0.45, cap: 'round' });
+  g.eventMode = 'none';
+  return g;
+}
+
+/** A soft four-point sparkle of radius `r`, for the still-here element in the flipbook. */
+export function sparkle(r: number): Graphics {
+  const g = new Graphics();
+  const k = r * 0.28;
+  g.moveTo(0, -r)
+    .lineTo(k, -k)
+    .lineTo(r, 0)
+    .lineTo(k, k)
+    .lineTo(0, r)
+    .lineTo(-k, k)
+    .lineTo(-r, 0)
+    .lineTo(-k, -k)
+    .closePath()
+    .fill({ color: swatch.yellow.light, alpha: 0.95 })
+    .stroke({ width: 2, color: swatch.yellow.fill });
+  g.eventMode = 'none';
+  return g;
 }
 
 /** A picture in its white card frame; `sepia` fades it to long ago. The picture sits inside, masked to the frame. */

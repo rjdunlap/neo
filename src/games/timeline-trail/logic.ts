@@ -4,8 +4,11 @@
  * after them. A card has exactly one valid gap (where it sorts among the hung cards), and a wrong gap answers with a
  * reason about what the picture shows. Level 4 hangs two places on one line: the shore and the tree grow side by side,
  * a card's number is its time on the shared line, and each card carries a clue, a little picture of the other place at
- * the same time, which is the only thing that orders one place's card against the other's.
- * Everything here is pure; the scene draws it. Definition: docs/definitions/timeline-trail.md (levels 1–4).
+ * the same time, which is the only thing that orders one place's card against the other's. Level 5 grows one of two
+ * later places (a village green, a bread oven) whose middle picture is the grandest, then asks which of three things is
+ * still here in every picture: every stage lists what its picture `shows`, and an element in all of them is still here.
+ * Everything here is pure; the scene draws it. Definitions: docs/definitions/timeline-trail.md (levels 1–4) and
+ * docs/definitions/timeline-trail-5-7.md (level 5).
  */
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -13,8 +16,12 @@ import type { BandLevels } from '../../progress/difficulty';
 
 // ——— Places and stages ———
 
-export type PlaceId = 'shore' | 'tree' | 'nest';
+export type PlaceId = 'shore' | 'tree' | 'nest' | 'green' | 'oven';
+/** The three places of levels 1–3 (level 4 uses two of them). */
 export const PLACE_IDS: readonly PlaceId[] = ['shore', 'tree', 'nest'];
+/** The two places used only from level 5 on: in each, something grand is replaced by something plainer. */
+export const LATER_PLACES = ['green', 'oven'] as const satisfies readonly PlaceId[];
+export type LaterPlace = (typeof LATER_PLACES)[number];
 
 export interface Stage {
   /** `<place>-<n>`; the voice line is `trail.card.<id>`. */
@@ -23,6 +30,8 @@ export interface Stage {
   caption: string;
   /** The element this stage has that the stage before it lacks (the first stage names what only it shows bare). */
   changes: string;
+  /** The named elements this picture draws; one in every stage of a place is still here. */
+  shows: readonly string[];
 }
 
 export interface Place {
@@ -38,33 +47,168 @@ export const PLACES: Record<PlaceId, Place> = {
     id: 'shore',
     name: 'shore',
     stages: [
-      { id: 'shore-0', caption: 'an empty shore with one rock', changes: 'bare sand and one rock' },
-      { id: 'shore-1', caption: 'a little dock on the shore', changes: 'little dock' },
-      { id: 'shore-2', caption: 'the dock with a boat shed', changes: 'boat shed' },
-      { id: 'shore-3', caption: 'the dock with a boat and a lantern', changes: 'boat and lantern' },
+      {
+        id: 'shore-0',
+        caption: 'an empty shore with one rock',
+        changes: 'bare sand and one rock',
+        shows: ['rock'],
+      },
+      {
+        id: 'shore-1',
+        caption: 'a little dock on the shore',
+        changes: 'little dock',
+        shows: ['rock', 'dock'],
+      },
+      {
+        id: 'shore-2',
+        caption: 'the dock with a boat shed',
+        changes: 'boat shed',
+        shows: ['rock', 'dock', 'shed'],
+      },
+      {
+        id: 'shore-3',
+        caption: 'the dock with a boat and a lantern',
+        changes: 'boat and lantern',
+        shows: ['rock', 'dock', 'shed', 'boat', 'lantern'],
+      },
     ],
   },
   tree: {
     id: 'tree',
     name: 'tree',
     stages: [
-      { id: 'tree-0', caption: 'a sapling with two leaves', changes: 'tiny sapling' },
-      { id: 'tree-1', caption: 'a young tree', changes: 'trunk and a small crown of leaves' },
-      { id: 'tree-2', caption: 'a big tree', changes: 'big round crown' },
-      { id: 'tree-3', caption: 'the big tree with a swing', changes: 'swing' },
+      { id: 'tree-0', caption: 'a sapling with two leaves', changes: 'tiny sapling', shows: ['sapling'] },
+      {
+        id: 'tree-1',
+        caption: 'a young tree',
+        changes: 'trunk and a small crown of leaves',
+        shows: ['trunk', 'crown'],
+      },
+      { id: 'tree-2', caption: 'a big tree', changes: 'big round crown', shows: ['trunk', 'crown'] },
+      {
+        id: 'tree-3',
+        caption: 'the big tree with a swing',
+        changes: 'swing',
+        shows: ['trunk', 'crown', 'swing'],
+      },
     ],
   },
   nest: {
     id: 'nest',
     name: 'nest',
     stages: [
-      { id: 'nest-0', caption: 'an egg in the nest', changes: 'egg' },
-      { id: 'nest-1', caption: 'a hatchling in the nest', changes: 'hatchling' },
-      { id: 'nest-2', caption: 'a young pet with a first scarf', changes: 'scarf' },
-      { id: 'nest-3', caption: 'the pet now, at the treehouse door', changes: 'treehouse door' },
+      { id: 'nest-0', caption: 'an egg in the nest', changes: 'egg', shows: ['nest', 'egg'] },
+      {
+        id: 'nest-1',
+        caption: 'a hatchling in the nest',
+        changes: 'hatchling',
+        shows: ['nest', 'hatchling'],
+      },
+      {
+        id: 'nest-2',
+        caption: 'a young pet with a first scarf',
+        changes: 'scarf',
+        shows: ['nest', 'pet', 'scarf'],
+      },
+      {
+        id: 'nest-3',
+        caption: 'the pet now, at the treehouse door',
+        changes: 'treehouse door',
+        shows: ['pet', 'door'],
+      },
+    ],
+  },
+  // The later places: stage 1 is the grandest picture, and what tells stage 2 from it is the thing that only grows
+  // (the tree, the vine), never the plain bench or table, so no reason ever says "newer has more".
+  green: {
+    id: 'green',
+    name: 'village green',
+    stages: [
+      {
+        id: 'green-0',
+        caption: 'a green with a big rock and a sapling',
+        changes: 'big rock and a sapling',
+        shows: ['big rock', 'sapling'],
+      },
+      {
+        id: 'green-1',
+        caption: 'a grand merry-go-round on the green',
+        changes: 'merry-go-round',
+        shows: ['big rock', 'merry-go-round', 'flags', 'tree'],
+      },
+      {
+        id: 'green-2',
+        caption: 'a plain bench by a taller tree',
+        changes: 'taller tree',
+        shows: ['big rock', 'bench', 'tree'],
+      },
+      {
+        id: 'green-3',
+        caption: 'the bench with a flower bed and a big tree',
+        changes: 'flower bed',
+        shows: ['big rock', 'bench', 'flower bed', 'tree'],
+      },
+    ],
+  },
+  oven: {
+    id: 'oven',
+    name: 'bread oven',
+    stages: [
+      {
+        id: 'oven-0',
+        caption: 'a stone oven with a vine shoot',
+        changes: 'stone oven and a vine shoot',
+        shows: ['stone oven', 'vine shoot'],
+      },
+      {
+        id: 'oven-1',
+        caption: 'a fancy stall around the oven',
+        changes: 'striped awning',
+        shows: ['stone oven', 'striped awning', 'sign', 'bunting', 'vine'],
+      },
+      {
+        id: 'oven-2',
+        caption: 'a plain table beside the oven',
+        changes: 'longer vine',
+        shows: ['stone oven', 'table', 'vine'],
+      },
+      {
+        id: 'oven-3',
+        caption: 'the oven with a cat asleep on top',
+        changes: 'sleeping cat',
+        shows: ['stone oven', 'table', 'vine', 'sleeping cat'],
+      },
     ],
   },
 };
+
+/** How much a picture shows: the count of its named elements. In the later places the grandest picture is not the newest. */
+export const detail = (place: PlaceId, stage: number) => PLACES[place].stages[stage].shows.length;
+
+/** The elements in every stage of a place: what is still here. */
+export function stillHere(place: PlaceId): string[] {
+  const [first, ...rest] = PLACES[place].stages;
+  return first.shows.filter((e) => rest.every((s) => s.shows.includes(e)));
+}
+
+/** How many of a place's pictures show an element. */
+export const picturesWith = (place: PlaceId, element: string) =>
+  PLACES[place].stages.filter((s) => s.shows.includes(element)).length;
+
+/**
+ * Level 5's chips for each later place: the grand thing that came and went, and the plainer things a third chip is
+ * drawn from. The growing thing (sapling to tree, shoot to vine) is never a chip: she could fairly call it still here.
+ */
+export const CHIPS: Record<LaterPlace, { grand: string; others: readonly string[] }> = {
+  green: { grand: 'merry-go-round', others: ['bench', 'flower bed'] },
+  oven: { grand: 'striped awning', others: ['table', 'sleeping cat'] },
+};
+
+/** Why a chip is not the answer, in words about the pictures. */
+export function chipReason(place: PlaceId, element: string): string {
+  const n = picturesWith(place, element);
+  return `The ${element} is ${n === 1 ? 'only in one picture' : 'not in every picture'}.`;
+}
 
 // ——— Levels ———
 
@@ -82,12 +226,13 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Hang it between', cards: 3, hungAtStart: 2 },
   { level: 3, name: 'Grow the line', cards: 4, hungAtStart: 1 },
   { level: 4, name: 'A clue inside', cards: 4, hungAtStart: 2 },
+  { level: 5, name: 'Still here', cards: 4, hungAtStart: 1 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 4 },
+  school: { min: 2, max: 5 },
 };
 
 export function planFor(level: number): Plan {
@@ -110,14 +255,21 @@ export interface Round {
   hung: number[];
   /** Stage indices waiting in the tray, in their seeded tray order. */
   loose: number[];
+  /** Level 5 only: the three elements on the chips, in their seeded order; exactly one is `still`. */
+  chips?: string[];
+  /** Level 5 only: the element in every picture, the chip that pins to the ribbon. */
+  still?: string;
 }
 
 /** Which place the next round shows: a shuffled bag, so every place turns up before any repeats. */
-export class PlaceBag {
-  private bag: PlaceId[] = [];
-  constructor(private readonly rng: Rng) {}
-  next(): PlaceId {
-    if (!this.bag.length) this.bag = this.rng.shuffle([...PLACE_IDS]);
+export class PlaceBag<P extends PlaceId = PlaceId> {
+  private bag: P[] = [];
+  constructor(
+    private readonly rng: Rng,
+    private readonly ids: readonly P[] = PLACE_IDS as readonly P[],
+  ) {}
+  next(): P {
+    if (!this.bag.length) this.bag = this.rng.shuffle([...this.ids]);
     return this.bag.pop()!;
   }
 }
@@ -127,11 +279,16 @@ export const CLUE_PLACES: readonly PlaceId[] = ['shore', 'tree'];
 
 /** The session's bag: rounds take places from it in turn, so consecutive rounds never repeat a place until all three have shown. */
 const sessionBag = new PlaceBag(new Rng());
+/** Level 5's own bag of the two later places, so the three-place bag above is untouched. */
+const laterBag = new PlaceBag<LaterPlace>(new Rng(), LATER_PLACES);
+const isLater = (p: PlaceId | undefined): p is LaterPlace =>
+  p !== undefined && (LATER_PLACES as readonly PlaceId[]).includes(p);
 
 /**
  * A round: the place, the stages in play and which hang first. Level 1 shows two stages at least one stage apart, both
  * loose; level 2 drops one stage of the four, hangs two of the remaining three and leaves one loose (any of the three);
- * level 3 uses every stage, hangs the first, and the three others wait in a seeded order.
+ * level 3 uses every stage, hangs the first, and the three others wait in a seeded order; level 5 does the same with a
+ * later place and adds three chips (the still-here element, the grand thing and one plainer thing) in a seeded order.
  */
 export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
   const plan = planFor(level);
@@ -148,6 +305,14 @@ export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
     const owners = times.map((t) => (hung.includes(t) ? place : other));
     const loose = rng.shuffle(times.filter((t) => !hung.includes(t)));
     return { level: plan.level, place, other, owners, cards: times, hung, loose };
+  }
+  if (plan.level === 5) {
+    const place = isLater(chosen) ? chosen : laterBag.next();
+    const cards = PLACES[place].stages.map((_s, i) => i);
+    const loose = rng.shuffle(cards.slice(1));
+    const [still] = stillHere(place);
+    const chips = rng.shuffle([still, CHIPS[place].grand, rng.pick(CHIPS[place].others)]);
+    return { level: plan.level, place, cards, hung: [cards[0]], loose, chips, still };
   }
   const place = chosen ?? sessionBag.next();
   const n = PLACES[place].stages.length;
@@ -169,9 +334,10 @@ export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
 
 // ——— The line and its gaps ———
 
-/** How many gaps the line offers: one more than the hung cards, or level 1's two posts. */
+/** How many gaps the line offers: one more than the hung cards, level 1's two posts, or none once level 5's line is full. */
 export function gapCount(round: Round, line: readonly number[]): number {
   if (round.level === 1) return 2;
+  if (asking(round, line)) return 0;
   return line.length + 1;
 }
 
@@ -291,9 +457,12 @@ export function nextCard(round: Round, loose: readonly number[]): number | null 
 /**
  * Keeps the round's accounting: a miss per distinct wrong drop (the same card in the same wrong gap again repeats the
  * reason and counts nothing), a glow on a card's valid gap after its second miss (one hint a card, at most), and
- * Show a hint for the card in hand (the same single hint).
+ * Show a hint for the card in hand (the same single hint). Level 5's three chips count the same way as one more card:
+ * a miss per distinct wrong chip, the right chip glowing after the second, one hint at most.
  */
 export class Tally {
+  /** The key level 5's chip set counts under, as a card's stage does: `missed(CHIP_SET, chip)`, `help(CHIP_SET)`. */
+  static readonly CHIP_SET = -1;
   misses = 0;
   hints = 0;
   private wrong = new Map<number, number>();
@@ -373,11 +542,23 @@ export interface LineLayout {
   tray: Rect[];
   /** The flipbook frame. */
   frame: Rect;
+  /** Level 5, once the line is full: the "still here" ribbon under the row of cards, the chips' drop target. */
+  ribbon?: Rect;
+  /** Level 5, once the line is full: the three chips, where the tray was. */
+  chips: Rect[];
 }
+
+/** The ribbon's height: a full-size drop target. */
+export const RIBBON_H = 100;
+/** Level 5 asks its question once every card is hung. */
+export const asking = (round: Round, line: readonly number[]) =>
+  round.level === 5 && line.length === round.cards.length;
 
 /**
  * Posts at the edges, the line between them (wrapping into two rows when its cards and gaps do not fit one), the tray
  * below and the flipbook frame in the middle. Every target keeps full size; null when the view cannot hold them.
+ * Level 5's full line needs no gaps any more, so its four cards stand in one row with the ribbon under them and the
+ * three chips where the tray was; null rather than a smaller ribbon or chip.
  */
 export function lineLayout(
   round: Round,
@@ -399,16 +580,22 @@ export function lineLayout(
   const trayY = v.h - CARD - 28;
   const trayLeft = 176;
   const trayRight = v.w - 24;
-  const trayN = Math.max(1, looseCount);
-  const trayStep = Math.min(CARD + SPACE, (trayRight - trayLeft - CARD) / Math.max(1, trayN - 1) || 0);
-  const trayStart = (trayLeft + trayRight) / 2 - (trayStep * (trayN - 1)) / 2 - CARD / 2;
-  const tray = Array.from({ length: looseCount }, (_, i) => ({
-    x: trayStart + i * trayStep,
-    y: trayY,
-    w: CARD,
-    h: CARD,
-  }));
-  if (tray.length && (tray[0].x < trayLeft || tray[tray.length - 1].x + CARD > trayRight)) return null;
+  /** `count` card-sized places along the tray, or null when they do not fit side by side. */
+  const trayRects = (count: number): Rect[] | null => {
+    const step = Math.min(CARD + SPACE, (trayRight - trayLeft - CARD) / Math.max(1, count - 1) || 0);
+    const start = (trayLeft + trayRight) / 2 - (step * (Math.max(1, count) - 1)) / 2 - CARD / 2;
+    const rects = Array.from({ length: count }, (_, i) => ({
+      x: start + i * step,
+      y: trayY,
+      w: CARD,
+      h: CARD,
+    }));
+    if (count > 1 && step < CARD) return null;
+    if (rects.length && (rects[0].x < trayLeft || rects[rects.length - 1].x + CARD > trayRight)) return null;
+    return rects;
+  };
+  const tray = trayRects(looseCount);
+  if (!tray) return null;
 
   const frameSize = wide ? 360 : 420;
   const frame = { x: (v.w - frameSize) / 2, y: wide ? 100 : 180, w: frameSize, h: frameSize };
@@ -430,7 +617,25 @@ export function lineLayout(
       rows: [posts.left.y + posts.left.h - GAP_H / 2 - 20],
       tray,
       frame,
+      chips: [],
     };
+  }
+  const left = wide ? posts.left.x + posts.left.w + 12 : 24;
+  const right = wide ? posts.right.x - 12 : v.w - 24;
+  const room = right - left;
+  const lineTop = wide ? posts.left.y + 40 : posts.left.y + posts.left.h + 20;
+  const lineBottom = trayY - 30;
+  if (asking(round, line)) {
+    // The cards in one row, no gaps, the ribbon under them as wide as the row, the chips in the tray.
+    const chips = trayRects(round.chips?.length ?? 3);
+    const rowW = line.length * CARD + (line.length - 1) * SPACE;
+    const blockH = CARD + 16 + RIBBON_H;
+    if (!chips || rowW > room || blockH > lineBottom - lineTop) return null;
+    const top = (lineTop + lineBottom) / 2 - blockH / 2;
+    const x0 = (left + right) / 2 - rowW / 2;
+    const cards = line.map((_s, i) => ({ x: x0 + i * (CARD + SPACE), y: top, w: CARD, h: CARD }));
+    const ribbon = { x: x0, y: top + CARD + 16, w: rowW, h: RIBBON_H };
+    return { posts, cards, gaps: [], rows: [top + CARD / 2], tray, frame, ribbon, chips };
   }
   // Items in line order: gap, card, gap, card, …, gap.
   type Item = { kind: 'gap' | 'card'; index: number; w: number };
@@ -440,9 +645,6 @@ export function lineLayout(
     if (g < line.length) items.push({ kind: 'card', index: g, w: CARD });
   }
   const width = (its: Item[]) => its.reduce((s, it) => s + it.w, 0) + SPACE * (its.length - 1);
-  const left = wide ? posts.left.x + posts.left.w + 12 : 24;
-  const right = wide ? posts.right.x - 12 : v.w - 24;
-  const room = right - left;
   let rowsOf: Item[][];
   if (width(items) <= room) rowsOf = [items];
   else {
@@ -453,8 +655,6 @@ export function lineLayout(
     rowsOf = [items.slice(0, cut), items.slice(cut)];
   }
   if (rowsOf.some((r) => width(r) > room)) return null;
-  const lineTop = wide ? posts.left.y + 40 : posts.left.y + posts.left.h + 20;
-  const lineBottom = trayY - 30;
   const rowH = Math.max(CARD, GAP_H);
   const mid = (lineTop + lineBottom) / 2;
   const rows =
@@ -473,7 +673,7 @@ export function lineLayout(
       x += it.w + SPACE;
     }
   });
-  return { posts, cards, gaps, rows, tray, frame };
+  return { posts, cards, gaps, rows, tray, frame, chips: [] };
 }
 
 export const overlaps = (a: Rect, b: Rect) =>
