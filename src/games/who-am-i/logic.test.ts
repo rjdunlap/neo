@@ -3,6 +3,18 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   ANSWER_KINDS,
+  ask,
+  askable,
+  ASK_STRIP,
+  askLayout,
+  bestQuestion,
+  evenness,
+  KINDS,
+  lacksText,
+  makeTray,
+  splits,
+  TRAY_H,
+  unasked,
   botTap,
   DEFINING,
   FEATURE_IDS,
@@ -114,7 +126,7 @@ describe('Who Am I? reasons', () => {
 });
 
 describe('Who Am I? rounds', () => {
-  for (const plan of PLANS.filter((p) => !p.group)) {
+  for (const plan of PLANS.filter((p) => !p.group && p.mode !== 'ask')) {
     describe(`level ${plan.level}`, () => {
       it(`builds a playable, honest round for ${SEEDS} seeds`, () => {
         const seen = new Set<FriendId>();
@@ -508,8 +520,8 @@ describe('Who Am I? level 5, Which group?', () => {
   const plan = planFor(5);
   const rounds = Array.from({ length: SEEDS }, (_, k) => roundFor(5, k + 1));
 
-  it('is the top of the school ladder and leaves pre-K alone', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 5 } });
+  it('sits below level 6 on the school ladder and leaves pre-K alone', () => {
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 6 } });
     expect(plan.group).toBe(true);
     expect(PLANS.filter((p) => p.group).map((p) => p.level)).toEqual([5]);
   });
@@ -743,6 +755,513 @@ describe('Who Am I? levels 1-4 are unchanged by level 5', () => {
       expect(r.gallery.join(' '), `level ${level} seed ${seed}`).toBe(gallery);
       expect(r.answer).toBe(answer);
       expect((r.clues as Clue[]).join(' ')).toBe(clues);
+    }
+  });
+});
+
+describe('Who Am I? level 6, You ask', () => {
+  const plan = planFor(6);
+  const MIN_ASKABLE = 8;
+  const MAX_ASKABLE = 10;
+
+  // Every gallery: one friend from each of six of the seven kinds, in the table's order.
+  const GALLERIES: FriendId[][] = [];
+  KINDS.forEach((_, skip) => {
+    let acc: FriendId[][] = [[]];
+    KINDS.forEach((kind, k) => {
+      if (k === skip) return;
+      acc = acc.flatMap((g) => kind.map((f) => [...g, f]));
+    });
+    GALLERIES.push(...acc);
+  });
+  const ROUNDS: [FriendId[], FriendId][] = GALLERIES.flatMap((g) =>
+    g.map((s): [FriendId[], FriendId] => [g, s]),
+  );
+  const label = (g: FriendId[], s: FriendId) => `${g.join(' ')} / ${s}`;
+
+  const newPlay = (gallery: FriendId[], secret: FriendId, seed: number) =>
+    startPlay({ gallery: [...gallery], answer: secret, clues: [] }, 'ask', new Rng(seed));
+  const flipAll = (p: ReturnType<typeof startPlay>) => {
+    for (const i of helpTargets(p)) tap(p, i);
+  };
+
+  /** Checks every rule that must hold while she is choosing, then asks `pick`'s question and turns the friends over. */
+  function playOut(
+    gallery: FriendId[],
+    secret: FriendId,
+    seed: number,
+    pick: (p: ReturnType<typeof startPlay>, rng: Rng) => Feature,
+  ) {
+    const p = newPlay(gallery, secret, seed);
+    const chooser = new Rng(seed * 7919 + 13);
+    const secretIdx = gallery.indexOf(secret);
+    for (let guard = 0; !p.done; guard++) {
+      const ctx = `${label(gallery, secret)} seed ${seed} step ${guard}`;
+      expect(guard, ctx).toBeLessThan(40);
+      const left = standing(p);
+      const open = unasked(p);
+      expect(left, ctx).toContain(secret);
+      expect(left.length, ctx).toBeGreaterThanOrEqual(2);
+      expect(p.current, ctx).toBeNull();
+      // The tray: distinct, unasked, three (fewer only when fewer remain), and a real choice.
+      expect(new Set(p.tray).size, ctx).toBe(p.tray.length);
+      expect(p.tray.length, ctx).toBe(Math.min(3, open.length));
+      for (const f of p.tray) expect(open, ctx).toContain(f);
+      expect(
+        p.tray.some((f) => splits(f, left)),
+        ctx,
+      ).toBe(true);
+      const splitting = open.filter((f) => splits(f, left));
+      if (splitting.length >= 3) {
+        expect(
+          p.tray.every((f) => splits(f, left)),
+          `${ctx} no dud`,
+        ).toBe(true);
+        const top = Math.max(...splitting.map((f) => evenness(f, left)));
+        expect(Math.max(...p.tray.map((f) => evenness(f, left))), `${ctx} best`).toBe(top);
+      }
+      const f = pick(p, chooser);
+      expect(p.tray, ctx).toContain(f);
+      const before = { down: [...p.down], misses: p.misses, hints: p.hints };
+      const trayBefore = [...p.tray];
+      const out = ask(p, f);
+      const last = p.asked[p.asked.length - 1];
+      expect(last.feature, ctx).toBe(f);
+      expect(last.yes, ctx).toBe(keeps(f, secret));
+      if (out.kind === 'dud') {
+        expect(last.dud, ctx).toBe(true);
+        expect(splits(f, left), ctx).toBe(false);
+        expect([...p.down], ctx).toEqual(before.down);
+        expect(p.misses, ctx).toBe(before.misses);
+        expect(p.current, ctx).toBeNull();
+        expect(p.tray, ctx).not.toContain(f);
+        const slot = trayBefore.indexOf(f);
+        if (p.tray.length === trayBefore.length) {
+          expect(open, ctx).toContain(p.tray[slot]);
+          expect(trayBefore, ctx).not.toContain(p.tray[slot]);
+          p.tray.forEach((c, k) => k !== slot && expect(c, ctx).toBe(trayBefore[k]));
+        }
+        continue;
+      }
+      expect(out.kind, ctx).toBe('answer');
+      expect(last.dud, ctx).toBe(false);
+      expect(p.current, ctx).toEqual(last);
+      expect(helpTargets(p).length, ctx).toBeGreaterThan(0);
+      expect(helpTargets(p), ctx).not.toContain(secretIdx);
+      flipAll(p);
+      expect(p.misses, ctx).toBe(before.misses);
+      expect(p.hints, ctx).toBe(before.hints);
+    }
+    expect(standing(p)).toEqual([secret]);
+    return p;
+  }
+  const best = (p: ReturnType<typeof startPlay>) => bestQuestion(p)!;
+  const dudFirst = (p: ReturnType<typeof startPlay>) => {
+    const left = standing(p);
+    return p.tray.find((f) => !splits(f, left)) ?? best(p);
+  };
+
+  it('has an ask plan with no clue list, and school now runs 2 to 6', () => {
+    expect(plan.mode).toBe('ask');
+    expect(plan.friends).toBe(6);
+    expect(plan.clues).toBe(0);
+    expect(LEVELS.school).toEqual({ min: 2, max: 6 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
+  });
+
+  it('enumerates 68 galleries and 408 rounds', () => {
+    expect(GALLERIES).toHaveLength(68);
+    expect(ROUNDS).toHaveLength(408);
+    expect(new Set(GALLERIES.map((g) => g.join(' '))).size).toBe(68);
+  });
+
+  it('builds six distinct friends, one per kind from six kinds, with the answer among them', () => {
+    const secrets = new Set<FriendId>();
+    const keys = new Set(GALLERIES.map((g) => [...g].sort().join(' ')));
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(6, seed);
+      const ctx = `seed ${seed}`;
+      expect(r.gallery, ctx).toHaveLength(6);
+      expect(new Set(r.gallery).size, ctx).toBe(6);
+      expect(r.gallery, ctx).toContain(r.answer);
+      expect(r.clues, ctx).toEqual([]);
+      const kinds = r.gallery.map((f) => KINDS.findIndex((k) => k.includes(f)));
+      expect(new Set(kinds).size, ctx).toBe(6);
+      expect(keys.has([...r.gallery].sort().join(' ')), ctx).toBe(true);
+      expect(roundFor(6, seed), ctx).toEqual(r);
+      secrets.add(r.answer);
+    }
+    expect([...secrets].sort()).toEqual([...FRIEND_IDS].sort());
+    expect(FRIEND_IDS).toHaveLength(13);
+  });
+
+  it('asks only questions whose no is safe, and every one splits the six at the start', () => {
+    const counts = new Set<number>();
+    for (const g of GALLERIES) {
+      const q = askable(g);
+      expect(q, g.join(' ')).not.toContain('scales');
+      if (g.includes('turtle')) expect(q).not.toContain('beak');
+      if (g.includes('frog')) {
+        expect(q).not.toContain('gills');
+        expect(q).not.toContain('fins');
+      }
+      if (g.includes('fish')) expect(q).not.toContain('smooth-skin');
+      if (g.includes('penguin')) expect(q).not.toContain('milk');
+      counts.add(q.length);
+      expect(new Set(q).size).toBe(q.length);
+      for (const f of q) expect(splits(f, g), `${g.join(' ')} ${f}`).toBe(true);
+    }
+    expect(Math.min(...counts)).toBe(MIN_ASKABLE);
+    expect(Math.max(...counts)).toBe(MAX_ASKABLE);
+  });
+
+  it('tells the six friends apart pairwise on the questions it asks', () => {
+    for (const g of GALLERIES) {
+      const q = askable(g);
+      const sig = g.map((f) => q.map((x) => (keeps(x, f) ? 1 : 0)).join(''));
+      expect(new Set(sig).size, g.join(' ')).toBe(6);
+    }
+  });
+
+  it('gives every answer the table gives, never rules out the secret, and keeps the tray honest, in all 408 rounds', () => {
+    // The helper asserts the answer, the ruled-out set and the tray rules at every step.
+    for (const [g, s] of ROUNDS) {
+      const p = playOut(g, s, 3, (pl, r) => r.pick(pl.tray));
+      expect(p.misses).toBe(0);
+      // Only two duds in a row show the counted question hint.
+      expect(p.hints).toBeLessThanOrEqual(1);
+    }
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(6, seed);
+      playOut(r.gallery, r.answer, seed, (pl, rng) => rng.pick(pl.tray));
+    }
+  });
+
+  it('has bestQuestion split, and no tray card splits more evenly', () => {
+    for (const [g, s] of ROUNDS) {
+      const p = newPlay(g, s, 5);
+      while (!p.done) {
+        const left = standing(p);
+        const b = bestQuestion(p)!;
+        expect(b, label(g, s)).not.toBeNull();
+        expect(splits(b, left)).toBe(true);
+        for (const f of p.tray) expect(evenness(f, left)).toBeLessThanOrEqual(evenness(b, left));
+        ask(p, b);
+        flipAll(p);
+      }
+    }
+  });
+
+  it('finishes every one of the 408 rounds within three questions by following bestQuestion, with no miss or hint', () => {
+    for (const [g, s] of ROUNDS) {
+      for (const seed of [1, 2, 3, 4, 5]) {
+        const p = playOut(g, s, seed, best);
+        expect(p.asked.length, `${label(g, s)} seed ${seed}`).toBeLessThanOrEqual(3);
+        expect(p.asked.some((a) => a.dud)).toBe(false);
+        expect(p.misses).toBe(0);
+        expect(p.hints).toBe(0);
+      }
+    }
+  });
+
+  it('has no chain of splitting questions longer than the strip holds', () => {
+    for (const g of GALLERIES) {
+      const q = askable(g);
+      const memo = new Map<number, number>();
+      const longest = (set: number): number => {
+        const hit = memo.get(set);
+        if (hit !== undefined) return hit;
+        const ids = g.map((_, i) => i).filter((i) => set & (1 << i));
+        let most = 0;
+        for (const f of q) {
+          const have = ids.filter((i) => keeps(f, g[i]));
+          const lack = ids.filter((i) => !keeps(f, g[i]));
+          if (!have.length || !lack.length) continue;
+          for (const side of [have, lack])
+            most = Math.max(most, 1 + longest(side.reduce((m, i) => m | (1 << i), 0)));
+        }
+        memo.set(set, most);
+        return most;
+      };
+      expect(longest(0b111111), g.join(' ')).toBeLessThanOrEqual(ASK_STRIP);
+    }
+    expect(ASK_STRIP).toBe(5);
+  });
+
+  it('lets an asker who takes every dud first still finish, with never more questions than it can ask', () => {
+    let sawDud = false;
+    for (const [g, s] of ROUNDS) {
+      for (const seed of [1, 2, 3]) {
+        const p = playOut(g, s, seed, dudFirst);
+        expect(p.asked.length, `${label(g, s)} seed ${seed}`).toBeLessThanOrEqual(askable(g).length);
+        expect(p.misses).toBe(0);
+        if (p.asked.some((a) => a.dud)) sawDud = true;
+      }
+    }
+    expect(sawDud).toBe(true);
+  });
+
+  describe('duds, the question hint and the turning hint', () => {
+    // cat, owl, bat, turtle, fish, frog; the secret is the owl. Asking fur turns over the cat and the bat, and then the
+    // questions eggs and milk are the same for the owl, turtle, fish and frog: two real duds.
+    const G: FriendId[] = ['cat', 'owl', 'bat', 'turtle', 'fish', 'frog'];
+    const afterFur = (seed = 1) => {
+      const p = newPlay(G, 'owl', seed);
+      p.tray = ['fur', 'eggs', 'fly'];
+      expect(ask(p, 'fur').kind).toBe('answer');
+      flipAll(p);
+      return p;
+    };
+
+    it('treats a dud as free: nothing changes but the card, and it is recorded', () => {
+      const p = afterFur();
+      expect(p.current).toBeNull();
+      expect(standing(p)).toEqual(['owl', 'turtle', 'fish', 'frog']);
+      expect(splits('eggs', standing(p))).toBe(false);
+      expect(splits('milk', standing(p))).toBe(false);
+      p.tray = ['eggs', 'feathers', 'wings'];
+      const down = [...p.down];
+      const out = ask(p, 'eggs');
+      expect(out.kind).toBe('dud');
+      expect([...p.down]).toEqual(down);
+      expect(p.misses).toBe(0);
+      expect(p.hints).toBe(0);
+      expect(p.current).toBeNull();
+      expect(p.asked[p.asked.length - 1]).toEqual({ feature: 'eggs', yes: true, dud: true });
+      expect(p.tray).toHaveLength(3);
+      expect(p.tray[1]).toBe('feathers');
+      expect(p.tray[2]).toBe('wings');
+      expect(['eggs', 'fur', 'feathers', 'wings']).not.toContain(p.tray[0]);
+      expect(unasked(p)).toContain(p.tray[0]);
+    });
+
+    it('shows the question hint after two duds in a row and counts it once', () => {
+      const p = afterFur();
+      p.tray = ['eggs', 'milk', 'feathers'];
+      expect(ask(p, 'eggs')).toMatchObject({ kind: 'dud', hint: false, counted: false });
+      expect(ask(p, 'milk')).toMatchObject({ kind: 'dud', hint: true, counted: true });
+      expect(p.hints).toBe(1);
+      expect(p.misses).toBe(0);
+      expect(requestHelp(p)).toBe(false);
+      expect(p.hints).toBe(1);
+    });
+
+    it('does not count the two-dud hint when the pause-sheet hint was already counted', () => {
+      const p = afterFur();
+      expect(requestHelp(p)).toBe(true);
+      expect(p.hints).toBe(1);
+      p.tray = ['eggs', 'milk', 'feathers'];
+      ask(p, 'eggs');
+      expect(ask(p, 'milk')).toMatchObject({ kind: 'dud', hint: true, counted: false });
+      expect(p.hints).toBe(1);
+    });
+
+    it('counts the pause-sheet question hint once per round however often it is asked', () => {
+      const p = newPlay(G, 'owl', 2);
+      expect(requestHelp(p)).toBe(true);
+      expect(requestHelp(p)).toBe(false);
+      expect(requestHelp(p)).toBe(false);
+      expect(p.hints).toBe(1);
+      p.tray = ['fur', 'eggs', 'fly'];
+      ask(p, 'fur');
+      flipAll(p);
+      expect(p.current).toBeNull();
+      expect(requestHelp(p)).toBe(false);
+      expect(p.hints).toBe(1);
+    });
+
+    it('resets the two-dud run after an answer', () => {
+      const p = afterFur();
+      p.tray = ['eggs', 'feathers', 'wings'];
+      ask(p, 'eggs');
+      expect(p.duds).toBe(1);
+      ask(p, 'wings');
+      flipAll(p);
+      expect(p.duds).toBe(0);
+    });
+
+    it('shimmers on the second tap on a kept friend, counted once per answer, and resets for the next', () => {
+      const p = newPlay(G, 'owl', 4);
+      p.tray = ['fur', 'eggs', 'fly'];
+      ask(p, 'fur'); // no: the cat and the bat turn over; the owl, turtle, fish and frog are kept
+      expect(tap(p, G.indexOf('owl'))).toMatchObject({ kind: 'miss', helped: false });
+      expect(tap(p, G.indexOf('frog'))).toMatchObject({ kind: 'miss', helped: true });
+      expect(p.misses).toBe(2);
+      expect(p.hints).toBe(1);
+      expect(tap(p, G.indexOf('fish'))).toMatchObject({ kind: 'miss', helped: false });
+      expect(requestHelp(p)).toBe(false);
+      expect(p.hints).toBe(1);
+      flipAll(p);
+      expect(p.current).toBeNull();
+      p.tray = ['four-legs', 'wings', 'fly'];
+      ask(p, 'four-legs'); // no (the owl has two): the owl and the fish are kept
+      expect(tap(p, G.indexOf('owl'))).toMatchObject({ kind: 'miss', helped: false });
+      expect(tap(p, G.indexOf('fish'))).toMatchObject({ kind: 'miss', helped: true });
+      expect(p.hints).toBe(2);
+    });
+
+    it('counts a pause-sheet hint while turning once per answer and resets for the next answer', () => {
+      const p = afterFur();
+      p.tray = ['four-legs', 'wings', 'fly'];
+      ask(p, 'four-legs'); // no: the turtle and the frog turn over
+      expect(requestHelp(p)).toBe(true);
+      expect(requestHelp(p)).toBe(false);
+      expect(p.hints).toBe(1);
+      expect(tap(p, G.indexOf('owl'))).toMatchObject({ kind: 'miss', helped: false });
+      expect(tap(p, G.indexOf('fish'))).toMatchObject({ kind: 'miss', helped: false });
+      expect(p.hints).toBe(1);
+      flipAll(p);
+      expect(p.current).toBeNull();
+      expect(p.helped).toBe(false);
+      p.tray = ['fly', 'wings', 'feathers'];
+      ask(p, 'fly'); // yes: the fish turns over
+      expect(requestHelp(p)).toBe(true);
+      expect(p.hints).toBe(2);
+    });
+
+    it('plays a scripted round (a dud, a split, one kept-friend tap, correct flips) for misses 1, hints 0', () => {
+      const p = afterFur();
+      p.tray = ['eggs', 'feathers', 'wings'];
+      expect(ask(p, 'eggs').kind).toBe('dud');
+      expect(ask(p, 'feathers').kind).toBe('answer'); // yes: the turtle, fish and frog turn over
+      expect(tap(p, G.indexOf('owl'))).toMatchObject({ kind: 'miss' });
+      flipAll(p);
+      expect(p.done).toBe(true);
+      expect(standing(p)).toEqual(['owl']);
+      expect(p.misses).toBe(1);
+      expect(p.hints).toBe(0);
+    });
+  });
+
+  describe('taps', () => {
+    const G: FriendId[] = ['cat', 'owl', 'penguin', 'bat', 'frog', 'fish'];
+
+    it('answers a face-up tap while choosing with ask-first and counts nothing', () => {
+      const p = newPlay(G, 'penguin', 1);
+      for (let i = 0; i < 6; i++) expect(tap(p, i)).toEqual({ kind: 'ask-first' });
+      expect(p.misses).toBe(0);
+      expect(p.hints).toBe(0);
+      expect(p.wrongHere).toBe(0);
+      expect(p.down.size).toBe(0);
+    });
+
+    it('peeks at a face-down friend and repeats a second question while friends need turning', () => {
+      const p = newPlay(G, 'penguin', 1);
+      p.tray = ['fur', 'eggs', 'fly'];
+      ask(p, 'fur');
+      tap(p, 0);
+      expect(tap(p, 0)).toEqual({ kind: 'peek' });
+      const asked = p.asked.length;
+      const cur = p.current;
+      const out = ask(p, 'eggs');
+      expect(out).toMatchObject({ kind: 'repeat', answer: { feature: 'fur', yes: false, dud: false } });
+      expect(p.asked).toHaveLength(asked);
+      expect(p.current).toBe(cur);
+      expect(p.misses).toBe(0);
+      expect(p.hints).toBe(0);
+    });
+
+    it('ignores a card that is not in the tray and any ask once the round is over', () => {
+      const p = newPlay(G, 'penguin', 1);
+      p.tray = ['fur', 'eggs', 'fly'];
+      expect(ask(p, 'fins').kind).toBe('ignored');
+      expect(p.asked).toHaveLength(0);
+    });
+  });
+
+  describe('miss reasons', () => {
+    const G: FriendId[] = ['cow', 'duck', 'penguin', 'bat', 'frog', 'fish'];
+
+    it('names the kept friend after a yes, with the table text', () => {
+      const p = newPlay(G, 'duck', 1);
+      p.tray = ['feathers', 'eggs', 'fly'];
+      ask(p, 'feathers');
+      const out = tap(p, G.indexOf('duck'));
+      expect(out).toMatchObject({ kind: 'miss', stays: { name: 'Duck', has: hasText('duck', 'feathers') } });
+      expect(out.kind === 'miss' && out.staysNo).toBeUndefined();
+    });
+
+    it('carries staysNo with lacksText after a no', () => {
+      const p = newPlay(G, 'penguin', 1);
+      p.tray = ['fur', 'eggs', 'fly'];
+      ask(p, 'fur');
+      const out = tap(p, G.indexOf('duck'));
+      expect(out).toMatchObject({
+        kind: 'miss',
+        stays: null,
+        staysNo: { name: 'Duck', lacks: lacksText('fur') },
+      });
+      for (const f of FEATURE_IDS) expect(lacksText(f)).toBeTruthy();
+    });
+
+    it('never says "has no legs" for the leg questions', () => {
+      for (const f of ['four-legs', 'two-legs'] as const) {
+        expect(lacksText(f)).not.toMatch(/has no legs/);
+        expect(lacksText(f)).not.toMatch(/no legs/);
+        expect(lacksText(f)).toContain(f === 'four-legs' ? 'four legs' : 'two legs');
+      }
+    });
+  });
+
+  describe('trays', () => {
+    it('fills a short tray with every splitting question first and duds after', () => {
+      const left: FriendId[] = ['owl', 'penguin'];
+      const open: Feature[] = ['fly', 'milk', 'shell', 'fur'];
+      for (let seed = 1; seed <= 50; seed++) {
+        const t = makeTray(left, open, new Rng(seed));
+        expect(t).toHaveLength(3);
+        expect(new Set(t).size).toBe(3);
+        expect(t).toContain('fly');
+      }
+    });
+  });
+
+  describe('layout', () => {
+    const inside = (r: Rect, w: number, h: number) =>
+      r.x >= 0 && r.y >= 0 && r.x + r.w <= w + 1e-6 && r.y + r.h <= h + 1e-6;
+    const overlap = (a: Rect, b: Rect) =>
+      a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const views: [string, ReturnType<typeof computeView>][] = [
+      ['1024x768', computeView(1024, 768)],
+      ['1366x1024', computeView(1366, 1024)],
+      ['768x1024', computeView(768, 1024)],
+      ['1024x1366', computeView(1024, 1366)],
+      ['390x844 upright phone', computeView(390, 844, undefined, true)],
+    ];
+    for (const [name, v] of views) {
+      it(`${name} keeps cards, tray and strip big, on screen, apart and clear of the corners`, () => {
+        const L = askLayout(v);
+        const pet: Rect = { x: 0, y: v.h - PET_CORNER, w: PET_CORNER, h: PET_CORNER };
+        const home: Rect = { x: 0, y: 0, w: HOME_CORNER, h: HOME_CORNER };
+        expect(L.cards).toHaveLength(6);
+        expect(L.tray).toHaveLength(3);
+        expect(L.strip).toHaveLength(5);
+        expect(TRAY_H).toBe(110);
+        L.cards.forEach((c, i) => {
+          expect(c.w, `card ${i} w`).toBeGreaterThanOrEqual(100);
+          expect(c.h, `card ${i} h`).toBeGreaterThanOrEqual(100);
+        });
+        L.tray.forEach((c, i) => {
+          expect(c.w, `tray ${i} w`).toBeGreaterThanOrEqual(130);
+          expect(c.h, `tray ${i} h`).toBeGreaterThanOrEqual(110);
+        });
+        L.strip.forEach((c, i) => {
+          expect(c.w, `strip ${i} w`).toBe(100);
+          expect(c.h, `strip ${i} h`).toBe(100);
+        });
+        const all: [string, Rect][] = [
+          ...L.cards.map((r, i): [string, Rect] => [`card ${i}`, r]),
+          ...L.tray.map((r, i): [string, Rect] => [`tray ${i}`, r]),
+          ...L.strip.map((r, i): [string, Rect] => [`strip ${i}`, r]),
+          ['sign', L.sign],
+        ];
+        all.forEach(([n, r], i) => {
+          expect(inside(r, v.w, v.h), `${n} inside`).toBe(true);
+          expect(overlap(r, pet), `${n} pet`).toBe(false);
+          expect(overlap(r, home), `${n} home`).toBe(false);
+          all.slice(i + 1).forEach(([m, s]) => expect(overlap(r, s), `${n} / ${m}`).toBe(false));
+        });
+      });
     }
   });
 });

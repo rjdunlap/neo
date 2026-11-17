@@ -202,8 +202,8 @@ None was played. "Opened" means the page itself was read.
 8. **Z8 · Zoo Detective and Who Am I? cards** for the grown-ups' page, after review.
 9. **Z9 · Who Am I? levels 5–7** (definition). **Defined 2026-11-17:** [definition](../../definitions/who-am-i.md#levels-57-z9-defined-2026-11-17) (which group? with the group as the first clue and the penguin as an answer; you ask, a tray of yes/no questions where asking is never a miss and unsafe "no" answers are removed; make a riddle with true clue cards; school 2–7).
 10. **Z10 · Build level 5, Which group?**: rules in `logic.ts`, tests, ghost finger and how-to step, one scripted play. **Built 2026-11-17** ([PR #1749](https://github.com/rjdunlap/neo/pull/1749)).
-11. **Z11 · Build level 6, You ask**, after Z10: the question tray, the source check of the "no" answers, tests, one scripted play and a portrait screenshot.
-12. **Z12 · Build level 7, Make a riddle**, after Z11: the clue tray, tests, one scripted play and a portrait screenshot. Then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
+11. **Z11 · Build level 6, You ask**, after Z10: the question tray, the source check of the "no" answers, tests, one scripted play and a portrait screenshot. **Built 2026-11-17** ([PR #1752](https://github.com/rjdunlap/neo/pull/1752)).
+12. **Z12 · Build level 7, Make a riddle**, after Z11 (next; re-enumerate its galleries with the as-built `askable` first): the clue tray, tests, one scripted play and a portrait screenshot. Then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
 
 ## What was built
 

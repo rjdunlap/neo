@@ -4,8 +4,10 @@ import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Who Am I?: a row of friends on the barn's stage, one clue at a time, and she turns over every friend a clue rules out
- * until one is left (levels 2–5), or taps the one friend a single clue fits (level 1). The trait table below was checked
- * against museum, university and government sources on 2026-10-24 (docs/definitions/who-am-i.md, decision 1).
+ * until one is left (levels 2–5), or taps the one friend a single clue fits (level 1). At level 6 she asks the questions:
+ * the pet answers yes or no for a secret friend, and she turns over every friend the answer rules out. The trait table
+ * below was checked against museum, university and government sources on 2026-10-24, and the "no" answers level 6 gives
+ * on 2026-11-17 (docs/definitions/who-am-i.md, decisions 1 and 11).
  */
 
 export type Group = 'mammal' | 'bird' | 'amphibian' | 'reptile' | 'fish';
@@ -174,6 +176,16 @@ export function reason(friend: FriendId, clue: Feature): Reason {
   return { kind: 'no', name, lacks: FEATURES[clue].lacks };
 }
 
+/**
+ * What a friend without a feature does, after its name, when an answer of "no" keeps it (level 6): "Cow has no feathers".
+ * The leg questions say which count it is not, because a duck asked about four legs has legs.
+ */
+export function lacksText(feature: Feature): string {
+  if (feature === 'four-legs') return "doesn't have four legs";
+  if (feature === 'two-legs') return "doesn't have two legs";
+  return FEATURES[feature].lacks;
+}
+
 /** The spoken line for tapping a friend a clue keeps: "Duck has feathers, so Duck stays!" */
 export const staysText = (friend: FriendId, clue: Feature) => ({
   name: FRIENDS[friend].name,
@@ -214,8 +226,11 @@ export const DEFINING: readonly Family[] = ['covering', 'babies', 'breathing'];
 export interface WhoPlan {
   level: number;
   name: string;
-  /** 'fit': tap the one friend the clue fits. 'turn': turn over the friends each clue rules out. */
-  mode: 'fit' | 'turn';
+  /**
+   * 'fit': tap the one friend the clue fits. 'turn': turn over the friends each clue rules out. 'ask': she asks the
+   * questions and turns over the friends each answer rules out (level 6; the round has no clue list).
+   */
+  mode: 'fit' | 'turn' | 'ask';
   friends: number;
   clues: number;
   allowed: readonly Feature[];
@@ -313,9 +328,25 @@ export const PLANS: readonly WhoPlan[] = [
     surprise: true,
     group: true,
   },
+  {
+    level: 6,
+    name: 'You ask: choose the questions, 6 friends',
+    mode: 'ask',
+    friends: 6,
+    // She asks; the round has no clue list.
+    clues: 0,
+    allowed: SURPRISES,
+    minGroups: 4,
+    minDefining: 0,
+    // Any friend can be the secret: yes and no together tell all six apart.
+    answers: FRIEND_IDS,
+    pool: FRIEND_IDS,
+    include: [],
+    surprise: false,
+  },
 ];
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 5 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 6 } };
 
 export const planFor = (level: number): WhoPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
@@ -451,9 +482,31 @@ function makeGroupRound(plan: WhoPlan, rng: Rng): WhoRound {
   throw new Error(`who-am-i: no round for level ${plan.level}`);
 }
 
+/**
+ * The seven kinds of friend the table can tell apart with yes and no: the six four-legged mammals are one kind (the same
+ * row), and so are the duck and the owl.
+ */
+export const KINDS: readonly (readonly FriendId[])[] = [
+  MAMMALS,
+  FLYERS,
+  ['penguin'],
+  ['bat'],
+  ['frog'],
+  ['turtle'],
+  ['fish'],
+];
+
+/** Level 6: one friend from each of six of the seven kinds (68 galleries), and any of the six is the secret. */
+function makeAskRound(rng: Rng): WhoRound {
+  const skip = rng.int(0, KINDS.length - 1);
+  const gallery = rng.shuffle(KINDS.filter((_, k) => k !== skip).map((kind) => rng.pick(kind)));
+  return { gallery, answer: rng.pick(gallery), clues: [] };
+}
+
 /** A seeded round for the level: the same seed gives the same round. Bounded; the rule tests prove it never runs out. */
 export function makeRound(level: number, rng: Rng): WhoRound {
   const plan = planFor(level);
+  if (plan.mode === 'ask') return makeAskRound(rng);
   if (plan.group) return makeGroupRound(plan, rng);
   for (let attempt = 0; attempt < 400; attempt++) {
     const answer = rng.pick(plan.answers);
@@ -501,22 +554,45 @@ export interface WhoPlay {
   /** Surprises the pet has explained this round: each is said once, free. */
   explained: Set<Surprise>;
   done: boolean;
+  /** Level 6: the question cards she can ask now (three, fewer only when fewer are left unasked). */
+  tray: Feature[];
+  /** Level 6: every question asked so far, in order, with the answer the pet gave. */
+  asked: Asked[];
+  /** Level 6: the answer she is turning friends over for; null while she is choosing a question. */
+  current: Asked | null;
+  /** Level 6: duds asked in a row; two show the question hint by itself. */
+  duds: number;
+  /** Level 6: the question hint has been counted this round. */
+  askHelped: boolean;
+  /** Level 6: draws the trays. */
+  rng: Rng | null;
 }
 
-export const startPlay = (round: WhoRound, mode: WhoPlan['mode']): WhoPlay => ({
-  round,
-  mode,
-  down: new Set(),
-  clue: 0,
-  misses: 0,
-  hints: 0,
-  wrongHere: 0,
-  helped: false,
-  meaning: false,
-  shimmer: false,
-  explained: new Set(),
-  done: false,
-});
+/** `rng` draws level 6's question trays; the other modes do not use it. */
+export function startPlay(round: WhoRound, mode: WhoPlan['mode'], rng: Rng | null = null): WhoPlay {
+  const p: WhoPlay = {
+    round,
+    mode,
+    down: new Set(),
+    clue: 0,
+    misses: 0,
+    hints: 0,
+    wrongHere: 0,
+    helped: false,
+    meaning: false,
+    shimmer: false,
+    explained: new Set(),
+    done: false,
+    tray: [],
+    asked: [],
+    current: null,
+    duds: 0,
+    askHelped: false,
+    rng,
+  };
+  if (mode === 'ask') p.tray = makeTray(round.gallery, askable(round.gallery), rng!);
+  return p;
+}
 
 /** The friends still face up. */
 export const standing = (p: WhoPlay) => p.round.gallery.filter((_, i) => !p.down.has(i));
@@ -530,6 +606,11 @@ export function judged(p: WhoPlay): Clue {
 /** Gallery indices of the friends the help points at: the answer at level 1, every face-up friend the clue rules out after. */
 export function helpTargets(p: WhoPlay): number[] {
   if (p.mode === 'fit') return [p.round.gallery.indexOf(p.round.answer)];
+  if (p.mode === 'ask') {
+    const cur = p.current;
+    if (!cur) return [];
+    return p.round.gallery.map((_, i) => i).filter((i) => !p.down.has(i) && !fits(cur, p.round.gallery[i]));
+  }
   const clue = judged(p);
   return p.round.gallery.map((_, i) => i).filter((i) => !p.down.has(i) && !keeps(clue, p.round.gallery[i]));
 }
@@ -549,9 +630,13 @@ export type TapOutcome =
       reason: Reason | null;
       stays: { name: string; has: string } | null;
       group: { name: string; has: string; group: string } | null;
+      /** Level 6, after a no: "Cow has no feathers, so Cow stays!" */
+      staysNo?: { name: string; lacks: string };
       helped: boolean;
       shimmer: boolean;
     }
+  /** Level 6: a face-up friend tapped before any question is asked, or between answers. Never a miss. */
+  | { kind: 'ask-first' }
   /**
    * A ruled-out friend turned over; `next` when that finished the clue and another arrives, `done` when one friend is left.
    * `surprise` names who the pet explains when the finished clue was a surprise step not yet explained (level 4); it counts nothing.
@@ -565,11 +650,11 @@ export function tap(p: WhoPlay, i: number): TapOutcome {
   if (p.done || i < 0 || i >= p.round.gallery.length) return { kind: 'ignored' };
   if (p.down.has(i)) return { kind: 'peek' };
   const friend = p.round.gallery[i];
-  const clue = judged(p);
   const miss = (
     r: Reason | null,
     stays: { name: string; has: string } | null,
     group: { name: string; has: string; group: string } | null = null,
+    staysNo?: { name: string; lacks: string },
   ): TapOutcome => {
     p.misses++;
     p.wrongHere++;
@@ -584,8 +669,28 @@ export function tap(p: WhoPlay, i: number): TapOutcome {
         shimmer = true;
       }
     }
-    return { kind: 'miss', reason: r, stays, group, helped, shimmer };
+    return { kind: 'miss', reason: r, stays, group, staysNo, helped, shimmer };
   };
+  if (p.mode === 'ask') {
+    const cur = p.current;
+    if (!cur) return { kind: 'ask-first' };
+    if (fits(cur, friend))
+      return cur.yes
+        ? miss(null, staysText(friend, cur.feature))
+        : miss(null, null, null, { name: FRIENDS[friend].name, lacks: lacksText(cur.feature) });
+    p.down.add(i);
+    if (helpTargets(p).length > 0) return { kind: 'flip', next: false, done: false, surprise: null };
+    p.current = null;
+    p.wrongHere = 0;
+    p.helped = false;
+    if (standing(p).length === 1) {
+      p.done = true;
+      return { kind: 'flip', next: false, done: true, surprise: null };
+    }
+    p.tray = makeTray(standing(p), unasked(p), p.rng!);
+    return { kind: 'flip', next: true, done: false, surprise: null };
+  }
+  const clue = judged(p);
   if (p.mode === 'fit') {
     if (friend === p.round.answer) {
       p.done = true;
@@ -622,9 +727,20 @@ function countHelp(p: WhoPlay) {
   }
 }
 
-/** The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–5); true when this request counted. */
+/**
+ * The pause sheet's Show a hint: counted once per round (level 1) or per clue (levels 2–5); true when this request counted.
+ * At level 6 it is the question hint while she is choosing (once per round) and the shimmer while she is turning friends
+ * over (once per answer).
+ */
 export function requestHelp(p: WhoPlay): boolean {
-  if (p.done || p.helped) return false;
+  if (p.done) return false;
+  if (p.mode === 'ask' && !p.current) {
+    if (p.askHelped) return false;
+    p.askHelped = true;
+    p.hints++;
+    return true;
+  }
+  if (p.helped) return false;
   countHelp(p);
   return true;
 }
@@ -637,6 +753,176 @@ export function botTap(p: WhoPlay, showedMiss: boolean): number | null {
     return !showedMiss && wrong >= 0 ? wrong : p.round.gallery.indexOf(p.round.answer);
   }
   return helpTargets(p)[0] ?? null;
+}
+
+// Level 6, You ask ------------------------------------------------------------------------------------------------------
+
+/** A question she asked and the answer the pet gave; a dud told nobody apart. */
+export interface Asked {
+  feature: Feature;
+  yes: boolean;
+  dud: boolean;
+}
+
+/**
+ * The questions a gallery can be asked. A no must be as safe as a yes, so six cells of the table are never denied:
+ * `scales` is never asked (a bird's legs and a turtle's skin have scales), nor `beak` with the turtle (a turtle has a
+ * beak), `gills` or `fins` with the frog (a tadpole has gills and a tail fin), `smooth-skin` with the fish (a fish's skin
+ * is wet too) or `milk` with the penguin (a father emperor penguin feeds his chick a "crop milk"). The last two of these
+ * came from the level 6 source check (docs/definitions/who-am-i.md).
+ */
+export function askable(gallery: readonly FriendId[]): Feature[] {
+  const frog = gallery.includes('frog');
+  return FEATURE_IDS.filter(
+    (f) =>
+      f !== 'scales' &&
+      !(f === 'beak' && gallery.includes('turtle')) &&
+      !((f === 'gills' || f === 'fins') && frog) &&
+      !(f === 'smooth-skin' && gallery.includes('fish')) &&
+      !(f === 'milk' && gallery.includes('penguin')) &&
+      // Nor a question that is the same for all six from the start (the shell, with no turtle).
+      gallery.some((g) => keeps(f, g)) &&
+      gallery.some((g) => !keeps(f, g)),
+  );
+}
+
+/** Whether an answer keeps a friend: after a yes, the friends with the feature; after a no, the friends without it. */
+export const fits = (answer: { feature: Feature; yes: boolean }, friend: FriendId) =>
+  keeps(answer.feature, friend) === answer.yes;
+
+/** How evenly a question divides the friends: the size of the smaller side, 0 for a dud. */
+export function evenness(feature: Feature, friends: readonly FriendId[]): number {
+  const have = friends.filter((f) => keeps(feature, f)).length;
+  return Math.min(have, friends.length - have);
+}
+
+/** A question splits when some of the friends have the feature and some do not: either answer turns someone over. */
+export const splits = (feature: Feature, friends: readonly FriendId[]) => evenness(feature, friends) > 0;
+
+/** The gallery's questions not yet asked. */
+export const unasked = (p: WhoPlay) =>
+  askable(p.round.gallery).filter((f) => !p.asked.some((a) => a.feature === f));
+
+/**
+ * Three question cards from `open` (the questions not yet asked) for the friends still standing. With three or more
+ * that split: the most even split and two others that split. With fewer: every one that splits, and duds to fill, so
+ * there is still a choice and it is now the real one.
+ */
+export function makeTray(friends: readonly FriendId[], open: readonly Feature[], rng: Rng): Feature[] {
+  const split = open.filter((f) => splits(f, friends));
+  if (split.length >= 3) {
+    const top = Math.max(...split.map((f) => evenness(f, friends)));
+    const best = rng.pick(split.filter((f) => evenness(f, friends) === top));
+    const others = rng.shuffle(split.filter((f) => f !== best)).slice(0, 2);
+    return rng.shuffle([best, ...others]);
+  }
+  const duds = rng.shuffle(open.filter((f) => !split.includes(f))).slice(0, 3 - split.length);
+  return rng.shuffle([...split, ...duds]);
+}
+
+/** The tray card that splits the standing friends most evenly (the leftmost of equals): the question hint and the ghost finger's choice. */
+export function bestQuestion(p: WhoPlay): Feature | null {
+  const left = standing(p);
+  let best: Feature | null = null;
+  for (const f of p.tray)
+    if (splits(f, left) && (!best || evenness(f, left) > evenness(best, left))) best = f;
+  return best;
+}
+
+export type AskOutcome =
+  /** Not a question now: the round is over, or the card is not in the tray. */
+  | { kind: 'ignored' }
+  /** Friends still need turning for the last answer: the pet says it again, free. */
+  | { kind: 'repeat'; answer: Asked }
+  /** The answer rules out at least one standing friend: she turns them over next. */
+  | { kind: 'answer'; answer: Asked }
+  /**
+   * The same for everyone still standing: nobody turns over and the card is replaced. `hint` when it was the second dud
+   * in a row, so the best question glows; `counted` when that glow was the round's one counted question hint.
+   */
+  | { kind: 'dud'; answer: Asked; hint: boolean; counted: boolean };
+
+/** Asks the tray's question `feature`, changing `p`. Asking is never a miss. */
+export function ask(p: WhoPlay, feature: Feature): AskOutcome {
+  if (p.done || p.mode !== 'ask') return { kind: 'ignored' };
+  if (p.current) return { kind: 'repeat', answer: p.current };
+  const slot = p.tray.indexOf(feature);
+  if (slot < 0) return { kind: 'ignored' };
+  const left = standing(p);
+  const answer: Asked = { feature, yes: keeps(feature, p.round.answer), dud: !splits(feature, left) };
+  p.asked.push(answer);
+  if (!answer.dud) {
+    p.current = answer;
+    p.duds = 0;
+    p.wrongHere = 0;
+    p.helped = false;
+    return { kind: 'answer', answer };
+  }
+  // A dud's card is replaced where it lay; the questions that split are all in the tray already, so this is another dud.
+  const spare = unasked(p).filter((f) => !p.tray.includes(f));
+  const splitting = spare.filter((f) => splits(f, left));
+  if (spare.length > 0) p.tray[slot] = p.rng!.pick(splitting.length > 0 ? splitting : spare);
+  else p.tray.splice(slot, 1);
+  p.duds++;
+  const hint = p.duds >= 2;
+  const counted = hint && !p.askHelped;
+  if (counted) {
+    p.askHelped = true;
+    p.hints++;
+  }
+  return { kind: 'dud', answer, hint, counted };
+}
+
+export interface AskLayout extends GalleryLayout {
+  /** The three question cards, left to right. */
+  tray: Rect[];
+}
+
+export const TRAY_H = 110;
+/** The most answers the strip shows: no chain of questions that split is longer (a rule test proves it). */
+export const ASK_STRIP = 5;
+
+/**
+ * Level 6's stage: the six cards in two rows of three, the tray of three question cards in a row to the right of the
+ * pet's corner (along the bottom in landscape, under the cards in portrait), and room in the strip for five answers.
+ */
+export function askLayout(v: View): AskLayout {
+  const portrait = v.h > v.w;
+  const sign: Rect = { x: v.w / 2 - 160, y: 24, w: 320, h: 130 };
+  const strip: Rect[] = [];
+  const gapS = portrait ? 16 : 14;
+  for (let k = 0; k < ASK_STRIP; k++) {
+    strip.push(
+      portrait
+        ? {
+            x: v.w / 2 - (ASK_STRIP * THUMB + (ASK_STRIP - 1) * gapS) / 2 + k * (THUMB + gapS),
+            y: sign.y + sign.h + 16,
+            w: THUMB,
+            h: THUMB,
+          }
+        : { x: v.w - THUMB - 16, y: sign.y + sign.h + 20 + k * (THUMB + gapS), w: THUMB, h: THUMB },
+    );
+  }
+  const gap = 16;
+  const left = portrait ? 30 : PET_CORNER + 20,
+    right = portrait ? v.w - 30 : v.w - THUMB - 36;
+  const top = portrait ? strip[0].y + THUMB + 30 : sign.y + sign.h + 30;
+  const bottom = Math.min(v.h - 24 - TRAY_H - gap, top + 2 * 300);
+  const w = Math.min(170, (right - left - gap * 2) / 3);
+  const h = Math.min(210, (bottom - top - gap) / 2);
+  const x0 = (left + right) / 2 - (3 * w + 2 * gap) / 2;
+  const y0 = top + Math.max(0, (bottom - top - (2 * h + gap)) / 2);
+  const cards: Rect[] = [];
+  for (let i = 0; i < 6; i++)
+    cards.push({ x: x0 + (i % 3) * (w + gap), y: y0 + Math.floor(i / 3) * (h + gap), w, h });
+  // The tray starts right of the pet's corner in both orientations, so it may sit beside it.
+  const tLeft = PET_CORNER + 20,
+    tRight = portrait ? v.w - 30 : right;
+  const tw = Math.min(180, (tRight - tLeft - gap * 2) / 3);
+  const tx = (tLeft + tRight) / 2 - (3 * tw + 2 * gap) / 2;
+  const ty = Math.min(v.h - 24 - TRAY_H, y0 + 2 * h + gap + 24);
+  const tray: Rect[] = [0, 1, 2].map((k) => ({ x: tx + k * (tw + gap), y: ty, w: tw, h: TRAY_H }));
+  return { sign, strip, cards, tray };
 }
 
 // Layout ---------------------------------------------------------------------------------------------------------------

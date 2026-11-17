@@ -1,6 +1,6 @@
 # Who Am I?, levels 1–7 (definition)
 
-**Built:** levels 1–5 (Z3 levels 1–3 PR #928; Z4 level 4 and the bat PR #1740; Z10 level 5 PR #1749); the level 4 rules are in “Levels” and the as-built note under “Check tier”; to build level 6, read “Level 6: You ask” (inside [Levels 5–7](#levels-57-z9-defined-2026-11-17)). **Defined, not built:** levels 6–7 (Z9, 2026-11-17).
+**Built:** levels 1–6 (Z3 levels 1–3 PR #928; Z4 level 4 and the bat PR #1740; Z10 level 5 PR #1749; Z11 level 6 PR #1752); the level 4 rules are in “Levels” and the as-built note under “Check tier”; to build level 7, read “Level 7: Make a riddle” (inside [Levels 5–7](#levels-57-z9-defined-2026-11-17)). **Defined, not built:** level 7 (Z9, 2026-11-17).
 
 Defined 2026-10-19 as slice **Z1** of the [zoo-animals study](../deep-dives/subjects/zoo-animals.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/zoo-animals.md#a-first-games-ladder-who-am-i), its [cast table](../deep-dives/subjects/zoo-animals.md#the-cast-and-what-it-costs) and the [IDEAS row](../IDEAS.md#candidates). The definition itself was docs only; the art move (Z2) was done, in `src/art/animals.ts` (`frogArt`, `penguinArt`, `turtleArt`, `fishArt`). **Z3 built 2026-10-24** ([PR #928](https://github.com/rjdunlap/neo/pull/928); levels 1–3, `who-am-i`); **Z4 next** (the bat and level 4). Before Z3 this was ready to build: every open call below has a default the build can use. The one gate that is not a default is the **trait table review** in [decision 1](#open-decisions): the table below is a draft with its doubtful cells marked, and the build ships it only after the review named there.
 
@@ -188,7 +188,17 @@ School becomes 2–5, then 2–6, then 2–7 as each level is built (`LEVELS.sch
 - **Co-play:** the grown-up asks "which question would tell you the most?" before she taps. The study's keeper mode, where a grown-up holds the secret and answers, is not in this build ([decision 13](#open-decisions)).
 - **Check tier (Z11):** a new interaction: typecheck, unit tests, the `whoami` browser case with one level 6 play (one dud, one kept-friend tap, the question hint), one portrait screenshot with the tray and an answered question, `fingerdemo` at 6; `npm run build` only if a shared file changes.
 
+**As built, Z11 (2026-11-17, PR #1752):**
+
+1. The source check of the "no" answers found two more unsafe denials, so `askable(gallery)` also withholds `fins` with the frog (a tadpole's tail has a fin) and `milk` with the penguin (a father emperor penguin feeds his chick crop milk; fur asks the same thing of this cast, so nothing is lost), and it drops any question that is the same for all six at the start (the shell with no turtle, which "every one tells some friends apart" above had missed). Questions per gallery are 8 to 10 (32 galleries with 8, 24 with 9, 12 with 10), not 10 or 11. The six friends still differ pairwise in all 68 galleries; following the most even split still finishes in two questions (one third of rounds) or three (two thirds); no chain of splitting questions is longer than 5.
+2. Only answers that told friends apart join the strip (at most five, which the chain bound guarantees); a dud's answer is spoken and shown on the sign while the pet says so, and does not join.
+3. The pet does not nod or shake its head; the sign's tick or cross and the spoken "Yes!" or "No!" carry it.
+4. Voice lines added beyond the list: `whoami.turn-yes` ("Turn over every friend who {lacks}.") and `whoami.turn-no` ("Turn over every friend who {has}.") after each answer, which is the instruction the pet repeats; `whoami.ask-first`, `whoami.hint-shimmer-ask`, `whoami.asked-one`. A miss after a no on a leg question says "doesn't have four legs", never "has no legs".
+5. A face-up friend tapped while she is choosing counts nothing, and the pet says to ask a question.
+
 ### Level 7: Make a riddle
+
+**Z12 build: re-enumerate first.** The 36 galleries, "216 pairs" and "at least 34 trays" below were enumerated with the old `askable`; re-enumerate with the as-built one (see Level 6's as-built note) before relying on them.
 
 - **The round.** The pet covers its eyes: "Pick a friend for me to guess. I won't look!" She taps a friend; its card gets a small ribbon. Until her first clue she can tap another friend to change her mind, free. A **clue tray** of five cards appears, each a statement that is **true of her friend**: a feature it has ("I have wings") or, with a cross on the sign, one it lacks ("I can't fly"). She taps a card to give that clue. The pet turns over, by itself, every standing friend the clue does not fit, then thinks aloud about who is left: "Is it Owl, or Penguin? I need another clue!" When one friend is left: "I know! It's Penguin!", the friend jumps out, and the pet says her riddle back in her order: "I have feathers. I can't fly. Who am I? Penguin!"
 - **Not judged.** Every card is true, so no clue can be wrong; no clue count is asked for; nothing is a miss. A clue that turns nobody over gets "That fits everyone I'm still thinking of. Another clue?", free. The round finishes when the pet finds her friend, which the tray rule guarantees.
@@ -220,6 +230,24 @@ Done by the building session under the 2026-10-23 delegation; the table shipped 
 
 Open from this check: the penguin row leans on a broadcaster and an encyclopedia, and the fish-eggs row on general sources; neither changes a cell in Z3. A zoo educator's read (study decision 5) still replaces this check for the printed cards if one is found.
 
+## Level 6 "no" answers source check (Z11, 2026-11-17)
+
+Every friend-and-feature "no" the pet can say at level 6 was checked the way Z3 checked the table.
+
+| Denial | Finding | Sources |
+| --- | --- | --- |
+| Feathers, denied by every friend but the birds | "Birds are the only animals with feathers"; birds have scales on their lower legs and feet (why `scales` is never asked); penguins cannot fly | University of Michigan [BioKIDS, Aves](https://www.biokids.umich.edu/critters/Aves/) |
+| Gills with the frog (withheld) and lungs | Tadpoles use gills to breathe and grow legs and lungs | BioKIDS, [Amphibia](https://www.biokids.umich.edu/critters/Amphibia/) |
+| Fins with the frog (newly withheld) | A tadpole has a tail fin, without the bony supports of a fish's fins, and loses its tail at metamorphosis | Smithsonian Research Online repository ([a handbook chapter found by search](https://repository.si.edu/server/api/core/bitstreams/7f42be7b-9691-4975-bb1d-5ed269ba659a/content)); University of St Andrews, [From tadpole to frog](https://tadpoles.wp.st-andrews.ac.uk/from-tadpole-to-frog); Australian Museum, [frog life cycle](https://australian.museum/learn/teachers/learning/frog-life-cycle/) (read as search summaries, not opened page by page) |
+| Milk with the penguin (newly withheld) | Pigeons, flamingos and male emperor penguins feed chicks a "crop milk" from the crop lining; it is not mammals' milk, but a flat "no" is not safe | Stanford Birds essay "Bird Milk" (https://web.stanford.edu/group/stanfordbirds/text/essays/Bird_Milk.html; the page would not open this session, a certificate error, so this rests on the search summary and the Wikipedia "Crop milk" article it agreed with: the weakest row) |
+| Gills, denied by the turtle; eggs | All reptiles have lungs and come up to breathe air; scales keep water in; leathery or hard-shelled eggs | BioKIDS, [Reptilia](https://www.biokids.umich.edu/critters/Reptilia/) |
+| Smooth, wet skin, denied by the turtle, birds and mammals | Amphibians have soft moist skin; reptiles are scaled (BioKIDS Amphibia and Reptilia as above); the search for a museum or agency page saying "dry, scaly skin" in those words returned only general education sites, so this row leans on the two BioKIDS pages | BioKIDS, as above |
+| Smooth-skin with the fish (withheld) and fins, gills | Fish are covered in a thin layer of slime, use fins to swim and breathe with gills; "some fish lay eggs, while others give birth to live babies" (why the egg line stays first person) | BioKIDS, [Actinopterygii](https://www.biokids.umich.edu/critters/Actinopterygii/) |
+| Flying, denied by every mammal but the bat | Bats are the only mammals that truly fly | Smithsonian National Air and Space Museum, [bats](https://airandspace.si.edu/stories/editorial/bats) |
+| Wings, legs, shell, beak (without the turtle), fur, eggs denied by mammals | Read off the Z3 table and its sources; no new source opened. The Sam Noble "Creature Features" PDF from the Z3 check could not be read as text this session | Z3 check above |
+
+Done by the building session under the 2026-10-23 delegation and decision 11; a zoo educator's read still replaces it if one is found.
+
 ## Open decisions
 
 Each has a default the build uses. Decision 1 is the one review the study asks for before anything ships; the rest block nothing.
@@ -239,7 +267,7 @@ Each has a default the build uses. Decision 1 is the one review the study asks f
 **Added with levels 5–7 (2026-11-17), each with the default the builds use:**
 
 10. **Which groups are clues at level 5.** Default: `bird` and `mammal` only. Alternative: all five, once a defining line for the amphibian, the reptile and the fish is source-checked ("dry, scaly skin" for the turtle is not in the table today); each of those clues names a single friend in this cast.
-11. **Unsafe "no" answers at levels 6–7.** Default: never ask `scales`; never ask `beak` with the turtle, `gills` with the frog or `smooth-skin` with the fish; the level 6 build source-checks the remaining denials. Alternative: reword instead of removing (a "smooth, wet skin with no scales" clue would let the fish say no), after the same check.
+11. **Unsafe "no" answers at levels 6–7.** Default: never ask `scales`; never ask `beak` with the turtle, `gills` with the frog or `smooth-skin` with the fish; the level 6 build source-checks the remaining denials. The build also withheld `fins` with the frog and `milk` with the penguin and dropped any question that is the same for all six. Alternative: reword instead of removing (a "smooth, wet skin with no scales" clue would let the fish say no), after the same check.
 12. **Saying the question count at level 6.** Default: said once at the finish as a plain fact, never stored or compared. Alternative: not said, if play shows it reads as a score.
 13. **Keeper mode at level 6** (the study's "you choose": a grown-up holds the secret and answers). Default: not in the level 6 build; a later slice, with a toggle on the pause sheet and no accounting, if play asks for it.
 14. **Keeping a riddle.** Default: nothing saved. Alternative: a "keep this riddle" request files it as a creation in the treehouse, as other making rounds do, once the rework's collection book says where creations live.
