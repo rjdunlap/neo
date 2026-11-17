@@ -753,6 +753,134 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'Spinner Fair 9: upright, a wrong Check on the even wheel (1/0), a wedge dragged and wedges tapped across (not counted), the right Check and 80 spins; two wrong Checks on wheel 2 (3/1, the glow), help handed the wedges and pressed Check; passed',
     );
   }
+  async function spinnerFairDuePlay() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('spinner-fair').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const state = () => page.evaluate(() => neo.scene.game.state);
+    const until = (phase, set) =>
+      page.waitForFunction(
+        ([phase, set]) => {
+          const g = neo.scene.game;
+          return g.state.set === set && g.state.phase === phase && !g.busy && !g.spinning;
+        },
+        [phase, set],
+        { timeout: 40000 },
+      );
+    const tapCard = async (card) => {
+      await page.evaluate((card) => {
+        const g = neo.scene.game;
+        kit.tapOn(g.cards[g.options.indexOf(card)]);
+      }, card);
+      await page.waitForTimeout(300);
+    };
+    const tapSpinner = async () => {
+      await page.evaluate(() => kit.tapOn(neo.scene.game.art.node));
+      await page.waitForTimeout(150);
+    };
+    const streakOf = (s) => {
+      const tail = s.results.slice(-5);
+      return s.results.length === 240 || (tail.length === 5 && tail.every((k) => k === tail[0]));
+    };
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    await launch('spinner-fair', 10, 'Mia', 'school');
+    await until('run', 0);
+    let s = await state();
+    assert.deepEqual([s.wheel.length, s.results.length, s.streak, s.next], [6, 0, null, null]);
+    const evens = [s.even];
+    const fav = s.favourite;
+    // Wheel 1: the spinner starts the run, which stops itself at five in a row.
+    await tapSpinner();
+    await until('ask', 0);
+    s = await state();
+    assert.ok(streakOf(s), `the run ended on five in a row (${s.results.length} spins)`);
+    assert.equal(s.results.slice(0, -1).length >= 4, true);
+    assert.deepEqual([s.streak.length >= 5 || s.results.length === 240, s.misses, s.hints], [true, 0, 0]);
+    assert.equal(s.right, s.counts[0] === s.counts[1] ? 'same' : s.racers[s.counts[0] > s.counts[1] ? 0 : 1]);
+    log(
+      `Spinner Fair 10: wheel 1 ${s.counts.join('–')}, ${s.results.length} spins to ${s.streak.kind} x${s.streak.length}; right card ${s.right}`,
+    );
+    await page.waitForTimeout(600);
+    // The card for the critter that just made the streak is wrong on an even wheel; any card but the right one is a miss.
+    const wrong = (st) =>
+      st.options.find((c) => c !== st.right && (c === st.streak.kind || st.right === st.streak.kind));
+    await tapCard(wrong(s));
+    s = await state();
+    assert.deepEqual([s.misses, s.hints, s.phase, s.glowing], [1, 0, 'ask', false], 'a wrong card: one miss');
+    const spun = s.results.length;
+    await tapSpinner();
+    assert.equal((await state()).results.length, spun, 'no spin while the question waits');
+    await tapCard(s.right);
+    s = await state();
+    assert.deepEqual(
+      [s.phase, s.misses, s.next],
+      ['next', 1, null],
+      'the right card opens the one next spin',
+    );
+    await tapSpinner();
+    await page.waitForFunction(
+      () => neo.scene.game.state.next !== null || neo.scene.game.state.set === 1,
+      null,
+      {
+        timeout: 15000,
+      },
+    );
+    s = await state();
+    if (s.set === 0) {
+      assert.equal(s.results.length, spun + 1, 'one more honest spin');
+      assert.ok(s.racers.includes(s.next));
+    }
+    await until('run', 1);
+    s = await state();
+    assert.deepEqual(
+      [s.misses, s.hints, s.results.length, s.favourite],
+      [1, 0, 0, fav],
+      'the next spin counted nothing',
+    );
+    evens.push(s.even);
+    assert.deepEqual(evens.slice().sort(), [false, true], 'one even wheel and one uneven');
+    // Wheel 2: the arrows fast-forward the run from its first spin.
+    await page.evaluate(() => kit.tapOn(neo.scene.game.fast));
+    await until('ask', 1);
+    s = await state();
+    assert.ok(streakOf(s), `the fast run ended on five in a row (${s.results.length} spins)`);
+    await page.waitForTimeout(600);
+    await screenshot('spinner-fair-10-portrait');
+    const wrongs = s.options.filter((c) => c !== s.right);
+    for (const c of wrongs) {
+      await tapCard(c);
+      await page.waitForTimeout(300);
+    }
+    await page.waitForFunction(() => neo.scene.game.state.glowing, null, { timeout: 15000 });
+    s = await state();
+    assert.deepEqual(
+      [s.misses, s.hints],
+      [3, 1],
+      'the second wrong card on a wheel lights the glow: one hint',
+    );
+    await page.waitForTimeout(300);
+    await screenshot('spinner-fair-10-glow-portrait');
+    // Asked-for help while the glow is on taps the card. Still one hint.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    s = await state();
+    assert.deepEqual([s.phase, s.misses, s.hints], ['next', 3, 1], 'help answers the card');
+    log(`Spinner Fair 10: wheel 2 ${s.counts.join('–')}, ${s.results.length} spins; right card ${s.right}`);
+    await tapSpinner();
+    await finished('spinner-fair');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [3, 1], 'level 10 saved 3 misses, 1 hint');
+    log(
+      'Spinner Fair 10: upright, the run to five in a row by the spinner, one wrong card (1/0), no spin while the question waits, the right card and one more spin; the arrows on wheel 2, two wrong cards (3/1, the glow), help tapped the card; passed',
+    );
+  }
   return {
     spinnerFairPlay,
     spinnerFairRacePlay,
@@ -760,5 +888,6 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     spinnerFairDicePlay,
     spinnerFairTypicalPlay,
     spinnerFairRigPlay,
+    spinnerFairDuePlay,
   };
 }

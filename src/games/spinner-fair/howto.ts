@@ -37,6 +37,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: "Hand wedges between the two critters (tap a critter's box, or drag a wedge onto it) until the pet's favourite has the share it asked for, then tap Check.",
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Tap the spinner (or the arrows, to hurry): it spins until one critter comes up five times in a row. Then tap who is more likely next (either critter, or the same), and spin once more.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -58,6 +63,7 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'After a right Check, 80 spins play to bear it out; after the second wheel, one sticker, whatever the spins did.',
     },
+    { from: 10, to: 10, text: "After the second wheel's one more spin, one sticker, whoever came up." },
   ],
   note: [
     {
@@ -94,6 +100,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'Moving wedges, either way, is never counted, and neither is how the 80 spins turn out: a run far from the share is called unusual, not a mistake. Only a Check on a wheel that is not the share is a miss (each wedge is one of eight, so 1 out of every 4 is two wedges); after two on a wheel the share is marked on the rim and the next move glows, which counts as a hint. Nothing in the game is won, bet or unlocked by a spin.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'A run of one result does not change the next spin: the chance is in the wheel. No spin is ever a mistake. Only a wrong card is a miss: with three wedges each the answer is the same, otherwise it is the critter with more wedges. After two wrong cards on a wheel the wedge counts and the answer glow, which counts as a hint. Nothing is won, bet or unlocked by a spin.',
     },
   ],
 };

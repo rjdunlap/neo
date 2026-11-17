@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–9 |
+| school | 3–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,12 +23,13 @@
 | 7 | Two dice |
 | 8 | The typical spin |
 | 9 | Rig it |
+| 10 | Is it due? |
 
 <!-- end generated -->
 
 **Starts as:** tap a spinner and a critter's block drops onto its bar
 
-**Grows into:** levels 1–9; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean, and level 9 makes an eight-wedge wheel to a share the pet asks for (eighths, then quarters) by handing wedges across and proves it with an eighty-spin run that is never judged (school only). Counting Cove
+**Grows into:** levels 1–10; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean, level 9 makes an eight-wedge wheel to a share the pet asks for (eighths, then quarters) by handing wedges across and proves it with an eighty-spin run that is never judged, and level 10 spins until one critter comes up five times running, then asks who is more likely next (a favourite, a friend or the same, answered from the wheel, never from the run) (school only). Counting Cove
 
 ## Design notes
 
@@ -62,4 +63,8 @@ As built, against the definition: landscape below 1100 wide the spinner is 230 a
 
 Misses and hints (level 9): only a Check on a wheel that is not the share is a miss; moves, taps, spins and the proof run are never counted. After two wrong Checks on a wheel the share is marked on the rim and the next move glows (one hint per wheel); the pause sheet's Show me does the same.
 
-Levels 10–11 are CS3b and CS3c of the [chance study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), defined in the [levels 9–11 definition](../definitions/spinner-fair-9-10.md) and not yet built.
+**Level 10, Is it due? (CS3b, built 2026-11-16, PR #1735; school only, school is now 3–10).** Two critters share a six-wedge wheel with its wedge lines showing. One wheel of the round is even (3–3) and one uneven (the favourite 4 or 2), in seeded order; the favourite is the same on both and the friend is new (`dueSet(rng, fav, even, lastFriend)`). A tap on the spinner (the first twelve spins one by one at about 0.35 s, then faster) or on the arrows (a fast-forward from the first spin) starts a run of honest spins that stops itself when one critter has come up five times in a row, capped at 240 (`streakRun`, `STREAK`, `STREAK_CAP`; `runAt` and `longestStreak` read it). The results join a ribbon of the latest twelve faces (56 units upright, 44 beside the spinner at a 1024-wide view) with the run in progress banded and its length above; each slow result is a bell step that rises with the run's length. Then three cards stand in a row: the favourite, the friend, and *the same* (both faces on a level seesaw). The right card is read from the wheel only (`dueRight`: *the same* exactly on 3–3, otherwise the critter with more wedges, whatever the run was). A tap on the spinner while the question waits only pops; a tap on the pet repeats the question (`sf.streak`). After the right card she taps the spinner once more (`sf.spin-once`) and that honest spin is welcomed with the same line whoever lands (`sf.due-same` or `sf.due-more` for the reason, `sf.due-next`). The done line is "Two runs watched! The chance is in the wheel." The code is in `due.ts`; the lines "the spinner doesn't remember" and "every spin starts fresh" were checked against a source (see the [definition](../definitions/spinner-fair-9-10.md#build-slices-and-check-tiers)).
+
+Misses and hints (level 10): only a wrong card is a miss; spins, the run and the ribbon are never counted. After two wrong cards on a wheel the help lights (both wheel sections glow with numeral badges of their wedge counts, and the right card glows), one hint per wheel; asked again, the card is tapped.
+
+Level 11 is CS3c of the [chance study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), defined in the [levels 9–11 definition](../definitions/spinner-fair-9-10.md) and not yet built.
