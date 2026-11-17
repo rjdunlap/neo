@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { WHERE_WORDS } from '../peekaround-island/logic';
 import {
+  FLAG,
   LANDMARKS,
   LEVELS,
   MAP_SHAPES,
@@ -10,26 +11,41 @@ import {
   PATH_WORDS,
   SHAPE_IDS,
   STOPS,
+  TRAILS,
+  TRAIL_SETS,
+  allTrailSets,
   askHint,
   askedSlot,
   botSlot,
   callAt,
+  calledTrail,
   choose,
+  describeWalk,
+  goTrail,
   groupOf,
+  laneX,
   makeRoute,
+  makeTrails,
   mapLayout,
   mapSpot,
   nextHome,
   onMap,
+  onTrails,
+  planFor,
   restart,
   startWalk,
   step,
   stepHome,
   stopLayout,
+  stopOrder,
+  tapFlag,
+  trailWays,
+  walkedThere,
   walkerArea,
   waysAt,
   wayInSlot,
   type Rect,
+  type TrailSet,
   type WalkState,
 } from './logic';
 
@@ -289,11 +305,11 @@ describe('Adventure Walk: the way home (level 4)', () => {
     for (const slot of slots) step(s, slot);
     return s;
   };
-  it('bands: pre-K 2-4 and school 3-4, toddler and preschool unchanged', () => {
+  it('bands: pre-K 2-4 and school 3-5, toddler and preschool unchanged', () => {
     expect(LEVELS.toddler).toEqual({ min: 1, max: 1 });
     expect(LEVELS.preschool).toEqual({ min: 1, max: 2 });
     expect(LEVELS.prek).toEqual({ min: 2, max: 4 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 4 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 5 });
   });
   it('the walk out counts nothing whatever is tapped, and records the ways taken', () => {
     for (const seed of seeds) {
@@ -384,4 +400,289 @@ describe('Adventure Walk: the way home (level 4)', () => {
     expect(onMap(s)).toBe(false);
     expect(s.misses).toBe(1);
   });
+});
+
+describe('Adventure Walk: which trail? (level 5)', () => {
+  const fair = (set: TrailSet) => {
+    expect(new Set(set.map((t) => t.join(''))).size).toBe(TRAILS);
+    for (let i = 0; i < STOPS; i++) expect(new Set(set.map((t) => t[i])).size).toBe(2);
+  };
+  /** A wrong candidate for the open pick, with the stop where it first leaves the call in the order walked. */
+  const wrongs = (s: WalkState) =>
+    [0, 1, 2]
+      .filter((t) => t !== calledTrail(s) && t !== walkedThere(s))
+      .map((t) => ({
+        t,
+        stop: stopOrder(s.pick).find((i) => s.trails[t][i] !== s.trails[calledTrail(s)][i])!,
+      }));
+
+  it('the plan, the ladder and the words for grown-ups', () => {
+    expect(planFor(5)).toMatchObject({ level: 5, trails: true, calls: false });
+    expect(planFor(4).trails).toBeFalsy();
+    expect(describeWalk(5)).toBe('Pick the drawn trail the friend describes, there and back');
+    expect(describeWalk(4)).toBe('Walk to the picnic, then lead the way home on the map');
+  });
+  it('there are exactly 192 fair sets: pairwise different trails, both ways used at every landmark', () => {
+    const all = allTrailSets();
+    expect(all).toHaveLength(192);
+    expect(new Set(all.map((set) => set.map((t) => t.join('')).join(' '))).size).toBe(192);
+    all.forEach(fair);
+    // Counted the other way: every triple of trails with the property, in every order.
+    const every = [0, 1, 2, 3, 4, 5, 6, 7].map((n) => [n & 1, (n >> 1) & 1, (n >> 2) & 1]);
+    let count = 0;
+    for (const a of every)
+      for (const b of every)
+        for (const c of every) {
+          const set = [a, b, c];
+          if (new Set(set.map((t) => t.join(''))).size < 3) continue;
+          if ([0, 1, 2].every((i) => new Set(set.map((t) => t[i])).size === 2)) count++;
+        }
+    expect(count).toBe(192);
+  });
+  it('every generated set is one of them, every flag is called over many rounds, and the sweep map is used', () => {
+    const there = new Set<number>();
+    const home = new Set<number>();
+    const sets = new Set<TrailSet>();
+    for (const seed of seeds) {
+      const s = startWalk(5, new Rng(seed));
+      expect(TRAIL_SETS).toContain(s.trails);
+      fair(s.trails);
+      sets.add(s.trails);
+      expect(s.shape).toBe('sweep');
+      expect(s.route.stops.every((st) => st.asked === null)).toBe(true);
+      expect(s.calls[0]).not.toBe(s.calls[1]);
+      for (const c of s.calls) expect([0, 1, 2]).toContain(c);
+      there.add(s.calls[0]);
+      home.add(s.calls[1]);
+      const twin = startWalk(5, new Rng(seed));
+      expect([twin.trails, twin.calls]).toEqual([s.trails, s.calls]);
+      expect(makeTrails(s.route, new Rng(seed))).toBeDefined();
+    }
+    expect(there.size).toBe(3);
+    expect(home.size).toBe(3);
+    expect(sets.size).toBeGreaterThan(100);
+  });
+  it('levels 1-4 keep their seeded rounds', () => {
+    for (const level of [1, 2, 3]) {
+      const rng = new Rng(11);
+      const twin = new Rng(11);
+      startWalk(level, rng);
+      makeRoute(level, twin);
+      expect(rng.next()).toBe(twin.next());
+    }
+    const rng = new Rng(11);
+    const twin = new Rng(11);
+    startWalk(4, rng);
+    makeRoute(4, twin);
+    twin.next();
+    expect(rng.next()).toBe(twin.next());
+  });
+  it("the call names the called trail's ways in route order there and from the picnic on the way home", () => {
+    for (const seed of seeds) {
+      const s = startWalk(5, new Rng(seed));
+      const stops = s.route.stops;
+      expect(trailWays(s, s.calls[0])).toEqual(
+        [0, 1, 2].map((i) => waysAt(stops[i])[s.trails[s.calls[0]][i]]),
+      );
+      goTrail(s, s.calls[0]);
+      expect(s.pick).toBe(1);
+      expect(calledTrail(s)).toBe(s.calls[1]);
+      expect(trailWays(s, s.calls[1])).toEqual(
+        [2, 1, 0].map((i) => waysAt(stops[i])[s.trails[s.calls[1]][i]]),
+      );
+    }
+  });
+  it('only the called trail goes; another turns back at the first stop, in the order walked, where it differs', () => {
+    for (const seed of seeds) {
+      const s = startWalk(5, new Rng(seed));
+      for (const pick of [0, 1]) {
+        expect(s.pick).toBe(pick);
+        const called = calledTrail(s);
+        for (const w of wrongs(s)) {
+          const before = s.misses;
+          const r = goTrail(s, w.t);
+          expect(r.kind).toBe('other');
+          if (r.kind !== 'other') continue;
+          expect(r.stop).toBe(w.stop);
+          const order = stopOrder(pick);
+          expect(r.before).toEqual(order.slice(0, order.indexOf(w.stop)));
+          for (const i of r.before) expect(s.trails[w.t][i]).toBe(s.trails[called][i]);
+          const ways = waysAt(s.route.stops[w.stop]);
+          expect(r.took).toBe(ways[s.trails[w.t][w.stop]]);
+          expect(r.asked).toBe(ways[s.trails[called][w.stop]]);
+          expect(r.took).not.toBe(r.asked);
+          expect(s.misses).toBe(before + 1);
+          expect(s.turned[w.t]).toBe(w.stop);
+          // Turned back: it cannot be walked again in this pick, and its reason is free.
+          const again = goTrail(s, w.t);
+          expect(again).toEqual({ kind: 'reason', trail: w.t, stop: w.stop, took: r.took, asked: r.asked });
+          expect(s.misses).toBe(before + 1);
+        }
+        const r = goTrail(s, called);
+        expect(r.kind).toBe('go');
+        if (r.kind === 'go') {
+          expect(r.stops).toEqual(stopOrder(pick));
+          expect(r.done).toBe(pick === 1);
+        }
+        expect(s.turned).toEqual([null, null, null]);
+      }
+      expect(onTrails(s)).toBe(false);
+      expect(goTrail(s, 0).kind).toBe('ignored');
+      expect(tapFlag(s, 0).kind).toBe('ignored');
+      // The worst round: two wrong trails there, one on the way home, and both glows.
+      expect([s.misses, s.hints]).toEqual([3, 2]);
+    }
+  });
+  it('look, then go: a first tap looks (free, unlimited), a second tap on the same flag walks', () => {
+    for (const seed of seeds.slice(0, 100)) {
+      const s = startWalk(5, new Rng(seed));
+      const called = calledTrail(s);
+      for (let n = 0; n < 4; n++)
+        for (const t of [0, 1, 2]) {
+          if (s.looking === t) continue;
+          expect(tapFlag(s, t)).toEqual({ kind: 'look', trail: t });
+          expect(s.looking).toBe(t);
+        }
+      expect([s.misses, s.hints, s.pick]).toEqual([0, 0, 0]);
+      if (s.looking !== called) tapFlag(s, called);
+      expect(tapFlag(s, called).kind).toBe('go');
+      expect(s.looking).toBe(null);
+      // On the way home the trail she came by only looks: "We came that way.", never a miss, never walked.
+      for (let n = 0; n < 3; n++) expect(tapFlag(s, called)).toEqual({ kind: 'came', trail: called });
+      expect(goTrail(s, called)).toEqual({ kind: 'came', trail: called });
+      expect([s.misses, s.hints, s.pick]).toEqual([0, 0, 1]);
+    }
+  });
+  it('the glow comes exactly when one trail is left unmarked, once per pick; Show a hint is that same single hint', () => {
+    for (const seed of seeds.slice(0, 100)) {
+      const s = startWalk(5, new Rng(seed));
+      const [a, b] = wrongs(s);
+      const first = goTrail(s, a.t);
+      expect(first.kind === 'other' && first.glow).toBe(false);
+      expect(s.trailGlow).toBe(null);
+      const second = goTrail(s, b.t);
+      expect(second.kind === 'other' && second.glow).toBe(true);
+      expect(s.trailGlow).toBe(calledTrail(s));
+      expect(s.hints).toBe(1);
+      expect(askHint(s)).toBe('repeat');
+      expect(s.hints).toBe(1);
+      goTrail(s, calledTrail(s));
+      expect(s.trailGlow).toBe(null);
+      // On the way home: a requested hint first, so the miss that leaves one trail adds no second hint.
+      expect(askHint(s)).toBe('glow');
+      expect(s.trailGlow).toBe(calledTrail(s));
+      expect(askHint(s)).toBe('repeat');
+      const [c] = wrongs(s);
+      const third = goTrail(s, c.t);
+      expect(third.kind === 'other' && third.glow).toBe(false);
+      expect([s.misses, s.hints]).toEqual([3, 2]);
+      goTrail(s, calledTrail(s));
+      expect(askHint(s)).toBe('none');
+    }
+  });
+  it("the definition's first round: yellow turns back at the reeds, red goes, blue leads home; one miss, no hints", () => {
+    const s = startWalk(5, new Rng(1));
+    const stop = (id: 'brook' | 'reeds' | 'log') => ({ landmark: id, first: 0 as const, asked: null });
+    s.route = { level: 5, friend: 'duck', stops: [stop('brook'), stop('reeds'), stop('log')] };
+    s.trails = [
+      [0, 0, 0],
+      [1, 0, 0],
+      [0, 1, 1],
+    ];
+    s.calls = [0, 1];
+    expect(trailWays(s, 0).map((w) => w.phrase)).toEqual([
+      'over the bridge',
+      'through the reeds',
+      'under the log',
+    ]);
+    expect(tapFlag(s, 2).kind).toBe('look');
+    const r = tapFlag(s, 2);
+    expect(r).toMatchObject({ kind: 'other', stop: 1, before: [0], glow: false });
+    // The turned-back flag still looks; a second tap repeats the reason, free.
+    expect(s.looking).toBe(null);
+    expect(tapFlag(s, 2).kind).toBe('look');
+    expect(tapFlag(s, 2)).toMatchObject({ kind: 'reason', stop: 1 });
+    expect(s.misses).toBe(1);
+    if (r.kind === 'other')
+      expect([r.took.phrase, r.asked.phrase]).toEqual(['around the reeds', 'through the reeds']);
+    tapFlag(s, 0);
+    expect(tapFlag(s, 0).kind).toBe('go');
+    expect(trailWays(s, 1).map((w) => w.phrase)).toEqual([
+      'under the log',
+      'through the reeds',
+      'across the stones',
+    ]);
+    tapFlag(s, 1);
+    expect(tapFlag(s, 1)).toMatchObject({ kind: 'go', done: true });
+    expect([s.misses, s.hints]).toEqual([1, 0]);
+  });
+  it('start again returns home with every mark cleared and the same trails and calls, the counts kept', () => {
+    const s = startWalk(5, new Rng(9));
+    const { trails, calls } = s;
+    goTrail(s, wrongs(s)[0].t);
+    goTrail(s, calledTrail(s));
+    askHint(s);
+    tapFlag(s, 0);
+    restart(s);
+    expect([s.pick, s.looking, s.trailGlow, s.pickHinted]).toEqual([0, null, null, false]);
+    expect(s.turned).toEqual([null, null, null]);
+    expect([s.trails, s.calls]).toEqual([trails, calls]);
+    expect([s.misses, s.hints]).toEqual([1, 1]);
+  });
+  for (const [name, view] of Object.entries(VIEWS)) {
+    it(`the map fits ${name}: tiles, flags, badge, door and picnic apart, the corners clear`, () => {
+      const l = mapLayout(view, 5, 'sweep');
+      expect(l.flags).toHaveLength(TRAILS);
+      expect(l.badge).not.toBeNull();
+      expect(mapLayout(view, 4, 'sweep').flags).toHaveLength(0);
+      expect(mapLayout(view, 4, 'sweep').badge).toBeNull();
+      const badge = l.badge!;
+      const all = [...l.tiles, ...l.flags, badge, l.home, l.picnic];
+      const pet: Rect = { x: 0, y: view.h - 170, w: 160, h: 170 };
+      const home: Rect = { x: 0, y: 0, w: 110, h: 110 };
+      for (const r of all) {
+        expect(r.x).toBeGreaterThanOrEqual(0);
+        expect(r.y).toBeGreaterThanOrEqual(0);
+        expect(r.x + r.w).toBeLessThanOrEqual(view.w);
+        expect(r.y + r.h).toBeLessThanOrEqual(view.h);
+        expect(hit(r, pet)).toBe(false);
+        expect(hit(r, home)).toBe(false);
+      }
+      for (const t of l.tiles) {
+        expect(t.w).toBeGreaterThanOrEqual(170);
+        expect(t.h).toBeGreaterThanOrEqual(170);
+        // Both ways' lanes, and two ribbons side by side on one, stay inside the tile.
+        for (const slot of [0, 1] as const) {
+          expect(laneX(t, slot) - 15 - 11).toBeGreaterThan(t.x);
+          expect(laneX(t, slot) + 15 + 11).toBeLessThan(t.x + t.w);
+        }
+        expect(laneX(t, 1) - laneX(t, 0)).toBeGreaterThanOrEqual(100);
+      }
+      for (const f of l.flags) {
+        expect(f.w).toBeGreaterThanOrEqual(120);
+        expect(f.h).toBeGreaterThanOrEqual(120);
+      }
+      expect(FLAG.gap).toBeGreaterThanOrEqual(40);
+      expect(badge.w).toBeGreaterThanOrEqual(140);
+      const pad = (a: number, b: number) =>
+        a < STOPS && b < STOPS
+          ? 29
+          : a >= STOPS && a < STOPS + TRAILS && b >= STOPS && b < STOPS + TRAILS
+            ? 39
+            : 0;
+      for (let a = 0; a < all.length; a++)
+        for (let b = a + 1; b < all.length; b++)
+          expect(hit(all[a], all[b], pad(a, b)), `${a} and ${b}`).toBe(false);
+      // The sweep: the tile nearest the picnic is the last landmark.
+      const d = [1, 2, 3].map((i) => dist(l.path[i], l.path[STOPS + 1]));
+      expect(d.indexOf(Math.min(...d))).toBe(STOPS - 1);
+      // The companion at its door and on the blanket: a tap area of at least 120 that covers no flag, tile or badge.
+      for (const at of [-1, STOPS]) {
+        const w = walkerArea(mapSpot(l, at));
+        expect(w.x).toBeGreaterThanOrEqual(0);
+        expect(w.y + w.h).toBeLessThanOrEqual(view.h);
+        for (const r of [...l.tiles, ...l.flags, badge, pet, home]) expect(hit(w, r)).toBe(false);
+      }
+    });
+  }
 });

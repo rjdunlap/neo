@@ -152,6 +152,6 @@ No build slice is dispatched or scheduled by this study. No code, tests, game as
 
 ## What was built
 
-The Adventure Walk levels 1–3 [definition](../../definitions/adventure-walk.md) exists (2026-10-22); levels 1–3 were built 2026-10-23 (Barnyard), and levels 4–5 were [defined](../../definitions/adventure-walk.md#levels-45-aw3) on 2026-11-17; level 4 was built that day, and level 5 is not built.
+The Adventure Walk levels 1–3 [definition](../../definitions/adventure-walk.md) exists (2026-10-22); levels 1–3 were built 2026-10-23 (Barnyard), and levels 4–5 were [defined](../../definitions/adventure-walk.md#levels-45-aw3) on 2026-11-17; levels 4 and 5 were built that day (AW4, AW5).
 
 The study session itself (2026-10-14) built nothing: research and proposals only. Relative links/anchors and `git diff --check` checked in this session; see [verification](../../archive/VERIFICATION-2026-10-14.md#2026-10-14--movement-and-exercise-subject-research). Typecheck, units, build, browser, offline and device checks were not run. Open: named movement/accessibility reviewers, observed family/teen appeal and actual device speech/touch comfort.

@@ -1,0 +1,5 @@
+# 2026-11-17 — Adventure Walk level 5 Which trail? (AW5, PR #1751)
+
+**Changed:** `adventure-walk` level 5 (three drawn trails, look then go, a call home by a different trail; school 3–5); `makePicnic`, `buildMap` and `homeAgain` shared with level 4.
+**Ran:** `npm run typecheck`; `npm test` (357 files, 7561 tests, 1 skipped; the game's 68 rule tests cover 192 fair sets, calls, the first differing stop both ways, look-then-go, the glow once per pick, worst round 3 misses and 2 hints, the first round, restart, map layout at four views); `BROWSER_SUITE=adventurewalk` with a new portrait level-5 play (a look, a wrong trail turned back for 1 miss, a badge replay, the reason repeated free, the called trail walked, the trail she came by only looks, a requested hint lights the home flag, the different way home, saved score 1 miss 1 hint) and screenshot `adventure-walk-5-portrait`; `fingerdemo` `FINGER_ONLY=adventure-walk FINGER_LEVELS=5`, clean in 19.4 s.
+**Not run:** `npm run build` locally (no shared file or asset changed; CI builds), the offline check, other suites.

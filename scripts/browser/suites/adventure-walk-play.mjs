@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  /** Adventure Walk: level 1 (three free choices); level 3 in portrait (one wrong way, a replay, a requested hint, then the calls); level 4 in portrait (the walk out, then the way home on the hook map). */
+  /** Adventure Walk: level 1 (three free choices); level 3 in portrait (one wrong way, a replay, a requested hint, then the calls); level 4 in portrait (the walk out, then the way home on the hook map); level 5 in portrait (which trail, there and back). */
   async function adventureWalkPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -102,9 +102,71 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await tile(0);
     await finished('adventure-walk');
     assert.deepEqual(await score(), [1, 1]);
+    // Level 5 in portrait: a look, a wrong trail there (turned back, its reason free), a replay, the called trail, then
+    // the way home (the trail she came by only looks, a requested hint, the called trail).
+    await launch('adventure-walk', 5);
+    await page.waitForTimeout(800);
+    const tr = () =>
+      page.evaluate(() => {
+        const s = neo.scene.game.state;
+        return {
+          pick: s.pick,
+          misses: s.misses,
+          hints: s.hints,
+          looking: s.looking,
+          turned: [...s.turned],
+          calls: [...s.calls],
+          glow: s.trailGlow,
+        };
+      });
+    const flag = async (t) => {
+      await page.evaluate((t) => kit.tapOn(neo.scene.game.flagNodes[t]), t);
+      await page.waitForTimeout(250);
+    };
+    a = await tr();
+    const [there, back] = a.calls;
+    const wrong = [0, 1, 2].find((t) => t !== there);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.tileNodes.length + neo.scene.game.flagNodes.length),
+      6,
+    );
+    await screenshot('adventure-walk-5-portrait');
+    await flag(wrong);
+    a = await tr();
+    assert.deepEqual([a.looking, a.misses, a.pick], [wrong, 0, 0]);
+    await flag(wrong);
+    await idle();
+    a = await tr();
+    assert.deepEqual([a.misses, a.pick, a.turned[wrong] !== null], [1, 0, true]);
+    await page.evaluate(() => kit.tapOn(neo.scene.game.badgeNode));
+    await page.waitForTimeout(300);
+    // The turned-back trail still looks, and a second tap repeats its reason; neither counts.
+    await flag(wrong);
+    assert.equal((await tr()).looking, wrong);
+    await flag(wrong);
+    a = await tr();
+    assert.deepEqual([a.misses, a.hints, a.pick], [1, 0, 0]);
+    await flag(there);
+    assert.equal((await tr()).looking, there);
+    await flag(there);
+    await page.waitForFunction(() => neo.scene.game.state.pick === 1 && !neo.scene.game.busy, null, {
+      timeout: 25000,
+    });
+    await page.waitForTimeout(300);
+    await flag(there);
+    await flag(there);
+    a = await tr();
+    assert.deepEqual([a.misses, a.pick, a.looking], [1, 1, there]);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    a = await tr();
+    assert.deepEqual([a.hints, a.glow], [1, back]);
+    await flag(back);
+    await flag(back);
+    await finished('adventure-walk');
+    assert.deepEqual(await score(), [1, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
-      'Adventure Walk 1, 3 and 4: free choices, wrong way, replay, requested hint, calls followed, portrait, the way home on the hook map (wrong tile, requested hint, passed tile), saved scores passed',
+      'Adventure Walk 1, 3, 4 and 5: free choices, wrong way, replay, requested hint, calls followed, portrait, the way home on the hook map (wrong tile, requested hint, passed tile), which trail (a look, a wrong trail turned back, its reason free, the called trail, the way she came, a requested hint, a different way home), saved scores passed',
     );
   }
 
