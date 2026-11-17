@@ -192,12 +192,12 @@ export class DiceGame implements Game {
   // ---- the rolls ----
 
   private tapTray() {
-    if (this.finished || this.phase !== 'roll') return;
-    // The tray rattles on every touch, whether or not a roll starts.
+    // The tray rattles on every touch, whether or not a roll starts; once it is fading into the grid it takes none.
+    if (this.finished || this.tray.eventMode === 'none') return;
     this.ctx.tw.kill(this.tray);
     this.tray.rotation = 0.05;
     void this.ctx.tw.to(this.tray, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic });
-    if (this.busy || this.rolling) return;
+    if (this.busy || this.rolling || this.phase !== 'roll') return;
     void this.doRoll();
   }
 
@@ -424,6 +424,8 @@ export class DiceGame implements Game {
     const right = this.cardSums[i],
       other = this.cardSums[1 - i];
     this.finished = true;
+    this.talk++;
+    this.talking = false;
     sfx.bell(7, 0.35);
     sfx.bell(11, 0.3);
     await this.ctx.say('sf.pair-yes', { a: right, n: ways(right), b: other, m: ways(other) });

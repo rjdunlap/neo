@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–6 |
+| school | 3–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 4 | Sure, maybe, no way |
 | 5 | Fair or unfair? |
 | 6 | Watch it settle |
+| 7 | Two dice |
 
 <!-- end generated -->
 
