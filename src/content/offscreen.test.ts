@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { GAMES } from '../games/registry';
 import type { GameModule, OffScreenLines } from '../games/types';
 import { BANDS, playBand, type Band } from '../progress/bands';
-import { NO_NAME, offScreenFor, offScreenIdeas } from './offscreen';
+import { NO_NAME, offScreenFor } from './offscreen';
+import { EVERY_BAND, UNDER_3, wordPattern } from './offscreen-rules';
 
 const ALL_BANDS = BANDS.map((b) => b.id);
 const SAMPLE_NAME = 'Mira';
@@ -11,36 +12,6 @@ const byId = (id: string) => {
   if (!g) throw new Error(`no game ${id}`);
   return g;
 };
-
-/** Small loose objects (and a cord) that no line names at lap or toddler; plural-aware, word-bounded. */
-const UNDER_3 = [
-  'marble',
-  'coin',
-  'button',
-  'bean',
-  'bead',
-  'pebble',
-  'rubber band',
-  'battery',
-  'balloon',
-  'small ball',
-  'dry bean',
-  'pom-pom',
-  'seed',
-  'string',
-];
-const under3Pattern = (word: string) =>
-  new RegExp(`\\b${word.replace(/[-\s]/g, '[-\\s]')}(s|es|ies)?\\b`, 'i');
-
-/** Obligation, scheduling and purchase wording, for every band. */
-const EVERY_BAND = [
-  /[{}]/,
-  /\b\d+\s*(minutes?|mins?)\b/i,
-  /\bevery day\b/i,
-  /\beach morning\b/i,
-  /\bmust\b/i,
-  /\bbuy\b/i,
-];
 
 /** Every (game, band) pair a profile can play, with the band the launch resolves to. */
 const plays = GAMES.flatMap((g) => ALL_BANDS.map((band) => ({ g, band, at: playBand(g.bands, band) })));
@@ -53,7 +24,7 @@ describe('off-screen lines per band', () => {
       const line = offScreenFor(g, band, SAMPLE_NAME);
       if (line === null) continue;
       for (const word of UNDER_3)
-        if (under3Pattern(word).test(line)) bad.push(`${g.id} at ${band}: "${word}" in "${line}"`);
+        if (wordPattern(word).test(line)) bad.push(`${g.id} at ${band}: "${word}" in "${line}"`);
     }
     expect(bad).toEqual([]);
   });
@@ -87,21 +58,12 @@ describe('off-screen lines per band', () => {
     }
   });
 
-  it('withholds Garden Grow under 3 and keeps its line from preschool up; the page still takes two ideas', () => {
+  it('withholds Garden Grow under 3 and keeps its line from preschool up', () => {
     const garden = byId('garden-grow');
     expect(offScreenFor(garden, 'lap', SAMPLE_NAME)).toBeNull();
     expect(offScreenFor(garden, 'toddler', SAMPLE_NAME)).toBeNull();
     expect(offScreenFor(garden, 'prek', SAMPLE_NAME)).toBe((garden.offScreen as OffScreenLines).all);
     expect(offScreenFor(garden, 'preschool', SAMPLE_NAME)).toBe((garden.offScreen as OffScreenLines).all);
-    const ideas = offScreenIdeas(
-      [garden, byId('peg-garden'), byId('dot-link'), byId('fill-dump')],
-      'lap',
-      SAMPLE_NAME,
-    );
-    expect(ideas.map((i) => i.game.id)).toEqual(['peg-garden', 'dot-link']);
-    expect(ideas[0].line).toContain('large soft ball');
-    // No line at all is skipped the same way.
-    expect(offScreenIdeas([{ bands: ['lap'] as Band[] }, garden], 'lap', SAMPLE_NAME)).toEqual([]);
   });
 
   it('puts her name into Weather Wardrobe and falls back without one', () => {

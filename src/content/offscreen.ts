@@ -23,19 +23,3 @@ export function offScreenFor(
   const line = lineAt(mod.offScreen, playBand(mod.bands, band));
   return line === null ? null : line.replaceAll('{name}', childName.trim() || NO_NAME);
 }
-
-/** The ideas the grown-ups' page prints: the first `count` games with a line at her band, in the order given. */
-export function offScreenIdeas<T extends Pick<GameModule, 'bands' | 'offScreen'>>(
-  games: readonly T[],
-  band: Band,
-  childName: string,
-  count = 2,
-): { game: T; line: string }[] {
-  const out: { game: T; line: string }[] = [];
-  for (const game of games) {
-    const line = offScreenFor(game, band, childName);
-    if (line !== null) out.push({ game, line });
-    if (out.length >= count) break;
-  }
-  return out;
-}

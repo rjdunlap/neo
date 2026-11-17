@@ -13,8 +13,8 @@ import {
   isBlankProfile,
 } from '../progress/profiles';
 import { store } from '../progress/store';
-import { visibleGames } from '../content/lands';
-import { offScreenIdeas } from '../content/offscreen';
+import { LANDS, visibleGames } from '../content/lands';
+import { atHomeCard } from '../content/athome';
 import { projectRecap } from './recap';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES } from '../creatures/species';
@@ -170,6 +170,9 @@ ${
       <h2>This week</h2>
       <div data-week></div>
 
+      <h2>At home</h2>
+      <div data-at-home></div>
+
       <h2>Backup</h2>
       <p class="muted">Saves everyone's progress, stickers and birth month and year to one file you can keep or move to another iPad or computer. Restoring puts people back and never removes anyone.</p>
       <div class="parent__actions" style="margin-top:10px">
@@ -264,6 +267,7 @@ ${
     const wasOpen = week.querySelector<HTMLDetailsElement>('[data-week-every]')?.open ?? false;
     const query = week.querySelector<HTMLInputElement>('#p-search')?.value ?? '';
     week.innerHTML = weekSummary(app);
+    $('[data-at-home]').innerHTML = atHomeSection();
     const every = week.querySelector<HTMLDetailsElement>('[data-week-every]')!;
     const search = week.querySelector<HTMLInputElement>('#p-search')!;
     every.open = wasOpen;
@@ -511,10 +515,7 @@ function weekSummary(app: PanelApp): string {
   const head = '<tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>';
   const table = (rows: WeekRow<GameModule>[], attr: string) =>
     `<table ${attr}>${head}${rows.map((r) => weekRow(r, band, words.older)).join('')}</table>`;
-  const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
-  // Each idea is the line for the band she plays that game at, with her name; a game that withholds its line there is skipped.
-  const ideas = offScreenIdeas(played.length ? played : games, band, store.data.profile.name);
   return `
     <p class="muted">${esc(words.intro)}</p>
     ${first.length ? table(first, 'data-week-played') : '<p data-week-played>Nothing played this week yet.</p>'}
@@ -526,8 +527,43 @@ function weekSummary(app: PanelApp): string {
     </details>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
     ${words.picnic ? `<p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>` : ''}
-    <div data-recap-welcome>${projectRecap(store.data, store.data.profile.name)}</div>
-    ${ideas.map((i) => `<p><strong>Off-screen idea:</strong> ${esc(i.line)}</p>`).join('')}`;
+    <div data-recap-welcome>${projectRecap(store.data, store.data.profile.name)}</div>`;
+}
+
+/**
+ * At home: three things to try away from the screen (`atHomeCard`), each a game's off-screen line and, where one is
+ * written, something to notice and something to say, then the things from around the house they use. Read-only: nothing
+ * to press, nothing counted, nothing saved.
+ */
+function atHomeSection(): string {
+  const { band, name } = store.data.profile;
+  const grown = band === 'grownup';
+  const card = atHomeCard({
+    games: visibleGames(band, GAMES),
+    lands: LANDS,
+    band,
+    childName: name,
+    lastPlayed: (g) =>
+      store
+        .stats(g.id)
+        .history.reduce<number | undefined>((m, r) => (m === undefined || r.at > m ? r.at : m), undefined),
+    now: Date.now(),
+  });
+  const intro = grown
+    ? 'Paper versions of puzzles played this week or waiting on the shelf. Nothing here is tracked, counted or due.'
+    : 'Three things to try away from the screen, from games played this week and games for their age. Nothing here is tracked, counted or due.';
+  const ideas = card.ideas.map(
+    (i) => `<div class="parent__idea" data-at-home-idea="${esc(i.game.id)}">
+      <p><strong>Try:</strong> ${esc(i.try)}</p>
+      ${i.note ? `<p><strong>Notice:</strong> ${esc(i.note.notice)}</p><p><strong>Say:</strong> “${esc(i.note.say)}”</p>` : ''}
+      <p class="muted">From ${esc(i.game.name)}${i.played ? ', played this week' : ''}.</p>
+    </div>`,
+  );
+  return `
+    <p class="muted">${esc(intro)}</p>
+    ${ideas.join('')}
+    ${card.kit.length ? `<p data-at-home-kit><strong>Things from around the house:</strong> ${esc(card.kit.join(', '))}.</p>` : ''}
+    ${grown ? '' : '<p class="muted">Say it in whatever language you speak at home. There is no right way to do these.</p>'}`;
 }
 
 function picnicSummary(): string {
