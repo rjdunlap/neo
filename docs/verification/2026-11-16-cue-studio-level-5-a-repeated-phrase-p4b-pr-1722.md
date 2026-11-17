@@ -1,0 +1,5 @@
+# 2026-11-16 — Cue Studio level 5, A repeated phrase (P4b, PR #1722)
+
+**Changed:** `cue-studio` level 5 (school range 3–5): two-slot shelf with a Repeat cap, ghost copies, four-move expanded trace, per-slot trace dots, help on the cap, how-to lines and ghost finger; the voice-wording source check owed since P4a was done as a reading of two live sources.
+**Ran (2026-11-16, headless Chromium, dev server with speech off):** `npm run typecheck`; full `npm test` (cue-studio rules 57 tests, 9 new at level 5); `BROWSER_SUITE=cuestudio CUE_LEVELS=5` (empty and incomplete controls, the right pair played once as the one wrong Check, cap clue and repair, Start again, idempotent help, four Steps, Repeat as an undoable edit, targets and pet/ghost clearance at four view sizes, one helped sticker, portrait screenshot inspected); `BROWSER_SUITE=cuestudio CUE_LEVELS=3,4` regression; `BROWSER_SUITE=fingerdemo FINGER_ONLY=cue-studio FINGER_LEVELS=5` (18.8 s).
+**Not run:** `npm run build` (no shared files or assets changed; CI builds), levels 1–2 browser play, `world` and offline suites.
