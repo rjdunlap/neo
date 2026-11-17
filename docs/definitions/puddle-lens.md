@@ -1,6 +1,6 @@
 # Puddle Lens, levels 1–4 (definition)
 
-**Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
+**Slide Files (levels 9–11, `grownup`) is defined 2026-11-16 ([below](#slide-files-levels-911-definition-2026-11-16)) and not built.** **Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
 
 Defined 2026-10-22 as slice 1 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/cells-microbes.md#a-first-games-ladder-puddle-lens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
@@ -424,4 +424,162 @@ Defaults are set so the build can proceed; each is a reversible content call, no
 
 1. **Cheek cells.** Default: drawn as a prepared slide with no origin story, named only on the grown-ups' card. Alternative: plants only at level 7 (onion skin, leaf, and a can't-tell-yet slide), losing the animal half of the comparison.
 2. **Coloured water.** Default: a drop from a small cup of green-coloured water, with no line about how it was coloured. Alternative: replace it with tea-brown leaf water and ask "Why is this water coloured?". That only works if a brown living case (for example diatoms) is source-checked, so that colour still never decides.
-3. **A second animal sample**, a red-onion decoy or a dead-cell case: none defined. They go to Slide Files, with their own source check.
+3. **A second animal sample**, a red-onion decoy or a dead-cell case: the red-onion decoy and the dead-cell case (cork) are [defined in Slide Files](#slide-files-levels-911-definition-2026-11-16) (2026-11-16); a second animal sample is still not defined.
+
+## Slide Files, levels 9–11 (definition, 2026-11-16)
+
+Defined 2026-11-16 as slice 5 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [grown-up row](../deep-dives/subjects/cells-microbes.md#an-answer-for-every-audience) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no code, voice line, band or save field changes. It was written against the built game (`src/games/puddle-lens/logic.ts` at `531c92ef`: `Evidence`, `CANDIDATES`, `judgeLife`, `WALL_SLIDES`, `judgeWall`, `helpFor`, `LEVELS`, and `lensLayout`'s three-button group of 120-unit answers at a 12-unit gap). The [October 23 decision](#open-decisions) applies: this session's source check (below) stands in for a biology reader, and Slide Files sits on `grownup` (13 and up).
+
+**Fun action and purpose.** A case folder lies beside the lens with an unknown slide. **Level 9, *Name the slide*:** three field-guide cards show what the slide might be; she turns the dial and taps the card that the view leaves standing, or **can't tell yet**. **Level 10, *Measure it*:** a scale bar sits in the view; she turns the dial until both ends of the thing show beside the bar, then chooses its length from three sizes ten times apart. **Level 11, *Open cases*:** the cases of level 9, except that some cannot be closed by any stop on this lens, and **not enough evidence** is then the right way to close the file. The purpose is the study's grown-up claim: **choose the view that decides, read size from the bar and not from how big it looks, and say so when the instrument cannot settle it.** Turning the dial is always free, and the fewest views earns nothing extra.
+
+**What changes from levels 5–8, and what does not.**
+- The [levels 5–6 simplification](#levels-56-definition-2026-11-05) ("everything drawn that shows a cell is alive") ends at level 11: the cork slide is walls with nothing inside, cells that are no longer alive.
+- Level 8's limit is taken up, as that section promised: a thing can be too small for the closest stop to show an edge or an inside, and then this lens cannot say whether it is alive.
+- Sizes are spoken and drawn for the first time, in micrometres, at level 10 only.
+- Still never said or drawn: microbe, bacteria, germ, illness, dirty, clean, a species name, a magnification number, or where any slide came from. Decision 6 stands (faceless science drawings). The tiny living candidate is "a living thing too small to show its inside", never a named kind ([open item 1](#open-items-for-slide-files)).
+- Colour and movement are drawn and are never evidence, as before.
+
+### Source check (this session)
+
+| Claim the tables rely on | Source | How it was read |
+| --- | --- | --- |
+| A light microscope cannot separate details closer than about 0.2 µm, and more magnification past that shows nothing new | [Wikipedia, *Optical microscope*](https://en.wikipedia.org/wiki/Optical_microscope) | Opened: "typically limited to around 200 nanometers"; "While larger magnifications are possible no additional details of the object are resolved" |
+| The smallest living cells (0.4–10 µm) show their overall shape under a light microscope, but "their internal structures are too small to be resolved" | [Norton, *Microbiology: The Human Experience*, 3.1 Observing Microbes](https://nerd.wwnorton.com/ebooks/epub/michum3/EPUB/content/3.1-chapter03.xhtml) | Opened. This is the whole basis of the open cases: a dot about 1 µm across shows no edge detail and no inside. Whether such a dot shows at all at a school microscope's closest lens is disputed in search summaries (a Vanderbilt lesson says not at 400×); the drawing is a faint dot, and no line says how close stop 4 is |
+| Clay grains are 2 µm and smaller; silt is about 2–63 µm; medium sand is 0.2–0.63 mm | [Wikipedia, *Grain size*](https://en.wikipedia.org/wiki/Grain_size) | Opened (the Wentworth table and the ISO 14688-1 table). A clay speck and the smallest living things are the same size, which is why the open case is honest |
+| Jiggling is not evidence of life | [Emory, *Brownian Motion* reading](https://faculty.college.emory.edu/sites/weeks/squishy/reading1.html) | Opened in the [5–6 session](#source-check-this-session); not re-opened |
+| A paramecium-like swimmer is 0.06–0.3 mm long | [Wikipedia, *Paramecium*](https://en.wikipedia.org/wiki/Paramecium) | Opened: "range in size from 0.06 mm to 0.3 mm in length". The swimmer is drawn at 200 µm |
+| A small round green alga is one cell 2–12 µm across | [Freshwater Biodiversity of Bangladesh, *Chlorella vulgaris*](https://freshwaterbiodiversity.org.bd/?p=12292) | Opened in the 5–6 session; not re-opened. The green ball is drawn at 10 µm |
+| A flattened cheek cell measures about 50 µm across | A worked eyepiece-scale example in the Cambridge International AS and A Level Biology coursebook (20 eyepiece units at 2.5 µm each) | **Known from a search summary only**; the book page was not opened. The build opens a source for this number before the level-10 line ships, or drops the cheek cell from level 10 |
+| Cork is dead at maturity and air-filled, and it is what Hooke looked at when he named the cell | [Wikipedia, *Cork cambium*](https://en.wikipedia.org/wiki/Cork_cambium) ("dead at maturity; air-filled"), [Wikipedia, *Cork (material)*](https://en.wikipedia.org/wiki/Cork_(material)) ("examined microscopically by Robert Hooke, which led to his discovery and naming of the cell"; "filled with a gas mixture similar to air") | Both opened |
+| Onion skin cells have a wall, a nucleus and a large vacuole and no chloroplasts; red onion skin is "naturally pigmented" | [Wikipedia, *Onion epidermal cell*](https://en.wikipedia.org/wiki/Onion_epidermal_cell) | Opened. That the red is a pigment held in the vacuole comes from a search summary of [Collings 2019](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6963288/) only; no line says where in the cell the colour is |
+
+**Not sourced, so not used:** the length of an onion skin cell (no opened page gives it; onion skin is never measured at level 10), and any green living thing too small for the closest stop (so level 8's green water is not reopened as an open case; [open item 3](#open-items-for-slide-files)).
+
+### The model, added to `logic.ts`
+
+- **One table for all three levels**, `FILE_SAMPLES`, row for row below. It restates the built evidence of the samples it reuses (a test checks each reused row against `CANDIDATES` and `WALL_SLIDES`) and adds three. Evidence is listed per stop, and nothing shows at stops 1–2 on any row, so those stops never decide.
+
+| Sample | Field-guide card says | Stop 3 | Stop 4 | Drawn length | Motion | Art |
+| --- | --- | --- | --- | --- | --- | --- |
+| `swimmer` | a swimmer: one living cell | edge, inside | edge, inside, hairs | 200 µm | swims | built |
+| `green-ball` | a green ball: one living cell | none (a dot) | edge, inside | 10 µm | still | built |
+| `silt` | a grain of silt | none (a dot) | ragged | none used | still | built |
+| `mud-speck` | a mud speck | ragged | ragged | none used | drifts | built |
+| `bubble` | an air bubble | edge, empty | edge, empty | none used | drifts | built |
+| `onion-skin` | living plant cells | wall | wall, inside | none used | still | built |
+| `cheek-cells` | animal cells | soft-edge, inside | soft-edge, inside | 50 µm (one cell) | still | built |
+| `sand-grain` | a grain of sand | cracks | cracks | 300 µm | still | built (the sand sample's single grain) |
+| `cork` | cells no longer alive: walls only | wall | wall, empty | none used | still | **new**: small even boxes, thick walls, nothing in any box |
+| `red-onion` | living plant cells (the card is the `onion-skin` card) | wall | wall, inside | none used | still | **new**: the onion-skin drawing filled purple |
+| `tiny-living` | a living thing too small to show its inside | none | dot | 1 µm | drifts or jiggles | **new**: a faint dot, the same drawing as `tiny-clay` |
+| `tiny-clay` | a speck of clay | none | dot | 1 µm | drifts or jiggles | **new**: the same faint dot |
+
+- **One new evidence mark, `dot`:** something is there, with no edge detail and no inside to see even at the closest stop. `tiny-living` and `tiny-clay` have identical evidence, drawing and motion at every stop (a test), and the unknown in an open case is drawn from one shared "tiny dot" drawing with no hidden truth: **the model does not know which it is either.**
+- **`empty` inside a `wall`** is this model's mark for a cell whose contents are gone. It is a stated simplification: real living cells can look empty in a poor view, so the line says "nothing inside any of them", about the whole slide.
+- **Field-guide cards.** Each candidate card is an ink-line drawing with no colour: the candidate at stop 3 and at stop 4, side by side. The cards are how a player knows what a candidate would look like, so that ruling one out is reasoning and not a guess. Colour is left off the cards so that the purple of `red-onion` and the green of `green-ball` match nothing.
+- **Cases** (enumerated; a case is an unknown and three candidates, one of which is the unknown's own row, except in open cases):
+
+| Case | Level | Unknown | Candidates | Ruled out at stop 3 | Closes at | Right close |
+| --- | --- | --- | --- | --- | --- | --- |
+| N1 | 9 | `green-ball` | `green-ball`, `silt`, `bubble` | `bubble` | 4 | `green-ball` |
+| N2 | 9 | `bubble` | `bubble`, `swimmer`, `mud-speck` | `swimmer`, `mud-speck` | 3 | `bubble` |
+| N3 | 9 | `cheek-cells` | `cheek-cells`, `onion-skin`, `swimmer` | `onion-skin`, `swimmer` | 3 | `cheek-cells` |
+| N4 | 9 | `onion-skin` | `onion-skin`, `cheek-cells`, `mud-speck` | `cheek-cells`, `mud-speck` | 3 | `onion-skin` |
+| N5 | 9 | `silt` | `silt`, `green-ball`, `swimmer` | `swimmer` | 4 | `silt` |
+| N6 | 9 | `swimmer` | `swimmer`, `bubble`, `green-ball` | `bubble`, `green-ball` | 3 | `swimmer` |
+| O1 | 11 | the tiny dot, drifting | `tiny-living`, `tiny-clay`, `bubble` | `bubble` | 4 | **not enough evidence** |
+| O2 | 11 | the tiny dot, jiggling | `tiny-living`, `tiny-clay`, `swimmer` | `swimmer` | 4 | **not enough evidence** |
+| O3 | 11 | `cork` | `cork`, `onion-skin`, `cheek-cells` | `cheek-cells` | 4 | `cork` |
+| O4 | 11 | `red-onion` | `onion-skin` (its card), `cork`, `cheek-cells` | `cheek-cells` | 4 | `onion-skin` card |
+| O5 | 11 | `green-ball` | `green-ball`, `tiny-living`, `silt` | none | 4 | `green-ball` |
+
+  O5 is the foil to O1 and O2: a dot at stop 3 that *does* resolve at stop 4. O2 is the foil to movement: it jiggles and still cannot be called alive.
+- **`survivors(case, stop)`**: the candidates whose evidence at that stop equals the unknown's evidence at that stop. It never grows as the stop rises (a test), and at stops 1–2 it is all three.
+- **`judgeCase(case, stop, answer)`**, with `answer` a candidate or `'cant-tell'`:
+  - **A candidate the view has already ruled out** is a miss at any stop, with the evidence line for what the view shows (never the verdict): the built `lens.look.*`, `lens.see.*` and `lens.wall.see.*` lines, plus `file.see.only-dot` (the view shows no detail yet and the card would), `file.see.dot` and `file.see.walls-empty` below. No case lets a ruled-out card fit again at a higher stop (a test), so the stop-by-stop comparison is all the judge needs.
+  - **A surviving candidate while more than one survives**, below stop 4: free, the built `lens.could-be`, the same line for a true and a false guess.
+  - **`'cant-tell'` while more than one survives**, below stop 4: `'right-for-now'` (the built line). The file stays open.
+  - **One survivor:** naming it is `'right'` and closes the file. `'cant-tell'` is a miss, `file.can-tell-now` ("We can tell now. Compare the view with the cards.").
+  - **Stop 4 with more than one survivor (open cases only):** `'cant-tell'` is `'right'` and closes the file as **not enough evidence** (`file.yes.open`). Naming either survivor is a miss, `file.see.dot` ("Look: a dot, with no edge and nothing inside to see. Two of the cards look just like it."). At stop 4 the third button's picture changes from the lens with its "?" to a closed folder with a "?", and its spoken name from "can't tell yet" to "not enough evidence".
+- **Level 10, `measure(sample, stop)`**. The measured samples are `swimmer` (200 µm), `green-ball` (10 µm), `sand-grain` (300 µm) and one `cheek-cells` cell (50 µm, if its source is opened).
+  - **The bar.** From the stop where the sample first shows evidence, a white bar with dark ends sits under the view, labelled and spoken as one of **1 mm, 100 µm, 10 µm or 1 µm**. The built stops are separately drawn views, not one fixed magnification (stop 4 draws the swimmer 1.7 times its stop-3 size and the green ball far more), so the bar is computed per view: `unitsPerMicron(sample, stop)` is the drawn length in units divided by the table length, and the bar is the largest of the four values whose drawn length is between 60 and 240 units. The bar is what keeps each view honest, as on a printed micrograph, and the how-to card says so.
+  - **The measuring stop** is the lowest stop where the sample shows evidence and fits whole in the view: 3 for the swimmer and the sand grain, 4 for the green ball, 3 for the cheek cell.
+  - **Choices:** three lengths ten times apart, the table length in the middle or at an end by seed: for 200 µm, "20 µm", "200 µm" and "2 mm". A test checks that the right choice lies inside the sourced range and both wrong choices lie outside it.
+  - **`judgeSize(sample, stop, choice)`**: below the measuring stop every choice is free, `file.need-ends` ("Could be. You need to see both ends beside the bar."). At or above it the right choice is `'right'` (`file.yes.size`, with the count: "About two bars, and each bar is a hundred micrometres: two hundred micrometres."). A wrong choice is a miss with `file.see.bars` ("Count the bars along it. Each bar is a hundred micrometres."), which names the bar and never the answer.
+  - There is no can't-tell button at level 10: the three answers are the three lengths.
+- **Motion:** as built (at most 30 units a second, still while a finger is down). The tiny dot's jiggle in O2 is a seeded wobble of at most 6 units about its drift path. Nothing on the slide is tapped.
+- **Rounds.** Each level is three files. **Level 9:** three of N1–N6 with no unknown twice and at least one that closes at stop 4. **Level 10:** three of the measured samples. **Level 11:** three of O1–O5 with one or two open cases (never none, never all three), so the open close is neither automatic nor absent. Seeded from `ctx.rng`: the cases, their order, the order of the three cards, and positions.
+
+### Screen and controls
+
+- **Answers.** Levels 9 and 11 need four: three cards and the can't-tell button. `lensLayout` gains a four-answer group in the space the three 120-unit answers use today: four at 87 units with the built 12-unit gap (384 units either way), allowed because `grownup` targets may be 64 or more. It returns null rather than go below 64. Level 10 keeps the built three-button group at 120. The four stop buttons stay 110.
+- **Cards speak.** Touch-down on a card speaks its field-guide name; nothing needs reading. The level-10 lengths are spoken in full ("two hundred micrometres"), with the label "200 µm" drawn.
+- **The folder.** A closed file shows a small stamp on the folder at the table edge: the chosen card, the length, or "not enough evidence". It is decoration for this round only; nothing is saved.
+- **No ring, the paw reference, music and the pause sheet:** as levels 7–8.
+
+### Ranges and band
+
+`bands` gains `'grownup'`, and `LEVELS` gains `grownup: { min: 9, max: 11 }`. Every other band is unchanged and nothing is renumbered, so saved levels and pins keep their meaning. A grown-up starts at level 9; levels 5–8 remain the school ladder ([open item 2](#open-items-for-slide-files)). The game stays in Bubble Beach; the lands test decides whether the land's `grownup` page still fits, and a full page pages rather than shrinks. `PLANS` gains three names: "Name the slide: look closer, then tap the card the view leaves standing", "Measure it: look closer, then read its length from the scale bar" and "Open cases: name the slide, or close the file as not enough evidence".
+
+### First rounds (authored)
+
+- **Level 9:** N2, N5, N3. The bubble file opens at stop 2 with nothing to compare. She taps **a swimmer**: "Could be. What would show it?" (free). At stop 3 the view shows a thick edge and an empty middle. She taps **a swimmer** again: a boing and "Look: a thick edge, and nothing inside." (one miss). **An air bubble** closes the file. The silt file: at stop 3 it is a dot; **a swimmer** is a miss (its card shows an edge and an inside at stop 3, and the view is only a dot: "Look: only a dot so far. That card would show more by now."), **can't tell yet** is right for now, and at stop 4 the ragged grain closes it as **a grain of silt**. The cheek file: Show a hint turns to stop 3 and says the soft-edge line; **animal cells** is right.
+- **Level 10:** the swimmer, the green ball, the sand grain. The swimmer at stop 2: she taps "2 mm": "Could be. You need to see both ends beside the bar." (free). At stop 3 the bar says 100 µm and the swimmer is two bars long. "20 µm" is a miss ("Count the bars along it. Each bar is a hundred micrometres."); "200 µm" is right. The green ball needs stop 4, where the bar says 10 µm and the ball is one bar across. The sand grain at stop 3 is three 100 µm bars.
+- **Level 11:** O3, O1, O5. Cork at stop 3 shows walls; **animal cells** is a miss; **can't tell yet** is right for now. At stop 4 every box is empty: **living plant cells** is a miss ("Look: walls, and nothing inside any of them."), and **walls only** closes it ("Walls, and nothing inside. These were cells once. They aren't alive now."). The tiny dot at stop 4 is still a dot. She taps **a living thing too small to show its inside**: a miss ("Look: a dot, with no edge and nothing inside to see. Two of the cards look just like it."). **Not enough evidence** closes it: "Right. Even this close, two cards fit. This lens can't settle it." The green ball: a dot at stop 3, and at stop 4 an edge and parts inside, so **a green ball** is right and not enough evidence would be a miss.
+
+### Accounting, help and finishing
+
+As levels 5–8, with one addition:
+- **Misses:** a ruled-out card at any stop; **can't tell** when one card survives; a surviving card at stop 4 of an open case; a wrong length at or above the measuring stop. One per press. Turning the dial, a surviving card below the close, and every length below the measuring stop are free.
+- **Views are never counted.** The fewest views earns nothing, and looking at every stop costs nothing.
+- **Glow:** after two misses on one file, the right answer glows (at stop 4 of an open case, the folder button).
+- **Hints:** at most one per file. `helpFor(9 | 10 | 11, file)` returns `{ do: 'turn', stop }` at the closing or measuring stop, and the companion says that stop's evidence line. On an open case the hint turns to stop 4 and says `file.see.dot`; she still presses the close.
+- **Supported completion, adaptation, finish:** a hint and the glow leave one press; nothing times out. The shell's rule steps within `{9,11}`. After the third file, `ctx.finish({ misses, hints })` gives one sticker. No journal entry or discovery (decision 7).
+
+### Speech (`voice-script.ts`)
+
+New `lens.file.*` lines (built keys keep their wording and are reused where the table says so):
+- `instruct.name` ("What is on this slide? Look closer, then choose a card."), `instruct.size` ("How long is it? Find the view that shows both ends beside the bar. A micrometre is a thousandth of a millimetre.") and `instruct.open` ("What is on this slide? If no view can settle it, close the file.")
+- the card names in the table's second column, and `say.open` ("Not enough evidence")
+- `can-tell-now`, `need-ends`, `see.bars` (one per bar value), `see.only-dot`, `see.dot`, `see.walls-empty`, `yes.size` (slotted with the count and the bar), `yes.cork`, `yes.open`, and one `yes.*` line per closing card ("An air bubble: a thick edge and nothing inside.")
+- the bar values, spoken on touch-down of the bar: "one millimetre", "a hundred micrometres", "ten micrometres", "one micrometre"
+
+None says microbe, bacteria, germ, a species, a magnification, or where a slide came from. The slotted `yes.size` line falls to device speech until slotted clips exist.
+
+### Rule tests (`logic.test.ts`)
+
+- **Table:** every row has evidence at stops 3–4 and none at 1–2; evidence never shrinks as the stop rises; reused rows equal the built tables; colour and motion are in no evidence set; `tiny-living` and `tiny-clay` are identical in evidence, drawing id and motion.
+- **Cases:** `survivors` never grows with the stop. Each of N1–N6, O3, O4 and O5 has exactly one survivor at its closing stop and more than one just below it, and the survivor is the "Right close" column. O1 and O2 have exactly two survivors at stop 4, both tiny. Every "Ruled out at stop 3" cell matches `survivors`.
+- **No oracle:** below a file's close, naming any surviving card gives the same free verdict, and `'cant-tell'` is right-for-now there and only there; on an open case `'cant-tell'` at stop 4 is `'right'` and on every other case it is a miss.
+- **Movement and colour never decide:** answering O2 "alive because it moves", or O4 by its purple, is never right.
+- **Measure:** for every measured sample and stop, the bar is one of the four values and 60–240 units long; the drawn length over `unitsPerMicron` equals the table length; the right choice is inside the sourced range and the wrong ones outside; below the measuring stop every choice is free.
+- **Rounds:** across 500 seeds, level 9 has three distinct unknowns and a stop-4 close; level 11 has one or two open cases; the authored rounds match their stories.
+- **Help and layout:** `helpFor` names each closing or measuring stop; a scripted file (ruled-out card, hint, hint again, right card) counts one miss and one hint; the four-answer group passes the four `lands.test.ts` views at 87 units and is null rather than under 64. Registry, lands, how-to and voice tests pass with `grownup: {9,11}`.
+
+### Ghost finger and how-to card
+
+- **Ghost finger:** `autotouch()` at levels 9–11 follows `helpFor`: for each file it taps the closing or measuring stop, then the right answer read from `logic.ts` (the folder button on an open case).
+- **How-to card** (added to the existing card):
+  - Steps: "Turn the dial, compare the view with the three cards, and tap the one still standing" `{ from: 9, to: 9 }`; "Turn the dial until both ends show beside the scale bar, then choose the length" `{ from: 10, to: 10 }`; "Name the slide, or at the closest view close the file as not enough evidence" `{ from: 11, to: 11 }`.
+  - Finish: "All three files closed" `{ from: 9, to: 11 }`.
+  - Notes: "Each card shows the thing at the two microscope stops. A card the view already contradicts is a miss; a card that still fits is free until only one is left" `{ from: 9, to: 11 }`; "The views are drawings, not one fixed magnification: trust the bar, not how big it looks. A micrometre (µm) is a thousandth of a millimetre" `{ from: 10, to: 10 }`; "Some things are too small for any view here to show an edge or an inside. Then nobody can say from this lens whether they are alive, and saying so is the right answer" `{ from: 11, to: 11 }`; "Looking at more views never costs anything" `{ from: 9, to: 11 }`.
+- **Co-play:** "Second opinion": one person names a card and the stop that would prove it before the dial turns; the other turns and checks. **Off-screen** (spoken tip, no equipment): "Find a scale bar or a ruler in a photo, on a map or on a packet, and work out how big one thing in the picture really is." No microscope, collecting, culturing or body-sample instruction (decision 5).
+- **Couch:** none. **Rework couplings:** none.
+
+### Build slices and check tiers
+
+One session each, in this order. Each widens `grownup` only as far as it builds, and each owes the source check for its own spoken lines.
+
+1. **SF1, level 9 *Name the slide*** (new-interaction tier with a band added): `FILE_SAMPLES` for the built samples, the N cases, `survivors`, `judgeCase`, the field-guide cards, the four-answer group, `bands` and `grownup: {9,9}`. Typecheck, unit tests (above, plus registry, lands, how-to and voice), one scripted play at 9 with one free card, one ruled-out card, Show a hint and the sticker, one portrait screenshot of a file at stop 3 with its cards, `fingerdemo` at 9, `npm run build`.
+2. **SF2, level 10 *Measure it*** (after SF1; new-interaction tier): the bar, `unitsPerMicron`, `judgeSize`, the length buttons; `grownup: {9,10}`. Typecheck, rule tests, one scripted play at 10 with one free length and one wrong length, one portrait screenshot of the swimmer beside its bar, `fingerdemo` at 10, `npm run build`. Opens a source for the cheek-cell length or leaves the cheek cell out.
+3. **SF3, level 11 *Open cases*** (after SF1; new-levels tier with three new drawings): `cork`, `red-onion`, the tiny dot, `dot`, the O cases and the folder button; `grownup` to `{9,11}` (or `{9,9}` plus 11 through `order` if SF2 has not landed). Typecheck, rule tests, one browser play at 11 with one named survivor on an open case and the not-enough-evidence close, one portrait screenshot of the tiny dot at stop 4, `fingerdemo` at 11, `npm run build`.
+
+### Open items for Slide Files
+
+Defaults are set so the builds can proceed; each is a reversible content call, not a gate.
+
+1. **Naming the smallest living things.** Default: "a living thing too small to show its inside", with no named kind, keeping decision 6's line well clear. Alternative: name them on the grown-ups' how-to card only.
+2. **Where a grown-up starts.** Default: `grownup: {9,11}`. Alternative: `{7,11}` with `order` putting 9–11 first, so *Wall clue* and *Why green?* are reachable from Lantern Lodge play without a pin.
+3. **Reopening the green water.** Not defined: "green all through" against "green living things too small for this lens" needs an opened source that such things exist and how they would look at the closest stop.
+4. **Reference cards.** Default: cards show each candidate at stops 3 and 4. Whether that makes a file a picture match rather than a decision is a question for play; the alternative is cards that show only the closest view.
+5. **A staged slide** (the study's "power and stage": moving the slide to another spot): not defined. Every file is one fixed spot, as at levels 1–8.
