@@ -27,6 +27,27 @@ import {
   SWITCH_RIBBON,
   SWITCH_WHOLES,
   SwitchBench,
+  CASES_CHANGES,
+  CASES_FIRST,
+  CASES_STOCK,
+  CasesBench,
+  casesActions,
+  casesApply,
+  casesFeasible,
+  casesHint,
+  casesJudge,
+  casesMadeKey,
+  casesRound,
+  casesSolve,
+  casesStart,
+  HALF,
+  QUARTER,
+  RAIL_CAPACITY,
+  railVerdict,
+  type CasesAction,
+  type CasesState,
+  type Requests,
+  type Size,
   switchHint,
   switchJudge,
   switchRound,
@@ -458,11 +479,12 @@ describe('Whole Switch (level 6)', () => {
   });
 
   it('is the top of the school order, leaves saved levels 1–3 alone, and has every line it speaks', () => {
-    expect(LEVEL_IDS).toEqual([1, 2, 3, 6]);
-    expect(LEVELS.school).toEqual({ min: 1, max: 6, order: [1, 2, 3, 6] });
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 6, 7]);
+    expect(LEVELS.school).toEqual({ min: 1, max: 7, order: [1, 2, 3, 6, 7] });
     const range = LEVELS.school!;
     // A saved or pinned level is clamped by a step of nothing: 1–3 and 6 stay, and a reserved 4 or 5 lands on a listed ID.
     for (const l of LEVEL_IDS) expect(stepLevel(l, 0, range)).toBe(l);
+    expect(stepLevel(6, 1, range)).toBe(7);
     expect(stepLevel(4, 0, range)).toBe(3);
     expect(stepLevel(5, 0, range)).toBe(6);
     expect(stepLevel(3, 1, range)).toBe(6);
@@ -492,5 +514,317 @@ describe('Whole Switch (level 6)', () => {
         for (const sentence of lines.join(' ').split(/(?<=[.!?])\s+/))
           if (/\b(half|quarter|quarters)\b/.test(sentence))
             expect(sentence, id).toMatch(/(short|long) spool/);
+  });
+});
+
+describe('Ribbon Cases (level 7)', () => {
+  const sizes = (ps: readonly { size: number }[]) => ps.map((p) => p.size).join('');
+  const sorted = (ps: readonly { size: number }[]) =>
+    ps
+      .map((p) => p.size)
+      .sort()
+      .join('');
+  /** Exact: the order of every list and the lit gift. */
+  const exactKey = (s: CasesState) =>
+    `${s.active}|${sizes(s.tray)}|${sizes(s.rails[0])}|${sizes(s.rails[1])}`;
+  /** An arrangement: pieces of one size alike, order and the lit gift ignored. */
+  const arrangement = (s: CasesState) => `${sorted(s.tray)}|${sorted(s.rails[0])}|${sorted(s.rails[1])}`;
+  const ticks = (s: CasesState) => total(s.tray) + total(s.rails[0]) + total(s.rails[1]);
+  const ids = (s: CasesState) => [...s.tray, ...s.rails[0], ...s.rails[1]].map((p) => p.id);
+  function reach(from: CasesState): CasesState[] {
+    const seen = new Map<string, CasesState>([[exactKey(from), from]]),
+      queue = [from];
+    while (queue.length) {
+      const s = queue.pop()!;
+      for (const a of casesActions(s)) {
+        const next = casesApply(s, a);
+        if (next && !seen.has(exactKey(next))) {
+          seen.set(exactKey(next), next);
+          queue.push(next);
+        }
+      }
+    }
+    return [...seen.values()];
+  }
+  const tag1 = reach(casesStart());
+  const accepted = tag1.filter((s) => casesJudge(s, CASES_FIRST) === 'right');
+  const follow = (s: CasesState, path: readonly CasesAction[]) =>
+    path.reduce((at, a) => casesApply(at, a)!, s);
+  const railOf = (s: CasesState, id: number) => s.rails.findIndex((r) => r.some((p) => p.id === id));
+
+  it('deals six ticks and never loses or copies a piece', () => {
+    expect(CASES_STOCK.reduce((a: number, b) => a + b, 0)).toBe(6);
+    const all = [...tag1, ...accepted.flatMap((s) => reach(s))];
+    for (const s of all) {
+      expect(ticks(s)).toBe(6);
+      expect(new Set(ids(s)).size).toBe(ids(s).length);
+    }
+    // The definition's count: 61 arrangements of the pieces, 122 with the lit gift.
+    expect(new Set(tag1.map(arrangement)).size).toBe(61);
+    expect(new Set(tag1.map((s) => `${s.active}|${arrangement(s)}`)).size).toBe(122);
+  });
+
+  it('accepts exactly three sharings on tag 1, and the bow agrees with a brute-force count', () => {
+    // Every way to share the stock, with and without the snip: each piece on the top gift, the bottom gift or the tray.
+    const brute = new Set<string>();
+    for (const stock of [CASES_STOCK, [QUARTER, QUARTER, QUARTER, QUARTER, QUARTER, QUARTER] as Size[]])
+      for (let code = 0; code < 3 ** stock.length; code++) {
+        const lists: number[][] = [[], [], []];
+        stock.forEach((size, i) => lists[Math.floor(code / 3 ** i) % 3].push(size));
+        const sum = (l: number[]) => l.reduce((a, b) => a + b, 0);
+        if (sum(lists[0]) === 3 && sum(lists[1]) === 3)
+          brute.add(`${[...lists[0]].sort().join('')}|${[...lists[1]].sort().join('')}`);
+      }
+    expect([...brute].sort()).toEqual(['111|111', '111|12', '12|111']);
+    expect([...new Set(accepted.map((s) => `${sorted(s.rails[0])}|${sorted(s.rails[1])}`))].sort()).toEqual(
+      [...brute].sort(),
+    );
+    for (const s of tag1)
+      expect(casesJudge(s, CASES_FIRST) === 'right').toBe(total(s.rails[0]) === 3 && total(s.rails[1]) === 3);
+  });
+
+  it('accepts the half on either gift without the scissors, and names each sharing', () => {
+    const start = casesStart();
+    const [h, ...q] = [...start.tray].sort((a, b) => b.size - a.size);
+    const place = (id: number): CasesAction => ({ kind: 'place', id });
+    const top = follow(start, [
+      place(h.id),
+      place(q[0].id),
+      { kind: 'select', rail: 1 },
+      ...q.slice(1).map((p) => place(p.id)),
+    ]);
+    const bottom = follow(start, [
+      ...q.slice(1).map((p) => place(p.id)),
+      { kind: 'select', rail: 1 },
+      place(h.id),
+      place(q[0].id),
+    ]);
+    for (const s of [top, bottom]) {
+      expect(casesJudge(s, CASES_FIRST)).toBe('right');
+      expect(casesMadeKey(s)).toBe('split');
+    }
+    expect(sizes(top.rails[0])).toBe('21');
+    expect(sizes(bottom.rails[1])).toBe('21');
+    for (const s of accepted)
+      expect(casesMadeKey(s)).toBe(
+        s.rails.some((r) => r.some((p) => p.size === HALF)) ? 'split' : 'quarters',
+      );
+    expect(new Set(accepted.map(casesMadeKey))).toEqual(new Set(['split', 'quarters']));
+    for (const key of ['split', 'quarters']) expect(SCRIPT).toHaveProperty([`ribbon.cases.made.${key}`]);
+  });
+
+  it('repairs every changed order from every accepted sharing by moving one quarter across, with no snip', () => {
+    expect(accepted.length).toBeGreaterThan(3);
+    for (const requests of CASES_CHANGES) {
+      const grows = requests[0] === 4 ? 0 : 1;
+      for (const s of accepted) {
+        const path = casesSolve(s, requests)!;
+        // Three touches when the growing gift is not lit yet (the select may come before or after the return).
+        const kinds = path.map((a) => a.kind);
+        expect([...kinds].sort()).toEqual(
+          s.active === grows ? ['place', 'return'] : ['place', 'return', 'select'],
+        );
+        expect(kinds.at(-1)).toBe('place');
+        const moved = path.find((a) => a.kind === 'return') as { kind: 'return'; id: number };
+        expect(railOf(s, moved.id)).toBe(1 - grows);
+        const end = follow(s, path);
+        expect(casesJudge(end, requests)).toBe('right');
+        expect(railOf(end, moved.id)).toBe(grows);
+      }
+    }
+  });
+
+  it('issues only changed orders the stock can make: the 13 pairs of six ticks or fewer', () => {
+    const feasible: string[] = [];
+    for (let a = 1; a <= 4; a++)
+      for (let b = 1; b <= 4; b++) {
+        expect(casesFeasible(CASES_STOCK, [a, b]), `${a},${b}`).toBe(a + b <= 6);
+        if (casesFeasible(CASES_STOCK, [a, b])) feasible.push(`${a},${b}`);
+      }
+    expect(feasible).toHaveLength(13);
+    for (const c of CASES_CHANGES) expect(casesFeasible(CASES_STOCK, c)).toBe(true);
+    expect(casesFeasible(CASES_STOCK, CASES_FIRST)).toBe(true);
+    // A sharing that needs the snip: two wholes of quarters cannot be made, a half and a half with a quarter stock can.
+    expect(casesFeasible([HALF], [1, 1])).toBe(true);
+    expect(casesFeasible([HALF], [2, 1])).toBe(false);
+  });
+
+  it('gives a hint that leads to both ribbons right from every reachable state, one step shorter each time', () => {
+    const walk = (from: CasesState, requests: Requests, most: number) => {
+      let s = from,
+        left = casesSolve(s, requests)!.length;
+      expect(left).toBeLessThanOrEqual(most);
+      while (casesJudge(s, requests) !== 'right') {
+        const h = casesHint(s, requests)!;
+        expect(h.kind).not.toBe('check');
+        s = casesApply(s, h as CasesAction)!;
+        expect(s).not.toBeNull();
+        expect(casesSolve(s, requests)!.length).toBe(--left);
+      }
+      expect(left).toBe(0);
+      expect(casesHint(s, requests)).toEqual({ kind: 'check' });
+    };
+    // Tag 1: six touches from the start, at most seven from anywhere.
+    expect(casesSolve(casesStart(), CASES_FIRST)).toHaveLength(6);
+    for (const s of tag1) walk(s, CASES_FIRST, 7);
+    // Tag 2: from every state reachable from each kind of accepted sharing.
+    const starts = new Map(accepted.map((s) => [`${s.active}|${arrangement(s)}`, s]));
+    expect(starts.size).toBe(6);
+    for (const requests of CASES_CHANGES)
+      for (const start of starts.values()) for (const s of reach(start)) walk(s, requests, 9);
+  });
+
+  it('refuses a place past one whole and changes nothing', () => {
+    expect(RAIL_CAPACITY).toBe(4);
+    for (const s of tag1)
+      for (const p of s.tray) {
+        const next = casesApply(s, { kind: 'place', id: p.id });
+        if (total(s.rails[s.active]) + p.size > RAIL_CAPACITY) expect(next).toBeNull();
+        else expect(total(next!.rails[s.active])).toBe(total(s.rails[s.active]) + p.size);
+      }
+    const b = new CasesBench(casesRound(new Rng(1)));
+    for (const p of b.state.tray.filter((p) => p.size === QUARTER)) b.act({ kind: 'place', id: p.id });
+    const before = b.state;
+    expect(b.act({ kind: 'place', id: b.state.tray[0].id })).toBe(false);
+    expect(b.state).toBe(before);
+    // A placed half cannot be snipped, and a quarter never.
+    expect(casesApply(b.state, { kind: 'snip', id: b.state.rails[0][0].id })).toBeNull();
+  });
+
+  it('judges empty only with both benches empty, right only with both totals, whatever the order', () => {
+    for (const requests of [CASES_FIRST, ...CASES_CHANGES])
+      for (const s of tag1) {
+        const v = casesJudge(s, requests);
+        const both = total(s.rails[0]) === requests[0] && total(s.rails[1]) === requests[1];
+        if (!s.rails[0].length && !s.rails[1].length) expect(v).toBe('empty');
+        else expect(v).toBe(both ? 'right' : 'wrong');
+      }
+    const p = (id: number, size: Size) => ({ id, size });
+    expect(railVerdict([p(0, 2), p(1, 1)], 3)).toBe('right');
+    expect(railVerdict([p(1, 1), p(0, 2)], 3)).toBe('right');
+    expect(railVerdict([p(0, 2)], 3)).toBe('short');
+    expect(railVerdict([p(0, 2), p(1, 1), p(2, 1)], 3)).toBe('long');
+  });
+
+  it('undoes to the exact earlier state, never back into tag 1, and restarts each tag as it began', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const rng = new Rng(seed),
+        b = new CasesBench(casesRound(rng)),
+        trail: CasesState[] = [];
+      for (let i = 0; i < 30; i++) {
+        const options = casesActions(b.state),
+          before = b.state;
+        if (b.act(options[rng.int(0, options.length - 1)])) trail.push(before);
+      }
+      while (trail.length) {
+        expect(b.undo()).toBe(true);
+        expect(b.state).toBe(trail.pop());
+      }
+      expect(b.undo()).toBe(false);
+      expect(b.canUndo).toBe(false);
+      expect(sizes(b.state.tray)).toBe(b.round.stock.join(''));
+    }
+    const b = new CasesBench(casesRound(new Rng(3)));
+    for (const a of casesSolve(b.state, CASES_FIRST)!) b.act(a);
+    b.restart();
+    expect(ticks(b.state)).toBe(total(b.state.tray));
+    for (const a of casesSolve(b.state, CASES_FIRST)!) b.act(a);
+    expect(b.check()).toBe('right');
+    const kept = b.state;
+    expect([b.tag, b.canUndo, b.undo(), b.state.tray.length]).toEqual([2, false, false, 0]);
+    expect(b.requests).toEqual(CASES_CHANGES[b.round.change]);
+    b.act({ kind: 'return', id: b.state.rails[0][0].id });
+    b.act({ kind: 'return', id: b.state.rails[1][0].id });
+    b.restart();
+    expect(b.state).toBe(kept);
+    expect(b.canUndo).toBe(false);
+  });
+
+  it('counts a wrong check as one miss, the glow once per tag, and nothing else', () => {
+    const b = new CasesBench(casesRound(new Rng(5)));
+    const counts = () => [b.misses, b.hints, b.tally.glow];
+    expect(b.check()).toBe('empty');
+    expect(b.act({ kind: 'select', rail: 1 })).toBe(true);
+    expect(b.act({ kind: 'select', rail: 1 })).toBe(false);
+    for (const p of b.state.tray.filter((p) => p.size === QUARTER)) b.act({ kind: 'place', id: p.id });
+    expect(b.act({ kind: 'place', id: b.state.tray[0].id })).toBe(false);
+    expect(counts()).toEqual([0, 0, false]);
+    expect(b.check()).toBe('wrong');
+    expect(b.rails).toEqual(['short', 'long']);
+    expect(counts()).toEqual([1, 0, false]);
+    expect(b.check()).toBe('wrong');
+    expect(counts()).toEqual([2, 1, true]);
+    expect(b.askHint()).toBe(false);
+    expect(b.check()).toBe('wrong');
+    expect(counts()).toEqual([3, 1, true]);
+    for (let i = 0; i < 12 && b.hint()!.kind !== 'check'; i++) b.act(b.hint() as CasesAction);
+    expect(b.check()).toBe('right');
+    // Tag 2 starts without the glow; an untouched check is a miss, since neither ribbon fits its new tag.
+    expect(counts()).toEqual([3, 1, false]);
+    expect(b.check()).toBe('wrong');
+    expect(b.rails.includes('right')).toBe(false);
+    expect(b.askHint()).toBe(true);
+    expect(b.askHint()).toBe(false);
+    expect(b.check()).toBe('wrong');
+    expect(counts()).toEqual([5, 2, true]);
+    for (let i = 0; i < 12 && b.hint()!.kind !== 'check'; i++) b.act(b.hint() as CasesAction);
+    expect(b.check()).toBe('right');
+    expect([b.misses, b.hints, b.done]).toEqual([5, 2, true]);
+    // A finished round takes no more actions.
+    expect(b.act({ kind: 'select', rail: b.state.active === 0 ? 1 : 0 })).toBe(false);
+    expect(b.askHint()).toBe(false);
+    expect(b.hint()).toBeNull();
+  });
+
+  it('varies the tray order and which gift grows by the seed, never a quantity', () => {
+    const changes = new Set<number>(),
+      orders = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const r = casesRound(new Rng(seed));
+      expect([...r.stock].sort()).toEqual([...CASES_STOCK].sort());
+      changes.add(r.change);
+      orders.add(r.stock.join(''));
+      // Every tray the seed deals fits two rows, clear of the pet and the button column.
+      const spots = trayLayout(casesStart(r.stock).tray);
+      expect(Math.max(...spots.map((p) => p.row))).toBeLessThan(2);
+    }
+    expect(changes).toEqual(new Set([0, 1]));
+    expect(orders.size).toBe(5);
+    for (const s of [...tag1, ...accepted.flatMap((s) => reach(s))]) {
+      const spots = trayLayout(s.tray);
+      expect(Math.max(-1, ...spots.map((p) => p.row))).toBeLessThan(2);
+      spots.forEach((spot, i) => {
+        const half = (s.tray[i].size * UNIT) / 2;
+        expect(spot.x - half).toBeGreaterThanOrEqual(TRAY_LEFT);
+        expect(spot.x + half).toBeLessThanOrEqual(800);
+      });
+    }
+  });
+
+  it('is the top of both ladders, leaves saved levels alone, and has every line it speaks', () => {
+    expect(LEVELS.school!.order).toEqual([1, 2, 3, 6, 7]);
+    expect(LEVELS.grownup).toEqual({ min: 6, max: 7, order: [6, 7] });
+    for (const l of [1, 2, 3, 6]) expect(stepLevel(l, 0, LEVELS.school!)).toBe(l);
+    expect(stepLevel(6, 1, LEVELS.grownup!)).toBe(7);
+    expect(stepLevel(7, 1, LEVELS.grownup!)).toBe(7);
+    expect(stepLevel(7, -1, LEVELS.grownup!)).toBe(6);
+    for (const id of [
+      'ask',
+      'rail.top',
+      'rail.bottom',
+      'full',
+      'wrong.one',
+      'wrong.both',
+      'made.split',
+      'made.quarters',
+      'change.top',
+      'change.bottom',
+      'done',
+      'both',
+    ])
+      expect(SCRIPT[`ribbon.cases.${id}` as keyof typeof SCRIPT], id).toBeTruthy();
+    // No line says a right sharing is the only one.
+    for (const [id, lines] of Object.entries(SCRIPT))
+      if (id.startsWith('ribbon.cases.')) expect(lines.join(' '), id).not.toMatch(/\bonly\b/i);
   });
 });

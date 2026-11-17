@@ -11,10 +11,12 @@ import { arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bowIcon, dashed, giftBox, ribbon, scissorsIcon } from './art';
+import { bowIcon, dashed, giftBox, ribbon, scissorsIcon, spoolBar } from './art';
+import { RibbonCases } from './cases';
 import { WholeSwitch } from './switch';
 import {
   LEVELS,
+  CASES_LEVEL,
   SWITCH_LEVEL,
   AMOUNTS,
   CAPACITY,
@@ -90,7 +92,8 @@ class RibbonWorkshop implements Game {
     onTap(
       this.tag,
       () => {
-        if (this.snipOff()) return;
+        // While a finished gift ties its bow, the tag would cut the line being said.
+        if (this.snipOff() || this.busy || this.done) return;
         this.ask();
       },
       { cooldown: 600 },
@@ -430,15 +433,7 @@ class RibbonWorkshop implements Game {
     this.catcher.clear().rect(0, 0, v.w, v.h).fill(swatch.pink.light);
     const g = this.decor.clear();
     // The spool: one whole, the same length as a whole on the bench.
-    g.roundRect(X0, SPOOL_Y - 17, 4 * UNIT, 34, 8)
-      .fill(swatch.purple.light)
-      .stroke({ width: 4, color: swatch.purple.line });
-    for (let i = 1; i < 16; i++) g.moveTo(X0 + i * 35, SPOOL_Y - 15).lineTo(X0 + i * 35 - 10, SPOOL_Y + 15);
-    g.stroke({ width: 3, color: swatch.purple.fill });
-    for (const x of [X0, X0 + 4 * UNIT])
-      g.roundRect(x - 7, SPOOL_Y - 30, 14, 60, 6)
-        .fill(wood.fill)
-        .stroke({ width: 3, color: wood.line });
+    spoolBar(g, X0, SPOOL_Y, 4 * UNIT, 34);
     // The bench: a plank as long as it holds, and the dashed outline of the gift's length.
     g.roundRect(X0 - 14, BENCH_Y + 44, CAPACITY * UNIT + 28, 22, 8)
       .fill(wood.fill)
@@ -505,9 +500,11 @@ export const ribbonWorkshop: GameModule = {
   region: 'counting-cove',
   challenge: 'numbers',
   skills: ['fractions', 'equivalent-fractions', 'measurement'],
-  bands: ['school'],
+  bands: ['school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => {
+    if (l === CASES_LEVEL)
+      return 'Ribbon Cases: two gifts share one tray; make three quarters twice, then repair it when the order changes to a whole and a half';
     if (l === SWITCH_LEVEL)
       return 'Whole Switch: one ribbon is a half of the short spool and a quarter of the long one; choose the whole, then name the part';
     const p = planFor(l);
@@ -521,7 +518,7 @@ export const ribbonWorkshop: GameModule = {
   touchDemo: true,
   coplayHint: 'Ask {name} for a length, like "make me three quarters", and watch which pieces make it.',
   offScreen:
-    'Fold a paper strip in half and in half again, cut the pieces, and lay them against a whole strip. For Whole Switch, lay one strip on a strip twice as long, then on one four times as long, and say its name each time.',
+    'Fold a paper strip in half and in half again, cut the pieces, and lay them against a whole strip. For Whole Switch, lay one strip on a strip twice as long, then on one four times as long, and say its name each time. For Ribbon Cases, cut a strip into a half and four quarters, make two three-quarter ribbons, then turn them into a whole and a half without adding any paper.',
   hubIcon: () => {
     const c = new Container(),
       g = new Graphics();
@@ -538,5 +535,10 @@ export const ribbonWorkshop: GameModule = {
     c.addChild(box);
     return c;
   },
-  create: (ctx) => (ctx.level === SWITCH_LEVEL ? new WholeSwitch(ctx) : new RibbonWorkshop(ctx)),
+  create: (ctx) =>
+    ctx.level === CASES_LEVEL
+      ? new RibbonCases(ctx)
+      : ctx.level === SWITCH_LEVEL
+        ? new WholeSwitch(ctx)
+        : new RibbonWorkshop(ctx),
 };

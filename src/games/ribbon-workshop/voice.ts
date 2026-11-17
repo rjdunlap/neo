@@ -49,4 +49,26 @@ export const VOICE = {
   'ribbon.switch.both': [
     'One ribbon, two names. A half of the short spool, and a quarter of the long spool. The ribbon did not change. The whole did.',
   ],
+  'ribbon.cases.ask': [
+    'Two gifts. Each tag says three quarters. One tray for both. Tap a gift, then tap pieces for it.',
+  ],
+  'ribbon.cases.rail.top': ['The top gift.'],
+  'ribbon.cases.rail.bottom': ['The bottom gift.'],
+  'ribbon.cases.full': ['No more room on this ribbon.'],
+  'ribbon.cases.wrong.one': ['One ribbon is not right yet. Look where it flashes.'],
+  'ribbon.cases.wrong.both': ['Not yet. Look where the ribbons flash.'],
+  'ribbon.cases.made.split': [
+    'Yes! Three quarters and three quarters. One has the half in it and one is all quarters.',
+  ],
+  'ribbon.cases.made.quarters': ['Yes! Three quarters and three quarters, all in quarters.'],
+  'ribbon.cases.change.top': [
+    'The order changed. The top gift needs one whole now. The bottom gift needs a half. The tray is empty, so move a piece.',
+  ],
+  'ribbon.cases.change.bottom': [
+    'The order changed. The bottom gift needs one whole now. The top gift needs a half. The tray is empty, so move a piece.',
+  ],
+  'ribbon.cases.done': ['Yes! One whole and a half.'],
+  'ribbon.cases.both': [
+    'Three quarters and three quarters used every piece. One whole and a half used every piece too. Same ribbon, shared a new way.',
+  ],
 } satisfies Record<string, string[]>;

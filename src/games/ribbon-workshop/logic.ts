@@ -81,7 +81,9 @@ export const PLANS: Record<number, RibbonPlan> = {
 export const GIFT_LEVELS = [1, 2, 3] as const;
 /** Whole Switch. IDs 4 (Three halves) and 5 (Five sixths) are reserved and undefined. */
 export const SWITCH_LEVEL = 6;
-export const LEVEL_IDS = [...GIFT_LEVELS, SWITCH_LEVEL] as const;
+/** Ribbon Cases: two gifts share one tray, then the order changes. Its model is at the end of this file. */
+export const CASES_LEVEL = 7;
+export const LEVEL_IDS = [...GIFT_LEVELS, SWITCH_LEVEL, CASES_LEVEL] as const;
 export const planFor = (level: number): RibbonPlan => PLANS[level] ?? PLANS[1];
 
 /** The tag's name for a target, also the instruction's line: `ribbon.ask.<amount>`. */
@@ -296,7 +298,9 @@ export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x
 }
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: SWITCH_LEVEL, order: [...LEVEL_IDS] },
+  school: { min: 1, max: CASES_LEVEL, order: [...LEVEL_IDS] },
+  // A person of 13 or older starts at Whole Switch and steps up to Ribbon Cases; a grown-up can still pin any level.
+  grownup: { min: SWITCH_LEVEL, max: CASES_LEVEL, order: [SWITCH_LEVEL, CASES_LEVEL] },
 };
 
 /*
@@ -448,6 +452,263 @@ export class SwitchBench {
     return !this.done && this.tally.ask();
   }
   /** The tag's choices as it started. Misses and hints already counted stay. */
+  restart() {
+    if (this.done) return;
+    this.history = [];
+    this.state = this.base;
+  }
+}
+
+/*
+ * Level 7, Ribbon Cases: two gifts, one tray. Both ask for three quarters; then one order card changes them to a whole
+ * and a half, and a quarter has to cross from one gift to the other. Nothing is saved between rounds: the stock is dealt
+ * whole every time. See docs/definitions/ribbon-cases.md.
+ */
+
+/** The tray every round starts with: one half and four quarters, six ticks. */
+export const CASES_STOCK: readonly Size[] = [HALF, QUARTER, QUARTER, QUARTER, QUARTER];
+/** Tag 1: both gifts ask for three quarters. */
+export const CASES_FIRST: Requests = [3, 3];
+/** Tag 2: a whole and a half, one each way round. */
+export const CASES_CHANGES: readonly Requests[] = [
+  [4, 2],
+  [2, 4],
+];
+/** A bench holds at most one whole; a place past it is refused (not a miss). */
+export const RAIL_CAPACITY = 4;
+
+/** The top gift's bench and the bottom gift's. */
+export type Rail = 0 | 1;
+export type Requests = readonly [number, number];
+export interface CasesState {
+  tray: readonly Piece[];
+  rails: readonly [readonly Piece[], readonly Piece[]];
+  /** The gift she is working on: a placed piece joins its bench. */
+  active: Rail;
+  nextId: number;
+}
+export type CasesAction = { kind: 'select'; rail: Rail } | Action;
+export type CasesHint = CasesAction | { kind: 'check' };
+
+export function casesStart(stock: readonly Size[] = CASES_STOCK): CasesState {
+  return { tray: stock.map((size, id) => ({ id, size })), rails: [[], []], active: 0, nextId: stock.length };
+}
+
+/** Apply an action, or return null when it changes nothing or cannot be done (the gift already lit, a full bench, a placed half snipped). */
+export function casesApply(s: CasesState, a: CasesAction): CasesState | null {
+  if (a.kind === 'select') return a.rail === s.active ? null : { ...s, active: a.rail };
+  if (a.kind === 'place') {
+    const p = s.tray.find((p) => p.id === a.id);
+    if (!p || total(s.rails[s.active]) + p.size > RAIL_CAPACITY) return null;
+    const rails: [readonly Piece[], readonly Piece[]] = [s.rails[0], s.rails[1]];
+    rails[s.active] = [...rails[s.active], p];
+    return { ...s, tray: s.tray.filter((q) => q !== p), rails };
+  }
+  if (a.kind === 'return') {
+    const r = s.rails.findIndex((rail) => rail.some((p) => p.id === a.id));
+    if (r < 0) return null;
+    const p = s.rails[r].find((p) => p.id === a.id)!;
+    const rails: [readonly Piece[], readonly Piece[]] = [s.rails[0], s.rails[1]];
+    rails[r] = rails[r].filter((q) => q !== p);
+    return { ...s, rails, tray: [...s.tray, p] };
+  }
+  const i = s.tray.findIndex((p) => p.id === a.id);
+  if (i < 0 || s.tray[i].size !== HALF) return null;
+  const quarters: Piece[] = [
+    { id: s.nextId, size: QUARTER },
+    { id: s.nextId + 1, size: QUARTER },
+  ];
+  return { ...s, tray: [...s.tray.slice(0, i), ...quarters, ...s.tray.slice(i + 1)], nextId: s.nextId + 2 };
+}
+
+export type RailVerdict = 'short' | 'long' | 'right';
+/** One bench against its own request: the total, whatever the order and however it was made. */
+export function railVerdict(pieces: readonly Piece[], request: number): RailVerdict {
+  const t = total(pieces);
+  return t === request ? 'right' : t < request ? 'short' : 'long';
+}
+export type CasesVerdict = 'empty' | 'right' | 'wrong';
+/** What the bow says: `empty` with nothing on either bench, `right` when both totals match, else `wrong`. */
+export function casesJudge(s: CasesState, requests: Requests): CasesVerdict {
+  if (!s.rails[0].length && !s.rails[1].length) return 'empty';
+  return ([0, 1] as const).every((r) => railVerdict(s.rails[r], requests[r]) === 'right') ? 'right' : 'wrong';
+}
+
+/** Which accepted tag-1 sharing this is: `split` when a gift has the half in it, `quarters` when the half was snipped. Names `ribbon.cases.made.<key>`. */
+export const casesMadeKey = (s: CasesState): 'split' | 'quarters' =>
+  s.rails.some((rail) => rail.some((p) => p.size === HALF)) ? 'split' : 'quarters';
+
+/** Every action from a state, in the solver's tie-break order: the tray in order (place, then snip), returns from the top bench first, then the other gift. */
+export function casesActions(s: CasesState): CasesAction[] {
+  const out: CasesAction[] = [];
+  for (const p of s.tray) out.push({ kind: 'place', id: p.id });
+  for (const p of s.tray) if (p.size === HALF) out.push({ kind: 'snip', id: p.id });
+  for (const rail of s.rails) for (const p of [...rail].reverse()) out.push({ kind: 'return', id: p.id });
+  out.push({ kind: 'select', rail: s.active === 0 ? 1 : 0 });
+  return out;
+}
+
+const casesKey = (s: CasesState) =>
+  `${s.active}|${s.tray.map((p) => p.size).join('')}|${s.rails.map((r) => r.map((p) => p.size).join('')).join('|')}`;
+
+/**
+ * The shortest action list to both benches right, searched from the state as it stands (the pieces still in the tray
+ * and the pieces already placed). Among equally short lists: fewer returns, then fewer snips, then `casesActions`'
+ * order. Null when no sharing can make the requests.
+ */
+export function casesSolve(s: CasesState, requests: Requests): CasesAction[] | null {
+  interface Node {
+    s: CasesState;
+    path: CasesAction[];
+    cost: number;
+  }
+  const frontier: Node[] = [{ s, path: [], cost: 0 }];
+  const seen = new Set<string>();
+  while (frontier.length) {
+    // Stable: the earliest-made entry wins a tie.
+    let best = 0;
+    for (let i = 1; i < frontier.length; i++) if (frontier[i].cost < frontier[best].cost) best = i;
+    const node = frontier.splice(best, 1)[0];
+    const key = casesKey(node.s);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (casesJudge(node.s, requests) === 'right') return node.path;
+    for (const a of casesActions(node.s)) {
+      const next = casesApply(node.s, a);
+      if (next && !seen.has(casesKey(next)))
+        frontier.push({
+          s: next,
+          path: [...node.path, a],
+          cost: node.cost + 10000 + (a.kind === 'return' ? 100 : 0) + (a.kind === 'snip' ? 1 : 0),
+        });
+    }
+  }
+  return null;
+}
+
+/** The next touch toward both ribbons right: the bow when they are already. Null only for requests no sharing can make. */
+export function casesHint(s: CasesState, requests: Requests): CasesHint | null {
+  if (casesJudge(s, requests) === 'right') return { kind: 'check' };
+  return casesSolve(s, requests)?.[0] ?? null;
+}
+
+/**
+ * Some sharing of the stock, with snips, makes both requests. The guard on a changed order: one is only issued if this
+ * holds. Each piece goes to a gift or stays in the tray; a half may instead be snipped into two quarters.
+ */
+export function casesFeasible(stock: readonly Size[], requests: Requests): boolean {
+  if (requests.some((r) => r < 0 || r > RAIL_CAPACITY)) return false;
+  const go = (pieces: readonly Size[], a: number, b: number): boolean => {
+    if (a < 0 || b < 0) return false;
+    if (!pieces.length) return a === 0 && b === 0;
+    const [p, ...rest] = pieces;
+    return (
+      go(rest, a - p, b) ||
+      go(rest, a, b - p) ||
+      go(rest, a, b) ||
+      (p === HALF && go([QUARTER, QUARTER, ...rest], a, b))
+    );
+  };
+  return go(stock, requests[0], requests[1]);
+}
+
+/** What the seed varies: the tray order, the colours and which gift grows on tag 2. Never a quantity. */
+export interface CasesRound {
+  stock: Size[];
+  /** An index into `CASES_CHANGES`. */
+  change: number;
+  /** A seed for the scene's colours. */
+  paint: number;
+}
+export function casesRound(rng: Rng): CasesRound {
+  const feasible = CASES_CHANGES.map((_, i) => i).filter((i) => casesFeasible(CASES_STOCK, CASES_CHANGES[i]));
+  return {
+    stock: rng.shuffle([...CASES_STOCK]),
+    change: feasible[rng.int(0, feasible.length - 1)],
+    paint: rng.int(0, 2 ** 30),
+  };
+}
+
+/**
+ * One round of Ribbon Cases: two tags over one stock, with an undo stack of the exact earlier states. Tag 1 accepts
+ * every sharing that makes three quarters twice; tag 2 keeps her accepted ribbons on the benches under the changed
+ * requests, and undo never reaches back into tag 1.
+ */
+export class CasesBench {
+  state: CasesState;
+  requests: Requests = CASES_FIRST;
+  tag: 1 | 2 = 1;
+  /** Both tags are made. */
+  done = false;
+  readonly tally = new GiftTally();
+  private bankedMisses = 0;
+  private bankedHints = 0;
+  private history: CasesState[] = [];
+  /** What a restart goes back to: the whole stock in the tray on tag 1, her accepted tag-1 ribbons on tag 2. */
+  private base: CasesState;
+
+  constructor(readonly round: CasesRound) {
+    this.base = this.state = casesStart(round.stock);
+  }
+  get misses() {
+    return this.bankedMisses + this.tally.misses;
+  }
+  get hints() {
+    return this.bankedHints + this.tally.hints;
+  }
+  get canUndo() {
+    return this.history.length > 0;
+  }
+  /** Do an action; false (and nothing changes or counts) when it cannot be done. */
+  act(a: CasesAction): boolean {
+    if (this.done) return false;
+    const next = casesApply(this.state, a);
+    if (!next) return false;
+    this.history.push(this.state);
+    this.state = next;
+    return true;
+  }
+  undo(): boolean {
+    const prev = this.history.pop();
+    if (!prev) return false;
+    this.state = prev;
+    return true;
+  }
+  /** Each bench against its own request, for the flashes. */
+  get rails(): [RailVerdict, RailVerdict] {
+    return [
+      railVerdict(this.state.rails[0], this.requests[0]),
+      railVerdict(this.state.rails[1], this.requests[1]),
+    ];
+  }
+  /** The bow: `wrong` counts one miss, `right` finishes the tag, `empty` counts nothing. */
+  check(): CasesVerdict {
+    if (this.done) return 'empty';
+    const v = casesJudge(this.state, this.requests);
+    if (v === 'wrong') this.tally.miss();
+    if (v === 'right') {
+      this.bankedMisses += this.tally.misses;
+      this.bankedHints += this.tally.hints;
+      this.tally.misses = this.tally.hints = 0;
+      this.tally.nextGift();
+      this.history = [];
+      if (this.tag === 2) this.done = true;
+      else {
+        this.tag = 2;
+        this.requests = CASES_CHANGES[this.round.change];
+        this.base = this.state;
+      }
+    }
+    return v;
+  }
+  hint(): CasesHint | null {
+    return this.done ? null : casesHint(this.state, this.requests);
+  }
+  /** Show a hint: true when it counted (the glow was not already up). */
+  askHint(): boolean {
+    return !this.done && this.tally.ask();
+  }
+  /** The tag as it started. Misses and hints already counted stay. */
   restart() {
     if (this.done) return;
     this.history = [];
