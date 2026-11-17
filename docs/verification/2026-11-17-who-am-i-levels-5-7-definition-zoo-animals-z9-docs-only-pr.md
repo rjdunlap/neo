@@ -1,0 +1,5 @@
+# 2026-11-17 — Who Am I? levels 5–7 definition (zoo-animals Z9, docs only; PR #1743)
+
+**Changed:** new "Levels 5–7 (Z9)" section and open decisions 10–15 in `docs/definitions/who-am-i.md` (level 5 Which group?, level 6 You ask, level 7 Make a riddle; school 2–7); the Who Am I? page, zoo-animals study (Z9 defined, Z10–Z12 build rows), study backlog, recommendations and IDEAS pointers (stale "Z4 next" and "Z2/Z3 build on the ready list" lines corrected); READY: the definition line removed, Z10, Z11 and Z12 build lines added.
+**Ran:** `node scripts/check-links.mjs` and `git diff --check`. The round, gallery and pair counts in the definition (559 rounds over 260 galleries, 68 galleries and 408 rounds, 36 galleries and 216 pairs, the two- and three-question splits) were enumerated by a throwaway script from the trait table as built.
+**Not run:** typecheck, unit tests, build, browser and offline (docs tier); no code checks, and nothing is built. The level 6 "no" answers still need their source check at build.
