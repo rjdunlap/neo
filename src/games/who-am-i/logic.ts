@@ -521,13 +521,13 @@ export const startPlay = (round: WhoRound, mode: WhoPlan['mode']): WhoPlay => ({
 /** The friends still face up. */
 export const standing = (p: WhoPlay) => p.round.gallery.filter((_, i) => !p.down.has(i));
 
-/** Gallery indices of the friends the help points at: the answer at level 1, every face-up friend the clue rules out after. */
 /** The clue as it is judged and explained now: a group clue whose meaning has been shown is its feature clue. */
 export function judged(p: WhoPlay): Clue {
   const clue = p.round.clues[p.clue];
   return isGroup(clue) && p.meaning ? GROUP_FEATURE[clue] : clue;
 }
 
+/** Gallery indices of the friends the help points at: the answer at level 1, every face-up friend the clue rules out after. */
 export function helpTargets(p: WhoPlay): number[] {
   if (p.mode === 'fit') return [p.round.gallery.indexOf(p.round.answer)];
   const clue = judged(p);
