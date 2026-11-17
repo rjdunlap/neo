@@ -104,9 +104,14 @@ export function onGauge(level: number): boolean {
   return level === 6 || level === 7 || inGreenhouse(level);
 }
 
-/** The greenhouse (level 8): a heater and a vent fan on one gauge, and weather that warms and cools the room itself. */
+/** The greenhouse (levels 8–9): a heater and a vent fan on one gauge, and weather that warms and cools the room itself. */
 export function inGreenhouse(level: number): boolean {
-  return level === 8;
+  return level === 8 || level === 9;
+}
+
+/** Level 9: one setup has to meet the greenhouse goal on all three cases, watched in order. */
+export function allCases(level: number): boolean {
+  return level === 9;
 }
 
 /** How the sun moves the greenhouse's warmth each step, before either helper acts. */
@@ -311,6 +316,36 @@ export function meetsGoal(board: Board, day: Day): boolean {
   return runDay(board, day).met;
 }
 
+/** The days one Watch plays: the round's day, or at level 9 the three cases in order. */
+export function daysFor(brief: Pick<Brief, 'level' | 'day'>): Day[] {
+  return allCases(brief.level) ? CASE_NAMES.map(caseDay) : [brief.day];
+}
+
+export interface Pass {
+  /** One outcome per day watched: every day up to and including the first that did not meet the goal. */
+  runs: Outcome[];
+  met: boolean;
+  /** The first failing day's failure and its index among `daysFor`, or null when every day met the goal. */
+  failure: Failure | null;
+  failedAt: number | null;
+}
+
+/** One Watch: the days in order, stopping at the end of the first that does not meet the goal. */
+export function runPass(board: Board, brief: Pick<Brief, 'level' | 'day'>): Pass {
+  const runs: Outcome[] = [];
+  for (const day of daysFor(brief)) {
+    const o = runDay(board, day);
+    runs.push(o);
+    if (!o.met) return { runs, met: false, failure: o.failure, failedAt: runs.length - 1 };
+  }
+  return { runs, met: true, failure: null, failedAt: null };
+}
+
+/** Whether a board meets the round's whole goal: its day, or every case at level 9. */
+export function accepts(board: Board, brief: Pick<Brief, 'level' | 'day'>): boolean {
+  return runPass(board, brief).met;
+}
+
 // ——— Days ———
 
 /** Sun scripts: dim, at least four bright, a dim dusk, at least three dark, a dim dawn, bright at the end. */
@@ -346,8 +381,9 @@ export function caseDay(name: CaseName): Day {
 /** Level 4 starts the nook a little chilly. */
 export const START_WARMTH = 1;
 
-/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts; level 8 picks one of the three greenhouse cases. */
+/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts; level 8 picks one of the three greenhouse cases; level 9 watches all three, and its `day` is the first. */
 export function dayFor(level: number, rng: Rng): Day {
+  if (allCases(level)) return caseDay(CASE_NAMES[0]);
   if (inGreenhouse(level)) return caseDay(rng.pick(CASE_NAMES));
   if (level === 1) return { sun: SUN_SCRIPTS[0].slice(), arrivals: rng.pick(ARRIVALS).slice(), warmth: 0 };
   if (level === 4 || onGauge(level))
@@ -373,12 +409,13 @@ const PLANS: readonly Plan[] = [
   { level: 6, name: 'The comfy line', bench: 'lines' },
   { level: 7, name: 'Calm heater', bench: 'lines' },
   { level: 8, name: 'The greenhouse', bench: 'lines' },
+  { level: 9, name: 'Greenhouse cases', bench: 'lines' },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 8 },
+  school: { min: 2, max: 9 },
 };
 export const MAX_LEVEL = PLANS.length;
 
@@ -436,7 +473,8 @@ export function startBoard(level: number): Board {
         { reading: 'bright', action: 'off', given: true },
       ],
     };
-  // The greenhouse's given rows: below the heater line → heater on, above the fan line → fan on. The lines start crossed.
+  // The greenhouse's given rows: below the heater line → heater on, above the fan line → fan on. Level 8's lines start
+  // crossed; level 9's start together at gap 4, which works on the ordinary day and on no other.
   if (inGreenhouse(level))
     return {
       level,
@@ -445,7 +483,7 @@ export function startBoard(level: number): Board {
         { reading: null, action: 'on', given: true },
         { reading: null, action: 'on', given: true },
       ],
-      lines: { on: 4, off: 3 },
+      lines: { on: 4, off: allCases(level) ? 4 : 3 },
     };
   // The gauge's given rows: below the line → on, above it → off. Level 6's line starts at the top; level 7's two lines start together at level 6's lower answer.
   if (onGauge(level)) {
@@ -594,7 +632,7 @@ export function complete(board: Board): boolean {
 
 /** The boards whose day meets the goal. */
 export function solutions(brief: Brief): Board[] {
-  return candidateBoards(brief).filter((b) => meetsGoal(b, brief.day));
+  return candidateBoards(brief).filter((b) => accepts(b, brief));
 }
 
 /** Level 7's one accepted board: the on line at gap 3, the off line at gap 4. */
@@ -679,12 +717,13 @@ export function helpFor(board: Board, brief: Brief, _presses: number): Help {
  * press sets the line the failure points at, the second the other.
  */
 function lineHelp(board: Board, brief: Brief): Help {
-  if (meetsGoal(board, brief.day)) return { board, placed: null };
+  const pass = runPass(board, brief);
+  if (pass.met) return { board, placed: null };
   const { on, off } = board.lines!;
   if (board.level === 6) return { board: setLine(board, 'line', on >= 4 ? 4 : 3), placed: 'line' };
   if (inGreenhouse(board.level)) {
-    // The line the day's failure points at goes to its place in the setup that works on every case; a second press sets the other.
-    const piece = glowFor(board, runDay(board, brief.day).failure!) as LinePiece;
+    // The line the day's failure (at level 9, the first failing case's) points at goes to its place in the setup that works on every case; a second press sets the other.
+    const piece = glowFor(board, pass.failure!) as LinePiece;
     return { board: setLine(board, piece, rightLane(piece) ? GREEN.off : GREEN.on), placed: piece };
   }
   if (off !== CALM.off) {
@@ -765,9 +804,9 @@ export function nextMove(brief: Brief, board: Board, daysPlayed: number): Move {
   if (board.lines) {
     // Level 6: the line from the top down to gap 4 (Watch skips the guess). Level 7: Watch first (a pebble rolls out), then the off line up.
     if (brief.level === 6) return board.lines.on === 4 ? { watch: true } : { line: 'line', gap: 4 };
-    if (daysPlayed === 0 && !meetsGoal(board, brief.day)) return { watch: true };
+    if (daysPlayed === 0 && !accepts(board, brief)) return { watch: true };
     if (inGreenhouse(brief.level)) {
-      // Watch first (the helpers fight), the fan line up one gap, the heater line down one, then Watch.
+      // Watch first (level 8: the helpers fight; level 9: the heat wave fails), the fan line up one gap if it is off, the heater line down one, then Watch.
       if (board.lines.off !== GREEN.off) return { line: 'fan-line', gap: GREEN.off };
       if (board.lines.on !== GREEN.on) return { line: 'heat-line', gap: GREEN.on };
       return { watch: true };
@@ -842,13 +881,13 @@ export interface HouseLayout {
   undo: Rect;
   /** From level 6: the warmth gauge, its handle lanes and the click jar. */
   gauge: GaugeLayout | null;
-  /** Level 8: the round's case card, above the house. */
+  /** Levels 8–9: the round's case card, or level 9's three, above the house. */
   cases: Rect[];
 }
 
 /** How many case cards a level shows above the house. */
 export function caseCards(level: number): number {
-  return inGreenhouse(level) ? 1 : 0;
+  return allCases(level) ? CASE_NAMES.length : inGreenhouse(level) ? 1 : 0;
 }
 
 /** The gauge's tall column of seven warmth cells (0 at the bottom), a handle lane each side, and the click jar (from level 7). */

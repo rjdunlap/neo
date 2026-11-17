@@ -1,0 +1,5 @@
+# 2026-11-16 — Helper House level 9, Greenhouse cases (PR #1737)
+
+**Changed:** `helper-house` level 9, Greenhouse cases (RA5b; `school` now 2–9): one Watch plays the ordinary day, the heat wave and the cold snap with one setup, leaf stamps, a stop at the first failing case, three case cards, `hh.instruct.9` and `hh.case.passed`, how-to step, `autotouch()`, 12 new rule tests. Incidental fix: the step's phases now scale with the step length, so the helper visibly acts in every level's how-to demo (the act phase at 0.75 s never fired in a 0.6 s step).
+**Ran:** `npm run typecheck`; `npm test` (355 files, 7,441 tests; 91 in the game's `logic.test.ts`); `BROWSER_SUITE=helperhouse HH_LEVELS=9` (start board's pass and fail, a case-card tap counts nothing, portrait screenshot, heater line dragged to 3, the three-case finish 0 misses/0 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=helper-house FINGER_LEVELS=9` (44 s); `npm run build`; a reviewer pass found nothing serious.
+**Not run:** browser plays of levels 1–8 (the normal-pace code paths are unchanged; the demo-pace change is covered by unit tests and the level 9 demo), `world`, `picnic`, `couch`, offline.

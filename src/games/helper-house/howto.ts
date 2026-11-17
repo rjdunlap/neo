@@ -12,6 +12,7 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'Drag the line so the nook stays comfy.' },
     { from: 7, to: 7, text: 'Pull the two lines apart so the heater can rest between them.' },
     { from: 8, to: 8, text: 'Move the lines so the heater and the fan never run together.' },
+    { from: 9, to: 9, text: 'Find one setup that keeps the plants comfy on all three days.' },
     'Tap Watch and see what the helper does.',
   ],
   finish: 'The helper does its job all day by itself.',
@@ -50,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 8,
       text: 'Watching is never counted. Below its line the heater turns on; above its line the fan turns on; where the lines cross, both run at once and cancel each other. The pebbles only count clicks. They are never scored. The same trouble twice makes the line to move glow.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Watching is never counted. Watch plays an ordinary day, a heat wave and a cold snap with the same two lines; a day that works puts a leaf on its card, and the first day that does not work stops the Watch. Moving a line clears the leaves, because the new setup has not been watched yet. The pebbles only count clicks. They are never scored. The same trouble twice makes the line to move glow.',
     },
   ],
 };

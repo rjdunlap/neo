@@ -577,9 +577,9 @@ export function guessArt(choice: 'faster' | 'same', size: number): Container {
 }
 
 /** A greenhouse case's card: a sun and a moon (an ordinary day), a big sun over wavy heat, a moon with a snowflake. */
-export function caseArt(name: CaseName, w: number, h: number): Container {
+export function caseArt(name: CaseName, w: number, h: number, lit = false): Container {
   const c = new Container();
-  c.addChild(cardArt(w, h));
+  c.addChild(cardArt(w, h, lit));
   const r = h * 0.2;
   const night = (x: number, bw: number) =>
     new Graphics().roundRect(x - bw / 2, -h / 2 + 12, bw, h - 24, 14).fill(NIGHT);
@@ -619,7 +619,21 @@ export function caseArt(name: CaseName, w: number, h: number): Container {
   return c;
 }
 
-// ——— The greenhouse (level 8) ———
+/** Level 9: the leaf stamped on a case card whose day met the goal (a shape, not a colour alone). */
+export function leafStamp(r: number): Graphics {
+  const g = new Graphics();
+  g.circle(0, 0, r).fill(0xffffff).stroke(line(swatch.green.line, 4));
+  g.moveTo(-r * 0.5, r * 0.5)
+    .quadraticCurveTo(-r * 0.6, -r * 0.55, r * 0.55, -r * 0.55)
+    .quadraticCurveTo(r * 0.55, r * 0.6, -r * 0.5, r * 0.5)
+    .fill(swatch.green.fill);
+  g.moveTo(-r * 0.5, r * 0.5)
+    .lineTo(r * 0.2, -r * 0.2)
+    .stroke(line(swatch.green.line, 3));
+  return g;
+}
+
+// ——— The greenhouse (levels 8–9) ———
 
 /** How the seedlings look: drooping when cold, upright when comfy, curled when hot (shape, never colour alone). */
 export type PlantState = 'cold' | 'comfy' | 'hot';
