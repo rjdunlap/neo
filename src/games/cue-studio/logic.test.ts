@@ -1034,7 +1034,8 @@ describe('level 6: pass the cue', () => {
     for (let seed = 1; seed <= 60; seed++) seen.add(startFor(plan, new Rng(seed))!);
     expect(seen).toEqual(new Set(starts));
     // Same seed, same start.
-    for (let seed = 1; seed <= 20; seed++) expect(startFor(plan, new Rng(seed))).toBe(startFor(plan, new Rng(seed)));
+    for (let seed = 1; seed <= 20; seed++)
+      expect(startFor(plan, new Rng(seed))).toBe(startFor(plan, new Rng(seed)));
     // Every other plan has no start and leaves the generator where it was.
     for (const other of PLANS.filter((p) => p.level !== 6)) {
       const rng = new Rng(7);
@@ -1068,7 +1069,10 @@ describe('level 6: pass the cue', () => {
     for (const { a, b, r, s } of all) {
       const ok = a === 'W' && b === 'S' && r === 'leaf';
       expect(acts(s)).toEqual(
-        trace(s.program).flatMap((m): Act[] => [`P:${m}` as Act, ...(m === 'S' && r === 'leaf' ? (['B:F'] as Act[]) : [])]),
+        trace(s.program).flatMap((m): Act[] => [
+          `P:${m}` as Act,
+          ...(m === 'S' && r === 'leaf' ? (['B:F'] as Act[]) : []),
+        ]),
       );
       expect(acts(s).join() === PASS_ACTS.join()).toBe(ok);
       expect(mismatch(s) < 0).toBe(ok);
@@ -1077,7 +1081,9 @@ describe('level 6: pass the cue', () => {
       const first = PASS_ACTS.findIndex((x, i) => got[i] !== x);
       const want = first < 0 ? -1 : first >= 2 ? RECEIVER : first;
       expect(mismatch(s)).toBe(want);
-      expect(targetOf(s, mismatch(s))).toBe(want < 0 ? 'slot:-1' : want === RECEIVER ? 'receiver' : `slot:${want}`);
+      expect(targetOf(s, mismatch(s))).toBe(
+        want < 0 ? 'slot:-1' : want === RECEIVER ? 'receiver' : `slot:${want}`,
+      );
       expect(delivers(s)).toBe(r === 'leaf');
       expect(run(s)).toEqual([a, b]);
     }
@@ -1100,7 +1106,9 @@ describe('level 6: pass the cue', () => {
       // The bird never acts without a Send before it, and every fan follows its Send at once.
       const got = acts(s);
       got.forEach((a, i) => a === 'B:F' && expect(got[i - 1]).toBe('P:S'));
-      expect(got.filter((a) => a === 'B:F').length).toBe(delivers(s) ? s.program.filter((c) => c === 'S').length : 0);
+      expect(got.filter((a) => a === 'B:F').length).toBe(
+        delivers(s) ? s.program.filter((c) => c === 'S').length : 0,
+      );
     }
     // No Send, no bird; and a non-pass studio never delivers.
     expect(acts(made(startA, 'W', 'T', 'leaf'))).toEqual(['P:W', 'P:T']);
@@ -1116,7 +1124,12 @@ describe('level 6: pass the cue', () => {
     expect(isProgram(['W', 'X'], 2, true)).toBe(false);
     expect(isProgram(['W'], 2, true)).toBe(false);
     // Send cannot be added outside level 6, and nothing changes.
-    for (const s of [newStudio(2, ['W', 'T']), newStudio(2), newStudio(2, request, 'rows'), newStudio(2, ['W', 'T'], 'repeat')]) {
+    for (const s of [
+      newStudio(2, ['W', 'T']),
+      newStudio(2),
+      newStudio(2, request, 'rows'),
+      newStudio(2, ['W', 'T'], 'repeat'),
+    ]) {
       const before = s.program.slice();
       expect(tapAction(s, 'S')).toBe('full');
       expect([s.program, s.undo, s.checked]).toEqual([before, null, false]);
@@ -1193,7 +1206,14 @@ describe('level 6: pass the cue', () => {
     expect([s.checked, s.played]).toEqual([true, true]);
     s.selected = 0;
     expect(toggleReceiver(s)).toBe('shell');
-    expect([s.checked, s.played, s.selected, s.stepAt, s.receiver, s.undoReceiver]).toEqual([false, false, null, 0, 'shell', 'leaf']);
+    expect([s.checked, s.played, s.selected, s.stepAt, s.receiver, s.undoReceiver]).toEqual([
+      false,
+      false,
+      null,
+      0,
+      'shell',
+      'leaf',
+    ]);
     expect(s.program).toEqual(['W', 'S']);
     expect(undo(s)).toBe(true);
     expect([s.receiver, s.checked, s.played]).toEqual(['leaf', false, false]);
@@ -1309,7 +1329,14 @@ describe('level 6: pass the cue', () => {
       tapAction(s, 'T');
       const [misses, hints, helped] = [s.misses, s.hints, new Set(s.helped)];
       restart(s);
-      expect([s.program, s.receiver, s.undo, s.checked, s.played, s.selected]).toEqual([start.program, start.receiver, null, false, false, null]);
+      expect([s.program, s.receiver, s.undo, s.checked, s.played, s.selected]).toEqual([
+        start.program,
+        start.receiver,
+        null,
+        false,
+        false,
+        null,
+      ]);
       expect([s.misses, s.hints, s.helped]).toEqual([misses, hints, helped]);
       expect(s.program).not.toBe(start.program);
     }
