@@ -626,6 +626,8 @@ class TimelineTrail implements Game {
     this.loose = [...this.round.loose];
     this.pinned = false;
     this.build();
+    // The repeated instruction goes back to the round's first one (levels 5 and 6 change it part-way through).
+    void this.ctx.instruct(`trail.instruct.${this.level}` as LineId, { place: this.placeName });
   }
 
   update(dt: number) {
