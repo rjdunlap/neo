@@ -1,7 +1,16 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { ART_R, type LeafKind, type Looks, type SampleId, type Stop, type SwimmerShape } from './logic';
+import {
+  ART_R,
+  type FileCardId,
+  type FileSampleId,
+  type LeafKind,
+  type Looks,
+  type SampleId,
+  type Stop,
+  type SwimmerShape,
+} from './logic';
 
 /**
  * Everything in Puddle Lens is drawn here, in art units where the lens view's radius is `ART_R` (200). Each stop of each sample is
@@ -874,5 +883,126 @@ export function throughIcon(): Graphics {
     .stroke(line(0x7d97a8, 4));
   g.moveTo(-28, -14).lineTo(-22, 28).lineTo(22, 28).lineTo(28, -14).closePath().fill(GREEN_DROP);
   g.moveTo(-30, -26).lineTo(-22, 32).lineTo(22, 32).lineTo(30, -26).stroke(line(0x7d97a8, 4));
+  return g;
+}
+
+// ----- level 9: slide files -----
+
+const CARD_INK = 0x3b4a5a;
+const CARD_PAPER = 0xfdfaf0;
+
+/** A rough outline with nothing inside, in ink. */
+function inkRagged(g: Graphics, x: number, y: number, r: number, seed: number) {
+  const rng = new Rng(seed);
+  poly(
+    g,
+    Array.from({ length: 11 }, (_, i) => {
+      const a = (i / 11) * Math.PI * 2;
+      const k = r * rng.range(0.68, 1.05);
+      return { x: x + Math.cos(a) * k, y: y + Math.sin(a) * k * 0.85 };
+    }),
+  );
+  g.stroke(line(CARD_INK, 2));
+}
+
+/** One sample at one microscope stop, as an ink drawing inside a view 17 in radius centred on (x, y). No colour: colour is never a clue. */
+function inkView(g: Graphics, id: FileCardId, close: boolean, x: number, y: number) {
+  const dot = (dx: number, dy: number, r: number) => g.circle(x + dx, y + dy, r).fill(CARD_INK);
+  if (id === 'swimmer') {
+    const [a, b] = close ? [12, 7] : [8, 4.5];
+    g.ellipse(x, y, a, b).stroke(line(CARD_INK, 2));
+    dot(a * 0.25, 0, close ? 2.4 : 1.6);
+    if (close)
+      for (let i = 0; i < 10; i++) {
+        const t = (i / 10) * Math.PI * 2;
+        g.moveTo(x + Math.cos(t) * a, y + Math.sin(t) * b)
+          .lineTo(x + Math.cos(t) * (a + 3.5), y + Math.sin(t) * (b + 3.5))
+          .stroke(line(CARD_INK, 1.2));
+      }
+  } else if (id === 'green-ball') {
+    if (!close) return void dot(0, 0, 1.8);
+    g.circle(x, y, 10).stroke(line(CARD_INK, 2));
+    g.moveTo(x - 6, y - 1)
+      .arc(x, y - 1, 6, Math.PI, 0, true)
+      .stroke(line(CARD_INK, 2));
+    dot(-1, -4, 1.6);
+  } else if (id === 'silt') {
+    if (!close) return void dot(0, 0, 1.8);
+    inkRagged(g, x, y, 10, 23);
+  } else if (id === 'mud-speck') inkRagged(g, x, y, close ? 11 : 6.5, 19);
+  else if (id === 'bubble') g.circle(x, y, close ? 10 : 6).stroke(line(CARD_INK, close ? 4.5 : 3.5));
+  else if (id === 'onion-skin') {
+    // Bricks: thick straight walls fitted together; the closer view shows a dot in each.
+    const [w, h] = close ? [22, 11] : [11, 5.5];
+    g.rect(x - 11, y - 11, 22, 22);
+    for (let row = 0; row * h < 22; row++) {
+      const y0 = y - 11 + row * h;
+      if (row) g.moveTo(x - 11, y0).lineTo(x + 11, y0);
+      for (let x0 = x - 11 + (row % 2 ? w / 2 : 0); x0 < x + 11; x0 += w)
+        if (x0 > x - 11) g.moveTo(x0, y0).lineTo(x0, y0 + h);
+    }
+    g.stroke(line(CARD_INK, 2.5));
+    if (close)
+      for (const [dx, dy] of [
+        [0, -5.5],
+        [-5.5, 5.5],
+        [5.5, 5.5],
+      ])
+        dot(dx, dy, 1.4);
+  } else {
+    // Cheek cells: thin soft edges, each one on its own, a dot inside.
+    const cells: [number, number, number][] = close
+      ? [[0, 0, 10]]
+      : [
+          [-6, -5, 4.5],
+          [6, -2, 4.5],
+          [-2, 7, 4.5],
+        ];
+    for (const [dx, dy, r] of cells) {
+      g.ellipse(x + dx, y + dy, r * 1.1, r * 0.9).stroke(line(CARD_INK, 1.3));
+      dot(dx + r * 0.1, dy, close ? 2 : 1.2);
+    }
+  }
+}
+
+/**
+ * A field-guide card, about 76 across: the candidate at the two microscope stops side by side (three dots under the first, four
+ * under the closer one, as on the dial), in ink line on paper.
+ */
+export function fileCardArt(id: FileCardId): Graphics {
+  const g = new Graphics();
+  [-19, 19].forEach((x, k) => {
+    g.circle(x, -5, 17).fill(CARD_PAPER).stroke(line(0x9aa7b3, 1.5));
+    inkView(g, id, k === 1, x, -5);
+    const n = 3 + k;
+    for (let i = 0; i < n; i++) g.circle(x + (i - (n - 1) / 2) * 6, 22, 2).fill(swatch.purple.fill);
+  });
+  return g;
+}
+
+/** One stop's view of a level-9 file's unknown, and the part that moves on its path (a thing in water), or null (a slide of cells). */
+export function fileLayer(
+  id: FileSampleId,
+  stop: Stop,
+  looks: Looks,
+  angle: number,
+  seed: number,
+  shape: SwimmerShape,
+): { layer: Container; mover: Container | null } {
+  if (id === 'onion-skin' || id === 'cheek-cells')
+    return { layer: wallLayer(id, stop, looks, angle, seed), mover: null };
+  if (id === 'sand-grain') return { layer: viewLayer('sand', stop, looks), mover: null };
+  const layer = waterLayer(stop);
+  if (stop < 2) return { layer, mover: null };
+  const mover = candidateArt(id, stop, shape);
+  layer.addChild(mover);
+  return { layer, mover };
+}
+
+/** The case folder at the table's edge, about 84 by 64: closed files are stamped on it. */
+export function folderArt(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-42, -32, 36, 14, 5).fill(0xe2b866).stroke(line(0xa9843c, 3));
+  g.roundRect(-42, -24, 84, 56, 7).fill(0xf0cf86).stroke(line(0xa9843c, 3));
   return g;
 }

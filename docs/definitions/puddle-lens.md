@@ -1,6 +1,8 @@
 # Puddle Lens, levels 1–4 (definition)
 
-**Slide Files (levels 9–11, `grownup`) is defined 2026-11-16 ([below](#slide-files-levels-911-definition-2026-11-16)) and not built.** **Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
+**Built:** levels 1–9 (level 9, SF1, 2026-11-16, PR #1733); to build level 10 (SF2), read “Slide Files, levels 9–11 (definition, 2026-11-16)” and its as-built note.
+
+**Slide Files (levels 9–11, `grownup`) is defined 2026-11-16 ([below](#slide-files-levels-911-definition-2026-11-16)); level 9 (SF1) is built 2026-11-16, levels 10–11 are not.** **Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)) and built 2026-11-06 (PR #1327; no small cup is drawn beside the green water, since a cup beside only that drop would give the answer away at stop 1, so open item 2 still stands).** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
 
 Defined 2026-10-22 as slice 1 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/cells-microbes.md#a-first-games-ladder-puddle-lens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
@@ -155,7 +157,7 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## What comes next
 
-**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. **Puddle Lens 7–8** is [defined](#levels-78-definition-2026-11-06) (2026-11-06); built 2026-11-06 (PR #1327). Next is slice 5 (Slide Files, which also takes the dead-cell, clump, second-animal and red-onion cases set aside in 5–8).
+**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. **Puddle Lens 7–8** is [defined](#levels-78-definition-2026-11-06) (2026-11-06); built 2026-11-06 (PR #1327). Slide Files (slice 5) is next: SF1 (level 9) is built 2026-11-16; it also takes the dead-cell, clump, second-animal and red-onion cases set aside in 5–8).
 
 ## Open decisions
 
@@ -570,9 +572,18 @@ None says microbe, bacteria, germ, a species, a magnification, or where a slide 
 
 One session each, in this order. Each widens `grownup` only as far as it builds, and each owes the source check for its own spoken lines.
 
-1. **SF1, level 9 *Name the slide*** (new-interaction tier with a band added): `FILE_SAMPLES` for the built samples, the N cases, `survivors`, `judgeCase`, the field-guide cards, the four-answer group, `bands` and `grownup: {9,9}`. Typecheck, unit tests (above, plus registry, lands, how-to and voice), one scripted play at 9 with one free card, one ruled-out card, Show a hint and the sticker, one portrait screenshot of a file at stop 3 with its cards, `fingerdemo` at 9, `npm run build`.
+1. **SF1, level 9 *Name the slide*** (built 2026-11-16, PR #1733; new-interaction tier with a band added): `FILE_SAMPLES` for the built samples, the N cases, `survivors`, `judgeCase`, the field-guide cards, the four-answer group, `bands` and `grownup: {9,9}`. Typecheck, unit tests (above, plus registry, lands, how-to and voice), one scripted play at 9 with one free card, one ruled-out card, Show a hint and the sticker, one portrait screenshot of a file at stop 3 with its cards, `fingerdemo` at 9, `npm run build`.
 2. **SF2, level 10 *Measure it*** (after SF1; new-interaction tier): the bar, `unitsPerMicron`, `judgeSize`, the length buttons; `grownup: {9,10}`. Typecheck, rule tests, one scripted play at 10 with one free length and one wrong length, one portrait screenshot of the swimmer beside its bar, `fingerdemo` at 10, `npm run build`. Opens a source for the cheek-cell length or leaves the cheek cell out.
 3. **SF3, level 11 *Open cases*** (after SF1; new-levels tier with three new drawings): `cork`, `red-onion`, the tiny dot, `dot`, the O cases and the folder button; `grownup` to `{9,11}` (or `{9,9}` plus 11 through `order` if SF2 has not landed). Typecheck, rule tests, one browser play at 11 with one named survivor on an open case and the not-enough-evidence close, one portrait screenshot of the tiny dot at stop 4, `fingerdemo` at 11, `npm run build`.
+
+### As built (SF1, level 9, 2026-11-16)
+
+Two departures from the text above, and the rest as built.
+
+1. **Card size.** Cards are full-size 120-unit answers wherever four fit (they do on tablet landscape, tablet portrait, phone landscape and upright phone). `lensLayout` falls back to the defined 87 units (four in the space of three) only where four at 120 do not fit, and returns null rather than go under 87. Reason: at 87 the two ink views on each card were hard to read in the first screenshot.
+2. **Name before verdict line.** On a free or missed card the card's spoken name is heard out before the line about the view (levels 5–8 let the verdict cut the name), because the name is the only non-visual way to know a card. The miss count and boing are immediate, input is never held, and the line is skipped if the dial has moved or anything else was said meanwhile. The closing card's own `yes` line names it.
+
+Also as built: a ruled-out bubble's line is the built `lens.look.empty` ("Look: just an edge, and nothing inside."), not the paraphrase above. Eight sample rows exist (swimmer, green-ball, silt, mud-speck, bubble, onion-skin, cheek-cells, sand-grain), but sand-grain has no card or case at level 9. Cases N1–N6 are built; a round is three files (authored N2, N5, N3). The 16 `lens.file.*` voice lines restate claims already spoken at levels 5–8 and checked by this definition's source check; no new source was opened. The co-play and off-screen tips are unchanged in the module (the off-screen scale-bar tip belongs to level 10; `coplayHint` shows only at lap and toddler). The how-to notes are scoped `{9,9}` until levels 10–11 exist. Not built (SF2, SF3): `dot`, cork, red onion, the tiny dot, open cases, the folder button, the scale bar and length buttons.
 
 ### Open items for Slide Files
 
