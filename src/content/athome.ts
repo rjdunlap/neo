@@ -469,6 +469,61 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Which one is blocking the way? What has to move first?',
     },
   },
+  // Batch 7 (2026-11-17): the last seven eligible games, each naming toys, blocks, a box or a card.
+  'memory-desk': {
+    all: {
+      notice: 'Does {name} answer straight away, look at the toy you are holding or ask to open the box?',
+      say: 'What is in the box? Open it and see. Now you hide one for me.',
+    },
+  },
+  'sorting-machine': {
+    all: {
+      notice: 'Does {name} guess which door will open before a toy goes through?',
+      say: 'Which door will the hat open? What would a second card change?',
+    },
+  },
+  'orchard-rows': {
+    all: {
+      notice: 'Does {name} count the blocks one by one, row by row or say the total straight away?',
+      say: 'Three rows of four. How many is that? Is it the same from the side?',
+    },
+  },
+  'welcome-ways': {
+    all: {
+      notice: 'Does {name} widen the entrance, move a block aside or push each toy through?',
+      say: 'In rolls the car. In hops the bunny. Room for both!',
+    },
+    school: {
+      notice: 'Does {name} change the entrance after watching the second toy try it?',
+      say: 'Did it work for both toys? What would you change for a third?',
+    },
+  },
+  'shape-buddies': {
+    all: {
+      notice: 'Does {name} slide the toy over, move the bowl or change the bridge?',
+      say: 'Over the bridge and into the bowl! Now move the bowl. Again?',
+    },
+    school: {
+      notice: 'Does {name} point to where the toy will land before letting go?',
+      say: 'What did you change? Where do you think it will land now?',
+    },
+  },
+  'playdate-workshop': {
+    all: {
+      notice: 'Does {name} pass the crayon, keep it a little longer or say no thanks?',
+      say: 'Bear has the crayon now. Rabbit is next. Your turn, Rabbit!',
+    },
+  },
+  'read-do': {
+    all: {
+      notice: 'Does {name} read the words aloud, point to each word or go straight to find a toy?',
+      say: 'It says big pig. Let us find one! What shall we write next?',
+    },
+    school: {
+      notice: 'Does {name} write a card for you to read and match?',
+      say: 'Your turn to write one. Could two toys match your card?',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;

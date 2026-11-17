@@ -42,7 +42,7 @@ const ANSWER_SEEKING = ['what', 'which', 'why', 'how', 'tell', 'say', 'count', '
 
 describe('At-home notes', () => {
   it('has a registered game with an off-screen line behind every entry, and only band keys the game lists', () => {
-    expect(noted.length).toBeGreaterThanOrEqual(48);
+    expect(noted.length).toBeGreaterThanOrEqual(55);
     // Every land has at least one game with notes, so a starter walk can find a complete idea in any of them.
     for (const land of LANDS)
       expect(
