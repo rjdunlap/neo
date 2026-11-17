@@ -553,6 +553,8 @@ class WhoAmI implements Game {
   /** What a tap on the sign says again, free: the clue, or at level 6 the answer (the instruction while she is choosing). */
   private repeatSign() {
     if (this.riddling) {
+      // Never on top of the pet while it is saying a clue or thinking aloud.
+      if (this.busy) return;
       // Her newest clue, or what to do while she has given none.
       const last = this.play.given.at(-1);
       return void this.ctx.say(last ? this.statementLine(last) : this.signLine);
