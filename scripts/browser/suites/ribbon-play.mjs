@@ -12,6 +12,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await kit.sleep(t ? 300 : 400);
         }
       });
+    // RIBBON_LEVELS=upright plays only the phone held upright.
+    const onlyUpright = process.env.RIBBON_LEVELS === 'upright';
+    if (!process.env.RIBBON_LEVELS || onlyUpright) await upright(playOut);
+    if (onlyUpright) return;
     await launch('ribbon-workshop', 1);
     const first = await page.evaluate(async () => {
       const g = neo.scene.game,
@@ -268,6 +272,69 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
       'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), level 7 Ribbon Cases (refused place, misses, glow, the changed order repaired), portrait passed',
+    );
+  }
+
+  // A phone held upright (390 × 844, touch emulated; chunk 31): no turn prompt, the bench, the tray, the cards and every
+  // button inside the view and off Home, "?" and the guide at level 1, Whole Switch and Ribbon Cases; the ghost finger
+  // finishes each.
+  async function upright(playOut) {
+    const device = await page.context().newCDPSession(page);
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    const fits = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        const v = neo.view;
+        if (!v.upright || neo.turning) return ['not on the upright area'];
+        const out = [];
+        const nodes = [
+          g.bow,
+          g.undo,
+          ...(g.scissors?.visible ? [g.scissors] : []),
+          ...(g.trayCards?.values() ?? []),
+          ...(g.spoolCards?.values() ?? []),
+          ...(g.nameCards?.values() ?? []),
+        ];
+        const corners = [
+          { x0: 0, y0: 0, x1: 115, y1: 210 },
+          { x0: 0, y0: v.h - 170, x1: 150, y1: v.h },
+        ];
+        // Bounds are CSS pixels on the page; the view is in units.
+        for (const n of nodes) {
+          const b = n.getBounds();
+          const x0 = b.x / v.scale,
+            y0 = b.y / v.scale,
+            x1 = (b.x + b.width) / v.scale,
+            y1 = (b.y + b.height) / v.scale;
+          if (x0 < -1 || y0 < -1 || x1 > v.w + 1 || y1 > v.h + 1) out.push('a target leaves the view');
+          if (corners.some((k) => x0 < k.x1 && k.x0 < x1 && y0 < k.y1 && k.y0 < y1))
+            out.push('a target covers a corner');
+          if (Math.min(b.width, b.height) < 43)
+            out.push(`a target is ${Math.round(Math.min(b.width, b.height))} px`);
+        }
+        return [...new Set(out)];
+      });
+    for (const level of [1, 6, 7]) {
+      await launch('ribbon-workshop', level);
+      await page.waitForFunction(() => neo.view.upright === true && !!neo.scene.game, null, {
+        timeout: 8000,
+      });
+      await page.waitForTimeout(600);
+      assert.deepEqual(await fits(), [], `level ${level} fits a phone held upright`);
+      await screenshot(`ribbon-workshop-${level}-upright-phone`);
+      await playOut();
+      await finished('ribbon-workshop');
+    }
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+    await device.detach();
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    log(
+      'Ribbon Workshop upright on a 390 × 844 phone: levels 1, 6 and 7 lay out with no turn prompt, every card and button inside the view and off the corners; the ghost finger finishes each',
     );
   }
 
