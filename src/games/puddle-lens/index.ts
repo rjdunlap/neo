@@ -1171,10 +1171,19 @@ class PuddleLens implements Game {
       }
       const e = this.epoch;
       const at = this.index;
+      // The line is about the view she answered at: if she has turned the dial by then, it is not said.
+      const stop = this.stop;
       const named = this.say(kind === 'cant-tell' ? 'lens.say.cant-tell' : `lens.file.card.${kind}`);
       const spoken = this.spoken;
       await named;
-      if (this.alive && !this.finished && e === this.epoch && at === this.index && spoken === this.spoken)
+      if (
+        this.alive &&
+        !this.finished &&
+        e === this.epoch &&
+        at === this.index &&
+        stop === this.stop &&
+        spoken === this.spoken
+      )
         void this.say(v.line);
       return;
     }

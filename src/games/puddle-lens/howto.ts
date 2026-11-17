@@ -98,7 +98,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Show a hint turns the dial for you and says what the view shows; it counts as a hint, once per file.',
+      text: 'Show a hint turns the dial for you and says what the view shows; the first hint on each file counts as one hint.',
     },
   ],
 };
