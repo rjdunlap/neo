@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
 import { turtleArt } from '../../art/animals';
 import { ink, swatch, wood, type Swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -15,19 +15,25 @@ import type { LineId } from '../../content/voice-script';
 import {
   LEVELS,
   NEEDS,
+  REASONS,
+  REASON_FITS,
   byId,
   extend,
   hatch,
   helpFor,
   judge,
+  kin,
   makeRound,
   missing,
   ordered,
   planFor,
+  relatedPairs,
   sharedRelative,
   suits,
   type Feature,
   type Pair,
+  type PlanChoice,
+  type ReasonId,
   type Round,
   type Site,
   type Tree,
@@ -50,8 +56,16 @@ const SITE_W = 260;
 const SITE_H = 210;
 const MIN_TOUCH = 64;
 
-type Phase = 'busy' | 'pair' | 'site' | 'done';
-type Step = 'pair' | 'site';
+/** Level 4 runs plan, reason, ready (the keeper's plan is in the nests; only Spring is left), then the site. */
+type Phase = 'busy' | 'pair' | 'plan' | 'reason' | 'ready' | 'site' | 'done';
+type Step = 'pair' | 'site' | 'plan' | 'reason';
+type Rect = { x: number; y: number; w: number; h: number };
+const REASON_TEXT: Record<ReasonId, string> = {
+  more: 'It has more pairs',
+  apart: 'Its pairs are less closely related',
+  every: 'It uses every turtle',
+};
+const RELATED = swatch.orange.line;
 
 /** A turtle on the wall: a small turtle over its name tag. Its origin is its middle. */
 class TurtleCard extends Container {
@@ -152,6 +166,73 @@ function featureIcon(f: Feature, r: number, ghost = false): Graphics {
   return g;
 }
 
+/** A sign or a choice at level 4: lines of text on a card, shrunk to fit the box it is given. Its origin is its middle. */
+class ChoiceCard extends Container {
+  private readonly bg = new Graphics();
+  private readonly texts: Text[];
+  private w = 0;
+  private h = 0;
+  private glowing = false;
+  private readonly sizes: number[];
+  /** Where layout put its middle, so a shake always comes back to it. */
+  homeX = 0;
+  constructor(lines: readonly { text: string; size: number; color?: number }[]) {
+    super();
+    this.sizes = lines.map((l) => l.size);
+    this.bg.eventMode = 'none';
+    this.addChild(this.bg);
+    this.texts = lines.map((l) => {
+      const t = label(l.text, l.size, l.color ?? ink);
+      t.eventMode = 'none';
+      this.addChild(t);
+      return t;
+    });
+  }
+  setText(i: number, text: string) {
+    this.texts[i].text = text;
+    this.place({ x: this.x - this.w / 2, y: this.y - this.h / 2, w: this.w, h: this.h });
+  }
+  place(r: Rect) {
+    this.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    this.homeX = this.x;
+    this.w = r.w;
+    this.h = r.h;
+    const shown = this.texts.filter((t) => t.text !== '');
+    for (const t of this.texts) {
+      t.visible = t.text !== '';
+      t.style.wordWrap = true;
+      t.style.wordWrapWidth = r.w - 28;
+    }
+    // The largest type that fits the box, from twice its size (an upright phone has the room) down to whatever fits. The
+    // font size changes, never the scale, so large type stays sharp.
+    const gap = 4;
+    let total = 0;
+    for (let k = 2; ; k -= 0.1) {
+      this.texts.forEach((t, i) => (t.style.fontSize = Math.round(this.sizes[i] * k)));
+      total = shown.reduce((a, t) => a + t.height, 0) + gap * Math.max(0, shown.length - 1);
+      if (total <= r.h - 18 || k <= 0.5) break;
+    }
+    let y = -total / 2;
+    for (const t of shown) {
+      t.position.set(0, y + t.height / 2);
+      y += t.height + gap;
+    }
+    this.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+    this.draw();
+  }
+  lit(on: boolean) {
+    this.glowing = on;
+    this.draw();
+  }
+  private draw() {
+    this.bg
+      .clear()
+      .roundRect(-this.w / 2, -this.h / 2, this.w, this.h, 16)
+      .fill(0xffffff)
+      .stroke({ width: this.glowing ? 7 : 4, color: this.glowing ? LIT : wood.line });
+  }
+}
+
 /** A release site: a little painted scene with its needs' icons along the bottom (a missing one ghosted). */
 class SiteCard extends Container {
   readonly icons = new Map<Feature, Graphics>();
@@ -229,12 +310,20 @@ class SpeciesComeback implements Game {
   readonly spring = new Container();
   /** Misses in the current step; the glow comes after two. */
   private stepMisses = 0;
-  private readonly hinted: Record<Step, boolean> = { pair: false, site: false };
-  private glowing: { cards: number[]; nests: number[]; sites: number[] } = {
+  private readonly hinted: Record<Step, boolean> = { pair: false, site: false, plan: false, reason: false };
+  private glowing: { cards: number[]; nests: number[]; sites: number[]; choice: boolean } = {
     cards: [],
     nests: [],
     sites: [],
+    choice: false,
   };
+  /** Level 4: the keeper's note, the two plan cards and the three reason cards, and the plan she chose. */
+  readonly keeperLayer = new Container();
+  note: ChoiceCard | null = null;
+  readonly planCards = new Map<PlanChoice, ChoiceCard>();
+  readonly reasonCards = new Map<ReasonId, ChoiceCard>();
+  chosen: PlanChoice | null = null;
+  private restarted = false;
   private readonly hatchRng: Rng;
   private hatchlings: Turtle[] = [];
   private readonly baseCount: number;
@@ -297,8 +386,59 @@ class SpeciesComeback implements Game {
     });
     this.needs.visible = false;
     this.siteLayer.visible = false;
-    ctx.stage.addChild(this.wall, this.tree, this.nestLayer, this.needs, this.siteLayer);
+    if (this.round.keeper) this.buildKeeper();
+    this.keeperLayer.visible = !!this.round.keeper;
+    this.nestLayer.visible = !this.round.keeper;
+    ctx.stage.addChild(this.wall, this.tree, this.nestLayer, this.keeperLayer, this.needs, this.siteLayer);
     this.layout();
+  }
+
+  private badge(choice: PlanChoice) {
+    const k = this.round.keeper!,
+      related = relatedPairs(this.round.tree, k[choice]);
+    return `${k[choice].length} pairs, ${related || 'none'} related`;
+  }
+
+  private buildKeeper() {
+    const k = this.round.keeper!,
+      tree = this.round.tree;
+    this.note = new ChoiceCard([
+      { text: "The keeper's note", size: 17, color: 0x8a8172 },
+      {
+        text:
+          k.note === 'room'
+            ? `Room for ${k.b.length} nests this spring. Keep the pairs as far apart in the family as you can.`
+            : 'A big spring: we need as many hatchlings as we can raise.',
+        size: 21,
+      },
+      { text: '', size: 17, color: swatch.green.line },
+    ]);
+    onTap(this.note, () => this.tapNote());
+    this.keeperLayer.addChild(this.note);
+    for (const choice of ['a', 'b'] as const) {
+      const card = new ChoiceCard([
+        { text: choice === 'a' ? 'Plan A' : 'Plan B', size: 26 },
+        ...k[choice].map(([f, m]) => {
+          const related = kin(tree, f, m, 2);
+          return {
+            text: `${byId(tree, f).name} ♀ + ${byId(tree, m).name} ♂${related ? ' (related)' : ''}`,
+            size: 16,
+            color: related ? RELATED : ink,
+          };
+        }),
+        { text: this.badge(choice), size: 20 },
+      ]);
+      onTap(card, () => this.tapPlan(choice));
+      this.planCards.set(choice, card);
+      this.keeperLayer.addChild(card);
+    }
+    for (const id of REASONS) {
+      const card = new ChoiceCard([{ text: REASON_TEXT[id], size: 21 }]);
+      card.visible = false;
+      onTap(card, () => this.tapReason(id));
+      this.reasonCards.set(id, card);
+      this.keeperLayer.addChild(card);
+    }
   }
 
   private addCard(t: Turtle) {
@@ -326,9 +466,30 @@ class SpeciesComeback implements Game {
   }
 
   private async begin() {
-    this.phase = 'pair';
+    const k = this.round.keeper;
+    this.phase = k ? 'plan' : 'pair';
     await this.ctx.say('comeback.intro');
-    this.instructPair();
+    // Start again during the intro has already given the instruction.
+    if (this.restarted) return;
+    if (!k) return this.instructPair();
+    await this.sayNote();
+    if (this.phase === 'plan' && !this.restarted) this.instructPlan();
+  }
+
+  private sayNote() {
+    const k = this.round.keeper!;
+    return k.note === 'room'
+      ? this.ctx.say('comeback.note-room', { n: k.b.length })
+      : this.ctx.say('comeback.note-big');
+  }
+
+  private instructPlan() {
+    const k = this.round.keeper!;
+    void this.ctx.instruct('comeback.plans', {
+      a: k.a.length,
+      r: relatedPairs(this.round.tree, k.a),
+      b: k.b.length,
+    });
   }
 
   private instructPair() {
@@ -371,6 +532,14 @@ class SpeciesComeback implements Game {
       .clear()
       .roundRect(20, l.wall.top, v.w - 40, l.wall.bottom - l.wall.top, 24)
       .fill({ color: WALL, alpha: 0.8 });
+    this.note?.place(l.keeper.note);
+    const z = l.keeper.zone;
+    const split = (cards: ChoiceCard[], gap: number) => {
+      const w = (z.w - gap * (cards.length - 1)) / cards.length;
+      cards.forEach((c, i) => c.place({ x: z.x + i * (w + gap), y: z.y, w, h: z.h }));
+    };
+    split([...this.planCards.values()], 12);
+    split([...this.reasonCards.values()], 10);
     if (this.phase === 'site' || this.phase === 'done') this.layoutSites();
   }
 
@@ -414,7 +583,7 @@ class SpeciesComeback implements Game {
   }
 
   private drawSpring() {
-    const ready = this.plan.length >= this.target && this.phase === 'pair';
+    const ready = this.phase === 'ready' || (this.plan.length >= this.target && this.phase === 'pair');
     this.springBg
       .clear()
       .roundRect(-75, -40, 150, 80, 22)
@@ -496,9 +665,11 @@ class SpeciesComeback implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   tapTurtle(id: number) {
-    if (this.phase !== 'pair') return;
+    const keeper = this.phase === 'plan' || this.phase === 'reason' || this.phase === 'ready';
+    if (this.phase !== 'pair' && !keeper) return;
     const t = byId(this.round.tree, id);
-    if (!this.isCandidate(id)) {
+    // With the keeper's plans nobody is paired by hand: every turtle only says its name.
+    if (keeper || !this.isCandidate(id)) {
       // A founder or a turtle who nested before: hearing its name is free.
       void this.ctx.say('comeback.name', { who: t.name });
       return;
@@ -615,6 +786,7 @@ class SpeciesComeback implements Game {
   }
 
   tapSpring() {
+    if (this.phase === 'ready') return void this.doSpring();
     if (this.phase !== 'pair') return;
     if (this.plan.length < this.target) {
       void this.ctx.instruct('comeback.more-pairs', { n: this.target - this.plan.length });
@@ -687,7 +859,80 @@ class SpeciesComeback implements Game {
   }
 
   /* -------------------------------------------------------------------------------------------- */
-  /* Level 3: the release site                                                                     */
+  /* Level 4: the keeper's two plans                                                               */
+  /* -------------------------------------------------------------------------------------------- */
+
+  tapNote() {
+    if (this.phase === 'plan' || this.phase === 'reason') void this.sayNote();
+  }
+
+  private boingCard(card: ChoiceCard) {
+    sfx.boing();
+    const x = card.homeX;
+    void this.ctx.tw
+      .to(card, { x: x + 10 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(card, { x: x - 10 }, { duration: 0.1 }))
+      .then(() => this.ctx.tw.to(card, { x }, { duration: 0.08 }));
+  }
+
+  tapPlan(choice: PlanChoice) {
+    const k = this.round.keeper;
+    if (this.phase !== 'plan' || !k) return;
+    if (choice !== k.fits) {
+      // Both plans follow the rule; this one does not fit this year's note. The trade is spoken.
+      this.miss();
+      this.boingCard(this.planCards.get(choice)!);
+      void this.ctx.say(k.note === 'room' ? 'comeback.plan-wrong-room' : 'comeback.plan-wrong-big');
+      this.afterMiss('plan');
+      return;
+    }
+    this.clearGlow();
+    this.chosen = choice;
+    this.stepMisses = 0;
+    sfx.sparkle();
+    for (const c of this.planCards.values()) c.visible = false;
+    for (const c of this.reasonCards.values()) c.visible = true;
+    this.note?.setText(2, `You chose Plan ${choice === 'a' ? 'A' : 'B'}: ${this.badge(choice)}`);
+    this.phase = 'reason';
+    void this.ctx.instruct('comeback.reason-ask');
+  }
+
+  tapReason(id: ReasonId) {
+    const k = this.round.keeper;
+    if (this.phase !== 'reason' || !k) return;
+    if (REASON_FITS[id] !== k.fits) {
+      this.miss();
+      this.boingCard(this.reasonCards.get(id)!);
+      void this.ctx.say(`comeback.reason-wrong-${id}` as LineId);
+      this.afterMiss('reason');
+      return;
+    }
+    void this.settlePlan(id);
+  }
+
+  /** The chosen plan's pairs slide into the nests, and only Spring is left to press. */
+  private async settlePlan(id: ReasonId) {
+    const k = this.round.keeper!;
+    this.phase = 'busy';
+    this.clearGlow();
+    this.reasonCards.get(id)!.lit(true);
+    sfx.sparkle();
+    await this.ctx.tw.wait(0.6);
+    if (this.finished) return;
+    this.keeperLayer.visible = false;
+    this.nestLayer.visible = true;
+    this.plan = k[k.fits].slice();
+    this.plan.forEach((p, i) => this.placeInNest(i, p, true));
+    sfx.brush();
+    await this.ctx.tw.wait(0.45);
+    if (this.finished) return;
+    this.phase = 'ready';
+    this.drawSpring();
+    void this.ctx.instruct('comeback.reason-ok');
+  }
+
+  /* -------------------------------------------------------------------------------------------- */
+  /* Levels 3 and 4: the release site                                                              */
   /* -------------------------------------------------------------------------------------------- */
 
   private startSites() {
@@ -771,7 +1016,8 @@ class SpeciesComeback implements Game {
   }
 
   private currentStep(): Step | null {
-    return this.phase === 'pair' ? 'pair' : this.phase === 'site' ? 'site' : null;
+    const p = this.phase;
+    return p === 'pair' || p === 'site' || p === 'plan' || p === 'reason' ? p : null;
   }
 
   /** The glow for this step; counted as a hint once per step. */
@@ -780,7 +1026,16 @@ class SpeciesComeback implements Game {
       this.hinted[step] = true;
       this.hints++;
     }
-    this.glowing = { cards: [], nests: [], sites: [] };
+    this.glowing = { cards: [], nests: [], sites: [], choice: false };
+    const k = this.round.keeper;
+    if ((step === 'plan' || step === 'reason') && k) {
+      // The plan that fits the note, or the card that says why.
+      this.glowing.choice = true;
+      if (step === 'plan') this.planCards.get(k.fits)!.lit(true);
+      else this.reasonCards.get(REASONS.find((id) => REASON_FITS[id] === k.fits)!)!.lit(true);
+      if (speak) void this.ctx.say(step === 'plan' ? 'comeback.hint-plan' : 'comeback.hint-reason');
+      return;
+    }
     if (step === 'pair') {
       const help = helpFor(this.round.tree, this.plan, this.depth, this.target);
       if (help.kind === 'pair') this.glowing.cards = [...help.pair];
@@ -800,7 +1055,8 @@ class SpeciesComeback implements Game {
   }
 
   private clearGlow() {
-    this.glowing = { cards: [], nests: [], sites: [] };
+    this.glowing = { cards: [], nests: [], sites: [], choice: false };
+    for (const c of [...this.planCards.values(), ...this.reasonCards.values()]) c.lit(false);
     this.glow.clear();
     this.nests.forEach((_, i) => this.drawNest(i));
     this.sites.forEach((c) => c.lit(false));
@@ -820,13 +1076,20 @@ class SpeciesComeback implements Game {
   }
 
   askForHint() {
+    // With the keeper's plan in the nests, only Spring is left: say so.
+    if (this.phase === 'ready') return void this.ctx.instruct('comeback.spring');
     const step = this.currentStep();
     if (!step) return;
     if (
       this.hinted[step] &&
-      (this.glowing.cards.length || this.glowing.nests.length || this.glowing.sites.length)
+      (this.glowing.cards.length ||
+        this.glowing.nests.length ||
+        this.glowing.sites.length ||
+        this.glowing.choice)
     ) {
       if (step === 'pair') this.instructPair();
+      else if (step === 'plan') this.instructPlan();
+      else if (step === 'reason') void this.ctx.instruct('comeback.reason-ask');
       else void this.ctx.instruct('comeback.needs');
       return;
     }
@@ -834,7 +1097,8 @@ class SpeciesComeback implements Game {
   }
 
   restart() {
-    if (this.phase !== 'pair' && this.phase !== 'site') return;
+    if (this.phase === 'busy' || this.phase === 'done') return;
+    this.restarted = true;
     // The same seeded round from the start; misses and hints made so far keep counting.
     this.putDown();
     this.clearGlow();
@@ -860,10 +1124,18 @@ class SpeciesComeback implements Game {
     this.sprung = false;
     for (const id of back) this.returnToSlot(id);
     this.stepMisses = 0;
-    this.phase = 'pair';
+    const keeper = !!this.round.keeper;
+    this.phase = keeper ? 'plan' : 'pair';
+    this.chosen = null;
+    this.keeperLayer.visible = keeper;
+    this.nestLayer.visible = !keeper;
+    for (const c of this.planCards.values()) c.visible = true;
+    for (const c of this.reasonCards.values()) c.visible = false;
+    this.note?.setText(2, '');
     this.layout();
     for (const [id, c] of this.cards) c.set(this.isCandidate(id) ? 'normal' : 'faded');
-    this.instructPair();
+    if (keeper) this.instructPlan();
+    else this.instructPair();
   }
 
   update(dt: number) {
@@ -877,7 +1149,15 @@ class SpeciesComeback implements Game {
 
   autotouch(): TouchIntent | null {
     const tree = this.round.tree,
-      depth = this.depth;
+      depth = this.depth,
+      k = this.round.keeper;
+    if (this.phase === 'plan' && k) return { tap: { on: this.planCards.get(k.fits)! }, pause: 0.6 };
+    if (this.phase === 'reason' && k)
+      return {
+        tap: { on: this.reasonCards.get(REASONS.find((id) => REASON_FITS[id] === k.fits)!)! },
+        pause: 0.6,
+      };
+    if (this.phase === 'ready') return { tap: { on: this.spring } };
     if (this.phase === 'pair') {
       if (this.plan.length >= this.target) return { tap: { on: this.spring } };
       const full = extend(tree, this.plan, depth, this.target);
@@ -962,16 +1242,28 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
     });
   }
   const blocks = families.map((f) => Math.max(2, f.kids.length));
-  let s = 96;
-  const gap = 14,
+  // Up to eight in a row draw at 96 and nine or ten at 80 (level 4). A row still too wide at the 64-unit floor (level 4
+  // on the 768-wide areas) closes its gaps rather than shrink a card.
+  let s = blocks.reduce((a, b) => a + b, 0) > 8 ? 80 : 96;
+  let gap = 14,
     famGap = 30;
   const widthAt = (size: number) =>
     blocks.reduce((a, b) => a + b * (size + gap), 0) + famGap * (blocks.length - 1);
-  while (s > MIN_TOUCH && widthAt(s) > v.w - 40) s -= 4;
+  // Sideways the founders' row is level with Home and "?", so a wide tree keeps to their right.
+  const CHROME = 125;
+  while (s > MIN_TOUCH && widthAt(s) > v.w - (portrait ? 40 : CHROME + 20)) s -= 4;
+  if (widthAt(s) > v.w - 40) {
+    gap = 8;
+    famGap = 20;
+  }
   const rowH = s + 38;
-  const wallTop = v.upright ? 200 : 92;
-  const top = wallTop + 20 + s / 2;
   let x = (v.w - widthAt(s)) / 2;
+  // Not upright, a tree that would reach under Home and "?" moves right of them, or (too wide for that) starts below them
+  // as the upright tree does.
+  const below = v.upright || (x < CHROME && widthAt(s) > v.w - CHROME - 20);
+  if (!below) x = Math.max(x, Math.min(CHROME, v.w - 20 - widthAt(s)));
+  const wallTop = below ? 200 : 92;
+  const top = wallTop + 20 + s / 2;
   const slots = new Map<number, { x: number; y: number }>();
   families.forEach((f, i) => {
     const bw = blocks[i] * (s + gap),
@@ -982,20 +1274,28 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
     );
     x += bw + famGap;
   });
-  for (const pair of tree.nested) {
-    const third = tree.turtles.filter(
-      (t) => t.gen === 2 && t.parents?.[0] === pair[0] && t.parents?.[1] === pair[1],
-    );
-    const a = slots.get(pair[0])!,
-      b = slots.get(pair[1])!;
-    const mid = Math.min(
-      Math.max((a.x + b.x) / 2, 40 + (third.length * (s + gap)) / 2),
-      v.w - 40 - (third.length * (s + gap)) / 2,
-    );
-    third.forEach((t, k) =>
-      slots.set(t.id, { x: mid + (k - (third.length - 1) / 2) * (s + gap), y: top + rowH * 2 }),
-    );
+  // Each third generation sits under the middle of its parents, inside the wall; two of them (level 4) move apart.
+  const thirds = tree.nested
+    .map((pair) => {
+      const third = tree.turtles.filter(
+        (t) => t.gen === 2 && t.parents?.[0] === pair[0] && t.parents?.[1] === pair[1],
+      );
+      const w = third.length * (s + gap);
+      const want = (slots.get(pair[0])!.x + slots.get(pair[1])!.x) / 2;
+      return { third, w, mid: Math.min(Math.max(want, 40 + w / 2), v.w - 40 - w / 2) };
+    })
+    .sort((p, q) => p.mid - q.mid);
+  for (let i = 1; i < thirds.length; i++)
+    thirds[i].mid = Math.max(thirds[i].mid, thirds[i - 1].mid + (thirds[i - 1].w + thirds[i].w) / 2 + famGap);
+  for (let i = thirds.length - 1; i >= 0; i--) {
+    const g = thirds[i],
+      next = thirds[i + 1];
+    g.mid = Math.min(g.mid, next ? next.mid - (next.w + g.w) / 2 - famGap : v.w - 40 - g.w / 2);
   }
+  for (const g of thirds)
+    g.third.forEach((t, k) =>
+      slots.set(t.id, { x: g.mid + (k - (g.third.length - 1) / 2) * (s + gap), y: top + rowH * 2 }),
+    );
   const hatchRow = tree.nested.length ? 3 : 2;
   const hs = Math.max(MIN_TOUCH, Math.round(s * 0.8));
   hatchlings.forEach((t, k) =>
@@ -1010,7 +1310,26 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
     ? Math.min(170, (v.w - 40 - NEST_W) / Math.max(1, nests - 1))
     : Math.min(170, (v.w - 220 - 200) / Math.max(1, nests - 1 || 1));
   const left = v.upright ? v.w / 2 - ((nests - 1) * spacing) / 2 : 220;
+  // Level 4's note and choices stand under the tree, where the hatchlings and (upright) the nests come later: the note
+  // across the top with the two plans or three reasons under it, or sideways the note at their left.
+  const kTop = top + rowH * (hatchRow - 1) + s / 2 + 12;
+  const kBottom = nestY - 74;
+  // Upright there is room below the tree, so the choices grow (their text with them) and stop above the guide's corner
+  // or, when the view is short, stand beside it.
+  const zTop = kTop + 180,
+    zH = Math.max(170, Math.min(420, v.h - zTop - 20)),
+    zLeft = zTop + zH > v.h - 170 ? 170 : 20;
+  const keeper: { note: Rect; zone: Rect } = portrait
+    ? {
+        note: { x: 20, y: kTop, w: v.w - 40, h: 170 },
+        zone: { x: zLeft, y: zTop, w: v.w - 20 - zLeft, h: zH },
+      }
+    : {
+        note: { x: 20, y: kTop, w: 270, h: kBottom - kTop },
+        zone: { x: 302, y: kTop, w: v.w - 322, h: kBottom - kTop },
+      };
   return {
+    keeper,
     card: s,
     hatch: hs,
     slots,

@@ -40,8 +40,13 @@ export interface ComebackPlan {
   /** 1: siblings are close family. 2: cousins, aunts and uncles too. */
   depth: 1 | 2;
   target: number;
-  /** Level 3: after Spring, pick the release site. */
+  /** Levels 3 and 4: after Spring, pick the release site. */
   site: boolean;
+  /**
+   * Level 4: the keeper offers two finished plans and a note about this year. Two young pairs nested before, `depth` is the
+   * rule both plans follow, and `target` is unused: the round's target is the size of the plan that fits the note.
+   */
+  keeper: boolean;
 }
 
 export const PLANS: readonly ComebackPlan[] = [
@@ -54,6 +59,7 @@ export const PLANS: readonly ComebackPlan[] = [
     depth: 1,
     target: 2,
     site: false,
+    keeper: false,
   },
   {
     level: 2,
@@ -64,6 +70,7 @@ export const PLANS: readonly ComebackPlan[] = [
     depth: 2,
     target: 3,
     site: false,
+    keeper: false,
   },
   {
     level: 3,
@@ -74,11 +81,23 @@ export const PLANS: readonly ComebackPlan[] = [
     depth: 2,
     target: 3,
     site: true,
+    keeper: false,
+  },
+  {
+    level: 4,
+    name: 'Two plans',
+    founders: 4,
+    young: [3, 2, 2, 2],
+    third: [2, 2],
+    depth: 1,
+    target: 0,
+    site: true,
+    keeper: true,
   },
 ];
 
-/** Lantern Lake: levels 1–3 in this slice; level 4 (the keeper's two plans) is the next. */
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
+/** Lantern Lake: levels 1–4, the definition's whole ladder. */
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 export const planFor = (level: number): ComebackPlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 
@@ -101,6 +120,8 @@ export const NAMES = [
   'Sage',
   'Flint',
 ] as const;
+/** Six more for level 4's tree of twenty-one; levels 1–3 draw from NAMES alone, so their seeded trees keep their names. */
+export const MORE_NAMES = ['Alder', 'Burr', 'Teasel', 'Yarrow', 'Gorse', 'Larch'] as const;
 /** Hatchlings' names, so a spring never runs out. */
 export const HATCHLING_NAMES = [
   'Rush',
@@ -355,17 +376,62 @@ export function pickSites(rng: Rng): Site[] {
 /* A round                                                                                         */
 /* ---------------------------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------------------------- */
+/* Level 4: the keeper's two plans                                                                 */
+/* ---------------------------------------------------------------------------------------------- */
+
+export type PlanChoice = 'a' | 'b';
+export type NoteId = 'room' | 'big';
+export type ReasonId = 'more' | 'apart' | 'every';
+
+/** "Room for few nests, keep the pairs far apart" fits the smaller plan; "a big spring" fits the larger. */
+export const NOTE_FITS: Record<NoteId, PlanChoice> = { room: 'b', big: 'a' };
+export const REASONS: readonly ReasonId[] = ['more', 'apart', 'every'];
+/** Which plan each reason card is true of: "it uses every turtle" is true of neither, in any round. */
+export const REASON_FITS: Record<ReasonId, PlanChoice | null> = { more: 'a', apart: 'b', every: null };
+
+export interface Keeper {
+  /** The larger plan: no brothers and sisters, but at least one pair who share a parent or grandparent. */
+  a: Pair[];
+  /** The smaller plan: no pair shares a parent or grandparent. */
+  b: Pair[];
+  note: NoteId;
+  fits: PlanChoice;
+}
+
+/** How many of a plan's pairs are related within two generations (cousins, or an aunt or uncle with a niece or nephew). */
+export const relatedPairs = (tree: Tree, plan: Plan) => plan.filter(([a, b]) => kin(tree, a, b, 2)).length;
+
+export const usesEvery = (tree: Tree, plan: Plan) => plan.length * 2 === candidates(tree).length;
+
+/**
+ * The keeper's two plans, or null when the tree cannot offer the trade: A is a largest plan under the siblings rule and must
+ * be larger than B, a largest plan with no related pair at all, so every largest A has a related pair in it.
+ */
+export function keeperPlans(tree: Tree): { a: Pair[]; b: Pair[] } | null {
+  const loose = plans(tree, 1),
+    strict = plans(tree, 2);
+  const topA = Math.max(0, ...loose.map((x) => x.length)),
+    topB = Math.max(0, ...strict.map((x) => x.length));
+  if (topA <= topB || topA < 3 || topA > 4 || topB < 2 || topB > 3) return null;
+  const a = loose.find((x) => x.length === topA && !usesEvery(tree, x)),
+    b = strict.find((x) => x.length === topB);
+  return a && b ? { a, b } : null;
+}
+
 export interface Round {
   plan: ComebackPlan;
   tree: Tree;
   target: number;
   sites: Site[];
+  /** Level 4 only. */
+  keeper: Keeper | null;
 }
 
 export const MAX_DRAWS = 400;
 
 function drawTree(p: ComebackPlan, rng: Rng): Tree | null {
-  const names = rng.shuffle(NAMES.slice());
+  const names: string[] = rng.shuffle(p.keeper ? [...NAMES, ...MORE_NAMES] : NAMES.slice());
   let next = 0;
   const turtles: Turtle[] = [];
   const add = (sex: Sex, parents: readonly [number, number] | null, gen: number) => {
@@ -384,27 +450,33 @@ function drawTree(p: ComebackPlan, rng: Rng): Tree | null {
     families.push(kids);
   }
   const nested: Pair[] = [];
-  const thirdCount = p.third[1] > 0 ? rng.int(p.third[0], p.third[1]) : 0;
-  if (thirdCount > 0) {
-    // One young mother and father from two different families nested last spring.
+  // A young mother and father from two different families nested last spring; with the keeper, two such pairs did.
+  for (let n = 0; n < (p.keeper ? 2 : p.third[1] > 0 ? 1 : 0); n++) {
+    const thirdCount = rng.int(p.third[0], p.third[1]);
+    const taken = new Set(nested.flat());
+    // The second pair shares a family with the first, so the two third generations are cousins.
+    const first = families.map((kids) => kids.some((t) => taken.has(t.id)));
     const options: Pair[] = [];
     for (let i = 0; i < families.length; i++)
       for (let j = 0; j < families.length; j++) {
-        if (i === j) continue;
+        if (i === j || (n > 0 && first[i] === first[j])) continue;
         for (const a of families[i])
-          for (const b of families[j]) if (a.sex === 'f' && b.sex === 'm') options.push([a.id, b.id]);
+          for (const b of families[j])
+            if (a.sex === 'f' && b.sex === 'm' && !taken.has(a.id) && !taken.has(b.id))
+              options.push([a.id, b.id]);
       }
     if (!options.length) return null;
     const pair = rng.pick(options);
     nested.push(pair);
     for (let k = 0; k < thirdCount; k++) add(rng.chance(0.5) ? 'f' : 'm', [pair[0], pair[1]], 2);
   }
-  if (next > NAMES.length) return null;
+  if (next > names.length) return null;
   return { turtles, nested };
 }
 
 /** Whether a drawn tree meets every condition the definition sets for its level. */
 export function fits(tree: Tree, p: ComebackPlan): boolean {
+  if (p.keeper) return keeperPlans(tree) !== null;
   const all = plans(tree, p.depth);
   const top = Math.max(0, ...all.map((x) => x.length));
   if (top !== p.target) return false;
@@ -417,10 +489,25 @@ export function fits(tree: Tree, p: ComebackPlan): boolean {
 
 export function makeRound(level: number, rng: Rng): Round {
   const p = planFor(level);
-  for (let i = 0; i < MAX_DRAWS; i++) {
+  // The keeper's trade is rarer than a tree with two plans (about one draw in thirty), so level 4 gets a longer bound.
+  for (let i = 0; i < MAX_DRAWS * (p.keeper ? 5 : 1); i++) {
     const tree = drawTree(p, rng);
-    if (tree && fits(tree, p))
-      return { plan: p, tree, target: p.target, sites: p.site ? pickSites(rng) : [] };
+    if (!tree) continue;
+    if (p.keeper) {
+      const both = keeperPlans(tree);
+      if (!both) continue;
+      const note: NoteId = rng.chance(0.5) ? 'room' : 'big';
+      const choice = NOTE_FITS[note];
+      return {
+        plan: p,
+        tree,
+        target: both[choice].length,
+        sites: pickSites(rng),
+        keeper: { ...both, note, fits: choice },
+      };
+    }
+    if (fits(tree, p))
+      return { plan: p, tree, target: p.target, sites: p.site ? pickSites(rng) : [], keeper: null };
   }
   throw new Error(`species-comeback: no tree for level ${level}`);
 }
@@ -428,7 +515,7 @@ export function makeRound(level: number, rng: Rng): Round {
 /** Spring: two hatchlings in every nest, a new generation with both parents set. */
 export function hatch(tree: Tree, plan: Plan, rng: Rng): Turtle[] {
   const used = new Set(tree.turtles.map((t) => t.name));
-  const pool = rng.shuffle([...HATCHLING_NAMES, ...NAMES].filter((n) => !used.has(n)));
+  const pool = rng.shuffle([...HATCHLING_NAMES, ...NAMES, ...MORE_NAMES].filter((n) => !used.has(n)));
   let id = Math.max(...tree.turtles.map((t) => t.id)) + 1;
   const out: Turtle[] = [];
   for (const [a, b] of plan)
