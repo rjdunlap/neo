@@ -1,0 +1,5 @@
+# 2026-11-17 — Species Comeback level 4, Two plans (PR #1767)
+
+**Changed:** `species-comeback` level 4 (zoo-animals Z7): the keeper's note, two solver-made plans, three reason cards, then level 3's site step; `comebackLayout` keeps a wide tree clear of Home and "?" sideways (levels 2–3 move about 28 units right at 1024 wide); six more names; how-to steps level-scoped.
+**Ran:** `npm run typecheck`; full `npm test` (360 files, 7,730 passed, 1 skipped) before three review fixes, then the game's rule tests and the upright layout test again (40 passed); new rule tests over 500 seeds (tree shape, Plan A/B, notes, reason table, no plan uses every turtle, hatching names); `BROWSER_SUITE=comeback` (levels 1 and 3 as before; level 4 with one wrong plan, one wrong reason card, free note and name, the plan into the nests, Spring and a suiting site, history level 4, 2 misses, 0 hints; screenshots sideways and upright at 390 × 844); `BROWSER_SUITE=fingerdemo FINGER_ONLY=species-comeback FINGER_LEVELS=4` (finished in 10.1 s).
+**Not run:** `npm run build` locally (CI builds), `world`, offline, the full browser suites.
