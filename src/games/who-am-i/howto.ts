@@ -8,14 +8,14 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 1, text: 'Tap the friend the clue fits.' },
     {
       from: 2,
-      to: 3,
+      to: 4,
       text: 'Tap each friend the clue rules out to turn it over; the next clue comes when they are all down.',
     },
-    { from: 2, to: 3, text: 'Tap a turned-over friend to peek at it.' },
+    { from: 2, to: 4, text: 'Tap a turned-over friend to peek at it.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'The friend who fits jumps out and says its name.' },
-    { from: 2, to: 3, text: 'The last friend left jumps out and says its name.' },
+    { from: 2, to: 4, text: 'The last friend left jumps out and says its name.' },
   ],
   note: [
     {
@@ -25,8 +25,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 2,
-      to: 3,
+      to: 4,
       text: 'Hearing a clue again and peeking at a hidden friend are never counted against her. Turning over a friend the clue keeps counts as a miss, with the reason spoken; after two on one clue the friends it rules out shimmer, which counts as a hint.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'Some clues surprise: the penguin has feathers but cannot fly, and the bat flies but feeds its babies milk. The pet explains each once, and that is never counted.',
     },
   ],
 };

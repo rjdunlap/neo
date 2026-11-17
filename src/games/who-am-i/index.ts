@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { fishArt, frogArt, owlArt, penguinArt, turtleArt } from '../../art/animals';
+import { batArt, fishArt, frogArt, owlArt, penguinArt, turtleArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -13,8 +13,8 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  BARN,
   botTap,
-  FRIEND_IDS,
   FRIENDS,
   galleryLayout,
   helpTargets,
@@ -44,6 +44,9 @@ export function friendArt(id: FriendId): Container {
   if (id === 'owl') {
     art = owlArt('brown');
     art.scale.set(0.6);
+  } else if (id === 'bat') {
+    art = batArt();
+    art.scale.set(0.56);
   } else if (id === 'penguin') {
     art = penguinArt();
     art.scale.set(1.8);
@@ -383,6 +386,13 @@ class WhoAmI implements Game {
     sfx.whoosh();
     await this.flip(card, true);
     if (!this.alive) return;
+    if (out.surprise) {
+      // Level 4: the pet explains the surprise once, free, before the next clue or the jump-out.
+      await this.ctx.tw.wait(0.3);
+      if (!this.alive) return;
+      await this.ctx.say(out.surprise === 'penguin' ? 'whoami.surprise-penguin' : 'whoami.surprise-bat');
+      if (!this.alive) return;
+    }
     if (out.done) return void this.finale(this.round.gallery.indexOf(this.round.answer));
     if (out.next) {
       await this.ctx.tw.wait(0.6);
@@ -581,6 +591,6 @@ export const whoAmI: GameModule = {
     'Say the clue in your own words before the pet does, or act it out: flap for wings, waddle for two legs.',
   offScreen: 'In the car, think of an animal and let her ask what it has.',
   hubIcon: () => new WigglyIcon(cardIcon('duck', true)),
-  sticker: (seed) => cardIcon(new Rng(seed).pick(FRIEND_IDS), false),
+  sticker: (seed) => cardIcon(new Rng(seed).pick(BARN), false),
   create: (ctx) => new WhoAmI(ctx),
 };

@@ -24,6 +24,8 @@ import {
   standing,
   startPlay,
   staysText,
+  surpriseAt,
+  surprises,
   tap,
   useful,
   type Feature,
@@ -56,6 +58,9 @@ describe('Who Am I? trait table', () => {
     }
     expect(keeps('fly', 'penguin')).toBe(false);
     expect(keeps('fly', 'duck')).toBe(true);
+    expect(FRIENDS.bat.group).toBe('mammal');
+    expect(keeps('fly', 'bat')).toBe(true);
+    expect(keeps('wings', 'bat')).toBe(true);
   });
 
   it('has no swims, whiskers, tail or horns features', () => {
@@ -147,10 +152,18 @@ describe('Who Am I? rounds', () => {
 });
 
 /** Every sequence of `n` useful clues from `allowed` that leaves only `answer`, over every gallery of `size` containing it. */
-function canEndIn(answer: FriendId, size: number, n: number, allowed: readonly Feature[]): boolean {
-  const others = FRIEND_IDS.filter((f) => f !== answer);
+function canEndIn(
+  answer: FriendId,
+  size: number,
+  n: number,
+  allowed: readonly Feature[],
+  pool: readonly FriendId[] = planFor(1).pool,
+  include: readonly FriendId[] = [],
+): boolean {
+  const others = pool.filter((f) => f !== answer);
   const choose = (start: number, picked: FriendId[]): boolean => {
-    if (picked.length === size - 1) return solve([answer, ...picked], n);
+    if (picked.length === size - 1)
+      return include.every((f) => f === answer || picked.includes(f)) && solve([answer, ...picked], n);
     for (let i = start; i < others.length; i++) if (choose(i + 1, [...picked, others[i]])) return true;
     return false;
   };
@@ -168,7 +181,7 @@ function canEndIn(answer: FriendId, size: number, n: number, allowed: readonly F
 describe('Who Am I? answer pools are honest', () => {
   it('level 2: every listed answer can end a 2-clue round and a bird or the fish never can', () => {
     const plan = planFor(2);
-    for (const a of FRIEND_IDS) {
+    for (const a of plan.pool) {
       const can = canEndIn(a, plan.friends, plan.clues, plan.allowed);
       expect(can, a).toBe(plan.answers.includes(a));
     }
@@ -176,12 +189,117 @@ describe('Who Am I? answer pools are honest', () => {
 
   it('level 3: only the frog and the turtle can end a 3-clue round', () => {
     const plan = planFor(3);
-    for (const a of FRIEND_IDS) {
+    for (const a of plan.pool) {
       if (FRIENDS[a].group === 'mammal' || FRIENDS[a].group === 'bird' || FRIENDS[a].group === 'fish') {
         expect(canEndIn(a, plan.friends, plan.clues, plan.allowed), a).toBe(false);
       }
     }
     for (const a of plan.answers) expect(canEndIn(a, plan.friends, plan.clues, plan.allowed), a).toBe(true);
+  });
+});
+
+/**
+ * What a child using the flying shortcut expects a clue to keep: anything with wings or that flies is a bird (so it has
+ * feathers and a beak, lays eggs, can fly and never feeds its babies milk), and nothing else is.
+ */
+function shortcutKeeps(clue: Feature, f: FriendId): boolean {
+  const looksBird = keeps('wings', f) || keeps('fly', f);
+  if (clue === 'fly' || clue === 'feathers' || clue === 'eggs' || clue === 'beak')
+    return looksBird || (clue === 'eggs' && keeps(clue, f));
+  if (clue === 'milk') return !looksBird && keeps(clue, f);
+  return keeps(clue, f);
+}
+
+describe('Who Am I? level 4 surprises', () => {
+  const plan = planFor(4);
+
+  it('keeps the bat out of levels 1-3 and fly out of their clues', () => {
+    for (const level of [1, 2, 3]) {
+      expect(planFor(level).pool).not.toContain('bat');
+      expect(planFor(level).allowed).not.toContain('fly');
+      for (let seed = 1; seed <= SEEDS; seed++) expect(roundFor(level, seed).gallery).not.toContain('bat');
+    }
+  });
+
+  it('names the surprise only where the shortcut and the table disagree', () => {
+    expect(surpriseAt(['penguin', 'owl'], 'fly')).toBe('penguin');
+    expect(surpriseAt(['duck', 'owl', 'bat'], 'fly')).toBe(null);
+    expect(surpriseAt(['bat', 'owl'], 'feathers')).toBe('bat');
+    expect(surpriseAt(['bat', 'frog'], 'eggs')).toBe('bat');
+    expect(surpriseAt(['bat', 'owl', 'dog'], 'milk')).toBe('bat');
+    expect(surpriseAt(['bat', 'dog', 'frog'], 'milk')).toBe(null);
+    expect(surpriseAt(['owl', 'frog'], 'eggs')).toBe(null);
+    expect(surpriseAt(['bat', 'penguin'], 'wings')).toBe(null);
+  });
+
+  it(`every round has the penguin, the bat and a surprise step the shortcut gets wrong, for ${SEEDS} seeds`, () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(4, seed);
+      const ctx = `seed ${seed}`;
+      expect(r.gallery, ctx).toEqual(expect.arrayContaining(['penguin', 'bat']));
+      const found = surprises(r.gallery, r.clues);
+      expect(found.some(Boolean), ctx).toBe(true);
+      let left: FriendId[] = [...r.gallery];
+      let wrong = 0;
+      r.clues.forEach((c, k) => {
+        const bad = left.filter((f) => shortcutKeeps(c, f) !== keeps(c, f));
+        wrong += bad.length;
+        // A named surprise is always a step the shortcut gets wrong, about the friend it names.
+        if (found[k]) expect(bad, `${ctx} clue ${c}`).toContain(found[k]);
+        left = left.filter((f) => keeps(c, f));
+      });
+      expect(wrong, ctx).toBeGreaterThanOrEqual(1);
+      for (const s of found) if (s) kinds.add(s);
+    }
+    expect([...kinds].sort()).toEqual(['bat', 'penguin']);
+  });
+
+  it('lists exactly the friends who can end a 3-clue surprise round', () => {
+    for (const a of FRIEND_IDS) {
+      // Without the surprise condition: a friend who cannot end any 3-clue round is rightly left out.
+      const can = canEndIn(a, plan.friends, plan.clues, plan.allowed, plan.pool, plan.include);
+      expect(can, a).toBe(plan.answers.includes(a));
+    }
+  });
+
+  it('explains each surprise once, when its clue is finished, and counts nothing', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const r = roundFor(4, seed);
+      const expected = surprises(r.gallery, r.clues);
+      const p = startPlay(r, 'turn');
+      const said: (string | null)[] = [];
+      while (!p.done) {
+        const clue = p.clue;
+        const targets = helpTargets(p);
+        targets.forEach((i, k) => {
+          const out = tap(p, i);
+          if (out.kind !== 'flip') throw new Error(`seed ${seed}: not a flip`);
+          if (k < targets.length - 1) expect(out.surprise).toBe(null);
+          else said[clue] = out.surprise;
+        });
+      }
+      const once = expected.map((s, k) => (s && expected.indexOf(s) === k ? s : null));
+      expect(said, `seed ${seed}`).toEqual(once);
+      expect([p.misses, p.hints]).toEqual([0, 0]);
+    }
+  });
+
+  it('gives the bat a reason for every clue it does not fit', () => {
+    expect(reason('bat', 'feathers')).toEqual({ kind: 'not', name: 'Bat', has: 'has fur', clue: 'feathers' });
+    expect(reason('bat', 'eggs')).toEqual({
+      kind: 'instead',
+      name: 'Bat',
+      lacks: "doesn't lay eggs",
+      has: 'feeds its babies milk',
+    });
+    expect(reason('bat', 'four-legs')).toEqual({
+      kind: 'not',
+      name: 'Bat',
+      has: 'has two legs',
+      clue: 'four',
+    });
+    expect(reason('penguin', 'fly')).toEqual({ kind: 'no', name: 'Penguin', lacks: "can't fly" });
   });
 });
 
@@ -202,9 +320,9 @@ function flipCheck(r: WhoRound, mode: 'turn') {
     targets.forEach((t, k) => {
       const out = tap(p, t);
       const last = k === targets.length - 1;
-      if (!last) expect(out).toEqual({ kind: 'flip', next: false, done: false });
-      else if (c === r.clues.length - 1) expect(out).toEqual({ kind: 'flip', next: false, done: true });
-      else expect(out).toEqual({ kind: 'flip', next: true, done: false });
+      if (!last) expect(out).toMatchObject({ kind: 'flip', next: false, done: false });
+      else if (c === r.clues.length - 1) expect(out).toMatchObject({ kind: 'flip', next: false, done: true });
+      else expect(out).toMatchObject({ kind: 'flip', next: true, done: false });
     });
   }
   return p;
@@ -218,8 +336,8 @@ describe('Who Am I? hints and play', () => {
     }
   });
 
-  it('levels 2-3: help is the set the clue rules out, and flipping it advances to the answer', () => {
-    for (const level of [2, 3]) {
+  it('levels 2-4: help is the set the clue rules out, and flipping it advances to the answer', () => {
+    for (const level of [2, 3, 4]) {
       for (let seed = 1; seed <= 150; seed++) {
         const r = roundFor(level, seed);
         const p = flipCheck(r, 'turn');
@@ -272,7 +390,7 @@ describe('Who Am I? accounting', () => {
     const keptIdx = r.gallery.findIndex((g) => keeps(r.clues[0], g));
     expect(tap(p, keptIdx)).toMatchObject({ kind: 'miss', helped: false });
     const flipIdx = helpTargets(p)[0];
-    expect(tap(p, flipIdx)).toEqual({ kind: 'flip', next: false, done: false });
+    expect(tap(p, flipIdx)).toMatchObject({ kind: 'flip', next: false, done: false });
     expect(tap(p, keptIdx)).toMatchObject({ kind: 'miss', helped: true });
     expect(tap(p, keptIdx)).toMatchObject({ kind: 'miss', helped: false });
     expect(p.misses).toBe(3);
@@ -316,8 +434,8 @@ describe('Who Am I? ghost finger', () => {
     }
   });
 
-  it('levels 2-3 never taps a kept friend and finishes with no misses', () => {
-    for (const level of [2, 3]) {
+  it('levels 2-4 never taps a kept friend and finishes with no misses', () => {
+    for (const level of [2, 3, 4]) {
       for (let seed = 1; seed <= 150; seed++) {
         const p = startPlay(roundFor(level, seed), 'turn');
         let guard = 0;
