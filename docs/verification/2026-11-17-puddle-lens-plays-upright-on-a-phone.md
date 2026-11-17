@@ -1,0 +1,5 @@
+# 2026-11-17 — Puddle Lens plays upright on a phone (PR #1762)
+
+**Changed:** `puddle-lens` is `upright: true`; level 2's table in a tall view runs the whole width so the hand lens stays on an outer thing it is let go on (`lensLayout`, tall views only); new `src/games/upright-catch-up.test.ts` (all eleven levels on four phone views); `puddle-lens` added to the registry's upright list (29); new `LENS_LEVELS=upright` play in the `lens` suite.
+**Ran:** `npm run typecheck`; `npm test` (359 files; the one failure was the stale game-docs block, fixed with `npm run game-docs`, then passing); `npm run lint`; `npm run format:check`; `BROWSER_SUITE=lens LENS_LEVELS=upright` passed on a 390 × 844 touch phone (levels 1, 2, 4, 9, 11; an earlier run failed on an assertion that had not allowed for the glass riding 40 units above the finger, corrected and passed); the upright screenshots of levels 2, 9 and 11 were looked at.
+**Not run:** `npm run build` (no shared files or assets changed; CI builds the PR), the rest of the `lens` suite, `fingerdemo`, `world`, offline, couch suites.
