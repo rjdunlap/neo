@@ -2,6 +2,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
+import { label } from '../../ui/text';
 import {
   CARD_H,
   CARD_W,
@@ -9,6 +10,7 @@ import {
   sections,
   STAND,
   WEDGE_DEG,
+  WEDGES as WEDGE_COUNT,
   type Card,
   type Kind,
   type Wheel,
@@ -243,5 +245,86 @@ export function racerArt(kind: Kind, size: number): Container {
   );
   const f = face(kind, size * 0.78);
   c.addChild(f);
+  return c;
+}
+
+/** Level 6's share strip, drawn from (0, 0): the favourite's part of `total` spins from the left, the friend's after it. Empty before the first spin. */
+export function drawStrip(
+  g: Graphics,
+  w: number,
+  h: number,
+  fav: Kind,
+  friend: Kind,
+  count: number,
+  total: number,
+) {
+  g.clear();
+  const r = Math.min(14, h / 2);
+  g.roundRect(0, 0, w, h, r).fill(0xffffff);
+  if (total > 0) {
+    const split = (w * count) / total;
+    if (split > 0) g.roundRect(0, 0, split, h, r).fill(sw(fav).fill);
+    if (split < w) g.roundRect(split, 0, w - split, h, r).fill(sw(friend).fill);
+    // Square the seam between the two colours, so the split reads as one straight edge.
+    if (split > r && split < w - r) {
+      g.rect(split - r, 0, r, h).fill(sw(fav).fill);
+      g.rect(split, 0, r, h).fill(sw(friend).fill);
+      g.moveTo(split, 0).lineTo(split, h).stroke({ width: 4, color: ink });
+    }
+  }
+  g.roundRect(0, 0, w, h, r).stroke({ width: 5, color: ink });
+}
+
+/** The strip's fixed ruler (a tick at every sixth) and the dashed marker at the wheel's share, `k` sixths, with its arrow underneath. */
+export function stripRuler(w: number, h: number, k: number): Graphics {
+  const g = new Graphics();
+  for (let i = 0; i <= WEDGE_COUNT; i++) {
+    const x = (w * i) / WEDGE_COUNT;
+    g.moveTo(x, h + 4)
+      .lineTo(x, h + 16)
+      .stroke({ width: 4, color: ink, alpha: 0.6, cap: 'round' });
+  }
+  const x = (w * k) / WEDGE_COUNT;
+  for (let y = -8; y < h + 8; y += 16)
+    g.moveTo(x, y)
+      .lineTo(x, y + 9)
+      .stroke({ width: 5, color: swatch.red.line, cap: 'round' });
+  g.poly([x, h + 12, x - 13, h + 32, x + 13, h + 32])
+    .fill(swatch.red.fill)
+    .stroke({ width: 4, color: ink, join: 'round' });
+  g.eventMode = 'none';
+  return g;
+}
+
+/** A level-6 answer card: about `n` of sixty, its numeral over a small strip drawn at that share, so it reads without the numeral. */
+export function aboutCard(n: number, fav: Kind, friend: Kind, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 18)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.blue.line }),
+  );
+  const num = label(String(n), 58);
+  num.position.set(0, -22);
+  const strip = new Graphics();
+  drawStrip(strip, w - 36, 26, fav, friend, n, 60);
+  strip.position.set(-(w - 36) / 2, h / 2 - 44);
+  c.addChild(num, strip);
+  return c;
+}
+
+/** The fast-forward button: two arrowheads on a rounded plate. */
+export function fastButton(w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(swatch.green.fill)
+    .stroke({ width: 6, color: swatch.green.line });
+  for (const x of [-34, 4])
+    g.poly([x, -26, x + 32, 0, x, 26])
+      .fill(0xffffff)
+      .stroke({ width: 4, color: swatch.green.line, join: 'round' });
+  c.addChild(g);
   return c;
 }

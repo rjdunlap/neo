@@ -40,6 +40,18 @@ import {
   CARD_W,
   CARD_H,
   RACER,
+  SETTLE_K,
+  SETTLE_RUNS,
+  CHECK_SPINS,
+  ABOUT_CARDS,
+  ABOUT_W,
+  ABOUT_H,
+  RULER,
+  expected60,
+  aboutRight,
+  inBand,
+  spinRun,
+  settleLayout,
   type Kind,
   type Circle,
   type Box,
@@ -53,7 +65,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 5 },
+      school: { min: 3, max: 6 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -449,4 +461,110 @@ describe('levels 4–5 layout', () => {
       expect(circleHits(L.spinner, pet)).toBe(false);
     });
   }
+});
+
+describe('level 6: watch it settle', () => {
+  const sets = (seed: number) => makeRound(6, new Rng(seed));
+  it('the plan and the school range', () => {
+    expect(planFor(6)).toEqual({ level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 });
+    expect(SETTLE_RUNS[SETTLE_RUNS.length - 1]).toBe(planFor(6).spins);
+    expect(LEVELS.school).toEqual({ min: 3, max: 6 });
+  });
+  it('each set is a six-wedge wheel of the favourite and one friend, k of 1, 3 or 5, and the two sets differ', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const [a, b] = sets(seed);
+      expect(a.favourite).toBe(b.favourite);
+      expect(a.k).not.toBe(b.k);
+      expect(a.friend).not.toBe(b.friend);
+      for (const s of [a, b]) {
+        const w = s.wheels[0];
+        expect(s.wheels).toHaveLength(1);
+        expect(w).toHaveLength(WEDGES);
+        expect(SETTLE_K).toContain(s.k);
+        expect(countOf(w, s.favourite!)).toBe(s.k);
+        expect(countOf(w, s.friend!)).toBe(WEDGES - s.k!);
+        expect(contiguous(w)).toBe(true);
+        expect(COLOR_OF[s.favourite!]).not.toBe(COLOR_OF[s.friend!]);
+      }
+    }
+  });
+  it('exactly one card is right, and it comes from the wedges', () => {
+    for (const k of SETTLE_K) {
+      expect(expected60(k)).toBe(10 * k);
+      expect(ABOUT_CARDS.filter((c) => aboutRight(c, k))).toEqual([10 * k]);
+    }
+    expect(inBand(40, 3)).toBe(true);
+    expect(inBand(20, 3)).toBe(true);
+    expect(inBand(41, 3)).toBe(false);
+    expect(inBand(19, 3)).toBe(false);
+  });
+  it('a run is spin(rng) again and again: nothing filtered, shortened or drawn twice', () => {
+    for (const seed of [1, 7, 99]) {
+      const a = new Rng(seed),
+        b = new Rng(seed);
+      const run = spinRun(a, 240);
+      expect(run).toHaveLength(240);
+      expect(run).toEqual(Array.from({ length: 240 }, () => spin(b)));
+      expect(a.next()).toBe(b.next());
+    }
+  });
+  // Honesty measured, never enforced: the answer never depends on these runs.
+  it('over 2000 seeds, 240 spins end within 0.08 of the share and a 60-spin check is in its band, 97% of the time', () => {
+    for (const k of SETTLE_K) {
+      const wheel = raceWheel(['duck', 'pig'], k);
+      let close = 0,
+        band = 0;
+      for (let seed = 1; seed <= 2000; seed++) {
+        const rng = new Rng(seed * 31 + k);
+        const duck = (n: number) => spinRun(rng, n).filter((s) => wheel[s.wedge] === 'duck').length;
+        if (Math.abs(duck(240) / 240 - k / WEDGES) <= 0.08) close++;
+        if (inBand(duck(CHECK_SPINS), k)) band++;
+      }
+      expect(close / 2000).toBeGreaterThanOrEqual(0.97);
+      expect(band / 2000).toBeGreaterThanOrEqual(0.97);
+    }
+  });
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
+  type R = { x0: number; y0: number; x1: number; y1: number };
+  const rect = (b: Box): R => ({
+    x0: b.x - b.w / 2,
+    y0: b.y - b.h / 2,
+    x1: b.x + b.w / 2,
+    y1: b.y + b.h / 2,
+  });
+  const hit = (p: R, q: R) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  for (const [w, h] of VIEWS)
+    it(`layout at ${w}x${h}`, () => {
+      const L = settleLayout({ w, h });
+      expect(L.portrait).toBe(h > w);
+      const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
+      const corners = [
+        { x0: 0, y0: 0, x1: 120, y1: 120 },
+        { x0: w - 120, y0: 0, x1: w, y1: 120 },
+      ];
+      // The wheel with its rim and pointer, and the strip with its ruler and marker.
+      const s = L.spinner;
+      const wheel = { x0: s.x - s.r - 8, y0: s.y - s.r - 30, x1: s.x + s.r + 8, y1: s.y + s.r + 8 };
+      const strip = { ...rect(L.strip), y1: L.strip.y + L.strip.h / 2 + RULER };
+      const all: R[] = [wheel, strip, rect(L.counts), rect(L.fast), ...L.cards.map(rect)];
+      for (const r of all) {
+        expect(r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h).toBe(true);
+        expect(hit(r, pet)).toBe(false);
+        for (const c of corners) expect(hit(r, c)).toBe(false);
+      }
+      all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(hit(a, b)).toBe(false)));
+      // Targets: the spinner, the fast-forward button and each card, never under 100.
+      expect(2 * s.r).toBeGreaterThanOrEqual(100);
+      for (const b of [L.fast, ...L.cards]) expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
+      for (const b of L.cards) expect([b.w, b.h]).toEqual([ABOUT_W, ABOUT_H]);
+      expect(L.cards).toHaveLength(ABOUT_CARDS.length);
+      expect(L.strip.w).toBeGreaterThanOrEqual(480);
+    });
 });
