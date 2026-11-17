@@ -388,6 +388,87 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Teddy is coming to the parade. Hat on. Off we go!',
     },
   },
+  // Batch 6 (2026-11-17): eight pre-K and school games (Logic Grid from preschool), each naming toys, books or a tray.
+  'thought-bubbles': {
+    all: {
+      notice: 'Does {name} point to where teddy last saw the toy, or to where the toy is now?',
+      say: 'Teddy was asleep. Where will teddy look first?',
+    },
+    school: {
+      notice: 'Does {name} explain what teddy saw and what teddy missed?',
+      say: "What does teddy think? What would change teddy's mind?",
+    },
+  },
+  'logic-grid': {
+    all: {
+      notice: 'Does {name} go and look after each clue, or wait for one more?',
+      say: 'It is somewhere low. It is near something soft. Found it!',
+    },
+    school: {
+      notice: 'Does {name} rule places out aloud as the clues add up?',
+      say: 'Which places did that clue rule out? What would you ask next?',
+    },
+  },
+  'ramp-race': {
+    all: {
+      notice: 'Does {name} lift the book higher, try the other floor or chase the car?',
+      say: 'Down it rolls! That one went far. Now a higher ramp.',
+    },
+    school: {
+      notice: 'Does {name} change one thing at a time, the height or the floor?',
+      say: 'Which will roll farther? How would we make it a fair test?',
+    },
+  },
+  inchworm: {
+    all: {
+      notice: 'Does {name} lay the spoons end to end, leave gaps or hold two toys side by side?',
+      say: 'One spoon, two spoons, three. The bear is three spoons long!',
+    },
+    school: {
+      notice: 'Does {name} guess a length first, or measure and then compare?',
+      say: 'How many spoons long will it be? Would bricks give the same number?',
+    },
+  },
+  'chain-reaction': {
+    all: {
+      notice: 'Does {name} move the book, move the ball or point to where the ball will go?',
+      say: 'Where will it go this time? Let it roll and see.',
+    },
+    school: {
+      notice: 'Does {name} change one part at a time, or several at once?',
+      say: 'What did you change? What did that do to where the ball went?',
+    },
+  },
+  'not-always': {
+    all: {
+      notice: 'Does {name} check each toy in turn, or go straight to the one that does not fit?',
+      say: 'All of these are soft. Is that true for every one?',
+    },
+    school: {
+      notice: 'Does {name} make up a new "all of these" for you to test?',
+      say: 'Is it always true? What one toy would show that it is not?',
+    },
+  },
+  'critter-crossing': {
+    all: {
+      notice: 'Does {name} try lots of toys, try one kind again or guess the rule straight away?',
+      say: 'Yes, that one crosses. No, not that one. What is my rule?',
+    },
+    school: {
+      notice: 'Does {name} pick a toy that would test the guess before saying it?',
+      say: 'Which toy would test your idea? Now you make up a rule for me.',
+    },
+  },
+  'ferry-jam': {
+    all: {
+      notice: 'Does {name} slide one car at a time, push a whole row or lift a car off the tray?',
+      say: 'Slide this one over. Now there is a gap. Out it comes!',
+    },
+    school: {
+      notice: 'Does {name} look for what is in the way before sliding anything?',
+      say: 'Which one is blocking the way? What has to move first?',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;
