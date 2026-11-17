@@ -28,6 +28,16 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap the loop arrow (Repeat) to play both moves twice; tap it again to play once. Play runs the show; each place has a dot for each time through.',
     },
     {
+      from: 6,
+      to: 6,
+      text: 'The top picture shows three steps: the pet waves, the pet sends a leaf, then the bird opens its fan. Press Play and watch where the leaf goes.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: "The top row is the pet's show; the leaf card is Send. The bottom row is the bird's: tap its card to switch what it listens for, a leaf or a shell. Numbered badges show the order things ran in.",
+    },
+    {
       from: 1,
       to: 3,
       text: 'Play runs the whole show; the arrow-and-bar runs one move. Each place lights as it runs.',
@@ -49,6 +59,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'The bulb outlines the place to change, or the loop arrow; press again to set it. The orange Play button checks the show.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: "The bulb outlines the place to change, or the bird's card; press again to set it. The orange Play button checks the show.",
+    },
   ],
   finish: [
     {
@@ -58,7 +73,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 3,
-      to: 5,
+      to: 6,
       text: 'A matching Check turns orange Play into the blue Finish tick. Edits and Undo require another Check.',
     },
   ],
@@ -79,8 +94,13 @@ export const HOW_TO: GameHowTo = {
       text: 'Trying shows with Repeat on or off is free.',
     },
     {
+      from: 6,
+      to: 6,
+      text: 'A leaf that nobody is listening for is not a mistake: it lands and fades. Trying shows is free.',
+    },
+    {
       from: 3,
-      to: 5,
+      to: 6,
       text: 'Only a wrong Check counts a miss. Two show a clue. Each clue or supplied repair counts once; Undo and Start again keep misses and help.',
     },
   ],

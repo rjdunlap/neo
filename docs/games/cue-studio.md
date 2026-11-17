@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 3–5 |
+| school | 3–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 3 | Fix the cue: repair the pictured order, then check the show |
 | 4 | Which signal: give the bell and the flower each a move, then check them |
 | 5 | A repeated phrase: play a two-move phrase twice with Repeat |
+| 6 | Pass the cue: the pet's show sends a leaf and the bird answers |
 
 <!-- end generated -->
 

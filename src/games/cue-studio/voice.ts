@@ -59,4 +59,23 @@ export const VOICE = {
   'cue.phrase-fix-second-wave': ['The second move in the picture is a wave.'],
   'cue.phrase-fix-second-turn': ['The second move in the picture is a turn.'],
   'cue.help-repeat': ['The picture plays the two moves, then plays them again. Tap Repeat, the loop arrow.'],
+  'cue.pass': [
+    "{pet}'s show can send a leaf to the bird. Fix the show so the bird opens its fan at the end.",
+  ],
+  'cue.pass-request': ['{pet} waves. {pet} sends a leaf. Then the bird opens its fan.'],
+  'cue.send': ['Send a leaf.'],
+  'cue.listen-leaf': ['When a leaf comes.'],
+  'cue.listen-shell': ['When a shell comes.'],
+  'cue.nobody': ['The leaf came, but the bird was listening for a shell.'],
+  'cue.too-soon': ['The bird opened its fan before {pet} waved.'],
+  'cue.pass-miss-first-send': ['{pet} sent the leaf first. The picture asks for a wave first.'],
+  'cue.pass-miss-second-wave': ['The second move was a wave. The picture asks {pet} to send a leaf second.'],
+  'cue.pass-miss-second-turn': ['The second move was a turn. The picture asks {pet} to send a leaf second.'],
+  'cue.pass-fix-second': [
+    'The second picture asks {pet} to send a leaf. Choose the second place, then the leaf.',
+  ],
+  'cue.help-receiver': [
+    "The bird opens its fan when the thing it listens for comes. Tap the bird's card to change it to a leaf.",
+  ],
+  'cue.pass-success': ['The bird opened its fan at the end, like the picture. You can finish your show.'],
 } satisfies Record<string, string[]>;
