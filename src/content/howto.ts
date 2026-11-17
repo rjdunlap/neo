@@ -103,6 +103,7 @@ import { HOW_TO as penguinSlideHowTo } from '../games/penguin-slide/howto.ts';
 import { HOW_TO as petKitchenHowTo } from '../games/pet-kitchen/howto.ts';
 import { HOW_TO as petSaysHowTo } from '../games/pet-says/howto.ts';
 import { HOW_TO as photoSafariHowTo } from '../games/photo-safari/howto.ts';
+import { HOW_TO as picnicPantryHowTo } from '../games/picnic-pantry/howto.ts';
 import { HOW_TO as pictureGraphHowTo } from '../games/picture-graph/howto.ts';
 import { HOW_TO as pictureLogicHowTo } from '../games/picture-logic/howto.ts';
 import { HOW_TO as pileMatchHowTo } from '../games/pile-match/howto.ts';
@@ -296,6 +297,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pet-kitchen': petKitchenHowTo,
   'pet-says': petSaysHowTo,
   'photo-safari': photoSafariHowTo,
+  'picnic-pantry': picnicPantryHowTo,
   'picture-graph': pictureGraphHowTo,
   'picture-logic': pictureLogicHowTo,
   'pile-match': pileMatchHowTo,

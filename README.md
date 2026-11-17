@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (21), **Rainbow Meadow** (16), **Puzzle Peaks** (16), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (13, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (16), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (13, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 138 games, and "grown-up" (13 and up) is played by 21 games: the 15 grown-up puzzles and 6 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 177 games; the 162 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 139 games, and "grown-up" (13 and up) is played by 21 games: the 15 grown-up puzzles and 6 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -148,6 +148,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: one big lamp, a touch anywhere turns it, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–school | Cozy Village | 12 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 7 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |
+| [Picnic Pantry](docs/games/picnic-pantry.md) | school | Cozy Village | 1 | tap two of three dish cards and watch their tokens hop out of three pantry jars; ring the basket bell to lay a picnic for four friends when the pantry can cover both dishes |
 | [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
 | [Swap Meet](docs/games/swap-meet.md) | toddler–school | Cozy Village | 4 | trade pictured toys, with both objects crossing |
 | [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 3 | count pictured toy preferences, then everyone plays |
@@ -409,6 +410,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `brainbreak` | Brain Break levels 1 and 6: stone taps, two wrong taps and automatic help, requested Hint, a lit stone showing its total, every label within 88 units, portrait screenshot at 6 and one sticker per round | Demo: `FINGER_ONLY=brain-break FINGER_LEVELS=6` |
 | `pyramid` | Pyramid Solitaire levels 1, 3 and 4 by default (`PYRAMID_LEVELS=9,10` plays only the named levels, including the lesson deals' blocked-then-lesson line): actual card taps, mismatched pair and hint, repeated-hint accounting, Undo/Start over, legal dead-end recovery, portrait targets, one sticker per round, land launch, home return and interruption | Demo: `FINGER_ONLY=pyramid-solitaire` |
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
+| `pantry` | Picnic Pantry level 1: free bell and full-blanket taps, one miss on the pair that does not fit, the pause sheet's hint counted once, a laid picnic, Another way? with the pair that does not fit (free) and the other menu, the second picnic by the demonstration bot, an upright phone screenshot and one sticker (about 15 s) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=picnic-pantry` |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
