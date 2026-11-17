@@ -254,7 +254,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Ribbon Workshop
 
-*school* · [Ribbon Workshop](games/ribbon-workshop.md)
+*school–grown-up* · [Ribbon Workshop](games/ribbon-workshop.md)
 
 ### Paint Mixer
 

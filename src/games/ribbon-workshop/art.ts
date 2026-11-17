@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
-import { ink, swatch, type ColorName } from '../../art/palette';
+import { ink, swatch, wood, type ColorName } from '../../art/palette';
 
-/** Ribbon Workshop's drawings, shared by the gift levels (index.ts) and Whole Switch (switch.ts). */
+/** Ribbon Workshop's drawings, shared by the gift levels (index.ts), Whole Switch (switch.ts) and Ribbon Cases (cases.ts). */
 
 export const RIBBON_H = 64;
 
@@ -58,6 +58,19 @@ export function scissorsIcon(): Graphics {
     .lineTo(-14, -26)
     .stroke({ width: 6, color: ink });
   return g;
+}
+
+/** The spool: one whole as a striped bar from `x` to `x + len`, centred on `y`, with a wooden cap at each end. */
+export function spoolBar(g: Graphics, x: number, y: number, len: number, h: number) {
+  g.roundRect(x, y - h / 2, len, h, 8)
+    .fill(swatch.purple.light)
+    .stroke({ width: 4, color: swatch.purple.line });
+  for (let at = 35; at < len; at += 35) g.moveTo(x + at, y - h / 2 + 2).lineTo(x + at - 10, y + h / 2 - 2);
+  g.stroke({ width: 3, color: swatch.purple.fill });
+  for (const end of [x, x + len])
+    g.roundRect(end - 7, y - h / 2 - 13, 14, h + 26, 6)
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line });
 }
 
 /** A short dashed line, for the target outline. */

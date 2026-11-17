@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 177 games; the 162 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 139 games, and "grown-up" (13 and up) is played by 21 games: the 15 grown-up puzzles and 6 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 177 games; the 162 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 139 games, and "grown-up" (13 and up) is played by 22 games: the 15 grown-up puzzles and 7 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -133,7 +133,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Number Trails](docs/games/number-trails.md) | preschool–pre-K | Counting Cove | 6 | follow a firefly along a numeral, starting at the green ring and arrow (at preschool, *First numbers*: just 1, 2, 3 or 7), then watch that many things pop up and count them |
 | [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
 | [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
-| [Ribbon Workshop](docs/games/ribbon-workshop.md) | school | Counting Cove | 4 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |
+| [Ribbon Workshop](docs/games/ribbon-workshop.md) | school–grown-up | Counting Cove | 5 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |
 | [Paint Mixer](docs/games/paint-mixer.md) | school | Counting Cove | 6 | tap a pot to pour a drop into the bucket until its colour is the sample jar's, the way a recipe scales |
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
 | [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 9 | scrub mud off the pet |

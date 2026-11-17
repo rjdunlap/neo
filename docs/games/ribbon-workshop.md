@@ -2,13 +2,14 @@
 
 <!-- generated: from src/games/ribbon-workshop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ribbon-workshop` · **Land:** Counting Cove · **Ages:** school–grown-up · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** fractions, equivalent-fractions, measurement
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1, 2, 3, 6 |
+| school | 1, 2, 3, 6, 7 |
+| grown-up | 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,6 +17,7 @@
 | 2 | Snip a half: a half, then a quarter that needs the scissors |
 | 3 | Three quarters: ¾ as ½ + ¼, then from two halves with a snip |
 | 6 | Whole Switch: one ribbon is a half of the short spool and a quarter of the long one; choose the whole, then name the part |
+| 7 | Ribbon Cases: two gifts share one tray; make three quarters twice, then repair it when the order changes to a whole and a half |
 
 <!-- end generated -->
 

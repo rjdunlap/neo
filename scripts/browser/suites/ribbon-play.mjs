@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished }) {
-  /** Ribbon Workshop: level 1 with two wrong checks (the glow and its one hint), both gifts by real taps; level 3's snip gift with its tempting too-long ribbon; level 6 Whole Switch with two wrong checks, a free same check and undo; portrait. */
+  /** Ribbon Workshop: level 1 with two wrong checks (the glow and its one hint), both gifts by real taps; level 3's snip gift with its tempting too-long ribbon; level 6 Whole Switch with two wrong checks, a free same check and undo; level 7 Ribbon Cases with a refused place, two wrong checks and the tag-2 repair; portrait. */
   async function ribbonPlay() {
     // Follow the hint path with real taps until the round finishes (the ghost finger's rule).
     const playOut = () =>
@@ -178,9 +178,96 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }),
       [6, 2, 1],
     );
+    // Level 7, Ribbon Cases (portrait): an empty check, a refused place on a full bench, two wrong checks (the glow and its one hint), tag 1 by the hint path, then the tag-2 repair by hand: a return, a select and a place.
+    await launch('ribbon-workshop', 7);
+    const cases = await page.evaluate(async () => {
+      const g = neo.scene.game,
+        out = [];
+      const until = async (fn) => {
+        for (let i = 0; i < 80 && !fn(); i++) await kit.sleep(100);
+      };
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.state.active]);
+      // Four quarters make the top ribbon a whole: the half is refused there, and nothing counts.
+      for (const p of g.state.tray.filter((p) => p.size === 1)) {
+        kit.tapOn(g.trayCards.get(p.id));
+        await kit.sleep(300);
+      }
+      kit.tapOn(g.trayCards.get(g.state.tray[0].id));
+      await kit.sleep(400);
+      out.push([g.state.rails[0].length, g.state.tray.map((p) => p.size).join(''), g.misses]);
+      // The top ribbon is too long and the bottom gift has none: a miss, then a second with the glow and one hint.
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tally.glow, g.bench.rails]);
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tally.glow]);
+      for (let i = 0; i < 40 && g.bench.tag === 1; i++) {
+        const t = g.autotouch();
+        if (t) kit.tapOn(t.tap.on);
+        await kit.sleep(t ? 300 : 400);
+      }
+      await until(() => g.bench.tag === 2 && !g.busy);
+      await kit.sleep(700);
+      out.push([
+        [...g.bench.requests].sort().join(''),
+        g.state.tray.length,
+        g.bench.tally.glow,
+        g.bench.canUndo,
+        g.orderCard.visible,
+      ]);
+      return out;
+    });
+    assert.deepEqual(
+      cases,
+      [
+        [0, 0, 0],
+        [4, '2', 0],
+        [1, 0, false, ['long', 'short']],
+        [2, 1, true],
+        ['24', 0, false, false, true],
+      ],
+      'Ribbon Cases tag 1: empty check and refused place free, two misses and the glow, then the order changes',
+    );
+    await screenshot('ribbon-workshop-7-portrait');
+    const repair = await page.evaluate(async () => {
+      const g = neo.scene.game,
+        out = [];
+      const grows = g.bench.requests[0] === 4 ? 0 : 1,
+        quarter = g.state.rails[1 - grows].find((p) => p.size === 1);
+      // A quarter comes off the gift that shrinks, the growing gift is chosen, and the quarter joins it.
+      kit.tapOn(g.railPieces.get(quarter.id));
+      await kit.sleep(300);
+      out.push(g.state.tray.map((p) => p.id).join() === String(quarter.id));
+      kit.tapOn(g.gifts[grows]);
+      await kit.sleep(300);
+      out.push(g.state.active === grows);
+      kit.tapOn(g.trayCards.get(quarter.id));
+      await kit.sleep(300);
+      out.push(g.bench.rails);
+      kit.tapOn(g.bow);
+      for (let i = 0; i < 80 && !g.finale; i++) await kit.sleep(100);
+      out.push([g.finale, g.misses, g.hints]);
+      return out;
+    });
+    assert.deepEqual(
+      repair,
+      [true, true, ['right', 'right'], [true, 2, 1]],
+      'Ribbon Cases tag 2: a return, a select and a place repair the changed order',
+    );
+    await finished('ribbon-workshop');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('ribbon-workshop').history.at(-1);
+        return [r.level, r.misses, r.hints];
+      }),
+      [7, 2, 1],
+    );
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
-      'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), portrait passed',
+      'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), level 7 Ribbon Cases (refused place, misses, glow, the changed order repaired), portrait passed',
     );
   }
 
