@@ -1,0 +1,5 @@
+# 2026-11-17 — Bubble Pop: big and little, which one has the dots, pictures in bubbles (PR #1768)
+
+**Changed:** level 16 (big and little, toddler), level 17 (which one has the dots, preschool), and eight code-drawn pictures in free-play bubbles; ten voice lines with clips (282); how-to and mode cards.
+**Ran:** typecheck; `npm test` (361 files, 7914 passed, 1 skipped); `npm run build`; one headless scripted play at an upright 390 × 844 view of level 16 (two wrong sizes: 2 misses, 1 hint, right size glowed, 8 pops, rainbow, one sticker) and level 17 (one wrong bubble, six asks 3, 2, 4, 1, 3, 1 with one of each count always showing, one sticker); a rubber-duck picture bubble (bath) popped and released, no page errors; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=16,17` passed; upright screenshots of 16 and 17 reviewed; a read-only game-reviewer pass found nothing serious.
+**Not run:** the offline suite, `world`, any other browser suite. The scripted play drove the game's own tap handler from the page; the `fingerdemo` run covers real touch dispatch.
