@@ -45,6 +45,10 @@ Frame rate is not in the table: headless Chrome uses software rendering, so only
 
 Verification: `LAB_VIEW=3d` and `LAB_VIEW=2d` with `GAME_URL=http://localhost:4173 node scripts/sprout-preview-check.mjs` (preview running).
 
-## Phone playtest follow-up (claimed 2026-11-16)
+## Phone playtest follow-up (2026-11-16)
 
-Branch `claude/art-lab-eyes-and-crash`. From the developer's phone: both views hold 60 fps, Live 3D looks better, Sprout's eyes are not liked, and Live 3D stopped working twice. This slice hardens the live view, makes the page report what happened when it stops, and adds alternative eye styles to switch between. Expected files: `src/dev/art-lab/`, `art-lab/index.html`, `scripts/art/sprout-porch.py`, `scripts/art/sprout-porch-sprites.py`, `src/dev/sprout/`, this packet and a verification entry.
+From the developer's phone: both views hold 60 fps with a 17 ms slowest frame, **Live 3D looks better**, Sprout's eyes are not liked, and Live 3D stopped working twice (how it stopped was not reported). So real-time 3D is fast enough on that phone for a scene this size, and the open questions are its reliability and the character's face.
+
+**Reliability.** The cause is not known; nothing could be reproduced in headless Chrome. One defect was found by reading the code and fixed: leaving the page frees the renderer, so a page brought back by a back swipe was a dead canvas. It now reloads instead. The page also reports what happens next time, on the readout: a count of graphics-context losses (the browser taking the GPU away; both renderers restore themselves), any script error, and a note when the previous visit ended without the page closing normally, which is what a tab killed for memory looks like.
+
+**Eyes.** `sprout-porch.py` now models three styles under the head, each with its own blink pivots, and Live 3D switches between them in place (`?eyes=Bead` opens on one): **Classic** (the original glossy ovals in a cream ring), **Bead** (small round beads set wider and lower) and **Soft** (flat ovals, no ring, one glint). The extra styles add 90 KB to the uncompressed model and stay out of the stills, so the pre-rendered view keeps Classic.

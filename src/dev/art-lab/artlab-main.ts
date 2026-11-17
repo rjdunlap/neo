@@ -37,6 +37,41 @@ function downloaded(): string {
   return `download ${kb(code + art)} (code ${kb(code)}, art ${kb(art)})`;
 }
 
+// What went wrong, if anything, kept on screen so a phone playtest can report it.
+const notes: string[] = [];
+const note = (text: string) => {
+  if (!notes.includes(text)) notes.push(text);
+  console.warn(text);
+};
+// A marker that survives only when the page never got to say goodbye: the browser killed or reloaded the tab.
+const OPEN = 'artlab-open';
+try {
+  const before = localStorage.getItem(OPEN);
+  if (before) note(`last visit (${before}) ended without closing: the browser may have killed the tab`);
+  localStorage.setItem(OPEN, mode);
+  window.addEventListener('pagehide', () => localStorage.removeItem(OPEN));
+} catch {
+  // Private tabs may refuse storage; the marker is only a diagnostic.
+}
+window.addEventListener('error', (e) => note(`error: ${e.message}`));
+window.addEventListener('unhandledrejection', (e) => note(`error: ${String(e.reason)}`));
+// The browser can take the graphics context away (memory pressure, a long spell in the background). Neither event
+// bubbles, so listen in the capture phase. Both renderers restore themselves; this only counts and says so.
+let lost = 0;
+host.addEventListener(
+  'webglcontextlost',
+  () => {
+    lost++;
+    status.textContent = 'The browser paused the graphics. Restoring…';
+  },
+  true,
+);
+host.addEventListener('webglcontextrestored', () => (status.textContent = 'Graphics restored.'), true);
+// Leaving frees the renderer; a page brought back from the back-forward cache would be a dead canvas, so start again.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) location.reload();
+});
+
 let view: LabView | undefined;
 let readyMs = 0;
 // Frame pacing as the screen saw it: every animation frame's gap, whichever renderer is running.
@@ -56,6 +91,8 @@ function meter(now: number) {
       `${fps.toFixed(0)} fps · slowest frame ${worst.toFixed(0)} ms (5 s)`,
       `ready in ${(readyMs / 1000).toFixed(2)} s · ${downloaded()}`,
       `${view.detail()} · ${host.clientWidth}×${host.clientHeight} at ${pixelRatio}×`,
+      ...(lost ? [`graphics context lost ${lost}×`] : []),
+      ...notes,
     ].join('\n');
   }
   requestAnimationFrame(meter);
@@ -70,9 +107,30 @@ try {
   waveButton.addEventListener('click', view.hello);
   ballButton.addEventListener('click', view.roll);
   waveButton.disabled = ballButton.disabled = false;
+  if (view.eyeStyles && view.setEyes) {
+    const bar = $('eyes');
+    const pick = (style: string) => {
+      view?.setEyes?.(style);
+      for (const b of bar.querySelectorAll('button'))
+        b.setAttribute('aria-pressed', String(b.textContent === style));
+      query.set('eyes', style);
+      history.replaceState(null, '', `?${query}`);
+    };
+    for (const style of view.eyeStyles) {
+      const b = document.createElement('button');
+      b.textContent = style;
+      b.addEventListener('click', () => pick(style));
+      bar.append(b);
+    }
+    const asked = query.get('eyes');
+    pick(asked && view.eyeStyles.includes(asked) ? asked : view.eyeStyles[0]);
+    bar.hidden = false;
+  }
   window.addEventListener('pagehide', view.dispose, { once: true });
   document.body.dataset.ready = 'true';
 } catch (error) {
   status.textContent = 'The porch could not load. Refresh to try again.';
+  note(`could not load: ${String(error)}`);
+  readout.textContent = notes.join('\n');
   console.error(error);
 }

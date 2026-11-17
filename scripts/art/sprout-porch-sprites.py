@@ -29,15 +29,17 @@ r.film_transparent = True
 r.image_settings.file_format = 'WEBP'; r.image_settings.color_mode = 'RGBA'; r.image_settings.quality = 86
 bpy.context.view_layer.update()
 
-def meshes(root):
-    return [o for o in [root, *root.children_recursive] if o.type == 'MESH']
-
 sprout, head, arm, ball = ob['Sprout'], ob['Head'], ob['RightArm'], ob['Ball']
-eyes = [o for o in head.children if o.type == 'EMPTY' and o.name.startswith('Eye')]
+# The lab's other eye styles (EyesBead, EyesSoft) are marked hide_render by sprout-porch.py and stay out of every still.
+SPARE = [o for o in ob if o.type == 'MESH' and o.hide_render]
+eyes = [o for o in ob['EyesClassic'].children if o.type == 'EMPTY']
 assert len(eyes) == 2, 'two eye pivots'
+def meshes(root):
+    return [o for o in [root, *root.children_recursive] if o.type == 'MESH' and o not in SPARE]
+
 SPROUT, HEAD, ARM, BALL = meshes(sprout), meshes(head), meshes(arm), meshes(ball)
 BODY = [m for m in SPROUT if m not in HEAD and m not in ARM]
-STATIC = [o for o in ob if o.type == 'MESH' and o not in SPROUT and o not in BALL]
+STATIC = [o for o in ob if o.type == 'MESH' and o not in SPROUT and o not in BALL and o not in SPARE]
 EVERY = [o for o in ob if o.type == 'MESH']
 
 def px(point):
@@ -60,7 +62,7 @@ def render(name, seen, box=None, with_ball=False, behind=(), without=()):
         o.visible_camera = o in seen or o in behind
         o.is_holdout = o in behind
     for o in EVERY:
-        o.hide_render = o in without or (o in BALL and not with_ball)
+        o.hide_render = o in SPARE or o in without or (o in BALL and not with_ball)
     x0, y0, x1, y1 = box or (0, 0, SIZE, SIZE)
     r.use_border = r.use_crop_to_border = box is not None
     r.border_min_x, r.border_max_x = x0 / SIZE, x1 / SIZE

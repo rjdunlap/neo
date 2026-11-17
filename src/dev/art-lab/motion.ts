@@ -4,6 +4,9 @@ export type LabView = {
   hello(): void;
   roll(): void;
   dispose(): void;
+  /** Sprout's eye styles, where the view can swap them live; the first is the one showing. */
+  eyeStyles?: readonly string[];
+  setEyes?(style: string): void;
   /** What the renderer is drawing, for the readout. */
   detail(): string;
 };

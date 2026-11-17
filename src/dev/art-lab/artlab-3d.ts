@@ -41,18 +41,38 @@ export const mount: Mount = async (host, say, pixelRatio) => {
 
   const gltf = await new GLTFLoader().loadAsync(asset);
   scene.add(gltf.scene);
-  const eyes: T.Object3D[] = [];
   gltf.scene.traverse((o) => {
     if (o instanceof T.Mesh) {
       o.castShadow = true;
       o.receiveShadow = true;
-    } else if (/^Eye(?:[_.]?\d+)?$/.test(o.name)) eyes.push(o);
+    }
   });
+  // scripts/art/sprout-porch.py models each eye style as a group under the head holding two blink pivots.
+  const styles = new Map<string, { group: T.Object3D; pivots: T.Object3D[] }>();
+  for (const [label, name] of [
+    ['Classic', 'EyesClassic'],
+    ['Bead', 'EyesBead'],
+    ['Soft', 'EyesSoft'],
+  ]) {
+    const group = gltf.scene.getObjectByName(name);
+    const pivots = group?.children.filter((o) => !(o instanceof T.Mesh)) ?? [];
+    if (!group || pivots.length !== 2) throw new Error(`Missing eye style ${name}`);
+    styles.set(label, { group, pivots });
+  }
+  let eyes: T.Object3D[] = [];
+  const setEyes = (style: string) => {
+    for (const [label, { group, pivots }] of styles) {
+      group.visible = label === style;
+      for (const pivot of pivots) pivot.scale.y = 1;
+      if (group.visible) eyes = pivots;
+    }
+  };
+  setEyes('Classic');
   const sprout = gltf.scene.getObjectByName('Sprout');
   const head = gltf.scene.getObjectByName('Head');
   const arm = gltf.scene.getObjectByName('RightArm');
   const ball = gltf.scene.getObjectByName('Ball');
-  if (!sprout || !head || !arm || !ball || eyes.length !== 2) throw new Error('Missing model pivots');
+  if (!sprout || !head || !arm || !ball) throw new Error('Missing model pivots');
   const armRest = arm.rotation.z;
   const ballRest = ball.position.clone();
 
@@ -66,6 +86,8 @@ export const mount: Mount = async (host, say, pixelRatio) => {
       roll = time;
       say('A little nudge, right back to you.');
     },
+    eyeStyles: [...styles.keys()],
+    setEyes,
     detail: () =>
       `Three.js r${T.REVISION} · ${renderer.info.render.calls} draw calls · ${Math.round(renderer.info.render.triangles / 100) / 10}k triangles`,
     dispose() {
