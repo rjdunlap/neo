@@ -42,7 +42,9 @@ const ANSWER_SEEKING = ['what', 'which', 'why', 'how', 'tell', 'say', 'count', '
 
 describe('At-home notes', () => {
   it('has a registered game with an off-screen line behind every entry, and only band keys the game lists', () => {
-    expect(noted.length).toBeGreaterThanOrEqual(8);
+    expect(noted.length).toBeGreaterThanOrEqual(16);
+    // Every land has at least one game with notes, so a starter walk can find a complete idea in any of them.
+    for (const land of LANDS) expect(land.games.some((id) => id in AT_HOME_NOTES), land.id).toBe(true);
     for (const g of noted) {
       expect(g.offScreen, g.id).toBeTruthy();
       const entry = AT_HOME_NOTES[g.id];
@@ -168,9 +170,12 @@ describe('the kit list', () => {
 
 describe('the At-home card', () => {
   it('starts with three complete ideas from three lands when nothing is played', () => {
-    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as Band[])
-      expect(ids(card(band)), band).toEqual(['bounce-back', 'jelly-drums', 'roundup']);
-    expect(ids(card('school'))).toEqual(['bounce-back', 'jelly-drums', 'little-helpers']);
+    // Lands in order: Bubble Beach, Music Mountain, then Treehouse, whose one game with notes starts at preschool;
+    // below that the walk reaches Barnyard, where Peekaboo Barn comes before Roundup.
+    for (const band of ['lap', 'toddler'] as Band[])
+      expect(ids(card(band)), band).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
+    for (const band of ['preschool', 'prek', 'school'] as Band[])
+      expect(ids(card(band)), band).toEqual(['bounce-back', 'jelly-drums', 'pixel-pictures']);
     // Roundup stops at pre-K: a school profile still sees it and can play it onto the card, but it is not suggested.
     expect(ids(card('school', { roundup: NOW - DAY }))).toEqual(['roundup', 'bounce-back', 'jelly-drums']);
     expect(card('school', { roundup: NOW - DAY }).ideas[0].note).not.toBeNull();
@@ -187,7 +192,7 @@ describe('the At-home card', () => {
       'a large soft ball',
       'pots and pans',
       'a teddy or other soft toy',
-      'a laundry basket or box',
+      'a blanket',
     ]);
   });
 
@@ -199,7 +204,7 @@ describe('the At-home card', () => {
     expect(new Set(lands).size).toBe(3);
     // A played game in a starter's land takes that land's place.
     const d = card('toddler', { 'bounce-back': NOW - DAY });
-    expect(ids(d)).toEqual(['bounce-back', 'jelly-drums', 'roundup']);
+    expect(ids(d)).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
     expect(d.ideas.map((i) => i.played)).toEqual([true, false, false]);
   });
 
@@ -223,7 +228,7 @@ describe('the At-home card', () => {
   it('skips a played game with no line at her band, and a round older than seven days', () => {
     expect(offScreenFor(byId('garden-grow'), 'toddler', NAME)).toBeNull();
     const c = card('toddler', { 'garden-grow': NOW - DAY, opposites: NOW - 8 * DAY });
-    expect(ids(c)).toEqual(['bounce-back', 'jelly-drums', 'roundup']);
+    expect(ids(c)).toEqual(['bounce-back', 'jelly-drums', 'peekaboo-barn']);
     expect(c.ideas.some((i) => i.played)).toBe(false);
     expect(card('toddler', { opposites: NOW - 7 * DAY }).ideas[0]).toMatchObject({ played: true });
   });

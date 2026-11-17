@@ -360,11 +360,11 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
 
     await setBand('lap');
     const lap = await read();
-    assert.deepEqual(lap.ids, ['bounce-back', 'jelly-drums', 'roundup'], 'the lap starters, one land each');
+    assert.deepEqual(lap.ids, ['bounce-back', 'jelly-drums', 'peekaboo-barn'], 'the lap starters, one land each');
     for (const l of lap.labels) assert.deepEqual(l, ['Try:', 'Notice:', 'Say:'], 'each starter is complete');
     assert.equal(
       lap.kit,
-      'Things from around the house: a large soft ball, pots and pans, a teddy or other soft toy, a laundry basket or box.',
+      'Things from around the house: a large soft ball, pots and pans, a teddy or other soft toy, a blanket.',
     );
     assert.equal(lap.pressable, 0, 'nothing to press in the section');
     assert.ok(!lap.page.includes('Off-screen idea'), 'the old lines are gone');
@@ -379,7 +379,7 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
 
     await setBand('school');
     const school = await read();
-    assert.deepEqual(school.ids, ['bounce-back', 'jelly-drums', 'little-helpers'], 'the school starters');
+    assert.deepEqual(school.ids, ['bounce-back', 'jelly-drums', 'pixel-pictures'], 'the school starters');
     assert.ok(school.text.includes('What makes you think so?'), "school takes the band's own Say");
     assert.ok(school.sideways <= 0 && school.panelSideways <= 0, 'no sideways scroll at school either');
     await page.locator('[data-at-home]').scrollIntoViewIfNeeded();
