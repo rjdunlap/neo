@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With all 48 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batches 4 to 6 left every starter unchanged. The rule tests pin the starters.
+With all 55 games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap (Peekaboo Barn comes before Roundup in Barnyard's order), Bounce Back, Jelly Drums and Recipe Workshop at toddler (Treehouse has a complete toddler game from batch 3), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse's first complete game at those bands is Pixel Pictures, third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2, and toddler matched lap until batch 3; batches 4 to 7 left every starter unchanged. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -249,6 +249,25 @@ Eight more games in bands already served, so the table holds 48. Wording is copi
 Lands: Puzzle Peaks (Logic Grid, Ferry Jam, Critter Crossing), Story Grove (Not Always, Thought Bubbles) and Tinker Lab (Ramp Race, Inchworm, Chain Reaction). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited. The batch 4 exclusions still hold.
 
 Still eligible for a later batch (the *Try* is clear of the deferred words and names a kit item at every band): Memory Desk, Sorting Machine, Orchard Rows, Welcome Ways, Shape Buddies, Playdate Workshop and Read-Do.
+
+## Batch 7 (built 2026-11-17, PR #1761)
+
+The last seven eligible games, in bands already served, so the table holds 55. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged. Memory Desk, Sorting Machine, Orchard Rows and Playdate Workshop have an `all` entry only; a `grownup` profile sees no notes for Sorting Machine.
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Memory Desk (school) | `all` | Put a toy in a box and close the lid, hold up a different toy, and ask "what is in the box?" before opening it. | Does {name} answer straight away, look at the toy you are holding or ask to open the box? | What is in the box? Open it and see. Now you hide one for me. |
+| Sorting Machine (school, grownup; grownup shows no notes) | `all` | Make a shoebox machine with a "hat" card slot and two paper doors, and send stuffed toys through: did the hat open it? | Does {name} guess which door will open before a toy goes through? | Which door will the hat open? What would a second card change? |
+| Orchard Rows (school) | `all` | Arrange blocks in three rows of four. Count by rows, then look from the side and count by columns. Did any blocks appear? | Does {name} count the blocks one by one, row by row or say the total straight away? | Three rows of four. How many is that? Is it the same from the side? |
+| Welcome Ways (toddler–school) | `all` | For preschool and older: with large toy blocks, make an entrance for two toys that move differently. Let each toy try it. | Does {name} widen the entrance, move a block aside or push each toy through? | In rolls the car. In hops the bunny. Room for both! |
+| | `school` | (the same) | Does {name} change the entrance after watching the second toy try it? | Did it work for both toys? What would you change for a third? |
+| Shape Buddies (preschool–school) | `all` | Slide a large soft toy over a cardboard bridge into a bowl. Change the bridge or bowl and try again. For a step down, slide it down a cardboard ramp from a cushion to the floor and into the bowl. For two make one, lay a flat book across two cushions with a bowl at the far end, and roll a large soft ball along it into the bowl. For which way round, turn the ramp to face the other way and see which way the toy slides. | Does {name} slide the toy over, move the bowl or change the bridge? | Over the bridge and into the bowl! Now move the bowl. Again? |
+| | `school` | (the same) | Does {name} point to where the toy will land before letting go? | What did you change? Where do you think it will land now? |
+| Playdate Workshop (preschool, pre-K) | `all` | With two toys and one crayon, act out taking turns to make two pictures with {name}. Either of you can say no thanks. | Does {name} pass the crayon, keep it a little longer or say no thanks? | Bear has the crayon now. Rabbit is next. Your turn, Rabbit! |
+| Read & Do (pre-K, school) | `all` | Write big pig or green hat on a card and find a matching toy or drawing together. | Does {name} read the words aloud, point to each word or go straight to find a toy? | It says big pig. Let us find one! What shall we write next? |
+| | `school` | (the same) | Does {name} write a card for you to read and match? | Your turn to write one. Could two toys match your card? |
+
+Lands: Barnyard (Orchard Rows), Story Grove (Read & Do, Playdate Workshop) and Tinker Lab (Memory Desk, Sorting Machine, Shape Buddies, Welcome Ways). Every nothing-played starter is unchanged at every band (the rule tests still pin Bounce Back, Jelly Drums and Peekaboo Barn at lap, Recipe Workshop third at toddler and Pixel Pictures third from preschool up), so the `athome` browser case was not needed. The batch 6 list of games still eligible is now empty: no eligible game remains until the kit rule or the deferred classes are revisited, and the lap gaps in Treehouse and Cozy Village stay open until the kit rule is revisited. The batch 4 exclusions still hold.
 
 ## Open decisions
 
