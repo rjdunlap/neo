@@ -1,0 +1,5 @@
+# 2026-11-16 — Spinner Fair level 9, Rig it (PR #1732)
+
+**Changed:** `spinner-fair` level 9, Rig it (CS3a): an eight-wedge wheel made to a requested share and an 80-spin proof run; wheel functions take the wheel's size; the run player (level 6) and movable wedges (level 5) were extracted and shared.
+**Ran:** typecheck; `npm test` (353 files, 7,352 passed, 1 skipped; 101 rule tests); `BROWSER_SUITE=spinnerfair9` (upright 768×1024: wrong Check 1/0, drags and taps not counted, right Check and 80 spins, 72 of 80 asked 7 of 8; two wrong Checks lit the glow 3/1; asked-for help; saved 3 misses, 1 hint; two portrait screenshots); `spinnerfair45` and `spinnerfair6` regression (run because their code moved); `fingerdemo` at level 9 school (21.6 s); `npm run build`; a game-reviewer read of the diff.
+**Not run:** the other spinner-fair suites (levels 1–3, 7, 8: files only gained default parameters), `world`, offline, landscape browser play (landscape is covered by the layout rule tests at six views).

@@ -35,14 +35,13 @@ import {
   planFor,
   settleLayout,
   spinRun,
-  stopRotation,
-  wedgeAt,
   type Kind,
   type Plan,
   type SetSpec,
   type SettleLayout,
   type Spin,
 } from './logic';
+import { RunPlayer } from './runs';
 
 /*
  * Spinner Fair level 6, Watch it settle: a two-critter wheel spun 12, then 60, then 240 times, while a strip of the two
@@ -84,17 +83,10 @@ export class SettleGame implements Game {
   art!: SpinnerArt;
   cards: Container[] = [];
   readonly fast: Container;
-  private readonly reduce =
-    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   private L: SettleLayout;
   private clock = 0;
-  private lastWedge = -1;
-  /** Spins of the playing run still to land, the pace they land at, and what to call when the last one has. */
-  private queue: Spin[] = [];
-  private pace = 0;
-  private owed = 0;
-  private landed = 0;
-  private drained: (() => void) | null = null;
+  /** Lands each run's spins, one by one or as a fast-forward. */
+  private readonly runs: RunPlayer;
   /** Bumped by every new line of hers or the pet's, so an older chain of lines stops. */
   private talk = 0;
   private readonly backdrop: Backdrop;
@@ -112,6 +104,11 @@ export class SettleGame implements Game {
     this.plan = planFor(ctx.level);
     this.sets = makeRound(ctx.level, ctx.rng);
     this.L = settleLayout(ctx.view);
+    this.runs = new RunPlayer(ctx.tw, WEDGES, {
+      wheel: () => this.art.wheel,
+      land: (s, loud) => this.land(s, loud),
+      redraw: () => this.drawCounts(),
+    });
     this.backdrop = new Backdrop(
       {
         sky: [cream, swatch.blue.light],
@@ -191,8 +188,7 @@ export class SettleGame implements Game {
 
   destroy() {
     this.finished = true;
-    this.queue = [];
-    this.drained = null;
+    this.runs.stop();
     this.killTweens();
   }
 
@@ -307,38 +303,8 @@ export class SettleGame implements Game {
     this.talk++;
     this.talking = false;
     this.spinning = true;
-    const spins = spinRun(this.ctx.rng, n);
-    if (slow && !this.reduce) {
-      for (const s of spins) {
-        const from = this.art.wheel.rotation;
-        this.lastWedge = wedgeAt(from);
-        await this.ctx.tw.to(
-          this.art.wheel,
-          { rotation: stopRotation(from, s.angle, 0) },
-          { duration: seconds / n - 0.03, ease: ease.outCubic },
-        );
-        if (this.finished || set !== this.setIndex) return false;
-        this.land(s, true);
-      }
-    } else {
-      this.queue = spins;
-      this.pace = n / seconds;
-      this.owed = 0;
-      await new Promise<void>((done) => (this.drained = done));
-      if (this.finished || set !== this.setIndex) return false;
-      // The wheel comes to rest on the run's last spin.
-      const last = spins[spins.length - 1];
-      if (!this.reduce) {
-        await this.ctx.tw.to(
-          this.art.wheel,
-          { rotation: stopRotation(this.art.wheel.rotation, last.angle, 0) },
-          { duration: 0.35, ease: ease.outCubic },
-        );
-        if (this.finished || set !== this.setIndex) return false;
-      }
-      sfx.bell(5, 0.25);
-    }
-    this.art.wheel.rotation %= Math.PI * 2;
+    const alive = () => !this.finished && set === this.setIndex;
+    if (!(await this.runs.play(spinRun(this.ctx.rng, n), seconds, slow, alive))) return false;
     this.spinning = false;
     if (this.phase === 'run') this.runDone();
     return true;
@@ -349,7 +315,6 @@ export class SettleGame implements Game {
     const kind = this.set.wheels[0][s.wedge];
     this.total++;
     if (kind === this.fav) this.count++;
-    this.landed++;
     if (loud) {
       sfx.bell(kind === this.fav ? 5 : 3, 0.2);
       this.drawCounts();
@@ -538,37 +503,7 @@ export class SettleGame implements Game {
   update(dt: number) {
     this.clock += dt;
     if (this.finished) return;
-    if (this.spinning && this.queue.length === 0 && !this.drained) {
-      // The twelve slow spins: a tick as each line passes the pointer.
-      const w = wedgeAt(this.art.wheel.rotation);
-      if (w !== this.lastWedge) {
-        this.lastWedge = w;
-        sfx.tick();
-      }
-    }
-    if (this.drained) {
-      // Fast-forward: the spins land at the run's pace, the wheel blurring round; a soft tick per spin, thinned when fastest.
-      this.owed += dt * this.pace;
-      // Reduced motion: the strip steps once per twelve spins, except the first twelve, which still land one by one.
-      const step = this.reduce && this.pace > 12 ? 12 : 1;
-      let landed = 0;
-      while (this.owed >= step && this.queue.length) {
-        for (let i = 0; i < step && this.queue.length; i++) this.land(this.queue.shift()!, false);
-        this.owed -= step;
-        landed += step;
-      }
-      if (landed) {
-        this.drawCounts();
-        const every = this.pace > 30 ? 4 : 1;
-        if (this.landed % every < landed) sfx.tick();
-      }
-      if (!this.reduce) this.art.wheel.rotation += dt * (12 + this.pace * 0.35);
-      if (!this.queue.length) {
-        const done = this.drained;
-        this.drained = null;
-        done();
-      }
-    }
+    this.runs.update(dt);
     this.glowRing.clear();
     this.art.glow.clear();
     if (!this.glowing || this.busy || this.phase !== 'ask') return;

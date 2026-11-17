@@ -632,11 +632,133 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       `Spinner Fair 8: upright, two sets of six spins, a wrong range card, ${slipped ? 'a block moved onto a taller tower (not counted)' : 'no levelling needed, so no taller move was tried'}, ${levelled} levelling moves, a wrong typical card and asked-for help (2/1); passed`,
     );
   }
+  /** Spinner Fair 9, upright: a wrong Check on the even wheel (one miss), a wedge dragged and wedges tapped across (never
+   * counted), the right Check and its 80-spin proof run; on wheel 2 two wrong Checks (the glow, one hint) and asked-for
+   * help handing the wedges and pressing Check. */
+  async function spinnerFairRigPlay() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('spinner-fair').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const state = () => page.evaluate(() => neo.scene.game.state);
+    const idle = async () => {
+      await page.waitForTimeout(150);
+      await page.waitForFunction(
+        () =>
+          neo.scene.finished || (!neo.scene.game.spinning && !neo.scene.game.busy && !neo.scene.game.rebuild),
+        null,
+        { timeout: 40000 },
+      );
+      await page.waitForTimeout(120);
+    };
+    const tapBox = async (i) => {
+      await page.evaluate((i) => kit.tapOn(neo.scene.game.boxes[i]), i);
+      await idle();
+    };
+    const check = async () => {
+      await page.evaluate(() => kit.tapOn(neo.scene.game.check));
+      await page.waitForTimeout(300);
+    };
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    await launch('spinner-fair', 9, 'Mia', 'school');
+    await idle();
+    let s = await state();
+    assert.deepEqual([s.phase, s.wheel.length, s.counts, s.right], ['make', 8, [4, 4], false]);
+    assert.ok([1, 3, 5, 7].includes(s.target.k), `wheel 1 asks for eighths (${s.target.k})`);
+    assert.deepEqual([s.target.n, s.target.of], [s.target.k, 8]);
+    const fav = s.favourite;
+    // A Check on the even wheel: a miss, and the wheel stays hers to change.
+    await check();
+    s = await state();
+    assert.deepEqual(
+      [s.misses, s.hints, s.phase, s.glowing],
+      [1, 0, 'make', false],
+      'a wrong Check: one miss',
+    );
+    // One wedge dragged onto the critter that needs it.
+    const to = s.racers.indexOf(s.next);
+    await page.evaluate(async (to) => {
+      const g = neo.scene.game,
+        from = g.racers[1 - to],
+        p = g.pieces.filter((x) => x.kind === from).at(to === 0 ? 0 : -1);
+      await kit.dragTo(p.node, g.boxes[to].getGlobalPosition());
+    }, to);
+    await idle();
+    s = await state();
+    assert.equal(s.counts[to], 5, 'a wedge dragged onto a box changes owner');
+    assert.equal(s.wheel.length, 8);
+    // A tap the wrong way and back: free either way.
+    await tapBox(1 - to);
+    assert.deepEqual((await state()).counts, [4, 4], 'a tap on a box hands it one wedge');
+    await tapBox(to);
+    for (s = await state(); s.next; s = await state()) await tapBox(s.racers.indexOf(s.next));
+    assert.deepEqual(
+      [s.counts[0], s.right, s.misses, s.hints],
+      [s.target.k, true, 1, 0],
+      'moves are never counted',
+    );
+    const order = await page.evaluate(() => neo.scene.game.total);
+    assert.equal(order, 0, 'no spin before Check');
+    await screenshot('spinner-fair-9-portrait');
+    await check();
+    await page.waitForFunction(() => neo.scene.game.state.proved !== null, null, { timeout: 30000 });
+    s = await state();
+    assert.equal(s.total, 80, 'the proof run is eighty spins');
+    assert.ok(s.proved >= 0 && s.proved <= 80);
+    log(
+      `Spinner Fair 9: wheel 1 ${s.target.n} out of every ${s.target.of} (k=${s.target.k}), proof run ${s.proved} of 80 (${Math.abs(s.proved - 10 * s.target.k) <= 10 ? 'about' : 'unusual'})`,
+    );
+    await page.waitForFunction(() => neo.scene.game.state.set === 1 && !neo.scene.game.busy, null, {
+      timeout: 40000,
+    });
+    s = await state();
+    assert.deepEqual([s.misses, s.hints], [1, 0], 'the proof run counted nothing');
+    assert.deepEqual([s.phase, s.counts, s.favourite, s.total], ['make', [4, 4], fav, 0]);
+    assert.ok([2, 6].includes(s.target.k), `wheel 2 asks for quarters (${s.target.k})`);
+    assert.equal(s.target.of, 4);
+    for (let i = 0; i < 2; i++) {
+      await check();
+      await page.waitForTimeout(300);
+    }
+    await page.waitForFunction(() => neo.scene.game.state.glowing, null, { timeout: 15000 });
+    s = await state();
+    assert.deepEqual(
+      [s.misses, s.hints],
+      [3, 1],
+      'the second wrong Check on a wheel lights the glow: one hint',
+    );
+    await page.waitForTimeout(300);
+    await screenshot('spinner-fair-9-glow-portrait');
+    // Asked-for help while the glow is on: the wedges are handed over, then Check is pressed. Still one hint.
+    for (let i = 0; i < 4 && (await state()).phase === 'make'; i++) {
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await idle();
+    }
+    s = await state();
+    assert.deepEqual(
+      [s.phase, s.counts[0], s.misses, s.hints],
+      ['proof', s.target.k, 3, 1],
+      'help finishes the wheel',
+    );
+    await finished('spinner-fair');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [3, 1], 'level 9 saved 3 misses, 1 hint');
+    log(
+      'Spinner Fair 9: upright, a wrong Check on the even wheel (1/0), a wedge dragged and wedges tapped across (not counted), the right Check and 80 spins; two wrong Checks on wheel 2 (3/1, the glow), help handed the wedges and pressed Check; passed',
+    );
+  }
   return {
     spinnerFairPlay,
     spinnerFairRacePlay,
     spinnerFairSettlePlay,
     spinnerFairDicePlay,
     spinnerFairTypicalPlay,
+    spinnerFairRigPlay,
   };
 }

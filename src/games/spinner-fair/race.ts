@@ -1,13 +1,12 @@
-import { Circle, Container, Graphics, Polygon, Rectangle } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, grass, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
-import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { hubCap, racerArt, spinner as spinnerArt, sw, wedgePiece, type SpinnerArt } from './art';
+import { checkButton, racerArt, spinner as spinnerArt, sw, type SpinnerArt } from './art';
 import {
   BIG,
   BTN_H,
@@ -36,6 +35,7 @@ import {
   type SetSpec,
   type Wheel,
 } from './logic';
+import { wedgePieces, type Piece } from './wedges';
 
 /*
  * Spinner Fair level 5, Fair or unfair?: two critters share one wheel and race a step per spin they win. She says whether
@@ -45,13 +45,6 @@ import {
 
 type Phase = 'ask' | 'even' | 'race';
 type Button = 'fair' | 'unfair' | 'check';
-
-interface Piece {
-  index: number;
-  kind: Kind;
-  node: Container;
-  drag: DragHandle;
-}
 
 export class RaceGame implements Game {
   readonly plan: Plan;
@@ -207,14 +200,8 @@ export class RaceGame implements Game {
     this.buttons.fair.addChild(seesaw(0));
     plate(this.buttons.unfair, BTN_W, swatch.red);
     this.buttons.unfair.addChild(seesaw(0.32));
-    plate(this.buttons.check, CHECK_W, swatch.green);
-    this.buttons.check.addChild(
-      new Graphics()
-        .moveTo(-24, 0)
-        .lineTo(-6, 18)
-        .lineTo(26, -18)
-        .stroke({ width: 11, color: swatch.green.fill, cap: 'round', join: 'round' }),
-    );
+    this.buttons.check.addChild(checkButton(CHECK_W, BTN_H));
+    this.buttons.check.hitArea = new Rectangle(-CHECK_W / 2, -BTN_H / 2, CHECK_W, BTN_H);
     for (const b of ['fair', 'unfair', 'check'] as Button[]) onTap(this.buttons[b], () => this.press(b));
   }
 
@@ -250,31 +237,14 @@ export class RaceGame implements Game {
 
   /** One movable piece per wedge, in the wheel's frame; the hub caps them. */
   private buildPieces() {
-    for (const p of this.pieces) {
-      p.drag.destroy();
-      this.ctx.tw.kill(p.node);
-      p.node.destroy({ children: true });
-    }
-    // Keep the white disc (child 0); Pixi's removeChildren(1) throws when there is nothing after it.
-    while (this.art.wheel.children.length > 1) this.art.wheel.removeChildAt(1).destroy({ children: true });
-    this.pieces = this.wheel.map((kind, index) => {
-      const w = wedgePiece(kind, index, BIG);
-      w.node.hitArea = new Polygon(w.points);
-      this.art.wheel.addChild(w.node);
-      const p: Piece = { index, kind, node: w.node, drag: null! };
-      p.drag = draggable(w.node, this.ctx.tw, {
-        lift: 0,
-        keepGrab: true,
-        onPick: () => {
-          sfx.pop(5);
-          // The wedge goes on moving while the waiting ask is said.
-          this.askNow();
-        },
-        onDrop: (x, y) => this.dropWedge(p, x, y),
-      });
-      return p;
+    this.pieces = wedgePieces(this.art, this.wheel, BIG, this.ctx.tw, this.pieces, {
+      onPick: () => {
+        sfx.pop(5);
+        // The wedge goes on moving while the waiting ask is said.
+        this.askNow();
+      },
+      onDrop: (p, x, y) => this.dropWedge(p, x, y),
     });
-    this.art.wheel.addChild(hubCap(BIG));
     this.syncDrags();
   }
 

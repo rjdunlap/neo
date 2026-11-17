@@ -32,6 +32,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Tap the spinner six times; each spin stands as a tower. Tap how far apart the tallest and shortest are, drag blocks from tall towers onto short ones until the towers are as even as they can be, then tap the height they show.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: "Hand wedges between the two critters (tap a critter's box, or drag a wedge onto it) until the pet's favourite has the share it asked for, then tap Check.",
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -48,6 +53,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 7, to: 7, text: 'After the second question, one sticker, whatever the dice rolled.' },
     { from: 8, to: 8, text: "After the second wheel's typical spin, one sticker, whatever the spins were." },
+    {
+      from: 9,
+      to: 9,
+      text: 'After a right Check, 80 spins play to bear it out; after the second wheel, one sticker, whatever the spins did.',
+    },
   ],
   note: [
     {
@@ -79,6 +89,11 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 8,
       text: 'No spin or block move is ever a mistake; only a wrong card is a miss. The range is the outline blocks between the tallest and shortest towers; the typical spin is the height the evened towers show (if they show two, either is right). After two wrong cards on a question, or a second block moved onto a taller tower, the answer or next move glows: one hint for that wheel.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Moving wedges, either way, is never counted, and neither is how the 80 spins turn out: a run far from the share is called unusual, not a mistake. Only a Check on a wheel that is not the share is a miss (each wedge is one of eight, so 1 out of every 4 is two wedges); after two on a wheel the share is marked on the rim and the next move glows, which counts as a hint. Nothing in the game is won, bet or unlocked by a spin.',
     },
   ],
 };

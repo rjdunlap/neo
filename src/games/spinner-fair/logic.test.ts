@@ -87,6 +87,18 @@ import {
   typicalCards,
   nextMove,
   typicalLayout,
+  RIG_WEDGES,
+  RIG_EIGHTHS,
+  RIG_QUARTERS,
+  PROOF_SPINS,
+  RIG_BOX,
+  RIG_COUNT,
+  RIG_TALLY,
+  rigTarget,
+  rigSet,
+  rigRight,
+  nextRig,
+  rigLayout,
   type Roll,
   type Kind,
   type Circle,
@@ -101,7 +113,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 8 },
+      school: { min: 3, max: 9 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -504,7 +516,7 @@ describe('level 6: watch it settle', () => {
   it('the plan and the school range', () => {
     expect(planFor(6)).toEqual({ level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 });
     expect(SETTLE_RUNS[SETTLE_RUNS.length - 1]).toBe(planFor(6).spins);
-    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
   });
   it('each set is a six-wedge wheel of the favourite and one friend, k of 1, 3 or 5, and the two sets differ', () => {
     for (let seed = 1; seed <= 300; seed++) {
@@ -608,7 +620,7 @@ describe('level 6: watch it settle', () => {
 describe('level 7: two dice', () => {
   it('the plan and the school range', () => {
     expect(planFor(7)).toEqual({ level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
     // Levels 1–6 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -807,7 +819,7 @@ describe('level 8: the typical spin', () => {
   const sum = (t: readonly number[]) => t.reduce((a, b) => a + b, 0);
   it('the plan and the school range', () => {
     expect(planFor(8)).toEqual({ level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
     // Levels 1–7 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6, 7].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -997,5 +1009,245 @@ describe('level 8: the typical spin', () => {
       expect(L.cards).toHaveLength(3);
       for (const b of L.cards) expect([b.w, b.h]).toEqual([NUM_CARD, NUM_CARD]);
       expect(NUM_CARD).toBeGreaterThanOrEqual(100);
+    });
+});
+
+describe('wheel size: six wedges by default, eight at level 9', () => {
+  it('with the default, spin, spinRun, raceWheel and wedgeAt are what they were with six', () => {
+    for (const seed of [1, 7, 99, 2026]) {
+      const a = new Rng(seed),
+        b = new Rng(seed);
+      for (let i = 0; i < 200; i++) expect(spin(a)).toEqual(spin(b, 6));
+      expect(spinRun(a, 50)).toEqual(spinRun(b, 50, WEDGES));
+      expect(a.next()).toBe(b.next());
+    }
+    // The six-wedge draw is still one rng.int(0, 5) and one rng.next(), in that order, so every level 1–8 seed replays the same.
+    const a = new Rng(11),
+      b = new Rng(11);
+    const s = spin(a);
+    const wedge = b.int(0, 5);
+    expect(s).toEqual({ wedge, angle: wedge * 60 + 12 + b.next() * 36 });
+    expect(raceWheel(['duck', 'pig'], 4)).toEqual(raceWheel(['duck', 'pig'], 4, 6));
+    for (let r = -7; r < 7; r += 0.013) expect(wedgeAt(r)).toBe(wedgeAt(r, 6));
+  });
+  it('an eight-wedge stop lies at least 9° inside its 45° wedge, and stopRotation lands it under the pointer', () => {
+    const rng = new Rng(5);
+    for (let i = 0; i < 5000; i++) {
+      const s = spin(rng, RIG_WEDGES);
+      expect(s.wedge).toBeGreaterThanOrEqual(0);
+      expect(s.wedge).toBeLessThanOrEqual(7);
+      expect(s.angle).toBeGreaterThanOrEqual(s.wedge * 45 + 9);
+      expect(s.angle).toBeLessThanOrEqual((s.wedge + 1) * 45 - 9);
+      expect(wedgeAt(stopRotation(i * 0.7, s.angle, 0), RIG_WEDGES)).toBe(s.wedge);
+    }
+  });
+  it('over 80 000 eight-wedge spins each wedge is within a point of an eighth', () => {
+    const rng = new Rng(2026);
+    const hits = Array(8).fill(0);
+    for (let i = 0; i < 80000; i++) hits[spin(rng, RIG_WEDGES).wedge]++;
+    for (const h of hits) expect(Math.abs(h / 80000 - 1 / 8)).toBeLessThan(0.01);
+  });
+  it('give works on a wheel of either size and keeps its size', () => {
+    const racers: [Kind, Kind] = ['duck', 'pig'];
+    for (const size of [6, 8])
+      for (let a = 1; a < size; a++) {
+        const w = raceWheel(racers, a, size);
+        expect(w).toHaveLength(size);
+        for (const to of racers) {
+          const from = to === 'duck' ? 'pig' : 'duck';
+          const next = give(w, racers, to);
+          if (countOf(w, from) <= 1) {
+            expect(next).toBeNull();
+            continue;
+          }
+          expect(next).toHaveLength(size);
+          expect(contiguous(next!)).toBe(true);
+          expect(countOf(next!, to)).toBe(countOf(w, to) + 1);
+          expect(give(next!, racers, from)).toEqual(w);
+        }
+      }
+  });
+});
+
+describe('level 9: rig it', () => {
+  const sets = (seed: number) => makeRound(9, new Rng(seed));
+  it('the plan and the school range', () => {
+    expect(planFor(9)).toEqual({ level: 9, ask: 'rig', name: 'Rig it', sets: 2, spins: 80 });
+    expect(PROOF_SPINS).toBe(planFor(9).spins);
+    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
+    // Levels 1–8 keep their numbers and asks, so saved levels and pins stay valid.
+    expect([1, 2, 3, 4, 5, 6, 7, 8].map((l) => planFor(l).ask)).toEqual([
+      'see',
+      'most',
+      'pick',
+      'sure',
+      'fair',
+      'settle',
+      'dice',
+      'typical',
+    ]);
+  });
+  it('each set starts 4–4 on eight wedges with two critters; eighths first, then quarters; one favourite, a new friend', () => {
+    const first = new Set<number>(),
+      second = new Set<number>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const round = sets(seed);
+      expect(round).toHaveLength(2);
+      const [a, b] = round;
+      expect(a.favourite).toBe(b.favourite);
+      expect(a.friend).not.toBe(b.friend);
+      expect(RIG_EIGHTHS).toContain(a.target!.k);
+      expect(RIG_QUARTERS).toContain(b.target!.k);
+      first.add(a.target!.k);
+      second.add(b.target!.k);
+      for (const s of round) {
+        const w = s.wheels[0];
+        expect(s.wheels).toHaveLength(1);
+        expect(w).toHaveLength(RIG_WEDGES);
+        expect(s.racers).toEqual([s.favourite, s.friend]);
+        expect(countOf(w, s.favourite!)).toBe(4);
+        expect(countOf(w, s.friend!)).toBe(4);
+        expect(contiguous(w)).toBe(true);
+        expect(COLOR_OF[s.favourite!]).not.toBe(COLOR_OF[s.friend!]);
+        // A half is never the target, so the wheel never starts right.
+        expect(s.target!.k).not.toBe(4);
+        expect(s.k).toBe(s.target!.k);
+        expect(rigRight(w, s.favourite!, s.target!.k)).toBe(false);
+      }
+      expect(sets(seed)).toEqual(round);
+    }
+    expect([...first].sort()).toEqual([1, 3, 5, 7]);
+    expect([...second].sort()).toEqual([2, 6]);
+  });
+  it('rigSet keeps the favourite it is given, never repeats the last friend, and asks eighths first and quarters after', () => {
+    for (let seed = 1; seed <= 300; seed++)
+      for (const fav of KINDS)
+        for (const last of KINDS.filter((k) => k !== fav)) {
+          const first = rigSet(new Rng(seed), fav, true, last);
+          const second = rigSet(new Rng(seed), fav, false, last);
+          for (const s of [first, second]) {
+            expect(s.favourite).toBe(fav);
+            expect(s.friend).not.toBe(last);
+            expect(s.friend).not.toBe(fav);
+            expect(COLOR_OF[s.friend!]).not.toBe(COLOR_OF[fav]);
+          }
+          expect(RIG_EIGHTHS).toContain(first.target!.k);
+          expect(RIG_QUARTERS).toContain(second.target!.k);
+        }
+  });
+  it('the spoken n out of every of is k eighths in lowest terms', () => {
+    expect([1, 2, 3, 5, 6, 7].map(rigTarget)).toEqual([
+      { k: 1, n: 1, of: 8 },
+      { k: 2, n: 1, of: 4 },
+      { k: 3, n: 3, of: 8 },
+      { k: 5, n: 5, of: 8 },
+      { k: 6, n: 3, of: 4 },
+      { k: 7, n: 7, of: 8 },
+    ]);
+    for (let k = 1; k <= 7; k++) {
+      const t = rigTarget(k);
+      expect(t.n * 8).toBe(k * t.of);
+      // Lowest terms: no smaller pair says the same share.
+      for (let of = 1; of < t.of; of++) expect(Number.isInteger((k * of) / 8)).toBe(false);
+    }
+  });
+  it('rigRight accepts exactly the wheels with k of the favourite, whoever the friend is', () => {
+    const racers: [Kind, Kind] = ['duck', 'pig'];
+    for (let k = 1; k <= 7; k++)
+      for (let a = 1; a <= 7; a++) expect(rigRight(raceWheel(racers, a, 8), 'duck', k)).toBe(a === k);
+  });
+  it('from 4–4 (and from any wheel), nextRig reaches the target in |k − have| moves and nobody loses their last wedge', () => {
+    const racers: [Kind, Kind] = ['duck', 'pig'];
+    for (const k of [...RIG_EIGHTHS, ...RIG_QUARTERS])
+      for (let start = 1; start <= 7; start++) {
+        let w: Wheel = raceWheel(racers, start, 8);
+        let moves = 0;
+        for (let to = nextRig(w, racers, k); to; to = nextRig(w, racers, k)) {
+          const next = give(w, racers, to);
+          expect(next).not.toBeNull();
+          w = next!;
+          expect(countOf(w, 'duck')).toBeGreaterThanOrEqual(1);
+          expect(countOf(w, 'pig')).toBeGreaterThanOrEqual(1);
+          moves++;
+        }
+        expect(rigRight(w, 'duck', k)).toBe(true);
+        expect(moves).toBe(Math.abs(k - start));
+      }
+  });
+  it('the proof run is spin(rng, 8) eighty times: nothing filtered, shortened or drawn twice', () => {
+    for (const seed of [1, 7, 99]) {
+      const a = new Rng(seed),
+        b = new Rng(seed);
+      const run = spinRun(a, PROOF_SPINS, RIG_WEDGES);
+      expect(run).toHaveLength(80);
+      expect(run).toEqual(Array.from({ length: 80 }, () => spin(b, 8)));
+      expect(a.next()).toBe(b.next());
+    }
+  });
+  // Honesty measured, never enforced: Check is judged from the wedges and never from this run.
+  it('over 2000 seeds the proof run is within ten of ten a wedge in at least 97% of sets, for each k', () => {
+    for (const k of [...RIG_EIGHTHS, ...RIG_QUARTERS]) {
+      const wheel = raceWheel(['duck', 'pig'], k, 8);
+      let band = 0;
+      for (let seed = 1; seed <= 2000; seed++) {
+        const run = spinRun(new Rng(seed * 37 + k), PROOF_SPINS, RIG_WEDGES);
+        if (inBand(run.filter((s) => wheel[s.wedge] === 'duck').length, k)) band++;
+      }
+      expect(band / 2000).toBeGreaterThanOrEqual(0.97);
+    }
+    expect(inBand(30, 2)).toBe(true);
+    expect(inBand(31, 2)).toBe(false);
+    expect(inBand(10, 2)).toBe(true);
+    expect(inBand(9, 2)).toBe(false);
+  });
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
+  type R = { x0: number; y0: number; x1: number; y1: number };
+  const rect = (b: Box): R => ({
+    x0: b.x - b.w / 2,
+    y0: b.y - b.h / 2,
+    x1: b.x + b.w / 2,
+    y1: b.y + b.h / 2,
+  });
+  const hit = (p: R, q: R) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  for (const [w, h] of VIEWS)
+    it(`layout at ${w}x${h}`, () => {
+      const L = rigLayout({ w, h });
+      expect(L.portrait).toBe(h > w);
+      const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
+      const corners = [
+        { x0: 0, y0: 0, x1: 120, y1: 120 },
+        { x0: w - 120, y0: 0, x1: w, y1: 120 },
+      ];
+      // The wheel with its rim and pointer; each box with the count under it; the strip with the counts above and the ruler below.
+      const s = L.spinner;
+      const wheel = { x0: s.x - s.r - 8, y0: s.y - s.r - 30, x1: s.x + s.r + 8, y1: s.y + s.r + 8 };
+      const boxes = L.boxes.map((b) => ({ ...rect(b), y1: b.y + b.h / 2 + RIG_COUNT }));
+      const strip = {
+        ...rect(L.strip),
+        y0: L.strip.y - L.strip.h / 2 - RIG_TALLY,
+        y1: L.strip.y + L.strip.h / 2 + RULER,
+      };
+      const all: R[] = [wheel, ...boxes, strip, rect(L.check)];
+      for (const r of all) {
+        expect(r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h).toBe(true);
+        expect(hit(r, pet)).toBe(false);
+        for (const c of corners) expect(hit(r, c)).toBe(false);
+      }
+      all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(hit(a, b)).toBe(false)));
+      // Targets: the spinner (its wedges), the two boxes and Check, never under 100; a wedge can always reach a box.
+      expect(2 * s.r).toBeGreaterThanOrEqual(100);
+      expect(L.boxes).toHaveLength(2);
+      for (const b of L.boxes) expect([b.w, b.h]).toEqual([RIG_BOX, RIG_BOX]);
+      for (const b of [...L.boxes, L.check]) expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
+      // The boxes are far enough apart that a dropped wedge is nearer one than the other.
+      expect(Math.abs(L.boxes[0].x - L.boxes[1].x)).toBeGreaterThanOrEqual(RIG_BOX + 40);
+      expect(L.strip.w).toBeGreaterThanOrEqual(480);
     });
 });

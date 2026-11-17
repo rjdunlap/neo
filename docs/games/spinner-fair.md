@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–8 |
+| school | 3–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,12 +22,13 @@
 | 6 | Watch it settle |
 | 7 | Two dice |
 | 8 | The typical spin |
+| 9 | Rig it |
 
 <!-- end generated -->
 
 **Starts as:** tap a spinner and a critter's block drops onto its bar
 
-**Grows into:** levels 1–8; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean (school only). Counting Cove
+**Grows into:** levels 1–9; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean, and level 9 makes an eight-wedge wheel to a share the pet asks for (eighths, then quarters) by handing wedges across and proves it with an eighty-spin run that is never judged (school only). Counting Cove
 
 ## Design notes
 
@@ -57,4 +58,8 @@ Misses and hints (level 8): only a wrong range or typical card is a miss; moving
 
 As built, against the definition: landscape below 1100 wide the spinner is 230 across and the towers stand 14 apart (340 and 20 at 1100 and wider), and the spinner sits clear of the shell's help button; upright the towers stand up to 20 apart; lines added `sf.range-none` and `sf.done-typical`, and `sf.level-ask` also says to drag from tall towers to short ones; the card draws come after the spins from the same seeded stream and never affect a spin.
 
-Levels 9–10 are CS3 of the [chance study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), not yet defined.
+**Level 9, Rig it (CS3a, built 2026-11-16, PR #1732; school only, school is now 3–9).** Two critters share an eight-wedge wheel that starts 4–4. The pet asks for a share for its favourite: set one an eighths target (1, 3, 5 or 7 of eight), set two a quarters target (2 or 6 of eight, spoken "1 out of every 4" or "3 out of every 4"); the favourite is the same in both sets and the friend is redrawn (`rigSet(rng, fav, first, lastFriend)`, `rigTarget(k)` gives n out of `of`). She hands wedges across by dragging a wedge onto the other critter's box or tapping a box, each move speaking the two counts (`sf.count-now`), then taps Check. The empty strip carries the pet's order as a picture (the favourite with a heart and n of `of` pips filled); after a right Check the proof run plays about 5 s (2.4 s for the first eight spins one by one, 2.4 s fast-forward) and the strip's marker appears with the two counts above its ends. The pet names the count ("72 of 80") or calls it unusual; the run is never judged and not re-spun. The done line is "Two wheels made to order! Great making." The wheel functions (`spin`, `spinRun`, `raceWheel`, `wedgeAt`) take the wheel's size (default six, rule-tested to draw identically for levels 1–8); the code is in `rig.ts`, with the run player extracted to `runs.ts` (level 6 uses it) and the movable wedges to `wedges.ts` (level 5 uses it).
+
+Misses and hints (level 9): only a Check on a wheel that is not the share is a miss; moves, taps, spins and the proof run are never counted. After two wrong Checks on a wheel the share is marked on the rim and the next move glows (one hint per wheel); the pause sheet's Show me does the same.
+
+Levels 10–11 are CS3b and CS3c of the [chance study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), defined in the [levels 9–11 definition](../definitions/spinner-fair-9-10.md) and not yet built.

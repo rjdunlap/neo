@@ -78,9 +78,11 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
     node.addChild(stand, wheel, glow, pointer);
     return { node, wheel, glow };
   }
+  // A wheel's wedge is its own share of the turn: 60° on six wedges, 45° on eight.
+  const deg = 360 / w.length;
   for (const s of sections(w)) {
-    const a0 = rad(s.start * WEDGE_DEG),
-      a1 = rad((s.start + s.count) * WEDGE_DEG);
+    const a0 = rad(s.start * deg),
+      a1 = rad((s.start + s.count) * deg);
     const c = sw(s.kind);
     // A whole wheel of one critter (level 4's sure spinner) is a plain disc, with no seam from the hub.
     if (s.count === w.length) g.circle(0, 0, r).fill(c.fill).stroke({ width: 4, color: c.line });
@@ -88,7 +90,7 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
   }
   wheel.addChild(g);
   for (const s of sections(w)) {
-    const mid = rad((s.start + s.count / 2) * WEDGE_DEG);
+    const mid = rad((s.start + s.count / 2) * deg);
     const at = s.count >= 3 ? 0.55 : 0.62;
     const f = face(s.kind, r * (s.count === 1 ? 0.42 : 0.5));
     f.position.set(Math.cos(mid) * r * at, Math.sin(mid) * r * at);
@@ -117,8 +119,9 @@ export function glowSection(g: Graphics, w: Wheel, kind: Kind, r: number, rotati
   g.clear();
   const s = sections(w).find((x) => x.kind === kind);
   if (!s) return;
-  const a0 = rad(s.start * WEDGE_DEG) + rotation,
-    a1 = rad((s.start + s.count) * WEDGE_DEG) + rotation;
+  const deg = 360 / w.length;
+  const a0 = rad(s.start * deg) + rotation,
+    a1 = rad((s.start + s.count) * deg) + rotation;
   g.moveTo(0, 0)
     .arc(0, 0, r + 4, a0, a1)
     .closePath()
@@ -134,14 +137,16 @@ export function block(kind: Kind, w: number, h: number): Graphics {
     .stroke({ width: 3, color: c.line });
 }
 
-/** One wedge of a level-5 wheel as its own piece: the sector of wedge `i` drawn around its middle at mid-radius, its critter's face on it. */
+/** One wedge of a level-5 or level-9 wheel (of `wedges` wedges) as its own piece: the sector of wedge `i` drawn around its middle at mid-radius, its critter's face on it. */
 export function wedgePiece(
   kind: Kind,
   i: number,
   r: number,
+  wedges = WEDGE_COUNT,
 ): { node: Container; mid: { x: number; y: number }; points: number[] } {
-  const a0 = rad(i * WEDGE_DEG),
-    a1 = rad((i + 1) * WEDGE_DEG),
+  const deg = 360 / wedges;
+  const a0 = rad(i * deg),
+    a1 = rad((i + 1) * deg),
     am = (a0 + a1) / 2;
   const mid = { x: Math.cos(am) * r * 0.58, y: Math.sin(am) * r * 0.58 };
   const c = sw(kind);
@@ -153,7 +158,7 @@ export function wedgePiece(
     .fill(c.fill)
     .stroke({ width: 4, color: ink, alpha: 0.7 });
   node.addChild(g);
-  const f = face(kind, r * 0.36);
+  const f = face(kind, r * (wedges > WEDGE_COUNT ? 0.3 : 0.36));
   f.rotation = am + Math.PI / 2;
   node.addChild(f);
   // The grab area: the sector beyond the hub, in the piece's own frame.
@@ -276,16 +281,21 @@ export function drawStrip(
   g.roundRect(0, 0, w, h, r).stroke({ width: 5, color: ink });
 }
 
-/** The strip's fixed ruler (a tick at every sixth) and the dashed marker at the wheel's share, `k` sixths, with its arrow underneath. */
-export function stripRuler(w: number, h: number, k: number): Graphics {
+/**
+ * The strip's fixed ruler (a tick at every one of `of` parts: sixths at level 6, eighths at level 9) and the dashed
+ * marker at the wheel's share, `k` parts, with its arrow underneath; no marker while `k` is null.
+ */
+export function stripRuler(w: number, h: number, k: number | null, of = WEDGE_COUNT): Graphics {
   const g = new Graphics();
-  for (let i = 0; i <= WEDGE_COUNT; i++) {
-    const x = (w * i) / WEDGE_COUNT;
+  g.eventMode = 'none';
+  for (let i = 0; i <= of; i++) {
+    const x = (w * i) / of;
     g.moveTo(x, h + 4)
       .lineTo(x, h + 16)
       .stroke({ width: 4, color: ink, alpha: 0.6, cap: 'round' });
   }
-  const x = (w * k) / WEDGE_COUNT;
+  if (k === null) return g;
+  const x = (w * k) / of;
   for (let y = -8; y < h + 8; y += 16)
     g.moveTo(x, y)
       .lineTo(x, y + 9)
@@ -293,8 +303,58 @@ export function stripRuler(w: number, h: number, k: number): Graphics {
   g.poly([x, h + 12, x - 13, h + 32, x + 13, h + 32])
     .fill(swatch.red.fill)
     .stroke({ width: 4, color: ink, join: 'round' });
-  g.eventMode = 'none';
   return g;
+}
+
+/** The Check button's plate: a green tick on a white plate. */
+export function checkButton(w: number, h: number): Graphics {
+  return new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 20)
+    .fill(0xffffff)
+    .stroke({ width: 6, color: swatch.green.line })
+    .moveTo(-24, 0)
+    .lineTo(-6, 18)
+    .lineTo(26, -18)
+    .stroke({ width: 11, color: swatch.green.fill, cap: 'round', join: 'round' });
+}
+
+/** A small heart: the pet's favourite. */
+export function heart(): Graphics {
+  return new Graphics().circle(-8, 0, 9).circle(8, 0, 9).poly([-16, 4, 16, 4, 0, 20]).fill(swatch.red.fill);
+}
+
+/** `n` of `of` pips filled in `color`, in rows of four from (0, 0) at the first pip's middle: a count that reads without its numeral. */
+export function drawPips(g: Graphics, n: number, of: number, color: { fill: number; line: number }, r = 7) {
+  g.clear();
+  for (let i = 0; i < of; i++) {
+    const x = (i % 4) * (2 * r + 5),
+      y = Math.floor(i / 4) * (2 * r + 5);
+    g.circle(x, y, r)
+      .fill(i < n ? color.fill : 0xffffff)
+      .stroke({ width: 3, color: i < n ? color.line : ink, alpha: i < n ? 1 : 0.45 });
+  }
+}
+
+/**
+ * Level 9's order, drawn on the empty strip: the pet's favourite with its heart, then `n` of `of` pips filled ("3 out
+ * of every 8", "1 out of every 4"), so the share asked for can be seen as well as heard.
+ */
+export function rigOrder(fav: Kind, n: number, of: number): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const f = face(fav, 56);
+  f.position.set(-of * 16 - 34, 0);
+  const h = heart();
+  h.scale.set(0.7);
+  h.position.set(f.x + 26, -22);
+  const pips = new Graphics();
+  for (let i = 0; i < of; i++)
+    pips
+      .circle(-of * 16 + 22 + i * 32, 0, 12)
+      .fill(i < n ? sw(fav).fill : 0xffffff)
+      .stroke({ width: 3, color: i < n ? sw(fav).line : ink, alpha: i < n ? 1 : 0.5 });
+  c.addChild(f, h, pips);
+  return c;
 }
 
 /** A level-6 answer card: about `n` of sixty, its numeral over a small strip drawn at that share, so it reads without the numeral. */
