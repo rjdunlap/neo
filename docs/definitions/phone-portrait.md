@@ -80,7 +80,7 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | 3 (built) | grown-up: the rest of the smaller boards | `block-garden`, `logic-grid`, `species-comeback`, `pyramid-solitaire` |
 | 4 (built) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
 | 5 (built) | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
-| Grown-up catch-up (built 2026-11-17) | grown-up: games that gained the grown-up band after batch 4 | `puddle-lens` (noticing); `ribbon-workshop` is next and needs a layout (its benches are drawn for a 1024 width) |
+| Grown-up catch-up (built 2026-11-17) | grown-up: games that gained the grown-up band after batch 4 | `puddle-lens` (noticing); `ribbon-workshop` (fractions; all three scenes drawn into a world scaled to the 768-wide area) |
 | 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games from the sweep's fits-as-is list first (cheapest), then small fixes |
 
 The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (the upright sweep of the early-school games, built the same day and recorded [below](#the-upright-sweep-built-2026-11-09), then batches by kind).
@@ -95,7 +95,7 @@ Batch 4 brings the grown-up upright pool to 19 games, every game that lists the 
 
 Batch 5 brings the upright-ready games to 25, adding the lap and toddler six (`far-lights`, left unjudged by the sweep, is now laid out). The [batch closeout](../archive/COMPLETED-2026-10-09.md#lap-and-toddler-upright-games-batch-5-chunk-31-2026-11-09) records the layouts and checks.
 
-The grown-up catch-up brings the upright-ready games to 29 and the grown-up upright games to 21 of the 22 that list the grown-up band (only `ribbon-workshop` is left). Puddle Lens level 2's hand-lens table runs the whole width on a tall view, so a dropped glass rests centred on the thing it is let go on instead of being pulled off it.
+The grown-up catch-up brings the upright-ready games to 30 and the grown-up upright games to 22 of the 22 that list the grown-up band (every grown-up game is upright). Puddle Lens level 2's hand-lens table runs the whole width on a tall view, so a dropped glass rests centred on the thing it is let go on instead of being pulled off it. Ribbon Workshop's bench, Whole Switch and Ribbon Cases keep their sideways layout and draw it into a container scaled to the 768-wide area (`frame.ts`), with the tray clear of the guide.
 
 ### The upright sweep (built 2026-11-09)
 
