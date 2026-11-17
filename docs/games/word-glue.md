@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/word-glue; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `word-glue` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `word-glue` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** compound-words, vocabulary, word-meaning
 

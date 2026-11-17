@@ -678,6 +678,7 @@ export const wordGlue: GameModule = {
   entryLevels: [BIG_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  upright: true,
   coplayHint:
     'Silly Compounds: take turns inventing names for things in the room, like a spoon hat or a sock house. Let her name one first.',
   // At one year she points and pats while the grown-up does the naming (U5a's lap tip rule).

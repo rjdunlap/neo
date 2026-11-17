@@ -579,6 +579,7 @@ export const pixelPictures: GameModule = {
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  uprightLevels: [10, 11, 12],
   coplayHint:
     'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
