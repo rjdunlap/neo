@@ -110,6 +110,11 @@ export function createSuite({ page, context, log, launch, finished, screenshot }
     await page.evaluate(() => neo.scene.game.askForHint());
     st = await state();
     assert.equal(st.hints, 1, 'the same hint asked again is not counted twice');
+    // A second miss while that step still glows: two misses, and the due hint is the same step, so still one hint.
+    await tapNode('g.bell');
+    st = await state();
+    assert.deepEqual([st.misses, st.hints], [2, 1], 'the second miss does not count the glowing step again');
+    assert.deepEqual(st.hint, { putBack: badSecond });
     await tapNode(`g.places[g.slots.indexOf(${badSecond})]`);
     st = await state();
     assert.deepEqual(st.selection, [badFirst], 'she makes the tap herself');
@@ -119,7 +124,15 @@ export function createSuite({ page, context, log, launch, finished, screenshot }
     await tapNode(`g.cardOf(${hub})`);
     await tapNode('g.bell');
     st = await state();
-    assert.deepEqual([st.phase, st.laid, st.misses, st.hints], ['laid', 1, 1, 1], 'the picnic is laid');
+    assert.deepEqual([st.phase, st.laid, st.misses, st.hints], ['laid', 1, 2, 1], 'the picnic is laid');
+    await tapNode('g.bell');
+    await tapNode(`g.cardOf(${badSecond})`);
+    st = await state();
+    assert.deepEqual(
+      [st.phase, st.selection.length, st.misses],
+      ['laid', 2, 2],
+      'taps on a laid picnic change nothing',
+    );
     assert.ok(
       await page.evaluate(() => neo.scene.game.friends.every((f) => f.visible)),
       'four friends sit down',
@@ -135,14 +148,14 @@ export function createSuite({ page, context, log, launch, finished, screenshot }
     await tapNode(`g.cardOf(${badSecond})`);
     await tapNode('g.bell');
     st = await state();
-    assert.deepEqual([st.misses, st.hints, st.phase], [1, 1, 'plan'], 'nothing in Another way? is a miss');
+    assert.deepEqual([st.misses, st.hints, st.phase], [2, 1, 'plan'], 'nothing in Another way? is a miss');
     await tapNode(`g.cardOf(${badFirst})`);
     await tapNode(`g.cardOf(${hub})`);
     await tapNode('g.bell');
     st = await state();
     assert.deepEqual(
       [st.phase, st.laid, st.misses, st.hints],
-      ['laid', 2, 1, 1],
+      ['laid', 2, 2, 1],
       'the other menu is laid too',
     );
     await page.waitForTimeout(500);
@@ -166,13 +179,13 @@ export function createSuite({ page, context, log, launch, finished, screenshot }
         await new Promise((r) => setTimeout(r, 450));
       }
       if (!g.finished) throw new Error('The second picnic did not finish');
-      if (g.t.misses !== 1 || g.t.hints !== 1)
-        throw new Error(`Tally ${g.t.misses}/${g.t.hints}, expected 1/1`);
+      if (g.t.misses !== 2 || g.t.hints !== 1)
+        throw new Error(`Tally ${g.t.misses}/${g.t.hints}, expected 2/1`);
     });
     await finished('picnic-pantry');
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker');
     log(
-      'Picnic Pantry level 1: free taps, one miss, one hint, Another way?, both picnics and one sticker passed',
+      'Picnic Pantry level 1: free taps, two misses, one hint, Another way?, both picnics and one sticker passed',
     );
   }
   return { picnicPantryPlay };

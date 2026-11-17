@@ -106,6 +106,8 @@ class PicnicPantry implements Game {
   private idle = 0;
   private idleShown = false;
   private clock = 0;
+  /** Bumped by every tap that speaks or changes the plan, so a line waiting behind another is dropped once she has moved on. */
+  private talk = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.round = makeRound(ctx.rng);
@@ -169,12 +171,21 @@ class PicnicPantry implements Game {
 
   private touched() {
     this.idle = 0;
+    this.talk++;
     this.hintStep = null;
+  }
+
+  /** A tap that does nothing just now (a card or the bell while the picnic is laid) still answers the finger. */
+  private notNow(node: Container) {
+    this.idle = 0;
+    sfx.tick();
+    this.bounce(node);
   }
 
   private tapJar(j: number) {
     if (this.finished) return;
     this.idle = 0;
+    this.talk++;
     const c = this.picnic.case;
     const left = Math.max(0, remaining(c, this.selection)[j]);
     sfx.pop(2 + j * 2);
@@ -184,7 +195,8 @@ class PicnicPantry implements Game {
   }
 
   private tapCard(i: number) {
-    if (this.finished || this.phase !== 'plan') return;
+    if (this.finished) return;
+    if (this.phase !== 'plan') return this.notNow(this.cards[i]);
     const dish = this.picnic.order[i];
     if (this.selection.includes(dish)) {
       this.putBack(dish);
@@ -203,7 +215,8 @@ class PicnicPantry implements Game {
   }
 
   private tapPlace(k: number) {
-    if (this.finished || this.phase !== 'plan') return;
+    if (this.finished) return;
+    if (this.phase !== 'plan') return this.notNow(this.places[k]);
     const dish = this.slots[k];
     if (dish !== null) this.putBack(dish);
   }
@@ -275,26 +288,33 @@ class PicnicPantry implements Game {
   }
 
   private ring() {
-    if (this.finished || this.phase !== 'plan') return;
+    if (this.finished) return;
+    if (this.phase !== 'plan') return this.notNow(this.bell);
     const c = this.picnic.case;
-    this.touched();
     this.bounce(this.bell);
     if (this.selection.length < 2) {
+      this.touched();
       sfx.tick();
       void this.ctx.say('pantry.need-two');
       return;
     }
     if (fits(c, this.selection)) {
+      this.touched();
       this.lay();
       return;
     }
     // A pair the pantry cannot cover: the plan stays as she left it. One miss in the first pass, free in Another way?
+    // A hint already glowing stays (the plan has not changed), so the same step is never counted twice.
+    this.idle = 0;
+    const talk = ++this.talk;
     const [why] = explain(c, this.selection);
     const due = !this.again && missOnRequest(this.t);
     if (this.again) sfx.tick();
     else sfx.boing();
     this.bounce(this.jars[why.jar]);
     for (const slots of this.slotArt) for (const s of slots) if (s.jar === why.jar) this.bounce(s.node);
+    // Her second miss on this picnic shows the hint at once; its words wait for the reason, and are dropped if she moves on.
+    if (due) this.showHint(false);
     void this.ctx
       .say('pantry.short', {
         first: c.dishes[this.selection[0]].name,
@@ -304,10 +324,8 @@ class PicnicPantry implements Game {
         n: numberWord(why.pantry),
       })
       .then(() => {
-        // Her second miss on this picnic brings the hint, for the plan as it stands by then.
-        if (due && this.ctx.alive && !this.finished && this.phase === 'plan') this.showHint(true);
+        if (due && this.ctx.alive && !this.finished && talk === this.talk) this.sayHint();
       });
-    this.redrawGlow();
   }
 
   private lay() {
@@ -389,7 +407,6 @@ class PicnicPantry implements Game {
 
   /** One repair step glows and, when asked for, is named. A hint already glowing is repeated without counting again. */
   private showHint(spoken: boolean) {
-    const c = this.picnic.case;
     const step = this.nextStep();
     const same = JSON.stringify(step) === JSON.stringify(this.hintStep);
     if (!same) {
@@ -397,7 +414,14 @@ class PicnicPantry implements Game {
       if (!this.again) hinted(this.t);
     }
     this.redrawGlow();
-    if (!spoken) return;
+    if (spoken) this.sayHint();
+  }
+
+  /** Names the step that is glowing. */
+  private sayHint() {
+    const c = this.picnic.case;
+    const step = this.hintStep;
+    if (!step || step === 'next') return;
     if (step === 'lay') void this.ctx.say('pantry.hint-lay');
     else if ('add' in step) void this.ctx.say('pantry.hint-add', { dish: c.dishes[step.add].name });
     else void this.ctx.say('pantry.hint-back', { dish: c.dishes[step.putBack].name });
