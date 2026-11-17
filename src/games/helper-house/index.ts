@@ -1169,8 +1169,8 @@ class HelperHouse implements Game {
                 : p === 'fan-line'
                   ? 'hh.help.8.fan'
                   : this.nook
-                ? (`hh.help.row.4.${p === 0 ? 'on' : 'off'}` as LineId)
-                : 'hh.help.row';
+                    ? (`hh.help.row.4.${p === 0 ? 'on' : 'off'}` as LineId)
+                    : 'hh.help.row';
     void this.ctx.say(line);
   }
 

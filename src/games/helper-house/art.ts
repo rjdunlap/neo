@@ -719,9 +719,7 @@ export class Greenhouse extends Container {
     g.rect(left, top, right - left, ground - top).stroke(line(sw.line, 6));
     for (const k of [1 / 3, 2 / 3]) {
       const x = left + (right - left) * k;
-      g.moveTo(x, top)
-        .lineTo(x, ground)
-        .stroke({ width: 4, color: sw.line, alpha: 0.45 });
+      g.moveTo(x, top).lineTo(x, ground).stroke({ width: 4, color: sw.line, alpha: 0.45 });
       g.moveTo(x, top)
         .lineTo((left + right) / 2, peak)
         .stroke({ width: 4, color: sw.line, alpha: 0.45 });
