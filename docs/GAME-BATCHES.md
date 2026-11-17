@@ -19,6 +19,8 @@ Find the named game/batch heading and read only that section plus the batch cont
 
 ### egg-catch 1: Gate repair and changing gates
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
@@ -53,6 +55,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### sound-garden 3: Pitch drawing and copying
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`sound-garden`, level 9 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 9, and pre-K. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
 - **`sound-garden`, level 10 Copy the shape** (new level; after *Sing Higher*): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
 
@@ -69,12 +73,16 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### scoop-shop 1: Younger scoop and customer entries
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`scoop-shop`, lap entry 10 Any scoop** (new level on the existing interaction, with `order`/`entryLevels`): one tap, one scoop, one munch; lap order 10, 1. [Slice 3](deep-dives/scoop-shop.md#younger-band-openings)
 - **`scoop-shop`, toddler 11 Who wanted pink?** (new interaction): tap the customer whose picture matches the scoop already on the cone; toddler order 1, 2, 11, 3. [Slice 4](deep-dives/scoop-shop.md#easier-entries-and-levels-between-existing-ones)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### scoop-shop 2: Count-on and mixed-colour orders
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`scoop-shop`, level 12 Fill it up** (new level on the existing interaction): count on from scoops already on the cone; pre-K and school. [Slice 5](deep-dives/scoop-shop.md#new-levels-on-top)
 - **`scoop-shop`, level 13 Three pink and two blue** (new level): two colours with a count each, any order; pre-K and school. [Slice 6](deep-dives/scoop-shop.md#new-levels-on-top)
@@ -158,12 +166,16 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### garden-grow 1: Flower variety and the lap growth entry
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`garden-grow`, flower kinds** (content, levels 1–7): daisy, tulip, sunflower and bell-flower; kind varies per request, color alone is judged. [Slice 3](deep-dives/garden-grow.md#fresh-content-inside-existing-levels)
 - **`garden-grow`, level 8 Grow it up** (new level, after slice 2): one big bed, every touch grows the next stage, three flowers; lap `order: [8, 1, 2]`, `entryLevels: [8]`. [Slice 4](deep-dives/garden-grow.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### garden-grow 2: Rows, columns and equal rows
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`garden-grow`, level 9 Rows of colors** (new interaction): choose a packet, then beds, to match a sign of two colored rows; judged by position; pre-K after 7. [Slice 5](deep-dives/garden-grow.md#new-levels-on-top)
 - **`garden-grow`, level 10 Columns of colors** (new level, after level 9 *Rows of colors*): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
@@ -173,11 +185,15 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### stop-and-go 1: Go car, stop car
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`stop-and-go`, lap entry 9 Go car, stop car** (new interaction): a looping car, two huge lamps, no misses; lap order 9, 1, `entryLevels: [9]`. [Slice 3](deep-dives/stop-and-go.md#younger-band-openings)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### stop-and-go 2: Whose light and the busy crossing
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
 - **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)
@@ -185,6 +201,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### weather-wardrobe 1: Visible consequences and the lap fitting entry
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`weather-wardrobe`, a miss that shows why** (existing-game change): a wrong item goes on for a moment, shows its cold, hot, wet or blown consequence and hops back; accounting unchanged. [Slice 3](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, lap entry 8 Try it on** (new level, after *a miss that shows why*): anything goes on, the fitting item stops the weather, no misses; lap order 1, 8, 2, `entryLevels: [8]`. [Slice 4](deep-dives/weather-wardrobe.md#build-slices-in-order)
@@ -450,6 +468,8 @@ Built 2026-10-23, [PR #865](https://github.com/rjdunlap/neo/pull/865); [closeout
 
 ### attic-finds 1: Lid and Lever
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`attic-finds`, levels 3 *Up and down* (lap, toddler) and 4 *Peek inside* (toddler)** (a new giant-handle interaction inside the existing game; `entryLevels: [3, 4]`; 0 misses and 0 hints, nothing kept): each touch turns a giant handle half a turn so the bird (or fish) rises, then sinks; level 4 adds a peek door that shows the rod the handle pushes; a Finish picture appears after three turns and only her tap ends the round. [Definition](definitions/lid-and-lever.md), [everyday-life study slice H3](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/lid-and-lever.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticlever` scripted play at levels 3–4, `fingerdemo` at both, one portrait screenshot of level 4 with the door open, one build).
@@ -592,6 +612,8 @@ Proof: couch catalog tier: a frozen board list, course tests, `BROWSER_SUITE=cou
 
 ### light-lab 3: Levels 8–9 Place a mirror and Two to place
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`light-lab`, levels 8–9 *Place a mirror* and *Two to place* (dive slice 3)** (new interaction; school): she drops a mirror from a tray onto the board so the beam reaches the target, then two mirrors; the school range rises to 9. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
@@ -635,6 +657,8 @@ Built 2026-10-22 (PR #830); see the [build note](archive/COMPLETED-2026-10-09.md
 Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#photo-safari-batch-1-tell-me-which-and-tell-me-both-2026-10-22).
 
 ### timeline-trail 1: Levels 1–3
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`timeline-trail`, levels 1–3 (T2)** (a new game, one declared batch; preschool 1–2, pre-K 1–3, school 2–3, Barnyard by default): a clothesline between a "long ago" post and a "now" post; level 1 taps the older of two pictures, level 2 drags a third picture into the right of three gaps, level 3 builds a line of four one card at a time; a finished line plays as a flipbook of the place growing. Level 4 (a clue inside the picture) is a later batch on the same game. [Definition](definitions/timeline-trail.md), [time-and-change study slice 2](deep-dives/subjects/time-change.md#build-slices-in-order)
 
@@ -690,6 +714,8 @@ Built; [build note](archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-20
 
 
 ### swap-meet 1: Levels 1–4 (ME2)
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 Source: [ME1 packet](definitions/swap-meet.md), money-economy ME2; one declared four-level new-game batch after separate admission.
 
@@ -789,13 +815,19 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### spinner-fair 6: Rig it (CS3a)
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`spinner-fair`, level 9 (chance-statistics study slice CS3)** (defined 2026-11-16, [definition](definitions/spinner-fair-9-10.md#build-slices-and-check-tiers)): rig the wheel to a target, then prove it with a long run. Proof: new-levels tier on shared wheel functions (typecheck, all the game's rule tests, one browser play at 9 with one wrong Check and the proof run, a `spinnerfair45` regression play, `fingerdemo` at 9, build).
 
 ### spinner-fair 7: Is it due? (CS3b)
 
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
+
 - **`spinner-fair`, level 10** (after `spinner-fair 6`; same definition): a streak does not make the other colour due. Proof: new-levels tier (typecheck, rule tests, one browser play at 10 with one wrong card on each set, `fingerdemo` at 10, build); the building session's source check for the level-10 line.
 
 ### spinner-fair 8: The hidden spinner (CS3c)
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`spinner-fair`, level 11** (after `spinner-fair 7`; same definition): read a covered wheel from its spins. Proof: new-levels tier with the new cover art (typecheck, rule tests, one browser play at 11 with one wrong card, one portrait screenshot of the covered wheel, `fingerdemo` at 11, build); the source check.
 
@@ -866,6 +898,8 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/puppet
 Expected files: `src/games/puppet-stage/{logic,logic.test,art,index}.ts`, its `howto.ts`, its `voice.ts`, `scripts/browser-check.mjs`, README and GAMES docs.
 
 ## Relay Woods 1: levels 1–4 (NC2)
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **Scope:** [NC1 packet](definitions/relay-woods.md), one worker/branch/PR for Pass it along1, Two ways2, Fallen log3, The short way4; finite seeded templates and five picture payloads, hop/backtrack/log/long-arrival/reset rules, capped support, voice/how-to/BFS bot. Toddler1–2, preschool1–4, pre-K2–4, school4.
 - **Admission:** separate from docs NC1; current contract/source review and overlap required. Cozy Village after actual current full-size capacity/layout checks, else existing Story Grove with its own checks; no count increment before build. Existing optional picture Keep, no mailbox/save architecture.
@@ -1263,6 +1297,8 @@ Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.
 Proof: typecheck, rule tests, one play of level 5 with one wrong prediction (no miss) and one right, `fingerdemo` at 5.
 
 ### peekaround-island 3: Level 6 Who can't see it?
+
+Built (checked against `origin/main` 2026-11-17; the heading keeps its wording so links to it hold).
 
 - **`peekaround-island`, level 6 *Who can't see it?* (dive slice 3)**, after batch 1 (new interaction; pre-K and school): she taps the friend who cannot see the pictured spot from where they stand; a wrong friend turns to show it can see; pre-K max 6, school max 6. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
