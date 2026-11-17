@@ -96,6 +96,79 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Which will stand taller? What made that one wobble first?',
     },
   },
+  // Batch 2 (2026-11-17): eight more, one land each, including the three lands that had none.
+  'pixel-pictures': {
+    all: {
+      notice: 'Does {name} copy square by square, or color a whole row at once?',
+      say: 'Two blue, then one red. What shall we make next?',
+    },
+  },
+  'peekaboo-barn': {
+    all: {
+      notice: 'Does {name} look at the blanket, pull it off or wait for you to lift it?',
+      say: 'Where did the cow go? Peekaboo! There it is.',
+    },
+    school: {
+      notice: 'Does {name} take a turn hiding an animal for you to find?',
+      say: 'Your turn to hide one. Will you give me a clue?',
+    },
+  },
+  'duck-pond': {
+    all: {
+      notice: 'Does {name} touch each one, pick one up or push the line along?',
+      say: 'One, two, three. Three in a row!',
+    },
+    school: {
+      notice: 'Does {name} start again from one, or carry on from the last number?',
+      say: 'How many would there be with two more? How do you know?',
+    },
+  },
+  'swap-meet': {
+    all: {
+      notice: 'Does {name} hold on, hold a toy out or reach for yours?',
+      say: 'Swap? Here is mine. Thank you!',
+    },
+    school: {
+      notice: 'Does {name} offer a different toy after a "no thanks"?',
+      say: 'Would you swap? What would make it a good swap for both of us?',
+    },
+  },
+  'dot-link': {
+    all: {
+      notice: 'Does {name} line the blocks up, stack a few or gather one color?',
+      say: 'Red, red, blue. Two red, one blue.',
+    },
+    school: {
+      notice: 'Does {name} sort by color first, or keep a tally along the line?',
+      say: 'Which color has the most? How many more than the next one?',
+    },
+  },
+  'photo-safari': {
+    all: {
+      notice: 'Does {name} look toward the teddy, point or go and fetch it?',
+      say: 'I spy a teddy under the table. There it is!',
+    },
+    school: {
+      notice: 'Does {name} use a place word such as under, beside or on top of?',
+      say: 'Your turn to spy. Where is it hiding?',
+    },
+  },
+  'bouncy-launch': {
+    all: {
+      notice: 'Does {name} watch the ball, chase it or carry it back to the ramp?',
+      say: 'Down it goes! Far, far away. Again?',
+    },
+    school: {
+      notice: 'Does {name} move the guess nearer or farther after each roll?',
+      say: 'Where will it land now? What changed?',
+    },
+  },
+  'word-search': {
+    all: {
+      notice: 'Does {name} hide the words across, down or both ways?',
+      say: 'Which word was hardest to hide? Where would you look first?',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;
