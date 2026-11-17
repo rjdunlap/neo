@@ -86,4 +86,10 @@ export const VOICE = {
   'sf.typical-about': ['About {n}. Some towers are {a} and some are {b}: the typical spin is between.'],
   'sf.look-line': ['Look at the level line.'],
   'sf.done-typical': ['Towers levelled! Great sharing.'],
+  'sf.instruct.9': ['Make a wheel where {kind} wins about {n} out of every {of} spins. Then tap Check.'],
+  'sf.rig-count': ['{kind} has {n} of the 8 wedges.'],
+  'sf.rig-hint': ["Count {kind}'s wedges. {n} out of every {of}: how many of the eight is that?"],
+  'sf.rig-yes': ["Yes! {n} of 8. Let's spin 80 times and see."],
+  'sf.rig-proof': ['{n} of 80: about {a} in every {b}!'],
+  'sf.done-rig': ['Two wheels made to order! Great making.'],
 } satisfies Record<string, string[]>;

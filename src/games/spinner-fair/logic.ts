@@ -5,9 +5,12 @@
  * whether a two-critter race is fair and the wheel is even at Check (level 5), and about how many of sixty more spins will
  * be the favourite, read from its share of the wheel (level 6), and which two-dice sum is most likely and which of two sums
  * comes up more, read from the grid of every way two dice can land (level 7), and how far apart six spins of a number
- * wheel are and what a typical spin is, read from the towers they stand as (level 8). A roll, like a spin, is never a
- * miss, and neither is any block she moves while levelling the towers.
- * Definitions: docs/definitions/spinner-fair.md (levels 1–5), docs/definitions/spinner-fair-6-8.md (levels 6–8).
+ * wheel are and what a typical spin is, read from the towers they stand as (level 8), and whether an eight-wedge wheel
+ * she made gives the pet's favourite the share it asked for, judged at Check from the wedges and then borne out by
+ * eighty spins that judge nothing (level 9). A roll, like a spin, is never a miss, and neither is any block or wedge
+ * she moves.
+ * Definitions: docs/definitions/spinner-fair.md (levels 1–5), docs/definitions/spinner-fair-6-8.md (levels 6–8),
+ * docs/definitions/spinner-fair-9-10.md (levels 9–11).
  */
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -32,21 +35,23 @@ export const NAME_OF: Record<Kind, string> = {
   dog: 'Dog',
 };
 
-/** Every spinner has six wedges of 60°, each owner's wedges one contiguous section from wedge 0. */
+/** A spinner has six wedges of 60° (level 9's has eight, `RIG_WEDGES`), each owner's wedges one contiguous section from wedge 0. */
 export const WEDGES = 6;
 export const WEDGE_DEG = 360 / WEDGES;
-/** A stop lands at least this far inside its wedge, so the pointer never rests on a line. */
+/** A stop lands at least this far inside its 60° wedge (9° inside a 45° one, in proportion), so the pointer never rests on a line. */
 export const EDGE_DEG = 12;
+/** Level 9's wheel: eight wedges of 45°. */
+export const RIG_WEDGES = 8;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical' | 'rig';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4, 6–8), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6–9), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers); the spinner or tray stops taking them after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers; level 9: the proof run); the spinner or tray stops taking them after this many. */
   spins: number;
 }
 
@@ -59,12 +64,13 @@ const PLANS: readonly Plan[] = [
   { level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 },
   { level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 },
   { level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 },
+  { level: 9, ask: 'rig', name: 'Rig it', sets: 2, spins: 80 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 8 },
+  school: { min: 3, max: 9 },
 };
 
 export function planFor(level: number): Plan {
@@ -94,6 +100,8 @@ export interface SetSpec {
   /** Level 6: the other critter on the wheel, and how many of the six wedges the favourite has. */
   friend?: Kind;
   k?: number;
+  /** Level 9: the share the pet asks for, `k` of the eight wedges, spoken as `n` out of every `of`. */
+  target?: RigTarget;
 }
 
 // ---- wheels ----
@@ -156,6 +164,11 @@ export function makeRound(level: number, rng: Rng): SetSpec[] {
   if (plan.ask === 'settle') {
     const fav = pickCritters(rng, 1)[0];
     for (let i = 0; i < plan.sets; i++) out.push(settleSet(rng, fav, out));
+    return out;
+  }
+  if (plan.ask === 'rig') {
+    const fav = pickCritters(rng, 1)[0];
+    for (let i = 0; i < plan.sets; i++) out.push(rigSet(rng, fav, i === 0, out[i - 1]?.friend));
     return out;
   }
   for (let i = 0; i < plan.sets; i++) {
@@ -238,10 +251,10 @@ export const homeOf = (set: SetSpec, card: Card) =>
 
 // ---- level 5: fair or unfair? ----
 
-/** The racers' wheel: `a` wedges of the first racer, then the rest of the second, so each owner is one section. */
-export const raceWheel = (racers: readonly [Kind, Kind], a: number): Wheel => [
+/** The racers' wheel of `wedges` wedges: `a` of the first racer, then the rest of the second, so each owner is one section. */
+export const raceWheel = (racers: readonly [Kind, Kind], a: number, wedges = WEDGES): Wheel => [
   ...Array(a).fill(racers[0]),
-  ...Array(WEDGES - a).fill(racers[1]),
+  ...Array(wedges - a).fill(racers[1]),
 ];
 
 /** Fair means both racers have the same share: three wedges each. */
@@ -249,13 +262,13 @@ export const isFair = (wheel: Wheel, racers: readonly [Kind, Kind]) =>
   countOf(wheel, racers[0]) === countOf(wheel, racers[1]);
 
 /**
- * Hand one wedge to `to` from the other racer; the wheel re-sorts so each owner stays one section. A racer always keeps at
+ * Hand one wedge to `to` from the other racer, on a wheel of any size; the wheel re-sorts so each owner stays one section. A racer always keeps at
  * least one wedge (so both stay on the wheel); a give that would take the last one returns null and changes nothing.
  */
 export function give(wheel: Wheel, racers: readonly [Kind, Kind], to: Kind): Wheel | null {
   const from = to === racers[0] ? racers[1] : racers[0];
   if (countOf(wheel, from) <= 1) return null;
-  return raceWheel(racers, countOf(wheel, racers[0]) + (to === racers[0] ? 1 : -1));
+  return raceWheel(racers, countOf(wheel, racers[0]) + (to === racers[0] ? 1 : -1), wheel.length);
 }
 
 /** The racer the next wedge should go to (the hint and the ghost): the one with fewer, or null once the wheel is fair. */
@@ -298,8 +311,60 @@ export function settleSet(rng: Rng, fav: Kind, used: readonly SetSpec[] = []): S
 export const expected60 = (k: number) => 10 * k;
 /** The card is right when it names the share's count; the answer comes from the wedges, never from a run. */
 export const aboutRight = (card: number, k: number) => card === expected60(k);
-/** A check run "about" the share: within ten of it. Outside is unusual, never a miss and never spun again. */
+/**
+ * A check run "about" the share: within ten of ten a wedge. Outside is unusual, never a miss and never spun again. The
+ * same band serves level 9's eighty spins on eight wedges, where a wedge is ten of eighty.
+ */
 export const inBand = (count: number, k: number) => Math.abs(count - expected60(k)) <= 10;
+
+// ---- level 9: rig it ----
+
+/** The share the pet asks for: `k` of the eight wedges, spoken in lowest terms as `n` out of every `of` spins. */
+export interface RigTarget {
+  k: number;
+  n: number;
+  of: number;
+}
+/** Set one asks for eighths, set two for quarters; a half (level 5's fair wheel) is never asked. */
+export const RIG_EIGHTHS: readonly number[] = [1, 3, 5, 7];
+export const RIG_QUARTERS: readonly number[] = [2, 6];
+/** The proof run after a right Check: ten spins a wedge, never judged and never spun again. */
+export const PROOF_SPINS = 80;
+
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+/** `k` eighths in lowest terms. */
+export function rigTarget(k: number): RigTarget {
+  const d = gcd(k, RIG_WEDGES);
+  return { k, n: k / d, of: RIG_WEDGES / d };
+}
+
+/**
+ * A level-9 set: the favourite and one friend on an eight-wedge wheel that starts even (4–4), and the share to make:
+ * eighths on the round's first set, quarters on its second. The friend is never `lastFriend`.
+ */
+export function rigSet(rng: Rng, fav: Kind, first: boolean, lastFriend?: Kind): SetSpec {
+  const friend =
+    pickCritters(rng, 1, lastFriend ? [fav, lastFriend] : [fav])[0] ?? pickCritters(rng, 1, [fav])[0];
+  const target = rigTarget(rng.pick(first ? RIG_EIGHTHS : RIG_QUARTERS));
+  const racers: [Kind, Kind] = [fav, friend];
+  return {
+    wheels: [raceWheel(racers, RIG_WEDGES / 2, RIG_WEDGES)],
+    favourite: fav,
+    friend,
+    racers,
+    k: target.k,
+    target,
+  };
+}
+
+/** Check is right when the favourite has exactly `k` wedges: judged from the wheel, never from a spin. */
+export const rigRight = (wheel: Wheel, fav: Kind, k: number) => countOf(wheel, fav) === k;
+
+/** The critter the next wedge goes to (the hint and the ghost): the favourite while it has too few, the friend while it has too many, null once right. */
+export function nextRig(wheel: Wheel, racers: readonly [Kind, Kind], k: number): Kind | null {
+  const have = countOf(wheel, racers[0]);
+  return have === k ? null : have < k ? racers[0] : racers[1];
+}
 
 // ---- level 7: two dice ----
 
@@ -424,22 +489,27 @@ export function nextMove(towers: readonly number[]): { from: number; to: number 
 // ---- spins ----
 
 export interface Spin {
-  /** The wedge under the pointer, 0–5, uniform over wedges. */
+  /** The wedge under the pointer, from 0, uniform over wedges. */
   wedge: number;
   /** Where it stops, in degrees clockwise from the wheel's wedge-0 edge, inside the wedge and clear of its lines. */
   angle: number;
 }
 
-/** One honest spin: a uniform wedge and a stopping angle at least `EDGE_DEG` inside it. Nothing filters or retries it. */
-export function spin(rng: Rng): Spin {
-  const wedge = rng.int(0, WEDGES - 1);
-  const angle = wedge * WEDGE_DEG + EDGE_DEG + rng.next() * (WEDGE_DEG - 2 * EDGE_DEG);
+/**
+ * One honest spin of a wheel of `wedges` wedges: a uniform wedge and a stopping angle a fifth of a wedge inside it
+ * (`EDGE_DEG` on six). Nothing filters or retries it. With the default it draws from `rng` exactly as it always has.
+ */
+export function spin(rng: Rng, wedges = WEDGES): Spin {
+  const deg = 360 / wedges,
+    edge = (EDGE_DEG * deg) / WEDGE_DEG;
+  const wedge = rng.int(0, wedges - 1);
+  const angle = wedge * deg + edge + rng.next() * (deg - 2 * edge);
   return { wedge, angle };
 }
 
-/** `n` honest spins in a row (level 6's runs): each one `spin(rng)`, none filtered, shortened or drawn again. */
-export function spinRun(rng: Rng, n: number): Spin[] {
-  return Array.from({ length: n }, () => spin(rng));
+/** `n` honest spins in a row (level 6's runs, level 9's proof run): each one `spin(rng, wedges)`, none filtered, shortened or drawn again. */
+export function spinRun(rng: Rng, n: number, wedges = WEDGES): Spin[] {
+  return Array.from({ length: n }, () => spin(rng, wedges));
 }
 
 /** The wheel's rotation (radians, clockwise) that brings wheel angle `angle` under the top pointer after `turns` more whole turns from `from`. */
@@ -451,10 +521,10 @@ export function stopRotation(from: number, angle: number, turns: number): number
   return r + turns * full;
 }
 
-/** The wedge under the top pointer for a wheel turned by `rotation` radians. */
-export function wedgeAt(rotation: number): number {
+/** The wedge under the top pointer for a wheel of `wedges` wedges turned by `rotation` radians. */
+export function wedgeAt(rotation: number, wedges = WEDGES): number {
   const deg = ((((-rotation * 180) / Math.PI) % 360) + 360) % 360;
-  return Math.floor(deg / WEDGE_DEG) % WEDGES;
+  return Math.floor(deg / (360 / wedges)) % wedges;
 }
 
 /** Blocks per bar: how many times each of `kinds` came up in `results`. */
@@ -851,6 +921,56 @@ export function typicalLayout(view: { w: number; h: number }): TypicalLayout {
     towers: columns((w - span) / 2, gap, base),
     base,
     cards: row((190 + w - 20) / 2, h - 20 - NUM_CARD / 2),
+  };
+}
+
+/**
+ * Level 9: one eight-wedge spinner whose wedges she moves, the two critters' boxes (the drop and tap targets, a count
+ * hanging under each), the strip of the proof run with its ruler, and the Check button. The strip and the counts are
+ * display only.
+ */
+export const RIG_BOX = 140,
+  RIG_COUNT = 56,
+  RIG_TALLY = 44;
+export interface RigLayout {
+  portrait: boolean;
+  spinner: Circle;
+  /** The favourite's box, then the friend's; each count hangs `RIG_COUNT` under its box. */
+  boxes: Box[];
+  /** The strip; the proof run's two counts sit `RIG_TALLY` above it, and its ruler and the share marker hang up to `RULER` under it. */
+  strip: Box;
+  check: Box;
+}
+
+export function rigLayout(view: { w: number; h: number }): RigLayout {
+  const { w, h } = view;
+  if (h <= w) {
+    // The spinner on the left above the pet; the boxes, the strip and Check stacked on its right.
+    const left = 460,
+      right = w - 30;
+    const cx = (left + right) / 2;
+    return {
+      portrait: false,
+      spinner: { x: 250, y: 330, r: SETTLE_R },
+      boxes: [-1, 1].map((d) => box(cx + d * (RIG_BOX / 2 + 30), 126 + RIG_BOX / 2, RIG_BOX, RIG_BOX)),
+      strip: box(cx, 410, Math.min(STRIP_W, right - left), STRIP_H),
+      check: box(cx, h - 20 - BTN_H / 2, CHECK_W, BTN_H),
+    };
+  }
+  // Upright: the spinner, the boxes, the strip and Check in a stack, Check beside the pet.
+  const spinner = { x: w / 2, y: 130 + SETTLE_R + 10, r: SETTLE_R };
+  const top = spinner.y + SETTLE_R + 8 + 8;
+  return {
+    portrait: true,
+    spinner,
+    boxes: [-1, 1].map((d) => box(w / 2 + d * (RIG_BOX / 2 + 40), top + RIG_BOX / 2, RIG_BOX, RIG_BOX)),
+    strip: box(
+      w / 2,
+      top + RIG_BOX + RIG_COUNT + RIG_TALLY + STRIP_H / 2,
+      Math.min(STRIP_W, w - 60),
+      STRIP_H,
+    ),
+    check: box((190 + w - 20) / 2, h - 20 - BTN_H / 2, CHECK_W, BTN_H),
   };
 }
 

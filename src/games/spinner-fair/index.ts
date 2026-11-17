@@ -9,7 +9,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { block, face, glowSection, spinner as spinnerArt, sw, type SpinnerArt } from './art';
+import { block, face, glowSection, heart, spinner as spinnerArt, sw, type SpinnerArt } from './art';
 import {
   BAR_H,
   BIG,
@@ -35,6 +35,7 @@ import {
 } from './logic';
 import { DiceGame } from './dice';
 import { RaceGame } from './race';
+import { RigGame } from './rig';
 import { SettleGame } from './settle';
 import { SureGame } from './sure';
 import { TypicalGame } from './typical';
@@ -189,13 +190,9 @@ class SpinnerFair implements Game {
         .circle(0, 0, 60)
         .fill(0xffffff)
         .stroke({ width: 5, color: swatch.yellow.line });
-      const heart = new Graphics()
-        .circle(-8, 0, 9)
-        .circle(8, 0, 9)
-        .poly([-16, 4, 16, 4, 0, 20])
-        .fill(swatch.red.fill);
-      heart.position.set(38, -40);
-      this.favourite.addChild(bubble, face(this.set.favourite, 90), heart);
+      const h = heart();
+      h.position.set(38, -40);
+      this.favourite.addChild(bubble, face(this.set.favourite, 90), h);
     }
     this.buildBars();
     this.resize(this.ctx.view);
@@ -633,6 +630,7 @@ export const spinnerFair: GameModule = {
     if (ask === 'settle') return new SettleGame(ctx);
     if (ask === 'dice') return new DiceGame(ctx);
     if (ask === 'typical') return new TypicalGame(ctx);
+    if (ask === 'rig') return new RigGame(ctx);
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,

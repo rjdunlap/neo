@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–8 |
+| school | 3–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 6 | Watch it settle |
 | 7 | Two dice |
 | 8 | The typical spin |
+| 9 | Rig it |
 
 <!-- end generated -->
 
