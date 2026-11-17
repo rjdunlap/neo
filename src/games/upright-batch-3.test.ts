@@ -165,6 +165,33 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
             // The widest trees (level 3) shrink their cards to the 64-unit minimum on the 768-wide area: 32.5 px.
             32,
           );
+          // Level 4's plan and reason steps come before the nests: the note and the two plans, then the three reasons,
+          // under the whole tree and clear of the guide.
+          if (round.keeper && !spring) {
+            const { note, zone } = l.keeper;
+            const turtles = ids.map((id) => square('turtle', l.slots.get(id)!, l.card));
+            for (const n of [2, 3]) {
+              const w = (zone.w - (n === 2 ? 12 : 10) * (n - 1)) / n;
+              check(
+                v,
+                [
+                  ...turtles,
+                  box('note', note.x, note.y, note.w, note.h),
+                  ...Array.from({ length: n }, (_, i) =>
+                    box(
+                      n === 2 ? 'plan' : 'reason',
+                      zone.x + i * (w + (n === 2 ? 12 : 10)),
+                      zone.y,
+                      w,
+                      zone.h,
+                    ),
+                  ),
+                ],
+                64,
+                32,
+              );
+            }
+          }
         }
       }
     }

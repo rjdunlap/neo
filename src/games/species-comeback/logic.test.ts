@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   NEEDS,
+  NOTE_FITS,
   PLANS,
+  REASONS,
+  REASON_FITS,
   SITES,
   allowed,
   ancestors,
@@ -15,15 +18,18 @@ import {
   hatch,
   helpFor,
   judge,
+  keeperPlans,
   kin,
   makeRound,
   missing,
   ordered,
   pickSites,
   plans,
+  relatedPairs,
   sharedRelative,
   suits,
   tempting,
+  usesEvery,
   type Pair,
   type Tree,
   type Turtle,
@@ -76,6 +82,12 @@ function secondTree(): Tree {
 }
 
 const seeds = (n: number) => Array.from({ length: n }, (_, i) => i * 7919 + 13);
+const planKey = (plan: readonly Pair[]) =>
+  plan
+    .map((p) => p.join('-'))
+    .sort()
+    .join(',');
+const sameSet = (a: readonly Pair[], b: readonly Pair[]) => planKey(a) === planKey(b);
 
 describe('kin', () => {
   it('reads parents and grandparents', () => {
@@ -165,7 +177,7 @@ describe('pairs and plans', () => {
 });
 
 describe('rounds', () => {
-  for (const p of PLANS) {
+  for (const p of PLANS.filter((x) => !x.keeper)) {
     it(`level ${p.level} meets its conditions over 500 seeds`, () => {
       for (const seed of seeds(500)) {
         const r = makeRound(p.level, new Rng(seed));
@@ -189,7 +201,7 @@ describe('rounds', () => {
   }
 
   it('the same seed gives the same round', () => {
-    for (const level of [1, 2, 3])
+    for (const level of [1, 2, 3, 4])
       expect(makeRound(level, new Rng(42))).toEqual(makeRound(level, new Rng(42)));
   });
 });
@@ -307,5 +319,92 @@ describe('sites', () => {
     for (const n of NEEDS) expect(SITES.some((s) => missing(s).includes(n))).toBe(true);
     expect(SITES.some((s) => suits(s) && !s.features.includes('quiet'))).toBe(true);
     expect(SITES.some((s) => !suits(s) && s.features.includes('quiet'))).toBe(true);
+  });
+});
+
+describe("the keeper's two plans (level 4)", () => {
+  const rounds = seeds(500).map((seed) => makeRound(4, new Rng(seed)));
+
+  it('draws four founder pairs, nine young and two nested pairs with two young each: nine candidates', () => {
+    for (const { tree, plan } of rounds) {
+      expect(plan.level).toBe(4);
+      expect(tree.turtles.filter((t) => t.gen === 0)).toHaveLength(8);
+      expect(tree.turtles.filter((t) => t.gen === 1)).toHaveLength(9);
+      expect(tree.turtles.filter((t) => t.gen === 2)).toHaveLength(4);
+      expect(tree.nested).toHaveLength(2);
+      expect(new Set(tree.nested.flat()).size).toBe(4);
+      for (const [f, m] of tree.nested) {
+        expect([byId(tree, f).sex, byId(tree, m).sex]).toEqual(['f', 'm']);
+        expect(kin(tree, f, m, 1)).toBe(false);
+        expect(tree.turtles.filter((t) => t.parents?.[0] === f && t.parents?.[1] === m)).toHaveLength(2);
+      }
+      expect(tree.turtles.every((t) => !!t.name)).toBe(true);
+      expect(new Set(tree.turtles.map((t) => t.name)).size).toBe(tree.turtles.length);
+      expect(candidates(tree)).toHaveLength(9);
+    }
+  });
+
+  it('Plan A is a largest sibling-free plan with a related pair, Plan B a largest plan with none, and A is larger', () => {
+    for (const { tree, keeper } of rounds) {
+      const k = keeper!;
+      const loose = plans(tree, 1),
+        strict = plans(tree, 2);
+      expect(loose.some((x) => sameSet(x, k.a))).toBe(true);
+      expect(strict.some((x) => sameSet(x, k.b))).toBe(true);
+      expect(k.a.length).toBe(best(tree, 1));
+      expect(k.b.length).toBe(best(tree, 2));
+      expect(k.a.length).toBeGreaterThan(k.b.length);
+      expect(k.a.length).toBeGreaterThanOrEqual(3);
+      expect(k.a.length).toBeLessThanOrEqual(4);
+      expect(k.b.length).toBeGreaterThanOrEqual(2);
+      expect(k.b.length).toBeLessThanOrEqual(3);
+      expect(relatedPairs(tree, k.a)).toBeGreaterThan(0);
+      expect(relatedPairs(tree, k.b)).toBe(0);
+      // Both follow the rule the level states: one mother and one father, never brother and sister, nobody twice.
+      for (const plan of [k.a, k.b]) {
+        expect(new Set(plan.flat()).size).toBe(plan.length * 2);
+        for (const [f, m] of plan) {
+          expect(judge(tree, [], f, m, 1)).toBe('ok');
+          expect(byId(tree, f).sex).toBe('f');
+        }
+      }
+      expect(keeperPlans(tree)).toEqual({ a: k.a, b: k.b });
+    }
+  });
+
+  it('each note fits exactly one plan, the round asks for that plan, and both notes come up', () => {
+    expect(NOTE_FITS).toEqual({ room: 'b', big: 'a' });
+    const seen = new Set<string>();
+    for (const { keeper, target, sites } of rounds) {
+      const k = keeper!;
+      seen.add(k.note);
+      expect(k.fits).toBe(NOTE_FITS[k.note]);
+      expect(target).toBe(k[k.fits].length);
+      expect(sites).toHaveLength(3);
+    }
+    expect([...seen].sort()).toEqual(['big', 'room']);
+  });
+
+  it('the reason cards: the first fits A, the second fits B, and no plan in any seed uses every turtle', () => {
+    expect(REASONS).toEqual(['more', 'apart', 'every']);
+    expect(REASON_FITS).toEqual({ more: 'a', apart: 'b', every: null });
+    for (const { tree, keeper } of rounds) {
+      const k = keeper!;
+      // What each card says is true of the plan it fits and false of the other.
+      expect(k.a.length > k.b.length).toBe(true);
+      expect(relatedPairs(tree, k.b) < relatedPairs(tree, k.a)).toBe(true);
+      for (const plan of [...plans(tree, 1), ...plans(tree, 2)]) expect(usesEvery(tree, plan)).toBe(false);
+    }
+  });
+
+  it('the chosen plan hatches two each without running out of names, and levels 1 to 3 never see the keeper', () => {
+    for (const seed of seeds(100)) {
+      const r = makeRound(4, new Rng(seed));
+      const young = hatch(r.tree, r.keeper!.a, new Rng(seed));
+      expect(young).toHaveLength(r.keeper!.a.length * 2);
+      expect(r.tree.turtles.every((t) => !!t.name)).toBe(true);
+      expect(new Set(r.tree.turtles.map((t) => t.name)).size).toBe(r.tree.turtles.length);
+    }
+    for (const level of [1, 2, 3]) expect(makeRound(level, new Rng(7)).keeper).toBeNull();
   });
 });

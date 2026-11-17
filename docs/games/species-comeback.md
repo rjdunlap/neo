@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Not brothers and sisters |
 | 2 | Not cousins either |
 | 3 | Where will they live? |
+| 4 | Two plans |
 
 <!-- end generated -->
 
