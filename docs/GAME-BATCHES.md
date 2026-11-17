@@ -787,6 +787,18 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 **Status: built 2026-11-16, PR #1727.**
 
+### spinner-fair 6: Rig it (CS3a)
+
+- **`spinner-fair`, level 9 (chance-statistics study slice CS3)** (defined 2026-11-16, [definition](definitions/spinner-fair-9-10.md#build-slices-and-check-tiers)): rig the wheel to a target, then prove it with a long run. Proof: new-levels tier on shared wheel functions (typecheck, all the game's rule tests, one browser play at 9 with one wrong Check and the proof run, a `spinnerfair45` regression play, `fingerdemo` at 9, build).
+
+### spinner-fair 7: Is it due? (CS3b)
+
+- **`spinner-fair`, level 10** (after `spinner-fair 6`; same definition): a streak does not make the other colour due. Proof: new-levels tier (typecheck, rule tests, one browser play at 10 with one wrong card on each set, `fingerdemo` at 10, build); the building session's source check for the level-10 line.
+
+### spinner-fair 8: The hidden spinner (CS3c)
+
+- **`spinner-fair`, level 11** (after `spinner-fair 7`; same definition): read a covered wheel from its spins. Proof: new-levels tier with the new cover art (typecheck, rule tests, one browser play at 11 with one wrong card, one portrait screenshot of the covered wheel, `fingerdemo` at 11, build); the source check.
+
 ### tide-line 1: Come in, go out and stop at the line
 
 **Built 2026-10-31** ([PR #1059](https://github.com/rjdunlap/neo/pull/1059)); levels 3-4 are batch `tide-line 2` (built 2026-11-01).

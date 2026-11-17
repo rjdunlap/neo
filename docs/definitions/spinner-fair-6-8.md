@@ -1,6 +1,6 @@
 # Spinner Fair, levels 6–8 (definition)
 
-**Built:** levels 6–8, all of CS2 (PR #1720, #1724, #1727); levels 9–10 belong to CS3 of the [study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), not to this definition.
+**Built:** levels 6–8, all of CS2 (PR #1720, #1724, #1727); levels 9–11 (CS3) are in [their own definition](spinner-fair-9-10.md).
 
 Defined 2026-11-16 as the CS2 definition of the [chance and statistics study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order) (slice 3, its definition half), on the built levels 1–5 of the [levels 1–5 definition](spinner-fair.md). The study's decisions of 2026-10-23 stand ([record](../archive/DECISIONS-2026-10-23.md#decisions)); nothing here needs a new one. Three build slices follow (below); levels 9–10 stay CS3's.
 
