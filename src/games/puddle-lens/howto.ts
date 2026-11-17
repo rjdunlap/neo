@@ -112,8 +112,13 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 10, text: 'Looking at more views never costs anything.' },
     {
       from: 9,
-      to: 10,
+      to: 9,
       text: 'Show a hint turns the dial for you and says what the view shows; the first hint on each file counts as one hint.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'Show a hint turns the dial for you and names the bar to count along, never the length; the first hint on each file counts as one hint.',
     },
   ],
 };

@@ -1068,6 +1068,8 @@ export function measureLayer(
       const grain = grainArt(looks.sand[0], drawn / 2, stop === 4);
       // The grain's outline is uneven: scale it so its length is exactly the drawn length the bar is computed from.
       grain.scale.set(drawn / grain.getLocalBounds().width);
+      // Lifted a little, so its lower edge clears the scale bar.
+      grain.y = -28;
       layer.addChild(grain);
     }
   } else {

@@ -155,6 +155,8 @@ const isSize = (kind: Choice): kind is SizeChoice => kind.startsWith('size-');
 const slotOf = (kind: SizeChoice) => Number(kind.slice(5)) as SizeSlot;
 /** Levels 9–10: drop units to art units at each stop, closer in than level 5's so the one thing on the slide stays well in view. */
 const FILE_SCALE = [30, 100, ART_R, dropScale(4)].map((k) => k * 0.45);
+/** Level 10: how much of its level-9 path a measured thing covers. */
+const MEASURE_REACH = 0.6;
 const CHOICE_NAME: Record<Exclude<Choice, FileCardId | SizeChoice>, LineId> = {
   alive: 'lens.say.alive',
   'not-alive': 'lens.say.not-alive',
@@ -743,7 +745,7 @@ class PuddleLens implements Game {
   private sayBar() {
     const m = this.measure;
     const bar = m && barAt(m.sample, this.stop);
-    if (!bar || this.finished) return;
+    if (!bar || this.finished || this.busy) return;
     sfx.pop(5);
     void this.say(`lens.file.bar.${bar.value}`);
   }
@@ -892,10 +894,12 @@ class PuddleLens implements Game {
     if (file) {
       // Levels 9–10: the one thing in the water moves on its seeded path (a still one stays put), still while any finger is down.
       const p = swimmerAt(file.path, this.swimT);
+      // At level 10 the path is drawn in closer, so both ends of the swimmer stay in view at the closest stop too.
+      const reach = this.plan.level === 10 ? MEASURE_REACH : 1;
       const swims = FILE_SAMPLES['case' in file ? file.case.unknown : file.sample].motion === 'swims';
       this.fileNodes.forEach((n, i) => {
         if (!n) return;
-        n.position.set(p.x * FILE_SCALE[i], p.y * FILE_SCALE[i]);
+        n.position.set(p.x * FILE_SCALE[i] * reach, p.y * FILE_SCALE[i] * reach);
         if (swims) n.rotation = p.angle;
       });
       return;
