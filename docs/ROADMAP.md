@@ -367,7 +367,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Routines and self-care | 2026-10-14 | [study](deep-dives/subjects/routines-self-care.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#routines-and-self-care-recommendations) |
 | Cooking and recipes | 2026-10-14 | [study](deep-dives/subjects/cooking-recipes.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#cooking-and-recipes-recommendations) |
 | Social-emotional play | 2026-10-14 | [study](deep-dives/subjects/social-emotional.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations) |
-| Off-screen companions (slices 1–3 built) | 2026-10-14 | [study](deep-dives/subjects/off-screen-companions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#off-screen-companions-recommendations) |
+| Off-screen companions (slices 1–3 built, slice 4 defined) | 2026-10-14 | [study](deep-dives/subjects/off-screen-companions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#off-screen-companions-recommendations) |
 | Machines and tools | 2026-10-14 | [study](deep-dives/subjects/machines-tools.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#machines-and-tools-recommendations) |
 | Life science | 2026-10-14 | [study](deep-dives/subjects/life-science.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations) |
 | Cells and microbes | 2026-10-17; Puddle Lens levels 1–11 defined and built; Slide Files (levels 9–11, grown-up) [defined](definitions/puddle-lens.md#slide-files-levels-911-definition-2026-11-16) 2026-11-16, built in full (SF3, level 11, 2026-11-17) | [study](deep-dives/subjects/cells-microbes.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations) |
