@@ -35,23 +35,24 @@ export const NAME_OF: Record<Kind, string> = {
   dog: 'Dog',
 };
 
-/** A spinner has six wedges of 60° (level 9's has eight, `RIG_WEDGES`), each owner's wedges one contiguous section from wedge 0. */
+/** A spinner has six wedges of 60° (levels 9 and 11 have eight, `RIG_WEDGES`), each owner's wedges one contiguous section from wedge 0. */
 export const WEDGES = 6;
 export const WEDGE_DEG = 360 / WEDGES;
 /** A stop lands at least this far inside its 60° wedge (9° inside a 45° one, in proportion), so the pointer never rests on a line. */
 export const EDGE_DEG = 12;
-/** Level 9's wheel: eight wedges of 45°. */
+/** The wheel of levels 9 and 11: eight wedges of 45°. */
 export const RIG_WEDGES = 8;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical' | 'rig' | 'due';
+export type Ask =
+  'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical' | 'rig' | 'due' | 'hidden';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4, 6–10), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6–11), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers; level 9: the proof run; level 10: the cap on the run that waits for a streak); the spinner or tray stops taking them after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers; level 9: the proof run; level 10: the cap on the run that waits for a streak; level 11: the three runs together); the spinner or tray stops taking them after this many. */
   spins: number;
 }
 
@@ -66,12 +67,13 @@ const PLANS: readonly Plan[] = [
   { level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 },
   { level: 9, ask: 'rig', name: 'Rig it', sets: 2, spins: 80 },
   { level: 10, ask: 'due', name: 'Is it due?', sets: 2, spins: 240 },
+  { level: 11, ask: 'hidden', name: 'The hidden spinner', sets: 2, spins: 160 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 10 },
+  school: { min: 3, max: 11 },
 };
 
 export function planFor(level: number): Plan {
@@ -91,14 +93,14 @@ export const PICK_PAIRS: readonly (readonly [number, number])[] = [
 export interface SetSpec {
   /** One spinner (levels 1–2, 5), two side by side (level 3) or three in a row (level 4). */
   wheels: Wheel[];
-  /** Levels 3–4 and 6: the pet's favourite; level 3: the spinner (0 or 1) with more of it. */
+  /** Levels 3–4, 6 and 9–11: the pet's favourite; level 3: the spinner (0 or 1) with more of it. */
   favourite?: Kind;
   better?: number;
   /** Level 4: the three cards in the tray, left to right. */
   cards?: Card[];
   /** Level 5: the two racers; the wheel holds the first's wedges, then the second's. */
   racers?: [Kind, Kind];
-  /** Levels 6 and 9–10: the other critter on the wheel; level 6: how many of the six wedges the favourite has. */
+  /** Levels 6 and 9–11: the other critter on the wheel; levels 6 and 11: how many of the wheel's wedges the favourite has. */
   friend?: Kind;
   k?: number;
   /** Level 9: the share the pet asks for, `k` of the eight wedges, spoken as `n` out of every `of`. */
@@ -170,6 +172,11 @@ export function makeRound(level: number, rng: Rng): SetSpec[] {
   if (plan.ask === 'rig') {
     const fav = pickCritters(rng, 1)[0];
     for (let i = 0; i < plan.sets; i++) out.push(rigSet(rng, fav, i === 0, out[i - 1]?.friend));
+    return out;
+  }
+  if (plan.ask === 'hidden') {
+    const fav = pickCritters(rng, 1)[0];
+    for (let i = 0; i < plan.sets; i++) out.push(hiddenSet(rng, fav, out));
     return out;
   }
   if (plan.ask === 'due') {
@@ -444,6 +451,48 @@ export function dueRight(wheel: Wheel, racers: readonly [Kind, Kind]): DueCard {
   const [a, b] = racers.map((k) => countOf(wheel, k));
   return a === b ? 'same' : a > b ? racers[0] : racers[1];
 }
+
+// ---- level 11: the hidden spinner ----
+
+/** The favourite's wedges on a hidden eight-wedge wheel: a quarter, a half or three quarters. They are also the three answer cards, left to right. */
+export const HIDDEN_K: readonly number[] = [2, 4, 6];
+/** The spins standing after each of the three runs; the last is the plan's `spins`. */
+export const HIDDEN_RUNS: readonly number[] = [8, 40, 160];
+
+/**
+ * A level-11 set: the favourite with `k` of eight wedges and one friend with the rest, under the cover. `used` holds the
+ * round's earlier sets: this set's `k` differs from theirs, and its friend from the last one.
+ */
+export function hiddenSet(rng: Rng, fav: Kind, used: readonly SetSpec[] = []): SetSpec {
+  const free = HIDDEN_K.filter((k) => !used.some((s) => s.k === k));
+  const k = rng.pick(free.length ? free : HIDDEN_K);
+  const last = used[used.length - 1]?.friend;
+  const friend = pickCritters(rng, 1, last ? [fav, last] : [fav])[0] ?? pickCritters(rng, 1, [fav])[0];
+  const racers: [Kind, Kind] = [fav, friend];
+  return { wheels: [raceWheel(racers, k, RIG_WEDGES)], favourite: fav, friend, racers, k };
+}
+
+/**
+ * The card or cards the strip reads to: the nearest of a quarter, a half and three quarters to `count` of `total`, as
+ * wedges of eight (2, 4, 6). A strip exactly halfway between two cards reads to both. It is computed from the run
+ * alone, never from the wheel, so what the cover hides never enters the answer.
+ */
+export function readCards(count: number, total: number): number[] {
+  // Eighths of the strip, compared in whole numbers: |count/total − k/8| ∝ |8·count − k·total|.
+  const far = HIDDEN_K.map((k) => Math.abs(RIG_WEDGES * count - k * total));
+  const least = Math.min(...far);
+  return HIDDEN_K.filter((_, i) => far[i] === least);
+}
+
+/** The reveal: the uncovered wheel has the share this card shows. When no card the strip read to does, the run was unusual. */
+export const revealMatches = (card: number, k: number) => card === k;
+
+/** How a hidden share is spoken at the reveal. */
+export const SHARE_NAME: Readonly<Record<number, string>> = {
+  2: 'a quarter',
+  4: 'half',
+  6: 'three quarters',
+};
 
 // ---- level 7: two dice ----
 
@@ -800,7 +849,7 @@ export function raceLayout(view: { w: number; h: number }): RaceLayout {
 }
 
 /**
- * Level 6: one spinner, the share strip with its two counts above it, the fast-forward button and the three answer cards.
+ * Levels 6 and 11: one spinner, the share strip with its two counts above it, the fast-forward button and the three answer cards.
  * The strip and counts are display only; the spinner, the button and the cards are the targets.
  */
 export const SETTLE_R = 170,

@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–10 |
+| school | 3–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,12 +24,13 @@
 | 8 | The typical spin |
 | 9 | Rig it |
 | 10 | Is it due? |
+| 11 | The hidden spinner |
 
 <!-- end generated -->
 
 **Starts as:** tap a spinner and a critter's block drops onto its bar
 
-**Grows into:** levels 1–10; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean, level 9 makes an eight-wedge wheel to a share the pet asks for (eighths, then quarters) by handing wedges across and proves it with an eighty-spin run that is never judged, and level 10 spins until one critter comes up five times running, then asks who is more likely next (a favourite, a friend or the same, answered from the wheel, never from the run) (school only). Counting Cove
+**Grows into:** levels 1–11; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely, and level 8 spins a number wheel six times, stacks each spin as a tower, reads the range, levels the towers by dragging blocks from tall to short (never a miss) and picks the typical spin, the mean, level 9 makes an eight-wedge wheel to a share the pet asks for (eighths, then quarters) by handing wedges across and proves it with an eighty-spin run that is never judged, and level 10 spins until one critter comes up five times running, then asks who is more likely next (a favourite, a friend or the same, answered from the wheel, never from the run) (school only). Counting Cove
 
 ## Design notes
 
@@ -67,4 +68,6 @@ Misses and hints (level 9): only a Check on a wheel that is not the share is a m
 
 Misses and hints (level 10): only a wrong card is a miss; spins, the run and the ribbon are never counted. After two wrong cards on a wheel the help lights (both wheel sections glow with numeral badges of their wedge counts, and the right card glows), one hint per wheel; asked again, the card is tapped.
 
-Level 11 is CS3c of the [chance study](../deep-dives/subjects/chance-statistics.md#build-slices-in-order), defined in the [levels 9–11 definition](../definitions/spinner-fair-9-10.md) and not yet built.
+**Level 11, The hidden spinner (CS3c, built 2026-11-17, PR #1738; school only, school is now 3–11).** An eight-wedge wheel sits under a purple dome with eight question marks that turns with it; a still window under the pointer shows only the critter it stopped on, so nothing of the wheel is seen (`hiddenSet` returns the two critters, the wheel and `racers`; the code is in `hidden.ts`). The instruction names both critters ("This wheel is hiding {kind} and {other}! ..."). She spins it in three runs to 8, 40 and 160 honest spins (the first plays over about 6.4 s, 0.8 s a spin, each landing named with `sf.critter`; then 2.6 s and 3.6 s fast-forwards), the strip filling with quarter ticks and no marker. Then three share cards, with both critters' faces in their parts of the small wheel (the favourite's part clockwise from the top), are read from the run alone: the card nearest the run's share is right, and a strip exactly halfway accepts both neighbours (`readCards`). A tap on the spinner while the question waits only pops. The right card lifts the cover and the wedges are counted, the favourite's section glowing; the plain `sf.reveal` line plays whenever the wheel is one of the cards the strip read to, `sf.reveal-unusual` otherwise (the run is never judged). `SHARE_NAME` is the spoken share table and `state.right` is empty until the 160 spins stand. The done line is "Two hidden wheels read from their spins! Great reading." The layout is level 6's `settleLayout`. The share wording ("about a quarter, a half, three quarters", "unusual") was checked against CCSS 7.SP.C.6–7 (see the [definition](../definitions/spinner-fair-9-10.md#build-slices-and-check-tiers)).
+
+Misses and hints (level 11): only a wrong card is a miss; spins and runs are never counted. After two wrong cards on a wheel the right card glows (one hint per wheel); asked again, the card is tapped.

@@ -117,6 +117,12 @@ import {
   type Circle,
   type Box,
   type Wheel,
+  HIDDEN_K,
+  HIDDEN_RUNS,
+  SHARE_NAME,
+  hiddenSet,
+  readCards,
+  revealMatches,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i * 7919 + 1);
@@ -126,7 +132,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 10 },
+      school: { min: 3, max: 11 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -1443,4 +1449,132 @@ describe('level 10: is it due?', () => {
       expect(L.cell).toBeGreaterThanOrEqual(40);
       expect(L.cell).toBeLessThanOrEqual(56);
     });
+});
+
+describe('level 11: the hidden spinner', () => {
+  it('the plan, and levels 1–10 keep their asks', () => {
+    expect(planFor(11)).toEqual({
+      level: 11,
+      ask: 'hidden',
+      name: 'The hidden spinner',
+      sets: 2,
+      spins: 160,
+    });
+    expect(HIDDEN_RUNS).toEqual([8, 40, 160]);
+    expect(HIDDEN_RUNS[HIDDEN_RUNS.length - 1]).toBe(planFor(11).spins);
+    expect(HIDDEN_K).toEqual([2, 4, 6]);
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((l) => planFor(l).ask)).toEqual([
+      'see',
+      'most',
+      'pick',
+      'sure',
+      'fair',
+      'settle',
+      'dice',
+      'typical',
+      'rig',
+      'due',
+    ]);
+  });
+
+  it('each set is an eight-wedge wheel of the favourite and one friend, k of 2, 4 or 6, and the two sets differ', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const round = makeRound(11, new Rng(seed));
+      expect(round).toHaveLength(2);
+      const [a, b] = round;
+      expect(a.favourite).toBe(b.favourite);
+      expect(a.k).not.toBe(b.k);
+      expect(a.friend).not.toBe(b.friend);
+      for (const set of round) {
+        const w = set.wheels[0];
+        expect(set.wheels).toHaveLength(1);
+        expect(w).toHaveLength(RIG_WEDGES);
+        expect(HIDDEN_K).toContain(set.k);
+        expect(kindsOf(w).slice().sort()).toEqual([set.favourite!, set.friend!].sort());
+        expect(countOf(w, set.favourite!)).toBe(set.k);
+        expect(contiguous(w)).toBe(true);
+        expect(COLOR_OF[set.favourite!]).not.toBe(COLOR_OF[set.friend!]);
+        expect(set.racers).toEqual([set.favourite, set.friend]);
+        seen.add(set.k!);
+      }
+    }
+    expect([...seen].sort()).toEqual([2, 4, 6]);
+  });
+
+  it('a set with every share used still draws a wheel', () => {
+    const rng = new Rng(5);
+    const used = HIDDEN_K.map((k) => ({ wheels: [], k, friend: 'pig' as const }));
+    const set = hiddenSet(rng, 'duck', used);
+    expect(HIDDEN_K).toContain(set.k);
+    expect(set.friend).not.toBe('pig');
+  });
+
+  it('readCards is the nearest of a quarter, a half and three quarters, both when exactly halfway, never none', () => {
+    for (let count = 0; count <= 160; count++) {
+      const cards = readCards(count, 160);
+      expect(cards.length === 1 || cards.length === 2).toBe(true);
+      for (const c of cards) expect(HIDDEN_K).toContain(c);
+      const far = (k: number) => Math.abs(count / 160 - k / 8);
+      const least = Math.min(...HIDDEN_K.map(far));
+      for (const k of HIDDEN_K) expect(cards.includes(k)).toBe(Math.abs(far(k) - least) < 1e-12);
+    }
+    expect(readCards(40, 160)).toEqual([2]);
+    expect(readCards(80, 160)).toEqual([4]);
+    expect(readCards(120, 160)).toEqual([6]);
+    expect(readCards(60, 160)).toEqual([2, 4]);
+    expect(readCards(100, 160)).toEqual([4, 6]);
+    expect(readCards(59, 160)).toEqual([2]);
+    expect(readCards(61, 160)).toEqual([4]);
+    expect(readCards(0, 160)).toEqual([2]);
+    expect(readCards(160, 160)).toEqual([6]);
+    // Only 60 and 100 of 160 sit halfway.
+    const both = Array.from({ length: 161 }, (_, n) => n).filter((n) => readCards(n, 160).length === 2);
+    expect(both).toEqual([60, 100]);
+  });
+
+  it('the right card comes from the count alone, never from the wheel', () => {
+    // readCards takes no wheel; the same count reads the same whatever wheel made it.
+    expect(readCards.length).toBe(2);
+    for (const k of HIDDEN_K) {
+      expect(HIDDEN_K.filter((c) => revealMatches(c, k))).toEqual([k]);
+      expect(SHARE_NAME[k]).toBeTruthy();
+    }
+    expect(HIDDEN_K.map((k) => SHARE_NAME[k])).toEqual(['a quarter', 'half', 'three quarters']);
+  });
+
+  it("160 honest spins read to the wheel's own share in at least 99% of sets for each k (measured, never enforced)", () => {
+    const hold: Record<number, [number, number]> = { 2: [0, 0], 4: [0, 0], 6: [0, 0] };
+    for (let seed = 1; seed <= 2000; seed++) {
+      const rng = new Rng(seed * 104729);
+      for (const set of makeRound(11, rng)) {
+        const w = set.wheels[0];
+        const spins = spinRun(rng, 160, RIG_WEDGES);
+        expect(spins).toHaveLength(160);
+        for (const x of spins) expect(x.wedge >= 0 && x.wedge < RIG_WEDGES).toBe(true);
+        const count = spins.filter((x) => w[x.wedge] === set.favourite).length;
+        hold[set.k!][1]++;
+        if (readCards(count, 160).includes(set.k!)) hold[set.k!][0]++;
+      }
+    }
+    for (const k of HIDDEN_K) {
+      expect(hold[k][1]).toBeGreaterThan(500);
+      expect(hold[k][0] / hold[k][1]).toBeGreaterThanOrEqual(0.99);
+    }
+  });
+
+  it('the three runs are drawn through spinRun in order: the stream is the same one by one', () => {
+    const a = new Rng(77),
+      b = new Rng(77);
+    const runs = [8, 32, 120].flatMap((n) => spinRun(a, n, RIG_WEDGES));
+    const one = Array.from({ length: 160 }, () => spin(b, RIG_WEDGES));
+    expect(runs).toEqual(one);
+  });
+
+  it('the hint is a card the strip reads to, for every count', () => {
+    for (let count = 0; count <= 160; count++) {
+      const first = readCards(count, 160)[0];
+      expect(HIDDEN_K.indexOf(first)).toBeGreaterThanOrEqual(0);
+    }
+  });
 });

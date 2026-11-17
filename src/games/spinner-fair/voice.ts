@@ -104,4 +104,15 @@ export const VOICE = {
   'sf.spin-once': ['Tap the spinner for one more spin.'],
   'sf.due-next': ['{kind}! Every spin starts fresh.'],
   'sf.done-due': ['Two runs watched! The chance is in the wheel.'],
+  'sf.instruct.11': [
+    "This wheel is hiding {kind} and {other}! Spin it lots, and let the strip tell you how much of it is {kind}'s.",
+  ],
+  'sf.hidden-q': ["What does the strip say? About how much of the wheel is {kind}'s?"],
+  'sf.hidden-yes': ["Yes, that's what the strip says. Let's look!"],
+  'sf.reveal': ['{kind} has {n} of the 8 wedges: {share}.'],
+  'sf.reveal-unusual': [
+    "{kind} has {n} of the 8 wedges. The run said something else: that's unusual, and you read the strip right.",
+  ],
+  'sf.strip-hint': ['Look where the strip stops on the ruler.'],
+  'sf.done-hidden': ['Two hidden wheels read from their spins! Great reading.'],
 } satisfies Record<string, string[]>;
