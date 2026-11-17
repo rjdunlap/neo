@@ -1,12 +1,20 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
+import { label } from '../../ui/text';
 import {
   ART_R,
+  barAt,
+  GREEN_BALL_R,
+  lengthLabel,
+  MEASURED,
+  STOP4_ZOOM,
+  SWIMMER_ART_LEN,
   type FileCardId,
   type FileSampleId,
   type LeafKind,
   type Looks,
+  type MeasuredId,
   type SampleId,
   type Stop,
   type SwimmerShape,
@@ -474,10 +482,10 @@ export function candidateArt(
   shape: SwimmerShape,
   k = 1,
 ): Container {
-  const z = stop === 4 ? 1.7 : 1;
+  const z = stop === 4 ? STOP4_ZOOM : 1;
   if (stop <= 2) return dotArt(stop === 1 ? 2 : 5, SPECK_COLOR[id]);
-  if (id === 'swimmer') return swimmerArt(shape, 130 * z * k, stop === 4);
-  if (id === 'green-ball') return stop === 3 ? dotArt(6, BALL.cup) : greenBallArt(44 * k);
+  if (id === 'swimmer') return swimmerArt(shape, SWIMMER_ART_LEN * z * k, stop === 4);
+  if (id === 'green-ball') return stop === 3 ? dotArt(6, BALL.cup) : greenBallArt(GREEN_BALL_R * k);
   if (id === 'silt') return stop === 3 ? dotArt(6, SILT.fill) : raggedArt(30 * k, SILT, 23);
   if (id === 'mud-speck') return raggedArt(24 * z * k, MUD, 19);
   return bubbleArt(26 * z * k);
@@ -1005,4 +1013,77 @@ export function folderArt(): Graphics {
   g.roundRect(-42, -32, 36, 14, 5).fill(0xe2b866).stroke(line(0xa9843c, 3));
   g.roundRect(-42, -24, 84, 56, 7).fill(0xf0cf86).stroke(line(0xa9843c, 3));
   return g;
+}
+
+// ----- level 10: measure it -----
+
+const BAR_INK = 0x2f3b47;
+
+/** A scale bar `units` long, centred on (0, 0): white with dark ends, its value written under it, on a pale strip so it reads over anything. */
+export function scaleBarArt(units: number, text: string): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const w = Math.max(units, 96) + 28;
+  g.roundRect(-w / 2, -20, w, 64, 14).fill({ color: 0xffffff, alpha: 0.72 });
+  g.rect(-units / 2, -6, units, 12)
+    .fill(0xffffff)
+    .stroke({ width: 3, color: BAR_INK });
+  for (const x of [-units / 2, units / 2])
+    g.moveTo(x, -14).lineTo(x, 14).stroke({ width: 5, color: BAR_INK, cap: 'round' });
+  const t = label(text, 24, BAR_INK);
+  t.y = 28;
+  c.addChild(g, t);
+  return c;
+}
+
+/** Where the scale bar sits in the view, in art units below the middle. */
+export const BAR_Y = 132;
+
+/** A length written on its answer button, or (smaller) stamped on the folder. */
+export function lengthArt(text: string, size = 30): Container {
+  const t = label(text, size, BAR_INK);
+  // The longest label ("0.1 µm", "200 µm") stays inside a 120 button.
+  if (t.width > size * 3.4) t.scale.set((size * 3.4) / t.width);
+  return t;
+}
+
+/**
+ * One stop's view of a level-10 file's thing, drawn exactly as long as `MEASURED` says (the bar is computed from the same row), with
+ * its scale bar where the view shows one; and the part that moves on its path, or null (the sand grain lies still on the slide).
+ */
+export function measureLayer(
+  id: MeasuredId,
+  stop: Stop,
+  looks: Looks,
+  shape: SwimmerShape,
+): { layer: Container; mover: Container | null } {
+  let layer: Container;
+  let mover: Container | null = null;
+  const drawn = MEASURED[id].drawn[stop - 1];
+  if (id === 'sand-grain') {
+    if (!drawn) layer = viewLayer('sand', stop, looks);
+    else {
+      layer = new Container();
+      layer.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE));
+      const grain = grainArt(looks.sand[0], drawn / 2, stop === 4);
+      // The grain's outline is uneven: scale it so its length is exactly the drawn length the bar is computed from.
+      grain.scale.set(drawn / grain.getLocalBounds().width);
+      // Lifted a little, so its lower edge clears the scale bar.
+      grain.y = -28;
+      layer.addChild(grain);
+    }
+  } else {
+    layer = waterLayer(stop);
+    if (stop >= 2) {
+      mover = candidateArt(id, stop, shape);
+      layer.addChild(mover);
+    }
+  }
+  const bar = barAt(id, stop);
+  if (bar) {
+    const b = scaleBarArt(bar.units, lengthLabel(bar.value));
+    b.y = BAR_Y;
+    layer.addChild(b);
+  }
+  return { layer, mover };
 }

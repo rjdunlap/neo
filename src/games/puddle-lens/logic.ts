@@ -831,6 +831,125 @@ export function fileRoundFor(rng: Rng, authored: boolean): SlideFile[] {
   });
 }
 
+// ----- level 10: slide files (measure it) -----
+
+/** A swimmer's body length in art units at stop 3 (stop 4 draws it `STOP4_ZOOM` times as long), and the green ball's radius at stop 4. */
+export const SWIMMER_ART_LEN = SWIMMER_LENGTH * ART_R;
+export const GREEN_BALL_R = 44;
+
+/** The things measured at level 10 (the cheek cell is left out: no source for its length was opened). */
+export type MeasuredId = 'swimmer' | 'green-ball' | 'sand-grain';
+
+export interface Measured {
+  id: MeasuredId;
+  /** The length the drawing stands for, in micrometres, and the sourced range it lies in. */
+  microns: number;
+  range: readonly [number, number];
+  /** How long it is drawn at stops 1–4, in art units; 0 where it shows no evidence yet. The art draws from this row. */
+  drawn: readonly [number, number, number, number];
+}
+
+/** The measured samples (the definition's table). The views are separate drawings, not one magnification, so each has its own bar. */
+export const MEASURED: Record<MeasuredId, Measured> = {
+  swimmer: {
+    id: 'swimmer',
+    microns: 200,
+    range: [60, 300],
+    drawn: [0, 0, SWIMMER_ART_LEN, SWIMMER_ART_LEN * STOP4_ZOOM],
+  },
+  'green-ball': { id: 'green-ball', microns: 10, range: [2, 12], drawn: [0, 0, 0, GREEN_BALL_R * 2] },
+  'sand-grain': { id: 'sand-grain', microns: 300, range: [200, 630], drawn: [0, 0, 300, 660] },
+};
+export const MEASURED_IDS = Object.keys(MEASURED) as MeasuredId[];
+
+/** The scale bar's values in micrometres (1 mm, 100 µm, 10 µm, 1 µm), and how long a bar may be drawn, in art units. */
+export const BAR_VALUES = [1000, 100, 10, 1] as const;
+export type BarValue = (typeof BAR_VALUES)[number];
+export const BAR_MIN = 60;
+export const BAR_MAX = 240;
+/** The widest thing that shows both its ends in the view, in art units. */
+export const FITS_WHOLE = ART_R * 2 * 0.9;
+
+/** Art units to one micrometre in a view, or 0 where the sample shows nothing to measure yet. */
+export const unitsPerMicron = (s: MeasuredId, stop: Stop): number =>
+  MEASURED[s].drawn[stop - 1] / MEASURED[s].microns;
+
+/** The bar a view shows: the largest value drawn between 60 and 240 art units long, from the stop where the sample first shows evidence. */
+export function barAt(s: MeasuredId, stop: Stop): { value: BarValue; units: number } | null {
+  const k = unitsPerMicron(s, stop);
+  if (!k) return null;
+  const value = BAR_VALUES.find((v) => v * k >= BAR_MIN && v * k <= BAR_MAX);
+  return value ? { value, units: value * k } : null;
+}
+
+/** The lowest stop where the sample shows evidence and both its ends fit in the view. */
+export const measuringStop = (s: MeasuredId): Stop =>
+  STOPS.find((stop) => MEASURED[s].drawn[stop - 1] > 0 && MEASURED[s].drawn[stop - 1] <= FITS_WHOLE) ?? 4;
+
+/** How many bars long the sample is in a view (the same count at every stop that shows a bar; a test). */
+export const barsAlong = (s: MeasuredId, stop: Stop): number => {
+  const bar = barAt(s, stop);
+  return bar ? MEASURED[s].microns / bar.value : 0;
+};
+
+/** Which of the three length buttons is the right one. */
+export type SizeSlot = 0 | 1 | 2;
+export const SIZE_SLOTS: readonly SizeSlot[] = [0, 1, 2];
+
+/** Three lengths ten times apart in rising order, in micrometres, with the true length at `slot`. */
+export function sizeChoices(s: MeasuredId, slot: SizeSlot): [number, number, number] {
+  const m = MEASURED[s].microns;
+  const ladder = [m / 100, m / 10, m, m * 10, m * 100];
+  return [ladder[2 - slot], ladder[3 - slot], ladder[4 - slot]];
+}
+
+/** A length as its button shows it: micrometres below a millimetre, millimetres from there up. */
+export const lengthLabel = (microns: number): string =>
+  microns >= 1000 ? `${microns / 1000} mm` : `${microns} µm`;
+
+/** The voice line that says a length in full (`lens.file.len.200-um`; a tenth of a micrometre is `tenth-um`). */
+export type LengthKey = `${number}-um` | `${number}-mm` | 'tenth-um';
+export const lengthKey = (microns: number): LengthKey =>
+  microns >= 1000 ? `${microns / 1000}-mm` : microns < 1 ? 'tenth-um' : `${microns}-um`;
+
+export type SizeVerdict =
+  | { result: 'free'; line: 'lens.file.need-ends' }
+  | { result: 'right'; line: `lens.file.yes.size.${MeasuredId}` }
+  | { result: 'miss'; line: `lens.file.see.bars.${BarValue}` };
+
+/**
+ * Below the measuring stop every length is free (both ends are not beside a bar yet). At or above it the true length closes the
+ * file, and a wrong one is a miss whose line names the bar and never the answer.
+ */
+export function judgeSize(s: MeasuredId, slot: SizeSlot, stop: Stop, choice: SizeSlot): SizeVerdict {
+  const bar = barAt(s, stop);
+  if (stop < measuringStop(s) || !bar) return { result: 'free', line: 'lens.file.need-ends' };
+  if (choice === slot) return { result: 'right', line: `lens.file.yes.size.${s}` };
+  return { result: 'miss', line: `lens.file.see.bars.${bar.value}` };
+}
+
+/** A level-10 file: the thing to measure, which button holds its true length, and its path in the water. */
+export interface MeasureFile {
+  sample: MeasuredId;
+  slot: SizeSlot;
+  path: Swimmer;
+}
+
+/**
+ * Three files, one of each measured sample. The authored round is the swimmer (20 µm, 200 µm, 2 mm), the green ball, then the sand
+ * grain. Seeded: the order, where the true length sits among the three (never the same place on all three files), and positions.
+ */
+export function measureRoundFor(rng: Rng, authored: boolean): MeasureFile[] {
+  const ids: MeasuredId[] = authored
+    ? ['swimmer', 'green-ball', 'sand-grain']
+    : rng.shuffle([...MEASURED_IDS]);
+  let slots: SizeSlot[];
+  do {
+    slots = ids.map((_, i) => (authored && i === 0 ? 1 : rng.pick(SIZE_SLOTS)));
+  } while (slots.every((k) => k === slots[0]));
+  return ids.map((sample, i) => ({ sample, slot: slots[i], path: makePath(rng, sample, 0, FILE_SPOT) }));
+}
+
 // ----- help -----
 
 /**
@@ -847,7 +966,7 @@ export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'tur
 
 /**
  * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3 and 5–8)
- * or closes the file (9), or the lowest that shows the asked thing (4).
+ * or closes the file (9), the stop that shows both ends beside the bar (10), or the lowest that shows the asked thing (4).
  */
 export function helpFor(
   level: number,
@@ -861,9 +980,11 @@ export function helpFor(
     wall?: WallSlideId;
     green?: GreenDropId;
     file?: FileCase;
+    measure?: MeasuredId;
   },
 ): Help | null {
   if (level === 1) return { do: 'tap-lens' };
+  if (level === 10) return s.measure ? { do: 'turn', stop: measuringStop(s.measure) } : null;
   if (level === 9) return s.file ? { do: 'turn', stop: closingStop(s.file) } : null;
   if (level === 7) return s.wall ? { do: 'turn', stop: wallDeciding(s.wall) } : null;
   if (level === 8) return s.green ? { do: 'turn', stop: greenDeciding(s.green) } : null;
@@ -930,7 +1051,7 @@ const GAP = 12;
 export interface LensLayout {
   /** The lens view (levels 1, 3 and 4). */
   lens: Ring;
-  /** Levels 3–9: the four stop buttons; levels 3–4: the answer button; levels 5–8: the three answers or trays; level 9: four. */
+  /** Levels 3–10: the four stop buttons; levels 3–4: the answer button; levels 5–8 and 10: the three answers or trays; level 9: four. */
   stops: Rect[];
   answer: Rect | null;
   choices: Rect[];
@@ -1118,7 +1239,7 @@ export class LensTally {
 }
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -1140,6 +1261,7 @@ export const PLANS: readonly PlanInfo[] = [
     name: "Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet",
   },
   { level: 9, name: 'Name the slide: look closer, then tap the card the view leaves standing' },
+  { level: 10, name: 'Measure it: look closer, then read its length from the scale bar' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -1148,7 +1270,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
-  grownup: { min: 9, max: 9 },
+  grownup: { min: 9, max: 10 },
 };
 export const planFor = (level: number): PlanInfo =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
