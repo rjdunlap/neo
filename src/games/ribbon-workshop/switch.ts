@@ -258,7 +258,7 @@ export class WholeSwitch implements Game {
         // Both wholes show their steps: two of the ribbon in one, four in the other.
         for (const w of this.clips.keys()) this.marks.set(w, fitsIn(w));
         this.draw();
-        this.drawGift(true);
+        this.drawGift(true, true);
         this.ctx.particles.burst(X0 + RIBBON_LEN + 70, RIBBON_Y - 70, {
           colors: [swatch[this.color].fill, swatch.yellow.fill],
           count: 18,
@@ -383,7 +383,7 @@ export class WholeSwitch implements Game {
     this.rail.addChild(g);
   }
 
-  private drawGift(tied: boolean) {
+  private drawGift(tied: boolean, pop = false) {
     for (const c of this.giftLayer.removeChildren()) {
       this.ctx.tw.kill(c.scale);
       c.destroy({ children: true });
@@ -391,7 +391,7 @@ export class WholeSwitch implements Game {
     const box = giftBox(this.color, tied);
     box.position.set(X0 + RIBBON_LEN + 70, RIBBON_Y + 20);
     this.giftLayer.addChild(box);
-    if (tied) {
+    if (pop) {
       box.scale.set(0.7);
       void this.ctx.tw
         .to(box.scale, { x: 1.1, y: 1.1 }, { duration: 0.2 })
