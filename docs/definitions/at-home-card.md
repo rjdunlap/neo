@@ -31,7 +31,7 @@ One pure function, `atHomeCard`, in a new `src/content/athome.ts`. Its inputs ar
 
 In steps 2 and 3 a starter is always a game that lists the profile's own band, one rule for every band (a school profile still sees younger games, so without it Roundup would be a school starter); for a `grownup` profile that is the same rule, and step 2 is skipped (there are no notes to complete).
 
-With the first eight games below and nothing played, the card is Bounce Back, Jelly Drums and Roundup at lap, toddler, preschool and pre-K (Treehouse has no complete game, so the walk reaches Barnyard), and Bounce Back, Jelly Drums and Little Helpers at school (Roundup stops at pre-K, so the walk reaches Counting Cove). The rule tests pin both.
+With all sixteen games and nothing played, the card is Bounce Back, Jelly Drums and Peekaboo Barn at lap and toddler (Peekaboo Barn comes before Roundup in Barnyard's order), and Bounce Back, Jelly Drums and Pixel Pictures at preschool, pre-K and school (Treehouse has a complete game from preschool up and comes third in land order); the first eight games gave Roundup at lap through pre-K and Little Helpers at school until batch 2. The rule tests pin the starters.
 
 This changes two things from today on purpose: played games come most recent first (the study's "recent play first"; today they come in catalog order), and the card is filled to three where today a one-game week shows one idea.
 
@@ -121,6 +121,29 @@ Not established by any of this: whether a family reads or uses the card, whether
 
 The study's slice 4 marked built; this page's status and any as-built differences; DESIGN.md's per-band grown-up text row gains `atHomeCard`, `atHomeNoteFor` and `kitFor` and its grown-ups' page paragraph the section; the recommendations row and the IDEAS row move from proposal to built; a verification entry and the `grownups` coverage row. README and GAMES.md stay unchanged (no game behaviour). Queue the next notes batch (eight more games, strings tier: typecheck and the rule tests) only if Next ten needs a line.
 
+## Batch 2 (built 2026-11-17, PR #1754)
+
+Eight more games, one land each, so every one of the 11 lands now has a game with notes (Treehouse, Cozy Village and Lantern Lake had none) and the table holds 16 games. Wording is copied from `src/content/athome.ts`; each *Try* is the game's `offScreen`, unchanged. Word Search's `all` entry is what a school profile reads; a grown-up profile gets no notes, as before.
+
+| Game (bands) | Entry | Try (today's line, for reference) | Notice | Say |
+| --- | --- | --- | --- | --- |
+| Pixel Pictures (preschool–school) | `all` | Color squares on graph paper to copy a simple picture, or make one for her to copy. | Does {name} copy square by square, or color a whole row at once? | Two blue, then one red. What shall we make next? |
+| Peekaboo Barn | `all` | Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?" | Does {name} look at the blanket, pull it off or wait for you to lift it? | Where did the cow go? Peekaboo! There it is. |
+| | `school` | (the same) | Does {name} take a turn hiding an animal for you to find? | Your turn to hide one. Will you give me a clue? |
+| Duck Pond | `all` | Line up toy ducks or spoons and count them together, touching each one. | Does {name} touch each one, pick one up or push the line along? | One, two, three. Three in a row! |
+| | `school` | (the same) | Does {name} start again from one, or carry on from the last number? | How many would there be with two more? How do you know? |
+| Swap Meet (toddler–school) | `all` | With a grown-up, each hold a toy and say which toy you would like to swap. | Does {name} hold on, hold a toy out or reach for yours? | Swap? Here is mine. Thank you! |
+| | `school` | (the same) | Does {name} offer a different toy after a "no thanks"? | Would you swap? What would make it a good swap for both of us? |
+| Dot Link | `all` | Line up colored blocks or buttons (blocks only under 3), then count how many of each color. | Does {name} line the blocks up, stack a few or gather one color? | Red, red, blue. Two red, one blue. |
+| | `school` | (the same) | Does {name} sort by color first, or keep a tally along the line? | Which color has the most? How many more than the next one? |
+| Photo Safari | `all` | Play "I spy" with places: "I spy a teddy under the table." | Does {name} look toward the teddy, point or go and fetch it? | I spy a teddy under the table. There it is! |
+| | `school` | (the same) | Does {name} use a place word such as under, beside or on top of? | Your turn to spy. Where is it hiding? |
+| Bouncy Launch | `all` | Roll a ball down a ramp: tilt it more or less and see how far it goes. | Does {name} watch the ball, chase it or carry it back to the ramp? | Down it goes! Far, far away. Again? |
+| | `school` | Make a ramp from a book and roll a ball off it. Mark where it lands with a sock, tilt the book and guess the new spot first. | Does {name} move the guess nearer or farther after each roll? | Where will it land now? What changed? |
+| Word Search (school, grown-up) | `all` | Hide a few words in a grid of letters on paper for someone else to find. | Does {name} hide the words across, down or both ways? | Which word was hardest to hide? Where would you look first? |
+
+Left out, with reasons: Stamp Studio (its *Try* names a potato, food in spirit though not on the word list), Teddy Doctor (plasters) and Maker Lane (bread). One wording was caught by the rule tests during the build: a school *Notice* for Photo Safari used "behind", a measuring word, and became "under, beside or on top of". The unchanged selection rule changed the nothing-played starters, as described under [Which three ideas](#which-three-ideas); Roundup and Little Helpers still come onto the card with notes when played. A third batch follows the same rules (eight games, strings tier), choosing games that reach the youngest bands not yet served in their land.
+
 ## Open decisions
 
 Each has a default the build takes; none waits on anyone.
@@ -143,3 +166,4 @@ Built 2026-11-17 (PR #1747). Differences from this page:
 - `atHomeSection()` takes no `app` argument. `atHomeCard` takes one input object, including `now` and an optional `notes` table for tests; `atHomeNoteFor` and `kitFor` take an optional table too.
 - The browser case is its own suite name, `athome` (it also runs inside `grownups` and `all`), and also checks that a grown-up profile gets *Try* lines only and no kit.
 - The deferred practical-care classes are a concrete word list, `DEFERRED_CLASSES` in `src/content/offscreen-rules.ts` (food, snack, fruit, eat, drink, juice, milk, bath, bathtub, water, ice, sun, sunny, soap, bubble, scissors, knife, knives, sand, rice, flour, mirror, torch, flashlight, cord, rope), beside the shared `UNDER_3`, `wordPattern` and `EVERY_BAND` moved out of `offscreen.test.ts`.
+- Batch 2 changed that lap kit line to "a large soft ball, pots and pans, a teddy or other soft toy, a blanket" (see below).
