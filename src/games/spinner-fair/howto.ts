@@ -27,6 +27,11 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Tap the tray to roll the two dice, twelve times; watch the grid of every way they can land fill in; then tap the sum with the most squares, and the one of two sums that comes up more.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'Tap the spinner six times; each spin stands as a tower. Tap how far apart the tallest and shortest are, drag blocks from tall towers onto short ones until they are as level as they can be, then tap the height the level towers show.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -42,6 +47,7 @@ export const HOW_TO: GameHowTo = {
       text: 'After the right card, 60 more spins play to check it; after the second wheel, one sticker, whatever the spins did.',
     },
     { from: 7, to: 7, text: 'After the second question, one sticker, whatever the dice rolled.' },
+    { from: 8, to: 8, text: "After the second wheel's typical spin, one sticker, whatever the spins were." },
   ],
   note: [
     {
@@ -68,6 +74,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'A roll is never a mistake, and twelve rolls can make any sum look common: the grid, not the rolls, answers both questions. Only a wrong card is a miss (count the squares that make each sum); after two on a question the squares and the answer glow, which counts as a hint. The first time the grid is filled, a card goes in the journal, whatever the dice did. Nothing in the game is won, bet or unlocked by a roll.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'A spin is never a mistake and neither is any block she moves, whichever way it goes. Only a wrong card is a miss: the range is the outline blocks between the tallest and shortest towers, and the typical spin is the height the level towers show (when the blocks do not share out exactly, either of the two heights is right: it is about that many). After two wrong cards on a question, or a second block moved onto a taller tower, the answer or the next move glows, which counts as one hint for that wheel. Nothing in the game is won, bet or unlocked by a spin.',
     },
   ],
 };

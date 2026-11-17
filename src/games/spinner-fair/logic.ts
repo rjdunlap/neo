@@ -4,7 +4,9 @@
  * spinners has more of the pet's favourite (level 3), whether the favourite is sure, maybe or no way on a spinner (level 4), and
  * whether a two-critter race is fair and the wheel is even at Check (level 5), and about how many of sixty more spins will
  * be the favourite, read from its share of the wheel (level 6), and which two-dice sum is most likely and which of two sums
- * comes up more, read from the grid of every way two dice can land (level 7). A roll, like a spin, is never a miss.
+ * comes up more, read from the grid of every way two dice can land (level 7), and how far apart six spins of a number
+ * wheel are and what a typical spin is, read from the towers they stand as (level 8). A roll, like a spin, is never a
+ * miss, and neither is any block she moves while levelling the towers.
  * Definitions: docs/definitions/spinner-fair.md (levels 1–5), docs/definitions/spinner-fair-6-8.md (levels 6–8).
  */
 import type { Rng } from '../../engine/random';
@@ -37,14 +39,14 @@ export const WEDGE_DEG = 360 / WEDGES;
 export const EDGE_DEG = 12;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4, 6–7), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6–8), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice); the spinner or tray stops taking them after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers); the spinner or tray stops taking them after this many. */
   spins: number;
 }
 
@@ -56,12 +58,13 @@ const PLANS: readonly Plan[] = [
   { level: 5, ask: 'fair', name: 'Fair or unfair?', sets: 2, spins: 6 },
   { level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 },
   { level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 },
+  { level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 8 },
 };
 
 export function planFor(level: number): Plan {
@@ -352,6 +355,71 @@ export function pairCards(rng: Rng): [number, number] {
 /** The card with the most squares: the right answer to either question, read from the grid and never from the rolls. */
 export const moreWays = (cards: readonly number[]) =>
   cards.reduce((best, s) => (ways(s) > ways(best) ? s : best));
+
+// ---- level 8: the typical spin ----
+
+/** A number wheel: the numbers 1–6 once each, one to a wedge, so `spin(rng)` gives each number exactly a sixth. */
+export type NumWheel = readonly number[];
+/** A column holds this many blocks and no more (seven 45-unit blocks in a 330-unit column). */
+export const MAX_TOWER = 7;
+
+/** The numbers 1–6 in a seeded order, so the wheel does not always read clockwise. */
+export const numWheel = (rng: Rng): NumWheel => rng.shuffle([1, 2, 3, 4, 5, 6]);
+
+/** Spin `i` stands as tower `i`, as many blocks as its number. */
+export const towersOf = (spins: readonly number[]): number[] => spins.slice();
+
+/** How far apart the biggest and smallest are. */
+export const range = (towers: readonly number[]) => Math.max(...towers) - Math.min(...towers);
+
+/** The leftmost tallest tower and the leftmost shortest: the two the pet points at for the range. */
+export const extremes = (towers: readonly number[]) => ({
+  tall: towers.indexOf(Math.max(...towers)),
+  short: towers.indexOf(Math.min(...towers)),
+});
+
+/** The range question's three cards, in a seeded order: the range and two other numbers from 0–5. */
+export function rangeCards(rng: Rng, r: number): number[] {
+  const others = rng.shuffle([0, 1, 2, 3, 4, 5].filter((n) => n !== r));
+  return rng.shuffle([r, others[0], others[1]]);
+}
+
+/**
+ * One block from the top of `from` onto `to`: the total never changes. Refused (null) from an empty tower, onto itself
+ * or onto a tower that already fills its column.
+ */
+export function moveBlock(towers: readonly number[], from: number, to: number): number[] | null {
+  if (from === to || !(towers[from] > 0) || !(towers[to] < MAX_TOWER)) return null;
+  return towers.map((h, i) => (i === from ? h - 1 : i === to ? h + 1 : h));
+}
+
+/** A move onto a tower at least as tall as the one it left: allowed and said gently, never a miss. */
+export const tallerMove = (towers: readonly number[], from: number, to: number) => towers[to] >= towers[from];
+
+/** As level as honest spins allow: the tallest and shortest differ by at most one block. */
+export const nearlyLevel = (towers: readonly number[]) => range(towers) <= 1;
+
+/** The right answers to "what would every spin be?": the heights nearly level towers show (one when the mean is whole, the two around it otherwise). */
+export function typicalAccepted(towers: readonly number[]): number[] {
+  const mean = towers.reduce((a, b) => a + b, 0) / towers.length;
+  const lo = Math.floor(mean),
+    hi = Math.ceil(mean);
+  return lo === hi ? [lo] : [lo, hi];
+}
+
+/** The typical question's three cards, in a seeded order: three numbers from 1–6 holding every accepted height. */
+export function typicalCards(rng: Rng, towers: readonly number[]): number[] {
+  const right = typicalAccepted(towers);
+  const others = rng.shuffle([1, 2, 3, 4, 5, 6].filter((n) => !right.includes(n)));
+  return rng.shuffle([...right, ...others.slice(0, 3 - right.length)]);
+}
+
+/** The sure levelling move (the hint and the ghost finger): a block from the tallest tower to the shortest; null once nearly level. */
+export function nextMove(towers: readonly number[]): { from: number; to: number } | null {
+  if (nearlyLevel(towers)) return null;
+  const { tall, short } = extremes(towers);
+  return { from: tall, to: short };
+}
 
 // ---- spins ----
 
@@ -725,6 +793,64 @@ export function diceLayout(view: { w: number; h: number }): DiceLayout {
     ways: { x: bx, base: rollsBase + BAR_LABEL + 12 + barH, pitch: 60, w: 56, h: barH },
     most: row(3),
     pair: row(2),
+  };
+}
+
+/**
+ * Level 8: the number spinner, the six towers its spins stand as (a count under each) and the three number cards of the
+ * question in play. A tower's whole column is its grab and drop area; the spinner and the cards are the other targets.
+ */
+export const TOWER_W = 110,
+  TOWER_H = 330,
+  BLOCK_H = 45,
+  TOWER_LABEL = 34,
+  NUM_CARD = 130;
+export interface TypicalLayout {
+  portrait: boolean;
+  spinner: Circle;
+  /** Each tower's column, left to right; the count hangs `TOWER_LABEL` under its base. */
+  towers: Box[];
+  /** The line the towers stand on. */
+  base: number;
+  cards: Box[];
+}
+
+export function typicalLayout(view: { w: number; h: number }): TypicalLayout {
+  const { w, h } = view;
+  const columns = (x0: number, gap: number, base: number) =>
+    Array.from({ length: 6 }, (_, i) =>
+      box(x0 + TOWER_W / 2 + i * (TOWER_W + gap), base - TOWER_H / 2, TOWER_W, TOWER_H),
+    );
+  const row = (cx: number, y: number) =>
+    [-1, 0, 1].map((i) => box(cx + i * (NUM_CARD + 20), y, NUM_CARD, NUM_CARD));
+  if (h <= w) {
+    // The spinner on the left above the pet, the towers on its right with the cards in a row above them. Below 1100
+    // wide the spinner shrinks and the towers stand closer, so no column is ever narrower.
+    const gap = w < 1100 ? 14 : 20;
+    const span = 6 * TOWER_W + 5 * gap;
+    const r = Math.min(SETTLE_R, Math.floor((w - span - 64) / 2));
+    const x0 = (w - (2 * r + 48 + span)) / 2;
+    const base = h - 20 - TOWER_LABEL;
+    const left = x0 + 2 * r + 48;
+    return {
+      portrait: false,
+      // Low enough to clear the help button under the home button, and above the pet.
+      spinner: { x: x0 + 8 + r, y: Math.min(h - 182 - r, 400), r },
+      towers: columns(left, gap, base),
+      base,
+      cards: row(left + span / 2, 16 + NUM_CARD / 2),
+    };
+  }
+  // Upright: the spinner on top, the towers across the middle, the cards along the bottom beside the pet.
+  const gap = Math.min(20, (w - 16 - 6 * TOWER_W) / 5);
+  const span = 6 * TOWER_W + 5 * gap;
+  const base = h - 20 - NUM_CARD - 20 - TOWER_LABEL;
+  return {
+    portrait: true,
+    spinner: { x: w / 2, y: 130 + SETTLE_R + 10, r: SETTLE_R },
+    towers: columns((w - span) / 2, gap, base),
+    base,
+    cards: row((190 + w - 20) / 2, h - 20 - NUM_CARD / 2),
   };
 }
 

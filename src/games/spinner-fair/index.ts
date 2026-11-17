@@ -37,6 +37,7 @@ import { DiceGame } from './dice';
 import { RaceGame } from './race';
 import { SettleGame } from './settle';
 import { SureGame } from './sure';
+import { TypicalGame } from './typical';
 
 type Phase = 'spin' | 'ask' | 'pick';
 
@@ -622,15 +623,16 @@ export const spinnerFair: GameModule = {
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
   coplayHint:
-    'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair?',
+    'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair? Before levelling the towers, ask: how tall do you think they will end up?',
   offScreen:
-    'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell? For older children: roll two dice twenty times and tally the sums on a paper line from 2 to 12. Which sum came up most, and why?',
+    'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell? For older children: roll two dice twenty times and tally the sums on a paper line from 2 to 12. Which sum came up most, and why? Or roll one die six times, build a tower of bricks for each roll, then share the bricks out until the towers are as level as you can make them: how tall are they?',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
   create: (ctx) => {
     const ask = planFor(ctx.level).ask;
     if (ask === 'settle') return new SettleGame(ctx);
     if (ask === 'dice') return new DiceGame(ctx);
+    if (ask === 'typical') return new TypicalGame(ctx);
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,

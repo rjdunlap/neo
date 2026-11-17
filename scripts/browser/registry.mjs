@@ -336,6 +336,7 @@ export const SUITES = [
   'spinnerfair45',
   'spinnerfair6',
   'spinnerfair7',
+  'spinnerfair8',
   'rulemachine',
   'notalways',
   'thoughtbubbles',
@@ -509,6 +510,7 @@ export const ALL_SUITES = [
   'spinnerfair45',
   'spinnerfair6',
   'spinnerfair7',
+  'spinnerfair8',
   'rulemachine',
   'notalways',
   'thoughtbubbles',
@@ -1108,6 +1110,7 @@ export async function runSuite(suite, fixture) {
     spinnerFairRacePlay,
     spinnerFairSettlePlay,
     spinnerFairDicePlay,
+    spinnerFairTypicalPlay,
     ruleMachinePlay,
     notAlwaysPlay,
     thoughtBubblesPlay,
@@ -1299,6 +1302,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'spinnerfair45') await spinnerFairRacePlay();
   if (suite === 'all' || suite === 'spinnerfair6') await spinnerFairSettlePlay();
   if (suite === 'all' || suite === 'spinnerfair7') await spinnerFairDicePlay();
+  if (suite === 'all' || suite === 'spinnerfair8') await spinnerFairTypicalPlay();
   if (suite === 'all' || suite === 'rulemachine') await ruleMachinePlay();
   if (suite === 'all' || suite === 'notalways') await notAlwaysPlay();
   if (suite === 'all' || suite === 'thoughtbubbles') await thoughtBubblesPlay();

@@ -481,5 +481,159 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       `Spinner Fair 7: upright, twelve rolls, the grid to 36 squares, a wrong card on each question and the glow on question two (${right} over ${wrong}; 3/1), the journal entry filed; passed`,
     );
   }
-  return { spinnerFairPlay, spinnerFairRacePlay, spinnerFairSettlePlay, spinnerFairDicePlay };
+  async function spinnerFairTypicalPlay() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('spinner-fair').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const state = () => page.evaluate(() => neo.scene.game.state);
+    const open = (phase, set) =>
+      page.waitForFunction(
+        ([phase, set]) => {
+          const s = neo.scene.game.state;
+          return s.set === set && phase.includes(s.phase) && !s.busy && !s.spinning;
+        },
+        [phase, set],
+        { timeout: 30000 },
+      );
+    const spinSix = async () => {
+      for (let i = 1; i <= 6; i++) {
+        await page.evaluate(() => kit.tapOn(neo.scene.game.art.node));
+        await page.waitForFunction((i) => neo.scene.game.state.spins.length === i, i, { timeout: 10000 });
+      }
+    };
+    const tapCard = async (n) => {
+      await page.evaluate((n) => {
+        const g = neo.scene.game;
+        kit.tapOn(g.cards[g.state.cards.indexOf(n)]);
+      }, n);
+      await page.waitForTimeout(300);
+    };
+    /** Drags the top block of tower `from` onto tower `to`'s column, as a finger would. */
+    const moveBlock = async (from, to) => {
+      const before = (await state()).towers;
+      await page.evaluate(
+        async ([from, to]) => {
+          const g = neo.scene.game;
+          const col = g.L.towers[to];
+          await kit.dragTo(g.tops[from].node, g.towerLayer.toGlobal({ x: col.x, y: col.y }));
+        },
+        [from, to],
+      );
+      await page.waitForFunction((before) => neo.scene.game.state.towers.join() !== before.join(), before, {
+        timeout: 8000,
+      });
+      await page.waitForTimeout(150);
+    };
+    const levelAll = async () => {
+      let moves = 0;
+      for (let s = await state(); s.phase === 'level'; s = await state()) {
+        assert.ok(s.next, 'while levelling there is always a sure move');
+        assert.ok(s.towers[s.next.to] < s.towers[s.next.from], 'the sure move never makes a tower taller');
+        await moveBlock(s.next.from, s.next.to);
+        assert.ok(++moves <= 20, 'levelling ends');
+      }
+      return moves;
+    };
+    const sum = (t) => t.reduce((a, b) => a + b, 0);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    await launch('spinner-fair', 8, 'Mia', 'school');
+    let s = await state();
+    assert.deepEqual([s.level, s.phase, s.spins.length, s.cards.length], [8, 'spin', 0, 0]);
+    assert.deepEqual([...s.wheel].sort(), [1, 2, 3, 4, 5, 6], 'the wheel holds 1 to 6 once each');
+    let slipped = false;
+    let levelled = 0;
+    for (let set = 0; set < 2; set++) {
+      await open(['spin'], set);
+      await spinSix();
+      await open(['range'], set);
+      s = await state();
+      const spins = s.spins;
+      const range = Math.max(...spins) - Math.min(...spins);
+      assert.deepEqual(s.towers, spins, 'each spin stands as its tower');
+      assert.deepEqual(s.right, [range], 'the range is the biggest take away the smallest');
+      assert.ok(s.cards.includes(range) && s.cards.length === 3);
+      log(`Spinner Fair 8: set ${set + 1} spins ${spins.join(' ')}, range ${range}`);
+      if (set === 0) {
+        await screenshot('spinner-fair-8-range-portrait');
+        assert.deepEqual([s.misses, s.hints], [0, 0], 'spins are never counted');
+        await tapCard(s.cards.find((c) => c !== range));
+        s = await state();
+        assert.deepEqual([s.misses, s.hints, s.phase], [1, 0, 'range'], 'a wrong range card: one miss');
+      }
+      const missesBefore = s.misses;
+      await tapCard(range);
+      await open(['level', 'typical'], set);
+      s = await state();
+      if (s.phase === 'level') {
+        if (!slipped) {
+          // A block from the shortest tower onto the tallest: allowed and said, never a miss.
+          const short = s.towers.indexOf(Math.min(...s.towers)),
+            tall = s.towers.indexOf(Math.max(...s.towers));
+          await moveBlock(short, tall);
+          s = await state();
+          assert.equal(s.towers[tall], Math.max(...spins) + 1, 'the tall tower got taller');
+          assert.deepEqual(
+            [s.slips, s.misses, s.hints],
+            [1, missesBefore, 0],
+            'a taller move is not a miss or a hint',
+          );
+          assert.equal(sum(s.towers), sum(spins), 'a move keeps every block');
+          slipped = true;
+          if (set === 0) await screenshot('spinner-fair-8-towers-portrait');
+        }
+        levelled += await levelAll();
+      }
+      await open(['typical'], set);
+      s = await state();
+      assert.ok(Math.max(...s.towers) - Math.min(...s.towers) <= 1, 'the towers are nearly level');
+      assert.equal(sum(s.towers), sum(spins), 'levelling keeps every block');
+      const mean = sum(spins) / 6;
+      const want = Number.isInteger(mean) ? [mean] : [Math.floor(mean), Math.ceil(mean)];
+      assert.deepEqual(s.right, want, 'the right cards are the heights the level towers show');
+      for (const n of want) assert.ok(s.cards.includes(n), 'every accepted height is on a card');
+      if (set === 0) {
+        await tapCard(s.cards.find((c) => !want.includes(c)));
+        s = await state();
+        assert.deepEqual([s.misses, s.hints, s.glowing], [2, 0, false], 'a wrong typical card: one miss');
+        // The pause sheet's Show me: the level line and its cards glow, one hint.
+        await page.evaluate(() => neo.scene.game.askForHint());
+        await page.waitForTimeout(400);
+        s = await state();
+        assert.deepEqual([s.misses, s.hints, s.glowing], [2, 1, true], 'asked-for help is one hint');
+        // Turned on its side mid-question: the same towers, cards and counts.
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(500);
+        await screenshot('spinner-fair-8-typical-glow-landscape');
+        const turned = await state();
+        assert.deepEqual(
+          [turned.phase, turned.towers, turned.cards, turned.misses, turned.hints],
+          ['typical', s.towers, s.cards, 2, 1],
+        );
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(500);
+      }
+      // With a mean that is not whole, the upper neighbour is as right as the lower.
+      await tapCard(want.at(-1));
+    }
+    await finished('spinner-fair');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [2, 1], 'level 8 saved 2 misses, 1 hint');
+    log(
+      `Spinner Fair 8: upright, two sets of six spins, a wrong range card, ${slipped ? 'a block moved onto a taller tower (not counted)' : 'no levelling needed, so no taller move was tried'}, ${levelled} levelling moves, a wrong typical card and asked-for help (2/1); passed`,
+    );
+  }
+  return {
+    spinnerFairPlay,
+    spinnerFairRacePlay,
+    spinnerFairSettlePlay,
+    spinnerFairDicePlay,
+    spinnerFairTypicalPlay,
+  };
 }
