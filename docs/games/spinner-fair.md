@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–6 |
+| school | 3–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,12 +20,13 @@
 | 4 | Sure, maybe, no way |
 | 5 | Fair or unfair? |
 | 6 | Watch it settle |
+| 7 | Two dice |
 
 <!-- end generated -->
 
 **Starts as:** tap a spinner and a critter's block drops onto its bar
 
-**Grows into:** levels 1–6; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), and level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty (school only). Counting Cove
+**Grows into:** levels 1–7; levels 1–3: spin six times and watch (nothing counted, the pet spins after ten quiet seconds), spin twice eight times and tap the tallest bar (a tie takes either), then pick the spinner that gives the pet's favourite the better chance and spin the pick ten times (the better spinner may still lose; "still the better chance"). Spins are honest seeded draws and never misses. Then, for school, level 4 drags *sure*, *maybe* and *no way* cards onto the spinner each fits (a wrong card slides back with the reason, the spins only show), and level 5 asks *fair or unfair?* of a two-critter race wheel of movable wedges, hands wedges across until it is even and runs a six-spin race that is never judged (levels 4–5 school only), level 6 spins two wheels twelve, sixty then two hundred and forty times and predicts the next sixty, and level 7 rolls two dice twelve times, builds the grid of all thirty-six ways they can land and asks which sum is most likely (school only). Counting Cove
 
 ## Design notes
 
@@ -43,4 +44,10 @@ Misses and hints (level 6): only a wrong card is a miss; the second miss on a wh
 
 As built, against the definition: (1) the spinner is 340 across in both orientations, not 420, and the strip narrows from 560 to 534 at a 1024-wide landscape view, because 420 plus 560 does not fit 1024 wide; (2) the check run reuses the one strip, reset to zero, rather than a second display; (3) the pet's lines after a run never hold input: she can start the next run over them (the ghost finger waits for them); (4) under reduced motion the first twelve spins still land one by one on the strip (the wheel does not turn) and later runs step every twelve; (5) lines added: `sf.about-yes`, `sf.done-settle`, `sf.settle-count`; (6) school is 3–6 until levels 7–8 land.
 
-Levels 7–8 (Two dice, The typical spin) are defined, not built: [definition](../definitions/spinner-fair-6-8.md).
+**Level 7, Two dice (CS2b, built 2026-11-16, PR #1724; school only, school is now 3–7).** Twelve taps on a dice tray roll two dice (each `rng.int(1, 6)`, never judged); each sum drops a block on one of eleven display bars, and the pet says "Twelve rolls is only a few" whenever seven was not alone on top. Then a 6×6 grid of every way two dice can land builds itself a row at a time (rows two to six read "With a {die}: {a} up to {b}") while a second set of eleven bars counts the squares per sum. Question one: which sum is most likely (three cards, 7 is right). Question two: which of two sums comes up more (two cards, never 7, never a tie). The journal entry `spinner-fair:two-dice` ("Two dice": "Seven can be made six ways, more than any other sum.", card picture two dice, a 3 and a 4) is filed when the grid has been built, never on what the dice rolled. Rules and `diceLayout` are in `logic.ts`, the class `DiceGame` in `dice.ts`; "likely" follows CCSS 7.SP.C.5 and the grid is the organized table of 7.SP.C.8.b.
+
+Misses and hints (level 7): only a wrong card is a miss; after two misses on a question the squares of each card's sum and the right card glow (one hint per question); the pause sheet's Show me does the same and, asked again, taps the card. Rolls and the grid are never counted.
+
+As built, against the definition: lines added `sf.grid-first`, `sf.most-yes`, `sf.pair-yes`, `sf.done-dice`; upright, the grid's squares are 68 units below a 1150-tall view and 80 above, so both bar rows fit above the cards; in landscape the grid has a 44-unit header strip, the ways bars are 20 wide and the three cards sit 7 apart in a column; the tray is 300 × 170 and sits where the grid will be; the journal source text omits "in Spinner Fair" because the journal adds the game's name; school is 3–7 until level 8 lands. The off-screen suggestion gained a two-dice tally.
+
+Level 8 (The typical spin) is defined, not built: [definition](../definitions/spinner-fair-6-8.md).

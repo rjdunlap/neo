@@ -28,7 +28,8 @@ export type JournalGame =
   | 'pet-kitchen'
   | 'paint-mixer'
   | 'far-lights'
-  | 'chain-reaction';
+  | 'chain-reaction'
+  | 'spinner-fair';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -331,6 +332,19 @@ export const JOURNAL: readonly JournalEntry[] = [
     source: {
       find: 'send the marble onto the green spring and watch where it lands',
       found: 'the spring bounced the marble over one row, past the ramp under it',
+    },
+  },
+  // Spinner Fair, level 7 Two dice: the grid of every way two dice can land, watched being built. It files on the grid,
+  // never on what the dice rolled (definition spinner-fair-6-8).
+  {
+    id: entryId('spinner-fair', 'two-dice'),
+    game: 'spinner-fair',
+    key: 'two-dice',
+    name: 'Two dice',
+    line: 'journal.spinner-fair.two-dice',
+    source: {
+      find: 'fill the two-dice grid',
+      found: 'the two-dice grid showed seven has the most ways',
     },
   },
 ];

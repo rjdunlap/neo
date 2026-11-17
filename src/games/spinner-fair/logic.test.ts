@@ -52,6 +52,24 @@ import {
   inBand,
   spinRun,
   settleLayout,
+  SUMS,
+  SUM_CARD,
+  TRAY_W,
+  TRAY_H,
+  roll,
+  sumOf,
+  ways,
+  gridRows,
+  waysTally,
+  rollTally,
+  rollsMislead,
+  mostCards,
+  pairCards,
+  moreWays,
+  diceLayout,
+  gridSide,
+  barsBox,
+  type Roll,
   type Kind,
   type Circle,
   type Box,
@@ -65,7 +83,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 6 },
+      school: { min: 3, max: 7 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -468,7 +486,7 @@ describe('level 6: watch it settle', () => {
   it('the plan and the school range', () => {
     expect(planFor(6)).toEqual({ level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 });
     expect(SETTLE_RUNS[SETTLE_RUNS.length - 1]).toBe(planFor(6).spins);
-    expect(LEVELS.school).toEqual({ min: 3, max: 6 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
   });
   it('each set is a six-wedge wheel of the favourite and one friend, k of 1, 3 or 5, and the two sets differ', () => {
     for (let seed = 1; seed <= 300; seed++) {
@@ -566,5 +584,195 @@ describe('level 6: watch it settle', () => {
       for (const b of L.cards) expect([b.w, b.h]).toEqual([ABOUT_W, ABOUT_H]);
       expect(L.cards).toHaveLength(ABOUT_CARDS.length);
       expect(L.strip.w).toBeGreaterThanOrEqual(480);
+    });
+});
+
+describe('level 7: two dice', () => {
+  it('the plan and the school range', () => {
+    expect(planFor(7)).toEqual({ level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+    // Levels 1–6 keep their numbers and asks, so saved levels and pins stay valid.
+    expect([1, 2, 3, 4, 5, 6].map((l) => planFor(l).ask)).toEqual([
+      'see',
+      'most',
+      'pick',
+      'sure',
+      'fair',
+      'settle',
+    ]);
+  });
+  it('ways is 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1 for 2–12 and sums to 36', () => {
+    expect(SUMS).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(SUMS.map(ways)).toEqual([1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]);
+    expect(SUMS.map(ways).reduce((a, b) => a + b)).toBe(36);
+    expect([0, 1, 13].map(ways)).toEqual([0, 0, 0]);
+  });
+  it('the grid is every pair of faces once, and counting its squares gives ways', () => {
+    const rows = gridRows();
+    expect(rows).toHaveLength(6);
+    rows.forEach((row, a) => expect(row).toEqual([1, 2, 3, 4, 5, 6].map((b) => a + 1 + b)));
+    const all = rows.flat();
+    for (const s of SUMS) expect(all.filter((x) => x === s).length).toBe(ways(s));
+    expect(waysTally()).toEqual(SUMS.map(ways));
+    expect(waysTally(0)).toEqual(SUMS.map(() => 0));
+    // After the first row: one square each for 2 to 7.
+    expect(waysTally(6)).toEqual([1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+    for (let n = 0; n <= 36; n++) expect(waysTally(n).reduce((a, b) => a + b)).toBe(n);
+  });
+  it('question one always holds 7 and two other sums with different, smaller square counts; 7 is right', () => {
+    const orders = new Set<number>();
+    for (const seed of SEEDS) {
+      const cards = mostCards(new Rng(seed));
+      expect(cards).toHaveLength(3);
+      expect(new Set(cards).size).toBe(3);
+      expect(cards).toContain(7);
+      const [a, b] = cards.filter((c) => c !== 7);
+      for (const c of [a, b]) {
+        expect(SUMS).toContain(c);
+        expect(ways(c)).toBeLessThan(6);
+      }
+      expect(ways(a)).not.toBe(ways(b));
+      expect(moreWays(cards)).toBe(7);
+      orders.add(cards.indexOf(7));
+    }
+    // The right card is not always in the same place.
+    expect(orders.size).toBe(3);
+  });
+  it('question two never holds 7 or a tie, and the right card has more squares', () => {
+    const firstRight = new Set<boolean>();
+    for (const seed of SEEDS) {
+      const pair = pairCards(new Rng(seed));
+      expect(pair).toHaveLength(2);
+      expect(pair).not.toContain(7);
+      for (const c of pair) expect(SUMS).toContain(c);
+      expect(ways(pair[0])).not.toBe(ways(pair[1]));
+      const right = moreWays(pair);
+      expect(ways(right)).toBe(Math.max(ways(pair[0]), ways(pair[1])));
+      firstRight.add(right === pair[0]);
+    }
+    expect(firstRight.size).toBe(2);
+  });
+  it('a roll is rng.int(1, 6) twice: nothing filtered or drawn again', () => {
+    for (const seed of [1, 7, 99]) {
+      const a = new Rng(seed),
+        b = new Rng(seed);
+      for (let i = 0; i < 50; i++) expect(roll(a)).toEqual([b.int(1, 6), b.int(1, 6)]);
+      expect(a.next()).toBe(b.next());
+    }
+  });
+  // Honesty measured, never enforced: no answer depends on a roll.
+  it('over 60 000 rolls each face of each die is within a point of a sixth', () => {
+    const rng = new Rng(20261116);
+    const faces = [Array(6).fill(0), Array(6).fill(0)];
+    const N = 60000;
+    for (let i = 0; i < N; i++) {
+      const r = roll(rng);
+      faces[0][r[0] - 1]++;
+      faces[1][r[1] - 1]++;
+    }
+    for (const die of faces) for (const n of die) expect(Math.abs(n / N - 1 / 6)).toBeLessThan(0.01);
+  });
+  it('the roll bars count every roll once, on its sum', () => {
+    const rolls: Roll[] = [
+      [1, 1],
+      [3, 4],
+      [6, 1],
+      [6, 6],
+      [2, 5],
+    ];
+    expect(rolls.map(sumOf)).toEqual([2, 7, 7, 12, 7]);
+    expect(rollTally(rolls)).toEqual([1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1]);
+    expect(rollTally([])).toEqual(SUMS.map(() => 0));
+  });
+  it('the pet says twelve rolls is only a few unless seven alone came up most', () => {
+    expect(rollsMislead([[3, 4]])).toBe(false);
+    expect(
+      rollsMislead([
+        [3, 4],
+        [1, 1],
+      ]),
+    ).toBe(true);
+    expect(
+      rollsMislead([
+        [3, 4],
+        [1, 1],
+        [1, 1],
+      ]),
+    ).toBe(true);
+    expect(rollsMislead([])).toBe(true);
+  });
+  it('help leads to the right card: the glowing card is the one with the most squares on the grid', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      for (const cards of [mostCards(rng), pairCards(rng)]) {
+        const counts = cards.map(
+          (c) =>
+            gridRows()
+              .flat()
+              .filter((x) => x === c).length,
+        );
+        const best = cards[counts.indexOf(Math.max(...counts))];
+        expect(counts.filter((n) => n === Math.max(...counts))).toHaveLength(1);
+        expect(moreWays(cards)).toBe(best);
+      }
+    }
+  });
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+    [1662, 768],
+    [768, 1662],
+  ];
+  type R = { x0: number; y0: number; x1: number; y1: number };
+  const rect = (b: Box): R => ({
+    x0: b.x - b.w / 2,
+    y0: b.y - b.h / 2,
+    x1: b.x + b.w / 2,
+    y1: b.y + b.h / 2,
+  });
+  const hit = (p: R, q: R) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  for (const [w, h] of VIEWS)
+    it(`layout at ${w}x${h}`, () => {
+      const L = diceLayout({ w, h });
+      expect(L.portrait).toBe(h > w);
+      const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
+      const corners = [
+        { x0: 0, y0: 0, x1: 120, y1: 120 },
+        { x0: w - 120, y0: 0, x1: w, y1: 120 },
+      ];
+      const side = gridSide(L.grid);
+      const grid = { x0: L.grid.x, y0: L.grid.y, x1: L.grid.x + side, y1: L.grid.y + side };
+      const rolls = rect(barsBox(L.rolls)),
+        waysBars = rect(barsBox(L.ways));
+      const clear = (all: R[]) => {
+        for (const r of all) {
+          expect(r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h).toBe(true);
+          expect(hit(r, pet)).toBe(false);
+          for (const c of corners) expect(hit(r, c)).toBe(false);
+        }
+        all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(hit(a, b)).toBe(false)));
+      };
+      // The rolls: the tray and the roll bars.
+      clear([rect(L.tray), rolls]);
+      // Each question: the grid, both bar sets and the cards, none overlapping.
+      clear([grid, rolls, waysBars, ...L.most.map(rect)]);
+      clear([grid, rolls, waysBars, ...L.pair.map(rect)]);
+      // Targets: the tray and every card, never under 100.
+      expect([L.tray.w, L.tray.h]).toEqual([TRAY_W, TRAY_H]);
+      expect(Math.min(TRAY_W, TRAY_H)).toBeGreaterThanOrEqual(100);
+      expect(L.most).toHaveLength(3);
+      expect(L.pair).toHaveLength(2);
+      for (const b of [...L.most, ...L.pair]) {
+        expect([b.w, b.h]).toEqual([SUM_CARD, SUM_CARD]);
+        expect(SUM_CARD).toBeGreaterThanOrEqual(100);
+      }
+      // The grid and the bars are display only, but stay readable: squares of 60 or more, bars 80 or more tall.
+      expect(L.grid.cell).toBeGreaterThanOrEqual(60);
+      expect(L.rolls.h).toBeGreaterThanOrEqual(80);
+      expect(L.ways.h).toBeGreaterThanOrEqual(80);
     });
 });

@@ -328,3 +328,140 @@ export function fastButton(w: number, h: number): Container {
   c.addChild(g);
   return c;
 }
+
+// ---- level 7: two dice ----
+
+/** The two dice's soft colours: the first die (the grid's rows) and the second (its columns). */
+export const DIE_COLORS: readonly [ColorName, ColorName] = ['blue', 'red'];
+
+/** A sum's colour on the grid, the bars and the cards: seven is yellow; the others cycle, so neighbouring diagonals differ. */
+export function sumColor(sum: number): ColorName {
+  const cycle: ColorName[] = ['teal', 'purple', 'green', 'orange', 'pink'];
+  return sum === 7 ? 'yellow' : cycle[(sum - 2) % 6];
+}
+
+const PIPS: readonly (readonly [number, number])[][] = [
+  [[0, 0]],
+  [
+    [-1, -1],
+    [1, 1],
+  ],
+  [
+    [-1, -1],
+    [0, 0],
+    [1, 1],
+  ],
+  [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ],
+  [
+    [-1, -1],
+    [1, -1],
+    [0, 0],
+    [-1, 1],
+    [1, 1],
+  ],
+  [
+    [-1, -1],
+    [1, -1],
+    [-1, 0],
+    [1, 0],
+    [-1, 1],
+    [1, 1],
+  ],
+];
+
+/** Draws a die face of `value` pips, `size` across and centred on (0, 0), in a soft colour. */
+export function drawDie(g: Graphics, value: number, size: number, color: ColorName) {
+  const c = swatch[color];
+  g.clear()
+    .roundRect(-size / 2, -size / 2, size, size, size * 0.2)
+    .fill(c.light)
+    .stroke({ width: Math.max(3, size * 0.05), color: c.line });
+  for (const [x, y] of PIPS[value - 1]) g.circle(x * size * 0.26, y * size * 0.26, size * 0.09).fill(ink);
+}
+
+export function die(value: number, size: number, color: ColorName): Graphics {
+  const g = new Graphics();
+  drawDie(g, value, size, color);
+  return g;
+}
+
+/** The dice tray: a felt plate; the game sets the two dice on it. */
+export function diceTray(w: number, h: number): Graphics {
+  return new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 26)
+    .fill(swatch.green.light)
+    .stroke({ width: 7, color: wood.line });
+}
+
+/** One grid square, `cell` across and centred on (0, 0): its sum's colour and numeral. */
+export function sumSquare(sum: number, cell: number): Container {
+  const c = swatch[sumColor(sum)];
+  const sq = new Container();
+  sq.addChild(
+    new Graphics()
+      .roundRect(-cell / 2 + 2, -cell / 2 + 2, cell - 4, cell - 4, 8)
+      .fill(sum === 7 ? c.fill : c.light)
+      .stroke({ width: 3, color: c.line }),
+    label(String(sum), cell * 0.5),
+  );
+  return sq;
+}
+
+/** A sum card: the numeral over a grid square in the sum's colour, so the card points at its diagonal of squares. */
+export function sumCard(sum: number, size: number): Container {
+  const c = swatch[sumColor(sum)];
+  const card = new Container();
+  card.addChild(
+    new Graphics()
+      .roundRect(-size / 2, -size / 2, size, size, 18)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.blue.line }),
+    new Graphics()
+      .roundRect(-22, size / 2 - 50, 44, 34, 8)
+      .fill(sum === 7 ? c.fill : c.light)
+      .stroke({ width: 3, color: c.line }),
+  );
+  const num = label(String(sum), 60);
+  num.position.set(0, -18);
+  card.addChild(num);
+  return card;
+}
+
+/** Draws a row of eleven sum bars from their baseline up: `counts[i]` blocks of `blockH` on bar `i`, in the sum's colour, over a ground line. */
+export function drawSumBars(
+  g: Graphics,
+  bars: { x: number; base: number; pitch: number; w: number },
+  counts: readonly number[],
+  blockH: number,
+) {
+  g.clear();
+  counts.forEach((n, i) => {
+    const c = swatch[sumColor(i + 2)];
+    const x = bars.x + i * bars.pitch;
+    for (let k = 0; k < n; k++)
+      g.roundRect(x + 1, bars.base - (k + 1) * blockH + 1, bars.w - 2, blockH - 2, Math.min(6, blockH / 3))
+        .fill(c.fill)
+        .stroke({ width: 2, color: c.line });
+  });
+  g.moveTo(bars.x - 6, bars.base)
+    .lineTo(bars.x + 10 * bars.pitch + bars.w + 6, bars.base)
+    .stroke({ width: 4, color: ink, alpha: 0.5, cap: 'round' });
+}
+
+/** The journal's two-dice card: a three and a four, which make seven. */
+export function diceJournalPicture(): Container {
+  const c = new Container();
+  const a = die(3, 110, DIE_COLORS[0]),
+    b = die(4, 110, DIE_COLORS[1]);
+  a.position.set(-64, 8);
+  a.rotation = -0.12;
+  b.position.set(64, -8);
+  b.rotation = 0.1;
+  c.addChild(a, b);
+  return c;
+}
