@@ -328,3 +328,103 @@ export function homeDoor(): Graphics {
     .lineTo(30, -44)
     .stroke(stroke(swatch.red.fill, 6));
 }
+
+// ---- Trails (level 5) ---------------------------------------------------------------------------------------------------
+
+export type TrailMark = 'dot' | 'dash' | 'triangle';
+export interface TrailStyle {
+  fill: number;
+  line: number;
+  mark: TrailMark;
+}
+/** Each trail has its own colour and its own mark, so colour is never the only difference. */
+export const TRAIL_STYLES: readonly TrailStyle[] = [
+  { ...swatch.red, mark: 'dot' },
+  { ...swatch.blue, mark: 'dash' },
+  { ...swatch.yellow, mark: 'triangle' },
+];
+/** A walked trail's footprints keep its mark, in the footprint colour. */
+export const footprintStyle = (s: TrailStyle): TrailStyle => ({
+  fill: FOOTPRINT,
+  line: swatch.brown.line,
+  mark: s.mark,
+});
+
+/** One of a trail's marks at (x, y), pointing along (ux, uy). */
+function trailMark(g: Graphics, s: TrailStyle, x: number, y: number, ux: number, uy: number, size: number) {
+  const px = -uy;
+  const py = ux;
+  if (s.mark === 'dot') g.circle(x, y, size);
+  else if (s.mark === 'dash') {
+    const a = size * 1.5;
+    const b = size * 0.6;
+    g.poly([
+      x - ux * a - px * b,
+      y - uy * a - py * b,
+      x + ux * a - px * b,
+      y + uy * a - py * b,
+      x + ux * a + px * b,
+      y + uy * a + py * b,
+      x - ux * a + px * b,
+      y - uy * a + py * b,
+    ]);
+  } else {
+    const a = size * 1.3;
+    g.poly([
+      x + ux * a,
+      y + uy * a,
+      x - ux * a - px * a,
+      y - uy * a - py * a,
+      x - ux * a + px * a,
+      y - uy * a + py * a,
+    ]);
+  }
+  g.fill(s.fill).stroke(stroke(s.line, 2.5));
+}
+
+/** A ribbon: a pale band from `a` to `b` with the trail's marks along it. */
+export function ribbon(g: Graphics, s: TrailStyle, a: Pt, b: Pt, size = 8, gap = 26) {
+  const d = Math.hypot(b.x - a.x, b.y - a.y);
+  if (d < 1) return;
+  const ux = (b.x - a.x) / d;
+  const uy = (b.y - a.y) / d;
+  g.moveTo(a.x, a.y)
+    .lineTo(b.x, b.y)
+    .stroke({ width: size * 2 + 8, color: 0xffffff, alpha: 0.75, cap: 'round' });
+  const n = Math.max(1, Math.floor(d / gap));
+  for (let k = 0; k <= n; k++) {
+    const t = n === 0 ? 0.5 : k / n;
+    trailMark(g, s, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, ux, uy, size);
+  }
+}
+
+/** A trail's flag: its colour on the pennant and its mark, three times, underneath. Centred on (0, 0). */
+export function trailFlag(s: TrailStyle, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(0xffffff)
+    .stroke(stroke(s.line, 5));
+  // The pole and the pennant.
+  g.moveTo(-w / 2 + 34, -h / 2 + 14)
+    .lineTo(-w / 2 + 34, h / 2 - 40)
+    .stroke(stroke(wood.line, 6));
+  g.poly([-w / 2 + 34, -h / 2 + 16, w / 2 - 22, -h / 2 + 36, -w / 2 + 34, -h / 2 + 58])
+    .fill(s.fill)
+    .stroke(stroke(s.line, 4));
+  for (let i = -1; i <= 1; i++) trailMark(g, s, i * 36, h / 2 - 22, 1, 0, 9);
+  c.addChild(g);
+  return c;
+}
+
+/** The small mark a trail keeps where it turned back: a ring in its colour with a turn-around arrow. */
+export function turnedMark(g: Graphics, s: TrailStyle, x: number, y: number) {
+  g.circle(x, y, 17).fill(0xffffff).stroke(stroke(s.line, 4));
+  g.moveTo(x - 6, y + 8)
+    .lineTo(x - 6, y - 2)
+    .quadraticCurveTo(x - 6, y - 9, x + 1, y - 9)
+    .quadraticCurveTo(x + 8, y - 9, x + 8, y - 2)
+    .lineTo(x + 8, y + 4)
+    .stroke(stroke(s.line, 3.5));
+  g.poly([x + 2, y + 2, x + 14, y + 2, x + 8, y + 10]).fill(s.line);
+}

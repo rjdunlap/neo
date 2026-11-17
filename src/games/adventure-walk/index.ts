@@ -12,31 +12,54 @@ import { rangeFor } from '../../progress/difficulty';
 import type { CompanionRig } from '../../creatures/companion';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { blanket, dotted, drawTrail, friendBadge, homeDoor, mapTile, walkSticker, wayPicture } from './art';
+import {
+  TRAIL_STYLES,
+  blanket,
+  dotted,
+  drawTrail,
+  footprintStyle,
+  friendBadge,
+  homeDoor,
+  mapTile,
+  ribbon,
+  trailFlag,
+  turnedMark,
+  walkSticker,
+  wayPicture,
+} from './art';
 import {
   LEVELS,
   FRIEND_NAMES,
   LANDMARKS,
   LANDMARK_NAMES,
+  FLAG,
   MAP_WALKER,
   STOPS,
   TILE,
+  TRAILS,
   askHint,
   askedSlot,
   botSlot,
   callAt,
+  calledTrail,
   describeWalk,
   groupOf,
+  laneX,
   mapLayout,
   mapSpot,
   nextHome,
   onMap,
+  onTrails,
   planFor,
   restart,
   startWalk,
   step,
   stepHome,
   stopLayout,
+  stopOrder,
+  tapFlag,
+  trailWays,
+  walkedThere,
   waysAt,
   type MapLayout,
   type Plan,
@@ -44,7 +67,9 @@ import {
   type Stop,
   type StopLayout,
   type StepSound,
+  type TrailStep,
   type WalkState,
+  type Way,
 } from './logic';
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -86,6 +111,16 @@ class AdventureWalk implements Game {
   private at = STOPS;
   /** After a wrong tile it has taken one step towards the next landmark. */
   private nudged = false;
+  /** Level 5: a flag per trail, and each trail's ribbon under the tiles and through its way on them. */
+  flagNodes: Container[] = [];
+  private readonly flagGlow = new Graphics();
+  private readonly under: Graphics[] = [];
+  private readonly over: Graphics[] = [];
+  /** Bumped by every flag tap and call, so a look's sparkle or a call's pulses stop when something else is tapped. */
+  private lookRun = 0;
+  /** Level 5: the companion has reached the picnic, so the trail it came by shows footprints. */
+  private arrived = false;
+  private callRun = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -112,7 +147,7 @@ class AdventureWalk implements Game {
       this.glows.push(glow);
       this.scene.addChild(node);
     }
-    if (this.plan.calls) {
+    if (this.plan.calls || this.plan.trails) {
       this.badgeNode = friendBadge(this.state.route.friend, BADGE);
       this.badgeNode.eventMode = 'static';
       onTap(this.badgeNode, () => this.replay(), { cooldown: 400 });
@@ -127,11 +162,17 @@ class AdventureWalk implements Game {
     ctx.stage.addChild(this.walker);
     this.layout(this.view);
     this.drawStop(0);
+    if (this.plan.trails) this.openTrails();
   }
 
   start() {
     const friend = FRIEND_NAMES[this.state.route.friend];
-    if (!this.plan.calls) void this.ctx.instruct('walk.instruct-pick', { friend });
+    if (this.plan.trails) {
+      void this.ctx.instruct('walk.instruct-trail', { friend });
+      void this.ctx.tw.wait(2.6).then(() => {
+        if (!this.gone && !this.busy && !this.finished && this.state.pick === 0) void this.sayTrailCall();
+      });
+    } else if (!this.plan.calls) void this.ctx.instruct('walk.instruct-pick', { friend });
     else {
       void this.ctx.instruct('walk.instruct-follow', { friend });
       void this.ctx.tw.wait(2.6).then(() => {
@@ -170,11 +211,8 @@ class AdventureWalk implements Game {
         .roundRect(-r.w / 2 + 10, -r.h / 2 + 10, r.w - 20, r.h - 20, 22)
         .stroke({ width: 3, color: 0xffffff, alpha: 0.8 });
     });
-    if (this.badgeNode && this.lay.badge)
-      this.badgeNode.position.set(
-        this.lay.badge.x + this.lay.badge.w / 2,
-        this.lay.badge.y + this.lay.badge.h / 2,
-      );
+    const badge = this.lay.badge ?? (this.plan.trails ? mapLayout(v, this.ctx.level, 'sweep').badge : null);
+    if (this.badgeNode && badge) this.badgeNode.position.set(badge.x + badge.w / 2, badge.y + badge.h / 2);
     this.trail.position.set(this.lay.trail.x, this.lay.trail.y);
     if (this.map) this.layoutMap();
     else if (!this.busy) this.walker.position.set(this.lay.stand.x, this.lay.stand.y);
@@ -204,6 +242,19 @@ class AdventureWalk implements Game {
   }
 
   update(_dt: number) {
+    if (this.plan.trails) {
+      // Glow pulse on the called trail's flag once it is lit.
+      const lit = this.state.trailGlow !== null && onTrails(this.state) && !this.finished;
+      this.flagGlow.visible = lit;
+      if (lit && this.mapLay) {
+        const f = this.mapLay.flags[this.state.trailGlow!];
+        this.flagGlow
+          .clear()
+          .roundRect(f.x - 8, f.y - 8, f.w + 16, f.h + 16, 30)
+          .stroke({ width: 10, color: 0xfff08a, alpha: 0.6 + 0.3 * Math.sin(performance.now() / 180) });
+      }
+      return;
+    }
     if (this.map) {
       // Glow pulse on the next landmark home once it is lit.
       const lit = this.state.homeGlow && onMap(this.state);
@@ -255,6 +306,10 @@ class AdventureWalk implements Game {
   /** Say what to do now again: the map's question, the friend's call, or (where nobody calls) the walk's invitation. */
   private replay() {
     if (this.finished) return;
+    if (this.plan.trails) {
+      if (onTrails(this.state)) void this.sayTrailCall();
+      return;
+    }
     if (this.map) {
       if (onMap(this.state)) void this.ctx.say('walk.home-start');
       return;
@@ -356,13 +411,8 @@ class AdventureWalk implements Game {
     void this.sayCall(next);
   }
 
-  private async arrive() {
-    const { tw } = this.ctx;
-    this.badgeNode?.parent?.removeChild(this.badgeNode);
-    await tw.to(this.scene, { x: -this.view.w }, { duration: 0.35, ease: ease.inQuad });
-    if (this.gone) return;
-    this.zoneNodes.forEach((n) => (n.visible = false));
-    this.trail.visible = false;
+  /** The picnic picture: the blanket with the friend on it. */
+  private makePicnic(): Critter {
     const pic = new Container();
     const cloth = blanket(360);
     const friend = new Critter(CRITTERS[this.state.route.friend]);
@@ -370,11 +420,22 @@ class AdventureWalk implements Game {
     friend.position.set(60, -10);
     pic.addChild(cloth, friend);
     pic.eventMode = 'none';
-    pic.position.set(this.view.w / 2, this.view.h * 0.55);
     this.ctx.track(friend);
     this.picnic = pic;
     this.friend = friend;
     this.ctx.stage.addChild(pic);
+    return friend;
+  }
+
+  private async arrive() {
+    const { tw } = this.ctx;
+    this.badgeNode?.parent?.removeChild(this.badgeNode);
+    await tw.to(this.scene, { x: -this.view.w }, { duration: 0.35, ease: ease.inQuad });
+    if (this.gone) return;
+    this.zoneNodes.forEach((n) => (n.visible = false));
+    this.trail.visible = false;
+    const friend = this.makePicnic();
+    this.picnic!.position.set(this.view.w / 2, this.view.h * 0.55);
     this.scene.x = 0;
     this.walker.position.set(this.view.w * 0.3, this.view.h * 0.55 + 10);
     await tw.to(this.walker, { x: this.view.w / 2 - 80 }, { duration: 0.8, ease: ease.outQuad });
@@ -420,12 +481,18 @@ class AdventureWalk implements Game {
   private layoutMap() {
     const l = (this.mapLay = mapLayout(this.view, this.ctx.level, this.state.shape));
     this.mapPath.clear();
-    dotted(this.mapPath, [...l.path], 0xfff7d6, 7);
+    // At level 5 the three ribbons are the path.
+    if (!this.plan.trails) dotted(this.mapPath, [...l.path], 0xfff7d6, 7);
     this.door.position.set(l.path[0].x, l.path[0].y);
     this.tileNodes.forEach((n, i) => {
       const t = l.tiles[i];
       n.position.set(t.x + t.w / 2, t.y + t.h / 2);
     });
+    this.flagNodes.forEach((n, i) => {
+      const f = l.flags[i];
+      n.position.set(f.x + f.w / 2, f.y + f.h / 2);
+    });
+    if (this.plan.trails) this.drawRibbons();
     if (this.busy) return;
     const end = l.path[STOPS + 1];
     this.picnic?.position.set(end.x, end.y);
@@ -433,9 +500,8 @@ class AdventureWalk implements Game {
     this.walker.position.set(feet.x, feet.y);
   }
 
-  /** The view zooms out from the picnic to the whole path, with footprints on the three ways she took. */
-  private async openMap() {
-    const { tw } = this.ctx;
+  /** The map's path, door and tiles, laid out under the companion. At level 4 a tile is a tap target. */
+  private buildMap(): Container {
     const map = (this.map = new Container());
     map.eventMode = 'passive';
     this.mapPath.eventMode = 'none';
@@ -443,9 +509,17 @@ class AdventureWalk implements Game {
     this.tileGlow.eventMode = 'none';
     this.tileGlow.visible = false;
     map.addChild(this.mapPath, this.door);
+    const trails = !!this.plan.trails;
+    if (trails)
+      for (let t = 0; t < TRAILS; t++) {
+        const u = new Graphics();
+        u.eventMode = 'none';
+        this.under.push(u);
+        map.addChild(u);
+      }
     this.tileNodes = this.state.route.stops.map((stop, i) => {
       const ways = waysAt(stop);
-      const taken = this.state.taken[i];
+      const taken = trails ? null : this.state.taken[i];
       const node = mapTile(
         stop.landmark,
         [ways[stop.first].key, ways[1 - stop.first].key],
@@ -453,26 +527,55 @@ class AdventureWalk implements Game {
         TILE.w,
         TILE.h,
       );
-      node.eventMode = 'static';
-      node.hitArea = new Rectangle(-TILE.w / 2, -TILE.h / 2, TILE.w, TILE.h);
-      onTap(node, () => this.touchTile(i), { cooldown: 120 });
+      if (trails) node.eventMode = 'none';
+      else {
+        node.eventMode = 'static';
+        node.hitArea = new Rectangle(-TILE.w / 2, -TILE.h / 2, TILE.w, TILE.h);
+        onTap(node, () => this.touchTile(i), { cooldown: 120 });
+      }
       map.addChild(node);
       return node;
     });
     map.addChild(this.tileGlow);
-    this.at = STOPS;
-    this.nudged = false;
-    this.busy = true;
+    if (trails) {
+      for (let t = 0; t < TRAILS; t++) {
+        const o = new Graphics();
+        o.eventMode = 'none';
+        this.over.push(o);
+        map.addChild(o);
+      }
+      this.flagGlow.eventMode = 'none';
+      this.flagGlow.visible = false;
+      this.flagNodes = TRAIL_STYLES.map((style, t) => {
+        const node = trailFlag(style, FLAG.w, FLAG.h);
+        node.eventMode = 'static';
+        node.hitArea = new Rectangle(-FLAG.w / 2, -FLAG.h / 2, FLAG.w, FLAG.h);
+        onTap(node, () => this.touchFlag(t), { cooldown: 120 });
+        map.addChild(node);
+        return node;
+      });
+      map.addChild(this.flagGlow);
+    }
     this.layoutMap();
-    map.alpha = 0;
     this.ctx.stage.addChildAt(map, this.ctx.stage.getChildIndex(this.walker));
-    const l = this.mapLay!;
-    const end = l.path[STOPS + 1];
-    const feet = mapSpot(l, STOPS);
     // The companion's tap area stays at least MAP_WALKER across at its smaller size.
     this.walker.hitArea = this.walker.touchArea(
       Math.max(0, MAP_WALKER / 2 / MAP_SCALE - this.walker.touch.r),
     );
+    return map;
+  }
+
+  /** The view zooms out from the picnic to the whole path, with footprints on the three ways she took. */
+  private async openMap() {
+    const { tw } = this.ctx;
+    this.at = STOPS;
+    this.nudged = false;
+    this.busy = true;
+    const map = this.buildMap();
+    map.alpha = 0;
+    const l = this.mapLay!;
+    const end = l.path[STOPS + 1];
+    const feet = mapSpot(l, STOPS);
     const zoom = { duration: 0.8, ease: ease.inOutSine };
     void tw.to(map, { alpha: 1 }, zoom);
     if (this.picnic) {
@@ -576,6 +679,212 @@ class AdventureWalk implements Game {
     this.at = -1;
     await tw.to(this.walker, mapSpot(this.mapLay!, -1), { duration: 0.8, ease: ease.inOutSine });
     if (this.gone) return;
+    await this.homeAgain('walk.home');
+  }
+
+  // ---- Which trail? (level 5) -------------------------------------------------------------------------------------
+
+  /** Level 5 is on the map from the start: the companion at its door, the friend waiting on the blanket. */
+  private openTrails() {
+    this.zoneNodes.forEach((n) => (n.visible = false));
+    this.trail.visible = false;
+    this.makePicnic();
+    this.picnic!.scale.set(0.5);
+    this.at = -1;
+    this.walker.scale.set(MAP_SCALE);
+    this.buildMap();
+    // The map covers the path's ends; the door and the blanket sit above the ribbons.
+    this.ctx.stage.addChildAt(this.picnic!, this.ctx.stage.getChildIndex(this.walker));
+  }
+
+  /** Where trail `t` passes stop `i`: the middle of its way's half of the tile, side by side where two share the way. */
+  private lane(t: number, i: number): number {
+    const { trails, route } = this.state;
+    const stop = route.stops[i];
+    const way = trails[t][i];
+    const x = laneX(this.mapLay!.tiles[i], way === stop.first ? 0 : 1);
+    const sharing = [0, 1, 2].filter((o) => trails[o][i] === way);
+    return sharing.length < 2 ? x : x + (sharing.indexOf(t) === 0 ? -15 : 15);
+  }
+
+  /** Every trail's ribbon: along the path between the tiles, through its way on each tile, footprints once walked. */
+  private drawRibbons() {
+    const l = this.mapLay;
+    if (!l || !this.under.length) return;
+    const { state } = this;
+    const walked = this.arrived ? walkedThere(state) : null;
+    for (let t = 0; t < TRAILS; t++) {
+      const style = t === walked ? footprintStyle(TRAIL_STYLES[t]) : TRAIL_STYLES[t];
+      const u = this.under[t].clear();
+      const o = this.over[t].clear();
+      for (let k = 0; k < l.path.length - 1; k++) {
+        const a = l.path[k];
+        const b = l.path[k + 1];
+        const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const off = (t - 1) * 26;
+        const nx = (-(b.y - a.y) / d) * off;
+        const ny = ((b.x - a.x) / d) * off;
+        ribbon(u, style, { x: a.x + nx, y: a.y + ny }, { x: b.x + nx, y: b.y + ny }, 7, 30);
+      }
+      l.tiles.forEach((tile, i) => {
+        const x = this.lane(t, i);
+        const cy = tile.y + tile.h / 2;
+        // In at the bottom of its way and out at the top, so the way's own picture stays in view between them.
+        ribbon(o, style, { x, y: cy + 86 }, { x, y: cy + 54 }, 7, 18);
+        ribbon(o, style, { x, y: cy - 54 }, { x, y: cy - 86 }, 7, 18);
+        if (state.turned[t] === i) turnedMark(o, TRAIL_STYLES[t], x, cy);
+      });
+      // Looking at one trail brightens it and dims the others.
+      const dim = state.looking !== null && state.looking !== t && onTrails(state);
+      u.alpha = o.alpha = dim ? 0.18 : 1;
+      const flag = this.flagNodes[t];
+      flag.alpha = t === walked ? 0.5 : 1;
+      if (state.looking !== t) {
+        this.ctx.tw.kill(flag.scale);
+        flag.scale.set(1);
+      }
+    }
+  }
+
+  /** The friend's call: the called trail's three ways in the order walked, each landmark's tile pulsing as it is named. */
+  private sayTrailCall() {
+    const { state, ctx } = this;
+    const [first, second, third] = trailWays(state, calledTrail(state)).map((w) => w.phrase);
+    const run = ++this.callRun;
+    stopOrder(state.pick).forEach((stop, k) => {
+      void ctx.tw.wait(0.5 + k * 0.9).then(() => {
+        if (this.gone || run !== this.callRun) return;
+        const node = this.tileNodes[stop];
+        ctx.tw.kill(node.scale);
+        node.scale.set(1.1);
+        void ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
+      });
+    });
+    return ctx.say(state.pick === 0 ? 'walk.call.three' : 'walk.home-call', { first, second, third });
+  }
+
+  /** A silent sparkle along a trail, stop by stop in the order walked; any other tap cuts it short. */
+  private sparkle(t: number) {
+    const run = this.lookRun;
+    const style = TRAIL_STYLES[t];
+    stopOrder(this.state.pick).forEach((stop, k) => {
+      void this.ctx.tw.wait(0.1 + k * 0.45).then(() => {
+        if (this.gone || run !== this.lookRun || !this.mapLay) return;
+        const tile = this.mapLay.tiles[stop];
+        this.ctx.particles.burst(this.lane(t, stop), tile.y + tile.h / 2, {
+          kind: 'dot',
+          colors: [0xffffff, style.fill, 0xfff3a0],
+          count: 10,
+          speed: [40, 130],
+          gravity: 0,
+          life: [0.3, 0.6],
+        });
+      });
+    });
+  }
+
+  private touchFlag(t: number) {
+    if (this.busy || this.finished || !this.map) return;
+    const res = tapFlag(this.state, t);
+    if (res.kind === 'ignored') return;
+    sfx.tick();
+    this.lookRun++;
+    this.drawRibbons();
+    const node = this.flagNodes[t];
+    const to = this.state.looking === t ? 1.08 : 1;
+    this.ctx.tw.kill(node.scale);
+    node.scale.set(0.94);
+    void this.ctx.tw.to(node.scale, { x: to, y: to }, { duration: 0.25, ease: ease.outBack });
+    if (res.kind === 'look') this.sparkle(t);
+    else if (res.kind === 'came') {
+      this.sparkle(t);
+      void this.ctx.say('walk.came');
+    } else if (res.kind === 'reason')
+      void this.ctx.say('walk.other', { took: res.took.phrase, asked: res.asked.phrase });
+    else {
+      this.busy = true;
+      this.callRun++;
+      if (res.kind === 'other') void this.wrongTrail(res);
+      else void this.walkTrail(res);
+    }
+  }
+
+  /** The companion goes past stop `i` by `way` on the map, up the tile on the way out and down it on the way home. */
+  private async passTile(t: number, i: number, way: Way, home: boolean) {
+    const { tw } = this.ctx;
+    const tile = this.mapLay!.tiles[i];
+    const x = this.lane(t, i);
+    const ys = [tile.y + tile.h - 10, tile.y + tile.h / 2 + 35, tile.y + 80];
+    if (home) ys.reverse();
+    await tw.to(this.walker, { x, y: ys[0] }, { duration: 0.5, ease: ease.inOutSine });
+    if (this.gone) return;
+    for (const y of ys.slice(1)) {
+      sfx[way.sound]();
+      await tw.to(this.walker, { x, y }, { duration: 0.3, ease: ease.inOutSine });
+      if (this.gone) return;
+    }
+    void this.ctx.say('walk.went', { text: cap(way.phrase) });
+    await tw.wait(0.25);
+  }
+
+  /** Not the trail the friend described: it walks as far as the first place they differ, starts the other way and turns back. */
+  private async wrongTrail(res: Extract<TrailStep, { kind: 'other' }>) {
+    const { ctx } = this;
+    const { tw } = ctx;
+    const { state } = this;
+    const home = state.pick === 1;
+    for (const i of res.before) {
+      await this.passTile(res.trail, i, waysAt(state.route.stops[i])[state.trails[res.trail][i]], home);
+      if (this.gone) return;
+    }
+    const tile = this.mapLay!.tiles[res.stop];
+    const x = this.lane(res.trail, res.stop);
+    const y0 = home ? tile.y + 80 : tile.y + tile.h - 10;
+    await tw.to(this.walker, { x, y: y0 }, { duration: 0.5, ease: ease.inOutSine });
+    if (this.gone) return;
+    sfx.boing();
+    await tw.to(this.walker, { x, y: y0 + (home ? 30 : -30) }, { duration: 0.2, ease: ease.outQuad });
+    if (this.gone) return;
+    const back = mapSpot(this.mapLay!, this.at);
+    await tw.to(this.walker, { x: back.x, y: back.y }, { duration: 0.8, ease: ease.inOutSine });
+    if (this.gone) return;
+    this.busy = false;
+    this.layoutMap();
+    await ctx.say('walk.other', { took: res.took.phrase, asked: res.asked.phrase });
+    if (res.glow && !this.gone) void ctx.say('walk.hint-glow');
+  }
+
+  /** The called trail: past all three landmarks, to the picnic (and the call home) or back to the door (the finish). */
+  private async walkTrail(res: Extract<TrailStep, { kind: 'go' }>) {
+    const { ctx } = this;
+    const { tw } = ctx;
+    for (let k = 0; k < res.stops.length; k++) {
+      await this.passTile(res.trail, res.stops[k], res.ways[k], res.done);
+      if (this.gone) return;
+    }
+    this.at = res.done ? -1 : STOPS;
+    await tw.to(this.walker, mapSpot(this.mapLay!, this.at), { duration: 0.7, ease: ease.inOutSine });
+    if (this.gone) return;
+    if (res.done) {
+      await this.homeAgain('walk.home-other');
+      return;
+    }
+    this.arrived = true;
+    this.friend?.setMood('happy');
+    this.walker.cheer();
+    sfx.pluck(6, 0.25);
+    // The trail she came by keeps its footprints and its flag dims.
+    this.layoutMap();
+    await ctx.say('walk.arrive', { friend: FRIEND_NAMES[this.state.route.friend] });
+    if (this.gone) return;
+    this.busy = false;
+    this.layoutMap();
+    void this.sayTrailCall();
+  }
+
+  /** At its own door: a rise of notes, a cheer and the round is done. */
+  private async homeAgain(line: 'walk.home' | 'walk.home-other') {
+    const { tw } = this.ctx;
     this.finished = true;
     this.busy = false;
     // A turn of the screen mid-walk: stand at this view's door.
@@ -591,7 +900,7 @@ class AdventureWalk implements Game {
       life: [0.6, 1],
     });
     this.walker.cheer();
-    await this.ctx.say('walk.home');
+    await this.ctx.say(line);
     if (this.gone) return;
     sfx.tada();
     await tw.wait(1);
@@ -606,6 +915,12 @@ class AdventureWalk implements Game {
     if (this.finished || this.busy) return;
     const next = nextHome(this.state);
     const r = askHint(this.state);
+    if (this.plan.trails) {
+      // The called trail's flag glows (the pick's one hint); asked again, the friend calls again.
+      if (r === 'glow') void this.ctx.say('walk.hint-glow');
+      else this.replay();
+      return;
+    }
     if (this.map) {
       // On the map the hint names the place that comes first; asked again on the same leg, the question is repeated.
       if (r === 'glow')
@@ -621,14 +936,31 @@ class AdventureWalk implements Game {
   restart() {
     if (this.finished || this.busy) return;
     restart(this.state);
+    if (this.plan.trails) {
+      // Home again with every mark and footprint cleared, the same trails and calls.
+      this.lookRun++;
+      this.callRun++;
+      this.at = -1;
+      this.arrived = false;
+      this.layoutMap();
+      return;
+    }
     if (this.map) this.closeMap();
     this.drawStop(0);
     this.walker.position.set(this.lay.stand.x, this.lay.stand.y);
   }
 
-  /** The ghost finger: the asked way at each stop (levels 1 and 4: either, alternating sides); at level 3 one tap on the badge shows the replay; on level 4's map, the landmarks in the order home. */
+  /** The ghost finger: the asked way at each stop (levels 1 and 4: either, alternating sides); at level 3 one tap on the badge shows the replay; on level 4's map, the landmarks in the order home; at level 5 the badge once, then the called flag twice (look, go) there and again home. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
+    if (this.plan.trails) {
+      if (!onTrails(this.state)) return null;
+      if (this.badgeNode && !this.shownReplay) {
+        this.shownReplay = true;
+        return { tap: { on: this.badgeNode } };
+      }
+      return { tap: { on: this.flagNodes[calledTrail(this.state)] } };
+    }
     if (this.map) return onMap(this.state) ? { tap: { on: this.tileNodes[nextHome(this.state)] } } : null;
     if (this.state.stop >= STOPS) return null;
     if (this.ctx.level === 3 && this.state.stop === 1 && this.badgeNode && !this.shownReplay) {

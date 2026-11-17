@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–4 |
+| school | 3–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 2 | Take the way the friend calls at each landmark |
 | 3 | Follow two of the friend’s calls in order, then a third |
 | 4 | Walk to the picnic, then lead the way home on the map |
+| 5 | Pick the drawn trail the friend describes, there and back |
 
 <!-- end generated -->
 

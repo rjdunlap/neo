@@ -14,4 +14,9 @@ export const VOICE = {
   'walk.not-yet': ['Not yet! Follow the path from the picnic.'],
   'walk.first': ['We get to {place} first.'],
   'walk.home': ['Home again! We came back the way we went.'],
+  'walk.instruct-trail': ['{friend} is calling the way. Which trail is it?'],
+  'walk.call.three': ['Come {first}, {second}, then {third}!'],
+  'walk.home-call': ["Let's go home a different way: {first}, {second}, then {third}!"],
+  'walk.came': ['We came that way.'],
+  'walk.home-other': ['Home again, by a different way!'],
 } satisfies Record<string, string[]>;

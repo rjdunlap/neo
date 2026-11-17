@@ -91,6 +91,8 @@ export interface Plan {
   groups: readonly (readonly number[])[];
   /** After the walk out, she leads the walk home on the map (level 4). */
   home?: boolean;
+  /** The whole round is on the map: three drawn trails, and the friend calls one there and another home (level 5). */
+  trails?: boolean;
 }
 
 export const PLANS: readonly Plan[] = [
@@ -98,13 +100,14 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Come this way', calls: true, groups: [[0], [1], [2]] },
   { level: 3, name: 'Two at once', calls: true, groups: [[0, 1], [2]] },
   { level: 4, name: 'The way home', calls: false, groups: [], home: true },
+  { level: 5, name: 'Which trail?', calls: false, groups: [], trails: true },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 4 },
+  school: { min: 3, max: 5 },
 };
 
 export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];
@@ -211,12 +214,34 @@ export interface WalkState {
   legHinted: boolean;
   /** The next landmark on the way home glows. */
   homeGlow: boolean;
+  /** Level 5's three drawn trails (a fixed set, never shown, at the other levels). */
+  trails: TrailSet;
+  /** The trail the friend calls on the way there and on the way home. */
+  calls: readonly [number, number];
+  /** Which pick she is on: 0 the way there, 1 the way home, 2 once home. */
+  pick: number;
+  /** For each trail, the stop where it turned back in this pick, or null. */
+  turned: (number | null)[];
+  /** The trail she is looking along; a second tap on its flag walks it. */
+  looking: number | null;
+  pickHinted: boolean;
+  /** The trail whose flag glows. */
+  trailGlow: number | null;
 }
 
 export function startWalk(level: number, rng: Rng): WalkState {
   const route = makeRoute(level, rng);
   // Drawn after the route, and only where a map is shown, so levels 1-3 keep their seeded rounds.
   const shape = planFor(level).home ? SHAPE_IDS[Math.floor(rng.next() * SHAPE_IDS.length)] : 'sweep';
+  // The same holds for level 5's trails and calls: drawn last, and only there.
+  let trails = TRAIL_SETS[0];
+  let calls: readonly [number, number] = [0, 1];
+  if (planFor(level).trails) {
+    trails = makeTrails(route, rng);
+    const there = Math.floor(rng.next() * TRAILS);
+    const home = (there + 1 + Math.floor(rng.next() * (TRAILS - 1))) % TRAILS;
+    calls = [there, home];
+  }
   return {
     route,
     stop: 0,
@@ -231,6 +256,13 @@ export function startWalk(level: number, rng: Rng): WalkState {
     legMisses: 0,
     legHinted: false,
     homeGlow: false,
+    trails,
+    calls,
+    pick: 0,
+    turned: Array.from({ length: TRAILS }, () => null),
+    looking: null,
+    pickHinted: false,
+    trailGlow: null,
   };
 }
 
@@ -267,6 +299,14 @@ export function step(s: WalkState, slot: 0 | 1): Step {
 
 /** Show a hint: light the asked way (a hint, once per stop); asked again at that stop, say the request again. */
 export function askHint(s: WalkState): 'glow' | 'repeat' | 'none' {
+  if (planFor(s.route.level).trails) {
+    if (!onTrails(s)) return 'none';
+    if (s.pickHinted) return 'repeat';
+    s.pickHinted = true;
+    s.hints++;
+    s.trailGlow = calledTrail(s);
+    return 'glow';
+  }
   if (onMap(s)) {
     if (s.legHinted) return 'repeat';
     s.legHinted = true;
@@ -282,7 +322,7 @@ export function askHint(s: WalkState): 'glow' | 'repeat' | 'none' {
   return 'glow';
 }
 
-/** Start again: the first stop of the same seeded route (and the walk out again at level 4), keeping misses and hints. */
+/** Start again: the first stop of the same seeded route (the walk out again at level 4; home with every mark cleared and the same trails and calls at level 5), keeping misses and hints. */
 export function restart(s: WalkState) {
   s.stop = 0;
   s.stopMisses = 0;
@@ -293,6 +333,11 @@ export function restart(s: WalkState) {
   s.legMisses = 0;
   s.legHinted = false;
   s.homeGlow = false;
+  s.pick = 0;
+  s.turned.fill(null);
+  s.looking = null;
+  s.pickHinted = false;
+  s.trailGlow = null;
 }
 
 // ---- The way home (level 4) ---------------------------------------------------------------------------------------------
@@ -335,6 +380,121 @@ export function stepHome(s: WalkState, stop: number): HomeStep {
   s.legHinted = false;
   s.homeGlow = false;
   return { kind: 'back', stop, way: waysAt(s.route.stops[stop])[s.taken[stop] ?? 0], home: s.home >= STOPS };
+}
+
+// ---- Which trail? (level 5) ---------------------------------------------------------------------------------------------
+
+export const TRAILS = 3;
+/** One way index per stop. */
+export type Trail = readonly [0 | 1, 0 | 1, 0 | 1];
+export type TrailSet = readonly [Trail, Trail, Trail];
+
+/**
+ * Every ordered set of three trails that are pairwise different and use both ways at every landmark (two trails share one
+ * way, the third takes the other), so no single landmark tells all three apart and none is the same on all three: 192 sets.
+ */
+export function allTrailSets(): TrailSet[] {
+  // What the three trails do at one landmark: every split that is not all the same.
+  const splits: (0 | 1)[][] = [
+    [0, 0, 1],
+    [0, 1, 0],
+    [1, 0, 0],
+    [1, 1, 0],
+    [1, 0, 1],
+    [0, 1, 1],
+  ];
+  const out: TrailSet[] = [];
+  for (const a of splits)
+    for (const b of splits)
+      for (const c of splits) {
+        const set = [0, 1, 2].map((t) => [a[t], b[t], c[t]] as const) as unknown as TrailSet;
+        const keys = new Set(set.map((t) => t.join('')));
+        if (keys.size === TRAILS) out.push(set);
+      }
+  return out;
+}
+export const TRAIL_SETS: readonly TrailSet[] = allTrailSets();
+
+/** Three trails past the route's landmarks, drawn from the fair sets with the round's seed. */
+export function makeTrails(_route: Route, rng: Rng): TrailSet {
+  return TRAIL_SETS[Math.floor(rng.next() * TRAIL_SETS.length)];
+}
+
+/** A pick is open: the flags choose a trail. */
+export const onTrails = (s: WalkState): boolean => !!planFor(s.route.level).trails && s.pick < 2;
+/** The trail the friend is calling now. */
+export const calledTrail = (s: WalkState): number => s.calls[Math.min(s.pick, 1)];
+/** The trail walked to the picnic, once there: it is not a candidate for the way home. */
+export const walkedThere = (s: WalkState): number | null => (s.pick >= 1 ? s.calls[0] : null);
+/** The stops in the order walked: out from home, or back from the picnic. */
+export const stopOrder = (pick: number): readonly number[] => (pick === 0 ? [0, 1, 2] : [2, 1, 0]);
+/** A trail's ways in the order walked in this pick: what the friend's call names, and what the companion walks. */
+export const trailWays = (s: WalkState, trail: number, pick = s.pick): Way[] =>
+  stopOrder(pick).map((i) => waysAt(s.route.stops[i])[s.trails[trail][i]]);
+
+export type TrailStep =
+  /** The called trail: the companion walks `stops` by `ways`. `done` when that brings it home. */
+  | { kind: 'go'; trail: number; stops: readonly number[]; ways: Way[]; done: boolean }
+  /**
+   * Another trail: a miss. It turns back at `stop`, the first one, in the order walked, where it leaves the call; `before`
+   * are the stops walked first. `glow` when one trail is left and its flag lights up (a hint).
+   */
+  | {
+      kind: 'other';
+      trail: number;
+      stop: number;
+      before: readonly number[];
+      took: Way;
+      asked: Way;
+      glow: boolean;
+    }
+  /** A trail already turned back in this pick: the reason again, nothing counted. */
+  | { kind: 'reason'; trail: number; stop: number; took: Way; asked: Way }
+  /** The trail walked to the picnic, on the way home: "We came that way." Nothing counted. */
+  | { kind: 'came'; trail: number }
+  /** A first tap on a flag: look along its trail. Nothing counted. */
+  | { kind: 'look'; trail: number }
+  | { kind: 'ignored' };
+
+/** Walk `trail`. Only the called one goes; another is a miss, marked where it went wrong, and cannot be walked again. */
+export function goTrail(s: WalkState, trail: number): TrailStep {
+  if (!onTrails(s) || trail < 0 || trail >= TRAILS) return { kind: 'ignored' };
+  if (trail === walkedThere(s)) return { kind: 'came', trail };
+  const called = calledTrail(s);
+  const order = stopOrder(s.pick);
+  if (trail === called) {
+    const ways = trailWays(s, trail);
+    s.pick++;
+    s.turned.fill(null);
+    s.looking = null;
+    s.pickHinted = false;
+    s.trailGlow = null;
+    return { kind: 'go', trail, stops: order, ways, done: s.pick >= 2 };
+  }
+  const stop = order.find((i) => s.trails[trail][i] !== s.trails[called][i])!;
+  const ways = waysAt(s.route.stops[stop]);
+  const took = ways[s.trails[trail][stop]];
+  const asked = ways[s.trails[called][stop]];
+  if (s.turned[trail] !== null) return { kind: 'reason', trail, stop, took, asked };
+  s.misses++;
+  s.turned[trail] = stop;
+  const left = [0, 1, 2].filter((t) => t !== walkedThere(s) && s.turned[t] === null);
+  let glow = false;
+  if (left.length === 1 && !s.pickHinted) {
+    s.pickHinted = true;
+    s.hints++;
+    s.trailGlow = called;
+    glow = true;
+  }
+  return { kind: 'other', trail, stop, before: order.slice(0, order.indexOf(stop)), took, asked, glow };
+}
+
+/** She taps a flag: the first tap looks along its trail (free), a second tap on the same flag walks it. */
+export function tapFlag(s: WalkState, trail: number): TrailStep {
+  if (!onTrails(s) || trail < 0 || trail >= TRAILS) return { kind: 'ignored' };
+  if (s.looking === trail) return goTrail(s, trail);
+  s.looking = trail;
+  return trail === walkedThere(s) ? { kind: 'came', trail } : { kind: 'look', trail };
 }
 
 /** What a capable walker taps: the asked slot, else alternating sides so the demonstration shows both are fine. */
@@ -403,6 +563,8 @@ export const MAP_SHAPES: Record<MapShape, readonly Pt[]> = {
 };
 
 export const TILE = { w: 260, h: 200 };
+/** A trail's flag at level 5. */
+export const FLAG = { w: 140, h: 120, gap: 50 };
 /** The walker's tap area on the map, a square of this side around its body. */
 export const MAP_WALKER = 120;
 
@@ -413,16 +575,35 @@ export interface MapLayout {
   /** The room the home door and the picnic (blanket and friend) take. */
   home: Rect;
   picnic: Rect;
+  /** Level 5: one flag per trail, the only way to choose one; empty elsewhere. */
+  flags: readonly Rect[];
+  /** Level 5: the friend's picture, which speaks the call; null elsewhere. */
+  badge: Rect | null;
 }
 
 /** The whole path on one screen. Tiles are tap targets at level 4; the guide's corner and the home button stay clear. */
-export function mapLayout(view: View, _level: number, shape: MapShape): MapLayout {
+export function mapLayout(view: View, level: number, shape: MapShape): MapLayout {
   const upright = view.h > view.w;
+  const trails = !!planFor(level).trails;
   // The left margin clears the guide (bottom-left) and the home button (top-left) for every shape.
-  const x0 = 300;
-  const x1 = view.w - 150;
-  const y0 = 160;
-  const y1 = view.h - 140;
+  let x0 = 300;
+  let x1 = view.w - 150;
+  let y0 = 160;
+  let y1 = view.h - 140;
+  if (trails && upright) {
+    // The sweep runs down the screen: tiles against both sides, the row of flags under the picnic.
+    const dx = (view.w - 280) / 0.9;
+    x0 = 140 - 0.05 * dx;
+    x1 = x0 + dx;
+    y0 = 90;
+    y1 = view.h - 200;
+  } else if (trails) {
+    // The sweep runs across: the badge keeps the top-right corner and the row of flags the bottom edge.
+    x0 = 130;
+    x1 = view.w - 144;
+    y0 = 98;
+    y1 = view.h - 238;
+  }
   const path = MAP_SHAPES[shape].map((p) => {
     const u = upright ? p.y : p.x;
     const v = upright ? p.x : p.y;
@@ -431,13 +612,29 @@ export function mapLayout(view: View, _level: number, shape: MapShape): MapLayou
   const tiles = path.slice(1, 1 + STOPS).map((p) => ({ x: p.x - TILE.w / 2, y: p.y - TILE.h / 2, ...TILE }));
   const h = path[0];
   const p = path[STOPS + 1];
+  // The flags sit in a row along the bottom, right of the guide's corner.
+  const row = TRAILS * FLAG.w + (TRAILS - 1) * FLAG.gap;
+  const fx = 180 + (view.w - 200 - row) / 2;
   return {
     path,
     tiles,
     home: { x: h.x - 60, y: h.y - 70, w: 120, h: 130 },
     picnic: { x: p.x - 140, y: p.y - 95, w: 250, h: 130 },
+    flags: trails
+      ? Array.from({ length: TRAILS }, (_, i) => ({
+          x: fx + i * (FLAG.w + FLAG.gap),
+          y: view.h - 20 - FLAG.h,
+          w: FLAG.w,
+          h: FLAG.h,
+        }))
+      : [],
+    badge: trails ? { x: view.w - 20 - BADGE, y: 80, w: BADGE, h: BADGE } : null,
   };
 }
+
+/** Where a way's picture is centred across its tile: the drawn slot 0 on the left, 1 on the right. */
+export const laneX = (tile: Rect, slot: 0 | 1): number =>
+  tile.x + tile.w / 2 + (slot === 0 ? -1 : 1) * (tile.w / 4 - 2);
 
 /** Where the companion's feet are on the map: `-1` at home, a stop's landmark, or `STOPS` at the picnic. */
 export function mapSpot(l: MapLayout, at: number): Pt {
@@ -497,5 +694,7 @@ export function describeWalk(level: number): string {
       ? 'Take the way the friend calls at each landmark'
       : level === 3
         ? 'Follow two of the friend’s calls in order, then a third'
-        : 'Walk to the picnic, then lead the way home on the map';
+        : level === 4
+          ? 'Walk to the picnic, then lead the way home on the map'
+          : 'Pick the drawn trail the friend describes, there and back';
 }
