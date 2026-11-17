@@ -1241,13 +1241,18 @@ export function lensLayout(v: View, level: number): LensLayout | null {
   }
   if (level === 2) {
     const rowY = v.h * (wide ? 0.62 : 0.6);
-    const step = Math.min(THING_SIZE + 100, (v.w - 2 * M - THING_SIZE) / 2);
+    // A tall view has no room beside the guide's column, so its table runs the whole width between the corners above and
+    // below, and the row closes up until the glass can rest centred on the outer things (an upright phone is 768 wide).
+    const step = Math.min(THING_SIZE + 100, (v.w - 2 * M - (wide ? THING_SIZE : 2 * GLASS_R)) / 2);
     if (step < THING_SIZE + THING_GAP) return null;
     const things = [-1, 0, 1].map((k) => ({ x: v.w / 2 + k * step, y: rowY, r: THING_SIZE / 2 }));
     const paw = { x: v.w / 2, y: rowY + THING_SIZE / 2 + 70, r: 55 };
     const rest = { x: v.w / 2, y: rowY - THING_SIZE / 2 - 40 - GLASS_R };
-    const table = { x: PET_CORNER.w + 10, y: M, w: v.w - PET_CORNER.w - 10 - M, h: v.h - 2 * M };
-    if (rest.y - GLASS_R < M) return null;
+    const top = HOME_CORNER.h + 10;
+    const table = wide
+      ? { x: PET_CORNER.w + 10, y: M, w: v.w - PET_CORNER.w - 10 - M, h: v.h - 2 * M }
+      : { x: M, y: top, w: v.w - 2 * M, h: v.h - PET_CORNER.h - 10 - top };
+    if (rest.y - GLASS_R < table.y) return null;
     return ok({ ...none, lens: { ...rest, r: GLASS_R }, things, rest, table, paw });
   }
   // Levels 9 and 11 have four answers (three cards and can't tell yet): full-size where the row or column fits, otherwise four in the

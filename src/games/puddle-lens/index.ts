@@ -1596,6 +1596,8 @@ export const puddleLens: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
+  // Every level lays out upright through lensLayout's tall branch (src/games/upright-catch-up.test.ts).
+  upright: true,
   touchDemo: true,
   coplayHint:
     'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together. At the plant-or-animal slides, guess first: before each turn of the dial, both of you say plant, animal or can\'t tell yet.',
