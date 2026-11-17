@@ -99,6 +99,68 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(await score('stamp-studio'), [0, 0], 'two feet counts no misses or hints');
       await page.setViewportSize({ width: 1024, height: 768 });
     }
+    if ((!only || only === 'stamps') && stampAt(10)) {
+      // Level 10, Follow the sparkle (lap, toddler): a tap in the glow lands on its centre, a tap anywhere else (the paper
+      // or the teal around it) stamps too, the glow moves on either way, and the fifth stamp finishes the picture.
+      await launch('stamp-studio', 10);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { sparklePixel, pixel, SPARKLE } = await import('/src/games/stamp-studio/logic.ts');
+        if (g.spots.length !== 5) throw new Error(`${g.spots.length} sparkle spots`);
+        if (g.finish.visible || g.undo.visible || g.choices.some((b) => b.visible))
+          throw new Error('Follow the sparkle shows an arrow or the stamp button');
+        const glowAt = (i) => sparklePixel(g.spots[i], g.width, g.height);
+        const tapPaper = async (x, y) => {
+          const p = g.paper.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+          await kit.sleep(350);
+        };
+        const onPaper = (i) => pixel(g.stamps[i].data, g.width, g.height);
+        const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 1;
+        for (let i = 0; i < 5; i++) {
+          const c = glowAt(i);
+          if (!g.glow.visible || !near(g.glow.position, c))
+            throw new Error(`Sparkle ${i + 1} is not glowing at its spot`);
+          const b = g.glow.getBounds(),
+            sheet = g.sheet.getBounds();
+          if (b.width < SPARKLE.across * neo.view.scale - 1)
+            throw new Error(`The glow is ${b.width} px wide`);
+          if (
+            b.x < sheet.x ||
+            b.y < sheet.y ||
+            b.x + b.width > sheet.x + sheet.width ||
+            b.y + b.height > sheet.y + sheet.height
+          )
+            throw new Error(`Sparkle ${i + 1} reaches off the paper`);
+          if (i === 1) {
+            // Not the sparkle: the middle of the gap to the next spot is 100 or more units from both.
+            const next = glowAt(2),
+              away = { x: (c.x + next.x) / 2, y: (c.y + next.y) / 2 };
+            await tapPaper(away.x, away.y);
+            if (g.stamps.length !== 2 || !near(onPaper(1), away))
+              throw new Error('A tap away from the sparkle did not stamp where it fell');
+          } else if (i === 2) {
+            // The teal below the paper: the stamp lands on the paper's bottom edge.
+            await tapPaper(g.width / 2, g.height + 60);
+            if (g.stamps.length !== 3 || g.stamps[2].data.y !== 1)
+              throw new Error('A tap on the teal did not stamp at the nearest place on the paper');
+          } else {
+            await tapPaper(c.x + 40, c.y - 40);
+            if (g.stamps.length !== i + 1 || !near(onPaper(i), c))
+              throw new Error(`A tap in sparkle ${i + 1} did not land on its centre`);
+          }
+          if (i === 3 && g.done) throw new Error('Finished before the fifth stamp');
+        }
+        if (!g.done || g.glow.visible) throw new Error(`Five stamps: done ${g.done}, glow ${g.glow.visible}`);
+      });
+      await screenshot('stamp-studio-10');
+      await finished('stamp-studio');
+      assert.deepEqual(await score('stamp-studio'), [0, 0], 'follow the sparkle counts no misses or hints');
+    }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
       // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.
