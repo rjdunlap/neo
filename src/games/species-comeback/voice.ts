@@ -25,6 +25,26 @@ export const VOICE = {
   'comeback.missing-logs': ['No logs there for sunning.'],
   'comeback.missing-sand': ['No soft sand to dig a nest there.'],
   'comeback.missing-plants': ['No water plants to hide and find food in there.'],
+  'comeback.note-room': [
+    "The keeper's note says: room for {n} nests this spring. Keep the pairs as far apart in the family as you can.",
+  ],
+  'comeback.note-big': ["The keeper's note says: a big spring! We need as many hatchlings as we can raise."],
+  'comeback.plans': [
+    'Plan A has {a} pairs, and {r} of them are related. Plan B has {b} pairs, and none are related. Both follow the rule. Which plan fits the note?',
+  ],
+  'comeback.plan-wrong-room': [
+    'Plan A has more pairs, but some of them are related. The note asks for pairs far apart.',
+  ],
+  'comeback.plan-wrong-big': [
+    'Plan B keeps every pair far apart, but it has fewer pairs. The note asks for as many hatchlings as we can raise.',
+  ],
+  'comeback.reason-ask': ['That plan fits this year. Why does it fit?'],
+  'comeback.reason-ok': ['Yes, that is why. Now press Spring!'],
+  'comeback.reason-wrong-more': ['Not that one. The other plan has more pairs.'],
+  'comeback.reason-wrong-apart': ["Not that one. The other plan's pairs are less closely related."],
+  'comeback.reason-wrong-every': ['No plan uses every turtle. One is always left without a pair.'],
+  'comeback.hint-plan': ['The glowing plan fits the note.'],
+  'comeback.hint-reason': ['The glowing card says why.'],
   'comeback.hint-pair': ['Try the two glowing turtles together.'],
   'comeback.hint-undo': ['These nests leave someone without a pair. Try undoing the glowing nest.'],
   'comeback.hint-site': ['The glowing places have everything on the card.'],

@@ -148,9 +148,89 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       }),
       [1, 0],
     );
+    // Level 4: the plan that does not fit the note is one miss, so is a reason that does not match; hearing the note and a
+    // name are free; the fitting plan settles into the nests, Spring, then a suiting site.
+    await launch('species-comeback', 4);
+    await until('plan');
+    await page.waitForTimeout(400);
+    assert.equal(await small(), 0, 'level 4 cards at least 64 units');
+    const keeper = await page.evaluate(() => {
+      const g = neo.scene.game,
+        k = g.round.keeper;
+      return { fits: k.fits, a: k.a.length, b: k.b.length, nestsShown: g.nestLayer?.visible ?? null };
+    });
+    assert.ok(keeper.a > keeper.b, 'Plan A is the larger plan');
+    const onScreen = (expr) =>
+      page.evaluate((expr) => {
+        const list = Function('g', `return (${expr})`)(neo.scene.game);
+        return list.filter((c) => {
+          const b = c.getBounds();
+          return (
+            b.width < 64 * neo.view.scale - 0.5 ||
+            b.height < 64 * neo.view.scale - 0.5 ||
+            b.x < 0 ||
+            b.y < 0 ||
+            b.x + b.width > innerWidth ||
+            b.y + b.height > innerHeight
+          );
+        }).length;
+      }, expr);
+    assert.equal(await onScreen('[g.note, ...g.planCards.values()]'), 0, 'note and plans on screen');
+    await screenshot('species-comeback-4-plans');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(600);
+    assert.equal(await small(), 0, 'level 4 cards at least 64 units upright');
+    assert.equal(await onScreen('[g.note, ...g.planCards.values()]'), 0, 'note and plans on screen upright');
+    await screenshot('species-comeback-4-plans-upright');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(600);
+    await tapObj('g.note');
+    await page.waitForTimeout(400);
+    await tapCard(0);
+    await page.waitForTimeout(400);
+    assert.equal((await state()).misses, 0, 'hearing the note and a name is free');
+    const other = keeper.fits === 'a' ? 'b' : 'a';
+    await tapObj(`g.planCards.get('${other}')`);
+    await page.waitForTimeout(400);
+    st = await state();
+    assert.deepEqual([st.phase, st.misses], ['plan', 1], 'the plan that does not fit is one miss');
+    await tapObj(`g.planCards.get('${keeper.fits}')`);
+    await page.waitForTimeout(400);
+    st = await state();
+    assert.deepEqual([st.phase, st.misses], ['reason', 1], 'the fitting plan opens the reasons');
+    assert.equal(await onScreen('[g.note, ...g.reasonCards.values()]'), 0, 'reasons on screen');
+    await screenshot('species-comeback-4-reasons');
+    await tapObj(`g.reasonCards.get('every')`);
+    await page.waitForTimeout(400);
+    st = await state();
+    assert.deepEqual(
+      [st.phase, st.misses, st.hints],
+      ['reason', 2, 0],
+      'a reason that does not match is one miss',
+    );
+    await tapObj(`g.reasonCards.get('${keeper.fits === 'a' ? 'more' : 'apart'}')`);
+    await until('ready');
+    st = await state();
+    assert.equal(st.plan.length, keeper[keeper.fits], 'the chosen plan is in the nests');
+    await page.waitForTimeout(300);
+    await screenshot('species-comeback-4-nests');
+    await tapObj('g.spring');
+    await until('site');
+    await page.waitForTimeout(300);
+    await tapObj(
+      'g.sites.find((c) => ["water","logs","sand","plants"].every((f) => c.site.features.includes(f)))',
+    );
+    await finished('species-comeback');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('species-comeback').history.at(-1);
+        return [r.level, r.misses, r.hints];
+      }),
+      [4, 2, 0],
+    );
     assert.deepEqual(errors, []);
     log(
-      'Species Comeback: level 1 forbidden pair, undo, early Spring, one requested hint; level 3 unsuitable site; portrait sites; 64-unit cards; one sticker each passed',
+      'Species Comeback: level 1 forbidden pair, undo, early Spring, one requested hint; level 3 unsuitable site; portrait sites; level 4 wrong plan, wrong reason, free note and name, plan into the nests, site; 64-unit cards; one sticker each passed',
     );
   }
 
