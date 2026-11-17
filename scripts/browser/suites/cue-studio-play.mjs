@@ -158,6 +158,181 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     );
   }
 
+  /** Cue Studio level 5: free empty and incomplete controls, the right pair played once as the one wrong Check, clue and Repeat repair, a cancelled play, idempotent help, four Steps, four-view targets, one sticker. */
+  async function repeated(idle) {
+    await launch('cue-studio', 5);
+    await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const st = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          program: g.s.program.slice(),
+          repeat: g.s.repeat,
+          misses: g.s.misses,
+          hints: g.s.hints,
+          checked: g.s.checked,
+        };
+      });
+    // Past a pad's 250 ms double-tap guard.
+    const again = () => page.waitForTimeout(350);
+    const request = await page.evaluate(() => neo.scene.game.s.request.slice());
+    assert.ok(['WT', 'TW'].includes(request.join('')), 'the phrase is one of the two authored pairs');
+    const blank = { program: [null, null], repeat: false, misses: 0, hints: 0, checked: false };
+    // Empty Play and Check, and Repeat over an empty shelf, only point: never a miss or a hint.
+    await tap('neo.scene.game.playButton');
+    await tap('neo.scene.game.finishButton');
+    await tap('neo.scene.game.cap');
+    await again();
+    await tap('neo.scene.game.finishButton');
+    assert.deepEqual(await st(), { ...blank, repeat: true });
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.ghosts.map((g) => g.visible)),
+      [true, true],
+      'the ghost copies show while Repeat is on',
+    );
+    await again();
+    await tap('neo.scene.game.cap');
+    assert.deepEqual(await st(), blank);
+    // The right two moves with Repeat off: Play is free and lights two of the four dots; Check is the one miss.
+    await tap(`neo.scene.game.cards.${request[0]}`);
+    await tap(`neo.scene.game.cards.${request[1]}`);
+    await tap('neo.scene.game.playButton');
+    await idle();
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.lit, neo.scene.game.s.played]), [2, true]);
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    const once = { program: request, repeat: false, misses: 1, hints: 0, checked: false };
+    assert.deepEqual(await st(), once);
+    // Help: the clue points at the cap; again turns Repeat on and plays the show twice through.
+    await tap('neo.scene.game.hintButton');
+    assert.deepEqual(await st(), { ...once, hints: 1 });
+    assert.deepEqual(await page.evaluate(() => [...neo.scene.game.s.helped]), ['clue:repeat']);
+    await again();
+    await tap('neo.scene.game.hintButton');
+    await idle();
+    assert.deepEqual(await st(), { ...once, repeat: true, hints: 2 });
+    assert.equal(await page.evaluate(() => neo.scene.game.lit), 4, 'the repaired show lit all four dots');
+    // Start again during a play cancels it without a late result, keeping the miss and the help.
+    await tap('neo.scene.game.playButton');
+    await page.evaluate(() => neo.scene.game.restart());
+    await page.waitForTimeout(2500);
+    assert.deepEqual(await st(), { ...blank, misses: 1, hints: 2 });
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.busy, neo.scene.game.running, neo.scene.game.s.played]),
+      [false, -1, false],
+    );
+    // Each slot's repair is new; the cap's was already supplied, so it is free.
+    for (let i = 0; i < 3; i++) {
+      await again();
+      await tap('neo.scene.game.hintButton');
+      await idle();
+    }
+    assert.deepEqual(await st(), { ...once, repeat: true, hints: 4 });
+    // Step: four presses over the two slots.
+    const steps = [];
+    for (let i = 0; i < 4; i++) {
+      await again();
+      await tap('neo.scene.game.stepButton');
+      steps.push(await page.evaluate(() => [neo.scene.game.running, neo.scene.game.lit]));
+      await idle();
+    }
+    assert.deepEqual(steps, [
+      [0, 1],
+      [1, 2],
+      [0, 3],
+      [1, 4],
+    ]);
+    assert.equal((await st()).checked, false, 'stepping to the end never checks');
+    for (const viewport of [
+      { width: 1024, height: 768 },
+      { width: 768, height: 1024 },
+      { width: 1366, height: 768 },
+      { width: 1024, height: 1366 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(350);
+      const bad = await page.evaluate(() => {
+        const g = neo.scene.game,
+          v = neo.view;
+        const portrait = v.h > v.w;
+        const ox = Math.max(0, (v.w - 1024) / 2);
+        const oy = Math.max(0, (v.h - (portrait ? 900 : 768)) / 2);
+        const targets = {
+          slot0: g.slots[0],
+          slot1: g.slots[1],
+          repeat: g.cap,
+          wave: g.cards.W,
+          turn: g.cards.T,
+          play: g.playButton,
+          step: g.stepButton,
+          undo: g.undoButton,
+          help: g.hintButton,
+          check: g.finishButton,
+        };
+        const boxes = Object.entries(targets).map(([name, n]) => ({
+          name,
+          target: true,
+          x: n.x - 56,
+          y: n.y - 56,
+          w: 112 * n.scale.x,
+          h: 112 * n.scale.y,
+        }));
+        boxes.push({ name: 'phrase', target: true, x: g.phrase.x - 184, y: g.phrase.y - 56, w: 368, h: 112 });
+        // Scenery that must still stand clear: the ghost copies and the pet.
+        g.ghosts.forEach((n, i) => boxes.push({ name: `ghost${i}`, x: n.x - 48, y: n.y - 48, w: 96, h: 96 }));
+        const m = g.ctx.stage.worldTransform;
+        const pet = g.actor.getBounds();
+        boxes.push({
+          name: 'pet',
+          x: (pet.x - m.tx) / m.a,
+          y: (pet.y - m.ty) / m.d,
+          w: pet.width / m.a,
+          h: pet.height / m.d,
+        });
+        const out = [];
+        for (const a of boxes) {
+          if (a.target && (a.w < 100 || a.h < 100)) out.push(`${a.name} small`);
+          if (a.x < 0 || a.y < 128 || a.x + a.w > v.w || a.y + a.h > v.h)
+            out.push(
+              `${a.name} outside: ${[a.x, a.y, a.w, a.h].map(Math.round)} in ${Math.round(v.w)}x${Math.round(v.h)}`,
+            );
+          // The corner guide's space.
+          if (a.x < ox + 160 && a.y + a.h > oy + (portrait ? 660 : 500)) out.push(`${a.name} on the guide`);
+          for (const b of boxes)
+            if (a !== b && !(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y))
+              out.push(`${a.name} overlaps ${b.name}`);
+        }
+        return out;
+      });
+      assert.deepEqual(bad, [], `P4b targets fit without overlap at ${viewport.width}x${viewport.height}`);
+    }
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(400);
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    assert.deepEqual(await st(), { program: request, repeat: true, misses: 1, hints: 4, checked: true });
+    await screenshot('cue-studio-5-portrait');
+    // Turning Repeat off is an edit: Finish waits for a new Check; Undo needs one too.
+    await tap('neo.scene.game.cap');
+    assert.equal((await st()).checked, false);
+    await tap('neo.scene.game.undoButton');
+    assert.deepEqual(
+      (({ repeat, checked }) => [repeat, checked])(await st()),
+      [true, false],
+      'Undo puts Repeat back without restoring the Check',
+    );
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    await tap('neo.scene.game.finishButton');
+    await finished('cue-studio');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Cue Studio 5: free empty and incomplete controls, the pair played once as one wrong Check, cap clue and repair, cancelled play, idempotent help, four Steps, Repeat as an undoable edit, four-view targets and one helped sticker passed',
+    );
+  }
+
   async function cueStudioPlay() {
     const idle = () => page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
     const state = () =>
@@ -165,7 +340,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const g = neo.scene.game;
         return { program: g.s.program.slice(), played: g.s.played, hints: g.s.hints };
       });
-    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3', '4'], 'CUE_LEVELS').map(Number);
+    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3', '4', '5'], 'CUE_LEVELS').map(Number);
     for (const level of levels.filter((level) => level < 3)) {
       await launch('cue-studio', level);
       await idle();
@@ -233,6 +408,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       );
     }
     if (levels.includes(4)) await signals(idle);
+    if (levels.includes(5)) await repeated(idle);
     if (!levels.includes(3)) return;
     await launch('cue-studio', 3);
     await idle();

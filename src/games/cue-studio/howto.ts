@@ -18,6 +18,16 @@ export const HOW_TO: GameHowTo = {
       text: 'Choose a move for each row. Tap the bell or the flower to try it, in any order; the small card shows what the row did.',
     },
     {
+      from: 5,
+      to: 5,
+      text: 'The top picture shows two moves, then the same two again. Choose the two moves to fill the shelf.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'Tap the loop arrow (Repeat) to play both moves twice; tap it again to play once. Play runs the show; each place has a dot for each time through.',
+    },
+    {
       from: 1,
       to: 3,
       text: 'Play runs the whole show; the arrow-and-bar runs one move. Each place lights as it runs.',
@@ -34,6 +44,11 @@ export const HOW_TO: GameHowTo = {
       to: 4,
       text: 'The bulb outlines the first row that does not match; press again to set it. The orange Play button checks both signals and marks each row with a tick or a cross.',
     },
+    {
+      from: 5,
+      to: 5,
+      text: 'The bulb outlines the place to change, or the loop arrow; press again to set it. The orange Play button checks the show.',
+    },
   ],
   finish: [
     {
@@ -43,7 +58,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 3,
-      to: 4,
+      to: 5,
       text: 'A matching Check turns orange Play into the blue Finish tick. Edits and Undo require another Check.',
     },
   ],
@@ -59,8 +74,13 @@ export const HOW_TO: GameHowTo = {
       text: 'Every complete show is welcome; nothing counts as a miss. Supplied help counts once, even after Undo or Start again.',
     },
     {
+      from: 5,
+      to: 5,
+      text: 'Trying shows with Repeat on or off is free.',
+    },
+    {
       from: 3,
-      to: 4,
+      to: 5,
       text: 'Only a wrong Check counts a miss. Two show a clue. Each clue or supplied repair counts once; Undo and Start again keep misses and help.',
     },
   ],

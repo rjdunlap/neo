@@ -30,12 +30,16 @@ import {
   newStudio,
   planFor,
   playRun,
+  REPEAT,
   requestFor,
   restart,
+  run as executed,
+  shapeOf,
   step,
   stickerRecipe,
   tapAction,
   tapSlot,
+  toggleRepeat,
   trace,
   undo,
   type Cue,
@@ -128,6 +132,65 @@ const SIGNAL_MISS: readonly Record<Cue, LineId>[] = [
   { W: 'cue.signal-miss-flower-wave', T: 'cue.signal-miss-flower-turn' },
 ];
 
+/** Level 5's Repeat: a loop arrow around two dots, so "twice" needs neither colour nor a digit. */
+function loopIcon(color = ink): Graphics {
+  return new Graphics()
+    .arc(0, 0, 26, -Math.PI / 4, Math.PI * 1.4)
+    .stroke({ width: 8, color, cap: 'round' })
+    .poly([5, -29, -11, -35, -4, -14])
+    .fill(color)
+    .circle(-9, 2, 6)
+    .fill(color)
+    .circle(9, 2, 6)
+    .fill(color);
+}
+
+/** Level 5's request, by the phrase's first move: the two moves, then the same two again. */
+const PHRASE: Record<Cue, LineId> = { W: 'cue.phrase-wave-turn', T: 'cue.phrase-turn-wave' };
+/** A wrong Check at level 5, by the slot and the move the picture asks for there. */
+const PHRASE_MISS: readonly Record<Cue, LineId>[] = [
+  { W: 'cue.phrase-miss-first-wave', T: 'cue.phrase-miss-first-turn' },
+  { W: 'cue.phrase-miss-second-wave', T: 'cue.phrase-miss-second-turn' },
+];
+/** Level 5's clue and supplied repair for a slot. */
+const PHRASE_FIX: readonly Record<Cue, LineId>[] = [
+  { W: 'cue.phrase-fix-first-wave', T: 'cue.phrase-fix-first-turn' },
+  { W: 'cue.phrase-fix-second-wave', T: 'cue.phrase-fix-second-turn' },
+];
+const STRIP = { w: 368, h: BOX };
+
+/** Level 5's request strip: one wide target showing the four-move trace as two bracketed pairs. */
+class PhraseStrip extends Container {
+  constructor(phrase: readonly Cue[], onPress: () => void) {
+    super();
+    this.addChild(finishArt({ w: STRIP.w, h: STRIP.h, corner: 24 }, swatch.white, cream));
+    for (const side of [-1, 1]) {
+      this.addChild(
+        new Graphics().roundRect(side * 92 - 80, -44, 160, 88, 20).stroke({ width: 5, color: wood.line }),
+      );
+      phrase.forEach((cue, i) => {
+        const x = side * 92 + (i ? 36 : -36);
+        const tile = finishArt({ w: 64, h: 64, corner: 14 }, swatch[CUE_COLOR[cue]]);
+        tile.position.set(x, 0);
+        const icon = cueIcon(cue);
+        icon.scale.set(icon.scale.x * 0.52);
+        icon.position.set(x, cue === 'W' ? 4 : 0);
+        this.addChild(tile, icon);
+      });
+    }
+    this.hitArea = new Rectangle(-STRIP.w / 2, -STRIP.h / 2, STRIP.w, STRIP.h);
+    onTap(
+      this,
+      () => {
+        squash(this);
+        spring(this, 90);
+        onPress();
+      },
+      { cooldown: 250 },
+    );
+  }
+}
+
 /** Show me: a little lit bulb. */
 function bulbIcon(color = ink): Graphics {
   return new Graphics()
@@ -197,10 +260,18 @@ class CueStudio implements Game {
   /** The signal's picture over the pet while its move runs. */
   private floater: Container | null = null;
   private readonly floatAt: { x: number; y: number };
+  /** Level 5: the Repeat cap at the shelf's right end. */
+  readonly cap: Pad | null = null;
+  /** Level 5: the one request target, the four-move trace as two pairs. */
+  readonly phrase: PhraseStrip | null = null;
+  /** Level 5: faint copies of the slots after the cap, showing what the second pass plays. Scenery, never tappable. */
+  readonly ghosts: Container[] = [];
+  /** Level 5: the bracket around both slots while Repeat is on. */
+  readonly bracket = new Graphics();
   readonly clue = new Graphics();
   readonly requestShelf = new Graphics();
   watchedInitial = false;
-  /** A dot under each slot that lights as its command runs: the trace of the show. */
+  /** A dot under each slot that lights as its command runs: the trace of the show. Level 5 has two, one for each pass. */
   readonly marks: Graphics[] = [];
   /** The arrow over the slot she picked to change. */
   readonly pointer = new Graphics().poly([-18, -14, 18, -14, 0, 8]).fill(ink);
@@ -217,7 +288,7 @@ class CueStudio implements Game {
   changed = false;
   /** The slot running now, for its glow; -1 when nothing runs. */
   running = -1;
-  /** How far the trace has lit, in commands. */
+  /** How far the trace has lit, in executed moves. */
   lit = 0;
   private dead = false;
   private runId = 0;
@@ -227,7 +298,7 @@ class CueStudio implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.s = newStudio(this.plan.slots, requestFor(this.plan, ctx.rng), !!this.plan.signals);
+    this.s = newStudio(this.plan.slots, requestFor(this.plan, ctx.rng), shapeOf(this.plan));
     this.backdrop = ctx.track(
       new Backdrop(
         {
@@ -277,7 +348,16 @@ class CueStudio implements Game {
         chip.eventMode = 'none';
         this.chips.push(chip);
       });
-    else if (this.s.request)
+    else if (this.s.repeats) {
+      const phrase = this.s.request!;
+      this.phrase = new PhraseStrip(phrase, () => this.say(PHRASE[phrase[0]]));
+      this.cap = new Pad(swatch.white, loopIcon(), () => this.toggle(), cream);
+      for (let i = 0; i < this.plan.slots; i++) {
+        const ghost = new Container();
+        ghost.eventMode = 'none';
+        this.ghosts.push(ghost);
+      }
+    } else if (this.s.request)
       for (const cue of this.s.request) {
         this.requests.push(
           new Pad(swatch[CUE_COLOR[cue]], cueIcon(cue), () =>
@@ -286,6 +366,7 @@ class CueStudio implements Game {
         );
       }
     this.clue.eventMode = 'none';
+    this.bracket.eventMode = 'none';
     this.requestShelf.eventMode = 'none';
     this.playButton = new Pad(swatch.green, playIcon(), () => void this.play());
     this.stepButton = new Pad(swatch.teal, nextIcon(0xffffff), () => void this.stepOnce());
@@ -307,11 +388,15 @@ class CueStudio implements Game {
       this.actor,
       this.requestShelf,
       ...this.requests,
+      ...(this.phrase ? [this.phrase] : []),
       this.shelf,
       this.cards.W,
       this.cards.T,
       ...this.signals,
       ...this.slots,
+      ...(this.cap ? [this.cap] : []),
+      this.bracket,
+      ...this.ghosts,
       ...this.chips,
       ...this.marks,
       this.clue,
@@ -334,11 +419,13 @@ class CueStudio implements Game {
     await this.ctx.instruct(
       this.s.rows
         ? 'cue.signals'
-        : this.s.request
-          ? 'cue.repair'
-          : this.plan.slots === 1
-            ? 'cue.one'
-            : 'cue.two',
+        : this.s.repeats
+          ? 'cue.repeat-goal'
+          : this.s.request
+            ? 'cue.repair'
+            : this.plan.slots === 1
+              ? 'cue.one'
+              : 'cue.two',
     );
     if (this.dead || run !== this.runId) return;
     this.busy = false;
@@ -375,6 +462,15 @@ class CueStudio implements Game {
       );
     }
     if (this.s.rows) return this.layRows(at, portrait);
+    if (this.cap && this.phrase) {
+      // Level 5 (the P4 definition's rectangles): the cap ends the shelf and the ghosts stand after it, so the pet moves
+      // right, clear of the cap; it stands above that row.
+      const y = this.slots[0].y;
+      this.cap.position.set(ox + 640 + BOX / 2, y);
+      this.ghosts.forEach((ghost, i) => ghost.position.set(ox + 820 + i * 108, y));
+      this.phrase.position.set(ox + 384 + STRIP.w / 2, oy + (portrait ? 144 : 132) + BOX / 2);
+      this.actor.x = ox + 880;
+    }
     this.requests.forEach((pad, i) => at(pad, 384 + i * 128, portrait ? 144 : 136));
     this.requestShelf.clear();
     if (this.requests.length) {
@@ -385,7 +481,7 @@ class CueStudio implements Game {
         .stroke({ width: 5, color: wood.line });
     }
     this.slots.forEach((slot, i) => this.marks[i].position.set(slot.x, slot.y + BOX / 2 + 16));
-    const [first, last] = [this.slots[0], this.slots[this.slots.length - 1]];
+    const [first, last] = [this.slots[0], this.cap ?? this.slots[this.slots.length - 1]];
     const [x0, x1, y0] = [first.x - BOX / 2 - 18, last.x + BOX / 2 + 18, first.y - BOX / 2 - 18];
     this.shelf
       .clear()
@@ -437,16 +533,22 @@ class CueStudio implements Game {
         cue ? undefined : cream,
       );
       pad.setIcon(cue ? cueIcon(cue) : null);
-      const on = i < this.lit;
       this.marks[i].clear();
       // Actual trace retains the command picture below its editor slot, to compare with the request above.
       for (const child of this.marks[i].removeChildren()) child.destroy();
-      if (on && cue) {
-        const icon = cueIcon(cue, ink);
-        icon.scale.set(0.32);
-        this.marks[i].addChild(icon);
-      } else this.marks[i].circle(0, 0, 10).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
+      // Level 5: a dot for each pass, so a show that played once leaves its second dots unlit.
+      const passes = this.s.repeats ? 2 : 1;
+      for (let pass = 0; pass < passes; pass++) {
+        const x = passes === 1 ? 0 : pass ? 22 : -22;
+        if (pass * this.slots.length + i < this.lit && cue) {
+          const icon = cueIcon(cue, ink);
+          icon.scale.set(0.32);
+          icon.x = x;
+          this.marks[i].addChild(icon);
+        } else this.marks[i].circle(x, 0, 10).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
+      }
     });
+    this.drawRepeat();
     // The picked slot: a dark outline and an arrow over it, so it never depends on colour.
     const sel = selected !== null ? this.slots[selected] : null;
     this.pointer.visible = !!sel;
@@ -489,19 +591,53 @@ class CueStudio implements Game {
     this.clue.clear();
     const wrong = mismatch(this.s);
     if (wrong >= 0 && this.s.helped.size) {
-      const slot = this.slots[wrong];
+      // The place to change (a slot, or level 5's cap) and the picture that asks for it.
+      const slot = wrong === REPEAT && this.cap ? this.cap : this.slots[wrong];
       this.clue
         .roundRect(slot.x - 62, slot.y - 62, 124, 124, 26)
         .stroke({ width: 7, color: swatch.yellow.line });
-      const request = this.requests[wrong];
+      const request = this.phrase ?? this.requests[wrong];
+      const half = this.phrase ? STRIP.w / 2 + 6 : 62;
       this.clue
-        .roundRect(request.x - 62, request.y - 62, 124, 124, 26)
+        .roundRect(request.x - half, request.y - 62, half * 2, 124, 26)
         .stroke({ width: 7, color: swatch.yellow.line });
     }
     this.finishButton.setIcon(this.s.request && !this.s.checked ? playIcon() : checkIcon());
     this.finishButton.paint(this.s.request && !this.s.checked ? swatch.orange : swatch.blue);
     this.undoButton.alpha = this.s.undo ? 1 : 0.5;
     this.finishButton.alpha = this.s.request || canFinish(this.s) ? 1 : 0.45;
+  }
+
+  /** Level 5: the cap's face, the bracket around the body and the ghost copies of the second pass. */
+  private drawRepeat() {
+    if (!this.cap) return;
+    const on = this.s.repeat;
+    this.cap.paint(on ? swatch.pink : swatch.white, on ? undefined : cream);
+    this.cap.setIcon(loopIcon(on ? 0xffffff : ink));
+    this.bracket.clear();
+    const [first, last] = [this.slots[0], this.slots[this.slots.length - 1]];
+    if (on)
+      this.bracket
+        .roundRect(first.x - 64, first.y - 64, last.x - first.x + 128, 128, 28)
+        .stroke({ width: 6, color: ink });
+    this.ghosts.forEach((ghost, i) => {
+      for (const child of ghost.removeChildren()) child.destroy();
+      ghost.visible = on;
+      if (!on) return;
+      const cue = this.s.program[i];
+      // The second pass is acting this copy now.
+      ghost.alpha = this.running === i && this.lit > this.slots.length ? 1 : 0.5;
+      ghost.addChild(
+        new Graphics()
+          .roundRect(-48, -48, 96, 96, 20)
+          .fill(cream)
+          .stroke({ width: 5, color: cue ? swatch[CUE_COLOR[cue]].line : wood.line }),
+      );
+      if (!cue) return;
+      const icon = cueIcon(cue, swatch[CUE_COLOR[cue]].line);
+      icon.scale.set(icon.scale.x * 0.8);
+      ghost.addChild(icon);
+    });
   }
 
   private nudge(node: Container) {
@@ -565,6 +701,28 @@ class CueStudio implements Game {
     this.draw();
   }
 
+  /** Level 5's Repeat cap: on or off is an edit like any other, so it can be undone and needs a new Check. */
+  toggle() {
+    if (!this.cap) return;
+    if (this.busy || this.finished) return this.nudge(this.cap);
+    const on = toggleRepeat(this.s);
+    sfx.pop(on ? 11 : 6);
+    this.say(on ? 'cue.repeat' : 'cue.repeat-off');
+    this.lit = 0;
+    this.draw();
+  }
+
+  /** The executed moves, one by one: each acts on its own slot, twice over on a repeated show. Resolves false if cancelled. */
+  private async performAll(cues: readonly Cue[]): Promise<boolean> {
+    const run = this.runId;
+    const body = trace(this.s.program).length;
+    for (let n = 0; n < cues.length; n++) {
+      await this.perform(n % body, cues[n], n);
+      if (this.dead || run !== this.runId) return false;
+    }
+    return true;
+  }
+
   /** An empty shelf, or a hole where a move belongs: show the first empty slot. */
   private showEmpty() {
     const at = firstEmpty(this.s.program);
@@ -575,7 +733,6 @@ class CueStudio implements Game {
 
   /** Play: the whole show from the start, each command in turn. */
   async play() {
-    const run = this.runId;
     if (this.busy || this.finished) return this.nudge(this.playButton);
     const cues = playRun(this.s);
     if (!cues.length) return this.showEmpty();
@@ -583,10 +740,7 @@ class CueStudio implements Game {
     this.busy = true;
     this.lit = 0;
     this.draw();
-    for (let i = 0; i < cues.length; i++) {
-      await this.perform(i, cues[i]);
-      if (this.dead || run !== this.runId) return;
-    }
+    if (!(await this.performAll(cues))) return;
     const wasReady = this.s.played;
     finishRun(this.s);
     this.busy = false;
@@ -694,7 +848,6 @@ class CueStudio implements Game {
 
   /** A deliberate Check plays every command, then compares its trace with the pictured request. */
   async check() {
-    const run = this.runId;
     if (this.s.rows && !this.busy && !this.finished) return this.checkSignals();
     if (this.busy || this.finished) return this.nudge(this.finishButton);
     if (!isComplete(this.s.program)) return this.showEmpty();
@@ -702,11 +855,7 @@ class CueStudio implements Game {
     this.s.selected = null;
     this.lit = 0;
     this.say('cue.check');
-    const cues = playRun(this.s);
-    for (let i = 0; i < cues.length; i++) {
-      await this.perform(i, cues[i]);
-      if (this.dead || run !== this.runId) return;
-    }
+    if (!(await this.performAll(playRun(this.s)))) return;
     finishRun(this.s);
     const at = checkRun(this.s);
     this.watchedInitial = true;
@@ -716,10 +865,16 @@ class CueStudio implements Game {
     if (at < 0) {
       sfx.pop(12);
       this.say('cue.success');
+    } else if (at === REPEAT && this.cap) {
+      // The right two moves, played once: the picture's second pair never came.
+      sfx.boing();
+      this.pulse(this.cap);
+      this.say('cue.once');
     } else {
       sfx.boing();
       this.pulse(this.slots[at]);
-      this.say(at === 0 ? 'cue.mismatch-first' : 'cue.mismatch-second');
+      if (this.s.repeats) this.say(PHRASE_MISS[at][this.s.request![at]]);
+      else this.say(at === 0 ? 'cue.mismatch-first' : 'cue.mismatch-second');
     }
   }
 
@@ -732,23 +887,23 @@ class CueStudio implements Game {
     if (!next) return this.showEmpty();
     this.s.selected = null;
     this.busy = true;
-    if (next.at === 0) this.lit = 0;
+    if (next.n === 0) this.lit = 0;
     this.draw();
     this.say(next.cue === 'W' ? 'cue.wave' : 'cue.turn');
-    await this.perform(next.at, next.cue);
+    await this.perform(next.at, next.cue, next.n);
     if (this.dead || run !== this.runId) return;
     this.busy = false;
     this.draw();
-    if (next.at === trace(this.s.program).length - 1 && !isComplete(this.s.program)) this.showEmpty();
+    if (next.n === executed(this.s).length - 1 && !isComplete(this.s.program)) this.showEmpty();
     else if (!wasReady && this.s.played && !this.s.request) this.say('cue.ready');
   }
 
-  /** The companion acts one command; its slot glows and its trace dot lights. */
-  private async perform(at: number, cue: Cue) {
+  /** The companion acts one command; its slot glows and its trace dot lights (`n` is the executed move, for a repeat). */
+  private async perform(at: number, cue: Cue, n = at) {
     const run = this.runId;
     const tw = this.ctx.tw;
     this.running = at;
-    this.lit = at + 1;
+    this.lit = n + 1;
     this.draw();
     this.star.setMood('happy', 2);
     if (cue === 'W') {
@@ -778,17 +933,27 @@ class CueStudio implements Game {
     const result = help(this.s);
     if (result.kind === 'clue' || result.kind === 'repair') {
       this.draw();
-      this.pulse(this.slots[result.at]);
-      this.pulse(this.requests[result.at]);
-      if (this.s.rows) this.say(WHEN[result.at][result.cue]);
-      else this.say(result.at === 0 ? 'cue.fix-first' : 'cue.fix-second');
+      const { at, cue } = result;
+      this.pulse(this.phrase ?? this.requests[at]);
+      if (!cue) {
+        // Level 5's cap: the clue points at it; the repair has turned it on and plays the show twice through.
+        if (this.cap) this.pulse(this.cap);
+        this.say(result.kind === 'clue' ? 'cue.help-repeat' : 'cue.repeat');
+        this.lit = 0;
+        if (result.kind === 'repair') await this.play();
+        return;
+      }
+      this.pulse(this.slots[at]);
+      if (this.s.rows) this.say(WHEN[at][cue]);
+      else if (this.s.repeats) this.say(PHRASE_FIX[at][cue]);
+      else this.say(at === 0 ? 'cue.fix-first' : 'cue.fix-second');
       if (result.kind === 'repair') {
         this.lit = 0;
         this.unmark();
         this.busy = true;
         // The supplied repair is demonstrated: at level 4 by its own signal.
-        if (this.s.rows) await this.runRow(result.at, result.cue);
-        else await this.perform(result.at, result.cue);
+        if (this.s.rows) await this.runRow(at, cue);
+        else await this.perform(at, cue);
         if (this.dead || run !== this.runId) return;
         this.lit = 0;
         this.busy = false;
@@ -867,11 +1032,12 @@ class CueStudio implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const press =
-      this.s.request && this.watchedInitial && mismatch(this.s) >= 0
+      this.s.request && !this.s.repeats && this.watchedInitial && mismatch(this.s) >= 0
         ? this.s.selected === mismatch(this.s)
           ? { action: this.s.request[mismatch(this.s)] }
           : { slot: mismatch(this.s) }
         : demoNext(this.s, this.changed, this.fired);
+    if (press === 'repeat') return this.cap ? { tap: { on: this.cap } } : null;
     if (press === 'play') return { tap: { on: this.playButton } };
     if (press === 'check') return { tap: { on: this.finishButton } };
     if (press === 'finish') return { tap: { on: this.finishButton } };

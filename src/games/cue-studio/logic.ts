@@ -5,7 +5,9 @@ import type { BandLevels } from '../../progress/difficulty';
  * full show is a good show, nothing counts as a miss, and Finish waits for one complete run of the show as it stands.
  * Level 3 repairs a pictured request; only a deliberate failed Check counts a miss. Level 4 (docs/definitions/cue-studio-p4.md)
  * turns the two slots into two signal rows, a bell and a flower: each signal starts its own row's action, she fires either
- * one freely, and Check accepts each row by its own signal, never by the order they fire in. Programs are transient.
+ * one freely, and Check accepts each row by its own signal, never by the order they fire in. Level 5 adds one bounded
+ * Repeat to the two-slot shelf: on, the body (both slots) plays exactly twice, and Check accepts the played trace against a
+ * four-move request. Programs are transient.
  */
 
 export type Cue = 'W' | 'T';
@@ -20,6 +22,8 @@ export interface CuePlan {
   request?: readonly Cue[];
   /** Level 4: each slot is a signal's row, the shelf starts empty, and the seed picks one of these requests. */
   signals?: readonly (readonly Cue[])[];
+  /** Level 5: the shelf has a Repeat cap and starts empty, and the seed picks one of these two-move phrases, asked for twice. */
+  phrases?: readonly (readonly Cue[])[];
 }
 
 /** The level-4 signals, in row order. */
@@ -44,23 +48,40 @@ export const PLANS: readonly CuePlan[] = [
       ['T', 'W'],
     ],
   },
+  {
+    level: 5,
+    slots: 2,
+    name: 'A repeated phrase: play a two-move phrase twice with Repeat',
+    phrases: [
+      ['W', 'T'],
+      ['T', 'W'],
+    ],
+  },
 ];
 
 // The 2026-10-23 decision separates pre-K creation from school requested repair. The P4 definition's lean (standing rule
 // S8) grows school one rung per build with the ordinary step rule; entry stays 3.
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 3, max: 4 },
+  school: { min: 3, max: 5 },
 };
 
 export const planFor = (level: number): CuePlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 
-/** The round's request: level 3's authored order, or level 4's seeded binding (bell's action, then the flower's). */
+/** What kind of show a plan is: a plain shelf, level 4's signal rows, or level 5's shelf with a Repeat cap. */
+export type Shape = 'show' | 'rows' | 'repeat';
+export const shapeOf = (plan: CuePlan): Shape => (plan.signals ? 'rows' : plan.phrases ? 'repeat' : 'show');
+
+/**
+ * The round's request: level 3's authored order, level 4's seeded binding (bell's action, then the flower's), or level 5's
+ * seeded phrase (the body; the picture asks for it twice).
+ */
 export function requestFor(
   plan: CuePlan,
   rng: { int(min: number, max: number): number },
 ): readonly Cue[] | undefined {
-  return plan.signals ? plan.signals[rng.int(0, plan.signals.length - 1)] : plan.request;
+  const cases = plan.signals ?? plan.phrases;
+  return cases ? cases[rng.int(0, cases.length - 1)] : plan.request;
 }
 
 export interface Studio {
@@ -68,6 +89,10 @@ export interface Studio {
   readonly request: readonly Cue[] | null;
   /** Level 4: slot i is signal i's row, and the shelf starts empty instead of swapped. */
   readonly rows: boolean;
+  /** Level 5: the shelf has a Repeat cap, starts empty, and the request is the body played twice. */
+  readonly repeats: boolean;
+  /** Level 5: the Repeat cap is on, so the body (both slots) plays exactly twice. */
+  repeat: boolean;
   checked: boolean;
   misses: number;
   program: Slot[];
@@ -75,6 +100,8 @@ export interface Studio {
   selected: number | null;
   /** The program before the last edit; one step back only. */
   undo: Slot[] | null;
+  /** Whether Repeat was on before the last edit; Undo puts it back with the program. */
+  undoRepeat: boolean;
   /** A complete run of the current program has played (by Play or by stepping to the end). Every edit clears it. */
   played: boolean;
   /** The next command Step performs; 0 starts again at the neutral pose. */
@@ -84,20 +111,25 @@ export interface Studio {
   hints: number;
 }
 
-/** The authored start: a requested repair starts swapped; creation and the signal rows start empty. */
-const startProgram = (slots: number, request: readonly Cue[] | null, rows: boolean): Slot[] =>
-  request && !rows ? [...request].reverse() : Array<Slot>(slots).fill(null);
+/** The authored start: a requested repair starts swapped; creation, the signal rows and the repeat shelf start empty. */
+const startProgram = (slots: number, request: readonly Cue[] | null, empty: boolean): Slot[] =>
+  request && !empty ? [...request].reverse() : Array<Slot>(slots).fill(null);
 
-export function newStudio(slots: number, request?: readonly Cue[], rows = false): Studio {
+export function newStudio(slots: number, request?: readonly Cue[], shape: Shape = 'show'): Studio {
+  // Rows and Repeat need a request; a creation studio never becomes one.
+  const kind = request ? shape : 'show';
   return {
     slots,
     request: request ?? null,
-    rows: rows && !!request,
+    rows: kind === 'rows',
+    repeats: kind === 'repeat',
+    repeat: false,
     checked: false,
     misses: 0,
-    program: startProgram(slots, request ?? null, rows && !!request),
+    program: startProgram(slots, request ?? null, kind !== 'show'),
     selected: null,
     undo: null,
+    undoRepeat: false,
     played: false,
     stepAt: 0,
     helped: new Set(),
@@ -127,16 +159,35 @@ export const fire = (s: Studio, row: number): Cue | null => (s.rows ? (s.program
 export const checkRows = (s: Studio): boolean[] =>
   s.request ? s.request.map((cue, i) => s.program[i] === cue) : [];
 
-/** What a clue or repair is about: a signal's row at level 4, a slot otherwise. Survives Undo and Start again. */
-export const targetOf = (s: Studio, at: number) => (s.rows ? `row:${SIGNALS[at]}` : `slot:${at}`);
+/** Level 5's mismatch when both slots are right but Repeat is off: the place after the slots, where the cap stands. */
+export const REPEAT = 2;
+
+/** What a clue or repair is about: a signal's row at level 4, the Repeat cap, or a slot. Survives Undo and Start again. */
+export const targetOf = (s: Studio, at: number) =>
+  s.rows ? `row:${SIGNALS[at]}` : s.repeats && at === REPEAT ? 'repeat' : `slot:${at}`;
+
+/**
+ * The executed trace: the filled slots left to right, and at level 5 with Repeat on the complete body exactly twice. A
+ * body with an empty slot is incomplete, so it plays its filled part once.
+ */
+export const run = (s: Studio): Cue[] => {
+  const body = trace(s.program);
+  return s.repeat && isComplete(s.program) ? [...body, ...body] : body;
+};
+
+/** The trace the picture asks for: the request, twice over at level 5. */
+export const wanted = (s: Studio): readonly Cue[] =>
+  s.request ? (s.repeats ? [...s.request, ...s.request] : s.request) : [];
 
 /** What tapping an action card did. */
 export type ActionResult = 'insert' | 'replace' | 'same' | 'full';
 
-/** A real edit: keep the old program for Undo and forget any finished run. */
-function edit(s: Studio, next: Slot[]) {
+/** A real edit: keep the old program (and Repeat) for Undo and forget any finished run. */
+function edit(s: Studio, next: Slot[], repeat = s.repeat) {
   s.undo = s.program.slice();
+  s.undoRepeat = s.repeat;
   s.program = next;
+  s.repeat = repeat;
   s.checked = false;
   s.played = false;
   s.stepAt = 0;
@@ -175,11 +226,20 @@ export function tapSlot(s: Studio, at: number): 'selected' | 'released' {
   return 'selected';
 }
 
+/** The Repeat cap (level 5 only): turning it on or off is an edit like any other. Returns whether it is now on. */
+export function toggleRepeat(s: Studio): boolean {
+  if (!s.repeats) return false;
+  s.selected = null;
+  edit(s, s.program.slice(), !s.repeat);
+  return s.repeat;
+}
+
 /** Puts back the program before the last edit. Undo after Undo, or with nothing to undo, does nothing. */
 export function undo(s: Studio): boolean {
   s.selected = null;
   if (!s.undo) return false;
   s.program = s.undo;
+  s.repeat = s.undoRepeat;
   s.undo = null;
   s.checked = false;
   s.played = false;
@@ -190,24 +250,27 @@ export function undo(s: Studio): boolean {
 /** Play runs the whole current program from neutral; a complete program counts as watched, a part-filled one does not. */
 export function playRun(s: Studio): Cue[] {
   s.stepAt = 0;
-  return trace(s.program);
+  return run(s);
 }
 
 export function finishRun(s: Studio) {
   if (isComplete(s.program)) s.played = true;
 }
 
-/** Step: the next single command (from the start after an edit or a finished trace), or null on an empty shelf. */
-export function step(s: Studio): { at: number; cue: Cue } | null {
-  const t = trace(s.program);
+/**
+ * Step: the next single executed move (from the start after an edit or a finished trace), or null on an empty shelf. `n`
+ * counts executed moves and `at` is the slot acting, so a repeated show takes four presses over its two slots.
+ */
+export function step(s: Studio): { at: number; cue: Cue; n: number } | null {
+  const t = run(s);
   if (!t.length) return null;
   if (s.stepAt >= t.length) s.stepAt = 0;
-  const at = s.stepAt++;
+  const n = s.stepAt++;
   if (s.stepAt >= t.length) {
     finishRun(s);
     s.stepAt = t.length;
   }
-  return { at, cue: t[at] };
+  return { at: n % trace(s.program).length, cue: t[n], n };
 }
 
 /** Creation needs a complete run; a requested show needs a successful Check of the current program. */
@@ -216,15 +279,23 @@ export const canFinish = (s: Studio) => isComplete(s.program) && (s.request ? s.
 /** Help offers a creative move, or a clue/repair for the requested trace. */
 export type HelpResult =
   | { kind: 'insert'; at: number }
-  | { kind: 'clue' | 'repair'; at: number; cue: Cue }
+  /** `cue` is the move the slot or row should hold; null when the target is the Repeat cap. */
+  | { kind: 'clue' | 'repair'; at: number; cue: Cue | null }
   | { kind: 'check' }
   | { kind: 'play' }
   | { kind: 'finish' };
 
 const hasClue = (s: Studio) => [...s.helped].some((id) => id.startsWith('clue:'));
 
-export const mismatch = (s: Studio) =>
-  s.request ? s.program.findIndex((cue, i) => cue !== s.request![i]) : -1;
+/**
+ * The earliest difference from the request: a slot (or row) index, `REPEAT` when level 5's body is right but would play
+ * only once, or -1 when the show matches.
+ */
+export function mismatch(s: Studio): number {
+  if (!s.request) return -1;
+  const at = s.program.findIndex((cue, i) => cue !== s.request![i]);
+  return at < 0 && s.repeats && !s.repeat ? REPEAT : at;
+}
 
 /** Only a completed deliberate Check counts a miss; ordinary playback never does. */
 export function checkRun(s: Studio): number | null {
@@ -247,14 +318,15 @@ export function help(s: Studio): HelpResult {
   if (s.request) {
     const at = mismatch(s);
     if (at < 0) return { kind: s.checked ? 'finish' : 'check' };
-    const cue = s.request[at];
+    const cue = s.request[at] ?? null;
     if (!hasClue(s)) {
       charge(s, `clue:${targetOf(s, at)}`);
       return { kind: 'clue', at, cue };
     }
     const next = s.program.slice();
-    next[at] = cue;
-    edit(s, next);
+    if (cue) next[at] = cue;
+    // The Repeat target's repair turns the cap on.
+    edit(s, next, cue ? s.repeat : true);
     charge(s, `repair:${targetOf(s, at)}`);
     return { kind: 'repair', at, cue };
   }
@@ -281,7 +353,8 @@ function charge(s: Studio, id: string) {
 
 /** Restore the authored start, keeping misses and the help already supplied. */
 export function restart(s: Studio) {
-  s.program = startProgram(s.slots, s.request, s.rows);
+  s.program = startProgram(s.slots, s.request, s.rows || s.repeats);
+  s.repeat = false;
   s.selected = null;
   s.undo = null;
   s.checked = false;
@@ -293,10 +366,20 @@ export function restart(s: Studio) {
  * The ghost finger's next press for the how-to card, from the state alone. Level 1: Wave, Play, Finish. Level 2: Wave,
  * Turn, Play, then select the first slot, change it to Turn, Play the new show and Finish (a show that repeats an action is
  * a good show too). `changed` says whether the demonstration has made its change yet. Level 4: the requested move into
- * each row, fire the flower, fire the bell, Check, Finish; `fired` says which signals the demonstration has tried.
+ * each row, fire the flower, fire the bell, Check, Finish; `fired` says which signals the demonstration has tried. Level 5:
+ * the phrase's two moves, Repeat, Play, Check, Finish.
  */
-export type DemoPress = { action: Cue } | { slot: number } | { fire: number } | 'play' | 'check' | 'finish';
+export type DemoPress =
+  { action: Cue } | { slot: number } | { fire: number } | 'repeat' | 'play' | 'check' | 'finish';
 export function demoNext(s: Studio, changed: boolean, fired: readonly boolean[] = []): DemoPress {
+  if (s.request && s.repeats) {
+    const at = mismatch(s);
+    if (at === REPEAT) return 'repeat';
+    if (at >= 0)
+      return s.program[at] === null || s.selected === at ? { action: s.request[at] } : { slot: at };
+    if (s.checked) return 'finish';
+    return s.played ? 'check' : 'play';
+  }
   if (s.request && s.rows) {
     const at = mismatch(s);
     if (at >= 0)
