@@ -1,6 +1,6 @@
-# Helper House, levels 1–7 (definition)
+# Helper House, levels 1–9 (definition)
 
-Defined 2026-10-23 as slice RA1 of the [robots-and-automation study](../deep-dives/subjects/robots-automation.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations)), [PR #872](https://github.com/rjdunlap/neo/pull/872). **Levels 1–3 were built 2026-10-27 ([PR #1011](https://github.com/rjdunlap/neo/pull/1011)); level 4 (RA3) was built 2026-11-05 ([PR #1289](https://github.com/rjdunlap/neo/pull/1289)); level 5 was built 2026-11-06 ([PR #1305](https://github.com/rjdunlap/neo/pull/1305)); levels 6–7 built 2026-11-06 (PR #1311); the science-educator read of the warmth wording stays open ([DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#helper-house-level-4)).** Every open call in [Open decisions](#open-decisions) has a default the build can use; the five [Waiting](../WAITING-ON-DEVELOPER.md) calls (identity, accounting, toddler entry, older reach, rework tie-in) are answered here by recommended defaults the developer can overturn. The study's science-educator read of the warmth and light wording is a content gate on the spoken lines and card, not on the rules. RA2 builds levels 1–3; RA3 appends level 4. **Level 5 was built 2026-11-06 ([PR #1305](https://github.com/rjdunlap/neo/pull/1305)); levels 6–7 are still to build.** **Levels 5–7 (RA4: where the sensor looks, the comfy line, the calm heater) were defined 2026-11-06 in [Levels 5–7](#levels-57-ra4); level 5 builds first, then 6–7 together.** Levels 8–9 (Cases) stay in the study (RA5) and are not defined here.
+Defined 2026-10-23 as slice RA1 of the [robots-and-automation study](../deep-dives/subjects/robots-automation.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations)), [PR #872](https://github.com/rjdunlap/neo/pull/872). **Levels 1–3 were built 2026-10-27 ([PR #1011](https://github.com/rjdunlap/neo/pull/1011)); level 4 (RA3) was built 2026-11-05 ([PR #1289](https://github.com/rjdunlap/neo/pull/1289)); level 5 was built 2026-11-06 ([PR #1305](https://github.com/rjdunlap/neo/pull/1305)); levels 6–7 built 2026-11-06 (PR #1311); the science-educator read of the warmth wording stays open ([DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#helper-house-level-4)).** Every open call in [Open decisions](#open-decisions) has a default the build can use; the five [Waiting](../WAITING-ON-DEVELOPER.md) calls (identity, accounting, toddler entry, older reach, rework tie-in) are answered here by recommended defaults the developer can overturn. The study's science-educator read of the warmth and light wording is a content gate on the spoken lines and card, not on the rules. RA2 builds levels 1–3; RA3 appends level 4. **Level 5 was built 2026-11-06 ([PR #1305](https://github.com/rjdunlap/neo/pull/1305)); levels 6–7 are still to build.** **Levels 5–7 (RA4: where the sensor looks, the comfy line, the calm heater) were defined 2026-11-06 in [Levels 5–7](#levels-57-ra4); level 5 builds first, then 6–7 together.** **Levels 8–9 (RA5: the greenhouse, where a heater and a vent fan share one gauge, then one setup for three kinds of day) were defined 2026-11-16 in [Levels 8–9](#levels-89-cases-ra5); neither is built.**
 
 **Fun action and purpose:** put a helper's sensor in the right place, pick the rule card, tap Watch, and see the house run a whole day by itself while a friend reacts. She does not open the door or switch the lamp; she makes the helper able to do it by itself, and she sees every check as a pulse from sensor to card to helper. Learning goal: a sensor reads the world, a rule card turns a reading into an action, and the helper keeps checking, so what it did a moment ago can still matter now (a lamp that came on stays on until a rule says otherwise). Not choosing a sensor for one critter ([Sorting Machine](sorting-machine.md): no time, no carried state), not a command sequence ([Robot Path](../GAMES.md#robot-path), [Cue Studio](cue-studio.md)), not current in a wire ([Circuit Garden](circuit-garden.md)).
 
@@ -144,6 +144,102 @@ Every other level 7 board leaves the band: an on line at gap 1 or 2 lets the noo
 
 Two builds, in order. **Level 5** is new levels on an existing interaction: typecheck, its rule tests, one browser play of level 5 through the `helperhouse` filter, and `fingerdemo` at 5. **Levels 6–7** are a new interaction (line handles on a gauge, the click jar, the guess): typecheck, unit tests, one scripted play of levels 6 and 7 (one failing day twice so the line glows, one Show me), one portrait screenshot of level 7, `fingerdemo` at 7, and `npm run build` because voice and how-to change. Device checks to add at build: whether the flicker reads as the lamp's own fault on an iPad, and whether a six-year-old reads the jar as "fewer clicks" rather than a score.
 
+## Levels 8–9, Cases (RA5)
+
+Defined 2026-11-16 from the study's [ladder](../deep-dives/subjects/robots-automation.md#proposed-levels-and-bands) row "Helper House Cases". The step order is unchanged (world → read → rules → act; a later matching row wins; a helper with no matching row keeps its state). These levels add a second helper on the same gauge (a vent fan), weather that warms and cools the room by itself, and, at level 9, a goal that one setup must meet on three different days. Every number below was computed by running the model over all 36 boards on each frozen case, and is what the rule tests assert. Both levels are `school` only ([decision 4](#open-decisions)).
+
+**What is new to learn.** Two helpers that each follow a sensible rule can still work against each other (level 8), and a setup that was only ever watched on one kind of day can fail on another (level 9). Level 7 was one helper resting between two lines; here the rest is the space between two helpers.
+
+| Level | Name (`describeLevel`) | Board | Goal (`meetsGoal`) | Rounds |
+| --- | --- | --- | --- | --- |
+| 8 | The greenhouse | A glass house with seedlings, the warmth gauge, a **heater** and a **vent fan**; one line each on the gauge, starting **crossed** (heater line at gap 4, fan line at gap 3); the click jar, counting only | On the round's case: warmth is 2–4 after every step from step 2 **and** no step has both helpers on | 3 cases, one per round by seed |
+| 9 | Greenhouse cases | The same board, starting at heater line 4, fan line 4, under three **case cards** (ordinary day, heat wave, cold snap) | The level 8 goal on **all three cases with one setup** | 3 rounds of the same three cases (friend and house colour only) |
+
+### The greenhouse model
+
+**Sensor and helpers.**
+
+| Piece | Kind | What it does each step |
+| --- | --- | --- |
+| Warmth gauge | Sensor (placed and fixed) | Reads the warmth the act phase left last step, 0–6, as at levels 6–7 |
+| Heater | Helper | Adds 1 warmth while on |
+| Vent fan | Helper | Takes 1 warmth away while on |
+| Sky | Weather, not a sensor | Shows the step's sun level; no rule reads it |
+
+**Weather.** The sun acts on the glass house directly, which the nook's model did not do: in the act phase warmth changes by the step's **drift** (`bright` +1, `dim` 0, `dark` −1), plus 1 if the heater is on, minus 1 if the fan is on, then clamps to 0–6. Nothing falls toward an outside value at these levels; levels 4–7 keep their own rule. A helper can therefore hold the room against the weather (heater on a dark step: no change) and can overshoot with it (heater on a bright step: +2).
+
+**Rows as lines.** The heater line at gap *H* gives the rows "below the line → heater on" (warmth ≤ *H*−1) and "above the line → heater off" (warmth ≥ *H*). The fan line at gap *F* gives "above the line → fan on" (warmth ≥ *F*) and "below the line → fan off" (warmth ≤ *F*−1). Every warmth matches one row of each helper, so neither keeps a state. Both helpers are on exactly when *F* ≤ warmth ≤ *H*−1, which can only happen when the lines are **crossed** (*F* < *H*). The two handles move freely past each other, unlike level 7's: a crossed board is legal and is what the level starts on.
+
+**Frozen cases** (`CASES`, a new table beside `SUN_SCRIPTS`, whose shape test does not apply to it). Every case starts at warmth 3 (`GREENHOUSE_START`).
+
+| Case | Sun, steps 0–11 | Picture on its card |
+| --- | --- | --- |
+| `ordinary` | `SUN_SCRIPTS[0]`: dim, bright × 5, dim, dark × 3, dim, bright | A sun and a moon |
+| `heat-wave` | bright × 7, dim × 4, bright | A big sun with wavy lines |
+| `cold-snap` | dim, dim, bright, dim, dark × 7, dim | A moon with a snowflake |
+
+**Board space:** 36 boards (*H* and *F* each 1–6) at both levels.
+
+**Judging.** Band first, as at levels 6–7: the first step from step 2 on whose warmth is outside 2–4 names **`plants-cold`** or **`plants-hot`**. If the band holds, any step with both helpers on names **`helpers-fight`**. (On these cases no board leaves the band at steps 0–1 and returns, so "from step 2" changes no verdict; it is kept so the comfy rule is one constant.) Level 9 runs the cases in the order ordinary, heat wave, cold snap and reports the first failing case's failure.
+
+**Results on all 36 boards**, by case:
+
+| Case | Accepted | `helpers-fight` only | `plants-cold` | `plants-hot` |
+| --- | --- | --- | --- | --- |
+| `ordinary` | 2: (3, 4), (4, 4) | 1: (4, 3) | 13 | 20 |
+| `heat-wave` | 6: heater 1, 2 or 3 with fan 3 or 4 | 5: (3, 1), (3, 2), (4, 1), (4, 2), (4, 3) | 4 | 21 |
+| `cold-snap` | 4: heater 3 with fan 3, 4, 5 or 6 | 3: (4, 3), (5, 3), (6, 3) | 20 | 9 |
+
+Boards are written (heater line, fan line). **Level 8 accepts** the case's set above. **Level 9 accepts exactly (3, 4)**, the only board in all three sets. Every crossed board has at least one step with both helpers on in every case, so "never fight" and "lines not crossed" agree on the frozen cases.
+
+**Hand-run warmth** after each step (start 3), with clicks (switches of both helpers, each off before step 0) and steps with both on:
+
+| Board | Case | Warmth, steps 0–11 | Clicks | Both on | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| (3, 4) | ordinary | 3 4 4 4 4 4 3 2 2 2 3 4 | 4 | 0 | accepted |
+| (3, 4) | heat wave | 4 4 4 4 4 4 4 3 3 3 3 4 | 2 | 0 | accepted |
+| (3, 4) | cold snap | 3 3 4 3 2 2 2 2 2 2 2 3 | 3 | 0 | accepted |
+| (4, 3), level 8 start | ordinary | 3 4 4 4 4 4 3 2 2 2 3 4 | 6 | 4 | `helpers-fight` |
+| (4, 3) | heat wave | 4 4 4 4 4 4 4 3 3 3 3 4 | 4 | 5 | `helpers-fight` |
+| (4, 3) | cold snap | 3 3 4 3 2 2 2 2 2 2 2 3 | 5 | 4 | `helpers-fight` |
+| (4, 4), level 9 start | ordinary | 4 4 4 4 4 4 3 3 3 3 4 4 | 7 | 0 | accepted |
+| (4, 4) | heat wave | 5 5 5 5 5 5 5 4 3 4 3 5 | 9 | 0 | `plants-hot` |
+| (4, 4) | cold snap | 4 3 5 4 2 2 2 2 2 2 2 3 | 9 | 0 | `plants-hot` |
+| (3, 3) | ordinary | 2 4 4 4 4 4 3 1 1 1 2 4 | 7 | 0 | `plants-cold` |
+| (3, 3) | heat wave | 3 3 3 3 3 3 3 2 3 2 3 3 | 9 | 0 | accepted |
+| (3, 3) | cold snap | 2 3 3 2 2 2 2 2 2 2 2 3 | 7 | 0 | accepted |
+
+The level 8 start board keeps the plants comfy on every case, step for step the same warmth as the accepted (3, 4), and still fails: the heater and the fan run together and cancel. That is this level's overlap property. The level 9 start board is a level 8 answer for the ordinary day, so the first case passes and the second does not.
+
+### Screen, controls and the Watch at 8–9
+
+- **The gauge** is level 7's (seven marks, the comfy stripe, gaps at least 60 units apart, at least 420 units tall) beside the seedlings, whose leaves droop when cold and curl when hot (shape, never colour alone). The **heater line** handle sits on the gauge's left with a flame picture and the **fan line** handle on its right with a fan picture, each at least 110 × 110, dragged vertically with `drag.ts` and snapping to the nearest gap with a click; tapping the gauge column moves the nearer handle. Because the handles are on opposite sides they never overlap, at the same gap or crossed. New `LinePiece` values: `'heat-line'`, `'fan-line'`.
+- **Fighting is drawn.** On a step with both helpers on, the heater's warm puff and the fan's breeze meet and swirl in the middle of the room, both helpers shake a little, and a low pentatonic tick plays (not a boing). The friend looks from one to the other.
+- **The sky** over the glass shows the step's sun level with the existing three sun pictures, so she can see the weather push the gauge before either helper moves.
+- **The click jar** from level 7 is shown without a rim line: each switch of either helper drops a pebble, and nothing is judged. It lets a child who finds two level 8 answers for the ordinary day see that one of them clicks four times and the other seven.
+- **Case cards (level 9).** Three cards at least 130 × 110 above the house, each with its picture; tapping one speaks its name on touch-down ("A heat wave"). Watch plays the cases in order at about 0.6 s per step (a full pass is about 22 s; Pause and Step work as before). A case that meets the goal gets a leaf stamp on its card; the pass stops at the end of the first case that fails, the friend reacts, and the pet says why. Moving either line clears the stamps, because a changed setup has not been watched yet.
+- **Level 8** shows one case card for the round's case, so the picture language is met before level 9 needs it.
+- **Layout.** Landscape: the glass house left, the gauge and jar at its right edge, the case cards along the top clear of the corner buttons. Portrait: case cards, then the house, then the gauge and jar side by side. Nothing shrinks below the sizes here; `houseLayout(brief, view)` at the lands-test views proves it, and at a phone's portrait width the three cards sit in one row of 130-unit cards or the layout returns null rather than shrink them.
+
+### Accounting, help, demo, card and voice for 8–9
+
+- **Accounting:** unchanged. Watch, Step, Pause, Undo, moving a line and tapping a case card are never misses (`misses` is always 0). The same failure name at the end of two completed Watches glows a line and counts one hint (at level 9 the failing case need not be the same one); each Show me press counts one; after three failed Watches the pet offers the supported finish, which sets (3, 4) and runs the day or the three cases.
+- **Glow and Show me** steer toward (3, 4), which is accepted on every case at both levels. `glowFor` names a line whose gap differs from it: `plants-cold` prefers the heater line, `plants-hot` and `helpers-fight` the fan line; when the preferred line is already right, the other. Show me's first press sets the line `glowFor` would name and says why; the second sets the other. From level 8's start the first press lifts the fan line to 4 (accepted on the ordinary day; on the other two cases the heater now overshoots, and the second press lowers the heater line to 3).
+- **Ghost finger:** level 8: tap Watch (the helpers fight), drag the fan line up one gap, drag the heater line down one gap, tap Watch. Level 9: tap Watch (the ordinary day earns its leaf, the heat wave fails), drag the heater line down one gap, tap Watch.
+- **How-to card steps:** "Move the lines so the heater and the fan never run together" `{ from: 8, to: 8 }`; "Find one setup that keeps the plants comfy on all three days" `{ from: 9, to: 9 }`. Note added: "The pebbles only count clicks. They are never scored."
+- **Voice lines** (`hh.*`): `instruct.8` ("Keep the plants comfy, and never let the heater and the fan run together"), `instruct.9` ("Make one setup that works on every kind of day"), `helpers-fight` ("The heater and the fan were on together. One warms, one cools, and nothing changes."), `plants-cold` ("It got too cold for the plants. Look at when the heater came on."), `plants-hot` ("It got too warm for the plants. Look at which helper was working then."), `case.ordinary`, `case.heat-wave`, `case.cold-snap`, `case.passed` ("That day worked. Now the next one."), `clicks` (the finishing remark about the jar), and `help.8`–`help.9`. Reasons name the helpers and their rules, never the answer. Fiction only, as above: no "thermostat", no advice about real heaters, fans or plants.
+- **Bands:** the level 8 build raises `school`'s top to 8, the level 9 build to 9. No other band changes.
+- **Finish:** one ordinary sticker per round through `ctx.finish({ misses: 0, hints })`; no creation or journal entry.
+
+### Rule tests for 8–9
+
+Added to `logic.test.ts` with each build: the drift table and the act-phase sum, clamped to 0–6; the twelve hand-run rows above as exact traces, clicks and both-on counts; the board space is 36; the accepted sets per case are exactly those in the results table and the failure counts match it; level 9 accepts exactly (3, 4); both starting boards fail (level 8's on every case, level 9's on the heat wave after passing the ordinary day); every failing board reports one named failure, band before fight; `glowFor` names a line that differs from (3, 4), and `helpFor` reaches an accepted board within two presses from every board on every case. **Overlap properties:** at level 8 the start board's warmth trace equals the accepted (3, 4) trace on all three cases while it fails, and every crossed board has a both-on step on every case; at level 9 each case accepts at least one board that another case rejects ((4, 4) on the ordinary day, (3, 3) on the heat wave and the cold snap), so no single case shows the answer. `houseLayout` at the lands-test views keeps every handle, card and button at the sizes above and clear of the corners.
+
+### Build slices and check tiers
+
+1. **RA5a, level 8 The greenhouse:** the greenhouse model (drift, fan, crossed lines, `CASES`, the three new failures), its art (glass house, seedlings, fan, the swirl), one case card, voice and how-to step, `school` 2–8. New levels on an existing interaction (level 7's two handles on the gauge), with shared files changing: typecheck, all the game's rule tests, one browser play at 8 through the `helperhouse` filter (the fighting day twice so a line glows, one Show me), one portrait screenshot, `fingerdemo` at 8, and `npm run build`.
+2. **RA5b, level 9 Greenhouse cases** (after RA5a): the three case cards, the three-case Watch with stamps and the stop at the first failing case, `school` 2–9. New levels tier: typecheck, the game's rule tests, one browser play at 9 (the start board's pass and fail, then the fix), `fingerdemo` at 9, and `npm run build`.
+
 ## Check tier
 
 RA2 (levels 1–3) is new-game tier and RA3 (level 4) is new levels on an existing interaction. Typecheck and unit tests (all above, plus registry, lands and how-to tests); then one scripted play of the new game through a `browser-check.mjs` filter (level 1 and the top built level, a day that does not meet the goal twice, one Show me) and one portrait screenshot; `fingerdemo` at the top built level; `npm run build` because the registry, lands, voice and how-to change. Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Device checks stay open: whether the pulse from sensor to card to helper reads on an iPad, how a five-year-old reads the three-zone thermometer, and whether the day's pace feels right.
@@ -155,8 +251,9 @@ Each has a default the build uses; none blocks RA2 or RA4.
 1. **Identity.** Default: a new game, with levels 1–2 as its opening (above). The alternative folds them into Sorting Machine and starts Helper House at the old level 3; levels 3–4 are unaffected.
 2. **Accounting.** Default: Watch is always free, `misses` is always 0, and the same failure twice glows a fix and counts one hint (the Welcome Ways rule). The alternative is a deliberate Check button that counts misses; it would need a shell-visible "complete day" step this slice does not add.
 3. **Toddler entry (H0).** Default: none. No sensor concept is expected at two, so toddlers keep existing cause-and-effect games; revisit only after someone watches a three-year-old play level 1.
-4. **Older reach.** Default: school only, up to level 4 in this slice. Registering the later greenhouse cases (levels 8–9) at `grownup` is RA5's call.
+4. **Older reach.** Default: school only, up to level 4 in this slice. **RA5 (2026-11-16) took the call at its default:** levels 8–9 sit at `school`'s top only, as the study's 2026-10-23 decision record says; a `grownup` window stays an alternative the developer can ask for, and would need its own first round and a capacity check on Lantern Lodge.
 5. **Rework tie-in.** Default: none in the first build. Whether finished helpers later appear in the creature home as permanent unlocks, and which friend carries the warmth levels, waits for the home infrastructure.
 6. **Land.** Default: Cozy Village (a 13th game). Fallback if the lands test fails: Treehouse (7 games).
 7. **Review.** Science-educator read of the warmth, light and "sensor / rule / helper" wording before the build merges.
 8. **Level 5–7 settings (RA4).** Defaults: the third socket at level 5 is the always-dark shed, so the three sockets fail three different ways; levels 6–7 start at warmth 1 like level 4; the switch bound is 8 with the first turn-on counted; the guess appears once a round, before the first day. The alternative bound (6, the accepted board's exact count) was rejected because it would leave no margin.
+9. **Level 8–9 settings (RA5).** Defaults: the greenhouse starts at warmth 3 on every case; the three cases are an ordinary day, a heat wave and a cold snap; level 8 starts with the lines crossed (heater 4, fan 3) and level 9 with a setup that passes only the ordinary day (heater 4, fan 4); the click jar counts and is never judged. The alternatives considered and set aside: two lines per helper (441 boards, and the model accepts no board the single lines do not), and a judged click bound at level 9 (the one accepted setup is also the calmest, so a bound would add a rule without adding a choice).
