@@ -44,3 +44,7 @@ Frame rate is not in the table: headless Chrome uses software rendering, so only
 **Limits of the pre-rendered view.** Parts turn in the picture plane only: the head tilt and arm wave read well because the camera faces them, but a head turn, a walk toward the camera or a costume seen from another side each need their own renders. The ball spins as a flat disc rather than rolling. A moving part's shadow on its neighbour is baked at rest.
 
 Verification: `LAB_VIEW=3d` and `LAB_VIEW=2d` with `GAME_URL=http://localhost:4173 node scripts/sprout-preview-check.mjs` (preview running).
+
+## Phone playtest follow-up (claimed 2026-11-16)
+
+Branch `claude/art-lab-eyes-and-crash`. From the developer's phone: both views hold 60 fps, Live 3D looks better, Sprout's eyes are not liked, and Live 3D stopped working twice. This slice hardens the live view, makes the page report what happened when it stops, and adds alternative eye styles to switch between. Expected files: `src/dev/art-lab/`, `art-lab/index.html`, `scripts/art/sprout-porch.py`, `scripts/art/sprout-porch-sprites.py`, `src/dev/sprout/`, this packet and a verification entry.
