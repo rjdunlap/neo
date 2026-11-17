@@ -59,7 +59,7 @@ Every state can be enumerated: three values of `whole`, four of `claim`, three o
 
 There is one case. The seed varies the ribbon's colour, which spool card is on the left and the order of the name cards, never the quantities. This is a single idea to meet and return to, not a drill, and the definition does not add more wholes to pad it out. An 18-tick whole (the ribbon as a third) is left to a later definition (see [decision 3](#open-decisions)).
 
-**Numbering and bands.** Level IDs 4 (Three halves) and 5 (Five sixths) stay reserved and undefined. Level 6 is registered now with `school: { min: 1, max: 6, order: [1, 2, 3, 6] }`, so it is the top of the school ladder and two smooth rounds at level 3 step up to it. When 4 and 5 are defined they take their places in `order`. Saved levels and pins at 1–3 are untouched, and `LEVEL_IDS` becomes `[1, 2, 3, 6]`. Still `school` only: the study aims this rung at older children and grown-ups, and `school` is where older play lives today. A `grownup` entry is left to the Ribbon Cases definition (R5), which the study charges with settling the older registration.
+**Numbering and bands.** Level IDs 4 (Three halves) and 5 (Five sixths) stay reserved and undefined. Level 6 is registered now with `school: { min: 1, max: 6, order: [1, 2, 3, 6] }`, so it is the top of the school ladder and two smooth rounds at level 3 step up to it. When 4 and 5 are defined they take their places in `order`. Saved levels and pins at 1–3 are untouched, and `LEVEL_IDS` becomes `[1, 2, 3, 6]`. Still `school` only: the study aims this rung at older children and grown-ups, and `school` is where older play lives today. A `grownup` entry was left to the Ribbon Cases definition (R5), which settled it: a `grownup` ladder of levels 6 and 7 ([the level](ribbon-cases.md#the-level)).
 
 ### First round
 
@@ -154,7 +154,7 @@ Each has a default the build uses. None waits on the developer.
 1. **Tag 1 is free.** Default: either true statement finishes tag 1 and tag 2 asks for the other, so her first choice is never wrong for being the "other" one. The alternative, a seeded first whole, gives every round the same two tags in a fixed order and removes a real choice.
 2. **`same` is free.** Default: checking tag 1's statement again on tag 2 is true, so it is answered and not counted. The alternative counts it as a miss, which would call a true statement wrong.
 3. **Three name cards, two wholes.** Default: ¼, ½ and ¾ only, and 12 and 24 only, so exactly two statements are true and ¾ is the one tempting false name (the part of the long spool the ribbon does not cover). A 2⁄4 card (true for the short spool) and an 18-tick whole (the ribbon as a third) are each a later appended level with its own definition, not seeds of this one.
-4. **Band.** Default: `school` only, top of the order. A `grownup` entry waits on R5.
+4. **Band.** Default: `school` only, top of the order. A `grownup` entry waits on R5. *Settled by [Ribbon Cases](ribbon-cases.md#the-level): a `grownup` ladder of levels 6 and 7.*
 5. **No marks before a Check.** Default: the whole is unmarked until a measure animation runs. The alternative, marks from the start, turns the level into counting cells.
 6. **Educator review.** Default: the building session's source check of the voice table, per the [October 23 record](../archive/DECISIONS-2026-10-23.md#standing-rules).
 
