@@ -54,7 +54,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Puddle Lens
 
-*lap–school* · [Puddle Lens](games/puddle-lens.md)
+*lap–grown-up* · [Puddle Lens](games/puddle-lens.md)
 
 ### Melt and Freeze
 

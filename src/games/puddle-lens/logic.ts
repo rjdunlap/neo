@@ -416,10 +416,10 @@ export interface LifeDrop {
   paths: [Swimmer, Swimmer];
 }
 
-function makePath(rng: Rng, id: CandidateId, i: number): Swimmer {
-  const motion = CANDIDATES[id].motion;
-  // The two sit well apart, on opposite sides of the drop, so the ring round one never takes in the other.
-  const r = LIFE_SPOT;
+function makePath(rng: Rng, id: CandidateId | FileSampleId, i: number, r = LIFE_SPOT): Swimmer {
+  const motion =
+    id in CANDIDATES ? CANDIDATES[id as CandidateId].motion : FILE_SAMPLES[id as FileSampleId].motion;
+  // At level 5 the two sit well apart, on opposite sides of the drop, so the ring round one never takes in the other.
   if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2, r);
   const a = Math.PI * i + rng.range(-0.4, 0.4);
   const base: Swimmer = {
@@ -686,6 +686,151 @@ export const greenDriftAt = (phase: number, t: number) => ({
   y: GREEN_DRIFT * Math.sin(GREEN_DRIFT_W * 0.8 * t + phase * 1.7),
 });
 
+// ----- level 9: slide files (name the slide) -----
+
+/**
+ * The samples a case folder can hold or name. Each row restates the built evidence of the sample it reuses (`CANDIDATES`,
+ * `WALL_SLIDES`, `SORT_SAMPLES`), so one comparison serves every case. Nothing shows at stops 1–2 on any row.
+ */
+export type FileSampleId =
+  'swimmer' | 'green-ball' | 'silt' | 'mud-speck' | 'bubble' | 'onion-skin' | 'cheek-cells' | 'sand-grain';
+
+/** The samples a card can name (the sand grain is measured, never a card), and the ones a level-9 slide can be. */
+export type FileCardId = Exclude<FileSampleId, 'sand-grain'>;
+export type FileUnknownId = Exclude<FileCardId, 'mud-speck'>;
+
+export interface FileSample {
+  id: FileSampleId;
+  /** Evidence at stops 1–4 (index 0 is stop 1). Colour and motion are drawn and are never evidence. */
+  evidence: readonly (readonly Evidence[])[];
+  motion: Motion;
+}
+
+/** The file samples (the definition's table, the built rows). */
+export const FILE_SAMPLES: Record<FileSampleId, FileSample> = {
+  swimmer: {
+    id: 'swimmer',
+    evidence: [[], [], ['edge', 'inside'], ['edge', 'inside', 'hairs']],
+    motion: 'swims',
+  },
+  'green-ball': { id: 'green-ball', evidence: [[], [], [], ['edge', 'inside']], motion: 'still' },
+  silt: { id: 'silt', evidence: [[], [], [], ['ragged']], motion: 'still' },
+  'mud-speck': { id: 'mud-speck', evidence: [[], [], ['ragged'], ['ragged']], motion: 'drifts' },
+  bubble: { id: 'bubble', evidence: [[], [], ['edge', 'empty'], ['edge', 'empty']], motion: 'drifts' },
+  'onion-skin': { id: 'onion-skin', evidence: [[], [], ['wall'], ['wall', 'inside']], motion: 'still' },
+  'cheek-cells': {
+    id: 'cheek-cells',
+    evidence: [[], [], ['soft-edge', 'inside'], ['soft-edge', 'inside']],
+    motion: 'still',
+  },
+  'sand-grain': { id: 'sand-grain', evidence: [[], [], ['cracks'], ['cracks']], motion: 'still' },
+};
+export const FILE_SAMPLE_IDS = Object.keys(FILE_SAMPLES) as FileSampleId[];
+
+export const fileEvidenceAt = (s: FileSampleId, stop: Stop): readonly Evidence[] =>
+  FILE_SAMPLES[s].evidence[stop - 1];
+
+export type FileCaseId = 'N1' | 'N2' | 'N3' | 'N4' | 'N5' | 'N6';
+
+/** A case: an unknown slide and three field-guide cards, one of which is the unknown's own row. */
+export interface FileCase {
+  id: FileCaseId;
+  unknown: FileUnknownId;
+  candidates: readonly [FileCardId, FileCardId, FileCardId];
+}
+
+/** The level-9 cases (the definition's table, row for row). */
+export const FILE_CASES: Record<FileCaseId, FileCase> = {
+  N1: { id: 'N1', unknown: 'green-ball', candidates: ['green-ball', 'silt', 'bubble'] },
+  N2: { id: 'N2', unknown: 'bubble', candidates: ['bubble', 'swimmer', 'mud-speck'] },
+  N3: { id: 'N3', unknown: 'cheek-cells', candidates: ['cheek-cells', 'onion-skin', 'swimmer'] },
+  N4: { id: 'N4', unknown: 'onion-skin', candidates: ['onion-skin', 'cheek-cells', 'mud-speck'] },
+  N5: { id: 'N5', unknown: 'silt', candidates: ['silt', 'green-ball', 'swimmer'] },
+  N6: { id: 'N6', unknown: 'swimmer', candidates: ['swimmer', 'bubble', 'green-ball'] },
+};
+export const FILE_CASE_IDS = Object.keys(FILE_CASES) as FileCaseId[];
+
+/** The cards the view has not ruled out: those whose evidence at this stop equals the unknown's. Never grows as the stop rises. */
+export function survivors(c: FileCase, stop: Stop): FileCardId[] {
+  const seen = fileEvidenceAt(c.unknown, stop);
+  return c.candidates.filter((id) => sameSet(fileEvidenceAt(id, stop), seen));
+}
+
+/** The lowest stop that leaves one card standing. */
+export const closingStop = (c: FileCase): Stop => STOPS.find((s) => survivors(c, s).length === 1) ?? 4;
+
+export type FileSeeLine =
+  | 'lens.file.see.only-dot'
+  | 'lens.look.inside'
+  | 'lens.look.empty'
+  | 'lens.look.ragged'
+  | 'lens.wall.see.wall'
+  | 'lens.wall.see.soft'
+  | 'lens.see.cracks';
+
+/** What the view of a sample shows at a stop (a ruled-out card, and Show a hint), never the verdict. */
+export function fileSeeLine(s: FileSampleId, stop: Stop): FileSeeLine {
+  const ev = fileEvidenceAt(s, stop);
+  if (ev.includes('wall')) return 'lens.wall.see.wall';
+  if (ev.includes('soft-edge')) return 'lens.wall.see.soft';
+  if (ev.includes('empty')) return 'lens.look.empty';
+  if (ev.includes('inside')) return 'lens.look.inside';
+  if (ev.includes('ragged')) return 'lens.look.ragged';
+  if (ev.includes('cracks')) return 'lens.see.cracks';
+  return 'lens.file.see.only-dot';
+}
+
+export type FileAnswer = FileCardId | 'cant-tell';
+export type FileVerdict =
+  | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
+  | { result: 'right'; line: `lens.file.yes.${FileUnknownId}` }
+  | { result: 'miss'; line: 'lens.file.can-tell-now' | FileSeeLine };
+
+/**
+ * A card the view has ruled out is a miss at any stop. While more than one card stands, naming any of them is free (the same line
+ * for a true and a false guess, never an answer key) and can't tell yet is right for now. With one card standing, naming it closes
+ * the file and can't tell yet is a miss.
+ */
+export function judgeCase(c: FileCase, stop: Stop, answer: FileAnswer): FileVerdict {
+  const standing = survivors(c, stop);
+  if (answer !== 'cant-tell' && !standing.includes(answer))
+    return { result: 'miss', line: fileSeeLine(c.unknown, stop) };
+  if (standing.length > 1)
+    return answer === 'cant-tell'
+      ? { result: 'free', line: 'lens.right-for-now' }
+      : { result: 'free', line: 'lens.could-be' };
+  if (answer === 'cant-tell') return { result: 'miss', line: 'lens.file.can-tell-now' };
+  return { result: 'right', line: `lens.file.yes.${c.unknown}` };
+}
+
+/** A file in a round: its case, the seeded order of its three cards, and the unknown's path in the water. */
+export interface SlideFile {
+  case: FileCase;
+  cards: FileCardId[];
+  path: Swimmer;
+}
+
+/** How far a file's unknown sits from the middle of the view, in drop units. */
+export const FILE_SPOT = 0.1;
+
+/**
+ * Three files: no unknown twice, and at least one that closes only at the closest stop. The authored round is the bubble, the silt,
+ * then the cheek cells (N2, N5, N3). Seeded: the cases, their order, the order of the cards, and positions.
+ */
+export function fileRoundFor(rng: Rng, authored: boolean): SlideFile[] {
+  let ids: FileCaseId[];
+  if (authored) ids = ['N2', 'N5', 'N3'];
+  else
+    for (;;) {
+      ids = rng.shuffle([...FILE_CASE_IDS]).slice(0, 3);
+      if (ids.some((id) => closingStop(FILE_CASES[id]) === 4)) break;
+    }
+  return ids.map((id) => {
+    const c = FILE_CASES[id];
+    return { case: c, cards: rng.shuffle([...c.candidates]), path: makePath(rng, c.unknown, 0, FILE_SPOT) };
+  });
+}
+
 // ----- help -----
 
 /**
@@ -702,7 +847,7 @@ export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'tur
 
 /**
  * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3 and 5–8)
- * or the lowest that shows the asked thing (4).
+ * or closes the file (9), or the lowest that shows the asked thing (4).
  */
 export function helpFor(
   level: number,
@@ -715,9 +860,11 @@ export function helpFor(
     sample?: SortSampleId;
     wall?: WallSlideId;
     green?: GreenDropId;
+    file?: FileCase;
   },
 ): Help | null {
   if (level === 1) return { do: 'tap-lens' };
+  if (level === 9) return s.file ? { do: 'turn', stop: closingStop(s.file) } : null;
   if (level === 7) return s.wall ? { do: 'turn', stop: wallDeciding(s.wall) } : null;
   if (level === 8) return s.green ? { do: 'turn', stop: greenDeciding(s.green) } : null;
   if (level === 5) return s.pair ? { do: 'turn', stop: decidingStop(s.pair) } : null;
@@ -769,6 +916,9 @@ export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export const STOP_SIZE = 110;
 export const ANSWER_SIZE = 120;
+/** Level 9's three cards and can't tell yet where four full-size answers do not fit: four in the space of three (grown-up targets may be 64 or more). */
+export const CARD_SIZE = 87;
+export const MIN_GROWNUP = 64;
 export const MIN_LENS = 360;
 export const MIN_LENS_1 = 300;
 export const THING_SIZE = 160;
@@ -780,7 +930,7 @@ const GAP = 12;
 export interface LensLayout {
   /** The lens view (levels 1, 3 and 4). */
   lens: Ring;
-  /** Levels 3–8: the four stop buttons; levels 3–4: the answer button; levels 5–8: the three answers or trays. */
+  /** Levels 3–9: the four stop buttons; levels 3–4: the answer button; levels 5–8: the three answers or trays; level 9: four. */
   stops: Rect[];
   answer: Rect | null;
   choices: Rect[];
@@ -808,7 +958,10 @@ export function ringHits(c: Ring, r: Rect): boolean {
   return Math.hypot(nx - c.x, ny - c.y) < c.r;
 }
 
-/** Where everything goes, or null rather than a button under 110, a lens under 360 (300 at level 1) or a level-2 thing under 160. */
+/**
+ * Where everything goes, or null rather than a button under 110, a lens under 360 (300 at level 1), a level-2 thing under 160 or a
+ * level-9 card under 87.
+ */
 export function lensLayout(v: View, level: number): LensLayout | null {
   const wide = v.w >= v.h;
   const none = { stops: [], answer: null, choices: [], things: [], rest: null, table: null, paw: null };
@@ -847,80 +1000,84 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     if (rest.y - GLASS_R < M) return null;
     return ok({ ...none, lens: { ...rest, r: GLASS_R }, things, rest, table, paw });
   }
-  let stops: Rect[];
-  let answer: Rect | null = null;
-  let choices: Rect[] = [];
-  let area: Rect;
-  const three = level >= 5;
-  const row = 3 * ANSWER_SIZE + 2 * GAP;
-  if (three && wide) {
-    // Two columns at the right: the stops, and the three answers or trays beside them.
-    const cx = v.w - M - ANSWER_SIZE / 2;
-    const sx = cx - ANSWER_SIZE / 2 - GAP - STOP_SIZE;
-    const stopsH = 4 * STOP_SIZE + 3 * GAP;
-    stops = STOPS.map((_, i) => ({
-      x: sx,
-      y: (v.h - stopsH) / 2 + i * (STOP_SIZE + GAP),
-      w: STOP_SIZE,
-      h: STOP_SIZE,
-    }));
-    choices = [0, 1, 2].map((i) => ({
-      x: cx - ANSWER_SIZE / 2,
-      y: (v.h - row) / 2 + i * (ANSWER_SIZE + GAP),
-      w: ANSWER_SIZE,
-      h: ANSWER_SIZE,
-    }));
-    area = { x: PET_CORNER.w + 10, y: M, w: sx - 2 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
-  } else if (three) {
-    // The answers along the bottom edge right of the guide's corner, the stops above them.
-    const ax = Math.max(PET_CORNER.w + 10, (v.w - row) / 2);
-    const ay = v.h - M - ANSWER_SIZE;
-    choices = [0, 1, 2].map((i) => ({
-      x: ax + i * (ANSWER_SIZE + GAP),
-      y: ay,
-      w: ANSWER_SIZE,
-      h: ANSWER_SIZE,
-    }));
-    const stopsW = 4 * STOP_SIZE + 3 * GAP;
-    const sx = Math.max(PET_CORNER.w + 10, (v.w - stopsW) / 2);
-    const sy = ay - GAP - STOP_SIZE;
-    stops = STOPS.map((_, i) => ({ x: sx + i * (STOP_SIZE + GAP), y: sy, w: STOP_SIZE, h: STOP_SIZE }));
-    const top = HOME_CORNER.h + 10;
-    area = { x: M, y: top, w: v.w - 2 * M, h: sy - M - top };
-  } else if (wide) {
-    const total = 4 * STOP_SIZE + 3 * GAP + 20 + ANSWER_SIZE;
-    const top = (v.h - total) / 2;
-    const cx = v.w - M - ANSWER_SIZE / 2;
-    stops = STOPS.map((_, i) => ({
-      x: cx - STOP_SIZE / 2,
-      y: top + i * (STOP_SIZE + GAP),
-      w: STOP_SIZE,
-      h: STOP_SIZE,
-    }));
-    answer = { x: cx - ANSWER_SIZE / 2, y: top + total - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
-    area = { x: PET_CORNER.w + 10, y: M, w: v.w - ANSWER_SIZE - 3 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
-  } else {
-    const total = 4 * STOP_SIZE + 4 * GAP + ANSWER_SIZE;
-    const x0 = (v.w - total) / 2;
-    const bottom = v.h - PET_CORNER.h - 10;
-    stops = STOPS.map((_, i) => ({
-      x: x0 + i * (STOP_SIZE + GAP),
-      y: bottom - STOP_SIZE - (ANSWER_SIZE - STOP_SIZE) / 2,
-      w: STOP_SIZE,
-      h: STOP_SIZE,
-    }));
-    answer = { x: x0 + total - ANSWER_SIZE, y: bottom - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
-    const top = HOME_CORNER.h + 10;
-    area = { x: M, y: top, w: v.w - 2 * M, h: bottom - ANSWER_SIZE - M - top };
-  }
-  const r = Math.min(maxR, (Math.min(area.w, area.h) - 40) / 2);
-  if (r * 2 < MIN_LENS) return null;
-  const lens = { x: area.x + area.w / 2, y: area.y + area.h / 2, r };
-  // The paw rests just outside the lens, down and to the left, where there is room.
-  const d = (r + 70) / Math.SQRT2;
-  const paw = { x: lens.x - d, y: lens.y + d, r: 45 };
-  const withPaw = ok({ ...none, lens, stops, answer, choices, paw });
-  return withPaw ?? ok({ ...none, lens, stops, answer, choices });
+  // Level 9 has four answers (three cards and can't tell yet): full-size where the row or column fits, otherwise four in the
+  // space of three, which a grown-up's targets allow.
+  const place = (size: number): LensLayout | null => {
+    let stops: Rect[];
+    let answer: Rect | null = null;
+    let choices: Rect[] = [];
+    let area: Rect;
+    const three = level >= 5;
+    const n = level === 9 ? 4 : 3;
+    if (size < MIN_GROWNUP) return null;
+    const each = Array.from({ length: n }, (_, i) => i);
+    const row = n * size + (n - 1) * GAP;
+    if (three && wide) {
+      // Two columns at the right: the stops, and the three answers or trays beside them.
+      const cx = v.w - M - ANSWER_SIZE / 2;
+      const sx = cx - ANSWER_SIZE / 2 - GAP - STOP_SIZE;
+      const stopsH = 4 * STOP_SIZE + 3 * GAP;
+      stops = STOPS.map((_, i) => ({
+        x: sx,
+        y: (v.h - stopsH) / 2 + i * (STOP_SIZE + GAP),
+        w: STOP_SIZE,
+        h: STOP_SIZE,
+      }));
+      choices = each.map((i) => ({
+        x: cx - size / 2,
+        y: (v.h - row) / 2 + i * (size + GAP),
+        w: size,
+        h: size,
+      }));
+      area = { x: PET_CORNER.w + 10, y: M, w: sx - 2 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
+    } else if (three) {
+      // The answers along the bottom edge right of the guide's corner, the stops above them.
+      const ax = Math.max(PET_CORNER.w + 10, (v.w - row) / 2);
+      const ay = v.h - M - size;
+      choices = each.map((i) => ({ x: ax + i * (size + GAP), y: ay, w: size, h: size }));
+      const stopsW = 4 * STOP_SIZE + 3 * GAP;
+      const sx = Math.max(PET_CORNER.w + 10, (v.w - stopsW) / 2);
+      const sy = ay - GAP - STOP_SIZE;
+      stops = STOPS.map((_, i) => ({ x: sx + i * (STOP_SIZE + GAP), y: sy, w: STOP_SIZE, h: STOP_SIZE }));
+      const top = HOME_CORNER.h + 10;
+      area = { x: M, y: top, w: v.w - 2 * M, h: sy - M - top };
+    } else if (wide) {
+      const total = 4 * STOP_SIZE + 3 * GAP + 20 + ANSWER_SIZE;
+      const top = (v.h - total) / 2;
+      const cx = v.w - M - ANSWER_SIZE / 2;
+      stops = STOPS.map((_, i) => ({
+        x: cx - STOP_SIZE / 2,
+        y: top + i * (STOP_SIZE + GAP),
+        w: STOP_SIZE,
+        h: STOP_SIZE,
+      }));
+      answer = { x: cx - ANSWER_SIZE / 2, y: top + total - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
+      area = { x: PET_CORNER.w + 10, y: M, w: v.w - ANSWER_SIZE - 3 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
+    } else {
+      const total = 4 * STOP_SIZE + 4 * GAP + ANSWER_SIZE;
+      const x0 = (v.w - total) / 2;
+      const bottom = v.h - PET_CORNER.h - 10;
+      stops = STOPS.map((_, i) => ({
+        x: x0 + i * (STOP_SIZE + GAP),
+        y: bottom - STOP_SIZE - (ANSWER_SIZE - STOP_SIZE) / 2,
+        w: STOP_SIZE,
+        h: STOP_SIZE,
+      }));
+      answer = { x: x0 + total - ANSWER_SIZE, y: bottom - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
+      const top = HOME_CORNER.h + 10;
+      area = { x: M, y: top, w: v.w - 2 * M, h: bottom - ANSWER_SIZE - M - top };
+    }
+    const r = Math.min(maxR, (Math.min(area.w, area.h) - 40) / 2);
+    if (r * 2 < MIN_LENS) return null;
+    const lens = { x: area.x + area.w / 2, y: area.y + area.h / 2, r };
+    // The paw rests just outside the lens, down and to the left, where there is room.
+    const d = (r + 70) / Math.SQRT2;
+    const paw = { x: lens.x - d, y: lens.y + d, r: 45 };
+    const withPaw = ok({ ...none, lens, stops, answer, choices, paw });
+    return withPaw ?? ok({ ...none, lens, stops, answer, choices });
+  };
+  if (level !== 9) return place(ANSWER_SIZE);
+  return place(ANSWER_SIZE) ?? place(CARD_SIZE);
 }
 
 /** The glass stays on the table. */
@@ -961,7 +1118,7 @@ export class LensTally {
 }
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -982,6 +1139,7 @@ export const PLANS: readonly PlanInfo[] = [
     level: 8,
     name: "Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet",
   },
+  { level: 9, name: 'Name the slide: look closer, then tap the card the view leaves standing' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -990,6 +1148,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
+  grownup: { min: 9, max: 9 },
 };
 export const planFor = (level: number): PlanInfo =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

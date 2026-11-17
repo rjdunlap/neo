@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/puddle-lens; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `puddle-lens` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `puddle-lens` · **Land:** Bubble Beach · **Ages:** lap–grown-up · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** observation, magnification, scale, science
 
@@ -13,6 +13,7 @@
 | preschool | 2–3 |
 | pre-K | 3–4 |
 | school | 4–8 |
+| grown-up | 9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +25,7 @@
 | 6 | One cell or many: look closer, then sort each slide into one cell, many cells or not cells |
 | 7 | Wall clue: look closer, then say plant cells, animal cells or can't tell yet; the wall is the clue, not the colour |
 | 8 | Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet |
+| 9 | Name the slide: look closer, then tap the card the view leaves standing |
 
 <!-- end generated -->
 

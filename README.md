@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 138 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 138 games, and "grown-up" (13 and up) is played by 21 games: the 15 grown-up puzzles and 6 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -85,7 +85,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 12 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
 | [Lost Layers](docs/games/lost-layers.md) | school | Bubble Beach | 2 | drag Shell Cove's broken rock pieces beside Gull Cliff's six layers until the fossil twins go green and no wavy line is squeezed, stamp each fit as a story card, then claim a story or Can't tell |
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |
-| [Puddle Lens](docs/games/puddle-lens.md) | lap–school | Bubble Beach | 8 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
+| [Puddle Lens](docs/games/puddle-lens.md) | lap–grown-up | Bubble Beach | 9 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
 | [Melt and Freeze](docs/games/melt-freeze.md) | lap–preschool | Bubble Beach | 5 | one big ice cube at lap. Three touches anywhere on the playfield shrink it into a puddle, then the snowflake appears to freeze it again. |
 | [Tide Line](docs/games/tide-line.md) | lap–pre-K | Bubble Beach | 4 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |

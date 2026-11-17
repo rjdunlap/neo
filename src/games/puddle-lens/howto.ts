@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Turn the dial until you can tell why the water is green: tiny green living things, or green all through the water. One drop is just coloured water.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Turn the dial, compare the view with the three cards, and tap the one still standing.',
+    },
   ],
   finish: [
     { from: 1, to: 2, text: 'Three things looked at.' },
@@ -45,6 +50,7 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'All four slides sorted.' },
     { from: 7, to: 7, text: 'All three slides answered.' },
     { from: 8, to: 8, text: 'All three drops answered.' },
+    { from: 9, to: 9, text: 'All three files closed.' },
   ],
   note: [
     {
@@ -82,6 +88,17 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 8,
       text: "No edges even at the closest look means the green is in the water itself. It doesn't prove nothing is alive there.",
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Each card shows the thing at the two microscope stops. A card the view already contradicts is a miss; a card that still fits is free until only one is left.',
+    },
+    { from: 9, to: 9, text: 'Looking at more views never costs anything.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'Show a hint turns the dial for you and says what the view shows; it counts as a hint, once per file.',
     },
   ],
 };
