@@ -798,7 +798,7 @@ describe('Follow the sparkle (level 10)', () => {
     expect(orders.size).toBeGreaterThan(20);
   });
 
-  it('upright, the paper and so every sparkle is inside the view and clear of the buttons beside and below it', () => {
+  it('upright, the paper (and so every sparkle on it) ends left of the button column and above the bottom edge', () => {
     const v = { w: 768, h: 1024, upright: true as const };
     const l = stampLayout(v, 1, false);
     expect(l.paper.x).toBeGreaterThanOrEqual(0);
