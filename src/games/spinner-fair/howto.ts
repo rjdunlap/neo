@@ -22,6 +22,11 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: "Tap the spinner, then the arrows twice, and watch the strip; then tap about how many of the next 60 spins will be the pet's favourite.",
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap the tray to roll the two dice, twelve times; watch the grid of every way they can land fill in; then tap the sum with the most squares, and the one of two sums that comes up more.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -36,6 +41,7 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'After the right card, 60 more spins play to check it; after the second wheel, one sticker, whatever the spins did.',
     },
+    { from: 7, to: 7, text: 'After the second question, one sticker, whatever the dice rolled.' },
   ],
   note: [
     {
@@ -57,6 +63,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: "A long run gets close to the wheel's share, but a short run can be anything: an unusual run is chance, not a mistake. Only a wrong card is a miss, and the answer is in the wedges (each one is about ten of sixty); after two misses on a wheel the answer glows, which counts as a hint. Nothing in the game is won, bet or unlocked by a spin.",
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A roll is never a mistake, and twelve rolls can make any sum look common: the grid, not the rolls, answers both questions. Only a wrong card is a miss (count the squares that make each sum); after two on a question the squares and the answer glow, which counts as a hint. The first time the grid is filled, a card goes in the journal, whatever the dice did. Nothing in the game is won, bet or unlocked by a roll.',
     },
   ],
 };

@@ -383,5 +383,103 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'Spinner Fair 6: upright, three runs to 240 spins on each wheel, one wrong card (1/0), the check run; two wrong cards on wheel 2 (3/1, the glow); passed',
     );
   }
-  return { spinnerFairPlay, spinnerFairRacePlay, spinnerFairSettlePlay };
+  /** Spinner Fair 7, upright: twelve rolls (never counted), the grid building itself to 36 squares, one wrong card on each
+   * question (two misses), a second wrong card on question two (the glow, one hint), and the journal entry filed. */
+  async function spinnerFairDicePlay() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('spinner-fair').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const state = () => page.evaluate(() => neo.scene.game.state);
+    const ways = (sum) => 6 - Math.abs(sum - 7);
+    const tapCard = async (n) => {
+      await page.evaluate((n) => {
+        const g = neo.scene.game;
+        kit.tapOn(g.cards[g.state.cards.indexOf(n)]);
+      }, n);
+      await page.waitForTimeout(300);
+    };
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    const filed = () => page.evaluate(() => kit.store.data.journal.found.includes('spinner-fair:two-dice'));
+    assert.equal(await filed(), false, 'the two-dice entry is not in the journal before the round');
+    await launch('spinner-fair', 7, 'Mia', 'school');
+    let s = await state();
+    assert.deepEqual([s.level, s.phase, s.rolls.length, s.squares], [7, 'roll', 0, 0]);
+    assert.deepEqual(s.cards, [], 'no cards during the rolls');
+    for (let i = 1; i <= 12; i++) {
+      await page.evaluate(() => kit.tapOn(neo.scene.game.tray));
+      await page.waitForFunction((i) => neo.scene.game.state.rolls.length === i, i, { timeout: 8000 });
+      if (i === 6) await screenshot('spinner-fair-7-rolls-portrait');
+    }
+    s = await state();
+    assert.equal(s.rolls.length, 12);
+    for (const [a, b] of s.rolls) assert.ok(a >= 1 && a <= 6 && b >= 1 && b <= 6, 'each die shows 1 to 6');
+    assert.equal(
+      s.tally.reduce((x, y) => x + y),
+      12,
+      'the roll bars hold twelve blocks',
+    );
+    assert.deepEqual([s.misses, s.hints], [0, 0], 'rolls are never counted');
+    log(`Spinner Fair 7: rolls ${s.rolls.map(([a, b]) => a + b).join(' ')}`);
+    // The grid builds itself; a tap on it changes nothing.
+    await page.waitForFunction(() => neo.scene.game.state.squares >= 8, null, { timeout: 30000 });
+    await page.evaluate(() => kit.tapOn(neo.scene.game.grid));
+    await page.waitForFunction(() => neo.scene.game.state.phase === 'most' && !neo.scene.game.busy, null, {
+      timeout: 60000,
+    });
+    s = await state();
+    assert.deepEqual([s.squares, s.gridDone, s.rolls.length], [36, true, 12]);
+    assert.equal(s.cards.length, 3);
+    assert.ok(s.cards.includes(7), 'question one holds 7');
+    assert.equal(s.right, 7, 'seven is the most likely sum');
+    assert.deepEqual([s.misses, s.hints], [0, 0], 'a tap on the grid is not counted');
+    await screenshot('spinner-fair-7-grid-portrait');
+    await tapCard(s.cards.find((c) => c !== 7));
+    s = await state();
+    assert.deepEqual([s.misses, s.hints, s.glowing, s.phase], [1, 0, false, 'most'], 'a wrong sum: one miss');
+    await tapCard(7);
+    await page.waitForFunction(() => neo.scene.game.state.phase === 'pair' && !neo.scene.game.busy, null, {
+      timeout: 20000,
+    });
+    s = await state();
+    assert.equal(s.cards.length, 2);
+    assert.ok(!s.cards.includes(7), 'question two never holds 7');
+    const [right, wrong] = ways(s.cards[0]) > ways(s.cards[1]) ? s.cards : [s.cards[1], s.cards[0]];
+    assert.notEqual(ways(right), ways(wrong), 'never a tie');
+    assert.equal(s.right, right, 'the right card has more squares');
+    for (let i = 0; i < 2; i++) {
+      await tapCard(wrong);
+      await page.waitForTimeout(400);
+    }
+    await page.waitForFunction(() => neo.scene.game.state.glowing, null, { timeout: 15000 });
+    s = await state();
+    assert.deepEqual(
+      [s.misses, s.hints],
+      [3, 1],
+      'the second wrong card on a question lights the glow: one hint',
+    );
+    await page.waitForTimeout(300);
+    await screenshot('spinner-fair-7-glow-portrait');
+    // Turned on its side mid-question: the same question, cards and counts.
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(500);
+    await screenshot('spinner-fair-7-glow-landscape');
+    const turned = await state();
+    assert.deepEqual([turned.phase, turned.cards, turned.misses, turned.hints], ['pair', s.cards, 3, 1]);
+    await tapCard(right);
+    await finished('spinner-fair');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [3, 1], 'level 7 saved 3 misses, 1 hint');
+    assert.equal(await filed(), true, 'the two-dice entry is filed in the journal');
+    log(
+      `Spinner Fair 7: upright, twelve rolls, the grid to 36 squares, a wrong card on each question and the glow on question two (${right} over ${wrong}; 3/1), the journal entry filed; passed`,
+    );
+  }
+  return { spinnerFairPlay, spinnerFairRacePlay, spinnerFairSettlePlay, spinnerFairDicePlay };
 }

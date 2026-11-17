@@ -33,6 +33,7 @@ import {
   type Plan,
   type SetSpec,
 } from './logic';
+import { DiceGame } from './dice';
 import { RaceGame } from './race';
 import { SettleGame } from './settle';
 import { SureGame } from './sure';
@@ -622,12 +623,14 @@ export const spinnerFair: GameModule = {
   music: STYLES.hub,
   coplayHint:
     'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair?',
-  offScreen: 'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell?',
+  offScreen:
+    'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell? For older children: roll two dice twenty times and tally the sums on a paper line from 2 to 12. Which sum came up most, and why?',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
   create: (ctx) => {
     const ask = planFor(ctx.level).ask;
     if (ask === 'settle') return new SettleGame(ctx);
+    if (ask === 'dice') return new DiceGame(ctx);
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,

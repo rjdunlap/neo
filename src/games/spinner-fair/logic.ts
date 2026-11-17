@@ -3,7 +3,8 @@
  * A spin is never a miss; only a question decides one: which bar is tallest after the spins (level 2) and which of two
  * spinners has more of the pet's favourite (level 3), whether the favourite is sure, maybe or no way on a spinner (level 4), and
  * whether a two-critter race is fair and the wheel is even at Check (level 5), and about how many of sixty more spins will
- * be the favourite, read from its share of the wheel (level 6).
+ * be the favourite, read from its share of the wheel (level 6), and which two-dice sum is most likely and which of two sums
+ * comes up more, read from the grid of every way two dice can land (level 7). A roll, like a spin, is never a miss.
  * Definitions: docs/definitions/spinner-fair.md (levels 1–5), docs/definitions/spinner-fair-6-8.md (levels 6–8).
  */
 import type { Rng } from '../../engine/random';
@@ -36,14 +37,14 @@ export const WEDGE_DEG = 360 / WEDGES;
 export const EDGE_DEG = 12;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4, 6), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6–7), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together); the spinner stops taking spins after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice); the spinner or tray stops taking them after this many. */
   spins: number;
 }
 
@@ -54,12 +55,13 @@ const PLANS: readonly Plan[] = [
   { level: 4, ask: 'sure', name: 'Sure, maybe, no way', sets: 2, spins: 1 },
   { level: 5, ask: 'fair', name: 'Fair or unfair?', sets: 2, spins: 6 },
   { level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 },
+  { level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 export function planFor(level: number): Plan {
@@ -295,6 +297,61 @@ export const expected60 = (k: number) => 10 * k;
 export const aboutRight = (card: number, k: number) => card === expected60(k);
 /** A check run "about" the share: within ten of it. Outside is unusual, never a miss and never spun again. */
 export const inBand = (count: number, k: number) => Math.abs(count - expected60(k)) <= 10;
+
+// ---- level 7: two dice ----
+
+/** One roll of the two dice: the first die, then the second. */
+export type Roll = readonly [number, number];
+/** The eleven sums two dice can make, 2 to 12: one bar each. */
+export const SUMS: readonly number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+export const sumOf = (r: Roll) => r[0] + r[1];
+
+/** One honest roll: each die a uniform face, 1 to 6. Nothing filters or retries it, and a roll is never judged. */
+export function roll(rng: Rng): Roll {
+  return [rng.int(1, 6), rng.int(1, 6)];
+}
+
+/** How many of the 36 squares make `sum`: one for 2, up to six for 7, back down to one for 12. */
+export const ways = (sum: number) => (sum >= 2 && sum <= 12 ? 6 - Math.abs(sum - 7) : 0);
+
+/** The grid of every way two dice can land: row `a` (the first die, 1–6) holds the sums with the second die 1–6. */
+export function gridRows(): number[][] {
+  return [1, 2, 3, 4, 5, 6].map((a) => [1, 2, 3, 4, 5, 6].map((b) => a + b));
+}
+
+/** The eleven bars after the grid's first `squares` squares (row by row): how many of them make each sum. */
+export function waysTally(squares = 36): number[] {
+  const shown = gridRows().flat().slice(0, squares);
+  return SUMS.map((s) => shown.filter((x) => x === s).length);
+}
+
+/** The eleven roll bars: how many of `rolls` made each sum. */
+export function rollTally(rolls: readonly Roll[]): number[] {
+  return SUMS.map((s) => rolls.filter((r) => sumOf(r) === s).length);
+}
+
+/** The rolls did not show seven alone on top (twelve rolls often do not), so the pet says the squares show every way. */
+export function rollsMislead(rolls: readonly Roll[]): boolean {
+  const t = rollTally(rolls);
+  return tallest(t).length !== 1 || tallest(t)[0] !== SUMS.indexOf(7);
+}
+
+/** Question one's three cards, in a seeded order: 7, and two other sums whose square counts differ (both fewer than six). */
+export function mostCards(rng: Rng): number[] {
+  const [a, ...rest] = rng.shuffle(SUMS.filter((s) => s !== 7));
+  const b = rest.find((s) => ways(s) !== ways(a))!;
+  return rng.shuffle([7, a, b]);
+}
+
+/** Question two's two cards, in a seeded order: two sums, neither 7, whose square counts differ, so one comes up more. */
+export function pairCards(rng: Rng): [number, number] {
+  const [a, ...rest] = rng.shuffle(SUMS.filter((s) => s !== 7));
+  return [a, rest.find((s) => ways(s) !== ways(a))!];
+}
+
+/** The card with the most squares: the right answer to either question, read from the grid and never from the rolls. */
+export const moreWays = (cards: readonly number[]) =>
+  cards.reduce((best, s) => (ways(s) > ways(best) ? s : best));
 
 // ---- spins ----
 
@@ -582,6 +639,92 @@ export function settleLayout(view: { w: number; h: number }): SettleLayout {
     strip: box(w / 2, 770, sw, STRIP_H),
     fast,
     cards: row(180, w - 20, h - 20 - ABOUT_H / 2),
+  };
+}
+
+/**
+ * Level 7: the dice tray (the tap target of the twelve rolls), the roll bars, and at the grid step the 6×6 grid in the
+ * tray's place with the ways bars beside it (under the roll bars when upright) and the sum cards. The grid and both bar
+ * sets are display only; the tray and the cards are the targets.
+ */
+export const TRAY_W = 300,
+  TRAY_H = 170,
+  SUM_CARD = 130,
+  BAR_LABEL = 34;
+/** A row of eleven display bars: the first bar's left edge, the baseline, the step between bars, a bar's width and the tallest a bar can stand. */
+export interface Bars {
+  x: number;
+  base: number;
+  pitch: number;
+  w: number;
+  h: number;
+}
+export interface DiceLayout {
+  portrait: boolean;
+  tray: Box;
+  /** The grid's top-left corner, the header strip's size (the dice along the top and down the left) and a square's size. */
+  grid: { x: number; y: number; head: number; cell: number };
+  rolls: Bars;
+  ways: Bars;
+  /** Question one's three cards and question two's two. */
+  most: Box[];
+  pair: Box[];
+}
+/** The grid's whole side: the header strip and six squares. */
+export const gridSide = (g: DiceLayout['grid']) => g.head + 6 * g.cell;
+/** A bar row's box, labels included (they hang `BAR_LABEL` under the baseline). */
+export const barsBox = (b: Bars): Box => {
+  const w = 10 * b.pitch + b.w;
+  return box(b.x + w / 2, b.base + (BAR_LABEL - b.h) / 2, w, b.h + BAR_LABEL);
+};
+
+export function diceLayout(view: { w: number; h: number }): DiceLayout {
+  const { w, h } = view;
+  if (h <= w) {
+    // The grid on the left with the ways bars beside it, the cards in a column on the right, the roll bars along the bottom.
+    const ox = (w - 1024) / 2;
+    const grid = { x: ox + 180, y: 124, head: 44, cell: 60 };
+    const bottom = grid.y + gridSide(grid);
+    const base = h - 20 - BAR_LABEL;
+    const cx = ox + 929;
+    const col = (n: number) => {
+      const top = grid.y + (bottom - grid.y - n * SUM_CARD - (n - 1) * 7) / 2;
+      return Array.from({ length: n }, (_, i) =>
+        box(cx, top + SUM_CARD / 2 + i * (SUM_CARD + 7), SUM_CARD, SUM_CARD),
+      );
+    };
+    return {
+      portrait: false,
+      tray: box(ox + 518, (grid.y + bottom) / 2, TRAY_W, TRAY_H),
+      grid,
+      rolls: { x: ox + 190, base, pitch: 60, w: 56, h: Math.min(190, base - bottom - 14) },
+      ways: { x: ox + 600, base: bottom - BAR_LABEL, pitch: 22.6, w: 20, h: 264 },
+      most: col(3),
+      pair: col(2),
+    };
+  }
+  // Upright: the grid on top, the roll bars under it and the ways bars under those (bar over bar), the cards along the bottom.
+  const grid = { x: 0, y: 130, head: 50, cell: h >= 1150 ? 80 : 68 };
+  grid.x = (w - gridSide(grid)) / 2;
+  const bottom = grid.y + gridSide(grid);
+  const barH = Math.min(190, (h - 180 - bottom - 14 - 12) / 2 - BAR_LABEL);
+  const bx = (w - 656) / 2;
+  const row = (n: number) => {
+    const span = n * SUM_CARD + (n - 1) * 20;
+    const x0 = (190 + w - 20) / 2 - span / 2;
+    return Array.from({ length: n }, (_, i) =>
+      box(x0 + SUM_CARD / 2 + i * (SUM_CARD + 20), h - 20 - SUM_CARD / 2, SUM_CARD, SUM_CARD),
+    );
+  };
+  const rollsBase = bottom + 14 + barH;
+  return {
+    portrait: true,
+    tray: box(w / 2, (grid.y + bottom) / 2, TRAY_W, TRAY_H),
+    grid,
+    rolls: { x: bx, base: rollsBase, pitch: 60, w: 56, h: barH },
+    ways: { x: bx, base: rollsBase + BAR_LABEL + 12 + barH, pitch: 60, w: 56, h: barH },
+    most: row(3),
+    pair: row(2),
   };
 }
 
