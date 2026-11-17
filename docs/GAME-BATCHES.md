@@ -785,6 +785,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 - **`spinner-fair`, level 8** (after `spinner-fair 4`; same definition): the levelling drag and the typical spin. Proof: new-interaction tier (one scripted play, one portrait screenshot, `fingerdemo` at 8, build).
 
+**Status: built 2026-11-16, PR #1727.**
+
 ### tide-line 1: Come in, go out and stop at the line
 
 **Built 2026-10-31** ([PR #1059](https://github.com/rjdunlap/neo/pull/1059)); levels 3-4 are batch `tide-line 2` (built 2026-11-01).
