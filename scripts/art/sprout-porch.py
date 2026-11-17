@@ -93,13 +93,27 @@ for x in [-.57,.57]:
     orb('Ear',(x,.0,.39),(.24,.15,.25),mint,head)
     orb('Ear inset',(x,-.128,.39),(.13,.035,.14),dark,head)
 orb('Muzzle',(0,-.43,-.23),(.38,.095,.21),cream,head)
+# Three eye styles to switch between in the art lab; only EyesClassic renders in stills. Each has two 'Eye' pivots for the blink.
+STYLES={name:group(name,(0,0,0),head) for name in ['EyesClassic','EyesBead','EyesSoft']}
 for x in [-.265,.265]:
-    orb('Eye cream',(x,-.443,.04),(.178,.075,.225),cream,head)
-    eye=group('Eye', (x,-.50,.04),head)
+    side=1 if x>0 else -1
+    g=STYLES['EyesClassic']  # big glossy ovals in a cream ring, two glints
+    orb('Eye cream',(x,-.443,.04),(.178,.075,.225),cream,g)
+    eye=group('Eye', (x,-.50,.04),g)
     orb('Eye dark',(0,0,0),(.132,.059,.177),ink,eye)
     orb('Glint',(-.038,-.052,.065),(.047,.018,.055),white,eye)
     orb('Little glint',(.042,-.054,-.060),(.018,.012,.021),white,eye)
+    g=STYLES['EyesBead']  # small round beads, set wider and lower
+    eye=group('Eye',(side*.30,-.452,0),g)
+    orb('Eye dark',(0,0,0),(.082,.05,.092),ink,eye)
+    orb('Glint',(-.024,-.042,.034),(.024,.012,.026),white,eye)
+    g=STYLES['EyesSoft']  # flat painted ovals, no ring, one glint
+    eye=group('Eye',(side*.27,-.46,.03),g)
+    orb('Eye dark',(0,0,0),(.108,.035,.150),ink,eye)
+    orb('Glint',(-.03,-.03,.058),(.038,.014,.046),white,eye)
     orb('Cheek',(x*1.5,-.414,-.19),(.10,.025,.064),blush,head)
+for name in ['EyesBead','EyesSoft']:
+    for o in STYLES[name].children_recursive:o.hide_render=True
 orb('Nose',(0,-.537,-.16),(.072,.04,.043),ink,head)
 # Two short curves form the gentle smile.
 for sign in [-1,1]:

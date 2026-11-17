@@ -13,6 +13,15 @@ await page.locator('#wave').click();
 await page.waitForTimeout(500);
 assert.match(await page.locator('#status').innerText(), /Hello/);
 await page.screenshot({ path: `test-results/sprout-${process.env.LAB_VIEW || '3d'}-portrait.png` });
+// Live 3D only: each eye style switches in place and the face is kept as a close-up.
+for (const style of await page.locator('#eyes button').allInnerTexts()) {
+  await page.locator('#eyes button', { hasText: style }).click();
+  await page.waitForTimeout(700);
+  await page.screenshot({
+    path: `test-results/sprout-eyes-${style}.png`,
+    clip: { x: 60, y: 330, width: 200, height: 200 },
+  });
+}
 await page.locator('#ball').click();
 assert.match(await page.locator('#status').innerText(), /nudge/);
 await page.waitForTimeout(2800);

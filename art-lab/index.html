@@ -98,6 +98,25 @@
         font: 600 14px system-ui;
         text-decoration: none;
       }
+      nav[hidden] {
+        display: none;
+      }
+      nav span {
+        align-self: center;
+        font: 600 13px system-ui;
+      }
+      nav button {
+        min-height: 44px;
+        min-width: 0;
+        padding: 10px 14px;
+        border-radius: 14px;
+        box-shadow: none;
+        font: 600 14px system-ui;
+      }
+      nav button[aria-pressed='true'] {
+        background: #304b42;
+        color: #fff9e9;
+      }
       nav a[aria-current] {
         background: #304b42;
         color: #fff9e9;
@@ -177,6 +196,7 @@
         <a id="tab-3d" href="?view=3d">Live 3D</a>
         <a id="tab-2d" href="?view=2d">Pre-rendered</a>
       </nav>
+      <nav id="eyes" aria-label="Sprout’s eyes" hidden><span>Eyes</span></nav>
     </header>
     <main id="view">
       <pre id="readout" aria-label="Measurements"></pre>
