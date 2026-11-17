@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished }) {
-  /** Ribbon Workshop: level 1 with two wrong checks (the glow and its one hint), both gifts by real taps; level 3's snip gift with its tempting too-long ribbon; portrait. */
+  /** Ribbon Workshop: level 1 with two wrong checks (the glow and its one hint), both gifts by real taps; level 3's snip gift with its tempting too-long ribbon; level 6 Whole Switch with two wrong checks, a free same check and undo; portrait. */
   async function ribbonPlay() {
     // Follow the hint path with real taps until the round finishes (the ghost finger's rule).
     const playOut = () =>
@@ -98,8 +98,90 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }),
       [3, 1, 0],
     );
+    // Level 6, Whole Switch (portrait): free touches, two wrong checks (the glow and its one hint), tag 1, a free "same" check, undo, tag 2.
+    await launch('ribbon-workshop', 6);
+    const whole = await page.evaluate(async () => {
+      const g = neo.scene.game,
+        out = [];
+      const until = async (fn) => {
+        for (let i = 0; i < 60 && !fn(); i++) await kit.sleep(100);
+      };
+      // An empty check and a tap on the ribbon count nothing, and the ribbon has no action.
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      kit.tapOn(g.ribbonNode);
+      await kit.sleep(300);
+      out.push([g.misses, g.hints, g.state]);
+      // "A quarter of the short spool" is false: a miss, the name card goes back, and the ghost measures the whole.
+      kit.tapOn(g.spoolCards.get(12));
+      await kit.sleep(300);
+      kit.tapOn(g.nameCards.get(1));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await kit.sleep(200);
+      out.push([g.misses, g.hints, g.measuring, g.state.claim]);
+      await until(() => !g.measuring);
+      // A second false name brings the glow and one hint; the next tap only skips the measure.
+      kit.tapOn(g.nameCards.get(3));
+      await kit.sleep(500);
+      kit.tapOn(g.bow);
+      await kit.sleep(200);
+      out.push([g.misses, g.hints, g.bench.tally.glow, g.measuring]);
+      kit.tapOn(g.nameCards.get(2));
+      await kit.sleep(300);
+      out.push([g.measuring, g.state.claim]);
+      kit.tapOn(g.nameCards.get(2));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await until(() => g.bench.tag === 2 && !g.busy);
+      // Tag 2 starts with tag 1's statement showing; checking it again is true, so it is free.
+      out.push([g.state, g.bench.tally.glow]);
+      await kit.sleep(450);
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tag]);
+      // Switch the whole, pick the tempting three quarters, undo it, then the true name.
+      kit.tapOn(g.spoolCards.get(24));
+      await kit.sleep(300);
+      kit.tapOn(g.nameCards.get(3));
+      await kit.sleep(300);
+      kit.tapOn(g.undo);
+      await kit.sleep(450);
+      out.push(g.state);
+      kit.tapOn(g.nameCards.get(1));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await until(() => g.finale);
+      out.push([g.finale, g.misses, g.hints]);
+      return out;
+    });
+    assert.deepEqual(
+      whole,
+      [
+        [0, 0, { whole: 0, claim: 0, made: 0 }],
+        [1, 0, true, 0],
+        [2, 1, true, true],
+        [false, 0],
+        [{ whole: 12, claim: 2, made: 12 }, false],
+        [2, 1, 2],
+        { whole: 24, claim: 2, made: 12 },
+        [true, 2, 1],
+      ],
+      'Whole Switch: free touches, two misses and the glow, tag 1, a free same check, undo, tag 2',
+    );
+    await screenshot('ribbon-workshop-6-portrait');
+    await finished('ribbon-workshop');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('ribbon-workshop').history.at(-1);
+        return [r.level, r.misses, r.hints];
+      }),
+      [6, 2, 1],
+    );
     await page.setViewportSize({ width: 1024, height: 768 });
-    log('Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, portrait passed');
+    log(
+      'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), portrait passed',
+    );
   }
 
   return { ribbonPlay };

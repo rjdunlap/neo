@@ -77,7 +77,11 @@ export const PLANS: Record<number, RibbonPlan> = {
     ],
   },
 };
-export const LEVEL_IDS = [1, 2, 3] as const;
+/** The levels that compose a gift's ribbon from a tray. Level 6 (Whole Switch) has its own small model below. */
+export const GIFT_LEVELS = [1, 2, 3] as const;
+/** Whole Switch. IDs 4 (Three halves) and 5 (Five sixths) are reserved and undefined. */
+export const SWITCH_LEVEL = 6;
+export const LEVEL_IDS = [...GIFT_LEVELS, SWITCH_LEVEL] as const;
 export const planFor = (level: number): RibbonPlan => PLANS[level] ?? PLANS[1];
 
 /** The tag's name for a target, also the instruction's line: `ribbon.ask.<amount>`. */
@@ -207,14 +211,16 @@ export class GiftTally {
   private wrong = 0;
   /** A check: returns the verdict and counts a miss for a non-empty wrong bench. */
   check(v: Verdict): Verdict {
-    if (v === 'short' || v === 'long') {
-      this.misses++;
-      if (++this.wrong === 2 && !this.glow) {
-        this.glow = true;
-        this.hints++;
-      }
-    }
+    if (v === 'short' || v === 'long') this.miss();
     return v;
+  }
+  /** One wrong check: a miss, and with the second the glow and its one hint. */
+  miss() {
+    this.misses++;
+    if (++this.wrong === 2 && !this.glow) {
+      this.glow = true;
+      this.hints++;
+    }
   }
   /** Show a hint: true when it counted. */
   ask(): boolean {
@@ -290,5 +296,161 @@ export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x
 }
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 3 },
+  school: { min: 1, max: SWITCH_LEVEL, order: [...LEVEL_IDS] },
 };
+
+/*
+ * Level 6, Whole Switch: one ribbon that never changes, two spools that can each be the whole, and three name cards.
+ * The ribbon is a half of the short spool and a quarter of the long one. See docs/definitions/whole-switch.md.
+ */
+
+/** The ribbon's length in ticks. Read, never written: no action changes it. */
+export const SWITCH_RIBBON = 6;
+/** The short spool and the long spool. */
+export const SWITCH_WHOLES = [12, 24] as const;
+/** The name cards, counted in quarters: ¼, ½, ¾. */
+export const SWITCH_CLAIMS = [1, 2, 3] as const;
+export type SwitchWhole = (typeof SWITCH_WHOLES)[number];
+export type SwitchClaim = (typeof SWITCH_CLAIMS)[number];
+
+export interface SwitchState {
+  /** The spool chosen as the whole; 0 before one is chosen. */
+  whole: 0 | SwitchWhole;
+  /** The name card chosen, in quarters; 0 before one is chosen. */
+  claim: 0 | SwitchClaim;
+  /** The whole of the statement accepted on tag 1; 0 during tag 1. */
+  made: 0 | SwitchWhole;
+}
+
+/** "The ribbon is `claim` quarters of `whole`" is true: exactly (12, ½) and (24, ¼). */
+export const switchTrue = (whole: number, claim: number) =>
+  whole > 0 && claim > 0 && SWITCH_RIBBON * 4 === claim * whole;
+/** The one true name card for a whole. */
+export const trueClaim = (whole: SwitchWhole) => ((SWITCH_RIBBON * 4) / whole) as SwitchClaim;
+/** How many times the ribbon fits in a whole: what the measure animation counts (2 and 4). */
+export const fitsIn = (whole: SwitchWhole) => whole / SWITCH_RIBBON;
+
+export type SwitchVerdict = 'empty' | 'right' | 'same' | 'wrong';
+/** What the bow says. A true statement is never wrong: tag 1's own statement on tag 2 is `same`, which counts nothing. */
+export function switchJudge(s: SwitchState): SwitchVerdict {
+  if (!s.whole || !s.claim) return 'empty';
+  if (!switchTrue(s.whole, s.claim)) return 'wrong';
+  return s.whole === s.made ? 'same' : 'right';
+}
+
+export type SwitchHint =
+  { kind: 'whole'; whole: SwitchWhole } | { kind: 'claim'; claim: SwitchClaim } | { kind: 'check' };
+/** Touches to a right check through `whole`, the bow included. */
+const stepsVia = (s: SwitchState, whole: SwitchWhole) =>
+  (whole === s.whole ? 0 : 1) + (s.claim === trueClaim(whole) ? 0 : 1) + 1;
+/**
+ * The first step of the shortest route to an accepted statement: the spool card of an accepted whole when the current
+ * whole is not one (the whole the chosen name is already true for, else the first accepted card in the round's card
+ * order), else that whole's true name card, else the bow.
+ */
+export function switchHint(s: SwitchState, order: readonly SwitchWhole[] = SWITCH_WHOLES): SwitchHint {
+  if (!s.whole || s.whole === s.made) {
+    const open = order.filter((w) => w !== s.made);
+    return { kind: 'whole', whole: open.find((w) => trueClaim(w) === s.claim) ?? open[0] };
+  }
+  const claim = trueClaim(s.whole);
+  return s.claim === claim ? { kind: 'check' } : { kind: 'claim', claim };
+}
+/** Touches left on the shortest route, the bow included (1 to 3). */
+export function switchSteps(s: SwitchState): number {
+  if (s.whole && s.whole !== s.made) return stepsVia(s, s.whole);
+  return Math.min(...SWITCH_WHOLES.filter((w) => w !== s.made).map((w) => stepsVia(s, w)));
+}
+
+/** What the seed varies: the card orders and the ribbon's colour, never a quantity. */
+export interface SwitchRound {
+  /** The spool cards, left to right. */
+  wholes: SwitchWhole[];
+  /** The name cards, left to right. */
+  claims: SwitchClaim[];
+  /** An index into the game's ribbon colours. */
+  color: number;
+}
+export function switchRound(rng: Rng, colors: number): SwitchRound {
+  return {
+    wholes: rng.shuffle([...SWITCH_WHOLES]),
+    claims: rng.shuffle([...SWITCH_CLAIMS]),
+    color: rng.int(0, colors - 1),
+  };
+}
+
+/**
+ * One round of Whole Switch: two tags over the same ribbon, with an undo stack of the exact earlier choices. Tag 1
+ * accepts either true statement; tag 2 starts with tag 1's statement still showing and accepts only the other one.
+ */
+export class SwitchBench {
+  state: SwitchState = { whole: 0, claim: 0, made: 0 };
+  readonly tally = new GiftTally();
+  /** Totals from tag 1; the tally holds the tag in play. */
+  private bankedMisses = 0;
+  private bankedHints = 0;
+  /** Both tags are made. */
+  done = false;
+  private history: SwitchState[] = [];
+  /** The choices a restart goes back to: nothing on tag 1, tag 1's statement on tag 2. */
+  private base: SwitchState = this.state;
+
+  get tag(): 1 | 2 {
+    return this.state.made ? 2 : 1;
+  }
+  get misses() {
+    return this.bankedMisses + this.tally.misses;
+  }
+  get hints() {
+    return this.bankedHints + this.tally.hints;
+  }
+  get canUndo() {
+    return this.history.length > 0;
+  }
+  private set(next: SwitchState): boolean {
+    if (this.done || (next.whole === this.state.whole && next.claim === this.state.claim)) return false;
+    this.history.push(this.state);
+    this.state = next;
+    return true;
+  }
+  /** Choose a spool as the whole; false when it is the whole already. */
+  setWhole(whole: SwitchWhole): boolean {
+    return this.set({ ...this.state, whole });
+  }
+  /** Choose a name card (0 puts it back, as a wrong check does); false when nothing changes. */
+  setClaim(claim: 0 | SwitchClaim): boolean {
+    return this.set({ ...this.state, claim });
+  }
+  undo(): boolean {
+    const prev = this.history.pop();
+    if (!prev) return false;
+    this.state = prev;
+    return true;
+  }
+  /** The bow: `wrong` counts one miss, `right` finishes the tag, `empty` and `same` count nothing. */
+  check(): SwitchVerdict {
+    if (this.done) return 'empty';
+    const v = switchJudge(this.state);
+    if (v === 'wrong') this.tally.miss();
+    if (v === 'right') {
+      this.bankedMisses += this.tally.misses;
+      this.bankedHints += this.tally.hints;
+      this.tally.misses = this.tally.hints = 0;
+      this.tally.nextGift();
+      this.history = [];
+      if (this.state.made) this.done = true;
+      else this.base = this.state = { ...this.state, made: this.state.whole as SwitchWhole };
+    }
+    return v;
+  }
+  /** Show a hint: true when it counted (the glow was not already up). */
+  askHint(): boolean {
+    return !this.done && this.tally.ask();
+  }
+  /** The tag's choices as it started. Misses and hints already counted stay. */
+  restart() {
+    if (this.done) return;
+    this.history = [];
+    this.state = this.base;
+  }
+}

@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–3 |
+| school | 1, 2, 3, 6 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | A whole ribbon: a whole from halves and quarters |
 | 2 | Snip a half: a half, then a quarter that needs the scissors |
 | 3 | Three quarters: ¾ as ½ + ¼, then from two halves with a snip |
+| 6 | Whole Switch: one ribbon is a half of the short spool and a quarter of the long one; choose the whole, then name the part |
 
 <!-- end generated -->
 
