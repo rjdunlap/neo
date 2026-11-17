@@ -99,6 +99,19 @@ import {
   rigRight,
   nextRig,
   rigLayout,
+  STREAK,
+  STREAK_CAP,
+  RIBBON,
+  RIBBON_TOP,
+  FF_W,
+  FF_H,
+  dueSet,
+  dueCards,
+  dueRight,
+  dueLayout,
+  runAt,
+  streakRun,
+  longestStreak,
   type Roll,
   type Kind,
   type Circle,
@@ -113,7 +126,7 @@ describe('plans', () => {
     expect(LEVELS).toEqual({
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 9 },
+      school: { min: 3, max: 10 },
     });
   });
   it('plans ask see / most / pick / sure / fair', () => {
@@ -513,10 +526,9 @@ describe('levels 4–5 layout', () => {
 
 describe('level 6: watch it settle', () => {
   const sets = (seed: number) => makeRound(6, new Rng(seed));
-  it('the plan and the school range', () => {
+  it('the plan', () => {
     expect(planFor(6)).toEqual({ level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 });
     expect(SETTLE_RUNS[SETTLE_RUNS.length - 1]).toBe(planFor(6).spins);
-    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
   });
   it('each set is a six-wedge wheel of the favourite and one friend, k of 1, 3 or 5, and the two sets differ', () => {
     for (let seed = 1; seed <= 300; seed++) {
@@ -618,9 +630,8 @@ describe('level 6: watch it settle', () => {
 });
 
 describe('level 7: two dice', () => {
-  it('the plan and the school range', () => {
+  it('the plan', () => {
     expect(planFor(7)).toEqual({ level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
     // Levels 1–6 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -817,9 +828,8 @@ describe('level 8: the typical spin', () => {
     }
   };
   const sum = (t: readonly number[]) => t.reduce((a, b) => a + b, 0);
-  it('the plan and the school range', () => {
+  it('the plan', () => {
     expect(planFor(8)).toEqual({ level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 });
-    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
     // Levels 1–7 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6, 7].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -1071,10 +1081,9 @@ describe('wheel size: six wedges by default, eight at level 9', () => {
 
 describe('level 9: rig it', () => {
   const sets = (seed: number) => makeRound(9, new Rng(seed));
-  it('the plan and the school range', () => {
+  it('the plan', () => {
     expect(planFor(9)).toEqual({ level: 9, ask: 'rig', name: 'Rig it', sets: 2, spins: 80 });
     expect(PROOF_SPINS).toBe(planFor(9).spins);
-    expect(LEVELS.school).toEqual({ min: 3, max: 9 });
     // Levels 1–8 keep their numbers and asks, so saved levels and pins stay valid.
     expect([1, 2, 3, 4, 5, 6, 7, 8].map((l) => planFor(l).ask)).toEqual([
       'see',
@@ -1249,5 +1258,189 @@ describe('level 9: rig it', () => {
       // The boxes are far enough apart that a dropped wedge is nearer one than the other.
       expect(Math.abs(L.boxes[0].x - L.boxes[1].x)).toBeGreaterThanOrEqual(RIG_BOX + 40);
       expect(L.strip.w).toBeGreaterThanOrEqual(480);
+    });
+});
+
+describe('level 10: is it due?', () => {
+  const kindsOfRun = (wheel: Wheel, spins: { wedge: number }[]) => spins.map((x) => wheel[x.wedge]);
+
+  it('the plan, and levels 1–9 keep their asks', () => {
+    expect(planFor(10)).toEqual({ level: 10, ask: 'due', name: 'Is it due?', sets: 2, spins: STREAK_CAP });
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => planFor(l).ask)).toEqual([
+      'see',
+      'most',
+      'pick',
+      'sure',
+      'fair',
+      'settle',
+      'dice',
+      'typical',
+      'rig',
+    ]);
+    expect([STREAK, STREAK_CAP]).toEqual([5, 240]);
+  });
+
+  it('a round holds one even and one uneven six-wedge wheel, the same favourite, a new friend', () => {
+    let evenFirst = 0;
+    for (const seed of SEEDS) {
+      const round = makeRound(10, new Rng(seed));
+      expect(round).toHaveLength(2);
+      const evens = round.map((set) => dueRight(set.wheels[0], set.racers!) === 'same');
+      expect(evens.filter(Boolean)).toHaveLength(1);
+      if (evens[0]) evenFirst++;
+      expect(round[0].favourite).toBe(round[1].favourite);
+      expect(round[0].friend).not.toBe(round[1].friend);
+      for (const set of round) {
+        const w = set.wheels[0];
+        expect(set.wheels).toHaveLength(1);
+        expect(w).toHaveLength(WEDGES);
+        expect(contiguous(w)).toBe(true);
+        expect(set.racers).toEqual([set.favourite, set.friend]);
+        expect(COLOR_OF[set.favourite!]).not.toBe(COLOR_OF[set.friend!]);
+        expect([2, 3, 4]).toContain(countOf(w, set.favourite!));
+        expect(countOf(w, set.favourite!) + countOf(w, set.friend!)).toBe(WEDGES);
+      }
+    }
+    // The order is seeded: both orders turn up.
+    expect(evenFirst).toBeGreaterThan(SEEDS.length * 0.3);
+    expect(evenFirst).toBeLessThan(SEEDS.length * 0.7);
+  });
+
+  it('dueSet: even is 3–3, uneven gives the favourite 4 or 2, both ways', () => {
+    const favs = new Set<number>();
+    for (const seed of SEEDS) {
+      const even = dueSet(new Rng(seed), 'duck', true);
+      expect(countOf(even.wheels[0], 'duck')).toBe(3);
+      const un = dueSet(new Rng(seed), 'duck', false, 'pig');
+      expect(un.friend).not.toBe('pig');
+      favs.add(countOf(un.wheels[0], 'duck'));
+    }
+    expect([...favs].sort()).toEqual([2, 4]);
+  });
+
+  it('streakRun is the stream of honest spins, stopped at the first five in a row', () => {
+    for (const seed of SEEDS) {
+      const set = dueSet(new Rng(seed), 'duck', seed % 2 === 0);
+      const wheel = set.wheels[0];
+      const run = streakRun(new Rng(seed + 5), wheel);
+      // Exactly the spins `spin(rng)` gives from the same seed, in order: none skipped, filtered or drawn again.
+      const rng = new Rng(seed + 5);
+      expect(run).toEqual(run.map(() => spin(rng)));
+      const kinds = kindsOfRun(wheel, run);
+      expect(run.length).toBeGreaterThanOrEqual(STREAK);
+      expect(run.length).toBeLessThanOrEqual(STREAK_CAP);
+      const at = (n: number) => runAt(kinds.slice(0, n)).length;
+      // No earlier spin ended a run of five; the last one did, unless the cap stopped it.
+      for (let n = 1; n < run.length; n++) expect(at(n)).toBeLessThan(STREAK);
+      if (run.length < STREAK_CAP) expect(at(run.length)).toBe(STREAK);
+      // The next spin is the stream's next draw: the run consumed nothing past its last spin.
+      const again = new Rng(seed + 5);
+      streakRun(again, wheel);
+      expect(spin(again)).toEqual(spin(rng));
+    }
+  });
+
+  it('the cap stops a run that has no streak, and the longest streak is shown instead', () => {
+    const wheel: Wheel = ['duck', 'duck', 'duck', 'pig', 'pig', 'pig'];
+    const short = streakRun(new Rng(3), wheel, 4);
+    expect(short).toHaveLength(4);
+    const best = longestStreak(kindsOfRun(wheel, short));
+    expect(best.length).toBeGreaterThanOrEqual(1);
+    expect(best.length).toBeLessThanOrEqual(4);
+  });
+
+  it('on the even wheel a streak arrives by the cap in at least 99.9% of runs, at a median of 20–26 spins', () => {
+    const wheel: Wheel = ['duck', 'duck', 'duck', 'pig', 'pig', 'pig'];
+    const lengths: number[] = [];
+    let byStreak = 0;
+    for (let seed = 1; seed <= 20000; seed++) {
+      const run = streakRun(new Rng(seed * 31 + 7), wheel);
+      lengths.push(run.length);
+      if (runAt(kindsOfRun(wheel, run)).length === STREAK) byStreak++;
+    }
+    expect(byStreak / 20000).toBeGreaterThanOrEqual(0.999);
+    lengths.sort((a, b) => a - b);
+    const median = lengths[10000];
+    expect(median).toBeGreaterThanOrEqual(20);
+    expect(median).toBeLessThanOrEqual(26);
+  });
+
+  it('runAt and longestStreak read the results', () => {
+    expect(runAt([])).toEqual({ kind: null, length: 0 });
+    expect(runAt(['duck', 'pig', 'pig'])).toEqual({ kind: 'pig', length: 2 });
+    expect(longestStreak([])).toEqual({ kind: null, length: 0, end: -1 });
+    // The latest of the longest.
+    expect(longestStreak(['duck', 'duck', 'pig', 'cat', 'cat', 'dog'])).toEqual({
+      kind: 'cat',
+      length: 2,
+      end: 4,
+    });
+    for (const seed of SEEDS) {
+      const wheel = dueSet(new Rng(seed), 'duck', true).wheels[0];
+      const kinds = kindsOfRun(wheel, streakRun(new Rng(seed), wheel));
+      const best = longestStreak(kinds);
+      const tail = runAt(kinds);
+      if (tail.length === STREAK) expect(best).toEqual({ ...tail, end: kinds.length - 1 });
+    }
+  });
+
+  it('the answer comes from the wheel alone: the same on 3–3, otherwise whoever has more wedges', () => {
+    const racers: [Kind, Kind] = ['duck', 'pig'];
+    for (let a = 1; a < WEDGES; a++) {
+      const wheel = raceWheel(racers, a);
+      const right = dueRight(wheel, racers);
+      expect(right).toBe(a === 3 ? 'same' : a > 3 ? 'duck' : 'pig');
+      // The function takes no results, so no streak can change it; and it is always one of the three cards.
+      expect(dueRight.length).toBe(2);
+      expect(dueCards(racers)).toContain(right);
+    }
+    expect(dueCards(racers)).toEqual(['duck', 'pig', 'same']);
+  });
+
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
+  type R = { x0: number; y0: number; x1: number; y1: number };
+  const rect = (b: Box): R => ({
+    x0: b.x - b.w / 2,
+    y0: b.y - b.h / 2,
+    x1: b.x + b.w / 2,
+    y1: b.y + b.h / 2,
+  });
+  const hit = (p: R, q: R) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  for (const [w, h] of VIEWS)
+    it(`layout at ${w}x${h}`, () => {
+      const L = dueLayout({ w, h });
+      expect(L.portrait).toBe(h > w);
+      const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
+      const corners = [
+        { x0: 0, y0: 0, x1: 120, y1: 120 },
+        { x0: w - 120, y0: 0, x1: w, y1: 120 },
+      ];
+      const s = L.spinner;
+      const wheel = { x0: s.x - s.r - 8, y0: s.y - s.r - 30, x1: s.x + s.r + 8, y1: s.y + s.r + 8 };
+      // The ribbon with the run's length above it.
+      const ribbon = { ...rect(L.ribbon), y0: L.ribbon.y - L.ribbon.h / 2 - RIBBON_TOP };
+      const all: R[] = [wheel, ribbon, rect(L.fast), ...L.cards.map(rect)];
+      for (const r of all) {
+        expect(r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h).toBe(true);
+        expect(hit(r, pet)).toBe(false);
+        for (const c of corners) expect(hit(r, c)).toBe(false);
+      }
+      all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(hit(a, b)).toBe(false)));
+      // Targets: the spinner, the arrows and the three cards, never under 100. The ribbon is display only.
+      expect(2 * s.r).toBeGreaterThanOrEqual(100);
+      expect([L.fast.w, L.fast.h]).toEqual([FF_W, FF_H]);
+      expect(L.cards).toHaveLength(3);
+      for (const c of L.cards) expect([c.w, c.h]).toEqual([ABOUT_W, ABOUT_H]);
+      for (const b of [L.fast, ...L.cards]) expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
+      expect(L.ribbon.w).toBe(L.cell * RIBBON);
+      expect(L.cell).toBeGreaterThanOrEqual(40);
+      expect(L.cell).toBeLessThanOrEqual(56);
     });
 });

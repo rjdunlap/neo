@@ -92,4 +92,16 @@ export const VOICE = {
   'sf.rig-yes': ["Yes! {n} of 8. Let's spin 80 times and see."],
   'sf.rig-proof': ['{n} of 80: about {a} in every {b}!'],
   'sf.done-rig': ['Two wheels made to order! Great making.'],
+  'sf.instruct.10': ['Spin until someone comes up five times in a row. Then: who is more likely next?'],
+  'sf.streak': ['{kind} came up {n} times in a row! Which is more likely on the next spin?'],
+  'sf.due-same': [
+    "Yes, the same! Three wedges each, just like before the run. The spinner doesn't remember.",
+  ],
+  'sf.due-more': [
+    'Yes! {kind} has {n} wedges and {other} has {m}, so {kind} is more likely, just like before the run.',
+  ],
+  'sf.due-hint': ['Look at the wheel, not the run. Who has more wedges?'],
+  'sf.spin-once': ['Tap the spinner for one more spin.'],
+  'sf.due-next': ['{kind}! Every spin starts fresh.'],
+  'sf.done-due': ['Two runs watched! The chance is in the wheel.'],
 } satisfies Record<string, string[]>;

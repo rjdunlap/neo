@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–9 |
+| school | 3–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 7 | Two dice |
 | 8 | The typical spin |
 | 9 | Rig it |
+| 10 | Is it due? |
 
 <!-- end generated -->
 

@@ -45,6 +45,8 @@ export interface SpinnerOptions {
   stand?: boolean;
   /** Leave the sections out: level 5 draws each wedge as its own movable piece on top. */
   bare?: boolean;
+  /** Draw a line between every two wedges, so a section's wedges can be counted (level 10). */
+  lines?: boolean;
 }
 
 /** A spinner of radius `r` on a stand, with the fixed pointer at the top; one section per critter, its face at the middle. */
@@ -88,6 +90,11 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
     if (s.count === w.length) g.circle(0, 0, r).fill(c.fill).stroke({ width: 4, color: c.line });
     else g.moveTo(0, 0).arc(0, 0, r, a0, a1).closePath().fill(c.fill).stroke({ width: 4, color: c.line });
   }
+  if (opts.lines)
+    for (let i = 0; i < w.length; i++)
+      g.moveTo(0, 0)
+        .lineTo(Math.cos(rad(i * deg)) * r, Math.sin(rad(i * deg)) * r)
+        .stroke({ width: 4, color: sw(w[i]).line });
   wheel.addChild(g);
   for (const s of sections(w)) {
     const mid = rad((s.start + s.count / 2) * deg);
@@ -388,6 +395,64 @@ export function fastButton(w: number, h: number): Container {
       .stroke({ width: 4, color: swatch.green.line, join: 'round' });
   c.addChild(g);
   return c;
+}
+
+// ---- level 10: is it due? ----
+
+/**
+ * A level-10 answer card: one critter's face, or "the same": both faces on a level seesaw. Pictured, never read.
+ */
+export function dueCard(card: Kind | 'same', racers: readonly [Kind, Kind], w: number, h: number): Container {
+  const c = new Container();
+  const line = card === 'same' ? swatch.blue.line : sw(card).line;
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 18)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: line }),
+  );
+  if (card !== 'same') {
+    c.addChild(face(card, h * 0.7));
+    return c;
+  }
+  // The seesaw: a level plank on a small wedge, one critter at each end.
+  const y = h / 2 - 40;
+  c.addChild(
+    new Graphics()
+      .poly([-16, y + 24, 16, y + 24, 0, y + 4])
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line, join: 'round' })
+      .roundRect(-w / 2 + 16, y - 4, w - 32, 10, 5)
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line }),
+  );
+  racers.forEach((kind, i) => {
+    const f = face(kind, 58);
+    f.position.set((i === 0 ? -1 : 1) * (w / 2 - 46), y - 34);
+    c.addChild(f);
+  });
+  return c;
+}
+
+/**
+ * One cell of level 10's ribbon: both critters' faces, one shown at a time (so a fast run swaps a flag, never builds
+ * a face).
+ */
+export function ribbonCell(
+  racers: readonly [Kind, Kind],
+  cell: number,
+): { node: Container; show(kind: Kind | null): void } {
+  const node = new Container();
+  const faces = racers.map((kind) => {
+    const f = face(kind, cell - 8);
+    f.visible = false;
+    node.addChild(f);
+    return f;
+  });
+  return {
+    node,
+    show: (kind) => faces.forEach((f, i) => (f.visible = racers[i] === kind)),
+  };
 }
 
 // ---- level 7: two dice ----

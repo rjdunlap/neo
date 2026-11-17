@@ -44,14 +44,14 @@ export const EDGE_DEG = 12;
 export const RIG_WEDGES = 8;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical' | 'rig';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle' | 'dice' | 'typical' | 'rig' | 'due';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4, 6–9), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6–10), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers; level 9: the proof run); the spinner or tray stops taking them after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together; level 7: rolls of the two dice; level 8: the six spins that stand as towers; level 9: the proof run; level 10: the cap on the run that waits for a streak); the spinner or tray stops taking them after this many. */
   spins: number;
 }
 
@@ -65,12 +65,13 @@ const PLANS: readonly Plan[] = [
   { level: 7, ask: 'dice', name: 'Two dice', sets: 1, spins: 12 },
   { level: 8, ask: 'typical', name: 'The typical spin', sets: 2, spins: 6 },
   { level: 9, ask: 'rig', name: 'Rig it', sets: 2, spins: 80 },
+  { level: 10, ask: 'due', name: 'Is it due?', sets: 2, spins: 240 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 9 },
+  school: { min: 3, max: 10 },
 };
 
 export function planFor(level: number): Plan {
@@ -97,7 +98,7 @@ export interface SetSpec {
   cards?: Card[];
   /** Level 5: the two racers; the wheel holds the first's wedges, then the second's. */
   racers?: [Kind, Kind];
-  /** Level 6: the other critter on the wheel, and how many of the six wedges the favourite has. */
+  /** Levels 6 and 9–10: the other critter on the wheel; level 6: how many of the six wedges the favourite has. */
   friend?: Kind;
   k?: number;
   /** Level 9: the share the pet asks for, `k` of the eight wedges, spoken as `n` out of every `of`. */
@@ -169,6 +170,14 @@ export function makeRound(level: number, rng: Rng): SetSpec[] {
   if (plan.ask === 'rig') {
     const fav = pickCritters(rng, 1)[0];
     for (let i = 0; i < plan.sets; i++) out.push(rigSet(rng, fav, i === 0, out[i - 1]?.friend));
+    return out;
+  }
+  if (plan.ask === 'due') {
+    // One even wheel and one uneven one, in seeded order.
+    const fav = pickCritters(rng, 1)[0];
+    const evenFirst = rng.chance(0.5);
+    for (let i = 0; i < plan.sets; i++)
+      out.push(dueSet(rng, fav, (i === 0) === evenFirst, out[i - 1]?.friend));
     return out;
   }
   for (let i = 0; i < plan.sets; i++) {
@@ -364,6 +373,76 @@ export const rigRight = (wheel: Wheel, fav: Kind, k: number) => countOf(wheel, f
 export function nextRig(wheel: Wheel, racers: readonly [Kind, Kind], k: number): Kind | null {
   const have = countOf(wheel, racers[0]);
   return have === k ? null : have < k ? racers[0] : racers[1];
+}
+
+// ---- level 10: is it due? ----
+
+/** The run stops at the first spin where one critter has come up this many times running. */
+export const STREAK = 5;
+/** ... or at this many spins (about 2 runs in 10 000 on an even wheel), when the longest streak so far is shown instead. */
+export const STREAK_CAP = 240;
+
+/**
+ * A level-10 set: the favourite and one friend on a six-wedge wheel, even (3–3) or uneven (the favourite 4 or 2 of the
+ * six, seeded). The friend is never `lastFriend`.
+ */
+export function dueSet(rng: Rng, fav: Kind, even: boolean, lastFriend?: Kind): SetSpec {
+  const friend =
+    pickCritters(rng, 1, lastFriend ? [fav, lastFriend] : [fav])[0] ?? pickCritters(rng, 1, [fav])[0];
+  const racers: [Kind, Kind] = [fav, friend];
+  const a = even ? WEDGES / 2 : rng.pick([4, 2]);
+  return { wheels: [raceWheel(racers, a)], favourite: fav, friend, racers };
+}
+
+/** The run at the end of `results`: who came up last and how many times running (length 0 before any spin). */
+export function runAt(results: readonly Kind[]): { kind: Kind | null; length: number } {
+  const kind = results[results.length - 1] ?? null;
+  let length = 0;
+  while (length < results.length && results[results.length - 1 - length] === kind) length++;
+  return { kind, length };
+}
+
+/**
+ * Honest spins of `wheel` until the last `STREAK` agree, or `cap` spins: every one is `spin(rng)`, in order, none
+ * skipped, filtered or drawn again. The rule only says when to stop looking; it never touches a spin.
+ */
+export function streakRun(rng: Rng, wheel: Wheel, cap = STREAK_CAP): Spin[] {
+  const out: Spin[] = [];
+  let last: Kind | null = null,
+    run = 0;
+  while (out.length < cap && run < STREAK) {
+    const s = spin(rng);
+    out.push(s);
+    const kind = wheel[s.wedge];
+    run = kind === last ? run + 1 : 1;
+    last = kind;
+  }
+  return out;
+}
+
+/** The longest run of one critter in `results`, the latest when several are as long; `end` is its last spin's index. */
+export function longestStreak(results: readonly Kind[]): { kind: Kind | null; length: number; end: number } {
+  let best = { kind: null as Kind | null, length: 0, end: -1 };
+  let run = 0;
+  results.forEach((kind, i) => {
+    run = i > 0 && results[i - 1] === kind ? run + 1 : 1;
+    if (run >= best.length) best = { kind, length: run, end: i };
+  });
+  return best;
+}
+
+/** A level-10 answer: one of the two critters, or the same. */
+export type DueCard = Kind | 'same';
+/** The three cards, left to right: the favourite, the friend, the same. */
+export const dueCards = (racers: readonly [Kind, Kind]): DueCard[] => [racers[0], racers[1], 'same'];
+
+/**
+ * Who is more likely on the next spin: the same on an even wheel, otherwise the critter with more wedges. It reads the
+ * wheel and nothing else: no result, run or streak can enter it.
+ */
+export function dueRight(wheel: Wheel, racers: readonly [Kind, Kind]): DueCard {
+  const [a, b] = racers.map((k) => countOf(wheel, k));
+  return a === b ? 'same' : a > b ? racers[0] : racers[1];
 }
 
 // ---- level 7: two dice ----
@@ -971,6 +1050,58 @@ export function rigLayout(view: { w: number; h: number }): RigLayout {
       STRIP_H,
     ),
     check: box((190 + w - 20) / 2, h - 20 - BTN_H / 2, CHECK_W, BTN_H),
+  };
+}
+
+/**
+ * Level 10: one six-wedge spinner, the ribbon of the latest twelve results (the run's length rides above it), the
+ * fast-forward button and the three answer cards. The ribbon is display only, so its faces shrink to fit beside the
+ * spinner; the spinner, the button and the cards are the targets.
+ */
+export const RIBBON = 12,
+  RIBBON_CELL = 56,
+  RIBBON_TOP = 40;
+export interface DueLayout {
+  portrait: boolean;
+  spinner: Circle;
+  /** The ribbon: `RIBBON` cells of `cell` in a row; the run's length sits up to `RIBBON_TOP` above it. */
+  ribbon: Box;
+  cell: number;
+  fast: Box;
+  cards: Box[];
+}
+
+export function dueLayout(view: { w: number; h: number }): DueLayout {
+  const { w, h } = view;
+  const row = (left: number, right: number, y: number) => {
+    const gap = Math.min(40, (right - left - 3 * ABOUT_W) / 2);
+    const x0 = (left + right) / 2 - ABOUT_W - gap;
+    return [0, 1, 2].map((i) => box(x0 + i * (ABOUT_W + gap), y, ABOUT_W, ABOUT_H));
+  };
+  const ribbon = (cx: number, y: number, room: number) => {
+    const cell = Math.min(RIBBON_CELL, Math.floor(room / RIBBON));
+    return { cell, ribbon: box(cx, y, cell * RIBBON, cell) };
+  };
+  if (h <= w) {
+    // The spinner on the left, clear of the pet; the ribbon, the button and the cards stacked on its right.
+    const left = 460,
+      right = w - 30;
+    const cx = (left + right) / 2;
+    return {
+      portrait: false,
+      spinner: { x: 250, y: 330, r: SETTLE_R },
+      ...ribbon(cx, 250, right - left),
+      fast: box(cx, 425, FF_W, FF_H),
+      cards: row(left, right, h - 20 - ABOUT_H / 2),
+    };
+  }
+  // Upright: the spinner, the ribbon under it, the button, and the cards beside the pet.
+  return {
+    portrait: true,
+    spinner: { x: w / 2, y: 130 + SETTLE_R + 10, r: SETTLE_R },
+    ...ribbon(w / 2, 590, w - 60),
+    fast: box(w / 2, 720, FF_W, FF_H),
+    cards: row(180, w - 20, h - 20 - ABOUT_H / 2),
   };
 }
 
