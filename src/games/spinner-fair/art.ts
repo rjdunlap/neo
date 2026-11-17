@@ -289,7 +289,7 @@ export function drawStrip(
 }
 
 /**
- * The strip's fixed ruler (a tick at every one of `of` parts: sixths at level 6, eighths at level 9) and the dashed
+ * The strip's fixed ruler (a tick at every one of `of` parts: sixths at level 6, eighths at level 9, quarters at level 11) and the dashed
  * marker at the wheel's share, `k` parts, with its arrow underneath; no marker while `k` is null.
  */
 export function stripRuler(w: number, h: number, k: number | null, of = WEDGE_COUNT): Graphics {
@@ -453,6 +453,100 @@ export function ribbonCell(
     node,
     show: (kind) => faces.forEach((f, i) => (f.visible = racers[i] === kind)),
   };
+}
+
+// ---- level 11: the hidden spinner ----
+
+export interface CoverArt {
+  /** The dome that hides the wedges; it rides on the wheel, so its question marks turn with it. */
+  dome: Container;
+  /** The window at the pointer: it stays still and shows only who the wheel stopped on. */
+  window: Container;
+  show(kind: Kind | null): void;
+}
+
+/**
+ * Level 11's cover for a two-critter wheel of radius `r`: a dome painted with question marks, the same all the way
+ * round so it gives nothing away, and a window under the pointer where the landing critter pops up.
+ */
+export function cover(racers: readonly [Kind, Kind], r: number): CoverArt {
+  const dome = new Container();
+  dome.eventMode = 'none';
+  const c = swatch.purple;
+  dome.addChild(
+    new Graphics()
+      .circle(0, 0, r + 2)
+      .fill(c.fill)
+      .stroke({ width: 5, color: c.line })
+      .circle(0, 0, r * 0.1)
+      .fill(swatch.red.fill)
+      .stroke({ width: 4, color: swatch.red.line }),
+  );
+  const marks = 8;
+  for (let i = 0; i < marks; i++) {
+    const a = rad((i + 0.5) * (360 / marks));
+    const q = label('?', r * 0.34, 0xffffff);
+    q.position.set(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.62);
+    q.rotation = a + Math.PI / 2;
+    dome.addChild(q);
+  }
+  const window = new Container();
+  window.eventMode = 'none';
+  window.position.set(0, -r * 0.62);
+  const wr = r * 0.3;
+  const bg = new Graphics();
+  window.addChild(bg);
+  const faces = racers.map((kind) => {
+    const f = face(kind, wr * 1.5);
+    f.visible = false;
+    window.addChild(f);
+    return f;
+  });
+  const show = (kind: Kind | null) => {
+    bg.clear()
+      .circle(0, 0, wr)
+      .fill(kind ? sw(kind).fill : 0xffffff)
+      .stroke({ width: 5, color: ink });
+    faces.forEach((f, i) => (f.visible = racers[i] === kind));
+  };
+  show(null);
+  return { dome, window, show };
+}
+
+/**
+ * A level-11 answer card: a small wheel with `k` of its eight wedges (a quarter, a half or three quarters) in the
+ * favourite's colour with its face, the rest the friend's with its face. Pictured, never read.
+ */
+export function shareCard(k: number, fav: Kind, friend: Kind, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 18)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.blue.line }),
+  );
+  const r = h / 2 - 14;
+  const split = (k / 8) * 360;
+  const g = new Graphics();
+  for (const [kind, from, to] of [
+    [fav, 0, split],
+    [friend, split, 360],
+  ] as const)
+    g.moveTo(0, 0)
+      .arc(0, 0, r, rad(from), rad(to))
+      .closePath()
+      .fill(sw(kind).fill)
+      .stroke({ width: 4, color: ink, join: 'round' });
+  c.addChild(g);
+  for (const [kind, mid, share] of [
+    [fav, split / 2, k],
+    [friend, (split + 360) / 2, 8 - k],
+  ] as const) {
+    const f = face(kind, share <= 2 ? r * 0.62 : r * 0.8);
+    f.position.set(Math.cos(rad(mid)) * r * 0.55, Math.sin(rad(mid)) * r * 0.55);
+    c.addChild(f);
+  }
+  return c;
 }
 
 // ---- level 7: two dice ----

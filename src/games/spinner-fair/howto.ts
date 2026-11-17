@@ -42,6 +42,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Tap the spinner (or the arrows, to hurry): it spins until one critter comes up five times in a row. Then tap who is more likely next (either critter, or the same), and spin once more.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: "The wheel is under a cover. Tap the spinner, then the arrows twice, and watch the strip fill over 160 spins; then tap the share the strip shows for the pet's favourite: a quarter, half or three quarters.",
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -64,6 +69,11 @@ export const HOW_TO: GameHowTo = {
       text: 'After a right Check, 80 spins play to bear it out; after the second wheel, one sticker, whatever the spins did.',
     },
     { from: 10, to: 10, text: "After the second wheel's one more spin, one sticker, whoever came up." },
+    {
+      from: 11,
+      to: 11,
+      text: 'After the right card the cover lifts and the wedges are counted; after the second wheel, one sticker, whatever the cover showed.',
+    },
   ],
   note: [
     {
@@ -105,6 +115,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'A run of one result does not change the next spin: the chance is in the wheel. No spin is ever a mistake. Only a wrong card is a miss: with three wedges each the answer is the same, otherwise it is the critter with more wedges. After two wrong cards on a wheel the wedge counts and the answer glow, which counts as a hint. Nothing is won, bet or unlocked by a spin.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: "A long run is evidence for a hidden wheel's shares: an estimate, not proof. No spin is ever a mistake. Only a card the strip does not point to is a miss (a strip exactly halfway accepts both); after two on a wheel the strip's end and its card glow: a hint. If the uncovered wheel differs from the run, that is unusual: she still read the strip right. Nothing is won, bet or unlocked by a spin.",
     },
   ],
 };

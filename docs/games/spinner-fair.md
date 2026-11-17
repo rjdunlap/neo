@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–10 |
+| school | 3–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 8 | The typical spin |
 | 9 | Rig it |
 | 10 | Is it due? |
+| 11 | The hidden spinner |
 
 <!-- end generated -->
 
