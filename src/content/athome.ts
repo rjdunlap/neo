@@ -169,6 +169,71 @@ export const AT_HOME_NOTES: Record<string, AtHomeNotes> = {
       say: 'Which word was hardest to hide? Where would you look first?',
     },
   },
+  // Batch 3 (2026-11-17): eight more that name something from the kit; Treehouse now has a toddler game with notes.
+  'recipe-workshop': {
+    all: {
+      notice: 'Does {name} fill the bowl, stir it or hand it to you?',
+      say: 'In it goes. Stir, stir. All done!',
+    },
+  },
+  'song-maker': {
+    all: {
+      notice: 'Does {name} tap one pot, tap each in turn or watch your spoon?',
+      say: 'Tap, tap, boom. Again? Tap, tap, boom.',
+    },
+    school: {
+      notice: 'Does {name} play it back the same way, or change a part?',
+      say: 'Was that the same song? Which part would you change?',
+    },
+  },
+  'sound-garden': {
+    all: {
+      notice: 'Does {name} tap along, wait for a turn or speed up?',
+      say: 'Tap, tap, tap. Slow, slow. Fast, fast, fast!',
+    },
+  },
+  'egg-catch': {
+    all: {
+      notice: 'Does {name} watch the tube, look in the bowl or reach for the ball?',
+      say: 'In it goes. Here it comes. Caught it!',
+    },
+    school: {
+      notice: 'Does {name} move the bowl after seeing where the first roll lands?',
+      say: 'Where will it come out? What happens if we tilt the tube more?',
+    },
+  },
+  'bumper-garden': {
+    all: {
+      notice: 'Does {name} follow the ball, move a cup or tip the tray?',
+      say: 'Roll! Bump. It hit the cup. Again?',
+    },
+  },
+  'goodnight-room': {
+    all: {
+      notice: 'Does {name} look at each thing, point to one or wave?',
+      say: 'Goodnight, lamp. Goodnight, teddy. Goodnight, window.',
+    },
+  },
+  'seesaw-balance': {
+    all: {
+      notice: 'Does {name} add a spoon, take one out or swing the hanger?',
+      say: 'One more spoon. Down it goes! Now this side.',
+    },
+    school: {
+      notice: 'Does {name} even it up by adding to one cup, or by taking from the other?',
+      say: 'Which cup will go down? What would make it hang level?',
+    },
+  },
+  'relay-woods': {
+    all: {
+      notice: 'Does {name} pass the picture along, keep hold of it or give it to one friend?',
+      say: 'Here you go, bear. Pass it on. Thank you!',
+    },
+    school: {
+      notice: 'Does {name} give each friend a turn, or skip to the end of the row?',
+      say: 'Who gets it next? What would show us it got to the end?',
+    },
+  },
 };
 
 type Lined = Pick<GameModule, 'id' | 'bands' | 'offScreen'>;
