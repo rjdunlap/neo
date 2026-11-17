@@ -7,7 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
@@ -26,7 +26,8 @@ import {
   slotCenter,
   TAP_HOP,
   tapHops,
-  trayRows,
+  oneAtATimeLayout,
+  puzzleLayout,
   whereWords,
   type Piece,
   type PuzzlePlan,
@@ -198,11 +199,7 @@ class PuzzlePals implements Game {
 
   /** Where the one waiting piece sits: beside the frame (right of it sideways, under it upright). */
   private lapHome(v: View) {
-    const bw = PICTURE_W * this.scale;
-    const bh = PICTURE_H * this.scale;
-    const pw = bw / this.plan.cols;
-    if (v.w >= v.h) return { x: this.board.x + bw + 40 + pw / 2, y: this.board.y + bh / 2 };
-    return { x: this.board.x + bw / 2, y: this.board.y + bh + 40 + bh / 2 };
+    return oneAtATimeLayout(v, this.plan.cols).home;
   }
 
   /** One at a time, because she touched: the next piece slides in from the right edge to its place beside the frame. */
@@ -296,35 +293,22 @@ class PuzzlePals implements Game {
       this.layoutOneAtATime(v);
       return;
     }
-    const n = this.pieces.length;
-    const rows = trayRows(n);
-    const trayH = rows === 1 ? 210 : 240;
-    const top = 112;
-    const boardW = Math.min(640, v.w - 300, ((v.h - top - trayH - 24) * PICTURE_W) / PICTURE_H);
-    this.scale = boardW / PICTURE_W;
-    this.board.position.set(v.w / 2 + 50 - boardW / 2, top);
+    const waiting = this.pieces.filter((p) => !p.placed);
+    const L = puzzleLayout(v, this.plan, this.pieces.length, waiting.length);
+    this.scale = L.scale;
+    this.board.position.set(L.board.x, L.board.y);
     this.board.scale.set(this.scale);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
-      .roundRect(160, v.h - trayH - 6, v.w - 185, trayH - 8, 30)
+      .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30)
       .fill(cream);
     this.drawFrame();
-    const pw = PICTURE_W / this.plan.cols;
-    const ph = PICTURE_H / this.plan.rows;
-
     // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
-    const maxH = rows === 1 ? 170 : 100;
-    const maxW = rows === 1 ? 240 : 130;
-    this.trayScale = Math.min(this.scale, maxH / ph, maxW / pw);
-    const waiting = this.pieces.filter((p) => !p.placed);
-    const perRow = Math.ceil(waiting.length / rows);
+    this.trayScale = L.trayScale;
     waiting.forEach((p, i) => {
-      const row = Math.floor(i / perRow);
-      const inRow = Math.min(perRow, waiting.length - row * perRow);
-      const x = spread(inRow, 180, v.w - 40, rows === 1 ? 270 : 145)[i % perRow];
-      const y = rows === 1 ? v.h - trayH / 2 - 10 : v.h - trayH + 60 + row * 112;
+      const { x, y } = L.homes[i];
       p.drag.home = { x, y };
       if (!p.drag.dragging) {
         this.ctx.tw.kill(p.node);
@@ -364,20 +348,9 @@ class PuzzlePals implements Game {
    * upright, with the pet's corner kept clear on the left.
    */
   private layoutOneAtATime(v: View) {
-    const sideways = v.w >= v.h;
-    // Upright there is height to spare, so the frame starts below the grown-up tip.
-    const top = sideways ? 112 : 150;
-    const left = 180;
-    const gap = 40;
-    const aspect = PICTURE_H / PICTURE_W;
-    const across = 1 + 1 / this.plan.cols;
-    const boardW = sideways
-      ? Math.min(640, (v.w - left - 40 - gap) / across, (v.h - top - 40) / aspect)
-      : Math.min(640, v.w - 80, (v.h - top - 40 - gap) / (2 * aspect));
-    this.scale = this.trayScale = boardW / PICTURE_W;
-    const x = sideways ? left + (v.w - left - 40 - boardW * across - gap) / 2 : (v.w - boardW) / 2;
-    const y = sideways ? Math.max(top, (v.h - boardW * aspect) / 2) : top;
-    this.board.position.set(x, y);
+    const L = oneAtATimeLayout(v, this.plan.cols);
+    this.scale = this.trayScale = L.scale;
+    this.board.position.set(L.board.x, L.board.y);
     this.board.scale.set(this.scale);
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
     this.drawFrame();
@@ -462,6 +435,7 @@ export const puzzlePals: GameModule = {
   challenge: 'space',
   skills: ['spatial-reasoning', 'part-whole', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   // Level 8, one big piece at a time, is lap's first; a toddler carried a pinned 8 lands on toddler's easiest.
   entryLevels: [8],

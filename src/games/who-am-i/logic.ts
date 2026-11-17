@@ -933,6 +933,9 @@ export interface AskLayout extends GalleryLayout {
 }
 
 export const TRAY_H = 110;
+/** The corner column Home and "?" stand in upright: this wide, down to this far. */
+const HOME_COLUMN = 115,
+  HOME_BOTTOM = 214;
 /** The most answers the strip shows: no chain of questions that split is longer (a rule test proves it). */
 export const ASK_STRIP = 5;
 
@@ -951,7 +954,8 @@ function trayStage(v: View, n: number): AskLayout {
       portrait
         ? {
             x: v.w / 2 - (ASK_STRIP * THUMB + (ASK_STRIP - 1) * gapS) / 2 + k * (THUMB + gapS),
-            y: sign.y + sign.h + 16,
+            // Five answers reach the left edge on a 768-wide phone area, so the row starts below Home and "?".
+            y: Math.max(sign.y + sign.h + 16, v.w < 5 * THUMB + 4 * gapS + 2 * HOME_COLUMN ? HOME_BOTTOM : 0),
             w: THUMB,
             h: THUMB,
           }
