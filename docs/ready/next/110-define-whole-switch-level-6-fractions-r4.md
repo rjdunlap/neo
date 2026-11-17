@@ -1,1 +1,0 @@
-**Define Whole Switch, level 6 (fractions R4)** (docs only, no check beyond links and `git diff --check`): freeze the 6/12/24 frame case, its claims and all accepted quantities for Ribbon Workshop, then queue its first build. [Study](../../deep-dives/subjects/fractions.md#build-slices-in-order) [Backlog](../../STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)

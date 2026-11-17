@@ -47,7 +47,7 @@ Three levels, all `school`. Each round is **two gifts** and earns one sticker. A
 **Changes from the study's proposed IDs.** These are written down so later packets do not go stale.
 
 - The study numbered the creative preschool entry 1 and launched at 2–4. This packet registers the assessed levels as **1–3** so the first build has no gap. Study 2→1, 3→2, 4→3. A creative or pre-K entry later gets the next free ID and an `order`/`entryLevels` that puts it first. Existing IDs are never renumbered.
-- The later rungs become: Three halves 4, Five sixths 5, Whole Switch 6 (the study's R4 "7"), Ribbon Cases 7 (the study's R5 "8"). Each needs its own definition.
+- The later rungs become: Three halves 4, Five sixths 5, Whole Switch 6 (the study's R4 "7"), Ribbon Cases 7 (the study's R5 "8"). Each needs its own definition; Whole Switch (6) is now defined in [whole-switch.md](whole-switch.md).
 - **Level 2's second gift asks for a quarter, not a half.** In the study's level 3 (make a half, with an exchange), the exchange is never needed while a half is in the tray, so no rule test could show it is taught. Here gift 1 still asks for a half: one case has only quarters, so "two quarters make a half" must be built. Gift 2 then requires the snip.
 
 ### First rounds
@@ -141,4 +141,4 @@ Each has a default the build uses. None waits on the developer before R2.
 3. **Land.** Default: **Counting Cove**, its twelfth game, if the lands layout test passes at every band and view. If it returns null there, use **Rainbow Meadow** (eleven games today). The region stays `counting-cove`. Never Tinker Lab, which already holds twelve. Never shrink a target.
 4. **Written fractions.** Default: `½` and `¼` on the cards and the tag at school, with the spoken name on every place. The alternative is pictures only, for a later pre-K entry.
 5. **Snip as a mode.** Default as specified. The alternative is a scissors button that snips the last tray half, which is modeless but leaves her no choice of piece. Choose it only if the browser play shows the mode being lost.
-6. **Later rungs.** Three halves (4), Five sixths (5), Whole Switch (6) and Ribbon Cases (7) each need their own definition, R4/R5 in the study, with the math-educator review the study names before Whole Switch ships.
+6. **Later rungs.** Three halves (4), Five sixths (5), Whole Switch (6) and Ribbon Cases (7) each need their own definition, R4/R5 in the study. Whole Switch (6) is now defined in [whole-switch.md](whole-switch.md) (its math-educator review is the building session's source check of the voice table); Ribbon Cases (7) is next.

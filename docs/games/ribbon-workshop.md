@@ -24,6 +24,8 @@
 
 ## Design notes
 
+Level 6 *Whole Switch* (a fixed ribbon named against a 12- or 24-tick whole) is [defined](../definitions/whole-switch.md) and not built.
+
 *After the fractions study; [definition](../definitions/ribbon-workshop.md).* A gift waits on the workbench and its tag asks for a ribbon of one length of a declared whole (the spool above the bench). She taps halves and quarters in the tray and each unrolls onto the bench end to end; tapping a bench piece sends it back to the tray, and undo takes back the last place, return or snip. When she thinks the length is right she taps the bow: the pieces join and tie around the gift. A round is two gifts and earns one sticker, with or without help. Every combination that makes the length is accepted (a rule test checks the accepted compositions against brute force), so one amount shows several names.
 
 Levels (school only, 1–3): 1 a whole from halves and quarters (two halves, a half and two quarters, or four quarters); 2 the scissors appear and gift 1 asks for a half (including a tray of only quarters), while gift 2 asks for a quarter from two halves and cannot be made without a snip; 3 three quarters, whose second gift tempts two halves (a whole, too long) until she returns one, snips the other half and uses a quarter. The scissors snip a tray half into two quarters in place. The bench holds six quarter-ticks (one and a half wholes); a place past that is refused with a shake and "no more room".
