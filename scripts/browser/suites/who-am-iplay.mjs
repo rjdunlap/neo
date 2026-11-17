@@ -87,7 +87,10 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       const r = neo.scene.game.round;
       return { gallery: r.gallery, expected: L.surprises(r.gallery, r.clues).filter(Boolean) };
     });
-    assert.ok(l4.gallery.includes('penguin') && l4.gallery.includes('bat'), 'level 4 has the penguin and the bat');
+    assert.ok(
+      l4.gallery.includes('penguin') && l4.gallery.includes('bat'),
+      'level 4 has the penguin and the bat',
+    );
     assert.ok(l4.expected.length >= 1, 'level 4 has a surprise step');
     await screenshot('who-am-i-4');
     await tapCard(await answerAt());
