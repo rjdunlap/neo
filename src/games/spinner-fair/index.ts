@@ -35,6 +35,7 @@ import {
 } from './logic';
 import { DiceGame } from './dice';
 import { DueGame } from './due';
+import { HiddenGame } from './hidden';
 import { RaceGame } from './race';
 import { RigGame } from './rig';
 import { SettleGame } from './settle';
@@ -621,7 +622,7 @@ export const spinnerFair: GameModule = {
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
   coplayHint:
-    'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair? Before levelling the towers, ask: how tall do you think they will end up? After a run of five, before the next spin, ask: does the spinner know what it did last time?',
+    'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair? Before levelling the towers, ask: how tall do you think they will end up? After a run of five, before the next spin, ask: does the spinner know what it did last time? At the hidden wheel, each guess its share after eight spins, then again after forty.',
   offScreen:
     'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell? For older children: roll two dice twenty times and tally the sums on a paper line from 2 to 12. Which sum came up most, and why? Or roll one die six times, build a tower of bricks for each roll, then share the bricks out until the towers are as level as you can make them: how tall are they? Or flip a coin until it lands the same way four times running and count the flips; then ask what the next flip will be.',
   hubIcon: () => new WigglyIcon(icon()),
@@ -633,6 +634,7 @@ export const spinnerFair: GameModule = {
     if (ask === 'typical') return new TypicalGame(ctx);
     if (ask === 'rig') return new RigGame(ctx);
     if (ask === 'due') return new DueGame(ctx);
+    if (ask === 'hidden') return new HiddenGame(ctx);
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,
