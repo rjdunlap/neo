@@ -497,7 +497,9 @@ class WhoAmI implements Game {
 
   /** What a tap on the sign says again, free: the clue, or at level 6 the answer (the instruction while she is choosing). */
   private repeatSign() {
-    const a = this.asking ? this.answer : null;
+    // While the pet is still asking her question aloud, only an answer already on the sign is said again.
+    const a = this.asking ? (this.busy ? this.shown : this.answer) : null;
+    if (this.asking && this.busy && !a) return;
     if (a) void this.sayAnswer(a);
     else void this.ctx.say(this.signLine);
   }
