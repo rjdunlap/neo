@@ -10,11 +10,14 @@ export default defineConfig({
   // Relative paths so the build works from any static host or sub-folder (e.g. GitHub Pages).
   base: './',
   // Two pages: the root is the creature-world rework (`src/rework.ts`), `classic/` the island game (`src/main.ts`).
+  // `art-lab/` is an unlinked art comparison (docs/rework/LOW-POLY-PILOT.md): built so a phone can open it, never precached.
   build: {
     chunkSizeWarningLimit: 1500,
     // Voice clips stay files (precached below) rather than base64 inside the bundle.
     assetsInlineLimit: (file: string) => (file.endsWith('.m4a') ? false : undefined),
-    rollupOptions: { input: { main: 'index.html', classic: 'classic/index.html' } },
+    rollupOptions: {
+      input: { main: 'index.html', classic: 'classic/index.html', artlab: 'art-lab/index.html' },
+    },
   },
   plugins: [
     VitePWA({
@@ -51,6 +54,9 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2,m4a}'],
         clientsClaim: true,
+        // The art lab stays online-only: its page, chunks and stills are named `artlab-*` or live under `art-lab/`.
+        globIgnores: ['art-lab/**', '**/artlab-*'],
+        navigateFallbackDenylist: [/\/art-lab\//],
       },
     }),
   ],
