@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Tide Line 5–6 definition (oceans slice 3, 2026-11-18)
+
+[PR #1782](https://github.com/rjdunlap/neo/pull/1782) froze [Pool time and Read the chart](../definitions/tide-line-5-6.md). Both use four windows on the same fictional island day. Level 5 marks two contrasting water states; level 6 matches three jobs by height. The build is queued as one slice.
+
 ### Cue Studio level 4, Which signal? (programming P4a, 2026-11-16)
 
 Branch `claude/cue-studio-which-signal`, slice P4a of [the P4 definition](../definitions/cue-studio-p4.md#build-slices-and-checks). School range 3–4, entry 3, ordinary step rule (the definition's stated lean under S8; pin-only not taken). Two signal rows, a bell and a flower, each with a request picture, signal pad, one action slot and a result chip; free firing of either signal (an empty row shrugs, no miss or hint); Check fires bell then flower and accepts each row by its own signal with a tick or cross per chip. Only a wrong Check is a miss; two wrong Checks or Help give the clue, each later Help sets one wrong row. Help ids `clue:`/`repair:` plus `slot:<n>` or `row:bell`/`row:flower`. The private Undo icon was replaced by the shared `undoIcon`. Voice wording source check not completed (ScratchJr teaching link returns 410); owed to P4b.
