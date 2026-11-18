@@ -323,9 +323,12 @@ class SudokuGarden implements Game {
       stuck = new Set(deadEnds(this.grid, this.shape));
     const here = this.grid[this.cursor],
       tints = geo.patches ? patchTints(geo) : null;
-    g.roundRect(-16, -16, w + 32, w + 32, 26)
+    // The frame narrows where the bed runs nearly edge to edge (an upright phone), so the view never cuts it.
+    const pad = Math.max(2, Math.min(16, this.board.x - 4)),
+      thin = pad < 8;
+    g.roundRect(-pad, -pad, w + 2 * pad, w + 2 * pad, thin ? 14 : 26)
       .fill(wood.light)
-      .stroke({ width: 7, color: wood.line });
+      .stroke({ width: thin ? 4 : 7, color: wood.line });
     for (let i = 0; i < this.grid.length; i++) {
       const x = geo.colOf[i] * cell + 3,
         y = geo.rowOf[i] * cell + 3,

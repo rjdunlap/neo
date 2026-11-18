@@ -3,6 +3,9 @@ export const MIN_TOUCH = 64;
 /** At school the cells and both buttons are 100 units: the ponds are 4 rows so that fits on a 768-unit side. */
 export const SCHOOL_TOUCH = 100;
 
+/** Hint and Start over at the grown-up levels: 88 units high, 44.7 CSS pixels on a 390-wide upright phone (was 76). */
+export const GROWN_BUTTON = 88;
+
 export type SlotKind = 'hint' | 'again';
 export interface Slot {
   kind: SlotKind;
@@ -21,7 +24,7 @@ export interface Slot {
  * and pet sit above the game and still take their taps, and Hint and Start over sit above the swipe area).
  */
 export function pondTouchLayout(cols: number, rows: number, w: number, h: number, school: boolean) {
-  const btn = school ? SCHOOL_TOUCH : 76,
+  const btn = school ? SCHOOL_TOUCH : GROWN_BUTTON,
     rest = 16 + btn + 44 + 12,
     cap = school ? SCHOOL_TOUCH : 80;
   const beside = Math.min(cap, Math.floor((w - 124 - 24) / cols), Math.floor((h - 132 - rest) / rows));

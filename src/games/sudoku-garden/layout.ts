@@ -85,6 +85,7 @@ export function touchLayout(n: number, w: number, h: number, fill: boolean): Tou
       banner: { x: tx, y: bottom + 8, wrap: Math.max(180, w - tx - 36) },
     };
   }
+  if (w < 1000) return phoneLayout(n, w, h, fill);
   // A tall view: the bed centred, the numbers in a row under it and four buttons under them, clear of the pet in the corner.
   const cell = Math.max(MIN_TOUCH, stack),
     bed = n * cell,
@@ -111,6 +112,83 @@ export function touchLayout(n: number, w: number, h: number, fill: boolean): Tou
     tile: tw,
     x,
     y: top,
+    beside: false,
+    slots,
+    banner: { x: 140, y: 8, wrap: Math.max(230, w - 140 - 36) },
+  };
+}
+
+/** A button's height on an upright phone: 44.7 CSS pixels at 390 across, a comfortable thumb. */
+export const PHONE_BUTTON = 88;
+
+/**
+ * An upright phone (chunk 31; thumb sizes, docs/definitions/phone-portrait.md): the bed runs nearly edge to edge below Home
+ * and "?", so a 9 by 9 square is 84 units instead of 64; the numbers stand under it in one row or two, whichever leaves the
+ * larger of bed square and number tile, and the buttons are 88 units high. A short view (a small phone, or one with a
+ * caption strip) gives height back by shrinking the bed, never below 64.
+ */
+function phoneLayout(n: number, w: number, h: number, fill: boolean): TouchLayout {
+  const gap = 6,
+    below = 16 + 20,
+    buttons = 10 + PHONE_BUTTON + (fill ? 10 + PHONE_BUTTON : 0) + 20;
+  const plan = (rows: number) => {
+    const per = Math.ceil(n / rows),
+      tile = Math.min(100, Math.floor((w - 16 - (per - 1) * gap) / per)),
+      trayH = rows * tile + (rows - 1) * gap;
+    const cellAt = (top: number) =>
+      Math.max(
+        MIN_TOUCH,
+        Math.min(96, Math.floor((w - 8) / n), Math.floor((h - top - below - trayH - buttons) / n)),
+      );
+    // A bed reaching into the column of Home and "?" starts below them.
+    let top = 128,
+      cell = cellAt(top);
+    if ((w - n * cell) / 2 < 120) {
+      top = 220;
+      cell = cellAt(top);
+    }
+    return { rows, per, tile, trayH, top, cell };
+  };
+  const one = plan(1),
+    two = plan(2);
+  const p = Math.min(two.cell, two.tile) > Math.min(one.cell, one.tile) ? two : one;
+  const bed = n * p.cell,
+    dy = p.top + bed + below;
+  const slots: Slot[] = [];
+  for (let d = 1; d <= n; d++) {
+    const row = Math.floor((d - 1) / p.per),
+      inRow = Math.min(p.per, n - row * p.per),
+      rowW = inRow * p.tile + (inRow - 1) * gap;
+    slots.push({
+      kind: 'digit',
+      d,
+      x: (w - rowW) / 2 + ((d - 1) % p.per) * (p.tile + gap),
+      y: dy + row * (p.tile + gap),
+      w: p.tile,
+      h: p.tile,
+    });
+  }
+  // The buttons start right of the pet's corner; Fill marks sits under Hint and Start over.
+  const bx = 150,
+    bw = Math.floor((w - 12 - bx - 30) / 4),
+    by = dy + p.trayH + 10;
+  (['marks', 'erase', 'hint', 'again'] as const).forEach((kind, k) =>
+    slots.push({ kind, d: 0, x: bx + k * (bw + 10), y: by, w: bw, h: PHONE_BUTTON }),
+  );
+  if (fill)
+    slots.push({
+      kind: 'fill',
+      d: 0,
+      x: bx + 2 * (bw + 10),
+      y: by + PHONE_BUTTON + 10,
+      w: 2 * bw + 10,
+      h: PHONE_BUTTON,
+    });
+  return {
+    cell: p.cell,
+    tile: p.tile,
+    x: (w - bed) / 2,
+    y: p.top,
     beside: false,
     slots,
     banner: { x: 140, y: 8, wrap: Math.max(230, w - 140 - 36) },
