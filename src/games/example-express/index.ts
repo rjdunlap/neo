@@ -668,7 +668,9 @@ export class ExampleExpress implements Game {
           void this.missingSpeech();
         }
       }
-    } else if (result?.kind === 'intro') void this.ctx.say('ee.surprise');
+    }
+    // The surprise ends on the round's ask, so it is the line the guide repeats and the caption keeps.
+    else if (result?.kind === 'intro') void this.ctx.instruct('ee.surprise');
   }
   resize(view: View) {
     this.stop();

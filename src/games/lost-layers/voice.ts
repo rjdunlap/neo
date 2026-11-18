@@ -42,6 +42,7 @@ export const VOICE = {
   'lost-layers.stripe-missing': [
     'No dark stripe in this mud. The ash fell everywhere on one day, so this mud is not {creature} time. That time is in the gap.',
   ],
+  'lost-layers.instruct-which': ['Now, which story is true? Tap it.'],
   'lost-layers.not-yet-look': ['Not yet. Could a closer look tell us? Pick a look.'],
   'lost-layers.claim-right-mud': ['Yes. The stripe puts {creature} time in this mud, not in the gap.'],
   'lost-layers.claim-right-gap': [
