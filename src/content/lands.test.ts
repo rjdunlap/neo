@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CRITTERS } from '../art/critter';
 import { computeView } from '../engine/view';
 import { GAMES } from '../games/registry';
-import { UPRIGHT_VIEWS } from '../games/upright-check';
+import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { BANDS, bandRank, lowestBand, playBand, type Band } from '../progress/bands';
 import {
   clampLandPage,
@@ -39,7 +39,7 @@ const VIEWS = {
 /** Those, and a phone held upright on the 768 × 1024 area, where a location at the root lays out (chunk 31, shell slice 3). */
 const WITH_UPRIGHT = {
   ...VIEWS,
-  ...Object.fromEntries(Object.entries(UPRIGHT_VIEWS).map(([k, v]) => [`upright ${k}`, v])),
+  ...Object.fromEntries(Object.entries(UPRIGHT_SCREENS).map(([k, v]) => [`upright ${k}`, v])),
 };
 /** The backdrops' ground line, as a land scene computes it. */
 const groundOf = (h: number) => h * 0.4;

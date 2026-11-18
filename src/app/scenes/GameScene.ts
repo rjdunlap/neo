@@ -63,6 +63,8 @@ import { isParentPanelOpen } from '../../parent/panel';
 import { Scene } from '../Scene';
 import { HeldLines } from '../held-line';
 import { LEAVE_BEAT } from '../leave';
+import { CaptionBand } from '../../ui/caption-band';
+import { captionPlace, captionShows, type CaptionPlace } from '../../ui/caption-layout';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
@@ -80,6 +82,10 @@ export class GameScene extends Scene {
   private helpCard: HowToPanel | null = null;
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** The question written out for a reader (TotoLogic P3): `grownup` rounds, and `school` ones with the sound off. */
+  private readonly caption = new CaptionBand(this.tw, () => this.repeat());
+  /** Where the caption sits and the view it leaves the game; `none` when no caption shows. */
+  private place: CaptionPlace = captionPlace(this.view, false);
   /** The "again", heart and "home" buttons, once the celebration offers them. */
   /** The result's buttons. At the root a game opened from a location or Explore page has `home` as Back to that place and `house` as Home. */
   after: {
@@ -200,16 +206,12 @@ export class GameScene extends Scene {
     this.content.addChild(this.stage);
 
     this.pet.scale.set(GUIDE_SCALE);
-    onTap(this.pet, () => {
-      this.pet.poke();
-      sfx.giggle();
-      if (this.game?.sayWaitingAsk?.()) return;
-      if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars);
-    });
+    onTap(this.pet, () => this.repeat());
     this.pet.hitArea = new Circle(0, -125, 170);
     this.track(this.pet);
     this.help.alpha = 0.6;
-    this.ui.addChild(this.pet, this.home, this.help);
+    this.ui.addChild(this.caption, this.pet, this.home, this.help);
+    this.place = captionPlace(this.view, this.captionOn());
     this.ring.visible = false;
     window.addEventListener('pointerdown', this.touchDown, true);
     window.addEventListener('pointerup', this.touchUp);
@@ -255,7 +257,7 @@ export class GameScene extends Scene {
       own: lifetime.own,
       listen: lifetime.listen.bind(lifetime),
       stage: this.stage,
-      view: this.view,
+      view: this.place.game,
       level: this.level,
       band,
       rng: new Rng(),
@@ -269,7 +271,10 @@ export class GameScene extends Scene {
       untrack: (o) => this.untrack(o),
       instruct: (id, vars) => {
         this.instruction = { id, vars };
-        return this.whileHere(this.held.line(voice.say(id, vars)));
+        // One wording, shown and said: the eye and the ear get the same option, and the clip is still found by its text.
+        const text = voice.line(id, vars);
+        this.caption.show(text);
+        return this.whileHere(this.held.line(voice.speak(text)));
       },
       say: (id, vars) => this.whileHere(this.held.line(voice.say(id, vars))),
       sayIn: (id, preset, vars) => this.whileHere(this.held.line(voice.sayIn(id, preset, vars))),
@@ -287,11 +292,30 @@ export class GameScene extends Scene {
     if (store.data.settings.coplayHints && tip) this.showTip(tip);
   }
 
+  /** The guide, or the caption, was tapped: the waiting ask if the game has one, otherwise the instruction again. */
+  private repeat() {
+    this.pet.poke();
+    sfx.giggle();
+    if (this.game?.sayWaitingAsk?.()) return;
+    if (!this.instruction) return;
+    const text = voice.line(this.instruction.id, this.instruction.vars);
+    this.caption.show(text);
+    void voice.speak(text);
+  }
+
+  private captionOn(): boolean {
+    return captionShows(this.band, store.data.settings);
+  }
+
   resize(view: View) {
-    this.game?.resize(view);
-    this.pet.position.set(74, view.h - 18);
-    this.home.position.set(62, 62);
-    this.help.position.set(62, 172);
+    // The caption sits outside the board: the game gets the screen less the band, and the round's chrome moves with it.
+    const place = (this.place = captionPlace(view, this.captionOn()));
+    this.caption.layout(place);
+    this.stage.x = this.particles.x = place.dx;
+    this.game?.resize(place.game);
+    this.pet.position.set(place.dx + 74, place.game.h - 18);
+    this.home.position.set(place.dx + 62, 62);
+    this.help.position.set(place.dx + 62, 172);
     if (this.tip) this.placeTip(this.tip);
     this.helpCard?.layout(view);
     this.layoutResult(view);
@@ -342,6 +366,14 @@ export class GameScene extends Scene {
     }
     // While one of the game's lines plays the guide bobs, and a board tap that did nothing meanwhile gets a soft tick (U7 R5).
     this.pet.talking = this.held.talking && !this.finished;
+    // The words go while the card or the result is up; `pauseActions` takes them off under the pause sheet.
+    this.caption.visible =
+      this.caption.placed &&
+      !!this.caption.text &&
+      !!this.game &&
+      !this.helpCard &&
+      !this.finished &&
+      !this.app.paused;
     if (this.held.frame(soundCount.n) && !this.finished && !this.helpCard) sfx.tick();
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
@@ -440,7 +472,9 @@ export class GameScene extends Scene {
   private onShellButton(e: PointerEvent): boolean {
     const at = new Point();
     this.app.renderer.events.mapPositionToPoint(at, e.clientX, e.clientY);
-    return [this.pet, this.home, this.help].some((b) => b.visible && b.getBounds().containsPoint(at.x, at.y));
+    return [this.pet, this.home, this.help, this.caption].some(
+      (b) => b.visible && b.getBounds().containsPoint(at.x, at.y),
+    );
   }
 
   private whileHere(spoken: Promise<void>): Promise<void> {
@@ -452,6 +486,8 @@ export class GameScene extends Scene {
    * Each resumes first, so a hint can speak and a restart can finish what it is doing.
    */
   override pauseActions(): PauseAction[] {
+    // Read as the pause sheet opens, and the scene is not updated behind it: the caption goes until play resumes.
+    this.caption.visible = false;
     const game = this.game;
     if (!game || this.finished || this.gone) return [];
     const leave = { label: 'Leave', run: () => this.leave() };
@@ -560,7 +596,7 @@ export class GameScene extends Scene {
     if (this.game || !this.liveResult() || this.navigating) return;
     voice.stop();
     this.closeHelp();
-    this.build().resize(this.view);
+    this.build().resize(this.place.game);
     this.begin();
   }
 

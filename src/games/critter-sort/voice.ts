@@ -25,7 +25,7 @@ export const VOICE = {
     'One hoop is for critters {a}, the other is for critters {b}. Critters that fit neither go on the leaf mat!',
   ],
   'sort.newcomer': [
-    'These critters are already sorted. This hoop is for critters {a}, and this hoop is for critters {b}. Where does the new friend go? The middle fits both. The leaf mat fits neither.',
+    'These critters are sorted. This hoop is for critters {a}, that one for critters {b}. Where does the new friend go? The middle fits both, the leaf mat neither.',
   ],
   'sort.venn': [
     'One hoop is for critters {a}, the other for critters {b}. Critters that are both go in the middle! Critters that fit neither go on the leaf mat!',

@@ -116,6 +116,8 @@ export interface SaveData {
     coplayHints: boolean;
     howToCards: boolean;
     speech: boolean;
+    /** "Show the words": a `school` player sees the guide's question written out, for a phone on silent (a `grownup` always does). */
+    showWords: boolean;
   };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
@@ -154,6 +156,7 @@ export function defaults(): SaveData {
       sessionMinutes: 0,
       coplayHints: true,
       howToCards: true,
+      showWords: false,
       speech: true,
     },
     games: {},
@@ -356,6 +359,7 @@ export function migrate(raw: unknown): SaveData {
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
       speech: bool(settings.speech, d.settings.speech),
+      showWords: bool(settings.showWords, d.settings.showWords),
     },
     games,
     stickers,

@@ -1332,8 +1332,10 @@ export class CouchScene extends Scene {
       instruct: (line, vars) => {
         const said = speak(line);
         this.instruction = { id: said, vars };
-        this.caption.textContent = voice.line(said, vars);
-        return this.whileHere(voice.say(said, vars));
+        // One wording, shown and said (docs/definitions/question-on-screen.md).
+        const text = voice.line(said, vars);
+        this.caption.textContent = text;
+        return this.whileHere(voice.speak(text));
       },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)),
       sayIn: (line, preset, vars) => this.whileHere(voice.sayIn(speak(line), preset, vars)),
@@ -1409,7 +1411,11 @@ export class CouchScene extends Scene {
     this.button(sheet, 'Resume round', () => this.resume(), 'couch-primary');
     this.button(sheet, 'How to play', () => this.intro(id, 'pause'));
     this.button(sheet, 'Repeat instruction', () => {
-      if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars);
+      if (!this.instruction) return;
+      // A repeat resolves again, and the caption follows whatever is said.
+      const text = voice.line(this.instruction.id, this.instruction.vars);
+      this.caption.textContent = text;
+      void voice.speak(text);
     });
     const again = COUCH_INFO[id].restart;
     if (again && this.game?.restart)

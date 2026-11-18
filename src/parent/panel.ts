@@ -134,6 +134,11 @@ export function openParentPanel(
         <label for="p-howto">Show how to play before each game</label>
         <input id="p-howto" type="checkbox" />
       </div>
+      <div class="parent__row">
+        <label for="p-words">Show the words (ages 6 and up)</label>
+        <input id="p-words" type="checkbox" />
+      </div>
+      <p class="muted">The guide's question is written beside the round, for a phone on silent. A grown-up's own games always show it; younger games never do.</p>
       ${playing.after.map((line) => `<p class="muted">${esc(line)}</p>`).join('')}
 ${
   finding
@@ -202,6 +207,7 @@ ${
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
+  const words = $<HTMLInputElement>('#p-words');
   const layout = root.querySelector<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
@@ -250,6 +256,7 @@ ${
     if (layout) layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
+    words.checked = d.settings.showWords;
     volume.value = String(d.settings.volume);
     speechBox.checked = d.settings.speech;
     musicBox.checked = d.settings.music;
@@ -370,6 +377,10 @@ ${
   });
   howto.addEventListener('change', () => {
     store.data.settings.howToCards = howto.checked;
+    store.save();
+  });
+  words.addEventListener('change', () => {
+    store.data.settings.showWords = words.checked;
     store.save();
   });
   layout?.addEventListener('change', () => {

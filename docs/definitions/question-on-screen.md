@@ -1,12 +1,12 @@
 # The question on screen, for readers (TotoLogic P3, definition)
 
-*Status: defined 2026-11-17. Nothing is built; the [build slices](#build-slices-in-order) are queued in [READY](../READY.md).*
+*Status: defined 2026-11-17; slice 1 (the caption on a phone) built 2026-11-17; slices 2 and 3 are queued in [READY](../READY.md). The [build slices](#build-slices-in-order) say what differed.*
 
 From the [TotoLogic review](../TOTOLOGIC.md#p3-the-question-on-screen-for-readers-a-definition-then-shell-m), proposal P3, and the [UX review](../UX-REVIEW-2026-11-09.md#1-with-sound-off-the-app-says-nothing-about-what-to-do)'s first finding: a phone is usually on silent, both people playing now can read, and a touch round says what it wants only out loud. The [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play) settled who sees a caption: the `grownup` band always, the `school` band when speech is off or the phone is muted, younger bands never. This page settles the rest: what the caption shows, how its words are filled, how it changes within a round, what stands beside a sound, and where it sits on a phone without covering a target.
 
 Couch play is not touched: it has had a caption of its own since it was built (`CouchScene`, `.couch-caption`).
 
-## What is there today (`origin/main` at `cd899795a`)
+## What is there today (`origin/main` at `cd899795a`, before slice 1; see the built note under the build slices)
 
 - **The instruction is remembered, not shown.** `GameScene` keeps the last `ctx.instruct(id, vars)` as `this.instruction` and speaks it; a tap on the guide repeats it, unless the game's `sayWaitingAsk` says a waiting ask instead (`src/app/scenes/GameScene.ts`, `init` and `makeContext`). Every one of the 177 games calls `ctx.instruct`.
 - **The words are already available as text.** `voice.line(id, vars)` (`src/audio/voice.ts`) picks one of the line's written options and fills `{name}`, `{pet}` and the game's own slots; `voice.speak(text)` says a finished string, and finds a rendered clip by that string. Couch play's caption is `voice.line(said, vars)` beside `voice.say(said, vars)`, which pick an option separately, so a line with two wordings can show one and say the other.
@@ -80,6 +80,16 @@ The shell does not see a miss today (a game calls `sfx.boing()` itself, 394 call
 
 ## Build slices, in order
 
-1. **The caption on a phone** (shell tier: typecheck, unit tests, build, `uprightsweep` for the upright-ready `grownup` games, one filtered `phone` play; no offline check). `GameScene` resolves a line once and speaks that text; the band in `src/ui/` with a pure layout function and its test (strip, rail, type size, the 180-character budget test over every instruction option); the smaller game view upright and sideways; the fourth upright check view; `settings.showWords` with its repair, default, test and the grown-ups' page switch; hidden under the card, sheet and result; couch play's caption on the resolve-once pattern. The slice also shortens or splits the over-budget lines it finds and moves any question said with `say` in the upright-ready games.
+1. **The caption on a phone (built 2026-11-17, PR #1774; see below)** (shell tier: typecheck, unit tests, build, `uprightsweep` for the upright-ready `grownup` games, one filtered `phone` play; no offline check). `GameScene` resolves a line once and speaks that text; the band in `src/ui/` with a pure layout function and its test (strip, rail, type size, the 180-character budget test over every instruction option); the smaller game view upright and sideways; the fourth upright check view; `settings.showWords` with its repair, default, test and the grown-ups' page switch; hidden under the card, sheet and result; couch play's caption on the resolve-once pattern. The slice also shortens or splits the over-budget lines it finds and moves any question said with `say` in the upright-ready games.
 2. **Beside a sound, and no room to spare** (shell tier, the same suites): the boing listener with the guide's tilt and the band's wobble; `say` and `sayIn` lines in the band; the bubble for screens with no spare side.
 3. **The rest of the games' questions** (existing-game tier, a few games a session): read the remaining games for a question said with `ctx.say` and move it to `ctx.instruct`, grown-up games first, then school. No shell change.
+
+**Slice 1 built, and how it differs.** `src/ui/caption-layout.ts` (with its test) and `src/ui/caption-band.ts`; the strip upright (160 units) and the rail sideways (300 units, when the view is at least 1,324 wide); no band on an iPad-shaped screen (that bubble is slice 2); `settings.showWords` and the grown-ups' switch "Show the words (ages 6 and up)".
+- **`UPRIGHT_SCREENS`.** Besides the fourth round view (`captioned`, 768 × 1,206), `upright-check.ts` gained `UPRIGHT_SCREENS`, the three phones without it, which the screens that never show a caption check at (Home, Arcade, Friends, Dress, My mix, lands, the upright root, resident-check).
+- **Settings never change mid-round**, because the grown-ups' page leaves the round, so the band decides who sees it once per round.
+- **The suite is `uprightgames`** (it plays the upright-ready games); `uprightsweep` only surveys games that are not yet upright-ready, so it was not used.
+- **Measured type:** three lines at 34 units or four at 28 fit the strip. The band's tail upright sits behind the guide and is barely visible.
+- **Two real layouts found by the fourth view** and fixed in the slice: Lantern Lights and Island Bridges moved their button rows clear of the guide's corner.
+- **Lines:** five instruction lines over the budget were shortened (`sort.newcomer`, `mail.any-order`, `code.detective`, `code.markit`, `story.untangle.start`; their rendered clips are stale, so device speech until re-rendered); three questions moved to `ctx.instruct` (`orchard.nextset`, `pattern.swapChoose`, `pantry.another`). Left as `say` on purpose: `size.next`, `safari.which`, `paint.memory.mix`, the who-am-i riddles, animal-snack's replies. No upright-ready grown-up game had a question said with `say`.
+- **Couch play:** the caption resolves the line once; the pause sheet's "Repeat instruction" re-resolves and updates it.
+- **Still slice 2:** `say`/`sayIn` lines in the band, the boing listener, the bubble for screens with no spare side.
