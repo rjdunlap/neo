@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/melt-freeze; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `melt-freeze` · **Land:** Bubble Beach · **Ages:** lap–pre-K · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `melt-freeze` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** states-of-matter, cause-and-effect, observation, prediction
 
@@ -11,7 +11,8 @@
 | lap | 5, 1, 2 |
 | toddler | 1–3 |
 | preschool | 3, 4, 6 |
-| pre-K | 4, 6 |
+| pre-K | 4, 6, 7 |
+| school | 6–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +22,7 @@
 | 4 | Some do, some don’t: warm and cool a tray of four things together |
 | 5 | One big ice cube: tap anywhere to melt it, then tap the snowflake to freeze it |
 | 6 | Will it melt?: say what you think, then warm it and find out (a guess is never wrong) |
+| 7 | Can it go back?: test each changed thing with the snowflake and file it under goes back or can’t go back |
 
 <!-- end generated -->
 

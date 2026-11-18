@@ -10,7 +10,10 @@ import type { View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  binArt,
+  cookedArt,
   drawTable,
+  filedArt,
   ghostArt,
   guessArt,
   iconArt,
@@ -21,6 +24,9 @@ import {
   targetArt,
 } from './art';
 import {
+  arrivesAs,
+  binFor,
+  BINS,
   GUESSES,
   LAP_LEVEL,
   LEVELS,
@@ -31,6 +37,8 @@ import {
   PredictRound,
   requestsFor,
   sayAfter,
+  sortFor,
+  SortRound,
   step,
   SUBSTANCES,
   TAPS_TO_MELT,
@@ -39,6 +47,7 @@ import {
   toolFor,
   traysFor,
   truthOf,
+  type Bin,
   type Guess,
   type Plan,
   type State,
@@ -93,6 +102,14 @@ class MeltFreeze implements Game {
   predict: PredictRound | null = null;
   readonly guessCards: Record<Guess, Container> = { melts: new Container(), stays: new Container() };
   private readonly guessPics: Partial<Record<Guess, Container>> = {};
+  /** Level 7: the things in turn, the two bins she files them in, and how many small pictures each bin keeps. */
+  sort: SortRound | null = null;
+  readonly bins: Record<Bin, Container> = { back: new Container(), stuck: new Container() };
+  readonly filed: Record<Bin, Substance[]> = { back: [], stuck: [] };
+  private readonly binPulse: Record<Bin, number> = { back: 0, stuck: 0 };
+  private glowBin: Bin | null = null;
+  /** Level 7: taps so far, so a line that waits behind another is dropped once she has moved on. */
+  private touches = 0;
 
   private readonly background = new Graphics();
   private readonly table = new Graphics();
@@ -146,6 +163,20 @@ class MeltFreeze implements Game {
       this.snowButton.visible = false;
       this.askForHint = () => this.predictHint();
       this.hintLabel = 'Show a hint';
+    } else if (this.plan.mode === 'sort') {
+      this.sort = new SortRound(sortFor(ctx.rng, authored));
+      this.show([this.sort.thing], this.sort.state);
+      for (const bin of BINS) {
+        const box = this.bins[bin];
+        const sign = binArt(bin);
+        sign.y = -32;
+        box.addChild(tile(150, 150), sign);
+        box.hitArea = new Rectangle(-80, -80, 160, 160);
+        onTap(box, () => this.fileTap(bin));
+        ctx.stage.addChild(box);
+      }
+      this.askForHint = () => this.sortHint();
+      this.hintLabel = 'Show a hint';
     } else {
       this.trays = traysFor(ctx.rng, authored);
       this.show(this.trays[0]);
@@ -162,6 +193,8 @@ class MeltFreeze implements Game {
     ] as const) {
       if (this.plan.mode === 'tap' && tool === 'sun') continue;
       if (this.plan.mode === 'predict' && tool === 'snow') continue;
+      // Nothing is warmed at level 7: the snowflake is the test, and it stands alone.
+      if (this.plan.mode === 'sort' && tool === 'sun') continue;
       art.scale.set(1.15);
       button.addChild(tile(150, 150), art);
       button.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -179,14 +212,21 @@ class MeltFreeze implements Game {
     this.things.length = 0;
     for (const id of ids) {
       const node = new Container();
-      const solid = solidArt(id);
-      const puddle = puddleArt(id);
-      const ghost = ghostArt(id);
+      // A thing that arrives changed for good is drawn as that (toast, a popped kernel) and never changes again; the
+      // faint outline of what it was stands beside it, as a puddle's does above it.
+      const cooked = state === 'cooked';
+      const solid = cooked ? cookedArt(id) : solidArt(id);
+      const puddle = cooked ? new Graphics() : puddleArt(id);
+      const ghost = ghostArt(id, cooked ? 70 : 100);
+      if (cooked) {
+        solid.x = 28;
+        ghost.x = -52;
+      }
       node.addChild(puddle, ghost, solid);
       node.hitArea = new Rectangle(-70, -110, 140, 150);
       const thing: Thing = {
         id,
-        state: melts(id) ? state : 'solid',
+        state: cooked || melts(id) ? state : 'solid',
         node,
         solid,
         puddle,
@@ -210,7 +250,7 @@ class MeltFreeze implements Game {
     t.solid.alpha = melted ? 0 : 1;
     t.puddle.scale.set(melted ? 1 : 0);
     t.puddle.alpha = melted ? 1 : 0;
-    t.ghost.alpha = melted ? 0.22 : 0;
+    t.ghost.alpha = melted ? 0.22 : t.state === 'cooked' ? 0.3 : 0;
   }
 
   start() {
@@ -219,6 +259,7 @@ class MeltFreeze implements Game {
     else if (this.plan.mode === 'turn') void this.ctx.instruct('meltfreeze.instruct.both');
     else if (this.plan.mode === 'make') this.askRequest();
     else if (this.plan.mode === 'predict') this.askGuess();
+    else if (this.plan.mode === 'sort') void this.askSort();
     else void this.ctx.instruct('meltfreeze.instruct.tray');
   }
 
@@ -249,6 +290,11 @@ class MeltFreeze implements Game {
         const p = this.predict;
         if (!p || p.finished) return null;
         return p.guess ? tap('sun') : { tap: { on: this.guessCards[truthOf(p.thing)] } };
+      }
+      case 'sort': {
+        const r = this.sort;
+        if (!r || r.finished) return null;
+        return r.tested ? { tap: { on: this.bins[binFor(r.thing)] } } : tap('snow');
       }
     }
   }
@@ -310,6 +356,8 @@ class MeltFreeze implements Game {
         return void this.trayTap(tool);
       case 'predict':
         return void this.predictTap();
+      case 'sort':
+        return void this.sortTap();
     }
   }
 
@@ -657,18 +705,169 @@ class MeltFreeze implements Game {
     void this.ctx.say(this.predict.ask());
   }
 
+  // Level 7: can it go back? ------------------------------------------------------------------
+
+  /**
+   * The question for the thing on the table. Toast and the popped kernel are named first ("This was bread. Now it's
+   * toast."); the question follows unless she has already tapped something, so it never cuts a line her own tap earned.
+   */
+  private async askSort() {
+    const r = this.sort!;
+    if (r.finished) return;
+    const at = this.touches;
+    if (r.state === 'cooked')
+      await this.ctx.say(r.thing === 'kernel' ? 'meltfreeze.sort.popped' : 'meltfreeze.sort.toast');
+    if (at !== this.touches || this.finished) return;
+    void this.ctx.instruct('meltfreeze.instruct.sort');
+  }
+
+  /** The snowflake is the test, and it is always free: a puddle goes hard again, toast stays toast. */
+  private async sortTap() {
+    const r = this.sort!;
+    if (r.finished) return;
+    this.touches++;
+    r.test();
+    this.busy = true;
+    await this.runTest(this.things[0]);
+    this.busy = false;
+  }
+
+  /** Shows what the snowflake does to the thing on the table: the freeze, or a small shake and "Still toast." */
+  private async runTest(t: Thing) {
+    this.pulse.snow = 1;
+    if (t.state === 'cooked') {
+      this.wiggle(t);
+      sfx.sparkle();
+      await this.ctx.say(sayAfter(t.id, t.state, 'snow'));
+    } else await this.apply(t, 'snow');
+  }
+
+  /**
+   * She taps a bin. Filing before testing is allowed: the snowflake then runs first, so every filing has its evidence. A
+   * wrong bin is the only thing counted: the thing hops back with a boing and the clue names what the test showed; from
+   * the second the right bin glows, and on the third the pet files it.
+   */
+  private async fileTap(bin: Bin) {
+    const r = this.sort!;
+    if (this.finished || r.finished) return;
+    // Touch-down feedback at once, even while the table is still changing.
+    this.binPulse[bin] = 1;
+    sfx.pluck(bin === 'back' ? 4 : 7);
+    if (this.busy) return;
+    this.touches++;
+    const t = this.things[0];
+    const thing = r.thing;
+    const out = r.file(bin);
+    this.misses = r.misses;
+    this.hints = r.hints;
+    this.busy = true;
+    if (out.ranTest) await this.runTest(t);
+    if (out.miss) {
+      await this.hop(t, bin);
+      if (out.glow) this.setBinGlow(out.bin);
+      if (!out.done) {
+        // The clue plays over an open table: a tap on the right bin while it is spoken still counts.
+        if (out.hint) void this.ctx.say(out.hint);
+        return void (this.busy = false);
+      }
+      // A third wrong bin: the pet files it, after the clue.
+      if (out.hint) await this.ctx.say(out.hint);
+      this.binPulse[out.bin] = 1;
+      sfx.tick();
+    }
+    this.setBinGlow(null);
+    await this.land(t, thing, out.bin);
+    if (!out.supported) {
+      this.ctx.pet.cheer();
+      // Heard out on the last thing, because the closing line would cut it; otherwise it plays over the next arrival.
+      const said = this.ctx.say(
+        out.hint ?? (out.bin === 'back' ? 'meltfreeze.sort.back' : 'meltfreeze.sort.stuck'),
+      );
+      if (r.finished) await said;
+    }
+    if (r.finished) return void this.end();
+    this.show([r.thing], r.state);
+    const next = this.things[0];
+    next.node.x = this.view.w + 120;
+    await this.ctx.tw.to(next.node, { x: this.layout.spots[0].x }, { duration: 0.45, ease: ease.outBack });
+    this.busy = false;
+    // A puddle's question waits for the lesson line; a cooked thing's own naming line comes first either way.
+    const at = this.touches;
+    await this.ctx.tw.wait(r.state === 'cooked' ? 1.2 : 1.6);
+    if (at === this.touches && !this.finished) void this.askSort();
+  }
+
+  /** A wrong bin: the thing hops toward it and comes back to the table with a gentle boing. */
+  private async hop(t: Thing, bin: Bin) {
+    const tw = this.ctx.tw;
+    const home = { x: t.node.x, y: t.node.y };
+    const b = this.bins[bin];
+    await tw.to(
+      t.node,
+      { x: home.x + (b.x - home.x) * 0.45, y: home.y + (b.y - home.y) * 0.45 },
+      { duration: 0.22, ease: ease.outQuad },
+    );
+    sfx.boing();
+    await tw.to(t.node, home, { duration: 0.45, ease: ease.outBack });
+  }
+
+  /** The thing hops into its bin, which keeps a small picture of it for the rest of the round. */
+  private async land(t: Thing, id: Substance, bin: Bin) {
+    const tw = this.ctx.tw;
+    const b = this.bins[bin];
+    void tw.to(t.node.scale, { x: 0.4, y: 0.4 }, { duration: 0.35 });
+    await tw.to(t.node, { x: b.x, y: b.y + 50 }, { duration: 0.35, ease: ease.inOutSine });
+    t.node.visible = false;
+    const pic = filedArt(id);
+    pic.position.set(this.filed[bin].length === 0 ? -34 : 34, 62);
+    b.addChild(pic);
+    this.filed[bin].push(id);
+    this.binPulse[bin] = 1;
+    sfx.pluck(4);
+    void tw.wait(0.12).then(() => sfx.pluck(7));
+  }
+
+  /** Show a hint: the test runs if she has not run it, the right bin glows and the clue is spoken; one hint per thing. */
+  private async sortHint() {
+    const r = this.sort;
+    if (this.finished || this.busy || !r || r.finished) return;
+    this.touches++;
+    const out = r.ask();
+    this.hints = r.hints;
+    if (out.ranTest) {
+      this.busy = true;
+      await this.runTest(this.things[0]);
+      this.busy = false;
+    }
+    this.setBinGlow(out.glow);
+    void this.ctx.say(out.hint);
+  }
+
+  private setBinGlow(bin: Bin | null) {
+    this.glowBin = bin;
+    this.drawGlow();
+  }
+
   // Round end and the pause sheet --------------------------------------------------------------
 
   private async end() {
     if (this.finished) return;
     this.finished = true;
     this.setGlow(null);
+    this.glowBin = null;
     await this.ctx.tw.wait(0.8);
     this.ctx.pet.cheer();
     sfx.tada();
-    await this.ctx.say(this.plan.mode === 'predict' ? 'meltfreeze.done.predict' : 'meltfreeze.done');
-    const discoveries =
-      this.plan.mode === 'tray' || this.plan.mode === 'predict'
+    await this.ctx.say(
+      this.plan.mode === 'predict'
+        ? 'meltfreeze.done.predict'
+        : this.plan.mode === 'sort'
+          ? 'meltfreeze.done.sort'
+          : 'meltfreeze.done',
+    );
+    const discoveries = this.sort
+      ? [...this.sort.shown].map((k) => entryId('melt-freeze', k))
+      : this.plan.mode === 'tray' || this.plan.mode === 'predict'
         ? [
             ...[...this.changed].map((s) => entryId('melt-freeze', s)),
             ...(this.seenStay ? [entryId('melt-freeze', 'stays')] : []),
@@ -694,9 +893,14 @@ class MeltFreeze implements Game {
       this.round!.state = this.round!.request.from;
       this.round!.wrong = 0;
     }
+    if (this.sort) {
+      // The thing in play returns to how it arrived, untested; counts and filed things stay.
+      this.sort.reset();
+      this.setBinGlow(null);
+    }
     for (const t of this.things) {
-      t.state = this.plan.mode === 'make' ? this.round!.request.from : 'solid';
-      if (!melts(t.id)) t.state = 'solid';
+      t.state = this.plan.mode === 'make' ? this.round!.request.from : this.sort ? arrivesAs(t.id) : 'solid';
+      if (!melts(t.id) && t.state !== 'cooked') t.state = 'solid';
       t.warmed = false;
       this.ctx.tw.kill(t.solid);
       this.ctx.tw.kill(t.solid.scale);
@@ -711,6 +915,7 @@ class MeltFreeze implements Game {
       this.poseGuess();
       this.askGuess();
     }
+    if (this.sort) void this.askSort();
   }
 
   // Layout ----------------------------------------------------------------------------------------
@@ -746,6 +951,12 @@ class MeltFreeze implements Game {
     }
     // Level 6 has no snowflake, so the sun stands alone in the middle of the bottom row when the screen is upright.
     if (this.plan.mode === 'predict' && v.h > v.w) this.sunButton.x = v.w / 2;
+    // Level 7 has no sun, so the snowflake stands alone there instead.
+    if (this.plan.mode === 'sort' && v.h > v.w) this.snowButton.x = v.w / 2;
+    BINS.forEach((bin, i) => {
+      const b = L.bins[i];
+      this.bins[bin].position.set(b.x + b.w / 2, b.y + b.h / 2);
+    });
     this.card.position.set(L.card.x + L.card.w / 2, L.card.y + L.card.h / 2);
     GUESSES.forEach((guess, i) => {
       const b = L.cards[i];
@@ -765,6 +976,10 @@ class MeltFreeze implements Game {
         color: swatch.yellow.line,
       });
     }
+    if (this.glowBin && !this.finished) {
+      const c = this.bins[this.glowBin];
+      g.roundRect(c.x - 86, c.y - 86, 172, 176, 26).stroke({ width: 8, color: swatch.yellow.line });
+    }
     if (!this.glowOn || this.finished) return;
     const b = this.glowOn === 'sun' ? this.sunButton : this.snowButton;
     g.roundRect(b.x - 92, b.y - 92, 184, 184, 30).stroke({ width: 8, color: swatch.yellow.line });
@@ -780,6 +995,11 @@ class MeltFreeze implements Game {
         const p = this.pulse[tool];
         b.scale.set(1 + 0.14 * Math.sin(p * Math.PI));
       } else b.scale.set(1);
+    }
+    for (const bin of BINS) {
+      if (this.binPulse[bin] <= 0) continue;
+      this.binPulse[bin] = Math.max(0, this.binPulse[bin] - dt * 2.6);
+      this.bins[bin].scale.set(1 + 0.1 * Math.sin(this.binPulse[bin] * Math.PI));
     }
     if (this.plan.mode === 'predict') {
       if (this.beckon > 0) this.beckon = Math.max(0, this.beckon - dt * 1.6);
@@ -812,6 +1032,8 @@ class MeltFreeze implements Game {
     else this.sunButton.destroy();
     if (this.plan.mode !== 'predict') for (const guess of GUESSES) this.guessCards[guess].destroy();
     else this.snowButton.destroy();
+    if (this.plan.mode !== 'sort') for (const bin of BINS) this.bins[bin].destroy();
+    else this.sunButton.destroy();
   }
 }
 
@@ -822,14 +1044,17 @@ export const meltFreeze: GameModule = {
   region: 'tinker-lab',
   challenge: 'noticing',
   skills: ['states-of-matter', 'cause-and-effect', 'observation', 'prediction'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [LAP_LEVEL],
   describeLevel: (l) => meltPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Ask {name} what the sun did, then what the snowflake did.',
   coplayHintLap: 'Tell {name} what happened: "The ice melted! The snowflake froze it again!"',
-  offScreen: 'Put an ice cube on a plate by a window and watch it with her. Say what is happening.',
+  offScreen: {
+    all: 'Put an ice cube on a plate by a window and watch it with her. Say what is happening.',
+    school: 'Tear a piece of paper together, then ask: can it go back?',
+  },
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),

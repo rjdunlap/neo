@@ -291,6 +291,29 @@ export const JOURNAL: readonly JournalEntry[] = [
       found: 'some things stayed the same in the warm',
     },
   },
+  // Melt and Freeze, level 7: what the snowflake test showed, each filed only by a round that showed it.
+  {
+    id: entryId('melt-freeze', 'goes-back'),
+    game: 'melt-freeze',
+    key: 'goes-back',
+    name: 'Goes back',
+    line: 'journal.melt.goes-back',
+    source: {
+      find: 'cool a puddle with the snowflake and see whether it can go back',
+      found: 'a puddle went hard again in the cool',
+    },
+  },
+  {
+    id: entryId('melt-freeze', 'cant-go-back'),
+    game: 'melt-freeze',
+    key: 'cant-go-back',
+    name: 'Can’t go back',
+    line: 'journal.melt.cant-go-back',
+    source: {
+      find: 'cool the toast or the popped kernel with the snowflake and see whether it can go back',
+      found: 'toast stayed toast and a popped kernel stayed popped',
+    },
+  },
   // Pet Kitchen: what a fair or asked-for serve showed (decision 6 of its dive).
   ...KITCHEN_DISCOVERIES.map((k): JournalEntry => ({
     id: entryId('pet-kitchen', k),

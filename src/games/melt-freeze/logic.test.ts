@@ -6,10 +6,15 @@ import { computeView } from '../../engine/view';
 import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import {
   ALL_SUBSTANCES,
+  arrivesAs,
+  arrivesCooked,
+  binFor,
+  BINS,
   CHANGERS,
   EARLY,
   EARLY_CHANGERS,
   EARLY_STAYERS,
+  goesBack,
   GUESSES,
   LAP_LEVEL,
   LEVELS,
@@ -25,6 +30,12 @@ import {
   PredictRound,
   requestsFor,
   sayAfter,
+  SORT_BACK,
+  SORT_LEVEL,
+  SORT_STUCK,
+  sortFor,
+  sortLine,
+  SortRound,
   STAYERS,
   step,
   SUBSTANCES,
@@ -34,6 +45,7 @@ import {
   toolFor,
   traysFor,
   truthOf,
+  type Bin,
   type Box,
   type Guess,
   type Substance,
@@ -55,6 +67,21 @@ describe('the substance table', () => {
     expect(EARLY_STAYERS).toEqual(['stone', 'spoon']);
     for (const s of STAYERS) expect(SUBSTANCES[s].melted).toBeNull();
     for (const s of CHANGERS) expect(SUBSTANCES[s].reversible).toBe(true);
+  });
+
+  it('gives bread and the kernel a changed form that nothing undoes, and no other thing one', () => {
+    expect(ALL_SUBSTANCES.filter(arrivesCooked)).toEqual(['bread', 'kernel']);
+    for (const s of ['bread', 'kernel'] as const) {
+      expect(SUBSTANCES[s].cooked).toBeTruthy();
+      expect(SUBSTANCES[s].melted).toBeNull();
+      expect(SUBSTANCES[s].reversible).toBe(false);
+    }
+    expect(melts('lolly') && SUBSTANCES.lolly.reversible).toBe(true);
+    // The changed state is fixed under both tools, for everything.
+    for (const s of ALL_SUBSTANCES)
+      for (const tool of ['sun', 'snow'] as Tool[]) expect(step(s, 'cooked', tool)).toBe('cooked');
+    expect(sayAfter('bread', 'cooked', 'snow')).toBe('meltfreeze.sort.still.toast');
+    expect(sayAfter('kernel', 'cooked', 'snow')).toBe('meltfreeze.sort.still.popped');
   });
 
   it('melts in the sun, goes hard again in the snow, and otherwise nothing changes', () => {
@@ -85,13 +112,15 @@ describe('the substance table', () => {
 
 describe('rounds', () => {
   it('adds the tap opening before the existing lap levels without renumbering any plans', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray', 'tap', 'predict']);
+    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray', 'tap', 'predict', 'sort']);
+    expect(meltPlan(SORT_LEVEL).mode).toBe('sort');
+    expect(levelsInOrder(LEVELS.school!)).toEqual([PREDICT_LEVEL, SORT_LEVEL]);
     expect(new Set(PLANS.map((p) => p.name)).size).toBe(PLANS.length);
     expect(meltPlan(PREDICT_LEVEL).mode).toBe('predict');
     expect(levelsInOrder(LEVELS.preschool!)).toEqual([3, 4, PREDICT_LEVEL]);
-    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, PREDICT_LEVEL]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, PREDICT_LEVEL, SORT_LEVEL]);
     // Level 5 stays the lap opening and is in no other band's order.
-    for (const band of ['toddler', 'preschool', 'prek'] as const)
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(LAP_LEVEL);
     expect(meltPlan(0)).toBe(PLANS[0]);
     expect(meltPlan(LAP_LEVEL).mode).toBe('tap');
@@ -161,7 +190,12 @@ describe('levels 1–4 keep their five things', () => {
       for (const s of traysFor(rng, false).flat()) expect(early.has(s)).toBe(true);
     }
     const ids = JOURNAL.filter((e) => e.game === 'melt-freeze').map((e) => e.id);
-    expect(ids).toEqual([...CHANGERS.map((s) => entryId('melt-freeze', s)), entryId('melt-freeze', 'stays')]);
+    expect(ids).toEqual([
+      ...CHANGERS.map((s) => entryId('melt-freeze', s)),
+      entryId('melt-freeze', 'stays'),
+      entryId('melt-freeze', 'goes-back'),
+      entryId('melt-freeze', 'cant-go-back'),
+    ]);
     expect(CHANGERS).toEqual(['ice', 'butter', 'chocolate', 'lolly']);
   });
 });
@@ -246,6 +280,116 @@ describe('level 6, will it melt?', () => {
       for (const r of round.record)
         expect(ids.has(entryId('melt-freeze', r.result === 'melts' ? r.thing : 'stays'))).toBe(true);
       expect(round.record.filter((r) => r.result === 'stays')).toHaveLength(2);
+    }
+  });
+});
+
+describe('level 7, can it go back?', () => {
+  const other = (b: Bin): Bin => (b === 'back' ? 'stuck' : 'back');
+
+  it('draws four things in turn, both that cannot go back and two distinct puddles, never three alike in a row, none as its hard self', () => {
+    expect(sortFor(rngs[0], true)).toEqual(['butter', 'bread', 'lolly', 'kernel']);
+    for (const rng of rngs) {
+      const things = sortFor(rng, false);
+      expect(things).toHaveLength(4);
+      expect(new Set(things).size).toBe(4);
+      expect(things.filter((s) => SORT_STUCK.includes(s)).sort()).toEqual(['bread', 'kernel']);
+      expect(things.filter((s) => SORT_BACK.includes(s))).toHaveLength(2);
+      for (let i = 2; i < things.length; i++)
+        expect(new Set(things.slice(i - 2, i + 1).map(goesBack)).size).toBe(2);
+      for (const s of things) expect(arrivesAs(s)).not.toBe('solid');
+    }
+    for (const s of SORT_BACK) expect(arrivesAs(s)).toBe('melted');
+    for (const s of SORT_STUCK) expect(arrivesAs(s)).toBe('cooked');
+  });
+
+  it('the right bin is what the snowflake test shows, and each hint names that bin', () => {
+    for (const s of [...SORT_BACK, ...SORT_STUCK]) {
+      const wentBack = step(s, arrivesAs(s), 'snow') === 'solid';
+      expect(binFor(s)).toBe(wentBack ? 'back' : 'stuck');
+      expect(sortLine(s)).toBe(wentBack ? 'meltfreeze.sort.back' : 'meltfreeze.sort.stuck');
+      const round = new SortRound([s]);
+      expect(round.ask()).toMatchObject({ glow: binFor(s), hint: sortLine(s) });
+    }
+    expect(SCRIPT['meltfreeze.sort.back'].join(' ')).toMatch(/can go back/);
+    expect(SCRIPT['meltfreeze.sort.stuck'].join(' ')).toMatch(/can't go back/);
+  });
+
+  it('counts no miss for the right bin, tested or not, and runs the test itself when she files first', () => {
+    const round = new SortRound(sortFor(rngs[0], true));
+    // Tested first: the butter puddle goes hard again; a second snowflake is the "already hard" line; neither counts.
+    expect(round.test()).toEqual({ changed: true, line: 'meltfreeze.freeze' });
+    expect(round.test()).toEqual({ changed: false, line: 'meltfreeze.already.hard' });
+    expect(round.file('back')).toMatchObject({ done: true, miss: false, ranTest: false, bin: 'back' });
+    // Filed untested: the game runs the snowflake, and the answer is judged against what it shows.
+    expect(round.state).toBe('cooked');
+    expect(round.file('stuck')).toMatchObject({ done: true, miss: false, ranTest: true, bin: 'stuck' });
+    expect(round.test()).toEqual({ changed: true, line: 'meltfreeze.freeze.ice' });
+    round.file('back');
+    expect(round.test()).toEqual({ changed: false, line: 'meltfreeze.sort.still.popped' });
+    round.file('stuck');
+    expect(round.finished).toBe(true);
+    expect([round.misses, round.hints]).toEqual([0, 0]);
+    expect(round.file('back').done).toBe(false);
+    expect([round.misses, round.hints]).toEqual([0, 0]);
+  });
+
+  it('counts one miss per wrong bin with a clue, a glow and one hint from the second, and the pet files it on the third', () => {
+    for (const s of [...SORT_BACK, ...SORT_STUCK]) {
+      const round = new SortRound([s, 'bread']);
+      const wrong = other(binFor(s));
+      const first = round.file(wrong);
+      expect(first).toMatchObject({ done: false, miss: true, glow: false, supported: false, ranTest: true });
+      expect(first.hint).toBe(sortLine(s));
+      expect([round.misses, round.hints]).toEqual([1, 0]);
+      const second = round.file(wrong);
+      expect(second).toMatchObject({ done: false, miss: true, glow: true, ranTest: false, bin: binFor(s) });
+      expect([round.misses, round.hints]).toEqual([2, 1]);
+      // Asking for a hint now adds nothing: one counted hint per thing.
+      round.ask();
+      expect([round.misses, round.hints]).toEqual([2, 1]);
+      const third = round.file(wrong);
+      expect(SUPPORTED_AT).toBe(3);
+      expect(third).toMatchObject({ done: true, miss: true, supported: true, bin: binFor(s) });
+      expect([round.misses, round.hints, round.index]).toEqual([3, 1, 1]);
+      // The next thing starts clean.
+      expect([round.wrong, round.hinted, round.tested, round.state]).toEqual([0, false, false, 'cooked']);
+    }
+  });
+
+  it('Show a hint twice is one hint and runs the test; snowflake taps and Start again never count', () => {
+    const round = new SortRound(sortFor(rngs[0], true));
+    expect(round.ask()).toEqual({ glow: 'back', hint: 'meltfreeze.sort.back', ranTest: true });
+    expect(round.ask()).toEqual({ glow: 'back', hint: 'meltfreeze.sort.back', ranTest: false });
+    expect([round.misses, round.hints]).toEqual([0, 1]);
+    expect(round.state).toBe('solid');
+    round.reset();
+    expect([round.state, round.tested]).toEqual(['melted', false]);
+    for (let i = 0; i < 6; i++) round.test();
+    expect([round.misses, round.hints]).toEqual([0, 1]);
+    round.file('back');
+    for (let i = 0; i < 6; i++) round.test();
+    expect([round.misses, round.hints, round.state]).toEqual([0, 1, 'cooked']);
+  });
+
+  it('files only what the round showed, and every id it can file has a journal entry', () => {
+    const ids = new Set(JOURNAL.map((e) => e.id));
+    for (const key of ['goes-back', 'cant-go-back']) expect(ids.has(entryId('melt-freeze', key))).toBe(true);
+    // A round that showed no toast or kernel cannot file can't-go-back (not a round level 7 draws; stated for a later pool).
+    const puddles = new SortRound(['ice', 'butter']);
+    puddles.file('back');
+    puddles.file('stuck');
+    expect([...puddles.shown]).toEqual(['goes-back']);
+    const cooked = new SortRound(['bread']);
+    expect([...cooked.shown]).toEqual([]);
+    cooked.test();
+    expect([...cooked.shown]).toEqual(['cant-go-back']);
+    for (const rng of rngs) {
+      const round = new SortRound(sortFor(rng, false));
+      while (!round.finished) round.file(rng.pick(BINS));
+      expect([...round.shown].sort()).toEqual(['cant-go-back', 'goes-back']);
+      expect(round.misses).toBeLessThanOrEqual(4 * SUPPORTED_AT);
+      expect(round.hints).toBeLessThanOrEqual(4);
     }
   });
 });
@@ -353,6 +497,18 @@ describe('layout', () => {
               expect(overlaps(c, other), at).toBe(false);
             expect(overlaps(c, { x: 0, y: 0, w: 120, h: 120 }), at).toBe(false);
             expect(overlaps(c, { x: view.w - 120, y: 0, w: 120, h: 120 }), at).toBe(false);
+          }
+          // Level 7's bins: at least 150 units, clear of the thing with its "what it was" outline beside it (the pair
+          // stands up to 260 wide), the snowflake, the pet and the corner buttons.
+          const pair: Box = { x: L.spots[0].x - 150, y: L.spots[0].y - 130, w: 260, h: 190 };
+          expect(overlaps(L.bins[0], L.bins[1])).toBe(false);
+          for (const b of L.bins) {
+            const at = `${view.w}x${view.h} bin ${JSON.stringify(b)}`;
+            expect(Math.min(b.w, b.h), at).toBeGreaterThanOrEqual(150);
+            expect(inside(b, view.w, view.h), at).toBe(true);
+            for (const o of [pair, L.sun, L.snow, petCorner(view)]) expect(overlaps(b, o), at).toBe(false);
+            expect(overlaps(b, { x: 0, y: 0, w: 120, h: 120 }), at).toBe(false);
+            expect(overlaps(b, { x: view.w - 120, y: 0, w: 120, h: 120 }), at).toBe(false);
           }
         }
       }

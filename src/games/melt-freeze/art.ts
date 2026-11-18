@@ -1,7 +1,15 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { melts, type Box, type Guess, type Substance } from './logic';
+import {
+  arrivesCooked,
+  melts,
+  type Bin,
+  type Box,
+  type Guess,
+  type SortDiscovery,
+  type Substance,
+} from './logic';
 
 /** A big warm sun, about 110 units across, centred on (0, 0). */
 export function sunArt(): Graphics {
@@ -42,6 +50,8 @@ const COLORS: Record<Substance, { fill: number; line: number; light: number }> =
   spoon: { fill: wood.fill, line: wood.line, light: wood.light },
   lolly: swatch.pink,
   shell: { fill: swatch.orange.light, line: swatch.brown.line, light: swatch.white.fill },
+  bread: { fill: swatch.white.fill, line: wood.line, light: wood.light },
+  kernel: { fill: swatch.yellow.fill, line: swatch.orange.line, light: swatch.yellow.light },
 };
 
 /** A thing in its hard form, about 100 units across with its base on (0, 0). */
@@ -116,7 +126,70 @@ export function solidArt(s: Substance, size = 100): Graphics {
         g.moveTo(x * 0.25 * k, -8 * k).lineTo(x * k, (-70 + Math.abs(x) * 0.5) * k);
       g.stroke({ width: 3 * k, color: c.line, alpha: 0.7, cap: 'round' });
       break;
+    case 'bread':
+      slice(g, k)
+        .fill(c.fill)
+        .stroke({ width: 6 * k, color: c.light, join: 'round' });
+      break;
+    case 'kernel':
+      g.moveTo(0, 0)
+        .quadraticCurveTo(-26 * k, -6 * k, -22 * k, -34 * k)
+        .quadraticCurveTo(0, -56 * k, 22 * k, -34 * k)
+        .quadraticCurveTo(26 * k, -6 * k, 0, 0)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line, join: 'round' });
+      g.ellipse(-6 * k, -30 * k, 7 * k, 10 * k).fill({ color: c.light, alpha: 0.9 });
+      break;
   }
+  return g;
+}
+
+/** The outline of a slice of bread, base on (0, 0), about 90 units wide and 86 tall. */
+function slice(g: Graphics, k: number): Graphics {
+  return g
+    .moveTo(-36 * k, 0)
+    .lineTo(-36 * k, -52 * k)
+    .quadraticCurveTo(-52 * k, -62 * k, -42 * k, -78 * k)
+    .quadraticCurveTo(0, -96 * k, 42 * k, -78 * k)
+    .quadraticCurveTo(52 * k, -62 * k, 36 * k, -52 * k)
+    .lineTo(36 * k, 0)
+    .closePath();
+}
+
+/**
+ * A thing that arrives already changed for good, base on (0, 0): a slice of toast, or a popped kernel. Only the changed
+ * thing is drawn: nothing glows, smokes or steams, and nothing shows how it was made.
+ */
+export function cookedArt(s: Substance, size = 100): Graphics {
+  const g = new Graphics();
+  const k = size / 100;
+  if (s === 'kernel') {
+    // A fluffy white burst with the kernel's golden husk at its foot.
+    g.ellipse(0, -8 * k, 16 * k, 10 * k)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4 * k, color: swatch.orange.line });
+    for (const [x, y, r] of [
+      [-26, -36, 24],
+      [24, -34, 26],
+      [0, -62, 28],
+      [-2, -30, 22],
+    ])
+      g.circle(x * k, y * k, r * k)
+        .fill(swatch.white.fill)
+        .stroke({ width: 4 * k, color: wood.line, alpha: 0.6 });
+    for (const [x, y, r] of [
+      [-26, -36, 20],
+      [24, -34, 22],
+      [0, -62, 24],
+      [-2, -30, 20],
+    ])
+      g.circle(x * k, y * k, r * k).fill(swatch.white.fill);
+    return g;
+  }
+  slice(g, k)
+    .fill(wood.fill)
+    .stroke({ width: 6 * k, color: wood.line, join: 'round' });
+  g.roundRect(-22 * k, -66 * k, 44 * k, 48 * k, 14 * k).fill({ color: wood.line, alpha: 0.28 });
   return g;
 }
 
@@ -195,6 +268,42 @@ function plainPuddle(s: Substance, size: number): Graphics {
     .stroke({ width: 4 * k, color: c.line, alpha: 0.8 });
 }
 
+/**
+ * A bin's sign, about 100 units wide and centred on (0, 0). Goes back: a round arrow that returns to its start.
+ * Can't go back: a straight arrow that ends at a short bar. Pictures, never words.
+ */
+export function binArt(bin: Bin): Graphics {
+  const g = new Graphics();
+  if (bin === 'back') {
+    // Most of a circle, clockwise from the upper right round to the top, with the head closing on where it began.
+    const r = 26;
+    const [from, to] = [-Math.PI * 0.25, Math.PI * 1.42];
+    g.arc(0, 0, r, from, to).stroke({ width: 8, color: swatch.blue.line, cap: 'round' });
+    const [tx, ty] = [Math.cos(to) * r, Math.sin(to) * r];
+    // The way the line is travelling at its end; the head's two barbs lean back from it.
+    const heading = to + Math.PI / 2;
+    for (const lean of [-0.6, 0.6]) {
+      const a = heading + Math.PI + lean;
+      g.moveTo(tx + Math.cos(a) * 18, ty + Math.sin(a) * 18).lineTo(tx, ty);
+    }
+    g.stroke({ width: 8, color: swatch.blue.line, cap: 'round', join: 'round' });
+    return g;
+  }
+  g.moveTo(-34, 0)
+    .lineTo(18, 0)
+    .moveTo(4, -14)
+    .lineTo(18, 0)
+    .lineTo(4, 14)
+    .stroke({ width: 8, color: swatch.orange.line, cap: 'round', join: 'round' });
+  g.moveTo(32, -20).lineTo(32, 20).stroke({ width: 9, color: swatch.orange.line, cap: 'round' });
+  return g;
+}
+
+/** The small picture a bin keeps of a thing filed in it: the thing as it ended, hard again or still changed. */
+export function filedArt(s: Substance): Graphics {
+  return arrivesCooked(s) ? cookedArt(s, 44) : solidArt(s, 44);
+}
+
 /** A cube beside a puddle: the hub icon and sticker. */
 export function iconArt(seed = 1): Container {
   const rng = new Rng(seed);
@@ -211,9 +320,31 @@ export function iconArt(seed = 1): Container {
   return c;
 }
 
-/** The journal card: the thing hard beside its puddle, or the stone and spoon side by side for the ones that stay. */
-export function meltJournalPicture(key: Substance | 'stays'): Container {
+/**
+ * The journal card: the thing hard beside its puddle, the stone and spoon side by side for the ones that stay, a puddle
+ * and its hard block under the round arrow for goes back, toast and a popped kernel for can't go back.
+ */
+export function meltJournalPicture(key: Substance | 'stays' | SortDiscovery): Container {
   const c = new Container();
+  if (key === 'goes-back') {
+    const sign = binArt('back');
+    sign.scale.set(0.6);
+    sign.y = -48;
+    const puddle = puddleArt('butter', 62);
+    puddle.position.set(-36, 30);
+    const block = solidArt('butter', 62);
+    block.position.set(36, 36);
+    c.addChild(sign, puddle, block);
+    return c;
+  }
+  if (key === 'cant-go-back') {
+    const toast = cookedArt('bread', 74);
+    toast.position.set(-36, 36);
+    const popped = cookedArt('kernel', 66);
+    popped.position.set(40, 36);
+    c.addChild(toast, popped);
+    return c;
+  }
   if (key === 'stays') {
     const stone = solidArt('stone', 80);
     stone.position.set(-34, 30);

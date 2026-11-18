@@ -453,6 +453,8 @@ export const SHARED = {
   'journal.melt.butter': ['The butter melts when it is warm and goes hard again when it is cool.'],
   'journal.melt.chocolate': ['The chocolate melts when it is warm and goes hard again when it is cool.'],
   'journal.melt.lolly': ['The ice lolly melts in the warm sun and freezes again in the cold.'],
+  'journal.melt.goes-back': ['A puddle of butter or chocolate can go hard again. That change goes back.'],
+  'journal.melt.cant-go-back': ["Toast can't be bread again. Some changes can't go back."],
   'journal.melt.stays': ['Some things, like a stone and a spoon, stay the same, warm or cool.'],
   'journal.kitchen.half': ['Two halves make a whole. Put the two halves of a sandwich together and it is the whole sandwich again.'],
   'journal.kitchen.quarter': ['Two quarters make a half. Two quarter pieces cover the same as one half.'],
