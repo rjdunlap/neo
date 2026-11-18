@@ -22,6 +22,7 @@ import {
   patternPlan,
   pieceColor,
   pieceShape,
+  TUNNEL_SIZE,
   wantedChoice,
   type PairLook,
   type PatternPlan,
@@ -199,10 +200,11 @@ class PatternTrain implements Game {
 
   /** The tunnel after the sixth car: a dark arch with one dot for each hidden car. Tapping it says the count again. */
   private buildTunnel(hidden: number) {
+    const { w, h } = TUNNEL_SIZE;
     const arch = new Graphics()
-      .roundRect(-44, -66, 88, 140, 40)
+      .roundRect(-w / 2, -66, w, h, 44)
       .fill(swatch.brown.line)
-      .roundRect(-34, -56, 68, 130, 32)
+      .roundRect(-w / 2 + 10, -56, w - 20, h - 10, 36)
       .fill(0x3b2f3f);
     this.tunnel.addChild(arch);
     for (let i = 0; i < hidden; i++) {
@@ -552,7 +554,7 @@ export const patternTrain: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly,
-  uprightLevels: [8, 9, 11, 12, 13, 14, 15, 16],
+  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16],
   offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()),
   touchDemo: true,
