@@ -462,7 +462,8 @@ class MarketStall implements Game {
       this.firstWay = coins;
       this.wrongs = 0;
       this.hinted = false;
-      await this.ctx.say('shop.again');
+      // The second purchase must be paid another way (the same coins are a miss), so this is the instruction now.
+      await this.ctx.instruct('shop.again');
       this.busy = false;
       return;
     }
