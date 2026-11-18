@@ -95,21 +95,38 @@ describe('Conversation cards', () => {
   });
 
   it('uses a single under-two paragraph for lap and toddler profiles', () => {
-    const id = 'puppet-stage';
-    const fixture = {
-      title: 'Puppet talk',
-      lines: ['Ask a question.', 'Swap places.'],
-      under2: 'Say hello to {name}.',
-    };
-    TALK_CARDS[id] = fixture;
-    try {
-      checkCopy(id, fixture.under2, true);
-      const played = { [id]: NOW };
-      for (const band of ['lap', 'toddler'] as const)
-        expect(cards(band, played)[0].lines).toEqual(['Say hello to Mira.']);
-      expect(cards('preschool', played)[0].lines).toEqual(fixture.lines);
-    } finally {
-      delete TALK_CARDS[id];
-    }
+    const played = { 'puppet-stage': NOW, 'maker-lane': NOW - 1 };
+    const puppet = TALK_CARDS['puppet-stage'];
+    const maker = TALK_CARDS['maker-lane'];
+    expect(cards('lap', played)).toMatchObject([
+      { game: { id: 'puppet-stage' }, lines: [puppet.under2?.replaceAll('{name}', NAME)] },
+    ]);
+    expect(cards('toddler', played).map(({ lines }) => lines)).toEqual([
+      [puppet.under2?.replaceAll('{name}', NAME)],
+      [maker.under2],
+    ]);
+    const older = cards('preschool', played);
+    expect(older.map(({ lines }) => lines.length)).toEqual([puppet.lines.length, maker.lines.length]);
+    expect(older[0].lines[2]).toBe(
+      'Swap places: Mira holds the puppets, and you sit in the front row and clap.',
+    );
+  });
+
+  it('gives a card without a borrowed idea no source sentence', () => {
+    const played = { 'maker-lane': NOW, 'shell-rows': NOW - 1 };
+    const [maker, shells] = cards('school', played);
+    expect(maker.source).toBeUndefined();
+    expect(shells.source).toContain('Nim');
+  });
+
+  it('holds all six defined cards', () => {
+    expect(Object.keys(TALK_CARDS).sort()).toEqual([
+      'maker-lane',
+      'not-always',
+      'notice-board',
+      'puppet-stage',
+      'shell-rows',
+      'thought-bubbles',
+    ]);
   });
 });

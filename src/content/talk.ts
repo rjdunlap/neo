@@ -25,6 +25,24 @@ export const TALK_CARDS: Record<string, TalkCard> = {
     source:
       'The three questions follow the key questions of the National Association for Media Literacy Education.',
   },
+  'shell-rows': {
+    title: 'Two table games',
+    lines: [
+      'Noughts and crosses on paper: before each move, each of you says out loud which square you are watching.',
+      'Last one wins: lay seven spoons in a row and take turns taking one or two. Whoever takes the last spoon wins. Play again with {name} going second.',
+      'Change a rule together, ten spoons or up to three at a time, and see what happens.',
+    ],
+    source: 'Both are old table games with no single author; the second is usually called Nim.',
+  },
+  'maker-lane': {
+    title: 'Where did it begin?',
+    lines: [
+      'Find three things at home that began as a plant, an animal and a tree: a cotton sock, a wool hat, a cardboard box.',
+      'Read a clothing label together ("100% cotton") and ask: what did it look like before?',
+      'Tear the edge of a cardboard box and look at the little fibres.',
+    ],
+    under2: 'Touch a wool hat and a cardboard box together and name them: soft hat, bumpy box.',
+  },
   'thought-bubbles': {
     title: 'Story talk',
     lines: [
@@ -33,6 +51,16 @@ export const TALK_CARDS: Record<string, TalkCard> = {
       'With a reader who is ready for it: "Who is telling this story?"',
     ],
     source: 'Asking instead of telling is borrowed from dialogic reading (Whitehurst and colleagues, 1988).',
+  },
+  'puppet-stage': {
+    title: 'A sofa puppet show',
+    lines: [
+      'A sock over your hand is a puppet. Give it a voice and let it say hello to {name} over the back of the sofa.',
+      'Then a show in three scenes, one of the island\'s own. Bunny looks for a hat: "Where is my hat?" Duck finds one: "Quack! I found a hat!" Bunny says thank you.',
+      'Swap places: {name} holds the puppets, and you sit in the front row and clap.',
+    ],
+    under2:
+      'A sock over your hand is a puppet. Let it peek over the sofa, say hello to {name} and hide again.',
   },
 };
 
