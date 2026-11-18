@@ -128,7 +128,9 @@ None needed for grown-ups: 6 → 12 → 15 → 18 gems is already a gentle slope
 4. **Level 7 *Stones that stay* (built 2026-11-08, PR #1420).** The stone model, drawing and voice; range 1–7. Checks: model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one refused stone tap, one portrait screenshot, `fingerdemo` at 7, build.
 5. **Level 8 *Iced gems* (built 2026-11-08, PR #1423).** The ice model; range 1–8. Checks: new interaction: typecheck, unit tests, one scripted play with one iced-gem tap and one hint, one portrait screenshot, `fingerdemo` at 8, build.
 
-The school opening (decision 1) and the couch course (decision 3) are gated and stay out of the ready list.
+6. **Levels 1–2 open to school (claimed 2026-11-18, branch `claude/gem-swap-school`).** `school: { min: 1, max: 2 }`, child-form voice wording, the how-to card and the saves audit. Checks: typecheck, rule tests, the registry and lands tests, one browser play of level 2 at `school`.
+
+The couch course (decision 3) was decided against and stays out of the ready list.
 
 ## What was built in this session
 
