@@ -135,7 +135,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 1. **SG1 · Define Shell Rows 1–3** (docs only; **defined 2026-10-31**, [PR #1062](https://github.com/rjdunlap/neo/pull/1062), [definition](../../definitions/shell-rows.md)): the board model and minimax, the puzzle positions and their rule tests, square sizes and layout, the replay, accounting, how-to and bot, land placement by decision 2.
 2. **Build Shell Rows 1–3** (new-game tier; **built 2026-11-01**, [PR #1115](https://github.com/rjdunlap/neo/pull/1115), batch `shell-rows 1`).
-3. **SG5 · Table games card** (grown-ups' page, plain HTML): **defined 2026-11-17**, [definition](../../definitions/talk-cards.md); build 2; no sowing game.
+3. **SG5 · Table games card** (grown-ups' page, plain HTML): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1804; no sowing game.
 4. **SG2 · Define Shell Rows 4–5**, after 1–3 are played; then build.
 5. **SG3 · Define Last Pebble**, after Shell Rows 5 (it reuses the replay).
 6. **SG4 Seed Bowls** after its review; **SG6 Fence the Field** sketch after a Lantern Lake capacity test.
