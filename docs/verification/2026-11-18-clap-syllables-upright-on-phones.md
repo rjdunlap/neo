@@ -2,7 +2,7 @@
 
 **Changed:** Clap the Syllables opens upright at all eight offered levels. Its pure layout separates sorting cards and fits the bins and train inside the view. Placed pictures and returning cards follow a resize, still taps on sorting cards are free, and a sorting hint outlines the bin face.
 
-**Ran:** Typecheck and game-scoped lint and format passed on the final spacing. All 31 game tests passed on the final layout, including checks at six upright views and 1024 × 768 landscape. The checks cover all offered levels and their cards, pad and replay controls, sorting destinations and sorted slots, and loaded train bounds.
+**Ran:** Typecheck and game-scoped lint and format passed on the final spacing. All 31 game tests passed on the final layout, including checks at six upright views and 1024 × 768 landscape. The checks cover all offered levels and their cards, pad and replay controls, sorting destinations and sorted slots, and loaded train bounds. The first CI run caught the missing registry expectation for the new upright flag. After updating the registry list, its tests and the generated game-docs checks passed (41 passed, one skipped).
 
 **Ran:** On `http://localhost:5196`, `BROWSER_SUITE=uprightsweep PHONE_BANDS=all PHONE_ONLY=clap-syllables` passed before the change. The eight screenshots showed overlapping sort cards and clipped bins and engine that the sweep missed. `BROWSER_SUITE=uprightgames PHONE_ONLY=clap-syllables` at 390 × 844 passed for `PHONE_BAND=prek PHONE_LEVELS=3,4` and `PHONE_BAND=school PHONE_LEVELS=5,6,8`. Chromium touch finished those rounds in 5, 4, 8, 9 and 4 touches respectively, one sticker each. All five screenshots were reviewed. The final spacing changes apply to other viewport sizes.
 
