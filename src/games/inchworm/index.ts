@@ -853,7 +853,9 @@ class Inchworm implements Game {
       this.showPads();
       this.busy = false;
     }
-    if (this.plan.mode === 'say') return this.ctx.say('worm.howlong', { what: THING_WORDS[this.m.thing] });
+    // The measuring is done and the pads are up: the question is now the line the guide repeats and the caption keeps.
+    if (this.plan.mode === 'say')
+      return this.instructLine('worm.howlong', { what: THING_WORDS[this.m.thing] });
     if (this.plan.mode === 'units') {
       await this.ctx.say('worm.counts', { a: this.m.length, b: this.m.other!.length });
       this.showPads();
@@ -863,13 +865,13 @@ class Inchworm implements Game {
     }
     if (this.m.jump) {
       const [a, b] = this.m.length > this.m.other!.length ? JUMPERS : [JUMPERS[1], JUMPERS[0]];
-      return this.ctx.say('worm.jumpmuch', { a, b });
+      return this.instructLine('worm.jumpmuch', { a, b });
     }
     const [a, b] =
       this.m.length > this.m.other!.length
         ? [this.m.thing, this.m.other!.thing]
         : [this.m.other!.thing, this.m.thing];
-    return this.ctx.say('worm.howmuch', { a: THING_WORDS[a], b: THING_WORDS[b] });
+    return this.instructLine('worm.howmuch', { a: THING_WORDS[a], b: THING_WORDS[b] });
   }
 
   private showPads() {
