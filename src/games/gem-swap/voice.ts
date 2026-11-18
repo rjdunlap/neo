@@ -20,6 +20,17 @@ export const VOICE = {
   'gem-swap.stuck': [
     'These gems have no clearing route. Undo a swap, or restart this tray to try another plan.',
   ],
+  // School (levels 1 and 2): the same four moments in a child's words.
+  'gem-swap.go-school': [
+    'Tap a gem, then the gem next to it, and they swap places. Line up three of the same shape and they pop! The gems above fall down. Can you clear the whole tray?',
+  ],
+  'gem-swap.miss-school': [
+    'That swap did not line up three. Look for two of the same shape with a third one close by.',
+  ],
+  'gem-swap.hint-school': ['Try swapping the two gems with the orange rings.'],
+  'gem-swap.stuck-school': [
+    'These gems cannot all pop from here. Tap the Undo arrow to take a swap back, or the round arrow to start the tray again.',
+  ],
   'gem-swap.restart': ['The starting gems are back. Try a different plan.'],
   'gem-swap.done': ['The tray is clear!'],
 } satisfies Record<string, string[]>;

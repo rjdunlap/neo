@@ -1,6 +1,6 @@
 # Additional languages: stage 1, the pet says the word
 
-**WL1 definition refined 2026-10-25; docs only, nothing implemented.** This replaces the language-neutral 2026-10-15 proposal in place. [World-languages study](../deep-dives/subjects/world-languages.md#build-slices-in-order), [roadmap](../ROADMAP.md#additional-languages). European Portuguese comes first: English naming line, then one reviewed word, per profile, device speech (developer decisions 2026-10-23). The developer still names the family reviewer; their review of **every Portuguese line** and actual iPad voice acceptance remain open. WL1 supplies English semantic labels only. WL2 is separately admitted after those gates; this packet does not promote it to ready build.
+**WL1 definition refined 2026-10-25; docs only, nothing implemented.** This replaces the language-neutral 2026-10-15 proposal in place. [World-languages study](../deep-dives/subjects/world-languages.md#build-slices-in-order), [roadmap](../ROADMAP.md#additional-languages). European Portuguese comes first: English naming line, then one reviewed word, per profile, device speech (developer decisions 2026-10-23). **Review (the developer, 2026-11-17): there is no family reviewer, and the assistant reviews every Portuguese line** by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17) below. WL1 supplies English semantic labels only. WL2 is admitted on that basis and queued in [READY](../READY.md); its building session writes and reviews the word table before anything else.
 
 ## Purpose and limits
 
@@ -47,7 +47,7 @@ The pilot has **20 semantic keys**, not a generic 60–80-word language catalog 
 | `color.blue` | blue | Bubble target instruction |
 | `color.purple` | purple | Bubble target instruction |
 
-The reviewer must settle article, grammatical gender and number, mass nouns versus pictured units, bunny/rabbit naming and acceptable alternatives in the actual context. English labels are identifiers, not translation instructions or accepted Portuguese forms. Never assemble a phrase by concatenating unchecked fragments. The complete pilot cannot ship with a missing/unreviewed entry, though runtime still handles an absent key safely.
+The [assistant review](#assistant-review-of-the-portuguese-2026-11-17) must settle article, grammatical gender and number, mass nouns versus pictured units, bunny/rabbit naming and acceptable alternatives in the actual context. English labels are identifiers, not translation instructions or accepted Portuguese forms. Never assemble a phrase by concatenating unchecked fragments. The complete pilot cannot ship with a missing/unreviewed entry, though runtime still handles an absent key safely.
 
 ### Animal Snack: choose exactly one entry
 
@@ -77,23 +77,37 @@ A round is one host `create(ctx)` through `ctx.finish`/destruction, **not** each
 
 Proposed active-profile `SaveData.settings.language2` is exactly `'none' | 'pt-PT'`, default `'none'`. Missing, null, object, unknown, `pt`, `pt-BR` or any other value repairs to `'none'`; no prefix coercion or locale inference. Keep current-format bounds/default/repair tests, writes and failure handling. A parent's plain-HTML select in `src/parent/panel.ts` uses English labels “None” / “European Portuguese”; no device-wide preference, profile-index field or band-dependent enablement. Language changes invalidate speech before applying to the active profile. Test two isolated profiles with different settings, profile switching and independent backup/restore.
 
-The setting persists as chosen even when that device has no accepted voice; show accurate English status separately, do not silently rewrite the setting. Availability is device state, not backup data. Current-format backups round-trip the bounded setting; malformed restore data gets the same repair. Pins, rounds and ownership remain independent.
+The setting persists as chosen even when that device has no European Portuguese voice; show accurate English status separately, do not silently rewrite the setting. Availability is device state, not backup data. Current-format backups round-trip the bounded setting; malformed restore data gets the same repair. Pins, rounds and ownership remain independent.
 
 Under the development-save exception, WL2 may reject/reset incompatible development formats rather than migrate them. At cutover, document the accepted format/version and rejection message, offer the existing reset/start-fresh route for **only the selected profile**, and reseed a fresh current-format save with `language2: 'none'`. A compatible save missing only this field gets the default; an unsupported backup is rejected with an explicit start-fresh choice, never silently merged into another profile. Test current-format backup/restore and fresh offline restart, profile isolation and reliable writes. No data is reset by WL1; no compatibility layer or production-save guarantee is proposed.
 
 ## Exact pt-PT speech and fallback
 
-Proposed `Voice.speakIn` must explicitly assign both the accepted voice and utterance language `pt-PT`; never let the system default choose. Compare canonical language tags case-insensitively to **exactly `pt-PT`**. Reject `pt`, `pt-BR`, other regions/extensions, malformed tags and English-only voices. No `startsWith('pt')`, generic Portuguese or “closest” variety fallback. Initial empty lists and `voiceschanged` refreshes must be handled without an event leaking to a newly available voice.
+Proposed `Voice.speakIn` must explicitly assign both the chosen voice and utterance language `pt-PT`; never let the system default choose. Compare canonical language tags case-insensitively to **exactly `pt-PT`**. Reject `pt`, `pt-BR`, other regions/extensions, malformed tags and English-only voices. No `startsWith('pt')`, generic Portuguese or “closest” variety fallback. Initial empty lists and `voiceschanged` refreshes must be handled without an event leaking to a newly available voice.
 
-Only a locally available exact voice covered by the device acceptance record below is eligible. Reject remote-only voices for this offline pilot. If multiple exact local voices exist, choose deterministically among accepted identities, never a quality score that silently selects an unaccepted voice. Re-read availability at dispatch; removal/replacement invalidates its acceptance for that device/voice revision until checked again. A matching tag is eligibility evidence, not proof of accent or intelligibility.
+Any locally available exact `pt-PT` voice is eligible (2026-11-17: no per-device listening acceptance is required, since nobody is named to give it). Reject remote-only voices for this offline pilot. If multiple exact local voices exist, choose deterministically (a fixed order by name and URI), never a quality score. Re-read availability at dispatch. A matching tag is eligibility, not proof of accent or intelligibility: that is what a phone playtest note answers.
 
-Start review at rate 0.95 and pitch 1.15, matching current English defaults; they are unaccepted trial values until heard. Record and accept the actual values before shipping. Any changed text, voice identity/revision or rate/pitch needs corresponding renewed review/listening evidence. Do not route Portuguese through English cached clips, an English utterance or a remote translation service. No clips/assets are added in this pilot.
+Ship at rate 0.95 and pitch 1.15, matching current English defaults; a playtest note can change them. A changed text needs a renewed review row. Do not route Portuguese through English cached clips, an English utterance or a remote translation service. No clips/assets are added in this pilot.
 
-With setting off, speech disabled/unsupported, no accepted exact local voice, missing/unreviewed key or synthesis failure: omit the tail, retain English, never throw or stall, and leave normal touch/host support available. Parent status distinguishes “Off,” “No accepted European Portuguese voice available; words stay in English,” and an available voice's identity/acceptance status. Do not claim “Voice found” means accepted. English clip fallback remains its existing behavior; it cannot serve Portuguese words.
+With setting off, speech disabled/unsupported, no exact local voice, missing/unreviewed key or synthesis failure: omit the tail, retain English, never throw or stall, and leave normal touch/host support available. Parent status distinguishes “Off,” “No European Portuguese voice on this device; words stay in English,” and the name of the voice in use. Do not present a found voice as a good one. English clip fallback remains its existing behavior; it cannot serve Portuguese words.
 
-## Review evidence template and open device checklist
+## Assistant review of the Portuguese (2026-11-17)
 
-**All rows below are unfilled; no reviewer selected and no acceptance established.** Store the completed evidence with a versioned table/commit and link it from [DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#european-portuguese-stage-1-pilot-wl1). The developer names the family reviewer in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). No assistant, generic native-speaker label or web translation substitutes for that person.
+The developer, 2026-11-17: "I also don't have a Portuguese reviewer, AI will be handling that part." This replaces the developer-named family reviewer wherever this packet, the [study](../deep-dives/subjects/world-languages.md) or the roadmap asked for one. Until that day this packet said no assistant could stand in for that person; the rules below are what makes the substitute an honest one.
+
+- **One session writes, another pass checks.** The building session drafts each European Portuguese entry. A second pass in a fresh context (a subagent given only the key, the English line, the pictured context and the draft) checks it; the writer does not accept its own line. A disagreement is settled from the sources, and an entry that cannot be settled is left out (English continues) and never guessed.
+- **What is checked, for each key and each shipped variant:** the meaning in the pictured context; article, gender and number; a mass noun against pictured units; that the word and its spelling are European Portuguese and not Brazilian usage (*comboio*, not *trem*); that it is a word a small child in Portugal hears at home; and which alternatives lost, and why.
+- **Sources.** At least one European Portuguese dictionary entry for each key ([Priberam](https://dicionario.priberam.org/) or [Infopédia](https://www.infopedia.pt/)), and [Ciberdúvidas](https://ciberduvidas.iscte-iul.pt/) for a doubt about usage, each linked in the evidence row. A Brazilian source or a machine translation alone settles nothing.
+- **Evidence.** One row per key in the template below, committed with the word table. A changed entry gets a renewed row.
+- **Said honestly.** The grown-ups' page says the Portuguese words were chosen and checked by an AI assistant against European Portuguese dictionaries, and not by a family member. No page, doc or report calls a line "reviewed by a native speaker".
+- **A person's correction always wins.** A family member who says a word is wrong (a [playtest note](../OBSERVATIONS.md), or a word to the developer) replaces the entry without argument; the fix is an ordinary READY line.
+- **What the assistant cannot do is hear it.** No assistant hears a device voice. Whether a phone's `pt-PT` voice says a word well is answered by the developer or their wife playing with the setting on, as a playtest note; it gates nothing. The exact-`pt-PT` rule above still decides whether a word is spoken at all, and iPad listening is [parked](../DEVICE-CHECKS.md) with the other device checks.
+
+Arabic, French and Spanish are reviewed the same way when their turn comes, unless the developer names a person for one of them.
+
+## Review evidence template and listening questions
+
+**All rows below are unfilled.** The content rows are filled by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17); the listening rows only when a person listens on a phone, and they hold nothing back. Store the completed evidence with the versioned table and its commit.
 
 Repeat this template for **each of the 20 keys and every shipped variant/line**; inventory completeness and explicit acceptance must be auditable:
 
@@ -101,22 +115,20 @@ Repeat this template for **each of the 20 keys and every shipped variant/line**;
 | --- | --- |
 | Key / table version / commit | English key above; exact reviewed revision |
 | Host / level / event / pictured context | All applicable event contexts, including mass/plural foods and feeling reveals |
-| Proposed spoken entry / optional spelling | `[reviewed European Portuguese entry pending]` |
-| Meaning / article / gender / number / alternatives | `[family review pending]`; accepted form and reasons for rejected alternatives |
-| Named family reviewer / developer designation / date | `[pending]` |
+| Proposed spoken entry / optional spelling | `[written by the building session]` |
+| Meaning / article / gender / number / variety / alternatives | `[assistant review pending]`; accepted form, dictionary links and reasons for rejected alternatives |
+| Written by / checked by / date | `[pending]`; the writing session and the separate checking pass, with the commit |
 | Content decision | `[pending: accept / revise / reject]`; explicit per-line decision, not blanket approval |
-| Device / OS / browser or installed PWA / date / tester | `[actual iPad evidence pending]` |
-| Voice name / URI / lang / local flag / version where exposed | `[pending]`; record identity even if a version is unavailable |
-| Rate / pitch / volume / online and offline conditions | `[pending]`; actual settings used |
-| Listening contexts and result | Natural English-then-entry, replay, interruption and normal game sounds; clarity/variety accepted or revisions required |
+| Device / OS / browser or installed PWA / date / listener | `[only when a person listens on a phone; not a gate]` |
+| Voice name / URI / lang / local flag / version where exposed | `[as above]`; record identity even if a version is unavailable |
+| Rate / pitch / volume / online and offline conditions | `[as above]`; actual settings used |
+| Listening contexts and result | `[as above]`; natural English-then-entry, replay, interruption and normal game sounds; what sounded wrong |
 
-Before WL2 admission, obtain the named review and actual iPad listening acceptance of the complete candidate vocabulary in context using the intended local voice/settings; this docs-only slice supplies no Portuguese sample or test program. Recheck integrated playback before claiming the build accepted. Keep these person/device checks open until performed:
+WL2's building session completes the assistant review of the whole candidate vocabulary before any entry ships, and rechecks integrated playback with fake `pt-PT` voices. What only a person playing on a phone can tell us is kept here as questions for a playtest note, not as open checks:
 
-- [ ] Developer names reviewer; all 20 keys and every supplied line/variant have explicit content acceptance with version/date.
-- [ ] On an actual iPad, reviewer hears every entry after its English host context at real rate/pitch; accepts vocabulary, variety and intelligibility, including game sounds and singular/plural/mass referents.
-- [ ] Record exact local pt-PT identity, OS and Safari/PWA conditions; hear it offline after cold restart. Device with only pt/pt-BR or no accepted voice keeps English and explains status.
-- [ ] Observe fast repeated inputs, pet replay, interrupted English/tail, finish, Home/Back, mute, setting/profile change and voice-list change. No backlog, stale words or delayed speech from a destroyed round; controls stay responsive.
-- [ ] Restore a current-format backup and switch profiles on the iPad; unavailable voice never crosses profiles or prevents offline play. This is future evidence, not completed by a browser stub.
+- Does each word sound right after its English line, at the game's rate and pitch and over the game's sounds, for single, plural and mass things?
+- Which voice did the phone use (name, language tag, local or not), and does it still speak offline after a restart? A phone with only `pt` or `pt-BR` keeps English and says why.
+- After fast repeated taps, a replay, Home or Back, mute, and a change of setting or player, is there ever a stale or late word?
 
 ## Future WL2 verification scope
 
@@ -127,8 +139,8 @@ WL1 runs links and `git diff --check` only. No local code/build/browser/device t
 - Closed setting repair; independent profiles, compatible defaults, current-format backup/restore, unsupported-format reset/reseed and write-failure behavior. Matching/rejected/empty/mutating voice lists, off/mute/unavailable/missing-key cases all finish safely.
 - Seeded identical inputs on/off yield identical puzzles, misses/hints, completion, adaptation, sticker seed and ownership. Optional speech adds no RNG draw or gameplay wait.
 
-Use at most the two most relevant existing browser suites: `BROWSER_SUITE=originals ORIGINALS_ONLY=peekaboo PEEK_LEVELS=16,1,3,6`, then `BROWSER_SUITE=originals ORIGINALS_ONLY=bubbles BUBBLE_LEVELS=15,4,6,7,10`, then `BROWSER_SUITE=woods WOODS_ONLY=snack FROM_LEVEL=1` (through level 5; confirm current harness filters at build time). Exercise the eligible speech branches via small isolated-profile probes with fake accepted voices: Peek 16/1/3/6 including a feeling reveal, Snack 1–5 covering all arbitration and exclusion branches, Bubble 15/4/6 and a no-tail count/bonds case. Unit tests cover the full key matrix; do not play every key/level in the browser. Include one miss/hint where supported and cancellation/replay/round restart; no screenshots required for unchanged game drawings. Inspect the changed parent select/status once in portrait and landscape; run `world` only if navigation actually changes. Run production offline after checking served build identity because save/speech availability changed; record commit, filters, seeds and URL. Keep total browser time within the repository budget and mark remaining evidence not run. Device/child listening or learning outcomes cannot be established by these probes.
+Use at most the two most relevant existing browser suites: `BROWSER_SUITE=originals ORIGINALS_ONLY=peekaboo PEEK_LEVELS=16,1,3,6`, then `BROWSER_SUITE=originals ORIGINALS_ONLY=bubbles BUBBLE_LEVELS=15,4,6,7,10`, then `BROWSER_SUITE=woods WOODS_ONLY=snack FROM_LEVEL=1` (through level 5; confirm current harness filters at build time). Exercise the eligible speech branches via small isolated-profile probes with fake `pt-PT` voices: Peek 16/1/3/6 including a feeling reveal, Snack 1–5 covering all arbitration and exclusion branches, Bubble 15/4/6 and a no-tail count/bonds case. Unit tests cover the full key matrix; do not play every key/level in the browser. Include one miss/hint where supported and cancellation/replay/round restart; no screenshots required for unchanged game drawings. Inspect the changed parent select/status once in portrait and landscape; run `world` only if navigation actually changes. Run production offline after checking served build identity because save/speech availability changed; record commit, filters, seeds and URL. Keep total browser time within the repository budget and mark remaining evidence not run. Device/child listening or learning outcomes cannot be established by these probes.
 
 ## Outside this packet
 
-Later hosts/languages, receptive requests, whole-voice switching, translated sentences/captions/journal/how-to, reading/phonics/rhyme/song content, recordings/clips and reviewer selection are separate work. See the study's ordered slices; none becomes ready from WL1. Existing generated English speech policy is unchanged. Family review and actual iPad acceptance remain open; no Portuguese content ships from this refinement.
+Later hosts/languages, receptive requests, whole-voice switching, translated sentences/captions/journal/how-to, reading/phonics/rhyme/song content, and recordings/clips are separate work. See the study's ordered slices; only WL2 is ready. Existing generated English speech policy is unchanged. No Portuguese content ships from this refinement: WL2 writes and reviews it.

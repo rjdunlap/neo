@@ -706,7 +706,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Gem Swap
 
-*grown-up* · [Gem Swap](games/gem-swap.md)
+*school–grown-up* · [Gem Swap](games/gem-swap.md)
 
 ### Tile Pairs
 

@@ -27,5 +27,14 @@ export const HOW_TO: GameHowTo = {
     'Tap Hint to outline a swap that starts a clearing route.',
   ],
   finish: 'The round ends when every gem is cleared (the stones stay); there is no turn limit.',
-  note: 'A swap that makes no line stays put and counts as a miss; tapping a stone or a frosty gem is not a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
+  note: [
+    {
+      text: 'A swap that makes no line stays put and counts as a miss. Undo keeps your swap count; Restart counts as help. At school she plays these two 4 by 4 trays (about 7 and up), spoken in simpler words.',
+      to: 2,
+    },
+    {
+      text: 'A swap that makes no line stays put and counts as a miss; tapping a stone or a frosty gem is not a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
+      from: 3,
+    },
+  ],
 };
