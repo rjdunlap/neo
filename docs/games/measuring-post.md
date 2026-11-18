@@ -34,3 +34,5 @@ Misses and help: a wrong tool (levels 1–4), a wrong row or a wrong comparison 
 Deviations from the definition: a wrong tool does not animate measuring its own attribute; levels 3 (common-unit comparison) and 4 (conversion table) are not built.
 
 **The lesson line never holds the next task (U7 fix batch 24, 2026-11-12).** At levels 2–3 a right row's `measure.right.*` or compare pad's `right3.*` starts and the next task follows the 0.8 s settle alone, the lesson playing over it. Its question waits for the line, Replay, the guide or her first tool tap (which says it and is not judged); Help drops it, its hint naming what is asked. The last task's line is heard out.
+
+**What the guide repeats.** Each task's question (`measure.ask.*`, `measure.ask3.*`, `measure.kg.ask.3/4`) is an instruction, so the caption keeps it while she measures; the results and `measure.kg.watch` stay plain speech.
