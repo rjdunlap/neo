@@ -1,0 +1,1 @@
+**Beside a sound, and no room to spare** (TotoLogic P3 slice 2; shell tier, the same suites): the boing listener with the guide's tilt and the caption band's wobble; `say` and `sayIn` lines shown in the band; the bubble for screens with no spare side. [Build slices](../../definitions/question-on-screen.md#build-slices-in-order)

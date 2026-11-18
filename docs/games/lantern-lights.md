@@ -31,7 +31,7 @@
 
 ## Design notes
 
-On an upright phone the pond sits below the corner controls, with the count above it and the round controls underneath.
+On an upright phone the pond sits below the corner controls, with the count above it and the round controls underneath. In the captioned view (a grown-up round's question written in a strip below, 768 × 1,206 units) `pondLayout` moves the button row clear of the guide's corner.
 
 **Decided 2026-10-23 (on the developer's delegation):** What counts as a miss in Lantern Lights by touch, and the other grown-up puzzles: Count a miss only where the game shows it: Lantern Lights stays 0; Sudoku Garden's wrong digit (against the solution) stays a miss and now gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses (0, adapt on hints). ([record](../archive/DECISIONS-2026-10-23.md))
 

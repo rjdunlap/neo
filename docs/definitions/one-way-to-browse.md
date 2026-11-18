@@ -56,7 +56,7 @@ All games is upright-ready today and the Arcade is not, so folding one into the 
 
 - `arcadeLayout` already stacks the spotlight above the grid when the view is tall, but on the 768 × 1024 area it fits only two cards (one row of two). Upright, the grid holds **at least four cards (two by two)**, with the spotlight shortened to fit; cards stay 150 units, Topics 240 by 100, Play and the arrows 120, and the page label clears the arrows and the guide corner.
 - The Topics sheet (`topicsLayout`) fits its thirteen tiles on the upright area at 100 units or more, two sheets' worth paging if they cannot (never shrinking a tile).
-- `ArcadeScene` sets `upright` and `uprightArea`. Layout tests at every `UPRIGHT_VIEWS` entry, as Explore's are.
+- `ArcadeScene` sets `upright` and `uprightArea`. Layout tests at every `UPRIGHT_SCREENS` entry (the three phones; `UPRIGHT_VIEWS` adds the captioned round view), as Explore's are.
 
 ### R5. Little surprises keeps its own tap
 
@@ -93,7 +93,7 @@ In `src/content/arcade.test.ts` and `explore.test.ts`, over the real registry an
 - `arcadeFilters` starts with `'mine'`, then `'all'`, `'played'` and the subjects; the default filter is `'mine'` on a new memory and after `forgetArcade()`.
 - The page label reads `${page + 1} of ${arcadePages(n, perPage)}` and is absent when there is one page.
 - `EXPLORE_ENTRIES` has no `'all'`; at lap and toddler the entries page leads with Little surprises; every former `'all'` route (Today's six's button, empty Favorites, an `{ explore: 'all' }` origin, `placeAtRoot`) resolves to a valid scene (a routes test in `src/app/` or the scene tests).
-- Layout tests (`arcade-layout.test.ts`): at every `UPRIGHT_VIEWS` entry the Arcade holds at least four cards of 150 units with no overlap, Topics, Play, the arrows and the page label clear of each other, the corners and the guide corner; the Topics sheet's tiles are at least 100 units; Explore's four- and five-entry layouts at both areas.
+- Layout tests (`arcade-layout.test.ts`): at every `UPRIGHT_SCREENS` entry the Arcade holds at least four cards of 150 units with no overlap, Topics, Play, the arrows and the page label clear of each other, the corners and the guide corner; the Topics sheet's tiles are at least 100 units; Explore's four- and five-entry layouts at both areas.
 - The meanings test still passes with For me's picture (R2).
 
 ## Slices and check tier
