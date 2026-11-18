@@ -88,6 +88,8 @@ import {
   STEPS,
   Tally,
   TILE,
+  TILE_PAD,
+  WATCH_PAD,
   warmthY,
   zoneOf,
   type Board,
@@ -99,12 +101,16 @@ import {
   type Outcome,
   type Piece,
   type Pt,
+  type Rect,
   type Reading,
   type SensorKind,
   type Socket,
   type SunLevel,
   type Trace,
 } from './logic';
+
+/** A layout box's touch area around its own centre, reaching `by` units past the drawn box. */
+const pad = (r: Rect, by: number) => new Rectangle(-r.w / 2 - by, -r.h / 2 - by, r.w + 2 * by, r.h + 2 * by);
 
 /** The friend stands about 250 tall at scale 1. */
 const CRITTER_SCALE = 0.4;
@@ -401,12 +407,7 @@ class HelperHouse implements Game {
         .lineTo(r.action.x - 18, ay + 12)
         .stroke({ width: 6, color: ink, cap: 'round', join: 'round' });
       if (!row.given) {
-        reading.hitArea = new Rectangle(
-          -r.reading.w / 2 - 6,
-          -r.reading.h / 2 - 6,
-          r.reading.w + 12,
-          r.reading.h + 12,
-        );
+        reading.hitArea = pad(r.reading, TILE_PAD);
         onTap(reading, () => this.cycleRow(i), { cooldown: 250 });
       } else {
         reading.eventMode = 'none';
@@ -423,7 +424,7 @@ class HelperHouse implements Game {
       const node = new Container();
       node.addChild(tileArt(r.w));
       node.addChild(isChip ? readingArt(k as Chip, r.w * 0.66) : sensorArt(k as SensorKind, r.w * 0.7));
-      node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+      node.hitArea = pad(r, TILE_PAD);
       const at = centre(r);
       // A placed sensor sits in its socket instead of on the bench.
       const placedAt =
@@ -450,7 +451,7 @@ class HelperHouse implements Game {
     // Controls.
     const watch = new Container();
     watch.position.copyFrom(centre(l.watch));
-    watch.hitArea = new Rectangle(-l.watch.w / 2 - 8, -l.watch.h / 2 - 8, l.watch.w + 16, l.watch.h + 16);
+    watch.hitArea = pad(l.watch, WATCH_PAD);
     onTap(watch, () => this.watch(), { cooldown: 250 });
     this.board_.addChild(watch);
     this.watchButton = watch;
@@ -460,8 +461,8 @@ class HelperHouse implements Game {
     this.undoButton.position.copyFrom(centre(l.undo));
     this.board_.addChild(this.stepButton, this.undoButton);
     if (this.offered && !this.run) {
-      const offer = new RoundButton(checkIcon(), swatch.green, 60, () => this.acceptOffer());
-      offer.position.set(l.house.x + l.house.w / 2, l.house.y + l.house.h * 0.62);
+      const offer = new RoundButton(checkIcon(), swatch.green, l.offer.w / 2, () => this.acceptOffer());
+      offer.position.copyFrom(centre(l.offer));
       this.board_.addChild(offer);
       this.offerButton = offer;
     }
@@ -484,7 +485,12 @@ class HelperHouse implements Game {
     const column = new Container();
     column.position.set(g.column.x, g.column.y);
     column.addChild(gaugeArt(g.column.w, g.pitch, GAPS + 1));
-    column.hitArea = new Rectangle(-6, -6, g.column.w + 12, g.column.h + 12);
+    column.hitArea = new Rectangle(
+      -TILE_PAD,
+      -TILE_PAD,
+      g.column.w + 2 * TILE_PAD,
+      g.column.h + 2 * TILE_PAD,
+    );
     onTap(column, (e) => this.tapGauge(column.toLocal(e.global).y + g.column.y), { cooldown: 250 });
     const dyn = new Graphics();
     dyn.eventMode = 'none';
@@ -495,7 +501,7 @@ class HelperHouse implements Game {
       const r = handleRect(g, piece, this.gapOf(piece));
       const node = new Container();
       node.addChild(lineTabArt(piece, r.w));
-      node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+      node.hitArea = pad(r, TILE_PAD);
       node.position.copyFrom(centre(r));
       this.board_.addChild(node);
       const entry = { piece, node, handle: null as unknown as DragHandle };
@@ -515,13 +521,13 @@ class HelperHouse implements Game {
     }
     if (this.guessOpen && !this.run) {
       // The guess: two picture buttons over the house; either one (or Watch) starts the first day.
-      const size = 124;
-      const cy = l.house.y + l.house.h * 0.42;
       (['faster', 'same'] as const).forEach((choice, i) => {
+        const r = l.guesses[i];
+        const size = r.w;
         const b = new Container();
         b.addChild(guessArt(choice, size));
-        b.hitArea = new Rectangle(-size / 2 - 6, -size / 2 - 6, size + 12, size + 12);
-        b.position.set(l.house.x + l.house.w / 2 + (i === 0 ? -1 : 1) * (size / 2 + 18), cy);
+        b.hitArea = pad(r, TILE_PAD);
+        b.position.copyFrom(centre(r));
         onTap(b, () => this.guess(choice), { cooldown: 400 });
         this.board_.addChild(b);
         this.guessButtons.push(b);
@@ -1397,6 +1403,7 @@ export const helperHouse: GameModule = {
     'Be the Helper: one of you is the "sensor" who calls "someone\'s here!" or "it\'s dark!", and the other is the door or the lamp who answers only when the rule says so.',
   hubIcon: () => new HouseIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new HelperHouse(ctx),
 };

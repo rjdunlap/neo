@@ -33,8 +33,10 @@ import {
   planFor,
   restartState,
   SHOW,
+  STATION_DOWN,
   STATION_R,
   undo,
+  UNDO_R,
   type Arrow,
   type Fault,
   type FeedingRecord,
@@ -133,7 +135,7 @@ class FoodWebWorkshop implements Game {
     this.showButton.addChild(finishArt({ w: SHOW.w, h: SHOW.h, corner: 30 }, swatch.green), webPicture());
     this.showButton.hitArea = new Rectangle(-SHOW.w / 2 - 6, -SHOW.h / 2 - 6, SHOW.w + 12, SHOW.h + 12);
     onTap(this.showButton, () => void this.showWeb(), { cooldown: 400 });
-    this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
+    this.undoButton = new RoundButton(againIcon(), swatch.white, UNDO_R, () => this.undo());
 
     for (const record of caseRecords(this.s.round.webCase)) {
       const node = cardArt(record.from, record.to, CARD.w, CARD.h);
@@ -144,7 +146,7 @@ class FoodWebWorkshop implements Game {
     }
     this.s.round.stations.forEach((organism, i) => {
       const node = stationArt(organism, STATION_R);
-      node.hitArea = new Rectangle(-STATION_R, -STATION_R, STATION_R * 2, STATION_R + 12);
+      node.hitArea = new Rectangle(-STATION_R, -STATION_R, STATION_R * 2, STATION_R + STATION_DOWN);
       onTap(node, () => this.name(i), { cooldown: 400 });
       this.stationLayer.addChild(node);
       const badge = badgeArt(organism, BADGE);
@@ -473,6 +475,7 @@ export const foodWebWorkshop: GameModule = {
     'Draw three pictures on paper (a plant, something that eats it, and something that eats that) and join them with arrows from the food to the eater.',
   hubIcon: () => new WigglyIcon(webIcon()),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new FoodWebWorkshop(ctx),
 };

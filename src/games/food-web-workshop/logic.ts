@@ -258,6 +258,8 @@ export interface Pt {
   y: number;
 }
 export const STATION_R = 95;
+/** A station is touched on its picture: its hit box reaches this far below its centre, stopping just above its badge. */
+export const STATION_DOWN = 12;
 export const BADGE = 110;
 /** A badge let go this close to a station's centre lands there (the nearest wins). */
 export const DROP_R = 170;

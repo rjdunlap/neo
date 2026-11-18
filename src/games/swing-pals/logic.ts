@@ -675,7 +675,10 @@ export const FRIEND_DOWN = 12;
 export const HOOK_R = 60;
 /** The short hook sits this far forward of the others, so the three targets never overlap. */
 export const SHORT_SHIFT = 70;
-/** The apple's basket: its middle this far above the bottom of the view, and its half-size. */
+/** The seats hang this far above the bottom of the view; two swings on an upright phone, this far (see `swingLayout`). */
+export const SEAT_UP = 150;
+export const RAISED_SEAT_UP = 300;
+/** The apple's basket: its middle this far above the grass line under the seats (`SEAT_UP` below them), and its half-size. */
 export const BASKET_UP = 62;
 export const BASKET_HALF = { w: 46, h: 30 };
 
@@ -723,16 +726,25 @@ export { overlaps as rectsOverlap };
 /**
  * Where one or two swings hang in a view: seats all at one height, hooks at different heights above them, each swing in its
  * own column, every arc at the bell height clear of the pet's corner and the shell's buttons. Same line on every view.
+ *
+ * Two swings on a phone held upright (768 wide) hang higher, above the pet's corner, so their columns take the whole
+ * width: beside the pet the ropes came out half as long and the three hook targets lay over each other.
  */
 export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
   const bell = swings === 1 ? BELL_ONE : BELL_TWO;
-  const seatY = v.h - 150;
+  const raised = swings === 2 && v.upright === true;
+  const seatY = v.h - (raised ? RAISED_SEAT_UP : SEAT_UP);
   const pet = petCorner(v);
   const x0 = seatY + FRIEND_DOWN > pet.y ? pet.x + pet.w + 10 : 20;
   const x1 = v.w - 20;
   const half = (x1 - x0) / (2 * swings);
   const sin = Math.sin((bell * Math.PI) / 180);
-  const scale = Math.min(swings === 1 ? 560 : 460, seatY - 60, (half - FRIEND_HALF - 10) / sin);
+  // Raised, the two widest arcs may meet at the midline (never cross), which is what keeps the hooks a target apart.
+  const scale = Math.min(
+    swings === 1 ? 560 : 460,
+    seatY - 60,
+    (half - FRIEND_HALF - (raised ? 0 : 10)) / sin,
+  );
   const columns: Column[] = [];
   for (let i = 0; i < swings; i++) {
     // One swing stands in the middle when its widest arc clears the pet; otherwise each swing takes its column's middle.
@@ -762,7 +774,7 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
       const front = seatAt(layout, col, h, bell);
       col.mitten[h] = { x: back.x - FRIEND_HALF + 10, y: back.y - 40 };
       col.bell[h] = { x: front.x + 20, y: front.y - FRIEND_UP - 26 };
-      col.basket[h] = { x: col.bell[h].x, y: v.h - BASKET_UP };
+      col.basket[h] = { x: col.bell[h].x, y: seatY + SEAT_UP - BASKET_UP };
     }
     // Push targets: the whole play area under the shell's buttons for one swing; each swing's half, split at the midline.
     if (swings === 1) col.zone = { x: 0, y: 130, w: v.w, h: v.h - 130 };
@@ -791,6 +803,13 @@ export function hookTargets(col: Column): Record<Hook, Pt & { r: number }> {
   const out = {} as Record<Hook, Pt & { r: number }>;
   for (const h of HOOKS) out[h] = { ...col.pivot[h], r: HOOK_R };
   return out;
+}
+
+/** The friends' row at the finish: where each of `n` friends stands along the bottom, right of the pet's corner. */
+export function finaleRow(n: number, v: Pick<View, 'w' | 'h'>): Pt[] {
+  const gap = Math.min(150, (v.w - 320) / Math.max(1, n - 1));
+  const x0 = v.w / 2 - (gap * (n - 1)) / 2 + 60;
+  return Array.from({ length: n }, (_, i) => ({ x: x0 + i * gap, y: v.h - 40 }));
 }
 
 /* Bot ---------------------------------------------------------------------------------------------- */

@@ -7,16 +7,20 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { checkIcon } from '../../ui/icons';
 import { RoundButton } from '../../ui/buttons';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CountSign, bugBody, bugSticker, bugToken, bugWing } from './art';
+import { CountSign, bugBody, bugSticker, bugToken, bugWing, openPlace, stampedPlace } from './art';
 import { FoldFriend } from './fold';
 import { MendWing } from './mend';
 import {
   LEVELS,
   BUG_PLANS,
   BUG_TOKENS,
+  CHECK_RADIUS,
+  PLACE_TAP,
+  STAMP_HIT,
+  bugLayout,
   bugPuzzle,
   countBoard,
   countCheck,
@@ -76,14 +80,14 @@ class BugBuilder implements Game {
       board.state.places.forEach((p, i) => {
         const node = new Container();
         node.position.set(p.x, p.y);
-        node.addChild(this.openPlace());
+        node.addChild(openPlace());
         // A stamped place lifts off with a tap; an open one does nothing.
-        onTap(node, () => this.countEvent(countLift(this.count!, i), i), { radius: 56 });
+        onTap(node, () => this.countEvent(countLift(this.count!, i), i), { radius: PLACE_TAP });
         this.board.addChild(node);
         this.places.push(node);
       });
       this.sign = new CountSign(board.state.want, board.state.kind);
-      this.check = new RoundButton(checkIcon(), swatch.green, 58, () =>
+      this.check = new RoundButton(checkIcon(), swatch.green, CHECK_RADIUS, () =>
         this.countEvent(countCheck(this.count!)),
       );
       ctx.stage.addChild(this.sign, this.check);
@@ -92,14 +96,15 @@ class BugBuilder implements Game {
     for (const token of tokens) {
       const node = new Container();
       node.addChild(tile(102, 102), bugToken(token));
-      node.hitArea = new Circle(0, 0, 55);
+      node.hitArea = new Circle(0, 0, STAMP_HIT);
       ctx.stage.addChild(node);
       const drag = draggable(node, ctx.tw, {
         onPick: () => sfx.tick(),
         onDrop: (x, y) => {
           if (this.done) return false;
+          const at = this.onBoard(x, y);
           if (this.count) {
-            const place = countPlaceAt(this.count, x - this.board.x, y - this.board.y);
+            const place = countPlaceAt(this.count, at.x, at.y);
             if (place >= 0) this.countEvent(countStamp(this.count, place, token), place, token);
           } else this.matchDrop(token, x, y);
           return false; // A reusable stamp: return to the tray after every drop.
@@ -153,7 +158,8 @@ class BugBuilder implements Game {
     const ctx = this.ctx,
       mirror = this.plan.mode === 'mirror';
     // Slots are a little more generous than the outlines, without overlapping neighboring spots.
-    const slot = slotAt(this.targets, x - this.board.x, y - this.board.y);
+    const at = this.onBoard(x, y);
+    const slot = slotAt(this.targets, at.x, at.y);
     if (!slot) return;
     if (slot.token !== token) {
       this.misses++;
@@ -183,11 +189,10 @@ class BugBuilder implements Game {
     }
     this.drawHint();
   }
-  private openPlace(): Graphics {
-    return new Graphics()
-      .circle(0, 0, 50)
-      .fill(cream)
-      .stroke({ width: 3, color: swatch.orange.line, alpha: 0.6 });
+  /** A point on the stage in the bug's own units (the bug is drawn larger on a phone held upright). */
+  private onBoard(x: number, y: number) {
+    const k = this.board.scale.x;
+    return { x: (x - this.board.x) / k, y: (y - this.board.y) / k };
   }
   /** What a stamp, a lift or the check did on level 8: the count said aloud, the sign, the glow, and the finish. */
   private countEvent(ev: CountEvent, place = -1, token = -1) {
@@ -197,7 +202,7 @@ class BugBuilder implements Game {
     if (ev.kind === 'stamp' || ev.kind === 'lift') {
       const node = this.places[place];
       node.removeChildren().forEach((c) => c.destroy({ children: true }));
-      node.addChild(ev.kind === 'stamp' ? bugToken(token, 38) : this.openPlace());
+      node.addChild(ev.kind === 'stamp' ? stampedPlace(token) : openPlace());
       if (ev.kind === 'lift') sfx.tick();
       else sfx.bell(Math.min(9, 4 + ev.n), 0.3);
       const over = ev.kind === 'stamp' && ev.over;
@@ -252,39 +257,42 @@ class BugBuilder implements Game {
       void this.ctx.instruct(mode === 'guided' ? 'bug.guided' : mode === 'copy' ? 'bug.copy' : 'bug.mirror');
   }
   resize(v: View) {
+    const l = bugLayout(v, this.plan, this.choices.length, this.sign?.halfW);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.green.light)
-      .roundRect(165, v.h - 155, v.w - 200, 135, 32)
+      .roundRect(l.trayBox.x, l.trayBox.y, l.trayBox.w, l.trayBox.h, 32)
       .fill(cream);
-    const cy = Math.max(365, (v.h - 160) / 2);
-    const mode = this.plan.mode;
-    this.board.position.set(mode === 'copy' ? v.w * 0.68 : this.count ? v.w * 0.6 : v.w / 2, cy);
-    if (this.sign && this.check) {
-      const x = Math.max(this.sign.halfW + 30, v.w * 0.2);
-      this.sign.position.set(x, cy - 70);
-      this.check.position.set(x, Math.min(cy + 150, v.h - 230));
+    const k = l.board.scale;
+    this.board.position.set(l.board.x, l.board.y);
+    this.board.scale.set(k);
+    if (this.sign && this.check && l.sign && l.check) {
+      this.sign.position.set(l.sign.x, l.sign.y);
+      this.check.position.set(l.check.x, l.check.y);
     }
-    this.model.position.set(v.w * 0.24, cy);
-    this.model.scale.set(0.62);
+    this.model.position.set(l.model.x, l.model.y);
+    this.model.scale.set(l.model.scale);
     const d = this.decorations.clear();
-    if (this.plan.mode === 'copy') {
-      d.roundRect(this.model.x - 155, cy - 200, 310, 395, 32).fill(cream);
-      const x = v.w * 0.43;
-      d.moveTo(x - 12, cy - 20)
-        .lineTo(x + 12, cy)
-        .lineTo(x - 12, cy + 20)
+    if (l.card && l.arrow) {
+      d.roundRect(l.card.x, l.card.y, l.card.w, l.card.h, 32).fill(cream);
+      // A chevron from the model to the bug: pointing right beside it, or down when the model sits above.
+      const { x, y, down } = l.arrow;
+      const at = (along: number, across: number) =>
+        down ? [x + across, y + along] : [x + along, y + across];
+      const [a, b, c] = [at(-12, -20), at(12, 0), at(-12, 20)];
+      d.moveTo(a[0], a[1])
+        .lineTo(b[0], b[1])
+        .lineTo(c[0], c[1])
         .stroke({ width: 7, color: swatch.teal.line });
     }
     if (this.plan.mode === 'mirror')
-      for (let y = cy - 140; y < cy + 185; y += 28)
-        d.moveTo(this.board.x, y)
-          .lineTo(this.board.x, y + 13)
+      for (let y = -140; y < 185; y += 28)
+        d.moveTo(l.board.x, l.board.y + y * k)
+          .lineTo(l.board.x, l.board.y + (y + 13) * k)
           .stroke({ width: 4, color: swatch.white.fill });
-    const xs = spread(this.choices.length, 175, v.w - 45, 130);
     this.choices.forEach((c, i) => {
-      c.drag.home = { x: xs[i], y: v.h - 87 };
+      c.drag.home = l.tray[i];
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);
@@ -382,6 +390,7 @@ export const bugBuilder: GameModule = {
   challenge: 'space',
   skills: ['spatial-reasoning', 'symmetry', 'visual-matching', 'counting'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint,

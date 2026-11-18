@@ -2,6 +2,7 @@ import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
+import { spread } from '../../engine/view';
 
 export const BUG_PLANS = [
   { mode: 'guided', rows: 1, columns: 1, colors: 2, name: 'Decorate two spots with matching colors' },
@@ -546,3 +547,159 @@ export const LEVELS: BandLevels = {
   prek: { min: 4, max: 11, order: [4, 5, 8, 9, 6, 7, 10, 11] },
   school: { min: 6, max: 11, order: [6, 7, 10, 11] },
 };
+
+/** A point or a box in the view's logical units (a box by its top-left corner). */
+export interface Point {
+  x: number;
+  y: number;
+}
+export interface Box extends Point {
+  w: number;
+  h: number;
+}
+
+/** Touch sizes: a tray stamp's circle, a tapped place's circle, and the check button (drawn 58, touched 14 wider). */
+export const STAMP_HIT = 55,
+  PLACE_TAP = 56,
+  CHECK_RADIUS = 58,
+  CHECK_HIT = CHECK_RADIUS + 14;
+/** How far apart two rows of tray stamps sit when an upright view cannot hold them in one. */
+const TRAY_ROW = 125;
+
+/** A view taller than any tablet: a phone held upright (the same rule for every level, Fold a friend's since it was built). */
+export const isTall = (v: { w: number; h: number }) => v.h > v.w * 1.3;
+
+/** How far a drawn bug reaches from its middle, in its own units: antennae to wing tips, and out to its feet. */
+export function bugSpan(plan: Pick<BugPlan, 'rows' | 'columns'>): {
+  top: number;
+  bottom: number;
+  halfW: number;
+} {
+  const ry = plan.rows === 1 ? 105 : plan.rows === 2 ? 156 : 207;
+  return { top: ry + 78, bottom: ry + 4, halfW: plan.columns === 1 ? 220 : 308 };
+}
+
+/** The count sign's card for a number: the numeral over rows of up to three marks (half its width and height). */
+export function signSize(want: number): { halfW: number; halfH: number } {
+  const cols = Math.min(3, want),
+    rows = Math.ceil(want / 3);
+  return { halfW: Math.max(70, (cols * 44) / 2 + 18), halfH: (88 + rows * 44 + 18) / 2 };
+}
+
+export interface BugLayout {
+  /** The bug she works on: its middle, and how large it is drawn (1 sideways; larger where an upright view has the room). */
+  board: Point & { scale: number };
+  /** Copy levels: the little model bug, the card behind it, and the arrow from it to the bug (pointing right, or down). */
+  model: Point & { scale: number };
+  card: Box | null;
+  arrow: (Point & { down: boolean }) | null;
+  /** Count levels: the sign and the check button. */
+  sign: Point | null;
+  check: Point | null;
+  /** The tray panel and each stamp's home on it, in tray order. */
+  trayBox: Box;
+  tray: Point[];
+}
+
+/**
+ * Where everything on levels 1 to 9 and 11 sits: the scenes place from this and the upright test reads it. Sideways it is
+ * the layout the game has always had. On a phone held upright the bug sits in the middle of the room above the tray and is
+ * drawn as large as the width and that room allow (up to 1.3), a copy level's model goes above the bug instead of beside
+ * it, and six stamps take two rows of three. The count levels keep their sign beside the bug at every shape.
+ */
+export function bugLayout(
+  v: { w: number; h: number },
+  plan: Pick<BugPlan, 'mode' | 'rows' | 'columns'>,
+  stamps: number,
+  signHalfW = 70,
+): BugLayout {
+  const tall = isTall(v);
+  const row = spread(stamps, 175, v.w - 45, 130);
+  // Stamps closer than their touch circles (six across 768 units) go in two rows; only an upright view is that narrow.
+  const upper = tall && stamps > 1 && row[1] - row[0] < STAMP_HIT * 2 + 4 ? Math.ceil(stamps / 2) : 0;
+  const lift = upper ? TRAY_ROW : 0;
+  const tray = upper
+    ? [
+        ...spread(upper, 175, v.w - 45, 130).map((x) => ({ x, y: v.h - 87 - TRAY_ROW })),
+        ...spread(stamps - upper, 175, v.w - 45, 130).map((x) => ({ x, y: v.h - 87 })),
+      ]
+    : row.map((x) => ({ x, y: v.h - 87 }));
+  const trayBox = { x: 165, y: v.h - 155 - lift, w: v.w - 200, h: 135 + lift };
+  const cy = Math.max(365, (v.h - 160) / 2);
+  const counting = plan.mode === 'count' || plan.mode === 'kind';
+  const copy = plan.mode === 'copy';
+  let sign: Point | null = null,
+    check: Point | null = null;
+  if (counting) {
+    const x = Math.max(signHalfW + 30, v.w * 0.2);
+    sign = { x, y: cy - 70 };
+    check = { x, y: Math.min(cy + 150, v.h - 230) };
+  }
+  if (!tall || counting) {
+    const model = { x: v.w * 0.24, y: cy, scale: 0.62 };
+    return {
+      board: { x: copy ? v.w * 0.68 : counting ? v.w * 0.6 : v.w / 2, y: cy, scale: 1 },
+      model,
+      card: copy ? { x: model.x - 155, y: cy - 200, w: 310, h: 395 } : null,
+      arrow: copy ? { x: v.w * 0.43, y: cy, down: false } : null,
+      sign,
+      check,
+      trayBox,
+      tray,
+    };
+  }
+  // Upright: a copy level's model card across the top (right of Home and "?"), the arrow under it, then the bug.
+  const model = { x: v.w / 2, y: 216, scale: 0.62 };
+  const span = bugSpan(plan);
+  const top = copy ? 455 : 20,
+    bottom = trayBox.y - 20;
+  const scale = Math.min(1.3, (v.w - 40) / (span.halfW * 2), (bottom - top) / (span.top + span.bottom));
+  return {
+    board: { x: v.w / 2, y: (top + bottom + (span.top - span.bottom) * scale) / 2, scale },
+    model,
+    card: copy ? { x: model.x - 155, y: model.y - 200, w: 310, h: 395 } : null,
+    arrow: copy ? { x: v.w / 2, y: 433, down: true } : null,
+    sign,
+    check,
+    trayBox,
+    tray,
+  };
+}
+
+/** A choice card on Fold a friend: wide and tall enough for a whole small bug, far past the 100-unit touch target. */
+export const FOLD_CARD = { w: 250, h: 240 };
+/** The fold level's bug, from the antennae (-285) to the wing tips (+207), in its own units. */
+export const FOLD_BUG = { top: 285, bottom: 207 };
+
+export interface FoldLayout {
+  board: Point & { scale: number };
+  /** The three cards' middles, and their scale: 1 in a row along the bottom, larger when a tall view stacks them. */
+  cards: Point[];
+  cardScale: number;
+}
+
+/** Where Fold a friend's bug and three choice cards sit: the scene places from this and the upright test reads it. */
+export function foldLayout(v: { w: number; h: number }): FoldLayout {
+  const gap = 24,
+    bugH = FOLD_BUG.top + FOLD_BUG.bottom;
+  let bugScale: number, k: number, cards: Point[];
+  if (isTall(v)) {
+    // A tall view (a phone held upright): the bug across the top, the cards stacked larger in the middle below it, each
+    // clear of the pet's corner at the bottom left.
+    bugScale = Math.min(1, (v.w - 80) / 640);
+    const top = 20 + bugH * bugScale + 40,
+      room = v.h - 30 - top;
+    k = Math.min(1.6, (room - 2 * gap) / (3 * FOLD_CARD.h), (v.w - 2 * 175) / FOLD_CARD.w);
+    const step = FOLD_CARD.h * k + gap,
+      y0 = top + room / 2 - step;
+    cards = [0, 1, 2].map((i) => ({ x: v.w / 2, y: y0 + i * step }));
+  } else {
+    // The cards sit in a row along the bottom, right of the pet's corner; the bug fills the space above them.
+    k = Math.min(1, (v.w - 220 - 2 * gap) / (3 * FOLD_CARD.w));
+    const cardY = v.h - (FOLD_CARD.h * k) / 2 - 28;
+    cards = spread(3, 175, v.w - 45, FOLD_CARD.w * k + gap).map((x) => ({ x, y: cardY }));
+    const room = cardY - (FOLD_CARD.h * k) / 2 - 40;
+    bugScale = Math.min(0.85, room / bugH, (v.w - 120) / 640);
+  }
+  return { board: { x: v.w / 2, y: 20 + FOLD_BUG.top * bugScale, scale: bugScale }, cards, cardScale: k };
+}
