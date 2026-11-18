@@ -2671,6 +2671,57 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // The pet's turn at the end (dive slice 9): with a friend saved, the finale waits for one touch, an apple goes to
+    // the corner guide and the round ends with nothing counted. The levels above ran without a friend, so they
+    // covered the skip.
+    if (((!only || only === 'snack') && process.env.TO_LEVEL === undefined) || process.env.SNACK_PET) {
+      const before = await page.evaluate(() => {
+        const was = kit.store.data.creatures;
+        kit.store.data.creatures = {
+          owned: [
+            {
+              id: 'pip0',
+              species: 'sprout',
+              name: 'Clover',
+              look: { color: 'pink', worn: [] },
+              metAt: 'start',
+            },
+          ],
+          companion: 'pip0',
+        };
+        return was;
+      });
+      await launch('animal-snack', 2);
+      assert.equal(await page.evaluate(() => neo.scene.game.petTurn), 'none');
+      for (let k = 0; k < 6; k++) {
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+        await page.waitForTimeout(380);
+        await page.evaluate(() => kit.tapOn(neo.scene.game.snacks.find((s) => !s.eaten).node));
+        await page.waitForTimeout(250);
+      }
+      await page.waitForFunction(() => neo.scene.game.petTurn === 'waiting', null, { timeout: 20000 });
+      assert.equal(
+        await page.evaluate(() => neo.scene.finished),
+        false,
+        "the round waits for the pet's turn",
+      );
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(300);
+      await page.evaluate(() => kit.tap(innerWidth * 0.6, innerHeight * 0.45));
+      await page.waitForTimeout(450);
+      await screenshot('animal-snack-pet-turn-portrait');
+      await page.waitForFunction(() => neo.scene.game.petTurn === 'treated', null, { timeout: 20000 });
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('animal-snack');
+      assert.deepEqual(await score('animal-snack'), [0, 0], "the pet's turn counts nothing");
+      await page.evaluate((was) => {
+        kit.store.data.creatures = was;
+      }, before);
+      log(
+        "Animal Snack, the pet's turn: one touch after the finale gave the saved friend an apple; nothing counted",
+      );
+    }
+
     if (!only || only === 'beat')
       for (let level = fromLevel; level <= 5; level++) {
         await launch('beat-builder', level);

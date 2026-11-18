@@ -10,6 +10,9 @@ import {
   rowsFor,
   friendsAfter,
   planFor,
+  PET_TREAT,
+  PET_TURN_WAIT,
+  petTurn,
   LEVELS,
   BARN_ASPECT,
   BITE,
@@ -682,5 +685,29 @@ describe('Animal Snack', () => {
         );
       }
     }
+  });
+
+  describe("the pet's turn at the end (dive slice 9)", () => {
+    const here = { saved: true, guideShown: true, demo: false, couch: false };
+
+    it('is offered only for a pet she has, with the guide on screen, in her own touch round', () => {
+      expect(petTurn(here)).toBe(true);
+      expect(petTurn({ ...here, saved: false })).toBe(false);
+      expect(petTurn({ ...here, guideShown: false })).toBe(false);
+      expect(petTurn({ ...here, demo: true })).toBe(false);
+      expect(petTurn({ ...here, couch: true })).toBe(false);
+    });
+
+    it('names the pet in both lines and asks for nothing but a tap', () => {
+      for (const id of ['snack.petturn', 'snack.petyum'] as const)
+        for (const line of LINES[id]) expect(line).toContain('{pet}');
+      for (const line of LINES['snack.petturn']) expect(line).toMatch(/tap/i);
+    });
+
+    it('gives a treat with a bite sound, after a short wait that never holds the round', () => {
+      expect(BITE[PET_TREAT]).toBeDefined();
+      expect(PET_TURN_WAIT).toBeGreaterThanOrEqual(3);
+      expect(PET_TURN_WAIT).toBeLessThanOrEqual(8);
+    });
   });
 });

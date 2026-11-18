@@ -158,6 +158,20 @@ export function busyTouch(busy: boolean, finished: boolean, target: BusyTarget):
   return !target.snack.eaten && target.snack.visible ? 'wiggle' : null;
 }
 
+/** Seconds the pet's turn waits for a touch once its line has been said; after that the round ends with no treat. */
+export const PET_TURN_WAIT = 5;
+/** The treat the pet gets on its turn: an apple, which every scene can spare. */
+export const PET_TREAT: Food = 'apple';
+/**
+ * Whether the finale offers the pet a turn (dive slice 9). Only for a pet she has: before her first friend hatches the
+ * corner guide is a stand-in, so there is nobody to name. Not in the how-to card's demonstration, which has no one
+ * to tap for it, and not in couch play, which has no touch and no corner guide of hers. It is never a need: it adds
+ * no miss or hint, files nothing, and waiting it out ends the round the same way.
+ */
+export function petTurn(at: { saved: boolean; guideShown: boolean; demo: boolean; couch: boolean }): boolean {
+  return at.saved && at.guideShown && !at.demo && !at.couch;
+}
+
 /** Where snack time happens: the round's seed picks one. The food, the animals and the rules are the same everywhere. */
 export type Scene = 'meadow' | 'orchard' | 'garden' | 'dusk';
 export const SCENES: Scene[] = ['meadow', 'orchard', 'garden', 'dusk'];

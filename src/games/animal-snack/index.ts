@@ -3,6 +3,7 @@ import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { entryId } from '../../content/journal';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
+import { companion } from '../../creatures/companion';
 import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -46,6 +47,9 @@ import {
   pairsBell,
   rowsFor,
   pairsDrop,
+  PET_TREAT,
+  PET_TURN_WAIT,
+  petTurn,
   ROW_STEP,
   SCENE_SPECS,
   sceneFor,
@@ -225,6 +229,8 @@ class AnimalSnack implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The pet's turn after the finale: offered and waiting for a touch, then given a treat or waited out. */
+  petTurn: 'none' | 'waiting' | 'treated' | 'passed' = 'none';
 
   /** Where snack time is today, from the round's seed; `showScene` swaps it (the dev screenshots do). */
   scene: Scene;
@@ -1344,12 +1350,71 @@ class AnimalSnack implements Game {
     sfx.tada();
     for (const f of this.friends) f.node.cheer();
     await this.ctx.say('snack.done');
+    const turn = {
+      saved: companion() !== null,
+      guideShown: this.ctx.pet.visible,
+      demo: !!this.ctx.demo,
+      couch: !!this.ctx.couch,
+    };
+    if (petTurn(turn)) await this.petsTurn();
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({
       misses: this.misses,
       hints: this.hints,
       discoveries: [...this.fed].map((a) => entryId('animal-snack', a)),
     });
+  }
+
+  /**
+   * The pet's turn (dive slice 9): one touch anywhere sends an apple to the corner guide, which eats it and cheers.
+   * Never a need: nothing is counted or saved, and if no touch comes the round simply ends.
+   */
+  private async petsTurn() {
+    const { ctx } = this;
+    const layer = new Container();
+    layer.hitArea = new Rectangle(-4000, -4000, 8000, 8000);
+    ctx.stage.addChild(layer);
+    const touched = new Promise<{ x: number; y: number }>((resolve) =>
+      onTap(layer, (e) => resolve(ctx.stage.toLocal(e.global))),
+    );
+    // A touch during the line counts too; the wait for one starts when the line ends.
+    const waited = ctx
+      .instruct('snack.petturn')
+      .then(() => ctx.tw.wait(PET_TURN_WAIT))
+      .then(() => null);
+    this.petTurn = 'waiting';
+    const at = await Promise.race([touched, waited]);
+    layer.eventMode = 'none';
+    this.petTurn = at ? 'treated' : 'passed';
+    if (!at) return;
+    const pet = ctx.pet;
+    const treat = foodArt(PET_TREAT);
+    treat.eventMode = 'none';
+    treat.position.set(at.x, at.y);
+    treat.scale.set(0);
+    ctx.stage.addChild(treat);
+    sfx.pop();
+    await ctx.tw.to(treat.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    // Beside the guide's face rather than behind it: the stage draws under the guide.
+    const face = ctx.stage.toLocal(
+      pet.toGlobal({ x: pet.touch.x + pet.touch.r, y: pet.touch.y - pet.touch.r * 0.4 }),
+    );
+    await ctx.tw.to(treat, { x: face.x, y: face.y }, { duration: 0.5, ease: ease.inOutSine });
+    for (const left of BITE_SIZES) {
+      sfx.bite(BITE[PET_TREAT]);
+      ctx.particles.burst(face.x, face.y, {
+        colors: [wood.fill, swatch.yellow.light],
+        count: 3,
+        speed: [40, 110],
+        gravity: 500,
+        size: [0.15, 0.3],
+      });
+      pet.hop(0.25);
+      await ctx.tw.to(treat.scale, { x: left, y: left }, { duration: 0.12 });
+    }
+    treat.destroy({ children: true });
+    pet.cheer();
+    await ctx.say('snack.petyum');
   }
 }
 
