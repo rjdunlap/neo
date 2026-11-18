@@ -578,6 +578,7 @@ describe('game registry', () => {
       'memory-desk',
       'memory-match',
       'number-nook',
+      'orchard-rows',
       'paint-mixer',
       'picnic-pantry',
       'picture-logic',

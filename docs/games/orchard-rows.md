@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/orchard-rows; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `orchard-rows` · **Land:** Barnyard · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `orchard-rows` · **Land:** Barnyard · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** equal groups, arrays, skip counting, multiplication, division, factors, distributive property
 
