@@ -113,7 +113,7 @@ Independent of P1, the form itself can ask less. TotoLogic's web form asks for a
 
 ### P3. The question on screen, for readers (a definition; then shell, M)
 
-**Definition in progress 2026-11-17** (branch `claude/define-question-on-screen`, docs only; expected file: `docs/definitions/question-on-screen.md`).
+**Defined 2026-11-17** in [definitions/question-on-screen.md](definitions/question-on-screen.md): a strip below the guide upright and a rail on the left sideways, both outside the board; `grownup` always, `school` by a "Show the words" switch that stands in for the phone's mute (a web page cannot read it), younger bands never; `voice.line` is the text helper (the line is resolved once, then shown and spoken). Three build slices are queued in [READY](READY.md).
 
 A phone is usually on silent, and both current players can read. The first review credited TotoLogic with printing every question; that is true of its website demo and **not of the app**, which speaks its questions as the island does. Playing it muted is the best evidence this page has: pictures on blobs with nothing to say what is wanted, a sum that exists only as sound, and one wrong answer given in good faith because "find the vehicles" and "find the fruits" share a screen. A grown-up handed the island on a silent phone is in the same place once the how-to card closes.
 

@@ -41,6 +41,10 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **Upright batch 8 onward: the rest of the fits-as-is games, six at a time** (chunk 31; the existing-game tier six times over, as batches 6 and 7): after batch 7 (built), the next six from the sweep's measured fits-as-is list, one kind of challenge each where the list allows, measured games before by-eye ones; then the small-fix games, music first (`jelly-drums`, `rhythm-neighbors`, `movie-night`), each batch rerunning `BROWSER_SUITE=uprightsweep PHONE_ONLY=…` for its games first. Each closeout queues the next six as a Next ten line while the list lasts. [Game batches](definitions/phone-portrait.md#game-batches), [the sweep](definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09)
 
+- **Beside a sound, and no room to spare** (TotoLogic P3 slice 2, after slice 1; shell tier, the same suites): the boing listener with the guide's tilt and the caption band's wobble; `say` and `sayIn` lines shown in the band; the bubble for screens with no spare side. [Build slices](definitions/question-on-screen.md#build-slices-in-order)
+
+- **The rest of the games' questions on `ctx.instruct`** (TotoLogic P3 slice 3, after slice 1; existing-game tier, a few games a session): read the remaining games for a question said with `ctx.say` and move it to `ctx.instruct`, grown-up games first, then school; no shell change. [Build slices](definitions/question-on-screen.md#build-slices-in-order)
+
 - **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)
 
 - **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
@@ -53,7 +57,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](NEW-GAME.md) now asks.
 
-- **Define play first, set up after** (TotoLogic P1; docs only, after the question-on-screen definition): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
+- **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
 
 - **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](TOTOLOGIC.md#proposals)
 
