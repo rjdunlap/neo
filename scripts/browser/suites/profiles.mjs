@@ -332,7 +332,9 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     assert.deepEqual(await pressed(), [], 'no chip is lit before a tap');
     const fit = await page.evaluate(() => {
       const sheet = document.querySelector('.parent__sheet');
-      const boxes = [...document.querySelectorAll('.chooser-ages__chip')].map((c) => c.getBoundingClientRect());
+      const boxes = [...document.querySelectorAll('.chooser-ages__chip')].map((c) =>
+        c.getBoundingClientRect(),
+      );
       const add = sheet.querySelector('button[type=submit]').getBoundingClientRect();
       return {
         chips: boxes.length,
@@ -356,7 +358,11 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await screenshot('chooser-add-taps');
     await page.locator('.parent button[type=submit]').click();
     await scene('HatchScene');
-    assert.deepEqual(await storeNow().then((s) => [s.name, s.band, s.n]), ['', 'prek', 3], 'added with no name');
+    assert.deepEqual(
+      await storeNow().then((s) => [s.name, s.band, s.n]),
+      ['', 'prek', 3],
+      'added with no name',
+    );
     assert.deepEqual(
       await page.evaluate(() => kit.store.entry.birth),
       { month: Number(month), year: year - 4 },
