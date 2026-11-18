@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/gem-swap; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `gem-swap` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
+**ID:** `gem-swap` · **Land:** Lantern Lake · **Ages:** school–grown-up · **Challenge:** space · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-planning, cause-and-effect
 
 | Band | Levels, easiest first |
 | --- | --- |
+| school | 1–2 |
 | grown-up | 1–8 |
 
 | Level | Plays like |
