@@ -809,15 +809,18 @@ export interface TouchLayout {
   tally: { x: number; y: number; ax: number; ay: number };
 }
 
+/** A grown-up's Take back, Hint and Start over are this high: 44.7 px under a thumb on a 390-wide upright phone. */
+export const GROWN_BUTTON_H = 88;
+
 /**
  * Touch layout for a sea of `size` by `size` in a `w` by `h` view. Beside the sea when it fits (the buttons in a column), else
- * under it. Grown-ups get cells of 64 to 80 and buttons 76 high; at school every cell and button is at least 100 across.
+ * under it. Grown-ups get cells of 64 to 80 and buttons 88 high; at school every cell and button is at least 100 across.
  */
 export function touchLayout(size: number, w: number, h: number, school: boolean): TouchLayout {
   const min = school ? 100 : 64,
     cap = school ? 100 : 80,
-    bh = school ? 100 : 76,
-    under = school ? 100 : 72;
+    bh = school ? 100 : GROWN_BUTTON_H,
+    under = bh;
   const left = 152,
     panel = 108,
     gap = 14,

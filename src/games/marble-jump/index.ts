@@ -31,6 +31,7 @@ import {
   recovery,
   solve,
   boardLayout,
+  BUTTON_H,
   triangleFor,
   type Jump,
   type Triangle,
@@ -188,7 +189,7 @@ class MarbleJump implements Game {
       [this.hintButton, 'Hint', () => this.askForHint()],
       [this.restartButton, 'Start over', () => this.restart()],
     ] as const) {
-      node.addChild(tile(160, 78, 'white'), label(text, 25, ink));
+      node.addChild(tile(160, BUTTON_H, 'white'), label(text, 25, ink));
       onTap(node, action);
       this.root.addChild(node);
     }

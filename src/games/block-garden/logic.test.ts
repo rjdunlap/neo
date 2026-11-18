@@ -620,7 +620,8 @@ describe('gardenLayout', () => {
   it.each(VIEWS)('fits %s at every plan', (_, v) => {
     for (const plan of PLANS) {
       const lay = gardenLayout(plan, v);
-      const bed = { x: lay.x, y: lay.y, w: plan.n * plan.cell, h: plan.n * plan.cell };
+      const bed = { x: lay.x, y: lay.y, w: plan.n * lay.cell, h: plan.n * lay.cell };
+      expect(lay.cell).toBeGreaterThanOrEqual(plan.cell);
       expect(plan.cell).toBeGreaterThanOrEqual(plan.id >= 7 ? 72 : 100);
       // Inside the view, and the finger planting the bottom row stays 40 inside the bottom edge.
       expect(bed.x).toBeGreaterThanOrEqual(0);
@@ -647,6 +648,29 @@ describe('gardenLayout', () => {
       for (let i = 0; i < hits.length; i++)
         for (let j = i + 1; j < hits.length; j++) expect(overlap(hits[i], hits[j])).toBe(false);
       for (const s of lay.slots) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(120);
+      // Only an upright phone grows a bed: sideways and on the iPad the square is the plan's own.
+      expect(lay.cell).toBe(plan.cell);
+    }
+  });
+
+  it('keeps the tray on a tall view below where the finger lets go of a piece planted in the bottom row', () => {
+    const tallest = Math.max(...Object.values(SHAPES).map((s) => s.h));
+    for (const v of [computeView(768, 1024), computeView(390, 844, undefined, true)])
+      for (const plan of PLANS) {
+        const lay = gardenLayout(plan, v);
+        // The finger rides RIDE under the piece's bottom edge, plus the pick-up's 12% pop about its middle.
+        const reach = RIDE + (0.12 * tallest * lay.cell) / 2;
+        expect(lay.slots[0].y - (lay.y + plan.n * lay.cell)).toBeGreaterThan(reach);
+      }
+  });
+
+  it('grows a big bed on an upright phone, to 90 units and no wider than the view', () => {
+    const phone = computeView(390, 844, undefined, true);
+    for (const plan of PLANS) {
+      const lay = gardenLayout(plan, phone);
+      expect(lay.cell).toBe(plan.cell < 100 ? 90 : plan.cell);
+      expect(lay.x).toBeGreaterThanOrEqual(0);
+      expect(lay.x + plan.n * lay.cell).toBeLessThanOrEqual(phone.w);
     }
   });
 });

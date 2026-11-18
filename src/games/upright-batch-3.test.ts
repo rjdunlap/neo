@@ -57,6 +57,9 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
         100,
       );
       expect(l.slots[0].w).toBe(SLOT);
+      // The big beds (72 units sideways) grow on an upright phone: 90 units where the height holds them, never under 80.
+      if (plan.cell < 100) expect(l.cell).toBeGreaterThanOrEqual(v === UPRIGHT_VIEWS.phone ? 90 : 80);
+      else expect(l.cell).toBe(plan.cell);
     }
   });
 
