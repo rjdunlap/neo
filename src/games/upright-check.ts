@@ -65,3 +65,9 @@ export function uprightProblems(v: Pick<View, 'w' | 'h'>, targets: readonly Targ
   });
   return [...new Set(out)].slice(0, 10);
 }
+
+/**
+ * A size in units as CSS pixels on the 390 × 844 upright phone, to one decimal: what a thumb meets (a 100-unit target is
+ * 50.8 px, the grown-up band's 64-unit minimum 32.5 px). About 44 px is comfortable; a board under it should slide or zoom.
+ */
+export const thumbPx = (units: number): number => Math.round(units * UPRIGHT_VIEWS.phone.scale * 10) / 10;
