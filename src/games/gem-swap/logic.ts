@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { POOLS } from './boards.ts';
+import type { Band } from '../../progress/bands';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Board = readonly number[];
@@ -29,7 +30,12 @@ export const STONE = -2;
 export const ICE = 8;
 export const iced = (k: number) => k >= ICE;
 export const kindOf = (k: number) => (k >= ICE ? k - ICE : k);
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+/** School plays the two 4 by 4 trays (108-unit cells); level 3's 5 by 5 cells are under the band's 100-unit minimum. */
+export const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 8 } };
+/** The four lines that have a child form: at school the game says these in a 6-to-8-year-old's words. */
+export type SpokenPart = 'go' | 'miss' | 'hint' | 'stuck';
+export const lineFor = (band: Band, part: SpokenPart) =>
+  band === 'school' ? (`gem-swap.${part}-school` as const) : (`gem-swap.${part}` as const);
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every((k) => k < 0);
 export const neighbors = (a: number, b: number, size: number) =>

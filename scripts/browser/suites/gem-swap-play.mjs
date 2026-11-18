@@ -39,10 +39,29 @@ export function createSuite({
           L = await import('/src/games/gem-swap/logic.ts');
         return L.hintFor(g.board, g.puzzle.size);
       });
-    for (const level of [1, 8]) {
+    // Level 2 is played as a school child (the band's top level); 1 and 8 are the grown-up ends.
+    for (const [level, band] of [
+      [1, 'grownup'],
+      [2, 'school'],
+      [8, 'grownup'],
+    ]) {
       const before = await page.evaluate(() => kit.store.data.stickers.length);
-      await launch('gem-swap', level);
+      await launch('gem-swap', level, 'Mia', band);
       await page.waitForTimeout(400);
+      assert.equal(await page.evaluate(() => neo.scene.game.ctx.band), band);
+      if (band === 'school') {
+        // Every target a school child taps is at least 100 units: the sixteen cells and the three buttons.
+        const sizes = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return [...g.nodes, g.undoButton, g.hintButton, g.restartButton].map((n) => [
+            n.hitArea.width,
+            n.hitArea.height,
+          ]);
+        });
+        assert.equal(sizes.length, 19);
+        for (const [w, h] of sizes) assert.ok(w >= 100 && h >= 100, `school target ${w}x${h}`);
+        await screenshot('gem-swap-2-school');
+      }
       const initial = await state();
       const invalid = await page.evaluate(async () => {
         const g = neo.scene.game,

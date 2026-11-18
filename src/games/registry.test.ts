@@ -462,7 +462,6 @@ describe('game registry', () => {
       'snowball-merge',
       'snowball-merge',
       'number-nook',
-      'gem-swap',
       'tile-pairs',
       'sudoku-garden',
       'picture-logic',
@@ -502,6 +501,14 @@ describe('game registry', () => {
     expect(g.levels('school')).toEqual({ min: 1, max: 2 });
     expect(g.levels('grownup')).toEqual({ min: 1, max: 9 });
     expect(couchGameById('lantern-lights')).toBe(g);
+  });
+
+  it("opens Gem Swap's two 4 by 4 trays to school and every tray to grown-ups", () => {
+    const g = gameById('gem-swap')!;
+    expect(g.bands).toEqual(['school', 'grownup']);
+    expect(g.levels('school')).toEqual({ min: 1, max: 2 });
+    expect(g.levels('grownup')).toEqual({ min: 1, max: 8 });
+    expect(couchGameById('gem-swap')).toBe(g);
   });
 
   it("opens Pond Conga's two small step-by-step ponds to school and every pond to grown-ups", () => {
