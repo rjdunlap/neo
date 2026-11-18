@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/not-always; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `not-always` · **Land:** Story Grove · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `not-always` · **Land:** Story Grove · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** reasoning, claims, counterexamples, listening
 
@@ -34,3 +34,5 @@ Misses and hints: a fitting card, a false stamp, a card tapped when the claim is
 **A claim's line never holds the next claim (U7 fix batch 22, 2026-11-12).** `breaks.*` then `oops` (and level 2's `notalways.every`, level 3's `mend.right`) start as one chain that her next tap stops before `oops`. After the 0.4 s beat the next claim shows with input open; its read-out waits for the lines, the guide or her first tap, where a breaking card, a true stamp or the true mend goes ahead and anything else hears the read-out, no miss. The last claim's line is heard out. The ghost finger waits for an ask.
 
 **What the guide repeats.** Level 3's "What could I say instead? Listen." at the mend is an instruction (`ctx.instruct`), so the caption no longer keeps the claim that was just broken; a tap on the guide at the mend reads the mended signs as the friend does. The opening claim itself is the instruction the guide repeats; the friend's reading of it, lessons and hints stay `say`.
+
+**Upright on a phone (2026-11-18, upright batch 10):** every level plays upright with no layout change: `upright.test.ts` tests the existing `notAlwaysLayout` over every level and view.
