@@ -1276,6 +1276,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           while (await page.evaluate(() => neo.scene.game.onMat.length))
             await tap('neo.scene.game.onMat[0].node');
           for (const v of coins) await tap(`neo.scene.game.purse.find((p) => p.value === ${v}).node`);
+          // A total she can see (TotoLogic P8): the slate shows the sum where the game counts on, and stays
+          // away in pair and change modes.
+          const sum = coins.reduce((a, b) => a + b, 0);
+          assert.deepEqual(
+            await page.evaluate(() => [neo.scene.game.shownTotal, neo.scene.game.slate.visible]),
+            plan.mode === 'pair' || plan.mode === 'change' ? [null, false] : [sum, true],
+            `the counter's total at level ${level}`,
+          );
         };
         const wanted = () =>
           page.evaluate(async () => {
@@ -1304,6 +1312,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               if (level === 7) await screenshot('market-stall-7');
             } else {
               await putDown(Array(want + 1).fill(1));
+              if (level === 3) await screenshot('market-stall-3-total');
               await ring();
               await ring();
               assert.deepEqual(await counts(), [2, 1]);

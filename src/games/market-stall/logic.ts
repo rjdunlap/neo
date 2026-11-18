@@ -222,6 +222,19 @@ export function stallLayout(view: { w: number; h: number }) {
   return { cx: view.w / 2, cy: Math.min(view.h * 0.5, 420), stockX: view.w / 2 - 150 };
 }
 
+/**
+ * The running total is the game's to give (said, and drawn on the counter's slate) wherever the price is one number to
+ * reach. Not in pair mode, where adding up is the puzzle, nor in change mode, where the ten strip counts up instead.
+ */
+export const showsTotal = (plan: ShopPlan) => plan.mode !== 'pair' && plan.mode !== 'change';
+
+/** The number on the counter's slate: the coins' sum, or null when the level keeps it back or the counter is empty. */
+export const totalShown = (plan: ShopPlan, coins: number[]): number | null =>
+  showsTotal(plan) && coins.length ? sum(coins) : null;
+
+/** Where the slate sits, in the mat's own units: on the counter's edge above the mat's last column, clear of the hint coins. */
+export const TOTAL_SLATE = { x: 208, y: -98, w: 76, h: 50 };
+
 /** Change levels count up from the price (fresh 4): the shopkeeper's method of giving change. */
 export const countsUp = (plan: ShopPlan) => plan.mode === 'change';
 

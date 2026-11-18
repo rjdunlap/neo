@@ -1,0 +1,5 @@
+# 2026-11-18 — Market Stall: the running total drawn on the counter (PR #1812)
+
+**Changed:** Market Stall draws the running total of the coins on the counter on a small slate beside the bell at levels 1, 2, 3, 5 and 7 (hidden while the counter is empty, never colour-coded, not drawn at levels 4 and 6); one rule, `showsTotal`, now decides both the spoken and the drawn total.
+**Ran:** `npm run typecheck`; the Market Stall rule tests (22 passed, 5 new: which levels show it, sum and empty counter, never in pair or change, same number for a right and a wrong payment of one size, slate clear of coins and hint coins); `BROWSER_SUITE=woods WOODS_ONLY=shop` at levels 1–7 with a new assertion after every payment put down (slate shows the sum and is visible on 1, 2, 3, 5, 7; null and hidden on 4 and 6) and a level-3 screenshot (the "5" slate on the counter edge, clear of coins, tag and bell); Prettier and eslint on the changed files. Headless Chrome only.
+**Not run:** `npm run build`, the full `npm test`, `fingerdemo` (the bot and the demonstrated action did not change), offline.

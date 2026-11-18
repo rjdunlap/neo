@@ -27,6 +27,9 @@ import {
   teachLine,
   coinToName,
   countsUp,
+  showsTotal,
+  totalShown,
+  TOTAL_SLATE,
   countUpSaid,
   tenStrip,
   missKind,
@@ -167,6 +170,10 @@ class MarketStall implements Game {
   private readonly ghost = new Container();
   /** On change levels: the ten strip under the tag, redrawn as change lands (fresh 4). */
   private strip: Graphics | null = null;
+  /** The running total on the counter, where the game also says it; null when nothing is shown. */
+  shownTotal: number | null = null;
+  private readonly slate = new Container();
+  private readonly slateNumber = label('', 34, ink);
   private view: View;
   private wrongs = 0;
   /** Exact but inefficient payments heard at the bell this order. The second is a supported miss. */
@@ -200,6 +207,17 @@ class MarketStall implements Game {
     onTap(this.mat, (e) => this.takeBack(e), { cooldown: 120 });
     this.bell = new RoundButton(this.bellArt(), swatch.white, 56, () => void this.pay());
     this.ghost.eventMode = 'none';
+    this.slate.eventMode = 'none';
+    this.slate.position.set(TOTAL_SLATE.x, TOTAL_SLATE.y);
+    this.slate.addChild(
+      new Graphics()
+        .roundRect(-TOTAL_SLATE.w / 2, -TOTAL_SLATE.h / 2, TOTAL_SLATE.w, TOTAL_SLATE.h, 12)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: wood.line }),
+      this.slateNumber,
+    );
+    this.slate.visible = false;
+    this.mat.addChild(this.slate);
     ctx.stage.addChild(this.backdrop, this.keeper, this.stall, this.goods, this.mat, this.ghost, this.bell);
     for (const value of this.plan.coins) {
       const node = shopCoin(value, ctx.level);
@@ -383,8 +401,9 @@ class MarketStall implements Game {
       const price = this.order.prices[0];
       this.drawStrip();
       void this.ctx.say('shop.countup', { n: countUpSaid(price, total - value, value) });
-    } else if (this.plan.mode === 'pair') void this.ctx.say('count', { n: value });
-    else void this.ctx.say('count', { n: total });
+    } else if (showsTotal(this.plan)) void this.ctx.say('count', { n: total });
+    else void this.ctx.say('count', { n: value });
+    this.drawTotal();
   }
 
   /** Tap the mat: the coin nearest the finger goes back to the purse. */
@@ -403,6 +422,7 @@ class MarketStall implements Game {
     c.node.destroy({ children: true });
     this.layoutMat();
     this.drawStrip();
+    this.drawTotal();
     sfx.pop(3);
   }
 
@@ -456,6 +476,7 @@ class MarketStall implements Game {
       ),
     );
     this.onMat.splice(0).forEach((c) => c.node.destroy({ children: true }));
+    this.drawTotal();
     this.keeper.cheer();
     this.ctx.pet.cheer();
     if (this.plan.mode === 'ways' && !this.firstWay) {
@@ -532,6 +553,16 @@ class MarketStall implements Game {
       width: 4,
       color: over ? swatch.red.line : wood.line,
     });
+  }
+
+  /** The slate shows what is on the counter so far, so the count survives a missed or muted voice. It never judges the amount. */
+  private drawTotal() {
+    this.shownTotal = totalShown(
+      this.plan,
+      this.onMat.map((c) => c.value),
+    );
+    this.slate.visible = this.shownTotal !== null;
+    if (this.shownTotal !== null) this.slateNumber.text = String(this.shownTotal);
   }
 
   private clearGhost() {
