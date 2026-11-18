@@ -31,4 +31,6 @@ export const VOICE = {
   ],
   'snack.boardline': ['The {animal} wants {n} {word}.'],
   'snack.done': ['Everyone had a snack. Thank you!'],
+  'snack.petturn': ["Now it's {pet}'s turn! Tap to give a treat."],
+  'snack.petyum': ['Yum! Thank you, says {pet}!'],
 } satisfies Record<string, string[]>;

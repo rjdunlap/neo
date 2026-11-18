@@ -1,0 +1,5 @@
+# 2026-11-17 — animal-snack the pet's turn at the end (PR #1775)
+
+**Changed:** `animal-snack`, all bands and levels (dive slice 9): after the finale line, with a saved friend (`companion() !== null`) the pet says `snack.petturn`, one touch gives the corner guide an apple (three bites, `snack.petyum`), and the round ends as before. Never counted or saved, waits 5 s (`PET_TURN_WAIT`) then ends with no treat; skipped with no friend, in the how-to demonstration and in couch play (`petTurn` in `logic.ts`).
+**Ran:** `npm run typecheck`; `npx vitest run src/games/animal-snack` (36 passed, 3 new); `BROWSER_SUITE=woods WOODS_ONLY=snack FROM_LEVEL=2 TO_LEVEL=2 SNACK_PET=1` passed: level 2 with no friend finished as before (the skip), then with a friend the round waited, one touch gave the apple, score [0,0]; 390×844 screenshot `animal-snack-pet-turn-portrait`. The suite's pet case runs when the snack block runs without `TO_LEVEL`, or with `SNACK_PET=1`.
+**Not run:** build (no shared files or assets changed), `fingerdemo` (bot unchanged), the full unit suite locally (CI runs it), offline.
