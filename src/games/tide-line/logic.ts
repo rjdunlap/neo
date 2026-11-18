@@ -1,12 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import {
-  hinted,
-  missOnRequest,
-  newRequestTally,
-  nextRequest,
-  type RequestTally,
-} from '../../progress/coach';
+import { hinted, missOnRequest, newRequestTally, nextRequest, type RequestTally } from '../../progress/coach';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**

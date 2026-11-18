@@ -46,7 +46,13 @@ const INK = 0x35506b;
 function label(text: string, size: number) {
   const t = new Text({
     text,
-    style: { fontFamily: 'Nunito, sans-serif', fontSize: size, fontWeight: '800', fill: INK, align: 'center' },
+    style: {
+      fontFamily: 'Nunito, sans-serif',
+      fontSize: size,
+      fontWeight: '800',
+      fill: INK,
+      align: 'center',
+    },
   });
   t.anchor.set(0.5);
   t.eventMode = 'none';
@@ -86,6 +92,8 @@ export class ChartDay implements Game {
   private readonly doneLayer = new Container();
   private readonly pairs: Container[] = [];
   private hover: number | null = null;
+  /** The job whose card is out and whose mark is on the chart: it changes when the next card is served, not mid-flight. */
+  private shownJob: Job | undefined;
   private drawn = -1;
   private clock = 0;
   /** The next card's ask waits behind the last card's line; a tap on the guide says it at once. */
@@ -204,12 +212,14 @@ export class ChartDay implements Game {
     this.placePairs();
     if (this.turn.done) {
       this.card.visible = false;
+      this.shownJob = undefined;
       return void this.end();
     }
     // The line about this card never holds the next one (U7 R4): the next card is ready now, and its ask follows the line.
     this.serve();
-    this.card.alpha = 0;
-    void tw.to(this.card, { alpha: 1 }, { duration: 0.25 });
+    // The fade is on the card's drawing, so a grab, Help or a turned screen (which stop the card's own tweens) cannot leave it faint.
+    this.cardArt.alpha = 0;
+    void tw.to(this.cardArt, { alpha: 1 }, { duration: 0.25 });
     this.handle.enabled = true;
     this.busy = false;
     this.drawMarks();
@@ -222,6 +232,7 @@ export class ChartDay implements Game {
   private serve() {
     const job = this.turn.job;
     if (!job) return;
+    this.shownJob = job;
     jobCard(this.cardArt.clear(), job);
     this.card.scale.set(1);
     this.card.position.set(this.C.card.x, this.C.card.y);
@@ -352,7 +363,7 @@ export class ChartDay implements Game {
     });
     this.title.position.set(C.plot.x + C.plot.w / 2, C.plot.y - 24);
     this.timeLabel.position.set(C.plot.x - CHART_AXIS / 2, C.iconY);
-    this.heightLabel.position.set(C.plot.x - CHART_AXIS + 12, C.plot.y + C.plot.h / 2);
+    this.heightLabel.position.set(C.plot.x - CHART_AXIS + 8, C.plot.y + C.plot.h / 2);
     this.handle.home = { x: C.card.x, y: C.card.y };
     if (!this.busy) {
       this.ctx.tw.kill(this.card);
@@ -424,7 +435,7 @@ export class ChartDay implements Game {
     const C = this.C;
     const p = C.plot;
     const g = this.marks.clear();
-    const job = this.finished ? undefined : this.turn.job;
+    const job = this.finished ? undefined : this.shownJob;
     if (job) {
       const m = JOB_MARK[job];
       const y = chartY(C, m.h);

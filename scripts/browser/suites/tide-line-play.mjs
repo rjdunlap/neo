@@ -597,7 +597,14 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await drop(1);
     await ready();
     s = await st();
-    assert.deepEqual(s.placed, [['shows', 2], ['boat', 1]], 'the boat floats on high water');
+    assert.deepEqual(
+      s.placed,
+      [
+        ['shows', 2],
+        ['boat', 1],
+      ],
+      'the boat floats on high water',
+    );
     await drop(2);
     await finished('tide-line');
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -635,7 +642,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await finished('tide-line');
     assert.deepEqual(await score(), [0, 1], 'level 6 with Help saved 0 misses, 1 hint');
     log(
-      'Tide Line 6: a touched window is a look; a card let go off the windows goes home; two clashing windows are two misses and the glow; in portrait a tapped card goes on a tapped window, the boat on high water and the picnic on the pool\'s window (2/1); on a seeded day Help glows two windows, then places the card (0/1); passed',
+      "Tide Line 6: a touched window is a look; a card let go off the windows goes home; two clashing windows are two misses and the glow; in portrait a tapped card goes on a tapped window, the boat on high water and the picnic on the pool's window (2/1); on a seeded day Help glows two windows, then places the card (0/1); passed",
     );
   }
   return { tideLinePlay, tideLine34Play, tideLine5Play, tideLine6Play };
