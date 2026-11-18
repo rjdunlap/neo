@@ -157,7 +157,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 2. **Build Puppet Stage 1–3** (new-game tier): one batch. Claimed 2026-10-28 on branch `claude/puppet-stage-1-3` ([PR #TBD](https://github.com/rjdunlap/neo/pulls)): levels 1–3 as defined (lap 1, toddler 1–2, preschool 2–3, pre-K 3), `voice.sayIn`/`ctx.sayIn`, Music Mountain; files `src/games/puppet-stage/{logic,logic.test,art,index}.ts`, `src/audio/voice.ts` (+ test), `src/games/types.ts`, `GameScene.ts`, `CouchScene.ts`, `registry.ts`, `lands.ts`, `howto.ts`, `voice-script.ts`, a `puppetstage` browser suite, README, GAMES.md, docs closeout. Depends on nothing in flight.
 3. **Define Puppet Stage 4–6** (docs only): the three story cards and their spoken lines, the shown-only premiere, the director's-chair co-play role and `coplayHint`. **Defined 2026-11-03** ([definition](../../definitions/puppet-stage-4-6.md), [PR #1156](https://github.com/rjdunlap/neo/pull/1156)); the director's chair is a how-to note, since `coplayHint` is early-band only.
 4. **Build Puppet Stage 4–6** (new levels on an existing interaction, plus the premiere). **Built 2026-11-03** ([PR #1159](https://github.com/rjdunlap/neo/pull/1159)).
-5. **Puppet-show card** (grown-ups' page, plain HTML, sources on the card).
+5. **Puppet-show card** (grown-ups' page, plain HTML, sources on the card): **defined 2026-11-17**, [definition](../../definitions/talk-cards.md); build 2; no cutting or printed story cards.
 6. **Define Director's chair (level 7)** after a Cue Studio diff (decision 5); **define Yes, and (level 8)** after it.
 7. **Shadow Play** (Lantern Lake, 13+) sketch after a capacity test; **Read it in a voice** to the Story Weaver dive.
 
