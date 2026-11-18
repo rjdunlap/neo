@@ -62,7 +62,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Tide Line
 
-*lap–pre-K* · [Tide Line](games/tide-line.md)
+*lap–school* · [Tide Line](games/tide-line.md)
 
 ### Drift Cards
 

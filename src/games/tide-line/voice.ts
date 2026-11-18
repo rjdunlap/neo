@@ -34,4 +34,15 @@ export const VOICE = {
   'tl.look-card': ['Look! The glowing picture fits: in, out, in, out.'],
   'tl.right': ['Yes! In, out, in, out!'],
   'tl.next-strip': ["Here's another day by the sea!"],
+  // Level 5, Pool time: slide along the day, and flag a time for each ask.
+  'tl.instruct.5': ['Slide along the day. Mark a time when you can see the rock pool.'],
+  'tl.instruct.5.covered': ['Now mark a time when the sea covers the rock pool.'],
+  'tl.pick-time': ['Slide to a time first, then tap the flag.'],
+  'tl.other.covered': ['The sea is over the pool here. Look for lower water.'],
+  'tl.other.shows': ['The pool shows here. Look for higher water.'],
+  'tl.glow.shows': ['Look! The water is low at the glowing times. The pool shows there.'],
+  'tl.glow.covered': ['Look! The water is high at the glowing times. The sea covers the pool there.'],
+  'tl.mark.shows': ['The sea is out here, so the rock pool shows.'],
+  'tl.mark.covered': ['The sea is in here, so it covers the rock pool.'],
+  'tl.done.5': ['The pool shows when the sea is out. Higher water covers it again.'],
 } satisfies Record<string, string[]>;

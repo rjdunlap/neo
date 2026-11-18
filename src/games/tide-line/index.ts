@@ -10,6 +10,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { PoolDay } from './day';
 import {
   DUNE,
   flag,
@@ -1069,7 +1070,7 @@ export const tideLine: GameModule = {
   region: 'tinker-lab',
   challenge: 'noticing',
   skills: ['science', 'patterns', 'prediction'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(BAND_LEVELS, b),
   describeLevel: (l) => tidePlan(l).name,
   music: STYLES.bubbles,
@@ -1078,5 +1079,5 @@ export const tideLine: GameModule = {
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),
-  create: (ctx) => new TideLine(ctx),
+  create: (ctx) => (tidePlan(ctx.level).mode === 'day' ? new PoolDay(ctx) : new TideLine(ctx)),
 };
