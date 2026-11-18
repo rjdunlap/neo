@@ -190,6 +190,46 @@
   }
 }
 
+/* Add a player: the age chips. One tap fills the birth year, so a phone needs no keyboard; they wrap rather than shrink. */
+.chooser-ages {
+  padding: 4px 0 12px;
+  font-size: 17px;
+}
+
+.chooser-ages__ask {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.chooser-ages__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chooser-ages__chip {
+  font: inherit;
+  font-weight: 600;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--rule);
+  background: var(--card);
+  color: var(--ink);
+  touch-action: manipulation;
+}
+
+.chooser-ages__chip[aria-pressed='true'] {
+  border-color: var(--teal-line);
+  background: #e3f7f6;
+}
+
+.chooser-ages__chip:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .chooser-problem {
   margin: 4px 0 0;
   color: #b3261e;

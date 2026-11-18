@@ -89,13 +89,10 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     assert.equal(await page.locator('.chooser__card').count(), 0, 'a new device hides its blank profile');
     await screenshot('chooser-fresh');
 
-    // The form wants a name and a birth the clock allows.
+    // The form wants a birth the clock allows; the name is optional.
     await page.locator('.chooser__add').click();
     await page.locator('.parent button[type=submit]').click();
-    assert.match(await page.locator('[data-problem]').innerText(), /name/i, 'no name');
-    await page.fill('#add-name', 'Mia');
-    await page.locator('.parent button[type=submit]').click();
-    assert.match(await page.locator('[data-problem]').innerText(), /month/i, 'no birth');
+    assert.match(await page.locator('[data-problem]').innerText(), /tap an age/i, 'no birth');
     await page.selectOption('#add-month', '1');
     await page.fill('#add-year', String(new Date().getFullYear() + 1));
     await page.locator('.parent button[type=submit]').click();
@@ -318,9 +315,66 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await ready();
     await cards(2);
     assert.deepEqual(await names(), ['Mia', 'Robert D']);
+
+    // On a phone held upright a player is added with taps alone: an age chip fills the year, the month is this one, and
+    // no text field takes focus (which would raise the keyboard).
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('.chooser__add').click();
+    const year = new Date().getFullYear();
+    const month = String(new Date().getMonth() + 1);
+    const pressed = () => page.locator('.chooser-ages__chip[aria-pressed=true]').allInnerTexts();
+    assert.equal(
+      await page.evaluate(() => document.activeElement.className),
+      'chooser-ages__chip',
+      'a chip has focus, not a text field',
+    );
+    assert.equal(await page.inputValue('#add-month'), month, 'the month starts at this one');
+    assert.deepEqual(await pressed(), [], 'no chip is lit before a tap');
+    const fit = await page.evaluate(() => {
+      const sheet = document.querySelector('.parent__sheet');
+      const boxes = [...document.querySelectorAll('.chooser-ages__chip')].map((c) =>
+        c.getBoundingClientRect(),
+      );
+      const add = sheet.querySelector('button[type=submit]').getBoundingClientRect();
+      return {
+        chips: boxes.length,
+        small: boxes.filter((b) => b.width < 44 || b.height < 44).length,
+        wide: sheet.scrollWidth > sheet.clientWidth,
+        addOnScreen: add.bottom <= innerHeight,
+      };
+    });
+    assert.deepEqual(
+      fit,
+      { chips: 14, small: 0, wide: false, addOnScreen: true },
+      'fourteen chips of 44 px or more fit a 390 px phone with Add on screen',
+    );
+    await page.getByRole('button', { name: '4 years old', exact: true }).click();
+    assert.equal(await page.inputValue('#add-year'), String(year - 4), 'the chip fills the year');
+    assert.deepEqual(await pressed(), ['4']);
+    // Typing a year moves the light to the chip that matches, and a tap puts it back.
+    await page.fill('#add-year', String(year - 40));
+    assert.deepEqual(await pressed(), ['Grown-up']);
+    await page.getByRole('button', { name: '4 years old', exact: true }).click();
+    await screenshot('chooser-add-taps');
+    await page.locator('.parent button[type=submit]').click();
+    await scene('HatchScene');
+    assert.deepEqual(
+      await storeNow().then((s) => [s.name, s.band, s.n]),
+      ['', 'prek', 3],
+      'added with no name',
+    );
+    assert.deepEqual(
+      await page.evaluate(() => kit.store.entry.birth),
+      { month: Number(month), year: year - 4 },
+      'the birth the chip chose',
+    );
+    await hatched('green');
+    await cards(3);
+    assert.deepEqual(await names(), ['Mia', 'Robert D', 'Pip'], 'with no name the card carries the friend’s');
+    await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, []);
     log(
-      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13), a tap for the island, Enter and the card button for couch play as Player 1, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
+      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13, and with taps alone and no name on an upright phone), a tap for the island, Enter and the card button for couch play as Player 1, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
     );
   }
 

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { blankToFill, cardName, isBlankProfile, newEntry } from '../progress/profiles';
 import { defaults } from '../progress/save';
+import { bandForYears, completedYears } from '../progress/profiles';
 import {
+  ADULT_YEARS,
+  AGE_CHIPS,
+  birthForChip,
+  chipForBirth,
   cleanPlayerName,
   couchNameFor,
   modeFor,
@@ -63,15 +68,19 @@ describe('a name typed in the form', () => {
 });
 
 describe('add a player', () => {
-  it('needs a name and a birth the clock allows', () => {
+  it('needs a birth the clock allows, and takes a name or none', () => {
     expect(readNewPlayer('Mia', '10', '2025', now)).toEqual({
       ok: true,
       name: 'Mia',
       birth: { month: 10, year: 2025 },
     });
     expect(readNewPlayer('Mia', 10, 2025, now)).toMatchObject({ ok: true });
-    expect(readNewPlayer('', '10', '2025', now)).toEqual({ ok: false, problem: 'name' });
-    expect(readNewPlayer('   ', '10', '2025', now)).toEqual({ ok: false, problem: 'name' });
+    for (const none of ['', '   ', undefined])
+      expect(readNewPlayer(none, '10', '2025', now)).toEqual({
+        ok: true,
+        name: '',
+        birth: { month: 10, year: 2025 },
+      });
   });
 
   it('refuses a birth that is blank, not a number, or has not happened', () => {
@@ -101,6 +110,60 @@ describe('add a player', () => {
     expect(skipsEgg({ month: 11, year: 2013 }, now)).toBe(false);
     expect(skipsEgg({ month: 10, year: 2020 }, now)).toBe(false);
     expect(skipsEgg(null, now)).toBe(false);
+  });
+});
+
+describe('the age chips', () => {
+  const days = [now, new Date(2026, 0, 1), new Date(2026, 11, 31), new Date(2028, 1, 29)];
+
+  it('cover every year to twelve once, then a grown-up', () => {
+    expect(AGE_CHIPS.map((c) => c.years)).toEqual(Array.from({ length: ADULT_YEARS + 1 }, (_, i) => i));
+    expect(new Set(AGE_CHIPS.map((c) => c.label)).size).toBe(AGE_CHIPS.length);
+    expect(AGE_CHIPS.every((c) => c.spoken.length > c.label.length || c.years === ADULT_YEARS)).toBe(true);
+  });
+
+  it('fill a birth the form accepts, this month, that makes them the age tapped', () => {
+    for (const day of days)
+      for (const chip of AGE_CHIPS) {
+        const birth = birthForChip(chip, day);
+        expect(birth.month).toBe(day.getMonth() + 1);
+        expect(readNewPlayer('', String(birth.month), String(birth.year), day)).toEqual({
+          ok: true,
+          name: '',
+          birth,
+        });
+        const years = completedYears(birth, day);
+        if (chip.years < ADULT_YEARS) expect(years).toBe(chip.years);
+        else expect(bandForYears(years)).toBe('grownup');
+      }
+  });
+
+  it('reach every band the island starts someone in', () => {
+    const bands = new Set(AGE_CHIPS.map((c) => bandForYears(completedYears(birthForChip(c, now), now))));
+    expect([...bands]).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup']);
+  });
+
+  it('light the chip that matches the fields, tapped or typed', () => {
+    for (const day of days)
+      for (const chip of AGE_CHIPS) {
+        const birth = birthForChip(chip, day);
+        expect(chipForBirth(String(birth.month), String(birth.year), day)).toBe(chip);
+      }
+    // Typed: born October 2023 is three in October 2026, and two the month before her birthday.
+    expect(chipForBirth('10', '2023', now)?.years).toBe(3);
+    expect(chipForBirth('11', '2023', now)?.years).toBe(2);
+    expect(chipForBirth('1', '1950', now)?.years).toBe(ADULT_YEARS);
+  });
+
+  it('light none while the fields hold no birth', () => {
+    for (const [m, y] of [
+      ['', '2025'],
+      ['10', ''],
+      ['10', '20'],
+      ['11', '2026'],
+      ['10', '1800'],
+    ])
+      expect(chipForBirth(m, y, now), `${m}/${y}`).toBeNull();
   });
 });
 

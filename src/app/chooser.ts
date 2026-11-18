@@ -54,16 +54,53 @@ export const ADULT_YEARS = 13;
 export const skipsEgg = (birth: Birth | null, now: Date): boolean =>
   birth !== null && completedYears(birth, now) >= ADULT_YEARS;
 
-export type NewPlayer = { ok: true; name: string; birth: Birth } | { ok: false; problem: 'name' | 'birth' };
+/**
+ * The age chips on the add-a-player form: one tap fills the birth year, so a phone needs no keyboard. Under one, each year to
+ * twelve (the ages that change where the island starts), and a grown-up. `years` is the age the chip stands for.
+ */
+export interface AgeChip {
+  years: number;
+  label: string;
+  /** For a screen reader, where the label alone ("3") says too little. */
+  spoken: string;
+}
 
-/** What the add-a-player form holds, checked: a name, and a birth month and year that the clock allows. */
+/** The birth a grown-up's chip fills: any age from 13 plays the same, so it is a round number, shown in the year box to correct. */
+export const GROWNUP_CHIP_YEARS = 30;
+
+export const AGE_CHIPS: readonly AgeChip[] = [
+  { years: 0, label: 'Baby', spoken: 'Under one year old' },
+  ...Array.from({ length: ADULT_YEARS - 1 }, (_, i) => ({
+    years: i + 1,
+    label: String(i + 1),
+    spoken: i === 0 ? '1 year old' : `${i + 1} years old`,
+  })),
+  { years: ADULT_YEARS, label: 'Grown-up', spoken: 'A grown-up' },
+];
+
+/** The birth a chip fills in: this month, the chip's years ago, so they are exactly that age today. */
+export const birthForChip = (chip: AgeChip, now: Date): Birth => ({
+  month: now.getMonth() + 1,
+  year: now.getFullYear() - (chip.years >= ADULT_YEARS ? GROWNUP_CHIP_YEARS : chip.years),
+});
+
+/** The chip that matches what the month and year fields hold (typed or tapped), or null while they hold no birth. */
+export function chipForBirth(month: unknown, year: unknown, now: Date): AgeChip | null {
+  const birth = checkBirthInput(asNumber(month), asNumber(year), now);
+  if (!birth) return null;
+  const years = Math.min(ADULT_YEARS, completedYears(birth, now));
+  return AGE_CHIPS.find((c) => c.years === years) ?? null;
+}
+
+const asNumber = (v: unknown): unknown => (typeof v === 'string' ? Number(v.trim() || NaN) : v);
+
+export type NewPlayer = { ok: true; name: string; birth: Birth } | { ok: false; problem: 'birth' };
+
+/**
+ * What the add-a-player form holds, checked: a birth month and year that the clock allows, and a name if one was typed.
+ * The name may be empty: the card then carries the friend's name (`cardName`) until a grown-up types one on their page.
+ */
 export function readNewPlayer(name: unknown, month: unknown, year: unknown, now: Date): NewPlayer {
-  const clean = cleanPlayerName(name);
-  if (!clean) return { ok: false, problem: 'name' };
-  const birth = checkBirthInput(
-    typeof month === 'string' ? Number(month.trim() || NaN) : month,
-    typeof year === 'string' ? Number(year.trim() || NaN) : year,
-    now,
-  );
-  return birth ? { ok: true, name: clean, birth } : { ok: false, problem: 'birth' };
+  const birth = checkBirthInput(asNumber(month), asNumber(year), now);
+  return birth ? { ok: true, name: cleanPlayerName(name), birth } : { ok: false, problem: 'birth' };
 }
