@@ -1,0 +1,85 @@
+# The question on screen, for readers (TotoLogic P3, definition)
+
+*Status: defined 2026-11-17. Nothing is built; the [build slices](#build-slices-in-order) are queued in [READY](../READY.md).*
+
+From the [TotoLogic review](../TOTOLOGIC.md#p3-the-question-on-screen-for-readers-a-definition-then-shell-m), proposal P3, and the [UX review](../UX-REVIEW-2026-11-09.md#1-with-sound-off-the-app-says-nothing-about-what-to-do)'s first finding: a phone is usually on silent, both people playing now can read, and a touch round says what it wants only out loud. The [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play) settled who sees a caption: the `grownup` band always, the `school` band when speech is off or the phone is muted, younger bands never. This page settles the rest: what the caption shows, how its words are filled, how it changes within a round, what stands beside a sound, and where it sits on a phone without covering a target.
+
+Couch play is not touched: it has had a caption of its own since it was built (`CouchScene`, `.couch-caption`).
+
+## What is there today (`origin/main` at `cd899795a`)
+
+- **The instruction is remembered, not shown.** `GameScene` keeps the last `ctx.instruct(id, vars)` as `this.instruction` and speaks it; a tap on the guide repeats it, unless the game's `sayWaitingAsk` says a waiting ask instead (`src/app/scenes/GameScene.ts`, `init` and `makeContext`). Every one of the 177 games calls `ctx.instruct`.
+- **The words are already available as text.** `voice.line(id, vars)` (`src/audio/voice.ts`) picks one of the line's written options and fills `{name}`, `{pet}` and the game's own slots; `voice.speak(text)` says a finished string, and finds a rendered clip by that string. Couch play's caption is `voice.line(said, vars)` beside `voice.say(said, vars)`, which pick an option separately, so a line with two wordings can show one and say the other.
+- **A muted line keeps its length.** With speech off, `voice.speak` still resolves after 600 ms plus 45 ms a character, so a round's pacing is the same with and without sound.
+- **Nothing in a round can be read.** The how-to card before the round is the only text, and it describes the game, not the current question.
+- **The board owns the whole view.** A game lays out from the `view` that `GameScene.resize` passes it; the upright check (`uprightProblems`, `src/games/upright-check.ts`) keeps targets out of two corners only: Home and the question mark (115 × 210 units, top left) and the guide (150 × 170 units, bottom left). Anywhere else may hold a target, so a caption drawn over the view would cover one in some game.
+- **A phone has room the board does not need.** Upright, the view is 768 units wide and 1,662 tall on a 390 × 844 phone (1,366 on a 375 × 667 one), against a design area of 768 × 1,024. Sideways it is 768 tall and 1,662 wide (1,366 on the small phone) against 1,024 × 768.
+- **How long the instructions are** (a count over every game's `voice.ts` on this commit, for the lines whose id is written out in an `instruct` call; 333 further calls compute their id and were not counted): 536 written options, half of them 54 characters or fewer, nine in ten 113 or fewer, 14 longer than 150, the longest 237; 270 carry a slot.
+
+## Who sees it, and when
+
+| Band at play (`playBand`) | The caption shows |
+| --- | --- |
+| `grownup` | Always, in every touch round. There is no switch to turn it off. |
+| `school` | When the grown-ups' page has **Spoken voice** off, when its **Volume** is at zero, or when the new **Show the words** switch is on. |
+| `lap`, `toddler`, `preschool`, `prek` | Never, whatever the switches say. Nothing a child must read appears. |
+
+**The phone's own mute cannot be read.** A web page is not told about the silent switch or the volume buttons, so "the phone is muted" in the decision becomes a switch a grown-up sets: **Show the words (ages 6 and up)** on the grown-ups' page, off by default, saved per player as `settings.showWords` (a boolean, repaired to `false` on load, with a default and a test like the other settings). *This is the definition's reading of the decision, not something the decision spelled out.* The machine switch `VITE_SPEECH=off` does not turn the caption on: it is how the check servers run, and the browser suites for `school` games should keep the layouts they have.
+
+The caption is hidden while the how-to card (and the demonstration on it), the pause sheet or the result is up.
+
+## What it shows
+
+**The line the guide would repeat.** The caption is the current `ctx.instruct` line, in a band drawn as the guide's speech: cream fill, ink text from `src/art/palette.ts`, a small tail toward the guide and a speaker picture at its end. Tapping the band does exactly what tapping the guide does (the waiting ask if there is one, otherwise the instruction again), so the band is a second, larger target for the same action and adds no new one. It answers on touch-down with a short squash.
+
+**One wording, shown and said.** `GameScene` resolves the text once, `const text = voice.line(id, vars)`, shows it and speaks it with `voice.speak(text)`, so the eye and the ear always get the same option and the rendered clip is still found by its string. A repeat resolves again and the caption follows whatever is said. This is the helper the roadmap's language item calls `lineText(id)`: `voice.line` is the one place that turns an id and its slots into words, and when a second language arrives it is the place that switches. No new helper is added, and couch play's caption moves to the same resolve-once pattern in the first build slice.
+
+**What the guide says in between.** A `ctx.say` or `ctx.sayIn` line (a hint, a reason, a name, praise) takes the instruction's place in the band for as long as it would be spoken, at least 1.5 seconds, in the same type but a lighter ink, then the instruction returns. A reader with the sound off gets the hint the sound would have carried. A new `ctx.instruct` during it wins at once.
+
+**A length budget instead of a clipped line.** The band never cuts a line short and never scrolls. Text is 34 units (about 17 CSS pixels on a 390-wide phone); a line that does not fit at 34 is set at 28 (about 14 pixels). A unit test fills every instruction option's slots with a 12-character stand-in and fails for one longer than 180 characters; the first build slice shortens the few that are, or splits them into an instruction and a following `say`, which is also better speech. The figures are estimates from the character counts above and are measured with real text in the build.
+
+## How it changes within a round
+
+1. **A new instruction replaces the text at once** and the band pulses once (a 4% swell over a quarter of a second), so a changed question is noticed without sound. The same text again does not pulse.
+2. **A waiting ask** (`sayWaitingAsk`, the U7 R4 pattern in eight games today) reaches the caption because those games say the waiting ask through `ctx.instruct`; the build checks each of the eight.
+3. **A question asked through `ctx.say` leaves the caption stale**: it shows while it is spoken and then the old instruction returns. The rule is the one the contract already implies: the line the guide should repeat is said with `ctx.instruct`. Each build slice reads its games for a question said with `say` and moves it. *A rough size, by a text search and not by reading the games:* 89 written `say` lines contain a question mark outside hint and wrong-answer ids, in 49 games, five of them upright-ready today. Many of those are rhetorical ("Ready?") and need no change.
+
+## Beside a sound
+
+| What is heard | What is seen when the caption is on |
+| --- | --- |
+| The boing of a wrong answer | The guide tilts its head and the band gives two small sideways wobbles (6 units). The spoken hint that follows shows in the band. Never a cross, a red mark or a count. |
+| The glow after two misses | Already a picture; unchanged. |
+| A right answer's chime and praise | The game's own picture of success, as now; the praise line shows in the band. |
+| A sound that is the round's content (a tune to match, a beat, a word to hear) | Not solved by a caption. The band shows the instruction and the round still needs sound. Which games those are, and whether the band should say so, is left to a later note after the phone playtest answers "with the sound off, could you tell what each game asked?". |
+
+The shell does not see a miss today (a game calls `sfx.boing()` itself, 394 call sites), so the build gives `sfx` one optional listener for the boing, set by `GameScene` in `init` and cleared in `destroy`. Games are not edited for it.
+
+## Where it sits
+
+**Outside the board, on the side of the screen with room to spare.** The caption never overlaps the view the game lays out in. `GameScene` gives the game a smaller view and puts the band in the space it took.
+
+**Upright (a phone held upright over an upright-ready game).** A strip 160 units tall across the bottom of the screen, below the guide (about 81 CSS pixels on a 390 × 844 phone, a little under a tenth of its height). The game's view is the screen's less 160 units of height; the guide, which sits at the bottom of the game's view, moves up with it, so the band is directly under the guide and its tail points up at it. Three lines at 34 units hold about 114 characters, four at 28 about 184. The bottom was chosen over the top because the proposal asks for the caption near the guide and the top left already holds Home and the question mark; the band is a strip a thumb rests near, so it takes the same touch-down rules as any target and nothing in it is destructive.
+
+- **The check.** `UPRIGHT_VIEWS` gains a fourth view, the small phone less the strip (768 × 1,206 units), so every upright-ready game's existing layout test also proves the captioned layout. A game that fails only there gets its small placement fix in the same slice; one that needs a real layout is listed in READY and, until fixed, shows the bubble below on a small phone.
+- **Shorter than that** (a view under 1,206 units tall after the strip): the bubble below.
+
+**Sideways (a phone on its side, any game).** A rail 300 units wide down the left edge. The game's stage, Home, the question mark and the guide all move right by 300; the game's view is the screen's less 300 units of width. The band sits at the bottom of the rail with its tail pointing right at the guide, and grows upward with the text: about 15 characters a line at 34 units, 18 at 28, so the 180-character budget fits in the rail's 768 units of height. The rail shows when the view is at least 1,324 units wide, which holds for a 568 × 320 phone and everything wider.
+
+**No room to spare (an iPad-shaped screen, a narrow window).** The band becomes a bubble above the guide that shows when the instruction changes, when a `say` line plays and when the guide is tapped, for as long as the line would be spoken, and then goes. It lets touches through to the board beneath it (`eventMode: 'none'`), so it can hide a target for a few seconds but can never take a tap. This is the second build slice, since neither current player is on such a screen.
+
+**What the result, card and sheets see.** They lay out from the full view as now; the band is hidden while they show.
+
+## What this is not
+
+- Not a reading task for a child: the younger four bands never see it, and navigation still never needs reading.
+- Not a transcript or a log: one line at a time, nothing kept.
+- Not the how-to card: the card explains the game before the round and stays as it is.
+- Not a translation surface yet: the caption shows the same English line the voice says.
+- Not a claim about a real phone: where the strip feels right under a thumb, and whether 17 pixels reads comfortably, are for the phone playtest (the Sound question on the [playtest list](../DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now) already asks whether each game's ask was clear with the sound off).
+
+## Build slices, in order
+
+1. **The caption on a phone** (shell tier: typecheck, unit tests, build, `uprightsweep` for the upright-ready `grownup` games, one filtered `phone` play; no offline check). `GameScene` resolves a line once and speaks that text; the band in `src/ui/` with a pure layout function and its test (strip, rail, type size, the 180-character budget test over every instruction option); the smaller game view upright and sideways; the fourth upright check view; `settings.showWords` with its repair, default, test and the grown-ups' page switch; hidden under the card, sheet and result; couch play's caption on the resolve-once pattern. The slice also shortens or splits the over-budget lines it finds and moves any question said with `say` in the upright-ready games.
+2. **Beside a sound, and no room to spare** (shell tier, the same suites): the boing listener with the guide's tilt and the band's wobble; `say` and `sayIn` lines in the band; the bubble for screens with no spare side.
+3. **The rest of the games' questions** (existing-game tier, a few games a session): read the remaining games for a question said with `ctx.say` and move it to `ctx.instruct`, grown-up games first, then school. No shell change.
