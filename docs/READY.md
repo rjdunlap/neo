@@ -31,10 +31,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-- **`pixel-pictures` upright at levels 3–8** (small fix; existing-game tier: typecheck, `src/games/upright-batch-6.test.ts` with those levels added to its list, `PHONE_LEVELS=all` sweep screenshots): the board overflows the right edge by about 5 units at 768 wide, so lower its x minimum of 160 in `resize` in `index.ts`, then widen `uprightLevels` to every level.
-
-- **`pattern-train` upright at level 10** (small fix; same tier): one target is 88 units wide, under the 100 minimum; widen it and its neighbours at level 10, then add 10 to `uprightLevels`.
-
 - **Upright batch 8 onward: the rest of the fits-as-is games, six at a time** (chunk 31; the existing-game tier six times over, as batches 6 and 7): after batch 7 (built), the next six from the sweep's measured fits-as-is list, one kind of challenge each where the list allows, measured games before by-eye ones; then the small-fix games, music first (`jelly-drums`, `rhythm-neighbors`, `movie-night`), each batch rerunning `BROWSER_SUITE=uprightsweep PHONE_ONLY=…` for its games first. Each closeout queues the next six as a Next ten line while the list lasts. [Game batches](definitions/phone-portrait.md#game-batches), [the sweep](definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09)
 
 

@@ -1,0 +1,5 @@
+# 2026-11-18 — Tide Line level 6, Read the chart (PR #1808)
+
+**Changed:** `tide-line` level 6 (`chart.ts`, `ChartRound`, `jobsFor`, `JOB_MARK`, `chartLayout`, `windowAt` in `logic.ts`, art, voice, how-to); school 4–6, pre-K stays 3–5; new `tideline6` browser suite; a stale comment in `voice.ts` fixed.
+**Ran:** `npm run typecheck`; `npm test` (366 files, 8,157 passed, 1 skipped); 116 tide-line rule and layout tests (500 seeds; layout over seven views including upright 768×1024 and 390×844); `BROWSER_SUITE=tideline6` (school authored day: a look, an off-window drop, two clashes then the glow, portrait 768×1024 tap-card-then-window, a shared window, saved 2 misses/1 hint; then a seeded day with Help twice, saved 0/1; portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=6` (12.1 s); an independent game-reviewer pass, whose findings (the next card's fade, the chart's mark change) were fixed.
+**Not run:** `npm run build` locally (CI builds), `world`, offline, the unchanged `tideline`, `tideline34` and `tideline5` suites.
