@@ -58,7 +58,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Melt and Freeze
 
-*lap–pre-K* · [Melt and Freeze](games/melt-freeze.md)
+*lap–school* · [Melt and Freeze](games/melt-freeze.md)
 
 ### Tide Line
 

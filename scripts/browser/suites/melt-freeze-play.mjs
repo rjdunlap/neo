@@ -25,6 +25,98 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
+    // Level 7: can it go back? The authored four (butter puddle, toast, lolly puddle, popped kernel): the snowflake test
+    // is free, a wrong bin is one miss and runs the test, Show a hint counts once, filing first runs the test itself.
+    const sortPlay = async () => {
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await launch('melt-freeze', 7);
+      await settle();
+      const sort = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            index: g.sort.index,
+            tested: g.sort.tested,
+            on: g.things.filter((t) => t.node.visible).map((t) => [t.id, t.state]),
+            filed: g.filed,
+          };
+        });
+      const bin = async (which) => {
+        await page.evaluate((which) => kit.tapOn(neo.scene.game.bins[which]), which);
+        await settle();
+      };
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.sort.things, !!neo.scene.game.sunButton.parent]),
+        [['butter', 'bread', 'lolly', 'kernel'], false],
+        'the authored first round, and no sun',
+      );
+      assert.deepEqual(await sort(), {
+        index: 0,
+        tested: false,
+        on: [['butter', 'melted']],
+        filed: { back: [], stuck: [] },
+      });
+      assert.equal(
+        await page.evaluate(() => neo.scene.instruction?.id),
+        'meltfreeze.instruct.sort',
+        'the question is the instruction',
+      );
+      await tool('snow');
+      assert.deepEqual((await sort()).on, [['butter', 'solid']], 'the snowflake makes the puddle hard again');
+      await tool('snow');
+      assert.deepEqual(await tally(), [0, 0], 'testing is free, however often');
+      await bin('back');
+      assert.deepEqual(
+        await sort().then((s) => [s.index, s.on, s.filed.back]),
+        [1, [['bread', 'cooked']], ['butter']],
+        'the butter is filed under goes back and the toast arrives',
+      );
+      // The toast, filed under goes back before testing: one miss, the game runs the test, and it comes back.
+      await bin('back');
+      assert.deepEqual(
+        await sort().then((s) => [s.index, s.tested, s.on]),
+        [1, true, [['bread', 'cooked']]],
+        'a wrong bin runs the test and the toast stays on the table',
+      );
+      assert.deepEqual(await tally(), [1, 0], 'a wrong bin is one miss');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+      assert.deepEqual(await tally(), [1, 1], 'Show a hint counts once per thing');
+      assert.equal(await page.evaluate(() => neo.scene.game.glowBin), 'stuck', 'the right bin glows');
+      await bin('stuck');
+      // The lolly puddle, filed under goes back without a test: right, and the game shows the freeze first.
+      await bin('back');
+      assert.deepEqual(
+        await sort().then((s) => [s.index, s.on, s.filed]),
+        [3, [['kernel', 'cooked']], { back: ['butter', 'lolly'], stuck: ['bread'] }],
+        'three filed, the popped kernel on the table',
+      );
+      assert.deepEqual(await tally(), [1, 1], 'filing before testing is not a miss');
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(800);
+      await screenshot('melt-freeze-7-portrait');
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(800);
+      await screenshot('melt-freeze-7-phone');
+      await tool('snow');
+      assert.deepEqual((await sort()).on, [['kernel', 'cooked']], 'the popped kernel stays popped');
+      await bin('stuck');
+      await finished('melt-freeze');
+      assert.deepEqual(await score(), [1, 1]);
+      const found = await page.evaluate(() =>
+        kit.store.data.journal.found.filter((k) => k.startsWith('melt-freeze:')),
+      );
+      for (const id of ['melt-freeze:goes-back', 'melt-freeze:cant-go-back'])
+        assert.ok(found.includes(id), `${id} joins the journal`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Melt and Freeze 7: the snowflake test is free, a wrong bin is one miss and runs the test, one counted hint, filing first, portrait and phone, both journal entries passed',
+      );
+    };
+    if (process.env.MELT_SORT === '1') return sortPlay();
+
     // Level 5: the lap opening, with real canvas touches on the background and the ice.
     await page.setViewportSize({ width: 390, height: 844 });
     await launch('melt-freeze', 5);
@@ -277,6 +369,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     log(
       'Melt and Freeze 6: the sun waits for a guess, a changed mind, a surprise and a hint count nothing, portrait, the lolly entry passed',
     );
+    await sortPlay();
   }
   return { meltFreezePlay };
 }

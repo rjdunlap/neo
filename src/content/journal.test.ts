@@ -66,12 +66,14 @@ describe('the entries', () => {
       'chocolate',
       'lolly',
       'stays',
+      'goes-back',
+      'cant-go-back',
     ]);
     expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
     expect(entriesOf('chain-reaction').map((e) => e.key)).toEqual(['spring-skip']);
     expect(entriesOf('spinner-fair').map((e) => e.key)).toEqual(['two-dice']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 5 + 3 + 6 + 1 + 1 + 1,
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1,
     );
   });
 
@@ -125,6 +127,17 @@ describe('the entries', () => {
           expect(said, e.id).toContain('shelter');
           break;
         case 'melt-freeze':
+          // Level 7's two rules: what the snowflake test showed, never a word about how toast is made.
+          if (e.key === 'goes-back') {
+            expect(said, e.id).toContain('hard again');
+            expect(said, e.id).toContain('goes back');
+            break;
+          }
+          if (e.key === 'cant-go-back') {
+            expect(said, e.id).toContain('toast');
+            expect(said, e.id).toContain("can't go back");
+            break;
+          }
           expect(said, e.id).toContain(e.key === 'stays' ? 'stay the same' : e.key);
           expect(said, e.id).toContain(e.key === 'stays' ? 'warm or cool' : 'melts');
           // Only frozen water freezes; butter and chocolate go hard again.
@@ -217,6 +230,9 @@ describe('the entries', () => {
       } else if (e.game === 'rhythm-neighbors') {
         expect(find).toContain('woodpecker');
         expect(found).toContain('frog answered');
+      } else if (e.game === 'melt-freeze' && (e.key === 'goes-back' || e.key === 'cant-go-back')) {
+        expect(find).toContain('snowflake');
+        expect(found).toContain(e.key === 'goes-back' ? 'went hard again' : 'stayed toast');
       } else if (e.game === 'melt-freeze') {
         expect(find.toLowerCase()).toContain('warm');
         expect(found).toContain(e.key === 'stays' ? 'stayed the same' : 'melted');

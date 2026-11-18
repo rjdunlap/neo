@@ -7,22 +7,57 @@ import type { View } from '../../engine/view';
  * Melt and Freeze: a thing on a little table, a big sun that warms it and a snowflake that cools it. The state
  * table is authored, not simulated, so every change can be tested: `sun` takes a solid to its melted form if the thing melts,
  * `snow` takes a melted thing back to its solid if the change can be undone, and everything else is no change.
+ * Level 7 adds two things that arrive already changed for good (toast, a popped kernel): their `cooked` state is fixed under
+ * both tools, and the game never shows them being made, so nothing here toasts or pops.
  */
 
 export type Tool = 'sun' | 'snow';
-export type State = 'solid' | 'melted';
+export type State = 'solid' | 'melted' | 'cooked';
 
 export const SUBSTANCES = {
-  ice: { solid: 'an ice cube', melted: 'a clear puddle', reversible: true, word: 'ice' },
-  butter: { solid: 'a butter block', melted: 'a yellow puddle', reversible: true, word: 'butter' },
-  chocolate: { solid: 'a chocolate square', melted: 'a brown pool', reversible: true, word: 'chocolate' },
-  stone: { solid: 'a grey stone', melted: null, reversible: false, word: 'stone' },
-  spoon: { solid: 'a wooden spoon', melted: null, reversible: false, word: 'spoon' },
-  lolly: { solid: 'an ice lolly on its stick', melted: 'a pink puddle', reversible: true, word: 'ice lolly' },
-  shell: { solid: 'a sea shell', melted: null, reversible: false, word: 'shell' },
+  ice: { solid: 'an ice cube', melted: 'a clear puddle', cooked: null, reversible: true, word: 'ice' },
+  butter: {
+    solid: 'a butter block',
+    melted: 'a yellow puddle',
+    cooked: null,
+    reversible: true,
+    word: 'butter',
+  },
+  chocolate: {
+    solid: 'a chocolate square',
+    melted: 'a brown pool',
+    cooked: null,
+    reversible: true,
+    word: 'chocolate',
+  },
+  stone: { solid: 'a grey stone', melted: null, cooked: null, reversible: false, word: 'stone' },
+  spoon: { solid: 'a wooden spoon', melted: null, cooked: null, reversible: false, word: 'spoon' },
+  lolly: {
+    solid: 'an ice lolly on its stick',
+    melted: 'a pink puddle',
+    cooked: null,
+    reversible: true,
+    word: 'ice lolly',
+  },
+  shell: { solid: 'a sea shell', melted: null, cooked: null, reversible: false, word: 'shell' },
+  // Level 7 only, and only ever as their changed form: the hard form is the faint "what it was" outline.
+  bread: {
+    solid: 'a slice of bread',
+    melted: null,
+    cooked: 'a slice of toast',
+    reversible: false,
+    word: 'toast',
+  },
+  kernel: {
+    solid: 'a corn kernel',
+    melted: null,
+    cooked: 'a popped kernel',
+    reversible: false,
+    word: 'popped kernel',
+  },
 } as const satisfies Record<
   string,
-  { solid: string; melted: string | null; reversible: boolean; word: string }
+  { solid: string; melted: string | null; cooked: string | null; reversible: boolean; word: string }
 >;
 export type Substance = keyof typeof SUBSTANCES;
 export const ALL_SUBSTANCES = Object.keys(SUBSTANCES) as Substance[];
@@ -31,7 +66,10 @@ export const ALL_SUBSTANCES = Object.keys(SUBSTANCES) as Substance[];
 export const melts = (s: Substance) => SUBSTANCES[s].melted !== null;
 /** Every thing that melts, which is one journal entry each. */
 export const CHANGERS = ALL_SUBSTANCES.filter(melts);
-export const STAYERS = ALL_SUBSTANCES.filter((s) => !melts(s));
+/** Things that only ever arrive already changed for good (level 7); they never stand on the table as themselves. */
+export const arrivesCooked = (s: Substance) => SUBSTANCES[s].cooked !== null;
+/** Every thing that stands on the table as itself and stays the same in the warm. */
+export const STAYERS = ALL_SUBSTANCES.filter((s) => !melts(s) && !arrivesCooked(s));
 
 /**
  * Levels 1–4 keep the five things they were built with, as an explicit list: a row added to the table for a later level
@@ -43,6 +81,7 @@ export const EARLY_STAYERS = EARLY.filter((s) => !melts(s));
 
 /** One warm or cool step. The same state back means nothing happened. */
 export function step(s: Substance, state: State, tool: Tool): State {
+  if (state === 'cooked') return state;
   if (tool === 'sun') return state === 'solid' && melts(s) ? 'melted' : state;
   return state === 'melted' && SUBSTANCES[s].reversible ? 'solid' : state;
 }
@@ -50,6 +89,8 @@ export function step(s: Substance, state: State, tool: Tool): State {
 /** What the voice says after a tool on a thing: the change, the named thing that stays, or "already" when the tool cannot change it. */
 export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   const after = step(s, before, tool);
+  if (before === 'cooked')
+    return s === 'kernel' ? 'meltfreeze.sort.still.popped' : 'meltfreeze.sort.still.toast';
   if (after !== before)
     return after === 'melted'
       ? 'meltfreeze.melt'
@@ -65,10 +106,11 @@ export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   return tool === 'sun' ? 'meltfreeze.already.melted' : 'meltfreeze.already.hard';
 }
 
-export type Mode = 'watch' | 'turn' | 'make' | 'tray' | 'tap' | 'predict';
+export type Mode = 'watch' | 'turn' | 'make' | 'tray' | 'tap' | 'predict' | 'sort';
 
 export const LAP_LEVEL = 5;
 export const PREDICT_LEVEL = 6;
+export const SORT_LEVEL = 7;
 export const TAPS_TO_MELT = 3;
 
 export interface Plan {
@@ -91,6 +133,10 @@ export const PLANS: Plan[] = [
   {
     mode: 'predict',
     name: 'Will it melt?: say what you think, then warm it and find out (a guess is never wrong)',
+  },
+  {
+    mode: 'sort',
+    name: 'Can it go back?: test each changed thing with the snowflake and file it under goes back or can’t go back',
   },
 ];
 
@@ -308,6 +354,154 @@ export class PredictRound {
   }
 }
 
+// Level 7: can it go back? ---------------------------------------------------------------------
+
+/** The puddles that go hard again, each arriving melted. */
+export const SORT_BACK: Substance[] = ['ice', 'butter', 'chocolate', 'lolly'];
+/** The things that arrive changed for good. */
+export const SORT_STUCK: Substance[] = ['bread', 'kernel'];
+
+/** How a thing arrives at level 7: a puddle, or already changed for good. Never as its hard self. */
+export const arrivesAs = (s: Substance): State => (arrivesCooked(s) ? 'cooked' : 'melted');
+
+/** Level 7: four things in turn, both that cannot go back and two of the puddles that can, never three alike in a row. */
+export function sortFor(rng: Rng, authored: boolean): Substance[] {
+  if (authored) return ['butter', 'bread', 'lolly', 'kernel'];
+  return rng.shuffle([...rng.shuffle([...SORT_BACK]).slice(0, 2), ...SORT_STUCK]);
+}
+
+export type Bin = 'back' | 'stuck';
+export const BINS: Bin[] = ['back', 'stuck'];
+
+/** Whether the change a thing arrived with can be undone: exactly what the snowflake test shows. */
+export const goesBack = (s: Substance) => SUBSTANCES[s].reversible;
+export const binFor = (s: Substance): Bin => (goesBack(s) ? 'back' : 'stuck');
+/** The spoken clue for a thing: what the snowflake test showed, and so where it belongs. */
+export const sortLine = (s: Substance): LineId =>
+  goesBack(s) ? 'meltfreeze.sort.back' : 'meltfreeze.sort.stuck';
+
+export type SortDiscovery = 'goes-back' | 'cant-go-back';
+
+export interface Filing {
+  /** The thing is filed (by her, or by the pet on the third wrong bin) and the next one's turn begins. */
+  done: boolean;
+  miss: boolean;
+  /** After a wrong bin: what the test showed. */
+  hint: LineId | null;
+  /** From the second wrong bin of a thing, the right bin glows. */
+  glow: boolean;
+  /** The third wrong bin: the pet files it. */
+  supported: boolean;
+  /** She filed before testing, so the game runs the snowflake itself: every filing has its evidence. */
+  ranTest: boolean;
+  /** Where the thing belongs. */
+  bin: Bin;
+}
+
+/**
+ * Level 7's accounting, kept apart from the drawing so it can be tested, and shaped like `MakeRound`. The snowflake is the
+ * test and is always free. Only a wrong bin counts: one miss each time and a spoken clue, a glow (one counted hint per thing)
+ * from the second, and the pet's own filing on the third. Filing before testing is allowed and judged; the test then runs.
+ */
+export class SortRound {
+  index = 0;
+  state: State;
+  misses = 0;
+  hints = 0;
+  /** Wrong bins for the thing in play. */
+  wrong = 0;
+  hinted = false;
+  /** The snowflake has been tried on the thing in play. */
+  tested = false;
+  /** What the round has shown so far, which is what it may file in the journal. */
+  readonly shown = new Set<SortDiscovery>();
+
+  constructor(readonly things: Substance[]) {
+    this.state = arrivesAs(things[0]);
+  }
+
+  get thing(): Substance {
+    return this.things[Math.min(this.index, this.things.length - 1)];
+  }
+
+  get finished() {
+    return this.index >= this.things.length;
+  }
+
+  /** The snowflake is tapped (or the game runs it): a puddle goes hard again, a cooked thing stays. Never counted. */
+  test(): { changed: boolean; line: LineId } {
+    const thing = this.thing;
+    const before = this.state;
+    const line = sayAfter(thing, before, 'snow');
+    if (this.finished) return { changed: false, line };
+    this.state = step(thing, before, 'snow');
+    this.tested = true;
+    this.shown.add(goesBack(thing) ? 'goes-back' : 'cant-go-back');
+    return { changed: this.state !== before, line };
+  }
+
+  /** She taps a bin. */
+  file(bin: Bin): Filing {
+    const thing = this.thing;
+    const right = binFor(thing);
+    if (this.finished)
+      return {
+        done: false,
+        miss: false,
+        hint: null,
+        glow: false,
+        supported: false,
+        ranTest: false,
+        bin: right,
+      };
+    const ranTest = !this.tested;
+    if (ranTest) this.test();
+    if (bin === right) {
+      this.next();
+      return { done: true, miss: false, hint: null, glow: false, supported: false, ranTest, bin: right };
+    }
+    this.misses++;
+    this.wrong++;
+    const glow = this.wrong >= 2;
+    if (glow && !this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
+    const hint = sortLine(thing);
+    if (this.wrong >= SUPPORTED_AT) {
+      this.next();
+      return { done: true, miss: true, hint, glow: false, supported: true, ranTest, bin: right };
+    }
+    return { done: false, miss: true, hint, glow, supported: false, ranTest, bin: right };
+  }
+
+  /** Show a hint: the test runs if it has not, and the right bin glows; one counted hint per thing however often she asks. */
+  ask(): { glow: Bin; hint: LineId; ranTest: boolean } {
+    const ranTest = !this.finished && !this.tested;
+    if (ranTest) this.test();
+    if (!this.hinted && !this.finished) {
+      this.hinted = true;
+      this.hints++;
+    }
+    return { glow: binFor(this.thing), hint: sortLine(this.thing), ranTest };
+  }
+
+  /** Start again: the thing in play returns to how it arrived, untested. Counts and filed things stay. */
+  reset() {
+    if (this.finished) return;
+    this.state = arrivesAs(this.thing);
+    this.tested = false;
+  }
+
+  private next() {
+    this.index++;
+    this.wrong = 0;
+    this.hinted = false;
+    this.tested = false;
+    if (!this.finished) this.state = arrivesAs(this.thing);
+  }
+}
+
 export interface Box {
   x: number;
   y: number;
@@ -327,6 +521,8 @@ export interface TableLayout {
   card: Box;
   /** Level 6's two prediction cards (it melts, it stays), each at least 140 units, clear of the thing and the tools. */
   cards: [Box, Box];
+  /** Level 7's two bins (goes back, can't go back), each at least 150 units, in the places level 6's cards take. */
+  bins: [Box, Box];
 }
 
 const TOOL = 150;
@@ -350,6 +546,7 @@ export function tableLayout(view: View, n: number): TableLayout {
       snow,
       card: { x: view.w / 2 - 80, y: top, w: 160, h: 160 },
       cards: pair(view.w / 2, table.y + table.h + 40, 160),
+      bins: pair(view.w / 2, table.y + table.h + 40, 160),
     };
   }
   const right = view.w - 40 - TOOL;
@@ -365,6 +562,7 @@ export function tableLayout(view: View, n: number): TableLayout {
     snow,
     card: { x: table.x + table.w / 2 - 80, y: top - 30, w: 160, h: 160 },
     cards: pair(table.x + table.w / 2, top - 30, 150),
+    bins: pair(table.x + table.w / 2, top - 30, 150),
   };
 }
 
@@ -392,5 +590,6 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: LAP_LEVEL, order: [LAP_LEVEL, 1, 2] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 3, max: PREDICT_LEVEL, order: [3, 4, PREDICT_LEVEL] },
-  prek: { min: 4, max: PREDICT_LEVEL, order: [4, PREDICT_LEVEL] },
+  prek: { min: 4, max: SORT_LEVEL, order: [4, PREDICT_LEVEL, SORT_LEVEL] },
+  school: { min: PREDICT_LEVEL, max: SORT_LEVEL },
 };

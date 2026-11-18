@@ -21,7 +21,6 @@ import { diceJournalPicture } from '../games/spinner-fair/art';
 import { paintJournalPicture } from '../games/paint-mixer/art';
 import type { ShelfColour } from '../games/paint-mixer/logic';
 import type { KitchenDiscovery } from '../games/pet-kitchen/logic';
-import type { Substance } from '../games/melt-freeze/logic';
 import { thingArt } from '../games/sink-float/art';
 import type { Thing } from '../games/sink-float/logic';
 import { magnifierIcon } from './icons';
@@ -48,7 +47,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'mail-carrier':
       return mailJournalPicture(entry.key as HelperId);
     case 'melt-freeze':
-      return meltJournalPicture(entry.key as Substance | 'stays');
+      return meltJournalPicture(entry.key as Parameters<typeof meltJournalPicture>[0]);
     case 'pet-kitchen':
       return kitchenJournalPicture(entry.key as KitchenDiscovery);
     case 'paint-mixer':
