@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi
 import { grass, ink, swatch, wood } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
+import { BAR_GAP, buttonsAt, cellAt, cellHit, CELL, gridLayout, type GridLayout } from './layout';
 import { PicnicStage, WoodlandStage, type BeatStage } from './stage';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -43,7 +44,6 @@ import {
   type BeatPlan,
 } from './logic';
 
-const CELL = 100;
 const STEP_SECONDS = 0.32;
 const ROW_COLORS = [swatch.orange, swatch.teal, swatch.purple];
 
@@ -163,6 +163,8 @@ class BeatBuilder implements Game {
   private readonly model = new Graphics();
   private readonly icons = new Container();
   private view: View;
+  /** Where the grid and its squares sit in this view (one bar, or two on an upright phone at the eight-step levels). */
+  private lay: GridLayout;
   private timer = 0;
   /** Loops completed since the beat last changed (free play). */
   private loops = 0;
@@ -175,6 +177,7 @@ class BeatBuilder implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.lay = gridLayout(ctx.view, this.plan);
     this.gentle = ctx.band === 'toddler' && this.plan.mode === 'free';
     this.phrases = roundPhrases(this.plan, ctx.rng);
     this.piece = newPiece(this.plan);
@@ -197,11 +200,9 @@ class BeatBuilder implements Game {
     this.grid.addChild(this.cells);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => this.tapGrid(e), { cooldown: 90 });
-    for (let r = 0; r < this.plan.rows; r++) {
-      const icon = rowIcon(r);
-      icon.position.set(-60, r * CELL + CELL / 2);
-      this.icons.addChild(icon);
-    }
+    // A row picture for each row of each bar; the second bar's show only when the grid wraps.
+    for (let bar = 0; bar < 2; bar++)
+      for (let r = 0; r < this.plan.rows; r++) this.icons.addChild(rowIcon(r));
     this.grid.addChild(this.icons);
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 56, () =>
       this.playTarget(),
@@ -256,16 +257,20 @@ class BeatBuilder implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const w = this.plan.steps * CELL;
-    const x = Math.max(200, (v.w - w) / 2 + 40);
-    this.grid.position.set(x, Math.max(130, v.h * 0.26));
-    this.woodland.resize(v, this.grid.y);
-    this.grid.hitArea = new Rectangle(0, 0, w, this.plan.rows * CELL);
-    const y = this.grid.y + this.plan.rows * CELL + 95;
-    const reviseRow = this.plan.mode === 'revise';
-    this.listen.position.set(v.w / 2 - (reviseRow ? 170 : 90), y);
-    this.solo.position.set(v.w / 2, y);
-    this.check.position.set(v.w / 2 + (reviseRow ? 170 : 90), y);
+    const l = (this.lay = gridLayout(v, this.plan));
+    this.grid.position.set(l.x, l.y);
+    this.woodland.resize(v, l.y);
+    this.grid.hitArea = new Rectangle(0, 0, l.w, l.h);
+    this.icons.children.forEach((icon, i) => {
+      const bar = Math.floor(i / this.plan.rows);
+      icon.visible = bar < l.bars;
+      icon.position.set(-60, cellAt(l, i % this.plan.rows, bar * l.cols).y + CELL / 2);
+    });
+    const y = l.controlsY;
+    const at = buttonsAt(v, l, this.plan.mode);
+    this.listen.position.copyFrom(at.listen);
+    this.solo.position.copyFrom(at.solo);
+    this.check.position.copyFrom(at.check);
     this.model.position.set(v.w / 2, y + 95);
     if (this.plan.mode === 'return') {
       const x = v.w / 2;
@@ -343,10 +348,7 @@ class BeatBuilder implements Game {
       if (move === 'copy') return { tap: { on: this.copyBtn } };
       if (move === 'preview') return { tap: { on: this.previewBtn } };
       if (move === 'check') return { tap: { on: this.check } };
-      return {
-        tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 },
-        pause: 0.15,
-      };
+      return this.tapCell(move);
     }
     const goal =
       this.plan.mode === 'free' ? (this.gentle ? oneHit(this.plan) : freeBeat(this.plan)) : this.target;
@@ -354,10 +356,12 @@ class BeatBuilder implements Game {
     if (!move) return null;
     if (move === 'check') return { tap: { on: this.check } };
     // A square's middle, in the grid's own units; the grid works out which square from where the touch lands.
-    return {
-      tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 },
-      pause: 0.15,
-    };
+    return this.tapCell(move);
+  }
+
+  private tapCell(move: { row: number; step: number }): TouchIntent {
+    const c = cellAt(this.lay, move.row, move.step);
+    return { tap: { on: this.grid, x: c.x + CELL / 2, y: c.y + CELL / 2 }, pause: 0.15 };
   }
 
   destroy() {
@@ -605,12 +609,14 @@ class BeatBuilder implements Game {
     this.drawSlots();
     this.drawMarker();
     const g = this.cells.clear();
-    const { rows, steps } = this.plan;
-    g.roundRect(-14, -14, steps * CELL + 28, rows * CELL + 28, 24)
+    const { rows, steps } = this.plan,
+      l = this.lay;
+    g.roundRect(-14, -14, l.w + 28, l.h + 28, 24)
       .fill({ color: 0xffffff, alpha: 0.7 })
       .stroke({ width: 5, color: wood.line });
-    // The playhead column.
-    g.roundRect(this.step * CELL + 2, -8, CELL - 4, rows * CELL + 16, 16).fill({
+    // The playhead column, in the bar its step is in.
+    const head = cellAt(l, 0, this.step);
+    g.roundRect(head.x + 2, head.y - 8, CELL - 4, rows * CELL + 16, 16).fill({
       color: this.playingTarget > 0 ? swatch.yellow.light : swatch.blue.light,
       alpha: 0.8,
     });
@@ -619,8 +625,9 @@ class BeatBuilder implements Game {
       for (let s = 0; s < steps; s++) {
         const sw = ROW_COLORS[r];
         const on = this.beat[r][s];
-        const x = s * CELL + 10;
-        const y = r * CELL + 10;
+        const c = cellAt(l, r, s);
+        const x = c.x + 10;
+        const y = c.y + 10;
         g.roundRect(x, y, CELL - 20, CELL - 20, 16)
           .fill(on ? sw.fill : 0xffffff)
           .stroke({ width: 4, color: on ? sw.line : 0xd8d8e2 });
@@ -639,18 +646,20 @@ class BeatBuilder implements Game {
           g.stroke({ width: 6, color: sw.line, cap: 'round' });
         }
       }
-    if (this.plan.mode === 'repeat')
-      g.moveTo((steps / 2) * CELL, -14)
-        .lineTo((steps / 2) * CELL, rows * CELL + 14)
-        .stroke({ width: 4, color: wood.line });
+    // Repeat levels: a line between the half that is given and the half to make (across, when the grid wraps).
+    if (this.plan.mode === 'repeat') {
+      if (l.bars > 1) g.moveTo(-14, l.barH + BAR_GAP / 2).lineTo(l.w + 14, l.barH + BAR_GAP / 2);
+      else g.moveTo(l.w / 2, -14).lineTo(l.w / 2, l.h + 14);
+      g.stroke({ width: 4, color: wood.line });
+    }
   }
 
   private tapGrid(e: FederatedPointerEvent) {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return;
     const p = this.grid.toLocal(e.global);
-    const s = Math.floor(p.x / CELL);
-    const r = Math.floor(p.y / CELL);
-    if (s < 0 || r < 0 || s >= this.plan.steps || r >= this.plan.rows) return;
+    const cell = cellHit(this.lay, this.plan, p.x, p.y);
+    if (!cell) return;
+    const { row: r, step: s } = cell;
     if (givenCell(this.plan, r, s)) {
       if (this.plan.mode === 'revise') {
         sfx.tick();
@@ -779,7 +788,7 @@ export const beatBuilder: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
-  uprightLevels: [3, 6, 7, 8, 9],
+  upright: true,
   coplayHint: 'Clap and stomp the beat together as the playhead goes round.',
   offScreen:
     'Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other.',

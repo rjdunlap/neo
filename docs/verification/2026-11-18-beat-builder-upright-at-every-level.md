@@ -1,0 +1,5 @@
+# 2026-11-18 — Beat Builder upright at every level (PR #1798)
+
+**Changed:** `src/games/beat-builder/layout.ts` (grid layout lifted out of `index.ts`; on the upright view the eight-step levels 4 and 5 wrap into two bars of four 100-unit steps) with `layout.test.ts`; the game is now `upright: true` for every level (the READY line asked only for 4 and 5), added to the upright list in `registry.test.ts` (39 games).
+**Ran:** typecheck; `npm test` (365 files pass after `npm run game-docs`); `BROWSER_SUITE=uprightsweep PHONE_ONLY=beat-builder PHONE_BANDS=all` at 390 × 844: levels 3 and 5–9 fit (smallest target 112), levels 1, 2 and 4 "look" (one whole-grid target, 0 wrong), screenshots of 1, 4 and 5 read by eye; `BROWSER_SUITE=fingerdemo FINGER_ONLY=beat-builder FINGER_LEVELS=4,5` sideways passed (16.4 s and 35.9 s).
+**Not run:** `npm run build` locally (CI runs it); a scripted play on the upright view (the wrapped tap mapping is covered by the unit test only); offline, `world` and every other suite.
