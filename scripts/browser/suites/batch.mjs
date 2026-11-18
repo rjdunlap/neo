@@ -103,6 +103,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await kit.sleep(300);
             if (g.monsters.some((m) => m.placed && m.slot === repair.slot))
               throw new Error('The wrong letter did not leave its slot');
+            if (neo.scene.instruction?.id !== 'monster.repair.replace')
+              throw new Error('With the letter out, the instruction is to put the right one in');
             const slot = g.slotAt(repair.slot);
             const aim = (x) => g.top.parent.toGlobal({ x, y: slot.y + 40 });
             const right = g.monsters.find((m) => !m.placed && m.letter === answer[repair.slot]);

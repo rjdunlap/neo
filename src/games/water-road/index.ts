@@ -361,7 +361,8 @@ class WaterRoad implements Game {
     }
     if (isAsked(plan, s) && !s.done && !this.asked) {
       this.asked = true;
-      void this.ctx.say('wr.ask');
+      // The asked pair's question is the instruction: frames no longer pull, so "Pull a frame and see" is over.
+      void this.ctx.instruct('wr.ask');
     }
   }
 

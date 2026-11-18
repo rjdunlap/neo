@@ -1,0 +1,5 @@
+# 2026-11-18 — Younger-band games' questions on ctx.instruct, ninth session (PR #1801)
+
+**Changed:** TotoLogic P3 slice 3, the last 13 games that reach school from younger bands (story-steps to word-monsters, alphabetical): Water Road level 2's asked pair (`wr.ask`), Word Monsters level 12's put-the-right-letter-in step (`monster.repair.replace`) and Vine Snip's repeated ask on a plain tap or an early Help are now `ctx.instruct`; the other ten were read and needed nothing or kept `say` on purpose. No new voice line, no shell change. The `waterroad` play asserts the instruction on the asked pair and the Word Monsters level 12 play in `batch` asserts it after the wrong letter leaves.
+**Ran:** `npm run typecheck`; rule tests for word-monsters, water-road and vine-snip (85 passed). On headless Chromium against a silent dev server: `BROWSER_SUITE=waterroad` passed (with the new assertion), `BROWSER_SUITE=vinesnip` passed, `BROWSER_SUITE=batch BATCH_ONLY=monsters MONSTER_LEVELS=12` passed (with the new assertion).
+**Not run:** `npm run build` and full `npm test` locally (CI runs both), `fingerdemo` (no bot or demonstrated action changed), any other suite, offline.
