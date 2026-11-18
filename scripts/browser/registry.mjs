@@ -302,6 +302,7 @@ export const SUITES = [
   'couchgames',
   'grownups',
   'athome',
+  'talkcards',
   'critternot',
   'feelpoke',
   'smoke',
@@ -651,6 +652,7 @@ export function createChecks(fixture) {
     'hatchingAndMap',
     'grownUps',
     'atHome',
+    'talkCards',
     'subjectPlaces',
     'patterns',
     'memory',
@@ -1006,6 +1008,7 @@ export async function runSuite(suite, fixture) {
     hatchingAndMap,
     grownUps,
     atHome,
+    talkCards,
     subjectPlaces,
     patterns,
     memory,
@@ -1286,6 +1289,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'all' || suite === 'grownups') await grownUps();
   if (suite === 'all' || suite === 'grownups' || suite === 'athome') await atHome();
+  if (suite === 'all' || suite === 'grownups' || suite === 'talkcards') await talkCards();
   if (suite === 'critternot') await critterNotEntry();
   if (suite === 'feelpoke') await feelingsPoke();
   if (suite === 'smoke') await smoke();

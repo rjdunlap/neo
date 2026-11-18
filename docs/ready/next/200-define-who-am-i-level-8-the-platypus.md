@@ -1,0 +1,1 @@
+**Define Who Am I? level 8, the platypus** (`who-am-i`; zoo-animals ladder row 8; levels 1–7 are built): a friend that lays eggs and feeds milk, as the case the group rule has to stretch for. [Definition](../../definitions/who-am-i.md), [study](../../deep-dives/subjects/zoo-animals.md)

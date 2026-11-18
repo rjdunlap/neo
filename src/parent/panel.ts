@@ -15,6 +15,7 @@ import {
 import { store } from '../progress/store';
 import { LANDS, visibleGames } from '../content/lands';
 import { atHomeCard } from '../content/athome';
+import { talkCards } from '../content/talk';
 import { projectRecap } from './recap';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES } from '../creatures/species';
@@ -543,23 +544,23 @@ function weekSummary(app: PanelApp): string {
 
 /**
  * At home: three things to try away from the screen (`atHomeCard`), each a game's off-screen line and, where one is
- * written, something to notice and something to say, then the things from around the house they use. Read-only: nothing
- * to press, nothing counted, nothing saved.
+ * written, something to notice and something to say. The kit line and conversation cards follow the three ideas.
  */
 function atHomeSection(): string {
   const { band, name } = store.data.profile;
   const grown = band === 'grownup';
-  const card = atHomeCard({
+  const input = {
     games: visibleGames(band, GAMES),
-    lands: LANDS,
     band,
     childName: name,
-    lastPlayed: (g) =>
-      store
-        .stats(g.id)
-        .history.reduce<number | undefined>((m, r) => (m === undefined || r.at > m ? r.at : m), undefined),
-    now: Date.now(),
-  });
+    lastPlayed: (game: GameModule) =>
+      store.data.games[game.id]?.history.reduce<number | undefined>(
+        (latest, round) => (latest === undefined || round.at > latest ? round.at : latest),
+        undefined,
+      ),
+  };
+  const card = atHomeCard({ ...input, lands: LANDS, now: Date.now() });
+  const conversations = talkCards(input);
   const intro = grown
     ? 'Paper versions of puzzles played this week or waiting on the shelf. Nothing here is tracked, counted or due.'
     : 'Three things to try away from the screen, from games played this week and games for their age. Nothing here is tracked, counted or due.';
@@ -570,10 +571,18 @@ function atHomeSection(): string {
       <p class="muted">From ${esc(i.game.name)}${i.played ? ', played this week' : ''}.</p>
     </div>`,
   );
+  const talk = conversations.map(
+    ({ game, title, lines, source }) => `<div class="parent__idea" data-talk-card="${esc(game.id)}">
+      <p><strong>${esc(title)}</strong></p>
+      ${lines.map((line) => `<p>${esc(line)}</p>`).join('')}
+      <p class="muted">From ${esc(game.name)}.${source ? ` ${esc(source)}` : ''}</p>
+    </div>`,
+  );
   return `
     <p class="muted">${esc(intro)}</p>
     ${ideas.join('')}
     ${card.kit.length ? `<p data-at-home-kit><strong>Things from around the house:</strong> ${esc(card.kit.join(', '))}.</p>` : ''}
+    ${talk.length ? `<div data-talk-cards><p><strong>Something to talk about</strong></p>${talk.join('')}</div>` : ''}
     ${grown ? '' : '<p class="muted">Say it in whatever language you speak at home. There is no right way to do these.</p>'}`;
 }
 

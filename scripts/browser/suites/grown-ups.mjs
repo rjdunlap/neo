@@ -1,7 +1,18 @@
 import { createTestContext } from '../../test-browser.mjs';
 import assert from 'node:assert/strict';
 
-export function createSuite({ page, browser, errors, islandUrl, log, ready, scene, screenshot, launch }) {
+export function createSuite({
+  page,
+  browser,
+  errors,
+  islandUrl,
+  log,
+  ready,
+  scene,
+  screenshot,
+  launch,
+  output,
+}) {
   /** The grown-ups' gear on "Who's playing?", Esc and the pause sheet in a game, and undoing a reset. */
   async function grownUps() {
     const gear = page.locator('.gear:not(.gear--inline)');
@@ -404,5 +415,57 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
     );
   }
 
-  return { grownUps, atHome };
+  async function talkCards() {
+    const context = await createTestContext(browser, { viewport: { width: 390, height: 844 } });
+    try {
+      const phone = await context.newPage();
+      phone.on('pageerror', (error) => errors.push(error.message));
+      await phone.goto(new URL('/', islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173')).href);
+      await phone.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+      await phone.evaluate(() => neo.go.start());
+      await phone.waitForFunction(() => neo.scene.constructor.name === 'ChooserScene' && !neo.switching);
+
+      const gear = phone.locator('.gear:not(.gear--inline)');
+      const open = async () => {
+        await gear.focus();
+        await phone.keyboard.down('Enter');
+        await phone.waitForTimeout(2400);
+        await phone.keyboard.up('Enter');
+        await phone.locator('.parent').waitFor();
+      };
+      const section = phone.locator('[data-at-home]');
+      const block = section.locator('[data-talk-cards]');
+      await open();
+      await phone.locator('[data-band="prek"]').click();
+      await phone.waitForFunction(() => kit.store.data.profile.band === 'prek');
+      assert.equal(await block.count(), 0, 'no conversation block on a fresh pre-K profile');
+      await phone.locator('[data-done]').click();
+      await phone.evaluate(() =>
+        kit.store.recordRound(
+          'notice-board',
+          { at: Date.now(), level: 1, misses: 0, hints: 0, seconds: 15 },
+          { min: 1, max: 1 },
+        ),
+      );
+      await open();
+      const cards = block.locator('[data-talk-card]');
+      assert.deepEqual(await cards.evaluateAll((items) => items.map((item) => item.dataset.talkCard)), [
+        'notice-board',
+      ]);
+      assert.match(await block.innerText(), /Something to talk about\s+Who made this\?/);
+      assert.match(await block.innerText(), /From Notice Board\. The three questions/);
+      assert.equal(await section.locator('input, button, a, details, select').count(), 0);
+      for (const locator of [phone.locator('html'), phone.locator('.parent'), block]) {
+        assert.ok(await locator.evaluate((element) => element.scrollWidth <= element.clientWidth));
+      }
+      await block.scrollIntoViewIfNeeded();
+      await phone.screenshot({ path: `${output}/parent-talk-cards.png` });
+      assert.deepEqual(errors, []);
+      log('Conversation cards passed at 390 wide: fresh pre-K profile and one saved Notice Board round');
+    } finally {
+      await context.close();
+    }
+  }
+
+  return { grownUps, atHome, talkCards };
 }
