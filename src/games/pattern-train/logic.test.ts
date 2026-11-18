@@ -13,6 +13,7 @@ import {
   PAIR_CHOICES,
   PATTERN_PLANS,
   TUNNEL_HIDDEN,
+  TUNNEL_SIZE,
   pieceColor,
   pieceShape,
   wantedChoice,
@@ -108,6 +109,10 @@ describe('Pattern Train', () => {
       expect(slots.size, `level ${i + 1}`).toBe(expected);
       expect(notFirst, `level ${i + 1}`).toBeGreaterThan(200 / 3);
     });
+  });
+
+  it('draws the tunnel as a full-size target, since tapping it says the count again', () => {
+    expect(Math.min(TUNNEL_SIZE.w, TUNNEL_SIZE.h)).toBeGreaterThanOrEqual(100);
   });
 
   it('rolls the tunnel train through four to seven hidden cars, and the car that comes out is found by counting', () => {
