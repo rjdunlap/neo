@@ -143,7 +143,7 @@ Round variety changes request feature, parcel decorations, contrastive evidence 
 
 ## Build slices in order
 
-D1 is defined in the [Example Express 1–3 packet](../../definitions/example-express.md) ([PR #955](https://github.com/rjdunlap/neo/pull/955)); the precise seeds, accepted sets, accounting and initial selected-rule presentation there supersede the proposed ladder above for levels 1–3. D2 school levels 1–2 are built in Tinker Lab; D3 remains a separately admitted build with its own source review and rule/play/demo proof.
+D1 is defined in the [Example Express 1–3 packet](../../definitions/example-express.md) ([PR #955](https://github.com/rjdunlap/neo/pull/955)); the precise seeds, accepted sets, accounting and initial selected-rule presentation there supersede the proposed ladder above for levels 1–3. D2 school levels 1–2 and D3 level 3 are built in Tinker Lab (D3 2026-11-18).
 
 Definitions are docs-only, links and diff checks. Builds below are later sessions explicitly selected by the developer, not a dispatch queue.
 

@@ -1,0 +1,6 @@
+# 2026-11-18 — Example Express level 3, Choose the lesson (PR #1793)
+
+**Changed:** `example-express` school level 3 (D3): four open slots, an eight-parcel shelf, either dock, practice tray 0/3/5/6, all 212 shape lessons accepted, shortest-path Show me. Incidental fixes: an incomplete Check shows and says its response once (not once per parcel); no slot −1 stored as selected; the scene reads `tray()` from logic.ts instead of a copy; the two-miss glow also outlines the dock, Examples, Change and Remove controls; the level-2 how-to step is scoped `to: 2`; the browser suite gained `EXAMPLE_ONLY=lesson` and ends with it.
+**Ran:** `npm run typecheck`; full `npm test` (363 files); `logic.test.ts` (18 tests, 5 new for level 3, against independent truth-table and set-distance oracles) and `layout.test.ts`; `BROWSER_SUITE=exampleexpress EXAMPLE_ONLY=lesson` (portrait 768×1024, passed on the rerun after a dev-server reload from an edit); `BROWSER_SUITE=fingerdemo FINGER_ONLY=example-express FINGER_LEVELS=3` passed; eslint and prettier on changed files.
+**Not run:** `npm run build` locally (CI runs it); levels 1–2 of the `exampleexpress` suite (shared `label()`, `help()` and incomplete-Check code changed slightly; unit tests only); `world`; offline.
+**Source check:** CSTA 2026 and AI4K12 Big Idea 3 re-read; see the definition's D3 review. No wording changed.
