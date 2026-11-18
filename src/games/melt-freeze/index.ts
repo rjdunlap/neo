@@ -777,10 +777,11 @@ class MeltFreeze implements Game {
     }
     this.setBinGlow(null);
     await this.land(t, thing, out.bin);
+    let said: Promise<void> = Promise.resolve();
     if (!out.supported) {
       this.ctx.pet.cheer();
       // Heard out on the last thing, because the closing line would cut it; otherwise it plays over the next arrival.
-      const said = this.ctx.say(
+      said = this.ctx.say(
         out.hint ?? (out.bin === 'back' ? 'meltfreeze.sort.back' : 'meltfreeze.sort.stuck'),
       );
       if (r.finished) await said;
@@ -790,10 +791,12 @@ class MeltFreeze implements Game {
     const next = this.things[0];
     next.node.x = this.view.w + 120;
     await this.ctx.tw.to(next.node, { x: this.layout.spots[0].x }, { duration: 0.45, ease: ease.outBack });
+    // The screen may have turned while the thing came in.
+    this.place();
     this.busy = false;
-    // A puddle's question waits for the lesson line; a cooked thing's own naming line comes first either way.
+    // The lesson line never holds the table, and the next question waits for it to end (or is dropped if she taps first).
     const at = this.touches;
-    await this.ctx.tw.wait(r.state === 'cooked' ? 1.2 : 1.6);
+    await said;
     if (at === this.touches && !this.finished) void this.askSort();
   }
 
@@ -809,6 +812,8 @@ class MeltFreeze implements Game {
     );
     sfx.boing();
     await tw.to(t.node, home, { duration: 0.45, ease: ease.outBack });
+    // The screen may have turned mid-hop: the thing takes its place in the layout as it is now.
+    this.place();
   }
 
   /** The thing hops into its bin, which keeps a small picture of it for the rest of the round. */
@@ -896,6 +901,8 @@ class MeltFreeze implements Game {
     if (this.sort) {
       // The thing in play returns to how it arrived, untested; counts and filed things stay.
       this.sort.reset();
+      // A question still waiting behind a line is dropped: Start again asks it afresh below.
+      this.touches++;
       this.setBinGlow(null);
     }
     for (const t of this.things) {
