@@ -9,7 +9,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { RoundButton } from '../../ui/buttons';
 import { HINT_AFTER, hinted } from '../../progress/coach';
@@ -35,15 +35,33 @@ import {
   type Question,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import {
+  BODY_R,
+  BUILD_PICTURE,
+  DROP_REACH,
+  FIXED_HIT,
+  HIT_R,
+  LAST_PICTURE,
+  PICTURE_HIT,
+  READ_AT,
+  READ_R,
+  SLOT_DY,
+  SLOT_ROW_HIT,
+  SLOT_SIZE,
+  TEAM_HIT_RX,
+  TEAM_STRETCH,
+  bigSpot,
+  looseSpots,
+  shelfScale,
+  shelfSpot,
+  slotSpot,
+  slotX,
+  topSpot,
+} from './layout';
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
-const BODY_R = 62;
 /** Level 9's one big monster, about 300 units across its fur. */
 const BIG_SCALE = 2.3;
-/** Level 9's kept pictures, small along the top. */
-const SHELF_SCALE = 0.3;
-/** Level 13: a team monster's body is this much wider on each side, two tummies' worth. */
-const TEAM_STRETCH = 30;
 /** Level 13: a team monster shrinks a little in its box so it stays clear of its neighbors (150 apart). */
 const TEAM_SLOT_SCALE = 0.78;
 
@@ -97,7 +115,7 @@ class Monster extends Container {
     this.body.addChild(g, this.mouth, text);
     this.addChild(this.glow, this.body);
     // A team's touch area hugs its wide body (about 200 across), so it never reaches over a narrow-row neighbor's.
-    this.hitArea = w ? new Ellipse(0, 0, BODY_R + 10 + w, BODY_R + 24) : new Circle(0, 0, BODY_R + 24);
+    this.hitArea = w ? new Ellipse(0, 0, TEAM_HIT_RX, HIT_R) : new Circle(0, 0, HIT_R);
     this.drawMouth();
   }
 
@@ -188,7 +206,7 @@ class WordMonsters implements Game {
         .moveTo(18, -19)
         .quadraticCurveTo(36, 0, 18, 19)
         .stroke({ color: ink, width: 4, cap: 'round' });
-      this.readWord = new RoundButton(speaker, swatch.white, 52, () => {
+      this.readWord = new RoundButton(speaker, swatch.white, READ_R, () => {
         const repair = this.question?.repair;
         if (!this.busy && repair) void this.ctx.say('monster.blend', { word: repair.word });
       });
@@ -247,8 +265,8 @@ class WordMonsters implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    this.top.position.set(v.w / 2, v.h * 0.3);
-    this.readWord?.position.set(306, 106);
+    this.top.position.copyFrom(topSpot(v, this.plan));
+    this.readWord?.position.copyFrom(READ_AT);
     if (this.plan.big) this.crowd.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.layoutMonsters();
     this.layoutShelf();
@@ -256,20 +274,16 @@ class WordMonsters implements Game {
 
   /** Level 9: where the big monster stands. */
   private bigSpot() {
-    return { x: this.view.w / 2, y: this.view.h * 0.62 };
+    return bigSpot(this.view);
   }
 
   /** Level 9: where the `i`th kept picture sits along the top, clear of the corners. */
   private shelfSpot(i: number) {
-    const v = this.view;
-    const xs = spread(this.plan.rounds, 150, v.w - 150, 110);
-    return { x: xs[i], y: Math.max(90, v.h * 0.14) };
+    return shelfSpot(this.view, this.plan.rounds, i);
   }
 
-  /** Level 9: a kept picture's scale, smaller when the shelf is narrow so six never overlap (a picture is about 220 wide). */
   private shelfScale() {
-    const xs = spread(this.plan.rounds, 150, this.view.w - 150, 110);
-    return Math.min(SHELF_SCALE, ((xs[1] ?? 0) - xs[0] || 110) / 260);
+    return shelfScale(this.view, this.plan.rounds);
   }
 
   private layoutShelf() {
@@ -291,16 +305,10 @@ class WordMonsters implements Game {
     }
     for (const m of this.monsters) if (m.placed) m.position.copyFrom(this.slotAt(m.slot));
     const loose = this.monsters.filter((m) => !m.placed);
-    // Five full-size targets need two rows on a narrow screen.
-    const fourSounds = this.plan.choices === 5;
-    const rows = fourSounds && v.w < 1020 ? [loose.slice(0, 3), loose.slice(3)] : [loose];
-    const row = this.plan.mode === 'repair' ? Math.min(v.h - 130, this.slotAt(0).y + 375) : v.h - 130;
-    rows.forEach((monsters, j) => {
-      const xs = spread(monsters.length, fourSounds ? 140 : 150, v.w - (fourSounds ? 20 : 40), 190);
-      monsters.forEach((m, i) => {
-        m.position.set(xs[i], row - (rows.length - 1 - j) * 205 + (i % 2 ? 18 : -10));
-        if (m.drag) m.drag.home = { x: m.x, y: m.y };
-      });
+    const spots = looseSpots(v, this.plan, loose.length, this.slotCount);
+    loose.forEach((m, i) => {
+      m.position.copyFrom(spots[i]);
+      if (m.drag) m.drag.home = { x: m.x, y: m.y };
     });
   }
 
@@ -472,16 +480,16 @@ class WordMonsters implements Game {
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
-      this.showPicture(this.sayingPicture(q.answer as WordPicture), 0.5, -110);
+      this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(unitsOf(q).length);
     } else if (this.building) {
-      this.showPicture(wordPicture(q.answer as WordPicture), 0.5, -110);
+      this.showPicture(wordPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(q.answer.length, q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
     } else if (this.plan.mode === 'last' && q.word) {
       // Larger than a building level's picture: there are no slots below it, and it is a thing to tap.
-      this.showPicture(this.sayingPicture(q.word), 0.9);
+      this.showPicture(this.sayingPicture(q.word), LAST_PICTURE.scale, LAST_PICTURE.y);
     } else {
       this.showPicture(null);
     }
@@ -513,7 +521,7 @@ class WordMonsters implements Game {
   private sayingPicture(word: WordPicture) {
     const p = wordPicture(word);
     // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
-    p.hitArea = new Rectangle(-120, -120, 240, 240);
+    p.hitArea = new Rectangle(-PICTURE_HIT / 2, -PICTURE_HIT / 2, PICTURE_HIT, PICTURE_HIT);
     onTap(
       p,
       () => {
@@ -551,7 +559,7 @@ class WordMonsters implements Game {
       m.slot = i + offset;
       m.position.copyFrom(this.slotAt(m.slot));
       if (this.question?.repair) {
-        m.hitArea = new Rectangle(-74, -82, 148, 164);
+        m.hitArea = new Rectangle(-FIXED_HIT.w / 2, -FIXED_HIT.h / 2, FIXED_HIT.w, FIXED_HIT.h);
         onTap(m, () => this.tapFixed(m), { cooldown: 400 });
       }
       this.ctx.track(m);
@@ -701,14 +709,18 @@ class WordMonsters implements Game {
 
   // Building words ---------------------------------------------------------------------
 
+  /** The word's boxes, one per sound. */
+  private get slotCount() {
+    return this.question ? unitsOf(this.question).length : 3;
+  }
+
   private slotX(i: number) {
-    const count = this.question ? unitsOf(this.question).length : 3;
-    return (i - (count - 1) / 2) * 150;
+    return slotX(i, this.slotCount);
   }
 
   /** Slot `i`'s middle, in stage units. */
   private slotAt(i: number) {
-    return { x: this.top.x + this.slotX(i), y: this.top.y + 106 };
+    return slotSpot(this.view, this.plan, i, this.slotCount);
   }
 
   /**
@@ -738,9 +750,9 @@ class WordMonsters implements Game {
   /** A brief ring over box `i`, so the sound she hears belongs to a place. */
   private ripple(i: number) {
     const ring = new Graphics()
-      .roundRect(-66, -66, 132, 132, 26)
+      .roundRect(-SLOT_SIZE / 2, -SLOT_SIZE / 2, SLOT_SIZE, SLOT_SIZE, 26)
       .stroke({ width: 8, color: swatch.purple.light });
-    ring.position.set(this.slotX(i), 106);
+    ring.position.set(this.slotX(i), SLOT_DY);
     this.top.addChild(ring);
     void this.ctx.tw.to(ring.scale, { x: 1.18, y: 1.18 }, { duration: 0.35, ease: ease.outQuad });
     void this.ctx.tw.to(ring, { alpha: 0 }, { duration: 0.35 }).then(() => ring.destroy());
@@ -751,14 +763,19 @@ class WordMonsters implements Game {
     const g = this.slots.clear();
     // Give the sound hint one generous tap area over the whole row.
     if (this.plan.mode === 'slow' || this.plan.mode === 'team')
-      g.hitArea = new Rectangle(this.slotX(0) - 80, 26, this.slotX(count - 1) - this.slotX(0) + 160, 160);
+      g.hitArea = new Rectangle(
+        this.slotX(0) - SLOT_ROW_HIT.pad,
+        SLOT_DY - SLOT_ROW_HIT.h / 2,
+        this.slotX(count - 1) - this.slotX(0) + 2 * SLOT_ROW_HIT.pad,
+        SLOT_ROW_HIT.h,
+      );
     for (let i = 0; i < count; i++) {
-      g.roundRect(this.slotX(i) - 66, 40, 132, 132, 26)
+      g.roundRect(this.slotX(i) - SLOT_SIZE / 2, SLOT_DY - SLOT_SIZE / 2, SLOT_SIZE, SLOT_SIZE, 26)
         .fill({ color: 0xffffff, alpha: 0.7 })
         .stroke({ width: 5, color: swatch.purple.line });
       if (this.plan.mode === 'build') {
         const t = label(word[i], 70, swatch.purple.light);
-        t.position.set(this.slotX(i), 106);
+        t.position.set(this.slotX(i), SLOT_DY);
         this.slotLetters.addChild(t);
       }
     }
@@ -777,7 +794,7 @@ class WordMonsters implements Game {
     // Generous: anywhere over the slot row counts as trying the next slot.
     const units = unitsOf(q);
     const edge = Math.max(280, this.slotX(units.length - 1) + 80);
-    if (Math.abs(y - slot.y) > 140 || Math.abs(x - this.top.x) > edge) return false;
+    if (Math.abs(y - slot.y) > DROP_REACH || Math.abs(x - this.top.x) > edge) return false;
     if (q.repair && (this.wrongMonster() || Math.abs(x - slot.x) > 75)) return false;
     const want = units[this.filled];
     if (!fits(units, this.filled, m.letter)) {
@@ -830,7 +847,7 @@ class WordMonsters implements Game {
       for (const c of p.children) if (c instanceof Critter) c.cheer();
     }
     sfx.tada();
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+    this.ctx.particles.burst(this.top.x, this.top.y, {
       kind: 'star',
       colors: [0xffffff, 0xfff3a0, swatch.purple.light],
       count: 24,
@@ -893,6 +910,7 @@ export const wordMonsters: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Make each monster\'s sound together, slowly: "mmm", "sss", then blend them into a word.',
   coplayHintLap:
     'Make each monster\'s sound slowly as {name} taps it: "mmm", "sss". Then blend them into a word.',

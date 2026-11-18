@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/word-monsters; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `word-monsters` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `word-monsters` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** letter-sounds, phonics, vocabulary
 
