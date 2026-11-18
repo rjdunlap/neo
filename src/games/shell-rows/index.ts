@@ -438,6 +438,7 @@ export const shellRows: GameModule = {
   titleLine: 'game.shell-rows',
   region: 'puzzle-peaks',
   challenge: 'logic',
+  upright: true,
   skills: ['planning', 'prediction', 'logic'],
   bands: ['prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),

@@ -550,6 +550,7 @@ export const notAlways: GameModule = {
   titleLine: 'game.not-always',
   region: 'story-grove',
   challenge: 'logic',
+  upright: true,
   skills: ['reasoning', 'claims', 'counterexamples', 'listening'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

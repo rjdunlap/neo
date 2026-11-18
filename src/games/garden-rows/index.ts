@@ -7,7 +7,6 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { spread } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -17,13 +16,17 @@ import {
   clash,
   copyBed,
   deadEnds,
+  CELL,
   FLOWER_NAMES,
+  gardenLayout,
   hintFor,
   isFull,
   isSolved,
   makeBeds,
   mendTarget,
   nextMove,
+  PACKET,
+  PACKET_REACH,
   planFor,
   rowsOf,
   type Bed,
@@ -31,9 +34,6 @@ import {
   type Puzzle,
   type RowsPlan,
 } from './logic';
-
-const CELL = 100;
-const PACKET = 52;
 
 /** One flower, drawn so that no two share a silhouette or a color: it fills about `size` units around (0, 0). */
 export function flowerArt(kind: number, size: number): Container {
@@ -191,7 +191,7 @@ class GardenRows implements Game {
           .fill(cream)
           .stroke({ width: 5, color: wood.line }),
       );
-      packet.hitArea = new Circle(0, 0, PACKET + 12);
+      packet.hitArea = new Circle(0, 0, PACKET + PACKET_REACH);
       onTap(packet, () => this.select(f), { cooldown: 150 });
       this.packets.addChild(packet);
     }
@@ -224,28 +224,10 @@ class GardenRows implements Game {
   }
 
   resize(v: View) {
-    const w = this.n * CELL;
-    const h = this.rows * CELL;
-    // The seed packets sit beside the bed when there is room, and under it on a tall screen.
-    const side = v.w - (w + 40) >= 300;
-    if (side) {
-      const total = w + 70 + PACKET * 2 + 20;
-      const x = Math.max(160, (v.w - total) / 2);
-      const y = Math.max(100, (v.h - h) / 2);
-      this.board.position.set(x, y);
-      // A fixed gap, so the round packets never overlap however few flowers there are.
-      const gap = PACKET * 2 + 10;
-      this.packets.children
-        .slice(0, this.n)
-        .forEach((p, i) => p.position.set(x + w + 70 + PACKET, y + h / 2 + (i - (this.n - 1) / 2) * gap));
-    } else {
-      const total = h + PACKET * 2 + 150;
-      const y = Math.max(100, (v.h - total) / 2);
-      this.board.position.set((v.w - w) / 2, y);
-      const xs = spread(this.n, 150, v.w - 40, PACKET * 2 + 14);
-      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(xs[i], y + h + 60 + PACKET));
-    }
-    this.board.hitArea = new Rectangle(0, 0, w, h);
+    const L = gardenLayout(v, this.plan);
+    this.board.position.set(L.board.x, L.board.y);
+    this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(L.packets[i].x, L.packets[i].y));
+    this.board.hitArea = new Rectangle(0, 0, L.board.w, L.board.h);
     this.drawSoil();
   }
 
@@ -650,6 +632,7 @@ export const gardenRows: GameModule = {
   titleLine: 'game.garden-rows',
   region: 'puzzle-peaks',
   challenge: 'logic',
+  upright: true,
   skills: ['logic', 'deduction', 'patterns', 'spatial-reasoning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/shell-rows; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `shell-rows` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `shell-rows` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** planning, prediction, logic
 
@@ -30,3 +30,5 @@
 Levels: 1 "Finish the row" (pre-K 1, school 1): two shells in a row and a gap; set the third. 2 "Stop the row" (pre-K 2, school 2): the pet has two pebbles in a row; set a shell in its gap. 3 "Win first" (school 3): both a win and a block are on the board; take the win. No preschool range.
 
 Misses and hints: a wrong empty square is one miss, and the pet plays its honest reply (takes her gap, completes its own row, or takes the three she could have had); the deciding row glows with the spoken reason, then the board rewinds. A second miss on a position glows the right square (one hint). Show me glows it; asked again, the ghost sets it (still one hint). Occupied squares and taps during the replay count nothing. One sticker per round. Shells are set on touch-down. The ghost finger plays levels 1 and 3. The co-play line asks "What will the pet do if you go there?"; the off-screen idea is noughts and crosses on paper. Not built: Shell Rows 4–5 (forks, play it out) and the grown-ups' table-games card. Open: the person and device checks in DEVICE-CHECKS.
+
+**Upright on a phone (2026-11-18, upright batch 10):** every level plays upright, tested on the existing `layout`. One change: in portrait the board now sits in the middle of the room between the piles' strip and the pet's row; it used to hug the top, under Home and over the sun, far from a thumb on a tall phone. This also moves it 85 units down on a 768 × 1024 tablet held upright. Layout test: `upright.test.ts`.
