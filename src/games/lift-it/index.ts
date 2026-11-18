@@ -554,7 +554,14 @@ class LiftIt implements Game {
     this.levelLine = lines[this.plan.id];
     // Who wants to pull follows the level's instruction (said at once, it used to cut the instruction off).
     void this.ctx.instruct(this.levelLine).then(() => {
-      if (this.plan.request && !this.destroyed && !this.finished && this.line === 0 && !this.question && !this.busy)
+      if (
+        this.plan.request &&
+        !this.destroyed &&
+        !this.finished &&
+        this.line === 0 &&
+        !this.question &&
+        !this.busy
+      )
         void this.sayAsk();
     });
   }
