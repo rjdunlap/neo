@@ -615,6 +615,7 @@ describe('game registry', () => {
       'timeline-trail',
       'who-am-i',
       'word-glue',
+      'word-monsters',
       'word-search',
     ];
     expect(

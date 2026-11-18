@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/word-monsters; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `word-monsters` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `word-monsters` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** letter-sounds, phonics, vocabulary
 
@@ -52,3 +52,5 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 **Level 13, Two letters, one sound.** A wide team monster wearing two letters (sh, ch, th or ck) fills one sound box. Only the word is said ("Make fish! Two letters can make one sound."); tap the picture to hear it again (free) or the boxes to hear the sounds box by box (one hint per word). A wrong drop says who the monster is; dropping one letter of the wanted team says "That is just sss. Two letters make shh."; two misses glow the next monster. Nine words: fish, dish, ship, chick, duck, sock, rock, bath, moth, three per round with three different teams. A spare monster is half the time one letter of a team (never both, and never c or k beside ck) and otherwise an unrelated letter that is no lookalike or sound twin. Team words never appear at levels 10 and 11. Known gap: a ck monster dropped in chick's ch box gets the generic "I'm CK" line.
 
 **What the guide repeats (2026-11-18).** Level 12: once the wrong letter is tapped out, `monster.repair.replace` ("Put the right letter in to make {word}.") is the instruction (`ctx.instruct`), so the caption no longer keeps the "Tap the letter I should take out." line through the round's second step; the next word instructs `monster.repair` again. `monster.repair.keep`, `monster.next`, `monster.iam` and `monster.team.half` are replies and stay `say`.
+
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–14: four loose monsters stand two by two, five (level 14) as three over two, lifted clear of the guide's corner, with the picture and boxes above them so the word is built in the lower half of a tall screen. The layout is pure functions in `layout.ts` (`topSpot`, `slotSpot`, `looseSpots`, `rowSizes`, `bigSpot`, `shelfSpot`, the touch sizes); sideways is unchanged, and `upright.test.ts` checks every level, question and five phone views (targets at least 100 units, apart, in view, clear of Home and the guide).
