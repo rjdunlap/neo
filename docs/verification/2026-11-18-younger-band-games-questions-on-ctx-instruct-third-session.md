@@ -1,0 +1,5 @@
+# 2026-11-18 — Younger-band games' questions on ctx.instruct, third session (PR #1791)
+
+**Changed:** TotoLogic P3 slice 3, the third ten games that reach school from bands younger than pre-K (far-lights to gear-garden, alphabetical): Gear Garden level 3's first pick of each pair of machines now says `gears.instruct.gap` ("A gear is missing. Put it in the gap, then turn!") with `ctx.instruct`; the other nine were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/gear-garden` (1 file, 27 tests passed); on a headless Chromium run against a silent dev server, `BROWSER_SUITE=gears` passed (levels 1 and 3: face tap, Turn-back, garden tap, uncounted hint, bloom tap, blooms, B opened, short drop home, still flower, requested hint, portrait, saved score). It is a regression play; it does not assert the caption text.
+**Not run:** full unit suite and build locally (CI runs both on the PR), offline, `fingerdemo` (the demonstrated action did not change).
