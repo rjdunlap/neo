@@ -360,7 +360,7 @@ export class BasketOrchard implements Game {
         this.shown = null;
         this.drawBed(false);
         this.drawBaskets();
-        await this.talk(this.ctx.say('orchard.nextset'));
+        await this.talk(this.ctx.instruct('orchard.nextset'));
         break;
       }
       default:

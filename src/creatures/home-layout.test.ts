@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
-import { UPRIGHT_VIEWS } from '../games/upright-check';
+import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { HOME_NAMES, NAME_MAX, nameBelow, nameWidth, PILL, playName } from '../content/button-names';
 import { BACK } from './friends-layout';
@@ -46,7 +46,7 @@ const VIEWS = [
   computeView(1366, 768),
 ];
 /** Those, and a phone held upright on the 768 × 1024 upright area, for the scenes that lay out on it (chunk 31). */
-const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_VIEWS)];
+const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_SCREENS)];
 
 interface Box {
   x0: number;

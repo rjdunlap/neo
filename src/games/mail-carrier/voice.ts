@@ -60,7 +60,7 @@ export const VOICE = {
   'mail.key-make-ready': ['You made the key! Now use it to deliver two letters.'],
   'mail.key': ['The {animal} lives at the {sign} house.'],
   'mail.any-order': [
-    'Three letters! One for the {first}, one for the {second}, and one for the {third}. Plan them in any order you like, then tap the green arrow to walk. We will count the stones all the way back to the post office.',
+    'Three letters: the {first}, the {second} and the {third}. Plan them in any order, then tap the green arrow. We will count the stones all the way back.',
   ],
   'mail.any-order-nobody': ['No letter for the {resident} in this bag. Look at the three letters.'],
   'mail.any-order-hint': [

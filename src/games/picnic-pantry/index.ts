@@ -371,7 +371,7 @@ class PicnicPantry implements Game {
     this.slots = [null, null];
     sfx.pop(5);
     this.draw();
-    void this.ctx.say('pantry.another');
+    void this.ctx.instruct('pantry.another');
   }
 
   private next() {

@@ -76,7 +76,7 @@ export const VOICE = {
   'story.predict.try': ['That could happen, but look at {clue}. Try the ending that this clue points to.'],
   'story.predict.reason': ['{reason}'],
   'story.untangle.start': [
-    'Two stories! {first} is in the top row. {second} is in the bottom row. Drag each picture to the next glowing space in its own story. Tap the picture beside a row to hear its name.',
+    "Two stories! {first} is the top row. {second} is the bottom row. Drag each picture to the next glowing space in its own story. Tap a row's picture to hear its name.",
   ],
   'story.untangle.row': ['{story}. Put this story in the row beside this picture.'],
   'story.untangle.wrong': [

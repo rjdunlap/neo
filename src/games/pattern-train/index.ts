@@ -353,7 +353,7 @@ class PatternTrain implements Game {
     car.removeChildAt(1).destroy({ children: true });
     car.addChildAt(label('?', 60, swatch.purple.line), 1);
     this.choices.forEach((c) => (c.visible = true));
-    void this.ctx.say('pattern.swapChoose');
+    void this.ctx.instruct('pattern.swapChoose');
     this.layoutGlow();
   }
 

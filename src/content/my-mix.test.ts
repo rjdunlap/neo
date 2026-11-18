@@ -8,7 +8,7 @@ import { gamesFor } from '../app/scenes/PlaceScene';
 import { Tweener } from '../engine/tween';
 import { inlineFits } from '../ui/howto-card';
 import { sheetPlaces, sheetTiles } from '../ui/mix';
-import { UPRIGHT_VIEWS } from '../games/upright-check';
+import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { MixTable } from '../ui/mix-table';
 import {
   lineup,
@@ -171,7 +171,7 @@ describe('Make my mix: layouts never shrink a target', () => {
     { w: 1024, h: 2100 },
   ].map((v) => ({ ...v, scale: 1 }));
   /** Those, and a phone held upright on the 768 × 1024 area (chunk 31, shell slice 3). */
-  const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_VIEWS)];
+  const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_SCREENS)];
   it('the sheet puts every tile, Skip under each, Back and the buttons inside the view, apart, in every view', () => {
     type B = { what: string; x0: number; y0: number; x1: number; y1: number };
     const box = (what: string, c: { x: number; y: number }, w: number): B => ({
@@ -214,7 +214,7 @@ describe('Make my mix: layouts never shrink a target', () => {
       }
     // The wide area keeps its one row; the upright area wraps five into three over two.
     expect(new Set(sheetPlaces(5, VIEWS[0]).tiles.map((t) => t.y)).size).toBe(1);
-    expect(new Set(sheetPlaces(5, UPRIGHT_VIEWS.phone).tiles.map((t) => t.y)).size).toBe(2);
+    expect(new Set(sheetPlaces(5, UPRIGHT_SCREENS.phone).tiles.map((t) => t.y)).size).toBe(2);
   });
   it('the sheet holds one to five tiles at 150 or more, inside the design area, apart', () => {
     for (let n = 1; n <= MIX_MAX; n++) {

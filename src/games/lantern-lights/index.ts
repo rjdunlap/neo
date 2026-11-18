@@ -791,14 +791,16 @@ export function pondLayout(v: View, n: number) {
   const cell = Math.min(116, Math.floor((v.h - boardY - 150) / n));
   const bw = n * cell;
   const y = boardY + bw + 78;
+  // A view shortened by the caption strip can bring the buttons down into the guide's rows: they then sit clear of its corner.
+  const mid = v.w / 2 + (v.upright && y + 50 > v.h - 170 ? 50 : 0);
   return {
     wide,
     cell,
     board: { x: (v.w - bw) / 2, y: boardY },
-    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 180, y })),
+    buttons: [-1, 0, 1].map((i) => ({ x: mid + i * 180, y })),
     after: [
-      { x: v.w / 2 - 120, y },
-      { x: v.w / 2 + 170, y },
+      { x: mid - 120, y },
+      { x: mid + 170, y },
     ],
   };
 }

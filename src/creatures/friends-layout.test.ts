@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
-import { UPRIGHT_VIEWS } from '../games/upright-check';
+import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { HOME_BUTTON } from './home-layout';
 import {
   ARROW_RADIUS,
@@ -21,7 +21,7 @@ const VIEWS = [
   computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   computeView(1366, 768),
   // A phone held upright on the 768 × 1024 upright area (chunk 31, shell slice 2).
-  ...Object.values(UPRIGHT_VIEWS),
+  ...Object.values(UPRIGHT_SCREENS),
 ];
 
 interface Box {

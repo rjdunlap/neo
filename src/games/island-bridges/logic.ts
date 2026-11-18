@@ -853,8 +853,11 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
     sea = size * cell,
     x = (w - sea) / 2,
     y = w < 1000 && x < 120 ? 220 : 140;
-  const by = y + sea + 16 + 20,
-    bw = Math.min(200, Math.floor((sea - 24) / 3));
+  const by = y + sea + 16 + 20;
+  // A view shortened by the caption strip can bring the row down into the guide's corner: the row then starts beside it.
+  const low = by + under > h - 170,
+    bw = Math.min(200, Math.floor((sea - 24) / 3), low ? Math.floor((w - 150 - 8 - 24) / 3) : Infinity),
+    bx = Math.max(x + sea / 2 - (3 * bw + 24) / 2, low ? 150 : -Infinity);
   return {
     cell,
     x,
@@ -862,7 +865,7 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
     beside: false,
     slots: kinds.map((kind, k) => ({
       kind,
-      x: x + sea / 2 - (3 * bw + 24) / 2 + k * (bw + 12),
+      x: bx + k * (bw + 12),
       y: by,
       w: bw,
       h: under,
