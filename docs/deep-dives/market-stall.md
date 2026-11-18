@@ -201,6 +201,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 10. **Level 12, Can I buy it?** (decision 7; define with a child first), then **level 13, Trade up** (decision 5, prototype first).
 11. **The grown-up window** (G1–G5, decision 6) after Lands stage B or a couch-side plan table; the true-minimum `fewest` (gap 8) is its first piece.
 12. **Sketches**: a sell stall, a bakery, a journal discovery for level 5.
+13. **A total she can see on the counter** ([TotoLogic P8](../reviews/TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)): claimed by `claude/market-stall-counter-total` (the dive note on which levels, then the drawn total; `src/games/market-stall/index.ts`, `logic.ts` and its test, the `shop` browser case, the game page).
 
 ## What was built in this session
 
