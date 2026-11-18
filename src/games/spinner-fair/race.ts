@@ -34,6 +34,7 @@ import {
   type RaceLayout,
   type SetSpec,
   type Wheel,
+  SPIN_PAD,
 } from './logic';
 import { wedgePieces, type Piece } from './wedges';
 
@@ -217,7 +218,7 @@ export class RaceGame implements Game {
     for (const p of this.pieces) p.drag.destroy();
     this.pieces = [];
     this.art = spinnerArt(this.wheel, BIG, { stand: false, bare: true });
-    this.art.node.hitArea = new Circle(0, 0, BIG + 12);
+    this.art.node.hitArea = new Circle(0, 0, BIG + SPIN_PAD);
     this.art.wheel.eventMode = 'passive';
     onTap(this.art.node, () => this.tapSpinner());
     this.spinLayer.addChild(this.art.node);

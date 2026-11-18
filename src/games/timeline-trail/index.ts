@@ -40,6 +40,7 @@ import {
   asking,
   bare,
   CARD,
+  CARD_HIT,
   centre,
   chipReason,
   faceOf,
@@ -292,7 +293,7 @@ class TimelineTrail implements Game {
       const r = l.tray[i];
       const node = new Container();
       node.addChild(this.makeCard(stage, CARD, false));
-      node.hitArea = new Rectangle(-CARD / 2 - 6, -CARD / 2 - 6, CARD + 12, CARD + 12);
+      node.hitArea = new Rectangle(-CARD_HIT / 2, -CARD_HIT / 2, CARD_HIT, CARD_HIT);
       node.position.copyFrom(centre(r));
       this.board.addChild(node);
       const c: CardNode = { stage, node, hung: false, handle: null as unknown as DragHandle };
@@ -333,7 +334,7 @@ class TimelineTrail implements Game {
       const at = l.chips[i];
       const node = new Container();
       node.addChild(chipArt(element, CARD));
-      node.hitArea = new Rectangle(-CARD / 2 - 6, -CARD / 2 - 6, CARD + 12, CARD + 12);
+      node.hitArea = new Rectangle(-CARD_HIT / 2, -CARD_HIT / 2, CARD_HIT, CARD_HIT);
       node.position.copyFrom(centre(at));
       this.board.addChild(node);
       const c: ChipNode = { element, node, handle: null as unknown as DragHandle };
@@ -842,6 +843,7 @@ export const timelineTrail: GameModule = {
   challenge: 'logic',
   skills: ['sequencing', 'then-and-now', 'cause-and-effect'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

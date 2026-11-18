@@ -6,12 +6,14 @@ import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  JAR_H,
+  JAR_W,
   LEVELS,
   choices,
   compareGuess,
@@ -19,17 +21,18 @@ import {
   guessCards,
   gridFor,
   inside,
+  lassoLayout,
   makeRound,
   nearestGroup,
   planFor,
   scatter,
+  tallField,
+  type LassoLayout,
   type LassoPlan,
   type LassoRound,
   type Point,
 } from './logic';
 
-const JAR_W = 108;
-const JAR_H = 150;
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** A glowing little bug: a yellow tail light, a dark head and see-through wings. */
@@ -180,13 +183,12 @@ class LassoLoops implements Game {
   private readonly padLayer = new Container();
   private touch: { id: number; points: Point[] } | null = null;
   private area = { x: 0, y: 0, w: 0, h: 0 };
+  private L: LassoLayout;
   private wrongs = 0;
   private hinted = false;
-  private view: View;
   private readonly grid: { cols: number; rows: number };
 
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.round = makeRound(this.plan, ctx.rng);
     this.backdrop = ctx.track(
@@ -202,7 +204,9 @@ class LassoLoops implements Game {
         ctx.view,
       ),
     );
-    this.grid = gridFor(this.round.fireflies);
+    this.L = this.layout(ctx.view);
+    // An upright phone's field is taller than wide, so the grid turns with it (the same number of cells).
+    this.grid = gridFor(this.round.fireflies, tallField(this.L));
     for (const spot of scatter(this.round.fireflies, ctx.rng, this.grid.cols, this.grid.rows)) {
       const f = ctx.track(new Firefly(spot));
       this.flies.push(f);
@@ -255,14 +259,13 @@ class LassoLoops implements Game {
   }
 
   resize(v: View) {
-    this.view = v;
     this.backdrop.resize(v);
-    this.area = { x: 160, y: 96, w: v.w - 210, h: v.h - 96 - JAR_H - 120 };
-    this.sky.hitArea = new Rectangle(0, 0, v.w, v.h - JAR_H - 40);
+    const L = (this.L = this.layout(v));
+    this.area = L.field;
+    this.sky.hitArea = new Rectangle(L.sky.x, L.sky.y, L.sky.w, L.sky.h);
     for (const f of this.flies) if (f.spot && !this.ctx.tw.busy(f)) f.position.copyFrom(this.place(f.spot));
-    const xs = spread(this.jars.length, 190, v.w - (this.leafNeeded ? 210 : 40), 140);
     this.jars.forEach((j, i) => {
-      j.position.set(xs[i], v.h - 30);
+      j.position.copyFrom(L.jars[i]);
       j.flies.forEach((f, k) => {
         if (this.ctx.tw.busy(f)) return;
         const s = j.slot(k, j.want || j.flies.length);
@@ -279,14 +282,14 @@ class LassoLoops implements Game {
       .moveTo(-80, 0)
       .lineTo(80, 0)
       .stroke(line(swatch.green.line, 4));
-    this.leaf.position.set(v.w - 120, v.h - 90);
+    this.leaf.position.copyFrom(L.leaf);
     this.layoutPads();
     this.layoutGuesses();
-    this.guessSign.position.set(v.w - 110, 58);
+    this.guessSign.position.copyFrom(L.sign);
   }
 
-  private get leafNeeded() {
-    return this.round.ones > 0;
+  private layout(v: View) {
+    return lassoLayout(v, this.round.jars.length, this.round.ones > 0, !!this.plan.guess);
   }
 
   private place(spot: Point) {
@@ -363,8 +366,8 @@ class LassoLoops implements Game {
   }
 
   private layoutGuesses() {
-    const xs = spread(3, this.guessPhase === 'revise' ? this.jars[0].x + 150 : 190, this.view.w - 40, 160);
-    this.guessCards.forEach((c, i) => c.position.set(xs[i], this.view.h - 100));
+    const spots = this.guessPhase === 'revise' ? this.L.guessRevise : this.L.guessFirst;
+    this.guessCards.forEach((c, i) => c.position.copyFrom(spots[i]));
   }
 
   private showGuesses() {
@@ -632,8 +635,7 @@ class LassoLoops implements Game {
   }
 
   private layoutPads() {
-    const v = this.view;
-    this.pads.forEach((p, i) => p.position.set(v.w / 2 + (i - 1) * 180, this.area.y + this.area.h * 0.45));
+    this.pads.forEach((p, i) => p.position.copyFrom(this.L.pads[i]));
   }
 
   private async answer(pad: Pad) {
@@ -779,5 +781,6 @@ export const lassoLoops: GameModule = {
   hubIcon: () => new LassoIcon(),
   sticker,
   touchDemo: true,
+  upright: true,
   create: (ctx) => new LassoLoops(ctx),
 };

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import { spread, type View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
 /** The feelings a face can show. Each has its own critter mood, sound, and color. */
@@ -353,4 +354,57 @@ export function faceFrame(
   const cx = (left + Math.max(...xs)) / 2;
   const cy = (top + Math.max(...ys)) / 2;
   return { scale, x: -cx * scale, y: -cy * scale };
+}
+
+// Layout ---------------------------------------------------------------------
+
+/** An answer card's touch box (a face, a helper, a wish or a happening), centred on the card. */
+export const CARD_HIT = { w: 180, h: 200 };
+/** A free-play feeling bubble's touch circle, across. */
+export const BUBBLE_HIT = 170;
+/** A friend's scale, and its touch box in its own units: `up` above its feet, the rest below. */
+export const FRIEND_SCALE = 0.62;
+export const FRIEND_HIT = { w: 300, h: 330, up: 310 };
+
+export interface FeelingLayout {
+  /** The floor line: the big pet's feet, and the two friends' and the asked friend's. */
+  floor: number;
+  /** The centres of the answer cards (free play: the feeling bubbles), left to right. */
+  options: { x: number; y: number }[];
+  /** The friends' feet. Level 12's four friends share one spot: only the one asked shows. */
+  friends: { x: number; y: number }[];
+}
+
+/**
+ * Where a round's touch targets stand. Sideways, the cards run along the bottom to the right of the guide's corner.
+ * Upright (a phone held tall, 768 units wide) two or three cards still fit there; four cards or bubbles take the whole
+ * width in a row raised above the guide's corner, and level 7's four friends take the whole width too.
+ */
+export function feelingLayout(
+  v: Pick<View, 'w' | 'h'>,
+  mode: FeelingMode,
+  options: number,
+  friends: number,
+): FeelingLayout {
+  const floor = v.h * 0.6;
+  const wide = v.h > v.w && options > 3;
+  const play = mode === 'play';
+  const xs = wide
+    ? spread(options, 0, v.w, play ? 200 : 215)
+    : spread(options, 160, v.w - 40, play ? 200 : 215);
+  const y = play ? v.h - (wide ? 260 : 105) : v.h - (wide ? 280 : 125);
+  const fx =
+    mode === 'ask'
+      ? Array.from({ length: friends }, () => v.w / 2 - 110)
+      : mode === 'perspective'
+        ? [v.w / 2 - 215, v.w / 2 + 215]
+        : v.h > v.w
+          ? spread(friends, 0, v.w, 215)
+          : spread(friends, 160, v.w - 40, 215);
+  const fy = mode === 'perspective' || mode === 'ask' ? floor : v.h * 0.68;
+  return {
+    floor,
+    options: xs.map((x) => ({ x, y })),
+    friends: Array.from({ length: friends }, (_, i) => ({ x: fx[i] ?? v.w / 2, y: fy })),
+  };
 }

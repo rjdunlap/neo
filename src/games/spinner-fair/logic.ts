@@ -686,6 +686,14 @@ export const BIG = 210,
   FACE = 70,
   BAR_H = 320,
   STAND = 50;
+/** A phone held upright: the faces under the bars are the answers she taps, so they grow past 100 units and stand further apart. */
+export const FACE_UP = 116,
+  COL_GAP_UP = 40;
+/** A spinner's tap circle reaches this far past its wheel. */
+export const SPIN_PAD = 12;
+/** The favourite bubble's tap square: level 3's, and level 4's smaller one. */
+export const FAV = 120,
+  SURE_FAV = 110;
 
 export interface Layout {
   portrait: boolean;
@@ -697,6 +705,8 @@ export interface Layout {
   favourite: Box;
   /** The bars' baseline (under the blocks, above the faces). */
   base: number;
+  /** How far a bar's face slot hangs under the baseline: `FACE`, or `FACE_UP` upright. */
+  face: number;
   /** One tap column per bar: from the face to the top of the tallest bar the set can make. */
   columns: Box[];
 }
@@ -706,10 +716,14 @@ const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h }
 export function layout(view: { w: number; h: number }, bars: number): Layout {
   const { w, h } = view;
   const portrait = h > w;
-  const span = bars * COL_W + (bars - 1) * COL_GAP;
+  // A phone held upright (1100 units tall or more) has the room; a 768 × 1024 tablet keeps its own portrait layout.
+  const tall = portrait && h >= 1100;
+  const gap = tall ? COL_GAP_UP : COL_GAP;
+  const face = tall ? FACE_UP : FACE;
+  const span = bars * COL_W + (bars - 1) * gap;
   const cols = (left: number, base: number) =>
     Array.from({ length: bars }, (_, i) =>
-      box(left + COL_W / 2 + i * (COL_W + COL_GAP), base - BAR_H / 2 + FACE / 2, COL_W, BAR_H + FACE),
+      box(left + COL_W / 2 + i * (COL_W + gap), base - BAR_H / 2 + face / 2, COL_W, BAR_H + face),
     );
   if (!portrait) {
     const cy = Math.max(140 + BIG, Math.min(h / 2 - 20, 350));
@@ -724,14 +738,15 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
         { x: w / 2 - SMALL - 50, y: pcy, r: SMALL },
         { x: w / 2 + SMALL + 50, y: pcy, r: SMALL },
       ],
-      favourite: box(w / 2, pcy - SMALL - 20, 120, 120),
+      favourite: box(w / 2, pcy - SMALL - 20, FAV, FAV),
       base,
+      face,
       columns: cols(left, base),
     };
   }
   const cx = w / 2;
   const spinner = { x: cx, y: 120 + BIG + 10, r: BIG };
-  const base = h - 40 - FACE;
+  const base = h - 40 - face;
   return {
     portrait,
     spinner,
@@ -739,8 +754,9 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
       { x: cx - 40, y: 130 + SMALL, r: SMALL },
       { x: cx - 40, y: 130 + SMALL * 3 + 110, r: SMALL },
     ],
-    favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 55, 120, 120),
+    favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 55, FAV, FAV),
     base,
+    face,
     columns: cols(cx - span / 2 + 40, base),
   };
 }
@@ -773,7 +789,7 @@ export function sureLayout(view: { w: number; h: number }): SureLayout {
       spinners: xs.map((x) => ({ x, y: cy, r: MID })),
       slots: xs.map((x) => box(x, cy + rim + 2 + CARD_H / 2, CARD_W, CARD_H)),
       tray: [-170, 0, 170].map((dx) => box(mid + dx, trayY, CARD_W, CARD_H)),
-      favourite: box(w - 30 - 55, trayY, 110, 110),
+      favourite: box(w - 30 - 55, trayY, SURE_FAV, SURE_FAV),
     };
   }
   // Upright: a column of spinners clear of the pet, each card's slot beside it, and the tray as a column on the right.
@@ -788,7 +804,7 @@ export function sureLayout(view: { w: number; h: number }): SureLayout {
     spinners: ys.map((y) => ({ x: cx, y, r: MID })),
     slots: ys.map((y) => box(cx + rim + 10 + CARD_W / 2, y, CARD_W, CARD_H)),
     tray: [0, 1, 2].map((i) => box(trayX, trayTop + i * ((bottom - trayTop) / 2), CARD_W, CARD_H)),
-    favourite: box(w - 30 - 55, h - 30 - 55, 110, 110),
+    favourite: box(w - 30 - 55, h - 30 - 55, SURE_FAV, SURE_FAV),
   };
 }
 

@@ -34,6 +34,7 @@ import {
   type NumWheel,
   type Plan,
   type TypicalLayout,
+  SPIN_PAD,
 } from './logic';
 
 /*
@@ -194,7 +195,7 @@ export class TypicalGame implements Game {
   private dressWheel(): SpinnerArt {
     // Drawn at one size and scaled to the layout's radius, so a turn of the screen never interrupts a spin.
     const art = numSpinner(this.wheel, SETTLE_R);
-    art.node.hitArea = new Circle(0, 0, SETTLE_R + 12);
+    art.node.hitArea = new Circle(0, 0, SETTLE_R + SPIN_PAD);
     onTap(art.node, () => this.tapSpinner());
     this.spinLayer.addChild(art.node);
     return art;

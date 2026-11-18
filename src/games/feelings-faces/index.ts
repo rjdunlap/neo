@@ -10,7 +10,7 @@ import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -39,6 +39,11 @@ import {
 } from './art';
 import {
   wishEnding,
+  BUBBLE_HIT,
+  CARD_HIT,
+  feelingLayout,
+  FRIEND_HIT,
+  FRIEND_SCALE,
   type Wish,
   bubbleToTap,
   EVENTS,
@@ -150,8 +155,8 @@ class FeelingsFaces implements Game {
         : this.plan.mode === 'perspective'
           ? (['cat', 'bunny'] as const)
           : ctx.rng.shuffle([...FRIENDS]).slice(0, 4)) {
-        const critter = feelingCritter(CRITTERS[name], 'happy', 0.62);
-        critter.hitArea = new Rectangle(-150, -310, 300, 330);
+        const critter = feelingCritter(CRITTERS[name], 'happy', FRIEND_SCALE);
+        critter.hitArea = new Rectangle(-FRIEND_HIT.w / 2, -FRIEND_HIT.up, FRIEND_HIT.w, FRIEND_HIT.h);
         const friend = { critter, feeling: 'happy' as Feeling };
         onTap(critter, () => {
           if (this.plan.mode === 'ask') {
@@ -194,7 +199,7 @@ class FeelingsFaces implements Game {
     if (this.plan.mode === 'play') {
       for (const feeling of FEELINGS) {
         const { node, critter } = feelingBubble(ctx.companion(), feeling);
-        onTap(node, () => this.showFeeling(feeling, node), { radius: 85 });
+        onTap(node, () => this.showFeeling(feeling, node), { radius: BUBBLE_HIT / 2 });
         this.options.push({ value: feeling, node, critter });
         ctx.stage.addChild(node);
       }
@@ -483,7 +488,7 @@ class FeelingsFaces implements Game {
   }
 
   private addOption(option: Option) {
-    option.node.hitArea = new Rectangle(-90, -100, 180, 200);
+    option.node.hitArea = new Rectangle(-CARD_HIT.w / 2, -CARD_HIT.h / 2, CARD_HIT.w, CARD_HIT.h);
     onTap(option.node, () => this.choose(option.value, option.node));
     option.node.scale.set(0);
     void this.ctx.tw.to(
@@ -1065,7 +1070,8 @@ class FeelingsFaces implements Game {
 
   resize(v: View) {
     this.view = v;
-    const floor = v.h * 0.6;
+    const L = feelingLayout(v, this.plan.mode, this.options.length, this.friends.length);
+    const floor = L.floor;
     // A rug in a color the pet isn't, so any pet stands out.
     const rug = swatch[this.pet?.color === 'blue' ? 'green' : 'blue'];
     const g = this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
@@ -1094,28 +1100,11 @@ class FeelingsFaces implements Game {
       this.pet.position.set(this.petX, floor);
     }
 
-    if (this.plan.mode === 'play') {
-      const xs = spread(this.options.length, 160, v.w - 40, 200);
-      this.options.forEach((o, i) => o.node.position.set(xs[i], v.h - 105));
-    } else {
-      const xs = spread(this.options.length, 160, v.w - 40, 215);
-      this.options.forEach((o, i) => {
-        this.ctx.tw.kill(o.node);
-        o.node.position.set(xs[i], v.h - 125);
-      });
-    }
-    const fx =
-      this.plan.mode === 'ask'
-        ? [v.w / 2 - 110]
-        : this.plan.mode === 'perspective'
-          ? [v.w / 2 - 215, v.w / 2 + 215]
-          : spread(this.friends.length, 160, v.w - 40, 215);
-    this.friends.forEach((f, i) =>
-      f.critter.position.set(
-        this.plan.mode === 'ask' ? v.w / 2 - 110 : fx[i],
-        this.plan.mode === 'perspective' || this.plan.mode === 'ask' ? floor : v.h * 0.68,
-      ),
-    );
+    this.options.forEach((o, i) => {
+      if (this.plan.mode !== 'play') this.ctx.tw.kill(o.node);
+      o.node.position.set(L.options[i].x, L.options[i].y);
+    });
+    this.friends.forEach((f, i) => f.critter.position.set(L.friends[i].x, L.friends[i].y));
     if (this.requestBubble) this.requestBubble.position.set(v.w / 2 + 100, floor - 230);
     if (this.offered) this.offered.position.set(v.w / 2 + 160, floor - 30);
     this.subject.clear();
@@ -1260,6 +1249,7 @@ export const feelingsFaces: GameModule = {
     return new WigglyIcon(c);
   },
   touchDemo: true,
+  upright: true,
   sticker: (seed) => feelingsSticker(seed),
   create: (ctx) => new FeelingsFaces(ctx),
 };

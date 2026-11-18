@@ -734,6 +734,8 @@ export interface Pt {
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 
 export const CARD = 150;
+/** A loose card's or chip's touch box: its picture and a 6-unit rim all round. */
+export const CARD_HIT = CARD + 12;
 export const GAP_W = 110;
 export const GAP_H = 150;
 /** Between a card and a gap. */
@@ -877,7 +879,11 @@ export function lineLayout(
     const cut = items.findIndex((it) => it.kind === 'card' && it.index === firstCards - 1) + 1;
     rowsOf = [items.slice(0, cut), items.slice(cut)];
   }
-  if (rowsOf.some((r) => width(r) > room)) return null;
+  // Upright, a wrapped row may run to 16 units from each edge: a full line's second row (two cards between three gaps,
+  // 726 across) is 6 wider than the 720 a 768-wide phone leaves inside the usual margins, and without it the finished
+  // line, and level 7's question after it, had no layout at all there. Rows are centred, so nothing else moves.
+  const reach = wide ? room : Math.max(room, v.w - 32);
+  if (rowsOf.some((r) => width(r) > reach)) return null;
   const rowH = Math.max(CARD, GAP_H);
   const mid = (lineTop + lineBottom) / 2;
   const rows =

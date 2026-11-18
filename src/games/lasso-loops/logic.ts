@@ -144,11 +144,16 @@ export function scatter(n: number, rng: Rng, cols: number, rows: number): Point[
   }));
 }
 
-/** The grid for `n` fireflies: wide rather than tall, with spare cells. */
-export function gridFor(n: number): { cols: number; rows: number } {
+/** The grid for `n` fireflies: wide rather than tall, with spare cells; `tall` turns it for a field taller than wide. */
+export function gridFor(n: number, tall = false): { cols: number; rows: number } {
   const rows = n <= 10 ? 3 : n <= 20 ? 4 : 5;
-  return { cols: Math.ceil((n * 1.15) / rows), rows };
+  const cols = Math.ceil((n * 1.15) / rows);
+  return tall ? { cols: rows, rows: cols } : { cols, rows };
 }
+
+/** Whether the fireflies' grid is turned: an upright phone whose field is taller than wide. */
+export const tallField = (L: { upright: boolean; field: { w: number; h: number } }) =>
+  L.upright && L.field.h > L.field.w;
 
 /** Whether a point is inside the (closed) loop, by counting crossings. */
 export function inside(loop: readonly Point[], p: Point): boolean {
@@ -221,4 +226,95 @@ export function demoLoop(points: readonly Point[], n: number, padding = 0.02): D
       if (got.length === n && indices.every((i) => got.includes(i))) return { indices: got, loop };
     }
   return null;
+}
+
+// Where things stand ------------------------------------------------------------------------------
+
+export const JAR_W = 108;
+export const JAR_H = 150;
+/** A jar's number badge reaches this far above its rim. */
+export const JAR_TAG = 72;
+/** A firefly's glow, from its middle. */
+export const FIREFLY_R = 32;
+/** The touch boxes of an answer pad (round) and an estimate sign. */
+export const PAD_HIT = 140;
+export const GUESS_HIT = { w: 150, h: 130 };
+
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface LassoLayout {
+  /** A phone held upright: much taller than wide. Six jars stand in two rows and the changed-guess signs get their own row. */
+  upright: boolean;
+  /** Where firefly middles scatter (corner-anchored). */
+  field: Box;
+  /** Where a loop may be drawn (corner-anchored). */
+  sky: Box;
+  /** Each jar's foot, middle of its base. */
+  jars: Point[];
+  leaf: Point;
+  /** The three answer pads, by their middles. */
+  pads: Point[];
+  /** The three estimate signs: the first guess, and the keep-or-change guess beside the first jar. */
+  guessFirst: Point[];
+  guessRevise: Point[];
+  sign: Point;
+}
+
+/** `n` places from `left` to `right`, centered, at most `gap` apart (the shell's `spread`, kept here so the rules stay Pixi-free). */
+function row(n: number, left: number, right: number, gap: number): number[] {
+  const step = Math.min(gap, (right - left) / Math.max(1, n));
+  const start = (left + right) / 2 - (step * (n - 1)) / 2;
+  return Array.from({ length: n }, (_, i) => start + i * step);
+}
+
+/**
+ * The one layout the scene and its tests read. Sideways and on a tablet it is the long-standing one: a field right of the
+ * corner buttons, a row of jars along the bottom right of the pet, the leaf in the bottom-right corner. Upright (768 wide
+ * and at least 1.4 times as tall) the same, except that six jars, too many for one row at 768, stand in two rows of three,
+ * and level 6's keep-or-change signs sit in their own row above the jar instead of squeezing beside it; the field ends above
+ * whichever is there.
+ */
+export function lassoLayout(
+  v: { w: number; h: number },
+  jars: number,
+  leaf: boolean,
+  guess = false,
+): LassoLayout {
+  const upright = v.h > v.w * 1.4;
+  const twoRows = upright && jars > 4;
+  const jarRight = v.w - (leaf ? 210 : 40);
+  const xs = twoRows ? row(Math.ceil(jars / 2), 190, jarRight, 140) : row(jars, 190, jarRight, 140);
+  const rowUp = JAR_H + JAR_TAG + 28;
+  const feet = xs.length;
+  const jarSpots = Array.from({ length: jars }, (_, i) => ({
+    x: xs[i % feet],
+    // The first jars to fill stand in the upper row.
+    y: v.h - 30 - (twoRows && i < feet ? rowUp : 0),
+  }));
+  let fieldH = v.h - 96 - JAR_H - 120;
+  if (twoRows) fieldH -= rowUp + FIREFLY_R;
+  else if (upright && guess) fieldH -= GUESS_HIT.h + 20 + FIREFLY_R;
+  // A tall field can spare the strip where the lowest firefly's glow met a jar's number badge.
+  else if (upright) fieldH -= 24;
+  const field = { x: 160, y: 96, w: v.w - 210, h: fieldH };
+  const reviseY = v.h - 30 - JAR_H - JAR_TAG - 20 - GUESS_HIT.h / 2;
+  return {
+    upright,
+    field,
+    sky: { x: 0, y: 0, w: v.w, h: v.h - JAR_H - 40 },
+    jars: jarSpots,
+    leaf: { x: v.w - 120, y: v.h - 90 },
+    pads: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 180, y: field.y + field.h * 0.45 })),
+    guessFirst: row(3, 190, v.w - 40, 160).map((x) => ({ x, y: v.h - 100 })),
+    guessRevise:
+      upright && guess
+        ? row(3, 40, v.w - 40, 200).map((x) => ({ x, y: reviseY }))
+        : row(3, (jarSpots[0]?.x ?? 40) + 150, v.w - 40, 160).map((x) => ({ x, y: v.h - 100 })),
+    sign: { x: v.w - 110, y: 58 },
+  };
 }
