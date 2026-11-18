@@ -133,7 +133,7 @@ All slices are future work, each separate. Definition tiers use links and `git d
 
 1. **Definition packet** (docs; **defined 2026-10-22**, [definition](../../definitions/melt-and-freeze.md)): freeze the substance table, dial settings and levels 1–4 in one file; recheck overlap.
 2. **Levels 1–4** (**built 2026-10-24**, [PR #943](https://github.com/rjdunlap/neo/pull/943)): state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
-3. **Levels 5–6**: predictions and the reversible sort; the journal entries. **Defined 2026-11-17** as level IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md); ID 5 is the lap opening *One big ice cube*); build queued in READY.
+3. **Levels 5–6**: predictions and the reversible sort; the journal entries. **Defined 2026-11-17** as level IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md); ID 5 is the lap opening *One big ice cube*). **Level 6 built 2026-11-18** ([PR #1803](https://github.com/rjdunlap/neo/pull/1803)); level 7 queued in READY.
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
 6. **Stir and See** definition, then the same ladder shape for dissolve, settle and float.
