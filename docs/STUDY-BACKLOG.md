@@ -127,7 +127,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Pile Match (`pile-match`) | designed 2026-11-07 ([dive](deep-dives/pile-match.md): slices 1–4 built by 2026-11-09 (PR #1444); no new decisions); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Lift It (`lift-it`) | designed 2026-11-07 ([dive](deep-dives/lift-it.md): slices 1–5 built; level 10 and two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Block Garden (`block-garden`) | designed 2026-11-07 ([dive](deep-dives/block-garden.md): slices 1–5 built; level 14 and one decision wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
-| Gem Swap (`gem-swap`) | designed 2026-11-07 ([dive](deep-dives/gem-swap.md): slices 1–5 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Gem Swap (`gem-swap`) | designed 2026-11-07 ([dive](deep-dives/gem-swap.md): slices 1–6 built (6 opens levels 1–2 to school); the three decisions are settled); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Log Roll (`log-roll`) | designed 2026-11-07 ([dive](deep-dives/log-roll.md): slices 1–5 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Marble Jump (`marble-jump`) | designed 2026-11-07 ([dive](deep-dives/marble-jump.md): slices 1–4 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Number Nook (`number-nook`) | designed 2026-11-07 ([dive](deep-dives/number-nook.md): slices 1–6 built through level 7; the school opening and couch course await decisions); wave 7 | [Tracker](deep-dives/README.md#tracker) |
