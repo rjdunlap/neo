@@ -322,7 +322,8 @@ describe('Market Stall', () => {
 
     it('never shows in pair or change mode, whatever is on the counter', () => {
       for (const plan of PLANS.filter((p) => !showsTotal(p)))
-        for (const coins of [[], [1], [5, 2, 1], Array(12).fill(5)]) expect(totalShown(plan, coins)).toBeNull();
+        for (const coins of [[], [1], [5, 2, 1], Array(12).fill(5)])
+          expect(totalShown(plan, coins)).toBeNull();
     });
 
     it('never gives the answer away: the slate shows the same number for a right and a wrong payment of one size', () => {
