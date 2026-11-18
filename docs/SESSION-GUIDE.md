@@ -193,3 +193,5 @@ For a reference review of an app that only runs on a phone (first used for [Toto
 ## Keeping AGENTS.md small
 
 Every session and subagent re-reads AGENTS.md on every turn, and Codex reads only its first 32 KiB by default (`scripts/agent-guard.test.mjs` fails past that). It was trimmed under the limit on 2026-10-23 and 2026-11-06 and crept back each time, because each session added a rule in place. Since 2026-11-07 it holds rules and pointers only (about 18 KB, with a 24 KiB budget test): add a new rule as one line there and its detail, reasons and dates here, in DESIGN.md or in the owning doc. The same goes for this guide and the subagent prompts: a rule lives in one place, and the others point to it.
+
+This guide keeps every line under 600 characters, the width `node scripts/peek.mjs section` prints, so a session or subagent reading one section sees all of it (`scripts/docs-map.test.mjs`): split a long paragraph rather than extend it.
