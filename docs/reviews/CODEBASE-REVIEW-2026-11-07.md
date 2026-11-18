@@ -1,6 +1,6 @@
 # Codebase structure review (2026-11-07)
 
-A review of how the game code is split up, focused on what makes AI sessions slow or conflict-prone. Each section is one [READY](READY.md#codebase-structure-2026-11-07-review) item. Measured on `origin/main` at `07d7ac06`; the unit suite was not run during the review.
+A review of how the game code is split up, focused on what makes AI sessions slow or conflict-prone. Each section is one [READY](../READY.md#codebase-structure-2026-11-07-review) item. Measured on `origin/main` at `07d7ac06`; the unit suite was not run during the review.
 
 Baseline: about 245K source lines and 74K test lines across 181 game folders. Every game has `logic.ts` and `logic.test.ts`, 174 have an `autotouch()` bot, and the engine is small and tested. The basics are sound; the problems are about scale.
 
@@ -17,7 +17,7 @@ Target:
 
 Mechanical, so a script does it. Pilot on 2–3 games, then sweep in one PR while no game work is in flight.
 
-Counterpoint: the [2026-11-06 token review](DEVELOPMENT-WORKFLOW.md#token-review-2026-11-06) left this split undone on purpose, because sessions reach these files by `grep` at about 1.5 KB a call and the move itself conflicts with every open slice. This review weighs the merge conflicts (about 580 commits each since 2026-10-01) more heavily. The session that picks this item should confirm with the developer which view wins before sweeping.
+Counterpoint: the [2026-11-06 token review](WORKFLOW-REVIEWS.md#token-review-2026-11-06) left this split undone on purpose, because sessions reach these files by `grep` at about 1.5 KB a call and the move itself conflicts with every open slice. This review weighs the merge conflicts (about 580 commits each since 2026-10-01) more heavily. The session that picks this item should confirm with the developer which view wins before sweeping.
 
 ## 2. Discover games instead of listing them
 
@@ -33,29 +33,29 @@ The README inventory (213 KB, 672 commits since 2026-10-01) and GAMES.md (609 KB
 
 ## 4. Trim AGENTS.md
 
-**Built 2026-11-07:** 32,766 bytes to about 16 KB of rules and pointers. The operational how-to moved word for word, and the decisions and dated specifics moved, to [the session guide](SESSION-GUIDE.md); every linked heading was kept. `scripts/agent-guard.test.mjs` keeps the 32 KiB hard test and adds a 24 KiB budget whose message says to move detail out rather than trim words. The original analysis follows.
+**Built 2026-11-07:** 32,766 bytes to about 16 KB of rules and pointers. The operational how-to moved word for word, and the decisions and dated specifics moved, to [the session guide](../SESSION-GUIDE.md); every linked heading was kept. `scripts/agent-guard.test.mjs` keeps the 32 KiB hard test and adds a 24 KiB budget whose message says to move detail out rather than trim words. The original analysis follows.
 
 It is 32,758 bytes against the 32 KiB test in `scripts/agent-guard.test.mjs`, and every session reads it on every turn. About half is rationale and dated history. Cut it to contracts, commands and pointers, about 10–15 KB, and move the reasons to `DEVELOPMENT-WORKFLOW.md` and DESIGN.md. Items 1–3 shrink the "Adding a minigame" steps further.
 
 ## 5. Move level ladders into `logic.ts`
 
-**Built 2026-11-07 ([PR #1379](https://github.com/rjdunlap/neo/pull/1379)).** After the three-game pilot [PR #1377](https://github.com/rjdunlap/neo/pull/1377), all remaining 133 tables and ten inline ladders now live in `logic.ts`; the source scan has no allowlists. Supported-band ranges and order are unchanged; unsupported inline bands use the standard `rangeFor` fallback. [Build note](archive/COMPLETED-2026-10-09.md#level-ladders-into-logicts-codebase-item-5-2026-11-07). The original analysis follows.
+**Built 2026-11-07 ([PR #1379](https://github.com/rjdunlap/neo/pull/1379)).** After the three-game pilot [PR #1377](https://github.com/rjdunlap/neo/pull/1377), all remaining 133 tables and ten inline ladders now live in `logic.ts`; the source scan has no allowlists. Supported-band ranges and order are unchanged; unsupported inline bands use the standard `rangeFor` fallback. [Build note](../archive/COMPLETED-2026-10-09.md#level-ladders-into-logicts-codebase-item-5-2026-11-07). The original analysis follows.
 
 AGENTS.md puts ladders in `logic.ts`, but 129 games define `const LEVELS: BandLevels` in `index.ts` and 26 in `logic.ts`. In `index.ts` the ladder can't be tested without loading Pixi, and agents copy the majority pattern. Move `LEVELS` and each `describe…` with a script, then add a source-scan test so it can't drift back.
 
 ## 6. Promote shared code out of game folders
 
-**Complete 2026-11-07 ([PR #1383](https://github.com/rjdunlap/neo/pull/1383), after pilot [#1381](https://github.com/rjdunlap/neo/pull/1381)).** Shared tracing and feedback live in `src/learning/tracing/`, sorting predicates/types in `src/learning/sorting/rules.ts`, and name normalization and letter vocabulary in `src/learning/words/`. Letter-picture, sorting-sign and plant art live in `src/art/`. Importers, including the woods browser harness, use the promoted modules; game-specific plans and rules stay local. The nine moved bodies/data are unchanged. [Build note](archive/COMPLETED-2026-10-09.md#shared-tracing-and-sorting-helpers-codebase-item-6-complete-2026-11-07).
+**Complete 2026-11-07 ([PR #1383](https://github.com/rjdunlap/neo/pull/1383), after pilot [#1381](https://github.com/rjdunlap/neo/pull/1381)).** Shared tracing and feedback live in `src/learning/tracing/`, sorting predicates/types in `src/learning/sorting/rules.ts`, and name normalization and letter vocabulary in `src/learning/words/`. Letter-picture, sorting-sign and plant art live in `src/art/`. Importers, including the woods browser harness, use the promoted modules; game-specific plans and rules stay local. The nine moved bodies/data are unchanged. [Build note](../archive/COMPLETED-2026-10-09.md#shared-tracing-and-sorting-helpers-codebase-item-6-complete-2026-11-07).
 
-**Pilot built 2026-11-07 ([PR #1381](https://github.com/rjdunlap/neo/pull/1381)).** Word Search, Pond Typing and Crossword share `src/learning/words/themes.ts`, `blocked.ts` and the Pixi-free `picture-words.ts`; their picture renderer is `src/art/word-pictures.ts`. Data and behavior are unchanged; the remaining dependencies were promoted in the completion above. [Build note](archive/COMPLETED-2026-10-09.md#shared-word-learning-helpers-pilot-codebase-item-6-2026-11-07).
+**Pilot built 2026-11-07 ([PR #1381](https://github.com/rjdunlap/neo/pull/1381)).** Word Search, Pond Typing and Crossword share `src/learning/words/themes.ts`, `blocked.ts` and the Pixi-free `picture-words.ts`; their picture renderer is `src/art/word-pictures.ts`. Data and behavior are unchanged; the remaining dependencies were promoted in the completion above. [Build note](../archive/COMPLETED-2026-10-09.md#shared-word-learning-helpers-pilot-codebase-item-6-2026-11-07).
 
-Files from other games import `letter-trails/` 18 times, `word-search/` 5, `pond-typing/` 4 and `critter-sort/` 4. That code is shared: move it to `src/learning/…` or `src/art/…` and list it in the [reuse map](DESIGN.md#reuse-map), so refactoring one game cannot break others and agents can find the helpers.
+Files from other games import `letter-trails/` 18 times, `word-search/` 5, `pond-typing/` 4 and `critter-sort/` 4. That code is shared: move it to `src/learning/…` or `src/art/…` and list it in the [reuse map](../DESIGN.md#reuse-map), so refactoring one game cannot break others and agents can find the helpers.
 
 ## 7. One standard way to clean up after a round
 
-**Follow-up built 2026-11-07 ([PR #1387](https://github.com/rjdunlap/neo/pull/1387)).** All 92 remaining native global-listener registrations in 42 game files use `ctx.listen`; five scene-only liveness flags use `ctx.alive`. Board-generation guards and shorter-lived resources remain local. Rainbow Fingers’ wrong-stroke browser check now waits on its game clock. [Build note](archive/COMPLETED-2026-10-09.md#scene-owned-cleanup-migration-codebase-item-7-follow-up-2026-11-07).
+**Follow-up built 2026-11-07 ([PR #1387](https://github.com/rjdunlap/neo/pull/1387)).** All 92 remaining native global-listener registrations in 42 game files use `ctx.listen`; five scene-only liveness flags use `ctx.alive`. Board-generation guards and shorter-lived resources remain local. Rainbow Fingers’ wrong-stroke browser check now waits on its game clock. [Build note](../archive/COMPLETED-2026-10-09.md#scene-owned-cleanup-migration-codebase-item-7-follow-up-2026-11-07).
 
-**Built 2026-11-07 ([PR #1385](https://github.com/rjdunlap/neo/pull/1385)).** `GameContext` has `alive`, `own(cleanup)` and `listen(...)`, backed by one `Lifetime` per touch round, couch round or demonstration replay. Pilots are Rainbow Fingers’ global listeners and Puzzle Pals’ drag handles; the global-listener follow-up is recorded above. [Build note](archive/COMPLETED-2026-10-09.md#scene-owned-cleanup-helpers-codebase-item-7-2026-11-07). The original analysis follows.
+**Built 2026-11-07 ([PR #1385](https://github.com/rjdunlap/neo/pull/1385)).** `GameContext` has `alive`, `own(cleanup)` and `listen(...)`, backed by one `Lifetime` per touch round, couch round or demonstration replay. Pilots are Rainbow Fingers’ global listeners and Puzzle Pals’ drag handles; the global-listener follow-up is recorded above. [Build note](../archive/COMPLETED-2026-10-09.md#scene-owned-cleanup-helpers-codebase-item-7-2026-11-07). The original analysis follows.
 
 Games use four idioms for "this round is gone": `gone` (6 files), `epoch` (14), `destroyed` (18) and hand-rolled `releaseDrags` (5); 37 game files call `addEventListener` directly. Add scene-owned helpers to `GameContext` (`ctx.alive` or an `AbortSignal`, `ctx.listen(target, type, fn)`, `ctx.own(disposable)` for drags, textures and timers) that the shell disposes on destroy. `game-reviewer` can then flag raw listeners. Migrate games as they are touched, no sweep needed. Shell tier.
 
@@ -67,7 +67,7 @@ Each game writes the "boing, spoken hint, glow after two misses" rule itself: Fi
 
 ## 9. Split the largest files
 
-**Light Lab art split built 2026-11-07 ([PR #1411](https://github.com/rjdunlap/neo/pull/1411)).** Drawing helpers, `Bloom`, hub icon, seeded sticker art and their visual constants live in `src/games/light-lab/art.ts`; the entry point fell from 1,540 to 1,263 lines (58,867 to 48,315 bytes). Game state, input, layout and rules are unchanged. [Build note](archive/COMPLETED-2026-10-09.md#light-lab-art-split-codebase-item-9-2026-11-07). Other large files remain eligible one at a time; this does not complete item 9.
+**Light Lab art split built 2026-11-07 ([PR #1411](https://github.com/rjdunlap/neo/pull/1411)).** Drawing helpers, `Bloom`, hub icon, seeded sticker art and their visual constants live in `src/games/light-lab/art.ts`; the entry point fell from 1,540 to 1,263 lines (58,867 to 48,315 bytes). Game state, input, layout and rules are unchanged. [Build note](../archive/COMPLETED-2026-10-09.md#light-lab-art-split-codebase-item-9-2026-11-07). Other large files remain eligible one at a time; this does not complete item 9.
 
 Game files of 40–68 KB (Caravan Days, River Tablets, Logic Grid, Keep House, Light Lab and others) often hold several modes as separate classes. Fill and Dump has four game classes in one file, chosen in `create()`. Split by mode (`modes/<mode>.ts`) and art (`art.ts`, as Caravan Days and Measuring Post do). The shell scenes `GameScene.ts` (49 KB) and `CouchScene.ts` (63 KB) are next. Do it when each file next comes up for work, not as a sweep.
 
@@ -75,19 +75,19 @@ Game files of 40–68 KB (Caravan Days, River Tablets, Logic Grid, Keep House, L
 
 **Follow-up 2026-11-07 ([PR #1408](https://github.com/rjdunlap/neo/pull/1408)):** Microsoft’s side-by-side npm aliases retain TypeScript 7.0.2 for the CLI and 6.0.3 (through compatibility package 6.0.2) for the API used by ESLint 10 / typescript-eslint 8.72.1. One root manifest/lockfile and a root ESLint config replace the isolated package and nested postinstall. Lint rules and baseline are unchanged.
 
-**Built 2026-11-07 ([PR #1405](https://github.com/rjdunlap/neo/pull/1405)).** Prettier formats maintained code/configuration in a separate commit recorded in `.git-blame-ignore-revs`; generated barrels/manifests, npm locks and Markdown keep their own layout. Pull-request CI runs formatting and minimal typed ESLint checks for assertions to `any`, floating promises and direct native game listeners. A per-file/rule baseline records 32 pre-existing floating promises across 11 files; increases fail. Lint initially used an isolated supported TypeScript 6 dependency while the app retained TypeScript 7; the follow-up above consolidates the installation. [Tooling guide](CODE-QUALITY.md). The original analysis follows.
+**Built 2026-11-07 ([PR #1405](https://github.com/rjdunlap/neo/pull/1405)).** Prettier formats maintained code/configuration in a separate commit recorded in `.git-blame-ignore-revs`; generated barrels/manifests, npm locks and Markdown keep their own layout. Pull-request CI runs formatting and minimal typed ESLint checks for assertions to `any`, floating promises and direct native game listeners. A per-file/rule baseline records 32 pre-existing floating promises across 11 files; increases fail. Lint initially used an isolated supported TypeScript 6 dependency while the app retained TypeScript 7; the follow-up above consolidates the installation. [Tooling guide](../CODE-QUALITY.md). The original analysis follows.
 
 There is no formatter or linter. `howto.ts` is written as `{from:2,to:2,text:…}` while game code uses normal spacing, so AI edits produce noisy diffs. Add Prettier, with one reformat commit listed in `.git-blame-ignore-revs`. Add a minimal ESLint covering `as any` (43 files), floating promises and raw listeners.
 
 ## 11. A new-game scaffold
 
-**Built 2026-11-07 ([PR #1399](https://github.com/rjdunlap/neo/pull/1399)).** `npm run new-game -- …` creates the colocated starter, rule-test placeholders, voice/how-to, browser-suite stub, game page and land entry, then refreshes both content barrels. Dry-run and preflight protect existing work; implementation and suite registration remain explicit. [Usage](NEW-GAME.md), [build note](archive/COMPLETED-2026-10-09.md#new-game-scaffold-codebase-item-11-2026-11-07). The original analysis follows.
+**Built 2026-11-07 ([PR #1399](https://github.com/rjdunlap/neo/pull/1399)).** `npm run new-game -- …` creates the colocated starter, rule-test placeholders, voice/how-to, browser-suite stub, game page and land entry, then refreshes both content barrels. Dry-run and preflight protect existing work; implementation and suite registration remain explicit. [Usage](../NEW-GAME.md), [build note](../archive/COMPLETED-2026-10-09.md#new-game-scaffold-codebase-item-11-2026-11-07). The original analysis follows.
 
 `.claude/skills/` has only `codex-image`. A scaffold script or skill that creates the item 1 layout (module, logic, tests, voice, how-to, suite stub, land entry) would replace much of the "Adding or extending a minigame" prose with one command. Do it after items 1 and 2.
 
 ## 12. Repository weight
 
-The git pack is 177 MB, 151 MB of it `docs/rework/concepts` images, which every fresh worktree and cloud session downloads. **Decided and built 2026-11-07:** the developer chose to have code sessions skip the images rather than use Git LFS or a separate repository. `scripts/concept-art.sh skip` applies a per-worktree sparse checkout; the link checker and the art scripts handle it. How to use it: [concept art out of code checkouts](DEVELOPMENT-WORKFLOW.md#concept-art-out-of-code-checkouts-2026-11-07).
+The git pack is 177 MB, 151 MB of it `docs/rework/concepts` images, which every fresh worktree and cloud session downloads. **Decided and built 2026-11-07:** the developer chose to have code sessions skip the images rather than use Git LFS or a separate repository. `scripts/concept-art.sh skip` applies a per-worktree sparse checkout; the link checker and the art scripts handle it. How to use it: [concept art out of code checkouts](WORKFLOW-REVIEWS.md#concept-art-out-of-code-checkouts-2026-11-07).
 
 ## Done during the review
 

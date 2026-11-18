@@ -1,6 +1,6 @@
 # Puddle Island (project Neo)
 
-Shared rules for human contributors and coding assistants. Paths are relative to the repository root. This file holds rules and pointers only: put new detail, reasons and history in the doc that owns it (below) and link to it, rather than growing this file. Operational how-to is in the [session guide](docs/SESSION-GUIDE.md).
+Shared rules for human contributors and coding assistants. Paths are relative to the repository root. This file holds rules and pointers only: put new detail, reasons and history in the doc that owns it (below) and link to it, rather than growing this file. Operational how-to is in the [session guide](docs/SESSION-GUIDE.md); the [docs map](docs/README.md) says what every other document is for.
 
 ## Project direction
 
@@ -18,6 +18,7 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 
 | Document / source | Role |
 | --- | --- |
+| [docs/README.md](docs/README.md) | The docs map: every document and folder, grouped by when a session opens it |
 | [README.md](README.md) | Setup, the game inventory and count, browser suites |
 | [docs/ROADMAP.md](docs/ROADMAP.md), [docs/READY.md](docs/READY.md) | Direction and chunks; the pick list (**Next ten**, one file per line in `docs/ready/next/`, `node scripts/ready.mjs`; then **Queued**) |
 | [docs/rework/](docs/rework/README.md) | Creature-world target and work items (proposed until delivered) |
@@ -25,11 +26,12 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | [docs/OBSERVATIONS.md](docs/OBSERVATIONS.md) | What people said after real play: the phone playtest notes |
 | [docs/DESIGN.md](docs/DESIGN.md) | Architecture, systems, [integration contracts](docs/DESIGN.md#integration-contracts), [reuse map](docs/DESIGN.md#reuse-map) |
 | [docs/games/](docs/GAMES.md) (one page per game), [docs/IDEAS.md](docs/IDEAS.md) | What each game does, indexed in GAMES.md; the idea notebook (not a mandate) |
-| [docs/deep-dives/](docs/deep-dives/README.md) | Each game's researched ladder and the research tracker |
+| `docs/definitions/`, [docs/deep-dives/](docs/deep-dives/README.md) | One buildable definition per game or feature; each game's researched ladder and the research tracker |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md), `docs/verification/` | The coverage summary per suite; checks performed, one dated file per entry |
-| [docs/SESSION-GUIDE.md](docs/SESSION-GUIDE.md), [docs/DEVELOPMENT-WORKFLOW.md](docs/DEVELOPMENT-WORKFLOW.md) | How a session works here; the reasons behind the workflow |
+| [docs/SESSION-GUIDE.md](docs/SESSION-GUIDE.md) | How a session works here, from claim to merge |
+| [docs/reviews/](docs/README.md#reviews) | Dated reviews of other games and of our screens, code and [workflow](docs/reviews/WORKFLOW-REVIEWS.md): reasons, not instructions |
 | [docs/COUCH-PLAY.md](docs/COUCH-PLAY.md) | Player guide for couch play |
-| `docs/archive/` | History, not instructions |
+| [docs/archive/](docs/archive/README.md) | History, not instructions |
 | `src/games/types.ts` | The minigame contract |
 
 Check the working tree before editing. Local work, recorded verification and deployed features are distinct states; `origin/main` is what is deployed. Preserve unrelated work in progress.
@@ -85,7 +87,7 @@ Spend checks where they find real bugs, at the lightest tier that proves the cha
 
 Hard rules: unit tests are the main proof; never start `npm run test:browser` without a `BROWSER_SUITE` filter; never re-run a suite the [coverage summary](docs/VERIFICATION.md#coverage-summary) records passing on unchanged code; probe a failing check once, then record a flake and move on; keep browser checking to about ten minutes; read big docs by section with `node scripts/peek.mjs`; pipe test output through `tail`; say which checks were not run. Chrome automation never establishes hardware, a real phone, iPad or controller, or a child's reaction: never claim it did, and do not list those as open either ([parked](docs/DEVICE-CHECKS.md)). Details: [keeping checks light](docs/SESSION-GUIDE.md#keeping-checks-light).
 
-One same-game batch (usually 2–4 related subtasks from [the batch plans](docs/GAME-BATCHES.md)) per session, in one worker, branch and PR; start fresh after it merges, and checkpoint a draft PR past about 150K tokens of context. Worktree setup, ports, scripted play and servers: [session guide](docs/SESSION-GUIDE.md#session-setup-and-closeout).
+One [same-game batch](docs/SESSION-GUIDE.md#same-game-batches) (usually 2–4 related subtasks) per session, in one worker, branch and PR; start fresh after it merges, and checkpoint a draft PR past about 150K tokens of context. Worktree setup, ports and servers: [setting up a worktree](docs/SESSION-GUIDE.md#setting-up-a-worktree); driving a game: [scripted play](docs/SESSION-GUIDE.md#scripted-play).
 
 ### Input and rendering pitfalls
 
@@ -93,10 +95,10 @@ Before writing pointer input, hit areas, couch controls, textures or long-lived 
 
 ## Documentation and Git
 
-**Scheduled roadmap work** runs as local scheduled tasks, one slice per run, in a fresh chat ([scheduled runs](docs/SESSION-GUIDE.md#rule-details)); the Codex [execution queue](docs/EXECUTION-QUEUE.md) is paused and its file frozen. Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
+**Scheduled roadmap work** runs as local scheduled tasks, one slice per run, in a fresh chat ([scheduled runs](docs/SESSION-GUIDE.md#scheduled-runs), which lists the paths their prompts depend on). Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
 
 **Before choosing a slice or editing:** run `scripts/overlap.sh <game-id> <path>…` (fetch, how far behind, matching PRs, worktrees and unmerged branches). If another branch implements the slice, reconcile with it or pick another. Start a named feature branch from the latest `origin/main`, then publish a small docs-only claim commit and draft PR naming the game ID, subtasks and expected files, and put it on the roadmap or deep-dive row. Recheck overlap before each follow-up push and before merging; integrate a moved `origin/main` and rerun proportionate checks. Never push a stale local `main`. Full steps: [avoiding duplicate parallel work](docs/SESSION-GUIDE.md#avoiding-duplicate-parallel-work).
 
-**Doc updates** go to their owning doc: a game's page in `docs/games/` and how-to card (rerun `npm run game-docs` rather than hand-merging a conflict in README, GAMES.md or a generated block); roadmap lines in ROADMAP.md (a landed READY line is removed, a Next ten line by `git rm` of its file in `docs/ready/next/`, and its note archived; plan docs keep no running counts or PR lists); a short entry file in `docs/verification/` (`node scripts/verification.mjs new`) plus its VERIFICATION.md coverage row; contract changes in DESIGN.md only; superseded docs to `docs/archive/`. Routing in full: [where each doc update goes](docs/SESSION-GUIDE.md#where-each-doc-update-goes). Keep this file provider-neutral and durable.
+**Doc updates** go to their owning doc: a game's page in `docs/games/` and how-to card (rerun `npm run game-docs` rather than hand-merging a conflict in README, GAMES.md or a generated block); roadmap lines in ROADMAP.md (a landed READY line is removed, a Next ten line by `git rm` of its file in `docs/ready/next/`, with no separate build note; plan docs keep no running counts or PR lists); a short entry file in `docs/verification/` (`node scripts/verification.mjs new`) plus its VERIFICATION.md coverage row; contract changes in DESIGN.md only; superseded docs to `docs/archive/` with a line in its index, and a new doc gets a line in the docs map. Routing in full: [where each doc update goes](docs/SESSION-GUIDE.md#where-each-doc-update-goes). Keep this file provider-neutral and durable.
 
-**Publishing.** When a requested task is complete and verified, commit it on its feature branch, push, and create or update its one pull request. Every PR runs `npm test` and `npm run build` on its merge with `main` (`.github/workflows/ci.yml`); merge only when that passes for the head commit, then push `main`, which deploys to [Puddle Island](https://rjdunlap.github.io/neo/). **Standing authorization (the developer, 2026-10-12): merge and deploy completed, verified changes this way without asking again**, unless a later instruction says to leave work unmerged. Report briefly to the grown-up what each finished change does and which checks ran. Repo identity is `rjdunlap` with the GitHub no-reply email.
+**Publishing.** When a requested task is complete and verified, commit it on its feature branch, push, and create or update its one pull request. Every PR runs the format check, lint, `npm test` and `npm run build` on its merge with `main` (`.github/workflows/ci.yml`); merge the pull request only when a completed run passed for the head commit. The merge to `main` deploys to [Puddle Island](https://rjdunlap.github.io/neo/); never publish by pushing a local `main` ([steps](docs/SESSION-GUIDE.md#reporting-merging-and-deploying)). **Standing authorization (the developer, 2026-10-12): merge and deploy completed, verified changes this way without asking again**, unless a later instruction says to leave work unmerged. Report briefly to the grown-up what each finished change does and which checks ran. Repo identity is `rjdunlap` with the GitHub no-reply email.

@@ -155,13 +155,13 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 
 ## 2026-11-10 — TotoLogic reviewed (docs only)
 
-**Changed:** new [reference review](../TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
+**Changed:** new [reference review](../reviews/TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only its site, store listing, policies and three web demo puzzles were opened.
 
 ## 2026-11-10 — Pok Pok reviewed (docs only)
 
-**Changed:** new [reference review](../POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
+**Changed:** new [reference review](../reviews/POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
 
@@ -225,7 +225,7 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 
 ## 2026-11-10 — Spark AI Games reviewed (docs only)
 
-**Changed:** new [reference review](../SPARK-AI-GAMES.md) of sparkaigames.com (202 browser mini games): the catalogue against the island's games and notebook, eight proposals (P1 a crossword of sums, P2 Reversi for two on one phone, P3 a Puddle Pipes ladder, P4 pair paths, P5 a turning shadow for TP6, P6 routes that run at once, P7 Ticket Booth, P8 a Shell Rows level), notes for existing games and rows, and what stays out; a pointer section in IDEAS.md; rows in the puzzle-pages and strategy-games studies; a note on TP6 in the theatre study. No READY line: each proposal needs a definition.
+**Changed:** new [reference review](../reviews/SPARK-AI-GAMES.md) of sparkaigames.com (202 browser mini games): the catalogue against the island's games and notebook, eight proposals (P1 a crossword of sums, P2 Reversi for two on one phone, P3 a Puddle Pipes ladder, P4 pair paths, P5 a turning shadow for TP6, P6 routes that run at once, P7 Ticket Booth, P8 a Shell Rows level), notes for existing games and rows, and what stays out; a pointer section in IDEAS.md; rows in the puzzle-pages and strategy-games studies; a note on TP6 in the theatre study. No READY line: each proposal needs a definition.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`. The review's own evidence: all 202 game pages read as text; thirteen games opened in headless Chrome at 390 by 844, eight of them to a first board (one solved).
 **Not run:** code checks (no code changed). Not established: anything past a first board, sound, Spark's solver and one-answer claims, its friend rooms and pass-and-play, and who makes it.
 

@@ -1,5 +1,5 @@
 /**
- * The short names on the root's picture buttons (U1, docs/UX-REVIEW-2026-11-09.md#recommendations-in-priority-order):
+ * The short names on the root's picture buttons (U1, docs/reviews/UX-REVIEW-2026-11-09.md#recommendations-in-priority-order):
  * one word or two on a cream pill across each button's lower rim, so a grown-up with the sound off can tell what each
  * picture does. They use the words the buttons already speak (`home.*`, `daily.go`, `nav.*`) and Explore's entry names.
  */

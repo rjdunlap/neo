@@ -1,8 +1,6 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
-### Tide Line 5–6 definition (oceans slice 3, 2026-11-18)
-
-[PR #1782](https://github.com/rjdunlap/neo/pull/1782) froze [Pool time and Read the chart](../definitions/tide-line-5-6.md). Both use four windows on the same fictional island day. Level 5 marks two contrasting water states; level 6 matches three jobs by height. The build is queued as one slice.
+**Frozen 2026-11-18: add nothing here.** A landed slice no longer gets a build note; what it built is in its entry in [docs/verification/](../VERIFICATION.md), its game's page in [docs/games/](../GAMES.md) and its definition's built line ([routing](../SESSION-GUIDE.md#where-each-doc-update-goes)). Notes were added at both the top and the end of this file until 2026-11-17, so it is not in date order; find one with `node scripts/peek.mjs grep`.
 
 ### Cue Studio level 4, Which signal? (programming P4a, 2026-11-16)
 
@@ -3319,11 +3317,11 @@ Deviation from the definition: the authored board's small-board bolts are at y 2
 
 ## Codebase structure item 2: games discovered from their folders (2026-11-07)
 
-[PR #1356](https://github.com/rjdunlap/neo/pull/1356), `claude/discover-games`, [review item 2](../CODEBASE-REVIEW-2026-11-07.md#2-discover-games-instead-of-listing-them). `src/games/registry.ts` no longer imports 176 modules by hand; `GAMES` is built with `import.meta.glob('./*/index.ts', { eager: true })` from each folder's single export with `id` and `create`, sorted by position in `LANDS` (a game in no land last, by id). The same 175 IDs as before; 135 positions changed, so within-subject order on the home spot, the grown-ups' table, daily picks and mix pools reshuffle. New `registry.test.ts` case "finds every game folder, one game each, named by its id, in island order" (fails without the sort). AGENTS.md step 5 updated.
+[PR #1356](https://github.com/rjdunlap/neo/pull/1356), `claude/discover-games`, [review item 2](../reviews/CODEBASE-REVIEW-2026-11-07.md#2-discover-games-instead-of-listing-them). `src/games/registry.ts` no longer imports 176 modules by hand; `GAMES` is built with `import.meta.glob('./*/index.ts', { eager: true })` from each folder's single export with `id` and `create`, sorted by position in `LANDS` (a game in no land last, by id). The same 175 IDs as before; 135 positions changed, so within-subject order on the home spot, the grown-ups' table, daily picks and mix pools reshuffle. New `registry.test.ts` case "finds every game folder, one game each, named by its id, in island order" (fails without the sort). AGENTS.md step 5 updated.
 
 ## Codebase structure item 4: AGENTS.md trimmed to rules and pointers (2026-11-07)
 
-[PR #1359](https://github.com/rjdunlap/neo/pull/1359), `claude/trim-agents`, [review item 4](../CODEBASE-REVIEW-2026-11-07.md#4-trim-agentsmd), asked by the developer because sessions kept going over 32 KiB and shaving a few bytes. AGENTS.md went from 32,766 to about 16 KB. The new [session guide](../SESSION-GUIDE.md) takes, word for word, the check-keeping bullets, same-game batches, session setup, scripted play, overlap steps, doc routing and the publishing paragraph, plus a "Rule details" section with the decisions and dated specifics. The subagents, `peek.mjs` and `overlap.sh` point there now. A 24 KiB budget test sits under the 32 KiB hard test.
+[PR #1359](https://github.com/rjdunlap/neo/pull/1359), `claude/trim-agents`, [review item 4](../reviews/CODEBASE-REVIEW-2026-11-07.md#4-trim-agentsmd), asked by the developer because sessions kept going over 32 KiB and shaving a few bytes. AGENTS.md went from 32,766 to about 16 KB. The new [session guide](../SESSION-GUIDE.md) takes, word for word, the check-keeping bullets, same-game batches, session setup, scripted play, overlap steps, doc routing and the publishing paragraph, plus a "Rule details" section with the decisions and dated specifics. The subagents, `peek.mjs` and `overlap.sh` point there now. A 24 KiB budget test sits under the 32 KiB hard test.
 
 ## Scene-owned cleanup helpers (codebase item 7, 2026-11-07)
 

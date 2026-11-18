@@ -386,7 +386,7 @@
 
 ## Worker dispatch records (execution queue)
 
-Coordinator dispatch notes from [the execution queue](../EXECUTION-QUEUE.md), moved out of the live verification log on 2026-10-17.
+Coordinator dispatch notes from [the execution queue](EXECUTION-QUEUE-2026-11-03.md), moved out of the live verification log on 2026-10-17.
 
 ### 2026-10-16 — Bumper Garden table dispatch
 

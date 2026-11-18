@@ -1,5 +1,5 @@
 /**
- * A silent "touch here" cue for when nothing has been touched for a while (UX review U4, docs/UX-REVIEW-2026-11-09.md):
+ * A silent "touch here" cue for when nothing has been touched for a while (UX review U4, docs/reviews/UX-REVIEW-2026-11-09.md):
  * with sound off, a screen that sits still says nothing about what to do. After `first` seconds of quiet the cue plays for
  * `length` seconds, then again every `every` seconds until `reset()`. It makes no sound; the scene that tracks it turns its
  * progress into motion (`wobble` or `bounce`), so leaving the scene stops it.

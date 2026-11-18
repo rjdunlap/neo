@@ -377,7 +377,7 @@ export function tilesIcon(): Graphics {
 
 /**
  * A day's page with the sun on it: Home's Today's six (D10), a ready-made set for the day. No tiles, so it is not
- * mistaken for All games' four squares (U2, docs/UX-REVIEW-2026-11-09.md finding 2).
+ * mistaken for All games' four squares (U2, docs/reviews/UX-REVIEW-2026-11-09.md finding 2).
  */
 export function sixIcon(): Graphics {
   const g = new Graphics()

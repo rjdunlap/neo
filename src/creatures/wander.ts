@@ -3,7 +3,7 @@ import type { Rng } from '../engine/random';
 import type { View } from '../engine/view';
 
 /**
- * P5 pilot (docs/POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m): a resident that carries on. It
+ * P5 pilot (docs/reviews/POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m): a resident that carries on. It
  * rests at home, walks to one or two marked stops of free ground, uses the thing at the first (the chime), walks back,
  * and turns toward her last touch. Pure logic, no drawing: `LocationScene` moves the resident with it, and its test
  * checks every stop and every step of every leg against what the land's screen already holds.

@@ -56,7 +56,7 @@
 
 ## 2026-10-30 — Critter Daily reference review (docs only)
 
-- Branch `claude/critter-daily-research-d94b87`: [docs/CRITTER-DAILY.md](../CRITTER-DAILY.md), a review of critterdaily.com's six animal-led puzzles and how their animals are drawn and animated, with six proposals (P1–P6), plus a pointer in [IDEAS](../IDEAS.md#critter-daily-review-2026-10-30).
+- Branch `claude/critter-daily-research-d94b87`: [docs/CRITTER-DAILY.md](../reviews/CRITTER-DAILY.md), a review of critterdaily.com's six animal-led puzzles and how their animals are drawn and animated, with six proposals (P1–P6), plus a pointer in [IDEAS](../IDEAS.md#critter-daily-review-2026-10-30).
 - Seen: the home page and one Burrow practice round in the browser pane; every game's page, stylesheet and script read; a local pose sheet rendered in the session scratchpad (not committed).
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, browser suites (docs only).
 
