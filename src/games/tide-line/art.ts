@@ -194,7 +194,9 @@ export function dayShore(
   wrack(g, 10, w - 10, yOf(0.66), 10, 5);
   // The pool is seen from low down: twice as wide as it is deep, so the star in it reads from across the room.
   // (Pixi applies the scale to the translation too, so the x is halved.)
-  g.save().translateTransform(px / 2, near).scaleTransform(2, 1);
+  g.save()
+    .translateTransform(px / 2, near)
+    .scaleTransform(2, 1);
   g.ellipse(0, 4, 74 * s, 12 * s).fill({ color: WET_SAND, alpha: 0.7 });
   pool(g, 0, 0, ['star'], s);
   g.restore();

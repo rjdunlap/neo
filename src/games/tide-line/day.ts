@@ -122,6 +122,8 @@ export class PoolDay implements Game {
         sfx.pop(5);
       },
       onMove: (x) => {
+        // A finger still down when the round ends no longer moves the day.
+        if (this.finished) return;
         this.now.t = trackT(this.D, x);
         this.knob.position.set(trackX(this.D, this.now.t), this.D.track.y);
       },

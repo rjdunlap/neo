@@ -858,7 +858,11 @@ describe('level 5: PoolTime', () => {
 });
 
 describe('level 5: layout', () => {
-  for (const view of views) {
+  for (const view of [
+    ...views,
+    computeView(390, 844, undefined, true),
+    computeView(768, 1024, undefined, true),
+  ]) {
     const tag = `${view.w}x${view.h}`;
     const D = dayLayout(view);
     const pet = petCorner(view);

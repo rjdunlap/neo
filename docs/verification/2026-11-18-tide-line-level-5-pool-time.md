@@ -1,0 +1,5 @@
+# 2026-11-18 — Tide Line level 5, Pool time (PR #1805)
+
+**Changed:** `tide-line` level 5 (`day.ts`, island-day rules in `logic.ts`, art, voice, how-to goal line); pre-K 3–5, school 4–5; new `tideline5` browser suite.
+**Ran:** `npm run typecheck`; `npm test` (366 files, pass after one how-to wording fix); tide-line rule tests (94, including 500-seed day tests and layout at 1024×768, a 768×1024 window, 844×390 with and without insets, and the upright phone and tablet areas, added after review found the marker starting over the pet on an upright 768×1024 area); `BROWSER_SUITE=tideline5` (pre-K authored day in landscape then portrait 768×1024: flag with nothing chosen does nothing, scrub settles on the nearest stop, the other state flagged twice uncounted, a tapped stop, both flags 0 misses/0 hints; school seeded day: Help glow 1 hint, Help again flags the first fitting stop, 0/1; portrait and glow screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=5` (11.0 s).
+**Not run:** `npm run build` locally (no shared files or assets changed; CI builds), `world`, offline, the older `tideline`/`tideline34` suites (their code is unchanged).

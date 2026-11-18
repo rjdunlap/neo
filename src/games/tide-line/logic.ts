@@ -639,7 +639,9 @@ export function dayLayout(view: View): DayLayout {
   const w = (stripW - (STOPS - 1) * STOP_GAP) / STOPS;
   const stopH = 130;
   const below = 70 + stopH + 14 + KNOB + (stacked ? 16 + FLAG_BUTTON : 0) + 16;
-  const pictureH = Math.min(560, view.h - 24 - below);
+  // Stacked, the marker starts at the left of its track, above the pet: the track ends before the pet's corner begins.
+  const abovePet = stacked ? view.h - PET.h - 24 - (70 + stopH + 14 + KNOB) : Infinity;
+  const pictureH = Math.min(560, view.h - 24 - below, abovePet);
   const picture = { x: side, y: 24, w: view.w - side * 2, h: pictureH };
   const stopY = picture.y + pictureH + 70;
   const stops = Array.from({ length: STOPS }, (_, i) => ({
