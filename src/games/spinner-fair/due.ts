@@ -194,11 +194,11 @@ export class DueGame implements Game {
   sayWaitingAsk() {
     if (this.finished || this.busy || this.spinning) return false;
     if (this.phase === 'ask' && this.streak) {
-      void this.say('sf.streak', { kind: NAME_OF[this.streak.kind], n: this.streak.length });
+      void this.ask('sf.streak', { kind: NAME_OF[this.streak.kind], n: this.streak.length });
       return true;
     }
     if (this.phase === 'next') {
-      void this.say('sf.spin-once');
+      void this.ask('sf.spin-once');
       return true;
     }
     return false;
@@ -321,6 +321,12 @@ export class DueGame implements Game {
     return this.ctx.say(...args);
   }
 
+  /** The question after a run, and the ask for one more spin: each is the instruction while it waits, so the caption keeps it and the guide repeats it. */
+  private ask(...args: Parameters<GameContext['instruct']>) {
+    this.talk++;
+    return this.ctx.instruct(...args);
+  }
+
   private jiggle() {
     const node = this.art.node;
     this.ctx.tw.kill(node);
@@ -386,7 +392,7 @@ export class DueGame implements Game {
       void this.ctx.tw.to(c, { alpha: 1 }, { duration: 0.25, delay: i * 0.06, ease: ease.outQuad });
     });
     this.busy = false;
-    void this.say('sf.streak', { kind: NAME_OF[this.streak.kind], n: this.streak.length });
+    void this.ask('sf.streak', { kind: NAME_OF[this.streak.kind], n: this.streak.length });
   }
 
   /** One spin of the run joins the ribbon; a slow one rings a step that rises while a run grows and drops when it breaks. */
@@ -443,7 +449,7 @@ export class DueGame implements Game {
       return;
     }
     if (this.phase === 'next') {
-      void this.say('sf.spin-once');
+      void this.ask('sf.spin-once');
       return;
     }
     if (!this.glowing) {
@@ -490,7 +496,7 @@ export class DueGame implements Game {
     await line;
     // The ask for the one more spin follows, unless she has already spun.
     if (this.finished || set !== this.setIndex || this.phase !== 'next' || this.spinning || this.busy) return;
-    if (t === this.talk) void this.say('sf.spin-once');
+    if (t === this.talk) void this.ask('sf.spin-once');
   }
 
   /** The one spin after the question: the stream's next honest draw, welcomed the same whoever it lands on. */
