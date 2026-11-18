@@ -790,7 +790,8 @@ class SecretCode implements Game {
     this.busy = false;
     // The first try at each code is the ask to mark it (in full once, short after), so the guide and the caption never
     // go back to "make me a code" while she is marking.
-    if (this.history.length === 0) return this.ctx.instruct(this.index === 0 ? 'code.markit' : 'code.markagain');
+    if (this.history.length === 0)
+      return this.ctx.instruct(this.index === 0 ? 'code.markit' : 'code.markagain');
     return this.ctx.say('code.pettry');
   }
 

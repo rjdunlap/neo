@@ -668,9 +668,9 @@ class MysteryGrid implements Game {
 
   /** The level's instruction: what the guide repeats, and the caption shows, while the grid is being marked. */
   private levelLine() {
-    return (['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const)[
-      this.plan.level - 1
-    ];
+    return (
+      ['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const
+    )[this.plan.level - 1];
   }
 
   /** The lines that name the missing thing: `lg.event` for the pie, `lg.event.ball` for the ball, `lg.event.kite` for the kite. */
