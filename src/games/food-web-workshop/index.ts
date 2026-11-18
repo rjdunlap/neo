@@ -338,7 +338,7 @@ class FoodWebWorkshop implements Game {
     if (!this.s.arrows.length) {
       (squash(this.showButton), spring(this.showButton, 90));
       sfx.tick();
-      return void this.ctx.say(ASK[this.s.round.plan.level]);
+      return void this.ctx.instruct(ASK[this.s.round.plan.level]);
     }
     (squash(this.showButton), spring(this.showButton, 90));
     const result = check(this.s);

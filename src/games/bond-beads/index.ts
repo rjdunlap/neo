@@ -75,6 +75,8 @@ class BondBeads implements Game {
   help: Help | null = null;
   /** Level 4: `bondbeads.other` waiting behind the first shape's line (U7 R4); `askGen` drops a stale wait. */
   unasked = false;
+  /** Level 4: the other shape's ask replaced the instruction, so the next card says the level's instruction again. */
+  private otherAsked = false;
   private askGen = 0;
   private alive = true;
   private epoch = 0;
@@ -642,6 +644,10 @@ class BondBeads implements Game {
     this.index++;
     this.busy = false;
     this.openStep();
+    if (this.otherAsked) {
+      this.otherAsked = false;
+      void this.ctx.instruct(this.instruction());
+    }
   }
 
   /** What the pet says when a tray, card, puzzle or set is finished. */
@@ -671,7 +677,9 @@ class BondBeads implements Game {
   sayWaitingAsk() {
     if (!this.unasked || this.finished) return false;
     this.dropAsk();
-    void this.ctx.say('bondbeads.other');
+    // The second shape's ask is the line the guide repeats and the caption keeps until the next card.
+    this.otherAsked = true;
+    void this.ctx.instruct('bondbeads.other');
     return true;
   }
 

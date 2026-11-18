@@ -208,7 +208,8 @@ export class FixedMeadow implements Game {
   }
   private async ask(labels = false) {
     const token = this.epoch;
-    await this.ctx.say(
+    // The question is the line the guide repeats and the caption keeps: at level 4 it is the only place "grass" or "fence" is said.
+    await this.ctx.instruct(
       this.task.kind === 'parts'
         ? 'meadow.ask5'
         : this.task.material === 'grass'
