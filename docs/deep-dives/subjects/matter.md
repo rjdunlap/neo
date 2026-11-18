@@ -112,6 +112,8 @@ Each authored substance (ice, butter, chocolate, bread, cake batter, popcorn ker
 | 10 | upper school, middle (future) | Particle Lens: match a scene to its dots, then predict the picture after heat is added | Wrong match tested against the scene |
 | 11 | middle, grown-up | Plan a sequence to reach a target state with spare tools; or read a melting-point clue to name a mystery | Counted as in other puzzles |
 
+The built game's level IDs differ from this table from row 5 on: ID 5 is the lap opening *One big ice cube*, so rows 5 and 6 are IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md)); later rows take IDs from 8 upward when defined.
+
 **Hint ladder** follows the island rule: a gentle spoken hint after a miss, a glow after two, and a supported finish. **Accounting.** Only a wrong sort or a wrong dial counts as a miss; exploring, predictions and undo never do. A level finished with a supported ending is not evidence of independent mastery.
 
 ## Experience and presentation
@@ -131,7 +133,7 @@ All slices are future work, each separate. Definition tiers use links and `git d
 
 1. **Definition packet** (docs; **defined 2026-10-22**, [definition](../../definitions/melt-and-freeze.md)): freeze the substance table, dial settings and levels 1–4 in one file; recheck overlap.
 2. **Levels 1–4** (**built 2026-10-24**, [PR #943](https://github.com/rjdunlap/neo/pull/943)): state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
-3. **Levels 5–6**: predictions and the reversible sort; the journal entries.
+3. **Levels 5–6**: predictions and the reversible sort; the journal entries. **Defined 2026-11-17** as level IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md); ID 5 is the lap opening *One big ice cube*); build queued in READY.
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
 6. **Stir and See** definition, then the same ladder shape for dissolve, settle and float.
@@ -139,4 +141,4 @@ All slices are future work, each separate. Definition tiers use links and `git d
 
 ## What was built and what ran
 
-Slice 2 built 2026-10-24 (PR #943): `src/games/melt-freeze/`, a new Bubble Beach game, levels 1–4 (ice; three things in turn; make it the way the card shows; a tray of four with a stone and a spoon that never change), four journal entries, a Kokoro title clip; 12 rule tests, the `meltfreeze` browser suite and the finger demo (levels 1 and 3) passed. The research above was docs only: Markdown links and `git diff --check`. NGSS pages were opened at their source for 2-PS1-1, 2-PS1-3, 2-PS1-4, 5-PS1-2, 5-PS1-4, MS-PS1-2 and MS-PS1-4; the PhET simulation page returned only navigation and was read through search summaries; the Toca Lab claims come from Common Sense Education, Engadget and search summaries, not from play. No device, child or science reviewer was involved, and the particle-diagram misconception risk is stated from general knowledge, not an opened study.
+Slice 2 built 2026-10-24 (PR #943): `src/games/melt-freeze/`, a new Bubble Beach game, levels 1–4 (ice; three things in turn; make it the way the card shows; a tray of four with a stone and a spoon that never change), four journal entries, a Kokoro title clip; 12 rule tests, the `meltfreeze` browser suite and the finger demo (levels 1 and 3) passed. The research above was docs only: Markdown links and `git diff --check`. NGSS pages were opened at their source for 2-PS1-1, 2-PS1-3, 2-PS1-4, 5-PS1-2, 5-PS1-4, MS-PS1-2 and MS-PS1-4; the PhET simulation page returned only navigation and was read through search summaries; the Toca Lab claims come from Common Sense Education, Engadget and search summaries, not from play. No device, child or science reviewer was involved, and the particle-diagram misconception risk is stated from general knowledge, not an opened study. The slice 3 definition (2026-11-17) was docs only: Markdown links and `git diff --check`.
