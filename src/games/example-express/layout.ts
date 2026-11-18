@@ -18,6 +18,10 @@ export function layout(v: View) {
     slots: [290, 460, 630, 800].map((x) => box(x, 365, 136, 128)),
     docks: [box(430, 515, 144, 112), box(690, 515, 144, 112)],
     shelf: [290, 460, 630, 800].map((x) => box(x, 365, 136, 128)),
+    // Level 3: all eight parcels in two rows with their caption beneath, and Examples beside both docks.
+    shelf8: [345, 490].flatMap((y) => [290, 460, 630, 800].map((x) => box(x, y, 136, 128))),
+    shelfCaption: box(550, 587, 600, 40),
+    lesson: [box(300, 515, 140, 112), box(530, 515, 144, 112), box(740, 515, 144, 112)],
     controls: [300, 480, 660, 840].map((x) => box(x, 670, 140, 100)),
     parcel: box(550, 385, 160, 140),
     prev: box(270, 385, 100, 100),

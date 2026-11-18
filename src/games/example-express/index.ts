@@ -15,10 +15,11 @@ import {
   Round,
   PARCELS,
   RULES,
-  SHELF,
   requested,
   predict,
   solution,
+  tray,
+  shelfIds,
   type Dock,
   type Trace,
   type Action,
@@ -119,6 +120,8 @@ export class ExampleExpress implements Game {
   reaction: Trace | null = null;
   private boxes;
   private demoReplayed = false;
+  /** The parcels on the Examples panel, one button each. */
+  private readonly cards: readonly number[];
   get busy() {
     return this.opening || !!this.run || !!this.helpRun;
   }
@@ -131,6 +134,7 @@ export class ExampleExpress implements Game {
   private readonly cancel = () => this.stop();
   constructor(private ctx: GameContext) {
     this.round = new Round(ctx.level);
+    this.cards = shelfIds(this.round.level);
     this.boxes = layout(ctx.view);
     ctx.stage.addChild(this.root);
     this.root.addChild(this.background, this.pictures);
@@ -141,21 +145,7 @@ export class ExampleExpress implements Game {
       return b;
     };
     for (let i = 0; i < 4; i++) this.slots.push(button('', () => this.slot(i), 136, 128));
-    for (const id of SHELF)
-      this.shelf.push(
-        button(
-          '',
-          () => {
-            if (this.busy) return;
-            this.selectedParcel = id;
-            this.panel = 'main';
-            void ctx.say('ee.placeExample');
-            this.draw();
-          },
-          136,
-          128,
-        ),
-      );
+    for (const id of this.cards) this.shelf.push(button('', () => this.pick(id), 136, 128));
     for (const dock of ['tree', 'house'] as const)
       this.docks.push(button(dock === 'tree' ? 'Tree dock' : 'House dock', () => this.label(dock), 144, 112));
     this.testButton = button('Test', () => {
@@ -164,7 +154,7 @@ export class ExampleExpress implements Game {
         else {
           this.panel = 'tray';
           this.reaction = null;
-          void ctx.say('ee.test');
+          void ctx.say(this.round.level < 3 ? 'ee.test' : 'ee.test3');
           this.draw();
         }
       }
@@ -174,12 +164,16 @@ export class ExampleExpress implements Game {
       else this.play('check');
     });
     this.examplesButton = button('Examples', () => {
-      if (!this.busy && this.round.surpriseSeen) {
-        this.panel = 'shelf';
-        this.selectedSlot = null;
-        this.draw();
-        void ctx.say('ee.shelf');
+      if (this.busy || !this.round.surpriseSeen) return;
+      if (this.round.level < 3) this.selectedSlot = null;
+      // Level 3 keeps a tapped slot as the card's destination; a full lesson needs one chosen to swap.
+      else if (this.selectedSlot === null && this.round.board.every((e) => e)) {
+        void ctx.say('ee.full');
+        return;
       }
+      this.panel = 'shelf';
+      this.draw();
+      void ctx.say(this.round.level < 3 ? 'ee.shelf' : 'ee.shelf3');
     });
     this.toolsButton = button('Change', () => {
       if (!this.busy) {
@@ -199,7 +193,7 @@ export class ExampleExpress implements Game {
       if (
         !this.busy &&
         this.selectedSlot !== null &&
-        this.round.level === 2 &&
+        this.round.level !== 1 &&
         this.round.edit({ slot: this.selectedSlot, example: null })
       )
         this.edited('ee.remove');
@@ -228,7 +222,7 @@ export class ExampleExpress implements Game {
   start() {
     this.opening = true;
     this.draw();
-    void this.ctx.instruct(this.round.level === 1 ? 'ee.instruction1' : 'ee.instruction2').then(() => {
+    void this.ctx.instruct(`ee.instruction${this.round.level}`).then(() => {
       if (this.destroyed) return;
       this.opening = false;
       if (!this.round.surpriseSeen) this.play('intro');
@@ -239,9 +233,34 @@ export class ExampleExpress implements Game {
     const r = this.round.rule;
     void this.ctx.say(r === null ? 'ee.needs' : (`ee.rule${r}` as LineId));
   }
+  /** A card on the Examples panel. Level 2's cards carry their dock and wait for a slot; a level 3
+   * parcel takes the tapped slot (or the first open one) and waits there for its dock. */
+  private pick(id: number) {
+    if (this.busy) return;
+    if (this.round.level < 3) {
+      this.selectedParcel = id;
+      this.panel = 'main';
+      void this.ctx.say('ee.placeExample');
+      this.draw();
+      return;
+    }
+    const open = this.round.board.findIndex((e) => e === null),
+      slot = this.selectedSlot ?? open;
+    if (slot < 0 || !this.round.edit({ slot, example: { id, dock: null } })) return;
+    this.selectedSlot = slot;
+    this.reaction = null;
+    this.panel = 'main';
+    this.draw();
+    void this.ctx.say('ee.chooseDock');
+  }
+  /** Where a dock button sits on the lesson panel; the Test panel always uses `docks`. */
+  private dockBox(dock: Dock) {
+    const i = dock === 'tree' ? 0 : 1;
+    return this.round.level === 3 ? this.boxes.lesson[i + 1] : this.boxes.docks[i];
+  }
   private slot(i: number) {
     if (this.busy || !this.round.surpriseSeen) return;
-    if (i < 2) {
+    if (this.round.level < 3 && i < 2) {
       void this.ctx.say('ee.locked');
       return;
     }
@@ -253,20 +272,26 @@ export class ExampleExpress implements Game {
     this.selectedSlot = i;
     this.selectedParcel = null;
     this.draw();
-    void this.ctx.say(this.round.level === 1 ? 'ee.chooseDock' : 'ee.selected');
+    const e = this.round.board[i];
+    void this.ctx.say(
+      this.round.level === 1
+        ? 'ee.chooseDock'
+        : this.round.level === 2
+          ? 'ee.selected'
+          : !e
+            ? 'ee.openSlot'
+            : e.dock === null
+              ? 'ee.chooseDock'
+              : 'ee.selected3',
+    );
   }
   private label(dock: Dock) {
     if (this.busy) return;
-    if (this.panel === 'tray') {
-      void this.ctx.say(dock === 'tree' ? 'ee.tree' : 'ee.house');
-      return;
-    }
-    if (this.round.level !== 1 || this.selectedSlot === null) {
-      void this.ctx.say(dock === 'tree' ? 'ee.tree' : 'ee.house');
-      return;
-    }
-    const e = this.round.board[this.selectedSlot];
-    if (e && this.round.edit({ slot: this.selectedSlot, example: { id: e.id, dock } })) this.edited();
+    const slot = this.panel === 'main' && this.round.level !== 2 ? this.selectedSlot : null,
+      e = slot === null ? null : this.round.board[slot];
+    // With no example chosen (or its dock unchanged) a dock only says its name.
+    if (slot !== null && e && this.round.edit({ slot, example: { id: e.id, dock } })) this.edited();
+    else void this.ctx.say(dock === 'tree' ? 'ee.tree' : 'ee.house');
   }
   private edited(line?: LineId) {
     this.selectedSlot = null;
@@ -289,12 +314,14 @@ export class ExampleExpress implements Game {
     });
   }
   get testTray() {
-    return this.round.level === 1 ? [1, 3] : [4, 3, 1, 6];
+    return tray(this.round.level);
   }
   private play(kind: Run['kind']) {
     if (this.busy) return;
-    const traces = this.round.begin(kind, kind === 'intro' ? 4 : this.testTray[this.testIndex]);
+    let traces = this.round.begin(kind, kind === 'intro' ? 4 : this.testTray[this.testIndex]);
     if (!traces) return;
+    // A Check with no lesson, or an example still waiting for its dock, has no routes: say so once.
+    if (kind === 'check' && traces[0].actual === null) traces = traces.slice(0, 1);
     voice.stop();
     this.reaction = null;
     this.panel = 'tray';
@@ -321,22 +348,27 @@ export class ExampleExpress implements Game {
       void this.ctx.say('ee.checkNow');
       return;
     }
+    // One useful change: a card from the shelf, a new dock for an example, or (level 3) one taken out.
+    const insert = this.inserts(a),
+      p = PARCELS[(a.example ?? this.round.board[a.slot]!).id],
+      parcel = { color: p.color, shape: p.shape, stamp: p.stamp };
     this.helpRun = { action: a, time: 0, speaking: true };
-    this.panel = this.round.level === 2 ? 'shelf' : 'main';
-    this.selectedSlot = this.round.level === 1 ? a.slot : null;
+    this.panel = insert ? 'shelf' : 'main';
+    this.selectedSlot = insert ? null : a.slot;
+    this.selectedParcel = null;
     this.draw();
-    const help = this.helpRun,
-      e = a.example!;
-    void this.ctx
-      .say(this.round.level === 1 ? 'ee.helpLabel' : 'ee.helpInsert', {
-        color: PARCELS[e.id].color,
-        shape: PARCELS[e.id].shape,
-        stamp: PARCELS[e.id].stamp,
-        dock: e.dock!,
-      })
-      .then(() => {
-        if (!this.destroyed && this.helpRun === help) help.speaking = false;
-      });
+    const help = this.helpRun;
+    void (
+      a.example
+        ? this.ctx.say(insert ? 'ee.helpInsert' : 'ee.helpLabel', { ...parcel, dock: a.example.dock! })
+        : this.ctx.say('ee.helpRemove', parcel)
+    ).then(() => {
+      if (!this.destroyed && this.helpRun === help) help.speaking = false;
+    });
+  }
+  /** A solver step that brings a new card into an open slot (never at level 1). */
+  private inserts(a: Action) {
+    return a.example !== null && this.round.board[a.slot] === null;
   }
   private delivered() {
     if (this.busy) return;
@@ -464,7 +496,14 @@ export class ExampleExpress implements Game {
         show(b, l.slots[i], !this.busy);
         clear(b.pic);
         const e = this.round.board[i];
-        b.caption.text = i < 2 ? 'Fixed' : e?.dock === null ? 'Choose dock' : e ? 'Example' : 'Open slot';
+        b.caption.text =
+          this.round.level < 3 && i < 2
+            ? 'Fixed'
+            : e?.dock === null
+              ? 'Choose dock'
+              : e
+                ? 'Example'
+                : 'Open slot';
         if (e) {
           const p = parcelArt(e.id, 27);
           p.x = -23;
@@ -486,16 +525,27 @@ export class ExampleExpress implements Game {
         }
         b.outline(this.selectedSlot === i || this.round.glow?.slot === i);
       });
-      if (this.round.level === 1)
-        this.docks.forEach((b, i) => {
-          show(b, l.docks[i], !this.busy);
+      const glow = this.round.glow,
+        chosen = this.selectedSlot === null ? null : this.round.board[this.selectedSlot];
+      if (this.round.level !== 2)
+        (['tree', 'house'] as const).forEach((dock, i) => {
+          const b = this.docks[i];
+          show(b, this.dockBox(dock), !this.busy);
+          // Level 3's docks wait, dimmed, until an example is chosen; a tap then still names the dock.
+          if (this.round.level === 3 && !chosen) b.alpha = 0.5;
           clear(b.pic);
-          b.pic.addChild(dockArt(i ? 'house' : 'tree'));
+          b.pic.addChild(dockArt(dock));
+          b.outline(!!glow && !!chosen && glow.slot === this.selectedSlot && glow.example?.dock === dock);
         });
-      else {
-        show(this.examplesButton, l.docks[0], !this.busy && this.round.surpriseSeen);
+      if (this.round.level !== 1) {
+        show(
+          this.examplesButton,
+          this.round.level === 2 ? l.docks[0] : l.lesson[0],
+          !this.busy && this.round.surpriseSeen,
+        );
         this.icon(this.examplesButton, 'examples');
-        if (this.selectedParcel !== null) {
+        this.examplesButton.outline(!!glow && this.inserts(glow));
+        if (this.round.level === 2 && this.selectedParcel !== null) {
           const p = parcelArt(this.selectedParcel, 34);
           p.position.set(l.docks[1].x, l.docks[1].y);
           this.pictures.addChild(p);
@@ -512,22 +562,28 @@ export class ExampleExpress implements Game {
       this.icon(this.checkButton, this.round.qualified ? 'finish' : 'check');
       this.icon(this.toolsButton, 'tools');
       this.icon(this.helpButton, 'help');
+      // A glowing example to take out is reached through Change.
+      this.toolsButton.outline(!!glow && glow.example === null && glow.slot === this.selectedSlot);
     } else if (this.panel === 'shelf') {
+      const lesson = this.round.level === 3;
       this.shelf.forEach((b, i) => {
-        const id = SHELF[i],
+        const id = this.cards[i],
           used = this.round.board.some((e) => e?.id === id);
-        show(b, l.shelf[i], !this.busy && !used);
+        show(b, (lesson ? l.shelf8 : l.shelf)[i], !this.busy && !used);
         clear(b.pic);
-        const p = parcelArt(id, 28);
-        p.x = -22;
-        const d = dockArt(requested(id), 20);
-        d.position.set(35, 8);
-        b.pic.addChild(p, d);
-        b.caption.text = used ? 'In lesson' : 'Add example';
-        b.outline(this.round.glow?.example?.id === id);
+        if (lesson) b.pic.addChild(parcelArt(id, 30));
+        else {
+          const p = parcelArt(id, 28);
+          p.x = -22;
+          const d = dockArt(requested(id), 20);
+          d.position.set(35, 8);
+          b.pic.addChild(p, d);
+        }
+        b.caption.text = used ? 'In lesson' : lesson ? 'Choose' : 'Add example';
+        b.outline(!used && this.round.glow?.example?.id === id);
       });
-      const caption = text('Choose an example, then a slot', 25);
-      caption.position.set(l.request.x, l.docks[0].y);
+      const caption = text(lesson ? 'Choose a parcel, then its dock' : 'Choose an example, then a slot', 25);
+      caption.position.set(l.request.x, lesson ? l.shelfCaption.y : l.docks[0].y);
       this.pictures.addChild(caption);
       show(this.backButton, l.controls[2], !this.busy);
       this.icon(this.backButton, 'back');
@@ -535,8 +591,16 @@ export class ExampleExpress implements Game {
       [this.undoButton, this.resetButton, this.removeButton, this.backButton].forEach((b, i) =>
         show(b, l.tools[i], !this.busy),
       );
-      this.removeButton.eventMode = this.round.level === 2 && this.selectedSlot !== null ? 'static' : 'none';
-      this.removeButton.alpha = this.removeButton.eventMode === 'none' ? 0.4 : 1;
+      const removable =
+        !this.busy &&
+        this.round.level !== 1 &&
+        this.selectedSlot !== null &&
+        !!this.round.board[this.selectedSlot];
+      this.removeButton.eventMode = removable ? 'static' : 'none';
+      this.removeButton.alpha = removable ? 1 : 0.4;
+      this.removeButton.outline(
+        removable && this.round.glow?.example === null && this.round.glow.slot === this.selectedSlot,
+      );
       this.icon(this.undoButton, 'undo');
       this.icon(this.resetButton, 'reset');
       this.icon(this.removeButton, 'remove');
@@ -601,17 +665,25 @@ export class ExampleExpress implements Game {
       const h = this.helpRun;
       h.time += dt;
       const a = h.action,
-        e = a.example!,
-        l = this.boxes;
-      if (this.round.level === 2 && h.time >= 0.8 && this.panel === 'shelf') {
+        e = a.example,
+        l = this.boxes,
+        insert = this.inserts(a),
+        lesson = this.round.level === 3;
+      if (insert && h.time >= 0.8 && this.panel === 'shelf') {
         this.panel = 'main';
-        this.selectedParcel = e.id;
+        if (lesson) this.selectedSlot = a.slot;
+        else this.selectedParcel = e!.id;
         this.draw();
       }
-      const start =
-        this.round.level === 1 ? l.slots[a.slot] : l.shelf[SHELF.indexOf(e.id as (typeof SHELF)[number])];
-      const end = this.round.level === 1 ? l.docks[e.dock === 'tree' ? 0 : 1] : l.slots[a.slot];
-      const t = Math.min(1, Math.max(0, (h.time - 0.7) / 1.1));
+      // The finger shows the taps: slot to dock for a label, slot to Change for a removal, card to slot
+      // for level 2's labelled cards, and for a level 3 parcel the card, then its slot to its dock.
+      let start = l.slots[a.slot],
+        end: Box = e ? this.dockBox(e.dock!) : l.controls[2];
+      if (insert && !lesson) {
+        start = l.shelf[this.cards.indexOf(e!.id)];
+        end = l.slots[a.slot];
+      } else if (insert && this.panel === 'shelf') start = end = l.shelf8[this.cards.indexOf(e!.id)];
+      const t = Math.min(1, Math.max(0, (h.time - (insert && lesson ? 1 : 0.7)) / 1.1));
       this.finger
         .clear()
         .circle(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t, 17)
@@ -655,7 +727,10 @@ export class ExampleExpress implements Game {
     this.draw();
     if (result?.kind === 'check') {
       if (result.ok) {
-        void this.ctx.say('ee.success');
+        // A passing lesson may hold a label the rule disagrees with: name it, never as a mistake.
+        const r = this.round.rule,
+          noisy = this.round.board.some((e) => e?.dock && r !== null && predict(r, e.id) !== e.dock);
+        void this.ctx.say(noisy ? 'ee.successNoisy' : 'ee.success');
       } else {
         this.reaction = result.first;
         sfx.boing();
@@ -663,7 +738,8 @@ export class ExampleExpress implements Game {
         if (result.first) void this.routeSpeech(result.first, true);
         else {
           this.panel = 'main';
-          this.selectedSlot = this.round.board.findIndex((e) => e?.dock === null);
+          const waiting = this.round.board.findIndex((e) => e?.dock === null);
+          this.selectedSlot = waiting < 0 ? null : waiting;
           this.draw();
           void this.missingSpeech();
         }
@@ -685,6 +761,7 @@ export class ExampleExpress implements Game {
       if (this.panel !== 'main') return { tap: { on: this.backButton } };
       return { tap: { on: this.checkButton } };
     }
+    if (this.round.level === 3) return this.lessonTouch();
     const action =
       this.round.level === 2 && this.round.board.slice(2).every((e) => e === null)
         ? { slot: 2, example: { id: 4, dock: requested(4) } }
@@ -696,8 +773,7 @@ export class ExampleExpress implements Game {
         return { tap: { on: this.docks[action.example!.dock === 'tree' ? 0 : 1] } };
       }
       if (this.selectedParcel === action.example!.id) return { tap: { on: this.slots[action.slot] } };
-      if (this.panel === 'shelf')
-        return { tap: { on: this.shelf[SHELF.indexOf(action.example!.id as (typeof SHELF)[number])] } };
+      if (this.panel === 'shelf') return { tap: { on: this.shelf[this.cards.indexOf(action.example!.id)] } };
       if (this.panel !== 'main') return { tap: { on: this.backButton } };
       return { tap: { on: this.examplesButton } };
     }
@@ -708,6 +784,43 @@ export class ExampleExpress implements Game {
       return { tap: { on: this.backButton } };
     }
     if (this.panel !== 'main') return { tap: { on: this.backButton } };
+    return { tap: { on: this.checkButton } };
+  }
+  /** Level 3's demonstration: build the solver's lesson with the real controls, test the yellow
+   * circle with a star, then check. */
+  private lessonTouch(): TouchIntent {
+    const a = solution(3, this.round.board)[0],
+      back = { tap: { on: this.backButton } };
+    if (a?.example === null) {
+      if (this.panel === 'tools' && this.selectedSlot === a.slot) return { tap: { on: this.removeButton } };
+      if (this.panel !== 'main') return back;
+      if (this.selectedSlot !== a.slot) return { tap: { on: this.slots[a.slot] } };
+      return { tap: { on: this.toolsButton } };
+    }
+    if (a?.example && !this.inserts(a)) {
+      if (this.panel !== 'main') return back;
+      if (this.selectedSlot !== a.slot) return { tap: { on: this.slots[a.slot] } };
+      return { tap: { on: this.docks[a.example.dock === 'tree' ? 0 : 1] } };
+    }
+    if (a?.example) {
+      const target = this.selectedSlot ?? this.round.board.findIndex((e) => e === null);
+      if (this.panel === 'shelf' && target === a.slot)
+        return { tap: { on: this.shelf[this.cards.indexOf(a.example.id)] } };
+      if (this.panel !== 'main') return back;
+      if (target !== a.slot) return { tap: { on: this.slots[a.slot] } };
+      return { tap: { on: this.examplesButton } };
+    }
+    if (!this.demoReplayed) {
+      if (this.panel === 'main') return { tap: { on: this.testButton } };
+      if (this.panel !== 'tray') return back;
+      if (this.round.tests === 0)
+        return {
+          tap: { on: this.testIndex === this.testTray.indexOf(5) ? this.sendButton : this.nextButton },
+        };
+      this.demoReplayed = true;
+      return back;
+    }
+    if (this.panel !== 'main') return back;
     return { tap: { on: this.checkButton } };
   }
   destroy() {
@@ -729,7 +842,9 @@ export const exampleExpress: GameModule = {
   describeLevel: (l) =>
     l <= 1
       ? 'Show, then send: label two examples and check fresh parcels'
-      : 'A surprising parcel: repair a color rule with examples',
+      : l === 2
+        ? 'A surprising parcel: repair a color rule with examples'
+        : 'Choose the lesson: pick up to four examples and their docks',
   music: STYLES.quiet,
   touchDemo: true,
   coplayHint:

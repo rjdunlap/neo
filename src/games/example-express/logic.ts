@@ -59,9 +59,19 @@ export function seed(level: number): Board {
         { id: 5, dock: null },
         { id: 7, dock: null },
       ]
-    : [{ id: 0, dock: 'tree' }, { id: 7, dock: 'house' }, null, null];
+    : level === 2
+      ? [{ id: 0, dock: 'tree' }, { id: 7, dock: 'house' }, null, null]
+      : [null, null, null, null];
 }
-export const tray = (level: number): readonly number[] => (level === 1 ? [1, 3] : [4, 3, 1, 6]);
+const TRAYS: readonly (readonly number[])[] = [
+  [1, 3],
+  [4, 3, 1, 6],
+  [0, 3, 5, 6],
+];
+/** The parcels a Check sends, and the ones Test offers. Level 3's tray is practice: it may overlap the lesson. */
+export const tray = (level: number): readonly number[] => TRAYS[Math.min(3, Math.max(1, level)) - 1];
+/** The cards the Examples panel offers: level 2's four prelabelled repairs, level 3's whole parcel set. */
+export const shelfIds = (level: number): readonly number[] => (level >= 3 ? PARCELS.map((p) => p.id) : SHELF);
 export function valid(level: number, b: Board): boolean {
   if (
     b.length !== 4 ||
@@ -75,6 +85,8 @@ export function valid(level: number, b: Board): boolean {
   )
     return false;
   if (new Set(b.filter((e) => e).map((e) => e!.id)).size !== b.filter((e) => e).length) return false;
+  // Level 3 has no locked cards: any four slots of distinct parcels, labelled or still waiting for a dock.
+  if (level >= 3) return true;
   const initial = seed(level);
   if (!b.slice(0, 2).every((e, i) => e?.id === initial[i]?.id && e?.dock === initial[i]?.dock)) return false;
   return level === 1
@@ -96,6 +108,21 @@ export function accepted(level: number, b: Board): boolean {
 }
 export function actions(level: number, b: Board): Action[] {
   const result: Action[] = [];
+  if (level >= 3) {
+    // Slot, then remove, relabel tree, relabel house, then inserts by parcel with the tree before the house.
+    for (let slot = 0; slot < 4; slot++) {
+      const e = b[slot];
+      if (e) {
+        result.push({ slot, example: null });
+        for (const dock of ['tree', 'house'] as const)
+          if (e.dock !== dock) result.push({ slot, example: { id: e.id, dock } });
+      } else
+        for (const p of PARCELS)
+          if (!b.some((o) => o?.id === p.id))
+            for (const dock of ['tree', 'house'] as const) result.push({ slot, example: { id: p.id, dock } });
+    }
+    return result;
+  }
   for (let slot = 2; slot < 4; slot++) {
     if (level === 1) {
       for (const dock of ['tree', 'house'] as const)
@@ -113,23 +140,45 @@ export function apply(b: Board, a: Action): Board {
   next[a.slot] = a.example ? { ...a.example } : null;
   return next;
 }
-/** BFS keeps physical slots, with deterministic slot/operation/parcel/dock tie order.
- * D2's shortest destinations are all request-consistent; it never installs a rule. */
+/** Every label in the lesson is the one the request would give. */
+export const consistent = (b: Board): boolean => b.every((e) => !e || e.dock === requested(e.id));
+// One number per board: a slot is empty or one of eight parcels with one of three label states.
+const key = (b: Board): number =>
+  b.reduce((k, e) => k * 25 + (e ? 1 + e.id * 3 + (e.dock === null ? 2 : e.dock === 'tree' ? 0 : 1) : 0), 0);
+const solved = new Map<number, Action[]>();
+/** BFS keeps physical slots, with deterministic slot/operation/parcel/dock tie order. Among the
+ * shortest paths it prefers one ending in a request-consistent lesson; it never installs a rule.
+ * Level 3's deepest searches visit thousands of boards, so the last answers are remembered. */
 export function solution(level: number, b: Board): Action[] {
   if (!valid(level, b) || accepted(level, b)) return [];
+  const memo = level * 400000 + key(b),
+    known = solved.get(memo);
+  if (known) return known;
   const queue: { b: Board; path: Action[] }[] = [{ b: clone(b), path: [] }],
-    seen = new Set([JSON.stringify(b)]);
-  for (let i = 0; i < queue.length; i++)
+    seen = new Set([key(b)]);
+  let found: Action[] | null = null;
+  search: for (let i = 0; i < queue.length; i++) {
+    // The first accepted board fixes the shortest length; finish that depth looking for a consistent one.
+    if (found && queue[i].path.length >= found.length) break;
     for (const a of actions(level, queue[i].b)) {
       const next = apply(queue[i].b, a),
-        key = JSON.stringify(next);
-      if (seen.has(key)) continue;
-      seen.add(key);
+        k = key(next);
+      if (seen.has(k)) continue;
+      seen.add(k);
       const path = [...queue[i].path, a];
-      if (accepted(level, next)) return path;
-      queue.push({ b: next, path });
+      if (accepted(level, next)) {
+        if (consistent(next)) {
+          found = path;
+          break search;
+        }
+        found ??= path;
+      } else if (!found) queue.push({ b: next, path });
     }
-  return [];
+  }
+  const result = found ?? [];
+  if (solved.size > 200) solved.clear();
+  solved.set(memo, result);
+  return result;
 }
 export interface Trace {
   id: number;
@@ -137,7 +186,7 @@ export interface Trace {
   required: Dock;
 }
 export class Round {
-  readonly level: 1 | 2;
+  readonly level: 1 | 2 | 3;
   board: Board;
   history: Board[] = [];
   misses = 0;
@@ -150,9 +199,9 @@ export class Round {
   tests = 0;
   private run: { kind: 'test' | 'check' | 'intro'; board: Board; ids: readonly number[] } | null = null;
   constructor(level: number) {
-    this.level = level <= 1 ? 1 : 2;
+    this.level = level <= 1 ? 1 : level === 2 ? 2 : 3;
     this.board = seed(this.level);
-    this.surpriseSeen = this.level === 1;
+    this.surpriseSeen = this.level !== 2;
   }
   get rule() {
     return fit(this.board);
@@ -254,4 +303,4 @@ export class Round {
   }
 }
 
-export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };

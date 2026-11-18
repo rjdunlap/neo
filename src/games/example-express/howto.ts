@@ -10,7 +10,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 2,
+      to: 2,
       text: 'Watch the free surprise. Back → Examples: choose a labelled card, then a slot. Any offered card can repair this lesson.',
+    },
+    {
+      from: 3,
+      text: 'Examples: choose a parcel, then its dock; up to four. Any lesson that makes the sorter use shape passes. Tap an example to relabel, swap or remove it.',
     },
     'Test opens practice: arrows choose a parcel; Send shows its route for free. Back returns. Check submits the lesson.',
     'Show me makes one useful change for one hint. Change opens Undo/Reset; select an added example to Remove. Stop cancels delivery.',

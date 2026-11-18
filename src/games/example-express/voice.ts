@@ -7,6 +7,9 @@ export const VOICE = {
   'ee.instruction2': [
     'Circles to the tree. Squares to the house. Watch this yellow circle. Then choose an example to change the sorter’s rule.',
   ],
+  'ee.instruction3': [
+    'Choose examples for circles to the tree and squares to the house. Test your lesson, then check.',
+  ],
   'ee.rule0': ['The sorter used color. Blue to the tree. Yellow to the house.'],
   'ee.rule1': ['The sorter used color. Yellow to the tree. Blue to the house.'],
   'ee.rule2': ['The sorter used shape. Circles to the tree. Squares to the house.'],
@@ -18,6 +21,9 @@ export const VOICE = {
   'ee.house': ['House dock.'],
   'ee.test': [
     'Test is free. Choose a practice parcel with the arrows, then Send. Testing does not change the lesson.',
+  ],
+  'ee.test3': [
+    'Test is free. Choose a practice parcel with the arrows, then Send. A practice parcel can also be one of your examples. Testing does not change the lesson.',
   ],
   'ee.parcel': ['A {color} {shape} with a {stamp} stamp.'],
   'ee.route': ['{color} {shape}, {stamp} stamp. Sorter: {actual}. Request: {required}.'],
@@ -34,7 +40,13 @@ export const VOICE = {
   'ee.locked': ['This example stays in the lesson.'],
   'ee.chooseDock': ['Choose the tree dock or the house dock for this example.'],
   'ee.selected': ['This example is selected. Change opens Undo, Reset and Remove.'],
+  'ee.selected3': [
+    'This example is selected. Tap a dock to change its label, Examples to swap the parcel, or Change to remove it.',
+  ],
+  'ee.openSlot': ['This slot is open. Tap Examples to choose a parcel for it.'],
+  'ee.full': ['The lesson holds four examples. Tap one first to swap it, or use Change to remove it.'],
   'ee.shelf': ['Choose one of these labelled examples. Then tap a slot in the lesson.'],
+  'ee.shelf3': ['Choose a parcel for the lesson. Then give it the tree dock or the house dock.'],
   'ee.tools': [
     'Undo takes back your last change. Reset starts the lesson again. Select an example first to remove it.',
   ],
@@ -47,7 +59,11 @@ export const VOICE = {
   'ee.helpInsert': [
     'Watch. Choose the {color} {shape} with a {stamp} stamp for the {dock} dock. Put that example in the lesson.',
   ],
+  'ee.helpRemove': ['Watch. The {color} {shape} with a {stamp} stamp goes back on the shelf.'],
   'ee.success': [
     'These checked parcels reached their requested docks. Tap Back, then All delivered when you are ready.',
+  ],
+  'ee.successNoisy': [
+    'These checked parcels reached their requested docks. The sorter used shape. An example marked with arrows has a different dock, and the sorter still chose shape. Tap Back, then All delivered when you are ready.',
   ],
 } satisfies Record<string, string[]>;
