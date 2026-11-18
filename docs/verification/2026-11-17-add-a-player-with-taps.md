@@ -1,0 +1,5 @@
+# 2026-11-17 — Add a player with taps (PR #1772)
+
+**Changed:** the add form on "Who's playing?" leads with fourteen age chips that fill the birth year and set the month to the current one; the name is optional; the first chip is focused so no keyboard rises (`src/app/chooser.ts`, `ChooserScene.ts`, `chooser.css`).
+**Ran:** typecheck; `npm test` (361 files, 7,937 tests, 1 skipped; `chooser.test.ts` gained five age-chip tests: every chip gives an accepted birth and the age tapped on four dates including Feb 29, all six bands reached, the lit chip matches tapped and typed fields, none lit for an invalid birth; the name tests accept an empty name); `npm run build`; `BROWSER_SUITE=profiles` in headless Chromium against a dev server: a third player added at 390×844 with taps alone and no name (chip focus, month default, fourteen chips of at least 44 px, no sideways scroll, Add on screen, chip fills the year, typing relights, profile gets band prek and the chosen birth, the card shows the friend's name; screenshot `chooser-add-taps`).
+**Not run:** `world`, offline and couch suites (no navigation, persistence format or asset change).
