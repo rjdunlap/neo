@@ -324,10 +324,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     // cards clearing and the handle freeing sooner shows the line no longer gates them.
     await page.evaluate(() => {
       const g = neo.scene.game;
-      const say = g.ctx.say.bind(g.ctx);
+      // The echo is the instruction while she pulls (the guide repeats it), so it goes through `ctx.instruct`.
+      const instruct = g.ctx.instruct.bind(g.ctx);
       g.heardLines = [];
-      g.ctx.say = (id, vars) => {
-        const line = say(id, vars);
+      g.ctx.instruct = (id, vars) => {
+        const line = instruct(id, vars);
         if (id !== 'lift-it.guess-heard') return line;
         const rec = { at: performance.now() };
         g.heardLines.push(rec);

@@ -197,6 +197,8 @@ class HelperHouse implements Game {
   pebbles = 0;
   /** Level 6: the guess before the round's first day is still open (never scored or saved). */
   guessOpen = false;
+  /** Level 6's guess question is the instruction just now; closing the guess gives the level's instruction back. */
+  private askedGuess = false;
   guessButtons: Container[] = [];
   /** Level 6: the first day's warmth, kept as a faint strip on the gauge. */
   private climb: number[] | null = null;
@@ -259,7 +261,9 @@ class HelperHouse implements Game {
   start() {
     this.build();
     void this.ctx.instruct(`hh.instruct.${this.level}` as LineId).then(() => {
-      if (this.alive && this.guessOpen && !this.run) void this.ctx.say('hh.guess.ask');
+      if (!this.alive || !this.guessOpen || this.run) return;
+      this.askedGuess = true;
+      void this.ctx.instruct('hh.guess.ask');
     });
   }
 
@@ -590,6 +594,8 @@ class HelperHouse implements Game {
   guess(choice: 'faster' | 'same') {
     if (!this.guessOpen || this.finished || this.busy || this.run) return;
     sfx.pop(choice === 'faster' ? 9 : 6);
+    // Closed first, so the instruction it gives back is under the reply and not spoken over it.
+    this.closeGuess();
     void this.ctx.say(choice === 'faster' ? 'hh.guess.faster' : 'hh.guess.same');
     this.startRun();
   }
@@ -866,6 +872,10 @@ class HelperHouse implements Game {
     this.guessOpen = false;
     for (const b of this.guessButtons) b.destroy({ children: true });
     this.guessButtons = [];
+    if (this.askedGuess) {
+      this.askedGuess = false;
+      void this.ctx.instruct('hh.instruct.6');
+    }
   }
 
   private change(board: Board, piece: Piece) {
@@ -915,8 +925,10 @@ class HelperHouse implements Game {
       this.redraw();
       return;
     }
+    // Watch pressed over the open guess question: the day's line is said, not the whole instruction again.
+    const asked = this.askedGuess;
     this.startRun();
-    if (!this.gauge || this.daysPlayed > 0) void this.ctx.say('hh.watch');
+    if (!this.gauge || this.daysPlayed > 0 || asked) void this.ctx.say('hh.watch');
   }
 
   /** Step: start the day paused at its first step, or show the next step and pause again. */

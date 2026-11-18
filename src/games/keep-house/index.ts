@@ -184,6 +184,7 @@ class KeepHouse implements Game {
   tileHeld = false;
   /** Keep it is shown (a cold arrival is waiting on her). */
   keepShown = false;
+  private askedWhich = false;
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
@@ -890,7 +891,7 @@ class KeepHouse implements Game {
       void this.nextPlacement();
       return;
     }
-    void this.ctx.say('kh.ask-move');
+    void this.ctx.instruct('kh.ask-move');
     // The tile lifts back to her hand and Keep it appears.
     const home = centre(l.tile!);
     this.tileDrag!.home = home;
@@ -936,7 +937,8 @@ class KeepHouse implements Game {
     this.busy = false;
     for (const c of this.walkLayer.removeChildren()) c.destroy({ children: true });
     this.build();
-    void this.ctx.say('kh.next-stable');
+    // The next yard's opening line replaces the kitchen's instruction (or the move question), which no longer fits.
+    void this.ctx.instruct('kh.next-stable');
   }
 
   // ——— Level 4 ———
@@ -1399,6 +1401,11 @@ class KeepHouse implements Game {
     await this.ctx.say('kh.stay');
     if (!this.live(epoch)) return;
     await this.ctx.say(`kh.years.${sit.years}` as LineId);
+    if (!this.live(epoch) || !this.askedWhich) return;
+    // The last lord's "Which would you build?" was the instruction: this lord starts from the level's again,
+    // unless she has already built while the lord was talking.
+    this.askedWhich = false;
+    if (!this.busy && !this.buildState.done) void this.ctx.instruct('kh.instruct.6');
   }
 
   /** The free look: the row lifts and its life is laid along the year bar; no total is spoken. */
@@ -1508,7 +1515,8 @@ class KeepHouse implements Game {
     if (!this.live(epoch)) return;
     await this.ctx.say(`kh.bags.${cost(sit, want)}` as LineId);
     if (!this.live(epoch)) return;
-    void this.ctx.say('kh.which-build');
+    this.askedWhich = true;
+    void this.ctx.instruct('kh.which-build');
     // The account stays on the site until she builds again.
     this.busy = false;
     this.keepShown = true;

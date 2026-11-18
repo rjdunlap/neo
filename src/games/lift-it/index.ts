@@ -353,6 +353,7 @@ class LiftIt implements Game {
   glowCounted = false;
   /** The questions (levels 4 and 6) are answered for this rig on this parcel. */
   answeredFor: Rig | null = null;
+  private levelLine: LineId = 'lift-it.instruct-pull';
   question: Question | null = null;
   guess: number | null = null;
   /** Level 4: "now pull" waits behind her guess's echo (U7 R4), and is dropped once she pulls or the question changes. */
@@ -550,12 +551,19 @@ class LiftIt implements Game {
       8: 'lift-it.instruct-three-numbers',
       9: 'lift-it.instruct-paws',
     };
-    void this.ctx.instruct(lines[this.plan.id]);
-    if (this.plan.request) void this.sayAsk();
+    this.levelLine = lines[this.plan.id];
+    // Who wants to pull follows the level's instruction (said at once, it used to cut the instruction off).
+    void this.ctx.instruct(this.levelLine).then(() => {
+      if (this.plan.request && !this.destroyed && !this.finished && this.line === 0 && !this.question && !this.busy)
+        void this.sayAsk();
+    });
   }
 
+  /** Who wants to pull this parcel: the instruction until a question takes over, so the guide can say it again. */
   private sayAsk() {
-    return this.ctx.say(this.cur.ask === 'ledge' ? 'lift-it.ask-ledge' : 'lift-it.ask-ground');
+    return this.cur.ask === 'ledge'
+      ? this.ctx.instruct('lift-it.ask-ledge')
+      : this.ctx.instruct('lift-it.ask-ground');
   }
 
   /* Lines ----------------------------------------------------------------------------------------- */
@@ -678,6 +686,8 @@ class LiftIt implements Game {
     if (this.destroyed) return;
     this.buildLine();
     if (this.plan.request) void this.sayAsk();
+    // A question or "now pull" was the last instruction: the next parcel starts from the level's again.
+    else if (this.plan.ask !== 'none') void this.ctx.instruct(this.levelLine);
   }
 
   /* Layout ---------------------------------------------------------------------------------------- */
@@ -947,7 +957,8 @@ class LiftIt implements Game {
     this.placeCards();
     this.drawCards();
     if (q.kind !== 'guess' && this.parcelMisses >= 2) this.countGlow();
-    void this.ctx.say(q.kind === 'paws' ? 'lift-it.ask-paws' : 'lift-it.ask-knots');
+    if (q.kind === 'paws') void this.ctx.instruct('lift-it.ask-paws');
+    else void this.ctx.instruct('lift-it.ask-knots');
   }
 
   private placeCards() {
@@ -1007,7 +1018,7 @@ class LiftIt implements Game {
       // An echo of her free pick never holds the pull (U7 R4): the cards clear and the handle is free while it plays,
       // and "now pull" waits for it, or is dropped when she pulls first.
       this.guess = v;
-      const heard = this.ctx.say('lift-it.guess-heard', { n: v });
+      const heard = this.ctx.instruct('lift-it.guess-heard', { n: v });
       this.clearCards();
       this.question = null;
       this.answeredFor = q.rig;
@@ -1045,7 +1056,7 @@ class LiftIt implements Game {
     } else {
       this.question = null;
       this.answeredFor = q.rig;
-      void this.ctx.say('lift-it.now-pull');
+      void this.ctx.instruct('lift-it.now-pull');
     }
     this.busy = false;
   }
