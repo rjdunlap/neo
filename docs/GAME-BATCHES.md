@@ -1,5 +1,7 @@
 # Same-game implementation batches
 
+**Status (2026-11-18): every plan below is built** (checked against `origin/main` at the 2026-11-17 READY refill). This page is a scope reference for an old batch, not a pick list: [READY](READY.md) dispatches new batches from the dives and definitions, and the batch rules a session follows are in the [session guide](SESSION-GUIDE.md#same-game-batches). The contract below is the copy these plans were written against. Moving the built plans to the archive is a [queued READY line](READY.md#docs-structure-2026-11-18-review).
+
 Requested by the developer 2026-10-21: group related levels into a coherent implementation session so the game’s rules, rendering, bot and checks are loaded once. [READY](READY.md) remains the dispatch order. These plans preserve the original numbered subtask scopes and gates; they do not renumber saved levels or authorize gated additions.
 
 ## Batch contract

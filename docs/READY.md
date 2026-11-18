@@ -18,7 +18,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **Better voice V1 (remaining): render the rest of the slot-free script in batches** (assets tier, offline check; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), no longer waiting on the listen): add line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally, the lines of the upright games first, one batch a session, each recording the size it adds to the offline cache; device speech stays the fallback, slotted lines (V3) stay on device speech and nothing is stitched until someone has listened. A listen can roll a batch back. [Roadmap](ROADMAP.md#a-better-voice)
 
-- **P5, the other residents follow** (content; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), the session judges it): first take a scripted capture strip of Trill's walk, chime and return and judge whether it reads as alive, recording the strip and the judgement; if it does, give the other five second-wave residents a route and one thing to use in their locations through `ResidentSpec.carriesOn` and `wanderRoute`, with the pilot's rules. A phone look can roll it back. [Pok Pok P5](POK-POK.md), [POLISH](rework/POLISH.md)
+- **P5, the other residents follow** (content; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), the session judges it): first take a scripted capture strip of Trill's walk, chime and return and judge whether it reads as alive, recording the strip and the judgement; if it does, give the other five second-wave residents a route and one thing to use in their locations through `ResidentSpec.carriesOn` and `wanderRoute`, with the pilot's rules. A phone look can roll it back. [Pok Pok P5](reviews/POK-POK.md), [POLISH](rework/POLISH.md)
 
 
 
@@ -42,9 +42,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **Upright batch 8 onward: the rest of the fits-as-is games, six at a time** (chunk 31; the existing-game tier six times over, as batches 6 and 7): after batch 7 (built), the next six from the sweep's measured fits-as-is list, one kind of challenge each where the list allows, measured games before by-eye ones; then the small-fix games, music first (`jelly-drums`, `rhythm-neighbors`, `movie-night`), each batch rerunning `BROWSER_SUITE=uprightsweep PHONE_ONLY=…` for its games first. Each closeout queues the next six as a Next ten line while the list lasts. [Game batches](definitions/phone-portrait.md#game-batches), [the sweep](definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09)
 
 
-- **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)
+- **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](reviews/TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)
 
-- **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
+- **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](reviews/TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
 
 ### Unblocked by the decisions of 2026-11-17
 
@@ -56,11 +56,11 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](NEW-GAME.md) now asks.
 
-- **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
+- **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
 
-- **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](TOTOLOGIC.md#proposals)
+- **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](reviews/TOTOLOGIC.md#proposals)
 
-- **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
+- **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](reviews/TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
 
 - **`lift-it` level 10, One big pull** (a toddler entry; new levels plus the band, land and entry tests): as the dive specifies it. [Dive](deep-dives/lift-it.md#decisions-for-the-developer)
 
@@ -116,20 +116,27 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 ### Codebase structure (2026-11-07 review)
 
-Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
+Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](reviews/CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
 
-- **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
+- **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](reviews/CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
+
+### Docs structure (2026-11-18 review)
+
+Left over from the [docs review](reviews/WORKFLOW-REVIEWS.md#docs-review-2026-11-18), which reorganized the session documents; each is docs only and touches a file many links point into, so it runs alone and merges quickly.
+
+- **Archive the built batch plans** (docs only: links and `git diff --check`): move `docs/GAME-BATCHES.md` (240 KB, every plan built) to `docs/archive/`, with its line in the archive index, and repoint the links into it; READY, ROADMAP and STUDY-BACKLOG then name the [batch rules](SESSION-GUIDE.md#same-game-batches) instead. A READY line that still cites a plan section as its scope keeps that link, pointed at the archived file.
+- **One coverage row per suite or area** (docs only: links and `git diff --check`): `docs/VERIFICATION.md` is 300 KB, most of it a coverage summary that gained a row per slice. Collapse it to one row per browser suite or area, each naming the latest passing entry file in `docs/verification/`, so the "never re-run a passing suite" rule can be checked by reading one short table; the per-slice detail is already in the entry files.
 
 ### UX review (2026-11-09)
 
-From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U5 are built ([definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-built-2026-11-10)); U6a and U6b are built ([one way to browse](definitions/one-way-to-browse.md)), U7 is defined ([never swallow a tap](definitions/never-swallow-a-tap.md); U7a–U7c are built, and U7d's [classification](definitions/never-swallow-a-tap-lines.md) of the upright-ready games is done, and its fix batch 1, `animal-snack` and `far-lights`, is built) and U8 is built ([the grown-ups' page](definitions/grownups-page.md)) (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
+From the [adversarial UX review](reviews/UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U5 are built ([definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-built-2026-11-10)); U6a and U6b are built ([one way to browse](definitions/one-way-to-browse.md)), U7 is defined ([never swallow a tap](definitions/never-swallow-a-tap.md); U7a–U7c are built, and U7d's [classification](definitions/never-swallow-a-tap-lines.md) of the upright-ready games is done, and its fix batch 1, `animal-snack` and `far-lights`, is built) and U8 is built ([the grown-ups' page](definitions/grownups-page.md)) (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
 
 
 
 
 ### Pok Pok review (2026-11-10)
 
-From the [Pok Pok review](POK-POK.md#proposals), queued at the developer's request the same day; one item per session, in this order. The review's two playtest questions (P2, P3) are in [what the phone playtest can answer](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now), P6 is an acceptance line in [RW10](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) and P8 is under [RW14's later list](rework/POLISH.md#later-not-sliced-yet). A playtest note that names a sound or a drag still goes under the phone lines in Next ten, ahead of these.
+From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer's request the same day; one item per session, in this order. The review's two playtest questions (P2, P3) are in [what the phone playtest can answer](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now), P6 is an acceptance line in [RW10](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) and P8 is under [RW14's later list](rework/POLISH.md#later-not-sliced-yet). A playtest note that names a sound or a drag still goes under the phone lines in Next ten, ahead of these.
 
 **Lap openings from the toy test (P4).** All of P4's lines are built; see the [definition](definitions/toy-test-lap-openings.md).
 

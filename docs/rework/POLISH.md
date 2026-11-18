@@ -50,7 +50,7 @@ _Built 2026-10-23 ([PR #898](https://github.com/rjdunlap/neo/pull/898)): the six
 - **Done when:** each of the six shows its illustrated resident at every band and in four views; the resident's touch circle (at least 100 across) and idle motion clear every spot, the signpost, the guide corner and the heading; no location shows her species twice; `npm run build` reports the new precache total.
 - **Check tier:** shell (assets and a shared scene). Typecheck, unit tests, build, one filtered root probe of arrive → poke the resident → launch → return for one of the six, in both orientations, and the offline check (new assets).
 
-_Follow-up, built 2026-11-11 ([PR #1535](https://github.com/rjdunlap/neo/pull/1535), [P5 pilot](../POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m)): Trill, the Music Mountain resident, walks to a wind chime and back on its own and turns toward her last touch (`src/creatures/wander.ts`); the other five stay standing until a phone look says it reads as alive._
+_Follow-up, built 2026-11-11 ([PR #1535](https://github.com/rjdunlap/neo/pull/1535), [P5 pilot](../reviews/POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m)): Trill, the Music Mountain resident, walks to a wind chime and back on its own and turns toward her last touch (`src/creatures/wander.ts`); the other five stay standing until a phone look says it reads as alive._
 
 ### Slice 3: one meaning per button
 
@@ -129,7 +129,7 @@ _Built 2026-10-23 ([PR #906](https://github.com/rjdunlap/neo/pull/906)): `App.sh
 
 - **Game scenes.** Illustrated surroundings for one game's own scene (Duck Pond's pond, behind the code-drawn water) after slice 6 is judged. It would be a queue row like R22, and the game's geometry stays code-drawn.
 - **Home at dusk.** `home-dusk-2` exists; the [RW06 default](HOME.md#decisions-defaults-the-build-uses) is day only.
-- **A stepped wobble.** One prop or one location's foreground gets an idle wobble that updates eight times a second rather than every frame, to see whether it reads as hand-made beside the mesh-rig creatures. Judged in a screenshot review; dropped if it reads as a low frame rate. No new art. From the [Pok Pok review](../POK-POK.md#p8-a-stepped-wobble-art-exploration-s-optional) (2026-11-10).
+- **A stepped wobble.** One prop or one location's foreground gets an idle wobble that updates eight times a second rather than every frame, to see whether it reads as hand-made beside the mesh-rig creatures. Judged in a screenshot review; dropped if it reads as a low frame rate. No new art. From the [Pok Pok review](../reviews/POK-POK.md#p8-a-stepped-wobble-art-exploration-s-optional) (2026-11-10).
 - **"New" marks.** Sparkles on unplayed spots could start only after her first round in a location, so that they mean "new since you were here". This is a proposal; it changes no gate.
 
 ## Not established

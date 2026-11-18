@@ -1,9 +1,8 @@
 # Archived documents
 
-- [Superseded Harbor progression proposal](PROGRESSION-PROPOSAL-2026-10-26.md): old ticket/wheel/bank specification, moved from the roadmap after reconciliation with the October 23 decisions.
+These files are **history, not instructions**. They record proposals, research, decisions and checks as they stood when they were written. Where they disagree with the current docs, the current docs win; the [docs map](../README.md) says which those are. Every file here has a line below (`scripts/docs-map.test.mjs` checks it; the dated verification files are covered by their one section). To archive a document, move it here with its date in the name, add its line, and repoint links with `node scripts/check-links.mjs --fix-moved` where sections moved.
 
-
-These files are **history, not instructions**. They record proposals, research and checks as they stood when they were written. Where they disagree with the current docs, the current docs win: [roadmap](../ROADMAP.md), [design](../DESIGN.md), [games](../GAMES.md), [ideas](../IDEAS.md), [verification](../VERIFICATION.md).
+## Roadmaps, plans and ideas
 
 | File | What it is | Where its live content went |
 | --- | --- | --- |
@@ -11,67 +10,46 @@ These files are **history, not instructions**. They record proposals, research a
 | [ELEMENTARY-ROADMAP.md](ELEMENTARY-ROADMAP.md) | The long-term plan through elementary school: horizons, game-family growth, zone concepts, curriculum references | The roadmap's [later horizons](../ROADMAP.md#later-horizons-elementary) |
 | [PLAY-AND-PROGRESSION.md](PLAY-AND-PROGRESSION.md) | The 2026-10-06 review of longer play, personal goals and scoring, with research notes; it led to the couch challenge courses and the pet room | Goal and scoring principles in the roadmap's [planning rules](../ROADMAP.md#planning-rules); built behavior in [DESIGN](../DESIGN.md#couch-play) |
 | [PARTY-AND-SWITCH.md](PARTY-AND-SWITCH.md) | The Island Party proposal (built as couch play) and research into running the game on an original Nintendo Switch | Couch play in [DESIGN](../DESIGN.md#couch-play) and [COUCH-PLAY.md](../COUCH-PLAY.md); co-op ideas in [IDEAS](../IDEAS.md); the Switch port is [parked](../ROADMAP.md#parked-or-decided) |
-| [COMPLETED-2026-10-09.md](COMPLETED-2026-10-09.md) | Finished roadmap items and build notes (including the [ME1 definition closeout](COMPLETED-2026-10-09.md#me1-swap-meet-14-definition-2026-10-25) and the [WL1 definition closeout](COMPLETED-2026-10-09.md#wl1-european-portuguese-stage-1-definition-2026-10-25); the ghost-finger build log, the couch route's built steps, the Lemonade Stand plan, the shortened "Where we are"), idea-notebook rows for ideas that were built, and the evidence paragraphs of the 2026-10-09 reviews | [ROADMAP.md](../ROADMAP.md) (open work), [GAMES.md](../GAMES.md) (what was built), [IDEAS.md](../IDEAS.md) (proposals) |
-| [VERIFICATION-2026-10-07-13.md](VERIFICATION-2026-10-07-13.md) | Verification entries rotated out of the live log on 2026-10-13 (everything before the newest fifteen) | The live log's [coverage summary](../VERIFICATION.md#coverage-summary) |
-| [VERIFICATION-2026-10-05-06.md](VERIFICATION-2026-10-05-06.md) | Verification entries from the first two days of building | The current log's [coverage summary](../VERIFICATION.md#coverage-summary) links here where a suite's last recorded pass is in this file |
+| [IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md](IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md) | IDEAS.md's short-ladder audit and its second and third rounds, moved out on 2026-10-17 | The game [deep dives](../deep-dives/README.md) superseded them |
 | [ROADMAP-LADDER-HANDOFF-2026-10-12.md](ROADMAP-LADDER-HANDOFF-2026-10-12.md) | Verbose deep-dive handoff and completed/stale short-ladder list before the family-experience review | [Current roadmap](../ROADMAP.md#short-ladders-in-order), [deep dives](../deep-dives/README.md), [family review](../FAMILY-EXPERIENCE.md) |
+| [ROADMAP-CLEANUP-2026-10-15.md](ROADMAP-CLEANUP-2026-10-15.md) | The Next up table, short-ladder and more-to-play lists, Lands, Profiles first and Grown-up play text as they stood before the roadmap was shortened to a ready-to-build list | [ROADMAP.md](../ROADMAP.md), [READY.md](../READY.md) |
+| [USER-RESEARCH-2026-10-24.md](USER-RESEARCH-2026-10-24.md) | The research review and the five-minute child observation protocol, for when child observations start | Real play is recorded as phone playtest notes in [OBSERVATIONS](../OBSERVATIONS.md) |
+| [PROGRESSION-PROPOSAL-2026-10-26.md](PROGRESSION-PROPOSAL-2026-10-26.md) | The superseded Harbor progression proposal: the old ticket/wheel/bank specification, moved from the roadmap after reconciliation with the October 23 decisions | The [rework brief](../rework/README.md) |
+| [ROADMAP-CLEANUP-2026-11-09.md](ROADMAP-CLEANUP-2026-11-09.md) | The roadmap's per-game "Where we are" bullets and its newest-game chain | The README tables are the inventory |
+| [BLOCK-TOPPLE-SKETCH-2026-10-14.md](BLOCK-TOPPLE-SKETCH-2026-10-14.md), [VINE-SNIP-SKETCH-2026-10-13.md](VINE-SNIP-SKETCH-2026-10-13.md), [DAY-BY-DAY-FIRST-SLICE.md](DAY-BY-DAY-FIRST-SLICE.md) | Early notes that sat loose in `docs/` | Each game's page in [docs/games/](../GAMES.md) |
 
-The original design brief also exists as a [historical design artifact](https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913) outside the repository. Nothing in the project depends on it.
+`MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions. On 2026-10-17 the subject recommendation packets left the roadmap for [deep-dives/subjects/RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md) (not an archive: they are live proposals). The original design brief also exists as a [historical design artifact](https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913) outside the repository. Nothing in the project depends on it.
 
-`MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions.
+## Completed work and build notes
 
-- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach, Penguin Slide/Tangram Town level checks and the Beat Builder how-to layout check, the Bouncy Launch level 7 entry, the Mossy Path first-slice entry, and the Sing-Along Barn level 6 entry.
-- [Verification 2026-10-14](VERIFICATION-2026-10-14.md): the Peekaboo Barn beach scene entry, the Critter Crossing level 6, Animal Snack level 3 and Peekaboo Barn bedroom entries, the weather and water and movement research entries, the Memory Match vehicles and dot-arrangements entries, the routines/self-care, cooking/recipes, social-emotional and off-screen companions research entries, the Word Monsters guards entry, and the machines/tools and commercial social-play research entries, and the Splish Splash level 9 entry (rotated during the computers study); Sing-Along Barn fifth tune, Dot Link dive and music/instruments research rotated during Weather Window closeout.
-- [Verification 2026-10-15](VERIFICATION-2026-10-15.md): the Peekaboo Barn level 16 One door and Critter Crossing level 7 Settle it, Goodnight Room note per friend and Duck Pond level 12 entries, and the Day by Day level 4 A day beside any day entry, the Clock Tower levels 3 and 6 coverage entry, and Chain Reaction trail/watch-again; Day by Day count another weather and Jelly Drums distinct tunes; Animal Snack bites and Day by Day Weather Window; Sing-Along Barn sixth tune and Memory Match 12 Same time; Goodnight Room tent and boat cabin; Treasure Map couch play; the Critter Sort level 7 newcomer entry.
-- [Verification 2026-10-18](VERIFICATION-2026-10-18.md): the 2026-10-18 entries beyond the newest fifteen, starting with the Attic Finds definition.
-- [Verification 2026-10-19](VERIFICATION-2026-10-19.md): the Medieval life subject research entry, rotated out when the Chance and statistics study closed out. The Greece and Rome subject research entry rotated out at the second creature-art review, and the Seesaw Balance deep dive entry when the Algebra and balance study closed out. The Chance and statistics study entry rotated out when RW06 slice 1 closed out.
-- [Verification 2026-10-17](VERIFICATION-2026-10-17.md): the 2026-10-17 entries beyond the newest fifteen (deep dives, definitions and subject research from that day, RW03 and RW04 packets, Dot Link 11, Splish Splash and Jelly Drums slices), rotated by `scripts/archive-verification.mjs`. Each dated verification file from 2026-10-13 on also ends with the execution queue's worker dispatch records for that day, moved out of the live log on 2026-10-17.
-- [Verification 2026-10-16](VERIFICATION-2026-10-16.md): the Critter Sort worked example and Market Stall pips and a teaching hint entries.
+Frozen 2026-11-18: a landed slice no longer gets a build note ([routing](../SESSION-GUIDE.md#where-each-doc-update-goes)). What a slice built is in its verification entry and its game's page.
 
-- [Historical local-build audit](LOCAL-GAME-BUILDS-2026-10-13.md): superseded source-worktree evidence for the three recovered games.
-- [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and the completed recovery audit.
-- [Roadmap cleanup 2026-10-15](ROADMAP-CLEANUP-2026-10-15.md): the Next up table, short-ladder and more-to-play lists, Lands, Profiles first and Grown-up play text as they stood before the roadmap was shortened to a ready-to-build list.
+| File | What it is | Where its live content went |
+| --- | --- | --- |
+| [COMPLETED-2026-10-09.md](COMPLETED-2026-10-09.md) | Finished roadmap items and build notes from 2026-10-09 to 2026-11-17 (including the [ME1 definition closeout](COMPLETED-2026-10-09.md#me1-swap-meet-14-definition-2026-10-25) and the [WL1 definition closeout](COMPLETED-2026-10-09.md#wl1-european-portuguese-stage-1-definition-2026-10-25); the ghost-finger build log, the couch route's built steps, the Lemonade Stand plan, the shortened "Where we are"), idea-notebook rows for ideas that were built, and the evidence paragraphs of the 2026-10-09 reviews. About 850 KB: read it with `node scripts/peek.mjs` | [ROADMAP.md](../ROADMAP.md) (open work), [GAMES.md](../GAMES.md) (what was built), [IDEAS.md](../IDEAS.md) (proposals) |
+| [Bubble Pop levels 16–18](2026-11-17-bubble-pop-big-and-little-which-one-has-the-dots-and-pictures-pr-1768.md), [upright batch 6](2026-11-17-upright-batch-6-six-early-school-games-pr-1765.md), [upright batch 7](2026-11-17-upright-batch-7-six-more-early-school-games-pr-1766.md) | Three build notes of 2026-11-17 written as their own files | The games' pages in [docs/games/](../GAMES.md) and that day's entries in [docs/verification/](../VERIFICATION.md) |
 
-Earth-materials research closeout also rotated the oldest live verification entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+## Decisions and lists for the developer
 
-Body/health research closeout also rotated the Shape Buddies level 2 definition and Critter Sort level 11 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+| File | What it is | Where its live content went |
+| --- | --- | --- |
+| [DECISIONS-2026-10-23.md](DECISIONS-2026-10-23.md) | Every open question decided on the developer's delegation of 2026-10-23, each with its reason and the row as it stood; its [standing rules](DECISIONS-2026-10-23.md#standing-rules) still decide what is not the developer's alone | Each decision is in its source doc; what remains is in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) |
+| [DECISIONS-2026-11-17.md](DECISIONS-2026-11-17.md) | The calls made as owner on 2026-11-17 for the work a READY refill had skipped as gated, and the Portuguese reviewer answer of the same day | Each is in its source; the unblocked slices are in [READY.md](../READY.md) |
+| [WAITING-ON-DEVELOPER-2026-11-09.md](WAITING-ON-DEVELOPER-2026-11-09.md) | The per-game optional decisions the waiting list used to repeat | Each is in its dive's own "Decisions for the developer" section with a default; the live list is [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) |
+| [DEVICE-CHECKS-2026-11-09.md](DEVICE-CHECKS-2026-11-09.md) | The 616 iPad, child, TV and controller checks collected up to the day they were parked, grouped by game | The live page is a short [parked note](../DEVICE-CHECKS.md) |
 
-Genetics research closeout rotated the Clap the Syllables level 8 and 9 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+## Sessions and workflow
 
-Deep-time research closeout rotated the oldest live Ecosystems subject-research entry into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+| File | What it is | Where its live content went |
+| --- | --- | --- |
+| [EXECUTION-QUEUE-2026-11-03.md](EXECUTION-QUEUE-2026-11-03.md) | The Codex coordinator's queue, policy and checkpoints, paused 2026-11-03 and frozen; archived 2026-11-18 | [Scheduled runs](../SESSION-GUIDE.md#scheduled-runs) in the session guide; [READY.md](../READY.md) is the pick list |
+| [LOCAL-GAME-BUILDS-2026-10-13.md](LOCAL-GAME-BUILDS-2026-10-13.md) | Historical local-build audit: superseded source-worktree evidence for the three recovered games | Nothing live |
+| [SESSION-CLEANUP-2026-10-14.md](SESSION-CLEANUP-2026-10-14.md) | Source reconciliation, integration checks and the completed recovery audit | Nothing live; later reviews are in [WORKFLOW-REVIEWS.md](../reviews/WORKFLOW-REVIEWS.md) |
 
-Creature-world planning closeout rotated nine older entries (Photo Safari two-clue/texture, Planet Hop, zoo animals, Barnyard visuals, standards, body/health, earth materials and Tangram broom) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
+## Verification entries before 2026-11-12
 
-Sink or Float level 7 closeout rotated the oldest live verification entry (Everyday life long ago subject research) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
+Since 2026-11-12 each set of checks is its own file in [`docs/verification/`](../VERIFICATION.md) and nothing is rotated. Before that, entries beyond the newest fifteen in the live log were moved here, into the file for the day they were written; the live [coverage summary](../VERIFICATION.md#coverage-summary) links here where a suite's last recorded pass is in one of these files.
 
-Shape Buddies level 2 closeout rotated the oldest live verification entry (Deep time subject research) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
-
-Ramp Race support definition closeout rotated the two oldest live verification entries (Additional subject gap review, Subject docs completed-work cleanup) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
-
-Song Maker deep-dive closeout rotated the Further subject and progression gaps and Subject docs publication reconciliation entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
-
-Splish Splash slice 1 closeout rotated the oldest live verification entry (Woodland Picnic) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
-
-Dot Link level 11 closeout rotated the five oldest live verification entries (Shape Buddies level 2, RW02b, Sink or Float level 7, RW02) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md); the RW03 entry stays live because the execution queue links it, leaving sixteen dated entries live.
-
-IDEAS.md's short-ladder audit (2026-10-09), round two and round three moved to [IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md](IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md) on 2026-10-17; the game deep dives superseded them. The same day the subject recommendation packets left the roadmap for [deep-dives/subjects/RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md) (not an archive: they are live proposals).
-
-RW06 slice 2 closeout rotated the oldest live verification entry (Ramp Race truthful support, inquiry Q2) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
-
-Puddle Gobble closeout rotated the oldest live verification entry into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
-
-Swing Pals closeout rotated the oldest live verification entry (Garden Grow, slice 1) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
-
-Cut Along closeout rotated the oldest live verification entry (Weather Wardrobe, slice 1) into [Verification 2026-10-21](VERIFICATION-2026-10-21.md), leaving fifteen dated entries live.
-
-Peg Garden batch 1 closeout rotated the oldest live verification entry (Stop and Go, slice 2) into [Verification 2026-10-22](VERIFICATION-2026-10-22.md), leaving fifteen dated entries live.
-
-Little Helpers slice 1 closeout rotated the oldest live verification entry (Fill and Dump level 6) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
-
-Docs streamlined for the phone-playtest focus (2026-11-09):
-
-- [Device checks backlog 2026-11-09](DEVICE-CHECKS-2026-11-09.md): the 616 iPad, child, TV and controller checks collected up to the day they were parked, grouped by game. The live page is now a short [parked note](../DEVICE-CHECKS.md).
-- [Waiting on the developer 2026-11-09](WAITING-ON-DEVELOPER-2026-11-09.md): the per-game optional decisions the waiting list used to repeat; each is still in its dive's own "Decisions for the developer" section with a default. The live list is [two rows](../WAITING-ON-DEVELOPER.md).
-- [Roadmap cleanup 2026-11-09](ROADMAP-CLEANUP-2026-11-09.md): the roadmap's per-game "Where we are" bullets and its newest-game chain; the README tables are the inventory.
-- [User research review 2026-10-24](USER-RESEARCH-2026-10-24.md): the research review and the five-minute child observation protocol, for when child observations start. Real play is now recorded as phone playtest notes in [OBSERVATIONS](../OBSERVATIONS.md).
-- [Block Topple sketch 2026-10-14](BLOCK-TOPPLE-SKETCH-2026-10-14.md), [Vine Snip sketch 2026-10-13](VINE-SNIP-SKETCH-2026-10-13.md) and [Day by Day first slice](DAY-BY-DAY-FIRST-SLICE.md): early notes that sat loose in `docs/`; each game's live page is in [docs/games/](../GAMES.md).
+- [VERIFICATION-2026-10-05-06.md](VERIFICATION-2026-10-05-06.md): entries from the first two days of building.
+- [VERIFICATION-2026-10-07-13.md](VERIFICATION-2026-10-07-13.md): entries rotated out of the live log on 2026-10-13.
+- One file per day from 2026-10-13: [10-13](VERIFICATION-2026-10-13.md), [10-14](VERIFICATION-2026-10-14.md), [10-15](VERIFICATION-2026-10-15.md), [10-16](VERIFICATION-2026-10-16.md), [10-17](VERIFICATION-2026-10-17.md), [10-18](VERIFICATION-2026-10-18.md), [10-19](VERIFICATION-2026-10-19.md), [10-20](VERIFICATION-2026-10-20.md), [10-21](VERIFICATION-2026-10-21.md), [10-22](VERIFICATION-2026-10-22.md), [10-23](VERIFICATION-2026-10-23.md), [10-24](VERIFICATION-2026-10-24.md), [10-25](VERIFICATION-2026-10-25.md), [10-26](VERIFICATION-2026-10-26.md), [10-27](VERIFICATION-2026-10-27.md), [10-28](VERIFICATION-2026-10-28.md), [10-30](VERIFICATION-2026-10-30.md), [10-31](VERIFICATION-2026-10-31.md), [11-01](VERIFICATION-2026-11-01.md), [11-02](VERIFICATION-2026-11-02.md), [11-03](VERIFICATION-2026-11-03.md), [11-04](VERIFICATION-2026-11-04.md), [11-05](VERIFICATION-2026-11-05.md), [11-06](VERIFICATION-2026-11-06.md), [11-07](VERIFICATION-2026-11-07.md), [11-08](VERIFICATION-2026-11-08.md), [11-09](VERIFICATION-2026-11-09.md), [11-10](VERIFICATION-2026-11-10.md), [11-11](VERIFICATION-2026-11-11.md), [11-12](VERIFICATION-2026-11-12.md). Each from 2026-10-13 on also ends with the execution queue's worker dispatch records for that day, moved out of the live log on 2026-10-17.

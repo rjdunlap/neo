@@ -111,7 +111,7 @@ The phone gives grown-ups four grown-up cards and two early-school cards at the 
 
 ## U5: a first six she can start (status built 2026-11-10)
 
-From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#4-todays-six-does-not-suit-a-brand-new-player), finding 4: a one-year-old's first six showed Word Glue with a grown-up tip that asks her to name something, and a four-year-old's showed Day by Day at level 4, a three-step card for a game never played. The review asked for three things; one of them is already built.
+From the [adversarial UX review](../reviews/UX-REVIEW-2026-11-09.md#4-todays-six-does-not-suit-a-brand-new-player), finding 4: a one-year-old's first six showed Word Glue with a grown-up tip that asks her to name something, and a four-year-old's showed Day by Day at level 4, a three-step card for a game never played. The review asked for three things; one of them is already built.
 
 | Asked | Decision |
 | --- | --- |

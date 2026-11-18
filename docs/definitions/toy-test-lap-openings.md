@@ -2,7 +2,7 @@
 
 *Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb`, Cozy Village's eight at `7f12c562`, Rainbow Meadow's six at `bd67aa66`, Puzzle Peaks' two at `d4fbbb71`, Story Grove's six at `d80b14e9` and Tinker Lab's six at `353daaba`, all 2026-11-11. All 57 games that list `lap` are read; what follows from that is in [every land is read](#every-land-is-read).*
 
-This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
+This is [P4](../reviews/POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
 ## The five questions
 
@@ -12,7 +12,7 @@ This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game
 4. **One big thing that grows.** Does it start with one big thing, with more arriving because she touched? Jelly Drums level 10, *One big jelly*, is the pattern: one enormous jelly answers a touch anywhere, and its friends wake after six touches.
 5. **A silly use is answered.** Does an unexpected touch (the background, a used-up thing, a hold, a drag where a tap is meant) get a reply of its own?
 
-A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap level in the *One big jelly* shape, at the new-level tier. The **Voice off** column is also [P7](../POK-POK.md#p7-a-words-off-list-for-the-familys-languages-docs-s)'s words-off list.
+A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap level in the *One big jelly* shape, at the new-level tier. The **Voice off** column is also [P7](../reviews/POK-POK.md#p7-a-words-off-list-for-the-familys-languages-docs-s)'s words-off list.
 
 ## How it was read
 
