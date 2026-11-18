@@ -1051,7 +1051,7 @@ class CutAlong implements Game {
     });
     this.held = { holder, inner, piece: t.cut.piece, handle };
     void this.ctx.tw.to(holder, { y: holder.y - 20 }, { duration: 0.25, ease: ease.outQuad });
-    void this.ctx.say('cut.place');
+    void this.ctx.instruct('cut.place');
   }
 
   /** Let go at (x, y) on the stage: inside the picture it stays where she put it; anywhere else it floats to the middle. */
