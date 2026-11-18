@@ -601,7 +601,8 @@ class WordMonsters implements Game {
       spare.alpha = 1;
     }
     sfx.pop(4);
-    void this.ctx.say('monster.repair.replace', { word: q.answer });
+    // The round's second step is the ask now: the caption and the guide stop asking for the letter to take out.
+    void this.ctx.instruct('monster.repair.replace', { word: q.answer });
   }
 
   private ask(q: Question) {

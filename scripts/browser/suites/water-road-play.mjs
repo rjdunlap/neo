@@ -114,6 +114,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     }
     let info = await pairInfo();
     assert.equal(info.pair, 2, 'the asked pair');
+    assert.equal(
+      await page.evaluate(() => neo.scene.instruction?.id),
+      'wr.ask',
+      'the asked pair puts its question as the instruction',
+    );
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(800);
     await screenshot('water-road-2-portrait');

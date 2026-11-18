@@ -226,7 +226,7 @@ class VineSnip implements Game {
 
   askForHint() {
     if (this.finished || this.busy) return;
-    if (!this.canSnip) return void this.say(this.instructLine(), this.vars());
+    if (!this.canSnip) return void this.ctx.instruct(this.instructLine() as LineId, this.vars());
     // Levels 1 and 2 count nothing against her, so the glow is free there, as the card says.
     if (this.plan.counts) this.hints++;
     // A fruit swinging or hanging on a vine that cannot feed its friend grows its vines back first.
@@ -498,7 +498,9 @@ class VineSnip implements Game {
     const s = this.stroke;
     if (!s || e.pointerId !== s.id) return;
     this.stroke = null;
-    if (!s.cutAny && s.travel < TAP_TRAVEL && this.canSnip) void this.say(this.instructLine(), this.vars());
+    // A plain tap hears the ask again, as the instruction: after a vine that left the fruit hanging still it is "Snip the other vine."
+    if (!s.cutAny && s.travel < TAP_TRAVEL && this.canSnip)
+      void this.ctx.instruct(this.instructLine() as LineId, this.vars());
   }
 
   snip(h: Hang, i: number, e?: FederatedPointerEvent) {
