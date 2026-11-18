@@ -605,7 +605,12 @@ class BlockTopple implements Game {
     // Level 5: the fruit hop into the tray, and she counts the tray before the next stack appears.
     if (this.plan.kind === 'count') await this.askCount();
     if (this.finished) return;
-    if (this.lineIndex + 1 < this.lines.length) return this.showLine(this.lineIndex + 1);
+    if (this.lineIndex + 1 < this.lines.length) {
+      this.showLine(this.lineIndex + 1);
+      // The count is answered: the next stack's ask is the level's again, not "How many fruits are in the tray?".
+      if (this.plan.kind === 'count') void this.ctx.instruct(INSTRUCT.count);
+      return;
+    }
     await this.finish();
   }
 
@@ -657,7 +662,8 @@ class BlockTopple implements Game {
     this.countHinted = false;
     const done = new Promise<void>((resolve) => (this.answered = resolve));
     this.showPads();
-    void this.ctx.say(this.lineIndex ? 'block-topple.how-many-now' : 'block-topple.how-many');
+    // The question is what is asked while the pads are up, so the guide repeats it and the caption keeps it.
+    void this.ctx.instruct(this.lineIndex ? 'block-topple.how-many-now' : 'block-topple.how-many');
     await done;
   }
 
