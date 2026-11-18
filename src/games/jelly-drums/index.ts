@@ -360,7 +360,8 @@ class JellyDrums implements Game {
   }
 
   private async playTune(slow: boolean) {
-    await this.ctx.say('jelly.listen');
+    // The listening phase's ask: the guide repeats it and the caption keeps it while the jellies play.
+    await this.ctx.instruct('jelly.listen');
     await this.ctx.tw.wait(0.3);
     for (const i of this.tune) {
       this.jellies[i].glow(slow ? 0.8 : 0.5);
@@ -377,6 +378,7 @@ class JellyDrums implements Game {
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
     this.phase = 'turn';
+    void this.ctx.instruct('jelly.turn');
     if (help) this.jellies[this.tune[0]].glow(1.5);
   }
 
@@ -404,6 +406,7 @@ class JellyDrums implements Game {
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
     this.phase = 'turn';
+    void this.ctx.instruct('jelly.turn');
     // After two tries, light the way: the next jelly to tap glows.
     if (help) this.jellies[this.tune[0]].glow(1.5);
   }
