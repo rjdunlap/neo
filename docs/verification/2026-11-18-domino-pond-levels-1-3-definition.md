@@ -1,4 +1,4 @@
-# Domino Pond levels 1–3 definition (PR #1802)
+# 2026-11-18 — Domino Pond levels 1–3 definition (PR #1802)
 
 **Changed:** Defined dot matching, exact patch totals and threshold signs as one Puzzle Peaks build, and queued it and the Word Code definition in Next ten. Updated the puzzle-pages study, recommendations, study backlog, roadmap, ideas and docs map.
 
