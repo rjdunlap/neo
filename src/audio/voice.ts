@@ -78,7 +78,11 @@ class Voice {
    * pet's single voice). Keeps the muted-environment pacing, the turn counter, ducking and the no-`end` timeout of `say`.
    */
   sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void> {
-    const text = this.line(id, vars);
+    return this.speakIn(this.line(id, vars), preset);
+  }
+
+  /** `sayIn` for a finished string, so a caller can show the same wording it says. */
+  speakIn(text: string, preset: VoicePreset): Promise<void> {
     this.endAll();
     if (envMuted || !this.enabled) return this.silent(text);
     this.cutClip();

@@ -14,6 +14,16 @@ function out() {
   return ctx ? { ctx, dest: audio.sfxOut, t: ctx.currentTime } : null;
 }
 
+/** Who is told of a boing: the round's shell, so a reader sees a wrong answer the sound alone would carry. */
+let boingHeard: (() => void) | null = null;
+
+/** Sets the one listener for the boing (or clears it with null). Returns the listener it replaced. */
+export function onBoing(fn: (() => void) | null): (() => void) | null {
+  const was = boingHeard;
+  boingHeard = fn;
+  return was;
+}
+
 /** Every sound effect in the game. Pitched ones take pentatonic steps (0 = middle C). */
 export type BiteKind = 'crunch' | 'swish' | 'gnaw' | 'gulp' | 'peck' | 'lick';
 
@@ -62,6 +72,8 @@ export const sfx = {
 
   /** A springy bounce, for a gentle "not that one". */
   boing() {
+    // Told before the sound is made, so it is seen with the device silent or the audio not yet unlocked.
+    boingHeard?.();
     const o = out();
     if (!o) return;
     const osc = tone(o.ctx, o.dest, 'triangle', 170 * jitter(), o.t, 0.3, 0.01, 0.35, 330);

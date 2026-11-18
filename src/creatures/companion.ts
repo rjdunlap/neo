@@ -264,6 +264,7 @@ export class Companion extends Container implements CompanionRig {
 
   private spinT = -1;
   private wiggleT = -1;
+  private tiltT = -1;
   private readonly parts = new Map<PartName, Container[]>();
 
   private shown: WearableId[] = [];
@@ -388,6 +389,11 @@ export class Companion extends Container implements CompanionRig {
     this.wiggleT = 0;
   }
 
+  /** One slow lean to the side and back: "hm?", for a wrong answer a reader cannot hear. */
+  tilt() {
+    this.tiltT = 0;
+  }
+
   hop(power = 1) {
     if (this.hopY < 0) return;
     this.hopV = -520 * power;
@@ -444,6 +450,11 @@ export class Companion extends Container implements CompanionRig {
       this.wiggleT += dt;
       rock = this.wiggleT >= 0.5 ? 0 : 0.14 * Math.sin((this.wiggleT / 0.5) * Math.PI * 4);
       if (this.wiggleT >= 0.5) this.wiggleT = -1;
+    }
+    if (this.tiltT >= 0) {
+      this.tiltT += dt;
+      if (this.tiltT >= 0.7) this.tiltT = -1;
+      else rock += 0.2 * Math.sin((this.tiltT / 0.7) * Math.PI);
     }
     this.talkAmt += Math.max(-dt * 5, Math.min(dt * 5, (this.talking ? 1 : 0) - this.talkAmt));
     this.talkT = this.talkAmt > 0 ? this.talkT + dt : 0;
