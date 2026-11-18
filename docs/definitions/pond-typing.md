@@ -74,7 +74,7 @@ Every level-1 group is four consecutive letters of the alphabet and no round mix
 
 Registration/land and the source-check route for content were decided 2026-10-23; capacity was established with part1 and the content check is below. Still open: whether the sticky Shift is reachable for a small hand; whether a six-year-old understands that the stage waits on every key (no timer); the couch's name for the player and orientation (read in code, not seen); Caps Lock and non-US layouts (read `key`); whether `faceoff: 'twin'` or a team stop suits a typing game; how a laptop with the key-cap strip hidden reads. Checks needing a child at a real keyboard or a laptop go to [DEVICE-CHECKS.md](../DEVICE-CHECKS.md) once a build exists. The couch-tier build check is `BROWSER_SUITE=couchgames` filtered to the new game plus typecheck and rule tests.
 
-**Reference (2026-10-23):** the [Typing Land review](../TYPING-LAND.md) proposes two docs-only amendments before the build, P1 (three short scenes per round over one key pool) and P2 (a *first try* readout, no speed), and records the facts the build should carry (read `key`, the pet reads every target, no hands on the keyboard).
+**Reference (2026-10-23):** the [Typing Land review](../reviews/TYPING-LAND.md) proposes two docs-only amendments before the build, P1 (three short scenes per round over one key pool) and P2 (a *first try* readout, no speed), and records the facts the build should carry (read `key`, the pet reads every target, no hands on the keyboard).
 
 
 ## Part 2 implementation and source check (2026-10-24)

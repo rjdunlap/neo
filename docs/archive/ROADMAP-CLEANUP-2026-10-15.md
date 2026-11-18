@@ -4,7 +4,7 @@ History, not instructions. On 2026-10-15 the roadmap's Next up table was rewritt
 
 ## Next up as it stood
 
-Scheduled work uses the [execution queue](../EXECUTION-QUEUE.md): one fresh project chat per slice, usage checks before dispatch, checkpoints between runs, and the same claim and verification rules as a human-started session. The queue selects from this roadmap; it does not change readiness or resolve developer decisions.
+Scheduled work uses the [execution queue](EXECUTION-QUEUE-2026-11-03.md): one fresh project chat per slice, usage checks before dispatch, checkpoints between runs, and the same claim and verification rules as a human-started session. The queue selects from this roadmap; it does not change readiness or resolve developer decisions.
 
 The [family experience review](../FAMILY-EXPERIENCE.md) adds a quality track alongside catalog growth: discovery, mode presentation, art and feedback, connected adventures and meaningful shared roles. Finish owned work first; then interleave bounded quality slices with content and ladder slices. Research is a complete docs-only task, and does not claim a game implementation.
 

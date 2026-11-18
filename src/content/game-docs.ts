@@ -1,7 +1,7 @@
 // The game inventory docs, generated from the registry: each game's page in docs/games/<id>.md (a marked block at its
 // top), the README's two inventory tables and their counts, and the GAMES.md index. Everything outside the marks is
 // written by hand: a page's "Starts as" and "Grows into" lines and its design notes. `game-docs.test.ts` fails when a
-// file is stale; `npm run game-docs` rewrites them (codebase review item 3, docs/CODEBASE-REVIEW-2026-11-07.md).
+// file is stale; `npm run game-docs` rewrites them (codebase review item 3, docs/reviews/CODEBASE-REVIEW-2026-11-07.md).
 import type { GameModule } from '../games/types';
 import type { Land } from './lands';
 import { BANDS, bandRank, type Band } from '../progress/bands';

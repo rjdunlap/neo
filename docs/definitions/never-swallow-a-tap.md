@@ -2,7 +2,7 @@
 
 *Status: defined 2026-11-10. U7a–U7c built 2026-11-10 ([U7a](#u7a-as-built-2026-11-10), [U7b](#u7b-as-built-2026-11-10), [U7c](#u7c-as-built-2026-11-10)); U7d classified for the games ready for upright play 2026-11-10 ([the lines page](never-swallow-a-tap-lines.md)); the other games' reading is queued.*
 
-From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#8-taps-are-dropped-and-screens-are-slow-to-answer), finding 8 and recommendation U7: a tap that does nothing, or a screen that takes seconds to answer, reads to a child as "it's broken" and to a grown-up as "it froze". The review asked for two things: let a second tap interrupt a spoken name, and show the pressed picture as chosen while a screen changes. This page settles what each means in the code, and adds the measurement the slow screens need first.
+From the [adversarial UX review](../reviews/UX-REVIEW-2026-11-09.md#8-taps-are-dropped-and-screens-are-slow-to-answer), finding 8 and recommendation U7: a tap that does nothing, or a screen that takes seconds to answer, reads to a child as "it's broken" and to a grown-up as "it froze". The review asked for two things: let a second tap interrupt a spoken name, and show the pressed picture as chosen while a screen changes. This page settles what each means in the code, and adds the measurement the slow screens need first.
 
 **Where it shows.** On a phone the root is **Who's playing?**, then Today's six and the games (`App.phoneOnly`); Home, Explore, the Arcade, the library and creature play are not reached there. So the phone parts are the chooser, Today's six's cards and in-game taps, and they come first. Home, Explore and the Arcade are tablet and computer screens and follow.
 

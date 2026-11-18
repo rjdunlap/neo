@@ -27,7 +27,7 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | [docs/games/](docs/GAMES.md) (one page per game), [docs/IDEAS.md](docs/IDEAS.md) | What each game does, indexed in GAMES.md; the idea notebook (not a mandate) |
 | [docs/deep-dives/](docs/deep-dives/README.md) | Each game's researched ladder and the research tracker |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md), `docs/verification/` | The coverage summary per suite; checks performed, one dated file per entry |
-| [docs/SESSION-GUIDE.md](docs/SESSION-GUIDE.md), [docs/DEVELOPMENT-WORKFLOW.md](docs/DEVELOPMENT-WORKFLOW.md) | How a session works here; the reasons behind the workflow |
+| [docs/SESSION-GUIDE.md](docs/SESSION-GUIDE.md), [docs/DEVELOPMENT-WORKFLOW.md](docs/reviews/WORKFLOW-REVIEWS.md) | How a session works here; the reasons behind the workflow |
 | [docs/COUCH-PLAY.md](docs/COUCH-PLAY.md) | Player guide for couch play |
 | `docs/archive/` | History, not instructions |
 | `src/games/types.ts` | The minigame contract |
@@ -93,7 +93,7 @@ Before writing pointer input, hit areas, couch controls, textures or long-lived 
 
 ## Documentation and Git
 
-**Scheduled roadmap work** runs as local scheduled tasks, one slice per run, in a fresh chat ([scheduled runs](docs/SESSION-GUIDE.md#rule-details)); the Codex [execution queue](docs/EXECUTION-QUEUE.md) is paused and its file frozen. Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
+**Scheduled roadmap work** runs as local scheduled tasks, one slice per run, in a fresh chat ([scheduled runs](docs/SESSION-GUIDE.md#rule-details)); the Codex [execution queue](docs/archive/EXECUTION-QUEUE-2026-11-03.md) is paused and its file frozen. Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
 
 **Before choosing a slice or editing:** run `scripts/overlap.sh <game-id> <path>…` (fetch, how far behind, matching PRs, worktrees and unmerged branches). If another branch implements the slice, reconcile with it or pick another. Start a named feature branch from the latest `origin/main`, then publish a small docs-only claim commit and draft PR naming the game ID, subtasks and expected files, and put it on the roadmap or deep-dive row. Recheck overlap before each follow-up push and before merging; integrate a moved `origin/main` and rerun proportionate checks. Never push a stale local `main`. Full steps: [avoiding duplicate parallel work](docs/SESSION-GUIDE.md#avoiding-duplicate-parallel-work).
 

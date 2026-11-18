@@ -1,6 +1,6 @@
 # Tap the piece, then the place (P3, definition)
 
-Status: defined 2026-11-11 (docs only); slices 1 (P3a, the engine path and Hat Band), 2 (P3b, Block Garden) and 3 (P3c, Tangram Town levels 1–3) built 2026-11-11; see [As built (P3a)](#as-built-p3a-2026-11-11), [(P3b)](#as-built-p3b-2026-11-11) and [(P3c)](#as-built-p3c-2026-11-11). Proposal: [Pok Pok review, P3](../POK-POK.md#p3-a-tap-can-do-what-a-drag-does-a-question-now-a-definition-later). Defaults below were decided under the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules); say if any is wrong.
+Status: defined 2026-11-11 (docs only); slices 1 (P3a, the engine path and Hat Band), 2 (P3b, Block Garden) and 3 (P3c, Tangram Town levels 1–3) built 2026-11-11; see [As built (P3a)](#as-built-p3a-2026-11-11), [(P3b)](#as-built-p3b-2026-11-11) and [(P3c)](#as-built-p3c-2026-11-11). Proposal: [Pok Pok review, P3](../reviews/POK-POK.md#p3-a-tap-can-do-what-a-drag-does-a-question-now-a-definition-later). Defaults below were decided under the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules); say if any is wrong.
 
 A grown-up thumb on an upright phone is the island's small hand today, and a thumb hides the place it is dragging to. This definition gives `src/engine/drag.ts` one shared, opt-in second way to move a piece: tap it, it shows it is held, then tap the place and it glides there. A game takes it with one option on its existing `draggable()` call and no pointer code of its own; the game's own drop rule decides what the put-down means, exactly as it decides a drag's. No playtest note has named a drag yet (see [OBSERVATIONS](../OBSERVATIONS.md)); READY queued the definition ahead of one.
 
@@ -77,7 +77,7 @@ The card keeps demonstrating the drag wherever a level's action is a drag (the [
 
 Later games take it one at a time, when a playtest note names their drag or their dive asks; a game whose still tap means something (the five above) takes it only after its dive decides which meaning wins.
 
-**Not this path:** tap-to-fill on a coloring page is a fill tool beside a brush, not a piece carried to a place. The TotoLogic review first asked the Rainbow Fingers dive to consider it and withdrew that once the app was played ([P6](../TOTOLOGIC.md#p6-tap-to-fill-withdrawn)); if a phone-width coloring page ever asks, it is a question for the [Rainbow Fingers dive](../deep-dives/rainbow-fingers.md), not for this path.
+**Not this path:** tap-to-fill on a coloring page is a fill tool beside a brush, not a piece carried to a place. The TotoLogic review first asked the Rainbow Fingers dive to consider it and withdrew that once the app was played ([P6](../reviews/TOTOLOGIC.md#p6-tap-to-fill-withdrawn)); if a phone-width coloring page ever asks, it is a question for the [Rainbow Fingers dive](../deep-dives/rainbow-fingers.md), not for this path.
 
 ## As built (P3a, 2026-11-11)
 
