@@ -38,6 +38,7 @@ describe('migrate', () => {
       coplayHints: true,
       howToCards: true,
       speech: true,
+      showWords: false,
     });
     expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
@@ -454,6 +455,17 @@ describe('migrate', () => {
     const save = defaults();
     save.favorites = ['duck-pond', 'bubble-pop'];
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts with "Show the words" off and repairs the switch', () => {
+    expect(defaults().settings.showWords).toBe(false);
+    expect(migrate({ settings: { volume: 0.5 } }).settings.showWords).toBe(false);
+    expect(migrate({ settings: { showWords: 'yes' } }).settings.showWords).toBe(false);
+    expect(migrate({ settings: { showWords: 1 } }).settings.showWords).toBe(false);
+    expect(migrate({ settings: { showWords: true } }).settings.showWords).toBe(true);
+    const save = defaults();
+    save.settings.showWords = true;
+    expect(migrate(JSON.parse(JSON.stringify(save))).settings.showWords).toBe(true);
   });
 
   it('starts with the how-to cards on, repairs the switch, and drops the list an earlier version kept', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../../engine/view';
-import { UPRIGHT_VIEWS } from '../../games/upright-check';
+import { UPRIGHT_SCREENS } from '../../games/upright-check';
 import { journalLayout } from './JournalScene';
 import { stickerBookLayout } from './StickerBookScene';
 
@@ -14,7 +14,7 @@ const VIEWS = [
   computeView(768, 1024),
   computeView(844, 390),
   computeView(1366, 768),
-  ...Object.values(UPRIGHT_VIEWS),
+  ...Object.values(UPRIGHT_SCREENS),
 ];
 
 interface Box {
@@ -76,7 +76,7 @@ describe('the journal on every view, upright included', () => {
 
   it('keeps the wide area at two rows of four, and lays the upright area out in four rows of two', () => {
     expect(new Set(journalLayout(computeView(1024, 768)).cards.map((c) => c.y)).size).toBe(2);
-    expect(new Set(journalLayout(UPRIGHT_VIEWS.phone).cards.map((c) => c.y)).size).toBe(4);
+    expect(new Set(journalLayout(UPRIGHT_SCREENS.phone).cards.map((c) => c.y)).size).toBe(4);
   });
 });
 
@@ -106,6 +106,6 @@ describe('the sticker book on every view, upright included', () => {
 
   it('shows five in the tray on the wide area and four on the upright area', () => {
     expect(stickerBookLayout(computeView(1024, 768)).trayCount).toBe(5);
-    expect(stickerBookLayout(UPRIGHT_VIEWS.phone).trayCount).toBe(4);
+    expect(stickerBookLayout(UPRIGHT_SCREENS.phone).trayCount).toBe(4);
   });
 });

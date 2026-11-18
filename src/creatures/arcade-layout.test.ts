@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { arcadeFilters } from '../content/arcade';
 import { computeView } from '../engine/view';
 import { GAMES } from '../games/registry';
-import { UPRIGHT_VIEWS } from '../games/upright-check';
+import { UPRIGHT_SCREENS } from '../games/upright-check';
 import {
   ARCADE_CARD,
   ARCADE_CELL_H,
@@ -24,7 +24,7 @@ const VIEWS = [
   computeView(390, 844),
   computeView(1366, 768),
   // A phone held upright lays the Arcade out on the 768 × 1024 area (docs/definitions/one-way-to-browse.md R4).
-  ...Object.values(UPRIGHT_VIEWS),
+  ...Object.values(UPRIGHT_SCREENS),
 ];
 
 interface Box {
@@ -129,7 +129,7 @@ describe('the Arcade layout', () => {
   });
 
   it('lays out at least four cards on the upright area', () => {
-    for (const [k, v] of Object.entries(UPRIGHT_VIEWS)) {
+    for (const [k, v] of Object.entries(UPRIGHT_SCREENS)) {
       const l = arcadeLayout(v);
       expect(l.cols, k).toBeGreaterThanOrEqual(2);
       expect(l.rows, k).toBeGreaterThanOrEqual(2);

@@ -8,7 +8,7 @@ export const VOICE = {
     'Green means right stone, right place. Yellow means that stone is in the code, but in another slot. Gray means no more of that stone.',
   ],
   'code.detective': [
-    'Your friend tried these stones already. Look at all the marks to work out the one code that fits. Tap stones to fill the slots, then turn the key. Green means right place, yellow means another place, and gray means no more of that stone.',
+    'Your friend tried these stones. Use the marks to find the one code that fits, then turn the key. Green means right place, yellow another place, gray no more of that stone.',
   ],
   'code.contradiction': [
     'That try does not fit all the clues. Look at the stones and marks your friend left above the door.',
@@ -36,7 +36,7 @@ export const VOICE = {
   'code.another': ['Make me another secret code, then tap the check.'],
   'code.makefill': ['Fill every slot with a stone, then tap the check.'],
   'code.markit': [
-    'Is it this? Tap the circle under each of my stones to give it a mark. Green: right stone, right place. Yellow: that stone is in your code, but in another place. Gray: no more of that stone. Then tap the arrow.',
+    'Is it this? Tap the circle under each stone to mark it. Green: right stone, right place. Yellow: in your code, another place. Gray: no more of that stone. Then tap the arrow.',
   ],
   'code.pettry': ['Hmm, is it this?', 'Let me try this one.'],
   'code.markall': ['Give every stone a mark first.'],

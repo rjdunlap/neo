@@ -1,14 +1,25 @@
 import { computeView, NO_INSETS, type View } from '../engine/view';
+import { captionPlace } from '../ui/caption-layout';
 
 /**
- * The upright views an upright-ready game is checked at (chunk 31, docs/definitions/phone-portrait.md): a 390 × 844 phone,
- * a small 375 × 667 one and a tall one with a notch and a home bar, each on the 768 × 1024 upright area. Kept apart from
- * the locations' swept `VIEWS` (`resident-check.ts`), which stay sideways until shell slice 2.
+ * The upright screens: a 390 × 844 phone, a small 375 × 667 one and a tall one with a notch and a home bar, each on the
+ * 768 × 1024 upright area (chunk 31, docs/definitions/phone-portrait.md). What a screen that is not a round is checked
+ * at (Home, Today's six, the locations): those never show a caption. Kept apart from the locations' swept `VIEWS`
+ * (`resident-check.ts`), which stay sideways until shell slice 2.
  */
-export const UPRIGHT_VIEWS: Record<string, View> = {
+export const UPRIGHT_SCREENS: Record<string, View> = {
   phone: computeView(390, 844, NO_INSETS, true),
   small: computeView(375, 667, NO_INSETS, true),
   tall: computeView(430, 932, { top: 59, right: 0, bottom: 34, left: 0 }, true),
+};
+
+/**
+ * The upright views an upright-ready game is checked at: the screens, and the small phone less the caption strip
+ * (768 × 1,206), which is the view a reader's round is laid out in (docs/definitions/question-on-screen.md).
+ */
+export const UPRIGHT_VIEWS: Record<string, View> = {
+  ...UPRIGHT_SCREENS,
+  captioned: captionPlace(UPRIGHT_SCREENS.small, true).game,
 };
 
 /** A target's box, by its center. */
