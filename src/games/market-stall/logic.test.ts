@@ -27,6 +27,9 @@ import {
   target,
   usesFewestCoins,
   countsUp,
+  showsTotal,
+  totalShown,
+  TOTAL_SLATE,
   countUpWords,
   countUpText,
   countUpSaid,
@@ -300,6 +303,40 @@ describe('Market Stall', () => {
           expect(sameWay(second, first)).toBe(false);
         }
       }
+    });
+  });
+
+  describe('a total she can see (TotoLogic P8)', () => {
+    it('is shown on every level but the two where the total is the puzzle', () => {
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => p.mode)).toEqual(['pair', 'change']);
+      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7]);
+    });
+
+    it('is the sum of the coins on the counter, and nothing while the counter is empty', () => {
+      for (const plan of PLANS.filter(showsTotal)) {
+        expect(totalShown(plan, [])).toBeNull();
+        expect(totalShown(plan, [5, 2, 1])).toBe(8);
+        expect(totalShown(plan, [1])).toBe(1);
+      }
+    });
+
+    it('never shows in pair or change mode, whatever is on the counter', () => {
+      for (const plan of PLANS.filter((p) => !showsTotal(p)))
+        for (const coins of [[], [1], [5, 2, 1], Array(12).fill(5)]) expect(totalShown(plan, coins)).toBeNull();
+    });
+
+    it('never gives the answer away: the slate shows the same number for a right and a wrong payment of one size', () => {
+      const plan = PLANS[2];
+      expect(totalShown(plan, [5, 2])).toBe(totalShown(plan, [2, 2, 2, 1]));
+    });
+
+    it('sits above the mat, clear of the coins and of the faint hint coins', () => {
+      // Coins on the mat: rows of six from x -200 by 80, top row at y -32, the biggest stall coin 40 in radius.
+      expect(TOTAL_SLATE.y + TOTAL_SLATE.h / 2).toBeLessThanOrEqual(-32 - 40);
+      // Hint coins: at most five, from x -200 by 60 at 0.7 scale (radius 28).
+      expect(TOTAL_SLATE.x - TOTAL_SLATE.w / 2).toBeGreaterThan(-200 + 4 * 60 + 28);
+      // Inside the mat's width, so it stays on the stall front beside the bell.
+      expect(TOTAL_SLATE.x + TOTAL_SLATE.w / 2).toBeLessThanOrEqual(250);
     });
   });
 
