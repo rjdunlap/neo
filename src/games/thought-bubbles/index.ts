@@ -284,10 +284,12 @@ class ThoughtBubbles implements Game {
     this.drawDots();
     this.stage = 'card';
     this.busy = false;
-    await this.ctx.instruct(line(`thought.instruct.${this.level}`));
     const s = this.story;
-    if (s.level === 2) void this.ctx.say(line(`thought.look.${s.look.template.id}.ask`));
-    if (s.level === 3) void this.ctx.say(line(`thought.why.${s.why.id}.ask`));
+    await this.ctx.instruct(line(`thought.instruct.${this.level}`));
+    // The story's own question is then the line the guide repeats and the caption keeps, unless she has already answered it.
+    if (this.finished || this.story !== s || this.stage !== 'card') return;
+    if (s.level === 2) void this.ctx.instruct(line(`thought.look.${s.look.template.id}.ask`));
+    if (s.level === 3) void this.ctx.instruct(line(`thought.why.${s.why.id}.ask`));
   }
 
   private clearCards() {
@@ -419,7 +421,8 @@ class ThoughtBubbles implements Game {
     this.stage = 'point';
     this.pointer.eventMode = 'static';
     this.busy = false;
-    await this.ctx.say('thought.showme');
+    // A new ask: the bubble is filled, so "Put the reason in her thought bubble" no longer says what to do.
+    await this.ctx.instruct('thought.showme');
   }
 
   /** Level 3: a tap on the picture. The clue ends the story; anything else is named, free. */

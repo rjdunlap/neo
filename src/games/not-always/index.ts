@@ -326,9 +326,15 @@ class NotAlways implements Game {
     this.askGen++;
   }
 
-  /** The guide was tapped while the next claim waits: say it, not the one before it. */
+  /**
+   * The guide was tapped while the next claim waits: say it, not the one before it. At the mend it reads the mended
+   * signs as the friend does, since "What could I say instead? Listen." alone would be followed by nothing.
+   */
   sayWaitingAsk() {
-    return this.askNow();
+    if (this.askNow()) return true;
+    if (this.play.phase !== 'mend' || this.busy || this.finished) return false;
+    void this.readMends();
+    return true;
   }
 
   // The mended signs (level 3) ------------------------------------------------------------------------------------
@@ -359,7 +365,8 @@ class NotAlways implements Game {
     // A newer reading (the friend tapped again) or her choice stops this one.
     const still = () =>
       this.alive && this.reading === reading && this.play.phase === 'mend' && this.play.claim === claim;
-    await this.ctx.say('notalways.mends');
+    // The claim is broken, so the mend's question is now the line the caption keeps.
+    await this.ctx.instruct('notalways.mends');
     for (let j = 0; j < this.mendNodes.length; j++) {
       if (!still()) return;
       const n = this.mendNodes[j];

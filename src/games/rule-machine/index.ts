@@ -359,7 +359,8 @@ class RuleMachine implements Game {
       rows = this.rows.length;
     await this.ctx.instruct('rm.instruct.5');
     if (this.finished || m !== this.index || ask !== this.asked || rows !== this.rows.length) return;
-    if (this.phase === 'feed' && this.wantedNow) await this.ctx.say('rm.back.ask', { n: this.wantedNow.out });
+    if (this.phase === 'feed' && this.wantedNow)
+      await this.ctx.instruct('rm.back.ask', { n: this.wantedNow.out });
   }
 
   // ---- building a machine ----
@@ -490,7 +491,8 @@ class RuleMachine implements Game {
     this.resize(this.ctx.view);
     sfx.whoosh();
     const n = this.wantedNow!.out;
-    this.askAfter(() => this.ctx.say('rm.back.ask', { n }), feedback);
+    // The question with its number is the line the guide repeats and the caption keeps.
+    this.askAfter(() => this.ctx.instruct('rm.back.ask', { n }), feedback);
   }
 
   private drawLights() {
@@ -763,7 +765,7 @@ class RuleMachine implements Game {
     if (this.plan.shelf === 'after') {
       this.trayLayer.visible = true;
       this.phase = 'feed';
-      this.askAfter(() => this.ctx.say('rm.send'), feedback);
+      this.askAfter(() => this.ctx.instruct('rm.send'), feedback);
       return;
     }
     const slot = lastCar(this.count.tray, this.fed);
@@ -951,7 +953,8 @@ class RuleMachine implements Game {
     }
     this.trayLayer.visible = true;
     this.phase = 'feed';
-    void this.ctx.say('rm.send');
+    // The pads are gone: sending a car is the ask now, not "How many will come out?".
+    void this.ctx.instruct('rm.send');
   }
 
   /** Level 3: three rows on the table, and the shelf of three cards comes down. */
