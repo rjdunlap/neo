@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import { spread } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
@@ -403,4 +404,50 @@ export function nextMove(
       if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
   const step = nextPlanting(bed, target, rule, selected);
   return step && { lift: false, ...step };
+}
+
+// ——— Where things sit ———
+
+/** A bed spot's side, and a seed packet's drawn radius (its touch area reaches `PACKET_REACH` further). */
+export const CELL = 100;
+export const PACKET = 52;
+export const PACKET_REACH = 12;
+
+export interface GardenLayout {
+  /** The bed's top-left corner; its spots are `CELL` squares from there, `rows` down and `size` across. */
+  board: { x: number; y: number; w: number; h: number };
+  /** The centre of each seed packet, one per kind of flower. */
+  packets: { x: number; y: number }[];
+}
+
+/**
+ * The bed and its seed packets for a view: the packets in a column beside the bed when there is room for one (every
+ * sideways screen, and the 3- and 4-wide beds on a phone held upright), and in a line under it otherwise (the 5 by 5 bed
+ * upright). Spots are always `CELL` units: the bed never shrinks.
+ */
+export function gardenLayout(view: { w: number; h: number }, plan: RowsPlan): GardenLayout {
+  const n = plan.size;
+  const w = n * CELL;
+  const h = rowsOf(plan) * CELL;
+  if (view.w - (w + 40) >= 300) {
+    const total = w + 70 + PACKET * 2 + 20;
+    const x = Math.max(160, (view.w - total) / 2);
+    const y = Math.max(100, (view.h - h) / 2);
+    // A fixed gap, so the round packets never overlap however few flowers there are.
+    const gap = PACKET * 2 + 10;
+    return {
+      board: { x, y, w, h },
+      packets: Array.from({ length: n }, (_, i) => ({
+        x: x + w + 70 + PACKET,
+        y: y + h / 2 + (i - (n - 1) / 2) * gap,
+      })),
+    };
+  }
+  const total = h + PACKET * 2 + 150;
+  const y = Math.max(100, (view.h - total) / 2);
+  const xs = spread(n, 150, view.w - 40, PACKET * 2 + 14);
+  return {
+    board: { x: (view.w - w) / 2, y, w, h },
+    packets: xs.map((x) => ({ x, y: y + h + 60 + PACKET })),
+  };
 }

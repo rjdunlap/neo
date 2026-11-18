@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/not-always; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `not-always` · **Land:** Story Grove · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `not-always` · **Land:** Story Grove · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** reasoning, claims, counterexamples, listening
 

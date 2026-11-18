@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/shell-rows; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `shell-rows` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `shell-rows` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** planning, prediction, logic
 

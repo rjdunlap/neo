@@ -333,7 +333,7 @@ export interface Layout {
   pebblePile: Box;
 }
 
-/** The board right of the pet's corner in landscape, centred above the pet's row in portrait; null rather than squares under 100. */
+/** The board right of the pet's corner in landscape, in the middle of the room above the pet's row in portrait; null rather than squares under 100. */
 export function layout(view: { w: number; h: number }): Layout | null {
   const { w, h } = view;
   const portrait = h > w;
@@ -345,7 +345,8 @@ export function layout(view: { w: number; h: number }): Layout | null {
   if (cell < 100) return null;
   const size = 3 * cell + 2 * GROOVE + 2 * BORDER;
   const cx = w / 2;
-  const cy = portrait ? top + size / 2 : (top + bottom) / 2;
+  // In the middle of its room on every screen: on a tall phone that is within a thumb's reach, not up under Home.
+  const cy = (top + bottom) / 2;
   const left = cx - size / 2 + BORDER;
   const up = cy - size / 2 + BORDER;
   const squares = Array.from({ length: 9 }, (_, i) =>

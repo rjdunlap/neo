@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/garden-rows; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `garden-rows` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `garden-rows` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** logic, deduction, patterns, spatial-reasoning
 
