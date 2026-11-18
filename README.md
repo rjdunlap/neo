@@ -87,7 +87,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |
 | [Puddle Lens](docs/games/puddle-lens.md) | lap–grown-up | Bubble Beach | 11 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
 | [Melt and Freeze](docs/games/melt-freeze.md) | lap–school | Bubble Beach | 7 | one big ice cube at lap. Three touches anywhere on the playfield shrink it into a puddle, then the snowflake appears to freeze it again. |
-| [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 5 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
+| [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 8 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |

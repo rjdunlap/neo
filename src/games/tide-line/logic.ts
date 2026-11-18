@@ -1,15 +1,21 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { hinted, newRequestTally, nextRequest, type RequestTally } from '../../progress/coach';
+import {
+  hinted,
+  missOnRequest,
+  newRequestTally,
+  nextRequest,
+  type RequestTally,
+} from '../../progress/coach';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Tide Line (docs/definitions/tide-line.md): the sea comes in and goes out, and the seaweed line on the sand shows how far
  * the last high tide came. The beach slopes up the screen; a height `h` runs from 0 (the low-tide water's edge) to 1 (the
  * foot of the dunes), and the grass above the dunes goes a little past 1. Levels 1–2 are batch tide-line 1, 3–4 batch 2;
- * level 5 (docs/definitions/tide-line-5-6.md) turns the day into a strip she slides along.
+ * level 5 (docs/definitions/tide-line-5-6.md) turns the day into a strip she slides along, and level 6 plots it as a line.
  */
-export type Mode = 'wave' | 'pail' | 'line' | 'cycle' | 'day';
+export type Mode = 'wave' | 'pail' | 'line' | 'cycle' | 'day' | 'chart';
 
 export interface Plan {
   level: number;
@@ -31,18 +37,23 @@ export const PLANS: readonly Plan[] = [
     mode: 'day',
     name: 'Pool time: slide along the day, and mark a time the rock pool shows and a time the sea covers it',
   },
+  {
+    level: 6,
+    mode: 'chart',
+    name: "Read the chart: put the rock pool, the boat and the picnic on times that fit the line of the island's tide",
+  },
 ];
 
 export const tidePlan = (level: number): Plan =>
   PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
-/** Lap 1, toddler 1–2, preschool 2–3, pre-K 3–5, school 4–5 (4–6 once level 6, Read the chart, is built). */
+/** Lap 1, toddler 1–2, preschool 2–3, pre-K 3–5, school 4–6. */
 export const BAND_LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 5 },
+  school: { min: 4, max: 6 },
 };
 
 // The sea ---------------------------------------------------------------------------------------
@@ -666,3 +677,160 @@ export function dayLayout(view: View): DayLayout {
 export const trackX = (D: DayLayout, t: number) => D.track.x0 + t * (D.track.x1 - D.track.x0);
 export const trackT = (D: DayLayout, x: number) =>
   Math.max(0, Math.min(1, (x - D.track.x0) / (D.track.x1 - D.track.x0)));
+
+// Level 6: read the chart -----------------------------------------------------------------------------
+
+/** Level 6's three job cards, in the authored order: the rock pool shows, the boat floats, the picnic shelf stays dry. */
+export const JOBS = ['shows', 'boat', 'picnic'] as const;
+export type Job = (typeof JOBS)[number];
+/** The height each job's reference mark sits at on the chart, and which side of it the line must stay. */
+export const JOB_MARK: Record<Job, { h: number; side: 'below' | 'above' }> = {
+  shows: { h: POOL_RIM, side: 'below' },
+  boat: { h: BOAT_FLOAT, side: 'above' },
+  picnic: { h: SHELF, side: 'below' },
+};
+/** The order the cards are served in: the authored order on the authored round, shuffled on a seeded one. */
+export const jobsFor = (rng: Rng, authored: boolean): Job[] =>
+  authored ? [...JOBS] : rng.shuffle<Job>([...JOBS]);
+
+/**
+ * Level 6's round: one job card at a time is put on a window of time. A window that fits pairs the card with it (two
+ * cards may share a window) and serves the next; a clashing window is one miss, and the second on a card lights both
+ * fitting windows (one hint a card). Help lights them at once; asked again, it gives the earlier one to place the card on.
+ * Looking at a window and letting a card go off the windows never reach this class.
+ */
+export class ChartRound {
+  readonly tally: RequestTally = newRequestTally();
+  /** The window each served card went on, in serving order. */
+  readonly placed: { job: Job; stop: number }[] = [];
+  glow = false;
+  constructor(
+    readonly day: Day,
+    readonly order: readonly Job[] = JOBS,
+  ) {}
+
+  get job(): Job | undefined {
+    return this.order[this.placed.length];
+  }
+  get done() {
+    return this.placed.length >= this.order.length;
+  }
+
+  /** The card is let go on a window. `glow` is true when this miss brought the hint. */
+  place(stop: number): { right: boolean; job: Job; stop: number; glow: boolean } | null {
+    const job = this.job;
+    if (!job || !Number.isInteger(stop) || stop < 0 || stop >= STOPS) return null;
+    if (fits(job, this.day, stop)) {
+      this.placed.push({ job, stop });
+      this.glow = false;
+      nextRequest(this.tally);
+      return { right: true, job, stop, glow: false };
+    }
+    const due = missOnRequest(this.tally);
+    if (due) {
+      hinted(this.tally);
+      this.glow = true;
+    }
+    return { right: false, job, stop, glow: due };
+  }
+
+  /** Help: the first press lights both fitting windows (one hint, unless misses already lit them); then the earlier one. */
+  help(): { glow: number[] } | { place: number } | null {
+    const job = this.job;
+    if (!job) return null;
+    const stops = fitting(job, this.day);
+    if (this.glow) return { place: stops[0] };
+    this.glow = true;
+    if (!this.tally.helped) {
+      this.tally.helped = true;
+      hinted(this.tally);
+    }
+    return { glow: stops };
+  }
+}
+
+/** Level 6's layout: the small shore picture, the plot with its four windows, the job card's home and the finished row. */
+export interface ChartLayout {
+  picture: Box;
+  /** The plot itself: time runs left to right across it, height from 0 at its bottom to `CHART_TOP` at its top. */
+  plot: Box;
+  /** The four windows she can touch: a column of the plot each, with its time-of-day icon in the foot beneath. */
+  windows: Box[];
+  /** The y of the middle of the row of time-of-day icons. */
+  iconY: number;
+  /** The middle of the job card at home. */
+  card: { x: number; y: number };
+  /** The three places finished cards go, each beside its time-of-day icon. */
+  done: Box[];
+}
+export const JOB_CARD = 150;
+/** The height at the top of the plot. */
+export const CHART_TOP = 0.75;
+/** Room left of the plot for the height scale's two shore silhouettes, and beneath it for the time-of-day icons. */
+export const CHART_AXIS = 84;
+export const CHART_FOOT = 84;
+const DONE = { w: 84, h: 116, gap: 8 };
+
+export function chartLayout(view: View): ChartLayout {
+  // A tall view stacks the picture, the chart and the card; a wide one puts the card and the finished row left of the chart.
+  const stacked = view.h >= 1000;
+  const side = CORNER + 30;
+  const title = 34;
+  let picture: Box;
+  let plot: Box;
+  let card: { x: number; y: number };
+  let doneAt: { x: number; y: number };
+  if (stacked) {
+    // The chart's foot ends above the pet's corner on the shortest stacked view, with the card row beside the pet.
+    const room = view.h - (24 + 20 + title + CHART_FOOT + 20 + JOB_CARD + 64);
+    const pictureH = Math.max(200, Math.min(360, room * 0.45));
+    picture = { x: side, y: 24, w: view.w - side * 2, h: pictureH };
+    const plotW = Math.min(860, view.w - 48 - CHART_AXIS);
+    plot = {
+      x: (view.w - plotW - CHART_AXIS) / 2 + CHART_AXIS,
+      y: picture.y + pictureH + 20 + title,
+      w: plotW,
+      h: Math.min(460, room - pictureH),
+    };
+    const rowW = JOB_CARD + 24 + 3 * DONE.w + 2 * DONE.gap;
+    const x0 = Math.max(PET.w + 24, (view.w - rowW) / 2);
+    const y = plot.y + plot.h + CHART_FOOT + 20;
+    card = { x: x0 + JOB_CARD / 2, y: y + JOB_CARD / 2 };
+    doneAt = { x: x0 + JOB_CARD + 24, y: y + (JOB_CARD - DONE.h) / 2 };
+  } else {
+    const column = 300;
+    const plotW = Math.min(860, view.w - 24 - column - CHART_AXIS);
+    const gx = (view.w - 24 - column - CHART_AXIS - plotW) / 2;
+    const pictureW = Math.min(900, view.w - side * 2);
+    picture = { x: (view.w - pictureW) / 2, y: 16, w: pictureW, h: 200 };
+    const top = picture.y + picture.h + 16 + title;
+    plot = {
+      x: gx + column + CHART_AXIS,
+      y: top,
+      w: plotW,
+      h: Math.min(460, view.h - top - CHART_FOOT - 16),
+    };
+    card = { x: gx + column / 2, y: top + JOB_CARD / 2 - 14 };
+    doneAt = { x: gx + (column - 3 * DONE.w - 2 * DONE.gap) / 2, y: card.y + JOB_CARD / 2 + 18 };
+  }
+  const w = plot.w / STOPS;
+  const windows = Array.from({ length: STOPS }, (_, i) => ({
+    x: plot.x + i * w + STOP_GAP / 2,
+    y: plot.y,
+    w: w - STOP_GAP,
+    h: plot.h + CHART_FOOT,
+  }));
+  const done = Array.from({ length: JOBS.length }, (_, i) => ({
+    x: doneAt.x + i * (DONE.w + DONE.gap),
+    y: doneAt.y,
+    w: DONE.w,
+    h: DONE.h,
+  }));
+  return { picture, plot, windows, iconY: plot.y + plot.h + CHART_FOOT / 2, card, done };
+}
+/** A time's x and a height's y on the plot. */
+export const chartX = (C: ChartLayout, t: number) => C.plot.x + t * C.plot.w;
+export const chartY = (C: ChartLayout, h: number) => C.plot.y + C.plot.h * (1 - h / CHART_TOP);
+/** The window under a point, or -1: only the four targets take a card. */
+export const windowAt = (C: ChartLayout, x: number, y: number) =>
+  C.windows.findIndex((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);

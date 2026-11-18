@@ -170,6 +170,7 @@ export function dayShore(
   t: number,
   rim: number,
   top: number,
+  jobs?: { boat: number; shelf: number },
 ) {
   const sky = Math.min(64, h * 0.2);
   const night = Math.max(0, Math.min(1, (t - 0.7) / 0.12));
@@ -200,7 +201,12 @@ export function dayShore(
   g.ellipse(0, 4, 74 * s, 12 * s).fill({ color: WET_SAND, alpha: 0.7 });
   pool(g, 0, 0, ['star'], s);
   g.restore();
-  rock(g, w * 0.82, yOf(0.36));
+  // Level 6's shore has the boat's inlet and the picnic shelf where level 5 has its rock.
+  const k = Math.max(0.7, Math.min(1.5, h / 240));
+  if (jobs) {
+    g.ellipse(w * 0.2, yOf(jobs.boat) + 4 * k, 52 * k, 9 * k).fill({ color: WET_SAND, alpha: 0.8 });
+    picnic(g, w * 0.82, yOf(jobs.shelf), k);
+  } else rock(g, w * 0.82, yOf(0.36));
   const edge = yOf(water);
   const wave = (x: number) => edge + Math.sin(x / 26 + t * 40) * 3;
   g.moveTo(0, wave(0));
@@ -214,7 +220,82 @@ export function dayShore(
   g.moveTo(0, wave(0));
   for (let x = 20; x <= w; x += 20) g.lineTo(x, wave(x));
   g.stroke({ color: 0xffffff, width: 5, cap: 'round' });
+  // The boat floats on the water's edge once the sea has reached its inlet; before that it rests, tipped, on the sand.
+  if (jobs) {
+    if (water >= jobs.boat) paperBoat(g, w * 0.2, edge + 5 * k + Math.sin(t * 60) * 2, k, 0);
+    else paperBoat(g, w * 0.2, yOf(jobs.boat) + 4 * k, k, 0.3);
+  }
   g.roundRect(0, 0, w, h, 20).stroke({ color: swatch.yellow.line, width: 4 });
+}
+
+/** A paper boat, the middle of its keel at (x, y); `tilt` (radians) tips it over on the sand. */
+export function paperBoat(g: Graphics, x: number, y: number, s: number, tilt = 0) {
+  const c = Math.cos(tilt);
+  const sn = Math.sin(tilt);
+  const at = (dx: number, dy: number) => [x + (dx * c - dy * sn) * s, y + (dx * sn + dy * c) * s];
+  g.poly([...at(-14, -16), ...at(0, -46), ...at(14, -16)])
+    .fill(swatch.red.fill)
+    .stroke({ color: swatch.red.line, width: 2.5, join: 'round' });
+  g.poly([...at(-36, -18), ...at(36, -18), ...at(20, 0), ...at(-20, 0)])
+    .fill(0xffffff)
+    .stroke({ color: swatch.blue.line, width: 2.5, join: 'round' });
+}
+
+/** A picnic on a rock shelf: a checked blanket and a basket, the blanket's front edge along y, centred on x. */
+export function picnic(g: Graphics, x: number, y: number, s: number) {
+  g.ellipse(x, y - 8 * s, 62 * s, 16 * s)
+    .fill(0xa9a9b8)
+    .stroke({ color: 0x77778a, width: 2.5 });
+  g.poly([x - 44 * s, y - 2 * s, x + 44 * s, y - 2 * s, x + 34 * s, y - 20 * s, x - 34 * s, y - 20 * s])
+    .fill(swatch.red.light)
+    .stroke({ color: swatch.red.line, width: 2.5, join: 'round' });
+  for (const dx of [-18, 0, 18])
+    g.moveTo(x + dx * 1.2 * s, y - 2 * s)
+      .lineTo(x + dx * s, y - 20 * s)
+      .stroke({ color: swatch.red.fill, width: 3 * s });
+  g.moveTo(x - 39 * s, y - 11 * s)
+    .lineTo(x + 39 * s, y - 11 * s)
+    .stroke({ color: swatch.red.fill, width: 3 * s });
+  g.moveTo(x - 12 * s, y - 28 * s)
+    .arc(x, y - 28 * s, 12 * s, Math.PI, 0)
+    .stroke({ color: swatch.brown.line, width: 3 * s, cap: 'round' });
+  g.roundRect(x - 15 * s, y - 30 * s, 30 * s, 18 * s, 5 * s)
+    .fill(swatch.brown.fill)
+    .stroke({ color: swatch.brown.line, width: 2.5 });
+}
+
+/** One of level 6's three jobs as a picture about 90 wide, centred on (x, y): the rock pool, the boat, the picnic. */
+export function jobArt(g: Graphics, job: 'shows' | 'boat' | 'picnic', x: number, y: number, s: number) {
+  if (job === 'shows') pool(g, x, y + 24 * s, ['star'], 0.75 * s);
+  else if (job === 'boat') {
+    paperBoat(g, x, y + 20 * s, 1.15 * s);
+    g.moveTo(x - 44 * s, y + 24 * s)
+      .quadraticCurveTo(x - 22 * s, y + 16 * s, x, y + 24 * s)
+      .quadraticCurveTo(x + 22 * s, y + 32 * s, x + 44 * s, y + 24 * s)
+      .stroke({ color: SEA_DEEP, width: 5 * s, cap: 'round' });
+  } else picnic(g, x, y + 22 * s, 0.95 * s);
+}
+
+/** A job card, 150 square and centred on (0, 0). */
+export function jobCard(g: Graphics, job: 'shows' | 'boat' | 'picnic') {
+  g.roundRect(-75, -75, 150, 150, 26).fill(0xffffff).stroke({ color: swatch.orange.line, width: 6 });
+  jobArt(g, job, 0, 0, 1.25);
+}
+
+/** The height scale's small shore, `w` by `h` from (x, y): the same sand with the sea low on it or high. */
+export function scaleShore(g: Graphics, x: number, y: number, w: number, h: number, high: boolean) {
+  g.roundRect(x, y, w, h, 8).fill(SAND);
+  const edge = y + h * (high ? 0.3 : 0.74);
+  g.moveTo(x, edge)
+    .quadraticCurveTo(x + w * 0.25, edge - 4, x + w * 0.5, edge)
+    .quadraticCurveTo(x + w * 0.75, edge + 4, x + w, edge)
+    .lineTo(x + w, y + h - 8)
+    .quadraticCurveTo(x + w, y + h, x + w - 8, y + h)
+    .lineTo(x + 8, y + h)
+    .quadraticCurveTo(x, y + h, x, y + h - 8)
+    .closePath()
+    .fill(SEA);
+  g.roundRect(x, y, w, h, 8).stroke({ color: swatch.blue.line, width: 2.5 });
 }
 
 /** One of the four times of day, morning to night, centred on (x, y): sunrise, the high sun, sunset, stars. */

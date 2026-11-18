@@ -2,7 +2,7 @@
 export const VOICE = {
   'game.tide-line': ['Tide Line!'],
 
-  // Melt and Freeze: a sun that warms, a snowflake that cools, and the same thing either way.
+  // Levels 1–4: the wave, the pails, the seaweed line and the day's picture strip.
   'tl.instruct.1': ['Pull the sea up the sand, then let it go!'],
   'tl.instruct.1.lap': ['Tap anywhere, and in comes the sea!'],
   'tl.instruct.2': ["Put the pail where the sea won't reach. Look for the seaweed line!"],
@@ -45,4 +45,17 @@ export const VOICE = {
   'tl.mark.shows': ['The sea is out here, so the rock pool shows.'],
   'tl.mark.covered': ['The sea is in here, so it covers the rock pool.'],
   'tl.done.5': ['The pool shows when the sea is out. Higher water covers it again.'],
+  // Level 6, Read the chart: one job card at a time goes on a time that fits the line.
+  'tl.instruct.6.shows': ['Find a time when the rock pool shows.'],
+  'tl.instruct.6.boat': ['Find a time when the water is high enough to float the boat.'],
+  'tl.instruct.6.picnic': ['Find a time when the picnic shelf stays dry.'],
+  'tl.clash.shows': ['The line is too high here. The sea covers the pool.'],
+  'tl.clash.boat': ["There's too little water here. The boat rests on the sand."],
+  'tl.clash.picnic': ['The water reaches the picnic shelf here. Look for a lower part of the line.'],
+  'tl.fit.shows': ['The line is low here, so the rock pool shows.'],
+  'tl.fit.boat': ['The line is high here, so the boat floats.'],
+  'tl.fit.picnic': ['The line is low here, so the picnic shelf stays dry.'],
+  'tl.glow.low': ['Look! The line is low at the glowing times.'],
+  'tl.glow.high': ['Look! The line is high at the glowing times.'],
+  'tl.done.6': ['Each picture has a time when the water suits it.'],
 } satisfies Record<string, string[]>;

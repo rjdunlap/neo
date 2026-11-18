@@ -354,6 +354,7 @@ export const SUITES = [
   'tideline',
   'tideline34',
   'tideline5',
+  'tideline6',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -534,6 +535,7 @@ export const ALL_SUITES = [
   'tideline',
   'tideline34',
   'tideline5',
+  'tideline6',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -1145,6 +1147,7 @@ export async function runSuite(suite, fixture) {
     tideLinePlay,
     tideLine34Play,
     tideLine5Play,
+    tideLine6Play,
     driftCardsPlay,
     gardenRowsPlay,
     dropsJourneyPlay,
@@ -1347,6 +1350,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'tideline') await tideLinePlay();
   if (suite === 'all' || suite === 'tideline34') await tideLine34Play();
   if (suite === 'all' || suite === 'tideline5') await tideLine5Play();
+  if (suite === 'all' || suite === 'tideline6') await tideLine6Play();
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();
   if (suite === 'all' || suite === 'gardenrows') await gardenRowsPlay();

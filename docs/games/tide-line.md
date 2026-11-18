@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3–5 |
-| school | 4–5 |
+| school | 4–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 3 | Read the line: with the sea out, put a pail, a flag and a towel where they stay dry; then a windy-day line |
 | 4 | In, out, in, out: finish a day's picture strip of the sea |
 | 5 | Pool time: slide along the day, and mark a time the rock pool shows and a time the sea covers it |
+| 6 | Read the chart: put the rock pool, the boat and the picnic on times that fit the line of the island's tide |
 
 <!-- end generated -->
 

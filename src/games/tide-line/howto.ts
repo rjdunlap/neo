@@ -21,6 +21,7 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Slide along the day and mark one time the pool shows and one time the sea covers it.',
     },
+    { from: 6, to: 6, text: 'Look at the height of the line. Put each picture on a time that fits.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'The round ends when the sea has been in and out twice.' },
@@ -32,6 +33,7 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 4, to: 4, text: 'The round ends when both strips are done.' },
     { from: 5, to: 5, text: 'The round ends when both times are flagged.' },
+    { from: 6, to: 6, text: 'The round ends when all three pictures sit beside a time.' },
   ],
   note: [
     {
@@ -58,6 +60,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'Drag the round marker, or tap one of the four times of day; the flag button marks the time it rests on. Sliding and flagging the other state are looking around, never a miss. Help lights the two times that fit; asked again, it flags the first of them. On this island the sea comes in and goes out twice a day, evenly; real shores vary.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'Drag the picture card onto one of the four times, or tap the card and then the time; touching a time alone shows the shore then, and never counts. The dashed mark is the height that picture needs the line above or below. A time that does not fit is a miss and the card comes back; after two, or with Help, the two times that fit glow, and Help asked again places the card. Two pictures can share a time. The chart is a made-up day on this island, not a real tide table.',
     },
   ],
 };
