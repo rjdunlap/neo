@@ -160,6 +160,8 @@ class FerryJam implements Game {
   private carry = 0;
   private assisted = false;
   private told = false;
+  /** "Now help the other one" was the last instruction, so the next harbor says its own ask again (level 8 has one harbor today, so this waits for a plan with more). */
+  private helpedOther = false;
   /** Level 10: she is still to tap the boat in the ferry's way, and how many other boats she has tapped this harbor. */
   private asking = false;
   private askMisses = 0;
@@ -306,7 +308,9 @@ class FerryJam implements Game {
     this.busy = false;
     this.report();
     if (this.asking) return this.ctx.instruct('ferry.who');
-    if (this.course ? this.told : this.index > 0) return;
+    const again = this.helpedOther;
+    this.helpedOther = false;
+    if (!again && (this.course ? this.told : this.index > 0)) return;
     this.told = true;
     if (this.course) return this.ctx.instruct('ferry.start');
     if (this.plan.entry) return this.ctx.instruct('ferry.start.one');
@@ -524,7 +528,11 @@ class FerryJam implements Game {
     this.busy = false;
     // The slide that sailed it still goes on the trail, once the glow could show on the boats that are left.
     this.maybeHint();
-    if (!this.hinted) await this.ctx.say('ferry.one');
+    // One ferry left is a new ask: the guide repeats it and the caption keeps it, not "Which ferry has to go first?".
+    if (!this.hinted) {
+      this.helpedOther = true;
+      await this.ctx.instruct('ferry.one');
+    }
   }
 
   private undo() {

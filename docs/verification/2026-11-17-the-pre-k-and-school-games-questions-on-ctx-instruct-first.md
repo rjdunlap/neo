@@ -1,0 +1,5 @@
+# 2026-11-17 — The pre-K-and-school games' questions on ctx.instruct, first session (PR #1780)
+
+**Changed:** TotoLogic P3 slice 3, first ten pre-K-and-school games: Inchworm's how-many question after the measuring and Ferry Jam's ask once one ferry is out (level 8) moved from `ctx.say` to `ctx.instruct` (each game's `index.ts`); eight others were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; full `npm test` (362 files, 8,053 tests, 1 skipped; a first run on a heavily loaded machine had 27 timeouts in unrelated games and passed completely on the rerun, a load flake); `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=2 TO_LEVEL=3` on a silent dev server (headless Chromium) passed; a one-off scripted play of Ferry Jam level 8 applying the solver's slides, asserting the instruction is `ferry.both` at the start and `ferry.one` after the first ferry sails, passed.
+**Not run:** build (CI runs it on the PR), offline, `fingerdemo` (no bot or demonstrated action changed), any other suite, any check that reads the caption text on screen; no Ferry Jam play suite exists.
