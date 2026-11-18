@@ -701,7 +701,7 @@ class LostLayers implements Game {
       creature: this.creature,
     });
     if (this.destroyed) return;
-    if (firstCard) void this.say('lost-layers.instruct-tell');
+    if (firstCard) void this.ctx.instruct('lost-layers.instruct-tell');
     else if (this.state.stamped.length === 2) void this.ctx.instruct('lost-layers.both-still-fit');
     this.busy = false;
   }
@@ -817,6 +817,9 @@ class LostLayers implements Game {
       await this.say(r.stripe ? 'lost-layers.stripe-found' : 'lost-layers.stripe-missing', {
         creature: this.creature,
       });
+      if (this.destroyed) return;
+      // The look is spent, so the line the guide repeats stops asking for one.
+      void this.ctx.instruct('lost-layers.instruct-which');
     } else {
       sfx.boing();
       await this.say(
