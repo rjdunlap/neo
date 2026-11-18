@@ -1374,9 +1374,19 @@ class AnimalSnack implements Game {
     const layer = new Container();
     layer.hitArea = new Rectangle(-4000, -4000, 8000, 8000);
     ctx.stage.addChild(layer);
-    const touched = new Promise<{ x: number; y: number }>((resolve) =>
-      onTap(layer, (e) => resolve(ctx.stage.toLocal(e.global))),
-    );
+    // The guide itself is the likeliest thing to touch on its turn; it sits above the stage, so it is heard here too.
+    const pet = ctx.pet;
+    let onGuide: (() => void) | null = null;
+    const touched = new Promise<{ x: number; y: number }>((resolve) => {
+      onTap(layer, (e) => resolve(ctx.stage.toLocal(e.global)));
+      onGuide = () =>
+        resolve(
+          ctx.stage.toLocal(
+            pet.toGlobal({ x: pet.touch.x + pet.touch.r * 3, y: pet.touch.y - pet.touch.r * 3 }),
+          ),
+        );
+      pet.once('pointerdown', onGuide);
+    });
     // A touch during the line counts too; the wait for one starts when the line ends.
     const waited = ctx
       .instruct('snack.petturn')
@@ -1385,9 +1395,9 @@ class AnimalSnack implements Game {
     this.petTurn = 'waiting';
     const at = await Promise.race([touched, waited]);
     layer.eventMode = 'none';
+    if (onGuide) pet.off('pointerdown', onGuide);
     this.petTurn = at ? 'treated' : 'passed';
     if (!at) return;
-    const pet = ctx.pet;
     const treat = foodArt(PET_TREAT);
     treat.eventMode = 'none';
     treat.position.set(at.x, at.y);
