@@ -1085,7 +1085,8 @@ class PhotoSafari implements Game {
           kind: outcome.better.kind === 'action' ? 'doing word' : 'place word',
         });
       if (this.destroyed || this.mystery !== play) return;
-      if (play.remaining.length === 1) await this.ctx.say('safari.last');
+      // One friend left: the ask is now the photo, so the guide and caption stop asking for a picture question.
+      if (play.remaining.length === 1) await this.ctx.instruct('safari.last');
     }
     if (!this.destroyed) this.busy = false;
   }
@@ -1111,7 +1112,7 @@ class PhotoSafari implements Game {
     // A guess sends a friend away, so a glow showing (or earned now) is worked out again for those left.
     if ((outcome.kind === 'wrong-guess' && outcome.glow) || this.chips.some((c) => c.glow.visible))
       this.glowBest();
-    if (play.remaining.length === 1) await this.ctx.say('safari.last');
+    if (play.remaining.length === 1) await this.ctx.instruct('safari.last');
     if (!this.destroyed) this.busy = false;
   }
 
