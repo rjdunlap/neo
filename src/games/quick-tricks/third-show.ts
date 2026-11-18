@@ -841,7 +841,7 @@ export class ThirdShow implements Game {
     if (this.quiet > 10) {
       this.quiet = 0;
       if (this.waiting) {
-        if (this.next.visible) void this.ctx.say('tricks.next');
+        if (this.next.visible) void this.ctx.instruct('tricks.next');
       } else if (this.turning === null && this.pouring === null && !this.touch && !this.busy) {
         void this.instruct();
         if (this.step === 0) this.nudge();
