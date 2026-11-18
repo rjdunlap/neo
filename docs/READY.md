@@ -31,10 +31,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-- **Upright batch 8 onward: the rest of the fits-as-is games, six at a time** (chunk 31; the existing-game tier six times over, as batches 6 and 7): after batch 7 (built), the next six from the sweep's measured fits-as-is list, one kind of challenge each where the list allows, measured games before by-eye ones; then the small-fix games, music first (`jelly-drums`, `rhythm-neighbors`, `movie-night`), each batch rerunning `BROWSER_SUITE=uprightsweep PHONE_ONLY=…` for its games first. Each closeout queues the next six as a Next ten line while the list lasts. [Game batches](definitions/phone-portrait.md#game-batches), [the sweep](definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09)
-
-
-- **`market-stall`, a total she can see on the counter** (existing-game change: typecheck, its rule tests, one filtered regression play): draw the running total on the counter in the modes where the game already counts on aloud, and not in the pair and change modes, so a round can be played with the phone muted; a note in the dive says which levels, then the change. Expected files: `src/games/market-stall/index.ts`, its dive and game page. [TotoLogic P8](reviews/TOTOLOGIC.md#p8-a-total-she-can-see-on-market-stalls-counter-a-dive-note-then-s)
 
 - **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](reviews/TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
 
@@ -43,8 +39,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 Each was skipped as gated by the refill and is settled in the [record](archive/DECISIONS-2026-11-17.md). A slice that names a probe runs it first, in the same session, and stops with a note in the dive if it fails.
 
 - **WL2, the pet says the word in European Portuguese** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): the building session first writes the 20 entries and has a separate pass check each against European Portuguese dictionaries, filling one evidence row per key ([assistant review](definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17)); then `ctx.sayWord`, the exact-`pt-PT` voice rule, the per-profile setting and the grown-ups' select and status in Peekaboo Barn, Animal Snack and Bubble Pop. Read the [definition](definitions/additional-languages.md) by section; an entry that cannot be settled is left out.
-
-- **Thumb sizes of the upright grown-up games, in pixels** (docs and a test helper: typecheck and the upright layout tests): measure the smallest target of each upright `grownup` game in CSS pixels at 390 × 844, list them in the phone-portrait definition, and queue a fix line for any under about 44 that does not zoom or scroll. [Roadmap 6](ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09)
 
 - **The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](NEW-GAME.md) now asks.
 
