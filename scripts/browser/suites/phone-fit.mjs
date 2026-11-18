@@ -346,6 +346,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       const six = await p.evaluate(() =>
         neo.scene.cards.map((c) => ({
           id: c.pick.mod.id,
+          band: c.pick.band,
           upright: !!c.pick.mod.upright,
           badge: c.node.getChildByLabel('turn').visible,
         })),
@@ -355,7 +356,27 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         six.every((c) => c.upright && !c.badge),
         `a grown-up's upright six is all upright-ready, with no turn badge (${JSON.stringify(six)})`,
       );
+      assert.deepEqual(
+        six.map((c) => c.band),
+        ['grownup', 'grownup', 'grownup', 'grownup', 'school', 'school'],
+        'four grown-up games and two early-school games',
+      );
       await p.screenshot({ path: `${output}/upright-daily.png` });
+      const cardIds = () => p.evaluate(() => neo.scene.cards.map((c) => c.pick.mod.id));
+      await p.setViewportSize({ width: 844, height: 390 });
+      await p.waitForFunction(() => !neo.scene.uprightPhone && neo.view.w >= 1024);
+      assert.deepEqual(
+        await cardIds(),
+        six.map((c) => c.id),
+        'the same six cards sideways',
+      );
+      await p.setViewportSize({ width: 390, height: 844 });
+      await p.waitForFunction(() => neo.scene.uprightPhone && neo.view.w === 768);
+      assert.deepEqual(
+        await cardIds(),
+        six.map((c) => c.id),
+        'the same six cards after turning back',
+      );
       assert.deepEqual(
         await p.evaluate(() => ({
           phone: neo.phoneOnly,
@@ -464,7 +485,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     }
     assert.deepEqual(bad, []);
     log(
-      "Upright root: the phone's Today's six (no Home), an upright round and its result laid out at 768 wide with no prompt, back to the six with a tick, and a not-ready game still asked to turn passed",
+      'Upright root: the same four grown-up and two school cards on a turn, an upright round and its result laid out at 768 wide with no prompt, back to the six with a tick, and a not-ready game still asked to turn passed',
     );
   }
 

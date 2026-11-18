@@ -31,18 +31,18 @@ Brain Age's daily training offers a handful of short exercises (calculation, mem
 ### R2. Who it is for
 
 - The active profile's band decides everything: a child's band gives a child's set, a `grownup` profile the grown-up set. "Adult if not a child" is the grown-up profile; a device with no profile goes through "Who's playing?" as everywhere, where a grown-up profile is one tap.
-- Family members at the same band on the same day see the same six (one seed per day and band, like a newspaper's puzzle page). Per-profile seeding is an [open decision](#open-decisions).
+- Family members using the same route at the same band on the same day see the same six.
 
 ### R3. The pool: games that make sense for the band
 
 - A game is eligible for a band when it is touch-playable (`playsByTouch`), **lists that band itself** (no younger top-up; every band has far more than six games today: lap 53, toddler 74, preschool 95, pre-K 118, early school 109, grown-up 16), and is not opted out.
 - **Opt-out:** a module may set `daily: false` for a round that does not suit a ready-made challenge (a free creation with no check, or a calendar-style round). The build lists the opt-outs; a registry test keeps the flag to real IDs and asserts every band still has at least six eligible games in at least five kinds.
-- Grown-ups: the games made for grown-ups plus early-school games at their hardest, as in the trial, with two grown-up games first. Whether that blend is right is the developer's call after playing ([open decision](#open-decisions)).
+- Grown-ups: the games made for grown-ups plus early-school games at their hardest, as in the trial, with two grown-up games first in the island trial and a [four-and-two mix](#the-weekly-phone-deal) on the phone.
 - Story rounds, couch courses and controller-only games are never in the six.
 
 ### R4. The six and the mix
 
-- **Seed:** the local calendar day (`dayKey`) and the band (`daySeed`); the same build gives the same six all day on every device at that band and a new six at her midnight. The page computes the six when it opens; a day change while she plays does not swap the six under her until the page is opened again. Adding a game to the registry changes later shuffles; that is fine.
+- **Island seed:** the local calendar day (`dayKey`) and the band (`daySeed`); the same build gives the same six all day on every device at that band and a new six at her midnight. The page computes the six when it opens; a day change while she plays does not swap the six under her until the page is opened again. Adding a game to the registry changes later shuffles; that is fine.
 - **Six distinct games.** When the band has fewer than six eligible games (none does today), the page shows what there is.
 - **Kinds of challenge.** Each touch game names one `challenge` kind, from a small fixed list, in its module; a registry test fails for a touch game without one. The seven kinds, chosen so every band has several:
 
@@ -57,7 +57,7 @@ Brain Age's daily training offers a handful of short exercises (calculation, mem
   | `hands` | aiming, tracing, steering, timing a touch | `bubble-pop`, `roundup`, `dot-link` |
 
   The examples are a guide for the classification pass; the pass reads each game's `skills` and GAMES.md entry and gives it the kind its round mostly asks for.
-- **Picking:** a seeded shuffle of the pool; take one game per kind until the kinds present at that band are used, then start the kinds again, preferring a land (`region`) not yet taken. The result at a band with seven kinds is six different kinds; at a band with fewer, at most two of a kind. Grown-ups take their two grown-up games first, then fill kinds.
+- **Picking:** a seeded shuffle of the pool; take one game per kind until the kinds present at that band are used, then start the kinds again, preferring a land (`region`) not yet taken. The result at a band with seven kinds is six different kinds; at a band with fewer, at most two of a kind. The island trial takes two grown-up games first, then fills kinds. The [phone deal](#the-weekly-phone-deal) gives older deals priority.
 - **Preset levels:** each pick gets a level from its game's ladder **at the band the round plays** (`playBand`), seeded with the day: the play-order ladder (`levelsInOrder`) with entry levels left out; grown-ups keep the trial's top third. A grown-up's pin for that game wins over the preset. The card shows the level as a dot row (no reading), and the intro's level arrows still work, so a grown-up can step it before Play.
 - **Accounting:** the round finishes through the shell as any round: sticker, history, stats. It records with `adapt` off (as a story round does), so a preset level, which is the day's choice and not her progress, never steps her saved level up or down. Again and Next level on the celebration work as they do everywhere.
 
@@ -86,7 +86,7 @@ In `src/content/daily.test.ts`, pure, over the real registry:
 - Every pick lists the band (grown-ups: `grownup` or `school`); no opted-out, story-only or controller-only game appears; every band has at least six eligible games in at least five kinds.
 - Every pick's level is in `levels(playBand)` and is not an entry level; a pin is used when valid; grown-up levels are in the top third.
 - Kinds: at a band with at least six kinds present, the six are six different kinds; otherwise no kind appears more than twice; lands do not repeat before they must.
-- Grown-ups: the first two picks are grown-up games.
+- Grown-ups: the phone deals four grown-up games followed by two school games. Both orientations show the same six, upright-ready games rotate within each pool, and a pool that can cover a week deals without repeats.
 - Registry: every touch game has a `challenge` kind; `daily: false` names real IDs only.
 
 ## Slices
@@ -102,6 +102,12 @@ Shell/navigation: typecheck, unit tests, build, one filtered browser flow (Home,
 ## On a phone, and playing all six (built 2026-11-09)
 
 On a phone the six are the whole root, R6's Play all is built as a play button plus a next-of-six tile on each daily round's result (not through the mix planner), and a grown-up's profile can leave a playtest note per game and day: [the daily playtest slice](phone-portrait.md#the-daily-playtest-slice-a-phone-is-todays-six-alone-built-2026-11-09).
+
+### The weekly phone deal
+
+The phone root shuffles the eligible pool once per band for the local Monday, and reconstructs the deals from Monday through the day the page opens. Games that have gone longest without a card this week come first. Among games dealt equally recently, the pick favors different kinds and lands. Each Monday starts a new shuffle.
+
+The phone gives grown-ups four grown-up cards and two early-school cards at the harder end of their ladders. It prefers upright-ready games within each group and fills from the available games when a group is short. The same cards and levels stay on a turn. The existing day seed, pins and first-launch rules still set the levels. Dealing uses the catalog and calendar, with no new save field.
 
 ## U5: a first six she can start (status built 2026-11-10)
 
@@ -146,11 +152,4 @@ In `daily.test.ts`, over the real registry: with every game new, each child's pi
 
 ## Open decisions
 
-For [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) after slice 1 is played:
-
-**Decided 2026-11-17 ([record](../archive/DECISIONS-2026-11-17.md#phone-play)):** the six stay shared per band and day; a grown-up's phone six becomes four grown-up games and two early-school games; the pool is dealt across the week from a weekly seed, still without reading history; the island keeps `?daily` only. The two changes are queued in [READY](../READY.md), and a playtest note can reverse either.
-
-- **Shared or per-profile six.** Proposed: shared per band and day (siblings at one band see the same six). Per-profile seeding is a one-line change if two children at a band should differ.
-- **The grown-up blend.** Proposed: keep two grown-up games plus four early-school games at their hardest until the grown-up catalog (16 games) is large enough for six.
-- **Recently played games.** Proposed: the six ignore history (a day's six are the day's). Avoiding the last few days' games would read history and is not needed.
-- **The island at `classic/`.** Proposed: `?daily` only, no button, since the cutover removes it.
+The [2026-11-17 decisions](../archive/DECISIONS-2026-11-17.md#phone-play) kept the six shared by band and kept the island's `?daily` entry. The weekly phone deal and grown-up mix are built. A [playtest note](../OBSERVATIONS.md) can reopen either decision.

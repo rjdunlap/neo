@@ -7,7 +7,7 @@ import { store } from '../progress/store';
  * (`GameScene.showDailyNext`) build the six from the store, so the two never disagree. Reads her band, her pins and which
  * games are new to her today; reads `store.data.games` directly so the pick never creates an empty entry per game.
  */
-export function todaysSix(day: string, upright: boolean): DailyPick[] {
+export function todaysSix(day: string, upright: boolean, phone: boolean): DailyPick[] {
   const games = store.data.games;
   return dailySix(
     day,
@@ -16,5 +16,6 @@ export function todaysSix(day: string, upright: boolean): DailyPick[] {
     (id) => games[id]?.pinned ?? null,
     upright,
     (id) => newToday(games[id], day),
+    phone,
   );
 }

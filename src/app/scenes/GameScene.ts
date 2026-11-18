@@ -943,7 +943,7 @@ export class GameScene extends Scene {
     if (!this.dailyRound || this.mixRound || !this.resultLayer) return null;
     const day = dayKey(new Date());
     const played = (id: string) => playedOn(store.data.games[id]?.history, day);
-    const picks = todaysSix(day, this.app.uprightPhone());
+    const picks = todaysSix(day, this.app.uprightPhone(), this.app.phoneOnly);
     const live = () => this.liveResult() && !this.navigating && this.resultReady && !this.dailySheet;
     const next = nextOfSix(picks, this.mod.id, played);
     if (next) {

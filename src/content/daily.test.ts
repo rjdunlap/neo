@@ -113,7 +113,7 @@ describe("today's six", () => {
   it("leads a grown-up's six with games made for grown-ups", () => {
     for (const day of days) {
       const six = dailySix(day, 'grownup', GAMES);
-      expect(six.filter((p) => p.mod.bands.includes('grownup')).length).toBeGreaterThanOrEqual(GROWNUP_FIRST);
+      expect(six.slice(0, 2).every((p) => p.mod.bands.includes('grownup'))).toBe(true);
     }
   });
 
@@ -219,15 +219,88 @@ describe("today's six on a phone held upright (chunk 31)", () => {
     }
   });
 
-  it("still leads a grown-up's six with games made for grown-ups when none is ready", () => {
+  it('still leads the classic upright six with grown-up games when none is ready', () => {
     for (const day of days) {
-      const six = dailySix(day, 'grownup', GAMES, undefined, true);
+      const six = dailySix(day, 'grownup', withReady([]), undefined, true);
       expect(
-        six.slice(0, GROWNUP_FIRST).every((p) => p.mod.bands.includes('grownup')),
+        six.slice(0, 2).every((p) => p.mod.bands.includes('grownup')),
         day,
       ).toBe(true);
       expect(six, day).toHaveLength(DAILY_COUNT);
     }
+  });
+});
+
+describe("the phone's weekly deal", () => {
+  // Monday through Sunday across both a month boundary and the fall clock change in the US.
+  const week = Array.from({ length: 7 }, (_, i) => dayKey(new Date(2026, 9, 26 + i)));
+  const phoneSix = (day: string, upright = true) =>
+    dailySix(day, 'grownup', GAMES, undefined, upright, undefined, true);
+
+  it('deals four grown-up games and two early-school games, keeping all six on a turn', () => {
+    for (const day of days) {
+      const six = phoneSix(day);
+      expect(six).toHaveLength(DAILY_COUNT);
+      expect(new Set(six.map((p) => p.mod.id)).size).toBe(DAILY_COUNT);
+      expect(six.map((p) => p.band)).toEqual([
+        'grownup',
+        'grownup',
+        'grownup',
+        'grownup',
+        'school',
+        'school',
+      ]);
+      expect(GROWNUP_FIRST).toBe(4);
+      for (const p of six) {
+        expect(p.mod.upright).toBe(true);
+        expect(hardLevels(p.mod, p.band)).toContain(p.level);
+      }
+      expect(phoneSix(day, false)).toEqual(six);
+      expect(phoneSix(day)).toEqual(six);
+    }
+  });
+
+  it('gives each upright game in each pool a day before dealing it again', () => {
+    const ready = dailyPool('grownup', GAMES).filter((m) => m.upright);
+    for (const band of ['grownup', 'school'] as const) {
+      const undealt = new Set(ready.filter((m) => m.bands.includes('grownup') === (band === 'grownup')));
+      const seen = new Set();
+      for (const day of week) {
+        const cards = phoneSix(day).filter((p) => p.band === band);
+        // All unseen cards for this day come before the repeats. Every card sees a turn if the week has room.
+        for (const card of cards) {
+          if (seen.has(card.mod)) expect(undealt.size, `${band} on ${day}`).toBe(0);
+          undealt.delete(card.mod);
+          seen.add(card.mod);
+        }
+      }
+      const slots = band === 'grownup' ? GROWNUP_FIRST : DAILY_COUNT - GROWNUP_FIRST;
+      expect(seen.size).toBe(Math.min(seen.size + undealt.size, week.length * slots));
+    }
+  });
+
+  it('deals without repeats for school when its upright pool can cover the week', () => {
+    const games = GAMES.filter((m) => m.bands.includes('school')).map((m) => ({
+      ...m,
+      upright: true as const,
+    }));
+    const cards = week.flatMap((day) => dailySix(day, 'school', games, undefined, true, undefined, true));
+    expect(cards).toHaveLength(week.length * DAILY_COUNT);
+    expect(new Set(cards.map((p) => p.mod.id)).size).toBe(cards.length);
+  });
+
+  it('uses sideways games from the needed band when its upright pool cannot fill a day', () => {
+    const games = GAMES.map((m) => ({ ...m, upright: m.id === 'brain-break' ? (true as const) : undefined }));
+    const six = dailySix(week[0], 'grownup', games, undefined, true, undefined, true);
+    expect(six[0].mod.id).toBe('brain-break');
+    expect(six.map((p) => p.band)).toEqual(['grownup', 'grownup', 'grownup', 'grownup', 'school', 'school']);
+  });
+
+  it('fills from available games when one part of the phone mix is too small', () => {
+    const games = GAMES.filter((m) => m.id === 'brain-break' || !m.bands.includes('grownup'));
+    const six = dailySix(week[0], 'grownup', games, undefined, true, undefined, true);
+    expect(six[0].mod.id).toBe('brain-break');
+    expect(new Set(six.map((p) => p.mod.id)).size).toBe(DAILY_COUNT);
   });
 });
 
