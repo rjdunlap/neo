@@ -564,6 +564,39 @@ export const MAP_SHAPES: Record<MapShape, readonly Pt[]> = {
   ],
 };
 
+/** A phone held upright: much taller than wide (a tablet turned upright, 3:4, keeps the swapped sideways map). */
+const isTall = (view: View): boolean => view.h >= view.w * 1.4;
+
+/**
+ * Level 4's shapes on a phone held upright, x across and y down the screen: the landmarks keep to two columns (two 260-wide
+ * tiles and a gap fill the 768 width), the door and the picnic sit between them, and the left column stays between the
+ * Home button and the guide. `sweep` goes down the screen from side to side, `zigzag` climbs it, and `hook` goes down the
+ * left and back up the right, to a picnic beside the first landmark.
+ */
+export const UPRIGHT_SHAPES: Record<MapShape, readonly Pt[]> = {
+  sweep: [
+    { x: 0.6, y: 0 },
+    { x: 0, y: 0.25 },
+    { x: 1, y: 0.5 },
+    { x: 0, y: 0.75 },
+    { x: 0.7, y: 1 },
+  ],
+  zigzag: [
+    { x: 0.95, y: 1 },
+    { x: 0, y: 0.75 },
+    { x: 1, y: 0.5 },
+    { x: 0, y: 0.25 },
+    { x: 0.95, y: 0 },
+  ],
+  hook: [
+    { x: 0.4, y: 0 },
+    { x: 0, y: 0.25 },
+    { x: 0, y: 0.75 },
+    { x: 1, y: 0.85 },
+    { x: 0.615, y: 0.25 },
+  ],
+};
+
 export const TILE = { w: 260, h: 200 };
 /** A trail's flag at level 5. */
 export const FLAG = { w: 140, h: 120, gap: 50 };
@@ -606,11 +639,14 @@ export function mapLayout(view: View, level: number, shape: MapShape): MapLayout
     y0 = 98;
     y1 = view.h - 238;
   }
-  const path = MAP_SHAPES[shape].map((p) => {
-    const u = upright ? p.y : p.x;
-    const v = upright ? p.x : p.y;
-    return { x: x0 + u * (x1 - x0), y: y0 + v * (y1 - y0) };
-  });
+  const path =
+    isTall(view) && !trails
+      ? UPRIGHT_SHAPES[shape].map((p) => ({ x: 140 + p.x * (view.w - 280), y: 95 + p.y * (view.h - 160) }))
+      : MAP_SHAPES[shape].map((p) => {
+          const u = upright ? p.y : p.x;
+          const v = upright ? p.x : p.y;
+          return { x: x0 + u * (x1 - x0), y: y0 + v * (y1 - y0) };
+        });
   const tiles = path.slice(1, 1 + STOPS).map((p) => ({ x: p.x - TILE.w / 2, y: p.y - TILE.h / 2, ...TILE }));
   const h = path[0];
   const p = path[STOPS + 1];
@@ -652,6 +688,22 @@ export const walkerArea = (feet: Pt): Rect => ({
   y: feet.y - 45 - MAP_WALKER / 2,
   w: MAP_WALKER,
   h: MAP_WALKER,
+});
+
+/**
+ * How large the companion is drawn on the map: 0.35 sideways; a little larger on a phone held upright, where the map has the room and
+ * its body would otherwise be just under 100 units across.
+ */
+export const mapWalkerScale = (view: View): number => (isTall(view) ? 0.42 : 0.35);
+
+/** The walker's tap area at a stop is a circle around its body, at most this far across for any companion. */
+export const STAND_WALKER = 200;
+/** The room the walker's tap area takes when it stands at a stop with its feet at `stand`: an outer bound. */
+export const standArea = (stand: Pt): Rect => ({
+  x: stand.x - STAND_WALKER / 2,
+  y: stand.y - 50 - STAND_WALKER / 2,
+  w: STAND_WALKER,
+  h: STAND_WALKER,
 });
 
 /** Every rectangle for one stop. Nothing is under 100; the guide's corner (bottom-left) and the home button stay clear. */

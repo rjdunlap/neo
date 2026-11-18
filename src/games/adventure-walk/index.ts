@@ -47,6 +47,7 @@ import {
   laneX,
   mapLayout,
   mapSpot,
+  mapWalkerScale,
   nextHome,
   onMap,
   onTrails,
@@ -74,8 +75,6 @@ import {
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SCALE = 0.5;
-/** The companion on the map (level 4). */
-const MAP_SCALE = 0.35;
 const lerp = (a: Pt, b: Pt, t: number): Pt => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
 class AdventureWalk implements Game {
@@ -495,10 +494,18 @@ class AdventureWalk implements Game {
     });
     if (this.plan.trails) this.drawRibbons();
     if (this.busy) return;
+    this.sizeMapWalker();
     const end = l.path[STOPS + 1];
     this.picnic?.position.set(end.x, end.y);
     const feet = this.mapFeet();
     this.walker.position.set(feet.x, feet.y);
+  }
+
+  /** The companion at this view's map size; its tap area stays at least MAP_WALKER across. */
+  private sizeMapWalker() {
+    const scale = mapWalkerScale(this.view);
+    this.walker.scale.set(scale);
+    this.walker.hitArea = this.walker.touchArea(Math.max(0, MAP_WALKER / 2 / scale - this.walker.touch.r));
   }
 
   /** The map's path, door and tiles, laid out under the companion. At level 4 a tile is a tap target. */
@@ -560,9 +567,8 @@ class AdventureWalk implements Game {
     this.layoutMap();
     this.ctx.stage.addChildAt(map, this.ctx.stage.getChildIndex(this.walker));
     // The companion's tap area stays at least MAP_WALKER across at its smaller size.
-    this.walker.hitArea = this.walker.touchArea(
-      Math.max(0, MAP_WALKER / 2 / MAP_SCALE - this.walker.touch.r),
-    );
+    const scale = mapWalkerScale(this.view);
+    this.walker.hitArea = this.walker.touchArea(Math.max(0, MAP_WALKER / 2 / scale - this.walker.touch.r));
     return map;
   }
 
@@ -583,7 +589,8 @@ class AdventureWalk implements Game {
       void tw.to(this.picnic, { x: end.x, y: end.y }, zoom);
       void tw.to(this.picnic.scale, { x: 0.5, y: 0.5 }, zoom);
     }
-    void tw.to(this.walker.scale, { x: MAP_SCALE, y: MAP_SCALE }, zoom);
+    const scale = mapWalkerScale(this.view);
+    void tw.to(this.walker.scale, { x: scale, y: scale }, zoom);
     await tw.to(this.walker, { x: feet.x, y: feet.y }, zoom);
     if (this.gone) return;
     this.busy = false;
@@ -692,7 +699,7 @@ class AdventureWalk implements Game {
     this.makePicnic();
     this.picnic!.scale.set(0.5);
     this.at = -1;
-    this.walker.scale.set(MAP_SCALE);
+    this.walker.scale.set(mapWalkerScale(this.view));
     this.buildMap();
     // The map covers the path's ends; the door and the blanket sit above the ribbons.
     this.ctx.stage.addChildAt(this.picnic!, this.ctx.stage.getChildIndex(this.walker));
@@ -1006,6 +1013,7 @@ export const adventureWalk: GameModule = {
     'Make a little walk on the table with a book bridge and a cushion boulder, and let a toy go over, under and around.',
   hubIcon: () => new WalkIcon(),
   touchDemo: true,
+  upright: true,
   sticker: (seed) => walkSticker(LANDMARKS[new Rng(seed).int(0, LANDMARKS.length - 1)].id),
   create: (ctx) => new AdventureWalk(ctx),
 };

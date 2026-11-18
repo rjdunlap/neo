@@ -1,0 +1,6 @@
+# 2026-11-18 — Upright batch 8 (PR #1811)
+
+**Changed:** `adventure-walk`, `timeline-trail`, `lasso-loops`, `spinner-fair`, `feelings-faces` and `keep-house` play upright at every level of every band they list. Two fixed layouts that returned null on 768-wide views (`timeline-trail` full line of four, `keep-house` levels 3–5).
+**Ran:** `npm run typecheck`; vitest for the six game folders (each with its own `upright.test.ts` on four upright phone views and a 375 × 601 one) and `registry.test.ts`, 645 tests passing. Before the change, `BROWSER_SUITE=uprightsweep PHONE_BANDS=all` on the six (48 level views: 29 fit, 5 small fix, 14 judged by eye).
+**Ran:** After the change, `BROWSER_SUITE=uprightgames` (390 × 844 touch phone, real touches, one sticker each): school first and last level of each game, plus every changed layout (`adventure-walk` 4, `feelings-faces` 12, `lasso-loops` 1, `spinner-fair` 1 and 2, `keep-house` 2 and 3, `feelings-faces` 7, 8 and 1 at their bands). Screenshots looked at by eye; that look caught `spinner-fair`'s bar faces drawn about four times too large, which the unit tests missed, and the fixed play was replayed.
+**Not run:** `npm run build`, `world`, offline, `fingerdemo`, the full unit suite locally (CI runs it).

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/spinner-fair; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `spinner-fair` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `spinner-fair` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, data, graphs, comparing
 
@@ -73,3 +73,5 @@ Misses and hints (level 10): only a wrong card is a miss; spins, the run and the
 Misses and hints (level 11): only a wrong card is a miss; spins and runs are never counted. After two wrong cards on a wheel the right card glows (one hint per wheel); asked again, the card is tapped.
 
 **What the guide repeats (2026-11-18).** Level 10: the question after a run (`sf.streak`) and the ask for one more spin (`sf.spin-once`) are the instruction (`ctx.instruct`, through `ask()` in `due.ts`), so the caption keeps the question while the three cards wait and a tap on the pet repeats it; the next wheel instructs the run's line again. Level 7: `sf.grid-intro` is the instruction while the grid builds, so the caption and guide no longer keep the dice tray's line.
+
+**Upright on a phone (2026-11-18, upright batch 8):** every level plays upright. Levels 1–2's bar faces are drawn at 110 units upright (64 before; the column taps were already 120 × 390) with the columns 40 apart (`FACE_UP`, `COL_GAP_UP`); hit sizes are constants. Layout test: `upright.test.ts` in the game folder.

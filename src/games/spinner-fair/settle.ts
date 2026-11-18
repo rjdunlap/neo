@@ -40,6 +40,7 @@ import {
   type SetSpec,
   type SettleLayout,
   type Spin,
+  SPIN_PAD,
 } from './logic';
 import { RunPlayer } from './runs';
 
@@ -215,7 +216,7 @@ export class SettleGame implements Game {
     this.run = 0;
     this.phase = 'run';
     this.art = spinnerArt(this.set.wheels[0], SETTLE_R, { stand: false });
-    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + 12);
+    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + SPIN_PAD);
     onTap(this.art.node, () => this.tapSpinner());
     this.spinLayer.addChild(this.art.node);
     this.cards = ABOUT_CARDS.map((n, i) => {

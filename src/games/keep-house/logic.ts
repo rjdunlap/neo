@@ -956,6 +956,8 @@ export const BUTTON = { w: 140, h: 110 };
 export const STEP = 75;
 const M = 20;
 const GAP = 16;
+/** A portrait view narrower than this is an upright phone (768 across); a portrait tablet is 1024. */
+export const UPRIGHT_BELOW = 900;
 
 export interface KeepLayout {
   /** Level 1: the doors left to right, and the well. */
@@ -989,11 +991,18 @@ export function fixedRect(p: Placement, yard: Rect): Rect {
   return { x: p.side === 'left' ? yard.x : yard.x + yard.w - FIXED.w, y: yard.y, w: FIXED.w, h: FIXED.h };
 }
 
-/** The yard's spots for a placement: `STEP` units per walking step from the fixed room's near edge. */
+/** A yard strip's length: the fixed room, a gap, six walking steps of `step` units and half a spot. */
+const yardWidth = (step: number) => FIXED.w + 60 + 6 * step + SPOT.w / 2;
+
+/**
+ * The yard's spots for a placement: one walking step per `STEP` units from the fixed room's near edge. An upright phone's
+ * yard is a little shorter than six full steps, so the step is read off the yard's own length (exactly `STEP` sideways).
+ */
 export function spotRects(p: Placement, yard: Rect): { near: Rect; far: Rect } {
   const fixed = fixedRect(p, yard);
+  const step = (yard.w - yardWidth(0)) / 6;
   const at = (steps: number): Rect => {
-    const cx = p.side === 'left' ? fixed.x + fixed.w + 60 + steps * STEP : fixed.x - 60 - steps * STEP;
+    const cx = p.side === 'left' ? fixed.x + fixed.w + 60 + steps * step : fixed.x - 60 - steps * step;
     return { x: cx - SPOT.w / 2, y: fixed.y + fixed.h - SPOT.h, w: SPOT.w, h: SPOT.h };
   };
   return { near: at(p.near), far: at(p.far) };
@@ -1001,6 +1010,9 @@ export function spotRects(p: Placement, yard: Rect): { near: Rect; far: Rect } {
 
 export function keepLayout(brief: Brief, v: View): KeepLayout | null {
   const wide = v.w >= v.h;
+  // An upright phone (768 units across): too narrow for the tablet-portrait rows beside the home corner, so the tray
+  // drops below Home and help, the yard runs edge to edge and the last need cards keep right of the pet.
+  const upright = !wide && v.w < UPRIGHT_BELOW;
   const left = HOME_CORNER.w + M;
   const cx = v.w / 2;
   let l: KeepLayout;
@@ -1040,9 +1052,15 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     }));
     l = { slots, rooms, ground: roomsY + YARD_ROOM.h, inputs: [...slots, ...rooms] };
   } else if (brief.id === 'walk') {
-    const total = FIXED.w + 60 + 6 * STEP + SPOT.w / 2;
+    const total = upright ? Math.min(yardWidth(STEP), v.w - 2 * M) : yardWidth(STEP);
     const top = wide ? 250 : 380;
-    const yard: Rect = { x: Math.max(left, cx - total / 2), y: top, w: total, h: FIXED.h };
+    // Upright, the yard stands below the home corner and above the pet, so it may start at the left margin.
+    const yard: Rect = {
+      x: upright ? cx - total / 2 : Math.max(left, cx - total / 2),
+      y: top,
+      w: total,
+      h: FIXED.h,
+    };
     const tile: Rect = { x: cx - TILE.w / 2, y: wide ? 50 : 150, w: TILE.w, h: TILE.h };
     const keep: Rect = { x: cx - KEEP.w / 2, y: top + FIXED.h + 40, w: KEEP.w, h: KEEP.h };
     l = { yard, tile, keep, ground: top + FIXED.h, inputs: [tile, keep] };
@@ -1086,11 +1104,11 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     if (site.w < 300 || !inside(site, v) || corners(v).some((c) => overlaps(site, c))) return null;
     l = { lord, site, rows, build, keep, ground: site.y + site.h, inputs: [...rows, build, keep] };
   } else {
-    const trayY = wide ? 30 : 120;
+    const trayY = wide ? 30 : upright ? HOME_CORNER.h + 15 : 120;
     const trayW = 5 * TILE.w + 4 * 14;
     const gridW = GRID * CELL + (GRID - 1) * CELL_GAP;
     const gridX = wide ? left + 30 : cx - gridW / 2;
-    const gridY = trayY + TILE.h + (wide ? 40 : 120);
+    const gridY = trayY + TILE.h + (wide ? 40 : upright ? 60 : 120);
     const trayX = wide ? left : cx - trayW / 2;
     const tray = PLAN_ROOMS.map((_, i) => ({ x: trayX + i * (TILE.w + 14), y: trayY, w: TILE.w, h: TILE.h }));
     const cells = Array.from({ length: CELLS }, (_, c) => ({
@@ -1101,7 +1119,7 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     }));
     const bell: Rect = wide
       ? { x: gridX + gridW + 50, y: gridY + gridW - BELL.h, w: BELL.w, h: BELL.h }
-      : { x: cx - BELL.w / 2, y: gridY + gridW + 40, w: BELL.w, h: BELL.h };
+      : { x: cx - BELL.w / 2, y: gridY + gridW + (upright ? 24 : 40), w: BELL.w, h: BELL.h };
     // Landscape keeps the need cards down the right; portrait stacks them under the bell in a row of three and a row of two.
     const cards: Rect[] = wide
       ? NEEDS.map((_, i) => ({ x: v.w - M - CARD.w, y: trayY + i * (CARD.h + 8), w: CARD.w, h: CARD.h }))
@@ -1109,9 +1127,11 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
           const r = i < 3 ? 0 : 1;
           const n = r === 0 ? 3 : 2;
           const k = r === 0 ? i : i - 3;
+          // Upright, the row of two lines up with the right of the row of three, clear of the pet's corner.
+          const shift = upright && r === 1 ? (CARD.w + GAP) / 2 : 0;
           return {
-            x: cx - (n * CARD.w + (n - 1) * GAP) / 2 + k * (CARD.w + GAP),
-            y: bell.y + BELL.h + 30 + r * (CARD.h + 8),
+            x: cx - (n * CARD.w + (n - 1) * GAP) / 2 + k * (CARD.w + GAP) + shift,
+            y: bell.y + BELL.h + (upright ? 20 : 30) + r * (CARD.h + 8),
             w: CARD.w,
             h: CARD.h,
           };

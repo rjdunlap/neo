@@ -15,6 +15,8 @@ import {
   BIG,
   COL_W,
   FACE,
+  FAV,
+  SPIN_PAD,
   LEVELS,
   NAME_OF,
   SMALL,
@@ -94,7 +96,7 @@ class SpinnerFair implements Game {
       ctx.view,
     );
     this.barsPanel.eventMode = this.glowRing.eventMode = 'none';
-    this.favourite.hitArea = new Rectangle(-60, -60, 120, 120);
+    this.favourite.hitArea = new Rectangle(-FAV / 2, -FAV / 2, FAV, FAV);
     onTap(this.favourite, () => this.tapFavourite());
     this.layoutNow = layout(ctx.view, 3);
     ctx.stage.addChild(
@@ -180,7 +182,7 @@ class SpinnerFair implements Game {
     this.spinners = this.set.wheels.map((w, i) => {
       const art = spinnerArt(w, this.plan.ask === 'pick' ? SMALL : BIG);
       const r = this.plan.ask === 'pick' ? SMALL : BIG;
-      art.node.hitArea = new Circle(0, 0, r + 12);
+      art.node.hitArea = new Circle(0, 0, r + SPIN_PAD);
       onTap(art.node, () => this.tapSpinner(i));
       this.spinLayer.addChild(art.node);
       return art;
@@ -209,9 +211,7 @@ class SpinnerFair implements Game {
     this.kinds.forEach((kind, i) => {
       const col = new Container();
       const f = face(kind, FACE - 6);
-      f.position.set(0, FACE / 2);
       col.addChild(f, new Container());
-      col.hitArea = new Rectangle(-COL_W / 2, -BAR_H, COL_W, BAR_H + FACE);
       onTap(col, () => this.tapColumn(i));
       this.columns.push(col);
       this.barsNode.addChild(col);
@@ -496,13 +496,21 @@ class SpinnerFair implements Game {
 
   private placeBars() {
     const l = this.layoutNow;
-    this.columns.forEach((col, i) => col.position.set(l.columns[i].x, l.base));
+    this.columns.forEach((col, i) => {
+      col.position.set(l.columns[i].x, l.base);
+      // The face fills its slot under the baseline (bigger upright), and the whole column is the tap.
+      const f = col.children[0];
+      // `face()` draws a 250-unit critter at size / 250, so the scale is set whole, never multiplied.
+      f.scale.set((l.face - 6) / 250);
+      f.position.set(0, l.face / 2);
+      col.hitArea = new Rectangle(-COL_W / 2, -BAR_H, COL_W, BAR_H + l.face);
+    });
     this.barsPanel.clear();
     if (!this.columns.length) return;
     const left = l.columns[0].x - COL_W / 2 - 14,
       right = l.columns[l.columns.length - 1].x + COL_W / 2 + 14;
     this.barsPanel
-      .roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + FACE + 24, 20)
+      .roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + l.face + 24, 20)
       .fill({ color: 0xffffff, alpha: 0.75 });
     this.barsPanel
       .moveTo(left + 10, l.base)
@@ -557,7 +565,7 @@ class SpinnerFair implements Game {
             c.x - COL_W / 2 - pulse,
             c.y - BAR_H - pulse,
             COL_W + 2 * pulse,
-            BAR_H + FACE + 2 * pulse,
+            BAR_H + this.layoutNow.face + 2 * pulse,
             22,
           )
           .stroke({ width: 7, color: swatch.yellow.fill });
@@ -638,4 +646,5 @@ export const spinnerFair: GameModule = {
     return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
   },
   touchDemo: true,
+  upright: true,
 };

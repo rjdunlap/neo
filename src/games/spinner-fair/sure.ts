@@ -27,6 +27,8 @@ import {
   type Plan,
   type SetSpec,
   type SureLayout,
+  SPIN_PAD,
+  SURE_FAV,
 } from './logic';
 
 /*
@@ -97,7 +99,7 @@ export class SureGame implements Game {
       ctx.view,
     );
     this.slotMarks.eventMode = this.glowRing.eventMode = 'none';
-    this.favourite.hitArea = new Rectangle(-55, -55, 110, 110);
+    this.favourite.hitArea = new Rectangle(-SURE_FAV / 2, -SURE_FAV / 2, SURE_FAV, SURE_FAV);
     onTap(this.favourite, () => this.tapFavourite());
     ctx.stage.addChild(
       this.backdrop,
@@ -168,7 +170,7 @@ export class SureGame implements Game {
     this.shown = this.set.wheels.map(() => null);
     this.spinners = this.set.wheels.map((w) => {
       const art = spinnerArt(w, MID, { stand: false });
-      art.node.hitArea = new Circle(0, 0, MID + 12);
+      art.node.hitArea = new Circle(0, 0, MID + SPIN_PAD);
       onTap(art.node, () => this.tapSpinner(art));
       this.spinLayer.addChild(art.node);
       return art;

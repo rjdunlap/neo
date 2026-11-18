@@ -39,6 +39,7 @@ import {
   type SetSpec,
   type Spin,
   type Wheel,
+  SPIN_PAD,
 } from './logic';
 import { RunPlayer } from './runs';
 
@@ -231,7 +232,7 @@ export class DueGame implements Game {
     this.viewEnd = -1;
     this.phase = 'run';
     this.art = spinnerArt(this.wheel, SETTLE_R, { stand: false, lines: true });
-    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + 12);
+    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + SPIN_PAD);
     onTap(this.art.node, () => this.tapSpinner());
     this.buildBadges();
     this.spinLayer.addChild(this.art.node);

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/keep-house; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `keep-house` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `keep-house` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** matching, spatial-reasoning, reasons, checking
 
@@ -41,3 +41,5 @@
 **A ruin clue never holds the next label (U7 fix batch 12, 2026-11-12).** At level 5 a settled label's deciding clue `kh.clue.*` and `kh.was.*` start and the other labels open at once; picking a label, a look or a wrong drop cuts the pair, and the figure fades after. A ruin's last label is still heard out before the household returns.
 
 **What the guide repeats.** At level 3 "Where would it stay hot? Put it down again, or keep it there." (after the cold walk) and the next yard's "Now the stable. The horses come in at the gate." are instructions (`ctx.instruct`); at level 6 "Which would you build for this lord?" is one, and the next lord's introduction ends with the level's instruction again when the question had been asked and she has not built yet. The yard and lord greetings, the lord's lines, read-outs and reasons stay `say`.
+
+**Upright on a phone (2026-11-18, upright batch 8):** every level plays upright. Bug fixed: `keepLayout` returned null on every 768-wide view at levels 3–5 (level 3's yard strip is 775 long; the five-tile tray of levels 4 and 5 sat in the Home corner), so nothing drew. A new upright branch (portrait and narrower than `UPRIGHT_BELOW` = 900) runs level 3's yard margin to margin with `spotRects` reading the step off its length, and puts levels 4 and 5's tray below Home, with level 4's two need cards clear of the pet. Level 2 needed no change. Layout test: `upright.test.ts` in the game folder.

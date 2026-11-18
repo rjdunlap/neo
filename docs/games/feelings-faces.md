@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/feelings-faces; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `feelings-faces` · **Land:** Cozy Village · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `feelings-faces` · **Land:** Cozy Village · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** emotions, empathy, vocabulary
 
@@ -45,3 +45,5 @@ Level 10, *Hug or pillow*, places two helper cards below a sad, sleepy or hungry
 Level 12, *Ask first*, shows Bunny, Cat, Bear and Dog one at a time, looking sad or sleepy. Tap the friend to ask; a thought bubble and spoken request reveal the wish before four offer cards appear. Every four-friend round includes a hug, quiet space on a blanket, a ball game and Hazel at the door exactly once. Tap the friend to repeat the wish without a miss or hint. Wrong offers count a miss and replay the request; two misses offer one glow hint. Give the stated wish: the game may end happy, and the other requests end calm. Calm stays valid at the round ending. Four supported answers earn one sticker, with a two-step ghost finger and level-specific spoken how-to. These are fictional requests, not advice about a real child.
 
 **A right answer's line never holds the next question (U7 fix batch 11, 2026-11-12).** The line starts and, after the 0.5 s beat, the next board opens with its ask waiting for the line, her first tap or the guide (`Game.sayWaitingAsk`). A first tap while the ask waits says it and is not judged, since several asks are only spoken. Levels 6 and 8 (why, care) and level 11's question before a new happening hear the line out first, since the happening's narration would cut it, as does the last question's line.
+
+**Upright on a phone (2026-11-18, upright batch 8):** every level plays upright. The layout moved to `feelingLayout` in `logic.ts` with `CARD_HIT`, `BUBBLE_HIT` and `FRIEND_HIT` (landscape pinned by a test). Upright, four cards or bubbles (levels 1, 8 and 12) take the full width in a row raised above the guide, and level 7's four friends spread across the full width. Layout test: `upright.test.ts` in the game folder.

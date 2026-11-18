@@ -1729,6 +1729,7 @@ export const keepHouse: GameModule = {
   challenge: 'space',
   skills: ['matching', 'spatial-reasoning', 'reasons', 'checking'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,

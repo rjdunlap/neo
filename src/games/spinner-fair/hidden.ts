@@ -41,6 +41,7 @@ import {
   type SetSpec,
   type SettleLayout,
   type Spin,
+  SPIN_PAD,
 } from './logic';
 import { RunPlayer } from './runs';
 
@@ -235,7 +236,7 @@ export class HiddenGame implements Game {
     this.revealed = this.counting = false;
     this.phase = 'run';
     this.art = spinnerArt(this.set.wheels[0], SETTLE_R, { stand: false, lines: true });
-    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + 12);
+    this.art.node.hitArea = new Circle(0, 0, SETTLE_R + SPIN_PAD);
     onTap(this.art.node, () => this.tapSpinner());
     // The dome turns with the wheel; the window sits still over it, under the pointer (the node's last child).
     this.lid = cover([this.fav, this.friend], SETTLE_R);
