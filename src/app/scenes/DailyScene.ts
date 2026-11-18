@@ -113,7 +113,7 @@ export class DailyScene extends Scene {
   }
 
   private pickSix(): DailyPick[] {
-    return todaysSix(this.day, this.uprightPhone);
+    return todaysSix(this.day, this.uprightPhone, this.app.phoneOnly);
   }
 
   private played(id: string): boolean {
@@ -260,11 +260,11 @@ export class DailyScene extends Scene {
   }
 
   resize(_v: View) {
-    // A turn of the phone changes which games the six draw from first (upright-ready ones when upright), and the badges.
+    // A turn redraws the badges. The island trial also changes which games it draws from first.
     const upright = this.app.uprightPhone();
     if (upright !== this.uprightPhone && !this.leaving) {
       this.uprightPhone = upright;
-      this.picks = this.pickSix();
+      if (!this.app.phoneOnly) this.picks = this.pickSix();
       this.buildCards();
       this.playAll.visible = !this.allPlayed;
     }

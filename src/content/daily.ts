@@ -13,7 +13,8 @@ import type { GameStats, RoundRecord } from '../progress/save';
  */
 export const DAILY_COUNT = 6;
 /** How many of a grown-up's six are games made for grown-ups (the rest are early-school games at their hardest). */
-export const GROWNUP_FIRST = 2;
+export const GROWNUP_FIRST = 4;
+const ISLAND_GROWNUP_FIRST = 2;
 
 export interface DailyPick {
   mod: GameModule;
@@ -69,19 +70,78 @@ export function hardLevels(mod: GameModule, band: Band): number[] {
   return order.slice(Math.floor((order.length * 2) / 3));
 }
 
+/** Pick one game per kind before repeating kinds, preferring a land not yet taken. */
+function dealSix(
+  pool: readonly GameModule[],
+  band: Band,
+  upright: boolean,
+  lastDealt?: ReadonlyMap<GameModule, number>,
+): GameModule[] {
+  const chosen: GameModule[] = [];
+  const kinds = new Set<GameModule['challenge']>();
+  const lands = new Set<string>();
+  const take = (from: readonly GameModule[], count: number) => {
+    const upTo = Math.min(chosen.length + count, DAILY_COUNT);
+    const left = from.filter((m) => !chosen.includes(m));
+    while (chosen.length < upTo && left.length) {
+      // Draw from the oldest deals first. A game that has never had a day is older than any deal this week.
+      const age = (m: GameModule) => lastDealt?.get(m) ?? -1;
+      const oldest = Math.min(...left.map(age));
+      const candidates = lastDealt ? left.filter((m) => age(m) === oldest) : left;
+      const unusedKinds = candidates.filter((m) => !kinds.has(m.challenge));
+      // During a weekly deal, keep the day's kinds and lands in mind even when the oldest games repeat one.
+      if (!unusedKinds.length && !lastDealt) kinds.clear();
+      if (candidates.every((m) => lands.has(m.region)) && !lastDealt) lands.clear();
+      const options = unusedKinds.length ? unusedKinds : candidates;
+      const next = options.find((m) => !lands.has(m.region)) ?? options[0];
+      left.splice(left.indexOf(next), 1);
+      chosen.push(next);
+      kinds.add(next.challenge);
+      lands.add(next.region);
+    }
+  };
+  const grown = (m: GameModule) => m.bands.includes('grownup');
+  const ready = upright ? pool.filter((m) => m.upright) : pool;
+  if (lastDealt && band === 'grownup') {
+    take(ready.filter(grown), GROWNUP_FIRST);
+    take(pool.filter(grown), GROWNUP_FIRST - chosen.length);
+    const schoolSlots = DAILY_COUNT - GROWNUP_FIRST;
+    const beforeSchool = chosen.length;
+    take(
+      ready.filter((m) => !grown(m)),
+      schoolSlots,
+    );
+    take(
+      pool.filter((m) => !grown(m)),
+      schoolSlots - (chosen.length - beforeSchool),
+    );
+  } else if (band === 'grownup') {
+    take(ready.filter(grown), ISLAND_GROWNUP_FIRST);
+  }
+  take(ready, DAILY_COUNT);
+  if (upright && !lastDealt && band === 'grownup')
+    take(pool.filter(grown), ISLAND_GROWNUP_FIRST - chosen.length);
+  take(pool, DAILY_COUNT);
+  return chosen;
+}
+
+/** Rebuild the phone's deals from Monday through this day, using dates as calendar days even across clock changes. */
+function weeklyDeal(day: string, band: Band, pool: GameModule[]): GameModule[] {
+  const monday = new Date(`${day}T00:00:00Z`);
+  const weekday = (monday.getUTCDay() + 6) % 7;
+  monday.setUTCDate(monday.getUTCDate() - weekday);
+  const deck = new Rng(daySeed(monday.toISOString().slice(0, 10), band)).shuffle(pool);
+  const lastDealt = new Map<GameModule, number>();
+  for (let offset = 0; offset < weekday; offset++) {
+    for (const mod of dealSix(deck, band, true, lastDealt)) lastDealt.set(mod, offset);
+  }
+  return dealSix(deck, band, true, lastDealt);
+}
+
 /**
- * The day's six: a seeded shuffle of the pool, taken so each kind of challenge (`challenge`) appears once before any appears
- * twice, preferring a subject (`region`) not yet taken, so a band with six kinds gets six different kinds and lands repeat only
- * when they must. Each pick gets a seeded level from its game's ladder at the band it plays (`presetLevels`; a grown-up's from
- * `hardLevels`), unless `pinned` names a grown-up's pin for that game inside the ladder, which wins. A preset level is the
- * day's choice, not her progress: the round records with `adapt` off (`dailyOrigin`).
- *
- * On a phone held upright (`upright`, chunk 31) the same pick runs over the upright-ready games first (`upright: true`), then
- * fills from the rest of the pool if fewer than six are ready; the seed is unchanged, so a sideways day is exactly as before.
- *
- * A game `fresh` names as new to her today (`newToday`, U5a) plays its band's first level (`firstLevel`, where an ordinary
- * first launch starts) instead of the preset, at every child's band; a pin still wins, and a grown-up's six ignore it. The
- * seed is untouched, so the games, their order and every other card's level are the same for everyone at a band on a day.
+ * The island deals from a daily shuffle. The phone deals from a weekly shuffle and prefers upright-ready games in both
+ * orientations so a turn keeps the same cards. Pins and first launches affect levels only, and the daily origin turns
+ * adaptation off when the round is saved.
  */
 export function dailySix(
   day: string,
@@ -90,38 +150,11 @@ export function dailySix(
   pinned: (id: string) => number | null = () => null,
   upright = false,
   fresh: (id: string) => boolean = () => false,
+  phone = false,
 ): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
-  const pool = rng.shuffle([...dailyPool(band, games)]);
-  const chosen: GameModule[] = [];
-  const kinds = new Set<GameModule['challenge']>();
-  const lands = new Set<string>();
-  const take = (from: readonly GameModule[], upTo: number) => {
-    for (
-      let left = from.filter((m) => !chosen.includes(m));
-      chosen.length < upTo && left.length;
-      left = left.filter((m) => !chosen.includes(m))
-    ) {
-      // Every kind (or every land) left has had a turn: start its round again.
-      if (left.every((m) => kinds.has(m.challenge))) kinds.clear();
-      if (left.every((m) => lands.has(m.region))) lands.clear();
-      const fresh = left.filter((m) => !kinds.has(m.challenge));
-      const next = fresh.find((m) => !lands.has(m.region)) ?? fresh[0];
-      chosen.push(next);
-      kinds.add(next.challenge);
-      lands.add(next.region);
-    }
-  };
-  // A grown-up's six lead with two of the games made for grown-ups, so the day is not all early-school play.
-  const grown = (from: readonly GameModule[]) => from.filter((m) => m.bands.includes('grownup'));
-  const ready = upright ? pool.filter((m) => m.upright) : pool;
-  if (band === 'grownup') take(grown(ready), GROWNUP_FIRST);
-  if (upright) {
-    take(ready, DAILY_COUNT);
-    // Too few ready grown-up games still leaves a grown-up two of theirs.
-    if (band === 'grownup') take(grown(pool), GROWNUP_FIRST);
-  }
-  take(pool, DAILY_COUNT);
+  const pool = dailyPool(band, games);
+  const chosen = phone ? weeklyDeal(day, band, pool) : dealSix(rng.shuffle(pool), band, upright);
   return chosen.map((mod) => {
     const at = playBand(mod.bands, band);
     // The preset is drawn for every pick, pinned or not, so one pin never reshuffles the other cards' levels.
