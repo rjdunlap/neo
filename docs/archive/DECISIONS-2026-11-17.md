@@ -8,7 +8,7 @@ The developer, after the READY refill of 2026-11-17 listed what it had skipped a
 - **"After it is played" means parked.** Levels that waited for a child or a person to play the earlier ones are defined now on the study's lean; a playtest note can still change them before or after the build.
 - **The youngest bands come first among optional openings.** The game is for a one-year-old: a cheap lap or toddler entry that a dive already sketched is opened; optional openings for older bands follow the dive's default.
 - **The journal files observations about the world.** A finding she could repeat outside the game (a longer rope swings slower) is filed; numerals, fruit kinds, berry colours and tidy rows are not.
-- **Kept for the developer:** an irreversible step, a named family reviewer, money, accounts and the child's data. The deferred research scopes (living cultures, colonization, practical safety, sign language) stay deferred.
+- **Kept for the developer:** an irreversible step, a named family reviewer (until the developer [answered that](#answered-the-same-day-the-portuguese-reviewer)), money, accounts and the child's data. The deferred research scopes (living cultures, colonization, practical safety, sign language) stay deferred.
 
 ## Phone play
 
@@ -52,3 +52,7 @@ The developer, after the READY refill of 2026-11-17 listed what it had skipped a
 | `paint-mixer` 4 | The hatch colour step and the grown-ups' select are built now; the recolour of a dress or collection book waits for RW10's packet. |
 | RW08 cutover | Not yet, and still the developer's word. Nothing above waits on it, and deleting the island cannot be undone. |
 | Portuguese reviewer; building the language plumbing early | Still the developer's to name; nothing is built before that. |
+
+## Answered the same day: the Portuguese reviewer
+
+The developer, later on 2026-11-17: "I also don't have a Portuguese reviewer, AI will be handling that part." So the last row above is superseded: nobody is to be named, the assistant writes and reviews every Portuguese line, and WL2 (the build of stage 1) is queued in [READY](../READY.md). The [definition](../definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17) sets out how the review is done so that it is an honest substitute: one pass writes and a separate pass checks against European Portuguese dictionaries, the grown-ups' page says an AI assistant chose and checked the words, a family member's correction always wins, and how a phone's voice sounds is a playtest question that gates nothing. The other family languages are reviewed the same way unless the developer names someone. A family reviewer is no longer one of the calls [kept for the developer](../WAITING-ON-DEVELOPER.md).

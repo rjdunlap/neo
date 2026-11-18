@@ -122,7 +122,7 @@ So the rows have something concrete, a few sketches. Each would need its own ses
 
 ## Decisions for the developer
 
-- **Language order, varieties and reviewers:** Portuguese, Arabic, French and Spanish are chosen. Order, varieties and reviewers remain open in [Waiting on the developer](../../WAITING-ON-DEVELOPER.md); the `world-languages` session follows [Additional languages](../../ROADMAP.md#additional-languages). Sign language still needs a Deaf reviewer and accurate hand drawings.
+- **Language order, varieties and reviewers:** Portuguese, Arabic, French and Spanish are chosen. Portuguese is first, in European Portuguese, reviewed by the assistant (the developer, 2026-11-17); the order and varieties of the other three are later decisions. The `world-languages` session follows [Additional languages](../../ROADMAP.md#additional-languages). Sign language still needs a Deaf reviewer and accurate hand drawings.
 - **How far up does math go?** The ratio, integer and algebra rows sit at 11–14; whether that belongs to `school`'s top levels or a future band is the tracker's open [middle-band decision](../subjects.md#decisions-for-the-developer).
 
 ## Decisions already made
