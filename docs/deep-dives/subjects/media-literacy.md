@@ -138,7 +138,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 1. **ML1 · Define Notice Board 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/notice-board.md)): the poster model, badges, memory pictures and baskets, their sizes, spoken posters, accounting, how-to and bot, land placement by decision 2, rule tests.
 2. **Build Notice Board 1–3** (new-game tier), after its definition. **Built 2026-11-01** (batch `notice-board 1`, PR #1113).
-3. **ML3 · "Who made this?" card** (grown-ups' page, plain HTML, sources on the card): **defined 2026-11-17**, [definition](../../definitions/talk-cards.md); build 1; the AAP caution is left off the card.
+3. **ML3 · "Who made this?" card** (grown-ups' page, plain HTML, sources on the card): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1796; the AAP caution is left off the card.
 4. **ML4 · Hand frame co-play role** (with the build or right after it).
 5. **ML2 · Define Notice Board 4–5**, after 1–3 are played; decision 4 settles Story Stamp Checker there; then build.
 6. **ML5** to the Photo Safari dive.

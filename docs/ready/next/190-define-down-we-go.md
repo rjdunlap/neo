@@ -1,0 +1,1 @@
+**Define Down We Go** (a new game, pre-K to school; oceans study slice 5, whose condition, the shore art, is built): a lantern on a rope, the light dimming by stops, the seaweed question; the packet does its own land capacity and source checks. [Study](../../deep-dives/subjects/oceans.md#build-slices-in-order)
