@@ -198,6 +198,9 @@ class GearGarden implements Game {
     this.tally.touched();
     this.stillSaid = false;
     this.directionSaid = false;
+    // The first pick answers "Pick a machine to fix!": what to do with the open machine becomes the instruction the
+    // guide repeats. A switch to the other machine keeps it (each has one gap).
+    if (!this.opened) void this.ctx.instruct('gears.instruct.gap');
     this.opened = which;
     this.machine = new Machine(which === 'a' ? s.pair.a : s.pair.b);
     sfx.whoosh();
