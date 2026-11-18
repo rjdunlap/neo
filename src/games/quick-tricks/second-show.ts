@@ -275,7 +275,8 @@ export class SecondShow implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     if (this.step === 2) this.gulp();
-    void this.ctx.say('tricks.encore-yes');
+    // The arrow is the ask now: the guide repeats it and the caption keeps it, not the finished trick's instruction.
+    void this.ctx.instruct('tricks.encore-yes');
   }
   /** The parcel is in: the mailbox's flag pops up with a bell. */
   private flagUp() {
@@ -440,7 +441,7 @@ export class SecondShow implements Game {
       this.waitClock += dt;
       if (this.waitClock > 10) {
         this.waitClock = 0;
-        void this.ctx.say('tricks.next');
+        void this.ctx.instruct('tricks.next');
       }
     }
     if (this.waiting && this.step === 0 && this.parcel)

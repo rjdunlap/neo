@@ -977,7 +977,7 @@ class QuickTricks implements Game {
       this.waitClock += dt;
       if (this.waitClock > 10) {
         this.waitClock = 0;
-        void this.ctx.say('tricks.next');
+        void this.ctx.instruct('tricks.next');
       }
     }
     if (this.plan.tiny) this.sayAgainWhenQuiet(dt);
