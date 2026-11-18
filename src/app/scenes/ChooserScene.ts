@@ -20,6 +20,9 @@ import { defaults, type SaveData } from '../../progress/save';
 import { store } from '../../progress/store';
 import { gearButton } from '../../ui/grownups';
 import {
+  AGE_CHIPS,
+  birthForChip,
+  chipForBirth,
   couchNameFor,
   modeFor,
   POINTER_WINDOW_MS,
@@ -351,17 +354,25 @@ export class ChooserScene extends Scene {
   private openAdd() {
     if (this.busy || this.form) return;
     this.stopInput();
-    const year = new Date().getFullYear();
+    const today = new Date();
+    const year = today.getFullYear();
+    const thisMonth = today.getMonth() + 1;
     const wrap = el('div', 'parent');
+    // Taps first: an age chip fills the year and the month starts at this one, so a phone needs no keyboard. The typed
+    // fields stay below for a grown-up who wants the exact month, and the name can wait for the grown-ups' page.
     wrap.innerHTML = `
       <form class="parent__sheet" role="dialog" aria-modal="true" aria-labelledby="add-title" novalidate>
         <div class="parent__head"><h1 id="add-title">Add a player</h1></div>
-        <p class="muted">The birth month and year choose where the island starts, and move them up by themselves as they grow. It stays on this device.</p>
-        <div class="parent__row"><label for="add-name">Name</label><input id="add-name" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Mia" /></div>
+        <p class="muted">Their age chooses where the island starts, and the birth month moves them up by themselves as they grow. It stays on this device.</p>
+        <div class="chooser-ages" role="group" aria-labelledby="add-age">
+          <span id="add-age" class="chooser-ages__ask">How old?</span>
+          <div class="chooser-ages__chips">${AGE_CHIPS.map((c) => `<button type="button" class="chooser-ages__chip" data-age="${c.years}" aria-pressed="false" aria-label="${c.spoken}">${c.label}</button>`).join('')}</div>
+        </div>
         <div class="parent__row"><label for="add-month">Birth month</label>
-          <select id="add-month"><option value="">Choose…</option>${MONTHS.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}</select></div>
+          <select id="add-month">${MONTHS.map((m, i) => `<option value="${i + 1}"${i + 1 === thisMonth ? ' selected' : ''}>${m}</option>`).join('')}</select></div>
         <div class="parent__row"><label for="add-year">Birth year</label>
           <input id="add-year" type="number" inputmode="numeric" min="${year - 120}" max="${year}" placeholder="${year - 3}" /></div>
+        <div class="parent__row"><label for="add-name">Name <small class="muted">(optional; a nickname is fine)</small></label><input id="add-name" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Mia" /></div>
         <p class="chooser-problem" role="alert" data-problem hidden></p>
         <div class="parent__actions"><button type="submit" class="btn btn--primary">Add</button><button type="button" class="btn" data-cancel>Cancel</button></div>
       </form>`;
@@ -371,6 +382,24 @@ export class ChooserScene extends Scene {
     const month = $<HTMLSelectElement>('#add-month');
     const yearBox = $<HTMLInputElement>('#add-year');
     const problem = $<HTMLElement>('[data-problem]');
+    const chips = [...wrap.querySelectorAll<HTMLButtonElement>('.chooser-ages__chip')];
+
+    // The chip that is lit always says what the two fields hold, whether a tap or typing put it there.
+    const light = () => {
+      const on = chipForBirth(month.value, yearBox.value, new Date());
+      for (const c of chips) c.setAttribute('aria-pressed', String(Number(c.dataset.age) === on?.years));
+    };
+    chips.forEach((button, i) =>
+      button.addEventListener('click', () => {
+        const birth = birthForChip(AGE_CHIPS[i], new Date());
+        month.value = String(birth.month);
+        yearBox.value = String(birth.year);
+        problem.hidden = true;
+        light();
+      }),
+    );
+    month.addEventListener('change', light);
+    yearBox.addEventListener('input', light);
 
     this.formKey = (e: KeyboardEvent) => e.key === 'Escape' && !this.busy && this.dismissForm(true);
     window.addEventListener('keydown', this.formKey);
@@ -382,17 +411,19 @@ export class ChooserScene extends Scene {
       const read: NewPlayer = readNewPlayer(name.value, month.value, yearBox.value, new Date());
       if (!read.ok) {
         problem.hidden = false;
-        problem.textContent =
-          read.problem === 'name'
-            ? 'Please type a name.'
-            : 'Please choose the month and the year they were born (not a date that has not happened).';
-        (read.problem === 'name' ? name : month.value ? yearBox : month).focus();
+        problem.textContent = yearBox.value.trim()
+          ? 'Please choose the month and the year they were born (not a date that has not happened).'
+          : 'Please tap an age, or type the year they were born.';
+        // No focus on the year box when it is only empty: on a phone that would raise the keyboard over the chips.
+        if (yearBox.value.trim()) yearBox.focus();
+        else chips[0].focus();
         return;
       }
       void this.create(read.name, read.birth);
     });
     document.body.append(wrap);
-    name.focus();
+    // The first chip takes focus, not a text field: a focused field raises a phone's keyboard, which the chips are there to avoid.
+    chips[0].focus();
   }
 
   private async create(name: string, birth: { month: number; year: number }) {
