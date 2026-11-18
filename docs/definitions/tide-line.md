@@ -4,6 +4,8 @@ Defined 2026-10-31 (levels 1–2 and the shore kit built 2026-10-31, [PR #1059](
 
 **Fun action and purpose:** pull the big wave up the sand and let it slide back while the shore answers (shells wobble, the sea star waves, the anemone closes and opens); then keep a pail dry by putting it above the seaweed line; then read a line the last tide left, with the sea out, to place three things so they stay dry; then finish a day's picture strip of in, out, in, out. Learning goal: *the sea comes in and goes out again and again, and the shore keeps evidence of how far it came.* The central decision from level 2 on is **where the sea will reach**, read from the line; level 4 adds **when**, read from the pattern. That is the identity test the study set (decision 1): Sea Lift owns above/below as a number line and Day by Day owns the clock day; neither asks where the next tide will reach from evidence on the sand.
 
+The [levels 5–6 definition](tide-line-5-6.md) specifies the pre-K and school extensions.
+
 ## Source check (S1, this session)
 
 The study's model is kept, with what the sources support and what the game must not say:
@@ -42,7 +44,7 @@ The study's model is kept, with what the sources support and what the game must 
 
 ### Bands and ranges
 
-`BandLevels`: `lap: { min: 1, max: 1 }`, `toddler: { min: 1, max: 2 }`, `preschool: { min: 2, max: 3 }`, `prek: { min: 3, max: 4 }`. No `school` window until levels 5–6 are defined (school then gets `{ min: 4, max: 6 }`; nothing is renumbered). No `order`.
+`BandLevels`: `lap: { min: 1, max: 1 }`, `toddler: { min: 1, max: 2 }`, `preschool: { min: 2, max: 3 }`, `prek: { min: 3, max: 4 }`. The school window opens when levels 5–6 are built (school then gets `{ min: 4, max: 6 }`; nothing is renumbered). No `order`.
 
 ## Screen and controls
 
