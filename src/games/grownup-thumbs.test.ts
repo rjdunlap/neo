@@ -52,7 +52,7 @@ import { LEVELS as wordLevels, planFor as wordPlan } from './word-search/logic';
 
 /**
  * The smallest thing a thumb has to hit in each upright grown-up game, at the grown-up band's levels on a 390 × 844 phone
- * (roadmap recommendation 6, docs/definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games). Each entry
+ * (roadmap recommendation 6, docs/definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18). Each entry
  * measures the game's own layout; the table records the result in CSS pixels, so a layout change that shrinks a target
  * fails here and the definition's table is kept honest. `slides` names a board that scrolls or is one swipe surface,
  * which the band rule allows under the 44-pixel comfort line.

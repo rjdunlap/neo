@@ -109,6 +109,38 @@ Batch 6 brings the fully upright-ready games to 32 and puts four more on `uprigh
 
 Batch 7 brought the fully upright-ready games to 38 (40 once `beat-builder` and `orchard-rows` were made whole-game upright), all six of its games upright at every level of every band they list. The sweep's "fits as is" is the top school level and sizes only, so before marking a game upright run it with `PHONE_BANDS=all` and write the layout test: that is what found the overlaps (rhyme-time's rows on the 768-wide area, puzzle-pals' pieces of 83–98 units and one piece over the guide and off the edge, who-am-i's strip reaching under Home). The sweep takes `PHONE_BANDS=all` (every level of every band a game lists, each launched at a band that plays it); `uprightgames` takes `PHONE_BAND=<band>` (default grownup) so younger bands' upright games can be played by real touches, and `PHONE_SECONDS` (default 90) sets how long a level may take (Orchard Rows levels 2 and 3 need about 140).
 
+### Thumb sizes of the upright grown-up games (measured 2026-11-18)
+
+Each of the 22 upright `grownup` games was measured from its own layout function at the grown-up band's levels on the 390 × 844 upright view: the design area is 768 units wide at scale 0.508, so 100 units are 50.8 CSS pixels and the band's 64-unit minimum is 32.5 pixels. The smallest fixed target is listed, meaning a thing she taps or a place she drops on. A board that slides is judged by its window, and the grown-up band rule already allows a board that cannot fit to zoom or scroll.
+
+[`src/games/grownup-thumbs.test.ts`](../../src/games/grownup-thumbs.test.ts) guards the table (`thumbPx` in `src/games/upright-check.ts` turns units into pixels). A layout change that alters a number fails it, and it fails if an upright grown-up game is not measured. It also keeps an `UNDER` list of the games with a fixed target under 44 pixels, so a fix updates the list and this table together.
+
+| Game | Smallest (px) | What it is | Note |
+| --- | --- | --- | --- |
+| `block-garden` | 36.6 | bed square, 72 units | The 8 × 8 beds of levels 7, 8 and 12, a drop place for a dragged piece rather than a tap. 6 × 6 beds are 100 units (50.8). The 768-wide area has room for about 90-unit squares. |
+| `brain-break` | 50.8 | stone | |
+| `crossword` | 44.7 | square and key, 88 units | |
+| `gem-swap` | 44.7 | button, 88 units high | Gems are 49.8 at the largest tray. |
+| `hat-band` | 50.8 | song card | |
+| `island-bridges` | 32.5 | sea square, 64 units | The 11 × 11 sea (level 4). 9 × 9 seas are 74 units (37.6); 5 and 7 are 80 (40.6). Buttons are 72 to 76 units high (36.6 to 38.6). The sea does not slide, and 11 across cannot reach 44 on 768 units without sliding or zooming. |
+| `lantern-lights` | 50.8 | button | Lanterns are 58.9 or more. |
+| `log-roll` | 50.8 | direction button | Stones are not tapped. |
+| `logic-grid` | 32.5 | case-file square, 64 units | Level 7 sits whole in its window and does not slide. Level 8's squares are also 32.5, but that board slides. |
+| `marble-jump` | 39.6 | hole and button, 78 units | Does not slide. |
+| `number-nook` | 43.7 | tile, 86 units | The four-column boards (levels 4, 6 and 7). Counted as about 44, so no fix is queued. |
+| `picture-logic` | 44.7 | tool button | Squares are 44.7 on a board that slides. |
+| `pond-conga` | 38.6 | Hint and Start over, 76 units high | The pond is one swipe surface, so only the buttons are targets. |
+| `puddle-lens` | 55.9 | stop button | |
+| `pyramid-solitaire` | 50.8 | card | Level 8's covered back-card strips (36.6) are not targets until the card stands whole. |
+| `ribbon-workshop` | 49.8 | bow, scissors and Undo | |
+| `snowball-merge` | 50.8 | arrow | |
+| `sorting-machine` | 52.8 | machine button | |
+| `species-comeback` | 32.5 | turtle card, 64 units | Level 4. Levels 2 and 3 are 80 units (40.6) and level 1 is 96 (48.8). Does not slide. |
+| `sudoku-garden` | 32.5 | bed square and number button, 64 units | The 9 × 9 bed. 6 × 6 squares are 81 units (41.1). Marks, Erase, Hint and Again are 72 units high (36.6). Does not slide. The 768-wide area has room for 85-unit squares (43) at 9 × 9. |
+| `word-search` | 35.0 | letter square, 69 units, on a grid that fits | Buttons are 72 units high (36.6). Larger grids slide at 64-unit squares (32.5), which the band rule allows. The square size is `touchSquare` in `src/games/word-search/layout.ts`. |
+
+Fourteen games are at about 44 pixels or more. Eight have a fixed target under it: `block-garden`, `island-bridges`, `logic-grid` (level 7), `marble-jump`, `pond-conga` (buttons only), `species-comeback`, `sudoku-garden` and `word-search` (the squares of a grid that just fits, and the buttons). Two READY lines queue the fixes: one for the boards that already have the room (bigger squares and buttons), one for the boards that need to slide or zoom, a game per session.
+
 ### The upright sweep (built 2026-11-09)
 
 Before choosing early-school games to convert, every `school`-band game not yet `upright` was played at its top school level on a 390 × 844 touch phone with the development-only switch `?uprightall` (honoured only on the dev server through `import.meta.env.DEV`; not in the build; a game is upright in the build only when it says `upright: true` and has its layout test). The suite measures each game's interactive objects in units (≥ 100, inside the view, clear of Home, "?" and the guide) and sorts them. It is a survey, not a gate: it fails only if the turn prompt shows. Of 124 games: 57 fit, 37 need a small fix, 28 need a layout, 1 not judged, 1 not a phone game. Top school level only; lower levels may differ.
