@@ -1,0 +1,1 @@
+**Define Bunny Patches 1–3** (PP3, a new game; docs only; after the Word Code definition in the study's order): one bunny in each row, column and patch, none touching; define 4×4, 5×5 and 6×6 with a given bunny in the first level and an 8×8 grown-up rung left for later. [Study](../../deep-dives/subjects/puzzle-pages.md#build-slices-in-order)

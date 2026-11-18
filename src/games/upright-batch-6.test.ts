@@ -2,11 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS, type View } from '../engine/view';
 import { driftLayout, PLANS as driftPlans, targetsOf, type Box } from './drift-cards/logic';
 import { BIG, CARD, MADE, PLANS as glue, tableCentre, tableLayout } from './word-glue/logic';
-import { uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
+import {
+  BOARD_RIM,
+  CELL,
+  DONE_RADIUS,
+  MODEL_MARGIN,
+  PAINT_RADIUS,
+  pictureLayout,
+} from './pixel-pictures/layout';
+import { bitsLayout, FREE_COLORS, PLANS as pixelPlans } from './pixel-pictures/logic';
+import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
 /**
  * Upright batch 6 (chunk 31, docs/definitions/phone-portrait.md): six early-school games from the sweep's fits-as-is list, each
- * checked at every level (a phone's Today's six plays a game at the player's own band), on the three upright phone views and
+ * checked at every level (a phone's Today's six plays a game at the player's own band), on the upright phone and caption views and
  * a short one.
  */
 const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) };
@@ -64,6 +73,69 @@ describe.each(Object.entries(views))('School upright batch 6 on %s', (_, v) => {
         // The made thing appears at the centre of the table, inside the view and clear of Home and the guide.
         expect(uprightProblems(v, [picture('made thing', tableCentre(v, n), MADE)])).toEqual([]);
       }
+    },
+  );
+});
+
+const pixelViews = { ...views, minimum: computeView(375, 500, NO_INSETS, true) };
+
+describe.each(Object.entries(pixelViews))('Pixel Pictures upright on %s', (_, v) => {
+  it.each(pixelPlans.map((plan, i) => [i + 1, plan] as const))(
+    'Pixel Pictures level %i: its board and controls fit',
+    (level, plan) => {
+      if (plan.mode === 'bitsRow' || plan.mode === 'bitsPicture') {
+        const bits = bitsLayout(level, v);
+        expect(bits).not.toBeNull();
+        if (!bits) return;
+        check(v, [
+          ...bits.cards.map((card) => ({ what: 'bit card', ...card })),
+          { what: 'read', ...bits.arrow },
+          { what: 'check', ...bits.check },
+        ]);
+        return;
+      }
+
+      const { board, model, modelWidth, paint, done } = pictureLayout(v, plan);
+      const cells = Array.from({ length: plan.size ** 2 }, (_, i) =>
+        square(
+          'pixel',
+          {
+            x: board.x + ((i % plan.size) + 0.5) * CELL,
+            y: board.y + (Math.floor(i / plan.size) + 0.5) * CELL,
+          },
+          CELL,
+        ),
+      );
+      const paintCount = plan.mode === 'free' ? FREE_COLORS.length : plan.colors === 2 ? 2 : 0;
+      const buttons = Array.from({ length: paintCount }, (_, i) =>
+        square('paint', paint(i), 2 * PAINT_RADIUS),
+      );
+      if (plan.mode === 'free') buttons.push(square('Done', done, 2 * DONE_RADIUS));
+      check(v, [...cells, ...buttons]);
+
+      const drawn = [
+        square(
+          'board frame',
+          {
+            x: board.x + board.width / 2,
+            y: board.y + board.width / 2,
+          },
+          board.width + 2 * BOARD_RIM,
+        ),
+      ];
+      if (plan.mode === 'copy' || plan.mode === 'big') {
+        drawn.push(
+          square(
+            'reference picture',
+            {
+              x: model.x + modelWidth / 2,
+              y: model.y + modelWidth / 2,
+            },
+            modelWidth + 2 * MODEL_MARGIN + 5,
+          ),
+        );
+      }
+      expect(uprightProblems(v, [...drawn, ...buttons], 0)).toEqual([]);
     },
   );
 });

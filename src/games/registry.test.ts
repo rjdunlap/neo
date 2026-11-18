@@ -582,6 +582,7 @@ describe('game registry', () => {
       'paint-mixer',
       'picnic-pantry',
       'picture-logic',
+      'pixel-pictures',
       'pond-conga',
       'puddle-lens',
       'puzzle-pals',
