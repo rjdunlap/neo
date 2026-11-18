@@ -129,7 +129,7 @@ For the grown-ups playing now, the matching playtest question is whether the six
 
 ### P7. A words-off list for the family's languages (docs, S)
 
-Pok Pok needs no translation because it has no words. The island speaks English; [additional languages](definitions/additional-languages.md) start with European Portuguese and wait on a family reviewer. Question 3 of P4 produces, for free, the list of lap and toddler levels that play completely with the voice off. Published as a short list (later, a mark on the grown-ups' page), it tells a grandparent who speaks Portuguese or Arabic which games they can sit down to today, in their own words, without waiting for any translation. It claims nothing about what she learns.
+Pok Pok needs no translation because it has no words. The island speaks English; [additional languages](definitions/additional-languages.md) start with European Portuguese, its lines written and reviewed by the assistant (the developer, 2026-11-17). Question 3 of P4 produces, for free, the list of lap and toddler levels that play completely with the voice off. Published as a short list (later, a mark on the grown-ups' page), it tells a grandparent who speaks Portuguese or Arabic which games they can sit down to today, in their own words, without waiting for any translation. It claims nothing about what she learns.
 
 ### P8. A stepped wobble (art exploration, S, optional)
 
