@@ -3,6 +3,32 @@ import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
+  AUTHORED_DAY,
+  BOAT_FLOAT,
+  DAY_HIGHS,
+  DAY_LOW,
+  FLAG_BUTTON,
+  KNOB,
+  POOL_ASKS,
+  POOL_RIM,
+  POOL_TOP,
+  PoolTime,
+  SHELF,
+  STOPS,
+  WINDOW,
+  dayLayout,
+  dayWater,
+  fits,
+  fitting,
+  makeDay,
+  nearestStop,
+  stopT,
+  suits,
+  trackT,
+  trackX,
+  windowTimes,
+  type Ask,
+  type Day,
   AUTHORED_STRIP,
   BAND,
   BAND_LEVELS,
@@ -341,15 +367,17 @@ describe('layout', () => {
 });
 
 describe('levels and bands', () => {
-  it('lap 1, toddler 1-2, preschool 2-3, pre-K 3-4, nothing else', () => {
+  it('lap 1, toddler 1-2, preschool 2-3, pre-K 3-5, school 4-5, nothing else', () => {
     expect(BAND_LEVELS).toEqual({
       lap: { min: 1, max: 1 },
       toddler: { min: 1, max: 2 },
       preschool: { min: 2, max: 3 },
-      prek: { min: 3, max: 4 },
+      prek: { min: 3, max: 5 },
+      school: { min: 4, max: 5 },
     });
   });
-  it('level 1 is the wave, 2 the pail, 3 the line, 4 the cycle', () => {
+  it('level 1 is the wave, 2 the pail, 3 the line, 4 the cycle, 5 the day', () => {
+    expect(tidePlan(5).mode).toBe('day');
     expect(tidePlan(1).mode).toBe('wave');
     expect(tidePlan(2).mode).toBe('pail');
     expect(tidePlan(3).mode).toBe('line');
@@ -639,6 +667,252 @@ describe('level 4: the strip', () => {
   }
 });
 
+const ASKS: readonly Ask[] = ['shows', 'covered', 'boat', 'picnic'];
+const days = seeds.map((seed) => makeDay(new Rng(seed)));
+const allDays: Day[] = DAY_HIGHS.flatMap((high) => ([0, 0.5] as const).map((offset) => ({ high, offset })));
+
+describe('levels 5-6: the island day', () => {
+  it('seeds both starting tides and both highs, deterministically; the authored day starts low at 0.55', () => {
+    for (const high of DAY_HIGHS)
+      for (const offset of [0, 0.5])
+        expect(
+          days.some((d) => d.high === high && d.offset === offset),
+          `${high} ${offset}`,
+        ).toBe(true);
+    for (const d of days) expect(DAY_HIGHS).toContain(d.high);
+    expect(makeDay(new Rng(7))).toEqual(makeDay(new Rng(7)));
+    expect(AUTHORED_DAY).toEqual({ high: 0.55, offset: 0 });
+    expect(dayWater(AUTHORED_DAY, stopT(0))).toBeCloseTo(DAY_LOW, 9);
+    expect(dayWater(AUTHORED_DAY, stopT(1))).toBeCloseTo(0.55, 9);
+  });
+
+  it('every stop is a turn of the tide, low and high alternating, and the water runs one way between stops', () => {
+    for (const day of allDays) {
+      for (let i = 0; i < STOPS; i++) {
+        const low = (i % 2 === 0) === (day.offset === 0);
+        expect(dayWater(day, stopT(i)), `${JSON.stringify(day)} stop ${i}`).toBeCloseTo(
+          low ? DAY_LOW : day.high,
+          9,
+        );
+      }
+      for (let i = 0; i + 1 < STOPS; i++) {
+        const rising = dayWater(day, stopT(i + 1)) > dayWater(day, stopT(i));
+        let prev = dayWater(day, stopT(i));
+        for (let k = 1; k <= 40; k++) {
+          const h = dayWater(day, stopT(i) + (k / 40) * (stopT(i + 1) - stopT(i)));
+          expect(rising ? h >= prev - 1e-12 : h <= prev + 1e-12, `${JSON.stringify(day)} between ${i}`).toBe(
+            true,
+          );
+          prev = h;
+        }
+      }
+      for (let k = 0; k <= 200; k++) {
+        const h = dayWater(day, k / 200);
+        expect(h).toBeGreaterThanOrEqual(DAY_LOW - 1e-12);
+        expect(h).toBeLessThanOrEqual(day.high + 1e-12);
+      }
+    }
+  });
+
+  it('a window is judged at its ends and its middle, which bound every height inside it', () => {
+    for (const day of allDays)
+      for (let i = 0; i < STOPS; i++) {
+        const three = windowTimes(i).map((t) => dayWater(day, t));
+        expect(windowTimes(i)).toEqual([stopT(i) - WINDOW, stopT(i), stopT(i) + WINDOW]);
+        for (let k = 0; k <= 50; k++) {
+          const h = dayWater(day, stopT(i) - WINDOW + (k / 50) * 2 * WINDOW);
+          expect(h).toBeGreaterThanOrEqual(Math.min(...three) - 1e-12);
+          expect(h).toBeLessThanOrEqual(Math.max(...three) + 1e-12);
+        }
+      }
+  });
+
+  it('every ask fits exactly two stops on every day, and the other two clash at every moment of their windows', () => {
+    for (const day of [...allDays, ...days])
+      for (const ask of ASKS) {
+        const ok = fitting(ask, day);
+        expect(ok.length, `${ask} ${JSON.stringify(day)}`).toBe(2);
+        expect(ok[0]).toBeLessThan(ok[1]);
+        for (let i = 0; i < STOPS; i++) {
+          if (ok.includes(i)) continue;
+          expect(fits(ask, day, i)).toBe(false);
+          for (const t of windowTimes(i))
+            expect(suits(ask, dayWater(day, t)), `${ask} stop ${i}`).toBe(false);
+        }
+      }
+  });
+
+  it('the pool and the picnic fit the low stops, the covered pool and the boat the high ones', () => {
+    for (const day of allDays) {
+      const lows = [0, 1, 2, 3].filter((i) => (i % 2 === 0) === (day.offset === 0));
+      const highs = [0, 1, 2, 3].filter((i) => !lows.includes(i));
+      expect(fitting('shows', day)).toEqual(lows);
+      expect(fitting('picnic', day)).toEqual(lows);
+      expect(fitting('covered', day)).toEqual(highs);
+      expect(fitting('boat', day)).toEqual(highs);
+    }
+    expect(POOL_RIM).toBeLessThan(POOL_TOP);
+    expect(POOL_TOP).toBeLessThan(SHELF);
+    expect(SHELF).toBeLessThan(BOAT_FLOAT);
+  });
+
+  it('across the seeds, each stop is an accepted answer for each ask equally often as its partner', () => {
+    for (const ask of POOL_ASKS) {
+      const count = [0, 0, 0, 0];
+      for (const day of days) for (const i of fitting(ask, day)) count[i]++;
+      // Stops two apart always fit together, so each pair is reached equally; both pairs are used.
+      expect(count[0]).toBe(count[2]);
+      expect(count[1]).toBe(count[3]);
+      expect(count[0]).toBeGreaterThan(100);
+      expect(count[1]).toBeGreaterThan(100);
+    }
+  });
+
+  it('the nearest stop to a time is the one whose quarter of the day holds it', () => {
+    for (let i = 0; i < STOPS; i++) {
+      expect(nearestStop(stopT(i))).toBe(i);
+      expect(nearestStop(stopT(i) - 0.12)).toBe(i);
+      expect(nearestStop(stopT(i) + 0.12)).toBe(i);
+    }
+    expect(nearestStop(0)).toBe(0);
+    expect(nearestStop(1)).toBe(STOPS - 1);
+  });
+});
+
+describe('level 5: PoolTime', () => {
+  it('starts with nothing selected, and a flag with nothing selected does nothing', () => {
+    const p = new PoolTime(AUTHORED_DAY);
+    expect(p.selected).toBeNull();
+    expect(p.ask).toBe('shows');
+    expect(p.mark()).toBeNull();
+    expect(p.flags).toEqual([]);
+  });
+
+  it('the authored day: stop 0 shows the pool, stop 1 covers it; flagging the other state is never a miss', () => {
+    const p = new PoolTime(AUTHORED_DAY);
+    p.select(1);
+    expect(p.mark()).toEqual({ right: false, ask: 'shows', stop: 1 });
+    expect(p.flags).toEqual([]);
+    p.select(0);
+    expect(p.mark()).toEqual({ right: true, ask: 'shows', stop: 0 });
+    expect(p.ask).toBe('covered');
+    // The first flag's stop now shows the other state.
+    expect(p.mark()).toEqual({ right: false, ask: 'covered', stop: 0 });
+    p.select(3);
+    expect(p.mark()).toEqual({ right: true, ask: 'covered', stop: 3 });
+    expect(p.done).toBe(true);
+    expect(p.flags).toEqual([0, 3]);
+    expect(p.tally).toMatchObject({ misses: 0, hints: 0 });
+    // Nothing changes afterwards.
+    p.select(2);
+    expect(p.mark()).toBeNull();
+    expect(p.help()).toBeNull();
+    expect(p.flags).toEqual([0, 3]);
+  });
+
+  it('either fitting stop takes each flag, independently, on every seeded day', () => {
+    for (const day of days.slice(0, 500))
+      for (const a of [0, 1])
+        for (const b of [0, 1]) {
+          const p = new PoolTime(day);
+          p.select(fitting('shows', day)[a]);
+          expect(p.mark()?.right).toBe(true);
+          p.select(fitting('covered', day)[b]);
+          expect(p.mark()?.right).toBe(true);
+          expect(p.done).toBe(true);
+          expect(p.flags).toEqual([fitting('shows', day)[a], fitting('covered', day)[b]]);
+          expect(p.tally).toMatchObject({ misses: 0, hints: 0 });
+        }
+  });
+
+  it('Help glows both fitting stops once an ask (one hint), then gives the earlier one, which finishes the round', () => {
+    for (const day of days) {
+      const p = new PoolTime(day);
+      for (const ask of POOL_ASKS) {
+        expect(p.help()).toEqual({ glow: fitting(ask, day) });
+        expect(p.glow).toBe(true);
+        const again = p.help();
+        expect(again).toEqual({ mark: fitting(ask, day)[0] });
+        // Asked a third time, it is still one hint.
+        expect(p.help()).toEqual(again);
+        p.select((again as { mark: number }).mark);
+        expect(p.mark()?.right).toBe(true);
+        expect(p.glow).toBe(false);
+      }
+      expect(p.done).toBe(true);
+      expect(p.tally).toMatchObject({ misses: 0, hints: 2 });
+    }
+  });
+
+  it('a hint on one ask only is one hint, and exploring before it changes nothing', () => {
+    const p = new PoolTime({ high: 0.65, offset: 0.5 });
+    p.select(0);
+    expect(p.mark()?.right).toBe(false);
+    p.select(1);
+    expect(p.mark()?.right).toBe(true);
+    p.help();
+    p.select(2);
+    expect(p.mark()?.right).toBe(true);
+    expect(p.tally).toMatchObject({ misses: 0, hints: 1 });
+  });
+});
+
+describe('level 5: layout', () => {
+  for (const view of views) {
+    const tag = `${view.w}x${view.h}`;
+    const D = dayLayout(view);
+    const pet = petCorner(view);
+    it(`${tag}: stops, marker and flag button are large, on screen and clear of the pet and corners`, () => {
+      expect(D.stops.length).toBe(STOPS);
+      const knobs = D.stops.map((b) => ({
+        x: b.x + b.w / 2 - KNOB / 2,
+        y: D.track.y - KNOB / 2,
+        w: KNOB,
+        h: KNOB,
+      }));
+      const ends = [0, 1].map((t) => ({
+        x: trackX(D, t) - KNOB / 2,
+        y: D.track.y - KNOB / 2,
+        w: KNOB,
+        h: KNOB,
+      }));
+      for (const b of [...D.stops, ...knobs, D.button, D.picture]) {
+        expect(b.w, tag).toBeGreaterThanOrEqual(100);
+        expect(b.h, tag).toBeGreaterThanOrEqual(100);
+        expect(inside(b, view.w, view.h), `${tag} on screen ${JSON.stringify(b)}`).toBe(true);
+        expect(overlaps(b, pet), `${tag} pet ${JSON.stringify(b)}`).toBe(false);
+        for (const c of cornerButtons(view)) expect(overlaps(b, c), `${tag} corner`).toBe(false);
+      }
+      for (const b of ends) {
+        expect(inside(b, view.w, view.h), `${tag} track end ${JSON.stringify(b)}`).toBe(true);
+        expect(overlaps(b, pet), `${tag} track end pet`).toBe(false);
+      }
+      expect(D.button.w).toBe(FLAG_BUTTON);
+      // The strip is at least 500 wide with 116-unit stops, and nothing interactive overlaps.
+      expect(D.stops[STOPS - 1].x + D.stops[STOPS - 1].w - D.stops[0].x).toBeGreaterThanOrEqual(500);
+      for (const b of D.stops) expect(b.w).toBeGreaterThanOrEqual(116);
+      const touch = [
+        ...D.stops,
+        D.button,
+        { x: D.track.x0, y: D.track.y - KNOB / 2, w: D.track.x1 - D.track.x0, h: KNOB },
+      ];
+      for (let i = 0; i < touch.length; i++)
+        for (let j = i + 1; j < touch.length; j++)
+          expect(overlaps(touch[i], touch[j]), `${tag} ${i} ${j}`).toBe(false);
+      expect(D.picture.y + D.picture.h).toBeLessThan(D.flagY - 50);
+      expect(D.picture.h).toBeGreaterThanOrEqual(240);
+    });
+    it(`${tag}: each stop sits at its time on the track, and the track round-trips`, () => {
+      for (let i = 0; i < STOPS; i++) {
+        expect(trackX(D, stopT(i))).toBeCloseTo(D.stops[i].x + D.stops[i].w / 2, 6);
+        expect(trackT(D, trackX(D, stopT(i)))).toBeCloseTo(stopT(i), 9);
+      }
+      expect(trackT(D, D.track.x0 - 500)).toBe(0);
+      expect(trackT(D, D.track.x1 + 500)).toBe(1);
+    });
+  }
+});
+
 describe('voice keys', () => {
   it('every tl.* line the game uses exists', () => {
     const wrongs: WrongLine[] = [
@@ -665,6 +939,16 @@ describe('voice keys', () => {
       'tl.look-card',
       'tl.right',
       'tl.next-strip',
+      'tl.instruct.5',
+      'tl.instruct.5.covered',
+      'tl.pick-time',
+      'tl.other.covered',
+      'tl.other.shows',
+      'tl.glow.shows',
+      'tl.glow.covered',
+      'tl.mark.shows',
+      'tl.mark.covered',
+      'tl.done.5',
     ];
     for (const k of keys) expect(Object.keys(SCRIPT), k).toContain(k);
     for (const t of THINGS) expect(Object.keys(SCRIPT)).toContain(`tl.wet.${t}`);

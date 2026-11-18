@@ -155,3 +155,130 @@ export function shorePicture(
   for (let x = 4; x <= w - 4; x += 16) g.lineTo(x, edge + Math.sin(x / 14) * 3);
   g.stroke({ color: 0xffffff, width: 4, cap: 'round' });
 }
+
+/**
+ * Level 5's shore at one moment of the island day, `w` by `h` from (0, 0), drawn from the water's height itself: the
+ * rock pool's near rim sits at height `rim` and its far rim at `top`, so the pool and its sea star show while the water is
+ * below the near rim and the sea lies over them once it is past the far one. `t` (0 to 1) is the time of day: the sun
+ * crosses the sky and the last quarter is a starry evening.
+ */
+export function dayShore(
+  g: Graphics,
+  w: number,
+  h: number,
+  water: number,
+  t: number,
+  rim: number,
+  top: number,
+) {
+  const sky = Math.min(64, h * 0.2);
+  const night = Math.max(0, Math.min(1, (t - 0.7) / 0.12));
+  g.roundRect(0, 0, w, h, 20).fill(SAND);
+  g.roundRect(0, 0, w, sky + 14, 20).fill(night > 0.5 ? 0x5b6aa8 : t < 0.2 || t > 0.6 ? 0xd9e8f4 : 0xbfe6f7);
+  g.rect(0, sky, w, 16).fill(DUNE);
+  g.rect(0, sky - 6, w, 10).fill(GRASS_GREEN);
+  if (night < 0.5) {
+    const u = Math.min(1, t / 0.7);
+    g.circle(30 + u * (w - 60), sky - 14 - Math.sin(Math.PI * u) * (sky - 30), 13)
+      .fill(swatch.yellow.fill)
+      .stroke({ color: swatch.yellow.line, width: 2 });
+  } else
+    for (let i = 0; i < 7; i++)
+      g.star(w * (0.12 + i * 0.13), 14 + ((i * 17) % (sky - 26)), 4, 5, 2.2).fill(0xfff6c8);
+  // Heights 0 to 0.75 run from just above the bottom to the foot of the dunes.
+  const yOf = (hh: number) => h - 16 - (hh / 0.75) * (h - 16 - (sky + 22));
+  const near = yOf(rim);
+  const far = yOf(top);
+  const s = (near - far) / 44;
+  const px = w * 0.5;
+  wrack(g, 10, w - 10, yOf(0.66), 10, 5);
+  // The pool is seen from low down: twice as wide as it is deep, so the star in it reads from across the room.
+  // (Pixi applies the scale to the translation too, so the x is halved.)
+  g.save().translateTransform(px / 2, near).scaleTransform(2, 1);
+  g.ellipse(0, 4, 74 * s, 12 * s).fill({ color: WET_SAND, alpha: 0.7 });
+  pool(g, 0, 0, ['star'], s);
+  g.restore();
+  rock(g, w * 0.82, yOf(0.36));
+  const edge = yOf(water);
+  const wave = (x: number) => edge + Math.sin(x / 26 + t * 40) * 3;
+  g.moveTo(0, wave(0));
+  for (let x = 20; x <= w; x += 20) g.lineTo(x, wave(x));
+  g.lineTo(w, h - 20)
+    .quadraticCurveTo(w, h, w - 20, h)
+    .lineTo(20, h)
+    .quadraticCurveTo(0, h, 0, h - 20)
+    .closePath()
+    .fill({ color: SEA, alpha: 0.86 });
+  g.moveTo(0, wave(0));
+  for (let x = 20; x <= w; x += 20) g.lineTo(x, wave(x));
+  g.stroke({ color: 0xffffff, width: 5, cap: 'round' });
+  g.roundRect(0, 0, w, h, 20).stroke({ color: swatch.yellow.line, width: 4 });
+}
+
+/** One of the four times of day, morning to night, centred on (x, y): sunrise, the high sun, sunset, stars. */
+export function skyIcon(g: Graphics, i: number, x: number, y: number) {
+  const sun = swatch.yellow;
+  const rays = (cy: number, from: number, to: number, n: number) => {
+    for (let k = 0; k < n; k++) {
+      const a = from + ((to - from) * k) / (n - 1);
+      g.moveTo(x + Math.cos(a) * 26, cy + Math.sin(a) * 26)
+        .lineTo(x + Math.cos(a) * 36, cy + Math.sin(a) * 36)
+        .stroke({ color: sun.line, width: 4, cap: 'round' });
+    }
+  };
+  if (i === 1) {
+    rays(y, 0, Math.PI * 1.75, 8);
+    g.circle(x, y, 20).fill(sun.fill).stroke({ color: sun.line, width: 3 });
+    return;
+  }
+  if (i === 3) {
+    g.roundRect(x - 40, y - 30, 80, 60, 14).fill(0x5b6aa8);
+    for (const [dx, dy, r] of [
+      [-20, -8, 7],
+      [14, -12, 9],
+      [2, 12, 6],
+      [26, 10, 5],
+    ])
+      g.star(x + dx, y + dy, 4, r, r / 2.2).fill(0xfff6c8);
+    return;
+  }
+  // A half sun on the horizon: rising on the left of the day (yellow), setting on its right (orange), with an arrow.
+  const c = i === 0 ? sun : swatch.orange;
+  const base = y + 14;
+  rays(base, Math.PI, Math.PI * 2, 5);
+  g.moveTo(x - 20, base)
+    .arc(x, base, 20, Math.PI, 0)
+    .closePath()
+    .fill(c.fill)
+    .stroke({ color: c.line, width: 3 });
+  g.moveTo(x - 42, base)
+    .lineTo(x + 42, base)
+    .stroke({ color: swatch.blue.line, width: 4, cap: 'round' });
+  const up = i === 0 ? -1 : 1;
+  const ay = base + 16;
+  g.moveTo(x, ay - 7 * up)
+    .lineTo(x, ay + 7 * up)
+    .moveTo(x - 6, ay + 1 * up)
+    .lineTo(x, ay + 7 * up)
+    .lineTo(x + 6, ay + 1 * up)
+    .stroke({ color: c.line, width: 3, cap: 'round', join: 'round' });
+}
+
+/** The flag button, 130 square from (0, 0): a flag on a pole in a rounded frame. */
+export function flagButton(g: Graphics) {
+  g.roundRect(0, 0, 130, 130, 28).fill(0xffffff).stroke({ color: swatch.green.line, width: 5 });
+  dayFlag(g, 56, 112, 1);
+}
+
+/** A small marking flag, its foot at (x, y); `s` scales it (1 is 92 tall). */
+export function dayFlag(g: Graphics, x: number, y: number, s: number, c = swatch.green) {
+  g.roundRect(x - 4 * s, y - 92 * s, 8 * s, 92 * s, 4 * s)
+    .fill(0x9a6a3a)
+    .stroke({ color: 0x6e4a26, width: 2 });
+  g.moveTo(x + 3 * s, y - 90 * s)
+    .lineTo(x + 46 * s, y - 72 * s)
+    .lineTo(x + 3 * s, y - 52 * s)
+    .closePath()
+    .fill(c.fill)
+    .stroke({ color: c.line, width: 3, join: 'round' });
+}

@@ -333,5 +333,152 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'Tide Line 3–4: level 3 an early wave not counted, round 1 dry, round 2 a pail between the lines floats and is fetched (1/0); level 4 two wrong cards then the glow in portrait, two strips (2/1); passed',
     );
   }
-  return { tideLinePlay, tideLine34Play };
+  async function tideLine5Play() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('tide-line').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const st = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          t: g.now.t,
+          selected: g.turn.selected,
+          flags: [...g.turn.flags],
+          ask: g.turn.ask ?? null,
+          glow: g.turn.glow,
+          misses: g.turn.tally.misses,
+          hints: g.turn.tally.hints,
+          day: g.turn.day,
+          busy: g.busy,
+          button: g.flagBtn.alpha,
+        };
+      });
+    /** Carry the marker along its track to time `t` and let go. */
+    const scrub = async (t) => {
+      await page.evaluate(async (t) => {
+        const g = neo.scene.game;
+        const from = g.knob.getGlobalPosition();
+        const D = g.D;
+        const to = g.board.toGlobal({ x: D.track.x0 + t * (D.track.x1 - D.track.x0), y: D.track.y });
+        const path = kit.line([from.x, from.y], [to.x, to.y], 16);
+        for (let i = 0; i < 4; i++) path.push([to.x, to.y]);
+        await kit.drag(path, 1, 30);
+      }, t);
+      await page.waitForTimeout(450);
+    };
+    const tapStop = async (i) => {
+      await page.evaluate((i) => {
+        const g = neo.scene.game;
+        const b = g.D.stops[i];
+        kit.tapOn(g.stops[i], (b.w / 2) * g.view.scale, (b.h / 2) * g.view.scale);
+      }, i);
+      await page.waitForTimeout(750);
+    };
+    const flag = async () => {
+      await page.evaluate(() => kit.tapOn(neo.scene.game.flagBtn));
+      await page.waitForTimeout(600);
+    };
+    const water = (s) =>
+      0.1 + ((s.day.high - 0.1) * (1 - Math.cos(2 * Math.PI * (2 * (s.t - 1 / 8) + s.day.offset)))) / 2;
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+
+    // Level 5 (pre-K), the authored day (low, high, low, high). The flag does nothing before a stop is chosen; a scrub
+    // moves the sea under the finger and settles on the nearest stop; flagging the other state is never a miss.
+    await launch('tide-line', 5, 'Mia', 'prek');
+    await page.waitForTimeout(1200);
+    let s = await st();
+    assert.deepEqual(
+      [s.t, s.selected, s.ask],
+      [0, null, 'shows'],
+      'the day starts at its left end, nothing chosen',
+    );
+    assert.ok(s.button < 1, 'the flag button waits for a stop');
+    await flag();
+    s = await st();
+    assert.deepEqual([s.flags.length, s.misses], [0, 0], 'the flag with nothing chosen marks nothing');
+    await scrub(0.4);
+    s = await st();
+    assert.equal(s.selected, 1, 'letting go near the second stop settles on it');
+    assert.ok(Math.abs(s.t - 3 / 8) < 0.001, `the marker snaps to the stop (${s.t.toFixed(3)})`);
+    assert.ok(water(s) > 0.5, 'the sea is in at the second stop');
+    await flag();
+    s = await st();
+    assert.deepEqual(
+      [s.flags.length, s.misses, s.hints, s.ask],
+      [0, 0, 0, 'shows'],
+      'flagging the covered pool while the pool is asked for is named, not counted',
+    );
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(900);
+    await scrub(0.6);
+    s = await st();
+    assert.equal(s.selected, 2, 'a scrub in portrait settles on the third stop');
+    assert.ok(water(s) < 0.15, 'the sea is out at the third stop');
+    await screenshot('tide-line-5-portrait');
+    await flag();
+    await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 5000 });
+    s = await st();
+    assert.deepEqual(
+      [s.flags, s.ask, s.misses],
+      [[2], 'covered', 0],
+      'the pool time is flagged; the covered ask follows',
+    );
+    await flag();
+    s = await st();
+    assert.deepEqual(
+      [s.flags, s.misses],
+      [[2], 0],
+      'the first flag stop shows the other state for the second ask: not counted',
+    );
+    await tapStop(3);
+    s = await st();
+    assert.equal(s.selected, 3, 'a tapped stop is chosen');
+    assert.ok(Math.abs(s.t - 7 / 8) < 0.001, 'the sea moves to the tapped stop');
+    await flag();
+    await finished('tide-line');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [0, 0], 'level 5 counts nothing for looking around');
+
+    // Level 5 (school), a seeded day: Help lights both fitting stops (one hint); asked again it flags the earlier one.
+    await launch('tide-line', 5, 'Mia', 'school');
+    await page.waitForTimeout(1200);
+    const fitting = (ask) =>
+      page.evaluate((ask) => {
+        const g = neo.scene.game;
+        const low = (i) => (i % 2 === 0) === (g.turn.day.offset === 0);
+        return [0, 1, 2, 3].filter((i) => (ask === 'shows' ? low(i) : !low(i)));
+      }, ask);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    s = await st();
+    assert.deepEqual(
+      [s.glow, s.hints, s.flags.length],
+      [true, 1, 0],
+      'Help glows the fitting stops: one hint',
+    );
+    await screenshot('tide-line-5-glow');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.turn.flags.length === 1 && !neo.scene.game.busy, null, {
+      timeout: 5000,
+    });
+    s = await st();
+    assert.deepEqual(
+      [s.flags, s.hints, s.glow],
+      [[(await fitting('shows'))[0]], 1, false],
+      'Help again flags the earlier fitting stop',
+    );
+    await tapStop((await fitting('covered'))[1]);
+    await flag();
+    await finished('tide-line');
+    assert.deepEqual(await score(), [0, 1], 'level 5 with Help saved 0 misses, 1 hint');
+    log(
+      'Tide Line 5: the flag waits for a stop; a scrub settles on the nearest stop and moves the sea; flagging the other state twice is not counted; a portrait scrub, a tapped stop and both flags (0/0); on a seeded school day Help glows two stops, then flags the earlier one (0/1); passed',
+    );
+  }
+  return { tideLinePlay, tideLine34Play, tideLine5Play };
 }

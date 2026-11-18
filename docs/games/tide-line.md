@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/tide-line; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `tide-line` · **Land:** Bubble Beach · **Ages:** lap–pre-K · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `tide-line` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** science, patterns, prediction
 
@@ -11,7 +11,8 @@
 | lap | 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
-| pre-K | 3–4 |
+| pre-K | 3–5 |
+| school | 4–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +20,7 @@
 | 2 | Stop at the line: put two pails above the seaweed line |
 | 3 | Read the line: with the sea out, put a pail, a flag and a towel where they stay dry; then a windy-day line |
 | 4 | In, out, in, out: finish a day's picture strip of the sea |
+| 5 | Pool time: slide along the day, and mark a time the rock pool shows and a time the sea covers it |
 
 <!-- end generated -->
 

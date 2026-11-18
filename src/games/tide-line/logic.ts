@@ -1,13 +1,15 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import { hinted, newRequestTally, nextRequest, type RequestTally } from '../../progress/coach';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Tide Line (docs/definitions/tide-line.md): the sea comes in and goes out, and the seaweed line on the sand shows how far
  * the last high tide came. The beach slopes up the screen; a height `h` runs from 0 (the low-tide water's edge) to 1 (the
- * foot of the dunes), and the grass above the dunes goes a little past 1. Levels 1–2 are batch tide-line 1, 3–4 batch 2.
+ * foot of the dunes), and the grass above the dunes goes a little past 1. Levels 1–2 are batch tide-line 1, 3–4 batch 2;
+ * level 5 (docs/definitions/tide-line-5-6.md) turns the day into a strip she slides along.
  */
-export type Mode = 'wave' | 'pail' | 'line' | 'cycle';
+export type Mode = 'wave' | 'pail' | 'line' | 'cycle' | 'day';
 
 export interface Plan {
   level: number;
@@ -24,17 +26,23 @@ export const PLANS: readonly Plan[] = [
     name: 'Read the line: with the sea out, put a pail, a flag and a towel where they stay dry; then a windy-day line',
   },
   { level: 4, mode: 'cycle', name: "In, out, in, out: finish a day's picture strip of the sea" },
+  {
+    level: 5,
+    mode: 'day',
+    name: 'Pool time: slide along the day, and mark a time the rock pool shows and a time the sea covers it',
+  },
 ];
 
 export const tidePlan = (level: number): Plan =>
   PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
-/** Lap 1, toddler 1–2, preschool 2–3, pre-K 3–4. School waits for levels 5–6's definition. */
+/** Lap 1, toddler 1–2, preschool 2–3, pre-K 3–5, school 4–5 (4–6 once level 6, Read the chart, is built). */
 export const BAND_LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
+  prek: { min: 3, max: 5 },
+  school: { min: 4, max: 5 },
 };
 
 // The sea ---------------------------------------------------------------------------------------
@@ -491,3 +499,168 @@ export function stripLayout(view: View): { pics: Box[]; cards: Box[] } {
   }));
   return { pics, cards };
 }
+
+// Levels 5–6: the island day ---------------------------------------------------------------------------
+
+/** The day's low water, and the heights its two equal high tides are seeded from. */
+export const DAY_LOW = 0.1;
+export const DAY_HIGHS = [0.55, 0.65] as const;
+/** The four times of the day she can stop at, morning to night. */
+export const STOPS = 4;
+
+/** One island day: how high the sea comes, and whether the first stop is low water (0) or high water (0.5). */
+export interface Day {
+  high: number;
+  offset: 0 | 0.5;
+}
+
+/** The first day of a session, and every demonstration's: it starts at low water. */
+export const AUTHORED_DAY: Day = { high: 0.55, offset: 0 };
+export const makeDay = (rng: Rng): Day => ({
+  high: rng.pick(DAY_HIGHS),
+  offset: rng.pick([0, 0.5] as const),
+});
+
+/** The time (0 at the left of the day, 1 at the right) at the middle of stop `i`. */
+export const stopT = (i: number) => (2 * i + 1) / 8;
+/** The stop nearest a time. */
+export const nearestStop = (t: number) => Math.max(0, Math.min(STOPS - 1, Math.floor(t * STOPS)));
+/** The water's height at time `t` of the day: two whole tides across it, with a turn of the tide at each stop. */
+export const dayWater = (day: Day, t: number) => waterAt(2 * (t - 1 / 8) + day.offset, DAY_LOW, day.high);
+
+/** Half the width of a stop's window of time. */
+export const WINDOW = 1 / 32;
+/** The times a window is judged at: its two ends and its middle, which is the only turn of the tide inside it. */
+export const windowTimes = (stop: number) => [stopT(stop) - WINDOW, stopT(stop), stopT(stop) + WINDOW];
+
+/** The shore's thresholds, as heights: the pool's near rim and far rim, the boat's inlet and the picnic shelf. */
+export const POOL_RIM = 0.2;
+export const POOL_TOP = 0.3;
+export const BOAT_FLOAT = 0.45;
+export const SHELF = 0.4;
+
+/**
+ * What a time can be asked for: the rock pool shows (water still in its hollow), the sea covers the pool, there is
+ * enough water to float the boat, the picnic shelf stays dry. `covered` is level 5's second ask; level 6's cards are
+ * the pool (`shows`), the boat and the picnic.
+ */
+export type Ask = 'shows' | 'covered' | 'boat' | 'picnic';
+export const suits = (ask: Ask, h: number) =>
+  ask === 'shows'
+    ? h <= POOL_RIM
+    : ask === 'covered'
+      ? h >= POOL_TOP
+      : ask === 'boat'
+        ? h >= BOAT_FLOAT
+        : h < SHELF;
+/** A stop fits an ask when its whole window of time does. */
+export const fits = (ask: Ask, day: Day, stop: number) =>
+  windowTimes(stop).every((t) => suits(ask, dayWater(day, t)));
+/** The stops that fit an ask, earliest first: always two of the four. */
+export const fitting = (ask: Ask, day: Day) =>
+  Array.from({ length: STOPS }, (_, i) => i).filter((i) => fits(ask, day, i));
+
+/** Level 5's two asks, in order. */
+export const POOL_ASKS = ['shows', 'covered'] as const;
+export type PoolAsk = (typeof POOL_ASKS)[number];
+
+/**
+ * Level 5's round: she selects a stop (by sliding or tapping) and flags it. A flag on a stop that fits the ask pins it
+ * and moves to the next ask; a flag on a stop showing the other state is exploration, never a miss. Help lights both
+ * fitting stops (one hint an ask); asked again, it gives the earlier one to flag.
+ */
+export class PoolTime {
+  readonly tally: RequestTally = newRequestTally();
+  /** The stop flagged for each ask, in ask order. */
+  readonly flags: number[] = [];
+  /** The stop the marker rests on; null until she first lets go or taps one. */
+  selected: number | null = null;
+  glow = false;
+  constructor(readonly day: Day) {}
+
+  get ask(): PoolAsk | undefined {
+    return POOL_ASKS[this.flags.length];
+  }
+  get done() {
+    return this.flags.length >= POOL_ASKS.length;
+  }
+
+  select(stop: number) {
+    if (!this.done) this.selected = Math.max(0, Math.min(STOPS - 1, Math.round(stop)));
+  }
+
+  /** The flag button: null with nothing selected (or the round over); otherwise whether the selected stop fits the ask. */
+  mark(): { right: boolean; ask: PoolAsk; stop: number } | null {
+    const ask = this.ask;
+    if (!ask || this.selected === null) return null;
+    const stop = this.selected;
+    if (!fits(ask, this.day, stop)) return { right: false, ask, stop };
+    this.flags.push(stop);
+    this.glow = false;
+    nextRequest(this.tally);
+    return { right: true, ask, stop };
+  }
+
+  /** Help: the first press lights both fitting stops (one hint); a press while they glow returns the earlier one to mark. */
+  help(): { glow: number[] } | { mark: number } | null {
+    const ask = this.ask;
+    if (!ask) return null;
+    const stops = fitting(ask, this.day);
+    if (this.glow) return { mark: stops[0] };
+    this.glow = true;
+    this.tally.helped = true;
+    hinted(this.tally);
+    return { glow: stops };
+  }
+}
+
+/** Level 5's layout: the shore picture, the row of four stops with their flags above, the marker's track and the flag button. */
+export interface DayLayout {
+  picture: Box;
+  stops: Box[];
+  /** Screen x of time 0 and time 1, and the y of the marker's track. */
+  track: { x0: number; x1: number; y: number };
+  /** The y of a pinned flag's foot, above the stops. */
+  flagY: number;
+  button: Box;
+}
+export const STOP_GAP = 12;
+export const KNOB = 110;
+export const FLAG_BUTTON = 130;
+
+export function dayLayout(view: View): DayLayout {
+  // A tall view stacks the picture, the strip and the flag button; a wide one puts the button at the strip's right end,
+  // with the strip, and the marker at the start of the day, clear of the pet's corner.
+  const stacked = view.h >= 1000;
+  const side = CORNER + 30;
+  const stripX = stacked ? 112 : PET.w + 20 + (KNOB + STOP_GAP) / 2;
+  const stripW = Math.min(860, view.w - stripX - (stacked ? 112 : 24 + FLAG_BUTTON + 20));
+  const x0 = stacked ? (view.w - stripW) / 2 : stripX;
+  const w = (stripW - (STOPS - 1) * STOP_GAP) / STOPS;
+  const stopH = 130;
+  const below = 70 + stopH + 14 + KNOB + (stacked ? 16 + FLAG_BUTTON : 0) + 16;
+  const pictureH = Math.min(560, view.h - 24 - below);
+  const picture = { x: side, y: 24, w: view.w - side * 2, h: pictureH };
+  const stopY = picture.y + pictureH + 70;
+  const stops = Array.from({ length: STOPS }, (_, i) => ({
+    x: x0 + i * (w + STOP_GAP),
+    y: stopY,
+    w,
+    h: stopH,
+  }));
+  const trackY = stopY + stopH + 14 + KNOB / 2;
+  const button = stacked
+    ? { x: (view.w - FLAG_BUTTON) / 2, y: trackY + KNOB / 2 + 16, w: FLAG_BUTTON, h: FLAG_BUTTON }
+    : { x: x0 + stripW + 20, y: stopY, w: FLAG_BUTTON, h: FLAG_BUTTON };
+  return {
+    picture,
+    stops,
+    track: { x0: x0 - STOP_GAP / 2, x1: x0 + stripW + STOP_GAP / 2, y: trackY },
+    flagY: stopY - 6,
+    button,
+  };
+}
+/** A time's x on the track, and back (clamped to the day). */
+export const trackX = (D: DayLayout, t: number) => D.track.x0 + t * (D.track.x1 - D.track.x0);
+export const trackT = (D: DayLayout, x: number) =>
+  Math.max(0, Math.min(1, (x - D.track.x0) / (D.track.x1 - D.track.x0)));

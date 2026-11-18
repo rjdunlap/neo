@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Watch the sea come in and go out, and use the seaweed line to keep things dry.',
+  goal: 'Watch the sea come in and go out, and work out where the water will be.',
   steps: [
     {
       from: 1,
@@ -16,6 +16,11 @@ export const HOW_TO: GameHowTo = {
       text: "With the sea out, drag the pail, the flag and the towel where they'll stay dry, then tap the wave; with two lines, the sea reaches the top one.",
     },
     { from: 4, to: 4, text: 'Tap the picture that fills the gap: in, out, in, out.' },
+    {
+      from: 5,
+      to: 5,
+      text: 'Slide along the day and mark one time the pool shows and one time the sea covers it.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: 'The round ends when the sea has been in and out twice.' },
@@ -26,6 +31,7 @@ export const HOW_TO: GameHowTo = {
       text: 'The round ends when all three things stay dry under the ordinary line, then under the windy-day line.',
     },
     { from: 4, to: 4, text: 'The round ends when both strips are done.' },
+    { from: 5, to: 5, text: 'The round ends when both times are flagged.' },
   ],
   note: [
     {
@@ -47,6 +53,11 @@ export const HOW_TO: GameHowTo = {
       from: 4,
       to: 4,
       text: 'On this island the sea comes in twice and goes out twice a day; many shores do, not all, and the times shift each day. A wrong card is a miss; the halfway picture never fits. Tapping a picture in the strip says in or out.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'Drag the round marker, or tap one of the four times of day; the flag button marks the time it rests on. Sliding and flagging the other state are looking around, never a miss. Help lights the two times that fit; asked again, it flags the first of them. On this island the sea comes in and goes out twice a day, evenly; real shores vary.',
     },
   ],
 };
