@@ -237,6 +237,8 @@ export function fewestFor(board: number, goal = ANY, gold = NONE, tri = SMALL): 
     ? BIG_FEWEST[start]
     : fewestMoves(board, goal, gold, tri);
 }
+/** Undo, Hint and Start over: 160 wide and this high (44.7 px under a thumb on a 390-wide upright phone). */
+export const BUTTON_H = 88;
 /**
  * Where the board goes in a view: centre x, the top row's y, the tray's half width and height, the pocket groove's y and the
  * hole centres. The big board packs closer (90 × 74 instead of 102 × 82) so its groove clears the buttons at 1024 × 768,

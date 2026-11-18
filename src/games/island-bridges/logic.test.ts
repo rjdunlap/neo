@@ -739,7 +739,7 @@ describe('the school opening', () => {
     expect(touchLayout(5, 1024, 768, true)).toMatchObject({ cell: 100, x: 201, y: 134, beside: true });
   });
 
-  it('keeps the grown-up layout as it was: cells of 64 to 80 and buttons 76 high beside the sea', () => {
+  it('keeps the grown-up seas as they were, cells of 64 to 80, with buttons 88 high beside the sea or under it', () => {
     expect(touchLayout(7, 1024, 768, false)).toMatchObject({ cell: 80, x: 171, y: 104, beside: true });
     expect(touchLayout(9, 1024, 768, false)).toMatchObject({ cell: 79, beside: true });
     expect(touchLayout(11, 1024, 768, false)).toMatchObject({ cell: 64, beside: true });
@@ -748,7 +748,7 @@ describe('the school opening', () => {
         const fit = touchLayout(size, w, h, false);
         expect(fit.cell).toBeGreaterThanOrEqual(64);
         expect(fit.cell).toBeLessThanOrEqual(80);
-        for (const s of fit.slots) expect(s.h).toBe(fit.beside ? 76 : 72);
+        for (const s of fit.slots) expect(s.h).toBe(88);
       }
   });
 

@@ -23,6 +23,7 @@ import { LEVELS as lanternLevels, planFor as lanternPlan } from './lantern-light
 import { BUTTON_SIZE, DIRECTION_SIZE, logRollLayout } from './log-roll';
 import { FLOORS } from './log-roll/floors';
 import { caseLayout, slidingLayout } from './logic-grid';
+import { BUTTON_H as MARBLE_BUTTON_H } from './marble-jump/logic';
 import { nookLayout, LEVELS as nookLevels, planFor as nookPlan } from './number-nook/logic';
 import {
   clueDepths,
@@ -117,8 +118,11 @@ const MEASURE: Record<string, () => Size[]> = {
     ['case-file square', caseLayout(v, 6, true).cell],
     ['square', slidingLayout(v, 6, true).cell, 'slides'],
   ],
-  // The holes are 78-unit hit circles and the buttons 78 units high (upright-batch-4.test.ts).
-  'marble-jump': () => [['hole and button', 78]],
+  // The holes are 78-unit hit circles (upright-batch-4.test.ts).
+  'marble-jump': () => [
+    ['hole', 78],
+    ['button', MARBLE_BUTTON_H],
+  ],
   'number-nook': () =>
     grown(nookLevels.grownup!).map((level) => {
       const { rows, cols } = nookPlan(level);
@@ -219,7 +223,7 @@ const MEASURE: Record<string, () => Size[]> = {
       const slides = plan.size * cell + PAD > Math.min(f.vp.w, f.vp.h);
       return [
         slides ? ['letter square', cell, 'slides'] : ['letter square', cell],
-        ...f.btn.map((): Size => ['button', side(f.btn[0])]),
+        ...f.btn.map((b): Size => ['button', side(b)]),
       ] as Size[];
     }),
 };
@@ -229,7 +233,7 @@ const MEASURE: Record<string, () => Size[]> = {
  * smallest square of a board that slides (allowed under the comfort line by the grown-up band rule).
  */
 const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
-  'block-garden': { px: 36.6, what: 'bed square' },
+  'block-garden': { px: 45.7, what: 'bed square' },
   'brain-break': { px: 50.8, what: 'stone' },
   crossword: { px: 44.7, what: 'square and key' },
   'gem-swap': { px: 44.7, what: 'button' },
@@ -238,7 +242,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'lantern-lights': { px: 50.8, what: 'button' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 32.5, what: 'case-file square', slides: 32.5 },
-  'marble-jump': { px: 39.6, what: 'hole and button' },
+  'marble-jump': { px: 39.6, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },
@@ -257,7 +261,6 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
 const UNDER = [
-  'block-garden',
   'island-bridges',
   'logic-grid',
   'marble-jump',
@@ -281,6 +284,12 @@ describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
 
   it("records each game's smallest target as measured", () => {
     expect(Object.fromEntries(Object.keys(MEASURE).map((id) => [id, measured(id)]))).toEqual(THUMBS);
+  });
+
+  it('keeps the buttons fixed on 2026-11-18 at a comfortable thumb: Island Bridges, Marble Jump and Word Search', () => {
+    for (const id of ['island-bridges', 'marble-jump', 'word-search'])
+      for (const [what, units] of MEASURE[id]().filter((s) => s[0] === 'button'))
+        expect(thumbPx(units), `${id} ${what}`).toBeGreaterThanOrEqual(COMFORT);
   });
 
   it('keeps every target at the grown-up minimum of 64 units, and names each game under a comfortable thumb', () => {

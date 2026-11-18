@@ -5,6 +5,8 @@ export const MIN_TOUCH = 64;
 /** The small grid's squares: 96 at the least, 132 at the most. */
 export const SMALL_MIN = 96;
 export const SMALL_CAP = 132;
+/** A grown-up's Hint and Start over are this high: 44.7 px under a thumb on a 390-wide upright phone. */
+export const BUTTON_H = 88;
 /** The room kept around the grid inside its window. */
 export const PAD = 24;
 export const SCHOOL_LIST_W = 210;
@@ -59,7 +61,7 @@ export function touchFrame(
 ): TouchFrame {
   const side = w >= h,
     narrow = w < 1000;
-  const bh = g.school ? SCHOOL_TOUCH : 72;
+  const bh = g.school ? SCHOOL_TOUCH : BUTTON_H;
   const top = side ? 100 : narrow ? 220 : 150,
     left = 150,
     gap = 24;
@@ -90,7 +92,8 @@ export function touchFrame(
       slideNote: { x: listX, y: listY + 66 },
     };
   }
-  const panel = 280,
+  // The list's panel: four rows of words above the two buttons.
+  const panel = 208 + bh,
     listX = 160;
   let vp: Viewport, listY: number;
   if (g.school) {

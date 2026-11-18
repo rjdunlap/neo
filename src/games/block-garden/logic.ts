@@ -1505,9 +1505,32 @@ export interface GardenLayout {
   portrait: boolean;
 }
 
+/** On an upright phone a bed drawn smaller than this grows toward it: 90 units are 45.7 px under a thumb at 390 wide. */
+export const UPRIGHT_CELL = 90;
+/**
+ * The gap between the bed and the tray under it on a tall view. The finger rides under a carried piece (`RIDE`, plus the
+ * pick-up's pop: up to 70 units under a five-square piece on a 100-unit bed), and letting go inside the piece's own slot
+ * sends it home, so the gap is wider than that reach: a piece can be planted in the bottom row above its own slot.
+ */
+export const TRAY_GAP = 72;
+/** The room kept at each side of a bed grown for an upright phone. */
+const UPRIGHT_SIDE = 24;
+
+/**
+ * The bed's square size in a view: the plan's own, except on an upright phone, where the big beds (72 units, 36.6 px on a
+ * 390-wide phone) grow to fill the width, up to `UPRIGHT_CELL` and never past what the height holds with the tray under it.
+ */
+export function cellFor(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v: View): number {
+  if (!v.upright || v.h <= v.w || plan.cell >= UPRIGHT_CELL) return plan.cell;
+  const under = TRAY_GAP + SLOT + (plan.preview ? 8 + NEXT_H : 0) + 74;
+  const fit = Math.floor(Math.min((v.w - 2 * UPRIGHT_SIDE) / plan.n, (v.h - 214 - under) / plan.n));
+  return Math.max(plan.cell, Math.min(UPRIGHT_CELL, fit));
+}
+
 /** Bed, three tray slots and the round arrow, clear of the shell's top-left buttons and the pet's bottom-left corner. */
 export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v: View): GardenLayout {
-  const size = plan.n * plan.cell;
+  const cell = cellFor(plan, v);
+  const size = plan.n * cell;
   const portrait = v.h > v.w;
   if (!portrait) {
     // Bed beside the shell's buttons, the tray a column on the right.
@@ -1530,7 +1553,7 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v
     return {
       x,
       y,
-      cell: plan.cell,
+      cell,
       n: plan.n,
       slots,
       next,
@@ -1539,18 +1562,18 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v
     };
   }
   const x = (v.w - size) / 2;
-  const block = size + 40 + SLOT + (plan.preview ? 8 + NEXT_H : 0);
+  const block = size + TRAY_GAP + SLOT + (plan.preview ? 8 + NEXT_H : 0);
   // An upright phone (chunk 31) keeps a wide bed below Home and "?" (to y 210).
   const minY = v.upright && x < 115 ? 214 : 128;
   const y = Math.max(minY, minY + (v.h - minY - 74 - block) / 2);
-  const ty = y + size + 40;
+  const ty = y + size + TRAY_GAP;
   const left = Math.max(170, (v.w - 3 * SLOT) / 2 + 40);
   const slots = [0, 1, 2].map((i) => ({ x: left + i * SLOT, y: ty, w: SLOT, h: SLOT }));
   const next = plan.preview ? slots.map((s) => ({ x: s.x, y: ty + SLOT + 8, w: SLOT, h: NEXT_H })) : [];
   return {
     x,
     y,
-    cell: plan.cell,
+    cell,
     n: plan.n,
     slots,
     next,
