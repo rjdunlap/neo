@@ -1,5 +1,12 @@
 /** School's picture grid: squares, picture tiles and buttons are all this big; the list column beside the grid is this wide. */
 export const SCHOOL_TOUCH = 100;
+/** A grown-up's letter square is never smaller than this; a grid that cannot fit at it slides. */
+export const MIN_TOUCH = 64;
+/** The small grid's squares: 96 at the least, 132 at the most. */
+export const SMALL_MIN = 96;
+export const SMALL_CAP = 132;
+/** The room kept around the grid inside its window. */
+export const PAD = 24;
 export const SCHOOL_LIST_W = 210;
 /** Level 6: the strip under the grid kept for the message's blanks. */
 export const MSG_H = 76;
@@ -109,4 +116,15 @@ export function touchFrame(
     tally: { x: listX + 330, y: listY + 8 },
     slideNote: narrow ? { x: 140, y: top - 28 } : { x: listX + 560, y: listY + 8 },
   };
+}
+
+/**
+ * Touch play's letter square for an `n` × `n` grid in the window `vp`: the biggest that shows the whole grid, no bigger than
+ * 96 and no smaller than 64 (then the grid slides); a small grid's squares are bigger, 96 at the least; a picture grid's are
+ * the school size.
+ */
+export function touchSquare(vp: Viewport, g: { n: number; school: boolean; small: boolean }): number {
+  const fit = Math.floor(Math.min(vp.w - PAD, vp.h - PAD) / g.n);
+  if (g.school) return SCHOOL_TOUCH;
+  return g.small ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit)) : Math.max(MIN_TOUCH, Math.min(96, fit));
 }

@@ -1,0 +1,5 @@
+# 2026-11-18 — Thumb sizes of the upright grown-up games (PR #1815)
+
+**Changed:** `src/games/grownup-thumbs.test.ts` measures each of the 22 upright grown-up games' smallest target in CSS pixels at 390 × 844 from the game's own layout and guards the recorded table; `thumbPx` in `src/games/upright-check.ts`; Word Search's letter-square formula moved unchanged into `src/games/word-search/layout.ts` as `touchSquare` so it can be measured. The table is in [the phone-portrait definition](../definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18); eight games are under about 44 pixels and two READY lines queue the fixes.
+**Ran:** `npm run typecheck` clean; eslint on the changed files clean; `npx vitest run src/games/grownup-thumbs.test.ts src/games/word-search src/games/registry.test.ts` (5 files, 78 tests passed); `node scripts/check-links.mjs`.
+**Not run:** build, any browser suite (no scripted play of Word Search: the moved formula is unchanged and typechecked), offline, the whole unit suite locally (CI runs it). Measured from layout functions, not on a phone.

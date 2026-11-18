@@ -28,23 +28,19 @@ import {
   type WordGrid,
   type WordPlan,
 } from './logic';
-import { MSG_H, SCHOOL_TOUCH, touchFrame, type Slot, type Viewport } from './layout';
+import { MSG_H, PAD, SCHOOL_TOUCH, touchFrame, touchSquare, type Slot, type Viewport } from './layout';
 import { themeById } from '../../learning/words/themes';
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
 
 /** The smallest touch target in a grown-up game, in logical units: a letter's square is never smaller. */
-const MIN_TOUCH = 64;
 /** A small grid's squares are at least this big on every view, and grow up to the cap where the view has room. */
-const SMALL_MIN = 96;
-const SMALL_CAP = 132;
 /** An unfound picture tile's paper: pale green, since some pictures (the hen, the rain cloud) are white. */
 const TILE_FILL = 0xe6f3d8;
 /** The gap between two picture tiles. */
 const TILE_GAP = 10;
 /** The paper around a grid, and half of it: the margin kept at each edge of the window when the grid slides. */
-const PAD = 24;
 const EDGE = PAD / 2;
 /** A finger that travels this far (logical units) between touching and lifting is sliding the grid, not tapping a letter. */
 const SLIDE = 14;
@@ -311,15 +307,8 @@ class WordSearch implements Game {
     this.slideNote.anchor.set(0, 0.5);
     this.title.style.fontSize = 26;
     this.tally.style.fontSize = 20;
-    // The biggest square that shows the whole grid, no bigger than 96 and no smaller than 64 (then the grid slides); a small
-    // grid's squares are bigger, 96 at the least.
     const pad = PAD;
-    const fit = Math.floor(Math.min(vp.w - pad, vp.h - pad) / n);
-    this.cell = school
-      ? SCHOOL_TOUCH
-      : small
-        ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit))
-        : Math.max(MIN_TOUCH, Math.min(96, fit));
+    this.cell = touchSquare(vp, { n, school, small });
     const size = n * this.cell;
     this.maxX = Math.max(0, size + pad - vp.w);
     this.maxY = Math.max(0, size + pad - vp.h);
