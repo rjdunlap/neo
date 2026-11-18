@@ -300,7 +300,8 @@ class PetSays implements Game {
         void this.ctx.instruct('says.quiet.go');
       } else {
         this.stillHere();
-        void this.ctx.say('says.music');
+        // The ask has turned around, so it is the instruction: the guide and caption say "Freeze!" while the music plays.
+        void this.ctx.instruct('says.music');
       }
     }
     this.beatIn -= dt;
