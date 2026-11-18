@@ -1,3 +1,4 @@
+import type { Band } from '../../progress/bands';
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, RAINBOW, swatch } from '../../art/palette';
 import { shapePath, SHAPES } from '../../art/shapes';
@@ -13,6 +14,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  lineFor,
   botTarget,
   clear,
   drops,
@@ -158,8 +160,9 @@ class GemSwap implements Game {
       [this.hintButton, 'Hint ◇', () => this.askForHint()],
       [this.restartButton, 'Restart ↺', () => this.restart()],
     ] as const) {
-      node.addChild(tile(150, 88, 'purple'), label(text, 23));
-      node.hitArea = new Rectangle(-75, -44, 150, 88);
+      const { w, h } = gemButton(ctx.band);
+      node.addChild(tile(w, h, 'purple'), label(text, 23));
+      node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
       node.visible = this.touch;
       onTap(node, act);
       ctx.stage.addChild(node);
@@ -176,7 +179,7 @@ class GemSwap implements Game {
             ? 'gem-swap.stones'
             : this.ctx.level === 8
               ? 'gem-swap.ice'
-              : 'gem-swap.go',
+              : lineFor(this.ctx.band, 'go'),
     );
   }
   resize(v: View) {
@@ -243,7 +246,9 @@ class GemSwap implements Game {
     this.help.text = this.pending
       ? `Line cleared${this.wave ? ' · a falling line!' : ''}`
       : this.route === null
-        ? 'No clearing route · Undo or Restart to revise'
+        ? this.ctx.band === 'school'
+          ? 'No way to clear from here · Undo ↶ or Restart ↺'
+          : 'No clearing route · Undo or Restart to revise'
         : this.ctx.level === 6
           ? 'Swap neighbours · one swap makes a long line'
           : this.ctx.level === 7
@@ -293,7 +298,7 @@ class GemSwap implements Game {
       this.misses++;
       this.sinceMatch++;
       sfx.boing();
-      void this.ctx.say('gem-swap.miss');
+      void this.ctx.say(lineFor(this.ctx.band, 'miss'));
       if (this.sinceMatch >= 2) this.askForHint();
       this.draw();
       return;
@@ -344,7 +349,7 @@ class GemSwap implements Game {
     this.selected = null;
     this.hinted = pair;
     this.draw();
-    void this.ctx.say('gem-swap.hint');
+    void this.ctx.say(lineFor(this.ctx.band, 'hint'));
   }
   update(dt: number) {
     if (this.dead || !this.pending) return;
@@ -367,7 +372,7 @@ class GemSwap implements Game {
     this.route = solve(this.board, this.puzzle.size);
     this.draw();
     if (clear(this.board)) void this.complete();
-    else if (!this.route) void this.ctx.say('gem-swap.stuck');
+    else if (!this.route) void this.ctx.say(lineFor(this.ctx.band, 'stuck'));
   }
   private async complete() {
     this.busy = this.finished = true;
@@ -468,6 +473,8 @@ function sticker(seed: number) {
   }
   return c;
 }
+/** Undo, Hint and Restart: 100 units tall at school, where every target is at least 100; the grown-up row keeps its 88. */
+export const gemButton = (band: Band) => ({ w: 150, h: band === 'school' ? 100 : 88 });
 export function gemLayout(v: View, size: number) {
   const pitch = Math.min(108, (v.w - 180) / size, (v.h - 290) / size);
   const half = ((size - 1) * pitch) / 2;
@@ -487,7 +494,7 @@ export const gemSwap: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'space',
   skills: ['spatial-planning', 'cause-and-effect'],
-  bands: ['grownup'],
+  bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),

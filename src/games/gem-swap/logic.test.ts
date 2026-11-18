@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { computeView, NO_INSETS } from '../../engine/view';
+import { rangeFor } from '../../progress/difficulty';
+import { BANDS } from '../../progress/bands';
 import { POOLS } from './boards';
+import { gemButton, gemLayout } from './index';
+import { VOICE } from './voice';
 import {
   botTarget,
   clear,
@@ -8,11 +13,14 @@ import {
   fall,
   hintFor,
   ICE,
+  LEVELS,
+  lineFor,
   iced,
   makePuzzle,
   matches,
   moves,
   neighbors,
+  planFor,
   PLANS,
   solve,
   STONE,
@@ -425,5 +433,69 @@ describe('Gem Swap', () => {
     expect(alternatives).toBeGreaterThan(12);
     expect(cascades).toBeGreaterThan(0);
     expect(botTarget([[1, 2]], 3)).toBe(3);
+  });
+});
+
+describe('the school opening', () => {
+  const school = rangeFor(LEVELS, 'school');
+
+  it('opens only the two 4 by 4 trays, and leaves the grown-up ladder as it was', () => {
+    expect(school).toEqual({ min: 1, max: 2 });
+    expect(rangeFor(LEVELS, 'grownup')).toEqual({ min: 1, max: 8 });
+    for (let level = school.min; level <= school.max; level++) expect(planFor(level).size).toBe(4);
+    // Level 3 is the first 5 by 5, whose cells are under the band's 100 units on a tablet held sideways.
+    expect(planFor(3).size).toBe(5);
+    expect(gemLayout(computeView(1024, 768, NO_INSETS), 5).pitch).toBeLessThan(100);
+  });
+
+  it('clears every school tray by following the hint from the start, in one swap then two', () => {
+    for (const [level, par] of [
+      [1, 1],
+      [2, 2],
+    ] as const) {
+      for (let seed = 1; seed <= 200; seed++) {
+        const puzzle = makePuzzle(level, new Rng(seed));
+        expect(puzzle.par, `level ${level} seed ${seed}`).toBe(par);
+        let board: Board = puzzle.board,
+          swaps = 0;
+        while (!clear(board)) {
+          board = swap(board, puzzle.size, hintFor(board, puzzle.size)!)!.board;
+          swaps++;
+        }
+        expect(swaps).toBe(par);
+      }
+    }
+  });
+
+  it('gives a school child cells and buttons of at least 100 units, sideways and upright', () => {
+    const views = [
+      computeView(1024, 768, NO_INSETS),
+      computeView(768, 1024, NO_INSETS),
+      computeView(390, 844, NO_INSETS, true),
+      computeView(375, 601, NO_INSETS, true),
+    ];
+    for (const v of views) {
+      const frame = gemLayout(v, 4);
+      expect(frame.pitch, `${v.w}x${v.h}`).toBeGreaterThanOrEqual(100);
+      // The tray ends above the button row.
+      const bottom = frame.tray.y + 3.5 * frame.pitch;
+      expect(bottom).toBeLessThanOrEqual(frame.buttons[0].y - gemButton('school').h / 2);
+    }
+    expect(gemButton('school').h).toBeGreaterThanOrEqual(100);
+    expect(gemButton('school').w).toBeGreaterThanOrEqual(100);
+    expect(gemButton('grownup')).toEqual({ w: 150, h: 88 });
+  });
+
+  it("says the four moments in a child's words at school only, and every line exists", () => {
+    const lines: Record<string, string[]> = VOICE;
+    for (const part of ['go', 'miss', 'hint', 'stuck'] as const) {
+      expect(lineFor('school', part)).toBe(`gem-swap.${part}-school`);
+      for (const band of BANDS.map((b) => b.id)) {
+        expect(lines[lineFor(band, part)], `${band} ${part}`).toBeDefined();
+        if (band !== 'school') expect(lineFor(band, part)).toBe(`gem-swap.${part}`);
+      }
+      // The grown-up wording a child would not follow stays out of the school form.
+      for (const text of lines[lineFor('school', part)]) expect(text).not.toMatch(/route|revise|outlined/i);
+    }
   });
 });
