@@ -1,0 +1,5 @@
+# 2026-11-18 — The pre-K-and-school games' questions on ctx.instruct, second session (PR #1784)
+
+**Changed:** TotoLogic P3 slice 3, second ten pre-K-and-school games: Rule Machine's `rm.send` and level 5's `rm.back.ask`, Thought Bubbles' story question and `thought.showme`, and Not Always' level 3 `notalways.mends` moved from `ctx.say` to `ctx.instruct` (each game's `index.ts`); seven others were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/thought-bubbles src/games/rule-machine src/games/not-always src/audio src/ui` (13 files, 176 tests, including the caption budget test); on a silent dev server in headless Chromium, `BROWSER_SUITE=rulemachine RM_LEVELS=2,3,5`, `BROWSER_SUITE=notalways` (levels 1–3) and `BROWSER_SUITE=thoughtbubbles` (levels 1–3) passed.
+**Not run:** full `npm test` and build locally (CI runs both on the PR), offline, `fingerdemo` (no bot or demonstrated action changed), any check that reads the caption text on screen or asserts which line is the instruction.
