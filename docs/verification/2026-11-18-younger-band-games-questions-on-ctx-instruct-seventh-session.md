@@ -1,0 +1,5 @@
+# 2026-11-18 — Younger-band games' questions on ctx.instruct, seventh session (PR #1797)
+
+**Changed:** TotoLogic P3 slice 3, the seventh ten games that reach school from younger bands (puppet-stage to robot-path, alphabetical): Quick Tricks' "Ta-da! Tap the green arrow when you are ready." (`tricks.encore-yes`, second show) and the ten-quiet-seconds "Tap the arrow for the next trick!" (`tricks.next`, all three shows) are now `ctx.instruct`; the other nine were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/quick-tricks src/ui/caption-layout.test.ts` (4 files, 66 tests passed; caption-layout proves the instructed lines fit the caption budget). On headless Chromium against a silent dev server: `BROWSER_SUITE=fingerdemo FINGER_ONLY=quick-tricks FINGER_LEVELS=5` passed (level 5, the second show, at pre-K finished in 28.8 s). It is a regression play; it does not assert the caption text.
+**Not run:** full unit suite and build locally (CI runs both on the PR), offline, the first and third shows in a browser (their only change is the ten-second nudge's call).
