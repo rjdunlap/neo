@@ -1,1 +1,0 @@
-**`orchard-rows` upright at levels 1–6 and 8** (real layout; existing-game tier: typecheck, layout tests and filtered upright sweep): the sweep measured its targets too small or outside the view at those levels; give them an upright layout with a layout test, then widen `uprightLevels`.

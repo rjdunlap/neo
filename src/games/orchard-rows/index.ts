@@ -11,6 +11,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BasketOrchard, tree } from './baskets';
+import { PAD, rowsLayout } from './layout';
 import { PathOrchard } from './path';
 import {
   LEVELS,
@@ -20,7 +21,6 @@ import {
   isPathLevel,
   makeOrchards,
   missingTrees,
-  orchardLayout,
   planFor,
   total,
   turn,
@@ -75,7 +75,7 @@ class OrchardRows implements Game {
       ctx.view,
     );
     this.glow.eventMode = this.heading.eventMode = this.sentence.eventMode = 'none';
-    this.rotate.addChild(tile(120, 110, 'teal'));
+    this.rotate.addChild(tile(PAD.w, PAD.h, 'teal'));
     this.rotate.addChild(
       new Graphics()
         .moveTo(-25, 15)
@@ -115,13 +115,13 @@ class OrchardRows implements Game {
     this.backdrop.resize(view);
     this.heading.position.set(view.w / 2, 122);
     this.sentence.position.set(view.w / 2, 170);
-    this.rotate.position.set(view.w - 130, 250);
-    this.pads.forEach((p, i) => p.node.position.set(view.w - 130, 390 + i * 125));
     if (!this.oriented) return;
-    const l = orchardLayout(view.w, view.h, this.oriented);
+    const l = rowsLayout(view, this.oriented, this.pads.length);
+    this.rotate.position.set(l.rotate.x, l.rotate.y);
+    this.pads.forEach((p, i) => p.node.position.set(l.pads[i].x, l.pads[i].y));
     this.groups.forEach((node, i) => {
       node.position.set(l.x, l.y + i * l.rowHeight + l.rowHeight / 2);
-      node.hitArea = new Rectangle(-l.width / 2, -50, l.width, 100);
+      node.hitArea = new Rectangle(-l.width / 2, -l.hit / 2, l.width, l.hit);
     });
     this.drawRows();
   }
@@ -190,13 +190,13 @@ class OrchardRows implements Game {
   }
 
   private drawRows() {
-    const l = orchardLayout(this.view.w, this.view.h, this.oriented);
+    const l = rowsLayout(this.view, this.oriented);
     this.groups.forEach((node, row) => {
       for (const child of node.removeChildren()) child.destroy({ children: true });
       const counted = this.counted.includes(row);
       const planted = this.turned || this.planted.includes(row);
       const g = new Graphics()
-        .roundRect(-l.width / 2, -46, l.width, 92, 18)
+        .roundRect(-l.width / 2, -l.drawn / 2, l.width, l.drawn, 18)
         .fill(counted ? swatch.yellow.light : planted ? swatch.green.light : wood.light)
         .stroke({ width: counted ? 4 : 2, color: counted ? swatch.yellow.line : wood.line });
       g.eventMode = 'none';
@@ -292,7 +292,7 @@ class OrchardRows implements Game {
       this.phase === 'missing' ? this.orchard.rows : undefined,
     )) {
       const node = new Container();
-      node.addChild(tile(120, 110, 'white'), label(String(n), 42));
+      node.addChild(tile(PAD.w, PAD.h, 'white'), label(String(n), 42));
       onTap(node, () => void this.choose(n));
       this.pads.push({ n, node });
       this.ctx.stage.addChild(node);
@@ -407,7 +407,7 @@ export const orchardRows: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  uprightLevels: [7, 9],
+  upright: true,
   touchDemo: true,
   coplayHint:
     'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns. At the new levels, guess before pressing the arrow: will any be left over? At the path levels, count the part you know first, then add the other.',

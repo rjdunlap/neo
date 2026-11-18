@@ -369,6 +369,17 @@ export const PET_CORNER = { w: 200, h: 205 };
 export const TOP_CLEAR = 110;
 export const MIN_CELL = 18;
 
+/**
+ * Levels 4–6 and 8, upright: the x of the four controls along the bottom (fewer, card, more, and Plant or Lay the
+ * path), 120, 120, 120 and 130 wide. A wide upright view keeps them where they were; the 768-wide one closes the gaps
+ * so the last control ends inside the view and the first still starts clear of the guide's corner.
+ */
+export function controlRow(w: number): [number, number, number, number] {
+  if (w >= 810) return [230, 370, 510, 670];
+  const x0 = w - 565;
+  return [x0, x0 + 140, x0 + 280, x0 + 420];
+}
+
 /** Pure: every control at least 100 units, nothing in the pet's corner; null rather than shrink a target. */
 export function basketLayout(view: { w: number; h: number }, level: number, frames = 0): BasketLayout | null {
   const { w, h } = view;
@@ -393,10 +404,11 @@ export function basketLayout(view: { w: number; h: number }, level: number, fram
   let bed: Box, up: Box, down: Box, card: Box, act: Box;
   if (portrait) {
     const rowY = h - 160;
-    down = { x: 230, y: rowY, w: 120, h: 110 };
-    card = { x: 370, y: rowY - 5, w: 120, h: 120 };
-    up = { x: 510, y: rowY, w: 120, h: 110 };
-    act = { x: 670, y: rowY, w: 130, h: 110 };
+    const [x0, x1, x2, x3] = controlRow(w);
+    down = { x: x0, y: rowY, w: 120, h: 110 };
+    card = { x: x1, y: rowY - 5, w: 120, h: 120 };
+    up = { x: x2, y: rowY, w: 120, h: 110 };
+    act = { x: x3, y: rowY, w: 130, h: 110 };
     bed = { x: 40, y: stripBottom + 20, w: w - 80, h: h - 225 - (stripBottom + 20) };
   } else {
     const cx = w - 140,
@@ -651,10 +663,11 @@ export function pathLayout(view: { w: number; h: number }, level: number): PathL
       ];
     }
     if (level === 8) {
-      up = { x: 230, y: rowY, w: 120, h: 110 };
-      card = { x: 370, y: rowY - 5, w: 120, h: 120 };
-      down = { x: 510, y: rowY, w: 120, h: 110 };
-      lay = { x: 670, y: rowY, w: 130, h: 110 };
+      const [x0, x1, x2, x3] = controlRow(w);
+      up = { x: x0, y: rowY, w: 120, h: 110 };
+      card = { x: x1, y: rowY - 5, w: 120, h: 120 };
+      down = { x: x2, y: rowY, w: 120, h: 110 };
+      lay = { x: x3, y: rowY, w: 130, h: 110 };
     }
   } else {
     const cx = w - 140,

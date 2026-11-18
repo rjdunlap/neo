@@ -150,7 +150,9 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
           await p.waitForTimeout(750);
           if (asked || level === levels.at(-1)) await p.screenshot({ path: `${output}/${id}-${level}.png` });
           const before = await p.evaluate(() => kit.store.data.stickers.length);
-          const deadline = Date.now() + 90_000;
+          // `PHONE_SECONDS=240` gives a long level (many spoken counts) more than the usual 90 seconds.
+          const seconds = Number(process.env.PHONE_SECONDS) || 90;
+          const deadline = Date.now() + seconds * 1000;
           let finished = false;
           let actions = 0;
           while (!finished && Date.now() < deadline) {
@@ -213,7 +215,7 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
             log(`Upright: ${id} level ${level} reached Check in ${actions} touches`);
             continue;
           }
-          assert.ok(finished, `${id} ${level} did not finish in 90 seconds after ${actions} touches`);
+          assert.ok(finished, `${id} ${level} did not finish in ${seconds} seconds after ${actions} touches`);
           assert.equal(await p.evaluate(() => kit.store.data.stickers.length), before + 1, id);
           assert.equal(await p.evaluate(() => kit.store.data.stickers.at(-1).game), id);
           log(`Upright: ${id} level ${level} completed in ${actions} touches with one sticker`);
