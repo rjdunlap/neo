@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/beat-builder; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `beat-builder` · **Land:** Music Mountain · **Ages:** toddler–school · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `beat-builder` · **Land:** Music Mountain · **Ages:** toddler–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** rhythm, patterns, listening, music
 

@@ -560,6 +560,7 @@ describe('game registry', () => {
     // Add a batch here as it lands (docs/definitions/phone-portrait.md).
     const upright = [
       'animal-snack',
+      'beat-builder',
       'block-garden',
       'brain-break',
       'bubble-pop',
