@@ -441,6 +441,8 @@ class AtticFinds implements Game {
   private wiggled = false;
   private t = 0;
   private destroyed = false;
+  /** Try mode: "Which one happened?" is the instruction now, so the next find says the level's ask again. */
+  private askedWhich = false;
 
   /* Levels 3-4 */
   private readonly free: boolean;
@@ -1207,7 +1209,10 @@ class AtticFinds implements Game {
     void this.ctx
       .say(this.obj.mover === 'bird' ? 'attic-finds.bobbed-bird' : 'attic-finds.bobbed-fish')
       .then(() => {
-        if (!this.state.done) void this.ctx.say('attic-finds.which-happened');
+        if (this.state.done) return;
+        // What is asked now: the guide repeats it and the caption keeps it instead of "then try it".
+        this.askedWhich = true;
+        void this.ctx.instruct('attic-finds.which-happened');
       });
   }
 
@@ -1412,6 +1417,11 @@ class AtticFinds implements Game {
     await this.ctx.tw.to(this.objNode, { x: this.L.object.x }, { duration: 0.55, ease: ease.outCubic });
     if (this.destroyed) return;
     this.busy = false;
+    if (this.askedWhich) {
+      // A new find has not been tried yet, so "Which one happened?" gives way to the level's ask.
+      this.askedWhich = false;
+      void this.ctx.instruct('attic-finds.instruct-try');
+    }
   }
 
   private async finale() {

@@ -1,0 +1,5 @@
+# 2026-11-18 — The games reaching school from younger bands' questions on ctx.instruct, first session (PR #1789)
+
+**Changed:** TotoLogic P3 slice 3, first ten games that reach school from bands younger than pre-K (alphabetical): Block Topple level 5's "How many fruits are in the tray?" and Attic Finds' level 1 "Which one happened? Tap the picture." moved from `ctx.say` to `ctx.instruct`, with the level's ask said again for the next stack or find; eight others were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/block-topple src/games/attic-finds src/content` (26 files, 335 tests passed, 1 skipped); on a silent dev server in headless Chromium, `BROWSER_SUITE=blocktopple` (levels 1, 3, 4, 5, including level 5's wrong and right counts) and `BROWSER_SUITE=atticfinds` (levels 1 and 2) passed. The plays are regression plays; they do not assert the caption text.
+**Not run:** full unit suite and build locally (CI runs both on the PR), offline, `fingerdemo` (no bot or demonstrated action changed).
