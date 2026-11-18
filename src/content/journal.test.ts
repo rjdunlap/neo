@@ -60,11 +60,18 @@ describe('the entries', () => {
       'rose',
       'lilac',
     ]);
+    expect(entriesOf('melt-freeze').map((e) => e.key)).toEqual([
+      'ice',
+      'butter',
+      'chocolate',
+      'lolly',
+      'stays',
+    ]);
     expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
     expect(entriesOf('chain-reaction').map((e) => e.key)).toEqual(['spring-skip']);
     expect(entriesOf('spinner-fair').map((e) => e.key)).toEqual(['two-dice']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1 + 1 + 1,
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 5 + 3 + 6 + 1 + 1 + 1,
     );
   });
 
@@ -120,7 +127,9 @@ describe('the entries', () => {
         case 'melt-freeze':
           expect(said, e.id).toContain(e.key === 'stays' ? 'stay the same' : e.key);
           expect(said, e.id).toContain(e.key === 'stays' ? 'warm or cool' : 'melts');
-          if (e.key !== 'stays') expect(said, e.id).toContain('hard again');
+          // Only frozen water freezes; butter and chocolate go hard again.
+          if (e.key !== 'stays')
+            expect(said, e.id).toContain(e.key === 'lolly' ? 'freezes again' : 'hard again');
           break;
         case 'mail-carrier':
           expect(said, e.id).toContain(e.key);
