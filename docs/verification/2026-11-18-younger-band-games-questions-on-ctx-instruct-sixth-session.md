@@ -1,0 +1,5 @@
+# 2026-11-18 — Younger-band games' questions on ctx.instruct, sixth session (PR #1795)
+
+**Changed:** TotoLogic P3 slice 3, the sixth ten games that reach school from younger bands (pattern-train to puddle-gobble, alphabetical): Pet Says level 7's "Music! Freeze!" and Photo Safari's mystery-level "Only one friend left. Take its photo!" are now `ctx.instruct`; the other eight were read and needed nothing or kept `say` on purpose.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/pet-says src/games/photo-safari` (2 files, 87 tests passed); `npx vitest run src/ui/caption-layout.test.ts` (19 tests passed; it proves the instructed lines fit the caption budget). On headless Chromium against a silent dev server: `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-says FINGER_LEVELS=7` passed (level 7 at pre-K finished in 33.5 s); `BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=14` passed ("Photo Safari 14 (mystery): photos, wrong snaps, hint, album, saved score and sticker"). These are regression plays; none asserts the caption text.
+**Not run:** full unit suite and build locally (CI runs both on the PR), offline.
