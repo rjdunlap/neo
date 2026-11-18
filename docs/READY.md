@@ -120,6 +120,13 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](reviews/CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
 
+### Docs structure (2026-11-18 review)
+
+Left over from the [docs review](reviews/WORKFLOW-REVIEWS.md#docs-review-2026-11-18), which reorganized the session documents; each is docs only and touches a file many links point into, so it runs alone and merges quickly.
+
+- **Archive the built batch plans** (docs only: links and `git diff --check`): move `docs/GAME-BATCHES.md` (240 KB, every plan built) to `docs/archive/`, with its line in the archive index, and repoint the links into it; READY, ROADMAP and STUDY-BACKLOG then name the [batch rules](SESSION-GUIDE.md#same-game-batches) instead. A READY line that still cites a plan section as its scope keeps that link, pointed at the archived file.
+- **One coverage row per suite or area** (docs only: links and `git diff --check`): `docs/VERIFICATION.md` is 300 KB, most of it a coverage summary that gained a row per slice. Collapse it to one row per browser suite or area, each naming the latest passing entry file in `docs/verification/`, so the "never re-run a passing suite" rule can be checked by reading one short table; the per-slice detail is already in the entry files.
+
 ### UX review (2026-11-09)
 
 From the [adversarial UX review](reviews/UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U5 are built ([definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-built-2026-11-10)); U6a and U6b are built ([one way to browse](definitions/one-way-to-browse.md)), U7 is defined ([never swallow a tap](definitions/never-swallow-a-tap.md); U7a–U7c are built, and U7d's [classification](definitions/never-swallow-a-tap-lines.md) of the upright-ready games is done, and its fix batch 1, `animal-snack` and `far-lights`, is built) and U8 is built ([the grown-ups' page](definitions/grownups-page.md)) (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).

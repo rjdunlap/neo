@@ -1,5 +1,7 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+**Frozen 2026-11-18: add nothing here.** A landed slice no longer gets a build note; what it built is in its entry in [docs/verification/](../VERIFICATION.md), its game's page in [docs/games/](../GAMES.md) and its definition's built line ([routing](../SESSION-GUIDE.md#where-each-doc-update-goes)). Notes were added at both the top and the end of this file until 2026-11-17, so it is not in date order; find one with `node scripts/peek.mjs grep`.
+
 ### Cue Studio level 4, Which signal? (programming P4a, 2026-11-16)
 
 Branch `claude/cue-studio-which-signal`, slice P4a of [the P4 definition](../definitions/cue-studio-p4.md#build-slices-and-checks). School range 3–4, entry 3, ordinary step rule (the definition's stated lean under S8; pin-only not taken). Two signal rows, a bell and a flower, each with a request picture, signal pad, one action slot and a result chip; free firing of either signal (an empty row shrugs, no miss or hint); Check fires bell then flower and accepts each row by its own signal with a tick or cross per chip. Only a wrong Check is a miss; two wrong Checks or Help give the clue, each later Help sets one wrong row. Help ids `clue:`/`repair:` plus `slot:<n>` or `row:bell`/`row:flower`. The private Undo icon was replaced by the shared `undoIcon`. Voice wording source check not completed (ScratchJr teaching link returns 410); owed to P4b.

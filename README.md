@@ -4,7 +4,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 **Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). On a phone the root opens **Today's six**, six games picked each day, and that is where play is being tried now ([try it on a phone](#try-it-on-a-phone)); on a tablet or computer add `?daily` to the root URL to see the same page in place of Home. Every push to `main` redeploys via GitHub Actions
 
-[Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Development workflow review](docs/reviews/WORKFLOW-REVIEWS.md)
+[Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Docs map](docs/README.md)
 
 What's in it:
 
