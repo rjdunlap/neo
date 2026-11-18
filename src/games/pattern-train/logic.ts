@@ -73,6 +73,8 @@ export const ANIMAL_TRIOS: readonly (readonly [CritterName, CritterName, Critter
 
 /** The tunnel hides this many cars, so the car that comes out is `hidden mod unit` places on from the first. */
 export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
+/** The tunnel arch she taps to hear the count again: a target like any car, so never under 100 units either way. */
+export const TUNNEL_SIZE = { w: 100, h: 140 } as const;
 
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
