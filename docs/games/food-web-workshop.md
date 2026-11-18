@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/food-web-workshop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `food-web-workshop` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `food-web-workshop` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** science, models, reasoning
 
@@ -31,3 +31,5 @@
 **Misses and help.** Show our web (green button, bottom right) is the only thing that counts a miss: one per failed check, with the boing, one spoken line naming the fault (an arrow the wrong way, a card with no arrow yet, an arrow no card showed) and that fault's card replaying; after two failed checks the fault's card and stations glow. The pause sheet's "Show a hint" mends one fault (the arrow grows, turns or fades) and counts one hint; repeated hints always reach a passing web. A passing check plays the web once, says "Our food web! The arrows show where the food goes.", then one sticker. A drag refused during the miss line ticks. No journal entry; nothing is saved. Bands: school plays levels 1-3 (a younger child finds it behind Rainbow Meadow's signpost); region tinker-lab. The six feeding records passed the 2026-10-24 source check ([VERIFICATION](../VERIFICATION.md)). It is a model of these cards, never a whole meadow. Layout deviation from the packet: stations of radius 95 with their tops at 0.40 of the height, the lower row at +/-240 and 0.62 of the height, badges 68 units below a station's centre and cards at max(100, 0.12 of the height), so the pet corner and Show button stay clear. The ghost-finger bot plays every level. Co-play: ask which way the food goes before she drags, and let her tell what each card showed. Off-screen: watch a garden together and say who ate what, then draw a food arrow for each.
 
 **What the guide repeats.** Pressing Show our web with no arrows repeats the level's ask through the guide (same words), so the caption shows it again.
+
+**Upright on a phone (2026-11-18, upright batch 9):** every level plays upright with no layout change; `upright.test.ts` reads the layout on four phone views and a short one (a `STATION_DOWN` constant now names the station drop, and the test reads `UNDO_R`).

@@ -864,6 +864,13 @@ export const TILE = 110;
 export const CARD = { w: 130, h: 110 };
 export const WATCH = { w: 140, h: 104 };
 export const BUTTON_R = 50;
+/** How far a tile's, a card's, a handle's or the gauge's touch area reaches past its drawn box, and Watch's. */
+export const TILE_PAD = 6;
+export const WATCH_PAD = 8;
+/** The offered set-up's check button (a circle) and the two guess pictures at level 6 (squares). */
+export const OFFER_R = 60;
+export const GUESS = 124;
+const GUESS_GAP = 36;
 const ARROW = 36;
 const M = 20;
 const GAP = 16;
@@ -883,7 +890,22 @@ export interface HouseLayout {
   gauge: GaugeLayout | null;
   /** Levels 8–9: the round's case card, or level 9's three, above the house. */
   cases: Rect[];
+  /** The check button over the house once the pet offers to set it up (after three failed days). */
+  offer: Rect;
+  /** Level 6: the two guess pictures over the house until the first day runs; empty at the other levels. */
+  guesses: Rect[];
 }
+
+/** The offer button, in the lower middle of the house. */
+const offerRect = (house: Rect): Rect => button(house.x + house.w / 2, house.y + house.h * 0.62, OFFER_R);
+/** The guess pictures, side by side above the house's middle. */
+const guessRects = (house: Rect): Rect[] =>
+  [-1, 1].map((side) => ({
+    x: house.x + house.w / 2 + (side * (GUESS + GUESS_GAP)) / 2 - GUESS / 2,
+    y: house.y + house.h * 0.42 - GUESS / 2,
+    w: GUESS,
+    h: GUESS,
+  }));
 
 /** How many case cards a level shows above the house. */
 export function caseCards(level: number): number {
@@ -966,9 +988,11 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   } else {
     by = v.h - M - WATCH.h / 2;
     rightX = v.w - M;
-    // The house takes what the rows, the bench and the buttons leave, up to a comfortable height.
+    // The house takes what the rows, the bench and the buttons leave, up to a comfortable height. The rows start at the
+    // left edge, so they (and a reading card's touch padding) end above the guide's corner as well as above the buttons.
     const boardH = Math.max(nRows * (CARD.h + GAP) - GAP, TILE);
-    const houseH = Math.min(820, by - WATCH.h / 2 - M - boardH - M - M);
+    const floor = Math.min(by - WATCH.h / 2 - M, v.h - PET_CORNER.h - TILE_PAD);
+    const houseH = Math.min(820, floor - boardH - M - M);
     house = { x: HOME_CORNER.w + M, y: M, w: v.w - HOME_CORNER.w - 2 * M, h: houseH };
     rowX = M;
     rowY = house.y + house.h + M;
@@ -1036,7 +1060,19 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
   if (sockets.some((s) => !inside(s, v) || sockets.some((t) => t !== s && overlaps(s, t)))) return null;
-  return { house, sockets, rows, bench, watch, step, undo, gauge: null, cases: [] };
+  return {
+    house,
+    sockets,
+    rows,
+    bench,
+    watch,
+    step,
+    undo,
+    gauge: null,
+    cases: [],
+    offer: offerRect(house),
+    guesses: [],
+  };
 }
 
 /**
@@ -1116,5 +1152,17 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   if (!parts.every((p) => inside(p, v))) return null;
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
-  return { house, sockets: [], rows, bench: [], watch, step, undo, gauge, cases };
+  return {
+    house,
+    sockets: [],
+    rows,
+    bench: [],
+    watch,
+    step,
+    undo,
+    gauge,
+    cases,
+    offer: offerRect(house),
+    guesses: brief.level === 6 ? guessRects(house) : [],
+  };
 }

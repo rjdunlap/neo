@@ -3,20 +3,26 @@ import { cream, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { bugBody, bugToken, bugWing } from './art';
-import { foldBoard, type BugPlan, type FoldBoard, type FoldChoice } from './logic';
+import {
+  FOLD_BUG,
+  FOLD_CARD,
+  foldBoard,
+  foldLayout,
+  type BugPlan,
+  type FoldBoard,
+  type FoldChoice,
+} from './logic';
 
-/** A choice card: wide and tall enough for a whole small bug, far past the 100-unit touch target. */
-const CARD_W = 250,
-  CARD_H = 240,
+const CARD_W = FOLD_CARD.w,
+  CARD_H = FOLD_CARD.h,
   /** The small bugs on the cards, and their stamps (drawn a little larger than the scale would make them, to read). */
   CARD_SCALE = 0.36,
   CARD_STAMP = 19;
-/** A bug's height from the antennae (-285) to the wing tips (+207), in its own units; the board centers on it. */
-const BUG_TOP = 285,
-  BUG_BOTTOM = 207;
+const BUG_TOP = FOLD_BUG.top,
+  BUG_BOTTOM = FOLD_BUG.bottom;
 
 interface Card {
   node: Container;
@@ -147,35 +153,16 @@ export class FoldFriend implements Game {
 
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.green.light);
-    const gap = 24,
-      bugH = BUG_TOP + BUG_BOTTOM;
-    let bugScale: number, k: number;
-    if (v.h > v.w * 1.3) {
-      // A tall view (a tall window, or the upright test layout): the bug across the top, the cards stacked larger in the middle below it,
-      // each clear of the pet's corner at the bottom left.
-      bugScale = Math.min(1, (v.w - 80) / 640);
-      const top = 20 + bugH * bugScale + 40,
-        room = v.h - 30 - top;
-      k = Math.min(1.6, (room - 2 * gap) / (3 * CARD_H), (v.w - 2 * 175) / CARD_W);
-      const step = CARD_H * k + gap,
-        y0 = top + room / 2 - step;
-      this.cards.forEach((c, i) => c.node.position.set(v.w / 2, y0 + i * step));
-    } else {
-      // The cards sit in a row along the bottom, right of the pet's corner; the bug fills the space above them.
-      k = Math.min(1, (v.w - 220 - 2 * gap) / (3 * CARD_W));
-      const cardY = v.h - (CARD_H * k) / 2 - 28;
-      const xs = spread(3, 175, v.w - 45, CARD_W * k + gap);
-      this.cards.forEach((c, i) => c.node.position.set(xs[i], cardY));
-      const room = cardY - (CARD_H * k) / 2 - 40;
-      bugScale = Math.min(0.85, room / bugH, (v.w - 120) / 640);
-    }
+    const l = foldLayout(v),
+      k = l.cardScale;
     this.cardScale = k;
     this.cards.forEach((c, i) => {
+      c.node.position.set(l.cards[i].x, l.cards[i].y);
       this.ctx.tw.kill(c.node.scale);
       c.node.scale.set(this.folded && i === this.fold.answer ? k * 1.08 : k);
     });
-    this.board.scale.set(bugScale);
-    this.board.position.set(v.w / 2, 20 + BUG_TOP * bugScale);
+    this.board.scale.set(l.board.scale);
+    this.board.position.set(l.board.x, l.board.y);
   }
 
   update(dt: number) {

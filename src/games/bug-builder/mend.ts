@@ -3,12 +3,15 @@ import { cream, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { bugBody, bugToken } from './art';
+import { bugBody, bugToken, openPlace, stampedPlace } from './art';
 import {
   BUG_TOKENS,
+  PLACE_TAP,
+  STAMP_HIT,
+  bugLayout,
   mendBoard,
   mendDrop,
   mendMove,
@@ -48,7 +51,7 @@ export class MendWing implements Game {
 
   constructor(
     private readonly ctx: GameContext,
-    plan: BugPlan,
+    private readonly plan: BugPlan,
   ) {
     this.mend = mendBoard(plan, ctx.rng);
     ctx.stage.addChild(this.background, this.board, this.trayGlow);
@@ -58,15 +61,15 @@ export class MendWing implements Game {
       const twin = this.mend.left.find((l) => l.x === -p.x && l.y === p.y);
       const node = new Container();
       node.position.set(-p.x, p.y);
-      node.addChild(twin ? bugToken(twin.token, 38) : this.openPlace());
-      onTap(node, () => this.leftTap(), { radius: 56 });
+      node.addChild(twin ? stampedPlace(twin.token) : openPlace());
+      onTap(node, () => this.leftTap(), { radius: PLACE_TAP });
       this.wings[0].addChild(node);
     }
     this.mend.places.forEach((p, i) => {
       const node = new Container();
       node.position.set(p.x, p.y);
       this.drawPlace(i, node);
-      onTap(node, () => this.event(mendTap(this.mend, i), i), { radius: 56 });
+      onTap(node, () => this.event(mendTap(this.mend, i), i), { radius: PLACE_TAP });
       this.wings[1].addChild(node);
       this.places.push(node);
     });
@@ -75,13 +78,14 @@ export class MendWing implements Game {
     for (const token of this.mend.tokens) {
       const node = new Container();
       node.addChild(tile(102, 102), bugToken(token));
-      node.hitArea = new Circle(0, 0, 55);
+      node.hitArea = new Circle(0, 0, STAMP_HIT);
       ctx.stage.addChild(node);
       const drag = draggable(node, ctx.tw, {
         onPick: () => sfx.tick(),
         onDrop: (x, y) => {
           if (this.done) return false;
-          const place = mendPlaceAt(this.mend, x - this.board.x, y - this.board.y);
+          const k = this.board.scale.x;
+          const place = mendPlaceAt(this.mend, (x - this.board.x) / k, (y - this.board.y) / k);
           if (place >= 0) this.event(mendDrop(this.mend, place, token), place);
           return false; // A reusable stamp: back to the tray after every drop.
         },
@@ -94,19 +98,11 @@ export class MendWing implements Game {
     void this.ctx.instruct('bug.mend');
   }
 
-  private openPlace(): Graphics {
-    return new Graphics()
-      .circle(0, 0, 50)
-      .fill(cream)
-      .stroke({ width: 3, color: swatch.orange.line, alpha: 0.6 });
-  }
-
   /** A right-wing place as it is now: its stamp, a faint open place, or (once found) an open place ringed in blue. */
   private drawPlace(i: number, node = this.places[i]) {
     node.removeChildren().forEach((c) => c.destroy({ children: true }));
     const token = this.mend.right[i];
-    if (token !== null) node.addChild(bugToken(token, 38));
-    else node.addChild(this.openPlace());
+    node.addChild(token !== null ? stampedPlace(token) : openPlace());
     if (i === this.mend.wrong && this.mend.found && !this.mend.done)
       node.addChild(new Graphics().circle(0, 0, 50).stroke({ width: 6, color: swatch.blue.line }));
   }
@@ -179,23 +175,23 @@ export class MendWing implements Game {
   }
 
   resize(v: View) {
+    const l = bugLayout(v, this.plan, this.choices.length);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.green.light)
-      .roundRect(165, v.h - 155, v.w - 200, 135, 32)
+      .roundRect(l.trayBox.x, l.trayBox.y, l.trayBox.w, l.trayBox.h, 32)
       .fill(cream);
-    const cy = Math.max(365, (v.h - 160) / 2);
-    this.board.position.set(v.w / 2, cy);
+    this.board.position.set(l.board.x, l.board.y);
+    this.board.scale.set(l.board.scale);
     this.crease.clear();
     for (let y = -225; y < 225; y += 28)
       this.crease
         .moveTo(0, y)
         .lineTo(0, y + 13)
         .stroke({ width: 4, color: swatch.white.fill });
-    const xs = spread(this.choices.length, 175, v.w - 45, 130);
     this.choices.forEach((c, i) => {
-      c.drag.home = { x: xs[i], y: v.h - 87 };
+      c.drag.home = l.tray[i];
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);

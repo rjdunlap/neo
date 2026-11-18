@@ -502,6 +502,7 @@ export const noticeBoard: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  upright: true,
   coplayHint:
     "Cover most of a picture-book page with your hand and say something about it, like 'this bear is all alone!' Let her guess, lift your hand, then swap.",
   offScreen: 'When you pass a sign or poster together, ask: who made this, and why?',

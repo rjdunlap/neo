@@ -35,7 +35,23 @@ import {
   affordable,
   BATCHES,
   batchCost,
+  BOAT_HIT,
   boatTalk,
+  BUTTON_R,
+  CARD_PAD,
+  CARD_W,
+  cardHeight,
+  COIN_HIT_R,
+  COIN_SCALE,
+  COL_W,
+  DAY_W,
+  HEAD_H,
+  ROW_H,
+  standColumns,
+  standLayout,
+  TOWER_GRIP_R,
+  TOWER_GRIP_UP,
+  towerLayout,
   cheaperBoat,
   dayPerTwo,
   forecastChoice,
@@ -60,16 +76,12 @@ import {
   type Help,
   type Insight,
   type Offer,
+  type Cell,
   type Row,
+  type StandLayout,
   type StandPlan,
 } from './logic';
 
-const ROW_H = 100;
-const HEAD_H = 84;
-/** The first table column (the day and its weather), then one narrow column per number. */
-const DAY_W = 84;
-const COL_W = 56;
-const CARD_W = 120;
 /** The cups on the counter are drawn at 0.8 so twelve fit in two rows under the awning. */
 const CUP_SCALE = 0.8;
 /** The seven first friends, pinned so animals added to `CRITTERS` for other games never change a seed's customers. */
@@ -77,26 +89,9 @@ const FRIENDS: CritterName[] = FIRST_CAST.filter((n) => n !== 'pip');
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 /** The two boats' sail colours, seeded per morning. */
 const SAILS = [swatch.red, swatch.blue, swatch.green, swatch.purple, swatch.orange, swatch.teal];
-/** Where the boats sit on the water: their centres, and how far the waterline is above the bottom of the view. */
-const BOAT_X = [280, 540];
-const BOAT_UP = 170;
 /** "2 lemons for 1 shell", for the spoken offer. */
 const shellWords = (n: number) => `${n} ${n === 1 ? 'shell' : 'shells'}`;
 const offerWords = (o: Offer) => `${o.lemons} lemons for ${o.shells} ${o.shells === 1 ? 'shell' : 'shells'}`;
-
-type Cell = 'came' | 'made' | 'sold' | 'left' | 'shells';
-
-/** Where everything sits for the current view; recomputed on every resize. */
-interface Metrics {
-  panelX: number;
-  panelW: number;
-  cx: number;
-  top: number;
-  counterY: number;
-  ground: number;
-  cardsY: number;
-  priceY: number;
-}
 
 class LemonadeStand implements Game {
   readonly plan: StandPlan;
@@ -166,7 +161,7 @@ class LemonadeStand implements Game {
   private readonly picnic: Critter[] = [];
   private readonly trayCups: Container[] = [];
   private readonly friends = new Set<Critter>();
-  private m: Metrics;
+  private m: StandLayout;
   private dayCoins = 0;
   private helpAt = 0;
   private helpedToday = false;
@@ -325,7 +320,12 @@ class LemonadeStand implements Game {
         cost.position.set(10, 66);
         node.addChild(coin, cost);
       }
-      node.hitArea = new Rectangle(-CARD_W / 2 - 6, -this.cardH() / 2 - 6, CARD_W + 12, this.cardH() + 12);
+      node.hitArea = new Rectangle(
+        -CARD_W / 2 - CARD_PAD,
+        -this.cardH() / 2 - CARD_PAD,
+        CARD_W + 2 * CARD_PAD,
+        this.cardH() + 2 * CARD_PAD,
+      );
       onTap(node, () => this.pickBatch(n), { cooldown: 140 });
       this.cards.push({ n, node, box, cost });
     }
@@ -337,9 +337,9 @@ class LemonadeStand implements Game {
         const node = new Container();
         const ring = new Graphics();
         const art = coinArt(value);
-        art.scale.set(1.5);
+        art.scale.set(COIN_SCALE);
         node.addChild(ring, art);
-        node.hitArea = new Circle(0, 0, 66);
+        node.hitArea = new Circle(0, 0, COIN_HIT_R);
         onTap(node, () => this.pickPrice(value), { cooldown: 140 });
         this.coins.push({ value, node, ring });
       }
@@ -347,8 +347,8 @@ class LemonadeStand implements Game {
 
     const openArt = new Container();
     openArt.addChild(label('OPEN', 30, ink));
-    this.open = new RoundButton(openArt, swatch.green, 56, () => void this.openStand());
-    this.help = new RoundButton(bulbArt(), swatch.yellow, 56, () => void this.askHelp());
+    this.open = new RoundButton(openArt, swatch.green, BUTTON_R, () => void this.openStand());
+    this.help = new RoundButton(bulbArt(), swatch.yellow, BUTTON_R, () => void this.askHelp());
 
     ctx.stage.addChild(
       this.backdrop,
@@ -370,42 +370,19 @@ class LemonadeStand implements Game {
       this.open,
       this.help,
     );
-    this.m = this.metrics();
+    this.m = standLayout(this.view, this.plan);
     this.resize(ctx.view);
   }
 
   private cardH() {
-    return this.plan.purse ? 160 : 130;
-  }
-
-  private metrics(): Metrics {
-    const v = this.view;
-    const panelW = DAY_W + this.columns().length * COL_W + 12;
-    const panelX = v.w - panelW - 18;
-    const right = panelX - 14;
-    // The stand sits left of the middle of the space beside the table, leaving the customers' spot on its right clear.
-    const cx = Math.min(Math.max(400, (150 + right) / 2), right - 275);
-    // Spare height (a portrait window) goes above the stand, so the controls stay at the bottom.
-    const extra = Math.max(0, v.h - 768);
-    const top = 138 + extra * 0.5;
-    const counterY = top + 150;
-    return {
-      panelX,
-      panelW,
-      cx,
-      top,
-      counterY,
-      ground: counterY + 108,
-      cardsY: v.h - 150,
-      priceY: v.h - 300,
-    };
+    return cardHeight(this.plan);
   }
 
   // ---------------------------------------------------------------- layout and drawing
 
   resize(v: View) {
     this.view = v;
-    this.m = this.metrics();
+    this.m = standLayout(this.view, this.plan);
     const m = this.m;
     this.backdrop.resize(v);
     this.drawWash();
@@ -413,11 +390,10 @@ class LemonadeStand implements Game {
     this.signText.position.set(m.cx, m.counterY + 70);
     this.tray.position.set(m.cx, m.counterY - 4);
     this.soldOut.position.set(m.cx, m.counterY - 66);
-    this.tally.position.set(m.cx + 218, m.top + (priceChoice(this.plan) ? 80 : 56));
-    this.blanket.position.set(170, m.ground + 14);
+    this.tally.position.copyFrom(m.tally);
+    this.blanket.position.copyFrom(m.blanket);
     // Banner
-    const right = m.panelX - 14;
-    const bw = right - 150;
+    const bw = m.bannerRight - 150;
     this.banner.position.set(150 + bw / 2, 24 + 48);
     this.bannerBox
       .clear()
@@ -432,7 +408,7 @@ class LemonadeStand implements Game {
     this.purseChip.position.set(bw / 2 - 118, 0);
     this.purseText.position.set(52, 0);
     // The table
-    this.table.position.set(m.panelX, 40);
+    this.table.position.set(m.panelX, m.panelY);
     const rows = Math.max(this.plan.days, 1);
     this.tableBox
       .clear()
@@ -443,20 +419,18 @@ class LemonadeStand implements Game {
       .stroke(line(wood.line, 5));
     this.tableBody.position.set(0, HEAD_H);
     // Controls
-    const cards = this.cards.length;
-    const x0 = 150 + CARD_W / 2;
-    this.cards.forEach((c, i) => c.node.position.set(x0 + i * (CARD_W + 14), m.cardsY));
-    this.open.position.set(x0 + (cards - 1) * (CARD_W + 14) + CARD_W / 2 + 14 + 56, m.cardsY);
-    this.coins.forEach((c, i) => c.node.position.set(280 + i * 140, m.priceY));
-    this.help.position.set(190, m.top + 84);
+    this.cards.forEach((c, i) => c.node.position.copyFrom(m.cards[i]));
+    this.open.position.copyFrom(m.open);
+    this.coins.forEach((c, i) => c.node.position.copyFrom(m.coins[i]));
+    this.help.position.copyFrom(m.help);
     // The jetty: a strip of water under the two boats, in the controls' place while the boats wait.
-    const wy = v.h - BOAT_UP;
+    const wy = m.boats[0].y;
     this.water
       .clear()
-      .roundRect(BOAT_X[0] - 130, wy + 8, BOAT_X[1] - BOAT_X[0] + 260, 56, 26)
+      .roundRect(m.boats[0].x - 130, wy + 8, m.boats[1].x - m.boats[0].x + 260, 56, 26)
       .fill({ color: swatch.blue.light, alpha: 0.85 })
       .stroke(line(swatch.blue.fill, 4));
-    this.boats.forEach((b, i) => b.node.position.set(BOAT_X[i], wy));
+    this.boats.forEach((b, i) => b.node.position.copyFrom(m.boats[i]));
     if (this.towerPhase) this.buildTowers();
   }
 
@@ -530,9 +504,7 @@ class LemonadeStand implements Game {
   }
 
   private columns(): Cell[] {
-    // The typical-day level shows the friends who came: on a sold-out day the cups sold say fewer than came.
-    if (this.plan.typical) return ['came', 'made', 'sold', 'left'];
-    return priceChoice(this.plan) ? ['made', 'sold', 'left', 'shells'] : ['made', 'sold', 'left'];
+    return standColumns(this.plan);
   }
 
   private drawCards() {
@@ -570,7 +542,13 @@ class LemonadeStand implements Game {
     if (this.clock < this.litUntil) {
       const pulse = 6 + 2 * Math.sin(this.clock * 6);
       for (const i of this.lit) {
-        g.roundRect(this.m.panelX - 2, 40 + HEAD_H + i * ROW_H - 2, this.m.panelW + 4, ROW_H + 4, 20).stroke({
+        g.roundRect(
+          this.m.panelX - 2,
+          this.m.panelY + HEAD_H + i * ROW_H - 2,
+          this.m.panelW + 4,
+          ROW_H + 4,
+          20,
+        ).stroke({
           width: pulse,
           color: swatch.yellow.fill,
         });
@@ -579,15 +557,17 @@ class LemonadeStand implements Game {
     if (this.towerPhase && this.towerGlow && this.towerTops.length === 3) {
       const top = this.towerTops[tallest(this.towers)].node;
       const r = 62 + 3 * Math.sin(this.clock * 6);
-      g.circle(this.towerLayer.x + top.x, this.towerLayer.y + top.y - this.towerSpots().step * 0.6, r).stroke(
-        {
-          width: 7,
-          color: swatch.yellow.fill,
-        },
-      );
+      g.circle(
+        this.towerLayer.x + top.x,
+        this.towerLayer.y + top.y - this.towerSpots().step * TOWER_GRIP_UP,
+        r,
+      ).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+      });
     }
     if (this.boatPhase) {
-      const wy = this.view.h - BOAT_UP;
+      const wy = this.m.boats[0].y;
       this.boats.forEach((b, i) => (b.node.y = wy + 3 * Math.sin(this.clock * 2 + i * 1.7)));
       if (this.boatMisses >= 2) {
         const b = this.boats[cheaperBoat(this.week[this.index].boats!)].node;
@@ -709,8 +689,8 @@ class LemonadeStand implements Game {
     offers.forEach((offer, i) => {
       const node = boatArt(offer, sails[i].fill, sails[i].line);
       for (const child of node.children) child.eventMode = 'none';
-      node.hitArea = new Rectangle(-110, -150, 220, 200);
-      node.position.set(BOAT_X[i], this.view.h - BOAT_UP);
+      node.hitArea = new Rectangle(BOAT_HIT.x, BOAT_HIT.y, BOAT_HIT.w, BOAT_HIT.h);
+      node.position.copyFrom(this.m.boats[i]);
       node.scale.set(0.01);
       onTap(node, () => void this.pickBoat(i), { cooldown: 200 });
       this.jetty.addChild(node);
@@ -773,21 +753,7 @@ class LemonadeStand implements Game {
 
   /** Where the three towers stand (in the tower layer, which sits at the origin) and how far apart their friends are. */
   private towerSpots() {
-    const right = this.m.panelX - 14;
-    const left = 270;
-    const gap = Math.min(170, (right - left) / 3);
-    const mid = (left + right) / 2;
-    const baseY = this.view.h - 70;
-    const room = baseY - (this.m.top + 20) - 70;
-    const step = Math.min(56, room / Math.max(14, ...this.towers.map((h) => h + 1)));
-    return {
-      xs: [mid - gap, mid, mid + gap],
-      baseY,
-      step,
-      gap,
-      left: mid - gap * 1.5,
-      right: mid + gap * 1.5,
-    };
+    return towerLayout(this.view, this.m, this.towers);
   }
 
   /** Before the last day, the friends who came on the three sunny days stand as towers beside the table. */
@@ -819,12 +785,12 @@ class LemonadeStand implements Game {
     this.clearTowerTops();
     this.towerFaces.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const c of this.towerLayer.children.slice(2)) c.destroy({ children: true });
-    const { xs, baseY, step, gap, left, right } = this.towerSpots();
+    const { xs, baseY, step, gap, board } = this.towerSpots();
     this.towerBoard
       .clear()
-      .roundRect(left - 10, this.m.top - 10 + 5, right - left + 20, baseY - this.m.top + 50, 26)
+      .roundRect(board.x, board.y + 5, board.w, board.h, 26)
       .fill(wood.line)
-      .roundRect(left - 10, this.m.top - 10, right - left + 20, baseY - this.m.top + 50, 26)
+      .roundRect(board.x, board.y, board.w, board.h, 26)
       .fill(0xfffaf0)
       .stroke(line(wood.line, 5));
     const size = (step * 1.35) / 250;
@@ -847,7 +813,7 @@ class LemonadeStand implements Game {
         grip.position.set(x, baseY - k * step);
         grip.addChild(c);
         c.eventMode = 'none';
-        grip.hitArea = new Circle(0, -step * 0.6, 55);
+        grip.hitArea = new Circle(0, -step * TOWER_GRIP_UP, TOWER_GRIP_R);
         this.towerLayer.addChild(grip);
         const drag = draggable(grip, this.ctx.tw, {
           onPick: () => sfx.pop(4 + Math.min(6, t * 2)),
@@ -1436,6 +1402,7 @@ export const lemonadeStand: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
+  upright: true,
   coplayHint:
     'A grown-up reads the forecast aloud like a weather reporter and plays the first friend in line; she decides the cups.',
   offScreen:

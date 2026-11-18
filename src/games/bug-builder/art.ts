@@ -2,12 +2,28 @@ import { Container, Graphics } from 'pixi.js';
 import { label } from '../../ui/text';
 import { cream, ink, swatch } from '../../art/palette';
 import { shapePath } from '../../art/shapes';
-import { BUG_TOKENS, type KindWant } from './logic';
+import { BUG_TOKENS, PLACE_TAP, signSize, type KindWant } from './logic';
 
 export function bugToken(token: number, size = 32): Graphics {
   const t = BUG_TOKENS[token],
     color = swatch[t.color];
   return shapePath(new Graphics(), t.shape, size).fill(color.fill).stroke({ width: 4, color: color.line });
+}
+/** An open place on a wing: a faint cream disc where a stamp can go. */
+export function openPlace(): Graphics {
+  return new Graphics()
+    .circle(0, 0, 50)
+    .fill(cream)
+    .stroke({ width: 3, color: swatch.orange.line, alpha: 0.6 });
+}
+/**
+ * A stamp on a place that can still be tapped (lifted on the count levels, chosen on Mend the wing), over an unseen disc
+ * the size of the place's touch circle: a small stamp such as a triangle then measures as large as it is to touch.
+ */
+export function stampedPlace(token: number): Container {
+  const c = new Container();
+  c.addChild(new Graphics().circle(0, 0, PLACE_TAP).fill({ color: 0xffffff, alpha: 0 }), bugToken(token, 38));
+  return c;
 }
 /** A wing uses the body's center as its hinge, including the spots added by the game. */
 export function bugWing(rows: number, columns: number, side: number): Graphics {
@@ -91,10 +107,7 @@ export class CountSign extends Container {
     private readonly kind: KindWant | null = null,
   ) {
     super();
-    const cols = Math.min(3, want),
-      rows = Math.ceil(want / 3);
-    this.halfW = Math.max(70, (cols * SIGN_GAP) / 2 + 18);
-    this.halfH = (88 + rows * SIGN_GAP + 18) / 2;
+    ({ halfW: this.halfW, halfH: this.halfH } = signSize(want));
     this.card
       .roundRect(-this.halfW, -this.halfH, this.halfW * 2, this.halfH * 2, 22)
       .fill(cream)

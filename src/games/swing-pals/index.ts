@@ -36,6 +36,8 @@ import {
   ropeOf,
   seatAt,
   swingLayout,
+  finaleRow,
+  HOOK_R,
   together,
   watchTime,
   WEIGHT,
@@ -497,7 +499,7 @@ class SwingPals implements Game {
         const node = new Container();
         const ring = new Graphics();
         node.addChild(ring);
-        onTap(node, () => this.chooseHook(hook), { radius: 60 });
+        onTap(node, () => this.chooseHook(hook), { radius: HOOK_R });
         this.hookLayer.addChild(node);
         this.hookTargets.push({ node, ring, hook });
       }
@@ -1335,14 +1337,12 @@ class SwingPals implements Game {
     const row = new Container();
     row.eventMode = 'none';
     this.ctx.stage.addChild(row);
-    const n = friends.length;
-    const gap = Math.min(150, (this.view.w - 320) / Math.max(1, n - 1));
-    const x0 = this.view.w / 2 - (gap * (n - 1)) / 2 + 60;
+    const spots = finaleRow(friends.length, this.view);
     const critters = this.finaleCritters;
     friends.forEach((f, i) => {
       const c = new Critter(SPECS[f]);
       c.scale.set(FRIEND_SCALE[WEIGHT[f]] * 0.85);
-      c.position.set(x0 + i * gap, this.view.h - 40);
+      c.position.copyFrom(spots[i]);
       c.alpha = 0;
       row.addChild(c);
       critters.push(c);
@@ -1449,6 +1449,7 @@ export const swingPals: GameModule = {
     toddler: 'At the playground, push in time and feel it go higher.',
   },
   touchDemo: true,
+  upright: true,
   hubIcon: () => new SwingIcon(),
   sticker,
   create: (ctx) => new SwingPals(ctx),

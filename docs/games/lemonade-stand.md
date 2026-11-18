@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/lemonade-stand; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `lemonade-stand` · **Land:** Cozy Village · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `lemonade-stand` · **Land:** Cozy Village · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** forecasting, comparing, money, data
 
@@ -45,3 +45,5 @@ Level 7 *A typical sunny day*: five days at price 1 with no events, purse or boa
 Fresh look: each round draws an awning colour (eight) and a cup trim (never yellow, never the awning's colour) from the seed, after the week is made so no seed's days change; the trim colours the straw and a thin rim on every in-round cup. The sticker and hub icon stay as they were.
 
 Not built: a saved week or market-week chart in the journal, recipe quality and advertising, a "close the stand" button (the home button always works), the Maker Harbor tickets and fair board that this game is the first slice of, and a couch version.
+
+**Upright on a phone (2026-11-18, upright batch 9):** every level plays upright. Layout moved into `standLayout` and `towerLayout` in `logic.ts`. Upright, batch cards clear the guide's corner (the first card covered it at levels 1–4 and 7); the banner runs the full width with the table under it (on levels 3–7 it was crushed to 266 units and the counter ran 19 units off the left edge); the lightbulb sits above the awning and the picnic blanket in front of the stand; level 7's towers stand 127 units apart (they were 49 apart under 110-unit drag grips). The price coins are drawn about 106 units on every view. Layout test: `upright.test.ts` in the game folder.

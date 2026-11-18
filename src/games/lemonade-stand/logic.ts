@@ -617,3 +617,150 @@ export function forecastChoice(
   const { made, price } = bestChoice(plan, { ...forecast, noise: 1 }, 0, purse);
   return { made, price };
 }
+
+// ---------------------------------------------------------------- where things sit
+
+/** The table: a row's and the header's height, the first column (the day and its weather), then one narrow column per number. */
+export const ROW_H = 100;
+export const HEAD_H = 84;
+export const DAY_W = 84;
+export const COL_W = 56;
+/** A batch card's face; its touch area is `CARD_PAD` wider all round. */
+export const CARD_W = 120;
+export const CARD_PAD = 6;
+export const cardHeight = (plan: Pick<StandPlan, 'purse'>) => (plan.purse ? 160 : 130);
+/** A price coin's touch circle, and the scale its art is drawn at (106 units across). */
+export const COIN_HIT_R = 66;
+export const COIN_SCALE = 1.65;
+/** OPEN and the lightbulb: the drawn radius, and the touch circle a round button gives it. */
+export const BUTTON_R = 56;
+export const BUTTON_HIT_R = BUTTON_R + 14;
+/** A lemon boat's touch box, from its place on the waterline. */
+export const BOAT_HIT = { x: -110, y: -150, w: 220, h: 200 };
+/** The touch circle on a tower's top friend, `TOWER_GRIP_UP` steps above the friend's feet. */
+export const TOWER_GRIP_R = 55;
+export const TOWER_GRIP_UP = 0.6;
+
+export type Cell = 'came' | 'made' | 'sold' | 'left' | 'shells';
+
+/** The table's number columns. The typical-day level shows the friends who came: on a sold-out day the cups sold say fewer. */
+export const standColumns = (plan: StandPlan): Cell[] =>
+  plan.typical
+    ? ['came', 'made', 'sold', 'left']
+    : priceChoice(plan)
+      ? ['made', 'sold', 'left', 'shells']
+      : ['made', 'sold', 'left'];
+
+interface Spot {
+  x: number;
+  y: number;
+}
+
+/** Where everything sits for a view; the scene places from this on every resize. Points are centres. */
+export interface StandLayout {
+  /** The table of days: its left edge, top and width. Row `i` starts `HEAD_H + i * ROW_H` below the top. */
+  panelX: number;
+  panelY: number;
+  panelW: number;
+  /** The forecast banner runs from x 150 to here. */
+  bannerRight: number;
+  /** The stand: its middle, the awning's top, the counter and the ground the friends stand on. */
+  cx: number;
+  top: number;
+  counterY: number;
+  ground: number;
+  /** The day's tally, beside the awning. */
+  tally: Spot;
+  blanket: Spot;
+  cards: Spot[];
+  open: Spot;
+  /** One per price, when she chooses one. */
+  coins: Spot[];
+  help: Spot;
+  /** The two lemon boats on the waterline. */
+  boats: Spot[];
+}
+
+/**
+ * The stand's layout. Sideways, the table stands at the top right, the stand beside it and the controls along the bottom
+ * from the guide's corner. Upright (768 wide), the banner runs the full width with the table under it, the stand keeps to
+ * the left of the table, the lightbulb sits above the awning and the picnic in front of the stand, and the cards start
+ * clear of the guide's corner.
+ */
+export function standLayout(v: { w: number; h: number; upright?: boolean }, plan: StandPlan): StandLayout {
+  const up = !!v.upright;
+  const panelW = DAY_W + standColumns(plan).length * COL_W + 12;
+  const panelX = v.w - panelW - 18;
+  const right = panelX - 14;
+  // Sideways, the stand sits left of the middle of the space beside the table, leaving the customers' spot on its right
+  // clear. Upright there is only room for the stand itself: it keeps its counter (160 either side) on the screen.
+  const cx = up ? Math.max(165, right - 275) : Math.min(Math.max(400, (150 + right) / 2), right - 275);
+  // Spare height (a portrait window) goes above the stand, so the controls stay at the bottom.
+  const extra = Math.max(0, v.h - 768);
+  const top = 138 + extra * 0.5;
+  const counterY = top + 150;
+  const ground = counterY + 108;
+  const cardsY = v.h - 150;
+  // Upright the prices sit a little higher, so a coin's touch circle stays off the taller purse cards.
+  const priceY = v.h - (up ? 320 : 300);
+  const pitch = CARD_W + 14;
+  const x0 = (up ? 162 : 150) + CARD_W / 2;
+  const lastCard = x0 + (BATCHES.length - 1) * pitch;
+  const twoChips = priceChoice(plan);
+  return {
+    panelX,
+    panelY: up ? 134 : 40,
+    panelW,
+    bannerRight: up ? v.w - 18 : right,
+    cx,
+    top,
+    counterY,
+    ground,
+    tally: { x: up ? Math.min(cx + 218, right - 66) : cx + 218, y: top + (twoChips ? 80 : 56) },
+    blanket: up ? { x: cx, y: ground + 120 } : { x: 170, y: ground + 14 },
+    cards: BATCHES.map((_, i) => ({ x: x0 + i * pitch, y: cardsY })),
+    open: {
+      x: up ? lastCard + CARD_W / 2 + CARD_PAD + 4 + BUTTON_HIT_R : lastCard + CARD_W / 2 + 14 + BUTTON_R,
+      y: cardsY,
+    },
+    coins: twoChips ? plan.prices.map((_, i) => ({ x: 280 + i * 140, y: priceY })) : [],
+    help: up ? { x: 215, y: top - 142 } : { x: 190, y: top + 84 },
+    boats: [280, 540].map((x) => ({ x, y: v.h - 170 })),
+  };
+}
+
+/** Where the three towers of a typical sunny day stand, and their board. */
+export interface TowerLayout {
+  xs: number[];
+  /** The friends' feet, and how far apart the friends in a tower are. */
+  baseY: number;
+  step: number;
+  gap: number;
+  /** The board behind the towers. */
+  board: { x: number; y: number; w: number; h: number };
+}
+
+/**
+ * The towers stand beside the table: sideways right of the lightbulb and down to the bottom of the view; upright across
+ * the space left of the table, ending above the guide's corner. The towers are at least a grip apart.
+ */
+export function towerLayout(
+  v: { w: number; h: number; upright?: boolean },
+  L: Pick<StandLayout, 'panelX' | 'top'>,
+  towers: readonly number[],
+): TowerLayout {
+  const right = L.panelX - (v.upright ? 24 : 14);
+  const left = v.upright ? 24 : 270;
+  const gap = Math.min(170, (right - left) / 3);
+  const mid = (left + right) / 2;
+  const baseY = v.h - (v.upright ? 215 : 70);
+  const room = baseY - (L.top + 20) - 70;
+  const step = Math.min(56, room / Math.max(14, ...towers.map((h) => h + 1)));
+  return {
+    xs: [mid - gap, mid, mid + gap],
+    baseY,
+    step,
+    gap,
+    board: { x: mid - gap * 1.5 - 10, y: L.top - 10, w: gap * 3 + 20, h: baseY - L.top + 50 },
+  };
+}
