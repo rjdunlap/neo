@@ -259,7 +259,7 @@ class MeadowPens implements Game {
       // The field's ask and its demonstration counts are held, so they wait for the thanks to end.
       if (line) await line;
       if (!this.alive) return;
-      await this.ctx.say('meadow.field-ask');
+      await this.ctx.instruct('meadow.field-ask');
       if (!this.alive) return;
       await this.startField();
       return;
@@ -289,11 +289,12 @@ class MeadowPens implements Game {
   }
 
   private askAloud() {
-    if (this.task.kind === 'field') return this.ctx.say('meadow.field-ask');
+    // Each friend's request is the line the guide repeats and the caption keeps until the next friend asks.
+    if (this.task.kind === 'field') return this.ctx.instruct('meadow.field-ask');
     const r = this.request;
     return r.fence === undefined
-      ? this.ctx.say('meadow.ask', { n: r.squares })
-      : this.ctx.say('meadow.ask3', { n: r.fence });
+      ? this.ctx.instruct('meadow.ask', { n: r.squares })
+      : this.ctx.instruct('meadow.ask3', { n: r.fence });
   }
 
   /** A tap on the friend or the bubble: the request again, free. */

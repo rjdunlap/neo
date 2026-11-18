@@ -557,10 +557,11 @@ class MeasuringPost implements Game {
       if (this.phase === 'watch' && !this.rolling) {
         this.rolling = true;
         this.watchLine = this.ctx.say('measure.kg.watch');
-      } else void this.ctx.say(`measure.kg.ask.${this.current.table!.kg}` as LineId);
+      } else void this.ctx.instruct(`measure.kg.ask.${this.current.table!.kg}` as LineId);
       return;
     }
-    void this.ctx.say(
+    // The task's question is the line the guide repeats and the caption keeps.
+    void this.ctx.instruct(
       `measure.${this.plan.mode === 'common' ? 'ask3' : 'ask'}.${this.current.attribute}` as LineId,
     );
   }

@@ -85,6 +85,8 @@ class StoryWeaver implements Game {
   /** Level 1: seconds this page has sat empty, and the pages already nudged. */
   private quiet = 0;
   private readonly nudged = new Set<number>();
+  /** Level 3: the feeling or its reason has been asked for with `ctx.instruct`, so it is the line the guide repeats. */
+  private phaseAsked = false;
   private readonly seed: number;
 
   constructor(private readonly ctx: GameContext) {
@@ -440,7 +442,10 @@ class StoryWeaver implements Game {
     if (placed) {
       sfx.pop(3);
       const gone = r.remove(slot.part);
-      if (gone.length) this.refresh();
+      if (gone.length) {
+        this.refresh();
+        this.askAfterRemoval(slot.part);
+      }
       return;
     }
     const want = slot.part;
@@ -449,6 +454,17 @@ class StoryWeaver implements Game {
     this.refresh();
     if ((want === 'try' || want === 'ending') && r.active === 'problem')
       void this.ctx.say('weaver.needproblem');
+  }
+
+  /**
+   * Level 3: a tile taken back after the feeling or its reason was asked for leaves that ask untrue, so the guide's line
+   * goes back to what is asked now: the feeling again, or the level's instruction when the story itself has a gap.
+   */
+  private askAfterRemoval(part: Part) {
+    if (!this.phaseAsked || part === 'reason') return;
+    if (part === 'feeling') return void this.ctx.instruct('weaver.feel', { who: this.who() });
+    this.phaseAsked = false;
+    void this.ctx.instruct('weaver.three');
   }
 
   private async tapTile(t: Tile) {
@@ -476,7 +492,9 @@ class StoryWeaver implements Game {
     this.refresh();
     if (res.cleared.length) await this.ctx.say('weaver.cleared');
     if (part === 'feeling') {
-      await this.ctx.say('weaver.because', { who: this.who(), feeling: t.id });
+      // The feeling's reason is a new ask: the guide repeats it and the caption keeps it.
+      this.phaseAsked = true;
+      await this.ctx.instruct('weaver.because', { who: this.who(), feeling: t.id });
       this.busy = false;
       return;
     }
@@ -506,7 +524,8 @@ class StoryWeaver implements Game {
         // An answer to the owl was just read in full.
         if (!res.answered) await this.readAloud(storyText(r.story, 3));
         this.refresh();
-        await this.ctx.say('weaver.feel', { who: this.who() });
+        this.phaseAsked = true;
+        await this.ctx.instruct('weaver.feel', { who: this.who() });
       }
     }
     this.refresh();

@@ -23,6 +23,7 @@ vi.mock('../../art/scenery', async () => {
 function make(level: 4 | 5) {
   const blocked = new Map<string, (() => void)[]>();
   const hold = new Set<string>();
+  const instructed: string[] = [];
   const companion = Object.assign(new Container(), { cheer: vi.fn(), wiggle: vi.fn() });
   const say = vi.fn((line: string) => {
     if (!hold.has(line)) return Promise.resolve();
@@ -39,7 +40,12 @@ function make(level: 4 | 5) {
     pet: { cheer: vi.fn() },
     particles: { burst: vi.fn() },
     say,
-    instruct: vi.fn(() => Promise.resolve()),
+    // The level's instruction resolves at once; a question's ask goes through `instruct` too (the guide repeats it and
+    // the caption keeps it) and is recorded with the spoken lines, so the order checks below see it and can hold it.
+    instruct: vi.fn((line: string) => {
+      instructed.push(line);
+      return line.startsWith('meadow.instruct.') ? Promise.resolve() : say(line);
+    }),
     finish: vi.fn(),
     tw: {
       wait: vi.fn(() => Promise.resolve()),
@@ -69,10 +75,25 @@ function make(level: 4 | 5) {
     blocked.delete(line);
   };
   g.start();
-  return { g, ctx, say, tap, settle, flush, card, hold, blocked, release };
+  return { g, ctx, say, instructed, tap, settle, flush, card, hold, blocked, release };
 }
 
 describe('Meadow Pens fixed-field input and accounting', () => {
+  it.each([4, 5] as const)(
+    'level %i: the question is the instruction the guide repeats, not a passing line',
+    async (level) => {
+      const { g, instructed, settle } = make(level);
+      await settle();
+      const ask =
+        g.task.kind === 'parts'
+          ? 'meadow.ask5'
+          : g.task.material === 'grass'
+            ? 'meadow.ask4.grass'
+            : 'meadow.ask4.fence';
+      expect(instructed).toEqual([`meadow.instruct.${level}`, ask]);
+    },
+  );
+
   it('comparison targets highlight immediately before held badge speech, and unequal questions replay the same label', async () => {
     const { g, say, tap, settle, card, hold, blocked, flush, release } = make(4);
     await settle();

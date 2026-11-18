@@ -510,7 +510,7 @@ class PaintMixer implements Game {
       this.nextTurn();
       this.refresh();
       this.busy = false;
-      const ask = () => void this.ctx.say('pm.different-amount');
+      const ask = () => void this.ctx.instruct('pm.different-amount');
       this.unasked = ask;
       await line;
       if (this.unasked === ask) this.askNow();
