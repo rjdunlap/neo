@@ -1,0 +1,5 @@
+# 2026-11-18 — Thumb fixes for Sudoku Garden and Pond Conga (PR #1817)
+
+**Changed:** Sudoku Garden's upright `phoneLayout` (9 × 9 squares 84 units, 6 × 6 squares 96, numbers 100, buttons 88 high) and Pond Conga's Hint and Start over (88 units high); `grownup-thumbs.test.ts` table updated, Pond Conga off the `UNDER` list, Sudoku Garden stays on it (9 × 9 square 42.7 px).
+**Ran:** `npm run typecheck`; vitest for both game folders and `grownup-thumbs.test.ts` (7 files, 124 tests); eslint on both folders; `BROWSER_SUITE=uprightgames` at 390 × 844 by real touches: Sudoku Garden `PHONE_LEVELS=7,2,8` (one sticker each, 19, 41 and 110 touches) and Pond Conga level 9 with `PHONE_SECONDS=240` (33 touches, one sticker; it does not finish in the default 90 seconds); upright screenshots of Sudoku Garden levels 8 and 2 and Pond Conga level 9 looked at. The first Sudoku run failed one early assertion while the dev server warmed and passed on rerun unchanged (flake).
+**Not run:** `npm run build`, the full unit suite locally (CI runs both), offline, world, sideways or iPad browser play (those layouts are unchanged and covered by layout tests).
