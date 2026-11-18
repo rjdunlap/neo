@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/helper-house; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `helper-house` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `helper-house` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** systems, logic, cause-effect, testing
 
@@ -45,3 +45,5 @@
 **9 Greenhouse cases** (school, range 2–9): the level 8 board starting at heater 4, fan 4 under three case cards (130 × 110; tapping one speaks its name and counts nothing). One Watch plays the ordinary day, the heat wave and the cold snap in order at 0.6 s a step with a 0.8 s beat between, the jar counting the case being watched. A case that meets the goal gets a leaf stamp and the pet says `hh.case.passed`; the Watch stops at the end of the first case that does not, its card stays lit and the failure line does not name it. Moving a line, Undo, Show me, Start again and the supported finish clear the stamps. Only (3, 4) of the 36 boards is accepted; of the 35 failing boards 34 stop on the ordinary day and the start board (4, 4) on the heat wave, so the cold snap is always a confirmation. Rounds differ only in friend and house colour; the help lines are level 8's. `misses` stays 0. The step's phases (read, pulse, card, act) now scale with the step length, which fixes the helper never visibly acting in the how-to demos at the quick pace.
 
 **What the guide repeats.** At level 6 the guess question ("Will the nook warm up faster? Tap the hare for faster, or the two flames for the same.") is an instruction (`ctx.instruct`) while the two picture buttons are up; closing the guess (a guess, Watch, Step, a moved line or Help) gives the level's instruction back. A guess's reply and Watch pressed over the open question are said straight after, so the whole level instruction is not spoken over the day. The offer after misses, the replies and the reasons stay `say`.
+
+**Upright on a phone (2026-11-18, upright batch 9):** every level plays upright. Bug fixed: levels 3–5 returned a null layout (an empty board) on the small captioned phone (768 × 1,206) and a short one (375 × 601), because the second rule row ended inside the guide's corner. The offer and guess buttons are now placed from `houseLayout`. That fix is proven by the layout test (`upright.test.ts`) only; the touch play ran at 390 × 844 without captions.

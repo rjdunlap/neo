@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/notice-board; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `notice-board` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `notice-board` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** media, authorship, evidence, purpose
 
@@ -32,3 +32,5 @@ Levels: 1 "Who made it?" (pre-K 1, school 1): three posters, each with a stamp i
 Misses and hints: a wrong badge, a heard-it or elsewhere friend, and a wrong basket are each a miss; friend taps at level 3 are free. Two misses on one poster glow its answer (one hint per poster, shared with Show me). One sticker per round. Voice lines `noticeboard.*` (89, plus `game.notice-board` with its title clip rendered). Cozy Village is its home land (the 20th game), fallback Tinker Lab. The ghost finger plays every level. Co-play and off-screen lines are on the grown-ups' page. Not built: Notice Board 4–5 (what did it leave out, who is behind it), the grown-ups' "Who made this?" card and the hand-frame co-play role. Open: the person and device checks in DEVICE-CHECKS.
 
 **A lesson line never holds the next poster (U7 fix batch 14, 2026-11-12).** The right answer's line (`why.*`, `true`, `label.*`, `tell`, `sell`) starts and the pin, photo or fold follow at once; the next poster is seated after the existing short beat with input open while the lesson plays. The new poster's reading waits for the line to end, or is read at once on a tap on the poster, a guide tap or a free friend tap; a judged tap or a Show me hint drops it. Level 2's `saw` and `stretched` stay held, and the last poster's line is heard out before `done`.
+
+**Upright on a phone (2026-11-18, upright batch 9):** every level plays upright with no layout change; `upright.test.ts` in the game folder reads the layout on four phone views and a short one.

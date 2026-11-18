@@ -725,7 +725,8 @@ export { overlaps as rectsOverlap };
 
 /**
  * Where one or two swings hang in a view: seats all at one height, hooks at different heights above them, each swing in its
- * own column, every arc at the bell height clear of the pet's corner and the shell's buttons. Same line on every view.
+ * own column, every arc at the bell height clear of the pet's corner and the shell's buttons. The seats hang at `SEAT_UP`,
+ * except two swings upright (below).
  *
  * Two swings on a phone held upright (768 wide) hang higher, above the pet's corner, so their columns take the whole
  * width: beside the pet the ropes came out half as long and the three hook targets lay over each other.
