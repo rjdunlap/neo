@@ -893,9 +893,13 @@ export class WoodsMail implements Game {
     const h = this.houses[i];
     const check = checkStop(trip, this.planned, i, this.plan.mode === 'compare');
     if (check === 'planned') {
+      // A finished plan was instructed with "Tap the green arrow"; taking a stop out hides the arrow, so the undo
+      // line becomes the instruction. An unfinished plan keeps the letters' own instruction.
+      const wasReady = this.planned.length === trip.length;
       this.planned = this.planned.slice(0, this.planned.indexOf(i));
       sfx.whoosh();
-      void this.ctx.say('mail.route-undo');
+      if (wasReady) void this.ctx.instruct('mail.route-undo');
+      else void this.ctx.say('mail.route-undo');
     } else if (check === 'ok') {
       this.planned.push(i);
       sfx.pop(6 + this.planned.length);
