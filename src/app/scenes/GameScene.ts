@@ -6,7 +6,7 @@ import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
 import { audio } from '../../audio/engine';
 import { isSilent, music } from '../../audio/music';
-import { sfx } from '../../audio/sfx';
+import { onBoing, sfx } from '../../audio/sfx';
 import { soundCount } from '../../audio/sound-count';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
@@ -212,6 +212,7 @@ export class GameScene extends Scene {
     this.help.alpha = 0.6;
     this.ui.addChild(this.caption, this.pet, this.home, this.help);
     this.place = captionPlace(this.view, this.captionOn());
+    onBoing(this.sawBoing);
     this.ring.visible = false;
     window.addEventListener('pointerdown', this.touchDown, true);
     window.addEventListener('pointerup', this.touchUp);
@@ -273,11 +274,23 @@ export class GameScene extends Scene {
         this.instruction = { id, vars };
         // One wording, shown and said: the eye and the ear get the same option, and the clip is still found by its text.
         const text = voice.line(id, vars);
-        this.caption.show(text);
-        return this.whileHere(this.held.line(voice.speak(text)));
+        const spoken = voice.speak(text);
+        this.caption.instruct(text, spoken);
+        return this.whileHere(this.held.line(spoken));
       },
-      say: (id, vars) => this.whileHere(this.held.line(voice.say(id, vars))),
-      sayIn: (id, preset, vars) => this.whileHere(this.held.line(voice.sayIn(id, preset, vars))),
+      // A hint, a reason, praise: shown in the band while it is said, so a reader with the sound off gets it too.
+      say: (id, vars) => {
+        const text = voice.line(id, vars);
+        const spoken = voice.speak(text);
+        this.caption.say(text, spoken);
+        return this.whileHere(this.held.line(spoken));
+      },
+      sayIn: (id, preset, vars) => {
+        const text = voice.line(id, vars);
+        const spoken = voice.speakIn(text, preset);
+        this.caption.say(text, spoken);
+        return this.whileHere(this.held.line(spoken));
+      },
       finish: (result) => this.finish(result),
     };
     return (this.game = this.mod.create(ctx));
@@ -299,9 +312,15 @@ export class GameScene extends Scene {
     if (this.game?.sayWaitingAsk?.()) return;
     if (!this.instruction) return;
     const text = voice.line(this.instruction.id, this.instruction.vars);
-    this.caption.show(text);
-    void voice.speak(text);
+    this.caption.instruct(text, voice.speak(text));
   }
+
+  /** A wrong answer's boing, for a reader who cannot hear it: the guide tilts and the band wobbles. Nothing is counted. */
+  private readonly sawBoing = () => {
+    if (!this.caption.placed || !this.game || this.helpCard || this.finished) return;
+    this.pet.tilt();
+    this.caption.wobble();
+  };
 
   private captionOn(): boolean {
     return captionShows(this.band, store.data.settings);
@@ -367,9 +386,10 @@ export class GameScene extends Scene {
     // While one of the game's lines plays the guide bobs, and a board tap that did nothing meanwhile gets a soft tick (U7 R5).
     this.pet.talking = this.held.talking && !this.finished;
     // The words go while the card or the result is up; `pauseActions` takes them off under the pause sheet.
+    this.caption.update(dt);
     this.caption.visible =
       this.caption.placed &&
-      !!this.caption.text &&
+      this.caption.wanted &&
       !!this.game &&
       !this.helpCard &&
       !this.finished &&
@@ -452,6 +472,9 @@ export class GameScene extends Scene {
 
   destroy() {
     this.gone = true;
+    // Only our own listener: a later round may already have set its own.
+    const heard = onBoing(null);
+    if (heard !== this.sawBoing) onBoing(heard);
     window.removeEventListener('pointerdown', this.touchDown, true);
     window.removeEventListener('pointerup', this.touchUp);
     window.removeEventListener('pointercancel', this.touchUp);
@@ -472,9 +495,9 @@ export class GameScene extends Scene {
   private onShellButton(e: PointerEvent): boolean {
     const at = new Point();
     this.app.renderer.events.mapPositionToPoint(at, e.clientX, e.clientY);
-    return [this.pet, this.home, this.help, this.caption].some(
-      (b) => b.visible && b.getBounds().containsPoint(at.x, at.y),
-    );
+    // The bubble lies over the board and takes no touch, so a touch on it is a touch on the board.
+    const buttons = [this.pet, this.home, this.help, ...(this.caption.overBoard ? [] : [this.caption])];
+    return buttons.some((b) => b.visible && b.getBounds().containsPoint(at.x, at.y));
   }
 
   private whileHere(spoken: Promise<void>): Promise<void> {

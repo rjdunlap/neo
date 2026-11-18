@@ -3,11 +3,14 @@ import { SCRIPT, type LineId } from '../content/voice-script';
 import { computeView, NO_INSETS } from '../engine/view';
 import { BANDS } from '../progress/bands';
 import {
+  ASIDE_MIN,
+  BUBBLE_W,
   CAPTION_BUDGET,
   CAPTION_SIZES,
   RAIL_W,
   SLOT_STAND_IN,
   STRIP_H,
+  CaptionLines,
   captionPlace,
   captionShows,
   captionSize,
@@ -82,8 +85,8 @@ describe('where the caption sits', () => {
     expect(Math.round(captionPlace(small, true).game.h)).toBe(1206);
   });
 
-  it('upright on a screen shorter than the small phone: no strip', () => {
-    expect(captionPlace(computeView(375, 640, NO_INSETS, true), true).mode).toBe('none');
+  it('upright on a screen shorter than the small phone: no strip, the bubble instead', () => {
+    expect(captionPlace(computeView(375, 640, NO_INSETS, true), true).mode).toBe('bubble');
   });
 
   it('sideways: a rail down the left, the board moved right by it and still at least the design width', () => {
@@ -97,17 +100,26 @@ describe('where the caption sits', () => {
     }
   });
 
-  it('an iPad-shaped screen has no side to spare, so no band and the whole view for the game', () => {
-    const p = captionPlace(ipad, true);
-    expect(p.mode).toBe('none');
-    expect(p.game).toBe(ipad);
-    expect(captionPlace(computeView(1180, 820), true).mode).toBe('none');
+  it('an iPad-shaped screen has no side to spare: the whole view for the game and a bubble above the guide', () => {
+    for (const v of [ipad, computeView(1180, 820), computeView(768, 1024, NO_INSETS, true)]) {
+      const p = captionPlace(v, true);
+      expect(p.mode).toBe('bubble');
+      expect(p.game).toBe(v);
+      expect(p.dx).toBe(0);
+      const b = p.band!;
+      // On screen, no wider than the bubble's most, and its foot clear of the guide's corner (170 units tall).
+      expect(b.x).toBe(0);
+      expect(b.w).toBeLessThanOrEqual(Math.min(v.w, BUBBLE_W));
+      expect(b.y).toBeGreaterThan(0);
+      expect(b.y + b.h).toBeLessThanOrEqual(v.h - 170);
+    }
   });
 });
 
 describe('the words fit', () => {
   const strip = captionPlace(computeView(375, 667, NO_INSETS, true), true);
   const rail = captionPlace(computeView(568, 320), true);
+  const bubble = captionPlace(computeView(768, 1024, NO_INSETS, true), true);
 
   it('wraps by whole words', () => {
     expect(wrapCount('one two three', 13)).toBe(1);
@@ -145,13 +157,90 @@ describe('the words fit', () => {
     expect(over).toEqual([]);
   });
 
-  it('every instruction option fits the strip and the rail without being cut', () => {
+  it('every instruction option fits the strip, the rail and the bubble without being cut', () => {
     const cut = ids.flatMap((id) =>
       (SCRIPT[id] as readonly string[])
         .map(filled)
-        .filter((t) => captionSize(t, strip) === null || captionSize(t, rail) === null)
+        .filter((t) => [strip, rail, bubble].some((place) => captionSize(t, place) === null))
         .map((t) => `${id} (${t.length}): ${t}`),
     );
     expect(cut).toEqual([]);
+  });
+});
+
+describe('what the band shows from moment to moment', () => {
+  /** A line's speech, ended by hand. */
+  function speech() {
+    let end = () => {};
+    const done = new Promise<void>((resolve) => (end = resolve));
+    return { done, end };
+  }
+  const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  it('shows the instruction, and says whether the words changed', () => {
+    const lines = new CaptionLines();
+    expect(lines.text).toBe('');
+    expect(lines.instruct('Tap the biggest one.', speech().done)).toBe(true);
+    expect(lines.instruct('Tap the biggest one.', speech().done)).toBe(false);
+    expect(lines.text).toBe('Tap the biggest one.');
+    expect(lines.isAside).toBe(false);
+  });
+
+  it('a line said in between takes the place until it is spoken, then gives the instruction back', async () => {
+    const lines = new CaptionLines();
+    lines.instruct('Which is next?', speech().done);
+    const hint = speech();
+    expect(lines.say('Look at the colours.', hint.done)).toBe(true);
+    expect(lines.text).toBe('Look at the colours.');
+    expect(lines.isAside).toBe(true);
+    // Still being said after the least time: it stays.
+    expect(lines.update(ASIDE_MIN + 1)).toBe(false);
+    expect(lines.text).toBe('Look at the colours.');
+    hint.end();
+    await settle();
+    expect(lines.update(0.016)).toBe(true);
+    expect(lines.text).toBe('Which is next?');
+    expect(lines.isAside).toBe(false);
+  });
+
+  it('a short line stays at least the least time', async () => {
+    const lines = new CaptionLines();
+    lines.instruct('Which is next?', speech().done);
+    const praise = speech();
+    lines.say('Yes!', praise.done);
+    praise.end();
+    await settle();
+    expect(lines.update(ASIDE_MIN - 0.1)).toBe(false);
+    expect(lines.text).toBe('Yes!');
+    expect(lines.update(0.2)).toBe(true);
+    expect(lines.text).toBe('Which is next?');
+  });
+
+  it('a new instruction wins at once, and the old line ending later changes nothing', async () => {
+    const lines = new CaptionLines();
+    lines.instruct('Which is next?', speech().done);
+    const hint = speech();
+    lines.say('Look at the colours.', hint.done);
+    const next = speech();
+    expect(lines.instruct('Now the last one.', next.done)).toBe(true);
+    expect(lines.text).toBe('Now the last one.');
+    hint.end();
+    await settle();
+    // The bubble still shows: the instruction itself is being said.
+    lines.update(ASIDE_MIN + 1);
+    expect(lines.live).toBe(true);
+    next.end();
+    await settle();
+    expect(lines.live).toBe(false);
+    expect(lines.text).toBe('Now the last one.');
+  });
+
+  it('a line whose speech fails still ends', async () => {
+    const lines = new CaptionLines();
+    lines.instruct('Which is next?', Promise.resolve());
+    lines.say('Hm.', Promise.reject(new Error('no speech')));
+    await settle();
+    expect(lines.update(ASIDE_MIN + 0.1)).toBe(true);
+    expect(lines.text).toBe('Which is next?');
   });
 });
