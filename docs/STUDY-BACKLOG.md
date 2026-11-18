@@ -116,7 +116,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Puddle Gobble (`puddle-gobble`) | designed (dive 2026-11-06; slices 1–4 built, then two pails built (slices 5–6); lap entry and the journal wait on decisions) | [Dive](deep-dives/puddle-gobble.md), [tracker](deep-dives/README.md#tracker) |
 | Fruit Slice (`fruit-slice`) | designed, wave 5 (slices 1–4 built; fractions closure and the journal wait on decisions) | [Dive](deep-dives/fruit-slice.md) |
 | Cut Along (`cut-along`) | designed ([dive](deep-dives/cut-along.md), PR #1351; levels 1–11 built), wave 5 | [Tracker](deep-dives/README.md#tracker) |
-| Brain Break (`brain-break`) | not started (found 2026-11-17: built from its definition, no dive); in READY Next ten | [Game page](games/brain-break.md) |
+| Brain Break (`brain-break`) | designed 2026-11-18 ([dive](deep-dives/brain-break.md): slice 1 ready, then levels 7–14 in slices 2–6; four decisions with defaults) | [Tracker](deep-dives/README.md#tracker) |
 | Little Conductor (`little-conductor`) | not started (found 2026-11-17); queued in READY | [Definition](definitions/little-conductor.md) |
 | Vine Snip (`vine-snip`) | not started (found 2026-11-17); queued in READY | [Definition](definitions/vine-snip.md) |
 | Domino Run (`domino-run`) | designed 2026-11-07 ([dive](deep-dives/domino-run.md): slices 1–4 built; nothing ready remains); wave 5 | [Tracker](deep-dives/README.md#tracker) |
