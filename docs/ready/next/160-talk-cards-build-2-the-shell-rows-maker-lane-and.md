@@ -1,0 +1,1 @@
+**Talk cards, build 2: the Shell Rows, Maker Lane and Puppet Stage cards** (after build 1; strings tier: typecheck and the rule tests): the three making-and-playing cards with their two *under two* lines join `TALK_CARDS`. Expected files: `src/content/talk.ts`, `src/content/talk.test.ts`. [Definition](../../definitions/talk-cards.md#build-slices-in-order)
