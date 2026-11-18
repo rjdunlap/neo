@@ -251,7 +251,7 @@ export class DiceGame implements Game {
     await this.ctx.tw.wait(0.7);
     if (this.finished) return;
     this.phase = 'grid';
-    await this.ctx.say('sf.grid-intro');
+    await this.instruct();
     if (this.finished) return;
     sfx.whoosh();
     this.tray.eventMode = 'none';

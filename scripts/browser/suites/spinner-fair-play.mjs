@@ -806,7 +806,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     log(
       `Spinner Fair 10: wheel 1 ${s.counts.join('–')}, ${s.results.length} spins to ${s.streak.kind} x${s.streak.length}; right card ${s.right}`,
     );
-    await page.waitForTimeout(600);
+    // The cards take no tap for their first half second of game time (CARD_WAIT), which a busy machine stretches.
+    await page.waitForTimeout(1000);
     // The card for the critter that just made the streak is wrong on an even wheel; any card but the right one is a miss.
     const wrong = (st) =>
       st.options.find((c) => c !== st.right && (c === st.streak.kind || st.right === st.streak.kind));
