@@ -10,6 +10,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { ChartDay } from './chart';
 import { PoolDay } from './day';
 import {
   DUNE,
@@ -1079,5 +1080,8 @@ export const tideLine: GameModule = {
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),
-  create: (ctx) => (tidePlan(ctx.level).mode === 'day' ? new PoolDay(ctx) : new TideLine(ctx)),
+  create: (ctx) => {
+    const mode = tidePlan(ctx.level).mode;
+    return mode === 'chart' ? new ChartDay(ctx) : mode === 'day' ? new PoolDay(ctx) : new TideLine(ctx);
+  },
 };

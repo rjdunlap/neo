@@ -1,6 +1,6 @@
 # Tide Line 5–6, Pool time and Read the chart
 
-**Built:** level 5 (PR #1805); to build level 6, read “Level 6 · Read the chart”, with “The island day” already in `logic.ts` (`fits`/`fitting`) and level 5's as-built notes on the [game page](../games/tide-line.md).
+**Built:** levels 5–6 (PRs #1805, #1808); both are built, so read the as-built notes on the [game page](../games/tide-line.md).
 
 The sky arc in [levels 1–4](tide-line.md) becomes a time control in level 5. Level 6 plots the same moving water as a line so the player can choose a time from the height alone. Together they form one build slice in the [oceans study](../deep-dives/subjects/oceans.md#build-slices-in-order).
 

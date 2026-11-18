@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { tally } from '../../progress/coach';
 import {
   AUTHORED_DAY,
   BOAT_FLOAT,
@@ -13,6 +14,18 @@ import {
   POOL_RIM,
   POOL_TOP,
   PoolTime,
+  CHART_FOOT,
+  CHART_TOP,
+  ChartRound,
+  JOB_CARD,
+  JOB_MARK,
+  JOBS,
+  chartLayout,
+  chartX,
+  chartY,
+  jobsFor,
+  windowAt,
+  type Job,
   SHELF,
   STOPS,
   WINDOW,
@@ -367,16 +380,18 @@ describe('layout', () => {
 });
 
 describe('levels and bands', () => {
-  it('lap 1, toddler 1-2, preschool 2-3, pre-K 3-5, school 4-5, nothing else', () => {
+  it('lap 1, toddler 1-2, preschool 2-3, pre-K 3-5, school 4-6, nothing else', () => {
     expect(BAND_LEVELS).toEqual({
       lap: { min: 1, max: 1 },
       toddler: { min: 1, max: 2 },
       preschool: { min: 2, max: 3 },
       prek: { min: 3, max: 5 },
-      school: { min: 4, max: 5 },
+      school: { min: 4, max: 6 },
     });
   });
-  it('level 1 is the wave, 2 the pail, 3 the line, 4 the cycle, 5 the day', () => {
+  it('level 1 is the wave, 2 the pail, 3 the line, 4 the cycle, 5 the day, 6 the chart', () => {
+    expect(tidePlan(6).mode).toBe('chart');
+    expect(tidePlan(7).mode).toBe('chart');
     expect(tidePlan(5).mode).toBe('day');
     expect(tidePlan(1).mode).toBe('wave');
     expect(tidePlan(2).mode).toBe('pail');
@@ -917,6 +932,199 @@ describe('level 5: layout', () => {
   }
 });
 
+describe('level 6: ChartRound', () => {
+  const play = (day: Day, order: readonly Job[], pickLater = false) => {
+    const r = new ChartRound(day, order);
+    for (const job of order) {
+      const f = fitting(job, day);
+      expect(r.place(f[pickLater ? 1 : 0])?.right).toBe(true);
+    }
+    return r;
+  };
+
+  it('the authored order is pool, boat, picnic; a seeded order is a shuffle of the three, every order reachable', () => {
+    expect(jobsFor(new Rng(1), true)).toEqual(['shows', 'boat', 'picnic']);
+    const seen = new Set<string>();
+    for (const seed of seeds) {
+      const order = jobsFor(new Rng(seed), false);
+      expect([...order].sort()).toEqual([...JOBS].sort());
+      expect(jobsFor(new Rng(seed), false)).toEqual(order);
+      seen.add(order.join());
+    }
+    expect(seen.size).toBe(6);
+  });
+
+  it('every job has two fitting windows on every day, strictly apart from the two that clash', () => {
+    for (const day of allDays)
+      for (const job of JOBS) {
+        const f = fitting(job, day);
+        expect(f.length, `${job} ${JSON.stringify(day)}`).toBe(2);
+        const m = JOB_MARK[job];
+        for (let i = 0; i < STOPS; i++)
+          for (const t of windowTimes(i)) {
+            const h = dayWater(day, t);
+            // Fitting windows keep to the mark's side by a clear margin; clashing ones are on the other side of it.
+            if (f.includes(i)) expect(m.side === 'below' ? m.h - h : h - m.h).toBeGreaterThan(0.05);
+            else expect(m.side === 'below' ? h - m.h : m.h - h).toBeGreaterThan(0.05);
+          }
+      }
+  });
+
+  it('the pool and the picnic share the low windows, the boat takes the high ones, and the marks sit on the plot', () => {
+    for (const day of allDays) {
+      expect(fitting('shows', day)).toEqual(fitting('picnic', day));
+      expect([...fitting('shows', day), ...fitting('boat', day)].sort()).toEqual([0, 1, 2, 3]);
+    }
+    expect(JOB_MARK).toEqual({
+      shows: { h: POOL_RIM, side: 'below' },
+      boat: { h: BOAT_FLOAT, side: 'above' },
+      picnic: { h: SHELF, side: 'below' },
+    });
+    for (const j of JOBS) expect(JOB_MARK[j].h).toBeLessThan(CHART_TOP);
+    for (const h of DAY_HIGHS) expect(h).toBeLessThan(CHART_TOP);
+  });
+
+  it('over 500 seeds a clean round finishes 0/0 on either fitting window, and both are accepted equally', () => {
+    for (const seed of seeds) {
+      const rng = new Rng(seed);
+      const day = makeDay(rng);
+      const order = jobsFor(rng, false);
+      for (const later of [false, true]) {
+        const r = play(day, order, later);
+        expect(r.done).toBe(true);
+        expect(r.job).toBeUndefined();
+        expect(tally(r.tally)).toEqual({ misses: 0, hints: 0 });
+        expect(r.placed.map((p) => p.job)).toEqual(order);
+      }
+    }
+  });
+
+  it('two cards may share a window, and a window out of range or a card after the last does nothing', () => {
+    const r = new ChartRound(AUTHORED_DAY);
+    expect(r.place(-1)).toBeNull();
+    expect(r.place(4)).toBeNull();
+    expect(r.place(1.5)).toBeNull();
+    expect(r.place(0)).toEqual({ right: true, job: 'shows', stop: 0, glow: false });
+    expect(r.place(1)?.right).toBe(true);
+    expect(r.place(0)).toEqual({ right: true, job: 'picnic', stop: 0, glow: false });
+    expect(r.placed).toEqual([
+      { job: 'shows', stop: 0 },
+      { job: 'boat', stop: 1 },
+      { job: 'picnic', stop: 0 },
+    ]);
+    expect(r.place(0)).toBeNull();
+    expect(r.help()).toBeNull();
+    expect(tally(r.tally)).toEqual({ misses: 0, hints: 0 });
+  });
+
+  it('a clashing window is one miss; the second on a card lights both fitting windows, one hint a card', () => {
+    const r = new ChartRound(AUTHORED_DAY);
+    expect(r.place(1)).toEqual({ right: false, job: 'shows', stop: 1, glow: false });
+    expect(r.glow).toBe(false);
+    expect(r.place(3)).toEqual({ right: false, job: 'shows', stop: 3, glow: true });
+    expect(r.glow).toBe(true);
+    expect(r.place(1)?.glow).toBe(false);
+    expect(tally(r.tally)).toEqual({ misses: 3, hints: 1 });
+    // Help while they glow gives the earlier fitting window and counts nothing more.
+    expect(r.help()).toEqual({ place: 0 });
+    expect(tally(r.tally)).toEqual({ misses: 3, hints: 1 });
+    expect(r.place(0)?.right).toBe(true);
+    // The next card starts again: no glow, its own two misses before a hint.
+    expect(r.glow).toBe(false);
+    expect(r.place(0)).toEqual({ right: false, job: 'boat', stop: 0, glow: false });
+    expect(tally(r.tally)).toEqual({ misses: 4, hints: 1 });
+  });
+
+  it('Help lights both windows for one hint, then places; a miss after Help brings no second hint', () => {
+    for (const day of allDays) {
+      const r = new ChartRound(day);
+      for (const job of JOBS) {
+        const f = fitting(job, day);
+        expect(r.help()).toEqual({ glow: f });
+        const clash = [0, 1, 2, 3].find((i) => !f.includes(i))!;
+        expect(r.place(clash)?.glow).toBe(false);
+        expect(r.place(clash)?.glow).toBe(false);
+        expect(r.help()).toEqual({ place: f[0] });
+        expect(r.place(f[0])?.right).toBe(true);
+      }
+      expect(r.done).toBe(true);
+      expect(tally(r.tally)).toEqual({ misses: 6, hints: 3 });
+    }
+  });
+
+  it('one miss then Help is still one hint; the scripted play (two clashes, the glow, a shared window) is 2/1', () => {
+    const a = new ChartRound(AUTHORED_DAY);
+    a.place(1);
+    expect(a.help()).toEqual({ glow: [0, 2] });
+    a.place(3);
+    expect(tally(a.tally)).toEqual({ misses: 2, hints: 1 });
+    const r = new ChartRound(AUTHORED_DAY);
+    r.place(1);
+    r.place(3);
+    r.place(2);
+    r.place(1);
+    r.place(2);
+    expect(r.done).toBe(true);
+    expect(tally(r.tally)).toEqual({ misses: 2, hints: 1 });
+  });
+});
+
+describe('level 6: layout', () => {
+  for (const view of [
+    ...views,
+    computeView(1200, 950),
+    computeView(390, 844, undefined, true),
+    computeView(768, 1024, undefined, true),
+  ]) {
+    const tag = `${view.w}x${view.h}`;
+    const C = chartLayout(view);
+    const pet = petCorner(view);
+    const card = { x: C.card.x - JOB_CARD / 2, y: C.card.y - JOB_CARD / 2, w: JOB_CARD, h: JOB_CARD };
+    it(`${tag}: windows and the card are large, on screen and clear of the pet, the corners and each other`, () => {
+      expect(C.windows.length).toBe(STOPS);
+      for (const b of [...C.windows, card, C.picture]) {
+        expect(b.w, tag).toBeGreaterThanOrEqual(100);
+        expect(b.h, tag).toBeGreaterThanOrEqual(100);
+        expect(inside(b, view.w, view.h), `${tag} on screen ${JSON.stringify(b)}`).toBe(true);
+        expect(overlaps(b, pet), `${tag} pet ${JSON.stringify(b)}`).toBe(false);
+        for (const c of cornerButtons(view)) expect(overlaps(b, c), `${tag} corner`).toBe(false);
+      }
+      for (const b of C.done) {
+        expect(inside(b, view.w, view.h), `${tag} done on screen`).toBe(true);
+        expect(overlaps(b, pet), `${tag} done pet`).toBe(false);
+      }
+      // The chart is at least 500 wide with 116-unit windows 12 apart, and nothing a finger uses overlaps.
+      expect(C.plot.w).toBeGreaterThanOrEqual(500);
+      expect(C.plot.h).toBeGreaterThanOrEqual(300);
+      expect(C.picture.h).toBeGreaterThanOrEqual(200);
+      for (const b of C.windows) expect(b.w).toBeGreaterThanOrEqual(116);
+      for (let i = 0; i + 1 < STOPS; i++)
+        expect(C.windows[i + 1].x - (C.windows[i].x + C.windows[i].w)).toBeCloseTo(12, 6);
+      const all = [...C.windows, card, ...C.done, C.picture];
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++)
+          expect(overlaps(all[i], all[j]), `${tag} ${i} ${j}`).toBe(false);
+      // The scale's gutter and the title above the plot are on screen and below the picture.
+      expect(C.plot.x - 84).toBeGreaterThanOrEqual(0);
+      expect(C.plot.y - 34).toBeGreaterThanOrEqual(C.picture.y + C.picture.h);
+      expect(C.iconY).toBeCloseTo(C.plot.y + C.plot.h + CHART_FOOT / 2, 6);
+    });
+    it(`${tag}: each window sits on its time, heights map onto the plot, and only the windows take a card`, () => {
+      for (let i = 0; i < STOPS; i++) {
+        const b = C.windows[i];
+        expect(chartX(C, stopT(i))).toBeCloseTo(b.x + b.w / 2, 6);
+        for (const t of windowTimes(i)) expect(windowAt(C, chartX(C, t), C.plot.y + 10)).toBe(i);
+        expect(windowAt(C, b.x + b.w / 2, C.iconY)).toBe(i);
+      }
+      expect(chartY(C, 0)).toBeCloseTo(C.plot.y + C.plot.h, 6);
+      expect(chartY(C, CHART_TOP)).toBeCloseTo(C.plot.y, 6);
+      expect(windowAt(C, C.card.x, C.card.y)).toBe(-1);
+      expect(windowAt(C, C.picture.x + C.picture.w / 2, C.picture.y + C.picture.h / 2)).toBe(-1);
+      expect(windowAt(C, C.windows[0].x + C.windows[0].w + 6, C.plot.y + 10)).toBe(-1);
+    });
+  }
+});
+
 describe('voice keys', () => {
   it('every tl.* line the game uses exists', () => {
     const wrongs: WrongLine[] = [
@@ -953,6 +1161,10 @@ describe('voice keys', () => {
       'tl.mark.shows',
       'tl.mark.covered',
       'tl.done.5',
+      ...JOBS.flatMap((j) => [`tl.instruct.6.${j}`, `tl.clash.${j}`, `tl.fit.${j}`]),
+      'tl.glow.low',
+      'tl.glow.high',
+      'tl.done.6',
     ];
     for (const k of keys) expect(Object.keys(SCRIPT), k).toContain(k);
     for (const t of THINGS) expect(Object.keys(SCRIPT)).toContain(`tl.wet.${t}`);

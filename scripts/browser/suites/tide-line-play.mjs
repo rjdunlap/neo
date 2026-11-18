@@ -480,5 +480,170 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'Tide Line 5: the flag waits for a stop; a scrub settles on the nearest stop and moves the sea; flagging the other state twice is not counted; a portrait scrub, a tapped stop and both flags (0/0); on a seeded school day Help glows two stops, then flags the earlier one (0/1); passed',
     );
   }
-  return { tideLinePlay, tideLine34Play, tideLine5Play };
+  async function tideLine6Play() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('tide-line').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const st = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          t: g.now.t,
+          look: g.look,
+          placed: g.turn.placed.map((p) => [p.job, p.stop]),
+          job: g.turn.job ?? null,
+          order: [...g.turn.order],
+          glow: g.turn.glow,
+          misses: g.turn.tally.misses,
+          hints: g.turn.tally.hints,
+          day: g.turn.day,
+          busy: g.busy,
+          home: Math.hypot(g.card.x - g.C.card.x, g.card.y - g.C.card.y) < 2,
+        };
+      });
+    /** Touch a window alone: a look at that time. */
+    const lookAt = async (i) => {
+      await page.evaluate((i) => {
+        const g = neo.scene.game;
+        const b = g.C.windows[i];
+        kit.tapOn(g.windows[i], (b.w / 2) * g.view.scale, (b.h / 2) * g.view.scale);
+      }, i);
+      await page.waitForTimeout(600);
+    };
+    /** Carry the card to a point of the board (logical units) and let go; the card rides 40 above the finger. */
+    const carry = async (x, y) => {
+      await page.evaluate(
+        async ([x, y]) => {
+          const g = neo.scene.game;
+          const from = g.card.getGlobalPosition();
+          const to = g.board.toGlobal({ x, y: y + 40 });
+          const path = kit.line([from.x, from.y], [to.x, to.y], 16);
+          for (let i = 0; i < 4; i++) path.push([to.x, to.y]);
+          await kit.drag(path, 1, 30);
+        },
+        [x, y],
+      );
+      await page.waitForTimeout(700);
+    };
+    const drop = async (i) => {
+      const [x, y] = await page.evaluate((i) => {
+        const C = neo.scene.game.C;
+        const b = C.windows[i];
+        return [b.x + b.w / 2, C.plot.y + C.plot.h / 2];
+      }, i);
+      await carry(x, y);
+    };
+    const ready = () =>
+      page.waitForFunction(() => !neo.scene.game.busy && !neo.scene.game.finished, null, { timeout: 5000 });
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+
+    // Level 6 (school), the authored day (low, high, low, high) and order (pool, boat, picnic). Looking at a window and
+    // letting the card go off the windows count nothing; two clashing windows are two misses and bring the glow.
+    await launch('tide-line', 6, 'Mia', 'school');
+    await page.waitForTimeout(1200);
+    let s = await st();
+    assert.deepEqual(
+      [s.t, s.look, s.job, s.order],
+      [0, null, 'shows', ['shows', 'boat', 'picnic']],
+      'the chart starts at the left of the day with the pool card served',
+    );
+    await lookAt(1);
+    s = await st();
+    assert.equal(s.look, 1, 'a touched window is looked at');
+    assert.ok(Math.abs(s.t - 3 / 8) < 0.001, `the shore moves to the touched window (${s.t.toFixed(3)})`);
+    const pic = await page.evaluate(() => {
+      const b = neo.scene.game.C.picture;
+      return [b.x + b.w / 2, b.y + b.h / 2];
+    });
+    await carry(pic[0], pic[1]);
+    s = await st();
+    assert.deepEqual(
+      [s.placed.length, s.misses, s.home],
+      [0, 0, true],
+      'a card let go off the windows goes home, uncounted',
+    );
+    await drop(1);
+    s = await st();
+    assert.deepEqual(
+      [s.placed.length, s.misses, s.hints, s.glow, s.home],
+      [0, 1, 0, false, true],
+      'the pool on high water is one miss and the card comes back',
+    );
+    await drop(3);
+    s = await st();
+    assert.deepEqual(
+      [s.placed.length, s.misses, s.hints, s.glow],
+      [0, 2, 1, true],
+      'a second clash lights the fitting windows: one hint',
+    );
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(900);
+    await screenshot('tide-line-6-portrait');
+    // Tap the card, then tap a glowing window.
+    await page.evaluate(() => kit.tapOn(neo.scene.game.card));
+    await page.waitForTimeout(400);
+    await lookAt(2);
+    await ready();
+    s = await st();
+    assert.deepEqual(
+      [s.placed, s.job, s.glow, s.misses],
+      [[['shows', 2]], 'boat', false, 2],
+      'tap the card, tap the window: the pool sits on the third time and the boat is served',
+    );
+    await drop(1);
+    await ready();
+    s = await st();
+    assert.deepEqual(
+      s.placed,
+      [
+        ['shows', 2],
+        ['boat', 1],
+      ],
+      'the boat floats on high water',
+    );
+    await drop(2);
+    await finished('tide-line');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [2, 1], 'level 6 saved 2 misses, 1 hint with a shared window');
+
+    // A seeded round: Help lights two windows (one hint), asked again it places the card on the earlier one.
+    await launch('tide-line', 6, 'Mia', 'school');
+    await page.waitForTimeout(1200);
+    const fitting = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        const low = (i) => (i % 2 === 0) === (g.turn.day.offset === 0);
+        return [0, 1, 2, 3].filter((i) => (g.turn.job === 'boat' ? !low(i) : low(i)));
+      });
+    const first = await fitting();
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    s = await st();
+    assert.deepEqual([s.glow, s.hints, s.placed.length], [true, 1, 0], 'Help glows the fitting windows');
+    await screenshot('tide-line-6-glow');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.turn.placed.length === 1 && !neo.scene.game.busy, null, {
+      timeout: 5000,
+    });
+    s = await st();
+    assert.deepEqual(
+      [s.placed[0][1], s.hints, s.glow],
+      [first[0], 1, false],
+      'Help again places the card on the earlier fitting window',
+    );
+    await drop((await fitting())[1]);
+    await ready();
+    await drop((await fitting())[0]);
+    await finished('tide-line');
+    assert.deepEqual(await score(), [0, 1], 'level 6 with Help saved 0 misses, 1 hint');
+    log(
+      "Tide Line 6: a touched window is a look; a card let go off the windows goes home; two clashing windows are two misses and the glow; in portrait a tapped card goes on a tapped window, the boat on high water and the picnic on the pool's window (2/1); on a seeded day Help glows two windows, then places the card (0/1); passed",
+    );
+  }
+  return { tideLinePlay, tideLine34Play, tideLine5Play, tideLine6Play };
 }
