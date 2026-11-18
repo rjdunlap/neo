@@ -703,7 +703,7 @@ class SecretCode implements Game {
     this.busy = false;
     if (this.seats === 'two') return this.ctx.instruct('code.lookaway');
     if (this.index === 0) return this.ctx.instruct('code.maker');
-    return this.ctx.say('code.another');
+    return this.ctx.instruct('code.another');
   }
 
   private newSlots() {
@@ -788,7 +788,10 @@ class SecretCode implements Game {
     });
     this.show.visible = true;
     this.busy = false;
-    if (this.index === 0 && this.history.length === 0) return this.ctx.instruct('code.markit');
+    // The first try at each code is the ask to mark it (in full once, short after), so the guide and the caption never
+    // go back to "make me a code" while she is marking.
+    if (this.history.length === 0)
+      return this.ctx.instruct(this.index === 0 ? 'code.markit' : 'code.markagain');
     return this.ctx.say('code.pettry');
   }
 
@@ -959,7 +962,7 @@ class SecretCode implements Game {
     // After many tries, faint stones show seat 2 a code that fits her marks. They are not hers, so nothing is counted.
     if (this.history.length >= this.plan.slots + 4) this.showIdea();
     this.busy = false;
-    if (first) await this.ctx.say('code.grownupbreak');
+    if (first) await this.ctx.instruct('code.grownupbreak');
   }
 
   /** Seat 2 turned the key: no island marks. The lid lifts so she can see her code, and she gives each stone its mark. */
@@ -1021,7 +1024,7 @@ class SecretCode implements Game {
     this.botCode = quickCode(this.plan, this.ctx.rng, 0x2b);
     this.resize(this.view);
     this.busy = false;
-    return this.ctx.say('code.swap');
+    return this.ctx.instruct('code.swap');
   }
 
   /** Seat 2's code is under the lid: she breaks it with levels 3–6's rules and the island's marks. */

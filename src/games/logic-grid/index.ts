@@ -661,13 +661,16 @@ class MysteryGrid implements Game {
 
   private async intro() {
     await this.ctx.say(this.line('mystery'));
-    await this.ctx.instruct(
-      (['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const)[
-        this.plan.level - 1
-      ],
-    );
+    await this.ctx.instruct(this.levelLine());
     if (this.slides) await this.ctx.say('lg.slide');
     await this.readClues();
+  }
+
+  /** The level's instruction: what the guide repeats, and the caption shows, while the grid is being marked. */
+  private levelLine() {
+    return (
+      ['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const
+    )[this.plan.level - 1];
   }
 
   /** The lines that name the missing thing: `lg.event` for the pie, `lg.event.ball` for the ball, `lg.event.kite` for the kite. */
@@ -1436,7 +1439,8 @@ class MysteryGrid implements Game {
     if (this.index !== at || this.finished) return;
     this.busy = false;
     for (const c of this.critters) c.hop();
-    void this.ctx.say(this.line('who'));
+    // The question is now the ask, so it is the line the guide repeats and the caption keeps (not the grid's instruction).
+    void this.ctx.instruct(this.line('who'));
   }
 
   private async found() {
@@ -1475,6 +1479,8 @@ class MysteryGrid implements Game {
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     this.setBoard();
     await this.ctx.say('lg.next');
+    // A second board is marked again, so the grid's instruction takes the question's place.
+    await this.ctx.instruct(this.levelLine());
     await this.readClues();
   }
 

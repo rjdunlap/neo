@@ -38,6 +38,7 @@ export const VOICE = {
   'code.markit': [
     'Is it this? Tap the circle under each stone to mark it. Green: right stone, right place. Yellow: in your code, another place. Gray: no more of that stone. Then tap the arrow.',
   ],
+  'code.markagain': ['Is it this? Mark each stone, then tap the arrow.'],
   'code.pettry': ['Hmm, is it this?', 'Let me try this one.'],
   'code.markall': ['Give every stone a mark first.'],
   'code.sure': ['Are you sure about that {color} stone? Look at your code again.'],
