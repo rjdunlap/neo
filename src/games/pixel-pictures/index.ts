@@ -42,7 +42,8 @@ import {
   type PixelPlan,
 } from './logic';
 
-const CELL = 100;
+import { CELL, DONE_RADIUS, MODEL_MARGIN, PAINT_RADIUS, modelSize, pictureLayout } from './layout';
+
 /** Logic levels draw every filled square in one color, since only filled-or-empty matters. */
 const LOGIC_COLOR = 'b';
 
@@ -119,32 +120,16 @@ class PixelPictures implements Game {
 
   resize(v: View) {
     this.view = v;
-    const w = this.n * CELL;
-    const clueSpace = this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 90 : 0;
-    const modelSpace = this.plan.mode === 'copy' || this.plan.mode === 'big' ? 230 : 0;
-    const paletteSpace = this.plan.mode === 'colorClues' ? 130 : this.plan.mode === 'free' ? 280 : 0;
-    const x = Math.max(160, (v.w - w - clueSpace - modelSpace - paletteSpace) / 2 + clueSpace);
-    const y = Math.max(clueSpace ? 90 + 60 : 110, (v.h - w) / 2 + (clueSpace ? 30 : 0));
-    this.board.position.set(x, y);
-    this.board.hitArea = new Rectangle(0, 0, w, w);
-    this.model.position.set(x + w + 60, y);
-    this.clueLayer.position.set(x, y);
-    const free = this.plan.mode === 'free';
-    const narrow = v.w < 920;
-    // Level 10 on a narrow view: the row's first paint keeps its left edge at 150, clear of the pet.
-    const rowX = Math.max(206, v.w / 2 - 232);
-    const rowY = Math.min(v.h - 70, y + w + 70);
+    const { board, model, paint, done } = pictureLayout(v, this.plan);
+    this.board.position.set(board.x, board.y);
+    this.board.hitArea = new Rectangle(0, 0, board.width, board.width);
+    this.model.position.set(model.x, model.y);
+    this.clueLayer.position.set(board.x, board.y);
     this.palette.forEach((p, i) => {
-      // Level 10: four paints in a row below the board (portrait) or a column beside it, with Done past them.
-      if (free && narrow) p.node.position.set(rowX + i * 116, rowY);
-      else if (free) p.node.position.set(x + w + 100, y + 60 + i * 126);
-      else if (narrow) p.node.position.set(v.w / 2 + (i ? 72 : -72), Math.min(v.h - 60, y + w + 64));
-      else p.node.position.set(x + w + 150, y + w - 60 - i * 120);
+      const spot = paint(i);
+      p.node.position.set(spot.x, spot.y);
     });
-    if (this.done) {
-      if (narrow) this.done.position.set(rowX + 4 * 116 + 10, rowY);
-      else this.done.position.set(x + w + 240, y + w - 60);
-    }
+    this.done?.position.set(done.x, done.y);
     this.draw();
   }
 
@@ -227,9 +212,15 @@ class PixelPictures implements Game {
     this.model.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.plan.mode !== 'copy' && this.plan.mode !== 'big') return;
     const small = this.plan.mode === 'big' ? toGrid(scaleDown(this.picture, 2)) : this.target;
-    const s = this.plan.mode === 'big' ? 40 : 30;
+    const s = modelSize(this.plan);
     const g = new Graphics()
-      .roundRect(-12, -12, small.length * s + 24, small.length * s + 24, 14)
+      .roundRect(
+        -MODEL_MARGIN,
+        -MODEL_MARGIN,
+        small.length * s + 2 * MODEL_MARGIN,
+        small.length * s + 2 * MODEL_MARGIN,
+        14,
+      )
       .fill(0xffffff)
       .stroke({ width: 5, color: wood.line });
     small.forEach((row, y) =>
@@ -292,7 +283,7 @@ class PixelPictures implements Game {
       const node = new Container();
       const sw = swatch[colorOf(letter)];
       node.addChild(new Graphics().circle(0, 0, 48).fill(sw.fill).stroke({ width: 6, color: sw.line }));
-      node.hitArea = new Circle(0, 0, 56);
+      node.hitArea = new Circle(0, 0, PAINT_RADIUS);
       onTap(node, () => {
         this.color = letter;
         sfx.tick();
@@ -310,7 +301,7 @@ class PixelPictures implements Game {
       const node = new Container();
       const sw = swatch[colorOf(letter)];
       node.addChild(new Graphics().circle(0, 0, 50).fill(sw.fill).stroke({ width: 6, color: sw.line }));
-      node.hitArea = new Circle(0, 0, 56);
+      node.hitArea = new Circle(0, 0, PAINT_RADIUS);
       onTap(node, () => {
         this.color = letter;
         sfx.tick();
@@ -320,7 +311,7 @@ class PixelPictures implements Game {
       this.paletteLayer.addChild(node);
     }
     if (!this.done) {
-      this.done = new RoundButton(checkIcon(), swatch.green, 60, () => void this.finishFree());
+      this.done = new RoundButton(checkIcon(), swatch.green, DONE_RADIUS, () => void this.finishFree());
       this.paletteLayer.addChild(this.done);
     }
     this.done.visible = false;
@@ -579,7 +570,7 @@ export const pixelPictures: GameModule = {
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  uprightLevels: [10, 11, 12],
+  upright: true,
   coplayHint:
     'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',

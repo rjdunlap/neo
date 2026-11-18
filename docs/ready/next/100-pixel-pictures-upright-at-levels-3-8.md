@@ -1,1 +1,0 @@
-**`pixel-pictures` upright at levels 3–8** (small fix; existing-game tier: typecheck, `src/games/upright-batch-6.test.ts` with those levels added to its list, `PHONE_LEVELS=all` sweep screenshots): the board overflows the right edge by about 5 units at 768 wide, so lower its x minimum of 160 in `resize` in `index.ts`, then widen `uprightLevels` to every level.
