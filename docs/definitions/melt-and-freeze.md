@@ -1,6 +1,6 @@
 # Melt and Freeze, levels 1–4 (definition)
 
-Defined 2026-10-22 as slice 1 of the [matter study](../deep-dives/subjects/matter.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/matter.md#a-first-games-ladder-melt-and-freeze) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations). *Melt and Freeze* is a working name and `melt-freeze` a working ID; levels 5–11 (predictions, the can't-go-back sort, three states, the sealed-jar scale, the dial, the particle lens) are not defined here.
+Defined 2026-10-22 as slice 1 of the [matter study](../deep-dives/subjects/matter.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/matter.md#a-first-games-ladder-melt-and-freeze) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations). *Melt and Freeze* is a working name and `melt-freeze` a working ID; the predictions and the can't-go-back sort are defined separately as level IDs 6 and 7 ([packet](melt-and-freeze-predictions.md), 2026-11-17), and the later rungs (three states, the sealed-jar scale, the dial, the particle lens) are not defined here.
 
 **Status: built 2026-10-24 in [PR #943](https://github.com/rjdunlap/neo/pull/943)** (`src/games/melt-freeze/`, Bubble Beach; the rest of this file is the record of what was defined; the open decisions were settled 2026-10-23). Levels 1–4 use only ice, butter, chocolate, a stone and a spoon, never heat food for her and draw no flame or steam, so no science or food-safety reviewer gates them ([decision 4](#open-decisions)).
 
@@ -106,7 +106,7 @@ Device and person checks stay open: whether a one-year-old notices the puddle af
 
 ## What comes next
 
-Levels 5–6 (predictions; the can't-go-back sort with toast and a popped kernel) and 7–9 follow the study's [slices 3–4](../deep-dives/subjects/matter.md#build-slices-in-order); the dial, steam and the particle lens wait on the named science reviewer. **Stir and See** is defined after this table is frozen, as its outcome table can reuse the substance record.
+The predictions and the can't-go-back sort with toast and a popped kernel are defined as level IDs 6 and 7 in [melt-and-freeze-predictions.md](melt-and-freeze-predictions.md) (2026-11-17; ID 5 is the lap opening). The remaining rungs follow the study's [slices 3–4](../deep-dives/subjects/matter.md#build-slices-in-order); the dial, steam and the particle lens wait on the named science reviewer. **Stir and See** is defined after this table is frozen, as its outcome table can reuse the substance record.
 
 ## Open decisions
 
