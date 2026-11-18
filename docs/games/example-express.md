@@ -8,12 +8,13 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–2 |
+| school | 1–3 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Show, then send: label two examples and check fresh parcels |
 | 2 | A surprising parcel: repair a color rule with examples |
+| 3 | Choose the lesson: pick up to four examples and their docks |
 
 <!-- end generated -->
 

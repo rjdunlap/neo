@@ -2,7 +2,7 @@ import { it, expect } from 'vitest';
 import { computeView } from '../../engine/view';
 import { overlaps, petCorner, landButtons } from '../../content/lands';
 import { layout, type Box } from './layout';
-it('keeps every active D2 panel target full size, apart and clear of pet and shell in both safe orientations', () => {
+it('keeps every active panel target full size, apart and clear of pet and shell in both safe orientations', () => {
   for (const view of [
     computeView(1024, 768),
     computeView(768, 1024),
@@ -14,6 +14,9 @@ it('keeps every active D2 panel target full size, apart and clear of pet and she
     for (const boxes of [
       [...l.slots, ...l.docks, ...l.controls, l.replay],
       [...l.shelf, l.controls[2], l.replay],
+      // Level 3: the lesson with Examples beside both docks, and the eight-parcel shelf over Back.
+      [...l.slots, ...l.lesson, ...l.controls, l.replay],
+      [...l.shelf8, l.controls[2], l.replay],
       [...l.tools, l.replay],
       [...l.docks, l.prev, l.next, l.controls[1], l.controls[2], l.replay],
     ]) {

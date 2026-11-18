@@ -78,7 +78,109 @@ export function createSuite({
         const h = kit.store.stats('example-express').history.at(-1);
         return [h.misses, h.hints];
       });
-    if (process.env.EXAMPLE_ONLY !== 'repair') {
+    async function exampleExpressLesson() {
+      log('Example Express level 3');
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('example-express', 3);
+      await settle();
+      await layout();
+      assert.deepEqual((await state()).board, [null, null, null, null]);
+      assert.equal((await state()).rule, null);
+      // A free Test with no lesson has no route; an empty Check counts one miss and says so once.
+      await tap('testButton');
+      await tap('sendButton');
+      await settle();
+      assert.deepEqual((await state()).reaction, { id: 0, actual: null, required: 'tree' });
+      assert.equal((await state()).misses, 0);
+      await tap('backButton');
+      await check();
+      assert.equal((await state()).misses, 1);
+      assert.equal((await state()).panel, 'main');
+      // Teach color on purpose through the shelf, a slot and a dock: blue circle → tree, yellow circle → house.
+      await tap('examplesButton');
+      await layout();
+      await screenshot('example-express-3-shelf-portrait');
+      await tap('shelf', 0);
+      assert.deepEqual((await state()).board[0], { id: 0, dock: null });
+      assert.equal((await state()).rule, null);
+      await layout();
+      await tap('docks', 0);
+      assert.equal((await state()).rule, 0);
+      await tap('examplesButton');
+      await tap('shelf', 4);
+      await check(); // The yellow circle still waits for a dock: incomplete, one miss, no route.
+      assert.equal((await state()).misses, 2);
+      assert.equal((await state()).reaction, null);
+      await tap('docks', 1);
+      assert.deepEqual((await state()).board.slice(0, 2), [
+        { id: 0, dock: 'tree' },
+        { id: 4, dock: 'house' },
+      ]);
+      assert.equal((await state()).rule, 0);
+      await check();
+      assert.equal((await state()).misses, 3);
+      assert.deepEqual((await state()).reaction, { id: 3, actual: 'tree', required: 'house' });
+      assert.ok((await state()).glow);
+      assert.equal((await state()).hints, 0);
+      // Relabel, swap and remove by hand: every edit is free and refits.
+      await tap('backButton');
+      await tap('slots', 1);
+      await tap('docks', 0);
+      assert.equal((await state()).board[1].dock, 'tree');
+      await tap('slots', 1);
+      await tap('examplesButton');
+      await tap('shelf', 7);
+      await tap('docks', 1);
+      assert.deepEqual((await state()).board[1], { id: 7, dock: 'house' });
+      await tap('slots', 1);
+      await tap('toolsButton');
+      await layout();
+      await tap('removeButton');
+      assert.equal((await state()).board[1], null);
+      await tap('toolsButton');
+      await tap('undoButton');
+      await tap('toolsButton');
+      await tap('undoButton');
+      await tap('toolsButton');
+      await tap('undoButton');
+      assert.deepEqual((await state()).board[1], { id: 4, dock: 'tree' });
+      await tap('toolsButton');
+      await tap('undoButton');
+      assert.deepEqual((await state()).board[1], { id: 4, dock: 'house' });
+      assert.equal((await state()).misses, 3);
+      // Show me makes one useful change at a time until the lesson passes, one hint each.
+      let hints = 0;
+      for (; hints < 5; hints++) {
+        await tap('helpButton');
+        await settle();
+        if ((await state()).hints === hints) break;
+      }
+      assert.ok(hints >= 1 && hints <= 4, `hints ${hints}`);
+      assert.equal((await state()).rule, 2);
+      await tap('testButton');
+      await tap('nextButton');
+      await tap('nextButton');
+      await layout();
+      await tap('sendButton');
+      await settle();
+      assert.deepEqual((await state()).reaction, { id: 5, actual: 'tree', required: 'tree' });
+      await tap('backButton');
+      await layout();
+      await screenshot('example-express-3-portrait');
+      await check();
+      assert.equal((await state()).qualified, true);
+      await tap('backButton');
+      await tap('checkButton');
+      await finished('example-express');
+      assert.deepEqual(await history(), [3, hints]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Example Express 3: empty and waiting Checks, a taught color rule failing on the practice tray, relabel/swap/remove/Undo, Show me to a passing lesson, free Test and once-only finish passed in portrait',
+      );
+    }
+    const only = process.env.EXAMPLE_ONLY;
+    if (only === 'lesson') return exampleExpressLesson();
+    if (only !== 'repair') {
       log('Example Express level 1');
       await launch('example-express', 1);
       await settle();
@@ -264,6 +366,7 @@ export function createSuite({
     log(
       'Example Express 1–2: exact fitted traces, free Test, failed Check/glow/help, cancellation, Undo/reset/removal, once-only reward, portrait targets and classic/root launch-return passed',
     );
+    await exampleExpressLesson();
   }
   return { exampleExpressPlay };
 }

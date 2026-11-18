@@ -12,6 +12,12 @@ import {
   actions,
   Round,
   SHELF,
+  tray,
+  shelfIds,
+  consistent,
+  requested,
+  LEVELS,
+  type Board,
   type Dock,
 } from './logic';
 const dock = (n: number): Dock => (n ? 'house' : 'tree');
@@ -221,5 +227,173 @@ describe('round accounting and cancellation', () => {
     expect(r.misses).toBe(0);
     expect(r.reset()).toBe(false);
     expect(r.help()).toBeNull();
+  });
+});
+
+describe('level 3, Choose the lesson', () => {
+  type Card = { id: number; dock: Dock };
+  // Independent oracle: the truth table above picks the rule, never the game's own fit().
+  const rule = (cards: Card[]) => {
+    const errors = expected.map((row) => cards.reduce((n, e) => n + Number(row[e.id] !== e.dock), 0));
+    return errors.indexOf(Math.min(...errors));
+  };
+  const passes = (cards: Card[]) => cards.length > 0 && rule(cards) === 2;
+  const sets: Card[][] = [];
+  for (let mask = 0; mask < 256; mask++) {
+    const ids = PARCELS.filter((p) => (mask >> p.id) & 1).map((p) => p.id);
+    if (ids.length > 4) continue;
+    for (let labels = 0; labels < 1 << ids.length; labels++)
+      sets.push(ids.map((id, i) => ({ id, dock: dock((labels >> i) & 1) })));
+  }
+  const name = (cards: Card[]) =>
+    [...cards]
+      .sort((a, b) => a.id - b.id)
+      .map((e) => `${e.id}${e.dock[0]}`)
+      .join(' ');
+  const board = (cards: Card[]): Board => [0, 1, 2, 3].map((i) => (cards[i] ? { ...cards[i] } : null));
+  const clean = (cards: Card[]) => cards.every((e) => e.dock === requested(e.id));
+  // Distance to the nearest passing lesson over unordered sets: remove, relabel, or insert below four.
+  const far = new Map<string, number>(),
+    cleanFar = new Map<string, number>();
+  for (const [table, goal] of [
+    [far, passes],
+    [cleanFar, (c: Card[]) => passes(c) && clean(c)],
+  ] as const) {
+    const byName = new Map(sets.map((c) => [name(c), c]));
+    const queue = sets.filter(goal);
+    for (const c of queue) table.set(name(c), 0);
+    for (let i = 0; i < queue.length; i++) {
+      const c = queue[i],
+        d = table.get(name(c))!;
+      const near: Card[][] = [];
+      c.forEach((e, j) => {
+        near.push(c.filter((_, k) => k !== j));
+        near.push(c.map((o, k) => (k === j ? { id: e.id, dock: e.dock === 'tree' ? 'house' : 'tree' } : o)));
+      });
+      if (c.length < 4)
+        for (const p of PARCELS)
+          if (!c.some((e) => e.id === p.id))
+            for (const k of [0, 1]) near.push([...c, { id: p.id, dock: dock(k) }]);
+      for (const n of near) {
+        const key = name(n);
+        if (!table.has(key)) {
+          table.set(key, d + 1);
+          queue.push(byName.get(key)!);
+        }
+      }
+    }
+  }
+  it('opens school level 3 with four empty slots, the whole shelf and the practice tray', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 3 });
+    expect(seed(3)).toEqual([null, null, null, null]);
+    expect(tray(3)).toEqual([0, 3, 5, 6]);
+    expect(tray(3).map(requested)).toEqual(['tree', 'house', 'tree', 'house']);
+    expect(shelfIds(3)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(shelfIds(2)).toEqual(SHELF);
+    expect(new Round(3).surpriseSeen).toBe(true);
+    expect(new Round(7).level).toBe(3);
+  });
+  it('accepts exactly the 212 lessons that fit the shape rule, in any slots, noisy labels included', () => {
+    const counts = [0, 0, 0, 0, 0],
+      cleanCounts = [0, 0, 0, 0, 0];
+    for (const cards of sets) {
+      const b = board(cards);
+      expect(accepted(3, b)).toBe(passes(cards));
+      // Passing the visible tray and fitting the shape rule are the same thing.
+      const r = fit(b);
+      expect(accepted(3, b)).toBe(r !== null && tray(3).every((id) => expected[r][id] === requested(id)));
+      expect(accepted(3, [...b].reverse())).toBe(passes(cards));
+      expect(consistent(b)).toBe(clean(cards));
+      if (passes(cards)) {
+        counts[cards.length]++;
+        if (clean(cards)) cleanCounts[cards.length]++;
+      }
+    }
+    expect(counts).toEqual([0, 0, 16, 48, 148]);
+    expect(cleanCounts).toEqual([0, 0, 16, 48, 68]);
+    // A lesson with one label against the request still passes: the sorter used shape.
+    const noisy: Board = [
+      { id: 0, dock: 'tree' },
+      { id: 1, dock: 'tree' },
+      { id: 2, dock: 'house' },
+      { id: 7, dock: 'tree' },
+    ];
+    expect([fit(noisy), accepted(3, noisy), consistent(noisy)]).toEqual([2, true, false]);
+  });
+  it('keeps parcels unique within four slots, lets any slot change, and holds a waiting card out of the fit', () => {
+    expect(valid(3, [{ id: 0, dock: 'tree' }, { id: 0, dock: 'house' }, null, null])).toBe(false);
+    expect(valid(3, [null, null, null, null, null])).toBe(false);
+    expect(valid(3, [{ id: 8, dock: 'tree' }, null, null, null])).toBe(false);
+    const waiting: Board = [{ id: 0, dock: 'tree' }, { id: 2, dock: 'house' }, { id: 5, dock: null }, null];
+    expect(valid(3, waiting)).toBe(true);
+    expect(fit(waiting)).toBe(2);
+    expect(accepted(3, waiting)).toBe(false);
+    expect(solution(3, waiting)).toEqual([{ slot: 2, example: null }]);
+    const full: Board = [0, 1, 2, 3].map((id) => ({ id, dock: 'tree' as Dock }));
+    expect(actions(3, full).every((a) => a.example === null || a.example.id === full[a.slot]!.id)).toBe(true);
+    expect(actions(3, seed(3))).toHaveLength(4 * 16);
+    const r = new Round(3);
+    expect(r.edit({ slot: 0, example: { id: 0, dock: null } })).toBe(true);
+    expect(r.rule).toBeNull();
+    expect(r.edit({ slot: 1, example: { id: 0, dock: 'tree' } })).toBe(false);
+    expect(r.edit({ slot: 0, example: { id: 0, dock: 'tree' } })).toBe(true);
+    expect(r.edit({ slot: 0, example: { id: 0, dock: 'house' } })).toBe(true);
+    expect(r.edit({ slot: 0, example: null })).toBe(true);
+    expect(r.board).toEqual(seed(3));
+  });
+  it('Show me takes a shortest path from every lesson, to a request-labelled lesson when one is as near', () => {
+    expect(solution(3, seed(3))).toEqual([
+      { slot: 0, example: { id: 0, dock: 'tree' } },
+      { slot: 1, example: { id: 2, dock: 'house' } },
+    ]);
+    let deepest = 0;
+    for (const cards of sets) {
+      const d = far.get(name(cards))!;
+      deepest = Math.max(deepest, d);
+      // Slot order must not change the distance: try the cards packed left and packed right.
+      for (const b of [board(cards), board(cards).reverse()]) {
+        const path = solution(3, b);
+        expect(path).toHaveLength(d);
+        let at = b;
+        for (const [i, a] of path.entries()) {
+          expect(actions(3, at)).toContainEqual(a);
+          at = apply(at, a);
+          expect(valid(3, at)).toBe(true);
+          expect(solution(3, at)).toHaveLength(d - i - 1);
+        }
+        if (d) {
+          expect(accepted(3, at)).toBe(true);
+          if (cleanFar.get(name(cards)) === d) expect(consistent(at)).toBe(true);
+        }
+      }
+    }
+    expect(deepest).toBe(4);
+  });
+  it('counts an empty, a waiting and a failed Check once each, never a Test, and finishes once with help', () => {
+    const r = new Round(3);
+    expect(r.begin('test', 5)).toEqual([{ id: 5, actual: null, required: 'tree' }]);
+    r.complete();
+    expect(r.begin('check')?.every((t) => t.actual === null)).toBe(true);
+    expect(r.complete()).toEqual({ kind: 'check', ok: false, first: null });
+    expect([r.misses, r.hints, r.tests]).toEqual([1, 0, 1]);
+    r.edit({ slot: 0, example: { id: 0, dock: 'tree' } });
+    r.edit({ slot: 1, example: { id: 4, dock: 'house' } });
+    expect(r.rule).toBe(0);
+    r.begin('check');
+    // Tray order 0, 3, 5, 6: the blue square is the first parcel the color rule sends wrong.
+    expect(r.complete()?.first).toEqual({ id: 3, actual: 'tree', required: 'house' });
+    expect([r.misses, r.failures]).toEqual([2, 2]);
+    expect(r.glow).toEqual(solution(3, r.board)[0]);
+    let steps = 0;
+    while (r.help()) steps++;
+    expect(steps).toBe(r.hints);
+    expect(steps).toBeGreaterThan(0);
+    expect(r.rule).toBe(2);
+    expect(r.help()).toBeNull();
+    expect(r.finish()).toBeNull();
+    r.begin('check');
+    expect(r.complete()?.ok).toBe(true);
+    expect(r.finish()).toEqual({ misses: 2, hints: steps });
+    expect(r.finish()).toBeNull();
   });
 });
