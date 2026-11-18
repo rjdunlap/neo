@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/pixel-pictures; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `pixel-pictures` · **Land:** Painted Canyon · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `pixel-pictures` · **Land:** Painted Canyon · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, symmetry, logic, art
 
