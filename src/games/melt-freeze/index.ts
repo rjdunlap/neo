@@ -9,13 +9,26 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawTable, ghostArt, iconArt, puddleArt, snowArt, solidArt, sunArt, targetArt } from './art';
 import {
+  drawTable,
+  ghostArt,
+  guessArt,
+  iconArt,
+  puddleArt,
+  snowArt,
+  solidArt,
+  sunArt,
+  targetArt,
+} from './art';
+import {
+  GUESSES,
   LAP_LEVEL,
   LEVELS,
   MakeRound,
   meltPlan,
   melts,
+  predictFor,
+  PredictRound,
   requestsFor,
   sayAfter,
   step,
@@ -25,6 +38,8 @@ import {
   thingsFor,
   toolFor,
   traysFor,
+  truthOf,
+  type Guess,
   type Plan,
   type State,
   type Substance,
@@ -74,6 +89,10 @@ class MeltFreeze implements Game {
   readonly used = new Set<Tool>();
   private readonly changed = new Set<Substance>();
   private seenStay = false;
+  /** Level 6: what she thought and what the sun showed, and the two picture cards she guesses with. */
+  predict: PredictRound | null = null;
+  readonly guessCards: Record<Guess, Container> = { melts: new Container(), stays: new Container() };
+  private readonly guessPics: Partial<Record<Guess, Container>> = {};
 
   private readonly background = new Graphics();
   private readonly table = new Graphics();
@@ -88,6 +107,8 @@ class MeltFreeze implements Game {
   private layout: TableLayout;
   private view: View;
   private clock = 0;
+  /** Level 6: the cards bob once when the sun is tapped before a guess, or a hint is asked for. */
+  private beckon = 0;
   private glowOn: Tool | null = null;
   askForHint?: () => void;
   hintLabel?: string;
@@ -110,6 +131,21 @@ class MeltFreeze implements Game {
       this.showCard();
       this.askForHint = () => this.hint();
       this.hintLabel = 'Show a hint';
+    } else if (this.plan.mode === 'predict') {
+      this.predict = new PredictRound(predictFor(ctx.rng, authored));
+      this.show([this.predict.thing]);
+      for (const guess of GUESSES) {
+        const card = this.guessCards[guess];
+        card.addChild(tile(150, 150));
+        card.hitArea = new Rectangle(-80, -80, 160, 160);
+        onTap(card, () => this.choose(guess));
+        ctx.stage.addChild(card);
+      }
+      this.showGuessCards();
+      // A melted thing gets no snowflake at this level: going back is the next level's question.
+      this.snowButton.visible = false;
+      this.askForHint = () => this.predictHint();
+      this.hintLabel = 'Show a hint';
     } else {
       this.trays = traysFor(ctx.rng, authored);
       this.show(this.trays[0]);
@@ -125,6 +161,7 @@ class MeltFreeze implements Game {
       [this.snowButton, snowArt(), 'snow'],
     ] as const) {
       if (this.plan.mode === 'tap' && tool === 'sun') continue;
+      if (this.plan.mode === 'predict' && tool === 'snow') continue;
       art.scale.set(1.15);
       button.addChild(tile(150, 150), art);
       button.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -181,6 +218,7 @@ class MeltFreeze implements Game {
     else if (this.plan.mode === 'watch') void this.ctx.instruct('meltfreeze.instruct.watch');
     else if (this.plan.mode === 'turn') void this.ctx.instruct('meltfreeze.instruct.both');
     else if (this.plan.mode === 'make') this.askRequest();
+    else if (this.plan.mode === 'predict') this.askGuess();
     else void this.ctx.instruct('meltfreeze.instruct.tray');
   }
 
@@ -206,6 +244,12 @@ class MeltFreeze implements Game {
         return this.round && !this.round.finished ? tap(toolFor(this.round.request)) : null;
       case 'tray':
         return !this.used.has('sun') ? tap('sun') : !this.used.has('snow') ? tap('snow') : null;
+      case 'predict': {
+        // The demonstration shows a match; the surprise is hers to find.
+        const p = this.predict;
+        if (!p || p.finished) return null;
+        return p.guess ? tap('sun') : { tap: { on: this.guessCards[truthOf(p.thing)] } };
+      }
     }
   }
 
@@ -242,6 +286,13 @@ class MeltFreeze implements Game {
     if (this.finished) return;
     // Touch-down feedback at once, even while the table is still changing; the step itself waits for a still table.
     this.pulse[tool] = 1;
+    if (this.plan.mode === 'predict' && !this.predict?.guess && !this.busy) {
+      // The sun waits for her guess: a soft tick, the cards beckon and the question is asked again.
+      sfx.tick();
+      this.rest = 0;
+      this.beckon = 1;
+      return void this.askGuess();
+    }
     if (tool === 'sun') sfx.pop(7);
     else sfx.pluck(11);
     if (this.busy) return;
@@ -257,6 +308,8 @@ class MeltFreeze implements Game {
         return void this.makeTap(tool);
       case 'tray':
         return void this.trayTap(tool);
+      case 'predict':
+        return void this.predictTap();
     }
   }
 
@@ -514,6 +567,96 @@ class MeltFreeze implements Game {
     void this.ctx.instruct('meltfreeze.instruct.tray');
   }
 
+  // Level 6: will it melt? --------------------------------------------------------------------
+
+  /** The question for the thing on the table, or the next step once she has guessed: the line the guide repeats. */
+  private askGuess() {
+    const p = this.predict!;
+    if (p.finished) return;
+    if (p.guess) void this.ctx.instruct('meltfreeze.predict.test');
+    else void this.ctx.instruct('meltfreeze.instruct.predict', { thing: SUBSTANCES[p.thing].word });
+  }
+
+  /** Redraws both cards as pictures of the thing on the table, and shows which one she has picked (if any). */
+  private showGuessCards() {
+    const p = this.predict!;
+    for (const guess of GUESSES) {
+      this.guessPics[guess]?.destroy({ children: true });
+      const pic = guessArt(p.thing, guess);
+      this.guessPics[guess] = pic;
+      this.guessCards[guess].addChild(pic);
+    }
+    this.poseGuess();
+  }
+
+  /** The picked card lifts and stays lit as "what you thought"; the sun opens once there is a guess. */
+  private poseGuess() {
+    const picked = this.predict!.guess;
+    for (const guess of GUESSES) {
+      const card = this.guessCards[guess];
+      card.alpha = picked && picked !== guess ? 0.55 : 1;
+      card.pivot.y = picked === guess ? 14 : 0;
+    }
+    this.sunButton.alpha = picked || this.busy ? 1 : 0.45;
+    this.drawGlow();
+  }
+
+  /** She taps a card: it lifts at once. A tap on the other card before the sun is tapped changes her mind freely. */
+  private choose(guess: Guess) {
+    const p = this.predict!;
+    if (this.finished || this.busy || p.finished) return;
+    this.rest = 0;
+    sfx.pluck(guess === 'melts' ? 4 : 7);
+    const first = !p.guess;
+    p.choose(guess);
+    this.poseGuess();
+    const card = this.guessCards[guess];
+    card.scale.set(1.12);
+    void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    if (first) this.askGuess();
+  }
+
+  /** The sun is tapped after a guess: the thing melts or stays, then the match or the surprise is named, warmly either way. */
+  private async predictTap() {
+    const p = this.predict!;
+    const t = this.things[0];
+    const said = sayAfter(t.id, t.state, 'sun');
+    const out = p.test();
+    if (!out) return;
+    this.busy = true;
+    if (out.result === 'melts') {
+      t.state = 'melted';
+      this.changed.add(t.id);
+      void this.ctx.say(said);
+      await this.melt(t);
+    } else {
+      this.seenStay = true;
+      this.wiggle(t);
+      await this.ctx.say(said);
+    }
+    if (out.match) this.ctx.pet.cheer();
+    await this.ctx.say(out.line);
+    if (p.finished) return void this.end();
+    await this.ctx.tw.to(t.node, { x: -200, alpha: 0 }, { duration: 0.4, ease: ease.inQuad });
+    this.show([p.thing]);
+    const next = this.things[0];
+    next.node.x = this.view.w + 120;
+    this.showGuessCards();
+    await this.ctx.tw.to(next.node, { x: this.layout.spots[0].x }, { duration: 0.45, ease: ease.outBack });
+    this.busy = false;
+    this.rest = 0;
+    this.poseGuess();
+    this.askGuess();
+  }
+
+  /** Show a hint: how the level works. There is no right card to show, and nothing is counted. */
+  private predictHint() {
+    if (this.finished || !this.predict || this.predict.finished) return;
+    this.beckon = this.predict.guess ? 0 : 1;
+    if (this.predict.guess) this.pulse.sun = 1;
+    void this.ctx.say(this.predict.ask());
+  }
+
   // Round end and the pause sheet --------------------------------------------------------------
 
   private async end() {
@@ -523,9 +666,9 @@ class MeltFreeze implements Game {
     await this.ctx.tw.wait(0.8);
     this.ctx.pet.cheer();
     sfx.tada();
-    await this.ctx.say('meltfreeze.done');
+    await this.ctx.say(this.plan.mode === 'predict' ? 'meltfreeze.done.predict' : 'meltfreeze.done');
     const discoveries =
-      this.plan.mode === 'tray'
+      this.plan.mode === 'tray' || this.plan.mode === 'predict'
         ? [
             ...[...this.changed].map((s) => entryId('melt-freeze', s)),
             ...(this.seenStay ? [entryId('melt-freeze', 'stays')] : []),
@@ -563,6 +706,11 @@ class MeltFreeze implements Game {
       this.pose(t);
     }
     this.used.clear();
+    if (this.predict) {
+      this.predict.clear();
+      this.poseGuess();
+      this.askGuess();
+    }
   }
 
   // Layout ----------------------------------------------------------------------------------------
@@ -596,12 +744,27 @@ class MeltFreeze implements Game {
     if (this.plan.mode === 'tap' && v.h > v.w) {
       this.snowButton.position.set(L.spots[0].x, L.table.y + L.table.h + 110);
     }
+    // Level 6 has no snowflake, so the sun stands alone in the middle of the bottom row when the screen is upright.
+    if (this.plan.mode === 'predict' && v.h > v.w) this.sunButton.x = v.w / 2;
     this.card.position.set(L.card.x + L.card.w / 2, L.card.y + L.card.h / 2);
+    GUESSES.forEach((guess, i) => {
+      const b = L.cards[i];
+      this.guessCards[guess].position.set(b.x + b.w / 2, b.y + b.h / 2);
+    });
     this.drawGlow();
   }
 
   private drawGlow() {
     const g = this.glow.clear();
+    const picked = this.predict?.guess;
+    if (picked && !this.finished) {
+      // "What you thought": a steady ring round the picked card, lifted with it.
+      const c = this.guessCards[picked];
+      g.roundRect(c.x - 84, c.y - 84 - c.pivot.y, 168, 172, 24).stroke({
+        width: 8,
+        color: swatch.yellow.line,
+      });
+    }
     if (!this.glowOn || this.finished) return;
     const b = this.glowOn === 'sun' ? this.sunButton : this.snowButton;
     g.roundRect(b.x - 92, b.y - 92, 184, 184, 30).stroke({ width: 8, color: swatch.yellow.line });
@@ -618,6 +781,21 @@ class MeltFreeze implements Game {
         b.scale.set(1 + 0.14 * Math.sin(p * Math.PI));
       } else b.scale.set(1);
     }
+    if (this.plan.mode === 'predict') {
+      if (this.beckon > 0) this.beckon = Math.max(0, this.beckon - dt * 1.6);
+      const k = 1 + 0.08 * Math.sin(this.beckon * Math.PI * 2);
+      if (!this.predict?.guess)
+        for (const guess of GUESSES)
+          if (!this.ctx.tw.busy(this.guessCards[guess].scale)) this.guessCards[guess].scale.set(k);
+      // A long rest: the pet asks again. Nothing is tapped for her, because there is no right card to show.
+      if (!this.busy && !this.finished && !this.ctx.demo) {
+        this.rest += dt;
+        if (this.rest > REST_BEFORE_HELP) {
+          this.rest = 0;
+          this.askGuess();
+        }
+      }
+    }
     // Level 1: a long rest with one change still unseen, and the pet shows the other tool so the round finishes.
     if (this.plan.mode === 'watch' && !this.busy && !this.finished && !this.ctx.demo) {
       this.rest += dt;
@@ -632,6 +810,8 @@ class MeltFreeze implements Game {
     this.cardArt?.destroy({ children: true });
     if (this.plan.mode !== 'tap') this.playfield.destroy();
     else this.sunButton.destroy();
+    if (this.plan.mode !== 'predict') for (const guess of GUESSES) this.guessCards[guess].destroy();
+    else this.snowButton.destroy();
   }
 }
 
@@ -641,8 +821,8 @@ export const meltFreeze: GameModule = {
   titleLine: 'game.melt-freeze',
   region: 'tinker-lab',
   challenge: 'noticing',
-  skills: ['states-of-matter', 'cause-and-effect', 'observation'],
-  bands: ['lap', 'toddler', 'preschool'],
+  skills: ['states-of-matter', 'cause-and-effect', 'observation', 'prediction'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [LAP_LEVEL],
   describeLevel: (l) => meltPlan(l).name,

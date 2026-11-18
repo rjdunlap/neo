@@ -452,6 +452,7 @@ export const SHARED = {
   'journal.melt.ice': ['The ice melts in the warm sun and goes hard again in the cold.'],
   'journal.melt.butter': ['The butter melts when it is warm and goes hard again when it is cool.'],
   'journal.melt.chocolate': ['The chocolate melts when it is warm and goes hard again when it is cool.'],
+  'journal.melt.lolly': ['The ice lolly melts in the warm sun and freezes again in the cold.'],
   'journal.melt.stays': ['Some things, like a stone and a spoon, stay the same, warm or cool.'],
   'journal.kitchen.half': ['Two halves make a whole. Put the two halves of a sandwich together and it is the whole sandwich again.'],
   'journal.kitchen.quarter': ['Two quarters make a half. Two quarter pieces cover the same as one half.'],

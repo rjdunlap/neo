@@ -190,6 +190,93 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     log(
       'Melt and Freeze 1, 3 and 4: ice melts and freezes, a wrong tool and one counted hint, two trays, portrait, journal entries passed',
     );
+
+    // Level 6: will it melt? The authored four; the sun waits for a guess, a changed mind is free, one guess is a
+    // surprise, Show a hint is not counted, and nothing is ever a miss. A portrait screenshot with a card picked.
+    await launch('melt-freeze', 6);
+    await settle();
+    const predict = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          things: g.predict.things,
+          index: g.predict.index,
+          guess: g.predict.guess,
+          on: g.things.map((t) => [t.id, t.state]),
+          snow: !!g.snowButton.parent,
+        };
+      });
+    const card = (guess) => page.evaluate((guess) => kit.tapOn(neo.scene.game.guessCards[guess]), guess);
+    assert.deepEqual(await predict(), {
+      things: ['lolly', 'shell', 'chocolate', 'spoon'],
+      index: 0,
+      guess: null,
+      on: [['lolly', 'solid']],
+      snow: false,
+    });
+    assert.equal(
+      await page.evaluate(() => neo.scene.instruction?.id),
+      'meltfreeze.instruct.predict',
+      'the question is the instruction',
+    );
+    await tool('sun');
+    assert.deepEqual((await predict()).on, [['lolly', 'solid']], 'the sun waits for a guess');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await card('stays');
+    await page.waitForTimeout(200);
+    await card('melts');
+    assert.equal((await predict()).guess, 'melts', 'a tap on the other card changes her mind');
+    assert.equal(
+      await page.evaluate(() => neo.scene.instruction?.id),
+      'meltfreeze.predict.test',
+      'once she has guessed, the sun is the instruction',
+    );
+    await page.waitForTimeout(400);
+    await screenshot('melt-freeze-6-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(500);
+    await tool('sun');
+    assert.deepEqual(
+      await predict().then((p) => [p.index, p.on]),
+      [1, [['shell', 'solid']]],
+      'the lolly melted',
+    );
+    // The shell: she thinks it melts. A surprise, and not a miss.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    await card('melts');
+    await tool('sun');
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.predict.record.map((r) => [r.thing, r.guess, r.result])),
+      [
+        ['lolly', 'melts', 'melts'],
+        ['shell', 'melts', 'stays'],
+      ],
+    );
+    assert.deepEqual(await tally(), [0, 0], 'a surprise and a hint count nothing');
+    await card('melts');
+    await tool('sun');
+    await card('stays');
+    await tool('sun');
+    await finished('melt-freeze');
+    assert.deepEqual(await score(), [0, 0], 'level 6 counts nothing');
+    assert.deepEqual(
+      await page.evaluate(() =>
+        kit.store.data.journal.found.filter((k) => k.startsWith('melt-freeze:')).sort(),
+      ),
+      [
+        'melt-freeze:butter',
+        'melt-freeze:chocolate',
+        'melt-freeze:ice',
+        'melt-freeze:lolly',
+        'melt-freeze:stays',
+      ],
+      'the lolly she watched melt joins the journal',
+    );
+    log(
+      'Melt and Freeze 6: the sun waits for a guess, a changed mind, a surprise and a hint count nothing, portrait, the lolly entry passed',
+    );
   }
   return { meltFreezePlay };
 }

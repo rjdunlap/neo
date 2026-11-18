@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import type { Box, Substance } from './logic';
+import { melts, type Box, type Guess, type Substance } from './logic';
 
 /** A big warm sun, about 110 units across, centred on (0, 0). */
 export function sunArt(): Graphics {
@@ -40,6 +40,8 @@ const COLORS: Record<Substance, { fill: number; line: number; light: number }> =
   chocolate: { fill: 0x7a4a2a, line: 0x55301a, light: 0xa8704a },
   stone: { fill: 0xa9a9b4, line: 0x6f6f7c, light: 0xd3d3da },
   spoon: { fill: wood.fill, line: wood.line, light: wood.light },
+  lolly: swatch.pink,
+  shell: { fill: swatch.orange.light, line: swatch.brown.line, light: swatch.white.fill },
 };
 
 /** A thing in its hard form, about 100 units across with its base on (0, 0). */
@@ -92,6 +94,28 @@ export function solidArt(s: Substance, size = 100): Graphics {
         .stroke({ width: 5 * k, color: c.line });
       g.ellipse(0, -72 * k, 14 * k, 9 * k).fill({ color: c.light, alpha: 0.8 });
       break;
+    case 'lolly':
+      g.roundRect(-6 * k, -30 * k, 12 * k, 30 * k, 5 * k)
+        .fill(wood.light)
+        .stroke({ width: 4 * k, color: wood.line });
+      g.roundRect(-28 * k, -96 * k, 56 * k, 72 * k, 24 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
+      g.roundRect(-16 * k, -84 * k, 10 * k, 34 * k, 5 * k).fill({ color: c.light, alpha: 0.9 });
+      break;
+    case 'shell':
+      g.moveTo(-12 * k, 0)
+        .lineTo(-46 * k, -34 * k)
+        .quadraticCurveTo(-42 * k, -78 * k, 0, -80 * k)
+        .quadraticCurveTo(42 * k, -78 * k, 46 * k, -34 * k)
+        .lineTo(12 * k, 0)
+        .closePath()
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line, join: 'round' });
+      for (const x of [-30, -15, 0, 15, 30])
+        g.moveTo(x * 0.25 * k, -8 * k).lineTo(x * k, (-70 + Math.abs(x) * 0.5) * k);
+      g.stroke({ width: 3 * k, color: c.line, alpha: 0.7, cap: 'round' });
+      break;
   }
   return g;
 }
@@ -105,6 +129,11 @@ export function puddleArt(s: Substance, size = 100): Graphics {
     .fill({ color: c.fill, alpha: s === 'ice' ? 0.75 : 1 })
     .stroke({ width: 4 * k, color: c.line, alpha: 0.8 });
   g.ellipse(-18 * k, -5 * k, 16 * k, 5 * k).fill({ color: c.light, alpha: 0.7 });
+  // The lolly's stick is left lying in its puddle.
+  if (s === 'lolly')
+    g.roundRect(10 * k, -8 * k, 40 * k, 10 * k, 5 * k)
+      .fill(wood.light)
+      .stroke({ width: 3 * k, color: wood.line });
   return g;
 }
 
@@ -133,6 +162,37 @@ export function targetArt(s: Substance, melted: boolean): Container {
     c.addChild(ghost);
   }
   return c;
+}
+
+/**
+ * A prediction card's picture, about 140 units tall and centred on (0, 0): this thing above an arrow to what the guess says
+ * the sun will do, its puddle (it melts) or the same thing again (it stays). A picture of the thing on the table, never words.
+ */
+export function guessArt(s: Substance, guess: Guess): Container {
+  const c = new Container();
+  const from = solidArt(s, 56);
+  from.y = -14;
+  const arrow = new Graphics()
+    .moveTo(0, -6)
+    .lineTo(0, 12)
+    .moveTo(-9, 4)
+    .lineTo(0, 14)
+    .lineTo(9, 4)
+    .stroke({ width: 6, color: ink, cap: 'round', join: 'round' });
+  // A thing that never melts has no puddle of its own, so the "it melts" card shows a plain puddle in its colour.
+  const to = guess === 'stays' ? solidArt(s, 56) : melts(s) ? puddleArt(s, 85) : plainPuddle(s, 85);
+  to.y = guess === 'stays' ? 70 : 46;
+  c.addChild(from, arrow, to);
+  return c;
+}
+
+function plainPuddle(s: Substance, size: number): Graphics {
+  const c = COLORS[s];
+  const k = size / 100;
+  return new Graphics()
+    .ellipse(0, 0, 56 * k, 20 * k)
+    .fill(c.fill)
+    .stroke({ width: 4 * k, color: c.line, alpha: 0.8 });
 }
 
 /** A cube beside a puddle: the hub icon and sticker. */

@@ -3,7 +3,7 @@ import { WORDS } from '../learning/words/letter-words';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, thingWord, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
-import { CHANGERS } from '../games/melt-freeze/logic';
+import { CHANGERS, EARLY, SUBSTANCES } from '../games/melt-freeze/logic';
 import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
 import { RECIPES } from '../games/paint-mixer/logic';
 import type { LineId } from './voice-script';
@@ -262,17 +262,23 @@ export const JOURNAL: readonly JournalEntry[] = [
       found: `the ${helper} fixed the ${HELPER[helper].problem} with ${HELPER[helper].toolName}`,
     },
   })),
-  // Melt and Freeze, level 4: each thing she watched melt and go hard again on the tray, and the things that stayed the same.
+  // Melt and Freeze, levels 4 and 6: each thing she watched melt (on the tray, where it also went hard again, or after
+  // a guess), and the things that stayed the same. The ice lolly is only ever met at level 6.
   ...CHANGERS.map((s): JournalEntry => ({
     id: entryId('melt-freeze', s),
     game: 'melt-freeze',
     key: s,
-    name: cap(s),
+    name: cap(SUBSTANCES[s].word),
     line: `journal.melt.${s}` as LineId,
-    source: {
-      find: `warm and cool a tray with the ${s} on it`,
-      found: `the ${s} melted in the warm and went hard again in the cool`,
-    },
+    source: EARLY.includes(s)
+      ? {
+          find: `warm and cool a tray with the ${s} on it`,
+          found: `the ${s} melted in the warm and went hard again in the cool`,
+        }
+      : {
+          find: `say what you think the sun will do to the ${SUBSTANCES[s].word}, then warm it`,
+          found: `the ${SUBSTANCES[s].word} melted in the warm`,
+        },
   })),
   {
     id: entryId('melt-freeze', 'stays'),
@@ -281,8 +287,8 @@ export const JOURNAL: readonly JournalEntry[] = [
     name: 'Stays the same',
     line: 'journal.melt.stays',
     source: {
-      find: 'warm a tray that has a stone or a spoon on it',
-      found: 'the stone and the spoon stayed the same in the warm',
+      find: 'warm a thing that does not melt, like a stone or a spoon',
+      found: 'some things stayed the same in the warm',
     },
   },
   // Pet Kitchen: what a fair or asked-for serve showed (decision 6 of its dive).

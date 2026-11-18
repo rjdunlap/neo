@@ -2,15 +2,16 @@
 
 <!-- generated: from src/games/melt-freeze; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `melt-freeze` · **Land:** Bubble Beach · **Ages:** lap–preschool · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `melt-freeze` · **Land:** Bubble Beach · **Ages:** lap–pre-K · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** states-of-matter, cause-and-effect, observation
+**Skills:** states-of-matter, cause-and-effect, observation, prediction
 
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 5, 1, 2 |
 | toddler | 1–3 |
-| preschool | 3–4 |
+| preschool | 3, 4, 6 |
+| pre-K | 4, 6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +20,7 @@
 | 3 | Make it…: three request cards, each asking for the sun or the snowflake |
 | 4 | Some do, some don’t: warm and cool a tray of four things together |
 | 5 | One big ice cube: tap anywhere to melt it, then tap the snowflake to freeze it |
+| 6 | Will it melt?: say what you think, then warm it and find out (a guess is never wrong) |
 
 <!-- end generated -->
 

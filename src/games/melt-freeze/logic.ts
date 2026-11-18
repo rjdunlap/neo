@@ -4,7 +4,7 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
 /**
- * Melt and Freeze, levels 1–4: a thing on a little table, a big sun that warms it and a snowflake that cools it. The state
+ * Melt and Freeze: a thing on a little table, a big sun that warms it and a snowflake that cools it. The state
  * table is authored, not simulated, so every change can be tested: `sun` takes a solid to its melted form if the thing melts,
  * `snow` takes a melted thing back to its solid if the change can be undone, and everything else is no change.
  */
@@ -18,6 +18,8 @@ export const SUBSTANCES = {
   chocolate: { solid: 'a chocolate square', melted: 'a brown pool', reversible: true, word: 'chocolate' },
   stone: { solid: 'a grey stone', melted: null, reversible: false, word: 'stone' },
   spoon: { solid: 'a wooden spoon', melted: null, reversible: false, word: 'spoon' },
+  lolly: { solid: 'an ice lolly on its stick', melted: 'a pink puddle', reversible: true, word: 'ice lolly' },
+  shell: { solid: 'a sea shell', melted: null, reversible: false, word: 'shell' },
 } as const satisfies Record<
   string,
   { solid: string; melted: string | null; reversible: boolean; word: string }
@@ -25,10 +27,19 @@ export const SUBSTANCES = {
 export type Substance = keyof typeof SUBSTANCES;
 export const ALL_SUBSTANCES = Object.keys(SUBSTANCES) as Substance[];
 
-/** Whether warming changes the thing at all. A thing that melts here can always be made hard again (levels 1–4). */
+/** Whether warming changes the thing at all. A thing that melts here can always be made hard again. */
 export const melts = (s: Substance) => SUBSTANCES[s].melted !== null;
+/** Every thing that melts, which is one journal entry each. */
 export const CHANGERS = ALL_SUBSTANCES.filter(melts);
 export const STAYERS = ALL_SUBSTANCES.filter((s) => !melts(s));
+
+/**
+ * Levels 1–4 keep the five things they were built with, as an explicit list: a row added to the table for a later level
+ * never changes what level 2 draws, level 3 asks for or level 4 puts on a tray.
+ */
+export const EARLY: Substance[] = ['ice', 'butter', 'chocolate', 'stone', 'spoon'];
+export const EARLY_CHANGERS = EARLY.filter(melts);
+export const EARLY_STAYERS = EARLY.filter((s) => !melts(s));
 
 /** One warm or cool step. The same state back means nothing happened. */
 export function step(s: Substance, state: State, tool: Tool): State {
@@ -42,16 +53,22 @@ export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   if (after !== before)
     return after === 'melted'
       ? 'meltfreeze.melt'
-      : s === 'ice'
+      : s === 'ice' || s === 'lolly'
         ? 'meltfreeze.freeze.ice'
         : 'meltfreeze.freeze';
-  if (!melts(s)) return s === 'stone' ? 'meltfreeze.stays.stone' : 'meltfreeze.stays.spoon';
+  if (!melts(s))
+    return s === 'stone'
+      ? 'meltfreeze.stays.stone'
+      : s === 'shell'
+        ? 'meltfreeze.stays.shell'
+        : 'meltfreeze.stays.spoon';
   return tool === 'sun' ? 'meltfreeze.already.melted' : 'meltfreeze.already.hard';
 }
 
-export type Mode = 'watch' | 'turn' | 'make' | 'tray' | 'tap';
+export type Mode = 'watch' | 'turn' | 'make' | 'tray' | 'tap' | 'predict';
 
 export const LAP_LEVEL = 5;
+export const PREDICT_LEVEL = 6;
 export const TAPS_TO_MELT = 3;
 
 export interface Plan {
@@ -71,6 +88,10 @@ export const PLANS: Plan[] = [
   { mode: 'make', name: 'Make it…: three request cards, each asking for the sun or the snowflake' },
   { mode: 'tray', name: 'Some do, some don’t: warm and cool a tray of four things together' },
   { mode: 'tap', name: 'One big ice cube: tap anywhere to melt it, then tap the snowflake to freeze it' },
+  {
+    mode: 'predict',
+    name: 'Will it melt?: say what you think, then warm it and find out (a guess is never wrong)',
+  },
 ];
 
 export const meltPlan = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -79,7 +100,7 @@ export const meltPlan = (level: number) => PLANS[Math.max(0, Math.min(PLANS.leng
 export function thingsFor(rng: Rng, authored: boolean): Substance[] {
   if (authored) return ['ice', 'butter', 'stone'];
   for (;;) {
-    const pick = rng.shuffle([...ALL_SUBSTANCES]).slice(0, 3);
+    const pick = rng.shuffle([...EARLY]).slice(0, 3);
     if (pick.some(melts) && pick.some((s) => !melts(s))) return pick;
   }
 }
@@ -102,7 +123,7 @@ export function requestsFor(rng: Rng, authored: boolean): Request[] {
       { thing: 'chocolate', from: 'solid', to: 'melted' },
     ];
   }
-  const things = rng.shuffle([...CHANGERS]);
+  const things = rng.shuffle([...EARLY_CHANGERS]);
   const firstMelts = rng.chance(0.5);
   return things.map((thing, i): Request => {
     const melt = i === 2 ? rng.chance(0.5) : i === 0 ? firstMelts : !firstMelts;
@@ -117,7 +138,7 @@ export function traysFor(rng: Rng, authored: boolean): Substance[][] {
       ['ice', 'butter', 'stone', 'spoon'],
       ['chocolate', 'ice', 'stone', 'spoon'],
     ];
-  return [0, 1].map(() => rng.shuffle([...rng.shuffle([...CHANGERS]).slice(0, 2), ...STAYERS]));
+  return [0, 1].map(() => rng.shuffle([...rng.shuffle([...EARLY_CHANGERS]).slice(0, 2), ...EARLY_STAYERS]));
 }
 
 /** Supported finish on the third miss of a request: the pet taps the right tool. */
@@ -211,6 +232,82 @@ export class MakeRound {
   }
 }
 
+// Level 6: will it melt? -----------------------------------------------------------------------
+
+/** The things that can stand on the table as themselves at level 6. */
+export const PREDICT_POOL: Substance[] = ['ice', 'butter', 'chocolate', 'lolly', 'stone', 'spoon', 'shell'];
+
+/** Level 6: four distinct things, two that melt and two that stay, the first two one of each. */
+export function predictFor(rng: Rng, authored: boolean): Substance[] {
+  if (authored) return ['lolly', 'shell', 'chocolate', 'spoon'];
+  const melt = rng.shuffle(PREDICT_POOL.filter(melts)).slice(0, 2);
+  const stay = rng.shuffle(PREDICT_POOL.filter((s) => !melts(s))).slice(0, 2);
+  return [...rng.shuffle([melt[0], stay[0]]), ...rng.shuffle([melt[1], stay[1]])];
+}
+
+export type Guess = 'melts' | 'stays';
+export const GUESSES: Guess[] = ['melts', 'stays'];
+
+/** What the sun does to a thing standing on the table, in a guess's own words. */
+export const truthOf = (s: Substance): Guess => (melts(s) ? 'melts' : 'stays');
+
+/**
+ * Level 6's record, kept apart from the drawing so it can be tested: she says what she thinks (and may change her mind until
+ * the sun is tapped), then the sun shows what happens. A guess is an experimental prediction, never a wrong answer, so
+ * nothing here is ever counted: misses and hints are 0 whatever she taps.
+ */
+export class PredictRound {
+  index = 0;
+  readonly misses = 0;
+  readonly hints = 0;
+  /** What she thought and what the sun showed, one per thing tested so far. */
+  readonly record: { thing: Substance; guess: Guess; result: Guess }[] = [];
+  /** Her guess for the thing in play, until the sun is tapped. */
+  guess: Guess | null = null;
+
+  constructor(readonly things: Substance[]) {}
+
+  get thing(): Substance {
+    return this.things[Math.min(this.index, this.things.length - 1)];
+  }
+
+  get finished() {
+    return this.index >= this.things.length;
+  }
+
+  /** She taps a card; a tap on the other card before the sun changes her mind freely. */
+  choose(guess: Guess) {
+    if (!this.finished) this.guess = guess;
+  }
+
+  /** Start again: the thing in play has no guess yet. */
+  clear() {
+    this.guess = null;
+  }
+
+  /** The sun is tapped. Null while she has not guessed (the sun waits); otherwise the outcome line, and the next thing's turn. */
+  test(): { thing: Substance; result: Guess; match: boolean; line: LineId } | null {
+    if (this.finished || !this.guess) return null;
+    const thing = this.thing;
+    const result = truthOf(thing);
+    const match = this.guess === result;
+    this.record.push({ thing, guess: this.guess, result });
+    this.guess = null;
+    this.index++;
+    return {
+      thing,
+      result,
+      match,
+      line: match ? 'meltfreeze.predict.match' : 'meltfreeze.predict.surprise',
+    };
+  }
+
+  /** Show a hint says how the level works; there is no right card to show and nothing is counted. */
+  ask(): LineId {
+    return 'meltfreeze.hint.predict';
+  }
+}
+
 export interface Box {
   x: number;
   y: number;
@@ -228,6 +325,8 @@ export interface TableLayout {
   snow: Box;
   /** Level 3's request card, beside the thing and never over it. */
   card: Box;
+  /** Level 6's two prediction cards (it melts, it stays), each at least 140 units, clear of the thing and the tools. */
+  cards: [Box, Box];
 }
 
 const TOOL = 150;
@@ -250,6 +349,7 @@ export function tableLayout(view: View, n: number): TableLayout {
       sun,
       snow,
       card: { x: view.w / 2 - 80, y: top, w: 160, h: 160 },
+      cards: pair(view.w / 2, table.y + table.h + 40, 160),
     };
   }
   const right = view.w - 40 - TOOL;
@@ -264,7 +364,16 @@ export function tableLayout(view: View, n: number): TableLayout {
     sun,
     snow,
     card: { x: table.x + table.w / 2 - 80, y: top - 30, w: 160, h: 160 },
+    cards: pair(table.x + table.w / 2, top - 30, 150),
   };
+}
+
+/** Two square boxes side by side about a centre line. */
+function pair(cx: number, y: number, size: number): [Box, Box] {
+  return [
+    { x: cx - size - 12, y, w: size, h: size },
+    { x: cx + 12, y, w: size, h: size },
+  ];
 }
 
 function spots(n: number, table: Box, size: number) {
@@ -282,5 +391,6 @@ export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: LAP_LEVEL, order: [LAP_LEVEL, 1, 2] },
   toddler: { min: 1, max: 3 },
-  preschool: { min: 3, max: 4 },
+  preschool: { min: 3, max: PREDICT_LEVEL, order: [3, 4, PREDICT_LEVEL] },
+  prek: { min: 4, max: PREDICT_LEVEL, order: [4, PREDICT_LEVEL] },
 };

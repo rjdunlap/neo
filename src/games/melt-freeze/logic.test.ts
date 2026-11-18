@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { JOURNAL, entryId } from '../../content/journal';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
@@ -6,6 +7,10 @@ import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import {
   ALL_SUBSTANCES,
   CHANGERS,
+  EARLY,
+  EARLY_CHANGERS,
+  EARLY_STAYERS,
+  GUESSES,
   LAP_LEVEL,
   LEVELS,
   MakeRound,
@@ -14,6 +19,10 @@ import {
   overlaps,
   petCorner,
   PLANS,
+  PREDICT_LEVEL,
+  PREDICT_POOL,
+  predictFor,
+  PredictRound,
   requestsFor,
   sayAfter,
   STAYERS,
@@ -24,7 +33,9 @@ import {
   thingsFor,
   toolFor,
   traysFor,
+  truthOf,
   type Box,
+  type Guess,
   type Substance,
   type Tool,
 } from './logic';
@@ -33,10 +44,15 @@ const rngs = Array.from({ length: 40 }, (_, i) => new Rng(i + 1));
 
 describe('the substance table', () => {
   it('authors a hard form for everything and a melted form only for the things that melt', () => {
-    expect(ALL_SUBSTANCES).toEqual(['ice', 'butter', 'chocolate', 'stone', 'spoon']);
+    // The five original ids keep their places; later levels' things are appended.
+    expect(ALL_SUBSTANCES.slice(0, 5)).toEqual(['ice', 'butter', 'chocolate', 'stone', 'spoon']);
+    expect(new Set(ALL_SUBSTANCES).size).toBe(ALL_SUBSTANCES.length);
     for (const s of ALL_SUBSTANCES) expect(SUBSTANCES[s].solid.length).toBeGreaterThan(0);
-    expect(CHANGERS).toEqual(['ice', 'butter', 'chocolate']);
-    expect(STAYERS).toEqual(['stone', 'spoon']);
+    expect(CHANGERS).toEqual(['ice', 'butter', 'chocolate', 'lolly']);
+    expect(STAYERS).toEqual(['stone', 'spoon', 'shell']);
+    expect(EARLY).toEqual(['ice', 'butter', 'chocolate', 'stone', 'spoon']);
+    expect(EARLY_CHANGERS).toEqual(['ice', 'butter', 'chocolate']);
+    expect(EARLY_STAYERS).toEqual(['stone', 'spoon']);
     for (const s of STAYERS) expect(SUBSTANCES[s].melted).toBeNull();
     for (const s of CHANGERS) expect(SUBSTANCES[s].reversible).toBe(true);
   });
@@ -59,6 +75,9 @@ describe('the substance table', () => {
     expect(sayAfter('chocolate', 'melted', 'snow')).toBe('meltfreeze.freeze');
     expect(sayAfter('stone', 'solid', 'sun')).toBe('meltfreeze.stays.stone');
     expect(sayAfter('spoon', 'solid', 'snow')).toBe('meltfreeze.stays.spoon');
+    expect(sayAfter('lolly', 'solid', 'sun')).toBe('meltfreeze.melt');
+    expect(sayAfter('lolly', 'melted', 'snow')).toBe('meltfreeze.freeze.ice');
+    expect(sayAfter('shell', 'solid', 'sun')).toBe('meltfreeze.stays.shell');
     expect(sayAfter('ice', 'melted', 'sun')).toBe('meltfreeze.already.melted');
     expect(sayAfter('ice', 'solid', 'snow')).toBe('meltfreeze.already.hard');
   });
@@ -66,8 +85,14 @@ describe('the substance table', () => {
 
 describe('rounds', () => {
   it('adds the tap opening before the existing lap levels without renumbering any plans', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray', 'tap']);
-    expect(new Set(PLANS.map((p) => p.name)).size).toBe(5);
+    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray', 'tap', 'predict']);
+    expect(new Set(PLANS.map((p) => p.name)).size).toBe(PLANS.length);
+    expect(meltPlan(PREDICT_LEVEL).mode).toBe('predict');
+    expect(levelsInOrder(LEVELS.preschool!)).toEqual([3, 4, PREDICT_LEVEL]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, PREDICT_LEVEL]);
+    // Level 5 stays the lap opening and is in no other band's order.
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(LAP_LEVEL);
     expect(meltPlan(0)).toBe(PLANS[0]);
     expect(meltPlan(LAP_LEVEL).mode).toBe('tap');
     expect(levelsInOrder(LEVELS.lap!)).toEqual([LAP_LEVEL, 1, 2]);
@@ -123,6 +148,104 @@ describe('rounds', () => {
         expect(tray.filter(melts)).toHaveLength(2);
         expect(tray.filter((s) => !melts(s))).toHaveLength(2);
       }
+    }
+  });
+});
+
+describe('levels 1–4 keep their five things', () => {
+  it('never draws a thing added for a later level, and the journal has one entry per thing that melts', () => {
+    const early = new Set<Substance>(EARLY);
+    for (const rng of rngs) {
+      for (const s of thingsFor(rng, false)) expect(early.has(s)).toBe(true);
+      for (const r of requestsFor(rng, false)) expect(early.has(r.thing)).toBe(true);
+      for (const s of traysFor(rng, false).flat()) expect(early.has(s)).toBe(true);
+    }
+    const ids = JOURNAL.filter((e) => e.game === 'melt-freeze').map((e) => e.id);
+    expect(ids).toEqual([...CHANGERS.map((s) => entryId('melt-freeze', s)), entryId('melt-freeze', 'stays')]);
+    expect(CHANGERS).toEqual(['ice', 'butter', 'chocolate', 'lolly']);
+  });
+});
+
+describe('level 6, will it melt?', () => {
+  it('draws four distinct things from the pool, two that melt and two that stay, the first two one of each', () => {
+    expect(predictFor(new Rng(1), true)).toEqual(['lolly', 'shell', 'chocolate', 'spoon']);
+    const seen = new Set<Substance>();
+    for (const rng of [...rngs, ...Array.from({ length: 200 }, (_, i) => new Rng(1000 + i))]) {
+      for (const authored of [true, false]) {
+        const things = predictFor(rng, authored);
+        expect(things).toHaveLength(4);
+        expect(new Set(things).size).toBe(4);
+        expect(things.filter(melts)).toHaveLength(2);
+        expect(things.slice(0, 2).filter(melts)).toHaveLength(1);
+        for (const s of things) {
+          expect(PREDICT_POOL).toContain(s);
+          seen.add(s);
+        }
+      }
+    }
+    // Every thing in the pool can come up, and each can stand on the table as itself.
+    expect([...seen].sort()).toEqual([...PREDICT_POOL].sort());
+    expect(PREDICT_POOL.filter(melts)).toHaveLength(4);
+    for (const s of PREDICT_POOL) expect(step(s, 'solid', 'sun')).toBe(melts(s) ? 'melted' : 'solid');
+  });
+
+  it('counts nothing whatever she taps, and names a match exactly when the guess equals what the sun does', () => {
+    const round = new PredictRound(predictFor(new Rng(1), true));
+    // The sun before a guess waits.
+    expect(round.test()).toBeNull();
+    expect(round.index).toBe(0);
+    // A guess, a changed guess, a hint three times.
+    round.choose('stays');
+    round.choose('melts');
+    for (let i = 0; i < 3; i++) expect(round.ask()).toBe('meltfreeze.hint.predict');
+    expect(round.test()).toEqual({
+      thing: 'lolly',
+      result: 'melts',
+      match: true,
+      line: 'meltfreeze.predict.match',
+    });
+    // An extra sun tap before the next guess does nothing.
+    expect(round.test()).toBeNull();
+    // A guess that turns out different is a surprise, not a miss.
+    round.choose('melts');
+    expect(round.test()).toMatchObject({
+      thing: 'shell',
+      result: 'stays',
+      match: false,
+      line: 'meltfreeze.predict.surprise',
+    });
+    // Start again clears only the guess in play.
+    round.choose('stays');
+    round.clear();
+    expect(round.test()).toBeNull();
+    round.choose('stays');
+    expect(round.test()).toMatchObject({ thing: 'chocolate', match: false });
+    round.choose('stays');
+    expect(round.test()).toMatchObject({ thing: 'spoon', match: true });
+    expect(round.finished).toBe(true);
+    round.choose('melts');
+    expect(round.guess).toBeNull();
+    expect(round.test()).toBeNull();
+    expect([round.misses, round.hints]).toEqual([0, 0]);
+    expect(round.record.map((r) => r.guess === r.result)).toEqual([true, false, false, true]);
+  });
+
+  it('over many rounds and every pattern of guesses stays at 0 misses and 0 hints, and files only what it showed', () => {
+    for (const rng of rngs) {
+      const round = new PredictRound(predictFor(rng, false));
+      while (!round.finished) {
+        const guess: Guess = rng.pick(GUESSES);
+        round.choose(guess);
+        const out = round.test()!;
+        expect(out.match).toBe(guess === truthOf(out.thing));
+        expect(out.result).toBe(melts(out.thing) ? 'melts' : 'stays');
+      }
+      expect([round.misses, round.hints]).toEqual([0, 0]);
+      // What a round can file: an entry per thing that melted, and "stays" (a round always shows both).
+      const ids = new Set(JOURNAL.map((e) => e.id));
+      for (const r of round.record)
+        expect(ids.has(entryId('melt-freeze', r.result === 'melts' ? r.thing : 'stays'))).toBe(true);
+      expect(round.record.filter((r) => r.result === 'stays')).toHaveLength(2);
     }
   });
 });
@@ -216,7 +339,22 @@ describe('layout', () => {
           for (let j = i + 1; j < boxes.length; j++)
             expect(overlaps(boxes[i], boxes[j]), `${view.w}x${view.h} n=${n} boxes ${i},${j}`).toBe(false);
         for (const p of L.spots) expect(p.x > L.table.x && p.x < L.table.x + L.table.w).toBe(true);
-        if (n === 1) expect(overlaps(L.card, boxes[2])).toBe(false);
+        if (n === 1) {
+          expect(overlaps(L.card, boxes[2])).toBe(false);
+          // Level 6's prediction cards: at least 140 units, clear of the thing as drawn (it stands up to 150 wide and
+          // about 190 tall on its spot), the table's thing, the tools, the pet and the corner buttons.
+          const drawn: Box = { x: L.spots[0].x - 75, y: L.spots[0].y - 130, w: 150, h: 190 };
+          expect(overlaps(L.cards[0], L.cards[1])).toBe(false);
+          for (const c of L.cards) {
+            const at = `${view.w}x${view.h} card ${JSON.stringify(c)}`;
+            expect(Math.min(c.w, c.h), at).toBeGreaterThanOrEqual(140);
+            expect(inside(c, view.w, view.h), at).toBe(true);
+            for (const other of [drawn, L.sun, L.snow, petCorner(view)])
+              expect(overlaps(c, other), at).toBe(false);
+            expect(overlaps(c, { x: 0, y: 0, w: 120, h: 120 }), at).toBe(false);
+            expect(overlaps(c, { x: view.w - 120, y: 0, w: 120, h: 120 }), at).toBe(false);
+          }
+        }
       }
     }
   });
@@ -240,6 +378,10 @@ describe('speech', () => {
       'hot',
       'freezer',
       'fridge',
+      'toaster',
+      'pan',
+      'cook',
+      'burn',
     ];
     const ids = (Object.keys(SCRIPT) as (keyof typeof SCRIPT)[]).filter(
       (id) => id.startsWith('meltfreeze.') || id.startsWith('journal.melt.') || id === 'game.melt-freeze',
@@ -252,8 +394,9 @@ describe('speech', () => {
     }
   });
 
-  it('says "freezes" only of ice', () => {
-    for (const s of CHANGERS.filter((c) => c !== 'ice') as Substance[]) {
+  it('says "freezes" only of ice and the ice lolly', () => {
+    expect(SCRIPT['journal.melt.lolly'].join(' ')).toMatch(/freez/);
+    for (const s of CHANGERS.filter((c) => c !== 'ice' && c !== 'lolly') as Substance[]) {
       expect(SCRIPT[`journal.melt.${s}` as keyof typeof SCRIPT].join(' ')).not.toMatch(/freez/);
     }
     expect(SCRIPT['meltfreeze.freeze'].join(' ')).not.toMatch(/freez/);
