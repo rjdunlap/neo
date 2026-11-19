@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/jelly-drums; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `jelly-drums` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `jelly-drums` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-effect, rhythm, sequence-memory
 
