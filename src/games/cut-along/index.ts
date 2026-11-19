@@ -1512,4 +1512,5 @@ export const cutAlong: GameModule = {
   sticker,
   create: (ctx) => new CutAlong(ctx),
   touchDemo: true,
+  upright: true,
 };
