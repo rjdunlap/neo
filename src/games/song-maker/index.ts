@@ -15,6 +15,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   awakeSpots,
+  barOf,
   beadToTap,
   key,
   makeSong,
@@ -24,6 +25,7 @@ import {
   songPlan,
   wakeTouch,
   type Note,
+  type SongLayout,
   type Song,
   type SongPlan,
 } from './logic';
@@ -43,6 +45,8 @@ class Bead extends Container {
   size = 1;
   /** Wake level: an unlit spot is drawn as a sleeping jelly. */
   sleepy = false;
+  /** The cell it was last drawn in (a given bar upright is small). */
+  cell = 100;
   private readonly g = new Graphics();
   private bounce = 0;
   private bounceV = 0;
@@ -57,6 +61,7 @@ class Bead extends Container {
 
   /** Redraws to fill a grid cell `cell` wide; the whole cell answers a touch. */
   draw(cell: number) {
+    this.cell = cell;
     const r = cell * 0.36;
     const sw = swatch[this.color];
     const g = this.g.clear();
@@ -129,9 +134,8 @@ class SongMaker implements Game {
   private readonly card = new Container();
   readonly replay: RoundButton | null = null;
   private cell = 100;
+  private lay: SongLayout | null = null;
   private view: View | null = null;
-  /** The grid's top-left corner. */
-  private grid = { x0: 0, y0: 0 };
   private col = -1;
   private ownBeats = 0;
   private clock = 0;
@@ -254,7 +258,7 @@ class SongMaker implements Game {
       bead.lit = !bead.lit;
       if (bead.lit) this.placed.add(key(bead.note));
       else this.placed.delete(key(bead.note));
-      bead.draw(this.cell);
+      bead.draw(bead.cell);
       this.ctx.particles.burst(bead.x, bead.y, {
         kind: 'note',
         colors: [swatch[rowColor(bead.note.row, this.plan.rows)].fill],
@@ -285,7 +289,7 @@ class SongMaker implements Game {
       this.placed.add(key(bead.note));
       bead.lit = true;
       bead.ghost = false;
-      bead.draw(this.cell);
+      bead.draw(bead.cell);
       this.wrong = 0;
       this.ctx.particles.burst(bead.x, bead.y, {
         kind: 'star',
@@ -399,32 +403,39 @@ class SongMaker implements Game {
       alpha: 0.2,
     });
     const p = this.plan;
-    const { cell, x0, y0 } = songLayout(p, v);
-    this.cell = cell;
-    const w = cell * p.cols;
-    const h = cell * p.rows;
-    const b = this.board
-      .clear()
-      .roundRect(x0 - 14, y0 - 14, w + 28, h + 28, 28)
-      .fill(cream)
-      .stroke({ width: 6, color: swatch.purple.line });
+    const lay = songLayout(p, v);
+    this.lay = lay;
+    this.cell = lay.cell;
+    const b = this.board.clear();
     const awakeRows = new Set(awakeSpots(this.lights).map((n) => n.row));
-    for (let row = 0; row < p.rows; row++)
-      if (p.mode !== 'wake' || awakeRows.has(row))
-        b.rect(x0, y0 + this.cell * row + this.cell * 0.12, w, this.cell * 0.76).fill({
-          color: swatch[rowColor(row, p.rows)].light,
-          alpha: 0.45,
-        });
-    for (const bead of this.beads) {
-      bead.position.set(x0 + this.cell * (bead.note.col + 0.5), y0 + this.cell * (bead.note.row + 0.5));
-      bead.draw(this.cell);
+    for (const bar of lay.bars) {
+      const w = bar.cell * bar.cols;
+      b.roundRect(bar.x0 - 14, bar.y0 - 14, w + 28, bar.cell * p.rows + 28, 28)
+        .fill(cream)
+        .stroke({ width: 6, color: swatch.purple.line });
+      for (let row = 0; row < p.rows; row++)
+        if (p.mode !== 'wake' || awakeRows.has(row))
+          b.rect(bar.x0, bar.y0 + bar.cell * row + bar.cell * 0.12, w, bar.cell * 0.76).fill({
+            color: swatch[rowColor(row, p.rows)].light,
+            alpha: 0.45,
+          });
     }
-    this.grid = { x0, y0 };
+    for (const bead of this.beads) {
+      const bar = barOf(lay, bead.note.col);
+      bead.position.set(
+        bar.x0 + bar.cell * (bead.note.col - bar.from + 0.5),
+        bar.y0 + bar.cell * (bead.note.row + 0.5),
+      );
+      // A given bar shown small upright is only to look at: its seeds hide and nothing in it takes a touch.
+      bead.visible = bar.tappable || bead.given;
+      if (p.mode !== 'wake') bead.eventMode = bar.tappable ? 'static' : 'none';
+      bead.draw(bar.cell);
+    }
     this.view = v;
     this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
     this.wakeLayout();
-    this.drawCard(v);
-    this.replay?.position.set(v.w - 70, v.h / 2);
+    this.drawCard(lay);
+    this.replay?.position.set(lay.replay.x, lay.replay.y);
     if (this.col >= 0) this.drawPlayhead(this.col);
     this.drawGlow();
   }
@@ -456,15 +467,22 @@ class SongMaker implements Game {
   }
 
   private drawPlayhead(col: number) {
-    const { x0, y0 } = this.grid;
+    if (!this.lay) return;
+    const bar = barOf(this.lay, col);
     this.playhead
       .clear()
-      .roundRect(x0 + this.cell * col + 4, y0 - 8, this.cell - 8, this.cell * this.plan.rows + 16, 18)
+      .roundRect(
+        bar.x0 + bar.cell * (col - bar.from) + 4,
+        bar.y0 - 8,
+        bar.cell - 8,
+        bar.cell * this.plan.rows + 16,
+        18,
+      )
       .fill({ color: swatch.yellow.fill, alpha: 0.35 });
   }
 
   /** Card level: the song to copy, small, on a wooden card. */
-  private drawCard(v: View) {
+  private drawCard(lay: SongLayout) {
     this.card.removeChildren().forEach((c) => c.destroy());
     if (this.plan.mode !== 'card') return;
     const s = 34;
@@ -489,7 +507,7 @@ class SongMaker implements Game {
         .stroke({ width: 2, color: sw.line });
     }
     this.card.addChild(g);
-    this.card.position.set(v.w * 0.18, v.h * 0.4);
+    this.card.position.set(lay.card.x, lay.card.y);
   }
 
   private drawGlow() {
@@ -497,7 +515,7 @@ class SongMaker implements Game {
     if (this.wrong < 2 || this.done) return;
     const next = this.remaining[0];
     const bead = next && this.beads.find((b) => b.note.col === next.col && b.note.row === next.row);
-    if (bead) g.circle(bead.x, bead.y, this.cell * 0.48).stroke({ width: 7, color: swatch.yellow.line });
+    if (bead) g.circle(bead.x, bead.y, bead.cell * 0.48).stroke({ width: 7, color: swatch.yellow.line });
   }
 
   destroy() {}
@@ -542,6 +560,7 @@ export const songMaker: GameModule = {
   offScreen: 'Make a song with pots and spoons, then play it again the same way together.',
   hubIcon: () => new WigglyIcon(boardArt()),
   touchDemo: true,
+  upright: true,
   sticker: (seed) => boardArt(seed),
   create: (ctx) => new SongMaker(ctx),
 };
