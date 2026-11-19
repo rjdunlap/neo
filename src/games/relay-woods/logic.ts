@@ -257,15 +257,18 @@ export interface Point {
   y: number;
 }
 /** Perimeter order follows paths, so reflected templates never cross or pass through a carrier. */
+// On a view under 1100 tall (the 768 × 1024 upright area) the two sides squeeze to fit between the request and ribbon above and the buttons below.
+// Held upright (view under 900 wide) the board's center is 24 right of the middle, not 48, so the receiver's stump ends inside the right edge.
 export function layout(
   v: View,
   p: Plan,
 ): { nodes: Record<string, Point>; reset: Point; help: Point; request: Point; ribbon: Point } {
   const portrait = v.h > v.w,
-    cx = (v.w + 96) / 2,
-    cy = portrait ? Math.min(v.h * 0.47, 650) : 440,
+    cx = v.w < 900 ? v.w / 2 + 24 : (v.w + 96) / 2,
+    squeeze = portrait && v.h < 1100,
+    cy = squeeze ? (v.h + 130) / 2 : portrait ? Math.max(620, Math.min(v.h * 0.55, 800)) : 440,
     rx = 280,
-    ry = portrait ? 300 : 140;
+    ry = squeeze ? (v.h - 510) / 2 : portrait ? 300 : 140;
   const nodes: Record<string, Point> = { S: { x: cx - rx, y: cy }, R: { x: cx + rx, y: cy } };
   if (p.level === 1) nodes.A = { x: cx, y: cy };
   else

@@ -615,6 +615,7 @@ describe('game registry', () => {
       'puzzle-pals',
       'pyramid-solitaire',
       'ramp-race',
+      'relay-woods',
       'rhyme-time',
       'rhythm-neighbors',
       'ribbon-workshop',
