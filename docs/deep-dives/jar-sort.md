@@ -116,6 +116,7 @@ None new. Couch play stays "later" as decided on 2026-10-23.
 3. **Built 2026-11-08 (PR #1417).** **Level 10 *A little jar to park in*** (model change on the existing interaction: typecheck, rule tests with levels 1–9 unchanged, one browser play of 10 with one refused move on the little jar, `fingerdemo` at 10, build).
 4. **Built 2026-11-09 ([PR #1433](https://github.com/rjdunlap/neo/pull/1433)).** **Level 11 *Like the picture*** (new interaction: typecheck, unit tests, one scripted play with one refused move and one hint, one portrait screenshot, `fingerdemo` at 11, build).
 5. **Built 2026-11-09 ([PR #1433](https://github.com/rjdunlap/neo/pull/1433)).** **Level 12 *Scoop the run*** (model change on the existing interaction: typecheck, rule tests, one browser play of 12, `fingerdemo` at 12, build).
+6. **Built 2026-11-19 ([PR #1867](https://github.com/rjdunlap/neo/pull/1867)).** **Phone portrait, levels 1–12.** Full-size jars fit one or two shelves above the caption and Undo. See the [game page](../games/jar-sort.md#design-notes) and [verification](../verification/2026-11-19-jar-sort-upright-on-phones.md).
 
 ## What was built in this session
 

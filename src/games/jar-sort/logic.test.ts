@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import { computeView } from '../../engine/view';
+import { captionPlace } from '../../ui/caption-layout';
 import { BOARDS } from './puzzles';
 import { VOICE } from './voice';
 import {
@@ -18,6 +19,7 @@ import {
   hintMove,
   HIT_W,
   jarLayout,
+  JAR_W,
   legal,
   liftCount,
   matLabels,
@@ -437,6 +439,52 @@ describe('Jar Sort rules', () => {
 });
 
 describe('Jar Sort layout', () => {
+  it('keeps every upright shelf clear of a caption and Undo at full jar size', () => {
+    for (const [width, height] of [
+      [390, 625],
+      [375, 667],
+      [390, 844],
+    ]) {
+      for (const captions of [false, true]) {
+        const place = captionPlace(computeView(width, height, undefined, true), captions);
+        const v = place.game;
+        for (const plan of PLANS) {
+          const where = `level ${plan.id} at ${width}×${height} with captions ${captions}`;
+          const picture = plan.rule === 'any';
+          // The little jar can be shuffled into any position, including either shelf.
+          for (let i = 0; i < (plan.caps?.length ?? 1); i++) {
+            const caps = plan.caps ? [...plan.caps.slice(i), ...plan.caps.slice(0, i)] : plan.cap;
+            const spots = jarLayout(plan.jars, caps, v, picture ? PICTURE_HEADER : undefined);
+            expect(new Set(spots.map((s) => s.y)).size, where).toBe(plan.jars <= 4 ? 1 : 2);
+            for (const [j, { x, y, hit }] of spots.entries()) {
+              expect(hit.w, where).toBe(HIT_W);
+              expect(hit.h, where).toBeGreaterThanOrEqual(100);
+              expect(x - JAR_W, where).toBeGreaterThanOrEqual(0);
+              expect(x + JAR_W, where).toBeLessThanOrEqual(v.w);
+              expect(hit.x, where).toBeGreaterThanOrEqual(116);
+              expect(hit.y, where).toBeGreaterThanOrEqual(picture ? PICTURE_HEADER : 120);
+              expect(y + 34, where).toBeLessThanOrEqual(v.h - 134);
+              if (place.mode === 'bubble') expect(y + 34, where).toBeLessThanOrEqual(place.band!.y);
+              for (const { hit: other } of spots.slice(j + 1)) {
+                const apart =
+                  hit.y >= other.y + other.h ||
+                  y <= other.y ||
+                  hit.x >= other.x + other.w ||
+                  hit.x + hit.w <= other.x;
+                expect(apart, where).toBe(true);
+              }
+            }
+            if (picture) {
+              expect(spots[0].x - 60, where).toBeGreaterThan(116);
+              expect(spots.at(-1)!.x + 60, where).toBeLessThan(v.w);
+              expect(Math.min(...spots.map((s) => s.hit.y)) - 170, where).toBeGreaterThan(0);
+            }
+          }
+        }
+      }
+    }
+  });
+
   it('fits every level at every view: big separate jars, clear of the pet and the round arrow, inside the screen', () => {
     for (const plan of PLANS) {
       for (const [name, v] of Object.entries(VIEWS)) {

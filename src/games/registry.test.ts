@@ -589,6 +589,7 @@ describe('game registry', () => {
       'helper-house',
       'inchworm',
       'island-bridges',
+      'jar-sort',
       'jelly-drums',
       'keep-house',
       'lantern-lights',
