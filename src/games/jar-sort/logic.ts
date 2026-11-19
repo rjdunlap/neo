@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
+import { captionPlace } from '../../ui/caption-layout';
 
 /**
  * Jar Sort's rules. A jar is a bottom-to-top list of fruit kinds (0 strawberry, 1 blueberry, 2 orange, 3 pear, 4 plum, 5 cherries, 6 lemon); a move
@@ -481,6 +482,8 @@ export const PICTURE_HEADER = 300;
 export const UNDO_INSET = 80;
 const ROW_GAP = 40;
 const MIN_PITCH = 130;
+// Includes the shelf lip and its outline below the glass.
+const SHELF_CLEARANCE = 36;
 
 export const jarHeight = (cap: number) => cap * PIECE + RIM;
 
@@ -510,6 +513,20 @@ export function jarLayout(n: number, cap: Caps, v: View, header = HEADER): JarSp
     const jh = Math.max(100, jarHeight(capAt(cap, i)));
     return { x, y: base, hit: { x: x - HIT_W / 2, y: base - jh, w: HIT_W, h: jh } };
   };
+  if (v.upright) {
+    const upper = room >= MIN_PITCH ? n : Math.ceil(n / 2);
+    const lower = n - upper;
+    const total = lower ? 2 * h + ROW_GAP : h;
+    const caption = captionPlace(v, true);
+    // On short phones the shell may overlay the board with a caption. Keep the shelves above that space, and
+    // keep Undo in its usual corner. The play area can already be shorter when the caption has its own strip.
+    const bottom = Math.min(v.h - UNDO_INSET - 54, caption.mode === 'bubble' ? caption.band!.y : v.h);
+    const top = header + Math.max(0, (bottom - SHELF_CLEARANCE - header - total) / 2);
+    return [
+      ...rowXs(upper, v).map((x, i) => spot(x, top + h, i)),
+      ...rowXs(lower, v).map((x, i) => spot(x, top + total, upper + i)),
+    ];
+  }
   if (room >= MIN_PITCH) {
     // One row, standing in the middle of the space under the header and above the round arrow.
     const bottom = v.h - UNDO_INSET - 54 - 20;

@@ -299,6 +299,7 @@ class JarSort implements Game {
   private readonly pieceLayer = new Container();
   private readonly glow = new Graphics();
   private readonly undoButton: RoundButton;
+  private view: View;
   private jars: JarNode[] = [];
   private picture: Container | null = null;
   private pieces: Container[][] = [];
@@ -321,6 +322,7 @@ class JarSort implements Game {
   };
 
   constructor(private readonly ctx: GameContext) {
+    this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.caps = capsFor(this.plan);
     const list = BOARDS[this.plan.id];
@@ -343,6 +345,7 @@ class JarSort implements Game {
   }
 
   resize(v: View) {
+    this.view = v;
     this.back.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
     this.back.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.undoButton.position.set(v.w - UNDO_INSET, v.h - UNDO_INSET);
@@ -462,7 +465,7 @@ class JarSort implements Game {
     for (const j of this.jars) j.handle.destroy();
     this.jarLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pieceLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const spots = this.layout(this.ctx.view);
+    const spots = this.layout(this.view);
     this.picture = this.goal ? this.makePicture(this.goal, spots) : null;
     this.placePicture(spots);
     this.jars = this.board.map((_, i) => this.makeJar(i, spots[i]));
@@ -859,7 +862,7 @@ class JarSort implements Game {
       });
     });
     await this.ctx.say(this.goal ? 'jar.picture-done' : 'jar.done');
-    const away = this.ctx.view.w + 200;
+    const away = this.view.w + 200;
     await Promise.all([
       this.ctx.tw.to(this.jarLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine }),
       this.ctx.tw.to(this.pieceLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine }),
@@ -924,6 +927,7 @@ export const jarSort: GameModule = {
   challenge: 'space',
   skills: ['planning', 'sorting', 'spatial-reasoning'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
