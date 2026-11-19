@@ -660,6 +660,7 @@ describe('game registry', () => {
       'tile-pairs',
       'timeline-trail',
       'trackway-tales',
+      'village-vote',
       'water-road',
       'welcome-ways',
       'who-am-i',
