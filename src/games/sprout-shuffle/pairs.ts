@@ -11,23 +11,12 @@ import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import {
-  bedArt,
-  BUD_H,
-  BUD_W,
-  BudCard,
-  CHECK_R,
-  leafArt,
-  LENS_R,
-  lensArt,
-  PAIR_H,
-  PAIR_W,
-  PairCard,
-} from './art';
+import { pairsLayout } from './layout';
+import { bedArt, BudCard, CHECK_R, leafArt, LENS_R, lensArt, PairCard } from './art';
 import {
   checkPairs,
   copiesKey,
@@ -42,13 +31,6 @@ import {
 
 /** Friends who might ask for the bed; one is seeded per round. */
 const FRIENDS: readonly CritterName[] = ['bunny', 'pig', 'cat', 'bear', 'duck'];
-
-/** The vertical stack, bottom up: cards, their magnifiers, the leaf, the fan. Hit radii are a RoundButton's radius + 14. */
-const TOP = 100;
-const LENS_HIT = LENS_R + 14;
-const CHECK_HIT = CHECK_R + 14;
-const FAN_GAP = 16;
-const CARD_GAP = 20;
 
 interface Grow {
   card: BudCard;
@@ -144,41 +126,23 @@ export class SproutPairs implements Game {
 
   // ——— Layout ———
 
-  /** Scales that fit the stack: cards and fan shrink together to the height, each to its own width; buttons never shrink. */
-  private scales() {
-    const v = this.view;
-    const fixed = TOP + 16 + 8 + 2 * LENS_HIT + 16 + 2 * CHECK_HIT + 10;
-    const tall = Math.max(0.6, (v.h - fixed) / (PAIR_H + BUD_H));
-    const card = Math.min(1, tall, (v.w - 150 - 40) / (3 * PAIR_W + 2 * CARD_GAP));
-    const fan = Math.min(1, tall, (v.w - 60) / (4 * BUD_W + 3 * FAN_GAP));
-    return { card, fan };
-  }
-
+  /** Everything placed by `pairsLayout` (./layout.ts). */
   layout() {
-    const v = this.view;
-    const { card, fan } = this.scales();
-    const cardY = v.h - 16 - (PAIR_H / 2) * card;
-    const xs = spread(3, 150, v.w - 40, PAIR_W * card + CARD_GAP);
+    const g = pairsLayout(this.view);
     for (const [i, c] of this.cards.entries()) {
-      c.scale.set(card);
-      c.position.set(xs[i], cardY);
-      this.lenses[i].position.set(xs[i], cardY - (PAIR_H / 2) * card - 8 - LENS_HIT);
+      c.scale.set(g.cardScale);
+      c.position.copyFrom(g.cards[i]);
+      this.lenses[i].position.copyFrom(g.lenses[i]);
     }
-    const lensY = this.lenses[0].y;
-    const checkY = lensY - LENS_HIT - 16 - CHECK_HIT;
-    this.checkButton.position.set(v.w / 2, checkY);
-    const fanY = checkY - CHECK_HIT - 10 - (BUD_H / 2) * fan;
-    const bx = spread(4, 30, v.w - 30, BUD_W * fan + FAN_GAP);
+    this.checkButton.position.copyFrom(g.check);
     for (const [i, b] of this.buds.entries()) {
-      b.scale.set(fan);
-      b.position.set(bx[i], fanY);
+      b.scale.set(g.fanScale);
+      b.position.copyFrom(g.buds[i]);
     }
-    // Before any fan opens, the friend and the bed picture stand where the fan will be.
-    const feet = fanY + (BUD_H / 2) * fan;
-    this.friend.scale.set(0.62 * fan);
-    this.friend.position.set(v.w / 2 - 150 * fan, feet);
-    this.bed.scale.set(0.95 * fan);
-    this.bed.position.set(v.w / 2 + 110 * fan, feet - 95 * fan);
+    this.friend.scale.set(g.friend.scale);
+    this.friend.position.set(g.friend.x, g.friend.y);
+    this.bed.scale.set(g.bed.scale);
+    this.bed.position.set(g.bed.x, g.bed.y);
   }
 
   // ——— The fan ———

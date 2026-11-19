@@ -14,7 +14,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
@@ -24,7 +24,6 @@ import {
   BUD_H,
   BUD_W,
   BudCard,
-  CARD,
   CHECK_R,
   ChoiceCard,
   claimPic,
@@ -62,6 +61,7 @@ import {
   type Round,
   type Setup,
 } from './logic';
+import { shuffleLayout } from './layout';
 import { SproutPairs } from './pairs';
 import { SproutHidden } from './hidden';
 import { SproutConservatory } from './conservatory';
@@ -103,6 +103,8 @@ class SproutShuffle implements Game {
   private readonly slotTiles: (Container | null)[] = [null, null];
   private readonly sprout: Sprout;
   private sproutScale = 1;
+  /** The choice cards' size: smaller on the upright phone (`shuffleLayout`). */
+  private cardScale = 1;
   buds: BudCard[] = [];
   private readonly fan = new Container();
   cards: ChoiceCard[] = [];
@@ -234,43 +236,30 @@ class SproutShuffle implements Game {
     this.layout();
   }
 
-  private get portrait() {
-    return this.view.h > this.view.w;
-  }
-
-  /** The stage: plants left and right with their trays, the sprout between, the fan along the bottom (a 2 × 2 grid in portrait). */
+  /** The stage, placed by `shuffleLayout` (./layout.ts). */
   private layout() {
-    const v = this.view;
-    const px = [v.w * 0.17, v.w * 0.83];
-    const plantFeet = 300;
-    const trayY = plantFeet + 90;
+    const g = shuffleLayout(this.view, !!this.tryButton);
     for (const side of [0, 1] as const) {
-      this.plants[side].position.set(px[side], plantFeet);
-      this.slots[side].position.set(v.w / 2 + (side === 0 ? -1 : 1) * 90, plantFeet - 20);
-      this.slotTiles[side]?.position.copyFrom(this.slots[side].position);
+      this.plants[side].position.copyFrom(g.plants[side]);
+      this.slots[side].position.copyFrom(g.slots[side]);
+      this.slotTiles[side]?.position.copyFrom(g.slots[side]);
     }
     for (const t of this.tiles) {
       if (t.handle.dragging) continue;
-      const x = px[t.side] + (t.index === 0 ? -1 : 1) * (TILE / 2 + 12);
-      t.node.position.set(x, trayY);
-      t.handle.home = { x, y: trayY };
+      const home = g.tiles[t.side][t.index];
+      t.node.position.copyFrom(home);
+      t.handle.home = { ...home };
     }
-    this.sprout.position.set(v.w / 2, plantFeet - 40);
+    this.sprout.position.copyFrom(g.sprout);
     this.sprout.scale.set(this.sproutScale);
-    if (this.portrait) {
-      const cy = [v.h * 0.5 + 130, v.h * 0.5 + 130 + BUD_H + 24];
-      const cx = [v.w / 2 - BUD_W / 2 - 14, v.w / 2 + BUD_W / 2 + 14];
-      this.buds.forEach((b, i) => b.position.set(cx[i % 2], cy[Math.floor(i / 2)]));
-    } else {
-      const xs = spread(4, 150, v.w - 40, BUD_W + 30);
-      this.buds.forEach((b, i) => b.position.set(xs[i], v.h - BUD_H / 2 - 40));
-    }
-    const cardY = 230;
-    this.cards.forEach((c, i) => c.position.set(v.w / 2 + (i === 0 ? -1 : 1) * (CARD / 2 + 10), cardY));
-    // Level 3: the leaf sits left of centre and the seed packet right, both between the trays.
-    const checkY = cardY + CARD / 2 + CHECK_R + 30;
-    this.checkButton?.position.set(v.w / 2 - (this.tryButton ? 85 : 0), checkY);
-    this.tryButton?.position.set(v.w / 2 + 85, checkY);
+    this.buds.forEach((b, i) => b.position.copyFrom(g.buds[i]));
+    this.cardScale = g.cardScale;
+    this.cards.forEach((c, i) => {
+      c.position.copyFrom(g.cards[i]);
+      if (this.round.phase !== 'choose' || c.scale.x > 0.5) c.scale.set(g.cardScale);
+    });
+    this.checkButton?.position.copyFrom(g.check);
+    this.tryButton?.position.copyFrom(g.tryOne);
     this.drawPaths();
   }
 
@@ -542,10 +531,11 @@ class SproutShuffle implements Game {
     for (const s of this.slotTiles) if (s) void this.ctx.tw.to(s, { alpha: 0 }, { duration: 0.4 });
     this.choice.visible = true;
     for (const [i, c] of [...this.cards, ...(this.tryButton ? [this.tryButton] : [])].entries()) {
+      const to = c === this.tryButton ? 1 : this.cardScale;
       c.scale.set(0.01);
       void this.ctx.tw.to(
         c.scale,
-        { x: 1, y: 1 },
+        { x: to, y: to },
         { duration: 0.4, delay: 0.5 + 0.1 * i, ease: ease.outBack },
       );
     }
@@ -848,6 +838,7 @@ export const sproutShuffle: GameModule = {
     'Draw two plants and four arrows between them on paper, and talk about which sprout each arrow would make.',
   hubIcon: () => new SproutIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => {
     const level = Math.round(ctx.level);

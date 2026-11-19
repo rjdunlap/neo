@@ -12,14 +12,12 @@ import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
   benchArt,
-  BUD_H,
-  BUD_W,
   BudCard,
   CAN_R,
   canArt,
@@ -33,7 +31,6 @@ import {
   PACKET_R,
   packetArt,
   plantArt,
-  RECORD_H,
   recordArt,
   slotX,
   Sprout,
@@ -64,13 +61,7 @@ import {
   type Tester,
 } from './logic';
 
-const TOP = 100;
-const PLANT_H = 160;
-const TRAY_TILE = 72;
-const FAN_GAP = 16;
-const SPROUT_H = 112;
-/** Level 6's waiting testers stand on the bench at this scale. */
-const BENCH_S = 0.62;
+import { BENCH_S, HIDDEN_PLANT_H as PLANT_H, SPROUT_H, TRAY_TILE, hiddenLayout } from './layout';
 
 interface Grow {
   sprout: Sprout;
@@ -260,77 +251,46 @@ export class SproutHidden implements Game {
 
   // ——— Layout ———
 
-  /** Plants and trays in the top band, the record card under them, the candidate cards and the leaf along the bottom. Portrait centres the same stack. */
+  /** Everything placed by `hiddenLayout` (./layout.ts). */
   layout() {
     const v = this.view;
-    const off = Math.max(0, (v.h - 768) / 2);
-    const feet = off + TOP + PLANT_H + 20;
-    const trayY = feet + 60;
-    const hx = v.w * 0.28;
-    const tx = v.w * 0.72;
-    this.hiddenPlant.position.set(hx, feet);
-    this.testerPlant.position.set(tx, feet);
-    for (const [i, t] of this.hiddenTiles.entries())
-      t.position.set(hx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
-    for (const [i, t] of this.testerTiles.entries())
-      t.position.set(tx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
-    if (!this.finished) this.cover.position.set(hx, trayY);
-    this.banner.position.set(hx, feet - PLANT_H - 34);
-    this.canButton.position.set(v.w / 2, feet - 90);
-    this.tryButton.position.set(v.w - 90, feet - 90);
-    const recordY = trayY + 48 + 10 + RECORD_H / 2;
-    this.recordCard.position.set(v.w / 2, recordY);
-    for (const [i, sp] of this.sprouts.entries())
-      sp.position.set(v.w / 2 + slotX(i), recordY + RECORD_H / 2 - 18);
-    const cardY = Math.min(v.h - 16 - CARD / 2, recordY + RECORD_H / 2 + 26 + CARD / 2 + (off > 0 ? 40 : 0));
-    const xs = spread(3, 150, v.w - 40, CARD + 50);
+    const g = hiddenLayout(v, this.buds.length);
+    this.hiddenPlant.position.copyFrom(g.hiddenPlant);
+    this.testerPlant.position.copyFrom(g.testerPlant);
+    for (const [i, t] of this.hiddenTiles.entries()) t.position.copyFrom(g.hiddenTiles[i]);
+    for (const [i, t] of this.testerTiles.entries()) t.position.copyFrom(g.testerTiles[i]);
+    if (!this.finished) this.cover.position.copyFrom(g.cover);
+    this.banner.position.copyFrom(g.banner);
+    this.canButton.position.copyFrom(g.can);
+    this.tryButton.position.copyFrom(g.tryOne);
+    this.recordCard.position.copyFrom(g.record);
+    for (const [i, sp] of this.sprouts.entries()) sp.position.copyFrom(g.sprout(i));
     for (const [i, c] of this.cards.entries()) {
-      c.position.set(xs[i], cardY);
+      c.position.copyFrom(g.cards[i]);
       c.visible = this.phase !== 'pick';
     }
-    this.checkButton.position.set(xs[2], cardY);
+    this.checkButton.position.copyFrom(g.check);
     // Level 6: the potted tester stands where level 5's does; the others wait on the bench in the cards' row.
-    this.bench.position.set((xs[0] + xs[1]) / 2, cardY + 82);
+    this.bench.position.copyFrom(g.bench);
     this.bench.visible = this.phase === 'pick';
     for (const [i, b] of this.benchPlants.entries()) {
       if (b.key === this.potted) {
         b.art.scale.set(1);
-        b.art.position.set(tx, feet);
+        b.art.position.copyFrom(g.testerPlant);
       } else {
         b.art.scale.set(BENCH_S);
-        b.art.position.set(xs[i], cardY + 22);
+        b.art.position.copyFrom(g.benchPlants[i]);
       }
       b.art.visible = this.phase === 'pick' || b.key === this.potted;
     }
-    // The fan covers the plants' band while open.
-    const top = off + TOP + 4;
-    const bottom = trayY + 48;
     this.fanPanel
       .clear()
-      .roundRect(20, top, v.w - 40, bottom - top, 28)
+      .roundRect(20, g.panel.top, v.w - 40, g.panel.bottom - g.panel.top, 28)
       .fill({ color: 0xfffaf0, alpha: 0.94 })
       .stroke({ width: 5, color: swatch.green.line });
-    // Two fans side by side share one row in landscape, with a wider gap between them and clear of the corner buttons, and stack in portrait.
-    const pair = this.buds.length > 4;
-    const rows = pair && v.h > v.w ? 2 : 1;
-    const perRow = this.buds.length / rows;
-    const split = pair && rows === 1 ? 40 : 0;
-    const left = pair && rows === 1 ? 130 : 40;
-    const scale = Math.min(
-      1,
-      (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H),
-      (v.w - 40 - left - split) / (perRow * BUD_W + (perRow - 1) * FAN_GAP),
-    );
-    const bx = spread(perRow, left, v.w - 40, BUD_W * scale + FAN_GAP);
-    const rowH = BUD_H * scale + FAN_GAP;
     for (const [i, b] of this.buds.entries()) {
-      const row = Math.floor(i / perRow);
-      const col = i % perRow;
-      b.scale.set(scale);
-      b.position.set(
-        bx[col] + (split ? (col < perRow / 2 ? -split / 2 : split / 2) : 0),
-        (top + bottom) / 2 + (row - (rows - 1) / 2) * rowH,
-      );
+      b.scale.set(g.budScale);
+      b.position.copyFrom(g.buds[i]);
     }
   }
 

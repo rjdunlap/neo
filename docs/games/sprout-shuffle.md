@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sprout-shuffle; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sprout-shuffle` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sprout-shuffle` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** inheritance, modeling, possible outcomes
 

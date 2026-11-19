@@ -6,14 +6,56 @@ import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
 import type { Claim, Copy, Look, Marking } from './logic';
+import {
+  BRIEF_H,
+  BRIEF_W,
+  BUD_H,
+  BUD_W,
+  CAN_R,
+  CARD,
+  CHECK_R,
+  LENS_BIG_R,
+  LENS_R,
+  PACKET_R,
+  PAIR_H,
+  PAIR_W,
+  PLANT_H,
+  PLANT_W,
+  RECORD_H,
+  RECORD_W,
+  SLOT,
+  SLOT_STEP,
+  TESTER_TILE,
+  TESTER_TRAY_Y,
+  TILE,
+  slotX,
+} from './layout';
 
-export const TILE = 120;
-export const SLOT = 130;
-export const BUD_W = 180;
-export const BUD_H = 200;
-export const CARD = 200;
-export const CHECK_R = 70;
-export const PACKET_R = 56;
+/** The sizes live in ./layout.ts, where the layouts are tested; they are re-exported for the scenes. */
+export {
+  BRIEF_H,
+  BRIEF_W,
+  BUD_H,
+  BUD_W,
+  CAN_R,
+  CARD,
+  CHECK_R,
+  LENS_BIG_R,
+  LENS_R,
+  PACKET_R,
+  PAIR_H,
+  PAIR_W,
+  PLANT_H,
+  PLANT_W,
+  RECORD_H,
+  RECORD_W,
+  SLOT,
+  SLOT_STEP,
+  TESTER_TILE,
+  TESTER_TRAY_Y,
+  TILE,
+  slotX,
+};
 
 /** Three dark ovals (a spot copy) or one outlined ring (a plain copy), as a child Container so the ovals can lean. */
 export function marks(copy: Copy, r: number): Container {
@@ -404,10 +446,6 @@ export function stickerArt(look: Look, color: ColorName): Container {
   return c;
 }
 
-export const PAIR_W = 220;
-export const PAIR_H = 200;
-export const LENS_R = 50;
-
 /** Level 4's pair card: two small plants, each over its two open copies, with a tick badge while chosen. */
 export class PairCard extends Container {
   private readonly badge = new Graphics();
@@ -491,11 +529,6 @@ export function bedArt(color: ColorName): Container {
 
 // ——— Level 5: Hidden Sprouts ———
 
-export const CAN_R = 56;
-export const SLOT_STEP = 76;
-export const RECORD_W = 8 * SLOT_STEP + 40;
-export const RECORD_H = 142;
-
 /** The watering can on its button: a green can with a spout and three drops. */
 export function canArt(): Container {
   const c = new Container();
@@ -550,11 +583,6 @@ export function recordArt(): Graphics {
   return g;
 }
 
-/** The centre x of record slot `i`, relative to the card. */
-export function slotX(i: number): number {
-  return (i - 3.5) * SLOT_STEP;
-}
-
 /** A candidate card's picture: the two copies it names, face up. */
 export function copiesPic(copies: readonly [Copy, Copy]): Container {
   const c = new Container();
@@ -586,10 +614,6 @@ export function cantTellArt(): Container {
 
 // ——— Level 6: which plant could tell us? ———
 
-/** Where a tester's tray sits under its feet, and its tiles' size. */
-export const TESTER_TRAY_Y = 60;
-export const TESTER_TILE = 72;
-
 /** A known plant for level 6's bench: the plant with its open tray of two copies, its origin at the plant's feet. The whole plant is one tap target. */
 export function testerArt(look: Look, copies: readonly [Copy, Copy], color: ColorName, h: number): Container {
   const c = new Container();
@@ -620,12 +644,6 @@ export function benchArt(w: number): Graphics {
 }
 
 // ——— Levels 7–8: Patchwork Conservatory ———
-
-export const PLANT_W = 200;
-export const PLANT_H = 240;
-export const LENS_BIG_R = 65;
-export const BRIEF_W = 260;
-export const BRIEF_H = 180;
 
 /** A teardrop petal outline `r` tall from its centre, pointing up. */
 function petalPath(g: Graphics, r: number, dy = 0) {
