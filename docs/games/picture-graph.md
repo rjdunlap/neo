@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/picture-graph; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `picture-graph` · **Land:** Counting Cove · **Ages:** pre-K–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `picture-graph` · **Land:** Counting Cove · **Ages:** pre-K–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, data, graphs, comparing
 

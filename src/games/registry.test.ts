@@ -602,6 +602,7 @@ describe('game registry', () => {
       'paint-mixer',
       'pet-kitchen',
       'picnic-pantry',
+      'picture-graph',
       'picture-logic',
       'pixel-pictures',
       'pond-conga',
