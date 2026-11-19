@@ -159,6 +159,8 @@ Use the app's recoverable archive for a managed worktree when available; otherwi
 
 Since 2026-11-10 two local desktop scheduled tasks (`neo-roadmap-slice-a` and `-b`, prompts in `~/.claude/scheduled-tasks/` on the developer's Mac) each take one READY slice per hourly run, in a fresh chat.
 
+- **Off-peak schedule (2026-11-19).** To use the weekday off-peak hours, A and B run at `:29` and `:59` Monday to Friday only in hours 0–4 and 11–23 Pacific (nothing 5:00–10:59am, the assumed weekday peak), and the copies `neo-roadmap-slice-a-weekend` and `-b-weekend` run every hour on Saturday and Sunday. A task holds one cron expression, hence four tasks. **A change to the prompt goes into all four.**
+
 - **Their prompts name these paths**, so keep them where they are, or change the prompts in the same step: `AGENTS.md`, `docs/READY.md` (Next ten, Queued), `docs/ROADMAP.md` (Next up), `docs/deep-dives/`, `docs/OBSERVATIONS.md`, `docs/WAITING-ON-DEVELOPER.md`, `scripts/overlap.sh` and the `docs-keeper` subagent.
 - **Never bind a recurring job to a long-lived chat:** each firing re-reads that chat's whole context ([measured 2026-11-06](reviews/WORKFLOW-REVIEWS.md#token-review-2026-11-06)). A fresh-session run lacks the session tools (the same review).
 - **Codex.** The Codex execution queue was paused 2026-11-03 and is [archived](archive/EXECUTION-QUEUE-2026-11-03.md); a Codex session a person starts works from the roadmap like any other.
