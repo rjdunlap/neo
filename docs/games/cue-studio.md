@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/cue-studio; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `cue-studio` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `cue-studio` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** following a sequence of instructions, choosing a command, order, changing a plan
 

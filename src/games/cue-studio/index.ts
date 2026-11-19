@@ -16,6 +16,7 @@ import { label } from '../../ui/text';
 import { saysFrame } from '../pet-says/logic';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BOX, cueLayout, STRIP_W, type CueLayout } from './layout';
 import { birdArt, FAN_FOLDED, fanIcon, leafIcon, listenIcon, sendIcon } from './art';
 import {
   LEVELS,
@@ -54,8 +55,6 @@ import {
   type Studio,
 } from './logic';
 
-/** Every card, slot and control is this square, in logical units. */
-const BOX = 112;
 const CUE_COLOR: Record<Move, ColorName> = { W: 'orange', T: 'purple', S: 'green' };
 /** What a command card says when it is chosen or stepped. */
 const MOVE_LINE: Record<Move, LineId> = { W: 'cue.wave', T: 'cue.turn', S: 'cue.send' };
@@ -167,7 +166,7 @@ const PHRASE_FIX: readonly Record<Cue, LineId>[] = [
   { W: 'cue.phrase-fix-first-wave', T: 'cue.phrase-fix-first-turn' },
   { W: 'cue.phrase-fix-second-wave', T: 'cue.phrase-fix-second-turn' },
 ];
-const STRIP = { w: 368, h: BOX };
+const STRIP = { w: STRIP_W, h: BOX };
 
 /** Level 5's request strip: one wide target showing the four-move trace as two bracketed pairs. */
 class PhraseStrip extends Container {
@@ -548,46 +547,24 @@ class CueStudio implements Game {
 
   resize(v: View) {
     this.backdrop.resize(v);
-    const portrait = v.h > v.w;
-    const ox = Math.max(0, (v.w - 1024) / 2);
-    // The definition's rectangles (top-left corners); each box's centre is half a box in.
-    const oy = portrait ? Math.max(0, (v.h - 900) / 2) : Math.max(0, (v.h - 768) / 2);
-    const at = (node: Container, x: number, y: number) =>
-      node.position.set(ox + x + BOX / 2, oy + y + BOX / 2);
-    const k = Math.min(1.3, 190 / this.height);
-    this.actor.scale.set(k);
-    const one = this.plan.slots === 1;
-    if (portrait) {
-      this.actor.position.set(ox + (this.s.request ? 800 : 512), oy + 360);
-      for (let i = 0; i < this.slots.length; i++) at(this.slots[i], one ? 448 : 384 + i * 128, 420);
-      // A little lower than the definition's 564/708, to leave room under the show's shelf.
-      at(this.cards.W, 384, 600);
-      at(this.cards.T, 512, 600);
-      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach(
-        (b, i) => at(b, 192 + i * 128, 748),
-      );
-    } else {
-      this.actor.position.set(ox + 828, oy + 330);
-      for (let i = 0; i < this.slots.length; i++) at(this.slots[i], one ? 448 : 384 + i * 128, 356);
-      // 32 units left of the definition's 128/256, so the cards stand clear of the shelf.
-      at(this.cards.W, 96, 356);
-      at(this.cards.T, 224, 356);
-      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach(
-        (b, i) => at(b, 192 + i * 128, 532),
-      );
-    }
-    if (this.s.rows) return this.layRows(at, portrait);
-    if (this.s.pass) return this.layPass(at, portrait, ox, oy);
+    const L = cueLayout(v, shapeOf(this.plan), this.plan.slots, !!this.s.request);
+    const place = (node: Container, p: { x: number; y: number }) => node.position.set(p.x, p.y);
+    this.actor.scale.set(Math.min(1.3, 190 / this.height));
+    place(this.actor, L.actor);
+    this.slots.forEach((slot, i) => place(slot, L.slots[i]));
+    place(this.cards.W, L.cards.W);
+    place(this.cards.T, L.cards.T);
+    [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach((b, i) =>
+      place(b, L.buttons[i]),
+    );
+    if (this.s.rows) return this.layRows(L);
+    if (this.s.pass) return this.layPass(L);
     if (this.cap && this.phrase) {
-      // Level 5 (the P4 definition's rectangles): the cap ends the shelf and the ghosts stand after it, so the pet moves
-      // right, clear of the cap; it stands above that row.
-      const y = this.slots[0].y;
-      this.cap.position.set(ox + 640 + BOX / 2, y);
-      this.ghosts.forEach((ghost, i) => ghost.position.set(ox + 820 + i * 108, y));
-      this.phrase.position.set(ox + 384 + STRIP.w / 2, oy + (portrait ? 144 : 132) + BOX / 2);
-      this.actor.x = ox + 880;
+      place(this.cap, L.cap);
+      this.ghosts.forEach((ghost, i) => place(ghost, L.ghosts[i]));
+      place(this.phrase, L.strip);
     }
-    this.requests.forEach((pad, i) => at(pad, 384 + i * 128, portrait ? 144 : 136));
+    this.requests.forEach((pad, i) => place(pad, L.requests[i]));
     this.requestShelf.clear();
     if (this.requests.length) {
       const first = this.requests[0];
@@ -611,19 +588,12 @@ class CueStudio implements Game {
   }
 
   /** Level 4 (the P4 definition's rectangles): each row is request, signal, slot, result chip; the palette stands apart. */
-  private layRows(at: (node: Container, x: number, y: number) => void, portrait: boolean) {
-    if (!portrait) {
-      at(this.cards.W, 384, 132);
-      at(this.cards.T, 512, 132);
-    }
+  private layRows(L: CueLayout) {
     this.shelf.clear();
-    this.slots.forEach((slot, row) => {
-      const y = (portrait ? 300 : 260) + row * 128;
-      at(this.requests[row], 96, y);
-      at(this.signals[row], 240, y);
-      at(slot, 384, y);
-      // The chip is 72 wide, at the definition's x 512.
-      at(this.chips[row], 512 - (BOX - 72) / 2, y);
+    this.slots.forEach((_slot, row) => {
+      this.requests[row].position.set(L.requests[row].x, L.requests[row].y);
+      this.signals[row].position.set(L.signals[row].x, L.signals[row].y);
+      this.chips[row].position.set(L.chips[row].x, L.chips[row].y);
     });
     // One board behind both rows, drawn under the request pictures.
     const [first, last] = [this.requests[0], this.chips[this.chips.length - 1]];
@@ -640,29 +610,15 @@ class CueStudio implements Game {
    * Level 6 (the P4 definition's rectangles): the pet's row over the bird's row, the two actors in the right-hand column,
    * the pet above and the bird below, and the leaf's path down that column.
    */
-  private layPass(
-    at: (node: Container, x: number, y: number) => void,
-    portrait: boolean,
-    ox: number,
-    oy: number,
-  ) {
+  private layPass(L: CueLayout) {
     const { receiver, fanTile, bird, passStrip } = this;
     if (!receiver || !fanTile || !bird || !passStrip) return;
-    const row = portrait ? 300 : 260;
-    this.slots.forEach((slot, i) => at(slot, 384 + i * 128, row));
-    at(receiver, 384, row + 128);
-    at(fanTile, 512, row + 128);
-    if (portrait) at(this.cards.S, 640, 600);
-    else {
-      at(this.cards.W, 96, 260);
-      at(this.cards.T, 224, 260);
-      at(this.cards.S, 224, 388);
-    }
-    passStrip.position.set(ox + 384 + STRIP.w / 2, oy + (portrait ? 144 : 132) + BOX / 2);
-    // The pet about 150 tall and the bird about 120, each centred at the definition's point; both origins are at the feet.
+    receiver.position.set(L.receiver.x, L.receiver.y);
+    fanTile.position.set(L.fanTile.x, L.fanTile.y);
+    this.cards.S.position.set(L.cards.S.x, L.cards.S.y);
+    passStrip.position.set(L.strip.x, L.strip.y);
     this.actor.scale.set(Math.min(1.3, 150 / this.height));
-    this.actor.position.set(ox + 880, oy + (portrait ? 330 : 250) + 75);
-    bird.root.position.set(ox + 880, oy + (portrait ? 480 : 440) + 60);
+    bird.root.position.set(L.bird.x, L.bird.y);
     // A board behind each row, outlined in its actor's colour and reaching toward that actor.
     this.requestShelf.clear();
     this.shelf.clear();
@@ -677,7 +633,7 @@ class CueStudio implements Game {
         .roundRect(x0, y - BOX / 2 - 6, x1 - x0, BOX + 12, 26)
         .fill(wood.light)
         .stroke({ width: 6, color });
-      for (let x = x1 + 16; x < ox + 800; x += 22) this.shelf.circle(x, y, 5).fill(color);
+      for (let x = x1 + 16; x < L.trailEnd; x += 22) this.shelf.circle(x, y, 5).fill(color);
     });
     this.path.from = { x: this.actor.x - 44, y: this.actor.y - 62 };
     this.path.to = { x: bird.root.x - 50, y: bird.root.y - 64 };
@@ -1443,6 +1399,7 @@ export const cueStudio: GameModule = {
     'Take turns giving each other a two-move show to act out: "wave, then turn around". Then swap the order.',
   hubIcon: () => new CueIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new CueStudio(ctx),
 };
