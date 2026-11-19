@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/jar-sort; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `jar-sort` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `jar-sort` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** planning, sorting, spatial-reasoning
 
@@ -40,5 +40,7 @@
 Levels: 1 two kinds in three jars; 2 taller jars; 3 three kinds with one spare jar; 9 (placed between 2 and 3) three kinds in four jars of three with the lit target jars back; 4 two spare jars; 5 four kinds; 6 four kinds with one spare jar (plan ahead); 7 five kinds in seven jars (two rows); 8 four jars on picture mats, each fruit's lid only on its own mat ("The pears go in the pear jar"); 10 five jars where the last, little jar holds only two and never takes a lid, so each board needs it as a place to park. Preschool plays 1, 2, 9, 3 in that order, pre-K 2, 9, 3, 4, 5, school 4–8 and 10–12. Lit target jars show where a lifted fruit fits at levels 1–2 and 9. A child saved at 9 who moves to school lands on level 4 (`entryLevels`).
 
 At level 11, *Like the picture*, copy the fruit order in three cups from the miniature cups above them. Any top fruit can go into a cup with space. Each matching cup lights up, and matching all three finishes the board. There are two boards per round. At level 12, *Scoop the run*, lift the whole matching run from the top of a jar. As many as fit hop into an empty jar or onto a matching fruit. One undo puts back the whole move.
+
+On an upright phone, up to four jars share one shelf and five or more sit on two. Jar targets stay 120 units wide and at least 100 units tall. On a short screen the shelves leave room for the caption and the round arrow. Miniature cups sit directly above their jars at level 11. Undo and the next board use the current view after rotation.
 
 Misses and hints: a refused move (full jar, or a different fruit on top in the sorting modes) springs back with a gentle boing and a spoken reason; it is free at levels 1–2 and 9 and one miss at levels 3–8 and 10–12 (the little jar says "The little jar holds two."). Every second miss on a board glows the hint move's two jars (one hint). After `max(8, 2 × par)` legal moves with no solution, the hint move glows as well. The hint is found by a state search capped at 200,000 states, falling back to undo. When no move is left, or the search proves there is no way through, the pet says "Stuck! Let's take one back" and the undo arrow pulses; that is never a miss or a hint. Moving fruit anywhere legal, undo and set-downs are never counted. A ghost finger taps along the solver's path (the demonstration plays one board). Touch only; no couch play.
