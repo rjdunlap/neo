@@ -9,10 +9,11 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
+import { arrowSpots, cardSpots, islandCenter, ISLAND, MAP_CARD, RING, shoreSpots, VIEW_CARD } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -57,16 +58,9 @@ const VOICE: Record<CritterName, AnimalSound> = {
   mouse: 'squeak',
 };
 
-/** Friends stand on a ring inside the island's top, drawn as an ellipse seen from the side. */
-const RING = { x: 230, y: 86 };
-const ISLAND = { x: 300, y: 110 };
 const FRIEND_SCALE = 0.42;
 /** Flower i stands between spots i and i + 1; four colours so every side of the island looks different. */
 const FLOWERS = ['pink', 'yellow', 'purple', 'orange'] as const;
-/** Level 7's picture cards: big enough to read a friend beside the tree, in a row clear of the corner buttons. */
-const VIEW_CARD = { w: 270, h: 220, gap: 290, y: 126, art: 0.4 };
-/** Level 8's maps: square cards in a row at the top; the island sits low enough that the crown clears them. */
-const MAP_CARD = { size: 170, gap: 190, y: 115, island: 64, crown: 22, ring: 46, critter: 0.14 };
 
 /** A friend on the island or waiting on the shore. */
 interface Friend {
@@ -326,14 +320,7 @@ class PeekaroundIsland implements Game {
   }
 
   private center() {
-    // Level 7's cards take the top: the island sits low enough that the crown clears them.
-    const y =
-      this.plan.mode === 'view'
-        ? Math.max(this.view.h * 0.6, VIEW_CARD.y + VIEW_CARD.h / 2 + 350)
-        : this.plan.mode === 'sky'
-          ? Math.max(this.view.h * 0.6, 545)
-          : this.view.h * 0.6;
-    return { x: this.view.w / 2, y };
+    return islandCenter(this.view, this.plan.mode, this.tiles.length || 3);
   }
 
   /** Where island spot `s` stands right now, and how near the child it is (1 front, -1 behind). */
@@ -357,20 +344,12 @@ class PeekaroundIsland implements Game {
       .stroke({ width: 6, color: swatch.green.line });
     this.tree.position.set(c.x, c.y);
     this.boat?.position.set(c.x, c.y + 165);
-    this.left.position.set(c.x - 400, c.y + 20);
-    this.right.position.set(c.x + 400, c.y + 20);
+    const arrows = arrowSpots(v, c);
+    this.left.position.set(arrows.left.x, arrows.left.y);
+    this.right.position.set(arrows.right.x, arrows.right.y);
     // The picture card: centred when it fits, else in the room right of the corner buttons, tiles never overlapping.
-    const n = this.tiles.length;
-    if (this.plan.mode === 'sky') {
-      const xs = spread(this.maps.length, 200, v.w - 200, MAP_CARD.gap);
-      this.maps.forEach((m, i) => m.node.position.set(xs[i], MAP_CARD.y));
-    } else if (this.plan.mode === 'view') {
-      const xs = spread(n, 130, v.w - 20, VIEW_CARD.gap);
-      this.tiles.forEach((t, i) => t.node.position.set(xs[i], VIEW_CARD.y));
-    } else {
-      const xs = n * 136 <= v.w - 400 ? spread(n, 200, v.w - 200, 136) : spread(n, 140, v.w - 40, 136);
-      this.tiles.forEach((t, i) => t.node.position.set(xs[i], 78));
-    }
+    const cards = this.plan.mode === 'sky' ? this.maps : this.tiles;
+    cardSpots(v, this.plan.mode, cards.length).forEach((p, i) => cards[i].node.position.set(p.x, p.y));
     this.placeShore();
   }
 
@@ -931,11 +910,11 @@ class PeekaroundIsland implements Game {
 
   private placeShore() {
     const waiting = this.friends.filter((f) => f.spot < 0);
-    const xs = spread(waiting.length, 220, this.view.w - 120, 170);
+    const spots = shoreSpots(this.view, waiting.length);
     waiting.forEach((f, i) => {
       if (!f.drag) return;
-      f.drag.home = { x: xs[i], y: this.view.h - 40 };
-      if (!f.drag.dragging) f.node.position.set(xs[i], this.view.h - 40);
+      f.drag.home = spots[i];
+      if (!f.drag.dragging) f.node.position.set(spots[i].x, spots[i].y);
     });
   }
 
@@ -1173,6 +1152,7 @@ export const peekaroundIsland: GameModule = {
   challenge: 'space',
   skills: ['object-permanence', 'perspective', 'spatial-words', 'reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
