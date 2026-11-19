@@ -30,8 +30,7 @@ import {
   type ClockPlan,
   type ClockTask,
 } from './logic';
-
-const R = 200;
+import { R, towerLayout } from './layout';
 
 /** Little pictures of the day, for reading the clock. */
 function eventArt(id: string): Graphics {
@@ -292,25 +291,33 @@ class ClockTower implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const cx = v.w * (this.plan.mode === 'read' ? 0.3 : 0.42);
-    const cy = Math.max(R + 70, v.h * 0.52);
+    const l = towerLayout(v, this.plan.mode);
+    const { x: cx, y: cy, s } = l.face;
     this.face.position.set(cx, cy);
+    this.face.scale.set(s);
     // A little tower around the clock.
     this.tower
       .clear()
-      .roundRect(cx - R - 50, cy - R - 60, 2 * R + 100, v.h - (cy - R - 60) + 40, 30)
+      .roundRect(cx - (R + 50) * s, cy - (R + 60) * s, (2 * R + 100) * s, v.h - (cy - (R + 60) * s) + 40, 30)
       .fill(0xe8dcc8)
       .stroke({ width: 6, color: wood.line });
     this.tower
-      .poly([cx - R - 70, cy - R - 56, cx, cy - R - 150, cx + R + 70, cy - R - 56])
+      .poly([
+        cx - (R + 70) * s,
+        cy - (R + 56) * s,
+        cx,
+        cy - (R + 150) * s,
+        cx + (R + 70) * s,
+        cy - (R + 56) * s,
+      ])
       .fill(swatch.red.fill)
       .stroke({ width: 6, color: swatch.red.line, join: 'round' });
-    this.bell.position.set(cx + R + 150, cy);
-    this.request.position.set(cx + R + 185, cy - 170);
-    this.handKey.position.set(cx + R + 150, cy + 120);
-    this.comparison.position.set(cx + R + 185, Math.min(cy + 265, v.h - 90));
-    this.appointmentHeading.position.set(v.w - 250, cy - 285);
-    this.choices.forEach((c, i) => c.card.position.set(v.w - 250, cy - 170 + i * 170));
+    this.bell.position.set(l.bell.x, l.bell.y);
+    this.request.position.set(l.request.x, l.request.y);
+    this.handKey.position.set(l.handKey.x, l.handKey.y);
+    this.comparison.position.set(l.comparison.x, l.comparison.y);
+    this.appointmentHeading.position.set(l.heading.x, l.heading.y);
+    this.choices.forEach((c, i) => c.card.position.set(l.cards[i].x, l.cards[i].y));
   }
 
   update(dt: number) {
@@ -682,7 +689,7 @@ class ClockTower implements Game {
         sfx.bell(step, 0.3);
         await this.ctx.tw.wait(0.18);
       }
-    this.ctx.particles.burst(this.face.x, this.face.y - R, {
+    this.ctx.particles.burst(this.face.x, this.face.y - R * this.face.scale.x, {
       kind: 'star',
       colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
       count: 18,
@@ -773,5 +780,6 @@ export const clockTower: GameModule = {
   hubIcon: () => new ClockIcon(),
   sticker,
   touchDemo: true,
+  upright: true,
   create: (ctx) => new ClockTower(ctx),
 };
