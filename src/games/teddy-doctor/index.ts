@@ -10,6 +10,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
+import { cardFor, pairFor, SCALE, spotFor, toolHomesFor } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   CHECK_PART,
@@ -32,7 +33,6 @@ import {
 import { rangeFor } from '../../progress/difficulty';
 
 /** Patients are big, so their body parts are easy to aim at. */
-const SCALE = 1.25;
 const STEP_WORDS: Record<Check, string> = {
   stethoscope: 'listen to my heart',
   thermometer: 'check my temperature',
@@ -231,7 +231,7 @@ class TeddyDoctor implements Game {
         .lineTo(x - 40, v.h)
         .stroke(line(wood.fill, 3));
     // A heart sign on the wall and a soft mat to stand on.
-    const hx = v.w * 0.36;
+    const hx = spotFor(v).x;
     g.roundRect(hx - 60, 70, 120, 100, 20)
       .fill(0xffffff)
       .stroke(line(swatch.pink.line, 5));
@@ -239,28 +239,28 @@ class TeddyDoctor implements Game {
       .bezierCurveTo(hx - 50, 118, hx - 34, 84, hx, 102)
       .bezierCurveTo(hx + 34, 84, hx + 50, 118, hx, 150)
       .fill(swatch.pink.fill);
-    this.spot = { x: v.w * 0.36, y: v.h - 100 };
+    this.spot = spotFor(v);
     g.ellipse(this.spot.x, this.spot.y + 6, 190, 30)
       .fill(swatch.blue.light)
       .stroke(line(swatch.blue.line, 4));
     if (this.patient) this.patient.position.set(this.spot.x, this.spot.y);
     this.layoutPair();
     this.layoutTools();
-    this.card.position.set(v.w - 220, 110);
+    const c = cardFor(v);
+    this.card.position.set(c.x, c.y);
   }
 
   private layoutPair() {
     if (!this.choosing || !this.patient || !this.friend) return;
-    const xs = [this.view.w * 0.32, this.view.w * 0.73];
-    this.patient.position.set(xs[this.round.hurtSide], this.spot.y);
-    this.friend.position.set(xs[1 - this.round.hurtSide], this.spot.y);
+    const [hurt, fine] = pairFor(this.view, this.round.hurtSide);
+    this.patient.position.set(hurt.x, hurt.y);
+    this.friend.position.set(fine.x, fine.y);
   }
 
   private layoutTools() {
-    const v = this.view;
-    const cols = [v.w - 250, v.w - 110];
+    const homes = toolHomesFor(this.view, this.tools.length);
     this.tools.forEach((t, i) => {
-      t.home = { x: cols[i % 2], y: 300 + Math.floor(i / 2) * 170 + (this.tools.length === 1 ? 80 : 0) };
+      t.home = homes[i];
       t.drag.home = t.home;
       if (!t.drag.dragging) t.node.position.set(t.home.x, t.home.y);
     });
@@ -423,7 +423,7 @@ class TeddyDoctor implements Game {
       this.ctx.untrack(this.friend!);
       this.friend!.destroy({ children: true });
       this.friend = null;
-      await this.ctx.tw.to(this.patient!, { x: this.spot.x }, { duration: 0.4 });
+      await this.ctx.tw.to(this.patient!, { x: this.spot.x, y: this.spot.y }, { duration: 0.4 });
       await this.ctx.instruct('doctor.play');
     }
     this.busy = false;
@@ -949,6 +949,7 @@ export const teddyDoctor: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  upright: true,
   entryLevels: [7],
   coplayHint: 'Be the patient! Tell {name} where it hurts, and say thank you when you feel better.',
   offScreen: {

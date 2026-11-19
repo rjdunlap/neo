@@ -627,6 +627,7 @@ describe('game registry', () => {
       'stamp-studio',
       'sudoku-garden',
       'swing-pals',
+      'teddy-doctor',
       'tile-pairs',
       'timeline-trail',
       'water-road',
