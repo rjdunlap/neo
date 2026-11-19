@@ -534,6 +534,7 @@ describe('game registry', () => {
     const makingMusic = [
       'movie-night',
       'beat-builder',
+      'circuit-garden',
       'clap-syllables',
       'hat-band',
       'jelly-drums',
