@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/measuring-post; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `measuring-post` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `measuring-post` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** measurement, choose-a-tool, unit-size
 
@@ -31,8 +31,10 @@ Rules (`src/games/measuring-post/logic.ts`, 23 rule tests): the tool must match 
 
 Misses and help: a wrong tool (levels 1–4), a wrong row or a wrong comparison (level 3, hint naming the counts) or a wrong Check (level 4; repeating Check on the same wrong choice is not another miss) is a miss with a boing, a shake and a spoken reason ("The balance tells how heavy. We need how long."); after two misses on a task the useful control glows (counts as that step's hint). Help points and explains first (one hint per step: tool, answer; level 3 tool, little units, comparison; level 4 glows the right pad and names the groups, again chooses it, again points at Check); pressing again does the step. Changing a level-4 choice, or tapping the chosen pad again to take it back, is never a miss. Send is not a counted step. The speaker replays the question or result. Challenge `numbers`, music `STYLES.quiet`; touch demonstration on the how-to card. In Tinker Lab.
 
-Deviations from the definition: a wrong tool does not animate measuring its own attribute; levels 3 (common-unit comparison) and 4 (conversion table) are not built.
+Deviations from the definition: a wrong tool does not animate measuring its own attribute.
 
 **The lesson line never holds the next task (U7 fix batch 24, 2026-11-12).** At levels 2–3 a right row's `measure.right.*` or compare pad's `right3.*` starts and the next task follows the 0.8 s settle alone, the lesson playing over it. Its question waits for the line, Replay, the guide or her first tool tap (which says it and is not judged); Help drops it, its hint naming what is asked. The last task's line is heard out.
 
 **What the guide repeats.** Each task's question (`measure.ask.*`, `measure.ask3.*`, `measure.kg.ask.3/4`) is an instruction, so the caption keeps it while she measures; the results and `measure.kg.watch` stay plain speech.
+
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–4. The layout moved from the scene into a pure `layout.ts` (`postLayout(view, mode)` for the four modes: tool, rows, common, table; `BUTTON` and `TOOL_PAD` are its named sizes), tested over every level and every moment of a round that shows something to touch (`upright.test.ts`: three upright phone views, the captioned one and a short 375 × 601). Held upright (`view.upright`) Help, Replay and Send (level 4's Check sits where Send does) are in the bottom row, 94 units above the bottom edge, with the tool, unit, comparison and grams pads just above them and level 2's two answer rows stacked there, so every touch is within 410 units of the bottom edge (208 px of a 390 × 844 phone). The board sits 20 units above those controls and keeps its shape (no taller than 1.25 times its width, 0.9 at level 1, which shows one object), so a tall phone leaves empty room above the board, not between the board and the thumb. Before this the upright view stretched the 768 × 1024 plan and put the tool shelf about 267 px above the bottom edge. In the stacked board at levels 2 and 3 a line now separates the two friends' halves: each friend stood at the foot of its own half directly above the other friend's count badges, so one read as owning the other's counts. Sideways and an upright tablet keep their positions, pinned by exact-value tests.
