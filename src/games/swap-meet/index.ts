@@ -487,6 +487,7 @@ export const swapMeet: GameModule = {
   describeLevel: (l) => NAMES[Math.max(0, Math.min(3, l - 1))],
   music: STYLES.paint,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Voice one friend’s pictured request while she chooses an offer, then exchange roles.',
   offScreen: 'With a grown-up, each hold a toy and say which toy you would like to swap.',
   hubIcon: () => new SwapIcon(),

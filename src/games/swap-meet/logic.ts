@@ -236,7 +236,10 @@ export interface Layout {
 export function layout(v: { w: number; h: number }, friends: number, slots: number): Layout {
   const tall = v.h > v.w;
   const xs = tall ? [v.w * 0.35, v.w * 0.72] : [v.w * 0.36, v.w * 0.68];
-  const ys = tall ? [300, 650] : [260, 475];
+  // Held upright the first row sits low enough that a panel's request bubble (130 above its center) clears the undo and
+  // help buttons, whose bottoms are at 260; a second row, taller screens first, ends above the trays.
+  const top = Math.min(560, Math.max(420, v.h * 0.3));
+  const ys = tall ? [top, top + 380] : [260, 475];
   const positions =
     friends === 1
       ? [{ x: v.w * 0.55, y: ys[0] }]
