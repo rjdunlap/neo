@@ -439,6 +439,12 @@ const ARCH_TOP = 20;
 const CURTAIN_TOP = 110;
 /** Levels 4–6: the curtains start below the marquee cards, which hang across the arch. */
 const STORY_CURTAIN_TOP = 126;
+/** Upright, the puppets shrink to this (a 140-unit puppet is then 101 units, still a whole touch target). */
+export const UPRIGHT_PUPPET_K = 0.72;
+/** Upright, the curtains start below the Home and help column, so no curtain touch lies under them. */
+const UPRIGHT_CURTAIN_TOP = 222;
+/** Upright, the stage runs nearly edge to edge: its floor and mid-height keep clear of the corner buttons. */
+const UPRIGHT_STAGE_LEFT = 20;
 const CARD_Y = 18 + CARD_H / 2;
 const CARD_GAP = 12;
 /** The marquee keeps right of the corner buttons' column. */
@@ -458,8 +464,10 @@ export interface Layout {
   tassel: Box;
   /** A touch anywhere here raises a puppet at that x (level 1). */
   floorTouch: Box;
-  /** Where a risen puppet may stand (its x). */
-  stand: { min: number; max: number };
+  /** Where a risen puppet may stand (its x), and how far apart two risen puppets stand. */
+  stand: { min: number; max: number; apart: number };
+  /** The puppets' drawn scale: smaller upright, where the 768-wide stage cannot hold two pairs at full size. */
+  k: number;
   /** The four parked puppets' home x, in `PUPPETS` order. */
   homes: number[];
   /** Fixed places for level 2's pair and level 3's puppet. */
@@ -487,14 +495,16 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
   const tall = !portrait && h >= 660;
   const columnOfBubbles = level === 3 && tall;
   const story = level >= 4;
-  const left = STAGE_LEFT;
+  const k = portrait ? UPRIGHT_PUPPET_K : 1;
+  const apart = APART * k;
+  const left = portrait ? UPRIGHT_STAGE_LEFT : STAGE_LEFT;
   const right = w - 20 - (columnOfBubbles ? BUBBLE + 20 : 0);
   const floor = Math.round(h * (portrait ? 0.55 : 0.6));
   const cx = (left + right) / 2;
-  const curtainTop = story ? STORY_CURTAIN_TOP : CURTAIN_TOP;
+  const curtainTop = portrait ? UPRIGHT_CURTAIN_TOP : story ? STORY_CURTAIN_TOP : CURTAIN_TOP;
   // A story puppet stands on a mark in full view: its whole width clears the curtain.
-  const keep = story ? PUPPET_W / 2 + 10 : 40;
-  const stand = { min: left + CURTAIN_W + keep, max: right - CURTAIN_W - keep };
+  const keep = story ? (PUPPET_W / 2 + 10) * k : 40;
+  const stand = { min: left + CURTAIN_W + keep, max: right - CURTAIN_W - keep, apart };
   const span = stand.max - stand.min;
   const homes = Array.from(
     { length: PUPPETS.length },
@@ -540,8 +550,8 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
     cards: Box[] = [],
     end: Box | null = null;
   if (story) {
-    places = [stand.min + APART / 2, stand.max - APART / 2];
-    marks = places.map((p) => [p - APART / 2, p + APART / 2] as [number, number]);
+    places = [stand.min + apart / 2, stand.max - apart / 2];
+    marks = places.map((p) => [p - apart / 2, p + apart / 2] as [number, number]);
     snap = Math.min(120, (places[1] - places[0]) / 2);
     peeks = [
       box(stand.min, floor + PEEK_H / 2, PEEK_W, PEEK_H),
@@ -559,6 +569,7 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
   const bottom = floor + (story ? PEEK_H + 10 : 50);
   return {
     portrait,
+    k,
     stage: { left, right, top: ARCH_TOP, floor, bottom },
     curtains,
     tassel,
@@ -585,28 +596,33 @@ export function placeAt(x: number, l: Pick<Layout, 'places' | 'snap'>): 0 | 1 | 
   return null;
 }
 
-/** The place's mark nearest `x` that stands at least `APART` from every other standing puppet, or null if both are taken. */
+/** The place's mark nearest `x` that stands at least the layout's `stand.apart` (`APART` at full size) from every other standing puppet, or null if both are taken. */
 export function freeMark(
   place: 0 | 1,
   x: number,
   others: readonly number[],
-  l: Pick<Layout, 'marks'>,
+  l: Pick<Layout, 'marks' | 'stand'>,
 ): 0 | 1 | null {
   const order = ([0, 1] as const)
     .slice()
     .sort((a, b) => Math.abs(l.marks[place][a] - x) - Math.abs(l.marks[place][b] - x));
-  for (const m of order) if (others.every((o) => apart(o, l.marks[place][m], APART))) return m;
+  for (const m of order) if (others.every((o) => apart(o, l.marks[place][m], l.stand.apart))) return m;
   return null;
 }
 
 /** Where a puppet rises for a touch at `x`: inside the stand range and at least `APART` from the others standing. */
-export function standAt(x: number, others: readonly number[], stand: { min: number; max: number }): number {
+export function standAt(
+  x: number,
+  others: readonly number[],
+  stand: { min: number; max: number; apart?: number },
+): number {
+  const apart = stand.apart ?? APART;
   let at = Math.min(stand.max, Math.max(stand.min, x));
   for (let i = 0; i < 4; i++) {
-    const near = others.find((o) => Math.abs(o - at) < APART);
+    const near = others.find((o) => Math.abs(o - at) < apart);
     if (near === undefined) break;
-    const pushed = at >= near ? near + APART : near - APART;
-    at = pushed > stand.max ? near - APART : pushed < stand.min ? near + APART : pushed;
+    const pushed = at >= near ? near + apart : near - apart;
+    at = pushed > stand.max ? near - apart : pushed < stand.min ? near + apart : pushed;
   }
   return Math.min(stand.max, Math.max(stand.min, at));
 }

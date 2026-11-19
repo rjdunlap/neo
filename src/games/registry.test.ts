@@ -604,6 +604,7 @@ describe('game registry', () => {
       'pixel-pictures',
       'pond-conga',
       'puddle-lens',
+      'puppet-stage',
       'puzzle-pals',
       'pyramid-solitaire',
       'ramp-race',
