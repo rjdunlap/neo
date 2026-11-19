@@ -1028,6 +1028,7 @@ export const lostLayers: GameModule = {
   name: 'Lost Layers',
   titleLine: 'game.lost-layers',
   region: 'tinker-lab',
+  upright: true,
   challenge: 'logic',
   skills: ['evidence', 'relative order', 'uncertainty', 'reasoning'],
   bands: ['school'],
