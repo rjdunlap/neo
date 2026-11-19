@@ -16,9 +16,25 @@ import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  LEVELS,
   CARD_H,
   CARD_W,
+  floorLength,
+  floorPad,
+  goSpot,
+  GO_R,
+  HEIGHT_PX,
+  lanesOf,
+  RAMP_W,
+  rampPad,
+  shelfLayout,
+  signSpot,
+  tellLayout,
+  TILE_H,
+  TILE_W,
+  type LaneSpot,
+} from './layout';
+import {
+  LEVELS,
   changed,
   claimWhy,
   CLAIMS,
@@ -30,7 +46,6 @@ import {
   fairRepair,
   farther,
   FLOORS,
-  HEIGHT_PX,
   HEIGHTS,
   makeQuestions,
   makeShelf,
@@ -39,18 +54,12 @@ import {
   MAX_DISTANCE,
   onStar,
   planFor,
-  RAMP_W,
-  RAMP_X0,
   rampTouch,
   recordOf,
-  shelfLayout,
   sideOf,
   tally,
   tellConclusion,
-  tellLayout,
   tellRepair,
-  TILE_H,
-  TILE_W,
   waysTo,
   type Claim,
   type FairQuestion,
@@ -170,10 +179,10 @@ class Lane extends Container {
     this.addChild(this.floorArt, this.ramp, this.floorHit, this.car);
   }
 
-  layout(x0: number, floorY: number, right: number) {
-    this.floorY = floorY;
-    this.rampEnd = x0 + RAMP_W;
-    this.unit = (right - this.rampEnd) / (MAX_DISTANCE + 0.6);
+  layout(at: LaneSpot) {
+    this.floorY = at.floorY;
+    this.rampEnd = at.rampEnd;
+    this.unit = at.unit;
     this.draw();
     this.reset();
   }
@@ -189,14 +198,11 @@ class Lane extends Container {
       a.moveTo(x0, this.floorY - k * HEIGHT_PX)
         .lineTo(x0 + 18, this.floorY - k * HEIGHT_PX)
         .stroke({ width: 4, color: wood.line });
-    this.ramp.hitArea = new Rectangle(
-      x0 - 20,
-      this.floorY - 4 * HEIGHT_PX - 30,
-      RAMP_W + 30,
-      4 * HEIGHT_PX + 40,
-    );
+    const at: LaneSpot = { x0, rampEnd: this.rampEnd, unit: this.unit, floorY: this.floorY };
+    const pad = rampPad(at);
+    this.ramp.hitArea = new Rectangle(pad.x, pad.y, pad.w, pad.h);
     const f = this.floorArt.clear();
-    const w = (MAX_DISTANCE + 0.6) * this.unit;
+    const w = floorLength(at);
     const color =
       this.setup.floor === 'carpet' ? swatch.red.fill : this.setup.floor === 'wood' ? wood.fill : 0xbfe6fb;
     f.roundRect(this.rampEnd - 4, this.floorY, w + 8, 34, 8)
@@ -220,7 +226,8 @@ class Lane extends Container {
       f.moveTo(this.rampEnd + k * this.unit, this.floorY + 34)
         .lineTo(this.rampEnd + k * this.unit, this.floorY + 44)
         .stroke({ width: 3, color: ink, alpha: 0.4 });
-    this.floorHit.hitArea = new Rectangle(this.rampEnd, this.floorY - 10, w, 70);
+    const strip = floorPad(at);
+    this.floorHit.hitArea = new Rectangle(strip.x, strip.y, strip.w, strip.h);
   }
 
   /** The car waits at the top of the ramp. */
@@ -331,7 +338,7 @@ class RampRace implements Game {
       this.lanes.push(lane);
       ctx.stage.addChild(lane);
     }
-    this.go = new RoundButton(playIcon(), swatch.green, 60, () => void this.roll());
+    this.go = new RoundButton(playIcon(), swatch.green, GO_R, () => void this.roll());
     this.marks.eventMode = 'none';
     this.badge.eventMode = 'none';
     this.badge.visible = false;
@@ -372,10 +379,12 @@ class RampRace implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const ys = this.lanes.length === 2 ? [v.h * 0.42, v.h * 0.78] : [v.h * 0.66];
-    this.lanes.forEach((l, i) => l.layout(RAMP_X0, ys[i], v.w - 150));
-    this.go.position.set(v.w - 80, v.h - 80);
-    this.sign.position.set(v.w / 2 + 60, 80);
+    const spots = lanesOf(v, this.lanes.length);
+    this.lanes.forEach((l, i) => l.layout(spots[i]));
+    const go = goSpot(v);
+    this.go.position.set(go.x, go.y);
+    const sign = signSpot(v);
+    this.sign.position.set(sign.x, sign.y);
     this.drawStar();
     if (this.plan.mode === 'shelf' || this.plan.mode === 'change') this.layoutShelf();
     if (this.plan.mode === 'tell') this.layoutTell();
@@ -473,7 +482,7 @@ class RampRace implements Game {
     if ('card' in move) return { tap: { on: this.cards[move.card], x: CARD_W / 2, y: CARD_H / 2 } };
     if ('guess' in move) {
       // The middle of the chosen side of the blue flag, a little above the floor.
-      const zone = shelfLayout(this.view, this.records[0].stop).guess[move.guess];
+      const zone = shelfLayout(this.view, this.records[0].stop, this.lanes.length).guess[move.guess];
       return { tap: { on: this.guessHit, x: zone.x + zone.w / 2, y: this.lanes[0].floorY - 40 }, pause: 0.4 };
     }
     const lane = this.lanes[move.lane];
@@ -902,12 +911,12 @@ class RampRace implements Game {
   }
 
   private cardBoxes() {
-    return shelfLayout(this.view, this.records[0]?.stop ?? 0).cards;
+    return shelfLayout(this.view, this.records[0]?.stop ?? 0, this.lanes.length).cards;
   }
 
   /** Cards sit at their slots and the guess zone over the floor; flags and the paw are redrawn from marks. */
   private layoutShelf() {
-    const L = shelfLayout(this.view, this.records[0]?.stop ?? 0);
+    const L = shelfLayout(this.view, this.records[0]?.stop ?? 0, this.lanes.length);
     this.cards.forEach((c, k) => c.position.set(L.cards[k].x, L.cards[k].y));
     const z = L.guess;
     this.guessHit.hitArea = new Rectangle(z.before.x, z.before.y, z.before.w + z.past.w, z.before.h);
@@ -1317,6 +1326,7 @@ export const rampRace: GameModule = {
   challenge: 'noticing',
   skills: ['science', 'fair-tests', 'predicting', 'measuring'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
