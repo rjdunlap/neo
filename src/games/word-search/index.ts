@@ -289,6 +289,7 @@ class WordSearch implements Game {
   /**
    * Touch layout. A letter's square is at least 64 across, so a grid that does not fit beside (or above) the word list
    * slides: the window shows part of it and a drag moves it. The list sits to the right, or under the grid on a tall view.
+   * On an upright phone a grid that would fit only at squares smaller than a thumb slides at 86 instead (`touchSquare`).
    */
   private resizeTouch(v: View) {
     const n = this.n,
@@ -308,7 +309,7 @@ class WordSearch implements Game {
     this.title.style.fontSize = 26;
     this.tally.style.fontSize = 20;
     const pad = PAD;
-    this.cell = touchSquare(vp, { n, school, small });
+    this.cell = touchSquare(vp, { n, school, small, phone: f.phone });
     const size = n * this.cell;
     this.maxX = Math.max(0, size + pad - vp.w);
     this.maxY = Math.max(0, size + pad - vp.h);
