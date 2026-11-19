@@ -573,13 +573,17 @@ class PuppetStage implements Game {
     const node = this.puppetNodes.get(p)!;
     const look = WAY_LOOK[way];
     this.ctx.tw.kill(node.scale);
-    void this.ctx.tw.to(node.scale, { x: look.scale, y: look.scale }, { duration: 0.25, ease: ease.outBack });
+    void this.ctx.tw.to(
+      node.scale,
+      { x: look.scale * this.l.k, y: look.scale * this.l.k },
+      { duration: 0.25, ease: ease.outBack },
+    );
     if (way === 'sleepy') sfx.yawn();
     const seq = ++this.waySeq;
     await this.speakAs(p, this.plan.line!, WAY_VOICE[way]);
     if (this.finished || seq !== this.waySeq) return;
     this.critterOf(p).setMood(look.mood, 0.8);
-    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    void this.ctx.tw.to(node.scale, { x: this.l.k, y: this.l.k }, { duration: 0.3, ease: ease.outBack });
   }
 
   private async askNext(i: number) {
@@ -1067,6 +1071,7 @@ class PuppetStage implements Game {
     const cast = this.story?.cast;
     for (const p of PUPPETS) {
       const node = this.puppetNodes.get(p)!;
+      if (!this.ctx.tw.busy(node.scale)) node.scale.set(l.k);
       const i = this.standing.indexOf(p);
       if (i < 0) {
         const peek = cast ? cast.indexOf(p) : -1;
@@ -1121,7 +1126,8 @@ class PuppetStage implements Game {
 
   private puppetBox(p: Puppet) {
     const n = this.puppetNodes.get(p)!;
-    return { x: n.x, y: this.l.stage.floor - PUPPET_H / 2, w: 140, h: PUPPET_H };
+    const k = this.l.k;
+    return { x: n.x, y: this.l.stage.floor - (PUPPET_H * k) / 2, w: 140 * k, h: PUPPET_H * k };
   }
 
   private glowTarget(g: Puppet | Way): Container {
@@ -1196,6 +1202,7 @@ export const puppetStage: GameModule = {
   name: 'Puppet Stage',
   titleLine: 'game.puppet-stage',
   region: 'music-mountain',
+  upright: true,
   challenge: 'words',
   skills: ['pretend-play', 'listening', 'character-voices', 'acting-a-story'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],

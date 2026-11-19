@@ -280,11 +280,11 @@ describe('layout', () => {
             expect(overlap(separate[i], separate[j]), `${name} ${i} ${j}`).toBe(false);
         expect(l.bubbles).toHaveLength(level === 3 ? 3 : 0);
         expect(l.spots).toHaveLength(level === 1 ? 0 : level === 2 ? 2 : 1);
-        if (level === 2) expect(Math.abs(l.spots[1] - l.spots[0])).toBeGreaterThanOrEqual(APART);
+        if (level === 2) expect(Math.abs(l.spots[1] - l.spots[0])).toBeGreaterThanOrEqual(l.stand.apart);
         expect(l.portrait).toBe(v.h > v.w);
         if (l.portrait && level === 3)
           for (const b of l.bubbles) expect(b.y - b.h / 2).toBeGreaterThanOrEqual(l.stage.floor);
-        expect(l.stand.max - l.stand.min).toBeGreaterThanOrEqual(APART);
+        expect(l.stand.max - l.stand.min).toBeGreaterThanOrEqual(l.stand.apart);
         expect(l.homes).toHaveLength(4);
       });
     }
@@ -331,7 +331,7 @@ describe('layout', () => {
             expect(overlap(p, o)).toBe(false);
         }
         if (l.end) expect(overlap(l.end, l.bow)).toBe(false);
-        expect(l.places[1] - l.places[0]).toBeGreaterThanOrEqual(APART);
+        expect(l.places[1] - l.places[0]).toBeGreaterThanOrEqual(l.stand.apart);
         for (const m of l.marks.flat()) {
           expect(m).toBeGreaterThanOrEqual(l.stand.min);
           expect(m).toBeLessThanOrEqual(l.stand.max);
@@ -348,7 +348,7 @@ describe('layout', () => {
         const x0 = l.marks[place][first];
         const second = freeMark(place, l.places[place], [x0], l)!;
         expect(second).not.toBe(first);
-        expect(Math.abs(l.marks[place][second] - x0)).toBe(APART);
+        expect(Math.abs(l.marks[place][second] - x0)).toBeCloseTo(l.stand.apart, 6);
         for (const m of l.marks[place]) expect(placeAt(m, l)).toBe(place);
         expect(freeMark(place, l.places[place], [l.marks[place][0], l.marks[place][1]], l)).toBeNull();
       }
