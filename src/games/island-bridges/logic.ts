@@ -798,27 +798,53 @@ export interface Slot {
   w: number;
   h: number;
 }
+/** The window a sliding sea shows through, in stage units, and how far the sea can slide each way. */
+export interface SeaWindow {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  maxX: number;
+  maxY: number;
+}
 export interface TouchLayout {
   cell: number;
-  /** The sea's top-left corner, in stage units. */
+  /** The sea's top-left corner, in stage units (a sliding sea's before it has slid). */
   x: number;
   y: number;
   beside: boolean;
   slots: Slot[];
   /** Where the plank count sits, and how it is anchored. */
   tally: { x: number; y: number; ax: number; ay: number };
+  /** A sea too big for an upright phone at a thumb-sized square slides in this window; null when the whole sea shows. */
+  window: SeaWindow | null;
+  /** Where "Drag the sea to slide it" sits (anchored at its left middle), beside the help button. */
+  note: { x: number; y: number };
 }
 
 /** A grown-up's Take back, Hint and Start over are this high: 44.7 px under a thumb on a 390-wide upright phone. */
 export const GROWN_BUTTON_H = 88;
 
 /**
+ * On an upright phone a grown-up's sea square is never smaller than this, 43.7 px under a thumb on a 390-wide phone: a sea
+ * that cannot show whole at it (9 × 9 fits at 74, 11 × 11 at 61) slides at it instead.
+ */
+export const THUMB_CELL = 86;
+/** On an upright phone a grown-up's small seas (5 × 5 and 7 × 7) grow to this, 44.7 px; elsewhere a square stops at 80. */
+export const PHONE_CAP = 88;
+/** The sea's own border, kept inside the window of a sea that slides. */
+export const SEA_EDGE = 16;
+
+/**
  * Touch layout for a sea of `size` by `size` in a `w` by `h` view. Beside the sea when it fits (the buttons in a column), else
- * under it. Grown-ups get cells of 64 to 80 and buttons 88 high; at school every cell and button is at least 100 across.
+ * under it. Grown-ups get cells of 64 to 80 and buttons 88 high; at school every cell and button is at least 100 across. On
+ * an upright phone (narrower than 1000) a grown-up's cells are 86 to 88: the small seas grow, and a sea that cannot fit at 86
+ * slides in a window as wide as the view, with the buttons under the window.
  */
 export function touchLayout(size: number, w: number, h: number, school: boolean): TouchLayout {
+  const phone = !school && w < 1000;
   const min = school ? 100 : 64,
-    cap = school ? 100 : 80,
+    cap = school ? 100 : phone ? PHONE_CAP : 80,
     bh = school ? 100 : GROWN_BUTTON_H,
     under = bh;
   const left = 152,
@@ -837,6 +863,7 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
     Math.floor((h - 140 - 24 - 20 - under - 24) / size),
   );
   const kinds = ['take', 'hint', 'again'] as const;
+  const note = { x: 140, y: 186 };
   if (side >= min && side + 8 > stack) {
     const sea = size * side,
       x = Math.max(left, (w - (sea + gap + panel)) / 2),
@@ -849,6 +876,40 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
       beside: true,
       slots: kinds.map((kind, k) => ({ kind, x: bx, y: y + 8 + k * (bh + 12), w: panel, h: bh })),
       tally: { x: bx + panel / 2, y: y + 8 + 3 * (bh + 12) + 8, ax: 0.5, ay: 0 },
+      window: null,
+      note,
+    };
+  }
+  // The row of three buttons under a box (the sea, or a sliding sea's window) that ends at `bottom`.
+  const row = (boxX: number, boxW: number, bottom: number) => {
+    const by = bottom + 20;
+    // A view shortened by the caption strip can bring the row down into the guide's corner: the row then starts beside it.
+    const low = by + under > h - 170,
+      bw = Math.min(200, Math.floor((boxW - 24) / 3), low ? Math.floor((w - 150 - 8 - 24) / 3) : Infinity),
+      bx = Math.max(boxX + boxW / 2 - (3 * bw + 24) / 2, low ? 150 : -Infinity);
+    return {
+      slots: kinds.map((kind, k) => ({ kind, x: bx + k * (bw + 12), y: by, w: bw, h: under })),
+      tally: { x: w / 2, y: by + under + 36, ax: 0.5, ay: 0.5 },
+    };
+  };
+  if (phone && stack < THUMB_CELL) {
+    // The window starts below Home and help and is as wide as the view allows; it is only as tall as the sea needs, and
+    // stops above the guide's corner (the view shortened by the caption strip), where the sea then slides up and down as
+    // well and the buttons and the plank count take the 170 units beside the guide.
+    const cell = THUMB_CELL,
+      full = size * cell + 2 * SEA_EDGE,
+      vx = 24,
+      vy = 212,
+      vw = Math.min(full, w - 2 * vx),
+      vh = Math.min(full, h - 170 - vy);
+    return {
+      cell,
+      x: vx + SEA_EDGE,
+      y: vy + SEA_EDGE,
+      beside: false,
+      ...row(vx, vw, vy + vh),
+      window: { x: vx, y: vy, w: vw, h: vh, maxX: full - vw, maxY: full - vh },
+      note,
     };
   }
   // On an upright phone (chunk 31) a sea wider than the gap beside Home and "?" starts below them; the wide area is unchanged.
@@ -856,23 +917,29 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
     sea = size * cell,
     x = (w - sea) / 2,
     y = w < 1000 && x < 120 ? 220 : 140;
-  const by = y + sea + 16 + 20;
-  // A view shortened by the caption strip can bring the row down into the guide's corner: the row then starts beside it.
-  const low = by + under > h - 170,
-    bw = Math.min(200, Math.floor((sea - 24) / 3), low ? Math.floor((w - 150 - 8 - 24) / 3) : Infinity),
-    bx = Math.max(x + sea / 2 - (3 * bw + 24) / 2, low ? 150 : -Infinity);
+  return { cell, x, y, beside: false, ...row(x, sea, y + sea + SEA_EDGE), window: null, note };
+}
+
+/**
+ * How far a sliding sea should have slid so that the point `x`, `y` of the sea (in its own units, from its top-left corner)
+ * is in the middle of its window, or as near as the sea's edges allow.
+ */
+export function slideToShow(win: SeaWindow, x: number, y: number): { x: number; y: number } {
   return {
-    cell,
-    x,
-    y,
-    beside: false,
-    slots: kinds.map((kind, k) => ({
-      kind,
-      x: bx + k * (bw + 12),
-      y: by,
-      w: bw,
-      h: under,
-    })),
-    tally: { x: w / 2, y: by + under + 36, ax: 0.5, ay: 0.5 },
+    x: Math.min(win.maxX, Math.max(0, x + SEA_EDGE - win.w / 2)),
+    y: Math.min(win.maxY, Math.max(0, y + SEA_EDGE - win.h / 2)),
   };
+}
+
+/** Is the point `x`, `y` of the sea inside its window, at least `margin` from every edge, when the sea has slid by `slid`? */
+export function inWindow(
+  win: SeaWindow,
+  slid: { x: number; y: number },
+  x: number,
+  y: number,
+  margin: number,
+): boolean {
+  const px = x + SEA_EDGE - slid.x,
+    py = y + SEA_EDGE - slid.y;
+  return px >= margin && px <= win.w - margin && py >= margin && py <= win.h - margin;
 }

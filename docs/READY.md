@@ -158,6 +158,8 @@ Added 2026-11-05: 21 games built from definitions have no dive and no study row 
 - **Research: a Vine Snip dive** (`vine-snip`, lap to school, levels 1–5; its later ideas are proposals only in its [definition](definitions/vine-snip.md)).
 
 
+- **A shared sliding-board helper** (restructuring, typecheck and unit tests plus one filtered play per game it moves; the [thumb-fix line](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18) left it): Word Search (`layout.ts`), Island Bridges (`touchLayout`, `slideToShow`, `inWindow` in `logic.ts`) and Logic Grid / Picture Logic each carry their own window, clamp, drag threshold and edge-arrow code; move what is common into one engine helper (check the [reuse map](DESIGN.md#reuse-map) first) and keep every game's layout test passing, without changing any size.
+
 ## Blocked work (not routine picks)
 
 - **Rework RW08 slice 3, the cutover** (approved by the developer 2026-10-23; starts only when they say go ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12)

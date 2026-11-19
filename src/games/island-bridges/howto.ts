@@ -6,7 +6,19 @@ export const HOW_TO: GameHowTo = {
   steps: [
     'Tap the water between two islands to lay a plank; tap again for a second. Bridges cannot cross.',
     'Tap Take off, then a bridge, to lift a plank.',
-    'Hint shows a bridge to try; Start over clears the sea.',
+    // The 9 by 9 and 11 by 11 seas slide on an upright phone; the 5 by 5 (level 5) and 7 by 7 (level 1) show whole.
+    { from: 1, to: 1, text: 'Hint shows a bridge to try; Start over clears the sea.' },
+    {
+      from: 2,
+      to: 4,
+      text: 'Hint shows a bridge to try; Start over clears the sea. On a phone, drag to slide the sea.',
+    },
+    { from: 5, to: 5, text: 'Hint shows a bridge to try; Start over clears the sea.' },
+    {
+      from: 6,
+      to: 7,
+      text: 'Hint shows a bridge to try; Start over clears the sea. On a phone, drag to slide the sea.',
+    },
     {
       from: 6,
       to: 6,

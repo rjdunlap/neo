@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -19,12 +19,14 @@ import {
   edgeToward,
   focusPath,
   hintFor,
+  inWindow,
   isSolved,
   islandToward,
   makePuzzles,
   otherEnd,
   planFor,
   planksAt,
+  slideToShow,
   edgeAt,
   headStart,
   trouble,
@@ -35,6 +37,7 @@ import {
   type Forced,
   type Hint,
   type Puzzle,
+  type SeaWindow,
 } from './logic';
 
 const SEA = 0xcfe8f7;
@@ -45,6 +48,8 @@ const DONE_FILL = 0xcdeccb;
 const DONE_LINE = 0x4a9a35;
 
 type Mode = 'move' | 'add' | 'remove';
+/** A finger has to travel this far on a sliding sea before the touch is a slide and not a tap. */
+const SLIDE = 14;
 
 const FORCED_LINE: Record<Forced, LineId> = {
   full: 'bridges.hint-full',
@@ -84,6 +89,24 @@ class IslandBridges implements Game {
   taking = false;
   private readonly buttons = new Graphics();
   private readonly buttonText = new Container();
+  /**
+   * An upright phone's big seas (9 × 9 and 11 × 11) slide in a window at a thumb-sized square: the window, how far the sea
+   * has slid, and the finger on it (where it began, what the sea had slid, the water under it, whether it became a slide).
+   */
+  win: SeaWindow | null = null;
+  slid = { x: 0, y: 0 };
+  private drag: {
+    id: number;
+    sx: number;
+    sy: number;
+    ox: number;
+    oy: number;
+    edge: number | null;
+    moved: boolean;
+  } | null = null;
+  private readonly clipMask = new Graphics();
+  private readonly frame = new Graphics();
+  private readonly slideNote = label('', 18, ink, '500');
 
   private readonly puzzles: Puzzle[];
   private readonly board = new Container();
@@ -94,6 +117,9 @@ class IslandBridges implements Game {
   private readonly tally = label('', 26, ink, '500');
   private numbers: ReturnType<typeof label>[] = [];
   private cell = 60;
+  /** The sea's corner before any sliding. */
+  private origin = { x: 0, y: 0 };
+  private frameDirty = true;
   private clock = 0;
   private view: View;
   private dirty = true;
@@ -133,11 +159,27 @@ class IslandBridges implements Game {
     this.touch = !ctx.couch;
     if (this.touch) {
       // A layer over the sea works out which stretch of water a finger touched, so a tap never depends on a drawing's own hit area.
-      onTap(this.tapLayer, (e) => this.tapSea(e.global.x, e.global.y), { cooldown: 60 });
+      // On a sea that slides, a touch waits for the finger to lift (a tap) or to travel (a slide); the water under it lights at once.
+      onTap(this.tapLayer, (e) => (this.win ? this.seaDown(e) : this.tapSea(e.global.x, e.global.y)), {
+        cooldown: 60,
+      });
+      this.tapLayer.on('globalpointermove', this.seaMove);
+      this.tapLayer.on('pointerup', this.seaUp);
+      this.tapLayer.on('pointerupoutside', this.seaUp);
+      this.tapLayer.on('pointercancel', this.seaCancel);
       this.tapLayer.cursor = 'pointer';
-      this.buttons.eventMode = 'none';
-      this.buttonText.eventMode = 'none';
-      ctx.stage.addChild(this.buttons, this.buttonText, this.tapLayer, this.touchLayer);
+      for (const part of [this.buttons, this.buttonText, this.clipMask, this.frame, this.slideNote])
+        part.eventMode = 'none';
+      this.slideNote.anchor.set(0, 0.5);
+      ctx.stage.addChild(
+        this.clipMask,
+        this.frame,
+        this.slideNote,
+        this.buttons,
+        this.buttonText,
+        this.tapLayer,
+        this.touchLayer,
+      );
     }
   }
 
@@ -158,6 +200,7 @@ class IslandBridges implements Game {
     if (!this.puzzle) return;
     const size = this.puzzle.size;
     if (this.touch) return this.resizeTouch(v);
+    this.windowOff();
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the sea stays above it.
     this.cell = Math.max(40, Math.min(76, Math.floor((v.h - 100 - 200) / size)));
     const w = size * this.cell,
@@ -169,19 +212,43 @@ class IslandBridges implements Game {
     this.dirty = true;
   }
 
-  /** Touch layout (`touchLayout`): three buttons beside or under the sea; every cell and button at least 64 for grown-ups, 100 at school. */
+  /**
+   * Touch layout (`touchLayout`): three buttons beside or under the sea; every cell and button at least 64 for grown-ups, 100
+   * at school. On an upright phone a grown-up's big sea slides in a window at 86-unit squares and a drag moves it.
+   */
   private resizeTouch(v: View) {
     const size = this.puzzle.size,
       fit = touchLayout(size, v.w, v.h, this.ctx.band === 'school');
     this.cell = fit.cell;
     this.slots = fit.slots;
-    this.board.position.set(fit.x, fit.y);
+    this.origin = { x: fit.x, y: fit.y };
     this.tally.anchor.set(fit.tally.ax, fit.tally.ay);
     this.tally.position.set(fit.tally.x, fit.tally.y);
-    const w = size * this.cell;
-    this.tapLayer.clear().rect(0, 0, w, w).fill({ color: 0xffffff, alpha: 0.001 });
-    this.tapLayer.hitArea = new Rectangle(0, 0, w, w);
-    this.tapLayer.position.copyFrom(this.board.position);
+    this.drag = null;
+    const w = size * this.cell,
+      win = fit.window;
+    if (win) {
+      this.win = win;
+      this.slid = {
+        x: Math.min(win.maxX, Math.max(0, this.slid.x)),
+        y: Math.min(win.maxY, Math.max(0, this.slid.y)),
+      };
+      this.clipMask.clear().roundRect(win.x, win.y, win.w, win.h, 22).fill(0xffffff);
+      this.board.mask = this.clipMask;
+      this.slideNote.text = 'Drag the sea to slide it';
+      this.slideNote.position.set(fit.note.x, fit.note.y);
+      this.slideNote.visible = true;
+      this.frame.visible = true;
+      this.tapLayer.clear().rect(0, 0, win.w, win.h).fill({ color: 0xffffff, alpha: 0.001 });
+      this.tapLayer.hitArea = new Rectangle(0, 0, win.w, win.h);
+      this.tapLayer.position.set(win.x, win.y);
+    } else {
+      this.windowOff();
+      this.tapLayer.clear().rect(0, 0, w, w).fill({ color: 0xffffff, alpha: 0.001 });
+      this.tapLayer.hitArea = new Rectangle(0, 0, w, w);
+      this.tapLayer.position.set(fit.x, fit.y);
+    }
+    this.placeBoard();
     for (const node of this.touchLayer.removeChildren()) node.destroy();
     this.slotNodes = this.slots.map((slot, k) => {
       const node = new Container();
@@ -194,6 +261,69 @@ class IslandBridges implements Game {
     this.layoutNumbers();
     this.dirty = true;
     this.paintButtons();
+  }
+
+  /** The whole sea shows (or a controller plays): no window, nothing slid. */
+  private windowOff() {
+    this.win = null;
+    this.drag = null;
+    this.slid = { x: 0, y: 0 };
+    this.board.mask = null;
+    // A mask let go draws as an ordinary shape again, so it is emptied.
+    this.clipMask.clear();
+    this.frame.visible = false;
+    this.slideNote.visible = false;
+  }
+
+  /** The sea sits at its corner, moved by however far it has slid. */
+  private placeBoard() {
+    this.board.position.set(this.origin.x - this.slid.x, this.origin.y - this.slid.y);
+    this.frameDirty = true;
+  }
+
+  /** Slide the sea to `x`, `y`, kept inside what there is to see. */
+  setSlide(x: number, y: number) {
+    const win = this.win;
+    if (!win) return;
+    this.slid = { x: Math.min(win.maxX, Math.max(0, x)), y: Math.min(win.maxY, Math.max(0, y)) };
+    this.placeBoard();
+  }
+
+  /** Slide so that a bridge's water is in view: a hint that rings something off the window would be no hint at all. */
+  private showEdge(edge: number) {
+    if (!this.win || !this.touch) return;
+    const at = waterOf(this.layout, this.cell, edge);
+    if (inWindow(this.win, this.slid, at.x, at.y, this.cell)) return;
+    const to = slideToShow(this.win, at.x, at.y);
+    this.setSlide(to.x, to.y);
+  }
+
+  /** The window's rim, with an arrow on each side that has more sea beyond it. */
+  private paintFrame() {
+    this.frameDirty = false;
+    const g = this.frame.clear(),
+      win = this.win;
+    if (!win) return;
+    const { x, y, w, h } = win,
+      line = this.taking ? swatch.red.line : SEA_LINE;
+    g.roundRect(x, y, w, h, 22).stroke({ width: 6, color: line });
+    const tri = (cx: number, cy: number, dx: number, dy: number) =>
+      g
+        .circle(cx, cy, 20)
+        .fill({ color: 0xffffff, alpha: 0.85 })
+        .poly([
+          cx + dx * 10 - dy * 11,
+          cy + dy * 10 + dx * 11,
+          cx + dx * 10 + dy * 11,
+          cy + dy * 10 - dx * 11,
+          cx - dx * 10,
+          cy - dy * 10,
+        ])
+        .fill(swatch.orange.line);
+    if (this.slid.x > 1) tri(x + 24, y + h / 2, 1, 0);
+    if (this.slid.x < win.maxX - 1) tri(x + w - 24, y + h / 2, -1, 0);
+    if (this.slid.y > 1) tri(x + w / 2, y + 24, 0, 1);
+    if (this.slid.y < win.maxY - 1) tri(x + w / 2, y + h - 24, 0, -1);
   }
 
   /** Hint and Start over, each a tile that sinks while it is pressed. */
@@ -322,6 +452,7 @@ class IslandBridges implements Game {
     this.clock += dt;
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
+    if (this.frameDirty) this.paintFrame();
     if (this.pressed && this.clock >= this.pressed.until) {
       this.pressed = null;
       this.paintButtons();
@@ -331,6 +462,15 @@ class IslandBridges implements Game {
     const cell = this.cell,
       rad = cell * 0.38,
       p = this.at(this.focus);
+    // A finger resting on a sliding sea: the water under it lights until it lifts (a plank) or travels (a slide).
+    if (this.drag && !this.drag.moved && this.drag.edge !== null) {
+      const e = this.layout.edges[this.drag.edge],
+        a = this.at(e.a),
+        b = this.at(e.b);
+      g.moveTo(a.x, a.y)
+        .lineTo(b.x, b.y)
+        .stroke({ width: cell * 0.3, color: 0xffffff, alpha: 0.6 });
+    }
     // What a push would reach from the highlighted island: a faint line to each neighbour, in the mode's color.
     if (this.mode !== 'move' && !this.touch) {
       const color = this.mode === 'add' ? swatch.yellow.fill : swatch.red.fill;
@@ -376,7 +516,10 @@ class IslandBridges implements Game {
     });
   }
 
-  destroy() {}
+  destroy() {
+    this.drag = null;
+    this.tapLayer.removeAllListeners();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Rounds and seas                                                                               */
@@ -394,6 +537,7 @@ class IslandBridges implements Game {
     this.mode = 'move';
     this.told = { cross: false };
     this.focus = 0;
+    this.slid = { x: 0, y: 0 };
     this.buildNumbers();
     this.resize(this.view);
     this.board.alpha = 0;
@@ -403,8 +547,12 @@ class IslandBridges implements Game {
     if (this.spoken) return;
     this.spoken = true;
     if (this.plan.maxPlanks)
-      return this.ctx.instruct(this.touch ? 'bridges.go-three-touch' : 'bridges.go-three');
-    return this.ctx.instruct(this.touch ? 'bridges.go-touch' : 'bridges.go');
+      return this.ctx.instruct(
+        this.touch ? (this.win ? 'bridges.go-three-slide' : 'bridges.go-three-touch') : 'bridges.go-three',
+      );
+    return this.ctx.instruct(
+      this.touch ? (this.win ? 'bridges.go-slide' : 'bridges.go-touch') : 'bridges.go',
+    );
   }
 
   /** Hand a course's numbers to the shell. `finished` means the sea just ended, so none of its planks are "in progress". */
@@ -465,9 +613,15 @@ class IslandBridges implements Game {
       sfx.bell(3 + (step % 7), 0.2);
       await this.ctx.tw.wait(0.06);
     }
-    const mid = this.ctx.stage.toLocal(
-      this.board.toGlobal({ x: (this.puzzle.size * this.cell) / 2, y: (this.puzzle.size * this.cell) / 2 }),
-    );
+    // The stars burst from the middle of the sea, or of its window when the sea is bigger than the window.
+    const mid = this.win
+      ? { x: this.win.x + this.win.w / 2, y: this.win.y + this.win.h / 2 }
+      : this.ctx.stage.toLocal(
+          this.board.toGlobal({
+            x: (this.puzzle.size * this.cell) / 2,
+            y: (this.puzzle.size * this.cell) / 2,
+          }),
+        );
     this.ctx.particles.burst(mid.x, mid.y, {
       kind: 'star',
       colors: [0xffffff, 0xfff3a0, swatch.blue.light],
@@ -493,6 +647,8 @@ class IslandBridges implements Game {
     this.tapLayer.visible = false;
     this.buttons.visible = false;
     this.buttonText.visible = false;
+    this.frame.visible = false;
+    this.slideNote.visible = false;
     sfx.tada();
     await this.ctx.say(this.ctx.band === 'school' ? 'bridges.done-school' : 'bridges.done');
     await this.ctx.tw.wait(0.5);
@@ -514,6 +670,51 @@ class IslandBridges implements Game {
     else this.lay(edge);
   }
 
+  /** A finger went down on a sea that slides: the water under it lights, and what it does waits for the finger to lift or travel. */
+  private seaDown(e: FederatedPointerEvent) {
+    if (this.drag || this.busy || this.finished || !this.puzzle) return;
+    const s = this.ctx.stage.toLocal(e.global),
+      p = this.board.toLocal(e.global);
+    if (!Number.isFinite(s.x) || !Number.isFinite(s.y)) return;
+    this.drag = {
+      id: e.pointerId,
+      sx: s.x,
+      sy: s.y,
+      ox: this.slid.x,
+      oy: this.slid.y,
+      edge: edgeAt(this.layout, this.cell, p.x, p.y, this.planks),
+      moved: false,
+    };
+  }
+
+  private seaMove = (e: FederatedPointerEvent) => {
+    const d = this.drag;
+    if (!d || e.pointerId !== d.id) return;
+    const s = this.ctx.stage.toLocal(e.global);
+    if (!Number.isFinite(s.x) || !Number.isFinite(s.y)) return;
+    const dx = s.x - d.sx,
+      dy = s.y - d.sy;
+    if (!d.moved && Math.hypot(dx, dy) < SLIDE) return;
+    d.moved = true;
+    this.setSlide(d.ox - dx, d.oy - dy);
+  };
+
+  /** The finger lifted: a touch that never travelled is a tap on the water it began on. */
+  private seaUp = (e: FederatedPointerEvent) => {
+    const d = this.drag;
+    if (!d || e.pointerId !== d.id) return;
+    this.drag = null;
+    if (d.moved || this.busy || this.finished || !this.puzzle) return;
+    if (d.edge === null) return void sfx.tick();
+    if (this.taking) this.lift(d.edge);
+    else this.lay(d.edge);
+  };
+
+  /** The system took the touch away (or the finger left the screen): nothing is laid and the sea stays where it has slid. */
+  private seaCancel = () => {
+    this.drag = null;
+  };
+
   /** A finger on a button. It sinks at once. */
   private tapSlot(k: number) {
     if (this.busy || this.finished || !this.puzzle) return;
@@ -523,6 +724,7 @@ class IslandBridges implements Game {
       this.taking = !this.taking;
       sfx.pop(this.taking ? 3 : 2);
       this.dirty = true;
+      this.frameDirty = true;
     } else if (s.kind === 'hint') this.askForHint();
     else this.restart();
     this.paintButtons();
@@ -536,6 +738,7 @@ class IslandBridges implements Game {
     this.tapLayer.visible = false;
     this.buttons.visible = false;
     this.buttonText.visible = false;
+    this.windowOff();
     this.tally.anchor.set(0, 0.5);
     this.resize(this.view);
   }
@@ -619,6 +822,7 @@ class IslandBridges implements Game {
       // By touch, the hint switched Take off on for her; once its bridge is lifted, laying is what comes next.
       if (this.touch && this.taking) {
         this.taking = false;
+        this.frameDirty = true;
         this.paintButtons();
       }
     }
@@ -643,7 +847,9 @@ class IslandBridges implements Game {
     if (this.touch) {
       this.taking = h.kind === 'fix';
       this.dirty = true;
+      this.frameDirty = true;
       this.paintButtons();
+      this.showEdge(h.edge);
     }
     const e = this.layout.edges[h.edge];
     this.focus = h.kind === 'forced' || h.kind === 'joined' ? h.island : e.a;
@@ -672,6 +878,7 @@ class IslandBridges implements Game {
     this.taking = false;
     this.focus = 0;
     this.dirty = true;
+    this.frameDirty = true;
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -694,7 +901,21 @@ class IslandBridges implements Game {
         pause: 0.3,
       };
     }
-    const at = waterOf(this.layout, this.cell, need);
+    const at = waterOf(this.layout, this.cell, need),
+      win = this.win;
+    // On a sea that slides, water out of view comes into view first: the finger drags the sea the other way.
+    if (win && !inWindow(win, this.slid, at.x, at.y, this.cell / 2)) {
+      const to = slideToShow(win, at.x, at.y),
+        dx = to.x - this.slid.x,
+        dy = to.y - this.slid.y,
+        L = this.tapLayer;
+      return {
+        trace: { on: L, x: win.w / 2 + dx / 2, y: win.h / 2 + dy / 2 },
+        via: [{ on: L, x: win.w / 2 - dx / 2, y: win.h / 2 - dy / 2 }],
+        receiver: L,
+        pause: 0.4,
+      };
+    }
     return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.tapLayer, pause: 0.3 };
   }
 
