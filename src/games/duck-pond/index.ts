@@ -44,7 +44,11 @@ import {
   type DuckPlan,
   type PondStory,
   padSpot,
+  bankSpot,
+  enterY,
   pondCenter,
+  pondDrawRx,
+  signSpot,
   POND_RX,
   POND_RY,
   SPLIT_BRIDGE_HALF,
@@ -199,6 +203,8 @@ class DuckPond implements Game {
   private view: View;
   /** Half the pond's width: `POND_RX`, or wider while a round seats twenty (`Seating.pondRx`). */
   private pondRx = POND_RX;
+  /** Half the pond's height: `POND_RY`, or taller while an upright view stacks twenty (`Seating.pondRy`). */
+  private pondRy = POND_RY;
   private round = 0;
   private want = 0;
   private answer = 0;
@@ -285,9 +291,10 @@ class DuckPond implements Game {
     const { x, y } = this.pondCenter();
     const g = this.pond.clear();
     // A round seating twenty widens the pond; its lily pads and reeds keep their places relative to the rim.
-    const rx = this.pondRx;
+    const rx = pondDrawRx(v, this.pondRx);
+    const ry = this.pondRy;
     const k = rx / POND_RX;
-    g.ellipse(x, y, rx, POND_RY).fill(WATER).stroke({ width: 10, color: WATER_EDGE });
+    g.ellipse(x, y, rx, ry).fill(WATER).stroke({ width: 10, color: WATER_EDGE });
     g.ellipse(x - 40 * k, y - 20, 300 * k, 80).fill({ color: 0xffffff, alpha: 0.12 });
     for (const [dx, dy, r] of [
       [-330, 50, 28],
@@ -305,7 +312,7 @@ class DuckPond implements Game {
       [420, 80],
     ]) {
       // Reeds stand just outside the rim, however wide the pond.
-      const rx0 = x + Math.sign(dx) * (rx + Math.abs(dx) - POND_RX);
+      const rx0 = x + Math.sign(dx) * Math.min(rx + Math.abs(dx) - POND_RX, v.w / 2 - 12);
       g.moveTo(rx0, y + 60)
         .quadraticCurveTo(rx0 + 6, y + 60 - h / 2, rx0 - 4, y + 60 - h)
         .stroke({ width: 7, color: 0x4a9a35, cap: 'round' });
@@ -338,7 +345,8 @@ class DuckPond implements Game {
         .stroke({ width: 6, color: wood.line });
     }
     bridge.visible = this.plan.mode === 'hide' || !!this.plan.split;
-    this.sign.position.set(v.w / 2 + 380, 150);
+    const sg = signSpot(v);
+    this.sign.position.set(sg.x, sg.y);
     this.layoutBank();
     this.layoutPads();
     this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
@@ -424,7 +432,8 @@ class DuckPond implements Game {
   private layoutBank() {
     const v = this.view;
     this.bank.forEach((d, i) => {
-      d.position.set(v.w / 2 + (i - (this.bank.length - 1) / 2) * 104, v.h - 22);
+      const at = bankSpot(v, i, this.bank.length);
+      d.position.set(at.x, at.y);
       d.zIndex = 10000;
     });
   }
@@ -460,26 +469,33 @@ class DuckPond implements Game {
   private async arrive(
     n: number,
     slots?: readonly [number, number][],
-    seating?: Pick<Seating, 'scale' | 'pondRx'>,
+    seating?: Pick<Seating, 'scale' | 'pondRx' | 'pondRy'>,
     fromRight = false,
   ) {
-    if (seating && seating.pondRx !== this.pondRx) {
-      this.pondRx = seating.pondRx;
+    if (seating && this.sizePond(seating)) {
       this.resize(this.view);
     }
     for (let i = 0; i < n; i++) {
       const d = new Duck();
       d.scale.set(seating?.scale ?? 1);
-      d.position.set(fromRight ? this.view.w + 80 : -80, this.view.h * 0.62);
+      d.position.set(fromRight ? this.view.w + 80 : -80, enterY(this.view));
       this.ducks.addChild(d);
       await this.swimIn(d, slots?.[i]);
     }
   }
 
+  /** Takes the pond size a seating asks for; true when it changed, so the pond is drawn again. */
+  private sizePond(seats: Pick<Seating, 'pondRx' | 'pondRy'>): boolean {
+    const ry = seats.pondRy ?? POND_RY;
+    const changed = seats.pondRx !== this.pondRx || ry !== this.pondRy;
+    this.pondRx = seats.pondRx;
+    this.pondRy = ry;
+    return changed;
+  }
+
   /** Level 15: a full ten pops onto the pond at once, with one splash, rather than hopping in one by one. */
   private async arriveTen(seats: Seating) {
-    if (seats.pondRx !== this.pondRx) {
-      this.pondRx = seats.pondRx;
+    if (this.sizePond(seats)) {
       this.resize(this.view);
     }
     const { x, y } = this.pondCenter();
@@ -517,7 +533,7 @@ class DuckPond implements Game {
         this.tw.wait(i * 0.22).then(() => {
           const d = new Duck();
           d.scale.set(seats.scale);
-          d.position.set(this.view.w + 80, this.view.h * 0.62);
+          d.position.set(this.view.w + 80, enterY(this.view));
           this.ducks.addChild(d);
           return this.swimIn(d, seats.slots[10 + i]);
         }),
@@ -529,13 +545,13 @@ class DuckPond implements Game {
   private async arriveHiding(visible: number, hidden: number) {
     for (let i = 0; i < visible; i++) {
       const d = new Duck();
-      d.position.set(-80, this.view.h * 0.62);
+      d.position.set(-80, enterY(this.view));
       this.ducks.addChild(d);
       await this.swimIn(d, HIDING_SLOTS[i]);
     }
     for (let i = 0; i < hidden; i++) {
       const d = new Duck();
-      d.position.set(-80, this.view.h * 0.62);
+      d.position.set(-80, enterY(this.view));
       this.ducks.addChild(d);
       // Keep hidden ducks directly under the broad center span of the bridge.
       await this.swimIn(d, [-90 + (i % 5) * 45, -16]);
@@ -602,7 +618,7 @@ class DuckPond implements Game {
         const d = new Duck();
         // Five ducks sit 106 units apart, so each target is a 106-unit circle that stays its own.
         d.hitArea = new Circle(0, -46, 53);
-        d.position.set(-80, this.view.h * 0.62);
+        d.position.set(-80, enterY(this.view));
         this.ducks.addChild(d);
         onTap(d, () => void this.tapSwimmer(d), { cooldown: 300 });
         await this.swimIn(d);
@@ -679,7 +695,7 @@ class DuckPond implements Game {
       this.teen = t;
       this.answer = teenAnswer(t);
       const total = 10 + t.ones;
-      const seats = frameSeats(total);
+      const seats = frameSeats(total, !!this.view.upright);
       if (t.ask === 'ones') this.showSign(total, false);
       await this.arriveTen(seats);
       await this.ctx.say('duck.fullTen');
@@ -802,7 +818,7 @@ class DuckPond implements Game {
     const d = new Duck();
     d.eventMode = 'none';
     // Friends come from the side she did not just see one come from: left, right, left…
-    d.position.set(n % 2 ? -80 : this.view.w + 80, this.view.h * 0.62);
+    d.position.set(n % 2 ? -80 : this.view.w + 80, enterY(this.view));
     this.ducks.addChild(d);
     const swum = this.swimIn(d, FRIEND_SLOTS[n - 1]);
     if (n < this.plan.max) return;
@@ -1027,7 +1043,7 @@ class DuckPond implements Game {
       await this.arrive(5, seats.slots, seats);
     } else if (this.plan.mode === 'teen') {
       // The pond narrows back from the two ten-frames for five full-size ducks.
-      const seats = frameSeats(5);
+      const seats = frameSeats(5, !!this.view.upright);
       await this.arrive(5, seats.slots, seats);
     } else if (this.plan.mode !== 'friends') await this.arrive(5);
     this.quackChorus();
@@ -1145,6 +1161,7 @@ export const duckPond: GameModule = {
   hubIcon: () => new PondIcon(),
   entryLevels: [12, 13],
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new DuckPond(ctx),
 };
