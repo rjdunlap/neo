@@ -8,7 +8,7 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
@@ -18,6 +18,8 @@ import {
   LEVELS,
   stallFor,
   stallLayout,
+  MAT_BOX,
+  purseFor,
   goodPlacement,
   type StallId,
   PLANS,
@@ -254,18 +256,26 @@ class MarketStall implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const cy = this.counterY();
-    const { cx, stockX } = stallLayout(v);
+    const { cx, stockX, awningTop } = stallLayout(v);
     const s = this.stall.clear();
     const awning = swatch[STALLS[this.stallId].awning];
     // An awning with stripes, two posts and a counter.
-    s.rect(cx - 330, 70, 20, cy - 70)
-      .rect(cx + 310, 70, 20, cy - 70)
+    s.rect(cx - 330, awningTop + 10, 20, cy - awningTop - 10)
+      .rect(cx + 310, awningTop + 10, 20, cy - awningTop - 10)
       .fill(wood.fill);
-    for (let i = 0; i < 8; i++) s.rect(cx - 340 + i * 85, 60, 85, 56).fill(i % 2 ? 0xffffff : awning.fill);
-    s.rect(cx - 340, 60, 680, 56).stroke({ width: 5, color: awning.line });
+    for (let i = 0; i < 8; i++)
+      s.rect(cx - 340 + i * 85, awningTop, 85, 56).fill(i % 2 ? 0xffffff : awning.fill);
+    s.rect(cx - 340, awningTop, 680, 56).stroke({ width: 5, color: awning.line });
     // Scalloped edge hanging below the stripes.
     for (let i = 0; i < 8; i++)
-      s.moveTo(cx - 340 + i * 85, 116).arc(cx - 297.5 + i * 85, 116, 42.5, Math.PI, 0, true);
+      s.moveTo(cx - 340 + i * 85, awningTop + 56).arc(
+        cx - 297.5 + i * 85,
+        awningTop + 56,
+        42.5,
+        Math.PI,
+        0,
+        true,
+      );
     s.fill(awning.fill);
     s.roundRect(cx - 360, cy, 720, 50, 14)
       .fill(wood.fill)
@@ -276,14 +286,14 @@ class MarketStall implements Game {
     this.keeper.position.set(cx + 200, cy + 20);
     this.goods.position.set(stockX, cy);
     // The mat where coins go, on the front of the stall.
-    const mw = 500;
+    const mw = MAT_BOX.w;
     this.mat.position.set(cx - 50, cy + 140);
-    this.mat.hitArea = new Rectangle(-mw / 2, -80, mw, 160);
+    this.mat.hitArea = new Rectangle(-mw / 2, -80, mw, MAT_BOX.h);
     this.drawMat(mw);
     this.layoutMat();
     this.bell.position.set(cx + mw / 2 + 30, cy + 140);
-    const xs = spread(this.purse.length, 220, v.w - 160, 170);
-    this.purse.forEach((p, i) => p.node.position.set(xs[i], v.h - 85));
+    const homes = purseFor(v, this.purse.length);
+    this.purse.forEach((p, i) => p.node.position.set(homes[i].x, homes[i].y));
     this.ghost.position.set(this.mat.x, this.mat.y);
   }
 
@@ -629,6 +639,7 @@ export const marketStall: GameModule = {
   offScreen: 'Play shop with real coins or buttons: price a few toys and pay for them.',
   hubIcon: () => new StallIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new MarketStall(ctx),
 };

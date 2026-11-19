@@ -591,6 +591,7 @@ describe('game registry', () => {
       'lost-layers',
       'maker-lane',
       'marble-jump',
+      'market-stall',
       'measuring-post',
       'memory-desk',
       'memory-match',

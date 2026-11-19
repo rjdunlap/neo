@@ -1,5 +1,6 @@
 import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
+import { spread } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
@@ -217,9 +218,30 @@ export function goodPlacement(kind: PropKind, count: number, index: number) {
   };
 }
 
-/** Shared round stock anchor for every stall; the existing payment area keeps its geometry. */
-export function stallLayout(view: { w: number; h: number }) {
-  return { cx: view.w / 2, cy: Math.min(view.h * 0.5, 420), stockX: view.w / 2 - 150 };
+/** Where the stall's awning starts, down from the top of the view, and how far its posts and scalloped edge reach from it. */
+export const AWNING = { drop: 360, stripes: 56, scallop: 42.5 };
+/** The coin tap box (hit circle radius 46 at scale 1.25), the bell's round button and the mat's box, in units. */
+export const COIN_HIT = 115;
+export const BELL_HIT = 112;
+export const MAT_BOX = { w: 500, h: 160 };
+
+/**
+ * Shared round stock anchor for every stall; the existing payment area keeps its geometry. Sideways the counter is where it
+ * always was (the awning at the top). Held upright (chunk 31, docs/definitions/phone-portrait.md) the whole stall moves
+ * down the tall screen: its awning clear of Home and "?" (it starts at 220 or lower), the counter near 45% of the height,
+ * and never so low that its front meets the purse of coins along the foot.
+ */
+export function stallLayout(view: { w: number; h: number; upright?: true }) {
+  const cx = view.w / 2;
+  const stockX = cx - 150;
+  if (!view.upright) return { cx, cy: Math.min(view.h * 0.5, 420), stockX, awningTop: 60 };
+  const cy = Math.min(Math.max(580, view.h * 0.45), view.h - 452);
+  return { cx, cy, stockX, awningTop: cy - AWNING.drop };
+}
+
+/** Where the coins of the purse rest along the foot of the view, clear of the guide in the bottom-left corner. */
+export function purseFor(view: { w: number; h: number }, n: number): { x: number; y: number }[] {
+  return spread(n, 220, view.w - 160, 170).map((x) => ({ x, y: view.h - 85 }));
 }
 
 /**
