@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/water-road; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `water-road` · **Land:** Tinker Lab · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `water-road` · **Land:** Tinker Lab · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, prediction, spatial-reasoning, reasons
 

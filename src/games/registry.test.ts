@@ -617,6 +617,7 @@ describe('game registry', () => {
       'swing-pals',
       'tile-pairs',
       'timeline-trail',
+      'water-road',
       'who-am-i',
       'word-glue',
       'word-monsters',

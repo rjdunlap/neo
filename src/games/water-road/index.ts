@@ -34,15 +34,24 @@ import {
   wallArt,
 } from './art';
 import {
-  LEVELS,
   BLOCK,
+  centre,
+  inner,
+  outer,
+  SLOT,
+  stoneAngles,
+  stoneCentre,
+  waterRoadLayout,
+  type Pt,
+  type WrLayout,
+} from './layout';
+import {
+  LEVELS,
   botMove,
   buttressPlan,
   buttressStart,
-  centre,
   explain,
   hintFor,
-  inner,
   isAsked,
   keystone,
   keystoneArch,
@@ -50,7 +59,6 @@ import {
   keystoneStart,
   nextArch,
   nextPair,
-  outer,
   pairsPlan,
   pairsStart,
   place,
@@ -60,12 +68,8 @@ import {
   pull,
   pullFree,
   pullKeystone,
-  SLOT,
-  stoneAngles,
-  stoneCentre,
   Tally,
   tapPile,
-  waterRoadLayout,
   withBlock,
   type Arch,
   type Block,
@@ -75,9 +79,7 @@ import {
   type KeystoneState,
   type PairsPlan,
   type PairsState,
-  type Pt,
   type Side,
-  type WrLayout,
 } from './logic';
 
 /** The handle glows brighter when nothing has been tapped for this long after the ring closes (level 1, uncounted). */
@@ -92,6 +94,8 @@ interface FrameView {
   stones: (Container | null)[];
   arch: Arch;
   centre: Pt;
+  /** The ground this frame stands on (its own step when a pair is stacked). */
+  ground: number;
 }
 
 class WaterRoad implements Game {
@@ -133,6 +137,8 @@ class WaterRoad implements Game {
   slotNodes: { left: Container; right: Container } | null = null;
   private walker: CompanionRig | null = null;
   private walking = false;
+  /** The ground the pet walks on: the step of the frame it walks through. */
+  private walkGround = 0;
   /** The asked pair's question has been put (once, not again on a rebuild). */
   private asked = false;
 
@@ -249,7 +255,9 @@ class WaterRoad implements Game {
       this.board.addChild(tap);
       this.tapLayer = tap;
     }
-    this.board.addChild(groundArt(v.w, l.ground, v.h));
+    // One ground line, or a step for each of a stacked pair's frames.
+    for (const ground of new Set(l.frames.map((f) => f.ground)))
+      this.board.addChild(groundArt(v.w, ground, v.h));
     if (this.plan.level === 1) this.buildKeystone(l, this.plan);
     else if (this.plan.level === 2) this.buildPairs(l, this.plan);
     else this.buildButtress(l, this.plan);
@@ -293,7 +301,7 @@ class WaterRoad implements Game {
     box.position.copyFrom(centre(f.box));
     box.hitArea = new Rectangle(-f.box.w / 2, -f.box.h / 2, f.box.w, f.box.h);
     this.board.addChild(box);
-    const view: FrameView = { frame, box, stones, arch, centre: f.centre };
+    const view: FrameView = { frame, box, stones, arch, centre: f.centre, ground: f.ground };
     this.frames.push(view);
     return view;
   }
@@ -351,7 +359,7 @@ class WaterRoad implements Game {
         // A rebuild mid-pair: the fallen stones lie on the ground.
         view.stones.forEach((st, i) => {
           if (st) {
-            st.position.set(view.centre.x + (i - arch.stones / 2) * 44, l.ground - 20);
+            st.position.set(view.centre.x + (i - arch.stones / 2) * 44, view.ground - 20);
             st.rotation = (i % 2 ? 1 : -1) * 0.6;
           }
         });
@@ -495,7 +503,6 @@ class WaterRoad implements Game {
    * unheld side), with a soft stone slide.
    */
   private async tumble(view: FrameView, spread: Side | null) {
-    const l = this.layoutNow!;
     sfx.rumble();
     const n = view.arch.stones;
     const moves: Promise<void>[] = [];
@@ -504,7 +511,7 @@ class WaterRoad implements Game {
       const k = keystone(n);
       const outward = spread ? (spread === 'left' ? -1 : 1) : i < k ? -1 : i > k ? 1 : 0;
       const far = spread ? (spread === 'left' ? n - i : i + 1) : Math.abs(i - k) + 1;
-      const to = { x: st.x + outward * (40 + far * 26), y: l.ground - 18 - (i % 2) * 8 };
+      const to = { x: st.x + outward * (40 + far * 26), y: view.ground - 18 - (i % 2) * 8 };
       if (this.reduce) {
         st.position.copyFrom(to);
         st.rotation = outward * 0.7;
@@ -539,7 +546,8 @@ class WaterRoad implements Game {
     const bounds = rig.bodyBounds();
     const fit = inner(l.ring) * 1.05;
     rig.scale.set(Math.min(0.6, fit / Math.max(1, bounds.height)));
-    rig.position.set(view.centre.x - outer(l.ring) - 110, l.ground);
+    rig.position.set(view.centre.x - outer(l.ring) - 110, view.ground);
+    this.walkGround = view.ground;
     rig.eventMode = 'none';
     this.ctx.track(rig);
     this.board.addChild(rig);
@@ -949,7 +957,7 @@ class WaterRoad implements Game {
     this.clock += dt;
     if (this.relayout && !this.busy && !this.finished) this.build();
     if (this.walker && this.walking)
-      this.walker.y = this.layoutNow!.ground - Math.abs(Math.sin(this.clock * 12)) * 8;
+      this.walker.y = this.walkGround - Math.abs(Math.sin(this.clock * 12)) * 8;
     if (!this.busy && !this.finished) this.idle += dt;
     if (this.arrowSide && this.clock > this.arrowsUntil) {
       this.arrowSide = null;
@@ -1049,6 +1057,7 @@ export const waterRoad: GameModule = {
     'Frame-puller and stone counter: one of you counts the stones aloud (or says which ring has the gap), the other taps and pulls; swap after each arch. On the water roads, a spring-keeper says "open!" only when both agree every stretch goes down.',
   hubIcon: () => new ArchIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => (planFor(ctx.level).level >= 4 ? new WaterFlow(ctx) : new WaterRoad(ctx)),
 };

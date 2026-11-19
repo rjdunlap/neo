@@ -2,10 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
+  corners,
+  MIN_TARGET,
+  overlaps,
+  stoneAngles,
+  stoneCentre,
+  waterRoadLayout,
+  type Rect,
+} from './layout';
+import {
   botMove,
   buttressPlan,
   buttressStart,
-  corners,
   explain,
   hintFor,
   isAsked,
@@ -13,10 +21,8 @@ import {
   keystoneArch,
   keystonePlan,
   keystoneStart,
-  MIN_TARGET,
   nextArch,
   nextPair,
-  overlaps,
   PAIRS,
   pairsPlan,
   pairsStart,
@@ -28,17 +34,13 @@ import {
   pullFree,
   pullKeystone,
   stands,
-  stoneAngles,
-  stoneCentre,
   Tally,
   tapPile,
-  waterRoadLayout,
   withBlock,
   type Arch,
   type ButtressState,
   type KeystoneState,
   type PairsState,
-  type Rect,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
