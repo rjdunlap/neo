@@ -15,8 +15,8 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossySnacksPlay();
       return;
     }
-    if (process.env.MOSSY_ONLY === 'plan') {
-      await mossyPlanPlay();
+    if (['plan', 'upright'].includes(process.env.MOSSY_ONLY)) {
+      await mossyPlanPlay(process.env.MOSSY_ONLY === 'upright');
       return;
     }
     if (process.env.MOSSY_ONLY === 'thick') {
@@ -436,9 +436,32 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
   }
 
   /** Level 10: a short plan and a Go, a plan into a wrong branch (one miss), a Hint's gold prints, then the rest and finish. */
-  async function mossyPlanPlay() {
+  async function mossyPlanPlay(phone) {
+    const shortPhone = { width: 390, height: 630 };
+    if (phone) {
+      await page.setViewportSize(shortPhone);
+      await page.evaluate(() => {
+        kit.store.data.settings.showWords = true;
+      });
+    }
     await launch('mossy-path', 10);
     await page.waitForTimeout(350);
+    if (phone)
+      assert.deepEqual(
+        await page.evaluate(() => [neo.view.upright, neo.scene.place.mode, neo.scene.game.cell]),
+        [true, 'bubble', 104],
+      );
+    const point = (expression) =>
+      page.evaluate((expression) => {
+        const { x, y } = Function(`return (${expression})`)().getGlobalPosition();
+        return { x, y };
+      }, expression);
+    const press = async (expression) => {
+      if (!phone) return tap(expression);
+      const { x, y } = await point(expression);
+      await page.touchscreen.tap(x, y);
+      await page.waitForTimeout(180);
+    };
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     const routeFromTurtle = () =>
       page.evaluate(async () => {
@@ -447,13 +470,13 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
         return L.routeBetween(g.board, g.path.at(-1), g.board.pond);
       });
     const goAndWait = async () => {
-      await tap(`neo.scene.game.nodes[${await page.evaluate(() => neo.scene.game.path.at(-1))}]`);
+      await press(`neo.scene.game.nodes[${await page.evaluate(() => neo.scene.game.path.at(-1))}]`);
       await page.waitForFunction(() => !neo.scene.game.going, null, { timeout: 8000 });
       await page.waitForTimeout(200);
     };
     // A short plan: two prints, nothing moves until the turtle is tapped.
     const route = await routeFromTurtle();
-    for (const at of route.slice(1, 3)) await tap(`neo.scene.game.nodes[${at}]`);
+    for (const at of route.slice(1, 3)) await press(`neo.scene.game.nodes[${at}]`);
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.plan, neo.scene.game.path]), [
       route.slice(0, 3),
       [route[0]],
@@ -475,30 +498,51 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
         .sort((x, y) => L.routeBetween(b, here, x).length - L.routeBetween(b, here, y).length);
       return L.routeBetween(b, here, entries[0]).slice(1);
     });
-    for (const at of wrong) await tap(`neo.scene.game.nodes[${at}]`);
+    for (const at of wrong) await press(`neo.scene.game.nodes[${at}]`);
     await goAndWait();
     assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a wrong branch counts once');
     // Hint: three gold prints toward the pond, counted once.
-    await tap('neo.scene.game.hintButton');
+    await press('neo.scene.game.hintButton');
     const hint = await page.evaluate(() => [neo.scene.game.plan.length, neo.scene.game.hints]);
     assert.ok(hint[0] >= 2 && hint[0] <= 4, 'the hint draws up to three prints');
     assert.equal(hint[1], 1);
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForTimeout(350);
-    assert.ok(
-      await page.evaluate(() => neo.scene.game.cell >= 100),
-      'portrait maze cells stay at least 100 units',
-    );
-    await screenshot('mossy-path-10-portrait');
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await page.waitForTimeout(350);
+    if (phone) {
+      await screenshot('mossy-path-10-upright-short');
+      const cdp = await page.context().newCDPSession(page);
+      const turtle = await point(
+        `neo.scene.game.nodes[${await page.evaluate(() => neo.scene.game.path.at(-1))}]`,
+      );
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [turtle] });
+      await page.waitForFunction(() => neo.scene.game.goArmed);
+      await page.setViewportSize({ width: 630, height: 390 });
+      await page.waitForFunction(() => !neo.view.upright && !neo.scene.game.goArmed);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.plan.length, neo.scene.game.going]),
+        [hint[0], null],
+        'rotating under a held finger preserves the plan without sending the turtle',
+      );
+      await page.setViewportSize(shortPhone);
+      await page.waitForFunction(() => neo.view.upright);
+      await page.waitForTimeout(100);
+    } else {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(350);
+      assert.ok(
+        await page.evaluate(() => neo.scene.game.cell >= 100),
+        'portrait maze cells stay at least 100 units',
+      );
+      await screenshot('mossy-path-10-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(350);
+    }
     // Draw on from the gold prints to the pond, then go.
     const rest = await page.evaluate(async () => {
       const L = await import('/src/games/mossy-path/logic.ts'),
         g = neo.scene.game;
       return L.routeBetween(g.board, g.plan.at(-1), g.board.pond).slice(1);
     });
-    for (const at of rest) await tap(`neo.scene.game.nodes[${at}]`);
+    for (const at of rest) await press(`neo.scene.game.nodes[${at}]`);
     assert.equal(await page.evaluate(() => neo.scene.game.plan.at(-1)), (await routeFromTurtle()).at(-1));
     await goAndWait();
     assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);

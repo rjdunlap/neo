@@ -10,6 +10,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { FederatedPointerEvent } from 'pixi.js';
+import { cellPosition, mossyLayout, ROUND_BUTTON } from './layout';
 import {
   LEVELS,
   berriesOf,
@@ -201,7 +202,8 @@ class MossyPath implements Game {
       [this.hintButton, 'Hint ◇', () => this.askForHint()],
       [this.againButton, 'Start over ↺', () => this.restart()],
     ] as const) {
-      node.addChild(tile(168, 100, 'purple'), label(text, 24, ink));
+      node.addChild(tile(ROUND_BUTTON.w, ROUND_BUTTON.h, 'purple'), label(text, 24, ink));
+      node.hitArea = new Rectangle(-ROUND_BUTTON.w / 2, -ROUND_BUTTON.h / 2, ROUND_BUTTON.w, ROUND_BUTTON.h);
       onTap(node, action);
     }
     this.heading.eventMode = 'none';
@@ -802,25 +804,20 @@ class MossyPath implements Game {
     }
   }
   resize(v: View) {
-    this.cell = Math.min(132, (v.h - 330) / this.board.rows, (v.w - 320) / this.board.cols);
-    this.grid.position.set(
-      v.w / 2 - ((this.board.cols - 1) * this.cell) / 2,
-      v.h / 2 + 12 - ((this.board.rows - 1) * this.cell) / 2,
-    );
-    this.pad.hitArea = new Rectangle(
-      -this.cell / 2,
-      -this.cell / 2,
-      this.board.cols * this.cell,
-      this.board.rows * this.cell,
-    );
+    if (this.drag) this.onCancel({ pointerId: this.drag.id });
+    const layout = mossyLayout(v, this.board);
+    const { cols, rows } = this.board;
+    this.cell = layout.cell;
+    this.grid.position.copyFrom(layout.first);
+    this.pad.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, cols * this.cell, rows * this.cell);
     this.nodes.forEach((node, at) => {
-      node.position.set((at % this.board.cols) * this.cell, Math.floor(at / this.board.cols) * this.cell);
+      node.position.copyFrom(cellPosition(at, cols, this.cell));
       node.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, this.cell, this.cell);
     });
-    this.heading.position.set(v.w / 2, 110);
-    this.status.position.set(v.w / 2, 154);
+    this.heading.position.copyFrom(layout.heading);
+    this.status.position.copyFrom(layout.status);
     [this.undoButton, this.hintButton, this.againButton].forEach((node, i) =>
-      node.position.set(v.w / 2 + (i - 1) * 192, v.h - 80),
+      node.position.copyFrom(layout.buttons[i]),
     );
     this.draw();
   }
@@ -935,6 +932,7 @@ export const mossyPath: GameModule = {
   skills: ['spatial-reasoning', 'planning', 'path-coverage', 'maze-planning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   touchDemo: true,
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   // School opens on the one-step maze (6); a saved 4 or 5 from a younger band starts school there, not at the hardest patch.
   entryLevels: [4, 5, 6],
