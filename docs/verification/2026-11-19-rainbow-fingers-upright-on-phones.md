@@ -1,0 +1,5 @@
+# 2026-11-19 — Rainbow Fingers upright on phones (PR #1873)
+
+**Changed:** Rainbow Fingers plays upright at every level (`upright: true`, replacing `uprightLevels: [12]`). Its layout was already pure (`potLayout`, `wheelLayout`, `foldButtonPlace` in `logic.ts`, the match card centred in `match.ts`), so no scene change. New `upright.test.ts` over levels 1–11 and four upright views plus 768 × 1024 (pots at 104 across, bowl, hang-it-up and fold buttons, wheel above the pots, fold button clear of the pots) and the level-12 card clear of Home and the guide passed first time.
+**Ran:** typecheck, the new test and the registry test. `BROWSER_SUITE=uprightsweep`: levels 2–11 read "needs a layout" only because the sweep measured the 60-wide pot art inside a 104-unit tap area; level 12 "small fix" (91). `BROWSER_SUITE=uprightgames` school 5, 8, 9 and 12 by real touches, one sticker each, screenshots looked at (wheel and pots sit right; the pictures float mid-screen on a tall phone by design). Headless Chrome only.
+**Not run:** build, offline, full browser suites.

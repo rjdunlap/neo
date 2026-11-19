@@ -631,6 +631,7 @@ describe('game registry', () => {
       'puppet-stage',
       'puzzle-pals',
       'pyramid-solitaire',
+      'rainbow-fingers',
       'ramp-race',
       'relay-woods',
       'rhyme-time',
