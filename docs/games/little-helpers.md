@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/little-helpers; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `little-helpers` · **Land:** Counting Cove · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `little-helpers` · **Land:** Counting Cove · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, one-to-one, number-sense, adding
 
@@ -27,6 +27,8 @@
 | 9 | Whistle when it's full: fill every ring, then blow the whistle |
 
 <!-- end generated -->
+
+On upright phones the layout is a pure `layout.ts` (`helpersLayout`, `crowdHome`, `carryPitch`): the crowd stands in two rows hung up from the bottom edge (four at a 110 pitch above, level 8's big three at 130 below, 124-wide circles), the fruit centred above them at height - 430 with the ring badge and whistle 300 above it, and the destination at the bottom right, leaving sky at the top of a tall phone. Single-fruit carriers queue at a 100 pitch (was 58/66, with 100-unit taps; strong carriers' pitch shrinks to 104 so seven fit 768); team carriers keep their 50 step, since tapping a carried helper recalls it and recall taps overlap as before. The sideways plan is unchanged and pinned by `upright.test.ts`, which covers all nine levels, three seeds and five views.
 
 **Starts as:** tap a fruit and a helper carries it home
 
