@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/penguin-slide; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `penguin-slide` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `penguin-slide` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** planning, spatial-reasoning, problem-solving
 
@@ -35,6 +35,8 @@
 **Grows into:** plan slides to two fish, soft snow that stops the penguin, ice blocks to push (6), parking a block for two fish (7), and combining block and snow stops (8), two blocks that both need moving (9), three fish in a pond where no first slide eats two (10), pushing one ice block onto a star with no fish (12), and two penguins that stop each other, tapping to choose which slides (13); undo and a hint arrow; preschool and pre-K also predict where a shown slide will stop (11)
 
 ## Design notes
+
+**Upright on a phone (2026-11-19).** `layout.ts` holds the placing as the pure `pondLayout`. Sideways is unchanged. Held upright the pond sits clear of Home and help, and the undo button rests beneath the ice: beside it (x+w+70) it was off the 768-wide edge for the 6- and 7-column ponds. `upright.test.ts` covers all four pond sizes (5×4, 6×4, 6×5, 7×5) on five upright views.
 
 At level 11 the next prediction opens during a correct guess’s confirmation. An incorrect guess still gives time to hear what stopped the penguin, and the last confirmation on each pond plays before the pond changes.
 
