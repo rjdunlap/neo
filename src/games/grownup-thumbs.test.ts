@@ -95,7 +95,11 @@ const MEASURE: Record<string, () => Size[]> = {
   'island-bridges': () =>
     grown(bridgeLevels.grownup!).flatMap((level) => {
       const fit = bridgeLayout(bridgePlan(level).size, v.w, v.h, false);
-      return [['sea square', fit.cell], ...fit.slots.map((s): Size => ['button', side(s)])] as Size[];
+      // A sea that slides (9 × 9 and 11 × 11) is judged by its window.
+      return [
+        ['sea square', fit.cell, fit.window ? 'slides' : undefined],
+        ...fit.slots.map((s): Size => ['button', side(s)]),
+      ] as Size[];
     }),
   'lantern-lights': () => [
     ...grown(lanternLevels.grownup!).map((level): Size => [
@@ -238,7 +242,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   crossword: { px: 44.7, what: 'square and key' },
   'gem-swap': { px: 44.7, what: 'button' },
   'hat-band': { px: 50.8, what: 'song card' },
-  'island-bridges': { px: 32.5, what: 'sea square' },
+  'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 32.5, what: 'case-file square', slides: 32.5 },
@@ -260,7 +264,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
-const UNDER = ['island-bridges', 'logic-grid', 'marble-jump', 'species-comeback', 'sudoku-garden'];
+const UNDER = ['logic-grid', 'marble-jump', 'species-comeback', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);

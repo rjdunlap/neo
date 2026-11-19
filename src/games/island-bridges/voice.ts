@@ -5,11 +5,17 @@ export const VOICE = {
   'bridges.go-touch': [
     'Give each island as many planks as its number, with no crossing, and join them all. Tap the water between two islands to lay a plank.',
   ],
+  'bridges.go-slide': [
+    'Give each island as many planks as its number, with no crossing, and join them all. Tap the water between two islands to lay a plank, and drag the sea to see the rest of it.',
+  ],
   'bridges.go-three': [
     'This time a bridge can carry up to three planks. Give each island as many planks as its number, with no crossing, and join them all.',
   ],
   'bridges.go-three-touch': [
     'This time a bridge can carry up to three planks: tap the water again for a third. Give each island as many planks as its number, with no crossing, and join them all.',
+  ],
+  'bridges.go-three-slide': [
+    'This time a bridge can carry up to three planks: tap the water again for a third. Give each island as many planks as its number, with no crossing, and join them all. Drag the sea to see the rest of it.',
   ],
   'bridges.cross': ['A bridge would cross another there, or an island has no room. Try another.'],
   'bridges.hint-fix': ['A bridge here is not part of the answer. Take a plank off the ringed bridge.'],
