@@ -1004,6 +1004,7 @@ export const trackwayTales: GameModule = {
   offScreen:
     'On sand or snow, one of you walks or hops across while the other looks away; then the looker reads the marks and says how. Swap.',
   touchDemo: true,
+  upright: true,
   hubIcon: () => new WigglyIcon(trackStrip(false)),
   sticker,
   create: (ctx) => new TrackwayTales(ctx),

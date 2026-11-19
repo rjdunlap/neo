@@ -455,6 +455,7 @@ export const nearestCol = (L: TrackLayout, x: number, cols: number): number =>
 export function trackLayout(v: View, level: number): TrackLayout {
   const lv = planFor(level).id;
   const cols = COLS[lv];
+  if (v.upright) return uprightTrackLayout(v, lv, cols);
   const ox = Math.max(0, (v.w - 1024) / 2),
     oy = Math.max(0, (v.h - 768) / 2);
   const colW = Math.min(150, 900 / cols);
@@ -482,5 +483,39 @@ export function trackLayout(v: View, level: number): TrackLayout {
     slot: { x: bx, y: top + SLOT_H / 2 },
     check: { x: bx, y: top + SLOT_H + 12 + CHECK_H / 2 },
     lens: { x: ox + 512, y: Math.max(LENS_R + 6, practice.y + STRIP_H / 2 - 10) },
+  };
+}
+
+/**
+ * Held upright (768 wide, at least 1,024 tall): the strips narrow to 700 so eight columns still leave each print
+ * its 70 units, they sit below the Home column near the top, and the cards, Check and the study board stand up from
+ * the bottom edge: Check and the study board in a row at the right (clear of the guide's corner), the cards above.
+ */
+function uprightTrackLayout(v: View, lv: number, cols: number): TrackLayout {
+  const colW = Math.min(150, 700 / cols);
+  const w = colW * cols;
+  const sx = (v.w - w) / 2;
+  const n = lv >= 3 ? 4 : lv === 2 ? 3 : 2;
+  const gap = 14;
+  const bottom = v.h - 34;
+  const boardTop = bottom - SLOT_H;
+  const bx = v.w - 34 - SLOT_W / 2;
+  const cardTop = boardTop - 20 - CARD_H;
+  const slack = Math.max(0, cardTop - 585);
+  const practice = { x: sx, y: 215 + slack * 0.4, w, h: STRIP_H };
+  const mud = { x: sx, y: practice.y + STRIP_H + 8, w, h: STRIP_H };
+  const span = n * CARD_W + (n - 1) * gap;
+  const cx0 = (v.w - span) / 2 + CARD_W / 2;
+  const rowY0 = cardTop + CARD_H / 2;
+  const cards = Array.from({ length: n }, (_, i) => ({ x: cx0 + i * (CARD_W + gap), y: rowY0 }));
+  return {
+    practice,
+    mud,
+    colW,
+    cards,
+    plays: cards.map((p) => ({ x: p.x, y: p.y + CARD_H / 2 - PLAY_R - 10 })),
+    slot: { x: bx, y: boardTop + SLOT_H / 2 },
+    check: { x: bx - SLOT_W - gap, y: boardTop + SLOT_H - CHECK_H / 2 },
+    lens: { x: v.w / 2, y: Math.max(LENS_R + 6, practice.y + STRIP_H / 2 - 10) },
   };
 }
