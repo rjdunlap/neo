@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/domino-run; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `domino-run` · **Land:** Bubble Beach · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `domino-run` · **Land:** Bubble Beach · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, spacing, planning, revision
 

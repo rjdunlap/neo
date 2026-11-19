@@ -772,7 +772,7 @@ export function slotBox(l: { x0: number; base: number }, s: number): Box {
 }
 
 /**
- * Lanes centred in the view; the tray a column to their right on a sideways screen and a row under them held upright.
+ * Lanes centred in the view; the tray a column to their right on a sideways screen and a row under them held upright, hung up from the bottom edge.
  * Clear of the home and `?` buttons (top-left) and the pet's corner (bottom-left 150 × 220).
  */
 export function dominoLayout(lanes: number, v: View, pieces = 3): DominoLayout {
@@ -796,7 +796,10 @@ export function dominoLayout(lanes: number, v: View, pieces = 3): DominoLayout {
     };
   }
   const left = (v.w - width) / 2;
-  const top = Math.max(200, (v.h - 900) / 2 + 120);
+  // Hung up from the bottom edge: the tray rests 100 units above it and the lanes stand over it, so a tall phone's spare
+  // height is sky at the top, never a gap between the lanes and her thumb. Never higher than Home's clearance (210).
+  const stack = lanes === 1 ? SLOT_H : 2 * SLOT_H + 80;
+  const top = Math.max(210, v.h - 100 - TRAY_H - 90 - stack);
   const bases = lanes === 1 ? [top + SLOT_H] : [top + SLOT_H, top + 2 * SLOT_H + 80];
   const trayTop = bases[bases.length - 1] + 90;
   const n = Math.max(1, Math.min(3, pieces));

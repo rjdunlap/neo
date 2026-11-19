@@ -577,6 +577,7 @@ describe('game registry', () => {
       'cue-studio',
       'cut-along',
       'day-by-day',
+      'domino-run',
       'drift-cards',
       'drops-journey',
       'duck-pond',
