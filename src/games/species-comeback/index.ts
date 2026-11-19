@@ -1,9 +1,9 @@
-import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent, type Text } from 'pixi.js';
 import { turtleArt } from '../../art/animals';
 import { ink, swatch, wood, type Swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
-import { onTap } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -55,6 +55,8 @@ const NEST_W = 120;
 const SITE_W = 260;
 const SITE_H = 210;
 const MIN_TOUCH = 64;
+const UPRIGHT_CARD = 88;
+const SLIDE_SLOP = 12;
 
 /** Level 4 runs plan, reason, ready (the keeper's plan is in the nests; only Spring is left), then the site. */
 type Phase = 'busy' | 'pair' | 'plan' | 'reason' | 'ready' | 'site' | 'done';
@@ -329,7 +331,20 @@ class SpeciesComeback implements Game {
   private readonly baseCount: number;
 
   private readonly wall = new Graphics();
+  private readonly treeWindow = new Container();
+  private readonly treeClip = new Graphics();
+  private readonly scrollTrack = new Graphics();
   private readonly tree = new Container();
+  private readonly nestCards = new Container();
+  private maxScroll = 0;
+  private press: {
+    id: number;
+    x: number;
+    y: number;
+    scroll: number;
+    moved: boolean;
+    card?: TurtleCard;
+  } | null = null;
   private readonly lines = new Graphics();
   private readonly litLines = new Graphics();
   private readonly glow = new Graphics();
@@ -354,6 +369,19 @@ class SpeciesComeback implements Game {
     for (const part of [this.wall, this.lines, this.litLines, this.glow, this.springBg, this.springText])
       part.eventMode = 'none';
     this.tree.addChild(this.lines, this.litLines, this.glow);
+    this.treeWindow.addChild(this.tree, this.treeClip, this.scrollTrack);
+    this.scrollTrack.eventMode = 'none';
+    this.treeWindow.eventMode = 'passive';
+    this.treeWindow.on('pointerdown', (e) => {
+      if (e.target === this.treeWindow) this.startSlide(e);
+    });
+    this.treeWindow.on('globalpointermove', (e) => this.moveSlide(e));
+    this.treeWindow.on('pointerup', (e) => this.endSlide(e));
+    this.treeWindow.on('pointerupoutside', (e) => this.cancelSlide(e));
+    ctx.listen(window, 'pointerup', (e) => this.cancelSlide(e));
+    ctx.listen(window, 'pointercancel', (e) => this.cancelSlide(e), { capture: true });
+    ctx.listen(window, 'blur', () => this.clearPress());
+    ctx.listen(document, 'visibilitychange', () => this.clearPress());
     for (const t of this.round.tree.turtles) this.addCard(t);
     for (let i = 0; i < this.round.target; i++) {
       const nest = new Container();
@@ -366,7 +394,8 @@ class SpeciesComeback implements Game {
     this.spring.addChild(this.springBg, this.springText);
     this.spring.hitArea = new Rectangle(-75, -40, 150, 80);
     onTap(this.spring, () => this.tapSpring());
-    this.nestLayer.addChild(this.spring);
+    this.nestLayer.addChild(this.spring, this.nestCards);
+    this.nestCards.eventMode = 'none';
     // The needs card: the four needs a site must have.
     const nb = new Graphics()
       .roundRect(-150, -60, 300, 120, 16)
@@ -389,7 +418,14 @@ class SpeciesComeback implements Game {
     if (this.round.keeper) this.buildKeeper();
     this.keeperLayer.visible = !!this.round.keeper;
     this.nestLayer.visible = !this.round.keeper;
-    ctx.stage.addChild(this.wall, this.tree, this.nestLayer, this.keeperLayer, this.needs, this.siteLayer);
+    ctx.stage.addChild(
+      this.wall,
+      this.treeWindow,
+      this.nestLayer,
+      this.keeperLayer,
+      this.needs,
+      this.siteLayer,
+    );
     this.layout();
   }
 
@@ -443,7 +479,11 @@ class SpeciesComeback implements Game {
 
   private addCard(t: Turtle) {
     const c = new TurtleCard(t);
-    onTap(c, () => this.tapTurtle(t.id));
+    onTap(c, (e) => {
+      if (this.maxScroll) this.startSlide(e, c);
+      else this.tapTurtle(t.id);
+    });
+    c.on('pointerup', (e) => this.endSlide(e, c));
     this.cards.set(t.id, c);
     this.tree.addChild(c);
     if (t.gen === 0 || this.round.tree.nested.some((p) => p.includes(t.id))) c.set('faded');
@@ -503,6 +543,7 @@ class SpeciesComeback implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   resize(v: View) {
+    this.clearPress();
     this.view = v;
     this.layout();
   }
@@ -511,11 +552,27 @@ class SpeciesComeback implements Game {
     const v = this.view,
       tree = this.round.tree;
     const l = comebackLayout(v, tree, this.hatchlings, this.nests.length);
+    const preview = this.phase === 'site' || this.phase === 'done';
+    this.maxScroll = preview ? 0 : l.scroll;
+    this.treeWindow.eventMode = this.maxScroll ? 'static' : 'passive';
+    this.treeWindow.hitArea = this.maxScroll
+      ? new Rectangle(20, l.wall.top, v.w - 40, l.wall.bottom - l.wall.top)
+      : null;
+    this.treeClip.clear();
+    if (this.treeWindow.hitArea) {
+      this.treeClip.rect(20, l.wall.top, v.w - 40, l.wall.bottom - l.wall.top).fill(0xffffff);
+    }
+    this.tree.mask = this.maxScroll ? this.treeClip : null;
+    this.setScroll(-this.tree.x);
     this.card = l.card;
     this.slots = l.slots;
     for (const [id, c] of this.cards) {
       c.setSize(byId(tree, id).gen === 3 ? l.hatch : l.card);
+      this.ctx.tw.kill(c.position);
+      this.ctx.tw.kill(c.scale);
       if (!this.inNest(id)) {
+        if (c.parent !== this.tree) this.tree.addChild(c);
+        c.scale.set(this.lifted === id ? 1.08 : 1);
         const p = this.slots.get(id)!;
         c.position.set(p.x, p.y);
       }
@@ -545,27 +602,86 @@ class SpeciesComeback implements Game {
 
   private layoutSites() {
     const v = this.view;
+    this.clearPress();
+    this.maxScroll = 0;
+    this.tree.mask = null;
+    this.treeWindow.eventMode = 'none';
+    this.treeWindow.hitArea = null;
+    this.scrollTrack.clear();
     this.wall.visible = false;
     this.nestLayer.visible = false;
     // The tree shrinks into the top band.
     const bounds = this.tree.getLocalBounds();
-    const band = v.h * (v.h > v.w ? 0.26 : 0.24);
+    const wide = 3 * (SITE_W + 24) - 24 <= v.w - 160 - 20;
+    const top = v.upright ? 210 : 96;
+    const siteRows = wide ? 1 : 2;
+    const siteRoom = 72 + 60 + 24 + siteRows * SITE_H + (siteRows - 1) * 24;
+    const band = Math.min(v.h * (v.h > v.w ? 0.26 : 0.24), v.h - top - siteRoom - 20);
     const k = Math.min(1, band / Math.max(1, bounds.height), (v.w - 40) / Math.max(1, bounds.width));
     this.tree.scale.set(k);
-    const top = v.upright ? 210 : 96;
     this.tree.position.set(v.w / 2 - (bounds.x + bounds.width / 2) * k, top - bounds.y * k);
     const needY = top + band + 72;
     this.needs.position.set(v.w / 2, needY);
     // Three across when they fit beside the pet's corner, else two over one.
     const w = SITE_W + 24,
-      row = 3 * w - 24,
-      wide = row <= v.w - 160 - 20;
+      row = 3 * w - 24;
     const cx = Math.max(v.w / 2, 160 + row / 2),
       y = needY + 60 + 24 + SITE_H / 2;
     this.sites.forEach((c, i) => {
       if (wide) c.position.set(cx + (i - 1) * w, y);
       else c.position.set(i < 2 ? v.w / 2 + (i - 0.5) * w : v.w / 2, y + (i < 2 ? 0 : SITE_H + 24));
     });
+  }
+
+  private setScroll(scroll: number) {
+    const x = Math.max(0, Math.min(this.maxScroll, scroll));
+    this.tree.x = -x;
+    this.scrollTrack.clear();
+    if (!this.maxScroll) return;
+    const width = this.view.w - 64;
+    const thumb = (width * (this.view.w - 40)) / (this.view.w - 40 + this.maxScroll);
+    this.scrollTrack
+      .roundRect(32, 208, width, 6, 3)
+      .fill(wood.light)
+      .roundRect(32 + ((width - thumb) * x) / this.maxScroll, 206, thumb, 10, 5)
+      .fill(wood.line);
+  }
+
+  private startSlide(e: FederatedPointerEvent, card?: TurtleCard) {
+    if (!this.maxScroll || this.phase === 'busy' || this.press || palmOnGlass() || e.button > 0) return;
+    const { x, y } = this.treeWindow.toLocal(e.global);
+    this.press = { id: e.pointerId, x, y, scroll: -this.tree.x, moved: false, card };
+    if (card) card.alpha *= 0.7;
+  }
+
+  private moveSlide(e: FederatedPointerEvent) {
+    const press = this.press;
+    if (!press || press.id !== e.pointerId) return;
+    if (palmOnGlass()) return this.clearPress();
+    const { x, y } = this.treeWindow.toLocal(e.global);
+    const dx = x - press.x;
+    if (!press.moved && Math.hypot(dx, y - press.y) < SLIDE_SLOP) return;
+    press.moved = true;
+    this.setScroll(press.scroll - dx);
+  }
+
+  private endSlide(e: FederatedPointerEvent, card?: TurtleCard) {
+    const press = this.press;
+    if (!press || press.id !== e.pointerId) return;
+    this.moveSlide(e);
+    const tap = this.press && !press.moved && card && press.card === card;
+    this.clearPress();
+    if (tap) this.tapTurtle(card.turtle.id);
+  }
+
+  private cancelSlide(e: { pointerId: number }) {
+    if (e.pointerId === this.press?.id) this.clearPress();
+  }
+
+  private clearPress() {
+    const card = this.press?.card;
+    if (card) card.alpha = card.state === 'faded' ? 0.6 : 1;
+    this.press = null;
   }
 
   private drawNest(i: number) {
@@ -583,10 +699,12 @@ class SpeciesComeback implements Game {
   }
 
   private drawSpring() {
+    const halfHeight = this.view.upright ? UPRIGHT_CARD / 2 : 40;
+    this.spring.hitArea = new Rectangle(-75, -halfHeight, 150, halfHeight * 2);
     const ready = this.phase === 'ready' || (this.plan.length >= this.target && this.phase === 'pair');
     this.springBg
       .clear()
-      .roundRect(-75, -40, 150, 80, 22)
+      .roundRect(-75, -halfHeight, 150, halfHeight * 2, 22)
       .fill(ready ? swatch.green.fill : 0xe4ddd0)
       .stroke({ width: ready ? 6 : 4, color: ready ? swatch.green.line : 0xb9ae9c });
     this.springText.style.fill = ready ? ink : 0x8a8172;
@@ -641,6 +759,7 @@ class SpeciesComeback implements Game {
       const c = this.cards.get(id)!,
         to = this.nestSpot(nest, k as 0 | 1);
       const scale = 60 / this.card;
+      this.moveCard(c, this.nestCards);
       c.set('normal');
       if (animate) {
         void this.ctx.tw.to(c.position, to, { duration: 0.35, ease: ease.outCubic });
@@ -652,9 +771,19 @@ class SpeciesComeback implements Game {
     });
   }
 
+  private moveCard(card: TurtleCard, layer: Container) {
+    if (card.parent === layer) return;
+    this.ctx.tw.kill(card.position);
+    this.ctx.tw.kill(card.scale);
+    const dx = layer === this.tree ? -this.tree.x : this.tree.x;
+    layer.addChild(card);
+    card.x += dx;
+  }
+
   private returnToSlot(id: number) {
     const c = this.cards.get(id)!,
       p = this.slots.get(id)!;
+    this.moveCard(c, this.tree);
     c.set('normal');
     void this.ctx.tw.to(c.position, p, { duration: 0.3, ease: ease.outCubic });
     void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.3 });
@@ -743,7 +872,7 @@ class SpeciesComeback implements Game {
       this.litLines.clear();
       for (const [id, c] of this.cards)
         if (c.state === 'lit') c.set(this.isCandidate(id) ? 'normal' : 'faded');
-      for (const id of [a, b]) if (this.lifted !== id) this.cards.get(id)!.scale.set(1);
+      for (const id of [a, b]) if (this.lifted !== id && !this.inNest(id)) this.cards.get(id)!.scale.set(1);
       this.drawGlow();
     });
     this.afterMiss('pair');
@@ -805,20 +934,20 @@ class SpeciesComeback implements Game {
         .to(n, { rotation: 0.06 }, { duration: 0.12 })
         .then(() => this.ctx.tw.to(n, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
     this.hatchlings = hatch(this.round.tree, this.plan, this.hatchRng);
+    for (const turtle of this.hatchlings) this.addCard(turtle);
+    this.clearPress();
+    this.setScroll(this.maxScroll / 2);
+    this.layout();
     this.sprung = true;
-    // The parents go back to the tree, faded: they have nested.
+    // Use the current tree coordinates after the layout has added the hatchling row.
     for (const pair of this.plan) for (const id of pair) this.returnToSlot(id);
-    for (const [k, t] of this.hatchlings.entries()) {
-      const c = this.addCard(t);
-      const nest = this.nests[Math.floor(k / 2)];
-      c.position.set(nest.x, nest.y);
-      c.scale.set(0.2);
-    }
-    this.layoutHatchlingsOnly();
     let k = 0;
     for (const t of this.hatchlings) {
       const c = this.cards.get(t.id)!,
-        p = this.slots.get(t.id)!;
+        p = this.slots.get(t.id)!,
+        nest = this.nests[Math.floor(k / 2)];
+      c.position.set(nest.x - this.tree.x, nest.y);
+      c.scale.set(0.2);
       void this.ctx.tw.to(c.position, p, { duration: 0.5, delay: 0.15 * k, ease: ease.outCubic });
       void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.5, delay: 0.15 * k });
       void this.ctx.tw.wait(0.15 * k + 0.3).then(() => {
@@ -835,27 +964,6 @@ class SpeciesComeback implements Game {
     await this.ctx.say('comeback.hatched');
     if (this.round.plan.site) return this.startSites();
     return this.finishRound();
-  }
-
-  /** Slots for new hatchlings without moving anyone mid-tween. */
-  private layoutHatchlingsOnly() {
-    const saved = new Map(
-      [...this.cards]
-        .filter(([id]) => this.plan.some((p) => p.includes(id)))
-        .map(([id, c]) => [id, { x: c.x, y: c.y, s: c.scale.x }]),
-    );
-    this.layout();
-    for (const t of this.hatchlings) {
-      const c = this.cards.get(t.id)!;
-      const n = this.nests[Math.floor(this.hatchlings.indexOf(t) / 2)];
-      c.position.set(n.x, n.y);
-      c.scale.set(0.2);
-    }
-    for (const [id, p] of saved) {
-      const c = this.cards.get(id)!;
-      c.position.set(p.x, p.y);
-      c.scale.set(p.s);
-    }
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -1038,8 +1146,10 @@ class SpeciesComeback implements Game {
     }
     if (step === 'pair') {
       const help = helpFor(this.round.tree, this.plan, this.depth, this.target);
-      if (help.kind === 'pair') this.glowing.cards = [...help.pair];
-      else if (help.kind === 'undo') this.glowing.nests = [help.nest];
+      if (help.kind === 'pair') {
+        this.glowing.cards = [...help.pair];
+        this.revealPair(help.pair);
+      } else if (help.kind === 'undo') this.glowing.nests = [help.nest];
       if (speak) {
         if (help.kind === 'pair') void this.ctx.say('comeback.hint-pair');
         else if (help.kind === 'undo') void this.ctx.say('comeback.hint-undo');
@@ -1052,6 +1162,16 @@ class SpeciesComeback implements Game {
     this.nests.forEach((_, i) => this.drawNest(i));
     this.sites.forEach((c, i) => c.lit(this.glowing.sites.includes(i)));
     this.drawGlow();
+  }
+
+  private revealPair(pair: Pair) {
+    if (!this.maxScroll) return;
+    const [a, b] = pair.map((id) => this.slots.get(id)!.x);
+    const margin = this.card / 2 + 26;
+    const min = Math.max(a, b) - this.view.w + margin;
+    const max = Math.min(a, b) - margin;
+    const next = this.slots.get(pair.find((id) => id !== this.lifted)!)!.x;
+    this.setScroll(min <= max ? Math.min(max, Math.max(min, -this.tree.x)) : next - this.view.w / 2);
   }
 
   private clearGlow() {
@@ -1099,6 +1219,7 @@ class SpeciesComeback implements Game {
   restart() {
     if (this.phase === 'busy' || this.phase === 'done') return;
     this.restarted = true;
+    this.clearPress();
     // The same seeded round from the start; misses and hints made so far keep counting.
     this.putDown();
     this.clearGlow();
@@ -1119,10 +1240,8 @@ class SpeciesComeback implements Game {
     this.nestLayer.visible = true;
     this.tree.scale.set(1);
     this.tree.position.set(0, 0);
-    const back = this.plan.flat();
     this.plan = [];
     this.sprung = false;
-    for (const id of back) this.returnToSlot(id);
     this.stepMisses = 0;
     const keeper = !!this.round.keeper;
     this.phase = keeper ? 'plan' : 'pair';
@@ -1166,9 +1285,18 @@ class SpeciesComeback implements Game {
         return help.kind === 'undo' ? { tap: { on: this.nests[help.nest] } } : null;
       }
       const next = full[this.plan.length];
-      if (this.lifted === null) return { tap: { on: this.cards.get(next[0])! }, pause: 0.3 };
-      if (this.lifted === next[0]) return { tap: { on: this.cards.get(next[1])! } };
-      return { tap: { on: this.cards.get(this.lifted)! } };
+      const id = this.lifted === null ? next[0] : this.lifted === next[0] ? next[1] : this.lifted;
+      const card = this.cards.get(id)!;
+      const edge = UPRIGHT_CARD / 2 + 22;
+      const x = card.x + this.tree.x;
+      if (this.maxScroll && (x < edge || x > this.view.w - edge)) {
+        const from = this.view.w / 2;
+        return {
+          trace: { on: this.treeWindow, x: from, y: 235 },
+          via: [{ on: this.treeWindow, x: Math.max(24, Math.min(this.view.w - 24, 2 * from - x)), y: 235 }],
+        };
+      }
+      return { tap: { on: card }, pause: this.lifted === null ? 0.3 : undefined };
     }
     if (this.phase === 'site') {
       const good = this.sites.find((c) => suits(c.site));
@@ -1179,6 +1307,7 @@ class SpeciesComeback implements Game {
 
   destroy() {
     this.finished = true;
+    this.clearPress();
   }
 }
 
@@ -1251,13 +1380,16 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
     blocks.reduce((a, b) => a + b * (size + gap), 0) + famGap * (blocks.length - 1);
   // Sideways the founders' row is level with Home and "?", so a wide tree keeps to their right.
   const CHROME = 125;
-  while (s > MIN_TOUCH && widthAt(s) > v.w - (portrait ? 40 : CHROME + 20)) s -= 4;
-  if (widthAt(s) > v.w - 40) {
+  const largeTree = v.upright && families.length >= 3;
+  if (largeTree) s = UPRIGHT_CARD;
+  else while (s > MIN_TOUCH && widthAt(s) > v.w - (portrait ? 40 : CHROME + 20)) s -= 4;
+  if (!largeTree && widthAt(s) > v.w - 40) {
     gap = 8;
     famGap = 20;
   }
+  const treeWidth = largeTree ? Math.max(v.w, widthAt(s) + 40) : v.w;
   const rowH = s + 38;
-  let x = (v.w - widthAt(s)) / 2;
+  let x = (treeWidth - widthAt(s)) / 2;
   // Not upright, a tree that would reach under Home and "?" moves right of them, or (too wide for that) starts below them
   // as the upright tree does.
   const below = v.upright || (x < CHROME && widthAt(s) > v.w - CHROME - 20);
@@ -1282,7 +1414,7 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
       );
       const w = third.length * (s + gap);
       const want = (slots.get(pair[0])!.x + slots.get(pair[1])!.x) / 2;
-      return { third, w, mid: Math.min(Math.max(want, 40 + w / 2), v.w - 40 - w / 2) };
+      return { third, w, mid: Math.min(Math.max(want, 40 + w / 2), treeWidth - 40 - w / 2) };
     })
     .sort((p, q) => p.mid - q.mid);
   for (let i = 1; i < thirds.length; i++)
@@ -1290,7 +1422,7 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
   for (let i = thirds.length - 1; i >= 0; i--) {
     const g = thirds[i],
       next = thirds[i + 1];
-    g.mid = Math.min(g.mid, next ? next.mid - (next.w + g.w) / 2 - famGap : v.w - 40 - g.w / 2);
+    g.mid = Math.min(g.mid, next ? next.mid - (next.w + g.w) / 2 - famGap : treeWidth - 40 - g.w / 2);
   }
   for (const g of thirds)
     g.third.forEach((t, k) =>
@@ -1300,7 +1432,7 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
   const hs = Math.max(MIN_TOUCH, Math.round(s * 0.8));
   hatchlings.forEach((t, k) =>
     slots.set(t.id, {
-      x: v.w / 2 + (k - (hatchlings.length - 1) / 2) * (hs + 10),
+      x: treeWidth / 2 + (k - (hatchlings.length - 1) / 2) * (hs + 10),
       y: top + rowH * hatchRow - (s - hs) / 2,
     }),
   );
@@ -1332,6 +1464,7 @@ export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[
     keeper,
     card: s,
     hatch: hs,
+    scroll: treeWidth - v.w,
     slots,
     nests: Array.from({ length: nests }, (_, i) => ({ x: left + i * spacing, y: nestY })),
     spring: v.upright ? { x: v.w / 2, y: nestY + 120 } : { x: v.w - 110, y: nestY },
