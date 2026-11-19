@@ -611,6 +611,7 @@ describe('game registry', () => {
       'peekaround-island',
       'penguin-slide',
       'pet-kitchen',
+      'photo-safari',
       'picnic-pantry',
       'picture-graph',
       'picture-logic',

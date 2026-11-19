@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/photo-safari; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `photo-safari` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `photo-safari` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** vocabulary, verbs, positions, listening
 
