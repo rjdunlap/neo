@@ -606,6 +606,7 @@ describe('game registry', () => {
       'orchard-rows',
       'paint-mixer',
       'peekaround-island',
+      'penguin-slide',
       'pet-kitchen',
       'picnic-pantry',
       'picture-graph',
