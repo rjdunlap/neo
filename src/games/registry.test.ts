@@ -630,6 +630,7 @@ describe('game registry', () => {
       'sprout-shuffle',
       'stamp-studio',
       'sudoku-garden',
+      'swap-meet',
       'swing-pals',
       'teddy-doctor',
       'tile-pairs',
