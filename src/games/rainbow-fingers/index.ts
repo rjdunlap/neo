@@ -1710,7 +1710,7 @@ export const rainbowFingers: GameModule = {
     return 'Paint the pumpkin: remember orange, then mix red and yellow';
   },
   music: STYLES.paint,
-  uprightLevels: [12],
+  upright: true,
   touchDemo: true,
   coplayHint: 'Say each color as {name} paints it, then find something that color in the room.',
   coplayHintLap: "Guide {name}'s finger in big swoops, then let go and watch.",
