@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { SCHOOL_TOUCH, touchFrame } from './layout';
+import { MIN_TOUCH, PAD, SCHOOL_TOUCH, THUMB_TOUCH, touchFrame, touchSquare } from './layout';
 import { PLANS } from './logic';
 
 describe('Word Search on a phone held upright (chunk 31)', () => {
@@ -49,5 +49,49 @@ describe('Word Search on a phone held upright (chunk 31)', () => {
     expect(
       touchFrame(1024, 768, { n: 12, words: 9, school: false, small: false, message: false }).vp,
     ).toEqual({ x: 150, y: 100, w: 1024 - 262 - 16 - 24 - 150, h: 768 - 100 - 24 });
+  });
+
+  it('keeps a fixed letter square thumb-sized in each upright view: a grid that would just fit slides at 86 instead', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) {
+      PLANS.forEach((plan, i) => {
+        const g = { n: plan.size, school: !!plan.pictures, small: plan.size <= 6 };
+        const f = touchFrame(v.w, v.h, { ...g, words: plan.words, message: !!plan.message });
+        const cell = touchSquare(f.vp, { ...g, phone: f.phone }),
+          where = `${name} level ${i + 1}`;
+        const slides = plan.size * cell + PAD > Math.min(f.vp.w, f.vp.h);
+        expect(f.phone, where).toBe(true);
+        // A grid that is all in view (so a drag marks a word) never has a square under a thumb.
+        if (!slides) expect(cell, where).toBeGreaterThanOrEqual(THUMB_TOUCH);
+        // A sliding grid's square is the thumb size when the grid nearly fits, and 64 when it is far too big to.
+        else expect([MIN_TOUCH, THUMB_TOUCH], where).toContain(cell);
+        // The window always shows at least four squares each way, so a short word can be seen whole.
+        expect(Math.min(f.vp.w, f.vp.h), where).toBeGreaterThanOrEqual(4 * cell);
+      });
+    }
+  });
+
+  it('slides the 10 × 10 grids (levels 2 and 7) at 86 on the phone, and leaves the 8 × 8 whole and the bigger grids at 64', () => {
+    const v = UPRIGHT_VIEWS.phone;
+    const cellAt = (level: number) => {
+      const plan = PLANS[level - 1];
+      const g = { n: plan.size, school: false, small: plan.size <= 6 };
+      const f = touchFrame(v.w, v.h, { ...g, words: plan.words, message: !!plan.message });
+      return touchSquare(f.vp, { ...g, phone: f.phone });
+    };
+    expect([1, 2, 3, 4, 6, 7].map(cellAt)).toEqual([87, 86, 64, 64, 87, 86]);
+  });
+
+  it('changes no square on an iPad or a sideways view, where a just-fitting square is already big under a finger', () => {
+    for (const [w, h] of [
+      [1024, 1365],
+      [1024, 768],
+      [1366, 1024],
+    ])
+      for (const plan of PLANS) {
+        const g = { n: plan.size, school: !!plan.pictures, small: plan.size <= 6 };
+        const f = touchFrame(w, h, { ...g, words: plan.words, message: !!plan.message });
+        expect(f.phone).toBe(false);
+        expect(touchSquare(f.vp, { ...g, phone: f.phone })).toBe(touchSquare(f.vp, g));
+      }
   });
 });

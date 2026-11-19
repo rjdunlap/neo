@@ -218,8 +218,8 @@ const MEASURE: Record<string, () => Size[]> = {
       const plan = wordPlan(level);
       const g = { n: plan.size, school: !!plan.pictures, small: plan.size <= 6 };
       const f = wordFrame(v.w, v.h, { ...g, words: plan.words, message: !!plan.message });
-      const cell = touchSquare(f.vp, g);
-      // The grid slides when its squares cannot all show at 64 units.
+      const cell = touchSquare(f.vp, { ...g, phone: f.phone });
+      // The grid slides when its squares cannot all show at 64 units, or on this phone at a thumb's 86.
       const slides = plan.size * cell + PAD > Math.min(f.vp.w, f.vp.h);
       return [
         slides ? ['letter square', cell, 'slides'] : ['letter square', cell],
@@ -254,20 +254,13 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'species-comeback': { px: 32.5, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
   'tile-pairs': { px: 50.8, what: 'button' },
-  'word-search': { px: 35, what: 'letter square', slides: 32.5 },
+  'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
 };
 
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
-const UNDER = [
-  'island-bridges',
-  'logic-grid',
-  'marble-jump',
-  'species-comeback',
-  'sudoku-garden',
-  'word-search',
-];
+const UNDER = ['island-bridges', 'logic-grid', 'marble-jump', 'species-comeback', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);
