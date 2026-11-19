@@ -36,8 +36,8 @@ import {
   type Ramp,
   type Trace,
 } from './logic';
+import { BUTTON_HIT_R, chainLayout, COL_GAP, PART_HIT_R } from './layout';
 
-const COL_GAP = 104;
 const PART_R = 52;
 
 /** A chunky wooden ramp. The pale groove shows exactly where the marble will leave it. */
@@ -51,7 +51,7 @@ export function rampArt(ramp: Ramp, loose = false): Container {
   g.circle(0, -28, 10).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
   g.circle(end, 25, 10).fill(swatch.blue.light).stroke({ width: 3, color: swatch.blue.line });
   c.addChild(g);
-  c.hitArea = new Circle(0, 0, PART_R + 6);
+  c.hitArea = new Circle(0, 0, PART_HIT_R);
   return c;
 }
 
@@ -150,7 +150,7 @@ function roundButton(fill: number, line: number, picture: (g: Graphics) => void)
     .stroke({ width: 6, color: line });
   picture(g);
   c.addChild(g);
-  c.hitArea = new Circle(0, 0, 62);
+  c.hitArea = new Circle(0, 0, BUTTON_HIT_R);
   return c;
 }
 
@@ -265,15 +265,15 @@ class ChainReaction implements Game {
   }
 
   resize(v: View) {
-    const span = (this.plan.cols - 1) * COL_GAP;
-    this.left = Math.max(190, (v.w - 225 - span) / 2);
-    this.top = 112;
-    this.gap = Math.min(96, (Math.min(v.h - 90, 680) - this.top) / (this.plan.rows + 1));
-    this.runButton.position.set(v.w - 100, 180);
-    this.helpButton.position.set(v.w - 100, 305);
+    const L = chainLayout(v, this.plan.cols, this.plan.rows);
+    this.left = L.left;
+    this.top = L.top;
+    this.gap = L.gap;
+    this.runButton.position.set(L.run.x, L.run.y);
+    this.helpButton.position.set(L.help.x, L.help.y);
     this.parts.forEach((part, i) => {
-      part.home.x = v.w - 100;
-      part.home.y = 455 + i * 122;
+      part.home.x = L.home(i).x;
+      part.home.y = L.home(i).y;
       part.handle.home = { ...part.home };
       const socket = this.placement[i];
       const at = socket === null || socket === undefined ? part.home : this.socketPosition(socket);
@@ -398,7 +398,7 @@ class ChainReaction implements Game {
   private makeParts() {
     this.machine.loose.forEach((ramp, piece) => {
       const node = rampArt(ramp, true);
-      const home = { x: this.ctx.view.w - 100, y: 455 + piece * 122 };
+      const home = chainLayout(this.ctx.view, this.plan.cols, this.plan.rows).home(piece);
       node.position.set(home.x, home.y);
       const handle = draggable(node, this.ctx.tw, {
         onPick: () => {
@@ -992,6 +992,7 @@ export const chainReaction: GameModule = {
   challenge: 'space',
   skills: ['prediction', 'cause-and-effect', 'planning', 'revision'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [TAP_TO_TURN, WHICH_BELL],
   describeLevel: (level) => planFor(level).name,
