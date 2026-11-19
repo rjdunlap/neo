@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/rhythm-neighbors; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `rhythm-neighbors` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `rhythm-neighbors` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** turn-taking, rhythm, musical-expression
 
