@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sprout-shuffle; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sprout-shuffle` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sprout-shuffle` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** inheritance, modeling, possible outcomes
 
@@ -44,3 +44,5 @@
 **Misses and help.** A wrong Check is one miss with a boing, and the missed route's bud replays and is spoken ("a plain copy and a plain copy..."). A second wrong Check glows that bud and the missing card and counts one hint once. Show me does the next step (gives a copy, opens a bud, taps a source tile, or chooses every makeable look and pulses Check; she still presses Check) and counts one hint the first time it is used in each part of the round (once per round at level 1; at level 3 one hint per phase, and Show me picks "sometimes" for her to Check). The ghost finger never presses Try one. One sticker through `ctx.finish({ misses, hints })`. Music is the paint style.
 
 **The look never holds the bud fan (U7 fix batch 17, 2026-11-12).** At levels 1–3 the look (`sprout.spotted` or `sprout.plain`) starts and the bud fan opens at once; the fan's instruction waits for the look and is dropped at her first bud or tray tap, or said by the guide or a meadow tap. The ghost finger waits for it.
+
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–8. The four scenes' layouts are pure functions in `layout.ts` (`shuffleLayout` for levels 1–3, `pairsLayout` for 4, `hiddenLayout` for 5–6, `conservatoryLayout` and `conservatoryFan` for 7–8; the shared sizes moved there from `art.ts`, which re-exports them). On the 768-wide area: levels 1–3 stand the plants in from the edges so all four tray tiles are whole, centre the stack on a taller phone, put the leaf and seed packet under the trays with the two-by-two bud fan right under them, and draw the two choice cards at three-quarter size (150 units) so they stand between the plants. Levels 5–6 put the hidden plant, can, tester and seed packet left to right so neither button lies over level 6's potted tester, and spread the two candidate cards and the leaf over the full width. Levels 7–8 spread the row of four buttons (two lenses, leaf, star) over the whole width, lower the fan's close button clear of the star and draw the two finished beds at 0.7 scale. Sideways and iPad-held-upright (1024-wide) positions are unchanged and pinned by `upright.test.ts`, which checks every level, every moment of a round with different targets and five upright views.

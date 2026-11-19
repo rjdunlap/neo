@@ -206,6 +206,9 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
               }
               actions++;
               await p.waitForTimeout(1000 * (step.pause ?? 0.35));
+              // `PHONE_SHOTS=1` keeps a screenshot after every touch, so each moment of a round can be looked at.
+              if (process.env.PHONE_SHOTS)
+                await p.screenshot({ path: `${output}/${id}-${level}-touch${actions}.png` });
             } else {
               await p.waitForTimeout(100);
             }

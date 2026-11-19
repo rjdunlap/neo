@@ -608,6 +608,7 @@ describe('game registry', () => {
       'sorting-machine',
       'species-comeback',
       'spinner-fair',
+      'sprout-shuffle',
       'stamp-studio',
       'sudoku-garden',
       'swing-pals',

@@ -13,7 +13,7 @@ import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { finish as finishArt, RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
@@ -21,20 +21,17 @@ import {
   BRIEF_H,
   BRIEF_W,
   briefPic,
-  BUD_H,
-  BUD_W,
   BudCard,
   CHECK_R,
   conservatoryBedArt,
   leafArt,
   LENS_BIG_R,
   markingLensArt,
-  PLANT_H,
-  PLANT_W,
   PlantCard,
   potArt,
   type Face,
 } from './art';
+import { CLOSE_R, conservatoryFan, conservatoryLayout } from './layout';
 import {
   conservatoryStep,
   conservatorySetupFor,
@@ -52,8 +49,6 @@ import {
 } from './logic';
 
 const FRIENDS: readonly CritterName[] = ['bunny', 'pig', 'cat', 'bear', 'duck'];
-const FAN_GAP = 16;
-const CLOSE_R = 50;
 
 interface Card {
   index: number;
@@ -229,10 +224,6 @@ export class SproutConservatory implements Game {
     void this.ctx.instruct(this.lastInstruction);
   }
 
-  private get portrait() {
-    return this.view.h > this.view.w;
-  }
-
   private get full() {
     return this.pots[0] !== null && this.pots[1] !== null;
   }
@@ -243,70 +234,11 @@ export class SproutConservatory implements Game {
 
   // ——— Layout ———
 
-  private geometry() {
-    const v = this.view;
-    const portrait = this.portrait;
-    const top = portrait ? Math.max(0, (v.h - 1180) / 2) : Math.max(0, (v.h - 768) / 2);
-    const briefY = top + 20 + BRIEF_H / 2;
-    const potScale = portrait ? 0.85 : 1;
-    const potCardY = top + (portrait ? 230 : 210) + (PLANT_H * potScale) / 2;
-    const potRim = potCardY + (PLANT_H * potScale) / 2 - 6;
-    const potX = [v.w * 0.38, v.w * 0.62];
-    const n = this.cards.length;
-    let benchTop: number;
-    let benchBottom: number;
-    let benchPos: { x: number; y: number }[];
-    const bs = portrait ? 0.9 : 1;
-    if (portrait) {
-      const rowY = potRim + 130 + 90;
-      benchTop = rowY - 16;
-      const rows = n > 3 ? 2 : 1;
-      const perRow = Math.ceil(n / rows);
-      const rowH = PLANT_H * bs + 24;
-      benchPos = Array.from({ length: n }, (_, k) => {
-        const row = Math.floor(k / perRow);
-        const xs = spread(perRow, 150, v.w - 40, PLANT_W * bs + 60);
-        return { x: xs[k % perRow], y: rowY + rowH / 2 + row * rowH };
-      });
-      benchBottom = rowY + rows * rowH;
-    } else {
-      const y = top + 768 - 16 - PLANT_H / 2;
-      const xs = spread(n, 150, v.w - 40, PLANT_W + 30);
-      benchPos = xs.map((x) => ({ x, y }));
-      benchTop = y - PLANT_H / 2 - 8;
-      benchBottom = y + PLANT_H / 2 + 8;
-    }
-    // Landscape: the lenses stand left of the pots and the leaves right; portrait: all in one row under the pots.
-    const ctrl = portrait
-      ? (() => {
-          const y = potRim + 130;
-          const xs = spread(4, 150, v.w - 40, 190);
-          return {
-            spots: { x: xs[0], y },
-            rim: { x: xs[1], y },
-            check: { x: xs[2], y },
-            finish: { x: xs[3], y },
-          };
-        })()
-      : {
-          spots: { x: potX[0] - PLANT_W / 2 - 30 - LENS_BIG_R, y: top + 270 },
-          rim: { x: potX[0] - PLANT_W / 2 - 30 - LENS_BIG_R, y: top + 410 },
-          check: { x: potX[1] + PLANT_W / 2 + 30 + CHECK_R, y: top + 280 },
-          finish: { x: potX[1] + PLANT_W / 2 + 30 + CHECK_R, y: top + 430 },
-        };
-    const bedY = briefY + 30;
-    const beds = [
-      { x: v.w / 2 - 290, y: bedY },
-      { x: v.w / 2 + 290, y: bedY },
-    ];
-    return { briefY, potScale, potCardY, potRim, potX, benchPos, bs, benchTop, benchBottom, ctrl, beds };
-  }
-
   /** Puts everything in place; cards move along a short arc unless `snap`. A card held in a drag is left alone. */
   layout(snap = false) {
     const v = this.view;
-    const g = this.geometry();
-    this.brief.position.set(v.w / 2, g.briefY);
+    const g = conservatoryLayout(v, this.cards.length);
+    this.brief.position.copyFrom(g.brief);
     for (const [k, p] of this.potArts.entries()) {
       p.position.set(g.potX[k], g.potRim);
       p.scale.set(g.potScale);
@@ -333,33 +265,18 @@ export class SproutConservatory implements Game {
     this.finishButton.position.set(g.ctrl.finish.x, g.ctrl.finish.y);
     for (const [k, bed] of this.beds.entries()) {
       bed.position.set(g.beds[k].x, g.beds[k].y);
-      bed.scale.set(0.8);
+      bed.scale.set(g.bedScale);
     }
-    // An open fan covers the bench: one row of four in landscape, two by two in portrait.
-    // Portrait's fan is two rows of buds even over a one-row bench, so a bud never shrinks below its full size.
-    const top = g.benchTop;
-    const bottom = this.portrait ? Math.max(g.benchBottom, top + 2 * BUD_H + FAN_GAP + 24) : g.benchBottom;
+    const fan = conservatoryFan(v, this.cards.length);
     this.fanPanel
       .clear()
-      .roundRect(20, top, v.w - 40, bottom - top, 28)
+      .roundRect(20, fan.panel.top, v.w - 40, fan.panel.bottom - fan.panel.top, 28)
       .fill({ color: 0xfffaf0, alpha: 0.95 })
       .stroke({ width: 5, color: swatch.green.line });
-    this.closeButton.position.set(v.w - 20 - CLOSE_R - 8, top + CLOSE_R + 8);
-    const rows = this.portrait ? 2 : 1;
-    const perRow = 4 / rows;
-    const left = 150;
-    const right = v.w - 40 - 2 * CLOSE_R - 20;
-    const scale = Math.min(
-      1,
-      (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H),
-      (right - left) / (perRow * BUD_W + (perRow - 1) * FAN_GAP),
-    );
-    const bx = spread(perRow, left, right, BUD_W * scale + FAN_GAP);
-    const rowH = BUD_H * scale + FAN_GAP;
+    this.closeButton.position.copyFrom(fan.close);
     for (const [i, b] of this.buds.entries()) {
-      const row = Math.floor(i / perRow);
-      b.scale.set(scale);
-      b.position.set(bx[i % perRow], (top + bottom) / 2 + (row - (rows - 1) / 2) * rowH);
+      b.scale.set(fan.scale);
+      b.position.copyFrom(fan.buds[i]);
     }
   }
 
@@ -376,7 +293,7 @@ export class SproutConservatory implements Game {
   /** A card let go: near its own place is a tap (plant it, or send a potted one back); over a pot plants it there. */
   private released(card: Card, x: number, y: number): boolean {
     if (this.finished || this.busy) return false;
-    const g = this.geometry();
+    const g = conservatoryLayout(this.view, this.cards.length);
     const near = (p: { x: number; y: number }, r: number) => Math.hypot(x - p.x, y - p.y) < r;
     const pot = this.pots.indexOf(card.index);
     if (near(card.handle.home, 60)) {
