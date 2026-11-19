@@ -20,6 +20,7 @@ import {
   arcAt,
   basketAt,
   boardOrigin,
+  boardScale,
   boardsFor,
   coverBoardsFor,
   coverHint,
@@ -543,7 +544,7 @@ class FruitSlice implements Game {
   private launch(column: number) {
     const aloft = this.flyers.filter((f) => !f.gone).map((f) => f.toss.kind);
     const kind = nextKind(this.plan, this.current!, aloft, this.ctx.rng, this.tossed++);
-    const toss = makeToss(kind, column, this.plan.aloft, this.ctx.rng);
+    const toss = makeToss(kind, column, this.plan.aloft, this.ctx.rng, this.view.w);
     const node = fruitArt(kind);
     const b = basketAt(this.view);
     node.position.set(b.x, b.y);
@@ -565,8 +566,9 @@ class FruitSlice implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private boardPoint(p: Pt): Pt {
-    const o = boardOrigin(this.view);
-    return { x: o.x + p.x, y: o.y + p.y };
+    const o = boardOrigin(this.view),
+      k = boardScale(this.view);
+    return { x: o.x + p.x * k, y: o.y + p.y * k };
   }
 
   private buildBoard() {
@@ -722,7 +724,7 @@ class FruitSlice implements Game {
     if (Math.hypot(b.x - a.x, b.y - a.y) < LINE_CANCEL) return;
     const live = this.stills.filter((s) => !s.cut);
     const centers = live.map((s) => this.boardPoint(s.at));
-    const ids = lineHits(a, b, centers);
+    const ids = lineHits(a, b, centers, HIT_R * boardScale(this.view));
     this.flashLine(a, b);
     if (!ids.length) return;
     const hit = ids.map((i) => live[i]);
@@ -1478,6 +1480,7 @@ export const fruitSlice: GameModule = {
   name: 'Fruit Slice',
   titleLine: 'game.fruit-slice',
   region: 'bubble-beach',
+  upright: true,
   challenge: 'hands',
   skills: ['fine-motor', 'sorting', 'counting', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
