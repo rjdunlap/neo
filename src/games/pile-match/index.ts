@@ -985,6 +985,7 @@ export const pileMatch: GameModule = {
   challenge: 'noticing',
   skills: ['matching', 'visual-search', 'counting', 'planning'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,

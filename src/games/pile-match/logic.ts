@@ -475,6 +475,8 @@ export const BASKET_W = 150;
 export const TAG_W = 104;
 const ROW_GAP = 24;
 const LEFT = 150;
+/** Upright: the tray row's bottom edge sits this far up, clear of the pet's corner (the guide fills the bottom 170). */
+export const UPRIGHT_ROW_UP = 186;
 
 export interface Rect {
   x: number;
@@ -494,10 +496,13 @@ export interface PileLayout {
 
 /** The heap under the header, the tray and basket in one row along the bottom, everything right of the pet's corner. */
 export function pileLayout(cells: readonly Cell[], t: number, asked: boolean, v: View): PileLayout {
-  const right = v.w - 40;
+  // Sideways the pet's corner is left of everything; upright the tray row rests above the pet's corner (170 up from
+  // the bottom edge) instead, so the heap and the row both use the whole width.
+  const left = v.upright ? 20 : LEFT;
+  const right = v.upright ? v.w - 20 : v.w - 40;
   const rowW = (asked ? TAG_W + ROW_GAP : 0) + t * SLOT_W + (t - 1) * SLOT_GAP + ROW_GAP + BASKET_W;
-  let x = (LEFT + right) / 2 - rowW / 2;
-  const y = v.h - 20 - SLOT_H;
+  let x = (left + right) / 2 - rowW / 2;
+  const y = v.upright ? v.h - UPRIGHT_ROW_UP - SLOT_H : v.h - 20 - SLOT_H;
   let tag: Rect | null = null;
   if (asked) {
     tag = { x, y, w: TAG_W, h: SLOT_H };
@@ -520,8 +525,8 @@ export function pileLayout(cells: readonly Cell[], t: number, asked: boolean, v:
     heapH = (maxY - minY) * PITCH + 2 * RADIUS;
   const top = HEADER,
     bottom = y - 40;
-  const scale = Math.min(1, (right - LEFT) / heapW, (bottom - top) / heapH);
-  const cx = (LEFT + right) / 2,
+  const scale = Math.min(1, (right - left) / heapW, (bottom - top) / heapH);
+  const cx = (left + right) / 2,
     cy = (top + bottom) / 2;
   const pieces = cells.map((c) => ({
     x: cx + (c.x - (minX + maxX) / 2) * PITCH * scale,
