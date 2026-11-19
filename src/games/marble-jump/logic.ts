@@ -239,17 +239,24 @@ export function fewestFor(board: number, goal = ANY, gold = NONE, tri = SMALL): 
 }
 /** Undo, Hint and Start over: 160 wide and this high (44.7 px under a thumb on a 390-wide upright phone). */
 export const BUTTON_H = 88;
+/** Diameter of each hole’s hit circle, about 44.7 px on a 390-wide upright phone. */
+export const HOLE_SIZE = 88;
 /**
  * Where the board goes in a view: centre x, the top row's y, the tray's half width and height, the pocket groove's y and the
- * hole centres. The big board packs closer (90 × 74 instead of 102 × 82) so its groove clears the buttons at 1024 × 768,
- * with the 78-unit hit circles still apart.
+ * hole centres. On short views the six-row board brings its rows closer so the groove clears the buttons while
+ * the wider columns keep diagonal hit circles apart.
  */
 export function boardLayout(tri: Triangle, w: number, h: number) {
-  const [dx, dy] = tri.rows > 5 ? [90, 74] : [102, 82],
-    cx = w / 2 + 35,
-    top = Math.max(175, (h - (tri.rows - 1) * dy - 82) / 2),
-    half = ((tri.rows - 1) * dx) / 2 + 59,
-    base = (tri.rows - 1) * dy + 53;
+  const intervals = tri.rows - 1;
+  const dx = 104;
+  const topMin = 190;
+  const grooveBelowLastRow = 53 + 30 + 22;
+  const grooveLimit = h - 65 - BUTTON_H / 2 - 4;
+  const dy = Math.min(86, (grooveLimit - topMin - grooveBelowLastRow) / intervals);
+  const cx = w / 2 + 35;
+  const top = Math.max(topMin, (h - intervals * dy - 82) / 2);
+  const half = (intervals * dx) / 2 + 59;
+  const base = intervals * dy + 53;
   return {
     cx,
     top,
