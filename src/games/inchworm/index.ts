@@ -21,12 +21,10 @@ import {
   hintSpans,
   hopTicks,
   isRuler,
-  isWide,
   longerShorter,
   makeMeasures,
   measureTouch,
   planFor,
-  RULER,
   slideSlots,
   temptingReading,
   UNIT_SIZE,
@@ -34,8 +32,8 @@ import {
   type MeasurePlan,
   type Thing,
 } from './logic';
+import { BIG_WORM_HIT, bucketHome, hopHit, padHome, rowY, U, unit, WORM_HIT, x0For } from './layout';
 
-const U = 88;
 export const THING_WORDS: Record<Thing, string> = {
   leaf: 'leaf',
   pencil: 'pencil',
@@ -281,36 +279,26 @@ class Inchworm implements Game {
 
   /** The ruler levels fit 0 to 10 on screen with a smaller unit, and so does one worm's eight hops; worms keep their size elsewhere. */
   private get u(): number {
-    return isWide(this.plan.mode) ? 74 : U;
+    return unit(this.view, this.plan.mode);
   }
 
   private x0() {
-    // The broken ruler: its piece from the break to 10 is centred, so the missing part leaves no gap.
-    const brk = this.plan.mode === 'broken' ? this.m?.brk : undefined;
-    if (brk !== undefined) return Math.max(40, (this.view.w - (RULER - brk) * this.u) / 2) - brk * this.u;
-    // One worm, hop by hop: the thing and the worm waiting one length before it are centred together.
-    if (this.plan.mode === 'hop' && this.m)
-      return Math.max(40, (this.view.w - (this.m.length + 1) * this.u) / 2) + this.u;
-    // Longer than the ruler: the thing and the ruler's second lay (which reaches past its end) are centred together.
-    if (this.plan.mode === 'slide' && this.m)
-      return Math.max(40, (this.view.w - 2 * this.m.ruler! * this.u) / 2);
-    return isRuler(this.plan.mode) ? 140 : 200;
+    return x0For(this.view, this.plan.mode, this.m);
   }
 
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    for (const r of this.rows) r.node.position.set(this.x0() + r.start * this.u, r.y);
+    this.rows.forEach((r, i) => {
+      r.y = rowY(v, this.plan.mode, i);
+      r.node.position.set(this.x0() + r.start * this.u, r.y);
+    });
     this.bucket.forEach((b, i) => {
-      b.drag.home = { x: v.w - 170, y: v.h - 150 + i * 46 };
+      b.drag.home = bucketHome(v, i);
       if (!b.drag.dragging) b.node.position.set(b.drag.home.x, b.drag.home.y);
     });
-    // Pads to the right of the measuring, or along the bottom under the long ruler.
-    this.pads.forEach((p, i) =>
-      isWide(this.plan.mode)
-        ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110)
-        : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125),
-    );
+    // Pads to the right of the measuring, or along the bottom under the long ruler and upright.
+    this.pads.forEach((p, i) => p.node.position.copyFrom(padHome(v, this.plan.mode, i)));
     this.drawRuler();
     this.drawPit();
     this.placeHopper();
@@ -442,21 +430,21 @@ class Inchworm implements Game {
     };
     if (this.plan.mode === 'units') {
       // The same stick twice: big worms on the top copy, then little worms on the faded one below.
-      add(m.thing, m.length, v.h * 0.3, 0, UNIT_SIZE[0]);
-      add(m.other!.thing, m.other!.length, v.h * 0.52, 0, UNIT_SIZE[1]);
+      add(m.thing, m.length, rowY(v, 'units', 0), 0, UNIT_SIZE[0]);
+      add(m.other!.thing, m.other!.length, rowY(v, 'units', 1), 0, UNIT_SIZE[1]);
       this.rows[1].node.alpha = 0.4;
     } else if (this.plan.mode === 'compare') {
-      add(m.thing, m.length, v.h * 0.3);
-      add(m.other!.thing, m.other!.length, v.h * 0.52);
+      add(m.thing, m.length, rowY(v, 'compare', 0));
+      add(m.other!.thing, m.other!.length, rowY(v, 'compare', 1));
     } else if (this.plan.mode === 'rulerdiff') {
       // Two rows above one ruler, each starting at its own mark.
-      add(m.thing, m.length, v.h * 0.26, m.start ?? 0);
-      add(m.other!.thing, m.other!.length, v.h * 0.26 + 96, m.other!.start ?? 0);
+      add(m.thing, m.length, rowY(v, 'rulerdiff', 0), m.start ?? 0);
+      add(m.other!.thing, m.other!.length, rowY(v, 'rulerdiff', 1), m.other!.start ?? 0);
     } else if (this.plan.mode === 'rulersum') {
       // The second thing starts exactly where the first stops, on the same row.
-      add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
-      add(m.other!.thing, m.other!.length, v.h * 0.4, m.other!.start ?? 0);
-    } else add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
+      add(m.thing, m.length, rowY(v, 'rulersum', 0), m.start ?? 0);
+      add(m.other!.thing, m.other!.length, rowY(v, 'rulersum', 0), m.other!.start ?? 0);
+    } else add(m.thing, m.length, rowY(v, this.plan.mode, 0), m.start ?? 0);
     if (isRuler(this.plan.mode)) this.showPads();
     else if (this.plan.mode === 'hop') this.makeHopper();
     else if (this.plan.mode === 'slide') this.makeSlider();
@@ -616,7 +604,8 @@ class Inchworm implements Game {
   private makeHopper() {
     const node = wormArt();
     node.scale.set(this.u / U);
-    node.hitArea = new Rectangle(-76, -64, 152, 128);
+    const { hw, hh } = hopHit(this.view, this.plan.mode);
+    node.hitArea = new Rectangle(-hw, -hh, 2 * hw, 2 * hh);
     onTap(node, () => void this.hop(), { cooldown: 200 });
     // On the stage, not the placed worms' layer, which takes no touches.
     this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.glow));
@@ -769,8 +758,8 @@ class Inchworm implements Game {
     this.bucketSize = size;
     while (this.bucket.length < 3) {
       const node = size > 1 ? bigWormArt() : wormArt();
-      node.hitArea =
-        size > 1 ? new Rectangle(-U - 10, -46, 2 * U + 20, 92) : new Rectangle(-U / 2 - 10, -40, U + 20, 80);
+      const hit = size > 1 ? BIG_WORM_HIT : WORM_HIT;
+      node.hitArea = new Rectangle(-hit.w / 2, -hit.h / 2, hit.w, hit.h);
       const item = { node, drag: null as unknown as DragHandle };
       item.drag = draggable(node, this.ctx.tw, {
         onPick: () => sfx.tick(),
@@ -1013,6 +1002,7 @@ export const inchworm: GameModule = {
   challenge: 'numbers',
   skills: ['measuring', 'length', 'units', 'comparing'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
