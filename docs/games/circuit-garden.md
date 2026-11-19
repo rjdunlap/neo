@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/circuit-garden; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `circuit-garden` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `circuit-garden` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** complete-circuit, cause-and-effect, observation
 
@@ -32,3 +32,5 @@ Rules (`src/games/circuit-garden/logic.ts`): a terminal graph where the lamp lig
 Misses and help: no misses at levels 1–2. At level 3 a wrong Check is one miss each, with a boing, "There is a break…" and the named break (supply first) plus a red pulsing outline on that bridge; after two wrong Checks that bridge glows and counts as its help identity once. Show me (the hand button, also the pause sheet's hint) counts one hint per help identity (return, show-on, show-off); at level 3 it fills supply then return, then points at Check or Done without a new hint; with nothing new it only points at Done. Touch demonstration on the how-to card (`touchDemo`); challenge `noticing`; no off-screen suggestion, since practical electrical cards need a named reviewer. In Tinker Lab.
 
 Deviations from the definition: level 3 *Mend the lantern* (two gaps, Check, misses, automatic glow) is the definition's E3 and is not built.
+
+**Upright on a phone (2026-11-19).** `layout.ts` holds the placing as pure functions (`layoutFor`, `boardBottom`, `HALF`). The board is no longer fixed at y 235–545: `boardBottom(v)` = clamp(`v.h` − 530, 545, 1000), so on a tall phone it stretches down (the lamp end up to y 1,000) to meet the tray instead of floating above a gap. `upright.test.ts` covers levels 1–3, both board mirrorings and four views (phone, small, tall, captioned). Sideways is unchanged.
