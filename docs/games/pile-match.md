@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/pile-match; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `pile-match` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `pile-match` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** matching, visual-search, counting, planning
 

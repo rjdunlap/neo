@@ -617,6 +617,7 @@ describe('game registry', () => {
       'picnic-pantry',
       'picture-graph',
       'picture-logic',
+      'pile-match',
       'pixel-pictures',
       'pond-conga',
       'puddle-lens',
