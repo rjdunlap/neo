@@ -71,16 +71,6 @@ export function toggleMark(marks: readonly number[], day: number, recorded: numb
   if (!Number.isInteger(day) || day < 0 || day >= recorded) return [...marks];
   return marks.includes(day) ? marks.filter((n) => n !== day) : [...marks, day];
 }
-/** Logical coordinates. Seven 108×112 records and three 170×110 choices never shrink. */
-export function weekLayout(w: number, h: number) {
-  return {
-    records: Array.from({ length: 7 }, (_, i) => ({ x: w / 2 + (i - 3) * 118, y: 280 })),
-    choices: Array.from({ length: 3 }, (_, i) => ({ x: w / 2 + (i - 1) * 190, y: 470 })),
-    confirm: { x: w / 2 + 365, y: 470 },
-    garden: { x: w / 2, y: h - 105 },
-  };
-}
-
 export type Summary = 'a-more' | 'b-more' | 'equal' | 'different';
 export interface WindowQuestion {
   weather: number;
@@ -126,19 +116,4 @@ export function makeWindow(rng: Rng): WindowRound {
       { weather: 0, choices: Object.freeze(rng.shuffle<Summary>(['equal', 'different'])) },
     ]),
   });
-}
-/** One full-size week page; tabs and summary/confirm targets stay separate from records and pet. */
-export function windowLayout(w: number) {
-  return {
-    tabs: [
-      { x: w / 2 - 100, y: 234 },
-      { x: w / 2 + 100, y: 234 },
-    ],
-    records: Array.from({ length: 7 }, (_, i) => ({ x: w / 2 + (i - 3) * 118, y: 355 })),
-    choices: [
-      { x: w / 2 - 170, y: 520 },
-      { x: w / 2 + 170, y: 520 },
-    ],
-    confirm: { x: w / 2, y: 658 },
-  };
 }

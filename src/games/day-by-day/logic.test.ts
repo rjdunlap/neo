@@ -1,3 +1,4 @@
+import { weekLayout } from './layout';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
@@ -17,7 +18,6 @@ import {
   relativeQuestions,
   sunnyCount,
   toggleMark,
-  weekLayout,
 } from './logic';
 
 describe('Day by Day', () => {
@@ -143,7 +143,7 @@ describe('Day by Day', () => {
       [750, 369],
     ]) {
       const v = computeView(w, h);
-      const l = weekLayout(v.w, v.h);
+      const l = weekLayout(v);
       const boxes = [
         ...l.records.map((p) => ({ ...p, w: 108, h: 112 })),
         ...l.choices.map((p) => ({ ...p, w: 170, h: 110 })),

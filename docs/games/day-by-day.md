@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/day-by-day; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** weekday order, yesterday and tomorrow, weather records, counting observations, comparing evidence
 
@@ -28,6 +28,8 @@
 **Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6
 
 ## Design notes
+
+On an upright phone, the calendar keeps all seven day cards at full size across two rows. Weather Window uses the same two rows on each week page. The week-turn path curves around the records, and short phones place the arrow beside the area used for spoken captions.
 
 Make a whole pretend week in one round: tap one of three day cards to hear its name, then tap the placing arrow to commit it. Record each day's code-drawn sky by choosing sunny, cloudy or rainy. Each recorded day opens another flower in a playful garden; this is a day counter, not a plant-growth model. Nothing follows the device date or requires daily returns. At levels 1–3, a teal placement thread and settling cream weather stamp show what was recorded. A seeded wooden box, cream pot row or teal-edged bed varies the garden without changing questions. During the boundary questions a dotted return path connects Sunday and Monday, with both records outlined as free visible evidence.
 

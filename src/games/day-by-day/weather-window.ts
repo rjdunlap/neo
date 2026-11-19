@@ -8,16 +8,8 @@ import { label } from '../../ui/text';
 import { tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { weatherArt } from './art';
-import {
-  DAYS,
-  makeWindow,
-  summaryTrue,
-  toggleMark,
-  WEATHER,
-  weatherCount,
-  windowLayout,
-  type Summary,
-} from './logic';
+import { RECORD, REPLAY, SUBMIT, SUMMARY, TAB, windowLayout } from './layout';
+import { DAYS, makeWindow, summaryTrue, toggleMark, WEATHER, weatherCount, type Summary } from './logic';
 
 /** Supplied evidence mode: browsing never submits an answer or earns a hint. */
 export class WeatherWindow implements Game {
@@ -69,9 +61,9 @@ export class WeatherWindow implements Game {
       },
       ctx.view,
     );
-    this.confirm.hitArea = new Rectangle(-60, -50, 120, 100);
+    this.confirm.hitArea = new Rectangle(-SUBMIT.w / 2, -SUBMIT.h / 2, SUBMIT.w, SUBMIT.h);
     this.confirm.addChild(
-      tile(120, 100, 'teal'),
+      tile(SUBMIT.w, SUBMIT.h, 'teal'),
       new Graphics()
         .moveTo(-26, 0)
         .lineTo(25, 0)
@@ -81,18 +73,18 @@ export class WeatherWindow implements Game {
     );
     onTap(this.confirm, () => void this.submit());
     // The pictured question is also a large replay control.
-    this.replayButton.hitArea = new Rectangle(-55, -50, 110, 100);
-    this.replayButton.addChild(tile(110, 100, 'white'));
+    this.replayButton.hitArea = new Rectangle(-REPLAY.w / 2, -REPLAY.h / 2, REPLAY.w, REPLAY.h);
+    this.replayButton.addChild(tile(REPLAY.w, REPLAY.h, 'white'));
     onTap(this.replayButton, () => void this.replayQuestion());
     for (let i = 0; i < 2; i++) {
       const tab = new Container();
-      tab.hitArea = new Rectangle(-80, -50, 160, 100);
+      tab.hitArea = new Rectangle(-TAB.w / 2, -TAB.h / 2, TAB.w, TAB.h);
       onTap(tab, () => this.browse(i));
       this.tabs.push(tab);
     }
     for (let i = 0; i < 7; i++) {
       const node = new Container();
-      node.hitArea = new Rectangle(-54, -56, 108, 112);
+      node.hitArea = new Rectangle(-RECORD.w / 2, -RECORD.h / 2, RECORD.w, RECORD.h);
       onTap(node, () => this.replayRecord(i));
       this.records.push(node);
     }
@@ -139,15 +131,15 @@ export class WeatherWindow implements Game {
   resize(view: View) {
     this.view = view;
     this.backdrop.resize(view);
-    const l = windowLayout(view.w);
-    this.heading.position.set(view.w / 2, 113);
-    this.caption.position.set(view.w / 2, 156);
-    this.note.position.set(view.w / 2, 428);
+    const l = windowLayout(view);
+    this.heading.position.copyFrom(l.heading);
+    this.caption.position.copyFrom(l.caption);
+    this.note.position.copyFrom(l.note);
     this.tabs.forEach((n, i) => n.position.set(l.tabs[i].x, l.tabs[i].y));
     this.records.forEach((n, i) => n.position.set(l.records[i].x, l.records[i].y));
     this.choices.forEach((p, i) => p.node.position.set(l.choices[i].x, l.choices[i].y));
     this.confirm.position.set(l.confirm.x, l.confirm.y);
-    this.replayButton.position.set(view.w / 2 - 350, 234);
+    this.replayButton.position.copyFrom(l.replay);
   }
 
   update(dt: number) {
@@ -196,7 +188,7 @@ export class WeatherWindow implements Game {
     this.tabs.forEach((n, i) => {
       this.clear(n);
       n.addChild(
-        tile(160, 100, this.page === i ? 'teal' : 'white'),
+        tile(TAB.w, TAB.h, this.page === i ? 'teal' : 'white'),
         label(`Week ${i === 0 ? 'A' : 'B'}`, 26),
       );
       for (const child of n.children) child.eventMode = 'none';
@@ -235,7 +227,7 @@ export class WeatherWindow implements Game {
     this.clear(this.replayButton);
     const picture = weatherArt(this.current.weather);
     picture.scale.set(0.6);
-    this.replayButton.addChild(tile(110, 100, 'white'), picture);
+    this.replayButton.addChild(tile(REPLAY.w, REPLAY.h, 'white'), picture);
     for (const child of this.replayButton.children) child.eventMode = 'none';
     for (const p of this.choices.splice(0)) p.node.destroy({ children: true });
     this.answer = this.current.choices.findIndex((s) =>
@@ -243,7 +235,7 @@ export class WeatherWindow implements Game {
     );
     this.current.choices.forEach((s, i) => {
       const n = new Container();
-      n.hitArea = new Rectangle(-145, -70, 290, 140);
+      n.hitArea = new Rectangle(-SUMMARY.w / 2, -SUMMARY.h / 2, SUMMARY.w, SUMMARY.h);
       const text = label(this.text(s), 23);
       text.y = 21;
       // Pictures repeat both the weather and the relation, so the spoken summary stays anchored.
@@ -255,7 +247,7 @@ export class WeatherWindow implements Game {
       const picture = weatherArt(this.current.weather);
       picture.scale.set(0.3);
       picture.position.set(-112, -38);
-      n.addChild(tile(290, 140, 'white'), a, picture, text);
+      n.addChild(tile(SUMMARY.w, SUMMARY.h, 'white'), a, picture, text);
       for (const child of n.children) child.eventMode = 'none';
       onTap(n, () => this.choose(i));
       this.choices.push({ n: i, node: n });
