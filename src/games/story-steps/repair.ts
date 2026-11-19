@@ -2,12 +2,13 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { storyCard } from './art';
 import { pictureText, repairMove, repairPuzzle, STORIES, swapPictures, type StoryCard } from './logic';
+import { repairLayout } from './layout';
 
 /** A full strip stays editable until it tells the story; trying an order never counts as a miss. */
 export class RepairStory implements Game {
@@ -130,26 +131,22 @@ export class RepairStory implements Game {
     if (!this.done) this.instruction();
   }
   resize(v: View) {
+    const L = repairLayout(v);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
-      .roundRect(30, v.h * 0.4 - 118, v.w - 60, 236, 35)
+      .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 35)
       .fill(cream);
-    const xs = spread(4, 115, v.w - 115, 220);
-    this.slots.forEach((slot, i) => slot.position.set(xs[i], v.h * 0.4));
-    this.path.clear();
-    for (let i = 0; i < 3; i++) {
-      const x = (xs[i] + xs[i + 1]) / 2,
-        y = v.h * 0.4;
-      this.path
-        .moveTo(x - 8, y - 13)
-        .lineTo(x + 5, y)
-        .lineTo(x - 8, y + 13)
+    this.slots.forEach((slot, i) => slot.position.set(L.slots[i].x, L.slots[i].y));
+    const p = this.path.clear();
+    for (const a of L.arrows)
+      p.moveTo(a.x - 8, a.y - 13)
+        .lineTo(a.x + 5, a.y)
+        .lineTo(a.x - 8, a.y + 13)
         .stroke({ width: 5, color: swatch.teal.line });
-    }
-    this.replay.position.set(v.w - 70, 70);
-    this.undo.position.set(v.w - 70, v.h - 90);
+    this.replay.position.set(L.replay.x, L.replay.y);
+    this.undo.position.set(L.undo.x, L.undo.y);
     this.drawGlow();
   }
   private drawGlow() {
