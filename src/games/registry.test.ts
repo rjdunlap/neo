@@ -624,6 +624,7 @@ describe('game registry', () => {
       'rhyme-time',
       'rhythm-neighbors',
       'ribbon-workshop',
+      'robot-path',
       'scoop-shop',
       'sense-detective',
       'shell-rows',

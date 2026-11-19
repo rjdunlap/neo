@@ -16,7 +16,6 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   boardFor,
-  DELTAS,
   DIRECTIONS,
   expand,
   FIX_PLANS,
@@ -37,6 +36,7 @@ import {
   type RobotPlan,
   type Slot,
 } from './logic';
+import { robotLayout, type RobotLayout } from './layout';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -83,7 +83,7 @@ class RobotPath implements Game {
   private readonly clear: RoundButton;
   private cell = 110;
   private origin: Cell = [160, 155];
-  private view: View;
+  private place: RobotLayout;
   running = false;
   done = false;
   misses = 0;
@@ -94,7 +94,7 @@ class RobotPath implements Game {
   private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
+    this.place = robotLayout(ctx.view, 5, 4, 'steps');
     this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
     this.fixPlan =
       ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : ctx.level === 14 ? ctx.rng.pick(MEND_PLANS) : null;
@@ -320,14 +320,13 @@ class RobotPath implements Game {
   }
 
   private slotX(i: number) {
-    return this.view.w / 2 - 165 + (i % 4) * 110;
+    return this.place.queue.x0 + (i % 4) * 110;
   }
 
   private drawQueue() {
     this.queue.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.slotTargets = [];
-    const rows = this.plan.limit > 4 ? 2 : 1;
-    const top = this.view.h - (rows > 1 ? 170 : 80);
+    const top = this.place.queue.top;
     if (this.mode === 'loop') {
       // A bracket around the program, with how many times it repeats.
       const g = new Graphics()
@@ -354,7 +353,7 @@ class RobotPath implements Game {
           c.addChild(n);
         }
       }
-      c.position.set(this.slotX(i), top + Math.floor(i / 4) * 110);
+      c.position.set(this.slotX(i), top + Math.floor(i / 4) * this.place.queue.rowStep);
       c.hitArea = new Rectangle(-50, -50, 100, 100);
       this.slotTargets.push(c);
       // The repair level selects a slot; other levels take it and later steps out.
@@ -411,13 +410,10 @@ class RobotPath implements Game {
   }
 
   resize(v: View) {
-    this.view = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    const portrait = v.h > v.w;
-    this.cell = portrait ? 100 : Math.max(100, Math.min(128, (v.h - 350) / this.plan.size));
-    this.origin = portrait
-      ? [20, 220]
-      : [Math.max(150, v.w / 2 - 360), Math.max(40, (v.h - this.plan.size * this.cell - 250) / 2)];
+    this.place = robotLayout(v, this.plan.size, this.plan.limit, this.mode);
+    this.cell = this.place.cell;
+    this.origin = this.place.origin;
     const g = this.grid.clear();
     for (let y = 0; y < this.plan.size; y++)
       for (let x = 0; x < this.plan.size; x++) {
@@ -456,15 +452,12 @@ class RobotPath implements Game {
         .stroke({ width: 8, color: swatch.yellow.line });
       this.appleGlow.visible = false;
     }
-    const cx = v.w - 190;
-    const cy = portrait ? v.h - 300 : v.h * 0.44;
-    this.arrows.forEach(({ dir, button }) => {
-      const d = DELTAS[dir];
-      button.position.set(cx + d[0] * 112, cy + d[1] * 112);
-    });
-    this.play.position.set(v.w - 90, v.h - 76);
-    this.clear.position.set(v.w - 70, 70);
-    this.loopButton.position.set(this.slotX(0) + this.plan.limit * 110 + 50, v.h - 80);
+    this.arrows.forEach(({ dir, button }) =>
+      button.position.set(this.place.arrows[dir].x, this.place.arrows[dir].y),
+    );
+    this.play.position.set(this.place.play.x, this.place.play.y);
+    this.clear.position.set(this.place.clear.x, this.place.clear.y);
+    this.loopButton.position.set(this.place.loop.x, this.place.loop.y);
     this.arrows.forEach(({ button }) => {
       button.visible = !this.prediction;
     });
@@ -578,6 +571,7 @@ export const robotPath: GameModule = {
     'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),
   touchDemo: true,
+  upright: true,
   sticker: () => robotArt(150),
   create: (ctx) => new RobotPath(ctx),
 };
