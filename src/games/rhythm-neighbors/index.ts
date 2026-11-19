@@ -36,6 +36,7 @@ import {
   planFor,
   schedule,
 } from './logic';
+import { BIG_FROG, neighborsLayout, type Layout } from './layout';
 
 function frog(which: number, r = 65) {
   const s = which ? swatch.teal : swatch.green,
@@ -104,7 +105,7 @@ function bird() {
   return g;
 }
 class RhythmNeighbors implements Game {
-  private view: View;
+  private lay: Layout;
   readonly plan;
   readonly phrases;
   phrase = 0;
@@ -155,8 +156,11 @@ class RhythmNeighbors implements Game {
     return this.done;
   }
   constructor(private readonly ctx: GameContext) {
-    this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.lay = neighborsLayout(ctx.view, {
+      voices: this.plan.voices,
+      tree: !!(this.plan.knock || this.plan.call),
+    });
     this.phrases = makePhrases(ctx.level, ctx.rng);
     ctx.stage.addChild(this.bg, this.pond, this.bird, this.score, this.glow);
     this.glow.eventMode = 'none';
@@ -394,7 +398,7 @@ class RhythmNeighbors implements Game {
           .stroke({ width: i === active ? 8 : 4, color: swatch[v ? 'teal' : 'green'].line }),
         frog(v, 27),
       );
-      node.position.set(250 + (times[i] / end) * (this.view.w - 370), 0);
+      node.position.set(this.lay.score.x0 + (times[i] / end) * (this.lay.score.x1 - this.lay.score.x0), 0);
       this.score.addChild(node);
     });
     if (this.guided) {
@@ -477,32 +481,27 @@ class RhythmNeighbors implements Game {
     if (!this.plan.free && !this.tree) this.demonstrate();
   }
   resize(v: View) {
-    this.view = v;
+    const l = (this.lay = neighborsLayout(v, { voices: this.frogs.length, tree: this.tree }));
     this.bg
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.green.light)
-      .ellipse(v.w / 2, v.h - 160, Math.min(400, v.w * 0.4), 130)
+      .ellipse(l.pond.x, l.pond.y, l.pond.rx, l.pond.ry)
       .fill(swatch.blue.light);
-    this.bird.position.set(155, 300);
-    this.score.y = 290;
-    this.frogs.forEach((f, i) =>
-      f.position.set(v.w / 2 + (this.frogs.length === 1 ? 0 : i ? 160 : -160), v.h - 180),
-    );
+    this.bird.position.set(l.bird.x, l.bird.y);
+    this.score.y = l.score.y;
+    this.frogs.forEach((f, i) => f.position.set(l.frogs[i].x, l.frogs[i].y));
     if (this.tree) {
       // A big tree on the left half, one large frog on the pond; no buttons.
-      const s = Math.min(1, (v.h - 260) / 640);
-      this.base.set(this.bird, s);
-      this.bird.scale.set(s);
-      this.bird.position.set(v.w * 0.27, v.h / 2 + 50);
-      this.frogs[0].position.set(v.w * 0.7, v.h - 190);
-      this.base.set(this.frogs[0], 1.5);
-      this.frogs[0].scale.set(1.5);
+      this.base.set(this.bird, l.treeScale);
+      this.bird.scale.set(l.treeScale);
+      this.base.set(this.frogs[0], BIG_FROG);
+      this.frogs[0].scale.set(BIG_FROG);
     }
-    this.submit.position.set(v.w - 80, 65);
+    this.submit.position.set(l.submit.x, l.submit.y);
     this.submit.visible = !this.tree && !this.plan.turn && (!this.plan.free || this.plays > 0);
-    this.replay.position.set(220, 65);
-    this.help.position.set(360, 65);
+    this.replay.position.set(l.replay.x, l.replay.y);
+    this.help.position.set(l.help.x, l.help.y);
     this.help.visible = !this.plan.free && !this.plan.turn && !this.tree;
     this.replay.visible = !this.tree;
     this.drawScore();
@@ -602,6 +601,7 @@ export const rhythmNeighbors: GameModule = {
     return new WigglyIcon(c);
   },
   touchDemo: true,
+  upright: true,
   sticker: (seed) => frog(new Rng(seed).int(0, 1), 80),
   create: (ctx) => new RhythmNeighbors(ctx),
 };
