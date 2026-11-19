@@ -568,6 +568,7 @@ describe('game registry', () => {
       'bubble-pop',
       'bug-builder',
       'clap-syllables',
+      'clock-tower',
       'crossword',
       'drift-cards',
       'drops-journey',
