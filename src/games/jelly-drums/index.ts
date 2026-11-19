@@ -13,6 +13,7 @@ import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
+import { jellyLayout, type Layout } from './layout';
 import {
   LEVELS,
   awakeJellies,
@@ -50,6 +51,7 @@ class JellyDrums implements Game {
   /** Wake level only: a stage-wide layer last in the stage, so a touch anywhere sings the nearest awake jelly. */
   private readonly anywhere = new Graphics();
   private view: View;
+  private lay: Layout;
   private phase: JellyPhase = 'play';
   private lit = 0;
   private notes = 0;
@@ -77,6 +79,7 @@ class JellyDrums implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.view = ctx.view;
+    this.lay = jellyLayout(ctx.view);
     this.jellies = COLORS.map((c, i) => {
       const hw = 82 - i * 7;
       const j = new Jelly(c, hw, hw * 1.55);
@@ -127,18 +130,15 @@ class JellyDrums implements Game {
 
   resize(v: View) {
     this.view = v;
-    const cx = v.w / 2;
-    const top = v.h * 0.74;
+    const l = (this.lay = jellyLayout(v));
+    const top = l.mountainBase;
     this.sky.width = v.w;
     this.sky.height = v.h;
 
     const m = this.mountains.clear();
-    const peaks: [number, number, number, number][] = [
-      [cx - 420, top - 300, 330, 0xb7a6f0],
-      [cx + 360, top - 330, 380, 0xb7a6f0],
-      [cx - 60, top - 260, 420, 0x9f8be6],
-    ];
-    for (const [x, y, half, color] of peaks) {
+    for (const [k, [x, y, half]] of l.peaks.entries()) {
+      // The third, middle peak is the darker one.
+      const color = k === 2 ? 0x9f8be6 : 0xb7a6f0;
       m.moveTo(x - half, top)
         .quadraticCurveTo(x - 30, y - 30, x, y)
         .quadraticCurveTo(x + 30, y - 30, x + half, top)
@@ -153,26 +153,26 @@ class JellyDrums implements Game {
         .fill(0xffffff);
     }
 
+    const { x: sx, w: sw, skirt } = l.stage;
     this.stageG
       .clear()
-      .roundRect(cx - 470, top - 12, 940, 40, 18)
+      .roundRect(sx, top - 12, sw, 40, 18)
       .fill(wood.fill)
       .stroke({ width: 6, color: wood.line })
-      .rect(cx - 452, top + 26, 904, v.h * 0.12)
+      .rect(sx + 18, top + 26, sw - 36, skirt)
       .fill(wood.line);
     for (let i = 0; i < 8; i++)
       this.stageG
-        .rect(cx - 452 + i * 113 + 54, top + 26, 5, v.h * 0.12)
+        .rect(sx + 18 + i * ((sw - 36) / 8) + 54, top + 26, 5, skirt)
         .fill({ color: 0x000000, alpha: 0.12 });
 
-    this.jellies.forEach((j, i) => j.position.set(cx + (i - 2) * 178, top + 10));
-    // Between the garland and the jellies' tops, clear of both.
-    this.again.position.set(cx, top - 250);
+    this.jellies.forEach((j, i) => j.position.set(l.jellies[i].x, l.jellies[i].y));
+    this.again.position.set(l.again.x, l.again.y);
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
-    }
-    this.fans.forEach((f, i) => f.position.set(cx + (i - 1.5) * 150, v.h - 6));
+    } else this.jellies.forEach((j) => j.scale.set(l.scale));
+    this.fans.forEach((f, i) => f.position.set(l.fans[i].x, l.fans[i].y));
     this.drawGarland();
   }
 
@@ -283,9 +283,8 @@ class JellyDrums implements Game {
     const cx = this.view.w / 2;
     this.jellies.forEach((j, i) => {
       j.visible = awake.includes(i);
-      j.scale.set(alone ? 1.8 : 1);
-      if (alone) j.x = cx;
-      else j.x = cx + (i - 2) * 178;
+      j.scale.set(alone ? 1.8 * this.lay.scale : this.lay.scale);
+      j.x = alone ? cx : this.lay.jellies[i].x;
     });
   }
 
@@ -323,9 +322,8 @@ class JellyDrums implements Game {
 
   /** A string of bulbs over the stage; each one lit is a bit of progress. */
   private drawGarland() {
-    const v = this.view;
-    const cx = v.w / 2;
-    const [x0, x1, y, sag] = [cx - 400, cx + 400, 70, 80];
+    const cx = this.view.w / 2;
+    const { x0, x1, y, sag } = this.lay.garland;
     const g = this.garland.clear();
     g.moveTo(x0, y)
       .quadraticCurveTo(cx, y + sag * 2, x1, y)
@@ -511,6 +509,7 @@ export const jellyDrums: GameModule = {
   },
   hubIcon: () => new JellyStand(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new JellyDrums(ctx),
 };
