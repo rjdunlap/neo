@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../engine/random';
 import { computeView, NO_INSETS, type View } from '../engine/view';
+import { captionPlace } from '../ui/caption-layout';
 import { gardenLayout, NEXT_H, PLANS as gardenPlans, SLOT, UNDO_R } from './block-garden/logic';
 import { caseLayout, slidingLayout } from './logic-grid';
 import { makeRound as makeCases, planFor as casePlan } from './logic-grid/logic';
@@ -63,25 +64,42 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
     }
   });
 
-  it('Logic Grid: the case file (7) and the sliding L (8) fit with their clues and Help', () => {
-    for (const level of [7, 8]) {
-      const seeds = [1, 2, 3, 4, 5];
-      const n = Math.max(
-        ...seeds.flatMap((seed) => makeCases(casePlan(level), new Rng(seed)).map((b) => b.clues.length)),
+  it('Mystery Grid level 7 keeps the board window, clues and Help clear at every clue count', () => {
+    for (let n = 5; n <= 8; n++) {
+      const l = caseLayout(v, n, true);
+      const win = box(
+        'board window',
+        l.board.x,
+        l.board.y,
+        (100 + l.win.w) * l.scale,
+        (80 + l.win.h) * l.scale,
       );
-      const l = level === 7 ? caseLayout(v, n, true) : slidingLayout(v, n, true);
-      // The squares slide (8) or sit (7) in a window right of the friends' column and under the headers.
-      const win = box('squares', l.board.x + 100, l.board.y + 80, l.win.w, l.win.h);
-      expect(Math.floor(l.win.w / l.cell)).toBeGreaterThanOrEqual(8);
-      expect(Math.floor(l.win.h / l.cell)).toBeGreaterThanOrEqual(level === 7 ? 8 : 7);
-      expect(l.board.y).toBeGreaterThanOrEqual(210);
       const clues = l.clues.map((p) => box('clue', p.x, p.y, l.clueSize.w, l.clueSize.h));
-      const help = square('help', l.help, 100);
-      // The squares are 64 units (the grown-up minimum): 32.5 px on a 390-wide phone, as when it is held sideways.
-      check(v, [win, ...clues, ...(level === 8 ? [help] : [])], 64, 32);
-      // Level 7's Help sits in the L's empty quarter, inside the window's box.
-      if (level === 7) check(v, [...clues, help], 64, 32);
+      const help = box('help', l.help.x - 60, l.help.y - 50, 120, 100);
+      expect(l.cell).toBe(88);
+      expect(l.win.w).toBeLessThan(8 * 64 + 8);
+      expect(l.win.w * l.scale).toBeGreaterThanOrEqual(6 * l.cell);
+      expect(l.win.h * l.scale).toBeGreaterThanOrEqual(l.cell);
+      const caption = captionPlace(v, true);
+      if (caption.mode === 'bubble') {
+        expect(Math.max(...l.clues.map((p) => p.y + l.clueSize.h))).toBeLessThan(caption.band!.y);
+        expect(l.board.y + win.h).toBeLessThan(caption.band!.y);
+      }
+      check(v, [win, ...clues, help], 88, 44);
     }
+  });
+
+  it('Mystery Grid level 8 fits the sliding L with its clues and Help', () => {
+    const n = Math.max(
+      ...[1, 2, 3, 4, 5].flatMap((seed) => makeCases(casePlan(8), new Rng(seed)).map((b) => b.clues.length)),
+    );
+    const l = slidingLayout(v, n, true);
+    const win = box('squares', l.board.x + 100, l.board.y + 80, l.win.w, l.win.h);
+    expect(Math.floor(l.win.w / l.cell)).toBeGreaterThanOrEqual(8);
+    expect(Math.floor(l.win.h / l.cell)).toBeGreaterThanOrEqual(7);
+    expect(l.board.y).toBeGreaterThanOrEqual(210);
+    const clues = l.clues.map((p) => box('clue', p.x, p.y, l.clueSize.w, l.clueSize.h));
+    check(v, [win, ...clues, square('help', l.help, 100)], 64, 32);
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
