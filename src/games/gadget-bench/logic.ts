@@ -661,12 +661,14 @@ function placeBoards(
   bottom: number,
   boards: Rect[],
   hands: Rect[],
+  /** How far down the spare room the group sits: 0.5 centres it; upright it sits low, in thumb reach of the path row. */
+  bias = 0.5,
 ) {
   const gap = 16;
   if (pair) {
     const bw = Math.min(320, (room - 30) / 2);
     const bh = Math.min(260, bottom - top - HAND - gap);
-    const y = top + Math.max(0, (bottom - top - bh - HAND - gap) / 2);
+    const y = top + Math.max(0, (bottom - top - bh - HAND - gap) * bias);
     const x0 = left + (room - (2 * bw + 30)) / 2;
     for (let i = 0; i < 2; i++) {
       boards.push({ x: x0 + i * (bw + 30), y, w: bw, h: bh });
@@ -675,7 +677,12 @@ function placeBoards(
   } else {
     const bw = Math.min(460, room);
     const bh = Math.min(360, bottom - top);
-    boards.push({ x: left + (room - bw) / 2, y: top + Math.max(0, (bottom - top - bh) / 2), w: bw, h: bh });
+    boards.push({
+      x: left + (room - bw) / 2,
+      y: top + Math.max(0, (bottom - top - bh) * bias),
+      w: bw,
+      h: bh,
+    });
   }
 }
 
@@ -743,7 +750,8 @@ export function benchLayout(level: number, tiles: number, trayCount: number, v: 
     const bottom = tilesY - M;
     const left = M;
     const room = v.w - 2 * M;
-    placeBoards(pair, left, room, top, bottom, boards, hands);
+    // Upright the boards sit low: a tall phone's spare room is not left empty between the Give hands and the path row.
+    placeBoards(pair, left, room, top, bottom, boards, hands, 0.85);
   }
   for (const b of boards) if (b.w < 220 || b.h < 180) return null;
   const parts = [

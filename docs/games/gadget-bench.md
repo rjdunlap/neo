@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/gadget-bench; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `gadget-bench` · **Land:** Painted Canyon · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `gadget-bench` · **Land:** Painted Canyon · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** design, testing, problem-solving, cause-and-effect
 
@@ -38,3 +38,5 @@
 **5 Little Gate** (school): the neighbor lives behind a low garden arch at the end of the path. She builds as at level 3 and Tries; the familiar cart crosses every condition, then a tall part (the big wheels or the umbrella, or even the flag on top) stops at the arch. A low part does the same job (a roller belt under for bumps and rain gear that sits flat) and rolls under. Every round holds four tray parts. Taking the tall part out is the fix, and a part that does nothing still counts if it is tall. The glow for a tall part doing nothing speaks the existing gate line. **6 New Box** (school): the pet's finished cart works for one neighbor, its parts ride home with that neighbor, and a second neighbor needs the same path from a new box whose parts it never used (glow stones for the dark, a roller belt). Glow stones at the front fail the Give (one miss) and work on top; she meets the need again with different parts. Help names the socket and installs the part as at level 3.
 
 **Misses and help.** Try is always free and a failing Try never counts. A failing Give is one miss. After two misses, or two failing Trys at the same condition with that socket unchanged, the responsible socket glows (at level 1, the passing gadget); that is one hint, once per round. Show a hint installs the needed part (one hint each, up to the round's unmet conditions); after the glow one more miss installs the part, a supported finish with one hint. A passing Give ends the round: the neighbor hops, and two more friends roll in with copies. A version strip shows each Try and Give as a small picture. Three rounds a level, one sticker a level. The pause sheet offers Start again and Show a hint. The how-to card has a ghost finger at levels 1–3. Painted Canyon (now 11 games). Co-play: one of you is the neighbor who says what the cart must get through, the other builds it, then swap; off-screen: find something with wheels at home and ask what the wheels are for. No level 7, Workshop Cases or kept gadgets.
+
+**Plays upright on a phone (upright batch 11 onward, 2026-11-18).** `benchLayout` was already pure; held upright the boards (and level 1's Give hands) now sit low in the spare room (bias 0.85) above the path row, where a tall phone had left the pair floating mid-screen with the lower 40% empty. Sideways and an upright tablet keep the centred layout. `upright.test.ts` checks levels 1–6 (and a six-level five-tray case) on five upright views.

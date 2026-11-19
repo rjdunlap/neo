@@ -1063,6 +1063,7 @@ export const gadgetBench: GameModule = {
   name: 'Gadget Bench',
   titleLine: 'game.gadget-bench',
   region: 'tinker-lab',
+  upright: true,
   challenge: 'space',
   skills: ['design', 'testing', 'problem-solving', 'cause-and-effect'],
   bands: ['preschool', 'prek', 'school'],

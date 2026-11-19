@@ -575,6 +575,7 @@ describe('game registry', () => {
       'feelings-faces',
       'food-web-workshop',
       'fruit-slice',
+      'gadget-bench',
       'garden-rows',
       'gem-swap',
       'hat-band',
