@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/inchworm; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `inchworm` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `inchworm` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** measuring, length, units, comparing
 
