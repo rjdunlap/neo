@@ -1,0 +1,6 @@
+# 2026-11-18 — Puppet Stage upright on phones
+
+**Changed:** Puppet Stage plays upright (`upright: true`). Held upright the stage runs edge to edge (left 20, not 180), the curtains start at y=222 below the Home and help column, and the puppets are drawn at 0.72 (layout field `k`; a 140-unit puppet is 101 units, still a whole touch target) with a layout-owned spacing `stand.apart` (160 × k) used by `standAt`, `freeMark`, the places and the marks. Before this the story levels 4–6 had two places' four marks only 28 units apart (places at 450 and 478 on the 768-wide area) and 14-unit snap zones; now marks are at least a puppet width apart and snap zones are at least 50. Sideways and an upright tablet keep their layout (k = 1, apart 160). The old `logic.test.ts` portrait tests now read `stand.apart`.
+**Ran:** `npm run typecheck`; eslint on the game; vitest for `src/games/puppet-stage` and `registry.test.ts`, including the new `upright.test.ts` (all six levels on phone, small, tall, captioned and short views).
+**Ran:** `BROWSER_SUITE=uprightgames PHONE_ONLY=puppet-stage` at toddler level 1 and school levels 4 and 6 (390 × 844): all completed with one sticker each; screenshots after every touch of levels 6 and 1 looked at, both fit. Headless Chrome only.
+**Not run:** the `uprightsweep` suite, build, full browser suites, any real phone.
