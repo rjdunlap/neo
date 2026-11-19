@@ -577,6 +577,7 @@ describe('game registry', () => {
       'day-by-day',
       'drift-cards',
       'drops-journey',
+      'duck-pond',
       'far-lights',
       'feelings-faces',
       'food-web-workshop',
