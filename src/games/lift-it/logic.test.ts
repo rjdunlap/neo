@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { UPRIGHT_VIEWS } from '../upright-check';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import {
   applyPull,
@@ -69,6 +70,7 @@ const VIEWS = {
   portrait: computeView(768, 1024),
   phone: computeView(844, 390),
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  ...UPRIGHT_VIEWS,
 };
 
 const line = (w: number, h: number, g: number, l: number, ask?: Line['ask']): Line => ({

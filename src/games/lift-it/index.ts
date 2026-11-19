@@ -724,7 +724,7 @@ class LiftIt implements Game {
       const p = f.at === 'waiting' ? ledge.waiting : f.at === 'ledge' ? ledge.pullers[f.i] : L.ground[f.i];
       f.c.position.set(p.x, p.y);
     }
-    const cb = counterBox(L);
+    const cb = counterBox(L, this.view.upright);
     this.counter.position.set(cb.x + cb.w / 2, cb.y + cb.h / 2);
     this.replayButton.position.copyFrom(replaySpot(this.view));
     if (this.held) this.placeHeld();
@@ -1500,8 +1500,12 @@ class LiftIt implements Game {
       return null;
     }
     if (this.plan.ask !== 'none' && this.answeredFor !== this.rig) return { tap: { on: this.handle } };
+    // A stroke begun from an end still hanging low would run off the bottom of a short view, so it stops short of the edge.
     const H = this.freeEnd();
-    const dy = pullDirection(this.rig) === 'down' ? STROKE : -Math.min(STROKE, H.y - 20);
+    const dy =
+      pullDirection(this.rig) === 'down'
+        ? Math.min(STROKE, this.view.h - 20 - H.y)
+        : -Math.min(STROKE, H.y - 20);
     return {
       trace: { on: this.ctx.stage, x: H.x, y: H.y },
       via: [{ on: this.ctx.stage, x: H.x, y: H.y + dy }],
@@ -1624,6 +1628,7 @@ export const liftIt: GameModule = {
   challenge: 'noticing',
   skills: ['cause-and-effect', 'simple-machines', 'force-and-distance', 'prediction', 'numbers'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

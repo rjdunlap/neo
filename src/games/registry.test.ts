@@ -588,6 +588,7 @@ describe('game registry', () => {
       'lantern-lights',
       'lasso-loops',
       'lemonade-stand',
+      'lift-it',
       'log-roll',
       'logic-grid',
       'look-it-up',
