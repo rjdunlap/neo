@@ -602,6 +602,7 @@ describe('game registry', () => {
       'ramp-race',
       'rhyme-time',
       'ribbon-workshop',
+      'sense-detective',
       'shell-rows',
       'sing-along-barn',
       'size-parade',

@@ -1,5 +1,4 @@
 import type { Rng } from '../../engine/random';
-import { spread, type View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
@@ -368,75 +367,3 @@ export const HEARD: Record<SoundValue, string> = { ring: 'a ring', shake: 'a rat
 export const ITS: Record<SoundValue, string> = { ring: 'rings', shake: 'shakes', beat: 'goes boom' };
 
 export const GLOW_AFTER = 2;
-
-export interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-export interface Exhibit {
-  parcel: Rect;
-  look: Rect;
-  listen: Rect | null;
-  strip: Rect[];
-  shelf: Rect[];
-  check: Rect;
-  /** Level 5's *Can't tell yet* card, or null. */
-  cantTell: Rect | null;
-}
-
-const PET_CORNER = { w: 160, h: 170 };
-export const TOY_W = 200;
-export const TOY_H = 220;
-export const CHECK = 170;
-export const EVIDENCE = 140;
-export const BUTTON = 150;
-export const CANT_TELL = 170;
-
-/**
- * Every rectangle of the museum counter. A test asserts sizes, clearances and no overlap at four views. `strip` slots
- * default to the channel buttons; level 5 has one button but two clues (the look, then the reveal's sound).
- */
-export function exhibitLayout(
-  view: View,
-  cards: number,
-  channels: number,
-  cantTell = false,
-  strip = channels,
-): Exhibit {
-  const { w, h } = view;
-  const landscape = w >= h;
-  const top = 120;
-  const parcelW = 240;
-  const gap = 30;
-  const rowW = BUTTON + gap + parcelW + (channels > 1 ? gap + BUTTON : 0);
-  const left = (w - rowW) / 2;
-  const look: Rect = { x: left, y: top + 25, w: BUTTON, h: BUTTON };
-  const parcel: Rect = { x: left + BUTTON + gap, y: top, w: parcelW, h: 200 };
-  const listen: Rect | null =
-    channels > 1 ? { x: parcel.x + parcelW + gap, y: top + 25, w: BUTTON, h: BUTTON } : null;
-  const stripY = top + 200 + 30;
-  const stripX = spread(strip, 0, w, EVIDENCE + 24);
-  const slots: Rect[] = stripX.map((cx) => ({ x: cx - EVIDENCE / 2, y: stripY, w: EVIDENCE, h: EVIDENCE }));
-  const shelfY = landscape ? h - 20 - TOY_H : stripY + EVIDENCE + 40;
-  const checkX = w - 20 - CHECK;
-  const lo = landscape ? PET_CORNER.w + 10 : 20;
-  const hi = landscape ? checkX - 20 : w - 20;
-  const shelf: Rect[] = spread(cards, lo, hi, TOY_W + 30).map((cx) => ({
-    x: cx - TOY_W / 2,
-    y: shelfY,
-    w: TOY_W,
-    h: TOY_H,
-  }));
-  const check: Rect = landscape
-    ? { x: checkX, y: shelfY + (TOY_H - CHECK) / 2, w: CHECK, h: CHECK }
-    : { x: checkX, y: shelfY + TOY_H + 20, w: CHECK, h: CHECK };
-  // The card sits above Check in landscape (the column right of the shelf), and left of Check on its row in portrait.
-  const tell: Rect | null = !cantTell
-    ? null
-    : landscape
-      ? { x: checkX, y: check.y - 20 - CANT_TELL, w: CANT_TELL, h: CANT_TELL }
-      : { x: checkX - 30 - CANT_TELL, y: check.y, w: CANT_TELL, h: CANT_TELL };
-  return { parcel, look, listen, strip: slots, shelf, check, cantTell: tell };
-}
