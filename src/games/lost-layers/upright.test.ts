@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS, type View } from '../../engine/view';
-import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
+import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import {
   BTN_H,
   BTN_W,
@@ -25,7 +25,12 @@ import {
 const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) };
 const levels = [1, 2];
 
-const box = (what: string, p: { x: number; y: number }, w: number, h: number): Target => ({ what, ...p, w, h });
+const box = (what: string, p: { x: number; y: number }, w: number, h: number): Target => ({
+  what,
+  ...p,
+  w,
+  h,
+});
 
 function targets(v: View, level: number): Target[] {
   const L = layersLayout(v, level);
@@ -45,9 +50,12 @@ function targets(v: View, level: number): Target[] {
 }
 
 describe.each(Object.entries(views))('Lost Layers upright on %s', (_, v) => {
-  it.each(levels)('level %i: every touch target is whole, apart, in view and clear of Home and the guide', (level) => {
-    expect(uprightProblems(v, targets(v, level)), `level ${level}`).toEqual([]);
-  });
+  it.each(levels)(
+    'level %i: every touch target is whole, apart, in view and clear of Home and the guide',
+    (level) => {
+      expect(uprightProblems(v, targets(v, level)), `level ${level}`).toEqual([]);
+    },
+  );
 
   it.each(levels)('level %i: the lens opens inside the view', (level) => {
     const L = layersLayout(v, level);
@@ -70,5 +78,4 @@ it('the sideways layout is unchanged', () => {
   const L = layersLayout(v, 1);
   expect(L.portrait).toBe(false);
   expect([L.gullX, L.coveX, L.bottom]).toEqual([300, 560, 680]);
-  void square;
 });
