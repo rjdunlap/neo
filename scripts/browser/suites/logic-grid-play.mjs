@@ -7,6 +7,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         const r = kit.store.stats('logic-grid').history.at(-1);
         return [r.misses, r.hints];
       });
+    const phone = process.env.LOGICGRID_PHONE === '1';
     const tally = () => page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
     const idle = () =>
       page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 30000 });
@@ -57,6 +58,137 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           pet: boxes.some((b) => b.x < 160 && b.y + b.h > v.h - 220),
         };
       });
+    const phoneCase = async () => {
+      await page.setViewportSize({ width: 390, height: 640 });
+      await page.waitForFunction(() => neo.view.upright && neo.scene.game.slides);
+      const point = (key, i, x, y) =>
+        page.evaluate(
+          ({ key, i, x, y }) => {
+            const node = i === null ? neo.scene.game[key] : neo.scene.game[key][i];
+            const p = node.toGlobal({ x, y });
+            return { x: p.x, y: p.y };
+          },
+          { key, i, x, y },
+        );
+      const tap = async (key, i, x, y) => {
+        const p = await point(key, i, x, y);
+        await page.touchscreen.tap(p.x, p.y);
+      };
+      const marks = () => page.evaluate(() => [...neo.scene.game.marks]);
+      const cdp = await page.context().newCDPSession(page);
+      const touch = (type, p) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: p ? [p] : [] });
+      const swipe = async (from, dx, dy) => {
+        await touch('touchStart', from);
+        for (let i = 1; i <= 6; i++)
+          await touch('touchMove', { x: from.x + (i * dx) / 6, y: from.y + (i * dy) / 6 });
+        await touch('touchEnd');
+      };
+
+      const hold = await marks();
+      const size = await page.evaluate(() => {
+        const g = neo.scene.game,
+          cell = g.cells[0],
+          hit = cell.hitArea;
+        return hit.width * g.board.scale.x * neo.view.scale;
+      });
+      assert.ok(size >= 44 && size < 45, `case-file squares are about 45 CSS px, got ${size}`);
+      await page.evaluate(() => neo.scene.game.setScroll(0, 0));
+      await page.waitForTimeout(100);
+      const headerX = (await point('friendCards', 0, 50, 32)).x;
+      const headerY = (await point('colStrip', null, 100, 0)).y;
+      await swipe(await point('cells', 7, 32, 32), -77, -67);
+      const scroll = await page.evaluate(() => [neo.scene.game.scrollX, neo.scene.game.scrollY]);
+      assert.ok(
+        scroll[0] > 0 && scroll[1] > 0,
+        `native diagonal swipe pans both axes on a short phone (${scroll})`,
+      );
+      assert.deepEqual(await marks(), hold, 'a two-axis swipe from a square adds no mark');
+      assert.equal((await point('friendCards', 0, 50, 32)).x, headerX, 'row labels stay pinned at the left');
+      assert.equal(
+        (await point('colStrip', null, 100, 0)).y,
+        headerY,
+        'column labels stay pinned at the top',
+      );
+
+      const visible = await page.evaluate(() =>
+        neo.scene.game.cells.findIndex((_, i) => neo.scene.game.inView(i)),
+      );
+      const p = await point('cells', visible, 32, 32);
+      await touch('touchStart', p);
+      await touch('touchCancel');
+      assert.deepEqual(await marks(), hold, 'a cancelled touch adds no mark');
+      await tap('cells', visible, 32, 32);
+      assert.notDeepEqual(await marks(), hold, 'a still tap after cancellation marks its own square');
+      await tap('clueCards', 0, 60, 44);
+      // Help was already requested on the whole board. The new mark may change its target; ask for the current step.
+      await page.waitForTimeout(550);
+      await tap('help', null, 0, 0);
+      const hint = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          square: g.pulse,
+          inView: g.pulse !== null && g.inView(g.pulse),
+          drawsOnTop:
+            g.pulse !== null &&
+            g.body.getChildIndex(g.glowLayer) > g.body.getChildIndex(g.cells[g.pulse]) &&
+            g.glowLayer.getLocalBounds().width > 0,
+        };
+      });
+      assert.ok(
+        hint.inView && hint.drawsOnTop,
+        `Help reveals and outlines its square (${JSON.stringify(hint)})`,
+      );
+      const covered = await page.evaluate(() => {
+        const scene = neo.scene;
+        const caption = scene.caption.getBounds();
+        return scene.game.clueCards.some((card) => {
+          const b = card.getBounds();
+          return (
+            b.x < caption.x + caption.width &&
+            caption.x < b.x + b.width &&
+            b.y < caption.y + caption.height &&
+            caption.y < b.y + b.height
+          );
+        });
+      });
+      assert.equal(covered, false, 'the spoken caption stays clear of the written clues on a short phone');
+      await screenshot('logic-grid-7-short-phone');
+
+      const beforeTurn = await marks();
+      await page.setViewportSize({ width: 844, height: 390 });
+      await page.waitForFunction(() => !neo.view.upright && !neo.scene.game.slides);
+      assert.deepEqual(await marks(), beforeTurn, 'turning sideways preserves all marks');
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.scrollX, neo.scene.game.scrollY]), [0, 0]);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForFunction(() => neo.view.upright && neo.scene.game.slides);
+      assert.deepEqual(await marks(), beforeTurn, 'turning upright preserves all marks');
+      assert.ok(
+        await page.evaluate((i) => neo.scene.game.inView(i), hint.square),
+        'the hint is visible again after rotation',
+      );
+
+      await screenshot('logic-grid-7-phone');
+      const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+      for (let n = 0; n < 60; n++) {
+        await idle();
+        const p = await page.evaluate(() => {
+          if (neo.scene.finished) return null;
+          const step = neo.scene.game.autotouch();
+          const p = step.tap.on.toGlobal({ x: step.tap.x, y: step.tap.y });
+          return { x: p.x, y: p.y };
+        });
+        if (!p) break;
+        // The demo may reveal a square. Pixi hit-tests against the previous rendered frame.
+        await page.waitForTimeout(320);
+        await page.touchscreen.tap(p.x, p.y);
+      }
+      await finished('logic-grid');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1);
+      await cdp.detach();
+      log(
+        'Mystery Grid 7 at 390 × 844: pinned headers, native swipe and cancel, Help, rotation and one sticker',
+      );
+    };
     let s;
     if (from <= 4) {
       if (from <= 2) {
@@ -370,7 +502,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         const g = neo.scene.game;
         kit.tapOn(g.cells[i], 32 * neo.view.scale, 32 * neo.view.scale);
       }, wrong7);
-      await page.waitForTimeout(3100);
+      await page.waitForFunction(() => neo.scene.game.misses === 1);
       assert.deepEqual(await tally(), [1, 0], 'level 7: a ruled-out yes is one miss once it rests');
       await page.evaluate(() => kit.tapOn(neo.scene.game.help));
       await page.waitForTimeout(400);
@@ -384,6 +516,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         `level 7 fits upright clear of the pet (${JSON.stringify(fit7)})`,
       );
       await screenshot('logic-grid-7-portrait');
+      if (phone) {
+        await phoneCase();
+        return;
+      }
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(500);
       await playOut();
@@ -478,7 +614,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       const g = neo.scene.game;
       kit.tapOn(g.cells[i], 32 * neo.view.scale, 32 * neo.view.scale);
     }, wrong8);
-    await page.waitForTimeout(3100);
+    await page.waitForFunction(() => neo.scene.game.misses === 1);
     assert.deepEqual(await tally(), [1, 0], 'level 8: a ruled-out yes is one miss once it rests');
     await page.evaluate(() => kit.tapOn(neo.scene.game.help));
     await page.waitForTimeout(400);

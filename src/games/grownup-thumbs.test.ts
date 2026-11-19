@@ -117,11 +117,16 @@ const MEASURE: Record<string, () => Size[]> = {
         ['button', side(BUTTON_SIZE)],
       ] as Size[];
     }),
-  'logic-grid': () => [
-    // Level 7's case file sits whole in its window; level 8's L slides.
-    ['case-file square', caseLayout(v, 6, true).cell],
-    ['square', slidingLayout(v, 6, true).cell, 'slides'],
-  ],
+  'logic-grid': () => {
+    const l = caseLayout(v, 6, true);
+    const time = slidingLayout(v, 8, true);
+    return [
+      ['case-file clue card', l.clueSize.h],
+      ['case-file square', l.cell, 'slides'],
+      ['time-grid clue card', time.clueSize.h],
+      ['time-grid square', time.cell, 'slides'],
+    ];
+  },
   // The holes are 78-unit hit circles (upright-batch-4.test.ts).
   'marble-jump': () => [
     ['hole', 78],
@@ -245,7 +250,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
   'log-roll': { px: 50.8, what: 'direction button' },
-  'logic-grid': { px: 32.5, what: 'case-file square', slides: 32.5 },
+  'logic-grid': { px: 32.5, what: 'time-grid clue card', slides: 32.5 },
   'marble-jump': { px: 39.6, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },

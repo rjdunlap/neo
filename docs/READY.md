@@ -34,6 +34,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](reviews/TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
 
+- **Mystery Grid (`logic-grid`) level 8 written clue cards** (existing-game tier): give the time-grid clues thumb-sized targets on an upright phone, while keeping 7–9 clues clear of the sliding grid, Help, and the spoken caption on short views. The level 7 case file has its own larger upright layout. [Thumb sizes](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18)
+
 ### Unblocked by the decisions of 2026-11-17
 
 Each was skipped as gated by the refill and is settled in the [record](archive/DECISIONS-2026-11-17.md). A slice that names a probe runs it first, in the same session, and stops with a note in the dive if it fails.

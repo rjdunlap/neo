@@ -30,7 +30,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 7,
       to: 7,
-      text: 'Case file: three linked grids (friend and place, friend and snack, snack and place) at grown-up size, from a written clue list; tap a clue to hear it. A yes in two grids decides the third.',
+      text: 'Case file: three linked grids (friend and place, friend and snack, snack and place) from written clues. On an upright phone, drag the grid or the names to see more. A yes in two grids decides the third.',
     },
     {
       from: 8,
