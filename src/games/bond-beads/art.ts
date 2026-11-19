@@ -1,7 +1,8 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { label } from '../../ui/text';
-import { HANDS, type Kind, type Link, type Pt, type Shape } from './logic';
+import { type Pt } from './layout';
+import { HANDS, type Kind, type Link, type Shape } from './logic';
 
 /** Bead colours follow the usual ball-and-stick convention; they are bead colours, never a substance's. */
 export const BEAD_COLOR: Record<Kind, { fill: number; line: number; text: number }> = {

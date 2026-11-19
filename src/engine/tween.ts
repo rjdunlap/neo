@@ -86,6 +86,12 @@ export class Tweener {
         tw.delay -= dt;
         if (tw.delay > 0) continue;
       }
+      // Something destroyed mid-tween (a letter posted, a scoop eaten), or before its tween's first frame (a board
+      // rebuilt in the same frame), just ends its tween, instead of throwing and freezing every other tween in the scene.
+      if ((tw.target as { destroyed?: boolean }).destroyed) {
+        finished.push(tw);
+        continue;
+      }
       if (!tw.started) {
         tw.started = true;
         tw.from = tw.keys.map((k) => tw.target[k]);
@@ -93,12 +99,6 @@ export class Tweener {
       tw.elapsed += dt;
       const p = Math.min(1, tw.elapsed / tw.duration);
       const e = tw.ease(p);
-      // Something destroyed mid-tween (a letter posted, a scoop eaten) just ends its tween,
-      // instead of throwing and freezing every other tween in the scene.
-      if ((tw.target as { destroyed?: boolean }).destroyed) {
-        finished.push(tw);
-        continue;
-      }
       try {
         tw.keys.forEach((k, i) => (tw.target[k] = tw.from[i] + (tw.to[i] - tw.from[i]) * e));
       } catch {
