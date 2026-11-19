@@ -132,7 +132,7 @@ Each of the 22 upright `grownup` games was measured from its own layout function
 | `lantern-lights` | 50.8 | button | Lanterns are 58.9 or more. |
 | `log-roll` | 50.8 | direction button | Stones are not tapped. |
 | `logic-grid` | 44.7 at level 7 | case-file square and clue-card height, 88 units | Level 7 slides on an upright phone under pinned headers. Level 8's sliding squares and written clue cards are 64 units (32.5 px). |
-| `marble-jump` | 39.6 | hole, 78 units | Does not slide. Undo, Hint and Start over are 88 units high (44.7), fixed 2026-11-18 (were 78). |
+| `marble-jump` | 44.7 | hole, 88 units | Both boards fit without sliding. Undo, Hint and Start over are also 88 units high. |
 | `number-nook` | 43.7 | tile, 86 units | The four-column boards (levels 4, 6 and 7). Counted as about 44, so no fix is queued. |
 | `picture-logic` | 44.7 | tool button | Squares are 44.7 on a board that slides. |
 | `pond-conga` | 44.7 | Hint and Start over, 88 units high | The pond is one swipe surface, so only the buttons are targets. Fixed 2026-11-18 (was 76 units, 38.6). |
@@ -145,7 +145,7 @@ Each of the 22 upright `grownup` games was measured from its own layout function
 | `sudoku-garden` | 42.7 | bed square, 84 units | The 9 × 9 bed, fixed 2026-11-18 (was 64 units, 32.5). 6 × 6 squares are 96 units (48.8), number buttons 100 (50.8, two rows at 9 × 9) and Marks, Erase, Hint, Start over and Fill marks 88 units high (44.7). Does not slide. 768 units across nine squares cannot reach 44 pixels (86 units) without sliding or zooming, and 1.3 pixels under does not warrant a sliding board, so it stays on the list. A short view (the 375 × 667 phone) shrinks the bed, never below 72 units in the tested views. |
 | `word-search` | 44.2 | letter square, 87 units, on a grid that fits; a 10 × 10 grid slides at 86 units (43.7) | Hint and Start over are 88 units high (44.7), fixed 2026-11-18 (were 72, 36.6). The larger grids (12 × 12 and 14 × 14) slide at 64-unit squares (32.5), which the band rule allows; the 10 × 10 grids were fixed 2026-11-18 (were 69 units, 35.0). The square size is `touchSquare` in `src/games/word-search/layout.ts`. |
 
-Most games are at about 44 pixels or more (`pond-conga`, `block-garden` and the Sudoku Garden buttons and 6 × 6 beds were fixed 2026-11-18, as were the buttons of `island-bridges`, `marble-jump` and `word-search`, the 10 × 10 grids of `word-search` and the seas of `island-bridges`). Marble Jump's holes are the remaining READY board fix. Sudoku Garden keeps its 42.7 px 9 × 9 bed. Mystery Grid level 8 has its own READY item for the 32.5 px written clue cards.
+Most games are at about 44 pixels or more (`pond-conga`, `block-garden` and the Sudoku Garden buttons and 6 × 6 beds were fixed 2026-11-18, as were the buttons of `island-bridges`, `marble-jump` and `word-search`, the 10 × 10 grids of `word-search` and the seas of `island-bridges`). Marble Jump’s holes grew to 44.7 pixels on 2026-11-19. Sudoku Garden keeps its 42.7 px 9 × 9 bed. Mystery Grid level 8 has its own READY item for the 32.5 px written clue cards.
 
 ### The upright sweep (built 2026-11-09)
 

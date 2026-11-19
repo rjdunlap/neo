@@ -32,6 +32,7 @@ import {
   solve,
   boardLayout,
   BUTTON_H,
+  HOLE_SIZE,
   triangleFor,
   type Jump,
   type Triangle,
@@ -68,7 +69,7 @@ const LOOKS = [
   },
 ] as const;
 type Look = (typeof LOOKS)[number];
-function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 29): Graphics {
+function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 34): Graphics {
   const color = marbles[Math.abs(seed) % 3];
   return new Graphics()
     .circle(0, 0, r)
@@ -78,7 +79,7 @@ function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 29
     .stroke({ color: cream, width: r / 6, cap: 'round' });
 }
 /** The gold marble that must stay: yellow, with a cream glint and a small star so it reads in every tray look. */
-function goldArt(r = 29): Graphics {
+function goldArt(r = 34): Graphics {
   return marbleArt(0, [swatch.yellow, swatch.yellow, swatch.yellow], r)
     .star(0, r * 0.08, 5, r * 0.38, r * 0.17)
     .fill(cream)
@@ -178,7 +179,7 @@ class MarbleJump implements Game {
       g.eventMode = 'none';
     this.tri.holes.forEach((_, i) => {
       const node = new Container();
-      node.hitArea = new Circle(0, 0, 39);
+      node.hitArea = new Circle(0, 0, HOLE_SIZE / 2);
       onTap(node, () => this.tapHole(i));
       this.nodes.push(node);
       this.root.addChild(node);
@@ -421,15 +422,15 @@ class MarbleJump implements Game {
     this.marbles = this.nodes.map((node, i) => {
       node.removeChildren().forEach((c) => c.destroy());
       const hole = new Graphics()
-        .circle(0, 3, 35)
+        .circle(0, 2, 42)
         .fill(look.deep)
-        .circle(0, 0, 33)
+        .circle(0, 0, 40)
         .fill(look.rim)
-        .circle(0, 0, 26)
+        .circle(0, 0, 32)
         .fill(look.deep);
       if (i === this.goal) {
         hole
-          .circle(0, 0, 36)
+          .circle(0, 0, 41)
           .stroke({ color: swatch.yellow.line, width: 5 })
           .star(0, 0, 5, 20, 9)
           .fill(swatch.yellow.fill)
@@ -473,7 +474,7 @@ class MarbleJump implements Game {
     ] as const) {
       if (i != null) {
         const n = this.nodes[i];
-        this.rings.circle(n.x, n.y, 37).stroke({ color, width: 5 });
+        this.rings.circle(n.x, n.y, 41).stroke({ color, width: 5 });
       }
     }
     if (this.hinted) {
@@ -501,7 +502,7 @@ class MarbleJump implements Game {
     this.cx = cx;
     this.gy = gy;
     this.title.position.set(cx, 82);
-    this.status.position.set(cx, 132);
+    this.status.position.set(cx, 118);
     const groove = half - 34;
     this.tray
       .clear()
