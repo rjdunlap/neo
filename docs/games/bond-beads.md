@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/bond-beads; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `bond-beads` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `bond-beads` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** composition, conservation, rearrangement, spatial
 

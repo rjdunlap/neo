@@ -563,6 +563,7 @@ describe('game registry', () => {
       'animal-snack',
       'beat-builder',
       'block-garden',
+      'bond-beads',
       'brain-break',
       'bubble-pop',
       'bug-builder',

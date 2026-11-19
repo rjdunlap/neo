@@ -16,15 +16,14 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
+import { BEAD_R, beadLayout, centre, type BeadLayout, type Pt } from './layout';
 import {
   LEVELS,
   allHeld,
-  BEAD_R,
   beadAt,
-  beadLayout,
   Bench,
   canLink,
-  centre,
+  cardShapes,
   CheckTally,
   helpFor,
   linkAt,
@@ -36,21 +35,13 @@ import {
   roundFor,
   shapeKey,
   tally,
-  type BeadLayout,
   type Help,
   type Kind,
   type Link,
   type Plan,
-  type Pt,
   type Shape,
   type Step,
 } from './logic';
-
-/** The shapes a step's card pictures: one (level 2), the pieces to build (levels 3 and 7), or the two ways (level 4). */
-function cardShapes(s: Step): Shape[] {
-  if (!s.requests) return [];
-  return s.twoWays ? s.requests.map((r) => r[0]) : s.requests[0];
-}
 
 /** How far a double hold's two hands sit either side of the line between its beads, in radians (at its bars). */
 const DOUBLE_HAND = 0.29;
@@ -638,7 +629,8 @@ class BondBeads implements Game {
       });
       return;
     }
-    await this.ctx.say(this.stepLine());
+    // The beads finish their hop before the next tray replaces them, however short the line is (or with speech off).
+    await Promise.all([this.ctx.say(this.stepLine()), ...hops]);
     if (!this.alive || epoch !== this.epoch) return;
     if (this.index + 1 >= this.steps.length) return this.finale();
     this.index++;
@@ -784,6 +776,7 @@ export const bondBeads: GameModule = {
     'Take a set of snap-together blocks, build something, take it apart and build something different. Count the blocks each time.',
   hubIcon: () => new BeadIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new BondBeads(ctx),
 };

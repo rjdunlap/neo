@@ -17,6 +17,26 @@ describe('Tweener', () => {
     expect(gone.x).toBe(where); // left where it was
   });
 
+  it('ends a tween whose target was destroyed before its first frame, when even reading it throws', async () => {
+    // A destroyed Pixi container has no position: reading `y` throws (Bond Beads rebuilt its tray in the frame a hop began).
+    const tw = new Tweener();
+    const gone = {
+      destroyed: false,
+      get y(): number {
+        if (this.destroyed) throw new Error("Cannot read properties of null (reading 'y')");
+        return 0;
+      },
+      set y(_: number) {},
+    };
+    const other = { x: 0 };
+    const a = tw.to(gone, { y: -24 }, { duration: 0.2 });
+    const b = tw.to(other, { x: 10 }, { duration: 0.2 });
+    gone.destroyed = true;
+    expect(() => tw.update(0.25)).not.toThrow();
+    await Promise.all([a, b]);
+    expect(other.x).toBe(10);
+  });
+
   it('survives a target that throws when set', async () => {
     const tw = new Tweener();
     const broken = {
