@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { corners, MIN_TARGET, overlaps, waterLayout, type Rect } from './layout';
 import {
   abutmentsFor,
   abutmentsInTray,
   archesInTray,
   chooseChannel,
-  corners,
   downhillPlan,
   downhillStart,
   emptyArcade,
@@ -17,14 +17,12 @@ import {
   followHint,
   heights,
   MAX_STEP,
-  MIN_TARGET,
   moveAbutment,
   moveArch,
   nearestFalling,
   nextRoad,
   openSpring,
   openValley,
-  overlaps,
   pierHint,
   planFor,
   pressArrow,
@@ -37,10 +35,8 @@ import {
   valleyHint,
   valleyPlan,
   waterBotMove,
-  waterLayout,
   type Arcade,
   type DownhillState,
-  type Rect,
   type Road,
   type Valley,
   type ValleyState,

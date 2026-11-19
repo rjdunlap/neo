@@ -1,7 +1,7 @@
 /** Water Road's code-drawn pieces: wedge stones, the timber frame and its rope handle, low walls, the buttress block, slots, push arrows, icon and sticker. */
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, wood } from '../../art/palette';
-import { inner, outer, stoneAngles, type Ring } from './logic';
+import { inner, outer, stoneAngles, type Ring } from './layout';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 /** Pale stone in three tints, so a ring is never one flat colour. */
