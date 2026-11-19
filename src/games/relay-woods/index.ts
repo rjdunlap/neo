@@ -463,6 +463,7 @@ export const relayWoods: GameModule = {
   describeLevel: (l) => NAMES[Math.max(0, Math.min(3, l - 1))],
   music: STYLES.paint,
   touchDemo: true,
+  upright: true,
   coplayHint: 'One person points out a path, the other taps. Swap roles.',
   offScreen: 'With a grown-up, pass a drawn picture along a row of toy friends.',
   hubIcon: () => new RelayIcon(),

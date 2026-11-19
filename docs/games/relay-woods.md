@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/relay-woods; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `relay-woods` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `relay-woods` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** connections, route-planning, comparing-hops
 
@@ -25,6 +25,8 @@
 **Starts as:** pass a picture along three connected friends
 
 **Grows into:** either route, a visible log with retracing, then fewest hops; optional picture Keep
+
+**Upright on a phone (2026-11-19).** `layout()` in `logic.ts` was already pure; held upright (under 900 wide) the receiver's stump now sits at the view's centre plus 24 (it was 4 units off the right edge), and on views under 1,100 tall the two sides of a reflected graph squeeze (`cy = (h + 130) / 2`, `ry = (h - 510) / 2`) so no friend sits under Home, the request or the ribbon; taller views centre at `max(620, min(0.55h, 800))`. `upright.test.ts` covers levels 1–4, both graph shapes, both reflections and five-plus views. Sideways keeps its layout.
 
 ## Design notes
 
