@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/mossy-path; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `mossy-path` · **Land:** Puzzle Peaks · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `mossy-path` · **Land:** Puzzle Peaks · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, planning, path-coverage, maze-planning
 
@@ -34,6 +34,8 @@
 **Grows into:** three coverage plans each at levels 1–3 (corridors, open patches, rocks); level 8, *a little patch*, five small boards (2 × 3 to 3 × 3) where a far tap is free; then six frozen hedge mazes per level 4–7, level 7 collecting the berry before the pond; level 9, *two snacks*, six 4 × 7 mazes with two berries eaten in either order before the pond; level 10, *plan, then go*, three 4 × 7 mazes where she draws the route first and the turtle then walks it; level 11, *thick moss*, four boards (3 × 4 and 4 × 4) where each thick tuft is crossed twice and a first visit to one is never a miss; exact-search and next-tile hints
 
 ## Design notes
+
+Held upright, the widest mazes fit seven 104-unit tiles across. Undo, Hint and Start over sit beside the pet, below the caption bubble on short phones. Turning the screen during a press leaves the drawn route ready to finish.
 
 *toddler–school, levels 1–7 · path-coverage puzzle (1–3) and hedge mazes (4–7).* Tap an adjacent unvisited moss tile: the turtle steps there and a flower blooms. Visit every tile exactly once and reach the pictured pond last; any valid complete route earns one sticker. The starting tile already blooms. Level 1 follows a short winding corridor, level 2 opens a patch with route choices, and level 3 threads tiles around rocks (three frozen plans each). Seeded reflections and rotations vary each board. This asks for coverage, distinct from Penguin Slide's stopping places and Robot Path's programs.
 
