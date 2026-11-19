@@ -564,6 +564,7 @@ describe('game registry', () => {
       'beat-builder',
       'block-garden',
       'block-tower',
+      'bolt-boards',
       'bond-beads',
       'brain-break',
       'bubble-pop',

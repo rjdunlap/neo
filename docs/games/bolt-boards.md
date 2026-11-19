@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/bolt-boards; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `bolt-boards` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `bolt-boards` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, planning, spatial-reasoning
 

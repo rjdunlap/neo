@@ -522,15 +522,20 @@ export interface BoltLayout {
 /** The pet's corner at the bottom left (as `petCorner` in lands.ts): the wall keeps right of it where they would meet. */
 export const PET_W = 200,
   PET_H = 205;
+/** Upright, the guide's corner is 150 wide and 170 tall (docs/definitions/phone-portrait.md). */
+const UPRIGHT_GUIDE_W = 150,
+  UPRIGHT_GUIDE_H = 170;
 
 /** The wall under the header and above the basket strip, scaled to fit (never larger than 1.1) and clear of the pet. */
 export function boardLayout(v: View, build = false): BoltLayout {
-  const top = HEADER,
-    room = v.h - HEADER - STRIP;
+  // Upright (768 wide) the wall takes the width and the guide is a 150 × 170 corner, so the wall only has to clear the strip;
+  // at level 9 the picture card hangs in a band between the header and the wall, since nothing is free beside it.
+  const top = HEADER + (v.upright && build ? CARD_H + 20 : 0),
+    room = v.h - top - (v.upright ? Math.max(STRIP, UPRIGHT_GUIDE_H) : STRIP);
   let scale = Math.min(1.1, (v.w - 80) / WALL_W, room / WALL_H);
   let x = (v.w - WALL_W * scale) / 2;
   let y = top + (room - WALL_H * scale) / 2;
-  if (y + WALL_H * scale > v.h - PET_H && x < PET_W + 10) {
+  if (!v.upright && y + WALL_H * scale > v.h - PET_H && x < PET_W + 10) {
     scale = Math.min(scale, (v.w - PET_W - 10 - 40) / WALL_W);
     x = Math.max(PET_W + 10, (v.w - WALL_W * scale) / 2);
     y = top + (room - WALL_H * scale) / 2;
@@ -560,11 +565,12 @@ export const inRect = (r: Rect, q: Pt) => q.x >= r.x && q.x <= r.x + r.w && q.y 
  * wide and 130 tall, centred. A board that is up leaves its slot empty, so slots never shift.
  */
 export function woodpileLayout(v: View, n: number): Rect[] {
-  const left = PET_W + 20,
-    right = v.w - 90 - 74,
+  // Upright the strip is 390 units between the corner and the arrow: four boards need slots under 120, but not under 100.
+  const left = v.upright ? UPRIGHT_GUIDE_W + 10 : PET_W + 20,
+    right = v.w - 90 - (v.upright ? 64 : 74),
     h = 130,
     y = v.h - STRIP + 10;
-  const w = Math.max(120, Math.min(200, (right - left) / n));
+  const w = Math.max(v.upright ? 100 : 120, Math.min(200, (right - left) / n));
   const x0 = left + (right - left - w * n) / 2;
   return Array.from({ length: n }, (_, k) => ({ x: x0 + k * w, y, w, h }));
 }
