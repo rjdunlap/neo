@@ -8,6 +8,8 @@ import {
   FULL,
   LEVELS,
   boardLayout,
+  BUTTON_H,
+  HOLE_SIZE,
   fewestFor,
   SMALL,
   GOLD_LEVEL,
@@ -407,7 +409,7 @@ describe('Marble Jump', () => {
     expect(fewestMoves(BIG.full ^ 1, ANY, NONE, BIG)).toBe(BIG_FEWEST[0]);
     BIG.memo.clear();
   }, 30000);
-  it('lays out both boards with 78-unit holes apart, inside the view and above the buttons', () => {
+  it('lays out both boards with thumb-sized holes apart, inside the view and above the buttons', () => {
     for (const tri of [SMALL, BIG])
       for (const [w, h] of [
         [1024, 768],
@@ -417,14 +419,14 @@ describe('Marble Jump', () => {
         const l = boardLayout(tri, w, h);
         for (let a = 0; a < l.holes.length; a++) {
           const p = l.holes[a];
-          expect(p.x - 39).toBeGreaterThan(0);
-          expect(p.x + 39).toBeLessThan(w);
+          expect(p.x - HOLE_SIZE / 2).toBeGreaterThan(0);
+          expect(p.x + HOLE_SIZE / 2).toBeLessThan(w);
           for (let b = a + 1; b < l.holes.length; b++)
-            expect(Math.hypot(p.x - l.holes[b].x, p.y - l.holes[b].y)).toBeGreaterThanOrEqual(78);
+            expect(Math.hypot(p.x - l.holes[b].x, p.y - l.holes[b].y)).toBeGreaterThanOrEqual(HOLE_SIZE);
         }
-        // The top hole sits below the status line; the groove (44 tall) ends above the 78-tall buttons at h − 65.
-        expect(l.top - 39).toBeGreaterThan(132);
-        expect(l.groove + 22).toBeLessThan(h - 65 - 39);
+        // The top hole clears the status line and the groove ends above the buttons.
+        expect(l.top - HOLE_SIZE / 2).toBeGreaterThan(140);
+        expect(l.groove + 22).toBeLessThan(h - 65 - BUTTON_H / 2);
         expect(l.cx - l.half).toBeGreaterThan(0);
       }
   });

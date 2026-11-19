@@ -23,7 +23,7 @@ import { LEVELS as lanternLevels, planFor as lanternPlan } from './lantern-light
 import { BUTTON_SIZE, DIRECTION_SIZE, logRollLayout } from './log-roll';
 import { FLOORS } from './log-roll/floors';
 import { caseLayout, slidingLayout } from './logic-grid';
-import { BUTTON_H as MARBLE_BUTTON_H } from './marble-jump/logic';
+import { BUTTON_H as MARBLE_BUTTON_H, HOLE_SIZE as MARBLE_HOLE_SIZE } from './marble-jump/logic';
 import { nookLayout, LEVELS as nookLevels, planFor as nookPlan } from './number-nook/logic';
 import {
   clueDepths,
@@ -127,9 +127,8 @@ const MEASURE: Record<string, () => Size[]> = {
       ['time-grid square', time.cell, 'slides'],
     ];
   },
-  // The holes are 78-unit hit circles (upright-batch-4.test.ts).
   'marble-jump': () => [
-    ['hole', 78],
+    ['hole', MARBLE_HOLE_SIZE],
     ['button', MARBLE_BUTTON_H],
   ],
   'number-nook': () =>
@@ -251,7 +250,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'lantern-lights': { px: 50.8, what: 'button' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 32.5, what: 'time-grid clue card', slides: 32.5 },
-  'marble-jump': { px: 39.6, what: 'hole' },
+  'marble-jump': { px: 44.7, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },
@@ -269,7 +268,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
-const UNDER = ['logic-grid', 'marble-jump', 'sudoku-garden'];
+const UNDER = ['logic-grid', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);

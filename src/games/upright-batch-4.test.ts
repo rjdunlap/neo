@@ -3,7 +3,7 @@ import { computeView, NO_INSETS, type View } from '../engine/view';
 import { BUTTON_SIZE, DIRECTION_SIZE, logRollLayout } from './log-roll';
 import { FLOORS } from './log-roll/floors';
 import { mirror } from './log-roll/logic';
-import { boardLayout, BIG, BUTTON_H, SMALL } from './marble-jump/logic';
+import { boardLayout, BIG, BUTTON_H, HOLE_SIZE, SMALL } from './marble-jump/logic';
 import { snowballLayout } from './snowball-merge';
 import { SIZE } from './snowball-merge/logic';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
@@ -48,14 +48,14 @@ describe.each(Object.entries(views))('Grown-up upright batch 4 on %s', (_, v) =>
       }
   });
 
-  it('Marble Jump: both boards, their 78-unit holes and the 88-unit buttons fit', () => {
+  it('Marble Jump: both boards, their 88-unit holes and buttons fit', () => {
     for (const tri of [SMALL, BIG]) {
       const l = boardLayout(tri, v.w, v.h);
-      // The holes are hit circles: apart by their 78-unit diameter, each inside the view and clear of the corners.
+      // The holes are hit circles: apart by their diameter, each inside the view and clear of the corners.
       for (const [a, p] of l.holes.entries()) {
-        expect(uprightProblems(v, [square('hole', p, 78)], 64)).toEqual([]);
+        expect(uprightProblems(v, [square('hole', p, HOLE_SIZE)], HOLE_SIZE)).toEqual([]);
         for (const q of l.holes.slice(a + 1))
-          expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(78);
+          expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(HOLE_SIZE);
       }
       check(
         v,
@@ -65,8 +65,6 @@ describe.each(Object.entries(views))('Grown-up upright batch 4 on %s', (_, v) =>
           ...[-1, 0, 1].map((i) => ({ what: 'button', x: l.cx + i * 180, y: v.h - 65, w: 160, h: BUTTON_H })),
         ],
         64,
-        // The 78-unit holes are 39.6 px on a 390-wide phone, the same 78 units as when it is held sideways; the buttons are 88 (44.7 px).
-        39,
       );
     }
   });
