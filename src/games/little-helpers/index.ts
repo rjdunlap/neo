@@ -13,6 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { carryPitch, crowdHome, helpersLayout } from './layout';
 import {
   LEVELS,
   badgeRings,
@@ -221,14 +222,17 @@ class LittleHelpers implements Game {
     void this.next();
   }
 
+  private get lay() {
+    // A bunch's wider row of teams sits a little right, clear of the waiting crowd (sideways).
+    return helpersLayout(this.view, teamedPlan(this.plan));
+  }
+
   private spot() {
-    const v = this.view;
-    // A bunch's wider row of teams sits a little right, clear of the waiting crowd.
-    return { x: v.w * (teamedPlan(this.plan) ? 0.58 : 0.55), y: v.h - 190 };
+    return this.lay.spot;
   }
 
   private basketAt() {
-    return { x: this.view.w - 120, y: this.view.h - 120 };
+    return this.lay.basket;
   }
 
   resize(v: View) {
@@ -240,12 +244,12 @@ class LittleHelpers implements Game {
     drawDestination(this.basket, this.place, b.x, b.y);
     this.pile.position.set(b.x, b.y - 40);
     this.helpers.forEach((h, i) => {
-      h.home = { x: 190 + (i % 4) * 62 + (i >= 4 ? 30 : 0), y: v.h - 210 + (i >= 4 ? 90 : 0) };
+      h.home = crowdHome(v, i);
       if (h.slot < 0 && !h.moving) h.position.copyFrom(h.home);
     });
     const s = this.spot();
     this.fruitNode.position.set(s.x, s.y);
-    this.whistle.position.set(s.x + 190, s.y - 210);
+    this.whistle.position.copyFrom(this.lay.whistle);
     for (const h of this.carrying) if (!h.moving) h.position.copyFrom(this.standAt(h));
     if (this.fruit && this.index >= 0) this.drawBadge(this.fruit);
   }
@@ -319,7 +323,7 @@ class LittleHelpers implements Game {
   private teamSlot(g: number, k: number, f: Fruit) {
     const s = this.spot();
     const size = partsOf(f)[g];
-    return { x: s.x + this.groupX(g, f) + (k - (size - 1) / 2) * TEAM_STEP, y: s.y + 70 };
+    return { x: s.x + this.groupX(g, f) + (k - (size - 1) / 2) * TEAM_STEP, y: s.y + this.lay.carryDy };
   }
 
   /** Where a helper holding on stands: its place in its team, or in the row under the fruit. */
@@ -338,7 +342,10 @@ class LittleHelpers implements Game {
     const strong = this.plan.mode === 'strong';
     const need = this.fruit?.need ?? 1;
     const n = Math.max(strong ? 0 : need, this.carrying.length, i + 1);
-    return { x: s.x + (i - (n - 1) / 2) * (strong ? 66 : 58), y: s.y + 70 };
+    return {
+      x: s.x + (i - (n - 1) / 2) * carryPitch(this.view.upright, strong, n, this.view.w),
+      y: s.y + this.lay.carryDy,
+    };
   }
 
   // Fruit ---------------------------------------------------------------------------------
@@ -419,8 +426,7 @@ class LittleHelpers implements Game {
     this.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.emptyRings = null;
     if (this.plan.mode === 'tap') return;
-    const s = this.spot();
-    this.badge.position.set(s.x - 200, s.y - 210);
+    this.badge.position.copyFrom(this.lay.badge);
     const teamed = teamedPlan(this.plan);
     const counts = teamed
       ? partsOf(f).map((_, g) => this.carrying.filter((h) => h.team === g && !h.moving).length)
@@ -913,5 +919,6 @@ export const littleHelpers: GameModule = {
   hubIcon: () => new HelpersIcon(),
   touchDemo: true,
   sticker,
+  upright: true,
   create: (ctx) => new LittleHelpers(ctx),
 };
