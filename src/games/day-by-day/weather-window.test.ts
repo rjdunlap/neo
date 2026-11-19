@@ -1,7 +1,8 @@
+import { windowLayout } from './layout';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { makeWindow, summaryTrue, toggleMark, weatherCount, windowLayout } from './logic';
+import { makeWindow, summaryTrue, toggleMark, weatherCount } from './logic';
 
 describe('Weather Window evidence', () => {
   it('supplies two repeatable immutable seven-day records and two uniquely true comparisons', () => {
@@ -64,13 +65,13 @@ describe('Weather Window evidence', () => {
       [750, 369],
     ]) {
       const v = computeView(w, h),
-        l = windowLayout(v.w);
+        l = windowLayout(v);
       const boxes = [
         ...l.records.map((p) => ({ ...p, w: 108, h: 112 })),
         ...l.tabs.map((p) => ({ ...p, w: 160, h: 100 })),
         ...l.choices.map((p) => ({ ...p, w: 290, h: 140 })),
         { ...l.confirm, w: 120, h: 100 },
-        { x: v.w / 2 - 350, y: 234, w: 110, h: 100 },
+        { ...l.replay, w: 110, h: 100 },
       ];
       for (const [i, a] of boxes.entries()) {
         expect(a.w).toBeGreaterThanOrEqual(100);

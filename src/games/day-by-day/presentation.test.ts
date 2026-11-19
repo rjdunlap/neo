@@ -1,7 +1,8 @@
+import { weekLayout, wrapPath } from './layout';
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { choicesFor, makeWeek, relativeQuestions, weekLayout } from './logic';
-import { gardenTreatment, wrapPath } from './presentation';
+import { choicesFor, makeWeek, relativeQuestions } from './logic';
+import { gardenTreatment } from './presentation';
 
 it('varies garden treatments repeatably without changing any round questions', () => {
   const seen = new Set<number>();
@@ -22,8 +23,8 @@ it('varies garden treatments repeatably without changing any round questions', (
 
 it('connects Sunday to Monday below the records and above answer controls in either orientation', () => {
   for (const w of [1024, 1365]) {
-    const l = weekLayout(w, 1024),
-      path = wrapPath(w);
+    const l = weekLayout({ w, h: 1024, scale: 1 }),
+      path = wrapPath(l.records);
     expect(path[0].x).toBe(l.records[6].x);
     expect(path[3].x).toBe(l.records[0].x);
     for (const p of path) {

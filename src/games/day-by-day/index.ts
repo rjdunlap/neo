@@ -29,9 +29,9 @@ import {
   WEATHER_COUNT_LEVEL,
   toggleMark,
   WEATHER,
-  weekLayout,
 } from './logic';
-import { gardenTreatment, wrapPath } from './presentation';
+import { gardenTreatment } from './presentation';
+import { CHOICE, PLACE, RECORD, weekLayout, wrapPath } from './layout';
 
 function flower(color: number, grown: boolean): Graphics {
   const g = new Graphics()
@@ -81,6 +81,7 @@ class DayByDay implements Game {
   /** A replayed record's line: it holds no input, but the ghost finger lets it be heard before its next tap. */
   private playing: Promise<void> | null = null;
   private view: View;
+  private layout;
   private readonly backdrop: Backdrop;
   private readonly garden = new Container();
   private readonly sky = new Container();
@@ -95,6 +96,7 @@ class DayByDay implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
+    this.layout = weekLayout(ctx.view);
     this.plan = planFor(ctx.level);
     this.tallyWeather = tallyWeather(ctx.level, ctx.rng);
     this.week =
@@ -121,7 +123,7 @@ class DayByDay implements Game {
       ctx.view,
     );
     this.confirm.addChild(
-      tile(120, 110, 'teal'),
+      tile(PLACE.w, PLACE.h, 'teal'),
       new Graphics()
         .moveTo(-28, 0)
         .lineTo(25, 0)
@@ -129,10 +131,11 @@ class DayByDay implements Game {
         .poly([8, -22, 34, 0, 8, 22])
         .fill(ink),
     );
+    this.confirm.hitArea = new Rectangle(-PLACE.w / 2, -PLACE.h / 2, PLACE.w, PLACE.h);
     onTap(this.confirm, () => void this.place());
     for (let i = 0; i < 7; i++) {
       const node = new Container();
-      node.hitArea = new Rectangle(-54, -56, 108, 112);
+      node.hitArea = new Rectangle(-RECORD.w / 2, -RECORD.h / 2, RECORD.w, RECORD.h);
       onTap(node, () => this.replay(i));
       this.records.push(node);
     }
@@ -209,11 +212,14 @@ class DayByDay implements Game {
   resize(view: View) {
     this.view = view;
     this.backdrop.resize(view);
-    const l = weekLayout(view.w, view.h);
-    this.heading.position.set(view.w / 2, 120);
-    this.caption.position.set(view.w / 2, 176);
-    this.note.position.set(view.w / 2, 570);
-    this.sky.position.set(view.w / 2, 378);
+    const l = (this.layout = weekLayout(view));
+    this.heading.position.copyFrom(l.heading);
+    this.caption.position.copyFrom(l.caption);
+    this.note.position.copyFrom(l.note);
+    this.note.style.wordWrap = !!view.upright;
+    this.note.style.wordWrapWidth = 640;
+    this.sky.position.copyFrom(l.sky);
+    this.garden.scale.set(l.garden.scale);
     this.garden.position.set(l.garden.x, l.garden.y);
     this.records.forEach((n, i) => n.position.set(l.records[i].x, l.records[i].y));
     this.choices.forEach((p, i) => p.node.position.set(l.choices[i].x, l.choices[i].y));
@@ -251,7 +257,7 @@ class DayByDay implements Game {
     const g = this.evidence.clear();
     if (this.ctx.level > 3) return;
     if (this.phase === 'relative' && !this.finished) {
-      const points = wrapPath(this.view.w);
+      const points = wrapPath(this.layout.records);
       const color = swatch.teal.line;
       for (let i = 1; i < points.length; i++) {
         const a = points[i - 1],
@@ -265,7 +271,7 @@ class DayByDay implements Game {
         const n = this.records[day];
         g.roundRect(n.x - 57, n.y - 59, 114, 118, 16).stroke({ width: 3, color });
       }
-      const end = this.question === 0 ? points[3] : points[0];
+      const end = this.question === 0 ? points[points.length - 1] : points[0];
       g.moveTo(end.x - 9, end.y + 13)
         .lineTo(end.x, end.y + 3)
         .lineTo(end.x + 9, end.y + 13)
@@ -275,11 +281,11 @@ class DayByDay implements Game {
       const t = (this.clock - this.placement.at) / 0.6;
       if (t >= 1) this.placement = null;
       else {
-        const l = weekLayout(this.view.w, this.view.h);
+        const l = this.layout;
         const a = l.choices[this.placement.choice],
           b = l.records[this.placement.day];
         g.moveTo(a.x, a.y - 58)
-          .quadraticCurveTo(b.x, 386, b.x, b.y + 58)
+          .quadraticCurveTo(b.x, (a.y + b.y) / 2 + 11, b.x, b.y + 58)
           .stroke({ width: 5, color: swatch.teal.line, alpha: 1 - t, cap: 'round' });
         g.circle(b.x, b.y + 58, 5 + 9 * t).stroke({ width: 3, color: swatch.teal.line, alpha: 1 - t });
       }
@@ -400,8 +406,8 @@ class DayByDay implements Game {
     this.confirm.alpha = 0.45;
     for (const n of values) {
       const node = new Container();
-      node.hitArea = new Rectangle(-85, -55, 170, 110);
-      node.addChild(tile(170, 110, 'white'));
+      node.hitArea = new Rectangle(-CHOICE.w / 2, -CHOICE.h / 2, CHOICE.w, CHOICE.h);
+      node.addChild(tile(CHOICE.w, CHOICE.h, 'white'));
       if (kind === 'weather') node.addChild(weatherArt(n));
       else node.addChild(label(kind === 'day' ? DAYS[n] : String(n), kind === 'day' ? 24 : 42));
       onTap(node, () => void this.choose(n));
@@ -649,6 +655,7 @@ export const dayByDay: GameModule = {
   titleLine: 'game.day-by-day',
   region: 'cozy-village',
   challenge: 'noticing',
+  upright: true,
   skills: [
     'weekday order',
     'yesterday and tomorrow',
