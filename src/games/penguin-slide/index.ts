@@ -16,6 +16,7 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
+import { CELL, pondLayout } from './layout';
 import {
   LEVELS,
   beside,
@@ -42,7 +43,6 @@ import {
   type SlidePuzzle,
 } from './logic';
 
-const CELL = 100;
 const ICE = 0xe3f4ff;
 
 function fishArt(color: FishColor = 'orange'): Graphics {
@@ -283,10 +283,9 @@ class PenguinSlide implements Game {
   resize(v: View) {
     this.view = v;
     if (!this.puzzle) return;
-    const w = this.puzzle.cols * CELL;
-    const h = this.puzzle.rows * CELL;
-    this.board.position.set((v.w - w) / 2, Math.max(110, (v.h - h) / 2 + 10));
-    this.undo.position.set(this.board.x + w + 70, this.board.y + 50);
+    const l = pondLayout(v, this.puzzle.cols, this.puzzle.rows);
+    this.board.position.set(l.board.x, l.board.y);
+    this.undo.position.set(l.undo.x, l.undo.y);
   }
 
   update(dt: number) {
@@ -940,6 +939,7 @@ export const penguinSlide: GameModule = {
   challenge: 'space',
   skills: ['planning', 'spatial-reasoning', 'problem-solving'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
