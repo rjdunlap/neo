@@ -26,11 +26,8 @@ import {
   stripCard,
   sunArt,
 } from './art';
+import { BOOK, CARD_H, CARD_W, LEAF, STRIP_STEP, journeyLayout, stripRoom, type Layout } from './layout';
 import {
-  BOOK,
-  CARD_H,
-  CARD_W,
-  LEAF,
   LEVELS,
   MOVES,
   maxCards,
@@ -41,7 +38,6 @@ import {
   here,
   hintFor,
   isLawful,
-  journeyLayout,
   makeRound,
   moveTo,
   moves,
@@ -52,7 +48,6 @@ import {
   type Choice,
   type Driver,
   type Journey,
-  type Layout,
   type Place,
   type Plan,
   type Process,
@@ -485,11 +480,10 @@ class DropsJourney implements Game {
     const s = this.layoutNow.strip;
     const kids = this.strip.children;
     if (kids.length === 0) this.strip.addChild(stripCard(this.journey.start, null));
-    const room = Math.max(1, Math.min(6, Math.floor(s.w / 80)));
-    const first = Math.max(0, kids.length - room);
+    const first = Math.max(0, kids.length - stripRoom(s));
     kids.forEach((k, i) => {
       k.visible = i >= first;
-      k.position.set(s.x - s.w / 2 + 40 + (i - first) * 80, s.y);
+      k.position.set(s.x - s.w / 2 + STRIP_STEP / 2 + (i - first) * STRIP_STEP, s.y);
     });
   }
 
@@ -687,4 +681,5 @@ export const dropsJourney: GameModule = {
   sticker,
   create: (ctx) => new DropsJourney(ctx),
   touchDemo: true,
+  upright: true,
 };

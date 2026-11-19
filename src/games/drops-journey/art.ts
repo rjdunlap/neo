@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
-import type { Driver, Layout, Place, State } from './logic';
+import type { Layout } from './layout';
+import type { Driver, Place, State } from './logic';
 
 const SEA = swatch.blue,
   SNOW = swatch.white,
@@ -10,10 +11,7 @@ const SEA = swatch.blue,
 export function landArt(l: Layout): Graphics {
   const g = new Graphics();
   const { land, places: p } = l;
-  const left = land.x - land.w / 2,
-    right = land.x + land.w / 2,
-    top = land.y - land.h / 2,
-    bottom = land.y + land.h / 2;
+  const right = land.x + land.w / 2;
   // Mountain under the snow ring.
   const peak = p.snow;
   const baseY = peak.y + land.h * (l.portrait ? 0.3 : 0.36);
@@ -63,7 +61,13 @@ export function landArt(l: Layout): Graphics {
     g.circle(gr.x + dx, gr.y + dy, 5).fill(SEA.fill);
   // The sea, bottom-right.
   const sea = p.sea;
-  g.roundRect(sea.x - (right - sea.x) - 120, sea.y - 46, (right - sea.x) * 2 + 240, bottom - sea.y + 90, 46)
+  g.roundRect(
+    sea.x - (right - sea.x) - 120,
+    sea.y - 46,
+    (right - sea.x) * 2 + 240,
+    l.seaFloor - sea.y + 46,
+    46,
+  )
     .fill(SEA.light)
     .stroke({ width: 4, color: SEA.line });
   for (let i = -2; i <= 2; i++)
@@ -93,8 +97,6 @@ export function landArt(l: Layout): Graphics {
   ])
     g.circle(c.x + dx, c.y + dy, rr).fill(0xffffff);
   g.roundRect(c.x - 110, c.y + 10, 220, 46, 23).fill(0xffffff);
-  void left;
-  void top;
   return g;
 }
 
