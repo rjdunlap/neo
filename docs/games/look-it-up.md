@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/look-it-up; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `look-it-up` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `look-it-up` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** text-features, informational-reading, animal-facts
 
@@ -34,3 +34,5 @@ Misses and hints: turning to any page, re-reading a row or label, tapping the vi
 Bands: toddler 1, preschool 1–2, pre-K 2–3, school 3. Home land Barnyard; subject Story Grove. Known gaps (2026-10-22): the first round of each level is seeded-random, not the authored cow/duck/bear round; baby pictures are the parent critter scaled small rather than distinct baby art, and the duck and rabbit are not tinted mallard or brown; choices are drag-or-tap (a drop that barely moves counts as a tap), so level 3 foods move like places; the level 2 demonstration does not first tap another tab; the supported finish fires after four wrong tries, not three; there is no Start again pause action.
 
 **A right picture's fact never holds the next visitor (U7 fix batch 7, 2026-11-12).** At levels 2–3 the fact starts as the visitor eats or goes and the next visitor walks in at once; the ask waits for the fact or her first touch (a tab turns the page and says the ask instead of the title, a row lights and says it, a tap on the visitor says it, and a drop says it, snaps back and is not judged). The supported finish says the row's line once, and the last visitor's fact is heard out before the closing line. Level 1's page reading is unchanged.
+
+**Plays upright on a phone (upright batch 11 onward, 2026-11-18).** Held upright the book starts at y 140 instead of 100, so the first row clears Home and the question mark (column to y 210) and the title sits beside them; the tabs, rows and basket choices move with it. Sideways and an upright tablet keep their layout. `upright.test.ts` checks levels 1–3 on the three upright phone views, the captioned one and a short 375 × 601 one.

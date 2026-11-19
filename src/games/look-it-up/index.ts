@@ -670,6 +670,7 @@ export const lookItUp: GameModule = {
   offScreen: 'Find an animal book at home and look for what one animal eats.',
   hubIcon: () => new LookIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new LookItUp(ctx),
 };

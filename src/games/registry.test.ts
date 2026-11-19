@@ -589,6 +589,7 @@ describe('game registry', () => {
       'lemonade-stand',
       'log-roll',
       'logic-grid',
+      'look-it-up',
       'lost-layers',
       'maker-lane',
       'marble-jump',

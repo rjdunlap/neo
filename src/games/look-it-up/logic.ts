@@ -418,7 +418,8 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
       });
     }
   } else {
-    book = { x: 20, y: 100, w: w - 20 - TAB - 30, h: 70 + rowCount * ROW_H + 20 };
+    // Upright, the first row starts below Home and the "?" column (y 210); the book's title sits beside them.
+    book = { x: 20, y: 140, w: w - 20 - TAB - 30, h: 70 + rowCount * ROW_H + 20 };
     const tx = book.x + book.w + 6;
     for (let i = 0; i < 3; i++) tabs.push({ x: tx, y: book.y + 10 + i * (TAB + 14), w: TAB, h: TAB });
     const top = book.y + book.h + 20;
