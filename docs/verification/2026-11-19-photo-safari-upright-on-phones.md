@@ -1,0 +1,6 @@
+# 2026-11-19 — Photo Safari upright on phones (PR #1859)
+
+**Changed:** Photo Safari plays upright at every level (`upright: true`; it had `uprightLevels: [14, 15]`). New pure `layout.ts`: `tellLayout` puts the tell cards at most three to a row above the Tell button on a narrow view (five cards plus the button needed 806 units and ran past the 768 edge); `mysteryLayout` and `groundLine` moved out of the scene, and the tell meadow's ground is lifted by a reserved two rows so it does not move with the card count. The sweep (`PHONE_BANDS=all`) had flagged only levels 10 and 11 (tell: small fix, two wrong boxes); the rest read fits or look.
+**Ran:** `npm run typecheck`, prettier, eslint; vitest on `src/games/registry` and Photo Safari (159 passed), including the new `upright.test.ts` over levels 1–15, 12 seeds and four upright views (including a short 375 × 601): friend bodies, camera, thumbs, cards and the Tell button.
+**Ran:** `BROWSER_SUITE=uprightgames PHONE_ONLY=photo-safari PHONE_BAND=school PHONE_LEVELS=10,11,14,15 PHONE_SHOTS=1`: all four levels completed, one sticker each; screenshots viewed. Headless Chrome only.
+**Not run:** full `npm test`, build, offline (no shared files changed), other suites.
