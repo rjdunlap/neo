@@ -462,14 +462,17 @@ export const nearestRow = (L: LayersLayout, y: number): number =>
 export function layersLayout(v: View, level: number): LayersLayout {
   const portrait = v.h > v.w;
   if (portrait) {
+    // Held upright (768 wide, tall): the buttons and cards stand up from the bottom edge where a thumb rests, the two
+    // columns sit right above them. Level 2 pushes the columns to the right edge so the look cards and the slot wait
+    // on their left, clear of Home.
     const mid = v.w / 2;
-    const gullX = mid - 40 - COL_W,
-      coveX = mid + 40;
-    const top = 150,
-      bottom = top + ROWS * ROW_H;
-    const t1 = bottom + 30 + BTN_H / 2;
-    const t2 = t1 + BTN_H / 2 + 20 + CARD_H / 2;
-    const lx = gullX - 60 - LOOK_W / 2;
+    const t2 = v.h - 24 - CARD_H / 2;
+    const t1 = t2 - CARD_H / 2 - 20 - BTN_H / 2;
+    const bottom = t1 - BTN_H / 2 - 30;
+    const top = bottom - ROWS * ROW_H;
+    const coveX = level >= 2 ? v.w - 24 - COL_W : mid + 40;
+    const gullX = coveX - 80 - COL_W;
+    const lx = 195;
     return {
       portrait,
       gullX,
@@ -481,8 +484,8 @@ export function layersLayout(v: View, level: number): LayersLayout {
         { x: mid - 120, y: t2 },
         { x: mid + 120, y: t2 },
       ],
-      looks: [0, 1, 2].map((i) => ({ x: lx, y: top + 70 + i * (LOOK_H + 20) })),
-      slot: { x: lx, y: top + 70 + 3 * (LOOK_H + 20) + 10 },
+      looks: [0, 1, 2].map((i) => ({ x: lx, y: top + LOOK_H / 2 + 10 + i * (LOOK_H + 20) })),
+      slot: { x: lx, y: top + LOOK_H / 2 + 10 + 3 * (LOOK_H + 20) + 10 },
       lens: { x: mid, y: top + 250 },
     };
   }

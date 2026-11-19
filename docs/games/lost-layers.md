@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/lost-layers; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `lost-layers` · **Land:** Bubble Beach · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `lost-layers` · **Land:** Bubble Beach · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** evidence, relative order, uncertainty, reasoning
 
