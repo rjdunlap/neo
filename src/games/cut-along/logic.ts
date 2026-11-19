@@ -120,7 +120,11 @@ function arrange(v: { w: number; h: number }, P: number): Layout {
   };
   const beside = fit(left, picture.x - PAD - EDGE, PAD, bottom);
   const under = fit(left, v.w - PAD - EDGE, picture.y + P + 16, bottom);
-  const best = beside.s >= under.s ? beside : under;
+  // Upright, the 170-wide column kept for the pet would leave the paper 446 wide on a 768 view. Under the picture the pet
+  // corner is only a floor, so the paper takes the full width less its ring room and stops above the pet's top.
+  const upright = v.h > v.w;
+  const wide = fit(EDGE, v.w - EDGE, picture.y + P + 16, v.h - petCorner(v).h - EDGE);
+  const best = upright ? wide : beside.s >= under.s ? beside : under;
   return { paper: { x: best.x, y: best.y, w: best.s * PAPER_W, h: best.s, s: best.s }, picture };
 }
 

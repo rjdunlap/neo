@@ -575,6 +575,7 @@ describe('game registry', () => {
       'clock-tower',
       'crossword',
       'cue-studio',
+      'cut-along',
       'day-by-day',
       'drift-cards',
       'drops-journey',

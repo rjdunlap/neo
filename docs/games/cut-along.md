@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/cut-along; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `cut-along` · **Land:** Painted Canyon · **Ages:** toddler–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `cut-along` · **Land:** Painted Canyon · **Ages:** toddler–school · **Challenge:** hands · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** fine-motor, shapes, spatial-reasoning
 
