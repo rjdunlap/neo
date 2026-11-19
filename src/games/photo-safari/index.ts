@@ -51,6 +51,7 @@ import {
   type Sighting,
   type Spot,
 } from './logic';
+import { groundLine, mysteryLayout, mysteryTwoRows, tellLayout } from './layout';
 import { rangeFor } from '../../progress/difficulty';
 
 const SCALE = 0.5;
@@ -544,8 +545,7 @@ class PhotoSafari implements Game {
 
   /** Mystery Friend on a phone upright or any narrow view: the tray takes two rows and the meadow lifts. */
   private get twoRows() {
-    // Four or five 156-unit cards must fit between the pet's corner (x 150) and the right margin in one row.
-    return this.isMystery && (this.view.w < 900 || (this.plan.best ? 5 : 4) * 156 > this.view.w - 190);
+    return this.isMystery && mysteryTwoRows(this.view, !!this.plan.best);
   }
 
   private get isTell() {
@@ -594,8 +594,11 @@ class PhotoSafari implements Game {
   }
 
   private ground() {
-    if (this.isMystery) return Math.min(this.view.h * 0.78, this.view.h - 200) - (this.twoRows ? 140 : 0);
-    return this.isTell ? Math.min(this.view.h * 0.78, this.view.h - 200) : this.view.h * 0.78;
+    return groundLine(
+      this.view,
+      this.isMystery ? 'mystery' : this.isTell ? 'tell' : 'plain',
+      !!this.plan.best,
+    );
   }
 
   private spotPos(spot: Spot) {
@@ -950,13 +953,13 @@ class PhotoSafari implements Game {
   }
 
   private layoutChips() {
-    const start = (150 + this.view.w - 40 - 806) / 2;
+    const at = tellLayout(this.view, this.chips.length);
     this.chips.forEach((c, i) => {
       c.selected = this.chosen.some((k) => sameChip(k, c.chip));
-      c.position.set(start + 70 + i * 156, this.view.h - 78 - (c.selected ? 16 : 0));
+      c.position.set(at.chips[i].x, at.chips[i].y - (c.selected ? 16 : 0));
       c.draw();
     });
-    this.tellButton.position.set(start + 721, this.view.h - 78);
+    this.tellButton.position.set(at.button.x, at.button.y);
     this.tellPictures.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.chosen.forEach((chip, i) => {
       const icon = chipIcon(chip);
@@ -1006,19 +1009,19 @@ class PhotoSafari implements Game {
 
   /** One row in a wide view; doing words over places in a narrow one, so no card shrinks. */
   private layoutMysteryChips() {
-    const mid = (150 + this.view.w - 40) / 2;
-    const rows = this.twoRows
-      ? [this.chips.filter((c) => c.chip.kind === 'action'), this.chips.filter((c) => c.chip.kind === 'spot')]
-      : [this.chips];
-    rows.forEach((row, r) =>
-      row.forEach((c, i) => {
-        c.position.set(
-          mid + (i - (row.length - 1) / 2) * 156,
-          this.view.h - 78 - (rows.length === 2 && r === 0 ? 140 : 0),
-        );
-        c.draw();
-      }),
-    );
+    // Doing words first, then places, as `rows` always listed them.
+    const ordered = this.twoRows
+      ? [
+          ...this.chips.filter((c) => c.chip.kind === 'action'),
+          ...this.chips.filter((c) => c.chip.kind === 'spot'),
+        ]
+      : this.chips;
+    const actions = ordered.filter((c) => c.chip.kind === 'action').length;
+    const at = mysteryLayout(this.view, !!this.plan.best, actions, ordered.length - actions);
+    ordered.forEach((c, i) => {
+      c.position.set(at.chips[i].x, at.chips[i].y);
+      c.draw();
+    });
   }
 
   private glowBest() {
@@ -1562,8 +1565,8 @@ export const photoSafari: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [12, 13],
-  // Mystery Friend lays out upright: on a phone held upright its question tray takes two rows.
-  uprightLevels: [14, 15],
+  // Every level lays out upright: the tell and mystery trays stack their cards (layout.ts, upright.test.ts).
+  upright: true,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint:
