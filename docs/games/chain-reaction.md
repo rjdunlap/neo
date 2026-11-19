@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/chain-reaction; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `chain-reaction` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `chain-reaction` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** prediction, cause-and-effect, planning, revision
 
