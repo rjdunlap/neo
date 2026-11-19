@@ -25,7 +25,12 @@ import {
   planFor,
   PLANS,
   planksAt,
+  PHONE_CAP,
+  SEA_EDGE,
+  THUMB_CELL,
+  inWindow,
   roomOf,
+  slideToShow,
   solve,
   hintWalk,
   touchLayout,
@@ -739,7 +744,7 @@ describe('the school opening', () => {
     expect(touchLayout(5, 1024, 768, true)).toMatchObject({ cell: 100, x: 201, y: 134, beside: true });
   });
 
-  it('keeps the grown-up seas as they were, cells of 64 to 80, with buttons 88 high beside the sea or under it', () => {
+  it('keeps the grown-up seas as they were on the iPad and sideways, cells of 64 to 80, with buttons 88 high beside the sea or under it', () => {
     expect(touchLayout(7, 1024, 768, false)).toMatchObject({ cell: 80, x: 171, y: 104, beside: true });
     expect(touchLayout(9, 1024, 768, false)).toMatchObject({ cell: 79, beside: true });
     expect(touchLayout(11, 1024, 768, false)).toMatchObject({ cell: 64, beside: true });
@@ -748,6 +753,7 @@ describe('the school opening', () => {
         const fit = touchLayout(size, w, h, false);
         expect(fit.cell).toBeGreaterThanOrEqual(64);
         expect(fit.cell).toBeLessThanOrEqual(80);
+        expect(fit.window, `${size} at ${w}x${h}`).toBeNull();
         for (const s of fit.slots) expect(s.h).toBe(88);
       }
   });
@@ -770,7 +776,7 @@ describe('the school opening', () => {
 });
 
 describe('Island Bridges on a phone held upright (chunk 31)', () => {
-  it('fits every sea and its three buttons in each upright view: cells and buttons 100 at school, 64 for grown-ups', () => {
+  it('fits every sea, or the window of one that slides, and its three buttons in each upright view: cells and buttons 100 at school, a thumb for grown-ups', () => {
     for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) {
       for (const [school, sizes] of [
         [true, [5, 7]],
@@ -778,16 +784,92 @@ describe('Island Bridges on a phone held upright (chunk 31)', () => {
       ] as const)
         for (const size of sizes) {
           const fit = touchLayout(size, v.w, v.h, school),
-            min = school ? 100 : 64,
+            min = school ? 100 : THUMB_CELL,
             sea = size * fit.cell,
+            win = fit.window,
             where = `${name} ${size}${school ? ' school' : ''}`;
           expect(fit.cell, where).toBeGreaterThanOrEqual(min);
+          const box = win ?? { x: fit.x, y: fit.y, w: sea, h: sea };
           const targets = [
-            { what: 'sea', x: fit.x + sea / 2, y: fit.y + sea / 2, w: sea, h: sea },
+            { what: 'sea', x: box.x + box.w / 2, y: box.y + box.h / 2, w: box.w, h: box.h },
             ...fit.slots.map((s) => ({ what: s.kind, x: s.x + s.w / 2, y: s.y + s.h / 2, w: s.w, h: s.h })),
           ];
           expect(uprightProblems(v, targets, min), where).toEqual([]);
+          // The plank count's line is inside the view, under the buttons.
+          expect(fit.tally.y + 12, where).toBeLessThanOrEqual(v.h);
+          expect(fit.tally.y - 12, where).toBeGreaterThanOrEqual(fit.slots[0].y + fit.slots[0].h);
         }
     }
+  });
+
+  it("slides a grown-up's 9 × 9 and 11 × 11 seas at 86-unit squares, and grows the 5 × 5 and 7 × 7 seas to 88", () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) {
+      for (const size of [5, 7]) {
+        const fit = touchLayout(size, v.w, v.h, false);
+        expect(fit, `${name} ${size}`).toMatchObject({ cell: PHONE_CAP, window: null });
+      }
+      for (const size of [9, 11]) {
+        const fit = touchLayout(size, v.w, v.h, false),
+          win = fit.window!,
+          where = `${name} ${size}`;
+        expect(fit.cell, where).toBe(THUMB_CELL);
+        expect(win, where).not.toBeNull();
+        // The sea starts in the window's corner inside its own border, and the window shows at least six squares each way.
+        expect([fit.x, fit.y], where).toEqual([win.x + SEA_EDGE, win.y + SEA_EDGE]);
+        expect(Math.min(win.w, win.h), where).toBeGreaterThanOrEqual(6 * THUMB_CELL);
+        // What can slide is exactly what the window cannot show: the sea and its border, less the window.
+        const full = size * THUMB_CELL + 2 * SEA_EDGE;
+        expect([win.maxX, win.maxY], where).toEqual([full - win.w, full - win.h]);
+        expect(win.maxX, where).toBeGreaterThan(0);
+        expect(win.maxY, where).toBeGreaterThanOrEqual(0);
+        // The note sits beside the help button, above the window.
+        expect(fit.note.x, where).toBeGreaterThanOrEqual(115);
+        expect(fit.note.y + 12, where).toBeLessThanOrEqual(win.y);
+      }
+    }
+    // The 390 × 844 phone: the 9 × 9 sea slides one square sideways and shows whole top to bottom.
+    const nine = touchLayout(9, UPRIGHT_VIEWS.phone.w, UPRIGHT_VIEWS.phone.h, false).window!;
+    expect(nine).toMatchObject({ w: 720, h: 806, maxX: 86, maxY: 0 });
+    // The view shortened by the caption strip: the 11 × 11 sea slides both ways.
+    const cap = touchLayout(11, UPRIGHT_VIEWS.captioned.w, UPRIGHT_VIEWS.captioned.h, false).window!;
+    expect(cap.maxX).toBe(258);
+    expect(cap.maxY).toBeGreaterThan(0);
+  });
+
+  it('leaves the school seas whole at 100-unit squares: a sliding sea is for grown-ups only', () => {
+    for (const v of Object.values(UPRIGHT_VIEWS))
+      for (const size of [5, 7])
+        expect(touchLayout(size, v.w, v.h, true)).toMatchObject({ cell: 100, window: null });
+  });
+
+  it('brings every stretch of water of a sliding sea into its window, wherever the sea had slid', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
+      for (const level of [2, 3, 4, 6, 7])
+        for (let seed = 1; seed <= 12; seed++) {
+          const [p] = makePuzzles(planFor(level), new Rng(seed)),
+            fit = touchLayout(p.size, v.w, v.h, false),
+            win = fit.window!;
+          p.layout.edges.forEach((_, k) => {
+            const at = waterOf(p.layout, fit.cell, k),
+              to = slideToShow(win, at.x, at.y),
+              where = `${name} level ${level} seed ${seed} edge ${k}`;
+            expect(to.x, where).toBeGreaterThanOrEqual(0);
+            expect(to.x, where).toBeLessThanOrEqual(win.maxX);
+            expect(to.y, where).toBeGreaterThanOrEqual(0);
+            expect(to.y, where).toBeLessThanOrEqual(win.maxY);
+            // Once shown it is at least half a square inside the window, so the whole square under a thumb is in view.
+            expect(inWindow(win, to, at.x, at.y, fit.cell / 2), where).toBe(true);
+          });
+        }
+  });
+
+  it('knows water that is out of the window from water that is in it', () => {
+    const win = touchLayout(11, UPRIGHT_VIEWS.phone.w, UPRIGHT_VIEWS.phone.h, false).window!;
+    // The far right column of an 11 × 11 sea starts out of view, and is in view once the sea has slid all the way.
+    const x = 10.5 * THUMB_CELL,
+      y = 2.5 * THUMB_CELL;
+    expect(inWindow(win, { x: 0, y: 0 }, x, y, THUMB_CELL / 2)).toBe(false);
+    expect(inWindow(win, { x: win.maxX, y: 0 }, x, y, THUMB_CELL / 2)).toBe(true);
+    expect(inWindow(win, { x: win.maxX, y: 0 }, THUMB_CELL / 2, y, THUMB_CELL / 2)).toBe(false);
   });
 });
