@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sense-detective; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sense-detective` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sense-detective` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** observation, evidence, senses, comparing
 
@@ -32,3 +32,5 @@
 Check compares the selected toy with the toys the revealed clues still allow. If only that toy fits, the paper unfolds, the toy hops onto the shelf and the round finishes. If the clues rule it out, that is a gentle miss and the pet says why ("The peephole shows a handle. The bell has no handle."). If it fits but another toy fits too (or nothing has been revealed), it is "not yet": free, the pet asks for another clue and bobs the unused button, and a lucky guess never finishes a round. Free: Look, Listen and replays, selecting or changing a toy, Check with nothing selected, a not-yet Check. Pressing Check again with nothing changed repeats the reason and counts nothing more. Two misses glow the one possible toy (one hint, once per round); Show a hint runs the deciding clue first if it has not been made, then glows it, still at most once. A zero-miss round shows she observed before choosing, not that she chose the right sense unprompted. Every sound has an equal picture, so hearing is never required. Start again rebuilds the same round and keeps misses and hints. Nothing is saved, filed in the journal or shown as real, and there is no couch play. The game silences the island music (`silenced(STYLES.quiet)`) because its sounds are the clues. The ghost-finger bot looks before it checks (level 2: look, listen, compare, pick, Check). Co-play: one chooses what to find out, the other says what the clue shows. Off-screen: with a grown-up, put a toy in a bag, feel and shake it, and say what you know and what you can't tell yet.
 
 **The detective's line never holds the cards (U7 fix batch 25, 2026-11-12).** Level 5's `sense.cant-tell-right` starts and the sense cards open at once, `sense.what-would` waiting for the line, the guide or her first tap (a first card says the question in place of its name; the tick says it and is not judged). Level 4's `sense.so-far` starts as the listen button grows and the cards and ear open at once, the narrowing instruction waiting the same way; Listen drops it, toggling a toy leaves it waiting, the tick says it (not judged). Show a hint says the waiting instruction first, then the glow; restart drops it. The ghost finger waits for it.
+
+On upright phones all five levels keep the Look button below Help, with room for the clue replay cards and the green Check button. The eye and ear choices share the shelf when a second sense is needed.

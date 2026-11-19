@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { computeView } from '../../engine/view';
 import {
   check,
   checkSense,
@@ -8,7 +7,6 @@ import {
   checkTell,
   deciding,
   distinguishing,
-  exhibitLayout,
   HEARD,
   hintEdit,
   ITS,
@@ -28,7 +26,6 @@ import {
   tellTouch,
   type Channel,
   type Observation,
-  type Rect,
   type Round,
   type TellAnswer,
   type ToyId,
@@ -175,62 +172,6 @@ describe('Sense Detective: checking', () => {
       }
     }
   });
-});
-
-describe('Sense Detective: layout', () => {
-  const views = {
-    landscape: computeView(1024, 768),
-    portrait: computeView(768, 1024),
-    wide: computeView(1366, 1024),
-    tall: computeView(820, 1180),
-  };
-  const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  for (const [name, view] of Object.entries(views)) {
-    for (const cards of [2, 3])
-      for (const channels of [1, 2])
-        for (const tell of cards === 3 && channels === 1 ? [false, true] : [false]) {
-          it(`fits ${cards} cards and ${channels} channel(s)${tell ? " with the can't-tell card and two clues" : ''} in ${name}`, () => {
-            const l = exhibitLayout(view, cards, channels, tell, tell ? 2 : channels);
-            expect(l.cantTell !== null).toBe(tell);
-            if (tell) expect(l.strip.length).toBe(2);
-            const all: Rect[] = [
-              l.parcel,
-              l.look,
-              ...(l.listen ? [l.listen] : []),
-              ...l.strip,
-              ...l.shelf,
-              l.check,
-              ...(l.cantTell ? [l.cantTell] : []),
-            ];
-            all.forEach((r) => {
-              expect(r.x).toBeGreaterThanOrEqual(0);
-              expect(r.y).toBeGreaterThanOrEqual(0);
-              expect(r.x + r.w).toBeLessThanOrEqual(view.w);
-              expect(r.y + r.h).toBeLessThanOrEqual(view.h);
-            });
-            for (const r of [
-              l.look,
-              ...(l.listen ? [l.listen] : []),
-              ...l.strip,
-              ...l.shelf,
-              l.check,
-              ...(l.cantTell ? [l.cantTell] : []),
-            ]) {
-              expect(r.w).toBeGreaterThanOrEqual(100);
-              expect(r.h).toBeGreaterThanOrEqual(100);
-            }
-            for (let i = 0; i < all.length; i++)
-              for (let j = i + 1; j < all.length; j++) expect(hit(all[i], all[j]), `${i} ${j}`).toBe(false);
-            // The pet's corner (bottom-left) and the home button (top-left) stay clear.
-            const pet: Rect = { x: 0, y: view.h - 170, w: 160, h: 170 };
-            const home: Rect = { x: 0, y: 0, w: 110, h: 110 };
-            for (const r of all) {
-              expect(hit(r, pet)).toBe(false);
-              expect(hit(r, home)).toBe(false);
-            }
-          });
-        }
-  }
 });
 
 const permutations = <T>(xs: readonly T[]): T[][] =>
