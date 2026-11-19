@@ -584,8 +584,15 @@ export interface LiftLayout {
 
 export function liftLayout(v: View, movableKnot = false): LiftLayout {
   const groundY = v.h - 128;
-  const rung = Math.min(170, (groundY - (BRANCH_Y + 150 + CRATE_H)) / 3);
-  const cx = Math.max(290, Math.round(v.w * (movableKnot ? 0.46 : 0.4)));
+  // Held upright the view is far taller than wide, so the rungs stretch (up to 330) to use it rather than leave the crate's
+  // travel in the bottom third; the knot-moving level sits 53 left so its waiting friend stays inside the 768-wide view.
+  // Its top rung's handle (170 above the ledge) stays under the top-right button, so the stretch stops short of it.
+  const rung = Math.min(
+    v.upright ? 330 : 170,
+    (groundY - (BRANCH_Y + 150 + CRATE_H)) / 3,
+    v.upright ? (groundY - 365) / 3 : Infinity,
+  );
+  const cx = v.upright && movableKnot ? 300 : Math.max(290, Math.round(v.w * (movableKnot ? 0.46 : 0.4)));
   return {
     movableKnot,
     groundY,
@@ -599,7 +606,11 @@ export function liftLayout(v: View, movableKnot = false): LiftLayout {
       { x: v.w - 200, y: v.h - 64 },
       { x: v.w - 70, y: v.h - 64 },
     ],
-    ground: [0, 1, 2].map((i) => ({ x: cx + (movableKnot ? -225 : 230) + i * 80, y: groundY })),
+    // The knot-moving level's ground friends stand left of the crate sideways, where the guide would cover them upright.
+    ground: [0, 1, 2].map((i) => ({
+      x: cx + (movableKnot ? (v.upright ? 170 : -225) : 230) + i * 80,
+      y: groundY,
+    })),
   };
 }
 
@@ -668,9 +679,10 @@ export function cardSpots(v: View, n: number): Pt[] {
 export const REPLAY_HIT = 60;
 export const replaySpot = (v: View): Pt => ({ x: 75, y: Math.min(440, v.h - 205 - REPLAY_HIT - 20) });
 /** The knot counter's box, centred where the game draws it. */
-export const counterBox = (L: LiftLayout): Rect => ({
+export const counterBox = (L: LiftLayout, upright = false): Rect => ({
   x: Math.max(150, L.cx - 220) - 70,
-  y: BRANCH_Y + 150,
+  // Upright, below the Home and help column (it reaches 210).
+  y: BRANCH_Y + (upright ? 190 : 150),
   w: 140,
   h: 100,
 });

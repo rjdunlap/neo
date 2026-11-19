@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/lift-it; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `lift-it` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `lift-it` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, simple-machines, force-and-distance, prediction, numbers
 
@@ -43,3 +43,5 @@ From level 3, the round arrow replays the previous delivery with its own wheels 
 **A guess card never holds the pull (U7 fix batch 15, 2026-11-12).** At level 4 a card's `lift-it.guess-heard` starts with the cards cleared and the handle free; `now-pull` is said when the echo ends or by the guide, and dropped once she has grabbed the handle.
 
 **What the guide repeats.** Who wants to pull (levels 5, 6 and 8) is an instruction (`ctx.instruct`) that follows the level's instruction on the first parcel, rather than cutting it off; the card questions at level 4, the guess's echo ("{n} knots? Pull and count!") and "now pull" after an answered card are instructions too. At levels 4 and 9 each parcel after the first says the level's instruction again. The waiting "now pull" behind the echo and on Show a hint, the reasons, counts and replay narration stay `say`.
+
+**Upright on a phone (2026-11-19).** `liftLayout` in `logic.ts` stretches the rungs up a tall phone (cap 330 units, stopping so the top rung's ledge handle clears the top-right button); the knot-moving level 9 sits at x 300 upright with its ground friends right of the crate (left they were under the guide and the waiting friend was drawn past the 768 edge); the knot counter sits below the Home and help column; the autotouch bot's downward stroke stops short of the view bottom. `upright.test.ts` covers every level and six upright views (targets, friends, counter, cards). Sideways is unchanged.
