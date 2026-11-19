@@ -20,8 +20,12 @@ export const HOW_TO: GameHowTo = {
       to: 4,
       text: "Read the keeper's note, then tap the plan that fits this year and the card that says why. The plan's pairs go into the nests by themselves.",
     },
-    'Press Spring when every nest is full.',
-    { from: 3, to: 4, text: 'Then pick the place that has every need on the card.' },
+    { from: 2, text: 'Swipe the tree sideways on an upright phone.' },
+    { to: 2, text: 'Press Spring when every nest is full.' },
+    {
+      from: 3,
+      text: 'Press Spring when the nests are full, then pick the place with every need on the card.',
+    },
   ],
   finish: [
     { from: 1, to: 2, text: 'Hatchlings appear under every nest.' },

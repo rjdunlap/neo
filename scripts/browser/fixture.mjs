@@ -10,7 +10,8 @@ export async function createFixture(browser, suite) {
   const context = await createTestContext(browser, {
     viewport: { width: 1024, height: 768 },
     reducedMotion: 'reduce',
-    ...(suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1'
+    ...((suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
+    (suite === 'comeback' && process.env.COMEBACK_PHONE === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });
