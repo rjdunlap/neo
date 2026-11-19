@@ -613,6 +613,7 @@ describe('game registry', () => {
       'rhyme-time',
       'rhythm-neighbors',
       'ribbon-workshop',
+      'scoop-shop',
       'sense-detective',
       'shell-rows',
       'sing-along-barn',
