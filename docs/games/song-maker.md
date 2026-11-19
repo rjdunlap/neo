@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/song-maker; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `song-maker` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `song-maker` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** music, patterns, listening
 

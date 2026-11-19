@@ -215,27 +215,92 @@ export function wakeTouch(
   return unlit ? { note: unlit.note, act: 'light' } : { note: near.note, act: 'sing' };
 }
 
-/** Where the grid sits in a view: its cell size and top-left corner. */
+/** One block of the grid: beats `from`..`from + cols - 1` drawn at `cell` from (x0, y0). A block that is not `tappable` is a shown, given bar. */
+export interface SongBar {
+  from: number;
+  cols: number;
+  x0: number;
+  y0: number;
+  cell: number;
+  tappable: boolean;
+}
+
+/** Where the grid sits in a view: the main (played) block's cell size and top-left corner, every block, and the card and replay button spots. */
 export interface SongLayout {
   cell: number;
   x0: number;
   y0: number;
+  bars: SongBar[];
+  card: { x: number; y: number };
+  replay: { x: number; y: number };
 }
 
+/** The block a beat's column sits in. */
+export const barOf = (lay: SongLayout, col: number): SongBar =>
+  lay.bars.find((b) => col >= b.from && col < b.from + b.cols) ?? lay.bars[0];
+
+/** The upright pattern level's first bar (the four given beats) is drawn small above the board she plays: cell size. */
+export const GIVEN_CELL = 50;
+
 /**
- * The grid's place: clear of the pet on the left (and of the card at the card level), the replay button on the right at
- * the listening level, and the top corner buttons. Cells grow to at most 150; every cell is a whole touch target.
+ * The grid's place. Sideways: clear of the pet on the left (and of the card at the card level), the replay button on the
+ * right at the listening level, and the top corner buttons; cells grow to at most 150. Upright (chunk 31): the board takes
+ * the width under the card or replay button, cells up to 180, clear of Home above and the guide's corner below; the
+ * 8-beat pattern level cannot fit 8 columns of 100 on 768, so its first bar (given, never tapped) sits small above the four
+ * beats she fills in. Every tappable cell is a whole touch target.
  */
-export function songLayout(plan: SongPlan, v: { w: number; h: number }): SongLayout {
+export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: boolean }): SongLayout {
+  if (v.upright) {
+    const card = { x: v.w / 2, y: 130 };
+    const replay = { x: v.w - 80, y: 130 };
+    if (plan.mode === 'pattern') {
+      const half = plan.cols / 2;
+      const top = 40 + GIVEN_CELL * plan.rows + 40;
+      const cell = Math.min(180, (v.w - 48) / half, (v.h - 170 - 14 - top) / plan.rows);
+      const x0 = (v.w - cell * half) / 2;
+      const gx = (v.w - GIVEN_CELL * half) / 2;
+      return {
+        cell,
+        x0,
+        y0: top,
+        bars: [
+          { from: 0, cols: half, x0: gx, y0: 40, cell: GIVEN_CELL, tappable: false },
+          { from: half, cols: half, x0, y0: top, cell, tappable: true },
+        ],
+        card,
+        replay,
+      };
+    }
+    const left = 24;
+    const right = v.w - 24;
+    const top = 240;
+    const bottom = v.h - 170 - 14;
+    const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 180);
+    const x0 = left + (right - left - cell * plan.cols) / 2;
+    const y0 = top + (bottom - top - cell * plan.rows) / 2;
+    return {
+      cell,
+      x0,
+      y0,
+      bars: [{ from: 0, cols: plan.cols, x0, y0, cell, tappable: true }],
+      card,
+      replay,
+    };
+  }
   const left = plan.mode === 'card' ? v.w * 0.36 : 175;
   const right = v.w - (plan.mode === 'listen' ? 130 : 40);
   const top = 130;
   const bottom = v.h - 40;
   const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
+  const x0 = left + (right - left - cell * plan.cols) / 2;
+  const y0 = top + (bottom - top - cell * plan.rows) / 2;
   return {
     cell,
-    x0: left + (right - left - cell * plan.cols) / 2,
-    y0: top + (bottom - top - cell * plan.rows) / 2,
+    x0,
+    y0,
+    bars: [{ from: 0, cols: plan.cols, x0, y0, cell, tappable: true }],
+    card: { x: v.w * 0.18, y: v.h * 0.4 },
+    replay: { x: v.w - 70, y: v.h / 2 },
   };
 }
 

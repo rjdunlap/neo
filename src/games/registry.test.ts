@@ -642,6 +642,7 @@ describe('game registry', () => {
       'sing-along-barn',
       'size-parade',
       'snowball-merge',
+      'song-maker',
       'sorting-machine',
       'species-comeback',
       'spinner-fair',
