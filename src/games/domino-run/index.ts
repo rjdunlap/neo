@@ -1095,4 +1095,5 @@ export const dominoRun: GameModule = {
   touchDemo: true,
   sticker,
   create: (ctx) => new DominoRun(ctx),
+  upright: true,
 };
