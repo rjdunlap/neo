@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/fruit-slice; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `fruit-slice` · **Land:** Bubble Beach · **Ages:** toddler–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `fruit-slice` · **Land:** Bubble Beach · **Ages:** toddler–school · **Challenge:** hands · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** fine-motor, sorting, counting, spatial-reasoning
 
@@ -40,3 +40,5 @@
 Content: nine fruit (apple, orange, lemon, pear, blueberries, grapes, strawberry, banana, plum) and four not-fruit (balloon, flower, beach ball, shell); each round has a seeded morning, picnic or sunset look (decoration only).
 
 **A right line never holds the next board at level 7 (U7 fix batch 4, 2026-11-11).** `slice.line-yes` starts and, after 0.7 s for the halves to reach the bowl, the next board arrives and can be cut while the line plays. The board's instruction follows the line, or is registered at once if she draws a line or a hint glows first. On the last board the line is heard out. Level 9's `slice.cover-yes` is unchanged.
+
+*Held upright on a phone.* `boardScale(view)` in `logic.ts` is `min(1, (width − 40) / 820)`: 1 sideways and on an upright tablet, about 0.888 on the 768-wide upright area. Board positions and the line cut's hit radius (`HIT_R`) are scaled together so counts are unchanged and no hit circle leaves the screen; the art is not scaled. `columnsFor(aloft, width)` spreads two hanging fruit to 0.3/0.7 and three to 0.2/0.5/0.8 upright so neighbours drifting together keep their circles apart (sideways unchanged), and `makeToss` takes the view width. `upright.test.ts` covers levels 1–11 on the phone, small, tall, captioned and short views: worst-case drift, the sign, the bowl and level 10's tokens, and the still boards of levels 7–9 inside the view.
