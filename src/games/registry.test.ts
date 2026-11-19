@@ -599,6 +599,7 @@ describe('game registry', () => {
       'puddle-lens',
       'puzzle-pals',
       'pyramid-solitaire',
+      'ramp-race',
       'rhyme-time',
       'ribbon-workshop',
       'shell-rows',

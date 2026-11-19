@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/ramp-race; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ramp-race` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ramp-race` · **Land:** Tinker Lab · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** science, fair-tests, predicting, measuring
 
@@ -37,3 +37,5 @@
 
 
 **A right answer's line never holds the next question (U7 fix batch 23, 2026-11-12).** Levels 2-3 `ramp.yay` starts and the next star opens at once; level 4 `fairyay` and levels 5-7's `shelf.yay`, `fairyay`, `tell.floor` and `tell.height` play over the next pair or case. Its instruction waits for the line, the guide or her first touch: Go says it instead of rolling (no miss), a ramp change, paw guess or card replay says it and still takes effect, a claim tile is chosen with the question said in place of its name. The last line is heard out. `tell.both` and `guess.*` stay held.
+
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–7. The lanes, ramp and floor touch pads, go and sign are placed by pure functions in `layout.ts` (`lanesOf`, `laneOf`, `rampPad`, `floorPad`, `goSpot`, `signSpot`, with `shelfLayout` and `tellLayout` moved there from `logic.ts`), and `upright.test.ts` checks every level, every moment of a round (rolling; level 5 rolling and guessing for each first ramp height; level 6 fixing and reading; level 7 claim and repair) on three upright phone views, a captioned one and a short 375 × 601 one. On the 768-wide area a ramp starts 40 units in (150 sideways) and its floor runs to 30 short of the right edge (150 sideways), because go sits below every floor there; a floor mark is about 50 units (it would have been 28; sideways 52) and level 5's "before the flag" guess zone is at least 100 wide. The two record cards (levels 5–7), level 4 and 6's fair-test sign and level 7's three claim tiles hang just above the top lane rather than at the top of a tall screen. Sideways positions are unchanged. Both orientations: the floor's touch pad is 100 units tall (it was 70) and starts 10 units past the ramp's foot, so it no longer lies under the ramp's pad.

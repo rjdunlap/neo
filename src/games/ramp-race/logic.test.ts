@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { shelfLayout, tellLayout, TILE_H, TILE_W } from './layout';
 import {
   changed,
   CLAIMS,
@@ -9,10 +10,7 @@ import {
   CONTROLLED,
   makeTell,
   tellConclusion,
-  tellLayout,
   tellRepair,
-  TILE_H,
-  TILE_W,
   type Claim,
   type TellCase,
   classifyFair,
@@ -34,7 +32,6 @@ import {
   PLANS,
   rampTouch,
   recordOf,
-  shelfLayout,
   sideOf,
   tally,
   waysTo,

@@ -285,55 +285,6 @@ export function makeTell(rng: Rng): [TellCase, TellCase] {
   return (rng.next() < 0.5 ? pair : pair.reverse()) as [TellCase, TellCase];
 }
 
-export interface Box {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-/** The ramp's left edge and width, and how tall one height step stands, shared with the drawing in index.ts. */
-export const RAMP_X0 = 150;
-export const RAMP_W = 170;
-export const HEIGHT_PX = 46;
-export const CARD_W = 460;
-export const CARD_H = 104;
-
-/** One lane's floor: where it starts, how many units a mark is, and its height on screen (the single-lane levels). */
-export function laneOf(view: { w: number; h: number }): { rampEnd: number; unit: number; floorY: number } {
-  const rampEnd = RAMP_X0 + RAMP_W;
-  return { rampEnd, unit: (view.w - 150 - rampEnd) / (MAX_DISTANCE + 0.6), floorY: view.h * 0.66 };
-}
-
-/**
- * The Trial Shelf's pieces: two stacked record cards right-aligned at the top, the decorative ask badge left of them,
- * and the guess zone on the floor split at the first card's flag (`flag` in marks). Pure, so a rule test checks it.
- */
-export function shelfLayout(
-  view: { w: number; h: number },
-  flag: number,
-): { cards: [Box, Box]; badge: Box; guess: { before: Box; past: Box } } {
-  const x = view.w - 40 - CARD_W;
-  const cards: [Box, Box] = [
-    { x, y: 36, w: CARD_W, h: CARD_H },
-    { x, y: 36 + CARD_H + 12, w: CARD_W, h: CARD_H },
-  ];
-  const lane = laneOf(view);
-  const split = lane.rampEnd + flag * lane.unit;
-  const top = lane.floorY - 110;
-  const h = 170;
-  // Start just past the ramp's touch pad (it reaches 10 units beyond the ramp's foot), so a guess never cycles the ramp.
-  const left = lane.rampEnd + 12;
-  return {
-    cards,
-    badge: { x: view.w - 630, y: 96, w: 100, h: 100 },
-    guess: {
-      before: { x: left, y: top, w: split - left, h },
-      past: { x: split, y: top, w: view.w - 150 - split, h },
-    },
-  };
-}
-
 /** One touch of the ghost finger: change a lane's ramp or its floor (each tap moves to the next), press go, guess a side of the flag, tap a card, or pick a claim tile. */
 export type RampTouch =
   | { lane: number; change: 'ramp' | 'floor' }
@@ -360,19 +311,7 @@ export function tellRepair(a: Setup, b: Setup): 'ramp' | 'floor' | null {
   return ramp < floor ? 'ramp' : 'floor';
 }
 
-/**
- * What can we tell?'s pieces: the shelf's two cards (as on the Trial Shelf) and three claim tiles, 200 by 150 with a
- * 30-unit gap, centered, their tops at 300. Pure, so a rule test checks the arithmetic.
- */
-export const TILE_W = 200;
-export const TILE_H = 150;
 export const CLAIMS: Claim[] = ['floor', 'height', 'both'];
-
-export function tellLayout(view: { w: number; h: number }): { cards: [Box, Box]; tiles: [Box, Box, Box] } {
-  const left = view.w / 2 - (3 * TILE_W + 2 * 30) / 2;
-  const tile = (k: number): Box => ({ x: left + k * (TILE_W + 30), y: 300, w: TILE_W, h: TILE_H });
-  return { cards: shelfLayout(view, 0).cards, tiles: [tile(0), tile(1), tile(2)] };
-}
 
 /**
  * What a capable child touches next: on the explore level a new ramp height before every roll; on the star levels the
