@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/rainbow-fingers; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `rainbow-fingers` · **Land:** Painted Canyon · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `rainbow-fingers` · **Land:** Painted Canyon · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** fine-motor, creativity
 
@@ -54,3 +54,5 @@ Finger painting that grows into coloring and mixing: rainbow or color-pot painti
 **Mix it from memory (level 11).** Three pages of three different recipes drawn from orange, green, purple, pink and brown (`MEMORY_POOL`; the puddle, cupcake, tulip and grapes are left out as told-only or ambiguous), at least one pink or brown so it is never level 7 made longer. The ask names neither the color nor the recipe ("Paint the frog! What color is it?"). The bowl takes three pours and the white pot is present. The first miss names the color only ("The frog is green!"); the second tells the recipe and glows the pots (a hint) (`tellsRecipe`). Voice lines `paint.memory`, `paint.memory.mix` and `paint.memory.is`; a level-11 how-to line. Known: the first-miss wording was checked by tests, not heard on speech.
 
 **Match the sample (level 12).** Tap either marked pot to add a drop and watch the bowl's color change. The paint card shows a shade made from two primaries. Two drops of one and one of the other can match, and so can other close proportions. The check mark compares the bowl with the card, and a nearby shade counts. A far check suggests more of one paint or a fresh bowl. After two far checks the helpful control glows. Tapping a pot when the bowl already holds six drops makes it wobble and lights Start again. Each card with a glow counts as one hint. Checking a blend never counts as a miss. Three matches finish a round. This level plays upright on a phone.
+
+**Upright on a phone.** The game is flagged `upright: true` at every level. Its layout was already pure (`potLayout`, `wheelLayout`, `foldButtonPlace` in `logic.ts`; the level-12 card centred in `match.ts`), so the scene did not change; `upright.test.ts` checks levels 1–11 over the upright views and 768 × 1024 (pots at 104 across, bowl, hang-it-up and fold buttons, wheel above the pots, fold button clear of the pots) and the level-12 card clear of Home and the guide. The pictures float mid-screen on a tall phone by design. A sweep "needs a layout" on levels 2–11 was only the 60-wide pot art inside a 104-unit tap area.
