@@ -840,6 +840,7 @@ export const welcomeWays: GameModule = {
     ][planFor(level).level - 1],
   music: STYLES.quiet,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Voice a visitor’s pictured need while {name} builds, then swap.',
   offScreen:
     'For preschool and older: with large toy blocks, make an entrance for two toys that move differently. Let each toy try it.',
