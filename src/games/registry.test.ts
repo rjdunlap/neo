@@ -610,6 +610,7 @@ describe('game registry', () => {
       'measuring-post',
       'memory-desk',
       'memory-match',
+      'monster-munch',
       'mossy-path',
       'movie-night',
       'not-always',

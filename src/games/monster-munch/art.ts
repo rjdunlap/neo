@@ -3,6 +3,7 @@ import { cream, ink, swatch, wood, type ColorName, type Swatch } from '../../art
 import { prop } from '../../art/props';
 import { bodyPath, puffs } from '../../art/shapes';
 import { Rng } from '../../engine/random';
+import { MONSTER_H, MONSTER_W } from './layout';
 import { FOODS, type Food } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -40,9 +41,6 @@ export const FOOD_TINT: Record<Food, number> = {
 };
 /** The mouth's middle, in the monster's own coordinates (feet on 0, 0). */
 export const MOUTH_Y = -170;
-/** Roughly how wide and tall a monster is at scale 1. */
-export const MONSTER_W = 300;
-export const MONSTER_H = 320;
 
 /** One food, about 90 units across, centered on (0, 0). Each has its own shape and colour so two kinds never look alike. */
 export function foodArt(food: Food): Container {

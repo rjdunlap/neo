@@ -7,7 +7,7 @@ import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
@@ -24,6 +24,7 @@ import {
   MUNCH_PLACES,
   type MunchPlace,
 } from './art';
+import { munchLayout } from './layout';
 import {
   LEVELS,
   canCallFriend,
@@ -754,35 +755,27 @@ class MonsterMunch implements Game {
 
   resize(v: View) {
     this.view = v;
-    const rows = this.snacks.length > 7 ? 2 : 1;
-    const trayTop = v.h - (rows === 2 ? 235 : 165);
+    const lay = munchLayout(v, {
+      mode: this.plan.mode,
+      monsters: this.monsters.length,
+      snacks: this.snacks.length,
+      pads: this.pads.length,
+      lapFeed: this.lapFeed,
+    });
     drawPlace(this.background, this.place, v.w, v.h);
     this.tray
       .clear()
-      .roundRect(160, trayTop, v.w - 190, v.h - trayTop - 15, 32)
+      .roundRect(lay.tray.x, lay.tray.y, lay.tray.w, lay.tray.h, 32)
       .fill({ color: wood.light, alpha: 0.85 })
       .stroke({ width: 5, color: wood.fill });
 
-    const n = this.monsters.length;
-    const friends = this.plan.mode === 'friends';
-    const scale = friends ? 0.52 : n === 1 ? 0.95 : n === 2 ? 0.75 : 0.66;
-    const xs = friends
-      ? spread(4, 245, v.w - 30, 200)
-      : n === 1
-        ? [v.w * 0.62]
-        : spread(n, 230, v.w - 50, n === 2 ? 340 : 290);
     this.monsters.forEach((m, i) => {
-      m.scale.set(scale);
-      m.position.set(xs[i], trayTop - 25);
+      m.scale.set(lay.scale);
+      m.position.set(lay.monsterX[i], lay.baseline);
     });
 
-    const perRow = Math.ceil(this.snacks.length / rows);
     this.snacks.forEach((s, i) => {
-      const row = Math.floor(i / perRow);
-      const inRow = Math.min(perRow, this.snacks.length - row * perRow);
-      // Big bites: one cookie at a time, each in the middle of the tray.
-      const x = this.lapFeed ? (160 + v.w - 30) / 2 : spread(inRow, 180, v.w - 50, 125)[i % perRow];
-      const y = rows === 2 ? trayTop + 62 + row * 100 : v.h - 90;
+      const { x, y } = lay.snacks[i];
       if (s.drag) s.drag.home = { x, y };
       if (!s.eatenBy && !s.drag?.dragging) {
         this.ctx.tw.kill(s.node);
@@ -790,11 +783,10 @@ class MonsterMunch implements Game {
       }
     });
 
-    this.sign.position.set(Math.max(230, v.w * 0.26), Math.min(240, trayTop - 220));
-    this.bell.position.set(v.w - 85, 110);
-    this.cave.position.set(155, trayTop - 170);
-    const px = spread(this.pads.length, v.w / 2 - 230, v.w / 2 + 230, 160);
-    this.pads.forEach((p, i) => p.node.position.set(px[i], 170));
+    this.sign.position.set(lay.sign.x, lay.sign.y);
+    this.bell.position.set(lay.bell.x, lay.bell.y);
+    this.cave.position.set(lay.cave.x, lay.cave.y);
+    this.pads.forEach((p, i) => p.node.position.set(lay.pads[i].x, lay.pads[i].y));
     this.drawGlow();
   }
 
@@ -920,4 +912,5 @@ export const monsterMunch: GameModule = {
   touchDemo: true,
   sticker: (seed) => monsterSticker(seed),
   create: (ctx) => new MonsterMunch(ctx),
+  upright: true,
 };
