@@ -363,17 +363,74 @@ export function layoutFor(rng: Rng, plan: DuckPlan, n: number): PondLayout {
   return { kind, slots: rowsSlots(n) };
 }
 
-/** Where the pond's middle and the row of answer pads sit in a view (the pond is an ellipse `POND_RX` by `POND_RY` around it). */
-export const pondCenter = (v: { w: number; h: number }) => ({ x: v.w / 2, y: v.h * 0.5 });
+/** The view a layout reads: its size, and `upright` for a phone held upright (768 wide, at least 1,024 tall). */
+export interface PondView {
+  w: number;
+  h: number;
+  upright?: true;
+}
+
+/**
+ * Where the pond's middle and the row of answer pads sit in a view (the pond is an ellipse `POND_RX` by `POND_RY` around it).
+ * Upright, the pond hangs from the bottom edge (the pads and the bank sit beneath it) rather than from the screen's middle.
+ */
+export const pondCenter = (v: PondView) => ({ x: v.w / 2, y: v.upright ? v.h - UPRIGHT_POND_UP : v.h * 0.5 });
+/** Upright: how far the pond's middle stands above the bottom edge, leaving room beneath for two rows of waiting ducks or the pads. */
+export const UPRIGHT_POND_UP = 450;
 export const POND_RX = 390;
 export const POND_RY = 128;
+/** Upright, the pond is drawn no wider than the view less this on each side. */
+export const UPRIGHT_SIDE = 14;
+/** The pond's drawn half-width: `rx`, or upright no wider than the 768 view. */
+export const pondDrawRx = (v: PondView, rx: number) =>
+  v.upright ? Math.min(rx, v.w / 2 - UPRIGHT_SIDE) : rx;
 export const PAD_ROW_GAP = 190;
 export const padRowY = (v: { h: number }) => v.h - 90;
+/** The pads' tap area is a circle of this radius (the pad itself is `PAD_R`). */
+export const PAD_HIT_R = 74;
+/** The guide's corner takes this much of the bottom-left, so an upright row is centered in what is left of the width. */
+export const GUIDE_CORNER_W = 150;
 /** A pad's middle, counting from the left of a row of `count`. */
-export const padSpot = (v: { w: number; h: number }, i: number, count = 3) => ({
-  x: v.w / 2 + (i - (count - 1) / 2) * PAD_ROW_GAP,
+export const padSpot = (v: PondView, i: number, count = 3) => ({
+  x: (v.upright ? (v.w + GUIDE_CORNER_W) / 2 : v.w / 2) + (i - (count - 1) / 2) * PAD_ROW_GAP,
   y: padRowY(v),
 });
+
+/** A waiting duck's tap area is a circle of this radius, centered `BANK_HIT_UP` above its feet. */
+export const BANK_HIT_R = 72;
+export const BANK_HIT_UP = 46;
+/** Upright: waiting ducks stand four to a row, this far apart across and up (a tap area is 144 wide and tall). */
+export const BANK_ROW_PITCH = 150;
+const BANK_PER_ROW = 4;
+/**
+ * Where waiting duck `i` of `n` stands (its feet). Sideways they stand in one row, 104 apart; upright, four to a row in the
+ * width the guide leaves, the second row above the first, so a tap area never meets its neighbour's.
+ */
+export function bankSpot(v: PondView, i: number, n: number): { x: number; y: number } {
+  if (!v.upright) return { x: v.w / 2 + (i - (n - 1) / 2) * 104, y: v.h - 22 };
+  const row = Math.floor(i / BANK_PER_ROW);
+  const inRow = row === 0 ? Math.min(n, BANK_PER_ROW) : n - BANK_PER_ROW;
+  const col = i - row * BANK_PER_ROW;
+  return {
+    x: (v.w + GUIDE_CORNER_W) / 2 + (col - (inRow - 1) / 2) * BANK_ROW_PITCH,
+    y: v.h - 34 - row * BANK_ROW_PITCH,
+  };
+}
+
+/** A waiting duck's tap area as a box: its middle and size. */
+export const bankBox = (v: PondView, i: number, n: number) => {
+  const at = bankSpot(v, i, n);
+  return { x: at.x, y: at.y - BANK_HIT_UP, w: 2 * BANK_HIT_R, h: 2 * BANK_HIT_R };
+};
+
+/** The number sign's middle: beside the pond's far corner sideways; upright, above the pond's middle, clear of the ducks' heads. */
+export const signSpot = (v: PondView) => {
+  const c = pondCenter(v);
+  return v.upright ? { x: c.x, y: c.y - 340 } : { x: v.w / 2 + 380, y: 150 };
+};
+
+/** The height ducks swim in from beyond the screen's side. */
+export const enterY = (v: PondView) => (v.upright ? pondCenter(v).y + 70 : v.h * 0.62);
 
 /**
  * Seats for ducks that are counted, never tapped (the pads are the targets), so they may be drawn smaller than a tappable
@@ -384,6 +441,8 @@ export interface Seating {
   scale: number;
   /** How wide the pond is drawn for these seats (half its width): `POND_RX`, or `WIDE_POND_RX` for twenty. */
   pondRx: number;
+  /** Half the pond's height (default `POND_RY`): the stacked twenty of an upright view need a taller pond. */
+  pondRy?: number;
 }
 
 /** Twenty seats widen the pond, so the outer ducks sit well inside its rim and the two tens have room apart. */
@@ -394,6 +453,10 @@ export const FRAME_GAP = 80;
 export const FRAME_SCALE = 0.68;
 /** The two rows of the twenty seats, nearer the pond's middle than the rows of five, where the pond is widest. */
 const FRAME_ROWS = [-40, 42] as const;
+/** Upright: the four rows of the stacked twenty (the first ten's two, then the second's), their column gap and the taller pond they need. */
+export const UPRIGHT_FRAME_ROWS = [-96, -26, 52, 122] as const;
+export const UPRIGHT_FRAME_GAP = 84;
+export const UPRIGHT_FRAME_RY = 190;
 /** The gap between the two ten-frames' inner columns, half as wide again as a column, so the tens read apart. */
 export const FRAMES_APART = 128;
 
@@ -403,9 +466,17 @@ export const FRAMES_APART = 128;
  * first (its top row, then its bottom row), then the right frame fills the same way, so the full ten is counted, and seen,
  * before the ones. Not `countingOrder`, which would read across both frames row by row.
  */
-export function frameSeats(n: number): Seating {
+export function frameSeats(n: number, upright = false): Seating {
   const count = Math.max(0, Math.min(20, Math.floor(n)));
   if (count <= 10) return { slots: rowsSlots(count), scale: 1, pondRx: POND_RX };
+  if (upright) {
+    // Held upright the pond is as wide as the view, so the two tens stack, the full ten above, the ones in the frame beneath.
+    const slots = Array.from({ length: count }, (_, i): [number, number] => [
+      ((i % 5) - 2) * UPRIGHT_FRAME_GAP,
+      UPRIGHT_FRAME_ROWS[Math.floor(i / 5)],
+    ]);
+    return { slots, scale: FRAME_SCALE, pondRx: POND_RX, pondRy: UPRIGHT_FRAME_RY };
+  }
   const slots = Array.from({ length: count }, (_, i): [number, number] => {
     const frame = Math.floor(i / 10);
     const inFrame = i % 10;
