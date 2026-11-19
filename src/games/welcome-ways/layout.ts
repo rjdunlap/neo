@@ -7,6 +7,7 @@ export interface Box {
 }
 /** No board scaling: input boxes stay large inside the safe view. Levels 5–7 pass `level` for their own boards. */
 export function layout(view: View, rises: number, choices: number, visitors: number, level = 1) {
+  if (view.upright) return uprightLayout(view, rises, choices, visitors, level);
   const x = (view.w - 1024) / 2;
   const tall = view.h > view.w;
   const box = (cx: number, cy: number, w = 144, h = w): Box => ({ x: x + cx, y: cy, w, h });
@@ -80,5 +81,77 @@ export function layout(view: View, rises: number, choices: number, visitors: num
     doorBase: boardY + 70 - 44 * rises,
     left: x,
     tall,
+  };
+}
+
+/**
+ * Held upright (chunk 31, docs/definitions/phone-portrait.md): the 768-wide area. The board (ramps, door, house) spans
+ * 650 units, so it shifts left to sit inside the view; the friends walk in from its left edge. The visitor cards sit in a
+ * centred row at the top, and the tray and the four buttons stand up from the bottom edge (the buttons start right of
+ * the guide corner). A taller phone moves the board down a little rather than leaving a gap under the cards.
+ */
+function uprightLayout(view: View, rises: number, choices: number, visitors: number, level: number) {
+  const left = view.w / 2 - 667,
+    bottom = view.h,
+    slack = Math.max(0, bottom - 1206),
+    box = (cx: number, cy: number, w = 144, h = w): Box => ({ x: left + cx, y: cy, w, h });
+  const centred = (n: number, i: number, gap: number) => view.w / 2 + (i - (n - 1) / 2) * gap;
+  const small = level >= 5;
+  const size = small ? 120 : 144,
+    gap = small ? 140 : 180;
+  const row = (n: number, y: number) =>
+    Array.from({ length: n }, (_, i): Box => ({ x: centred(n, i, gap), y, w: size, h: size }));
+  const button = (cx: number, w = 120): Box => ({ x: cx, y: bottom - 90, w, h: w });
+  const common = {
+    tray: row(choices, bottom - 250),
+    visitors: row(visitors, 240 + Math.round(slack * 0.15)),
+    undo: button(230),
+    remove: button(370),
+    help: button(510),
+    try: button(650, 144),
+    left,
+    tall: true,
+  };
+  if (level === 5) {
+    const ground = 820 + Math.round(slack * 0.4);
+    return {
+      ...common,
+      sockets: [
+        box(690, ground - 50, 160, 100),
+        box(450, ground - 100, 160),
+        box(690, ground - 150, 160, 100),
+        box(850, ground - 278, 144, 156),
+      ],
+      boardY: ground - 70,
+      ground,
+      doorBase: ground - 200,
+    };
+  }
+  const boardY = 620 + Math.round(slack * 0.4);
+  if (level >= 6) {
+    const ground = boardY + 70;
+    return {
+      ...common,
+      sockets: [
+        box(450, boardY),
+        box(610, boardY),
+        box(790, boardY - 40, 144, 200),
+        box(530, boardY + 130, 320, 100),
+        box(530, boardY - 130, 320, 100),
+      ],
+      boardY,
+      ground,
+      doorBase: ground - 88,
+    };
+  }
+  return {
+    ...common,
+    sockets: [
+      ...(rises === 2 ? [450, 610] : [530]).map((cx) => box(cx, boardY, 160)),
+      box(790, boardY - 40, 144, 200),
+    ],
+    boardY,
+    ground: boardY + 70,
+    doorBase: boardY + 70 - 44 * rises,
   };
 }

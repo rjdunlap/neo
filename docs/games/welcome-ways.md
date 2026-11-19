@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/welcome-ways; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `welcome-ways` · **Land:** Tinker Lab · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `welcome-ways` · **Land:** Tinker Lab · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** engineering design, testing and revision, considering different needs
 
