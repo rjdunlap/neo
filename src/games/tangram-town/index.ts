@@ -7,10 +7,11 @@ import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
+import { townLayout } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -244,17 +245,17 @@ class TangramTown implements Game {
     );
   }
   resize(v: View) {
+    const l = townLayout(v, this.pieces.length);
     this.bg
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.blue.light)
-      .roundRect(175, v.h - 190, v.w - 205, 170, 25)
+      .roundRect(l.panel.x, l.panel.y, l.panel.w, l.panel.h, 25)
       .fill(cream);
-    this.board.position.set(v.w / 2, Math.max(340, v.h * 0.4));
-    this.turn.position.set(v.w - 85, 250);
+    this.board.position.set(l.board.x, l.board.y);
+    this.turn.position.set(l.turn.x, l.turn.y);
     this.turn.visible = this.plan.rotate;
-    this.help.position.set(v.w - 85, 390);
-    const xs = spread(this.pieces.length, 200, v.w - 65, 205);
+    this.help.position.set(l.help.x, l.help.y);
     // A placed piece stays at its chosen target when rotating the device.
     this.pieces.forEach((c, i) => {
       if (c.placed) {
@@ -265,7 +266,7 @@ class TangramTown implements Game {
             Math.abs(c.drag.home.y - this.previousBoard.y - t.y) < 1,
         );
         if (t) c.drag.home = { x: this.board.x + t.x, y: this.board.y + t.y };
-      } else c.drag.home = { x: xs[i], y: v.h - 100 };
+      } else c.drag.home = { ...l.tray[i] };
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);
@@ -421,10 +422,11 @@ class TangramRepair implements Game {
   }
   resize(v: View) {
     this.bg.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
-    this.board.position.set(v.w / 2, Math.max(340, v.h * 0.4));
-    this.turn.position.set(v.w - 85, 250);
-    this.help.position.set(v.w - 85, 390);
-    this.check.position.set(v.w - 85, 530);
+    const l = townLayout(v, this.pieces.length);
+    this.board.position.set(l.board.x, l.board.y);
+    this.turn.position.set(l.turn.x, l.turn.y);
+    this.help.position.set(l.help.x, l.help.y);
+    this.check.position.set(l.check.x, l.check.y);
     this.draw();
   }
   update(dt: number) {
@@ -454,6 +456,7 @@ export const tangramTown: GameModule = {
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Move the big shapes together. Let {name} try turning a roof before helping.',
   offScreen: 'Cut a paper square diagonally. Turn the two triangles into different pictures.',
   hubIcon: () => {
