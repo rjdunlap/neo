@@ -587,6 +587,7 @@ describe('game registry', () => {
       'gem-swap',
       'hat-band',
       'helper-house',
+      'inchworm',
       'island-bridges',
       'jelly-drums',
       'keep-house',
