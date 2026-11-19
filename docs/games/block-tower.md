@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/block-tower; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `block-tower` · **Land:** Tinker Lab · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `block-tower` · **Land:** Tinker Lab · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** stacking, measuring height, comparing, balance
 
