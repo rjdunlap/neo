@@ -615,7 +615,7 @@ export class MovieNight implements Game {
           .lineTo(x + 2, y + 8)
           .stroke({ color: wood.line, width: 4 });
       } else {
-        const x = l.slots[0].x - 150;
+        const x = l.slots[0].x - l.slots[0].w / 2 - 30;
         g.moveTo(b.x, b.y + b.h / 2 + 16)
           .lineTo(x, b.y + b.h / 2 + 16)
           .lineTo(x, next.y)
@@ -704,6 +704,7 @@ export const movieNight: GameModule = {
     ][planIndex(l)],
   music: silenced(STYLES.quiet),
   touchDemo: true,
+  upright: true,
   coplayHint:
     'One person places sounds; the other watches, then swap. A grown-up can look away until the premiere and say what they heard.',
   hubIcon: () => new WigglyIcon(emblem()),

@@ -591,6 +591,7 @@ describe('game registry', () => {
       'measuring-post',
       'memory-desk',
       'memory-match',
+      'movie-night',
       'not-always',
       'notice-board',
       'number-nook',
