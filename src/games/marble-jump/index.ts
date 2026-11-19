@@ -69,7 +69,7 @@ const LOOKS = [
   },
 ] as const;
 type Look = (typeof LOOKS)[number];
-function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 34): Graphics {
+function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 29): Graphics {
   const color = marbles[Math.abs(seed) % 3];
   return new Graphics()
     .circle(0, 0, r)
@@ -79,12 +79,13 @@ function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 34
     .stroke({ color: cream, width: r / 6, cap: 'round' });
 }
 /** The gold marble that must stay: yellow, with a cream glint and a small star so it reads in every tray look. */
-function goldArt(r = 34): Graphics {
+function goldArt(r = 29): Graphics {
   return marbleArt(0, [swatch.yellow, swatch.yellow, swatch.yellow], r)
     .star(0, r * 0.08, 5, r * 0.38, r * 0.17)
     .fill(cream)
     .stroke({ color: swatch.yellow.line, width: 2 });
 }
+const BOARD_MARBLE_RADIUS = 34;
 const FLY = 0.3,
   TILT = 0.26;
 interface Snapshot {
@@ -441,7 +442,10 @@ class MarbleJump implements Game {
       if (!occupied(this.board, i) || this.flight?.j.to === i) return null;
       if (this.selected === i)
         node.addChild(new Graphics().ellipse(4, 12, 30, 14).fill({ color: shadow, alpha: 0.25 }));
-      const art = i === this.gold ? goldArt() : marbleArt(this.colors[i], look.marbles);
+      const art =
+        i === this.gold
+          ? goldArt(BOARD_MARBLE_RADIUS)
+          : marbleArt(this.colors[i], look.marbles, BOARD_MARBLE_RADIUS);
       art.eventMode = 'none';
       node.addChild(art);
       art.scale.set(this.selected === i ? 1.08 : 1);
@@ -455,7 +459,9 @@ class MarbleJump implements Game {
       layer.removeChildren().forEach((c) => c.destroy());
       if (this.flight && color != null)
         layer.addChild(
-          layer === this.flyer && this.flight.j.to === this.gold ? goldArt() : marbleArt(color, look.marbles),
+          layer === this.flyer && this.flight.j.to === this.gold
+            ? goldArt(BOARD_MARBLE_RADIUS)
+            : marbleArt(color, look.marbles, BOARD_MARBLE_RADIUS),
         );
     }
     if (this.flight) this.place(this.flight);
