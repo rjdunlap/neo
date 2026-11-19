@@ -10,7 +10,7 @@ import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
@@ -30,8 +30,6 @@ import {
   hintFor,
   MAT_RX,
   MAT_RY,
-  neitherMat,
-  hoopCenters,
   makeRound,
   nextToSort,
   sortPlaceAt,
@@ -52,7 +50,7 @@ import {
   type SortCritter,
 } from '../../learning/sorting/rules';
 
-const SCALE = 0.32;
+import { CRITTER_HIT, CRITTER_SCALE, PLANT_HIT, sortLayout } from './layout';
 interface Sorter {
   c: SortCritter;
   node: Critter | PlantNode;
@@ -85,6 +83,7 @@ class CritterSort implements Game {
   private readonly bigPlant = new Container();
   private readonly glow = new Graphics();
   private view: View;
+  private layout!: ReturnType<typeof sortLayout>;
   private wrongs = 0;
   private hinting: Sorter | null = null;
   private clock = 0;
@@ -128,21 +127,22 @@ class CritterSort implements Game {
     return this.plan.mode === 'butnot' ? 'butnot' : this.plan.mode === 'not';
   }
 
-  private centers() {
-    return hoopCenters(
-      this.plan.mode,
-      this.plan.mode === 'butnot' ? 1 : (this.round?.rules.length ?? 1),
-      this.view,
-    );
-  }
-
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.round) return;
+    const loose = this.sorters.filter((s) => !s.placed);
+    const outside = this.sorters.filter((s) => s.placed === 'out').length;
+    const layout = (this.layout = sortLayout(
+      v,
+      this.plan.mode,
+      this.plan.mode === 'butnot' ? 1 : this.round.rules.length,
+      loose.length,
+      outside,
+    ));
     const g = this.hoops.clear();
     const colors = [swatch.orange, swatch.teal];
-    this.centers().forEach((c, i) =>
+    this.layout.centers.forEach((c, i) =>
       g
         .circle(c.x, c.y, HOOP_R)
         .fill({ color: colors[i].light, alpha: 0.45 })
@@ -150,7 +150,7 @@ class CritterSort implements Game {
     );
     this.mat.clear();
     if (hasNeitherMat(this.plan.mode)) {
-      const p = neitherMat(this.centers());
+      const p = layout.mat;
       this.mat
         .ellipse(p.x, p.y, MAT_RX, MAT_RY)
         .fill(swatch.green.light)
@@ -164,7 +164,9 @@ class CritterSort implements Game {
       }
     }
     this.signs.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.centers().forEach((c, i) => {
+    // The sign layer survives resize, including when the rule is flipping.
+    this.signs.pivot.x = this.signs.x = this.layout.centers[0].x;
+    layout.signs.forEach((point, i) => {
       const sign = new Container();
       sign.addChild(
         new Graphics()
@@ -204,44 +206,36 @@ class CritterSort implements Game {
             .stroke({ width: 9, color: swatch.red.fill, cap: 'round' }),
         );
       }
-      sign.position.set(c.x + (this.centers().length === 2 ? (i ? 80 : -80) : 0), c.y - HOOP_R - 50);
+      sign.position.copyFrom(point);
       this.signs.addChild(sign);
     });
-    this.bigPlant.position.set(...this.bigPlantSpot());
-    const loose = this.sorters.filter((s) => !s.placed);
-    const xs = spread(loose.length, 190, v.w - 50, 150);
+    this.bigPlant.position.copyFrom(layout.parent);
     loose.forEach((s, i) => {
-      s.home = { x: xs[i], y: v.h - 40 };
+      s.home = layout.loose[i];
       if (s.drag) s.drag.home = s.home;
-      if (!s.drag?.dragging) s.node.position.set(s.home.x, s.home.y);
+      if (!s.drag?.dragging) {
+        this.ctx.tw.kill(s.node);
+        s.node.position.copyFrom(s.home);
+      }
     });
     const placedCounts: Record<Place, number> = { left: 0, right: 0, both: 0, out: 0 };
     for (const s of this.sorters) {
       if (!s.placed) continue;
       const k = placedCounts[s.placed]++;
       if (s.placed === 'out' && !hasNeitherMat(this.plan.mode)) {
-        const xs = spread(this.sorters.filter((x) => x.placed === 'out').length, 190, v.w - 50, 150);
-        s.node.position.set(xs[k], Math.min(v.h * 0.42 + HOOP_R + 120, v.h - 150));
+        s.node.position.copyFrom(layout.outside[k]);
       } else {
         const p = this.counting
-          ? countSpot(this.centers(), s.placed as CountPart, k, this.totals()[s.placed as CountPart])
+          ? countSpot(this.layout.centers, s.placed as CountPart, k, this.totals()[s.placed as CountPart])
           : this.spotFor(s.placed, k);
         s.node.position.set(p.x, p.y);
       }
     }
     if (this.counting) {
-      this.comparisons.forEach((o, i) => o.node.position.set(v.w / 2 + (i - 1) * 190, v.h - 65));
+      this.comparisons.forEach((o, i) => o.node.position.copyFrom(layout.compares[i]));
       this.drawBadges();
     }
-    const os = spread(this.options.length, 220, v.w - 120, 190);
-    this.options.forEach((o, i) => o.node.position.set(os[i], v.h - 90));
-  }
-
-  /** The big plant stands beside the single sign, or above the middle of two overlapping signs, clear of the corners. */
-  private bigPlantSpot(): [number, number] {
-    const [first] = this.centers();
-    if (this.plan.mode === 'venn') return [this.view.w / 2, first.y - 150];
-    return [first.x - 215, first.y - 70];
+    this.options.forEach((o, i) => o.node.position.copyFrom(layout.guesses[i]));
   }
 
   update(dt: number) {
@@ -285,7 +279,10 @@ class CritterSort implements Game {
     );
     if (!next?.who.drag) return null;
     const spot = this.spotFor(next.place, 1);
-    return { drag: { on: next.who.node }, to: { on: this.ctx.stage, x: spot.x, y: spot.y } };
+    return {
+      drag: { on: next.who.node, y: next.who.c.plant ? PLANT_HIT.y : CRITTER_HIT.y / CRITTER_SCALE },
+      to: { on: this.ctx.stage, x: spot.x, y: spot.y },
+    };
   }
 
   destroy() {
@@ -293,7 +290,7 @@ class CritterSort implements Game {
   }
 
   private spotFor(place: Place, k = 0) {
-    return spotFor(this.centers(), this.plan.mode, place, k);
+    return spotFor(this.layout.centers, this.plan.mode, place, k);
   }
 
   private async next() {
@@ -332,11 +329,11 @@ class CritterSort implements Game {
       const node = c.plant
         ? new PlantNode({ ...c.plant, petalColor: PETAL_COLORS[this.round.petalColor!] })
         : new Critter(CRITTERS[c.kind]);
-      if (c.plant) node.hitArea = new Circle(0, -70, 75);
+      if (c.plant) node.hitArea = new Circle(0, PLANT_HIT.y, PLANT_HIT.radius);
       else {
-        node.scale.set(SCALE);
+        node.scale.set(CRITTER_SCALE);
         if (c.hat) (node as Critter).attach(hatArt());
-        node.hitArea = new Circle(0, -120, 170);
+        node.hitArea = new Circle(0, CRITTER_HIT.y / CRITTER_SCALE, CRITTER_HIT.radius / CRITTER_SCALE);
       }
       this.ctx.track(node);
       this.ctx.stage.addChild(node);
@@ -403,7 +400,7 @@ class CritterSort implements Game {
 
   private drop(s: Sorter, x: number, y: number): boolean {
     if (this.busy || this.finished) return false;
-    const at = sortPlaceAt(this.centers(), this.plan.mode, x, y);
+    const at = sortPlaceAt(this.layout.centers, this.plan.mode, x, y);
     // Back on the grass: just put down again, never a mistake.
     if (at === null) return false;
     const right = placeOf(s.c, this.round.rules, this.ruleMode);
@@ -533,8 +530,7 @@ class CritterSort implements Game {
 
   private drawBadges() {
     this.badges.removeChildren().forEach((c) => c.destroy({ children: true }));
-    for (const part of COUNT_PARTS) {
-      const center = part === 'out' ? neitherMat(this.centers()) : this.centers()[part === 'left' ? 0 : 1];
+    for (const [i, part] of COUNT_PARTS.entries()) {
       const n = this.comparisonHint
         ? this.totals()[part]
         : [...this.counted.keys()].filter((s) => s.placed === part).length;
@@ -543,7 +539,7 @@ class CritterSort implements Game {
         new Graphics().circle(0, 0, 27).fill(0xffffff).stroke({ width: 4, color: wood.line }),
         label(String(n), 34, ink),
       );
-      badge.position.set(center.x + (part === 'out' ? MAT_RX + 40 : HOOP_R + 30), center.y);
+      badge.position.copyFrom(this.layout.badges[i]);
       this.badges.addChild(badge);
     }
     // A ring marks each counted critter without intercepting another touch.
@@ -632,15 +628,15 @@ class CritterSort implements Game {
     await this.ctx.tw.wait(0.5);
     if (this.plan.mode === 'resort' && this.pass === 0) {
       // Keep the very same critters and drag handles; the sign and destinations change.
-      await this.ctx.tw.to(this.signs.children[0].scale, { x: 0 }, { duration: 0.25 });
+      await this.ctx.tw.to(this.signs.scale, { x: 0 }, { duration: 0.25 });
       this.pass = 1;
       this.round.rules = [this.round.nextRule!];
       this.wrongs = 0;
       for (const s of this.sorters) s.placed = null;
       this.resize(this.view);
-      this.signs.children[0].scale.x = 0;
+      this.signs.scale.x = 0;
       for (const s of this.sorters) s.node.hop();
-      await this.ctx.tw.to(this.signs.children[0].scale, { x: 1 }, { duration: 0.25 });
+      await this.ctx.tw.to(this.signs.scale, { x: 1 }, { duration: 0.25 });
       await this.instruct();
       for (const s of this.sorters) if (s.drag) s.drag.enabled = true;
       this.busy = false;
@@ -710,6 +706,7 @@ export const critterSort: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Ask why each critter goes where it does: "Why is the dog in the middle?"',
   offScreen:
     'Sort toys or socks with two hula hoops or loops of string: "red" and "soft". What goes in the middle?',
