@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/trackway-tales; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `trackway-tales` · **Land:** Story Grove · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `trackway-tales` · **Land:** Story Grove · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** evidence, inference, comparing, uncertainty
 
