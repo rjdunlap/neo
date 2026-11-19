@@ -8,6 +8,7 @@ import { label } from '../../ui/text';
 import { tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { theaterScene, theaterSymbol } from './theater-art';
+import { theaterLayout } from './layout';
 import {
   canFinish,
   completeStory,
@@ -42,6 +43,7 @@ export class TheaterStoryGame implements Game {
   private readonly groupLabels = ['Who?', 'Weather?', 'Bring what?'].map((t) => label(t, 23, ink));
   private previous: TheaterDraft | null = null;
   private helped: Container | null = null;
+  private compareX = [-420, 420];
   private shown: TheaterStory | null = null;
   private cue = -1;
   private alive = true;
@@ -271,7 +273,7 @@ export class TheaterStoryGame implements Game {
       this.shows.forEach((story, i) => {
         const art = theaterScene(story, 3);
         art.scale.set(0.24);
-        art.position.set(i === 0 ? -420 : 420, 0);
+        art.position.set(this.compareX[i], 0);
         this.comparison.addChild(art);
         const text = label(i === 0 ? 'First show' : 'Changed show', 17, ink);
         text.position.set(art.x, 48);
@@ -295,21 +297,19 @@ export class TheaterStoryGame implements Game {
         .stroke({ width: 6, color: swatch.yellow.line });
   }
   resize(v: View) {
+    const L = theaterLayout(v);
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.purple.light);
-    const extra = Math.max(0, v.h - 768);
-    this.title.position.set(v.w / 2, 112 + extra * 0.12);
-    this.stage.position.set(v.w / 2, 284 + extra * 0.3);
-    this.caption.position.set(v.w / 2, 426 + extra * 0.3);
-    const row = v.h - 210 - extra * 0.45;
-    const centers = [v.w / 2 - 326, v.w / 2, v.w / 2 + 326];
-    this.groupLabels.forEach((node, i) => node.position.set(centers[i], row - 85));
-    this.choices.forEach((c, i) =>
-      c.node.position.set(centers[Math.floor(i / 2)] + (i % 2 === 0 ? -80 : 80), row),
-    );
+    this.title.position.set(L.title.x, L.title.y);
+    this.stage.position.set(L.stage.x, L.stage.y);
+    this.stage.scale.set(L.stageScale);
+    this.caption.position.set(L.caption.x, L.caption.y);
+    this.groupLabels.forEach((node, i) => node.position.set(L.labels[i].x, L.labels[i].y));
+    this.choices.forEach((c, i) => c.node.position.set(L.choices[i].x, L.choices[i].y));
     [this.showButton, this.undoButton, this.helpButton, this.finishButton].forEach((node, i) =>
-      node.position.set(260 + (i * (v.w - 360)) / 3, v.h - 62 - extra * 0.25),
+      node.position.set(L.buttons[i].x, L.buttons[i].y),
     );
     this.comparison.position.set(v.w / 2, this.stage.y);
+    this.compareX = L.compare;
     this.draw();
   }
   autotouch(): TouchIntent | null {

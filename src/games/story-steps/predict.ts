@@ -3,11 +3,12 @@ import { cream, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { predictionPicture } from './prediction-art';
+import { predictLayout } from './layout';
 import { predictionFeedback, predictionPuzzle } from './predictions';
 
 export class PredictStory implements Game {
@@ -120,23 +121,22 @@ export class PredictStory implements Game {
     this.start();
   }
   resize(v: View) {
+    const L = predictLayout(v);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
-      .roundRect(155, v.h - 255, v.w - 190, 215, 35)
+      .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 35)
       .fill(cream);
-    const xs = spread(4, 100, v.w - 100, 210);
-    this.slots.forEach((s, i) => s.position.set(xs[i], v.h * 0.4));
-    const tray = spread(2, 260, v.w - 110, 230);
+    this.slots.forEach((s, i) => s.position.set(L.slots[i].x, L.slots[i].y));
     this.choices.forEach((c, i) => {
-      c.drag.home = { x: tray[i], y: v.h - 148 };
+      c.drag.home = { ...L.tray[i] };
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);
       }
     });
-    this.replay.position.set(v.w - 70, 70);
+    this.replay.position.set(L.replay.x, L.replay.y);
     this.drawGlow();
   }
   private drawGlow() {

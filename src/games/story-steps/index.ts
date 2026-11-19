@@ -3,7 +3,7 @@ import { cream, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile, WigglyIcon } from '../shared';
@@ -16,6 +16,7 @@ import { THEATER_PLANS } from './theater-logic';
 import { PREDICTION_PLAN } from './predictions';
 import { LEVELS, UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
 import { storyCard, storySticker } from './art';
+import { stripLayout } from './layout';
 import {
   nextPicture,
   nextSlot,
@@ -148,32 +149,28 @@ class StorySteps implements Game {
     if (!this.done) this.instruction();
   }
   resize(v: View) {
+    const L = stripLayout(v, this.slots.length, this.choices.length);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
-      .roundRect(155, v.h - 255, v.w - 190, 215, 35)
+      .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 35)
       .fill(cream);
-    const xs = spread(this.slots.length, 85, v.w - 85, 212);
-    this.slots.forEach((s, i) => s.position.set(xs[i], v.h * 0.4));
+    this.slots.forEach((s, i) => s.position.set(L.slots[i].x, L.slots[i].y));
     const p = this.path.clear();
-    for (let i = 0; i < xs.length - 1; i++) {
-      const x = (xs[i] + xs[i + 1]) / 2,
-        y = v.h * 0.4;
-      p.moveTo(x - 8, y - 13)
-        .lineTo(x + 5, y)
-        .lineTo(x - 8, y + 13)
+    for (const a of L.arrows)
+      p.moveTo(a.x - 8, a.y - 13)
+        .lineTo(a.x + 5, a.y)
+        .lineTo(a.x - 8, a.y + 13)
         .stroke({ width: 5, color: swatch.teal.line });
-    }
-    const choices = spread(this.choices.length, 170, v.w - 40, this.choices.length > 4 ? 126 : 184);
     this.choices.forEach((c, i) => {
-      c.drag.home = { x: choices[i], y: v.h - 148 };
+      c.drag.home = { ...L.tray[i] };
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);
       }
     });
-    this.replay.position.set(v.w - 70, 70);
+    this.replay.position.set(L.replay.x, L.replay.y);
     this.drawGlow();
   }
   private drawGlow() {
@@ -237,6 +234,7 @@ export const storySteps: GameModule = {
             : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
   offScreen: {
     all: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',

@@ -1,0 +1,6 @@
+# 2026-11-19 — Story Steps upright on phones (PR #1855)
+
+**Changed:** Story Steps plays upright (`upright: true`). Its layout is a pure `layout.ts` for all five modes (`stripLayout` for levels 1–8, repair level 9, untangle level 10, predict level 11, Story Theater levels 12–13). Held upright the 4-slot strips stand 2×2 with trays in rows of 2 or 3, untangle's anchor sits left of three slots, and Theater's groups stack with the stage at 0.85 scale and its buttons in a 2×2. Sideways is unchanged.
+**Ran:** `npm run typecheck`; eslint and prettier; vitest `src/games/story-steps` and the registry test (106 passed), including the new `upright.test.ts` over every level (all eight strip plans × six seeds, repair, untangle, predict, theater) on four upright views (48 tests), which passed first time; the 4-slot strips at 164 on a 150 step that overlapped on 768 were caught by the per-mode test before any browser run.
+**Ran:** `BROWSER_SUITE=uprightgames PHONE_ONLY=story-steps PHONE_BAND=school` levels 6, 7, 8, 9, 10, 11, 12 and 13 by real touches, each completing with one sticker; screenshots of levels 10 and 12 viewed. Headless Chrome only.
+**Not run:** `uprightsweep`, build, offline, full unit suite.

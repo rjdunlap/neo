@@ -3,11 +3,12 @@ import { cream, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { storyCard } from './art';
+import { untangleLayout } from './layout';
 import {
   nextSlot,
   nextUntangle,
@@ -143,37 +144,32 @@ export class UntangleStory implements Game {
     if (!this.done) this.start();
   }
   resize(v: View) {
+    const L = untangleLayout(v);
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
-      .roundRect(155, v.h - 235, v.w - 185, 195, 35)
+      .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 35)
       .fill(cream);
-    const xs = spread(3, 320, v.w - 110, 210);
-    const ys = [v.h * 0.29, v.h * 0.56];
     this.path.clear();
     this.slots.forEach((row, r) => {
-      this.anchors[r].position.set(195, ys[r]);
-      row.forEach((s, i) => s.position.set(xs[i], ys[r]));
-      for (let i = 0; i < 2; i++) {
-        const x = (xs[i] + xs[i + 1]) / 2,
-          y = ys[r];
+      this.anchors[r].position.set(L.anchors[r].x, L.anchors[r].y);
+      row.forEach((s, i) => s.position.set(L.slots[r][i].x, L.slots[r][i].y));
+      for (const a of L.arrows[r])
         this.path
-          .moveTo(x - 8, y - 13)
-          .lineTo(x + 5, y)
-          .lineTo(x - 8, y + 13)
+          .moveTo(a.x - 8, a.y - 13)
+          .lineTo(a.x + 5, a.y)
+          .lineTo(a.x - 8, a.y + 13)
           .stroke({ width: 5, color: swatch.teal.line });
-      }
     });
-    const tray = spread(6, 215, v.w - 80, 126);
     this.choices.forEach((c, i) => {
-      c.drag.home = { x: tray[i], y: v.h - 135 };
+      c.drag.home = { ...L.tray[i] };
       if (!c.drag.dragging) {
         this.ctx.tw.kill(c.node);
         c.node.position.set(c.drag.home.x, c.drag.home.y);
       }
     });
-    this.replay.position.set(v.w - 70, 70);
+    this.replay.position.set(L.replay.x, L.replay.y);
     this.drawGlow();
   }
   private drawGlow() {

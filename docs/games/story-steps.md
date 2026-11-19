@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/story-steps; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `story-steps` · **Land:** Story Grove · **Ages:** toddler–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `story-steps` · **Land:** Story Grove · **Ages:** toddler–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** sequencing, cause-and-effect, storytelling, prediction
 
@@ -30,6 +30,8 @@
 | 13 | Story Theater: change one event and compare two picnic endings |
 
 <!-- end generated -->
+
+**Upright on a phone (2026-11-19).** `layout.ts` holds the placing as pure functions for all five modes (`stripLayout` for levels 1–8, then repair, untangle, predict and Story Theater). Held upright (768 wide) the 4-slot strips stand 2×2 with trays of 4–6 pictures in rows of 2 or 3 (four slots of 164 and a row of four 156 pictures do not fit one row); untangle's anchor picture sits left of three slots; Theater's three groups stand one above another with the stage at 0.85 scale, its four buttons in a 2×2 and the compare thumbnails at ±200. `upright.test.ts` checks every level (all eight strip plans × six seeds, repair, untangle, predict, theater) on the four upright views. Sideways is unchanged.
 
 **Starts as:** finish a two-picture story
 
