@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/duck-pond; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `duck-pond` · **Land:** Counting Cove · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `duck-pond` · **Land:** Counting Cove · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, number-sense, adding
 
