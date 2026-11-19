@@ -13,6 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BH, BW, towerLayout, towerX, bearX, standX, edgeX, floorY, tableTopY } from './layout';
 import {
   LEVELS,
   compare,
@@ -37,9 +38,7 @@ import {
   type TowerRound,
 } from './logic';
 
-/** A block's size in logical units; positions in the logic are eighths of BW. */
-const BW = 104;
-const BH = 62;
+/** Positions in the logic are eighths of BW (a block's width, `layout.ts`). */
 /** The tallest tower the basket builds, so it always fits on screen. */
 const MAX_BLOCKS = 9;
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -238,21 +237,20 @@ class BlockTower implements Game {
   }
 
   private get floor() {
-    return this.view.h - 70;
+    return floorY(this.view);
   }
 
   /** Where the child's tower stands. */
   private get towerX() {
-    const v = this.view;
-    return this.plan.mode === 'match' ? v.w * 0.58 : v.w * 0.45;
+    return towerX(this.view, this.plan.mode === 'match');
   }
 
   private get bearX() {
-    return this.view.w * 0.3;
+    return bearX(this.view);
   }
 
   private get edge() {
-    return this.view.w * (this.reachRound?.direction === -1 ? 0.58 : 0.42);
+    return edgeX(this.view, this.reachRound?.direction === -1 ? -1 : 1);
   }
 
   private reachScreen(u: number) {
@@ -260,7 +258,7 @@ class BlockTower implements Game {
   }
 
   private get tableTop() {
-    return this.floor - 170;
+    return tableTopY(this.view);
   }
 
   start() {
@@ -269,7 +267,8 @@ class BlockTower implements Game {
 
   resize(v: View) {
     this.view = v;
-    const f = v.h - 70;
+    const L = towerLayout(v);
+    const f = L.floor;
     this.room
       .clear()
       .rect(0, 0, v.w, v.h)
@@ -280,23 +279,23 @@ class BlockTower implements Game {
       .fill(wood.fill);
     // A window, for a playroom feel.
     this.room
-      .roundRect(v.w * 0.72, 70, 170, 130, 12)
+      .roundRect(L.window.x, L.window.y, 170, 130, 12)
       .fill(swatch.blue.light)
       .stroke(line(wood.line, 6))
-      .moveTo(v.w * 0.72 + 85, 70)
-      .lineTo(v.w * 0.72 + 85, 200)
-      .moveTo(v.w * 0.72, 135)
-      .lineTo(v.w * 0.72 + 170, 135)
+      .moveTo(L.window.x + 85, L.window.y)
+      .lineTo(L.window.x + 85, L.window.y + 130)
+      .moveTo(L.window.x, L.window.y + 65)
+      .lineTo(L.window.x + 170, L.window.y + 65)
       .stroke(line(wood.line, 5));
     this.input.clear();
     this.input.hitArea = new Rectangle(0, 0, v.w, v.h);
-    this.bin.position.set(v.w - 120, f + 20);
-    this.bell.position.set(v.w - 120, f - 190);
+    this.bin.position.set(L.bin.x, L.bin.y);
+    this.bell.position.set(L.bell.x, L.bell.y);
     this.layoutTowers();
     this.drawMarks();
     this.layoutReach();
-    this.watchAgain.position.set(v.w * 0.43, 290);
-    this.continueStand.position.set(v.w * 0.65, 290);
+    this.watchAgain.position.set(L.watchAgain.x, L.watchAgain.y);
+    this.continueStand.position.set(L.continueStand.x, L.continueStand.y);
     if (this.observation.phase === 'result' || this.observation.phase === 'releasing')
       this.drawStandExplanation();
     this.drawPrediction();
@@ -394,7 +393,7 @@ class BlockTower implements Game {
   }
 
   private standX(i: number) {
-    return this.view.w * (i ? 0.68 : 0.32);
+    return standX(this.view, i);
   }
 
   /** Height lines and signs: the friend's height, the flag, ropes holding the leaning towers. */
@@ -436,10 +435,10 @@ class BlockTower implements Game {
     }
     if (mode === 'stand' && this.stand && this.observation.phase === 'held') {
       // Ropes from a beam hold both towers until the guess is in.
-      g.rect(0, 40, this.view.w, 22).fill(wood.fill);
+      g.rect(0, towerLayout(this.view).beamY, this.view.w, 22).fill(wood.fill);
       this.standTowers.forEach((t) => {
         const top = t[t.length - 1];
-        g.moveTo(top.x, 62)
+        g.moveTo(top.x, towerLayout(this.view).beamY + 22)
           .lineTo(top.x, top.y - BH)
           .stroke(line(swatch.white.line, 4));
       });
@@ -890,7 +889,7 @@ class BlockTower implements Game {
       .stroke(line(swatch.yellow.line, 4));
     const loose = this.tray.filter((t) => t.x === null);
     loose.forEach((t, i) => {
-      const home = { x: v.w - 330 + i * 120, y: this.floor + 30 };
+      const home = towerLayout(v).tray(i);
       t.drag.home = home;
       if (!t.drag.dragging && !this.ctx.tw.busy(t.node)) t.node.position.set(home.x, home.y);
     });
@@ -1148,6 +1147,7 @@ export const blockTower: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
+  upright: true,
   coplayHint:
     'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
   offScreen: {
