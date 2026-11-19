@@ -331,9 +331,15 @@ export const SIGN_W = 160;
 
 /** The columns fruit hang in, as fractions of the view's width. */
 const COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.36, 0.64], 3: [0.28, 0.5, 0.72] };
+/** Two and three fruit across the 768-wide upright area: wider apart, so neighbours (each drifting up to 26, apex jitter up to 9) keep their 150-wide hit circles apart. */
+const COLUMNS_UPRIGHT: Record<number, number[]> = { 1: [0.5], 2: [0.3, 0.7], 3: [0.2, 0.5, 0.8] };
 
-export function makeToss(kind: Kind, column: number, aloft: number, rng: Rng): Toss {
-  const cols = COLUMNS[aloft] ?? COLUMNS[3];
+/** The fractions of the view's width the columns hang at: the 1024-wide area keeps its columns, a narrower one spreads them. */
+export const columnsFor = (aloft: number, w = 1024): number[] =>
+  (w < 1000 ? COLUMNS_UPRIGHT : COLUMNS)[aloft] ?? COLUMNS[3];
+
+export function makeToss(kind: Kind, column: number, aloft: number, rng: Rng, w = 1024): Toss {
+  const cols = columnsFor(aloft, w);
   return {
     kind,
     column,
@@ -438,12 +444,14 @@ export const lineHits = sliceHits;
 /* Still boards (level 7, and level 8's last sign)                                                */
 /* ---------------------------------------------------------------------------------------------- */
 
-/** The box a board is laid out in, in logical units: it fits every view (the view is never under 1024×768) and is only moved, never scaled, so a line's count cannot change. */
+/** The box a board is laid out in, in logical units: it fits every view (the view is never under 1024×768) and is only moved on the 1024-wide area, and scaled as one (`boardScale`) on the 768-wide upright one, so a line's count cannot change. */
 export const BOARD_W = 820;
 export const BOARD_H = 400;
 const BOARD_TOP = 175;
+/** The board's scale in a view: 1 on the 1024-wide area; on the 768-wide upright one every distance (fruit spacing, the hit circle) shrinks together, so a line's count cannot change and the fruit stay inside the screen. */
+export const boardScale = (v: Pick<View, 'w'>) => Math.min(1, (v.w - 40) / BOARD_W);
 export const boardOrigin = (v: View) => ({
-  x: (v.w - BOARD_W) / 2,
+  x: (v.w - BOARD_W * boardScale(v)) / 2,
   y: BOARD_TOP + Math.max(0, (v.h - 768) / 3),
 });
 
