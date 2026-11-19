@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/measuring-post; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `measuring-post` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `measuring-post` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** measurement, choose-a-tool, unit-size
 

@@ -35,6 +35,7 @@ import {
   toolArt,
   unitArt,
 } from './art';
+import { BUTTON, postLayout, TOOL_PAD, type Box, type Layout, type Pt } from './layout';
 import {
   LEVELS,
   answerRow,
@@ -70,105 +71,11 @@ const STEP = 0.4;
 /** Seconds the level-2 "one big is two little" strip takes before the records measure. */
 const EQUIV = 1.2;
 
-const TOOL_PAD = { w: 140, h: 110 };
-
 /** Level 4's watch: a 250-gram weight lands every WEIGH seconds, then they group, then two kilograms balance two groups. */
 const WEIGH = 0.6;
 const GROUP_AT = 3.0;
 const TWO_AT = 4.2;
 const WATCH_END = 5.4;
-
-interface Pt {
-  x: number;
-  y: number;
-}
-interface Box {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-/**
- * Where things go. Landscape centres the 1024×768 plan; portrait stretches the 768×1024 plan over the view (positions
- * only: pads and buttons keep their size).
- */
-interface Layout {
-  landscape: boolean;
-  board: Box;
-  /** The one-big-is-two-little strip and the two record slots (level 2); level 1 uses the whole board. */
-  strip: Box;
-  slots: [Box, Box];
-  /** Level 3's two objects, side by side (landscape) or stacked (portrait), over the whole board. */
-  pair: [Box, Box];
-  tools: Pt[];
-  /** Level 3's two unit tokens, big then little. */
-  units: [Pt, Pt];
-  answers: [Pt, Pt];
-  answerSize: { w: number; h: number };
-  help: Pt;
-  replay: Pt;
-  send: Pt;
-}
-
-function layoutFor(v: View): Layout {
-  if (v.w >= v.h) {
-    const ox = (v.w - 1024) / 2,
-      oy = (v.h - 768) / 2;
-    const P = (x: number, y: number): Pt => ({ x: ox + x, y: oy + y });
-    const board = { x: ox + 180, y: oy + 150, w: 780, h: 330 };
-    const strip = { x: board.x, y: board.y, w: board.w, h: 90 };
-    const slotY = strip.y + strip.h,
-      slotH = board.y + board.h - slotY;
-    return {
-      landscape: true,
-      board,
-      strip,
-      slots: [
-        { x: board.x, y: slotY, w: board.w / 2, h: slotH },
-        { x: board.x + board.w / 2, y: slotY, w: board.w / 2, h: slotH },
-      ],
-      pair: [
-        { ...board, w: board.w / 2 },
-        { ...board, x: board.x + board.w / 2, w: board.w / 2 },
-      ],
-      tools: [P(340, 555), P(520, 555), P(700, 555)],
-      units: [P(430, 555), P(610, 555)],
-      answers: [P(375, 555), P(765, 555)],
-      answerSize: { w: 320, h: 110 },
-      help: P(340, 700),
-      replay: P(550, 700),
-      send: P(800, 700),
-    };
-  }
-  const sx = v.w / 768,
-    sy = v.h / 1024;
-  const P = (x: number, y: number): Pt => ({ x: x * sx, y: y * sy });
-  const board = { x: 170 * sx, y: 150 * sy, w: 560 * sx, h: 460 * sy };
-  const strip = { x: board.x, y: board.y, w: board.w, h: 100 * sy };
-  const slotY = strip.y + strip.h,
-    slotH = (board.y + board.h - slotY) / 2;
-  return {
-    landscape: false,
-    board,
-    strip,
-    slots: [
-      { x: board.x, y: slotY, w: board.w, h: slotH },
-      { x: board.x, y: slotY + slotH, w: board.w, h: slotH },
-    ],
-    pair: [
-      { ...board, h: board.h / 2 },
-      { ...board, y: board.y + board.h / 2, h: board.h / 2 },
-    ],
-    tools: [P(260, 700), P(440, 700), P(620, 700)],
-    units: [P(350, 700), P(530, 700)],
-    answers: [P(450, 672), P(450, 800)],
-    answerSize: { w: 540, h: 110 },
-    help: P(260, 930),
-    replay: P(440, 930),
-    send: P(620, 930),
-  };
-}
 
 /**
  * What the round is doing now. Taps only act in `tool`, `send` (level 1), `answer` (levels 2–3) and `unit` (level 3:
@@ -314,15 +221,15 @@ class MeasuringPost implements Game {
       this.tablePads.push(pad);
       ctx.stage.addChild(pad);
     }
-    this.checkButton = new RoundButton(tickIcon(), swatch.green, 50, () => this.check());
+    this.checkButton = new RoundButton(tickIcon(), swatch.green, BUTTON / 2, () => this.check());
     this.checkButton.visible = false;
     ctx.stage.addChild(this.checkButton);
     if (this.plan.mode === 'table') this.phase = 'watch';
-    this.helpButton = new RoundButton(handIcon(), swatch.orange, 50, () => this.help());
-    this.replayButton = new RoundButton(speakerIcon(), swatch.white, 50, () => this.replay());
-    this.sendButton = new RoundButton(sendIcon(), swatch.green, 50, () => this.send());
+    this.helpButton = new RoundButton(handIcon(), swatch.orange, BUTTON / 2, () => this.help());
+    this.replayButton = new RoundButton(speakerIcon(), swatch.white, BUTTON / 2, () => this.replay());
+    this.sendButton = new RoundButton(sendIcon(), swatch.green, BUTTON / 2, () => this.send());
     ctx.stage.addChild(this.helpButton, this.replayButton, this.sendButton, this.glow);
-    this.layout = layoutFor(ctx.view);
+    this.layout = postLayout(ctx.view, this.plan.mode);
   }
 
   get hints(): number {
@@ -590,7 +497,7 @@ class MeasuringPost implements Game {
     else if (step === 'answer' && this.plan.mode === 'common')
       this.glowAt = { p: L.tools[compareAnswer(this.current, this.commonSize!)], ...TOOL_PAD };
     else if (step === 'answer') this.glowAt = { p: L.answers[answerRow(this.current)], ...L.answerSize };
-    else this.glowAt = { p: L.send, w: 100, h: 100 };
+    else this.glowAt = { p: L.send, w: BUTTON, h: BUTTON };
   }
 
   // ---- Help ----
@@ -633,7 +540,7 @@ class MeasuringPost implements Game {
         // Help again chooses the right row; once it is chosen, Help points at Check (she still presses it).
         if (this.chosen !== tableAnswer(task)) this.choose(tableAnswer(task));
         else {
-          this.glowAt = { p: this.layout.send, w: 100, h: 100 };
+          this.glowAt = { p: this.layout.send, w: BUTTON, h: BUTTON };
           void this.ctx.say('measure.kg.check');
         }
       } else if (common) this.pickCompare(compareAnswer(task, this.commonSize!));
@@ -833,6 +740,20 @@ class MeasuringPost implements Game {
     return Math.min(max, (box.w - pad * 2) / Math.max(1, b.width), (box.h - pad * 2) / Math.max(1, b.height));
   }
 
+  /**
+   * A line across the board at `y`, between two friends' stacked halves: each friend stands at the foot of its own half,
+   * just above the other's counts, and the line says whose is whose.
+   */
+  private divider(y: number) {
+    const b = this.layout.board;
+    this.board.addChild(
+      new Graphics()
+        .moveTo(b.x + 24, y)
+        .lineTo(b.x + b.w - 24, y)
+        .stroke({ width: 3, color: swatch.brown.light, cap: 'round' }),
+    );
+  }
+
   /** A count with its unit pictured beside it, at `p`. */
   private countBadge(attr: Attribute, rec: MeasureRecord, p: Pt, dim = false) {
     const c = new Container();
@@ -940,6 +861,7 @@ class MeasuringPost implements Game {
       // The strip first (one big is two little), then both friends' records.
       this.fit(this.stripArt(attr), L.strip, 0.9, 8);
       if (this.phase !== 'measure' || this.t >= EQUIV) {
+        if (!L.landscape) this.divider(L.slots[1].y);
         task.records.forEach((rec, i) => {
           const slot = L.slots[i];
           const friend = friendHead(ROW_FRIENDS[i], 0.22);
@@ -1109,6 +1031,7 @@ class MeasuringPost implements Game {
     const records = this.shownRecords();
     const raw = this.commonSize === null && measuring;
     const areas = L.pair.map((box) => ({ x: box.x + 70, y: box.y + 70, w: box.w - 80, h: box.h - 76 }));
+    if (!L.landscape) this.divider(L.pair[1].y);
     const arts = task.objects!.map((o, i) =>
       measuring
         ? this.recordArt(attr, o.quantity, records[i], shown[i])
@@ -1199,7 +1122,7 @@ class MeasuringPost implements Game {
   }
 
   resize(v: View) {
-    this.layout = layoutFor(v);
+    this.layout = postLayout(v, this.plan.mode);
     const L = this.layout;
     this.background.clear().rect(0, 0, v.w, v.h).fill(0xf3efe2);
     this.background
@@ -1258,6 +1181,7 @@ export const measuringPost: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   touchDemo: true,
+  upright: true,
   coplayHint:
     "Take turns: one of you asks a friend's question, the other runs the counter and picks the tool, then swap.",
   hubIcon: () => new WigglyIcon(hubArt()),

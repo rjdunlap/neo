@@ -587,6 +587,7 @@ describe('game registry', () => {
       'logic-grid',
       'maker-lane',
       'marble-jump',
+      'measuring-post',
       'memory-desk',
       'memory-match',
       'not-always',
