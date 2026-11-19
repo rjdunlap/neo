@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/tangram-town; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `tangram-town` · **Land:** Rainbow Meadow · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `tangram-town` · **Land:** Rainbow Meadow · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** shape-composition, rotation, spatial-reasoning
 
@@ -39,3 +39,5 @@
 **Level 8 (school), Fix the picture:** a seeded assembled picture has exactly one non-symmetric shape facing the wrong way, with faint correct outlines behind it. Tap a piece to select it, turn it in place with the round arrow, then use the green check. Turns and selections are free revision; four turns restore a piece. Wrong checks count one miss and explain the mismatch; two wrong checks glow an actual mismatch and count one hint. Requested help selects an actual mismatch without turning it, counting once while the support is visible; if everything matches, it suggests Check for free. A correct check finishes with one sticker and a repair explanation. Eight picture kinds have distinct selectable centers; wrong-shape swaps are unbuilt. School extends to 5–8, preserving younger bands and saved IDs/pins.
 
 Tap-then-place (levels 1–3): a tray piece can also be placed by tapping it (it is held at its tray home) and then tapping a shadow, with the tapped point as the piece's middle; a wrong shadow is the same miss as the same drag, and letting go, switching or tapping empty ground is free. At level 3 she turns first, then taps the piece and its shadow. Levels 4–8 are unchanged, and the how-to card still shows the drag.
+
+**Upright on a phone (2026-11-19).** `townLayout` in `layout.ts` places the board, tray and button column, tested over every level and five upright views (plus 360 × 800 and 768 × 1024) in `upright.test.ts`. Held upright the tray pieces rest in rows of two (four 150-unit touch circles in a row did not fit between the guide corner and the 768-wide edge), the lowest row stays clear of the guide and the cream tray panel grows to match; the board and the turn, help and check column are unchanged. Sideways keeps the old layout.
