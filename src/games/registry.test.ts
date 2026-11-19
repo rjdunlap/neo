@@ -633,6 +633,7 @@ describe('game registry', () => {
       'sudoku-garden',
       'swap-meet',
       'swing-pals',
+      'tangram-town',
       'teddy-doctor',
       'tile-pairs',
       'timeline-trail',
