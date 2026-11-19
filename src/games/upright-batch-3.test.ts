@@ -172,45 +172,29 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
         for (const spring of [false, true]) {
           const young = spring ? hatch(t, plan, new Rng(seed)) : [];
           const l = comebackLayout(v, t, young, round.target);
-          const ids = t.turtles.map((x) => x.id);
-          check(
-            v,
-            [
-              ...ids.map((id) =>
-                square('turtle', l.slots.get(id)!, young.some((y) => y.id === id) ? l.hatch : l.card),
-              ),
-              ...l.nests.map((p) => ({ ...p, what: 'nest', w: 120, h: 100 })),
-              { ...l.spring, what: 'Spring', w: 150, h: 80 },
-            ],
-            64,
-            // The widest trees (level 3) shrink their cards to the 64-unit minimum on the 768-wide area: 32.5 px.
-            32,
-          );
+          check(v, [
+            ...l.nests.map((p) => ({ ...p, what: 'nest', w: 120, h: 100 })),
+            { ...l.spring, what: 'Spring', w: 150, h: 88 },
+          ]);
+          for (const turtle of t.turtles) {
+            const p = l.slots.get(turtle.id)!;
+            const size = turtle.gen === 3 ? l.hatch : l.card;
+            // Cards beyond the right edge of the window are reachable at the far end of the swipe.
+            const x = p.x + size / 2 > v.w - 20 ? p.x - l.scroll : p.x;
+            check(v, [square('turtle', { x, y: p.y }, size)], 64, turtle.gen === 3 ? 32 : 44);
+          }
           // Level 4's plan and reason steps come before the nests: the note and the two plans, then the three reasons,
           // under the whole tree and clear of the guide.
           if (round.keeper && !spring) {
             const { note, zone } = l.keeper;
-            const turtles = ids.map((id) => square('turtle', l.slots.get(id)!, l.card));
             for (const n of [2, 3]) {
               const w = (zone.w - (n === 2 ? 12 : 10) * (n - 1)) / n;
-              check(
-                v,
-                [
-                  ...turtles,
-                  box('note', note.x, note.y, note.w, note.h),
-                  ...Array.from({ length: n }, (_, i) =>
-                    box(
-                      n === 2 ? 'plan' : 'reason',
-                      zone.x + i * (w + (n === 2 ? 12 : 10)),
-                      zone.y,
-                      w,
-                      zone.h,
-                    ),
-                  ),
-                ],
-                64,
-                32,
-              );
+              check(v, [
+                box('note', note.x, note.y, note.w, note.h),
+                ...Array.from({ length: n }, (_, i) =>
+                  box(n === 2 ? 'plan' : 'reason', zone.x + i * (w + (n === 2 ? 12 : 10)), zone.y, w, zone.h),
+                ),
+              ]);
             }
           }
         }

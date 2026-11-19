@@ -14,7 +14,32 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
           lifted: g.lifted,
         };
       });
-    const tapCard = (id) =>
+    const phone = process.env.COMEBACK_PHONE === '1';
+    const cdp = phone ? await page.context().newCDPSession(page) : null;
+    const touch = (type, p) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: p ? [p] : [] });
+    const swipe = async (from, dx) => {
+      await touch('touchStart', from);
+      for (let i = 1; i <= 5; i++) await touch('touchMove', { x: from.x + (dx * i) / 5, y: from.y });
+      await touch('touchEnd');
+    };
+    const cardPoint = (id) =>
+      page.evaluate((id) => {
+        const p = neo.scene.game.cards.get(id).getGlobalPosition();
+        return { x: p.x, y: p.y };
+      }, id);
+    const tapCard = async (id) => {
+      if (phone && (await page.evaluate(() => neo.view.upright))) {
+        let p = await cardPoint(id);
+        if (p.x < 40 || p.x > 350) {
+          await swipe({ x: 195, y: 115 }, p.x < 40 ? 160 : -160);
+          p = await cardPoint(id);
+        }
+        await page.touchscreen.tap(p.x, p.y);
+        return;
+      }
+      await tapDesktopCard(id);
+    };
+    const tapDesktopCard = (id) =>
       page.evaluate((id) => {
         const c = neo.scene.game.cards.get(id),
           p = c.getGlobalPosition();
@@ -109,12 +134,45 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await until('pair');
     assert.equal(await small(), 0, 'level 3 cards at least 64 units');
     await screenshot('species-comeback-3-tree');
-    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.setViewportSize(phone ? { width: 390, height: 640 } : { width: 768, height: 1024 });
     await page.waitForTimeout(500);
     assert.equal(await small(), 0, 'level 3 cards at least 64 units upright');
     await screenshot('species-comeback-3-tree-portrait');
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await page.waitForTimeout(500);
+    if (phone) {
+      const candidate = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return [...g.cards.keys()].find(
+          (id) => g.isCandidate(id) && g.cards.get(id).x > 200 && g.cards.get(id).x < 500,
+        );
+      });
+      const at = await cardPoint(candidate);
+      const nestX = await page.evaluate(() => neo.scene.game.nests[0].getGlobalPosition().x);
+      const previous = await state();
+      await swipe(at, -95);
+      assert.ok((await cardPoint(candidate)).x < at.x - 18, 'a native swipe moves the tree');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.nests[0].getGlobalPosition().x),
+        nestX,
+        'nests stay fixed',
+      );
+      assert.deepEqual(await state(), previous, 'swiping a candidate is free');
+      await swipe({ x: 195, y: 115 }, 155);
+      await touch('touchStart', at);
+      await touch('touchCancel');
+      assert.deepEqual(await state(), previous, 'a cancelled touch is free');
+      await page.waitForTimeout(170);
+      await tapCard(candidate);
+      assert.equal((await state()).lifted, candidate, 'a still touch chooses the candidate');
+      await page.waitForTimeout(170);
+      await tapCard(candidate);
+      assert.equal((await state()).lifted, null, 'a second touch puts the candidate down');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      assert.equal((await state()).hints, 1, 'Help counts once on the sliding tree');
+      await screenshot('species-comeback-3-hint-upright');
+    } else {
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+    }
     await pairUp();
     await until('site');
     await page.waitForTimeout(300);
@@ -146,7 +204,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         const r = kit.store.stats('species-comeback').history.at(-1);
         return [r.misses, r.hints];
       }),
-      [1, 0],
+      [1, phone ? 1 : 0],
     );
     // Level 4: the plan that does not fit the note is one miss, so is a reason that does not match; hearing the note and a
     // name are free; the fitting plan settles into the nests, Spring, then a suiting site.
@@ -182,11 +240,29 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     assert.equal(await small(), 0, 'level 4 cards at least 64 units upright');
     assert.equal(await onScreen('[g.note, ...g.planCards.values()]'), 0, 'note and plans on screen upright');
     await screenshot('species-comeback-4-plans-upright');
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await page.waitForTimeout(600);
+    if (phone) {
+      const planX = await page.evaluate(() => neo.scene.game.planCards.get('a').getGlobalPosition().x);
+      await swipe({ x: 290, y: 150 }, -210);
+      assert.ok(
+        await page.evaluate(() => -neo.scene.game.tree.x > 200),
+        'the keeper tree scrolls to the other end',
+      );
+      assert.equal(await page.evaluate(() => neo.scene.game.planCards.get('a').getGlobalPosition().x), planX);
+    } else {
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(600);
+    }
     await tapObj('g.note');
     await page.waitForTimeout(400);
-    await tapCard(0);
+    const founder = phone
+      ? await page.evaluate(() => {
+          const g = neo.scene.game;
+          return [...g.cards].find(
+            ([, c]) => c.turtle.gen === 0 && c.getGlobalPosition().x > 45 && c.getGlobalPosition().x < 345,
+          )[0];
+        })
+      : 0;
+    await tapCard(founder);
     await page.waitForTimeout(400);
     assert.equal((await state()).misses, 0, 'hearing the note and a name is free');
     const other = keeper.fits === 'a' ? 'b' : 'a';
@@ -221,6 +297,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       'g.sites.find((c) => ["water","logs","sand","plants"].every((f) => c.site.features.includes(f)))',
     );
     await finished('species-comeback');
+    assert.equal(
+      await page.evaluate(() => kit.store.data.stickers.length),
+      stickers + 3,
+      'one sticker per level',
+    );
     assert.deepEqual(
       await page.evaluate(() => {
         const r = kit.store.stats('species-comeback').history.at(-1);

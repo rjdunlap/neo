@@ -260,7 +260,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'ribbon-workshop': { px: 49.8, what: 'bow, scissors and Undo' },
   'snowball-merge': { px: 50.8, what: 'arrow' },
   'sorting-machine': { px: 52.8, what: 'machine button' },
-  'species-comeback': { px: 32.5, what: 'turtle card' },
+  'species-comeback': { px: 44.7, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
@@ -269,7 +269,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
-const UNDER = ['logic-grid', 'marble-jump', 'species-comeback', 'sudoku-garden'];
+const UNDER = ['logic-grid', 'marble-jump', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);
