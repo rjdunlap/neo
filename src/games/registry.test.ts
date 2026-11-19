@@ -600,6 +600,7 @@ describe('game registry', () => {
       'number-nook',
       'orchard-rows',
       'paint-mixer',
+      'pet-kitchen',
       'picnic-pantry',
       'picture-logic',
       'pixel-pictures',
