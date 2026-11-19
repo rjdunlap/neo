@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/market-stall; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `market-stall` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `market-stall` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, money, adding, counting-on
 
@@ -35,3 +35,5 @@
 Level 6 counts up the change: each change coin says its value, then the shopkeeper counts up from the price ("2. 7… 8, 9"; the count line is templated, so it uses device speech), and a ten strip under the price tag shows price cells green and change cells yellow, with a red edge when too much change is on the mat. The rules are `countsUp`, `countUpWords`, `countUpText`, `countUpSaid` and `tenStrip` in `logic.ts`.
 
 **What the guide repeats (level 5).** In the `ways` mode, "Thank you! Now buy another one, and pay a different way!" (`shop.again`) is an instruction (`ctx.instruct`), because paying the same way again is a miss and the standing instruction does not say to change; the next order instructs its own line. `shop.fewer`, `shop.full`, coin names, counts and hints stay `say`.
+
+**Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.
