@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/drops-journey; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `drops-journey` · **Land:** Tinker Lab · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `drops-journey` · **Land:** Tinker Lab · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** water, states-of-matter, cause-and-effect, sequencing
 
@@ -31,3 +31,5 @@
 Levels (preschool 1, pre-K 1–2, school 2–3): 1 "Where can the drop go?": three places, a leaf after three stops, nothing wrong. 2 "Send it to the postcard's place": a postcard names a goal (authored sea to snow) and any lawful route reaches it; the cloud offers five cards (four moves and stay), wrapping to two rows in portrait; the leaf comes when the goal is reached. 3 "Can it go there?": one uphill can't-go card per stop where one exists (the sea, the river and the ground); tapping it is a miss, the card greys and the drop stays. The book replays the trip.
 
 Misses and hints: levels 1–2 have no misses. At level 3 a can't-go card is one miss; the second miss lights the causal glow with the driver badges (sun, rain, snow, downhill; one hint). The pause sheet's Show me points at a lawful card (level 2: the next on a shortest route), one hint per pointed card. The idle cue pointing the definition describes is not built; the shell's idle repeat of the instruction stays. Nothing is kept. Two lines follow their sources rather than the definition: groundwater "can seep back out into the river" (no "slowly") and the sublimation line "The sun can turn a little snow straight into vapour." Tinker Lab.
+
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–3. The layout moved from `logic.ts` into a pure `layout.ts` (`journeyLayout`, `stripRoom`, `STRIP_STEP` and the sizes). Held upright (`view.upright`) the journey strip, the book and the leaf (level 2: the postcard) sit in one row just above the cards, so every touch is within the bottom 450 units (about 229 px of a 390 × 844 phone); the strip starts at the screen edge there and shows five stops (sideways up to six). The sweep called all three levels "fits" and the size checks passed, but a screenshot showed the book and the leaf, the tap that finishes the round, at the very top of a tall phone and the land stretched the full height. The land now sits on that row and is no taller than 1.25 times its width (`LAND_TALL`), leaving sky above on a tall phone, and the sea is drawn only to the land's floor (`Layout.seaFloor`) so the row lies on the meadow, not the water. Sideways and an upright tablet are unchanged, pinned by tests of exact values. `upright.test.ts` checks every level, every number of cards a stop deals (2, 3 or 5), on the three upright phone views, the captioned one and a short 375 × 601 one.
