@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { journeyLayout, type Box } from './layout';
 import {
   CANT,
   HEIGHT,
@@ -13,13 +14,11 @@ import {
   here,
   hintFor,
   isLawful,
-  journeyLayout,
   lawful,
   makeRound,
   moves,
   offer,
   step,
-  type Box,
   type Choice,
   type Journey,
   type Place,

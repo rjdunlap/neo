@@ -570,6 +570,7 @@ describe('game registry', () => {
       'clap-syllables',
       'crossword',
       'drift-cards',
+      'drops-journey',
       'far-lights',
       'feelings-faces',
       'food-web-workshop',
