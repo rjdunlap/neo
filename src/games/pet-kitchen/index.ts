@@ -7,6 +7,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
+import { BUTTON_R, kitchenLayout } from './layout';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -447,8 +448,8 @@ class PetKitchen implements Game {
           this.wiggleNearest(at.x, at.y);
         }
       });
-    this.serve = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.check());
-    this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
+    this.serve = new RoundButton(arrowIcon(1), swatch.green, BUTTON_R, () => this.check());
+    this.undo = new RoundButton(arrowIcon(-1), swatch.white, BUTTON_R, () => {
       if (this.done) return;
       if (this.plan.mode === 'cup') {
         this.idle = 0;
@@ -466,7 +467,7 @@ class PetKitchen implements Game {
         this.drawHint();
       }
     });
-    this.recut = new RoundButton(againIcon(), swatch.white, 48, () => {
+    this.recut = new RoundButton(againIcon(), swatch.white, BUTTON_R, () => {
       if (this.done || this.asking || this.overlaying) return;
       this.clearPieces();
       this.split = 0;
@@ -1182,7 +1183,8 @@ class PetKitchen implements Game {
   private layoutPieces(animate = false) {
     const v = this.view,
       offsets = this.plates.map(() => 0);
-    const xs = spread(4, 200, v.w - 80, 145),
+    const lay = kitchenLayout(v),
+      xs = lay.pieceXs,
       dx = this.shapes ? 36 : 32;
     this.pieces.forEach((p, i) => {
       const slot = p.plate < 0 ? i : offsets[p.plate]++,
@@ -1190,8 +1192,8 @@ class PetKitchen implements Game {
       const home =
         p.plate < 0
           ? this.lapDeal
-            ? { x: (this.plates[0].x + this.plates[this.plates.length - 1].x) / 2, y: v.h - 110 }
-            : { x: xs[i % 4], y: v.h - 90 - Math.floor(i / 4) * 125 }
+            ? { x: (this.plates[0].x + this.plates[this.plates.length - 1].x) / 2, y: lay.pieceY - 20 }
+            : { x: xs[i % 4], y: lay.pieceY - Math.floor(i / 4) * 125 }
           : { x: plate.x + (slot % 2 ? dx : -dx), y: plate.y + (Math.floor(slot / 2) % 2 ? 30 : -24) };
       if (!p.drag) {
         if (animate && p.node.x + p.node.y !== 0 && (p.node.x !== home.x || p.node.y !== home.y))
@@ -1286,7 +1288,7 @@ class PetKitchen implements Game {
   }
   /** Level 14's sandwich row, just under the plates and above the counter (also where the overlay lies). */
   private wholesY(v: View) {
-    return Math.min(v.h - 260 - 72, Math.max(310, v.h * 0.36) + 190);
+    return kitchenLayout(v).wholesY;
   }
   start() {
     this.instruction();
@@ -1299,9 +1301,10 @@ class PetKitchen implements Game {
       .fill(swatch.orange.light)
       .roundRect(165, v.h - 260, v.w - 190, 245, 30)
       .fill(cream);
-    this.serve.position.set(v.w - 75, 65);
-    this.undo.position.set(v.w - 75, v.h - 80);
-    this.recut.position.set(205, 65);
+    const lay = kitchenLayout(v);
+    this.serve.position.set(lay.serve.x, lay.serve.y);
+    this.undo.position.set(lay.undo.x, lay.undo.y);
+    this.recut.position.set(lay.recut.x, lay.recut.y);
     this.serve.visible = !this.tapDeal && !this.asking;
     this.undo.visible =
       this.plan.mode === 'recipe' || this.plan.mode === 'half-recipe' || this.plan.mode === 'cup';
@@ -1311,12 +1314,12 @@ class PetKitchen implements Game {
       !this.asking;
     const px = spread(this.plates.length, 180, v.w - 50, 185);
     this.plates.forEach((p, i) => {
-      p.position.set(px[i], Math.max(310, v.h * 0.36));
+      p.position.set(px[i], lay.plateY);
       p.visible = this.split > 0 || this.shapes || this.compare;
     });
     // Level 13's bubbles stand on the outer side of their own friends, clear of the other plate.
-    this.bubbles.forEach((b, i) => b.position.set(px[i] + (i ? 110 : -110), Math.max(310, v.h * 0.36) - 150));
-    this.bubble.position.set(px[0] + 125, Math.max(310, v.h * 0.36) - 150);
+    this.bubbles.forEach((b, i) => b.position.set(px[i] + (i ? 110 : -110), lay.plateY - 150));
+    this.bubble.position.set(px[0] + 125, lay.plateY - 150);
     for (const c of this.food.removeChildren()) {
       this.ctx.tw.kill(c);
       c.destroy({ children: true });
@@ -1333,7 +1336,7 @@ class PetKitchen implements Game {
           f.position.set(v.w / 2 + (i - (this.plan.wholes - 1) / 2) * 240, this.wholesY(v));
         } else {
           f.scale.set(1.2);
-          f.position.set(v.w / 2 + (i - (this.plan.wholes - 1) / 2) * 240, v.h * 0.4);
+          f.position.set(v.w / 2 + (i - (this.plan.wholes - 1) / 2) * 240, lay.foodY);
         }
       }
     const xs = spread(this.cuts.length, 250, v.w - 180, 200);
@@ -1354,12 +1357,12 @@ class PetKitchen implements Game {
       this.ingredients.forEach((b, i) => b.position.set(v.w / 2 + (i ? 130 : -130), v.h - 95));
     } else {
       this.recipeCard.position.set(v.w / 2, 215);
-      this.meal.position.set(v.w / 2, v.h * 0.5);
+      this.meal.position.set(v.w / 2, lay.mealY);
       this.ingredients.forEach((b, i) => b.position.set(v.w / 2 + (i ? 110 : -110), v.h - 95));
     }
     if (this.plan.mode === 'recipe' || this.plan.mode === 'half-recipe')
       this.background
-        .ellipse(v.w / 2, v.h * 0.5 + 30, 245, 110)
+        .ellipse(v.w / 2, lay.mealY + 30, 245, 110)
         .fill(swatch.white.fill)
         .stroke({ width: 7, color: swatch.blue.line });
     this.layoutPieces();
@@ -1463,6 +1466,7 @@ export const petKitchen: GameModule = {
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,
+  upright: true,
   coplayHint: 'Share the food together. Help {name} give a piece to each friend, then serve it.',
   offScreen:
     'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',
