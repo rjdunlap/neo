@@ -13,7 +13,18 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { paw, toy } from './art';
-import { LEVELS, Election, fixture, layout, NAMES, roundFor, type Option, type Point } from './logic';
+import {
+  LEVELS,
+  Election,
+  fixture,
+  layout,
+  NAMES,
+  playLayout,
+  roundFor,
+  uprightDrop,
+  type Option,
+  type Point,
+} from './logic';
 interface Control {
   node: Container;
   w: number;
@@ -208,7 +219,8 @@ export class VillageVote implements Game {
       this.friends.set(v.id, n);
       if (isPet) this.fitPet(this.boxes.voters[v.id]);
     }
-    if (e.phase === 'preference') this.fitPet({ x: 90, y: 420 });
+    if (e.phase === 'preference')
+      this.fitPet({ x: 90, y: 420 + (this.view.upright ? uprightDrop(this.view) : 0) });
     const bulb = new Container();
     bulb.addChild(
       new Graphics()
@@ -331,13 +343,14 @@ export class VillageVote implements Game {
   private drawPlay() {
     const e = this.election,
       big = toy(e.winner);
+    const scene = playLayout(this.view, e.voters.length);
     big.scale.set(2.3);
-    big.position.set(this.view.w / 2 + 50, 300);
+    big.position.set(scene.toy.x, scene.toy.y);
     this.board.addChild(big);
     const voters = [...e.voters].sort((a, b) => Number(b.id === 'pet') - Number(a.id === 'pet'));
     voters.forEach((v, i) => {
       const n = new Container(),
-        p = { x: 300 + (i % 4) * 180 + (this.view.w - 1024) / 2, y: 500 + Math.floor(i / 4) * 150 };
+        p = scene.voters[i];
       n.position.set(p.x, p.y);
       n.eventMode = 'none';
       if (v.id === 'pet') this.fitPet(p);
@@ -359,7 +372,8 @@ export class VillageVote implements Game {
       const n = v.id === 'pet' ? this.companion : this.friends.get(v.id)!;
       const x = n.x,
         y = n.y;
-      await this.ctx.tw.to(n, { x: this.view.w / 2 + 50, y: 315 }, { duration: 0.22 });
+      const toy = playLayout(this.view, 0).toy;
+      await this.ctx.tw.to(n, { x: toy.x, y: toy.y + 15 }, { duration: 0.22 });
       if (!this.alive || gen !== this.generation) return;
       await this.ctx.tw.to(n, { x, y }, { duration: 0.22 });
     }
@@ -437,6 +451,7 @@ export const villageVote: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => NAMES[Math.max(0, Math.min(2, l - 1))],
   music: STYLES.paint,
+  upright: true,
   touchDemo: true,
   coplayHint: 'Count aloud while she taps the paws, then swap roles. Choose freely for the pet.',
   offScreen: 'With a grown-up, let toy friends choose between two toys and count their preferences.',

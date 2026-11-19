@@ -156,15 +156,18 @@ export interface Layout {
   help: Point;
 }
 /** Fixed 110-square voters; the five-vote group occupies three rows, never behind the guide. */
-export function layout(view: { w: number; h: number }, e: Election): Layout {
+export function layout(view: { w: number; h: number; upright?: true }, e: Election): Layout {
   const n = e.plan.options.length,
     tall = view.h > view.w;
-  const xs = n === 3 ? [325, 575, 825] : [410, 750];
-  const xoff = (view.w - 1024) / 2,
-    oy = tall ? 240 : 220,
-    by = tall ? 390 : 350,
-    first = tall ? 570 : 480,
-    gap = tall ? 160 : 115;
+  // Upright phone (768 wide): three toys at a 240 pitch about the middle; the whole scene hangs up from the bottom edge.
+  const up = view.upright === true,
+    dy = up ? uprightDrop(view) : 0;
+  const xs = up ? (n === 3 ? [144, 384, 624] : [290, 558]) : n === 3 ? [325, 575, 825] : [410, 750];
+  const xoff = up ? 0 : (view.w - 1024) / 2,
+    oy = (up ? 320 : tall ? 240 : 220) + dy,
+    by = (up ? 470 : tall ? 390 : 350) + dy,
+    first = (up ? 600 : tall ? 570 : 480) + dy,
+    gap = up ? 125 : tall ? 160 : 115;
   const voters: Record<string, Point> = {};
   e.plan.options.forEach((o, i) =>
     e.voters
@@ -177,7 +180,24 @@ export function layout(view: { w: number; h: number }, e: Election): Layout {
     options: xs.map((x) => ({ x: x + xoff, y: oy })),
     boards: xs.map((x) => ({ x: x + xoff, y: by })),
     voters,
-    help: { x: 90, y: 280 },
+    help: up ? { x: view.w - 90, y: view.h - 100 } : { x: 90, y: 280 },
+  };
+}
+
+/** How far an upright scene drops so it hangs up from the bottom edge, not mid-screen on a tall phone (768 × 1024 is the design). */
+export const uprightDrop = (view: { h: number }) => Math.max(0, view.h - 1024);
+
+/** The sharing scene: the winning toy and the friends (the pet first) in rows of four. */
+export function playLayout(view: { w: number; h: number; upright?: true }, count: number) {
+  const up = view.upright === true,
+    dy = up ? uprightDrop(view) : 0,
+    xoff = up ? -186 : (view.w - 1024) / 2;
+  return {
+    toy: { x: up ? view.w / 2 : view.w / 2 + 50, y: (up ? 340 : 300) + dy },
+    voters: Array.from({ length: count }, (_, i): Point => ({
+      x: 300 + (i % 4) * 180 + xoff,
+      y: (up ? 560 : 500) + dy + Math.floor(i / 4) * 150,
+    })),
   };
 }
 
