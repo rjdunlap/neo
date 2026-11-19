@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/scoop-shop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `scoop-shop` · **Land:** Cozy Village · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `scoop-shop` · **Land:** Cozy Village · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** colors, counting, sequencing, memory
 

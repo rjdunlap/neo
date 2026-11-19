@@ -7,7 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { LineId } from '../../content/voice-script';
@@ -49,6 +49,7 @@ import {
   type WindowScene,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { counterTopFor, tubSpotsFor } from './layout';
 
 const SCOOP_R = 34;
 const SCOOP_STEP = 44;
@@ -286,7 +287,7 @@ class ScoopShop implements Game {
   }
 
   private get counterTop() {
-    return this.view.h * 0.6;
+    return counterTopFor(this.view);
   }
 
   private customerSpot() {
@@ -316,7 +317,7 @@ class ScoopShop implements Game {
       c.moveTo(x, top + 40)
         .lineTo(x, v.h)
         .stroke({ width: 3, color: wood.line, alpha: 0.4 });
-    const two = this.plan.mode === 'two' ? twoConeLayout(v.w, top) : null;
+    const two = this.plan.mode === 'two' ? twoConeLayout(v.w, top, !!v.upright) : null;
     for (const { x } of two ? two.map((s) => s.cone) : [this.coneSpot()]) {
       c.roundRect(x - 46, top - 30, 92, 44, 12)
         .fill(0xc9d3dc)
@@ -354,9 +355,7 @@ class ScoopShop implements Game {
 
   /** Where each shown tub rests along the bottom of the counter. */
   private tubSpots(n = this.shown) {
-    const v = this.view;
-    const xs = n === 1 && this.lap ? [v.w * 0.5] : spread(n, 150, v.w - 40, 140);
-    return xs.map((x) => ({ x, y: v.h - 70 }));
+    return tubSpotsFor(this.view, n, this.lap);
   }
 
   private layoutTubs() {
@@ -542,7 +541,7 @@ class ScoopShop implements Game {
       picture.addChild(scoop);
       guest.addChild(picture);
       onTap(guest, () => this.tapGuest(side), { cooldown: 600 });
-      guest.hitArea = new Rectangle(-150, -500, 300, 500);
+      guest.hitArea = new Rectangle(-150, -340, 300, 340);
       this.ctx.track(guest);
       this.people.addChild(guest);
       this.guests[side] = guest;
@@ -807,7 +806,7 @@ class ScoopShop implements Game {
     this.busy = true;
     this.customerIndex = 0;
     const tw = this.ctx.tw;
-    const spots = twoConeLayout(this.view.w, this.counterTop);
+    const spots = twoConeLayout(this.view.w, this.counterTop, !!this.view.upright);
     const arrivals = this.orders.map((order, i) => {
       const friend = new Critter(CRITTERS[this.kinds[i]]);
       friend.scale.set(FRIEND_SCALE);
@@ -1166,6 +1165,7 @@ export const scoopShop: GameModule = {
   titleLine: 'game.scoop-shop',
   region: 'cozy-village',
   challenge: 'noticing',
+  upright: true,
   skills: ['colors', 'counting', 'sequencing', 'memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   entryLevels: [10],
