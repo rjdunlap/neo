@@ -15,11 +15,24 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { TwoPictures } from './compare';
 import { LineUp } from './line';
-import { LEVELS, claimBars, claimLayout, STAMP_R, STAMPS, stampWhy, type Claim, type Stamp } from './logic';
+import {
+  BLOCK_H,
+  COL_W,
+  columnX,
+  graphBase,
+  LEVELS,
+  claimBars,
+  claimLayout,
+  STAMP_R,
+  STAMPS,
+  stampWhy,
+  UPRIGHT_LIFT,
+  type Claim,
+  type Stamp,
+} from './logic';
 import {
   barsFor,
   cardLayout,
-  CARD_GROUP_W,
   choicesFor,
   graphMove,
   GROUP_GAP,
@@ -41,8 +54,6 @@ import {
   type Question,
 } from './logic';
 
-const COL_W = 110;
-const BLOCK_H = 34;
 const COLORS: ColorName[] = ['orange', 'teal', 'pink', 'purple'];
 const NAMES: Partial<Record<CritterName, string>> = {
   duck: 'ducks',
@@ -225,11 +236,16 @@ class PictureGraph implements Game {
   }
 
   private baseY() {
-    return this.view.h - 110;
+    return graphBase(this.view.h, !!this.view.upright);
+  }
+
+  /** How far the graph stands above its sideways place: held upright it clears the guide in the bottom-left corner. */
+  private lift() {
+    return this.view.upright ? UPRIGHT_LIFT : 0;
   }
 
   private colX(i: number) {
-    return this.view.w / 2 - 60 - ((this.graph.kinds.length - 1) * (COL_W + 20)) / 2 + i * (COL_W + 20);
+    return columnX(this.view.w, this.graph.kinds.length, i);
   }
 
   resize(v: View) {
@@ -239,8 +255,8 @@ class PictureGraph implements Game {
     this.columns.forEach((c, i) => c.position.set(this.colX(i), this.baseY()));
     this.check.position.set(v.w - 90, this.baseY() - 40);
     this.key.position.set(88, v.h * 0.34);
-    this.pads.forEach((p, i) => p.node.position.set(v.w - 110, v.h * 0.32 + i * 125));
-    const claims = claimLayout(v.w, v.h);
+    this.pads.forEach((p, i) => p.node.position.set(v.w - 100, v.h * 0.32 + i * 125));
+    const claims = claimLayout(v.w, v.h, this.lift());
     this.stamps.forEach((s, i) => s.node.position.set(claims.stamp(i).x, claims.stamp(i).y));
     this.claimCard.position.set(claims.card.x, claims.card.y);
     this.drawCards();
@@ -289,9 +305,9 @@ class PictureGraph implements Game {
       const cards = this.cardLayout();
       for (let k = 0; k < this.graph.counts[this.hint] / 5; k++)
         g.roundRect(
-          cards.groupX(k) - CARD_GROUP_W / 2 + 2,
+          cards.groupX(k) - cards.group / 2 + 2,
           cards.rowY(this.hint) - cards.rowH / 2 + 4,
-          CARD_GROUP_W - 4,
+          cards.group - 4,
           cards.rowH - 8,
           12,
         ).stroke({ width: pulse * 0.7, color: swatch.yellow.fill });
@@ -400,7 +416,7 @@ class PictureGraph implements Game {
   }
 
   private cardLayout() {
-    return cardLayout(this.view.w, this.view.h, this.graph.kinds.length, this.plan.max);
+    return cardLayout(this.view.w, this.view.h, this.graph.kinds.length, this.plan.max, this.lift());
   }
 
   /** Level 9's tally cards: a face, then the kind's marks in groups of five, one group for each block its bar needs. */
@@ -749,7 +765,7 @@ class PictureGraph implements Game {
       this.resize(this.view);
     }
     for (const x of this.claimCard.removeChildren()) x.destroy({ children: true });
-    const t = claimLayout(this.view.w, this.view.h).card;
+    const t = claimLayout(this.view.w, this.view.h, this.lift()).card;
     this.claimCard.addChild(tile(t.w, t.h, 'white'));
     const face = (i: number, x: number) => {
       const f = new Critter(CRITTERS[this.graph.kinds[i]]);
@@ -937,6 +953,7 @@ export const pictureGraph: GameModule = {
   name: 'Picture Graph',
   titleLine: 'game.picture-graph',
   region: 'counting-cove',
+  upright: true,
   challenge: 'numbers',
   skills: ['counting', 'data', 'graphs', 'comparing'],
   bands: ['prek', 'school'],

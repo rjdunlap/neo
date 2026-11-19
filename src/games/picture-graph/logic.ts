@@ -357,6 +357,20 @@ export function groupSpots(
 
 /* Level 9, A key of five: a tally card per kind where the meadow was, its marks in groups of five, one group to a block. */
 
+/**
+ * Where the graph's baseline sits above the bottom edge: 110 sideways, and 250 held upright, so the graph panel (which
+ * reaches 80 below the baseline) ends 170 up, over the guide in the bottom-left corner rather than under it.
+ */
+export const graphBase = (h: number, upright = false) => h - (upright ? 250 : 110);
+/** A graph column's width (and its tap box's), and a block's height. */
+export const COL_W = 110;
+export const BLOCK_H = 34;
+/** The centre of the graph's `i`th column of `kinds`: the row sits 60 left of centre, clear of the number pads and stamps. */
+export const columnX = (w: number, kinds: number, i: number) =>
+  w / 2 - 60 - ((kinds - 1) * (COL_W + 20)) / 2 + i * (COL_W + 20);
+/** How far the upright baseline is lifted above the sideways one: what `cardLayout` and `claimLayout` take as `lift`. */
+export const UPRIGHT_LIFT = 140;
+
 /** A group of five tally marks on a card takes this much room across. */
 export const CARD_GROUP_W = 52;
 /** Room at a card's start for the critter's face. */
@@ -366,11 +380,13 @@ export const CARD_FACE_W = 80;
  * The tally cards: one row per kind, stacked where the meadow was, clear of the key on the left, the number pads on the
  * right and the graph panel below (its top is 412 above the bottom). `groupX(k)` and `rowY(r)` are centres.
  */
-export function cardLayout(w: number, h: number, rows: number, groups: number) {
-  const width = CARD_FACE_W + groups * CARD_GROUP_W + 16;
-  const left = Math.max(170, w / 2 - 60 - width / 2);
+export function cardLayout(w: number, h: number, rows: number, groups: number, lift = 0) {
+  // A narrow view narrows the groups (a mark of five is 40 across) so the card ends clear of the number pads.
+  const group = Math.min(CARD_GROUP_W, (w - 172 - 150 - CARD_FACE_W - 16) / groups);
+  const width = CARD_FACE_W + groups * group + 16;
+  const left = Math.max(150, w / 2 - 60 - width / 2);
   // Centred in the room between the corner buttons (150) and the graph panel, so a tall view has no gap above the graph.
-  const room = h - 430 - 150;
+  const room = h - 430 - lift - 150;
   const rowH = Math.min(70, room / rows);
   const top = 150 + (room - rows * rowH) / 2;
   return {
@@ -380,7 +396,8 @@ export function cardLayout(w: number, h: number, rows: number, groups: number) {
     bottom: top + rows * rowH,
     rowH,
     faceX: left + CARD_FACE_W / 2,
-    groupX: (k: number) => left + CARD_FACE_W + CARD_GROUP_W / 2 + k * CARD_GROUP_W,
+    group,
+    groupX: (k: number) => left + CARD_FACE_W + group / 2 + k * group,
     rowY: (r: number) => top + rowH / 2 + r * rowH,
   };
 }
@@ -512,7 +529,9 @@ export const ROW_LABEL = 110;
  * Clear of the pet on the left; `slotX(k)` and `rowY(r)` are centres.
  */
 export function trayLayout(w: number, h: number, rows: number, max: number) {
-  const width = ROW_LABEL + max * THING_SIZE + 20;
+  // A narrow view narrows the slots (a placed thing is drawn smaller than its tap square) so the tray stays on screen.
+  const slot = Math.min(THING_SIZE, (w - 8 - 160 - ROW_LABEL - 20) / max);
+  const width = ROW_LABEL + max * slot + 20;
   const left = Math.max(160, w / 2 - width / 2);
   const bottom = h - 24;
   const top = bottom - rows * ROW_H - 16;
@@ -522,7 +541,8 @@ export function trayLayout(w: number, h: number, rows: number, max: number) {
     top,
     bottom,
     labelX: left + ROW_LABEL / 2 + 4,
-    slotX: (k: number) => left + ROW_LABEL + 10 + THING_SIZE / 2 + k * THING_SIZE,
+    slot,
+    slotX: (k: number) => left + ROW_LABEL + 10 + slot / 2 + k * slot,
     rowY: (r: number) => top + 8 + ROW_H / 2 + r * ROW_H,
   };
 }
@@ -715,12 +735,12 @@ export const claimBars = (c: Claim, kinds: number): number[] =>
 export const STAMP_R = 56;
 
 /** The three stamps down the right edge, under the corner buttons, clear of the graph; and the claim card over the graph. */
-export function claimLayout(w: number, h: number) {
+export function claimLayout(w: number, h: number, lift = 0) {
   const x = w - 100;
   const mid = Math.max(210 + 130, h * 0.45);
   return {
     stamp: (i: number) => ({ x, y: mid + (i - 1) * 140 }),
     // Just over the graph it talks about (whose panel starts at h - 412).
-    card: { x: w / 2 - 60, y: Math.max(210, h - 412 - 110), w: 380, h: 130 },
+    card: { x: w / 2 - 60, y: Math.max(210, h - 412 - lift - 110), w: 380, h: 130 },
   };
 }

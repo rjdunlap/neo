@@ -124,6 +124,7 @@ export class LineUp implements Game {
         // A hop still under way would pull it back toward the old layout's slot.
         this.ctx.tw.kill(th.node);
         th.node.position.set(t.slotX(th.slot), t.rowY(th.kind));
+        th.node.scale.set(t.slot / THING_SIZE);
       } else th.node.position.set(spots[i].x, spots[i].y);
     });
     this.rows.forEach((r, i) => r.position.set((t.left + t.right) / 2, t.rowY(i)));
@@ -267,8 +268,10 @@ export class LineUp implements Game {
     sfx.pop(2 + n);
     void this.ctx.say('count', { n });
     const t = this.layout();
-    th.node.scale.set(0.85);
-    void this.ctx.tw.to(th.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
+    // In the tray a thing is drawn to its slot, which a narrow view makes narrower than the shore's tap square.
+    const fit = t.slot / THING_SIZE;
+    th.node.scale.set(0.85 * fit);
+    void this.ctx.tw.to(th.node.scale, { x: fit, y: fit }, { duration: 0.15 });
     void this.ctx.tw.to(th.node, { x: t.slotX(th.slot), y: t.rowY(th.kind) }, { duration: 0.35 });
     if (this.things.every((x) => x.placed)) void this.allLined();
   }
