@@ -32,6 +32,7 @@ import {
   type CrossRound,
   type Gate,
 } from './logic';
+import { crossLayout } from './layout';
 
 const SCALE = 0.32;
 /** The small copies on the bank shelf, and the gap between them. */
@@ -180,28 +181,27 @@ class CritterCrossing implements Game {
 
   /** Where the bridge's gate stands, and the height of the bridge. */
   private gatePoint() {
-    return { x: this.view.w * 0.42 - 10, y: this.view.h * 0.5 };
+    return crossLayout(this.view).gate;
   }
 
   private leftSlot(i: number) {
-    const v = this.view;
-    return { x: v.w * (0.2 + 0.12 * (i % 2)), y: v.h * (0.4 + 0.15 * Math.floor(i / 2)) + 40 };
+    return crossLayout(this.view).left(i);
   }
 
   private rightSlot(i: number) {
-    const v = this.view;
-    return { x: v.w * (0.68 + 0.12 * (i % 2)), y: v.h * (0.4 + 0.15 * Math.floor(i / 2)) + 40 };
+    return crossLayout(this.view).right(i);
   }
 
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
     const g = this.scenery.clear();
-    const top = v.h * 0.32;
+    const L = crossLayout(v);
+    const top = L.top;
     g.rect(0, top, v.w, v.h - top).fill(swatch.green.light);
     // The river, with a few ripples, and the bridge across it.
-    const riverL = v.w * 0.42;
-    const riverR = v.w * 0.58;
+    const riverL = L.riverL;
+    const riverR = L.riverR;
     g.rect(riverL, top, riverR - riverL, v.h - top).fill(swatch.blue.fill);
     for (let y = top + 40; y < v.h; y += 70)
       g.moveTo(riverL + 24, y)
@@ -217,10 +217,10 @@ class CritterCrossing implements Game {
         .stroke({ width: 3, color: wood.line, alpha: 0.6 });
     this.drawGate(false);
     this.sign.position.set(this.gatePoint().x, by - 150);
-    this.bulb.position.set(v.w * 0.5, v.h - 80);
-    this.dots.position.set(v.w * 0.5, v.h - 160);
+    this.bulb.position.set(L.bulb.x, L.bulb.y);
+    this.dots.position.set(L.dots.x, L.dots.y);
     this.drawDots();
-    this.shelf.position.set(v.w - 24, v.h - 20);
+    this.shelf.position.set(L.shelf.x, L.shelf.y);
     for (const [i, s] of this.slots.entries()) {
       const home =
         s.state === 'crossed'
@@ -447,7 +447,7 @@ class CritterCrossing implements Game {
       const right = this.rightSlot(this.slots.filter((s) => s.state === 'crossed').length - 1);
       slot.home = right;
       void this.ctx.say('cross.yes', { who });
-      await this.walkTo(slot, this.view.w * 0.58 + 40, this.gatePoint().y + 10);
+      await this.walkTo(slot, crossLayout(this.view).riverR + 40, this.gatePoint().y + 10);
       await this.walkTo(slot, right.x, right.y);
       this.drawGate(false);
       slot.node.cheer();
@@ -586,6 +586,7 @@ class CritterCrossing implements Game {
     const n = this.cards.length;
     if (!n) return;
     const left = 125;
+    const top = crossLayout(v).panelTop;
     const width = v.w - left - 20;
     const gap = 16;
     const widths = this.cards.map((c) => cardWidth(c.gate));
@@ -594,7 +595,7 @@ class CritterCrossing implements Game {
     if (total <= width) {
       let x = left + (width - total) / 2;
       this.cards.forEach((c, i) => {
-        c.node.position.set(x + widths[i] / 2, 130);
+        c.node.position.set(x + widths[i] / 2, top);
         x += widths[i] + gap;
       });
       return;
@@ -605,7 +606,7 @@ class CritterCrossing implements Game {
     this.cards.forEach((c, i) =>
       c.node.position.set(
         v.w / 2 - (cols * colW) / 2 + colW / 2 + (i % cols) * colW,
-        130 + Math.floor(i / cols) * 150,
+        top + Math.floor(i / cols) * 150,
       ),
     );
   }
@@ -675,7 +676,7 @@ class CritterCrossing implements Game {
         sfx.bell(6, 0.25);
         const right = this.rightSlot(this.slots.filter((s) => s.state === 'crossed').length - 1);
         slot.home = right;
-        await this.walkTo(slot, this.view.w * 0.58 + 40, this.gatePoint().y + 10);
+        await this.walkTo(slot, crossLayout(this.view).riverR + 40, this.gatePoint().y + 10);
         await this.walkTo(slot, right.x, right.y);
         this.drawGate(false);
         this.mark(slot, true);
@@ -768,6 +769,7 @@ export const critterCrossing: GameModule = {
   challenge: 'logic',
   skills: ['deduction', 'using-evidence', 'attributes', 'reasoning'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
