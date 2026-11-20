@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/shape-buddies; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `shape-buddies` · **Land:** Tinker Lab · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `shape-buddies` · **Land:** Tinker Lab · **Ages:** preschool–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** shape and function, spatial planning, testing and revision
 
@@ -52,3 +52,5 @@ A failed trial drops the seed onto a cushion and names the first unsupported rol
 **Level 8, Your friend, my friend (pre-K and school; not an entry level):** level 3's wide gap and spoon with two people at one iPad. The round opens on two 112-unit seat buttons (`buddies.seats`): **Two of us** and **Just me** (the same seat art as Secret Code, in `src/art/seats.ts`). Just me plays like level 3 with hints unchanged. In Two of us friend 0 is hers and goes first; only the turn holder's friend moves, the other is dimmed and a tap on it wobbles it and says whose turn it is (`buddies.turnTeal`, `turnPurple`, `turnPink`, `turnBlue`) with no miss or hint. Shape changes keep the turn; every real drop (to a dock or the park, changed or not, past a 70-unit movement threshold; a plain tap does not) passes it. A failed Try and Help hand the turn to the friend whose role broke, Undo restores the holder and Replay returns the turn to her. Hints are charged per friend, and Two of us finishes with misses 0 and hints `max(hints on hers, 1)` through `sharedResult` (`buddies.shared`). Pre-K `order` [7, 1, 2, 3, 8, 4, 5], school [1, 2, 3, 8, 4, 5, 6]; spoken start `buddies.start8`.
 
 Rules use a finite inspectable trace, independent of collision/frame timing. The ghost finger uses selection, tools, drags, Try and the pot through the same handlers as touch play. Colors are seeded; geometry and solvability are fixed. Co-play asks which shape can hold the seed; off screen, slide a large soft toy across cardboard into a bowl. At level 2, ask why the flat one did not work this time; off screen, add a step-down ramp. No controller or second-seat mode. Future arrangements remain proposals.
+
+On upright phones the layout (already pure in `logic.ts`) takes an upright branch; it was fixed to a 1024 width centred, which put the pot and third tool off a 768 view and the bridge dock over Home on a 1024-tall view. Upright, the bridge dock sits at x 250 (mirrored for level 6), the pot at 390 along, the tools take a row with the parks beneath, level 6's four buttons sit at a 160 pitch, and the scene hangs up from the bottom edge. The chute's far end is cropped at the edge, by design. `upright.test.ts` covers five views of all eight levels.

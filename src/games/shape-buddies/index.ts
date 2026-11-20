@@ -234,7 +234,7 @@ class ShapeBuddies implements Game {
     this.round = new SeedRound(ctx.level);
     ({ colors: this.colors, seed: this.kind } = looks(ctx.rng));
     this.seed = seedArt(this.kind);
-    const far = layout(this.view.w, this.view.h, this.level).receiverWidth;
+    const far = layout(this.view.w, this.view.h, this.level, !!this.view.upright).receiverWidth;
     for (const dock of ['bridge', 'receiver'] as const) {
       const node = this.docks[dock],
         w = dock === 'bridge' ? 180 : far;
@@ -464,7 +464,7 @@ class ShapeBuddies implements Game {
     void this.announce(-1);
   }
   private place() {
-    return layout(this.view.w, this.view.h, this.level);
+    return layout(this.view.w, this.view.h, this.level, !!this.view.upright);
   }
   private canEdit() {
     return !this.dead && !this.busy && this.round.editable && !this.handles.some((h) => h.dragging);
@@ -801,12 +801,12 @@ class ShapeBuddies implements Game {
   }
   resize(view: View) {
     this.view = view;
-    const l = layout(view.w, view.h, this.level),
+    const l = layout(view.w, view.h, this.level, !!view.upright),
       x = 0,
       d = this.step;
     this.scenery.clear().rect(0, 0, view.w, view.h).fill(cream);
     // Banks are drawn from the bridge dock (x = 0) and flipped when the stream runs the other way.
-    this.land.clear().position.set(l.bridge.x, 0);
+    this.land.clear().position.set(l.bridge.x, l.dy);
     this.land.scale.x = this.dir;
     // The wide gap: the near bank ends at left + 290 (raised by the step at level 4) and the far bank starts at left + 690. Cushions sit under
     // the near half (no path, or a slope's dip), in the gap between the halves, and on the far bank past the spoon.
@@ -863,8 +863,8 @@ class ShapeBuddies implements Game {
       .fill(wood.fill)
       .stroke({ width: 4, color: wood.line });
     // The raised bridge dock's label sits where the caption was, so a step down lifts the words, never a target.
-    this.heading.position.set(view.w / 2, d ? 110 : 128);
-    this.caption.position.set(view.w / 2, d ? 150 : 180);
+    this.heading.position.set(view.w / 2, (d ? 110 : 128) + l.dy);
+    this.caption.position.set(view.w / 2, (d ? 150 : 180) + l.dy);
     for (const dock of ['bridge', 'receiver'] as Dock[]) this.docks[dock].position.set(l[dock].x, l[dock].y);
     this.pot.position.set(l.pot.x, l.pot.y);
     this.sprout.position.set(l.pot.x, l.pot.y - 20);
@@ -918,6 +918,7 @@ export const shapeBuddies: GameModule = {
   challenge: 'space',
   skills: ['shape and function', 'spatial planning', 'testing and revision'],
   bands: ['preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [7],
   describeLevel: (level) => DESCRIPTIONS[level] ?? DESCRIPTIONS[1],

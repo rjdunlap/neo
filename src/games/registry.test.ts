@@ -653,6 +653,7 @@ describe('game registry', () => {
       'second-chance-shed',
       'secret-code',
       'sense-detective',
+      'shape-buddies',
       'shell-rows',
       'sing-along-barn',
       'size-parade',
