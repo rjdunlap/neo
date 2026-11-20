@@ -74,6 +74,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 ### Game slices from the dives (refilled 2026-11-17)
 
+- **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
+
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
 - **`duck-pond` real stopping at levels 4–5** (toddler, preschool; a new interaction on existing levels: typecheck, rule tests, one filtered play at 4 and 5 with one wrong count, `fingerdemo`, one portrait screenshot): a "That's enough!" check ends the round, too few or too many is a gentle miss with the spoken count (the unused `duck.extra` line), and a duck tapped on the pond hops back as a free undo; level 3 stays as it is. Expected files: `src/games/duck-pond/{logic,index,howto,voice}.ts`, `logic.test.ts`, the browser case, the game page. [Dive slice 3](deep-dives/duck-pond.md#build-slices-in-order)
