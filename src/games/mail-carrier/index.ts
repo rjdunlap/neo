@@ -7,14 +7,12 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  sideColumns,
-  sideLayout,
   sideWrong,
   parity,
   addressedHouse,
@@ -43,6 +41,7 @@ import {
 } from './logic';
 import { drawProblem, drawTool } from './art';
 import type { CompanionRig } from '../../creatures/companion';
+import { streetHouses, streetLayout } from './layout';
 import { WoodsMail } from './woods';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -120,6 +119,8 @@ class HouseView extends Container {
   readonly neighbor: Critter;
   readonly box = new Container();
   delivered = 0;
+  /** The scale the house rests at (the street's layout sets it). */
+  rest = 1;
   private waving = false;
 
   constructor(
@@ -254,6 +255,7 @@ class MailCarrier implements Game {
   private readonly backdrop: Backdrop;
   private readonly road = new Graphics();
   private wrongs = 0;
+  private cartMin = 210;
   /** Seconds since the last touch, for level 1's invitation. */
   private idle = 0;
   private wiggling = false;
@@ -268,7 +270,7 @@ class MailCarrier implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.street = makeStreet(
-      this.plan.mode === 'sides' && sideColumns(ctx.view.w) === 3
+      streetHouses(ctx.view, this.plan.houses, this.plan.mode === 'sides') !== this.plan.houses
         ? { ...this.plan, houses: 6, top: 12 }
         : this.plan,
       ctx.rng,
@@ -309,10 +311,10 @@ class MailCarrier implements Game {
       onTap(h, () => void this.post(i), { cooldown: 400 });
       h.on('pointerdown', () => {
         this.idle = 0;
-        h.scale.set(this.plan.mode === 'sides' ? 0.832 : 1.04);
+        h.scale.set(h.rest * 1.04);
       });
       for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'] as const)
-        h.on(up, () => h.scale.set(this.plan.mode === 'sides' ? 0.8 : 1));
+        h.on(up, () => h.scale.set(h.rest));
       ctx.track(h.neighbor);
       this.houses.push(h);
       ctx.stage.addChild(h);
@@ -351,28 +353,22 @@ class MailCarrier implements Game {
 
   resize(v: View) {
     this.backdrop.resize(v);
-    const y = v.h - 150;
-    this.road
-      .clear()
-      .rect(0, y + 40, v.w, v.h - y)
-      .fill(0xd9d2c5)
-      .rect(0, y + 30, v.w, 14)
-      .fill(0xbfb6a6);
-    for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, y + 96, 50, 8, 4).fill(0xffffff);
-    const xs = spread(this.houses.length, 160, v.w - 50, 178);
-    this.houses.forEach((h, i) => h.position.set(xs[i], y));
-    if (this.plan.mode === 'sides') {
-      const layout = sideLayout(v.w, v.h, this.houses.length);
-      this.houses.forEach((h, i) => {
-        h.position.set(layout[i].x, layout[i].y);
-        h.scale.set(layout[i].scale);
-      });
-      const roadTop = layout[0].y + 110;
-      this.road.clear().rect(0, roadTop, v.w, 54).fill(0xd9d2c5);
-      for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, roadTop + 25, 50, 6, 3).fill(0xffffff);
-    }
-    this.envelope.position.set(v.w / 2, this.plan.mode === 'sides' ? 105 : 150);
-    this.cart.position.set(this.cartX(this.cart.x || v.w / 2), y + 140);
+    const lay = streetLayout(v, this.houses.length, this.plan.mode === 'sides');
+    this.road.clear().rect(0, lay.road.top, v.w, lay.road.h).fill(0xd9d2c5);
+    if (lay.road.curb) {
+      this.road.rect(0, lay.road.top - 10, v.w, 14).fill(0xbfb6a6);
+      for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, lay.road.top + 56, 50, 8, 4).fill(0xffffff);
+    } else
+      for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, lay.road.top + 25, 50, 6, 3).fill(0xffffff);
+    this.houses.forEach((h, i) => {
+      h.position.set(lay.houses[i].x, lay.houses[i].y);
+      h.rest = lay.houses[i].scale;
+      h.scale.set(lay.houses[i].scale);
+      h.hitArea = new Circle(0, -60, lay.houses[i].hit);
+    });
+    this.cartMin = lay.cartMin;
+    this.envelope.position.set(lay.envelope.x, lay.envelope.y);
+    this.cart.position.set(this.cartX(this.cart.x || v.w / 2), lay.cartY);
   }
 
   update(dt: number) {
@@ -391,7 +387,7 @@ class MailCarrier implements Game {
 
   /** The cart stops in front of a mailbox, kept clear of the guide's corner. */
   private cartX(x: number) {
-    return Math.max(210, Math.min(this.ctx.view.w - 70, x));
+    return Math.max(this.cartMin, Math.min(this.ctx.view.w - 70, x));
   }
 
   /**
@@ -723,5 +719,6 @@ export const mailCarrier: GameModule = {
   },
   hubIcon: () => new MailIcon(),
   sticker,
+  upright: true,
   create: (ctx) => (isMapMode(planFor(ctx.level).mode) ? new WoodsMail(ctx) : new MailCarrier(ctx)),
 };

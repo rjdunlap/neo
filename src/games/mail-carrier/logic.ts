@@ -646,18 +646,8 @@ export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): W
     : 'go';
 }
 
-/** Layout fallback: four 0.8-scale houses per side unless their 176-unit targets would overlap. */
+/** Houses per side for the odd-and-even level: four, unless their 176-unit targets would overlap sideways. */
 export const sideColumns = (width: number) => (width - 260 >= 3 * 180 ? 4 : 3);
-export function sideLayout(width: number, height: number, count: number) {
-  const columns = count / 2;
-  const near = height - 130;
-  const far = 380;
-  return Array.from({ length: count }, (_, i) => ({
-    x: 160 + ((width - 260) * (i % columns)) / (columns - 1),
-    y: i < columns ? far : near,
-    scale: 0.8,
-  }));
-}
 export const parity = (n: number) => (n % 2 ? 'odd' : 'even');
 export function sideWrong(actual: number, target: number) {
   return {
