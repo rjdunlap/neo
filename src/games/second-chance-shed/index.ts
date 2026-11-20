@@ -439,6 +439,7 @@ export const secondChanceShed: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  upright: true,
   coplayHint:
     'Be the shed keeper: say where you think a thing goes ("I think the worms want this one"), let her check the pictures and carry it, then swap.',
   offScreen: 'Find something at home that could be used again, and use it together.',

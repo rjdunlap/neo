@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/second-chance-shed; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `second-chance-shed` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `second-chance-shed` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** sorting, materials, cause-and-effect, reuse, planning
 
@@ -25,6 +25,8 @@
 | 8 | Three picnics |
 
 <!-- end generated -->
+
+On upright phones levels 1–4 keep `shedLayout`, which already fits. The planned cart (levels 5–6, `planLayout`) hangs its places up from the bottom edge with the friends above them, the bell at their right and the cart row above the friends, five things at a 132 pitch (`UPRIGHT_THING_GAP`). The picnic board (levels 7–8, `uprightPicnicLayout`) is a 768 × 1024 plan hung from the bottom: the shelf and stack row clear of Home, three picnics 648 wide, the painter and a low 270 × 100 heap in a foot row, the bell at the bottom right, and heap outlines in one row of five when wider than tall. The sideways plans are unchanged; `upright.test.ts` covers every level, three seeds and five views.
 
 **Starts as:** drag each used thing from the cart to the place that gives it a second life, and watch that place make something
 
