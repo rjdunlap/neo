@@ -26,6 +26,7 @@ import { VOICE as crosswordVoice } from '../games/crossword/voice.ts';
 import { VOICE as cueStudioVoice } from '../games/cue-studio/voice.ts';
 import { VOICE as cutAlongVoice } from '../games/cut-along/voice.ts';
 import { VOICE as dayByDayVoice } from '../games/day-by-day/voice.ts';
+import { VOICE as dominoPondVoice } from '../games/domino-pond/voice.ts';
 import { VOICE as dominoRunVoice } from '../games/domino-run/voice.ts';
 import { VOICE as dotLinkVoice } from '../games/dot-link/voice.ts';
 import { VOICE as drawThePatternVoice } from '../games/draw-the-pattern/voice.ts';
@@ -640,6 +641,7 @@ export const SCRIPT = {
   ...cueStudioVoice,
   ...cutAlongVoice,
   ...dayByDayVoice,
+  ...dominoPondVoice,
   ...dominoRunVoice,
   ...dotLinkVoice,
   ...drawThePatternVoice,

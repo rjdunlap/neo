@@ -1,0 +1,1 @@
+**The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](../../NEW-GAME.md) now asks.

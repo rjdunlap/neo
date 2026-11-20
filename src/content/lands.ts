@@ -299,6 +299,7 @@ export const LANDS: readonly Land[] = [
       'critter-crossing',
       'mossy-path',
       'shell-rows',
+      'domino-pond',
     ],
   },
   {

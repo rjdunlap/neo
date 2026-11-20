@@ -427,7 +427,7 @@ class WordCode implements Game {
     if (next === undefined)
       return { tap: { on: this.plan.picture ? this.checkBtn : this.keyCells.get('enter')! }, pause: 0.9 };
     if (this.entry.join('') !== want.slice(0, this.entry.length))
-      return { tap: { on: this.backBtn }, pause: 0.2 };
+      return { tap: { on: this.plan.picture ? this.backBtn : this.keyCells.get('back')! }, pause: 0.2 };
     return { tap: { on: this.keyCells.get(next)! }, pause: 0.3 };
   }
 

@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (16), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (17), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 178 games; the 162 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 143 games, and "grown-up" (13 and up) is played by 23 games: the 16 grown-up puzzles and 7 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 179 games; the 163 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 144 games, and "grown-up" (13 and up) is played by 24 games: the 16 grown-up puzzles and 8 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -189,6 +189,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Critter Crossing](docs/games/critter-crossing.md) | pre-K–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |
 | [Mossy Path](docs/games/mossy-path.md) | toddler–school | Puzzle Peaks | 11 | tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 and 9 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch; level 10 (school) draws the whole route as paw prints, then taps the turtle to walk it; level 11 (school) is coverage where thick tufts are crossed twice |
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 3 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
+| [Domino Pond](docs/games/domino-pond.md) | pre-K–grown-up | Puzzle Peaks | 3 | Turn and lay two stepping stones to match the dots on both ends. |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 10 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 14 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
@@ -431,6 +432,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `sudokutouch` | Sudoku Garden by touch, levels 7, 1, 6, 8, 9 and 10: a wrong number (one miss, boing, red ring, spoken line), Erase, Marks, one hint, start over, every square and tray target at least 64 logical units sideways and upright, one sticker each, leaving mid-round | `SUDOKU_ONLY=7` plays only the 4 by 4 level, `SUDOKU_ONLY=8` the crossing-rows level (hints until the X-Wing one, up to three beds, a portrait screenshot) `SUDOKU_ONLY=10` the cage level (a wrong number, marks, a two-square cage filled off its sum, Start over, a cage hint, portrait and landscape 64-unit targets, one sticker) (level 9, patchwork beds, was played by a one-off probe, not this suite); `FINGER_ONLY=sudoku-garden` for the demonstration |
 | `jarsort` | Jar Sort by touch: level 1's authored boards (a refused move free under lit jars, a ground tap sets a fruit back), level 3 (two refused moves are two misses and light one hint, a drag moves a fruit, undo), level 7 upright screenshot, level 8 with mats solved by taps; one sticker per round | `FINGER_ONLY=jar-sort` for the demonstration |
 | `dominorun` | Domino Run by touch: level 1 by taps, level 8 with a stalled run (no miss), one requested hint, drags, level 5 upright screenshot, level 6 sunset with a drop on a puddle | `FINGER_ONLY=domino-run` for the demonstration |
+| `dominopond` | Domino Pond levels 1 and 3 at 390 × 844: rejected match, checked inequalities, Help, Undo, rotation, revised finish and stickers (about 35 s) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=domino-pond FINGER_LEVELS=1,2,3` |
 | `fruitslice` | Fruit Slice by touch: level 1 by taps, level 3 with two wrong-kind swipes (glow, one hint), level 7 upright by the hint lines, level 8 two signs by swipes and the bowl, then the pair board by lines | `FINGER_ONLY=fruit-slice` for the demonstration |
 | `vinesnip` | Vine Snip by touch: levels 1, 3, 4 and 5; level 1 three taps 0/0; level 3 in portrait with a far-turnaround miss, a requested hint, three timed snips and a saved 1/1; level 4 portrait screenshot with the keep glow; level 5 with a wrong-side keep, Grow back and both lines fed, saved 1/0 (about 2 minutes) | |
 | `drawpattern` | Draw the Pattern by touch: level 1 by marks and a pat, level 3 with two strays (one miss, glow, one hint, progress kept), level 4 a circle counterclockwise then clockwise, level 5 portrait screenshot, level 8 a wrong candidate (one miss, stroke resets) then finished, `DRAW_LEVELS=9` plays level 9 alone (two strays, one miss, glow, one hint, finish), `DRAW_LEVELS=10` plays level 10 (lap: a stray tap and drag with no misses, dot taps and one drag along the dashes, portrait screenshot, then a toddler round and the step from 10 to 2) (about 1–2 min) | `FINGER_ONLY=draw-the-pattern FINGER_LEVELS=1,7` (or `10`) for the demonstration |
