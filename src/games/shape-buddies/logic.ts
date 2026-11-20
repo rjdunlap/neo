@@ -294,13 +294,12 @@ export function layout(w: number, h: number, level = 1, upright = false) {
     // the fourth stays inside 768.
     dy = upright ? Math.max(0, h - 1024) : 0,
     buttonX = (i: number) => (upright ? 225 + 160 * i + (w - 768) / 2 : left + 340 + 180 * i);
-  // Upright, the bridge dock moves to x = 215 (clear of Home) (mirrored for level 6) so its far bank and the pot (470 or 490 along) end inside 768.
-  const at = (x: number) => {
-    const sideways = left + (flow === 1 ? x : 1090 - x);
-    if (!upright) return sideways;
-    const bridgeX = left + (flow === 1 ? (plan.joined ? 380 : 400) : 1090 - 400);
-    return sideways - bridgeX + (flow === 1 ? 215 : w - 215);
-  };
+  // Upright, the bridge dock moves to x = 250 (mirrored for level 6) so the chute's foot (245 behind it) stays on screen, and the pot comes in to 390 along
+  // (from 470 or 490) so it ends inside 768; the far bank behind it is only grass.
+  const bx = plan.joined ? 380 : 400,
+    bridgeUp = flow === 1 ? 250 : w - 250,
+    at = (x: number) =>
+      upright ? bridgeUp + flow * (Math.min(x, bx + 390) - bx) : left + (flow === 1 ? x : 1090 - x);
   const cx = w / 2;
   return {
     dy,
