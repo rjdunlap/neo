@@ -253,9 +253,11 @@ export function boardLayout(tri: Triangle, w: number, h: number) {
   const grooveBelowLastRow = 53 + 30 + 22;
   const grooveLimit = h - 65 - BUTTON_H / 2 - 4;
   const dy = Math.min(86, (grooveLimit - topMin - grooveBelowLastRow) / intervals);
-  const cx = w / 2 + 35;
-  const top = Math.max(topMin, (h - intervals * dy - 82) / 2);
   const half = (intervals * dx) / 2 + 59;
+  // Sideways, the caption bubble stands over the left of the view above the guide, so the board sits as far right as the
+  // view allows (24 units from the edge) and the left holes stay in sight while a hint is spoken. Upright keeps it centred.
+  const cx = w > h ? Math.max(w / 2 + 35, w - half - 24) : w / 2 + 35;
+  const top = Math.max(topMin, (h - intervals * dy - 82) / 2);
   const base = intervals * dy + 53;
   return {
     cx,
