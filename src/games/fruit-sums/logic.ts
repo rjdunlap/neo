@@ -1,4 +1,6 @@
 import type { Rng } from '../../engine/random';
+import type { View } from '../../engine/view';
+import { BUBBLE, BUBBLE_FOOT, BUBBLE_TEXT_H, STRIP_H, STRIP_MIN_VIEW_H } from '../../ui/caption-layout';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
@@ -505,30 +507,40 @@ export const PLUS3 = 48;
 
 export const LEAF_PITCH3 = 140;
 
-/** `leaves` is how many sign leaves the level shows: none, two (plus and take away) or three (and times). */
-export function layoutFor(w: number, h: number, count: number, leaves: number, three = false): TreeLayout {
-  // A tall window (portrait) puts the working rows lower rather than leaving the bottom empty.
-  const cx = w / 2,
-    drop = Math.max(0, Math.min(200, (h - 768) * 0.35)),
-    row = 300 + drop;
-  const x0 = cx - (three ? 288 : 293);
-  const at = (dx: number, y = row): Pt => ({ x: x0 + dx, y });
-  const cols = Math.max(1, Math.min(count, Math.floor((w - 190 + GAP) / (TILE + GAP))));
+/** The sign, equation and fruit form one group above the guide and any short-phone caption. */
+export function layoutFor({ w, h, upright }: View, plan: TreePlan): TreeLayout {
+  const { tiles: count, three, clearTree } = plan;
+  const leaves = plan.ops.length > 1 ? plan.ops.length : 0;
+  const cx = w / 2;
+  const pitch = TILE + (upright ? 14 : GAP);
+  const drop = Math.max(0, Math.min(200, (h - 768) * 0.35));
+  const cols = upright ? count : Math.max(1, Math.min(count, Math.floor((w - 190 + GAP) / pitch)));
   const rows = Math.ceil(count / cols);
-  const trayTop = (leaves ? 600 : 480) + drop;
-  // A short window squeezes the tray upward rather than off the bottom.
-  const top = Math.min(trayTop, h - 60 - TILE / 2 - (rows - 1) * (TILE + GAP));
+  // Short views can have a bubble over the board. The game also sees views shortened by the caption strip,
+  // so give every short upright view the same clearance, whether a bubble is visible or not.
+  const bubbleClearance = BUBBLE_FOOT + BUBBLE_TEXT_H + 2 * BUBBLE.railPadY + BUBBLE.tail;
+  const aboveShortView = Math.max(0, h - STRIP_MIN_VIEW_H - STRIP_H);
+  const clearance = h >= STRIP_MIN_VIEW_H - 0.5 ? Math.max(174, bubbleClearance - aboveShortView) : 174;
+  const floor = h - clearance;
+  const basketY = floor - 52;
+  const top = upright
+    ? clearTree
+      ? basketY - 155
+      : floor - 74
+    : Math.min((leaves ? 600 : 480) + drop, h - 60 - TILE / 2 - (rows - 1) * pitch);
+  const row = upright ? top - (leaves ? 278 : 134) : 300 + drop;
+  const x0 = cx - (three ? 288 : 293);
+  const at = (dx: number): Pt => ({ x: x0 + dx, y: row });
   const tiles: Pt[] = [];
   for (let i = 0; i < count; i++) {
     const r = Math.floor(i / cols),
       inRow = Math.min(cols, count - r * cols);
-    const rowW = inRow * TILE + (inRow - 1) * GAP;
-    const left = 170 + (w - 210 - rowW) / 2;
-    tiles.push({ x: left + (i - r * cols) * (TILE + GAP) + TILE / 2, y: top + r * (TILE + GAP) });
+    const start = upright ? cx : (170 + w - 40) / 2;
+    tiles.push({ x: start + ((i % cols) - (inRow - 1) / 2) * pitch, y: top + r * pitch });
   }
   return {
-    sign: { x: cx, y: 110 },
-    found: { x: cx, y: 196 },
+    sign: { x: cx, y: upright ? row - 166 : 110 },
+    found: { x: cx, y: upright ? row - 84 : 196 },
     ...(three
       ? { a: at(0), op: at(98), b: at(196), op2: at(294), c: at(392), equals: at(484), check: at(576) }
       : { a: at(60), op: at(194), b: at(328), op2: at(328), c: at(328), equals: at(417), check: at(526) }),
@@ -538,7 +550,10 @@ export function layoutFor(w: number, h: number, count: number, leaves: number, t
       y: top - 150,
     })),
     tiles,
-    basket: { x: cx + 20, y: Math.min(h - 70, tiles[count - 1].y + TILE / 2 + 95) },
+    basket: {
+      x: upright ? cx : cx + 20,
+      y: upright ? basketY : Math.min(h - 70, tiles[count - 1].y + TILE / 2 + 95),
+    },
   };
 }
 
