@@ -583,7 +583,7 @@ describe('Frog Hop, Hop by tens (level 13)', () => {
 });
 
 describe('Scenes (slice 6)', () => {
-  // The four views slice 7 checked: the design area, an upright iPad, and a phone either way round (Frog Hop is not upright-ready).
+  // The four views slice 7 checked: the design area, an upright iPad, and a phone either way round.
   const VIEWS = [
     [1024, 768],
     [768, 1024],
