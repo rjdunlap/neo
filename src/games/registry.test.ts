@@ -642,6 +642,7 @@ describe('game registry', () => {
       'pyramid-solitaire',
       'rainbow-fingers',
       'ramp-race',
+      'read-do',
       'relay-woods',
       'rhyme-time',
       'rhythm-neighbors',

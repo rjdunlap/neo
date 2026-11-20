@@ -1,3 +1,4 @@
+import { signLayout, type Box } from './layout';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
@@ -20,8 +21,6 @@ import {
   makeWishes,
   MAX_SLOTS,
   type SlotWord,
-  signLayout,
-  type Box,
 } from './logic';
 import {
   actionOf,
@@ -348,24 +347,23 @@ describe('Read & Do, Make the sign (level 7)', () => {
       computeView(1561, 768, { top: 0, right: 47, bottom: 21, left: 47 }),
     ];
     const hit = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    for (const level of [7, 8, 9])
-      for (const v of views) {
-        const L = signLayout(v, level);
-        const targets = [...L.row, L.speaker, L.wish, L.show, L.send, ...L.tray];
-        const shell: Box[] = [
-          { x: 12, y: 12, w: 100, h: 100 },
-          { x: 12, y: 110, w: 100, h: 100 },
-          { x: 0, y: v.h - 160, w: 150, h: 160 },
-        ];
-        for (const b of targets) {
-          expect(b.w).toBeGreaterThanOrEqual(100);
-          expect(b.h).toBeGreaterThanOrEqual(100);
-          expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h).toBe(true);
-          for (const s of shell) expect(hit(b, s)).toBe(false);
-        }
-        for (const [i, a] of [...targets, L.stage].entries())
-          for (const b of [...targets, L.stage].slice(i + 1)) expect(hit(a, b)).toBe(false);
+    for (const v of views) {
+      const L = signLayout(v);
+      const targets = [...L.row, L.speaker, L.wish, L.show, L.send, ...L.tray];
+      const shell: Box[] = [
+        { x: 12, y: 12, w: 100, h: 100 },
+        { x: 12, y: 110, w: 100, h: 100 },
+        { x: 0, y: v.h - 160, w: 150, h: 160 },
+      ];
+      for (const b of targets) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h).toBe(true);
+        for (const s of shell) expect(hit(b, s)).toBe(false);
       }
+      for (const [i, a] of [...targets, L.stage].entries())
+        for (const b of [...targets, L.stage].slice(i + 1)) expect(hit(a, b)).toBe(false);
+    }
   });
   it('has every Make the sign line', () => {
     for (const id of [
