@@ -590,6 +590,7 @@ describe('game registry', () => {
       'feelings-faces',
       'ferry-jam',
       'food-web-workshop',
+      'forecast-detective',
       'frog-hop',
       'fruit-slice',
       'fruit-sums',
