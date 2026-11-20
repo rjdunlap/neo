@@ -382,6 +382,7 @@ class WordCode implements Game {
     if (row) {
       row.children.forEach((t) => t.scale.set(0));
       for (const t of row.children) {
+        if (t.destroyed) break;
         await this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.16, ease: ease.outBack });
         if (!this.ctx.alive) return;
         sfx.tick();
@@ -426,7 +427,7 @@ class WordCode implements Game {
     if (next === undefined)
       return { tap: { on: this.plan.picture ? this.checkBtn : this.keyCells.get('enter')! }, pause: 0.9 };
     if (this.entry.join('') !== want.slice(0, this.entry.length))
-      return { tap: { on: this.keyCells.get('back')! ?? this.backBtn }, pause: 0.2 };
+      return { tap: { on: this.backBtn }, pause: 0.2 };
     return { tap: { on: this.keyCells.get(next)! }, pause: 0.3 };
   }
 
