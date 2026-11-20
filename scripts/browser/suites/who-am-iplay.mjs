@@ -407,6 +407,44 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.deepEqual(after.standing, ['penguin']);
     await finished('who-am-i');
     assert.deepEqual(await score(), [0, 1]);
+    // Level 8, the platypus: the answer is always the platypus and the clues are eggs and milk. Tapping the platypus is the
+    // one miss (it stays), the pause sheet's hint is the one hint, every ruled-out friend turns over, and the pet explains
+    // the platypus once, uncounted.
+    await launch('who-am-i', 8, 'Mia', 'school');
+    await settle();
+    const l8 = await page.evaluate(() => {
+      const r = neo.scene.game.round;
+      return { answer: r.answer, clues: [...r.clues], gallery: r.gallery };
+    });
+    assert.equal(l8.answer, 'platypus', 'level 8 answers the platypus');
+    assert.deepEqual([...l8.clues].sort(), ['eggs', 'milk']);
+    assert.equal(l8.gallery.length, 6);
+    await screenshot('who-am-i-8');
+    await tapCard(await answerAt());
+    await settle();
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.play.misses, neo.scene.game.play.down.size]),
+      [1, 0],
+    );
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => neo.scene.game.play.hints), 1);
+    for (let clue = 0; clue < 2; clue++) {
+      await settle();
+      for (const i of await targets()) {
+        await tapCard(i);
+        await page.waitForTimeout(450);
+      }
+    }
+    await finished('who-am-i');
+    assert.deepEqual(await score(), [1, 1]);
+    assert.deepEqual(await page.evaluate(() => [...neo.scene.game.play.explained]), ['platypus']);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Who Am I? 8: the platypus in a six-card gallery with the clues eggs and milk, a tap on the platypus as the one miss, the pause-sheet hint counted once, every ruled-out friend turned over, the platypus explained once and uncounted, saved score 1 miss and 1 hint passed',
+    );
     log(
       'Who Am I? 7: no tray before a pick, a pick dealing five fair clue cards, a changed mind free, the clue hint counted once (asked twice), a clue the pet turns friends over for, a clue that fits everyone (nobody turns, nothing counts), her friend settled after a clue, the glowing card to the end, portrait screenshot with the five-card tray, saved score 0 misses and 1 hint passed',
     );

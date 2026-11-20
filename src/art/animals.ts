@@ -42,6 +42,28 @@ export function penguinArt(): Container {
   return c;
 }
 
+/**
+ * Who Am I?'s platypus (level 8): a brown furred body with a flat grey bill, a flat paddle tail and webbed feet, standing
+ * with its feet on y = 34 like the penguin, about 76 units tall.
+ */
+export function platypusArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const grey = 0x8a8f9c,
+    greyLine = 0x5d6270;
+  g.ellipse(34, 26, 20, 7).fill(swatch.brown.line);
+  g.ellipse(-15, 33, 13, 6).ellipse(15, 33, 13, 6).fill(grey).stroke({ width: 2, color: greyLine });
+  g.ellipse(0, 8, 30, 27).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
+  g.ellipse(0, 14, 17, 17).fill(swatch.brown.light);
+  g.circle(0, -16, 21).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
+  g.circle(-9, -22, 5).circle(9, -22, 5).fill(0xffffff).circle(-8, -21, 2.5).circle(10, -21, 2.5).fill(ink);
+  g.ellipse(0, -7, 17, 8).fill(grey).stroke({ width: 3, color: greyLine });
+  g.circle(-6, -9, 1.8).circle(6, -9, 1.8).fill(greyLine);
+  g.circle(-17, -12, 4).circle(17, -12, 4).fill({ color: swatch.pink.fill, alpha: 0.6 });
+  c.addChild(g);
+  return c;
+}
+
 /** Mossy Path's turtle; Species Comeback passes other shell colors. */
 export function turtleArt(size: number, shell: Swatch = swatch.teal): Graphics {
   const u = size / 100,

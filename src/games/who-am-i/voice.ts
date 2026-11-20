@@ -32,6 +32,9 @@ export const VOICE = {
   'whoami.reason.group-stays': ['{name} {has}, so {name} is {group}. {name} stays!'],
   'whoami.surprise-penguin': ["Penguin has feathers, so Penguin is a bird. Penguin just can't fly!"],
   'whoami.surprise-bat': ['Bat can fly, but Bat feeds its babies milk, so Bat is a mammal.'],
+  'whoami.platypus.explain': [
+    'Platypus lays eggs, and Platypus feeds its babies milk, so Platypus is a mammal. A very unusual one!',
+  ],
   'whoami.hint-glow': ['Look at the glowing friend. Does the clue fit?'],
   'whoami.hint-shimmer': ['The shimmering friends do not fit the clue. Turn them over.'],
   'whoami.hint-group.bird': ["I'm a bird, so I have feathers!"],
