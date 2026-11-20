@@ -75,7 +75,7 @@ Every new species is new `CritterSpec` anatomy or bespoke art. The plan is to st
 | platypus | mammal | none | M: `snout: 'bill'` exists; needs a flat tail and webbed feet (a tail part many More kinds need) | **tricky:** lays eggs and feeds milk |
 | whale | mammal | none | M: bespoke, too big for the `Critter` body | **tricky:** a mammal in the sea. Build once, for `oceans` and here |
 
-So Who Am I? levels 1–3 cost an art refactor (S) and no new anatomy; the bat (level 4) is the first "M each" item, and platypus and whale wait for a later slice or the oceans kit.
+So Who Am I? levels 1–3 cost an art refactor (S) and no new anatomy; the bat (level 4) is the first "M each" item, and the platypus (level 8, defined 2026-11-20) waits for its build slice (Z14) and the whale for the oceans kit.
 
 ### Overlap boundaries
 
@@ -162,7 +162,7 @@ None was played. "Opened" means the page itself was read.
 | 5 · Which group? | school | The clue is a group ("I'm a bird"); she turns over everyone who is not | Using the features that define a group | The miss names the feature: "Penguin has feathers, so penguin is a bird" |
 | 6 · You ask | school | A secret friend; three question cards to choose from; the pet answers yes or no, and she turns over the friends the answer rules out | Which question to ask | Asking is never a miss, however many questions; only turning over a friend the answer keeps is. The hint suggests a question that splits what is left |
 | 7 · Make a riddle | school (upper) | She picks a friend and chooses clue cards until the pet can find it; the pet "guesses" aloud between the friends that still fit | Which clues make one friend the only answer | Not judged: an ambiguous riddle makes the pet ask for another clue |
-| 8 · Platypus (later) | school (upper) | A friend that lays eggs and feeds milk | Holding two features at once | As level 4 |
+| 8 · Platypus | school (upper) | A friend that lays eggs and feeds milk; defined 2026-11-20 (Z13), build Z14 | Holding two features at once | As level 4 |
 
 **Finish.** A round finishes when one friend is left (levels 1–6) or the pet finds her friend (level 7); one sticker each round, with help. Free looking (tapping the clue sign to hear it again, peeking at a friend's card) is never a miss.
 
@@ -203,7 +203,11 @@ None was played. "Opened" means the page itself was read.
 9. **Z9 · Who Am I? levels 5–7** (definition). **Defined 2026-11-17:** [definition](../../definitions/who-am-i.md#levels-57-z9-defined-2026-11-17) (which group? with the group as the first clue and the penguin as an answer; you ask, a tray of yes/no questions where asking is never a miss and unsafe "no" answers are removed; make a riddle with true clue cards; school 2–7).
 10. **Z10 · Build level 5, Which group?**: rules in `logic.ts`, tests, ghost finger and how-to step, one scripted play. **Built 2026-11-17** ([PR #1749](https://github.com/rjdunlap/neo/pull/1749)).
 11. **Z11 · Build level 6, You ask**, after Z10: the question tray, the source check of the "no" answers, tests, one scripted play and a portrait screenshot. **Built 2026-11-17** ([PR #1752](https://github.com/rjdunlap/neo/pull/1752)).
-12. **Z12 · Build level 7, Make a riddle**, after Z11: the clue tray, tests, one scripted play and a portrait screenshot. **Built 2026-11-17** ([PR #1755](https://github.com/rjdunlap/neo/pull/1755); re-enumerated with the as-built `askable`: 36 galleries, 216 pairs, at least 20 trays each). Then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
+12. **Z12 · Build level 7, Make a riddle**, after Z11: the clue tray, tests, one scripted play and a portrait screenshot. **Built 2026-11-17** ([PR #1755](https://github.com/rjdunlap/neo/pull/1755); re-enumerated with the as-built `askable`: 36 galleries, 216 pairs, at least 20 trays each).
+13. **Z13 · Who Am I? level 8, the platypus** (definition). **Defined 2026-11-20:** [definition](../../definitions/who-am-i.md#level-8-the-platypus-z13-defined-2026-11-20) (the platypus in every gallery of six, the clues `eggs` and `milk` in either order so both steps are surprise steps, no `beak` clue, one spoken explanation; school 2–8).
+14. **Z14 · Build level 8, the platypus**: `platypusArt()`, the rules and tests, the source check of the platypus row, one scripted play and a portrait screenshot.
+
+Then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
 
 ## What was built
 
