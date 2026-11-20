@@ -286,35 +286,54 @@ export class SeedRound {
 }
 /** Level 2 raises only the chute's bank, so the bridge dock moves up with it. Level 3 widens the stream: the docks become a near and a far half, side by side. Level 4 does both: the near half sits up on the raised bank.
  * Level 6 is level 2 mirrored about left + 545, so the pot clears the pet's corner, and gains a fourth button, Turn. */
-export function layout(w: number, h: number, level = 1) {
+export function layout(w: number, h: number, level = 1, upright = false) {
   const left = (w - 1024) / 2,
     plan = planFor(level),
-    flow = plan.flow ?? 1;
-  const at = (x: number) => left + (flow === 1 ? x : 1090 - x);
+    flow = plan.flow ?? 1,
+    // Upright, the whole scene hangs up from the bottom edge (a tall phone's spare height is sky), and the four level-6 buttons take a 160 pitch so
+    // the fourth stays inside 768.
+    dy = upright ? Math.max(0, h - 1024) : 0,
+    buttonX = (i: number) => (upright ? 225 + 160 * i + (w - 768) / 2 : left + 340 + 180 * i);
+  // Upright, the bridge dock moves to x = 215 (clear of Home) (mirrored for level 6) so its far bank and the pot (470 or 490 along) end inside 768.
+  const at = (x: number) => {
+    const sideways = left + (flow === 1 ? x : 1090 - x);
+    if (!upright) return sideways;
+    const bridgeX = left + (flow === 1 ? (plan.joined ? 380 : 400) : 1090 - 400);
+    return sideways - bridgeX + (flow === 1 ? 215 : w - 215);
+  };
+  const cx = w / 2;
   return {
-    bridge: { x: at(plan.joined ? 380 : 400), y: 300 - plan.drop },
-    receiver: { x: at(plan.joined ? 580 : 630), y: 300 },
-    pot: { x: at(870), y: 300 },
+    dy,
+    bridge: { x: at(plan.joined ? 380 : 400), y: 300 - plan.drop + dy },
+    receiver: { x: at(plan.joined ? 580 : 630), y: 300 + dy },
+    pot: { x: at(870), y: 300 + dy },
     receiverWidth: plan.joined ? 180 : 110,
-    parks: [
-      { x: left + 250, y: 485 },
-      { x: left + 420, y: 485 },
-    ],
-    tools: [
-      { x: left + 590, y: 485 },
-      { x: left + 740, y: 485 },
-      { x: left + 890, y: 485 },
-    ],
+    // Upright, the three tools take a row at a 150 pitch and the two parks a row under it (five 130-to-140-wide spots do not fit one 768 row beside each other with room to drag).
+    parks: upright
+      ? [
+          { x: cx - 85, y: 625 + dy },
+          { x: cx + 85, y: 625 + dy },
+        ]
+      : [
+          { x: left + 250, y: 485 },
+          { x: left + 420, y: 485 },
+        ],
+    tools: upright
+      ? [
+          { x: cx - 150, y: 485 + dy },
+          { x: cx, y: 485 + dy },
+          { x: cx + 150, y: 485 + dy },
+        ]
+      : [
+          { x: left + 590, y: 485 },
+          { x: left + 740, y: 485 },
+          { x: left + 890, y: 485 },
+        ],
     // Level 8's seat question: two round buttons (112 across) over the stream, shown alone while the friends, tools and docks are hidden.
     seats: [
-      { x: left + 420, y: 330 },
-      { x: left + 620, y: 330 },
+      { x: left + 420, y: 330 + dy },
+      { x: left + 620, y: 330 + dy },
     ],
-    buttons: [
-      { x: left + 340, y: h - 118 },
-      { x: left + 520, y: h - 118 },
-      { x: left + 700, y: h - 118 },
-      ...(plan.flow ? [{ x: left + 880, y: h - 118 }] : []),
-    ],
+    buttons: [0, 1, 2, ...(plan.flow ? [3] : [])].map((i) => ({ x: buttonX(i), y: h - 118 })),
   };
 }
