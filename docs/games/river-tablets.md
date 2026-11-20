@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/river-tablets; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `river-tablets` · **Land:** Story Grove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `river-tablets` · **Land:** Story Grove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, one-to-one, symbols, checking
 
