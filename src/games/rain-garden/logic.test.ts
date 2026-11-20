@@ -670,7 +670,9 @@ describe('level 4 layout', () => {
           for (const t of targets) expect(overlap(t, l.pond)).toBe(false);
           // The cloud hangs over the top bed; the low bed is downhill of it.
           expect(Math.abs(l.cloud.x - l.beds[0].patch.x)).toBeLessThan(1);
-          expect((l.beds[1].patch.x - l.beds[0].patch.x) * (mirror && !v.upright ? -1 : 1)).toBeGreaterThan(0);
+          expect((l.beds[1].patch.x - l.beds[0].patch.x) * (mirror && !v.upright ? -1 : 1)).toBeGreaterThan(
+            0,
+          );
           expect(l.beds[1].patch.y).toBeGreaterThan(l.beds[0].patch.y);
         });
       }
