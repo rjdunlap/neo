@@ -79,7 +79,10 @@ export function readLayout(v: GameView, wordCount: number, choiceCount: number) 
   const paired = choiceCount === 4;
   const compact = v.upright && mayUseBubble(v);
   const y = v.upright ? v.h - (compact ? 874 : 695) : 185;
-  const wordsX = v.upright ? cx + 196 - wordCount * 58 : cx;
+  // Center short signs with the speaker. The four-word sign shifts right to clear Home and Help.
+  const signShift = paired ? 22 : 0;
+  const wordsX = v.upright ? cx - 58 + signShift : cx;
+  const speakerX = v.upright ? cx + wordCount * 58 + signShift : cx + 365;
   const choices = Array.from({ length: choiceCount }, (_, i) => {
     const x = paired
       ? cx + (i % 2 ? 1 : -1) * (v.upright ? 184 : 170)
@@ -91,7 +94,7 @@ export function readLayout(v: GameView, wordCount: number, choiceCount: number) 
   });
   return {
     words: tiles(wordCount, wordsX, y),
-    speaker: box(v.upright ? cx + 254 : cx + 365, y, 110, 100),
+    speaker: box(speakerX, y, 110, 100),
     choices,
     actor: { x: cx, y: v.upright ? v.h - (compact ? (paired ? 619 : 702) : 480) : v.h * 0.43 },
   };
