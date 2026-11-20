@@ -32,13 +32,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ### Phone play
 
 
-- **Marble Jump (`marble-jump`) sideways captions** (existing-game tier; shell tier if the shared caption layout changes): at 630 × 390, the caption bubble can cover the left holes of the six-row board while a hint is spoken. Keep the active hole and its neighbours visible while preserving the 88-unit targets. [Phone check](verification/2026-11-19-marble-jump-phone-touch-targets.md)
-
 ### Puzzle-page follow-ups
-
-- **Define Sum Crates** (PP5, docs only): check Fruit Sums for overlap, then define the opening crossing-run puzzle. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
-
-- **Define Campsite** (PP6, docs only): define a 4×4 opening board with one tent by each tree, no touching and row and column counts. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 - **Define Silly Scene** (PP7, docs only): check Not Always and Who Am I? for overlap before defining the first authored pictures and explanations. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 

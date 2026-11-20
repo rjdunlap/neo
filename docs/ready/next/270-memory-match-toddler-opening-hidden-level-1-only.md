@@ -1,0 +1,1 @@
+**`memory-match` toddler opening, hidden level 1 only** (existing-game and navigation checks): expose the four-card round in Puzzle Peaks, scope the how-to, audit band counts and land fit, and play one toddler round with free replay and supported completion. [Definition](../../deep-dives/memory-match.md#younger-band-openings)

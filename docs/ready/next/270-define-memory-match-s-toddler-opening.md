@@ -1,1 +1,0 @@
-**Define Memory Match's toddler opening** (`memory-match`; its dive calls it ready to define, decided as the hidden level 1 only): the toddler window, its how-to and the audits. [Dive](../../deep-dives/memory-match.md#build-slices-in-order)
