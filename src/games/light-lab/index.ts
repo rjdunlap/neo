@@ -72,19 +72,12 @@ import {
   sticker,
   sunArt,
 } from './art';
+import { boardOrigin, CARD_STEP, cardsShift, CELL, ROW_GAP, TRAY_GAP, TRAY_H, TRAY_STEP } from './layout';
 
-const CELL = 100;
-/** The tray under the board on levels 8–9: its gap below the board, height and slot spacing. */
-const TRAY_GAP = 34;
-const TRAY_H = 124;
-const TRAY_STEP = 140;
 /** A drag that travels less than this from where it was picked up is a tap: on a placed mirror, it turns it. */
 const TAP_SLOP = 24;
 /** Level 10: a couch spot on a cloud cell rather than a mirror or the sun. */
 const CLOUD = -100;
-/** Level 11: the picture row (or tray) under the board: its gap, card size and spacing. */
-const ROW_GAP = 30;
-const CARD_STEP = 210;
 
 /** A tray mirror: in the tray (`cell` null) or placed on the board. */
 interface TrayMirror {
@@ -225,9 +218,10 @@ class LightLab implements Game {
     this.view = v;
     if (!this.puzzle) return;
     const { cols, rows } = this.puzzle;
-    const tall =
-      rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : this.round ? ROW_GAP + CARD_H : 0);
-    this.board.position.set((v.w - cols * CELL) / 2, Math.max(110, (v.h - tall) / 2 + 20));
+    const below = this.puzzle.tray.length ? TRAY_GAP + TRAY_H : this.round ? ROW_GAP + CARD_H : 0;
+    const o = boardOrigin(v, cols, rows, below);
+    this.board.position.set(o.x, o.y);
+    this.cards.forEach((c, k) => (c.x = (cols * CELL) / 2 + cardsShift(v) + (k - 1) * CARD_STEP));
   }
 
   update(dt: number) {
@@ -1018,7 +1012,7 @@ class LightLab implements Game {
       card.addChild(cardArt());
       if (typeof item === 'string') card.addChild(outcomeArt(item));
       else card.addChild(objectArt(item.name, r.board.tilt));
-      card.position.set((this.puzzle.cols * CELL) / 2 + (k - 1) * CARD_STEP, y);
+      card.position.set((this.puzzle.cols * CELL) / 2 + cardsShift(this.view) + (k - 1) * CARD_STEP, y);
       card.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
       onTap(card, () => void (typeof item === 'string' ? this.guess(item, card) : this.choose(k)), {
         cooldown: 300,
@@ -1249,6 +1243,7 @@ export const lightLab: GameModule = {
   challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'cause-and-effect', 'light'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
