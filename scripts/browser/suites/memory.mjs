@@ -12,7 +12,8 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       await page.waitForTimeout(250);
       await page.evaluate(() => {
         const g = neo.scene.game;
-        if (g.cards.length !== 4 || g.views.some((v) => v.matched)) throw new Error('Toddler round is not four hidden cards');
+        if (g.cards.length !== 4 || g.views.some((v) => v.matched))
+          throw new Error('Toddler round is not four hidden cards');
         if (g.ctx.band !== 'toddler') throw new Error(`Toddler launch played at ${g.ctx.band}`);
         const scale = neo.view.scale;
         for (const v of g.views) {
