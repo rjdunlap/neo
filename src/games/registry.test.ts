@@ -569,6 +569,7 @@ describe('game registry', () => {
       'brain-break',
       'bubble-pop',
       'bug-builder',
+      'caravan-days',
       'chain-reaction',
       'circuit-garden',
       'clap-syllables',

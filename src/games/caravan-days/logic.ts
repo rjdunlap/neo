@@ -962,13 +962,18 @@ export function roadLayout(
   index = 0,
 ): RoadLayout | null {
   const wide = v.w >= v.h;
-  const midY = v.h * 0.5;
+  const up = !!v.upright;
+  const midY = up && level === 2 ? v.h - 450 : v.h * 0.5;
   const short = v.h < 600;
   let out: RoadLayout;
   if (level === 1) {
     const baleY = short ? v.h - 70 : v.h - 110;
-    const start = { x: 300, y: Math.min(midY + 20, baleY - BALE / 2 - CAMEL.h / 2 - 10) };
-    const oasis = { x: v.w - 180, y: wide ? midY - 60 : midY - 100 };
+    // Upright the camel stands just above the bales and the oasis above it, hung up from the bottom edge.
+    const start = {
+      x: 300,
+      y: up ? baleY - BALE / 2 - CAMEL.h / 2 - 10 : Math.min(midY + 20, baleY - BALE / 2 - CAMEL.h / 2 - 10),
+    };
+    const oasis = { x: v.w - 180, y: up ? start.y - 260 : wide ? midY - 60 : midY - 100 };
     const n = (plan as LoadPlan).bales;
     const bales = Array.from({ length: n }, (_, i) => around({ x: 250 + i * 130, y: baleY }, BALE));
     out = {
@@ -983,7 +988,7 @@ export function roadLayout(
   } else if (level === 2) {
     const road = (plan as ReachPlan).roads[index];
     const start = { x: 300, y: midY + 20 };
-    const gap = Math.min(wide ? 190 : 230, v.h * 0.28);
+    const gap = up ? 230 : Math.min(wide ? 190 : 230, v.h * 0.28);
     const upper = { x: v.w - 170, y: midY - gap };
     const lower = { x: v.w - 170, y: midY + gap };
     out = {
@@ -1000,12 +1005,18 @@ export function roadLayout(
     };
   } else if (level === 4 || level === 5) {
     const legs = level === 4 ? (plan as SwapPlan).roads[index].legs : (plan as WorthPlan).legs;
-    const stopY = Math.round(level === 4 ? Math.max(300, v.h * 0.4) : Math.max(230, v.h * 0.3));
+    const stopY = up
+      ? v.h - (level === 4 ? 130 : 250) - (level === 4 ? 330 : 420)
+      : Math.round(level === 4 ? Math.max(300, v.h * 0.4) : Math.max(230, v.h * 0.3));
     const pts = rowStops(v, stopY);
     // Landscape keeps the choices along the bottom; portrait pulls them up under the road so the road and the choice read together.
-    const lowY = v.w >= v.h ? v.h - 130 : Math.min(v.h - 130, stopY + (level === 4 ? 330 : 420));
+    const lowY = up
+      ? v.h - (level === 4 ? 130 : 250)
+      : v.w >= v.h
+        ? v.h - 130
+        : Math.min(v.h - 130, stopY + (level === 4 ? 330 : 420));
     const go = around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h);
-    const mid = (PET_CORNER.w + go.x) / 2;
+    const mid = up && level === 5 ? v.w / 2 : (PET_CORNER.w + go.x) / 2;
     const base = {
       camel: around({ x: pts[0].x, y: stopY + 48 }, CAMEL.w * 0.55, CAMEL.h * 0.55),
       start: { x: pts[0].x, y: stopY + 48 },
@@ -1026,7 +1037,8 @@ export function roadLayout(
       const gap = LOAD.w + 40;
       out = {
         ...base,
-        boards: pts.slice(1).map((p) => around({ x: p.x, y: stopY + 140 }, BOARD.w, BOARD.h)),
+        // Upright the three boards stand on the stops' 136 pitch, so they are 126 wide (still over 100).
+        boards: pts.slice(1).map((p) => around({ x: p.x, y: stopY + 140 }, up ? 126 : BOARD.w, BOARD.h)),
         loads: [
           around({ x: mid - gap / 2, y: lowY }, LOAD.w, LOAD.h),
           around({ x: mid + gap / 2, y: lowY }, LOAD.w, LOAD.h),
@@ -1043,30 +1055,35 @@ export function roadLayout(
     out = lay;
   } else {
     const map = (plan as PlanPlan).maps[index];
-    const homeX = wide ? 240 : 110;
-    const home = { x: homeX, y: midY };
-    const city = { x: v.w - 150, y: midY };
-    const gap = Math.min(wide ? 215 : 300, v.h * 0.28);
-    const x0 = homeX + 140;
-    const x1 = v.w - 290;
-    const pts: Pt[] = map.stops.map(() => ({ x: 0, y: 0 }));
-    pts[map.home] = home;
-    pts[map.city] = city;
-    map.branches.forEach((ids, b) => {
-      const y = b === 0 ? midY - gap : midY + gap;
-      ids.forEach((id, i) => {
-        pts[id] = { x: ids.length === 1 ? (x0 + x1) / 2 : x0 + (i * (x1 - x0)) / (ids.length - 1), y };
+    if (up) {
+      const lay = planLayoutUpright(map, v);
+      out = lay;
+    } else {
+      const homeX = wide ? 240 : 110;
+      const home = { x: homeX, y: midY };
+      const city = { x: v.w - 150, y: midY };
+      const gap = Math.min(wide ? 215 : 300, v.h * 0.28);
+      const x0 = homeX + 140;
+      const x1 = v.w - 290;
+      const pts: Pt[] = map.stops.map(() => ({ x: 0, y: 0 }));
+      pts[map.home] = home;
+      pts[map.city] = city;
+      map.branches.forEach((ids, b) => {
+        const y = b === 0 ? midY - gap : midY + gap;
+        ids.forEach((id, i) => {
+          pts[id] = { x: ids.length === 1 ? (x0 + x1) / 2 : x0 + (i * (x1 - x0)) / (ids.length - 1), y };
+        });
       });
-    });
-    out = {
-      camel: around(home, CAMEL.w, CAMEL.h),
-      start: home,
-      bales: [],
-      skin: { x: home.x, y: Math.min(home.y + 150, v.h - 40) },
-      stops: pts.map((p) => around(p, OASIS)),
-      go: around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h),
-      roads: map.legs.map((l) => ({ from: pts[l.a], to: pts[l.b], suns: l.suns, a: l.a, b: l.b })),
-    };
+      out = {
+        camel: around(home, CAMEL.w, CAMEL.h),
+        start: home,
+        bales: [],
+        skin: { x: home.x, y: Math.min(home.y + 150, v.h - 40) },
+        stops: pts.map((p) => around(p, OASIS)),
+        go: around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h),
+        roads: map.legs.map((l) => ({ from: pts[l.a], to: pts[l.b], suns: l.suns, a: l.a, b: l.b })),
+      };
+    }
   }
   // At levels 4–5 the stops are scenery; the offers, bubbles, boards and loads are the inputs.
   const inputs =
@@ -1093,6 +1110,35 @@ export function roadLayout(
   return out;
 }
 
+/**
+ * Level 3 upright: the map stands on end (home at the bottom, the city at the top, the two branches as columns), because
+ * a 3-stop branch laid across 768 leaves its stops 114 apart; up the tall area they are 178 apart. Hung up from Go.
+ */
+function planLayoutUpright(map: CaravanMap, v: View): RoadLayout {
+  const x = v.w / 2;
+  const homeY = v.h - 230;
+  const H = 712;
+  const home = { x, y: homeY };
+  const city = { x, y: homeY - H };
+  const pts: Pt[] = map.stops.map(() => ({ x: 0, y: 0 }));
+  pts[map.home] = home;
+  pts[map.city] = city;
+  map.branches.forEach((ids, b) => {
+    ids.forEach((id, i) => {
+      pts[id] = { x: b === 0 ? 190 : v.w - 190, y: homeY - ((i + 1) * H) / (ids.length + 1) };
+    });
+  });
+  return {
+    camel: around(home, CAMEL.w, CAMEL.h),
+    start: home,
+    bales: [],
+    skin: { x: home.x, y: home.y + 150 },
+    stops: pts.map((p) => around(p, OASIS)),
+    go: around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h),
+    roads: map.legs.map((l) => ({ from: pts[l.a], to: pts[l.b], suns: l.suns, a: l.a, b: l.b })),
+  };
+}
+
 /** Points along a road for its suns, evenly spaced and clear of both ends. */
 export function sunPoints(r: RoadLine): Pt[] {
   return Array.from({ length: r.suns }, (_, i) => {
@@ -1104,16 +1150,19 @@ export function sunPoints(r: RoadLine): Pt[] {
 /** Level 6: the pass road above and the sand road below, home at the left and the city at the right; the day cards and Go under them. */
 function passLayout(map: PassMap, v: View): RoadLayout | null {
   const wide = v.w >= v.h;
+  const up = !!v.upright;
   const band = 120;
   const between = 50;
-  const top = wide ? 140 : Math.round(Math.max(140, v.h * 0.2));
+  // Upright the cards rest in one row above Go and the roads hang up from them (the top is sky on a tall phone).
+  const cardsAt = up ? v.h - 260 : 0;
+  const top = up ? cardsAt - 530 : wide ? 140 : Math.round(Math.max(140, v.h * 0.2));
   const passY = top + band / 2;
   const sandY = top + band + between + band / 2;
-  const x0 = 220;
-  const x1 = v.w - 200;
+  const x0 = up ? 190 : 220;
+  const x1 = up ? v.w - 170 : v.w - 200;
   const midY = (passY + sandY) / 2;
-  const home = { x: 120, y: midY };
-  const city = { x: v.w - 110, y: midY };
+  const home = { x: up ? 100 : 120, y: midY };
+  const city = { x: up ? v.w - 90 : v.w - 110, y: midY };
   const bands = [
     { x: x0, y: top, w: x1 - x0, h: band },
     { x: x0, y: top + band + between, w: x1 - x0, h: band },
@@ -1139,11 +1188,12 @@ function passLayout(map: PassMap, v: View): RoadLayout | null {
     .slice(1)
     .map((p, i) => ({ from: sandPts[i], to: p, suns: map.sandLegs[i], a: i, b: i + 1 }));
   const rowW = DAY_CARDS.length * CARD + (DAY_CARDS.length - 1) * CARD_GAP;
-  const cardsY = wide ? v.h - 90 : Math.min(v.h - 90, top + 2 * band + between + 240);
-  const go = around({ x: v.w - 110, y: cardsY }, GO.w, GO.h);
+  const cardsY = up ? cardsAt : wide ? v.h - 90 : Math.min(v.h - 90, top + 2 * band + between + 240);
+  const go = around({ x: v.w - 110, y: up ? v.h - 70 : cardsY }, GO.w, GO.h);
   const left = PET_CORNER.w + 20;
-  const mid = (left + go.x - 30) / 2;
-  if (mid - rowW / 2 < left) return null;
+  const mid = up ? v.w / 2 : (left + go.x - 30) / 2;
+  if (!up && mid - rowW / 2 < left) return null;
+  if (up && mid - rowW / 2 < 0) return null;
   const cards = DAY_CARDS.map((_, i) => ({
     x: mid - rowW / 2 + i * (CARD + CARD_GAP),
     y: cardsY - CARD / 2,
@@ -1173,17 +1223,20 @@ function passLayout(map: PassMap, v: View): RoadLayout | null {
 function wellsLayout(road: WellRoad, v: View): RoadLayout | null {
   const wide = v.w >= v.h;
   const L = road.length;
-  const R = 85;
-  const left = 210;
+  // Upright the 16-mark roads are 72 apart, so the bend is wider and the discs 100 (two sites two marks apart stay clear even at the bend's slant).
+  const up = !!v.upright;
+  const R = up ? 120 : 85;
+  const left = up ? 185 : 210;
+  const site = up ? 100 : SITE;
   // Room for the bend's discs at the right edge.
-  const right = v.w - R - 75;
-  const step = Math.min(SITE, (2 * (right - left) + Math.PI * R) / L);
+  const right = v.w - R - (up ? 60 : 75);
+  const step = Math.min(site, (2 * (right - left) + Math.PI * R) / L);
   if (step < MARK_MIN) return null;
   const W = (L * step - Math.PI * R) / 2;
   if (W <= 0) return null;
   const xL = (left + right) / 2 - W / 2;
   const xR = xL + W;
-  const y0 = wide ? 330 : Math.round(Math.max(330, v.h * 0.3));
+  const y0 = v.upright ? v.h - 440 : wide ? 330 : Math.round(Math.max(330, v.h * 0.3));
   const at = (t: number): Pt => {
     if (t <= W) return { x: xL + t, y: y0 };
     if (t <= W + Math.PI * R) {
@@ -1193,7 +1246,7 @@ function wellsLayout(road: WellRoad, v: View): RoadLayout | null {
     return { x: xR - (t - W - Math.PI * R), y: y0 + 2 * R };
   };
   const marks = Array.from({ length: L + 1 }, (_, i) => at(i * step));
-  const sites = road.sites.map((m) => around(marks[m], SITE));
+  const sites = road.sites.map((m) => around(marks[m], site));
   const stick = around({ x: xL + STICK.w / 2 + 90, y: y0 - 150 }, STICK.w, STICK.h);
   const go = around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h);
   return {

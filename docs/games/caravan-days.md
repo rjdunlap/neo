@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/caravan-days; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `caravan-days` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `caravan-days` · **Land:** Cozy Village · **Ages:** toddler–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** counting, comparing, planning, cause-and-effect
 
@@ -24,6 +24,8 @@
 | 7 | A well every day's walk: dig wells so no stretch of road is longer than a day's walk, with as few wells as she can (two roads; about 9 and up) |
 
 <!-- end generated -->
+
+On upright phones `roadLayout` (already pure) has upright branches for levels 1–7, all hung up from the bottom edge: level 3's map stands on end (home at the bottom, the city at the top, branches as columns 178 apart), level 5's three boards are 126 wide with the loads lifted clear of the guide corner, level 6's five day cards sit in one row above Go, and level 7's bend has a 120 radius with 100-unit discs so sites two marks apart do not overlap at the slant. `upright.test.ts` covers 66+ seeds, every level and five views; the sideways plan is unchanged.
 
 **Starts as:** tap the camel so it kneels, load it, and walk it to the water, the way caravans once did
 
