@@ -16,6 +16,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
+import { CELL, harborLayout } from './layout';
 import {
   LEVELS,
   blockers,
@@ -42,7 +43,6 @@ import {
   type Slide,
 } from './logic';
 
-const CELL = 100;
 /** Colors for the boats besides the ferry. */
 const HULLS: ColorName[] = [
   'blue',
@@ -209,11 +209,9 @@ class FerryJam implements Game {
   }
 
   resize(v: View) {
-    const w = this.n * CELL;
-    // The dock sticks out on the right, so the harbor sits a little left of center; a yellow ferry's dock sticks out below too.
-    const below = this.harbor?.yellow ? 110 : 0;
-    this.board.position.set(Math.max(150, (v.w - w - 110) / 2), Math.max(100, (v.h - w - below) / 2));
-    this.undoButton.position.set(v.w - 80, v.h - 80);
+    const lay = harborLayout(v, this.n, !!this.harbor?.yellow);
+    this.board.position.set(lay.x, lay.y);
+    this.undoButton.position.set(lay.undo.x, lay.undo.y);
     this.drawWater();
   }
 
@@ -954,6 +952,7 @@ export const ferryJam: GameModule = {
   challenge: 'space',
   skills: ['planning', 'spatial-reasoning', 'problem-solving', 'sequencing'],
   bands: ['prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [9, 10],
   describeLevel: (level) => planFor(level).name,

@@ -585,6 +585,7 @@ describe('game registry', () => {
       'duck-pond',
       'far-lights',
       'feelings-faces',
+      'ferry-jam',
       'food-web-workshop',
       'frog-hop',
       'fruit-slice',
