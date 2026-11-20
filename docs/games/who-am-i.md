@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 2–7 |
+| school | 2–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,12 +20,13 @@
 | 5 | Which group? The clue is a bird or a mammal, 6 friends |
 | 6 | You ask: choose the questions, 6 friends |
 | 7 | Make a riddle: choose clues until the pet finds your friend |
+| 8 | The platypus: eggs and milk, 6 friends |
 
 <!-- end generated -->
 
 **Starts as:** a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out
 
-**Grows into:** three friends and one clue, then four friends and two clues, then six friends from at least four groups and three clues (covering, babies, breathing), then level 4's surprises: the penguin and the bat in every gallery, where flying or feathers stop meaning "bird", then level 5 (school): the first clue is the answer's group ("I'm a bird!" or "I'm a mammal!") and the penguin can be the answer, then level 6 (school): she asks yes/no questions of a secret friend from a tray of three and turns over every friend each answer rules out, then level 7 (school): she picks a friend and gives the pet true clue cards from a tray of five until it knows who it is; level 8, the platypus (school, defined 2026-11-20 as Z13, not built), is the friend that lays eggs and feeds milk, found with the clues `eggs` and `milk` (see the [definition](../definitions/who-am-i.md#level-8-the-platypus-z13-defined-2026-11-20))
+**Grows into:** three friends and one clue, then four friends and two clues, then six friends from at least four groups and three clues (covering, babies, breathing), then level 4's surprises: the penguin and the bat in every gallery, where flying or feathers stop meaning "bird", then level 5 (school): the first clue is the answer's group ("I'm a bird!" or "I'm a mammal!") and the penguin can be the answer, then level 6 (school): she asks yes/no questions of a secret friend from a tray of three and turns over every friend each answer rules out, then level 7 (school): she picks a friend and gives the pet true clue cards from a tray of five until it knows who it is; then level 8 (school): the platypus, the friend that lays eggs and feeds milk, found with the clues `eggs` and `milk` (see the [definition](../definitions/who-am-i.md#level-8-the-platypus-z13-defined-2026-11-20))
 
 ## Design notes
 
@@ -38,3 +39,5 @@ Level 6 (school 6, Z11 "You ask"): the pet thinks of a secret friend among six (
 Level 7 (school 7, Z12 "Make a riddle"): she picks a friend for the pet to guess (a small pink rosette marks it; she can change her mind, free, until her first clue). A tray of five clue cards is dealt, each true of her friend: a feature it has or, with a cross, one it lacks. She taps a card; the clue is spoken and the pet turns over every standing friend it does not fit, then thinks aloud ("Is it Duck, or Penguin? I need another clue!", by name for two or three, a count for four or five). A clue that fits everyone still standing turns nobody over and counts nothing. When one friend is left the pet names it, says her riddle back in her order, and the round finishes. Nothing is judged: the round always reports 0 misses, and 1 hint only if she asked the pause sheet for the glowing card (the one that turns over the most standing friends), counted once per round. There are 36 galleries (a four-legged mammal, a flying bird, the penguin, the bat, and two of frog, turtle, fish) and 216 friend-and-gallery pairs, each with at least 20 fair trays; the penguin is always there, so `milk` is never a clue card. The shortest riddle is two clues (192 pairs) or three (24). Given cards leave a gap; the newest clue shows on the sign and earlier ones in the strip, tappable to hear again. Nothing is kept. School is now 2–7, pre-K stays 1–2. See the [definition](../definitions/who-am-i.md#level-7-make-a-riddle).
 
 **Upright (2026-11-17).** Levels 6 and 7's five-answer strip starts below the Home and "?" column when upright (it reached under it); sideways is unchanged. Layout test: `src/games/upright-batch-7.test.ts`.
+
+Level 8 (school 8, Z14 "The platypus"): a gallery of six that always has the platypus, with two or three egg-layers that are not mammals and three or two mammals that do not lay eggs. The clues are exactly `eggs` and `milk`, in either order (seeded); each turns over the friends it rules out, so both steps are surprise steps (after `eggs` the platypus stays among the egg-layers; after `milk` it stays among the mammals). Never a `beak` clue: the platypus's bill is soft and flat, and its feet, tail and bill are drawn, not spoken. Misses and hints are level 4's: a keeps-tap is a miss (tapping the platypus says "Platypus lays eggs, so Platypus stays!" or "...feeds its babies milk, so Platypus stays!"), two on a clue shimmer the ruled-out friends. After the last step the pet says once, free, `whoami.platypus.explain` ("Platypus lays eggs, and Platypus feeds its babies milk, so Platypus is a mammal. A very unusual one!"), which never says what all or most animals do. The platypus is in `FRIENDS` but not `FRIEND_IDS`, so levels 1–7 and their seeds are unchanged; there are 945 galleries, 1,890 rounds. School is now 2–8, pre-K stays 1–2. See the [definition](../definitions/who-am-i.md#level-8-the-platypus-z13-defined-2026-11-20).
