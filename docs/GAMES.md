@@ -740,4 +740,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Species Comeback](games/species-comeback.md)
 
+### Word Code
+
+*school–grown-up* · [Word Code](games/word-code.md)
+
 <!-- end generated -->

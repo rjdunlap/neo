@@ -414,6 +414,7 @@ export const LANDS: readonly Land[] = [
       'island-bridges',
       'pond-conga',
       'species-comeback',
+      'word-code',
     ],
   },
 ];

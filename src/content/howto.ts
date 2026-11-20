@@ -174,6 +174,7 @@ import { HOW_TO as waterRoadHowTo } from '../games/water-road/howto.ts';
 import { HOW_TO as weatherWardrobeHowTo } from '../games/weather-wardrobe/howto.ts';
 import { HOW_TO as welcomeWaysHowTo } from '../games/welcome-ways/howto.ts';
 import { HOW_TO as whoAmIHowTo } from '../games/who-am-i/howto.ts';
+import { HOW_TO as wordCodeHowTo } from '../games/word-code/howto.ts';
 import { HOW_TO as wordGlueHowTo } from '../games/word-glue/howto.ts';
 import { HOW_TO as wordMonstersHowTo } from '../games/word-monsters/howto.ts';
 import { HOW_TO as wordSearchHowTo } from '../games/word-search/howto.ts';
@@ -368,6 +369,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'weather-wardrobe': weatherWardrobeHowTo,
   'welcome-ways': welcomeWaysHowTo,
   'who-am-i': whoAmIHowTo,
+  'word-code': wordCodeHowTo,
   'word-glue': wordGlueHowTo,
   'word-monsters': wordMonstersHowTo,
   'word-search': wordSearchHowTo,

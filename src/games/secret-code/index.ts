@@ -11,6 +11,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { codeLayout } from './layout';
+import { markArt } from './marks';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
@@ -59,26 +60,6 @@ function stoneArt(color: number, r: number): Container {
   );
   c.addChild(shapePath(new Graphics(), MARKS[color], r * 0.38).fill({ color: 0xffffff, alpha: 0.85 }));
   return c;
-}
-
-function markArt(mark: Mark, r: number): Graphics {
-  const g = new Graphics()
-    .circle(0, 0, r)
-    .fill(mark === 'green' ? swatch.green.fill : mark === 'yellow' ? swatch.yellow.fill : 0xc9ccd6)
-    .stroke({ width: 3, color: 0xffffff });
-  if (mark === 'green')
-    g.moveTo(-r * 0.45, 0)
-      .lineTo(-r * 0.1, r * 0.4)
-      .lineTo(r * 0.5, -r * 0.4)
-      .stroke({ width: r * 0.28, color: 0xffffff, cap: 'round', join: 'round' });
-  else if (mark === 'gray')
-    g.moveTo(-r * 0.35, -r * 0.35)
-      .lineTo(r * 0.35, r * 0.35)
-      .moveTo(r * 0.35, -r * 0.35)
-      .lineTo(-r * 0.35, r * 0.35)
-      .stroke({ width: r * 0.22, color: 0xffffff, cap: 'round' });
-  else g.circle(0, 0, r * 0.3).fill(0xffffff);
-  return g;
 }
 
 /** The picture around the slots: a wooden door, a garden gate or a treasure chest. The slot panel's rectangle is the same for each. */

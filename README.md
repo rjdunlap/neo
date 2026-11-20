@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (16), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (13, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (16), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 177 games; the 162 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 142 games, and "grown-up" (13 and up) is played by 22 games: the 15 grown-up puzzles and 7 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 178 games; the 162 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 143 games, and "grown-up" (13 and up) is played by 23 games: the 16 grown-up puzzles and 7 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -274,7 +274,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 15 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 13 in Lantern Lake. All play by touch on the island; 7 are touch-only, and 8 also play with a controller on the couch.
+These 16 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 14 in Lantern Lake. All play by touch on the island; 8 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -299,6 +299,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Island Bridges](docs/games/island-bridges.md) | Lantern Lake | 7 | a 7 by 7 sea of numbered islands joined by plank bridges: tap the water between two islands to lay a plank (Take off, Hint, Start over are buttons); a controller plays it too |
 | [Pond Conga](docs/games/pond-conga.md) | Lantern Lake | 11 | a line of ducklings paddles on at a steady pace and is steered to each helping of duck food (peas, sweetcorn or oats) in turn, round lily pads: touch to set off, swipe anywhere to turn (Hint and Start over are buttons); a controller plays it too |
 | [Species Comeback](docs/games/species-comeback.md) | Lantern Lake | 4 | tap two pond turtles on a family tree to put them in a nest, with no brothers and sisters in a pair, then press Spring |
+| [Word Code](docs/games/word-code.md) | Lantern Lake | 3 | TODO: the first fun action and learning purpose. |
 
 <!-- end generated -->
 
@@ -411,6 +412,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `pyramid` | Pyramid Solitaire levels 1, 3 and 4 by default (`PYRAMID_LEVELS=9,10` plays only the named levels, including the lesson deals' blocked-then-lesson line): actual card taps, mismatched pair and hint, repeated-hint accounting, Undo/Start over, legal dead-end recovery, portrait targets, one sticker per round, land launch, home return and interruption | Demo: `FINGER_ONLY=pyramid-solitaire` |
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
 | `pantry` | Picnic Pantry level 1: free bell and full-blanket taps, two misses on the pair that does not fit, the pause sheet's hint counted once (not again by the second miss), a laid picnic, Another way? with the pair that does not fit (free) and the other menu, the second picnic by the demonstration bot, an upright phone screenshot and one sticker (about 15 s) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=picnic-pantry` |
+| `wordcode` | Word Code by touch: level 1 with a picture word that is not hidden, a try that ignores a mark (the one miss), a requested hint, a portrait screenshot, then the hidden word and a saved score; level 3 with a word not on the list turned down free, an ignored mark, a hint and a portrait screenshot, then the hidden word on the keys | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-code` |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
