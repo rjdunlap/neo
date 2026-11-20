@@ -229,7 +229,8 @@ Each is one session; definitions are docs only.
 6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung): [defined](../../definitions/bunny-patches.md) 2026-11-20 (PR #1907); its build is queued in READY.
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; its build is queued in READY.
-8b. **PP6–PP7** (Campsite, Silly Scene): define once the first of PP2–PP3 is built, checking Not Always and Who Am I for overlap.
+8b. **PP6: define Campsite’s 4×4 opening**: claimed on `codex/neo-ready-define-campsite` (definition, study and READY closeout, docs only).
+8c. **PP7: define Silly Scene**: ready after Domino Pond, checking Not Always and Who Am I for overlap.
 9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
 
 ## What was built and what ran
