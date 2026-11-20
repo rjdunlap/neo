@@ -29,6 +29,7 @@ import { VOICE as dayByDayVoice } from '../games/day-by-day/voice.ts';
 import { VOICE as dominoPondVoice } from '../games/domino-pond/voice.ts';
 import { VOICE as dominoRunVoice } from '../games/domino-run/voice.ts';
 import { VOICE as dotLinkVoice } from '../games/dot-link/voice.ts';
+import { VOICE as downWeGoVoice } from '../games/down-we-go/voice.ts';
 import { VOICE as drawThePatternVoice } from '../games/draw-the-pattern/voice.ts';
 import { VOICE as driftCardsVoice } from '../games/drift-cards/voice.ts';
 import { VOICE as dropsJourneyVoice } from '../games/drops-journey/voice.ts';
@@ -644,6 +645,7 @@ export const SCRIPT = {
   ...dominoPondVoice,
   ...dominoRunVoice,
   ...dotLinkVoice,
+  ...downWeGoVoice,
   ...drawThePatternVoice,
   ...driftCardsVoice,
   ...dropsJourneyVoice,

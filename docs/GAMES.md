@@ -68,6 +68,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Drift Cards](games/drift-cards.md)
 
+### Down We Go
+
+*pre-K–school* · [Down We Go](games/down-we-go.md)
+
 ## Music Mountain
 
 ### Jelly Drums
