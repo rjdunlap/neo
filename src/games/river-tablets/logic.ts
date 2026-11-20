@@ -832,6 +832,67 @@ export interface TabletLayout {
   inputs: Rect[];
 }
 
+/** An upright view's lowest thing rests this far above the bottom edge. */
+export const UPRIGHT_FLOOR = 24;
+
+/**
+ * Upright, the whole scene hangs up from the bottom edge, so a tall phone's spare height is sky at the top (not a gap
+ * between the lane and the controls); the lineup keeps clear of the guide's corner. Moves every rect, once each.
+ */
+function hangFromBottom(l: TabletLayout, v: View): void {
+  const rects = new Set<Rect>();
+  for (const val of Object.values(l)) {
+    if (Array.isArray(val)) val.forEach((r) => rects.add(r as Rect));
+    else if (val) rects.add(val as Rect);
+  }
+  const left = PET_CORNER.w + M;
+  if (l.lineup.x < left) {
+    l.lineup.w -= left - l.lineup.x;
+    l.lineup.x = left;
+  }
+  let low = 0;
+  rects.forEach((r) => (low = Math.max(low, r.y + r.h)));
+  const dy = Math.max(0, v.h - UPRIGHT_FLOOR - low);
+  rects.forEach((r) => (r.y += dy));
+}
+
+/** Level 6 upright: the two tablets side by side (628 wide), each with its lineup and "this one" button, then neither and can't tell in a row. */
+function uprightPair(v: View, lane: Rect, free: Rect, crates: Rect[], baskets: Rect): TabletLayout | null {
+  const x0 = Math.round((v.w - (2 * PAIR_TABLET.w + 2 * GAP)) / 2);
+  const y0 = free.y + 6;
+  const pair = [0, 1].map((i) => ({
+    x: x0 + i * (PAIR_TABLET.w + 2 * GAP),
+    y: y0,
+    w: PAIR_TABLET.w,
+    h: PAIR_TABLET.h,
+  }));
+  const lineups = pair.map((t) => ({ x: t.x, y: t.y + t.h + 12, w: t.w, h: 110 }));
+  const picks = pair.map((t) => ({
+    x: t.x + (t.w - PICK) / 2,
+    y: lineups[0].y + 110 + 12,
+    w: PICK,
+    h: PICK,
+  }));
+  const ay = picks[0].y + PICK + 12;
+  const ax = Math.round(free.x + (free.w - (2 * ANSWER + GAP)) / 2);
+  const neither: Rect = { x: ax, y: ay, w: ANSWER, h: ANSWER };
+  const cantTell: Rect = { x: ax + ANSWER + GAP, y: ay, w: ANSWER, h: ANSWER };
+  const lineup: Rect = { x: x0, y: lineups[0].y, w: 2 * PAIR_TABLET.w + 2 * GAP, h: 110 };
+  const l: TabletLayout = {
+    lane,
+    crates,
+    baskets,
+    pair,
+    picks,
+    neither,
+    cantTell,
+    lineups,
+    lineup,
+    inputs: [...pair, ...picks, neither, cantTell],
+  };
+  return finishLayout(l, v);
+}
+
 /**
  * The lane along the top, the record centred and large, the storehouse right in landscape (below in portrait). Null when
  * the view cannot hold full-size targets; nothing shrinks.
@@ -889,6 +950,7 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     }));
     const bx = crates[2].x + CRATE.w + 12;
     const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
+    if (v.upright) return uprightPair(v, lane, free, crates, baskets);
     // Farm | neither, can't tell | storehouse; each tablet's button below it, then each tablet's lineup.
     const groupW = 2 * PAIR_TABLET.w + 2 * GAP + ANSWER;
     const groupH = PAIR_TABLET.h + 12 + PICK + 12 + 110;
@@ -932,7 +994,7 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
     const tabletH = READ_H + 2 * STRIP.h + 2 * 12 + 20;
     // Portrait has room to spare below: the tablet and its lineup sit a third of the way down it rather than at the top.
-    const spare = wide ? 0 : Math.max(0, free.h - tabletH - 12 - 110 - 6) / 3;
+    const spare = wide || v.upright ? 0 : Math.max(0, free.h - tabletH - 12 - 110 - 6) / 3;
     const tablet: Rect = { x: free.x, y: free.y + 6 + Math.round(spare), w: STRIP.w + 40, h: tabletH };
     const strips = [0, 1].map((i) => ({
       x: tablet.x + 20,
@@ -944,17 +1006,27 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const lineup: Rect = {
       x: free.x,
       y: tablet.y + tablet.h + 12,
-      w: plan.id === 'tens' ? free.w : tablet.w,
+      w: plan.id === 'tens' || v.upright ? free.w : tablet.w,
       h: 110,
     };
+    // Upright, the controls rest in rows under the tablet and its lineup (they cannot sit beside a 500-wide tablet on 768).
+    const below = lineup.y + lineup.h + 12;
+    if (v.upright) tablet.x = Math.round((v.w - tablet.w) / 2);
+    if (v.upright) strips.forEach((r) => (r.x = tablet.x + 20));
     if (plan.id === 'tens') {
-      const stamps = strips.map((r) => ({ x: col, y: r.y, w: STAMP.w, h: STAMP.h }));
-      const handIn: Rect = {
-        x: col + STAMP.w + GAP,
-        y: (strips[0].y + strips[1].y + STRIP.h) / 2 - CRACK.h / 2,
-        w: CRACK.w,
-        h: CRACK.h,
-      };
+      const rowW = 2 * STAMP.w + CRACK.w + 2 * GAP;
+      const rx = Math.round(free.x + (free.w - rowW) / 2);
+      const stamps = v.upright
+        ? [0, 1].map((i) => ({ x: rx + i * (STAMP.w + GAP), y: below, w: STAMP.w, h: STAMP.h }))
+        : strips.map((r) => ({ x: col, y: r.y, w: STAMP.w, h: STAMP.h }));
+      const handIn: Rect = v.upright
+        ? { x: rx + 2 * (STAMP.w + GAP), y: below + (STAMP.h - CRACK.h) / 2, w: CRACK.w, h: CRACK.h }
+        : {
+            x: col + STAMP.w + GAP,
+            y: (strips[0].y + strips[1].y + STRIP.h) / 2 - CRACK.h / 2,
+            w: CRACK.w,
+            h: CRACK.h,
+          };
       l = {
         lane,
         crates,
@@ -967,18 +1039,18 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
         inputs: [tablet, ...strips, ...stamps, handIn],
       };
     } else {
-      const verdicts = [0, 1, 2].map((i) => ({
-        x: col,
-        y: tablet.y + i * (VERDICT + GAP),
-        w: VERDICT,
-        h: VERDICT,
-      }));
-      const numbers = verdicts.map((r) => ({
-        x: col + VERDICT + GAP,
-        y: r.y + (VERDICT - NUMBER) / 2,
-        w: NUMBER,
-        h: NUMBER,
-      }));
+      // Upright: a row of verdicts with each one's number straight below it.
+      const vx = Math.round(free.x + (free.w - (3 * VERDICT + 2 * GAP)) / 2);
+      const verdicts = [0, 1, 2].map((i) =>
+        v.upright
+          ? { x: vx + i * (VERDICT + GAP), y: below, w: VERDICT, h: VERDICT }
+          : { x: col, y: tablet.y + i * (VERDICT + GAP), w: VERDICT, h: VERDICT },
+      );
+      const numbers = verdicts.map((r) =>
+        v.upright
+          ? { x: r.x + (VERDICT - NUMBER) / 2, y: r.y + VERDICT + GAP, w: NUMBER, h: NUMBER }
+          : { x: col + VERDICT + GAP, y: r.y + (VERDICT - NUMBER) / 2, w: NUMBER, h: NUMBER },
+      );
       l = {
         lane,
         crates,
@@ -1010,6 +1082,12 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     };
     l = { lane, rows, store, lineup, inputs: rows.slice() };
   }
+  return finishLayout(l, v);
+}
+
+/** Hangs an upright layout from the bottom edge, then null unless every target fits, clears the corners and never overlaps another. */
+function finishLayout(l: TabletLayout, v: View): TabletLayout | null {
+  if (v.upright) hangFromBottom(l, v);
   const parts = [
     l.lane,
     ...(l.cells ?? []),

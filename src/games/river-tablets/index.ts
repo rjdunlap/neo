@@ -1883,6 +1883,7 @@ export const riverTablets: GameModule = {
   name: 'River Tablets',
   titleLine: 'game.river-tablets',
   region: 'story-grove',
+  upright: true,
   challenge: 'numbers',
   skills: ['counting', 'one-to-one', 'symbols', 'checking'],
   bands: ['preschool', 'prek', 'school'],
