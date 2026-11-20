@@ -1,0 +1,5 @@
+# 2026-11-20 — Sum Crates levels 1–3 definition (PR #1916)
+
+**Changed:** Defined Sum Crates (PP5) as `sum-crates`: crossing rows and columns of numbered fruit crates, each line adding to its sign with no repeat; school levels 1–2 and a school and grown-up level 3, the miss and hint rules, the human-solver gate, upright layout and Lantern Lake as home (Counting Cove as fallback). Checked Fruit Sums for overlap. Queued its build in Next ten and updated the docs map, puzzle-pages study and study backlog.
+**Ran:** A throwaway search script found the three example boards, checked each by brute force to have exactly one solution and to finish under a rule-only solver. Counted page sizes for Counting Cove, Puzzle Peaks and Lantern Lake at each band with a throwaway vitest probe (since deleted). Links and diff checks.
+**Not run:** Typecheck, unit tests, build and browser suites (outside the docs-only tier). Per-level solver caps, layout numbers and the land page counts with the new game are build checks.
