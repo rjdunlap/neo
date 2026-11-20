@@ -587,6 +587,7 @@ describe('game registry', () => {
       'food-web-workshop',
       'frog-hop',
       'fruit-slice',
+      'fruit-sums',
       'gadget-bench',
       'garden-rows',
       'gem-swap',
