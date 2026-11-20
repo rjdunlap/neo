@@ -21,6 +21,7 @@ export const PLANS = [
   { pairs: 3, mode: 'clocks', name: 'Same time: match hour and half-hour clocks' },
 ] as const;
 export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 5 },
   prek: { min: 3, max: 9 },
   school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] },

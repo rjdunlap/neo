@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/memory-match; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `memory-match` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `memory-match` · **Land:** Puzzle Peaks · **Ages:** toddler–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** memory, matching, number-sense, letters, telling-time
 
 | Band | Levels, easiest first |
 | --- | --- |
+| toddler | 1 |
 | preschool | 1–5 |
 | pre-K | 3–9 |
 | school | 8, 12, 9, 10, 11 |

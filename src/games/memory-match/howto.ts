@@ -24,7 +24,8 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
-    { from: 1, to: 11, text: 'The round ends when every pair is found.' },
+    { from: 1, to: 1, text: 'Find both picture pairs to finish.' },
+    { from: 2, to: 11, text: 'The round ends when every pair is found.' },
     { from: 12, to: 12, text: 'Find all three analog and digital clock pairs to finish.' },
   ],
   note: 'A nonmatching pair counts as a miss only when the first card’s partner was already seen. After two misses, one known partner glows until a match clears it.',
