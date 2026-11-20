@@ -641,6 +641,8 @@ export class PlanTally {
 export const THING = 120;
 export const THING_GAP = 24;
 export const BELL = 120;
+/** The gap between the cart row's things upright, where five of them must fit 768 wide. */
+export const UPRIGHT_THING_GAP = 12;
 export const FRIEND_W = 170;
 export const FRIEND_H = 210;
 export const FRIEND_GAP = 2 * DROP_PAD + 16;
@@ -660,6 +662,34 @@ export function planLayout(view: View, round: Round): PlanLayout {
   const { w, h } = view;
   const base = shedLayout(view, round.open);
   const n = round.items.length;
+  const k = round.requests.length;
+  const fw = k * FRIEND_W + (k - 1) * FRIEND_GAP;
+  const top = Math.min(...Object.values(base.places).map((r) => r!.y));
+  if (view.upright) {
+    // Upright (the 768-wide area): the places rest up from the bottom edge, the friends above them with the bell at their
+    // right, and the cart row above the friends (never above y = 210, which is the Home column's depth), so a tall phone's
+    // spare height is sky at the top. Five things sit at a 132 pitch (a 12 gap), 648 wide.
+    const friendY = top - 14 - FRIEND_H;
+    const y = Math.max(HOME_CORNER.w + 100, friendY - 16 - BELL);
+    const rowW = n * THING + (n - 1) * UPRIGHT_THING_GAP;
+    const x0 = (w - rowW) / 2;
+    const slots = Array.from({ length: n }, (_, i): Rect => ({
+      x: x0 + i * (THING + UPRIGHT_THING_GAP),
+      y,
+      w: THING,
+      h: THING,
+    }));
+    const row: Rect = { x: x0, y, w: rowW, h: BELL };
+    const bell: Rect = { x: w - 20 - BELL, y: friendY + (FRIEND_H - BELL) / 2, w: BELL, h: BELL };
+    const fx0 = (w - fw) / 2;
+    const friends = round.requests.map((_, i): Rect => ({
+      x: fx0 + i * (FRIEND_W + FRIEND_GAP),
+      y: friendY,
+      w: FRIEND_W,
+      h: FRIEND_H,
+    }));
+    return { slots, bell, row, friends, places: base.places };
+  }
   // The bell stands clear of the cart row's drop area, so a thing let go by the bell lands on the cart, never on the bell.
   const bellGap = DROP_PAD + 14;
   const rowW = n * THING + (n - 1) * THING_GAP + bellGap + BELL;
@@ -673,10 +703,7 @@ export function planLayout(view: View, round: Round): PlanLayout {
   }));
   const row: Rect = { x: x0, y, w: rowW - BELL - bellGap, h: BELL };
   const bell: Rect = { x: x0 + row.w + bellGap, y, w: BELL, h: BELL };
-  const top = Math.min(...Object.values(base.places).map((r) => r!.y));
   const bandMid = (y + BELL + top) / 2;
-  const k = round.requests.length;
-  const fw = k * FRIEND_W + (k - 1) * FRIEND_GAP;
   const fx0 = h > w ? (w - fw) / 2 : w - 40 - fw;
   const friends = round.requests.map((_, i): Rect => ({
     x: fx0 + i * (FRIEND_W + FRIEND_GAP),
@@ -1162,6 +1189,7 @@ export interface PicnicLayout {
 }
 
 export function picnicLayout(view: View, day: PicnicDay): PicnicLayout {
+  if (view.upright) return uprightPicnicLayout(view, day);
   const ox = Math.max(0, (view.w - 1024) / 2);
   const oy = Math.max(0, (view.h - 768) / 2);
   const r = (x: number, y: number, w: number, h: number): Rect => ({ x: ox + x, y: oy + y, w, h });
@@ -1226,4 +1254,38 @@ export function stopRect(l: PicnicLayout, s: PicnicStop): Rect {
   if (s.at === 'seat') return l.seats[s.picnic][s.seat];
   if (s.at === 'tub') return l.slots[s.tub][s.slot];
   return l.painter!;
+}
+
+/**
+ * The picnic board on the 768-wide upright area, drawn on a 768 × 1,024 plan hung up from the bottom edge (a tall phone's
+ * spare height is sky at the top). The shelf and stack sit in one row clear of the Home column, the picnics' headers,
+ * seats and tubs below it (three picnics are 648 wide), the painter and the heap in a row at the foot and the bell at the
+ * bottom right. The heap lies low (270 × 100, its outlines in one row of five) instead of standing tall at the side.
+ */
+export const UPRIGHT_PLAN_H = 1024;
+function uprightPicnicLayout(view: View, day: PicnicDay): PicnicLayout {
+  const oy = Math.max(0, view.h - UPRIGHT_PLAN_H);
+  const r = (x: number, y: number, w: number, h: number): Rect => ({ x, y: oy + y, w, h });
+  const shelf = Object.fromEntries(VESSEL_IDS.map((v, i) => [v, r(130 + i * 124, 30, CUP, CUP)])) as Record<
+    VesselId,
+    Rect
+  >;
+  const stack = r(130 + VESSEL_IDS.length * 124, 30, CUP, CUP);
+  const back = r(126, 20, 624, 120);
+  const bell = r(view.w - 20 - 120, UPRIGHT_PLAN_H - 20 - 120, 120, 120);
+  const cols = day.picnics * 2 - 1;
+  const span = cols * SEAT + (cols - 1) * SEAT_GAP;
+  const x0 = (view.w - span) / 2;
+  const colX = (c: number) => x0 + c * (SEAT + SEAT_GAP);
+  const headers = Array.from({ length: day.picnics }, (_, p) => r(colX(2 * p), 220, SEAT, 44));
+  const seats = Array.from({ length: day.picnics }, (_, p) =>
+    Array.from({ length: SEATS }, (_, k) => r(colX(2 * p), 276 + k * (SEAT + SEAT_GAP), SEAT, SEAT)),
+  );
+  const tubs = Array.from({ length: day.picnics - 1 }, (_, t) => r(colX(2 * t + 1) - 8, 396, SEAT + 16, 272));
+  const slots = Array.from({ length: day.picnics - 1 }, (_, t) =>
+    Array.from({ length: TUB_SLOTS }, (_, k) => r(colX(2 * t + 1), 412 + k * (SEAT + SEAT_GAP), SEAT, SEAT)),
+  );
+  const painter = day.promise ? r(170, 800, 148, 220) : null;
+  const heap = r(330, 860, 270, 100);
+  return { shelf, stack, back, bell, headers, seats, tubs, slots, painter, heap };
 }

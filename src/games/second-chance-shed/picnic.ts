@@ -310,7 +310,9 @@ export class PicnicShed implements Game {
     g.roundRect(0, 0, r.w, r.h, 20)
       .fill({ color: wood.light, alpha: 0.55 })
       .stroke({ width: 4, color: wood.line });
-    const cell = (i: number) => ({ x: 26 + (i % 3) * 48, y: 34 + Math.floor(i / 3) * 62 });
+    // Upright the heap lies low (wider than tall): its outlines go in one row of five instead of rows of three.
+    const perRow = r.w > r.h ? 5 : 3;
+    const cell = (i: number) => ({ x: 26 + (i % perRow) * 48, y: 34 + Math.floor(i / perRow) * 62 });
     for (let i = 0; i < this.day.target; i++) {
       const c = cell(i);
       const pts: [number, number][] = [
