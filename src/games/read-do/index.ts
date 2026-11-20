@@ -13,6 +13,7 @@ import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { centre, markLayout, readLayout, signLayout, type Box, type SignLayout } from './layout';
 import {
   LEVELS,
   act,
@@ -31,16 +32,13 @@ import {
   printed,
   resolveDrop,
   sameAct,
-  signLayout,
   stepFor,
-  type Box,
   type Choice,
   type Drop,
   type Hint,
   type Marks,
   type Outcome,
   type Sign,
-  type SignLayout,
   type SlotWord,
   type Step,
   type Wish,
@@ -201,20 +199,11 @@ class ReadDo implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    // Five separate, unscaled 108-unit word targets fit even in the 1024-unit design width.
-    this.words.forEach((word, i) =>
-      word.position.set(v.w / 2 + (i - (this.words.length - 1) / 2) * 116, 185),
-    );
-    this.replay.position.set(v.w / 2 + 365, 185);
-    this.actor.position.set(v.w / 2, v.h * 0.43);
-    this.choices.forEach((c, i) =>
-      c.node.position.set(
-        this.choices.length === 4
-          ? v.w / 2 + (i % 2 ? 170 : -170)
-          : v.w / 2 + (i - (this.choices.length - 1) / 2) * 220,
-        this.choices.length === 4 ? v.h * (i < 2 ? 0.62 : 0.85) : v.h * 0.7,
-      ),
-    );
+    const layout = readLayout(v, this.words.length, this.choices.length);
+    this.words.forEach((word, i) => word.position.copyFrom(centre(layout.words[i])));
+    this.replay.position.copyFrom(centre(layout.speaker));
+    this.actor.position.copyFrom(layout.actor);
+    this.choices.forEach((choice, i) => choice.node.position.copyFrom(centre(layout.choices[i])));
   }
   update(dt: number) {
     this.clock += dt;
@@ -522,10 +511,6 @@ class SignDo implements Game {
   get sign() {
     return this.signs[this.index];
   }
-  /** Where the stamp rests while it is not on the sign. */
-  get rest() {
-    return { x: this.view.w / 2 - 270, y: 300 };
-  }
   start() {
     void this.next();
   }
@@ -536,15 +521,18 @@ class SignDo implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    // Three unscaled 108-unit word tiles and the 100-unit socket, 116 apart, fit in the 1024-unit design width.
-    this.words.forEach((word, i) => word.position.set(v.w / 2 + (i - 1.5) * 116, 185));
-    this.socket.position.set(v.w / 2 + 1.5 * 116, 185);
-    this.replay.position.set(v.w / 2 + 365, 185);
-    this.actor.position.set(v.w / 2, v.h * 0.43);
-    this.show.position.set(v.w / 2 - 150, v.h * 0.88);
-    this.send.position.set(v.w / 2 + 150, v.h * 0.88);
-    this.drag.home = this.rest;
-    if (!this.drag.dragging) this.stop.position.copyFrom(this.marks.stop ? this.socket.position : this.rest);
+    const layout = markLayout(v);
+    this.words.forEach((word, i) => word.position.copyFrom(centre(layout.words[i])));
+    this.socket.position.copyFrom(centre(layout.socket));
+    this.replay.position.copyFrom(centre(layout.speaker));
+    this.actor.position.copyFrom(layout.actor);
+    this.show.position.copyFrom(centre(layout.show));
+    this.send.position.copyFrom(centre(layout.send));
+    this.drag.home = centre(layout.stop);
+    if (!this.drag.dragging) {
+      this.ctx.tw.kill(this.stop);
+      this.stop.position.copyFrom(this.marks.stop ? this.socket.position : this.drag.home);
+    }
   }
   /** The control she still needs: the first word, the stamp, or Send once the sign is ready. */
   get needed(): Container {
@@ -793,7 +781,6 @@ interface MakeTile {
   slot: number;
 }
 const STAGE_SCALE = 1.3;
-const centre = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 
 /**
  * Level 7 (WC3, *Make the sign*): the pet's wish is a picture; she drags word tiles between a locked *The* and stop
@@ -845,7 +832,7 @@ class MakeDo implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.level = ctx.level;
-    this.L = signLayout(ctx.view, this.level);
+    this.L = signLayout(ctx.view);
     this.wishes = this.level >= 8 ? makeMendSigns(ctx.rng, this.level) : makeWishes(ctx.rng);
     this.backdrop = new Backdrop(
       {
@@ -919,7 +906,7 @@ class MakeDo implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    this.L = signLayout(v, this.level);
+    this.L = signLayout(v);
     const at = (node: Container, b: Box) => node.position.copyFrom(centre(b));
     at(this.the, this.L.row[0]);
     at(this.stop, this.L.row[4]);
@@ -928,7 +915,7 @@ class MakeDo implements Game {
     at(this.card, this.L.wish);
     at(this.show, this.L.show);
     at(this.send, this.L.send);
-    this.actors.position.set(v.w / 2, v.h * 0.43);
+    this.actors.position.copyFrom(this.L.actors);
     this.outlines.children.forEach((o, i) => at(o as Container, this.L.tray[i]));
     for (const t of this.tiles) t.drag.home = centre(this.L.tray[t.slot]);
     this.place(false);
@@ -1359,6 +1346,7 @@ function sticker(seed: number) {
 }
 export const readDo: GameModule = {
   id: 'read-do',
+  upright: true,
   name: 'Read & Do',
   titleLine: 'game.read-do',
   region: 'story-grove',
