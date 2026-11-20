@@ -1,0 +1,5 @@
+# 2026-11-20 — Word Code levels 1-3 (PR #1903)
+
+**Changed:** New game `word-code` levels 1-3 (PP9): school picture words (3 and 4 letters, four pictured candidates, a letter tray) and grown-up five-letter words (about 390 answers, guesses from a several-thousand list, 7 x 4 keyboard), on Secret Code's marks (`markArt` moved to `src/games/secret-code/marks.ts`). Lantern Lake, upright, ghost finger, spoken title clip, `scripts/word-code-guesses.mjs`, suite `wordcode`.
+**Ran:** typecheck; full unit tests (17150 pass, after `npm run game-docs` and the title clip); eslint on the new files; `npm run build`; `BROWSER_SUITE=wordcode` (school level 1 with a non-hidden candidate, an ignored-mark miss, one hint, the hidden word; grown-up level 3 with a not-a-word turned down free, a miss, a hint; one portrait screenshot each, score [1,1]); `BROWSER_SUITE=uprightgames PHONE_ONLY=word-code` at 390 x 844 (school and grown-up); `fingerdemo FINGER_ONLY=word-code` levels 1 and 3. Headless Chrome only.
+**Not run:** `world`, offline and couch suites (no navigation, persistence or couch change).
