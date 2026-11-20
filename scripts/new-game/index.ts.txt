@@ -55,5 +55,5 @@ export const game: GameModule = {
   // Add touchDemo: true only after autotouch finishes every supported level.
   hubIcon: () => new WigglyIcon(picture()),
   sticker: _seed => picture(),
-  create: ctx => new Round(ctx),
+@UPRIGHT@  create: ctx => new Round(ctx),
 };

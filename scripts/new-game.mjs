@@ -91,11 +91,14 @@ export function planGame(root, options) {
     BAND: quote(band),
     CHALLENGE: quote(challenge),
     METHOD: `${alias(id)}Play`,
+    // A grown-up game ships upright-ready (docs/NEW-GAME.md): the flag and a test stub for its layout.
+    UPRIGHT: band === 'grownup' ? '  upright: true,\n' : '',
   };
   const files = ['index.ts', 'logic.ts', 'logic.test.ts', 'voice.ts', 'howto.ts'].map((file) => [
     file,
     `${folder}/${file}`,
   ]);
+  if (band === 'grownup') files.push(['upright.test.ts', `${folder}/upright.test.ts`]);
   files.push(['play.mjs', `scripts/browser/suites/${id}-play.mjs`], ['page.md', `docs/games/${id}.md`]);
   const writes = files.map(([template, path]) => {
     if (existsSync(safePath(root, path))) throw new Error(`Already exists: ${path}`);
