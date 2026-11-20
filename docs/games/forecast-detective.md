@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/forecast-detective; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `forecast-detective` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `forecast-detective` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** weather, evidence, deduction, uncertainty
 
@@ -30,3 +30,5 @@ Levels (school 1–2): 1 "Which way is the wind?": all four clues can be opened;
 Misses and hints: opening clues, the rule card and a not-yet Check (the open clues do not yet decide it) are free. A Check that an open clue rules out, or that claims more than the open clues allow (an overclaim at level 2), is a miss with a spoken reason. The same Check again (same answer, same open clues) counts nothing. Two misses cross out the ruled-out cards, glow the answer and bob a useful flap (one hint, once a round). Show a hint opens the most useful clue (one hint), or crosses out ruled-out cards (counted only if something new is crossed out). A right Check plays night then morning, the late postcard arriving and the upwind sky sliding to the town; once a session the pet adds "Real weather is trickier…". Nothing is kept beyond round history.
 
 Deviations from the definition: the most useful clue is the one leaving the fewest weathers, ties (including when no clue shrinks the set yet) broken in the order wind, upwind postcard, thermometer, downwind postcard, and `usefulClue` returns null only once the round is decided or no available clue is closed, since the literal "null when none reduces" rule would strand hints (for example the authored level 1 after the thermometer); added the line `forecast.ruledout.islands` ("{a} has {skyA} and {b} has {skyB}, so it can't be {weather}.") for a closed wind with both postcards ruling a weather out, where the definition's wind form would be false; added `forecast.glow` and `forecast.hint.cross`. Tinker Lab.
+
+Upright on a phone (`upright: true`): `forecastLayout` in `logic.ts` takes an `uprightForecast` branch when `view.upright`, because the sideways board (rule card plus four flaps, 774 wide) returned null on the 768-wide upright area. The cards sit in rows of up to three beside the guide corner with Check in the last row, then a 240-tall scene, then the four flaps in one 648-wide row with the rule card above them; everything hangs up from the bottom edge (`UPRIGHT_FLOOR` 24), so a tall phone's spare height is sky at the top. The sideways plan is unchanged. `upright.test.ts` covers levels 1–2 over five upright views (including 768 × 1024); the flaps row first ran past the right edge at x 120, so it centres at 60 or sits at 116 when high enough to meet the Home column.

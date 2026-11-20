@@ -596,6 +596,7 @@ export const forecastDetective: GameModule = {
   challenge: 'logic',
   skills: ['weather', 'evidence', 'deduction', 'uncertainty'],
   bands: ['school'],
+  upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.quiet,

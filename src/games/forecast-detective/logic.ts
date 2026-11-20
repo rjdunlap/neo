@@ -222,7 +222,73 @@ const LEFT_COLUMN = 125,
   PET_CORNER = 175;
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export function forecastLayout(view: { w: number; h: number }, level: number): Layout | null {
+/** An upright view's lowest thing rests this far above the bottom edge. */
+export const UPRIGHT_FLOOR = 24;
+
+/**
+ * Upright (a phone held tall): everything hangs up from the bottom edge, so a tall phone's spare height is sky at the
+ * top. From the bottom: the cards in rows of up to three beside the guide's corner with Check after them, the scene,
+ * the four flaps in one row (648 wide, so the whole board cannot take the rule card too) and the rule card above them.
+ */
+function uprightForecast(view: { w: number; h: number }, level: number): Layout | null {
+  const { w, h } = view;
+  const gap = 16,
+    cg = 14,
+    floor = UPRIGHT_FLOOR;
+  const n = answersFor(level).length;
+  const left = PET_CORNER + 10,
+    right = w - 20;
+  const perRow = Math.max(1, Math.floor((right - left + cg) / (CARD_W + cg)));
+  // Check joins the last row when it fits, else takes a row of its own.
+  const lastCount = n % perRow || perRow;
+  const checkBeside = lastCount * (CARD_W + cg) + CHECK <= right - left + cg + gap;
+  const cardRows = Math.ceil(n / perRow);
+  const rows = cardRows + (checkBeside ? 0 : 1);
+  const cards: Box[] = [];
+  let checkBtn = box(0, 0, CHECK, CHECK);
+  for (let r = 0; r < cardRows; r++) {
+    const count = Math.min(perRow, n - r * perRow);
+    const last = r === cardRows - 1;
+    const withCheck = last && checkBeside;
+    const rowW = count * CARD_W + (count - 1) * cg + (withCheck ? gap + CHECK : 0);
+    const x0 = (left + right) / 2 - rowW / 2;
+    const y = h - floor - CARD_H / 2 - (rows - 1 - r) * (CARD_H + 12);
+    for (let i = 0; i < count; i++) cards.push(box(x0 + CARD_W / 2 + i * (CARD_W + cg), y, CARD_W, CARD_H));
+    if (withCheck) checkBtn = box(x0 + rowW - CHECK / 2, y, CHECK, CHECK);
+  }
+  if (!checkBeside) checkBtn = box((left + right) / 2, h - floor - CHECK / 2, CHECK, CHECK);
+  const cardsTop = Math.min(...cards.map((c) => c.y - c.h / 2), checkBtn.y - CHECK / 2);
+  const SCENE_H = 240;
+  const flapsY = cardsTop - 12 - SCENE_H - 12 - FLAP / 2;
+  const ruleY = flapsY - FLAP / 2 - gap - RULE / 2;
+  const boardW = 4 * FLAP + 3 * gap;
+  // Centred, but right of the Home column when the row reaches that high.
+  const bx = flapsY - FLAP / 2 < 215 ? 116 : (w - boardW) / 2;
+  if (bx + boardW > w - 4 || ruleY - RULE / 2 < 4) return null;
+  const flaps = {} as Record<ClueId, Box>;
+  CLUES.forEach((k, i) => {
+    flaps[k] = box(bx + FLAP / 2 + i * (FLAP + gap), flapsY, FLAP, FLAP);
+  });
+  const scene = box(w / 2, cardsTop - 12 - SCENE_H / 2, w, SCENE_H);
+  const sy = scene.y + scene.h * 0.08;
+  return {
+    portrait: true,
+    rule: box(w / 2, ruleY, RULE, RULE),
+    flaps,
+    cards,
+    checkBtn,
+    scene,
+    hill: { x: 120, y: sy },
+    lighthouse: { x: w - 120, y: sy },
+    town: { x: w / 2, y: scene.y + scene.h * 0.18 },
+  };
+}
+
+export function forecastLayout(
+  view: { w: number; h: number; upright?: boolean },
+  level: number,
+): Layout | null {
+  if (view.upright) return uprightForecast(view, level);
   const { w, h } = view;
   const portrait = h > w;
   const top = 18,
