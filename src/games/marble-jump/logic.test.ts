@@ -430,4 +430,24 @@ describe('Marble Jump', () => {
         expect(l.cx - l.half).toBeGreaterThan(0);
       }
   });
+  it('sideways, keeps the board to the right so the caption bubble leaves the left holes in sight', () => {
+    for (const tri of [SMALL, BIG])
+      for (const [w, h] of [
+        [1024, 768],
+        [1241, 768],
+        [1366, 768],
+      ]) {
+        const l = boardLayout(tri, w, h);
+        // Never left of centre, and the tray stays 24 units inside the right edge.
+        expect(l.cx).toBeGreaterThanOrEqual(w / 2 + 35);
+        expect(l.cx + l.half).toBeLessThanOrEqual(Math.max(w - 24, w / 2 + 35 + l.half));
+        // The buttons, 160 wide at cx ± 180, stay inside the view.
+        expect(l.cx + 180 + 80).toBeLessThan(w);
+      }
+    // A phone held sideways (1241 × 768 units): the bottom row's left hole clears a full-width bubble by under 40 units.
+    const l = boardLayout(BIG, 1241, 768);
+    expect(Math.min(...l.holes.map((p) => p.x)) - HOLE_SIZE / 2).toBeGreaterThan(590);
+    // Upright stays centred.
+    expect(boardLayout(BIG, 768, 1366).cx).toBe(768 / 2 + 35);
+  });
 });
