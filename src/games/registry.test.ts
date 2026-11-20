@@ -608,6 +608,7 @@ describe('game registry', () => {
       'logic-grid',
       'look-it-up',
       'lost-layers',
+      'mail-carrier',
       'maker-lane',
       'marble-jump',
       'market-stall',

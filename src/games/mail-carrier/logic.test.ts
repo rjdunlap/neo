@@ -1,3 +1,4 @@
+import { streetLayout } from './layout';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
@@ -9,7 +10,6 @@ import {
   clueNode,
   makeClues,
   sideColumns,
-  sideLayout,
   parity,
   houseLooks,
   mailboxColor,
@@ -540,7 +540,7 @@ describe('Mail Carrier spoken clues and two street sides', () => {
       [768, 1024],
     ]) {
       const columns = sideColumns(w),
-        points = sideLayout(w, h, columns * 2);
+        points = streetLayout({ w, h }, columns * 2, true).houses;
       expect(columns).toBe(w === 768 ? 3 : 4);
       for (const a of points) {
         expect(220 * a.scale).toBeGreaterThanOrEqual(100);

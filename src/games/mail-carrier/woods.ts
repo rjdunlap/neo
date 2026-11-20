@@ -12,12 +12,12 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
+import { nodePoint, woodsLayout, type WoodsLayout } from './layout';
 import {
   keyMatches,
   COMPARE_EDGES,
   comparisonRoute,
   compareCounts,
-  clueNode,
   makeClues,
   type MapClue,
   checkStop,
@@ -25,7 +25,6 @@ import {
   makeTrips,
   makeWoods,
   MAP_EDGES,
-  mapNode,
   mapX,
   planFor,
   POST_OFFICE,
@@ -223,12 +222,14 @@ export class WoodsMail implements Game {
   private readonly hazel = makeHazel();
   private wrongs = 0;
   private rect = { x: 0, y: 0, w: 0, h: 0 };
+  private lay: WoodsLayout;
   /** The node the walker stands at, unless it is on its way somewhere. */
   private walkerAt = POST_OFFICE;
   private walking = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.lay = woodsLayout(ctx.view, this.plan.mode, 5);
     this.buildingKey = this.plan.mode === 'key';
     this.woods = makeWoods(ctx.rng);
     this.mirrored = ctx.rng.chance(0.5);
@@ -257,14 +258,12 @@ export class WoodsMail implements Game {
     this.office.eventMode = 'none';
     if (this.plan.mode === 'clue') {
       this.office.eventMode = 'static';
-      this.office.hitArea = new Circle(-35, -40, 68);
       onTap(this.office, () => void this.speakClue(), { cooldown: 450 });
     }
     this.board.addChild(this.paper, this.decor, this.paths, this.preview, this.office);
     this.woods.forEach((house, i) => {
       const h = new WoodsHouseView(house, i);
       if (this.plan.mode === 'key') h.resident.visible = true;
-      if (this.plan.mode === 'clue' || this.plan.mode === 'key') h.hitArea = new Circle(0, -50, 50);
       h.on('pointerdown', () => {
         h.alpha = 0.7;
       });
@@ -289,7 +288,7 @@ export class WoodsMail implements Game {
       );
     for (const { house, i } of rows) {
       const node = new Container();
-      const glow = new Graphics().roundRect(-118, -42, 236, 84, 18).fill({ color: 0xfff3a0, alpha: 0.95 });
+      const glow = new Graphics();
       glow.visible = false;
       const who = new Critter(CRITTERS[house.resident]);
       who.alive = false;
@@ -317,12 +316,6 @@ export class WoodsMail implements Game {
             node.alpha = 1;
           });
       }
-      node.hitArea = new Rectangle(
-        -118,
-        this.plan.mode === 'key' ? -50 : -45,
-        236,
-        this.plan.mode === 'key' ? 100 : 90,
-      );
       onTap(node, () => this.tapKey(i), { cooldown: 500 });
       this.key.push({ house: i, node, glow, who, wet, filled: !this.buildingKey });
       ctx.stage.addChild(node);
@@ -344,11 +337,11 @@ export class WoodsMail implements Game {
 
   /** The map fills the left of the screen, clear of the pet's corner; the key and letters stand on the right. */
   resize(v: View) {
-    const keyW = 260;
-    const x = 150;
-    const y = 104;
-    const w = v.w - keyW - 40 - x;
-    const h = v.h - 24 - y;
+    const lay = woodsLayout(v, this.plan.mode, this.key.length);
+    this.lay = lay;
+    if (this.plan.mode === 'clue')
+      this.office.hitArea = new Circle(lay.officeHit.x, lay.officeHit.y, lay.officeHit.r);
+    const { x, y, w, h } = lay.rect;
     this.rect = { x: 0, y: 0, w, h };
     this.board.position.set(x, y);
     this.paper.clear().roundRect(0, 0, w, h, 26).fill(0xf6ecd6).stroke(line(wood.line, 6));
@@ -389,23 +382,30 @@ export class WoodsMail implements Game {
     this.houses.forEach((hv, i) => {
       const p = this.at(HOUSE_NODES[i]);
       hv.position.set(p.x, p.y + 40);
+      hv.scale.set(lay.houseScale);
+      if (lay.houseHit !== null) hv.hitArea = new Circle(0, -50, lay.houseHit);
     });
     if (!this.walking) this.walker.position.copyFrom(this.feet(this.walkerAt));
     this.drawPreview();
-    const kx = v.w - keyW / 2 - 20;
-    const top = this.plan.mode === 'key' ? 220 : 250;
-    const rowH = Math.min(100, (v.h - 30 - top) / this.key.length);
     this.keyCard
       .clear()
-      .roundRect(kx - keyW / 2, top - 30, keyW, rowH * this.key.length + 40, 22)
+      .roundRect(lay.key.card.x, lay.key.card.y, lay.key.card.w, lay.key.card.h, 22)
       .fill(0xfffdf6)
       .stroke(line(wood.line, 5));
-    this.key.forEach((r, i) => r.node.position.set(kx, top + rowH * (i + 0.5) - 10));
-    this.routeChoiceButtons.forEach((b, i) => b.node.position.set(kx, v.h * (i === 0 ? 0.62 : 0.81)));
-    this.letters.position.set(kx, this.plan.mode === 'compare' ? 108 : 118);
-    this.stoneCount.position.set(kx, 204);
-    this.compareButtons.forEach((b, i) => b.position.set(kx, 330 + i * 160));
-    this.go.position.set(x + w - 70, y + h - 70);
+    this.key.forEach((r, i) => {
+      r.node.position.set(lay.key.rows[i].x, lay.key.rows[i].y);
+      r.node.scale.set(lay.key.scale);
+      r.node.hitArea = new Rectangle(-lay.key.hit.w / 2, -lay.key.hit.h / 2, lay.key.hit.w, lay.key.hit.h);
+      r.glow
+        .clear()
+        .roundRect(-lay.key.glow.w / 2, -lay.key.glow.h / 2, lay.key.glow.w, lay.key.glow.h, 18)
+        .fill({ color: 0xfff3a0, alpha: 0.95 });
+    });
+    this.layoutRouteChoices();
+    this.letters.position.set(lay.letters.x, lay.letters.y);
+    this.stoneCount.position.set(lay.stoneCount.x, lay.stoneCount.y);
+    this.compareButtons.forEach((b, i) => b.position.set(lay.compare[i].x, lay.compare[i].y));
+    this.go.position.set(lay.go.x, lay.go.y);
   }
 
   update() {}
@@ -442,14 +442,7 @@ export class WoodsMail implements Game {
 
   /** A map node in board coordinates, inside a margin so houses stay on the paper. */
   private at(n: number) {
-    const m = 70;
-    const { w, h } = this.rect;
-    const node = this.plan.mode === 'clue' ? clueNode(n, this.mirrored) : mapNode(n, this.mirrored);
-    if (this.plan.mode === 'clue') {
-      const size = Math.min(w - 2 * m, h - 2 * m - 40);
-      return { x: m + node.x * size, y: m + 40 + node.y * size };
-    }
-    return { x: m + node.x * (w - 2 * m), y: m + 40 + node.y * (h - 2 * m - 40) };
+    return nodePoint(this.rect, this.plan.mode, this.mirrored, n, this.lay.upright);
   }
 
   /** Where the walker stands at a node: at the post office's door, or on the path in front of a house. */
@@ -854,10 +847,8 @@ export class WoodsMail implements Game {
   }
 
   private layoutRouteChoices() {
-    const keyW = 260;
-    const kx = this.ctx.view.w - keyW / 2 - 20;
     this.routeChoiceButtons.forEach((b, i) =>
-      b.node.position.set(kx, this.ctx.view.h * (i === 0 ? 0.62 : 0.81)),
+      b.node.position.set(this.lay.choices[i].x, this.lay.choices[i].y),
     );
   }
 
