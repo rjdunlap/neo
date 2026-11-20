@@ -224,7 +224,7 @@ Each is one session; definitions are docs only.
 1. **Define `crossword`**: defined in [crossword.md](../../definitions/crossword.md); levels 1–4 built by 2026-11-06 and levels 5–6 queued in READY. Notes: [crossword](#crossword).
 2. **Define `logic-grid`**: defined in [logic-grid.md](../../definitions/logic-grid.md); levels 1–2 built 2026-11-05 and levels 3–4 queued in READY. Notes: [logic-grid](#logic-grid-whodunit).
 3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)): defined in [mossy-path.md](../../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1) 2026-11-06; built 2026-11-06 ([PR #1312](https://github.com/rjdunlap/neo/pull/1312)).
-4. **PP2: Domino Pond 1–3** is [defined](../../definitions/domino-pond.md). Its first build is in [READY](../../READY.md#next-ten), with Word Code defined and its build queued after it. Levels 1–3 claimed on `codex/neo-ready-domino-pond`.
+4. **PP2: Domino Pond 1–3** is [built](../../games/domino-pond.md) from the [definition](../../definitions/domino-pond.md).
 5. **PP9: Word Code 1–3** is [defined](../../definitions/word-code.md) 2026-11-18 (school: three- and four-letter picture words with spoken support; grown-up: five letters at the decided par). Unlimited tries, no daily word, Secret Code's rule that ignoring a still-visible mark is the miss, and a reviewed list and block list as data.
 6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung).
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.

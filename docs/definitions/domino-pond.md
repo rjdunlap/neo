@@ -1,5 +1,7 @@
 # Domino Pond levels 1–3 (definition)
 
+**Built:** levels 1–3 ([PR #1902](https://github.com/rjdunlap/neo/pull/1902)).
+
 Proposed touch game `domino-pond`, PP2 of the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order). Defined 2026-11-18 from `fdb427957` in [PR #1802](https://github.com/rjdunlap/neo/pull/1802), following the [November 17 decision](../archive/DECISIONS-2026-11-17.md#games). The three levels form one implementation batch.
 
 Lay two-ended stepping stones over shallow pond patches. When every patch meets its clue, a duck crosses and the round finishes. The player first matches two quantities, then combines the dots under a patch outline, then compares that total with a visible threshold. Domino Run uses dominoes for toppling and prediction. Shell Rows uses placement to preserve a sequence. Domino Pond asks which two linked values can go into which patch.

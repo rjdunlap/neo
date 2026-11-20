@@ -32,19 +32,23 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ### Phone play
 
 
-- **A read-through of how drag games count a miss** (docs only): one table across the drag games (which wrong drops count, which use `src/progress/coach.ts`), since two smooth rounds step a level up and no test looks across games; closeout queues a fix line for any game whose wrong drop is uncounted. Expected files: a new page under `docs/definitions/`. [TotoLogic P9](reviews/TOTOLOGIC.md#p9-a-read-through-of-how-drag-games-count-a-miss-docs-s)
-
 - **Marble Jump (`marble-jump`) sideways captions** (existing-game tier; shell tier if the shared caption layout changes): at 630 × 390, the caption bubble can cover the left holes of the six-row board while a hint is spoken. Keep the active hole and its neighbours visible while preserving the 88-unit targets. [Phone check](verification/2026-11-19-marble-jump-phone-touch-targets.md)
 
-- **Mystery Grid (`logic-grid`) level 8 written clue cards** (existing-game tier): give the time-grid clues thumb-sized targets on an upright phone, while keeping 7–9 clues clear of the sliding grid, Help, and the spoken caption on short views. The level 7 case file has its own larger upright layout. [Thumb sizes](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18)
+### Puzzle-page follow-ups
+
+- **Define Sum Crates** (PP5, docs only): check Fruit Sums for overlap, then define the opening crossing-run puzzle. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
+
+- **Define Campsite** (PP6, docs only): define a 4×4 opening board with one tent by each tree, no touching and row and column counts. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
+
+- **Define Silly Scene** (PP7, docs only): check Not Always and Who Am I? for overlap before defining the first authored pictures and explanations. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
+
+- **A puzzle page at the table** (PP8, grown-ups' page): write the short offline-play card for mazes, spoken word ladders and domino dots. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 ### Unblocked by the decisions of 2026-11-17
 
 Each was skipped as gated by the refill and is settled in the [record](archive/DECISIONS-2026-11-17.md). A slice that names a probe runs it first, in the same session, and stops with a note in the dive if it fails.
 
 - **WL2, the pet says the word in European Portuguese** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): the building session first writes the 20 entries and has a separate pass check each against European Portuguese dictionaries, filling one evidence row per key ([assistant review](definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17)); then `ctx.sayWord`, the exact-`pt-PT` voice rule, the per-profile setting and the grown-ups' select and status in Peekaboo Barn, Animal Snack and Bubble Pop. Read the [definition](definitions/additional-languages.md) by section; an entry that cannot be settled is left out.
-
-- **The scaffold starts a grown-up game upright** (tooling: typecheck and the scaffold's own test): `npm run new-game` with `--band grownup` writes `upright: true` and an upright layout test stub, as [NEW-GAME](NEW-GAME.md) now asks.
 
 - **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
 
@@ -106,8 +110,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 - **`brain-break` the trail you made, a nudge on a wrong stone, and three pond looks** (already upright; grown-up; existing-game change: typecheck, its rule tests, one filtered `brainbreak` regression play of level 2 with one wrong stone, one upright screenshot; no `fingerdemo` since the bot does not change): a press squash on every tap, a side-to-side nudge on a wrong stone, a ribbon drawn from each lit stone to the next and replayed with pentatonic steps before the finishing line, three seeded pond looks; no rule or accounting change. Expected files: `src/games/brain-break/{index,logic,logic.test}.ts`, the game page. [Dive slice 1](deep-dives/brain-break.md#build-slices-in-order); slice 2 (levels 7–8 Count by) follows it.
 
-- **`down-we-go` levels 1–2: Down we go and Measure first** (a new game; oceans study slice 5 build; new-game tier, as the [definition's check tier](definitions/down-we-go.md#check-tier) sets it): batch `down-we-go 1` as defined: the lantern on a knotted rope, the sun dial, the ledges and the deepest-ledge question; pre-K 1–2 and school 2; Bubble Beach as its 15th game (the lands test decides; fallback Tinker Lab); the build session redoes the S1 source check of the speech lines. Expected files: `src/games/down-we-go/`, `src/content/lands.ts`, generated barrels, a browser-check case, game docs. Levels 3–4 (batch `down-we-go 2`) follow as a later line when 1–2 land. [Definition](definitions/down-we-go.md), [study](deep-dives/subjects/oceans.md#build-slices-in-order)
-
 ### Codebase structure (2026-11-07 review)
 
 Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](reviews/CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
@@ -140,11 +142,7 @@ From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate (three more are in Next ten):
-
-- **Define Memory Match's toddler opening** (`memory-match`; its dive calls it ready to define, decided as the hidden level 1 only): the toddler window, its how-to and the audits. [Dive](deep-dives/memory-match.md#build-slices-in-order)
-
-- **Define Robot Path level 15, A routine** (`robot-path`, the last school level; the slice asks for the two-row UI, the call button and the bot to be defined first). [Dive](deep-dives/robot-path.md#build-slices-in-order)
+Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
 
 - **Define Market Stall levels 12–13, Can I buy it? and Trade up** (`market-stall`; decided as "define now"). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
@@ -158,8 +156,6 @@ Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 ### Game research (docs only)
 
 Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains. Every game has a dive or a study row (Pyramid Solitaire's dive, 2026-11-11, was the last of the tracker's waves), but a game built from a definition can still have no plan for its next levels; those found 2026-11-17 are below; Brain Break's dive is done (2026-11-18, [dive](deep-dives/brain-break.md)):
-
-- **Research: a Vine Snip dive** (`vine-snip`, lap to school, levels 1–5; its later ideas are proposals only in its [definition](definitions/vine-snip.md)).
 
 
 - **A shared sliding-board helper** (restructuring, typecheck and unit tests plus one filtered play per game it moves; the [thumb-fix line](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18) left it): Word Search (`layout.ts`), Island Bridges (`touchLayout`, `slideToShow`, `inWindow` in `logic.ts`) and Logic Grid / Picture Logic each carry their own window, clamp, drag threshold and edge-arrow code; move what is common into one engine helper (check the [reuse map](DESIGN.md#reuse-map) first) and keep every game's layout test passing, without changing any size.

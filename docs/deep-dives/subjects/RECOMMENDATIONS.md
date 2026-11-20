@@ -978,11 +978,11 @@ Completion with spoken support is not evidence of independent understanding of t
 | --- | --- | --- |
 | **Crossword** and **Logic Grid** · new games | crossword defined ([definition](../../definitions/crossword.md)), logic-grid definition in READY | Use the study's [crossword](puzzle-pages.md#crossword) and [logic-grid](puzzle-pages.md#logic-grid-whodunit) notes; each level authors only its own words, cast and clues |
 | **PP1 Mossy Path 4–7, *find the way*** · toddler–school · new levels and bands | define (READY) | Same turtle and stepping; mazes are trees with one route; follow the moss (no fork), which way (a free short branch), look before you go (a seen dead end is a miss), snack on the way (two goals in order). [Ladder](puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way) |
-| **PP2 Domino Pond 1–3** · pre-K–grown-up · new game | [defined](../../definitions/domino-pond.md), build queued | Lay dominoes so patches meet their clues: matching dots, then exact sums, then < = >. Every valid placement is accepted. |
+| **PP2 Domino Pond 1–3** · pre-K–grown-up · new game | [built](../../games/domino-pond.md) | Lay dominoes so patches meet their clues: matching dots, then exact sums, then < = >. Every valid placement is accepted. |
 | **PP3 Bunny Patches 1–3** (IDEAS *Garden Queens*) · pre-K/school–grown-up · new game | define after PP2 | One bunny per row, column and patch, none touching; 4×4 to 6×6, grown-up 8×8 at par later |
 | **PP4 Garden Rows, *the bee counts tall flowers*** · school | define after Garden Rows' queued levels | Skyscrapers on 3×3 with every clue, then 4×4 with clues removed |
 | **PP9 Word Code 1–3** (IDEAS row) · school–grown-up · new game | define (closest to ready: Secret Code's feedback, par rule decided 2026-10-23) | Letters on Secret Code's marks with shapes as well as colours; unlimited tries, no daily word; a reviewed list and block list per level |
-| **PP5 Sum Crates**, **PP6 Campsite**, **PP7 Silly Scene** | sketches | Kakuro, Tents and *What's Wrong?*; define after PP2 or PP3 is built, checking Fruit Sums, Not Always and Who Am I |
-| **PP8 A puzzle page at the table** · grown-ups' page | write after the first build | Draw mazes for each other, a spoken word ladder, counting domino dots; plain HTML; no learning claim |
+| **PP5 Sum Crates**, **PP6 Campsite**, **PP7 Silly Scene** | define ([Queued](../../READY.md#queued)) | Kakuro, Tents and *What's Wrong?*; for each definition check Fruit Sums, Not Always and Who Am I for overlap |
+| **PP8 A puzzle page at the table** · grown-ups' page | write ([Queued](../../READY.md#queued)) | Draw mazes for each other, a spoken word ladder, counting domino dots; plain HTML; no learning claim |
 
 [Ordered slices](puzzle-pages.md#build-slices-in-order). Defaults: the maze is a Mossy Path opening, truth-and-lie clues are left out, generic names only.
