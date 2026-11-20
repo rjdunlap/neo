@@ -18,11 +18,14 @@
 
 <!-- end generated -->
 
-**Starts as:** TODO: the first fun action and learning purpose.
+**Starts as:** a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches.
 
-**Grows into:** TODO: the supported ladder and meaningful choices.
+**Grows into:** measuring first (level 2: choose which knots of a five-knot rope to measure before planting). Levels 3 (clear and cloudy coves) and 4 (each knot leaves half) are defined and not built: [definition](../definitions/down-we-go.md).
 
 ## Design notes
 
-Scaffold only: implement the approved definition, mistakes/help, completion and demonstration.
-Run `npm run game-docs` to add the generated inventory block. Complete the game's verification tier before publishing.
+Built from the [definition](../definitions/down-we-go.md) (batch `down-we-go 1`, levels 1-2). Home land Bubble Beach (the lands test passed; the pre-K side now pages); region tinker-lab. The sun dial reads daylight only; the lantern is her light and is never claimed to grow seaweed.
+
+- **Misses and hints.** Planting on a too-dark ledge is a counted miss; two misses show one glow hint. A shallow ledge that is still lit is free (it grows, with "can it live deeper?"), and at level 2 an unmeasured ledge is free ("Now we know"). At level 1 the ledge tapped before the ride finishes is free. The only help button is the pause sheet's Show a hint.
+- **Departures from the definition.** (1) No round counter exists, so level 1's first dive of every round is the authored [8,4,0] and the other two are seeded; the authored three play in full only in the how-to demo. Level 2's first dive is the authored [8,8,4,1,0]. (2) One added voice line, `down.ride` ("Pull the lantern all the way down first."), for a ledge tapped during the level-1 ride.
+- **Source check (S1).** NOAA's light-travel page supports "rarely any significant light beyond 200 meters" and that photosynthesis is no longer possible beyond; it does not mention seaweed itself, but NOAA's kelp page says kelp forests form in shallow open waters "because of their dependency upon light for photosynthesis" and that kelp are large brown algae. NOAA's bioluminescence page gives "light produced by an organism using a chemical reaction" and that most animals between 200 and 1,000 m are bioluminescent. So `down.why` and `down.glow` are supported. `down.cloudy` and `down.limits` are level 3-4 lines not built; their S1 check stays with batch 2.
