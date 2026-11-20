@@ -299,7 +299,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Island Bridges](docs/games/island-bridges.md) | Lantern Lake | 7 | a 7 by 7 sea of numbered islands joined by plank bridges: tap the water between two islands to lay a plank (Take off, Hint, Start over are buttons); a controller plays it too |
 | [Pond Conga](docs/games/pond-conga.md) | Lantern Lake | 11 | a line of ducklings paddles on at a steady pace and is steered to each helping of duck food (peas, sweetcorn or oats) in turn, round lily pads: touch to set off, swipe anywhere to turn (Hint and Start over are buttons); a controller plays it too |
 | [Species Comeback](docs/games/species-comeback.md) | Lantern Lake | 4 | tap two pond turtles on a family tree to put them in a nest, with no brothers and sisters in a pair, then press Spring |
-| [Word Code](docs/games/word-code.md) | Lantern Lake | 3 | TODO: the first fun action and learning purpose. |
+| [Word Code](docs/games/word-code.md) | Lantern Lake | 3 | a hidden picture word. Four pictured words (three letters at level 1, four at level 2) sit in a row and one is hiding; she taps letters from a small tray to try a word and every try comes back marked letter by letter with Secret Code's shapes (a green check in the right spot, a yellow dot elsewhere in the word, a gray cross not in it). The marks are the evidence for the next try. |
 
 <!-- end generated -->
 
