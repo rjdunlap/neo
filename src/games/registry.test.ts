@@ -591,6 +591,7 @@ describe('game registry', () => {
       'gadget-bench',
       'garden-rows',
       'gem-swap',
+      'habitat-helpers',
       'hat-band',
       'helper-house',
       'inchworm',

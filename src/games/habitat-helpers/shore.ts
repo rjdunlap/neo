@@ -4,9 +4,10 @@ import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
+import { friendPoints, gatePoint, placeXs, shoreFrame } from './layout';
 import { shoreFriendArt, shorePlaceArt, tideIcon } from './art';
 import {
   hasRoom,
@@ -113,15 +114,21 @@ export class RockyShore implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    this.tideButton.position.set(v.w - 86, v.h - 92);
-    this.sand.hitArea = new Rectangle(150, v.h - 170, v.w - 330, 160);
-    // Places 260 wide, 300 apart: three fit across the 1024-unit design width with the pet and buttons clear below.
-    const placeXs = spread(this.places.length, 40, v.w - 40, 300);
-    this.places.forEach((p, i) => p.node.position.set(placeXs[i], this.placeY));
-    // Friends on the sand sit in a row between the pet and the wave button.
+    const gate = gatePoint(v);
+    this.tideButton.position.set(gate.x, gate.y);
+    const frame = this.frame;
+    this.sand.hitArea = new Rectangle(frame.sand.x, frame.sand.y, frame.sand.w, frame.sand.h);
+    // Places 260 wide, 300 apart: three fit across the 1024-unit design width with the pet and buttons clear below
+    // (upright, three are 250 wide and 250 apart so they fit 768).
+    const xs = placeXs(v, this.places.length);
+    this.places.forEach((p, i) => {
+      p.node.position.set(xs[i], this.placeY);
+      p.node.hitArea = new Rectangle(-frame.placeHalf, -90, frame.placeHalf * 2, 180);
+    });
+    // Friends on the sand sit in a row between the pet and the wave button (two rows upright).
     const loose = this.friends.map((_, i) => i).filter((i) => this.arrangement[i] === null);
-    const trayXs = spread(loose.length, 200, v.w - 190, 130);
-    loose.forEach((i, k) => this.friends[i].node.position.set(trayXs[k], v.h - 95));
+    const tray = friendPoints(v, loose.length);
+    loose.forEach((i, k) => this.friends[i].node.position.set(tray[k].x, tray[k].y));
     for (const p of this.places) {
       const here = this.friends.map((_, i) => i).filter((i) => this.arrangement[i] === p.place);
       here.forEach((i, k) => this.friends[i].node.position.set(p.node.x + SLOT_X[k], p.node.y + 6));
@@ -129,8 +136,12 @@ export class RockyShore implements Game {
     for (const [i, f] of this.friends.entries()) f.node.scale.set(i === this.held ? 1.12 : 1);
   }
 
+  private get frame() {
+    return shoreFrame(this.view, this.places.length);
+  }
+
   private get placeY() {
-    return this.view.h * 0.5;
+    return this.frame.placeY;
   }
 
   update(dt: number) {
@@ -156,7 +167,13 @@ export class RockyShore implements Game {
           });
         // A friend blocking a full place goes back to the sand first, so the sand glows.
         else if (move.place === 'sand')
-          g.roundRect(160, this.view.h - 165, this.view.w - 350, 150, 34).stroke({
+          g.roundRect(
+            this.frame.sand.x + 10,
+            this.frame.sand.y + 5,
+            this.frame.sand.w - 20,
+            this.frame.sand.h - 10,
+            34,
+          ).stroke({
             width: pulse,
             color: swatch.yellow.fill,
           });
@@ -182,7 +199,7 @@ export class RockyShore implements Game {
   /** The sea: a band of water round the places at high tide that draws back toward the horizon as it goes out. */
   private drawSea() {
     const v = this.view;
-    const top = v.h * 0.3;
+    const top = this.frame.seaTop;
     const low = top + 40;
     const high = this.placeY + 110;
     const edge = low + (high - low) * this.sea.in;
