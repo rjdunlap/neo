@@ -27,6 +27,7 @@ import { HOW_TO as crosswordHowTo } from '../games/crossword/howto.ts';
 import { HOW_TO as cueStudioHowTo } from '../games/cue-studio/howto.ts';
 import { HOW_TO as cutAlongHowTo } from '../games/cut-along/howto.ts';
 import { HOW_TO as dayByDayHowTo } from '../games/day-by-day/howto.ts';
+import { HOW_TO as dominoPondHowTo } from '../games/domino-pond/howto.ts';
 import { HOW_TO as dominoRunHowTo } from '../games/domino-run/howto.ts';
 import { HOW_TO as dotLinkHowTo } from '../games/dot-link/howto.ts';
 import { HOW_TO as drawThePatternHowTo } from '../games/draw-the-pattern/howto.ts';
@@ -221,6 +222,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'cue-studio': cueStudioHowTo,
   'cut-along': cutAlongHowTo,
   'day-by-day': dayByDayHowTo,
+  'domino-pond': dominoPondHowTo,
   'domino-run': dominoRunHowTo,
   'dot-link': dotLinkHowTo,
   'draw-the-pattern': drawThePatternHowTo,
