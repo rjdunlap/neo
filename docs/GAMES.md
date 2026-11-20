@@ -436,7 +436,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Memory Match
 
-*preschool–school* · [Memory Match](games/memory-match.md)
+*toddler–school* · [Memory Match](games/memory-match.md)
 
 ### Size Parade
 

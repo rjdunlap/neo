@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Container } from 'pixi.js';
-import { nextLevelOffer, stepLevel, nextLevel } from '../../progress/difficulty';
+import { nextLevelOffer, stepLevel, nextLevel, rangeFor } from '../../progress/difficulty';
 import { Rng } from '../../engine/random';
 import { fractionFace, pictureFace } from './art';
 import { memoryMatch } from './index';
@@ -109,10 +109,15 @@ describe('memory matching', () => {
   it('preserves existing plans and IDs, inserting the clock bridge in the school order, deck sizes and band windows with scoped instructions', () => {
     expect(PLANS.map((p) => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3]);
     expect(LEVELS).toEqual({
+      toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 5 },
       prek: { min: 3, max: 9 },
       school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] },
     });
+    expect(memoryMatch.bands).toContain('toddler');
+    expect(rangeFor(LEVELS, 'toddler')).toEqual({ min: 1, max: 1 });
+    expect(howToFor(memoryMatch, 1)!.finish).toBe('Find both picture pairs to finish.');
+    expect(howToFor(memoryMatch, 2)!.finish).toBe('The round ends when every pair is found.');
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(100)).toBe(PLANS[11]);
     for (let level = 1; level <= PLANS.length; level++) {

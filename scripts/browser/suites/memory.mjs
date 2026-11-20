@@ -4,6 +4,39 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   async function memory() {
     const levels =
       process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    // The toddler window: the hidden four-card round (level 1), played from the toddler band, on a narrow upright phone.
+    if (levels.includes(1)) {
+      const original = page.viewportSize();
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('memory-match', 1, 'Mia', 'toddler');
+      await page.waitForTimeout(250);
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        if (g.cards.length !== 4 || g.views.some((v) => v.matched)) throw new Error('Toddler round is not four hidden cards');
+        if (g.ctx.band !== 'toddler') throw new Error(`Toddler launch played at ${g.ctx.band}`);
+        const scale = neo.view.scale;
+        for (const v of g.views) {
+          const b = v.node.getBounds();
+          if (b.x < 0 || b.y < 0 || b.x + b.width > neo.view.w * scale || b.y + b.height > neo.view.h * scale)
+            throw new Error('Toddler card outside the screen');
+          if (v.node.scale.x * 140 < 100) throw new Error('Toddler card below 100 units');
+        }
+      });
+      await screenshot('memory-toddler-portrait');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let pair = 0; pair < 2; pair++) {
+          const ids = g.cards.map((c, i) => (c.pair === pair ? i : -1)).filter((i) => i >= 0);
+          kit.tapOn(g.views[ids[0]].node);
+          await kit.sleep(180);
+          kit.tapOn(g.views[ids[1]].node);
+          if (!(await kit.until(() => !g.locked))) throw new Error('Toddler pair stayed locked');
+        }
+      });
+      await finished('memory-match');
+      await page.setViewportSize(original);
+      log('Memory Match toddler round: four cards, upright fit and reward passed');
+    }
     for (const level of levels) {
       await launch('memory-match', level);
       await page.evaluate(async () => {

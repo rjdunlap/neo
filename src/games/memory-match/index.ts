@@ -366,7 +366,7 @@ export const memoryMatch: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'noticing',
   skills: ['memory', 'matching', 'number-sense', 'letters', 'telling-time'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
