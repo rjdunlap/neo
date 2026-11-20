@@ -14,6 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { choicePoints, gardenFrame, gatePoint, needPoints, plotXs, plotY, trayPoints } from './layout';
 import { RockyShore } from './shore';
 import { changedArt, gardenPatch, gateIcon, needIcon, pieceArt } from './art';
 import {
@@ -172,33 +173,27 @@ class HabitatHelpers implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const gardenX = v.w / 2 + 50;
-    const gardenY = v.h * 0.49;
+    const { gardenX, gardenY, goal } = gardenFrame(v);
     this.patch.position.set(gardenX, gardenY);
-    this.goal.position.set(gardenX, 125);
-    this.testButton.position.set(v.w - 86, v.h - 92);
+    this.goal.position.set(goal.x, goal.y);
+    const gate = gatePoint(v);
+    this.testButton.position.set(gate.x, gate.y);
 
-    const selectedButtons = this.pieces.filter((p) => p.selected);
-    // Level 7's four spaces spread wider, 130 apart, so its 124-unit touch areas never overlap.
-    const half = this.plotCount > 3 ? 260 : 210;
-    const gardenXs = spread(this.plotCount, gardenX - half, gardenX + half, this.plotCount > 3 ? 130 : 120);
-    selectedButtons.forEach((p, i) => p.node.position.set(gardenXs[i], gardenY + (i % 2 ? 12 : -14)));
+    const gardenXs = plotXs(v, this.plotCount);
+    this.pieces
+      .filter((p) => p.selected)
+      .forEach((p, i) => p.node.position.set(gardenXs[i], plotY(gardenY, i)));
 
+    // Level 6's six 112-unit cards (124-unit touch areas) rest in one row sideways and in two upright.
     const loose = this.pieces.filter((p) => !p.selected);
-    // Between the pet and the gate: six 112-unit cards (level 6) fit with their 124-unit touch areas not overlapping.
-    const trayXs = spread(loose.length, 150, v.w - 165, 124);
-    loose.forEach((p, i) => p.node.position.set(trayXs[i], v.h - 90));
+    const tray = trayPoints(v, loose.length);
+    loose.forEach((p, i) => p.node.position.set(tray[i].x, tray[i].y));
 
-    const choiceXs = spread(
-      this.choices.length,
-      gardenX - 90 * this.choices.length,
-      gardenX + 90 * this.choices.length,
-      180,
-    );
-    this.choices.forEach((c, i) => c.node.position.set(choiceXs[i], v.h - 95));
+    choicePoints(v, this.choices.length).forEach((pt, i) => this.choices[i].node.position.set(pt.x, pt.y));
     // The need question sits in the tray row, between the pet and the hidden gate.
-    const needXs = spread(this.needChoices.length, 170, v.w - 170, 170);
-    this.needChoices.forEach((c, i) => c.node.position.set(needXs[i], v.h - 95));
+    needPoints(v, this.needChoices.length).forEach((pt, i) =>
+      this.needChoices[i].node.position.set(pt.x, pt.y),
+    );
     this.drawPlots(gardenX, gardenY, gardenXs);
   }
 
@@ -286,7 +281,8 @@ class HabitatHelpers implements Game {
         .fill({ color: wood.fill, alpha: 0.25 })
         .stroke({ width: 4, color: wood.line, alpha: 0.55 });
     }
-    // A little open path from the gate button into the habitat.
+    // A little open path from the gate button into the habitat (sideways only: upright the tray rests between them).
+    if (!gardenFrame(this.view).path) return;
     g.moveTo(gardenX + 260, gardenY + 95)
       .quadraticCurveTo(gardenX + 305, gardenY + 125, this.view.w - 120, this.view.h - 118)
       .stroke({ width: 24, color: wood.light, alpha: 0.5, cap: 'round' });
@@ -595,24 +591,20 @@ class HabitatHelpers implements Game {
 
   private async showArrivals(visitors: readonly Visitor[]) {
     sfx.sparkle();
-    const gardenX = this.view.w / 2 + 50;
+    const { gardenX, visitorY, burstY } = gardenFrame(this.view);
     const xs = spread(visitors.length, gardenX - 100, gardenX + 100, 160);
     for (const [i, visitor] of visitors.entries()) {
       const node = new Critter(CRITTERS[visitor]);
       node.scale.set(0.46);
-      node.position.set(this.view.w + 100 + i * 80, this.view.h * 0.61);
+      node.position.set(this.view.w + 100 + i * 80, visitorY);
       this.ctx.track(node);
       this.visitorLayer.addChild(node);
       this.arrivals.push({ visitor, node });
-      void this.ctx.tw.to(
-        node,
-        { x: xs[i], y: this.view.h * 0.61 },
-        { duration: 0.7 + i * 0.12, ease: ease.outBack },
-      );
+      void this.ctx.tw.to(node, { x: xs[i], y: visitorY }, { duration: 0.7 + i * 0.12, ease: ease.outBack });
     }
     await this.ctx.tw.wait(0.85);
     for (const a of this.arrivals) a.node.cheer();
-    this.ctx.particles.burst(gardenX, this.view.h * 0.42, {
+    this.ctx.particles.burst(gardenX, burstY, {
       kind: 'star',
       colors: [swatch.yellow.fill, swatch.green.fill, swatch.blue.fill],
       count: 18,
@@ -683,6 +675,7 @@ export const habitatHelpers: GameModule = {
     'Look outdoors for food, water and shelter an animal could use. Watch from a distance and leave wild animals where they are.',
   hubIcon: () => new WigglyIcon(habitatIcon()),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => (planFor(ctx.level).mode === 'shore' ? new RockyShore(ctx) : new HabitatHelpers(ctx)),
 };
