@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/ferry-jam; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ferry-jam` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ferry-jam` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** planning, spatial-reasoning, problem-solving, sequencing
 
@@ -37,3 +37,5 @@
 **On the couch (Harbor Rush).** Grown-ups play its 5 by 5 and 6 by 6 harbors (levels 3 to 6) with a controller: the stick moves a highlight to the nearest boat in the direction pushed, the bottom button picks it up and later sets it down, the stick slides a held boat along its lane one cell at a time, and the left button puts a held boat back for nothing (or, with nothing held, takes the last slide back; it stays counted). A boat moved any distance is one slide, counted when it ends somewhere new. The pause menu has **Show a hint** (the solver's next slide; on the couch the automatic hint is off, and a shown hint marks a challenge run as helped) and **Start this harbor again** (slides kept). `boatToward` and `focusPath` in `logic.ts` are the highlight's rules, tested to reach every boat in every harbor of the game. One puzzle-shelf course, **Busy Harbors** (five frozen harbors with fewest slides 8, 10, 12, 16 and 18, par 64), with **Watch the best routes** after a first finish; a trip climbs levels 3 to 6 and a face-off compares slides over the fewest. The round arrow is not drawn on the couch.
 
 **What the guide repeats.** At level 8 (two ferries), `ferry.one` ("One ferry is out! Now help the other one.") is an instruction (`ctx.instruct`, unless a hint glow is showing), so the caption no longer keeps "Which ferry has to go first?". A tap on a ferry (`ferry.who`) and the blocked-way hint (`ferry.notway`) stay `say`.
+
+On upright phones the layout is the pure `harborLayout` in `layout.ts` (with `CELL` and `DOCK`), and the sideways plan is pinned identical by test. A 6-wide harbor plus its dock is 712 of 768 units, so upright the harbor takes the width and hangs up from the bottom edge (bottom at least 190 above the view bottom, clear of the guide corner; Home clearance y at least 235), a yellow-ferry harbor's lower dock included, with the undo button bottom-right. The real fault was the sideways-only x≥150 margin pushing 6-wide harbors off a 768 view. `upright.test.ts` covers every level's harbors and the course harbors in five views.
