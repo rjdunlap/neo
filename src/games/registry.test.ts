@@ -665,6 +665,7 @@ describe('game registry', () => {
       'sprout-shuffle',
       'stamp-studio',
       'story-steps',
+      'story-weaver',
       'sudoku-garden',
       'swap-meet',
       'swing-pals',
