@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/example-express; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `example-express` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `example-express` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** changing labelled examples, observing a fitted rule, testing and revising
 

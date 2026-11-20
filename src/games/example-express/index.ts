@@ -835,6 +835,7 @@ export const exampleExpress: GameModule = {
   name: 'Example Express',
   titleLine: 'ee.title',
   region: 'tinker-lab',
+  upright: true,
   challenge: 'logic',
   skills: ['changing labelled examples', 'observing a fitted rule', 'testing and revising'],
   bands: ['school'],
