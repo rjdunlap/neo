@@ -10,6 +10,7 @@ import {
 } from './block-garden/logic';
 import { layoutFor as stonesLayout, LEVELS as stoneLevels, planFor as stonePlan } from './brain-break/logic';
 import { phoneCrosswordLayout } from './crossword/grownup';
+import { CELL as DOMINO_CELL, TARGET as DOMINO_TARGET, TRAY_W as DOMINO_TRAY_W } from './domino-pond/layout';
 import { gemLayout } from './gem-swap';
 import { LEVELS as gemLevels, planFor as gemPlan } from './gem-swap/logic';
 import { songLayout } from './hat-band/logic';
@@ -81,6 +82,11 @@ const MEASURE: Record<string, () => Size[]> = {
   'brain-break': () =>
     grown(stoneLevels.grownup!).map((level) => ['stone', stonesLayout(v.w, v.h, stonePlan(level).side).size]),
   crossword: () => [8, 5].map((n) => ['square and key', phoneCrosswordLayout(v, n, n).tile]),
+  'domino-pond': () => [
+    ['board cell', DOMINO_CELL],
+    ['tray', Math.min(DOMINO_TRAY_W, DOMINO_TARGET)],
+    ['button', DOMINO_TARGET],
+  ],
   'gem-swap': () => [
     ...grown(gemLevels.grownup!).map((level): Size => ['gem', gemLayout(v, gemPlan(level).size).pitch]),
     ['button', 88],
@@ -244,6 +250,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'block-garden': { px: 45.7, what: 'bed square' },
   'brain-break': { px: 50.8, what: 'stone' },
   crossword: { px: 44.7, what: 'square and key' },
+  'domino-pond': { px: 50.8, what: 'tray' },
   'gem-swap': { px: 44.7, what: 'button' },
   'hat-band': { px: 50.8, what: 'song card' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },

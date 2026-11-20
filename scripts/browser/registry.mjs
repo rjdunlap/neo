@@ -37,6 +37,7 @@ import { createSuite as createThoughtBubbles } from './suites/thought-bubbles-pl
 import { createSuite as createNoticeBoard } from './suites/notice-board-play.mjs';
 import { createSuite as createMakerLane } from './suites/maker-lane-play.mjs';
 import { createSuite as createShellRows } from './suites/shell-rows-play.mjs';
+import { createSuite as createDominoPond } from './suites/domino-pond-play.mjs';
 import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
 import { createSuite as createDriftCards } from './suites/drift-cards-play.mjs';
 import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs';
@@ -230,6 +231,7 @@ export const SUITES = [
   'pilematch',
   'boltboards',
   'dominorun',
+  'dominopond',
   'fruitslice',
   'cutalong',
   'drawpattern',
@@ -426,6 +428,7 @@ export const ALL_SUITES = [
   'pilematch',
   'boltboards',
   'dominorun',
+  'dominopond',
   'fruitslice',
   'cutalong',
   'drawpattern',
@@ -901,6 +904,7 @@ export function createChecks(fixture) {
   install(createNoticeBoard(shared));
   install(createMakerLane(shared));
   install(createShellRows(shared));
+  install(createDominoPond(shared));
   install(createTideLine(shared));
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
@@ -1144,6 +1148,7 @@ export async function runSuite(suite, fixture) {
     thoughtBubblesPlay,
     noticeBoardPlay,
     shellRowsPlay,
+    dominoPondPlay,
     tideLinePlay,
     tideLine34Play,
     tideLine5Play,
@@ -1347,6 +1352,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'noticeboard') await noticeBoardPlay();
   if (suite === 'all' || suite === 'makerlane') await makerLanePlay();
   if (suite === 'all' || suite === 'shellrows') await shellRowsPlay();
+  if (suite === 'all' || suite === 'dominopond') await dominoPondPlay();
   if (suite === 'all' || suite === 'tideline') await tideLinePlay();
   if (suite === 'all' || suite === 'tideline34') await tideLine34Play();
   if (suite === 'all' || suite === 'tideline5') await tideLine5Play();
