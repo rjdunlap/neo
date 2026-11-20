@@ -561,6 +561,7 @@ describe('game registry', () => {
     const upright = [
       'adventure-walk',
       'animal-snack',
+      'attic-finds',
       'beat-builder',
       'block-garden',
       'block-tower',

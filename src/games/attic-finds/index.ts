@@ -1667,6 +1667,7 @@ export const atticFinds: GameModule = {
   challenge: 'noticing',
   skills: ['observation', 'cause-and-effect', 'evidence', 'prediction', 'comparing'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   entryLevels: [3, 4],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
