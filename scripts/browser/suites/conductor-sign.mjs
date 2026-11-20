@@ -2,8 +2,33 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished }) {
   async function conductorSign() {
+    // CONDUCTOR_UPRIGHT=1 plays level 3 as a touch phone held upright (390 × 844): the sign beside the bandstand.
+    const held = process.env.CONDUCTOR_UPRIGHT === '1';
+    if (held) await page.setViewportSize({ width: 390, height: 844 });
     await launch('little-conductor', 3);
     await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
+    if (held) {
+      const v = await page.evaluate(() => {
+        const l = neo.scene.game.layout;
+        return { up: !!neo.view.upright, w: neo.view.w, h: neo.view.h, sign: l.sign, done: l.done };
+      });
+      assert.equal(
+        v.up,
+        true,
+        'the view is upright ' +
+          JSON.stringify([
+            v.w,
+            v.h,
+            await page.evaluate(() => [
+              innerWidth,
+              innerHeight,
+              matchMedia('(pointer: coarse)').matches,
+              neo.scene.uprightArea,
+            ]),
+          ]),
+      );
+      assert.ok(v.sign.x + v.sign.w <= v.w && v.done.y + v.done.r <= v.h, 'sign and Done are on screen');
+    }
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     const req = () =>
       page.evaluate(() => ({ ...neo.scene.game.requests, wants: neo.scene.game.round.requests }));
@@ -39,7 +64,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     await page.evaluate(() => neo.scene.game.askForHint());
     assert.equal((await req()).hints, 1);
     await settled();
-    await screenshot('little-conductor-3-portrait');
+    await screenshot(held ? 'little-conductor-3-upright' : 'little-conductor-3-portrait');
     await tap(`neo.scene.game.pads.${wants[0]}`);
     await settled();
     await tap('neo.scene.game.done');

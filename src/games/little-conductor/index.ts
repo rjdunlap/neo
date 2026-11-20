@@ -796,6 +796,7 @@ export const littleConductor: GameModule = {
   name: 'Little Conductor',
   titleLine: 'game.little-conductor',
   region: 'music-mountain',
+  upright: true,
   challenge: 'music',
   skills: ['listening', 'tempo', 'cause and effect', 'following a picture'],
   bands: ['toddler', 'preschool', 'prek'],

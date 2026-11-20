@@ -610,6 +610,7 @@ describe('game registry', () => {
       'lemonade-stand',
       'lift-it',
       'light-lab',
+      'little-conductor',
       'little-helpers',
       'log-roll',
       'logic-grid',

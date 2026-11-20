@@ -307,18 +307,27 @@ export const SIGN = 200;
 const SIGN_COLUMN = 250;
 
 /** Every rectangle on the screen, from the view: the pads stay 180 units and clear of the pet's corner in both orientations. */
-export function conductorLayout(view: { w: number; h: number }, level: number): ConductorLayout {
+export function conductorLayout(
+  view: { w: number; h: number; upright?: boolean },
+  level: number,
+): ConductorLayout {
   const portrait = view.h > view.w;
   const signed = planFor(level).mode === 'sign';
-  const column = signed && !portrait ? SIGN_COLUMN : 0;
+  // Level 3 keeps the sign's column beside the bandstand in landscape and upright (768 wide has no room under it).
+  const column = signed && (!portrait || view.upright) ? SIGN_COLUMN : 0;
   const cx = (view.w - column) / 2;
-  const standW = Math.min(view.w - column - (column ? 80 : 200), portrait ? 760 : 820);
+  const standW = Math.min(view.w - column - (column ? (view.upright ? 40 : 80) : 200), portrait ? 760 : 820);
   const standH = portrait ? Math.min(380, view.h * 0.3) : Math.min(340, view.h * 0.44);
   const stand: Rect = { x: cx - standW / 2, y: portrait ? 110 : 70, w: standW, h: standH };
-  const spacing = portrait ? 200 : 230;
+  const spacing = column && portrait ? 140 : portrait ? 200 : 230;
   const feet = stand.y + stand.h - 40;
   const friends = [-1, 0, 1].map((i) => ({ x: cx + i * spacing, y: feet }));
-  const padY = portrait ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - PAD / 2) : stand.y + stand.h + 50;
+  // Upright, the pads hang up from the bottom edge, above the pet's corner and their marks, so a tall phone leaves sky between.
+  const padY = view.upright
+    ? Math.max(stand.y + stand.h + 90, view.h - 220 - 50 - PAD)
+    : portrait
+      ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - PAD / 2)
+      : stand.y + stand.h + 50;
   const padsCx = portrait ? view.w / 2 : Math.min(view.w / 2, view.w - 2 * BUTTON - 60 - PAD - PAD_GAP / 2);
   const pads = {
     turtle: { x: padsCx - PAD_GAP / 2 - PAD, y: padY, w: PAD, h: PAD },
@@ -332,10 +341,11 @@ export function conductorLayout(view: { w: number; h: number }, level: number): 
     ? { x: bx, y: view.h - BUTTON - 50, r: BUTTON }
     : { x: bx, y: padY + PAD + 30, r: BUTTON };
   if (!signed) return { stand, friends, pads, listen, done };
-  // Landscape: the sign at the top of the right-hand column. Portrait: below the bandstand, right of the pads.
-  const sign: Rect = portrait
-    ? { x: view.w - SIGN - 50, y: stand.y + stand.h + 30, w: SIGN, h: SIGN }
-    : { x: view.w - SIGN - 25, y: stand.y, w: SIGN, h: SIGN };
+  // Landscape and upright: the sign at the top of the right-hand column. Portrait: below the bandstand, right of the pads.
+  const sign: Rect =
+    portrait && !view.upright
+      ? { x: view.w - SIGN - 50, y: stand.y + stand.h + 30, w: SIGN, h: SIGN }
+      : { x: view.w - SIGN - 25, y: stand.y, w: SIGN, h: SIGN };
   return {
     stand,
     friends,
