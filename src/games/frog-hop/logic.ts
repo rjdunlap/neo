@@ -526,17 +526,46 @@ export interface HopLayout {
   cards: { x: number; y: number }[];
 }
 
+/** Held upright (768 wide) the nine pads cannot sit in one row at 100 units: they take a row of five and a row of four. */
+export const UPRIGHT_PAD_ROW = 5;
+export const UPRIGHT_PAD_PITCH = 140;
+/** Upright, the row of pads and the next one are this far apart, room for the fraction line's "one whole" bracket between. */
+const UPRIGHT_ROW_GAP = 250;
+
 /**
  * Where the line, the sign and the number cards sit in a view. The card row starts right of the guide's corner
- * (`corner`, the bottom-left square the pet stands in) and keeps its 124-unit step while it fits.
+ * (`corner`, the bottom-left square the pet stands in) and keeps its 124-unit step while it fits. Held upright the line
+ * folds into two rows (pads 0–4, then 5–8, reading like text) and the cards into two rows of three beside the guide; the
+ * cards, the rows and the sign hang up from the bottom edge, so a tall phone's spare height is sky at the top.
  */
-export function hopLayout(view: { w: number; h: number }, mode: HopMode, corner = 200): HopLayout {
+export function hopLayout(
+  view: { w: number; h: number; upright?: true },
+  mode: HopMode,
+  corner = 200,
+): HopLayout {
+  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match';
+  const n = usesCards ? GAP_CARDS.length : 0;
+  if (view.upright && view.h > view.w * 1.1) {
+    const cardsTop = view.h - (usesCards ? 248 : corner);
+    const rowB = cardsTop - 24 - PAD_HIT.h / 2;
+    const rowA = rowB - UPRIGHT_ROW_GAP;
+    const x0 = view.w / 2 - 2 * UPRIGHT_PAD_PITCH;
+    const pads = Array.from({ length: WINDOW }, (_, i) => ({
+      x: x0 + (i % UPRIGHT_PAD_ROW) * UPRIGHT_PAD_PITCH,
+      y: i < UPRIGHT_PAD_ROW ? rowA : rowB,
+    }));
+    const sign = { x: view.w / 2 - SIGN.w / 2, y: rowA - PAD_HIT.h / 2 - 30 - SIGN.h, w: SIGN.w, h: SIGN.h };
+    const mid = (corner + 16 + CARD_HIT.w / 2 + view.w - 24 - CARD_HIT.w / 2) / 2;
+    const cards = Array.from({ length: n }, (_, i) => ({
+      x: mid + ((i % 3) - 1) * 124,
+      y: view.h - (i < 3 ? 190 : 66),
+    }));
+    return { pads, sign, cards };
+  }
   const y = view.h * (countsHops(mode) ? 0.56 : 0.62);
   const x0 = (view.w - (WINDOW - 1) * PAD_STEP) / 2;
   const pads = Array.from({ length: WINDOW }, (_, i) => ({ x: x0 + i * PAD_STEP, y }));
   const sign = { x: view.w / 2 - SIGN.w / 2, y: SIGN.y - SIGN.h / 2, w: SIGN.w, h: SIGN.h };
-  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match';
-  const n = usesCards ? GAP_CARDS.length : 0;
   const left = corner + 16 + CARD_HIT.w / 2;
   const right = view.w - 24 - CARD_HIT.w / 2;
   const step = Math.min(124, (right - left) / Math.max(1, n - 1));

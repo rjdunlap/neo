@@ -365,13 +365,23 @@ class FrogHop implements Game {
 
   private layout: HopLayout;
 
-  private padX(n: number) {
-    const [a, b] = this.layout.pads;
-    return a.x + (n - this.lo) * (b.x - a.x);
+  /** Where pad `n` sits (a row of nine sideways; upright, a row of five and a row of four). */
+  private padPos(n: number) {
+    return this.layout.pads[Math.max(0, Math.min(WINDOW - 1, n - this.lo))];
   }
 
+  private padX(n: number) {
+    return this.padPos(n).x;
+  }
+
+  /** The line's first row, which the scenery and the fireflies follow. */
   private padY() {
     return this.layout.pads[0].y;
+  }
+
+  /** Where the frog stands on pad `n`. */
+  private frogY(n: number) {
+    return this.padPos(n).y - 8;
   }
 
   /** The scene's still touches, laid out for the view: ripples in the brook, tufts on the flower path, the evening moon. */
@@ -417,12 +427,12 @@ class FrogHop implements Game {
     this.layout = hopLayout(v, this.plan.mode, GUIDE_CORNER.w);
     this.backdrop.resize(v);
     this.drawScene(v);
-    this.pads.forEach((p, i) => p.position.set(this.padX(this.lo + i), this.padY()));
+    this.pads.forEach((p, i) => p.position.set(this.layout.pads[i].x, this.layout.pads[i].y));
     this.drawMarks();
-    if (!this.frogMoving) this.frog.position.set(this.padX(this.at), this.padY() - 8);
+    if (!this.frogMoving) this.frog.position.set(this.padX(this.at), this.frogY(this.at));
     const x0 = this.padX(0);
     const x1 = this.padX(4);
-    this.bracket.position.set((x0 + x1) / 2, this.padY() + 92);
+    this.bracket.position.set((x0 + x1) / 2, this.padPos(0).y + 92);
     const half = (x1 - x0) / 2;
     this.bracketLine
       .clear()
@@ -431,7 +441,8 @@ class FrogHop implements Game {
       .lineTo(half, 0)
       .lineTo(half, -14)
       .stroke({ width: 5, color: ink });
-    if (this.q?.target !== undefined) this.flag.position.set(this.padX(this.q.target), this.padY());
+    if (this.q?.target !== undefined)
+      this.flag.position.set(this.padX(this.q.target), this.padPos(this.q.target).y);
     this.sign.position.set(v.w / 2, this.layout.sign.y + this.layout.sign.h / 2);
     this.cards.forEach((c, i) => c.node.position.set(this.layout.cards[i].x, this.layout.cards[i].y));
   }
@@ -545,7 +556,7 @@ class FrogHop implements Game {
     if (this.at !== q.start) await this.leap(q.start);
     if (mode === 'count-up') {
       // The flag marks the bigger number; the frog stands on the one taken away.
-      this.flag.position.set(this.padX(q.target), this.padY());
+      this.flag.position.set(this.padX(q.target), this.padPos(q.target).y);
       this.flag.visible = true;
     }
     if (isFrac(mode)) return this.askFrac(line);
@@ -655,10 +666,10 @@ class FrogHop implements Game {
 
   private async leap(to: number) {
     this.frogMoving = true;
-    const y = this.padY() - 8;
+    const y = this.frogY(to);
     sfx.whoosh();
     void this.ctx.tw
-      .to(this.frog, { y: y - 90 }, { duration: 0.22, ease: ease.outQuad })
+      .to(this.frog, { y: Math.min(this.frog.y, y) - 90 }, { duration: 0.22, ease: ease.outQuad })
       .then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.22, ease: ease.inQuad }));
     await this.ctx.tw.to(this.frog, { x: this.padX(to) }, { duration: 0.44 });
     await this.ctx.tw.wait(0.05);
@@ -674,15 +685,15 @@ class FrogHop implements Game {
    */
   private async hopCount(to: number, numerals = false) {
     const dir = Math.sign(to - this.at);
-    const y = this.padY() - 8;
     this.frogMoving = true;
     for (let k = 1; this.at !== to; k++) {
       const next = this.at + dir;
+      const y = this.frogY(next);
       void this.ctx.say('count', { n: numerals ? padValue(this.plan, next) : k });
       if (numerals) this.addTally();
       sfx.pop(5 + k);
       void this.ctx.tw
-        .to(this.frog, { y: y - 50 }, { duration: 0.16, ease: ease.outQuad })
+        .to(this.frog, { y: Math.min(this.frog.y, y) - 50 }, { duration: 0.16, ease: ease.outQuad })
         .then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.16, ease: ease.inQuad }));
       await this.ctx.tw.to(this.frog, { x: this.padX(next) }, { duration: 0.32 });
       this.frog.y = y;
@@ -704,16 +715,20 @@ class FrogHop implements Game {
 
   /** Fraction hops: each as long as its size, saying the landing names, or on the card stage counting the hops. */
   private async hopBy(jump: number, count: number, speak: 'names' | 'counts') {
-    const y = this.padY() - 8;
     this.frogMoving = true;
     for (let k = 1; k <= count; k++) {
       const next = this.at + jump;
+      const y = this.frogY(next);
       if (speak === 'names') void this.ctx.say('hop.frac.land', { name: hopWords(next, jump) });
       else void this.ctx.say('count', { n: k });
       sfx.pop(5 + k);
       const time = 0.26 + 0.06 * jump;
       void this.ctx.tw
-        .to(this.frog, { y: y - 40 - 16 * jump }, { duration: time / 2, ease: ease.outQuad })
+        .to(
+          this.frog,
+          { y: Math.min(this.frog.y, y) - 40 - 16 * jump },
+          { duration: time / 2, ease: ease.outQuad },
+        )
         .then(() => this.ctx.tw.to(this.frog, { y }, { duration: time / 2, ease: ease.inQuad }));
       await this.ctx.tw.to(this.frog, { x: this.padX(next) }, { duration: time });
       this.frog.y = y;
@@ -802,7 +817,7 @@ class FrogHop implements Game {
     if (this.at !== q.start) await this.leap(q.start);
     await this.hopBy(q.jump!, q.count!, 'names');
     this.pads[q.target - this.lo].mark(fracName(q.target));
-    this.flag.position.set(this.padX(q.target), this.padY());
+    this.flag.position.set(this.padX(q.target), this.padPos(q.target).y);
     this.flag.visible = true;
     sfx.pop(9);
     await this.ctx.tw.wait(0.4);
@@ -1015,6 +1030,7 @@ export const frogHop: GameModule = {
   titleLine: 'game.frog-hop',
   region: 'counting-cove',
   challenge: 'numbers',
+  upright: true,
   skills: ['number-line', 'adding', 'taking-away', 'counting-on', 'fractions'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

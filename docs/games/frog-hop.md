@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/frog-hop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `frog-hop` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `frog-hop` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** number-line, adding, taking-away, counting-on, fractions
 
@@ -29,6 +29,8 @@
 | 13 | Hop by tens: pads 0, 10, 20 … 100, start at 10 to 70 and hop 1 to 4 tens on or back |
 
 <!-- end generated -->
+
+On upright phones `hopLayout` (pure, in `logic.ts`; guard `view.upright` and height over 1.1 × width) folds the nine pads into a row of five (pads 0–4) and a row of four (5–8) at a 140 pitch, left-aligned like text and 250 units apart so the fraction line's "one whole" bracket fits under row one; the six number cards go in two rows of three beside the guide at a 124 pitch; cards, rows and sign hang up from the bottom edge, so a tall phone's spare height is sky at the top. The scene's single pad baseline became `padPos`/`frogY`, so `leap`, `hopCount` and `hopBy` tween the frog's y to the landing pad's row. The sideways plan is unchanged and still tested; `logic.test.ts` runs every one of the 13 plans over five upright views (768×1024, 390×844, 390×700, 430×932, 360×780) and checks rows, order and the bracket gap.
 
 **Starts as:** hop to a number on the lily pads
 
