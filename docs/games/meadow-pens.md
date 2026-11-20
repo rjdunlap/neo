@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/meadow-pens; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `meadow-pens` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `meadow-pens` · **Land:** Rainbow Meadow · **Ages:** school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** area, perimeter, arrays, spatial-reasoning
 
@@ -26,7 +26,7 @@
 
 ## Design notes
 
-*After unit-square area models and fence-and-field word problems; [definition](../definitions/meadow-pens.md).* A friend stands at the meadow gate and asks for a pen. She paints squares of grass on a 6 by 4 grid (drawn 4 by 6 in portrait) and **the fence builds itself** around the biggest connected group of painted squares, one piece per grass edge. Painted squares that do not touch the pen are flowers that ask to join; a ring of grass around an empty square makes that square a pond. A heap or counted stack of fence pieces sits under the grid, topped up by a cart. She rings the bell to check: ringing an empty meadow is free. **Built: levels 1–5** (school 1–5).
+*After unit-square area models and fence-and-field word problems; [definition](../definitions/meadow-pens.md).* A friend stands at the meadow gate and asks for a pen. She paints squares of grass on a 6 by 4 grid (drawn 4 by 6 on taller upright phones) and **the fence builds itself** around the biggest connected group of painted squares, one piece per grass edge. Painted squares that do not touch the pen are flowers that ask to join; a ring of grass around an empty square makes that square a pond. A heap or counted stack of fence pieces sits under the grid, topped up by a cart. She rings the bell to check: ringing an empty meadow is free. **Built: levels 1–5** (school 1–5).
 
 **Levels.** Level 1 *Enough grass*: three pens; the first asks for 4 squares, then 3 to 8 in a seeded order without repeats; any connected shape with that many squares works, and the fence heap is free. Level 2 *Rows of grass*: five fenced fields from the card table (the first 2 by 3); the first row and column paint themselves with a count, any cell can be tapped to count on, and she picks the total from three cards: the right one (rows times columns), the fence count (perimeter), and rows plus columns or a row off. 4 by 4 is left out because its perimeter equals its area. Level 3 *Same grass, new fence*: six squares of grass using every piece of a counted stack of 10, then 12 and 14 in a seeded order; missing pieces show dashed. Level 4 *More grass, or more fence?*: five questions comparing two fixed pens, with two pen answer cards and a matching-piles same card; the authored opening compares a 1 by 6 and a 2 by 3 for grass, then fence. Both equality kinds and opposite grass/fence ordering occur. Level 5 *Two parts*: five L-shaped fields split into two disjoint rectangles; touch each part to count it, then choose the whole grass total from three cards (the correct total, a documented part/perimeter error, and a bounding-box or omitted-part error). Later rounds use seeded schedules.
 

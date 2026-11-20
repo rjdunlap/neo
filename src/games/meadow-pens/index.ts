@@ -861,6 +861,7 @@ export const meadowPens: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  upright: true,
   touchDemo: true,
   coplayHint:
     'Take turns counting squares of grass or fence pieces with {name}; compare the pens, or count both parts of a bent field together.',

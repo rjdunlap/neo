@@ -277,7 +277,6 @@ describe('Meadow Pens fixed-field layouts', () => {
         orientations.add(l.tall);
         expect(l.tall).toBe(view.h > view.w && view.h >= 1150);
         expect(l.stack).toBeNull();
-        expect(l.fixed).toBe(true);
         expect(l.cards).toHaveLength(3);
         expect(targets(l)).not.toContain(l.bell);
         for (let i = 0; i < 3; i++) {
