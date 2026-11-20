@@ -117,6 +117,17 @@ describe('new-game scaffold', () => {
     expect(tree(root)).toEqual(before);
   });
 
+  it('starts a grown-up game upright with a layout test stub, and no other band', () => {
+    const root = fixture();
+    scaffold(root, { ...options, band: 'grownup' });
+    expect(readFileSync(join(root, 'src/games/test-starter/index.ts'), 'utf8')).toContain('upright: true,');
+    expect(readFileSync(join(root, 'src/games/test-starter/upright.test.ts'), 'utf8')).toContain('it.todo');
+    const other = fixture();
+    scaffold(other, options);
+    expect(readFileSync(join(other, 'src/games/test-starter/index.ts'), 'utf8')).not.toContain('upright');
+    expect(existsSync(join(other, 'src/games/test-starter/upright.test.ts'))).toBe(false);
+  });
+
   it('rejects a repeated run without touching the generated work', () => {
     const root = fixture();
     scaffold(root, options);
