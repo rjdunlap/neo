@@ -72,7 +72,7 @@ How the puzzle page maps onto what exists. "Row" means an [IDEAS](../../IDEAS.md
 | Hashi (Bridges) | [Island Bridges](../../GAMES.md#island-bridges) | Built |
 | Lights Out (Tatham's Flip) | Lantern Lights | Built (couch) |
 | Sliding fifteen | Number Nook | Built |
-| Mastermind; Wordle; hangman | [Secret Code](../../GAMES.md#secret-code); row *Word Code* | Built; Word Code is an idea with a par rule decided |
+| Mastermind; Wordle; hangman | [Secret Code](../../GAMES.md#secret-code); [Word Code](../../GAMES.md#word-code) | Both built |
 | Zip (numbered path through every cell), Numbrix | [Mossy Path](../../GAMES.md#mossy-path) | Built (school 1–3); numbered stones would be a mode |
 | **Maze** | none | **Gap**: PP1 |
 | Mahjong solitaire; Tiles (layered pairs) | Tile Pairs | Built; a layered-attribute mode is a later idea |
@@ -225,7 +225,7 @@ Each is one session; definitions are docs only.
 2. **Define `logic-grid`**: defined in [logic-grid.md](../../definitions/logic-grid.md); levels 1–2 built 2026-11-05 and levels 3–4 queued in READY. Notes: [logic-grid](#logic-grid-whodunit).
 3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)): defined in [mossy-path.md](../../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1) 2026-11-06; built 2026-11-06 ([PR #1312](https://github.com/rjdunlap/neo/pull/1312)).
 4. **PP2: Domino Pond 1–3** is [built](../../games/domino-pond.md) from the [definition](../../definitions/domino-pond.md).
-5. **PP9: Word Code 1–3** is [defined](../../definitions/word-code.md) 2026-11-18 (school: three- and four-letter picture words with spoken support; grown-up: five letters at the decided par). Unlimited tries, no daily word, Secret Code's rule that ignoring a still-visible mark is the miss, and a reviewed list and block list as data.
+5. **PP9: Word Code 1–3** is [defined](../../definitions/word-code.md) 2026-11-18 and **built** (PR #1903) (school: three- and four-letter picture words with spoken support; grown-up: five letters at the decided par). Unlimited tries, no daily word, Secret Code's rule that ignoring a still-visible mark is the miss, and a reviewed list and block list as data.
 6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung).
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5–PP7** (Sum Crates, Campsite, Silly Scene): define once the first of PP2–PP3 is built, checking Fruit Sums, Not Always and Who Am I for overlap.

@@ -174,6 +174,7 @@ import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
 import { VOICE as weatherWardrobeVoice } from '../games/weather-wardrobe/voice.ts';
 import { VOICE as welcomeWaysVoice } from '../games/welcome-ways/voice.ts';
 import { VOICE as whoAmIVoice } from '../games/who-am-i/voice.ts';
+import { VOICE as wordCodeVoice } from '../games/word-code/voice.ts';
 import { VOICE as wordGlueVoice } from '../games/word-glue/voice.ts';
 import { VOICE as wordMonstersVoice } from '../games/word-monsters/voice.ts';
 import { VOICE as wordSearchVoice } from '../games/word-search/voice.ts';
@@ -788,6 +789,7 @@ export const SCRIPT = {
   ...weatherWardrobeVoice,
   ...welcomeWaysVoice,
   ...whoAmIVoice,
+  ...wordCodeVoice,
   ...wordGlueVoice,
   ...wordMonstersVoice,
   ...wordSearchVoice,

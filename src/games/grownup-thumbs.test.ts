@@ -49,6 +49,8 @@ import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
+import { wordLayout } from './word-code/layout';
+import { PLANS as codePlans } from './word-code/logic';
 import { PAD, touchFrame as wordFrame, touchSquare } from './word-search/layout';
 import { LEVELS as wordLevels, planFor as wordPlan } from './word-search/logic';
 
@@ -227,6 +229,13 @@ const MEASURE: Record<string, () => Size[]> = {
         ['button', 100],
       ] as Size[];
     }),
+  'word-code': () => {
+    const L = wordLayout(v, codePlans[3]);
+    return [
+      ['key', side(L.keyBox)],
+      ['hint button', 112],
+    ] as Size[];
+  },
   'word-search': () =>
     grown(wordLevels.grownup!).flatMap((level) => {
       const plan = wordPlan(level);
@@ -269,6 +278,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'species-comeback': { px: 44.7, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
   'tile-pairs': { px: 50.8, what: 'button' },
+  'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
 };
 
