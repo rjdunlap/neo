@@ -585,6 +585,7 @@ describe('game registry', () => {
       'drift-cards',
       'drops-journey',
       'duck-pond',
+      'example-express',
       'far-lights',
       'feelings-faces',
       'ferry-jam',

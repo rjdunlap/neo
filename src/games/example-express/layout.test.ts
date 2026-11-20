@@ -1,4 +1,5 @@
-import { it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { computeView } from '../../engine/view';
 import { overlaps, petCorner, landButtons } from '../../content/lands';
 import { layout, type Box } from './layout';
@@ -32,4 +33,34 @@ it('keeps every active panel target full size, apart and clear of pet and shell 
       }
     }
   }
+});
+
+describe.each(Object.entries(UPRIGHT_VIEWS))('Example Express upright on %s', (_, view) => {
+  it('every panel fits 768 wide, clear of Home and the guide, and hangs up from the bottom edge', () => {
+    const l = layout(view);
+    const panels: Record<string, Box[]> = {
+      'levels 1 and 2 main': [...l.slots, ...l.docks, ...l.controls, l.replay],
+      shelf: [...l.shelf, l.controls[2], l.replay],
+      'level 3 lesson': [...l.slots, ...l.lesson, ...l.controls, l.replay],
+      'level 3 shelf': [...l.shelf8, l.controls[2], l.replay],
+      tray: [...l.tools, l.replay],
+      'check strip': [...l.docks, l.prev, l.next, l.controls[1], l.controls[2], l.replay],
+      parcel: [l.parcel],
+      caption: [l.shelfCaption],
+    };
+    for (const [name, boxes] of Object.entries(panels)) {
+      const targets: Target[] = boxes.map((b, i) => ({
+        what: `${name} ${i}`,
+        x: b.x,
+        y: b.y,
+        w: b.w,
+        h: b.h,
+      }));
+      // The caption and parcel are shown art, not taps: only their place is checked.
+      const min = name === 'caption' || name === 'parcel' ? 40 : 100;
+      expect(uprightProblems(view, targets, min)).toEqual([]);
+    }
+    const lowest = Math.max(...l.controls.map((b) => b.y + b.h / 2));
+    expect(view.h - lowest).toBeLessThanOrEqual(45);
+  });
 });
