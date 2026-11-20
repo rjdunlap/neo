@@ -298,6 +298,10 @@ describe('layout', () => {
     portrait: computeView(768, 1024),
     phone: computeView(844, 390),
     notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    upright: computeView(390, 844, undefined, true),
+    uprightTall: computeView(390, 900, undefined, true),
+    uprightPad: computeView(768, 1024, undefined, true),
+    uprightWide: computeView(430, 700, undefined, true),
   };
   const overlap = (a: Box, b: Box) =>
     Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
@@ -326,7 +330,7 @@ describe('layout', () => {
           expect(b.h).toBeGreaterThanOrEqual(100);
           expect(inside(b, v)).toBe(true);
           expect(corner(b, 0, 0, 120, 215)).toBe(false);
-          expect(corner(b, 0, v.h - 170, 170, v.h)).toBe(false);
+          expect(corner(b, 0, v.h - (v.upright ? 205 : 170), 170, v.h)).toBe(false);
         }
         expect(l.cloud.w).toBeGreaterThanOrEqual(220);
         expect(l.cloud.h).toBeGreaterThanOrEqual(140);
@@ -364,8 +368,19 @@ describe('layout', () => {
     }
   }
 
+  it('hangs upright boards up from the bottom edge, so a tall phone leaves sky above', () => {
+    for (const level of [1, 2, 3]) {
+      const a = rainLayout(VIEWS.uprightPad, level)!;
+      const b = rainLayout(VIEWS.uprightTall, level)!;
+      const dy = VIEWS.uprightTall.h - VIEWS.uprightPad.h;
+      expect(b.boards[0].pond.y - a.boards[0].pond.y).toBeCloseTo(dy);
+      expect(b.cloud.y - a.cloud.y).toBeCloseTo(dy);
+    }
+  });
+
   it('returns null rather than shrink in a view that is too small', () => {
     expect(rainLayout({ w: 600, h: 400 }, 2)).toBeNull();
+    expect(rainLayout({ w: 700, h: 900, upright: true }, 2)).toBeNull();
   });
 });
 
@@ -587,6 +602,10 @@ describe('level 4 layout', () => {
     portrait: computeView(768, 1024),
     phone: computeView(844, 390),
     notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    upright: computeView(390, 844, undefined, true),
+    uprightTall: computeView(390, 900, undefined, true),
+    uprightPad: computeView(768, 1024, undefined, true),
+    uprightWide: computeView(430, 700, undefined, true),
   };
   const overlap = (a: Box, b: Box) =>
     Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
@@ -603,7 +622,7 @@ describe('level 4 layout', () => {
           const targets = [l.cloud, l.beds[0].patch, l.beds[1].patch, l.check];
           const clearOfCorners = (b: Box) => {
             expect(corner(b, 0, 0, 120, 215)).toBe(false);
-            expect(corner(b, 0, v.h - 170, 170, v.h)).toBe(false);
+            expect(corner(b, 0, v.h - (v.upright ? 205 : 170), 170, v.h)).toBe(false);
           };
           for (const b of targets) {
             expect(b.w).toBeGreaterThanOrEqual(100);
@@ -647,11 +666,11 @@ describe('level 4 layout', () => {
           }
           expect(l.slots.length).toBe(4);
           expect(inside(l.pond, v)).toBe(true);
-          expect(corner(l.pond, 0, v.h - 170, 170, v.h)).toBe(false);
+          expect(corner(l.pond, 0, v.h - (v.upright ? 205 : 170), 170, v.h)).toBe(false);
           for (const t of targets) expect(overlap(t, l.pond)).toBe(false);
           // The cloud hangs over the top bed; the low bed is downhill of it.
           expect(Math.abs(l.cloud.x - l.beds[0].patch.x)).toBeLessThan(1);
-          expect((l.beds[1].patch.x - l.beds[0].patch.x) * (mirror ? -1 : 1)).toBeGreaterThan(0);
+          expect((l.beds[1].patch.x - l.beds[0].patch.x) * (mirror && !v.upright ? -1 : 1)).toBeGreaterThan(0);
           expect(l.beds[1].patch.y).toBeGreaterThan(l.beds[0].patch.y);
         });
       }

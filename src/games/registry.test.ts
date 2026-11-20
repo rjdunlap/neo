@@ -645,6 +645,7 @@ describe('game registry', () => {
       'puppet-stage',
       'puzzle-pals',
       'pyramid-solitaire',
+      'rain-garden',
       'rainbow-fingers',
       'ramp-race',
       'read-do',

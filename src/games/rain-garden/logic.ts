@@ -245,6 +245,9 @@ export const LEAF = 120,
 /** The frame every board is drawn in, centered in the view. */
 const FW = 1024,
   FH = 768;
+/** The upright frame (`UPRIGHT_W` × `UPRIGHT_H` in engine/view.ts). */
+const UW = 768,
+  UH = 1024;
 
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
@@ -279,8 +282,13 @@ function board(
 }
 
 /** Every rectangle the round needs, in view units; null if a view cannot hold the boards without shrinking a target. */
-export function rainLayout(view: { w: number; h: number }, level: number, mirror = false): Layout | null {
+export function rainLayout(
+  view: { w: number; h: number; upright?: true },
+  level: number,
+  mirror = false,
+): Layout | null {
   const { w, h } = view;
+  if (view.upright) return uprightRainLayout(w, h, level);
   if (w < FW - 1 || h < FH - 1) return null;
   const ox = (w - FW) / 2,
     oy = (h - FH) / 2;
@@ -301,6 +309,30 @@ export function rainLayout(view: { w: number; h: number }, level: number, mirror
   const tiles = p === 3 ? [box(ox + 320, oy + 680, TILE, TILE), box(ox + 480, oy + 680, TILE, TILE)] : [];
   const bookmark = p === 3 ? box(ox + 770, oy + 220, 220, 160) : null;
   return { cloud: box(mx(400), oy + 150, 260, 140), boards: [b], tiles, leaf, bookmark };
+}
+
+/**
+ * The upright 768 × 1024 plan (levels 1–3): the cloud, then the garden bed, then the pond stack down the screen, the whole
+ * frame hanging up from the bottom edge so a tall phone's spare height is sky at the top. The pond sits at the middle,
+ * clear of the guide corner; mirroring is not needed (the pet is never beside the pond), so it is ignored.
+ */
+function uprightRainLayout(w: number, h: number, level: number): Layout | null {
+  if (w < UW - 1 || h < UH - 1) return null;
+  const ox = (w - UW) / 2,
+    oy = h - UH;
+  const leaf = box(w - 20 - LEAF / 2, 18 + LEAF / 2, LEAF, LEAF);
+  const p = Math.min(3, planFor(level).level);
+  const cx = ox + UW / 2;
+  if (p === 2) {
+    const xs = [192, 576];
+    const boards = xs.map((bx) => board(ox + bx, oy + 450, 300, 150, ox + bx, oy + 690, 270, 56, 64, 1));
+    const tiles = [270, 576].map((tx) => box(ox + tx, oy + 880, TILE2, TILE2));
+    return { cloud: box(cx, oy + 290, 600, 140), boards, tiles, leaf, bookmark: null };
+  }
+  const b = board(cx, oy + 450, 360, 180, cx, oy + 740, 320, 60, 76, 1);
+  const tiles = p === 3 ? [box(ox + 300, oy + 880, TILE, TILE), box(ox + 460, oy + 880, TILE, TILE)] : [];
+  const bookmark = p === 3 ? box(ox + 640, oy + 260, 220, 160) : null;
+  return { cloud: box(cx, oy + 150, 260, 140), boards: [b], tiles, leaf, bookmark };
 }
 
 /** The sticker's pond friend and drop count, seeded. */
@@ -564,11 +596,49 @@ export const CHECK = 120,
   SIGN_H = 110;
 
 /**
+ * Level 4 upright: the cloud, the top bed, the low bed one terrace down and across, then the pond, stacked down a
+ * 768-wide screen (mirroring is ignored: it would put the pond beside the guide) and hung up from the bottom edge. The beds step right, so the pond sits right of the guide corner; the
+ * need signs stand beside what they name, in the free space left of the low bed, right of the top bed and left of the pond.
+ */
+function uprightRouteLayout(w: number, h: number, bed: 0 | 1): RouteLayout | null {
+  if (w < UW - 1 || h < UH - 1) return null;
+  const ox = (w - UW) / 2,
+    oy = h - UH;
+  const low = board(ox + 548, oy + 650, BED_W, BED_H, ox + 548, oy + 840, 240, 56, 58, 1);
+  const tx = ox + 220,
+    ty = oy + 470;
+  const top = {
+    patch: box(tx, ty, BED_W, BED_H),
+    pockets: [-1, 1].map((k) =>
+      box(tx + k * BED_W * 0.22, ty + BED_H * 0.08, Math.min(96, BED_W * 0.27), 60),
+    ),
+  };
+  const edge = tx + BED_W / 2;
+  const arrow1 = { x1: edge - 10, y1: ty - 16, x2: edge + 30, y2: low.patch.y - BED_H / 2 - 10 };
+  return {
+    cloud: box(tx, oy + 300, 260, 140),
+    beds: [top, { patch: low.patch, pockets: low.pockets }],
+    arrows: [arrow1, low.arrow],
+    pond: low.pond,
+    slots: low.slots,
+    friend: low.friend,
+    bedSign: bed === 1 ? box(ox + 220, oy + 650, SIGN_W, SIGN_H) : box(ox + 500, oy + 450, SIGN_W, SIGN_H),
+    pondSign: box(ox + 290, oy + 840, SIGN_W, SIGN_H),
+    check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
+  };
+}
+
+/**
  * Level 4's board in the 1024×768 frame: the cloud over the top bed, the low bed one terrace down and across, the pond
  * at the bottom of the downhill side. Mirroring reflects it about x = 525 so the pond stays clear of the pet.
  */
-export function routeLayout(view: { w: number; h: number }, bed: 0 | 1, mirror = false): RouteLayout | null {
+export function routeLayout(
+  view: { w: number; h: number; upright?: true },
+  bed: 0 | 1,
+  mirror = false,
+): RouteLayout | null {
   const { w, h } = view;
+  if (view.upright) return uprightRouteLayout(w, h, bed);
   if (w < FW - 1 || h < FH - 1) return null;
   const ox = (w - FW) / 2,
     oy = (h - FH) / 2;
