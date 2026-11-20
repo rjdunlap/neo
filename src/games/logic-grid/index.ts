@@ -888,7 +888,7 @@ class MysteryGrid implements Game {
   }
 
   private get phoneCase() {
-    return !!(this.current?.case && !this.current.times && this.view.upright);
+    return !!(this.current?.case && this.view.upright);
   }
 
   get slides() {
@@ -1747,46 +1747,52 @@ function sticker(seed: number): Container {
 }
 
 /**
+ * The upright phone's layout for the two sliding levels: the L's squares grow to PHONE_CELL (88 units, 44 px) and slide
+ * under pinned headers, with the written clues in columns below the window and Help beside them. `full` is the L's
+ * squares-and-gutter span and `clueW` the written card's width.
+ */
+function phoneLayout(v: View, n: number, full: number, clueW: number) {
+  const safe = safeArea(v);
+  // The game view is already shortened when the shell uses a caption strip. A view this short may
+  // instead have the caption bubble over it, so keep the list and window above the bubble's bounds.
+  const compact = v.h < STRIP_MIN_VIEW_H + STRIP_H - 0.5;
+  const scale = PHONE_CELL / C;
+  const w = compact ? 176 : clueW;
+  const cols = compact ? 4 : 2;
+  const per = Math.ceil(n / cols);
+  const gap = compact ? 6 : 8;
+  const listH = per * (PHONE_CELL + gap) - gap;
+  const bottom = compact ? captionPlace(v, true).band!.y - 4 : v.h - 20;
+  const listGap = compact ? 4 : 18;
+  const board = { x: safe.x + 12, y: compact ? 210 : Math.max(214, safe.y) };
+  const win = {
+    w: Math.min(full, (safe.w - 24) / scale - HW),
+    h: Math.min(full, (bottom - listH - listGap - board.y) / scale - HH),
+  };
+  const x = safe.x + (compact ? 20 : 196);
+  const y = board.y + (HH + win.h) * scale + listGap;
+  return {
+    board,
+    win,
+    clues: Array.from({ length: n }, (_, i) => ({
+      x: x + Math.floor(i / per) * (w + (compact ? gap : 16)),
+      y: y + (i % per) * (PHONE_CELL + gap),
+    })),
+    clueSize: { w, h: PHONE_CELL },
+    cell: PHONE_CELL,
+    scale,
+    help: compact ? { x: safe.x + safe.w - 82, y: 148 } : { x: safe.x + 98, y: Math.min(y + 50, v.h - 242) },
+  };
+}
+
+/**
  * Level 7: the L of three blocks (its 64-unit squares start HW, HH in from the board's corner), its written clues in a column
  * beside it (landscape) or two columns under it (portrait), and Help in the L's empty quarter. On an upright phone the
  * L grows and slides, with its clues and Help below the window.
  */
 export function caseLayout(v: View, n: number, portrait: boolean) {
+  if (v.upright) return phoneLayout(v, n, 8 * C + GUT, 252);
   const safe = safeArea(v);
-  if (v.upright) {
-    // The game view is already shortened when the shell uses a caption strip. A view this short may
-    // instead have the caption bubble over it, so keep the list and window above the bubble's bounds.
-    const compact = v.h < STRIP_MIN_VIEW_H + STRIP_H - 0.5;
-    const scale = PHONE_CELL / C;
-    const clueW = compact ? 176 : 252;
-    const cols = compact ? 4 : 2;
-    const per = Math.ceil(n / cols);
-    const gap = compact ? 6 : 8;
-    const listH = per * (PHONE_CELL + gap) - gap;
-    const bottom = compact ? captionPlace(v, true).band!.y - 4 : v.h - 20;
-    const listGap = compact ? 4 : 18;
-    const board = { x: safe.x + 12, y: compact ? 210 : Math.max(214, safe.y) };
-    const win = {
-      w: Math.min(8 * C + GUT, (safe.w - 24) / scale - HW),
-      h: Math.min(8 * C + GUT, (bottom - listH - listGap - board.y) / scale - HH),
-    };
-    const x = safe.x + (compact ? 20 : 196);
-    const y = board.y + (HH + win.h) * scale + listGap;
-    return {
-      board,
-      win,
-      clues: Array.from({ length: n }, (_, i) => ({
-        x: x + Math.floor(i / per) * (clueW + (compact ? gap : 16)),
-        y: y + (i % per) * (PHONE_CELL + gap),
-      })),
-      clueSize: { w: clueW, h: PHONE_CELL },
-      cell: PHONE_CELL,
-      scale,
-      help: compact
-        ? { x: safe.x + safe.w - 82, y: 148 }
-        : { x: safe.x + 98, y: Math.min(y + 50, v.h - 242) },
-    };
-  }
   const cw = HW + 8 * C + GUT,
     ch = HH + 8 * C + GUT;
   let board: { x: number; y: number }, clues: { x: number; y: number }[];
@@ -1825,14 +1831,15 @@ export function caseLayout(v: View, n: number, portrait: boolean) {
  * and Help beside them.
  */
 export function slidingLayout(v: View, n: number, portrait: boolean) {
-  const safe = safeArea(v);
   const full = 10 * C + GUT;
+  if (v.upright) return phoneLayout(v, n, full, CASE_W8);
+  const safe = safeArea(v);
   const bottom = safe.y + safe.h - 8;
   if (portrait) {
     // The list sits right under the window, which takes what height the list leaves (the whole L on a tall screen).
     const per = Math.ceil(n / 2);
     const listH = per * (LINE_H + 6) - 6;
-    const board = { x: Math.max(safe.x + 8, Math.round((v.w - HW - full) / 2)), y: v.upright ? 214 : 146 };
+    const board = { x: Math.max(safe.x + 8, Math.round((v.w - HW - full) / 2)), y: 146 };
     const win = {
       w: Math.min(full, safe.x + safe.w - 8 - board.x - HW),
       h: Math.min(full, Math.max(v.h - 12, bottom) - listH - 14 - board.y - HH),
@@ -1849,7 +1856,7 @@ export function slidingLayout(v: View, n: number, portrait: boolean) {
       clueSize: { w: CASE_W8, h: LINE_H },
       cell: C,
       scale: 1,
-      help: { x: Math.min(safe.x + 80, x0 - 74), y: Math.min(y0 + 50, v.h - (v.upright ? 230 : 280)) },
+      help: { x: Math.min(safe.x + 80, x0 - 74), y: Math.min(y0 + 50, v.h - 280) },
     };
   }
   const board = { x: safe.x + 162, y: 146 };
