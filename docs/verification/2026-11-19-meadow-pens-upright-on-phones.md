@@ -1,0 +1,6 @@
+# 2026-11-19 — Meadow Pens upright on phones (PR #1895)
+
+**Changed:** All five levels open upright with 100-unit cells. Taller phones transpose the board to four columns. Short phones keep six columns and leave a clear band between the grid and the answer cards or fence controls for captions. The layout fit check now omits the hidden bell at level 2, as it does at levels 4 and 5.
+**Ran:** Typecheck, 131 focused Meadow Pens and registry tests, scoped Prettier and ESLint, generated game metadata, Markdown links and diff checks. The upright layout tests cover each level in six views, including the minimum play area and the largest possible short-phone caption bubble. The tested base was `51515f33f` plus this PR's diff.
+**Ran:** Chromium at `http://localhost:5189/`. `BROWSER_SUITE=uprightgames PHONE_ONLY=meadow-pens PHONE_BAND=school` played levels 1–3 at 390 × 844 with one sticker each. A touch run at level 5 started at 390 × 625 with captions, counted one part for free, triggered two misses and one hint, preserved the question and hint through sideways and tall-upright rotations, and finished with one sticker. Screenshots reviewed.
+**Not run:** Local production build, offline, the full `meadow` suite and separate `fingerdemo`.

@@ -89,7 +89,7 @@ Only a ringing that fails (levels 1 and 3) or a wrong card (level 2) is a mistak
 
 ## Screen and controls
 
-- **Meadow grid:** cells **at least 100 logical units** (target 105), 6 × 4 in landscape, 4 × 6 in portrait, with a 6-unit gap so a cell's edge is clear. Clear of the guide's bottom-left corner and the Home button.
+- **Meadow grid:** cells **at least 100 logical units** (target 105), 6 × 4 in landscape and on short phones, 4 × 6 in taller upright views, with a 6-unit gap so a cell's edge is clear. Clear of the guide's bottom-left corner and the Home button.
 - **Gate, friend and bell:** the gate on the grid's right edge (landscape) or bottom edge (portrait); the friend beside it with a request bubble at least 220 × 120 (a picture of grass squares with dots, and from level 3 fence pieces with dots); the bell at least 120 × 120.
 - **Fence stack:** a column at least 120 wide beside the grid (landscape) or a row under it (portrait); at level 3 its dots are at least 24 units apart. The stack is not a touch target.
 - **Cards** (level 2): three cards at least 130 × 130, at least 30 units apart, in a column beside the grid (landscape) or a row under it (portrait), replacing the stack.
@@ -116,7 +116,7 @@ Only a ringing that fails (levels 1 and 3) or a wrong card (level 2) is a mistak
 +------------------------------------------------------------+
 ```
 
-**Portrait (768 × 1024):** the bubble, then the 4 × 6 grid centred, then the stack (or the three cards) in a row with the gate, friend and bell at its right; the companion beside the gate. The view's spare height goes between the grid and the row below it.
+**Upright phones:** the pictured request, friend and companion sit above the board, with the gate on the bottom edge and the stack and bell or three cards at the bottom beside the guide. At 768 × 1024 the 6 × 4 board sits above the caption bubble. Taller phones can use the transposed 4 × 6 board with room for a caption strip below the game.
 
 ## Speech (`voice-script.ts`)
 
@@ -263,7 +263,7 @@ All proposed IDs below belong in `voice-script.ts` during the build. Instruction
 
 ### Layout and implementation gates
 
-Reuse one **6 × 4 board**, transposed to 4 × 6 in the tall portrait layout, with unit cells at least 100 logical units (including final scaling). Level 4 fits both pens within that board with a full empty row between them; it does not put two full grids beside each other. All three response cards are at least 130 × 130, 30 units apart, in the built level-2 card lane; each pen's badge/count replay target and each level-5 part must have at least one unambiguous 100 × 100 target. At level 4 the badge on the board counts while its matching response card answers: keep those regions separate and visually mark the response lane. Same needs a recognisable matching-piles picture and spoken support. Hide inactive bell/paint handlers and stack to avoid overlapping actions. Reuse the bubble/friend replay area, guide clearance and Home clearance; show count summaries beside the badges or above the cards without covering either. Portrait counts and split rectangles follow the actual drawn rows. The built layout transposes only when `h > w && h >= 1150` in logical view units, so do not infer grid orientation from physical screen dimensions; test the actual `View` transformation and both branches.
+Reuse one **6 × 4 board**, transposed to 4 × 6 in the tall portrait layout, with unit cells at least 100 logical units (including final scaling). Level 4 fits both pens within that board with a full empty row between them; it does not put two full grids beside each other. All three response cards are at least 130 × 130, 30 units apart, in the built level-2 card lane; each pen's badge/count replay target and each level-5 part must have at least one unambiguous 100 × 100 target. At level 4 the badge on the board counts while its matching response card answers: keep those regions separate and visually mark the response lane. Same needs a recognisable matching-piles picture and spoken support. Hide inactive bell/paint handlers and stack to avoid overlapping actions. Reuse the bubble/friend replay area, guide clearance and Home clearance; show count summaries beside the badges or above the cards without covering either. Portrait counts and split rectangles follow the actual drawn rows. The upright phone layout transposes when the game view has enough height to clear captions. Test the actual `View` and both grid orientations.
 
 Extend `meadowLayout(view, level)` and its actual safe-view geometry tests to levels 4 and 5: cards, count regions, longest speech bubble/count labels, badge patterns, notch and seam, with no overlaps or shrink-to-fit fallback. Null is a build failure to resolve, not permission to reduce target size. A paper arrangement is **not verified capacity**; check actual portrait/landscape rendering, how-to fit, pet clearance and route back from the current Rainbow Meadow placement. No new catalog entry is proposed, but extending the school range must preserve current land paging, pins, launch band and return origin. Relocation, if genuinely needed, follows the existing decided placement process; this definition chooses no new land.
 

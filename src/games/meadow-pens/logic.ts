@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
+import { captionPlace } from '../../ui/caption-layout';
 
 /**
  * Meadow Pens: a friend at the gate asks for a pen, she paints squares of grass on a meadow grid, and the
@@ -11,7 +12,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * docs/definitions/meadow-pens.md.
  */
 
-/** The model grid: 6 columns by 4 rows. Portrait draws it transposed, which keeps every count. */
+/** The model grid: 6 columns by 4 rows. Tall views draw it transposed, which keeps every count. */
 export const COLS = 6;
 export const ROWS = 4;
 export const CELLS = COLS * ROWS;
@@ -547,7 +548,7 @@ export interface Rect {
   h: number;
 }
 export interface MeadowLayout {
-  /** Portrait draws the model grid transposed (4 columns by 6 rows). */
+  /** Tall views draw the model grid transposed (4 columns by 6 rows). */
   tall: boolean;
   grid: { x: number; y: number; cell: number; pitch: number; cols: number; rows: number };
   gate: Rect;
@@ -559,7 +560,6 @@ export interface MeadowLayout {
   /** Level 2: the three cards. */
   cards: Rect[] | null;
   companion: { x: number; y: number };
-  fixed?: boolean;
 }
 
 export const CELL = 100;
@@ -574,15 +574,35 @@ const CARD_GAP = 30;
 /** Every rectangle of the screen for a view and level, or null if it cannot fit without shrinking a target. */
 export function meadowLayout(view: View, level: number): MeadowLayout | null {
   const { w, h } = view;
-  const tall = h > w && h >= 1150;
+  const caption = view.upright ? captionPlace(view, true) : null;
+  const captionBubble = caption?.mode === 'bubble' ? caption.band : null;
+  const tall = view.upright ? !captionBubble : h > w && h >= 1150;
   const cols = tall ? ROWS : COLS;
   const rows = tall ? COLS : ROWS;
   const gw = cols * PITCH - GAP;
   const gh = rows * PITCH - GAP;
   const cardsRow = (x: number, y: number) =>
     [0, 1, 2].map((i) => ({ x: x + i * (CARD + CARD_GAP), y, w: CARD, h: CARD }));
+  const hasCards = level === 2 || level >= 4;
   let out: MeadowLayout;
-  if (!tall) {
+  if (view.upright) {
+    const rowY = h - 160;
+    // Short phones need the wide board to leave the whole caption bubble unobstructed.
+    const gy = captionBubble ? captionBubble.y - gh - 15 : rowY - gh - 46;
+    const gx = Math.max(gy < HOME_CORNER.h ? HOME_CORNER.w : 0, (w - gw) / 2);
+    const cardsLeft = Math.max(PET_CORNER.w + 16, (w - (3 * CARD + 2 * CARD_GAP)) / 2);
+    out = {
+      tall,
+      grid: { x: gx, y: gy, cell: CELL, pitch: PITCH, cols, rows },
+      gate: { x: gx + gw / 2 - 70, y: gy + gh - 15, w: 140, h: 30 },
+      friend: { x: w / 2 + 108, y: gy - 164, w: 130, h: 134 },
+      bubble: { x: w / 2 - 220, y: gy - 154, w: 280, h: 124 },
+      bell: { x: cardsLeft + 420, y: rowY + 5, w: 120, h: 120 },
+      stack: hasCards ? null : { x: cardsLeft, y: rowY, w: 390, h: 130 },
+      cards: hasCards ? cardsRow(cardsLeft, rowY) : null,
+      companion: { x: w / 2 + 316, y: gy - 34 },
+    };
+  } else if (!tall) {
     const ox = Math.max(0, (w - 1024) / 2);
     const gx = ox + 180;
     const gy = 175;
@@ -594,11 +614,8 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: col, y: gy, w: 130, h: 140 },
       bubble: { x: gx + gw / 2 - 140, y: 18, w: 280, h: 124 },
       bell: { x: col + 5, y: gy + 172, w: 120, h: 120 },
-      stack: level === 2 || level >= 4 ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
-      cards:
-        level === 2 || level >= 4
-          ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32)
-          : null,
+      stack: hasCards ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
+      cards: hasCards ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32) : null,
       companion: { x: col + 65, y: gy + gh + 10 },
     };
   } else {
@@ -614,12 +631,11 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: left + cardsW + 60, y: rowY, w: 130, h: 140 },
       bubble: { x: w / 2 - 140, y: 40, w: 280, h: 124 },
       bell: { x: left + cardsW + 60 + 130 + 30, y: rowY + 10, w: 120, h: 120 },
-      stack: level === 2 || level >= 4 ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
-      cards: level === 2 || level >= 4 ? cardsRow(left, rowY + 5) : null,
+      stack: hasCards ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
+      cards: hasCards ? cardsRow(left, rowY + 5) : null,
       companion: { x: gx + gw + 90, y: gy + gh },
     };
   }
-  out.fixed = level >= 4;
   return fits(out, view) ? out : null;
 }
 
@@ -632,7 +648,7 @@ const gridRect = (l: MeadowLayout): Rect => ({
 
 /** The touch targets of a layout: grid, bubble, friend, bell and cards (the stack and gate take no touch). */
 export function targets(l: MeadowLayout): Rect[] {
-  return [gridRect(l), l.bubble, l.friend, ...(l.fixed ? [] : [l.bell]), ...(l.cards ?? [])];
+  return [gridRect(l), l.bubble, l.friend, ...(l.cards ? [] : [l.bell]), ...(l.cards ?? [])];
 }
 
 const apart = (a: Rect, b: Rect, d: number) =>
