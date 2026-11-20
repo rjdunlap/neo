@@ -89,17 +89,24 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
     }
   });
 
-  it('Mystery Grid level 8 fits the sliding L with its clues and Help', () => {
+  it('Mystery Grid level 8 slides at thumb size with its clues and Help clear', () => {
     const n = Math.max(
       ...[1, 2, 3, 4, 5].flatMap((seed) => makeCases(casePlan(8), new Rng(seed)).map((b) => b.clues.length)),
     );
     const l = slidingLayout(v, n, true);
-    const win = box('squares', l.board.x + 100, l.board.y + 80, l.win.w, l.win.h);
-    expect(Math.floor(l.win.w / l.cell)).toBeGreaterThanOrEqual(8);
-    expect(Math.floor(l.win.h / l.cell)).toBeGreaterThanOrEqual(7);
+    const win = box(
+      'board window',
+      l.board.x,
+      l.board.y,
+      (100 + l.win.w) * l.scale,
+      (80 + l.win.h) * l.scale,
+    );
+    expect(l.cell).toBe(88);
+    expect(l.win.w * l.scale).toBeGreaterThanOrEqual(5 * l.cell);
+    expect(l.win.h * l.scale).toBeGreaterThanOrEqual(l.cell);
     expect(l.board.y).toBeGreaterThanOrEqual(210);
     const clues = l.clues.map((p) => box('clue', p.x, p.y, l.clueSize.w, l.clueSize.h));
-    check(v, [win, ...clues, square('help', l.help, 100)], 64, 32);
+    check(v, [win, ...clues, square('help', l.help, 100)], 88, 44);
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
