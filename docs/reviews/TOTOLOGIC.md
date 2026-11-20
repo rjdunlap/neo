@@ -154,6 +154,8 @@ TotoLogic's Money shows the amount paid so far as a number that changes with eve
 
 ### P9. A read-through of how drag games count a miss (docs, S)
 
+**Built 2026-11-20:** the read-through is [drag-miss-counting](../definitions/drag-miss-counting.md); no drag game has an unexplained uncounted wrong drop, so no fix line was queued.
+
 TotoLogic shows what an uncounted miss costs: its end card said "Every one right on the first try!" after wrong drops, and that count sat under a "Proficient" label, on a page that had already put a three-year-old's profile at "Level 5-6". The island shows no such count, but misses do more here: two smooth rounds step a level up. Each game does its own counting (four use `src/progress/coach.ts`), and no test looks across games. A code read on 2026-11-11 found wrong drops counted in the sorts it sampled (Critter Sort, Jar Sort, Shape Sorter, Sink or Float, Puzzle Pals, Timeline Trail, Tangram Town, Size Parade) and the never-a-miss games documented as deliberate, so **no bug is known**. The proposal is one table of the drag games (66 by that read's count) with each one's rule for a wrong drop, flagging any that neither counts it nor says it is free play; anything flagged becomes an ordinary bug fix with its rule test. Docs only until something is found.
 
 ### What not to take
