@@ -647,6 +647,7 @@ describe('game registry', () => {
       'robot-path',
       'scoop-shop',
       'second-chance-shed',
+      'secret-code',
       'sense-detective',
       'shell-rows',
       'sing-along-barn',

@@ -8,8 +8,9 @@ import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import { codeLayout } from './layout';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
@@ -328,19 +329,24 @@ class SecretCode implements Game {
     void this.next();
   }
 
+  private lay() {
+    return codeLayout(this.view, this.plan.slots, this.plan.colors);
+  }
+
   private slotX(i: number) {
-    return this.view.w / 2 - 40 + (i - (this.plan.slots - 1) / 2) * 124;
+    return this.lay().slotX[i];
   }
 
   private doorY() {
-    return Math.max(430, this.view.h * 0.6);
+    return this.lay().doorY;
   }
 
   resize(v: View) {
     this.view = v;
-    const y = this.doorY();
-    const w = this.plan.slots * 124 + 60;
-    const x0 = this.slotX(0) - 92;
+    const L = this.lay();
+    const y = L.doorY;
+    const w = L.panelW;
+    const x0 = L.x0;
     drawDoor(
       this.door,
       this.doors[Math.min(this.doors.length - 1, Math.max(0, this.plan.swap ? this.half - 1 : this.index))],
@@ -350,17 +356,19 @@ class SecretCode implements Game {
     );
     this.slots.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.ghost.children.forEach((s, i) => s.position.set(this.slotX(i), y));
-    this.key.position.set(x0 + w + 80, y);
+    this.key.position.set(L.key.x, L.key.y);
     this.ready.position.copyFrom(this.key.position);
     this.show.position.copyFrom(this.key.position);
-    this.discs.forEach((d, i) => d.position.set(this.slotX(i), y + 134));
+    this.discs.forEach((d, i) => d.position.set(L.slotX[i], L.discsY));
     if (this.seats === 'two') {
       // Two of us shows the tray and the hidden code together, so the code sits up at the right, clear of the tries above the door.
-      this.mine.position.set(v.w - 224, y - 210);
+      this.mine.position.set(L.mine.x, L.mine.y);
+      this.mine.scale.set(L.mine.scale);
       this.mine.children.forEach((s, i) =>
         s.position.set(i === 0 ? 0 : (i - 1 - (this.plan.slots - 1) / 2) * 124, 0),
       );
       this.lid.position.copyFrom(this.mine.position);
+      this.lid.scale.set(L.mine.scale);
     } else
       this.mine.children.forEach((s, i) =>
         s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90),
@@ -369,10 +377,9 @@ class SecretCode implements Game {
     this.alone.position.set(v.w / 2 - 40 + 110, y);
     this.bubble.position.set(x0 + w + 60, y - 150);
     this.drawGlow();
-    const xs = spread(this.plan.colors, 190, v.w - 110, 124);
     this.tray.forEach((b, i) => {
       b.visible = this.trayOn && i < this.plan.colors;
-      if (i < this.plan.colors) b.position.set(xs[i], v.h - 90);
+      if (i < this.plan.colors) b.position.set(L.trayX[i], L.trayY);
     });
     this.drawCrosses();
     this.layoutPast();
@@ -668,14 +675,15 @@ class SecretCode implements Game {
   /** The latest guesses stack above the door, newest nearest it; older ones fade. */
   private layoutPast() {
     const rows = this.past.children;
-    const bottom = this.doorY() - 150;
-    const fit = rowsThatFit(this.doorY());
+    const L = this.lay();
+    const bottom = L.pastBottom;
+    const fit = L.rows;
     rows.forEach((r, i) => {
       const fromEnd = rows.length - 1 - i;
       r.visible = fromEnd < fit;
       // A detective door's clues are all needed at once, so none fades.
       r.alpha = !this.plan.detective && fromEnd === fit - 1 && fit > 1 ? 0.5 : 1;
-      r.position.set(this.view.w / 2 - 40 - ((this.plan.slots - 1) * 76) / 2, bottom - fromEnd * 62);
+      r.position.set(L.pastX, bottom - fromEnd * 62);
     });
   }
 
@@ -1163,6 +1171,7 @@ export const secretCode: GameModule = {
     'Hide three toys in a row behind your back and let her guess the order, saying which ones are in the right spot.',
   hubIcon: () => new CodeIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new SecretCode(ctx),
 };
