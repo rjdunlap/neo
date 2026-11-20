@@ -698,6 +698,7 @@ export const storyWeaver: GameModule = {
     'Tell a three-part story at bedtime (who and where, what went wrong, how it ended) and ask why the friend felt the way they did.',
   hubIcon: () => new WeaverIcon(),
   touchDemo: true,
+  upright: true,
   sticker,
   create: (ctx) => new StoryWeaver(ctx),
 };

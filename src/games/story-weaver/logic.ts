@@ -537,7 +537,8 @@ export const TOP = 108;
 export const CORNER = { x: 0, y: 0, w: 114, h: 212 };
 
 /** Every rectangle of the scene, from the logical view only (portrait views are taller, never narrower than 1024). */
-export function layout(v: { w: number; h: number }, pages: number): WeaverLayout {
+export function layout(v: { w: number; h: number; upright?: boolean }, pages: number): WeaverLayout {
+  if (v.upright) return uprightLayout(v, pages);
   const margin = 24;
   // Pages sit right of the shell's Home and "?" column (x0–114, y0–212); a one-slot page is half as wide as a two-slot one.
   const left = CORNER.w + 6;
@@ -568,6 +569,61 @@ export function layout(v: { w: number; h: number }, pages: number): WeaverLayout
       const row = rows === 2 ? (i < Math.ceil(n / 2) ? 0 : 1) : 0;
       const inRow = rows === 2 ? (row === 0 ? Math.ceil(n / 2) : n - Math.ceil(n / 2)) : n;
       const col = row === 0 ? i : i - Math.ceil(n / 2);
+      const w = inRow * TILE_W + (inRow - 1) * TILE_GAP;
+      out.push({
+        x: cx - w / 2 + TILE_W / 2 + col * (TILE_W + TILE_GAP),
+        y: tray.y + TILE_H / 2 + row * (TILE_H + TILE_GAP),
+      });
+    }
+    return out;
+  };
+  return {
+    pages: pageBoxes,
+    strip,
+    tiles,
+    tray,
+    owl,
+    controls,
+    pet: { x: 0, y: v.h - 268, w: 160, h: 268 },
+    corner: CORNER,
+  };
+}
+
+/**
+ * The upright 768 × 1024 area (chunk 31): the pages take two rows (two 2-slot pages, then the one-slot pages and the
+ * owl), so every slot is at least 100 wide; the strip, tray and buttons hang up from the bottom edge, with the tray
+ * right of the guide's corner, and a tall phone's spare height is empty sky between the pages and the tray.
+ */
+function uprightLayout(v: { w: number; h: number }, pages: number): WeaverLayout {
+  const left = CORNER.w + 6;
+  const gap = 12;
+  const cardH = 170;
+  const wide = (v.w - left - 16 - gap) / 2;
+  const narrow = 160;
+  const row1 = TOP;
+  const row2 = row1 + cardH + gap;
+  const pageBoxes: Box[] = [];
+  for (let i = 0; i < pages; i++) {
+    const col = i % 2;
+    const w = i < 2 ? wide : narrow;
+    const x = left + (i < 2 ? col * (wide + gap) : col * (narrow + gap));
+    pageBoxes.push({ x, y: i < 2 ? row1 : row2, w, h: cardH });
+  }
+  const trayW = 3 * TILE_W + 2 * TILE_GAP;
+  const trayH = 2 * TILE_H + TILE_GAP;
+  const cy = v.h - CONTROL_R - 8;
+  const tray = { x: (150 + v.w - trayW) / 2, y: cy - CONTROL_R - 16 - trayH, w: trayW, h: trayH };
+  const strip = { x: 24, y: tray.y - 8 - 80, w: v.w - 48, h: 80 };
+  const owl = { x: v.w - 184, y: row2, w: 168, h: 240 };
+  const cx = tray.x + trayW / 2;
+  const controls = [0, 1, 2, 3].map((i) => ({ x: 176 + CONTROL_R + i * (2 * CONTROL_R + 24), y: cy }));
+  const tiles = (n: number) => {
+    const out: { x: number; y: number }[] = [];
+    const first = n > 3 ? Math.ceil(n / 2) : n;
+    for (let i = 0; i < n; i++) {
+      const row = i < first ? 0 : 1;
+      const inRow = row === 0 ? first : n - first;
+      const col = row === 0 ? i : i - first;
       const w = inRow * TILE_W + (inRow - 1) * TILE_GAP;
       out.push({
         x: cx - w / 2 + TILE_W / 2 + col * (TILE_W + TILE_GAP),
