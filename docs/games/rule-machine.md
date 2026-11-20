@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/rule-machine; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `rule-machine` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `rule-machine` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** patterns, prediction, deduction, adding
 
@@ -37,3 +37,5 @@ Levels: 1 "Hat machine" (pre-K): two machines, each two of hat, blue, big or spo
 ---
 
 **What the guide repeats.** `rm.send` ("Send another car in.", after a prediction is answered and at level 3 after the card hangs) and level 5's `rm.back.ask` ("{n} came out. Which car went in?") are instructions (`ctx.instruct`), so the guide repeats them and the caption keeps them instead of "How many will come out? Tap a number." once the pads are gone. The level 4 nudge `rm.tap-card`, `rm.peek` and results stay `say`.
+
+**Upright on a phone.** `layout()` wraps `baseLayout` and, on an upright view, hangs the table, machine, chute and bottom row up from the bottom edge (the lowest row rests 190 units above it), so a tall phone's spare height is sky at the top; the sideways and portrait plan is unchanged. `upright.test.ts` checks levels 1–6 on five upright views (taps at least 100, inside the view, apart, clear of Home and the guide, hung within 330 of the bottom). Pads and tray share one bottom row by design, and level 6's pads and shelf are alternatives.
