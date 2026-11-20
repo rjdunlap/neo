@@ -1,1 +1,0 @@
-**Research: a Little Conductor dive** (`little-conductor`, toddler to pre-K, levels 1–3; its later plans for strength, cueing and a baton are one line in its [definition](../../definitions/little-conductor.md)). Claimed by `claude/little-conductor-dive`: expected files `docs/deep-dives/little-conductor.md` and the closeout rows.
