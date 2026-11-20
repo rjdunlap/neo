@@ -195,6 +195,7 @@ import { createSuite as create130 } from './suites/discovery-direct-next.mjs';
 import { createSuite as create131 } from './suites/discovery-my-mix.mjs';
 import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
+import { createSuite as create134 } from './suites/word-code-play.mjs';
 
 export const SUITES = [
   'relaywoods',
@@ -223,6 +224,7 @@ export const SUITES = [
   'mossypath',
   'numbernook',
   'pantry',
+  'wordcode',
   'gemswap',
   'tilepairs',
   'lanterntouch',
@@ -420,6 +422,7 @@ export const ALL_SUITES = [
   'mossypath',
   'numbernook',
   'pantry',
+  'wordcode',
   'gemswap',
   'tilepairs',
   'lanterntouch',
@@ -611,6 +614,7 @@ export function createChecks(fixture) {
     'mossyPathPlay',
     'numberNookPlay',
     'picnicPantryPlay',
+    'wordCodePlay',
     'gemSwapPlay',
     'tilePairsPlay',
     'lanternTouchPlay',
@@ -881,6 +885,7 @@ export function createChecks(fixture) {
   install(create131(shared));
   install(create132(shared));
   install(create133(shared));
+  install(create134(shared));
   install(createLens(shared));
   install(createMeltFreeze(shared));
   install(createMoonWindow(shared));
@@ -968,6 +973,7 @@ export async function runSuite(suite, fixture) {
     mossyPathPlay,
     numberNookPlay,
     picnicPantryPlay,
+    wordCodePlay,
     gemSwapPlay,
     tilePairsPlay,
     lanternTouchPlay,
@@ -1210,6 +1216,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'mossypath') await mossyPathPlay();
   if (suite === 'all' || suite === 'numbernook') await numberNookPlay();
   if (suite === 'all' || suite === 'pantry') await picnicPantryPlay();
+  if (suite === 'all' || suite === 'wordcode') await wordCodePlay();
   if (suite === 'all' || suite === 'gemswap') await gemSwapPlay();
   if (suite === 'all' || suite === 'tilepairs') await tilePairsPlay();
   if (suite === 'all' || suite === 'lanterntouch') await lanternTouchPlay();
