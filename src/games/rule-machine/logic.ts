@@ -775,7 +775,40 @@ function chainLayout(view: { w: number; h: number }): Layout {
   };
 }
 
-export function layout(view: { w: number; h: number }, level: number): Layout {
+/** Upright, the lowest row rests this far above the bottom edge: clear of the guide's corner and the caption. */
+const UPRIGHT_FOOT = 190;
+
+/**
+ * Where a level's machine, table and bottom row stand. Upright (chunk 31) the whole scene hangs up from the bottom edge,
+ * so a tall phone's spare height is sky at the top rather than a gap between the machine and the row.
+ */
+export function layout(view: { w: number; h: number; upright?: true }, level: number): Layout {
+  const l = baseLayout(view, level);
+  if (!view.upright) return l;
+  const foot = Math.max(...[...l.tray, ...l.pads, ...l.shelf].map((b) => b.y + b.h / 2));
+  const dy = view.h - UPRIGHT_FOOT - foot;
+  if (dy <= 0) return l;
+  const mv = (b: Box): Box => ({ ...b, y: b.y + dy });
+  const pt = (q: Pt): Pt => ({ x: q.x, y: q.y + dy });
+  return {
+    ...l,
+    columns: l.columns.map(mv),
+    hopper: mv(l.hopper),
+    body: mv(l.body),
+    chute: mv(l.chute),
+    waitAt: pt(l.waitAt),
+    out: pt(l.out),
+    tray: l.tray.map(mv),
+    pads: l.pads.map(mv),
+    shelf: l.shelf.map(mv),
+    peek: mv(l.peek),
+    second: l.second && mv(l.second),
+    slots: l.slots.map(mv),
+    link: l.link && pt(l.link),
+  };
+}
+
+function baseLayout(view: { w: number; h: number }, level: number): Layout {
   if (planFor(level).pair) return chainLayout(view);
   const { w, h } = view;
   const portrait = h > w;

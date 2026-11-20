@@ -1256,6 +1256,7 @@ export const ruleMachine: GameModule = {
   titleLine: 'game.rule-machine',
   region: 'puzzle-peaks',
   challenge: 'logic',
+  upright: true,
   skills: ['patterns', 'prediction', 'deduction', 'adding'],
   bands: ['prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
