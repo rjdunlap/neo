@@ -41,7 +41,8 @@ export type FriendId =
   | 'frog'
   | 'turtle'
   | 'fish'
-  | 'bat';
+  | 'bat'
+  | 'platypus';
 
 export interface FeatureInfo {
   family: Family;
@@ -119,9 +120,18 @@ export const FRIENDS: Record<FriendId, Friend> = {
   // The island's fruit bat, last so the earlier levels' seeded rounds are unchanged. Its clues say what this bat has and
   // does, never what all bats do.
   bat: { id: 'bat', name: 'Bat', group: 'mammal', features: ['fur', 'wings', 'two-legs', 'milk', 'fly'] },
+  // Level 8's friend, last and in no pool of levels 1–7: it lays eggs and feeds milk. Its bill is soft and flat, so it has
+  // no `beak`; its webbed feet, flat tail and bill are drawn and never named as clues.
+  platypus: {
+    id: 'platypus',
+    name: 'Platypus',
+    group: 'mammal',
+    features: ['fur', 'four-legs', 'eggs', 'milk'],
+  },
 };
 
-export const FRIEND_IDS = Object.keys(FRIENDS) as FriendId[];
+/** Every friend of levels 1–7, in table order: the platypus joins no pool of those levels, so their seeded rounds never shift. */
+export const FRIEND_IDS = (Object.keys(FRIENDS) as FriendId[]).filter((f) => f !== 'platypus');
 
 /** A group clue (level 5): "I'm a bird!" or "I'm a mammal!", the two groups with more than one friend. */
 export type GroupClue = 'bird' | 'mammal';
@@ -258,6 +268,9 @@ export interface WhoPlan {
 }
 
 const MAMMALS: FriendId[] = ['cow', 'pig', 'cat', 'bear', 'dog', 'bunny'];
+/** Level 8's two sides: friends that lay eggs and are not mammals, and mammals that do not lay eggs. */
+export const EGG_LAYERS: FriendId[] = ['duck', 'owl', 'penguin', 'frog', 'turtle', 'fish'];
+export const EGGLESS_MAMMALS: FriendId[] = [...MAMMALS, 'bat'];
 /** Everyone but the bat, in table order: levels 1–3 and the sticker draw from these, so neither changed when the bat came. */
 export const BARN: FriendId[] = FRIEND_IDS.filter((f) => f !== 'bat');
 const EARLY = { pool: BARN, include: [] as FriendId[], surprise: false };
@@ -362,9 +375,24 @@ export const PLANS: readonly WhoPlan[] = [
     include: ['penguin', 'bat'],
     surprise: false,
   },
+  {
+    level: 8,
+    name: 'The platypus: eggs and milk, 6 friends',
+    mode: 'turn',
+    friends: 6,
+    // Exactly two clues, `eggs` and `milk` in either order.
+    clues: 2,
+    allowed: ['eggs', 'milk'],
+    minGroups: 1,
+    minDefining: 2,
+    answers: ['platypus'],
+    pool: [...EGG_LAYERS, ...EGGLESS_MAMMALS],
+    include: ['platypus'],
+    surprise: true,
+  },
 ];
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 7 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 8 } };
 
 export const planFor = (level: number): WhoPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
@@ -395,7 +423,7 @@ export const useful = (clue: Clue, answer: FriendId, remaining: readonly FriendI
  * penguin stands (it has feathers and goes face down), `feathers` or `eggs` while the bat stands (it has wings and goes
  * face down), or `milk` while the bat and a bird both stand (the birds go, the bat stays). Names who the pet explains.
  */
-export type Surprise = 'penguin' | 'bat';
+export type Surprise = 'penguin' | 'bat' | 'platypus';
 export function surpriseAt(remaining: readonly FriendId[], clue: Clue): Surprise | null {
   // Level 5's group clues: the penguin left alone is the bird that cannot fly; otherwise "a bird" turns over the bat though
   // it flies, and "a mammal" keeps the bat while a bird goes.
@@ -415,6 +443,8 @@ export function surpriseAt(remaining: readonly FriendId[], clue: Clue): Surprise
 
 /** The surprise at each clue of a round, in order (null where there is none). */
 export function surprises(gallery: readonly FriendId[], clues: readonly Clue[]): (Surprise | null)[] {
+  // Level 8: the pet explains the platypus once, after the round's last step; the bat and penguin lines are not spoken.
+  if (gallery.includes('platypus')) return clues.map((_, i) => (i === clues.length - 1 ? 'platypus' : null));
   let left = [...gallery];
   return clues.map((c) => {
     const s = surpriseAt(left, c);
@@ -540,12 +570,30 @@ function makeRiddleRound(rng: Rng): WhoRound {
   return { gallery, answer: gallery[0], clues: [] };
 }
 
+/**
+ * Level 8: the platypus plus five friends split two and three, or three and two, between egg-layers that are not mammals
+ * and mammals that do not lay eggs (945 galleries); the clues are `eggs` and `milk` in a seeded order. After either clue
+ * the platypus stays and at least one friend goes, so each step is useful and each one is a surprise.
+ */
+function makePlatypusRound(rng: Rng): WhoRound {
+  const eggSide = rng.pick([2, 3]);
+  const eggers = rng.shuffle([...EGG_LAYERS]).slice(0, eggSide);
+  const mammals = rng.shuffle([...EGGLESS_MAMMALS]).slice(0, 5 - eggSide);
+  const gallery = rng.shuffle<FriendId>(['platypus', ...eggers, ...mammals]);
+  const clues: Feature[] = rng.pick([
+    ['eggs', 'milk'],
+    ['milk', 'eggs'],
+  ]);
+  return { gallery, answer: 'platypus', clues };
+}
+
 /** A seeded round for the level: the same seed gives the same round. Bounded; the rule tests prove it never runs out. */
 export function makeRound(level: number, rng: Rng): WhoRound {
   const plan = planFor(level);
   if (plan.mode === 'ask') return makeAskRound(rng);
   if (plan.mode === 'riddle') return makeRiddleRound(rng);
   if (plan.group) return makeGroupRound(plan, rng);
+  if (plan.answers[0] === 'platypus') return makePlatypusRound(rng);
   for (let attempt = 0; attempt < 400; attempt++) {
     const answer = rng.pick(plan.answers);
     if (plan.mode === 'fit') {

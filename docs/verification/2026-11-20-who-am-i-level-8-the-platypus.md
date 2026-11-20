@@ -1,0 +1,6 @@
+# 2026-11-20 — Who Am I? level 8, the platypus (PR #1901)
+
+**Changed:** Who Am I? level 8: `platypusArt()`, the platypus in `FRIENDS` (not `FRIEND_IDS`, so levels 1-7 seeded rounds are unchanged), the level 8 plan and `makePlatypusRound`, the `eggs`/`milk` clues and the `whoami.platypus.explain` line, school 2-8, the how-to step, and the `whoami` suite extended with level 8.
+**Ran:** typecheck; full `npm test` (110 tests in the game's `logic.test.ts`, including the platypus in no round of levels 1-7 over 500 seeds and 945 galleries x 2 clue orders = 1,890 rounds; the stale game-docs check fixed by `npm run game-docs`); `BROWSER_SUITE=whoami` passed with level 8, portrait screenshot checked at 1024x768 (a 390x844 resize was exercised but not screenshotted). Headless Chrome only.
+**Source check (decision 19):** the platypus row against the Australian Museum (monotreme that lays eggs, has fur, a soft flexible bill, milk from skin patches, no teats) and the American Museum of Natural History and Carnegie Museum of Natural History pages (a mammal that lays eggs and makes milk): row confirmed, no venom or swimming claim in any line.
+**Not run:** `npm run build`, `fingerdemo` (`autotouch` uses `botTap`, unchanged), offline.

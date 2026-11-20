@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { batArt, fishArt, frogArt, owlArt, penguinArt, turtleArt } from '../../art/animals';
+import { batArt, fishArt, frogArt, owlArt, penguinArt, platypusArt, turtleArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -68,6 +68,10 @@ export function friendArt(id: FriendId): Container {
     art = penguinArt();
     art.scale.set(1.8);
     art.y = -41 * 1.8;
+  } else if (id === 'platypus') {
+    art = platypusArt();
+    art.scale.set(1.8);
+    art.y = -34 * 1.8;
   } else if (id === 'frog') {
     art = frogArt();
     art.scale.set(1.7);
@@ -817,7 +821,13 @@ class WhoAmI implements Game {
       // Levels 4 and 5: the pet explains the surprise once, free, before the next clue or the jump-out.
       await this.ctx.tw.wait(0.3);
       if (!this.alive) return;
-      await this.ctx.say(out.surprise === 'penguin' ? 'whoami.surprise-penguin' : 'whoami.surprise-bat');
+      await this.ctx.say(
+        out.surprise === 'penguin'
+          ? 'whoami.surprise-penguin'
+          : out.surprise === 'platypus'
+            ? 'whoami.platypus.explain'
+            : 'whoami.surprise-bat',
+      );
       if (!this.alive) return;
     }
     if (out.done) return void this.finale(this.round.gallery.indexOf(this.round.answer));

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { VOICE } from './voice';
 import { computeView } from '../../engine/view';
 import {
   ANSWER_KINDS,
@@ -82,15 +83,15 @@ describe('Who Am I? trait table', () => {
     }
   });
 
-  it('matches each group, and no friend has both eggs and milk', () => {
-    for (const f of FRIEND_IDS) {
+  it('matches each group, and only the platypus has both eggs and milk', () => {
+    for (const f of [...FRIEND_IDS, 'platypus' as FriendId]) {
       const { group, features } = FRIENDS[f];
       if (group === 'bird') expect(features, f).toEqual(expect.arrayContaining(['feathers', 'eggs']));
       if (group === 'mammal') expect(features, f).toEqual(expect.arrayContaining(['fur', 'milk']));
       if (group === 'amphibian') expect(features).toContain('smooth-skin');
       if (group === 'reptile') expect(features).toContain('shell');
       if (group === 'fish') expect(features).toEqual(expect.arrayContaining(['scales', 'fins', 'gills']));
-      expect(features.includes('eggs') && features.includes('milk'), f).toBe(false);
+      expect(features.includes('eggs') && features.includes('milk'), f).toBe(f === 'platypus');
     }
     expect(keeps('fly', 'penguin')).toBe(false);
     expect(keeps('fly', 'duck')).toBe(true);
@@ -1293,11 +1294,11 @@ describe('Who Am I? level 7, Make a riddle', () => {
     return startPlay(makeRound(7, rng), 'riddle', rng);
   };
 
-  it('is the top of the school ladder (2 to 7), and pre-K stays 1 to 2', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 7 } });
+  it('is level 7 of the school ladder (2 to 8 once the platypus is built), and pre-K stays 1 to 2', () => {
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 2, max: 8 } });
     expect(planFor(7).mode).toBe('riddle');
     expect(planFor(7).name).toBe('Make a riddle: choose clues until the pet finds your friend');
-    expect(PLANS).toHaveLength(7);
+    expect(PLANS).toHaveLength(8);
   });
 
   it('has 36 galleries and 216 pairs, and the seeded rounds draw only those, all of them', () => {
@@ -1616,6 +1617,115 @@ describe('Who Am I? level 7, Make a riddle', () => {
           all.slice(i + 1).forEach(([m, s]) => expect(overlap(r, s), `${n} / ${m}`).toBe(false));
         });
       });
+    }
+  });
+});
+
+describe('Who Am I? level 8, the platypus', () => {
+  const plan = planFor(8);
+  const rounds = Array.from({ length: SEEDS }, (_, i) => roundFor(8, i + 1));
+
+  it('has the platypus in no pool of levels 1 to 7, and in no round of them', () => {
+    expect(FRIEND_IDS).not.toContain('platypus');
+    for (let level = 1; level <= 7; level++)
+      for (let seed = 1; seed <= SEEDS; seed++)
+        expect(roundFor(level, seed).gallery, `level ${level} seed ${seed}`).not.toContain('platypus');
+  });
+
+  it('is a gallery of six, always the platypus, split two and three between the two sides', () => {
+    const eggs = new Set<FriendId>(['duck', 'owl', 'penguin', 'frog', 'turtle', 'fish']);
+    const sides = new Set<string>();
+    for (const r of rounds) {
+      expect(r.answer).toBe('platypus');
+      expect(r.gallery).toHaveLength(6);
+      expect(new Set(r.gallery).size).toBe(6);
+      const e = r.gallery.filter((f) => eggs.has(f)).length;
+      const m = r.gallery.filter((f) => f !== 'platypus' && !eggs.has(f)).length;
+      expect(e).toBeGreaterThanOrEqual(2);
+      expect(m).toBeGreaterThanOrEqual(2);
+      expect(e + m).toBe(5);
+      sides.add(`${e}/${m}`);
+    }
+    expect([...sides].sort()).toEqual(['2/3', '3/2']);
+    expect(roundFor(8, 5)).toEqual(roundFor(8, 5));
+  });
+
+  it('has exactly the clues eggs and milk in either order, each useful, never a beak, leaving the platypus', () => {
+    const orders = new Set<string>();
+    for (const r of rounds) {
+      orders.add(r.clues.join(','));
+      expect([...r.clues].sort()).toEqual(['eggs', 'milk']);
+      let left: FriendId[] = [...r.gallery];
+      for (const c of r.clues) {
+        expect(c).not.toBe('beak');
+        expect(useful(c, 'platypus', left)).toBe(true);
+        left = left.filter((f) => keeps(c, f));
+      }
+      expect(left).toEqual(['platypus']);
+    }
+    expect([...orders].sort()).toEqual(['eggs,milk', 'milk,eggs']);
+  });
+
+  it('beats the shortcuts: "eggs means not a mammal" and "milk means not an egg-layer" each flip a friend wrongly', () => {
+    for (const r of rounds) {
+      let left: FriendId[] = [...r.gallery];
+      let wrong = 0;
+      for (const c of r.clues) {
+        // Shortcut: "eggs, so not a mammal" turns over every mammal; "milk, so not an egg-layer" every friend that lays eggs.
+        const shortcut = left.filter((f) =>
+          c === 'eggs' ? FRIENDS[f].group === 'mammal' : keeps('eggs', f),
+        );
+        const truth = ruledOut(left, c);
+        wrong += shortcut.filter((f) => !truth.includes(f)).length;
+        left = left.filter((f) => keeps(c, f));
+      }
+      expect(wrong).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('explains the platypus once, after the last step, free', () => {
+    for (const seed of [1, 2, 3, 4]) {
+      const r = roundFor(8, seed);
+      const p = startPlay(r, 'turn');
+      const outcomes: ReturnType<typeof tap>[] = [];
+      let guard = 0;
+      while (!p.done && guard++ < 20) outcomes.push(tap(p, botTap(p, false)!));
+      const spoken = outcomes.map((o) => (o.kind === 'flip' ? o.surprise : null)).filter(Boolean);
+      expect(spoken).toEqual(['platypus']);
+      expect(p.misses).toBe(0);
+      expect(p.hints).toBe(0);
+    }
+  });
+
+  it('says the platypus stays when it is tapped on either clue, and never says all, every or most', () => {
+    for (const clue of ['eggs', 'milk'] as const) {
+      const r = {
+        gallery: ['platypus', 'duck', 'cow', 'bat', 'owl', 'pig'] as FriendId[],
+        answer: 'platypus' as FriendId,
+        clues: [clue, clue === 'eggs' ? 'milk' : 'eggs'] as Clue[],
+      };
+      const p = startPlay(r, 'turn');
+      const out = tap(p, 0);
+      expect(out.kind).toBe('miss');
+      expect(out.kind === 'miss' && out.stays).toEqual({
+        name: 'Platypus',
+        has: clue === 'eggs' ? 'lays eggs' : 'feeds its babies milk',
+      });
+      expect(p.misses).toBe(1);
+    }
+    for (const line of VOICE['whoami.platypus.explain']) expect(line).not.toMatch(/\b(all|every|most)\b/i);
+  });
+
+  it('draws the six-card gallery at every tested view', () => {
+    expect(plan.friends).toBe(6);
+    for (const [pw, ph] of [
+      [1024, 768],
+      [768, 1024],
+      [390, 844],
+    ]) {
+      const L = galleryLayout(computeView(pw, ph), 6);
+      expect(L.cards).toHaveLength(6);
+      for (const c of L.cards) expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(100);
     }
   });
 });
