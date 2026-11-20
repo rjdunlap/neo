@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/habitat-helpers; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `habitat-helpers` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `habitat-helpers` · **Land:** Rainbow Meadow · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** habitats, living-things, prediction, systems-thinking
 
@@ -25,6 +25,8 @@
 | 9 | Who lives where? Three shore places, and the rock pool has room for one |
 
 <!-- end generated -->
+
+On upright phones the layout is a pure `layout.ts` (`gardenFrame`, `plotXs`, `trayPoints`, `choicePoints`, `needPoints` for the garden scene, levels 1–7; `shoreFrame`, `placeXs`, `friendPoints` for the rocky shore, levels 8–9; `gatePoint`): the loose cards rest in up to two rows (three lower beside the guide, the rest above), the garden's spaces above them, visitors arrive over the garden and the goal sign hangs above, so a tall phone's spare height is sky; the gate path is drawn sideways only. The shore's three places are 250 wide (they were 260 at a 300 pitch, 780 > 768) and the friends rest in two rows on a taller sand tap area, the sea top following the places. The garden's spaces were 120 apart with 124-unit touch areas, now 130 apart sideways too. The sideways plan is otherwise unchanged and pinned by `upright.test.ts`, which covers every level and round, three seeds, five views and every number of loose cards.
 
 **Starts as:** place Bunny's food, water and shelter, then open the garden gate
 
