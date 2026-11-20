@@ -217,6 +217,13 @@ describe('Little Conductor layout', () => {
     [1366, 768],
     [1194, 834],
   ];
+  /** A phone held upright: 390 × 844, a taller 390 × 900, an iPad's 768 × 1024 and a squarer 430 × 700. */
+  const UPRIGHT: [number, number][] = [
+    [390, 844],
+    [390, 900],
+    [768, 1024],
+    [430, 700],
+  ];
   const overlap = (
     a: { x: number; y: number; w: number; h: number },
     b: { x: number; y: number; w: number; h: number },
@@ -227,10 +234,14 @@ describe('Little Conductor layout', () => {
     w: 2 * d.r,
     h: 2 * d.r,
   });
-  for (const [pw, ph] of VIEWS)
+  const cases = [
+    ...VIEWS.map(([pw, ph]) => ({ pw, ph, upright: false })),
+    ...UPRIGHT.map(([pw, ph]) => ({ pw, ph, upright: true })),
+  ];
+  for (const { pw, ph, upright } of cases)
     for (const level of [1, 2, 3])
-      it(`keeps every target large, apart, on screen and clear of the pet at ${pw}×${ph}, level ${level}`, () => {
-        const view = computeView(pw, ph);
+      it(`keeps every target large, apart, on screen and clear of the pet at ${pw}×${ph}${upright ? ' upright' : ''}, level ${level}`, () => {
+        const view = computeView(pw, ph, undefined, upright);
         const l = conductorLayout(view, level);
         const targets = [l.pads.turtle, l.pads.rabbit, box(l.listen), box(l.done)];
         for (const t of targets) {

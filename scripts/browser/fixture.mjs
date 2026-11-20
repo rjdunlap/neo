@@ -12,7 +12,8 @@ export async function createFixture(browser, suite) {
     reducedMotion: 'reduce',
     ...((suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
-    (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright')
+    (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
+    (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });

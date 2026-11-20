@@ -18,7 +18,7 @@ Three friends stand on a bandstand and play one four-beat pentatonic tune over a
 
 **Known gaps.**
 
-- **No upright layout.** `conductorLayout` already has a portrait branch (pads 180, buttons 120, sign and pet clear), but the game does not set `upright`, so on a phone held upright it shows the turn prompt. Music games are the part of the [phone batches](../definitions/phone-portrait.md) still queued, and this is the current focus.
+- **Upright layout (built, slice 1).** `upright: true`: upright views hang the pads up from the bottom edge, and level 3's sign sits in a right-hand column beside a narrower bandstand (friends spacing 140), because 768 wide has no room under it. Before this the game showed the turn prompt on a phone held upright.
 - **One property, one pair of values.** All three levels are about pace, and the pace is always one of two values. After level 3 she has met the idea fully; nothing new is asked of her, so the older end of the band has no reason to come back.
 - **No way to make a change of her own.** She chooses between two prepared performances. She never makes a pace that is not 60 or 90, and she never decides when a part comes in, how strongly it plays, or what a friend plays.
 - **The performance is not kept.** The finish is a bow and a sticker; the tune she chose vanishes. That is the default by [decision 7](../definitions/little-conductor.md#open-decisions), and the rework's creation slots are the place to revisit it.
@@ -113,7 +113,7 @@ None blocks the first two slices. Defaults are what a build uses.
 
 ## Build slices, in order
 
-1. **Upright layout for levels 1–3** (new-levels tier, typecheck, `layout` test over the four views, one portrait scripted play at level 3 with one wrong Check and one hint, a portrait screenshot, and `fingerdemo` for the changed layout): set `upright`, add a test that every target is at least 100 units, inside the view and clear of the pet's corner, and the sign clears the pads.
+1. **Built: upright layout for levels 1–3** (new-levels tier, typecheck, `layout` test over the four views, one portrait scripted play at level 3 with one wrong Check and one hint, a portrait screenshot, and `fingerdemo` for the changed layout): set `upright`, add a test that every target is at least 100 units, inside the view and clear of the pet's corner, and the sign clears the pads.
 2. **A second motif family** (rule tests only): three more tunes, the same pace-independence and event tests over all six.
 3. **Level 4, strength** (new-interaction tier: typecheck, unit tests, one filtered scripted play at level 4, a portrait screenshot, and `npm run build` only if shared files change): strength as a gain table, the pictured pair, the heard gate over the latest change.
 4. **Level 5, two dials** (new levels tier).
