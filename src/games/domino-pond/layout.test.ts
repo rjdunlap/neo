@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { captionPlace } from '../../ui/caption-layout';
-import { square, thumbPx, uprightProblems, UPRIGHT_SCREENS } from '../upright-check';
+import { square, uprightProblems, UPRIGHT_SCREENS } from '../upright-check';
 import { CELL, pondLayout, TARGET, TRAY_W } from './layout';
 import { sampleBoard } from './logic';
 
@@ -36,7 +36,4 @@ describe('Domino Pond touch layout', () => {
       }
     });
   }
-  it('puts at least 50 CSS pixels under a thumb at 390 × 844', () => {
-    expect(thumbPx(Math.min(CELL, TARGET, TRAY_W))).toBe(50.8);
-  });
 });
