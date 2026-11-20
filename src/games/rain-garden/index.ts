@@ -621,6 +621,7 @@ export const rainGarden: GameModule = {
   name: 'Rain Garden',
   titleLine: 'game.rain-garden',
   region: 'tinker-lab',
+  upright: true,
   challenge: 'noticing',
   skills: ['observation', 'comparing', 'fair-test', 'water'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
