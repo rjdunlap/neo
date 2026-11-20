@@ -2004,6 +2004,7 @@ export const caravanDays: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  upright: true,
   coplayHint:
     "Crier and driver: one of you counts each road's suns aloud, the other taps the water or the stops; swap after each road.",
   offScreen:
