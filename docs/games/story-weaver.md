@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/story-weaver; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `story-weaver` · **Land:** Story Grove · **Ages:** school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `story-weaver` · **Land:** Story Grove · **Ages:** school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** story-structure, composition, sequencing, feelings, listening
 
