@@ -79,6 +79,7 @@ export const LANDS: readonly Land[] = [
       'melt-freeze',
       'tide-line',
       'drift-cards',
+      'down-we-go',
     ],
   },
   {

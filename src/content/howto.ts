@@ -30,6 +30,7 @@ import { HOW_TO as dayByDayHowTo } from '../games/day-by-day/howto.ts';
 import { HOW_TO as dominoPondHowTo } from '../games/domino-pond/howto.ts';
 import { HOW_TO as dominoRunHowTo } from '../games/domino-run/howto.ts';
 import { HOW_TO as dotLinkHowTo } from '../games/dot-link/howto.ts';
+import { HOW_TO as downWeGoHowTo } from '../games/down-we-go/howto.ts';
 import { HOW_TO as drawThePatternHowTo } from '../games/draw-the-pattern/howto.ts';
 import { HOW_TO as driftCardsHowTo } from '../games/drift-cards/howto.ts';
 import { HOW_TO as dropsJourneyHowTo } from '../games/drops-journey/howto.ts';
@@ -226,6 +227,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'domino-pond': dominoPondHowTo,
   'domino-run': dominoRunHowTo,
   'dot-link': dotLinkHowTo,
+  'down-we-go': downWeGoHowTo,
   'draw-the-pattern': drawThePatternHowTo,
   'drift-cards': driftCardsHowTo,
   'drops-journey': dropsJourneyHowTo,

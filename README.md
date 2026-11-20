@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (14), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (17), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (17), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 179 games; the 163 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 144 games, and "grown-up" (13 and up) is played by 24 games: the 16 grown-up puzzles and 8 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 180 games; the 164 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 145 games, and "grown-up" (13 and up) is played by 24 games: the 16 grown-up puzzles and 8 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -89,6 +89,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Melt and Freeze](docs/games/melt-freeze.md) | lap–school | Bubble Beach | 7 | one big ice cube at lap. Three touches anywhere on the playfield shrink it into a puddle, then the snowflake appears to freeze it again. |
 | [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
+| [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 2 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 8 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |
@@ -414,6 +415,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
 | `pantry` | Picnic Pantry level 1: free bell and full-blanket taps, two misses on the pair that does not fit, the pause sheet's hint counted once (not again by the second miss), a laid picnic, Another way? with the pair that does not fit (free) and the other menu, the second picnic by the demonstration bot, an upright phone screenshot and one sticker (about 15 s) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=picnic-pantry` |
 | `wordcode` | Word Code by touch: level 1 with a picture word that is not hidden, a try that ignores a mark (the one miss), a requested hint, a portrait screenshot, then the hidden word and a saved score; level 3 with a word not on the list turned down free, an ignored mark, a hint and a portrait screenshot, then the hidden word on the keys | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-code` |
+| `downwego` | Down We Go by touch: level 1 with a ledge tapped before the ride (free), the ride, a too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge on three dives; level 2 with an unmeasured ledge (free), a requested hint, a screenshot at the darkest knot, then the right ledge on three dives | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=down-we-go` |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
