@@ -7,6 +7,7 @@ import { computeView } from '../../engine/view';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
   hopLayout,
+  UPRIGHT_PAD_ROW,
   sceneFor,
   SCENES,
   PAD_HIT,
@@ -589,6 +590,14 @@ describe('Scenes (slice 6)', () => {
     [390, 844],
     [844, 390],
   ].map(([w, h]) => computeView(w, h));
+  // Held upright on the 768 × 1024 area: a 4:3 tablet shape, a tall phone, a short phone and a very tall one.
+  const UPRIGHT_VIEWS = [
+    [768, 1024],
+    [390, 844],
+    [390, 700],
+    [430, 932],
+    [360, 780],
+  ].map(([w, h]) => computeView(w, h, undefined, true));
   const overlap = (a: Box, b: Box) =>
     a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   const hit = (c: { x: number; y: number }, s: { w: number; h: number }): Box => ({
@@ -618,7 +627,7 @@ describe('Scenes (slice 6)', () => {
       w: GUIDE_CORNER.w,
       h: GUIDE_CORNER.h,
     });
-    for (const v of VIEWS)
+    for (const v of [...VIEWS, ...UPRIGHT_VIEWS])
       for (const plan of PLANS) {
         // The layout takes no scene: a pad's place and hit area are the same in all four.
         const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
@@ -649,5 +658,37 @@ describe('Scenes (slice 6)', () => {
             : 0,
         );
       }
+  });
+
+  it('folds the line into two rows upright, hung up from the bottom edge, in order, with the sign and bracket clear', () => {
+    for (const v of UPRIGHT_VIEWS)
+      for (const plan of PLANS) {
+        const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
+        const what = `${plan.mode} at ${Math.round(v.w)}×${Math.round(v.h)} upright`;
+        const a = l.pads.slice(0, UPRIGHT_PAD_ROW);
+        const b = l.pads.slice(UPRIGHT_PAD_ROW);
+        expect(new Set(a.map((p) => p.y)).size, what).toBe(1);
+        expect(new Set(b.map((p) => p.y)).size, what).toBe(1);
+        expect(b[0].y - a[0].y, what).toBeGreaterThanOrEqual(PAD_HIT.h + 100);
+        for (const row of [a, b])
+          for (let i = 1; i < row.length; i++)
+            expect(row[i].x - row[i - 1].x, what).toBeGreaterThanOrEqual(PAD_HIT.w);
+        // Left to right, then the next row: each pad is right of the one before in its row, and the second row starts under the first.
+        expect(b[0].x, what).toBe(a[0].x);
+        // Hung up from the bottom: the lowest card or pad rests within 260 of the bottom edge (a card level) or clear above the pet.
+        const lowest = Math.max(
+          ...l.pads.map((p) => p.y + PAD_HIT.h / 2),
+          ...l.cards.map((c) => c.y + CARD_HIT.h / 2),
+        );
+        expect(v.h - lowest, what).toBeLessThanOrEqual(l.cards.length ? 16 : GUIDE_CORNER.h + 100);
+        // The sign sits above the first row, under the top, clear of the top corners' buttons.
+        expect(l.sign.y + l.sign.h, what).toBeLessThanOrEqual(a[0].y - PAD_HIT.h / 2);
+        // The fraction line's "one whole" bracket (92 to 140 under the first row) fits between the rows.
+        expect(a[0].y + 140, what).toBeLessThanOrEqual(b[0].y - PAD_HIT.h / 2);
+      }
+    // A 768 × 1024 view has room for the sign under the shell buttons.
+    const v = UPRIGHT_VIEWS[0];
+    for (const plan of PLANS)
+      expect(hopLayout(v, plan.mode, GUIDE_CORNER.w).sign.y, plan.mode).toBeGreaterThanOrEqual(130);
   });
 });
