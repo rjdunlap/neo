@@ -162,6 +162,7 @@ class FruitSums implements Game {
   hints = 0;
   private sumMisses = 0;
   private layout: TreeLayout;
+  private view: View;
   private clock = 0;
   private readonly backdrop: Backdrop;
   private readonly ropes = new Graphics();
@@ -191,7 +192,8 @@ class FruitSums implements Game {
     this.three = !!round.three;
     this.op = this.signs ? null : 'plus';
     this.look = ctx.rng.pick(LOOKS);
-    this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.leafCount(), this.three);
+    this.view = ctx.view;
+    this.layout = layoutFor(ctx.view, this.plan);
     this.backdrop = new Backdrop(
       { ...SCENES[this.look], horizon: 0.3, clouds: 2, sun: true, seed: 57 },
       ctx.view,
@@ -282,11 +284,6 @@ class FruitSums implements Game {
     this.resize(ctx.view);
     // Up in the tree until start() drops them: lifted by the pivot, so layout and resize stay put.
     for (const t of this.tiles) t.pivot.y = t.y + TILE;
-  }
-
-  /** The sign leaves shown: none, plus and take away, or those and times. */
-  private leafCount() {
-    return this.signs ? this.plan.ops.length : 0;
   }
 
   private slotArt(at: 'a' | 'b' | 'c' | 'op'): Graphics {
@@ -381,6 +378,7 @@ class FruitSums implements Game {
   private place(animate = true) {
     const l = this.layout;
     this.tiles.forEach((t, i) => {
+      if (!animate || !this.gone[i]) this.ctx.tw.kill(t.position);
       if (this.gone[i]) {
         // In the basket: its own tween carries it there; a resize puts it straight in its spot.
         if (!animate) {
@@ -605,7 +603,7 @@ class FruitSums implements Game {
   /** The found ways stay on one line under the sign, narrower than the screen. */
   private fitFound() {
     this.foundText.scale.set(1);
-    const room = this.ctx.view.w - 260;
+    const room = this.view.w - 260;
     if (this.foundText.width > room) this.foundText.scale.set(room / this.foundText.width);
   }
 
@@ -618,7 +616,8 @@ class FruitSums implements Game {
   // ---- shell hooks ----
 
   resize(view: View) {
-    const l = (this.layout = layoutFor(view.w, view.h, this.tray.length, this.leafCount(), this.three));
+    this.view = view;
+    const l = (this.layout = layoutFor(view, this.plan));
     this.backdrop.resize(view);
     this.sign.position.set(l.sign.x, l.sign.y);
     this.foundText.position.set(l.found.x, l.found.y);
@@ -760,6 +759,7 @@ export const fruitSums: GameModule = {
   challenge: 'numbers',
   skills: ['adding', 'taking-away', 'number-sense', 'operations'],
   bands: ['school'],
+  upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.stickers,

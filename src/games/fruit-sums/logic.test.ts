@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { computeView, type View } from '../../engine/view';
+import { captionPlace } from '../../ui/caption-layout';
 import { levelsInOrder } from '../../progress/difficulty';
 import {
   BASKET_H,
@@ -304,23 +306,30 @@ describe('Fruit Sums answers', () => {
 });
 
 describe('Fruit Sums layout', () => {
-  const views: [number, number][] = [
-    [1024, 768],
-    [768, 1024],
-    [1366, 1024],
-    [1180, 820],
-    [1024, 1366],
+  const views: View[] = [
+    { w: 1024, h: 768, scale: 1 },
+    { w: 1366, h: 1024, scale: 1 },
+    { w: 1180, h: 820, scale: 1 },
+    { w: 1024, h: 1366, scale: 1 },
+    { w: 768, h: 1024, scale: 1 },
+    { w: 768, h: 1024, scale: 1, upright: true },
+    computeView(390, 844, undefined, true),
+    computeView(390, 625, undefined, true),
+    computeView(375, 667, undefined, true),
   ];
-  for (const [w, h] of views) {
-    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
-      it(`${w}x${h} level ${level}: every touch target is at least 100 units, on screen, apart, and clear of the pet corner`, () => {
-        const plan = planFor(level),
-          signs = choosesSign(level);
-        const l = layoutFor(w, h, plan.tiles, signs ? plan.ops.length : 0, !!plan.three);
+  for (const view of views) {
+    const { game, mode, band } = captionPlace(view, !!view.upright && view.scale < 1);
+    const { w, h } = game;
+    for (const level of levelsInOrder(LEVELS.school!)) {
+      it(`${w.toFixed(0)}x${h.toFixed(0)} ${mode} level ${level}: keeps targets on screen, apart and clear of chrome`, () => {
+        const plan = planFor(level);
+        const signs = choosesSign(level);
+        const l = layoutFor(game, plan);
         const boxes = [
           ...l.tiles.map((p) => ({ ...p, s: TILE })),
           ...(plan.three ? [l.a, l.b, l.c] : [l.a, l.b]).map((p) => ({ ...p, s: SLOT })),
           { ...l.check, s: SLOT },
+          ...(signs ? [{ ...l.op, s: SLOT }] : []),
           ...l.leaves.map((p) => ({ ...p, s: TILE })),
         ];
         for (const b of boxes) {
@@ -329,6 +338,8 @@ describe('Fruit Sums layout', () => {
           expect(b.x + b.s / 2).toBeLessThanOrEqual(w);
           expect(b.y - b.s / 2).toBeGreaterThanOrEqual(0);
           expect(b.y + b.s / 2).toBeLessThanOrEqual(h);
+          expect(b.x - b.s / 2 >= 114 || b.y - b.s / 2 >= 224).toBe(true);
+          if (mode === 'bubble' && band) expect(b.y + b.s / 2).toBeLessThanOrEqual(band.y);
           // The pet's corner: the bottom-left 170 by 170.
           expect(b.x - b.s / 2 < 170 && b.y + b.s / 2 > h - 170).toBe(false);
         }
@@ -356,6 +367,7 @@ describe('Fruit Sums layout', () => {
         if (plan.clearTree) {
           // The basket is on screen, clear of the pet corner, and covers no touch target; the six fruit in it stay inside it.
           const k = l.basket;
+          if (mode === 'bubble' && band) expect(k.y + BASKET_H / 2).toBeLessThanOrEqual(band.y);
           expect(k.x - BASKET_W / 2).toBeGreaterThanOrEqual(170);
           expect(k.x + BASKET_W / 2).toBeLessThanOrEqual(w);
           expect(k.y + BASKET_H / 2).toBeLessThanOrEqual(h);
@@ -365,8 +377,14 @@ describe('Fruit Sums layout', () => {
             ).toBe(true);
           for (let i = 0; i < plan.tiles; i++) {
             const at = basketSpot(k, i);
+            if (game.upright) expect(at.y - 33).toBeGreaterThan(l.tiles[i].y + TILE / 2);
             expect(Math.abs(at.x - k.x) + (TILE * BASKET_SCALE) / 2).toBeLessThanOrEqual(BASKET_W / 2);
           }
+        }
+        if (game.upright) {
+          expect(new Set(l.tiles.map((p) => p.y)).size).toBe(1);
+          expect(l.sign.y - 60).toBeGreaterThanOrEqual(0);
+          expect(l.found.y - (l.sign.y + 60)).toBeGreaterThanOrEqual(20);
         }
         // Below the sign and the found list, not under the home button.
         expect(l.a.y - SLOT / 2).toBeGreaterThan(l.found.y);
