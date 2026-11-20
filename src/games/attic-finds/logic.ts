@@ -513,11 +513,13 @@ export const DOOR_W = 220;
 export const DOOR_H = 200;
 
 export function atticLayout(v: View, level: number): AtticLayout {
-  const base = classicLayout(v);
+  const base = classicLayout(v, level);
   if (level < 3) return base;
   const portrait = v.h > v.w;
   const fs = portrait ? FREE_SCALE_PORTRAIT : FREE_SCALE;
-  const object = portrait ? { x: v.w / 2 - 60, y: 470 } : { x: Math.max(420, v.w * 0.42), y: 430 };
+  // Upright, the free levels hang up from the bottom edge: the Finish button's foot sits 24 units above it.
+  const dy = v.upright ? Math.max(0, v.h - 24 - (470 + OBJ * fs + 150 + FINISH_R)) : 0;
+  const object = portrait ? { x: v.w / 2 - 60, y: 470 + dy } : { x: Math.max(420, v.w * 0.42), y: 430 };
   const knob = objectOf('bird-box').crank.front.knob;
   const dc = { x: object.x + DOOR_AT.x * fs, y: object.y + DOOR_AT.y * fs };
   return {
@@ -530,7 +532,7 @@ export function atticLayout(v: View, level: number): AtticLayout {
   };
 }
 
-function classicLayout(v: View): AtticLayout {
+function classicLayout(v: View, level: number): AtticLayout {
   const portrait = v.h > v.w;
   const free = {
     handle: { x: 0, y: 0 },
@@ -538,13 +540,18 @@ function classicLayout(v: View): AtticLayout {
     door: { x: 0, y: 0, w: DOOR_W, h: DOOR_H },
     finish: { x: 0, y: 0 },
   };
-  const shelfY = 150;
+  // Upright, the whole scene hangs up from the bottom edge: the lowest row (the cards at level 1, the chips at level 2)
+  // sits 24 units above it, so a tall phone's spare height is sky at the top.
+  const dy = v.upright
+    ? Math.max(0, v.h - 24 - (480 + OBJ + 150 + (level === 1 ? CARD / 2 : 170 + CHIP_R)))
+    : 0;
+  const shelfY = 150 + dy;
   const shelf = [
     { x: v.w / 2 - 90, y: shelfY },
     { x: v.w / 2 + 90, y: shelfY },
   ];
   if (portrait) {
-    const object = { x: v.w / 2 + 40, y: 480 };
+    const object = { x: v.w / 2 + 40, y: 480 + dy };
     const below = object.y + OBJ + 150;
     return {
       ...free,
@@ -554,14 +561,18 @@ function classicLayout(v: View): AtticLayout {
       shelf,
       shelfY,
       turn: { x: object.x + OBJ + 120, y: object.y + 60 },
-      window: { x: object.x - OBJ - 175, y: object.y - 40 },
+      // Beside the object there is no room on 768 units, so upright the magnifier opens over it, above its top.
+      window: v.upright
+        ? { x: v.w / 2, y: object.y - OBJ - 150 }
+        : { x: object.x - OBJ - 175, y: object.y - 40 },
       cards: [
         { x: v.w / 2 - 85, y: below },
         { x: v.w / 2 + 85, y: below },
       ],
-      claim: { x: v.w / 2 - 125, y: below },
-      slot: { x: v.w / 2 + 100, y: below },
-      check: { x: v.w / 2 + 230, y: below },
+      // Upright the row slides right 60 so the claim card clears the guide's corner.
+      claim: { x: v.w / 2 - 125 + (v.upright ? 60 : 0), y: below },
+      slot: { x: v.w / 2 + 100 + (v.upright ? 50 : 0), y: below },
+      check: { x: v.w / 2 + 230 + (v.upright ? 40 : 0), y: below },
       chips: [-120, 0, 120].map((dx) => ({ x: v.w / 2 + dx, y: below + 170 })),
     };
   }
@@ -868,24 +879,28 @@ export interface JobLayout {
 
 export function jobLayout(v: View): JobLayout {
   const portrait = v.h > v.w;
-  const shelfY = 150;
-  const shelf = [-150, 0, 150].map((dx) => ({ x: v.w / 2 + dx, y: shelfY }));
   const step = TOOL_BOX + TOOL_GAP;
   if (portrait) {
-    const toolsY = v.h / 2 + 20;
+    // Upright, the cart sits 24 units above the bottom edge, the tools above it, the card and lens above those.
+    const toolsY = v.upright ? v.h - 24 - CART_H - 40 - TOOL_BOX / 2 : v.h / 2 + 20;
     const cart = { x: v.w - 30 - CART_W / 2, y: toolsY + TOOL_BOX / 2 + 40 + CART_H / 2 };
+    const topY = v.upright ? toolsY - TOOL_BOX / 2 - 40 - LENS_R : 300;
+    const shelfY = v.upright ? topY - 150 : 150;
+    const shelf = [-150, 0, 150].map((dx) => ({ x: v.w / 2 + dx, y: shelfY }));
     return {
       portrait,
       shelf,
       shelfY,
-      card: { x: v.w / 2 - 125, y: shelfY + 150 },
-      lens: { x: v.w - 25 - LENS_R, y: shelfY + 150 },
+      card: { x: v.w / 2 - 125, y: topY },
+      lens: { x: v.w - 25 - LENS_R, y: topY },
       tools: [-1, 0, 1].map((k) => ({ x: v.w / 2 + k * step, y: toolsY })),
       cart,
       slots: [-1, 0, 1].map((k) => ({ x: cart.x + k * (CART_SLOT + 10), y: cart.y - 6 })),
       check: { x: cart.x - CART_W / 2 - 30 - JOB_CHECK_R, y: cart.y },
     };
   }
+  const shelfY = 150;
+  const shelf = [-150, 0, 150].map((dx) => ({ x: v.w / 2 + dx, y: shelfY }));
   const cx = v.w / 2 - 22;
   const cart = { x: v.w - 20 - CART_W / 2, y: v.h - 20 - CART_H / 2 };
   return {

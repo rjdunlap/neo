@@ -419,11 +419,16 @@ export function placeCase(v: View, level: number): CaseLayout {
   const rows = level === 7 ? 2 : 3;
   const portrait = v.h > v.w;
   // Upright, the block sits a little above the middle of the tall screen.
-  const top = portrait
-    ? Math.max(220, (v.h - (PAPER_H + ROW_GAP + rows * (CASE_CARD_H + ROW_GAP))) / 2 - 80)
-    : 160;
+  const rowsH = PAPER_H + ROW_GAP + rows * (CASE_CARD_H + ROW_GAP) - ROW_GAP;
+  // Upright, the block hangs up from the bottom edge, its last card clear of the pet corner (205 tall) and Check.
+  const top = v.upright
+    ? v.h - 210 - rowsH
+    : portrait
+      ? Math.max(220, (v.h - (PAPER_H + ROW_GAP + rows * (CASE_CARD_H + ROW_GAP))) / 2 - 80)
+      : 160;
   const rowW = CASE_CARD_W + 20 + (level === 7 ? CASE_SLOT : 4 * STAMP_R + 10);
-  const x0 = Math.max(210, (v.w - rowW) / 2);
+  // Upright, the three-stamp rows are centred: 210 from the left pushed the last stamp off 768.
+  const x0 = v.upright ? (v.w - rowW) / 2 : Math.max(210, (v.w - rowW) / 2);
   const papersW = 3 * PAPER_W + 2 * PAPER_GAP;
   const papers = [0, 1, 2].map((i) => ({
     x: (v.w - papersW) / 2 + PAPER_W / 2 + i * (PAPER_W + PAPER_GAP),
@@ -775,6 +780,26 @@ export interface ExhibitLayout {
 export function placeExhibit(v: View): ExhibitLayout {
   const gap = ROW_GAP + CASE_CARD_H;
   const check = { x: v.w - 24 - CASE_CHECK_R, y: v.h - 24 - CASE_CHECK_R };
+  if (v.upright) {
+    // Hung up from the bottom edge: the new-paper row 24 above it, the question row 61 above that (clear of the pet corner),
+    // then the captions and the thumbnails.
+    const ny = v.h - 24 - NEW_H / 2;
+    const qy = ny - NEW_H / 2 - 61 - QUESTION_H / 2;
+    const rowY = (i: number) => qy - QUESTION_H / 2 - 30 - CASE_CARD_H / 2 - (2 - i) * gap;
+    return {
+      papers: [-1, 0, 1].map((k) => ({
+        x: v.w / 2 + k * (THUMB + 20),
+        y: rowY(0) - CASE_CARD_H / 2 - 20 - THUMB / 2,
+      })),
+      rows: [0, 1, 2].map((i) => ({ x: 30 + CASE_CARD_W / 2, y: rowY(i) })),
+      strip: [0, 1, 2].map((i) => ({ x: 440 + STRIP / 2, y: rowY(i) })),
+      dome: { x: 660, y: rowY(1) },
+      question: { x: 30 + QUESTION_W / 2, y: qy },
+      slot: { x: 30 + QUESTION_W + 10 + CASE_SLOT / 2, y: qy },
+      offered: [0, 1, 2].map((k) => ({ x: 220 + NEW_W / 2 + k * (NEW_W + 10), y: ny })),
+      check,
+    };
+  }
   if (v.h > v.w) {
     // The block is 810 units tall; on a tall screen it sits a little above the middle.
     const top = Math.max(140, (v.h - 810) / 2 - 40);
