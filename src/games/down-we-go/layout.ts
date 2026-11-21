@@ -59,7 +59,7 @@ export function downLayout(v: { w: number; h: number }, knots: number): DownLayo
     plate: { w: 170, h: 130 },
     cards: [-1, 0, 1].map((d) => ({ x: v.w - 110, y: mid + d * 165 })),
     card: { w: 150, h: 150 },
-    logbook: ys.map((y) => ({ x: 62, y })),
-    logR: 26,
+    logbook: ys.slice(0, 4).map((y) => ({ x: 118, y })),
+    logR: 22,
   };
 }

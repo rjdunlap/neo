@@ -102,7 +102,10 @@ export function createSuite({ page, screenshot, launch, finished }) {
     // School, level 3: measure and plant the first cove, the OTHER prediction first (free), then the second cove.
     await launch('down-we-go', 3, 'Mia', 'school');
     await settle();
-    let g = await page.evaluate(() => ({ w: neo.scene.game.dives.map((d) => d.water), idx: neo.scene.game.idx }));
+    let g = await page.evaluate(() => ({
+      w: neo.scene.game.dives.map((d) => d.water),
+      idx: neo.scene.game.idx,
+    }));
     assert.notEqual(g.w[0], g.w[1]);
     for (let k = 0; k < 5; k++) {
       await tapKnot(k);

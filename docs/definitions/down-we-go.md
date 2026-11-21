@@ -1,10 +1,10 @@
 # Down We Go, levels 1–4 (definition)
 
-**Built:** levels 1–2 (PR #1909); to build level 3, read “Levels” and “Rounds” (batch `down-we-go 2`, levels 3–4).
+**Built:** levels 1–4 (PRs #1909, #1918); no later level is defined, so a builder reads “What comes next”.
 
 Defined 2026-11-18 as slice 5 of the [oceans study](../deep-dives/subjects/oceans.md#build-slices-in-order), from its [candidate row](../deep-dives/subjects/oceans.md#candidates-and-recommended-order) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#oceans-recommendations). The slice's condition, Tide Line's shore art, is built. Docs only: no game, ID registration, voice line, art or save field exists yet.
 
-**Status: levels 1–2 built (batch `down-we-go 1`); levels 3–4 not built.** Registration, bands and land take the defaults below under standing rule S8, and every explanation line takes the building session's source check under S1 ([decision record](../archive/DECISIONS-2026-10-23.md#standing-rules)); nothing waits on the developer. It depends on no unbuilt game.
+**Status: levels 1–4 built (batches `down-we-go 1` and `2`; see the [game page](../games/down-we-go.md) for where level 3–4 departs from this definition).** Registration, bands and land take the defaults below under standing rule S8, and every explanation line takes the building session's source check under S1 ([decision record](../archive/DECISIONS-2026-10-23.md#standing-rules)); nothing waits on the developer. It depends on no unbuilt game.
 
 **Fun action and purpose:** a little boat sits on a calm sea with a lantern on a knotted rope. She pulls the lantern down, knot by knot. At every knot a **sun dial** on the rope opens as many petals as there is daylight left, the water round the lantern turns a deeper blue, and a rock ledge comes into the lantern's glow. Then she plants a seaweed sprout on the deepest ledge where it can still grow. The learning purpose is **daylight fades as the sea gets deeper, and seaweed can only live where enough of it reaches** (NOAA Ocean Literacy concepts 5e, a three-dimensional ocean, and 5f, habitats set by light among other factors, as the [study](../deep-dives/subjects/oceans.md#anchors-opened-at-their-source) read them). The school levels add that cloudy water stops the light sooner, and that the fading multiplies (each knot leaves half) rather than taking away a fixed amount.
 

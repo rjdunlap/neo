@@ -297,7 +297,7 @@ class DownWeGo implements Game {
         c.addChild(
           new Graphics()
             .roundRect(-L.card.w / 2, -L.card.h / 2, L.card.w, L.card.h, 22)
-            .fill(0xffffff)
+            .fill(0x35508f)
             .stroke({ width: 4, color: swatch.teal.line }),
           dialArt(opt, 52),
         );
