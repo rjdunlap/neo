@@ -117,6 +117,8 @@ class NumberTrails implements Game {
   private strokes: readonly (readonly Point[])[];
   /** Ten, and some more: the finished 1, which slides left of the box while she writes the digit beside it. */
   private readonly tensInk = new Graphics();
+  /** The 1 is finished and stands (or is sliding) left of the box while she writes the digit beside it. */
+  private tensDone = false;
   private readonly teens: boolean;
   /** The ten-frames the teen's things fill: ten in the first, the rest in the second. */
   private readonly frameArt = new Graphics();
@@ -447,12 +449,15 @@ class NumberTrails implements Game {
     if (this.digit < this.digits.length - 1) {
       // Ten, and some more: the finished 1 slides left of the box, and the digit beside it is written in the same box.
       this.ink.clear();
+      this.tensDone = true;
       this.drawTens();
       await this.ctx.tw.to(
         this.tensInk,
         { x: TENS_SHIFT * this.size },
         { duration: 0.5, ease: ease.outBack },
       );
+      // A resize during the slide redrew the 1 at the new size; land it at the new size's place too.
+      this.tensInk.x = TENS_SHIFT * this.size;
       this.digit++;
       this.strokes = DIGITS[this.digits[this.digit]];
       this.stroke = 0;
@@ -477,6 +482,7 @@ class NumberTrails implements Game {
     this.ink.clear();
     this.cue.clear();
     this.beacon.clear();
+    this.tensDone = false;
     this.tensInk.clear();
     this.firefly.visible = false;
     this.handle.enabled = false;
@@ -549,9 +555,12 @@ class NumberTrails implements Game {
 
   /** The frames' outlines and cells, and the things in their spots, at the room this view gives. */
   private placeFrames() {
-    this.frames = tenFrames(this.n, this.pileRect());
-    if (!this.frames) throw new Error(`Number Trails: ${this.n} does not fit a ten-frame in this view`);
-    const { cell, frames, spots } = this.frames;
+    const layout = tenFrames(this.n, this.pileRect());
+    // The layout test covers every supported view; a smaller one mid-show keeps the last layout rather than throw.
+    if (!layout && this.frames) return;
+    if (!layout) throw new Error(`Number Trails: ${this.n} does not fit a ten-frame in this view`);
+    this.frames = layout;
+    const { cell, frames, spots } = layout;
     this.frameArt.clear();
     for (const f of frames) {
       this.frameArt.roundRect(f.x - 6, f.y - 6, f.w + 12, f.h + 12, 14).fill(swatch.white.fill);
@@ -762,9 +771,9 @@ class NumberTrails implements Game {
     this.size = box.size;
     this.canvas.position.set(box.x, box.y);
     this.heading.position.set(v.w / 2, 70);
-    if (this.digit > 0) {
+    if (this.tensDone && this.phase === 'trace') {
       this.drawTens();
-      this.tensInk.x = TENS_SHIFT * this.size;
+      if (this.digit > 0) this.tensInk.x = TENS_SHIFT * this.size;
     }
     this.draw();
     this.placeFirefly();
