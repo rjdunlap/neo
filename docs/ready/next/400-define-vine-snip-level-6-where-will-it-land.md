@@ -1,1 +1,0 @@
-**Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](../../deep-dives/vine-snip.md#build-slices-in-order)
