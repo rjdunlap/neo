@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung; level 4 replay; level 9 paws cards. FROM_LEVEL=7, 8 or 9 runs only that level. */
+  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung; level 4 replay; level 9 paws cards. FROM_LEVEL=7, 8, 9 or 10 runs only that level. */
   async function liftItPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -226,6 +226,22 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await level9();
       assert.deepEqual(errors, [], 'page errors');
       log('Lift It: level 9 with a wrong paws card, a free tug and a requested card glow');
+      return;
+    }
+
+    if (process.env.FROM_LEVEL === '10') {
+      // Level 10, the toddler entry: a one-rung ledge, so a single stroke lands each parcel; no misses, one requested hint.
+      await launch('lift-it', 10);
+      await idle();
+      const n10 = await page.evaluate(() => kit.store.data.stickers.length);
+      assert.equal(await page.evaluate(() => neo.scene.game.cur.h), 1, 'a one-rung ledge');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(1200);
+      await playOut(n10);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [0, 1], 'level 10: no misses, the one requested hint');
+      assert.deepEqual(errors, [], 'page errors');
+      log('Lift It: level 10 lands each parcel in one pull');
       return;
     }
 

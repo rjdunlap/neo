@@ -301,6 +301,7 @@ export const LANDS: readonly Land[] = [
       'mossy-path',
       'shell-rows',
       'domino-pond',
+      'bunny-patches',
     ],
   },
   {
@@ -417,6 +418,7 @@ export const LANDS: readonly Land[] = [
       'pond-conga',
       'species-comeback',
       'word-code',
+      'sum-crates',
     ],
   },
 ];

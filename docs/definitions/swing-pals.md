@@ -81,7 +81,7 @@ Defined 2026-10-17 for [chunk 27](../ROADMAP.md#chunks) (physics games), from th
 - **A miss (levels 4–6):** choosing a different hook that does not match, the first time on this line. The gentle response: the two swings visibly part during the watch, a soft boing as they settle, and the spoken reason with its direction ("Yours is quicker. Try a longer rope." / "Yours is slower. Try a shorter rope."), plus at level 5 the weight line and at level 6 the height line when that is the tempting variable. Her rope stays where she put it.
 - **The glow after two misses:** after a line's second miss the matching hook glows until she taps it; that counts `hints++` once. With three hooks, two misses always leave the right one, so the glow confirms rather than replaces her reasoning; the doc says so on the card.
 - **Show a hint** in the pause sheet (`Scene.pauseActions`): at levels 1–3 the pet gives the next two pushes with her (landing at the back points) and counts `hints++` once per request; at levels 4–6 it gives the same glow as above, `hints++` once per glow; asking when the line is done only says what to do next.
-- **Finish:** when every line's bells have rung (levels 1–3) or every line swings together (levels 4–6), all the friends swing in a row once, then `ctx.finish({ misses, hints })` gives one ordinary sticker, with or without help. No creation, discovery or journal entry is filed in this build ([decision 4](#open-decisions)).
+- **Finish:** when every line's bells have rung (levels 1–3) or every line swings together (levels 4–6), all the friends swing in a row once, then `ctx.finish({ misses, hints })` gives one ordinary sticker, with or without help. No creation is kept. A round at level 3 or 7 also files the journal entry "a longer rope swings slower" once ([decision 4](#open-decisions); decided 2026-11-17, built 2026-11-21); levels 1, 2 and 4–6 file nothing.
 
 ## Rule tests (`logic.test.ts`)
 
@@ -123,7 +123,7 @@ Each has a default the build uses. None blocks it.
 1. **Bands.** Default lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4–6, matching PHYSICS-GAMES's lap–school. Not in the first build: a school prediction mode ("which comes back first?", unscored, as Planet Hop's predictions are), a counting mode (count the swings in a song phrase) and the grown-up calm toy.
 2. **Accounting.** Default: levels 1–3 record no misses at all, so adaptation there moves only through hints; misses only from level 4, where the rule is stated before she chooses. Alternative: no misses at pre-K (level 4 counts from school only).
 3. **Home land.** Default Rainbow Meadow (9 with the pending defaults). Alternatives: Tinker Lab, whose 14th game needs `landLayout` to fit, or Bubble Beach, already the default for Domino Run, Fruit Slice and Puddle Gobble (7 with those).
-4. **Journal.** Default: no discovery filed. Alternative: file "a longer rope swings slower" once level 3 has actually shown both swings ringing, as Seesaw Balance files only what a round showed.
+4. **Journal.** Decided 2026-11-17 and built 2026-11-21: "a longer rope swings slower" is filed once a finished round at level 3 or 7 swung a short rope beside a long one, as Seesaw Balance files only what a round showed (the earlier default was none).
 5. **Level 2's waiting push.** Default: a mistimed tap is stored and lands at the back point. Alternative: a tap outside a generous window does nothing (the mitten pops out and waits visibly); either way it is never a miss and never lowers the height.
 
 ## Built

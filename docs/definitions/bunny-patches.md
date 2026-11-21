@@ -1,6 +1,6 @@
 # Bunny Patches levels 1–3 (definition)
 
-**Built:** not yet; levels 1–3 are one implementation batch (`bunny-patches 1`).
+**Built:** levels 1–3 (PR #1915); the larger grown-up rungs are not defined, so there is no section to read yet. It departs from this page in two places: levels 2 and 3 both use the advanced rule as the human gate, and the 5×5 and 6×6 fallbacks are new boards (see the game page's design notes).
 
 Proposed touch game `bunny-patches`, PP3 of the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order). Defined 2026-11-20 in [PR #1907](https://github.com/rjdunlap/neo/pull/1907), following the [November 17 decision](../archive/DECISIONS-2026-11-17.md#games) (admitted for definition, third in its order). **Docs only:** no code or device evidence. It is the notebook's *Garden Queens* ([IDEAS](../IDEAS.md)) under its default name; Queens is LinkedIn's name and a reference only.
 

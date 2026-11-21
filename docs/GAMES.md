@@ -42,7 +42,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Puddle Gobble
 
-*toddler–school* · [Puddle Gobble](games/puddle-gobble.md)
+*lap–school* · [Puddle Gobble](games/puddle-gobble.md)
 
 ### Lost Layers
 
@@ -138,7 +138,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Draw the Pattern
 
-*lap–pre-K* · [Draw the Pattern](games/draw-the-pattern.md)
+*lap–school* · [Draw the Pattern](games/draw-the-pattern.md)
 
 ### Recipe Workshop
 
@@ -246,7 +246,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Number Trails
 
-*preschool–pre-K* · [Number Trails](games/number-trails.md)
+*preschool–school* · [Number Trails](games/number-trails.md)
 
 ### Fruit Sums
 
@@ -402,7 +402,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Lift It
 
-*preschool–school* · [Lift It](games/lift-it.md)
+*toddler–school* · [Lift It](games/lift-it.md)
 
 ### Sand Table
 
@@ -484,7 +484,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Mossy Path
 
-*toddler–school* · [Mossy Path](games/mossy-path.md)
+*lap–school* · [Mossy Path](games/mossy-path.md)
 
 ### Shell Rows
 
@@ -493,6 +493,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Domino Pond
 
 *pre-K–grown-up* · [Domino Pond](games/domino-pond.md)
+
+### Bunny Patches
+
+*pre-K–grown-up* · [Bunny Patches](games/bunny-patches.md)
 
 ## Story Grove
 
@@ -751,5 +755,9 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Word Code
 
 *school–grown-up* · [Word Code](games/word-code.md)
+
+### Sum Crates
+
+*school–grown-up* · [Sum Crates](games/sum-crates.md)
 
 <!-- end generated -->

@@ -20,6 +20,30 @@ describe.each(Object.entries(views))('Down We Go layout on %s', (_, v) => {
     expect(L!.band).toBeGreaterThanOrEqual(112);
     expect(uprightProblems(v, t, 100)).toEqual([]);
   });
+
+  it('keeps level 3 plates and level 4 cards at their sizes, clear of each other and the chrome', () => {
+    const L = downLayout(v, 5)!;
+    const plates: Target[] = L.plates.map((p, k) => ({
+      what: `plate ${k}`,
+      x: p.x,
+      y: p.y,
+      w: L.plate.w,
+      h: L.plate.h,
+    }));
+    const cards: Target[] = L.cards.map((p, k) => ({
+      what: `card ${k}`,
+      x: p.x,
+      y: p.y,
+      w: L.card.w,
+      h: L.card.h,
+    }));
+    expect(L.plate.w).toBeGreaterThanOrEqual(150);
+    expect(L.plate.h).toBeGreaterThanOrEqual(130);
+    expect(L.card.w).toBeGreaterThanOrEqual(150);
+    expect(L.card.h).toBeGreaterThanOrEqual(150);
+    expect(uprightProblems(v, plates, 100)).toEqual([]);
+    expect(uprightProblems(v, cards, 100)).toEqual([]);
+  });
 });
 
 it('returns null rather than squeeze a band under 112 units', () => {

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { blankToFill, cardName, isBlankProfile, newEntry } from '../progress/profiles';
+import {
+  blankToFill,
+  cardName,
+  everyoneHidden,
+  isBlankProfile,
+  isHiddenProfile,
+  newEntry,
+} from '../progress/profiles';
 import { defaults } from '../progress/save';
 import { bandForYears, completedYears } from '../progress/profiles';
 import {
@@ -211,6 +218,54 @@ describe('the profile nobody has used', () => {
     expect(blankToFill([items[0], items[2]])).toBe('bbbb2222');
     expect(blankToFill([items[2]])).toBeNull();
     expect(blankToFill([])).toBeNull();
+  });
+});
+
+describe('a guest who played first', () => {
+  const played = () => {
+    const save = defaults();
+    save.stickers.push({ game: 'bubble-pop', seed: 1, at: 1 });
+    save.games['bubble-pop'] = { plays: 1, level: 1, pinned: null, history: [] };
+    return save;
+  };
+  const guest = { ...newEntry('aaaa1111', 0, true), guest: true };
+
+  it('is hidden from the chooser like a blank profile, even after a round and a sticker', () => {
+    expect(isBlankProfile(played(), guest)).toBe(false);
+    expect(isHiddenProfile(played(), guest)).toBe(true);
+    expect(isHiddenProfile(defaults(), newEntry('bbbb2222', 0))).toBe(true);
+    expect(isHiddenProfile(played(), newEntry('bbbb2222', 0))).toBe(false);
+  });
+
+  it('leaves everyone hidden on a fresh device and with only a guest, and not once anyone is set up', () => {
+    const blank = { entry: newEntry('aaaa1111', 0, true), save: defaults() };
+    expect(everyoneHidden([blank])).toBe(true);
+    expect(everyoneHidden([{ entry: guest, save: played() }])).toBe(true);
+    expect(
+      everyoneHidden([
+        { entry: guest, save: played() },
+        { entry: newEntry('bbbb2222', 0), save: defaults() },
+      ]),
+    ).toBe(true);
+    const named = defaults();
+    named.profile.name = 'Mia';
+    for (const other of [
+      { entry: { ...newEntry('cccc3333', 0), birth: { month: 1, year: 2020 } }, save: defaults() },
+      { entry: { ...newEntry('cccc3333', 0), startBand: 'prek' as const }, save: defaults() },
+      { entry: newEntry('cccc3333', 0), save: named },
+      { entry: newEntry('cccc3333', 0), save: played() },
+    ])
+      expect(everyoneHidden([{ entry: guest, save: played() }, other])).toBe(false);
+  });
+
+  it('is the profile Add fills, even beside a blank original', () => {
+    const lateGuest = { ...newEntry('bbbb2222', 0), guest: true };
+    expect(
+      blankToFill([
+        { entry: newEntry('aaaa1111', 0, true), save: defaults() },
+        { entry: lateGuest, save: played() },
+      ]),
+    ).toBe('bbbb2222');
   });
 });
 

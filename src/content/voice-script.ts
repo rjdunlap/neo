@@ -14,6 +14,7 @@ import { VOICE as brainBreakVoice } from '../games/brain-break/voice.ts';
 import { VOICE as bubblePopVoice } from '../games/bubble-pop/voice.ts';
 import { VOICE as bugBuilderVoice } from '../games/bug-builder/voice.ts';
 import { VOICE as bumperGardenVoice } from '../games/bumper-garden/voice.ts';
+import { VOICE as bunnyPatchesVoice } from '../games/bunny-patches/voice.ts';
 import { VOICE as caravanDaysVoice } from '../games/caravan-days/voice.ts';
 import { VOICE as chainReactionVoice } from '../games/chain-reaction/voice.ts';
 import { VOICE as circuitGardenVoice } from '../games/circuit-garden/voice.ts';
@@ -159,6 +160,7 @@ import { VOICE as stopAndGoVoice } from '../games/stop-and-go/voice.ts';
 import { VOICE as storyStepsVoice } from '../games/story-steps/voice.ts';
 import { VOICE as storyWeaverVoice } from '../games/story-weaver/voice.ts';
 import { VOICE as sudokuGardenVoice } from '../games/sudoku-garden/voice.ts';
+import { VOICE as sumCratesVoice } from '../games/sum-crates/voice.ts';
 import { VOICE as swapMeetVoice } from '../games/swap-meet/voice.ts';
 import { VOICE as swingPalsVoice } from '../games/swing-pals/voice.ts';
 import { VOICE as tangramTownVoice } from '../games/tangram-town/voice.ts';
@@ -491,6 +493,7 @@ export const SHARED = {
   'journal.neighbors.answer': ['The woodpecker knocked, and the frog answered. Taking turns makes a song.'],
   'journal.chain.spring': ['The spring bounces the marble over one row, so the ramp under the spring is skipped.'],
   'journal.spinner-fair.two-dice': ['Seven can be made six ways, more than any other sum.'],
+  'journal.swing.slower': ['A longer rope swings slower. The friend on the short rope comes back first.'],
   'journal.launch.pull': ['A bigger pull stretches the spring more and sends the pet farther.'],
   'journal.habitat.bunny': ['A bunny needs food to eat, water to drink, and shelter where it can hide and rest.'],
   'journal.habitat.duck': ['A duck needs food to eat, water to drink, and shelter where it can hide and rest.'],
@@ -630,6 +633,7 @@ export const SCRIPT = {
   ...bubblePopVoice,
   ...bugBuilderVoice,
   ...bumperGardenVoice,
+  ...bunnyPatchesVoice,
   ...caravanDaysVoice,
   ...chainReactionVoice,
   ...circuitGardenVoice,
@@ -775,6 +779,7 @@ export const SCRIPT = {
   ...storyStepsVoice,
   ...storyWeaverVoice,
   ...sudokuGardenVoice,
+  ...sumCratesVoice,
   ...swapMeetVoice,
   ...swingPalsVoice,
   ...tangramTownVoice,

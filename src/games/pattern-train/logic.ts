@@ -1,6 +1,7 @@
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { CritterName } from '../../art/critter';
+import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
@@ -70,6 +71,78 @@ export const ANIMAL_TRIOS: readonly (readonly [CritterName, CritterName, Critter
   ['bear', 'cat', 'pig'],
   ['duck', 'dog', 'cow'],
 ];
+
+/** The fruit family's three pieces, in piece order. */
+export const FRUITS: readonly (readonly [PropKind, ColorName])[] = [
+  ['apple', 'red'],
+  ['pear', 'green'],
+  ['grapes', 'purple'],
+];
+/** The flower family's three colors, in piece order. */
+export const FLOWERS: readonly ColorName[] = ['red', 'blue', 'yellow'];
+/** The plain shape family's pieces as `symbol()` in `../shared` draws them: piece n is the nth color in the nth shape. */
+const PLAIN_SHAPES = ['red circle', 'blue triangle', 'yellow square'] as const;
+/** Bells are named by their pitch: piece 0 rings lowest (`sfx.bell(4 + piece * 3)`). */
+const BELLS = ['low', 'middle', 'high'] as const;
+
+/** What one piece is called when the train is said back: "cat", "apple", "red flower", "blue triangle", "high". */
+export function pieceName(kind: PatternPlan['kind'], family: number | undefined, piece: number): string {
+  const p = piece % 3;
+  if (kind === 'bell') return BELLS[p];
+  if (kind === 'animal')
+    return (family === undefined ? (['cat', 'cow', 'duck'] as const) : ANIMAL_TRIOS[family])[p];
+  if (family === 1) return FRUITS[p][0];
+  if (family === 2) return `${FLOWERS[p]} flower`;
+  return PLAIN_SHAPES[p];
+}
+
+/** The spoken reason after the answer that ends a round (TotoLogic P7): a line id and its slots. */
+export interface PatternSaid {
+  key: 'pattern.why' | 'pattern.whyBells' | 'pattern.whyNumber' | 'pattern.whyPair' | 'pattern.oddWhy';
+  vars: Record<string, string | number>;
+}
+
+/**
+ * What the train says back once its last car is right: the repeating unit once, "over and over" ("cat, cow, over and
+ * over"), so a lucky tap becomes the rule and an ABC train of two-word pieces stays one short line. A numbered train names its step and its first four numbers; a color-and-shape train says each cycle on
+ * its own; the extra-car level names the car that hopped off first. Built from the finished train (`sequence`), so the
+ * extra car is left out and a swapped car is the piece that belongs.
+ */
+export function patternSaid(
+  plan: PatternPlan,
+  train: { sequence: readonly number[]; targets: readonly number[]; family?: number; look?: PairLook },
+): PatternSaid {
+  const { sequence } = train;
+  if (plan.kind === 'number') {
+    return {
+      key: 'pattern.whyNumber',
+      vars: { step: sequence[1] - sequence[0], list: sequence.slice(0, 4).join(', ') },
+    };
+  }
+  if (plan.kind === 'pair' && train.look) {
+    const look = train.look;
+    // Start where the shape pair starts, so the shapes are heard as a rule (circle, circle, triangle, triangle).
+    const from = sequence[0] % 2;
+    const four = sequence.slice(from, from + 4);
+    return {
+      key: 'pattern.whyPair',
+      vars: {
+        colors: four.map((p) => look.colors[pieceColor(p)]).join(', '),
+        shapes: four.map((p) => look.shapes[pieceShape(p)]).join(', '),
+      },
+    };
+  }
+  const extra = plan.odd === 'extra' ? train.targets[0] : -1;
+  const clean = sequence.filter((_, i) => i !== extra);
+  const unit = clean.slice(0, plan.pattern.length);
+  const list = unit.map((p) => pieceName(plan.kind, train.family, p)).join(', ');
+  if (extra >= 0)
+    return {
+      key: 'pattern.oddWhy',
+      vars: { piece: pieceName(plan.kind, train.family, sequence[extra]), list },
+    };
+  return { key: plan.kind === 'bell' ? 'pattern.whyBells' : 'pattern.why', vars: { list } };
+}
 
 /** The tunnel hides this many cars, so the car that comes out is `hidden mod unit` places on from the first. */
 export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;

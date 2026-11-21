@@ -1,6 +1,6 @@
 # The grown-ups' page speaks of the root (U8, definition)
 
-*Status: built 2026-11-10 (PR #1472): U8a, the whole definition.*
+*Status: built 2026-11-10 (PR #1472): U8a, the whole definition; R6 built 2026-11-21 (PR #1951).*
 
 From the [adversarial UX review](../reviews/UX-REVIEW-2026-11-09.md#10-grown-ups-get-child-surfaces-and-stale-words), finding 10 and recommendation U8: the grown-ups' page still describes the island map, and its This week table lists every game for her age with a level picker on each, 57 rows at lap and 175 at grown-up. The review asked for three things: remove the map words, remove the development row, and fold This week's rows behind a search or "played this week". This page settles each, and keeps the classic island's page as it is.
 
@@ -62,6 +62,15 @@ The button and its handler go. The reseed stays: the same seeding becomes `kit.m
 - The row selection is a pure function (`weekRows(band, stats, since)` returning the played-or-pinned list and the full list) in `src/parent/`, beside `recap.ts`.
 - The stickers line, the Welcome a New Friend recap and the off-screen ideas stay below the tables, as now.
 
+### R6. This week says what the games asked, and names one not tried (TotoLogic P4)
+
+Two lines above This week's first table, in both apps, built from each game's `challenge` kind. They name what the games asked and what is there; they never grade, rank or recommend.
+
+- **What the games asked**: one sentence counting the **games** (not rounds) she played this week by kind, most games first, ties in `CHALLENGE_KINDS` order: "This week: three games with numbers, two with words and letters, and one with music." Number words one to ten, then digits; "one game" in the singular; "games" is said only in the first item. A game with no `challenge` kind is left out, and a pinned game she did not play is not counted. **Too little to say**: with fewer than three rounds this week in all, the sentence is absent, not padded.
+- **The kinds in plain words**: numbers "with numbers", words "with words and letters", logic "with patterns and rules", space "with shapes and building", music "with music", noticing "with noticing and remembering", hands "with aiming and steering".
+- **Not played**: one line naming one game of a kind she played nothing of this week, ending with its reason: "Not played yet: Critter Crossing. Nothing with patterns and rules this week." The game is for her band (its `bands` include hers), plays by touch, has a kind, and has no round this week; one never played reads "Not played yet", one played before "Not played this week". The pick is stable for the week and moves on the next: the kinds are tried from a starting point that turns with the week number, and within a kind the game turns the same way, in the lands' order. The line is absent when every kind was played; it shows even when the sentence is absent, since a quiet week is when it helps most. It is a line, not a button: the page launches nothing.
+- Both come from one pure function beside `weekRows` in `src/parent/week.ts` (`weekKinds`), with its tests.
+
 ## What the tests assert
 
 - A new `src/parent/copy.test.ts`: the root's copy for every section contains none of "map", "home spot", "picnic", "signpost", "Swiping", "development", "island" (except as a name the game itself carries) or any `placeFor(band).name`; the classic copy still contains "home spot" and the layout note; both apps' Playing copy says the ? opens with a tap and calls Today's six a day's page.
@@ -80,7 +89,7 @@ One session; nothing else is needed for it.
 
 The rest of finding 10 is not this page's: a grown-up colouring and naming a friend before playing (the add-player flow), the classic door on Home with no label, and couch play's four names (U6b sends Family play straight to couch). Each goes to its own line if real play shows it matters.
 
-**Reference (2026-11-10, played 2026-11-11):** the [TotoLogic review](../reviews/TOTOLOGIC.md#p4-this-week-says-what-the-games-asked-and-names-one-not-tried-panel-s) proposes one addition to This week (P4): a plain sentence built from each played game's `challenge` kind, and one game of a kind not played this week. Its P1 and P2 are about the add-player flow left out above. After the app was played (2026-11-11) the review adds two wording notes to P4 from TotoLogic's progress page: leave the sentence out in a week with too little play rather than pad it, and end the "not played yet" line with its reason; and one caution, that a label such as "Proficient" is only as good as the count under it. Proposals only.
+**Reference (2026-11-10, played 2026-11-11):** the [TotoLogic review](../reviews/TOTOLOGIC.md#p4-this-week-says-what-the-games-asked-and-names-one-not-tried-panel-s) proposes one addition to This week (P4): a plain sentence built from each played game's `challenge` kind, and one game of a kind not played this week. Its P1 and P2 are about the add-player flow left out above. After the app was played (2026-11-11) the review adds two wording notes to P4 from TotoLogic's progress page: leave the sentence out in a week with too little play rather than pad it, and end the "not played yet" line with its reason; and one caution, that a label such as "Proficient" is only as good as the count under it. The P4 addition is built as R6 below (2026-11-21, PR #1951); its P1 and P2 stay out of this page.
 
 ## Open decisions
 

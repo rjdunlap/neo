@@ -8,7 +8,7 @@ describe('location pictures', () => {
     // FILES is every .webp in this folder (`import.meta.glob`).
     expect(FILES.stray).toEqual([]);
     expect([...FILES.cards.keys()].sort()).toEqual([...FILES.pictures.keys()].sort());
-    expect(FILES.pictures.has('rainbow-meadow')).toBe(true);
+    expect(FILES.pictures.size).toBe(11);
     expect(locationFiles(['./meadow.webp', './rainbow-meadow-card.webp']).stray).toEqual(['./meadow.webp']);
   });
 
@@ -16,22 +16,34 @@ describe('location pictures', () => {
     for (const [name, view] of Object.entries(VIEWS)) {
       for (const horizon of [0.36, 0.4, 0.62]) {
         const ground = view.h * horizon;
-        const h = horizonOf('rainbow-meadow');
-        const fit = pictureFit(view, ground, h);
-        expect(fit.y + h * fit.scale, name).toBeCloseTo(ground);
-        expect(fit.y, name).toBeLessThanOrEqual(1e-6);
-        expect(fit.y + PICTURE.h * fit.scale, name).toBeGreaterThanOrEqual(view.h - 1e-6);
-        expect(fit.x - (PICTURE.w / 2) * fit.scale, name).toBeLessThanOrEqual(1e-6);
-        expect(fit.x + (PICTURE.w / 2) * fit.scale, name).toBeGreaterThanOrEqual(view.w - 1e-6);
+        for (const id of FILES.pictures.keys()) {
+          const h = horizonOf(id);
+          const fit = pictureFit(view, ground, h);
+          expect(fit.y + h * fit.scale, name).toBeCloseTo(ground);
+          expect(fit.y, name).toBeLessThanOrEqual(1e-6);
+          expect(fit.y + PICTURE.h * fit.scale, name).toBeGreaterThanOrEqual(view.h - 1e-6);
+          expect(fit.x - (PICTURE.w / 2) * fit.scale, name).toBeLessThanOrEqual(1e-6);
+          expect(fit.x + (PICTURE.w / 2) * fit.scale, name).toBeGreaterThanOrEqual(view.w - 1e-6);
+        }
       }
     }
   });
 
   // The spots' feet stand on the calm ground. Their drawings still rise in front of the painted trees, rabbit and rocks on
   // every real meadow page (measured 2026-10-24; foreground depth accepted 2026-10-26 in POLISH.md), so that is not asserted.
-  it('stands every Rainbow Meadow spot on the calm painted ground below the horizon, in every layout and view', () => {
-    for (const { ground, layout, where } of landLayouts('rainbow-meadow')) {
-      for (const spot of layoutSpots(layout)) expect(spot.y, where).toBeGreaterThan(ground);
+  it('stands every spot of every pictured land on the calm painted ground below the horizon, in every layout and view', () => {
+    for (const id of FILES.pictures.keys()) {
+      for (const { ground, layout, where } of landLayouts(id)) {
+        for (const spot of layoutSpots(layout)) expect(spot.y, `${id} ${where}`).toBeGreaterThan(ground);
+      }
+    }
+  });
+
+  it('gives every pictured land a horizon inside the calm-ground band the prompts ask for', () => {
+    // The batch prompt puts the horizon near y = 390 and keeps the ground calm from y = 420; a measured row may sit a little lower.
+    for (const id of FILES.pictures.keys()) {
+      expect(horizonOf(id), id).toBeGreaterThanOrEqual(380);
+      expect(horizonOf(id), id).toBeLessThanOrEqual(470);
     }
   });
 });

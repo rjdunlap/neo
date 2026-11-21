@@ -29,7 +29,8 @@ export type JournalGame =
   | 'paint-mixer'
   | 'far-lights'
   | 'chain-reaction'
-  | 'spinner-fair';
+  | 'spinner-fair'
+  | 'swing-pals';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -374,6 +375,19 @@ export const JOURNAL: readonly JournalEntry[] = [
     source: {
       find: 'fill the two-dice grid',
       found: 'the two-dice grid showed seven has the most ways',
+    },
+  },
+  // Swing Pals, level 3 Short rope, long rope or level 7 Who comes back first?: two ropes of different lengths swung
+  // side by side, and the shorter one came back first (showsSlower in the game's rules).
+  {
+    id: entryId('swing-pals', 'longer-slower'),
+    game: 'swing-pals',
+    key: 'longer-slower',
+    name: 'Long ropes swing slower',
+    line: 'journal.swing.slower',
+    source: {
+      find: 'swing a friend on a short rope beside a friend on a long rope',
+      found: 'the friend on the long rope swung slower and came back after the short rope',
     },
   },
 ];

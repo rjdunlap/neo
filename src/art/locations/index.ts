@@ -11,7 +11,20 @@ import { LAND_IDS, type LandId } from '../../content/lands';
 /** The picture's size, as R23 and R26 ask for it. */
 export const PICTURE = { w: 1536, h: 1024 };
 /** Where each picture's ground begins, in its own pixels; the batch prompt asks for about 38% of the height. */
-const HORIZON: Partial<Record<LandId, number>> = { 'rainbow-meadow': 395 };
+const HORIZON: Partial<Record<LandId, number>> = {
+  'rainbow-meadow': 395,
+  // R26 (2026-11-21): the lowest edge of each picture's landmarks (pond, lane, sandbar) across the width spots use.
+  'counting-cove': 437,
+  'puzzle-peaks': 395,
+  'bubble-beach': 425,
+  'music-mountain': 400,
+  treehouse: 455,
+  'cozy-village': 436,
+  'story-grove': 415,
+  'tinker-lab': 414,
+  barnyard: 415,
+  'lantern-lake': 425,
+};
 export const horizonOf = (id: LandId) => HORIZON[id] ?? Math.round(PICTURE.h * 0.38);
 
 /** The land IDs a folder's file names give, split into backdrops and cards; a name that is not a land is returned as stray. */

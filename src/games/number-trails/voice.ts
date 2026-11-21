@@ -2,6 +2,9 @@
 export const VOICE = {
   'game.number-trails': ['Number trails!'],
   'nt.start': ['Follow the firefly to draw {n}! Start at the glowing dot.'],
+  'nt.teen': ['Let us write {n}! First a 1, then a {d} beside it. Start at the glowing dot.'],
+  'nt.ones': ['Now the {d}, right beside the 1!'],
+  'nt.ten': ['Ten {things}! A full ten.'],
   'nt.stroke': ['Now follow this trail!'],
   'nt.dots': ['Now draw {n} again. Follow the dots!'],
   'nt.alone': ['One more {n}, all by yourself! Start at the glowing dot and go the way the arrow points.'],

@@ -72,8 +72,9 @@ describe('the entries', () => {
     expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
     expect(entriesOf('chain-reaction').map((e) => e.key)).toEqual(['spring-skip']);
     expect(entriesOf('spinner-fair').map((e) => e.key)).toEqual(['two-dice']);
+    expect(entriesOf('swing-pals').map((e) => e.key)).toEqual(['longer-slower']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1,
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1 + 1,
     );
   });
 
@@ -184,6 +185,11 @@ describe('the entries', () => {
           expect(said, e.id).toContain('seven');
           expect(said, e.id).toContain('six ways');
           break;
+        case 'swing-pals':
+          // Matches firstBack() in the game's rules: the shorter rope comes back first.
+          expect(said, e.id).toContain('longer rope swings slower');
+          expect(said, e.id).toContain('short rope comes back first');
+          break;
       }
     }
   });
@@ -254,6 +260,9 @@ describe('the entries', () => {
       } else if (e.game === 'spinner-fair') {
         expect(find).toContain('two-dice grid');
         expect(found).toContain('seven has the most ways');
+      } else if (e.game === 'swing-pals') {
+        expect(find).toContain('short rope');
+        expect(found).toContain('long rope swung slower');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

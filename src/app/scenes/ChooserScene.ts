@@ -12,7 +12,7 @@ import { openParentPanel } from '../../parent/panel';
 import {
   blankToFill,
   cardName,
-  isBlankProfile,
+  isHiddenProfile,
   MAX_PROFILES,
   type ProfileEntry,
 } from '../../progress/profiles';
@@ -184,7 +184,7 @@ export class ChooserScene extends Scene {
     this.cards.replaceChildren();
     this.buttons = [];
 
-    const shown = items.filter((i) => !isBlankProfile(i.save, i.entry));
+    const shown = items.filter((i) => !isHiddenProfile(i.save, i.entry));
     // Two or more players stand two across on an upright phone (`chooser.css`); one keeps the large card.
     this.cards.classList.toggle('chooser__cards--many', shown.length > 1);
     for (const { entry, save } of shown) {
@@ -443,6 +443,8 @@ export class ChooserScene extends Scene {
       return;
     }
     store.setBirth(id, birth);
+    // Adoption is a rename: a guest's profile keeps its id, save, round and sticker, and is simply no longer a guest.
+    store.setGuest(id, false);
     store.data.profile.name = name;
     store.save();
     applySettings();

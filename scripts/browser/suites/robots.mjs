@@ -4,7 +4,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   async function robots() {
     for (
       let level = Number(process.env.FROM_LEVEL || 1);
-      level <= Number(process.env.TO_LEVEL || 14);
+      level <= Number(process.env.TO_LEVEL || 15);
       level++
     ) {
       if (level >= 11) await page.setViewportSize({ width: 768, height: 1024 });
@@ -106,6 +106,87 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         await finished('robot-path');
         log(
           'Robot Path level 14: free watch, an unchanged run and a wrong mend, the glow, and the mended loop passed',
+        );
+        continue;
+      }
+      if (level === 15) {
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const tapTile = async (tile) => {
+            kit.tapOn(g.palette.find((p) => p.tile === tile).button);
+            await kit.sleep(450);
+          };
+          if (g.plan.corridor.length !== 6) throw new Error('A routine board was not built');
+          // Free incomplete tries: Play with an empty Start here row, and a call with nothing to run.
+          kit.tapOn(g.play);
+          await kit.sleep(300);
+          if (g.running || g.misses !== 0 || g.flash?.row !== 'main-first')
+            throw new Error('An empty Start here row was not a free pointer');
+          if (!g.plan.routine.length) {
+            await tapTile('call');
+            if (g.editor.main.length || g.flash?.row !== 'main')
+              throw new Error('A call in the routine row did not point at Start here');
+          } else {
+            g.editor.sel = { row: 'routine', i: 0 };
+            g.editor.routine = [];
+            await tapTile('call');
+            if (g.editor.main.length) throw new Error('A call with an empty routine was placed');
+            g.editor.routine = [...g.plan.routine];
+          }
+          // Undo restores the slot and the selection.
+          kit.tapOn(g.targets.get('main0'));
+          await kit.sleep(300);
+          await tapTile('call');
+          if (g.editor.main[0] !== 'call') throw new Error('The call did not land in Start here');
+          kit.tapOn(g.undo);
+          await kit.sleep(450);
+          if (g.editor.main.length) throw new Error('Undo did not take the call back out');
+          // Two walks that bump: free of the routine's content, each a gentle miss, then the glow.
+          if (!g.editor.routine.length) {
+            kit.tapOn(g.targets.get('routine0'));
+            await kit.sleep(300);
+            await tapTile('up');
+          }
+          kit.tapOn(g.targets.get('main0'));
+          await kit.sleep(300);
+          await tapTile('up');
+          for (let k = 0; k < 2; k++) {
+            kit.tapOn(g.play);
+            if (!(await kit.until(() => !g.running, 20000))) throw new Error('A bump did not finish');
+          }
+          if (g.misses !== 2 || g.hints !== 1)
+            throw new Error(`Two bumps gave ${g.misses} misses and ${g.hints} hints`);
+        });
+        await screenshot('robot-path-15');
+        // Rotation keeps both rows.
+        const before = await page.evaluate(() => JSON.stringify(neo.scene.game.editor));
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(500);
+        await screenshot('robot-path-15-sideways');
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(500);
+        if ((await page.evaluate(() => JSON.stringify(neo.scene.game.editor))) !== before)
+          throw new Error('Rotation changed the program');
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          // Follow the glow (the ghost finger's own presses) to a winning program.
+          for (let i = 0; i < 40 && !g.done; i++) {
+            if (g.running) {
+              await kit.until(() => !g.running || g.done, 20000);
+              continue;
+            }
+            const intent = g.autotouch();
+            if (!intent) break;
+            kit.tapOn(intent.tap.on);
+            await kit.sleep(450);
+          }
+          if (!g.done) throw new Error('Following the glow did not reach the star');
+          if (g.misses !== 2 || g.hints !== 1)
+            throw new Error(`Routine accounting was ${g.misses} misses and ${g.hints} hints`);
+        });
+        await finished('robot-path');
+        log(
+          'Robot Path level 15: free incomplete tries, Undo, two bumps, the glow, rotation and the reward passed',
         );
         continue;
       }

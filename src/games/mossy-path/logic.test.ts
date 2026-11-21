@@ -44,6 +44,8 @@ import {
   solved,
   step,
   validPath,
+  walkStep,
+  isTurtleWalk,
   type Board,
   type MazeState,
 } from './logic';
@@ -1019,5 +1021,48 @@ describe('Mossy Path level 11, thick moss', () => {
       seen.add(n);
     }
     expect(seen.size).toBe(THICK.length);
+  });
+});
+
+describe('Mossy Path level 12, turtle walk (lap entry)', () => {
+  it('is a lap-only entry with its own name and level range', () => {
+    expect(LEVELS.lap).toEqual({ min: 12, max: 12 });
+    expect(isTurtleWalk(12)).toBe(true);
+    expect(isTurtleWalk(11)).toBe(false);
+    expect(isMaze(12)).toBe(true);
+    expect(levelName(12)).toMatch(/Turtle walk/);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.max).toBeLessThan(12);
+  });
+  it('has only straight corridors of three to five steps: no fork, berry or wrong turn', () => {
+    for (const rows of MAZES[12]) {
+      const b = parseMaze(rows);
+      expect(b.rows).toBe(1);
+      expect(b.cols - 1).toBeGreaterThanOrEqual(3);
+      expect(b.cols - 1).toBeLessThanOrEqual(5);
+      expect(berriesOf(b)).toEqual([]);
+      expect(mainline(b).size).toBe(b.tiles.length);
+    }
+  });
+  it('steps once per touch to the pond, whichever way a seed flips the corridor, and never misses', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const b = makeBoard(12, new Rng(seed));
+      let s = mazeStart(b);
+      let touches = 0;
+      while (walkStep(b, s) >= 0) {
+        const { state, move } = mazeTouch(b, 12, s, walkStep(b, s));
+        expect(move.kind).toBe('forward');
+        expect(state.path.length).toBe(s.path.length + 1);
+        s = state;
+        touches++;
+      }
+      expect(s.path.at(-1)).toBe(b.pond);
+      expect(touches).toBe(b.tiles.length - 1);
+      expect(s.misses).toBe(0);
+      expect(solved(b, s.path) || validPath(b, s.path)).toBe(true);
+    }
+  });
+  it('keeps every cell at least 100 units wide in a corridor of up to six tiles', () => {
+    for (const rows of MAZES[12]) expect(parseMaze(rows).cols).toBeLessThanOrEqual(6);
   });
 });

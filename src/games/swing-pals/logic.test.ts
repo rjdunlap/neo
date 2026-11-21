@@ -11,6 +11,7 @@ import {
   friendHeight,
   GOALS,
   ropeOf,
+  showsSlower,
   authoredPush,
   authoredTogether,
   BELL_ONE,
@@ -678,5 +679,24 @@ describe('level order', () => {
     expect(stepLevel(7, 1, school)).toBe(8);
     expect(swingPals.describeLevel?.(7)).toBe('Who comes back first?');
     expect(swingPals.describeLevel?.(8)).toBe('Twice as quick');
+  });
+});
+
+describe('the journal discovery', () => {
+  it('files "a longer rope swings slower" from every round of levels 3 and 7 and from no other level', () => {
+    for (const p of PLANS)
+      for (const authored of [true, false])
+        for (let seed = 1; seed <= 200; seed++) {
+          const { round } = makeRound(p, new Rng(seed), authored);
+          expect(showsSlower(round), `level ${p.id} seed ${seed}`).toBe(p.id === 3 || p.id === 7);
+        }
+  });
+
+  it('needs two ropes of different lengths side by side', () => {
+    const same = { kind: 'push' as const, goal: 'bell' as const, lines: [authoredPush(planFor(3))] };
+    expect(showsSlower(same)).toBe(true);
+    same.lines[0].swings[1] = { ...same.lines[0].swings[1], hook: same.lines[0].swings[0].hook };
+    expect(showsSlower(same)).toBe(false);
+    expect(showsSlower({ kind: 'push', goal: 'bell', lines: [authoredPush(planFor(1))] })).toBe(false);
   });
 });

@@ -648,9 +648,9 @@ export function repairPress(
   return selected === i ? { arrow: want[i].dir } : { slot: i };
 }
 
-/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13) and mend a loop (14). */
+/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13), mend a loop (14) and reuse a routine (15). */
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
-  school: { min: 4, max: 14 },
+  school: { min: 4, max: 15 },
 };

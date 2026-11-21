@@ -14,10 +14,13 @@ import {
   PATTERN_PLANS,
   TUNNEL_HIDDEN,
   TUNNEL_SIZE,
+  patternSaid,
   pieceColor,
+  pieceName,
   pieceShape,
   wantedChoice,
 } from './logic';
+import { SCRIPT } from '../../content/voice-script';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -346,5 +349,72 @@ describe('Pattern Train', () => {
         });
       }
     }
+  });
+
+  describe('says the rule back after the answer that ends the round (TotoLogic P7)', () => {
+    const plain = PATTERN_PLANS.filter((p) => !p.match && !p.numberSteps && p.kind !== 'pair');
+
+    it("says the finished train's repeating unit once, in the order the train shows it, with the extra car left out", () => {
+      for (const plan of plain) {
+        for (let seed = 1; seed <= 80; seed++) {
+          const train = buildTrain(plan, new Rng(seed));
+          const said = patternSaid(plan, train);
+          const unit = plan.pattern.length;
+          const clean = train.sequence.filter((_, i) => plan.odd !== 'extra' || i !== train.targets[0]);
+          const names = said.vars.list.toString().split(', ');
+          expect(names, plan.name).toHaveLength(unit);
+          // What is said is the train itself: each name is the piece at that place on the finished train, and every
+          // later car repeats it (a tunnel's last car comes out after the hidden ones, so it is not in step).
+          (plan.tunnel ? clean.slice(0, -1) : clean).forEach((piece, i) =>
+            expect(pieceName(plan.kind, train.family, piece), plan.name).toBe(names[i % unit]),
+          );
+          // Different pieces get different names, so the pattern can be heard.
+          const distinct = new Set(plan.pattern).size;
+          expect(new Set(names).size, plan.name).toBe(distinct);
+          if (plan.odd === 'extra') {
+            expect(said.key).toBe('pattern.oddWhy');
+            expect(said.vars.piece).toBe(
+              pieceName(plan.kind, train.family, train.sequence[train.targets[0]]),
+            );
+            expect(names).not.toContain(said.vars.piece);
+          } else expect(said.key).toBe(plan.kind === 'bell' ? 'pattern.whyBells' : 'pattern.why');
+        }
+      }
+    });
+
+    it("names the step of a numbered train and a color-and-shape train's two cycles", () => {
+      const number = PATTERN_PLANS.find((p) => p.numberSteps)!;
+      const pair = PATTERN_PLANS.find((p) => p.kind === 'pair')!;
+      for (let seed = 1; seed <= 60; seed++) {
+        const n = buildTrain(number, new Rng(seed));
+        const saidN = patternSaid(number, n);
+        expect(saidN.key).toBe('pattern.whyNumber');
+        expect(number.numberSteps).toContain(saidN.vars.step);
+        expect(saidN.vars.list).toBe(n.sequence.slice(0, 4).join(', '));
+        const p = buildTrain(pair, new Rng(seed));
+        const saidP = patternSaid(pair, p);
+        expect(saidP.key).toBe('pattern.whyPair');
+        const colors = saidP.vars.colors.toString().split(', ');
+        const shapes = saidP.vars.shapes.toString().split(', ');
+        // The color alternates; the shape holds for two cars.
+        expect(colors[0]).toBe(colors[2]);
+        expect(colors[0]).not.toBe(colors[1]);
+        expect(shapes[0]).toBe(shapes[1]);
+        expect(shapes[2]).toBe(shapes[3]);
+        expect(shapes[1]).not.toBe(shapes[2]);
+      }
+    });
+
+    it('has a line for every key it can say, each with the slots it fills', () => {
+      for (const [key, slots] of [
+        ['pattern.why', ['list']],
+        ['pattern.whyBells', ['list']],
+        ['pattern.whyNumber', ['step', 'list']],
+        ['pattern.whyPair', ['colors', 'shapes']],
+        ['pattern.oddWhy', ['piece', 'list']],
+      ] as const) {
+        for (const slot of slots) expect(SCRIPT[key][0], key).toContain(`{${slot}}`);
+      }
+    });
   });
 });

@@ -21,6 +21,7 @@ export const VOICE = {
   'moss.maze': ['Help the turtle find the way to the pond. Tap or slide along the moss.'],
   'moss.maze-berry': ['The turtle wants a berry snack on the way. Get the berry first, then go to the pond.'],
   'moss.maze-berries': ['Two berries for the turtle, in any order. Then the pond.'],
+  'moss.walk': ['Touch anywhere, and the turtle takes a step. Walk to the pond!'],
   'moss.hedge': ["Hedges all around. Let's turn back."],
   'moss.stop': ['That way stops at the hedge. Look for the way that keeps going.'],
   'moss.snack': ['The pond can wait. Get the berry first!'],

@@ -3,6 +3,7 @@ import { CAST_ART, castArt, type CastId, IllustratedCast } from '../art/creature
 import type { ArtSet } from '../art/creatures/illustrated';
 import type { LandId } from '../content/lands';
 import type { LineId } from '../content/voice-script';
+import type { PropId } from './props';
 
 /**
  * RW14 slice 2 (docs/rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home): a location's
@@ -18,17 +19,27 @@ export interface ResidentSpec {
   line: LineId;
   /** Its rig at this scale takes about a host's room; `lift` raises a species whose (0, 0) is not its feet (Lumen floats). */
   fit: { scale: number; lift: number };
-  /** P5: it carries on (walks between marked stops, uses a thing, turns toward her last touch). Only the pilot's species has it. */
-  carriesOn?: true;
+  /** P5: it carries on (walks between marked stops, uses this thing at the first, turns toward her last touch). */
+  carriesOn: PropId;
 }
 
 export const RESIDENTS: Record<CastId, ResidentSpec> = {
-  tote: { land: 'bubble-beach', line: 'resident.tote', fit: { scale: 0.95, lift: 0 } },
-  trill: { land: 'music-mountain', line: 'resident.trill', fit: { scale: 0.9, lift: 0 }, carriesOn: true },
-  dapple: { land: 'treehouse', line: 'resident.dapple', fit: { scale: 0.9, lift: 0 } },
-  bramble: { land: 'cozy-village', line: 'resident.bramble', fit: { scale: 1.2, lift: 0 } },
-  mossback: { land: 'tinker-lab', line: 'resident.mossback', fit: { scale: 0.88, lift: 0 } },
-  lumen: { land: 'story-grove', line: 'resident.lumen', fit: { scale: 0.85, lift: 60 } },
+  tote: { land: 'bubble-beach', line: 'resident.tote', fit: { scale: 0.95, lift: 0 }, carriesOn: 'pool' },
+  trill: { land: 'music-mountain', line: 'resident.trill', fit: { scale: 0.9, lift: 0 }, carriesOn: 'chime' },
+  dapple: { land: 'treehouse', line: 'resident.dapple', fit: { scale: 0.9, lift: 0 }, carriesOn: 'stones' },
+  bramble: {
+    land: 'cozy-village',
+    line: 'resident.bramble',
+    fit: { scale: 1.2, lift: 0 },
+    carriesOn: 'bush',
+  },
+  mossback: {
+    land: 'tinker-lab',
+    line: 'resident.mossback',
+    fit: { scale: 0.88, lift: 0 },
+    carriesOn: 'gear',
+  },
+  lumen: { land: 'story-grove', line: 'resident.lumen', fit: { scale: 0.85, lift: 60 }, carriesOn: 'flower' },
 };
 
 /** The touch circle's largest radius in host units: at least 100 across at the smallest layout (`hostScale` ≈ 0.49), and inside the spot at the largest. */
