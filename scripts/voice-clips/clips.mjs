@@ -13,7 +13,7 @@ export const SETTINGS = {
 
 /**
  * Line ids with clips, by the part before the first dot: the island's shell (titles, praise, the
- * home spot, lands and places, the hatch, stickers) and two whole lap games, Bubble Pop and Duck Pond.
+ * home spot, lands and places, the hatch, stickers) and seven whole lap and toddler games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights and Stamp Studio.
  * The rest stays on device speech until the iPad listen passes (docs/ROADMAP.md#a-better-voice).
  */
 export const PREFIXES = [
@@ -36,6 +36,11 @@ export const PREFIXES = [
   'play',
   'bubble',
   'duck',
+  'barn',
+  'snack',
+  'size',
+  'far',
+  'stamp',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */
