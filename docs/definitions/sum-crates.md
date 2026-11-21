@@ -1,6 +1,6 @@
 # Sum Crates levels 1–3 (definition)
 
-**Built:** not yet; levels 1–3 are one implementation batch (`sum-crates 1`).
+**Built:** not yet; levels 1–3 are one implementation batch (`sum-crates 1`), claimed 2026-11-20 on `claude/sum-crates-1-3`.
 
 Proposed touch game `sum-crates`, PP5 of the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order) (the Kakuro genre; Kakuro is a reference only). Defined 2026-11-20 in the [PR for this definition](https://github.com/rjdunlap/neo/pull/1916), following the [November 17 decision](../archive/DECISIONS-2026-11-17.md#games). **Docs only:** no code or device evidence.
 
