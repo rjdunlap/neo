@@ -1,0 +1,1 @@
+**`draw-the-pattern` level 11, Spiral and eight** (a school window; probe first: a rule test that the rings and lobes stay two corridors apart, then new levels plus the band and land tests). [Dive](../../deep-dives/draw-the-pattern.md#decisions-for-the-developer)
