@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, screenshot, launch, finished }) {
-  /** Down We Go by touch: level 1 (pre-K) with a ledge tapped before the ride (free), the ride, a measured too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge, and the other two dives; level 2 (school) with an unmeasured ledge (free), a requested hint, a portrait screenshot with the lantern at the darkest knot, then the right ledge on all three dives. */
+  /** Down We Go by touch: level 1 (pre-K) with a ledge tapped before the ride (free), the ride, a measured too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge, and the other two dives; level 2 (school) with an unmeasured ledge (free), a requested hint, a portrait screenshot with the lantern at the darkest knot, then the right ledge on all three dives; level 3 with the other prediction first (free) and a screenshot of the plates; level 4 with the free first question wrong, one counted wrong dial and the right ones. */
   async function downWeGoPlay() {
     const settle = async () => {
       await page.waitForTimeout(300);
@@ -98,6 +98,64 @@ export function createSuite({ page, screenshot, launch, finished }) {
       await tapLedge(deepestOf(await state()));
       if (dive < 2) await page.waitForFunction((d) => neo.scene.game.idx === d + 1, dive, { timeout: 20000 });
     }
+    await finished('down-we-go');
+    // School, level 3: measure and plant the first cove, the OTHER prediction first (free), then the second cove.
+    await launch('down-we-go', 3, 'Mia', 'school');
+    await settle();
+    let g = await page.evaluate(() => ({
+      w: neo.scene.game.dives.map((d) => d.water),
+      idx: neo.scene.game.idx,
+    }));
+    assert.notEqual(g.w[0], g.w[1]);
+    for (let k = 0; k < 5; k++) {
+      await tapKnot(k);
+      await settle();
+    }
+    await tapLedge(deepestOf(await state()));
+    await page.waitForFunction(() => neo.scene.game.predicting, null, { timeout: 20000 });
+    await page.waitForTimeout(600);
+    await screenshot('down-we-go-cove-guess');
+    const truthDeeper = await page.evaluate(() => {
+      const [a, b] = neo.scene.game.dives;
+      const dp = (d) => d.light.reduce((best, n, k) => (n >= d.need ? k : best), 0);
+      return dp(b) > dp(a);
+    });
+    // The other plate: plates[0] is Deeper, plates[1] is Not as deep.
+    await page.evaluate((i) => kit.tapOn(neo.scene.game.plates[i]), truthDeeper ? 1 : 0);
+    await page.waitForFunction(() => !neo.scene.game.predicting, null, { timeout: 25000 });
+    await settle();
+    s = await state();
+    assert.equal(s.misses, 0);
+    for (let k = 0; k < 5; k++) {
+      await tapKnot(k);
+      await settle();
+    }
+    await tapLedge(deepestOf(await state()));
+    await finished('down-we-go');
+    // School, level 4: the free first question wrong, then a counted wrong dial, then the right ones.
+    await launch('down-we-go', 4, 'Mia', 'school');
+    await settle();
+    const cardOf = (right) =>
+      page.evaluate((right) => {
+        const g = neo.scene.game;
+        const q = g.qs[g.qi];
+        return q.options.findIndex((o) => (o === q.answer) === right);
+      }, right);
+    const tapCard = (i) => page.evaluate((i) => kit.tapOn(neo.scene.game.cards[i]), i);
+    await tapCard(await cardOf(false)); // first question: free
+    await settle();
+    assert.equal((await state()).misses, 0);
+    await tapCard(await cardOf(true));
+    await page.waitForFunction(() => neo.scene.game.qi === 1, null, { timeout: 20000 });
+    await settle();
+    await screenshot('down-we-go-dial-cards');
+    await tapCard(await cardOf(false)); // second question: one miss
+    await settle();
+    assert.equal((await state()).misses, 1);
+    await tapCard(await cardOf(true));
+    await page.waitForFunction(() => neo.scene.game.qi === 2, null, { timeout: 20000 });
+    await settle();
+    await tapCard(await cardOf(true));
     await finished('down-we-go');
   }
   return { downWeGoPlay };
