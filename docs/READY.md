@@ -65,6 +65,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
+- **`egg-catch` level 13, Sorting gate** (school; new interaction tier: typecheck, unit tests, one filtered play of level 13 with a wrong placement and a hint, one portrait screenshot, `fingerdemo` at 13; the four new `egg.*` voice clips are rendered with `scripts/voice-clips/render.mjs`, so the offline check runs too). [Definition](definitions/egg-catch-sorting-gate.md), [dive](deep-dives/egg-catch.md#build-slices-in-order)
+
 - **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
 
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
