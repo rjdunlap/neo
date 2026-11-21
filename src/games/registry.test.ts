@@ -570,6 +570,7 @@ describe('game registry', () => {
       'brain-break',
       'bubble-pop',
       'bug-builder',
+      'bunny-patches',
       'caravan-days',
       'chain-reaction',
       'circuit-garden',

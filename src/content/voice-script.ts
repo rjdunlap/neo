@@ -14,6 +14,7 @@ import { VOICE as brainBreakVoice } from '../games/brain-break/voice.ts';
 import { VOICE as bubblePopVoice } from '../games/bubble-pop/voice.ts';
 import { VOICE as bugBuilderVoice } from '../games/bug-builder/voice.ts';
 import { VOICE as bumperGardenVoice } from '../games/bumper-garden/voice.ts';
+import { VOICE as bunnyPatchesVoice } from '../games/bunny-patches/voice.ts';
 import { VOICE as caravanDaysVoice } from '../games/caravan-days/voice.ts';
 import { VOICE as chainReactionVoice } from '../games/chain-reaction/voice.ts';
 import { VOICE as circuitGardenVoice } from '../games/circuit-garden/voice.ts';
@@ -630,6 +631,7 @@ export const SCRIPT = {
   ...bubblePopVoice,
   ...bugBuilderVoice,
   ...bumperGardenVoice,
+  ...bunnyPatchesVoice,
   ...caravanDaysVoice,
   ...chainReactionVoice,
   ...circuitGardenVoice,

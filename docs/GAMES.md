@@ -494,6 +494,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–grown-up* · [Domino Pond](games/domino-pond.md)
 
+### Bunny Patches
+
+*pre-K–grown-up* · [Bunny Patches](games/bunny-patches.md)
+
 ## Story Grove
 
 ### Letter Trails
