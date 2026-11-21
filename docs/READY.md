@@ -83,7 +83,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 - **`owl-walk` level 5, Stepping stones, and the lap band** (lap, toddler; new levels on an existing interaction, plus the registry and lands tests because `bands` gains `lap`): five fat stones and a nest with no cards; a tap on a stone ahead hops the owl there with a note per stone, and nothing is wrong. Expected files: `src/games/owl-walk/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/owl-walk.md#build-slices-in-order)
 
-- **`stop-and-go` level 10, Wait for green** (toddler, between levels 1 and 2; new levels on an existing interaction): one car and a two-lamp light that changes by itself with long phases; a red tap is a rumble and "wait!", a nudge and not a miss; toddler `order [1, 10, 2]`, `entryLevels [10]`. Expected files: `src/games/stop-and-go/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/stop-and-go.md#build-slices-in-order)
 
 - **`word-monsters` My letter** (toddler, preschool; new levels on an existing interaction): three monsters, one wearing the first letter of her name (`nameLetters(ctx.childName)`, with the dive's fallback), asked by letter name only, so it makes no phonics claim; a lookalike guard in the rule tests. Expected files: `src/games/word-monsters/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/word-monsters.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 

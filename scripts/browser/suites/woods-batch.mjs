@@ -3046,7 +3046,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'go')
-      for (const level of [1, 2, 3, 4, 5, 6, 9].filter((l) => l >= fromLevel)) {
+      for (const level of [1, 2, 3, 4, 5, 6, 9, 10].filter((l) => l >= fromLevel)) {
         await launch('stop-and-go', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const lightIs = (l) =>
@@ -3090,6 +3090,28 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           for (let k = 0; k < 5; k++) {
             await anywhere(k + 1);
             await page.waitForTimeout(350);
+          }
+        } else if (mode === 'wait') {
+          // Wait for green: a two-lamp light; going on red only rumbles and says "wait!" (never a miss, never a hint).
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.light.twoLamp),
+            true,
+            'the light has two lamps',
+          );
+          await lightIs('red');
+          await page.waitForTimeout(300);
+          for (let k = 0; k < 3; k++) {
+            await tap('neo.scene.game.cars[0]');
+            await page.waitForTimeout(400);
+          }
+          assert.deepEqual(await counts(), [0, 0], 'three taps on red are no miss and no hint');
+          assert.equal(await page.evaluate(() => neo.scene.game.done), 0, 'a red tap sends nothing');
+          await lightIs('green');
+          await screenshot('stop-and-go-10');
+          for (let k = 0; k < 20 && !(await page.evaluate(() => neo.scene.game.finished)); k++) {
+            await lightIs('green');
+            await tap('neo.scene.game.cars[0]');
+            await page.waitForTimeout(700);
           }
         } else if (mode === 'toy') {
           // The car answers too: a tap on it counts as one of the eight touches.
@@ -3206,7 +3228,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await screenshot('stop-and-go-4');
         }
         await finished('stop-and-go');
-        assert.deepEqual(await score('stop-and-go'), mode === 'toy' || mode === 'lamps' ? [0, 0] : [2, 1]);
+        assert.deepEqual(
+          await score('stop-and-go'),
+          mode === 'toy' || mode === 'lamps' || mode === 'wait' ? [0, 0] : [2, 1],
+        );
         log(
           `Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'one big lamp turned by a touch anywhere (sky, lamp, grass) and the car tooting, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
         );

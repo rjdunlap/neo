@@ -120,7 +120,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 1. **Walk signal (level 8)** — ship only after the safety expert review named in [subjects.md](subjects.md); lean: build it with stop-look-listen and a held hand, never "safe because it says walk".
 2. **School window and Smart light (level 7)** — lean: wait for the `robots-automation` subject study.
-3. **Toddler level 10 accounting** — lean: red is a nudge, not a miss, at 10 only.
+3. **Toddler level 10 accounting** (built as leaned) — lean: red is a nudge, not a miss, at 10 only.
 4. **Rework hooks** — vehicles that join the road permanently through play (a garage collection), and the companion as the driver. Lean: companion driver first, once RW companion art is settled; the vehicle collection waits for the rework's unlock system.
 
 ## Build slices, in order
@@ -132,7 +132,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 3. **Lap entry 9 *Go car, stop car*** (new interaction; **built**, [PR #847](https://github.com/rjdunlap/neo/pull/847)): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Level 5 *Whose light?* and the pre-K window** (new level; **built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4 (**built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
-6. *(Decision 3)* Toddler level 10 *Wait for green*.
+6. Toddler level 10 *Wait for green* (**built**, [PR #1923](https://github.com/rjdunlap/neo/pull/1923)): order `[1, 10, 2]`, `entryLevels: [9, 10]`, mode `wait`; red is a nudge (decision 3, settled 2026-10-23). Checks: new-levels tier (typecheck, rule tests, one play of 10).
 7. *(Decision 2)* Level 7 *Smart light* and a school window.
 8. *(Decision 1)* Level 8 *Walk signal* after the safety review.
 9. *(Decision 4)* Companion driver; vehicle collection with the rework's unlocks.
