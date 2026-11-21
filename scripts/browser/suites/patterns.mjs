@@ -51,6 +51,10 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       if (level === 12) await screenshot('pattern-train');
       await page.evaluate(async () => {
         const g = neo.scene.game;
+        // What the answer that ends the round says (TotoLogic P7), recorded for the check below.
+        window.__said = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.__said.push({ id, vars }), say(id, vars));
         if (g.plan.match === 'row') {
           kit.tapOn(g.rows[g.round.answer]);
           await kit.sleep(900);
@@ -78,7 +82,18 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         }
       });
       await finished('pattern-train');
-      log(`Pattern Train level ${level}: mistakes, hint, and reward passed`);
+      const said = await page.evaluate(() => window.__said);
+      const why = said.find((s) => /^pattern\.(why|oddWhy)/.test(s.id));
+      if (level < 15) {
+        assert.ok(why, `pattern ${level} says why: ${JSON.stringify(said)}`);
+        assert.ok(
+          Object.values(why.vars).every((v) => v !== '' && !/undefined|NaN/.test(String(v))),
+          `pattern ${level} why slots ${JSON.stringify(why)}`,
+        );
+      }
+      log(
+        `Pattern Train level ${level}: mistakes, hint, and reward passed${why ? `; said ${why.id} ${JSON.stringify(why.vars)}` : ''}`,
+      );
     }
   }
 

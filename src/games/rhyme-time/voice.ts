@@ -10,6 +10,7 @@ export const VOICE = {
   'rhyme.noodd': ['{word} rhymes with {other}! Which one is left out?'],
   'rhyme.yes': ['{a}, {b}! They rhyme!'],
   'rhyme.oddyes': ['Yes! {word} does not rhyme.'],
+  'rhyme.oddwhy': ['Yes! {word} does not rhyme. {list} rhyme!'],
   'rhyme.hint': ['Listen to the glowing one.'],
   'rhyme.riddle': ['Here is a riddle! It rhymes with {sound}. {clue} Is it {list}?'],
   'rhyme.riddle2': ['Here is a riddle! {clue} And it rhymes with {sound}. Is it {list}?'],

@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
-import { prop, type PropKind } from '../../art/props';
+import { prop } from '../../art/props';
 import { shapePath } from '../../art/shapes';
 import type { AnimalSound } from '../../audio/sfx';
 import { STYLES } from '../../audio/music';
@@ -19,7 +19,10 @@ import {
   LEVELS,
   ANIMAL_TRIOS,
   buildTrain,
+  FLOWERS,
+  FRUITS,
   patternPlan,
+  patternSaid,
   pieceColor,
   pieceShape,
   TUNNEL_SIZE,
@@ -57,12 +60,6 @@ const VOICE: Partial<Record<CritterName, AnimalSound>> = {
   bear: 'growl',
   bunny: 'hop',
 };
-const FRUITS: readonly [PropKind, ColorName][] = [
-  ['apple', 'red'],
-  ['pear', 'green'],
-  ['grapes', 'purple'],
-];
-const FLOWERS: readonly ColorName[] = ['red', 'blue', 'yellow'];
 
 /** One of a round's three pieces, made of the round's family of things (see `SHAPE_FAMILIES` and `ANIMAL_TRIOS`). */
 function pieceArt(
@@ -346,7 +343,8 @@ class PatternTrain implements Game {
       this.cars.splice(this.targets[0], 1);
       car.destroy({ children: true });
       if (this.view) this.resize(this.view);
-      await this.ctx.tw.wait(0.5);
+      await this.ctx.tw.wait(0.3);
+      await this.sayWhy();
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
@@ -357,6 +355,12 @@ class PatternTrain implements Game {
     this.choices.forEach((c) => (c.visible = true));
     void this.ctx.instruct('pattern.swapChoose');
     this.layoutGlow();
+  }
+
+  /** The answer that ends the round says the rule back (TotoLogic P7): once, here, never after every car. */
+  private async sayWhy() {
+    const { key, vars } = patternSaid(this.plan, this);
+    await this.ctx.say(key, vars);
   }
 
   private async playPattern() {
@@ -411,7 +415,10 @@ class PatternTrain implements Game {
       this.glow.clear();
       this.hintsGlow.clear();
       this.selection.clear();
-      void this.ctx.tw.wait(0.6).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
+      void this.ctx.tw
+        .wait(0.4)
+        .then(() => this.sayWhy())
+        .then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
     } else {
       void this.ctx.say('pattern.next');
       this.layoutGlow();
