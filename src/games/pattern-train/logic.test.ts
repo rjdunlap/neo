@@ -354,7 +354,7 @@ describe('Pattern Train', () => {
   describe('says the rule back after the answer that ends the round (TotoLogic P7)', () => {
     const plain = PATTERN_PLANS.filter((p) => !p.match && !p.numberSteps && p.kind !== 'pair');
 
-    it("says the finished train's unit twice, in the order the train shows it, with the extra car left out", () => {
+    it("says the finished train's repeating unit once, in the order the train shows it, with the extra car left out", () => {
       for (const plan of plain) {
         for (let seed = 1; seed <= 80; seed++) {
           const train = buildTrain(plan, new Rng(seed));
@@ -362,11 +362,12 @@ describe('Pattern Train', () => {
           const unit = plan.pattern.length;
           const clean = train.sequence.filter((_, i) => plan.odd !== 'extra' || i !== train.targets[0]);
           const names = said.vars.list.toString().split(', ');
-          expect(names, plan.name).toHaveLength(unit * 2);
-          // What is said is the train itself: each name is the piece at that place on the finished train.
-          names.forEach((n, i) => expect(n, plan.name).toBe(pieceName(plan.kind, train.family, clean[i])));
-          // And it repeats: the second half says the first again.
-          expect(names.slice(unit), plan.name).toEqual(names.slice(0, unit));
+          expect(names, plan.name).toHaveLength(unit);
+          // What is said is the train itself: each name is the piece at that place on the finished train, and every
+          // later car repeats it (a tunnel's last car comes out after the hidden ones, so it is not in step).
+          (plan.tunnel ? clean.slice(0, -1) : clean).forEach((piece, i) =>
+            expect(pieceName(plan.kind, train.family, piece), plan.name).toBe(names[i % unit]),
+          );
           // Different pieces get different names, so the pattern can be heard.
           const distinct = new Set(plan.pattern).size;
           expect(new Set(names).size, plan.name).toBe(distinct);

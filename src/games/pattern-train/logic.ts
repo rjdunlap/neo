@@ -103,8 +103,8 @@ export interface PatternSaid {
 }
 
 /**
- * What the train says back once its last car is right: the repeating unit twice ("cat, cow, cat, cow"), so a lucky tap
- * becomes the rule. A numbered train names its step and its first four numbers; a color-and-shape train says each cycle on
+ * What the train says back once its last car is right: the repeating unit once, "over and over" ("cat, cow, over and
+ * over"), so a lucky tap becomes the rule and an ABC train of two-word pieces stays one short line. A numbered train names its step and its first four numbers; a color-and-shape train says each cycle on
  * its own; the extra-car level names the car that hopped off first. Built from the finished train (`sequence`), so the
  * extra car is left out and a swapped car is the piece that belongs.
  */
@@ -133,7 +133,7 @@ export function patternSaid(
   const extra = plan.odd === 'extra' ? train.targets[0] : -1;
   const clean = sequence.filter((_, i) => i !== extra);
   const unit = clean.slice(0, plan.pattern.length);
-  const list = [...unit, ...unit].map((p) => pieceName(plan.kind, train.family, p)).join(', ');
+  const list = unit.map((p) => pieceName(plan.kind, train.family, p)).join(', ');
   if (extra >= 0)
     return {
       key: 'pattern.oddWhy',

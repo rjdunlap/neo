@@ -31,9 +31,9 @@ export const VOICE = {
   ],
   'pattern.buildHint': ['These cars on top play the same part. Try a green one!'],
   'pattern.next': ['Yes! Now fill the next car!'],
-  'pattern.why': ['Yes! The pattern goes {list}!'],
-  'pattern.whyBells': ['Yes! The bells go {list}!'],
+  'pattern.why': ['Yes! The pattern goes {list}, over and over!'],
+  'pattern.whyBells': ['Yes! The bells go {list}, over and over!'],
   'pattern.whyNumber': ['Yes! They count by {step}: {list}!'],
   'pattern.whyPair': ['Yes! The colors go {colors}, and the shapes go {shapes}!'],
-  'pattern.oddWhy': ['The {piece} did not belong! Now the pattern goes {list}.'],
+  'pattern.oddWhy': ['The {piece} did not belong! Now it goes {list}, over and over.'],
 } satisfies Record<string, string[]>;
