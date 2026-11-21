@@ -38,7 +38,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **WL2, the pet says the word in European Portuguese** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): the building session first writes the 20 entries and has a separate pass check each against European Portuguese dictionaries, filling one evidence row per key ([assistant review](definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17)); then `ctx.sayWord`, the exact-`pt-PT` voice rule, the per-profile setting and the grown-ups' select and status in Peekaboo Barn, Animal Snack and Bubble Pop. Read the [definition](definitions/additional-languages.md) by section; an entry that cannot be settled is left out.
 
-- **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
 
 - **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](reviews/TOTOLOGIC.md#proposals)
 
@@ -69,7 +68,10 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`silly-scene` levels 1–3** (a new game in Puzzle Peaks; preschool 1, pre-K 1–2, school 2–3; new game tier, upright from the first slice: typecheck, unit tests, one filtered play of levels 1 and 3 with a wrong tap and a hint, one portrait screenshot, `fingerdemo` at level 1, and one `npm run build` for the voice lines and the land change). [Definition](definitions/silly-scene.md#build-checks), [study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
-- **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
+- **`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](definitions/block-tower-mend.md), [dive](deep-dives/block-tower.md#build-slices-in-order)
+
+- **`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](deep-dives/block-tower.md#decisions-for-the-developer)
+
 
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
