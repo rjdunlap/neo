@@ -1,8 +1,8 @@
 import { Companion, makeCompanion } from '../../creatures/companion';
 import { RESIDENTS, Resident } from '../../creatures/resident';
 import { Wanderer, wanderKeepOut, wanderRoute } from '../../creatures/wander';
+import { makeProp, PROP_TIME, PROPS, type PropSpec } from '../../creatures/props';
 import { Rng } from '../../engine/random';
-import { sfx } from '../../audio/sfx';
 import { meadowKeepOut } from './meadow';
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { SPECIES, type SpeciesId } from '../../creatures/species';
@@ -12,7 +12,7 @@ import { store } from '../../progress/store';
 import type { LineId } from '../../content/voice-script';
 import type { LandId, LandLayout } from '../../content/lands';
 import { ENTRY_NAMES, entryArt, fittedBack } from '../../ui/origin-art';
-import { ink, swatch, wood } from '../../art/palette';
+import { ink } from '../../art/palette';
 import { voice } from '../../audio/voice';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
@@ -88,8 +88,9 @@ export class LocationScene extends LandScene {
   readonly atHome: boolean;
   /** P5: a resident that carries on walks its route on its own (null for the rest). */
   readonly wanderer: Wanderer | null = null;
-  private chime: Graphics | null = null;
-  private chimeSway = 0;
+  /** The thing it uses at its first stop (`PROPS`), its moving part, and how far through a use it is. */
+  private prop: { spec: PropSpec; node: Container; moving: Graphics } | null = null;
+  private propTime = 0;
   private notes = 0;
   private readonly pad = new Container();
   /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
@@ -152,8 +153,10 @@ export class LocationScene extends LandScene {
     });
     this.resident = resident;
     const placed = resident as Companion | Resident | null;
-    if (placed instanceof Resident && RESIDENTS[placed.species].carriesOn) {
-      this.wanderer = new Wanderer(new Rng(), () => this.useChime());
+    if (placed instanceof Resident) {
+      this.wanderer = new Wanderer(new Rng(), () => this.useProp());
+      const id = RESIDENTS[placed.species].carriesOn;
+      this.prop = { spec: PROPS[id], ...makeProp(id) };
     }
     this.atHome = atHome;
     this.opensAtRoot = !!back;
@@ -169,8 +172,7 @@ export class LocationScene extends LandScene {
       this.root.on('pointerdown', (e: FederatedPointerEvent) =>
         this.wanderer?.look(this.field.toLocal(e.global).x),
       );
-      this.chime = new Graphics();
-      this.content.addChildAt(this.chime, this.content.getChildIndex(this.field));
+      if (this.prop) this.content.addChildAt(this.prop.node, this.content.getChildIndex(this.field));
     }
     // Explore opens with this place's postcard next time (RW14 slice 8).
     if (this.opensAtRoot) store.visitPlace(this.id);
@@ -195,7 +197,7 @@ export class LocationScene extends LandScene {
       s,
     );
     walker.setRoute(route);
-    this.drawChime(route[1] ?? null, s);
+    this.placeProp(route[1] ?? null, s);
     this.placeResident();
   }
 
@@ -205,14 +207,16 @@ export class LocationScene extends LandScene {
     if (!walker) return;
     walker.update(dt);
     this.placeResident();
-    if (this.chime) {
-      this.chimeSway = Math.max(0, this.chimeSway - dt);
-      this.chime.rotation = Math.sin(this.chimeSway * 14) * 0.07 * Math.min(1, this.chimeSway);
+    const prop = this.prop;
+    if (!prop) return;
+    if (this.propTime > 0) {
+      this.propTime = Math.max(0, this.propTime - dt);
+      prop.spec.animate(prop.moving, this.propTime / PROP_TIME);
     }
     if (this.notes > 0 && (this.notesIn -= dt) <= 0) {
       this.notesIn = 0.2;
-      // Three bells up the land's pentatonic range, each softer than a game's own sound.
-      sfx.bell(this.land.music.range[0] + (3 - this.notes) * 2, 0.16);
+      // Its sounds on the land's pentatonic range, each softer than a game's own.
+      prop.spec.play(prop.spec.notes - this.notes, this.land.music.range[0]);
       this.notes--;
     }
   }
@@ -228,43 +232,25 @@ export class LocationScene extends LandScene {
     res.face(walker.facing, this.hostHit);
   }
 
-  /** It reached the chime: it flutters, the chime sways and rings three notes. */
-  private useChime() {
+  /** It reached its thing: it flutters, and the thing moves and sounds. */
+  private useProp() {
+    if (!this.prop) return;
     this.resident?.poke();
-    this.chimeSway = 1.6;
-    this.notes = 3;
+    this.propTime = PROP_TIME;
+    this.notes = this.prop.spec.notes;
     this.notesIn = 0.15;
   }
 
-  /** The wind chime at the first stop, drawn in host units behind where the resident stands (none where there is no stop). */
-  private drawChime(stop: { x: number; y: number } | null, s: number) {
-    const g = this.chime;
-    if (!g) return;
-    g.clear();
-    g.visible = !!stop;
+  /** The thing at the first stop, in host units behind where the resident stands (none where there is no stop). */
+  private placeProp(stop: { x: number; y: number } | null, s: number) {
+    const prop = this.prop;
+    if (!prop) return;
+    prop.node.visible = !!stop;
     if (!stop) return;
-    g.position.set(stop.x, stop.y);
-    g.scale.set(s);
-    // Pivots at the bar so the whole chime sways from it.
-    const top = -250;
-    g.pivot.set(0, top);
-    g.position.set(stop.x, stop.y + top * s);
-    g.roundRect(-70, top - 8, 140, 16, 8)
-      .fill(wood.fill)
-      .stroke({ width: 3, color: wood.line });
-    const tubes = [
-      [-50, 70, swatch.teal],
-      [-17, 100, swatch.blue],
-      [17, 82, swatch.purple],
-      [50, 62, swatch.pink],
-    ] as const;
-    for (const [x, len, c] of tubes) {
-      g.moveTo(x, top + 8)
-        .lineTo(x, top + 34)
-        .stroke({ width: 3, color: wood.line });
-      g.roundRect(x - 9, top + 34, 18, len, 6)
-        .fill(c.fill)
-        .stroke({ width: 3, color: c.line });
-    }
+    prop.node.position.set(stop.x, stop.y);
+    prop.node.scale.set(s);
+    this.propTime = 0;
+    this.notes = 0;
+    prop.spec.animate(prop.moving, 0);
   }
 }

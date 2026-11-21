@@ -4,7 +4,7 @@ import type { View } from '../engine/view';
 
 /**
  * P5 pilot (docs/reviews/POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m): a resident that carries on. It
- * rests at home, walks to one or two marked stops of free ground, uses the thing at the first (the chime), walks back,
+ * rests at home, walks to one or two marked stops of free ground, uses the thing at the first (`PROPS`), walks back,
  * and turns toward her last touch. Pure logic, no drawing: `LocationScene` moves the resident with it, and its test
  * checks every stop and every step of every leg against what the land's screen already holds.
  *
@@ -86,7 +86,7 @@ export function wanderRoute(
     Math.hypot(a.x - home.x, a.y - home.y) - Math.hypot(b.x - home.x, b.y - home.y) || a.y - b.y || a.x - b.x;
   found.sort(byHome);
   const dist = (a: Stop, b: Stop) => Math.hypot(a.x - b.x, a.y - b.y);
-  // The first stop is the nearest one whose leg home is clear, which is where it uses the chime.
+  // The first stop is the nearest one whose leg home is clear, which is where it uses its thing.
   const first = found.find((p) => legClear(home, p));
   if (!first) return [{ ...home }];
   const second = found.find((p) => dist(p, first) >= apart * 1.5 && legClear(first, p) && legClear(p, home));
@@ -117,7 +117,7 @@ export class Wanderer {
   /** The stop it is at, or walking to. */
   private at = 0;
   private wait = 0;
-  /** `arrive(i)` fires when it reaches stop `i` (i ≥ 1) and starts using what is there, for the scene's chime. */
+  /** `arrive(i)` fires when it reaches stop `i` (i ≥ 1) and starts using what is there, for the scene's prop. */
   constructor(
     private readonly rng: Rng,
     private readonly arrive: (stop: number) => void = () => {},
