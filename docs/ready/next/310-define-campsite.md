@@ -1,1 +1,0 @@
-**Define Campsite** (PP6, docs only): define a 4×4 opening board with one tent by each tree, no touching and row and column counts. [Study](../../deep-dives/subjects/puzzle-pages.md#build-slices-in-order)

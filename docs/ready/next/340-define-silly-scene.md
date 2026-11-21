@@ -1,0 +1,1 @@
+**Define Silly Scene** (PP7, docs only): check Not Always and Who Am I? for overlap before defining the first authored pictures and explanations. [Study](../../deep-dives/subjects/puzzle-pages.md#build-slices-in-order)

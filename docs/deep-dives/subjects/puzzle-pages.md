@@ -154,7 +154,7 @@ The newspaper format is built on one puzzle a day, a streak and tomorrow's answe
 | PP3 | **Bunny Patches** (IDEAS *Garden Queens*) | Star Battle, LinkedIn Queens | One bunny in every row, column and patch, none touching | Where a bunny is forced; crossing out squares a bunny rules out | K–G | new game | M | Place → grow regions → solver ([a no-backtracking solver is documented](https://mspiegel.github.io/queens-without-backtracking/QUEENS.html)) |
 | PP4 | **The bee counts tall flowers** | Skyscrapers | Plant flowers of different heights so the bee at each gate sees the right number | Which height goes where, from what the bee can see | S–U | Garden Rows (new level) | S–M | Latin square plus visibility clues |
 | PP5 | **Sum Crates** | Kakuro | Fill runs of fruit crates so each run adds to its label, no repeats | Which partition of the sum fits both crossing runs | S–G | new game (check Fruit Sums first) | M | Small boards searched exhaustively |
-| PP6 | **Campsite** | Tents (Tatham) | Pitch each critter's tent beside its own tree, no two touching, matching the row counts | Which tree a tent belongs to | S–G | new game | M | Tatham's generator needs no guessing |
+| PP6 | **Campsite** | Tents (Tatham) | Pitch one tent beside each tree, with none touching and both sets of counts met | Which square is left for this tree | S | [defined 4×4 opening](../../definitions/campsite.md) | S | One authored board with three visible deductions |
 | PP7 | **Silly Scene** | Highlights' *What's Wrong?* | Tap the impossible thing (a fish in a tree); the pet laughs and says why | What cannot be true | P–S | new small game, or a mode (check Not Always and Who Am I) | S | Authored scenes |
 | PP9 | **Word Code** (IDEAS row) | Wordle, Secret Code | Guess a word; each letter is marked right, elsewhere or absent, with shapes as well as colours | Which letters the marks still allow | S–G | new game beside Secret Code (Puzzle Peaks or Lantern Lake) | M | Secret Code's feedback rule on letters; a reviewed word list and block list per level; the decided par (a fixed reference solver's guess count) |
 | PP8 | **A puzzle page at the table** | Unplugged | — | — | G | grown-ups' page | S | None |
@@ -229,7 +229,7 @@ Each is one session; definitions are docs only.
 6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung): [defined](../../definitions/bunny-patches.md) 2026-11-20 (PR #1907); its build is queued in READY.
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; its build is queued in READY.
-8b. **PP6: define Campsite’s 4×4 opening**: claimed on `codex/neo-ready-define-campsite` (definition, study and READY closeout, docs only).
+8b. **PP6: Campsite level 1** is [defined](../../definitions/campsite.md) (school, 4×4); the build is in READY.
 8c. **PP7: define Silly Scene**: ready after Domino Pond, checking Not Always and Who Am I for overlap.
 9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
 
