@@ -161,6 +161,7 @@ import { HOW_TO as stopAndGoHowTo } from '../games/stop-and-go/howto.ts';
 import { HOW_TO as storyStepsHowTo } from '../games/story-steps/howto.ts';
 import { HOW_TO as storyWeaverHowTo } from '../games/story-weaver/howto.ts';
 import { HOW_TO as sudokuGardenHowTo } from '../games/sudoku-garden/howto.ts';
+import { HOW_TO as sumCratesHowTo } from '../games/sum-crates/howto.ts';
 import { HOW_TO as swapMeetHowTo } from '../games/swap-meet/howto.ts';
 import { HOW_TO as swingPalsHowTo } from '../games/swing-pals/howto.ts';
 import { HOW_TO as tangramTownHowTo } from '../games/tangram-town/howto.ts';
@@ -359,6 +360,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'story-steps': storyStepsHowTo,
   'story-weaver': storyWeaverHowTo,
   'sudoku-garden': sudokuGardenHowTo,
+  'sum-crates': sumCratesHowTo,
   'swap-meet': swapMeetHowTo,
   'swing-pals': swingPalsHowTo,
   'tangram-town': tangramTownHowTo,
