@@ -103,6 +103,16 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | wear-boots-sitter-3.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [boots-sitter3](R19-PROMPTS.md#boots-sitter1) | yes |
 | wear-raincoat-sitter-4.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [raincoat-sitter4](R19-PROMPTS.md#raincoat-sitter4) | yes |
 | wear-raincoat-walker-4.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [raincoat-walker4](R19-PROMPTS.md#raincoat-walker4) | yes |
+| land-barnyard-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-beach-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-canyon-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-cove-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-grove-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-lake-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-music-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-peaks-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-tinker-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
+| land-village-1.png | R26 | 2026-11-21 | Codex built-in image_gen via scripts/codex-image.sh | [ChatGPT batch](../../art-requests/CHATGPT-BATCH.md) | yes |
 
 ## R01 review and preparation notes
 

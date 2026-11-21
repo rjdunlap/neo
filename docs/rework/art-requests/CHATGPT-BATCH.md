@@ -81,7 +81,7 @@ Make these once the illustrated meadow and duck are in the game (RW14 slices 4 a
 | `land-barnyard.png` | `Barnyard: a farm. In the middle half: a red barn with a white-trimmed door, a wooden fence along the horizon, two or three apple trees in fruit, a hay bale. No animals. Below the horizon, an even, calm grassy yard.` |
 | `land-lake.png` | `Lantern Lake: a lake at dusk. A warm orange-pink sky fading to soft purple at the top, a still lake along the horizon with a few floating paper lanterns and a small moored rowboat, reeds on the far bank. Below the horizon, an even, calm dusky grass bank.` |
 
-Uses: [slice 10](../POLISH.md#slice-10-the-other-ten-backdrops), which needs no code: each imported file appears in its location.
+Uses: [slice 10](../POLISH.md#slice-10-the-other-ten-backdrops), which needs no loader code: each imported file appears in its location. Made 2026-11-21 through `scripts/codex-image.sh` rather than ChatGPT chats ([run log](QUEUE.md#run-log)).
 
 ## Not in these batches
 
