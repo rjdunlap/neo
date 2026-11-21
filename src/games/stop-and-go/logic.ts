@@ -62,7 +62,11 @@ export const WAIT_PLAN: GoPlan = {
 };
 
 export const planFor = (level: number) =>
-  level === LAMPS_LEVEL ? LAMPS_PLAN : level === WAIT_LEVEL ? WAIT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === LAMPS_LEVEL
+    ? LAMPS_PLAN
+    : level === WAIT_LEVEL
+      ? WAIT_PLAN
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export type Light = 'green' | 'yellow' | 'red';
 
@@ -124,7 +128,14 @@ export interface Crossing {
 export const safe = (c: Crossing) => !(c.ns === 'green' && c.ew === 'green');
 
 /** What a capable child touches at each level but the crossing: the toy light, the car at the front, or the step button. */
-export const GO_TARGET = { lamps: 'lamp', wait: 'car', toy: 'light', send: 'car', walk: 'step', lanes: 'car' } as const;
+export const GO_TARGET = {
+  lamps: 'lamp',
+  wait: 'car',
+  toy: 'light',
+  send: 'car',
+  walk: 'step',
+  lanes: 'car',
+} as const;
 
 /**
  * Whether a tap that lands now is right: the toy light answers every tap, but a car or a step is only right on green

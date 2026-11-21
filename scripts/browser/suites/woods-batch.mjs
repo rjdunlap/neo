@@ -3093,7 +3093,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           }
         } else if (mode === 'wait') {
           // Wait for green: a two-lamp light; going on red only rumbles and says "wait!" (never a miss, never a hint).
-          assert.equal(await page.evaluate(() => neo.scene.game.light.twoLamp), true, 'the light has two lamps');
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.light.twoLamp),
+            true,
+            'the light has two lamps',
+          );
           await lightIs('red');
           await page.waitForTimeout(300);
           for (let k = 0; k < 3; k++) {
@@ -3224,7 +3228,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await screenshot('stop-and-go-4');
         }
         await finished('stop-and-go');
-        assert.deepEqual(await score('stop-and-go'), mode === 'toy' || mode === 'lamps' || mode === 'wait' ? [0, 0] : [2, 1]);
+        assert.deepEqual(
+          await score('stop-and-go'),
+          mode === 'toy' || mode === 'lamps' || mode === 'wait' ? [0, 0] : [2, 1],
+        );
         log(
           `Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'one big lamp turned by a touch anywhere (sky, lamp, grass) and the car tooting, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
         );

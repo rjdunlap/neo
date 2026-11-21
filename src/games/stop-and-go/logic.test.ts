@@ -105,7 +105,14 @@ describe('Stop and Go', () => {
 
   it('sends and steps only on green, so the hand never makes the one mistake', () => {
     expect(PLANS.map((p) => p.mode)).toEqual(['toy', 'send', 'walk', 'cross', 'lanes', 'busy']);
-    expect(GO_TARGET).toEqual({ lamps: 'lamp', wait: 'car', toy: 'light', send: 'car', walk: 'step', lanes: 'car' });
+    expect(GO_TARGET).toEqual({
+      lamps: 'lamp',
+      wait: 'car',
+      toy: 'light',
+      send: 'car',
+      walk: 'step',
+      lanes: 'car',
+    });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
       for (const mode of ['send', 'walk'] as const)
