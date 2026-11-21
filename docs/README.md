@@ -51,6 +51,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Block Tower level 7](definitions/block-tower-mend.md) | Mend the leaning tower: move the top block under ropes, release, and see whether it stands; school, a repair interaction |
 | [Egg Catch level 13](definitions/egg-catch-sorting-gate.md) | Sorting gate: place a shell-reading sorter at one junction and turn it so four mixed eggs reach their baskets; school, a placement interaction |
 | [Silly Scene](definitions/silly-scene.md) | Puzzle-pages PP7, levels 1–3: tap the one impossible thing in a familiar picture and hear why; preschool 1, pre-K 1–2, school 2–3, Puzzle Peaks |
+| [Vine Snip level 6](definitions/vine-snip-where-will-it-land.md) | Where will it land?: predict where one orange lands when released through the same point heading right, then left, then watch both and replay free; school, a prediction interaction |
 | [Drag miss counting](definitions/drag-miss-counting.md) | Read-through of how every drag game counts a wrong drop (2026-11-20): none uncounted without a stated reason |
 | [`deep-dives/`](deep-dives/README.md) | Each game's researched ladder, the subject studies under `subjects/`, and the research tracker |
 | [DISCOVERY.md](DISCOVERY.md) | 2026-10-12 study of two ways in ("let's explore" and "let's play"), a run of games without retracing the catalog, and its build slices |
