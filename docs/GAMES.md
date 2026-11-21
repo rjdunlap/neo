@@ -138,7 +138,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Draw the Pattern
 
-*lap–pre-K* · [Draw the Pattern](games/draw-the-pattern.md)
+*lap–school* · [Draw the Pattern](games/draw-the-pattern.md)
 
 ### Recipe Workshop
 

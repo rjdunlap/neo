@@ -75,13 +75,14 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Draw the Pattern ladder', () => {
-  it('has ten levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(10);
+  it('has eleven levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(11);
     expect(LEVELS).toEqual({
       lap: { min: 1, max: 10, order: [1, 10] },
       toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
       preschool: { min: 3, max: 5 },
       prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
+      school: { min: 8, max: 11, order: [8, 11] },
     });
     expect(markCount(planFor(1))).toBe(4);
     expect(planFor(1).mode).toBe('mark');
@@ -90,8 +91,9 @@ describe('Draw the Pattern ladder', () => {
 
   it('never widens the corridor as the level rises', () => {
     for (let l = 2; l <= 9; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
-    // Level 10 is an easy tap entry, as wide as level 2.
+    // Level 10 is an easy tap entry, as wide as level 2; 11 is no wider than 9.
     expect(tolerance(10)).toBe(tolerance(2));
+    expect(tolerance(11)).toBeLessThanOrEqual(tolerance(9));
   });
 
   for (const [name, v] of Object.entries(VIEWS)) {
@@ -242,15 +244,15 @@ describe('Draw the Pattern ladder', () => {
               .map((q) => points.findIndex((p) => dist(p, q) < 1e-9))
               .filter((i) => i >= 0)
               .map((i) => arc[i]);
-            const ends = ['circle', 'square', 'triangle'].includes(s.kind) ? [0, arc.at(-1)!] : [];
-            const crossings = s.kind === 'loop' ? selfCrossings(points) : [];
+            const ends = ['circle', 'square', 'triangle', 'eight'].includes(s.kind) ? [0, arc.at(-1)!] : [];
+            const crossings = s.kind === 'loop' || s.kind === 'eight' ? selfCrossings(points) : [];
             const near = (i: number, at: number) => Math.abs(arc[i] - at) <= 4 * tol;
             for (let i = s.lead; i < points.length; i++) {
               for (let j = i + 1; j < points.length; j++) {
                 if (arc[j] - arc[i] < 4 * tol) continue;
                 if (cornerArc.some((c) => near(i, c) && near(j, c))) continue;
                 if (ends.some((c) => near(i, c)) && ends.some((c) => near(j, c))) continue;
-                // A loop's one self-crossing: its two passes meet there by design.
+                // A loop's or an eight's self-crossing: its two passes meet there by design.
                 if (crossings.some(([a, b]) => near(i, arc[a]) && near(j, arc[b]))) continue;
                 expect(
                   dist(points[i], points[j]),
@@ -740,5 +742,126 @@ describe('Draw the Pattern level 10, dot to dot', () => {
 
   it('draws the same dots for the same seed', () => {
     expect(stripsFor(10, new Rng(7))).toEqual(stripsFor(10, new Rng(7)));
+  });
+});
+
+describe('Draw the Pattern level 11, spiral and eight', () => {
+  const tol = tolerance(11);
+  const level11 = (seed: number) => stripsFor(11, new Rng(seed));
+
+  it('opens the school window at 8 then 11, without renumbering', () => {
+    const school = rangeFor(LEVELS, 'school');
+    expect(stepLevel(8, 1, school)).toBe(11);
+    expect(stepLevel(11, 1, school)).toBe(11);
+    expect(stepLevel(11, -1, school)).toBe(8);
+    expect(planFor(11).mode).toBe('trace');
+    expect(planFor(10).mode).toBe('dots');
+    expect(tol).toBe(0.15);
+  });
+
+  it('draws a snail’s spiral the pet starts, then an eight that is glasses or a racetrack', () => {
+    const seen = new Set<string>();
+    for (const seed of SEEDS) {
+      const [snail, eight] = level11(seed);
+      expect(snail.piece).toBe('snail');
+      expect(snail.strokes.map((s) => s.kind)).toEqual(['spiral']);
+      expect(eight.strokes.map((s) => s.kind)).toEqual(['eight']);
+      expect(['glasses', 'racetrack']).toContain(eight.piece);
+      seen.add(eight.piece);
+      for (const s of [...snail.strokes, ...eight.strokes]) {
+        // The pet draws a start; most of the stroke is hers.
+        expect(s.lead).toBeGreaterThan(0);
+        expect(s.lead).toBeLessThan(s.orders[0].length / 3);
+      }
+    }
+    expect([...seen].sort()).toEqual(['glasses', 'racetrack']);
+  });
+
+  it('turns the spiral more than once, into the middle, its rings two corridors apart everywhere', () => {
+    const s = level11(1)[0].strokes[0],
+      pts = s.orders[0];
+    // Angle round the middle, unwrapped: more than one full turn, always clockwise on the screen.
+    const mid: Point = [1.7, 0.56];
+    let turned = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const a0 = Math.atan2(pts[i - 1][1] - mid[1], pts[i - 1][0] - mid[0]),
+        a1 = Math.atan2(pts[i][1] - mid[1], pts[i][0] - mid[0]);
+      let d = a1 - a0;
+      if (d > Math.PI) d -= 2 * Math.PI;
+      if (d < -Math.PI) d += 2 * Math.PI;
+      expect(d).toBeGreaterThan(0);
+      turned += d;
+    }
+    expect(turned / (2 * Math.PI)).toBeGreaterThan(1.1);
+    // It ends nearer the middle than it began.
+    expect(dist(pts.at(-1)!, mid)).toBeLessThan(dist(pts[0], mid) / 1.5);
+    // Any two points more than a quarter-turn's worth of path apart are two corridors apart (the geometry probe).
+    const arc = pts.map((_, i) => lengthTo(pts, i));
+    let closest = Infinity;
+    for (let i = 0; i < pts.length; i++)
+      for (let j = i + 1; j < pts.length; j++)
+        if (arc[j] - arc[i] >= 4 * tol) closest = Math.min(closest, dist(pts[i], pts[j]));
+    expect(closest).toBeGreaterThanOrEqual(2 * tol);
+    // The spiral never crosses itself.
+    expect(selfCrossings(pts)).toHaveLength(0);
+  });
+
+  it('passes the eight’s crossing twice, each pass once by index, and straight on into the other lobe', () => {
+    const s = level11(1)[1].strokes[0],
+      pts = s.orders[0];
+    const crossings = selfCrossings(pts);
+    // One crossing in the middle: the first pass is hers (after the pet's start), the second comes later.
+    expect(crossings).toHaveLength(1);
+    const [first, second] = crossings[0];
+    expect(first).toBeGreaterThan(s.lead);
+    expect(second - first).toBeGreaterThan(pts.length / 3);
+    expect(Math.abs(pts[first][0] - 1.7)).toBeLessThan(0.05);
+    // Straight on: the left lobe is entered from one side of the middle and left on the other.
+    expect(pts[first - 4][0]).toBeLessThan(1.7);
+    expect(pts[first + 4][0]).toBeGreaterThan(1.7);
+    expect(pts[second + 4][0]).toBeLessThan(1.7);
+    // A finger walking the dashes never jumps from the first pass to the second.
+    const route = traceWaypoints(pts.slice(s.lead));
+    let progress = s.lead,
+      prev = route[0],
+      jump = 0;
+    for (const to of route.slice(1)) {
+      const next = advanceTrace(pts, progress, prev, to, tol);
+      jump = Math.max(jump, next - progress);
+      progress = next;
+      prev = to;
+    }
+    expect(progress).toBe(pts.length - 1);
+    // No single move reaches from the first pass to the second.
+    expect(jump).toBeLessThan((second - first) / 4);
+    // Each lobe is more than two corridors high, so its top and bottom never share a corridor.
+    const ys = pts.map((p) => p[1]);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThanOrEqual(4 * tol);
+  });
+
+  it('lets the ghost finger finish both strokes', () => {
+    for (const st of level11(3)) {
+      const s = st.strokes[0],
+        pts = s.orders[0],
+        route = botRoute(s, pts, s.lead);
+      let progress = s.lead,
+        prev = route[0];
+      for (const to of route.slice(1)) {
+        progress = advanceTrace(pts, progress, prev, to, tol);
+        prev = to;
+      }
+      expect(progress, s.kind).toBe(pts.length - 1);
+    }
+  });
+
+  it('has a spoken line for every piece and the two instructions', () => {
+    for (const p of ['snail', 'glasses', 'racetrack'])
+      expect(LINES[`draw.picture.${p}` as keyof typeof LINES], p).toBeTruthy();
+    expect(LINES['draw.instruct.spiral']).toBeTruthy();
+    expect(LINES['draw.instruct.eight']).toBeTruthy();
+  });
+
+  it('draws the same strips for the same seed', () => {
+    expect(level11(7)).toEqual(level11(7));
   });
 });

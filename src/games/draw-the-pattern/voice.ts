@@ -10,6 +10,8 @@ export const VOICE = {
   'draw.instruct.memory': ['Keep the pattern going. The dots show where it turns.'],
   'draw.instruct.shape': ['Start on the green ring and follow the arrow.'],
   'draw.instruct.next': ['What comes next? Draw it.'],
+  'draw.instruct.spiral': ['Keep going round and round, into the middle.'],
+  'draw.instruct.eight': ['Go round, cross the middle, and round the other side.'],
   'draw.back-to-crayon': ['Come back to the crayon.'],
   'draw.unit.zig': ['Zig!'],
   'draw.unit.wave': ['Wave!'],
@@ -56,5 +58,8 @@ export const VOICE = {
   'draw.picture.bunting': ['Your pattern is the flags!'],
   'draw.picture.kite': ['Your X is the sticks of a kite!'],
   'draw.picture.treasure': ['Your X marks the treasure!'],
+  'draw.picture.snail': ['Your spiral is a snail shell!'],
+  'draw.picture.glasses': ['Your eight is a pair of glasses!'],
+  'draw.picture.racetrack': ['Your eight is a racetrack!'],
   'draw.done': ['The picture is all done. Look what you drew!'],
 } satisfies Record<string, string[]>;
