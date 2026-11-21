@@ -78,15 +78,17 @@ Board units, on the shipped 720 × 600 board that is never scaled. `whereLayout(
 
 Grow back is hidden at level 6, since there is nothing to undo. The paw print and the curled leaf stay inside the leaf targets.
 
+**Below the board's foot, on purpose.** The leaf targets reach y 635 and Snip y 620, up to 35 units below the 600-unit board. Moving the leaves up would push the landed fruit (it reaches y 608 with its 48-unit radius) out of its target. Every view is at least 768 units tall and the board's top is at 124, so the lowest target ends at screen y 759, inside the view. This is a deliberate exception to the shipped layout test's "inside the board" check: at level 6 the check is "inside the view".
+
 **Envelope, computed with `computeView`, `captionPlace` and `boardOrigin`.** Vine Snip is not upright-ready, so a phone plays it sideways. Every sideways phone has a 768-unit-tall view:
 
 - **667 × 375 phone, words shown (rail):** view 1366 × 768 at 0.488 CSS px per unit. The game keeps 1066 units right of the 300-unit rail. The board is at screen x 473–1193, y 124–724. The leaf targets are 107 × 73 CSS px and Snip is 59 px, so the 100-unit minimum holds, and the rail is clear of everything.
 - **844 × 390 phone, words shown:** view 1662 × 768, board x 621–1341. Leaves 112 × 76 px.
 - **568 × 320 (smallest checked):** view 1363 × 768 at 0.417. Leaves 92 × 63 px, Snip 50 px, still 100 units each.
-- **1024 × 768 with words shown (bubble):** the board is at x 152–872, y 124–724. The bubble's space is x 0–640, y 343–583. It ends 26 units above the leaf targets (screen y 609) and 41 above Snip (624), so it never covers a control. It does cover the ring (screen 512, 414) while it shows. The hold lasts until she acts, so the trail is visible again once the bubble goes, and the build must not start a pass's hold timer under the bubble. The phone's rail has no such overlap.
+- **1024 × 768 with words shown (bubble):** the board is at x 152–872, y 124–724. The bubble's space is x 0–640, y 343–583. It ends 26 units above the leaf targets (screen y 609) and 41 above Snip (624), so it never covers a control. It does cover the ring (screen 512, 414) and most of the swing (screen x 387–637, y 380–414) while it shows. The hold waits for her, so the trail is visible again once the bubble goes. During a hold, Show a hint says its line first and starts the replayed approach only once the words have cleared, so the replay never plays under the bubble. The phone's rail has no such overlap.
 - **Pet corner and shell buttons:** the board starts at screen x 152 or more, right of the pet corner (x < 150). The board's top (y 124) is below the 120-unit corner buttons at every view.
 
-The build's layout test checks these at the four standard views and the three sideways phone views: every target is at least 100 units, none overlap, each is inside the board, and nothing is under the pet corner, the shell buttons or the caption band.
+The build's layout test checks these at the four standard views and the three sideways phone views: every target is at least 100 units, none overlap, each is inside the view (not the board, see above), and nothing is under the pet corner, the shell buttons or the caption band.
 
 ## Words and help
 
