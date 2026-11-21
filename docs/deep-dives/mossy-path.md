@@ -111,7 +111,7 @@ All three are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slice
 3. **Level 9 *Two snacks*** (**built 2026-11-10**, see below; after slice 1 so the berry art is drawn once). Tier: new level on the existing maze interaction: typecheck, rule tests, one browser play of level 9 eating the farther berry first, `fingerdemo` at 9; build (voice lines).
 4. **Level 10 *Plan, then go*** (**built 2026-11-10**, see below). Tier: new interaction: typecheck, unit tests, one scripted play (a short plan, a Go, a plan into a wrong branch, a Hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
 5. **Level 11 *Thick moss*** (claimed 2026-11-10, branch `claude/mossy-path-thick-moss`). Tier: new level on the existing tap interaction with a solver rewrite: typecheck, rule tests (solvability, the time bound, hint progress, and levels 1–3 and 8 unchanged under the new solver), one browser play of level 11, `fingerdemo` at 11; build.
-6. **Lap entry, toddler 4–5 and the journal:** decisions 1–3 (decision 2 after the toddler device check).
+6. **Lap entry** (level 12 *Turtle walk*; claimed 2026-11-20 by `claude/mossy-path-turtle-walk`; expected files `src/games/mossy-path/`, `src/games/registry.test.ts`-style band tests, browser-check case, game page), **toddler 4–5** (decided: stays at 4) and the **journal** (decided: nothing filed).
 
 ## What was built in this session
 
