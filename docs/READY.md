@@ -34,8 +34,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Puzzle-page follow-ups
 
-- **Define Silly Scene** (PP7, docs only): check Not Always and Who Am I? for overlap before defining the first authored pictures and explanations. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
-
 - **A puzzle page at the table** (PP8, grown-ups' page): write the short offline-play card for mazes, spoken word ladders and domino dots. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 ### Unblocked by the decisions of 2026-11-17
@@ -73,8 +71,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
-
-- **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
 
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
