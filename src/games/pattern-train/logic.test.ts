@@ -399,8 +399,9 @@ describe('Pattern Train', () => {
         // The color alternates; the shape holds for two cars.
         expect(colors[0]).toBe(colors[2]);
         expect(colors[0]).not.toBe(colors[1]);
-        expect(new Set(shapes).size).toBe(2);
-        expect(shapes.filter((s) => s === shapes[0])).toHaveLength(2);
+        expect(shapes[0]).toBe(shapes[1]);
+        expect(shapes[2]).toBe(shapes[3]);
+        expect(shapes[1]).not.toBe(shapes[2]);
       }
     });
 

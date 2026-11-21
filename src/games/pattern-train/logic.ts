@@ -121,7 +121,9 @@ export function patternSaid(
   }
   if (plan.kind === 'pair' && train.look) {
     const look = train.look;
-    const four = sequence.slice(0, 4);
+    // Start where the shape pair starts, so the shapes are heard as a rule (circle, circle, triangle, triangle).
+    const from = sequence[0] % 2;
+    const four = sequence.slice(from, from + 4);
     return {
       key: 'pattern.whyPair',
       vars: {

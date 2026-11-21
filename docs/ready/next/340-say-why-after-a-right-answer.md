@@ -1,1 +1,0 @@
-**Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](../../reviews/TOTOLOGIC.md#proposals) Claimed 2026-11-21 by `claude/say-why-after-right`.
