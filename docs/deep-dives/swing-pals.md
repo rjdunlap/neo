@@ -108,7 +108,7 @@ The definition's five decisions stand as decided on 2026-10-23. This dive adds:
 
 1. **Where level 7 plays.** Built on the default; the developer can still change it. Default: pre-K between 3 and 4 (`order: [3, 7, 4]`) and school after 6. Alternative: school only, leaving pre-K's jump.
 2. **Paint the beat** (a paint pot on her swing paints a wiggle on a sliding paper strip; a short rope paints tight wiggles). Whether to build it as a creative level, and whether its painting may be kept in the treehouse, which reopens the "nothing kept" default. No default; it stays unbuilt.
-3. **A journal discovery** ("a longer rope swings slower", filed once level 3 or 7 has shown it). Reopens the definition's decision 4 (no discovery filed). Default: still none.
+3. **A journal discovery** ("a longer rope swings slower", filed once level 3 or 7 has shown it). Reopens the definition's decision 4 (no discovery filed). Decided yes 2026-11-17; built 2026-11-21 (slice 6).
 
 Decision 1 has a usable default, so slice 2 stays buildable on it. Decisions 2 and 3 gate only their own slices.
 
@@ -119,7 +119,7 @@ Decision 1 has a usable default, so slice 2 stays buildable on it. Decisions 2 a
 3. **Level 8, *Twice as quick*.** (built 2026-11-06, PR #1339) After slice 2 (school's `order` then ends 7, 8). Tier: new level on the existing hook interaction: typecheck, rule tests, one browser play of level 8 with one wrong hook, `fingerdemo` at 8.
 4. **Level 9, *A row of three*.** First the `swingLayout` probe in `logic.test.ts`; then a definition.
 5. **Paint the beat.** Decision 2, then a definition.
-6. **Journal discovery.** Decision 3.
+6. **Journal discovery.** Decision 3 (decided yes). (built 2026-11-21, [PR #1946](https://github.com/rjdunlap/neo/pull/1946)) A finished round that swung a short rope beside a long one (level 3 *Short rope, long rope* or level 7 *Who comes back first?*) files `swing-pals:longer-slower` once, "Long ropes swing slower". The matching levels (4–6, 8) also show two ropes but she tunes one to the other, so they file nothing, and levels 1 and 2 never do.
 
 ## What was built in this session
 

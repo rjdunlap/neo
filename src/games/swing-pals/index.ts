@@ -7,6 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { entryId } from '../../content/journal';
 import type { LineId } from '../../content/voice-script';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
@@ -34,6 +35,8 @@ import {
   requestStrip,
   rightHook,
   ropeOf,
+  showsSlower,
+  SLOWER,
   seatAt,
   swingLayout,
   finaleRow,
@@ -1360,7 +1363,9 @@ class SwingPals implements Game {
     await this.ctx.say('swing-pals.done');
     if (this.destroyed) return;
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    // Levels 3 and 7 swing a short rope beside a long one; the journal files "a longer rope swings slower" once.
+    const discoveries = showsSlower(this.round) ? [entryId('swing-pals', SLOWER)] : undefined;
+    this.ctx.finish({ misses: this.misses, hints: this.hints, ...(discoveries ? { discoveries } : {}) });
   }
 
   destroy() {
@@ -1400,6 +1405,52 @@ function swingPicture(friend: Friend, angle: number): Container {
   bell.scale.set(0.7);
   bell.position.set(95, -110);
   c.addChild(bell);
+  return c;
+}
+
+/**
+ * The journal card for "a longer rope swings slower": a short rope and a long rope on one bar, each friend at the far end
+ * of a faint arc, with the short rope's arc drawn twice to say it comes back twice while the long one swings once.
+ */
+export function swingJournalPicture(): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics().roundRect(-170, -24, 340, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }),
+  );
+  const ropes: { x: number; len: number; friend: Friend; angle: number; arcs: number }[] = [
+    { x: -85, len: 110, friend: 'mouse', angle: 0.45, arcs: 2 },
+    { x: 85, len: 250, friend: 'frog', angle: -0.3, arcs: 1 },
+  ];
+  for (const r of ropes) {
+    const arcs = new Graphics();
+    for (let i = 0; i < r.arcs; i++) {
+      const rad = r.len + 30 + i * 22;
+      arcs.arc(r.x, 0, rad, Math.PI / 2 - 0.5, Math.PI / 2 + 0.5);
+    }
+    arcs.stroke({ width: 6, color: ROPE, alpha: 0.35, cap: 'round' });
+    c.addChild(arcs);
+    const arm = new Container();
+    arm.position.set(r.x, 0);
+    arm.rotation = r.angle;
+    const critter = new Critter(SPECS[r.friend]);
+    critter.alive = false;
+    critter.scale.set(0.34);
+    critter.position.set(0, r.len - 5);
+    arm.addChild(
+      new Graphics()
+        .moveTo(-32, 0)
+        .lineTo(-32, r.len)
+        .moveTo(32, 0)
+        .lineTo(32, r.len)
+        .stroke({ width: 5, color: ROPE }),
+      new Graphics()
+        .roundRect(-42, r.len - 5, 84, 14, 6)
+        .fill(wood.fill)
+        .stroke({ width: 3, color: wood.line }),
+      critter,
+    );
+    c.addChild(arm);
+  }
   return c;
 }
 
