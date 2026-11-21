@@ -13,7 +13,7 @@ export const SETTINGS = {
 
 /**
  * Line ids with clips, by the part before the first dot: the island's shell (titles, praise, the
- * home spot, lands and places, the hatch, stickers) and thirty-two whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow and Moon Window.
+ * home spot, lands and places, the hatch, stickers) and thirty-six whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies and Lift It.
  * The rest stays on device speech until the iPad listen passes (docs/ROADMAP.md#a-better-voice).
  */
 export const PREFIXES = [
@@ -66,6 +66,10 @@ export const PREFIXES = [
   'opp',
   'grow',
   'moonwindow',
+  'bolt',
+  'meadow',
+  'buddies',
+  'lift-it',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */
