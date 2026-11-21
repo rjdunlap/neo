@@ -15,6 +15,7 @@ import { HOW_TO as brainBreakHowTo } from '../games/brain-break/howto.ts';
 import { HOW_TO as bubblePopHowTo } from '../games/bubble-pop/howto.ts';
 import { HOW_TO as bugBuilderHowTo } from '../games/bug-builder/howto.ts';
 import { HOW_TO as bumperGardenHowTo } from '../games/bumper-garden/howto.ts';
+import { HOW_TO as bunnyPatchesHowTo } from '../games/bunny-patches/howto.ts';
 import { HOW_TO as caravanDaysHowTo } from '../games/caravan-days/howto.ts';
 import { HOW_TO as chainReactionHowTo } from '../games/chain-reaction/howto.ts';
 import { HOW_TO as circuitGardenHowTo } from '../games/circuit-garden/howto.ts';
@@ -212,6 +213,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'bubble-pop': bubblePopHowTo,
   'bug-builder': bugBuilderHowTo,
   'bumper-garden': bumperGardenHowTo,
+  'bunny-patches': bunnyPatchesHowTo,
   'caravan-days': caravanDaysHowTo,
   'chain-reaction': chainReactionHowTo,
   'circuit-garden': circuitGardenHowTo,
