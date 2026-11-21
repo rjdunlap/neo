@@ -56,6 +56,8 @@ import {
 
 /** Top speed of the puddle, units per second. */
 const SPEED = 320;
+/** Level 13's hop: a touch anywhere sends the puddle across in a splash, so a first touch is answered at once. */
+const SPLASH_SPEED = 1100;
 /** A too-big thing re-arms once its center is this far outside the puddle. */
 const REARM = 30;
 const WATER = 0x8fd0f5;
@@ -106,7 +108,7 @@ function thingNode(plan: Plan, t: Thing): Container {
     n.anchor.set(0.5);
     c.addChild(n);
     if (plan.dots) c.addChild(dotCard(t.size, 0, 50, ink));
-  } else {
+  } else if (!plan.splash) {
     c.addChild(tierDots(t.size, d / 2 + 4, d / 2 - 6));
   }
   return c;
@@ -392,6 +394,7 @@ class PuddleGobble implements Game {
       pail: 'gobble.instruct-pail',
     } as const;
     if (this.plan.twoPails) void this.ctx.instruct('gobble.instruct-two-pails');
+    else if (this.plan.splash) void this.ctx.instruct('gobble.instruct-splash');
     else if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
     else if (this.plan.grow === 3) void this.ctx.instruct('gobble.instruct-grow');
     else if (this.plan.numbers) void this.ctx.instruct('gobble.instruct-order-number');
@@ -622,14 +625,34 @@ class PuddleGobble implements Game {
       dy = this.target.y - p.y;
     const dist = Math.hypot(dx, dy);
     if (dist > 1) {
-      const step = Math.min(dist, SPEED * dt);
+      const step = Math.min(dist, (this.plan.splash ? SPLASH_SPEED : SPEED) * dt);
       p.x += (dx / dist) * step;
       p.y += (dy / dist) * step;
+      if (this.plan.splash && step >= dist) this.splashDown();
     }
+  }
+
+  /** Level 13: the puddle lands and sprays, whether or not anything was under it. */
+  private splashDown() {
+    sfx.pop(5);
+    this.ctx.particles.burst(this.puddle.x, this.puddle.y, {
+      colors: [WATER, 0xffffff],
+      count: 8,
+      speed: [80, 200],
+      gravity: 300,
+      angle: -Math.PI / 2,
+      spread: 1.6,
+      size: [0.2, 0.32],
+    });
   }
 
   private drawMeter() {
     const g = this.meter.clear();
+    // Level 13 has no growth and no size to compare, so the puddle carries no dots or drops.
+    if (this.plan.splash) {
+      this.badgeText.text = '';
+      return;
+    }
     const r = this.diameter / 2;
     if (this.plan.mode === 'grow') {
       // Its tier's dots above, and the growth drops below.
@@ -1243,8 +1266,9 @@ export const puddleGobble: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'numbers',
   skills: ['comparison', 'measurement', 'ordering', 'addition', 'planning'],
-  bands: ['toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [13],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Name a thing ("Can it soak the ball yet?") before the other one steers there.',

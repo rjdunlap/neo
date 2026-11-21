@@ -42,7 +42,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Puddle Gobble
 
-*toddler–school* · [Puddle Gobble](games/puddle-gobble.md)
+*lap–school* · [Puddle Gobble](games/puddle-gobble.md)
 
 ### Lost Layers
 

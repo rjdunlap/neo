@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/puddle-gobble; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `puddle-gobble` · **Land:** Bubble Beach · **Ages:** toddler–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `puddle-gobble` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** comparison, measurement, ordering, addition, planning
 
 | Band | Levels, easiest first |
 | --- | --- |
+| lap | 13 |
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3, 4, 5, 10, 6 |
@@ -27,6 +28,7 @@
 | 10 | Count the dots |
 | 11 | Too full |
 | 12 | Two pails |
+| 13 | Splash |
 
 <!-- end generated -->
 

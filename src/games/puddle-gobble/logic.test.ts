@@ -681,7 +681,7 @@ describe('level 12, two pails', () => {
   };
 
   it('is appended for school only, after 11, with nothing renumbered', () => {
-    expect(LEVEL_COUNT).toBe(12);
+    expect(LEVEL_COUNT).toBe(13);
     expect(plan.name).toBe('Two pails');
     expect(LEVELS.school).toEqual({ min: 5, max: 12, order: [5, 10, 6, 7, 8, 9, 11, 12] });
     expect(LEVELS.prek?.max).toBe(10);
@@ -863,3 +863,54 @@ function reachable(b: Board): State[] {
   }
   return [...seen.values()].filter((s) => !done(b, s));
 }
+
+describe('level 13, Splash (the lap entry)', () => {
+  const plan = planFor(13);
+
+  it('is appended for lap alone, below no saved level, and school and the rest keep their ranges', () => {
+    expect(plan.name).toBe('Splash');
+    expect(LEVELS.lap).toEqual({ min: 13, max: 13 });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 2 });
+    expect(LEVELS.school?.max).toBe(12);
+  });
+
+  it('three shells, a puddle already at the biggest tier, nothing refused, three soaks finish, no growth', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const b = makeBoard(plan, new Rng(seed));
+      expect(b.fallback).toBeUndefined();
+      expect(b.things).toHaveLength(3);
+      expect(b.things.every((t) => t.kind === 'shell')).toBe(true);
+      let s = startState(b);
+      expect(s.puddle).toBe(4);
+      for (const t of b.things) {
+        expect(refusal(b, s, t.id)).toBeNull();
+        const r = soak(b, s, t.id);
+        expect(r.ok && r.state.puddle).toBe(4);
+        if (r.ok) s = r.state;
+      }
+      expect(done(b, s)).toBe(true);
+    }
+  });
+
+  it('draws every shell at least 100 wide and lays them out clear of the puddle and pet at four views', () => {
+    const b = authoredBoard(plan);
+    expect(thingDiameter(plan, b.things[0])).toBeGreaterThanOrEqual(100);
+    for (const view of [
+      { w: 1024, h: 768 },
+      { w: 768, h: 1024 },
+      { w: 390, h: 844 },
+      { w: 844, h: 390 },
+    ]) {
+      const f = fieldFor(plan, view);
+      for (let seed = 1; seed <= 50; seed++) {
+        const placed = beachLayout(makeBoard(plan, new Rng(seed)), new Rng(seed));
+        expect(placed).toHaveLength(3);
+        for (const p of placed) {
+          const at = placeOn(f, p);
+          expect(at.x).toBeGreaterThan(f.x0);
+          expect(at.x).toBeLessThan(f.x1);
+        }
+      }
+    }
+  });
+});
