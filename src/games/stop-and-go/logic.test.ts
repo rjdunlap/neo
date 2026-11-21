@@ -25,6 +25,10 @@ import {
   lampRolls,
   nextLamp,
   planFor,
+  WAIT_LEVEL,
+  WAIT_PHASE,
+  waitCycleFor,
+  LEVELS,
   rightNow,
   safe,
   touchCounts,
@@ -101,7 +105,7 @@ describe('Stop and Go', () => {
 
   it('sends and steps only on green, so the hand never makes the one mistake', () => {
     expect(PLANS.map((p) => p.mode)).toEqual(['toy', 'send', 'walk', 'cross', 'lanes', 'busy']);
-    expect(GO_TARGET).toEqual({ lamps: 'lamp', toy: 'light', send: 'car', walk: 'step', lanes: 'car' });
+    expect(GO_TARGET).toEqual({ lamps: 'lamp', wait: 'car', toy: 'light', send: 'car', walk: 'step', lanes: 'car' });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
       for (const mode of ['send', 'walk'] as const)
@@ -339,5 +343,32 @@ describe('Stop and Go: whose light and the busy crossing', () => {
       expect(done).toBe(8);
       expect(handOvers).toBeGreaterThanOrEqual(2);
     }
+  });
+});
+
+describe('Stop and Go level 10, Wait for green', () => {
+  it('is a toddler level between 1 and 2, with its own plan', () => {
+    expect(planFor(WAIT_LEVEL).mode).toBe('wait');
+    expect(LEVELS.toddler?.order).toEqual([1, 10, 2]);
+    expect(LEVELS.toddler?.max).toBeGreaterThanOrEqual(WAIT_LEVEL);
+  });
+  it('has a two-colour cycle with long greens and reds and no yellow', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const cycle = waitCycleFor(new Rng(seed));
+      expect(cycle.map((c) => c.light)).toEqual(['green', 'red']);
+      for (const c of cycle) expect(c.seconds).toBeGreaterThanOrEqual(WAIT_PHASE.min);
+      const total = cycle[0].seconds + cycle[1].seconds;
+      for (let t = 0; t < total * 2; t += 0.1) expect(lightAt(t, cycle)).not.toBe('yellow');
+    }
+  });
+  it('sends on green and only nudges on red: nothing is a miss', () => {
+    expect(carTap('wait', 'green', true)).toBe('send');
+    expect(carTap('wait', 'red', true)).toBe('nudge');
+    expect(carTap('wait', 'red', false)).toBe('toot');
+    expect(carTap('wait', 'green', false)).toBe('toot');
+    expect(hintOn('wait', 'green')).toBeNull();
+    expect(rightNow('wait', 'red')).toBe(false);
+    expect(rightNow('wait', 'green')).toBe(true);
+    expect(GO_TARGET.wait).toBe('car');
   });
 });

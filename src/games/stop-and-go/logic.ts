@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  *
  * Nothing is timed: the light keeps cycling as long as she likes, and waiting is never wrong.
  */
-export type GoMode = 'lamps' | 'toy' | 'send' | 'walk' | 'cross' | 'lanes' | 'busy';
+export type GoMode = 'lamps' | 'wait' | 'toy' | 'send' | 'walk' | 'cross' | 'lanes' | 'busy';
 
 export interface GoPlan {
   mode: GoMode;
@@ -36,7 +36,8 @@ export const PLANS: GoPlan[] = [
 export const LEVELS: BandLevels = {
   // Level 9 is the easiest, so lap plays it first and then 1 (see `order`).
   lap: { min: 1, max: 9, order: [9, 1] },
-  toddler: { min: 1, max: 2 },
+  // Level 10 (Wait for green) sits between 1 and 2, so toddler plays 1, 10, then 2.
+  toddler: { min: 1, max: 10, order: [1, 10, 2] },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
 };
@@ -52,8 +53,16 @@ export const LAMPS_PLAN: GoPlan = {
   name: "Go car, stop car: one big lamp, and a touch anywhere turns it: green, the car goes round; red, it stops (lap's first level)",
 };
 
+/** Toddler's bridge between the toy light and the self-changing one (level 10): a two-lamp light, one car, and a red tap is only a nudge. */
+export const WAIT_LEVEL = 10;
+export const WAIT_PLAN: GoPlan = {
+  mode: 'wait',
+  goal: 3,
+  name: 'Wait for green: a red and green light changes by itself; tap the car when it is green (a tap on red is only a "wait!", never a miss)',
+};
+
 export const planFor = (level: number) =>
-  level === LAMPS_LEVEL ? LAMPS_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === LAMPS_LEVEL ? LAMPS_PLAN : level === WAIT_LEVEL ? WAIT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export type Light = 'green' | 'yellow' | 'red';
 
@@ -75,6 +84,13 @@ export const cycleFor = (rng: { range(min: number, max: number): number }): Cycl
   { light: 'yellow', seconds: PHASE.yellow },
   { light: 'red', seconds: rng.range(PHASE.min, PHASE.max) },
 ];
+
+/** Level 10's cycle: no yellow (a zero-length phase), each colour long and seeded, so waiting is easy to see. */
+export const waitCycleFor = (rng: { range(min: number, max: number): number }): Cycle => [
+  { light: 'green', seconds: rng.range(WAIT_PHASE.min, WAIT_PHASE.max) },
+  { light: 'red', seconds: rng.range(WAIT_PHASE.min, WAIT_PHASE.max) },
+];
+export const WAIT_PHASE = { min: 4, max: 5 } as const;
 
 /** Which light shows `t` seconds into the cycle. */
 export function lightAt(t: number, cycle: Cycle = CYCLE): Light {
@@ -108,7 +124,7 @@ export interface Crossing {
 export const safe = (c: Crossing) => !(c.ns === 'green' && c.ew === 'green');
 
 /** What a capable child touches at each level but the crossing: the toy light, the car at the front, or the step button. */
-export const GO_TARGET = { lamps: 'lamp', toy: 'light', send: 'car', walk: 'step', lanes: 'car' } as const;
+export const GO_TARGET = { lamps: 'lamp', wait: 'car', toy: 'light', send: 'car', walk: 'step', lanes: 'car' } as const;
 
 /**
  * Whether a tap that lands now is right: the toy light answers every tap, but a car or a step is only right on green
@@ -147,8 +163,10 @@ export type CarAnswer = 'drive' | 'toot' | 'send' | 'nudge' | 'miss';
 export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
   if (mode === 'lamps') return 'toot';
   if (mode === 'toy') return light === 'green' ? 'drive' : 'toot';
-  if ((mode !== 'send' && mode !== 'lanes') || !front) return 'toot';
+  if ((mode !== 'send' && mode !== 'lanes' && mode !== 'wait') || !front) return 'toot';
   const j = judgeGo(light);
+  // Wait for green: red is the nudge, never the miss.
+  if (mode === 'wait') return j === 'go' ? 'send' : 'nudge';
   return j === 'go' ? 'send' : j === 'wait' ? 'nudge' : 'miss';
 }
 

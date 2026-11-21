@@ -14,6 +14,11 @@ export const HOW_TO: GameHowTo = {
       to: 1,
       text: 'Tap the traffic light to change it: red stops the car, green makes it go. Tapping the car counts too: it toots, and on green it drives round.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'A red and green light changes by itself, slowly: wait until it is green, then tap the car to send it. Three cars go.',
+    },
     { from: 2, to: 2, text: 'The light changes by itself: tap a car only when the light is green.' },
     { from: 3, to: 3, text: 'Tap the feet to step toward the flag on green, and freeze on red.' },
     { from: 4, to: 4, text: 'At the crossing, tap a light to let one road go at a time.' },
@@ -30,7 +35,8 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { from: 9, to: 9, text: 'The round ends after eight touches.' },
-    { to: 8, text: 'The round ends when the cars or the pet have reached the end.' },
+    { from: 10, to: 10, text: 'The round ends after three cars have gone on green.' },
+    { from: 1, to: 8, text: 'The round ends when the cars or the pet have reached the end.' },
   ],
   note: [
     { from: 1, to: 1, text: 'Every touch counts toward the round; there is nothing to get wrong.' },
@@ -38,6 +44,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'Every touch counts toward the round, anywhere on the screen or on the car, so nothing can go wrong; the round ends after eight touches.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'Tapping the car on red is never a miss: it rumbles and says "wait!", and the round still counts every car that goes on green.',
     },
     {
       from: 2,

@@ -3,6 +3,8 @@ export const VOICE = {
   'game.stop-and-go': ['Stop and go!'],
   'go.lamps': ['Touch anywhere! Green, the car goes. Red, it stops.'],
   'go.toy': ['Tap the traffic light! Green means go, red means stop.'],
+  'go.wait.intro': ['Wait for the green light! When it is green, tap the car to make it go.'],
+  'go.wait': ['Wait! Wait for green.'],
   'go.send': ['When the light is green, tap the car to make it go. Red means wait!'],
   'go.walk': ['Red light, green light! Tap the feet to walk on green. On red, freeze!'],
   'go.cross': [

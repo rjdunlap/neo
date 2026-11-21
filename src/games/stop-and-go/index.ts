@@ -36,6 +36,7 @@ import {
   touchCounts,
   VEHICLES,
   cycleFor,
+  waitCycleFor,
   type Cycle,
   type GoPlan,
   type Lamp,
@@ -55,6 +56,8 @@ const CAR_COLORS: ColorName[] = ['blue', 'pink', 'orange', 'purple', 'teal', 're
 /** A three-lamp traffic light on a pole; the lit lamp is bright, the others dim. */
 class TrafficLight extends Container {
   light: Light = 'red';
+  /** Level 10's light has only a red and a green lamp, with the same sizes and spacing as the three-lamp one. */
+  twoLamp = false;
   private readonly box = new Graphics();
   constructor(pole = true) {
     super();
@@ -65,9 +68,14 @@ class TrafficLight extends Container {
   }
   set(l: Light) {
     this.light = l;
-    const g = this.box.clear().roundRect(-44, -164, 88, 168, 22).fill(ink);
-    (['red', 'yellow', 'green'] as Light[]).forEach((x, i) =>
-      g.circle(0, -134 + i * 52, 22).fill({ color: LAMP[x], alpha: x === l ? 1 : 0.22 }),
+    const top = this.twoLamp ? -112 : -164;
+    const lamps: Light[] = this.twoLamp ? ['red', 'green'] : ['red', 'yellow', 'green'];
+    const g = this.box
+      .clear()
+      .roundRect(-44, top, 88, this.twoLamp ? 116 : 168, 22)
+      .fill(ink);
+    lamps.forEach((x, i) =>
+      g.circle(0, top + 30 + i * 52, 22).fill({ color: LAMP[x], alpha: x === l ? 1 : 0.22 }),
     );
   }
 }
@@ -263,7 +271,7 @@ class StopAndGo implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.crossMode = isCross(this.plan.mode);
-    this.cycle = cycleFor(ctx.rng);
+    this.cycle = this.plan.mode === 'wait' ? waitCycleFor(ctx.rng) : cycleFor(ctx.rng);
     this.laneCycle = this.plan.mode === 'lanes' ? laneCycles(ctx.rng) : null;
     this.order = this.plan.mode === 'busy' ? arrivalOrder(ctx.rng, this.plan.goal) : [];
     this.backdrop = new Backdrop(
@@ -285,6 +293,10 @@ class StopAndGo implements Game {
     onTap(this.light2, () => this.tapLight(this.light2), { cooldown: 300 });
     this.light2.visible = this.crossMode || this.plan.mode === 'lanes';
     this.light.visible = this.plan.mode !== 'lamps';
+    if (this.plan.mode === 'wait') {
+      this.light.twoLamp = true;
+      this.light.set('red');
+    }
     this.lamp.visible = this.plan.mode === 'lamps';
     // One big lamp: the whole screen is the move. The car sits above this layer, so a touch on it still toots.
     if (this.plan.mode === 'lamps')
@@ -402,6 +414,7 @@ class StopAndGo implements Game {
       lamps: 'go.lamps',
       toy: 'go.toy',
       send: 'go.send',
+      wait: 'go.wait.intro',
       walk: 'go.walk',
       cross: 'go.cross',
       lanes: 'go.lanes',
@@ -512,7 +525,7 @@ class StopAndGo implements Game {
       }
     }
     // The light runs itself on the send and walk levels.
-    if (this.plan.mode === 'send' || this.plan.mode === 'walk') {
+    if (this.plan.mode === 'send' || this.plan.mode === 'walk' || this.plan.mode === 'wait') {
       const l = lightAt(this.clock, this.cycle);
       if (l !== this.light.light) {
         this.light.set(l);
@@ -744,6 +757,7 @@ class StopAndGo implements Game {
       this.busy ||
       this.finished ||
       (this.plan.mode !== 'send' &&
+        this.plan.mode !== 'wait' &&
         this.plan.mode !== 'toy' &&
         this.plan.mode !== 'lamps' &&
         this.plan.mode !== 'lanes')
@@ -775,7 +789,7 @@ class StopAndGo implements Game {
     }
     if (answer === 'nudge') {
       this.toot(car);
-      return void this.ctx.say('go.yellow');
+      return void this.ctx.say(this.plan.mode === 'wait' ? 'go.wait' : 'go.yellow');
     }
     this.squash(car);
     this.stopMiss(car.lane === 'bike' ? 'go.red.bike' : car.lane === 'car' ? 'go.red.car' : 'go.red');
@@ -944,7 +958,7 @@ export const stopAndGo: GameModule = {
   skills: ['self-control', 'colors', 'safety', 'turn-taking'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [9],
+  entryLevels: [9, 10],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
