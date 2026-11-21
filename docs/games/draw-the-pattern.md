@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/draw-the-pattern; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `draw-the-pattern` · **Land:** Painted Canyon · **Ages:** lap–pre-K · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `draw-the-pattern` · **Land:** Painted Canyon · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** fine-motor, writing, patterns
 
@@ -12,6 +12,7 @@
 | toddler | 1, 10, 2, 3 |
 | preschool | 3–5 |
 | pre-K | 5, 9, 6, 7, 8 |
+| school | 8, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +26,7 @@
 | 8 | Two, then one: patterns like hill, hill, dip; draw what comes next |
 | 9 | Slanting lines: rain from a cloud, then an X, each line from its own ring |
 | 10 | Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag |
+| 11 | Spiral and eight: a snail shell round into the middle, then a figure of eight through its crossing |
 
 <!-- end generated -->
 

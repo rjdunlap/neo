@@ -48,6 +48,11 @@ export const PLANS: readonly Plan[] = [
     name: 'Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag',
     count: 2,
   },
+  {
+    mode: 'trace',
+    name: 'Spiral and eight: a snail shell round into the middle, then a figure of eight through its crossing',
+    count: 2,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -57,6 +62,8 @@ export const LEVELS: BandLevels = {
   preschool: { min: 3, max: 5 },
   // Level 9's slanting lines come between memory (5) and the shapes (6), whose triangle is made of them.
   prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
+  // The school window (decided 2026-11-17, once the geometry probe passed): level 8's patterns, then 11's spiral and eight.
+  school: { min: 8, max: 11, order: [8, 11] },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -146,7 +153,10 @@ export type PieceId =
   | 'bridge'
   | 'bunting'
   | 'kite'
-  | 'treasure';
+  | 'treasure'
+  | 'snail'
+  | 'glasses'
+  | 'racetrack';
 
 /**
  * What a stroke can become, three things each, chosen by the round's seed. The strokes never change with the piece; only
@@ -172,6 +182,9 @@ export const SHAPE_SETS: readonly (readonly [cross: PieceId, square: PieceId, tr
 
 /** Level 9's X becomes a kite's crossed sticks or a treasure mark. */
 export const X_PIECES: readonly PieceId[] = ['kite', 'treasure'];
+
+/** Level 11's figure of eight becomes a pair of glasses or a racetrack. */
+export const EIGHT_PIECES: readonly PieceId[] = ['glasses', 'racetrack'];
 
 /** One unit's width along the strip: the strip holds five. */
 export const UNIT_W = 0.6;
@@ -243,6 +256,8 @@ export interface Stroke {
     | 'slant'
     | 'x-back'
     | 'x-fwd'
+    | 'spiral'
+    | 'eight'
     | 'free';
   /** One path, or two: a circle's two ways round, or levels 7–8's two candidates (the continuing one is `right`). */
   orders: Point[][];
@@ -540,6 +555,11 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
         },
       ];
     }
+    case 11:
+      return [
+        { piece: 'snail', strokes: [spiralStroke()] },
+        { piece: rng.pick(EIGHT_PIECES), strokes: [eightStroke()] },
+      ];
     default: {
       const shapes: Shape[] = l === 7 ? ['AB', 'AB'] : rng.shuffle<Shape>(['AAB', 'ABB']);
       const pairs = rng.shuffle([...PAIRS]).slice(0, 2);
@@ -572,6 +592,58 @@ function circle(cx: number, cy: number, r: number): Point[][] {
     SPACING,
   );
   return [ccw, cw];
+}
+
+/* ---------------------------------------------------------------- spiral and eight (level 11) */
+
+/** How far round level 11's spiral goes: one and an eighth turns, from the top of the outside ring into the middle. */
+export const SPIRAL_TURNS = 1.125;
+/**
+ * The snail shell: a spiral that goes clockwise from the top of a wide outside ring into the middle. Each turn it draws in
+ * 0.34 strip units up and down and 0.6 across, so a ring stays at least two corridors (0.3) from the ring outside it on a
+ * strip one unit high. The pet draws the first quarter turn.
+ */
+export function spiralStroke(): Stroke {
+  const cx = 1.7,
+    cy = 0.56;
+  const path = curve((u) => {
+    const turns = SPIRAL_TURNS * u,
+      t = 2 * Math.PI * turns;
+    return [cx + (1 - 0.6 * turns) * Math.sin(t), cy - (0.46 - 0.34 * turns) * Math.cos(t)];
+  }, 160);
+  const pts = sampleStroke(path, SPACING);
+  // The pet's quarter turn ends at the right of the outside ring, level with the middle.
+  const lead = indexAtLength(pts, lengthTo(path, 40));
+  return { kind: 'spiral', orders: [pts], lead, corners: [] };
+}
+
+/** The last checkpoint no further along the path than `d`. */
+function indexAtLength(points: readonly Point[], d: number): number {
+  let run = 0;
+  for (let i = 1; i < points.length; i++) {
+    run += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+    if (run > d + 1e-9) return i - 1;
+  }
+  return points.length - 1;
+}
+
+/** The figure of eight's half-width and the height of each lobe above and below the middle. */
+const EIGHT_A = 1,
+  EIGHT_B = 0.35;
+/**
+ * A figure of eight lying down: from the left end, down round the left lobe, up through the crossing in the middle, round
+ * the right lobe, back through the crossing and round the top of the left lobe to where it began. The pet draws to the
+ * bottom of the left lobe; she carries it through the crossing, where it goes straight on into the other lobe.
+ */
+export function eightStroke(): Stroke {
+  const cx = 1.7;
+  const path = curve((u) => {
+    const t = -Math.PI / 2 + 2 * Math.PI * u;
+    return [cx + EIGHT_A * Math.sin(t), BASE - EIGHT_B * Math.sin(2 * t)];
+  }, 160);
+  const pts = sampleStroke(path, SPACING);
+  const lead = indexAtLength(pts, lengthTo(path, 20));
+  return { kind: 'eight', orders: [pts], lead, corners: [] };
 }
 
 /** Levels 7–8: the pet's units as one stroke, then one stroke per chosen unit with both candidates. */
