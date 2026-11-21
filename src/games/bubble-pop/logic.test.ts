@@ -11,6 +11,10 @@ import {
   LEVELS,
   dicePips,
   dotAsks,
+  matchFaces,
+  matchPair,
+  matchTap,
+  partners,
   pictureLine,
   riderFor,
   spawnSize,
@@ -20,6 +24,7 @@ import {
   bondNumbers,
   bubbleToPop,
   choosePalette,
+  clearSpot,
   countRun,
   signFor,
   FRIEND_SOUND,
@@ -182,6 +187,10 @@ describe('the bubble the ghost finger pops', () => {
         }
         if (plan.mode === 'bonds')
           shown = bondNumbers(plan.sum!, plan.goal, rng).map((n, i) => at(100 + i * 90, 300, { number: n }));
+        if (plan.mode === 'match')
+          shown = matchFaces(plan, rng).map((f, i) =>
+            at(100 + i * 90, 300, { number: f.number, pips: f.pips }),
+          );
         shown.push(at(500, 300, { rainbow: true, number: 99 }));
         // Pop a whole round the way the bot would, and the round must finish with no wrong tap.
         let held: DemoBubble | null = null;
@@ -190,6 +199,19 @@ describe('the bubble the ghost finger pops', () => {
           const pick: DemoBubble | null = bubbleToPop(plan.mode, shown, target, next, plan.sum, held, 'big');
           expect(pick, `${plan.mode} seed ${seed}`).not.toBeNull();
           expect(pick!.rainbow).toBeFalsy();
+          if (plan.mode === 'match') {
+            if (!held) held = pick;
+            else {
+              expect(matchTap(held, pick!)).toBe('match');
+              // The pair is replaced by a new pair of the same count, so every bubble still has a partner showing.
+              const { number } = pick!;
+              shown = shown.filter((b) => b !== held && b !== pick);
+              shown.push(at(150, 400, { number, pips: false }), at(650, 400, { number, pips: true }));
+              held = null;
+              pops++;
+            }
+            continue;
+          }
           if (plan.mode === 'bonds') {
             if (!held) held = pick;
             else {
@@ -472,7 +494,7 @@ describe('which one has the dots (level 17, preschool, between 6 and 7)', () => 
   const plan = planFor(17);
 
   it('is played by preschoolers after the colors and before the numerals, and by no other band', () => {
-    expect(LEVELS.preschool!.order).toEqual([4, 5, 6, 17, 7, 8, 9]);
+    expect(LEVELS.preschool!.order).toEqual([4, 5, 6, 17, 7, 18, 8, 9]);
     for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
       expect(LEVELS[band]!.order ?? [], band).not.toContain(17);
   });
@@ -516,6 +538,109 @@ describe('which one has the dots (level 17, preschool, between 6 and 7)', () => 
     }
     expect(dicePips(0)).toEqual([]);
     expect(dicePips(7)).toEqual([]);
+  });
+});
+
+describe('where a still bubble starts', () => {
+  it('starts clear of the bubbles already there whenever the screen has room, and never outside its box', () => {
+    for (const level of [9, 17, 18]) {
+      const plan = planFor(level);
+      for (let seed = 1; seed <= 50; seed++) {
+        const rng = new Rng(seed);
+        const placed: { x: number; y: number; r: number }[] = [];
+        for (let i = 0; i < plan.most; i++) {
+          const r = plan.radius[1];
+          const box = spawnBox(768, 1662, r, true);
+          const at = clearSpot(box, r, placed, rng);
+          expect(at.x).toBeGreaterThanOrEqual(box.x[0]);
+          expect(at.x).toBeLessThanOrEqual(box.x[1]);
+          expect(at.y).toBeGreaterThanOrEqual(box.y[0]);
+          expect(at.y).toBeLessThanOrEqual(box.y[1]);
+          for (const o of placed)
+            expect(Math.hypot(o.x - at.x, o.y - at.y), `level ${level} seed ${seed}`).toBeGreaterThan(
+              o.r + r,
+            );
+          placed.push({ ...at, r });
+        }
+      }
+    }
+  });
+});
+
+describe('dots and numbers together (level 18, preschool, between 7 and 8)', () => {
+  const plan = planFor(18);
+
+  it('comes after level 7, where numerals first appear, and is played by no band but preschool', () => {
+    const order = LEVELS.preschool!.order!;
+    expect(order.indexOf(18)).toBe(order.indexOf(7) + 1);
+    expect(LEVELS.preschool!.max).toBe(18);
+    for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.order ?? [], band).not.toContain(18);
+    expect(plan.mode).toBe('match');
+    expect(signFor(plan, 18, [])).toBeNull();
+    expect(showsDots(18)).toBe(false);
+  });
+
+  it('opens with exactly one numeral and one dot bubble for each count 1 to 4, filling the screen and no more', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const faces = matchFaces(plan, new Rng(seed));
+      expect(faces.length).toBe(plan.most);
+      for (let n = 1; n <= plan.dotsTo!; n++) {
+        expect(faces.filter((f) => f.number === n && f.pips).length).toBe(1);
+        expect(faces.filter((f) => f.number === n && !f.pips).length).toBe(1);
+      }
+      // So every bubble has exactly one partner.
+      for (const f of faces) expect(faces.filter((o) => partners(f, o)).length).toBe(1);
+    }
+  });
+
+  it('never colors a pair alike, at the start or in a replacement, so the color never gives the match away', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const faces = matchFaces(plan, rng);
+      for (const f of faces) {
+        const partner = faces.find((o) => partners(f, o))!;
+        expect(partner.color, `seed ${seed}`).not.toBe(f.color);
+      }
+      for (let n = 1; n <= 4; n++) {
+        const [a, b] = matchPair(n, rng);
+        expect(a.color).not.toBe(b.color);
+        expect(partners(a, b)).toBe(true);
+        expect(RAINBOW).toContain(a.color);
+      }
+    }
+  });
+
+  it('a partner is the same number the other way; the same kind moves the hold and is never a miss', () => {
+    const num = (n: number) => ({ color: null, number: n, pips: false });
+    const dots = (n: number) => ({ color: null, number: n, pips: true });
+    const three = num(3);
+    expect(matchTap(three, dots(3))).toBe('match');
+    expect(matchTap(dots(3), three)).toBe('match');
+    expect(matchTap(three, three)).toBe('release');
+    expect(matchTap(three, num(2))).toBe('switch');
+    expect(matchTap(dots(1), dots(4))).toBe('switch');
+    expect(matchTap(three, dots(2))).toBe('miss');
+    expect(matchTap(dots(4), num(1))).toBe('miss');
+    expect(partners(three, num(3))).toBe(false);
+  });
+
+  it('the ghost finger takes dots first, then the numeral that matches them, and never a wrong partner', () => {
+    const at = (x: number, n: number, pips: boolean): DemoBubble => ({
+      x,
+      y: 300,
+      r: 64,
+      color: null,
+      number: n,
+      pips,
+    });
+    const shown = [at(200, 2, false), at(300, 3, true), at(400, 2, true), at(500, 3, false)];
+    const first = bubbleToPop('match', shown, null, 0, undefined, null)!;
+    expect(first.pips).toBe(true);
+    const second = bubbleToPop('match', shown, null, 0, undefined, first)!;
+    expect(matchTap(first, second)).toBe('match');
+    // Holding one whose partner is not showing yet: wait.
+    expect(bubbleToPop('match', [shown[0], shown[1]], null, 0, undefined, shown[0])).toBeNull();
   });
 });
 

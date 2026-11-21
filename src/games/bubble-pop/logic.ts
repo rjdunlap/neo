@@ -5,16 +5,18 @@ import type { Rng } from '../../engine/random';
 import type { LineId } from '../../content/voice-script';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type BubbleMode = 'free' | 'color' | 'count' | 'bonds' | 'size' | 'dots';
+export type BubbleMode = 'free' | 'color' | 'count' | 'bonds' | 'size' | 'dots' | 'match';
 export type BubbleSize = 'big' | 'little';
 
 /**
  * Modes where a particular bubble is needed (the next number, a partner) are laid out whole and drift in place,
  * so the one she needs never floats off the top. Free and color bubbles rise and leave; color mode sends the
  * asked-for color again whenever none is showing (`spawnTarget`), so none of its rounds is stranded; size mode does
- * the same for the asked-for size. Dot bubbles drift in place, one of each count, so the count asked for is always there.
+ * the same for the asked-for size. Dot bubbles drift in place, one of each count, so the count asked for is always there;
+ * so do the match bubbles, a numeral and its dots for each count, so every bubble's partner is always there.
  */
-export const staysPut = (mode: BubbleMode) => mode === 'count' || mode === 'bonds' || mode === 'dots';
+export const staysPut = (mode: BubbleMode) =>
+  mode === 'count' || mode === 'bonds' || mode === 'dots' || mode === 'match';
 
 /**
  * The friends that can ride in a bubble, in this order. The sticker draws from this list with `rng.pick`, so growing
@@ -87,7 +89,7 @@ export interface BubblePlan {
   anywhere?: boolean;
   /** Size mode: the radius ranges of the two sizes; the round asks for one of them. */
   sizes?: Record<BubbleSize, [number, number]>;
-  /** Dots mode: the largest dot count a bubble carries (one bubble of each count from 1 is always showing). */
+  /** Dots and match modes: the largest dot count a bubble carries (one bubble, or in match one pair, of each count from 1 is always showing). */
   dotsTo?: number;
 }
 
@@ -125,6 +127,9 @@ export const PLANS: BubblePlan[] = [
   },
   // Preschool, between levels 6 and 7: dot patterns with no numeral, one bubble each of 1 to 4, "pop the one with four".
   { mode: 'dots', goal: 6, speed: 30, most: 4, colors: 0, radius: [70, 82], dotsTo: 4 },
+  // Preschool, between levels 7 and 8: a numeral and a dot bubble for each of 1 to 4, all drifting; tap one, then its
+  // partner (the same number the other way). After level 7, where the numerals first appear with dots beneath them.
+  { mode: 'match', goal: 6, speed: 28, most: 8, colors: 0, radius: [60, 68], dotsTo: 4 },
 ];
 
 /** The two sizes must be told apart at a glance: the smallest big bubble is at least this many times the largest little one. */
@@ -135,8 +140,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
   // Level 16 (big and little) sits where color sits: after free popping, before two colors.
   toddler: { min: 1, max: 16, order: [1, 2, 3, 16, 4, 5, 6] },
-  // Level 17 (which one has the dots) comes before the numerals at 7.
-  preschool: { min: 4, max: 17, order: [4, 5, 6, 17, 7, 8, 9] },
+  // Level 17 (which one has the dots) comes before the numerals at 7; level 18 (dots and numbers together) after 7,
+  // the first level that shows her numerals, and before 8 counts further.
+  preschool: { min: 4, max: 18, order: [4, 5, 6, 17, 7, 18, 8, 9] },
   prek: { min: 6, max: 12 },
   school: { min: 10, max: 14 },
 };
@@ -201,9 +207,49 @@ export function dotAsks(plan: BubblePlan, rng: Rng): number[] {
 
 export interface BubbleFace {
   color: ColorName | null;
-  /** The numeral on it, or in dots mode how many dots it carries. */
+  /** The numeral on it, or in dots mode (and on a match-mode `pips` bubble) how many dots it carries. */
   number?: number;
   size?: BubbleSize;
+  /** The number is drawn as dice pips with no numeral. */
+  pips?: boolean;
+}
+
+/** Match mode: what one pair is, a numeral bubble and a dot bubble of the same count. */
+export interface MatchFace {
+  number: number;
+  pips: boolean;
+  color: ColorName;
+}
+
+/**
+ * Match mode: the two bubbles of one count, a numeral and its dice pips. Their colors are drawn apart, so the pair is
+ * found by the number and never by a color.
+ */
+export function matchPair(n: number, rng: Rng): [MatchFace, MatchFace] {
+  const [a, b] = rng.shuffle([...RAINBOW]);
+  return [
+    { number: n, pips: false, color: a },
+    { number: n, pips: true, color: b },
+  ];
+}
+
+/** Match mode: the opening faces, one pair for each count from 1 to the plan's `dotsTo`, in a shuffled order. */
+export const matchFaces = (plan: BubblePlan, rng: Rng): MatchFace[] =>
+  rng.shuffle(Array.from({ length: plan.dotsTo ?? 4 }, (_, i) => matchPair(i + 1, rng)).flat());
+
+/** Match mode: two bubbles are partners when they carry the same number, one as a numeral and one as dots. */
+export const partners = (a: BubbleFace, b: BubbleFace) =>
+  a !== b && a.number !== undefined && a.number === b.number && !!a.pips !== !!b.pips;
+
+/**
+ * Match mode, the second tap while one is held: `match` pops the pair, `switch` moves the hold to a bubble of the same
+ * kind (both numerals or both dots, which is changing her mind and not a wrong answer), `release` lets the held one go,
+ * and `miss` is the other kind with another number.
+ */
+export function matchTap(held: BubbleFace, tapped: BubbleFace): 'match' | 'switch' | 'release' | 'miss' {
+  if (held === tapped) return 'release';
+  if (partners(held, tapped)) return 'match';
+  return !!held.pips === !!tapped.pips ? 'switch' : 'miss';
 }
 
 /** Whether popping this bubble counts: anything in free play, the asked-for color or size, the next number, or the dot count asked for. */
@@ -256,6 +302,28 @@ export function spawnBox(w: number, h: number, r: number, still: boolean, anywhe
   return still
     ? { x: [150 + r, w - 50 - r], y: [130 + r, h - 60 - r] }
     : { x: [130 + r, w - 40 - r], y: [rise, rise] };
+}
+
+/**
+ * Where a still bubble starts: a random spot in `box` clear of the bubbles already there, so two never begin stacked
+ * (overlapping dots read as one bigger count). The spot farthest from the rest after a few tries when none is clear.
+ */
+export function clearSpot(
+  box: { x: number[]; y: number[] },
+  r: number,
+  others: readonly { x: number; y: number; r: number }[],
+  rng: Rng,
+  tries = 24,
+): { x: number; y: number } {
+  let best = { x: box.x[0], y: box.y[0] };
+  let bestGap = -Infinity;
+  for (let i = 0; i < tries; i++) {
+    const at = { x: rng.range(box.x[0], box.x[1]), y: rng.range(box.y[0], box.y[1]) };
+    const gap = Math.min(Infinity, ...others.map((o) => Math.hypot(o.x - at.x, o.y - at.y) - o.r - r));
+    if (gap > 8) return at;
+    if (gap > bestGap) [best, bestGap] = [at, gap];
+  }
+  return best;
 }
 
 /**
@@ -312,6 +380,11 @@ export function bubbleToPop<T extends DemoBubble>(
   if (mode === 'color' || mode === 'size')
     return highest(live.filter((b) => isRight(mode, b, target, next, size)));
   if (mode === 'count' || mode === 'dots') return live.find((b) => b.number === next) ?? null;
+  if (mode === 'match') {
+    // The dots first, then the numeral that says how many: counting, then naming the count.
+    if (held) return live.find((b) => partners(held, b)) ?? null;
+    return live.find((a) => a.pips && live.some((b) => partners(a, b))) ?? null;
+  }
   if (held) return live.find((b) => b !== held && held.number! + b.number! === sum) ?? null;
   return live.find((a) => live.some((b) => b !== a && a.number! + b.number! === sum)) ?? null;
 }
@@ -454,7 +527,9 @@ export type ModePicture =
   /** A big bubble and a little one, the asked-for size ringed. */
   | { kind: 'sizes' }
   /** Bubbles with dice pips and no numeral, the asked-for count ringed (the first). */
-  | { kind: 'pips'; counts: number[] };
+  | { kind: 'pips'; counts: number[] }
+  /** A dot bubble and the numeral that matches it, joined, beside one that does not match. */
+  | { kind: 'match'; n: number; other: number };
 
 export interface BubbleModeCard {
   name: string;
@@ -497,6 +572,7 @@ export const MODE_CARDS: Record<number, BubbleModeCard> = {
   14: { name: 'Tens and fives', line: 'bubble.mode.14', picture: { kind: 'count', numbers: [10, 20, 30] } },
   16: { name: 'Big and little', line: 'bubble.mode.16', picture: { kind: 'sizes' } },
   17: { name: 'Which has the dots?', line: 'bubble.mode.17', picture: { kind: 'pips', counts: [4, 2, 3] } },
+  18: { name: 'Dots and numbers', line: 'bubble.mode.18', picture: { kind: 'match', n: 3, other: 2 } },
 };
 
 /** The card for a level, clamped like `planFor`. */

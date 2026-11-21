@@ -56,11 +56,9 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 ### Game slices from the dives (refilled 2026-11-17)
 
-- **`market-stall` level 8, How much is in the purse?** (school; dive slice 4, a new interaction: typecheck, rule tests, one scripted play at first and last level with one wrong card and one hint, one portrait screenshot). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
-- **`egg-catch` level 13, Sorting gate** (school; new interaction tier: typecheck, unit tests, one filtered play of level 13 with a wrong placement and a hint, one portrait screenshot, `fingerdemo` at 13; the four new `egg.*` voice clips are rendered with `scripts/voice-clips/render.mjs`, so the offline check runs too). [Definition](definitions/egg-catch-sorting-gate.md), [dive](deep-dives/egg-catch.md#build-slices-in-order)
 
 - **`vine-snip` level 6, Where will it land?** (school; new interaction tier: typecheck and rule tests, one filtered `vinesnip` play at level 6 with opposite guesses, Help, replay and one award, one sideways phone screenshot, `fingerdemo` at 6; run the build too, since the voice and how-to barrels change). [Definition](definitions/vine-snip-where-will-it-land.md), [dive](deep-dives/vine-snip.md#build-slices-in-order)
 

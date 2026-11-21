@@ -15,6 +15,9 @@ export const VOICE = {
   'bubble.size.wrong': ["That one's {wrong}. Find {size}!"],
   'bubble.dots': ['Pop the one with {n}!', 'Which one has {n}? Pop it!'],
   'bubble.dots.wrong': ['That one has {wrong}. Find {n}!'],
+  'bubble.match': ['Find the dots and the number that go together. Tap one, then its partner!'],
+  'bubble.matched': ['{n} and {n}! They match!'],
+  'bubble.match.wrong': ["That's {wrong}. Count the dots again!"],
   'bubble.picture.flower': ['A flower!'],
   'bubble.picture.shell': ['A shell!'],
   'bubble.picture.rubber-duck': ['A rubber duck!'],
@@ -46,4 +49,5 @@ export const VOICE = {
   'bubble.mode.14': ['Count by tens or by fives.'],
   'bubble.mode.16': ['Big and little. Pop only the size I say.'],
   'bubble.mode.17': ['Dots and no numbers. Pop the bubble with as many dots as I say.'],
+  'bubble.mode.18': ['Dots and numbers. Tap the dots, then the number that says how many.'],
 } satisfies Record<string, string[]>;

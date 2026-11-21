@@ -1,0 +1,5 @@
+# 2026-11-21 — Bubble Pop level 18, dots and numbers together (PR #1953)
+
+**Changed:** Bubble Pop level 18 (preschool, mode `match`, `order` placement after level 7): a numeral and a dice-pip bubble for each of 1 to 4, tap one then its partner; still bubbles in every still mode now start clear of each other (`clearSpot`); two slot-free voice clips rendered (1681 clips in all); how-to card steps and mode card picture.
+**Ran:** `npm run typecheck`; vitest for `src/games/bubble-pop`, `upright-batch-5`, `src/content` and `scripts/voice-clips` (28 files, 319 passed, 1 skipped); one headless scripted play of level 18 at an upright 390 × 844 view (a numeral held, two wrong dot bubbles: 2 misses, 1 hint, hold kept, partner glowed; a same-kind tap moved the hold with no miss; six pairs with every count shown twice throughout; rainbow; one sticker, history misses 2 hints 1; no page errors); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=9,17,18 FINGER_BAND=preschool` passed; upright screenshot reviewed.
+**Not run:** full `npm test` locally (CI runs it), `npm run build`, the offline suite, `originals` and every other browser suite.

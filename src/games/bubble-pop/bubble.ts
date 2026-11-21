@@ -69,8 +69,10 @@ export interface BubbleOptions {
   picture?: PictureName;
   /** Size mode: which of the two sizes this bubble is. */
   size?: BubbleSize;
-  /** Dots mode: `number` is drawn as dice pips with no numeral. */
+  /** Dots mode, and a match-mode dot bubble: `number` is drawn as dice pips with no numeral. */
   pips?: boolean;
+  /** Leave out the small lower glint, which beside dot bubbles could be counted as one more dot. */
+  noGlint?: boolean;
   rainbow?: boolean;
 }
 
@@ -84,6 +86,8 @@ export class Bubble extends Container {
   readonly friend?: Friend;
   critter: Critter | null = null;
   readonly size?: BubbleSize;
+  /** Its number is drawn as dice pips with no numeral. */
+  readonly pips: boolean;
   readonly pictureName?: PictureName;
   picture: Container | null = null;
   vx = 0;
@@ -108,6 +112,7 @@ export class Bubble extends Container {
     this.addChild(this.ring, this.shell);
 
     this.size = o.size;
+    this.pips = !!o.pips;
     this.pictureName = o.picture;
     if (o.picture) {
       this.picture = drawPicture(o.picture);
@@ -123,7 +128,7 @@ export class Bubble extends Container {
     }
     const g = new Graphics();
     if (o.rainbow) drawRainbowBubble(g, o.r);
-    else drawBubble(g, o.r, o.color, undefined, !o.dots && !o.pips, o.rim);
+    else drawBubble(g, o.r, o.color, undefined, !o.dots && !o.pips && !o.noGlint, o.rim);
     this.shell.addChild(g);
     if (o.pips && o.number !== undefined) {
       const pips = new Graphics();
