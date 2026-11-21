@@ -109,7 +109,7 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 4. **Level 11 *Too full*** (built 2026-11-07, PR #1384). Tier: new level on the existing let-go interaction: typecheck, rule tests (the held-start state, hint reach, strip fits), one browser play of level 11 with one under-shoot and one requested hint, `fingerdemo` at 11; build.
 5. **Two pails, probe and definition** (defined 2026-11-07, PR #1406; docs and one probe test only): a `beachLayout` and strip probe in `logic.test.ts` at four views, then the [definition](../definitions/puddle-gobble-two-pails.md).
 6. **Level 12 *Two pails*** (built 2026-11-07, PR #1409; school 5–12, order adds 12): pour by leading onto a matching pail, tip a full pail back. Tier: new interaction: typecheck, unit tests (rule, registry, lands, how-to), one scripted play of 12 via `BROWSER_SUITE=puddlegobble` with one refused overshoot, one lead onto the wrong pail, one tip back and one hint, one portrait screenshot at 1024×1365, `fingerdemo` at 12, build.
-7. **Lap entry** (now level 13) and **journal**: decisions 1 and 2.
+7. **Lap entry** (level 13 *Splash*; claimed 2026-11-20 by `claude/puddle-gobble-splash`; expected files `src/games/puddle-gobble/`, browser-check case, game page) and **journal** (decided: nothing filed).
 
 ## What was built in this session
 
