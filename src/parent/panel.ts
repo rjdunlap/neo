@@ -29,7 +29,7 @@ import {
   weekCopy,
   type PanelApp,
 } from './copy';
-import { matchesSearch, weekRows, type WeekRow } from './week';
+import { matchesSearch, weekKinds, weekRows, type WeekRow } from './week';
 
 const MONTHS = [
   'January',
@@ -528,8 +528,22 @@ function weekSummary(app: PanelApp): string {
   const table = (rows: WeekRow<GameModule>[], attr: string) =>
     `<table ${attr}>${head}${rows.map((r) => weekRow(r, band, words.older)).join('')}</table>`;
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
+  // What the games asked this week, and one kind she played nothing of (R6, TotoLogic P4).
+  const kinds = weekKinds(
+    all,
+    (g) => ({
+      name: g.name,
+      kind: g.challenge,
+      forBand: g.bands.includes(band),
+      touch: playsByTouch(g),
+      everPlayed: store.stats(g.id).plays > 0 || store.stats(g.id).history.length > 0,
+    }),
+    Math.floor(Date.now() / (7 * DAY)),
+  );
   return `
     <p class="muted">${esc(words.intro)}</p>
+    ${kinds.sentence ? `<p data-week-kinds>${esc(kinds.sentence)}</p>` : ''}
+    ${kinds.untried ? `<p class="muted" data-week-untried>${esc(kinds.untried.line)}</p>` : ''}
     ${first.length ? table(first, 'data-week-played') : '<p data-week-played>Nothing played this week yet.</p>'}
     <details class="parent__every" data-week-every>
       <summary>Every game for their age (${games.length})</summary>

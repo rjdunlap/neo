@@ -30,7 +30,6 @@ None queued: the next phone line is in Next ten.
 
 ### Puzzle-page follow-ups
 
-- **A puzzle page at the table** (PP8, grown-ups' page): write the short offline-play card for mazes, spoken word ladders and domino dots. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 ### Unblocked by the decisions of 2026-11-17
 
@@ -43,7 +42,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`bolt-boards` lap entry** (the same tier): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](deep-dives/bolt-boards.md#decisions-for-the-developer)
 
 
 
