@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 9 with one bigger number first (one miss); level 10 with a too-big touch and the 5 → 10 → 6 step; level 11 under the pail and a requested hint; level 4 upright; level 5 upright in the evening mood; level 12 (two pails) upright with a lead onto the wrong pail, a refused overshoot, a pour, a tip back and a requested hint. `PUDDLE_ONLY=12` plays level 12 alone. */
+  /** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 9 with one bigger number first (one miss); level 10 with a too-big touch and the 5 → 10 → 6 step; level 11 under the pail and a requested hint; level 4 upright; level 5 upright in the evening mood; level 12 (two pails) upright with a lead onto the wrong pail, a refused overshoot, a pour, a tip back and a requested hint. level 13 (Splash, lap) upright with one hop and taps. `PUDDLE_ONLY=12` or `13` plays that level alone. */
   async function puddleGobblePlay() {
     const state = () =>
       page.evaluate(() => {
@@ -205,6 +205,40 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         [3, 5],
       ]);
       await page.setViewportSize({ width: 1024, height: 768 });
+    }
+    /** Level 13 (lap entry) upright: a touch on empty sand hops the puddle there fast; taps finish the three shells with no miss or hint. */
+    const splash = async () => {
+      await page.setViewportSize({ width: 820, height: 1100 });
+      await launch('puddle-gobble', 13, 'Mia', 'lap');
+      await still();
+      const n = await page.evaluate(() => kit.store.data.stickers.length);
+      assert.equal(await page.evaluate(() => neo.scene.game.plan.splash), true, 'level 13 is Splash');
+      assert.equal(await page.evaluate(() => neo.scene.game.board.things.length), 3, 'three shells');
+      const before = await page.evaluate(() => ({ x: neo.scene.game.puddle.x, y: neo.scene.game.puddle.y }));
+      const spot = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return g.ctx.stage.toGlobal({ x: g.field.x0 + 120, y: g.field.y0 + 60 });
+      });
+      await page.evaluate(({ x, y }) => kit.tap(x, y), spot);
+      await page.waitForTimeout(150);
+      const mid = await page.evaluate(() => ({ x: neo.scene.game.puddle.x, y: neo.scene.game.puddle.y }));
+      assert.ok(
+        Math.hypot(mid.x - before.x, mid.y - before.y) > 200,
+        'the puddle hopped most of the way in 150 ms',
+      );
+      await screenshot('puddle-gobble-13-splash-portrait');
+      for (let guard = 0; guard < 8 && !(await page.evaluate(() => neo.scene.finished)); guard++)
+        await followHint();
+      await sticker(n);
+      const st = await state();
+      assert.deepEqual([st.misses, st.hints, st.puddle], [0, 0, 4], 'Splash finishes clean with no growth');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    };
+    if (process.env.PUDDLE_ONLY === '13') {
+      await splash();
+      assert.deepEqual(errors, [], 'page errors');
+      log('Puddle Gobble level 13: a splash hop to a touch, three shells soaked by taps, upright');
+      return;
     }
     if (process.env.PUDDLE_ONLY === '12') {
       await twoPails();
@@ -415,9 +449,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await sticker(n);
     await page.setViewportSize({ width: 1024, height: 768 });
     await twoPails();
+    await splash();
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 9 with a bigger number first, level 10 with dots, level 11 too full, level 4 upright, level 5 upright in the evening, level 12 two pails upright',
+      'Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 9 with a bigger number first, level 10 with dots, level 11 too full, level 4 upright, level 5 upright in the evening, level 12 two pails upright, level 13 splash upright',
     );
   }
 

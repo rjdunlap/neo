@@ -20,6 +20,8 @@ export interface Plan {
   dots?: true;
   /** Level 12: two pails, each with its own number, poured into by leading the puddle onto one. */
   twoPails?: true;
+  /** Level 13 (the lap entry): a touch anywhere hops the puddle there in a splash; three big shells, no growth, nothing refused. */
+  splash?: true;
 }
 
 const PLANS: Plan[] = [
@@ -35,9 +37,12 @@ const PLANS: Plan[] = [
   { id: 10, name: 'Count the dots', mode: 'plus', grow: 0, dots: true },
   { id: 11, name: 'Too full', mode: 'pail', grow: 0 },
   { id: 12, name: 'Two pails', mode: 'pail', grow: 0, twoPails: true },
+  { id: 13, name: 'Splash', mode: 'grow', grow: 0, splash: true },
 ];
 
 export const LEVELS: BandLevels = {
+  // Level 13 is the lap entry: an easy level appended above the ladder (`entryLevels`), so no saved level is renumbered.
+  lap: { min: 13, max: 13 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   // Level 10 sits between pictured order (5) and bare numerals (6).
@@ -153,7 +158,8 @@ export const PUDDLE_D = [0, 100, 150, 200, 250];
 export const MAX_PUDDLE_D = 250;
 
 export function thingDiameter(plan: Plan, t: Thing) {
-  return numeric(plan) ? THING_D[2] : THING_D[t.size];
+  // Splash's shells are drawn at tier 2's width so a first touch lands near one.
+  return numeric(plan) || plan.splash ? THING_D[2] : THING_D[t.size];
 }
 
 /** The puddle's drawn width: by tier, or stepped with its number and capped (the rule reads only the number). */
@@ -511,6 +517,16 @@ export function authoredBoard(plan: Plan): Board {
           ['shell', 1],
         ]),
       };
+    case 13:
+      return {
+        plan,
+        start: 4,
+        things: things([
+          ['shell', 1],
+          ['shell', 1],
+          ['shell', 1],
+        ]),
+      };
     case 2:
       return {
         plan,
@@ -664,6 +680,11 @@ export function passesFilter(board: Board): boolean {
   switch (plan.id) {
     case 1:
       return tooBig.length === 0 && things.length === 5;
+    // Splash: the puddle is already the biggest tier, so every shell fits and three soaks finish.
+    case 13:
+      return (
+        start === 4 && tooBig.length === 0 && things.length === 3 && things.every((t) => t.kind === 'shell')
+      );
     case 2: {
       if (tooBig.length !== 1) return false;
       // It fits after exactly two soaks.
@@ -745,6 +766,12 @@ function draw(plan: Plan, rng: Rng): Board {
   switch (plan.id) {
     case 1:
       return { plan, start: 2, things: picture(rng, [1, 1, 1, 1, 1]) };
+    case 13:
+      return {
+        plan,
+        start: 4,
+        things: picture(rng, [1, 1, 1]).map((t) => ({ ...t, kind: 'shell' as const })),
+      };
     case 2:
       return { plan, start: 1, things: picture(rng, [1, 1, 1, 1, 2]) };
     case 3:
