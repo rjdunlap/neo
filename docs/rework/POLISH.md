@@ -120,6 +120,8 @@ _Built 2026-10-23 ([PR #906](https://github.com/rjdunlap/neo/pull/906)): `App.sh
 
 ### Slice 10: the other ten backdrops
 
+_Screenshot review passed 2026-11-21 ([PR #1939](https://github.com/rjdunlap/neo/pull/1939)), by the session as [decided 2026-11-17](../archive/DECISIONS-2026-11-17.md#rework): Rainbow Meadow's picture beside the untouched Counting Cove and Bubble Beach at 1024 × 768, 768 × 1024, 844 × 390 and 390 × 844, and Duck Pond's illustrated ducks in portrait. The painted meadow reads as the same calm, cel-shaded world as the code-drawn lands, a step richer rather than foreign; its horizon sits under the heading band at every view, the spots read on their cream plates and the resident stays clear on the lawn, including on a tall phone, where the picture keeps its middle half; the ducks match the meadow's outline and shading. Not done: the ten images. Every R26 run that day stopped on the ChatGPT plan's usage limit before generating ([run log](art-requests/QUEUE.md#run-log)); the briefs are ready to re-send._
+
 - **Needs:** R26 from [batch 2](art-requests/CHATGPT-BATCH.md#batch-2-after-the-meadow-is-accepted), after slices 4 and 6 are built and their screenshot review beside the untouched lands passes (decided 2026-10-23; the iPad look is a device check that can roll a step back).
 - **Changes:** none in code. Import each image; slice 4's loader shows it.
 - **Done when:** each location is checked at four views with the slice 4 rules (horizon, landmarks clear of spots, the plates), and the precache total is recorded.

@@ -353,6 +353,8 @@ Check: outside the arm areas the silhouette stays within 4 px of the base; insid
 
 ## Run log
 
+- 2026-11-21 · R26 · Codex built-in image_gen via `scripts/codex-image.sh` · **nothing kept**: all ten backdrop runs (two candidates each, the batch 2 prompt with `home-day-3`, the concept sheet and `land-meadow-5` attached) stopped at once on the ChatGPT plan's usage limit, before any image. RW14 slice 10's screenshot review of slices 4 and 6 passed the same day ([POLISH](../POLISH.md#slice-10-the-other-ten-backdrops)); the next run re-sends the same briefs ([PR #1939](https://github.com/rjdunlap/neo/pull/1939)).
+
 - 2026-10-23 · R23 · built-in image_gen.imagegen, model undisclosed · chosen untouched `land-meadow-5.png` (1.67 MB), no missing file. Five calls; full-size/120 px and landscape/portrait composition review, source hash, links/diff passed. [Prompts and caveats](../concepts/generated/R23-PROMPTS.md). No preparation/import, integration or device proof.
 
 - 2026-10-23 · R22 · built-in image_gen.imagegen, model undisclosed · five calls; chose base 2 and portrait 2, two untouched originals (2,432,234 bytes). Full-size/120 px white/sky-blue review, dimensions and source SHA-256 equality passed; [exact prompts and padding/background caveats](../concepts/generated/R22-PROMPTS.md). No missing asset. Links/diff checked; no preparation, rigging, src integration or runtime/device checks. Worker `01a16a34-16dd-7a61-b3b0-e85c195ce57e`, `codex/art-r22`, [#888](https://github.com/rjdunlap/neo/pull/888).
