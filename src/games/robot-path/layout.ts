@@ -88,3 +88,61 @@ export function robotLayout(
     queue: q,
   };
 }
+
+/**
+ * Level 15 (A routine): the board beside a compact editor, in every orientation. The board is a playback display (cells
+ * need not be 100); every control is 100 units. The editor column is three tiles wide: the purple Do this row (two
+ * slots), the Start here row (three), the call tile, up and Undo, then left, down and right, then Play.
+ */
+export interface RoutineLayout {
+  cell: number;
+  origin: [number, number];
+  /** Heading text positions (left edges, centered on y). */
+  routineHead: Point;
+  mainHead: Point;
+  routineSlots: Point[];
+  mainSlots: Point[];
+  call: Point;
+  arrows: Record<Direction, Point>;
+  undo: Point;
+  play: Point;
+}
+
+export const ROUTINE_COLUMN_W = 312;
+
+export function routineLayout(v: View): RoutineLayout {
+  const cell = 100;
+  const gap = 24;
+  const gridW = 4 * cell;
+  const total = gridW + gap + ROUTINE_COLUMN_W;
+  const left = Math.max(v.upright ? 12 : 130, (v.w - total) / 2);
+  const colX = left + gridW + gap;
+  const colH = 44 + 100 + 20 + 44 + 100 + 22 + 206 + 14 + 100;
+  const colTop = Math.max(60, (v.h - colH) / 2);
+  const gridTop = Math.min(v.h - 170 - gridW - 8, Math.max(215, (v.h - gridW) / 2));
+  const at = (col: number, y: number): Point => ({ x: colX + 50 + col * 106, y });
+  let y = colTop;
+  const routineHead = { x: colX, y: y + 16 };
+  y += 44 + 50;
+  const routineSlots = [0, 1].map((k) => at(k, y));
+  y += 50 + 20;
+  const mainHead = { x: colX, y: y + 16 };
+  y += 44 + 50;
+  const mainSlots = [0, 1, 2].map((k) => at(k, y));
+  y += 50 + 22 + 50;
+  const upY = y;
+  const lowY = y + 106;
+  y = lowY + 50 + 14 + 50;
+  return {
+    cell,
+    origin: [left, gridTop],
+    routineHead,
+    mainHead,
+    routineSlots,
+    mainSlots,
+    call: at(0, upY),
+    arrows: { up: at(1, upY), left: at(0, lowY), down: at(1, lowY), right: at(2, lowY) },
+    undo: at(2, upY),
+    play: { x: colX + ROUTINE_COLUMN_W - 50, y },
+  };
+}

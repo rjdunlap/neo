@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–6 |
-| school | 4–14 |
+| school | 4–15 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 12 | Fix the program |
 | 13 | Pick up the apple on the way |
 | 14 | Mend the loop |
+| 15 | A routine: use the same steps twice |
 
 <!-- end generated -->
 
