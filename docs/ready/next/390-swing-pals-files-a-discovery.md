@@ -1,0 +1,1 @@
+**`swing-pals` files a discovery** (existing-game change plus the journal tests): "a longer rope swings slower", filed the first time a round shows it. [Dive](../../deep-dives/swing-pals.md#decisions-for-the-developer)

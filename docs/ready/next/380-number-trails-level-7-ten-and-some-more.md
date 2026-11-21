@@ -1,0 +1,1 @@
+**`number-trails` level 7, Ten, and some more** (a school window, school 5–7; layout probe first, then new levels plus the band and land tests): a ten-frame and the teens. [Dive](../../deep-dives/number-trails.md#decisions-for-the-developer)

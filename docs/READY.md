@@ -48,11 +48,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`bolt-boards` lap entry** (the same tier): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](deep-dives/bolt-boards.md#decisions-for-the-developer)
 
-- **`draw-the-pattern` level 11, Spiral and eight** (a school window; probe first: a rule test that the rings and lobes stay two corridors apart, then new levels plus the band and land tests). [Dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)
 
-- **`number-trails` level 7, Ten, and some more** (a school window, school 5–7; layout probe first, then new levels plus the band and land tests): a ten-frame and the teens. [Dive](deep-dives/number-trails.md#decisions-for-the-developer)
 
-- **`swing-pals` files a discovery** (existing-game change plus the journal tests): "a longer rope swings slower", filed the first time a round shows it. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer)
 
 - **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which waits for RW10's packet). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
 
@@ -63,6 +60,10 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
+
+- **`market-stall` level 8, How much is in the purse?** (school; dive slice 4, a new interaction: typecheck, rule tests, one scripted play at first and last level with one wrong card and one hint, one portrait screenshot). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+
+- **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
 - **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
 
