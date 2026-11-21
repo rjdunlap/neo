@@ -105,9 +105,9 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
     kite: { x: 0.7, y: 0.03, w: 0.2, h: 0.18 },
     treasure: { x: 0.34, y: 0.76, w: 0.32, h: 0.14 },
     // Level 11: the snail on the grass at the left; the glasses up in the sky, or the racetrack on the grass at the right.
-    snail: { x: 0.08, y: 0.5, w: 0.36, h: 0.24 },
+    snail: { x: 0.06, y: 0.5, w: 0.34, h: 0.24 },
     glasses: { x: 0.24, y: 0.1, w: 0.52, h: 0.2 },
-    racetrack: { x: 0.5, y: 0.6, w: 0.44, h: 0.3 },
+    racetrack: { x: 0.56, y: 0.6, w: 0.4, h: 0.3 },
   };
   // Level 5's two strips, whatever they are, stack one above the other, a sky piece on top when only the second is one.
   if (l === 5) return SKY.has(strips[1].piece) && !SKY.has(strips[0].piece) ? [low, top] : [top, low];
@@ -500,10 +500,10 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
     case 'snail': {
       // A soft body along the grass, its head and eye stalks out to the right, and her spiral as the shell on its back.
       const by = r.y + r.h * 0.92;
-      g.roundRect(r.x - r.w * 0.08, by - r.h * 0.12, r.w * 1.32, r.h * 0.24, r.h * 0.12).fill(
+      g.roundRect(r.x - r.w * 0.06, by - r.h * 0.12, r.w * 1.24, r.h * 0.24, r.h * 0.12).fill(
         swatch.yellow.fill,
       );
-      const [hx, hy] = [r.x + r.w * 1.18, by - r.h * 0.04];
+      const [hx, hy] = [r.x + r.w * 1.1, by - r.h * 0.04];
       for (const dx of [-6, 6])
         g.moveTo(hx + dx * 0.4, hy)
           .lineTo(hx + dx, hy - r.h * 0.42)
