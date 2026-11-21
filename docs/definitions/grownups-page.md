@@ -62,6 +62,15 @@ The button and its handler go. The reseed stays: the same seeding becomes `kit.m
 - The row selection is a pure function (`weekRows(band, stats, since)` returning the played-or-pinned list and the full list) in `src/parent/`, beside `recap.ts`.
 - The stickers line, the Welcome a New Friend recap and the off-screen ideas stay below the tables, as now.
 
+### R6. This week says what the games asked, and names one not tried (TotoLogic P4)
+
+Two lines above This week's first table, in both apps, built from each game's `challenge` kind. They name what the games asked and what is there; they never grade, rank or recommend.
+
+- **What the games asked**: one sentence counting the **games** (not rounds) she played this week by kind, most games first, ties in `CHALLENGE_KINDS` order: "This week: three games with numbers, two with words and letters, and one with music." Number words one to ten, then digits; "one game" in the singular; "games" is said only in the first item. A game with no `challenge` kind is left out, and a pinned game she did not play is not counted. **Too little to say**: with fewer than three rounds this week in all, the sentence is absent, not padded.
+- **The kinds in plain words**: numbers "with numbers", words "with words and letters", logic "with patterns and rules", space "with shapes and building", music "with music", noticing "with noticing and remembering", hands "with aiming and steering".
+- **Not played**: one line naming one game of a kind she played nothing of this week, ending with its reason: "Not played yet: Critter Crossing. Nothing with patterns and rules this week." The game is for her band (its `bands` include hers), plays by touch, has a kind, and has no round this week; one never played reads "Not played yet", one played before "Not played this week". The pick is stable for the week and moves on the next: the kinds are tried from a starting point that turns with the week number, and within a kind the game turns the same way, in the lands' order. The line is absent when every kind was played; it shows even when the sentence is absent, since a quiet week is when it helps most. It is a line, not a button: the page launches nothing.
+- Both come from one pure function beside `weekRows` in `src/parent/week.ts` (`weekKinds`), with its tests.
+
 ## What the tests assert
 
 - A new `src/parent/copy.test.ts`: the root's copy for every section contains none of "map", "home spot", "picnic", "signpost", "Swiping", "development", "island" (except as a name the game itself carries) or any `placeFor(band).name`; the classic copy still contains "home spot" and the layout note; both apps' Playing copy says the ? opens with a tap and calls Today's six a day's page.
