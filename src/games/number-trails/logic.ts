@@ -15,6 +15,8 @@ export interface TrailPlan {
   writeHowMany?: true;
   /** Less help each time: the numeral is traced three times, the trail solid, then dotted, then only its start. */
   fading?: true;
+  /** Ten, and some more: a two-digit numeral 10 to 19, written left to right, then ten in a frame and the rest beside it. */
+  teens?: true;
   /** How far the finger may stray from the trail, in writing boxes, before it counts as a wander: wider on the easy entries. */
   tolerance: number;
   name: string;
@@ -24,6 +26,8 @@ const ONE_TO_FIVE = [1, 2, 3, 4, 5] as const;
 const ZERO_TO_NINE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 /** The first numerals: each is one stroke from the top, with no lift and no loop back over itself. */
 export const FIRST_NUMBERS = [1, 2, 3, 7] as const;
+/** Ten, and some more: ten, then ten and one to nine more. */
+export const TEENS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
 
 export const PLANS: readonly TrailPlan[] = [
   {
@@ -64,6 +68,13 @@ export const PLANS: readonly TrailPlan[] = [
     tolerance: 0.085,
     name: 'Less help each time: trace one numeral three times, with a solid trail, then dots, then only the start',
   },
+  {
+    digits: TEENS,
+    wakeThem: false,
+    teens: true,
+    tolerance: 0.085,
+    name: 'Ten, and some more: write 10 to 19, the 1 then the digit beside it, then see ten in a frame and count on',
+  },
 ];
 
 /**
@@ -73,6 +84,8 @@ export const PLANS: readonly TrailPlan[] = [
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 4, order: [4, 1, 2] },
   prek: { min: 2, max: 6, order: [2, 3, 5, 6] },
+  // The school window (decided 2026-11-17, once the ten-frame layout probe passed): write how many, less help, then the teens.
+  school: { min: 5, max: 7 },
 };
 export const ENTRY_LEVELS = [4] as const;
 
@@ -90,6 +103,9 @@ export const guidesFor = (level: number): readonly Guide[] => (planFor(level).fa
 export const TRY_HINTS = 1;
 export const hintCounts = (level: number, wrongOnStroke: number, hintsThisTry: number): boolean =>
   hintDue(wrongOnStroke) && (!planFor(level).fading || hintsThisTry < TRY_HINTS);
+
+/** The digits of a numeral, written left to right: 14 is a 1, then a 4. */
+export const digitsOf = (n: number): number[] => String(n).split('').map(Number);
 
 /** The numeral this round draws. */
 export const numeralFor = (level: number, rng: Rng): number => rng.pick(planFor(level).digits);
@@ -297,6 +313,74 @@ export const spotsFor = (arrangement: Arrangement, count: number, rect: Rect): S
 
 /** Misses and hints for a trail: one miss per drag that leaves the corridor; a hint at the second in a row on one stroke. */
 export const trailTolerance = (level: number): number => planFor(level).tolerance;
+
+/**
+ * The writing box, a square `size` units across at (`x`, `y`) on the stage, the same for every level. The game's `resize`
+ * lays the canvas out from it, and the tens mark's test reads it.
+ */
+export function writingBox(view: { w: number; h: number }): { x: number; y: number; size: number } {
+  const size = Math.min(view.h - 260, view.w - 360, 520);
+  return { x: view.w / 2 - size / 2 + 35, y: (view.h - size) / 2 + 55, size };
+}
+
+/**
+ * Ten, and some more: once the 1 is written, it slides this far left (in writing boxes), so it stands just in front of the
+ * box as a finished mark and the second digit is written in the same box, at the same size and corridor, beside it.
+ */
+export const TENS_SHIFT = -0.56;
+
+/** The finished 1's ink, as a line on the stage: from its top to its bottom, at `x`. */
+export function tensMark(view: { w: number; h: number }): { x: number; top: number; bottom: number } {
+  const box = writingBox(view);
+  const x = box.x + (DIGIT_ONE_X + TENS_SHIFT) * box.size;
+  return { x, top: box.y, bottom: box.y + box.size };
+}
+/** Where the 1's big line down sits in its writing box (`DIGITS[1]`). */
+export const DIGIT_ONE_X = 0.5;
+
+/**
+ * A ten-frame is two rows of five cells. Ten, and some more lays out a full frame for the ten and, for 11 to 19, a second
+ * frame stacked under it holding the rest, filled the same way (top row left to right, then the bottom row): the usual
+ * picture of a teen. Nothing in it is tapped, so the cells may be smaller than a tap circle, but never under `FRAME_CELL_MIN`.
+ */
+export const FRAME_COLS = 5;
+export const FRAME_ROWS = 2;
+export const FRAME_CELL_MAX = THING_GAP;
+export const FRAME_CELL_MIN = 100;
+/** The gap between the two frames, in cells. */
+export const FRAME_GAP = 0.4;
+
+export interface TenFrames {
+  /** A cell's side. */
+  cell: number;
+  /** Each frame's outline: one for 10, two for 11 to 19. */
+  frames: Rect[];
+  /** Where each thing sits: the first ten in the first frame, the rest in the second. */
+  spots: Spot[];
+}
+
+/** The frames and spots for `n` (10 to 19) in `rect`, centered; null if a cell would fall under `FRAME_CELL_MIN`. */
+export function tenFrames(n: number, rect: Rect): TenFrames | null {
+  const count = n > 10 ? 2 : 1;
+  const tall = FRAME_ROWS * count + FRAME_GAP * (count - 1);
+  const cell = Math.min(FRAME_CELL_MAX, rect.w / FRAME_COLS, rect.h / tall);
+  if (cell < FRAME_CELL_MIN) return null;
+  const w = FRAME_COLS * cell,
+    x = rect.x + (rect.w - w) / 2,
+    top = rect.y + (rect.h - tall * cell) / 2;
+  const frames = Array.from({ length: count }, (_, k) => ({
+    x,
+    y: top + k * (FRAME_ROWS + FRAME_GAP) * cell,
+    w,
+    h: FRAME_ROWS * cell,
+  }));
+  const spots = Array.from({ length: n }, (_, i) => {
+    const f = frames[Math.floor(i / 10)],
+      j = i % 10;
+    return { x: f.x + ((j % FRAME_COLS) + 0.5) * cell, y: f.y + (Math.floor(j / FRAME_COLS) + 0.5) * cell };
+  });
+  return { cell, frames, spots };
+}
 
 /** The sticker's numeral for a seed, 0 to 9. */
 export const stickerDigit = (seed: number): number => Math.floor(Math.abs(seed)) % 10;
