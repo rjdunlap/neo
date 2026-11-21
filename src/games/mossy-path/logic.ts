@@ -192,7 +192,10 @@ export function helpFor(b: Board, path: readonly number[]): { undo: number; next
 }
 
 /* Levels 4–7, 9 and 10, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
-export const isMaze = (level: number) => (level >= 4 && level <= 7) || level === 9 || level === 10;
+export const isMaze = (level: number) =>
+  (level >= 4 && level <= 7) || level === 9 || level === 10 || level === 12;
+/** Level 12, *turtle walk*: a straight corridor where any touch, anywhere, steps the turtle one tile on (the lap entry). */
+export const isTurtleWalk = (level: number) => level === 12;
 /** Level 10, *plan, then go*: she draws the way first and the turtle walks it when she taps it. */
 export const isPlanLevel = (level: number) => level === 10;
 /** Frozen boards (six per level; three at level 10), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
@@ -244,6 +247,8 @@ export const MAZES: Record<number, readonly (readonly string[])[]> = {
     ['...#..P', '.#.#.##', 'S#.....', '##.##.#'],
     ['#..S..#', '..##.##', '#...#.#', '###...P'],
   ],
+  // Straight corridors, three to five steps; a flip puts the pond on the left. No fork, berry or wrong turn exists.
+  12: [['S...P'], ['S..P'], ['S....P']],
 };
 const MAZE_NAMES: Record<number, string> = {
   4: 'Follow the moss: one winding path to the pond',
@@ -252,6 +257,7 @@ const MAZE_NAMES: Record<number, string> = {
   7: 'Snack on the way: get the berry, then the pond',
   9: 'Two snacks: both berries, then the pond',
   10: 'Plan, then go: draw the way, then the turtle walks it',
+  12: 'Turtle walk: any touch steps the turtle to the pond',
 };
 export const levelName = (level: number) =>
   MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : level === 11 ? THICK_NAME : PLAN_NAMES[planLevel(level)]);
@@ -454,6 +460,9 @@ export function mazeTouch(
   };
 }
 
+/** Level 12: the turtle's next step along the corridor, whatever was touched; -1 once it has reached the pond. */
+export const walkStep = (b: Board, s: MazeState): number => nextToward(b, s.path[s.path.length - 1], b.pond);
+
 /* Level 10's plan: dotted paw prints drawn from the turtle before it moves. The plan's first tile is always the turtle's. */
 export type PlanEdit = 'add' | 'erase' | 'ignore' | 'far';
 /**
@@ -528,6 +537,7 @@ export function leafSpots(at: number): [number, number][] {
 }
 
 export const LEVELS: BandLevels = {
+  lap: { min: 12, max: 12 },
   toddler: { min: 4, max: 4 },
   preschool: { min: 4, max: 5 },
   prek: { min: 5, max: 8, order: [5, 6, 8] },

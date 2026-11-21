@@ -19,6 +19,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossyPlanPlay(process.env.MOSSY_ONLY === 'upright');
       return;
     }
+    if (process.env.MOSSY_ONLY === 'walk') {
+      await mossyWalkPlay();
+      return;
+    }
     if (process.env.MOSSY_ONLY === 'thick') {
       await mossyThickPlay();
       return;
@@ -312,6 +316,35 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
     await finished('mossy-path');
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
     log('Mossy Path 8: free far tap, counted visited tap, finish and one sticker passed');
+  }
+
+  /** Level 12, turtle walk (lap entry), upright: a touch far from the board steps the turtle once, more touches reach the pond, no miss or hint, one sticker. */
+  async function mossyWalkPlay() {
+    await page.setViewportSize({ width: 820, height: 1100 });
+    await launch('mossy-path', 12, 'Mia', 'lap');
+    await page.waitForTimeout(400);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal(await page.evaluate(() => neo.scene.game.anyTouch), true, 'level 12 is Turtle walk');
+    assert.ok(
+      await page.evaluate(() => neo.scene.game.cell >= 100),
+      'corridor cells stay at least 100 units',
+    );
+    // A touch in the empty corner of the screen, away from the corridor, still steps the turtle once.
+    await page.evaluate(() => kit.tap(60, 560));
+    await page.waitForTimeout(200);
+    assert.equal(await page.evaluate(() => neo.scene.game.path.length), 2, 'one touch, one step');
+    await screenshot('mossy-path-12-portrait');
+    for (let guard = 0; guard < 8 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+      await page.evaluate(() => kit.tap(760, 700));
+      await page.waitForTimeout(250);
+    }
+    await finished('mossy-path');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Mossy Path 12: a touch far from the corridor steps the turtle, taps reach the pond, no miss, one sticker',
+    );
   }
 
   /** Level 11, thick moss: a free first visit to a tuft, one counted wrong tap, a hint, a portrait screenshot, a finish. */

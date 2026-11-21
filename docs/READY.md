@@ -51,7 +51,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](reviews/TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
 
 
-- **`mossy-path` level 12, Turtle walk** (a lap entry; the same tier): any touch steps the turtle along a straight corridor. [Dive](deep-dives/mossy-path.md#decisions-for-the-developer)
 
 - **`bolt-boards` lap entry** (the same tier): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](deep-dives/bolt-boards.md#decisions-for-the-developer)
 

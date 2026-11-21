@@ -484,7 +484,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Mossy Path
 
-*toddler–school* · [Mossy Path](games/mossy-path.md)
+*lap–school* · [Mossy Path](games/mossy-path.md)
 
 ### Shell Rows
 
