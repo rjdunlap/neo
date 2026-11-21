@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { queueRows, robotLayout } from './layout';
+import { queueRows, robotLayout, routineLayout } from './layout';
 import {
   boardFor,
   DIRECTIONS,
@@ -26,7 +26,7 @@ const plansFor = (level: number): { plan: RobotPlan; prediction: boolean }[] => 
 };
 
 describe.each(Object.entries(UPRIGHT_VIEWS))('Robot Path upright on %s', (_, v) => {
-  it.each(Array.from({ length: LEVELS.school!.max }, (_l, i) => i + 1))('level %s', (level) => {
+  it.each(Array.from({ length: LEVELS.school!.max - 1 }, (_l, i) => i + 1))('level %s', (level) => {
     for (const { plan, prediction } of plansFor(level)) {
       const mode = plan.mode ?? 'steps';
       const L = robotLayout(v, plan.size, plan.limit, mode);
@@ -64,5 +64,51 @@ describe.each(Object.entries(UPRIGHT_VIEWS))('Robot Path upright on %s', (_, v) 
       expect(L.arrows.up.y + 50).toBeLessThan(L.queue.top - 62);
       expect(queueRows(plan.limit)).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+describe.each(Object.entries(UPRIGHT_VIEWS))('Robot Path level 15 upright on %s', (_, v) => {
+  it('keeps every control apart, large and clear of Home and the guide, beside the board', () => {
+    const L = routineLayout(v);
+    const t: Target[] = [
+      ...L.routineSlots.map((p, i) => square(`routine ${i}`, p, 100)),
+      ...L.mainSlots.map((p, i) => square(`main ${i}`, p, 100)),
+      square('call', L.call, 100),
+      ...DIRECTIONS.map((d) => square(`arrow ${d}`, L.arrows[d], 100)),
+      square('undo', L.undo, 100),
+      square('play', L.play, 100),
+      // The board is a display, but it must not sit under Home or the guide either.
+      square('board', { x: L.origin[0] + 200, y: L.origin[1] + 200 }, 400),
+    ];
+    expect(uprightProblems(v, t)).toEqual([]);
+    expect(L.origin[0]).toBeGreaterThanOrEqual(0);
+    expect(L.origin[0] + 400).toBeLessThan(L.mainSlots[0].x - 50);
+  });
+});
+
+describe('Robot Path level 15 sideways and on a tall tablet', () => {
+  it.each([
+    [1024, 768],
+    [1060, 768],
+    [1366, 768],
+    [1024, 1365],
+  ])('%s x %s fits the view with the board clear of Home', (w, h) => {
+    const L = routineLayout({ w, h, scale: 1 });
+    const t: Target[] = [
+      ...L.routineSlots,
+      ...L.mainSlots,
+      L.call,
+      ...DIRECTIONS.map((d) => L.arrows[d]),
+      L.undo,
+      L.play,
+    ].map((p, i) => square(`target ${i}`, p, 100));
+    for (const b of t) {
+      expect(b.x - 50).toBeGreaterThanOrEqual(0);
+      expect(b.x + 50).toBeLessThanOrEqual(w);
+      expect(b.y - 50).toBeGreaterThanOrEqual(0);
+      expect(b.y + 50).toBeLessThanOrEqual(h);
+    }
+    expect(L.origin[0]).toBeGreaterThanOrEqual(130);
+    expect(L.origin[1] + 400).toBeLessThanOrEqual(h);
   });
 });

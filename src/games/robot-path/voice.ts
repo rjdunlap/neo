@@ -19,6 +19,13 @@ export const VOICE = {
     'Pick up the apple on the way! Make a path that goes through the apple and ends on the star.',
   ],
   'robot.forgot': ['You forgot the apple! Go through it on the way to the star.'],
+  'robot.routine': [
+    'Put two arrows in Do this. Then use the purple tile in Start here to do them again from wherever the robot is. Press play!',
+  ],
+  'robot.routine.arrows': ['Put an arrow in Do this first.'],
+  'robot.routine.call': ['Put the purple tile in Start here.'],
+  'robot.routine.start': ['Put something in Start here first.'],
+  'robot.routine.hint': ['Follow the glowing button.'],
   'robot.empty': ['Tap some arrows first.'],
   'robot.short': ['It stopped here. It needs more steps.'],
   'robot.bump': ['A bump! Let us change our path and try again.'],

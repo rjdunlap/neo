@@ -24,7 +24,12 @@ export const HOW_TO: GameHowTo = {
       text: 'Make a path with counted steps that goes through the apple first, then ends on the star. Press play.',
     },
     {
+      from: 15,
+      text: 'Put arrows in the purple Do this row, then use the purple tile in Start here to run them from wherever the robot is. Tap a slot to select it, tap a tile to fill it, Undo to step back, then press play.',
+    },
+    {
       from: 14,
+      to: 14,
       text: 'Press play to watch the looped program once. Then either tap a slot and an arrow to change that step, or tap the loop button to change how many times it repeats. Press play again.',
     },
   ],
@@ -33,7 +38,8 @@ export const HOW_TO: GameHowTo = {
     { from: 11, to: 11, text: 'The round ends after the robot shows where the program stops.' },
     { from: 12, to: 12, text: 'The round ends when the fixed program reaches the star.' },
     { from: 13, to: 13, text: 'The round ends when the robot has picked up the apple and reached the star.' },
-    { from: 14, text: 'The round ends when the mended loop reaches the star.' },
+    { from: 14, to: 14, text: 'The round ends when the mended loop reaches the star.' },
+    { from: 15, text: 'The round ends when the robot reaches the star.' },
   ],
   note: [
     {
@@ -53,7 +59,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 14,
+      to: 14,
       text: 'The first watch is free. Most boards need only one more turn of the loop; one needs a longer step inside it. A mend that still stops short is a gentle miss, and after two the slot or loop button to change glows.',
+    },
+    {
+      from: 15,
+      text: 'Two boards: one starts with the Do this arrows placed, the other leaves them empty. A call with nothing to run, or Play with nothing in Start here, only points the way. A walk that bumps or stops short is a gentle miss, and after two the next button to press glows.',
     },
   ],
 };
