@@ -6,7 +6,8 @@ import { Rng } from '../engine/random';
 import { landLayouts } from '../app/scenes/resident-check';
 import { hostScale } from '../app/scenes/LandScene';
 import { meadowKeepOut } from '../app/scenes/meadow';
-import { Resident, TOUCH_BELOW, TOUCH_SIDE } from './resident';
+import { Resident, RESIDENTS, TOUCH_BELOW, TOUCH_SIDE } from './resident';
+import type { CastId } from '../art/creatures/cast';
 import {
   footprintAt,
   MAX_RANGE,
@@ -18,11 +19,12 @@ import {
   type Stop,
 } from './wander';
 
-const fp = Resident.footprint('trill');
+const SPECIES = Object.keys(RESIDENTS) as CastId[];
 
-describe('Trill carries on (P5)', () => {
+describe.each(SPECIES)('%s carries on (P5)', (species) => {
+  const fp = Resident.footprint(species);
   it('has a footprint that holds its touch circle either way round, grown, and the whole picture', () => {
-    const size = Resident.size('trill');
+    const size = Resident.size(species);
     expect(fp.side).toBeGreaterThanOrEqual(TOUCH_SIDE);
     expect(fp.side).toBeGreaterThanOrEqual(size.w / 2);
     expect(fp.up).toBeGreaterThanOrEqual(size.h);
@@ -32,7 +34,7 @@ describe('Trill carries on (P5)', () => {
   it('keeps every stop and every step of every leg clear, on screen and near home, in every layout the land allows', () => {
     let withStops = 0;
     let layouts = 0;
-    for (const { view, layout, where } of landLayouts('music-mountain')) {
+    for (const { view, layout, where } of landLayouts(RESIDENTS[species].land)) {
       layouts++;
       const s = hostScale(layout.box);
       const others = wanderKeepOut(layout, meadowKeepOut(layout, view));
@@ -62,18 +64,28 @@ describe('Trill carries on (P5)', () => {
           expect(Math.hypot(b.x - route[0].x, b.y - route[0].y), where).toBeLessThanOrEqual(MAX_RANGE);
       }
     }
-    // The roomy layouts have somewhere to go; only a crowded land screen stands still.
+    // The roomy layouts have somewhere to go; only a crowded land screen stands still. On a phone, sideways or upright,
+    // every layout has a stop (measured 2026-11-21); only some of the sideways iPad's leave it at home.
     expect(withStops / layouts).toBeGreaterThan(0.4);
+    for (const { view, layout, where } of landLayouts(RESIDENTS[species].land)) {
+      if (where.startsWith('landscape')) continue;
+      const s = hostScale(layout.box);
+      const route = wanderRoute(layout, view, wanderKeepOut(layout, meadowKeepOut(layout, view)), fp, s);
+      expect(route.length, `${where} has a stop`).toBeGreaterThan(1);
+    }
   });
 
   it('has a touch circle, either way round, that stays inside its footprint and a hundred across', () => {
-    const r = new Resident('trill', sameArt(Texture.WHITE));
+    const r = new Resident(species, sameArt(Texture.WHITE));
     const hit = r.touchArea(10);
+    r.face(1, hit);
+    const right = hit.x;
     for (const dir of [-1, 1] as const) {
       r.face(dir, hit);
       expect(Math.abs(hit.x) + hit.radius).toBeLessThanOrEqual(fp.side);
       expect(hit.y + hit.radius).toBeLessThanOrEqual(fp.down);
-      expect(hit.x).toBe(dir * Math.abs(hit.x));
+      // Turning round mirrors the circle about its feet.
+      expect(hit.x).toBeCloseTo(dir * right);
       expect(hit.radius * 2 * hostScale({ h: 155 })).toBeGreaterThan(100);
     }
     r.destroy({ children: true });
