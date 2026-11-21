@@ -29,6 +29,14 @@ import {
   planFor,
   roundFor,
   stickerDigit,
+  TEENS,
+  TENS_SHIFT,
+  FRAME_CELL_MIN,
+  digitsOf,
+  DIGIT_ONE_X,
+  tenFrames,
+  tensMark,
+  writingBox,
   thingFor,
   thingSpots,
   thingWord,
@@ -56,7 +64,8 @@ describe('number trails levels', () => {
   it('ends each band inside the ladder and opens pre-K at the bigger numbers', () => {
     expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 4, order: [4, 1, 2] });
     expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 6, order: [2, 3, 5, 6] });
-    for (const band of ['preschool', 'prek'] as const)
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 5, max: 7 });
+    for (const band of ['preschool', 'prek', 'school'] as const)
       expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
   });
   it('draws only 1 to 5 at level 1 and all of 0 to 9 above it', () => {
@@ -402,6 +411,111 @@ describe('level 6, Less help each time', () => {
       expect(hintCounts(level, 2, 0)).toBe(true);
       expect(hintCounts(level, 2, 1)).toBe(true);
       expect(hintCounts(level, 1, 0)).toBe(false);
+    }
+  });
+});
+
+describe('level 7, Ten, and some more', () => {
+  // Every view the island lays out on: iPads both ways, a desktop window, and a phone on its side and upright.
+  const views = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 1024],
+    [1024, 1366],
+    [1180, 820],
+    [1662, 768],
+    [768, 1662],
+  ];
+  const pileRect = (w: number, h: number) => ({ x: 150, y: 140, w: w - 190, h: h - 190 });
+
+  it('opens school at write how many, less help, then the teens, and lands an older save inside it', () => {
+    const school = rangeFor(LEVELS, 'school');
+    expect(levelsInOrder(school)).toEqual([5, 6, 7]);
+    expect(firstLevel(school, ENTRY_LEVELS)).toBe(5);
+    expect(stepLevel(6, 1, school)).toBe(7);
+    expect(stepLevel(7, 1, school)).toBe(7);
+    expect(landing(4, school, ENTRY_LEVELS)).toBe(5);
+    expect(landing(6, school, ENTRY_LEVELS)).toBe(6);
+  });
+  it('draws every numeral 10 to 19 and nothing else, keeping levels 1 to 6 the same for a seed', () => {
+    const rng = new Rng(5);
+    const drawn = new Set(Array.from({ length: 400 }, () => numeralFor(7, rng)));
+    expect([...drawn].sort((a, b) => a - b)).toEqual([...TEENS]);
+    expect(planFor(7).teens).toBe(true);
+    expect(planFor(7).wakeThem).toBe(false);
+    expect(trailTolerance(7)).toBe(trailTolerance(2));
+    for (let level = 1; level <= 6; level++) expect(planFor(level).teens).toBeUndefined();
+  });
+  it('writes the 1 first, then the digit beside it, each from the stroke table', () => {
+    expect(digitsOf(10)).toEqual([1, 0]);
+    expect(digitsOf(17)).toEqual([1, 7]);
+    expect(digitsOf(4)).toEqual([4]);
+    for (const n of TEENS) {
+      const [tens, ones] = digitsOf(n);
+      expect(tens).toBe(1);
+      expect(ones).toBe(n - 10);
+      expect(DIGITS[ones]).toBeDefined();
+    }
+    expect(DIGITS[1]).toEqual([
+      [
+        [DIGIT_ONE_X, 0],
+        [DIGIT_ONE_X, 1],
+      ],
+    ]);
+  });
+  it('slides the finished 1 to a place inside the view, clear of the corner guide and apart from the next digit', () => {
+    const leftmost = Math.min(
+      ...Array.from({ length: 10 }, (_, d) => Math.min(...DIGITS[d].flat().map(([x]) => x))),
+    );
+    expect(TENS_SHIFT).toBeLessThan(0);
+    for (const [w, h] of views) {
+      const box = writingBox({ w, h }),
+        mark = tensMark({ w, h }),
+        ink = 12;
+      expect(mark.x - ink, `${w}x${h}`).toBeGreaterThanOrEqual(0);
+      expect(mark.top).toBeGreaterThanOrEqual(140);
+      expect(mark.bottom).toBeLessThanOrEqual(h);
+      // Clear of the corner guide's square at the bottom left.
+      expect(mark.x - ink >= GUIDE_CLEAR || mark.bottom <= h - GUIDE_CLEAR, `${w}x${h}`).toBe(true);
+      // A clear space between the 1 and the second digit's leftmost ink, close enough to read as one numeral.
+      const gap = box.x + leftmost * box.size - mark.x;
+      expect(gap).toBeGreaterThanOrEqual(0.15 * box.size);
+      expect(gap).toBeLessThanOrEqual(0.3 * box.size);
+    }
+  });
+  it('lays out ten in a full frame and the rest in a second, inside the room at every view, never small', () => {
+    for (const [w, h] of views) {
+      const room = pileRect(w, h);
+      for (const n of TEENS) {
+        const layout = tenFrames(n, room);
+        expect(layout, `${n} at ${w}x${h}`).not.toBeNull();
+        const { cell, frames, spots } = layout!;
+        expect(cell).toBeGreaterThanOrEqual(FRAME_CELL_MIN);
+        expect(cell).toBeLessThanOrEqual(THING_GAP);
+        expect(frames).toHaveLength(n > 10 ? 2 : 1);
+        expect(spots).toHaveLength(n);
+        for (const f of frames) {
+          expect(f.x).toBeGreaterThanOrEqual(room.x - 1e-9);
+          expect(f.x + f.w).toBeLessThanOrEqual(room.x + room.w + 1e-9);
+          expect(f.y).toBeGreaterThanOrEqual(room.y - 1e-9);
+          expect(f.y + f.h).toBeLessThanOrEqual(room.y + room.h + 1e-9);
+          expect(
+            f.x >= GUIDE_CLEAR || f.y + f.h <= h - GUIDE_CLEAR,
+            `frame clear of the guide at ${w}x${h}`,
+          ).toBe(true);
+        }
+        if (frames.length === 2) expect(frames[1].y).toBeGreaterThan(frames[0].y + frames[0].h);
+        const inside = (s: { x: number; y: number }, f: (typeof frames)[number]) =>
+          s.x > f.x && s.x < f.x + f.w && s.y > f.y && s.y < f.y + f.h;
+        spots.forEach((s, i) => expect(inside(s, frames[i < 10 ? 0 : 1])).toBe(true));
+        // Each frame fills its top row left to right, then its bottom row.
+        expect(spots[4].y).toBe(spots[0].y);
+        expect(spots[5].y).toBeGreaterThan(spots[0].y);
+        expect(spots[5].x).toBe(spots[0].x);
+        for (const [i, a] of spots.entries())
+          for (const b of spots.slice(i + 1))
+            expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(cell - 1e-9);
+      }
     }
   });
 });

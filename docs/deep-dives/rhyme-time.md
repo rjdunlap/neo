@@ -126,3 +126,5 @@ None new. The study's open decisions (verse review, alliteration owner) do not g
 ## What was built in this session
 
 Nothing: docs only. I read `index.ts`, `logic.ts`, `pictures.ts`, the tests, the how-to card, the GAMES entry and the poetry study. The game was not opened or played. Links and `git diff --check` ran on the changed docs.
+
+**Say why after a right answer, built (TotoLogic P7, 2026-11-21, PR #1950).** In odd-one-out (level 4) the round's last question says `rhyme.oddwhy`, "Yes! {word} does not rhyme. {list} rhyme!", naming the three rhyming pictures (`oddRhymes(q)` in `logic.ts`); earlier questions keep the short `rhyme.oddyes`. Match and pair already said "{a}, {b}! They rhyme!" and are unchanged.

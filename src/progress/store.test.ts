@@ -446,6 +446,49 @@ describe('adding and removing', () => {
   });
 });
 
+describe('adopting a guest (play first)', () => {
+  it('is a rename: same id and save key, the one sticker and round kept, the flag cleared, no new profile', async () => {
+    const store = make();
+    await store.load();
+    const id = store.activeId;
+    store.setGuest(id, true);
+    store.recordRound('bubble-pop', { ...ANY_ROUND, seconds: 10, at: 1 }, { min: 1, max: 3 }, false);
+    store.addSticker('bubble-pop', 1);
+    store.flush();
+    expect(indexOnDisk().profiles[0].guest).toBe(true);
+    // What "Add a player" does to the profile it fills.
+    store.setBirth(id, { month: 10, year: 2025 });
+    store.setGuest(id, false);
+    store.data.profile.name = 'Mia';
+    store.save();
+    vi.advanceTimersByTime(300);
+    expect(store.activeId).toBe(id);
+    expect(store.profiles).toHaveLength(1);
+    expect(indexOnDisk().profiles[0]).toMatchObject({
+      id,
+      legacy: true,
+      guest: false,
+      birth: { month: 10, year: 2025 },
+    });
+    const saved = savedAs('neo.save');
+    expect(saved.profile.name).toBe('Mia');
+    expect(saved.stickers).toHaveLength(1);
+    expect(saved.games['bubble-pop'].plays).toBe(1);
+  });
+
+  it('carries the guest flag through a backup and back', async () => {
+    const store = make();
+    await store.load();
+    store.setGuest(store.activeId, true);
+    store.addSticker('bubble-pop', 1);
+    const text = await store.exportAll();
+    expect(JSON.parse(text).profiles[0].guest).toBe(true);
+    store.setGuest(store.activeId, false);
+    await store.restoreAll(text);
+    expect(store.entry.guest).toBe(true);
+  });
+});
+
 describe('backing up every profile', () => {
   const setUp = async () => {
     const store = make();

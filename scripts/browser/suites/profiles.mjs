@@ -307,7 +307,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await shows(['Mia', 'Robert D']);
     assert.equal(
       await page.evaluate(() => Object.keys(kit.store.entry).join()),
-      'id,legacy,birth,startBand,addedAt',
+      'id,legacy,birth,startBand,addedAt,guest',
     );
 
     // It all survives a reload.

@@ -27,6 +27,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
+None queued: the next phone line is in Next ten.
 
 ### Puzzle-page follow-ups
 
@@ -38,21 +39,15 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **WL2, the pet says the word in European Portuguese** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): the building session first writes the 20 entries and has a separate pass check each against European Portuguese dictionaries, filling one evidence row per key ([assistant review](definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17)); then `ctx.sayWord`, the exact-`pt-PT` voice rule, the per-profile setting and the grown-ups' select and status in Peekaboo Barn, Animal Snack and Bubble Pop. Read the [definition](definitions/additional-languages.md) by section; an entry that cannot be settled is left out.
 
-- **Define play first, set up after** (TotoLogic P1; docs only; the [question-on-screen definition](definitions/question-on-screen.md) it waited on now exists): the first visit on a device with no players is one picture choice and a round on the blank profile, which awards nothing until it is adopted; adoption is a rename, not a copy. [P1](reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m)
 
-- **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](reviews/TOTOLOGIC.md#proposals)
 
-- **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](reviews/TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
 
 
 
 - **`bolt-boards` lap entry** (the same tier): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](deep-dives/bolt-boards.md#decisions-for-the-developer)
 
-- **`draw-the-pattern` level 11, Spiral and eight** (a school window; probe first: a rule test that the rings and lobes stay two corridors apart, then new levels plus the band and land tests). [Dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)
 
-- **`number-trails` level 7, Ten, and some more** (a school window, school 5–7; layout probe first, then new levels plus the band and land tests): a ten-frame and the teens. [Dive](deep-dives/number-trails.md#decisions-for-the-developer)
 
-- **`swing-pals` files a discovery** (existing-game change plus the journal tests): "a longer rope swings slower", filed the first time a round shows it. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer)
 
 - **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which waits for RW10's packet). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
 
@@ -64,7 +59,20 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 ### Game slices from the dives (refilled 2026-11-17)
 
-- **Define `vine-snip` level 6, Where will it land?** (school, docs only): compare two releases through the same point in opposite directions, with a free prediction and supported replay. Work out the authored pair, phone envelope and ghost-finger contract. [Dive](deep-dives/vine-snip.md#build-slices-in-order)
+- **`market-stall` level 8, How much is in the purse?** (school; dive slice 4, a new interaction: typecheck, rule tests, one scripted play at first and last level with one wrong card and one hint, one portrait screenshot). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+
+- **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+
+- **`egg-catch` level 13, Sorting gate** (school; new interaction tier: typecheck, unit tests, one filtered play of level 13 with a wrong placement and a hint, one portrait screenshot, `fingerdemo` at 13; the four new `egg.*` voice clips are rendered with `scripts/voice-clips/render.mjs`, so the offline check runs too). [Definition](definitions/egg-catch-sorting-gate.md), [dive](deep-dives/egg-catch.md#build-slices-in-order)
+
+- **`vine-snip` level 6, Where will it land?** (school; new interaction tier: typecheck and rule tests, one filtered `vinesnip` play at level 6 with opposite guesses, Help, replay and one award, one sideways phone screenshot, `fingerdemo` at 6; run the build too, since the voice and how-to barrels change). [Definition](definitions/vine-snip-where-will-it-land.md), [dive](deep-dives/vine-snip.md#build-slices-in-order)
+
+- **`silly-scene` levels 1–3** (a new game in Puzzle Peaks; preschool 1, pre-K 1–2, school 2–3; new game tier, upright from the first slice: typecheck, unit tests, one filtered play of levels 1 and 3 with a wrong tap and a hint, one portrait screenshot, `fingerdemo` at level 1, and one `npm run build` for the voice lines and the land change). [Definition](definitions/silly-scene.md#build-checks), [study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
+
+- **`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](definitions/block-tower-mend.md), [dive](deep-dives/block-tower.md#build-slices-in-order)
+
+- **`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](deep-dives/block-tower.md#decisions-for-the-developer)
+
 
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
@@ -87,7 +95,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 - **`goodnight-room` the yawn nudge** (lap to pre-K; existing-game change: typecheck, its rule tests, one filtered regression play): the last unbuilt part of dive slice 10, a sound-only "still ready, any time" yawn with no timer and no pressure. Expected files: `src/games/goodnight-room/index.ts`, the game page. [Dive](deep-dives/goodnight-room.md#build-slices-in-order)
 
-- **`bubble-pop` level 18, Dots and numbers together** (preschool; new level on an existing interaction: typecheck, the rule tests, one browser play with one wrong pop, `fingerdemo` at it, one upright screenshot): the last piece of the dive's *Which one has the dots?* (level 17 is built): a later round where numerals and dot patterns are mixed and she pops the matching pair, reusing level 17's dice art and the bonds levels' hold-then-partner handling, placed by the preschool `order`. [Dive](deep-dives/bubble-pop.md#levels-below-level-1), [slices](deep-dives/bubble-pop.md#build-slices-in-order)
 
 - **`stamp-studio` Stamp a duck!** (toddler, between levels 2 and 3; new levels on an existing interaction): three animal stamps with sounds (the duck is new to the stamp kinds; the cat's meow and the fish's splash exist); the voice asks for one ("Stamp a duck!"), three asks in a round, then free; a wrong stamp still prints and is named ("That's a cat! Find the duck."), and the asked stamp's button glows after two such presses (a hint). It takes the next free level ID (11) with toddler `order [9, 10, 2, 11, 3]` and `entryLevels` unchanged. Expected files: `src/games/stamp-studio/{logic,index,voice,howto}.ts`, `logic.test.ts`, the browser case, the game page and dive. [Dive](deep-dives/stamp-studio.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 

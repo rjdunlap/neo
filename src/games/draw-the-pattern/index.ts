@@ -104,6 +104,10 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
     // Level 9: the kite flies top-right, clear of the rain cloud; the treasure mark lies on the grass below the rain.
     kite: { x: 0.7, y: 0.03, w: 0.2, h: 0.18 },
     treasure: { x: 0.34, y: 0.76, w: 0.32, h: 0.14 },
+    // Level 11: the snail on the grass at the left; the glasses up in the sky, or the racetrack on the grass at the right.
+    snail: { x: 0.06, y: 0.5, w: 0.34, h: 0.24 },
+    glasses: { x: 0.24, y: 0.1, w: 0.52, h: 0.2 },
+    racetrack: { x: 0.56, y: 0.6, w: 0.4, h: 0.3 },
   };
   // Level 5's two strips, whatever they are, stack one above the other, a sky piece on top when only the second is one.
   if (l === 5) return SKY.has(strips[1].piece) && !SKY.has(strips[0].piece) ? [low, top] : [top, low];
@@ -493,6 +497,48 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
       for (const p of paths) line(p, 7, swatch.red.line);
       break;
     }
+    case 'snail': {
+      // A soft body along the grass, its head and eye stalks out to the right, and her spiral as the shell on its back.
+      const by = r.y + r.h * 0.92;
+      g.roundRect(r.x - r.w * 0.06, by - r.h * 0.12, r.w * 1.24, r.h * 0.24, r.h * 0.12).fill(
+        swatch.yellow.fill,
+      );
+      const [hx, hy] = [r.x + r.w * 1.1, by - r.h * 0.04];
+      for (const dx of [-6, 6])
+        g.moveTo(hx + dx * 0.4, hy)
+          .lineTo(hx + dx, hy - r.h * 0.42)
+          .stroke({ width: 3, color: swatch.yellow.line, cap: 'round' })
+          .circle(hx + dx, hy - r.h * 0.42, 4)
+          .fill(ink);
+      g.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w * 0.56, r.h * 0.56).fill(swatch.orange.light);
+      line(paths[0], 6, swatch.brown.line);
+      break;
+    }
+    case 'glasses': {
+      // Two lenses in her eight's loops, and the arms reaching back from its ends.
+      for (const x of [1.1, 2.3]) {
+        const [lx, ly] = f([x, 0.5]);
+        g.ellipse(lx, ly, r.w * 0.2, r.h * 0.38).fill({ color: swatch.blue.light, alpha: 0.8 });
+      }
+      line(paths[0], 6, ink);
+      const [[lx, ly], [rx, ry]] = ends(paths[0]);
+      g.moveTo(lx, ly)
+        .lineTo(lx - r.w * 0.1, ly - r.h * 0.4)
+        .moveTo(rx, ry)
+        .lineTo(rx + r.w * 0.1, ry - r.h * 0.4)
+        .stroke({ width: 5, color: ink, cap: 'round' });
+      break;
+    }
+    case 'racetrack': {
+      // A grey track along her eight with a white line down the middle, and a little red car at the start.
+      line(paths[0], 14, swatch.white.line);
+      line(paths[0], 2, 0xffffff);
+      const [cx, cy] = f(paths[0][0]);
+      g.roundRect(cx - 9, cy - 6, 18, 12, 4)
+        .fill(swatch.red.fill)
+        .stroke({ width: 2, color: swatch.red.line });
+      break;
+    }
   }
 }
 
@@ -659,6 +705,8 @@ class DrawThePattern implements Game {
     if (this.strip.strokes[0].kind === 'post') return 'draw.instruct.down';
     if (this.strip.strokes[0].kind === 'slant') return 'draw.instruct.slant';
     if (this.strip.strokes[0].kind === 'x-back') return 'draw.instruct.shape';
+    if (this.strip.strokes[0].kind === 'spiral') return 'draw.instruct.spiral';
+    if (this.strip.strokes[0].kind === 'eight') return 'draw.instruct.eight';
     return 'draw.instruct.ring';
   }
 
@@ -1442,7 +1490,7 @@ export const drawThePattern: GameModule = {
   region: 'treehouse',
   challenge: 'hands',
   skills: ['fine-motor', 'writing', 'patterns'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
   entryLevels: [10],
   describeLevel: (l) => planFor(l).name,

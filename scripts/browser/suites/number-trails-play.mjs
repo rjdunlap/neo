@@ -19,6 +19,60 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
         }
         if (g.phase === 'trace') throw new Error('Tracing did not complete');
       });
+    // Level 7, Ten, and some more, on an upright phone: the 1 is traced and slides left of the box; a wander on the digit
+    // beside it is one miss; then ten things fill one frame and the rest are counted on in a second. NT_LEVEL=7 runs only this.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('number-trails', 7);
+    await page.waitForTimeout(400);
+    const seven = await page.evaluate(() => ({ n: neo.scene.game.n, digits: [...neo.scene.game.digits] }));
+    assert.ok(seven.n >= 10 && seven.n <= 19, `level 7 drew ${seven.n}`);
+    assert.deepEqual(seven.digits, [1, seven.n - 10]);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const p = g.points.map(([x, y]) => {
+        const q = g.canvas.toGlobal({ x: x * g.size, y: y * g.size });
+        return [q.x, q.y];
+      });
+      await kit.drag(p, 1, 10);
+    });
+    await page.waitForFunction(() => neo.scene.game.digit === 1 && !neo.scene.game.busy, null, {
+      timeout: 15000,
+    });
+    assert.ok((await page.evaluate(() => neo.scene.game.tensInk.x)) < 0, 'the finished 1 slid left');
+    await screenshot('number-trails-7-second-digit-portrait');
+    await page.evaluate(async () => {
+      const p = neo.scene.game.firefly.getGlobalPosition();
+      await kit.drag(kit.line([p.x, p.y], [neo.view.w * neo.view.scale - 10, 15], 30));
+      await kit.sleep(250);
+    });
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 0]);
+    await traceAll();
+    await page.waitForFunction(
+      (n) =>
+        neo.scene.game.phase === 'show' && neo.scene.game.things.filter((t) => t.scale.x > 0.5).length === n,
+      seven.n,
+      { timeout: 40000 },
+    );
+    const shown = await page.evaluate(() => ({
+      frames: neo.scene.game.frames.frames.length,
+      cell: neo.scene.game.frames.cell,
+    }));
+    assert.equal(shown.frames, seven.n > 10 ? 2 : 1);
+    assert.ok(shown.cell >= 100, `cell ${shown.cell}`);
+    await screenshot('number-trails-7-frames-portrait');
+    await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, {
+      timeout: 30000,
+    });
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 0]);
+    await finished('number-trails');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    assert.deepEqual(errors, []);
+    if (process.env.NT_LEVEL === '7') {
+      log(
+        `Number Trails level 7: ${seven.n} written 1 then ${seven.n - 10} on an upright phone, one wander, ${shown.frames} frame(s) at ${Math.round(shown.cell)}-unit cells, sticker`,
+      );
+      return;
+    }
     // Level 1: two wandering drags earn a miss each and a hint; tracing then shows exactly n things, counted in turn.
     await launch('number-trails', 1);
     await page.evaluate(async () => {

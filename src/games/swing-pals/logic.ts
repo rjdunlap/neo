@@ -360,6 +360,21 @@ export type Round =
   | { kind: 'together'; lines: Line[] }
   | { kind: 'predict'; lines: Race[] };
 
+/** The journal entry's key for "a longer rope swings slower" (`swing-pals:longer-slower`). Never rename it. */
+export const SLOWER = 'longer-slower';
+
+/**
+ * Whether a finished round showed that a longer rope swings slower: two friends on ropes of different lengths swinging
+ * side by side, pushed in turn (level 3) or raced (level 7). The matching levels (4 to 6 and 8) also put two ropes side
+ * by side, but there she tunes one to the other, so the entry files only from the two rounds the dive names.
+ */
+export function showsSlower(round: Round): boolean {
+  if (round.kind === 'push')
+    return round.lines.some((l) => l.swings.length === 2 && l.swings[0].hook !== l.swings[1].hook);
+  if (round.kind === 'predict') return round.lines.some((r) => r.hooks[0] !== r.hooks[1]);
+  return false;
+}
+
 /** Each level's authored first line, from the definition's first rounds. */
 export function authoredPush(plan: Plan): PushLine {
   if (plan.id === 1) return { swings: [stillSwing('middle', 'bunny')] };

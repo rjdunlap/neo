@@ -1,12 +1,18 @@
 import type { GameHowTo } from '../types';
 
+/** The note for the tracing levels (2–6, 9 and 11): what counts as a miss and a hint. */
+const TRACE_NOTE =
+  "Nothing is timed. A tap on the picture draws the pet's part again. Wandering off the path counts as a miss; after two misses the next stretch lights up and a sparkle flies it, which counts as a hint.";
+
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
   goal: 'Keep going with the line or pattern the pet starts, using one finger.',
   steps: [
     { from: 1, to: 1, text: 'Touch anywhere and it draws on the paper. Four touches finish a strip.' },
     { from: 2, to: 9, text: 'Start on the green ring and follow the dashes to the end.' },
+    { from: 11, to: 11, text: 'Start on the green ring and follow the dashes to the end.' },
     { from: 2, to: 9, text: 'Lift any time; the crayon waits where you stopped.' },
+    { from: 11, to: 11, text: 'Lift any time; the crayon waits where you stopped.' },
     { from: 2, to: 2, text: 'Short lines start at the top and go down.' },
     { from: 3, to: 3, text: 'The line turns at each peak; the crayon waits there for the turn.' },
     { from: 5, to: 5, text: 'The line turns at each peak; the crayon waits there for the turn.' },
@@ -24,6 +30,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Tap the shining dot and the crayon draws a line to it; sliding a finger along the dashes works too. A tap anywhere else is never wrong.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'The spiral goes round and round into the middle. The eight crosses itself in the middle: go straight on through the crossing into the other loop.',
+    },
   ],
   finish: 'The picture is complete when every strip is drawn.',
   note: [
@@ -35,13 +46,14 @@ export const HOW_TO: GameHowTo = {
     {
       from: 2,
       to: 6,
-      text: "Nothing is timed. A tap on the picture draws the pet's part again. Wandering off the path counts as a miss; after two misses the next stretch lights up and a sparkle flies it, which counts as a hint.",
+      text: TRACE_NOTE,
     },
     {
       from: 9,
       to: 9,
-      text: "Nothing is timed. A tap on the picture draws the pet's part again. Wandering off the path counts as a miss; after two misses the next stretch lights up and a sparkle flies it, which counts as a hint.",
+      text: TRACE_NOTE,
     },
+    { from: 11, to: 11, text: TRACE_NOTE },
     {
       from: 7,
       to: 8,

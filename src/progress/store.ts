@@ -505,6 +505,13 @@ export class Store {
     if (id === this.index.active) this.syncBand();
   }
 
+  /** Marks a profile as a guest (played before setting up) or clears it when "Add a player" adopts it. */
+  setGuest(id: string, guest: boolean) {
+    if (!this.index.profiles.some((p) => p.id === id)) return;
+    this.index = updateEntry(this.index, id, { guest });
+    this.saveIndex();
+  }
+
   /** Another profile's save, to draw its card on the chooser. The active profile's is the live one. */
   async peek(id: string): Promise<SaveData | null> {
     const entry = this.index.profiles.find((p) => p.id === id);
@@ -519,7 +526,13 @@ export class Store {
     const profiles = [];
     for (const e of this.index.profiles) {
       const save = e.id === this.index.active ? this.data : (await this.read(e)).data;
-      profiles.push({ id: e.id, birth: e.birth, startBand: e.startBand, save });
+      profiles.push({
+        id: e.id,
+        birth: e.birth,
+        startBand: e.startBand,
+        ...(e.guest ? { guest: true as const } : {}),
+        save,
+      });
     }
     return JSON.stringify(buildBackup(profiles, this.index.active, this.clock()), null, 2);
   }
@@ -557,6 +570,7 @@ export class Store {
         ...newEntry(a.id, this.clock()),
         birth: a.birth,
         startBand: a.startBand,
+        guest: a.guest === true,
       });
       if (!next) continue;
       index = next;

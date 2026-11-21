@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright; level 7 upright with a wrong guess (never a miss) and a lit rope (one hint); level 8 with one wrong hook. */
+  /** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright; level 7 upright with a wrong guess (never a miss) and a lit rope (one hint), filing the journal's longer-rope entry; level 8 with one wrong hook. */
   async function swingPalsPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -68,6 +68,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         const g = neo.scene.game;
         return neo.scene.finished || !g || g.finished || g.line >= g.round.lines.length;
       });
+    const filed = () =>
+      page.evaluate(() => kit.store.data.journal.found.includes('swing-pals:longer-slower'));
     const sticker = (n) =>
       page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, n, { timeout: 30000 });
 
@@ -86,6 +88,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await sticker(n);
     let st = await state();
     assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
+    assert.equal(await filed(), false, 'one rope on level 1 files no journal entry');
 
     // Level 6: a hook that is neither the start nor the right one parts (one miss); a requested hint glows (one hint).
     await launch('swing-pals', 6);
@@ -173,6 +176,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await sticker(n);
     st = await state();
     assert.deepEqual([st.misses, st.hints], [0, 1], 'level 7: a wrong guess is no miss; one hint');
+    assert.equal(await filed(), true, 'level 7 files "a longer rope swings slower" in the journal');
     await heard('level 7');
     await page.setViewportSize({ width: 1024, height: 768 });
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Draw the Pattern by touch: level 1 by marks (one touch during the pet's turn, one off the paper), two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture. `DRAW_LEVELS=9` runs only level 9. */
+  /** Draw the Pattern by touch: level 1 by marks (one touch during the pet's turn, one off the paper), two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture, two strays at 11's spiral and its picture on an upright phone. `DRAW_LEVELS=9` runs only level 9. */
   async function drawPatternPlay() {
     const only = process.env.DRAW_LEVELS?.split(',').map(Number);
     const state = () =>
@@ -256,6 +256,46 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       assert.deepEqual([st.misses, st.hints], [2, 1]);
       assert.ok(['kite', 'treasure'].includes(await page.evaluate(() => neo.scene.game.strips[1].piece)));
       await screenshot('draw-the-pattern-9-picture');
+    }
+    if (!only || only.includes(11)) {
+      // Level 11 at school on a phone held upright: the pet starts the snail's spiral, she strays twice (one miss, then the
+      // glow and a hint), finishes it, then draws the eight through its crossing; the picture shows the snail and glasses
+      // or a racetrack. Screenshots of the glowing spiral and of the picture.
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('draw-the-pattern', 11, 'Mia', 'school');
+      await idle();
+      n = await stickers();
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.tracks.map((t) => t.stroke.kind)),
+        ['spiral'],
+        'the first strip is the spiral',
+      );
+      await stray();
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [1, 0], 'a stray off the spiral is one miss');
+      await stray();
+      st = await state();
+      assert.deepEqual(
+        [st.misses, st.hints, st.glow],
+        [2, 1, true],
+        'the second stray lights the way, one hint',
+      );
+      await page.waitForTimeout(400);
+      await screenshot('draw-the-pattern-11-phone-portrait');
+      for (let guard = 0; guard < 8 && (await page.evaluate(() => neo.scene.game.index)) === 0; guard++)
+        await drawOn();
+      await idle();
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.tracks.map((t) => t.stroke.kind)),
+        ['eight'],
+        'the second strip is the eight',
+      );
+      await finishRound(n);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [2, 1]);
+      assert.ok(['glasses', 'racetrack'].includes(await page.evaluate(() => neo.scene.game.strips[1].piece)));
+      await screenshot('draw-the-pattern-11-picture');
+      await page.setViewportSize({ width: 1024, height: 768 });
     }
     if (!only || only.includes(10)) {
       // Level 10 at lap: dot to dot. A tap beside the shining dot and a drag that wanders off are never wrong; taps on the

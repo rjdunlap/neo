@@ -27,6 +27,11 @@ export interface ProfileEntry {
   /** A grown-up's "start here instead": a child who plays above or below their age. Wins over the age. */
   startBand: Band | null;
   addedAt: number;
+  /**
+   * Someone who tapped an age place on the first-visit screen and played before setting up ([play first](../../docs/definitions/play-first.md)).
+   * Hidden like a blank profile until "Add a player" adopts it, which clears this.
+   */
+  guest: boolean;
 }
 
 export interface ProfileIndex {
@@ -127,6 +132,7 @@ export const newEntry = (id: string, at: number, legacy = false): ProfileEntry =
   birth: null,
   startBand: null,
   addedAt: at,
+  guest: false,
 });
 
 /**
@@ -148,6 +154,7 @@ export function repairIndex(raw: unknown, makeId: () => string, now: number): Pr
       birth: cleanBirth(p.birth),
       startBand: bandOrNull(p.startBand),
       addedAt: typeof p.addedAt === 'number' && Number.isFinite(p.addedAt) ? Math.max(0, p.addedAt) : 0,
+      guest: p.guest === true,
     });
   }
   if (!profiles.length) profiles.push(newEntry(makeId(), now, true));
@@ -183,7 +190,7 @@ export function removeEntry(
 export function updateEntry(
   index: ProfileIndex,
   id: string,
-  patch: Partial<Pick<ProfileEntry, 'birth' | 'startBand'>>,
+  patch: Partial<Pick<ProfileEntry, 'birth' | 'startBand' | 'guest'>>,
 ): ProfileIndex {
   return { ...index, profiles: index.profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)) };
 }
@@ -198,6 +205,8 @@ export interface BackupProfile {
   id: string;
   birth: Birth | null;
   startBand: Band | null;
+  /** Written only when true; a file without it (or from an older build) restores as not a guest. */
+  guest?: true;
   save: SaveData;
 }
 
@@ -240,6 +249,7 @@ export function parseBackup(text: string): ParsedBackup | null {
         id: p.id,
         birth: cleanBirth(p.birth),
         startBand: bandOrNull(p.startBand),
+        ...(p.guest === true ? { guest: true as const } : {}),
         save: migrate(p.save),
       });
     }
@@ -255,7 +265,11 @@ export interface RestorePlan {
    * Profiles to put a save back into, each keeping its own undo snapshot. `entry` is the backup's birth and start band, or
    * absent for a bare save, which leaves who the person is alone.
    */
-  replace: { id: string; save: SaveData; entry?: { birth: Birth | null; startBand: Band | null } }[];
+  replace: {
+    id: string;
+    save: SaveData;
+    entry?: { birth: Birth | null; startBand: Band | null; guest: boolean };
+  }[];
   /** People the backup has and this device does not. */
   add: BackupProfile[];
   /** People who would not fit in the household. */
@@ -273,7 +287,11 @@ export function planRestore(index: ProfileIndex, backup: ParsedBackup): RestoreP
   let room = MAX_PROFILES - index.profiles.length;
   for (const p of backup.profiles) {
     if (index.profiles.some((q) => q.id === p.id))
-      plan.replace.push({ id: p.id, save: p.save, entry: { birth: p.birth, startBand: p.startBand } });
+      plan.replace.push({
+        id: p.id,
+        save: p.save,
+        entry: { birth: p.birth, startBand: p.startBand, guest: p.guest === true },
+      });
     else if (room > 0) {
       plan.add.push(p);
       room--;
@@ -303,11 +321,24 @@ export function isBlankProfile(save: SaveData, entry: Pick<ProfileEntry, 'birth'
 export const cardName = (save: Pick<SaveData, 'profile' | 'creatures'>): string =>
   save.profile.name.trim() || (companionOf(save.creatures)?.name ?? SPECIES.sprout.names[0]);
 
+/** A profile with no card on the chooser: blank, or a guest nobody has adopted yet. */
+export const isHiddenProfile = (
+  save: SaveData,
+  entry: Pick<ProfileEntry, 'birth' | 'startBand' | 'guest'>,
+): boolean => entry.guest || isBlankProfile(save, entry);
+
+/** No profile would show a card, so the root opens the first-visit screen instead of "Who's playing?". */
+export const everyoneHidden = (items: readonly { entry: ProfileEntry; save: SaveData }[]): boolean =>
+  items.every((i) => isHiddenProfile(i.save, i.entry));
+
 /**
  * The profile that "Add a player" fills in instead of creating a second one, so the first person stays at `neo.save`:
- * the first blank one, the original (`legacy`) before any other. Null when none is blank.
+ * the guest if there is one (adoption is a rename, so its round and sticker become the new player's), then the first
+ * blank one, the original (`legacy`) before any other. Null when none is hidden.
  */
 export function blankToFill(items: readonly { entry: ProfileEntry; save: SaveData }[]): string | null {
+  const guest = items.find((i) => i.entry.guest);
+  if (guest) return guest.entry.id;
   const blank = items.filter((i) => isBlankProfile(i.save, i.entry));
   return (blank.find((i) => i.entry.legacy) ?? blank[0])?.entry.id ?? null;
 }

@@ -20,6 +20,7 @@ import {
   makeTap,
   makeTrays,
   mateTags,
+  oddRhymes,
   planFor,
   PLANS,
   rhymes,
@@ -424,5 +425,20 @@ describe('Rhyme baskets (level 10)', () => {
   it('has its voice lines', () => {
     for (const id of ['rhyme.baskets', 'rhyme.basketNo', 'rhyme.basketHint', 'rhyme.basketSong'])
       expect(Object.keys(SCRIPT)).toContain(id);
+  });
+
+  it('says why after the odd one out that ends the round: the three left all rhyme, the odd one with none (TotoLogic P7)', () => {
+    const plan = PLANS.find((p) => p.mode === 'odd')!;
+    for (let seed = 1; seed <= 60; seed++) {
+      for (const q of makeQuestions(plan, new Rng(seed))) {
+        const group = oddRhymes(q);
+        expect(group).toHaveLength(q.words.length - 1);
+        expect(group).not.toContain(q.answer[0]);
+        for (const a of group)
+          for (const b of group) if (a !== b) expect(rhymes(a, b), `${a} ${b}`).toBe(true);
+        for (const w of group) expect(rhymes(w, q.answer[0])).toBe(false);
+      }
+    }
+    expect(SCRIPT['rhyme.oddwhy'][0]).toMatch(/\{word\} does not rhyme\. \{list\} rhyme!/);
   });
 });
