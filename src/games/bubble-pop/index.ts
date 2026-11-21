@@ -19,6 +19,7 @@ import {
   bondNumbers,
   bubbleToPop,
   choosePalette,
+  clearSpot,
   countRun,
   dotAsks,
   modeCardFor,
@@ -30,7 +31,11 @@ import {
   FRIENDS,
   inReach,
   isRight,
+  matchFaces,
+  matchPair,
+  matchTap,
   meant,
+  partners,
   nearestShown,
   openingBubble,
   roomFor,
@@ -43,6 +48,7 @@ import {
   type BubblePlan,
   type BubbleSize,
   type Friend,
+  type MatchFace,
   type PictureName,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
@@ -79,7 +85,7 @@ class BubblePop implements Game {
   /** How many right pops finish the round. */
   private readonly goal: number;
   private readonly sign: TargetSignView | null = null;
-  /** Bonds mode: the bubble being held still while its partner is found. */
+  /** Bonds and match modes: the bubble being held still while its partner is found. */
   held: Bubble | null = null;
 
   constructor(private readonly ctx: GameContext) {
@@ -132,6 +138,10 @@ class BubblePop implements Game {
         .shuffle(Array.from({ length: p.dotsTo! }, (_, i) => i + 1))
         .forEach((n, i) => this.spawn(n, i));
     }
+    if (p.mode === 'match') {
+      void this.ctx.instruct('bubble.match');
+      matchFaces(p, this.ctx.rng).forEach((face, i) => this.spawn(face.number, i, undefined, face));
+    }
     if (p.mode === 'bonds') {
       void this.ctx.instruct('bubble.bonds', { n: p.sum! });
       for (const n of bondNumbers(p.sum!, p.goal, this.ctx.rng)) this.spawn(n);
@@ -178,6 +188,16 @@ class BubblePop implements Game {
         if (next) next.glow = 2.5;
       }
     }
+    if (this.phase === 'play' && p.mode === 'match' && this.held) {
+      // Holding one and stuck for a while? Gently point at its partner (not counted as a hint).
+      this.idle += dt;
+      if (this.idle > 6) {
+        this.idle = 0;
+        const held = this.held;
+        const partner = this.bubbles.find((b) => !b.popped && partners(held, b));
+        if (partner) partner.glow = 2.5;
+      }
+    }
     for (const b of [...this.bubbles]) {
       if (b.popped) continue;
       b.update(dt);
@@ -220,8 +240,16 @@ class BubblePop implements Game {
     this.bubbles = [];
   }
 
-  /** A new bubble: rising in from below (or drifting, for count and bonds), or `standing` still at a given place and size. */
-  private spawn(number?: number, index = (number ?? 1) - 1, standing?: { x: number; y: number; r: number }) {
+  /**
+   * A new bubble: rising in from below (or drifting, for count and bonds), or `standing` still at a given place and size.
+   * A match-mode `face` brings its own color and says whether its number is drawn as dots.
+   */
+  private spawn(
+    number?: number,
+    index = (number ?? 1) - 1,
+    standing?: { x: number; y: number; r: number },
+    face?: MatchFace,
+  ) {
     const { rng } = this.ctx;
     const p = this.plan;
     const v = this.view;
@@ -237,7 +265,7 @@ class BubblePop implements Game {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
       color = spawnTarget(this.spawned, targetShowing, rng) ? this.target : rng.pick(this.palette.slice(1));
     }
-    if (staysPut(p.mode)) color = RAINBOW[index % RAINBOW.length];
+    if (staysPut(p.mode)) color = face?.color ?? RAINBOW[index % RAINBOW.length];
     const rider = p.mode === 'free' ? riderFor(rng, this.backdrop.scene) : {};
 
     const b = new Bubble({
@@ -247,7 +275,8 @@ class BubblePop implements Game {
       critter: rider.friend,
       picture: rider.picture,
       size,
-      pips: p.mode === 'dots',
+      pips: p.mode === 'dots' || !!face?.pips,
+      noGlint: p.mode === 'match',
       dots: showsDots(this.ctx.level),
       rim: LOOKS[this.backdrop.scene].rim,
     });
@@ -256,7 +285,9 @@ class BubblePop implements Game {
       b.position.set(standing.x, standing.y);
       b.vx = b.vy = 0;
     } else if (staysPut(p.mode)) {
-      b.position.set(rng.range(at.x[0], at.x[1]), rng.range(at.y[0], at.y[1]));
+      const others = this.bubbles.filter((o) => !o.popped);
+      const spot = clearSpot(at, r, others, rng);
+      b.position.set(spot.x, spot.y);
       const a = rng.range(0, Math.PI * 2);
       b.vx = Math.cos(a) * p.speed;
       b.vy = Math.sin(a) * p.speed;
@@ -316,7 +347,7 @@ class BubblePop implements Game {
       return;
     }
     const p = this.plan;
-    if (p.mode === 'bonds') {
+    if (p.mode === 'bonds' || p.mode === 'match') {
       // Drifting bubbles overlap: the touch goes to the bubble whose middle is nearest the finger.
       const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
       const near = at
@@ -326,7 +357,7 @@ class BubblePop implements Game {
             tapped,
           )
         : tapped;
-      return void this.tapBond(near);
+      return void (p.mode === 'match' ? this.tapMatch(near) : this.tapBond(near));
     }
     const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
     const b = at ? meant(tapped, live, at, (o) => this.right(o)) : tapped;
@@ -400,6 +431,69 @@ class BubblePop implements Game {
       const first = live.find((o) => live.some((x) => x !== o && x.number! + o.number! === sum));
       const partner = first && live.find((x) => x !== first && x.number! + first.number! === sum);
       for (const o of [first, partner]) if (o) o.glow = 4;
+    }
+  }
+
+  /**
+   * Match: the first tap holds a bubble still; its partner (the same number the other way, numeral or dots) pops them both.
+   * Another of the same kind moves the hold, the held one tapped again lets go, and the other kind with another number
+   * is a miss that keeps the hold, so she looks again for the same partner.
+   */
+  private tapMatch(b: Bubble) {
+    if (this.phase !== 'play') return;
+    this.idle = 0;
+    const a = this.held;
+    const verdict = a ? matchTap(a, b) : 'switch';
+    if (verdict === 'release') {
+      a!.glow = 0;
+      this.held = null;
+      return;
+    }
+    if (verdict === 'switch') {
+      if (a) a.glow = 0;
+      this.held = b;
+      b.glow = 1e6;
+      sfx.pop(5);
+      // A numeral is read aloud; a dot bubble is not, so her counting is what finds the numeral.
+      if (!b.pips) void this.ctx.say('count', { n: b.number! });
+      return;
+    }
+    if (verdict === 'match') {
+      this.held = null;
+      a!.glow = 0;
+      this.missStreak = 0;
+      this.pop(a!);
+      this.pop(b);
+      this.scored++;
+      void this.ctx.say('bubble.matched', { n: b.number! });
+      if (this.scored % 2 === 0) this.ctx.pet.cheer();
+      if (this.scored >= this.plan.goal) return void this.finale();
+      // A new pair of the same count takes their place, so every count is still showing as dots and as a numeral.
+      for (const face of matchPair(b.number!, this.ctx.rng)) {
+        const again = this.spawn(face.number, this.spawned, undefined, face);
+        again.scale.set(0.3);
+        void this.ctx.tw.to(again.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+      }
+      return;
+    }
+    b.bounce();
+    sfx.boing();
+    this.misses++;
+    this.missStreak++;
+    const want = a!.number!;
+    if (this.clock - this.lastNag > 4) {
+      this.lastNag = this.clock;
+      // Held a numeral and tapped dots: count those dots aloud. Held dots and tapped a numeral: name the numeral, and
+      // send her back to the dots without saying their count, which is hers to find.
+      if (b.pips) void this.ctx.say('bubble.dots.wrong', { wrong: b.number!, n: want });
+      else void this.ctx.say('bubble.match.wrong', { wrong: b.number! });
+    }
+    if (this.missStreak >= 2) {
+      // Two misses in a row: light up the held one's partner.
+      this.missStreak = 0;
+      this.hints++;
+      const partner = this.bubbles.find((o) => !o.popped && partners(a!, o));
+      if (partner) partner.glow = 3;
     }
   }
 
@@ -680,6 +774,8 @@ export const bubblePop: GameModule = {
       return `Pop one size, big or little, as asked (${p.goal} pops; toddler plays it between levels 3 and 4)`;
     if (p.mode === 'dots')
       return `Pop the bubble with the number of dots asked for, 1 to ${p.dotsTo}, no numerals (${p.goal} asks; preschool plays it between levels 6 and 7)`;
+    if (p.mode === 'match')
+      return `Match dots to numerals, 1 to ${p.dotsTo}: tap one, then its partner (${p.goal} pairs; preschool plays it between levels 7 and 8)`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;
     return countLevel(level);

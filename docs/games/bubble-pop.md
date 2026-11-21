@@ -10,7 +10,7 @@
 | --- | --- |
 | lap | 15, 1, 2, 3 |
 | toddler | 1, 2, 3, 16, 4, 5, 6 |
-| preschool | 4, 5, 6, 17, 7, 8, 9 |
+| preschool | 4, 5, 6, 17, 7, 18, 8, 9 |
 | pre-K | 6–12 |
 | school | 10–14 |
 
@@ -33,6 +33,7 @@
 | 15 | Tap anywhere on the screen to pop the nearest bubble, 8 pops (lap's first level) |
 | 16 | Pop one size, big or little, as asked (8 pops; toddler plays it between levels 3 and 4) |
 | 17 | Pop the bubble with the number of dots asked for, 1 to 4, no numerals (6 asks; preschool plays it between levels 6 and 7) |
+| 18 | Match dots to numerals, 1 to 4: tap one, then its partner (6 pairs; preschool plays it between levels 7 and 8) |
 
 <!-- end generated -->
 

@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       to: 17,
       text: 'Listen for the number, then tap the bubble with that many dots. There are no numerals: the dots are the number.',
     },
+    {
+      from: 18,
+      to: 18,
+      text: 'Each number is on two bubbles: once as a numeral and once as dots. Tap one to hold it, then tap its partner. Tap the held bubble again to let it go.',
+    },
     { from: 4, to: 6, text: 'Listen for the color, then tap only the bubbles of that color.' },
     { from: 7, to: 9, text: 'Tap the numbered bubbles in order, starting at 1.' },
     {
@@ -72,6 +77,11 @@ export const HOW_TO: GameHowTo = {
       from: 17,
       to: 17,
       text: 'A wrong bubble only wobbles and its dots are counted aloud; after two in a row the right one glows.',
+    },
+    {
+      from: 18,
+      to: 18,
+      text: 'A bubble that is not the partner only wobbles and the held one stays held; after two in a row the partner glows. Tapping another of the same kind just moves the hold. A held numeral is read aloud; held dots are not, so the counting is hers.',
     },
   ],
 };

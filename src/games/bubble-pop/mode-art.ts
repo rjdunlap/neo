@@ -142,6 +142,19 @@ export function modePicture(p: ModePicture): Container {
       c.addChild(new Graphics().circle(spots[0][0], spots[0][1], 31).stroke({ width: 4, color: ink }));
       break;
     }
+    case 'match': {
+      // The dots and the numeral that says how many, joined by a ring; a numeral that does not match stands apart.
+      const pipsAt = [-28, -18] as const;
+      bubble(c, pipsAt[0], pipsAt[1], 24, RAINBOW[4]);
+      const d = new Graphics();
+      for (const pip of dicePips(p.n))
+        d.circle(pipsAt[0] + pip.x * 24, pipsAt[1] + pip.y * 24, PIP_RADIUS * 24).fill(ink);
+      c.addChild(d);
+      bubble(c, 24, -14, 24, RAINBOW[1], p.n);
+      bubble(c, -2, 32, 20, RAINBOW[3], p.other);
+      c.addChild(new Graphics().roundRect(-58, -48, 112, 66, 33).stroke({ width: 4, color: ink }));
+      break;
+    }
     case 'bond':
       sign(c, -32, String(p.sum));
       p.numbers.forEach((n, i) => bubble(c, i ? 22 : -22, 22, 22, null, n));

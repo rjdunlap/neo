@@ -27,6 +27,11 @@ describe('Bubble Pop mode cards', () => {
       if (picture.kind === 'bond')
         expect(picture.numbers[0] + picture.numbers[1], `level ${level}`).toBe(plan.sum);
       if (picture.kind === 'colors') expect(picture.colors, `level ${level}`).toBe(plan.colors);
+      if (picture.kind === 'match') {
+        expect(plan.mode, `level ${level}`).toBe('match');
+        for (const n of [picture.n, picture.other]) expect(n).toBeLessThanOrEqual(plan.dotsTo!);
+        expect(picture.other).not.toBe(picture.n);
+      }
       if (picture.kind === 'palm') expect(plan.anywhere, `level ${level}`).toBe(true);
       if (picture.kind === 'plain')
         expect(plan.mode === 'free' && !plan.anywhere, `level ${level}`).toBe(true);
