@@ -3,6 +3,7 @@ export const VOICE = {
   'game.lift-it': ['Lift it!'],
   'lift-it.intro': ['Pull the rope and lift the crate up to a friend!'],
   'lift-it.instruct-pull': ['Pull the rope down! Lift the crate up to the ledge.'],
+  'lift-it.instruct-one-pull': ['One big pull! Pull the rope down.'],
   'lift-it.instruct-push-or-pull': ['Push it up yourselves, or hang the wheel and pull down. You choose.'],
   'lift-it.instruct-heavy': ['This crate is heavy. Hang the wheels and find a way to lift it.'],
   'lift-it.instruct-knots': ['Hang the wheels, guess how many knots will go by, then pull and count them.'],

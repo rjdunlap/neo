@@ -1,6 +1,6 @@
 # Lift It, levels 1–6 (definition)
 
-**Built:** levels 1–9, with school levels ordered 3, 4, 9, 5, 6, 7, 8. The [deep dive](../deep-dives/lift-it.md#the-game-today) covers the current ladder and movable knot.
+**Built:** levels 1–10 (level 10 *One big pull* is defined in the dive, not here), with school levels ordered 3, 4, 9, 5, 6, 7, 8. The [deep dive](../deep-dives/lift-it.md#the-game-today) covers the current ladder and movable knot.
 
 Defined 2026-10-17 for [chunk 27](../ROADMAP.md#chunks) (physics games), from the [PHYSICS-GAMES candidate](../PHYSICS-GAMES.md#new-candidates), its [IDEAS row](../IDEAS.md#candidates) and the [machines and tools study](../deep-dives/subjects/machines-tools.md#candidates-and-fit) (its [build slice 3](../deep-dives/subjects/machines-tools.md#build-slices-in-order)). **Built 2026-10-20** (levels 1–6, [PR #692](https://github.com/rjdunlap/neo/pull/692), on every default; build notes in the [archive](../archive/COMPLETED-2026-10-09.md#lift-it-levels-16-2026-10-20); the replay button from level 3 and the drawn pet paw for the level 1–2 hint were built later, as slice 2 of the [dive](../deep-dives/lift-it.md#build-slices-in-order)). Originally docs only. **Was ready to build:** every open call below has a default the build used. The study's mechanism reviewer is wanted before any *real-world* claim is spoken; this packet speaks only its stated ideal rule, so the reviewer does not gate the build. The calls are listed in [Open decisions](#open-decisions) and in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 

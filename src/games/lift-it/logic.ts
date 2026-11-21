@@ -183,6 +183,18 @@ export const PLANS: readonly Plan[] = [
     lines: 3,
   },
   {
+    // The toddler entry: level 1's tree with a one-rung ledge, so a single stroke lands the parcel.
+    id: 10,
+    name: 'One big pull',
+    hooks: [],
+    tray: 0,
+    prebuilt: 'fixed',
+    counter: false,
+    ask: 'none',
+    request: false,
+    lines: 3,
+  },
+  {
     id: 2,
     name: 'Push or pull',
     hooks: ['branch'],
@@ -268,10 +280,15 @@ export const PLANS: readonly Plan[] = [
 ];
 
 export const LEVELS: BandLevels = {
+  // Level 10 is the toddler entry: easy, with a high ID so saves and pins keep their numbers (`entryLevels`).
+  toddler: { min: 10, max: 10 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
   school: { min: 3, max: 9, order: [3, 4, 9, 5, 6, 7, 8] },
 };
+
+/** Levels where the pet's paw can pull a stroke with her and a tug is never a miss to glow about (1, 2 and the toddler's 10). */
+export const strokeLevel = (plan: Plan) => plan.id <= 2 || plan.id === 10;
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];
@@ -303,6 +320,9 @@ export function lineFits(plan: Plan, line: Line): boolean {
   switch (plan.id) {
     case 1:
       return w === 1 && g === 1 && h >= 2 && l === 0 && works('fixed', line);
+    case 10:
+      // One stroke of one knot always suffices: a one-rung ledge, one stone, one friend, nothing else on offer.
+      return w === 1 && g === 1 && h === 1 && l === 0 && works('fixed', line) && travel('fixed', line) === 1;
     case 2:
       return (
         w <= 2 &&
@@ -376,6 +396,8 @@ export function authored(plan: Plan): Line[] {
       return [{ w: 1, h: 2, g: 1, l: 0, waiting: 'bunny', puller: 'duck', parcel: 'apples' }];
     case 2:
       return [{ w: 2, h: 2, g: 2, l: 0, waiting: 'frog', puller: 'mouse', parcel: 'kite' }];
+    case 10:
+      return [{ w: 1, h: 1, g: 1, l: 0, waiting: 'bunny', puller: 'duck', parcel: 'apples' }];
     case 3:
       return [{ w: 4, h: 2, g: 2, l: 2, waiting: 'bunny', puller: 'bear', parcel: 'pumpkin' }];
     case 4:
@@ -402,6 +424,8 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
   switch (plan.id) {
     case 1:
       return { ...base, w: 1, h: rng.int(2, 3), g: 1, l: 0 };
+    case 10:
+      return { ...base, w: 1, h: 1, g: 1, l: 0 };
     case 2: {
       const w = rng.int(1, 2);
       return { ...base, w, h: 2, g: w, l: 0 };
@@ -439,6 +463,10 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
 export function fallbackRound(plan: Plan): Line[] {
   const first = authored(plan);
   const more: Record<number, Line[]> = {
+    10: [
+      { w: 1, h: 1, g: 1, l: 0, waiting: 'frog', puller: 'bear' },
+      { w: 1, h: 1, g: 1, l: 0, waiting: 'mouse', puller: 'bunny' },
+    ],
     1: [
       { w: 1, h: 2, g: 1, l: 0, waiting: 'frog', puller: 'bear' },
       { w: 1, h: 2, g: 1, l: 0, waiting: 'mouse', puller: 'bunny' },

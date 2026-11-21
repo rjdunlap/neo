@@ -492,3 +492,29 @@ describe('layout', () => {
     });
   }
 });
+
+describe('level 10, One big pull (toddler entry)', () => {
+  const plan = planFor(10);
+  it('offers only the prebuilt rope, and one stroke of one knot always lands the parcel', () => {
+    expect(rigsFor(plan)).toEqual(['fixed']);
+    for (let seed = 1; seed <= 200; seed++) {
+      const { lines, fellBack } = makeRound(plan, new Rng(seed), seed % 2 === 0);
+      expect(fellBack).toBe(false);
+      for (const l of lines) {
+        expect(travel('fixed', l)).toBe(1);
+        const h = applyPull({ rung: 0, knots: 0 }, 'fixed', l, KNOT);
+        expect(h.rung).toBe(l.h);
+      }
+    }
+  });
+  it('a shorter pull keeps its height, and is never a miss', () => {
+    const l = authored(plan)[0];
+    const half = applyPull({ rung: 0, knots: 0 }, 'fixed', l, KNOT / 2);
+    expect(half.rung).toBe(0.5);
+    expect(applyPull(half, 'fixed', l, KNOT / 2).rung).toBe(1);
+    expect(countsMisses(plan)).toBe(false);
+  });
+  it("is the toddler band's only level", () => {
+    expect(LEVELS.toddler).toEqual({ min: 10, max: 10 });
+  });
+});
