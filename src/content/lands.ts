@@ -301,8 +301,7 @@ export const LANDS: readonly Land[] = [
       'mossy-path',
       'shell-rows',
       'domino-pond',
-      'bunny-patches',
-    ],
+      'bunny-patches', 'campsite'],
   },
   {
     id: 'story-grove',

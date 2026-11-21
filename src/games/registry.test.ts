@@ -571,6 +571,7 @@ describe('game registry', () => {
       'bubble-pop',
       'bug-builder',
       'bunny-patches',
+      'campsite',
       'caravan-days',
       'chain-reaction',
       'circuit-garden',
