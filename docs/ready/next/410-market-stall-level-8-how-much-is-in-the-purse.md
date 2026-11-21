@@ -1,0 +1,1 @@
+**`market-stall` level 8, How much is in the purse?** (school; dive slice 4, a new interaction: typecheck, rule tests, one scripted play at first and last level with one wrong card and one hint, one portrait screenshot). [Dive](../../deep-dives/market-stall.md#build-slices-in-order)

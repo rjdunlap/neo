@@ -444,6 +444,7 @@ class BubblePop implements Game {
     this.idle = 0;
     const a = this.held;
     const verdict = a ? matchTap(a, b) : 'switch';
+    if (verdict === 'release' || verdict === 'switch') this.missStreak = 0;
     if (verdict === 'release') {
       a!.glow = 0;
       this.held = null;
