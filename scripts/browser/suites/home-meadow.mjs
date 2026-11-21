@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot }) {
   /**
-   * RW14 slice 4: the illustrated Rainbow Meadow (`HOME_ONLY=meadow`). Places shows the meadow's postcard; the meadow draws
+   * RW14 slices 4 and 10: the illustrated locations (`HOME_ONLY=meadow`). Places shows each pictured land's postcard; the meadow draws
    * its picture over the whole view with no code-drawn sun, clouds or scenery and its games on plates, in both orientations;
-   * Counting Cove (no picture) is unchanged; a round launched there finishes on the picture; Explore's postcard shows it.
+   * a location without a picture, if any is left, is unchanged; a round launched in the meadow finishes on the picture; Explore's postcard shows it.
    */
   async function homeMeadow() {
     await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href);
@@ -37,9 +37,19 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
       const walk = eval(src);
       return neo.scene.cards.map((c) => [c.id, walk(c.node)]);
     }, `(${pictured})`);
+    // Every land with a picture in src/art/locations/ (RW14 slices 4 and 10) shows its postcard, and no other.
+    const { withPicture, unpictured } = await page.evaluate(async () => {
+      const { FILES } = await import('/src/art/locations/index.ts');
+      const { LAND_IDS } = await import('/src/content/lands.ts');
+      return {
+        withPicture: [...FILES.pictures.keys()],
+        unpictured: LAND_IDS.filter((id) => !FILES.pictures.has(id)),
+      };
+    });
+    assert.ok(withPicture.includes('rainbow-meadow'));
     assert.deepEqual(
       cards.filter(([, p]) => p).map(([id]) => id),
-      ['rainbow-meadow'],
+      cards.map(([id]) => id).filter((id) => withPicture.includes(id)),
       JSON.stringify(cards),
     );
     await screenshot('meadow-places');
@@ -94,15 +104,18 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     }
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
-    await page.evaluate(() => neo.go.land('counting-cove'));
-    await scene('LocationScene');
-    await page.waitForTimeout(300);
-    const cove = await look();
-    assert.deepEqual(
-      { picture: cove.picture, scenery: cove.scenery },
-      { picture: false, scenery: true },
-      JSON.stringify(cove),
-    );
+    // A location without a picture keeps its code-drawn scenery (none is left once all eleven are pictured).
+    if (unpictured.length) {
+      await page.evaluate((id) => neo.go.land(id), unpictured[0]);
+      await scene('LocationScene');
+      await page.waitForTimeout(300);
+      const plain = await look();
+      assert.deepEqual(
+        { picture: plain.picture, scenery: plain.scenery },
+        { picture: false, scenery: true },
+        JSON.stringify(plain),
+      );
+    }
     await page.evaluate(() => neo.go.land('rainbow-meadow'));
     await scene('LocationScene');
     await page.waitForTimeout(300);
@@ -141,7 +154,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await screenshot('meadow-explore-postcard');
     assert.deepEqual(errors, []);
     log(
-      'Illustrated meadow: Places postcard, picture in both orientations without sun/clouds/scenery, Counting Cove unchanged, result on the picture and the Explore postcard passed',
+      'Illustrated meadow: Places postcards, picture in both orientations without sun/clouds/scenery, an unpictured location unchanged, result on the picture and the Explore postcard passed',
     );
   }
 

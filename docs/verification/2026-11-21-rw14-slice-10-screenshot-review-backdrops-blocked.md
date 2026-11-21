@@ -1,0 +1,5 @@
+# 2026-11-21 — RW14 slice 10 screenshot review (backdrops blocked) (PR #1939, draft)
+
+**Changed:** no images. The screenshot review of slices 4 and 6 is recorded in [POLISH](../rework/POLISH.md#slice-10-the-other-ten-backdrops) (passed); `scripts/browser/suites/home-meadow.mjs` now expects a postcard for every land with a picture in `src/art/locations/` and checks an unpictured location only while one is left, so the suite keeps passing once the ten backdrops land. All ten R26 image runs stopped on the ChatGPT plan's usage limit before generating ([run log](../rework/art-requests/QUEUE.md#run-log)).
+**Ran:** a headless probe of Rainbow Meadow, Counting Cove and Bubble Beach at 1024 × 768, 768 × 1024, 844 × 390 and 390 × 844, and Duck Pond in portrait (no page errors); `BROWSER_SUITE=home HOME_ONLY=meadow` before and after the suite edit (passed both times).
+**Not run:** typecheck, unit tests, build and the offline check (no source or asset changed); the per-location probes the slice asks for, which wait for the images.
