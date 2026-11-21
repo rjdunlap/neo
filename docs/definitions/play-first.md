@@ -1,6 +1,8 @@
 # Play first, set up after (TotoLogic P1, definition)
 
-*Status: defined 2026-11-21 (docs only). Nothing is built; the [build slices](#build-slices-in-order) are queued in [READY](../READY.md).*
+*Status: defined 2026-11-21 (docs only). Slice 1 (the guest in the save) built 2026-11-21: nothing sets `guest` yet and there is no new screen; slice 2 is next in [READY](../READY.md).*
+
+**Built:** slice 1, the guest in the save ([PR #1949](https://github.com/rjdunlap/neo/pull/1949)); to build slice 2, read “[Build slices, in order](#build-slices-in-order)”.
 
 From the [TotoLogic review](../reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m), proposal P1. Someone handed a link to Puddle Island on a phone meets a form before a game. The [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play) admitted P1 after [the question on screen](question-on-screen.md), with two rules fixed: the guest round **awards nothing until the blank profile is adopted**, and **adoption is a rename, not a copy**. This page settles the rest: when the first-visit screen shows, its age places and bands, which round is played, where the guest's round is kept, what the result offers, where the egg goes, and what the save does.
 
@@ -95,7 +97,7 @@ In `src/progress/profiles.test.ts`, `src/app/chooser.test.ts` and the store's te
 
 ## Build slices, in order
 
-1. **The guest in the save** (save, S): `ProfileEntry.guest` with repair, `updateEntry`, backups and restore; `everyoneHidden`; `blankToFill`'s preference; the grown-ups' page label; adoption clears the flag. The chooser hides guests. No new screen yet. Tier (save): typecheck, unit tests, build, `profiles`, offline.
+1. **The guest in the save** (save, S; built 2026-11-21): `ProfileEntry.guest` with repair, `updateEntry`, backups and restore; `everyoneHidden`; `blankToFill`'s preference; the grown-ups' page label; adoption clears the flag. The chooser hides guests. No new screen yet. Tier (save): typecheck, unit tests, build, `profiles`, offline.
 2. **The first-visit screen and the guest's round** (shell and navigation, M; after slice 1): the first-visit mode of `ChooserScene`, the root's `start` choosing it, the guest's `hub`, the first card, the result's Add me, the opened add form and its Cancel, the spoken line. Tier (shell and navigation): typecheck, unit tests, build, `profiles`, `phonefit`, `home` (its first run must still reach `HatchScene` through `.chooser__add`), `world`, offline. A browser play of the whole path on an upright phone size: first visit, Grown-up, one round with one wrong answer, Add me, adopt, hatch, the six with the card played; one portrait screenshot of the first-visit screen.
 
 ## Open for the developer (not blocking)

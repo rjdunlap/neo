@@ -223,7 +223,7 @@ ${
     who.innerHTML = items
       .map(
         ({ e, save }) =>
-          `<option value="${e.id}">${esc(save && !isBlankProfile(save, e) ? cardName(save) : 'New player (not set up)')}</option>`,
+          `<option value="${e.id}">${esc(e.guest ? 'Played as a guest (not set up)' : save && !isBlankProfile(save, e) ? cardName(save) : 'New player (not set up)')}</option>`,
       )
       .join('');
     who.value = store.activeId;

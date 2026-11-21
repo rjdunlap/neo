@@ -151,7 +151,9 @@ describe('repairIndex', () => {
       { profiles: [null, 3, {}] },
     ]) {
       const i = repairIndex(raw, counter(), 5);
-      expect(i.profiles).toEqual([{ id: 'id0001', legacy: true, birth: null, startBand: null, addedAt: 5 }]);
+      expect(i.profiles).toEqual([
+        { id: 'id0001', legacy: true, birth: null, startBand: null, addedAt: 5, guest: false },
+      ]);
       expect(i.active).toBe('id0001');
       expect(i.version).toBe(1);
     }
@@ -162,8 +164,15 @@ describe('repairIndex', () => {
       version: 1,
       active: 'bbbb2222',
       profiles: [
-        { id: 'aaaa1111', legacy: true, birth: { month: 10, year: 2025 }, startBand: null, addedAt: 1 },
-        { id: 'bbbb2222', legacy: false, birth: null, startBand: 'school', addedAt: 2 },
+        {
+          id: 'aaaa1111',
+          legacy: true,
+          birth: { month: 10, year: 2025 },
+          startBand: null,
+          addedAt: 1,
+          guest: true,
+        },
+        { id: 'bbbb2222', legacy: false, birth: null, startBand: 'school', addedAt: 2, guest: false },
       ],
     };
     expect(repairIndex(JSON.parse(JSON.stringify(index)), counter(), 9)).toEqual(index);
@@ -208,7 +217,14 @@ describe('repairIndex', () => {
       counter(),
       0,
     ).profiles;
-    expect(p).toEqual({ id: 'aaaa1111', legacy: false, birth: null, startBand: null, addedAt: 0 });
+    expect(p).toEqual({
+      id: 'aaaa1111',
+      legacy: false,
+      birth: null,
+      startBand: null,
+      addedAt: 0,
+      guest: false,
+    });
   });
 
   it('holds a household of at most eight', () => {
@@ -219,6 +235,36 @@ describe('repairIndex', () => {
     const i = repairIndex({ profiles }, counter(), 0);
     expect(i.profiles).toHaveLength(MAX_PROFILES);
     expect(i.profiles[0].legacy).toBe(true);
+  });
+});
+
+describe('the guest flag (play first)', () => {
+  it('is kept when true and repaired to false otherwise; an index without it has no guests', () => {
+    const i = repairIndex(
+      {
+        profiles: [
+          { id: 'aaaa1111', legacy: true, guest: true },
+          { id: 'bbbb2222', guest: 'yes' },
+          { id: 'cccc3333', guest: 1 },
+          { id: 'dddd4444' },
+        ],
+      },
+      counter(),
+      0,
+    );
+    expect(i.profiles.map((p) => p.guest)).toEqual([true, false, false, false]);
+    expect(newEntry('eeee5555', 0).guest).toBe(false);
+  });
+
+  it('is set and cleared by updateEntry, leaving who someone is alone', () => {
+    const i = repairIndex(
+      { profiles: [{ id: 'aaaa1111', legacy: true, birth: { month: 1, year: 2020 } }] },
+      counter(),
+      0,
+    );
+    const guest = updateEntry(i, 'aaaa1111', { guest: true });
+    expect(guest.profiles[0]).toMatchObject({ guest: true, birth: { month: 1, year: 2020 } });
+    expect(updateEntry(guest, 'aaaa1111', { guest: false }).profiles[0].guest).toBe(false);
   });
 });
 
@@ -258,7 +304,7 @@ describe('adding and removing', () => {
     const one = removeEntry(two, 'bbbb2222', counter(), 0);
     const after = removeEntry(one, 'aaaa1111', counter(), 42);
     expect(after.profiles).toEqual([
-      { id: 'id0001', legacy: false, birth: null, startBand: null, addedAt: 42 },
+      { id: 'id0001', legacy: false, birth: null, startBand: null, addedAt: 42, guest: false },
     ]);
     expect(after.active).toBe('id0001');
   });
@@ -298,6 +344,28 @@ describe('backup', () => {
     expect(file.kind).toBe(BACKUP_KIND);
     const parsed = parseBackup(JSON.stringify(file, null, 2));
     expect(parsed).toEqual({ kind: 'many', profiles: file.profiles });
+  });
+
+  it('carries a guest through a backup, and restores a file without the flag as not a guest', () => {
+    const file = buildBackup(
+      [
+        { id: 'aaaa1111', birth: null, startBand: null, guest: true, save: mia },
+        { id: 'bbbb2222', birth: null, startBand: null, save: robert },
+      ],
+      'aaaa1111',
+      1,
+    );
+    const parsed = parseBackup(JSON.stringify(file))!;
+    if (parsed.kind !== 'many') throw new Error('expected many');
+    expect(parsed.profiles.map((p) => p.guest === true)).toEqual([true, false]);
+    expect('guest' in parsed.profiles[1]).toBe(false);
+    const plan = planRestore(index, parsed);
+    expect(plan.replace.map((r) => r.entry?.guest)).toEqual([true, false]);
+    const odd = parseBackup(
+      JSON.stringify({ kind: BACKUP_KIND, profiles: [{ id: 'aaaa1111', guest: 'true', save: {} }] }),
+    )!;
+    if (odd.kind !== 'many') throw new Error('expected many');
+    expect(odd.profiles[0].guest).toBeUndefined();
   });
 
   it('still reads today’s single-profile backup', () => {
@@ -370,7 +438,7 @@ describe('backup', () => {
     )!;
     const plan = planRestore(index, parsed);
     expect(plan.replace.map((r) => r.id)).toEqual(['bbbb2222']);
-    expect(plan.replace[0].entry).toEqual({ birth: { month: 5, year: 1980 }, startBand: null });
+    expect(plan.replace[0].entry).toEqual({ birth: { month: 5, year: 1980 }, startBand: null, guest: false });
     expect(plan.add.map((a) => a.id)).toEqual(['dddd4444']);
     expect(plan.skipped).toBe(0);
     // aaaa1111 is not in the file and appears nowhere in the plan: a restore only puts back.
