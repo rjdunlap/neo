@@ -110,7 +110,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 4. **Level 4, *First numbers*** (built 2026-11-10, PR #1479). Tier: typecheck, rule tests (draws, order, landing), browser play of 4 and `fingerdemo` at 4.
 5. **Level 5, *Write how many*** (built 2026-11-10, PR #1482). Tier: typecheck, unit tests, one scripted play (a ring of three, one wrong card, the glow, zero), one portrait screenshot.
 6. **Level 6, *Less help each time*** (built 2026-11-10, PR #1490; its guide helpers are shared with Letter Trails level 9). Tier: rule tests, one play of three tries with one wander, `fingerdemo` at 6, one screenshot of the dotted try.
-7. **Level 7, *Ten, and some more*** (decision 1, then a layout probe).
+7. **Level 7, *Ten, and some more*** (claimed by `claude/number-trails-7`, 2026-11-21; decision 1, then a layout probe).
 8. **Journal entries** (decision 2).
 
 ## What was built in this session
