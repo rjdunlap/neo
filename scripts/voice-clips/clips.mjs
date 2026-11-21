@@ -13,7 +13,7 @@ export const SETTINGS = {
 
 /**
  * Line ids with clips, by the part before the first dot: the island's shell (titles, praise, the
- * home spot, lands and places, the hatch, stickers) and sixty-one whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies, Lift It, Puzzle Pals, Rhythm Neighbors, Song Maker, Teddy Doctor, Photo Safari, Color Garden, Bumper Garden, Fluffy Salon, Sound Garden, Shape Sorter, Dot Link, Feelings Faces, Gear Garden, Sand Table, Scoop Shop, Attic Finds, Pet Kitchen, Puppet Stage, Swing Pals, Word Glue, Word Monsters, Little Conductor, Beat Builder, Bug Builder and Rain Garden.
+ * home spot, lands and places, the hatch, stickers) and sixty-six whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies, Lift It, Puzzle Pals, Rhythm Neighbors, Song Maker, Teddy Doctor, Photo Safari, Color Garden, Bumper Garden, Fluffy Salon, Sound Garden, Shape Sorter, Dot Link, Feelings Faces, Gear Garden, Sand Table, Scoop Shop, Attic Finds, Pet Kitchen, Puppet Stage, Swing Pals, Word Glue, Word Monsters, Little Conductor, Beat Builder, Bug Builder, Rain Garden, Seesaw Balance, Little Loom, Relay Woods, Swap Meet and Welcome Ways.
  * The rest stays on device speech until the iPad listen passes (docs/ROADMAP.md#a-better-voice).
  */
 export const PREFIXES = [
@@ -98,6 +98,11 @@ export const PREFIXES = [
   'beat',
   'bug',
   'rain',
+  'seesaw',
+  'loom',
+  'relay-woods',
+  'swap-meet',
+  'ww',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */
