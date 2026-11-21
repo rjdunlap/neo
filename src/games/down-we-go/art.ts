@@ -113,3 +113,49 @@ export function iconArt(): Container {
   c.addChild(ledge, sprout, lantern);
   return c;
 }
+
+/** A shell cover for a covered knot's dial (level 4), `r` across. */
+export function shellArt(r: number): Graphics {
+  const g = new Graphics()
+    .circle(0, 0, r)
+    .fill(swatch.pink.fill)
+    .stroke({ width: 5, color: swatch.pink.line });
+  for (let i = -2; i <= 2; i++)
+    g.moveTo(0, r * 0.8)
+      .lineTo(i * r * 0.36, -r * 0.7)
+      .stroke({ width: 3, color: swatch.pink.line });
+  return g;
+}
+
+/** Level 3's answer plate: the sprout on a lower ("deeper") or higher ("not as deep") ledge, with an arrow, `w` × `h`. */
+export function plateArt(deeper: boolean, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 22)
+      .fill(0xffffff)
+      .stroke({ width: 4, color: swatch.teal.line }),
+  );
+  const ys = [-h * 0.28, h * 0.28];
+  for (const y of ys)
+    c.addChild(
+      new Graphics()
+        .roundRect(-w * 0.42, y + 12, w * 0.5, 12, 5)
+        .fill(swatch.brown.light)
+        .stroke({ width: 2, color: swatch.brown.line }),
+    );
+  const sp = sproutArt();
+  sp.scale.set(0.42);
+  sp.position.set(-w * 0.17, ys[deeper ? 1 : 0] + 12);
+  const dir = deeper ? 1 : -1;
+  const arrow = new Graphics()
+    .moveTo(w * 0.3, -dir * h * 0.25)
+    .lineTo(w * 0.3, dir * h * 0.25)
+    .stroke({ width: 8, color: swatch.blue.line, cap: 'round' })
+    .moveTo(w * 0.3 - 16, dir * h * 0.25 - dir * 16)
+    .lineTo(w * 0.3, dir * h * 0.25)
+    .lineTo(w * 0.3 + 16, dir * h * 0.25 - dir * 16)
+    .stroke({ width: 8, color: swatch.blue.line, cap: 'round', join: 'round' });
+  c.addChild(sp, arrow);
+  return c;
+}

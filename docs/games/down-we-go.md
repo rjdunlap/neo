@@ -9,12 +9,14 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 2 |
+| school | 2–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Down we go: ride the lantern past every knot, then plant the seaweed on the deepest ledge it can grow |
 | 2 | Measure first: choose which knots to measure on a five-knot rope, then plant the seaweed as deep as it can live |
+| 3 | Clear water, cloudy water: guess whether the seaweed lives deeper or not as deep in the next cove, then find its deepest ledge |
+| 4 | Half each knot: choose the sun dial that fits a covered knot, from the rule that each knot leaves half the light |
 
 <!-- end generated -->
 

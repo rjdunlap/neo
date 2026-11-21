@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
-import { AUTHORED, LEVELS, canGrow, deepest, hintKnot, plantResult, roundFor } from './logic';
+import {
+  AUTHORED,
+  DIAL_POOL,
+  LEVELS,
+  canGrow,
+  compare,
+  covesFor,
+  deepest,
+  fade,
+  hintKnot,
+  plantResult,
+  questionsFor,
+  roundFor,
+} from './logic';
 
 describe('Down We Go rules', () => {
   it('has the authored dives and their answers', () => {
@@ -18,7 +31,7 @@ describe('Down We Go rules', () => {
 
   it('keeps the bands as defined', () => {
     expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 1, max: 2 });
-    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 2, max: 2 });
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 2, max: 4 });
   });
 
   it.each([1, 2])('level %i: every seeded dive is fair', (level) => {
@@ -68,5 +81,49 @@ describe('Down We Go rules', () => {
 
   it('sends the hint to the deepest knot', () => {
     for (const d of [...AUTHORED[1], ...AUTHORED[2]]) expect(hintKnot(d)).toBe(deepest(d));
+  });
+
+  it('level 3: the authored coves, and the comparison is never "same"', () => {
+    const [a, b] = covesFor(new Rng(1), true);
+    expect([a.water, b.water, a.need]).toEqual(['clear', 'cloudy', 2]);
+    expect([deepest(a), deepest(b)]).toEqual([2, 1]);
+    expect(compare(a, b)).toBe('shallower');
+    for (const need of [1, 2, 4])
+      for (const [x, y] of [
+        ['clear', 'cloudy'],
+        ['cloudy', 'clear'],
+      ] as const) {
+        const d = (w: typeof x) => ({ light: fade(w), need, water: w });
+        expect(compare(d(x), d(y))).not.toBe('same');
+        expect(d(x).light.some((_, k) => !canGrow(d(x), k))).toBe(true);
+      }
+    for (let seed = 1; seed <= 100; seed++) {
+      const [p, q] = covesFor(new Rng(seed));
+      expect(p.water).not.toBe(q.water);
+      expect(p.need).toBe(q.need);
+      expect(deepest(p)).not.toBe(deepest(q));
+    }
+  });
+
+  it('level 4: the pool matches the rule, with three distinct options and one right', () => {
+    expect(DIAL_POOL.map((q) => [q.at, q.answer])).toEqual([
+      [2, 2],
+      [3, 1],
+      [1, 4],
+      [2, 2],
+    ]);
+    for (const q of DIAL_POOL) {
+      expect(q.answer).toBe(fade('clear')[q.at]);
+      expect(new Set(q.options).size).toBe(3);
+      expect(q.options.filter((o) => o === q.answer)).toHaveLength(1);
+      expect(q.answer).toBeGreaterThanOrEqual(1);
+    }
+    for (let seed = 1; seed <= 200; seed++) {
+      const r = questionsFor(new Rng(seed));
+      expect(r).toHaveLength(3);
+      expect(r[0].next).toBe(true);
+      expect(new Set(r.map((q) => q.shown.join())).size).toBe(3);
+      for (const q of r) expect(q.options).toContain(q.answer);
+    }
   });
 });
