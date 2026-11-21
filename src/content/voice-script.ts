@@ -160,6 +160,7 @@ import { VOICE as stopAndGoVoice } from '../games/stop-and-go/voice.ts';
 import { VOICE as storyStepsVoice } from '../games/story-steps/voice.ts';
 import { VOICE as storyWeaverVoice } from '../games/story-weaver/voice.ts';
 import { VOICE as sudokuGardenVoice } from '../games/sudoku-garden/voice.ts';
+import { VOICE as sumCratesVoice } from '../games/sum-crates/voice.ts';
 import { VOICE as swapMeetVoice } from '../games/swap-meet/voice.ts';
 import { VOICE as swingPalsVoice } from '../games/swing-pals/voice.ts';
 import { VOICE as tangramTownVoice } from '../games/tangram-town/voice.ts';
@@ -777,6 +778,7 @@ export const SCRIPT = {
   ...storyStepsVoice,
   ...storyWeaverVoice,
   ...sudokuGardenVoice,
+  ...sumCratesVoice,
   ...swapMeetVoice,
   ...swingPalsVoice,
   ...tangramTownVoice,

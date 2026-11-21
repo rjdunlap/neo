@@ -756,4 +756,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school–grown-up* · [Word Code](games/word-code.md)
 
+### Sum Crates
+
+*school–grown-up* · [Sum Crates](games/sum-crates.md)
+
 <!-- end generated -->

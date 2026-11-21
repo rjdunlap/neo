@@ -677,6 +677,7 @@ describe('game registry', () => {
       'story-steps',
       'story-weaver',
       'sudoku-garden',
+      'sum-crates',
       'swap-meet',
       'swing-pals',
       'tangram-town',
