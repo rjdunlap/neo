@@ -27,7 +27,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-- **The first-visit screen and the guest's round** (TotoLogic P1 slice 2, after slice 1 "The guest in the save"; shell and navigation tier: typecheck, unit tests, build, `profiles`, `phonefit`, `home` (its first run must still reach `HatchScene` through `.chooser__add`), `world`, offline; one upright-phone browser play of the whole path, first visit, Grown-up, one round with one wrong answer, Add me, adopt, hatch, the six with the card played, and one portrait screenshot of the first-visit screen). [Definition](definitions/play-first.md#build-slices-in-order)
+None queued: the next phone line is in Next ten.
 
 ### Puzzle-page follow-ups
 
