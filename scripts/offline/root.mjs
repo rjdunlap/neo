@@ -49,11 +49,11 @@ export async function rootOffline(browser) {
       // Production has no scene API. Allow the 0.35 s curtain to settle after the DOM link becomes visible.
       await page.waitForTimeout(600);
       await page.screenshot({ path: `${output}/home.png` });
-      // At 1024×768: toddler Home Explore, Explore Places, then Counting Cove's place card.
+      // At 1024×768: toddler Home Explore (Little surprises, Places, Favorites, Arcade, Family play), Places, then Counting Cove's place card.
       await page.mouse.click(914, 403);
       await page.waitForTimeout(1400);
       await page.locator('.classic-link').waitFor({ state: 'hidden' });
-      await page.mouse.click(282, 197);
+      await page.mouse.click(512, 197);
       await page.waitForTimeout(2200);
       await page.screenshot({ path: `${output}/places.png` });
       await page.mouse.click(397, 200);
