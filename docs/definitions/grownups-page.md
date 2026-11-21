@@ -1,6 +1,6 @@
 # The grown-ups' page speaks of the root (U8, definition)
 
-*Status: built 2026-11-10 (PR #1472): U8a, the whole definition.*
+*Status: built 2026-11-10 (PR #1472): U8a, the whole definition; R6 built 2026-11-21 (PR #1951).*
 
 From the [adversarial UX review](../reviews/UX-REVIEW-2026-11-09.md#10-grown-ups-get-child-surfaces-and-stale-words), finding 10 and recommendation U8: the grown-ups' page still describes the island map, and its This week table lists every game for her age with a level picker on each, 57 rows at lap and 175 at grown-up. The review asked for three things: remove the map words, remove the development row, and fold This week's rows behind a search or "played this week". This page settles each, and keeps the classic island's page as it is.
 
@@ -89,7 +89,7 @@ One session; nothing else is needed for it.
 
 The rest of finding 10 is not this page's: a grown-up colouring and naming a friend before playing (the add-player flow), the classic door on Home with no label, and couch play's four names (U6b sends Family play straight to couch). Each goes to its own line if real play shows it matters.
 
-**Reference (2026-11-10, played 2026-11-11):** the [TotoLogic review](../reviews/TOTOLOGIC.md#p4-this-week-says-what-the-games-asked-and-names-one-not-tried-panel-s) proposes one addition to This week (P4): a plain sentence built from each played game's `challenge` kind, and one game of a kind not played this week. Its P1 and P2 are about the add-player flow left out above. After the app was played (2026-11-11) the review adds two wording notes to P4 from TotoLogic's progress page: leave the sentence out in a week with too little play rather than pad it, and end the "not played yet" line with its reason; and one caution, that a label such as "Proficient" is only as good as the count under it. Proposals only.
+**Reference (2026-11-10, played 2026-11-11):** the [TotoLogic review](../reviews/TOTOLOGIC.md#p4-this-week-says-what-the-games-asked-and-names-one-not-tried-panel-s) proposes one addition to This week (P4): a plain sentence built from each played game's `challenge` kind, and one game of a kind not played this week. Its P1 and P2 are about the add-player flow left out above. After the app was played (2026-11-11) the review adds two wording notes to P4 from TotoLogic's progress page: leave the sentence out in a week with too little play rather than pad it, and end the "not played yet" line with its reason; and one caution, that a label such as "Proficient" is only as good as the count under it. The P4 addition is built as R6 below (2026-11-21, PR #1951); its P1 and P2 stay out of this page.
 
 ## Open decisions
 

@@ -93,7 +93,7 @@ At age 3 on "Just right", unless marked. A record for anyone comparing ladders, 
 
 ## Proposals
 
-Each is a proposal, sized for one session unless it says otherwise, with the document it would change. P1 to P6 keep their numbers from the first review, each with what play changed; P7 to P9 are new. [Decided 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play): P1 to P4 and P7 are admitted and on [READY](../READY.md) with P9, and P8 and P7 are since built (P2 as a build, since built; P3 then P1 as definitions, P4 and P7 as notes then builds). For the phone playtest the order of likely value is now P3, P1, then the rest (P2 is built).
+Each is a proposal, sized for one session unless it says otherwise, with the document it would change. P1 to P6 keep their numbers from the first review, each with what play changed; P7 to P9 are new. [Decided 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play): P1 to P4 and P7 are admitted and on [READY](../READY.md) with P9, and P8, P7 and P4 are since built (P2 as a build, since built; P3 then P1 as definitions, P4 and P7 as notes then builds). For the phone playtest the order of likely value is now P3, P1, then the rest (P2 is built).
 
 ### P1. Play first, set up after (a definition; then shell and save, M)
 
@@ -124,6 +124,8 @@ A phone is usually on silent, and both current players can read. The first revie
 Define a caption for touch rounds: the current `ctx.instruct` line as one line of text near the pet, with a small speaker picture that repeats it (what tapping the pet already does). To settle: which players see it (the `grownup` band always; `school` perhaps; younger bands never, so nothing a child must read appears), whether it shows only when speech is off or muted, how slotted lines are filled (the roadmap's planned `lineText(id)` helper), and where it sits upright on a 390-wide screen without covering a target. Two things from play to add to the definition: the caption must change when the question changes within a round, and feedback that is only a sound (TotoLogic's wrong drop, the island's boing) needs something to see beside it; the island's glow after two misses already is that. This answers the UX review's first finding for the people who are actually playing. This review adds one clause to the Sound question on the [phone playtest list](../DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now): with the sound off, could you tell what each game asked?
 
 ### P4. This week says what the games asked, and names one not tried (panel, S)
+
+**Built 2026-11-21 (PR #1951):** [R6](../definitions/grownups-page.md#r6-this-week-says-what-the-games-asked-and-names-one-not-tried-totologic-p4), `weekKinds` in `src/parent/week.ts`.
 
 Each game already declares one of seven `challenge` kinds (numbers, words, logic, space, music, noticing, hands), used only to mix Today's six. Add to [This week](../definitions/grownups-page.md#r5-this-week-opens-on-what-she-played), above the table, one plain sentence built from it: "This week: three counting games, two with words, one with music", and under it one line: "Not played yet: *Critter Crossing* (logic)", chosen from her band, a kind she has not played this week, first level. No percentages, no "mastered", no "recommended", no ranking: it names what the games asked and what is there, which is the wording rule. The pure function sits beside `weekRows` in `src/parent/`; the tier is typecheck and its unit tests. It needs a few lines added to the grown-ups' page definition first, with the kind names in plain words.
 

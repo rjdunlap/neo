@@ -1,0 +1,1 @@
+**A puzzle page at the table** (PP8, grown-ups' page): write the short offline-play card for mazes, spoken word ladders and domino dots. [Study](../../deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
