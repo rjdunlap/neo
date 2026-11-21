@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/number-trails; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `number-trails` · **Land:** Counting Cove · **Ages:** preschool–pre-K · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `number-trails` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** numerals, counting, fine-motor, writing
 
@@ -10,6 +10,7 @@
 | --- | --- |
 | preschool | 4, 1, 2 |
 | pre-K | 2, 3, 5, 6 |
+| school | 5–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +20,7 @@
 | 4 | First numbers: trace 1, 2, 3 or 7 in one stroke, then watch that many appear |
 | 5 | Write how many: count a group of 0 to 9, tap the numeral that tells how many, then trace it |
 | 6 | Less help each time: trace one numeral three times, with a solid trail, then dots, then only the start |
+| 7 | Ten, and some more: write 10 to 19, the 1 then the digit beside it, then see ten in a frame and count on |
 
 <!-- end generated -->
 

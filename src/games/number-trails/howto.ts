@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Less help each time draws one numeral three times: a solid trail, then dots, then only the start dot and its arrow. The three dots under the numeral show which try she is on.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Ten, and some more writes 10 to 19 left to right: first the 1, which slides aside when it is done, then the digit beside it in the same place.',
+    },
     { to: 2, text: 'When the numeral is done, the things pop up one at a time. Count them aloud together.' },
     {
       from: 4,
@@ -46,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'After the third try the things pop up one at a time, and the round ends when the last is counted.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Ten things fill a ten-frame, then the rest are counted on in a second frame; the round ends when the last is counted.',
+    },
   ],
   note: [
     {
@@ -66,6 +76,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'Counting taps are never wrong. A wrong card is a gentle miss and the group is counted again; a second one makes the right card glow.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Nothing is tapped after the numeral: ten in a full frame and some more is how a teen number is built. Wandering off the trail is a gentle miss.',
     },
   ],
 };

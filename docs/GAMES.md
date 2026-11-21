@@ -246,7 +246,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Number Trails
 
-*preschool–pre-K* · [Number Trails](games/number-trails.md)
+*preschool–school* · [Number Trails](games/number-trails.md)
 
 ### Fruit Sums
 

@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 182 games; the 165 child games are listed below and the 17 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 148 games, and "grown-up" (13 and up) is played by 26 games: the 17 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 182 games; the 165 child games are listed below and the 17 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 149 games, and "grown-up" (13 and up) is played by 26 games: the 17 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -131,7 +131,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 6 | draw a loop around fireflies: they fly into a jar |
 | [Fill and Dump](docs/games/fill-dump.md) | lap–preschool | Counting Cove | 7 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
-| [Number Trails](docs/games/number-trails.md) | preschool–pre-K | Counting Cove | 6 | follow a firefly along a numeral, starting at the green ring and arrow (at preschool, *First numbers*: just 1, 2, 3 or 7), then watch that many things pop up and count them |
+| [Number Trails](docs/games/number-trails.md) | preschool–school | Counting Cove | 7 | follow a firefly along a numeral, starting at the green ring and arrow (at preschool, *First numbers*: just 1, 2, 3 or 7), then watch that many things pop up and count them |
 | [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
 | [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
 | [Ribbon Workshop](docs/games/ribbon-workshop.md) | school–grown-up | Counting Cove | 5 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |

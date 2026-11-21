@@ -28,6 +28,11 @@ import {
   CARD_H,
   CARD_W,
   ENTRY_LEVELS,
+  TENS_SHIFT,
+  digitsOf,
+  tenFrames,
+  writingBox,
+  type TenFrames,
   LEVELS,
   askLayout,
   cardHintDue,
@@ -106,7 +111,16 @@ class NumberTrails implements Game {
   private unasked = false;
   private clock = 0;
   private readonly tolerance: number;
-  private readonly strokes: readonly (readonly Point[])[];
+  /** The numeral's digits, left to right, and the one she is writing: 14 is the 1, then the 4 beside it. */
+  private readonly digits: number[];
+  private digit = 0;
+  private strokes: readonly (readonly Point[])[];
+  /** Ten, and some more: the finished 1, which slides left of the box while she writes the digit beside it. */
+  private readonly tensInk = new Graphics();
+  private readonly teens: boolean;
+  /** The ten-frames the teen's things fill: ten in the first, the rest in the second. */
+  private readonly frameArt = new Graphics();
+  private frames: TenFrames | null = null;
   /** Write how many: the three numeral cards, the things she has counted, wrong cards this round, and the right card's glow. */
   private readonly asking: boolean;
   private readonly choices: number[] = [];
@@ -127,7 +141,9 @@ class NumberTrails implements Game {
     this.thing = round.thing;
     this.look = round.look;
     this.arrangement = round.arrangement;
-    this.strokes = DIGITS[String(this.n)];
+    this.digits = digitsOf(this.n);
+    this.strokes = DIGITS[this.digits[0]];
+    this.teens = planFor(ctx.level).teens === true;
     this.tolerance = trailTolerance(ctx.level);
     this.asking = planFor(ctx.level).writeHowMany === true;
     this.guides = guidesFor(ctx.level);
@@ -141,7 +157,7 @@ class NumberTrails implements Game {
       this.pips,
     );
     this.glow.eventMode = 'none';
-    this.canvas.addChild(this.outline, this.ink, this.cue, this.beacon, this.firefly);
+    this.canvas.addChild(this.tensInk, this.outline, this.ink, this.cue, this.beacon, this.firefly);
     this.firefly.addChild(
       new Graphics()
         .ellipse(-14, -12, 16, 10)
@@ -428,6 +444,23 @@ class NumberTrails implements Game {
       void this.ctx.instruct('nt.stroke');
       return;
     }
+    if (this.digit < this.digits.length - 1) {
+      // Ten, and some more: the finished 1 slides left of the box, and the digit beside it is written in the same box.
+      this.ink.clear();
+      this.drawTens();
+      await this.ctx.tw.to(
+        this.tensInk,
+        { x: TENS_SHIFT * this.size },
+        { duration: 0.5, ease: ease.outBack },
+      );
+      this.digit++;
+      this.strokes = DIGITS[this.digits[this.digit]];
+      this.stroke = 0;
+      this.busy = false;
+      this.prepareStroke();
+      void this.ctx.instruct('nt.ones', { d: this.digits[this.digit] });
+      return;
+    }
     if (this.attempt < this.guides.length - 1) {
       // The same numeral again with less of the trail shown: the ink clears and the firefly goes back to the start.
       await this.ctx.tw.wait(0.5);
@@ -444,6 +477,7 @@ class NumberTrails implements Game {
     this.ink.clear();
     this.cue.clear();
     this.beacon.clear();
+    this.tensInk.clear();
     this.firefly.visible = false;
     this.handle.enabled = false;
     await this.meetThings();
@@ -456,6 +490,10 @@ class NumberTrails implements Game {
     this.heading.text = `${this.n}`;
     if (this.asking) {
       await this.showWritten();
+      return;
+    }
+    if (this.teens) {
+      await this.showTeens();
       return;
     }
     if (this.n === 0) {
@@ -496,6 +534,63 @@ class NumberTrails implements Game {
       sfx.marimba(i % 8, 0.4);
       void this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       await this.ctx.say('nt.count', { n: i + 1 });
+      await this.ctx.tw.wait(0.2);
+    }
+    await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
+    await this.ctx.tw.wait(1);
+    this.phase = 'done';
+    this.ctx.finish({ misses: this.misses, hints: this.hints });
+  }
+
+  /** A thing in a ten-frame cell: a little smaller than a tap circle, since nothing is tapped. */
+  private frameScale(cell: number) {
+    return Math.min(1, (cell - 12) / (2 * THING_HIT));
+  }
+
+  /** The frames' outlines and cells, and the things in their spots, at the room this view gives. */
+  private placeFrames() {
+    this.frames = tenFrames(this.n, this.pileRect());
+    if (!this.frames) throw new Error(`Number Trails: ${this.n} does not fit a ten-frame in this view`);
+    const { cell, frames, spots } = this.frames;
+    this.frameArt.clear();
+    for (const f of frames) {
+      this.frameArt.roundRect(f.x - 6, f.y - 6, f.w + 12, f.h + 12, 14).fill(swatch.white.fill);
+      for (let c = 1; c < 5; c++) this.frameArt.moveTo(f.x + c * cell, f.y).lineTo(f.x + c * cell, f.y + f.h);
+      this.frameArt.moveTo(f.x, f.y + cell).lineTo(f.x + f.w, f.y + cell);
+      this.frameArt.stroke({ width: 3, color: swatch.purple.light });
+      this.frameArt
+        .roundRect(f.x - 6, f.y - 6, f.w + 12, f.h + 12, 14)
+        .stroke({ width: 6, color: swatch.purple.line });
+    }
+    this.things.forEach((t, i) => t.position.set(spots[i].x, spots[i].y));
+  }
+
+  /**
+   * Ten, and some more's ending: the first ten fill a ten-frame quickly, said as one ten, then the rest are counted on in the
+   * second frame ("eleven, twelve…") and the group is named. Nothing is tapped.
+   */
+  private async showTeens() {
+    this.phase = 'show';
+    this.pile.addChild(this.frameArt);
+    this.things = Array.from({ length: this.n }, () => {
+      const t = drawThing(this.thing.id);
+      t.eventMode = 'none';
+      t.scale.set(0);
+      this.pile.addChild(t);
+      return t;
+    });
+    this.placeFrames();
+    const s = this.frameScale(this.frames!.cell);
+    for (const [i, t] of this.things.slice(0, 10).entries()) {
+      sfx.marimba(i % 8, 0.35);
+      void this.ctx.tw.to(t.scale, { x: s, y: s }, { duration: 0.3, ease: ease.outBack });
+      await this.ctx.tw.wait(0.14);
+    }
+    await this.ctx.say('nt.ten', { things: this.thing.plural });
+    for (const [i, t] of this.things.slice(10).entries()) {
+      sfx.marimba(i % 8, 0.4);
+      void this.ctx.tw.to(t.scale, { x: s, y: s }, { duration: 0.35, ease: ease.outBack });
+      await this.ctx.say('nt.count', { n: 11 + i });
       await this.ctx.tw.wait(0.2);
     }
     await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
@@ -565,27 +660,33 @@ class NumberTrails implements Game {
     g.stroke({ width, color, cap: 'round', join: 'round' });
   }
 
+  /** The finished 1 in the round's ink, where it was written; `completeStroke` slides it left of the box. */
+  private drawTens() {
+    this.tensInk.clear();
+    for (const stroke of DIGITS[this.digits[0]]) this.drawInk(sampleStroke(stroke), this.tensInk);
+  }
+
   /** The round's look: teal, a rainbow that changes color along the trail, gold with glitter, or sand. Paint only. */
-  private drawInk(points: readonly Point[]) {
+  private drawInk(points: readonly Point[], ink = this.ink) {
     if (this.look === 'rainbow') {
       for (let i = 1; i < points.length; i++)
         this.drawPath(
-          this.ink,
+          ink,
           [points[i - 1], points[i]],
           swatch[RAINBOW[Math.floor(i / 4) % RAINBOW.length]].fill,
           24,
         );
     } else if (this.look === 'glitter') {
-      this.drawPath(this.ink, points, swatch.yellow.fill, 24);
+      this.drawPath(ink, points, swatch.yellow.fill, 24);
       points.forEach((p, i) => {
         if (i % 3 === 1)
-          this.ink
+          ink
             .circle(p[0] * this.size + (i % 2 ? 5 : -5), p[1] * this.size + (i % 4 < 2 ? -4 : 4), 3)
             .fill(swatch.white.fill);
       });
     } else {
-      this.drawPath(this.ink, points, this.look === 'sand' ? swatch.brown.light : swatch.teal.fill, 24);
-      if (this.look === 'sand') this.drawPath(this.ink, points, swatch.brown.fill, 6);
+      this.drawPath(ink, points, this.look === 'sand' ? swatch.brown.light : swatch.teal.fill, 24);
+      if (this.look === 'sand') this.drawPath(ink, points, swatch.brown.fill, 6);
     }
   }
 
@@ -657,12 +758,18 @@ class NumberTrails implements Game {
   resize(v: View) {
     this.view = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    this.size = Math.min(v.h - 260, v.w - 360, 520);
-    this.canvas.position.set(v.w / 2 - this.size / 2 + 35, (v.h - this.size) / 2 + 55);
+    const box = writingBox(v);
+    this.size = box.size;
+    this.canvas.position.set(box.x, box.y);
     this.heading.position.set(v.w / 2, 70);
+    if (this.digit > 0) {
+      this.drawTens();
+      this.tensInk.x = TENS_SHIFT * this.size;
+    }
     this.draw();
     this.placeFirefly();
     if (this.phase === 'count' || this.phase === 'cards') this.placeAsk();
+    else if (this.frames) this.placeFrames();
     else if (this.things.length || this.basket) {
       this.basket?.position.set(
         this.pileRect().x + this.pileRect().w / 2,
@@ -674,6 +781,10 @@ class NumberTrails implements Game {
   }
 
   async start() {
+    if (this.teens) {
+      void this.ctx.instruct('nt.teen', { n: this.n, d: this.digits[1] });
+      return;
+    }
     if (!this.asking) {
       void this.ctx.instruct('nt.start', { n: this.n });
       return;
@@ -781,7 +892,7 @@ export const numberTrails: GameModule = {
   region: 'counting-cove',
   challenge: 'numbers',
   skills: ['numerals', 'counting', 'fine-motor', 'writing'],
-  bands: ['preschool', 'prek'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
   entryLevels: ENTRY_LEVELS,
   describeLevel: (l) => planFor(l).name,
