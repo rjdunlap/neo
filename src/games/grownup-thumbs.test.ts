@@ -51,6 +51,8 @@ import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
 import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
+import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
+import { specOf as sumSpec } from './sum-crates/logic';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
 import { PAD, touchFrame as wordFrame, touchSquare } from './word-search/layout';
@@ -78,6 +80,16 @@ const MEASURE: Record<string, () => Size[]> = {
     return [
       ['meadow square', l.cell],
       ['button', Math.min(bunnyButton.w, bunnyButton.h)],
+    ] as Size[];
+  },
+  'sum-crates': () => {
+    // Level 3, the grown-up band's only level: the 5 × 5 stack, the nine-fruit tray and Hint.
+    const sp = sumSpec(3);
+    const l = sumLayout(v, sp.rows, sp.cols, sp.fruit);
+    return [
+      ['crate', l.cell],
+      ['tray fruit', l.tray.size],
+      ['button', Math.min(sumButton.w, sumButton.h)],
     ] as Size[];
   },
   'block-garden': () =>
@@ -288,6 +300,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'sorting-machine': { px: 52.8, what: 'machine button' },
   'species-comeback': { px: 44.7, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
+  'sum-crates': { px: 50.8, what: 'tray fruit' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },

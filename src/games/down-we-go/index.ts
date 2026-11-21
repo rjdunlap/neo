@@ -10,23 +10,49 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { dialArt, glowFishArt, iconArt, ledgeArt, lanternArt, sproutArt } from './art';
+import { dialArt, glowFishArt, iconArt, ledgeArt, lanternArt, plateArt, shellArt, sproutArt } from './art';
 import { downLayout, type DownLayout } from './layout';
-import { LEVELS, canGrow, deepest, describeLevel, hintKnot, lightKind, roundFor, type Dive } from './logic';
+import {
+  LEVELS,
+  aboveKnot,
+  canGrow,
+  compare,
+  deepest,
+  describeLevel,
+  fade,
+  halfOf,
+  hintKnot,
+  lightKind,
+  questionsFor,
+  roundFor,
+  type DialQ,
+  type Dive,
+} from './logic';
 
 /** Spoken once a session: the first finish's reason, and the glowing fish. */
 let whySaid = false;
+let cloudySaid = false;
+let limitsSaid = false;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-function water(t: number): number {
+function water(t: number, cloudy = false): number {
   const mix = (s: number, e: number, shift: number) =>
     Math.round(lerp((s >> shift) & 255, (e >> shift) & 255, t));
-  const [a, b] = [0x79d0f2, 0x2f3f8f];
+  const [a, b] = cloudy ? [0xa9c9c0, 0x55657a] : [0x79d0f2, 0x2f3f8f];
   return (mix(a, b, 16) << 16) | (mix(a, b, 8) << 8) | mix(a, b, 0);
 }
 
 class DownWeGo implements Game {
   private readonly dives: Dive[];
+  private readonly qs: DialQ[] = [];
+  private qi = 0;
+  private predicted = false;
+  private predicting = false;
+  private revealed = false;
+  private hintSplit = false;
+  private glowCard: number | null = null;
+  private cards: Container[] = [];
+  private plates: Container[] = [];
   private idx = 0;
   private d!: Dive;
   private measured: boolean[] = [];
@@ -58,7 +84,8 @@ class DownWeGo implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.dives = roundFor(ctx.level, ctx.rng, !!ctx.demo);
+    this.dives = ctx.level === 4 ? [] : roundFor(ctx.level, ctx.rng, !!ctx.demo);
+    if (ctx.level === 4) this.qs = questionsFor(ctx.rng);
     ctx.stage.addChild(this.root);
   }
 
@@ -67,7 +94,9 @@ class DownWeGo implements Game {
   }
 
   private begin() {
+    if (this.ctx.level === 4) return this.beginQuestion();
     this.d = this.dives[this.idx];
+    this.predicting = this.ctx.level === 3 && this.idx === 1 && !this.predicted;
     this.measured = this.d.light.map((_, k) => k === 0);
     this.at = 0;
     this.wrongs = 0;
@@ -78,9 +107,32 @@ class DownWeGo implements Game {
     this.ride = this.ctx.level === 1;
     this.busy = false;
     this.build();
-    if (this.ctx.level === 1) {
+    if (this.predicting) {
+      const w = this.d.water;
+      void this.ctx.instruct('down.instruct.3b', { water: w });
+      return;
+    }
+    if (this.ctx.level === 3) {
+      if (this.idx === 0) void this.ctx.instruct('down.instruct.3a');
+    } else if (this.ctx.level === 1) {
       if (this.idx === 0) void this.ctx.instruct('down.instruct.1');
     } else void this.ctx.instruct('down.instruct.2', { need: this.d.need });
+  }
+
+  private beginQuestion() {
+    const q = this.qs[this.qi];
+    this.d = { light: fade('clear'), need: 1, water: 'clear' };
+    this.measured = this.d.light.map(() => true);
+    this.at = 0;
+    this.wrongs = 0;
+    this.glowed = false;
+    this.glowCard = null;
+    this.hintSplit = false;
+    this.revealed = false;
+    this.busy = false;
+    this.build();
+    this.lantern.y = this.L.knots[Math.max(0, aboveKnot(q))].y;
+    if (this.qi === 0) void this.ctx.instruct('down.instruct.4');
   }
 
   // Building -----------------------------------------------------------------------------
@@ -92,11 +144,12 @@ class DownWeGo implements Game {
     const L = (this.L = downLayout(this.view, this.d.light.length)!);
     const v = this.view;
     const n = this.d.light.length;
+    const cloudy = this.d.water === 'cloudy';
     const sea = new Graphics();
     sea.rect(0, 0, v.w, L.seaTop).fill(0xcdeeff);
     for (let k = 0; k < n; k++)
-      sea.rect(0, L.seaTop + k * L.band, v.w, L.band + 1).fill(water(n === 1 ? 0 : k / (n - 1)));
-    sea.rect(0, L.seaTop + n * L.band, v.w, v.h).fill(water(1));
+      sea.rect(0, L.seaTop + k * L.band, v.w, L.band + 1).fill(water(n === 1 ? 0 : k / (n - 1), cloudy));
+    sea.rect(0, L.seaTop + n * L.band, v.w, v.h).fill(water(1, cloudy));
     sea.rect(L.wallX, L.seaTop, v.w - L.wallX, v.h).fill(0x6e5a66);
     sea
       .moveTo(L.ropeX, L.boat.y + 30)
@@ -120,6 +173,11 @@ class DownWeGo implements Game {
       .poly([L.boat.x - 6, L.boat.y - 8, L.boat.x - 6, L.boat.y - 70, L.boat.x + 44, L.boat.y - 8])
       .fill(0xffffff)
       .stroke({ width: 3, color: swatch.blue.line });
+    if (cloudy)
+      for (let i = 0; i < 40; i++)
+        sea
+          .circle(((i * 197) % v.w) | 0, L.seaTop + ((i * 83) % (n * L.band)), 3 + (i % 3))
+          .fill({ color: 0xe8e0c8, alpha: 0.5 });
     this.root.addChild(sea);
     const card = new Container();
     card.addChild(
@@ -137,7 +195,8 @@ class DownWeGo implements Game {
     card.addChild(cs, cd);
     card.position.set(L.needCard.x, L.needCard.y);
     card.eventMode = 'none';
-    this.root.addChild(card);
+    if (this.ctx.level !== 4) this.root.addChild(card);
+    else card.destroy({ children: true });
 
     // Friends: a fish near the top, a turtle in the middle, a small fish that glows by itself at the darkest knot.
     this.friends = [];
@@ -161,7 +220,7 @@ class DownWeGo implements Game {
       this.root.addChild(g);
       return g;
     });
-    this.ledges = L.ledges.map((p, k) => {
+    this.ledges = (this.ctx.level === 4 ? [] : L.ledges).map((p, k) => {
       const c = new Container();
       c.position.set(p.x, p.y);
       c.hitArea = new Rectangle(-L.ledge.w / 2, -L.ledge.h / 2, L.ledge.w, L.ledge.h);
@@ -169,7 +228,7 @@ class DownWeGo implements Game {
       this.root.addChild(c);
       return c;
     });
-    this.knotHits = L.knots.map((p, k) => {
+    this.knotHits = (this.ctx.level === 4 ? [] : L.knots).map((p, k) => {
       const c = new Container();
       c.position.set(p.x, p.y);
       c.addChild(new Graphics().rect(-60, -L.band / 2, 120, L.band).fill({ color: 0xffffff, alpha: 0.001 }));
@@ -182,23 +241,73 @@ class DownWeGo implements Game {
     this.lantern.position.set(L.ropeX, L.knots[this.at].y);
     this.glow = new Graphics();
     this.root.addChild(this.glow, this.lantern);
-    this.drag = draggable(this.lantern, this.ctx.tw, {
-      lift: 0,
-      keepGrab: true,
-      onMove: (_x, y) => {
-        this.lantern.x = L.ropeX;
-        this.lantern.y = Math.max(L.knots[0].y, Math.min(L.knots[n - 1].y, y));
-        this.reach(this.nearest(this.lantern.y), false);
-      },
-      onDrop: (_x, y) => {
-        void this.moveTo(this.nearest(y));
-        return true;
-      },
-    });
-    this.drag.home = { x: L.ropeX, y: L.knots[this.at].y };
+    if (this.ctx.level !== 4)
+      this.drag = draggable(this.lantern, this.ctx.tw, {
+        lift: 0,
+        keepGrab: true,
+        onMove: (_x, y) => {
+          this.lantern.x = L.ropeX;
+          this.lantern.y = Math.max(L.knots[0].y, Math.min(L.knots[n - 1].y, y));
+          this.reach(this.nearest(this.lantern.y), false);
+        },
+        onDrop: (_x, y) => {
+          void this.moveTo(this.nearest(y));
+          return true;
+        },
+      });
+    if (this.drag) this.drag.home = { x: L.ropeX, y: L.knots[this.at].y };
     if (this.sproutAt >= 0) this.plant(this.sproutAt, false);
     this.drawDials();
     this.drawLedges();
+    this.buildExtras();
+  }
+
+  /** Level 3's logbook, answer plates; level 4's dial cards. */
+  private buildExtras() {
+    const L = this.L;
+    const lvl = this.ctx.level;
+    this.plates = [];
+    this.cards = [];
+    if (lvl === 3 && this.idx === 1) {
+      L.logbook.forEach((p, k) => {
+        const g = dialArt(this.dives[0].light[k], L.logR);
+        g.position.set(p.x, p.y);
+        g.eventMode = 'none';
+        this.root.addChild(g);
+      });
+    }
+    if (this.predicting) {
+      for (const k of this.ledges) k.visible = false;
+      for (const k of this.knotHits) k.visible = false;
+      this.lantern.visible = false;
+      for (const g of this.dials) g.visible = false;
+      ([true, false] as const).forEach((deeper, i) => {
+        const c = plateArt(deeper, L.plate.w, L.plate.h);
+        c.position.set(L.plates[i].x, L.plates[i].y);
+        c.hitArea = new Rectangle(-L.plate.w / 2, -L.plate.h / 2, L.plate.w, L.plate.h);
+        onTap(c, () => void this.onPlate(deeper), { cooldown: 250 });
+        this.root.addChild(c);
+        this.plates.push(c);
+      });
+    }
+    if (lvl === 4) {
+      const q = this.qs[this.qi];
+      this.cards = q.options.map((opt, i) => {
+        const c = new Container();
+        c.addChild(
+          new Graphics()
+            .roundRect(-L.card.w / 2, -L.card.h / 2, L.card.w, L.card.h, 22)
+            .fill(0x35508f)
+            .stroke({ width: 4, color: swatch.teal.line }),
+          dialArt(opt, 52),
+        );
+        c.position.set(L.cards[i].x, L.cards[i].y);
+        c.hitArea = new Rectangle(-L.card.w / 2, -L.card.h / 2, L.card.w, L.card.h);
+        onTap(c, () => void this.onCard(i), { cooldown: 250 });
+        this.root.addChild(c);
+        return c;
+      });
+    }
   }
 
   private nearest(y: number): number {
@@ -212,6 +321,21 @@ class DownWeGo implements Game {
   private drawDials() {
     this.dials.forEach((g, k) => {
       g.removeChildren().forEach((c) => c.destroy());
+      if (this.ctx.level === 4) {
+        const q = this.qs[this.qi];
+        const val = q.shown[k];
+        if (val === undefined) return;
+        if (val === null && !this.revealed) return void g.addChild(shellArt(this.L.dialR));
+        g.addChild(dialArt(val ?? q.answer, this.L.dialR));
+        if (this.hintSplit && k === aboveKnot(q))
+          g.addChild(
+            new Graphics()
+              .moveTo(0, -this.L.dialR)
+              .lineTo(0, this.L.dialR)
+              .stroke({ width: 5, color: swatch.blue.line }),
+          );
+        return;
+      }
       g.addChild(dialArt(this.measured[k] ? this.d.light[k] : 0, this.L.dialR, !this.measured[k]));
     });
   }
@@ -323,6 +447,78 @@ class DownWeGo implements Game {
     this.busy = false;
   }
 
+  /** Level 3: the free guess about the second cove, then the answer. */
+  private async onPlate(deeper: boolean) {
+    if (this.busy || !this.predicting) return;
+    this.busy = true;
+    sfx.pop(5);
+    const truth = compare(this.dives[0], this.dives[1]) === 'deeper';
+    const cl = this.d.water === 'cloudy';
+    await this.ctx.say(
+      deeper === truth
+        ? cl
+          ? 'down.predict.rightCloudy'
+          : 'down.predict.rightClear'
+        : cl
+          ? 'down.predict.otherCloudy'
+          : 'down.predict.otherClear',
+    );
+    if (!this.ctx.alive) return;
+    if (cl && !cloudySaid) {
+      cloudySaid = true;
+      await this.ctx.say('down.cloudy');
+      if (!this.ctx.alive) return;
+    }
+    this.predicted = true;
+    this.begin();
+  }
+
+  /** Level 4: a dial card. The first question never counts; from the second a wrong card is one miss. */
+  private async onCard(i: number) {
+    if (this.busy || this.finished) return;
+    const q = this.qs[this.qi];
+    const opt = q.options[i];
+    this.busy = true;
+    if (opt !== q.answer) {
+      sfx.boing();
+      const above = q.shown[aboveKnot(q)] as number;
+      if (this.qi > 0) {
+        this.misses++;
+        this.wrongs++;
+      }
+      this.hintSplit = true;
+      this.drawDials();
+      await this.ctx.say('down.hint.4', { n: above, half: halfOf(above) });
+      if (!this.ctx.alive) return;
+      if (this.wrongs >= 2 && !this.glowed) {
+        this.glowed = true;
+        this.hints++;
+        this.glowCard = q.options.indexOf(q.answer);
+      }
+      this.busy = false;
+      return;
+    }
+    sfx.tada();
+    this.glowCard = null;
+    this.revealed = true;
+    this.drawDials();
+    await this.ctx.tw.to(this.lantern, { y: this.L.knots[q.at].y }, { duration: 0.5, ease: ease.outBack });
+    if (!this.ctx.alive) return;
+    await this.ctx.say('down.dial.right');
+    if (!this.ctx.alive) return;
+    await this.ctx.tw.wait(0.4);
+    if (!this.ctx.alive) return;
+    this.qi++;
+    if (this.qi < this.qs.length) return void this.beginQuestion();
+    this.finished = true;
+    if (!limitsSaid) {
+      limitsSaid = true;
+      await this.ctx.say('down.limits');
+      if (!this.ctx.alive) return;
+    }
+    this.ctx.finish({ misses: this.misses, hints: this.hints });
+  }
+
   private async nextDive() {
     await this.ctx.tw.wait(0.5);
     if (!this.ctx.alive) return;
@@ -341,7 +537,16 @@ class DownWeGo implements Game {
 
   /** The pause sheet's "show a hint": the lantern goes to the deepest ledge's knot and its ledge glows. Counted once a press. */
   askForHint() {
-    if (this.finished || this.busy) return;
+    if (this.finished || this.busy || this.predicting) return;
+    if (this.ctx.level === 4) {
+      const q = this.qs[this.qi];
+      const above = q.shown[aboveKnot(q)] as number;
+      this.hints++;
+      this.hintSplit = true;
+      this.drawDials();
+      void this.ctx.say('down.hint.4', { n: above, half: halfOf(above) });
+      return;
+    }
     this.hints++;
     this.glowKnot = hintKnot(this.d);
     this.ride = false;
@@ -360,7 +565,14 @@ class DownWeGo implements Game {
     if (this.sprout && !this.sprout.destroyed) this.sprout.rotation = Math.sin(this.t * 2) * 0.06;
     for (const f of this.friends) f.node.y = f.y + Math.sin(this.t * 1.5 + f.phase) * 8;
     const g = this.glow.clear();
-    if (this.glowKnot !== null && !this.finished) {
+    if (this.glowCard !== null && !this.finished) {
+      const p = this.L.cards[this.glowCard];
+      g.roundRect(p.x - 80, p.y - 80, 160, 160, 24).stroke({
+        width: 7 + Math.sin(this.t * 5) * 2,
+        color: swatch.yellow.line,
+      });
+    }
+    if (this.glowKnot !== null && !this.finished && this.ctx.level !== 4) {
       const p = this.L.ledges[this.glowKnot];
       g.roundRect(p.x - 95, p.y - 60, 190, 120, 24).stroke({
         width: 7 + Math.sin(this.t * 5) * 2,
@@ -380,6 +592,14 @@ class DownWeGo implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.moving) return null;
+    if (this.predicting) {
+      const deeper = compare(this.dives[0], this.dives[1]) === 'deeper';
+      return { tap: { on: this.plates[deeper ? 0 : 1] }, pause: 0.8 };
+    }
+    if (this.ctx.level === 4) {
+      const q = this.qs[this.qi];
+      return { tap: { on: this.cards[q.options.indexOf(q.answer)] }, pause: 0.8 };
+    }
     const d = this.d;
     for (let k = 0; k < d.light.length; k++) {
       if (!this.measured[k]) return { tap: { on: this.knotHits[k] }, pause: 0.5 };

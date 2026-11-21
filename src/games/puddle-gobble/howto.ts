@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Lead the puddle to soak up the beach.',
   steps: [
     'Drag or tap to lead the puddle.',
+    {
+      from: 13,
+      to: 13,
+      text: 'Touch anywhere: the puddle splashes there and soaks up the shells it lands on.',
+    },
     { from: 1, to: 5, text: 'It soaks up anything smaller than itself.' },
     { from: 2, to: 3, text: 'After two, it grows bigger.' },
     { from: 4, to: 4, text: 'Fill the three drops to grow.' },
@@ -30,6 +35,7 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { from: 1, to: 7, text: 'The beach is clean.' },
+    { from: 13, to: 13, text: 'The beach is clean.' },
     { from: 8, to: 8, text: 'The puddle matches the pail.' },
     { from: 11, to: 11, text: 'The puddle matches the pail.' },
     { from: 12, to: 12, text: 'Both pails are full.' },

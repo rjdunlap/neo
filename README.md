@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (18), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (14, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (18), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (15, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 181 games; the 165 child games are listed below and the 16 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 146 games, and "grown-up" (13 and up) is played by 25 games: the 16 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 182 games; the 165 child games are listed below and the 17 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 147 games, and "grown-up" (13 and up) is played by 26 games: the 17 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -82,14 +82,14 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 10 | (lap, level 12) one big thing over the water that a touch anywhere drops in, then drop things in the water and watch |
 | [Domino Run](docs/games/domino-run.md) | toddler–school | Bubble Beach | 11 | stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell |
 | [Fruit Slice](docs/games/fruit-slice.md) | toddler–school | Bubble Beach | 11 | touch a fruit hanging at the top of its slow arc and it splits |
-| [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 12 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
+| [Puddle Gobble](docs/games/puddle-gobble.md) | lap–school | Bubble Beach | 13 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
 | [Lost Layers](docs/games/lost-layers.md) | school | Bubble Beach | 2 | drag Shell Cove's broken rock pieces beside Gull Cliff's six layers until the fossil twins go green and no wavy line is squeezed, stamp each fit as a story card, then claim a story or Can't tell |
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |
 | [Puddle Lens](docs/games/puddle-lens.md) | lap–grown-up | Bubble Beach | 11 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
 | [Melt and Freeze](docs/games/melt-freeze.md) | lap–school | Bubble Beach | 7 | one big ice cube at lap. Three touches anywhere on the playfield shrink it into a puddle, then the snowflake appears to freeze it again. |
 | [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
-| [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 2 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
+| [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 4 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 8 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |
@@ -212,7 +212,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 3 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |
 | [Thought Bubbles](docs/games/thought-bubbles.md) | pre-K–school | Story Grove | 3 | a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble |
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
-| [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 14 | one or two steps to a star |
+| [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 15 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |
 | [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 12 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
 | [Seesaw Balance](docs/games/seesaw-balance.md) | lap–school | Tinker Lab | 17 | touch the empty end to lift a little friend; tap who is heavier or lighter |
@@ -277,7 +277,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 16 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 14 in Lantern Lake. All play by touch on the island; 8 are touch-only, and 8 also play with a controller on the couch.
+These 17 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 15 in Lantern Lake. All play by touch on the island; 9 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -303,6 +303,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Pond Conga](docs/games/pond-conga.md) | Lantern Lake | 11 | a line of ducklings paddles on at a steady pace and is steered to each helping of duck food (peas, sweetcorn or oats) in turn, round lily pads: touch to set off, swipe anywhere to turn (Hint and Start over are buttons); a controller plays it too |
 | [Species Comeback](docs/games/species-comeback.md) | Lantern Lake | 4 | tap two pond turtles on a family tree to put them in a nest, with no brothers and sisters in a pair, then press Spring |
 | [Word Code](docs/games/word-code.md) | Lantern Lake | 3 | a hidden picture word. Four pictured words (three letters at level 1, four at level 2) sit in a row and one is hiding; she taps letters from a small tray to try a word and every try comes back marked letter by letter with Secret Code's shapes (a green check in the right spot, a yellow dot elsewhere in the word, a gray cross not in it). The marks are the evidence for the next try. |
+| [Sum Crates](docs/games/sum-crates.md) | Lantern Lake | 3 | a small stack of wooden crates with a number sign at the start of each row and column: she taps a crate and then a numbered fruit (or drags one in) so every line adds up to its sign with no fruit twice in the same line; the board has exactly one answer, found by using the crossing line to choose between the pairs that make a sign. |
 
 <!-- end generated -->
 
@@ -416,8 +417,9 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
 | `pantry` | Picnic Pantry level 1: free bell and full-blanket taps, two misses on the pair that does not fit, the pause sheet's hint counted once (not again by the second miss), a laid picnic, Another way? with the pair that does not fit (free) and the other menu, the second picnic by the demonstration bot, an upright phone screenshot and one sticker (about 15 s) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=picnic-pantry` |
 | `wordcode` | Word Code by touch: level 1 with a picture word that is not hidden, a try that ignores a mark (the one miss), a requested hint, a portrait screenshot, then the hidden word and a saved score; level 3 with a word not on the list turned down free, an ignored mark, a hint and a portrait screenshot, then the hidden word on the keys | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-code` |
-| `downwego` | Down We Go by touch: level 1 with a ledge tapped before the ride (free), the ride, a too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge on three dives; level 2 with an unmeasured ledge (free), a requested hint, a screenshot at the darkest knot, then the right ledge on three dives | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=down-we-go` |
+| `downwego` | Down We Go by touch: level 1 with a ledge tapped before the ride (free), the ride, a too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge on three dives; level 2 with an unmeasured ledge (free), a requested hint, a screenshot at the darkest knot, then the right ledge on three dives; level 3 with the other prediction first (free) and a screenshot of the plates; level 4 with the free first question wrong, a counted wrong dial and the right ones | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=down-we-go` |
 | `bunnypatches` | Bunny Patches by touch: level 1 with the given bunny locked, a full wrong board (one miss), the identical board again (free), a changed wrong board (second miss, one glow hint), a requested hint, then the finish; level 3 with the paw, bunny and clear cycle and the answer. `BUNNY_ONLY=upright` runs the 390×844 phone check (touch context, squares at least 100 units, screenshots) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=bunny-patches` |
+| `sumcrates` | Sum Crates by touch: level 1 with a full wrong stack (one miss), the identical stack again (free), a changed wrong stack (second miss, one glow hint), a requested hint, then the finish; level 3 with a hint and the answer. `SUMCRATES_ONLY=upright` runs the 390×844 phone check (touch context, crates sized, screenshots) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=sum-crates` |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |

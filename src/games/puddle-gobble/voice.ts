@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.puddle-gobble': ['Puddle gobble!'],
   'gobble.instruct-1': ['Lead the puddle to the things on the sand. It soaks them up!'],
+  'gobble.instruct-splash': ['Touch the beach. Splash! The puddle soaks up the shells.'],
   'gobble.instruct': ['Lead the puddle. It soaks up things smaller than itself, and grows!'],
   'gobble.instruct-grow': ['Lead the puddle. Fill the three drops to grow!'],
   'gobble.instruct-order': ['Soak them up smallest first!'],

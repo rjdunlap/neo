@@ -74,8 +74,11 @@ const SCENES: Record<Look, { sky: [number, number]; hills: number[] }> = {
   },
 };
 
-/** A numbered fruit, centered on (0, 0) and 100 units across, in its tree's shape; the colour still tells the fruit apart. */
-function fruit(value: number, color: ColorName, shape: FruitShape = 'round'): Container {
+/**
+ * A numbered fruit, centered on (0, 0) and 100 units across, in its tree's shape; the colour still tells the fruit apart.
+ * `dots` adds that many dots under a smaller numeral, so a younger player can count it (Sum Crates).
+ */
+export function fruit(value: number, color: ColorName, shape: FruitShape = 'round', dots = false): Container {
   const c = new Container(),
     sw = swatch[color];
   const g = new Graphics().ellipse(0, 44, 36, 7).fill({ color: ink, alpha: 0.12 });
@@ -119,9 +122,17 @@ function fruit(value: number, color: ColorName, shape: FruitShape = 'round'): Co
     stem();
   }
   c.addChild(g);
-  const n = label(`${value}`, value >= 10 ? 50 : 60, ink);
-  n.position.set(0, 6);
+  const n = label(`${value}`, dots ? 44 : value >= 10 ? 50 : 60, ink);
+  n.position.set(0, dots ? -8 : 6);
   c.addChild(n);
+  if (dots) {
+    const d = new Graphics();
+    const rows = value > 5 ? [5, value - 5] : [value];
+    rows.forEach((count, r) => {
+      for (let i = 0; i < count; i++) d.circle((i - (count - 1) / 2) * 11, 24 + r * 11, 4).fill(ink);
+    });
+    c.addChild(d);
+  }
   return c;
 }
 
