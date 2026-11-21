@@ -1,3 +1,4 @@
+import type { HubIcon } from '../../games/types';
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
@@ -125,7 +126,12 @@ export class DailyScene extends Scene {
     return this.picks.every((p) => this.played(p.mod.id));
   }
 
+  /** The cards' animated icons, untracked when a turn redraws the cards: a destroyed icon updated every frame throws. */
+  private icons: HubIcon[] = [];
+
   private buildCards() {
+    for (const icon of this.icons) this.untrack(icon);
+    this.icons = [];
     for (const c of this.cards) c.node.destroy({ children: true });
     this.cards = this.picks.map((pick) => ({ pick, node: this.card(pick) }));
     for (const c of this.cards) this.ui.addChild(c.node);
@@ -184,6 +190,7 @@ export class DailyScene extends Scene {
   private card(pick: DailyPick): Container {
     const node = new Container();
     const icon = this.track(pick.mod.hubIcon());
+    this.icons.push(icon);
     const art = new Container();
     art.addChild(icon);
     const played = playedOn(store.data.games[pick.mod.id]?.history, this.day);
