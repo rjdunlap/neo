@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/mossy-path; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `mossy-path` · **Land:** Puzzle Peaks · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `mossy-path` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, planning, path-coverage, maze-planning
 
 | Band | Levels, easiest first |
 | --- | --- |
+| lap | 12 |
 | toddler | 4 |
 | preschool | 4–5 |
 | pre-K | 5, 6, 8 |
@@ -26,12 +27,13 @@
 | 9 | Two snacks: both berries, then the pond |
 | 10 | Plan, then go: draw the way, then the turtle walks it |
 | 11 | Thick moss: some tiles need two visits |
+| 12 | Turtle walk: any touch steps the turtle to the pond |
 
 <!-- end generated -->
 
-**Starts as:** tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 and 9 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch; level 10 (school) draws the whole route as paw prints, then taps the turtle to walk it; level 11 (school) is coverage where thick tufts are crossed twice
+**Starts as:** tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 and 9 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch; level 10 (school) draws the whole route as paw prints, then taps the turtle to walk it; level 11 (school) is coverage where thick tufts are crossed twice; level 12 (lap) is a straight corridor where any touch anywhere steps the turtle to the pond
 
-**Grows into:** three coverage plans each at levels 1–3 (corridors, open patches, rocks); level 8, *a little patch*, five small boards (2 × 3 to 3 × 3) where a far tap is free; then six frozen hedge mazes per level 4–7, level 7 collecting the berry before the pond; level 9, *two snacks*, six 4 × 7 mazes with two berries eaten in either order before the pond; level 10, *plan, then go*, three 4 × 7 mazes where she draws the route first and the turtle then walks it; level 11, *thick moss*, four boards (3 × 4 and 4 × 4) where each thick tuft is crossed twice and a first visit to one is never a miss; exact-search and next-tile hints
+**Grows into:** three coverage plans each at levels 1–3 (corridors, open patches, rocks); level 8, *a little patch*, five small boards (2 × 3 to 3 × 3) where a far tap is free; then six frozen hedge mazes per level 4–7, level 7 collecting the berry before the pond; level 9, *two snacks*, six 4 × 7 mazes with two berries eaten in either order before the pond; level 10, *plan, then go*, three 4 × 7 mazes where she draws the route first and the turtle then walks it; level 11, *thick moss*, four boards (3 × 4 and 4 × 4) where each thick tuft is crossed twice and a first visit to one is never a miss; level 12, *turtle walk*, three straight corridors of 3 to 5 steps (lap's only level) where any touch steps the turtle once, with no misses or hints; exact-search and next-tile hints
 
 ## Design notes
 
@@ -46,3 +48,5 @@ Tapping the turtle is free. Non-adjacent, visited and early-pond taps give speci
 **Level 10, *plan, then go* (school, order 6, 8, 1, 7, 9, 2, 10, 3).** Three frozen 4 × 7 tree mazes (flipped, never transposed), no berry, dead ends up to two tiles deep and one wrong branch that forks again. She slides or taps from the turtle to draw dotted paw prints: a tile beside the plan's end adds, the second-last tile erases, a far tap pulses and says `moss.far`; drawing is never a miss. Tapping the turtle walks the plan at 0.25 s a tile. A plan that reaches the pond finishes; one that enters a wrong branch counts one miss per branch per round (boing, `moss.stop`) and the turtle can walk back free; one that ends short stops and waits (`moss.plan-more`). Hint draws the next three tiles toward the pond as gold prints, counted once per trail (`moss.hint-plan`). Undo erases the last print first, then steps the turtle back; Start over clears the plan. A cancelled press never sends the turtle off, and a press on the turtle that drifts away keeps the plan. The bot traces the route, then taps the turtle.
 
 **Level 11, *thick moss* (school, order 6, 8, 1, 7, 9, 2, 10, 3, 11).** Four frozen boards (`THICK`; `Board.thick`): 3 × 4 open, pond 8, tuft 5; 3 × 4 open, pond 10, tuft 7; 4 × 4 rock 6, pond 15, tufts 9 and 10; 4 × 4 rock 5, start 1, pond 3, tufts 6 and 10; the pool is drawn at random, flipped and transposed like levels 1–3. Every tuft is crossed twice, every other tile once, pond last. The solver counts visits (two bitmasks, memoised by both and the turtle's tile). A first visit to a tuft is never a miss; far, bloomed-tile and early-pond taps count as levels 1–3; stepping back onto a once-visited tuft is a legal second visit. Hint (exact completion), Undo and Start over as levels 1–3. A tuft is tall leaning blades, flattened after the first visit, and blooms with an extra centre flower after the second, so the state reads by shape, not colour. Voice: `moss.thick` once per round on the first flattened tuft and the instruct line `moss.thick-go`.
+
+**Level 12, *turtle walk* (lap).** Appended, lap only (`lap` 12–12, `entryLevels` 12; `isTurtleWalk`, `walkStep` in `logic.ts`). `MAZES[12]` holds three straight one-row corridors of 3–5 steps, flipped left–right, never transposed. The grid pad's hit area is the whole view, so a touch anywhere (an empty corner too) steps the turtle one tile toward the pond; nothing is a miss and there is no hint, and Undo, Hint and Start over are hidden. A pace-cue glow on the next tile after 4 s idle is not a hint. Voice: the instruct line `moss.walk`; the how-to and `coplayHintLap` show a parent's tap alternating with hers. Nothing is filed in the journal and toddler stays at level 4.

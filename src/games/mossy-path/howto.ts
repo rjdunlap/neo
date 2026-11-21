@@ -38,7 +38,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'Tap a tile beside the turtle to take one step. Tall thick moss flattens on the first visit and blooms on the second; every other tile blooms once. Reach the pond last. Undo takes back one step; Start over restores the same patch.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'Touch anywhere on the screen and the turtle takes one step along the moss. Each touch is one step: a long press or a drag still steps once.',
     },
     {
       from: 8,
@@ -56,13 +62,20 @@ export const HOW_TO: GameHowTo = {
       text: 'Visiting every tile and reaching the pond finishes the round, including with help.',
     },
     { from: 9, to: 9, text: 'Reaching the pond with both berries finishes the round, including with help.' },
+    { from: 12, to: 12, text: 'Reaching the pond finishes the round.' },
     { from: 10, to: 10, text: 'A plan that reaches the pond finishes the round, including with help.' },
     {
       from: 11,
+      to: 11,
       text: 'Blooming every tile, the thick moss twice, and reaching the pond finishes the round, including with help.',
     },
   ],
   note: [
+    {
+      from: 12,
+      to: 12,
+      text: 'Nothing counts as a miss and nothing can go wrong: every touch steps the turtle on. A palm is ignored while one finger is down.',
+    },
     {
       to: 3,
       text: 'Legal route experiments and dead ends are free. Non-adjacent, visited and early-pond taps count a miss; two consecutive misses show help. Repeating help on the same path counts once. Undo and Start over preserve misses and hints.',
@@ -99,6 +112,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'A first visit to thick moss is never a miss. Far, bloomed-tile and early-pond taps count a miss; two consecutive misses show help. Hint outlines a completing next step, or glows Undo until a route is possible. Undo and Start over preserve misses and hints.',
     },
   ],

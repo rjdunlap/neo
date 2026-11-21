@@ -22,6 +22,8 @@ import {
   hintPlan,
   isMaze,
   isPlanLevel,
+  isTurtleWalk,
+  walkStep,
   leafSpots,
   levelName,
   makeBoard,
@@ -52,6 +54,7 @@ const HEADINGS: Record<number, string> = {
   7: 'Get the berry, then the pond',
   9: 'Get both berries, then the pond',
   10: 'Draw the way, then tap the turtle',
+  12: 'Touch to walk the turtle',
 };
 /** Seconds per tile as the turtle walks a plan. */
 const PLAN_PACE = 0.25;
@@ -152,6 +155,8 @@ class MossyPath implements Game {
   private readonly berryBadge = new Graphics();
   /* Level 10, plan then go: dotted prints drawn from the turtle, walked when she taps the turtle. */
   readonly planning: boolean;
+  /** Level 12: any touch anywhere steps the turtle on. */
+  readonly anyTouch: boolean;
   /** The drawn plan; its first tile is the turtle's, so a plan of one tile is empty. */
   plan: number[] = [];
   /** Plan tiles the Hint drew, shown gold. */
@@ -172,6 +177,7 @@ class MossyPath implements Game {
     this.maze = isMaze(ctx.level);
     if (this.board.thick?.length) this.heading.text = 'Cross the thick moss twice';
     this.planning = isPlanLevel(ctx.level);
+    this.anyTouch = isTurtleWalk(ctx.level);
     this.planLayer.eventMode = 'none';
     this.trail.eventMode = 'none';
     this.buttonGlow.eventMode = 'none';
@@ -219,7 +225,7 @@ class MossyPath implements Game {
       this.buttonGlow,
     );
     // Levels 4–5 have no misses to recover from, so no buttons: walking back is the undo.
-    if (this.maze && ctx.level <= 5)
+    if (this.maze && (ctx.level <= 5 || this.anyTouch))
       for (const b of [this.undoButton, this.hintButton, this.againButton]) b.visible = false;
     this.resize(ctx.view);
   }
@@ -229,13 +235,15 @@ class MossyPath implements Game {
         ? this.board.thick?.length
           ? 'moss.thick-go'
           : 'moss.go'
-        : this.planning
-          ? 'moss.plan'
-          : this.board.berry2 !== undefined
-            ? 'moss.maze-berries'
-            : this.board.berry !== undefined
-              ? 'moss.maze-berry'
-              : 'moss.maze',
+        : this.anyTouch
+          ? 'moss.walk'
+          : this.planning
+            ? 'moss.plan'
+            : this.board.berry2 !== undefined
+              ? 'moss.maze-berries'
+              : this.board.berry !== undefined
+                ? 'moss.maze-berry'
+                : 'moss.maze',
     );
   }
   private cellAt(global: { x: number; y: number }): number {
@@ -255,6 +263,10 @@ class MossyPath implements Game {
     const cell = this.cellAt(e.global);
     this.drag = { id: e.pointerId, cell };
     this.lift(cell);
+    if (this.anyTouch) {
+      this.walkOn();
+      return;
+    }
     if (this.planning) {
       if (this.going || this.finished) return;
       // A press on the turtle with a plan drawn waits: lifting sends it off, sliding away draws a fresh plan.
@@ -266,7 +278,7 @@ class MossyPath implements Game {
   };
   private readonly onMove = (e: FederatedPointerEvent) => {
     const d = this.drag;
-    if (!d || e.pointerId !== d.id || !this.alive || this.walkTo >= 0) return;
+    if (!d || e.pointerId !== d.id || !this.alive || this.walkTo >= 0 || this.anyTouch) return;
     const cell = this.cellAt(e.global);
     if (cell === d.cell || cell < 0) return;
     d.cell = cell;
@@ -384,6 +396,12 @@ class MossyPath implements Game {
     this.path = state.path;
     this.misses = state.misses;
     for (const at of state.path) this.pawed.add(at);
+  }
+  /** Level 12: one touch, one step along the corridor, whatever was touched; a held or dragged finger steps once. */
+  private walkOn() {
+    if (!this.maze_) return;
+    const next = walkStep(this.board, this.maze_);
+    if (next >= 0) this.touchCell(next, true);
   }
   /** A touch on a maze tile, by tap or by sliding onto it. */
   private touchCell(at: number, tap: boolean) {
@@ -809,7 +827,10 @@ class MossyPath implements Game {
     const { cols, rows } = this.board;
     this.cell = layout.cell;
     this.grid.position.copyFrom(layout.first);
-    this.pad.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, cols * this.cell, rows * this.cell);
+    // Level 12 takes a touch anywhere on the screen, so its pad is the whole view (in the grid's own coordinates).
+    this.pad.hitArea = this.anyTouch
+      ? new Rectangle(-layout.first.x, -layout.first.y, v.w, v.h)
+      : new Rectangle(-this.cell / 2, -this.cell / 2, cols * this.cell, rows * this.cell);
     this.nodes.forEach((node, at) => {
       node.position.copyFrom(cellPosition(at, cols, this.cell));
       node.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, this.cell, this.cell);
@@ -895,7 +916,7 @@ class MossyPath implements Game {
       }
     }
     // Levels 4–5: after a pause, the next tile glows as a pace cue (never counted as a hint).
-    if (this.ctx.level <= 5 && this.walkTo < 0 && this.hinted < 0) {
+    if ((this.ctx.level <= 5 || this.anyTouch) && this.walkTo < 0 && this.hinted < 0) {
       this.idle += dt;
       if (this.idle >= 4) {
         this.idle = 0;
@@ -930,16 +951,18 @@ export const mossyPath: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'path-coverage', 'maze-planning'],
-  bands: ['toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   touchDemo: true,
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   // School opens on the one-step maze (6); a saved 4 or 5 from a younger band starts school there, not at the hardest patch.
-  entryLevels: [4, 5, 6],
+  entryLevels: [4, 5, 6, 12],
   describeLevel: levelName,
   music: STYLES.lullaby,
   coplayHint:
     'One person points out a tile that might be cut off; the other chooses the next step. Swap jobs after Undo. In a maze, point at each fork and guess together which way keeps going.',
+  coplayHintLap:
+    'Any touch makes the turtle take a step. Say "step" for each one as it plods along the moss, then cheer at the pond.',
   offScreen:
     'Draw a small grid on paper. Walk a toy turtle through every square once, ending at a blue pond. Cross out two squares as rocks. Draw a maze with one wrong turn for each other; trace it with a finger first.',
   hubIcon: () => new WigglyIcon(iconArt()),
