@@ -27,6 +27,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
+- **The first-visit screen and the guest's round** (TotoLogic P1 slice 2, after slice 1 "The guest in the save"; shell and navigation tier: typecheck, unit tests, build, `profiles`, `phonefit`, `home` (its first run must still reach `HatchScene` through `.chooser__add`), `world`, offline; one upright-phone browser play of the whole path, first visit, Grown-up, one round with one wrong answer, Add me, adopt, hatch, the six with the card played, and one portrait screenshot of the first-visit screen). [Definition](definitions/play-first.md#build-slices-in-order)
 
 ### Puzzle-page follow-ups
 
@@ -39,9 +40,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **WL2, the pet says the word in European Portuguese** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): the building session first writes the 20 entries and has a separate pass check each against European Portuguese dictionaries, filling one evidence row per key ([assistant review](definitions/additional-languages.md#assistant-review-of-the-portuguese-2026-11-17)); then `ctx.sayWord`, the exact-`pt-PT` voice rule, the per-profile setting and the grown-ups' select and status in Peekaboo Barn, Animal Snack and Bubble Pop. Read the [definition](definitions/additional-languages.md) by section; an entry that cannot be settled is left out.
 
 
-- **Say why after a right answer** (TotoLogic P7; two dive notes, then voice lines: the existing-game tier for each): one short line at the answer that ends the round in `pattern-train` and `rhyme-time`. [TotoLogic](reviews/TOTOLOGIC.md#proposals)
 
-- **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](reviews/TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
 
 
 

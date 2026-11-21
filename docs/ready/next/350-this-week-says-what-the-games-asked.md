@@ -1,0 +1,1 @@
+**This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](../../reviews/TOTOLOGIC.md#proposals), [definition](../../definitions/grownups-page.md)
