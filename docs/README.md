@@ -49,6 +49,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Bunny Patches](definitions/bunny-patches.md) | Puzzle-pages PP3, levels 1–3: one bunny in every row, column and patch, none touching; pre-K 4×4 to school 6×6 |
 | [Market Stall levels 12–13](definitions/market-stall-12-13.md) | Can I buy it? (does a purse cover a price, then spend it on two things) and Trade up (swap small coins for a bigger one); school, built after levels 8–11 |
 | [Egg Catch level 13](definitions/egg-catch-sorting-gate.md) | Sorting gate: place a shell-reading sorter at one junction and turn it so four mixed eggs reach their baskets; school, a placement interaction |
+| [Silly Scene](definitions/silly-scene.md) | Puzzle-pages PP7, levels 1–3: tap the one impossible thing in a familiar picture and hear why; preschool 1, pre-K 1–2, school 2–3, Puzzle Peaks |
 | [Drag miss counting](definitions/drag-miss-counting.md) | Read-through of how every drag game counts a wrong drop (2026-11-20): none uncounted without a stated reason |
 | [`deep-dives/`](deep-dives/README.md) | Each game's researched ladder, the subject studies under `subjects/`, and the research tracker |
 | [DISCOVERY.md](DISCOVERY.md) | 2026-10-12 study of two ways in ("let's explore" and "let's play"), a run of games without retracing the catalog, and its build slices |
