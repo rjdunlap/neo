@@ -49,6 +49,8 @@ import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
+import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
+import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
 import { PAD, touchFrame as wordFrame, touchSquare } from './word-search/layout';
@@ -70,6 +72,14 @@ const side = (r: { w: number; h: number }) => Math.min(r.w, r.h);
 const grown = (levels: Parameters<typeof levelsInOrder>[0]) => levelsInOrder(levels);
 
 const MEASURE: Record<string, () => Size[]> = {
+  'bunny-patches': () => {
+    // Level 3, the grown-up band's only level: the 6 × 6 meadow, Hint and Lamp. A board that fits never slides.
+    const l = bunnyLayout(v, bunnySize(3));
+    return [
+      ['meadow square', l.cell],
+      ['button', Math.min(bunnyButton.w, bunnyButton.h)],
+    ] as Size[];
+  },
   'block-garden': () =>
     grown(gardenLevels.grownup!).flatMap((level) => {
       const l = gardenLayout(gardenPlans[level - 1], v);
@@ -256,6 +266,7 @@ const MEASURE: Record<string, () => Size[]> = {
  * smallest square of a board that slides (allowed under the comfort line by the grown-up band rule).
  */
 const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
+  'bunny-patches': { px: 50.8, what: 'button' },
   'block-garden': { px: 45.7, what: 'bed square' },
   'brain-break': { px: 50.8, what: 'stone' },
   crossword: { px: 44.7, what: 'square and key' },

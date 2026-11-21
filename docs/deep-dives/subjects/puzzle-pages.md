@@ -226,7 +226,7 @@ Each is one session; definitions are docs only.
 3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)): defined in [mossy-path.md](../../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1) 2026-11-06; built 2026-11-06 ([PR #1312](https://github.com/rjdunlap/neo/pull/1312)).
 4. **PP2: Domino Pond 1–3** is [built](../../games/domino-pond.md) from the [definition](../../definitions/domino-pond.md).
 5. **PP9: Word Code 1–3** is [defined](../../definitions/word-code.md) 2026-11-18 and **built** (PR #1903) (school: three- and four-letter picture words with spoken support; grown-up: five letters at the decided par). Unlimited tries, no daily word, Secret Code's rule that ignoring a still-visible mark is the miss, and a reviewed list and block list as data.
-6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung): [defined](../../definitions/bunny-patches.md) 2026-11-20 (PR #1907); its build is queued in READY.
+6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung): [defined](../../definitions/bunny-patches.md) 2026-11-20 (PR #1907); levels 1–3 built (PR #1915); the 8×8 grown-up rung with a par is not defined.
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; its build is queued in READY.
 8b. **PP6–PP7** (Campsite, Silly Scene): define once the first of PP2–PP3 is built, checking Not Always and Who Am I for overlap.

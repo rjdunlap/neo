@@ -50,8 +50,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **This week says what the games asked** (TotoLogic P4; a few lines in the grown-ups' page definition, then the panel: typecheck, unit tests, build). [TotoLogic](reviews/TOTOLOGIC.md#proposals), [definition](definitions/grownups-page.md)
 
-- **`lift-it` level 10, One big pull** (a toddler entry; new levels plus the band, land and entry tests): as the dive specifies it. [Dive](deep-dives/lift-it.md#decisions-for-the-developer)
-
 - **`puddle-gobble` level 13, Splash** (a lap entry; new levels plus the band, land and entry tests): the puddle splashes toward any touch, three shells, no growth. [Dive](deep-dives/puddle-gobble.md#decisions-for-the-developer)
 
 - **`mossy-path` level 12, Turtle walk** (a lap entry; the same tier): any touch steps the turtle along a straight corridor. [Dive](deep-dives/mossy-path.md#decisions-for-the-developer)
