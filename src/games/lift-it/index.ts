@@ -57,6 +57,7 @@ import {
   rigsFor,
   TIE_HIT,
   TRAY_HIT,
+  strokeLevel,
   travel,
   WHEEL_R,
   works,
@@ -550,6 +551,7 @@ class LiftIt implements Game {
       7: 'lift-it.instruct-three',
       8: 'lift-it.instruct-three-numbers',
       9: 'lift-it.instruct-paws',
+      10: 'lift-it.instruct-one-pull',
     };
     this.levelLine = lines[this.plan.id];
     // Who wants to pull follows the level's instruction (said at once, it used to cut the instruction off).
@@ -1087,6 +1089,7 @@ class LiftIt implements Game {
   get canReplay(): boolean {
     return (
       this.plan.id >= 3 &&
+      this.plan.id !== 10 &&
       this.last !== null &&
       !this.busy &&
       !this.finished &&
@@ -1194,7 +1197,7 @@ class LiftIt implements Game {
       void this.ctx.say('lift-it.hint');
       return;
     }
-    if (this.plan.id <= 2) {
+    if (strokeLevel(this.plan)) {
       // The pet's paw pulls the next stroke with her.
       if (!works(this.rig, this.cur)) {
         this.showGlow();
@@ -1627,7 +1630,8 @@ export const liftIt: GameModule = {
   region: 'tinker-lab',
   challenge: 'noticing',
   skills: ['cause-and-effect', 'simple-machines', 'force-and-distance', 'prediction', 'numbers'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
+  entryLevels: [10],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

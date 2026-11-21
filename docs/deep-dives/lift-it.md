@@ -1,6 +1,6 @@
 # Lift It deep dive
 
-*ID `lift-it` · bands preschool, pre-K, school · levels 1–9 on 2026-11-09 · session `claude/dive-lift-it` ([PR #1364](https://github.com/rjdunlap/neo/pull/1364))*
+*ID `lift-it` · bands toddler, preschool, pre-K, school · levels 1–10 on 2026-11-20 · session `claude/dive-lift-it` ([PR #1364](https://github.com/rjdunlap/neo/pull/1364))*
 
 ## The game today
 
@@ -18,7 +18,7 @@ A friend waits on the tree's ledge for a parcel. She hauls the crate up by dragg
 | 8 | Three ropes by the numbers | school | first parcel 6 · 3 · 0 · 2, ledge request and both cards | Which rig reaches the requested friends, then its exact paws and knots |
 | 9 | How many paws? | school | level 4's filter with `w` 2 or 4, no request, one paws card | Any rig she likes, then how many paws it needs (paw prints hidden until she answers) |
 
-`LEVELS` is `{ preschool: 1–2, prek: 2–4, school: 3–9 }`, with school `order` `[3, 4, 9, 5, 6, 7, 8]` (level 9 sits between 4 and 5) and no `entryLevels`; pre-K stays 2–4 (school only, decision 2's default). A round is three parcels; each level's first round of a session leads with its authored line(s).
+`LEVELS` is `{ toddler: 10, preschool: 1–2, prek: 2–4, school: 3–9 }`, with school `order` `[3, 4, 9, 5, 6, 7, 8]` (level 9 sits between 4 and 5) and `entryLevels` [10] for the toddler entry; pre-K stays 2–4 (school only, decision 2's default). A round is three parcels; each level's first round of a session leads with its authored line(s).
 
 **Content pools.** Four base rigs (`direct`, `fixed`, `movable`, `both`) and `three` at levels 7–8. Eight friend kinds (bunny, duck, mouse, bear, frog, cat, dog, pig), with different kinds for the waiting friend and the pullers. Each round picks a meadow, spring, autumn or evening look. Each crate has one dot per stone and carries a parcel from its light or heavy group. Speech uses the ideal rule.
 
@@ -90,7 +90,7 @@ Counting the level 7 drawing, segment by segment: the rope is tied to the crate'
 
 ### Younger-band openings
 
-- **Level 10 *One big pull*** (toddler, **decision**): the level 1 tree with a 1-rung ledge, the branch wheel prebuilt, one stone and one ground friend; any downward drag of 120 units lands the parcel, and a shorter one raises it part way and leaves it there for the next. No tray, no misses, no hint glow; Show a hint pulls with her. `entryLevels` would declare it for toddler; Rainbow Meadow's toddler page must still fit (lands test). A rule test asserts one stroke always suffices and nothing else is on offer. It opens a band the definition left closed (decision 1), and whether a toddler finds the knot without the ghost finger is a person check, so it waits on the developer.
+- **Level 10 *One big pull*** (toddler, **built 2026-11-20**): the level 1 tree with a 1-rung ledge, the branch wheel prebuilt, one stone and one ground friend; any downward drag of 120 units lands the parcel, and a shorter one raises it part way and leaves it there for the next. No tray, no misses, no hint glow; Show a hint pulls with her. `entryLevels` would declare it for toddler; Rainbow Meadow's toddler page must still fit (lands test). A rule test asserts one stroke always suffices and nothing else is on offer. It opens a band the definition left closed (decision 1), and whether a toddler finds the knot without the ghost finger is a person check, so it waits on the developer.
 
 ### Easier entries and levels between existing ones
 
@@ -123,7 +123,7 @@ By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S8) 
 4. **Built.** **Level 7 *Three ropes*** added the movable knot and three-strand haul.
 5. **Built.** **Level 8 *Three ropes by the numbers*** adds the puller request and exact paws and knots cards to that interaction.
 
-The [completed work record](../archive/COMPLETED-2026-10-09.md#lift-it-levels-78-three-ropes-2026-11-09) covers slices 4–5. Level 10 awaits decision 1. Ring and strand readability on iPad remain [device checks](../DEVICE-CHECKS.md).
+The [completed work record](../archive/COMPLETED-2026-10-09.md#lift-it-levels-78-three-ropes-2026-11-09) covers slices 4–5. Level 10 is built (toddler entry). Ring and strand readability on iPad remain [device checks](../DEVICE-CHECKS.md).
 
 ## What was built in this session
 
