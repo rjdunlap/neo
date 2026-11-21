@@ -9,7 +9,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
+import { againIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -37,18 +37,14 @@ import {
   type Slot,
 } from './logic';
 import { robotLayout, type RobotLayout } from './layout';
+import { arrow } from './art';
+import { RoutineRound } from './routine-scene';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
 
 /** The stick's directions as the controller reports them: 0 right, 1 down, 2 left, 3 up. */
 const STICK_DIRECTIONS: Direction[] = ['right', 'down', 'left', 'up'];
-
-function arrow(dir: Direction) {
-  const g = arrowIcon(1);
-  g.rotation = (DIRECTIONS.indexOf(dir) * Math.PI) / 2 - Math.PI / 2;
-  return g;
-}
 
 class RobotPath implements Game {
   readonly plan: RobotPlan;
@@ -559,13 +555,15 @@ export const robotPath: GameModule = {
           ? 'Pick up the apple on the way'
           : l === 14
             ? 'Mend the loop'
-            : l === 1
-              ? 'One or two steps straight to the star'
-              : l === 2
-                ? 'A short program with a turn'
-                : l === 3
-                  ? 'Plan across a bigger grid'
-                  : planFor(l).name,
+            : l === 15
+              ? 'A routine: use the same steps twice'
+              : l === 1
+                ? 'One or two steps straight to the star'
+                : l === 2
+                  ? 'A short program with a turn'
+                  : l === 3
+                    ? 'Plan across a bigger grid'
+                    : planFor(l).name,
   music: STYLES.jelly,
   offScreen:
     'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
@@ -573,5 +571,5 @@ export const robotPath: GameModule = {
   touchDemo: true,
   upright: true,
   sticker: () => robotArt(150),
-  create: (ctx) => new RobotPath(ctx),
+  create: (ctx) => (ctx.level === 15 ? new RoutineRound(ctx) : new RobotPath(ctx)),
 };
