@@ -20,6 +20,8 @@ export const RESULT_NAMES = {
   house: 'Home',
   heart: 'Favorite',
   keep: 'Keep',
+  /** A guest's result, in the heart's place (play-first slice 2). */
+  addMe: 'Add me',
 } as const;
 
 /** A name longer than this falls back to a shorter word, so it fits beside its neighbours. */

@@ -63,8 +63,11 @@ export interface Routes {
    * puzzle), so leaving goes back there, not to "Who's playing?".
    */
   couch(play?: boolean | CourseId, origin?: Origin): void;
-  /** "Who's playing?": the front door, and the way back to it from the map. */
-  start(): void;
+  /**
+   * "Who's playing?": the front door, and the way back to it from the map. At the root, while nobody shows a card, it is
+   * the first-visit screen; `add` (a guest's Add me) opens the plain chooser with its add form already open.
+   */
+  start(add?: boolean): void;
   /** Today's six (`?daily` at the root, a trial): six games for the day, played from one page. The island opens it too. */
   daily(): void;
   /** The island map: the themed lands, her home spot and the picnic. */
