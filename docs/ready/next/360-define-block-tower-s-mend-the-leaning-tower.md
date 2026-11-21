@@ -1,0 +1,1 @@
+**Define Block Tower's Mend the leaning tower** (`block-tower`, school; the slice asks for the editable-top domain, release, undo and replay, and two seeded tasks to be defined first). [Dive](../../deep-dives/block-tower.md#build-slices-in-order)

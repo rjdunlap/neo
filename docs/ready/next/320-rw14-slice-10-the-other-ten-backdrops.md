@@ -1,0 +1,1 @@
+**RW14 slice 10, the other ten backdrops** (images only; [decided 2026-11-17](../../archive/DECISIONS-2026-11-17.md#rework)): the session first does the screenshot review of slices 4 and 6 beside the untouched lands itself and records it; if it passes, R26's ten backdrops follow through `scripts/codex-image.sh`. [POLISH.md](../../rework/POLISH.md#slice-10-the-other-ten-backdrops)

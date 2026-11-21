@@ -18,11 +18,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **Better voice V1 (remaining): render the rest of the slot-free script in batches** (assets tier, offline check; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), no longer waiting on the listen): add line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally, the lines of the upright games first, one batch a session (done: shell, nav, praise, stickers, Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies, Lift It, Puzzle Pals, Rhythm Neighbors, Song Maker, Teddy Doctor, Photo Safari, Color Garden, Bumper Garden, Fluffy Salon, Sound Garden, Shape Sorter, Dot Link, Feelings Faces, Gear Garden, Sand Table, Scoop Shop, Attic Finds, Pet Kitchen, Puppet Stage, Swing Pals, Word Glue; 1556 clips, +4.30 MB in batch 12), each recording the size it adds to the offline cache; device speech stays the fallback, slotted lines (V3) stay on device speech and nothing is stitched until someone has listened. A listen can roll a batch back. [Roadmap](ROADMAP.md#a-better-voice)
 
-- **P5, the other residents follow** (claimed 2026-11-21 by `claude/p5-residents-follow`; content; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play), the session judges it): first take a scripted capture strip of Trill's walk, chime and return and judge whether it reads as alive, recording the strip and the judgement; if it does, give the other five second-wave residents a route and one thing to use in their locations through `ResidentSpec.carriesOn` and `wanderRoute`, with the pilot's rules. A phone look can roll it back. [Pok Pok P5](reviews/POK-POK.md), [POLISH](rework/POLISH.md)
 
-
-
-- **RW14 slice 10, the other ten backdrops** (images only; [decided 2026-11-17](archive/DECISIONS-2026-11-17.md#rework)): the session first does the screenshot review of slices 4 and 6 beside the untouched lands itself and records it; if it passes, R26's ten backdrops follow through `scripts/codex-image.sh`. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
 
@@ -33,8 +29,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 ### Puzzle-page follow-ups
-
-- **Define Silly Scene** (PP7, docs only): check Not Always and Who Am I? for overlap before defining the first authored pictures and explanations. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 - **A puzzle page at the table** (PP8, grown-ups' page): write the short offline-play card for mazes, spoken word ladders and domino dots. [Study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
@@ -134,12 +128,6 @@ From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
 Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
-
-- **Define Market Stall levels 12–13, Can I buy it? and Trade up** (`market-stall`; decided as "define now"). [Dive](deep-dives/market-stall.md#build-slices-in-order)
-
-- **Define Egg Catch level 13, the sorting gate** (`egg-catch`; dive slice 9 is the definition itself). [Dive](deep-dives/egg-catch.md#build-slices-in-order)
-
-- **Define Block Tower's Mend the leaning tower** (`block-tower`, school; the slice asks for the editable-top domain, release, undo and replay, and two seeded tasks to be defined first). [Dive](deep-dives/block-tower.md#build-slices-in-order)
 
 
 ### Subject research (docs only)
