@@ -52,11 +52,11 @@ export class DailyScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly backdrop = homeBackdrop();
-  /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), to "Who's playing?". */
+  /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), and for a guest, to "Who's playing?". */
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.back,
-      () => (this.app.phoneOnly ? this.app.go.start() : this.app.go.hub()),
+      () => (this.app.phoneOnly || store.entry.guest ? this.app.go.start() : this.app.go.hub()),
       () => voice.say('nav.back'),
     ),
   ).means('back');
@@ -174,7 +174,8 @@ export class DailyScene extends Scene {
     );
     if (this.notes) this.ui.addChild(this.notes);
     // On a phone the six are the whole app: there is no All games to open.
-    this.all.visible = !this.app.phoneOnly;
+    // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
+    this.all.visible = !this.app.phoneOnly && !store.entry.guest;
     this.playAll.visible = !this.allPlayed;
     this.buildCards();
     this.place();

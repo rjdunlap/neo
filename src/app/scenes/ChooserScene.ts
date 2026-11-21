@@ -1,4 +1,4 @@
-import { makeEgg, makePortrait } from '../../creatures/companion';
+import { makeEgg, makePortrait, STAND_IN } from '../../creatures/companion';
 import { companionOf } from '../../progress/save';
 import { Backdrop } from '../../art/scenery';
 import { audio } from '../../audio/engine';
@@ -12,6 +12,7 @@ import { openParentPanel } from '../../parent/panel';
 import {
   blankToFill,
   cardName,
+  everyoneHidden,
   isHiddenProfile,
   MAX_PROFILES,
   type ProfileEntry,
@@ -24,6 +25,7 @@ import {
   birthForChip,
   chipForBirth,
   couchNameFor,
+  FIRST_VISIT_PLACES,
   modeFor,
   POINTER_WINDOW_MS,
   readNewPlayer,
@@ -33,6 +35,10 @@ import {
   type NewPlayer,
 } from '../chooser';
 import { selectPlayer } from '../players';
+import { firstDemoPick, todaysSix } from '../daily-six';
+import { dayKey } from '../../content/daily';
+import type { App } from '../App';
+import type { Band } from '../../progress/bands';
 import { applySettings } from '../settings';
 import { Scene } from '../Scene';
 import { markTiming } from '../../engine/timing';
@@ -69,10 +75,16 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text 
   return node;
 };
 
+/** The stand-in friend's picture on a first-visit age place, in units of the card's paper: small to large. */
+const PLACE_PICTURE = { small: 150, medium: 190, large: 230 } as const;
+
 /**
  * "Who's playing?": a card for each person, and Add a player. A tap opens the island as that person; Enter or a controller
  * button opens couch play with them as Player 1, and so does the small controller button on each card, so a mouse user can
  * choose it too. Plain HTML over the island's backdrop. Nothing here can remove anyone: that is behind the gear's hold.
+ *
+ * At the root, while every profile is hidden (blank or a guest), it is the first-visit screen instead (play-first slice 2):
+ * three age places that play one round as a guest before anything is set up, and a smaller Add a player below them.
  */
 export class ChooserScene extends Scene {
   /** Plain HTML that suits a phone held upright, and a page of its own inputs. */
@@ -95,6 +107,10 @@ export class ChooserScene extends Scene {
   private pointerAt = -Infinity;
   private form: HTMLElement | null = null;
   private formKey: ((e: KeyboardEvent) => void) | null = null;
+  /** Showing the three age places rather than people's cards (`everyoneHidden` at the root). */
+  private firstVisit = false;
+  /** Add me on a guest's result opens the add form at once; its Cancel brings back the first-visit screen. */
+  private openFormOnBuild: boolean;
   private readonly gear = gearButton({
     onOpen: () => this.openGrownUps(),
     onShort: () => {
@@ -104,6 +120,11 @@ export class ChooserScene extends Scene {
       void voice.say('parent.ask');
     },
   });
+
+  constructor(app: App, openForm = false) {
+    super(app);
+    this.openFormOnBuild = openForm;
+  }
 
   init() {
     this.backdrop = this.track(
@@ -183,8 +204,29 @@ export class ChooserScene extends Scene {
     this.items = items;
     this.cards.replaceChildren();
     this.buttons = [];
+    const opening = this.openFormOnBuild;
+    this.openFormOnBuild = false;
+    // `classic/` keeps the plain chooser; so does the root once anyone shows a card, and while Add me's form is open.
+    const firstVisit = this.app.creatureWorld && !opening && everyoneHidden(items);
+    const wasFirst = this.firstVisit;
+    this.firstVisit = firstVisit;
+    this.page.classList.toggle('chooser--first', firstVisit);
+    this.cards.classList.toggle('chooser__cards--places', firstVisit);
+    if (firstVisit) {
+      for (const place of FIRST_VISIT_PLACES) {
+        const button = el('button', `chooser__place chooser__place--${place.size}`);
+        button.type = 'button';
+        button.dataset.band = place.band;
+        button.setAttribute('aria-label', place.spoken);
+        button.append(this.standIn(PLACE_PICTURE[place.size]), el('span', 'chooser__name', place.label));
+        button.addEventListener('click', () => this.playAsGuest(place.band));
+        this.cards.append(button);
+        this.buttons.push(button);
+      }
+      if (!wasFirst) void voice.say('chooser.first');
+    }
 
-    const shown = items.filter((i) => !isHiddenProfile(i.save, i.entry));
+    const shown = firstVisit ? [] : items.filter((i) => !isHiddenProfile(i.save, i.entry));
     // Two or more players stand two across on an upright phone (`chooser.css`); one keeps the large card.
     this.cards.classList.toggle('chooser__cards--many', shown.length > 1);
     for (const { entry, save } of shown) {
@@ -230,6 +272,55 @@ export class ChooserScene extends Scene {
     const mine = this.buttons.findIndex((b) => b.dataset.id === store.activeId);
     this.setFocus(mine >= 0 ? mine : 0);
     markTiming('cards');
+    if (opening && canAdd) this.openAdd();
+  }
+
+  /** The stand-in friend on card paper, for a first-visit age place: nobody has a friend yet. */
+  private standIn(size: number): HTMLCanvasElement {
+    const art = makePortrait(STAND_IN, size);
+    const canvas = this.app.renderer.extract.canvas({ target: art, resolution: 1.5 }) as HTMLCanvasElement;
+    canvas.setAttribute('aria-hidden', 'true');
+    art.destroy({ children: true });
+    return canvas;
+  }
+
+  /**
+   * An age place was tapped: the hidden profile (the guest if there is one, else the blank `legacy` one) becomes a guest at
+   * that band and plays the first of its six that has a ghost finger, as a daily round, so the rest of the six follows.
+   */
+  private playAsGuest(band: Band) {
+    if (this.busy || this.closed) return;
+    const id = blankToFill(this.items);
+    if (id === null) return;
+    markTiming('tap');
+    this.busy = true;
+    audio.unlock();
+    voice.unlock();
+    this.stopInput();
+    this.gear.hide(true);
+    void this.beginGuest(id, band);
+  }
+
+  private async beginGuest(id: string, band: Band) {
+    const ok = await selectPlayer(id);
+    if (this.closed) return;
+    if (!ok) {
+      this.busy = false;
+      this.gear.hide(false);
+      this.startInput();
+      await this.build();
+      return;
+    }
+    store.setGuest(id, true);
+    store.setBand(band);
+    this.page.classList.add('chooser--leaving');
+    this.cards.querySelector(`.chooser__place[data-band="${band}"]`)?.classList.add('is-chosen');
+    sfx.giggle();
+    await this.tw.wait(LEAVE_BEAT);
+    if (this.closed) return;
+    const pick = firstDemoPick(todaysSix(dayKey(new Date()), this.app.uprightPhone(), this.app.phoneOnly));
+    if (pick) this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level);
+    else this.app.go.daily();
   }
 
   /** A person's companion, drawn once into a picture for the card: its portrait on card paper, or an egg before the first friend. */
@@ -285,7 +376,9 @@ export class ChooserScene extends Scene {
   private activate() {
     const at = document.activeElement;
     const id = at instanceof HTMLElement ? at.closest<HTMLElement>('.chooser__card')?.dataset.id : undefined;
-    if (id) this.choose(id, modeFor('pad'));
+    const band = at instanceof HTMLElement ? (at.dataset.band as Band | undefined) : undefined;
+    if (band) this.playAsGuest(band);
+    else if (id) this.choose(id, modeFor('pad'));
     else if (at instanceof HTMLElement && at.classList.contains('chooser__add')) this.openAdd();
   }
 
@@ -462,7 +555,9 @@ export class ChooserScene extends Scene {
     this.form = null;
     if (restart) {
       this.startInput();
-      this.setFocus(this.focus);
+      // Cancel on the form Add me opened: the chooser was plain only for the form, so the first-visit screen comes back.
+      if (this.app.creatureWorld && !this.firstVisit && everyoneHidden(this.items)) void this.build();
+      else this.setFocus(this.focus);
     }
   }
 

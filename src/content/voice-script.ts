@@ -288,6 +288,8 @@ export const SHARED = {
     'Ten! {a} back to ten, {k} back in all. Move to where the frog lands, then press the bottom button!',
   ],
   'couch.sink.guess': ['Will the {thing} float or sink? Choose with left and right, then press the bottom button!'],
+  // The first-visit screen (play-first slice 2): three age places, before anyone is set up.
+  'chooser.first': ["Who's playing? Tap one!"],
   'parent.ask': ['That one is for grown-ups. Ask a grown-up to help!'],
   'start.hi':['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],
   'hub.pick': ['What should we play?', 'Pick a game!', "Let's play!"],
