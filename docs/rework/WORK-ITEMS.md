@@ -294,7 +294,7 @@ Requested by the developer 2026-10-23 (relayed by the session that started the d
 | 7 | Buttons and cards with a finish, in code | — | shell |
 | 8 | The last place first on Explore | — | shell and save, offline |
 | 9 | Moving between screens without a cream flash | — | shell and navigation |
-| 10 | The other ten backdrops: images only | R26, after slice 4 is accepted | one probe per location, offline |
+| 10 | The other ten backdrops: images only (built 2026-11-21) | R26, after slice 4 is accepted | one probe per location, offline |
 
 **Acceptance:**
 - No target shrinks below 100 units, navigation never needs reading, the guide and corners stay clear, and nothing gates.
