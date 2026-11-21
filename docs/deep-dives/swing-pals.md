@@ -119,7 +119,7 @@ Decision 1 has a usable default, so slice 2 stays buildable on it. Decisions 2 a
 3. **Level 8, *Twice as quick*.** (built 2026-11-06, PR #1339) After slice 2 (school's `order` then ends 7, 8). Tier: new level on the existing hook interaction: typecheck, rule tests, one browser play of level 8 with one wrong hook, `fingerdemo` at 8.
 4. **Level 9, *A row of three*.** First the `swingLayout` probe in `logic.test.ts`; then a definition.
 5. **Paint the beat.** Decision 2, then a definition.
-6. **Journal discovery.** Decision 3.
+6. **Journal discovery.** Decision 3 (decided yes). In progress 2026-11-21 on `claude/swing-pals-discovery`: `src/games/swing-pals`, `src/content/journal.ts` and its test, `src/content/voice-script.ts`, `src/ui/journal-art.ts`.
 
 ## What was built in this session
 
