@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics, Rectangle, type Sprite } from 'pixi.js';
 import { placePicture } from '../../art/locations';
 import { makeHost, PageArrow, Signpost } from '../../art/lands';
-import { swatch } from '../../art/palette';
+import { ink, swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { music } from '../../audio/music';
@@ -207,9 +207,13 @@ export class LandScene extends Scene {
   init() {
     lastLandId = this.id;
     this.heading.text = this.land.name;
-    if (this.options.headingColor !== undefined) this.heading.style.fill = this.options.headingColor;
-    const style = this.options.backdrop ?? this.land.backdrop;
     const picture = this.options.backdropImage;
+    if (this.options.headingColor !== undefined) {
+      this.heading.style.fill = this.options.headingColor;
+      // A light heading over a painted night sky or cave can cross the moon or a glow-worm light: an ink edge keeps it readable.
+      if (picture) this.heading.style.stroke = { color: ink, width: 6, join: 'round' };
+    }
+    const style = this.options.backdrop ?? this.land.backdrop;
     // Under a picture the backdrop only fills and keeps the ground line: no sun or clouds to draw or to take a tap.
     this.backdrop = this.track(
       new Backdrop(picture ? { ...style, sun: false, clouds: 0 } : style, this.view),
