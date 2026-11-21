@@ -27,6 +27,7 @@ import {
   makeRiddles,
   makeTap,
   makeTrays,
+  oddRhymes,
   planFor,
   rhymes,
   sceneFor,
@@ -517,7 +518,10 @@ class RhymeTime implements Game {
         ? this.ctx.say('rhyme.yes', { a: q.prompt!, b: a.word })
         : this.plan.mode === 'pair'
           ? this.ctx.say('rhyme.yes', { a: a.word, b: b!.word })
-          : this.ctx.say('rhyme.oddyes', { word: a.word });
+          : this.index + 1 >= this.total
+            ? // The answer that ends the round says why (TotoLogic P7): the odd one, then the three that rhyme.
+              this.ctx.say('rhyme.oddwhy', { word: a.word, list: andList(oddRhymes(q)) })
+            : this.ctx.say('rhyme.oddyes', { word: a.word });
     // The bounce (0.38 s) fits inside the beat.
     await this.onward(said, 0.3);
   }

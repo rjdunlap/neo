@@ -222,6 +222,9 @@ export const familySong = (key: string) => [key, ...FAMILIES[familyOf(key)].filt
 export const andList = (words: readonly string[]) =>
   `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
 
+/** An odd-one-out question's rhyming group: every picture but the odd one, in the order shown (TotoLogic P7's "why"). */
+export const oddRhymes = (q: RhymeQuestion) => q.words.filter((w) => !q.answer.includes(w));
+
 // Rhyme Riddles (levels 5–7) -----------------------------------------------------------
 
 /**
