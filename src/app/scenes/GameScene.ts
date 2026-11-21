@@ -51,6 +51,7 @@ import {
   heartIcon,
   houseIcon,
   nextIcon,
+  plusIcon,
   treehouseIcon,
 } from '../../ui/icons';
 import { FONT } from '../../ui/text';
@@ -893,24 +894,31 @@ export class GameScene extends Scene {
     show(store.isFavorite(this.mod.id));
     const heartIcons = new Container();
     heartIcons.addChild(outline, solid);
-    const heart = new RoundButton(heartIcons, swatch.pink, 56, () => {
-      if (!this.liveResult() || this.navigating) return;
-      this.speechSerial++;
-      const on = store.toggleFavorite(this.mod.id);
-      show(on);
-      if (on) {
-        sfx.sparkle();
-        confetti.burst(heart.x, heart.y, {
-          kind: 'star',
-          colors: [swatch.pink.fill, 0xffffff],
-          count: 14,
-          speed: [180, 340],
-          gravity: 0,
-          life: [0.5, 0.9],
+    // A guest (play-first slice 2) has no favorites to keep: the heart's place holds Add me, which opens the add form. It
+    // is never spoken and never pressed on anyone; Keep playing is the next-of-six tile as for anyone.
+    const guest = store.entry.guest;
+    const heart = guest
+      ? new RoundButton(plusIcon(0xffffff), swatch.purple, 56, () =>
+          this.navigateResult(() => this.app.go.start(true)),
+        )
+      : new RoundButton(heartIcons, swatch.pink, 56, () => {
+          if (!this.liveResult() || this.navigating) return;
+          this.speechSerial++;
+          const on = store.toggleFavorite(this.mod.id);
+          show(on);
+          if (on) {
+            sfx.sparkle();
+            confetti.burst(heart.x, heart.y, {
+              kind: 'star',
+              colors: [swatch.pink.fill, 0xffffff],
+              count: 14,
+              speed: [180, 340],
+              gravity: 0,
+              life: [0.5, 0.9],
+            });
+            void this.resultVoice('heart.on');
+          } else void this.resultVoice('heart.off');
         });
-        void this.resultVoice('heart.on');
-      } else void this.resultVoice('heart.off');
-    });
     // Something she made: a button to hang it in her treehouse room. Explicit, and it replaces (never deletes) the earlier one.
     let keep: RoundButton | null = null;
     const made = this.made;
@@ -944,7 +952,8 @@ export class GameScene extends Scene {
     // At the root each picture carries its name (U1), so the way on reads with the sound off.
     if (this.app.creatureWorld)
       for (const k of ['again', 'next', 'heart', 'home', 'house', 'keep'] as const)
-        this.after[k]?.named(RESULT_NAMES[k], RESULT_NAME_W[k]);
+        this.after[k]?.named(k === 'heart' && guest ? RESULT_NAMES.addMe : RESULT_NAMES[k], RESULT_NAME_W[k]);
+    if (guest) heart.label = 'add-me';
     for (const b of [
       again,
       ...(next ? [next] : []),

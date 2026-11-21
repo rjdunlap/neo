@@ -1,3 +1,4 @@
+import type { HubIcon } from '../../games/types';
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
@@ -52,11 +53,11 @@ export class DailyScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly backdrop = homeBackdrop();
-  /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), to "Who's playing?". */
+  /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), and for a guest, to "Who's playing?". */
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.back,
-      () => (this.app.phoneOnly ? this.app.go.start() : this.app.go.hub()),
+      () => (this.app.phoneOnly || store.entry.guest ? this.app.go.start() : this.app.go.hub()),
       () => voice.say('nav.back'),
     ),
   ).means('back');
@@ -125,7 +126,12 @@ export class DailyScene extends Scene {
     return this.picks.every((p) => this.played(p.mod.id));
   }
 
+  /** The cards' animated icons, untracked when a turn redraws the cards: a destroyed icon updated every frame throws. */
+  private icons: HubIcon[] = [];
+
   private buildCards() {
+    for (const icon of this.icons) this.untrack(icon);
+    this.icons = [];
     for (const c of this.cards) c.node.destroy({ children: true });
     this.cards = this.picks.map((pick) => ({ pick, node: this.card(pick) }));
     for (const c of this.cards) this.ui.addChild(c.node);
@@ -174,7 +180,8 @@ export class DailyScene extends Scene {
     );
     if (this.notes) this.ui.addChild(this.notes);
     // On a phone the six are the whole app: there is no All games to open.
-    this.all.visible = !this.app.phoneOnly;
+    // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
+    this.all.visible = !this.app.phoneOnly && !store.entry.guest;
     this.playAll.visible = !this.allPlayed;
     this.buildCards();
     this.place();
@@ -183,6 +190,7 @@ export class DailyScene extends Scene {
   private card(pick: DailyPick): Container {
     const node = new Container();
     const icon = this.track(pick.mod.hubIcon());
+    this.icons.push(icon);
     const art = new Container();
     art.addChild(icon);
     const played = playedOn(store.data.games[pick.mod.id]?.history, this.day);

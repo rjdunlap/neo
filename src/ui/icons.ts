@@ -268,6 +268,16 @@ export function crossIcon(color = ink): Graphics {
     .stroke({ width: 9, color, cap: 'round' });
 }
 
+/** A plus about 40 across: Add me on a guest's result (play-first slice 2). */
+export function plusIcon(color = ink): Graphics {
+  return new Graphics()
+    .moveTo(0, -20)
+    .lineTo(0, 20)
+    .moveTo(-20, 0)
+    .lineTo(20, 0)
+    .stroke({ width: 10, color, cap: 'round' });
+}
+
 /** A heart about 56 across: solid when it is kept, just an outline when it is not. */
 export function heartIcon(color = 0xffffff, filled = true): Graphics {
   const g = shapePath(new Graphics(), 'heart', 26);

@@ -1,4 +1,5 @@
 import { dailySix, newToday, type DailyPick } from '../content/daily';
+
 import { GAMES } from '../games/registry';
 import { store } from '../progress/store';
 
@@ -19,3 +20,10 @@ export function todaysSix(day: string, upright: boolean, phone: boolean): DailyP
     phone,
   );
 }
+
+/**
+ * A guest's round (play-first slice 2): the first of the six whose game has a ghost finger, so the how-to card and the
+ * finger carry it with the sound off. Null only if none has one, which the rule tests rule out for the guest's bands.
+ */
+export const firstDemoPick = (picks: readonly DailyPick[]): DailyPick | null =>
+  picks.find((p) => p.mod.touchDemo) ?? null;

@@ -55,7 +55,8 @@ async function boot() {
       Object.entries(routes).map(([name, route]) => [
         name,
         (...args: unknown[]) => {
-          if (link) link.hidden = name !== 'hub';
+          // A guest's hub is the six alone (play-first slice 2): no way to the island games until Add me.
+          if (link) link.hidden = name !== 'hub' || store.entry.guest;
           return (route as (...a: unknown[]) => void)(...args);
         },
       ]),
@@ -88,7 +89,8 @@ async function boot() {
         const six = daily;
         daily = false;
         // On a phone the six are the whole root (`App.phoneOnly`): Home and what it leads to stay on tablets and computers.
-        void app.show(six || app.phoneOnly ? new DailyScene(app) : new HomeScene(app));
+        // A guest (play-first slice 2) sees the six and their rounds on every device, nothing else, until Add me.
+        void app.show(six || app.phoneOnly || store.entry.guest ? new DailyScene(app) : new HomeScene(app));
       },
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),

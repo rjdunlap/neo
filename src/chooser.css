@@ -178,6 +178,72 @@
   pointer-events: none;
 }
 
+/* The first-visit screen (play-first slice 2): three age places, the stand-in friend small to large, and Add a player as a
+   row below them. A place is a card of its own, at least 100 units each way. */
+.chooser__cards--places {
+  grid-template-columns: repeat(3, calc(220px * var(--u)));
+}
+
+.chooser__place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(8px * var(--u));
+  min-height: calc(270px * var(--u));
+  padding: calc(14px * var(--u)) calc(10px * var(--u)) calc(16px * var(--u));
+  font-size: calc(30px * var(--u));
+  font-weight: 600;
+  background: var(--card) !important;
+  border: calc(4px * var(--u)) solid var(--teal-line) !important;
+  border-radius: calc(28px * var(--u));
+  box-shadow: 0 calc(8px * var(--u)) calc(18px * var(--u)) rgb(0 0 0 / 0.14);
+  transition:
+    transform 0.2s,
+    opacity 0.3s;
+}
+
+.chooser__place:active {
+  transform: scale(0.96);
+}
+
+.chooser__place canvas {
+  flex: none;
+  object-fit: contain;
+}
+
+.chooser__place--small canvas {
+  width: calc(120px * var(--u));
+  height: calc(120px * var(--u));
+}
+
+.chooser__place--medium canvas {
+  width: calc(150px * var(--u));
+  height: calc(150px * var(--u));
+}
+
+.chooser__place--large canvas {
+  width: calc(180px * var(--u));
+  height: calc(180px * var(--u));
+}
+
+.chooser__cards--places .chooser__add {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  gap: calc(12px * var(--u));
+  min-height: calc(100px * var(--u));
+  font-size: calc(22px * var(--u));
+}
+
+.chooser--leaving .chooser__place:not(.is-chosen) {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.chooser__place.is-chosen {
+  animation: chooser-pop 0.35s ease-out;
+}
+
 @keyframes chooser-pop {
   30% {
     transform: scale(1.08);
@@ -185,7 +251,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chooser__card.is-chosen {
+  .chooser__card.is-chosen,
+  .chooser__place.is-chosen {
     animation: none;
   }
 }
@@ -313,6 +380,40 @@
     height: 48px;
     font-size: 34px;
   }
+
+  /* The first-visit places stand in one column, each a row: the friend beside the word, small to large. */
+  .chooser__cards--places {
+    grid-template-columns: minmax(0, 300px);
+    gap: 12px;
+  }
+
+  .chooser__place {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    min-height: 120px;
+    padding: 6px 18px;
+    font-size: 28px;
+  }
+
+  .chooser__place--small canvas {
+    width: 76px;
+    height: 76px;
+  }
+
+  .chooser__place--medium canvas {
+    width: 94px;
+    height: 94px;
+  }
+
+  .chooser__place--large canvas {
+    width: 112px;
+    height: 112px;
+  }
+
+  .chooser__cards--places .chooser__add {
+    min-height: 88px;
+  }
 }
 
 /* A phone held sideways: a short heading, and cards short enough that a whole card and its couch button show. */
@@ -369,5 +470,35 @@
     width: 64px;
     height: 64px;
     font-size: 44px;
+  }
+
+  .chooser__cards--places {
+    grid-template-columns: repeat(3, 184px);
+  }
+
+  .chooser__place {
+    min-height: 152px;
+    padding: 8px 8px 10px;
+    gap: 2px;
+    font-size: 24px;
+  }
+
+  .chooser__place--small canvas {
+    width: 72px;
+    height: 72px;
+  }
+
+  .chooser__place--medium canvas {
+    width: 88px;
+    height: 88px;
+  }
+
+  .chooser__place--large canvas {
+    width: 104px;
+    height: 104px;
+  }
+
+  .chooser__cards--places .chooser__add {
+    min-height: 100px;
   }
 }

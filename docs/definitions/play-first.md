@@ -1,8 +1,8 @@
 # Play first, set up after (TotoLogic P1, definition)
 
-*Status: defined 2026-11-21 (docs only). Slice 1 (the guest in the save) built 2026-11-21: nothing sets `guest` yet and there is no new screen; slice 2 is next in [READY](../READY.md).*
+*Status: defined 2026-11-21 (docs only). Slice 1 (the guest in the save) and slice 2 (the first-visit screen and the guest's round) built 2026-11-21: both slices are built.*
 
-**Built:** slice 1, the guest in the save ([PR #1949](https://github.com/rjdunlap/neo/pull/1949)); to build slice 2, read “[Build slices, in order](#build-slices-in-order)”.
+**Built:** slices 1 and 2, the guest in the save ([PR #1949](https://github.com/rjdunlap/neo/pull/1949)) and the first-visit screen and the guest's round ([PR #1952](https://github.com/rjdunlap/neo/pull/1952)); nothing is left to build here. Slice 2 departs from this page in one place: **Add me sits in the heart's place on a guest's result** (a purple plus, `RESULT_NAMES.addMe`), not as one more button, so `result-layout`'s fits need no new spot; a guest has no favorites shelf, so a guest cannot set a favorite during the guest round. The six also hides its Arcade/All games button for a guest, and the root's island link is hidden. The built code is `ChooserScene` (`FIRST_VISIT_PLACES` in `src/app/chooser.ts`), `firstDemoPick` in `src/app/daily-six.ts`, and the shell line `chooser.first` (a new slot-free line for the next Better voice batch).
 
 From the [TotoLogic review](../reviews/TOTOLOGIC.md#p1-play-first-set-up-after-a-definition-then-shell-and-save-m), proposal P1. Someone handed a link to Puddle Island on a phone meets a form before a game. The [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#phone-play) admitted P1 after [the question on screen](question-on-screen.md), with two rules fixed: the guest round **awards nothing until the blank profile is adopted**, and **adoption is a rename, not a copy**. This page settles the rest: when the first-visit screen shows, its age places and bands, which round is played, where the guest's round is kept, what the result offers, where the egg goes, and what the save does.
 
@@ -103,4 +103,5 @@ In `src/progress/profiles.test.ts`, `src/app/chooser.test.ts` and the store's te
 ## Open for the developer (not blocking)
 
 - **Whether a guest round should store its sticker at all** (see [above](#what-awards-nothing-until-adopted-means-here)); the build follows this page unless told otherwise.
+- **Whether Add me should take the heart's place** on a guest's result (built so; the alternative is one more button if the fits allow it).
 - **Whether three age places are enough** once someone has used it on a phone; a fourth (`prek`) is a one-row change if the column fits.

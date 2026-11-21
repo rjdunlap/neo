@@ -1,4 +1,5 @@
 import { cleanName } from '../couch/party';
+import type { Band } from '../progress/bands';
 import { checkBirthInput, completedYears, type Birth } from '../progress/profiles';
 
 /**
@@ -104,3 +105,22 @@ export function readNewPlayer(name: unknown, month: unknown, year: unknown, now:
   const birth = checkBirthInput(asNumber(month), asNumber(year), now);
   return birth ? { ok: true, name: cleanPlayerName(name), birth } : { ok: false, problem: 'birth' };
 }
+
+/**
+ * The first-visit screen's age places (play-first slice 2): shown at the root while every profile is hidden (`everyoneHidden`).
+ * A tap makes the hidden profile a guest at the place's band and plays one round. `size` is the stand-in friend's picture,
+ * small to large. `preschool` and `prek` have no place: four would not fit an upright phone beside Add a player, and the
+ * age typed at adoption sets the real band.
+ */
+export interface FirstVisitPlace {
+  band: Band;
+  label: string;
+  spoken: string;
+  size: 'small' | 'medium' | 'large';
+}
+
+export const FIRST_VISIT_PLACES: readonly FirstVisitPlace[] = [
+  { band: 'toddler', label: 'Little one', spoken: 'A little one', size: 'small' },
+  { band: 'school', label: 'Bigger kid', spoken: 'A bigger kid', size: 'medium' },
+  { band: 'grownup', label: 'Grown-up', spoken: 'A grown-up', size: 'large' },
+];

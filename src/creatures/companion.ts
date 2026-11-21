@@ -493,7 +493,8 @@ function illustrated(species: SpeciesId, art: ArtSet): IllustratedCreature {
 }
 
 /** Who stands in before her first friend: a teal sprout, which is what the egg hatches. */
-const STAND_IN = { species: 'sprout', look: { color: SPECIES.sprout.color, worn: [] } } as const;
+/** The friend who stands in before a hatch: the guide, the star and the first-visit screen's age places. */
+export const STAND_IN = { species: 'sprout', look: { color: SPECIES.sprout.color, worn: [] } } as const;
 
 /** The active profile's companion, or null before the first friend hatches. */
 export const companion = (): Individual | null => store.companion;
