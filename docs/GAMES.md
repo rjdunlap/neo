@@ -402,7 +402,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Lift It
 
-*preschool–school* · [Lift It](games/lift-it.md)
+*toddler–school* · [Lift It](games/lift-it.md)
 
 ### Sand Table
 

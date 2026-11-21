@@ -4,6 +4,11 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Pull the rope to lift the crate up to a friend, and hang the wheels so a heavy crate gets light.',
   steps: [
+    {
+      from: 10,
+      to: 10,
+      text: "Drag the rope's end down, one big pull, and the crate rides up to the friend. A short pull leaves it part way for the next.",
+    },
     { from: 1, to: 1, text: "Drag the rope's end down, again and again, until the crate reaches the ledge." },
     {
       from: 2,
@@ -76,6 +81,12 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'A wrong paws card counts as a miss and the right one then lights; pulling never counts. After two wrong cards on a parcel, the next card question glows the right card, which counts as a hint.',
+    },
+    { from: 10, to: 10, text: 'Pulling is never counted against her; one stroke always lands the parcel.' },
+    {
+      from: 10,
+      to: 10,
+      text: "Show a hint in the pause sheet puts the pet's paw on the rope to pull with her, which counts as a hint.",
     },
     {
       from: 1,
