@@ -109,7 +109,7 @@ The definition's six decisions stand as decided on 2026-10-23. This dive adds:
 2. **Level 8, *Plenty of holes*. Built 2026-11-06** (PR #1344, build note in the [archive](../archive/COMPLETED-2026-10-09.md#bolt-boards-level-8-plenty-of-holes-2026-11-06)). On decision 1's default. Tier: new level on an existing interaction: typecheck, rule tests (the no-stuck search, the hole-closing move, the authored board, registry, how-to and voice tests), one browser play of level 8, and `fingerdemo` at 8; build, since voice and how-to change.
 3. **Define level 9, *Put it back*. Defined 2026-11-07** (PR #1348, [definition](../definitions/bolt-boards-put-it-back.md); docs only): the reverse `place` rule, the woodpile picker and picture card at the four standard views, the accounting, the bot, the voice lines and the rule tests.
 4. **Level 9, *Put it back*. Built 2026-11-07** (PR #1354, build note in the [archive](../archive/COMPLETED-2026-10-09.md#bolt-boards-level-9-put-it-back-2026-11-07)). On the [definition](../definitions/bolt-boards-put-it-back.md); new-interaction tier.
-5. **Lap entry.** Decision 2, after the device check.
+5. **Lap entry.** Decision 2. Claimed by `codex/neo-ready-bolt-boards-lap`: one oversized bolt, one board, and a tap anywhere in the play area at the next free level ID.
 6. **Couch play** over bolts and holes (`src/couch/focus.ts`). Still later, as in the definition.
 
 ## What was built in this session
