@@ -303,6 +303,7 @@ export const LANDS: readonly Land[] = [
       'domino-pond',
       'bunny-patches',
       'campsite',
+      'silly-scene',
     ],
   },
   {

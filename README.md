@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (19), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (15, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (15, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 183 games; the 166 child games are listed below and the 17 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 150 games, and "grown-up" (13 and up) is played by 26 games: the 17 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 184 games; the 167 child games are listed below and the 17 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 26 games: the 17 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -193,6 +193,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Domino Pond](docs/games/domino-pond.md) | pre-K–grown-up | Puzzle Peaks | 3 | Turn and lay two stepping stones to match the dots on both ends. |
 | [Bunny Patches](docs/games/bunny-patches.md) | pre-K–grown-up | Puzzle Peaks | 3 | a 4×4 meadow of coloured patches with one bunny already sitting: she taps squares to put one bunny in every row, column and patch, and the shaded reach of each bunny shows what it rules out. |
 | [Campsite](docs/games/campsite.md) | school | Puzzle Peaks | 1 | one authored 4×4 camp with three trees: she pitches a tent beside each tree so every row and column matches its count sign and no two tents touch, even at a corner, then taps Check camp. The counts and the corner rule rule squares out until each tree has one place left. |
+| [Silly Scene](docs/games/silly-scene.md) | preschool–school | Puzzle Peaks | 3 | Tap the fish in the tree to hear why it belongs in the pond and watch it splash back into the water. |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 10 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 14 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
@@ -421,6 +422,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `downwego` | Down We Go by touch: level 1 with a ledge tapped before the ride (free), the ride, a too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge on three dives; level 2 with an unmeasured ledge (free), a requested hint, a screenshot at the darkest knot, then the right ledge on three dives; level 3 with the other prediction first (free) and a screenshot of the plates; level 4 with the free first question wrong, a counted wrong dial and the right ones | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=down-we-go` |
 | `bunnypatches` | Bunny Patches by touch: level 1 with the given bunny locked, a full wrong board (one miss), the identical board again (free), a changed wrong board (second miss, one glow hint), a requested hint, then the finish; level 3 with the paw, bunny and clear cycle and the answer. `BUNNY_ONLY=upright` runs the 390×844 phone check (touch context, squares at least 100 units, screenshots) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=bunny-patches` |
 | `campsite` | Campsite by touch on a 390×844 phone: a free tree tap and part-full check, the authored touching camp (one miss, checked again free), a fourth tent refused, a changed wrong camp (second miss and its own hint), a Hint press, the revision and the sticker; one upright screenshot | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=campsite` |
+| `sillyscene` | Silly Scene levels 1 and 3 at 390 × 844 by Chromium touch. Empty scenery, one sticker per round, a repeated ordinary prop, a possible decoy, the automatic glow and rotation during a repair. One upright screenshot. | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=silly-scene FINGER_LEVELS=1 FINGER_BAND=preschool` |
 | `sumcrates` | Sum Crates by touch: level 1 with a full wrong stack (one miss), the identical stack again (free), a changed wrong stack (second miss, one glow hint), a requested hint, then the finish; level 3 with a hint and the answer. `SUMCRATES_ONLY=upright` runs the 390×844 phone check (touch context, crates sized, screenshots) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=sum-crates` |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |

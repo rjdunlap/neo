@@ -673,6 +673,7 @@ describe('game registry', () => {
       'sense-detective',
       'shape-buddies',
       'shell-rows',
+      'silly-scene',
       'sing-along-barn',
       'size-parade',
       'snowball-merge',

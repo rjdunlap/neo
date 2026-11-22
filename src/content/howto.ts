@@ -146,6 +146,7 @@ import { HOW_TO as senseDetectiveHowTo } from '../games/sense-detective/howto.ts
 import { HOW_TO as shapeBuddiesHowTo } from '../games/shape-buddies/howto.ts';
 import { HOW_TO as shapeSorterHowTo } from '../games/shape-sorter/howto.ts';
 import { HOW_TO as shellRowsHowTo } from '../games/shell-rows/howto.ts';
+import { HOW_TO as sillySceneHowTo } from '../games/silly-scene/howto.ts';
 import { HOW_TO as singAlongBarnHowTo } from '../games/sing-along-barn/howto.ts';
 import { HOW_TO as sinkFloatHowTo } from '../games/sink-float/howto.ts';
 import { HOW_TO as sizeParadeHowTo } from '../games/size-parade/howto.ts';
@@ -346,6 +347,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'shape-buddies': shapeBuddiesHowTo,
   'shape-sorter': shapeSorterHowTo,
   'shell-rows': shellRowsHowTo,
+  'silly-scene': sillySceneHowTo,
   'sing-along-barn': singAlongBarnHowTo,
   'sink-float': sinkFloatHowTo,
   'size-parade': sizeParadeHowTo,

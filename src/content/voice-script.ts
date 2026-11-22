@@ -145,6 +145,7 @@ import { VOICE as senseDetectiveVoice } from '../games/sense-detective/voice.ts'
 import { VOICE as shapeBuddiesVoice } from '../games/shape-buddies/voice.ts';
 import { VOICE as shapeSorterVoice } from '../games/shape-sorter/voice.ts';
 import { VOICE as shellRowsVoice } from '../games/shell-rows/voice.ts';
+import { VOICE as sillySceneVoice } from '../games/silly-scene/voice.ts';
 import { VOICE as singAlongBarnVoice } from '../games/sing-along-barn/voice.ts';
 import { VOICE as sinkFloatVoice } from '../games/sink-float/voice.ts';
 import { VOICE as sizeParadeVoice } from '../games/size-parade/voice.ts';
@@ -767,6 +768,7 @@ export const SCRIPT = {
   ...shapeBuddiesVoice,
   ...shapeSorterVoice,
   ...shellRowsVoice,
+  ...sillySceneVoice,
   ...singAlongBarnVoice,
   ...sinkFloatVoice,
   ...sizeParadeVoice,

@@ -502,6 +502,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Campsite](games/campsite.md)
 
+### Silly Scene
+
+*preschool–school* · [Silly Scene](games/silly-scene.md)
+
 ## Story Grove
 
 ### Letter Trails
