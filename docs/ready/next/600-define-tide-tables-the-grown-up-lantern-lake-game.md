@@ -1,0 +1,1 @@
+**Define Tide Tables, the grown-up Lantern Lake game** (docs only, one session; the land page, so no capacity test is owed). [Study](../../deep-dives/subjects/oceans.md), [record](../../archive/DECISIONS-2026-11-17.md#games)
