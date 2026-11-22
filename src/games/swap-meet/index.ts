@@ -13,19 +13,26 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { friendArt, itemArt } from './art';
+import { friendArt, itemArt, stallArt } from './art';
 import {
   LEVELS,
   accepted,
+  deadEnd,
   goal,
   hint,
+  hintLine,
+  identity,
   layout,
   NAMES,
+  netTrades,
   roundFor,
+  routeReply,
+  STALL,
   start,
   step,
   Tally,
   type Action,
+  type Frame,
   type Friend,
   type Item,
   type Point,
@@ -34,7 +41,17 @@ interface ObjectNode {
   source: Friend | number | null;
   item: Item;
   node: Container;
+  /** Where it sits: `f<i>` a friend's panel, `b<i>` a basket tray, `s<i>` a stall shelf place. */
+  at: string;
   drag?: DragHandle;
+}
+/** What each place holds in a frame, so animations match by place (the shelf's kite and Frog's kite are one kind). */
+function places(f: Frame): Map<string, Item> {
+  const m = new Map<string, Item>();
+  f.friends.forEach((t, i) => m.set(`f${i}`, t.hold));
+  f.basket.forEach((b, i) => m.set(`b${i}`, b.hold));
+  f.stall?.shelf.forEach((x, i) => x && m.set(`s${i}`, x));
+  return m;
 }
 /** Round-local objects only. Transactions settle after both objects have visibly crossed. */
 class SwapMeet implements Game {
@@ -63,6 +80,10 @@ class SwapMeet implements Game {
   private hintTask = '';
   private asked = false;
   private generation = 0;
+  /** Each stage's net trades (level 6 compares them), and the solver's next action cached by state. */
+  private counts = [0, 0];
+  private cached = { key: '', action: null as Action | null };
+  readonly cards = new Container();
   get misses() {
     return this.tally.misses;
   }
@@ -122,6 +143,7 @@ class SwapMeet implements Game {
       this.companion,
       this.undo,
       this.help,
+      this.cards,
       this.ghost.hand,
     );
     this.glow.eventMode = 'none';
@@ -135,16 +157,40 @@ class SwapMeet implements Game {
     this.instruct();
   }
   private instruct() {
-    const f = this.state.frame.friends[0];
-    if (this.round.level === 1)
+    const f = this.state.frame.friends[0],
+      level = this.round.level,
+      goalThing = { goal: this.round.goal ?? '' };
+    if (level === 1)
       void this.ctx.instruct('swap-meet.one', { friend: f.id, thing: f.want, returned: f.hold });
-    else if (this.round.level === 4) void this.ctx.instruct('swap-meet.four', { goal: this.round.goal! });
-    else void this.ctx.instruct(this.round.level === 2 ? 'swap-meet.two' : 'swap-meet.three');
+    else if (this.state.frame.stall?.open) void this.ctx.instruct('swap-meet.stall-open');
+    else if (level >= 4)
+      void this.ctx.instruct(
+        (['swap-meet.four', 'swap-meet.five', 'swap-meet.six'] as const)[level - 4],
+        goalThing,
+      );
+    else void this.ctx.instruct(level === 2 ? 'swap-meet.two' : 'swap-meet.three');
+  }
+  /** The solver's next action, searched once per state rather than every frame. */
+  private next(): Action | null {
+    const key = identity(this.state);
+    if (key !== this.cached.key) this.cached = { key, action: hint(this.round, this.state) };
+    return this.cached.action;
   }
   private at(source: Friend | number): Point {
     return typeof source === 'number'
       ? this.boxes.basket[source]
       : this.boxes.friends[this.state.frame.friends.findIndex((f) => f.id === source)];
+  }
+  private point(at: string): Point {
+    const i = Number(at.slice(1));
+    return at[0] === 'f' ? this.boxes.friends[i] : at[0] === 'b' ? this.boxes.basket[i] : this.boxes.shelf[i];
+  }
+  /** Where an action's two ends are, for the glow and the ghost finger. */
+  private ends(a: Action): Point[] {
+    if ('undo' in a) return [this.boxes.undo];
+    if ('sell' in a) return [this.boxes.basket[0], this.boxes.stall!];
+    if ('buy' in a) return [this.boxes.basket[0], this.boxes.shelf[a.buy]];
+    return [this.at(a.from), this.at(a.to)];
   }
   private inspect(id: Friend) {
     const f = this.state.frame.friends.find((f) => f.id === id)!;
@@ -164,17 +210,17 @@ class SwapMeet implements Game {
       this.ctx.tw.kill(o.node.scale);
     }
     this.objects = [];
-    for (const layer of [this.board, this.toys])
+    for (const layer of [this.board, this.toys, this.cards])
       for (const n of layer.removeChildren()) n.destroy({ children: true });
     this.panels = [];
   }
-  private object(item: Item, at: Point, source: Friend | number | null) {
+  private object(item: Item, at: Point, source: Friend | number | null, where: string) {
     const n = new Container();
     n.addChild(itemArt(item));
     n.hitArea = new Rectangle(-60, -60, 120, 120);
     n.position.set(at.x, at.y);
     this.toys.addChild(n);
-    const o: ObjectNode = { item, node: n, source };
+    const o: ObjectNode = { item, node: n, source, at: where };
     this.objects.push(o);
     if (source !== null) {
       o.drag = draggable(n, this.ctx.tw, {
@@ -195,7 +241,7 @@ class SwapMeet implements Game {
     this.clear();
     this.board.visible = true;
     const f = this.state.frame;
-    this.boxes = layout(this.view, f.friends.length, f.basket.length);
+    this.boxes = layout(this.view, f.friends.length, f.basket.length, !!f.stall);
     f.friends.forEach((trader, i) => {
       const at = this.boxes.friends[i],
         panel = new Container();
@@ -232,7 +278,7 @@ class SwapMeet implements Game {
       onTap(panel, () => this.inspect(trader.id), { cooldown: 300 });
       this.board.addChild(panel);
       this.panels.push(panel);
-      this.object(trader.hold, at, this.round.level === 3 && !trader.done ? trader.id : null);
+      this.object(trader.hold, at, this.round.level === 3 && !trader.done ? trader.id : null, `f${i}`);
     });
     f.basket.forEach((slot, i) => {
       const p = this.boxes.basket[i];
@@ -242,15 +288,30 @@ class SwapMeet implements Game {
         .stroke({ width: 5, color: wood.line });
       tray.eventMode = 'none';
       this.board.addChild(tray);
-      this.object(slot.hold, p, slot.active ? i : null);
+      this.object(slot.hold, p, slot.active ? i : null, `b${i}`);
     });
+    if (f.stall && this.boxes.stall) {
+      // The shut stall is only a picture (no hit target); open, its goods are full-size drop targets for the purse.
+      const body = stallArt(STALL.w, STALL.h, f.stall.open);
+      body.position.set(this.boxes.stall.x, this.boxes.stall.y);
+      this.board.addChild(body);
+      if (f.stall.open)
+        f.stall.shelf.forEach((x, i) => {
+          const p = this.boxes.shelf[i];
+          if (x) this.object(x, p, null, `s${i}`);
+          else
+            this.board.addChild(
+              new Graphics().circle(p.x, p.y, 40).stroke({ width: 4, color: wood.line, alpha: 0.35 }),
+            );
+        });
+    }
     f.rewards.forEach((item, i) => {
       const n = itemArt(item);
       n.scale.set(0.42);
       n.position.set(this.boxes.rewards.x + i * 75, this.boxes.rewards.y);
       this.board.addChild(n);
     });
-    this.companion.visible = this.round.level === 4;
+    this.companion.visible = !!this.round.goal;
     if (this.companion.visible) {
       this.companion.position.set(this.boxes.goal.x - 90, this.boxes.goal.y + 45);
       const goalNode = itemArt(this.round.goal!);
@@ -273,6 +334,25 @@ class SwapMeet implements Game {
   private drop(o: ObjectNode, x: number, y: number): boolean {
     this.owner = null;
     if (!this.alive || this.busy || this.finished || this.cancelled || o.source === null) return false;
+    const f = this.state.frame,
+      stall = this.boxes.stall;
+    if (f.stall && stall && Math.abs(x - stall.x) <= STALL.w && Math.abs(y - stall.y) <= STALL.h) {
+      // The shut stall takes nothing; the open one buys any object and, for the purse, sells the good it lands on.
+      if (!f.stall.open || typeof o.source !== 'number') return false;
+      if (o.item !== 'purse') {
+        void this.perform({ sell: true });
+        return true;
+      }
+      const buy = this.boxes.shelf.findIndex(
+        (p, i) => f.stall!.shelf[i] && Math.abs(x - p.x) <= 54 && Math.abs(y - p.y) <= 54,
+      );
+      if (buy < 0) {
+        void this.ctx.say('swap-meet.purse-return');
+        return false;
+      }
+      void this.perform({ buy });
+      return true;
+    }
     const candidates = this.state.frame.friends
       .map((f, i) => ({ f, at: this.boxes.friends[i] }))
       .filter(
@@ -287,12 +367,14 @@ class SwapMeet implements Game {
       sfx.boing();
       const other =
         typeof o.source === 'string' ? this.state.frame.friends.find((f) => f.id === o.source) : null;
-      void this.ctx.say(other ? 'swap-meet.reciprocal' : 'swap-meet.reject', {
-        friend: target.id,
-        want: target.want,
-        other: other?.id ?? '',
-        otherWant: other?.want ?? '',
-      });
+      if (deadEnd(this.round, this.state)) void this.ctx.say('swap-meet.dead-reject', { thing: o.item });
+      else
+        void this.ctx.say(other ? 'swap-meet.reciprocal' : 'swap-meet.reject', {
+          friend: target.id,
+          want: target.want,
+          other: other?.id ?? '',
+          otherWant: other?.want ?? '',
+        });
       return false;
     }
     void this.perform(a);
@@ -337,22 +419,45 @@ class SwapMeet implements Game {
           ),
           this.ctx.tw.to(offered, { x: home.x, y: home.y }, { duration: 0.6 }),
         ];
-      } else
+      } else {
+        // Match by place: an object stays where the earlier frame had it, else moves to a changed place that held
+        // its kind, else (the purse after a sell) fades away.
+        const was = places(previous),
+          now = places(before),
+          claimed = new Set<string>();
         motions = this.objects.map((o) => {
-          let p: Point | undefined;
-          const fi = previous.friends.findIndex((f) => f.hold === o.item);
-          const bi = previous.basket.findIndex((b) => b.hold === o.item);
-          if (fi >= 0) p = this.boxes.friends[fi];
-          if (bi >= 0) p = this.boxes.basket[bi];
-          return p ? this.ctx.tw.to(o.node, p, { duration: 0.6 }) : Promise.resolve();
+          if (was.get(o.at) === o.item) return Promise.resolve();
+          const to = [...was].find(([k, v]) => v === o.item && now.get(k) !== v && !claimed.has(k))?.[0];
+          if (!to) return this.ctx.tw.to(o.node, { alpha: 0 }, { duration: 0.6 });
+          claimed.add(to);
+          return this.ctx.tw.to(o.node, this.point(to), { duration: 0.6 });
         });
+      }
       void this.ctx.say('swap-meet.undo');
+    } else if ('sell' in a || 'buy' in a) {
+      const carried = this.objects.find((o) => o.at === 'b0')!,
+        place = 'sell' in a ? before.stall!.shelf.indexOf(null) : a.buy,
+        shelf = this.boxes.shelf[place],
+        basket = this.boxes.basket[0];
+      // Selling, the object goes onto the shelf and the purse comes from the stall; buying, the reverse.
+      const good =
+        'buy' in a
+          ? this.objects.find((o) => o.at === `s${place}`)!.node
+          : this.toys.addChild(
+              Object.assign(itemArt('purse'), { x: this.boxes.stall!.x, y: this.boxes.stall!.y }),
+            );
+      motions = [
+        this.ctx.tw.to(carried.node, 'sell' in a ? shelf : this.boxes.stall!, { duration: 0.65 }),
+        this.ctx.tw.to(good, basket, { duration: 0.65 }),
+      ];
+      if ('buy' in a) void this.ctx.tw.to(carried.node, { alpha: 0 }, { duration: 0.65 });
+      void this.ctx.say('sell' in a ? 'swap-meet.sell' : 'swap-meet.buy', {
+        thing: 'sell' in a ? carried.item : before.stall!.shelf[place]!,
+      });
+      sfx.bell(5);
     } else {
       const source = this.objects.find((o) => o.source === a.from)!,
-        target =
-          this.objects.find(
-            (o) => o.source === null && o.item === before.friends.find((f) => f.id === a.to)!.hold,
-          ) ?? this.objects.find((o) => o.source === a.to)!;
+        target = this.objects.find((o) => o.at === `f${before.friends.findIndex((f) => f.id === a.to)}`)!;
       const to = this.at(a.to),
         from = this.at(a.from);
       motions = [
@@ -366,6 +471,7 @@ class SwapMeet implements Game {
     if (!this.alive || gen !== this.generation) return;
     await this.ctx.tw.wait(0.22);
     if (!this.alive || gen !== this.generation) return;
+    this.counts[before.stage] = netTrades(this.counts[before.stage] ?? 0, a);
     this.state = next;
     this.tally.changed();
     this.asked = false;
@@ -374,6 +480,9 @@ class SwapMeet implements Game {
     this.busy = false;
     if (goal(this.round, this.state)) void this.finish();
     else if (this.state.frame.stage !== before.stage) this.instruct();
+    // A free remark when a trade leaves nothing anyone wants; she is never undone for.
+    else if (!('undo' in a) && deadEnd(this.round, this.state))
+      void this.ctx.say('swap-meet.dead-end', { thing: this.state.frame.basket[0].hold });
   }
   private async finish() {
     if (this.finished || !this.alive) return;
@@ -381,7 +490,9 @@ class SwapMeet implements Game {
     this.busy = true;
     for (const o of this.objects) if (o.drag) o.drag.enabled = false;
     this.ctx.pet.cheer();
-    if (this.round.level === 4 && this.round.goal === 'kite') {
+    if (this.round.level === 6) await this.question();
+    if (!this.alive) return;
+    if (this.round.goal === 'kite') {
       const kite = this.board.addChild(itemArt('kite'));
       kite.position.set(this.boxes.goal.x, this.boxes.goal.y - 35);
       void this.ctx.tw.to(kite, { x: this.boxes.goal.x + 70, y: this.boxes.goal.y - 190 }, { duration: 0.8 });
@@ -389,16 +500,70 @@ class SwapMeet implements Game {
     }
     if (!this.alive) return;
     sfx.tada();
-    await this.ctx.say(this.round.level === 4 ? 'swap-meet.goal' : 'swap-meet.done', {
+    await this.ctx.say(this.round.goal ? 'swap-meet.goal' : 'swap-meet.done', {
       goal: this.round.goal ?? '',
     });
     if (this.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+  /**
+   * Level 6's closing question over two route cards. Unscored: taps, glows and Help record nothing, and it awards
+   * nothing on its own; any tap gets both counts and one fact about the routes, then the round finishes as usual.
+   */
+  private question(): Promise<void> {
+    const v = this.view,
+      [first, second] = this.counts,
+      start = this.round.stages[1].stall!.shelf,
+      usedStall = JSON.stringify(this.state.frame.stall!.shelf) !== JSON.stringify(start);
+    const shade = new Graphics().rect(0, 0, v.w, v.h).fill({ color: cream, alpha: 0.7 });
+    shade.eventMode = 'static';
+    this.cards.addChild(shade);
+    let answered = false;
+    return new Promise((done) => {
+      const card = (x: number, stall: boolean, marks: number) => {
+        const c = new Container();
+        c.position.set(x, v.h * 0.48);
+        c.addChild(
+          new Graphics()
+            .roundRect(-140, -125, 280, 250, 26)
+            .fill(0xffffff)
+            .stroke({ width: 6, color: swatch.blue.line }),
+        );
+        if (stall) {
+          const s = stallArt(110, 58, true);
+          s.position.set(0, -45);
+          c.addChild(s);
+        } else
+          this.state.frame.friends.forEach((t, i) => {
+            const face = friendArt(t.id);
+            face.scale.set(t.id === 'frog' ? 0.5 : 0.2);
+            face.position.set(-80 + i * 80 - (t.id === 'frog' ? 0 : 45), t.id === 'frog' ? -45 : -75);
+            c.addChild(face);
+          });
+        const g = new Graphics();
+        for (let i = 0; i < marks; i++)
+          g.moveTo(-((marks - 1) * 30) / 2 + i * 30, 40)
+            .lineTo(-((marks - 1) * 30) / 2 + i * 30, 95)
+            .stroke({ width: 10, color: ink, cap: 'round' });
+        c.addChild(g);
+        c.hitArea = new Rectangle(-140, -125, 280, 250);
+        onTap(c, () => {
+          if (answered || !this.alive) return;
+          answered = true;
+          const r = routeReply(first, second);
+          void this.ctx.say(r.line, r.params).then(() => done());
+        });
+        this.cards.addChild(c);
+      };
+      card(v.w * 0.3, false, first);
+      card(v.w * 0.7, usedStall, second);
+      void this.ctx.instruct('swap-meet.question');
+    });
+  }
   askForHint() {
     if (!this.alive || this.busy || this.finished || this.dragging() || !this.ghost.idle) return;
-    const key = JSON.stringify(hint(this.round, this.state));
+    const a = this.next(),
+      key = JSON.stringify(a);
     this.tally.help(this.round, this.state);
-    const a = hint(this.round, this.state);
     if (!a) return;
     if (this.asked && this.hintTask === key) {
       const intent = this.autotouch();
@@ -407,18 +572,16 @@ class SwapMeet implements Game {
     }
     this.asked = true;
     this.hintTask = key;
-    if ('undo' in a) void this.ctx.say('swap-meet.hint-undo');
-    else if (typeof a.from === 'string')
-      void this.ctx.say('swap-meet.hint-pair', { friend: a.from, other: a.to });
-    else void this.ctx.say('swap-meet.hint', { thing: this.state.frame.basket[a.from].hold, friend: a.to });
+    const line = hintLine(this.round, this.state, a)!;
+    void this.ctx.say(line.line, line.params);
   }
   autotouch(): TouchIntent | null {
     if (!this.alive || this.busy || this.finished || this.dragging()) return null;
-    const a = hint(this.round, this.state);
+    const a = this.next();
     if (!a) return null;
     if ('undo' in a) return { tap: { on: this.undo } };
-    const o = this.objects.find((o) => o.source === a.from),
-      p = this.at(a.to);
+    const o = this.objects.find((o) => ('from' in a ? o.source === a.from : o.at === 'b0')),
+      p = this.ends(a)[1];
     return o ? { drag: { on: o.node }, to: { on: this.toys, x: p.x, y: p.y } } : null;
   }
   update(dt: number) {
@@ -426,10 +589,9 @@ class SwapMeet implements Game {
     this.ghost.update(dt);
     this.glow.clear();
     if (!this.tally.glowing || this.busy || this.finished) return;
-    const a = hint(this.round, this.state);
+    const a = this.next();
     if (!a) return;
-    const points = 'undo' in a ? [this.boxes.undo] : [this.at(a.from), this.at(a.to)];
-    for (const p of points)
+    for (const p of this.ends(a))
       this.glow
         .roundRect(p.x - 78, p.y - 77, 156, 154, 25)
         .stroke({ width: 6 + Math.sin(this.clock * 5) * 2, color: swatch.yellow.fill });
@@ -484,12 +646,17 @@ export const swapMeet: GameModule = {
   skills: ['matching', 'reciprocal-exchange', 'sequencing'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
-  describeLevel: (l) => NAMES[Math.max(0, Math.min(3, l - 1))],
+  describeLevel: (l) => NAMES[Math.max(0, Math.min(NAMES.length - 1, l - 1))],
   music: STYLES.paint,
   touchDemo: true,
   upright: true,
   coplayHint: 'Voice one friend’s pictured request while she chooses an offer, then exchange roles.',
-  offScreen: 'With a grown-up, each hold a toy and say which toy you would like to swap.',
+  offScreen: {
+    all: 'With a grown-up, each hold a toy and say which toy you would like to swap.',
+    // School: levels 5–6's stall, with pretend shells and no real coins.
+    school:
+      'Play a pretend stall with a grown-up: a few toys, two buttons for shells. Count the trades with friends and at the stall, then switch.',
+  },
   hubIcon: () => new SwapIcon(),
   sticker: (seed) => itemArt(new Rng(seed).pick(['leaf', 'shell', 'kite', 'flower'] as const)),
   create: (ctx) => new SwapMeet(ctx),

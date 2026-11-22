@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3–4 |
-| school | 4 |
+| school | 4–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,8 @@
 | 2 | Two friends — either request first |
 | 3 | Swap! — two mutually wanted pairs |
 | 4 | Chain of two — trade twice for a goal |
+| 5 | Chain of three — plan three trades past a tempting side trade |
+| 6 | Shells make it easier — trade with friends, then try the shell stall |
 
 <!-- end generated -->
 

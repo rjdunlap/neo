@@ -10,75 +10,218 @@ export function createSuite({
   pickFirst,
   turnToGame,
 }) {
-  async function swapMeetPlay() {
-    const state = () =>
-      page.evaluate(() => {
-        const g = neo.scene.game;
-        return {
-          frame: g.state.frame,
-          history: g.state.history,
-          misses: g.misses,
-          hints: g.hints,
-          busy: g.busy,
-          finished: g.finished,
-          case: g.round.id,
-        };
-      });
-    const wait = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished);
-    const drag = async (from, to) => {
-      await page.evaluate(
-        async ({ from, to }) => {
-          const g = neo.scene.game,
-            o = g.objects.find((o) => o.source === from),
-            p = g.boxes.friends[g.state.frame.friends.findIndex((f) => f.id === to)],
-            end = g.toys.toGlobal({ x: p.x, y: p.y + 40 });
-          await kit.dragTo(o.node, end, 22);
-        },
-        { from, to },
-      );
-      await page.waitForTimeout(1050);
-      await wait();
-    };
-    const next = () =>
-      page.evaluate(async () => {
+  const state = () =>
+    page.evaluate(() => {
+      const g = neo.scene.game;
+      return {
+        frame: g.state.frame,
+        history: g.state.history,
+        misses: g.misses,
+        hints: g.hints,
+        busy: g.busy,
+        finished: g.finished,
+        case: g.round.id,
+      };
+    });
+  const wait = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished);
+  const drag = async (from, to) => {
+    await page.evaluate(
+      async ({ from, to }) => {
         const g = neo.scene.game,
-          { hint } = await import('/src/games/swap-meet/logic.ts');
-        return hint(g.round, g.state);
-      });
-    const solve = async () => {
-      for (let i = 0; i < 5 && !(await state()).finished; i++) {
-        const a = await next();
-        assert.ok(a);
-        if (a.undo) await tapUndo();
-        else await drag(a.from, a.to);
+          o = g.objects.find((o) => o.source === from),
+          p = g.boxes.friends[g.state.frame.friends.findIndex((f) => f.id === to)],
+          end = g.toys.toGlobal({ x: p.x, y: p.y + 40 });
+        await kit.dragTo(o.node, end, 22);
+      },
+      { from, to },
+    );
+    await page.waitForTimeout(1050);
+    await wait();
+  };
+  const next = () =>
+    page.evaluate(async () => {
+      const g = neo.scene.game,
+        { hint } = await import('/src/games/swap-meet/logic.ts');
+      return hint(g.round, g.state);
+    });
+  const solve = async () => {
+    for (let i = 0; i < 5 && !(await state()).finished; i++) {
+      const a = await next();
+      assert.ok(a);
+      if (a.undo) await tapUndo();
+      else await drag(a.from, a.to);
+    }
+  };
+  const tapUndo = async () => {
+    await page.evaluate(() => kit.tapOn(neo.scene.game.undo));
+    await page.waitForTimeout(1050);
+    await wait();
+  };
+  const targets = async () => {
+    const result = await page.evaluate(() => {
+      const g = neo.scene.game;
+      for (const control of [g.undo, g.help]) {
+        const p = control.getGlobalPosition(),
+          hit = g.ctx.renderer.events.rootBoundary.hitTest(p.x, p.y);
+        if (hit !== control) throw Error('shell intercepts swap control');
       }
-    };
-    const tapUndo = async () => {
+      return g.objects
+        .filter((o) => o.drag)
+        .map((o) => {
+          const p = o.node.toGlobal({ x: -60, y: -60 }),
+            q = o.node.toGlobal({ x: 60, y: 60 });
+          return { w: (q.x - p.x) / neo.view.scale, h: (q.y - p.y) / neo.view.scale };
+        });
+    });
+    assert.ok(result.length);
+    for (const r of result) {
+      assert.ok(r.w >= 100 && r.h >= 100, JSON.stringify(r));
+    }
+  };
+  async function swapMeetPlay() {
+    // SWAPMEET_LEVELS=5,6 plays only those levels (levels 1–4 and the routes are recorded passing on unchanged code).
+    const only = process.env.SWAPMEET_LEVELS?.split(',').map(Number);
+    if (!only || only.some((l) => l <= 4)) await earlyLevels();
+    if (!only || only.includes(5)) await levelFive();
+    if (!only || only.includes(6)) await levelSix();
+  }
+  const fetchState = () =>
+    page.evaluate(() => {
+      const g = neo.scene.game;
+      return {
+        frame: g.state.frame,
+        history: g.state.history,
+        misses: g.misses,
+        hints: g.hints,
+        busy: g.busy,
+        finished: g.finished,
+        case: g.round.id,
+        goal: g.round.goal,
+        glowing: g.tally.glowing,
+      };
+    });
+  const settle = async () => {
+    await page.waitForTimeout(1050);
+    await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished);
+  };
+  const nextAction = () =>
+    page.evaluate(async () => {
+      const g = neo.scene.game,
+        { hint } = await import('/src/games/swap-meet/logic.ts');
+      return hint(g.round, g.state);
+    });
+  /** Drag the object at a place (`b0` the basket, `f<i>` a friend) to a board point, through real pointer input. */
+  const dragAt = async (at, x, y) => {
+    await page.evaluate(
+      async ({ at, x, y }) => {
+        const g = neo.scene.game,
+          o = g.objects.find((o) => o.at === at);
+        await kit.dragTo(o.node, g.toys.toGlobal({ x, y }), 22);
+      },
+      { at, x, y },
+    );
+    await settle();
+  };
+  const toFriend = (id) =>
+    page.evaluate((id) => {
+      const g = neo.scene.game,
+        p = g.boxes.friends[g.state.frame.friends.findIndex((f) => f.id === id)];
+      return { x: p.x, y: p.y + 40 };
+    }, id);
+  const giveTo = async (id) => {
+    const p = await toFriend(id);
+    await dragAt('b0', p.x, p.y);
+  };
+  const play = async (a) => {
+    if (a.undo) {
       await page.evaluate(() => kit.tapOn(neo.scene.game.undo));
-      await page.waitForTimeout(1050);
-      await wait();
-    };
-    const targets = async () => {
-      const result = await page.evaluate(() => {
-        const g = neo.scene.game;
-        for (const control of [g.undo, g.help]) {
-          const p = control.getGlobalPosition(),
-            hit = g.ctx.renderer.events.rootBoundary.hitTest(p.x, p.y);
-          if (hit !== control) throw Error('shell intercepts swap control');
-        }
-        return g.objects
-          .filter((o) => o.drag)
-          .map((o) => {
-            const p = o.node.toGlobal({ x: -60, y: -60 }),
-              q = o.node.toGlobal({ x: 60, y: 60 });
-            return { w: (q.x - p.x) / neo.view.scale, h: (q.y - p.y) / neo.view.scale };
-          });
-      });
-      assert.ok(result.length);
-      for (const r of result) {
-        assert.ok(r.w >= 100 && r.h >= 100, JSON.stringify(r));
+      await settle();
+    } else if (a.sell) {
+      const p = await page.evaluate(() => neo.scene.game.boxes.stall);
+      await dragAt('b0', p.x, p.y - 50);
+    } else if (a.buy !== undefined) {
+      const p = await page.evaluate((i) => neo.scene.game.boxes.shelf[i], a.buy);
+      await dragAt('b0', p.x, p.y);
+    } else await giveTo(a.to);
+  };
+  async function levelFive() {
+    for (const variant of [0, 1]) {
+      let s;
+      for (let i = 0; i < 12; i++) {
+        await launch('swap-meet', 5);
+        s = await fetchState();
+        if (variant === 0 || s.case !== levelFive.first) break;
       }
-    };
+      levelFive.first ??= s.case;
+      const side = s.frame.friends.find(
+        (f) => f.hold !== s.goal && !s.frame.friends.some((g) => g.want === f.hold),
+      );
+      // Follow the solver until the side friend wants what the basket carries, then take the tempting side trade.
+      for (let i = 0; i < 3 && (await fetchState()).frame.basket[0].hold !== side.want; i++)
+        await play(await nextAction());
+      await giveTo(side.id);
+      s = await fetchState();
+      assert.equal(s.frame.basket[0].hold, side.hold, 'the side trade is legal');
+      assert.equal(s.misses, 0, 'the side trade is never a miss');
+      // Two deliberate offers at the dead end: each counts, and the second glows the back arrow.
+      const other = s.frame.friends.find((f) => !f.done);
+      await giveTo(other.id);
+      await giveTo(other.id);
+      s = await fetchState();
+      assert.deepEqual([s.misses, s.hints, s.glowing], [2, 1, true]);
+      assert.deepEqual(await nextAction(), { undo: true });
+      const depth = s.history.length;
+      await play({ undo: true });
+      assert.equal((await fetchState()).history.length, depth - 1);
+      for (let i = 0; i < 6 && !(await fetchState()).finished; i++) await play(await nextAction());
+      await finished('swap-meet');
+      s = await fetchState();
+      assert.deepEqual([s.misses, s.hints], [2, 1]);
+      assert.ok(!s.frame.friends.find((f) => f.id === side.id).done, 'the side friend may stay waiting');
+    }
+    log(
+      'Swap Meet 5: both chains, the side trade and its dead end, rejections, the back-arrow glow and Undo passed',
+    );
+  }
+  async function levelSix() {
+    await launch('swap-meet', 6);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.equal((await fetchState()).hints, 1);
+    for (let i = 0; i < 3; i++) await play(await nextAction());
+    await page.waitForFunction(() => neo.scene.game.state.frame.stage === 1 && !neo.scene.game.busy);
+    let s = await fetchState();
+    assert.equal(s.history.length, 0, 'Undo never crosses into the first stage');
+    assert.deepEqual(await nextAction(), { sell: true }, 'the hint points to the stall');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(500);
+    await screenshot('swap-meet-6-stall-upright');
+    await play({ sell: true });
+    s = await fetchState();
+    assert.equal(s.frame.basket[0].hold, 'purse');
+    // The purse on a friend is one rejected offer; on the stall away from its goods it comes back free.
+    await giveTo(s.frame.friends[0].id);
+    assert.equal((await fetchState()).misses, 1);
+    const stall = await page.evaluate(() => neo.scene.game.boxes.stall);
+    await dragAt('b0', stall.x, stall.y - 70);
+    s = await fetchState();
+    assert.deepEqual([s.frame.basket[0].hold, s.misses], ['purse', 1]);
+    const buy = s.frame.stall.shelf.indexOf(s.goal);
+    await play({ buy });
+    await page.waitForFunction(() => neo.scene.game.cards.children.length === 3);
+    s = await fetchState();
+    assert.equal(s.frame.basket[0].hold, s.goal);
+    // The question is unscored: Help records nothing; any card answers, then the round finishes.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.deepEqual([(await fetchState()).misses, (await fetchState()).hints], [1, 1]);
+    await page.evaluate(() => kit.tapOn(neo.scene.game.cards.children[1]));
+    await finished('swap-meet');
+    assert.deepEqual([(await fetchState()).misses, (await fetchState()).hints], [1, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Swap Meet 6: barter stage, empty Undo at the stall, sell, purse misses and free return, buy, unscored question passed',
+    );
+  }
+  async function earlyLevels() {
     await launch('swap-meet', 1);
     await targets();
     let s = await state();
