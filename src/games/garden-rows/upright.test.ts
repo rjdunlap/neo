@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import type { Band } from '../../progress/bands';
-import { rangeFor } from '../../progress/difficulty';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { CELL, gardenLayout, LEVELS, PACKET, planFor, rowsOf } from './logic';
 
@@ -15,8 +15,9 @@ import { CELL, gardenLayout, LEVELS, PACKET, planFor, rowsOf } from './logic';
 const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) };
 
 const cases = (Object.keys(LEVELS) as Band[]).flatMap((band) => {
-  const { min, max } = rangeFor(LEVELS, band);
-  return Array.from({ length: max - min + 1 }, (_, i) => [band, min + i] as const);
+  return levelsInOrder(rangeFor(LEVELS, band))
+    .filter((level) => !planFor(level).bee)
+    .map((level) => [band, level] as const);
 });
 
 function targets(v: { w: number; h: number }, level: number): Target[] {

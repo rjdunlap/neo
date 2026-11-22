@@ -1,7 +1,145 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot, log }) {
+  async function beePlay() {
+    await page.setViewportSize({ width: 390, height: 625 });
+    await page.evaluate(async () => {
+      kit.store.data.settings.showWords = true;
+      const { Rng } = await import('/src/engine/random.ts');
+      let seed = 1;
+      while (new Rng(seed).int(0, 1) !== 0) seed++;
+      const random = Math.random;
+      window.restoreGardenRandom = () => {
+        Math.random = random;
+      };
+      Math.random = () => seed / 2 ** 31;
+    });
+    try {
+      await launch('garden-rows', 11, 'Mia', 'school');
+    } finally {
+      await page.evaluate(() => {
+        window.restoreGardenRandom();
+        delete window.restoreGardenRandom;
+      });
+    }
+    await page.waitForFunction(() => !neo.scene.game.busy);
+    assert.equal(await page.evaluate(() => neo.view.upright), true);
+    const state = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          bed: g.bed,
+          given: g.given,
+          selected: g.selected,
+          gate: g.activeGate,
+          misses: g.misses,
+          hints: g.hints,
+          hint: g.heightHint,
+          preview: g.bee.legend.text,
+        };
+      });
+    const tap = async (what, i, j) => {
+      const p = await page.evaluate(
+        ({ what, i, j }) => {
+          const g = neo.scene.game;
+          if (what === 'cell') return g.board.toGlobal({ x: 50 + 100 * j, y: 50 + 100 * i });
+          if (what === 'gate') return g.bee.gates[i].node.getGlobalPosition();
+          if (what === 'packet') return g.packets.children[i].getGlobalPosition();
+          if (what === 'guide') {
+            const b = neo.scene.pet.getBounds();
+            return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+          }
+          return g.bee.check.node.getGlobalPosition();
+        },
+        { what, i, j },
+      );
+      await page.touchscreen.tap(p.x, p.y);
+      await page.waitForTimeout(140);
+    };
+    const stickerCount = () =>
+      page.evaluate(() => kit.store.data.stickers.filter((sticker) => sticker.game === 'garden-rows').length);
+    const before = await stickerCount();
+    const initial = await state();
+    assert.deepEqual(initial.bed, [
+      [null, null, null],
+      [1, null, null],
+      [null, null, null],
+    ]);
+    await tap('check');
+    await tap('gate', 6);
+    await tap('gate', 6);
+    assert.equal((await state()).preview, 'Bee’s view');
+    assert.equal((await state()).misses, 0);
+    const wrong = [
+      [0, 2, 1],
+      [1, 0, 2],
+      [2, 1, 0],
+    ];
+    const correct = [
+      [0, 1, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+    ];
+    for (const [r, row] of wrong.entries())
+      for (const [c, flower] of row.entries()) {
+        if (initial.given[r][c]) continue;
+        await tap('packet', flower);
+        await tap('cell', r, c);
+      }
+    assert.deepEqual((await state()).bed, wrong);
+    assert.equal((await state()).misses, 0);
+    await tap('check');
+    const rejected = await state();
+    assert.equal(rejected.misses, 1);
+    assert.equal(rejected.gate, 1);
+    assert.equal(rejected.preview, 'Bee sees 1');
+    await screenshot('garden-rows-11-short-portrait');
+    await tap('check');
+    await tap('cell', 0, 1);
+    await tap('packet', 2);
+    await tap('cell', 0, 1);
+    await tap('check');
+    assert.equal((await state()).misses, 1, 'same arrangement stays free after a lift and replant');
+
+    await tap('guide');
+    const helped = await state();
+    assert.equal(helped.hints, 1);
+    assert.deepEqual([helped.hint.kind, helped.hint.r, helped.hint.c], ['fix', 0, 1]);
+    await tap('gate', helped.gate);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Show a hint', exact: true }).click();
+    assert.deepEqual(await state(), helped);
+    await page.setViewportSize({ width: 625, height: 390 });
+    await page.waitForFunction(() => !neo.view.upright);
+    assert.deepEqual(await state(), helped);
+    await tap('gate', 7);
+    assert.equal((await state()).gate, 7);
+    await tap('gate', helped.gate);
+    await page.setViewportSize({ width: 390, height: 625 });
+    await page.waitForFunction(() => neo.view.upright);
+    assert.deepEqual(await state(), helped);
+    for (const [r, row] of wrong.entries())
+      for (const [c, flower] of row.entries()) if (flower !== correct[r][c]) await tap('cell', r, c);
+    for (const [r, row] of correct.entries())
+      for (const [c, flower] of row.entries()) {
+        if (flower === wrong[r][c]) continue;
+        await tap('packet', flower);
+        await tap('cell', r, c);
+      }
+    assert.deepEqual((await state()).bed, correct);
+    await tap('check');
+    await finished('garden-rows');
+    assert.equal(await stickerCount(), before + 1);
+    const saved = await page.evaluate(() => {
+      const { level, misses, hints } = kit.store.stats('garden-rows').history.at(-1);
+      return { level, misses, hints };
+    });
+    assert.deepEqual(saved, { level: 11, misses: 1, hints: 1 });
+    log('Garden Rows 11: short portrait, repeat checks, one hint, rotation, revision and one sticker');
+  }
+
   async function gardenRowsPlay() {
+    if (process.env.GARDEN_ROWS_ONLY === 'bee') return beePlay();
     let s0;
     const state = () =>
       page.evaluate(() => {

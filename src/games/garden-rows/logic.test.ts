@@ -29,7 +29,7 @@ import {
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
 /** The beds she fills from empty spots; Mend the bed (level 7) starts full and is tested on its own. */
-const FILL = PLANS.filter((p) => !p.mend);
+const FILL = PLANS.filter((p) => !p.mend && !p.bee);
 const MEND = PLANS[6];
 const ONE_ROW = PLANS[9];
 
@@ -244,7 +244,7 @@ describe('Garden Rows', () => {
   });
 
   it('each bed draws its own seeded set of flowers, in palette order', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !p.bee)) {
       const seen = new Set<number>();
       for (let seed = 1; seed <= 50; seed++) {
         const { kinds, start, solution } = makePuzzle(plan, new Rng(seed));

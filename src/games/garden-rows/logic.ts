@@ -25,6 +25,7 @@ export interface RowsPlan {
   beds: number;
   /** Mend the bed: every spot starts planted and hers to lift, with two flowers in one row swapped; `blanks` is 0. */
   mend?: boolean;
+  bee?: boolean;
 }
 
 /** The ladder: one missing flower per row, then columns too, then bigger beds with fewer flowers to start. */
@@ -83,13 +84,21 @@ export const PLANS: RowsPlan[] = [
     blanks: 1,
     beds: 3,
   },
+  {
+    name: 'The bee counts tall flowers: plant three heights to match each gate’s view',
+    size: 3,
+    rule: 'both',
+    blanks: 8,
+    beds: 1,
+    bee: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
   // One row (10) opens preschool, then the 3 by 3 rows-only bed.
   preschool: { min: 1, max: 10, order: [10, 1] },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 9 },
+  school: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 8, 9, 11] },
 };
 
 /** How many rows the plan's beds have. */
@@ -285,6 +294,7 @@ export function makeMend(plan: RowsPlan, rng: Rng): Puzzle {
  */
 export function makePuzzle(plan: RowsPlan, rng: Rng): Puzzle {
   if (plan.mend) return makeMend(plan, rng);
+  if (plan.bee) return beePuzzle(rng.int(0, 1));
   const kinds = chooseKinds(plan.size, rng);
   for (let attempt = 0; attempt < 60; attempt++) {
     const solution = fullBed(plan.size, plan.rule, rng, rowsOf(plan));
@@ -404,6 +414,213 @@ export function nextMove(
       if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
   const step = nextPlanting(bed, target, rule, selected);
   return step && { lift: false, ...step };
+}
+
+export type Spot = { r: number; c: number };
+export type Side = 'top' | 'bottom' | 'left' | 'right';
+export const SIDES: readonly Side[] = ['top', 'bottom', 'left', 'right'];
+export const HEIGHTS = ['short', 'medium', 'tall'] as const;
+const INDICES = [0, 1, 2] as const;
+const SPOTS = INDICES.flatMap((r) => INDICES.map((c) => ({ r, c })));
+
+export interface Gate {
+  side: Side;
+  index: number;
+  goal: number;
+}
+
+export interface BeePuzzle extends Puzzle {
+  gates: Gate[];
+  teachingGate: number;
+}
+
+// Flower IDs run from 0 (short) to 2 (tall).
+const BOARDS = [
+  {
+    solution: [
+      [0, 1, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+    ],
+    given: { r: 1, c: 0 },
+    clues: [
+      [3, 2, 1],
+      [1, 2, 2],
+      [3, 2, 1],
+      [1, 2, 2],
+    ],
+    teachingGate: 6,
+  },
+  {
+    solution: [
+      [0, 2, 1],
+      [1, 0, 2],
+      [2, 1, 0],
+    ],
+    given: { r: 1, c: 1 },
+    clues: [
+      [3, 1, 2],
+      [1, 2, 2],
+      [2, 2, 1],
+      [2, 1, 3],
+    ],
+    teachingGate: 0,
+  },
+];
+
+export function beePuzzle(board: number): BeePuzzle {
+  const { solution, given, clues, teachingGate } = BOARDS[board];
+  const start = emptyBed(3);
+  start[given.r][given.c] = solution[given.r][given.c];
+  return {
+    start,
+    solution: solution.map((row) => [...row]),
+    kinds: [0, 1, 2],
+    gates: SIDES.flatMap((side, rank) => INDICES.map((index) => ({ side, index, goal: clues[rank][index] }))),
+    teachingGate,
+  };
+}
+
+export function gateLine({ side, index }: Gate): Spot[] {
+  switch (side) {
+    case 'top':
+      return INDICES.map((r) => ({ r, c: index }));
+    case 'bottom':
+      return INDICES.map((r) => ({ r: 2 - r, c: index }));
+    case 'left':
+      return INDICES.map((c) => ({ r: index, c }));
+    case 'right':
+      return INDICES.map((c) => ({ r: index, c: 2 - c }));
+  }
+}
+
+export function sightline(flowers: readonly (number | null)[]) {
+  let tallest = -1;
+  const visible = flowers.map((flower) => {
+    if (flower === null || flower <= tallest) return false;
+    tallest = flower;
+    return true;
+  });
+  return { visible, count: flowers.includes(null) ? null : visible.filter(Boolean).length };
+}
+
+export function inspectGate(bed: Bed, gate: Gate) {
+  const line = gateLine(gate);
+  const flowers = line.map(({ r, c }) => bed[r][c]);
+  return { line, flowers, ...sightline(flowers) };
+}
+
+export function checkBeeBed(bed: Bed, puzzle: BeePuzzle, rejected: Set<string>) {
+  if (!isSolved(bed, 'both')) return { kind: 'incomplete' } as const;
+  for (const [gate, clue] of puzzle.gates.entries()) {
+    const { count } = inspectGate(bed, clue);
+    if (count === null || count === clue.goal) continue;
+    const key = bed.map((row) => row.join('')).join('/');
+    const fresh = !rejected.has(key);
+    rejected.add(key);
+    return { kind: 'revise', gate, count, fresh } as const;
+  }
+  return { kind: 'solved' } as const;
+}
+
+type HintReason =
+  | { reason: 'three' | 'one' | 'line'; gate: number }
+  | { reason: 'cross'; gate: number; otherGate: number }
+  | { reason: 'missing-row' | 'missing-column'; gate: number };
+
+export type BeeHint =
+  (Spot & HintReason & { kind: 'fix' }) | (Spot & HintReason & { kind: 'plant'; flower: number });
+
+const PERMUTATIONS = [
+  [0, 1, 2],
+  [0, 2, 1],
+  [1, 0, 2],
+  [1, 2, 0],
+  [2, 0, 1],
+  [2, 1, 0],
+];
+
+function lineChoices(bed: Bed, puzzle: BeePuzzle, gateIndex: number, otherIndex: number, spot: Spot) {
+  const gate = puzzle.gates[gateIndex];
+  const line = gateLine(gate);
+  const at = line.findIndex(({ r, c }) => r === spot.r && c === spot.c);
+  return new Set(
+    PERMUTATIONS.filter((flowers) => {
+      if (sightline(flowers).count !== gate.goal) return false;
+      if (sightline([...flowers].reverse()).count !== puzzle.gates[otherIndex].goal) return false;
+      return line.every(({ r, c }, i) =>
+        bed[r][c] === null ? !clash(bed, 'both', r, c, flowers[i]) : bed[r][c] === flowers[i],
+      );
+    }).map((flowers) => flowers[at]),
+  );
+}
+
+function hintReason(bed: Bed, puzzle: BeePuzzle, spot: Spot): HintReason {
+  const { r, c } = spot;
+  const teaching = puzzle.teachingGate;
+  if (gateLine(puzzle.gates[teaching]).some((p) => p.r === r && p.c === c))
+    return { gate: teaching, reason: 'three' };
+  const row = 6 + r;
+  const column = c;
+  const ends = [row, row + 3, column, column + 3];
+  const one = ends.find((gate) => {
+    const clue = puzzle.gates[gate];
+    const [near] = gateLine(clue);
+    return clue.goal === 1 && near.r === r && near.c === c;
+  });
+  if (one !== undefined) return { gate: one, reason: 'one' };
+  if (bed[r].filter((flower) => flower !== null).length === 2) return { gate: row, reason: 'missing-row' };
+  if (bed.filter((line) => line[c] !== null).length === 2) return { gate: column, reason: 'missing-column' };
+  if (lineChoices(bed, puzzle, row, row + 3, spot).size === 1) return { gate: row, reason: 'line' };
+  if (lineChoices(bed, puzzle, column, column + 3, spot).size === 1) return { gate: column, reason: 'line' };
+  return { gate: row, otherGate: column, reason: 'cross' };
+}
+
+export function beeHint(bed: Bed, puzzle: BeePuzzle): BeeHint | null {
+  const order = [...gateLine(puzzle.gates[puzzle.teachingGate]), ...SPOTS];
+  const wrong = order.find(({ r, c }) => bed[r][c] !== null && bed[r][c] !== puzzle.solution[r][c]);
+  if (wrong) {
+    // Ignore all misplaced flowers while explaining the deduction that will replace this one.
+    const correct = bed.map((row, r) =>
+      row.map((flower, c) => (flower === puzzle.solution[r][c] ? flower : null)),
+    );
+    return { ...wrong, ...hintReason(correct, puzzle, wrong), kind: 'fix' };
+  }
+  const blank = order.find(({ r, c }) => bed[r][c] === null);
+  return blank
+    ? {
+        ...blank,
+        ...hintReason(bed, puzzle, blank),
+        kind: 'plant',
+        flower: puzzle.solution[blank.r][blank.c]!,
+      }
+    : null;
+}
+
+/** Keep a shown step until its spot is acted on or the deduction no longer holds. */
+export function beeHintValid(bed: Bed, puzzle: BeePuzzle, hint: BeeHint): boolean {
+  const { r, c } = hint;
+  if (hint.kind === 'fix') return bed[r][c] !== null && bed[r][c] !== puzzle.solution[r][c];
+  if (bed[r][c] !== null || clash(bed, 'both', r, c, hint.flower)) return false;
+  switch (hint.reason) {
+    case 'three':
+    case 'one':
+      return true;
+    case 'missing-row':
+      return bed[r].filter((flower) => flower !== null).length === 2;
+    case 'missing-column':
+      return bed.filter((row) => row[c] !== null).length === 2;
+    case 'line': {
+      const choices = lineChoices(bed, puzzle, hint.gate, hint.gate + 3, hint);
+      return choices.size === 1 && choices.has(hint.flower);
+    }
+    case 'cross': {
+      const row = lineChoices(bed, puzzle, hint.gate, hint.gate + 3, hint);
+      const column = lineChoices(bed, puzzle, hint.otherGate, hint.otherGate + 3, hint);
+      const shared = [...row].filter((flower) => column.has(flower));
+      return shared.length === 1 && shared[0] === hint.flower;
+    }
+  }
 }
 
 // ——— Where things sit ———
