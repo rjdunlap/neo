@@ -60,6 +60,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`swing-pals` level 9, *Paint the beat*** (preschool, pre-K and school; new interaction on an existing game: typecheck and unit tests including creations and the swing's upright test, one scripted play of level 9 keeping the painting and taking one hint, one upright portrait screenshot, `fingerdemo` at 9, build). [Definition](definitions/swing-pals-paint-the-beat.md#check-tier), [dive](deep-dives/swing-pals.md#build-slices-in-order)
 
+- **`draw-the-pattern` level 12, *Your pattern*** (pre-K and school; new levels on an existing interaction: typecheck and unit tests including the rule tests, one `BROWSER_SUITE=drawpattern DRAW_LEVELS=12` play on an upright phone, `fingerdemo` at 12, build because voice and how-to change). [Definition](definitions/draw-the-pattern-your-pattern.md#check-tier), [dive](deep-dives/draw-the-pattern.md#build-slices-in-order)
+
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
