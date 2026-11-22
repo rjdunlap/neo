@@ -45,6 +45,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
+| [Tide Tables](definitions/tide-tables.md) | Assign three jobs to a fictional harbor day using tide heights and job order, with multiple working schedules; grown-up, Lantern Lake |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
