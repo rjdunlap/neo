@@ -1554,7 +1554,7 @@ class EggCatch implements Game {
     // More than eight eggs (level 13's twelve) sit in two rows, so the basket still fits a phone held upright.
     const cols = this.gathered.length > 8 ? Math.ceil(this.gathered.length / 2) : this.gathered.length;
     const rows = Math.ceil(this.gathered.length / Math.max(1, cols));
-    const extra = (rows - 1) * 60;
+    const extra = (rows - 1) * 70;
     const width = Math.max(360, cols * 64 + 60);
     const panel = new Graphics()
       .roundRect(-width / 2, -150 - extra, width, 290 + 2 * extra, 40)
@@ -1565,7 +1565,7 @@ class EggCatch implements Game {
       const node = eggArt(shell);
       const row = Math.floor(i / cols);
       const inRow = Math.min(cols, this.gathered.length - row * cols);
-      node.position.set((i - row * cols - (inRow - 1) / 2) * 64, -55 - (rows - 1 - row) * 60);
+      node.position.set((i - row * cols - (inRow - 1) / 2) * 64, -55 - (rows - 1 - row) * 70);
       this.ending.addChild(node);
       return node;
     });

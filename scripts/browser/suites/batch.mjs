@@ -1226,16 +1226,101 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     }
 
     // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].filter(
       (n) =>
         n >= Number(process.env.FROM_LEVEL || 1) &&
-        n <= Number(process.env.TO_LEVEL || 12) &&
+        n <= Number(process.env.TO_LEVEL || 13) &&
         (!only || only === 'eggs'),
     )) {
       if (level >= 8) await page.setViewportSize({ width: 768, height: 1024 });
       await launch('egg-catch', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+      if (mode === 'sorter') {
+        // Level 13: the arrow with the sorting gate on its peg is free; board 1 by tap-then-tap; board 2 (always a low
+        // board) placed wrongly at the top twice, which keeps the board and lights the hint, then the hint is followed.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const { sorterAnswer, sorterHint, isTopBoard } = await import('/src/games/egg-catch/logic.ts');
+          const ready = () => g.sorterReady && !g.rolling;
+          const at = (o) => o.getGlobalPosition();
+          const step = async (hint) => {
+            if ('place' in hint) await kit.dragTo(g.sorter, at(g.gateHits[hint.place]), 10);
+            else if ('turn' in hint) kit.tapOn(g.sorter);
+            else kit.tapOn(g.gateHits[hint.gate]);
+            await kit.sleep(450);
+          };
+          const solve = async () => {
+            const n = g.caughtCount;
+            for (let i = 0; i < 8; i++) {
+              const a = sorterAnswer(g.sorterRound[g.routed]);
+              const need = a.needs.find((x) => g.gates[x.gate] !== x.right);
+              const hint =
+                g.sorterAt !== a.at
+                  ? { place: a.at }
+                  : g.brownRight !== a.brownRight
+                    ? { turn: true }
+                    : need
+                      ? { gate: need.gate }
+                      : null;
+              if (!hint) break;
+              await step(hint);
+            }
+            kit.tapOn(g.goButton);
+            if (!(await kit.until(() => g.caughtCount > n || g.finished, 30000)))
+              throw new Error(`sorting board ${g.routed} did not sort`);
+          };
+          await kit.until(ready, 12000);
+          if (g.sorterQueue.length !== 4) throw new Error('four eggs must wait at the entry');
+          kit.tapOn(g.goButton);
+          await kit.sleep(400);
+          if (g.misses || g.rolling)
+            throw new Error('the arrow with the sorting gate on its peg must be free');
+          // Board 1 (top): tap the sorting gate, then tap its junction; the covered plain gate must not flip.
+          const first = sorterAnswer(g.sorterRound[0]);
+          if (!isTopBoard(g.sorterRound[0])) throw new Error('the first board must be a top board');
+          const covered = g.gates[first.at];
+          kit.tapOn(g.sorter);
+          await kit.sleep(300);
+          kit.tapOn(g.gateHits[first.at]);
+          await kit.sleep(500);
+          if (g.sorterAt !== first.at || g.gates[first.at] !== covered)
+            throw new Error(`tap-to-place failed: at ${g.sorterAt}, covered gate ${g.gates[first.at]}`);
+          await solve();
+          await kit.until(ready, 12000);
+          // Board 2 (low): a wrong placement at the top, twice.
+          if (isTopBoard(g.sorterRound[1])) throw new Error('the second board must be a low board');
+          await step({ place: 0 });
+          if (g.sorterAt !== 0) throw new Error('drag to the top junction failed');
+          for (let k = 1; k <= 2; k++) {
+            kit.tapOn(g.goButton);
+            if (!(await kit.until(() => g.misses === k && ready(), 30000)))
+              throw new Error(`wrong placement run ${k} did not come back`);
+            if (g.routed !== 1 || g.sorterAt !== 0) throw new Error('a missed run must keep the board');
+          }
+          if (!g.hinting || g.hints !== 1) throw new Error('two misses must give one hint');
+          const h = sorterHint(g.sorterRound[1], g.setup());
+          if (!h || !('place' in h)) throw new Error('the first hint must place the sorting gate');
+        });
+        await screenshot(`egg-catch-${level}-hint-portrait`);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const { sorterHint, sorterAnswer } = await import('/src/games/egg-catch/logic.ts');
+          for (let i = 0; i < 6; i++) {
+            const h = sorterHint(g.sorterRound[g.routed], g.setup());
+            if (!h) break;
+            if ('gate' in h && !sorterAnswer(g.sorterRound[g.routed]).needs.some((n) => n.gate === h.gate))
+              throw new Error('the hint pointed at the free gate');
+            if ('place' in h) await kit.dragTo(g.sorter, g.gateHits[h.place].getGlobalPosition(), 10);
+            else if ('turn' in h) kit.tapOn(g.sorter);
+            else kit.tapOn(g.gateHits[h.gate]);
+            await kit.sleep(450);
+          }
+          kit.tapOn(g.goButton);
+          if (!(await kit.until(() => g.caughtCount === 2, 30000)))
+            throw new Error('hinted board did not sort');
+        });
+      }
       if (['predict', 'pair', 'repair', 'flipflop'].includes(mode)) {
         // Distinct routing interactions share two supported misses, then a clean completion.
         await page.evaluate(async () => {
@@ -1306,6 +1391,27 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       }
       await page.evaluate(async () => {
         const g = neo.scene.game;
+        if (g.plan.mode === 'sorter') {
+          // The third board, then the finale.
+          const { sorterAnswer } = await import('/src/games/egg-catch/logic.ts');
+          await kit.until(() => (g.sorterReady && !g.rolling) || g.finished, 12000);
+          while (!g.finished) {
+            const a = sorterAnswer(g.sorterRound[g.routed]);
+            const need = a.needs.find((x) => g.gates[x.gate] !== x.right);
+            if (g.sorterAt !== a.at) await kit.dragTo(g.sorter, g.gateHits[a.at].getGlobalPosition(), 10);
+            else if (g.brownRight !== a.brownRight) kit.tapOn(g.sorter);
+            else if (need) kit.tapOn(g.gateHits[need.gate]);
+            else {
+              const n = g.caughtCount;
+              kit.tapOn(g.goButton);
+              await kit.until(() => g.caughtCount > n || g.finished, 30000);
+              await kit.until(() => (g.sorterReady && !g.rolling) || g.finished, 12000);
+              continue;
+            }
+            await kit.sleep(450);
+          }
+          return;
+        }
         const canvas = document.querySelector('canvas');
         const touch = (type, x, y) =>
           canvas.dispatchEvent(
