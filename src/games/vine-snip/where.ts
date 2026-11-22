@@ -91,6 +91,7 @@ export class WhereWillItLand implements Game {
   private replayPass = -1;
   private stub = -Infinity;
   private readonly curled = [false, false];
+  private readonly leafPressed = [-Infinity, -Infinity];
   private readonly popAt: (number | null)[] = [null, null];
   private readonly pressed = new Map<Container, number>();
 
@@ -113,7 +114,8 @@ export class WhereWillItLand implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.line = makeLine(this.plan, ctx.rng, authoredShown && !ctx.demo ? 1 : 0);
-    authoredShown = true;
+    // The how-to card's demo shows the authored round without using it up.
+    if (!ctx.demo) authoredShown = true;
     this.where = this.line.where!;
     this.back = ctx.track(backdrop(ctx.view));
     this.fruit = fruitArt(this.where.kind);
@@ -189,8 +191,10 @@ export class WhereWillItLand implements Game {
   }
 
   pick(leaf: Dir) {
-    if (this.finished || this.waiting) return;
-    if (!wherePick(this.round, leaf)) return;
+    if (this.finished) return;
+    // Every touch on a leaf answers at once; it takes the paw print only while the picture holds.
+    this.leafPressed[leafIndex(leaf)] = this.clock;
+    if (this.waiting || !wherePick(this.round, leaf)) return void sfx.pop(3);
     sfx.pop(leaf < 0 ? 5 : 7);
   }
 
@@ -491,6 +495,8 @@ export class WhereWillItLand implements Game {
     this.layout.leaves.forEach((b, i) => {
       const c = centre(b);
       const y = LEAF_Y + 18;
+      const k = Math.max(0, 1 - (this.clock - this.leafPressed[i]) / 0.3);
+      if (k > 0) g.ellipse(c.x, y, 108, 48).fill({ color: swatch.yellow.light, alpha: 0.8 * k });
       g.ellipse(c.x, y, 96, 36).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
       g.moveTo(c.x - 80, y)
         .lineTo(c.x + 80, y)
