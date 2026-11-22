@@ -2,6 +2,13 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot, log }) {
   async function noticeBoardPlay() {
+    // NOTICE_LEVELS=4,5 plays only those levels (default: all five).
+    const levels = new Set(
+      (process.env.NOTICE_LEVELS || '1,2,3,4,5')
+        .split(',')
+        .map((x) => Number(x.trim()))
+        .filter(Boolean),
+    );
     const score = () =>
       page.evaluate(() => {
         const r = kit.store.stats('notice-board').history.at(-1);
@@ -21,6 +28,12 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           busy: g.busy,
           truth: it.truth,
           purpose: it.poster.purpose,
+          standOut: p.standOut,
+          doorOpen: p.doorOpen,
+          seller: it.seller ?? null,
+          tried: it.tried ?? null,
+          tags: it.tags ?? null,
+          omit: it.poster.omit ?? null,
           bench: it.bench.map((f) => ({ name: f.name, badge: f.badge, memory: f.memory ?? null })),
         };
       });
@@ -42,9 +55,19 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
       await page.waitForTimeout(250);
     };
+    const tapSide = async () => {
+      await ready();
+      await page.evaluate(() => kit.tapOn(neo.scene.game.side));
+      await page.waitForTimeout(400);
+    };
     const answer = async () => {
-      const s = await state();
-      if (s.target.kind === 'friend') await tapFriend(s.target.i);
+      let s = await state();
+      // Levels 4 and 5 look first, as the ghost finger does: the Go and see sign, or the club door.
+      if ((s.tags && !s.standOut) || (s.tried !== null && !s.doorOpen)) {
+        await tapSide();
+        s = await state();
+      }
+      if (s.target.kind === 'friend' || s.target.kind === 'tag') await tapFriend(s.target.i);
       else await tapBasket(s.target.purpose);
       return s;
     };
@@ -66,128 +89,206 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
-    // Level 1 (pre-K), the authored round: two friends whose badges do not match the stamp (two misses, the glow, one
-    // hint), then the maker.
-    await launch('notice-board', 1, 'Mia', 'prek');
-    await ready();
-    let s = await state();
-    const wrong = [0, 1, 2].filter((i) => i !== s.target.i);
-    await tapFriend(wrong[0]);
-    s = await state();
-    assert.deepEqual(
-      [s.misses, s.hints, s.glowing, s.index],
-      [1, 0, false, 0],
-      'a different badge: one miss, the poster stays',
-    );
-    await tapFriend(wrong[1]);
-    s = await state();
-    assert.deepEqual(
-      [s.misses, s.hints, s.glowing],
-      [2, 1, true],
-      'a second different badge lights the glow: one hint',
-    );
-    await screenshot('notice-board-1-glow');
-    await tapFriend(s.target.i);
-    await nextPoster(1);
-    await finishRest('notice-board');
-    assert.deepEqual(await score(), [2, 1], 'level 1 saved 2 misses, 1 hint');
-
-    // Level 2 (school), portrait: the heard-it friend (a miss), then the witness on the stretched first poster; the true
-    // second poster answered right; the screenshot with the memory bubbles and the photo.
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForTimeout(600);
-    await launch('notice-board', 2, 'Mia', 'school');
-    await ready();
-    s = await state();
-    assert.equal(s.truth, 'stretched', 'the authored round opens with a stretched poster');
-    const heard = s.bench.findIndex((f) => f.memory === 'heard');
-    assert.notEqual(heard, s.target.i, 'the heard-it friend is not the witness');
-    await tapFriend(heard);
-    s = await state();
-    assert.deepEqual([s.misses, s.hints, s.index], [1, 0, 0], 'the heard-it friend: one miss');
-    await tapFriend(s.target.i);
-    await page.waitForFunction(
-      () => neo.scene.game.photoHolder.children.length > 0 && neo.scene.game.poster?.children.length > 0,
-      null,
-      { timeout: 20000 },
-    );
-    await page.waitForTimeout(1200);
-    await screenshot('notice-board-2-portrait');
-    await nextPoster(1);
-    s = await state();
-    assert.equal(s.truth, 'true', 'the second poster is true');
-    await answer();
-    await nextPoster(2);
-    await finishRest('notice-board');
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await page.waitForTimeout(400);
-    assert.deepEqual(await score(), [1, 0], 'level 2 saved 1 miss, 0 hints');
-
-    // Level 3 (school): a free friend tap, the wrong basket for the apple-tree decoy (a miss), then the right one.
-    await launch('notice-board', 3, 'Mia', 'school');
-    await ready();
-    // U7 R4: the right answer's line (here `tell` or `sell`) never holds the board. Each is stretched to at least 4 s, so
-    // the next poster opening sooner shows the line no longer gates it; the next poster is read only when the line
-    // ends (or not at all, when she answers first), and the last poster's line is heard out before `done`.
-    await page.evaluate(() => {
-      const g = neo.scene.game;
-      const say = g.ctx.say.bind(g.ctx);
-      g.lessons = [];
-      g.ctx.say = (id, vars) => {
-        const line = say(id, vars);
-        const prev = g.lessons.at(-1);
-        const key = String(id);
-        if (prev && prev.read === undefined && key.startsWith('noticeboard.poster.'))
-          prev.read = performance.now() - prev.at;
-        if (prev && prev.done === undefined && key === 'noticeboard.done')
-          prev.done = performance.now() - prev.at;
-        if (key !== 'noticeboard.tell' && key !== 'noticeboard.sell') return line;
-        const rec = { at: performance.now(), last: g.play.done };
-        g.lessons.push(rec);
-        const watch = () => {
-          if (rec.opens !== undefined) return;
-          if (g.finished || !g.busy) rec.opens = performance.now() - rec.at;
-          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+    let s;
+    if (levels.has(1)) {
+      // Level 1 (pre-K), the authored round: two friends whose badges do not match the stamp (two misses, the glow, one
+      // hint), then the maker.
+      await launch('notice-board', 1, 'Mia', 'prek');
+      await ready();
+      s = await state();
+      const wrong = [0, 1, 2].filter((i) => i !== s.target.i);
+      await tapFriend(wrong[0]);
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.glowing, s.index],
+        [1, 0, false, 0],
+        'a different badge: one miss, the poster stays',
+      );
+      await tapFriend(wrong[1]);
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.glowing],
+        [2, 1, true],
+        'a second different badge lights the glow: one hint',
+      );
+      await screenshot('notice-board-1-glow');
+      await tapFriend(s.target.i);
+      await nextPoster(1);
+      await finishRest('notice-board');
+      assert.deepEqual(await score(), [2, 1], 'level 1 saved 2 misses, 1 hint');
+    }
+    if (levels.has(2)) {
+      // Level 2 (school), portrait: the heard-it friend (a miss), then the witness on the stretched first poster; the true
+      // second poster answered right; the screenshot with the memory bubbles and the photo.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(600);
+      await launch('notice-board', 2, 'Mia', 'school');
+      await ready();
+      s = await state();
+      assert.equal(s.truth, 'stretched', 'the authored round opens with a stretched poster');
+      const heard = s.bench.findIndex((f) => f.memory === 'heard');
+      assert.notEqual(heard, s.target.i, 'the heard-it friend is not the witness');
+      await tapFriend(heard);
+      s = await state();
+      assert.deepEqual([s.misses, s.hints, s.index], [1, 0, 0], 'the heard-it friend: one miss');
+      await tapFriend(s.target.i);
+      await page.waitForFunction(
+        () => neo.scene.game.photoHolder.children.length > 0 && neo.scene.game.poster?.children.length > 0,
+        null,
+        { timeout: 20000 },
+      );
+      await page.waitForTimeout(1200);
+      await screenshot('notice-board-2-portrait');
+      await nextPoster(1);
+      s = await state();
+      assert.equal(s.truth, 'true', 'the second poster is true');
+      await answer();
+      await nextPoster(2);
+      await finishRest('notice-board');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      assert.deepEqual(await score(), [1, 0], 'level 2 saved 1 miss, 0 hints');
+    }
+    if (levels.has(3)) {
+      // Level 3 (school): a free friend tap, the wrong basket for the apple-tree decoy (a miss), then the right one.
+      await launch('notice-board', 3, 'Mia', 'school');
+      await ready();
+      // U7 R4: the right answer's line (here `tell` or `sell`) never holds the board. Each is stretched to at least 4 s, so
+      // the next poster opening sooner shows the line no longer gates it; the next poster is read only when the line
+      // ends (or not at all, when she answers first), and the last poster's line is heard out before `done`.
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const say = g.ctx.say.bind(g.ctx);
+        g.lessons = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          const prev = g.lessons.at(-1);
+          const key = String(id);
+          if (prev && prev.read === undefined && key.startsWith('noticeboard.poster.'))
+            prev.read = performance.now() - prev.at;
+          if (prev && prev.done === undefined && key === 'noticeboard.done')
+            prev.done = performance.now() - prev.at;
+          if (key !== 'noticeboard.tell' && key !== 'noticeboard.sell') return line;
+          const rec = { at: performance.now(), last: g.play.done };
+          g.lessons.push(rec);
+          const watch = () => {
+            if (rec.opens !== undefined) return;
+            if (g.finished || !g.busy) rec.opens = performance.now() - rec.at;
+            else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+          };
+          void Promise.resolve().then(watch);
+          return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
         };
-        void Promise.resolve().then(watch);
-        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
-      };
-    });
-    s = await state();
-    assert.equal(s.purpose, 'tell', 'the authored decoy, my apple tree, is telling');
-    await tapFriend(0);
-    s = await state();
-    assert.deepEqual([s.misses, s.index], [0, 0], 'tapping a friend at level 3 is free');
-    await tapBasket('sell');
-    s = await state();
-    assert.deepEqual([s.misses, s.hints, s.index], [1, 0, 0], 'the wrong basket: one miss, the poster stays');
-    await screenshot('notice-board-3');
-    await tapBasket('tell');
-    await nextPoster(1);
-    await finishRest('notice-board');
-    assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
-    const lessons = await page.evaluate(() =>
-      neo.scene.game.lessons.map((r) => ({
-        last: r.last,
-        opens: Math.round(r.opens ?? -1),
-        read: Math.round(r.read ?? -1),
-        done: Math.round(r.done ?? -1),
-      })),
-    );
-    const early = lessons.filter((r) => !r.last);
-    // The fold (0.6 s) and the existing 0.5 + 0.4 s beat come before the next poster; the 4 s line no longer does.
-    if (!early.length || early.some((r) => r.opens < 0 || r.opens > 2200))
-      throw new Error(`R4: a right answer's line held the next poster: ${JSON.stringify(lessons)}`);
-    if (early.some((r) => r.read >= 0 && r.read < 3900))
-      throw new Error(`R4: the next poster's reading cut the lesson: ${JSON.stringify(lessons)}`);
-    if (lessons.filter((r) => r.last).some((r) => r.done < 3900))
-      throw new Error(`R4: the last poster's line was not heard out: ${JSON.stringify(lessons)}`);
-    log(
-      `Notice Board 3 R4: the next poster opened ${early.map((r) => r.opens).join(', ')} ms into its lesson`,
-    );
-    log(
-      'Notice Board 1–3: pre-K level 1 two wrong badges and the glow then the maker (2/1); portrait level 2 the heard-it friend then the witness through a stretched and a true poster (1/0); level 3 a free friend tap, the wrong basket then the right one (1/0); passed',
-    );
+      });
+      s = await state();
+      assert.equal(s.purpose, 'tell', 'the authored decoy, my apple tree, is telling');
+      await tapFriend(0);
+      s = await state();
+      assert.deepEqual([s.misses, s.index], [0, 0], 'tapping a friend at level 3 is free');
+      await tapBasket('sell');
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.index],
+        [1, 0, 0],
+        'the wrong basket: one miss, the poster stays',
+      );
+      await screenshot('notice-board-3');
+      await tapBasket('tell');
+      await nextPoster(1);
+      await finishRest('notice-board');
+      assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
+      const lessons = await page.evaluate(() =>
+        neo.scene.game.lessons.map((r) => ({
+          last: r.last,
+          opens: Math.round(r.opens ?? -1),
+          read: Math.round(r.read ?? -1),
+          done: Math.round(r.done ?? -1),
+        })),
+      );
+      const early = lessons.filter((r) => !r.last);
+      // The fold (0.6 s) and the existing 0.5 + 0.4 s beat come before the next poster; the 4 s line no longer does.
+      if (!early.length || early.some((r) => r.opens < 0 || r.opens > 2200))
+        throw new Error(`R4: a right answer's line held the next poster: ${JSON.stringify(lessons)}`);
+      if (early.some((r) => r.read >= 0 && r.read < 3900))
+        throw new Error(`R4: the next poster's reading cut the lesson: ${JSON.stringify(lessons)}`);
+      if (lessons.filter((r) => r.last).some((r) => r.done < 3900))
+        throw new Error(`R4: the last poster's line was not heard out: ${JSON.stringify(lessons)}`);
+      log(
+        `Notice Board 3 R4: the next poster opened ${early.map((r) => r.opens).join(', ')} ms into its lesson`,
+      );
+      log(
+        'Notice Board 1–3: pre-K level 1 two wrong badges and the glow then the maker (2/1); portrait level 2 the heard-it friend then the witness through a stretched and a true poster (1/0); level 3 a free friend tap, the wrong basket then the right one (1/0); passed',
+      );
+    }
+
+    if (levels.has(4) || levels.has(5)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+    }
+    if (levels.has(4)) {
+      // Level 4 (school), upright phone: a dimmed tag before looking (free), the Go and see sign, the poster's own
+      // thing tag (a miss), Show me (a hint), then the left-out tag.
+      await launch('notice-board', 4, 'Mia', 'school');
+      await ready();
+      s = await state();
+      assert.equal(s.omit, 'price', 'the authored round opens with the lemonade price');
+      await tapFriend(s.target.i);
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.index, s.standOut],
+        [0, 0, false],
+        'a dimmed tag before going to see is free',
+      );
+      await tapSide();
+      s = await state();
+      assert.equal(s.standOut, true, 'the sign slides the stand out');
+      await page.waitForTimeout(600);
+      await screenshot('notice-board-4-stand-phone');
+      await tapFriend(s.tags.indexOf('thing'));
+      s = await state();
+      assert.deepEqual([s.misses, s.hints, s.index], [1, 0, 0], 'the thing tag: one miss, the poster stays');
+      await ready();
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      s = await state();
+      assert.deepEqual([s.hints, s.glowing], [1, true], 'Show me: one hint, the left-out tag glows');
+      assert.equal(s.tags[s.target.i], 'price', 'the glow is on the left-out tag');
+      await tapFriend(s.target.i);
+      await nextPoster(1);
+      await finishRest('notice-board');
+      assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+      log(
+        'Notice Board 4: a free dimmed tag, the sign, the thing tag (a miss), Show me (a hint), then the price (1/1); passed',
+      );
+    }
+    if (levels.has(5)) {
+      // Level 5 (school), upright phone: the heard-it friend before the door (free, the door opens), the seller after
+      // it (a miss), then the friend who tried it.
+      await launch('notice-board', 5, 'Mia', 'school');
+      await ready();
+      s = await state();
+      const heard5 = [0, 1, 2].find((i) => i !== s.seller && i !== s.tried);
+      await tapFriend(heard5);
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.index, s.doorOpen],
+        [0, 0, true],
+        'a guess before the door is free and opens it',
+      );
+      await page.waitForTimeout(800);
+      await screenshot('notice-board-5-door-open-phone');
+      await tapFriend(s.seller);
+      s = await state();
+      assert.deepEqual([s.misses, s.hints, s.index], [1, 0, 0], 'the seller after the door: one miss');
+      await tapFriend(s.tried);
+      await nextPoster(1);
+      await finishRest('notice-board');
+      assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
+      log(
+        'Notice Board 5: the heard-it friend before the door (free), the seller after it (a miss), then the friend who tried it (1/0); passed',
+      );
+    }
+    await page.setViewportSize({ width: 1024, height: 768 });
   }
   return { noticeBoardPlay };
 }

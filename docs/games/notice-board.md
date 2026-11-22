@@ -9,13 +9,15 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–3 |
+| school | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Who made it? Match the poster's stamp to a friend's badge |
 | 2 | Who saw it? Tap the friend who was there; their photo settles the poster |
 | 3 | To tell or to sell? Sort each poster into the news or the come-and-buy basket |
+| 4 | What did it leave out? Go and see the real stall, then tap what the poster didn't show |
+| 5 | Who's behind it? Open the club door if she likes, then tap the friend who tried it and sells none |
 
 <!-- end generated -->
 
@@ -25,12 +27,14 @@
 
 ## Design notes
 
-*Levels 1–3 · after the media-literacy study; [definition](../definitions/notice-board.md).* Island friends pin made-up picture posters to a big wooden board in the village; the pet reads each poster aloud. Every poster is about something on the island, never a real product, person or claim, and selling is named, not judged. Art is code-drawn: the board, the poster sheets, six badges, six place pictures shared by posters and memory bubbles, an ear-and-whisper, the photo frame, and an eye and a hand basket.
+*Levels 1–3 · after the media-literacy study; [definition](../definitions/notice-board.md). Levels 4–5: [definition](../definitions/notice-board-4-5.md), batch `notice-board 2`, described in the last paragraph.* Island friends pin made-up picture posters to a big wooden board in the village; the pet reads each poster aloud. Every poster is about something on the island, never a real product, person or claim, and selling is named, not judged. Art is code-drawn: the board, the poster sheets, six badges, six place pictures shared by posters and memory bubbles, an ear-and-whisper, the photo frame, and an eye and a hand basket.
 
-Levels: 1 "Who made it?" (pre-K 1, school 1): three posters, each with a stamp in the corner; tap the friend whose badge matches, with at least one poster about a friend (who is a decoy: the poster is about them, they did not make it). 2 "Who saw it?" (pre-K 2, school 2): tap the friend whose memory bubble shows the place, the witness; their photo then settles the poster, which is true or stretched with a correction label. A friend who only heard it, or who was elsewhere, says so and is a miss. 3 "To tell or to sell?" (school 3): four posters, tap the eye basket (what happened) or the hand basket (come and get some); an item picture is a decoy for "sell". No preschool range.
+Levels: 1 "Who made it?" (pre-K 1, school 1): three posters, each with a stamp in the corner; tap the friend whose badge matches, with at least one poster about a friend (who is a decoy: the poster is about them, they did not make it). 2 "Who saw it?" (pre-K 2, school 2): tap the friend whose memory bubble shows the place, the witness; their photo then settles the poster, which is true or stretched with a correction label. A friend who only heard it, or who was elsewhere, says so and is a miss. 3 "To tell or to sell?" (school 3): four posters, tap the eye basket (what happened) or the hand basket (come and get some); an item picture is a decoy for "sell". Level 4 (school): a true poster shows the best part of a stall; tap the sign to go and see, the real stand slides out, then tap the picture tag for what the poster did not show (a price, a long line, the last one, rain, night, a long walk). Level 5 (school): a club's poster has a club house beside it; open its door if she likes (the seller says so), then tap the friend who tried it and sells none, and their paw pin lands under the poster's claim. No preschool range.
 
-Misses and hints: a wrong badge, a heard-it or elsewhere friend, and a wrong basket are each a miss; friend taps at level 3 are free. Two misses on one poster glow its answer (one hint per poster, shared with Show me). One sticker per round. Voice lines `noticeboard.*` (89, plus `game.notice-board` with its title clip rendered). Cozy Village is its home land (the 20th game), fallback Tinker Lab. The ghost finger plays every level. Co-play and off-screen lines are on the grown-ups' page. Not built: Notice Board 4–5 (what did it leave out, who is behind it), the grown-ups' "Who made this?" card and the hand-frame co-play role. Open: the person and device checks in DEVICE-CHECKS.
+Misses and hints: a wrong badge, a heard-it or elsewhere friend, and a wrong basket are each a miss; friend taps at level 3 are free. Two misses on one poster glow its answer (one hint per poster, shared with Show me). One sticker per round. Voice lines `noticeboard.*` (129, plus `game.notice-board` with its title clip rendered). Cozy Village is its home land (the 20th game), fallback Tinker Lab. The ghost finger plays every level. Co-play and off-screen lines are on the grown-ups' page. The grown-ups' "Who made this?" talk card is built (PR #1796). Not built: the hand-frame co-play role.
 
 **A lesson line never holds the next poster (U7 fix batch 14, 2026-11-12).** The right answer's line (`why.*`, `true`, `label.*`, `tell`, `sell`) starts and the pin, photo or fold follow at once; the next poster is seated after the existing short beat with input open while the lesson plays. The new poster's reading waits for the line to end, or is read at once on a tap on the poster, a guide tap or a free friend tap; a judged tap or a Show me hint drops it. Level 2's `saw` and `stretched` stay held, and the last poster's line is heard out before `done`.
 
 **Upright on a phone (2026-11-18, upright batch 9):** every level plays upright with no layout change; `upright.test.ts` in the game folder reads the layout on four phone views and a short one.
+
+**Levels 4–5 (2026-11-22, batch `notice-board 2`; school 1–5, pre-K stays 1–2).** Level 4 *What did it leave out?*: the poster is always true; the real stand shows the same thing plus one left-out picture tag (price, queue, last, rain, night, far). Three tags wait dimmed until she has gone to see (a tap on the sign slides the stand out); a tag tapped before looking is free. After looking, the poster's own thing tag, or a tag the stand does not have, is a miss; two misses on a poster glow the answer (one hint, shared with Show me). Level 5 *Who's behind it?*: one club poster, a club house with a door, three bench friends (the seller, the friend who tried it, a friend who only heard). A friend tapped before the door is open is free and opens the door; afterwards the seller or the heard-it friend is a miss and the tried-it friend is the answer, which pins their paw note under the poster's claim (the absorbed Story Stamp Checker act). Selling is named, never judged. Both levels depart from the definition nowhere that changes play; the open-decision defaults shipped. Art for both is code-drawn in `art.ts`; the browser suite takes `NOTICE_LEVELS` (for example `4,5`, default all five).

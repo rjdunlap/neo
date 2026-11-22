@@ -18,6 +18,12 @@ import {
   POOL_1,
   POOL_2,
   POOL_3,
+  POOL_4,
+  POOL_5,
+  AUTHORED_SLOTS,
+  LEFT_OUT,
+  planFor,
+  LEVELS,
   posterById,
   type Item,
   type Rect,
@@ -244,7 +250,7 @@ describe('accounting', () => {
         let guard = 0;
         while (!p.done && guard++ < 10) {
           const t = p.target()!;
-          last = t.kind === 'friend' ? p.tapFriend(t.i) : p.tapBasket(t.purpose);
+          last = p.tap(t);
           expect(last.kind).toBe('right');
         }
         expect(p.done).toBe(true);
@@ -271,7 +277,7 @@ describe('hints lead somewhere', () => {
           if (lv === 2) expect(g).toEqual({ kind: 'friend', i: it.witness });
           if (lv === 3) expect(g).toEqual({ kind: 'basket', purpose: it.poster.purpose });
           const p = new Play({ level: lv, items: [it] });
-          const out = g.kind === 'friend' ? p.tapFriend(g.i) : p.tapBasket(g.purpose);
+          const out = p.tap(g);
           expect(out.kind).toBe('right');
         }
       }
@@ -295,12 +301,12 @@ describe('layout', () => {
   const overlap = (a: Rect, b: Rect) =>
     a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   for (const v of views)
-    for (const lv of [1, 2, 3]) {
+    for (const lv of [1, 2, 3, 4, 5]) {
       it(`fits level ${lv} at ${v.w}x${v.h}`, () => {
         const l = noticeBoardLayout(v, lv);
         expect(l.friends).toHaveLength(3);
         expect(l.baskets).toHaveLength(lv === 3 ? 2 : 0);
-        expect(!!l.photo).toBe(lv === 2);
+        expect(!!l.photo).toBe(lv === 2 || lv >= 4);
         const named: [string, Rect][] = [
           ['poster', l.poster],
           ...l.friends.map((r, i): [string, Rect] => [`friend${i}`, r]),
@@ -330,7 +336,14 @@ describe('layout', () => {
 describe('voice', () => {
   const has = (id: string) => expect(lines[id], id).toBeDefined();
   it('has the lines every poster, badge and place needs', () => {
-    for (const p of [...POOL_1, ...POOL_2, ...POOL_3]) has(`noticeboard.poster.${p.id}`);
+    for (const p of [...POOL_1, ...POOL_2, ...POOL_3, ...POOL_4, ...POOL_5])
+      has(`noticeboard.poster.${p.id}`);
+    for (const k of LEFT_OUT) if (k !== 'price') has(`noticeboard.omit.${k}`);
+    for (const p of POOL_4) if (p.omit === 'price') has(`noticeboard.omit.price${p.price}`);
+    for (const p of POOL_5) {
+      has(`noticeboard.club.${p.club}`);
+      has(`noticeboard.tried.${p.club}`);
+    }
     for (const p of POOL_1) has(`noticeboard.why.${p.id}`);
     for (const p of POOL_3) has(`noticeboard.want.${p.id}`);
     for (const p of POOL_2) {
@@ -343,6 +356,13 @@ describe('voice', () => {
       'instruct.1',
       'instruct.2',
       'instruct.3',
+      'instruct.4',
+      'instruct.5',
+      'best',
+      'already',
+      'nothere',
+      'gosee',
+      'askother',
       'heard',
       'saw',
       'true',
@@ -363,5 +383,188 @@ describe('voice', () => {
         expect(bad.test(text), `${id}: ${text}`).toBe(false);
         expect(species.test(text), `${id}: ${text}`).toBe(false);
       }
+  });
+});
+
+// Levels 4 and 5 (docs/definitions/notice-board-4-5.md) -----------------------------------------------------------
+
+/** Each slot holds the answer between 25% and 42% of all posters over the seeds, and every round uses at least two slots. */
+function expectFairSlots(level: number, slotOf: (it: Item) => number) {
+  const counts = [0, 0, 0];
+  let total = 0;
+  for (const s of seeds) {
+    const used = new Set<number>();
+    for (const it of roundFor(level, s).items) {
+      const k = slotOf(it);
+      counts[k]++;
+      total++;
+      used.add(k);
+    }
+    expect(used.size).toBeGreaterThanOrEqual(2);
+  }
+  for (const c of counts) {
+    expect(c / total).toBeGreaterThanOrEqual(0.25);
+    expect(c / total).toBeLessThanOrEqual(0.42);
+  }
+}
+
+describe('levels 4 and 5: pools, plans and authored rounds', () => {
+  it('has eight true level-4 posters, every left-out kind an answer, and no other list holding its own omit', () => {
+    expect(POOL_4).toHaveLength(8);
+    expect(new Set(POOL_4.map((p) => p.omit))).toEqual(new Set(LEFT_OUT));
+    for (const p of POOL_4) {
+      expect(p.others!.length).toBeGreaterThan(0);
+      expect(p.others).not.toContain(p.omit);
+      // A level-4 poster draws no shells: only the stand shows a price.
+      expect(p.purpose).toBe('tell');
+      if (p.omit === 'price') expect([2, 3]).toContain(p.price);
+      else expect(p.price).toBeUndefined();
+    }
+  });
+  it('has six level-5 club cases with distinct clubs', () => {
+    expect(POOL_5).toHaveLength(6);
+    expect(new Set(POOL_5.map((p) => p.club)).size).toBe(6);
+  });
+  it('school climbs 1 to 5 by the ordinary ladder; pre-K stays 1 to 2', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 5 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
+    expect(planFor(4).mode).toBe('omit');
+    expect(planFor(5).mode).toBe('club');
+  });
+  it('authored rounds: level 4 lemonade, pie, kites (three different kinds); level 5 tried-it in slots 2, 0, 1', () => {
+    for (const s of [1, 7, 42]) {
+      const r4 = makeRound(4, new Rng(s), true);
+      expect(r4.items.map((it) => it.poster.id)).toEqual(AUTHORED[4]);
+      expect(new Set(r4.items.map((it) => it.poster.omit)).size).toBe(3);
+      expect(r4.items.map((it) => it.tags!.indexOf(it.poster.omit!))).toEqual([...AUTHORED_SLOTS[4]]);
+      const r5 = makeRound(5, new Rng(s), true);
+      expect(r5.items.map((it) => it.poster.id)).toEqual(AUTHORED[5]);
+      expect(r5.items.map((it) => it.tried)).toEqual([2, 0, 1]);
+    }
+  });
+});
+
+describe('level 4 rounds', () => {
+  it('deals three distinct posters, each with the tags {omit, thing, other}', () => {
+    for (const s of seeds) {
+      const r = roundFor(4, s);
+      expect(r.level).toBe(4);
+      expect(new Set(r.items.map((it) => it.poster.id)).size).toBe(3);
+      for (const it of r.items) {
+        const tags = it.tags!;
+        expect(tags).toHaveLength(3);
+        expect(new Set(tags).size).toBe(3);
+        expect(tags).toContain(it.poster.omit);
+        expect(tags).toContain('thing');
+        const other = tags.find((t) => t !== 'thing' && t !== it.poster.omit)!;
+        expect(it.poster.others).toContain(other);
+        expect(it.bench).toHaveLength(0);
+      }
+    }
+  });
+  it('moves the left-out tag fairly between slots', () => {
+    expectFairSlots(4, (it) => it.tags!.indexOf(it.poster.omit!));
+  });
+});
+
+describe('level 5 rounds', () => {
+  it('seats one seller, one tried-it and one heard-it friend with three distinct badges, never star with sun', () => {
+    for (const s of seeds) {
+      const r = roundFor(5, s);
+      expect(new Set(r.items.map((it) => it.poster.id)).size).toBe(3);
+      for (const it of r.items) {
+        const mem = it.bench.map((f) => f.memory).sort();
+        expect(mem).toEqual(['heard', 'sells', 'tried']);
+        expect(it.bench[it.seller!].memory).toBe('sells');
+        expect(it.bench[it.tried!].memory).toBe('tried');
+        expect(it.maker).toBe(it.bench[it.seller!].name);
+        // The door's badge is the seller's.
+        expect(it.stamp).toBe(it.bench[it.seller!].badge);
+        const badges = it.bench.map((f) => f.badge);
+        expect(new Set(badges).size).toBe(3);
+        expect(badges.includes('star') && badges.includes('sun')).toBe(false);
+        expect(new Set(it.bench.map((f) => f.name)).size).toBe(3);
+      }
+    }
+  });
+  it('moves the tried-it friend fairly between slots', () => {
+    expectFairSlots(5, (it) => it.tried!);
+  });
+});
+
+describe('levels 4 and 5 accounting', () => {
+  const r4 = () => makeRound(4, new Rng(3), true);
+  const r5 = () => makeRound(5, new Rng(3), true);
+  const wrongTags = (it: Item) => [0, 1, 2].filter((i) => it.tags![i] !== it.poster.omit);
+
+  it('level 4: dimmed tags are free, then the thing tag and the other tag are one miss each', () => {
+    const p = new Play(r4());
+    const right = p.item.tags!.indexOf(p.item.poster.omit!);
+    expect(p.tapTag(right)).toEqual({ kind: 'free' });
+    expect(p.tapFriend(0)).toEqual({ kind: 'free' });
+    expect(p.misses).toBe(0);
+    expect(p.seeStand()).toBe(true);
+    expect(p.seeStand()).toBe(false);
+    const [a, b] = wrongTags(p.item);
+    expect(p.tapTag(a).kind).toBe('miss');
+    const second = p.tapTag(b);
+    expect(second).toMatchObject({ kind: 'miss', glow: true });
+    expect([p.misses, p.hints]).toEqual([2, 1]);
+    expect(p.tapTag(right).kind).toBe('right');
+    // The next poster's stand starts hidden again.
+    expect(p.standOut).toBe(false);
+  });
+
+  it('level 5: a wrong friend before the door is free and opens it; after, one miss; a right pick before is right', () => {
+    const p = new Play(r5());
+    const it = p.item;
+    const seller = it.seller!;
+    const heard = [0, 1, 2].find((i) => i !== it.seller && i !== it.tried)!;
+    expect(p.tapFriend(heard)).toEqual({ kind: 'peek', item: it });
+    expect(p.doorOpen).toBe(true);
+    expect(p.misses).toBe(0);
+    expect(p.tapFriend(seller).kind).toBe('miss');
+    expect(p.tapFriend(heard)).toMatchObject({ kind: 'miss', glow: true });
+    expect([p.misses, p.hints]).toEqual([2, 1]);
+    expect(p.tapFriend(it.tried!).kind).toBe('right');
+    expect(p.doorOpen).toBe(false);
+    // Right before the door: right at once.
+    expect(p.tapFriend(p.item.tried!).kind).toBe('right');
+    expect(p.misses).toBe(2);
+  });
+
+  it('level 5: opening the door is free, and a seller tapped after it is a miss', () => {
+    const p = new Play(r5());
+    expect(p.openDoor()).toBe(true);
+    expect(p.openDoor()).toBe(false);
+    expect(p.tapFriend(p.item.seller!).kind).toBe('miss');
+  });
+
+  it('plays both levels to the end through the glow target, after looking first', () => {
+    for (const lv of [4, 5])
+      for (const s of seeds.slice(0, 60)) {
+        const p = new Play(roundFor(lv, s));
+        let guard = 0;
+        while (!p.done && guard++ < 10) {
+          if (lv === 4) p.seeStand();
+          else p.openDoor();
+          expect(p.tap(p.target()!).kind).toBe('right');
+        }
+        expect(p.done).toBe(true);
+        expect([p.misses, p.hints]).toEqual([0, 0]);
+        expect(p.tapTag(0)).toEqual({ kind: 'free' });
+        expect(p.tapFriend(0)).toEqual({ kind: 'free' });
+      }
+  });
+
+  it('hints lead somewhere: glowFor is the left-out tag and the tried-it friend', () => {
+    for (const s of seeds) {
+      for (const it of roundFor(4, s).items) {
+        const g = glowFor(it);
+        expect(g.kind).toBe('tag');
+        if (g.kind === 'tag') expect(it.tags![g.i]).toBe(it.poster.omit);
+      }
+      for (const it of roundFor(5, s).items) expect(glowFor(it)).toEqual({ kind: 'friend', i: it.tried });
+    }
   });
 });
