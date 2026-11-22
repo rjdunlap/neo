@@ -144,7 +144,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 2. **Build Not Always 1–3** (new-game tier; **built 2026-11-01**, batch [not-always 1](../../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better); [build note](../../archive/COMPLETED-2026-10-09.md#not-always-levels-13-philosophy-reasoning-pr1-not-always-1-2026-11-01)).
 3. **PR3 · Question card** (grown-ups' page, plain HTML, sources on the card): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1796.
 4. **PR4 · "But what about…?" co-play role** (with the build or right after it).
-5. **PR2 · Define Not Always 4–6**, after 1–3 are played; then build.
+5. **PR2 · Not Always 4–6** (new interaction on the existing game): [defined 2026-11-22](../../definitions/not-always.md#levels-46-definition-philosophy-and-reasoning-pr2), ready to build as one school batch.
 6. **PR5** to the Story Steps dive; **PR6 Truth Bridge** sketch after a Lantern Lake capacity test.
 
 ## What was built and what ran

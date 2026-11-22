@@ -52,7 +52,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **Define Swing Pals, *A row of three*, at the next free level ID** (level 9 went to *Paint the beat*; docs only), after a `swingLayout` probe. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer), [record](archive/DECISIONS-2026-11-17.md#games)
 
-- **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Village Vote 4–6 ([study](deep-dives/subjects/community-civics.md)), Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
+- **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 - **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
@@ -60,7 +60,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`swing-pals` level 9, *Paint the beat*** (preschool, pre-K and school; new interaction on an existing game: typecheck and unit tests including creations and the swing's upright test, one scripted play of level 9 keeping the painting and taking one hint, one upright portrait screenshot, `fingerdemo` at 9, build). [Definition](definitions/swing-pals-paint-the-beat.md#check-tier), [dive](deep-dives/swing-pals.md#build-slices-in-order)
 
-- **`notice-board` levels 4–5, *What did it leave out?* and *Who's behind it?*** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `noticeboard` play on an upright phone at levels 4 and 5 with a new level filter, one upright phone screenshot, `fingerdemo` at 4 and 5, build and offline because voice, clips and how-to change). [Definition](definitions/notice-board-4-5.md#check-tier), [dive](deep-dives/subjects/media-literacy.md#build-slices-in-order)
 
 - **`draw-the-pattern` level 12, *Your pattern*** (pre-K and school; new levels on an existing interaction: typecheck and unit tests including the rule tests, one `BROWSER_SUITE=drawpattern DRAW_LEVELS=12` play on an upright phone, `fingerdemo` at 12, build because voice and how-to change). [Definition](definitions/draw-the-pattern-your-pattern.md#check-tier), [dive](deep-dives/draw-the-pattern.md#build-slices-in-order)
 
