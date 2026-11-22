@@ -103,6 +103,8 @@ The [Pok Pok review's P6](../reviews/POK-POK.md#p6-the-put-down-test-for-unlock-
 
 ## Slice 1: the book and the discovery goal
 
+Claimed by `codex/neo-ready-rw10-book` (Neo roadmap slices, 2026-11-22).
+
 `BookScene`, `go.book()` in both route tables (the island's falls back to the treehouse, as `library` does), the library card, the goals table with `friend:welcome`, the Friends and Things pages, the star, `book.goal` with repair, the guard test.
 
 - **Files:** `src/app/scenes/BookScene.ts` (new), `src/creatures/book-layout.ts` and its test (new), `src/content/goals.ts` and its test (new), `src/app/scenes/LibraryScene.ts`, `src/app/App.ts` (`Routes.book`, the `{ book: true }` origin), `src/app/routes.ts`, `src/rework.ts`, `src/progress/save.ts`, `src/progress/store.ts` (`chooseGoal(id | null)`, written immediately like `choose()`), their tests, `src/content/voice-script.ts`.
