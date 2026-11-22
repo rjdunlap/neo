@@ -111,7 +111,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Game | Status | Source |
 | --- | --- | --- |
 | Draw the Pattern (`draw-the-pattern`) | designed 2026-11-05 (slices 1–3 built; level 11 waits on a decision and a geometry probe, level 12 on a definition) | [Dive](deep-dives/draw-the-pattern.md), [tracker](deep-dives/README.md#tracker) |
-| Swing Pals (`swing-pals`) | designed 2026-11-06 (slices 1–3 built; level 9 needs a layout probe and a definition, paint the beat waits on a decision; the journal discovery is built) | [Dive](deep-dives/swing-pals.md), [tracker](deep-dives/README.md#tracker) |
+| Swing Pals (`swing-pals`) | designed 2026-11-06 (slices 1–3, Paint the beat and the journal discovery built; A row of three is queued for a layout probe and definition) | [Dive](deep-dives/swing-pals.md), [tracker](deep-dives/README.md#tracker) |
 | Bolt Boards (`bolt-boards`) | designed (dive 2026-11-06) | [Dive](deep-dives/bolt-boards.md) |
 | Puddle Gobble (`puddle-gobble`) | designed (dive 2026-11-06; slices 1–4 built, then two pails built (slices 5–6); lap entry and the journal wait on decisions) | [Dive](deep-dives/puddle-gobble.md), [tracker](deep-dives/README.md#tracker) |
 | Fruit Slice (`fruit-slice`) | designed, wave 5 (slices 1–4 built; fractions closure and the journal wait on decisions) | [Dive](deep-dives/fruit-slice.md) |

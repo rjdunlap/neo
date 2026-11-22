@@ -40,4 +40,23 @@ export const VOICE = {
   'swing-pals.half-not-yet': ['Not half as quick yet. Try a longer rope.'],
   'swing-pals.twice-yes': ['Clap! Yours came back twice for every one of mine.'],
   'swing-pals.half-yes': ['Clap! Mine came back twice for every one of yours.'],
+  'swing-pals.instruct-paint': ['Push the swing, and the paint pot will paint its wiggle.'],
+  'swing-pals.paint-try-short': ['Try the short rope!'],
+  'swing-pals.paint-try-middle': ['Try the middle rope!'],
+  'swing-pals.paint-try-long': ['Try the long rope!'],
+  'swing-pals.paint-short': ['Short rope, tight little wiggles!'],
+  'swing-pals.paint-middle': ['Middle rope, in-between wiggles!'],
+  'swing-pals.paint-long': ['Long rope, slow wiggles with space between!'],
+  'swing-pals.paint-full': ['The paper is full! Tap the tick when you are ready.'],
+  'swing-pals.paint-ready': ['Tap the tick when you are ready.'],
+  'swing-pals.paint-compare-short-long': [
+    'Look! The short rope painted two wiggles where the long rope painted one.',
+  ],
+  'swing-pals.paint-compare-short-middle': [
+    'The short-rope wiggles sit closer together than the middle-rope wiggles.',
+  ],
+  'swing-pals.paint-compare-middle-long': [
+    'The middle-rope wiggles sit closer together than the long-rope wiggles.',
+  ],
+  'swing-pals.paint-done': ['What a swingy painting!'],
 } satisfies Record<string, string[]>;

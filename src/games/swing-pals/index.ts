@@ -1,15 +1,18 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS, type CritterSpec } from '../../art/critter';
-import { swatch, wood } from '../../art/palette';
+import { cream, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import type { PaintingCreation } from '../../content/creations';
 import { entryId } from '../../content/journal';
 import type { LineId } from '../../content/voice-script';
 import { rangeFor } from '../../progress/difficulty';
+import { RoundButton } from '../../ui/buttons';
+import { checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -49,6 +52,7 @@ import {
   type Goal,
   type Hook,
   type Line,
+  type PaintRound,
   type Plan,
   type PushLine,
   type Race,
@@ -57,6 +61,27 @@ import {
   type Swing,
   type SwingLayout,
 } from './logic';
+
+import {
+  blankTrace,
+  changeHook,
+  comparedHooks,
+  DRIP_MIN,
+  endSection,
+  HOOK_MOVE,
+  keptPainting,
+  paintBack,
+  PAINT_COLOR,
+  paintHeight,
+  paintLayout,
+  paintPush,
+  paintRows,
+  paperStep,
+  PAPER_SPEED,
+  ROLL_SECONDS,
+  sections,
+  type PaintSwing,
+} from './paint';
 
 /** Each level's authored first line leads its first round of a session. */
 const authoredShown = new Set<number>();
@@ -346,6 +371,57 @@ class Rig {
 
 /* The game --------------------------------------------------------------------------------------- */
 
+function swingBackdrop(view: View) {
+  return new Backdrop(
+    {
+      sky: [0xbfe6ff, 0xf3fbe8],
+      hills: [0xbfe3a0, 0x9fd38a, 0x86c96e],
+      horizon: 0.72,
+      clouds: 2,
+      sun: true,
+      seed: 317,
+    },
+    view,
+  );
+}
+
+function drawSwingTree(g: Graphics, L: SwingLayout, view: View, boughs: readonly (readonly Hook[])[]) {
+  g.clear();
+  const cols = L.columns;
+  const top = Math.min(...cols.map((c) => c.pivot.long.y));
+  const trunkX =
+    cols.length === 1
+      ? Math.min(view.w - 60, cols[0].pivot.middle.x + 300)
+      : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
+  g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.line });
+  for (const [i, c] of cols.entries()) {
+    // Only the boughs in use: her three hooks at levels 4–6, otherwise the hook each swing hangs from.
+    const used = boughs[i];
+    for (const h of used) {
+      const p = c.pivot[h];
+      const from = Math.min(p.x - 70, trunkX),
+        to = Math.max(p.x + 70, trunkX);
+      g.roundRect(from, p.y - 14, to - from, 22, 11)
+        .fill(wood.fill)
+        .stroke({ width: 4, color: wood.line });
+      g.circle(p.x, p.y + 6, 7).stroke({ width: 4, color: 0x8c8c9c });
+    }
+  }
+  // Leaves along the top, and over the trunk.
+  // A crown in rows, each narrower than the one below, so a tall view shows a tree rather than a hedge.
+  for (let k = 3; k >= 0; k--) {
+    const y0 = top - 70 - k * 120;
+    if (y0 < -90) continue;
+    const half = view.w / 2 + 40 - k * 150;
+    for (let x = view.w / 2 - half; x <= view.w / 2 + half; x += 90) {
+      g.circle(x, y0 + Math.sin(x * 0.05 + k) * 18, 78).fill(LEAF[(Math.abs(Math.round(x / 90)) + k) % 3]);
+    }
+  }
+  g.circle(trunkX, top - 30, 90).fill(LEAF[1]);
+}
+
 interface HookTarget {
   node: Container;
   ring: Graphics;
@@ -416,24 +492,16 @@ class SwingPals implements Game {
   guess: number | null = null;
   hintLit = false;
 
-  constructor(private readonly ctx: GameContext) {
+  constructor(
+    private readonly ctx: GameContext,
+    plan: Plan,
+    round: Round,
+  ) {
     this.view = ctx.view;
-    this.plan = planFor(ctx.level);
-    const authored = !authoredShown.has(this.plan.id) && !ctx.demo;
-    if (authored) authoredShown.add(this.plan.id);
-    this.round = makeRound(this.plan, ctx.rng, authored).round;
+    this.plan = plan;
+    this.round = round;
     this.layout = swingLayout(this.plan.two ? 2 : 1, ctx.view);
-    this.backdrop = new Backdrop(
-      {
-        sky: [0xbfe6ff, 0xf3fbe8],
-        hills: [0xbfe3a0, 0x9fd38a, 0x86c96e],
-        horizon: 0.72,
-        clouds: 2,
-        sun: true,
-        seed: 317,
-      },
-      ctx.view,
-    );
+    this.backdrop = swingBackdrop(ctx.view);
     this.tree.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.swingLayer.eventMode = 'none';
@@ -759,41 +827,10 @@ class SwingPals implements Game {
   }
 
   private drawTree() {
-    const L = this.layout;
-    const g = this.tree.clear();
-    const cols = L.columns;
-    const top = Math.min(...cols.map((c) => c.pivot.long.y));
-    const trunkX =
-      cols.length === 1
-        ? Math.min(this.view.w - 60, cols[0].pivot.middle.x + 300)
-        : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
-    g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26)
-      .fill(wood.fill)
-      .stroke({ width: 5, color: wood.line });
-    for (const [i, c] of cols.entries()) {
-      // Only the boughs in use: her three hooks at levels 4–6, otherwise the hook each swing hangs from.
-      const used = this.plan.mode === 'together' && i === 1 ? HOOKS : this.rigs[i] ? [this.rigs[i].hook] : [];
-      for (const h of used) {
-        const p = c.pivot[h];
-        const from = Math.min(p.x - 70, trunkX),
-          to = Math.max(p.x + 70, trunkX);
-        g.roundRect(from, p.y - 14, to - from, 22, 11)
-          .fill(wood.fill)
-          .stroke({ width: 4, color: wood.line });
-        g.circle(p.x, p.y + 6, 7).stroke({ width: 4, color: 0x8c8c9c });
-      }
-    }
-    // Leaves along the top, and over the trunk.
-    // A crown in rows, each narrower than the one below, so a tall view shows a tree rather than a hedge.
-    for (let k = 3; k >= 0; k--) {
-      const y0 = top - 70 - k * 120;
-      if (y0 < -90) continue;
-      const half = this.view.w / 2 + 40 - k * 150;
-      for (let x = this.view.w / 2 - half; x <= this.view.w / 2 + half; x += 90) {
-        g.circle(x, y0 + Math.sin(x * 0.05 + k) * 18, 78).fill(LEAF[(Math.abs(Math.round(x / 90)) + k) % 3]);
-      }
-    }
-    g.circle(trunkX, top - 30, 90).fill(LEAF[1]);
+    const boughs = this.layout.columns.map((_, i) =>
+      this.plan.mode === 'together' && i === 1 ? HOOKS : this.rigs[i] ? [this.rigs[i].hook] : [],
+    );
+    drawSwingTree(this.tree, this.layout, this.view, boughs);
   }
 
   private drawHooks() {
@@ -1376,6 +1413,315 @@ class SwingPals implements Game {
   }
 }
 
+/** Level 9 shares the swing rig and tree. Its paper, controls and finish have their own lifecycle. */
+class SwingPaint implements Game {
+  readonly hintLabel = 'Show a hint';
+  private layout: ReturnType<typeof paintLayout>;
+  private view: View;
+  private readonly rig: Rig;
+  private readonly backdrop: Backdrop;
+  private readonly tree = new Graphics();
+  private readonly paper = new Graphics();
+  private readonly pot = new Graphics();
+  private readonly mitten = new Container();
+  private readonly ground = new Container();
+  private readonly hooks = new Map<Hook, Graphics>();
+  private readonly tick: RoundButton;
+  private readonly trace = blankTrace();
+  private readonly named = new Set<Hook>();
+  private swing: PaintSwing;
+  private move: { from: Hook; angle: number } | null = null;
+  private pending: number | null = null;
+  private helperPushes = 0;
+  private hints = 0;
+  private invited = false;
+  private description = Promise.resolve<unknown>(undefined);
+  private invite: { hook: Hook; until: number } | null = null;
+  private pressed: { hook: Hook; until: number } | null = null;
+  private pushAt = -Infinity;
+  private t = 0;
+  private reveal: { at: number; picture: PaintingCreation } | null = null;
+  private destroyed = false;
+
+  constructor(
+    private readonly ctx: GameContext,
+    private readonly round: PaintRound,
+  ) {
+    this.view = ctx.view;
+    this.layout = paintLayout(ctx.view);
+    this.swing = { hook: round.hook, height: 0, start: 0 };
+    this.rig = new Rig(round.hook, round.friend, this.layout.columns[0]);
+    this.rig.arm.addChild(this.pot);
+    this.backdrop = swingBackdrop(ctx.view);
+    for (const g of [this.tree, this.paper, this.mitten]) g.eventMode = 'none';
+    this.mitten.addChild(mittenArt());
+    onTap(this.ground, () => this.push());
+    this.tick = new RoundButton(checkIcon(), swatch.green, 60, () => void this.done());
+    ctx.stage.addChild(this.backdrop, this.tree, this.paper, this.rig.arm, this.mitten, this.ground);
+    for (const hook of HOOKS) {
+      const g = new Graphics();
+      onTap(g, () => this.selectHook(hook), { radius: HOOK_R });
+      this.hooks.set(hook, g);
+      ctx.stage.addChild(g);
+    }
+    ctx.stage.addChild(this.tick);
+    ctx.track(this.rig.critter);
+    this.resize(ctx.view);
+  }
+
+  start() {
+    void this.ctx.instruct('swing-pals.instruct-paint');
+  }
+
+  resize(view: View) {
+    this.view = view;
+    this.layout = paintLayout(view);
+    this.backdrop.resize(view);
+    this.ground.hitArea = new Rectangle(0, 130, view.w, view.h - 130);
+    drawSwingTree(this.tree, this.layout, view, [HOOKS]);
+    for (const [hook, g] of this.hooks) g.position.copyFrom(this.layout.columns[0].pivot[hook]);
+    this.tick.position.copyFrom(this.layout.tick);
+    this.draw();
+  }
+
+  private selectHook(hook: Hook) {
+    this.pressed = { hook, until: this.t + 0.2 };
+    if (this.move || hook === this.swing.hook) {
+      this.draw();
+      return;
+    }
+    this.move = { from: this.swing.hook, angle: this.rig.angle(this.t) };
+    this.swing = changeHook(this.swing, hook, this.t);
+    endSection(this.trace);
+    this.pending = null;
+    this.invite = null;
+    this.draw();
+  }
+
+  private push() {
+    if (this.move || this.reveal !== null) return;
+    this.pushAt = this.t;
+    if (this.pending !== null) return;
+    this.pending = paintBack(this.swing, this.t);
+    if (this.pending <= this.t) this.landPush(this.t);
+    this.draw();
+  }
+
+  private landPush(t: number) {
+    if (paintHeight(this.swing, t) < DRIP_MIN) endSection(this.trace);
+    this.swing = paintPush(this.swing, t);
+    this.pending = null;
+    if (this.helperPushes > 0) this.helperPushes--;
+    sfx.whoosh();
+  }
+
+  askForHint() {
+    if (this.reveal !== null) return;
+    if (this.trace.seconds >= ROLL_SECONDS) {
+      void this.ctx.say('swing-pals.paint-ready');
+      return;
+    }
+    this.hints++;
+    this.helperPushes = 2;
+    void this.ctx.say('swing-pals.hint-push');
+  }
+
+  private speakAboutPaint() {
+    const painted = sections(this.trace);
+    const two = painted.find(({ hook, wiggles }) => wiggles >= 2 && !this.named.has(hook));
+    if (two) {
+      this.named.add(two.hook);
+      this.description = this.ctx.say(`swing-pals.paint-${two.hook}`);
+    }
+    const three = painted.some(({ wiggles }) => wiggles >= 3);
+    const tryHook = HOOKS.find((hook) => !painted.some((s) => s.hook === hook));
+    if (!this.invited && three && tryHook) {
+      this.invited = true;
+      const swing = this.swing.hook;
+      void this.description.then(() => {
+        if (this.destroyed || this.reveal || this.swing.hook !== swing || this.trace.seconds >= ROLL_SECONDS)
+          return;
+        this.invite = { hook: tryHook, until: this.t + 1 };
+        void this.ctx.say(`swing-pals.paint-try-${tryHook}`);
+      });
+    }
+  }
+
+  update(dt: number) {
+    const from = this.t;
+    this.t += dt;
+    if (this.reveal === null) {
+      if (this.move && this.t >= this.swing.start) this.move = null;
+      if (!this.move) {
+        if (this.helperPushes && this.pending === null) this.push();
+        const before = this.trace.seconds;
+        if (this.pending !== null && this.pending <= this.t) {
+          paperStep(this.trace, this.layout, this.swing, from, this.pending);
+          const at = this.pending;
+          this.landPush(at);
+          paperStep(this.trace, this.layout, this.swing, at, this.t);
+        } else paperStep(this.trace, this.layout, this.swing, from, this.t);
+        if (Math.floor(before * 12) < Math.floor(this.trace.seconds * 12))
+          sfx.pluck(7 - HOOKS.indexOf(this.swing.hook), 0.025);
+        if (before < ROLL_SECONDS && this.trace.seconds >= ROLL_SECONDS)
+          void this.ctx.say('swing-pals.paint-full');
+        else if (this.trace.seconds > before) this.speakAboutPaint();
+      }
+    }
+    this.draw();
+  }
+
+  private draw() {
+    const L = this.layout;
+    const g = this.paper.clear();
+    if (this.reveal !== null) {
+      this.drawReveal(g, this.reveal);
+      return;
+    }
+    const { x, y, w, h } = L.paper;
+    g.roundRect(x, y, w, h, 14).fill(cream).stroke({ color: wood.line, width: 4 });
+    for (const section of this.trace.sections) {
+      const seam = y + PAPER_SPEED * (this.trace.seconds - section.start);
+      if (seam <= y + h - 12 && seam > y + 12) this.hookPicture(g, x + 9, seam - 9, section.hook);
+      for (const dot of section.dots) {
+        const row = y + PAPER_SPEED * (this.trace.seconds - dot.time);
+        if (row >= y && row <= y + h - 4)
+          g.circle(x + w * dot.across, row, 3.2).fill(PAINT_COLOR[section.hook]);
+      }
+    }
+    g.roundRect(x - 7, y - 9, w + 14, 17, 8)
+      .fill(wood.light)
+      .stroke({ color: wood.line, width: 3 });
+
+    const to = L.columns[0].pivot[this.swing.hook];
+    const from = this.move ? L.columns[0].pivot[this.move.from] : to;
+    const mix = this.move ? ease.inOutSine(1 - (this.swing.start - this.t) / HOOK_MOVE) : 1;
+    const length = ropeOf(L, this.swing.hook);
+    this.rig.hook = this.swing.hook;
+    this.rig.L = this.move ? ropeOf(L, this.move.from) * (1 - mix) + length * mix : length;
+    const height = paintHeight(this.swing, this.t);
+    this.rig.A = height >= DRIP_MIN ? height : 0;
+    this.rig.t0 = this.swing.start;
+    this.rig.held = this.move ? this.move.angle * (1 - mix) - this.swing.height * mix : null;
+    this.rig.draw(this.t, from.x + (to.x - from.x) * mix, from.y + (to.y - from.y) * mix);
+    const potColor = PAINT_COLOR[this.swing.hook];
+    const potY = this.rig.seat.y + 9;
+    this.pot.clear().roundRect(-15, potY, 30, 20, 6).fill(wood.light).stroke({ color: wood.line, width: 3 });
+    this.pot.ellipse(0, potY, 13, 5).fill(potColor);
+    if (!this.move && this.rig.A > 0 && this.trace.seconds < ROLL_SECONDS) {
+      const seat = seatAt(L, L.columns[0], this.swing.hook, this.rig.angle(this.t));
+      g.circle(seat.x, Math.min(y, seat.y + 31 + ((this.t * 12) % 1) * 11), 3).fill(potColor);
+    }
+    for (const [hook, badge] of this.hooks) {
+      const on = hook === this.swing.hook;
+      const lit =
+        (hook === this.pressed?.hook && this.t < this.pressed.until) ||
+        (hook === this.invite?.hook && this.t < this.invite.until);
+      badge
+        .clear()
+        .circle(0, 0, 51)
+        .fill({ color: cream, alpha: on || lit ? 0.98 : 0.84 })
+        .stroke({ color: PAINT_COLOR[hook], width: lit ? 10 : on ? 7 : 4 });
+      this.hookPicture(badge, 0, -22, hook, 2.5);
+    }
+    const back = seatAt(L, L.columns[0], this.swing.hook, -Math.max(8, this.rig.A));
+    const pulse = Math.max(0, 1 - (this.t - this.pushAt) * 3);
+    this.mitten.visible = pulse > 0 || this.pending !== null;
+    this.mitten.position.set(back.x - 50 + 25 * (1 - pulse), back.y - 40);
+    this.mitten.scale.set(0.7 + 0.3 * pulse);
+    this.tick.visible = this.trace.sections.some((s) => s.seconds >= period(s.hook) - 1e-8);
+  }
+
+  private hookPicture(g: Graphics, x: number, y: number, hook: Hook, scale = 1) {
+    const length = (7 + HOOKS.indexOf(hook) * 5) * scale;
+    g.moveTo(x, y)
+      .lineTo(x, y + length)
+      .stroke({ color: PAINT_COLOR[hook], width: 2.5 * scale, cap: 'round' });
+    g.roundRect(x - 5 * scale, y + length, 10 * scale, 3 * scale, scale).fill(PAINT_COLOR[hook]);
+  }
+
+  private drawReveal(g: Graphics, { at, picture }: { at: number; picture: PaintingCreation }) {
+    const maxW = Math.min(this.view.w - 100, (this.view.h - 340) * picture.aspect);
+    const k = ease.inOutSine(Math.min(1, (this.t - at) / 0.55));
+    const w = this.layout.paper.h * (1 - k) + maxW * k;
+    const h = w / picture.aspect;
+    const strip = this.layout.paper;
+    const x = (strip.x + strip.w / 2) * (1 - k) + (this.view.w / 2) * k;
+    const y = (strip.y + strip.h / 2) * (1 - k) + this.view.h * 0.48 * k;
+    g.position.set(x, y);
+    g.rotation = ((1 - k) * Math.PI) / 2;
+    g.roundRect(-w / 2 - 16, -h / 2 - 16, w + 32, h + 32, 15)
+      .fill(wood.fill)
+      .stroke({ color: wood.line, width: 5 });
+    g.rect(-w / 2, -h / 2, w, h).fill(cream);
+    let offset = 0;
+    for (const section of this.trace.sections) {
+      const first = picture.marks[offset];
+      for (let i = 0; i < section.dots.length; i++) {
+        const dot = picture.marks[offset++];
+        if (dot?.shape === 'dab') g.circle(w * (dot.x - 0.5), h * (dot.y - 0.5), w * dot.r).fill(dot.color);
+      }
+      if (first) {
+        const rows = paintRows(this.trace.seconds);
+        const row = Math.min(rows - 1, Math.floor(first.y * rows));
+        this.hookPicture(g, w * (first.x - 0.5), h * (row / rows - 0.5) + 7, section.hook);
+      }
+    }
+  }
+
+  private async done() {
+    if (this.reveal !== null || !this.tick.visible) return;
+    const picture = keptPainting(this.trace);
+    this.reveal = { at: this.t, picture };
+    this.ground.visible = this.tick.visible = this.rig.arm.visible = this.mitten.visible = false;
+    for (const hook of this.hooks.values()) hook.visible = false;
+    this.ctx.stage.addChild(this.paper);
+    const hooks = comparedHooks(this.trace);
+    const id =
+      hooks.includes('short') && hooks.includes('long')
+        ? 'swing-pals.paint-compare-short-long'
+        : hooks.includes('short') && hooks.includes('middle')
+          ? 'swing-pals.paint-compare-short-middle'
+          : hooks.includes('middle') && hooks.includes('long')
+            ? 'swing-pals.paint-compare-middle-long'
+            : 'swing-pals.paint-done';
+    await Promise.all([this.ctx.say(id), this.ctx.tw.wait(1.2)]);
+    if (this.destroyed) return;
+    this.ctx.finish({
+      misses: 0,
+      hints: this.hints,
+      creation: picture,
+      ...(showsSlower(this.round, hooks) ? { discoveries: [entryId('swing-pals', SLOWER)] } : {}),
+    });
+  }
+
+  autotouch(): TouchIntent | null {
+    if (this.reveal !== null || this.move || this.pending !== null) return null;
+    const sectionsPainted = sections(this.trace);
+    const first = this.round.hook;
+    const next = first === 'short' ? 'long' : 'short';
+    if (this.swing.hook === first && sectionsPainted.some((s) => s.hook === first && s.wiggles >= 3))
+      return { tap: { on: this.hooks.get(next)! } };
+    if (this.swing.hook === next && sectionsPainted.some((s) => s.hook === next && s.wiggles >= 4))
+      return { tap: { on: this.tick } };
+    const height = paintHeight(this.swing, this.t);
+    if (height >= 21) return null;
+    return {
+      tap: { on: this.ground, x: this.layout.paper.x + this.layout.paper.w / 2, y: this.layout.seatY + 90 },
+      receiver: this.ground,
+      pause: 0.25,
+    };
+  }
+
+  destroy() {
+    this.destroyed = true;
+    this.ctx.untrack(this.rig.critter);
+    this.ground.removeAllListeners();
+    for (const hook of this.hooks.values()) hook.removeAllListeners();
+    this.tick.removeAllListeners();
+  }
+}
+
 /* Icon and sticker ------------------------------------------------------------------------------ */
 
 function swingPicture(friend: Friend, angle: number): Container {
@@ -1503,5 +1849,15 @@ export const swingPals: GameModule = {
   upright: true,
   hubIcon: () => new SwingIcon(),
   sticker,
-  create: (ctx) => new SwingPals(ctx),
+  create: (ctx) => {
+    const plan = planFor(ctx.level);
+    const authored = !authoredShown.has(plan.id);
+    if (authored && !ctx.demo) authoredShown.add(plan.id);
+    const { round } = makeRound(
+      plan,
+      ctx.rng,
+      plan.mode === 'paint' ? authored || !!ctx.demo : authored && !ctx.demo,
+    );
+    return round.kind === 'paint' ? new SwingPaint(ctx, round) : new SwingPals(ctx, plan, round);
+  },
 };
