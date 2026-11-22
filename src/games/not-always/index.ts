@@ -188,7 +188,7 @@ class NotAlways implements Game {
 
   /** Lays out the current prompt's row: once at levels 1–3, again for each prompt at levels 4 and 6. */
   private deal() {
-    if (this.dealt === this.play.claim && this.cards.length) return;
+    if (this.cards.length && (!this.play.round.prompts || this.dealt === this.play.claim)) return;
     this.dealt = this.play.claim;
     for (const c of this.cards) {
       this.ctx.tw.kill(c.node);
@@ -304,7 +304,7 @@ class NotAlways implements Game {
             ? 'notalways.fitsboth'
             : `notalways.${out.why === 'too' ? 'too' : 'fits'}.${c.attr}`;
       await this.ctx.say(line as LineId);
-      if (this.alive && out.glow) void this.sayHint();
+      if (this.alive && out.glow && this.play.glowing) void this.sayHint();
     }
   }
 
@@ -362,7 +362,7 @@ class NotAlways implements Game {
     if (out.kind === 'miss') {
       sfx.boing();
       await this.ctx.say('notalways.again');
-      if (this.alive && out.glow) void this.sayHint();
+      if (this.alive && out.glow && this.play.glowing) void this.sayHint();
     }
   }
 
@@ -400,7 +400,7 @@ class NotAlways implements Game {
       // The friend points at the card that breaks the chosen sign.
       const line = option.q === 'every' ? `notalways.breaks.${option.attr}` : `notalways.fits.${option.attr}`;
       await this.ctx.say(line as LineId);
-      if (this.alive && out.glow) void this.sayHint();
+      if (this.alive && out.glow && this.play.glowing) void this.sayHint();
     }
   }
 
@@ -410,6 +410,7 @@ class NotAlways implements Game {
   private showWhy() {
     const why = this.play.prompt?.why;
     if (!why) return;
+    this.traceUntil = 0;
     this.whyHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     const L = notAlwaysLayout(this.view, this.plan.level);
     this.speakers.forEach((_, s) => this.setSpeakerSign(s, why.says[s]));
@@ -478,7 +479,7 @@ class NotAlways implements Game {
     if (out.kind === 'miss') {
       sfx.boing();
       await this.ctx.say(out.why === 'sure' ? 'notalways.why.sure.miss' : 'notalways.why.again.miss');
-      if (this.alive && out.glow) void this.sayHint();
+      if (this.alive && out.glow && this.play.glowing) void this.sayHint();
     }
   }
 
@@ -718,6 +719,11 @@ class NotAlways implements Game {
   /** The pause sheet's Show me: the same glow as two misses, counted once per claim or mend; asked again it repeats the claim. */
   askForHint() {
     if (this.busy || this.finished || this.play.phase === 'done') return;
+    // The reply scene is never scored: Help lifts the continuing reply and reads the replies again.
+    if (this.play.phase === 'reply') {
+      this.bob(this.replyNodes[(this.play.round.replies ?? []).indexOf('kind')]);
+      return void this.readReplies();
+    }
     if (this.play.requestHint()) void this.sayHint();
     else this.repeat();
   }
