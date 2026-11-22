@@ -16,6 +16,9 @@ import {
   holeAt,
   holeCount,
   HOLE,
+  LAP_LEVEL,
+  LAP_BOLT_SCALE,
+  LEVELS,
   MIN_ARM,
   mirror,
   moves,
@@ -198,9 +201,24 @@ describe('Bolt Boards levels 1–5 never dead-end', () => {
 });
 
 describe('Bolt Boards frozen list', () => {
-  it('has twenty boards a level (level 6 has its authored first board too)', () => {
-    for (const plan of PLANS.filter((x) => !x.build))
+  it('keeps at least twenty boards across each take-apart level for toddler and up', () => {
+    for (const plan of PLANS.filter((x) => !x.build && x.id !== LAP_LEVEL))
       expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
+  });
+
+  it('gives lap players one visible hand-sized bolt that clears the board in one action', () => {
+    expect(LEVELS.lap).toEqual({ min: LAP_LEVEL, max: LAP_LEVEL });
+    const plan = planFor(LAP_LEVEL);
+    const [p] = PUZZLES[LAP_LEVEL];
+    expect(PUZZLES[LAP_LEVEL]).toHaveLength(1);
+    expect(plan.scenes).toBe(1);
+    expect(p.boards).toHaveLength(1);
+    expect(p.bolts).toHaveLength(1);
+    expect(moves(p, startState(p), plan.holes)).toEqual([{ bolt: 0 }]);
+    expect(done(p, apply(startState(p), { bolt: 0 }), plan.goal)).toBe(true);
+    for (const v of [...Object.values(VIEWS), computeView(390, 625, undefined, true)]) {
+      expect(52 * LAP_BOLT_SCALE * boardLayout(v).scale).toBeGreaterThanOrEqual(100);
+    }
   });
 
   it('keeps the authored first boards of levels 1 and 6 where they were when the list grew', () => {

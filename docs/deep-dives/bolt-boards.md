@@ -2,7 +2,7 @@
 
 *ID `bolt-boards` · bands toddler, preschool, pre-K, school · levels 1–7 on 2026-11-06 · session `claude/bolt-boards-dive` ([PR #1331](https://github.com/rjdunlap/neo/pull/1331))*
 
-## The game today
+## The game as researched
 
 Wooden boards hang on the barn's pegboard wall from big bolts, with a fruit or a peeking friend behind each one. She taps a free bolt and it spins out. A board with two bolts stays put, one with one bolt swings and hangs straight below it, and one with none slides down to the woodpile so its fruit hops into the basket. A bolt under a higher board is covered and waits. At levels 6–7 every bolt she takes out has to go into an open hole on the wall, so the order she chooses can leave her stuck, and a free undo takes it back. The learning purpose is cause and effect through a fastener, support (two, one or no bolts), and then taking things apart in order. It was built from its [definition](../definitions/bolt-boards.md) ([PR #681](https://github.com/rjdunlap/neo/pull/681)). Every pose is computed exactly in `logic.ts`: there is no physics engine.
 
@@ -22,10 +22,9 @@ Wooden boards hang on the barn's pegboard wall from big bolts, with a fruit or a
 **Accounting today.** Covered taps are free at 1–3 and one miss from 4. A closed hole is free at 6 (lit) and one miss at 7. The two-miss glow counts one hint. At 6–7 a wander hint fires after `max(6, 2 × par)` removals, and "Stuck!" pulses undo without counting. Levels 1–5 can never dead-end, which a 200-sequence test asserts.
 
 **Known gaps.**
-- **Pre-K's jump.** Closed 2026-11-06 by build slice 2: level 8 sits between 5 and 6 by `order` (pre-K 2, 3, 4, 5, 8, 6; school 4, 5, 8, 6, 7), so holes and two taps arrive before dead ends. Level 8 has no wander hint by design (no par); a device check of how she reads it is still open.
+- **Pre-K's jump.** Closed 2026-11-06 by build slice 2: level 8 sits between 5 and 6 by `order` (pre-K 2, 3, 4, 5, 8, 6; school 4, 5, 8, 6, 7), so holes and two taps arrive before dead ends. Level 8 has no wander hint by design (no par).
 - **Variety.** Closed 2026-11-06 by build slice 1: 20 boards per level and six fruits (was 10 and three). Levels 1–2 can still repeat a board over many rounds.
 - **School tops out at 7**, and every level so far is taking things apart. The reverse, putting a thing back together (where the same "on top" rule has to be run backwards), is not in the game.
-- **Person checks.** The [device check](../DEVICE-CHECKS.md) (whether a toddler connects the bolt to the drop, whether a partly covered head reads as covered, whether undo is found at level 6) is still open.
 - **Couch.** None; the definition's later candidate (`src/couch/focus.ts` over bolts and holes) is unchanged.
 - **IDEAS.** No rows; the IDEAS candidate was archived when the game was built.
 
@@ -61,7 +60,6 @@ The long arc: toddler taps a bolt and sees a board fall; preschool learns two-bo
 - **Supported ending.** The glow after two misses and the wander hint lead to the solver's next move at every level. Each round ends with the cart (or, at level 9, the finished wall matching its picture with a little bell), then one sticker.
 - **Co-play.** Built: a grown-up says which board is on top. At level 8, one player lifts and the other picks the hole. At level 9, one player reads the picture aloud ("the red one is at the back") and the other bolts.
 - **Art and feel example (code-drawn).** The picture card at level 9 is the target wall drawn small with the same board `Graphics` at about a quarter scale, on a cream card with a pin at the top. As each board goes up in the right place, its tiny copy on the card gets a tick drawn as two rounded strokes, so progress shows without numbers. No new art system.
-- **Needs a person or device.** The existing device check; whether a four-year-old finds the second tap of level 8 without the glow being explained; whether the picture card at level 9 is read as "make this" or as decoration on an iPad.
 
 ## Proposed ladder
 
@@ -84,11 +82,11 @@ Rule tests: the frozen list holds at least 20 boards per level, and the authored
 
 ### Younger-band openings
 
-None proposed now. Level 1 already plays in toddler with three big bolts. A lap entry (one board, one bolt as big as a hand, tap anywhere and the nearest bolt turns) is a sketch. It waits on the open device check of whether a toddler connects the bolt to the drop, and adding a lap band to the game is the developer's call.
+Lap opens at level 10, *One big bolt*. One tap anywhere in the play area spins the bolt out, drops the board and reveals the fruit. The ghost finger shows the move and the round awards one sticker. Toddler starts at level 1, with three bolts to tap.
 
 ### Easier entries and levels between existing ones
 
-Level 8 is the in-between level: an appended ID placed by `order`, with no renumbering. Default windows: pre-K `{ min: 2, max: 8, order: [2, 3, 4, 5, 8, 6] }`; school `{ min: 4, max: 8, order: [4, 5, 8, 6, 7] }`, and `[4, 5, 8, 6, 7, 9]` once level 9 exists. `entryLevels` stays unset: a birthday from pre-K at 8 into school lands on 8, which school lists. Toddler and preschool are unchanged. Saved levels keep their meaning.
+Level 8 is the in-between level: an appended ID placed by `order`, with no renumbering. Pre-K plays `[2, 3, 4, 5, 8, 6]` and school plays `[4, 5, 8, 6, 7, 9]`. A birthday from pre-K at 8 into school lands on 8, which school lists. `entryLevels: [10]` sends a player whose saved level is 10 to the first level of the new band's range.
 
 ### Left out on purpose
 
@@ -96,12 +94,12 @@ Move limits, paid or earned extra holes, boosters and timers. The color-box sort
 
 ## Decisions for the developer
 
-**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the lap entry is opened (2: yes; the toddler check is parked). A "default" or "lean" below that says otherwise is superseded.
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the lap entry is approved.
 
 The definition's six decisions stand as decided on 2026-10-23. This dive adds:
 
 1. **Where level 8 plays.** Default: pre-K and school, between 5 and 6 by `order`. The alternative is pre-K only, leaving school's 5 → 6 step as it is. The default is usable, so slice 2 is buildable on it.
-2. **A lap entry for Bolt Boards** (one huge bolt, tap anywhere). No default; it stays a sketch until the toddler device check has run.
+2. **A lap entry for Bolt Boards.** One huge bolt, one board, a tap anywhere in the play area.
 
 ## Build slices, in order
 
@@ -109,7 +107,7 @@ The definition's six decisions stand as decided on 2026-10-23. This dive adds:
 2. **Level 8, *Plenty of holes*. Built 2026-11-06** (PR #1344, build note in the [archive](../archive/COMPLETED-2026-10-09.md#bolt-boards-level-8-plenty-of-holes-2026-11-06)). On decision 1's default. Tier: new level on an existing interaction: typecheck, rule tests (the no-stuck search, the hole-closing move, the authored board, registry, how-to and voice tests), one browser play of level 8, and `fingerdemo` at 8; build, since voice and how-to change.
 3. **Define level 9, *Put it back*. Defined 2026-11-07** (PR #1348, [definition](../definitions/bolt-boards-put-it-back.md); docs only): the reverse `place` rule, the woodpile picker and picture card at the four standard views, the accounting, the bot, the voice lines and the rule tests.
 4. **Level 9, *Put it back*. Built 2026-11-07** (PR #1354, build note in the [archive](../archive/COMPLETED-2026-10-09.md#bolt-boards-level-9-put-it-back-2026-11-07)). On the [definition](../definitions/bolt-boards-put-it-back.md); new-interaction tier.
-5. **Lap entry.** Decision 2. Claimed by `codex/neo-ready-bolt-boards-lap`: one oversized bolt, one board, and a tap anywhere in the play area at the next free level ID.
+5. **Level 10, *One big bolt*. Built 2026-11-21.** The lap entry from decision 2 uses the existing removal, fruit and reward flow with an oversized bolt and a tap anywhere in the play area.
 6. **Couch play** over bolts and holes (`src/couch/focus.ts`). Still later, as in the definition.
 
 ## What was built in this session

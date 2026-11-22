@@ -1,9 +1,11 @@
 import type { GameHowTo } from '../types';
+import { LAP_LEVEL } from './logic';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
   goal: 'Take the boards down by their bolts, or bolt them back up to match a picture.',
   steps: [
+    { from: LAP_LEVEL, to: LAP_LEVEL, text: 'Tap anywhere in the play area to turn the big bolt.' },
     { from: 1, to: 8, text: 'Tap a bolt to take it out.' },
     { from: 2, to: 9, text: 'Two bolts hold a board up; with one, it swings; with none, it comes down.' },
     { from: 3, to: 8, text: 'A bolt under another board waits until that board is gone.' },
@@ -21,6 +23,7 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
+    { from: LAP_LEVEL, to: LAP_LEVEL, text: 'The board drops and reveals a fruit.' },
     { from: 1, to: 4, text: 'Every board is down.' },
     { from: 5, to: 5, text: 'Nothing covers the friend.' },
     { from: 6, to: 6, text: 'Every board is down.' },

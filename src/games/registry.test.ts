@@ -214,6 +214,13 @@ describe('game registry', () => {
     }
   });
 
+  it('opens Bolt Boards at the lap entry and starts the next band at level 1', () => {
+    const g = GAMES.find((g) => g.id === 'bolt-boards')!;
+    expect(levelsInOrder(g.levels('lap'))).toEqual([10]);
+    expect(landing(10, g.levels('toddler'), g.entryLevels)).toBe(1);
+    expect(landing(2, g.levels('toddler'), g.entryLevels)).toBe(2);
+  });
+
   it('places Color Garden tap entries first without renumbering existing levels or pins', () => {
     const g = GAMES.find((g) => g.id === 'color-garden')!;
     expect(g.bands).toContain('lap');
