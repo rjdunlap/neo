@@ -16,7 +16,7 @@ export const STRIP_W = 3.4;
 /** Sample spacing along a stroke, in strip units: about 5–7 logical units on the strip. */
 export const SPACING = 0.025;
 
-export type Mode = 'mark' | 'trace' | 'choose' | 'dots';
+export type Mode = 'mark' | 'trace' | 'choose' | 'dots' | 'own';
 
 export interface Plan {
   mode: Mode;
@@ -53,6 +53,11 @@ export const PLANS: readonly Plan[] = [
     name: 'Spiral and eight: a snail shell round into the middle, then a figure of eight through its crossing',
     count: 2,
   },
+  {
+    mode: 'own',
+    name: 'Your pattern: draw up or down in each place, and the pet keeps your pattern going',
+    count: 2,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -61,9 +66,10 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
   preschool: { min: 3, max: 5 },
   // Level 9's slanting lines come between memory (5) and the shapes (6), whose triangle is made of them.
-  prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
+  // Level 12, her own pattern, is the calm top of pre-K and school: it counts no misses, so it only stops a step down.
+  prek: { min: 5, max: 12, order: [5, 9, 6, 7, 8, 12] },
   // The school window (decided 2026-11-17, once the geometry probe passed): level 8's patterns, then 11's spiral and eight.
-  school: { min: 8, max: 11, order: [8, 11] },
+  school: { min: 8, max: 12, order: [8, 11, 12] },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -265,7 +271,7 @@ export interface Stroke {
   lead: number;
   /** The real corners (zigzag peaks and troughs, a square's and triangle's corners), as points on the path. */
   corners: Point[];
-  /** Levels 7–8: which candidate continues the pattern, and the kind of each. */
+  /** Levels 7–8: which candidate continues the pattern, and the kind of each. Level 12 has `kinds` and no `right`. */
   right?: number;
   kinds?: UnitKind[];
   /** Units in the pattern stroke, for the pet's spoken words (levels 3–5). */
@@ -281,7 +287,21 @@ export interface Strip {
   pattern?: UnitKind[];
   /** Level 5: the dashes fade after the pet's part. */
   memory?: boolean;
+  /** Level 12: her places on this strip, and how the pet carries her pattern on. */
+  own?: OwnStrip;
 }
+
+/** Level 12's strip: a pair (up kind first), her places, the units in all, their width and where the first starts. */
+export interface OwnStrip {
+  pair: readonly [UnitKind, UnitKind];
+  places: number;
+  total: number;
+  w: number;
+  x0: number;
+}
+
+/** A stroke with two faint candidates she chooses between (levels 7–8 and 12), as against a circle's two ways round. */
+export const isChoice = (stroke: Stroke): boolean => stroke.kinds !== undefined;
 
 const single = (kind: Stroke['kind'], path: Point[], lead = 0, corners: Point[] = []): Stroke => {
   const pts = sampleStroke(path, SPACING);
@@ -364,6 +384,60 @@ export function nextUnit(pattern: readonly UnitKind[], shown: number): UnitKind 
 /** The pattern laid out to `total` units. */
 export function patternUnits(core: readonly UnitKind[], total: number): UnitKind[] {
   return Array.from({ length: total }, (_, i) => core[i % core.length]);
+}
+
+/* ---------------------------------------------------------------- her own pattern (level 12) */
+
+/** Her places on the two strips of level 12. */
+export const OWN_PLACES = [2, 3] as const;
+/** The units on a level-12 strip: as many whole repeats of her places as fit nine (8 for two places, 9 for three). */
+export const ownTotal = (places: number): number => Math.floor(9 / places) * places;
+
+/** One of her places at x0: the pair's two kinds sharing the unit's start, the up one first, with no right one. */
+export function ownStroke(pair: readonly [UnitKind, UnitKind], x0: number, w: number): Stroke {
+  const kinds: UnitKind[] = [pair[0], pair[1]];
+  const orders = kinds.map((k) => sampleStroke(unitPath(k, x0, w).path, SPACING));
+  const corners = kinds.flatMap((k) => unitPath(k, x0, w).corners);
+  return { kind: pair[0], orders, lead: 0, corners, kinds };
+}
+
+/** Her unit: the kinds she drew, in order. */
+export const ownCore = (chosen: readonly UnitKind[]): UnitKind[] => [...chosen];
+
+/** What the pet says back: the shortest part of her list that repeats to make it ("hill" for hill, hill, hill). */
+export function spokenCore(chosen: readonly UnitKind[]): UnitKind[] {
+  const n = chosen.length;
+  for (let p = 1; p < n; p++)
+    if (n % p === 0 && chosen.every((k, i) => k === chosen[i % p])) return chosen.slice(0, p);
+  return [...chosen];
+}
+
+/** The whole strip: her list repeated as a whole to `total`. Every list repeats, so every choice is a pattern. */
+export const continueOwn = (chosen: readonly UnitKind[], total: number): UnitKind[] =>
+  patternUnits(ownCore(chosen), total);
+
+/** The pet's part, drawn after hers: the rest of the strip from the end of her last place, all of it the pet's. */
+export function continuationStroke(own: OwnStrip, chosen: readonly UnitKind[]): Stroke {
+  const rest = continueOwn(chosen, own.total).slice(own.places);
+  const st = patternStroke(rest, 0, own.x0 + own.places * own.w, own.w);
+  st.lead = st.orders[0].length - 1;
+  return st;
+}
+
+/** Level 12's strips: two different pairs, two places then three, each strip's width fixed before she draws. */
+function ownStrips(rng: Rng): Strip[] {
+  const pairs = rng.shuffle([...PAIRS]).slice(0, 2);
+  return OWN_PLACES.map((places, i) => {
+    const total = ownTotal(places),
+      w = Math.min(UNIT_W, 3.2 / total),
+      x0 = (STRIP_W - total * w) / 2,
+      pair = pairs[i];
+    return {
+      piece: i === 0 ? 'bridge' : 'bunting',
+      own: { pair, places, total, w, x0 },
+      strokes: Array.from({ length: places }, (_, j) => ownStroke(pair, x0 + j * w, w)),
+    };
+  });
 }
 
 /* ---------------------------------------------------------------- strips per level */
@@ -560,6 +634,8 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
         { piece: 'snail', strokes: [spiralStroke()] },
         { piece: rng.pick(EIGHT_PIECES), strokes: [eightStroke()] },
       ];
+    case 12:
+      return ownStrips(rng);
     default: {
       const shapes: Shape[] = l === 7 ? ['AB', 'AB'] : rng.shuffle<Shape>(['AAB', 'ABB']);
       const pairs = rng.shuffle([...PAIRS]).slice(0, 2);
@@ -693,7 +769,7 @@ export function chooseOrder(
   // candidates by how far each has left the other's path.
   const start = stroke.orders[0][0];
   const away = (o: number, i: number) =>
-    stroke.right === undefined
+    !isChoice(stroke)
       ? Math.hypot(stroke.orders[o][i][0] - start[0], stroke.orders[o][i][1] - start[1])
       : apart(stroke, o, i);
   const da = away(0, a),

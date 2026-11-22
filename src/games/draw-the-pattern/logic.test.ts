@@ -6,6 +6,14 @@ import { offTrail } from '../../learning/tracing/feedback';
 import {
   LEVELS,
   PAIRS,
+  OWN_PLACES,
+  baseOf,
+  continuationStroke,
+  continueOwn,
+  isChoice,
+  ownTotal,
+  spokenCore,
+  type UnitKind,
   PLANS,
   POOLS,
   SHAPE_SETS,
@@ -75,14 +83,14 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Draw the Pattern ladder', () => {
-  it('has eleven levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(11);
+  it('has twelve levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(12);
     expect(LEVELS).toEqual({
       lap: { min: 1, max: 10, order: [1, 10] },
       toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
       preschool: { min: 3, max: 5 },
-      prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
-      school: { min: 8, max: 11, order: [8, 11] },
+      prek: { min: 5, max: 12, order: [5, 9, 6, 7, 8, 12] },
+      school: { min: 8, max: 12, order: [8, 11, 12] },
     });
     expect(markCount(planFor(1))).toBe(4);
     expect(planFor(1).mode).toBe('mark');
@@ -749,10 +757,12 @@ describe('Draw the Pattern level 11, spiral and eight', () => {
   const tol = tolerance(11);
   const level11 = (seed: number) => stripsFor(11, new Rng(seed));
 
-  it('opens the school window at 8 then 11, without renumbering', () => {
+  it('opens the school window at 8, 11 then 12, without renumbering', () => {
     const school = rangeFor(LEVELS, 'school');
     expect(stepLevel(8, 1, school)).toBe(11);
-    expect(stepLevel(11, 1, school)).toBe(11);
+    expect(stepLevel(11, 1, school)).toBe(12);
+    expect(stepLevel(12, 1, school)).toBe(12);
+    expect(stepLevel(12, -1, school)).toBe(11);
     expect(stepLevel(11, -1, school)).toBe(8);
     expect(planFor(11).mode).toBe('trace');
     expect(planFor(10).mode).toBe('dots');
@@ -863,5 +873,153 @@ describe('Draw the Pattern level 11, spiral and eight', () => {
 
   it('draws the same strips for the same seed', () => {
     expect(level11(7)).toEqual(level11(7));
+  });
+});
+
+describe('Draw the Pattern level 12, your pattern', () => {
+  const own = (seed: number) => stripsFor(12, new Rng(seed));
+  const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
+  const d = (a: Point, b: Point) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const lists = (pair: readonly UnitKind[], n: number): UnitKind[][] =>
+    n === 0 ? [[]] : lists(pair, n - 1).flatMap((l) => pair.map((k) => [...l, k]));
+
+  it('gives each place two orders from one start, up first, no right one, and never counts a wrong candidate', () => {
+    const tol = tolerance(12);
+    for (const seed of seeds) {
+      for (const strip of own(seed)) {
+        expect(strip.strokes).toHaveLength(strip.own!.places);
+        for (const s of strip.strokes) {
+          expect(isChoice(s)).toBe(true);
+          expect(s.right).toBeUndefined();
+          expect(s.kinds).toEqual([...strip.own!.pair]);
+          expect(s.orders).toHaveLength(2);
+          expect(d(s.orders[0][0], s.orders[1][0])).toBeLessThan(1e-9);
+          expect(s.orders[0][1][1], 'up goes up').toBeLessThan(s.orders[0][0][1]);
+          expect(s.orders[1][1][1], 'down goes down').toBeGreaterThan(s.orders[1][0][1]);
+          for (const o of [0, 1]) {
+            const pts = s.orders[o],
+              dv = divergence(s, o, tol);
+            expect(dv).toBeLessThan(pts.length - 1 - 4);
+            for (let k = dv; k < dv + 4; k++) {
+              const near = Math.min(...s.orders[1 - o].map((q) => d(q, pts[k])));
+              expect(near).toBeGreaterThanOrEqual(2 * tol - 0.02);
+            }
+            for (let p = 0; p < pts.length; p++) expect(wrongReached(s, o, p, tol)).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('makes every list of two or three kinds a pattern of the right length', () => {
+    for (const pair of PAIRS) {
+      for (const [places, total] of [
+        [2, 8],
+        [3, 9],
+      ] as const) {
+        expect(ownTotal(places)).toBe(total);
+        for (const chosen of lists(pair, places)) {
+          const out = continueOwn(chosen, total);
+          expect(out).toHaveLength(total);
+          expect(out.slice(0, places)).toEqual(chosen);
+          out.forEach((k, i) => expect(k).toBe(chosen[i % chosen.length]));
+          expect(total % places).toBe(0);
+        }
+      }
+    }
+    expect([...OWN_PLACES]).toEqual([2, 3]);
+  });
+
+  it('says one kind when all are the same and the whole list otherwise, matching the continuation', () => {
+    for (const pair of PAIRS) {
+      for (const n of [2, 3]) {
+        for (const chosen of lists(pair, n)) {
+          const said = spokenCore(chosen);
+          if (chosen.every((k) => k === chosen[0])) expect(said).toEqual([chosen[0]]);
+          else expect(said).toEqual(chosen);
+          const total = ownTotal(n);
+          expect(Array.from({ length: total }, (_, i) => said[i % said.length])).toEqual(
+            continueOwn(chosen, total),
+          );
+        }
+      }
+    }
+  });
+
+  it('carries on from the end of her last place and fits the strip, joined on the baseline', () => {
+    for (const seed of seeds.slice(0, 20)) {
+      for (const strip of own(seed)) {
+        const o = strip.own!;
+        expect(o.w).toBeGreaterThanOrEqual(3.2 / 9 - 1e-9);
+        expect(o.x0).toBeGreaterThanOrEqual(0);
+        expect(o.x0 + o.total * o.w).toBeLessThanOrEqual(STRIP_W + 1e-9);
+        for (const chosen of lists(o.pair, o.places)) {
+          const st = continuationStroke(o, chosen);
+          const pts = st.orders[0];
+          expect(st.lead).toBe(pts.length - 1);
+          expect(st.units).toEqual(continueOwn(chosen, o.total).slice(o.places));
+          expect(st.units).toHaveLength(o.total - o.places);
+          const startX = o.x0 + o.places * o.w;
+          expect(pts[0][0]).toBeCloseTo(startX, 6);
+          expect(pts[0][1]).toBeCloseTo(baseOf(chosen[0]), 6);
+          expect(pts[pts.length - 1][0]).toBeCloseTo(o.x0 + o.total * o.w, 6);
+          for (const p of pts) {
+            expect(p[0]).toBeGreaterThanOrEqual(0);
+            expect(p[0]).toBeLessThanOrEqual(STRIP_W);
+          }
+          // Her places and the continuation both start and end on the baseline at each unit boundary.
+          for (let i = 0; i <= o.total - o.places; i++) {
+            const x = startX + i * o.w;
+            expect(
+              pts.some((p) => Math.abs(p[0] - x) < 1e-6 && Math.abs(p[1] - baseOf(chosen[0])) < 1e-6),
+              `boundary ${i}`,
+            ).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it('picks the down candidate after a downward move and the up one after an upward move', () => {
+    const tol = tolerance(12);
+    for (const seed of seeds.slice(0, 20)) {
+      for (const strip of own(seed)) {
+        const s = strip.strokes[0];
+        for (const want of [0, 1]) {
+          const pts = s.orders[want];
+          let order: number | null = null,
+            progress = 0,
+            prev = pts[0];
+          for (let i = 1; i < pts.length && order === null; i++) {
+            const next = chooseOrder(s, order, progress, prev, pts[i], tol);
+            order = next.order;
+            progress = next.progress;
+            prev = pts[i];
+          }
+          expect(order, `${s.kinds} ${want}`).toBe(want);
+        }
+      }
+    }
+  });
+
+  it('draws two strips with different pairs, reaches every pair on both, and repeats for a seed', () => {
+    const reached = [new Set<string>(), new Set<string>()];
+    for (let seed = 1; seed <= 300; seed++) {
+      const strips = own(seed);
+      expect(strips).toHaveLength(2);
+      expect(strips[0].own!.pair).not.toEqual(strips[1].own!.pair);
+      expect(strips.map((x) => x.piece)).toEqual(['bridge', 'bunting']);
+      expect(strips.map((x) => x.own!.places)).toEqual([2, 3]);
+      strips.forEach((x, i) => reached[i].add(x.own!.pair.join()));
+    }
+    for (const r of reached) expect([...r].sort()).toEqual(PAIRS.map((p) => p.join()).sort());
+    expect(own(7)).toEqual(own(7));
+  });
+
+  it('is the calm top of pre-K and school', () => {
+    expect(LEVELS.prek).toEqual({ min: 5, max: 12, order: [5, 9, 6, 7, 8, 12] });
+    expect(LEVELS.school).toEqual({ min: 8, max: 12, order: [8, 11, 12] });
+    expect(planFor(12).mode).toBe('own');
+    expect(planFor(12).count).toBe(2);
   });
 });

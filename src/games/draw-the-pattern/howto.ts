@@ -35,6 +35,16 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'The spiral goes round and round into the middle. The eight crosses itself in the middle: go straight on through the crossing into the other loop.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Two faint paths are shown in each place: one goes up, one goes down. Draw whichever you like.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'When your places are drawn, the pet says your pattern and keeps it going to the end of the strip.',
+    },
   ],
   finish: 'The picture is complete when every strip is drawn.',
   note: [
@@ -54,6 +64,11 @@ export const HOW_TO: GameHowTo = {
       text: TRACE_NOTE,
     },
     { from: 11, to: 11, text: TRACE_NOTE },
+    {
+      from: 12,
+      to: 12,
+      text: 'Nothing she draws here is wrong, and wandering off the path is not counted; the crayon just waits. Asking for a hint lights both paths and counts as a hint.',
+    },
     {
       from: 7,
       to: 8,
