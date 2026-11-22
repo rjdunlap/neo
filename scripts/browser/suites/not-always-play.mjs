@@ -41,6 +41,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.evaluate((j) => kit.tapOn(neo.scene.game.mendNodes[j]), j);
       await page.waitForTimeout(250);
     };
+    const tapNode = async (list, j) => {
+      await ready();
+      await page.evaluate(([list, j]) => kit.tapOn(neo.scene.game[list][j]), [list, j]);
+      await page.waitForTimeout(250);
+    };
     /** Answer everything left with the hint target, as the ghost finger does. */
     const finishRest = async (id) => {
       for (let k = 0; k < 12; k++) {
@@ -50,6 +55,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         if (s.phase === 'done') break;
         if (s.target.kind === 'card') await tapCard(s.target.i);
         else if (s.target.kind === 'stamp') await tapStamp();
+        else if (s.target.kind === 'why') await tapNode('responseNodes', s.target.j);
+        else if (s.target.kind === 'reply') await tapNode('replyNodes', s.target.j);
         else await tapMend(s.target.j);
       }
       await finished(id);
@@ -57,6 +64,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
+    // NOTALWAYS_LEVELS=4-6 runs only the levels 4–6 play; unset runs only levels 1–3.
+    if (process.env.NOTALWAYS_LEVELS === '4-6') return levels46();
 
     // Level 1 (pre-K), the authored row: "All of these have hats!" is broken only by card C (index 2). Two cards with hats
     // (two misses, the glow, one hint), then C; the other two claims answered right.
@@ -122,6 +131,99 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     log(
       'Not Always 1–3: level 1 two fitting cards and the glow then the breaker (2/1); portrait level 2 a false stamp then a true claim stamped (1/0); level 3 a free card tap, one false mend then the true one (1/0); passed',
     );
+
+    /** Levels 4–6 on an upright phone: a filtered claim, a disagreement, two signs and the unscored reply. */
+    async function levels46() {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      // Level 4, authored: "Every red one is round!" Two blue cards (outside the group: two misses, the glow), then the red square.
+      await launch('not-always', 4, 'Mia', 'school');
+      await ready();
+      const blues = await page.evaluate(() =>
+        neo.scene.game.play.row.flatMap((c, i) => (c.color === 'blue' ? [i] : [])),
+      );
+      await tapCard(blues[0]);
+      let s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.claim],
+        [1, 0, 0],
+        'a blue card cannot break a claim about the red ones: one miss',
+      );
+      await tapCard(blues[1]);
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.glowing],
+        [2, 1, true],
+        'a second outside card lights the glow: one hint',
+      );
+      const redSquare = await page.evaluate(() =>
+        neo.scene.game.play.row.findIndex((c) => c.color === 'red' && c.shape === 'square'),
+      );
+      assert.deepEqual(s.target, { kind: 'card', i: redSquare }, 'the glow is on the red square');
+      await screenshot('not-always-4-upright');
+      await tapCard(redSquare);
+      await page.waitForFunction(() => neo.scene.game.play.claim === 1, null, { timeout: 20000 });
+      await finishRest('not-always');
+      assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
+
+      // Level 5: "I'm very sure" is one miss, then the evidence; the other scenes answered right.
+      await launch('not-always', 5, 'Mia', 'school');
+      await ready();
+      const sure = await page.evaluate(() => neo.scene.game.play.prompt.why.responses.indexOf('sure'));
+      await tapNode('responseNodes', sure);
+      s = await state();
+      assert.deepEqual([s.misses, s.hints, s.claim], [1, 0, 0], 'being very sure is not a reason: one miss');
+      await screenshot('not-always-5-upright');
+      await tapNode('responseNodes', s.target.j);
+      await page.waitForFunction(() => neo.scene.game.play.claim === 1, null, { timeout: 30000 });
+      await finishRest('not-always');
+      assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
+
+      // Level 6: a card on a both-true prompt (one miss), the stamp; rotate during the second prompt, a false stamp (one miss),
+      // the breaker, then the reply scene: the rude reply, Help and the kind reply count nothing.
+      await launch('not-always', 6, 'Mia', 'school');
+      await tapCard(0);
+      s = await state();
+      assert.deepEqual([s.misses, s.claim], [1, 0], 'a card that fits both signs: one miss');
+      await tapStamp();
+      await page.waitForFunction(() => neo.scene.game.play.claim === 1, null, { timeout: 20000 });
+      await ready();
+      await page.setViewportSize({ width: 844, height: 390 });
+      await page.waitForTimeout(500);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(500);
+      await screenshot('not-always-6-two-signs');
+      // The second prompt's claims must have been read (a stamp before then only reads them, uncounted).
+      await page.waitForFunction(() => !neo.scene.game.unasked, null, { timeout: 20000 });
+      await tapStamp();
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.claim],
+        [2, 1],
+        'a false stamp after rotating: one miss, the prompt stays',
+      );
+      await tapCard(s.target.i);
+      await page.waitForFunction(() => neo.scene.game.play.phase === 'reply', null, { timeout: 20000 });
+      await ready();
+      const rude = await page.evaluate(() => neo.scene.game.play.round.replies.indexOf('rude'));
+      await tapNode('replyNodes', rude);
+      await page.evaluate(() => neo.scene.game.askForHint());
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.phase],
+        [2, 0, 'reply'],
+        'the rude reply and Help are never scored',
+      );
+      await screenshot('not-always-6-reply');
+      await tapNode('replyNodes', s.target.j);
+      await page.waitForFunction(() => neo.scene.game.play.claim === 2, null, { timeout: 20000 });
+      await finishRest('not-always');
+      assert.deepEqual(await score(), [2, 0], 'level 6 saved 2 misses, 0 hints');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Not Always 4–6 upright: level 4 two outside cards and the glow then the breaker (2/1); level 5 a sure reply then the evidence (1/0); level 6 a card miss, a stamp, rotation, a false stamp, the breaker, the rude reply and Help unscored, the kind reply (2/0); passed',
+      );
+    }
   }
   return { notAlwaysPlay };
 }

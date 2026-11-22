@@ -293,7 +293,7 @@ export function sceneArt(
   const marks: { x: number; y: number }[] = [];
   if (why.scene === 'balance') {
     // The heavier thing's pan sits low; the bucket is on the left unless mirrored.
-    const tilt = (a > b ? 1 : -1) * 0.22 * flip;
+    const tilt = -(a > b ? 1 : -1) * 0.22 * flip;
     const beam = new Container();
     const g = new Graphics()
       .poly([-16, h / 2 - 20, 16, h / 2 - 20, 0, -30])
