@@ -1,4 +1,4 @@
-# Village Vote levels 1–3 (CC1 / CC4)
+# Village Vote levels 1–6 (CC1 / CC4 / CC5)
 
 Defined 2026-10-25 from the [community-civics study](../deep-dives/subjects/community-civics.md#first-games-proposed-ladder-village-vote), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and [adopted October23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). Worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`, branch `codex/village-vote-cc1-definition`, claim `4796460e`, [PR #969](https://github.com/rjdunlap/neo/pull/969), base `da20f87c` plus docs diff. **CC1 defined the packet; CC4 built levels1–3 on2026-10-26 ([PR #983](https://github.com/rjdunlap/neo/pull/983)).** The implemented contract follows; current proof and remaining person/device gates are recorded below.
 
@@ -6,7 +6,7 @@ Fun action: tap raised paws, hear the count and choose the picture whose group h
 
 ## Scope, bands and complete rounds
 
-Stable ID `village-vote`, spoken/grown-up title “Village Vote”, subject `cozy-village` (everyday skills), land `cozy-village` (Cozy Village): subject and destination remain separate catalog concepts. CC4 ranges: preschool 1–2, prek 1–3, school 3–3, default each minimum, order `min..max`. No lap/toddler/grownup registration or new band. School 3–6 is the future ladder, not a shipped range; keep levels4–6 unregistered until separately built. Stable IDs never renumber later.
+Stable ID `village-vote`, spoken/grown-up title “Village Vote”, subject `cozy-village` (everyday skills), land `cozy-village` (Cozy Village): subject and destination remain separate catalog concepts. CC4 ranges: preschool 1–2, prek 1–3, school 3–3, default each minimum, order `min..max`. No lap/toddler/grownup registration or new band. School 3–6 is the ladder; levels 4–6 are [defined below](#levels-46-definition-cc5) and each stays unregistered until its batch is built. Stable IDs never renumber later.
 
 | Level / grown-up description | Canonical opening example and action | Whole-round finish |
 | --- | --- | --- |
@@ -85,7 +85,7 @@ CC4 meaningful rule tests must independently establish every finite family's tot
 
 Build tier: typecheck, unit tests, one filtered scripted play covering first/top level, wrong declaration and help, plus level2 free/lost preference and count/replay/phase boundaries, all three demos and one portrait screenshot at the densest case. Build because shared registration/lands/voice/card files change; add filtered browser case and README suite entry. Use only relevant world/offline checks if actual shared navigation/assets/persistence behavior changes; do not run a blanket release suite. Record tested commit/diff, exact filters/server URL; stop session servers. README inventory/GAMES/how-to updated by CC4; see current proof below.
 
-Person/device gates stay open: iPad speech/count ordering, comfortable reach/legibility and cancellation in both orientations, whether a preschool child distinguishes choosing for the pet from counting a winner, whether a child accepts a losing preference and understands the shared result, enjoyment/replay and any real-world transfer. No Chrome automation establishes these. CC5 waits until1–3 have been played; ties/run-off, excluded friends/fixes, chipping in, Count the Ballots, history/culture, safety, practical cards and persistent square rules remain separate and gated.
+Person/device gates stay open: iPad speech/count ordering, comfortable reach/legibility and cancellation in both orientations, whether a preschool child distinguishes choosing for the pet from counting a winner, whether a child accepts a losing preference and understands the shared result, enjoyment/replay and any real-world transfer. No Chrome automation establishes these. CC5 (ties/run-off, excluded friends/fixes, chipping in) is [defined below](#levels-46-definition-cc5) since the 2026-11-17 decisions lifted the play wait; Count the Ballots, history/culture, safety, practical cards and persistent square rules remain separate and gated.
 
 ## CC4 worker checkpoint (2026-10-25)
 
@@ -99,4 +99,138 @@ Built two groups, free pet preference, and three tallies through one shared-play
 
 Pre-code isolated prospective catalog audit recounted14 existing Cozy Village games,15 with this entry. All48 band/side/page/view cases (landscape, portrait, landscape phone) fitted at the current0.4 horizon, with scenery clear; existing lands/village tests also sweep four views, all counts/arrows and resident clearance. Prospective classic/root launch-return checks used a temporary test entry; final play checked the actual registration/icon/page/playBand and both return origins, including the younger signpost. No fallback land or smaller targets.
 
-Manual implementation review (no subagents, per assignment) found and fixed winner always in the first slot, lower-left crowd intrusion and Hint's corner overlap with shell help. Final edge probe briefly restores old Hint y235 and fails hit-testing, then restores280 and passes every control center/corner. Native cancel/outside/secondary pointer, partial/repeated/zero counts, losing pet preference, both choices on both level2 families, capped support/ghost-assisted finish, resize and destroy continuations are covered. Final screenshots of five votes and seven voters in portrait inspected. All three clean real card demos passed7.6/10.6/11.6 demo seconds. No independent reviewer or actual child/device acceptance is claimed; CC5 remains gated on play.
+Manual implementation review (no subagents, per assignment) found and fixed winner always in the first slot, lower-left crowd intrusion and Hint's corner overlap with shell help. Final edge probe briefly restores old Hint y235 and fails hit-testing, then restores280 and passes every control center/corner. Native cancel/outside/secondary pointer, partial/repeated/zero counts, losing pet preference, both choices on both level2 families, capped support/ghost-assisted finish, resize and destroy continuations are covered. Final screenshots of five votes and seven voters in portrait inspected. All three clean real card demos passed7.6/10.6/11.6 demo seconds. No independent reviewer or actual child/device acceptance is claimed; CC5 is defined below.
+
+## Levels 4–6 definition (CC5)
+
+Defined 2026-11-22 from the study's [proposed ladder](../deep-dives/subjects/community-civics.md#first-games-proposed-ladder-village-vote), its *Decided 2026-10-23* leans (decisions 4 and 6) and the [decisions of 2026-11-17](../archive/DECISIONS-2026-11-17.md#games), which lifted the wait on play. Read against the current `src/games/village-vote/` (levels 1–3, phone-upright layout). Docs only; each level is its own build batch below, and no level is registered before its batch lands.
+
+Fun action: the vote now has consequences she acts on: a tie sends friends to their next choice, the built toy turns out to leave some friends out until she picks a fix, and the toy is paid for by tapping shells from everyone's purses into one jar. Learning purpose: a run-off as an action (the fewest group's votes move on, then count again); that a choice most people wanted can still leave others out and can be changed so everyone can use it; and a shared cost paid in more than one way. Not taught: that a majority is right, that anyone deserves less, or any real election rule beyond the pictured run-off. No claim of transfer to real group behaviour.
+
+### Bands and ladder
+
+| Level | Grown-up description (`NAMES`) | Bands |
+| --- | --- | --- |
+| 4 *A tie* | A tie — move the fewest group's votes to their next choice, then choose most | school |
+| 5 *Everyone can use it* | Everyone can use it — find who the built toy leaves out, then choose a fix | school |
+| 6 *Chip in* | Chip in — fill the shared jar from the friends' purses | school |
+
+School grows 3–3 → 3–4 → 3–5 → 3–6, one batch at a time; preschool 1–2 and pre-K 1–3 are unchanged; default stays each band's minimum and `order` stays `min..max`. Each batch extends `LEVELS.school.max`, adds its `NAMES` row and lifts `describeLevel`'s clamp (today `Math.min(2, l - 1)`) to the new top. Levels 5 and 6 are upper-school by content and live at school's top as the band rule requires. Stable IDs 4–6 are fixed here; nothing renumbers.
+
+### Level 4, *A tie*
+
+**Round.** Three pictures and a crowd whose top two groups tie, counted as at level 3 (paw taps, partial tallies, replay). Tapping either tied picture is not a miss: the voice says "It's a tie!" with both totals, the fewest group's picture dims ("closed this time"), and each friend in that group shows a small picture of its **second choice** (a 48-unit badge drawn inside its own panel, decorative). She taps one of those friends (it lifts), then the toy picture it shows; it walks there and adds a mark. When every friend of the closed group has moved, the phase returns to counting and she taps the picture with the most votes now; that toy is built and everyone, the moved friends included, plays on it.
+
+**Seeded families** (counts before cosmetic permutation; the closed group's second choices are part of the family):
+
+| Family | First choices | Closed group's second choices | Run-off |
+| --- | --- | --- | --- |
+| A (opening fixture) | 3–3–2 (8 friends) | both to one tied picture | 5–3 |
+| B | 3–3–1 (7) | the one friend to either tied picture | 4–3 |
+| C | 2–2–1 (5) | the one friend to either tied picture | 3–2 |
+
+The generator never gives the two friends in family A different second choices: a 1–1 split would make 4–4, a second tie. Which tied picture gains is a seeded choice, so either slot can win. The opening fixture (`fixture(4, 0)`) is slide 3, swing 3, sandpit 2, both sandpit friends' second choice the swing, so the swing wins 5–3.
+
+**Taps.**
+
+- Tapping the fewest picture before the tie is found: a miss, "Let's count again" and the true three-way comparison (as level 3).
+- After the tie: tapping a closed-group friend selects it (tapping another switches; tapping it again deselects). Tapping the toy its badge shows moves it. Tapping the other tied toy while a friend is selected: a miss; the friend shakes its head and the voice says "This friend's next choice is the swing." Tapping the closed picture: ignored with "The sandpit is closed this time"; no miss.
+- Tapping a tied picture with no friend selected while closed-group friends remain: a nudge ("Move every friend from the sandpit first"), no miss.
+- After every friend has moved: tapping the picture with most votes completes; the other tied picture is a miss with the true comparison ("Five is more than three").
+- Paw taps and tally replays stay free throughout; moved friends count in their new group, and their marks move with them.
+
+**Model changes the builder makes.** `validate()` rejects a tied top only for levels 1–3, and for level 4 requires a tie between exactly the top two, a strictly smaller third group, and second choices on every closed-group friend that point to a tied option and agree (family A). `Vote` gains an optional `next?: Option`. `Election` gains a `runoff` phase, a `closed: Option | null`, a `moved` set, a `select(id)`/`send(option)` pair, and `winner` reads the totals after moves (a moved voter counts for its `next`). The level-1–3 behaviour, fixtures and tests are unchanged.
+
+### Level 5, *Everyone can use it*
+
+**Round.** The vote is already counted: two pictures, tallies full, and the **tall slide** (a fourth option, `tall-slide`, used only here) has won. Hazel says "The tall slide won, five to three. Let's build it!" and it is built. Some friends stand at the bottom: its first step is drawn clearly higher than they can reach. "Who can't use it? Tap them." She taps each friend left at the bottom (it bounces, and the voice says "The first step is too high"). When all are found, two fix cards appear, *add a step* and *a lower slide*. Either is accepted: the fix is built, the voice names what each costs ("A step was quick to add. A lower slide meant building it again."), and all friends play.
+
+**Seeded families.** Votes 5–3 (8 friends) or 4–2 (6); the tall slide is in either picture slot. Left out: one to three friends, all drawn as the smallest size and all from the group that wanted the other toy (the study's point, that a choice most wanted can leave the others out), but the round never says how anyone voted. Opening fixture: 5–3, the three who wanted the swing left out.
+
+**Taps.** Tapping a friend who is already on the slide: a miss, "This friend is on the slide!" Tapping a found friend again: replays its line, free. The fix choice is free and never wrong. Tapping a fix card before every left-out friend is found cannot happen (the cards appear after).
+
+**Wording rule.** The problem is the slide's step, never the friends: never "too small", "too little", "can't climb", "lost twice", "they didn't vote for it" or that anyone should have voted differently. The left-out friends are drawn content, waiting, not sad.
+
+**Model.** `OPTIONS` gains `tall-slide` outside levels 1–4's pool (`roundFor` at 1–4 never draws it). A level-5 plan carries `leftOut: string[]` (voter IDs); `validate()` checks they are 1–3 IDs of the losing group. `Election` gains `found` and a `fix: 'step' | 'lower' | null`; the finish waits for the fix.
+
+### Level 6, *Chip in*
+
+**Round.** The vote is already counted and the winning toy is pictured on the board with its cost. "The swing costs twelve shells. Tap the purses to fill the jar." Six friends stand in two rows, each holding a purse with its shells shown. Each tap on a purse moves one shell into the jar (a clink, the jar's new total spoken, one of its marked slots filled). The jar takes exactly its cost and then stops: the toy is built, and the voice names how it was filled, "Everyone gave the same." when every purse gave the same number, or "Some friends gave more." otherwise. Nothing ever names who gave least, and nothing calls a plan fair or unfair (decision 4's lean). Shells left in purses stay with their friends.
+
+**Seeded families.**
+
+| Family | Cost | Purses (permuted) | Ways to fill the jar | An equal-shares way |
+| --- | --- | --- | --- | --- |
+| Equal (opening fixture) | 12 | 2, 2, 2, 2, 2, 2 | 1 (every purse gives 2) | yes, the only one |
+| Uneven A | 10 | 1, 1, 2, 2, 3, 3 | 19 | none (a 1-shell purse caps equal shares at 6) |
+| Uneven B | 12 | 1, 2, 2, 3, 3, 3 | 20 | none |
+
+Counts from one uncommitted enumeration in the session's scratch folder; the builder's rule tests derive them, not this table.
+
+**Taps.** An empty purse ignores taps with "That purse is empty"; no miss. Taps after the jar is full are ignored. There is no wrong tap at this level, so it records no misses.
+
+**Model.** A level-6 plan carries `cost` and `purses: number[]` beside the voters; `Election` gains `jar` and `given: number[]` and a `give(i)` that refuses an empty purse or a full jar. The vote shown is a fixed two-picture count (as level 5), any winner slot.
+
+### Accounting, help and finishing
+
+The 1–3 rule holds (wrong declarations count misses; counting, replays and free choices never do), with these rows. Help uses `src/progress/coach.ts`; the Hint button and the automatic glow after two misses work as at 1–3.
+
+| Level | Counts a miss | Counts a hint | Never counted |
+| --- | --- | --- | --- |
+| 4 | tapping the fewest picture before the tie; sending a friend to the wrong tied toy; declaring the smaller group after the run-off | at most one per stage: the run-off stage (glow on the selected friend's toy, then the ghost) and the final declaration (glow on the winner); so 0–2 a round | the tied picture's "It's a tie!" tap, the closed picture, a declaration before every friend has moved, paws, replays |
+| 5 | tapping a friend who is on the slide | at most one: the glow on the left-out friends, then the ghost | found friends tapped again, the fix choice |
+| 6 | none | at most one: Hint glows a purse that still has shells, then the ghost finger taps it | empty purses, taps after the jar is full |
+
+Two smooth rounds (at most one miss, no hints) step up and two struggling rounds (at least four misses or two hints) step down, clamped to the band. Level 4 is the only level where two hints in one round are possible, because it has two separate decisions; level 6 can never struggle, which is acceptable at the top of the ladder. A round finished with a glow or the ghost is one sticker and is not counted as independent mastery. `ctx.finish` is called exactly once, after everyone has played on the toy.
+
+### Rule tests (`logic.test.ts`)
+
+- **Level 4:** every family's first choices tie exactly the top two with a strictly smaller third; every closed-group friend has a second choice that is a tied option, and in family A they agree; moving all of them always gives a unique winner (no 4–4); the winner after moves equals an independent instant run-off over (first, second) ballots computed in the test; a bad fixture with a 1–1 split, a three-way tie or a second choice on the closed option is rejected; `send` refuses the wrong toy (one miss), the closed toy (no miss) and a send with nothing selected; a declaration before every friend has moved is a nudge, not a miss; hints never exceed one per stage.
+- **Level 5:** the tall slide wins every seeded vote; `leftOut` is 1–3 IDs of the losing group; tapping an on-slide friend is one miss; both fix cards finish; levels 1–4's `roundFor` never draws `tall-slide`.
+- **Level 6:** every family's purses total at least the cost; the equal family has exactly one way and it is equal shares; each uneven family has at least two ways (enumerated in the test) and no equal-shares way; `give` refuses empty purses and a full jar; the jar never exceeds its cost; the spoken summary is "same" exactly when every purse gave the same number.
+- **All:** same seed gives the same round; `finish` once; existing 1–3 tests unchanged.
+
+### Voice, how-to and ghost finger
+
+Lines go in `voice.ts` (then `node scripts/content-barrels.mjs` and the clip generation), `ctx.instruct` for each phase's repeatable instruction:
+
+| Line | Proposed wording |
+| --- | --- |
+| Level 4 tie | "It's a tie! Three votes and three votes." |
+| Level 4 run-off | "The sandpit has fewest. Where would those friends go next? Tap a friend, then its picture." |
+| Level 4 recount | "Count again. Which picture has the most votes now?" |
+| Level 4 wrong send / closed / nudge | "This friend's next choice is the swing." / "The sandpit is closed this time." / "Move every friend from the sandpit first." |
+| Level 5 | "The tall slide won, five to three. Let's build it!" / "Who can't use it? Tap them." / "The first step is too high." / "This friend is on the slide!" / "How could everyone use it? Add a step, or a lower slide." |
+| Level 5 fix | "A step was quick to add. A lower slide meant building it again. Now everyone can play!" (and the mirror line for the lower slide) |
+| Level 6 | "The swing costs twelve shells. Tap the purses to fill the jar." / the jar's total / "Still two to go." (on instruction replay) / "That purse is empty." / "The jar is full! Everyone gave the same." / "The jar is full! Some friends gave more." |
+
+Never say "fair", "unfair", "greedy", "poor", who gave least, that the left-out friends are small or lost, or that a tie is bad. How-to card steps scoped `from: 4, to: 4` (tie, then move each closed-group friend to the toy on its badge, then choose most), `from: 5, to: 5` (find who cannot climb, then choose either fix) and `from: 6, to: 6` (tap purses until the jar is full; any way is fine). Each batch extends `autotouch()` through public taps only: at 4 it counts, taps a tied picture, moves each friend to its badge's toy and declares; at 5 it taps each left-out friend then a fix card; at 6 it taps purses round-robin until the jar is full. Co-play: at 4, a grown-up can be the latecomer whose second choice she asks; at 6, a grown-up names a purse and she taps it. Off-screen: the family meeting card stays its own slice (CC7).
+
+### Upright phone layout (candidate envelopes)
+
+The upright view (768 × 1024 design, `uprightDrop` below) is the first check: each batch extends `upright.test.ts` to its level, every family, and every phase (before the tie, mid run-off, after moves; the play scene with left-out friends and fix cards; the purses and jar), at 100 units with the existing `uprightProblems`.
+
+- **Level 4:** the level-3 columns (x 144 / 384 / 624, voters at ±58, rows 600 / 725 / 850 + drop). Eight friends at 3–3–2 need two rows; after the run-off a five-vote column needs three rows, the same depth level 2's five-vote column already passes. The badge sits inside each friend's 110 panel, so it adds no target.
+- **Level 5:** the play scene's friends (`playLayout`, rows of four at a 180 pitch) become tappable 110 targets; the fix cards (about 220 × 160 each) go in a row below the friends, about y 880 upright, clear of the Hint at (w − 90, h − 100). Landscape keeps the cards beside the toy.
+- **Level 6:** six purses as 110 targets in a 3 × 2 grid on the three columns (y about 600 and 760 upright), the jar (about 200 wide, cost slots visible) at about y 400 under the pictured winner. Landscape uses the level-3 columns at y about 480 and 610 with the jar beside the board.
+
+These are starting points; the builder measures art, speech labels, safe insets and the guide at runtime and moves things within `view`, never shrinking a target below 100.
+
+### Build batches
+
+1. **`village-vote 2` (level 4, *A tie*)**, the next build.
+2. **`village-vote 3` (level 5, *Everyone can use it*)**, after batch 2.
+3. **`village-vote 4` (level 6, *Chip in*)**, after batch 3. Shell art reuses Market Stall's `coinArt` (`src/games/market-stall/index.ts`) or the reuse map's coin entry if one exists by then; the taps stay `onTap` on whole purses.
+
+### Check tier
+
+- **Each batch, new interaction tier:** `npm run typecheck`; unit tests (the rule tests above plus the difficulty, how-to, registry, lands, clips and `upright.test.ts` walks that read every level); one filtered `BROWSER_SUITE=villagevote` play on an upright phone viewport at the new level, after the suite learns it (level 4: one wrong send and the glow; level 5: one tap on a friend on the slide, then a fix; level 6: one empty-purse tap and a full jar), with one hint; one upright phone screenshot at the densest phase (level 4 after moves, level 5 with the fix cards, level 6 mid-fill); `fingerdemo` at the new level; `npm run build`, because voice lines and clips are added. Record the tested commit, filter and server URL.
+- **This docs slice:** `node scripts/check-links.mjs` and `git diff --check`; the level-6 plan counts and the level-4 split check came from one uncommitted throwaway script.
+
+### Open decisions
+
+Each has a default the build uses; none blocks batch 2.
+
+1. **Who picks the closed group's next choice at level 4.** Default: the badge shows it and she carries it out. If play shows the badge is too easy to ignore, the friend could instead say its choice aloud when selected.
+2. **Level 5's left-out friends always from the losing side.** Default: yes, as the study proposes, without ever saying so. If play suggests it reads as a punishment, draw them from either group.
+3. **Level 6 naming.** Default: name the plan ("same" or "some gave more") and judge neither, decision 4's lean.
