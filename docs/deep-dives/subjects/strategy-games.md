@@ -136,7 +136,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 1. **SG1 · Define Shell Rows 1–3** (docs only; **defined 2026-10-31**, [PR #1062](https://github.com/rjdunlap/neo/pull/1062), [definition](../../definitions/shell-rows.md)): the board model and minimax, the puzzle positions and their rule tests, square sizes and layout, the replay, accounting, how-to and bot, land placement by decision 2.
 2. **Build Shell Rows 1–3** (new-game tier; **built 2026-11-01**, [PR #1115](https://github.com/rjdunlap/neo/pull/1115), batch `shell-rows 1`).
 3. **SG5 · Table games card** (grown-ups' page, plain HTML): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1804; no sowing game.
-4. **SG2 · Define Shell Rows 4–5**, after 1–3 are played; then build. **Defined 2026-11-22** (docs only; [definition](../../definitions/shell-rows-4-5.md)): two build batches, `shell-rows 2` (levels 4–5 with the pet) and `shell-rows 3` (the grown-up seat at level 5, after batch 2), both queued in [READY](../../READY.md).
+4. **SG2 · Define Shell Rows 4–5**, after 1–3 are played; then build. **Defined 2026-11-22** (docs only; [definition](../../definitions/shell-rows-4-5.md)): two build batches, `shell-rows 2` (levels 4–5 with the pet) and `shell-rows 3` (the grown-up seat at level 5, after batch 2), both queued in [READY](../../READY.md). **Batch `shell-rows 2` in progress 2026-11-22** (branch `claude/shell-rows-4-5`).
 5. **SG3 · Define Last Pebble**, after Shell Rows 5 (it reuses the replay).
 6. **SG4 Seed Bowls** after its review; **SG6 Fence the Field** sketch after a Lantern Lake capacity test.
 
