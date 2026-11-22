@@ -60,6 +60,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`swing-pals` level 9, *Paint the beat*** (preschool, pre-K and school; new interaction on an existing game: typecheck and unit tests including creations and the swing's upright test, one scripted play of level 9 keeping the painting and taking one hint, one upright portrait screenshot, `fingerdemo` at 9, build). [Definition](definitions/swing-pals-paint-the-beat.md#check-tier), [dive](deep-dives/swing-pals.md#build-slices-in-order)
 
+- **`notice-board` levels 4–5, *What did it leave out?* and *Who's behind it?*** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `noticeboard` play on an upright phone at levels 4 and 5 with a new level filter, one upright phone screenshot, `fingerdemo` at 4 and 5, build and offline because voice, clips and how-to change). [Definition](definitions/notice-board-4-5.md#check-tier), [dive](deep-dives/subjects/media-literacy.md#build-slices-in-order)
+
 - **`draw-the-pattern` level 12, *Your pattern*** (pre-K and school; new levels on an existing interaction: typecheck and unit tests including the rule tests, one `BROWSER_SUITE=drawpattern DRAW_LEVELS=12` play on an upright phone, `fingerdemo` at 12, build because voice and how-to change). [Definition](definitions/draw-the-pattern-your-pattern.md#check-tier), [dive](deep-dives/draw-the-pattern.md#build-slices-in-order)
 
 

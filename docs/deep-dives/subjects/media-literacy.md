@@ -128,7 +128,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 1. **Identity.** A new game, Notice Board, rather than Photo Safari levels: there is no camera act in finding a maker or a purpose. Edited and cropped pictures *are* Photo Safari's act and go to its dive. **Lean: new game plus the hand-off.**
 2. **Land.** Cozy Village (the island's village, where the sellers already are; nineteen games, so a twentieth pages, never shrinks) or Tinker Lab (the tracker's row; twenty games). **Lean: Cozy Village**; the defining session checks `landLayout` either way.
 3. **Selling is named, not judged.** *To sell* is ordinary: the maker says what they want, and no line says adverts are bad, tricks or scams. **Lean: yes.**
-4. **Story Stamp Checker.** Absorb data-ai-literacy's proposal as a Notice Board rung (5 or a later 6) so there is one board, or keep it separate. **Lean: absorb**, recorded in both studies when ML2 is defined.
+4. **Story Stamp Checker.** Absorb data-ai-literacy's proposal as a Notice Board rung (5 or a later 6) so there is one board, or keep it separate. **Lean: absorb**, recorded in both studies when ML2 is defined. **Settled 2026-11-22:** absorbed as level 5's paw pin ([definition](../../definitions/notice-board-4-5.md)).
 5. **Exaggeration, not lies.** Wrong posters are cheerful exaggerations or mix-ups ("as big as a tree"), never a friend lying on purpose, for pre-K and school 1–3; a maker with a reason to say something is only at level 5. **Lean: yes.**
 6. **Nothing kept.** No saved posters or journal pages for 1–3. **Lean: nothing kept.**
 
@@ -140,9 +140,9 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 2. **Build Notice Board 1–3** (new-game tier), after its definition. **Built 2026-11-01** (batch `notice-board 1`, PR #1113).
 3. **ML3 · "Who made this?" card** (grown-ups' page, plain HTML, sources on the card): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1796; the AAP caution is left off the card.
 4. **ML4 · Hand frame co-play role** (with the build or right after it).
-5. **ML2 · Define Notice Board 4–5**, after 1–3 are played; decision 4 settles Story Stamp Checker there; then build.
+5. **ML2 · Define Notice Board 4–5**, **defined 2026-11-22**, [definition](../../definitions/notice-board-4-5.md); decision 4 settled: Story Stamp Checker is absorbed as level 5's paw pin; then build.
 6. **ML5** to the Photo Safari dive.
 
 ## What was built and what ran
 
-Notice Board 1–3 was built 2026-11-01 (see the archive build note); nothing else is built. The Notice Board 1–3 definition was written 2026-10-31 (docs only; [definition](../../definitions/notice-board.md)). The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (NAMLE's Key Questions and Core Principles, RI.K, RI.4, ISTE students, the *American Educator* article), and used search summaries for the rest (the APA report page returned no text; AAP from secondary coverage); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+Notice Board 1–3 was built 2026-11-01 (see the archive build note); nothing else is built. The Notice Board 1–3 definition was written 2026-10-31 (docs only; [definition](../../definitions/notice-board.md)). The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (NAMLE's Key Questions and Core Principles, RI.K, RI.4, ISTE students, the *American Educator* article), and used search summaries for the rest (the APA report page returned no text; AAP from secondary coverage); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed. The Notice Board 4–5 definition ([definition](../../definitions/notice-board-4-5.md)) was written 2026-11-22 (docs only; links and diff check, nothing built).
