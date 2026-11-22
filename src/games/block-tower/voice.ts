@@ -40,5 +40,11 @@ export const VOICE = {
   'tower.reach-hint': ['Try a block on the glowing place.'],
   'tower.reach-off': ['Take the glowing top block off, and try again.'],
   'tower.star': ['You touched the star!'],
+  'tower.mend': [
+    'This tower leans too far, so the ropes hold it. Drag the top block to mend it, then tap the green button to let go.',
+  ],
+  'tower.mend-move': ['Move the top block first, then let go.'],
+  'tower.mend-stands': ['It stands! The middle of the blocks on top is over the block below.'],
+  'tower.mend-try': ['Round arrow: watch again. Rope: hold the tower again and try a new place.'],
   'tower.done': ['What a block builder!'],
 } satisfies Record<string, string[]>;

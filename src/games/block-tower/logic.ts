@@ -12,7 +12,7 @@ import type { BandLevels } from '../../progress/difficulty';
  *
  * Horizontal positions are in eighths of a block width, so every check is exact.
  */
-export type TowerMode = 'tumble' | 'friend' | 'flag' | 'match' | 'stand' | 'reach';
+export type TowerMode = 'tumble' | 'friend' | 'flag' | 'match' | 'stand' | 'reach' | 'mend';
 
 export interface TowerPlan {
   mode: TowerMode;
@@ -39,6 +39,11 @@ export const PLANS: TowerPlan[] = [
     rounds: 2,
     name: 'Stack blocks out past the table edge to touch the star without tipping',
   },
+  {
+    mode: 'mend',
+    rounds: 2,
+    name: 'Mend the leaning tower: move the top block so it stands, then let the ropes go',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -46,7 +51,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 3 },
   preschool: { min: 3, max: 4 },
   prek: { min: 4, max: 5 },
-  school: { min: 5, max: 6 },
+  // Mending one block is easier than level 6's open build, so school plays predict, mend, then reach.
+  school: { min: 5, max: 7, order: [5, 7, 6] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -289,6 +295,160 @@ export const stackMove = (have: number, want: number): 'add' | 'ring' | 'take' =
 export const standingTower = (round: StandRound): number =>
   round.towers.findIndex((t) => topples(t, null) === -1);
 
+/** On the mend level: where the top block goes (the hint's slot, which always stands). */
+export const nextMend = (task: Pick<DirectedMend, 'tower'>): number => mendHint(task);
+
 /** On the reach levels: where the next block goes (eighths from the table edge), or undefined when no way on is left from these blocks. */
 export const nextReach = (placed: readonly number[], round: ReachRound): number | undefined =>
   finish(placed, round)?.[0];
+
+// Mend the leaning tower ----------------------------------------------------------------------------
+
+/**
+ * Level 7: a tower that would tumble is held up by ropes; she slides only the top block along the block below, then
+ * lets go. Authored canonical towers (leaning right, floor under the bottom block); every dealt tower falls from block
+ * 1, and every task has failing slots on both sides of the standing window (docs/definitions/block-tower-mend.md).
+ */
+export interface MendTask {
+  id: string;
+  tower: readonly number[];
+}
+
+export const MEND_TASKS: readonly MendTask[] = Object.freeze([
+  { id: 'T1', tower: [0, 3, 6] },
+  { id: 'T2', tower: [0, 2, 6] },
+  // The definition's T3 was [0, 4, 5], but its base alone falls (a middle on the edge), so the top block was a
+  // counterweight, level 8's idea. Only bases [0, 2] and [0, 3] keep a standing base and fail both ways; [0, 3, 9]
+  // deals the top block furthest out, so the mend is the longest slide back.
+  { id: 'T3', tower: [0, 3, 9] },
+  { id: 'Q1', tower: [0, 2, 5, 7] },
+  { id: 'Q2', tower: [0, 2, 4, 8] },
+  { id: 'Q3', tower: [0, 3, 4, 7] },
+]);
+
+/** A dealt task: the tower in screen-direction eighths (canonical times `direction`), and a block colour start. */
+export interface DirectedMend {
+  id: string;
+  direction: ReachDirection;
+  tower: readonly number[];
+  color: number;
+}
+
+export const mendTask = (task: MendTask, direction: ReachDirection, color = 0): DirectedMend =>
+  Object.freeze({
+    id: task.id,
+    direction,
+    color,
+    tower: Object.freeze(task.tower.map((x) => x * direction || 0)),
+  });
+
+/** The blocks that never move: everything under the top one. */
+export const mendBase = (task: Pick<DirectedMend, 'tower'>) => task.tower.slice(0, -1);
+/** Where the top block was dealt. */
+export const mendStart = (task: Pick<DirectedMend, 'tower'>) => task.tower[task.tower.length - 1];
+
+/** The top block's slots: within seven eighths of the block below, so it always rests on that block. */
+export function mendDomain(task: Pick<DirectedMend, 'tower'>): number[] {
+  const base = mendBase(task);
+  const b = base[base.length - 1];
+  return Array.from({ length: 2 * (W - 1) + 1 }, (_, i) => b - (W - 1) + i);
+}
+
+/** Snap a drop (in eighths) into the domain: the nearest whole slot, clamped to its ends. */
+export function mendSlot(task: Pick<DirectedMend, 'tower'>, x: number): number {
+  const d = mendDomain(task);
+  return Math.max(d[0], Math.min(d[d.length - 1], Math.round(x))) || 0;
+}
+
+/** The domain slots where the whole tower stands. */
+export const mendRepairs = (task: Pick<DirectedMend, 'tower'>): number[] =>
+  mendDomain(task).filter((x) => topples([...mendBase(task), x], null) === -1);
+
+/** The middle of the standing window (the one nearer the base when the count is even): the most room either side. */
+export function mendHint(task: Pick<DirectedMend, 'tower'>): number {
+  const r = mendRepairs(task);
+  const lower = r[(r.length - 1) >> 1];
+  const upper = r[r.length >> 1];
+  const b = mendBase(task)[0];
+  return Math.abs(lower - b) <= Math.abs(upper - b) ? lower : upper;
+}
+
+/** One three-block task then one four-block task, one leaning each way, with a seeded colour start. */
+export function makeMendRounds(rng: Rng): readonly DirectedMend[] {
+  const three = rng.pick(MEND_TASKS.slice(0, 3));
+  const four = rng.pick(MEND_TASKS.slice(3));
+  const directions = rng.shuffle<ReachDirection>([1, -1]);
+  return Object.freeze([three, four].map((t, i) => mendTask(t, directions[i], rng.int(0, 6))));
+}
+
+/**
+ * One task's state. Moves and undo work while `held`; Let go at the dealt slot releases nothing; a tumble is one
+ * unsuccessful trial (never a miss), and two of them make the hint due. Watch again replays without counting.
+ */
+export class MendTrial {
+  phase: 'held' | 'releasing' | 'result' | 'stood' = 'held';
+  readonly start: number;
+  top: number;
+  moves: number[] = [];
+  failed = 0;
+  hinted = false;
+  private replaying = false;
+  constructor(readonly task: DirectedMend) {
+    this.start = this.top = mendStart(task);
+  }
+  /** Records a move to `x` (already snapped); false for a move outside the domain, to the same slot, or while not held. */
+  move(x: number): boolean {
+    if (this.phase !== 'held' || x === this.top || !mendDomain(this.task).includes(x)) return false;
+    // Back at the dealt slot is a fresh start: nothing left to undo.
+    if (x === this.start) this.moves = [];
+    else this.moves.push(this.top);
+    this.top = x;
+    return true;
+  }
+  undo(): boolean {
+    if (this.phase !== 'held' || !this.moves.length) return false;
+    this.top = this.moves.pop()!;
+    return true;
+  }
+  get canUndo() {
+    return this.phase === 'held' && this.moves.length > 0;
+  }
+  /** The tower as it stands now. */
+  get tower(): number[] {
+    return [...mendBase(this.task), this.top];
+  }
+  get stands() {
+    return topples(this.tower, null) === -1;
+  }
+  /** False (and nothing released) at the dealt slot. */
+  letGo(): boolean {
+    if (this.phase !== 'held' || this.top === this.start) return false;
+    this.phase = 'releasing';
+    return true;
+  }
+  /** The release has played out: a stand ends the task, a tumble counts one trial (a replay counts nothing). */
+  settle(): void {
+    if (this.phase !== 'releasing') return;
+    if (this.stands) this.phase = 'stood';
+    else {
+      if (!this.replaying) this.failed++;
+      this.phase = 'result';
+    }
+    this.replaying = false;
+  }
+  watchAgain(): boolean {
+    if (this.phase !== 'result') return false;
+    this.phase = 'releasing';
+    this.replaying = true;
+    return true;
+  }
+  /** Ropes back on, top block where she left it. */
+  tryAgain(): boolean {
+    if (this.phase !== 'result') return false;
+    this.phase = 'held';
+    return true;
+  }
+  get hintDue() {
+    return this.failed >= 2;
+  }
+}
