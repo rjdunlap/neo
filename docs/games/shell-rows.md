@@ -9,13 +9,15 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–3 |
+| school | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Finish the row: set the third shell |
 | 2 | Stop the row: block the pet's two pebbles |
 | 3 | Win first: make her own row rather than block |
+| 4 | Two ways to win: set a shell that makes two rows at once |
+| 5 | Play it out: a whole game with the pet; a tie is a good ending |
 
 <!-- end generated -->
 

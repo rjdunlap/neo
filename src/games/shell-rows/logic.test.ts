@@ -8,24 +8,32 @@ import {
   LINES,
   POSITIONS,
   SYMMETRIES,
+  PREFERENCE,
   Score,
+  accepts,
+  boardAfter,
   canonical,
   decidingLine,
   empties,
   fits,
+  forkFollow,
+  forkSquares,
   herTurn,
   key,
   layout,
   makeRound,
   other,
+  petMove,
   petReply,
   place,
   planFor,
   pool,
   replyKind,
   rightSquare,
+  showMeSquare,
   stickerBoard,
   transform,
+  turningPoint,
   value,
   winsFor,
   wonLine,
@@ -62,9 +70,9 @@ const ALL: Board[] = (() => {
 
 describe('plans', () => {
   it('level ranges and names', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 1, max: 3 } });
-    expect(LEVEL_IDS.map((l) => planFor(l).id)).toEqual(['finish', 'stop', 'first']);
-    for (const l of LEVEL_IDS) expect(planFor(l).name.length).toBeGreaterThan(0);
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 2 }, school: { min: 1, max: 5 } });
+    expect([1, 2, 3, 4, 5].map((l) => planFor(l).id)).toEqual(['finish', 'stop', 'first', 'fork', 'match']);
+    for (const l of [1, 2, 3, 4, 5]) expect(planFor(l).name.length).toBeGreaterThan(0);
   });
 });
 
@@ -189,14 +197,16 @@ describe('honest replies', () => {
             expect(replyKind(l, b, wrong)).toBe('could-have');
           }
           const line = decidingLine(b, wrong, reply);
+          expect(line).not.toBe(null);
           expect(line).toContain(reply);
+          expect(accepts(l, b, wrong)).toBe(false);
         }
       }
     });
 });
 
 describe('rounds', () => {
-  for (const l of LEVEL_IDS)
+  for (const l of [...LEVEL_IDS, 4])
     it(`level ${l} over 300 seeds`, () => {
       const authored = canonical(AUTHORED[planFor(l).id]);
       for (const seed of SEEDS) {
@@ -335,5 +345,292 @@ describe('wording', () => {
       expect(SCRIPT[k as keyof typeof SCRIPT], k).toBeDefined();
     }
     expect(HOW_TO['shell-rows']).toBeDefined();
+  });
+});
+
+// ---- levels 4–5 (SG2, docs/definitions/shell-rows-4-5.md) ----
+
+/** Every position with the pet to move: her shells one ahead (she went first) or level (the pet did), nobody's three. */
+const PET_TURN: Board[] = (() => {
+  const out: Board[] = [];
+  for (let n = 0; n < 3 ** 9; n++) {
+    const b: Board = Array.from({ length: 9 }, (_, i) => {
+      const d = Math.floor(n / 3 ** i) % 3;
+      return d === 0 ? null : d === 1 ? 'shell' : 'pebble';
+    });
+    const sh = b.filter((c) => c === 'shell').length,
+      pe = b.filter((c) => c === 'pebble').length;
+    if (!(sh === pe + 1 || sh === pe)) continue;
+    if (wonLine(b, 'shell') || wonLine(b, 'pebble') || !empties(b).length) continue;
+    out.push(b);
+  }
+  return out;
+})();
+
+describe('level 4, Two ways to win', () => {
+  it('the pool: reachable, nobody can win, a fork, every forced win a fork; 24 classes (17 with one fork)', () => {
+    const p = pool(4);
+    expect(p.length).toBeGreaterThanOrEqual(20);
+    expect(p).toHaveLength(24);
+    expect(p.filter((b) => forkSquares(b).length === 1)).toHaveLength(17);
+    for (const b of p) {
+      expect(herTurn(b)).toBe(true);
+      expect(winsFor(b, 'shell')).toEqual([]);
+      expect(winsFor(b, 'pebble')).toEqual([]);
+      const forks = forkSquares(b);
+      expect(forks.length).toBeGreaterThan(0);
+      for (const i of empties(b))
+        expect(value(place(b, i, 'shell'), 'pebble') === 1, `square ${i} of ${key(b)}`).toBe(
+          forks.includes(i),
+        );
+    }
+  });
+  it('the authored opening is in the pool, top-right its only fork square, rows and columns only', () => {
+    const a = AUTHORED.fork;
+    expect(fits(4, a)).toBe(true);
+    expect(forkSquares(a)).toEqual([2]);
+    expect(rightSquare(4, a)).toBe(2);
+    const rows = LINES.filter(
+      (l) => l.includes(2) && winsFor(place(a, 2, 'shell'), 'shell').some((g) => l.includes(g)),
+    );
+    for (const r of rows) expect(LINES.indexOf(r)).toBeLessThan(6);
+  });
+  it('accepts every fork square and nothing else; the glow is one of them and following it wins', () => {
+    for (const b of pool(4)) {
+      const forks = forkSquares(b);
+      for (const i of empties(b)) expect(accepts(4, b, i)).toBe(forks.includes(i));
+      expect(forks).toContain(rightSquare(4, b));
+      for (const f of forks) {
+        const { block, finish } = forkFollow(b, f);
+        const after = place(place(b, f, 'shell'), block, 'pebble');
+        expect(wonLine(after, 'pebble')).toBe(null);
+        expect(wonLine(place(after, finish, 'shell'), 'shell')).not.toBe(null);
+      }
+    }
+  });
+  it("honest replies: legal, minimax-best, never the pet's three; the kinds split 48, 19 and 9", () => {
+    const kinds: Record<string, number> = {};
+    for (const b of pool(4)) {
+      const right = rightSquare(4, b);
+      for (const wrong of empties(b).filter((i) => !accepts(4, b, i))) {
+        const after = place(b, wrong, 'shell');
+        const reply = petReply(after, right);
+        expect(after[reply]).toBe(null);
+        const best = Math.min(...empties(after).map((i) => value(place(after, i, 'pebble'), 'shell')));
+        expect(value(place(after, reply, 'pebble'), 'shell')).toBe(best);
+        const done = place(after, reply, 'pebble');
+        expect(wonLine(done, 'pebble')).toBe(null);
+        const kind = replyKind(4, b, wrong);
+        kinds[kind] = (kinds[kind] ?? 0) + 1;
+        const line = decidingLine(b, wrong, reply);
+        if (kind === 'stopped-one') {
+          expect(reply).toBe(winsFor(after, 'shell')[0]);
+          expect(line).toHaveLength(3);
+          expect(line).toContain(reply);
+        } else if (kind === 'took-best') {
+          expect(forkSquares(after)).toContain(reply);
+          expect(line!.length).toBeGreaterThanOrEqual(5);
+          expect(line).toContain(reply);
+        } else {
+          expect(kind).toBe('look-two');
+          expect(line).toBe(null);
+          // A fork square was not among the pet's best, or the reply would have taken it.
+          const forks = forkSquares(after);
+          for (const f of forks) expect(value(place(after, f, 'pebble'), 'shell')).toBeGreaterThan(best);
+        }
+      }
+    }
+    expect(kinds).toEqual({ 'stopped-one': 48, 'took-best': 19, 'look-two': 9 });
+  });
+});
+
+/** A level-5 match from the empty board: `her` picks her square; the pet plays `petMove` with `seed`. */
+function playMatch(her: (b: Board) => number, seed: number) {
+  const moves: number[] = [];
+  for (;;) {
+    const b = boardAfter(moves);
+    moves.push(her(b));
+    let a = boardAfter(moves);
+    if (wonLine(a, 'shell')) return { moves, result: 'win' as const };
+    if (!empties(a).length) return { moves, result: 'tie' as const };
+    moves.push(petMove(a, seed));
+    a = boardAfter(moves);
+    if (wonLine(a, 'pebble')) return { moves, result: 'loss' as const };
+  }
+}
+
+/** A player who always takes a win and always blocks, otherwise a seeded random empty square. */
+const ruleFollower = (rng: Rng) => (b: Board) => {
+  const w = winsFor(b, 'shell'),
+    p = winsFor(b, 'pebble');
+  if (w.length) return w[0];
+  if (p.length) return p[0];
+  return rng.pick(empties(b));
+};
+
+type Rates = [win: number, tie: number, loss: number];
+
+/** Exact rates against the level-5 pet with its quiet moves uniform: `her` lists her equally likely squares. */
+function rates(her: (b: Board) => number[]): Rates {
+  const memo = new Map<string, Rates>();
+  const herTurnRates = (b: Board): Rates => {
+    if (wonLine(b, 'pebble')) return [0, 0, 1];
+    const k = key(b);
+    const hit = memo.get(k);
+    if (hit) return hit;
+    const out: Rates = [0, 0, 0];
+    const choices = her(b);
+    for (const c of choices) {
+      const r = afterHers(place(b, c, 'shell'));
+      for (let j = 0; j < 3; j++) out[j] += r[j] / choices.length;
+    }
+    memo.set(k, out);
+    return out;
+  };
+  const afterHers = (a: Board): Rates => {
+    if (wonLine(a, 'shell')) return [1, 0, 0];
+    if (!empties(a).length) return [0, 1, 0];
+    const pw = winsFor(a, 'pebble'),
+      hw = winsFor(a, 'shell');
+    const first = (xs: number[]) => [PREFERENCE.find((i) => xs.includes(i))!];
+    const pets = pw.length ? first(pw) : hw.length ? first(hw) : empties(a);
+    const out: Rates = [0, 0, 0];
+    for (const c of pets) {
+      const r = herTurnRates(place(a, c, 'pebble'));
+      for (let j = 0; j < 3; j++) out[j] += r[j] / pets.length;
+    }
+    return out;
+  };
+  return herTurnRates(Array<null>(9).fill(null));
+}
+
+describe('level 5, Play it out', () => {
+  it('petMove takes a win, else blocks, on every position with the pet to move; deterministic per board and seed', () => {
+    for (const b of PET_TURN) {
+      const m = petMove(b, 17);
+      expect(b[m]).toBe(null);
+      expect(petMove(b, 17)).toBe(m);
+      const pw = winsFor(b, 'pebble'),
+        hw = winsFor(b, 'shell');
+      if (pw.length) expect(pw).toContain(m);
+      else if (hw.length) expect(hw).toContain(m);
+    }
+  });
+  it('its quiet moves cover every empty square over many seeds', () => {
+    const b = place(Array<null>(9).fill(null), 4, 'shell');
+    const seen = new Set(SEEDS.map((seed) => petMove(b, seed)));
+    expect([...seen].sort()).toEqual(empties(b));
+  });
+  it('a lost match always has a turning point; its glowed square never loses by force', () => {
+    let losses = 0;
+    for (const seed of SEEDS) {
+      const { moves, result } = playMatch(ruleFollower(new Rng(seed)), seed);
+      // A slip the pet did not punish is exploration: only a lost match rewinds.
+      if (result !== 'loss') continue;
+      losses++;
+      const k = turningPoint(moves)!;
+      expect(k).not.toBe(null);
+      expect(k % 2).toBe(0);
+      const before = boardAfter(moves, k);
+      expect(value(before, 'shell')).toBeGreaterThanOrEqual(0);
+      expect(value(place(before, moves[k], 'shell'), 'pebble')).toBe(-1);
+      const glow = showMeSquare(before);
+      expect(value(place(before, glow, 'shell'), 'pebble')).toBeGreaterThanOrEqual(0);
+      // Her later moves all kept or already lacked a safe square: none after k is another turning point.
+      for (let j = k + 2; j < moves.length; j += 2) expect(value(boardAfter(moves, j), 'shell')).toBe(-1);
+    }
+    expect(losses).toBeGreaterThan(20);
+  });
+  it('the ghost (Show me every turn) never lets the pet win, over 300 seeds', () => {
+    for (const seed of SEEDS) expect(playMatch(showMeSquare, seed).result).not.toBe('loss');
+  });
+  it('Show me: her win, else the block, else a minimax-best square (a fork first)', () => {
+    for (const b of ALL) {
+      const sq = showMeSquare(b);
+      expect(b[sq]).toBe(null);
+      const hw = winsFor(b, 'shell'),
+        pw = winsFor(b, 'pebble');
+      if (hw.length) expect(hw).toContain(sq);
+      else if (pw.length) expect(pw).toContain(sq);
+      else {
+        expect(value(place(b, sq, 'shell'), 'pebble')).toBe(value(b, 'shell'));
+        const forks = forkSquares(b);
+        if (forks.length) expect(forks).toContain(sq);
+      }
+    }
+  });
+  it('rates against this pet: the ghost wins 58% and never loses; a win-seeking player 92.7%; a rule-follower 31/52/17', () => {
+    const ghost = rates((b) => [showMeSquare(b)]);
+    expect(ghost[2]).toBe(0);
+    expect(ghost[0]).toBeCloseTo(0.583, 2);
+    // Best play against this pet: among squares that cannot lose, the one with the best chance of three.
+    const best = (() => {
+      const memo = new Map<string, Rates>();
+      const herT = (b: Board): Rates => {
+        if (wonLine(b, 'pebble')) return [0, 0, 1];
+        const k = key(b);
+        const hit = memo.get(k);
+        if (hit) return hit;
+        const opts = empties(b).map((c) => after(place(b, c, 'shell')));
+        const safe = opts.filter((r) => r[2] < 1e-12);
+        const pick = (safe.length ? safe : opts).reduce((x, y) => (y[0] > x[0] + 1e-12 ? y : x));
+        memo.set(k, pick);
+        return pick;
+      };
+      const after = (a: Board): Rates => {
+        if (wonLine(a, 'shell')) return [1, 0, 0];
+        if (!empties(a).length) return [0, 1, 0];
+        const pw = winsFor(a, 'pebble'),
+          hw = winsFor(a, 'shell');
+        const first = (xs: number[]) => [PREFERENCE.find((i) => xs.includes(i))!];
+        const pets = pw.length ? first(pw) : hw.length ? first(hw) : empties(a);
+        const out: Rates = [0, 0, 0];
+        for (const c of pets) {
+          const r = herT(place(a, c, 'pebble'));
+          for (let j = 0; j < 3; j++) out[j] += r[j] / pets.length;
+        }
+        return out;
+      };
+      return herT(Array<null>(9).fill(null));
+    })();
+    expect(best[2]).toBe(0);
+    expect(Math.abs(best[0] - 0.927)).toBeLessThan(0.01);
+    const rule = rates((b) => {
+      const w = winsFor(b, 'shell'),
+        p = winsFor(b, 'pebble');
+      return w.length ? [w[0]] : p.length ? [p[0]] : empties(b);
+    });
+    expect(Math.abs(rule[0] - 0.31)).toBeLessThan(0.01);
+    expect(Math.abs(rule[1] - 0.52)).toBeLessThan(0.01);
+    expect(Math.abs(rule[2] - 0.17)).toBeLessThan(0.01);
+  });
+  it('a round is the empty board with a seed', () => {
+    for (const seed of SEEDS.slice(0, 20)) {
+      const r = makeRound(5, new Rng(seed));
+      expect(makeRound(5, new Rng(seed))).toEqual(r);
+      expect(r.positions).toHaveLength(1);
+      expect(empties(r.positions[0].board)).toHaveLength(9);
+      expect(typeof r.seed).toBe('number');
+    }
+  });
+  it('accounting: a pet three is a miss; Show me one hint a turn; the second loss glows once a match', () => {
+    const s = new Score();
+    expect(s.showMe()).toBe(true);
+    expect(s.showMe()).toBe(false);
+    expect(s.hints).toBe(1);
+    s.newTurn();
+    expect(s.glowing).toBe(false);
+    expect(s.petWon()).toBe(false);
+    expect([s.misses, s.hints]).toEqual([1, 1]);
+    s.newTurn();
+    expect(s.petWon()).toBe(true);
+    s.newTurn();
+    s.lightTurningPoint();
+    expect([s.misses, s.hints, s.glowing]).toEqual([2, 2, true]);
+    expect(s.showMe()).toBe(false);
+    expect(s.hints).toBe(2);
+    s.newTurn();
+    expect(s.petWon()).toBe(false);
+    expect([s.misses, s.hints]).toEqual([3, 2]);
   });
 });
