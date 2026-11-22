@@ -5,7 +5,7 @@ Defined 2026-10-22 on `claude/define-lasso-about-how-many` ([PR #800](https://gi
 **What it adds:** one new level at the end of `lasso-loops` (`src/games/lasso-loops/`), level 6 *About how many?*. She looks at a meadow of fireflies and makes a free guess from three far-apart number cards. She loops one jar of ten as a benchmark and may then keep or change her guess. Then she plays level 4's tens round as the check: loop the tens, put the ones on the leaf, and choose how many in all. At the end the pet compares her guess with the count out loud. The new idea is using a known set (one jar of ten) to adjust a guess about a collection (CCSS MP5 and MP8, and the counting side of 2.MD.A.3). No built or planned rung covers it.
 
 - Levels 1–5 keep their IDs, pins and rules. This adds no band, land, tile, save field, journal entry, creation slot, couch entry or asset.
-- **Reconciling with Lasso Loops' own game dive.** The `lasso-loops` row in the [deep-dive tracker](../deep-dives/README.md) is still *not started*. This level takes **ID 6**. Whichever of the dive and this build lands second keeps ID 6 as defined here and numbers its own levels from 7. The study's level 7 *Too few, too many* (E2) waits on its decision 2 and a child's play of level 6. If the dive lands first, its own level 7 takes priority and E2 takes the next free ID.
+- **Reconciling with Lasso Loops' own game dive.** The `lasso-loops` row in the [deep-dive tracker](../deep-dives/README.md) is still *not started*. This level takes **ID 6**. Whichever of the dive and this build lands second keeps ID 6 as defined here and numbers its own levels from 7. The study's level 7 *Too few, too many* (E2) is now [defined](lasso-loops-too-few-too-many.md) (2026-11-22, not built). If the dive lands first, its own level 7 takes priority and E2 takes the next free ID.
 - Fixed here, against the study's table: the tens round makes **21–39** fireflies (`rng.int(2, 3)` tens and `rng.int(1, 9)` ones; never 20 or 30). The school window becomes **3–6**, not 3–7, because level 7 is not defined.
 
 ## Bands and ranges
@@ -142,4 +142,4 @@ Run `npm run build` only if shared files change (they should not). For person ch
 
 ## Open decisions
 
-None block the build. The study's decision 1 (append to school, 3–6 now) uses its lean as the default. Its decision 2 (level 7's miss rule) and the person checks belong to E2, which is defined only after a child has played level 6. There is no review gate: the content is invented fireflies and numbers, with no small objects and no reviewer table.
+None block the build. The study's decision 1 (append to school, 3–6 now) uses its lean as the default. Its decision 2 (level 7's miss rule) and the person checks belong to E2, now [defined](lasso-loops-too-few-too-many.md). There is no review gate: the content is invented fireflies and numbers, with no small objects and no reviewer table.
