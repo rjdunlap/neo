@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 18: five more games (PR #1963)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `cross`, `sort`, `cw`, `cue` and `cut` (Critter Crossing, Critter Sort, Crossword, Cue Studio, Cut Along), the next upright games alphabetically without clips after Clock Tower. Rendered 164 new slot-free clips (2386 in all, 2222 before); `src/audio/clips` grew from 37,507,442 to 40,326,146 bytes (+2,818,704 bytes, +2.82 MB); the service-worker precache went to 2598 entries and 56,430.77 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (2591), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, treehouse and journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
