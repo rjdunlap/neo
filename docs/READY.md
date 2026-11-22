@@ -46,7 +46,9 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which waits for RW10's packet). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
+- **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which is RW10's slice 2). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
+
+- **RW10 slice 2, the colour goal and the Dress colour row**, after the `paint-mixer 4` batch and RW10 slice 1 (shell, save and navigation tier with the new-interaction play: typecheck, unit tests, build, `BROWSER_SUITE=home` filtered to a school profile, and the offline check): six `colour:<c>` goals, the requested recipe for Paint Mixer level 5, the book origin that does not move her saved level, and one row of colour swatches in Dress. [Packet](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4), [work item](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals)
 
 - **Define Swing Pals level 9** (docs only), after the *Paint the beat* definition and a `swingLayout` probe. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer), [record](archive/DECISIONS-2026-11-17.md#games)
 
