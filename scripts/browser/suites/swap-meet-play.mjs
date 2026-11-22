@@ -213,6 +213,9 @@ export function createSuite({
     // The question is unscored: Help records nothing; any card answers, then the round finishes.
     await page.evaluate(() => neo.scene.game.askForHint());
     assert.deepEqual([(await fetchState()).misses, (await fetchState()).hints], [1, 1]);
+    // Turning the phone while the question waits draws the cards again rather than leaving the round stuck.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForFunction(() => neo.scene.game.cards.children.length === 3);
     await page.evaluate(() => kit.tapOn(neo.scene.game.cards.children[1]));
     await finished('swap-meet');
     assert.deepEqual([(await fetchState()).misses, (await fetchState()).hints], [1, 1]);

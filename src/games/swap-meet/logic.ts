@@ -302,6 +302,7 @@ export function taskKey(c: Case, s: State): string {
   if (c.level === 1) return `${c.id}:stage:${s.frame.stage}`;
   if (c.level === 4) return `${c.id}:carry:${s.frame.basket[0].hold}`;
   if (c.level >= 5) return `${c.id}:${s.frame.stage}:carry:${s.frame.basket[0].hold}`;
+  // Stall actions only occur from level 5, answered above; this narrows the type for the line below.
   if ('sell' in a || 'buy' in a) return `${c.id}:stall`;
   return `${c.id}:${'undo' in a ? 'undo' : c.level === 3 ? [a.from, a.to].sort().join(':') : a.to}`;
 }

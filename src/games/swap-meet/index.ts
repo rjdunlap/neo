@@ -86,6 +86,8 @@ class SwapMeet implements Game {
   readonly cards = new Container();
   /** The two route cards while level 6's question waits for a tap; the bot taps the one with fewer marks. */
   private routes: { card: Container; marks: number }[] = [];
+  /** Resolves level 6's question once she taps a card; null when no question is waiting. */
+  private pending: (() => void) | null = null;
   get misses() {
     return this.tally.misses;
   }
@@ -452,7 +454,8 @@ class SwapMeet implements Game {
         this.ctx.tw.to(carried.node, 'sell' in a ? shelf : this.boxes.stall!, { duration: 0.65 }),
         this.ctx.tw.to(good, basket, { duration: 0.65 }),
       ];
-      if ('buy' in a) void this.ctx.tw.to(carried.node, { alpha: 0 }, { duration: 0.65 });
+      if ('buy' in a)
+        motions.push(motions[0].then(() => this.ctx.tw.to(carried.node, { alpha: 0 }, { duration: 0.2 })));
       void this.ctx.say('sell' in a ? 'swap-meet.sell' : 'swap-meet.buy', {
         thing: 'sell' in a ? carried.item : before.stall!.shelf[place]!,
       });
@@ -512,6 +515,18 @@ class SwapMeet implements Game {
    * nothing on its own; any tap gets both counts and one fact about the routes, then the round finishes as usual.
    */
   private question(): Promise<void> {
+    void this.ctx.instruct('swap-meet.question');
+    return new Promise((done) => {
+      this.pending = done;
+      this.drawQuestion();
+    });
+  }
+  /** The shade and two route cards, laid out from the current view; a resize draws them again while the question waits. */
+  private drawQuestion() {
+    for (const n of this.cards.removeChildren()) n.destroy({ children: true });
+    this.routes = [];
+    const done = this.pending;
+    if (!done) return;
     const v = this.view,
       [first, second] = this.counts,
       start = this.round.stages[1].stall!.shelf,
@@ -519,50 +534,45 @@ class SwapMeet implements Game {
     const shade = new Graphics().rect(0, 0, v.w, v.h).fill({ color: cream, alpha: 0.7 });
     shade.eventMode = 'static';
     this.cards.addChild(shade);
-    let answered = false;
-    this.routes = [];
-    return new Promise((done) => {
-      const card = (x: number, stall: boolean, marks: number) => {
-        const c = new Container();
-        c.position.set(x, v.h * 0.48);
-        c.addChild(
-          new Graphics()
-            .roundRect(-140, -125, 280, 250, 26)
-            .fill(0xffffff)
-            .stroke({ width: 6, color: swatch.blue.line }),
-        );
-        if (stall) {
-          const s = stallArt(110, 58, true);
-          s.position.set(0, -45);
-          c.addChild(s);
-        } else
-          this.state.frame.friends.forEach((t, i) => {
-            const face = friendArt(t.id);
-            face.scale.set(t.id === 'frog' ? 0.5 : 0.2);
-            face.position.set(-80 + i * 80 - (t.id === 'frog' ? 0 : 45), t.id === 'frog' ? -45 : -75);
-            c.addChild(face);
-          });
-        const g = new Graphics();
-        for (let i = 0; i < marks; i++)
-          g.moveTo(-((marks - 1) * 30) / 2 + i * 30, 40)
-            .lineTo(-((marks - 1) * 30) / 2 + i * 30, 95)
-            .stroke({ width: 10, color: ink, cap: 'round' });
-        c.addChild(g);
-        c.hitArea = new Rectangle(-140, -125, 280, 250);
-        onTap(c, () => {
-          if (answered || !this.alive) return;
-          answered = true;
-          this.routes = [];
-          const r = routeReply(first, second);
-          void this.ctx.say(r.line, r.params).then(() => done());
+    const card = (x: number, stall: boolean, marks: number) => {
+      const c = new Container();
+      c.position.set(x, v.h * 0.48);
+      c.addChild(
+        new Graphics()
+          .roundRect(-140, -125, 280, 250, 26)
+          .fill(0xffffff)
+          .stroke({ width: 6, color: swatch.blue.line }),
+      );
+      if (stall) {
+        const s = stallArt(110, 58, true);
+        s.position.set(0, -45);
+        c.addChild(s);
+      } else
+        this.state.frame.friends.forEach((t, i) => {
+          const face = friendArt(t.id);
+          face.scale.set(t.id === 'frog' ? 0.5 : 0.2);
+          face.position.set(-80 + i * 80 - (t.id === 'frog' ? 0 : 45), t.id === 'frog' ? -45 : -75);
+          c.addChild(face);
         });
-        this.cards.addChild(c);
-        this.routes.push({ card: c, marks });
-      };
-      card(v.w * 0.3, false, first);
-      card(v.w * 0.7, usedStall, second);
-      void this.ctx.instruct('swap-meet.question');
-    });
+      const g = new Graphics();
+      for (let i = 0; i < marks; i++)
+        g.moveTo(-((marks - 1) * 30) / 2 + i * 30, 40)
+          .lineTo(-((marks - 1) * 30) / 2 + i * 30, 95)
+          .stroke({ width: 10, color: ink, cap: 'round' });
+      c.addChild(g);
+      c.hitArea = new Rectangle(-140, -125, 280, 250);
+      onTap(c, () => {
+        if (this.pending !== done || !this.alive) return;
+        this.pending = null;
+        this.routes = [];
+        const r = routeReply(first, second);
+        void this.ctx.say(r.line, r.params).then(() => done());
+      });
+      this.cards.addChild(c);
+      this.routes.push({ card: c, marks });
+    };
+    card(v.w * 0.3, false, first);
+    card(v.w * 0.7, usedStall, second);
   }
   askForHint() {
     if (!this.alive || this.busy || this.finished || this.dragging() || !this.ghost.idle) return;
@@ -613,6 +623,7 @@ class SwapMeet implements Game {
     this.busy = false;
     this.draw();
     if (this.finished) this.busy = true;
+    if (this.pending) this.drawQuestion();
   }
   destroy() {
     this.alive = false;
