@@ -5,7 +5,7 @@ import { layout, type Box } from './logic';
 
 /**
  * Shell Rows held upright (chunk 31, docs/definitions/phone-portrait.md): on the three upright phone views, the
- * captioned one and a short one. `layout` takes only the view, so levels 1 to 3 (they differ in how the tide plays, not
+ * captioned one and a short one. `layout` takes only the view, so levels 1 to 5 (they differ in the positions and the pet, not
  * in what is drawn where) and every seed share these boxes: the nine squares, which are the only targets, and the two
  * piles above the board, which are pictures that must stay in view and off Home and the squares.
  */
