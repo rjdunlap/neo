@@ -188,7 +188,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Bolt Boards
 
-*toddler–school* · [Bolt Boards](games/bolt-boards.md)
+*lap–school* · [Bolt Boards](games/bolt-boards.md)
 
 ### Look It Up
 

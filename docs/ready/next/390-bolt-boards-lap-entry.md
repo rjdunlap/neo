@@ -1,1 +1,0 @@
-**`bolt-boards` lap entry** (save and shell tier: typecheck, unit tests, build, the filtered host suites the definition names and production offline): one huge bolt that turns for a tap anywhere, at the next free level ID. [Dive](../../deep-dives/bolt-boards.md#decisions-for-the-developer)
