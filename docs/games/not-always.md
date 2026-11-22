@@ -9,13 +9,16 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–3 |
+| school | 1–6 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Not all of them: tap the card that breaks each claim |
 | 2 | Every one? Tap a card that breaks it, or stamp it true |
 | 3 | Say it better: break the claim, then choose one true of every card |
+| 4 | Only the red ones count: a claim about some of the cards |
+| 5 | Show me why: choose what settles a disagreement (about 10 and up) |
+| 6 | Both can be true: check two claims on one row (about 10 and up) |
 
 <!-- end generated -->
 
