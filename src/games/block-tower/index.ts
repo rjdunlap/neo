@@ -1107,7 +1107,9 @@ class BlockTower implements Game {
       trial.hinted = true;
       this.hints++;
       this.hintSlot = mendHint(trial.task);
-      void this.ctx.say('tower.reach-hint');
+      // The glow is the cue she needs: say it before the controls line, never over it.
+      await this.ctx.say('tower.reach-hint');
+      if (this.dead) return;
     }
     await this.ctx.say('tower.mend-try');
     if (this.dead) return;
