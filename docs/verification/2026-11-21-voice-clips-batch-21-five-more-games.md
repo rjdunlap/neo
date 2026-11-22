@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 21: five more games (PR #1967)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `bench` (Gadget Bench), `rows` (Garden Rows), `gem-swap` (Gem Swap), `habitat` (Habitat Helpers) and `hat-band` (Hat Band), the next upright games alphabetically without clips after Fruit Sums (Fossil Dig is not upright and stays skipped). Rendered 115 new slot-free clips (2678 in all, 2563 before); `src/audio/clips` grew from 44,003,520 to 46,395,982 bytes (+2,392,462 bytes, +2.39 MB); the service-worker precache went to 2890 entries and 62,424.92 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (2883), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, rearranged treehouse with kept creations and discovery journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
