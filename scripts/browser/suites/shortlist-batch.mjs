@@ -35,7 +35,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       );
 
     if (!only || only === 'tower')
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
         if (level === 6 && process.env.TOWER_SEED)
           await page.evaluate((seed) => {
             window.towerRandom = Math.random;
@@ -56,7 +56,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.deepEqual([...directions].sort(), [-1, 1]);
           log(`Block Tower reach order: ${directions.join(',')}`);
         }
-        if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+        if (level === 4 || level === 5 || level === 7)
+          await page.setViewportSize({ width: 768, height: 1024 });
         const { rounds, mode } = await page.evaluate(() => ({
           rounds: neo.scene.game.rounds.length,
           mode: neo.scene.game.plan.mode,
@@ -160,6 +161,110 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 saved.map((v) => v + 1),
               );
             }
+          } else if (mode === 'mend') {
+            // Mend: a let go before a move, a cancelled drag, two tumbles (one each way) with a replay, Try again and
+            // an undo, then the glowing place stands; nothing is ever a miss.
+            const state = () =>
+              page.evaluate(() => {
+                const t = neo.scene.game.trial;
+                return { phase: t.phase, top: t.top, failed: t.failed, moves: t.moves.length };
+              });
+            const slide = async (slot) => {
+              await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.trial.phase === 'held');
+              const [x, y] = await page.evaluate((slot) => {
+                const g = neo.scene.game;
+                return [g.mendScreen(slot), g.mendBlocks.at(-1).y - 31 + 40];
+              }, slot);
+              const target = await at(x, y);
+              await page.evaluate(async (target) => {
+                await kit.dragTo(neo.scene.game.mendBlocks.at(-1), { x: target[0], y: target[1] }, 12);
+              }, target);
+              await page.waitForTimeout(400);
+              assert.equal((await state()).top, slot, `the top block slid to ${slot}`);
+            };
+            const release = async (want) => {
+              await tap('neo.scene.game.letGo');
+              await page.waitForFunction(
+                (n) => {
+                  const g = neo.scene.game;
+                  return neo.scene.finished || g.index > n || (g.trial.phase === 'result' && !g.busy);
+                },
+                n,
+                { timeout: 30000 },
+              );
+              if (want) assert.equal((await state()).phase, want);
+            };
+            const plan = await page.evaluate(async () => {
+              const g = neo.scene.game;
+              const { mendDomain, mendBase, mendHint, topples } =
+                await import('/src/games/block-tower/logic.ts');
+              const t = g.trial.task;
+              const base = mendBase(t);
+              const falls = (x) => topples([...base, x], null);
+              const domain = mendDomain(t);
+              return {
+                out: domain.find((x) => falls(x) === 1 && x !== g.trial.start),
+                back: domain.find((x) => falls(x) === base.length),
+                hint: mendHint(t),
+              };
+            });
+            if (n === 0) {
+              await tap('neo.scene.game.letGo');
+              await page.waitForTimeout(400);
+              assert.deepEqual(
+                await page.evaluate(() => {
+                  const t = neo.scene.game.trial;
+                  return [t.phase, t.top === t.start, t.failed, t.moves.length];
+                }),
+                ['held', true, 0, 0],
+                'a let go before any move releases nothing',
+              );
+              assert.deepEqual(
+                await page.evaluate(() => {
+                  const g = neo.scene.game;
+                  const top = g.mendBlocks.at(-1);
+                  top.emit('pointerdown', { pointerId: 82, global: top.getGlobalPosition() });
+                  top.x += 60;
+                  window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 82 }));
+                  return [g.trial.moves.length, g.trial.top === g.trial.start, g.misses, g.hints];
+                }),
+                [0, true, 0, 0],
+                'a cancelled drag puts the top block back and records nothing',
+              );
+              await page.waitForTimeout(500);
+              await slide(plan.out);
+              await release('result');
+              assert.equal((await state()).failed, 1);
+              await screenshot('block-tower-7-tumble-portrait');
+              await tap('neo.scene.game.watchAgain');
+              await page.waitForFunction(() => neo.scene.game.busy);
+              await page.waitForFunction(
+                () => neo.scene.game.trial.phase === 'result' && !neo.scene.game.busy,
+                null,
+                { timeout: 30000 },
+              );
+              assert.equal((await state()).failed, 1, 'Watch again counts nothing');
+              await tap('neo.scene.game.tryAgain');
+              await page.waitForTimeout(300);
+              assert.deepEqual(await state(), { phase: 'held', top: plan.out, failed: 1, moves: 1 });
+              await slide(plan.back);
+              await tap('neo.scene.game.undo');
+              await page.waitForTimeout(300);
+              assert.equal((await state()).top, plan.out, 'undo returns the latest move');
+              await slide(plan.back);
+              await release('result');
+              assert.deepEqual(await counts(), [0, 1]);
+              await tap('neo.scene.game.tryAgain');
+              await page.waitForTimeout(300);
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.hintGhost.visible),
+                'the place that works glows',
+              );
+              await screenshot(`block-tower-${level}`);
+            }
+            await slide(plan.hint);
+            await release();
+            assert.deepEqual(await counts(), [0, 1]);
           } else {
             // Reach: a topple and a full short stack, top revision, then symmetric solutions on both edges.
             const drop = async (slot) => {
@@ -304,11 +409,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
         assert.deepEqual(
           await score('block-tower'),
-          mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0],
+          mode === 'flag' || mode === 'match' || mode === 'reach'
+            ? [2, 1]
+            : mode === 'mend'
+              ? [0, 1]
+              : [0, 0],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`,
+          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
         );
       }
 

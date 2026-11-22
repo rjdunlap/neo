@@ -110,28 +110,34 @@ describe.each(Object.entries(views))('Block Tower upright on %s', (_, v) => {
   });
 
   describe.each(MEND_TASKS.map((t) => t.id))('level 7, task %s', (id) => {
-    it.each([1, -1] as const)('leaning %s: the tower, the top block across its domain and both buttons', (d) => {
-      const task = mendTask(MEND_TASKS.find((t) => t.id === id)!, d);
-      const tx = towerX(v, false);
-      const n = task.tower.length - 1;
-      const buttons = [circle('undo', L.watchAgain), circle('let go', L.continueStand)];
-      // The top block's tap area at each end of its domain, standing on the block below.
-      for (const x of [mendDomain(task)[0], mendDomain(task).at(-1)!]) {
-        const top: Target = {
-          what: `top block at ${x}`,
-          x: tx + (x * BW) / 8,
-          y: L.floor - n * BH - (BH + 30) + TRAY_HIT.h / 2,
-          w: TRAY_HIT.w,
-          h: TRAY_HIT.h,
-        };
-        expect(uprightProblems(v, [top, ...buttons]), `${id} ${d} at ${x}`).toEqual([]);
-      }
-      // Every block stays inside the view, and the buttons sit above the tower's top.
-      for (const x of task.tower) {
-        expect(tx + (x * BW) / 8 - BW / 2).toBeGreaterThanOrEqual(0);
-        expect(tx + (x * BW) / 8 + BW / 2).toBeLessThanOrEqual(v.w);
-      }
-      expect(L.watchAgain.y + BUTTON_R).toBeLessThan(L.floor - (n + 1) * BH - 30);
-    });
+    it.each([1, -1] as const)(
+      'leaning %s: the tower, the top block across its domain and both buttons',
+      (d) => {
+        const task = mendTask(
+          MEND_TASKS.find((t) => t.id === id)!,
+          d,
+        );
+        const tx = towerX(v, false);
+        const n = task.tower.length - 1;
+        const buttons = [circle('undo', L.watchAgain), circle('let go', L.continueStand)];
+        // The top block's tap area at each end of its domain, standing on the block below.
+        for (const x of [mendDomain(task)[0], mendDomain(task).at(-1)!]) {
+          const top: Target = {
+            what: `top block at ${x}`,
+            x: tx + (x * BW) / 8,
+            y: L.floor - n * BH - (BH + 30) + TRAY_HIT.h / 2,
+            w: TRAY_HIT.w,
+            h: TRAY_HIT.h,
+          };
+          expect(uprightProblems(v, [top, ...buttons]), `${id} ${d} at ${x}`).toEqual([]);
+        }
+        // Every block stays inside the view, and the buttons sit above the tower's top.
+        for (const x of task.tower) {
+          expect(tx + (x * BW) / 8 - BW / 2).toBeGreaterThanOrEqual(0);
+          expect(tx + (x * BW) / 8 + BW / 2).toBeLessThanOrEqual(v.w);
+        }
+        expect(L.watchAgain.y + BUTTON_R).toBeLessThan(L.floor - (n + 1) * BH - 30);
+      },
+    );
   });
 });

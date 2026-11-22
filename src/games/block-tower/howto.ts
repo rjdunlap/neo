@@ -62,7 +62,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Press Continue after each observation. The third Continue ends the round, whichever towers you chose.',
     },
     { from: 6, to: 6, text: 'The round ends after two standing stacks touch their star lines.' },
-    { from: 7, to: 7, text: 'The round ends after two leaning towers are mended and stand without their ropes.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'The round ends after two leaning towers are mended and stand without their ropes.',
+    },
   ],
   note: [
     {

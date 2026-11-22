@@ -1028,7 +1028,11 @@ class BlockTower implements Game {
     const n = trial.tower.length - 1;
     this.topDrag!.home = { x: this.mendScreen(trial.top), y: this.floor - n * BH };
     void this.ctx.tw
-      .to(top, { x: this.mendScreen(trial.top), y: this.floor - n * BH }, { duration: 0.15, ease: ease.outQuad })
+      .to(
+        top,
+        { x: this.mendScreen(trial.top), y: this.floor - n * BH },
+        { duration: 0.15, ease: ease.outQuad },
+      )
       .then(() => this.drawMarks());
     this.mendButtons();
     this.drawMarks();

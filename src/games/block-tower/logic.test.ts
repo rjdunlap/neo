@@ -414,7 +414,8 @@ describe('Block Tower level 7, Mend the leaning tower', () => {
     expect(planFor(7).mode).toBe('mend');
     expect(planFor(7).rounds).toBe(2);
     expect(LEVELS.school).toEqual({ min: 5, max: 7, order: [5, 7, 6] });
-    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const) expect(LEVELS[band]!.max).toBeLessThan(7);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(LEVELS[band]!.max).toBeLessThan(7);
   });
 
   it.each(MEND_TASKS.map((t) => [t.id, t] as const))('task %s is a fair repair', (_, task) => {
@@ -448,7 +449,11 @@ describe('Block Tower level 7, Mend the leaning tower', () => {
       const right = mendTask(task, 1);
       const left = mendTask(task, -1);
       expect(mendHint(left)).toBe(-mendHint(right) || 0);
-      expect(mendRepairs(left)).toEqual(mendRepairs(right).map((x) => -x || 0).reverse());
+      expect(mendRepairs(left)).toEqual(
+        mendRepairs(right)
+          .map((x) => -x || 0)
+          .reverse(),
+      );
       for (const x of mendDomain(right))
         expect(topples([...mendBase(left), -x], null)).toBe(topples([...mendBase(right), x], null));
     }
