@@ -1,0 +1,1 @@
+**`not-always` levels 4–6** (school; one new-interaction batch): conditional claims, pictured evidence and pairs of claims with an unscored reply. [Definition and checks](../../definitions/not-always.md#build-and-checks-for-levels-46), [study](../../deep-dives/subjects/philosophy-reasoning.md#build-slices-in-order)

@@ -108,7 +108,7 @@ Person and device checks stay open (DEVICE-CHECKS once built): whether a four-ye
 
 ## What comes next
 
-**PR3** the question card (grown-ups' page) and **PR4** the printed claim strips follow the build; **PR2** Not Always 4–6 (only the red ones count, show me why, both can be true) is defined after levels 1–3 are played.
+**PR3** [the question card](talk-cards.md) shipped on the grown-ups' page. **PR2** is ready to build from the [levels 4–6 definition](#levels-46-definition-philosophy-and-reasoning-pr2). **PR4** covers the printed claim strips.
 
 ## Open decisions
 
@@ -130,3 +130,57 @@ Deviations from this definition:
 - **Extra voice lines:** `notalways.too.*`, `notalways.mends`, `notalways.hint`, `notalways.done`.
 - **How-to note.** One level-scoped line per level (the card type shows one note per level).
 - **Shared change.** Critter Sort's `hatArt` moved to `src/art/props.ts`; Critter Sort and Critter Crossing import it and look unchanged. New title clip `game.not-always` rendered.
+
+## Levels 4–6 definition (philosophy and reasoning PR2)
+
+Build all three in one school batch. Keep the existing game ID, Story Grove entry and school levels 1–3, extend the school maximum to 6, and keep pre-K 1–2. The grown-ups' level notes for 5–6 can say “about 10 and up.” Each level is a round of three prompts with one sticker through the existing finish path. Keep the evidence on the table and check claims only against the pictured row or scene. The speaking and listening reference for level 5 is [SL.4.3](https://www.thecorestandards.org/ELA-Literacy/SL/4/3/). The concrete counterexamples in levels 4 and 6 draw on [MP3](https://www.thecorestandards.org/Math/Practice/MP3/).
+
+### 4 · Only the red ones count
+
+Add an optional filter to a claim. Reuse the existing attribute evaluator for the filter and the conclusion. A card breaks a filtered “every” claim when it matches the filter and fails the conclusion. An eligible card that fits the conclusion and an ineligible card that lacks it are both useful distractors. Generate at least two eligible cards and at least one ineligible card that lacks the conclusion in every prompt. This avoids empty groups and gives the child a reason to listen to both parts. Two prompts have one breaker each and one is true. Stamp *Every one!* for the true one. Introduce a large circle or square frame behind the creature for shape claims. Pair the colour cue with a spoken colour name and retain the easy-to-read hat, wing and spot cues.
+
+| First round claim | Four cards | Accepted answer |
+| --- | --- | --- |
+| Every red card is round | Red circle, blue square, red square, blue circle | Red square |
+| Every blue friend has a hat | Blue with hat, red bare, blue with hat and spots, yellow bare | Every one! |
+| Every friend with spots has wings | Spotted with wings, bare of spots and wings, spotted without wings, winged without spots | Spotted without wings |
+
+Shuffle card positions with the seeded RNG. Keep the first round prompt order. Replays may shuffle prompt order and use equivalent authored rows or constrained generation with the same truth and distractor requirements. Keep pictured cards distinguishable within each row. A tap on the blue square in prompt 1 earns one miss and “That one's blue. We're looking at the red ones.” A fitting red card earns one miss and names the property that fits. After two misses, the breaker glows or the stamp glows for a true claim. The hint names the group and offers one thing to check. Success flips the breaker and changes the sign, or prints the stamp and sweeps the eligible cards.
+
+### 5 · Show me why
+
+Two speakers make opposing claims about one pictured scene. The scene and both claims stay visible above three pictured response cards. Tapping either speaker's sign repeats its claim for free. The response with the relevant evidence shows or describes the observed fact. Confidence and repetition stay plausible as things a speaker might say and earn one miss each. Keep the illustration, claim truth and evidence text derived from the same authored scene values. Record the factual comparison, speaker making the true claim and response kind in the rules. Shuffle response positions and assign species to speaker roles independently of who is right. Use the same response card treatment for all three.
+
+| Scene | Claims | Three responses |
+| --- | --- | --- |
+| A balance holds a bucket on the low pan and a cup on the high pan | “The bucket is heavier.” / “The cup is heavier.” | “Look, the bucket's side went down.” / “I'm very sure.” / “I'll say it again. The cup is heavier.” |
+| A red ribbon reaches five marks from the shared start, a blue ribbon reaches three | “The red ribbon reaches farther.” / “The blue ribbon reaches farther.” | “The red end is at the fifth mark. The blue end is at the third.” / “I'm very sure.” / “I'll say it again. The blue ribbon reaches farther.” |
+| The first tray has two shells and the second has four, in matching rows | “The first tray holds more.” / “The second tray holds more.” | “Here are four shells on the second tray and two on the first.” / “I'm very sure.” / “I'll say it again. The first tray holds more.” |
+
+Evidence flips open and briefly traces the pan, endpoints or shells in the scene. The friend who guessed changes the sign with “Oh, I see it now.” For confidence, prompt “What can we see that would help us decide?” For repetition, prompt “Let's look for something that shows us.” After two misses, the evidence card glows and the hint points out where on the scene to look. On replays, allow mirrored scenes and swapped pictured objects or colours with all factual comparisons and lines rebuilt together.
+
+### 6 · Both can be true
+
+Use two separately replayable claim signs and the same four pictured cards. The table stays visible while each claim is spoken in turn. Check each sign against the row independently. Stamp *Both true* when both hold. A tap succeeds if its card breaks either sign, and only the affected sign flips to its corrected state. Keep two prompts with both true and one with exactly one false claim and one breaker. Every replay must allow the two true claims to describe overlapping groups or different properties of the same cards. Balance which sign can be false over replay variants.
+
+| First round claims | Four cards | Accepted answer |
+| --- | --- | --- |
+| Every red friend has a hat. / Every friend with spots has wings. | Red hat without spots, red hat with spots and wings, blue with spots and wings, yellow without spots or wings | Both true |
+| Every friend with a hat has wings. / Every blue friend has spots. | Blue hat with spots and wings, blue with spots without hat or wings, red hat without wings or spots, yellow without hat or spots | Red hat without wings |
+| Every yellow friend has wings. / No friend has spots. | Yellow winged with hat, yellow winged without hat, red hat without wings, blue winged without hat | Both true |
+
+A valid breaker gets a short spoken explanation of the failing sign and of what still holds. Unsuccessful stamps and card taps each earn one miss. After two misses, the first valid target glows and the friend repeats the claim that needs checking, or reads both for a *Both true* round.
+
+After the false claim is repaired, show two illustrated speech bubbles in a short reply scene. “Let's look at this one together” continues. “I won't listen to you” makes the friend pause, then offers the continuing reply again with “We can look together.” The reply scene is unscored, including any glow or repeated tap. Keep Help out of the scoring path for this scene. The ghost finger chooses the continuing reply. The reply happens once per round and awards nothing on its own.
+
+### Shared interaction, layout and finishing
+
+Reuse the table, card flip, claim signs, stamp, `Play` accounting, round feedback and ghost-finger entry points. Put scene data and answer checks in `logic.ts`, with distinct phases for claim answers, evidence answers, the unscored reply and transitions. Route all scoring through the active phase. Free actions are claim replay, already settled prompts and actions during transitions. A manual Help request counts one hint and gives the same supported answer as the two-miss glow. Repeated Help for a prompt that is already assisted replays support. Reset per-prompt coaching at the next prompt and carry round totals to `ctx.finish({ misses, hints })` once. Keep only the existing round history and sticker. Keep the already shipped grown-ups' question card and the separate printable co-play strips in their existing scopes.
+
+Use the current view-driven layout boundary and keep the four cards or three responses large. Use two rows of two cards on narrow views when needed. On wide views put the level 6 replay signs side by side and on narrow views allow a compact stack above the table. Each sign has one tap region with its pictured filter and conclusion, and has a distinct speaker portrait. Level 5 uses one scene panel and three responses below it or beside it on short wide views. Use the space vacated by the table for the two large reply choices. Let the caption, pet and shell controls reserve their space before placing the game regions. Keep every active hit area at least 100 logical units on both axes. Redraw on rotation from the same prompt, option order and accepted answer state. Do not advance an authored prompt during the how-to preview. Add level-specific cards in `howto.ts` and spoken instructions, claims, responses and hints to `voice.ts`. Sequence two claims without competing speech and give each sign tap an immediate visual response.
+
+### Build and checks for levels 4–6
+
+- Rules: enumerate each authored row and compare exact breaker indices and stamp truth. For seeded rows check group size, a non-member distractor, exact truth mix, at least one valid action and connected hint. At level 5 verify the pictured facts support exactly one stance and that each scene offers one evidence card. At level 6 test each sign's separate truth, the union of breakers, valid answer after mirror or shuffle, and zero changes to accounting from the reply. Include the original 1–3 rules and level ranges.
+- Layout: test each phase with caption and pet clearances in upright, short upright and landscape views. Include long two-part claims and flag overlapping or undersize targets. At phone widths 390 × 844 and 390 × 625 verify pictured attributes and evidence remain legible.
+- New-interaction tier: typecheck and unit tests. Extend `BROWSER_SUITE=notalways` with a filter for 4–6 and use one scripted play covering the false filter tap and glow at 4, the evidence choice at 5, and both outcomes and the unscored reply at 6. Rotate during a two-sign prompt and inspect a portrait screenshot. Exercise `fingerdemo` at 6 through the reply. Build with rendered slot-free voice clips and check the new clips in the production service worker offline if the audio assets change.
