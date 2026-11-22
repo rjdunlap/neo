@@ -1,0 +1,5 @@
+# 2026-11-22 — Voice clips batch 30: eight more games (PR #1977)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `sm`, `comeback`, `sf`, `sprout`, `story`, `theater`, `weaver`, `sudoku` and `sum-crates` (Sorting Machine, Species Comeback, Spinner Fair, Sprout Shuffle, Story Steps (uses both `story` and `theater`), Story Weaver, Sudoku Garden, Sum Crates), the next games alphabetically after Snowball Merge. Rendered 301 new slot-free clips (4628 in all, 4327 before); `src/audio/clips` grew by 6,828,806 bytes (+6.83 MB); the service-worker precache went to 4840 entries and 99,318.74 KiB.
+**Ran:** the clip and audio unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed, 4833 cached assets).
+**Not run:** the root offline suite (no navigation or persistence change); the full `npm test` (CI runs it); a listen to the new clips (nothing is stitched; device speech stays the fallback).
