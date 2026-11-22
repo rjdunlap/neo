@@ -13,7 +13,7 @@ export const SETTINGS = {
 
 /**
  * Line ids with clips, by the part before the first dot: the island's shell (titles, praise, the
- * home spot, lands and places, the hatch, stickers) and one hundred and five whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies, Lift It, Puzzle Pals, Rhythm Neighbors, Song Maker, Teddy Doctor, Photo Safari, Color Garden, Bumper Garden, Fluffy Salon, Sound Garden, Shape Sorter, Dot Link, Feelings Faces, Gear Garden, Sand Table, Scoop Shop, Attic Finds, Pet Kitchen, Puppet Stage, Swing Pals, Word Glue, Word Monsters, Little Conductor, Beat Builder, Bug Builder, Rain Garden, Seesaw Balance, Little Loom, Relay Woods, Swap Meet, Welcome Ways, Pet Says, Memory Match, Fruit Slice, Peekaround Island, Adventure Walk, Block Garden, Bond Beads, Brain Break, Bunny Patches, Campsite, Circuit Garden, Clap Syllables, Caravan Days, Chain Reaction, Clock Tower, Critter Crossing, Critter Sort, Crossword, Cue Studio, Cut Along, Day by Day, Domino Pond, Domino Run, Drift Cards, Drop's Journey, Example Express, Ferry Jam, Food Web Workshop, Forecast Detective, Fruit Sums, Gadget Bench, Garden Rows, Gem Swap, Habitat Helpers, Hat Band, Helper House, Inchworm, Island Bridges and Jar Sort.
+ * home spot, lands and places, the hatch, stickers) and one hundred and seven whole games: Bubble Pop, Duck Pond, Sing-Along Barn, Animal Snack, Size Parade, Far Lights, Stamp Studio, Rainbow Fingers, Monster Munch, Block Tower, Mail Carrier, Little Helpers, Bounce Back, Peekaboo Barn, Stop and Go, Jelly Drums, Egg Catch, Splish-Splash, Goodnight Room, Fill and Dump, Puddle Gobble, Duckling Parade, Bouncy Launch, Peg Garden, Sink or Float, Frog Hop, Penguin Slide, Mossy Path, Melt and Freeze, Opposites, Garden Grow, Moon Window, Bolt Boards, Meadow Pens, Shape Buddies, Lift It, Puzzle Pals, Rhythm Neighbors, Song Maker, Teddy Doctor, Photo Safari, Color Garden, Bumper Garden, Fluffy Salon, Sound Garden, Shape Sorter, Dot Link, Feelings Faces, Gear Garden, Sand Table, Scoop Shop, Attic Finds, Pet Kitchen, Puppet Stage, Swing Pals, Word Glue, Word Monsters, Little Conductor, Beat Builder, Bug Builder, Rain Garden, Seesaw Balance, Little Loom, Relay Woods, Swap Meet, Welcome Ways, Pet Says, Memory Match, Fruit Slice, Peekaround Island, Adventure Walk, Block Garden, Bond Beads, Brain Break, Bunny Patches, Campsite, Circuit Garden, Clap Syllables, Caravan Days, Chain Reaction, Clock Tower, Critter Crossing, Critter Sort, Crossword, Cue Studio, Cut Along, Day by Day, Domino Pond, Domino Run, Drift Cards, Drop's Journey, Example Express, Ferry Jam, Food Web Workshop, Forecast Detective, Fruit Sums, Gadget Bench, Garden Rows, Gem Swap, Habitat Helpers, Hat Band, Helper House, Inchworm, Island Bridges, Jar Sort, Keep House and Lantern Lights.
  * The rest stays on device speech until the iPad listen passes (docs/ROADMAP.md#a-better-voice).
  */
 export const PREFIXES = [
@@ -143,6 +143,8 @@ export const PREFIXES = [
   'worm',
   'bridges',
   'jar',
+  'kh',
+  'lantern',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */
