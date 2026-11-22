@@ -1264,6 +1264,58 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           mode: neo.scene.game.plan.mode,
           orders: neo.scene.game.orders.length,
         }));
+        if (plan.mode === 'purse') {
+          // How much is in the purse? (dive slice 4): a free tap on a coin, two wrong cards (the coin count, then the near
+          // one), the counted hint with the right card lit, then the right card; later purses are answered straight away.
+          const card = (n) => `neo.scene.game.cards.find((c) => c.n === ${n}).node`;
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const { total, count, near } = await page.evaluate(() => {
+              const g = neo.scene.game;
+              const total = g.order.purse.reduce((a, b) => a + b, 0);
+              const count = g.order.purse.length;
+              return { total, count, near: g.cards.map((c) => c.n).find((x) => x !== total && x !== count) };
+            });
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.length,
+                  neo.scene.game.slate.visible,
+                ]),
+                [false, 0, false],
+                'no bell, purse or total on the purse level',
+              );
+              await tap('neo.scene.game.onMat[0].node');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.onMat.length),
+                count,
+                'a tapped coin stays',
+              );
+              assert.deepEqual(await counts(), [0, 0], 'hearing a coin is free');
+              await tap(card(count));
+              await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+              assert.deepEqual(await counts(), [1, 0]);
+              await tap(card(near));
+              await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.ok(await page.evaluate(() => neo.scene.game.glow.visible), 'the right card is lit');
+              // Held upright: the cards stand where the purse's coins do, the right one lit.
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-8-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(card(total));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          log(
+            `Market Stall ${level} (purse): a coin heard, the coin-count and near cards missed, the counted hint, saved score and sticker passed`,
+          );
+          continue;
+        }
         const ring = async () => {
           await tap('neo.scene.game.bell');
           await page.waitForTimeout(300);

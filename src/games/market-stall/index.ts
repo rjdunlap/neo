@@ -12,10 +12,14 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
-import { WigglyIcon } from '../shared';
+import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  CARD_HIT,
+  countOn,
+  purseCards,
+  purseMiss,
   stallFor,
   stallLayout,
   MAT_BOX,
@@ -148,6 +152,22 @@ function tagArt(price: number): Container {
   return c;
 }
 
+/** The purse the coins were tipped out of, open on the counter (purse levels). */
+function pouchArt(): Graphics {
+  const sw = swatch.brown;
+  const g = new Graphics();
+  g.moveTo(-50, -30)
+    .bezierCurveTo(-80, 10, -60, 50, 0, 50)
+    .bezierCurveTo(60, 50, 80, 10, 50, -30)
+    .closePath()
+    .fill(sw.fill)
+    .stroke({ width: 5, color: sw.line, join: 'round' });
+  g.ellipse(0, -32, 54, 14).fill(sw.line);
+  g.roundRect(-58, -16, 116, 12, 6).fill(swatch.red.fill);
+  g.position.set(0, -48);
+  return g;
+}
+
 class MarketStall implements Game {
   readonly stallId: StallId;
   readonly plan: ShopPlan;
@@ -170,6 +190,9 @@ class MarketStall implements Game {
   private readonly keeper: Critter;
   private readonly goods = new Container();
   private readonly ghost = new Container();
+  /** On purse levels: the three number cards along the foot, and the glow the hint puts behind the right one. */
+  readonly cards: { n: number; node: Container }[] = [];
+  readonly glow = new Graphics();
   /** On change levels: the ten strip under the tag, redrawn as change lands (fresh 4). */
   private strip: Graphics | null = null;
   /** The running total on the counter, where the game also says it; null when nothing is shown. */
@@ -221,7 +244,17 @@ class MarketStall implements Game {
     this.slate.visible = false;
     this.mat.addChild(this.slate);
     ctx.stage.addChild(this.backdrop, this.keeper, this.stall, this.goods, this.mat, this.ghost, this.bell);
-    for (const value of this.plan.coins) {
+    this.glow
+      .roundRect(-CARD_HIT.w / 2 - 14, -CARD_HIT.h / 2 - 14, CARD_HIT.w + 28, CARD_HIT.h + 28, 26)
+      .fill({ color: swatch.yellow.fill, alpha: 0.85 });
+    this.glow.visible = false;
+    this.glow.eventMode = 'none';
+    ctx.stage.addChild(this.glow);
+    // A purse level asks how much is already on the counter, so there is no purse to pay from and no bell.
+    const counting = this.plan.mode === 'purse';
+    this.bell.visible = !counting;
+    if (counting) this.bell.eventMode = 'none';
+    for (const value of counting ? [] : this.plan.coins) {
       const node = shopCoin(value, ctx.level);
       node.scale.set(1.25);
       node.hitArea = new Circle(0, 0, 46);
@@ -295,6 +328,15 @@ class MarketStall implements Game {
     const homes = purseFor(v, this.purse.length);
     this.purse.forEach((p, i) => p.node.position.set(homes[i].x, homes[i].y));
     this.ghost.position.set(this.mat.x, this.mat.y);
+    this.placeCards();
+  }
+
+  /** The number cards stand where the purse's coins would, clear of the guide. */
+  private placeCards() {
+    const homes = purseFor(this.view, this.cards.length);
+    this.cards.forEach((c, i) => c.node.position.set(homes[i].x, homes[i].y));
+    const lit = this.cards.find((c) => c.n === (this.order ? target(this.plan, this.order) : -1));
+    if (lit) this.glow.position.set(lit.node.x, lit.node.y);
   }
 
   private matArt = new Graphics();
@@ -318,6 +360,11 @@ class MarketStall implements Game {
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
+    if (this.order.purse) {
+      const want = target(this.plan, this.order);
+      const card = this.cards.find((c) => c.n === want);
+      return card ? { tap: { on: card.node } } : null;
+    }
     const touch = payTouch(
       paymentFor(this.plan, this.order, this.firstWay),
       this.onMat.map((c) => c.value),
@@ -338,8 +385,11 @@ class MarketStall implements Game {
     this.fewestOffers = 0;
     this.firstWay = null;
     this.clearGhost();
+    this.glow.visible = false;
+    this.cards.splice(0).forEach((c) => c.node.destroy({ children: true }));
     if (this.index >= this.orders.length) return void this.finale();
     const o = this.order;
+    if (o.purse) this.layPurse(o.purse);
     this.goods.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.names = [];
     o.prices.forEach((price, i) => {
@@ -353,6 +403,7 @@ class MarketStall implements Game {
       tag.position.set(art.x, -150);
       this.goods.addChild(art, tag);
     });
+    if (o.purse) this.goods.addChild(pouchArt());
     if (this.plan.mode === 'change') {
       // The customer's 10 coin, on the counter beside the fruit.
       const ten = coinArt(PAID);
@@ -374,6 +425,7 @@ class MarketStall implements Game {
       return this.ctx.instruct('shop.pair', { a: this.names[0], n, b: this.names[1], m: o.prices[1] });
     if (this.plan.mode === 'change') return this.ctx.instruct('shop.change', { fruit: this.names[0], n });
     if (this.plan.mode === 'fewest') return this.ctx.instruct('shop.fewest', { fruit: this.names[0], n });
+    if (o.purse) return this.ctx.instruct('shop.purse');
     return this.ctx.instruct('shop.pay', { fruit: this.names[0], n });
   }
 
@@ -416,9 +468,34 @@ class MarketStall implements Game {
     this.drawTotal();
   }
 
-  /** Tap the mat: the coin nearest the finger goes back to the purse. */
-  private takeBack(e: FederatedPointerEvent) {
-    if (this.busy || this.finished || !this.onMat.length) return;
+  /**
+   * A purse level: its coins lie on the counter at once, largest first, and three number cards come up along the foot. The
+   * coins stay put; a tap on one only says what it is worth.
+   */
+  private layPurse(purse: number[]) {
+    this.onMat.splice(0).forEach((c) => c.node.destroy({ children: true }));
+    for (const value of purse) {
+      const node = shopCoin(value, this.ctx.level);
+      node.eventMode = 'none';
+      node.alpha = 0;
+      this.mat.addChild(node);
+      this.onMat.push({ value, node });
+      void this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.3 });
+    }
+    this.layoutMat();
+    for (const n of purseCards(purse, this.ctx.rng)) {
+      const node = new Container();
+      node.addChild(tile(104, 110, 'white'), label(String(n), 52, ink));
+      node.hitArea = new Rectangle(-CARD_HIT.w / 2, -CARD_HIT.h / 2, CARD_HIT.w, CARD_HIT.h);
+      onTap(node, () => void this.tapCard(n), { cooldown: 300 });
+      this.cards.push({ n, node });
+      this.ctx.stage.addChild(node);
+    }
+    this.placeCards();
+  }
+
+  /** The coin nearest a tap on the mat. */
+  private nearest(e: FederatedPointerEvent) {
     const p = this.mat.toLocal(e.global);
     let best = 0;
     this.onMat.forEach((c, i) => {
@@ -428,6 +505,27 @@ class MarketStall implements Game {
       )
         best = i;
     });
+    return best;
+  }
+
+  /** A little hop for a coin that is being counted or named. */
+  private hop(node: Container) {
+    void this.ctx.tw
+      .to(node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outQuad }));
+  }
+
+  /** Tap the mat: the coin nearest the finger goes back to the purse, or on a purse level says its own value (never scored). */
+  private takeBack(e: FederatedPointerEvent) {
+    if (this.busy || this.finished || !this.onMat.length) return;
+    const best = this.nearest(e);
+    if (this.order?.purse) {
+      const coin = this.onMat[best];
+      sfx.pop(4 + coin.value);
+      this.hop(coin.node);
+      void this.ctx.say('count', { n: coin.value });
+      return;
+    }
     const [c] = this.onMat.splice(best, 1);
     c.node.destroy({ children: true });
     this.layoutMat();
@@ -475,7 +573,23 @@ class MarketStall implements Game {
       }
       return;
     }
-    // Paid: the coins slide over the counter.
+    await this.slideOver();
+    if (this.plan.mode === 'ways' && !this.firstWay) {
+      this.firstWay = coins;
+      this.wrongs = 0;
+      this.hinted = false;
+      // The second purchase must be paid another way (the same coins are a miss), so this is the instruction now.
+      await this.ctx.instruct('shop.again');
+      this.busy = false;
+      return;
+    }
+    await this.ctx.say('shop.thanks');
+    await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
+    await this.next();
+  }
+
+  /** Paid, or the purse counted: the coins slide over the counter to the shopkeeper, who cheers. */
+  private async slideOver() {
     sfx.bell(7, 0.3);
     sfx.bell(9, 0.3);
     this.clearGhost();
@@ -489,18 +603,47 @@ class MarketStall implements Game {
     this.drawTotal();
     this.keeper.cheer();
     this.ctx.pet.cheer();
-    if (this.plan.mode === 'ways' && !this.firstWay) {
-      this.firstWay = coins;
-      this.wrongs = 0;
-      this.hinted = false;
-      // The second purchase must be paid another way (the same coins are a miss), so this is the instruction now.
-      await this.ctx.instruct('shop.again');
-      this.busy = false;
+  }
+
+  /**
+   * A purse level's answer. The right total sends the purse to the shopkeeper. A wrong card names its kind (the number of
+   * coins, or one off); the second miss counts the purse aloud largest first, each coin hopping, and lights the right card.
+   */
+  private async tapCard(n: number) {
+    const purse = this.order?.purse;
+    if (this.busy || this.finished || !purse) return;
+    this.busy = true;
+    const card = this.cards.find((c) => c.n === n)!.node;
+    const kind = purseMiss(purse, n);
+    if (kind === null) {
+      this.glow.visible = false;
+      this.hop(card);
+      await this.slideOver();
+      await this.ctx.say('shop.purse.right', { n });
+      await Promise.all([
+        this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 }),
+        ...this.cards.map((c) => this.ctx.tw.to(c.node, { alpha: 0 }, { duration: 0.3 })),
+      ]);
+      await this.next();
       return;
     }
-    await this.ctx.say('shop.thanks');
-    await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
-    await this.next();
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    await this.ctx.say(
+      kind === 'coins' ? 'shop.purse.coins' : kind === 'near' ? 'shop.purse.near' : 'shop.purse.other',
+    );
+    if (this.wrongs >= 2 && !this.hinted) {
+      this.hints += hintCharge(this.wrongs, this.hinted, this.hintCharged);
+      this.hintCharged = true;
+      this.hinted = true;
+      this.placeCards();
+      this.glow.visible = true;
+      // The coins are already largest first, so each hops as its running total is said.
+      this.onMat.forEach((c, i) => void this.ctx.tw.wait(0.6 * i).then(() => this.hop(c.node)));
+      await this.ctx.say('shop.purse.hint', { n: countOn(purse).join(', ') });
+    }
+    this.busy = false;
   }
 
   private async wrong(

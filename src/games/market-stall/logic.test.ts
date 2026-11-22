@@ -34,7 +34,15 @@ import {
   countUpText,
   countUpSaid,
   tenStrip,
+  makePurse,
+  purseCards,
+  purseMiss,
+  countOn,
+  PURSE_MAX,
 } from './logic';
+
+/** Every level where she pays; the purse level asks for a total instead. */
+const PAYING = PLANS.filter((p) => p.mode !== 'purse');
 
 describe('Market Stall', () => {
   it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
@@ -94,7 +102,7 @@ describe('Market Stall', () => {
   });
 
   it("asks for amounts from 1 to 10 that the level's coins can make, never the same twice running", () => {
-    for (const plan of PLANS) {
+    for (const plan of PAYING) {
       for (let seed = 1; seed <= 300; seed++) {
         const orders = makeOrders(plan, new Rng(seed));
         expect(orders).toHaveLength(plan.orders);
@@ -136,7 +144,7 @@ describe('Market Stall', () => {
   });
 
   it('pays every order exactly with coins the counter has room for, the second way different from the first, so the demonstration never bounces', () => {
-    for (const plan of PLANS) {
+    for (const plan of PAYING) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const order of makeOrders(plan, new Rng(seed))) {
           const want = target(plan, order);
@@ -167,7 +175,7 @@ describe('Market Stall', () => {
     expect(missKind(PLANS[2], { prices: [3] }, [5])).toBe('big-coin');
     expect(missKind(PLANS[2], { prices: [9] }, [2])).toBe('short');
     expect(missKind(PLANS[2], { prices: [3] }, [2, 2, 2, 2])).toBe('over');
-    for (const plan of PLANS)
+    for (const plan of PAYING)
       for (const order of makeOrders(plan, new Rng(37))) {
         const want = target(plan, order);
         expect(missKind(plan, order, fewest(want, plan.coins))).toBeNull();
@@ -308,7 +316,7 @@ describe('Market Stall', () => {
 
   describe('a total she can see (TotoLogic P8)', () => {
     it('is shown on every level but the two where the total is the puzzle', () => {
-      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => p.mode)).toEqual(['pair', 'change']);
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => p.mode)).toEqual(['pair', 'change', 'purse']);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7]);
     });
 
@@ -395,6 +403,95 @@ describe('Market Stall', () => {
           );
         }
       expect(tenStrip(7, 3).cells.every((c) => c !== 'empty')).toBe(true);
+    });
+  });
+
+  describe('level 8, How much is in the purse?', () => {
+    const plan = PLANS[7];
+
+    it('is the last school level, appended after the fewest-coins level', () => {
+      expect(plan.mode).toBe('purse');
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: 8 });
+      expect(marketStall.describeLevel(8)).toBe(plan.name);
+    });
+
+    it('lays three to six coins on the counter, largest first, worth 3 to 12 with a coin worth more than 1', () => {
+      const totals = new Set<number>();
+      for (let seed = 1; seed <= 400; seed++) {
+        const orders = makeOrders(plan, new Rng(seed));
+        expect(orders).toHaveLength(plan.orders);
+        orders.forEach((o, i) => {
+          const purse = o.purse!;
+          expect(o.prices).toEqual([]);
+          expect(purse.length).toBeGreaterThanOrEqual(3);
+          expect(purse.length).toBeLessThanOrEqual(PURSE_MAX);
+          expect(purse).toEqual([...purse].sort((a, b) => b - a));
+          for (const c of purse) expect(plan.coins).toContain(c);
+          expect(purse.some((c) => c > 1)).toBe(true);
+          const t = target(plan, o);
+          expect(t).toBe(sum(purse));
+          expect(t).toBeGreaterThanOrEqual(3);
+          expect(t).toBeLessThanOrEqual(12);
+          // Counting the coins as ones never gives the answer.
+          expect(purse.length).not.toBe(t);
+          if (i > 0) expect(t).not.toBe(target(plan, orders[i - 1]));
+          totals.add(t);
+        });
+      }
+      // Totals past ten come up, which the paying levels never ask for.
+      expect(totals.has(11) && totals.has(12)).toBe(true);
+      expect(makeOrders(plan, new Rng(9))).toEqual(makeOrders(plan, new Rng(9)));
+    });
+
+    it('offers three different cards: the total, the number of coins and a neighbour of the total', () => {
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        const purse = makePurse(plan, rng);
+        const cards = purseCards(purse, rng);
+        const total = sum(purse);
+        expect(cards).toHaveLength(3);
+        expect(new Set(cards).size).toBe(3);
+        expect(cards).toContain(total);
+        expect(cards).toContain(purse.length);
+        const near = cards.find((n) => n !== total && n !== purse.length)!;
+        expect(Math.abs(near - total)).toBe(1);
+        expect(near).toBeGreaterThanOrEqual(1);
+        // Every wrong card has a named kind, so no card gets the generic line.
+        for (const n of cards)
+          expect(purseMiss(purse, n)).toBe(n === total ? null : n === purse.length ? 'coins' : 'near');
+      }
+    });
+
+    it('takes the neighbour above when the coin count is the one below (2, 1, 1, 1 is 5 in four coins)', () => {
+      for (let seed = 1; seed <= 50; seed++)
+        expect(purseCards([2, 1, 1, 1], new Rng(seed)).sort()).toEqual([4, 5, 6]);
+    });
+
+    it('names each wrong card by its kind', () => {
+      expect(purseMiss([5, 2, 2, 1], 10)).toBeNull();
+      expect(purseMiss([5, 2, 2, 1], 4)).toBe('coins');
+      expect(purseMiss([5, 2, 2, 1], 9)).toBe('near');
+      expect(purseMiss([5, 2, 2, 1], 11)).toBe('near');
+      expect(purseMiss([5, 2, 2, 1], 7)).toBe('other');
+    });
+
+    it('counts the purse on, largest first, ending on the total (the hint leads to the right card)', () => {
+      expect(countOn([5, 2, 2, 1])).toEqual([5, 7, 9, 10]);
+      expect(countOn([1, 5, 2])).toEqual([5, 7, 8]);
+      for (let seed = 1; seed <= 200; seed++) {
+        const purse = makePurse(plan, new Rng(seed));
+        const said = countOn(purse);
+        expect(said).toHaveLength(purse.length);
+        expect(said.at(-1)).toBe(sum(purse));
+        said.forEach((n, i) => i && expect(n).toBeGreaterThan(said[i - 1]));
+      }
+    });
+
+    it('never shows or says the running total, and keeps the paying hints away', () => {
+      expect(showsTotal(plan)).toBe(false);
+      expect(totalShown(plan, [5, 2, 2, 1])).toBeNull();
+      expect(teachLine(plan, null)).toBeNull();
+      expect(countsUp(plan)).toBe(false);
     });
   });
 });

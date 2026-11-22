@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–7 |
+| school | 3–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 5 | Pay the same price two different ways |
 | 6 | Keep the stall: a customer pays 10, give the change |
 | 7 | Pay 4 to 10 with as few shell coins as possible |
+| 8 | How much is in the purse? Count what each shell is worth, then tap the number |
 
 <!-- end generated -->
 
