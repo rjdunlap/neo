@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 17: three more games (PR #1962)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `cd`, `chain` and `clock` (Caravan Days, Chain Reaction, Clock Tower), the next upright-ready games alphabetically without clips (Block Topple was skipped because it is not upright). Rendered 172 new slot-free clips (2222 in all, 2050 before, which includes 4 Egg Catch clips that landed with PR #1961); `src/audio/clips` grew by 3,099,918 bytes (+3.10 MB); the service-worker precache went to 2434 entries and 53,651.69 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (2427), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, treehouse and journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
