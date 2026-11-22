@@ -14,16 +14,24 @@ import {
   BORDER,
   GROOVE,
   LEVELS,
+  LINES,
   SHELL_COLORS,
   Score,
+  accepts,
+  boardAfter,
   decidingLine,
+  empties,
+  forkFollow,
   layout,
   makeRound,
+  petMove,
   petReply,
   place,
   planFor,
   replyKind,
+  showMeSquare,
   stickerBoard,
+  turningPoint,
   wonLine,
   type Board,
   type Layout,
@@ -31,13 +39,20 @@ import {
   type Round,
 } from './logic';
 
-type Phase = 'turn' | 'replay' | 'between' | 'done';
+/** `pet`: level 5, her shell is settling or the pet is answering. */
+type Phase = 'turn' | 'replay' | 'between' | 'pet' | 'done';
 
 const REASON = {
   'took-spot': 'sr.took-spot',
   'got-three': 'sr.got-three',
   'could-have': 'sr.could-have',
+  'stopped-one': 'sr.stopped-one',
+  'took-best': 'sr.took-best',
+  'look-two': 'sr.look-two',
 } as const;
+
+/** Level 5: "Your turn!" after the pet's move when she has not tapped for this long, at most once a turn. */
+const NUDGE_AFTER = 6;
 
 class ShellRows implements Game {
   readonly plan: Plan;
@@ -50,6 +65,12 @@ class ShellRows implements Game {
   /** The square she set and the pet's reply, during a replay. */
   reply: { wrong: number; pebble: number } | null = null;
   finished = false;
+  /** Level 5: the match so far, her shells on even turns and the pet's pebbles on odd; and how it ended. */
+  moves: number[] = [];
+  ending: 'win' | 'tie' | null = null;
+  /** Level 5: seconds of her turn so far, and whether "Your turn!" may still be said this turn. */
+  private idle = 0;
+  private nudge = false;
   private saidFull = false;
   /** Bumped on every rewind or new position, so an awaited line from an older one stops short. */
   private gen = 0;
@@ -114,8 +135,9 @@ class ShellRows implements Game {
   get position() {
     return this.round.positions[this.index];
   }
+  /** The square the glow and the ghost show: the position's right square, or at level 5 *Show me*'s square for this turn. */
   get right(): number {
-    return this.position.right;
+    return this.plan.id === 'match' ? showMeSquare(this.board) : this.position.right;
   }
 
   /** What a scripted play reads. */
@@ -131,6 +153,8 @@ class ShellRows implements Game {
       hints: this.score.hints,
       glowing: this.score.glowing,
       finished: this.finished,
+      moves: this.moves.slice(),
+      ending: this.ending,
     };
   }
 
@@ -192,11 +216,11 @@ class ShellRows implements Game {
     if (!p.destroyed) p.alpha = 1;
   }
 
-  /** The pet's pebble slides in from its pile to square `i`. */
-  private async slidePebble(i: number) {
-    this.board = place(this.board, i, 'pebble');
-    const p = this.pieceFor('pebble');
-    const from = this.L.pebblePile,
+  /** The pet's pebble slides in from its pile to square `i`; or (level 4's follow-through) her shell from hers. */
+  private async slidePebble(i: number, side: 'shell' | 'pebble' = 'pebble') {
+    this.board = place(this.board, i, side);
+    const p = this.pieceFor(side);
+    const from = side === 'pebble' ? this.L.pebblePile : this.L.shellPile,
       b = this.L.squares[i];
     p.position.set(from.x, from.y);
     this.pieceLayer.addChild(p);
@@ -204,7 +228,7 @@ class ShellRows implements Game {
     await this.ctx.tw.to(p, { x: b.x, y: b.y }, { duration: this.reduce ? 0.3 : 0.6, ease: ease.outQuad });
     // A resize during the slide moved the squares; land on the square's current place.
     if (!p.destroyed) p.position.set(this.L.squares[i].x, this.L.squares[i].y);
-    sfx.pluck(1, 0.3);
+    sfx.pluck(side === 'pebble' ? 1 : 5, 0.3);
   }
 
   // ---- input ----
@@ -228,13 +252,18 @@ class ShellRows implements Game {
         void this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.3, ease: ease.outBack });
       }
       sfx.tick();
+      this.idle = 0;
       if (!this.saidFull) {
         this.saidFull = true;
         void this.ctx.say('sr.full');
       }
       return;
     }
-    const outcome = this.score.answer(i === this.right);
+    if (this.plan.id === 'match') {
+      void this.playShell(i);
+      return;
+    }
+    const outcome = this.score.answer(accepts(this.plan.level, this.board, i));
     if (outcome === 'right') {
       void this.solve(i);
       return;
@@ -269,10 +298,8 @@ class ShellRows implements Game {
     await this.slidePebble(pebble);
     if (g !== this.gen) return;
     const kind = replyKind(this.plan.level, before, wrong);
-    this.lit = {
-      line: decidingLine(before, wrong, pebble),
-      color: kind === 'got-three' ? swatch.purple.light : swatch.yellow.light,
-    };
+    const line = decidingLine(before, wrong, pebble);
+    this.lit = line && { line, color: kind === 'got-three' ? swatch.purple.light : swatch.yellow.light };
     if (kind === 'could-have')
       this.ctx.particles.burst(this.L.squares[this.right].x, this.L.squares[this.right].y, {
         kind: 'dot',
@@ -314,6 +341,25 @@ class ShellRows implements Game {
       sfx.bell(4, 0.3);
       this.ctx.pet.hop();
       await this.ctx.say('sr.saw-it');
+    } else if (this.plan.id === 'fork') {
+      // Two rows of two shimmer; the pet stops one and her third shell slides into the other on its own (no second tap).
+      const { block, finish } = forkFollow(this.position.board, i);
+      const rows = [block, finish].flatMap((gap) => this.rowThrough(gap));
+      this.lit = { line: [...new Set(rows)], color: swatch.yellow.light };
+      sfx.bell(4, 0.3);
+      await this.ctx.tw.wait(0.5);
+      if (g !== this.gen) return;
+      await this.slidePebble(block);
+      if (g !== this.gen) return;
+      this.lit = { line: this.rowThrough(finish), color: swatch.yellow.light };
+      await this.ctx.say('sr.two-ways');
+      if (g !== this.gen) return;
+      await this.slidePebble(finish, 'shell');
+      if (g !== this.gen) return;
+      this.lit = { line: wonLine(this.board, 'shell')!, color: swatch.yellow.light };
+      void this.rising(g);
+      this.ctx.pet.cheer();
+      await this.ctx.say('sr.three-in-a-row');
     } else {
       const line = wonLine(this.board, 'shell')!;
       this.lit = { line, color: swatch.yellow.light };
@@ -343,6 +389,102 @@ class ShellRows implements Game {
     this.drawPieces();
     this.phase = 'turn';
     void this.instruct();
+  }
+
+  /** Her row of two shells through the empty square `gap`. */
+  private rowThrough(gap: number): number[] {
+    const b = this.board;
+    for (const l of LINES)
+      if (
+        l.includes(gap) &&
+        l.filter((j) => b[j] === 'shell').length === 2 &&
+        l.every((j) => b[j] !== 'pebble')
+      )
+        return [...l];
+    return [];
+  }
+
+  // ---- level 5: a whole match ----
+
+  /** Her shell, then (unless she won or filled the sand) the pet's answer. */
+  private async playShell(i: number) {
+    this.phase = 'pet';
+    this.nudge = false;
+    const g = ++this.gen;
+    this.score.glowing = false;
+    this.moves.push(i);
+    await this.setShell(i);
+    if (g !== this.gen) return;
+    if (wonLine(this.board, 'shell')) return this.endMatch('win', g);
+    if (!empties(this.board).length) return this.endMatch('tie', g);
+    await this.ctx.tw.wait(0.4);
+    if (g !== this.gen) return;
+    const pebble = petMove(this.board, this.round.seed ?? 0);
+    this.moves.push(pebble);
+    await this.slidePebble(pebble);
+    if (g !== this.gen) return;
+    if (wonLine(this.board, 'pebble')) return this.petWins(g);
+    this.beginTurn(true);
+  }
+
+  private beginTurn(afterPet: boolean) {
+    this.phase = 'turn';
+    this.score.newTurn();
+    this.saidFull = false;
+    this.idle = 0;
+    this.nudge = afterPet;
+  }
+
+  /** A pet three is a replay, not an ending: one miss, then the board goes back to her turning point. */
+  private async petWins(g: number) {
+    this.lit = { line: wonLine(this.board, 'pebble')!, color: swatch.purple.light };
+    sfx.boing();
+    const second = this.score.petWon();
+    await Promise.all([this.ctx.say('sr.go-back'), this.ctx.tw.wait(0.8)]);
+    if (g !== this.gen) return;
+    this.lit = null;
+    const turn = turningPoint(this.moves) ?? 0;
+    // The pieces after it lift away, newest first.
+    const lifting: Promise<unknown>[] = [];
+    for (let k = this.moves.length - 1; k >= turn; k--) {
+      const p = this.pieces[this.moves[k]];
+      if (p)
+        lifting.push(this.ctx.tw.to(p, { y: p.y - 40, alpha: 0 }, { duration: this.reduce ? 0.25 : 0.5 }));
+      await this.ctx.tw.wait(this.reduce ? 0.05 : 0.15);
+      if (g !== this.gen) return;
+    }
+    await Promise.all(lifting);
+    if (g !== this.gen) return;
+    this.moves = this.moves.slice(0, turn);
+    this.board = boardAfter(this.moves);
+    this.drawPieces();
+    this.beginTurn(false);
+    if (second) {
+      // The second pet win in a match: the square that keeps the game safe glows (one hint, once a match).
+      this.score.lightTurningPoint();
+      await this.ctx.say('sr.look-again');
+    }
+  }
+
+  private async endMatch(kind: 'win' | 'tie', g: number) {
+    this.phase = 'done';
+    this.ending = kind;
+    this.finished = true;
+    if (kind === 'win') {
+      this.lit = { line: wonLine(this.board, 'shell')!, color: swatch.yellow.light };
+      void this.rising(g);
+      this.ctx.pet.cheer();
+      await this.ctx.say('sr.you-win');
+    } else {
+      this.lit = { line: [0, 1, 2, 3, 4, 5, 6, 7, 8], color: swatch.blue.light };
+      this.ctx.pet.hop();
+      await this.ctx.say('sr.tie');
+    }
+    if (g !== this.gen) return;
+    sfx.tada();
+    await this.ctx.tw.wait(0.6);
+    if (g !== this.gen) return;
+    this.ctx.finish({ misses: this.score.misses, hints: this.score.hints });
   }
 
   /** Her finished row shines with a rising three-note step. */
@@ -386,6 +528,13 @@ class ShellRows implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (this.nudge && this.phase === 'turn') {
+      this.idle += dt;
+      if (this.idle >= NUDGE_AFTER) {
+        this.nudge = false;
+        void this.ctx.say('sr.your-turn');
+      }
+    }
     this.glow.clear();
     if (this.lit) {
       for (const i of this.lit.line) {
@@ -446,7 +595,7 @@ export const shellRows: GameModule = {
   music: STYLES.hub,
   coplayHint: 'Before she taps, ask "What will the pet do if you go there?" and let the replay answer.',
   offScreen:
-    'Noughts and crosses on paper or a steamy window; each of you says out loud which square you are watching.',
+    'Noughts and crosses on paper or a steamy window; each of you says out loud which square you are watching, and tries to make two rows at once.',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
   create: (ctx) => new ShellRows(ctx),

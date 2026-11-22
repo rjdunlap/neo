@@ -19,7 +19,7 @@ export const LINES: readonly (readonly [number, number, number])[] = [
   [2, 4, 6],
 ];
 
-export type LevelId = 'finish' | 'stop' | 'first';
+export type LevelId = 'finish' | 'stop' | 'first' | 'fork' | 'match';
 
 export interface Plan {
   level: number;
@@ -31,12 +31,14 @@ const PLANS: readonly Plan[] = [
   { level: 1, id: 'finish', name: 'Finish the row: set the third shell' },
   { level: 2, id: 'stop', name: "Stop the row: block the pet's two pebbles" },
   { level: 3, id: 'first', name: 'Win first: make her own row rather than block' },
+  { level: 4, id: 'fork', name: 'Two ways to win: set a shell that makes two rows at once' },
+  { level: 5, id: 'match', name: 'Play it out: a whole game with the pet; a tie is a good ending' },
 ];
 
-/** Pre-K plays 1–2; school 1–3. Levels 4–5 (SG2) append above 3 without renumbering. */
+/** Pre-K plays 1–2; school 1–5 (levels 4–5, SG2, appended above 3 without renumbering). */
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 3 },
+  school: { min: 1, max: 5 },
 };
 
 export function planFor(level: number): Plan {
@@ -108,9 +110,15 @@ export function value(b: Board, toMove: Side): number {
 /** Centre, corners, edges: the order the pet looks in when no row is at stake. */
 export const PREFERENCE = [4, 0, 2, 6, 8, 1, 3, 5, 7];
 
+/** The empty squares where her shell would make two or more rows of two at once, ascending. */
+export function forkSquares(b: Board): number[] {
+  return empties(b).filter((i) => winsFor(place(b, i, 'shell'), 'shell').length >= 2);
+}
+
 /**
  * The pet's reply after her move: its own winning square if it has one; otherwise a square that stops her row,
- * preferring `target` (the square the puzzle asked for); otherwise the first minimax-best square, centre first.
+ * preferring `target` (the square the puzzle asked for); otherwise a minimax-best square, one of her fork squares
+ * first, then centre, corners, edges. (Levels 1–3 never reach the quiet case: every reply there wins or blocks.)
  */
 export function petReply(b: Board, target: number): number {
   const mine = winsFor(b, 'pebble');
@@ -119,8 +127,13 @@ export function petReply(b: Board, target: number): number {
   if (hers.length) return hers.includes(target) ? target : hers[0];
   const free = PREFERENCE.filter((i) => b[i] === null);
   const best = Math.min(...free.map((i) => value(place(b, i, 'pebble'), 'shell')));
-  return free.find((i) => value(place(b, i, 'pebble'), 'shell') === best)!;
+  const top = free.filter((i) => value(place(b, i, 'pebble'), 'shell') === best);
+  const forks = forkSquares(b);
+  return top.find((i) => forks.includes(i)) ?? top[0];
 }
+
+/** The first of `squares` in centre, corners, edges order. */
+const preferred = (squares: readonly number[]) => PREFERENCE.find((i) => squares.includes(i));
 
 // ---- symmetry ----
 
@@ -149,8 +162,24 @@ export function canonical(b: Board): string {
 
 // ---- the pools ----
 
+/** The square the glow and the ghost show: the level's one right square; at level 4 the first fork square; at 5 `showMeSquare`. */
 export function rightSquare(level: number, b: Board): number {
-  return planFor(level).id === 'stop' ? winsFor(b, 'pebble')[0] : winsFor(b, 'shell')[0];
+  switch (planFor(level).id) {
+    case 'stop':
+      return winsFor(b, 'pebble')[0];
+    case 'fork':
+      return preferred(forkSquares(b))!;
+    case 'match':
+      return showMeSquare(b);
+    default:
+      return winsFor(b, 'shell')[0];
+  }
+}
+
+/** Whether square `i` answers the puzzle: the one right square at 1–3, any fork square at 4. */
+export function accepts(level: number, b: Board, i: number): boolean {
+  if (planFor(level).id === 'fork') return forkSquares(b).includes(i);
+  return i === rightSquare(level, b);
 }
 
 export function fits(level: number, b: Board): boolean {
@@ -170,6 +199,18 @@ export function fits(level: number, b: Board): boolean {
       );
     case 'first':
       return hers.length === 1 && pets.length === 1 && hers[0] !== pets[0];
+    case 'fork': {
+      // Nobody can win now, she has a fork, and every square that wins by force is a fork square (so a quieter
+      // winning move never has to be called wrong).
+      if (hers.length || pets.length) return false;
+      const forks = forkSquares(b);
+      return (
+        forks.length > 0 &&
+        empties(b).every((i) => forks.includes(i) || value(place(b, i, 'shell'), 'pebble') < 1)
+      );
+    }
+    case 'match':
+      return false;
   }
 }
 
@@ -199,26 +240,130 @@ export const AUTHORED: Record<LevelId, Board> = {
   finish: board([0, 1], [3, 8]),
   stop: board([4], [6, 7]),
   first: board([0, 1], [6, 7]),
+  // She went first: shells top-middle and middle-right, pebbles centre and bottom-middle; top-right makes two rows.
+  fork: board([1, 5], [4, 7]),
+  match: board([], []),
 };
 
 // ---- what a wrong square brings ----
 
-export type Reply = 'took-spot' | 'got-three' | 'could-have';
+export type Reply = 'took-spot' | 'got-three' | 'could-have' | 'stopped-one' | 'took-best' | 'look-two';
 
-/** The pet's line after her wrong square: it took her spot (level 1), made its three, or (level 3's block) took the three she could have had. */
+/**
+ * The pet's line after her wrong square: it took her spot (level 1), made its three, or (level 3's block) took the three
+ * she could have had. At level 4: it stopped the one row she made, took her fork square, or simply moved.
+ */
 export function replyKind(level: number, b: Board, wrong: number): Reply {
   const after = place(b, wrong, 'shell');
   const reply = petReply(after, rightSquare(level, b));
   if (wonLine(place(after, reply, 'pebble'), 'pebble')) return 'got-three';
-  return planFor(level).id === 'first' ? 'could-have' : 'took-spot';
+  switch (planFor(level).id) {
+    case 'first':
+      return 'could-have';
+    case 'fork':
+      if (winsFor(after, 'shell').length) return 'stopped-one';
+      return forkSquares(after).includes(reply) ? 'took-best' : 'look-two';
+    default:
+      return 'took-spot';
+  }
 }
 
-/** The row a reply decides: the pet's completed row, or the row of hers the reply stopped. */
-export function decidingLine(b: Board, wrong: number, reply: number): readonly [number, number, number] {
-  const after = place(place(b, wrong, 'shell'), reply, 'pebble');
+/** Her rows through `i` that hold one shell and nothing else: the rows a shell at `i` would make. */
+const openRowsThrough = (b: Board, i: number) =>
+  LINES.filter(
+    (l) =>
+      l.includes(i) && l.filter((j) => b[j] === 'shell').length === 1 && l.every((j) => b[j] !== 'pebble'),
+  );
+
+/**
+ * The squares a reply lights: the pet's completed row, the row of hers the reply stopped, or (the pet took her fork
+ * square) her two rows through it; null when the reply settles no row.
+ */
+export function decidingLine(b: Board, wrong: number, reply: number): readonly number[] | null {
+  const mid = place(b, wrong, 'shell');
+  const after = place(mid, reply, 'pebble');
   const won = wonLine(after, 'pebble');
   if (won) return won;
-  return LINES.find((l) => l.includes(reply) && l.filter((i) => after[i] === 'shell').length === 2)!;
+  const stopped = LINES.find((l) => l.includes(reply) && l.filter((i) => after[i] === 'shell').length === 2);
+  if (stopped) return stopped;
+  const rows = openRowsThrough(mid, reply);
+  if (rows.length >= 2) return [...new Set(rows.flat())].sort((x, y) => x - y);
+  return null;
+}
+
+// ---- level 4: the fork follow-through ----
+
+/** After her fork shell: the row the pet stops (the first gap in centre, corners, edges order), and the gap she then fills. */
+export function forkFollow(b: Board, fork: number): { block: number; finish: number } {
+  const after = place(b, fork, 'shell');
+  const gaps = winsFor(after, 'shell');
+  const block = preferred(gaps)!;
+  return { block, finish: gaps.find((i) => i !== block)! };
+}
+
+// ---- level 5: a whole match ----
+
+/** A board-and-seed hash (FNV-1a), so a board always meets the same quiet move within a round. */
+function hash(b: Board, seed: number): number {
+  let h = 0x811c9dc5 ^ (seed >>> 0);
+  for (const ch of key(b)) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 0x01000193);
+  }
+  h ^= h >>> 15;
+  h = Math.imul(h, 0x2c1b3c6d);
+  h ^= h >>> 12;
+  return h >>> 0;
+}
+
+/**
+ * The level-5 pet: its own winning square; otherwise a square that stops her row (the first in centre, corners,
+ * edges order); otherwise a quiet move, uniform among the empty squares by a hash of the board and the round's seed.
+ * It never misses a win or a block but does not plan, so her forks can work.
+ */
+export function petMove(b: Board, seed: number): number {
+  const mine = winsFor(b, 'pebble');
+  if (mine.length) return preferred(mine)!;
+  const hers = winsFor(b, 'shell');
+  if (hers.length) return preferred(hers)!;
+  const free = empties(b);
+  return free[hash(b, seed) % free.length];
+}
+
+/**
+ * The square *Show me* lights on her level-5 turn: her winning square; otherwise one that stops the pet's row;
+ * otherwise her minimax-best square, a fork square first, then centre, corners, edges.
+ */
+export function showMeSquare(b: Board): number {
+  const hers = winsFor(b, 'shell');
+  if (hers.length) return preferred(hers)!;
+  const pets = winsFor(b, 'pebble');
+  if (pets.length) return preferred(pets)!;
+  const free = empties(b);
+  const best = Math.max(...free.map((i) => value(place(b, i, 'shell'), 'pebble')));
+  const top = free.filter((i) => value(place(b, i, 'shell'), 'pebble') === best);
+  const forks = forkSquares(b);
+  return preferred(top.filter((i) => forks.includes(i))) ?? preferred(top)!;
+}
+
+/** The board after the first `n` moves of a match she opened (her shells on even turns, the pet's pebbles on odd). */
+export function boardAfter(moves: readonly number[], n = moves.length): Board {
+  let b: Board = Array<Cell>(9).fill(null);
+  for (let k = 0; k < n; k++) b = place(b, moves[k], k % 2 === 0 ? 'shell' : 'pebble');
+  return b;
+}
+
+/**
+ * Her turning point in a match: the index of her most recent move made from a position with a non-losing square that
+ * left the pet a forced win. A match the pet won always has one (the empty board is a draw, and only her moves lower
+ * the value); null otherwise.
+ */
+export function turningPoint(moves: readonly number[]): number | null {
+  for (let k = (moves.length - 1) & ~1; k >= 0; k -= 2) {
+    const before = boardAfter(moves, k);
+    if (value(before, 'shell') >= 0 && value(place(before, moves[k], 'shell'), 'pebble') < 0) return k;
+  }
+  return null;
 }
 
 // ---- a round ----
@@ -235,6 +380,8 @@ export interface Round {
   level: number;
   positions: Position[];
   colors: [ShellColor, ShellColor];
+  /** Level 5: the seed the pet's quiet moves hash with. */
+  seed?: number;
 }
 
 export function makeRound(level: number, rng: Rng): Round {
@@ -245,6 +392,15 @@ export function makeRound(level: number, rng: Rng): Round {
     const t = transform(b, SYMMETRIES[symmetry]);
     return { board: t, right: rightSquare(level, t), symmetry };
   };
+  if (plan.id === 'match') {
+    const colors = rng.shuffle([...SHELL_COLORS]);
+    return {
+      level,
+      positions: [{ board: authored, right: rightSquare(level, authored), symmetry: 0 }],
+      colors: [colors[0], colors[1]],
+      seed: rng.int(0, 2 ** 30),
+    };
+  }
   const first = seat(authored);
   const avoid = canonical(authored);
   const others = rng.shuffle(pool(level).filter((b) => key(b) !== avoid)).slice(0, POSITIONS - 1);
@@ -291,6 +447,28 @@ export class Score {
       return 'glow';
     }
     return 'miss';
+  }
+
+  private matchGlowUsed = false;
+
+  /** Level 5: the pet got three. One miss; true when this is the match's second, so its turning point glows (one hint, once a match). */
+  petWon(): boolean {
+    this.misses++;
+    this.wrongs++;
+    if (this.wrongs < 2 || this.matchGlowUsed) return false;
+    this.matchGlowUsed = true;
+    return true;
+  }
+
+  /** Level 5: her turn begins (after the pet's move or a rewind); the glow and *Show me*'s hint are per turn. */
+  newTurn() {
+    this.glowing = false;
+    this.hinted = false;
+  }
+
+  /** Level 5: the second-loss glow on the turning-point turn. */
+  lightTurningPoint() {
+    this.light();
   }
 
   /** *Show me*: lights the glow (true), or, already lit, asks for the ghost's move (false). */
