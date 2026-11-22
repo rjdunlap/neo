@@ -15,6 +15,7 @@ import { VOICE as bubblePopVoice } from '../games/bubble-pop/voice.ts';
 import { VOICE as bugBuilderVoice } from '../games/bug-builder/voice.ts';
 import { VOICE as bumperGardenVoice } from '../games/bumper-garden/voice.ts';
 import { VOICE as bunnyPatchesVoice } from '../games/bunny-patches/voice.ts';
+import { VOICE as campsiteVoice } from '../games/campsite/voice.ts';
 import { VOICE as caravanDaysVoice } from '../games/caravan-days/voice.ts';
 import { VOICE as chainReactionVoice } from '../games/chain-reaction/voice.ts';
 import { VOICE as circuitGardenVoice } from '../games/circuit-garden/voice.ts';
@@ -636,6 +637,7 @@ export const SCRIPT = {
   ...bugBuilderVoice,
   ...bumperGardenVoice,
   ...bunnyPatchesVoice,
+  ...campsiteVoice,
   ...caravanDaysVoice,
   ...chainReactionVoice,
   ...circuitGardenVoice,

@@ -229,7 +229,7 @@ Each is one session; definitions are docs only.
 6. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung): [defined](../../definitions/bunny-patches.md) 2026-11-20 (PR #1907); levels 1–3 built (PR #1915); the 8×8 grown-up rung with a par is not defined.
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; levels 1–3 built (PR #1920).
-8b. **PP6: Campsite level 1** is [defined](../../definitions/campsite.md) (school, 4×4); the build is in READY.
+8b. **PP6: Campsite level 1** is [defined](../../definitions/campsite.md) (school, 4×4) and level 1 is **built** (PR #1954).
 8c. **PP7: Silly Scene 1–3** is [defined](../../definitions/silly-scene.md) 2026-11-21 (preschool to school; Not Always and Who Am I checked for overlap: a new small game in Puzzle Peaks); the build is in READY.
 9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
 
