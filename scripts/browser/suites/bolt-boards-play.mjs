@@ -75,11 +75,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         const g = neo.scene.game;
         const bolt = g.boltView(0);
         return {
-          upright: g.view.upright,
+          upright: g.ctx.view.upright,
           diameter: 52 * bolt.scale.x * g.layout.scale,
           undoVisible: g.undoButton.visible,
           demoTap: !!g.autotouch()?.tap,
-          at: g.hitLayer.toGlobal({ x: g.view.w - 35, y: g.view.h / 2 }),
+          at: g.hitLayer.toGlobal({ x: g.ctx.view.w - 35, y: g.ctx.view.h / 2 }),
         };
       });
       assert.equal(open.upright, true);

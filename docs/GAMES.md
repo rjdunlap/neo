@@ -498,6 +498,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–grown-up* · [Bunny Patches](games/bunny-patches.md)
 
+### Campsite
+
+*school* · [Campsite](games/campsite.md)
+
 ## Story Grove
 
 ### Letter Trails

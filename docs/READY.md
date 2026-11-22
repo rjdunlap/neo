@@ -48,7 +48,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which waits for RW10's packet). [Batch](GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](definitions/paint-mixer-5-6.md)
 
-- **Definitions, one docs-only session each, in this order where a study gives one:** Swing Pals level 9 after the *Paint the beat* definition and a `swingLayout` probe ([dive](deep-dives/swing-pals.md#decisions-for-the-developer)); and RW10 ([work items](rework/WORK-ITEMS.md#sequence)). [Record](archive/DECISIONS-2026-11-17.md#games)
+- **Definitions, one docs-only session each, in this order where a study gives one:** Garden Rows' tall flowers (PP4) from the [puzzle-pages study](deep-dives/subjects/puzzle-pages.md#decisions-for-the-developer); Swing Pals *Paint the beat*, then its level 9 after a `swingLayout` probe ([dive](deep-dives/swing-pals.md#decisions-for-the-developer)); Draw the Pattern level 12 *Your pattern* ([dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)); and RW10 ([work items](rework/WORK-ITEMS.md#sequence)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 - **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Not Always 4–6 ([study](deep-dives/subjects/philosophy-reasoning.md)), Notice Board 4–5 ([study](deep-dives/subjects/media-literacy.md)), Shell Rows 4–5 ([study](deep-dives/subjects/strategy-games.md)), Swap Meet 5–6 ([study](deep-dives/subjects/money-economy.md)), Village Vote 4–6 ([study](deep-dives/subjects/community-civics.md)), Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
@@ -61,8 +61,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 - **`vine-snip` level 6, Where will it land?** (school; new interaction tier: typecheck and rule tests, one filtered `vinesnip` play at level 6 with opposite guesses, Help, replay and one award, one sideways phone screenshot, `fingerdemo` at 6; run the build too, since the voice and how-to barrels change). [Definition](definitions/vine-snip-where-will-it-land.md), [dive](deep-dives/vine-snip.md#build-slices-in-order)
-
-- **`silly-scene` levels 1–3** (a new game in Puzzle Peaks; preschool 1, pre-K 1–2, school 2–3; new game tier, upright from the first slice: typecheck, unit tests, one filtered play of levels 1 and 3 with a wrong tap and a hint, one portrait screenshot, `fingerdemo` at level 1, and one `npm run build` for the voice lines and the land change). [Definition](definitions/silly-scene.md#build-checks), [study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
 
 - **`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](definitions/block-tower-mend.md), [dive](deep-dives/block-tower.md#build-slices-in-order)
 

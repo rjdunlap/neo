@@ -280,7 +280,6 @@ class BoltBoards implements Game {
   private friendKind: CritterName = 'cow';
   private used = new Set<number>();
   private layout: BoltLayout;
-  private view: View;
   private press: Press | null = null;
   private clock = 0;
   private lastSaid = -Infinity;
@@ -384,13 +383,12 @@ class BoltBoards implements Game {
       this.hitLayer,
       this.undoButton,
     );
-    this.view = ctx.view;
-    this.layout = boardLayout(this.view, this.build);
+    this.layout = boardLayout(ctx.view, this.build);
     this.buildScene();
   }
 
   start() {
-    this.resize(this.view);
+    this.resize(this.ctx.view);
     this.wall.alpha = 0;
     void this.ctx.tw.to(this.wall, { alpha: 1 }, { duration: 0.3 }).then(() => {
       this.busy = false;
@@ -400,7 +398,6 @@ class BoltBoards implements Game {
 
   resize(v: View) {
     this.letGo(true);
-    this.view = v;
     this.layout = boardLayout(v, this.build);
     const L = this.layout;
     this.wall.position.set(L.x, L.y);
@@ -593,7 +590,7 @@ class BoltBoards implements Game {
     }
     this.placeAll();
     if (this.build) {
-      this.slots = woodpileLayout(this.view, p.boards.length);
+      this.slots = woodpileLayout(this.ctx.view, p.boards.length);
       this.drawWoodpile();
       this.drawCard();
     }
@@ -726,7 +723,7 @@ class BoltBoards implements Game {
       const v = this.views[i];
       if (q.kind === 'down') {
         this.swings[i] = null;
-        const wall = toWall(this.layout, { x: 0, y: this.view.h + 60 });
+        const wall = toWall(this.layout, { x: 0, y: this.ctx.view.h + 60 });
         void this.ctx.tw
           .to(
             v,

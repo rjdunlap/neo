@@ -1,1 +1,0 @@
-**Define Garden Rows, The bee counts tall flowers** (PP4, docs only): define a school opening for planting different flower heights to match what the bee sees from each gate. [Study](../../deep-dives/subjects/puzzle-pages.md#build-slices-in-order)

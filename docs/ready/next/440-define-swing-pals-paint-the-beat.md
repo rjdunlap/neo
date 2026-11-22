@@ -1,1 +1,0 @@
-**Define Swing Pals, Paint the beat** (docs only): define the creative swing trace, its rope-length comparison and the option to keep the painting. [Dive](../../deep-dives/swing-pals.md#decisions-for-the-developer)
