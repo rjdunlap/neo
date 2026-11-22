@@ -45,7 +45,7 @@ Learning references: CCSS Standards for Mathematical Practice MP1 and MP7 ([TERC
 - **Boxes at 4×4 are the classic next rule** for 6–8. Sudoku Garden is numbers at 6×6 and 9×9 for grown-ups, so a picture 4×4 with hedged 2×2 boxes does not duplicate it; it is the step before it. The 2026-10-23 rule S8 adopts the lean for identity questions: Garden Rows' boxes are a Garden Rows level, not a Sudoku Garden band.
 - **Two-flower beds at 4×4** (the existing IDEAS proposal) change what she counts. At 4×4 the rule is two of each flower per line and no two rows alike, which is a counting rule rather than a "one of each" rule.
 - **A younger opening.** The rows-only 3×3 at pre-K level 1 asks "which one is missing?", which preschoolers already do with one row. A single-row entry (ID 10) opens preschool; under S8 this follows the lean (open it).
-- **Left as a proposal:** Skyscrapers-style "the bee counts tall flowers" (ordered heights are a new concept and a visibility rule; better as a later study), arithmetic cages, and inequality signs.
+- **Next rule:** the [bee counts tall flowers](../definitions/garden-rows-bee.md) adds an ordered-height sightline to a small 3×3 bed. Arithmetic cages and inequality signs remain proposals.
 
 The long arc: rows (pre-K) → rows and columns → bigger beds → mending a bed (revision) → boxes → two-flower counting beds. After that the grown-up Sudoku Garden takes over at 6×6.
 
@@ -88,8 +88,8 @@ Only One row (ID 10, above). Pre-K keeps 1–3; no other between-levels are need
 
 ### Left out on purpose
 
-- **Two-flower beds (Takuzu at 4×4).** A counting rule that suits the game. Kept in IDEAS as a later slice after Hedge boxes, because it changes the packet count and the win rule. It could be a level 11 after the boxes are played.
-- **Skyscrapers ("the bee counts tall flowers"), arithmetic cages, inequality signs.** New concepts, or a reading load; filed as an IDEAS proposal only.
+- **Two-flower beds (Takuzu at 4×4).** A counting rule that suits the game. Kept in IDEAS as a later slice after Hedge boxes, because it changes the packet count and the win rule. It can use a fresh level ID when defined.
+- **Arithmetic cages and inequality signs.** New concepts, or a reading load; kept for later.
 - **6×6 boxes.** That is Sudoku Garden's grown-up range.
 - **Timers or a speed mode** (forbidden).
 
@@ -102,7 +102,7 @@ None are new. Under the 2026-10-23 standing rule S8, the identity, band and land
 1. **Batch garden-rows 1: F1 seeded flower sets + level 7 Mend the bed** (existing interaction, new level). Checks: typecheck; Garden Rows rule tests (the F1 and Mend the bed assertions above); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. **Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02).**
 2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03).**
 3. **Batch garden-rows 3: level 10 One row (preschool opening)** (new band). Checks: typecheck; unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. **Built 2026-11-03 ([PR #1171](https://github.com/rjdunlap/neo/pull/1171)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-level-10-one-row-garden-rows-3-2026-11-03).**
-4. **PP4, define The bee counts tall flowers** (docs only) is claimed on `codex/neo-ready-define-garden-rows-bee`.
+4. **PP4: level 11, The bee counts tall flowers** (school, new interaction). [Defined](../definitions/garden-rows-bee.md) 2026-11-22 as a 3×3 sightline puzzle. Build in [READY](../READY.md#next-ten).
 5. Later, after 2 is played (built, not yet played by a child): Two-flower beds (4×4) as level 11, needing its own definition.
 
 ## What was built in this session
