@@ -198,6 +198,7 @@ import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as create135 } from './suites/down-we-go-play.mjs';
 import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
+import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
 import { createSuite as createCampsite } from './suites/campsite-play.mjs';
 import { createSuite as create137 } from './suites/sum-crates-play.mjs';
 
@@ -232,6 +233,7 @@ export const SUITES = [
   'downwego',
   'bunnypatches',
   'campsite',
+  'sillyscene',
   'sumcrates',
   'gemswap',
   'tilepairs',
@@ -434,6 +436,7 @@ export const ALL_SUITES = [
   'downwego',
   'bunnypatches',
   'campsite',
+  'sillyscene',
   'sumcrates',
   'gemswap',
   'tilepairs',
@@ -630,6 +633,7 @@ export function createChecks(fixture) {
     'downWeGoPlay',
     'bunnyPatchesPlay',
     'campsitePlay',
+    'sillyScenePlay',
     'sumCratesPlay',
     'gemSwapPlay',
     'tilePairsPlay',
@@ -905,6 +909,7 @@ export function createChecks(fixture) {
   install(create135(shared));
   install(create136(shared));
   install(createCampsite(shared));
+  install(createSillyScene(shared));
   install(create137(shared));
   install(createLens(shared));
   install(createMeltFreeze(shared));
@@ -997,6 +1002,7 @@ export async function runSuite(suite, fixture) {
     downWeGoPlay,
     bunnyPatchesPlay,
     campsitePlay,
+    sillyScenePlay,
     sumCratesPlay,
     gemSwapPlay,
     tilePairsPlay,
@@ -1244,6 +1250,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'downwego') await downWeGoPlay();
   if (suite === 'all' || suite === 'bunnypatches') await bunnyPatchesPlay();
   if (suite === 'all' || suite === 'campsite') await campsitePlay();
+  if (suite === 'all' || suite === 'sillyscene') await sillyScenePlay();
   if (suite === 'all' || suite === 'sumcrates') await sumCratesPlay();
   if (suite === 'all' || suite === 'gemswap') await gemSwapPlay();
   if (suite === 'all' || suite === 'tilepairs') await tilePairsPlay();

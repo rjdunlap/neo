@@ -2,7 +2,7 @@
 
 **Subject:** `puzzle-pages` · **Audiences:** T, P, K, S, U, M and G, as defined in the [subject tracker](../subjects.md#the-audiences) (L: none, below) · **Requested:** by the developer on 2026-11-05 ("what other newspaper type games we would add … extensive research"), right after the [crossword and logic-grid definitions](../../READY.md#next-ten) were queued · **Researched:** 2026-11-05 · **Session:** `claude/research-puzzle-pages`, [PR #1283](https://github.com/rjdunlap/neo/pull/1283).
 
-**Research and proposals only; nothing here is built.** "Puzzle pages" means the puzzles a newspaper, a puzzle magazine or a children's activity book prints: crosswords and word games, number grids, pencil-logic puzzles, mazes, dot-to-dots, hidden pictures and spot-the-difference. Four parallel research passes covered (1) newspaper and daily-app lineups, (2) children's activity books and what each age can do, (3) pencil-logic and number-grid genres and (4) word puzzles and logic-grid mysteries. Each source below is marked **opened**, **search summary** (a result snippet, page not opened) or **recalled**.
+"Puzzle pages" means the puzzles a newspaper, a puzzle magazine or a children's activity book prints: crosswords and word games, number grids, pencil-logic puzzles, mazes, dot-to-dots, hidden pictures and spot-the-difference. Four parallel research passes covered (1) newspaper and daily-app lineups, (2) children's activity books and what each age can do, (3) pencil-logic and number-grid genres and (4) word puzzles and logic-grid mysteries. Each source below is marked **opened**, **search summary** (a result snippet, page not opened) or **recalled**.
 
 **What the island already has.** It covers more of the puzzle page than it looks: sudoku, nonograms, Hashi bridges, Lights Out, sliding tiles, word search, a Mastermind code, a Zip-style path (Mossy Path), Latin squares (Garden Rows), and notebook rows for about a dozen more genres (the [map below](#on-the-island-today)). It has **no maze**, **no domino puzzle**, **no number-crossing grid** (Kakuro) and **no adjacency-placement puzzle** (Star Battle, Tents). Its word puzzles stop at Word Search and phonics games. The [crossword](../../READY.md#next-ten) and [logic-grid whodunit](../../READY.md#next-ten) definitions queued the same day fill the largest word and deduction gaps.
 
@@ -90,7 +90,7 @@ How the puzzle page maps onto what exists. "Row" means an [IDEAS](../../IDEAS.md
 | **Domino puzzles** (Pips, Dominosa) | none (Domino Run is toppling, not placement) | **Gap**: PP2 |
 | **Kakuro** (cross sums) | none (Fruit Sums makes one sum from two fruit) | **Gap**: PP5 |
 | **Tents** | none | **Gap**: PP6 |
-| **What's wrong? (absurd scene)** | none | **Gap**: PP7, [defined](../../definitions/silly-scene.md) |
+| **What's wrong? (absurd scene)** | [Silly Scene](../../games/silly-scene.md) | PP7, levels 1–3 built |
 
 ## Similar games, apps and books
 
@@ -155,7 +155,7 @@ The newspaper format is built on one puzzle a day, a streak and tomorrow's answe
 | PP4 | **The bee counts tall flowers** | Skyscrapers | Plant flowers of different heights so the bee at each gate sees the right number | Which height goes where, from what the bee can see | S–U | Garden Rows (new level) | S–M | Latin square plus visibility clues |
 | PP5 | **Sum Crates** | Kakuro | Fill runs of fruit crates so each run adds to its label, no repeats | Which partition of the sum fits both crossing runs | S–G | new game (check Fruit Sums first) | M | Small boards searched exhaustively |
 | PP6 | **Campsite** | Tents (Tatham) | Pitch one tent beside each tree, with none touching and both sets of counts met | Which square is left for this tree | S | [defined 4×4 opening](../../definitions/campsite.md) | S | One authored board with three visible deductions |
-| PP7 | **Silly Scene** | Highlights' *What's Wrong?* | Tap the impossible thing (a fish in a tree); the pet laughs and says why | What cannot be true | P–S | new small game `silly-scene` ([defined](../../definitions/silly-scene.md); Not Always and Who Am I checked) | S | Authored scenes |
+| PP7 | **Silly Scene** | Highlights' *What's Wrong?* | Tap the impossible thing (a fish in a tree); the pet laughs and says why | What cannot be true | P–S | [built](../../games/silly-scene.md) as `silly-scene` | S | Authored scenes |
 | PP9 | **Word Code** (IDEAS row) | Wordle, Secret Code | Guess a word; each letter is marked right, elsewhere or absent, with shapes as well as colours | Which letters the marks still allow | S–G | new game beside Secret Code (Puzzle Peaks or Lantern Lake) | M | Secret Code's feedback rule on letters; a reviewed word list and block list per level; the decided par (a fixed reference solver's guess count) |
 | PP8 | **A puzzle page at the table** | Unplugged | — | — | G | grown-ups' page | S | None |
 | — | Re-ranked rows | Sort Four (picture form), Letter Pond, Decoder Ring (also a logic-grid clue kind), KenKen cages, Lamp Lighter, Two-flower beds | as their rows say | | | existing rows | | |
@@ -230,7 +230,7 @@ Each is one session; definitions are docs only.
 7. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; levels 1–3 built (PR #1920).
 8b. **PP6: Campsite level 1** is [defined](../../definitions/campsite.md) (school, 4×4) and level 1 is **built** (PR #1954).
-8c. **PP7: Silly Scene 1–3** is [defined](../../definitions/silly-scene.md) 2026-11-21 (preschool to school; Not Always and Who Am I checked for overlap: a new small game in Puzzle Peaks); the build is in READY.
+8c. **PP7: Silly Scene 1–3** is [built](../../games/silly-scene.md) (preschool to school in Puzzle Peaks, PR #1964). [Opening definition](../../definitions/silly-scene.md).
 9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built. [Defined](../../definitions/at-home-card.md#the-puzzle-page-card-pp8-defined-2026-11-21) 2026-11-21; Built 2026-11-21 ([PR #1958](https://github.com/rjdunlap/neo/pull/1958)).
 
 ## What was built and what ran

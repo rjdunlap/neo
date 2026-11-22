@@ -1,6 +1,8 @@
 # Silly Scene levels 1–3 (definition)
 
-Proposed touch game `silly-scene`, PP7 of the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order) and the notebook's *Silly Scene* row ([IDEAS](../IDEAS.md)). Defined 2026-11-21. **Docs only:** no code, voice line, art or device evidence exists yet. Identity, land, bands and accounting take this page's defaults under [standing rule S8](../archive/DECISIONS-2026-10-23.md#standing-rules); the spoken reasons get the building session's source check under S1 (below).
+**Built:** levels 1–3 (PR #1964), with the rules, repairs and source notes on the [game page](../games/silly-scene.md).
+
+Opening definition for `silly-scene`, PP7 of the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order). Defined 2026-11-21. Identity, land, bands and accounting take this page's defaults under [standing rule S8](../archive/DECISIONS-2026-10-23.md#standing-rules); the spoken reasons get the building session's source check under S1 (below).
 
 A familiar picture (a pond garden, a beach, a farmyard) has one thing in it that cannot be true: a fish sitting in a tree, a pig with wings, rain falling up. She taps it; the pet laughs, says why in one short sentence ("Fish swim in water. There's no water up a tree!"), and the thing puts itself right (the fish flips down into the pond). The learning purpose is **checking a picture against what she knows about the world**: where animals live, what parts they have, which way things fall, and, at the top level, telling *silly but could happen* from *could not happen*. It makes no claim about a school, reading or reasoning outcome; a grown-up can watch whether she starts saying why before the pet does.
 
