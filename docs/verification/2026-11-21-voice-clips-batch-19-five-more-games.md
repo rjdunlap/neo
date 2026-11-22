@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 19: five more games (PR #1965)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `window`, `week` (Day by Day), `domino-pond`, `domino-run`, `drift` (Drift Cards) and `drop` (Drop's Journey), the next upright games alphabetically without clips after Cut Along (Down We Go and Draw the Pattern are not upright and were skipped). Rendered 79 new slot-free clips (2466 in all, 2387 before); `src/audio/clips` grew from 40,337,199 to 41,981,641 bytes (+1,644,442 bytes, +1.64 MB); the service-worker precache went to 2678 entries and 58,076.95 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (2671), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, treehouse and journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
