@@ -1,0 +1,7 @@
+# 2026-11-22 — Garden Rows level 11 bee sightlines
+
+**Changed:** Added PP4 to the end of Garden Rows' school ladder. A seed picks one of two 3×3 height puzzles. Tapping a numbered gate shows its view, and Ask the bee checks all twelve clues before the round awards one sticker. Kept repeat-check history through revisions, added teaching hints and an opposite-end example for the how-to, and rendered seven slot-free lines with Kokoro. Refilled Next ten with the approved RW10 definition and four study definitions.
+
+**Ran:** Typecheck, production build, 169 focused tests (one skipped), Markdown links and diff checks. The tests enumerate all twelve Latin squares per authored puzzle and bring the hint sequence to its unique solution from all 2,097 legal partial or full beds per puzzle. Native Chromium with `BROWSER_SUITE=gardenrows GARDEN_ROWS_ONLY=bee` at `http://127.0.0.1:5188/` and 390 × 625 CSS pixels checked a failed full bed, repeat checks after lifting and replanting, one hint requested with the guide and replayed from the gate and pause menu, rotation, revision and one sticker. Reviewed the short upright screenshot. The final `fingerdemo` run with `FINGER_ONLY=garden-rows FINGER_LEVELS=11 FINGER_BAND=school` finished in 36.9 s. The production service worker returned valid AAC data for all seven clips with Chromium offline.
+
+**Not run:** Wider browser suites and a standalone local offline play-through.

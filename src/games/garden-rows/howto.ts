@@ -7,6 +7,11 @@ export const HOW_TO: GameHowTo = {
     'Tap a flower packet to choose it, then tap an empty spot to plant it.',
     'Tap a flower you planted to take it out again.',
     { to: 1, text: 'Each row needs one of every flower.' },
+    { from: 11, text: 'Plant one of each height in every row and column.' },
+    {
+      from: 11,
+      text: 'Tap a gate to see down its line. The gate number tells you how many flower tops should show.',
+    },
     { from: 2, to: 9, text: 'Each row and each column needs one of every flower.' },
     {
       from: 10,
@@ -24,8 +29,18 @@ export const HOW_TO: GameHowTo = {
       text: 'The bed starts full, but two flowers in one row have swapped places, so two columns each have a repeat. Tap them to lift them out, then plant them back where they belong.',
     },
   ],
-  finish: 'The round ends when every bed is full and right.',
+  finish: [
+    { to: 10, text: 'The round ends when every bed is full and right.' },
+    {
+      from: 11,
+      text: 'Fill the bed and tap Ask the bee. Lift and replant flowers until every gate has the right view.',
+    },
+  ],
   note: [
+    {
+      from: 11,
+      text: 'A flower shows only if it is taller than every flower ahead of it. Try the same line from the other end.',
+    },
     {
       to: 6,
       text: 'A flower that repeats in a row or column will not stay. Every bed has exactly one way to finish it, and the glowing spot is a hint.',

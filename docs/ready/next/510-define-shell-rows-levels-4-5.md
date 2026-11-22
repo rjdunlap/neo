@@ -1,0 +1,1 @@
+**Define Shell Rows levels 4–5** (docs only): the next two strategy levels after the opening and replay. [Study](../../deep-dives/subjects/strategy-games.md), [decision](../../archive/DECISIONS-2026-11-17.md#games)

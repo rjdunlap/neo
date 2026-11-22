@@ -1,1 +1,0 @@
-**`garden-rows` level 11, The bee counts tall flowers** (school, new interaction tier, filtered gardenrows and fingerdemo at 11): plant three flower heights in a 3×3 bed and use the bee’s view at each gate to revise it. [Definition](../../definitions/garden-rows-bee.md)

@@ -13,6 +13,7 @@ export async function createFixture(browser, suite) {
     ...(suite === 'dominopond' ||
     suite === 'campsite' ||
     suite === 'sillyscene' ||
+    (suite === 'gardenrows' && process.env.GARDEN_ROWS_ONLY === 'bee') ||
     (suite === 'boltboards' && process.env.BOLT_BOARDS_CASE === 'lap') ||
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
