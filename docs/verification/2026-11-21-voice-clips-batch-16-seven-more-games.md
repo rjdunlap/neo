@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 16: seven more games (PR #1960)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `block-garden`, `bondbeads`, `brain`, `bunny`, `campsite`, `circuit` and `clap` (Block Garden, Bond Beads, Brain Break, Bunny Patches, Campsite, Circuit Garden, Clap Syllables). Rendered 101 new slot-free clips (2046 in all, 1945 before); `src/audio/clips` grew by 1,970,092 bytes (+1.97 MB); the service-worker precache went to 2258 entries and 50,482.74 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (2251), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, treehouse and journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
