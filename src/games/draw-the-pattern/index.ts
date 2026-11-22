@@ -21,10 +21,8 @@ import {
   botRoute,
   chooseOrder,
   continuationStroke,
-  continueOwn,
   hintStretch,
   isChoice,
-  patternStroke,
   spokenCore,
   layoutFor,
   lengthTo,
@@ -968,7 +966,8 @@ class DrawThePattern implements Game {
       const r = this.slots[i],
         slot = { x: r.x * w, y: r.y * h, w: r.w * w, h: r.h * h };
       if (this.placed.has(i)) drawPiece(g, strip, this.drawn[i], slot, false);
-      else if (this.plan.mode === 'mark')
+      // Level 1's marks, and level 12's pattern (an outline would show her an answer), wait as a blank slot.
+      else if (this.plan.mode === 'mark' || strip.own)
         g.rect(slot.x, slot.y + slot.h * 0.5, slot.w, slot.h * 0.5).fill({ color: 0xffffff, alpha: 0.5 });
       else drawPiece(g, strip, this.ghostPaths(strip), slot, true);
     }
@@ -976,9 +975,6 @@ class DrawThePattern implements Game {
 
   /** The soft outline of a strip's piece before it is drawn. */
   private ghostPaths(strip: Strip): Point[][] {
-    // Level 12: a whole strip of the pair taking turns, so the outline shows the bridge or flags, not her choices.
-    const own = strip.own;
-    if (own) return patternStroke(continueOwn(own.pair, own.total), 0, own.x0, own.w).orders;
     return strip.strokes.map((st) => st.orders[st.right ?? 0]);
   }
 
