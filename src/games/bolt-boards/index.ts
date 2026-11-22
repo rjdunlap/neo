@@ -4,7 +4,7 @@ import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { smallFruit } from '../../art/props';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
-import { palmOnGlass } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -16,6 +16,8 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  LAP_LEVEL,
+  LAP_BOLT_SCALE,
   blockingBoard,
   boardBuilt,
   boardLayout,
@@ -258,6 +260,7 @@ type Press = { bolt: number; at: Pt; dragging: boolean } | { wall: Pt };
 
 class BoltBoards implements Game {
   readonly plan: BoltPlan;
+  private readonly lap: boolean;
   puzzle!: Puzzle;
   state: number[] = [];
   history: number[][] = [];
@@ -276,7 +279,7 @@ class BoltBoards implements Game {
   private fruits: Fruit[] = [];
   private friendKind: CritterName = 'cow';
   private used = new Set<number>();
-  private layout!: BoltLayout;
+  private layout: BoltLayout;
   private press: Press | null = null;
   private clock = 0;
   private lastSaid = -Infinity;
@@ -326,6 +329,7 @@ class BoltBoards implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.build = !!this.plan.build;
+    this.lap = this.plan.id === LAP_LEVEL;
     this.boardLayer.sortableChildren = true;
     for (const c of [
       this.wallBack,
@@ -353,11 +357,19 @@ class BoltBoards implements Game {
     this.toolbox.addChild(toolboxArt());
     this.toolbox.eventMode = 'none';
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
-    this.hitLayer.eventMode = 'static';
-    this.hitLayer.on('pointerdown', (e) => this.down(e));
-    this.hitLayer.on('pointermove', (e) => this.move(e));
-    this.hitLayer.on('pointerup', (e) => this.up(e));
-    this.hitLayer.on('pointerupoutside', () => this.letGo(true));
+    if (this.lap) {
+      onTap(this.hitLayer, () => {
+        if (!this.busy && !this.finished) this.take({ bolt: 0 });
+      });
+      this.undoButton.visible = false;
+    } else {
+      this.hitLayer.eventMode = 'static';
+      this.hitLayer.on('pointerdown', (e) => this.down(e));
+      this.hitLayer.on('pointermove', (e) => this.move(e));
+      this.hitLayer.on('pointerup', (e) => this.up(e));
+      this.hitLayer.on('pointerupoutside', () => this.letGo(true));
+      this.ctx.listen(window, 'pointercancel', this.onCancel);
+    }
     for (const c of [this.woodpile, this.pileGlow, this.card]) c.eventMode = 'none';
     this.basket.visible = this.toolbox.visible = !this.build;
     this.woodpile.visible = this.pileGlow.visible = this.card.visible = this.build;
@@ -371,7 +383,6 @@ class BoltBoards implements Game {
       this.hitLayer,
       this.undoButton,
     );
-    this.ctx.listen(window, 'pointercancel', this.onCancel);
     this.layout = boardLayout(ctx.view, this.build);
     this.buildScene();
   }
@@ -458,7 +469,7 @@ class BoltBoards implements Game {
     }
   }
 
-  /** The ghost finger: the hint each step, highest board first at 1–5 and 8 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
+  /** The ghost finger: the hint each step, highest board first at 1–5, 8 and 10 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.press || this.swings.some((s) => s)) return null;
     const h = this.hint();
@@ -484,6 +495,7 @@ class BoltBoards implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private pickPuzzle(): Puzzle {
+    if (this.lap) return PUZZLES[LAP_LEVEL][0];
     const rng = this.ctx.rng;
     if (this.plan.build) {
       // Level 9: the authored board first in a session, then boards from the level-3 and level-4 lists, by scene.
@@ -587,6 +599,7 @@ class BoltBoards implements Game {
   private instruction(): LineId {
     switch (this.plan.id) {
       case 1:
+      case LAP_LEVEL:
         return 'bolt.instruct';
       case 2:
         return 'bolt.instruct-two';
@@ -666,7 +679,7 @@ class BoltBoards implements Game {
       if (v) {
         v.visible = s[b] === b && this.lifted !== b;
         v.rotation = 0;
-        v.scale.set(1);
+        v.scale.set(this.lap ? LAP_BOLT_SCALE : 1);
       }
     });
     this.parked.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -960,20 +973,23 @@ class BoltBoards implements Game {
     this.commit(r.state);
   }
 
-  /** Levels 1–5: the bolt spins out and flies into the toolbox. */
+  /** With no parking holes, the bolt spins out and flies into the toolbox. */
   private take(m: Move) {
     const r = remove(this.puzzle, this.state, m.bolt, false);
     if (!removed(r)) return;
     const at = this.puzzle.bolts[m.bolt];
     const art = this.fly.addChild(boltArt());
     art.position.set(at.x, at.y);
+    if (this.lap) art.scale.set(LAP_BOLT_SCALE);
     const to = toWall(this.layout, this.layout.toolbox);
     sfx.ratchet(3);
     void this.ctx.tw
       .to(art, { rotation: Math.PI * 3, y: at.y - 30 }, { duration: 0.25, ease: ease.outQuad })
-      .then(() =>
-        this.ctx.tw.to(art, { x: to.x, y: to.y - 20, alpha: 0.4 }, { duration: 0.4, ease: ease.inQuad }),
-      )
+      .then(() => {
+        const flight = { duration: 0.4, ease: ease.inQuad };
+        if (this.lap) void this.ctx.tw.to(art.scale, { x: 1, y: 1 }, flight);
+        return this.ctx.tw.to(art, { x: to.x, y: to.y - 20, alpha: 0.4 }, flight);
+      })
       .then(() => art.destroy({ children: true }));
     this.commit(r.state);
   }
@@ -1428,8 +1444,9 @@ export const boltBoards: GameModule = {
   challenge: 'space',
   upright: true,
   skills: ['cause-and-effect', 'planning', 'spatial-reasoning'],
-  bands: ['toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [LAP_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'Say which board is on top, and she takes its bolts out.',

@@ -59,6 +59,45 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       }
       await page.waitForFunction(() => neo.scene.finished, null, { timeout: 20000 });
     };
+    const playLap = async () => {
+      await page.setViewportSize({ width: 390, height: 625 });
+      await page.evaluate(() => {
+        kit.store.entry.birth = null;
+        kit.store.entry.startBand = 'lap';
+        kit.store.data.profile.band = 'lap';
+        neo.go.game('bolt-boards', 'lap');
+      });
+      await scene('GameScene');
+      assert.equal(await page.evaluate(() => neo.scene.level), 10);
+      await idle();
+      const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+      const open = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const bolt = g.boltView(0);
+        return {
+          upright: g.ctx.view.upright,
+          diameter: 52 * bolt.scale.x * g.layout.scale,
+          undoVisible: g.undoButton.visible,
+          demoTap: !!g.autotouch()?.tap,
+          at: g.hitLayer.toGlobal({ x: g.ctx.view.w - 35, y: g.ctx.view.h / 2 }),
+        };
+      });
+      assert.equal(open.upright, true);
+      assert.ok(open.diameter >= 100);
+      assert.equal(open.undoVisible, false);
+      assert.equal(open.demoTap, true);
+      await screenshot('bolt-boards-10-lap-portrait');
+      await page.touchscreen.tap(open.at.x, open.at.y);
+      await finished('bolt-boards');
+      const st = await state();
+      assert.deepEqual([st.state, st.misses, st.hints], ['-1', 0, 0]);
+      await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers);
+      log('Bolt Boards lap: one tap away from the bolt dropped the board and saved one sticker');
+    };
+    if (process.env.BOLT_BOARDS_CASE === 'lap') {
+      await playLap();
+      return;
+    }
     // Level 1: two scenes of hanging boards, every tap drops one; no misses.
     await launch('bolt-boards', 1);
     await idle();

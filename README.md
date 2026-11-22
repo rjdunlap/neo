@@ -117,7 +117,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Critter Sort](docs/games/critter-sort.md) | pre-K–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |
-| [Bolt Boards](docs/games/bolt-boards.md) | toddler–school | Barnyard | 9 | tap a bolt and a board on the barn wall swings or slides down, and a fruit peeks out and hops into the basket |
+| [Bolt Boards](docs/games/bolt-boards.md) | lap–school | Barnyard | 10 | tap anywhere in the play area to turn one big bolt, drop the board and send the fruit into the basket |
 | [Look It Up](docs/games/look-it-up.md) | toddler–school | Barnyard | 3 | touch a picture label to hear it, or tap an animal's face on the guide's tabs and give it the food its page shows |
 | [Adventure Walk](docs/games/adventure-walk.md) | toddler–school | Barnyard | 5 | tap one of two glowing ways (over or under, through, across, around) past each landmark on the companion's walk to a friend's picnic, then follow the friend's call |
 | [Ready for Adventure](docs/games/ready-for-adventure.md) | toddler–pre-K | Barnyard | 3 | get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade |

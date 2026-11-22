@@ -7,6 +7,7 @@ import {
   CARD_H,
   CARD_W,
   HIT,
+  LAP_LEVEL,
   PLANS,
   toView,
   WALL_H,
@@ -17,7 +18,7 @@ import {
 import { PUZZLES } from './puzzles';
 
 /**
- * Bolt Boards held upright (chunk 31, docs/definitions/phone-portrait.md): every board set of all nine levels at the
+ * Bolt Boards held upright (chunk 31, docs/definitions/phone-portrait.md): every board set of all levels at the
  * upright phone views. The tap targets are the bolts (a 60-unit reach, so 120 wide), the holes a lifted bolt can go to,
  * the undo arrow and, at level 9, the woodpile slots and the picture card's clearance. The basket and toolbox are
  * drawn only; they take no touch.
@@ -39,13 +40,14 @@ describe.each(Object.entries(views))('Bolt Boards upright on %s', (_, v) => {
         expect(L.y + h).toBeLessThanOrEqual(v.h - 150);
       });
 
-      it('keeps the undo arrow its own target, off the guide and the right edge', () => {
-        expect(uprightProblems(v, [{ what: 'undo', x: L.undo.x, y: L.undo.y, w: UNDO, h: UNDO }])).toEqual(
-          [],
-        );
-        // The toolbox and basket are drawn there (levels 1–8), not tapped, but must not run together.
-        if (!build) expect(L.undo.x - L.toolbox.x).toBeGreaterThanOrEqual(UNDO);
-      });
+      if (plan.id !== LAP_LEVEL)
+        it('keeps the undo arrow its own target, off the guide and the right edge', () => {
+          expect(uprightProblems(v, [{ what: 'undo', x: L.undo.x, y: L.undo.y, w: UNDO, h: UNDO }])).toEqual(
+            [],
+          );
+          // The toolbox and basket are drawn there (levels 1–8), not tapped, but must not run together.
+          if (!build) expect(L.undo.x - L.toolbox.x).toBeGreaterThanOrEqual(UNDO);
+        });
 
       it.each(sets.map((p, i) => [i, p] as const))(
         'puts every bolt and hole of set %s on screen',
