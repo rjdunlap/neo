@@ -5,6 +5,7 @@ import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -41,6 +42,13 @@ import {
   gatesFor,
   gateToFlip,
   routeTouch,
+  sorterAnswer,
+  sorterBoards,
+  sorterExit,
+  sorterHint,
+  sorts,
+  type SorterBoard,
+  type SorterSetup,
   LANES,
   makeEggs,
   planFor,
@@ -193,6 +201,19 @@ class EggCatch implements Game {
   held: { node: Graphics; egg: Egg } | null = null;
   /** Route levels: how many gates the egg on its way has gone by (2 when nothing is waiting to be set). */
   private passed = 2;
+  /** Level 13: the boards, the sorting gate (its drawing flips with its turn) and where it sits (null on its peg). */
+  readonly sorterRound: SorterBoard[] = [];
+  readonly sorter = new Container();
+  private readonly sorterArt = new Graphics();
+  private readonly sorterGlow = new Graphics();
+  sorterDrag: DragHandle | null = null;
+  sorterAt: 0 | 1 | 2 | null = null;
+  brownRight = false;
+  /** The four eggs waiting at the entry, in the order they roll; ready while the board waits for the arrow. */
+  private sorterQueue: Graphics[] = [];
+  sorterReady = false;
+  /** The face that lights as an egg is read, until `until` on the scene clock. */
+  private sorterLit: { brown: boolean; until: number } | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -262,6 +283,7 @@ class EggCatch implements Game {
     // The prediction glow reaches the bins: decoration must never swallow their taps.
     this.gateArt.eventMode = 'none';
     if (this.plan.mode === 'repair') this.repairBoards = repairBoards(ctx.rng, this.plan.eggs);
+    if (this.plan.mode === 'sorter') this.sorterRound = sorterBoards(ctx.rng, this.plan.eggs);
     if (this.paired)
       this.pairBoards = (this.plan.mode === 'flipflop' ? flipflopBoards : pairBoards)(
         ctx.rng,
@@ -275,7 +297,15 @@ class EggCatch implements Game {
         .poly([-14, -25, 25, 0, -14, 25])
         .fill(0xffffff);
       this.goButton.alpha = 0.4;
-      onTap(this.goButton, () => void (this.paired ? this.sendPair() : this.send()));
+      onTap(
+        this.goButton,
+        () =>
+          void (this.plan.mode === 'sorter'
+            ? this.sendSorter()
+            : this.paired
+              ? this.sendPair()
+              : this.send()),
+      );
       ctx.stage.addChild(this.goButton);
     }
     if (routing) {
@@ -285,11 +315,13 @@ class EggCatch implements Game {
       for (let i = 0; i < (this.plan.singleGate ? 1 : 3); i++) {
         const hit = new Container();
         hit.hitArea = new Circle(0, 0, 80);
-        onTap(hit, () => this.flip(i), { cooldown: 250 });
+        // Level 13: a junction is also a place for the sorting gate held by a tap.
+        onTap(hit, () => this.flip(i), { cooldown: 250, place: this.plan.mode === 'sorter' });
         this.gateHits.push(hit);
         ctx.stage.addChild(hit);
       }
     }
+    if (this.plan.mode === 'sorter') this.makeSorter();
   }
 
   get routing() {
@@ -299,7 +331,11 @@ class EggCatch implements Game {
   /** Levels where the egg (or pair) waits for the green arrow. */
   get arrowed() {
     return (
-      this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'repair' || this.paired
+      this.plan.mode === 'route' ||
+      this.plan.mode === 'sort' ||
+      this.plan.mode === 'repair' ||
+      this.plan.mode === 'sorter' ||
+      this.paired
     );
   }
 
@@ -323,6 +359,7 @@ class EggCatch implements Game {
       pair: 'egg.pair',
       repair: 'egg.repair',
       flipflop: 'egg.flipflop',
+      sorter: 'egg.sorter',
     } as const;
     if (this.plan.mode === 'predict') this.predictions = predictGates(this.ctx.rng, this.plan.eggs * 3);
     void this.ctx.instruct(
@@ -382,6 +419,7 @@ class EggCatch implements Game {
         this.hens[1]?.position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
         if (this.pairReady) this.placePair();
       }
+      if (this.plan.mode === 'sorter') this.layoutSorter();
     } else if (this.plan.oneHen) {
       s.roundRect(150, 150, v.w - 190, 24, 10)
         .fill(wood.fill)
@@ -418,6 +456,7 @@ class EggCatch implements Game {
     this.clock += dt;
     if (this.finished || this.routing) {
       this.drawGates();
+      if (this.plan.mode === 'sorter') this.drawSorterHint();
       // After two misses, the arrow pulses once the gates are set: now it can go.
       if (this.arrowed)
         this.goButton.scale.set(this.hinting && this.setToGo() ? 1 + 0.1 * Math.sin(this.clock * 7) : 1);
@@ -468,6 +507,7 @@ class EggCatch implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+    this.sorterDrag?.destroy();
   }
 
   /** Couch play on the catching levels: the stick slides the basket, and with two controllers both can steer it. */
@@ -538,6 +578,15 @@ class EggCatch implements Game {
       if (x === null && (this.pace.owesPlay || !this.pace.awake))
         return { tap: { on: this.touch, x: this.basketTarget, y: this.floor - 40 }, pause: 0.2 };
       return x === null ? null : { tap: { on: this.touch, x, y: this.floor - 40 }, pause: 0.2 };
+    }
+    if (mode === 'sorter') {
+      if (!this.sorterReady || this.rolling || this.sorterDrag?.dragging) return null;
+      const answer = sorterAnswer(this.sorterRound[this.routed]);
+      if (this.sorterAt !== answer.at)
+        return { drag: { on: this.sorter }, to: { on: this.gateHits[answer.at] }, pause: 0.4 };
+      if (this.brownRight !== answer.brownRight) return { tap: { on: this.sorter }, pause: 0.4 };
+      const need = answer.needs.find((n) => this.gates[n.gate] !== n.right);
+      return { tap: { on: need ? this.gateHits[need.gate] : this.goButton }, pause: 0.25 };
     }
     if (this.paired) {
       if (!this.pairReady || this.rolling) return null;
@@ -815,6 +864,13 @@ class EggCatch implements Game {
       seg(o.gate[this.plan.singleGate ? 0 : i < 2 ? 1 : 2], o.exit[i]);
       seg(o.exit[i], o.bin[i]);
     }
+    if (this.plan.mode === 'sorter') {
+      // The sorting gate's peg, its home beside the entry.
+      const peg = this.pegAt();
+      g.circle(peg.x, peg.y, 58)
+        .fill({ color: wood.light, alpha: 0.7 })
+        .stroke({ width: 5, color: wood.line });
+    }
     if (this.plan.mode === 'pair') {
       const b = this.pairBoards[this.routed]?.whiteBranch ?? 2;
       seg({ x: o.gate[b].x + (b === 1 ? -100 : 100), y: o.gate[b].y - 110 }, o.gate[b]);
@@ -831,7 +887,10 @@ class EggCatch implements Game {
         i === this.target.basket
           ? basketArt()
           : i === this.target.nest &&
-              (this.plan.mode === 'sort' || this.plan.mode === 'repair' || this.paired)
+              (this.plan.mode === 'sort' ||
+                this.plan.mode === 'repair' ||
+                this.plan.mode === 'sorter' ||
+                this.paired)
             ? this.nestArt()
             : hayArt(150);
       node.position.set(o.bin[i].x, o.bin[i].y + 20);
@@ -884,9 +943,17 @@ class EggCatch implements Game {
       }
       return;
     }
-    const want = this.hinting ? (this.paired ? pairNeeds(this.pairBoards[this.routed]) : this.wanted()) : [];
+    const want = !this.hinting
+      ? []
+      : this.plan.mode === 'sorter'
+        ? this.sorterGlows()
+        : this.paired
+          ? pairNeeds(this.pairBoards[this.routed])
+          : this.wanted();
     for (let i = 0; i < o.gate.length; i++) {
       const p = o.gate[i];
+      // Level 13: the sorting gate covers the plain gate at its junction (whose setting waits under it).
+      if (i === this.sorterAt) continue;
       const right = this.gates[i];
       const dx = i === 0 ? 190 : 95;
       const to = { x: p.x + (right ? dx : -dx) * 0.42, y: p.y + (i === 0 ? 130 : 130) * 0.42 };
@@ -946,7 +1013,8 @@ class EggCatch implements Game {
     if (
       this.finished ||
       this.plan.mode === 'predict' ||
-      ((this.paired || this.plan.mode === 'repair') && this.rolling) ||
+      ((this.paired || this.plan.mode === 'repair' || this.plan.mode === 'sorter') && this.rolling) ||
+      (this.plan.mode === 'sorter' && (i === this.sorterAt || !!this.sorterDrag?.placing)) ||
       (this.paired && !this.pairReady)
     )
       return;
@@ -963,6 +1031,10 @@ class EggCatch implements Game {
     }
     if (this.plan.mode === 'repair') {
       await this.prepareRepair();
+      return;
+    }
+    if (this.plan.mode === 'sorter') {
+      this.prepareSorter();
       return;
     }
     this.target = this.targets[this.routed % this.targets.length];
@@ -992,6 +1064,8 @@ class EggCatch implements Game {
 
   /** Whether the waiting egg (or pair) would arrive where it should with the gates as they are. */
   private setToGo() {
+    if (this.plan.mode === 'sorter')
+      return this.sorterReady && !this.rolling && sorts(this.sorterRound[this.routed], this.setup());
     if (this.paired)
       return (
         this.pairReady && !this.rolling && pairGateToFlip(this.pairBoards[this.routed], this.gates) === null
@@ -1242,6 +1316,234 @@ class EggCatch implements Game {
     void this.nextRoute();
   }
 
+  // Level 13, the sorting gate ------------------------------------------------------------------
+
+  /** Where the sorting gate rests while it is not on the run: left of the entry, clear of gate 1. */
+  private pegAt() {
+    const o = this.geo();
+    return { x: o.entry.x - 250, y: o.entry.y + 20 };
+  }
+
+  setup(): SorterSetup {
+    return { at: this.sorterAt, brownRight: this.brownRight, gates: this.gates };
+  }
+
+  /** A gate disc split in two: brown (with a brown egg) on the side brown rolls to, white on the other. Drawn brown-right; a
+   * turn mirrors it. */
+  private makeSorter() {
+    const g = this.sorterArt;
+    const half = (side: 1 | -1, shell: 'brown' | 'white') => {
+      const c = SHELL[shell];
+      g.moveTo(0, -52)
+        .arc(0, 0, 52, -Math.PI / 2, Math.PI / 2, side === -1)
+        .closePath()
+        .fill(c.fill)
+        .stroke({ width: 5, color: shell === 'brown' ? c.line : swatch.purple.line });
+      g.ellipse(side * 24, -16, 10, 13)
+        .fill(c.fill)
+        .stroke({ width: 3, color: c.line });
+      // Its arrow, down and out the way that shell rolls.
+      g.moveTo(side * 10, 10)
+        .lineTo(side * 34, 34)
+        .stroke({ width: 7, color: swatch.purple.line, cap: 'round' });
+      g.poly([side * 40, 40, side * 22, 38, side * 38, 22]).fill(swatch.purple.line);
+    };
+    half(1, 'brown');
+    half(-1, 'white');
+    g.circle(0, 0, 9).fill(swatch.purple.line);
+    this.sorterArt.addChild(this.sorterGlow);
+    this.sorterGlow.eventMode = 'none';
+    this.sorter.addChild(this.sorterArt);
+    this.sorter.hitArea = new Circle(0, 0, 80);
+    this.ctx.stage.addChild(this.sorter);
+    this.sorterDrag = draggable(this.sorter, this.ctx.tw, {
+      tapToPlace: () => this.sorterAt === null && !this.rolling && this.sorterReady,
+      onDrop: (x, y) => this.dropSorter(x, y),
+    });
+  }
+
+  /** A drop near a junction snaps there; a still tap on the placed gate turns it; anywhere else it floats home to its peg. */
+  private dropSorter(x: number, y: number): boolean {
+    if (this.rolling || !this.sorterReady) return false;
+    const o = this.geo();
+    if (this.sorterDrag?.tapped && this.sorterAt !== null) {
+      this.brownRight = !this.brownRight;
+      this.layoutSorter();
+      sfx.tick();
+      sfx.pop(5);
+      return true;
+    }
+    let best = -1;
+    for (let j = 0; j < 3; j++)
+      if (
+        Math.hypot(o.gate[j].x - x, o.gate[j].y - y) <= 140 &&
+        (best < 0 ||
+          Math.hypot(o.gate[j].x - x, o.gate[j].y - y) < Math.hypot(o.gate[best].x - x, o.gate[best].y - y))
+      )
+        best = j;
+    if (best < 0) {
+      this.sorterAt = null;
+      this.layoutSorter(false);
+      return false;
+    }
+    this.sorterAt = best as 0 | 1 | 2;
+    this.layoutSorter();
+    sfx.tick();
+    sfx.pop(4 + best * 2);
+    return true;
+  }
+
+  /** The sorting gate on its junction or peg, its turn, and the waiting eggs above the entry. */
+  private layoutSorter(move = true) {
+    const o = this.geo();
+    const at = this.sorterAt === null ? this.pegAt() : o.gate[this.sorterAt];
+    if (this.sorterDrag) this.sorterDrag.home = { x: at.x, y: at.y };
+    if (move && !this.sorterDrag?.dragging) this.sorter.position.set(at.x, at.y);
+    this.sorterArt.scale.x = this.brownRight ? 1 : -1;
+    this.sorterQueue.forEach((node, i) => node.position.set(o.entry.x + (i - 1.5) * 70, o.entry.y - 30));
+  }
+
+  private prepareSorter(retry = false) {
+    const board = this.sorterRound[this.routed];
+    this.target = { basket: board.basket, nest: board.nest };
+    if (!retry) {
+      this.gates = [...board.gates];
+      this.sorterAt = null;
+      this.brownRight = false;
+    }
+    this.drawExits();
+    this.sorterQueue = board.eggs.map((shell) => {
+      const node = eggArt(shell);
+      node.scale.set(0.8);
+      this.ctx.stage.addChild(node);
+      return node;
+    });
+    this.sorterReady = true;
+    if (this.sorterDrag) this.sorterDrag.enabled = true;
+    this.goButton.alpha = 1;
+    this.layoutSorter();
+  }
+
+  /** After two misses, one thing at a time: the gate still needed, as `drawGates` glows it (the place and turn are drawn
+   * by `drawSorterHint`). */
+  private sorterGlows(): { gate: number; right: boolean }[] {
+    const board = this.sorterRound[this.routed];
+    if (!board || !this.sorterReady) return [];
+    const hint = sorterHint(board, this.setup());
+    if (!hint || !('gate' in hint)) return [];
+    return sorterAnswer(board).needs.filter((n) => n.gate === hint.gate);
+  }
+
+  /** The place glow on a junction, the pulse on the brown face, and the face lit as an egg is read. */
+  private drawSorterHint() {
+    const glow = this.sorterGlow.clear();
+    const lit = this.sorterLit && this.clock < this.sorterLit.until ? this.sorterLit : null;
+    const board = this.sorterRound[this.routed];
+    const hint = this.hinting && this.sorterReady && board ? sorterHint(board, this.setup()) : null;
+    const face = (brown: boolean, alpha: number) =>
+      glow
+        .moveTo(0, -52)
+        .arc(0, 0, 52, -Math.PI / 2, Math.PI / 2, !brown)
+        .closePath()
+        .fill({ color: 0xfff3a0, alpha });
+    if (lit) face(lit.brown, 0.7);
+    else if (hint && 'turn' in hint) face(true, 0.35 + 0.3 * Math.sin(this.clock * 7));
+    if (hint && 'place' in hint) {
+      const p = this.geo().gate[hint.place];
+      this.gateArt.circle(p.x, p.y, 70 + 6 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.85 });
+    }
+  }
+
+  /** The green arrow: the gates lock and the four eggs roll in turn, each starting when the one before reaches its chute. */
+  private async sendSorter() {
+    if (!this.sorterReady || this.rolling || this.finished) return;
+    if (this.sorterAt === null) {
+      sfx.boing();
+      void this.ctx.say('egg.sorterfirst');
+      return;
+    }
+    const board = this.sorterRound[this.routed];
+    this.sorterReady = false;
+    this.rolling = true;
+    if (this.sorterDrag) this.sorterDrag.enabled = false;
+    this.goButton.alpha = 0.4;
+    sfx.pop(6);
+    const queue = this.sorterQueue;
+    this.sorterQueue = [];
+    const runs: Promise<boolean>[] = [];
+    for (const [i, node] of queue.entries()) {
+      const shell = board.eggs[i];
+      let chute!: () => void;
+      const reached = new Promise<void>((r) => (chute = r));
+      runs.push(this.rollSorted(node, shell, chute));
+      await reached;
+    }
+    const results = await Promise.all(runs);
+    await this.ctx.tw.wait(0.5);
+    this.rolling = false;
+    if (results.every(Boolean)) {
+      this.gathered.push(...board.eggs);
+      this.caughtCount++;
+      this.wrongs = 0;
+      this.hinting = false;
+      if (this.caughtCount >= this.plan.eggs) {
+        void this.finale();
+        return;
+      }
+      this.routed++;
+      this.prepareSorter();
+      return;
+    }
+    sfx.boing();
+    this.miss(null);
+    const hint = this.hinting ? sorterHint(board, this.setup()) : null;
+    void this.ctx.say(hint && 'place' in hint ? 'egg.sorterhere' : 'egg.sortermiss');
+    // The same four shells wait again; the board, the sorting gate's place and every gate stay as she left them.
+    this.prepareSorter(true);
+  }
+
+  /** One egg down the run; at the sorting gate it pauses while its face lights and its note plays. True if it sorted. */
+  private async rollSorted(node: Graphics, shell: 'brown' | 'white', chute: () => void): Promise<boolean> {
+    const tw = this.ctx.tw;
+    const o = this.geo();
+    const speed = this.hinting ? 1.3 : 1;
+    const go = async (p: { x: number; y: number }) => {
+      const d = Math.hypot(p.x - node.x, p.y - node.y);
+      await tw.to(node, { x: p.x, y: p.y }, { duration: (d / 220) * speed, ease: ease.linear });
+      sfx.tick();
+    };
+    const read = async (j: number) => {
+      if (this.sorterAt !== j) return;
+      this.sorterLit = { brown: shell === 'brown', until: this.clock + 0.35 };
+      sfx.pop(shell === 'brown' ? 2 : 9);
+      await tw.wait(0.25);
+    };
+    await tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.1 });
+    await go(o.entry);
+    await go(o.gate[0]);
+    await read(0);
+    const setup = this.setup();
+    const exit = sorterExit(setup, shell);
+    const second = exit >= 2 ? 2 : 1;
+    await go(o.gate[second]);
+    await read(second);
+    await go(o.exit[exit]);
+    chute();
+    await go({ x: o.bin[exit].x, y: o.bin[exit].y - 10 });
+    const ok = exit === (shell === 'brown' ? this.target.basket : this.target.nest);
+    if (ok) {
+      sfx.sparkle();
+      this.ctx.particles.burst(node.x, node.y - 30, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, 0xffffff],
+        count: 8,
+      });
+      await tw.wait(0.3);
+      node.destroy();
+    } else this.hatch(node);
+    return ok;
+  }
+
   private async finale() {
     if (this.finished) return;
     this.finished = true;
@@ -1249,15 +1551,21 @@ class EggCatch implements Game {
     // A scene-owned, non-interactive stopping point. No missed egg joins this basket.
     this.ending.eventMode = 'none';
     this.ending.position.set(this.view.w / 2, this.view.h * 0.56);
-    const width = Math.max(360, this.gathered.length * 64 + 60);
+    // More than eight eggs (level 13's twelve) sit in two rows, so the basket still fits a phone held upright.
+    const cols = this.gathered.length > 8 ? Math.ceil(this.gathered.length / 2) : this.gathered.length;
+    const rows = Math.ceil(this.gathered.length / Math.max(1, cols));
+    const extra = (rows - 1) * 70;
+    const width = Math.max(360, cols * 64 + 60);
     const panel = new Graphics()
-      .roundRect(-width / 2, -150, width, 290, 40)
+      .roundRect(-width / 2, -150 - extra, width, 290 + 2 * extra, 40)
       .fill({ color: 0xfff1e3, alpha: 0.97 })
       .stroke({ color: wood.line, width: 5 });
     this.ending.addChild(panel);
     const eggs = this.gathered.map((shell, i) => {
       const node = eggArt(shell);
-      node.position.set((i - (this.gathered.length - 1) / 2) * 64, -55);
+      const row = Math.floor(i / cols);
+      const inRow = Math.min(cols, this.gathered.length - row * cols);
+      node.position.set((i - row * cols - (inRow - 1) / 2) * 64, -55 - (rows - 1 - row) * 70);
       this.ending.addChild(node);
       return node;
     });
@@ -1283,7 +1591,8 @@ class EggCatch implements Game {
         .fill(SHELL[this.gathered[i]].fill)
         .stroke({ width: 3, color: SHELL[this.gathered[i]].line });
       sfx.chirp(HEN_NOTES[i % LANES]);
-      await this.ctx.tw.to(chick, { y: 85 }, { duration: 0.25, ease: ease.outBack });
+      const row = Math.floor(i / cols);
+      await this.ctx.tw.to(chick, { y: 85 + row * 60 }, { duration: 0.25, ease: ease.outBack });
     }
     sfx.tada();
     await this.ctx.say('egg.done');

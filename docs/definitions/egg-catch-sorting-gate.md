@@ -1,5 +1,7 @@
 # Egg Catch level 13: Sorting gate (definition)
 
+**Built:** level 13 (PR #1961); nothing further is defined here. The build's departures and miss/hint rules are in [the game page](../games/egg-catch.md#design-notes).
+
 *Game `egg-catch` · school band · defined 2026-11-21 from [dive slice 9](../deep-dives/egg-catch.md#build-slices-in-order) and the level 13 row of the dive's [new levels table](../deep-dives/egg-catch.md#new-levels-on-top). Docs only; nothing here is built. The dive's decisions 2–5 are about other levels and stay as the dive records them.*
 
 **Fun action and purpose.** A new gate joins the run: a **sorting gate** with a brown face and a white face that reads each egg's shell and sends brown one way and white the other. Four mixed eggs wait at the top. She puts the sorting gate on one of the three junctions, turns it, sets the two plain gates once, and taps the green arrow; all four eggs then roll in turn with no touches between, brown to the basket and white to the nest. Learning goal: **where a condition belongs in a route**. The sorting gate only helps where the brown road and the white road part: at the top when the basket and the nest are on different sides, on the lower junction of their side when they share one. This is the "if" placed inside a sequence, after levels 10 (debug a visible run) and 11 (a gate with state).
