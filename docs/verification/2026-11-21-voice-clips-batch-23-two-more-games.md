@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 23: two more games (PR #1969)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `kh` (Keep House) and `lantern` (Lantern Lights), the next games alphabetically after Jar Sort. Keep House was left for its own batch last time because of its size (106 slot-free lines); Lantern Lights (11) was added to it. Rendered 116 new slot-free clips (2907 in all, 2791 before); `src/audio/clips` grew from 49,022,037 to 50,932,580 bytes (+1,910,543 bytes, +1.91 MB); the service-worker precache went to 3119 entries and 66,894.38 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed: production reload, cached font and assets (3112), lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, Windy Picnic, rearranged treehouse with kept creations and discovery journal offline across reloads).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
