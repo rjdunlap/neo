@@ -8,10 +8,19 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import { beeLayout } from './bee-layout';
+import { BeeGardenView, drawHeight } from './bee-view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  HEIGHTS,
+  beeHint,
+  beeHintValid,
+  checkBeeBed,
+  inspectGate,
+  type BeeHint,
+  type BeePuzzle,
   boxSide,
   clash,
   copyBed,
@@ -19,6 +28,7 @@ import {
   CELL,
   FLOWER_NAMES,
   gardenLayout,
+  gateLine,
   hintFor,
   isFull,
   isSolved,
@@ -149,6 +159,20 @@ class GardenRows implements Game {
   given: boolean[][] = [];
   selected = 0;
 
+  readonly askForHint?: () => void;
+  readonly hintLabel?: string;
+  private readonly bee: BeeGardenView | null;
+  private readonly rejected = new Set<string>();
+  private readonly sight = new Graphics();
+  private activeGate: number | null = null;
+  private beeFeedback = 0;
+  private heightHint: BeeHint | null = null;
+  private sampleSide: number | null = null;
+  private sampleVisits = new Set<number>();
+  private demoOpened = false;
+  private flight: number | null = null;
+  private view: View;
+
   private readonly board = new Container();
   private readonly soil = new Graphics();
   private readonly glow = new Graphics();
@@ -171,13 +195,30 @@ class GardenRows implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.view = ctx.view;
     this.puzzles = makeBeds(this.plan, ctx.rng);
+    const puzzle = this.puzzles[0];
+    this.bee =
+      'gates' in puzzle
+        ? new BeeGardenView(
+            puzzle as BeePuzzle,
+            (id) => this.openGate(id),
+            () => this.askBee(),
+            (side) => this.showSample(side),
+          )
+        : null;
+    if (this.bee) {
+      this.sampleSide = ctx.demo ? 0 : null;
+      this.askForHint = () => this.showBeeHint();
+      this.hintLabel = 'Show a hint';
+    }
+    this.sight.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.plants.eventMode = 'none';
     this.packetRing.eventMode = 'none';
     this.ring.eventMode = 'none';
     // The ring last, so it sits over the flowers and the hint glow.
-    this.board.addChild(this.soil, this.plants, this.glow, this.ring);
+    this.board.addChild(this.soil, this.sight, this.plants, this.glow, this.ring);
     this.board.eventMode = 'static';
     onTap(this.board, (e) => this.tapBoard(e), { cooldown: 80 });
     for (let f = 0; f < this.plan.size; f++) {
@@ -197,6 +238,7 @@ class GardenRows implements Game {
     }
     this.packets.addChild(this.packetRing);
     ctx.stage.addChild(this.board, this.packets);
+    if (this.bee) ctx.stage.addChild(this.bee);
   }
 
   get n() {
@@ -224,7 +266,9 @@ class GardenRows implements Game {
   }
 
   resize(v: View) {
-    const L = gardenLayout(v, this.plan);
+    this.view = v;
+    const L = this.bee ? beeLayout(v) : gardenLayout(v, this.plan);
+    this.bee?.place(v, this.sampleSide);
     this.board.position.set(L.board.x, L.board.y);
     this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(L.packets[i].x, L.packets[i].y));
     this.board.hitArea = new Rectangle(0, 0, L.board.w, L.board.h);
@@ -233,6 +277,7 @@ class GardenRows implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (this.flight !== null) this.bee?.celebrate(Math.min(1, (this.clock - this.flight) / 0.8));
     const g = this.glow.clear();
     if (this.finished) return;
     if (this.flash && this.clock < this.flash.until) {
@@ -276,6 +321,19 @@ class GardenRows implements Game {
   autotouch(): TouchIntent | null {
     const puzzle = this.puzzles[this.index];
     if (this.busy || this.finished || !puzzle) return null;
+    if (this.bee) {
+      if (this.sampleSide !== null) {
+        const end = this.bee.sampleEnds.findIndex((_, side) => !this.sampleVisits.has(side));
+        return { tap: { on: end < 0 ? this.bee.check.node : this.bee.sampleEnds[end].node }, pause: 1.1 };
+      }
+      if (!this.demoOpened)
+        return { tap: { on: this.bee.gates[this.bee.puzzle.teachingGate].node }, pause: 1.1 };
+      const step = beeHint(this.bed, this.bee.puzzle);
+      if (!step) return { tap: { on: this.bee.check.node } };
+      if (step.kind === 'plant' && step.flower !== this.selected)
+        return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
+      return { tap: { on: this.board, x: (step.c + 0.5) * CELL, y: (step.r + 0.5) * CELL } };
+    }
     const step = nextMove(this.bed, this.given, this.target(), this.plan.rule, this.selected);
     if (!step) return null;
     if (!step.lift && step.flower !== this.selected)
@@ -293,7 +351,7 @@ class GardenRows implements Game {
    */
   control(input: CouchControls, dt: number) {
     this.couchOn = true;
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.bee) return;
     for (const dir of this.held.poll(input, dt)) this.move(dir);
     if (input.players.some((p) => p.action)) this.press();
     else if (input.players.some((p) => p.undo) && this.choosing) {
@@ -334,7 +392,7 @@ class GardenRows implements Game {
     p.active = true;
     this.botWait -= dt;
     const puzzle = this.puzzles[this.index];
-    if (this.busy || this.finished || !puzzle || this.botWait > 0) return out;
+    if (this.busy || this.finished || this.bee || !puzzle || this.botWait > 0) return out;
     this.botWait = 0.3;
     if (this.choosing) {
       const want = puzzle.solution[this.cursor.r][this.cursor.c]!;
@@ -368,17 +426,26 @@ class GardenRows implements Game {
     this.given = puzzle.start.map((row) => row.map((v) => v !== null && !this.plan.mend));
     this.packets.children.slice(0, this.n).forEach((p, f) => {
       if (p.children.length > 1) p.removeChildren(1).forEach((old) => old.destroy({ children: true }));
-      p.addChild(flowerArt(puzzle.kinds[f], PACKET * 1.25));
+      if (this.bee) {
+        const stem = new Graphics();
+        drawHeight(stem, 0, 35, f, 1, 0.92);
+        p.addChild(stem);
+      } else p.addChild(flowerArt(puzzle.kinds[f], PACKET * 1.25));
     });
     this.plants.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.nodes = this.bed.map((row, r) =>
       row.map((v, c) => (v === null ? null : this.addPlant(r, c, v, false))),
     );
     this.drawSoil();
+    this.drawBeeView();
     this.board.alpha = 0;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
+    if (this.bee) {
+      if (this.sampleSide !== null) return this.ctx.instruct('rows.bee-sample');
+      return this.ctx.instruct('rows.bee');
+    }
     return this.ctx.instruct(
       this.plan.mend
         ? 'rows.mend'
@@ -399,7 +466,12 @@ class GardenRows implements Game {
   }
 
   private addPlant(r: number, c: number, flower: number, pop: boolean): Container {
-    const node = flowerArt(this.kind(flower), CELL * 0.82);
+    const node = this.bee ? new Container() : flowerArt(this.kind(flower), CELL * 0.82);
+    if (this.bee) {
+      const stem = new Graphics();
+      drawHeight(stem, 0, 38, flower, 1, 0.93);
+      node.addChild(stem);
+    }
     node.position.set(c * CELL + CELL / 2, r * CELL + CELL / 2);
     if (pop) {
       node.scale.set(0.2);
@@ -460,10 +532,15 @@ class GardenRows implements Game {
   /** Tapping a flower the child planted lifts it out again: taking back a guess is always allowed. */
   private takeOut(r: number, c: number) {
     this.bed[r][c] = null;
-    this.nodes[r][c]?.destroy({ children: true });
+    const node = this.nodes[r][c];
+    if (node) {
+      this.ctx.tw.kill(node.scale);
+      node.destroy({ children: true });
+    }
     this.nodes[r][c] = null;
     if (this.hinted?.kind === 'fix' && this.hinted.r === r && this.hinted.c === c) this.hinted = null;
     sfx.pop(2);
+    if (this.bee) this.reviseBee();
     const at = this.ctx.stage.toLocal(
       this.board.toGlobal({ x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }),
     );
@@ -489,11 +566,11 @@ class GardenRows implements Game {
         color: swatch.red.fill,
         until: this.clock + 1.4,
       };
-      void this.ctx.say(
+      const feedback = this.ctx.say(
         hit.by === 'row' ? 'rows.clash-row' : hit.by === 'column' ? 'rows.clash-col' : 'rows.clash-box',
-        { flower: FLOWER_NAMES[this.kind(flower)] },
+        { flower: this.bee ? HEIGHTS[flower] + ' flower' : FLOWER_NAMES[this.kind(flower)] },
       );
-      return this.maybeHint();
+      return this.maybeHint(feedback);
     }
     // Mend the bed starts with repeats, so a lifted swapped flower can leave a spot nothing fits: only a spot this planting closes counts.
     const before = this.plan.mend ? deadEnds(this.bed, this.plan.rule) : [];
@@ -501,6 +578,7 @@ class GardenRows implements Game {
     this.nodes[r][c] = this.addPlant(r, c, flower, true);
     if (this.hinted && this.hinted.r === r && this.hinted.c === c) this.hinted = null;
     sfx.pop(4 + ((r + c) % 6));
+    if (this.bee) return this.reviseBee();
     if (isFull(this.bed)) return void this.bloom();
     const stuck = deadEnds(this.bed, this.plan.rule).filter(
       (d) => !before.some((b) => b.r === d.r && b.c === d.c),
@@ -520,7 +598,15 @@ class GardenRows implements Game {
     sfx.boing();
   }
 
-  private maybeHint() {
+  private maybeHint(feedback?: Promise<void>) {
+    if (this.bee) {
+      const turn = ++this.beeFeedback;
+      if (this.wrongs >= 2 && !this.hinted && feedback)
+        void feedback.then(() => {
+          if (this.ctx.alive && turn === this.beeFeedback) this.showBeeHint();
+        });
+      return;
+    }
     if (this.wrongs < 2 || this.hinted) return;
     const hint = hintFor(this.bed, this.given, this.target(), this.plan.rule);
     if (!hint) return;
@@ -532,6 +618,142 @@ class GardenRows implements Game {
     );
   }
 
+  private drawBeeView() {
+    if (!this.bee) return;
+    const opened =
+      this.activeGate === null ? null : inspectGate(this.bed, this.bee.puzzle.gates[this.activeGate]);
+    const hint = this.heightHint;
+    const gates = hint ? (hint.reason === 'cross' ? [hint.gate, hint.otherGate] : [hint.gate]) : [];
+    const highlight = this.sight.clear();
+    if (hint?.reason === 'cross' && this.activeGate !== null && gates.includes(this.activeGate)) {
+      const other = this.activeGate === hint.gate ? hint.otherGate : hint.gate;
+      for (const { r, c } of gateLine(this.bee.puzzle.gates[other]))
+        highlight
+          .roundRect(c * CELL + 16, r * CELL + 16, CELL - 32, CELL - 32, 12)
+          .stroke({ color: swatch.orange.line, width: 4 });
+    }
+    opened?.line.forEach(({ r, c }, i) => {
+      highlight
+        .roundRect(c * CELL + 7, r * CELL + 7, CELL - 14, CELL - 14, 15)
+        .fill({ color: swatch.teal.light, alpha: 0.35 })
+        .stroke({ color: swatch.teal.line, width: i === 0 ? 6 : 3 });
+    });
+    const sample = this.sampleSide;
+    this.board.visible = this.packets.visible = sample === null;
+    this.bee.draw(
+      sample === null ? (opened?.flowers ?? []) : this.bee.sampleLine(sample),
+      this.activeGate,
+      gates,
+      !this.busy && isFull(this.bed),
+      sample,
+    );
+  }
+
+  private showSample(side: number) {
+    if (!this.bee || this.sampleSide === null || this.busy) return;
+    this.sampleSide = side;
+    this.sampleVisits.add(side);
+    this.drawBeeView();
+    sfx.tick();
+    void this.ctx.say(side === 0 ? 'rows.bee-sample-left' : 'rows.bee-sample-right');
+  }
+
+  private openGate(id: number) {
+    if (!this.bee || this.busy || this.finished) return;
+    this.beeFeedback++;
+    this.activeGate = id;
+    this.demoOpened = true;
+    this.drawBeeView();
+    sfx.tick();
+    // Replaying a highlighted deduction never adds a second hint.
+    const hint = this.heightHint;
+    if (hint && (hint.gate === id || (hint.reason === 'cross' && hint.otherGate === id))) {
+      this.sayBeeHint(hint);
+      return;
+    }
+    const goal = this.bee.puzzle.gates[id].goal;
+    void this.ctx.say('rows.bee-goal', { goal, flowers: goal === 1 ? 'flower' : 'flowers' });
+  }
+
+  private askBee() {
+    if (!this.bee || this.busy || this.finished) return;
+    if (this.sampleSide !== null) {
+      this.sampleSide = null;
+      this.resize(this.view);
+      this.drawBeeView();
+      void this.ctx.instruct('rows.bee');
+      return;
+    }
+    const result = checkBeeBed(this.bed, this.bee.puzzle, this.rejected);
+    if (result.kind === 'incomplete') return;
+    if (result.kind === 'solved') return void this.bloom();
+    if (result.fresh) this.miss();
+    else sfx.tick();
+    this.activeGate = result.gate;
+    this.drawBeeView();
+    const feedback = this.ctx.say('rows.bee-revise', {
+      seen: result.count,
+      goal: this.bee.puzzle.gates[result.gate].goal,
+    });
+    this.maybeHint(feedback);
+  }
+
+  private reviseBee() {
+    this.beeFeedback++;
+    if (this.bee && this.heightHint && !beeHintValid(this.bed, this.bee.puzzle, this.heightHint)) {
+      this.heightHint = null;
+      this.hinted = null;
+    }
+    this.drawBeeView();
+  }
+
+  sayWaitingAsk() {
+    return this.showBeeHint();
+  }
+
+  private showBeeHint(): boolean {
+    if (!this.bee || this.busy || this.finished || this.sampleSide !== null) return false;
+    const hint = this.heightHint ?? beeHint(this.bed, this.bee.puzzle);
+    if (!hint) return false;
+    this.beeFeedback++;
+    if (!this.heightHint) {
+      this.hints++;
+      this.wrongs = 0;
+    }
+    this.heightHint = this.hinted = hint;
+    this.activeGate = hint.gate;
+    this.drawBeeView();
+    this.sayBeeHint(hint);
+    return true;
+  }
+
+  private sayBeeHint(hint: BeeHint) {
+    if (hint.kind === 'fix') {
+      void this.ctx.say('rows.bee-lift');
+      return;
+    }
+    const flower = HEIGHTS[hint.flower];
+    switch (hint.reason) {
+      case 'three':
+        void this.ctx.say('rows.bee-three', { flower });
+        break;
+      case 'one':
+        void this.ctx.say('rows.bee-one');
+        break;
+      case 'missing-row':
+      case 'missing-column':
+        void this.ctx.say('rows.bee-missing', {
+          line: hint.reason === 'missing-row' ? 'row' : 'column',
+          flower,
+        });
+        break;
+      case 'line':
+      case 'cross':
+        void this.ctx.say(hint.reason === 'line' ? 'rows.bee-line' : 'rows.bee-cross', { flower });
+        break;
+    }
+  }
+
   /** The bed is full and right: every flower blooms in turn. */
   private async bloom() {
     // The same check the rules use. Only Mend the bed can be full and still hold a repeat: the help on show stays, and the
@@ -539,7 +761,12 @@ class GardenRows implements Game {
     if (!isSolved(this.bed, this.plan.rule)) return void this.ctx.say('rows.mend');
     this.busy = true;
     this.hinted = null;
+    this.heightHint = null;
     this.flash = null;
+    if (this.bee) {
+      this.flight = this.clock;
+      this.drawBeeView();
+    }
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.n; c++) {
         const node = this.nodes[r][c];
@@ -563,7 +790,8 @@ class GardenRows implements Game {
       life: [0.6, 1],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('rows.bloom');
+    if (this.bee) await this.ctx.tw.wait(0.5);
+    await this.ctx.say(this.bee ? 'rows.bee-solved' : 'rows.bloom');
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
   }
@@ -639,8 +867,11 @@ export const gardenRows: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Point at a row and ask together: which flower is missing here?',
-  offScreen:
-    'Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back.',
+  offScreen: {
+    all: 'Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back.',
+    school:
+      'Make a line of three block towers at different heights. Look along the line from each end and compare how many tops you can see.',
+  },
   hubIcon: () => new RowsIcon(),
   touchDemo: true,
   sticker,
