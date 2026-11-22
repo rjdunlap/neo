@@ -28,7 +28,7 @@
 
 **Starts as:** tap anywhere to stack six blocks, then knock down two towers
 
-**Grows into:** tap anywhere for three friend-height towers, up to the numbered kite flag, three distinct reference heights, as tall as Duck's (or one taller or shorter), three unscored predictions of which leaning tower will stand, freely replayable observations and explicit Continue, then two standing stacks reaching a star past opposite table edges in seeded order, one settled block at a time
+**Grows into:** tap anywhere for three friend-height towers, up to the numbered kite flag, three distinct reference heights, as tall as Duck's (or one taller or shorter), three unscored predictions of which leaning tower will stand, freely replayable observations and explicit Continue, then two standing stacks reaching a star past opposite table edges in seeded order, one settled block at a time, then two leaning towers held by ropes that she mends by moving only the top block
 
 ## Design notes
 
@@ -36,3 +36,5 @@
 
 
 **The friend's cheer never holds the knock (U7 fix batch 23, 2026-11-12).** Level 2's `tower.as-tall` starts as the friend cheers and the knock opens at once; `tower.knock` waits for it or the guide, or is dropped when she knocks (its crash cuts the cheer). Level 1 is unchanged.
+
+**Level 7, Mend the leaning tower (2026-11-22).** School order is `[5, 7, 6]`. Two authored tasks (one three-block, one four-block, leaning opposite ways, seeded) hang from a beam by ropes; she drags only the top block along the one below (`mendDomain`), then taps let go. A tumble or a stand is an experiment: misses are always 0, undo and watch again are free, Try again keeps her slot, and the hint glows one valid slot (`mendHint`) after two tumbles, counted once per task. Departure from the definition: T3 is `[0,3,9]` (window 0 to 4, hint 2), because `[0,4,5]` has a base that falls on its own. A repeat let go at the same failed slot after Try again counts as another trial, and moving back to the dealt slot clears the undo history. Level 6 still counts topples as misses; that is its own READY line.

@@ -1,5 +1,7 @@
 # Block Tower level 7: Mend the leaning tower (definition)
 
+**Built:** level 7 (PR #1991); to build level 8, read “Decisions for the developer” in the [dive](../deep-dives/block-tower.md#decisions-for-the-developer) (levels 8 and 9 are not defined here). One departure: task T3 is `[0,3,9]` (window 0 to 4, hint 2), not `[0,4,5]`, whose base `[0,4]` falls on its own (a middle exactly on the edge) and so broke this page's own rule test; only bases `[0,2]` and `[0,3]` meet every constraint.
+
 *Game `block-tower` · school band · defined 2026-11-21 from [dive slice 6](../deep-dives/block-tower.md#build-slices-in-order) and the level 7 row of the dive's [new levels table](../deep-dives/block-tower.md#new-levels-on-top), under the decisions the developer delegated on 2026-10-23 (the dive's [decided paragraph](../deep-dives/block-tower.md#decisions-for-the-developer)). Docs only; nothing here is built. Levels 8 (counterweight) and 9 (safe removal) stay as the dive records them.*
 
 **Fun action and purpose.** A tower leans so far that it would tumble, and ropes from a beam hold it up. She drags the **top block** sideways along the block below it, tries **Let go**, and watches: the tower stands, or it tumbles with the same fallen outlines and middle line that level 5 shows. Two mended towers finish. Learning goal: **change one thing so the middle of the blocks above sits over the block below.** Level 5 asked her to *predict* which tower stands and level 6 to *build* out to a star; here she *revises* a plan that fails, one controlled change at a time, and sees both ways to get it wrong: not far enough back (the upper pair still hangs past the bottom block) and too far back (the top block slides off its own support).
@@ -41,7 +43,7 @@ Positions are eighths of a block width from the bottom block's middle, canonical
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `[0,3,6]` | block 1 | −4 to 10 | 0 to 4 | 2 | block 2 (top) | block 1 |
 | T2 | `[0,2,6]` | block 1 | −5 to 9 | −1 to 5 | 2 | block 2 | block 1 |
-| T3 | `[0,4,5]` | block 1 | −3 to 11 | 1 to 3 | 2 | block 2 | block 1 |
+| T3 | `[0,3,9]` (built; was `[0,4,5]`, whose base falls on its own) | block 1 | −3 to 11 | 0 to 4 | 2 | block 2 | block 1 |
 | Q1 | `[0,2,5,7]` | block 1 | −2 to 12 | 2 to 4 | 3 | block 3 (top) | block 1 |
 | Q2 | `[0,2,4,8]` | block 1 | −3 to 11 | 1 to 5 | 3 | block 3 | block 1 |
 | Q3 | `[0,3,4,7]` | block 1 | −3 to 11 | 1 to 4 | 2 | block 3 | block 1 |
