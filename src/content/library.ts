@@ -6,7 +6,7 @@ import { WOODLAND_BAND } from './woodland';
  * her discovery journal and the two stories. The Woodland Picnic shows only where Wonder Woods' path shows it, at school
  * band; the Windy Picnic is open to every age, as on the map. Looking changes no progress.
  */
-export const LIBRARY_BOOKS = ['journal', 'windy', 'woodland'] as const;
+export const LIBRARY_BOOKS = ['journal', 'windy', 'woodland', 'collection'] as const;
 export type LibraryBook = (typeof LIBRARY_BOOKS)[number];
 
 export const libraryBooks = (band: Band): LibraryBook[] =>
@@ -16,4 +16,5 @@ export const BOOK_NAMES: Record<LibraryBook, string> = {
   journal: 'Journal',
   windy: 'Windy Picnic',
   woodland: 'Woodland Picnic',
+  collection: 'Collection book',
 };

@@ -1,5 +1,6 @@
 import { selectValue } from '../selection.mjs';
 import assert from 'node:assert/strict';
+import { homeBook } from './home-book.mjs';
 import { homeTunes } from './home-tunes.mjs';
 
 export function createSuite({
@@ -24,9 +25,11 @@ export function createSuite({
     if (process.env.HOME_ONLY !== undefined)
       selectValue(
         process.env.HOME_ONLY,
-        ['first-run', 'result', 'residents', 'buttons', 'last-place', 'arcade', 'meadow', 'tunes'],
+        ['first-run', 'result', 'residents', 'buttons', 'last-place', 'arcade', 'meadow', 'tunes', 'book'],
         'HOME_ONLY',
       );
+    if (process.env.HOME_ONLY === 'book')
+      return homeBook({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
     if (process.env.HOME_ONLY === 'arcade') return homeArcade();
     if (process.env.HOME_ONLY === 'tunes')
       return homeTunes({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
@@ -163,7 +166,11 @@ export function createSuite({
     );
     await tap('neo.scene.books');
     await scene('LibraryScene');
-    assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.book)), ['journal', 'windy']);
+    assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.book)), [
+      'journal',
+      'windy',
+      'collection',
+    ]);
     await screenshot('library-landscape');
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(500);

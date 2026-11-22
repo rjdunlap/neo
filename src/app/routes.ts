@@ -53,10 +53,11 @@ export function createRoutes(app: App): Routes {
     project: () => void app.show(new MapScene(app)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
-    friends: (previewId) => void app.show(new FriendsScene(app, previewId)),
-    dress: (id) => void app.show(new DressScene(app, id)),
+    friends: (previewId, origin) => void app.show(new FriendsScene(app, previewId, origin)),
+    dress: (id, origin) => void app.show(new DressScene(app, id, origin)),
     journal: () => void app.show(new JournalScene(app)),
     // The library is the root's (src/rework.ts); the island never makes a library origin, so it opens the treehouse.
     library: () => void app.show(new RoomScene(app)),
+    book: () => void app.show(new RoomScene(app)),
   };
 }

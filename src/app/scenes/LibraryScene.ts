@@ -13,7 +13,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton, squash } from '../../ui/buttons';
-import { arrowIcon, houseIcon, journalIcon } from '../../ui/icons';
+import { arrowIcon, collectionBookIcon, houseIcon, journalIcon } from '../../ui/icons';
 import { fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
@@ -23,11 +23,13 @@ const ART: Record<LibraryBook, () => Container> = {
   journal: journalIcon,
   windy: picnicLandmark,
   woodland: woodlandLandmark,
+  collection: collectionBookIcon,
 };
 const LINES: Record<LibraryBook, LineId> = {
   journal: 'library.journal',
   windy: 'map.picnic',
   woodland: 'woodland.spot',
+  collection: 'library.book',
 };
 
 /**
@@ -88,17 +90,24 @@ export class LibraryScene extends Scene {
         if (this.out.leaving) return;
         sfx.tick();
         squash(node);
-        const go = () =>
-          book === 'journal'
-            ? this.app.go.journal()
-            : book === 'windy'
-              ? this.app.go.picnic()
-              : this.app.go.woodland();
-        this.leave(node, go, LINES[book]);
+        this.leave(node, () => this.open(book), LINES[book]);
       },
       { cooldown: 400 },
     );
     return node;
+  }
+
+  private open(book: LibraryBook) {
+    switch (book) {
+      case 'journal':
+        return this.app.go.journal();
+      case 'windy':
+        return this.app.go.picnic();
+      case 'woodland':
+        return this.app.go.woodland();
+      case 'collection':
+        return this.app.go.book();
+    }
   }
 
   private leave(node: Container, go: () => void, line: LineId) {
