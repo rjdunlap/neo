@@ -8,7 +8,17 @@ import type { BandLevels } from '../../progress/difficulty';
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
 export type EggMode =
-  'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair' | 'repair' | 'flipflop';
+  | 'tap'
+  | 'lane'
+  | 'catch'
+  | 'brown'
+  | 'route'
+  | 'sort'
+  | 'predict'
+  | 'pair'
+  | 'repair'
+  | 'flipflop'
+  | 'sorter';
 
 export interface EggPlan {
   mode: EggMode;
@@ -68,6 +78,12 @@ export const PLANS: EggPlan[] = [
     fall: 1.8,
     name: 'One big hen: a touch anywhere and she lays an egg into the basket',
   },
+  {
+    mode: 'sorter',
+    eggs: 3,
+    fall: 0,
+    name: 'Sorting gate: put the gate that reads shells where brown and white part, then four eggs roll with no touches between',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -76,7 +92,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 8, order: [1, 8, 2] },
   preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
   prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  school: { min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] },
+  school: { min: 4, max: 13, order: [4, 5, 6, 7, 10, 11, 13] },
 };
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
@@ -386,6 +402,93 @@ export function simulateFlipflop(start: readonly boolean[]): {
 }
 /** Opposite destination branches make all three starting directions matter. */
 export const flipflopBoards = (rng: Rng, count: number) => pairBoards(rng, count);
+
+/* Level 13, the sorting gate ---------------------------------------------------------------- */
+
+/**
+ * A board for the sorting gate: where the basket and the nest wait, the four eggs in the order they roll, and the plain
+ * gates as dealt. A *top* board has the basket and the nest on different branches (the sorting gate belongs at gate 0); a
+ * *low* board has both on one branch (it belongs on that branch's lower gate).
+ */
+export interface SorterBoard {
+  basket: number;
+  nest: number;
+  eggs: ('brown' | 'white')[];
+  gates: [boolean, boolean, boolean];
+}
+
+/** Where the sorting gate sits (`at`, null on its peg), which way it sends brown, and the plain gates' settings. */
+export interface SorterSetup {
+  at: 0 | 1 | 2 | null;
+  brownRight: boolean;
+  gates: [boolean, boolean, boolean];
+}
+
+export const isTopBoard = (b: { basket: number; nest: number }) => b.basket < 2 !== b.nest < 2;
+
+/** Boards alternate top, low, then either (seeded), so every round needs both placements. */
+export function sorterBoards(rng: Rng, count: number): SorterBoard[] {
+  const out: SorterBoard[] = [];
+  while (out.length < count) {
+    const top = out.length === 0 ? true : out.length === 1 ? false : rng.chance(0.5);
+    let basket = rng.int(0, 3);
+    if (out.length >= 2 && out.at(-1)!.basket === basket && out.at(-2)!.basket === basket)
+      basket = (basket + 1 + rng.int(0, 2)) % 4;
+    const nest = top ? (basket < 2 ? 2 : 0) + rng.int(0, 1) : basket % 2 === 0 ? basket + 1 : basket - 1;
+    const eggs = rng.shuffle(['brown', 'brown', 'white', 'white'] as ('brown' | 'white')[]);
+    const gates: SorterBoard['gates'] = [rng.chance(0.5), rng.chance(0.5), rng.chance(0.5)];
+    out.push({ basket, nest, eggs, gates });
+  }
+  return out;
+}
+
+/** Where one egg ends up: as `exitFor`, except that at the sorting gate's junction its shell picks the way. */
+export function sorterExit(setup: SorterSetup, shell: 'brown' | 'white'): number {
+  const way = (j: number) => (setup.at === j ? (shell === 'brown') === setup.brownRight : setup.gates[j]);
+  return way(0) ? (way(2) ? 3 : 2) : way(1) ? 1 : 0;
+}
+
+/** Every egg on the board reaches its place: brown the basket, white the nest. */
+export const sorts = (board: SorterBoard, setup: SorterSetup) =>
+  board.eggs.every((shell) => sorterExit(setup, shell) === (shell === 'brown' ? board.basket : board.nest));
+
+/**
+ * The one answer: the junction where the brown road and the white road part, the sorting gate's turn there, and the plain
+ * gates an egg passes. The gate no egg passes (on a low board, the other branch's lower gate) is never listed.
+ */
+export function sorterAnswer(board: SorterBoard): {
+  at: 0 | 1 | 2;
+  brownRight: boolean;
+  needs: { gate: number; right: boolean }[];
+} {
+  if (isTopBoard(board))
+    return {
+      at: 0,
+      brownRight: board.basket >= 2,
+      needs: [
+        { gate: board.basket < 2 ? 1 : 2, right: board.basket % 2 === 1 },
+        { gate: board.nest < 2 ? 1 : 2, right: board.nest % 2 === 1 },
+      ],
+    };
+  const right = board.basket >= 2;
+  return { at: right ? 2 : 1, brownRight: board.basket % 2 === 1, needs: [{ gate: 0, right }] };
+}
+
+/**
+ * After two misses, one thing glows at a time: where the sorting gate belongs while it is anywhere else, then its turn,
+ * then the first plain gate an egg still needs; null once the board sorts.
+ */
+export function sorterHint(
+  board: SorterBoard,
+  setup: SorterSetup,
+): { place: 0 | 1 | 2 } | { turn: true } | { gate: number } | null {
+  if (sorts(board, setup)) return null;
+  const answer = sorterAnswer(board);
+  if (setup.at !== answer.at) return { place: answer.at };
+  if (setup.brownRight !== answer.brownRight) return { turn: true };
+  const gate = answer.needs.find((n) => setup.gates[n.gate] !== n.right);
+  return gate ? { gate: gate.gate } : null;
+}
 
 /* Layout shared with the scene, so the far barn can stay clear of it ----------------------------- */
 

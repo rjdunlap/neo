@@ -12,7 +12,7 @@
 | toddler | 1, 8, 2 |
 | preschool | 2, 3, 9, 4 |
 | pre-K | 3, 9, 4, 5 |
-| school | 4, 5, 6, 7, 10, 11 |
+| school | 4, 5, 6, 7, 10, 11, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 10 | Fix the run: follow the dotted trace, repair one gate and roll again |
 | 11 | Flip-flop gate: set a spring gate for brown then white with one arrangement |
 | 12 | One big hen: a touch anywhere and she lays an egg into the basket |
+| 13 | Sorting gate: put the gate that reads shells where brown and white part, then four eggs roll with no touches between |
 
 <!-- end generated -->
 

@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Guide each egg to its destination.',
   steps: [
     {
+      from: 13,
+      to: 13,
+      text: 'Drag the sorting gate onto a junction, or tap it and then the junction. Tap it to turn its brown face. Set the other gates, then tap the green arrow: four eggs roll with no touches between.',
+    },
+    {
       from: 10,
       to: 10,
       text: 'Watch the pet’s failed run. Follow its dotted trace, change the gate that led into the hay, then tap the green arrow. Brown belongs in the basket; white belongs in the nest.',
@@ -50,6 +55,7 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
+    { from: 13, to: 13, text: 'Sort three boards, then watch twelve eggs hatch.' },
     { from: 10, to: 10, text: 'Repair four boards, then watch the four eggs hatch.' },
     { from: 11, to: 11, text: 'Route three pairs correctly, then watch all six eggs hatch.' },
     { from: 9, to: 9, text: 'Route four eggs into the basket, then watch them hatch into chicks.' },
@@ -63,6 +69,11 @@ export const HOW_TO: GameHowTo = {
     { from: 7, to: 7, text: 'Route three pairs correctly, then watch all six eggs hatch.' },
   ],
   note: [
+    {
+      from: 13,
+      to: 13,
+      text: 'A run that misses counts once and keeps the board. Two misses light where the sorting gate belongs, then which way it turns, then the gate still to set.',
+    },
     {
       from: 10,
       to: 10,

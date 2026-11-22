@@ -40,6 +40,13 @@ import {
   LEVELS,
   planFor,
   shelfHens,
+  sorterBoards,
+  sorterAnswer,
+  sorterHint,
+  sorts,
+  isTopBoard,
+  type SorterBoard,
+  type SorterSetup,
 } from './logic';
 import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import { eggCatch } from './index';
@@ -526,7 +533,7 @@ describe('Egg Catch far barn', () => {
 
 describe('Egg Catch level 12, one big hen (lap)', () => {
   it('is appended to the ladder, so levels 1–11 keep their IDs and plans', () => {
-    expect(PLANS).toHaveLength(12);
+    expect(PLANS).toHaveLength(13);
     expect(PLANS.slice(0, 11).map((p) => p.name)).toEqual([
       'Tap a hen; her egg rolls into the basket',
       'Slide the basket under falling eggs',
@@ -567,5 +574,128 @@ describe('Egg Catch level 12, one big hen (lap)', () => {
       expect(shelfHens(k)).toBe(Math.min(LANES, shelfHens(k - 1) + 1));
     expect(shelfHens(planFor(12).eggs - 1)).toBe(LANES);
     expect(shelfHens(99)).toBe(LANES);
+  });
+});
+
+describe('Egg Catch level 13, sorting gate', () => {
+  const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
+  const bools = [false, true];
+  const allGates = (): [boolean, boolean, boolean][] =>
+    bools.flatMap((a) => bools.flatMap((b) => bools.map((c) => [a, b, c] as [boolean, boolean, boolean])));
+  const allSetups = (): SorterSetup[] =>
+    ([0, 1, 2] as const).flatMap((at) =>
+      bools.flatMap((brownRight) => allGates().map((gates) => ({ at, brownRight, gates }))),
+    );
+  const boardsFor = (seed: number, count = 3) => sorterBoards(new Rng(seed), count);
+
+  it('is the last plan, a sorter level in school’s ladder', () => {
+    expect(PLANS[12].mode).toBe('sorter');
+    expect(levelsInOrder(LEVELS.school!)).toContain(13);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 6, 7, 10, 11, 13]);
+  });
+
+  it('sorts only at the answer’s junction and turn, with exactly one (top) or two (low) distinct setups', () => {
+    for (const seed of seeds)
+      for (const board of boardsFor(seed, 6)) {
+        const answer = sorterAnswer(board);
+        const classes = new Set<string>();
+        const all = allSetups();
+        expect(all).toHaveLength(48);
+        for (const setup of all) {
+          if (!sorts(board, setup)) continue;
+          expect(setup.at, `seed ${seed}`).toBe(answer.at);
+          expect(setup.brownRight, `seed ${seed}`).toBe(answer.brownRight);
+          // the covered junction's plain gate is never read
+          classes.add(setup.gates.map((g, i) => (i === setup.at ? '-' : g ? 'R' : 'L')).join(''));
+        }
+        expect(classes.size, `seed ${seed} ${JSON.stringify(board)}`).toBe(isTopBoard(board) ? 1 : 2);
+        // the answer itself sorts once its needs are applied
+        const gates = [...board.gates] as [boolean, boolean, boolean];
+        for (const n of answer.needs) gates[n.gate] = n.right;
+        expect(sorts(board, { at: answer.at, brownRight: answer.brownRight, gates })).toBe(true);
+      }
+  });
+
+  it('no setup with the sorting gate on its peg sorts any dealt board', () => {
+    for (const seed of seeds)
+      for (const board of boardsFor(seed, 6))
+        for (const brownRight of bools)
+          for (const gates of allGates()) expect(sorts(board, { at: null, brownRight, gates })).toBe(false);
+  });
+
+  it('deals a top board, then a low board; the basket never sits on one exit three boards running; two eggs of each shell', () => {
+    for (const seed of seeds) {
+      const round = boardsFor(seed, 3);
+      expect(round).toHaveLength(3);
+      expect(isTopBoard(round[0])).toBe(true);
+      expect(isTopBoard(round[1])).toBe(false);
+      for (const count of [3, 8, 20]) {
+        const boards = boardsFor(seed, count);
+        expect(boards).toHaveLength(count);
+        for (let i = 2; i < boards.length; i++)
+          expect(
+            boards[i].basket === boards[i - 1].basket && boards[i].basket === boards[i - 2].basket,
+            `seed ${seed} board ${i}`,
+          ).toBe(false);
+        for (const b of boards) {
+          expect(b.basket).toBeGreaterThanOrEqual(0);
+          expect(b.basket).toBeLessThan(4);
+          expect(b.nest).toBeGreaterThanOrEqual(0);
+          expect(b.nest).toBeLessThan(4);
+          expect(b.nest).not.toBe(b.basket);
+          expect(b.eggs).toHaveLength(4);
+          expect(b.eggs.filter((e) => e === 'brown')).toHaveLength(2);
+          expect(b.eggs.filter((e) => e === 'white')).toHaveLength(2);
+        }
+      }
+    }
+  });
+
+  it('is the same board for the same seed', () => {
+    expect(boardsFor(5, 6)).toEqual(boardsFor(5, 6));
+  });
+
+  it('following the hint from the dealt setup sorts in at most four steps and never names the free gate', () => {
+    for (const seed of seeds)
+      for (const board of boardsFor(seed, 8))
+        for (const brownRight of bools) {
+          let setup: SorterSetup = { at: null, brownRight, gates: [...board.gates] };
+          const needed = new Set(sorterAnswer(board).needs.map((n) => n.gate));
+          let steps = 0;
+          while (!sorts(board, setup)) {
+            const hint = sorterHint(board, setup);
+            expect(hint, `seed ${seed} step ${steps}`).not.toBeNull();
+            if (!hint) break;
+            if ('place' in hint) setup = { ...setup, at: hint.place };
+            else if ('turn' in hint) setup = { ...setup, brownRight: !setup.brownRight };
+            else {
+              expect(needed.has(hint.gate), `seed ${seed} free gate named`).toBe(true);
+              const gates = [...setup.gates] as [boolean, boolean, boolean];
+              gates[hint.gate] = !gates[hint.gate];
+              setup = { ...setup, gates };
+            }
+            steps++;
+            expect(steps, `seed ${seed}`).toBeLessThanOrEqual(4);
+          }
+          expect(sorterHint(board, setup)).toBeNull();
+        }
+  });
+
+  it('egg order never changes whether a setup sorts', () => {
+    const permutations = <T>(xs: T[]): T[][] =>
+      xs.length <= 1
+        ? [xs]
+        : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map((r) => [x, ...r]));
+    const setups = allSetups();
+    setups.push({ at: null, brownRight: true, gates: [true, false, true] });
+    for (const seed of seeds.slice(0, 15))
+      for (const board of boardsFor(seed, 4)) {
+        const perms = permutations(board.eggs);
+        expect(perms.length).toBe(24);
+        for (const setup of setups) {
+          const base = sorts(board, setup);
+          for (const eggs of perms) expect(sorts({ ...board, eggs } as SorterBoard, setup)).toBe(base);
+        }
+      }
   });
 });

@@ -22,6 +22,12 @@ export const VOICE = {
   'egg.sort': [
     'Brown eggs go in the basket. White eggs go to the nest. Tap the gates, then tap the green arrow!',
   ],
+  'egg.sorter': [
+    'This gate reads each egg. Brown rolls one way, white rolls the other. Put it where brown and white part, set the other gates, then tap the green arrow!',
+  ],
+  'egg.sorterfirst': ['Put the sorting gate on the run first.'],
+  'egg.sortermiss': ['Some eggs took the wrong road. Find where brown and white need to part.'],
+  'egg.sorterhere': ['The sorting gate goes here, where the brown road and the white road part.'],
   'egg.white': ['Oops, that one is white! White eggs hatch in the hay.'],
   'egg.peep': ['Peep! Slide under the next one.'],
   'egg.wrongway': ['Oops! It rolled the other way. Peep!'],
