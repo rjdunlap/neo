@@ -287,6 +287,8 @@ class NoticeBoard implements Game {
       // A guess before the door was open is never counted: the door opens itself and the friend says who they are.
       sfx.whoosh();
       this.showSide();
+      const item = this.play.item;
+      this.critters.get(item.bench[item.seller!].name)?.cheer();
       await this.ctx.say(f.memory === 'sells' ? this.clubLine() : 'noticeboard.heard');
       return;
     }
@@ -333,20 +335,26 @@ class NoticeBoard implements Game {
     if (this.busy || this.finished || this.play.done) return;
     if (this.plan.mode === 'omit') {
       if (!this.revealStand()) return void this.wiggle(this.side);
-      this.unread = false;
-      await this.ctx.say('noticeboard.gosee');
-      return;
+      return void this.sayThenRead('noticeboard.gosee');
     }
     if (!this.play.openDoor()) {
       sfx.tick();
       return void this.wiggle(this.side);
     }
-    this.unread = false;
     sfx.whoosh();
     this.showSide();
     const item = this.play.item;
     this.critters.get(item.bench[item.seller!].name)?.cheer();
-    await this.ctx.say(this.clubLine());
+    await this.sayThenRead(this.clubLine());
+  }
+
+  /** Says a side-slot line; a poster whose reading still waited is read after it rather than dropped. */
+  private async sayThenRead(id: LineId) {
+    const waiting = this.unread,
+      item = this.play.item;
+    this.unread = false;
+    await this.ctx.say(id);
+    if (waiting && this.alive && !this.finished && this.play.item === item) void this.read();
   }
 
   /** Level 4: the stand slides into the side slot and the tags wake; false if it was already out. */
@@ -420,7 +428,9 @@ class NoticeBoard implements Game {
       lesson = this.ctx.say('noticeboard.best');
     } else if (this.plan.mode === 'club') {
       // The door opens if it was shut, and the friend who tried it pins their paw note under the poster's claim.
-      if (!this.play.doorOpen) this.showSideOpen();
+      // The door shows open (it opens now if she chose before looking) and the seller waves; the tried-it friend cheers.
+      this.showSideOpen();
+      this.critters.get(item.bench[item.seller!].name)?.cheer();
       this.critters.get(item.bench[slot!].name)?.cheer();
       const paw = pawPinArt(64);
       paw.position.set(0, L.poster.h / 2 - 44);
