@@ -36,7 +36,7 @@ import { bounce, IdleCue } from '../../ui/idle-cue';
 import { PLAQUE, pictureBoard, singTune, TunePlaque } from '../../ui/creation-art';
 import { arrowIcon, checkIcon, frameIcon, houseIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
-import type { App } from '../App';
+import type { App, BookOrigin } from '../App';
 import { Scene } from '../Scene';
 
 interface Card {
@@ -60,8 +60,12 @@ export class ProjectScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly backdrop = homeBackdrop();
-  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave());
-  private readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave());
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => (this.origin ? this.app.go.book() : this.app.go.hub())),
+  ).means('back');
+  private readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.hub()),
+  ).means('home');
   private readonly basket = new Container();
   readonly newcomer: Companion;
   readonly cards: Card[] = [];
@@ -89,6 +93,7 @@ export class ProjectScene extends Scene {
     app: App,
     /** The step whose round just finished, for its done line. */
     private readonly from?: WelcomeStep,
+    private readonly origin?: BookOrigin,
   ) {
     super(app);
     const p = store.welcome;
@@ -260,15 +265,20 @@ export class ProjectScene extends Scene {
     const band = this.band;
     store.beginWelcome(band, step);
     const plan = WELCOME_PLAN[step]!;
-    this.app.go.game(plan.game, band, { project: 'welcome', step, level: plan.level[band] });
+    this.app.go.game(
+      plan.game,
+      band,
+      { project: 'welcome', step, level: plan.level[band] },
+      false,
+      this.origin,
+    );
   }
 
-  private async leave() {
+  private async leave(go: () => void) {
     if (this.leaving) return;
     this.leaving = true;
     await Promise.race([voice.say('welcome.back'), this.tw.wait(0.6)]);
-    if (this.app.scene !== this) return;
-    this.app.go.hub();
+    if (this.app.scene === this) go();
   }
 
   resize(v: View) {
@@ -444,7 +454,8 @@ export class ProjectScene extends Scene {
       await Promise.race([voice.say('welcome.full'), this.tw.wait(6)]);
     }
     if (this.app.scene !== this) return;
-    this.app.go.hub();
+    if (this.origin) this.app.go.book(met ? { joined: true } : undefined);
+    else this.app.go.hub();
   }
 
   async enter() {

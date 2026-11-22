@@ -26,6 +26,7 @@ import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
+import { isGoalId, type GoalId } from '../content/goals';
 import { discover, hasNew, markSeen } from '../content/journal';
 import {
   beginWelcome,
@@ -610,6 +611,15 @@ export class Store {
     const { profile, settings, creatures } = this.data;
     this.data = { ...defaults(), profile, settings, creatures };
     this.save();
+  }
+
+  /** Sets the book's one optional choice and writes it at once. */
+  chooseGoal(id: GoalId | null): boolean {
+    if (id !== null && !isGoalId(id)) return false;
+    this.data.book.goal = id;
+    this.save();
+    this.flush();
+    return true;
   }
 
   // ---- Her friends (RW05) ---------------------------------------------------------------------------------------

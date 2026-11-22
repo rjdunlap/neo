@@ -1031,3 +1031,24 @@ it('cloth Keep survives profile switching, reload and backup restore with previo
   await loaded.switchTo(b);
   expect(loaded.creations.picture.current).toEqual(stamp);
 });
+
+describe('the chosen book goal', () => {
+  it('writes immediately, isolates profiles, and follows reset and undo', async () => {
+    const store = make();
+    await store.load();
+    const first = store.activeId;
+    const second = store.addProfile()!;
+    store.chooseGoal('friend:welcome');
+    expect(savedAs('neo.save').book.goal).toBe('friend:welcome');
+    await store.switchTo(second);
+    expect(store.data.book.goal).toBeNull();
+    await store.switchTo(first);
+    expect(store.data.book.goal).toBe('friend:welcome');
+    store.reset();
+    expect(store.data.book.goal).toBeNull();
+    expect(store.undo()).toBe(true);
+    expect(store.data.book.goal).toBe('friend:welcome');
+    store.chooseGoal(null);
+    expect(savedAs('neo.save').book.goal).toBeNull();
+  });
+});

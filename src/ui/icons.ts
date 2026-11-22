@@ -130,6 +130,22 @@ export function bookIcon(): Graphics {
     .stroke(line(3, 0xd9a520));
 }
 
+/** The collection book's paw-print cover, distinct from the sticker book and journal. */
+export function collectionBookIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-30, -34, 60, 68, 7)
+    .fill(swatch.teal.fill)
+    .stroke(line(5, swatch.teal.line))
+    .rect(-28, -32, 9, 64)
+    .fill(swatch.teal.line)
+    .ellipse(5, 9, 12, 10)
+    .circle(-9, -5, 5)
+    .circle(0, -12, 5)
+    .circle(11, -12, 5)
+    .circle(20, -5, 5)
+    .fill(swatch.white.fill);
+}
+
 export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
   return new Graphics()
     .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])

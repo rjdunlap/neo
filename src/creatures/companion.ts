@@ -9,7 +9,7 @@ import {
   type Texture,
 } from 'pixi.js';
 import type { Mood } from '../art/critter';
-import { swatch, type ColorName } from '../art/palette';
+import { ink, swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
 import {
@@ -528,6 +528,7 @@ export const makeIndividual = (who: Individual): Companion => new Companion(who)
 export function makePortrait(
   who: Pick<Individual, 'species'> & { look: { color: PetColor } },
   size: number,
+  silhouette = false,
 ): Container {
   const card = new Container();
   const paper = loaded.pictures.get('card-paper');
@@ -553,7 +554,8 @@ export function makePortrait(
     f.anchor.set(0.5);
     const room = size * 0.8;
     f.scale.set(Math.min(room / face.width, room / face.height));
-    recolor(f, who.species, who.look.color);
+    if (silhouette) silhouetteOf(f);
+    else recolor(f, who.species, who.look.color);
     card.addChild(f);
   } else {
     const c = new Companion(who, undefined);
@@ -561,9 +563,20 @@ export function makePortrait(
     c.rig.alive = false;
     c.scale.set((size * 0.75) / 300);
     c.y = size * 0.35;
+    if (silhouette) silhouetteOf(c);
     card.addChild(c);
   }
   return card;
+}
+
+function silhouetteOf(node: Container) {
+  const dark = new ColorMatrixFilter({ resolution: 'inherit', antialias: 'inherit' });
+  const r = ((ink >> 16) & 255) / 255;
+  const g = ((ink >> 8) & 255) / 255;
+  const b = (ink & 255) / 255;
+  dark.matrix = [0, 0, 0, 0, r, 0, 0, 0, 0, g, 0, 0, 0, 0, b, 0, 0, 0, 1, 0];
+  node.filters = [dark];
+  node.once('destroyed', () => dark.destroy());
 }
 
 /**

@@ -14,7 +14,8 @@ import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
-import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
+import { isSpecies, MAX_CREATURES, SPECIES, type SpeciesId } from '../creatures/species';
+import { isGoalId, type GoalId } from '../content/goals';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
 import { isLandId, type LandId } from '../content/lands';
@@ -93,7 +94,7 @@ export interface CreaturesSave {
   companion: string | null;
 }
 
-export const MAX_CREATURES = 24;
+export { MAX_CREATURES } from '../creatures/species';
 export const CREATURE_ID = /^[a-z0-9]{4,32}$/;
 
 /** Everything the app remembers, as one versioned record so a backup is a single file. */
@@ -124,6 +125,7 @@ export interface SaveData {
   stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
   /** The root's projects (RW07): Welcome a New Friend, its steps and what she made for it. Never the treehouse's slots. */
   projects: { welcome: WelcomeProject };
+  book: { goal: GoalId | null };
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
@@ -166,6 +168,7 @@ export function defaults(): SaveData {
       woodland: { steps: [], ended: false, keepsake: false },
     },
     projects: { welcome: emptyWelcome() },
+    book: { goal: null },
     room: starterRoom(),
     favorites: [],
     creations: emptyCreations(),
@@ -365,6 +368,7 @@ export function migrate(raw: unknown): SaveData {
     stickers,
     stories: { picnic: story('picnic', stories.picnic), woodland: story('woodland', stories.woodland) },
     projects: { welcome: cleanWelcome(isObj(raw.projects) ? raw.projects.welcome : undefined) },
+    book: { goal: isObj(raw.book) && isGoalId(raw.book.goal) ? raw.book.goal : null },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
     creations: cleanCreations(raw.creations),

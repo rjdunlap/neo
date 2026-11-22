@@ -18,6 +18,7 @@ import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
 import { LibraryScene } from './app/scenes/LibraryScene';
 import { PlayScene } from './app/scenes/PlayScene';
+import { BookScene } from './app/scenes/BookScene';
 import { ProjectScene } from './app/scenes/ProjectScene';
 import { loadHomeBackdrop } from './art/home/backdrop';
 import { loadLocationArt } from './art/locations';
@@ -94,7 +95,8 @@ async function boot() {
       },
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),
-      project: (from) => void app.show(new ProjectScene(app, from)),
+      book: (at) => void app.show(new BookScene(app, at)),
+      project: (from, origin) => void app.show(new ProjectScene(app, from, origin)),
       // The Arcade is an Explore entry with its own scene (docs/rework/ARCADE.md); Family play has no page of its own
       // (U6b), so couch play's Back to it opens the entries.
       explore: (entry, page, filter) =>

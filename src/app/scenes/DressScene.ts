@@ -13,7 +13,7 @@ import type { Individual } from '../../progress/save';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, crossIcon, houseIcon } from '../../ui/icons';
-import type { App } from '../App';
+import type { App, BookOrigin } from '../App';
 import { Scene } from '../Scene';
 
 type Card = Container & { item: WearableId };
@@ -30,7 +30,7 @@ export class DressScene extends Scene {
   uprightArea = true;
   private readonly floor = new Graphics();
   private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () =>
-    this.app.go.friends(this.id),
+    this.app.go.friends(this.id, this.origin),
   );
   /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Dress keeps Back only. */
   private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
@@ -45,6 +45,7 @@ export class DressScene extends Scene {
   constructor(
     app: App,
     private readonly id: string,
+    private readonly origin?: BookOrigin,
   ) {
     super(app);
   }
@@ -172,7 +173,7 @@ export class DressScene extends Scene {
   async enter() {
     const who = this.who;
     if (!who) {
-      this.app.go.friends();
+      this.app.go.friends(undefined, this.origin);
       return;
     }
     await voice.say('friends.dress', { pet: who.name });
