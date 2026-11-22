@@ -30,6 +30,12 @@ export const VOICE = {
   'shop.hint': ['Here is one way to make it.'],
   'shop.hint.biggest': ['Try the biggest coin that fits first, then fill up what is left.'],
   'shop.hint.swap': ['Try different coins: swap a big coin for smaller ones, or smaller ones for a big one.'],
+  'shop.purse': ['How much is in the purse? Tap a coin to hear what it is worth, then tap the number.'],
+  'shop.purse.coins': ['That is how many coins. Count what each one is worth.'],
+  'shop.purse.near': ['So close! Count what each shell is worth once more.'],
+  'shop.purse.other': ['Count what each shell is worth, then try again.'],
+  'shop.purse.hint': ['Count them, biggest first: {n}.'],
+  'shop.purse.right': ['Yes! {n} shells in the purse.'],
   'shop.thanks': ['Thank you!', 'Here you go! Enjoy!', 'Thanks for shopping!'],
   'shop.done': ['The stall is all sold out. Thank you!'],
 } satisfies Record<string, string[]>;

@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–7 |
+| school | 3–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,12 +21,13 @@
 | 5 | Pay the same price two different ways |
 | 6 | Keep the stall: a customer pays 10, give the change |
 | 7 | Pay 4 to 10 with as few shell coins as possible |
+| 8 | How much is in the purse? Count what each shell is worth, then tap the number |
 
 <!-- end generated -->
 
 **Starts as:** count out shell coins at fruit, flower or balloon stalls
 
-**Grows into:** ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells; named payment slips and one hint per order
+**Grows into:** ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8); named payment slips and one hint per order
 
 ## Design notes
 
@@ -35,5 +36,7 @@
 Level 6 counts up the change: each change coin says its value, then the shopkeeper counts up from the price ("2. 7… 8, 9"; the count line is templated, so it uses device speech), and a ten strip under the price tag shows price cells green and change cells yellow, with a red edge when too much change is on the mat. The rules are `countsUp`, `countUpWords`, `countUpText`, `countUpSaid` and `tenStrip` in `logic.ts`.
 
 **What the guide repeats (level 5).** In the `ways` mode, "Thank you! Now buy another one, and pay a different way!" (`shop.again`) is an instruction (`ctx.instruct`), because paying the same way again is a miss and the standing instruction does not say to change; the next order instructs its own line. `shop.fewer`, `shop.full`, coin names, counts and hints stay `say`.
+
+**Level 8, How much is in the purse? (2026-11-21).** No bell and no total slate: three purses a round of 3–6 coins (totals 3–12, largest first, at least one coin above 1, never the same total twice running) lie beside a pouch, and she taps the total from three number cards (the total, the coin count and a neighbour differing from both). A coin tapped on the mat says its value, free. A wrong card is a miss that names its kind (`shop.purse.coins`: that is how many coins; `shop.purse.near`); two misses count the purse on aloud largest first with each coin hopping and light the right card, one hint per purse. The rules are `makePurse`, `purseCards`, `purseMiss` and `countOn` in `logic.ts`; the `shop.purse.*` lines are device speech, not rendered clips.
 
 **Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.

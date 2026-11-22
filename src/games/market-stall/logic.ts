@@ -6,14 +6,15 @@ import type { BandLevels } from '../../progress/difficulty';
 /**
  * Market Stall: buy fruit with shell coins worth 1, 2 and 5 by tapping them onto the counter,
  * then ring the bell. Later: add two prices, pay the same price a second, different way, and
- * finally keep the stall: a customer pays with a 10 and the child gives the change.
+ * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, and finally count
+ * a purse of mixed coins and tap the number card that says how much is in it.
  */
-export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest';
+export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse';
 
 export interface ShopPlan {
   mode: ShopMode;
   coins: number[];
-  /** Price range for one item. */
+  /** Price range for one item (on 'purse' levels, the range of the purse's total). */
   price: [number, number];
   orders: number;
   name: string;
@@ -51,6 +52,13 @@ export const PLANS: ShopPlan[] = [
     orders: 3,
     name: 'Pay 4 to 10 with as few shell coins as possible',
   },
+  {
+    mode: 'purse',
+    coins: [1, 2, 5],
+    price: [3, 12],
+    orders: 3,
+    name: 'How much is in the purse? Count what each shell is worth, then tap the number',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -65,18 +73,28 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export const PAID = 10;
 
 export interface Order {
-  /** One price per item. */
+  /** One price per item (none on 'purse' levels, where nothing is bought). */
   prices: number[];
+  /** On 'purse' levels: the coins lying on the counter, largest first. */
+  purse?: number[];
 }
 
-/** The amount to put on the counter: the price, both prices, or the change from 10. */
+/** The amount to put on the counter (the price, both prices, or the change from 10), or what the purse holds. */
 export function target(plan: ShopPlan, o: Order): number {
+  if (o.purse) return sum(o.purse);
   const total = o.prices.reduce((a, b) => a + b, 0);
   return plan.mode === 'change' ? PAID - total : total;
 }
 
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
   const out: Order[] = [];
+  if (plan.mode === 'purse') {
+    while (out.length < plan.orders) {
+      const o = { prices: [], purse: makePurse(plan, rng) };
+      if (!out.length || target(plan, out.at(-1)!) !== target(plan, o)) out.push(o);
+    }
+    return out;
+  }
   while (out.length < plan.orders) {
     const one = () => rng.int(plan.price[0], plan.price[1]);
     const o: Order = { prices: plan.mode === 'pair' ? [one(), one()] : [one()] };
@@ -91,6 +109,50 @@ export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
 }
 
 export const sum = (coins: number[]) => coins.reduce((a, b) => a + b, 0);
+
+/** The most coins a purse holds: one row of the mat. */
+export const PURSE_MAX = 6;
+
+/**
+ * A handful of three to six coins worth the plan's total range, largest first. At least one coin is worth more than 1, so
+ * counting the coins never gives the total.
+ */
+export function makePurse(plan: ShopPlan, rng: Rng): number[] {
+  for (;;) {
+    const coins = Array.from({ length: rng.int(3, PURSE_MAX) }, () => rng.pick(plan.coins)).sort(
+      (a, b) => b - a,
+    );
+    const total = sum(coins);
+    if (coins[0] > 1 && total >= plan.price[0] && total <= plan.price[1]) return coins;
+  }
+}
+
+/**
+ * Three number cards for a purse, in a seeded order: the total, the number of coins (the classic slip of counting each coin
+ * as one) and a neighbour of the total, one more or one less, that is neither of the others.
+ */
+export function purseCards(purse: number[], rng: Rng): number[] {
+  const total = sum(purse);
+  const count = purse.length;
+  const sides = rng.chance(0.5) ? [total + 1, total - 1] : [total - 1, total + 1];
+  const near = sides.find((n) => n >= 1 && n !== count)!;
+  return rng.shuffle([total, count, near]);
+}
+
+/** Why a card is wrong: it is the number of coins, it is one off, or (never among the three cards) something else. */
+export function purseMiss(purse: number[], card: number): 'coins' | 'near' | 'other' | null {
+  const total = sum(purse);
+  if (card === total) return null;
+  if (card === purse.length) return 'coins';
+  return Math.abs(card - total) === 1 ? 'near' : 'other';
+}
+
+/** The hint counts the purse largest first, saying each running total: 5, 2, 2, 1 is "5, 7, 9, 10". */
+export function countOn(purse: number[]): number[] {
+  const out: number[] = [];
+  for (const c of [...purse].sort((a, b) => b - a)) out.push((out.at(-1) ?? 0) + c);
+  return out;
+}
 
 /** The fewest coins that make an amount (greedy works for 1, 2 and 5): the hint's suggestion. */
 export function fewest(amount: number, coins: number[]): number[] {
@@ -224,6 +286,8 @@ export const AWNING = { drop: 360, stripes: 56, scallop: 42.5 };
 export const COIN_HIT = 115;
 export const BELL_HIT = 112;
 export const MAT_BOX = { w: 500, h: 160 };
+/** A purse level's number card (drawn 104 by 110) and its tap box; the three cards stand where the purse's coins do. */
+export const CARD_HIT = { w: 112, h: 116 };
 
 /**
  * Shared round stock anchor for every stall; the existing payment area keeps its geometry. Sideways the counter is where it
@@ -246,9 +310,10 @@ export function purseFor(view: { w: number; h: number }, n: number): { x: number
 
 /**
  * The running total is the game's to give (said, and drawn on the counter's slate) wherever the price is one number to
- * reach. Not in pair mode, where adding up is the puzzle, nor in change mode, where the ten strip counts up instead.
+ * reach. Not in pair or purse mode, where adding up is the puzzle, nor in change mode, where the ten strip counts up instead.
  */
-export const showsTotal = (plan: ShopPlan) => plan.mode !== 'pair' && plan.mode !== 'change';
+export const showsTotal = (plan: ShopPlan) =>
+  plan.mode !== 'pair' && plan.mode !== 'change' && plan.mode !== 'purse';
 
 /** The number on the counter's slate: the coins' sum, or null when the level keeps it back or the counter is empty. */
 export const totalShown = (plan: ShopPlan, coins: number[]): number | null =>
