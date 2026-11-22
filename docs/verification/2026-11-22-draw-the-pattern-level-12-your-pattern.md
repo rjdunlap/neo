@@ -1,0 +1,5 @@
+# 2026-11-22 — Draw the Pattern level 12 Your pattern (PR #2001)
+
+**Changed:** `draw-the-pattern` level 12 (she draws up or down in two places, then three; the pet repeats her whole unit to the strip's end and says it back; no misses) in the pre-K (5–12) and school (8–12) windows; three voice lines with Kokoro clips, how-to steps, rule tests, a level 12 block in the `drawpattern` suite. The picture shows a blank slot for the undrawn strip, and a place's path is fixed by her first clear move (both noted on the game's page).
+**Ran:** typecheck; full `npm test` (one failure, the clip coverage test, before the clips were rendered; it passes after); lint on the game folder; `npm run build`; `BROWSER_SUITE=drawpattern DRAW_LEVELS=12` on a 390×844 upright phone at school (strip 1 hill-or-peak then dip-or-valley, strip 2 one stray with no miss, one requested hint, three of one kind; misses 0, hints 1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=12` (21.6 s). A `game-reviewer` pass found the outline problem, fixed and replayed.
+**Not run:** other browser suites; offline; levels other than 12 not replayed.
