@@ -1,0 +1,5 @@
+# 2026-11-22 — Swap Meet levels 5–6 (PR #2002)
+
+**Changed:** `swap-meet` school band 4–6: level 5 *Chain of three* (side trade, dead end, three-entry Undo) and level 6 *Shells make it easier* (barter stage, shell stall stage, unscored route question); five voice clips; `SWAPMEET_LEVELS` filter in the browser suite; precache bound raised to 10 MiB. A review fix redraws the route cards on a resize during the question.
+**Ran:** typecheck; full unit tests (472 files, 17701 tests) including new rule tests and upright tests with a short upright phone view; lint; format check; `npm run build`; `BROWSER_SUITE=swapmeet SWAPMEET_LEVELS=5,6` (both level 5 cases with side trade, dead end, two rejections, glow and Undo; level 6 barter, empty Undo at the stall, sell, purse dropped on a friend as one miss, free return, buy, resize during the question, unscored question); one upright screenshot at level 6 stage 2 (390×844); `fingerdemo` with `FINGER_ONLY=swap-meet FINGER_LEVELS=5,6`.
+**Not run:** levels 1–4 of the `swapmeet` suite (unchanged code paths, recorded passing), offline suite, any other suite. Chrome automation is not a phone check.
