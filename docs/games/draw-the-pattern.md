@@ -11,8 +11,8 @@
 | lap | 1, 10 |
 | toddler | 1, 10, 2, 3 |
 | preschool | 3–5 |
-| pre-K | 5, 9, 6, 7, 8 |
-| school | 8, 11 |
+| pre-K | 5, 9, 6, 7, 8, 12 |
+| school | 8, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,6 +27,7 @@
 | 9 | Slanting lines: rain from a cloud, then an X, each line from its own ring |
 | 10 | Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag |
 | 11 | Spiral and eight: a snail shell round into the middle, then a figure of eight through its crossing |
+| 12 | Your pattern: draw up or down in each place, and the pet keeps your pattern going |
 
 <!-- end generated -->
 

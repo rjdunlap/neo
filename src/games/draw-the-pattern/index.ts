@@ -20,7 +20,12 @@ import {
   STRIP_W,
   botRoute,
   chooseOrder,
+  continuationStroke,
+  continueOwn,
   hintStretch,
+  isChoice,
+  patternStroke,
+  spokenCore,
   layoutFor,
   lengthTo,
   levelOf,
@@ -40,6 +45,7 @@ import {
   type Rect,
   type Strip,
   type Stroke,
+  type UnitKind,
 } from './logic';
 
 /** One stroke's drawing state: which way round (or which candidate), and how far the crayon has come. */
@@ -698,6 +704,7 @@ class DrawThePattern implements Game {
 
   private instructLine(): LineId {
     if (this.plan.mode === 'mark') return 'draw.instruct.mark';
+    if (this.plan.mode === 'own') return 'draw.instruct.own';
     if (this.plan.mode === 'choose') return 'draw.instruct.next';
     if (this.plan.mode === 'dots') return 'draw.instruct.dots';
     if (this.strip.memory) return 'draw.instruct.memory';
@@ -769,9 +776,12 @@ class DrawThePattern implements Game {
     this.tracks.forEach((t, i) => {
       if (i < this.cur) return;
       const st = t.stroke;
-      if (st.right !== undefined) {
+      if (isChoice(st)) {
         st.orders.forEach((o, k) => {
           if (this.glow && i === this.cur && k === st.right) this.line(g, o, 22, swatch.yellow.fill, 0.55);
+          // Level 12's hint lights the next stretch of both paths while she has not chosen, then of hers.
+          if (this.glow && i === this.cur && st.right === undefined && (t.order === null || t.order === k))
+            this.line(g, hintStretch(o, t.progress), 22, swatch.yellow.fill, 0.55);
           if (t.order === null || t.order === k)
             this.dashes(g, o.slice(t.order === k ? t.progress : 0), 6, 0.38);
         });
@@ -791,16 +801,33 @@ class DrawThePattern implements Game {
       // Level 10: the dots still to reach (the shining one is drawn by the cue).
       for (const d of st.dots ?? []) if (d > t.progress) g.circle(...this.pts(pts[d]), 16).fill(ink);
     });
+    // Level 12: the whole strip lights from the left while the pet says her pattern back.
+    if (this.light > 0) {
+      const all = this.strip.strokes.flatMap((st) =>
+        pathOf(st, this.tracks.find((x) => x.stroke === st)?.order ?? null),
+      );
+      this.line(
+        g,
+        all.slice(0, Math.max(2, Math.floor(this.light * all.length))),
+        30,
+        swatch.yellow.fill,
+        0.6,
+      );
+    }
   }
+  /** Level 12: how far along the strip the light has come as the pet says her pattern back (0 for none). */
+  private light = 0;
 
   /** The pet's part and hers, in the crayon's color. */
   private drawInk() {
     const g = this.inkG.clear(),
-      color = swatch[this.crayonColor].fill;
+      mine = swatch[this.crayonColor].fill;
     const show = this.show;
     for (const st of this.strip.strokes) {
       const t = this.tracks.find((x) => x.stroke === st);
       const pts = pathOf(st, t?.order ?? null);
+      // Level 12: the pet's repeats are in its own colour, so the picture shows where her unit ends.
+      const color = this.strip.own && st.lead > 0 ? swatch[this.petColor()].fill : mine;
       // The pet's part: drawn as it goes, or all of it once it has.
       let upto = st.lead;
       if (show && !show.faint)
@@ -809,18 +836,35 @@ class DrawThePattern implements Game {
       if (t && t.progress > st.lead) this.line(g, pts.slice(st.lead, t.progress + 1), 11, color);
     }
     if (show?.faint) {
-      const t = this.track;
-      if (t) {
-        const pts = t.stroke.orders[0],
-          n = Math.floor(show.k * (pts.length - 1));
-        if (n > 0) this.line(g, pts.slice(0, n + 1), 11, color, 0.45);
-      }
+      const at = this.faintAt(show.k);
+      if (at && at.i > 0) this.line(g, at.pts.slice(0, at.i + 1), 11, mine, 0.45);
     }
     for (const m of this.marks) {
-      if (m.length === 1) g.circle(...this.pts(m[0]), 9).fill(color);
-      else this.line(g, m, 14, color);
+      if (m.length === 1) g.circle(...this.pts(m[0]), 9).fill(mine);
+      else this.line(g, m, 14, mine);
     }
     this.placeCrayon();
+  }
+
+  /** The pet's colour at level 12: one that is neither the paper's nor her crayon's. */
+  private petColor(): ColorName {
+    return (['purple', 'orange', 'green'] as const).find(
+      (c) => c !== this.paperColor && c !== this.crayonColor,
+    )!;
+  }
+
+  /**
+   * The faint demonstration at `k` (0–1): the path it runs and how far along. A shape runs its one way; a level-12 place
+   * runs its up path, then its down path, so it shows the choice and chooses nothing.
+   */
+  private faintAt(k: number): { pts: Point[]; i: number } | null {
+    const t = this.track;
+    if (!t) return null;
+    const both = this.plan.mode === 'own' && t.stroke.orders.length === 2;
+    const o = both && k >= 0.5 ? 1 : 0,
+      u = both ? (k >= 0.5 ? 2 * k - 1 : 2 * k) : k;
+    const pts = t.stroke.orders[o];
+    return { pts, i: Math.floor(u * (pts.length - 1)) };
   }
 
   /** Checkpoints the pet draws on this strip, in all, and before a stroke. */
@@ -896,11 +940,9 @@ class DrawThePattern implements Game {
   /** Where the crayon is along the pet's part. */
   private petPoint(show: { k: number; faint: boolean }): { here: Point; ahead: Point } | null {
     if (show.faint) {
-      const t = this.track;
-      if (!t) return null;
-      const pts = t.stroke.orders[0],
-        i = Math.floor(show.k * (pts.length - 1));
-      return { here: pts[i], ahead: pts[Math.min(pts.length - 1, i + 3)] };
+      const at = this.faintAt(show.k);
+      if (!at) return null;
+      return { here: at.pts[at.i], ahead: at.pts[Math.min(at.pts.length - 1, at.i + 3)] };
     }
     let n = Math.floor(show.k * this.petLength());
     for (const st of this.strip.strokes) {
@@ -934,6 +976,9 @@ class DrawThePattern implements Game {
 
   /** The soft outline of a strip's piece before it is drawn. */
   private ghostPaths(strip: Strip): Point[][] {
+    // Level 12: a whole strip of the pair taking turns, so the outline shows the bridge or flags, not her choices.
+    const own = strip.own;
+    if (own) return patternStroke(continueOwn(own.pair, own.total), 0, own.x0, own.w).orders;
     return strip.strokes.map((st) => st.orders[st.right ?? 0]);
   }
 
@@ -943,39 +988,9 @@ class DrawThePattern implements Game {
   private async petDraws() {
     this.busy = true;
     const t = this.track;
-    // A shape with no part of the pet's (the circle, the cross, square and triangle) is shown faintly first.
+    // A shape with no part of the pet's (the circle, the cross, square and triangle, level 12's places) is shown faintly first.
     const faint = !!t && t.progress === 0 && this.petLength() === 0;
-    if (this.plan.mode === 'mark' || this.petLength() > 0 || faint) {
-      const anim = { k: 0 };
-      this.show = { k: 0, faint };
-      let said = -1;
-      const units = this.strip.strokes[0].units;
-      const ticker = () => {
-        if (!this.show) return;
-        this.show.k = anim.k;
-        const step = Math.min(4, Math.floor(anim.k * 5));
-        if (step !== this.note) {
-          this.note = step;
-          sfx.bell(5 + step, 0.1);
-        }
-        // At levels 7–8 the pet says each unit as it draws it.
-        if (this.plan.mode === 'choose' && units) {
-          const u = Math.min(units.length - 1, Math.floor(anim.k * units.length));
-          if (u !== said) {
-            said = u;
-            void this.ctx.say(`draw.unit.${units[u]}` as LineId);
-          }
-        }
-        this.drawInk();
-      };
-      this.ticker = ticker;
-      const seconds = this.plan.mode === 'choose' ? 0.8 * (units?.length ?? 4) : 1.6;
-      await this.ctx.tw.to(anim, { k: 1 }, { duration: seconds, ease: ease.inOutSine });
-      this.ticker = null;
-      this.show = null;
-      this.note = -1;
-      this.drawInk();
-    }
+    if (this.plan.mode === 'mark' || this.petLength() > 0 || faint) await this.petAnimates(faint);
     if (this.strip.memory) {
       // Level 5: after the pet's part the dashes fade out over a second; the stepping stones stay.
       const fade = { a: 1 };
@@ -993,6 +1008,46 @@ class DrawThePattern implements Game {
     void this.ctx.instruct(this.instructLine());
   }
   private ticker: (() => void) | null = null;
+
+  /**
+   * The pet's crayon runs its part (or a faint demonstration). At levels 7–8 it says each unit as it draws it, and at 12
+   * each unit of the repeats it draws after her places.
+   */
+  private async petAnimates(faint: boolean) {
+    const anim = { k: 0 };
+    this.show = { k: 0, faint };
+    let said = -1;
+    const units =
+      this.plan.mode === 'choose'
+        ? this.strip.strokes[0].units
+        : this.plan.mode === 'own' && !faint
+          ? this.strip.strokes.at(-1)!.units
+          : undefined;
+    const ticker = () => {
+      if (!this.show) return;
+      this.show.k = anim.k;
+      const step = Math.min(4, Math.floor(anim.k * 5));
+      if (step !== this.note) {
+        this.note = step;
+        sfx.bell(5 + step, 0.1);
+      }
+      if (units) {
+        const u = Math.min(units.length - 1, Math.floor(anim.k * units.length));
+        if (u !== said) {
+          said = u;
+          void this.ctx.say(`draw.unit.${units[u]}` as LineId);
+        }
+      }
+      this.drawInk();
+    };
+    this.ticker = ticker;
+    const seconds = units ? 0.8 * units.length : faint && this.plan.mode === 'own' ? 2.4 : 1.6;
+    await this.ctx.tw.to(anim, { k: 1 }, { duration: seconds, ease: ease.inOutSine });
+    this.ticker = null;
+    this.show = null;
+    this.note = -1;
+    this.drawInk();
+  }
 
   /* ------------------------------------------------------------ input */
 
@@ -1152,7 +1207,7 @@ class DrawThePattern implements Game {
     this.crayon.scale.set(1);
     if (d?.mark) return void this.markLifted(d.mark);
     // After the hint lights the next stretch, the crayon's tip sparkle flies it once she lifts.
-    if (this.glow && !this.sparkShown && this.track && this.track.stroke.right === undefined) {
+    if (this.glow && !this.sparkShown && this.track && !isChoice(this.track.stroke)) {
       this.sparkShown = true;
       void this.flySpark(this.track);
     }
@@ -1181,6 +1236,11 @@ class DrawThePattern implements Game {
   private stray() {
     // Level 10 counts nothing as wrong: the crayon just waits.
     if (this.plan.mode === 'dots') return void sfx.tick();
+    // Level 12 is her own pattern: a slip of the hand counts nothing either, and the pet calls her back to the crayon.
+    if (this.plan.mode === 'own') {
+      sfx.tick();
+      return void this.ctx.say('draw.back-to-crayon');
+    }
     this.misses++;
     this.wrong++;
     sfx.boing();
@@ -1247,16 +1307,46 @@ class DrawThePattern implements Game {
     this.sparkShown = false;
     this.reveal = -1;
     this.note = -1;
+    // Level 12: the pet names the unit she just drew, so she hears her pattern build up.
+    const word = this.strip.own ? this.ctx.say(`draw.unit.${t.stroke.kinds![t.order ?? 0]}` as LineId) : null;
     const next = this.track;
     if (!next) {
       if (this.drag) this.drag.stopped = true;
-      void this.stripDone();
+      void (word ? this.ownDone(word) : this.stripDone());
       return;
     }
     const start = next.stroke.orders[0][next.progress];
     if (this.drag && Math.hypot(start[0] - end[0], start[1] - end[1]) > 1e-6) this.drag.stopped = true;
     this.drawGuide();
     this.drawInk();
+  }
+
+  /**
+   * Level 12, after her last place: the pet takes the crayon and carries her unit on to the end of the strip, naming each
+   * unit, then says her pattern back over the whole strip as it lights up, and the strip goes to the picture.
+   */
+  private async ownDone(word: Promise<void>) {
+    this.busy = true;
+    this.placeCrayon();
+    const own = this.strip.own!;
+    const chosen: UnitKind[] = this.tracks.map((t) => t.stroke.kinds![t.order ?? 0]);
+    await word;
+    await this.ctx.say('draw.own.keep');
+    this.strip.strokes.push(continuationStroke(own, chosen));
+    await this.petAnimates(false);
+    const glow = { k: 0 };
+    this.ticker = () => {
+      this.light = glow.k;
+      this.drawGuide();
+    };
+    const sweep = this.ctx.tw.to(glow, { k: 1 }, { duration: 0.3 * own.total, ease: ease.inOutSine });
+    for (const k of spokenCore(chosen)) await this.ctx.say(`draw.unit.${k}` as LineId);
+    await this.ctx.say('draw.own.again');
+    await sweep;
+    this.ticker = null;
+    this.light = 0;
+    this.drawGuide();
+    await this.stripDone();
   }
 
   /** The strip rolls up into the picture and becomes its piece. */
@@ -1391,7 +1481,7 @@ class DrawThePattern implements Game {
       g.circle(x, y, RING_R * pulse)
         .fill({ color: swatch.green.light, alpha: 0.4 })
         .stroke({ width: 7, color: swatch.green.fill });
-      if (t.stroke.right === undefined) {
+      if (!isChoice(t.stroke)) {
         const a = startArrow(pts),
           ax = x + Math.cos(a.angle) * (RING_R + 8),
           ay = y + Math.sin(a.angle) * (RING_R + 8);
@@ -1402,13 +1492,16 @@ class DrawThePattern implements Game {
         );
       }
     }
-    if (this.glow && t.stroke.right === undefined) {
+    if (this.glow && !isChoice(t.stroke)) {
       for (const p of hintStretch(pathOf(t.stroke, t.order), t.progress))
         g.circle(p[0] * s, p[1] * s, 7).fill(swatch.yellow.fill);
     }
   }
 
   askForHint() {
+    // Level 12: asking while the pet draws her pattern on only repeats what to do.
+    if (this.busy && this.plan.mode === 'own' && !this.finished)
+      return void this.ctx.say(this.instructLine());
     if (this.busy || this.finished) return;
     if (this.plan.mode === 'mark' || this.plan.mode === 'dots') return void this.ctx.say(this.instructLine());
     if (!this.glow) {
@@ -1435,7 +1528,8 @@ class DrawThePattern implements Game {
     if (!t || this.tapping) return null;
     const dot = nextDot(t.stroke, t.progress);
     if (dot !== null) return { tap: spot(pathOf(t.stroke, t.order)[dot]), receiver: this.layer, pause: 0.5 };
-    const o = t.stroke.right ?? t.order ?? 0;
+    // Level 12: up in the first place, down in every later one, so it shows a pattern of two kinds.
+    const o = t.stroke.right ?? t.order ?? (this.plan.mode === 'own' && this.cur > 0 ? 1 : 0);
     // A wrong start on a candidate is drawn again from the unit's start.
     const pts = t.stroke.orders[o];
     const route = botRoute(t.stroke, pts, t.order === o || t.order === null ? t.progress : 0).map(spot);
