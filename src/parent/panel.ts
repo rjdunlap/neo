@@ -16,6 +16,7 @@ import { store } from '../progress/store';
 import { LANDS, visibleGames } from '../content/lands';
 import { atHomeCard } from '../content/athome';
 import { talkCards } from '../content/talk';
+import { puzzlePageCard } from '../content/puzzle-page';
 import { projectRecap } from './recap';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES } from '../creatures/species';
@@ -558,7 +559,8 @@ function weekSummary(app: PanelApp): string {
 
 /**
  * At home: three things to try away from the screen (`atHomeCard`), each a game's off-screen line and, where one is
- * written, something to notice and something to say. The kit line and conversation cards follow the three ideas.
+ * written, something to notice and something to say. The kit line, conversation cards and the puzzle page card (PP8)
+ * follow the three ideas.
  */
 function atHomeSection(): string {
   const { band, name } = store.data.profile;
@@ -592,11 +594,25 @@ function atHomeSection(): string {
       <p class="muted">From ${esc(game.name)}.${source ? ` ${esc(source)}` : ''}</p>
     </div>`,
   );
+  const puzzles = puzzlePageCard(band);
+  const puzzlePage = puzzles
+    ? `<div class="parent__idea" data-puzzle-page>
+      <p><strong>${esc(puzzles.title)}</strong></p>
+      <p class="muted">${esc(puzzles.intro)}</p>
+      ${puzzles.ideas
+        .map((i) => {
+          const game = i.game ? GAMES.find((g) => g.id === i.game) : undefined;
+          return `<p data-puzzle-idea="${esc(i.id)}">${esc(i.line)}${game ? ` <span class="muted">(Like ${esc(game.name)}.)</span>` : ''}</p>`;
+        })
+        .join('')}
+    </div>`
+    : '';
   return `
     <p class="muted">${esc(intro)}</p>
     ${ideas.join('')}
     ${card.kit.length ? `<p data-at-home-kit><strong>Things from around the house:</strong> ${esc(card.kit.join(', '))}.</p>` : ''}
     ${talk.length ? `<div data-talk-cards><p><strong>Something to talk about</strong></p>${talk.join('')}</div>` : ''}
+    ${puzzlePage}
     ${grown ? '' : '<p class="muted">Say it in whatever language you speak at home. There is no right way to do these.</p>'}`;
 }
 

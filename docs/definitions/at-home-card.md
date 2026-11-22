@@ -295,7 +295,7 @@ Built 2026-11-17 (PR #1747). Differences from this page:
 
 ## The puzzle page card (PP8, defined 2026-11-22)
 
-From the [puzzle pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order), slice 9, written now that Mossy Path's mazes and Domino Pond are built. One more block inside **At home**, after the talk cards and before the closing line: a bold heading, **A puzzle page at the table**, one short line saying these need a pencil, paper or a picture book and nothing else, then one line per idea, each ending with the game it echoes where one is built. Plain HTML (`data-puzzle-page`, each idea `data-puzzle-idea`), its own markup so the three `data-at-home-idea` blocks stay three; nothing to press, nothing tracked.
+From the [puzzle pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order), slice 9, written now that Mossy Path's mazes and Domino Pond are built. One more block inside **At home**, after the talk cards and before the closing line: a bold heading, **A puzzle page at the table**, one short line saying these need only paper and a pencil, a picture book or a few dominoes, then one line per idea, each followed by the game it echoes where one is built. Plain HTML (`data-puzzle-page`, each idea `data-puzzle-idea`), its own markup so the three `data-at-home-idea` blocks stay three; nothing to press, nothing tracked.
 
 | Idea | From band | Line | Echoes |
 | --- | --- | --- | --- |
@@ -304,7 +304,7 @@ From the [puzzle pages study](../deep-dives/subjects/puzzle-pages.md#build-slice
 | A maze for each other | preschool | Draw a maze on paper with a start, a pond and one wrong turn, then swap: they draw one for you. Bumping a wall just means going back. | Mossy Path |
 | A word ladder | prek | Say a word ladder in the car: change one sound at a time, cat, hat, hot, pot. Take turns; a made-up word counts. | — |
 
-- **Bands.** The card shows when at least two ideas reach her play band: toddler to school. Lap gets none (only *I spy* fits, and its picture book is already the lap ideas' kind of play); a `grownup` profile gets none, since that profile is an adult playing alone and its At home intro already offers paper puzzles.
+- **Bands.** The card shows when at least two ideas reach her play band: preschool to school. Lap and toddler get none (only *I spy* reaches toddler, and one idea is not a page); a `grownup` profile gets none, since that profile is an adult playing alone and its At home intro already offers paper puzzles.
 - **Contract.** `puzzlePageCard(band)` in `src/content/puzzle-page.ts` returns `{ title, intro, ideas: { id, line, game? }[] } | null`; pure, same band gives the same card.
 - **Rule tests** (`src/content/puzzle-page.test.ts`): the band rule above; every line passes `EVERY_BAND`, `DEFERRED_CLASSES`, and `UNDER_3` from its own band when that band is under three; no learning claim (brain, attention, behaviour, ADHD, school readiness, smarter); no map words (island, map, home spot, picnic), since the page serves both apps; every echoed game is registered and lists a band the idea reaches.
 - **Check tier** (as the This week kinds line): `npm run typecheck`, `npm test`, `npm run build`, and one upright screenshot at 390 wide. No browser suite: the At home suite counts `data-at-home-idea`, which this leaves alone.
