@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 1–3 |
 | pre-K | 2–4 |
-| school | 3–5 |
+| school | 3–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 3 | Wait for the swing |
 | 4 | Which vine stays? |
 | 5 | Two friends |
+| 6 | Where will it land? |
 
 <!-- end generated -->
 

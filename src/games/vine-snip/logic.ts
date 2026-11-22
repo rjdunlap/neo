@@ -67,9 +67,19 @@ export interface Line extends Pair {
   breeze: boolean;
   /** Levels 1–2: the friend scoots under the falling fruit, so every drop is caught. */
   scoot: boolean;
+  /** Level 6: the two passes through the ring (`fruit` and `friend` describe the first pass). */
+  where?: Where;
 }
 
-export type Mode = 'snip' | 'two' | 'wait' | 'keep' | 'pair';
+/** Level 6's round: which way the first pass heads (1 right, −1 left), the fruit and the two passes' friends. */
+export interface Where {
+  first: Dir;
+  kind: Kind;
+  friends: [FriendKind, FriendKind];
+}
+export type Dir = 1 | -1;
+
+export type Mode = 'snip' | 'two' | 'wait' | 'keep' | 'pair' | 'where';
 export interface Plan {
   level: number;
   name: string;
@@ -84,6 +94,7 @@ const PLANS: Plan[] = [
   { level: 3, name: 'Wait for the swing', mode: 'wait', lines: 3, counts: true },
   { level: 4, name: 'Which vine stays?', mode: 'keep', lines: 3, counts: true },
   { level: 5, name: 'Two friends', mode: 'pair', lines: 2, counts: true },
+  { level: 6, name: 'Where will it land?', mode: 'where', lines: 1, counts: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -91,7 +102,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 export const MAX_LEVEL = PLANS.length;
 
@@ -565,6 +576,12 @@ function pairLine(rng: Rng, first: boolean, kinds: [Kind, Kind], fks: [FriendKin
 function tryLine(plan: Plan, rng: Rng, first: boolean, index = 0): Line | null {
   const kind = rng.pick(KINDS);
   const fk = rng.pick(FRIENDS);
+  if (plan.mode === 'where') {
+    const where: Where = first
+      ? { first: 1, kind: 'orange', friends: ['bunny', 'duck'] }
+      : { first: rng.chance(0.5) ? 1 : -1, kind, friends: [fk, rng.pick(FRIENDS.filter((f) => f !== fk))] };
+    return whereLine(where);
+  }
   // Level 4: the authored line's friend is on the right, the second line's on the left, the third's seeded.
   if (plan.mode === 'keep')
     return keepLine(rng, first, index === 0 ? 1 : index === 1 ? -1 : rng.chance(0.5) ? 1 : -1, kind, fk);
@@ -670,3 +687,169 @@ export const growAt = (v: View): Pt => ({ x: v.w - GROW / 2 - 10, y: CORNER + GR
 /** How far below the mouth line a friend's feet are (on its stump). */
 export const FEET_BELOW = 70;
 export const FRIEND_H = 190;
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Level 6: Where will it land? (docs/definitions/vine-snip-where-will-it-land.md)                  */
+/* ---------------------------------------------------------------------------------------------- */
+
+/** The one authored swing: a 250-unit vine from x 360, let go 30° out, so it crosses the ring at the bottom. */
+export const WHERE_AX = 360;
+export const WHERE_LEN = 250;
+const WHERE_AMP = (30 * Math.PI) / 180;
+/** The ring at the bottom of the swing, where the picture holds and the vine is snipped. */
+export const RING: Pt & { r: number } = { x: WHERE_AX, y: ANCHOR_Y + WHERE_LEN, r: 60 };
+/** How much of the path behind the fruit the dotted trail shows, in seconds. */
+export const TRAIL_S = 0.25;
+
+/** The swing for a pass heading `dir` (1 right) through the ring: it starts from rest at the other end. */
+export function wherePass(dir: Dir): Swing {
+  return { ax: WHERE_AX, len: WHERE_LEN, amp: -dir * WHERE_AMP, t0: 0 };
+}
+
+/** The first time a swing reaches the bottom of its arc (the ring): a quarter beat. */
+export const ringTime = (s: Swing) => s.t0 + beat(s.len) / 4;
+
+/** Where a pass heading `dir` lands when snipped at the ring: it falls to the leaf line along the shared arc. */
+export function whereLanding(dir: Dir): { from: Pt; v: Pt; time: number; x: number } {
+  const s = wherePass(dir);
+  const t = ringTime(s);
+  const from = posAt(s, t);
+  const v = velocityAt(s, t);
+  const time = fallTime(from, v, LEAF_Y);
+  return { from, v, time, x: arcAt(from, v, time).x };
+}
+
+/** The leaf a fruit heading `dir` lands on: −1 the left leaf, 1 the right. */
+export const leafFor = (dir: Dir): Dir => (Math.sign(whereLanding(dir).x - WHERE_AX) as Dir) || 1;
+
+export interface WhereLayout {
+  /** Leaf targets, left then right. */
+  leaves: [Box, Box];
+  snip: Box;
+  ring: Pt & { r: number };
+  replay: Box;
+  finish: Box;
+}
+
+/**
+ * Level 6's controls in board units. The leaf targets reach 35 units below the 600-unit board on purpose (the landed fruit
+ * must sit inside them); Replay and Finish sit above the swing, clear of the 1024 × 768 bubble, and show only when nothing moves.
+ */
+export function whereLayout(): WhereLayout {
+  return {
+    leaves: [
+      { x: 58, y: 485, w: 220, h: 150 },
+      { x: 442, y: 485, w: 220, h: 150 },
+    ],
+    snip: { x: 300, y: 500, w: 120, h: 120 },
+    ring: { ...RING },
+    replay: { x: 190, y: 95, w: 160, h: 110 },
+    finish: { x: 370, y: 95, w: 160, h: 110 },
+  };
+}
+
+/** Level 6 puts the board at the top of the view (below the shell's buttons), so the leaves stay clear of a bubble at the foot. */
+export function whereOrigin(v: View): Pt {
+  return { x: Math.round((v.w - BOARD_W) / 2), y: CORNER + 4 };
+}
+
+/** The line for a level 6 round: the first pass as the line's fruit and friend (the friend stands at its leaf). */
+function whereLine(where: Where): Line {
+  const s = wherePass(where.first);
+  const rest = posAt(s, 0);
+  return {
+    fruit: { kind: where.kind, vines: [{ ax: WHERE_AX, len: WHERE_LEN }], rest },
+    friend: { x: whereLanding(where.first).x, kind: where.friends[0] },
+    breeze: false,
+    scoot: false,
+    where,
+  };
+}
+
+/** The direction of pass 0 or 1 of a round. */
+export const passDir = (w: Where, pass: number): Dir => (pass === 0 ? w.first : (-w.first as Dir));
+
+/**
+ * A level 6 round as a small state machine the scene drives and the tests simulate: approach → hold (guess, then Snip)
+ * → flight → landed, twice, then compare (Replay as often as she likes) → done. Nothing is ever a miss.
+ */
+export interface WhereRound {
+  pass: 0 | 1;
+  stage: 'approach' | 'hold' | 'flight' | 'landed' | 'compare' | 'replay' | 'done';
+  /** The leaf each pass's paw print is on (−1 left, 1 right), or null. */
+  guesses: [Dir | null, Dir | null];
+  /** Whether Show a hint has counted on each pass. */
+  hinted: [boolean, boolean];
+  hints: number;
+  misses: 0;
+}
+
+export const whereRound = (): WhereRound => ({
+  pass: 0,
+  stage: 'approach',
+  guesses: [null, null],
+  hinted: [false, false],
+  hints: 0,
+  misses: 0,
+});
+
+/** The approach reached the ring: the picture holds for her guess. */
+export function whereArrive(r: WhereRound) {
+  if (r.stage === 'approach') r.stage = 'hold';
+}
+
+/** A leaf touched during a hold puts (or moves) the paw print there. */
+export function wherePick(r: WhereRound, leaf: Dir): boolean {
+  if (r.stage !== 'hold') return false;
+  r.guesses[r.pass] = leaf;
+  return true;
+}
+
+/** Snip: with a paw print down it cuts the vine; without one it asks for a leaf first (never a miss). */
+export function whereSnip(r: WhereRound): 'snip' | 'pick-first' | 'ignored' {
+  if (r.stage !== 'hold') return 'ignored';
+  if (r.guesses[r.pass] === null) return 'pick-first';
+  r.stage = 'flight';
+  return 'snip';
+}
+
+/** Show a hint: during a hold it replays the approach, counting once per pass; at other moments it repeats the instruction. */
+export function whereHint(r: WhereRound): 'counted' | 'replayed' | 'instruct' {
+  if (r.stage !== 'hold') return 'instruct';
+  r.stage = 'approach';
+  if (r.hinted[r.pass]) return 'replayed';
+  r.hinted[r.pass] = true;
+  r.hints++;
+  return 'counted';
+}
+
+/** The fruit reached its leaf. */
+export function whereLand(r: WhereRound) {
+  if (r.stage === 'flight') r.stage = 'landed';
+}
+
+/** After a landing: the second pass's approach, or the comparison after both. */
+export function whereNext(r: WhereRound) {
+  if (r.stage !== 'landed') return;
+  if (r.pass === 0) {
+    r.pass = 1;
+    r.stage = 'approach';
+  } else r.stage = 'compare';
+}
+
+/** Replay both passes straight through (free, as often as she likes), and back to the comparison when it ends. */
+export function whereReplay(r: WhereRound): boolean {
+  if (r.stage !== 'compare') return false;
+  r.stage = 'replay';
+  return true;
+}
+export function whereReplayEnd(r: WhereRound) {
+  if (r.stage === 'replay') r.stage = 'compare';
+}
+
+/** Finish: true exactly once, from the comparison. */
+export function whereFinish(r: WhereRound): boolean {
+  if (r.stage !== 'compare') return false;
+  r.stage = 'done';
+  return true;
+}

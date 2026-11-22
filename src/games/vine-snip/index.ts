@@ -1,8 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { swatch, wood, type ColorName } from '../../art/palette';
-import { prop } from '../../art/props';
-import { Backdrop } from '../../art/scenery';
+import { swatch, wood } from '../../art/palette';
+import type { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
@@ -12,6 +11,8 @@ import { rangeFor } from '../../progress/difficulty';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
+import { backdrop, COLOR, FRIEND_SCALE, fruitArt, MOUTH_UP, NAME, NOTE } from './art';
+import { WhereWillItLand } from './where';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -44,7 +45,6 @@ import {
   TAP_TRAVEL,
   vineSeg,
   windows,
-  type FriendKind,
   type Kind,
   type Landing,
   type Line,
@@ -54,20 +54,6 @@ import {
   type Swing,
 } from './logic';
 
-const COLOR: Record<Kind, ColorName> = { apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green' };
-const NAME: Record<FriendKind, string> = {
-  bunny: 'Bunny',
-  bear: 'Bear',
-  duck: 'Duck',
-  pig: 'Pig',
-  dog: 'Dog',
-  cat: 'Cat',
-};
-/** Each friend rings its own pentatonic step when it munches. */
-const NOTE: Record<FriendKind, number> = { bunny: 5, bear: 6, duck: 7, pig: 8, dog: 9, cat: 10 };
-const FRIEND_SCALE = 0.76;
-/** A friend's mouth is this far above its feet at `FRIEND_SCALE`. */
-const MOUTH_UP = 88 * FRIEND_SCALE;
 const FLOAT = 1.2;
 
 type Phase = 'rest' | 'swing' | 'fall' | 'eat' | 'miss' | 'done';
@@ -78,10 +64,6 @@ interface Stroke {
   last: Pt;
   travel: number;
   cutAny: boolean;
-}
-
-function fruitArt(kind: Kind): Container {
-  return prop(kind, COLOR[kind]);
 }
 
 /** One fruit on its vines and the friend it is for (two at level 5). */
@@ -139,19 +121,7 @@ class VineSnip implements Game {
     this.plan = planFor(ctx.level);
     this.lines = linesFor(this.plan, ctx.rng);
     if (ctx.demo) this.lines.splice(1);
-    this.back = ctx.track(
-      new Backdrop(
-        {
-          sky: [0x9fd8f5, 0xe9f7e0],
-          hills: [0xb8e3a8, 0x8fcf7f, 0x7cc06c],
-          horizon: 0.86,
-          clouds: 3,
-          sun: true,
-          seed: 211,
-        },
-        ctx.view,
-      ),
-    );
+    this.back = ctx.track(backdrop(ctx.view));
     for (const o of [this.back, this.board, this.ground, this.branch, this.vinesG, this.glowG, this.trailG])
       o.eventMode = 'none';
     this.board.addChild(this.ground, this.branch, this.vinesG, this.glowG);
@@ -867,5 +837,5 @@ export const vineSnip: GameModule = {
   hubIcon: () => new VineIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new VineSnip(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'where' ? new WhereWillItLand(ctx) : new VineSnip(ctx)),
 };
