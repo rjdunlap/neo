@@ -194,7 +194,7 @@ ME1 levels1–4 [defined](../../definitions/swap-meet.md) 2026-10-25; [closeout]
 
 3. **ME3 · Define Market Stall 12 *Pick one*** inside the [Market Stall dive](../market-stall.md) with its decision 7 (docs).
 4. **ME4 · Define Lemonade Stand 5 *Save for the awning*** (docs) after decision 6: a goal jar, a tested plan that reaches it every seeded week, no failed week.
-5. **ME5 · Define Swap Meet 5–6**: [defined](../../definitions/swap-meet.md#levels-56-definition-me5) 2026-11-22.
+5. **ME5 · Define Swap Meet 5–6**: [defined](../../definitions/swap-meet.md#levels-56-definition-me5) 2026-11-22; levels 5–6 built (PR #2002).
 6. **ME6 · Define Harbor Orders** (school top and 13+), after decision 4 and Lantern Lake's capacity check.
 7. **ME7 · Spend, share, save and Play shop cards**, after a named practical review.
 8. **ME8 · Lemonade Stand 6 *A rainy-day jar***, after 5 is played.

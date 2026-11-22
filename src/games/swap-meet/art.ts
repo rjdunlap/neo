@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { CRITTERS, Critter } from '../../art/critter';
 import { frogArt } from '../../art/animals';
-import { cream, ink, swatch } from '../../art/palette';
+import { cream, ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import type { Friend, Item } from './logic';
 /** Each toy differs in silhouette as well as color. All drawings use the shared palette. */
@@ -88,6 +88,9 @@ export function itemArt(id: Item): Container {
     case 'star':
       g.star(0, 0, 5, 43, 21).fill(swatch.yellow.fill).stroke(line);
       break;
+    case 'purse':
+      c.addChild(purseArt());
+      break;
     case 'kite':
       g.poly([0, -47, 35, -5, 0, 32, -35, -5])
         .fill(swatch.teal.fill)
@@ -112,6 +115,47 @@ export function friendArt(id: Friend): Container {
   );
   c.alive = false;
   c.scale.set(0.32);
+  c.eventMode = 'none';
+  return c;
+}
+/** Level 6's purse: two shells on one string, a single picture (never a count of coins). */
+export function purseArt(): Container {
+  const c = new Container(),
+    g = new Graphics()
+      .moveTo(-34, -30)
+      .quadraticCurveTo(0, -52, 34, -30)
+      .stroke({ width: 4, color: ink, cap: 'round' });
+  c.addChild(g);
+  for (const x of [-22, 22]) {
+    const s = itemArt('shell');
+    s.scale.set(0.55);
+    s.position.set(x, 4);
+    c.addChild(s);
+  }
+  c.eventMode = 'none';
+  return c;
+}
+/** The shell stall's body: a striped awning with the two-shell sign; shut, its boards cover the shelf. */
+export function stallArt(w: number, h: number, open: boolean): Container {
+  const c = new Container(),
+    g = new Graphics()
+      .roundRect(-w, -h, w * 2, h * 2, 22)
+      .fill(open ? cream : wood.light)
+      .stroke({ width: 5, color: wood.line });
+  const stripes = 6,
+    sw = (w * 2) / stripes;
+  for (let i = 0; i < stripes; i++) g.rect(-w + i * sw, -h, sw, 40).fill(i % 2 ? cream : swatch.pink.fill);
+  g.rect(-w, -h, w * 2, 40).stroke({ width: 4, color: wood.line });
+  if (!open)
+    for (let y = -h + 52; y < h - 10; y += 34)
+      g.roundRect(-w + 14, y, w * 2 - 28, 26, 6)
+        .fill(wood.fill)
+        .stroke({ width: 3, color: wood.line });
+  c.addChild(g);
+  const sign = purseArt();
+  sign.scale.set(0.5);
+  sign.position.set(0, -h + 22);
+  c.addChild(sign);
   c.eventMode = 'none';
   return c;
 }
