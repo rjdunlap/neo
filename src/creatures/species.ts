@@ -5,6 +5,7 @@ import type { PetColor } from '../content/world';
  * RW05 (docs/rework/CREATURE-COLLECTION.md): a species is content, never saved and never owned. A child owns
  * individuals (`SaveData.creatures.owned`), each of one species. Pixi-free, so the save can repair against it.
  */
+export const MAX_CREATURES = 24;
 export const SPECIES_IDS = ['sprout', 'river', 'glider'] as const;
 export type SpeciesId = (typeof SPECIES_IDS)[number];
 

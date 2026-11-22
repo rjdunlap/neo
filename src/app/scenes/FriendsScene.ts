@@ -20,7 +20,7 @@ import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon, hangerIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
-import type { App } from '../App';
+import type { App, BookOrigin } from '../App';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 
@@ -40,7 +40,7 @@ export class FriendsScene extends Scene {
     this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(),
     swatch.white,
     50,
-    () => this.app.go.room(),
+    () => this.goBack(),
   );
   /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Friends keeps Back only. */
   private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
@@ -76,7 +76,11 @@ export class FriendsScene extends Scene {
   page = 0;
   private leaving = false;
 
-  constructor(app: App, previewId?: string) {
+  constructor(
+    app: App,
+    previewId?: string,
+    private readonly origin?: BookOrigin,
+  ) {
     super(app);
     this.previewed = previewId ?? store.data.creatures.companion;
   }
@@ -181,13 +185,18 @@ export class FriendsScene extends Scene {
     this.buildCards();
   }
 
+  private goBack() {
+    if (this.origin && this.previewed) this.app.go.book({ friend: this.previewed });
+    else this.app.go.room();
+  }
+
   /** Opens dressing for the friend on the stage. */
   private dressUp() {
     const who = this.friend(this.previewed);
     if (!who || this.leaving) return;
     this.leaving = true;
     // Dressing opens with `friends.dress`, then its instruction.
-    this.app.go.dress(who.id);
+    this.app.go.dress(who.id, this.origin);
   }
 
   /** The only thing here that changes anything: the previewed friend travels with her from now on. */

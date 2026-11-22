@@ -8,9 +8,10 @@ const routes = () =>
     place: vi.fn(),
     journal: vi.fn(),
     library: vi.fn(),
+    book: vi.fn(),
     explore: vi.fn(),
   }) as unknown as Routes &
-    Record<'land' | 'place' | 'journal' | 'library' | 'explore', ReturnType<typeof vi.fn>>;
+    Record<'land' | 'place' | 'journal' | 'library' | 'book' | 'explore', ReturnType<typeof vi.fn>>;
 
 describe('goToOrigin', () => {
   it('returns to the land, the home spot or the journal a game was opened from', () => {
@@ -29,6 +30,12 @@ describe('goToOrigin', () => {
     expect(d.library).toHaveBeenCalled();
     expect(d.journal).not.toHaveBeenCalled();
     expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it('returns to the book when it opened the game', () => {
+    const go = routes();
+    goToOrigin(go, { book: true }, vi.fn());
+    expect(go.book).toHaveBeenCalledOnce();
   });
 
   it('returns to the page of a full land a game was opened from', () => {
