@@ -1,6 +1,6 @@
 # Additional languages: stage 1, the pet says the word
 
-**WL1 definition refined 2026-10-25; docs only, nothing implemented.** This replaces the language-neutral 2026-10-15 proposal in place. [World-languages study](../deep-dives/subjects/world-languages.md#build-slices-in-order), [roadmap](../ROADMAP.md#additional-languages). European Portuguese comes first: English naming line, then one reviewed word, per profile, device speech (developer decisions 2026-10-23). **Review (the developer, 2026-11-17): there is no family reviewer, and the assistant reviews every Portuguese line** by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17) below. WL1 supplies English semantic labels only. WL2 is admitted on that basis and queued in [READY](../READY.md); its building session writes and reviews the word table before anything else.
+**Built 2026-11-22 (WL2, `claude/wl2-pet-says-portuguese`):** the word table is `src/content/words/pt-PT.ts`, the [evidence rows](#wl2-evidence-2026-11-22) are filled, and the [as-built notes](#as-built-2026-11-22) record where the build follows the hosts as they now are. **WL1 definition refined 2026-10-25.** This replaces the language-neutral 2026-10-15 proposal in place. [World-languages study](../deep-dives/subjects/world-languages.md#build-slices-in-order), [roadmap](../ROADMAP.md#additional-languages). European Portuguese comes first: English naming line, then one reviewed word, per profile, device speech (developer decisions 2026-10-23). **Review (the developer, 2026-11-17): there is no family reviewer, and the assistant reviews every Portuguese line** by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17) below. WL1 supplies English semantic labels only. WL2 is admitted on that basis and queued in [READY](../READY.md); its building session writes and reviews the word table before anything else.
 
 ## Purpose and limits
 
@@ -107,7 +107,7 @@ Arabic, French and Spanish are reviewed the same way when their turn comes, unle
 
 ## Review evidence template and listening questions
 
-**All rows below are unfilled.** The content rows are filled by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17); the listening rows only when a person listens on a phone, and they hold nothing back. Store the completed evidence with the versioned table and its commit.
+**The content rows are filled for WL2 in [the evidence below](#wl2-evidence-2026-11-22); the listening rows are not.** The content rows are filled by the [assistant review](#assistant-review-of-the-portuguese-2026-11-17); the listening rows only when a person listens on a phone, and they hold nothing back. Store the completed evidence with the versioned table and its commit.
 
 Repeat this template for **each of the 20 keys and every shipped variant/line**; inventory completeness and explicit acceptance must be auditable:
 
@@ -129,6 +129,44 @@ WL2's building session completes the assistant review of the whole candidate voc
 - Does each word sound right after its English line, at the game's rate and pitch and over the game's sounds, for single, plural and mass things?
 - Which voice did the phone use (name, language tag, local or not), and does it still speak offline after a restart? A phone with only `pt` or `pt-BR` keeps English and says why.
 - After fast repeated taps, a replay, Home or Back, mute, and a change of setting or player, is there ever a stale or late word?
+
+## WL2 evidence (2026-11-22)
+
+**Written by** the WL2 building session (`claude/wl2-pet-says-portuguese`, table version 1, the commit that adds `src/content/words/pt-PT.ts`); **checked by** a separate pass in a fresh context on 2026-11-22, given only each key, its English line, the pictured context and the draft. The checker accepted 18 drafts outright and made `food.apple` and `food.bone` depend on the art: a counted thing follows how many are drawn and a mass noun stays singular. The building session then read the drawing code: each snack piece is one apple and one bone, so the singular stands. Every Priberam page below was fetched and read; Infopédia refused automated fetches (HTTP 403), so none is cited, and no usage was in enough doubt to need Ciberdúvidas. The rules the checker applied throughout: animals and foods carry the definite article, which is how a parent in Portugal names a thing to a child and carries the gender; colours are bare, masculine where the word has a gender; no Brazilian vocabulary or spelling (*cão*, not *cachorro*). Hosts, levels and events per key are the [inventory](#exact-pilot-vocabulary) and the [as-built notes](#as-built-2026-11-22). The listening rows stay empty: nobody has heard a phone's `pt-PT` voice say these yet, and that is a playtest question, not a gate.
+
+| Key | Entry | Article, gender, number | Priberam entries read | Alternatives that lost, and why | Decision |
+| --- | --- | --- | --- | --- | --- |
+| `animal.cow` | a vaca | f. sg., definite | [vaca](https://dicionario.priberam.org/vaca) | — | accept |
+| `animal.duck` | o pato | m. sg., definite | [pato](https://dicionario.priberam.org/pato) | — | accept |
+| `animal.pig` | o porco | m. sg., definite (closed ô) | [porco](https://dicionario.priberam.org/porco) | *o porquinho*: diminutive; plain headwords for every animal | accept |
+| `animal.cat` | o gato | m. sg., definite | [gato](https://dicionario.priberam.org/gato) | *o gatinho*: diminutive, as above | accept |
+| `animal.dog` | o cão | m. sg., definite | [cão](https://dicionario.priberam.org/cão), [cachorro](https://dicionario.priberam.org/cachorro) | *o cachorro*: in Portugal a puppy; an adult dog only in Brazilian (and Madeiran) use | accept |
+| `animal.bunny` | o coelho | m. sg., definite | [coelho](https://dicionario.priberam.org/coelho), [coelhinho](https://dicionario.priberam.org/coelhinho) | *o coelhinho*: closer to "bunny" and natural with toddlers, but lost on consistency with the plain animal headwords | accept |
+| `animal.bear` | o urso | m. sg., definite | [urso](https://dicionario.priberam.org/urso) | *o ursinho*: also a teddy bear | accept |
+| `food.hay` | o feno | m. sg., mass (closed ê) | [feno](https://dicionario.priberam.org/feno) | *a palha*: straw, a different thing | accept |
+| `food.grass` | a erva | f. sg., mass | [erva](https://dicionario.priberam.org/erva), [relva](https://dicionario.priberam.org/relva) | *a relva*: a lawn; *erva* covers pasture plants, a tuft a rabbit eats | accept |
+| `food.bone` | o osso | m. sg., definite | [osso](https://dicionario.priberam.org/osso) | *os ossos*: the English line says "bones", but each snack draws one bone (`foodArt`, `FOOD_UNITS.bone.one`) | accept |
+| `food.fish` | o peixe | m. sg., definite | [peixe](https://dicionario.priberam.org/peixe) | — | accept |
+| `food.seeds` | as sementes | f. pl., definite (a heap is drawn) | [semente](https://dicionario.priberam.org/semente) | *o milho*, *os grãos*: too specific for generic seeds | accept |
+| `food.apple` | a maçã | f. sg., definite | [maçã](https://dicionario.priberam.org/maçã) | *as maçãs*: the English line says "apples", but each snack draws one apple (`prop('apple')`, `FOOD_UNITS.apple.one`) | accept |
+| `food.honey` | o mel | m. sg., mass | [mel](https://dicionario.priberam.org/mel) | — | accept |
+| `color.red` | vermelho | bare masc. adjective | [vermelho](https://dicionario.priberam.org/vermelho), [encarnado](https://dicionario.priberam.org/encarnado) | *encarnado*: a real pt-PT synonym but older or regional; children's books say *vermelho* | accept |
+| `color.orange` | cor de laranja | invariable locution, no hyphens (1990 agreement) | [cor de laranja](https://dicionario.priberam.org/cor%20de%20laranja), [laranja](https://dicionario.priberam.org/laranja) | *laranja* alone would be heard as "the orange" (the fruit); *cor-de-laranja* is the pre-1990 spelling | accept |
+| `color.yellow` | amarelo | bare masc. adjective | [amarelo](https://dicionario.priberam.org/amarelo) | — | accept |
+| `color.green` | verde | bare adjective, two genders | [verde](https://dicionario.priberam.org/verde) | — | accept |
+| `color.blue` | azul | bare adjective, two genders | [azul](https://dicionario.priberam.org/azul) | — | accept |
+| `color.purple` | roxo | bare masc. adjective (closed ô) | [roxo](https://dicionario.priberam.org/roxo), [lilás](https://dicionario.priberam.org/lilás), [violeta](https://dicionario.priberam.org/violeta) | *lilás*: a pale purple; *violeta*: the flower or spectrum word, not a child's everyday colour | accept |
+
+Questions for a phone playtest with the setting on, beyond those above: whether the closed vowels of *osso*, *porco*, *roxo* and *feno*, the *ch* of *peixe* and the nasal *ão* of *cão* come out European rather than Brazilian.
+
+## As built (2026-11-22)
+
+The hosts grew after this packet was audited, so WL2 re-audited them against the inventory and the rule "one word after a naming line":
+
+- **Peekaboo Barn:** `peek.found` and `peek.feel` (free play and One door) and `peek.yes`, which now also ends a correct find in the *top* and *swap* modes besides *find* and *remember*: each names the revealed animal. Pairs, clue answers (`peek.hasit`, `peek.feelsit`) and *went* add nothing. The farm four (sheep, horse, hen, mouse) that join from the newcomer level have no key and stay English.
+- **Animal Snack:** level 1 *munch* and level 3 *who* add the animal; level 2 *float* and level 4 *match* add the snack. The later modes (*sound*, *eats*, *pairs* and both *count* levels) add nothing, and neither do the four later animals or their oats, corn and grain.
+- **Bubble Pop:** `bubble.friend` in the free modes and the first `bubble.color` instruction; the pet's replay of that instruction stays English.
+- **The shell:** `ctx.sayWord(key)` reserves the key for the round when called, and `voice.afterLine` runs the word only if that English line ends on its own (device `end`, or a clip that plays out), never after a cut, error, watchdog or `stop()`; one word waits at most, finish and scene destroy drop it, and couch play and how-to demos have a no-op. Android's `pt_PT` tag counts as `pt-PT`. The grown-ups' page has the select (English labels), a status line naming the voice or saying there is none, and the sentence that an AI assistant chose and checked the words.
 
 ## Future WL2 verification scope
 
