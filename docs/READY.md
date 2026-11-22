@@ -60,9 +60,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
 
-- **`vine-snip` level 6, Where will it land?** (school; new interaction tier: typecheck and rule tests, one filtered `vinesnip` play at level 6 with opposite guesses, Help, replay and one award, one sideways phone screenshot, `fingerdemo` at 6; run the build too, since the voice and how-to barrels change). [Definition](definitions/vine-snip-where-will-it-land.md), [dive](deep-dives/vine-snip.md#build-slices-in-order)
 
-- **`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](definitions/block-tower-mend.md), [dive](deep-dives/block-tower.md#build-slices-in-order)
 
 - **`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](deep-dives/block-tower.md#decisions-for-the-developer)
 

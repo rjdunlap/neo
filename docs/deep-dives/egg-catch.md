@@ -96,7 +96,7 @@ Lap keeps level 1 only. Its work is slices 3 and 8 (notes, colours, the hatching
 
 ### Easier entries and levels between existing ones
 
-Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), through `order`; both are in `entryLevels`. No saved level is renumbered. The school window is `order: [4, 5, 6, 7, 10, 11]` (`[4, 5, 6, 7, 10, 11, 13]` once level 13 is built). Preschool and pre-K tops are unchanged.
+Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), through `order`; both are in `entryLevels`. No saved level is renumbered. The school window is `order: [4, 5, 6, 7, 10, 11, 13]`. Preschool and pre-K tops are unchanged.
 
 ### Left out on purpose
 
@@ -132,7 +132,7 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 6. **Level 10, Fix the run** (built with slice 7; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
 7. **Level 11, Flip-flop gate** (built after slice 6 in the same batch; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Same tier as slice 6.
 8. **Every touch answers at level 1** (after V2's person check). Tier: rule tests, a rapid-tap regression play at level 1, `fingerdemo` at 1.
-9. **Level 13, Sorting gate** (build claimed 2026-11-21, `claude/egg-catch-sorting-gate`): defined 2026-11-21 ([definition](../definitions/egg-catch-sorting-gate.md)); decisions 2–5 were settled 2026-10-23 (see the Decided note), so the build is next.
+9. **Level 13, Sorting gate** (built 2026-11-21; [PR #1961](https://github.com/rjdunlap/neo/pull/1961)): defined 2026-11-21 ([definition](../definitions/egg-catch-sorting-gate.md)); decisions 2–5 were settled 2026-10-23 (see the Decided note). Tier: new interaction: unit tests, one filtered play of 13 with a wrong placement and a hint, one portrait screenshot, `fingerdemo` at 13, offline for the clips.
 10. **Level 12, One big hen, first at lap** (built; [PR #1591](https://github.com/rjdunlap/neo/pull/1591)). A lap level from [the toy test](../definitions/toy-test-lap-openings.md#barnyard) placed first in lap's order, so the Sorting gate (slice 9) is now level 13. Tier: new level: typecheck, rule tests, one browser play of level 12, `fingerdemo` at 12.
 
 ## What was built in this session
