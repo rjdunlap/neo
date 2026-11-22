@@ -125,6 +125,8 @@ class Round implements Game {
   private finishIn = -1;
   private time = 0;
   cell = 120;
+  /** The view from the last resize: the shell may move the round onto the upright area after it is built. */
+  private view: View;
   private readonly tallyCount = newTally();
   get misses() {
     return this.tallyCount.misses;
@@ -135,6 +137,7 @@ class Round implements Game {
   finished = false;
 
   constructor(private readonly ctx: GameContext) {
+    this.view = ctx.view;
     for (let s = 0; s < N * N; s++) {
       const node = new Container();
       onTap(node, () => this.tapSquare(s));
@@ -236,8 +239,12 @@ class Round implements Game {
       return;
     }
     sfx.boing();
-    void this.ctx.say(this.lineFor(v));
-    if (miss && missEvery(this.tallyCount)) this.showHint(false);
+    const said = this.ctx.say(this.lineFor(v));
+    // The reason is heard first; the hint it brings follows, for the camp as it is by then.
+    if (miss && missEvery(this.tallyCount))
+      void said.then(() => {
+        if (this.ctx.alive && !this.finished) this.showHint();
+      });
   }
 
   private lineFor(v: Exclude<Verdict, { kind: 'solved' } | { kind: 'short' }>): Line {
@@ -254,10 +261,10 @@ class Round implements Game {
       node.destroy({ children: true });
       this.tentNodes.delete(s);
     }
-    for (const s of this.tents) this.addTent(s, true);
+    for (const s of this.tents) this.addTent(s, false);
     sfx.tada();
     sfx.clap();
-    this.ctx.particles.burst(this.ctx.view.w / 2, this.ctx.view.h / 2, {
+    this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, {
       colors: [swatch.orange.fill, swatch.yellow.fill, swatch.green.fill, swatch.blue.fill],
       count: 40,
       kind: 'dot',
@@ -267,8 +274,8 @@ class Round implements Game {
     this.finishIn = 1.8;
   }
 
-  /** The next help, glowing on the board and said aloud; counts one hint. `asked` is a Hint press. */
-  private showHint(_asked: boolean) {
+  /** The next help, glowing on the board and said aloud; counts one hint. */
+  private showHint() {
     const h = hintFor(CAMP, this.tents);
     if (!h) return;
     hinted(this.tallyCount);
@@ -279,17 +286,17 @@ class Round implements Game {
   }
 
   askForHint() {
-    if (!this.finished) this.showHint(true);
+    if (!this.finished) this.showHint();
   }
 
   private center(s: number) {
-    const { first } = campLayout(this.ctx.view);
+    const { first } = campLayout(this.view);
     return { x: first.x + (s % N) * this.cell, y: first.y + Math.floor(s / N) * this.cell };
   }
 
   private draw() {
     const c = this.cell;
-    const lay = campLayout(this.ctx.view);
+    const lay = campLayout(this.view);
     const o = this.over.clear();
     if (this.lit)
       for (const s of treeSides(CAMP, this.lit.tree)) {
@@ -350,7 +357,7 @@ class Round implements Game {
 
   private drawGround() {
     const c = this.cell;
-    const lay = campLayout(this.ctx.view);
+    const lay = campLayout(this.view);
     const g = this.ground.clear();
     for (let s = 0; s < N * N; s++) {
       const p = this.center(s);
@@ -399,6 +406,7 @@ class Round implements Game {
   }
 
   resize(view: View) {
+    this.view = view;
     const lay = campLayout(view);
     this.cell = lay.cell;
     this.heading.position.set(lay.heading.x, lay.heading.y);

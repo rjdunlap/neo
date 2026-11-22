@@ -25,7 +25,7 @@ export function campLayout(view: View) {
   const groupH = SUPPLY_H + SIGN.h + N * cell;
   // Upright, the camp starts below the Home and help column; spare height is shared above and below.
   const left = upright ? Math.max(126, (w - groupW) / 2) : Math.max(130, (w - 230 - groupW) / 2 + 20);
-  const start = top + Math.max(0, (bottom - top - groupH) / 2) * (upright ? 0.5 : 1);
+  const start = top + Math.max(0, (bottom - top - groupH) / 2) * (upright ? 0.2 : 1);
   const supplyY = start + SUPPLY_H / 2;
   const signY = start + SUPPLY_H + SIGN.h / 2;
   const boardTop = start + SUPPLY_H + SIGN.h;

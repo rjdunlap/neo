@@ -53,6 +53,9 @@ export function createSuite({ page, launch, finished, screenshot }) {
     await check();
     let s = await state();
     assert.equal(s.misses, 2, 'a changed wrong camp is a second miss');
+    // The hint follows the spoken reason.
+    await page.waitForFunction(() => neo.scene.game.hints === 1, null, { timeout: 15000 });
+    s = await state();
     assert.equal(s.hints, 1, 'the second miss brings the hint by itself');
     await page.evaluate(() => kit.tapOn(neo.scene.game.hintButton));
     await page.waitForTimeout(200);
