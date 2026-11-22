@@ -25,6 +25,11 @@ import {
   nextReach,
   planFor,
   makeReachRounds,
+  makeMendRounds,
+  MendTrial,
+  mendHint,
+  mendSlot,
+  nextMend,
   reachX,
   reachDrop,
   reached,
@@ -32,6 +37,7 @@ import {
   standingTower,
   topples,
   W,
+  type DirectedMend,
   type DirectedReachRound,
   type StandRound,
   type TowerPlan,
@@ -131,6 +137,16 @@ class BlockTower implements Game {
   readonly hintGhost = new Graphics();
   private aimSlot: number | null = null;
   private hintSlot: number | null = null;
+  // Mend the leaning tower.
+  readonly mendRounds: readonly DirectedMend[];
+  trial: MendTrial | null = null;
+  mendBlocks: Container[] = [];
+  private topDrag: DragHandle | null = null;
+  private topPointer: number | null = null;
+  private topCancelled = false;
+  readonly undo: RoundButton;
+  readonly letGo: RoundButton;
+  readonly tryAgain: RoundButton;
 
   private readonly room = new Graphics();
   private readonly marks = new Graphics();
@@ -147,6 +163,8 @@ class BlockTower implements Game {
   private clock = 0;
   // The shared drag helper reports window cancellation as a release. Mark it before that listener runs.
   private readonly cancelReach = (e: PointerEvent) => {
+    if (this.plan.mode === 'mend' && this.topDrag?.dragging && this.topPointer === e.pointerId)
+      this.topCancelled = true;
     if (this.plan.mode !== 'reach') return;
     for (const t of this.tray) if (t.drag.dragging && t.pointerId === e.pointerId) t.cancelled = true;
   };
@@ -156,10 +174,13 @@ class BlockTower implements Game {
     this.ctx.listen(window, 'pointercancel', this.cancelReach, true);
     this.plan = planFor(ctx.level);
     this.reachRounds = this.plan.mode === 'reach' ? makeReachRounds(ctx.rng) : [];
+    this.mendRounds = this.plan.mode === 'mend' ? makeMendRounds(ctx.rng) : [];
     this.rounds =
       this.plan.mode === 'reach'
         ? this.reachRounds.map(() => ({ target: 0 }))
-        : makeRounds(this.plan, ctx.rng);
+        : this.plan.mode === 'mend'
+          ? this.mendRounds.map(() => ({ target: 0 }))
+          : makeRounds(this.plan, ctx.rng);
     this.standRounds = this.plan.mode === 'stand' ? makeStandRounds(ctx.rng, ctx.band === 'school') : [];
     const replayIcon = new Graphics()
       .arc(0, 0, 24, 0.5, 5.7)
@@ -167,11 +188,40 @@ class BlockTower implements Game {
       .poly([20, -22, 32, -15, 17, -8])
       .fill(ink);
     const nextIcon = new Graphics().poly([-16, -25, 20, 0, -16, 25]).stroke(line(ink, 7));
-    this.watchAgain = new RoundButton(replayIcon, swatch.blue, 54, () => void this.replayStand());
+    this.watchAgain = new RoundButton(replayIcon, swatch.blue, 54, () =>
+      this.plan.mode === 'mend' ? void this.replayMend() : void this.replayStand(),
+    );
     this.continueStand = new RoundButton(nextIcon, swatch.green, 54, () => this.advanceStand());
+    // Level 7: a back arrow, two rope ends parting, and a rope loop.
+    const undoIcon = new Graphics()
+      .moveTo(22, 12)
+      .bezierCurveTo(22, -14, 0, -16, -16, -8)
+      .stroke(line(ink, 7))
+      .poly([-28, -10, -10, -24, -8, 4])
+      .fill(ink);
+    const letGoIcon = new Graphics()
+      .moveTo(-6, -28)
+      .lineTo(-6, -4)
+      .lineTo(-22, 22)
+      .moveTo(6, -28)
+      .lineTo(6, -4)
+      .lineTo(22, 22)
+      .stroke(line(ink, 7));
+    const ropeIcon = new Graphics()
+      .circle(0, 6, 17)
+      .stroke(line(ink, 7))
+      .moveTo(0, -11)
+      .lineTo(0, -30)
+      .stroke(line(ink, 7));
+    this.undo = new RoundButton(undoIcon, swatch.purple, 54, () => this.undoMend());
+    this.letGo = new RoundButton(letGoIcon, swatch.green, 54, () => void this.letGoMend());
+    this.tryAgain = new RoundButton(ropeIcon, swatch.yellow, 54, () => this.tryMendAgain());
     for (const [button, text] of [
       [this.watchAgain, 'Watch again'],
       [this.continueStand, 'Continue'],
+      [this.undo, 'Undo'],
+      [this.letGo, 'Let go'],
+      [this.tryAgain, 'Try again'],
     ] as const) {
       const caption = label(text, 22, ink);
       caption.y = 78;
@@ -224,6 +274,9 @@ class BlockTower implements Game {
       this.prediction,
       this.watchAgain,
       this.continueStand,
+      this.undo,
+      this.letGo,
+      this.tryAgain,
     );
     if (mode === 'tumble' || mode === 'friend') {
       // Lap play: a tap anywhere stacks, so the input layer goes last, on top.
@@ -296,6 +349,14 @@ class BlockTower implements Game {
     this.layoutReach();
     this.watchAgain.position.set(L.watchAgain.x, L.watchAgain.y);
     this.continueStand.position.set(L.continueStand.x, L.continueStand.y);
+    // The two places hold Undo and Let go while the ropes hold, and Watch again and Try again after a tumble.
+    this.undo.position.set(L.watchAgain.x, L.watchAgain.y);
+    this.letGo.position.set(L.continueStand.x, L.continueStand.y);
+    this.tryAgain.position.set(L.continueStand.x, L.continueStand.y);
+    if (this.plan.mode === 'mend') {
+      this.layoutMend();
+      if (this.trial?.phase === 'result') this.drawMendExplanation();
+    }
     if (this.observation.phase === 'result' || this.observation.phase === 'releasing')
       this.drawStandExplanation();
     this.drawPrediction();
@@ -342,6 +403,17 @@ class BlockTower implements Game {
         if (!this.stand || this.guess !== null) return null;
         return { tap: { on: this.standTowers[standingTower(this.stand)][0], x: 0, y: -BH / 2 } };
       }
+      case 'mend': {
+        const trial = this.trial;
+        if (!trial) return null;
+        if (trial.phase === 'result') return { tap: { on: this.tryAgain } };
+        if (trial.phase !== 'held') return null;
+        const top = this.mendBlocks[this.mendBlocks.length - 1];
+        const want = nextMend(trial.task);
+        if (trial.top !== want && top && !this.topDrag?.dragging)
+          return { drag: { on: top }, to: { on: this.ctx.stage, x: this.mendScreen(want), y: top.y } };
+        return trial.top === want ? { tap: { on: this.letGo } } : null;
+      }
       case 'reach': {
         const round = this.reachRound;
         const placed = this.placed;
@@ -364,6 +436,8 @@ class BlockTower implements Game {
   destroy() {
     this.dead = true;
     for (const t of this.tray) t.drag.destroy();
+    this.topDrag?.destroy();
+    this.topDrag = null;
   }
 
   // Layout ----------------------------------------------------------------------------------------
@@ -443,6 +517,15 @@ class BlockTower implements Game {
           .stroke(line(swatch.white.line, 4));
       });
     }
+    if (mode === 'mend' && this.trial?.phase === 'held') {
+      // Ropes from the beam hold every block until she lets go.
+      const beam = towerLayout(this.view).beamY;
+      g.rect(0, beam, this.view.w, 22).fill(wood.fill);
+      for (const b of this.mendBlocks)
+        g.moveTo(b.x, beam + 22)
+          .lineTo(b.x, b.y - BH)
+          .stroke(line(swatch.white.line, 4));
+    }
   }
 
   // Rounds ----------------------------------------------------------------------------------------
@@ -511,16 +594,25 @@ class BlockTower implements Game {
         this.buildReach();
         await this.ctx.instruct('tower.reach');
         break;
+      case 'mend':
+        this.trial = new MendTrial(this.mendRounds[this.index]);
+        this.restoreMend();
+        await this.ctx.instruct('tower.mend');
+        break;
     }
     if (this.dead) return;
     this.busy = false;
     this.layoutReach();
+    this.mendButtons();
   }
 
   /** Knocks everything from the last round away and tidies up. */
   private async clear() {
     for (const t of this.tray) t.drag.destroy();
+    this.topDrag?.destroy();
+    this.topDrag = null;
     const gone = [
+      ...this.mendBlocks,
       ...this.stack,
       ...this.bearStack,
       ...this.standTowers.flat(),
@@ -531,6 +623,10 @@ class BlockTower implements Game {
       void this.ctx.tw.to(b, { alpha: 0 }, { duration: 0.25 }).then(() => b.destroy());
     }
     this.stack = [];
+    this.mendBlocks = [];
+    this.trial = null;
+    this.hintSlot = null;
+    this.undo.visible = this.letGo.visible = this.tryAgain.visible = false;
     this.bearStack = [];
     this.standTowers = [];
     this.tray = [];
@@ -829,6 +925,249 @@ class BlockTower implements Game {
     dashed(g, umid, this.floor - 3.5 * BH, umid, this.floor - BH, swatch.green.fill, 5);
   }
 
+  // Mend the leaning tower -------------------------------------------------------------------------
+
+  /** Eighths from the tower's base to screen x. */
+  mendScreen(u: number) {
+    return this.towerX + px(u);
+  }
+
+  /** Screen x back to eighths, snapped into the top block's domain. */
+  mendDrop(x: number) {
+    return mendSlot(this.trial!.task, ((x - this.towerX) * W) / BW);
+  }
+
+  /** The tower as the trial holds it, ropes on, with a fresh drag on the top block. */
+  private restoreMend() {
+    const trial = this.trial!;
+    this.topDrag?.destroy();
+    this.topDrag = null;
+    for (const b of [...this.mendBlocks, ...this.flying.map((f) => f.node)]) if (!b.destroyed) b.destroy();
+    this.flying = [];
+    this.mendBlocks = trial.tower.map((_, k) => {
+      const b = blockArt(colorFor(trial.task.color + k));
+      b.eventMode = 'none';
+      this.layer.addChild(b);
+      return b;
+    });
+    const top = this.mendBlocks[this.mendBlocks.length - 1];
+    top.hitArea = new Rectangle(-BW / 2 - 10, -BH - 30, BW + 20, BH + 40);
+    this.topDrag = draggable(top, this.ctx.tw, {
+      onPick: () => {
+        sfx.tick();
+        this.topPointer = null;
+        this.topCancelled = false;
+      },
+      onMove: (x) => this.aimMend(x),
+      onDrop: (x) => this.dropMend(x),
+    });
+    // After the drag's own handler, so the pointer is known by the time a window cancel arrives.
+    top.on('pointerdown', (e) => {
+      if (this.topDrag?.dragging && this.topPointer === null) this.topPointer = e.pointerId;
+    });
+    this.layoutMend();
+  }
+
+  private layoutMend() {
+    const trial = this.trial;
+    if (!trial) return;
+    const xs = trial.tower;
+    this.mendBlocks.forEach((b, k) => {
+      const busy = this.ctx.tw.busy(b) || (k === xs.length - 1 && this.topDrag?.dragging);
+      if (!busy) b.position.set(this.mendScreen(xs[k]), this.floor - k * BH);
+    });
+    if (this.topDrag) {
+      const n = xs.length - 1;
+      this.topDrag.home = { x: this.mendScreen(xs[n]), y: this.floor - n * BH };
+      this.topDrag.enabled = !this.busy && !this.finished && trial.phase === 'held';
+    }
+    this.drawMendHint();
+    this.drawMarks();
+  }
+
+  /** Which buttons the two places hold now. */
+  private mendButtons() {
+    const t = this.trial;
+    const held = !!t && !this.busy && !this.finished && t.phase === 'held';
+    const result = !!t && !this.busy && t.phase === 'result';
+    this.undo.visible = held && t.canUndo;
+    this.letGo.visible = held;
+    this.watchAgain.visible = this.tryAgain.visible = result;
+    if (this.topDrag) this.topDrag.enabled = held;
+  }
+
+  private aimMend(x: number) {
+    if (!this.trial) return;
+    const s = this.mendDrop(x);
+    const n = this.trial.tower.length - 1;
+    this.ghost
+      .clear()
+      .roundRect(-BW / 2, -BH, BW, BH, 10)
+      .stroke({ width: 4, color: ink, alpha: 0.5 });
+    this.ghost.position.set(this.mendScreen(s), this.floor - n * BH);
+    this.ghost.visible = true;
+  }
+
+  /** A drop slides the top block to the snapped slot; a cancel or the same slot records nothing. */
+  private dropMend(x: number): boolean {
+    this.ghost.visible = false;
+    const trial = this.trial;
+    if (!trial || this.busy || this.finished || this.topCancelled) {
+      this.topCancelled = false;
+      return false;
+    }
+    if (!trial.move(this.mendDrop(x))) return false;
+    sfx.clunk();
+    this.slideTop();
+    return true;
+  }
+
+  private slideTop() {
+    const trial = this.trial!;
+    const top = this.mendBlocks[this.mendBlocks.length - 1];
+    const n = trial.tower.length - 1;
+    this.topDrag!.home = { x: this.mendScreen(trial.top), y: this.floor - n * BH };
+    void this.ctx.tw
+      .to(top, { x: this.mendScreen(trial.top), y: this.floor - n * BH }, { duration: 0.15, ease: ease.outQuad })
+      .then(() => this.drawMarks());
+    this.mendButtons();
+    this.drawMarks();
+  }
+
+  private undoMend() {
+    if (this.busy || this.finished || !this.trial?.undo()) return;
+    sfx.whoosh();
+    this.slideTop();
+  }
+
+  async letGoMend() {
+    const trial = this.trial;
+    if (this.busy || this.finished || !trial) return;
+    if (!trial.letGo()) {
+      // Not a trial and not a mistake: just the reminder.
+      sfx.tick();
+      void this.ctx.say('tower.mend-move');
+      return;
+    }
+    this.busy = true;
+    this.mendButtons();
+    this.drawMendHint();
+    sfx.pop(8);
+    await this.releaseMend();
+  }
+
+  /** The ropes lift away and the tower settles: it stands, or the blocks from the one that lost support fall. */
+  private async releaseMend() {
+    const trial = this.trial!;
+    await this.ctx.tw.wait(0.4);
+    if (this.dead) return;
+    sfx.whoosh();
+    this.drawMarks();
+    await this.ctx.tw.wait(0.5);
+    if (this.dead) return;
+    const xs = trial.tower;
+    const k = topples(xs, null);
+    if (k === -1) {
+      trial.settle();
+      const g = this.explain.clear();
+      const mid = this.mendScreen(middleFrom(xs, 1));
+      dashed(g, mid, this.floor - (xs.length + 0.5) * BH, mid, this.floor - BH, swatch.green.fill, 5);
+      sfx.sparkle();
+      sfx.tada();
+      this.ctx.particles.burst(mid, this.floor - xs.length * BH - 20, {
+        kind: 'star',
+        colors: [0xffd54a, 0xffffff],
+        count: 18,
+        speed: [150, 320],
+        gravity: 0,
+        life: [0.6, 1],
+      });
+      await this.ctx.say('tower.mend-stands');
+      await this.ctx.tw.wait(0.6);
+      if (this.dead) return;
+      return void this.next();
+    }
+    this.drawMendExplanation();
+    sfx.rumble();
+    const lean = Math.sign(middleFrom(xs, k) - xs[k - 1]) || trial.task.direction;
+    this.topDrag?.destroy();
+    this.topDrag = null;
+    this.tumble(this.mendBlocks.slice(k), this.mendScreen(xs[k - 1]), lean);
+    this.mendBlocks = this.mendBlocks.slice(0, k);
+    await this.ctx.tw.wait(1);
+    if (this.dead) return;
+    await this.ctx.say('tower.fell-block');
+    if (this.dead) return;
+    trial.settle();
+    if (trial.hintDue && !trial.hinted) {
+      trial.hinted = true;
+      this.hints++;
+      this.hintSlot = mendHint(trial.task);
+      void this.ctx.say('tower.reach-hint');
+    }
+    await this.ctx.say('tower.mend-try');
+    if (this.dead) return;
+    this.busy = false;
+    this.mendButtons();
+  }
+
+  /** Why it fell: the outlines of the tower as she let it go, the middle of the falling blocks, the edge it passed. */
+  private drawMendExplanation() {
+    const trial = this.trial;
+    if (!trial) return;
+    const xs = trial.tower;
+    const k = topples(xs, null);
+    if (k < 1) return;
+    const g = this.explain.clear();
+    for (let j = k; j < xs.length; j++)
+      g.roundRect(this.mendScreen(xs[j]) - BW / 2, this.floor - (j + 1) * BH, BW, BH, 10).stroke({
+        width: 3,
+        color: ink,
+        alpha: 0.35,
+      });
+    const mid = this.mendScreen(middleFrom(xs, k));
+    const lean = Math.sign(middleFrom(xs, k) - xs[k - 1]) || trial.task.direction;
+    const edge = this.mendScreen(xs[k - 1]) + (lean * BW) / 2;
+    dashed(g, mid, this.floor - (xs.length + 0.5) * BH, mid, this.floor - (k - 1) * BH, swatch.red.fill, 5);
+    g.moveTo(edge, this.floor - k * BH - 10)
+      .lineTo(edge, this.floor - k * BH + 18)
+      .stroke(line(swatch.red.line, 6));
+  }
+
+  private async replayMend() {
+    if (this.busy || this.dead || !this.trial?.watchAgain()) return;
+    this.busy = true;
+    this.mendButtons();
+    this.explain.clear();
+    this.restoreMend();
+    await this.ctx.say('tower.watch-again');
+    if (this.dead) return;
+    await this.releaseMend();
+  }
+
+  /** Ropes back on, the tower as she let it go, so she revises from her own attempt. */
+  private tryMendAgain() {
+    if (this.busy || this.dead || !this.trial?.tryAgain()) return;
+    sfx.tick();
+    this.explain.clear();
+    this.restoreMend();
+    this.mendButtons();
+  }
+
+  /** After two tumbles, the place that works glows where the top block would rest. */
+  private drawMendHint() {
+    const trial = this.trial;
+    const show = !!trial && this.hintSlot !== null && trial.phase === 'held';
+    this.hintGhost.visible = show;
+    if (!show) return;
+    this.hintGhost
+      .clear()
+      .roundRect(-BW / 2, -BH, BW, BH, 10)
+      .fill({ color: 0xfff3a0, alpha: 0.7 })
+      .stroke({ width: 4, color: swatch.yellow.line });
+    this.hintGhost.position.set(this.mendScreen(this.hintSlot!), this.floor - (trial.tower.length - 1) * BH);
+  }
+
   // Reach the star ----------------------------------------------------------------------------------
 
   private buildReach() {
@@ -1085,7 +1424,12 @@ class BlockTower implements Game {
   private drawGlow() {
     const g = this.glow.clear();
     if (!this.glowTop || this.finished) return;
-    const stack = this.plan.mode === 'reach' ? this.placed.map((t) => t.node) : this.stack;
+    const stack =
+      this.plan.mode === 'reach'
+        ? this.placed.map((t) => t.node)
+        : this.plan.mode === 'mend'
+          ? this.mendBlocks
+          : this.stack;
     const top = stack[stack.length - 1];
     if (!top) return;
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);

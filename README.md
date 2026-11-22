@@ -221,7 +221,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Light Lab](docs/games/light-lab.md) | pre-K–school | Tinker Lab | 12 | tap mirrors to turn a sunbeam onto a sleeping flower |
 | [Ramp Race](docs/games/ramp-race.md) | pre-K–school | Tinker Lab | 7 | tap the ramp to make it taller and roll a toy car |
 | [Inchworm Measure](docs/games/inchworm.md) | pre-K–school | Tinker Lab | 10 | lay inchworms end to end along a leaf and count them |
-| [Block Tower](docs/games/block-tower.md) | lap–school | Tinker Lab | 6 | tap anywhere to stack six blocks, then knock down two towers |
+| [Block Tower](docs/games/block-tower.md) | lap–school | Tinker Lab | 7 | tap anywhere to stack six blocks, then knock down two towers |
 | [Block Topple](docs/games/block-topple.md) | preschool–school | Tinker Lab | 5 | pull a big springy sling back, let go, and a soft ball arcs into a block tower; the top tips onto a cushion and a bell rings |
 | [Chain Reaction](docs/games/chain-reaction.md) | pre-K–school | Tinker Lab | 11 | drag a loose ramp into a large socket, run the machine and watch the marble ring a bell |
 | [Shape Buddies](docs/games/shape-buddies.md) | preschool–school | Tinker Lab | 8 | reshape two paper friends (one friend at preschool), test a seed journey and plant it |

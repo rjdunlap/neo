@@ -3,7 +3,7 @@ import { computeView, NO_INSETS } from '../../engine/view';
 import { Rng } from '../../engine/random';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { BH, BIN_HIT, BUTTON_R, BW, bearX, edgeX, standX, towerLayout, towerX, TRAY_HIT } from './layout';
-import { makeReachRounds, makeStandRounds, planFor, reachX } from './logic';
+import { MEND_TASKS, mendDomain, mendTask, makeReachRounds, makeStandRounds, planFor, reachX } from './logic';
 
 /**
  * Block Tower held upright (chunk 31, docs/definitions/phone-portrait.md): every level on the upright phone views.
@@ -106,6 +106,32 @@ describe.each(Object.entries(views))('Block Tower upright on %s', (_, v) => {
         const top = L.tableTop - (round.blocks + 0.6) * BH - 40;
         expect(top).toBeGreaterThanOrEqual(210);
       }
+    });
+  });
+
+  describe.each(MEND_TASKS.map((t) => t.id))('level 7, task %s', (id) => {
+    it.each([1, -1] as const)('leaning %s: the tower, the top block across its domain and both buttons', (d) => {
+      const task = mendTask(MEND_TASKS.find((t) => t.id === id)!, d);
+      const tx = towerX(v, false);
+      const n = task.tower.length - 1;
+      const buttons = [circle('undo', L.watchAgain), circle('let go', L.continueStand)];
+      // The top block's tap area at each end of its domain, standing on the block below.
+      for (const x of [mendDomain(task)[0], mendDomain(task).at(-1)!]) {
+        const top: Target = {
+          what: `top block at ${x}`,
+          x: tx + (x * BW) / 8,
+          y: L.floor - n * BH - (BH + 30) + TRAY_HIT.h / 2,
+          w: TRAY_HIT.w,
+          h: TRAY_HIT.h,
+        };
+        expect(uprightProblems(v, [top, ...buttons]), `${id} ${d} at ${x}`).toEqual([]);
+      }
+      // Every block stays inside the view, and the buttons sit above the tower's top.
+      for (const x of task.tower) {
+        expect(tx + (x * BW) / 8 - BW / 2).toBeGreaterThanOrEqual(0);
+        expect(tx + (x * BW) / 8 + BW / 2).toBeLessThanOrEqual(v.w);
+      }
+      expect(L.watchAgain.y + BUTTON_R).toBeLessThan(L.floor - (n + 1) * BH - 30);
     });
   });
 });

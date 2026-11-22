@@ -12,7 +12,7 @@
 | toddler | 2–3 |
 | preschool | 3–4 |
 | pre-K | 4–5 |
-| school | 5–6 |
+| school | 5, 7, 6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 4 | Compare with Duck's tower: just as tall, one block taller, or one shorter |
 | 5 | Which tower will stand? Guess, then let go and see (a guess is never wrong) |
 | 6 | Stack blocks out past the table edge to touch the star without tipping |
+| 7 | Mend the leaning tower: move the top block so it stands, then let the ropes go |
 
 <!-- end generated -->
 
