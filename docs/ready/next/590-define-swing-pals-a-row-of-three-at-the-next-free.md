@@ -1,1 +1,0 @@
-**Define Swing Pals, *A row of three*, at the next free level ID** (level 9 went to *Paint the beat*; docs only), after a `swingLayout` probe. [Dive](../../deep-dives/swing-pals.md#decisions-for-the-developer), [record](../../archive/DECISIONS-2026-11-17.md#games)

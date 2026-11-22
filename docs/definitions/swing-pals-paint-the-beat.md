@@ -10,7 +10,7 @@
 
 ## Level ID and play order
 
-- **ID 9**, name *Paint the beat*, plan `mode: 'paint'`, one swing. The dive's *A row of three* sketch takes the next free ID when it is defined.
+- **ID 9**, name *Paint the beat*, plan `mode: 'paint'`, one swing. The dive's *A row of three* is [level 10](swing-pals-row-of-three.md).
 - **Bands** (`LEVELS` in `logic.ts`): preschool `{ min: 2, max: 9, order: [2, 3, 9] }`, pre-K `{ min: 3, max: 9, order: [3, 7, 9, 4] }`, school `{ min: 4, max: 9, order: [4, 5, 6, 7, 8, 9] }`. Lap and toddler are unchanged. `entryLevels` stays unset: every band that lists 9 lists it, so a birthday keeps her level.
 - **Placement is intended.** A painting round has no misses and counts hints only from the pause sheet, so a round without help is always smooth and two of them step her on. At preschool it comes after *Short rope, long rope* (she has seen the two ropes, now she keeps a record of them) and is the top. At pre-K it sits between the race (7) and the first matching level (4): the painting makes the beat visible and still before she has to match it. At school it is a calm top after *Twice as quick*, where counting wiggles on the paper is the same 2 : 1 she just matched. Grown-ups can pin it at any of the three bands.
 
