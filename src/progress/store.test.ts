@@ -166,6 +166,19 @@ describe('switching profiles', () => {
     expect(store.data.explore.last).toBe('counting-cove');
   });
 
+  it("keeps each player's second language her own (WL2)", async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.data.settings.language2 = 'pt-PT';
+    store.save();
+    const b = store.addProfile()!;
+    expect(await store.switchTo(b)).toBe(true);
+    expect(store.data.settings.language2).toBe('none');
+    expect(await store.switchTo(a)).toBe(true);
+    expect(store.data.settings.language2).toBe('pt-PT');
+  });
+
   it('never shows default data while the other save is being read, and a save made meanwhile still lands on the old one', async () => {
     const store = make();
     await store.load();

@@ -150,3 +150,90 @@ describe('voice second-language word (WL2)', () => {
     expect(spoken).toHaveLength(0);
   });
 });
+
+/** The same tail on a rendered clip, which is how most English lines play on a phone. */
+describe('voice second-language word after a clip (WL2)', () => {
+  class FakeSource {
+    buffer: unknown = null;
+    onended: (() => void) | null = null;
+    connect = vi.fn();
+    start = vi.fn();
+    stop = vi.fn(() => this.onended?.());
+  }
+  let sources: FakeSource[] = [];
+
+  beforeEach(() => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    spoken.length = 0;
+    sources = [];
+    voices = [PT];
+    vi.stubGlobal(
+      'window',
+      Object.assign(new EventTarget(), {
+        setTimeout: (...a: Parameters<typeof setTimeout>) => setTimeout(...a),
+        clearTimeout: (...a: Parameters<typeof clearTimeout>) => clearTimeout(...a),
+        speechSynthesis: synth,
+      }),
+    );
+    vi.stubGlobal('speechSynthesis', synth);
+    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  const setup = async () => {
+    const { voice } = await import('./voice');
+    const { audio } = await import('./engine');
+    const { SCRIPT } = await import('../content/voice-script');
+    (audio as unknown as { ctx: unknown }).ctx = {
+      state: 'running',
+      decodeAudioData: async () => ({ duration: 1 }),
+      createBufferSource: () => {
+        const s = new FakeSource();
+        sources.push(s);
+        return s;
+      },
+    };
+    const run = vi.fn(() => void voice.speakWord('o pato', 'pt-PT'));
+    const line = (i = 0) => voice.speak(SCRIPT['nav.home'][i % SCRIPT['nav.home'].length]);
+    return { voice, run, line };
+  };
+
+  it('says the word when the clip plays out', async () => {
+    const { voice, run, line } = await setup();
+    void line();
+    voice.afterLine(run);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sources).toHaveLength(1);
+    sources[0].onended!();
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(spoken.at(-1)?.text).toBe('o pato');
+    expect(spoken.at(-1)?.lang).toBe('pt-PT');
+  });
+
+  it('says nothing when a newer line cuts the clip, or its watchdog ends it first', async () => {
+    const { voice, run, line } = await setup();
+    void line();
+    voice.afterLine(run);
+    await vi.advanceTimersByTimeAsync(0);
+    void line(1); // stops the first clip, which fires its `onended`
+    expect(sources[0].stop).toHaveBeenCalled();
+    expect(run).not.toHaveBeenCalled();
+
+    voice.stop();
+    void line();
+    voice.afterLine(run);
+    await vi.advanceTimersByTimeAsync(0);
+    const last = sources.at(-1)!;
+    await vi.advanceTimersByTimeAsync(5_000); // the suspended-context watchdog
+    last.onended!(); // a late end
+    expect(run).not.toHaveBeenCalled();
+  });
+});
