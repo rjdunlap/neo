@@ -1,8 +1,86 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
+  async function paintTheBeat() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('swing-pals', 9);
+    const before = await page.evaluate(() => ({
+      upright: neo.scene.game.view.upright,
+      stickers: kit.store.data.stickers.length,
+      paper: neo.scene.game.trace.seconds,
+      tick: neo.scene.game.tick.visible,
+    }));
+    assert.deepEqual([before.upright, before.paper, before.tick], [true, 0, false]);
+    const push = async () => {
+      const point = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const { x, w } = g.layout.paper;
+        const point = g.ctx.stage.toGlobal({ x: x + w / 2, y: g.layout.seatY + 90 });
+        const canvas = document.querySelector('canvas').getBoundingClientRect();
+        return { x: point.x + canvas.left, y: point.y + canvas.top };
+      });
+      await page.touchscreen.tap(point.x, point.y);
+    };
+    await push();
+    await page.waitForFunction(() => neo.scene.game.trace.seconds > 0.2);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.trace.sections[0]?.seconds >= 6);
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    const tapNode = async (name) => {
+      const point = await page.evaluate((name) => {
+        const g = neo.scene.game;
+        const point = (name === 'tick' ? g.tick : g.hooks.get(name)).getGlobalPosition();
+        const canvas = document.querySelector('canvas').getBoundingClientRect();
+        return { x: point.x + canvas.left, y: point.y + canvas.top };
+      }, name);
+      await page.touchscreen.tap(point.x, point.y);
+    };
+    await tapNode('short');
+    await page.waitForFunction(() => neo.scene.game.swing.hook === 'short' && !neo.scene.game.move);
+    const sampleCount = await page.evaluate(() => neo.scene.game.trace.sections[0].dots.length);
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForFunction(() => !neo.scene.game.view.upright);
+    assert.equal(await page.evaluate(() => neo.scene.game.trace.sections[0].dots.length), sampleCount);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => neo.scene.game.view.upright);
+    await push();
+    await page.waitForFunction(() => neo.scene.game.trace.sections[1]?.seconds >= 3);
+    await tapNode('tick');
+    await page.waitForFunction(() => !!neo.scene.game.reveal);
+    await page.waitForTimeout(680);
+    await screenshot('swing-pals-9-painting-portrait');
+    await finished('swing-pals');
+    await page.waitForFunction(() => !!neo.scene.after?.keep);
+    await page.waitForTimeout(850);
+    assert.equal(await page.evaluate(() => kit.store.creations.picture.current), null);
+    assert.deepEqual(
+      await page
+        .evaluate(() => ({
+          stickers: kit.store.data.stickers.length,
+          found: kit.store.data.journal.found.includes('swing-pals:longer-slower'),
+          record: kit.store.stats('swing-pals').history.at(-1),
+        }))
+        .then(({ stickers, found, record }) => [stickers, found, record.misses, record.hints]),
+      [before.stickers + 1, true, 0, 1],
+      'one sticker, the rope comparison and no misses with one requested hint',
+    );
+    const expected = await page.evaluate(() => neo.scene.game.reveal.picture);
+    await tap('neo.scene.after.keep');
+    await page.waitForFunction(() => !!kit.store.creations.picture.current);
+    assert.deepEqual(await page.evaluate(() => kit.store.creations.picture.current), expected);
+    assert.equal(new Set(expected.marks.map((mark) => mark.color)).size, 2);
+    await page.evaluate(() => neo.go.room());
+    await scene('RoomScene');
+    await page.waitForFunction(() => neo.scene.takePicture?.visible);
+    assert.deepEqual(errors, [], 'page errors');
+    log(
+      'Swing Pals 9: push, requested help, rope change, rotation, picture reveal, comparison, one sticker and optional Keep',
+    );
+  }
+
   /** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright; level 7 upright with a wrong guess (never a miss) and a lit rope (one hint), filing the journal's longer-rope entry; level 8 with one wrong hook. */
   async function swingPalsPlay() {
+    if (process.env.SWING_LEVELS === '9') return paintTheBeat();
     const state = () =>
       page.evaluate(() => {
         const g = neo.scene.game;

@@ -1,6 +1,8 @@
 # Swing Pals level 9: Paint the beat (definition)
 
-*Game `swing-pals` · preschool, pre-K and school · defined 2026-11-22 from [dive slice 5](../deep-dives/swing-pals.md#build-slices-in-order) and the dive's [*Paint the beat* idea](../deep-dives/swing-pals.md#what-makes-sense-here), on the [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#games): a creative level, its painting kept only on request through the saved-creations path every other creation uses. Docs only; nothing here is built. It extends the [levels 1–6 definition](swing-pals.md), whose model, pushes and hooks it reuses unchanged unless a line below says otherwise.*
+**Built:** Level 9, *Paint the beat* ([PR #1999](https://github.com/rjdunlap/neo/pull/1999)).
+
+*Game `swing-pals` · preschool, pre-K and school · defined 2026-11-22 from [dive slice 5](../deep-dives/swing-pals.md#build-slices-in-order) and the dive's [*Paint the beat* idea](../deep-dives/swing-pals.md#what-makes-sense-here), on the [decision of 2026-11-17](../archive/DECISIONS-2026-11-17.md#games): a creative level, its painting kept only on request through the saved-creations path every other creation uses. It extends the [levels 1–6 definition](swing-pals.md), whose model, pushes and hooks it reuses unchanged unless a line below says otherwise.*
 
 **Fun action and purpose.** A little paint pot hangs under her friend's seat and drips as the swing goes. A paper strip rolls slowly under the swing, so every swing back and forth paints one wiggle. She pushes to make it swing (and wiggle) wider, and taps a hook to hang the rope short, middle or long whenever she likes; each rope paints in its own colour. When she says it is done, the strip turns sideways and is framed as a picture: the short rope's wiggles sit close together, the long rope's spread out. Learning goal: **the beat leaves a record she can compare after the swing stops** (NGSS 3-PS2-2's "observations… as evidence" of a pattern of motion). The same length of paper holds two short-rope wiggles for every long-rope wiggle; a bigger push paints a wider wiggle but never a closer or further one. Nothing is wrong, nothing is scored, and she may keep the painting in the treehouse.
 
@@ -8,7 +10,7 @@
 
 ## Level ID and play order
 
-- **ID 9**, name *Paint the beat*, plan `mode: 'paint'`, one swing. It is the next free ID. The dive's unbuilt *A row of three* sketch, which had pencilled 9, takes the next free ID when it is defined (no saved level changes: neither is built).
+- **ID 9**, name *Paint the beat*, plan `mode: 'paint'`, one swing. The dive's *A row of three* sketch takes the next free ID when it is defined.
 - **Bands** (`LEVELS` in `logic.ts`): preschool `{ min: 2, max: 9, order: [2, 3, 9] }`, pre-K `{ min: 3, max: 9, order: [3, 7, 9, 4] }`, school `{ min: 4, max: 9, order: [4, 5, 6, 7, 8, 9] }`. Lap and toddler are unchanged. `entryLevels` stays unset: every band that lists 9 lists it, so a birthday keeps her level.
 - **Placement is intended.** A painting round has no misses and counts hints only from the pause sheet, so a round without help is always smooth and two of them step her on. At preschool it comes after *Short rope, long rope* (she has seen the two ropes, now she keeps a record of them) and is the top. At pre-K it sits between the race (7) and the first matching level (4): the painting makes the beat visible and still before she has to match it. At school it is a calm top after *Twice as quick*, where counting wiggles on the paper is the same 2 : 1 she just matched. Grown-ups can pin it at any of the three bands.
 
