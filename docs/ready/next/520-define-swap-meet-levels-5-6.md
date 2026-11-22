@@ -1,1 +1,0 @@
-**Define Swap Meet levels 5–6** (docs only): the next two trading levels on the approved study ladder. [Study](../../deep-dives/subjects/money-economy.md), [decision](../../archive/DECISIONS-2026-11-17.md#games)

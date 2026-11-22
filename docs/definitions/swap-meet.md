@@ -1,8 +1,8 @@
-# Swap Meet levels 1–4 (ME1)
+# Swap Meet levels 1–4 (ME1) and 5–6 (ME5)
 
 Defined 2026-10-25 from the [money-and-economy study](../deep-dives/subjects/money-economy.md#first-games-proposed-ladder-swap-meet), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and adopted 2026-10-23 decisions. Worker `01a172f8-7a55-72e2-b09d-c76c3796e586`, branch `codex/swap-meet-me1-definition`, [PR #967](https://github.com/rjdunlap/neo/pull/967). ME1 delivered the definition only. ME2 levels1–4 are now built in [PR #981](https://github.com/rjdunlap/neo/pull/981); [verification](../archive/VERIFICATION-2026-10-25.md#2026-10-25--swap-meet-14-me2) separates scripted evidence from open person/device gates. The later-level and money/card proposals below remain gated.
 
-Fun action: offer a pictured object and watch both objects cross between baskets. Learning purpose: match a visible request, recognize a mutually wanted swap, then order two trades to obtain a goal. These are the island friends' explicit toy rules; no claim about real prices, universal preferences, generosity, financial habits or developmental thresholds. Market Stall owns coin arithmetic and Lemonade Stand price/demand. No coins or payment are needed at 1–4; a shell here is one pictured object, never a balance.
+Fun action: offer a pictured object and watch both objects cross between baskets. Learning purpose: match a visible request, recognize a mutually wanted swap, then order two trades to obtain a goal. These are the island friends' explicit toy rules; no claim about real prices, universal preferences, generosity, financial habits or developmental thresholds. Market Stall owns coin arithmetic and Lemonade Stand price/demand. No coins or payment are needed at 1–4; a shell here is one pictured object, never a balance. Level 6 adds a flat-price shell stall with its own two-shell picture ([ME5](#levels-56-definition-me5)), and levels 5–6 use no shell object.
 
 ## ME2 implementation
 
@@ -18,7 +18,7 @@ The proposed top-bar positions failed a real-input probe: the shell’s fading c
 
 ## Scope and whole rounds
 
-Stable ID `swap-meet`, spoken/grown-up title “Swap Meet”, subject `cozy-village` (everyday skills) and land `cozy-village` (Cozy Village), separate catalog concepts sharing the current stable ID. ME2 bands/ranges: toddler 1–2, preschool 2–3, prek 3–4, school 4–4, default each range's minimum. No lap or grownup registration; do not advertise unbuilt levels 5–6. The full study's toddler–school window remains adopted. Do not renumber these levels later.
+Stable ID `swap-meet`, spoken/grown-up title “Swap Meet”, subject `cozy-village` (everyday skills) and land `cozy-village` (Cozy Village), separate catalog concepts sharing the current stable ID. ME2 bands/ranges: toddler 1–2, preschool 2–3, prek 3–4, school 4–4, default each range's minimum. No lap or grownup registration; levels 5–6 are [defined](#levels-56-definition-me5) and are advertised only once built. The full study's toddler–school window remains adopted. Do not renumber these levels later.
 
 | Level / grown-up description | Complete round and accepted action | Completion |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ ME2 rule tests must establish, rather than this definition claiming to have test
 - From **each** reachable nonterminal state BFS finds a finish; each returned hint is an available action whose successor distance is exactly one less. Goal distance zero gives no fabricated trade. Every legal alternate ordering works; Undo never strands a round. Reject a deliberately broken Undo/acceptance/goal fixture so a solver cannot merely agree with its own erroneous rules.
 - Bot follows current-state shortest paths through public input, finishes every level/case/cosmetic permutation, and recomputes after Undo. Tests of input accounting cover invalid deliberate offers, free inspection/cancel, automatic/manual support overlap, completion idempotence and cleanup.
 
-These cases have no level5 side-trade branch; adding one or a shell market expands scope and needs ME5 after 1–4 are played. Recovery here is shown by Undo and alternate pair/request orders, not invented extra chain levels.
+These cases have no level5 side-trade branch; the side trade and the shell stall belong to [ME5](#levels-56-definition-me5). Recovery here is shown by Undo and alternate pair/request orders, not invented extra chain levels.
 
 ## Exploration, offers and support accounting
 
@@ -116,3 +116,119 @@ ME1 closes only this definition. ME2 is one four-level new-game batch with exact
 ME2 proof: typecheck and meaningful unit tests above; one filtered play covering first and top, one rejected offer, help and Undo plus level2/3 entry/action layouts and all four demos (both top cases); one portrait screenshot. Build because shared registry/voice/land assets change. Add a filtered browser case and README suite entry. Reuse existing world/offline evidence for untouched shell behavior; any changed navigation/assets/persistence contract adds its relevant tier and production offline check. No blanket release suite. Record tested commit/filter/server URL and stop session servers. README/GAMES inventory, how-to and normal verification close out only when built, not during ME1.
 
 Person/device gates after ME2: actual iPad drag cancellation, two-way animation/want legibility, 100-unit targets in both orientations, speech/guide replay, whether a toddler understands the returned object and Undo, whether a pre-K child follows the two-step chain, and whether children enjoy/replay it. No Chrome test establishes these or transfer to everyday trading. Levels5–6 wait until1–4 have been played; persistent tickets remain parked per October23, real currencies require a family choice, other money games and practical family cards retain their own definitions/reviews. Nothing in ME1 opens them.
+
+## Levels 5–6 definition (ME5)
+
+Defined 2026-11-22 on the study's lean. The study's "after 1–4 have been played" gate was lifted by the [2026-11-17 decision](../archive/DECISIONS-2026-11-17.md#games) on levels waiting on play. Build both levels in one school batch in the existing game: school becomes 4–6, pre-K stays 3–4, the other bands are unchanged, and no level is renumbered. `NAMES` gains two entries and `describeLevel` clamps at index 5:
+
+- 5 *Chain of three* — plan three trades past a tempting side trade.
+- 6 *Shells make it easier* — trade with friends, then try the shell stall.
+
+The rules from ME1 hold unless this section changes them: fixed pictured wants, a satisfied friend is inactive, basket-to-friend offers only, exact Undo, explicit-offer accounting, capped help, one sticker per round and no save field. Neither level scores, praises or rewards fewer trades. Level 6 reports two route lengths as a fact about the routes, never about her.
+
+### 5 · Chain of three
+
+One basket object, three chain friends and one side friend, four panels in all, plus the companion's goal picture. The side friend wants the same object as one chain friend, so its trade is legal and tempting from a state on the shortest path. The object it hands back is wanted by nobody still active, so the only way out is Undo. Author two cases with the side trade at different chain positions. Seeded replay permutes panel positions only, as at level 4.
+
+| Case | Basket | Chain (holds / wants) | Side friend | Goal |
+| --- | --- | --- | --- | --- |
+| 5a | acorn | Otter ribbon/acorn → Bunny berry/ribbon → Frog kite/berry | Duck ball/ribbon (tempts at the second trade) | kite |
+| 5b | leaf | Duck carrot/leaf → Frog ball/carrot → Otter star/ball | Bunny flower/leaf (tempts at the first trade) | star |
+
+- **Goal test:** for a case with a goal, the round ends when the basket holds the goal. A side friend left unsatisfied does not block it. Today's `goal()` also requires every friend done, so change that test for goal cases; level 4 is unaffected because its goal implies both friends done.
+- **The side trade:** it is legal and free, never a miss. When it leaves a dead end (no active friend wants the carried object), the pet says once, free, "Hmm. Nobody here wants the ball." Nothing is undone for her.
+- **Offers at a dead end:** a deliberate offer to a friend still counts as one rejected offer, as at levels 2–4. Its line is "Nobody here wants the {thing}. The back arrow trades back." Two rejections glow the back arrow, which is then the solver's next action.
+- **Undo:** the stack holds up to three entries. No reachable state has more than three forward trades: the chain takes three and each dead end comes after one or two. So the cap never drops an entry, and every state can recover to the start.
+- **Hint:** it always performs or glows the solver's next action. Its spoken line depends on that action:
+  - the back arrow: the existing back-arrow line;
+  - a trade with the friend who holds the goal: the existing give line;
+  - any other trade: the study's backward clue, "Frog has the kite. Frog wants the berry." The glow still marks the next trade.
+- **Instruction:** "Our friend wants a {goal}. It takes three trades. Look before you trade." The level-scoped how-to card pictures the side friend's matching bubble and the back arrow.
+
+### 6 · Shells make it easier
+
+Two stages in one round. Both stages start from the same three-friend chain with the same goal, so the two counts compare like with like. A **shell stall** fills the fourth panel. It is called the shell stall, never Harbor, so it does not read as the parked Harbor tickets.
+
+1. **Stage 1, the stall is shut.** A plain three-trade chain with no side friend. The shut stall is pictured and has no hit target; a drop on it is a free return.
+2. **Stage 2, the stall opens.** The friends and the basket reset to the stage 1 start. The pet says: "The shell stall is open. It buys anything for two shells, and sells anything for two shells." Barter stays legal.
+
+| Case | Basket | Chain (holds / wants) | Stall shelf at stage 2 | Goal |
+| --- | --- | --- | --- | --- |
+| 6a | acorn | Otter ribbon/acorn → Bunny flower/ribbon → Frog kite/flower | kite, ball | kite |
+| 6b | leaf | Duck carrot/leaf → Frog berry/carrot → Otter star/berry | star, ball | star |
+
+**Stall rules (`logic.ts`):**
+
+- **Selling:** drop any carried object anywhere on the open stall. The object goes onto the shelf and the basket slot now holds the **purse**: one picture of two shells on a string, distinct from the old single-shell object.
+- **Buying:** drop the purse on a shelf good. That good moves to the basket and the purse leaves.
+- **Flat price:** the price is always two, so the basket holds either one object or the purse. There is no count to add, no change and no balance; coin arithmetic stays Market Stall's. Shells exist only inside the round and are never saved.
+- **What can be bought:** the shelf may repeat a kind a friend holds (the stall's kite and Frog's kite). Conservation is therefore a multiset check over basket, friends and shelf. The goal test is by kind, and ME1's unique-holds test applies to friends and basket only.
+- **Buying the wrong thing:** buying the ball is a legal off-path trade, never a miss. She recovers by selling it back or with Undo.
+- **Free drops:** the purse dropped on the stall away from a good returns freely with "Put the shells on the thing you want."
+- **Misses:** the purse dropped on a friend is one rejected offer ("{friend} wants the {want}"). The stall itself never rejects an object.
+
+**Undo and finite search.** Undo works within a stage and never crosses the stage boundary: stage 2 starts with an empty stack. The stack holds three entries and drops the oldest past three, because sell-and-buy can cycle. The search identity still includes that bounded history.
+
+The state space is finite: finitely many kinds and positions, done flags, a basket of one object or the purse, and a history of at most three frames. From every stage 2 state the goal is at most two forward trades away (sell, then buy), or one when she holds the purse. Recovery therefore does not depend on Undo.
+
+**Rule tests must prove:**
+
+- Stage 1's minimum is exactly three trades and has no shorter route.
+- Stage 2's minimum is exactly two, and the barter chain still finishes in three.
+- Every stage 2 state reaches the goal.
+- Rejected offers leave the state unchanged.
+- The hint lies on a shortest path, so at stage 2 it points to the stall.
+
+**Counting and the comparison.** Each stage keeps a net trade count: plus one per accepted trade, minus one per Undo. That is the length of the route she finally took; exploration that she undid is not counted.
+
+When stage 2 reaches the goal, the pet asks "Which way took fewer trades?" over two large route cards. One shows the three friends with stage 1's marks; the other shows the stall, or the friends if she bartered again, with stage 2's marks. Any tap gets the spoken counts and one fact:
+
+- **Fewer:** "With friends, three trades. With shells, two trades. Shells made it quicker."
+- **Same:** "Both ways took three trades. The shell stall can do it in two: sell, then buy."
+- **More:** "This time took {second} trades. The shell stall can do it in two: sell, then buy."
+
+This question is unscored, like Not Always 6's reply scene. Taps, glows and Help record nothing, and it awards nothing on its own. After the reply the round finishes through the existing path.
+
+**Help at stage 2.** The hint follows the solver, so it names the stall: "Sell the acorn at the shell stall," then "Buy the kite with the two shells." Stage 1 hints use the level 5 lines.
+
+### Shared interaction, layout and speech
+
+**Layout:**
+
+- Level 5 shows four friend panels, one basket slot and the goal card. Level 6 shows three friend panels and the stall panel, which holds two shelf goods, each a full target.
+- `layout()` today handles one, two or four friends. Give it a stall slot in the fourth position, and keep the basket and goal positions from level 4.
+- Every active source, receiver, shelf good, the purse, the route cards, Undo and Help stay at least 100 logical units after scaling, upright first.
+- Extend `upright.test.ts` to sweep both levels in the views it already checks, plus a short upright phone view. Include bubbles above the top row clearing Undo and Help, and the stall's two goods not overlapping.
+
+**Speech:** new `swap-meet.*` lines in `voice.ts`:
+
+- the level 5 and level 6 instructions;
+- the dead-end remark and the dead-end rejection;
+- the backward clue;
+- stall open, sell, buy and the purse return;
+- the two stall hints;
+- the question and its three answers.
+
+Lines with slots stay on device speech. Render clips for the slot-free ones ("Which way took fewer trades?", the stall-open line and the purse return), or mark them as falling back.
+
+**How-to card and ghost finger:** the card gets levels 5 and 6. `autotouch()` follows current-state solver edges through the real input, including drops on the stall and shelf. At level 6 it barters in stage 1, uses the stall in stage 2, and taps the route card with fewer marks.
+
+**Off-screen and co-play:** the grown-up runs a pretend stall with two buttons for "shells" and a few toys. Count the trades each way, then switch roles. No real coins.
+
+### Build and checks for levels 5–6
+
+- **Rules:** both cases of each level, and every seeded permutation. Check:
+  - minimum forward trades: three for level 5, and three then two for level 6's stages;
+  - the side trade is reachable from a shortest-path state and leads only to Undo;
+  - every reachable state reaches the goal, and the level 5 Undo cap never drops an entry;
+  - multiset conservation, and the purse is never two at once;
+  - the hint is on a shortest path, and the backward clue names the goal holder;
+  - net counts after Undo;
+  - the question is unscored;
+  - levels 1–4 and the ranges are unchanged apart from school's new top.
+- **New-interaction tier:**
+  - typecheck and unit tests;
+  - extend `BROWSER_SUITE=swapmeet` with a levels 5–6 filter, for one scripted play: the level 5 side trade, its dead-end rejection, the back-arrow glow and Undo; then level 6 with a purse dropped on a friend, a hint, the stall route and the question;
+  - one upright screenshot at level 6, stage 2;
+  - `fingerdemo` with `FINGER_LEVELS=5,6`;
+  - `npm run build`, because voice clips change.
