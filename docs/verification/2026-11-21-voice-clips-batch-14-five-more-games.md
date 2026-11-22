@@ -1,0 +1,5 @@
+# 2026-11-21 — Voice clips batch 14: five more games (PR #1955)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `seesaw`, `loom`, `relay-woods`, `swap-meet` and `ww` (Seesaw Balance, Little Loom, Relay Woods, Swap Meet, Welcome Ways). Rendered 112 new slot-free clips (1793 in all, 1681 before); `src/audio/clips` grew by 2,060,922 bytes (+2.06 MB); the service-worker precache went to 2005 entries and 46,255.35 KiB.
+**Ran:** the clip unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check (did not pass on this run: it installed the service worker, reloaded offline, kept progress and found the picnic blanket offline, then a 30-second page screenshot timed out in the second treehouse-and-journal pass while the Mac's load average was about 29 from other sessions; a separate fetch of all 2005 precache entries from the preview server returned 200 for each).
+**Not run:** the root offline suite (no navigation or persistence change); a listen to the new clips (nothing is stitched; device speech stays the fallback).
