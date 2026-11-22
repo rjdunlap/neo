@@ -60,6 +60,10 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
 
+- **`look-it-up` levels 4–5, *Contents page* and *Picture or words?*, batch `look-it-up 2`** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `lookitup` play on an upright phone at levels 4 and 5, one upright phone screenshot, `fingerdemo` at 4 and 5, build and offline because voice lines and clips are added). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
+
+- **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
+
 - **`village-vote` level 4, *A tie*, batch `village-vote 2`** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 4 with one hint, one upright screenshot, `fingerdemo` at level 4, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
 
 - **`village-vote` level 5, *Everyone can use it*, batch `village-vote 3`** (school; after batch `village-vote 2`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 5 with one hint, one upright screenshot, `fingerdemo` at level 5, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)

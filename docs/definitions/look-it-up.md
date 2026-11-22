@@ -199,7 +199,7 @@ Browser automation establishes none of these.
 
 ## What comes next
 
-**IR2, levels 4–6** (a contents page with printed names, a caption that decides between two pictured animals, and a question that needs two pages) is defined after a child has played level 3. The *Baby* row, read but never asked in IR1, is IR2's first new question. The study's [build slices](../deep-dives/subjects/informational-reading.md#build-slices-in-order) hold the order.
+**IR2, levels 4–6** (a contents page with printed names, a baby whose picture shows it but only the caption names it, and a question that needs two pages) is [defined 2026-11-22](look-it-up-4-6.md), with two build batches queued. The *Baby* row, read but never asked in IR1, is asked at level 5. The study's [build slices](../deep-dives/subjects/informational-reading.md#build-slices-in-order) hold the order.
 
 ## Decisions taken
 
