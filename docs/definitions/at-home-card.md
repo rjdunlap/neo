@@ -293,7 +293,7 @@ Built 2026-11-17 (PR #1747). Differences from this page:
 - The deferred practical-care classes are a concrete word list, `DEFERRED_CLASSES` in `src/content/offscreen-rules.ts` (food, snack, fruit, eat, drink, juice, milk, bath, bathtub, water, ice, sun, sunny, soap, bubble, scissors, knife, knives, sand, rice, flour, mirror, torch, flashlight, cord, rope), beside the shared `UNDER_3`, `wordPattern` and `EVERY_BAND` moved out of `offscreen.test.ts`.
 - Batch 2 changed that lap kit line to "a large soft ball, pots and pans, a teddy or other soft toy, a blanket" (see below).
 
-## The puzzle page card (PP8, defined 2026-11-22)
+## The puzzle page card (PP8, defined 2026-11-21)
 
 From the [puzzle pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order), slice 9, written now that Mossy Path's mazes and Domino Pond are built. One more block inside **At home**, after the talk cards and before the closing line: a bold heading, **A puzzle page at the table**, one short line saying these need only paper and a pencil, a picture book or a few dominoes, then one line per idea, each followed by the game it echoes where one is built. Plain HTML (`data-puzzle-page`, each idea `data-puzzle-idea`), its own markup so the three `data-at-home-idea` blocks stay three; nothing to press, nothing tracked.
 
@@ -308,3 +308,10 @@ From the [puzzle pages study](../deep-dives/subjects/puzzle-pages.md#build-slice
 - **Contract.** `puzzlePageCard(band)` in `src/content/puzzle-page.ts` returns `{ title, intro, ideas: { id, line, game? }[] } | null`; pure, same band gives the same card.
 - **Rule tests** (`src/content/puzzle-page.test.ts`): the band rule above; every line passes `EVERY_BAND`, `DEFERRED_CLASSES`, and `UNDER_3` from its own band when that band is under three; no learning claim (brain, attention, behaviour, ADHD, school readiness, smarter); no map words (island, map, home spot, picnic), since the page serves both apps; every echoed game is registered and lists a band the idea reaches.
 - **Check tier** (as the This week kinds line): `npm run typecheck`, `npm test`, `npm run build`, and one upright screenshot at 390 wide. No browser suite: the At home suite counts `data-at-home-idea`, which this leaves alone.
+
+### As built (PP8)
+
+Built 2026-11-21 (PR #1958). Differences from the section above:
+
+- The intro line reads "Paper and a pencil, a picture book or a few dominoes are all these need." (the section above shows it).
+- The `athome` browser case in `scripts/browser/suites/grown-ups.mjs` was extended after all (no card at lap, the four ideas at school), and ran with one upright 390 wide screenshot, rather than leaving the browser suites alone.

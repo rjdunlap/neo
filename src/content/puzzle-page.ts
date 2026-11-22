@@ -1,7 +1,7 @@
 import { bandRank, type Band } from '../progress/bands';
 
 /**
- * The puzzle page card in At home on the grown-ups' page (PP8, docs/definitions/at-home-card.md#the-puzzle-page-card-pp8-defined-2026-11-22):
+ * The puzzle page card in At home on the grown-ups' page (PP8, docs/definitions/at-home-card.md#the-puzzle-page-card-pp8-defined-2026-11-21):
  * puzzles for a table or a car that need a pencil, paper or a picture book and nothing else. Pure: the same band gives
  * the same card, and nothing is tracked.
  */
