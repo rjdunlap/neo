@@ -1,4 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
+import { wordKey } from '../../content/words/pt-PT';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -119,7 +120,11 @@ class BubblePop implements Game {
     const p = this.plan;
     if (p.mode === 'free') void this.ctx.instruct(p.anywhere ? 'bubble.anywhere' : 'bubble.free');
     if (p.anywhere) this.opening = this.spawn(undefined, 0, openingBubble(p, this.view.w, this.view.h));
-    if (p.mode === 'color') void this.ctx.instruct('bubble.color', { color: this.target! });
+    if (p.mode === 'color') {
+      void this.ctx.instruct('bubble.color', { color: this.target! });
+      // WL2: the target colour's word after the first instruction only; the pet's replay stays English.
+      this.ctx.sayWord(wordKey('color', this.target!));
+    }
     if (p.mode === 'count') {
       const step = this.run.length > 1 ? this.run[1] - this.run[0] : 1;
       const first = this.run[0];
@@ -558,6 +563,8 @@ class BubblePop implements Game {
       if (!this.named.has(friend)) {
         this.named.add(friend);
         void this.ctx.say('bubble.friend', { animal: friend });
+        // WL2: free play's first naming of a friend; counting and bonds add no word.
+        if (this.plan.mode === 'free') this.ctx.sayWord(wordKey('animal', friend));
       }
       await this.ctx.tw.wait(1.4);
       await this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.4 });

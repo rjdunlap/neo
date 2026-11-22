@@ -273,6 +273,7 @@ export class Demo {
       instruct: talk,
       say: talk,
       sayIn: talk,
+      sayWord: () => undefined,
       finish: () => {
         this.done = true;
       },

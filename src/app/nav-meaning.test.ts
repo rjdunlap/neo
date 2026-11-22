@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Container } from 'pixi.js';
-vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}), unlock: vi.fn() } }));
+vi.mock('../audio/voice', () => ({
+  voice: { stop: vi.fn(), say: vi.fn(async () => {}), unlock: vi.fn(), dropTail: vi.fn() },
+}));
 vi.mock('../audio/music', async (real) => ({
   ...(await real<object>()),
   music: { play: vi.fn(), stop: vi.fn() },

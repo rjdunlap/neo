@@ -2,6 +2,7 @@ import { SCRIPT, type LineId } from '../content/voice-script';
 import { audio } from './engine';
 import { clipUrl } from './voice-clips';
 import { chooseVoice, voiceLabel, voiceQuality, type VoiceQuality } from './voice-choice';
+import { exactLocalVoice } from './word-voice';
 
 export type LineVars = Record<string, string | number>;
 
@@ -47,6 +48,11 @@ class Voice {
   private failed = new Set<string>();
   /** Every line still pending: `stop()` and a new line end them all at once, so nothing waits out a cut line (U7 R4). */
   private pending = new Set<() => void>();
+  /**
+   * At most one second-language word waiting on the line now speaking (WL2): it runs only if that line ends on its own,
+   * never after a cut, an error or the no-`end` timeout, and any newer line or `stop()` drops it.
+   */
+  private tail: { turn: number; run: () => void } | null = null;
 
   constructor() {
     if (!hasSpeech) return;
@@ -87,6 +93,7 @@ class Voice {
     if (envMuted || !this.enabled) return this.silent(text);
     this.cutClip();
     this.turn++;
+    this.tail = null;
     return this.device(text, preset);
   }
 
@@ -95,6 +102,7 @@ class Voice {
     if (envMuted || !this.enabled) return this.silent(text);
     this.cutClip();
     const turn = ++this.turn;
+    this.tail = null;
     const url = clipUrl(text);
     const ctx = audio.ctx;
     if (url && !this.failed.has(url) && ctx && ctx.state === 'running') {
@@ -160,8 +168,11 @@ class Voice {
         src.buffer = buffer;
         src.connect(audio.voiceOut);
         src.onended = () => {
+          // A cut clears `source` before stopping it, so only a clip that played out still owns it here.
+          const natural = this.source === src && !done;
           if (this.source === src) this.source = null;
           finish();
+          if (natural) this.ended(turn);
         };
         this.source = src;
         src.start();
@@ -200,14 +211,25 @@ class Voice {
     }
   }
 
-  /** The device's built-in speech, in the pet's voice unless a preset says otherwise. */
-  private device(text: string, preset: VoicePreset = PET_VOICE): Promise<void> {
+  /**
+   * The device's built-in speech, in the pet's voice unless a preset says otherwise; `exact` is a second-language word's
+   * voice and language, set both ways so the system default never picks one.
+   */
+  private device(
+    text: string,
+    preset: VoicePreset = PET_VOICE,
+    exact?: { voice: SpeechSynthesisVoice; lang: string },
+  ): Promise<void> {
     if (!hasSpeech) return Promise.resolve();
+    const turn = this.turn;
     speechSynthesis.cancel();
     if (!this.chosen) this.pickVoice();
     return new Promise((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
-      if (this.chosen) u.voice = this.chosen;
+      if (exact) {
+        u.voice = exact.voice;
+        u.lang = exact.lang;
+      } else if (this.chosen) u.voice = this.chosen;
       u.rate = preset.rate;
       u.pitch = preset.pitch;
       u.volume = Math.min(1, audio.getVolume() * 1.1 * (preset.volume ?? 1));
@@ -222,7 +244,11 @@ class Voice {
         if (this.talking <= 0) audio.duck(false);
         resolve();
       };
-      u.onend = finish;
+      u.onend = () => {
+        const natural = !done;
+        finish();
+        if (natural) this.ended(turn);
+      };
       u.onerror = finish;
       // Some engines never fire `end`; don't let a game wait forever.
       timer = window.setTimeout(finish, 1500 + text.length * 90);
@@ -236,9 +262,58 @@ class Voice {
   /** Cuts whatever is speaking and ends every pending line's promise, a silenced line's included. */
   stop() {
     this.turn++;
+    this.tail = null;
     this.cutClip();
     if (hasSpeech) speechSynthesis.cancel();
     this.endAll();
+  }
+
+  /**
+   * Runs `run` once if the line that started last ends on its own: not cut by a newer line or `stop()`, not failed and not
+   * timed out. Replaces any word already waiting (one at most, no backlog). Returns false, and keeps nothing, when no
+   * line is speaking aloud (speech off, muted, or no speech on this device).
+   */
+  afterLine(run: () => void): boolean {
+    if (envMuted || !this.enabled || !hasSpeech || this.pending.size === 0) {
+      this.tail = null;
+      return false;
+    }
+    this.tail = { turn: this.turn, run };
+    return true;
+  }
+
+  /** Drops a word still waiting on its line: the round finished or the scene closed. */
+  dropTail() {
+    this.tail = null;
+  }
+
+  private ended(turn: number) {
+    const tail = this.tail;
+    if (!tail || tail.turn !== turn || turn !== this.turn) return;
+    this.tail = null;
+    tail.run();
+  }
+
+  /**
+   * Says a second-language word (WL2) in an exact local voice for `lang`, rechecked now; null, saying nothing, when speech
+   * is off or the device has no such voice. Never a rendered clip: the clips are English. A newer line cuts it like any line.
+   */
+  speakWord(text: string, lang: string): Promise<void> | null {
+    if (envMuted || !this.enabled || !hasSpeech) return null;
+    const exact = exactLocalVoice(speechSynthesis.getVoices(), lang);
+    if (!exact) return null;
+    this.endAll();
+    this.cutClip();
+    this.turn++;
+    this.tail = null;
+    return this.device(text, PET_VOICE, { voice: exact, lang });
+  }
+
+  /** The exact local voice a second-language word would use, for the grown-ups' page; null when there is none. */
+  wordVoice(lang: string): string | null {
+    if (!hasSpeech) return null;
+    const exact = exactLocalVoice(speechSynthesis.getVoices(), lang);
+    return exact ? voiceLabel(exact) : null;
   }
 
   /** The voice in use, for the grown-ups' page; null when the device's default speaks or there is no speech. */

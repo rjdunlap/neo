@@ -50,6 +50,7 @@ import {
   type CoverKind,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { wordKey } from '../../content/words/pt-PT';
 
 const GRASS = 0x9edb86;
 const SAND = 0xf3dba0;
@@ -772,6 +773,8 @@ class PeekabooBarn implements Game {
           : clue.kind === 'part'
             ? this.ctx.say('peek.hasit', { animal: spot.animal, part: PARTS[clue.part].words })
             : this.ctx.say('peek.feelsit', { animal: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
+      // WL2: only the plain find names the animal on its own; pairs, clues and "went" lines add no word.
+      if (!pair && !clue && this.plan.mode !== 'went') this.ctx.sayWord(wordKey('animal', spot.animal));
       const last = this.done >= this.plan.goal;
       if (last) await yes;
       await this.ctx.tw.wait(0.6);
@@ -896,6 +899,8 @@ class PeekabooBarn implements Game {
     const words = { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] };
     if (feeling) void this.ctx.say('peek.feel', { ...words, feeling: FEELING_WORDS[feeling] });
     else void this.ctx.say('peek.found', words);
+    // WL2: the animal's word after the reveal's line; a feeling is never translated.
+    this.ctx.sayWord(wordKey('animal', animal));
     if (counts) this.done++;
     if (counts && this.done % 4 === 0) this.ctx.pet.cheer();
     if (counts && this.done >= this.plan.goal) {

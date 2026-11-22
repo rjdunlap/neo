@@ -1339,6 +1339,8 @@ export class CouchScene extends Scene {
       },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)),
       sayIn: (line, preset, vars) => this.whileHere(voice.sayIn(speak(line), preset, vars)),
+      // Couch play is grown-up play: no second-language word (WL2 is a touch-play setting).
+      sayWord: () => undefined,
       finish: (result) => this.finish(result),
     });
     // The overlay owns couch controls; avoid competing touch steering and global drag releases.
