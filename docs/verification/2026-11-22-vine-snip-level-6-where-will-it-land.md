@@ -1,0 +1,5 @@
+# 2026-11-22 — Vine Snip level 6, Where will it land? (PR #1990)
+
+**Changed:** Vine Snip level 6, Where will it land? (school only): `where.ts` scene, rules and round state machine in `logic.ts`, eight voice lines with clips, how-to step; the `vinesnip` suite gained a `VINE_LEVELS` filter.
+**Ran:** typecheck, `npm test` (17,467; the voice-clip coverage test failed until the clips were rendered, then passed), lint, format check, `npm run build`. `BROWSER_SUITE=vinesnip VINE_LEVELS=6` on an 844×390 phone with words shown: authored round, Snip before a guess counted nothing, one hint replayed the approach and counted once, opposite guesses on both passes, Replay, Finish saved one round at level 6 (0 misses, 1 hint); rerun after the review fixes. `FINGER_ONLY=vine-snip FINGER_LEVELS=6 FINGER_BAND=school BROWSER_SUITE=fingerdemo` finished in 10.2 s. A game-reviewer pass found two issues, both fixed.
+**Not run:** the offline check; levels 1–5 of the `vinesnip` suite (unchanged apart from shared art moving to `art.ts`).
