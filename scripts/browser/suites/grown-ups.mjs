@@ -382,6 +382,7 @@ export function createSuite({
       'Things from around the house: a large soft ball, pots and pans, a teddy or other soft toy, a blanket.',
     );
     assert.equal(lap.pressable, 0, 'nothing to press in the section');
+    assert.equal(await page.locator('[data-puzzle-page]').count(), 0, 'no puzzle page card at lap');
     assert.ok(!lap.page.includes('Off-screen idea'), 'the old lines are gone');
     assert.ok(lap.text.includes('Nothing here is tracked, counted or due.'));
     assert.ok(
@@ -397,6 +398,11 @@ export function createSuite({
     assert.deepEqual(school.ids, ['bounce-back', 'jelly-drums', 'pixel-pictures'], 'the school starters');
     assert.ok(school.text.includes('What makes you think so?'), "school takes the band's own Say");
     assert.ok(school.sideways <= 0 && school.panelSideways <= 0, 'no sideways scroll at school either');
+    assert.deepEqual(
+      await page.locator('[data-puzzle-idea]').evaluateAll((els) => els.map((e) => e.dataset.puzzleIdea)),
+      ['i-spy', 'domino-dots', 'maze', 'word-ladder'],
+      'the puzzle page card at school (PP8)',
+    );
     await page.locator('[data-at-home]').scrollIntoViewIfNeeded();
     await screenshot('parent-at-home-school');
 

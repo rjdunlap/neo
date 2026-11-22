@@ -231,7 +231,7 @@ Each is one session; definitions are docs only.
 8. **PP5: define Sum Crates 1–3** (Kakuro; school and grown-up): [defined](../../definitions/sum-crates.md) 2026-11-20 (PR #1916); Fruit Sums checked for overlap; levels 1–3 built (PR #1920).
 8b. **PP6: Campsite level 1** is [defined](../../definitions/campsite.md) (school, 4×4) and level 1 is **built** (PR #1954).
 8c. **PP7: Silly Scene 1–3** is [defined](../../definitions/silly-scene.md) 2026-11-21 (preschool to school; Not Always and Who Am I checked for overlap: a new small game in Puzzle Peaks); the build is in READY.
-9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
+9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built. [Defined](../../definitions/at-home-card.md#the-puzzle-page-card-pp8-defined-2026-11-21) 2026-11-21; Built 2026-11-21 ([PR #1958](https://github.com/rjdunlap/neo/pull/1958)).
 
 ## What was built and what ran
 
