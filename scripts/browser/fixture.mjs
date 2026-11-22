@@ -11,6 +11,7 @@ export async function createFixture(browser, suite) {
     viewport: { width: 1024, height: 768 },
     reducedMotion: 'reduce',
     ...(suite === 'dominopond' ||
+    suite === 'campsite' ||
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
     (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
