@@ -118,7 +118,7 @@ Decision 1 has a usable default, so slice 2 stays buildable on it. Decisions 2 a
 2. **Level 7, *Who comes back first?*** (built 2026-11-06, [PR #1339](https://github.com/rjdunlap/neo/pull/1339)) On decision 1's default. Tier: new interaction: typecheck, unit tests (rule tests above, registry, how-to, voice), one scripted play of level 7 with one wrong prediction and one requested hint, and pre-K's `order` step from 3 to 7 to 4; one portrait screenshot; `fingerdemo` at 7; build.
 3. **Level 8, *Twice as quick*.** (built 2026-11-06, PR #1339) After slice 2 (school's `order` then ends 7, 8). Tier: new level on the existing hook interaction: typecheck, rule tests, one browser play of level 8 with one wrong hook, `fingerdemo` at 8.
 4. **Level 9, *A row of three*.** First the `swingLayout` probe in `logic.test.ts`; then a definition.
-5. **Paint the beat.** Decision 2, then a definition.
+5. **Paint the beat.** Decision 2, then a definition. (definition claimed 2026-11-22, branch `claude/define-swing-pals-paint-the-beat`)
 6. **Journal discovery.** Decision 3 (decided yes). (built 2026-11-21, [PR #1946](https://github.com/rjdunlap/neo/pull/1946)) A finished round that swung a short rope beside a long one (level 3 *Short rope, long rope* or level 7 *Who comes back first?*) files `swing-pals:longer-slower` once, "Long ropes swing slower". The matching levels (4–6, 8) also show two ropes but she tunes one to the other, so they file nothing, and levels 1 and 2 never do.
 
 ## What was built in this session
