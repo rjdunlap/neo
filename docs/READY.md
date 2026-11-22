@@ -59,7 +59,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
-- **`swap-meet` levels 5–6, *Chain of three* and *Shells make it easier*** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `swapmeet` play at levels 5 and 6 with a new levels filter, one upright screenshot at level 6 stage 2, `fingerdemo` at 5 and 6, build because voice clips change). [Definition](definitions/swap-meet.md#build-and-checks-for-levels-56), [study](deep-dives/subjects/money-economy.md#build-slices-in-order)
 
 - **`village-vote` level 4, *A tie*, batch `village-vote 2`** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 4 with one hint, one upright screenshot, `fingerdemo` at level 4, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
 

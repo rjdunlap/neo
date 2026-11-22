@@ -3,7 +3,17 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, type CritterSpec } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { hatArt } from '../../art/props';
-import { COLORS, type Attr, type Card, type Claim, type Color } from './logic';
+import {
+  COLORS,
+  SCENE_FACTS,
+  type Card,
+  type Claim,
+  type Color,
+  type Prop,
+  type Reply,
+  type Response,
+  type Why,
+} from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -57,9 +67,14 @@ export function crateArt(w = 150, h = 46): Graphics {
 }
 
 /** An attribute's picture, about 70 units across, centred on (0, 0). Colours are told apart by name and lightness. */
-export function attrIcon(a: Attr): Container {
+export function attrIcon(a: Prop): Container {
   const c = new Container();
-  if (COLORS.includes(a as Color)) {
+  if (a === 'round' || a === 'square') {
+    const g = new Graphics();
+    if (a === 'round') g.circle(0, 0, 30);
+    else g.rect(-28, -28, 56, 56);
+    c.addChild(g.stroke(line(ink, 7)));
+  } else if (COLORS.includes(a as Color)) {
     const sw = swatch[a as Color];
     c.addChild(new Graphics().circle(0, 0, 30).fill(sw.fill).stroke(line(ink, 5)));
   } else if (a === 'hat') {
@@ -140,14 +155,269 @@ export function claimSign(claim: Claim, w: number, h: number, mark: SignMark = c
       .stroke(line(wood.line, 6)),
   );
   const q = quantIcon(mark);
+  const a = attrIcon(claim.attr);
+  if (claim.if) {
+    // Filtered: the group (its picture in a dashed loop), then the quantifier, then the part, left to right.
+    const k = Math.min(1, h / 110);
+    const f = attrIcon(claim.if);
+    f.scale.set(0.8 * k);
+    f.x = -w / 2 + 52 * k + 6;
+    const loop = new Graphics();
+    for (let t = 0; t < 16; t += 2)
+      loop.arc(0, 0, 44, (t * Math.PI) / 8, ((t + 1) * Math.PI) / 8).stroke(line(ink, 4));
+    loop.scale.set(k);
+    loop.x = f.x;
+    q.scale.set(0.9 * k);
+    q.x = f.x + 100 * k;
+    a.scale.set(0.9 * k);
+    a.x = w / 2 - 52 * k - 6;
+    c.addChild(loop, f, q, a);
+    return c;
+  }
   q.x = -w / 4;
   q.scale.set(Math.min(1.2, h / 100));
-  const a = attrIcon(claim.attr);
   a.x = w / 4;
   a.scale.set(Math.min(1.1, h / 100));
   c.addChild(q, a);
   return c;
 }
+
+/** Level 4's frame behind a card's creature: a big circle or a big square, centred on (0, 0). */
+export function frameArt(shape: 'round' | 'square'): Graphics {
+  const g = new Graphics();
+  if (shape === 'round') g.circle(0, 0, 62);
+  else g.roundRect(-58, -58, 116, 116, 6);
+  return g.fill(swatch.white.light).stroke(line(ink, 7));
+}
+
+// Level 5 ------------------------------------------------------------------------------------------------------------
+
+/** A small picture of the thing a level 5 claim is about (`k` 0 or 1), centred on (0, 0), about 80 across. */
+export function thingIcon(why: Why, k: 0 | 1): Container {
+  const c = new Container();
+  if (why.scene === 'balance') c.addChild(k === 0 ? bucketArt(1) : cupArt(1));
+  else if (why.scene === 'ribbon')
+    c.addChild(
+      new Graphics()
+        .roundRect(-38, -10, 76, 20, 6)
+        .fill(swatch[k === 0 ? 'red' : 'blue'].fill)
+        .stroke(line(ink, 4)),
+    );
+  else c.addChild(trayArt(k + 1, 0.6, true));
+  return c;
+}
+
+/** "More": two stacked chevrons pointing up, centred on (0, 0). */
+function moreMark(): Graphics {
+  const g = new Graphics();
+  for (const y of [-6, 12])
+    g.moveTo(-16, y + 8)
+      .lineTo(0, y - 8)
+      .lineTo(16, y + 8);
+  return g.stroke(line(swatch.green.line, 7));
+}
+
+/** A speaker's sign at level 5: its claim as the thing and a "more" mark, `w` by `h`, centred on (0, 0). */
+export function whySign(why: Why, k: 0 | 1, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 16)
+      .fill(0xffffff)
+      .stroke(line(wood.line, 6)),
+  );
+  const t = thingIcon(why, k);
+  t.x = -w * 0.12;
+  const m = moreMark();
+  m.x = w * 0.3;
+  c.addChild(t, m);
+  return c;
+}
+
+export function bucketArt(s: number): Graphics {
+  return new Graphics()
+    .poly([-30 * s, -30 * s, 30 * s, -30 * s, 22 * s, 26 * s, -22 * s, 26 * s])
+    .fill(swatch.blue.light)
+    .stroke(line(ink, 4))
+    .moveTo(-28 * s, -30 * s)
+    .quadraticCurveTo(0, -62 * s, 28 * s, -30 * s)
+    .stroke(line(ink, 4));
+}
+export function cupArt(s: number): Graphics {
+  return new Graphics()
+    .roundRect(-14 * s, -14 * s, 28 * s, 30 * s, 5 * s)
+    .fill(swatch.yellow.light)
+    .stroke(line(ink, 4))
+    .circle(18 * s, 0, 8 * s)
+    .stroke(line(ink, 4));
+}
+/** A tray holding `n` shells in a row (from the left), `s` scale; `label` adds the tray's number as dots underneath. */
+export function trayArt(n: number, s: number, label = false): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-130 * s, -24 * s, 260 * s, 48 * s, 12 * s)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
+  if (label) for (let d = 0; d < n; d++) g.circle((d - (n - 1) / 2) * 30 * s, 0, 10 * s).fill(ink);
+  else
+    for (let i = 0; i < n; i++) {
+      const x = -100 * s + i * 54 * s;
+      g.moveTo(x - 18 * s, 10 * s)
+        .quadraticCurveTo(x, -34 * s, x + 18 * s, 10 * s)
+        .closePath()
+        .fill(swatch.pink.light)
+        .stroke(line(swatch.pink.line, 3));
+    }
+  c.addChild(g);
+  return c;
+}
+
+/**
+ * Level 5's scene, `w` by `h`, centred on (0, 0), drawn from the prompt's facts (so the picture and the lines agree).
+ * Returns the picture and the spot the evidence traces (the low pan, the two ribbon ends, or the two trays).
+ */
+export function sceneArt(
+  why: Why,
+  w: number,
+  h: number,
+): { node: Container; marks: { x: number; y: number }[] } {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 18)
+      .fill(cream)
+      .stroke(line(wood.line, 5)),
+  );
+  const [a, b] = why.facts;
+  const flip = why.mirror ? -1 : 1;
+  const marks: { x: number; y: number }[] = [];
+  if (why.scene === 'balance') {
+    // The heavier thing's pan sits low; the bucket is on the left unless mirrored.
+    const tilt = -(a > b ? 1 : -1) * 0.22 * flip;
+    const beam = new Container();
+    const g = new Graphics()
+      .poly([-16, h / 2 - 20, 16, h / 2 - 20, 0, -30])
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4));
+    c.addChild(g, beam);
+    beam.y = -30;
+    beam.addChild(new Graphics().rect(-170, -6, 340, 12).fill(wood.fill).stroke(line(wood.line, 4)));
+    beam.rotation = tilt;
+    for (const side of [-1, 1]) {
+      const isBucket = side === -flip;
+      const x = side * 160 * Math.cos(tilt),
+        y = -30 + side * 160 * Math.sin(tilt) + 50;
+      const pan = new Graphics()
+        .moveTo(x, y - 50)
+        .lineTo(x - 50, y)
+        .moveTo(x, y - 50)
+        .lineTo(x + 50, y)
+        .stroke(line(ink, 3))
+        .ellipse(x, y, 60, 12)
+        .fill(wood.light ?? wood.fill)
+        .stroke(line(wood.line, 4));
+      const thing = isBucket ? bucketArt(0.9) : cupArt(1.1);
+      thing.position.set(x, y - 24);
+      c.addChild(pan, thing);
+      if ((isBucket ? a : b) > (isBucket ? b : a)) marks.push({ x, y });
+    }
+  } else if (why.scene === 'ribbon') {
+    // A ruler of marks from a shared start; the red and blue ribbons reach their marks.
+    const step = Math.min(80, (w - 120) / 6);
+    const x0 = -step * 3;
+    const g = new Graphics();
+    g.moveTo(x0, -h / 2 + 30)
+      .lineTo(x0, h / 2 - 30)
+      .stroke(line(ink, 5));
+    for (let m = 1; m <= 6; m++)
+      g.moveTo(x0 + m * step, -h / 2 + 30)
+        .lineTo(x0 + m * step, h / 2 - 30)
+        .stroke(line(ink, 2));
+    c.addChild(g);
+    const rows: [Color, number][] = [
+      ['red', a],
+      ['blue', b],
+    ];
+    if (why.mirror) rows.reverse();
+    rows.forEach(([color, n], r) => {
+      const y = (r === 0 ? -1 : 1) * 40;
+      c.addChild(
+        new Graphics()
+          .roundRect(x0, y - 14, n * step, 28, 8)
+          .fill(swatch[color].fill)
+          .stroke(line(ink, 4)),
+      );
+      marks.push({ x: x0 + n * step, y });
+    });
+  } else {
+    // Two trays in matching rows: the first above, the second below.
+    [a, b].forEach((n, r) => {
+      const t = trayArt(n, 1);
+      t.y = (r === 0 ? -1 : 1) * 55;
+      c.addChild(t);
+      marks.push({ x: 0, y: t.y });
+    });
+  }
+  c.addChild(new Graphics()); // keeps child order stable for the trace overlay
+  return { node: c, marks };
+}
+
+/** A level 5 response card's picture, centred on (0, 0): a magnifier (evidence), a puffed-up "!" (sure), a looping bubble (again). */
+export function responseArt(r: Response, w: number, h: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 16)
+      .fill(0xffffff)
+      .stroke(line(wood.line, 6)),
+  );
+  const g = new Graphics();
+  if (r === 'evidence') {
+    g.circle(-8, -8, 34).fill(swatch.blue.light).stroke(line(ink, 7));
+    g.moveTo(16, 16).lineTo(46, 46).stroke(line(wood.line, 12));
+    g.circle(-8, -8, 8).fill(ink);
+  } else if (r === 'sure') {
+    g.circle(0, 0, 44).fill(swatch.orange.light).stroke(line(swatch.orange.line, 5));
+    g.roundRect(-7, -32, 14, 40, 6).fill(ink).circle(0, 22, 8).fill(ink);
+  } else {
+    g.roundRect(-52, -38, 104, 70, 24).fill(swatch.white.light).stroke(line(ink, 5));
+    g.moveTo(-20, 32).lineTo(-30, 52).lineTo(-4, 32).stroke(line(ink, 5));
+    g.arc(0, -4, 20, -2.6, 1.9).stroke(line(swatch.green.line, 6));
+    g.moveTo(-4, 16).lineTo(-12, 8).moveTo(-4, 16).lineTo(-12, 24).stroke(line(swatch.green.line, 6));
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** A level 6 reply bubble, `w` by `h`, centred on (0, 0): two friends looking together (kind) or a hand held up (rude). */
+export function replyArt(r: Reply, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h - 18, 30)
+    .fill(0xffffff)
+    .stroke(line(ink, 5))
+    .moveTo(-30, h / 2 - 20)
+    .lineTo(-44, h / 2)
+    .lineTo(-6, h / 2 - 20)
+    .fill(0xffffff);
+  if (r === 'kind') {
+    for (const x of [-44, 44])
+      g.circle(x, -14, 26).fill(swatch.orange.light).stroke(line(swatch.orange.line, 4));
+    g.circle(0, 18, 18)
+      .fill(swatch.blue.light)
+      .stroke(line(ink, 5))
+      .moveTo(12, 30)
+      .lineTo(26, 44)
+      .stroke(line(wood.line, 7));
+  } else {
+    g.roundRect(-30, -40, 60, 70, 18).fill(swatch.red.light).stroke(line(swatch.red.line, 5));
+    for (const x of [-20, -7, 6, 19]) g.moveTo(x, -40).lineTo(x, -58).stroke(line(swatch.red.line, 8));
+  }
+  c.addChild(g);
+  return c;
+}
+
+void SCENE_FACTS;
 
 /** The sign's post down to the friend's crate. */
 export function postArt(h: number): Graphics {

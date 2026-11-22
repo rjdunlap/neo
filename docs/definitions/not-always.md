@@ -1,4 +1,6 @@
-# Not Always, levels 1–3 (definition)
+# Not Always, levels 1–6 (definition)
+
+**Built:** levels 1–6 (PR #1997); all levels built, so there is no next level to read for.
 
 Defined 2026-10-31 as slice 1 (PR1) of the [philosophy and reasoning study](../deep-dives/subjects/philosophy-reasoning.md#build-slices-in-order), from its [ladder](../deep-dives/subjects/philosophy-reasoning.md#a-first-games-ladder-not-always) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations). The study's seven decisions were adopted on its leans under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) ([study](../deep-dives/subjects/philosophy-reasoning.md#decisions-for-the-developer)). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
@@ -108,7 +110,7 @@ Person and device checks stay open (DEVICE-CHECKS once built): whether a four-ye
 
 ## What comes next
 
-**PR3** [the question card](talk-cards.md) shipped on the grown-ups' page. **PR2** is ready to build from the [levels 4–6 definition](#levels-46-definition-philosophy-and-reasoning-pr2). **PR4** covers the printed claim strips.
+**PR3** [the question card](talk-cards.md) shipped on the grown-ups' page. **PR2** (levels 4–6) built 2026-11-22 from the [levels 4–6 definition](#levels-46-definition-philosophy-and-reasoning-pr2); see its built notes. **PR4** covers the printed claim strips.
 
 ## Open decisions
 
@@ -184,3 +186,13 @@ Use the current view-driven layout boundary and keep the four cards or three res
 - Rules: enumerate each authored row and compare exact breaker indices and stamp truth. For seeded rows check group size, a non-member distractor, exact truth mix, at least one valid action and connected hint. At level 5 verify the pictured facts support exactly one stance and that each scene offers one evidence card. At level 6 test each sign's separate truth, the union of breakers, valid answer after mirror or shuffle, and zero changes to accounting from the reply. Include the original 1–3 rules and level ranges.
 - Layout: test each phase with caption and pet clearances in upright, short upright and landscape views. Include long two-part claims and flag overlapping or undersize targets. At phone widths 390 × 844 and 390 × 625 verify pictured attributes and evidence remain legible.
 - New-interaction tier: typecheck and unit tests. Extend `BROWSER_SUITE=notalways` with a filter for 4–6 and use one scripted play covering the false filter tap and glow at 4, the evidence choice at 5, and both outcomes and the unscored reply at 6. Rotate during a two-sign prompt and inspect a portrait screenshot. Exercise `fingerdemo` at 6 through the reply. Build with rendered slot-free voice clips and check the new clips in the production service worker offline if the audio assets change.
+
+### Built notes for levels 4–6 (2026-11-22)
+
+Levels 4–6 are built (school maximum 6). Deviations from the definition above:
+
+- **Level 4 claims** come from a fixed set of nine slot-free lines (`L4_CLAIMS`), so the spoken lines stay slot-free and clips render at build time. Every level 4 card has a round or square frame, so the filter can be read from the picture.
+- **Level 5 replays** vary the prompt order, which speaker says which claim, the response order, the species and a mirrored balance or ribbon, but never which claim is true: the facts are fixed per scene, which keeps the lines slot-free.
+- **Level 6 claims** come from eight slot-free lines (`L6_CLAIMS`), two of them plain *none* claims. The reply scene comes after the one false sign is broken, once per round. The pause-sheet Show me there lifts the kind reply and rereads the replies without counting as a hint or miss.
+- **Card rows** are dealt per prompt at levels 4 and 6.
+- **Browser suite.** `NOTALWAYS_LEVELS=4-6` filters the `notalways` suite to the new levels.

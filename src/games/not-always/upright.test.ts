@@ -23,31 +23,49 @@ const rect = (what: string, r: Rect): Target => ({
   h: r.h - 1e-7,
 });
 
-const cases = (Object.keys(LEVELS) as Band[]).flatMap((band) => {
+const driven = (Object.keys(LEVELS) as Band[]).flatMap((band) => {
   const { min, max } = rangeFor(LEVELS, band);
   return Array.from({ length: max - min + 1 }, (_, i) => [band, min + i] as const);
 });
+/** Levels 4 to 6 are named explicitly for the school band, so they stay covered whatever `LEVELS.school.max` is. */
+const cases: (readonly [Band, number])[] = [...driven];
+for (const level of [4, 5, 6])
+  if (!cases.some(([b, l]) => b === 'school' && l === level)) cases.push(['school', level]);
 
 describe.each(Object.entries(views))('Not Always upright on %s', (_, v) => {
-  it('covers levels 1 to 3', () => {
-    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3]);
+  it('covers levels 1 to 6', () => {
+    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it.each(cases)(
     '%s level %i: the sign, friend, cards, stamp and mended signs are big enough, apart, in view and clear of Home and the guide',
     (_band, level) => {
       const l = notAlwaysLayout(v, level);
-      expect(l.cards).toHaveLength(level === 2 ? 5 : 4);
-      expect(!!l.stamp).toBe(level === 2);
+      expect(l.cards).toHaveLength(level === 2 ? 5 : level === 5 ? 0 : 4);
+      expect(!!l.stamp).toBe([2, 4, 6].includes(level));
       expect(l.mends).toHaveLength(level === 3 ? 3 : 0);
+      expect(l.responses).toHaveLength(level === 5 ? 3 : 0);
+      expect(l.replies).toHaveLength(level === 6 ? 2 : 0);
+      expect(l.signs).toHaveLength(level === 6 || level === 5 ? 2 : 1);
+      expect(l.friend === null).toBe(level === 5);
       const targets = [
-        rect('sign', l.sign),
-        rect('friend', l.friend),
+        ...l.signs.map((r, i) => rect(`sign ${i + 1}`, r)),
+        ...(l.friend ? [rect('friend', l.friend)] : []),
+        ...l.responses.map((r, i) => rect(`response ${i + 1}`, r)),
         ...l.cards.map((r, i) => rect(`card ${i + 1}`, r)),
         ...(l.stamp ? [rect('stamp', l.stamp)] : []),
         ...l.mends.map((r, i) => rect(`mended sign ${i + 1}`, r)),
       ];
       expect(uprightProblems(v, targets), `${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
+      if (l.replies.length) {
+        // The cards are hidden during the reply scene, so the bubbles are checked with the signs and friend instead.
+        const scene = [
+          ...l.signs.map((r, i) => rect(`sign ${i + 1}`, r)),
+          ...(l.friend ? [rect('friend', l.friend)] : []),
+          ...l.replies.map((r, i) => rect(`reply ${i + 1}`, r)),
+        ];
+        expect(uprightProblems(v, scene), `reply scene ${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
+      }
       if (v === UPRIGHT_VIEWS.phone)
         expect(Math.min(...targets.map((t) => Math.min(t.w, t.h))) * v.scale).toBeGreaterThanOrEqual(44);
     },
