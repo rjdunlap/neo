@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Draw the Pattern by touch: level 1 by marks (one touch during the pet's turn, one off the paper), two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture, two strays at 11's spiral and its picture on an upright phone. `DRAW_LEVELS=9` runs only level 9. */
+  /** Draw the Pattern by touch: level 1 by marks (one touch during the pet's turn, one off the paper), two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture, two strays at 11's spiral and its picture on an upright phone, level 12's own pattern (a stray and a hint counted as no miss and one hint). `DRAW_LEVELS=9` runs only level 9. */
   async function drawPatternPlay() {
     const only = process.env.DRAW_LEVELS?.split(',').map(Number);
     const state = () =>
@@ -295,6 +295,75 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       assert.deepEqual([st.misses, st.hints], [2, 1]);
       assert.ok(['glasses', 'racetrack'].includes(await page.evaluate(() => neo.scene.game.strips[1].piece)));
       await screenshot('draw-the-pattern-11-picture');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
+    if (!only || only.includes(12)) {
+      // Level 12 at school on a phone held upright: her own pattern. Strip 1: she draws a hill-or-peak, then a dip-or-valley,
+      // and the pet carries the two-unit pattern on to eight units. Strip 2: a stray (nothing counted), a requested hint
+      // (both paths light, one hint), then three of the same kind, which the pet carries on to nine. No misses.
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('draw-the-pattern', 12, 'Mia', 'school');
+      await idle();
+      n = await stickers();
+      const own = () =>
+        page.evaluate(() => {
+          const s = neo.scene.game.strips[neo.scene.game.index];
+          return { places: s.own.places, total: s.own.total, tracks: neo.scene.game.tracks.length };
+        });
+      assert.deepEqual(
+        await own(),
+        { places: 2, total: 8, tracks: 2 },
+        'strip 1 has two places on eight units',
+      );
+      await drawOn(0);
+      await drawOn(1);
+      await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 30000 });
+      const first = await page.evaluate(() => {
+        const s = neo.scene.game.strips[0];
+        return { kinds: s.strokes.slice(0, 2).map((st, i) => st.kinds[i]), rest: s.strokes[2].units };
+      });
+      assert.deepEqual(
+        first.rest,
+        [0, 1, 2, 3, 4, 5].map((i) => first.kinds[i % 2]),
+        'the pet repeats her two units to the end of the strip',
+      );
+      await idle();
+      assert.deepEqual(
+        await own(),
+        { places: 3, total: 9, tracks: 3 },
+        'strip 2 has three places on nine units',
+      );
+      // The stray goes straight back off the crayon, so it chooses neither path (a move along one would choose it).
+      const at = (await route())[0];
+      await page.evaluate((a) => kit.drag(kit.line(a, [a[0] - 200, a[1]], 8)), at);
+      await page.waitForTimeout(200);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [0, 0], 'a stray at level 12 counts nothing');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.tracks[0].order),
+        null,
+        'the stray chose no path',
+      );
+      await page.evaluate(() => neo.scene.game.askForHint());
+      st = await state();
+      assert.deepEqual(
+        [st.misses, st.hints, st.glow],
+        [0, 1, true],
+        'a requested hint lights the paths, one hint',
+      );
+      await page.waitForTimeout(400);
+      await screenshot('draw-the-pattern-12-phone-portrait');
+      for (let k = 0; k < 3; k++) await drawOn(1);
+      await sticker(n);
+      const second = await page.evaluate(() => neo.scene.game.strips[1].strokes[3].units);
+      assert.equal(second.length, 6, 'the pet draws six more units');
+      assert.ok(
+        second.every((u) => u === second[0]),
+        'three of one kind carry on as that kind',
+      );
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [0, 1]);
+      await screenshot('draw-the-pattern-12-picture');
       await page.setViewportSize({ width: 1024, height: 768 });
     }
     if (!only || only.includes(10)) {
