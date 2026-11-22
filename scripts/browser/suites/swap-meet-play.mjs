@@ -138,10 +138,10 @@ export function createSuite({
       await settle();
     } else if (a.sell) {
       const p = await page.evaluate(() => neo.scene.game.boxes.stall);
-      await dragAt('b0', p.x, p.y - 50);
+      await dragAt('b0', p.x, p.y + 40);
     } else if (a.buy !== undefined) {
       const p = await page.evaluate((i) => neo.scene.game.boxes.shelf[i], a.buy);
-      await dragAt('b0', p.x, p.y);
+      await dragAt('b0', p.x, p.y + 40);
     } else await giveTo(a.to);
   };
   async function levelFive() {
@@ -202,7 +202,7 @@ export function createSuite({
     await giveTo(s.frame.friends[0].id);
     assert.equal((await fetchState()).misses, 1);
     const stall = await page.evaluate(() => neo.scene.game.boxes.stall);
-    await dragAt('b0', stall.x, stall.y - 70);
+    await dragAt('b0', stall.x, stall.y - 20);
     s = await fetchState();
     assert.deepEqual([s.frame.basket[0].hold, s.misses], ['purse', 1]);
     const buy = s.frame.stall.shelf.indexOf(s.goal);

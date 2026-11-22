@@ -84,6 +84,8 @@ class SwapMeet implements Game {
   private counts = [0, 0];
   private cached = { key: '', action: null as Action | null };
   readonly cards = new Container();
+  /** The two route cards while level 6's question waits for a tap; the bot taps the one with fewer marks. */
+  private routes: { card: Container; marks: number }[] = [];
   get misses() {
     return this.tally.misses;
   }
@@ -518,6 +520,7 @@ class SwapMeet implements Game {
     shade.eventMode = 'static';
     this.cards.addChild(shade);
     let answered = false;
+    this.routes = [];
     return new Promise((done) => {
       const card = (x: number, stall: boolean, marks: number) => {
         const c = new Container();
@@ -549,10 +552,12 @@ class SwapMeet implements Game {
         onTap(c, () => {
           if (answered || !this.alive) return;
           answered = true;
+          this.routes = [];
           const r = routeReply(first, second);
           void this.ctx.say(r.line, r.params).then(() => done());
         });
         this.cards.addChild(c);
+        this.routes.push({ card: c, marks });
       };
       card(v.w * 0.3, false, first);
       card(v.w * 0.7, usedStall, second);
@@ -576,6 +581,8 @@ class SwapMeet implements Game {
     void this.ctx.say(line.line, line.params);
   }
   autotouch(): TouchIntent | null {
+    if (this.alive && this.routes.length)
+      return { tap: { on: [...this.routes].sort((a, b) => a.marks - b.marks)[0].card } };
     if (!this.alive || this.busy || this.finished || this.dragging()) return null;
     const a = this.next();
     if (!a) return null;
