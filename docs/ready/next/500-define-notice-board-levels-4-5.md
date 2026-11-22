@@ -1,0 +1,1 @@
+**Define Notice Board levels 4–5** (docs only): what a poster leaves out and who made it, following the approved study ladder. [Study](../../deep-dives/subjects/media-literacy.md), [decision](../../archive/DECISIONS-2026-11-17.md#games)

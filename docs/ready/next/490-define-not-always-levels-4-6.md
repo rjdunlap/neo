@@ -1,0 +1,1 @@
+**Define Not Always levels 4–6** (docs only): conditional claims, reasons and two compatible claims, following the approved study ladder. [Study](../../deep-dives/subjects/philosophy-reasoning.md), [decision](../../archive/DECISIONS-2026-11-17.md#games)
