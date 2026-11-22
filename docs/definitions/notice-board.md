@@ -129,7 +129,7 @@ Person and device checks stay open (DEVICE-CHECKS once built), from the study: d
 
 ## What comes next
 
-**ML3**, the "Who made this?" card on the grown-ups' page, follows the build; **ML4**'s hand frame ships as this game's `coplayHint`; **ML2** Notice Board 4–5 (what did it leave out, who's behind it, absorbing *Story Stamp Checker*) is defined after levels 1–3 are played; **ML5** stays with the Photo Safari dive.
+**ML3**, the "Who made this?" card on the grown-ups' page, follows the build; **ML4**'s hand frame ships as this game's `coplayHint`; **ML2** Notice Board 4–5 (what did it leave out, who's behind it, absorbing *Story Stamp Checker*) is [defined 2026-11-22](notice-board-4-5.md); **ML5** stays with the Photo Safari dive.
 
 ## Open decisions
 

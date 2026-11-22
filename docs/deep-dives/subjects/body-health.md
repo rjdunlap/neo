@@ -80,7 +80,7 @@ Effort: S = contained existing-game mode; M = one new interaction/model scene; L
 | **Inside the Picnic** · Body Connections mode | Follow a pictured meal through different jobs, then connect absorption to delivery | S–U, M after first system. No dietary targets, eating challenges or real quantities; reviewed matter/process table, not a second cooking game |
 | **Whose Clue?** · existing-game mode | Match a body/source to the event it can reveal, then compare evidence | K–S, S–M. Keep pure listening in Sound Garden and photography in Photo Safari; no separate registration for a theme |
 | **Notice Together** · page companion | Choose an original observation/conversation card and swap roles | Family/G, S for temporary plain HTML; practical review and accessibility alternatives required; printing/saving separate |
-| **Source Shelf** · later seed | Compare author, evidence and limits on two authored explanations of a body-model observation | U/M/G, M with expert review. Develop within the existing Story Stamp Checker/data-literacy evidence proposals; no live web, diagnostic misinformation or new title yet |
+| **Source Shelf** · later seed | Compare author, evidence and limits on two authored explanations of a body-model observation | U/M/G, M with expert review. Develop within the data-literacy evidence proposals (Story Stamp Checker was absorbed into Notice Board level 5, [defined 2026-11-22](../../definitions/notice-board-4-5.md)); no live web, diagnostic misinformation or new title yet |
 
 ## First game's proposed ladder: Sense Detective
 
