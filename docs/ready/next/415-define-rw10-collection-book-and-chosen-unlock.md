@@ -1,1 +1,0 @@
-**Define RW10, Collection book and chosen unlock goals** (docs only): a pictured collection book with owned creatures, one attainable discovery and one customization goal. Define the paths to the projects and the put-down test. [Work item](../../rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals), [decision](../../archive/DECISIONS-2026-11-17.md#rework)
