@@ -698,8 +698,8 @@ export const WHERE_LEN = 250;
 const WHERE_AMP = (30 * Math.PI) / 180;
 /** The ring at the bottom of the swing, where the picture holds and the vine is snipped. */
 export const RING: Pt & { r: number } = { x: WHERE_AX, y: ANCHOR_Y + WHERE_LEN, r: 60 };
-/** How much of the path behind the fruit the dotted trail shows, in seconds. */
-export const TRAIL_S = 0.25;
+/** How much of the path behind the fruit the dotted trail shows, in seconds (the definition's 0.25 s hid behind the fruit). */
+export const TRAIL_S = 0.4;
 
 /** The swing for a pass heading `dir` (1 right) through the ring: it starts from rest at the other end. */
 export function wherePass(dir: Dir): Swing {

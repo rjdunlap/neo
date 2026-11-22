@@ -469,11 +469,11 @@ export class WhereWillItLand implements Game {
     const now = a.kind === 'hold' || this.waiting ? ring : Math.min(ring, this.clock - a.t0);
     const alpha = this.bright ? 1 : 0.7;
     const r0 = this.bright ? 9 : 6;
-    for (let i = 1; i <= 7; i++) {
-      const t = now - (TRAIL_S * i) / 7;
+    for (let i = 1; i <= 10; i++) {
+      const t = now - (TRAIL_S * i) / 10;
       if (t < 0) break;
       const p = posAt(s, t);
-      g.circle(p.x, p.y, r0 - i * 0.4).fill({ color: this.bright ? swatch.yellow.light : 0xffffff, alpha });
+      g.circle(p.x, p.y, r0 - i * 0.25).fill({ color: this.bright ? swatch.yellow.light : 0xffffff, alpha });
     }
     if (a.kind !== 'hold') return;
     const p = posAt(s, ring);
@@ -511,7 +511,7 @@ export class WhereWillItLand implements Game {
       g.visible = leaf !== null;
       if (leaf === null) return;
       const b = this.layout.leaves[leafIndex(leaf)];
-      g.position.set(b.x + b.w / 2 + (pass ? 44 : -44), b.y + 34);
+      g.position.set(b.x + b.w / 2 + (pass ? 44 : -44), LEAF_Y + 24);
       g.alpha = pass === r.pass || r.stage === 'compare' || r.stage === 'replay' ? 1 : 0.4;
     });
   }

@@ -457,7 +457,7 @@ describe('level 6, Where will it land?', () => {
     expect([plan.mode, plan.name, plan.lines]).toEqual(['where', 'Where will it land?', 1]);
     expect(LEVELS.school).toEqual({ min: 3, max: 6 });
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
-      expect(LEVELS[band].max).toBeLessThan(6);
+      expect(LEVELS[band]!.max).toBeLessThan(6);
   });
   it('crosses the same ring in opposite directions, level and at the same speed', () => {
     const [r, l] = dirs.map((d) => whereLanding(d));
