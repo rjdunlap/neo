@@ -49,7 +49,7 @@ The loop is the game's action and the jar of ten is its representation; both car
 
 What does not fit, or belongs elsewhere: numbers past 39 (the space note above); hundreds (a crate of ten jars is the [number-structure study](subjects/number-structure.md)'s NS6 sketch, its home decided at its own definition); larger equal groups and factor pairs (Orchard Rows 4–6 and Monster Munch's division levels own them); timers or moving fireflies.
 
-**Long arc.** Preschool loops and exact small groups; pre-K fives and tens; school reads, builds and changes two-digit numbers and estimates (6, and E2 when defined); hundreds and estimating a whole from a part stay with their studies.
+**Long arc.** Preschool loops and exact small groups; pre-K fives and tens; school reads, builds and changes two-digit numbers and estimates (6, and E2, defined and not yet built); hundreds and estimating a whole from a part stay with their studies.
 
 ## Experience and presentation
 
@@ -72,7 +72,7 @@ What does not fit, or belongs elsewhere: numbers past 39 (the space note above);
 
 ### New levels on top
 
-**Level 7 stays reserved** for the estimation study's E2 *Too few, too many* ([estimation study](subjects/estimation.md#first-games-proposed-ladder-lasso-loops-6-and-7)), defined only after a child has played level 6 (its decision 2). This dive numbers its own levels from 8. Because `planFor` reads `PLANS` by position, level 8 cannot ship before a level 7 exists: either E2 is built first, or the developer agrees that this dive's first new level takes ID 7 and E2 takes the next free ID, placed after 6 with `order` (decision 1). Until then, levels 8–9 are written here but not queued.
+**Level 7 stays reserved** for the estimation study's E2 *Too few, too many* ([estimation study](subjects/estimation.md#first-games-proposed-ladder-lasso-loops-6-and-7)), now [defined](../definitions/lasso-loops-too-few-too-many.md) (2026-11-22, not built; its decision 2 took the lean). This dive numbers its own levels from 8. Because `planFor` reads `PLANS` by position, level 8 cannot ship before a level 7 exists: either E2 is built first, or the developer agrees that this dive's first new level takes ID 7 and E2 takes the next free ID, placed after 6 with `order` (decision 1). Levels 8–9 are written here but not queued: they become queueable once level 7 is built.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -98,7 +98,7 @@ The fresh level-4 teens give pre-K an easier tens round without a new ID. No oth
 
 ## Decisions for the developer
 
-1. **Level numbering.** Keep 7 for the estimation study's E2 and build this dive's levels only after E2 (lean), or let *Make the number* take ID 7 now and give E2 the next free ID placed after 6 with `order`.
+1. **Level numbering (the lean stands; E2 defined 2026-11-22, not built).** Keep 7 for the estimation study's E2 and build this dive's levels only after E2 (lean), or let *Make the number* take ID 7 now and give E2 the next free ID placed after 6 with `order`.
 2. **A toddler opening** (a loop that always catches), only after watching a two-year-old try to close a loop.
 
 ## Build slices, in order
