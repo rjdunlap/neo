@@ -27,4 +27,3 @@
 - Hints pack up the first stray tent in row order with the reason she can see (a zero sign, no tree beside it, or in another tree's way); otherwise they glow the next square of the authored deductions, ringing the tree it serves and, for the first and third, the row sign the reason leans on.
 - A tree tap lights the grass beside it and says so, free; the opening lights the top-left tree's sides. A fourth tent is refused with "Pack up a tent to move it". Touching tents wobble in a red ring.
 - Layout (`layout.ts`): supply and column signs above the camp, row signs on its right, Check camp and Hint at the bottom beside the guide upright and in a column on the right sideways; squares at least 100 units on every phone view (`upright.test.ts`).
-- The spoken title clip is not rendered yet (the Kokoro model download failed on 2026-11-21); device speech says the title until the next render.

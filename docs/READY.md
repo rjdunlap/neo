@@ -62,8 +62,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`vine-snip` level 6, Where will it land?** (school; new interaction tier: typecheck and rule tests, one filtered `vinesnip` play at level 6 with opposite guesses, Help, replay and one award, one sideways phone screenshot, `fingerdemo` at 6; run the build too, since the voice and how-to barrels change). [Definition](definitions/vine-snip-where-will-it-land.md), [dive](deep-dives/vine-snip.md#build-slices-in-order)
 
-- **`silly-scene` levels 1–3** (a new game in Puzzle Peaks; preschool 1, pre-K 1–2, school 2–3; new game tier, upright from the first slice: typecheck, unit tests, one filtered play of levels 1 and 3 with a wrong tap and a hint, one portrait screenshot, `fingerdemo` at level 1, and one `npm run build` for the voice lines and the land change). [Definition](definitions/silly-scene.md#build-checks), [study](deep-dives/subjects/puzzle-pages.md#build-slices-in-order)
-
 - **`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](definitions/block-tower-mend.md), [dive](deep-dives/block-tower.md#build-slices-in-order)
 
 - **`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](deep-dives/block-tower.md#decisions-for-the-developer)
