@@ -13,6 +13,8 @@ export const WALL_W = 700;
 export const WALL_H = 560;
 /** A bolt head's circle: a board on a higher layer that overlaps it covers the bolt. */
 export const HEAD = 30;
+export const LAP_BOLT_SCALE = 2.6;
+export const LAP_LEVEL = 10;
 /** A hole is closed while any board lies over this circle. */
 export const HOLE = 30;
 /** A touch within this many wall units of a bolt or hole lands on it: 120 across. */
@@ -132,9 +134,19 @@ export const PLANS: readonly BoltPlan[] = [
     scenes: 2,
     build: [3, 4],
   },
+  {
+    id: LAP_LEVEL,
+    name: 'One big bolt',
+    goal: 'all',
+    holes: false,
+    litHoles: false,
+    coveredMiss: false,
+    scenes: 1,
+  },
 ];
 
 export const LEVELS: BandLevels = {
+  lap: { min: LAP_LEVEL, max: LAP_LEVEL },
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 4 },
   // Level 8 (Plenty of holes) sits between 5 and 6: parking bolts in holes before the planning holes carry.

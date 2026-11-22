@@ -1,0 +1,1 @@
+**Define Draw the Pattern level 12, Your pattern** (docs only): define the creative mode where she chooses the units and the pet continues the pattern. [Dive](../../deep-dives/draw-the-pattern.md#decisions-for-the-developer)
