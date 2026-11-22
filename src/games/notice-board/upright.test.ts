@@ -9,8 +9,9 @@ import { LEVELS, noticeBoardLayout, type Rect } from './logic';
  * Notice Board held upright (chunk 31, docs/definitions/phone-portrait.md): every level of every band it lists, on the
  * three upright phone views, the captioned one and a short one. The boxes are `noticeBoardLayout`'s own rectangles, which
  * are exactly the scene's touch areas: the poster (a tap reads it again), the three bench friends and, at level 3, the
- * two baskets. The layout takes only the view and the level, so every poster of a round, and every seed, has the same
- * boxes; the one other moment is level 2's photo, which slides out beside the poster while the friends stay on screen.
+ * two baskets, and at levels 4 and 5 the side slot (the Go and see sign, or the club door). The layout takes only the view
+ * and the level, so every poster of a round, and every seed, has the same boxes; level 2's photo slides out beside the
+ * poster into the same side slot while the friends stay on screen.
  */
 const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) };
 
@@ -29,8 +30,8 @@ const cases = (Object.keys(LEVELS) as Band[]).flatMap((band) => {
 });
 
 describe.each(Object.entries(views))('Notice Board upright on %s', (_, v) => {
-  it('covers levels 1 to 3', () => {
-    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3]);
+  it('covers levels 1 to 5', () => {
+    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3, 4, 5]);
   });
 
   it.each(cases)(
@@ -43,11 +44,14 @@ describe.each(Object.entries(views))('Notice Board upright on %s', (_, v) => {
         rect('poster', l.poster),
         ...l.friends.map((r, i) => rect(`friend ${i + 1}`, r)),
         ...l.baskets.map((r, i) => rect(`basket ${i + 1}`, r)),
+        // Levels 4 and 5: the side slot is a target (the sign or the club door).
+        ...(level >= 4 && l.photo ? [rect('side slot', l.photo)] : []),
       ];
       expect(uprightProblems(v, targets), `${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
       // The photo is a picture, not a target, but it must not land on one, leave the view or hide a corner.
-      expect(!!l.photo).toBe(level === 2);
-      if (l.photo) expect(uprightProblems(v, [...targets, rect('photo', l.photo)])).toEqual([]);
+      expect(!!l.photo).toBe(level === 2 || level >= 4);
+      if (l.photo && level === 2)
+        expect(uprightProblems(v, [...targets, rect('photo', l.photo)])).toEqual([]);
       // The board behind the poster stays in view and clear of Home.
       expect(uprightProblems(v, [rect('board', l.board)])).toEqual([]);
       if (v === UPRIGHT_VIEWS.phone)

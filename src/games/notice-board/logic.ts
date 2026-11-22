@@ -28,8 +28,8 @@ export const LOOKALIKE: Record<Place, Place | null> = {
 export type Friend = Exclude<CritterName, 'pip'>;
 export const FRIENDS: readonly Friend[] = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
-/** What a friend remembers at level 2: a place, or only hearing about it. */
-export type Memory = Place | 'heard';
+/** What a friend's bubble shows: a place (level 2), only hearing about it (2 and 5), or at level 5 selling the thing or trying it. */
+export type Memory = Place | 'heard' | 'sells' | 'tried';
 export interface BenchFriend {
   name: Friend;
   badge: Badge;
@@ -62,11 +62,12 @@ export type Thing =
   | 'hats'
   | 'flowers'
   | 'rainbow'
-  | 'appletree';
+  | 'appletree'
+  | 'boat';
 
 export interface Poster {
   id: string;
-  level: 1 | 2 | 3;
+  level: 1 | 2 | 3 | 4 | 5;
   place: Place;
   thing: Thing;
   purpose: Purpose;
@@ -78,7 +79,18 @@ export interface Poster {
   item?: string;
   /** Level 2: the topic, which names its stretched and label lines. */
   topic?: string;
+  /** Level 4: what the stand shows that the poster left out, and the kinds its *other* tag is drawn from. */
+  omit?: LeftOut;
+  others?: readonly LeftOut[];
+  /** Level 5: the case, which names its club, tried-it and poster lines. */
+  club?: string;
 }
+
+/** Level 4: what a true poster can leave out, each a code-drawn tag picture. */
+export type LeftOut = 'price' | 'queue' | 'last' | 'rain' | 'night' | 'far';
+export const LEFT_OUT: readonly LeftOut[] = ['price', 'queue', 'last', 'rain', 'night', 'far'];
+/** A level-4 tag: a left-out kind, or the poster's own picture (on both the poster and the stand). */
+export type Tag = LeftOut | 'thing';
 
 const own = (id: string, place: Place, thing: Thing): Poster => ({
   id: `l1-${id}`,
@@ -156,19 +168,57 @@ export const POOL_3: readonly Poster[] = [
   tell('ball', 'meadow', 'ball', 'ball'),
 ];
 
+const omitPoster = (
+  id: string,
+  place: Place,
+  thing: Thing,
+  omit: LeftOut,
+  others: readonly LeftOut[],
+  price?: 2 | 3,
+): Poster => ({ id: `l4-${id}`, level: 4, place, thing, purpose: 'tell', omit, others, price });
+/** Level 4, *What did it leave out?*: eight true posters, each with one thing the stand shows and the poster did not. */
+export const POOL_4: readonly Poster[] = [
+  omitPoster('lemonade', 'square', 'lemonade', 'price', ['queue', 'last', 'night'], 2),
+  omitPoster('icecream', 'beach', 'icecream', 'queue', ['price', 'rain', 'far']),
+  omitPoster('pie', 'square', 'pie', 'last', ['price', 'queue', 'rain']),
+  omitPoster('kites', 'beach', 'kite', 'rain', ['night', 'far', 'last']),
+  omitPoster('show', 'square', 'song', 'night', ['rain', 'price', 'far']),
+  omitPoster('apples', 'orchard', 'appletree', 'far', ['price', 'queue', 'night']),
+  omitPoster('flowers', 'meadow', 'flowers', 'price', ['rain', 'last', 'far'], 3),
+  omitPoster('hats', 'square', 'hats', 'last', ['queue', 'night', 'price']),
+];
+
+const clubCase = (id: string, place: Place, thing: Thing): Poster => ({
+  id: `l5-${id}`,
+  level: 5,
+  place,
+  thing,
+  purpose: 'sell',
+  club: id,
+});
+/** Level 5, *Who's behind it?*: six club posters; the club's own seller made each one. */
+export const POOL_5: readonly Poster[] = [
+  clubCase('hats', 'square', 'hats'),
+  clubCase('pies', 'square', 'pie'),
+  clubCase('lemonade', 'square', 'lemonade'),
+  clubCase('kites', 'meadow', 'kite'),
+  clubCase('icecream', 'beach', 'icecream'),
+  clubCase('boats', 'pond', 'boat'),
+];
+
 const SOLD = new Set(POOL_3.filter((p) => p.purpose === 'sell').map((p) => p.item));
 /** A tell poster whose thing the pool also sells: food or flowers alone cannot decide it. */
 export const isItemDecoy = (p: Poster) => p.level === 3 && p.purpose === 'tell' && SOLD.has(p.item);
 
 export const posterById = (id: string): Poster => {
-  const p = [...POOL_1, ...POOL_2, ...POOL_3].find((q) => q.id === id);
+  const p = [...POOL_1, ...POOL_2, ...POOL_3, ...POOL_4, ...POOL_5].find((q) => q.id === id);
   if (!p) throw new Error(`no poster ${id}`);
   return p;
 };
 
 // Plans --------------------------------------------------------------------------------------------------------------
 
-export type Mode = 'maker' | 'witness' | 'purpose';
+export type Mode = 'maker' | 'witness' | 'purpose' | 'omit' | 'club';
 export interface Plan {
   level: number;
   name: string;
@@ -189,8 +239,20 @@ export const PLANS: readonly Plan[] = [
     mode: 'purpose',
     posters: 4,
   },
+  {
+    level: 4,
+    name: "What did it leave out? Go and see the real stall, then tap what the poster didn't show",
+    mode: 'omit',
+    posters: 3,
+  },
+  {
+    level: 5,
+    name: "Who's behind it? Open the club door if she likes, then tap the friend who tried it and sells none",
+    mode: 'club',
+    posters: 3,
+  },
 ];
-export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 3 } };
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 5 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 // Rounds -------------------------------------------------------------------------------------------------------------
@@ -209,16 +271,24 @@ export interface Item {
   truth?: 'true' | 'stretched';
   /** Level 2: the bench index of the friend who was there. */
   witness?: number;
+  /** Level 4: the three tags, left to right (the bench is empty). */
+  tags?: Tag[];
+  /** Level 5: the bench indexes of the club's seller (the maker), the friend who tried it and the heard-it friend. */
+  seller?: number;
+  tried?: number;
 }
 export interface Round {
   level: number;
   items: Item[];
 }
 
-export type Target = { kind: 'friend'; i: number } | { kind: 'basket'; purpose: Purpose };
+export type Target =
+  { kind: 'friend'; i: number } | { kind: 'basket'; purpose: Purpose } | { kind: 'tag'; i: number };
 
-/** The answer for a poster: the maker (level 1), the witness (level 2) or the basket (level 3). */
+/** The answer for a poster: the maker (1), the witness (2), the basket (3), the left-out tag (4) or the tried-it friend (5). */
 export function answerFor(item: Item): Target {
+  if (item.poster.level === 5) return { kind: 'friend', i: item.tried! };
+  if (item.poster.level === 4) return { kind: 'tag', i: item.tags!.indexOf(item.poster.omit!) };
   if (item.poster.level === 3) return { kind: 'basket', purpose: item.poster.purpose };
   if (item.poster.level === 2) return { kind: 'friend', i: item.witness! };
   return { kind: 'friend', i: item.bench.findIndex((f) => f.name === item.maker) };
@@ -254,6 +324,27 @@ function witnessItem(poster: Poster, truth: 'true' | 'stretched', slot: number, 
   return { poster, bench, maker: names[0], stamp: badges[0], truth, witness: slot };
 }
 
+/** Level 4: no bench; the maker keeps the stand. Three tags, the left-out kind in `slot`. */
+function omitItem(poster: Poster, slot: number, rng: Rng): Item {
+  const other = rng.pick(poster.others!);
+  const rest = rng.shuffle<Tag>(['thing', other]);
+  const tags = [0, 1, 2].map((i) => (i === slot ? poster.omit! : rest.shift()!));
+  return { poster, bench: [], maker: rng.pick(FRIENDS), stamp: rng.pick(BADGES), tags };
+}
+
+/** Level 5: the club's seller, a friend who tried it (in `slot`) and a heard-it friend, with badges as at level 1. */
+function clubItem(poster: Poster, slot: number, rng: Rng): Item {
+  const names = rng.shuffle([...FRIENDS]).slice(0, 3);
+  const badges = dealBadges(rng, 3);
+  const [seller] = rng.shuffle([0, 1, 2].filter((i) => i !== slot));
+  const bench: BenchFriend[] = names.map((name, i) => ({
+    name,
+    badge: badges[i],
+    memory: i === seller ? 'sells' : i === slot ? 'tried' : 'heard',
+  }));
+  return { poster, bench, maker: names[seller], stamp: badges[seller], seller, tried: slot };
+}
+
 const TRUTHS = [
   ['true', 'stretched'],
   ['stretched', 'true'],
@@ -264,7 +355,11 @@ export const AUTHORED: Record<number, readonly string[]> = {
   1: ['l1-kite', 'l1-race', 'l1-pie'],
   2: ['l2-carrot', 'l2-ducklings', 'l2-whale'],
   3: ['tell-tree', 'sell-lemonade', 'tell-ducklings', 'sell-flowers'],
+  4: ['l4-lemonade', 'l4-pie', 'l4-kites'],
+  5: ['l5-hats', 'l5-lemonade', 'l5-pies'],
 };
+/** Where the answer sits in each authored round at levels 4 (the left-out tag) and 5 (the tried-it friend). */
+export const AUTHORED_SLOTS: Record<4 | 5, readonly number[]> = { 4: [1, 2, 0], 5: [2, 0, 1] };
 const AUTHORED_TRUTH: readonly ('true' | 'stretched')[] = ['stretched', 'true', 'stretched'];
 
 export function makeRound(level: number, rng: Rng, authored = false): Round {
@@ -293,6 +388,15 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
       items: order.map((k, i) => witnessItem(posters[k], shuffledTruths[i], slots[i], rng)),
     };
   }
+  if (plan.mode === 'omit' || plan.mode === 'club') {
+    const lvl = plan.level as 4 | 5;
+    const pool = lvl === 4 ? POOL_4 : POOL_5;
+    const posters = authored ? AUTHORED[lvl].map(posterById) : rng.shuffle([...pool]).slice(0, 3);
+    // The answer's slots are a permutation, so it moves every poster and each slot holds it a third of the time.
+    const slots = authored ? AUTHORED_SLOTS[lvl] : rng.shuffle([0, 1, 2]);
+    const deal = lvl === 4 ? omitItem : clubItem;
+    return { level: lvl, items: posters.map((p, i) => deal(p, slots[i], rng)) };
+  }
   let posters: Poster[];
   if (authored) posters = AUTHORED[3].map(posterById);
   else {
@@ -315,7 +419,9 @@ export type Outcome =
   | { kind: 'right'; item: Item; done: boolean }
   /** One miss; `glow` when this miss lit the glow (and counted its one hint). */
   | { kind: 'miss'; item: Item; glow: boolean }
-  /** Never counted: a friend at level 3, or anything after the round. */
+  /** Level 5: a wrong friend before the club door was open. Never counted; the door opens by itself. */
+  | { kind: 'peek'; item: Item }
+  /** Never counted: a friend at level 3, a tag before the stand is out, or anything after the round. */
   | { kind: 'free' };
 
 export class Play {
@@ -328,6 +434,10 @@ export class Play {
   glowing = false;
   /** The current poster's one hint has been counted. */
   private helped = false;
+  /** Level 4: the real stand has slid out, so the tags can be chosen. */
+  standOut = false;
+  /** Level 5: the club door is open, so the seller is known. */
+  doorOpen = false;
 
   constructor(readonly round: Round) {}
 
@@ -343,9 +453,44 @@ export class Play {
   }
 
   tapFriend(i: number): Outcome {
-    if (this.done || this.round.level === 3) return { kind: 'free' };
+    if (this.done || this.round.level === 3 || this.round.level === 4) return { kind: 'free' };
     const t = answerFor(this.item);
-    return t.kind === 'friend' && t.i === i ? this.right() : this.miss();
+    if (t.kind === 'friend' && t.i === i) return this.right();
+    if (this.round.level === 5 && !this.doorOpen) {
+      this.doorOpen = true;
+      return { kind: 'peek', item: this.item };
+    }
+    return this.miss();
+  }
+
+  /** Tap whatever `t` names: a friend, a basket or a tag. */
+  tap(t: Target): Outcome {
+    return t.kind === 'friend'
+      ? this.tapFriend(t.i)
+      : t.kind === 'tag'
+        ? this.tapTag(t.i)
+        : this.tapBasket(t.purpose);
+  }
+
+  /** Level 4: a tag. Free (dimmed) until the stand is out; then the left-out kind is right and the others a miss. */
+  tapTag(i: number): Outcome {
+    if (this.done || this.round.level !== 4 || !this.standOut) return { kind: 'free' };
+    const t = answerFor(this.item);
+    return t.kind === 'tag' && t.i === i ? this.right() : this.miss();
+  }
+
+  /** Level 4's Go and see sign: the stand slides out. Free; false if it was already out. */
+  seeStand(): boolean {
+    if (this.done || this.round.level !== 4 || this.standOut) return false;
+    this.standOut = true;
+    return true;
+  }
+
+  /** Level 5's club door: free; false if it was already open. */
+  openDoor(): boolean {
+    if (this.done || this.round.level !== 5 || this.doorOpen) return false;
+    this.doorOpen = true;
+    return true;
   }
 
   tapBasket(purpose: Purpose): Outcome {
@@ -374,6 +519,8 @@ export class Play {
     this.posterMisses = 0;
     this.glowing = false;
     this.helped = false;
+    this.standOut = false;
+    this.doorOpen = false;
     return { kind: 'right', item, done: this.done };
   }
 
@@ -418,7 +565,7 @@ export const posterSize = (portrait: boolean) => (portrait ? { w: 300, h: 240 } 
 export interface NoticeBoardLayout {
   board: Rect;
   poster: Rect;
-  /** Level 2: where the witness's photo lands, beside the poster. */
+  /** The side slot beside the poster: level 2's photo, level 4's sign and stand, level 5's club house. */
   photo: Rect | null;
   friends: Rect[];
   /** Level 3: the tell basket then the sell basket. */
@@ -429,8 +576,8 @@ export function noticeBoardLayout(view: { w: number; h: number }, level: number)
   const portrait = view.h > view.w;
   const { w: pw, h: ph } = posterSize(portrait);
   const cx = view.w / 2;
-  const withPhoto = level === 2;
-  const friendH = level === 3 ? FRIEND_H_3 : FRIEND_H;
+  const withPhoto = level === 2 || level === 4 || level === 5;
+  const friendH = level === 3 || level === 4 ? FRIEND_H_3 : FRIEND_H;
   const boardH = ph + 2 * BOARD_PAD;
   const stack = boardH + friendH + (level === 3 ? BASKET_H : 0);
   const gaps = level === 3 ? 2 : 1;

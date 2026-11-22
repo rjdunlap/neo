@@ -9,13 +9,15 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–3 |
+| school | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Who made it? Match the poster's stamp to a friend's badge |
 | 2 | Who saw it? Tap the friend who was there; their photo settles the poster |
 | 3 | To tell or to sell? Sort each poster into the news or the come-and-buy basket |
+| 4 | What did it leave out? Go and see the real stall, then tap what the poster didn't show |
+| 5 | Who's behind it? Open the club door if she likes, then tap the friend who tried it and sells none |
 
 <!-- end generated -->
 

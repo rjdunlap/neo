@@ -15,12 +15,17 @@ import {
   basketArt,
   boardArt,
   bubbleArt,
+  clubHouseArt,
   iconArt,
   labelArt,
+  pawPinArt,
   photoArt,
   pinArt,
   posterArt,
+  signArt,
+  standArt,
   stillCritter,
+  tagArt,
 } from './art';
 import {
   BASKET_H,
@@ -39,6 +44,7 @@ import {
   type Plan,
   type Purpose,
   type Rect,
+  type Target,
 } from './logic';
 
 /** Each level's authored round leads its first round of a session, and every demonstration. */
@@ -70,6 +76,8 @@ class NoticeBoard implements Game {
   private readonly boardHolder = new Container();
   private readonly posterHolder = new Container();
   private readonly photoHolder = new Container();
+  /** Levels 4 and 5: the side slot beside the poster (the Go and see sign or the stand, or the club house); a free tap. */
+  readonly side = new Container();
   private readonly glow = new Graphics();
   /** All seven friends, made once; each poster seats three of them. */
   private readonly critters = new Map<Friend, Critter>();
@@ -111,6 +119,11 @@ class NoticeBoard implements Game {
         this.baskets.push({ node, purpose });
       }
     }
+    if (this.plan.mode === 'omit' || this.plan.mode === 'club') {
+      this.side.eventMode = 'static';
+      onTap(this.side, () => void this.tapSide(), { cooldown: 300 });
+      ctx.stage.addChild(this.side);
+    }
     // The photo and the glow sit over everything; the glow never takes a touch itself.
     ctx.stage.addChild(this.photoHolder, this.glow);
     this.resize(this.view);
@@ -148,6 +161,15 @@ class NoticeBoard implements Game {
     for (const k of this.critters.values()) k.parent?.removeChild(k);
     for (const b of this.badges.values()) b.destroy({ children: true });
     this.badges.clear();
+    if (item.tags) {
+      // Level 4: three tags on strings where the bench would be, dimmed until the stand is out.
+      const L = this.layout();
+      item.tags.forEach((tag, i) => {
+        const slot = this.slots[i];
+        slot.extras.removeChildren().forEach((c) => c.destroy({ children: true }));
+        slot.extras.addChild(tagArt(tag, item, L.friends[i].w, L.friends[i].h));
+      });
+    }
     item.bench.forEach((f, i) => {
       const slot = this.slots[i];
       const k = this.critters.get(f.name)!;
@@ -160,18 +182,43 @@ class NoticeBoard implements Game {
       this.badges.set(f.name, b);
       slot.extras.removeChildren().forEach((c) => c.destroy({ children: true }));
       if (f.memory) {
-        const bubble = bubbleArt(f.memory, BUBBLE_W, BUBBLE_H);
+        const club = { place: item.poster.place, thing: item.poster.thing, who: f.name };
+        const bubble = bubbleArt(f.memory, BUBBLE_W, BUBBLE_H, club);
         bubble.position.set(-10, BUBBLE_H);
         slot.extras.addChild(bubble);
       }
     });
     this.placeSlots();
+    this.showSide();
+  }
+
+  /** Draws the side slot for the current poster: the sign or the stand at level 4, the club house at level 5. */
+  private showSide() {
+    if (this.plan.mode !== 'omit' && this.plan.mode !== 'club') return;
+    this.side.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const L = this.layout();
+    const r = L.photo!;
+    const item = this.play.item;
+    if (this.plan.mode === 'omit') {
+      this.side.addChild(this.play.standOut ? standArt(item, r.w, r.h) : signArt(r.w, r.h));
+      for (const s of this.slots) s.extras.alpha = this.play.standOut ? 1 : 0.45;
+    } else {
+      const seller = item.bench[item.seller!];
+      this.side.addChild(clubHouseArt(item.poster.thing, seller.badge, this.play.doorOpen, r.w, r.h));
+    }
+    this.side.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+    this.side.position.set(r.x + r.w / 2, r.y + r.h / 2);
   }
 
   private placeSlots() {
     const L = this.layout();
     const h = L.friends[0].h;
-    const scale = this.plan.mode === 'witness' ? 0.46 : this.plan.mode === 'purpose' ? 0.55 : 0.6;
+    const scale =
+      this.plan.mode === 'witness' || this.plan.mode === 'club'
+        ? 0.46
+        : this.plan.mode === 'purpose'
+          ? 0.55
+          : 0.6;
     this.slots.forEach((s, i) => {
       const r: Rect = L.friends[i];
       s.base = scale;
@@ -217,6 +264,7 @@ class NoticeBoard implements Game {
 
   private async tapFriend(i: number) {
     if (this.busy || this.finished) return;
+    if (this.plan.mode === 'omit') return void this.tapTag(i);
     const slot = this.slots[i];
     const f = this.play.item.bench[i];
     const k = this.critters.get(f.name)!;
@@ -235,13 +283,80 @@ class NoticeBoard implements Game {
     // A judged tap before the poster was read stands (the stamp, the bubbles and the poster are on screen); the reading is dropped.
     this.unread = false;
     if (out.kind === 'right') return void this.settle(out, i);
+    if (out.kind === 'peek') {
+      // A guess before the door was open is never counted: the door opens itself and the friend says who they are.
+      sfx.whoosh();
+      this.showSide();
+      await this.ctx.say(f.memory === 'sells' ? this.clubLine() : 'noticeboard.heard');
+      return;
+    }
     sfx.boing();
     let line: string;
     if (this.plan.mode === 'maker') line = `noticeboard.notme.${f.badge}`;
+    else if (this.plan.mode === 'club')
+      line = f.memory === 'sells' ? 'noticeboard.askother' : 'noticeboard.heard';
     else line = f.memory === 'heard' ? 'noticeboard.heard' : `noticeboard.elsewhere.${f.memory}`;
     await this.ctx.say(line as LineId);
     if (this.alive && out.glow && this.play.glowing && this.play.item === out.item)
       void this.ctx.say('noticeboard.hint');
+  }
+
+  private clubLine() {
+    return `noticeboard.club.${this.play.item.poster.club}` as LineId;
+  }
+
+  /** Level 4: a tag. Dimmed before the stand is out (free: the sign wobbles); then the left-out kind or a miss. */
+  private async tapTag(i: number) {
+    const tag = this.slots[i].extras;
+    // Touch-down: the tag lifts on its string.
+    tag.y = -10;
+    void this.ctx.tw.to(tag, { y: 0 }, { duration: 0.3 });
+    const out = this.play.tapTag(i);
+    if (out.kind === 'free') {
+      sfx.tick();
+      if (!this.play.standOut) void this.wiggle(this.side);
+      this.readNow();
+      return;
+    }
+    this.unread = false;
+    if (out.kind === 'right') return void this.settle(out, i);
+    if (out.kind !== 'miss') return;
+    sfx.boing();
+    const t = out.item.tags![i];
+    await this.ctx.say(t === 'thing' ? 'noticeboard.already' : 'noticeboard.nothere');
+    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item)
+      void this.ctx.say('noticeboard.hint');
+  }
+
+  /** The side slot: level 4's sign slides the stand out, level 5's door opens. Always free. */
+  private async tapSide() {
+    if (this.busy || this.finished || this.play.done) return;
+    if (this.plan.mode === 'omit') {
+      if (!this.revealStand()) return void this.wiggle(this.side);
+      this.unread = false;
+      await this.ctx.say('noticeboard.gosee');
+      return;
+    }
+    if (!this.play.openDoor()) {
+      sfx.tick();
+      return void this.wiggle(this.side);
+    }
+    this.unread = false;
+    sfx.whoosh();
+    this.showSide();
+    const item = this.play.item;
+    this.critters.get(item.bench[item.seller!].name)?.cheer();
+    await this.ctx.say(this.clubLine());
+  }
+
+  /** Level 4: the stand slides into the side slot and the tags wake; false if it was already out. */
+  private revealStand() {
+    if (!this.play.seeStand()) return false;
+    sfx.whoosh();
+    this.showSide();
+    this.side.scale.set(0.3);
+    void this.ctx.tw.to(this.side.scale, { x: 1, y: 1 }, { duration: 0.35 });
+    return true;
   }
 
   private async tapBasket(purpose: Purpose) {
@@ -280,7 +395,41 @@ class NoticeBoard implements Game {
     let lesson: Promise<void> = Promise.resolve();
     const L = this.layout();
     sfx.marimba(7);
-    if (this.plan.mode === 'witness') {
+    if (this.plan.mode === 'omit') {
+      // The left-out tag flies up and is pinned beside the poster; the maker says they only drew the best part.
+      const tag = item.tags![slot!];
+      const r = L.friends[slot!];
+      const note = tagArt(tag, item, r.w, r.h);
+      note.position.set(r.x + r.w / 2, r.y);
+      this.photoHolder.addChild(note);
+      this.slots[slot!].extras.alpha = 0;
+      sfx.whoosh();
+      const omitLine =
+        tag === 'price' ? `noticeboard.omit.price${item.poster.price ?? 2}` : `noticeboard.omit.${tag}`;
+      const said = this.ctx.say(omitLine as LineId);
+      await this.ctx.tw.to(
+        note,
+        { x: L.poster.x + L.poster.w - 30, y: L.poster.y + L.poster.h * 0.3, rotation: 0.12 },
+        { duration: 0.45 },
+      );
+      if (!this.alive) return;
+      void this.ctx.tw.to(note.scale, { x: 0.6, y: 0.6 }, { duration: 0.2 });
+      sfx.pop(9);
+      await said;
+      if (!this.alive) return;
+      lesson = this.ctx.say('noticeboard.best');
+    } else if (this.plan.mode === 'club') {
+      // The door opens if it was shut, and the friend who tried it pins their paw note under the poster's claim.
+      if (!this.play.doorOpen) this.showSideOpen();
+      this.critters.get(item.bench[slot!].name)?.cheer();
+      const paw = pawPinArt(64);
+      paw.position.set(0, L.poster.h / 2 - 44);
+      paw.scale.set(1.5);
+      this.poster?.addChild(paw);
+      void this.ctx.tw.to(paw.scale, { x: 1, y: 1 }, { duration: 0.25 });
+      sfx.pop(9);
+      lesson = this.ctx.say(`noticeboard.tried.${item.poster.club}` as LineId);
+    } else if (this.plan.mode === 'witness') {
       // The witness's photo slides out beside the poster, with the maker's face-pin, and settles it.
       this.critters.get(item.bench[slot!].name)?.cheer();
       await this.ctx.say('noticeboard.saw');
@@ -360,6 +509,14 @@ class NoticeBoard implements Game {
     });
   }
 
+  /** Level 5, in the right answer's reaction: the club door opens so she sees who was behind the poster. */
+  private showSideOpen() {
+    const item = this.play.round.items[this.play.index - 1];
+    const r = this.layout().photo!;
+    this.side.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.side.addChild(clubHouseArt(item.poster.thing, item.bench[item.seller!].badge, true, r.w, r.h));
+  }
+
   // Help -----------------------------------------------------------------------------------------------------------
 
   /** The pause sheet's Show me: the same glow as two misses, counted once per poster; asked again it re-reads the poster. */
@@ -367,6 +524,8 @@ class NoticeBoard implements Game {
     if (this.busy || this.finished || this.play.done) return;
     if (this.play.requestHint()) {
       this.unread = false;
+      // The glowing tag must be choosable: Show me slides the stand out first.
+      if (this.plan.mode === 'omit') this.revealStand();
       void this.ctx.say('noticeboard.hint');
     } else this.reread();
   }
@@ -374,9 +533,15 @@ class NoticeBoard implements Game {
   targetNode(): Container | null {
     const t = this.play.target();
     if (!t) return null;
-    return t.kind === 'friend'
-      ? this.slots[t.i].node
-      : this.baskets.find((b) => b.purpose === t.purpose)!.node;
+    return t.kind === 'basket'
+      ? this.baskets.find((b) => b.purpose === t.purpose)!.node
+      : this.slots[t.i].node;
+  }
+
+  /** The glow's rectangle for a target. */
+  private targetRect(t: Target): Rect {
+    const L = this.layout();
+    return t.kind === 'basket' ? L.baskets[PURPOSES.indexOf(t.purpose)] : L.friends[t.i];
   }
 
   // Motion ---------------------------------------------------------------------------------------------------------
@@ -428,6 +593,8 @@ class NoticeBoard implements Game {
       for (const c of this.photoHolder.children)
         c.position.set(L.photo.x + L.photo.w / 2, L.photo.y + L.photo.h / 2);
     this.placeSlots();
+    if (L.photo && this.side.parent)
+      this.side.position.set(L.photo.x + L.photo.w / 2, L.photo.y + L.photo.h / 2);
     this.baskets.forEach((bk, k) => {
       const r = L.baskets[k];
       bk.node.position.set(r.x + r.w / 2, r.y + r.h / 2);
@@ -440,8 +607,7 @@ class NoticeBoard implements Game {
     if (!this.play.glowing || this.busy || this.finished) return;
     const t = this.play.target();
     if (!t) return;
-    const L = this.layout();
-    const r = t.kind === 'friend' ? L.friends[t.i] : L.baskets[PURPOSES.indexOf(t.purpose)];
+    const r = this.targetRect(t);
     const pulse = 0.6 + 0.4 * Math.sin(this.clock * 4);
     g.roundRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16, 22).stroke({
       width: 8,
@@ -454,6 +620,9 @@ class NoticeBoard implements Game {
   autotouch(): TouchIntent | null {
     // The demo waits for the lesson and the poster's reading, as a child hearing them would.
     if (this.busy || this.finished || this.unread) return null;
+    // Look first: the Go and see sign, or the club door, then the answer.
+    if (this.plan.mode === 'omit' && !this.play.standOut) return { tap: { on: this.side }, pause: 1.6 };
+    if (this.plan.mode === 'club' && !this.play.doorOpen) return { tap: { on: this.side }, pause: 2.4 };
     const n = this.targetNode();
     return n ? { tap: { on: n }, pause: 1.4 } : null;
   }
