@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Explore tower height and balance by stacking, comparing and predicting.',
+  goal: 'Explore tower height and balance by stacking, comparing, predicting and mending.',
   steps: [
     { from: 1, to: 1, text: 'Tap anywhere to stack six blocks, then tap again to knock the tower down.' },
     {
@@ -37,6 +37,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Drag blocks from the tray out past this table edge so one touches the star line without tipping. One task reaches left and one right.',
     },
     { from: 6, to: 6, text: 'Drag the top block to move it, or drag it back to the tray to take it off.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Drag the top block along the block below it, then tap the green button to let the ropes go. Two mended towers finish.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: 'The round ends after two towers are knocked down.' },
@@ -57,12 +62,22 @@ export const HOW_TO: GameHowTo = {
       text: 'Press Continue after each observation. The third Continue ends the round, whichever towers you chose.',
     },
     { from: 6, to: 6, text: 'The round ends after two standing stacks touch their star lines.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'The round ends after two leaning towers are mended and stand without their ropes.',
+    },
   ],
   note: [
     {
       from: 5,
       to: 5,
       text: 'Either prediction is welcome; choosing the tower that falls counts no miss or hint.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A tumble is an experiment, never a miss: the round arrow watches it again, the rope holds the tower again where she left it, and the back arrow undoes a move. After two tumbles a place that works glows.',
     },
   ],
 };

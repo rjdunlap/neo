@@ -17,6 +17,19 @@ import {
   middleFrom,
   nextReach,
   PLANS,
+  planFor,
+  LEVELS,
+  MEND_TASKS,
+  mendTask,
+  mendBase,
+  mendStart,
+  mendDomain,
+  mendSlot,
+  mendRepairs,
+  mendHint,
+  makeMendRounds,
+  MendTrial,
+  nextMend,
   REACH,
   reached,
   reachSlot,
@@ -391,5 +404,135 @@ describe('Block Tower', () => {
       }
       expect(reached(placed, round.star)).toBe(true);
     }
+  });
+});
+
+describe('Block Tower level 7, Mend the leaning tower', () => {
+  const both = [1, -1] as const;
+
+  it('is level 7, after prediction and before the open build in school play order', () => {
+    expect(planFor(7).mode).toBe('mend');
+    expect(planFor(7).rounds).toBe(2);
+    expect(LEVELS.school).toEqual({ min: 5, max: 7, order: [5, 7, 6] });
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(LEVELS[band]!.max).toBeLessThan(7);
+  });
+
+  it.each(MEND_TASKS.map((t) => [t.id, t] as const))('task %s is a fair repair', (_, task) => {
+    const t = mendTask(task, 1);
+    const base = mendBase(t);
+    const repairs = mendRepairs(t);
+    const domain = mendDomain(t);
+    expect(topples(t.tower, null), 'the dealt tower falls from block 1').toBe(1);
+    expect(topples(base, null), 'the base alone stands').toBe(-1);
+    expect(repairs.length).toBeGreaterThanOrEqual(2);
+    expect(repairs).not.toContain(mendStart(t));
+    // Failing slots on both sides: pushing all the way back is not a strategy.
+    expect(domain.some((x) => x < repairs[0])).toBe(true);
+    expect(domain.some((x) => x > repairs[repairs.length - 1])).toBe(true);
+    // Too far back loses the top block, too far out loses the upper pair.
+    expect(topples([...base, repairs[0] - 1], null)).toBe(base.length);
+    expect(topples([...base, repairs[repairs.length - 1] + 1], null)).toBe(1);
+    // The window is contiguous, and every domain slot rests on the block below.
+    expect(repairs).toEqual(domain.filter((x) => x >= repairs[0] && x <= repairs[repairs.length - 1]));
+    for (const x of domain) expect(Math.abs(x - base[base.length - 1])).toBeLessThan(W);
+    expect(repairs).toContain(mendHint(t));
+    expect(domain).toContain(mendHint(t));
+  });
+
+  it('matches the authored hint slots', () => {
+    expect(MEND_TASKS.map((t) => mendHint(mendTask(t, 1)))).toEqual([2, 2, 2, 3, 3, 2]);
+  });
+
+  it('mirrors every slot and the hint', () => {
+    for (const task of MEND_TASKS) {
+      const right = mendTask(task, 1);
+      const left = mendTask(task, -1);
+      expect(mendHint(left)).toBe(-mendHint(right) || 0);
+      expect(mendRepairs(left)).toEqual(
+        mendRepairs(right)
+          .map((x) => -x || 0)
+          .reverse(),
+      );
+      for (const x of mendDomain(right))
+        expect(topples([...mendBase(left), -x], null)).toBe(topples([...mendBase(right), x], null));
+    }
+  });
+
+  it('snaps drops into the domain', () => {
+    const t = mendTask(MEND_TASKS[0], 1);
+    expect([-20, -4.4, 2.4, 2.6, 30].map((x) => mendSlot(t, x))).toEqual([-4, -4, 2, 3, 10]);
+  });
+
+  it('deals one three-block then one four-block task, one each way, over 200 seeds', () => {
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const rounds = makeMendRounds(new Rng(seed));
+      expect(rounds).toEqual(makeMendRounds(new Rng(seed)));
+      expect(rounds.map((r) => r.tower.length)).toEqual([3, 4]);
+      expect(rounds.map((r) => r.direction).sort()).toEqual([-1, 1]);
+      expect(Object.isFrozen(rounds) && Object.isFrozen(rounds[0])).toBe(true);
+      for (const r of rounds) seen.add(r.id);
+    }
+    expect([...seen].sort()).toEqual(MEND_TASKS.map((t) => t.id).sort());
+  });
+
+  it('lets go only after a move, undoes move by move, and never counts a let go at the dealt slot', () => {
+    const trial = new MendTrial(mendTask(MEND_TASKS[0], -1));
+    expect(trial.letGo()).toBe(false);
+    expect(trial.phase).toBe('held');
+    expect(trial.failed).toBe(0);
+    expect(trial.move(trial.start)).toBe(false);
+    expect(trial.move(99)).toBe(false);
+    expect(trial.moves).toEqual([]);
+    expect(trial.move(-1)).toBe(true);
+    expect(trial.move(-9)).toBe(true);
+    expect(trial.canUndo).toBe(true);
+    expect(trial.undo()).toBe(true);
+    expect(trial.top).toBe(-1);
+    expect(trial.undo()).toBe(true);
+    expect(trial.top).toBe(trial.start);
+    expect(trial.canUndo).toBe(false);
+    // Away and back: still at the dealt slot, so nothing is released.
+    trial.move(-2);
+    trial.move(trial.start);
+    expect(trial.canUndo).toBe(false);
+    expect(trial.letGo()).toBe(false);
+  });
+
+  it('counts a tumble once, not on Watch again, keeps her slot on Try again, and is due a hint after two', () => {
+    const t = mendTask(MEND_TASKS[3], 1);
+    const trial = new MendTrial(t);
+    trial.move(12);
+    expect(trial.letGo()).toBe(true);
+    expect(trial.move(3)).toBe(false);
+    trial.settle();
+    expect([trial.phase, trial.failed]).toEqual(['result', 1]);
+    expect(trial.watchAgain()).toBe(true);
+    trial.settle();
+    expect([trial.phase, trial.failed, trial.top]).toEqual(['result', 1, 12]);
+    expect(trial.hintDue).toBe(false);
+    expect(trial.tryAgain()).toBe(true);
+    expect([trial.phase, trial.top]).toEqual(['held', 12]);
+    trial.move(-2);
+    trial.letGo();
+    trial.settle();
+    expect(trial.failed).toBe(2);
+    expect(trial.hintDue).toBe(true);
+    trial.tryAgain();
+    trial.move(mendHint(t));
+    trial.letGo();
+    trial.settle();
+    expect([trial.phase, trial.failed]).toEqual(['stood', 2]);
+  });
+
+  it("the ghost finger's plan stands for every task both ways", () => {
+    for (const task of MEND_TASKS)
+      for (const d of both) {
+        const trial = new MendTrial(mendTask(task, d));
+        expect(trial.move(nextMend(trial.task))).toBe(true);
+        expect(trial.letGo()).toBe(true);
+        expect(trial.stands).toBe(true);
+      }
   });
 });

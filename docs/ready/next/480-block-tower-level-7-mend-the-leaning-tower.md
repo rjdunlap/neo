@@ -1,1 +1,0 @@
-**`block-tower` level 7, Mend the leaning tower** (school; new interaction tier, plus the build and offline check for four new clips). [Definition](../../definitions/block-tower-mend.md), [dive](../../deep-dives/block-tower.md#build-slices-in-order)
