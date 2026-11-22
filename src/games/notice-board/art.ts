@@ -4,7 +4,7 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood, type Swatch } from '../../art/palette';
 import { hatArt, prop } from '../../art/props';
 import { shell, star } from '../../art/shore';
-import type { Badge, Friend, Item, Memory, Place, Purpose, Thing } from './logic';
+import type { Badge, Friend, Item, LeftOut, Memory, Place, Purpose, Tag, Thing } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -196,8 +196,54 @@ function heardArt(w: number, h: number): Graphics {
   return g;
 }
 
-/** A thought bubble `w` × `h` (centre-bottom on the origin) showing a remembered place or the ear-and-whisper. */
-export function bubbleArt(m: Memory, w: number, h: number): Container {
+/** Level 5's bubble picture: the friend behind a stall of the thing (`sells`), or out using it (`tried`). */
+function clubMemoryArt(
+  m: 'sells' | 'tried',
+  place: Place,
+  thing: Thing,
+  who: Friend,
+  w: number,
+  h: number,
+): Container {
+  const c = new Container();
+  const d = h * 0.62;
+  if (m === 'sells') {
+    c.addChild(new Graphics().rect(0, 0, w, h).fill(cream));
+    const face = pinArt(who, d);
+    face.position.set(w * 0.3, h * 0.48);
+    const counter = new Graphics()
+      .rect(0, h * 0.7, w, h * 0.3)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 2));
+    const shells = new Graphics();
+    shell(shells, w * 0.14, h * 0.94, 0.5);
+    shell(shells, w * 0.28, h * 0.94, 0.5);
+    const t = thingArt(thing, h * 0.5);
+    t.position.set(w * 0.7, h * 0.52);
+    const a = awning(w);
+    a.scale.set(1, 0.55);
+    c.addChild(face, counter, shells, t, a);
+  } else {
+    c.addChild(placeArt(place, w, h));
+    const face = pinArt(who, d);
+    face.position.set(w * 0.3, h * 0.5);
+    const t = thingArt(thing, h * 0.55);
+    t.position.set(w * 0.7, h * 0.5);
+    c.addChild(face, t);
+  }
+  return c;
+}
+
+/**
+ * A thought bubble `w` × `h` (centre-bottom on the origin) showing a remembered place or the ear-and-whisper, or at
+ * level 5 the friend selling or trying the poster's thing (`club`).
+ */
+export function bubbleArt(
+  m: Memory,
+  w: number,
+  h: number,
+  club?: { place: Place; thing: Thing; who: Friend },
+): Container {
   const c = new Container();
   const g = new Graphics();
   g.circle(-8, -6, 6).fill(0xffffff).stroke(line(ink, 2));
@@ -208,7 +254,12 @@ export function bubbleArt(m: Memory, w: number, h: number): Container {
     .stroke(line(ink, 3));
   const iw = w - 20,
     ih = bh - 16;
-  const pic = m === 'heard' ? heardArt(iw, ih) : placeArt(m, iw, ih);
+  const pic =
+    m === 'heard'
+      ? heardArt(iw, ih)
+      : m === 'sells' || m === 'tried'
+        ? clubMemoryArt(m, club!.place, club!.thing, club!.who, iw, ih)
+        : placeArt(m, iw, ih);
   pic.position.set(-iw / 2, -h + 8);
   const mask = new Graphics().roundRect(-iw / 2, -h + 8, iw, ih, 16).fill(0xffffff);
   pic.mask = mask;
@@ -596,6 +647,24 @@ export function thingArt(
         g.arc(0, 30 * s, (60 - k * 7) * s, Math.PI, 0).stroke(line(col.fill, 7 * s)),
       );
       break;
+    case 'boat':
+      g.moveTo(-50 * s, 14 * s)
+        .lineTo(50 * s, 14 * s)
+        .lineTo(34 * s, 40 * s)
+        .lineTo(-34 * s, 40 * s)
+        .closePath()
+        .fill(swatch.brown.fill)
+        .stroke(line(swatch.brown.line, 3));
+      g.moveTo(0, 14 * s)
+        .lineTo(0, -54 * s)
+        .stroke(line(wood.line, 4));
+      g.poly([4 * s, -50 * s, 40 * s, 6 * s, 4 * s, 6 * s])
+        .fill(0xffffff)
+        .stroke(line(swatch.red.line, 3));
+      g.poly([-4 * s, -40 * s, -32 * s, 6 * s, -4 * s, 6 * s])
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line, 3));
+      break;
   }
   return c;
 }
@@ -686,7 +755,8 @@ export function posterArt(item: Item, w: number, h: number): Container {
     .circle(0, 0, 32)
     .fill({ color: 0xffffff, alpha: 0.9 })
     .stroke(line(BADGE_COLOR[item.stamp].line, 3));
-  stamp.addChild(ring, badgeArt(item.stamp, 56));
+  // A club poster carries the club's emblem, not a badge: who is behind it waits behind the club door.
+  stamp.addChild(ring, p.level === 5 ? emblemArt(p.thing, 50) : badgeArt(item.stamp, 56));
   stamp.position.set(w / 2 - 38, h / 2 - 38);
   stamp.rotation = -0.12;
   c.addChild(stamp);
@@ -820,5 +890,267 @@ export function iconArt(): Container {
   const s = badgeArt('star', 26);
   s.position.set(28, 6);
   c.addChild(b, sheet, t, s);
+  return c;
+}
+
+// Levels 4 and 5 ---------------------------------------------------------------------------------------------------
+
+/** A club's emblem, `d` across: its thing, small, in a gold ring. */
+export function emblemArt(thing: Thing, d: number): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, d / 2)
+      .fill(0xffffff)
+      .stroke(line(swatch.yellow.line, 3)),
+  );
+  const t = thingArt(thing, d * 0.8);
+  c.addChild(t);
+  return c;
+}
+
+/** A rain cloud with drops, about 120 across at scale 1, centred on the origin. */
+function rainCloud(g: Graphics) {
+  for (const [x, y, r] of [
+    [-30, 0, 22],
+    [0, -12, 28],
+    [30, 0, 22],
+  ])
+    g.circle(x, y, r).fill(0xc9ced8).stroke(line(0x8a93a3, 3));
+  g.rect(-44, 0, 88, 20).fill(0xc9ced8);
+  for (const x of [-30, -6, 18, 40])
+    g.moveTo(x, 30)
+      .lineTo(x - 6, 46)
+      .stroke(line(swatch.blue.fill, 4));
+}
+
+/** A crescent moon and two stars on a night sky, `w` × `h` from the top-left. */
+function nightSky(g: Graphics, w: number, h: number, alpha = 1) {
+  g.rect(0, 0, w, h).fill({ color: 0x2c3566, alpha });
+  g.circle(w * 0.72, h * 0.3, h * 0.16).fill(0xfff3a0);
+  g.circle(w * 0.78, h * 0.25, h * 0.14).fill({ color: 0x2c3566 });
+  const twinkle = { fill: 0xffffff, line: 0xfff3a0 };
+  star(g, w * 0.25, h * 0.22, h / 220, twinkle);
+  star(g, w * 0.45, h * 0.4, h / 320, twinkle);
+}
+
+/** A green hill with a long winding path up to the top, `w` × `h` from the top-left. */
+function farHill(g: Graphics, w: number, h: number) {
+  g.ellipse(w * 0.6, h * 1.05, w * 0.6, h * 0.8)
+    .fill(0x9fd38a)
+    .stroke(line(swatch.green.line, 3));
+  g.moveTo(w * 0.15, h)
+    .bezierCurveTo(w * 0.7, h * 0.85, w * 0.2, h * 0.6, w * 0.6, h * 0.48)
+    .bezierCurveTo(w * 0.85, h * 0.4, w * 0.5, h * 0.34, w * 0.62, h * 0.28)
+    .stroke(line(0xc9a46a, 6));
+}
+
+/**
+ * A left-out kind's tag picture, about `size` across and centred on the origin: shells (the price), three friends
+ * waiting (a queue), one item left on a tray (the last one), a rain cloud, the moon at night, or a long path up a hill.
+ */
+export function leftOutArt(kind: LeftOut, thing: Thing, size: number, price: number = 2): Container {
+  const c = new Container();
+  const g = new Graphics();
+  c.addChild(g);
+  switch (kind) {
+    case 'price':
+      for (let k = 0; k < price; k++) shell(g, (k - (price - 1) / 2) * 36, 16, 1.2);
+      break;
+    case 'queue':
+      crowd(g, 3, 100, 10);
+      break;
+    case 'last': {
+      g.ellipse(0, 26, 52, 14).fill(0xe0e0e8).stroke(line(0x9a9aae, 3));
+      const t = thingArt(thing, 46);
+      t.position.set(0, 6);
+      c.addChild(t);
+      break;
+    }
+    case 'rain':
+      rainCloud(g);
+      break;
+    case 'night':
+      nightSky(g, 100, 90);
+      g.position.set(-50, -45);
+      break;
+    case 'far':
+      g.rect(0, 0, 110, 90).fill(0xd6eefc);
+      farHill(g, 110, 90);
+      g.position.set(-55, -45);
+      break;
+  }
+  const holder = new Container();
+  holder.addChild(c);
+  c.scale.set(size / 120);
+  return holder;
+}
+
+/** A level-4 tag hung on a string, `w` × `h` with its top centre on the origin: the left-out picture, or the poster's thing. */
+export function tagArt(tag: Tag, item: Item, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(0, 0).lineTo(0, 26).stroke(line(wood.line, 3));
+  const tw = w - 24,
+    th = h - 40;
+  g.roundRect(-tw / 2, 26, tw, th, 14)
+    .fill(0xfffbe8)
+    .stroke(line(swatch.yellow.line, 3));
+  g.circle(0, 40, 6).fill(cream).stroke(line(wood.line, 2));
+  c.addChild(g);
+  const size = Math.min(tw, th) * 0.8;
+  const pic =
+    tag === 'thing'
+      ? thingArt(item.poster.thing, size)
+      : leftOutArt(tag, item.poster.thing, size, item.poster.price ?? 2);
+  pic.position.set(0, 26 + th / 2 + 8);
+  c.addChild(pic);
+  return c;
+}
+
+/** Level 4's Go and see sign, `w` × `h` centred on the origin: a signpost with an arrow and an eye. */
+export function signArt(w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.rect(-8, -h / 2 + 20, 16, h / 2 + 30)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 3));
+  const bw = w * 0.9,
+    bh = h * 0.5;
+  g.moveTo(-bw / 2, -bh / 2 - 10)
+    .lineTo(bw / 2 - 30, -bh / 2 - 10)
+    .lineTo(bw / 2, -10)
+    .lineTo(bw / 2 - 30, bh / 2 - 10)
+    .lineTo(-bw / 2, bh / 2 - 10)
+    .closePath()
+    .fill(wood.light)
+    .stroke(line(wood.line, 4));
+  // The eye.
+  g.ellipse(-16, -10, 34, 20).fill(0xffffff).stroke(line(ink, 3));
+  g.circle(-16, -10, 11).fill(swatch.blue.fill);
+  g.circle(-16, -10, 5).fill(ink);
+  // The arrow.
+  g.moveTo(30, -10).lineTo(62, -10).moveTo(50, -22).lineTo(62, -10).lineTo(50, 2).stroke(line(ink, 5));
+  c.addChild(g);
+  return c;
+}
+
+/** Level 4's real stand, `w` × `h` centred on the origin: the poster's place and thing, and what the poster left out, under the maker's face-pin. */
+export function standArt(item: Item, w: number, h: number): Container {
+  const c = new Container();
+  const p = item.poster;
+  c.addChild(new Graphics().rect(-w / 2 + 4, -h / 2 + 6, w, h).fill({ color: ink, alpha: 0.2 }));
+  c.addChild(
+    new Graphics()
+      .rect(-w / 2, -h / 2, w, h)
+      .fill(0xffffff)
+      .stroke(line(0xcccccc, 2)),
+  );
+  const iw = w - 16,
+    ih = h - 16;
+  const pic = new Container();
+  pic.position.set(-iw / 2, -h / 2 + 8);
+  const back = placeArt(p.place, iw, ih);
+  pic.addChild(back);
+  const sky = new Graphics();
+  if (p.omit === 'night') nightSky(sky, iw, ih * 0.55, 0.85);
+  if (p.omit === 'far') farHill(sky, iw, ih);
+  pic.addChild(sky);
+  const thingSize = Math.min(iw, ih) * 0.55;
+  if (p.omit === 'last') {
+    const t = leftOutArt('last', p.thing, thingSize * 1.3);
+    t.position.set(iw * 0.5, ih * 0.62);
+    pic.addChild(t);
+  } else {
+    const t = thingArt(p.thing, p.omit === 'far' ? thingSize * 0.5 : thingSize);
+    if (p.omit === 'far') t.position.set(iw * 0.64, ih * 0.22);
+    else t.position.set(p.omit === 'queue' ? iw * 0.3 : iw * 0.5, ih * 0.58);
+    pic.addChild(t);
+  }
+  if (p.omit === 'rain') {
+    const r = leftOutArt('rain', p.thing, ih * 0.5);
+    r.position.set(iw * 0.72, ih * 0.2);
+    pic.addChild(r);
+  }
+  if (p.omit === 'queue') {
+    const q = leftOutArt('queue', p.thing, iw * 0.55);
+    q.position.set(iw * 0.72, ih * 0.72);
+    pic.addChild(q);
+  }
+  if (p.omit === 'price') {
+    const counter = new Graphics()
+      .rect(0, ih * 0.8, iw, ih * 0.2)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 2));
+    pic.addChild(counter);
+    const sh = leftOutArt('price', p.thing, iw * 0.5, p.price ?? 2);
+    sh.position.set(iw * 0.5, ih * 0.86);
+    pic.addChild(sh);
+  }
+  const a = awning(iw);
+  a.scale.set(1, 0.6);
+  pic.addChild(a);
+  const mask = new Graphics().rect(-iw / 2, -h / 2 + 8, iw, ih).fill(0xffffff);
+  pic.mask = mask;
+  c.addChild(pic, mask);
+  const pin = pinArt(item.maker, 46);
+  pin.position.set(-w / 2 + 18, -h / 2 + 14);
+  c.addChild(pin);
+  return c;
+}
+
+/** Level 5's club house, `w` × `h` centred on the origin: the club's emblem over a door, open with the seller's badge inside. */
+export function clubHouseArt(thing: Thing, badge: Badge, open: boolean, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const wallTop = -h / 2 + h * 0.36;
+  g.poly([-w / 2, wallTop, 0, -h / 2, w / 2, wallTop])
+    .fill(swatch.red.fill)
+    .stroke(line(swatch.red.line, 4));
+  g.rect(-w / 2 + 14, wallTop, w - 28, h / 2 - wallTop)
+    .fill(swatch.yellow.light)
+    .stroke(line(swatch.yellow.line, 4));
+  const dw = w * 0.36,
+    dh = (h / 2 - wallTop) * 0.8;
+  const dx = -dw / 2,
+    dy = h / 2 - dh;
+  g.roundRect(dx, dy, dw, dh, 10)
+    .fill(open ? 0x4a3a52 : wood.fill)
+    .stroke(line(wood.line, 4));
+  if (!open) g.circle(dx + dw - 12, dy + dh / 2, 5).fill(swatch.yellow.fill);
+  else
+    g.poly([dx, dy, dx - dw * 0.5, dy + 10, dx - dw * 0.5, h / 2 - 4, dx, h / 2])
+      .fill(wood.fill)
+      .stroke(line(wood.line, 3));
+  c.addChild(g);
+  const em = emblemArt(thing, Math.min(54, h * 0.32));
+  em.position.set(0, wallTop - 4);
+  c.addChild(em);
+  if (open) {
+    const b = badgeArt(badge, dw * 0.7);
+    b.position.set(0, dy + dh * 0.5);
+    c.addChild(b);
+  }
+  return c;
+}
+
+/** The paw pin, `d` across: a round note with a paw print, pinned under a club poster's claim by the friend who tried it. */
+export function pawPinArt(d: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .circle(0, 0, d / 2)
+    .fill(0xfffbe8)
+    .stroke(line(swatch.green.line, 4));
+  const s = d / 64;
+  g.ellipse(0, 8 * s, 12 * s, 10 * s).fill(swatch.brown.fill);
+  for (const [x, y] of [
+    [-14, -6],
+    [-5, -14],
+    [5, -14],
+    [14, -6],
+  ])
+    g.circle(x * s, y * s, 5 * s).fill(swatch.brown.fill);
+  g.circle(0, -d / 2 + 4, 4).fill(swatch.red.fill);
+  c.addChild(g);
   return c;
 }
