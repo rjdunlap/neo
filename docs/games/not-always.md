@@ -9,19 +9,22 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–3 |
+| school | 1–6 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Not all of them: tap the card that breaks each claim |
 | 2 | Every one? Tap a card that breaks it, or stamp it true |
 | 3 | Say it better: break the claim, then choose one true of every card |
+| 4 | Only the red ones count: a claim about some of the cards |
+| 5 | Show me why: choose what settles a disagreement (about 10 and up) |
+| 6 | Both can be true: check two claims on one row (about 10 and up) |
 
 <!-- end generated -->
 
 **Starts as:** a friend on a crate claims something about a row of picture cards; tap the card that breaks it
 
-**Grows into:** level 1 (pre-K, school): four cards and three "every" claims, tap the single breaker. Level 2: five cards (two rows in portrait), three claims with one or two true; tap a breaker (either of two is right) or press the stamp when the claim is true. Level 3 (school): break the claim, then pick one of three picture-sign mended claims, exactly one true of every card. A fitting card, a false stamp, a card tapped when the claim is true or a false mend is a miss; the friend, the sign and cards during the mend are free; two misses glow the target (one hint), Show me glows once per claim. Claims are about the cards on screen only. Story Grove
+**Grows into:** level 1 (pre-K, school): four cards and three "every" claims, tap the single breaker. Level 2: five cards (two rows in portrait), three claims with one or two true; tap a breaker (either of two is right) or press the stamp when the claim is true. Level 3 (school): break the claim, then pick one of three picture-sign mended claims, exactly one true of every card. A fitting card, a false stamp, a card tapped when the claim is true or a false mend is a miss; the friend, the sign and cards during the mend are free; two misses glow the target (one hint), Show me glows once per claim. Level 4 (school): a claim about only some of the cards ("Every red one is round"); a card outside the group is never a breaker. Level 5 (school, about 10 and up): two friends disagree about a pictured scene and she chooses the evidence that settles it over a friend's confidence. Level 6 (school, about 10 and up): two signs on one row; she checks each, breaks the false one, then picks the kind reply, which is never scored. Claims are about the cards on screen only. Story Grove
 
 ## Design notes
 
@@ -36,3 +39,5 @@ Misses and hints: a fitting card, a false stamp, a card tapped when the claim is
 **What the guide repeats.** Level 3's "What could I say instead? Listen." at the mend is an instruction (`ctx.instruct`), so the caption no longer keeps the claim that was just broken; a tap on the guide at the mend reads the mended signs as the friend does. The opening claim itself is the instruction the guide repeats; the friend's reading of it, lessons and hints stay `say`.
 
 **Upright on a phone (2026-11-18, upright batch 10):** every level plays upright with no layout change: `upright.test.ts` tests the existing `notAlwaysLayout` over every level and view.
+
+**Levels 4–6 (2026-11-22, PR #1997):** [definition](../definitions/not-always.md#levels-46-definition-philosophy-and-reasoning-pr2), [built notes](../definitions/not-always.md#built-notes-for-levels-46-2026-11-22). Level 4 draws its filtered claims from nine slot-free lines (`L4_CLAIMS`) and every card has a round or square frame; tapping a card outside the named group is a miss, with the usual glow after two. Level 5 replays vary prompt order, speaker, response order, species and a mirrored balance or ribbon, never which claim is true (facts are fixed per scene). A "very sure" answer is a miss and the evidence card settles it. Level 6 draws from eight lines (`L6_CLAIMS`, two plain *none* claims); the reply scene comes once per round after the one false sign is broken, the replies are never scored, and the pause-sheet Show me there lifts the kind reply and rereads the replies without counting. Card rows are dealt per prompt at 4 and 6. `upright.test.ts` covers the new phases. Browser play: `BROWSER_SUITE=notalways NOTALWAYS_LEVELS=4-6`.
