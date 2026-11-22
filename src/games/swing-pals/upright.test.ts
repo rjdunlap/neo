@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView, NO_INSETS, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
-import { rangeFor } from '../../progress/difficulty';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import {
   BASKET_HALF,
@@ -23,6 +23,7 @@ import {
   type Round,
   type SwingLayout,
 } from './logic';
+import { paintLayout, PAPER_SPEED } from './paint';
 
 /**
  * Swing Pals held upright (chunk 31, docs/definitions/phone-portrait.md): every level of every band it lists, every line
@@ -124,23 +125,44 @@ function screens(round: Round, L: SwingLayout, v: View): { targets: Target[]; pi
 }
 
 const cases = (Object.keys(LEVELS) as Band[]).flatMap((band) => {
-  const { min, max } = rangeFor(LEVELS, band);
-  return Array.from({ length: max - min + 1 }, (_, i) => [band, min + i] as const);
+  return levelsInOrder(rangeFor(LEVELS, band)).map((level) => [band, level] as const);
 });
 
+function checkPaint(v: View) {
+  const layout = paintLayout(v);
+  const [col] = layout.columns;
+  const targets = [
+    ...HOOKS.map((h) => rect(`${h} hook`, around(col.pivot[h], HOOK_R))),
+    rect('painting tick', around(layout.tick, 74)),
+  ];
+  for (const target of targets) expect(uprightProblems(v, [target])).toEqual([]);
+  for (const [i, a] of targets.entries())
+    for (const b of targets.slice(i + 1))
+      expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual((a.w + b.w) / 2);
+  expect(layout.paper.h).toBeGreaterThanOrEqual(180);
+  expect(PAPER_SPEED).toBeGreaterThanOrEqual(48);
+  for (const box of [layout.paper, ...HOOKS.flatMap((h) => arc(layout, 0, h))]) {
+    expect(inView(box, v)).toBe(true);
+    expect(meets(box, HOME) || meets(box, guide(v))).toBe(false);
+  }
+  expect(meets(layout.paper, around(layout.tick, 74))).toBe(false);
+}
+
 describe.each(Object.entries(views))('Swing Pals upright on %s', (_, v) => {
-  it('covers levels 1 to 8', () => {
-    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  it('covers levels 1 to 9', () => {
+    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   it.each(cases)(
     '%s level %i: every target is big enough, apart, in view and clear of Home and the guide',
     (_band, level) => {
+      if (level === 9) return checkPaint(v);
       const plan = planFor(level);
       const L = swingLayout(plan.two ? 2 : 1, v);
       for (const seed of SEEDS)
         for (const authored of [true, false]) {
           const { round } = makeRound(plan, new Rng(seed), authored);
+          if (round.kind === 'paint') throw new Error('expected a swing round');
           const all = screens(round, L, v);
           expect(all).toHaveLength(plan.lines);
           for (const { targets, pictures } of all) {
@@ -193,6 +215,7 @@ describe.each(Object.entries(views))('Swing Pals upright on %s', (_, v) => {
 describe('Swing Pals sideways', () => {
   it('keeps the tablet layout: seats 150 above the bottom, right of the guide, the same rope lengths', () => {
     for (const v of [computeView(1024, 768), computeView(1366, 1024)]) {
+      checkPaint(v);
       const two = swingLayout(2, v);
       expect(two.seatY).toBe(v.h - 150);
       expect(two.scale).toBeCloseTo((198.5 + (v.w - 1024) / 4 - 70) / Math.sin((18 * Math.PI) / 180), 6);

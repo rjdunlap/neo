@@ -33,14 +33,27 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: "The dots under the pet's swing show what to make: yours back twice for each of the pet's, once for every two, or together. Tap a hook; a clap means both are back at once.",
     },
+    { from: 9, to: 9, text: 'Push the swing. The paint pot paints a wiggle on the paper as it swings.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'Tap a hook to change the rope. The wiggles sit closer together on a shorter rope.',
+    },
+    { from: 9, to: 9, text: 'A bigger push makes a wider wiggle. The space between wiggles stays the same.' },
   ],
   finish: [
     { from: 1, to: 3, text: 'Every friend reaches the bell, chimes, apple or nest.' },
     { from: 4, to: 6, text: 'Every pair swings together.' },
     { from: 7, to: 7, text: 'Three races are watched, whoever she picks.' },
     { from: 8, to: 8, text: 'Every pair swings the way the dots ask.' },
+    { from: 9, to: 9, text: 'Tap the tick when your painting is done. You can hang it in the treehouse.' },
   ],
   note: [
+    {
+      from: 9,
+      to: 9,
+      text: 'The paper rolls while the swing moves. All paintings are welcome, and only the tick ends the round.',
+    },
     { from: 1, to: 6, text: 'A push never takes height away, and her timing is never counted against her.' },
     {
       from: 1,

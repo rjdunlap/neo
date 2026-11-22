@@ -275,7 +275,7 @@ export function widestApart(a: Hook, b: Hook, watch: number, step = 0.01): numbe
 export interface Plan {
   id: number;
   name: string;
-  mode: 'push' | 'together' | 'predict';
+  mode: 'push' | 'together' | 'predict' | 'paint';
   /** Lines (friends or pairs) in a round. */
   lines: number;
   /** Level 3: two swings, short and long. */
@@ -330,15 +330,16 @@ export const PLANS: readonly Plan[] = [
     heights: false,
     requests: true,
   },
+  { id: 9, name: 'Paint the beat', mode: 'paint', lines: 1, two: false, weights: false, heights: false },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  // Level 7 sits between 3 and 4 for pre-K, and after 6 for school.
-  prek: { min: 3, max: 7, order: [3, 7, 4] },
-  school: { min: 4, max: 8 },
+  preschool: { min: 2, max: 9, order: [2, 3, 9] },
+  // Pre-K sees the race and painting before matching two swings.
+  prek: { min: 3, max: 9, order: [3, 7, 9, 4] },
+  school: { min: 4, max: 9 },
 };
 
 export function planFor(level: number): Plan {
@@ -360,15 +361,23 @@ export type Round =
   | { kind: 'together'; lines: Line[] }
   | { kind: 'predict'; lines: Race[] };
 
+export interface PaintRound {
+  kind: 'paint';
+  hook: Hook;
+  friend: Friend;
+}
+
+export type PlannedRound = Round | PaintRound;
+
 /** The journal entry's key for "a longer rope swings slower" (`swing-pals:longer-slower`). Never rename it. */
 export const SLOWER = 'longer-slower';
 
 /**
  * Whether a finished round showed that a longer rope swings slower: two friends on ropes of different lengths swinging
- * side by side, pushed in turn (level 3) or raced (level 7). The matching levels (4 to 6 and 8) also put two ropes side
- * by side, but there she tunes one to the other, so the entry files only from the two rounds the dive names.
+ * side by side, pushed in turn (level 3) or raced (level 7), or two ropes whose patterns are recorded (level 9).
  */
-export function showsSlower(round: Round): boolean {
+export function showsSlower(round: PlannedRound, paintedHooks: readonly Hook[] = []): boolean {
+  if (round.kind === 'paint') return new Set(paintedHooks).size >= 2;
   if (round.kind === 'push')
     return round.lines.some((l) => l.swings.length === 2 && l.swings[0].hook !== l.swings[1].hook);
   if (round.kind === 'predict') return round.lines.some((r) => r.hooks[0] !== r.hooks[1]);
@@ -501,7 +510,14 @@ export const heavyTempts = (l: Line) =>
   WEIGHT[l.friend] === 'heavy' && WEIGHT[l.petFriend] !== 'heavy' && LENGTH[l.hook] > LENGTH[l.petHook];
 
 /** Does a round meet its plan's filter (the definition's table)? */
-export function roundFits(plan: Plan, round: Round): boolean {
+export function roundFits(plan: Plan, round: PlannedRound): boolean {
+  if (plan.mode === 'paint' || round.kind === 'paint')
+    return (
+      plan.mode === 'paint' &&
+      round.kind === 'paint' &&
+      HOOKS.includes(round.hook) &&
+      FRIENDS.includes(round.friend)
+    );
   if (round.kind === 'predict') {
     const races = round.lines;
     if (plan.mode !== 'predict' || races.length !== plan.lines) return false;
@@ -542,7 +558,8 @@ export function roundFits(plan: Plan, round: Round): boolean {
 }
 
 /** The fallback round, used only if 50 seeded tries all miss the filter (a test asserts it never happens). */
-export function fallbackRound(plan: Plan): Round {
+export function fallbackRound(plan: Plan): PlannedRound {
+  if (plan.mode === 'paint') return { kind: 'paint', hook: 'long', friend: 'duck' };
   if (plan.mode === 'predict') {
     return {
       kind: 'predict',
@@ -622,7 +639,21 @@ export function fallbackRound(plan: Plan): Round {
  * session). Tries at most 50 seeded rounds against the plan's filter, then the fallback; `fellBack` says which. A push
  * round's leaf goal is seeded too, except that the authored round keeps the bell.
  */
-export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Round; fellBack: boolean } {
+export function makeRound(
+  plan: Plan,
+  rng: Rng,
+  authored: boolean,
+): { round: PlannedRound; fellBack: boolean } {
+  if (plan.mode === 'paint') {
+    return {
+      round: {
+        kind: 'paint',
+        hook: authored ? 'long' : rng.pick(HOOKS),
+        friend: authored ? 'duck' : rng.pick(FRIENDS),
+      },
+      fellBack: false,
+    };
+  }
   const goal: Goal = authored ? 'bell' : rng.pick(GOALS);
   for (let attempt = 0; attempt < 50; attempt++) {
     let round: Round;
@@ -746,18 +777,22 @@ export { overlaps as rectsOverlap };
  * Two swings on a phone held upright (768 wide) hang higher, above the pet's corner, so their columns take the whole
  * width: beside the pet the ropes came out half as long and the three hook targets lay over each other.
  */
-export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
+export function swingLayout(
+  swings: 1 | 2,
+  v: View,
+  paint?: { seatY: number; left: number; right: number; maxScale: number; shortShiftRatio: number },
+): SwingLayout {
   const bell = swings === 1 ? BELL_ONE : BELL_TWO;
   const raised = swings === 2 && v.upright === true;
-  const seatY = v.h - (raised ? RAISED_SEAT_UP : SEAT_UP);
+  const seatY = paint?.seatY ?? v.h - (raised ? RAISED_SEAT_UP : SEAT_UP);
   const pet = petCorner(v);
-  const x0 = seatY + FRIEND_DOWN > pet.y ? pet.x + pet.w + 10 : 20;
-  const x1 = v.w - 20;
+  const x0 = paint?.left ?? (seatY + FRIEND_DOWN > pet.y ? pet.x + pet.w + 10 : 20);
+  const x1 = paint?.right ?? v.w - 20;
   const half = (x1 - x0) / (2 * swings);
   const sin = Math.sin((bell * Math.PI) / 180);
   // Raised, the two widest arcs may meet at the midline (never cross), which is what keeps the hooks a target apart.
   const scale = Math.min(
-    swings === 1 ? 560 : 460,
+    paint?.maxScale ?? (swings === 1 ? 560 : 460),
     seatY - 60,
     (half - FRIEND_HALF - (raised ? 0 : 10)) / sin,
   );
@@ -773,7 +808,10 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
         : x0 + half * (2 * i + 1);
     const pivot = {} as Record<Hook, Pt>;
     for (const h of HOOKS)
-      pivot[h] = { x: cx + (h === 'short' ? SHORT_SHIFT : 0), y: seatY - (LENGTH[h] / 4) * scale };
+      pivot[h] = {
+        x: cx + (h === 'short' ? (paint ? scale * paint.shortShiftRatio : SHORT_SHIFT) : 0),
+        y: seatY - (LENGTH[h] / 4) * scale,
+      };
     const col: Column = {
       pivot,
       mitten: {} as Record<Hook, Pt>,

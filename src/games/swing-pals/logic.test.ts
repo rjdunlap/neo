@@ -667,14 +667,17 @@ describe('level 8: twice as quick', () => {
 });
 
 describe('level order', () => {
-  it("pre-K steps 3 → 7 → 4; school runs 4 to 8; level 7's window includes pre-K and school", async () => {
+  it("pre-K steps 3 → 7 → 9 → 4; school runs 4 to 9; level 7's window includes pre-K and school", async () => {
     const { swingPals } = await import('./index');
     const prek = swingPals.levels('prek');
     expect(stepLevel(3, 1, prek)).toBe(7);
-    expect(stepLevel(7, 1, prek)).toBe(4);
-    expect(stepLevel(4, -1, prek)).toBe(7);
+    expect(stepLevel(7, 1, prek)).toBe(9);
+    expect(stepLevel(9, 1, prek)).toBe(4);
+    expect(stepLevel(4, -1, prek)).toBe(9);
     const school = swingPals.levels('school');
-    expect([school.min, school.max]).toEqual([4, 8]);
+    expect([school.min, school.max]).toEqual([4, 9]);
+    expect(stepLevel(8, 1, school)).toBe(9);
+    expect(stepLevel(3, 1, swingPals.levels('preschool'))).toBe(9);
     expect(stepLevel(6, 1, school)).toBe(7);
     expect(stepLevel(7, 1, school)).toBe(8);
     expect(swingPals.describeLevel?.(7)).toBe('Who comes back first?');
