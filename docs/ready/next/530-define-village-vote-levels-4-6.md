@@ -1,1 +1,0 @@
-**Define Village Vote levels 4–6** (docs only): a tie, everyone can use it and chip in, following the approved study ladder. [Study](../../deep-dives/subjects/community-civics.md#build-slices-in-order), [decision](../../archive/DECISIONS-2026-11-17.md#games)

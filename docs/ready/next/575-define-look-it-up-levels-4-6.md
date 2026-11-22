@@ -1,0 +1,1 @@
+**Define Look It Up levels 4–6** (docs only, one session; the study's lean after the decisions of 2026-11-17). [Study](../../deep-dives/subjects/informational-reading.md), [record](../../archive/DECISIONS-2026-11-17.md#games)

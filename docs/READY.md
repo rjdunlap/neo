@@ -50,16 +50,21 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **RW10 slice 2, the colour goal and the Dress colour row**, after the `paint-mixer 4` batch and RW10 slice 1 (shell, save and navigation tier with the new-interaction play: typecheck, unit tests, build, `BROWSER_SUITE=home` filtered to a school profile, and the offline check): six `colour:<c>` goals, the requested recipe for Paint Mixer level 5, the book origin that does not move her saved level, and one row of colour swatches in Dress. [Packet](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4), [work item](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals)
 
-- **Define Swing Pals, *A row of three*, at the next free level ID** (level 9 went to *Paint the beat*; docs only), after a `swingLayout` probe. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer), [record](archive/DECISIONS-2026-11-17.md#games)
 
-- **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
+- **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
-- **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
+- **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
 
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
+
+- **`village-vote` level 4, *A tie*, batch `village-vote 2`** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 4 with one hint, one upright screenshot, `fingerdemo` at level 4, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
+
+- **`village-vote` level 5, *Everyone can use it*, batch `village-vote 3`** (school; after batch `village-vote 2`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 5 with one hint, one upright screenshot, `fingerdemo` at level 5, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
+
+- **`village-vote` level 6, *Chip in*, batch `village-vote 4`** (school; after batch `village-vote 3`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 6 with one hint, one upright screenshot, `fingerdemo` at level 6, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
