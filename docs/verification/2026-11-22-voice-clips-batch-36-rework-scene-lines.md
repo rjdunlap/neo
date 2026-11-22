@@ -1,0 +1,5 @@
+# 2026-11-22 — Voice clips batch 36: rework-scene lines (PR #1986)
+
+**Changed:** `scripts/voice-clips/clips.mjs` PREFIXES gained `resident`, `arcade`, `daily`, `species`, `tune`, `heart`, `dress`, `discovery` and `chooser` (the rework scenes' lines). Rendered 27 new slot-free clips (5544 in all, 5517 before); `src/audio/clips` grew by 419,367 bytes (+0.42 MB); the service-worker precache went to 5756 entries and 116,299.91 KiB. `library` was left out on purpose: RW10 slice 1 (#1985) changes the library lines and adds `book.*` lines, so `library` and `book` follow after it lands. What stays on device speech: slotted lines (and prefixes with only slotted lines: start, result, location, count).
+**Ran:** the clip and audio unit tests (30 pass across `scripts/voice-clips` and `src/audio`), typecheck, build, and `OFFLINE_SUITE=classic` offline check against a production preview (passed, 5749 cached assets).
+**Not run:** the root offline suite (no navigation or persistence change); the full `npm test` (CI runs it); a listen to the new clips (nothing is stitched; device speech stays the fallback).
