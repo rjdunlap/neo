@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { computeView } from '../../engine/view';
+import { computeView, type View } from '../../engine/view';
+import { captionPlace } from '../../ui/caption-layout';
 import {
   alongVine,
   ANCHOR_Y,
   angleAt,
+  arcAt,
   BAND,
   beat,
   BOARD_H,
@@ -13,6 +15,27 @@ import {
   cornerButtons,
   cutBy,
   fallbacksUsed,
+  fallTime,
+  leafFor,
+  LEAF_Y,
+  LEVELS,
+  passDir,
+  ringTime,
+  whereArrive,
+  whereFinish,
+  whereHint,
+  whereLand,
+  whereLanding,
+  whereLayout,
+  whereNext,
+  whereOrigin,
+  wherePass,
+  wherePick,
+  whereReplay,
+  whereReplayEnd,
+  whereRound,
+  whereSnip,
+  type Dir,
   FRIEND_MAX,
   FRIEND_MIN,
   FRUIT_R,
@@ -61,19 +84,20 @@ const levels = Array.from({ length: MAX_LEVEL }, (_, i) => i + 1);
 const allLines = (level: number) => seeds.flatMap((seed) => linesFor(planFor(level), new Rng(seed)));
 
 describe('plans', () => {
-  it('names levels 1–5 and clamps beyond', () => {
+  it('names levels 1–6 and clamps beyond', () => {
     expect(levels.map((l) => planFor(l).name)).toEqual([
       'Snip!',
       'Two vines',
       'Wait for the swing',
       'Which vine stays?',
       'Two friends',
+      'Where will it land?',
     ]);
     expect(planFor(9).level).toBe(MAX_LEVEL);
     expect(planFor(0).level).toBe(1);
   });
   it('counts a missed drop or a hint only from level 3', () => {
-    expect(levels.map((l) => planFor(l).counts)).toEqual([false, false, true, true, true]);
+    expect(levels.map((l) => planFor(l).counts)).toEqual([false, false, true, true, true, true]);
   });
 });
 
@@ -329,8 +353,8 @@ describe('generation', () => {
 });
 
 describe('the hint', () => {
-  it('following solve at the middle of its window always feeds the friend', () => {
-    for (const level of levels) {
+  it('following solve at the middle of its window always feeds the friend (levels 1–5; level 6 has no snip window)', () => {
+    for (const level of levels.filter((l) => planFor(l).mode !== 'where')) {
       for (const l of allLines(level)) {
         if (level >= 4) {
           for (const p of pairsOf(l)) {
@@ -423,5 +447,172 @@ describe('layout', () => {
   });
   it('uses the stated toy gravity', () => {
     expect(G).toBe(1600);
+  });
+});
+
+describe('level 6, Where will it land?', () => {
+  const plan = planFor(6);
+  const dirs: Dir[] = [1, -1];
+  it("is the school band's top level and no other band reaches it", () => {
+    expect([plan.mode, plan.name, plan.lines]).toEqual(['where', 'Where will it land?', 1]);
+    expect(LEVELS.school).toEqual({ min: 3, max: 6 });
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(LEVELS[band]!.max).toBeLessThan(6);
+  });
+  it('crosses the same ring in opposite directions, level and at the same speed', () => {
+    const [r, l] = dirs.map((d) => whereLanding(d));
+    for (const x of [r, l]) {
+      expect(x.from.x).toBeCloseTo(360, 0);
+      expect(Math.abs(x.from.y - 290)).toBeLessThan(0.5);
+      expect(Math.abs(x.v.y)).toBeLessThan(0.01);
+    }
+    expect(Math.abs(r.v.x + l.v.x)).toBeLessThan(0.5);
+    expect(r.v.x).toBeCloseTo(331.2, 0);
+    expect(beat(wherePass(1).len)).toBeCloseTo(2.484, 2);
+    expect(ringTime(wherePass(1))).toBeCloseTo(beat(250) / 4, 6);
+  });
+  it('lands each pass with the shared solver, mirrored about the anchor', () => {
+    for (const d of dirs) {
+      const w = whereLanding(d);
+      expect(w.time).toBeCloseTo(fallTime(w.from, w.v, LEAF_Y), 9);
+      const p = arcAt(w.from, w.v, w.time);
+      expect([p.x, p.y]).toEqual([w.x, LEAF_Y]);
+      expect(w.time).toBeCloseTo(0.581, 2);
+    }
+    expect(Math.abs(whereLanding(1).x - 360 - (360 - whereLanding(-1).x))).toBeLessThan(0.5);
+    expect(whereLanding(1).x).toBeCloseTo(552.4, 0);
+    expect(whereLanding(-1).x).toBeCloseTo(167.6, 0);
+  });
+  it('lands on distinct leaves, each landed fruit inside its own leaf target and clear of the other', () => {
+    const L = whereLayout();
+    expect(whereLanding(1).x - whereLanding(-1).x).toBeGreaterThanOrEqual(300);
+    for (const d of dirs) {
+      const x = whereLanding(d).x;
+      const fruit: Box = { x: x - FRUIT_R, y: LEAF_Y - FRUIT_R, w: 2 * FRUIT_R, h: 2 * FRUIT_R };
+      const own = L.leaves[leafFor(d) < 0 ? 0 : 1];
+      const other = L.leaves[leafFor(d) < 0 ? 1 : 0];
+      expect(leafFor(d)).toBe(d);
+      expect(fruit.x >= own.x && fruit.x + fruit.w <= own.x + own.w).toBe(true);
+      expect(fruit.y >= own.y && fruit.y + fruit.h <= own.y + own.h).toBe(true);
+      expect(overlaps(fruit, other)).toBe(false);
+    }
+  });
+  it('keeps the whole swing and both flights on the board and clear of Snip', () => {
+    const snip = whereLayout().snip;
+    const gap = (p: { x: number; y: number }) => {
+      const dx = Math.max(snip.x - p.x, 0, p.x - (snip.x + snip.w));
+      const dy = Math.max(snip.y - p.y, 0, p.y - (snip.y + snip.h));
+      return Math.hypot(dx, dy) - FRUIT_R;
+    };
+    let least = Infinity;
+    for (const d of dirs) {
+      const s = wherePass(d);
+      for (let t = 0; t <= beat(s.len); t += 1 / 240) {
+        const p = posAt(s, t);
+        expect(p.x - FRUIT_R).toBeGreaterThanOrEqual(0);
+        expect(p.x + FRUIT_R).toBeLessThanOrEqual(BOARD_W);
+        least = Math.min(least, gap(p));
+      }
+      const w = whereLanding(d);
+      for (let t = 0; t <= w.time; t += 1 / 240) {
+        const p = arcAt(w.from, w.v, t);
+        expect(p.x - FRUIT_R).toBeGreaterThanOrEqual(0);
+        expect(p.x + FRUIT_R).toBeLessThanOrEqual(BOARD_W);
+        expect(p.y).toBeLessThanOrEqual(LEAF_Y + 1e-9);
+        least = Math.min(least, gap(p));
+      }
+    }
+    expect(least).toBeGreaterThanOrEqual(40);
+  });
+  it('every path finishes exactly once with no misses and at most two hints; the guess never changes the motion', () => {
+    for (const g0 of dirs)
+      for (const g1 of dirs)
+        for (const hintMask of [0, 1, 2, 3])
+          for (const replays of [0, 1, 3]) {
+            const r = whereRound();
+            let finishes = 0;
+            for (const pass of [0, 1]) {
+              expect(r.stage).toBe('approach');
+              // A hint before the hold repeats the instruction and counts nothing.
+              expect(whereHint(r)).toBe('instruct');
+              whereArrive(r);
+              expect(whereSnip(r)).toBe('pick-first');
+              if (hintMask & (1 << pass)) {
+                expect(whereHint(r)).toBe('counted');
+                whereArrive(r);
+                // A second hint in the same pass replays without counting.
+                expect(whereHint(r)).toBe('replayed');
+                whereArrive(r);
+              }
+              wherePick(r, -(pass ? g1 : g0) as Dir);
+              wherePick(r, pass ? g1 : g0);
+              const before = whereLanding(
+                passDir({ first: 1, kind: 'orange', friends: ['bunny', 'duck'] }, pass),
+              );
+              expect(whereSnip(r)).toBe('snip');
+              expect(whereHint(r)).toBe('instruct');
+              whereLand(r);
+              whereNext(r);
+              expect(before).toEqual(
+                whereLanding(passDir({ first: 1, kind: 'orange', friends: ['bunny', 'duck'] }, pass)),
+              );
+            }
+            expect(r.stage).toBe('compare');
+            expect(r.guesses).toEqual([g0, g1]);
+            for (let i = 0; i < replays; i++) {
+              expect(whereReplay(r)).toBe(true);
+              expect(whereFinish(r)).toBe(false);
+              whereReplayEnd(r);
+            }
+            for (let i = 0; i < 3; i++) if (whereFinish(r)) finishes++;
+            expect(finishes).toBe(1);
+            expect(r.misses).toBe(0);
+            expect(r.hints).toBe([0, 1, 1, 2][hintMask]);
+          }
+  });
+  it('authors the first round and seeds later ones: both directions first, two different friends', () => {
+    const first = makeLine(plan, new Rng(7), 0);
+    expect(first.where).toEqual({ first: 1, kind: 'orange', friends: ['bunny', 'duck'] });
+    expect([first.fruit.kind, first.friend.kind, first.breeze, first.scoot]).toEqual([
+      'orange',
+      'bunny',
+      false,
+      false,
+    ]);
+    const seen = new Set<number>();
+    for (const seed of seeds) {
+      const l = makeLine(plan, new Rng(seed), 1);
+      const w = l.where!;
+      seen.add(w.first);
+      expect(w.friends[0]).not.toBe(w.friends[1]);
+      expect(l.fruit.kind).toBe(w.kind);
+      expect(l.friend.x).toBeCloseTo(whereLanding(w.first).x, 6);
+      expect(makeLine(plan, new Rng(seed), 1)).toEqual(l);
+    }
+    expect([...seen].sort()).toEqual([-1, 1]);
+  });
+  it('fits every control at every view: 100 units or more, apart, inside the view and clear of the pet, buttons and words', () => {
+    const L = whereLayout();
+    const targets = [...L.leaves, L.snip, L.replay, L.finish];
+    for (const t of targets) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+    for (let i = 0; i < targets.length; i++)
+      for (let j = i + 1; j < targets.length; j++) expect(overlaps(targets[i], targets[j])).toBe(false);
+    const phones = [computeView(667, 375), computeView(844, 390), computeView(568, 320)];
+    const places = [
+      ...views.flatMap((v) => [captionPlace(v, false), captionPlace(v, true)]),
+      ...phones.flatMap((v) => [captionPlace(v, false), captionPlace(v, true)]),
+    ];
+    for (const place of places) {
+      const v: View = place.game;
+      const o = whereOrigin(v);
+      for (const t of targets) {
+        const b: Box = { x: o.x + t.x, y: o.y + t.y, w: t.w, h: t.h };
+        expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h).toBe(true);
+        for (const c of [...cornerButtons(v), petCorner(v)]) expect(overlaps(b, c)).toBe(false);
+        // The bubble is drawn over the game's view; the rail and strip sit beside it.
+        if (place.mode === 'bubble' && place.band) expect(overlaps(b, place.band)).toBe(false);
+      }
+      expect(o.x).toBeGreaterThanOrEqual(150);
+    }
   });
 });

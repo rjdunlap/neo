@@ -19,4 +19,12 @@ export const VOICE = {
   'vine-snip.hint-vine': ['Snip the glowing vine.'],
   'vine-snip.hint-keep': ['Keep the yellow vine. Snip the orange ones first.'],
   'vine-snip.done': ['Every friend has eaten!'],
+  'vine-snip.instruct-where': ['Where will it land? Tap a leaf, then press Snip.'],
+  'vine-snip.where-again': ["Now it's going the other way. Where will it land?"],
+  'vine-snip.pick-leaf': ['Pick a leaf first.'],
+  'vine-snip.kept-right': ['It kept going right!'],
+  'vine-snip.kept-left': ['It kept going left!'],
+  'vine-snip.hint-where': ["Watch which way it's moving at the ring."],
+  'vine-snip.where-done': ['Same ring, opposite ways, opposite leaves.'],
+  'vine-snip.where-end': ['Watch again, or finish?'],
 } satisfies Record<string, string[]>;

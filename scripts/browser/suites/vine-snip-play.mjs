@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot, log }) {
+  /** Vine Snip by touch: levels 1, 3, 4 and 5, then level 6 (Where will it land?). `VINE_LEVELS=6` runs only level 6. */
   async function vineSnipPlay() {
+    const only = process.env.VINE_LEVELS?.split(',').map(Number);
+    if (!only || only.some((l) => l < 6)) await earlier();
+    if (!only || only.includes(6)) await where();
+  }
+
+  async function earlier() {
     const state = () => page.evaluate(() => neo.scene.game.state);
     const score = () =>
       page.evaluate(() => {
@@ -220,6 +227,120 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
     log(
       `Vine Snip 1, 3, 4 and 5: level 1 a requested hint glowed the vine and counted nothing, three taps anywhere fed every friend 0/0; level 3 portrait, a snip at the far turnaround missed, a requested hint glowed the arc, then three timed snips fed every friend 1/1; level 4 portrait three vines with the keep glow; level 5 a wrong-side keep missed, Grow back was free, both lines fed 1/0; R4 the other fruit open ${Math.round(open)} ms into a 4 s munch, the last munch heard out; passed`,
+    );
+  }
+
+  /**
+   * Level 6 on a sideways phone with the words shown: guess the left leaf on the rightward pass and the right leaf on the
+   * leftward pass, Snip before a guess, one Show a hint, one Replay, then Finish for one sticker with 0 misses and 1 hint.
+   */
+  async function where() {
+    const state = () => page.evaluate(() => neo.scene.game.state);
+    const tap = (p) => page.evaluate((p) => kit.tap(p.x, p.y), p);
+    const stage = (want) =>
+      page.waitForFunction(
+        (want) => {
+          const s = neo.scene.game.state;
+          return s.stage === want && !s.waiting;
+        },
+        want,
+        { timeout: 15000 },
+      );
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+      kit.store.data.settings.showWords = true;
+    });
+    const before = await page.evaluate(() => kit.store.stats('vine-snip').history.length);
+    await launch('vine-snip', 6, 'Mia', 'school');
+    await stage('hold');
+    let s = await state();
+    assert.deepEqual(
+      [s.level, s.pass, s.dir, s.where.kind, s.where.friends],
+      [6, 0, 1, 'orange', ['bunny', 'duck']],
+      'the authored first round: an orange heading right',
+    );
+    // Snip before a guess: a soft "Pick a leaf first", nothing counted, still holding.
+    await tap(s.snip);
+    await page.waitForTimeout(300);
+    s = await state();
+    assert.deepEqual([s.stage, s.hints, s.misses], ['hold', 0, 0], 'Snip before a guess counts nothing');
+    // Show a hint replays the approach after its words, once counted.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    s = await state();
+    assert.deepEqual(
+      [s.stage, s.hints],
+      ['approach', 1],
+      'a hint during the hold counts once and replays the approach',
+    );
+    await stage('hold');
+    await page.waitForTimeout(700);
+    await screenshot('vine-snip-6-phone-hold');
+    // Opposite guess: the left leaf, though it heads right.
+    s = await state();
+    await tap(s.leaves[0]);
+    await page.waitForTimeout(300);
+    await tap(s.leaves[1]);
+    await page.waitForTimeout(300);
+    await tap(s.leaves[0]);
+    s = await state();
+    assert.deepEqual(s.guesses, [-1, null], 'the paw print moves and stays on the last leaf');
+    await tap(s.snip);
+    await stage('approach');
+    s = await state();
+    assert.deepEqual(
+      [s.pass, s.dir, s.misses],
+      [1, -1, 0],
+      'it landed right, no miss; the second pass heads left',
+    );
+    await stage('hold');
+    s = await state();
+    await tap(s.leaves[1]);
+    await page.waitForTimeout(300);
+    await tap(s.snip);
+    await page.waitForFunction(
+      () => neo.scene.game.state.stage === 'compare' && neo.scene.game.state.buttons,
+      null,
+      {
+        timeout: 20000,
+      },
+    );
+    s = await state();
+    assert.deepEqual(
+      [s.guesses, s.hints, s.misses],
+      [[-1, 1], 1, 0],
+      'both guesses kept, one hint, no misses',
+    );
+    await screenshot('vine-snip-6-phone-compare');
+    await tap(s.replay);
+    await page.waitForFunction(() => neo.scene.game.state.stage === 'replay', null, { timeout: 3000 });
+    await page.waitForFunction(
+      () => neo.scene.game.state.stage === 'compare' && neo.scene.game.state.buttons,
+      null,
+      {
+        timeout: 10000,
+      },
+    );
+    s = await state();
+    await tap(s.finish);
+    await finished('vine-snip');
+    const after = await page.evaluate(() => {
+      const h = kit.store.stats('vine-snip').history;
+      return { n: h.length, last: h.at(-1) };
+    });
+    assert.equal(after.n, before + 1, 'one round saved');
+    assert.deepEqual(
+      [after.last.level, after.last.misses, after.last.hints],
+      [6, 0, 1],
+      'level 6 saved 0 misses, 1 hint',
+    );
+    await page.evaluate(() => {
+      kit.store.data.settings.showWords = false;
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Vine Snip 6 on an 844×390 phone with words: Snip before a guess counted nothing, a hint replayed the approach and counted once, opposite guesses on both passes, Replay, Finish saved 0 misses and 1 hint; passed',
     );
   }
   return { vineSnipPlay };

@@ -74,7 +74,7 @@ A lifting bubble and a bounce leaf would each add a new motion rule and a separa
 ## Build slices, in order
 
 1. **Define level 6, Where will it land?** (docs only; defined 2026-11-21, [definition](../definitions/vine-snip-where-will-it-land.md)). Work out one authored mirrored pair with `posAt`, `velocityAt` and `arcAt`/the crossing calculation; show the quantitative leaf separation and phone target/caption envelope. Specify the approach, prediction, Snip, reveal, Help and free replay states, and the school range and ghost-finger contract. Check links and diff.
-2. **Build the defined level** from the [definition](../definitions/vine-snip-where-will-it-land.md). New interaction tier. Typecheck and rule tests, one filtered `vinesnip` play with opposite guesses on two passes, Help, replay and one award, a screenshot in the phone's supported orientation, and `fingerdemo` at level 6. Add the game page and how-to changes then.
+2. **Build the defined level** from the [definition](../definitions/vine-snip-where-will-it-land.md). New interaction tier. Typecheck and rule tests, one filtered `vinesnip` play with opposite guesses on two passes, Help, replay and one award, a screenshot in the phone's supported orientation, and `fingerdemo` at level 6. Add the game page and how-to changes then. **Built** 2026-11-22 (PR #1990); departures in the [game page](../games/vine-snip.md#design-notes).
 
 ## What was built in this session
 
