@@ -252,6 +252,7 @@ class ShellRows implements Game {
         void this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.3, ease: ease.outBack });
       }
       sfx.tick();
+      this.idle = 0;
       if (!this.saidFull) {
         this.saidFull = true;
         void this.ctx.say('sr.full');
