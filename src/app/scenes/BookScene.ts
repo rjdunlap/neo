@@ -211,7 +211,7 @@ export class BookScene extends Scene {
   }
 
   private friendCard(who: Individual) {
-    const portrait = makePortrait(who, CARD);
+    const portrait = makePortrait(who, CARD - 10);
     return this.card(portrait, who.name, (node) => {
       if (this.previewed === who.id) {
         this.leave(node, () => this.app.go.friends(who.id, { book: true }));

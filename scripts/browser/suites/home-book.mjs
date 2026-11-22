@@ -37,16 +37,13 @@ export async function homeBook({ page, errors, log, ready, scene, pickFirst, tap
   const kind = () => page.evaluate(() => neo.scene.pages[neo.scene.page].kind);
   const chosen = () => page.evaluate(() => kit.store.data.book.goal);
   const next = async () => {
-    const point = await page.evaluate(() => {
-      const pos = neo.scene.next.getGlobalPosition();
-      const rect = document.querySelector('canvas').getBoundingClientRect();
-      return { x: pos.x + rect.left, y: pos.y + rect.top };
+    const previous = await page.evaluate(() => neo.scene.page);
+    await page.evaluate(async () => {
+      const { x, y } = neo.scene.next.getGlobalPosition();
+      const point = [x, y];
+      await kit.drag(kit.line(point, point, 26), 1, 28);
     });
-    await page.mouse.move(point.x, point.y);
-    await page.mouse.down();
-    await page.waitForTimeout(460);
-    await page.mouse.up();
-    await page.waitForTimeout(80);
+    assert.notEqual(await page.evaluate(() => neo.scene.page), previous, 'holding Next turns the page');
   };
   await openBook();
   assert.equal(await kind(), 'goals');
@@ -93,7 +90,12 @@ export async function homeBook({ page, errors, log, ready, scene, pickFirst, tap
   await tap('neo.scene.path');
   await scene('ProjectScene');
   await page.waitForFunction(() => neo.scene.ending === 'naming', null, { timeout: 25000 });
+  // Let Pixi render the newly attached name buttons before reading their transforms.
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
   await tap('neo.scene.names[0].node');
+  assert.equal(await page.evaluate(() => neo.scene.chosen), 'Pebble');
   await tap('neo.scene.arrow');
   await scene('BookScene');
   assert.equal(await kind(), 'goals');
@@ -104,7 +106,9 @@ export async function homeBook({ page, errors, log, ready, scene, pickFirst, tap
   await tap("neo.scene.cards.find(({book}) => book === 'collection').node");
   await scene('BookScene');
   assert.equal(await kind(), 'friends');
-  while ((await kind()) !== 'things') await next();
+  const toThings = await page.evaluate(() => neo.scene.pages.length - 1 - neo.scene.page);
+  for (let i = 0; i < toThings; i++) await next();
+  assert.equal(await kind(), 'things');
   await tap('neo.scene.cards[0]');
   await scene('PlayScene');
   assert.ok(await page.evaluate(() => neo.scene.bed), 'the earned bed opens creature play');

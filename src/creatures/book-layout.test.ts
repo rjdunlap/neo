@@ -67,14 +67,14 @@ describe('collection-book paging', () => {
           });
           const arrow = 2 * (BOOK_ARROW_RADIUS + 14);
           const boxes = [
-            box(l.back, 2 * (l.back.r + 8)),
-            box(l.home, 2 * (l.home.r + 8)),
+            box(l.back, 2 * (l.back.r + 14)),
+            box(l.home, 2 * (l.home.r + 14)),
             box(l.heading, BOOK_HEADING.w, BOOK_HEADING.h),
             box(l.previous, arrow),
             box(l.next, arrow),
             ...l.cards.map((p) => box(p, CARD)),
           ];
-          if (page.kind === 'goals') boxes.push(box(l.goalArt, CARD), box(l.star, 116), box(l.path, 116));
+          if (page.kind === 'goals') boxes.push(box(l.goalArt, CARD), box(l.star, 128), box(l.path, 128));
           for (const [i, a] of boxes.entries()) {
             expect(a.right - a.left).toBeGreaterThanOrEqual(100);
             expect(a.bottom - a.top).toBeGreaterThanOrEqual(100);

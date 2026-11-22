@@ -48,7 +48,7 @@ export function bookLayout(view: View, count: number) {
   return {
     back: { x: BACK.x, y: BACK.y, r: CORNER_RADIUS },
     home: { x: HOME_BUTTON.x, y: HOME_BUTTON.y, r: CORNER_RADIUS },
-    heading: { x: mid, y: top + 156 },
+    heading: { x: mid, y: top + (view.upright ? 180 : 156) },
     cards,
     goalArt: { x: mid, y: center - 70 },
     star: { x: mid - 83, y: center + 108 },

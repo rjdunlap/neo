@@ -1,6 +1,6 @@
 # RW10: Collection book and chosen unlock goals (definition)
 
-Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) ([issue #494](https://github.com/rjdunlap/neo/issues/494)); the definition started on the [2026-11-17 decision](../archive/DECISIONS-2026-11-17.md#rework) that RW08's slices 1–2 meet its dependency. **Nothing here is built**, and being defined does not authorize RW11 or RW12. It builds on the [RW05 collection model](CREATURE-COLLECTION.md) (individuals, `meet()`, the `metAt` token, Friends), [RW06's dressing](HOME.md) (looks, no wardrobe inventory), [RW07's welcome project](WELCOME-BUILD.md) (the adoption token, the basket bed) and [RW08's library](RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home). Every code claim below was checked at `dc3645c94` (`origin/main`, 2026-11-22).
+Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) ([issue #494](https://github.com/rjdunlap/neo/issues/494)); the definition started on the [2026-11-17 decision](../archive/DECISIONS-2026-11-17.md#rework) that RW08's slices 1–2 meet its dependency. Slice 1 is implemented. Slice 2 follows the Paint Mixer palette batch. It builds on the [RW05 collection model](CREATURE-COLLECTION.md) (individuals, `meet()`, the `metAt` token, Friends), [RW06's dressing](HOME.md) (looks, no wardrobe inventory), [RW07's welcome project](WELCOME-BUILD.md) (the adoption token, the basket bed) and [RW08's library](RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home). Every code claim below was checked at `dc3645c94` (`origin/main`, 2026-11-22).
 
 ## Summary
 
@@ -42,7 +42,7 @@ The page order is fixed; the dots under the page show where she is. A profile wi
 
 **Choosing a goal.** Each goal card has a star button (100 units, touch-down feedback). Tapping it makes that goal the chosen one, says `book.chosen`, and moves its card first; tapping the chosen star again clears the choice. At most one goal is chosen. Choosing starts nothing, changes no level, and is never asked for. Following a path button does not choose the goal either.
 
-**Grouping keeps a larger collection readable.** The book never shows more than six cards at a time, groups by species and pages within a group. A 24-friend profile with three species is at most five Friends pages. A test fills a profile to 24 and checks the paging at every view.
+**Grouping keeps a larger collection readable.** The book never shows more than six cards at a time, groups by species and pages within a group. A 24-friend profile with three species can fill six Friends pages, for example with 22 sprouts, one river friend and one glider. A test fills a profile to 24 and checks the paging at every view.
 
 **Never mastery.** Opening, paging, choosing and following a path record nothing: no sticker, round, miss, hint, journal entry or stat. The journal stays the place discoveries are filed; the book reads it.
 
@@ -62,7 +62,7 @@ Goal {
 
 | Goal | Reachable when | Done when | Path |
 | --- | --- | --- | --- |
-| `friend:welcome`: meet the newcomer (`newcomerFor(owned)`, named by species) | The project is hers and open: `showsContinue(projects.welcome, band)` | `welcomeFriend(owned)` exists | `go.project()`, the page Home's Continue also opens |
+| `friend:welcome`: meet the newcomer (`newcomerFor(owned)`, named by species) | The project is hers and open (`showsContinue(projects.welcome, band)`) and the collection has room for her newcomer | `welcomeFriend(owned)` exists | `go.project()`, the page Home's Continue also opens |
 | `colour:<c>`, one per paint-shelf colour (slice 2) | Band `school`, where Paint Mixer plays | `journal.found` holds `paint-mixer:<c>` | `go.game('paint-mixer', band, undefined, false, { book: true }, 5)` with the recipe requested (below) |
 
 **After the welcome project ends** the friend goal is done, shown once as the friend in colour, and the next open of the book has no friend goal: the remaining pilot species and the second wave have no built path, so they are not shown. A second project that welcomes another species (PET-INTEGRATION's [meeting a creature inside a game](PET-INTEGRATION.md#5-meeting-a-creature-inside-a-game-rw10-with-rw07-style-projects)) adds its row here when it is built; RW12 owns that.
@@ -103,14 +103,14 @@ The [Pok Pok review's P6](../reviews/POK-POK.md#p6-the-put-down-test-for-unlock-
 
 ## Slice 1: the book and the discovery goal
 
-Claimed by `codex/neo-ready-rw10-book` (Neo roadmap slices, 2026-11-22).
+Implemented 2026-11-22.
 
 `BookScene`, `go.book()` in both route tables (the island's falls back to the treehouse, as `library` does), the library card, the goals table with `friend:welcome`, the Friends and Things pages, the star, `book.goal` with repair, the guard test.
 
 - **Files:** `src/app/scenes/BookScene.ts` (new), `src/creatures/book-layout.ts` and its test (new), `src/content/goals.ts` and its test (new), `src/app/scenes/LibraryScene.ts`, `src/app/App.ts` (`Routes.book`, the `{ book: true }` origin), `src/app/routes.ts`, `src/rework.ts`, `src/progress/save.ts`, `src/progress/store.ts` (`chooseGoal(id | null)`, written immediately like `choose()`), their tests, `src/content/voice-script.ts`.
 - **Silhouette:** the newcomer's prepared portrait drawn with a dark tint (a `ColorMatrixFilter`, as `recolor()` does), no new art.
 - **Voice:** `library.book`, `book.pick` (the instruction the book repeats when the page is tapped, since it has no corner guide: "Here are your friends and what you can find next"), `book.meet` ("Get the house ready, and a new friend will come to stay!", after the species' `species.<id>` line), `book.chosen`, `book.things`. Navigation needs no reading. Their clips follow the voice-clip batches.
-- **Tests:** goals: `friend:welcome` reachable exactly when `showsContinue`, done exactly when `welcomeFriend`, its name follows `newcomerFor`; save: unknown goal ids repair to null, reset clears, profiles do not share; layout: every target at least 100 units, cards 150, nothing under the corner buttons, paging at 24 friends in four views; the guard test.
+- **Tests:** goals: `friend:welcome` reachable while `showsContinue` and there is room to adopt, done exactly when `welcomeFriend`, its name follows `newcomerFor`; save: unknown goal ids repair to null, reset clears, profiles do not share; layout: every target at least 100 units, cards 150, nothing under the corner buttons, paging at 24 friends in four views; the guard test.
 - **Check tier: shell, save and navigation.** Typecheck, unit tests, build, `BROWSER_SUITE=home` extended with creature play → library → book (a pre-K profile with the project open: the goal card, its star, the path to the project page, Back to the book; a friend card twice to Friends with that friend previewed; one landscape and one upright screenshot), and the offline check because persistence and root navigation change. `world`, `couch` and `picnic` are not needed.
 
 ## Slice 2: the colour goal (after `paint-mixer 4`)
@@ -140,4 +140,4 @@ Each has a lean; the build uses the leans, and a [playtest note](../OBSERVATIONS
 3. **Reset clears the chosen goal.** Lean: clear it, as levels are cleared; creatures and done-states are untouched.
 4. **The colour goal waits for `paint-mixer 4`** rather than absorbing it. Lean: wait, as the 2026-11-17 record split the batch.
 
-**Proof of this packet:** links and `git diff --check`. Nothing was built or run.
+**Definition checks:** links and `git diff --check`.
