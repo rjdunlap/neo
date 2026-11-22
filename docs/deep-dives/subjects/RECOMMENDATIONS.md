@@ -850,7 +850,7 @@ Completion with spoken support is not evidence of independent phonological aware
 | **Rock Pool / shore zones** · P–S · content in Photo Safari and Habitat Helpers | hand to those dives | The pool shows when the sea is out; who lives high and low by what they need |
 | **Down We Go** · pre-K–upper school | [defined](../../definitions/down-we-go.md) 2026-11-18, levels 1–4; build queued | A lantern on a rope, light that dims by stops, a seaweed question (seaweed makes its food with sunlight). Ordered stops, never metres or percentages |
 | **Drift Cards** · upper school–M | defined 2026-10-31 ([levels 1–3](../../definitions/drift-cards.md); build queued; wooden cards, not bottles) | Send a bottle on a current map and predict where it lands (MS-ESS2-6). Counts of the 1992 toy spill disagree between sources |
-| **Tide Tables** · 13+ / parents | sketch; after a Lantern Lake capacity test | A cozy scheduling puzzle that fits jobs into tide windows |
+| **Tide Tables** · 13+ / parents | [Levels 1–2 defined](../../definitions/tide-tables.md); build next | Fit three jobs into shared tide slots, with alternate plans and revision |
 
 Completion with spoken support is not evidence of independent understanding of tides, and nothing scores a recited fact.
 

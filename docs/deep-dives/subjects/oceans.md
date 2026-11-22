@@ -99,7 +99,7 @@ Effort as in the other studies (S small mode, M bounded new interaction, L model
 | **Shore zones** (cases in Habitat Helpers) | Who lives high on the shore and who lives low; needs, not trivia (5h) | K–S | S–M. Handed to the Habitat Helpers dive; designed there as levels 8–9 (2026-10-31, [dive](../habitat-helpers.md)) |
 | **Down We Go** (new game, [defined 2026-11-18](../../definitions/down-we-go.md); levels 1–4 built 2026-11-20) | Lower a lantern; the light meter drops by stops; choose the seaweed's place; the deep is dark so the lantern is the light | P–U (the definition gives it pre-K 1–2 and school 2–4) | M. Light meter, depth stops; defined after Tide Line |
 | **Drift Cards** (new game, later; U/M; levels 1–3 [defined](../../definitions/drift-cards.md) 2026-10-31) | Send a wooden card (not a bottle); arrows show wind and currents; predict where it lands, then check | U–M; MS-ESS2-6, 1c | M–L. Defined; build queued |
-| **Tide Tables** (grown-up puzzle, later) | Fit jobs into the tide windows of a day | G; 13+ | M. Placement (Lantern Lake capacity) unresolved |
+| **Tide Tables** (grown-up puzzle, later) | Fit jobs into the tide windows of a day | G; 13+ | M. [Levels 1–2 defined](../../definitions/tide-tables.md) for Lantern Lake |
 | Rejected | Fishing derby / overfishing, aquarium keeper, oil or plastic spill clean-up, coral-bleaching rescue, shark feeding, sea-monster descent, whale-watching ship, "Below the Waves" integers (Sea Lift has it) | | Violates the no-predation-as-fun, tone and overlap rules |
 
 ## A first game's ladder: Tide Line
@@ -164,7 +164,7 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 | **4 — Handoffs** | Salty or Fresh taken by the Sink or Float dive as level 10 (define; [dive](../sink-float.md#build-slices-in-order); 5-ESS2-2 does not fit buoyancy); Beach Day Pack-up weighed in the Second Chance Shed 5–6 definition (2026-10-31) and kept as a proposed picnic set for its levels 2–4; Beach Tally to the Picture Graph dive (designed as its level 8 *Line them up*, 2026-11-01: [dive](../picture-graph.md)); Rock Pool to Photo Safari; shore zones to the Habitat Helpers dive (designed as its levels 8–9, 2026-10-31: [dive](../habitat-helpers.md)) | Each through its own game's workflow; stable IDs and pins kept |
 | **5 — Define Down We Go** (defined 2026-11-18: [definition](../../definitions/down-we-go.md), levels 1–4; seaweed is not called a plant after the source check; levels 1–4 built 2026-11-20) | The light meter, stops, the seaweed question and the school levels | Docs only, defined, after slice 2 so the shore art exists |
 | **6 — Define Drift Cards** (defined 2026-10-31: [definition](../../definitions/drift-cards.md), levels 1–3) | Maps with currents; the route puzzle | Docs only; done, wooden cards not bottles, the 1992 spill counts unused; levels 1–2 built 2026-10-31 (PR #1078); level 3 built 2026-11-02 (PR #1119) |
-| **7 — Define Tide Tables** | Grown-up cases; placement | Docs only, after capacity is measured |
+| **7 — Define Tide Tables** (defined 2026-11-22: [definition](../../definitions/tide-tables.md)) | **Build batch `tide-tables 1`**: two grown-up levels for assigning three shore jobs to one shared tide table, with revision and more than one valid schedule | [New-game tier](../../definitions/tide-tables.md#build-checks); Lantern Lake pages |
 
 ## What was built and what ran
 
