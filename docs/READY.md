@@ -64,6 +64,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
+- **`swap-meet` levels 5–6, *Chain of three* and *Shells make it easier*** (school; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `swapmeet` play at levels 5 and 6 with a new levels filter, one upright screenshot at level 6 stage 2, `fingerdemo` at 5 and 6, build because voice clips change). [Definition](definitions/swap-meet.md#build-and-checks-for-levels-56), [study](deep-dives/subjects/money-economy.md#build-slices-in-order)
+
 - **`draw-the-pattern` level 12, *Your pattern*** (pre-K and school; new levels on an existing interaction: typecheck and unit tests including the rule tests, one `BROWSER_SUITE=drawpattern DRAW_LEVELS=12` play on an upright phone, `fingerdemo` at 12, build because voice and how-to change). [Definition](definitions/draw-the-pattern-your-pattern.md#check-tier), [dive](deep-dives/draw-the-pattern.md#build-slices-in-order)
 
 
