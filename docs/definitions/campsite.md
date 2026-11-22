@@ -1,6 +1,6 @@
 # Campsite level 1 (definition)
 
-**Status:** ready to build level 1, *Pitch the tents*. [Definition PR #1917](https://github.com/rjdunlap/neo/pull/1917).
+**Built:** level 1, *Pitch the tents* (PR #1954); larger puzzles, a school ladder and a grown-up band are not defined, so there is no section to read yet. [Definition PR #1917](https://github.com/rjdunlap/neo/pull/1917).
 
 Campsite (`campsite`) is the PP6 touch puzzle from the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#build-slices-in-order). Pitch three little tents, one beside each tree. The counted signs say how many tents belong in each row and column, and every tent needs space around it. The player uses the counts to rule out squares and looks for the last space beside a tree. Finish with the campers coming out of their tents.
 

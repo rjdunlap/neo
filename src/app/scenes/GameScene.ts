@@ -252,6 +252,7 @@ export class GameScene extends Scene {
   private build(): Game {
     const band = this.band;
     const lifetime = this.lifetime;
+    const scene = this;
     const ctx: GameContext = {
       get alive() {
         return lifetime.alive;
@@ -259,7 +260,10 @@ export class GameScene extends Scene {
       own: lifetime.own,
       listen: lifetime.listen.bind(lifetime),
       stage: this.stage,
-      view: this.place.game,
+      // Live: the shell can move the round onto the upright area after the game is built, and every resize replaces the place.
+      get view() {
+        return scene.place.game;
+      },
       level: this.level,
       band,
       rng: new Rng(),
