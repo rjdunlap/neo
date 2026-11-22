@@ -50,13 +50,15 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **RW10 slice 2, the colour goal and the Dress colour row**, after the `paint-mixer 4` batch and RW10 slice 1 (shell, save and navigation tier with the new-interaction play: typecheck, unit tests, build, `BROWSER_SUITE=home` filtered to a school profile, and the offline check): six `colour:<c>` goals, the requested recipe for Paint Mixer level 5, the book origin that does not move her saved level, and one row of colour swatches in Dress. [Packet](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4), [work item](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals)
 
-- **Define Swing Pals level 9** (docs only), after the *Paint the beat* definition and a `swingLayout` probe. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer), [record](archive/DECISIONS-2026-11-17.md#games)
+- **Define Swing Pals, *A row of three*, at the next free level ID** (level 9 went to *Paint the beat*; docs only), after a `swingLayout` probe. [Dive](deep-dives/swing-pals.md#decisions-for-the-developer), [record](archive/DECISIONS-2026-11-17.md#games)
 
 - **Definitions of levels that waited on play** (one docs-only session each, on the study's lean): Village Vote 4–6 ([study](deep-dives/subjects/community-civics.md)), Look It Up 4–6 ([study](deep-dives/subjects/informational-reading.md)), Lasso Loops 7 ([study](deep-dives/subjects/estimation.md)), then Word Glue 4–5 and Thought Bubbles 4 ([backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 - **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Tide Tables ([oceans](deep-dives/subjects/oceans.md)), Truth Bridge ([philosophy](deep-dives/subjects/philosophy-reasoning.md)), Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
+
+- **`swing-pals` level 9, *Paint the beat*** (preschool, pre-K and school; new interaction on an existing game: typecheck and unit tests including creations and the swing's upright test, one scripted play of level 9 keeping the painting and taking one hint, one upright portrait screenshot, `fingerdemo` at 9, build). [Definition](definitions/swing-pals-paint-the-beat.md#check-tier), [dive](deep-dives/swing-pals.md#build-slices-in-order)
 
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
