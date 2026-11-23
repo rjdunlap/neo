@@ -494,6 +494,12 @@ class OwlWalk implements Game {
     const now = performance.now();
     if (now - this.lastTap < 150 || palmOnGlass()) return;
     this.lastTap = now;
+    if (this.plan.mode === 'free' && this.busy && !this.finished) {
+      // The stepping stones answer every touch, even mid-hop: a ring where the finger landed.
+      const p = this.touch.toLocal(e.global);
+      this.ripple(p.x, p.y);
+      return;
+    }
     if (this.busy || this.finished || this.turn !== 'child') return;
     const hit = this.nearest(this.touch.toLocal(e.global));
     if (this.plan.mode === 'free') return this.step(hit);
