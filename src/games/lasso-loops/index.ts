@@ -8,13 +8,17 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import { RoundButton } from '../../ui/buttons';
+import { checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  DONE_R,
   GUESS_HIT,
   JAR_H,
   JAR_W,
+  LEAF_HIT,
   LEVELS,
   RANGE_HIT,
   choices,
@@ -22,9 +26,16 @@ import {
   demoLoop,
   guessCards,
   gridFor,
+  hasLeaf,
   inside,
   lassoLayout,
+  leafSlot,
+  makeCountLine,
+  makeHint,
+  makeLoop,
+  makeNext,
   makeRound,
+  makeTotal,
   nearestGroup,
   planFor,
   rangeCards,
@@ -34,6 +45,7 @@ import {
   type LassoLayout,
   type LassoPlan,
   type LassoRound,
+  type MakeState,
   type Point,
 } from './logic';
 
@@ -45,6 +57,8 @@ class Firefly extends Container {
   readonly ring = new Graphics().circle(0, 0, 32).stroke({ width: 5, color: 0xffffff });
   /** Where it hovers, in play-area fractions; null once caught. */
   spot: Point | null;
+  /** Where it started, so a firefly let go at level 8 can fly back. */
+  readonly home: Point;
   caught = false;
   private clock = Math.random() * 6;
   private readonly body = new Container();
@@ -52,6 +66,7 @@ class Firefly extends Container {
   constructor(spot: Point) {
     super();
     this.spot = spot;
+    this.home = spot;
     const g = new Graphics()
       .ellipse(-9, -10, 9, 6)
       .ellipse(9, -10, 9, 6)
@@ -217,6 +232,14 @@ class LassoLoops implements Game {
   lastLoop: Point[] = [];
   readonly sky = new Graphics();
   readonly leaf = new Graphics();
+  /** The fireflies resting on the leaf, in the order they landed. */
+  readonly leafFlies: Firefly[] = [];
+  /** Level 8: nine hollow places on the leaf, its hint glow, the tick, and the wrong ticks so far. */
+  private readonly leafDots = new Graphics();
+  readonly leafGlow = new Graphics().ellipse(0, -8, 112, 74).fill({ color: 0xfff3a0, alpha: 0.85 });
+  doneButton: RoundButton | null = null;
+  private makeWrongs = 0;
+  private makeHinted = false;
 
   private readonly backdrop: Backdrop;
   private readonly trail = new Graphics();
@@ -268,7 +291,8 @@ class LassoLoops implements Game {
       this.guessPhase = 'first';
       this.jars.forEach((j) => (j.visible = false));
     }
-    if (this.plan.guess || this.plan.range) {
+    const make = this.plan.mode === 'make';
+    if (this.plan.guess || this.plan.range || make) {
       const bug = new Firefly({ x: 0, y: 0 });
       bug.position.set(-52, 0);
       this.guessNumber.x = 24;
@@ -282,6 +306,25 @@ class LassoLoops implements Game {
     this.guessSign.eventMode = 'none';
     this.outlines.eventMode = 'none';
     this.leaf.visible = false;
+    this.leafGlow.visible = false;
+    this.leafGlow.eventMode = 'none';
+    this.leafDots.eventMode = 'none';
+    if (make) {
+      // The sign says the number; the leaf is out from the start with nine places, and a jar or the leaf is tapped to
+      // let its fireflies go. They stand below the loop layer, whose touch area ends above them.
+      this.guessNumber.text = String(this.round.target);
+      this.guessSign.visible = true;
+      this.leaf.visible = true;
+      for (let k = 0; k < 9; k++) this.leafDots.circle(leafSlot(k).x, leafSlot(k).y, 11);
+      this.leafDots.stroke({ width: 3, color: 0xffffff, alpha: 0.7 });
+      this.leaf.hitArea = new Rectangle(-LEAF_HIT.w / 2, -8 - LEAF_HIT.h / 2, LEAF_HIT.w, LEAF_HIT.h);
+      onTap(this.leaf, () => void this.release(this.leafFlies));
+      for (const jar of this.jars) {
+        jar.hitArea = new Rectangle(-JAR_W / 2, -JAR_H, JAR_W, JAR_H);
+        onTap(jar, () => void this.release(jar.flies));
+      }
+      this.doneButton = new RoundButton(checkIcon(), swatch.green, DONE_R, () => void this.tapDone());
+    }
     this.sky.eventMode = 'static';
     this.sky.on('pointerdown', (e) => this.down(e));
     this.sky.on('globalpointermove', (e) => this.move(e));
@@ -293,7 +336,9 @@ class LassoLoops implements Game {
     // The loop layer catches touches over the meadow; jars and answer pads sit above it.
     ctx.stage.addChild(
       this.backdrop,
+      this.leafGlow,
       this.leaf,
+      this.leafDots,
       this.outlines,
       ...this.jars,
       this.flyLayer,
@@ -303,6 +348,7 @@ class LassoLoops implements Game {
       this.guessLayer,
       this.guessSign,
     );
+    if (this.doneButton) ctx.stage.addChild(this.doneButton);
   }
 
   start() {
@@ -335,6 +381,12 @@ class LassoLoops implements Game {
       .lineTo(80, 0)
       .stroke(line(swatch.green.line, 4));
     this.leaf.position.copyFrom(L.leaf);
+    this.leafDots.position.copyFrom(L.leaf);
+    this.leafGlow.position.copyFrom(L.leaf);
+    this.leafFlies.forEach((f, k) => {
+      if (!this.ctx.tw.busy(f)) f.position.set(L.leaf.x + leafSlot(k).x, L.leaf.y + leafSlot(k).y);
+    });
+    this.doneButton?.position.copyFrom(L.done);
     this.outlines.children.forEach((o, k) => o.position.copyFrom(L.shelf[k + 1]));
     this.layoutPads();
     this.layoutGuesses();
@@ -342,7 +394,14 @@ class LassoLoops implements Game {
   }
 
   private layout(v: View) {
-    return lassoLayout(v, this.round.jars.length, this.round.ones > 0, !!this.plan.guess, !!this.plan.range);
+    return lassoLayout(
+      v,
+      this.round.jars.length,
+      hasLeaf(this.round),
+      !!this.plan.guess,
+      !!this.plan.range,
+      this.plan.mode === 'make',
+    );
   }
 
   /** Level 7 before the sensible guess: the full jar stands on the shelf beside the outlines. */
@@ -373,6 +432,19 @@ class LassoLoops implements Game {
       return right ? { tap: { on: right }, pause: 0.12 } : null;
     }
     const free = this.free;
+    if (this.plan.mode === 'make') {
+      // Tens, then the ones, then the tick.
+      const n = makeNext(this.round.target!, this.makeState);
+      if (!n) return { tap: { on: this.doneButton! }, pause: 0.12 };
+      const loop = demoLoop(
+        free.map((f) => ({ x: f.x, y: f.y })),
+        n,
+        34,
+      );
+      if (!loop) return null;
+      const via = loop.loop.map((p) => ({ on: this.sky, x: p.x, y: p.y }));
+      return { trace: via[0], via: via.slice(1), pause: 0.12 };
+    }
     const jar = this.jar;
     if (!jar || !free.length) return null;
     const want =
@@ -392,7 +464,14 @@ class LassoLoops implements Game {
   }
 
   get jar(): Jar | undefined {
+    // Level 8 lets jars go again, so the next jar is the first empty one.
+    if (this.plan.mode === 'make') return this.jars.find((j) => !j.flies.length);
     return this.jars[this.index];
+  }
+
+  /** Level 8: the full jars and the fireflies on the leaf. */
+  get makeState(): MakeState {
+    return { jars: this.jars.filter((j) => j.flies.length).length, leaf: this.leafFlies.length };
   }
 
   get free(): Firefly[] {
@@ -413,6 +492,11 @@ class LassoLoops implements Game {
       return;
     }
     const r = this.round;
+    if (this.plan.mode === 'make') {
+      await this.ctx.instruct('lasso.make', { n: r.target! });
+      this.busy = false;
+      return;
+    }
     switch (this.plan.mode) {
       case 'free':
         await this.ctx.instruct('lasso.free');
@@ -620,7 +704,9 @@ class LassoLoops implements Game {
   /** The jar to fill next glows (except on the free level, where any loop fills the next jar). */
   private markJar() {
     this.jars.forEach(
-      (j, i) => (j.glow.visible = this.plan.mode !== 'free' && i === this.index && !this.finished),
+      (j, i) =>
+        (j.glow.visible =
+          this.plan.mode !== 'free' && this.plan.mode !== 'make' && i === this.index && !this.finished),
     );
   }
 
@@ -683,6 +769,10 @@ class LassoLoops implements Game {
     this.drawTrail(points, true);
     void this.ctx.tw.wait(0.5).then(() => this.trail.clear());
     const got = this.free.filter((f) => inside(points, f.position));
+    if (this.plan.mode === 'make') {
+      if (!got.length) return void this.ctx.say('lasso.empty');
+      return this.makeCatch(got);
+    }
     const jar = this.jar;
     if (!jar) return;
     if (!got.length) return void this.ctx.say('lasso.empty');
@@ -731,20 +821,7 @@ class LassoLoops implements Game {
     this.busy = true;
     this.wrongs = 0;
     for (const f of this.flies) f.ring.visible = false;
-    const of = jar.want || got.length;
-    for (const [k, f] of got.entries()) {
-      f.caught = true;
-      f.spot = null;
-      jar.flies.push(f);
-      // A jar of ten is full of fireflies: they snuggle up a little smaller.
-      if (of > 6) void this.ctx.tw.to(f.scale, { x: 0.72, y: 0.72 }, { duration: 0.45 });
-      const s = jar.slot(k, of);
-      sfx.bell(4 + Math.min(10, k), 0.2);
-      void this.ctx.tw.to(f, { x: jar.x + s.x, y: jar.y + s.y }, { duration: 0.45, ease: ease.inOutSine });
-      await this.ctx.tw.wait(0.08);
-    }
-    await this.ctx.tw.wait(0.4);
-    sfx.pop(9);
+    await this.intoJar(got, jar);
     jar.setTag(String(got.length));
     jar.glow.visible = false;
     // The count is the lesson, so it plays over her next loop (U7 R4) rather than holding the board; only the last jar's
@@ -782,6 +859,152 @@ class LassoLoops implements Game {
     }
   }
 
+  /** The fireflies fly into the jar one after another, each with its bell. */
+  private async intoJar(got: Firefly[], jar: Jar) {
+    const of = jar.want || got.length;
+    for (const [k, f] of got.entries()) {
+      f.caught = true;
+      f.spot = null;
+      jar.flies.push(f);
+      // A jar of ten is full of fireflies: they snuggle up a little smaller.
+      if (of > 6) void this.ctx.tw.to(f.scale, { x: 0.72, y: 0.72 }, { duration: 0.45 });
+      const s = jar.slot(k, of);
+      sfx.bell(4 + Math.min(10, k), 0.2);
+      void this.ctx.tw.to(f, { x: jar.x + s.x, y: jar.y + s.y }, { duration: 0.45, ease: ease.inOutSine });
+      await this.ctx.tw.wait(0.08);
+    }
+    await this.ctx.tw.wait(0.4);
+    sfx.pop(9);
+  }
+
+  /** They fly to the leaf's next free places. */
+  private async ontoLeaf(got: Firefly[]) {
+    for (const f of got) {
+      f.caught = true;
+      f.spot = null;
+      const s = leafSlot(this.leafFlies.length);
+      this.leafFlies.push(f);
+      void this.ctx.tw.to(
+        f,
+        { x: this.leaf.x + s.x, y: this.leaf.y + s.y },
+        { duration: 0.45, ease: ease.inOutSine },
+      );
+    }
+    await this.ctx.tw.wait(0.6);
+  }
+
+  // Level 8, Make the number: loops are never wrong, a jar or the leaf can be let go, and the tick is the answer. ----
+
+  private async makeCatch(got: Firefly[]) {
+    const step = makeLoop(this.makeState, got.length);
+    this.busy = true;
+    this.unasked = null;
+    if (step.kind === 'over' || step.kind === 'full') {
+      // More than a jar holds: they flutter and stay free. Not a miss.
+      sfx.boing();
+      for (const f of got) {
+        const x = f.x;
+        void this.ctx.tw
+          .to(f, { x: x + 10 }, { duration: 0.06 })
+          .then(() => this.ctx.tw.to(f, { x }, { duration: 0.3, ease: ease.outElastic }));
+      }
+      if (step.kind === 'over') await this.ctx.say('lasso.make-over', { got: got.length });
+      this.busy = false;
+      return;
+    }
+    this.clearMakeGlow();
+    if (step.kind === 'jar') {
+      await this.intoJar(got, this.jar!);
+      void this.ctx.say('count', { n: 10 });
+    } else {
+      got.forEach((_, k) => sfx.bell(4 + Math.min(10, k), 0.2));
+      await this.ontoLeaf(got);
+      if (step.kind === 'regroup') {
+        // Ten on the leaf: the first ten fly into the next jar and the rest settle into the first places.
+        void this.ctx.say('lasso.make-regroup');
+        await this.intoJar(this.leafFlies.splice(0, 10), this.jar!);
+        this.leafFlies.forEach((f, k) => {
+          const s = leafSlot(k);
+          void this.ctx.tw.to(f, { x: this.leaf.x + s.x, y: this.leaf.y + s.y }, { duration: 0.3 });
+        });
+        await this.ctx.tw.wait(0.3);
+      } else void this.ctx.say('count', { n: this.leafFlies.length });
+    }
+    this.busy = false;
+  }
+
+  /** A tapped jar or the leaf lets its fireflies fly home: a free undo. */
+  private async release(held: Firefly[]) {
+    if (this.busy || this.finished || this.touch || !held.length) return;
+    this.busy = true;
+    this.unasked = null;
+    this.clearMakeGlow();
+    sfx.pop(5);
+    void this.ctx.say('lasso.make-undo');
+    for (const f of held.splice(0)) {
+      f.caught = false;
+      f.spot = f.home;
+      const to = this.place(f.home);
+      void this.ctx.tw.to(f.scale, { x: 1, y: 1 }, { duration: 0.45 });
+      void this.ctx.tw.to(f, { x: to.x, y: to.y }, { duration: 0.45, ease: ease.inOutSine });
+    }
+    await this.ctx.tw.wait(0.5);
+    // A turn of the screen during the flight moved the meadow: settle them where it is now.
+    for (const f of this.free) f.position.copyFrom(this.place(f.spot!));
+    this.busy = false;
+  }
+
+  private clearMakeGlow() {
+    for (const j of this.jars) j.glow.visible = false;
+    this.leafGlow.visible = false;
+  }
+
+  /** The tick: right when the jars and the leaf make the number; otherwise one miss and the count aloud. */
+  private async tapDone() {
+    if (this.busy || this.finished || this.touch) return;
+    const s = this.makeState;
+    const n = this.round.target!;
+    const got = makeTotal(s);
+    this.busy = true;
+    this.unasked = null;
+    for (const j of this.jars) if (j.flies.length) this.bounce(j);
+    if (got === n) {
+      this.clearMakeGlow();
+      sfx.bell(10, 0.35);
+      this.bounce(this.guessSign);
+      if (!s.leaf) await this.ctx.say('lasso.make-right-tens', { t: s.jars, n });
+      else if (s.jars === 1) await this.ctx.say('lasso.make-right-teen', { r: s.leaf, n });
+      else await this.ctx.say('lasso.make-right-both', { t: s.jars, r: s.leaf, n });
+      return this.finale();
+    }
+    this.misses++;
+    this.makeWrongs++;
+    sfx.boing();
+    await this.ctx.say(`lasso.make-count-${makeCountLine(s)}`, {
+      t: s.jars,
+      tens: 10 * s.jars,
+      r: s.leaf,
+      got,
+      n,
+    });
+    if (this.finished) return;
+    if (this.makeWrongs >= 2) {
+      // The second wrong tick glows the part to change; one hint a round.
+      if (!this.makeHinted) {
+        this.makeHinted = true;
+        this.hints++;
+      }
+      const hint = makeHint(n, s)!;
+      this.clearMakeGlow();
+      if (hint.part === 'jar-add') this.jar!.glow.visible = true;
+      else if (hint.part === 'jar-remove')
+        [...this.jars].reverse().find((j) => j.flies.length)!.glow.visible = true;
+      else this.leafGlow.visible = true;
+      void this.ctx.say(`lasso.make-hint-${hint.part}`, { d: hint.part === 'more' ? hint.d : 0, n });
+    }
+    this.busy = false;
+  }
+
   /** Every jar is full: the ones go to the leaf (or the extras fly home), then the question. */
   private async allFull() {
     const r = this.round;
@@ -789,16 +1012,7 @@ class LassoLoops implements Game {
     if (this.plan.mode === 'exact') return this.finale();
     if (r.ones) {
       this.leaf.visible = true;
-      rest.forEach((f, k) => {
-        f.caught = true;
-        f.spot = null;
-        void this.ctx.tw.to(
-          f,
-          { x: this.leaf.x - 60 + (k % 5) * 30, y: this.leaf.y - 14 - Math.floor(k / 5) * 30 },
-          { duration: 0.5, ease: ease.inOutSine },
-        );
-      });
-      await this.ctx.tw.wait(0.6);
+      await this.ontoLeaf(rest);
       await this.ctx.say('lasso.left', { r: r.ones });
     } else if (!r.group) {
       // Fives and tens that come out even: no leaf at all.
@@ -899,16 +1113,15 @@ class LassoLoops implements Game {
     this.finished = true;
     this.markJar();
     sfx.tada();
-    for (const j of this.jars)
-      for (const f of j.flies)
-        this.ctx.particles.burst(f.x, f.y, {
-          kind: 'star',
-          colors: [0xffd54a, 0xffffff],
-          count: 2,
-          speed: [60, 140],
-          gravity: -30,
-          life: [0.5, 0.9],
-        });
+    for (const f of [...this.jars.flatMap((j) => j.flies), ...this.leafFlies])
+      this.ctx.particles.burst(f.x, f.y, {
+        kind: 'star',
+        colors: [0xffd54a, 0xffffff],
+        count: 2,
+        speed: [60, 140],
+        gravity: -30,
+        life: [0.5, 0.9],
+      });
     await this.ctx.say('lasso.done');
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints });

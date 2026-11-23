@@ -9,13 +9,25 @@ import {
   gridFor,
   inside,
   LEVELS,
+  MAKE_JARS,
+  MAKE_MAX,
+  MAKE_MIN,
+  MEADOW_MAX,
+  makeCountLine,
+  makeHint,
+  makeLoop,
+  makeNext,
   makeRound,
+  makeTotal,
   nearestGroup,
+  planFor,
   PLANS,
   rangeCards,
   rangeSide,
   scatter,
+  type MakeState,
 } from './logic';
+import { VOICE } from './voice';
 
 describe('Lasso Loops', () => {
   it('has enough fireflies for every jar, and a question whose answer is what was caught', () => {
@@ -23,7 +35,8 @@ describe('Lasso Loops', () => {
       for (let seed = 1; seed <= 300; seed++) {
         const r = makeRound(plan, new Rng(seed));
         const wanted = r.jars.reduce((s, n) => s + n, 0);
-        expect(r.fireflies).toBeGreaterThanOrEqual(wanted);
+        // Level 8's three jars are room, not an order: its own test below.
+        if (plan.mode !== 'make') expect(r.fireflies).toBeGreaterThanOrEqual(wanted);
         switch (plan.mode) {
           case 'free':
             expect(r.fireflies >= 6 && r.fireflies <= 9).toBe(true);
@@ -68,7 +81,16 @@ describe('Lasso Loops', () => {
   });
 
   it('keeps estimation on its own 21–39 tens round, drawn exactly as before', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['free', 'exact', 'fives', 'tens', 'groups', 'tens', 'tens']);
+    expect(PLANS.map((p) => p.mode)).toEqual([
+      'free',
+      'exact',
+      'fives',
+      'tens',
+      'groups',
+      'tens',
+      'tens',
+      'make',
+    ]);
     expect(PLANS[5].guess).toBe(true);
     expect(PLANS.slice(0, 5).every((p) => !p.guess)).toBe(true);
     expect(PLANS[6].range).toBe(true);
@@ -156,8 +178,8 @@ describe('Lasso Loops', () => {
     expect(compareGuess(21, 30)).toBe('close');
   });
 
-  it('puts school at 3–7 and leaves the younger bands alone', () => {
-    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 3, max: 7 });
+  it('puts school at 3–8 and leaves the younger bands alone', () => {
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 3, max: 8 });
     expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 3 });
     expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 4 });
   });
@@ -265,6 +287,21 @@ describe('Lasso Loops', () => {
           x: p.x * 800,
           y: p.y * 420,
         }));
+        if (plan.mode === 'make') {
+          // The ghost finger: tens, then the ones, until the number is made.
+          let state: MakeState = { jars: 0, leaf: 0 };
+          for (let want = makeNext(round.target!, state); want; want = makeNext(round.target!, state)) {
+            const move = demoLoop(points, want, 34);
+            expect(move, `${plan.name}, seed ${seed}, loop of ${want}`).not.toBeNull();
+            expect(move!.indices).toHaveLength(want);
+            points = points.filter((_, i) => !move!.indices.includes(i));
+            const step = makeLoop(state, want);
+            if (!('next' in step)) throw new Error(`the bot's loop was let go`);
+            state = step.next;
+          }
+          expect(makeTotal(state)).toBe(round.target);
+          continue;
+        }
         for (let jar = 0; jar < round.jars.length; jar++) {
           const want =
             plan.mode === 'free' ? Math.ceil(points.length / (round.jars.length - jar)) : round.jars[jar];
@@ -276,5 +313,132 @@ describe('Lasso Loops', () => {
           points = points.filter((_, i) => !got.includes(i));
         }
       }
+  });
+
+  describe('level 8, Make the number', () => {
+    const plan = planFor(8);
+
+    it('is the top level, with every target 13–36 and a meadow of at least three more, never over 39', () => {
+      expect(plan.mode).toBe('make');
+      expect(PLANS).toHaveLength(8);
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 3000; seed++) {
+        const r = makeRound(plan, new Rng(seed));
+        seen.add(r.target!);
+        expect(r.target! >= MAKE_MIN && r.target! <= MAKE_MAX).toBe(true);
+        expect(r.fireflies).toBeGreaterThanOrEqual(r.target! + 3);
+        expect(r.fireflies).toBeLessThanOrEqual(MEADOW_MAX);
+        expect(r.jars).toEqual(Array(MAKE_JARS).fill(10));
+        expect(r.answer).toBeNull();
+      }
+      expect([...seen].sort((a, b) => a - b)).toEqual(
+        Array.from({ length: MAKE_MAX - MAKE_MIN + 1 }, (_, i) => MAKE_MIN + i),
+      );
+    });
+
+    it('lets go a loop of more than ten, fills a jar with ten and rests fewer on the leaf', () => {
+      expect(makeLoop({ jars: 0, leaf: 0 }, 11)).toEqual({ kind: 'over' });
+      expect(makeLoop({ jars: 1, leaf: 4 }, 10)).toEqual({ kind: 'jar', next: { jars: 2, leaf: 4 } });
+      expect(makeLoop({ jars: 1, leaf: 4 }, 5)).toEqual({ kind: 'leaf', next: { jars: 1, leaf: 9 } });
+      // Thirteen ones, caught as 9 and 4: ten of them regroup into a jar and three stay.
+      expect(makeLoop({ jars: 0, leaf: 9 }, 4)).toEqual({ kind: 'regroup', next: { jars: 1, leaf: 3 } });
+      expect(makeLoop({ jars: 0, leaf: 4 }, 6)).toEqual({ kind: 'regroup', next: { jars: 1, leaf: 0 } });
+    });
+
+    it('accepts every sequence of loops that catches the target, and three jars are always enough', () => {
+      for (let seed = 1; seed <= 400; seed++) {
+        const rng = new Rng(seed);
+        const r = makeRound(plan, rng);
+        // Random loops of 1–12 from the free fireflies, never past the target, until it is caught.
+        let state: MakeState = { jars: 0, leaf: 0 };
+        let caught = 0;
+        while (caught < r.target!) {
+          const got = Math.min(rng.int(1, 12), r.fireflies - caught);
+          const step = makeLoop(state, got);
+          if (got > 10) {
+            expect(step.kind).toBe('over');
+            continue;
+          }
+          if (caught + got > r.target!) continue;
+          // No loop of ten or fewer is ever refused for want of a jar.
+          if (!('next' in step)) throw new Error(`refused ${got} at ${caught}`);
+          // A regroup moves exactly ten from the leaf to a jar.
+          if (step.kind === 'regroup')
+            expect(step.next).toEqual({ jars: state.jars + 1, leaf: state.leaf + got - 10 });
+          state = step.next;
+          caught += got;
+          expect(makeTotal(state)).toBe(caught);
+          expect(state.leaf).toBeLessThan(10);
+          expect(state.jars).toBeLessThanOrEqual(MAKE_JARS);
+        }
+        // However it was caught, what the tick sees is the number's tens and ones.
+        expect(state).toEqual({ jars: Math.floor(r.target! / 10), leaf: r.target! % 10 });
+      }
+      // The whole meadow, one firefly at a time, still fits: 39 is three jars and nine.
+      let state: MakeState = { jars: 0, leaf: 0 };
+      for (let k = 0; k < MEADOW_MAX; k++) {
+        const step = makeLoop(state, 1);
+        if (!('next' in step)) throw new Error(`refused at ${k}`);
+        state = step.next;
+      }
+      expect(state).toEqual({ jars: 3, leaf: 9 });
+    });
+
+    it('gives a hint that can always be followed and ends at the number', () => {
+      for (let seed = 1; seed <= 300; seed++) {
+        const r = makeRound(plan, new Rng(seed));
+        const n = r.target!;
+        for (let jars = 0; jars <= MAKE_JARS; jars++)
+          for (let leaf = 0; leaf <= 9; leaf++) {
+            let state: MakeState = { jars, leaf };
+            if (makeTotal(state) > r.fireflies) continue;
+            if (makeTotal(state) === n) {
+              expect(makeHint(n, state)).toBeNull();
+              continue;
+            }
+            let steps = 0;
+            for (let hint = makeHint(n, state); hint; hint = makeHint(n, state)) {
+              expect(++steps).toBeLessThanOrEqual(4);
+              const free = r.fireflies - makeTotal(state);
+              if (hint.part === 'jar-add') {
+                // Ten free fireflies and an empty jar are there to follow it.
+                expect(free).toBeGreaterThanOrEqual(10);
+                expect(makeLoop(state, 10).kind).toBe('jar');
+                state = { jars: state.jars + 1, leaf: state.leaf };
+              } else if (hint.part === 'more') {
+                expect(hint.d >= 1 && hint.d <= 9 && hint.d <= free).toBe(true);
+                const step = makeLoop(state, hint.d);
+                if (!('next' in step)) throw new Error('the hinted loop was let go');
+                state = step.next;
+              } else if (hint.part === 'jar-remove') {
+                expect(state.jars).toBeGreaterThan(0);
+                state = { jars: state.jars - 1, leaf: state.leaf };
+              } else {
+                expect(state.leaf).toBeGreaterThan(0);
+                state = { jars: state.jars, leaf: 0 };
+              }
+            }
+            expect(makeTotal(state)).toBe(n);
+          }
+      }
+    });
+
+    it('counts a wrong tick aloud with a line that fits the jars and the leaf, and has every line it says', () => {
+      expect(makeCountLine({ jars: 0, leaf: 0 })).toBe('none');
+      expect(makeCountLine({ jars: 0, leaf: 7 })).toBe('ones');
+      expect(makeCountLine({ jars: 1, leaf: 0 })).toBe('jar');
+      expect(makeCountLine({ jars: 1, leaf: 5 })).toBe('teen');
+      expect(makeCountLine({ jars: 2, leaf: 0 })).toBe('tens');
+      expect(makeCountLine({ jars: 2, leaf: 5 })).toBe('both');
+      const lines = VOICE as Record<string, string[]>;
+      for (const k of ['none', 'ones', 'jar', 'teen', 'tens', 'both'])
+        expect(lines[`lasso.make-count-${k}`]).toBeDefined();
+      for (const k of ['jar-add', 'more', 'jar-remove', 'leaf-remove'])
+        expect(lines[`lasso.make-hint-${k}`]).toBeDefined();
+      for (const k of ['tens', 'teen', 'both']) expect(lines[`lasso.make-right-${k}`]).toBeDefined();
+      // No line says "1 jars": the one-jar forms are their own lines.
+      expect(lines['lasso.make-count-teen'][0]).toMatch(/^One jar/);
+      expect(lines['lasso.make-count-jar'][0]).toMatch(/^One jar/);
+    });
   });
 });

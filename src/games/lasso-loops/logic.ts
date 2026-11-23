@@ -5,9 +5,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * Lasso Loops, after Montessori golden beads, ten frames and Pokémon Ranger's capture loop: draw a loop around
  * fireflies and they fly into a jar together, one loop for one group. The ladder goes from looping any fireflies,
  * to exactly two or three, to jars of five and of ten (counting the jars and the ones left over, so 34 is three
- * tens and four), to equal groups ("3 groups of 4") as the first idea of multiplying.
+ * tens and four), to equal groups ("3 groups of 4") as the first idea of multiplying. At the top she makes a number
+ * herself: a sign says 23, a loop of ten fills a jar, a smaller loop rests on the leaf, and ten on the leaf fly into a jar.
  */
-export type LassoMode = 'free' | 'exact' | 'fives' | 'tens' | 'groups';
+export type LassoMode = 'free' | 'exact' | 'fives' | 'tens' | 'groups' | 'make';
 
 export interface LassoPlan {
   mode: LassoMode;
@@ -33,12 +34,16 @@ export const PLANS: LassoPlan[] = [
     range: true,
     name: 'Too few, too many: loop one jar of 10, tap away the numbers that cannot be right, then loop the tens and say the number',
   },
+  {
+    mode: 'make',
+    name: 'Make the number: catch 23 as jars of 10 and ones on the leaf, then tap the tick',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 8 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -52,7 +57,12 @@ export interface LassoRound {
   /** Fireflies left over after the jars are full (fives and tens); 0 means none, and no leaf is drawn. */
   ones: number;
   group?: { count: number; size: number };
+  /** Level 8: the number on the sign, to catch as jars of ten and ones on the leaf. */
+  target?: number;
 }
+
+/** Whether the round has a leaf: where the ones rest, and at level 8 where every loop of fewer than ten lands. */
+export const hasLeaf = (round: LassoRound) => round.ones > 0 || round.target !== undefined;
 
 export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
   switch (plan.mode) {
@@ -81,6 +91,12 @@ export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
       const tens = kind === 'teen' ? 1 : rng.int(2, 3);
       const ones = kind === 'decade' ? 0 : rng.int(1, 9);
       return { fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones };
+    }
+    case 'make': {
+      // 13–36 with at least three fireflies to spare, so stopping is hers to decide; never more than the meadow's 39.
+      const target = rng.int(MAKE_MIN, MAKE_MAX);
+      const fireflies = Math.min(MEADOW_MAX, target + rng.int(3, 7));
+      return { fireflies, jars: Array(MAKE_JARS).fill(10), answer: null, ones: 0, target };
     }
     case 'groups': {
       for (;;) {
@@ -153,6 +169,69 @@ export function rangeCards(n: number, rng: Rng): { cards: number[]; possible: nu
 
 export function compareGuess(g: number, n: number): 'close' | 'more' | 'fewer' {
   return Math.abs(g - n) < 10 ? 'close' : g < n ? 'more' : 'fewer';
+}
+
+// Level 8, Make the number -----------------------------------------------------------------------
+
+export const MAKE_MIN = 13;
+export const MAKE_MAX = 36;
+export const MAKE_JARS = 3;
+/** The most fireflies a meadow holds with a finger's lane between them (the dive's space note). */
+export const MEADOW_MAX = 39;
+
+/** What she has caught at level 8: full jars of ten and fewer than ten on the leaf. */
+export interface MakeState {
+  jars: number;
+  leaf: number;
+}
+
+export const makeTotal = (s: MakeState) => 10 * s.jars + s.leaf;
+
+/**
+ * What a loop around `got` free fireflies does at level 8. More than ten is let go (no jar holds them); exactly ten fill
+ * the next jar; fewer rest on the leaf, and when the leaf would reach ten, ten of them fly into the next jar (`regroup`).
+ * `full` is a loop with no jar left for its ten, which a meadow of at most 39 never allows (a rule test says so).
+ */
+export function makeLoop(
+  s: MakeState,
+  got: number,
+): { kind: 'over' | 'full' } | { kind: 'jar' | 'leaf' | 'regroup'; next: MakeState } {
+  if (got > 10) return { kind: 'over' };
+  if (got === 10)
+    return s.jars < MAKE_JARS ? { kind: 'jar', next: { jars: s.jars + 1, leaf: s.leaf } } : { kind: 'full' };
+  if (s.leaf + got < 10) return { kind: 'leaf', next: { jars: s.jars, leaf: s.leaf + got } };
+  return s.jars < MAKE_JARS
+    ? { kind: 'regroup', next: { jars: s.jars + 1, leaf: s.leaf + got - 10 } }
+    : { kind: 'full' };
+}
+
+/** Which count-aloud line fits what the jars and the leaf hold (a wrong tick): the suffix of `lasso.make-count-…`. */
+export function makeCountLine(s: MakeState): 'none' | 'ones' | 'jar' | 'teen' | 'tens' | 'both' {
+  if (!s.jars) return s.leaf ? 'ones' : 'none';
+  if (s.jars === 1) return s.leaf ? 'teen' : 'jar';
+  return s.leaf ? 'both' : 'tens';
+}
+
+/**
+ * The part to change after a second wrong tick, always a step that can be taken and that ends at the number:
+ * short by ten or more, loop ten for the next jar; short by fewer, loop exactly that many more (they regroup by
+ * themselves if the leaf fills); over by ten or more, or over with an empty leaf, let a jar go; otherwise let the leaf go.
+ */
+export function makeHint(
+  target: number,
+  s: MakeState,
+): { part: 'jar-add' | 'jar-remove' | 'leaf-remove' } | { part: 'more'; d: number } | null {
+  const gap = target - makeTotal(s);
+  if (gap === 0) return null;
+  if (gap >= 10) return { part: 'jar-add' };
+  if (gap > 0) return { part: 'more', d: gap };
+  return gap <= -10 || !s.leaf ? { part: 'jar-remove' } : { part: 'leaf-remove' };
+}
+
+/** The ghost finger's next loop at level 8: tens first, then the ones; 0 when the number is made (tap the tick). */
+export function makeNext(target: number, s: MakeState): number {
+  const gap = target - makeTotal(s);
+  return gap >= 10 ? 10 : Math.max(0, gap);
 }
 
 // Firefly places and loops ------------------------------------------------------------------------
@@ -268,6 +347,12 @@ export const PAD_HIT = 140;
 export const GUESS_HIT = { w: 150, h: 130 };
 /** Level 7's smaller number cards, five to a row. */
 export const RANGE_HIT = { w: 130, h: 130 };
+/** Level 8's tick (a round button) and the leaf she taps to let its fireflies go. */
+export const DONE_R = 56;
+export const DONE_HIT = 2 * (DONE_R + 14);
+export const LEAF_HIT = { w: 180, h: 104 };
+/** Where the k-th firefly rests on the leaf, from the leaf's middle: five to a row. */
+export const leafSlot = (k: number): Point => ({ x: -60 + (k % 5) * 30, y: -14 - Math.floor(k / 5) * 30 });
 
 export interface Box {
   x: number;
@@ -296,6 +381,8 @@ export interface LassoLayout {
   shelf: Point[];
   /** Level 7: the five number cards' middles. */
   rangeCards: Point[];
+  /** Level 8: the tick, above the leaf. */
+  done: Point;
 }
 
 /** `n` places from `left` to `right`, centered, at most `gap` apart (the shell's `spread`, kept here so the rules stay Pixi-free). */
@@ -310,7 +397,7 @@ function row(n: number, left: number, right: number, gap: number): number[] {
  * corner buttons, a row of jars along the bottom right of the pet, the leaf in the bottom-right corner. Upright (768 wide
  * and at least 1.4 times as tall) the same, except that six jars, too many for one row at 768, stand in two rows of three,
  * and level 6's keep-or-change signs sit in their own row above the jar instead of squeezing beside it; the field ends above
- * whichever is there.
+ * whichever is there. Level 8 (`make`) adds the tick: beside the leaf on a wide view, above it (with a shorter field) on a narrow one.
  */
 export function lassoLayout(
   v: { w: number; h: number },
@@ -318,13 +405,21 @@ export function lassoLayout(
   leaf: boolean,
   guess = false,
   range = false,
+  make = false,
 ): LassoLayout {
   // Level 7's field is level 6's, so the fireflies stay put from the cards to the count.
   guess ||= range;
   const upright = v.h > v.w * 1.4;
   const twoRows = upright && jars > 4;
   const jarRight = v.w - (leaf ? 210 : 40);
-  const xs = twoRows ? row(Math.ceil(jars / 2), 190, jarRight, 140) : row(jars, 190, jarRight, 140);
+  // Level 8's tick: on the jar line between the jars and the leaf where the row has room for it (a view about 980 wide);
+  // otherwise above the leaf, where the field's lower right corner was, and the field ends above it.
+  const doneInRow = make && !upright && jarRight - 190 >= jars * 140 + DONE_HIT + 20;
+  const jarEnd = doneInRow ? jarRight - DONE_HIT - 10 : jarRight;
+  const done = doneInRow
+    ? { x: jarRight - 10 - DONE_HIT / 2, y: v.h - 100 }
+    : { x: v.w - 120, y: v.h - 166 - DONE_HIT / 2 };
+  const xs = twoRows ? row(Math.ceil(jars / 2), 190, jarRight, 140) : row(jars, 190, jarEnd, 140);
   const rowUp = JAR_H + JAR_TAG + 28;
   const feet = xs.length;
   const jarSpots = Array.from({ length: jars }, (_, i) => ({
@@ -337,6 +432,7 @@ export function lassoLayout(
   else if (upright && guess) fieldH -= GUESS_HIT.h + 20 + FIREFLY_R;
   // A tall field can spare the strip where the lowest firefly's glow met a jar's number badge.
   else if (upright) fieldH -= 24;
+  if (make && !doneInRow) fieldH = Math.min(fieldH, done.y - DONE_HIT / 2 - FIREFLY_R - 96);
   const field = { x: 160, y: 96, w: v.w - 210, h: fieldH };
   const reviseY = v.h - 30 - JAR_H - JAR_TAG - 20 - GUESS_HIT.h / 2;
   return {
@@ -363,5 +459,6 @@ export function lassoLayout(
           ? row(5, field.x, field.x + field.w, 180)
           : row(5, 40, v.w - 40, 170)
         ).map((x) => ({ x, y: field.y + field.h * 0.45 })),
+    done,
   };
 }
