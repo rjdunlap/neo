@@ -86,6 +86,8 @@ export class RainRoute implements Game {
   private settled: Settled[] = [];
   private readonly flying = new Set<Container>();
   private stale = false;
+  /** Bumped by anything she or the pet does next, so an unfinished narration chain stops instead of talking over it. */
+  private talk = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -264,6 +266,7 @@ export class RainRoute implements Game {
   /** Rain on the current arrangement from fresh, then (when `narrate`) say where the drops went. */
   private async tryIt(narrate: boolean) {
     this.busy = true;
+    this.talk++;
     this.s = { ...this.s, pointing: false };
     if (this.settled.length) {
       await this.freshen();
@@ -280,19 +283,34 @@ export class RainRoute implements Game {
   }
 
   /** Where the water went: level 4's one line per arrangement, or level 5's short clips, one per bed from the top, then the pond. */
-  private async narrate() {
+  private async narrate(): Promise<boolean> {
     const t = this.s.current;
-    if (!t) return;
+    if (!t) return false;
+    const token = this.talk;
     const lines =
       this.round.level === 4 ? [`rain.route.${this.s.sockets.join('-')}`] : narration(t, this.round.board);
     for (const id of lines) {
+      if (this.finished || token !== this.talk) return false;
       await this.ctx.say(id as LineId);
-      if (this.finished) return;
     }
+    return !this.finished && token === this.talk;
   }
 
   private async showRun(t: RouteTrial) {
     const count = { pocket: this.s.sockets.map(() => 0), slot: 0 };
+    if (this.round.level === 5) {
+      // Six drops through three beds: each leaves the cloud a beat after the last, so a try stays short.
+      const runs: Promise<void>[] = [];
+      for (const step of t.steps) {
+        runs.push(
+          this.fall(step.path, count, step.unit).then(() => (this.finished ? undefined : this.drawSigns())),
+        );
+        await this.ctx.tw.wait(0.45);
+        if (this.finished) return;
+      }
+      await Promise.all(runs);
+      return;
+    }
     for (const step of t.steps) {
       await this.fall(step.path, count, step.unit);
       if (this.finished) return;
@@ -435,6 +453,7 @@ export class RainRoute implements Game {
     if (fixed) {
       // The tree's bed and the stone path never change: a line, never a miss or a hint.
       this.squash(this.patches[i]);
+      this.talk++;
       void this.ctx.say(fixed === 'tree' ? 'rain.fixed.tree' : 'rain.fixed.path');
       return;
     }
@@ -443,6 +462,7 @@ export class RainRoute implements Game {
 
   /** Show a flipped bed: its new ground, a squash and its sound; a board with drops on it wipes to fresh. */
   private flipTo(next: RouteState, i: number) {
+    this.talk++;
     this.s = next;
     if (next.sockets[i] === 'stone') sfx.clunk();
     else sfx.squish();
@@ -493,12 +513,12 @@ export class RainRoute implements Game {
     // The drops have settled; she can change a bed while the pet explains.
     this.idle();
     const flower = verdict.need !== null && this.round.board.marked[verdict.need].marker === 'flower';
+    const token = ++this.talk;
     await this.ctx.say(
       verdict.cause === 'pond' ? 'rain.miss.pond' : flower ? 'rain.miss.dry.flower' : 'rain.miss.dry',
     );
-    if (this.finished) return;
-    await this.narrate();
-    if (this.finished) return;
+    if (this.finished || token !== this.talk) return;
+    if (!(await this.narrate())) return;
     if (this.s.glow !== null && this.s.glow !== before) await this.ctx.say('rain.glow');
   }
 
@@ -527,6 +547,7 @@ export class RainRoute implements Game {
       void this.ctx.say('rain.hint.flip');
     } else {
       this.s = state;
+      this.talk++;
       void this.ctx.say('rain.hint.check');
     }
   }
@@ -543,6 +564,7 @@ export class RainRoute implements Game {
       for (const d of this.settled) d.node.destroy({ children: true });
       this.settled = [];
       this.drawBoard();
+      this.talk++;
       void this.ctx.say('rain.again');
     };
     go();
