@@ -11,8 +11,9 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawSketch } from './art';
+import { drawSketch, habitIcon } from './art';
 import { KeyPanel, type KeyTarget } from './key-panel';
+import { TablePanel, type TableTarget } from './table-panel';
 import { layout, sketchCells, type Box, type Layout } from './layout';
 import {
   LEVELS,
@@ -23,21 +24,25 @@ import {
   VALUES,
   describeLevel,
   done,
+  cellLine,
   fault,
   faultLine,
   faultWorking,
-  fullWrong,
   give,
   hint,
   hintWorking,
   isQ,
+  judged,
   lift,
   makeBoard,
   newPage,
+  noteLine,
+  noteWords,
   pageKey,
   planFor,
   stamp,
   type Board,
+  type Fault,
   type Hint,
   type Page,
 } from './logic';
@@ -45,7 +50,7 @@ import {
 const line = (id: string) => id as LineId;
 const nameLine = (n: number) => line(`key.name.${NAMES[n].toLowerCase()}`);
 
-type Tab = 'sketches' | 'key';
+type Tab = 'sketches' | 'key' | 'table';
 /** `stamping`: the warden is stamping three; `reveal`: the last stamping colours the page in. */
 type Phase = 'play' | 'stamping' | 'reveal' | 'done';
 
@@ -89,8 +94,8 @@ class KeyItOut implements Game {
   taken = new Set<string>();
   /** The hint showing, and the page it was given on; asking again on the same page is free. */
   hintNow: (Hint & { at: string }) | null = null;
-  /** The question a fault lit. */
-  faultQ: number | null = null;
+  /** The fault showing: a question or a table cell lit. */
+  faultNow: Fault | null = null;
   /** Sketches coloured in by the end. */
   private coloured = new Set<number>();
   private readonly score = newTally();
@@ -109,6 +114,9 @@ class KeyItOut implements Game {
   readonly plate = new Container();
   readonly sketchesTab = new Container();
   readonly keyTab = new Container();
+  readonly tableTab = new Container();
+  /** The sketch's number and margin notes above its plate: a tap reads the notes. */
+  readonly notesSpot = new Container();
   readonly help = new Container();
   private readonly note: Text = label('', 26);
   /** The Sketches page: one tap target per sketch. */
@@ -116,6 +124,8 @@ class KeyItOut implements Game {
   private readonly cellArt = new Graphics();
   private readonly cellTexts = new Container();
   readonly key: KeyPanel;
+  /** Levels 3–4: the habits table. */
+  readonly table: TablePanel | null;
 
   constructor(private readonly ctx: GameContext) {
     this.level = planFor(ctx.level).level;
@@ -132,7 +142,7 @@ class KeyItOut implements Game {
       },
       ctx.view,
     );
-    this.L = layout(ctx.view);
+    this.L = layout(ctx.view, !!this.board.table);
     for (const g of [this.chrome, this.glow, this.big, this.cellArt]) g.eventMode = 'none';
     this.stripTexts.eventMode = this.cellTexts.eventMode = 'none';
     this.note.eventMode = 'none';
@@ -144,11 +154,21 @@ class KeyItOut implements Game {
       (t) => this.tapKey(t),
       () => this.phase === 'play',
     );
+    this.table = this.board.table
+      ? new TablePanel(
+          this.board,
+          ctx,
+          (t) => this.tapTable(t),
+          () => this.phase === 'play',
+        )
+      : null;
     onTap(this.prev, () => this.step(-1));
     onTap(this.next, () => this.step(1));
     onTap(this.plate, () => this.liftChosen());
     onTap(this.sketchesTab, () => this.open('sketches'));
     onTap(this.keyTab, () => this.open('key'));
+    onTap(this.tableTab, () => this.open('table'));
+    onTap(this.notesSpot, () => this.readNotes());
     onTap(this.help, () => this.askForHint());
     this.board.sketches.forEach((_, i) => {
       const c = new Container();
@@ -165,12 +185,15 @@ class KeyItOut implements Game {
       this.cellArt,
       this.cellTexts,
       this.key,
+      ...(this.table ? [this.table] : []),
       this.glow,
       this.prev,
       this.next,
       this.plate,
       this.sketchesTab,
       this.keyTab,
+      this.tableTab,
+      this.notesSpot,
       this.help,
     );
     this.resize(ctx.view);
@@ -189,7 +212,8 @@ class KeyItOut implements Game {
       misses: this.score.misses,
       hints: this.score.hints,
       hint: this.hintNow ? { sketch: this.hintNow.sketch, name: this.hintNow.name } : null,
-      fault: this.faultQ,
+      fault: this.faultNow?.kind === 'key' ? this.faultNow.q : null,
+      tableFault: this.faultNow?.kind === 'table' ? this.faultNow.habit : null,
       note: this.noteText,
       finished: this.finished,
     };
@@ -259,6 +283,27 @@ class KeyItOut implements Game {
     this.giveName(b.name);
   }
 
+  private tapTable(t: TableTarget) {
+    if (this.phase !== 'play') return;
+    const c = this.board.guide[t.row];
+    if (t.cell < 0) return this.giveName(c.name);
+    sfx.pop(5);
+    void this.ctx.say(line(cellLine(t.cell, c.habits![t.cell])));
+  }
+
+  /** Read the chosen sketch's margin notes aloud, one after another. */
+  private async readNotes() {
+    const s = this.board.sketches[this.chosen];
+    if (this.phase !== 'play' || !s.notes.length) return;
+    sfx.tick();
+    const g = this.gen;
+    const own = this.board.table!.get(s.name)!;
+    for (const h of s.notes) {
+      await this.ctx.say(line(noteLine(h, own[h])));
+      if (g !== this.gen) return;
+    }
+  }
+
   // ---- naming ----
 
   /** Give `name` to the chosen sketch. */
@@ -288,18 +333,19 @@ class KeyItOut implements Game {
     if (!next) return void sfx.tick();
     sfx.whoosh();
     this.page = next;
-    this.faultQ = null;
+    this.faultNow = null;
     this.draw();
   }
 
-  /** A naming happened: stamp three if three are right, or judge a full page. */
+  /** A naming happened: stamp three if three are right, or judge a page whose last blank plate it filled. */
   private settle(next: Page) {
     const s = stamp(this.board, next);
+    const before = this.page;
     this.page = next;
-    this.faultQ = null;
+    this.faultNow = null;
     this.draw();
     if (s.stamped.length) return void this.stampThree(s.page, s.stamped);
-    if (fullWrong(this.page)) this.wrongPage();
+    if (judged(before, this.page)) this.wrongPage();
   }
 
   private async stampThree(after: Page, which: number[]) {
@@ -337,12 +383,18 @@ class KeyItOut implements Game {
     const due = this.counted.count(this.page) && missEvery(this.score);
     sfx.boing();
     this.chosen = f.sketch;
-    this.faultQ = f.q;
+    this.faultNow = f;
     this.trail = [];
     this.taken.clear();
     this.hintNow = null;
-    if (this.L.upright) this.tab = 'key';
-    this.key.reveal(f.q);
+    // A key fault opens the key at its question; a note's opens the table at the name's row.
+    if (f.kind === 'key') {
+      if (this.L.upright || this.tab === 'table') this.tab = 'key';
+      this.key.reveal(f.q);
+    } else {
+      this.tab = 'table';
+      this.table!.reveal(this.table!.rowOf(f.name));
+    }
     this.noteText = faultWorking(f);
     this.draw();
     const g = this.gen;
@@ -368,14 +420,15 @@ class KeyItOut implements Game {
     }
     const h = this.hintNow;
     this.chosen = h.sketch;
-    this.faultQ = null;
+    this.faultNow = null;
     this.trail = [];
     this.taken.clear();
-    if (this.L.upright) this.tab = 'key';
+    if (this.L.upright || this.tab === 'table') this.tab = 'key';
     this.key.reveal(this.key.endOf(h.name).q);
+    this.table?.reveal(this.table.rowOf(h.name));
     this.noteText = hintWorking(this.board, h);
     this.draw();
-    void this.ctx.say(line(`key.hint.${h.kind}`));
+    void this.ctx.say(line(`key.hint.${h.line}`));
   }
 
   /** The Help button, and the pause sheet's "show a hint". */
@@ -390,7 +443,7 @@ class KeyItOut implements Game {
   private async end(g: number) {
     this.phase = 'reveal';
     this.hintNow = null;
-    this.faultQ = null;
+    this.faultNow = null;
     this.trail = [];
     this.taken.clear();
     if (this.L.upright) this.tab = 'sketches';
@@ -423,8 +476,7 @@ class KeyItOut implements Game {
 
   private draw() {
     const L = this.L;
-    const showSketches = !L.upright || this.tab === 'sketches';
-    const showKey = !L.upright || this.tab === 'key';
+    const { showSketches, showKey, showTable } = this.shown();
     const c = this.chrome.clear();
     for (const t of this.stripTexts.removeChildren()) t.destroy();
     for (const t of this.cellTexts.removeChildren()) t.destroy();
@@ -465,7 +517,14 @@ class KeyItOut implements Game {
     arrow(c, L.prev, -1);
     arrow(c, L.next, 1);
     const p = L.plate;
-    text(this.stripTexts, `Sketch ${this.chosen + 1}`, 30, p.x, 78);
+    // The sketch's number, and under it the warden's margin notes, each with its habit's icon.
+    const own = this.board.table?.get(chosen.name);
+    text(this.stripTexts, `Sketch ${this.chosen + 1}`, 30, p.x, chosen.notes.length ? 46 : 78);
+    chosen.notes.forEach((h, k) => {
+      const y = 84 + k * 30;
+      const t = text(this.stripTexts, noteWords(h, own![h]), 25, p.x + 14, y, 0x4a4652, p.w - 30);
+      habitIcon(this.big, h, own![h], p.x + 14 - t.width / 2 - 16, y, 0.36);
+    });
     card(
       c,
       p,
@@ -496,14 +555,14 @@ class KeyItOut implements Game {
       );
       text(this.stripTexts, 'Sketches', 32, tabs.sketches.x, tabs.sketches.y);
     }
-    card(
-      c,
-      tabs.key,
-      showKey && L.upright ? swatch.teal.light : 0xffffff,
-      wood.line,
-      showKey && L.upright ? 6 : 3,
-    );
+    // Sideways the Key page is always open unless the Table is, so its tab is lit only beside a Table tab.
+    const keyLit = showKey && (L.upright || !!tabs.table);
+    card(c, tabs.key, keyLit ? swatch.teal.light : 0xffffff, wood.line, keyLit ? 6 : 3);
     text(this.stripTexts, 'Key', 32, tabs.key.x, tabs.key.y);
+    if (tabs.table) {
+      card(c, tabs.table, showTable ? swatch.teal.light : 0xffffff, wood.line, showTable ? 6 : 3);
+      text(this.stripTexts, 'Table', 32, tabs.table.x, tabs.table.y);
+    }
     card(c, tabs.help, swatch.yellow.fill, wood.line, 4);
     text(this.stripTexts, 'Help', 32, tabs.help.x, tabs.help.y);
 
@@ -572,13 +631,33 @@ class KeyItOut implements Game {
         taken: this.taken,
         hint: new Set(h ? h.path : []),
         hintName: h?.name ?? null,
-        fault: this.faultQ,
+        fault: this.faultNow?.kind === 'key' ? this.faultNow.q : null,
       });
+    }
+    if (this.table) {
+      this.table.visible = showTable;
+      const f = this.faultNow;
+      if (showTable)
+        this.table.draw(this.page, this.page.names[this.chosen], {
+          hintName: this.hintNow?.name ?? null,
+          fault: f?.kind === 'table' ? { name: f.name, habit: f.habit } : null,
+        });
     }
   }
 
+  /** Which pages show: upright one at a time; sideways the Sketches always, beside the Key or the Table. */
+  private shown() {
+    const L = this.L;
+    const showTable = !!this.table && this.tab === 'table';
+    return {
+      showSketches: !L.upright || this.tab === 'sketches',
+      showKey: L.upright ? this.tab === 'key' : !showTable,
+      showTable,
+    };
+  }
+
   resize(view: View) {
-    this.L = layout(view);
+    this.L = layout(view, !!this.board.table);
     const L = this.L;
     this.backdrop.resize(view);
     const hit = (node: Container, b: Box) =>
@@ -588,9 +667,13 @@ class KeyItOut implements Game {
     hit(this.plate, L.plate);
     hit(this.keyTab, L.tabs.key);
     hit(this.help, L.tabs.help);
+    hit(this.notesSpot, L.notes);
+    this.tableTab.visible = !!L.tabs.table;
+    if (L.tabs.table) hit(this.tableTab, L.tabs.table);
     this.sketchesTab.visible = !!L.tabs.sketches;
     if (L.tabs.sketches) hit(this.sketchesTab, L.tabs.sketches);
     this.key.place(L);
+    this.table?.place(L);
     this.draw();
   }
 
@@ -616,6 +699,13 @@ class KeyItOut implements Game {
     return { x: b.x, y: b.y };
   }
 
+  /** Where a scripted play taps for a table target, after sliding it into view: in the panel's coordinates. */
+  tableSpot(t: TableTarget) {
+    this.table!.reveal(t.row);
+    const b = this.table!.boxOf(t);
+    return { x: b.x, y: b.y };
+  }
+
   /** The key target that gives `name`. */
   nameEnd(name: number): KeyTarget {
     return this.key.endOf(name);
@@ -635,7 +725,7 @@ class KeyItOut implements Game {
         },
       };
     }
-    if (this.L.upright && this.tab !== 'key') return { tap: { on: this.keyTab, ...centre(this.L.tabs.key) } };
+    if (!this.shown().showKey) return { tap: { on: this.keyTab, ...centre(this.L.tabs.key) } };
     const spot = this.keySpot(this.nameEnd(h.name));
     return { tap: { on: this.key, ...spot } };
   }

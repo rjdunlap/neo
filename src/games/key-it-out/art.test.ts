@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hiderShapes, partShapes, sketchShapes } from './art';
+import { habitShapes, hiderShapes, partShapes, sketchShapes } from './art';
 import { LOOKS } from './logic';
 
 const json = (x: unknown) => JSON.stringify(x);
@@ -29,5 +29,26 @@ describe('Key It Out sketches', () => {
     expect([0, 2, 3].every((p) => hiderShapes(p).length > 0)).toBe(true);
     // A stamped sketch shows its hidden parts again.
     expect(json(sketchShapes(LOOKS[40], [2], true))).toBe(json(sketchShapes(LOOKS[40], [])));
+  });
+
+  it('draws the nine habit icons apart', () => {
+    const all = [0, 1, 2].flatMap((h) => [0, 1, 2].map((v) => json(habitShapes(h, v))));
+    expect(new Set(all).size).toBe(9);
+    expect(all.every((a) => a.length > 2)).toBe(true);
+  });
+
+  it('hides two parts at once, each in its own way, as levels 3–4 do', () => {
+    for (let a = 0; a < 4; a++)
+      for (let b = a + 1; b < 4; b++) {
+        const both = json(sketchShapes(LOOKS[40], [a, b]));
+        expect(both).not.toBe(json(sketchShapes(LOOKS[40], [a])));
+        expect(both).not.toBe(json(sketchShapes(LOOKS[40], [b])));
+        // Neither hidden part's value shows.
+        for (const p of [a, b]) {
+          const look = LOOKS[40].slice() as unknown as [number, number, number, number];
+          look[p] = (look[p] + 1) % 3;
+          expect(json(sketchShapes(look, [a, b]))).toBe(both);
+        }
+      }
   });
 });
