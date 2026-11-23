@@ -30,6 +30,7 @@ import {
   SIGN_H,
   SIGN_W,
   arrangementKey,
+  board4,
   check,
   flipBed,
   makeRoute,
@@ -277,15 +278,15 @@ describe('rounds and levels', () => {
   });
 
   it('LEVELS and planFor', () => {
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5]);
     expect(planFor(0).level).toBe(1);
     expect(planFor(2.4).level).toBe(2);
-    expect(planFor(99).level).toBe(4);
+    expect(planFor(99).level).toBe(5);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 4 },
+      school: { min: 3, max: 5 },
     });
     for (const r of Object.values(LEVELS))
       for (let l = r!.min; l <= r!.max; l++) expect(planFor(l).level).toBe(l);
@@ -389,7 +390,7 @@ describe('layout', () => {
 const k2 = (a: readonly Surface[]) => arrangementKey(a);
 const round4 = (bed: 0 | 1, start: Surface[]): RouteRound => ({
   level: 4,
-  bed,
+  board: board4(bed),
   start,
   friend: 'frog',
   mirror: false,
@@ -422,14 +423,14 @@ describe('level 4 route', () => {
     ];
     for (const [a, top, low, pond] of table)
       expect([runRoute(a).stored, runRoute(a).pond], k2(a)).toEqual([[top, low], pond]);
-    expect(meets(runRoute(['stone', 'soil']), 1)).toEqual({ bed: true, pond: true });
-    expect(meets(runRoute(['soil', 'stone']), 1)).toEqual({ bed: false, pond: true });
-    expect(meets(runRoute(['soil', 'soil']), 1)).toEqual({ bed: true, pond: false });
-    expect(meets(runRoute(['stone', 'stone']), 1)).toEqual({ bed: false, pond: true });
-    expect(meets(runRoute(['soil', 'stone']), 0)).toEqual({ bed: true, pond: true });
-    expect(meets(runRoute(['soil', 'soil']), 0)).toEqual({ bed: true, pond: false });
-    expect(meets(runRoute(['stone', 'soil']), 0).bed).toBe(false);
-    expect(meets(runRoute(['stone', 'stone']), 0).bed).toBe(false);
+    expect(meets(runRoute(['stone', 'soil']), board4(1))).toEqual({ beds: [true], pond: true });
+    expect(meets(runRoute(['soil', 'stone']), board4(1))).toEqual({ beds: [false], pond: true });
+    expect(meets(runRoute(['soil', 'soil']), board4(1))).toEqual({ beds: [true], pond: false });
+    expect(meets(runRoute(['stone', 'stone']), board4(1))).toEqual({ beds: [false], pond: true });
+    expect(meets(runRoute(['soil', 'stone']), board4(0))).toEqual({ beds: [true], pond: true });
+    expect(meets(runRoute(['soil', 'soil']), board4(0))).toEqual({ beds: [true], pond: false });
+    expect(meets(runRoute(['stone', 'soil']), board4(0)).beds[0]).toBe(false);
+    expect(meets(runRoute(['stone', 'stone']), board4(0)).beds[0]).toBe(false);
   });
 
   it('a drop passes a socket only when it is full or stone', () => {
@@ -453,15 +454,15 @@ describe('level 4 route', () => {
 
   it('the judge passes exactly the arrangements solutions lists, one per variant', () => {
     for (const bed of [0, 1] as const) {
-      const sols = solutions(bed).map(k2);
+      const sols = solutions(board4(bed)).map(k2);
       expect(sols.length).toBe(1);
       for (const a of ARRANGEMENTS) {
         const r = check(routeFresh(round4(bed, a)), round4(bed, a));
         expect(r.verdict.result === 'pass', `${bed} ${k2(a)}`).toBe(sols.includes(k2(a)));
       }
     }
-    expect(solutions(1).map(k2)).toEqual(['stone/soil']);
-    expect(solutions(0).map(k2)).toEqual(['soil/stone']);
+    expect(solutions(board4(1)).map(k2)).toEqual(['stone/soil']);
+    expect(solutions(board4(0)).map(k2)).toEqual(['soil/stone']);
   });
 
   it('cause lines: dry when the marked bed misses, pond when only the pond does', () => {
@@ -477,7 +478,7 @@ describe('level 4 route', () => {
   it('seeded rounds start failing in their own variant and have a solution; the authored round is soil over stone, low bed', () => {
     expect(makeRoute(new Rng(1), true)).toEqual({
       level: 4,
-      bed: 1,
+      board: board4(1),
       start: ['soil', 'stone'],
       friend: 'frog',
       mirror: false,
@@ -485,8 +486,8 @@ describe('level 4 route', () => {
     const seen = new Set<string>();
     for (const seed of SEEDS) {
       const r = makeRoute(new Rng(seed), false);
-      seen.add(`${r.bed}:${k2(r.start)}:${r.mirror}`);
-      expect(solutions(r.bed).length).toBeGreaterThan(0);
+      seen.add(`${r.board.id}:${k2(r.start)}:${r.mirror}`);
+      expect(solutions(r.board).length).toBeGreaterThan(0);
       expect(check(routeFresh(r), r).verdict.result).not.toBe('pass');
       expect(makeRoute(new Rng(seed), false)).toEqual(r);
     }
@@ -501,12 +502,12 @@ describe('level 4 route', () => {
         const r = round4(bed, a);
         let s = routeFresh(r);
         let steps = 0;
-        while (stepBed(s.sockets, bed) !== null) {
-          const before = dist(s.sockets, nearest(s.sockets, bed));
+        while (stepBed(s.sockets, board4(bed)) !== null) {
+          const before = dist(s.sockets, nearest(s.sockets, board4(bed)));
           const h = routeHint(s, r);
           expect(h.hint.kind).toBe('flip');
           s = h.state;
-          expect(dist(s.sockets, nearest(s.sockets, bed))).toBeLessThan(before);
+          expect(dist(s.sockets, nearest(s.sockets, board4(bed)))).toBeLessThan(before);
           steps++;
         }
         expect(steps).toBeLessThanOrEqual(2);
@@ -522,32 +523,32 @@ describe('level 4 route', () => {
   it('accounting: a failed Check is one miss, the same arrangement again none, trials and flips none, the glow one hint once', () => {
     const r = round4(1, ['soil', 'stone']);
     let s = routeFresh(r);
-    s = tryRoute(s);
-    s = tryRoute(s);
+    s = tryRoute(s, r);
+    s = tryRoute(s, r);
     expect([s.misses, s.hints]).toEqual([0, 0]);
     let c = check(s, r);
-    expect(c.verdict).toEqual({ result: 'miss', cause: 'dry' });
+    expect(c.verdict).toEqual({ result: 'miss', cause: 'dry', need: 0 });
     s = c.state;
     expect([s.misses, s.hints, s.glow, s.current?.stored]).toEqual([1, 0, null, [2, 0]]);
     c = check(s, r);
     expect(c.verdict.result).toBe('again');
-    s = flipBed(flipBed(c.state, 1, r.bed), 1, r.bed);
+    s = flipBed(flipBed(c.state, 1, r.board), 1, r.board);
     expect(check(s, r).verdict.result).toBe('again');
     expect([s.misses, s.current]).toEqual([1, null]);
     // A second, different failing arrangement: the glow lights on the bed to change (one hint).
-    s = flipBed(s, 1, r.bed); // soil/soil: the pond gets none
+    s = flipBed(s, 1, r.board); // soil/soil: the pond gets none
     c = check(s, r);
     s = c.state;
     expect([c.verdict.cause, s.misses, s.hints, s.glow]).toEqual(['pond', 2, 1, 0]);
     // A third failure moves the glow without counting again.
-    s = flipBed(s, 0, r.bed);
+    s = flipBed(s, 0, r.board);
     expect(s.glow).toBe(null); // stone/soil passes: nothing left to change
-    s = flipBed(s, 1, r.bed); // stone/stone
+    s = flipBed(s, 1, r.board); // stone/stone
     expect(s.glow).toBe(1);
     s = check(s, r).state;
     expect([s.misses, s.hints, s.glow]).toEqual([3, 1, 1]);
     // Passing.
-    s = flipBed(s, 1, r.bed);
+    s = flipBed(s, 1, r.board);
     c = check(s, r);
     expect(c.verdict.result).toBe('pass');
     expect([c.state.passed, c.state.misses, c.state.hints, c.state.glow]).toEqual([true, 3, 1, null]);
@@ -556,10 +557,10 @@ describe('level 4 route', () => {
 
   it('fresh starts: a flip resets the run; Start again restores the start and keeps the counts', () => {
     const r = round4(1, ['soil', 'stone']);
-    let s = check(tryRoute(routeFresh(r)), r).state;
-    s = flipBed(s, 0, r.bed);
+    let s = check(tryRoute(routeFresh(r), r), r).state;
+    s = flipBed(s, 0, r.board);
     expect([s.sockets, s.current]).toEqual([['stone', 'stone'], null]);
-    s = tryRoute(s);
+    s = tryRoute(s, r);
     const back = routeRestart(s, r);
     expect([back.sockets, back.current, back.misses]).toEqual([['soil', 'stone'], null, 1]);
   });
@@ -572,8 +573,8 @@ describe('level 4 route', () => {
         let taps = 0;
         for (; taps < 8 && !s.passed; taps++) {
           const n = routeNext(s, r);
-          if (n.kind === 'cloud') s = tryRoute(s);
-          else if (n.kind === 'bed') s = flipBed(s, n.bed, r.bed);
+          if (n.kind === 'cloud') s = tryRoute(s, r);
+          else if (n.kind === 'bed') s = flipBed(s, n.bed, r.board);
           else {
             const c = check(s, r);
             s = c.state;
@@ -590,7 +591,7 @@ describe('level 4 route', () => {
     while (!s.passed) {
       const n = routeNext(s, r);
       seq.push(n.kind === 'bed' ? `bed${n.bed}` : n.kind);
-      s = n.kind === 'cloud' ? tryRoute(s) : n.kind === 'bed' ? flipBed(s, n.bed, r.bed) : check(s, r).state;
+      s = n.kind === 'cloud' ? tryRoute(s, r) : n.kind === 'bed' ? flipBed(s, n.bed, r.board) : check(s, r).state;
     }
     expect(seq).toEqual(['cloud', 'bed0', 'bed1', 'cloud', 'check']);
   });
@@ -617,7 +618,7 @@ describe('level 4 layout', () => {
     for (const bed of [0, 1] as const)
       for (const mirror of [false, true]) {
         it(`${name}, ${bed ? 'low' : 'top'} bed marked${mirror ? ', mirrored' : ''}`, () => {
-          const l = routeLayout(v, bed, mirror)!;
+          const l = routeLayout(v, board4(bed), mirror)!;
           expect(l).not.toBeNull();
           const targets = [l.cloud, l.beds[0].patch, l.beds[1].patch, l.check];
           const clearOfCorners = (b: Box) => {
@@ -643,7 +644,7 @@ describe('level 4 layout', () => {
           for (let i = 0; i < targets.length; i++)
             for (let k = i + 1; k < targets.length; k++)
               expect(overlap(targets[i], targets[k]), `targets ${i}/${k}`).toBe(false);
-          for (const sign of [l.bedSign, l.pondSign]) {
+          for (const sign of [...l.bedSigns, l.pondSign]) {
             expect([sign.w >= 130, sign.h >= 100, sign.w === SIGN_W, sign.h === SIGN_H]).toEqual([
               true,
               true,
@@ -655,10 +656,10 @@ describe('level 4 layout', () => {
             for (const t of targets) expect(overlap(sign, t)).toBe(false);
             expect(overlap(sign, l.pond)).toBe(false);
           }
-          expect(overlap(l.bedSign, l.pondSign)).toBe(false);
+          expect(overlap(l.bedSigns[0], l.pondSign)).toBe(false);
           // The marked bed's sign stands beside it.
           const marked = l.beds[bed].patch;
-          expect(Math.abs(l.bedSign.y - marked.y)).toBeLessThan(marked.h);
+          expect(Math.abs(l.bedSigns[0].y - marked.y)).toBeLessThan(marked.h);
           for (const b of [...l.beds.flatMap((x) => x.pockets), ...l.slots]) {
             expect(b.w).toBeGreaterThanOrEqual(48);
             expect(b.h).toBeGreaterThanOrEqual(48);
@@ -676,5 +677,5 @@ describe('level 4 layout', () => {
           expect(l.beds[1].patch.y).toBeGreaterThan(l.beds[0].patch.y);
         });
       }
-  it('returns null rather than shrink', () => expect(routeLayout({ w: 600, h: 400 }, 1)).toBeNull());
+  it('returns null rather than shrink', () => expect(routeLayout({ w: 600, h: 400 }, board4(1))).toBeNull());
 });
