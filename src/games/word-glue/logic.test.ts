@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { inventedArt, madeArt } from './art';
-import { choiceLine, nameLine } from './voice';
+import { inventedArt, madeArt, partArt } from './art';
+import { actionLine, choiceLine, doerLine, nameLine } from './voice';
 import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
@@ -23,6 +23,12 @@ import {
   currentAsk,
   DENY,
   distractorsFor,
+  DOER_LEVEL,
+  DOER_PICTURES,
+  DOERS,
+  headFixed,
+  joined,
+  PERSON,
   drop,
   dropTarget,
   forHead,
@@ -76,7 +82,7 @@ describe('the compound table', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // Levels 1–3 are unchanged.
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
     expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
     expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
@@ -361,8 +367,12 @@ describe('level 5: What kind of thing?', () => {
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
   });
 
-  it("school climbs 3, 5, 6, 7, never through lap's level 4, and a carried 4 lands on 3", () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL]);
+  it("school climbs 3, 5, 6, 7, 8, never through lap's level 4, and a carried 4 lands on 3", () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL, DOER_LEVEL]);
+    expect(stepLevel(NAME_LEVEL, 1, LEVELS.school!)).toBe(DOER_LEVEL);
+    expect(stepLevel(DOER_LEVEL, -1, LEVELS.school!)).toBe(NAME_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(DOER_LEVEL);
     expect(levelsInOrder(LEVELS.school!)).not.toContain(BIG_LEVEL);
     expect(landing(BIG_LEVEL, LEVELS.school!, [BIG_LEVEL])).toBe(3);
     expect(stepLevel(3, 1, LEVELS.school!)).toBe(KIND_LEVEL);
@@ -720,6 +730,141 @@ describe('level 7: Name the new thing', () => {
   });
 });
 
+describe('level 8: Someone who', () => {
+  const art = (key: string) => {
+    const c = partArt(key);
+    // The fallback for an unknown key is one grey circle; a drawn picture has more.
+    return c.children.length > 1 || (c.children[0] as { label?: string })?.label !== 'fallback';
+  };
+
+  it('every word is a plain action plus -er, meaning someone who does it, and none is a compound, opaque or denied', () => {
+    expect(DOERS).toHaveLength(7);
+    for (const d of DOERS) {
+      expect(d.second).toBe(PERSON);
+      expect(d.meaning).toBe(`someone who ${d.first}s`);
+      // painter, baker (a dropped final e), swimmer (a doubled last letter)
+      const stem = d.word.slice(0, -2);
+      const ok =
+        stem === d.first ||
+        (d.first.endsWith('e') && stem === d.first.slice(0, -1)) ||
+        stem === d.first + d.first.at(-1);
+      expect(ok, d.word).toBe(true);
+      expect(d.word.endsWith('er')).toBe(true);
+      for (const w of [d.word, d.first, d.meaning]) expect(w).not.toMatch(/-/);
+      expect(OPAQUE as readonly string[]).not.toContain(d.word);
+      expect(DENY).not.toContain(d.word);
+      expect(COMPOUNDS.map((c) => c.word)).not.toContain(d.word);
+    }
+  });
+
+  it('the doers stay out of the compound rungs: an action and the person make nothing there', () => {
+    for (const d of DOERS) {
+      expect(makes(d.first, PERSON)).toBeNull();
+      expect(joined(3, d.first, PERSON)).toBeNull();
+      expect(joined(DOER_LEVEL, d.first, PERSON)).toBe(d);
+      expect(joined(DOER_LEVEL, PERSON, d.first)).toBe(d);
+    }
+    expect(joined(2, 'dog', 'house')).toBe(makes('dog', 'house'));
+    expect(joined(3, 'bird', 'house')!.word).toBe('birdhouse');
+    expect(headFixed(3) && headFixed(DOER_LEVEL)).toBe(true);
+    expect([1, 2, 4, 5, 6, 7].some(headFixed)).toBe(false);
+  });
+
+  it('the authored round: painter, swimmer, baker, driver, builder, with the right action in each place', () => {
+    const r = makeRound(DOER_LEVEL, new Rng(3), true);
+    expect(r.asks.map((a) => a.entry.word)).toEqual(['painter', 'swimmer', 'baker', 'driver', 'builder']);
+    expect(r.asks.map((a) => a.pictures)).toEqual([
+      [PERSON, 'paint', 'bake', 'sing'],
+      [PERSON, 'read', 'swim', 'drive'],
+      [PERSON, 'build', 'bake', 'paint'],
+      [PERSON, 'drive', 'sing', 'read'],
+      [PERSON, 'swim', 'read', 'build'],
+    ]);
+    for (const a of r.asks) expect(DOERS).toContain(a.entry);
+  });
+
+  it('over 500 seeds: five different words, three different actions each with the right one, and every place used', () => {
+    for (const seed of SEEDS) {
+      const r = makeRound(DOER_LEVEL, new Rng(seed));
+      expect(r.plan.level).toBe(DOER_LEVEL);
+      expect(r.asks).toHaveLength(5);
+      expect(new Set(r.asks.map((a) => a.entry.word)).size).toBe(5);
+      const places = new Set<number>();
+      for (const a of r.asks) {
+        expect(DOERS).toContain(a.entry);
+        const [head, ...actions] = a.pictures;
+        expect(head).toBe(PERSON);
+        expect(actions).toHaveLength(3);
+        expect(new Set(actions).size).toBe(3);
+        for (const k of actions) expect(DOERS.map((d) => d.first)).toContain(k);
+        places.add(actions.indexOf(a.entry.first));
+      }
+      expect([...places].sort()).toEqual([0, 1, 2]);
+    }
+  });
+
+  it('only an action joins, and only onto the person', () => {
+    const s = stateFor(DOER_LEVEL, 0, true); // painter: paint, bake, sing
+    expect(canDrag(s, PERSON)).toBe(false);
+    expect(canDrag(s, 'bake')).toBe(true);
+    expect(drop(s, PERSON, 'bake').kind).toBe('ignore');
+    expect(drop(s, 'bake', 'sing').kind).toBe('ignore');
+    expect(s.misses).toBe(0);
+    expect(hintFor(s)).toEqual(['paint', PERSON]);
+    expect(check(s, 'paint', PERSON)).toBe('right');
+    expect(drop(s, 'paint', PERSON)).toEqual({ kind: 'right', entry: DOERS[0] });
+  });
+
+  it('accounting: the same action twice is one miss; two different ones glow and count one hint; Show a hint then counts nothing', () => {
+    const s = stateFor(DOER_LEVEL, 0, true);
+    const first = drop(s, 'bake', PERSON);
+    expect(first).toMatchObject({ kind: 'wrong', counted: true, glowed: false });
+    if (first.kind === 'wrong') expect(first.made?.word).toBe('baker');
+    expect(drop(s, 'bake', PERSON)).toMatchObject({ kind: 'wrong', counted: false });
+    expect(s.misses).toBe(1);
+    expect(drop(s, 'sing', PERSON)).toMatchObject({ kind: 'wrong', counted: true, glowed: true });
+    expect(s.misses).toBe(2);
+    expect(s.hints).toBe(1);
+    applyHint(s);
+    expect(s.hints).toBe(1);
+    // A wrong drop after the glow and two earlier wrong drops joins the right action, uncounted.
+    expect(drop(s, 'bake', PERSON)).toEqual({ kind: 'assist', entry: DOERS[0] });
+    expect(s.misses).toBe(2);
+    expect(currentAsk(s)!.entry.word).toBe('swimmer');
+  });
+
+  it('every ask can finish with the hint pair, and a round ends', () => {
+    for (const seed of SEEDS.slice(0, 100)) {
+      const s = stateFor(DOER_LEVEL, seed);
+      while (!s.done) {
+        const [a, b] = hintFor(s)!;
+        expect(drop(s, a, b).kind).toBe('right');
+      }
+      expect(s.misses + s.hints).toBe(0);
+    }
+  });
+
+  it('every picture and doer is drawn, and every line is written out in full', () => {
+    for (const k of DOER_PICTURES) expect(art(k), k).toBe(true);
+    for (const d of DOERS) {
+      const made = madeArt(d.word);
+      expect(made.node.children.length, d.word).toBeGreaterThan(1);
+      made.alive(0.5);
+      made.alive(2);
+      expect(SCRIPT[actionLine(d.first)]).toEqual([`${d.first[0].toUpperCase()}${d.first.slice(1)}!`]);
+      expect(SCRIPT[doerLine(d.word, 'ask')]).toEqual([`Make a ${d.word}!`]);
+      for (const kind of ['right', 'made'] as const) {
+        const [text] = SCRIPT[doerLine(d.word, kind)];
+        expect(text).toContain(d.word);
+        expect(text.toLowerCase()).toContain(d.meaning);
+        expect(text).not.toMatch(/\{|-|\ber\b/);
+      }
+    }
+    for (const id of ['wordglue.instruct.doer', 'wordglue.doer.person'] as const)
+      expect(SCRIPT[id], id).toBeDefined();
+  });
+});
+
 describe('the pictures', () => {
   it('names every part and the pool once', () => {
     expect(new Set(PICTURES).size).toBe(PICTURES.length);
@@ -824,14 +969,14 @@ describe('the table layout', () => {
 
 describe('check', () => {
   it('agrees with drop on every pair of the first ask at every level', () => {
-    for (const level of [1, 2, 3]) {
+    for (const level of [1, 2, 3, DOER_LEVEL]) {
       const s = stateFor(level, 7);
       const ask = currentAsk(s)!;
       for (const a of ask.pictures)
         for (const b of ask.pictures) {
           const k = check(s, a, b);
           if (a === b) expect(k).toBe('ignore');
-          if (k === 'right') expect(makes(a, b)).toBe(ask.entry);
+          if (k === 'right') expect(joined(level, a, b)).toBe(ask.entry);
         }
     }
   });
