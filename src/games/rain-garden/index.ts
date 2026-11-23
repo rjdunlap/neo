@@ -633,6 +633,6 @@ export const rainGarden: GameModule = {
     'Next time it rains, look out the window together: where does the water go on the path, and where on the grass?',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
-  create: (ctx) => (planFor(ctx.level).level === 4 ? new RainRoute(ctx) : new RainGarden(ctx)),
+  create: (ctx) => (planFor(ctx.level).level >= 4 ? new RainRoute(ctx) : new RainGarden(ctx)),
   touchDemo: true,
 };
