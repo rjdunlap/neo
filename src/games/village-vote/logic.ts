@@ -62,7 +62,8 @@ export function validate(p: Plan) {
   const by = (o: Option) => p.voters.filter((v) => v.option === o).length;
   const closed = p.options.reduce((a, b) => (by(b) < by(a) ? b : a));
   const tied = p.options.filter((o) => o !== closed);
-  if (by(tied[0]) !== by(tied[1]) || by(closed) >= by(tied[0])) throw Error('Level 4 needs a tie between the top two');
+  if (by(tied[0]) !== by(tied[1]) || by(closed) >= by(tied[0]))
+    throw Error('Level 4 needs a tie between the top two');
   const nexts = new Set(p.voters.filter((v) => v.option === closed).map((v) => v.next));
   if (
     nexts.size !== 1 ||
@@ -249,7 +250,9 @@ export class Election {
     return true;
   }
   comparison() {
-    return this.plan.options.filter((o) => o !== this.closed).map((option) => ({ option, total: this.total(option) }));
+    return this.plan.options
+      .filter((o) => o !== this.closed)
+      .map((option) => ({ option, total: this.total(option) }));
   }
   private enter(phase: Phase) {
     this.phase = phase;
