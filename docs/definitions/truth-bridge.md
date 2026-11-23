@@ -1,6 +1,8 @@
 # Truth Bridge, levels 1–4 (definition)
 
-Documentation packet, 2026-11-22, branch `claude/define-truth-bridge`, [PR #2017](https://github.com/rjdunlap/neo/pull/2017). Study follow-up PR6 from [philosophy and reasoning](../deep-dives/subjects/philosophy-reasoning.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Proposed game `truth-bridge`; nothing is registered or implemented. **Docs only.** Two build batches follow below.
+**Built:** levels 1–2 (PR #2026); to build level 3, read “Build batches” (batch 2).
+
+Documentation packet, 2026-11-22, branch `claude/define-truth-bridge`, [PR #2017](https://github.com/rjdunlap/neo/pull/2017). Study follow-up PR6 from [philosophy and reasoning](../deep-dives/subjects/philosophy-reasoning.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `truth-bridge`: batch 1 (levels 1–2) is built ([PR #2026](https://github.com/rjdunlap/neo/pull/2026)) and batch 2 (levels 3–4) is next. Two build batches follow below.
 
 ## What you do
 
@@ -97,7 +99,13 @@ The ghost finger follows the solver's own steps on the seeded board and taps Cro
 
 ## Build batches
 
-1. **`truth-bridge 1`, levels 1–2.** This is the new game, the mark-and-cross interaction and the propagation hints. Claimed on `claude/truth-bridge-1-2`: `src/games/truth-bridge/`, its how-to card, voice lines, the Lantern Lake land line and the `truthbridge` suite.
+1. **`truth-bridge 1`, levels 1–2.** This is the new game, the mark-and-cross interaction and the propagation hints. Built (PR #2026): `src/games/truth-bridge/`, its how-to card, voice lines, the Lantern Lake land line and the `truthbridge` suite.
+
+   **Build decisions:**
+   - The Topsy miss wording is "… are so." (a Topsy-marked speaker whose words are so), mirroring "are not so".
+   - Voice lines are rule-built whole lines: 25 sentences, 96 miss lines and 168 hint lines that the level 1–2 pools produce, plus three rule-built hint lines no level 1–2 board asks for; 301 new clips.
+   - Sideways, the islanders stack as rows to the right of the caption bubble with the name heading each bubble, rather than islanders left and buttons right, because the caption bubble covers the lower left.
+   - The smallest target at 390 × 844 is the Help button at 52.8 CSS px.
 
    **Checks:** typecheck and unit tests, which cover:
    - the pool counts above (26, 1,191) and uniqueness of every board;

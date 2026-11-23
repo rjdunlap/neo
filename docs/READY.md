@@ -47,7 +47,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`truth-bridge` levels 3–4, batch `truth-bridge 2`** (grown-up; after batch `truth-bridge 1`; new interaction tier: typecheck and unit tests (pool counts 404 and 372, the supposition hint, the plank hint walk, voice coverage), one filtered `truthbridge` play at level 4 with a wrong plank and one hint, one upright screenshot with the planks, `fingerdemo` at level 4, build). [Definition](definitions/truth-bridge.md#build-batches)
 
 - **`fence-the-field` levels 1–2, batch `fence-the-field 1`** (new game, grown-up, Lantern Lake; new-game tier: typecheck and unit tests covering the solver (value against a brute-force count on small positions), the pools for all four levels (the pool script runs first and the session stops if a pool is empty), sound and unsound rails, miss counting per distinct rail, the hint walk, voice coverage, the upright layout test, registry, lands and paging; one filtered `fencethefield` play at 390 × 625 with captions through the normal grown-up route and the Lantern Lake page, finishing level 1, then at level 2 laying one unsound rail, laying it again, following Help, rotating and finishing with one sticker; one upright screenshot, `fingerdemo` at level 2, build with the generated voice assets). [Definition](definitions/fence-the-field.md#build-batches)
 
