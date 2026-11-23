@@ -1,3 +1,4 @@
+import type { WordKey } from '../content/words/pt-PT';
 import type { LifetimeContext } from '../engine/lifetime';
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
@@ -252,6 +253,12 @@ export interface GameContext extends LifetimeContext {
   say(id: LineId, vars?: LineVars): Promise<void>;
   /** Speak a line in another voice (a puppet's): always device speech with the preset, never the pet's rendered clip. */
   sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void>;
+  /**
+   * After the line just started with `say` or `instruct` ends on its own, the pet adds this one word in the grown-ups'
+   * second language (WL2), if it is on. Call it right after that line, before awaiting it. Each key speaks at most once
+   * a round; off, muted, no exact voice, a cut line or a key already used say nothing and never delay the game.
+   */
+  sayWord(key: WordKey | null): void;
   /**
    * Set only by couch play. `versus`: a face-off on one shared board, so the game alternates the two players.
    * `course`: a challenge run on fixed boards, played in a row as one round.

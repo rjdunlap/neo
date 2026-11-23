@@ -1,3 +1,4 @@
+import { PT_PT, type WordKey } from '../../content/words/pt-PT';
 import { Lifetime } from '../../engine/lifetime';
 import { Circle, Container, Graphics, Point, Text } from 'pixi.js';
 import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
@@ -253,6 +254,8 @@ export class GameScene extends Scene {
     const band = this.band;
     const lifetime = this.lifetime;
     const scene = this;
+    /** Second-language words already said (or skipped) this round; a new round starts empty (WL2). */
+    const words = new Set<WordKey>();
     const ctx: GameContext = {
       get alive() {
         return lifetime.alive;
@@ -296,7 +299,23 @@ export class GameScene extends Scene {
         this.caption.say(text, spoken);
         return this.whileHere(this.held.line(spoken));
       },
-      finish: (result) => this.finish(result),
+      sayWord: (key) => {
+        // Reserved now, before the English ends, so a quick second tap cannot queue the same word; used is used.
+        if (!key || !lifetime.alive || words.has(key)) return;
+        words.add(key);
+        const lang = store.data.settings.language2;
+        if (lang === 'none') return;
+        const profile = store.activeId;
+        voice.afterLine(() => {
+          if (!lifetime.alive || scene.finished || store.activeId !== profile) return;
+          if (store.data.settings.language2 !== lang) return;
+          void voice.speakWord(PT_PT[key], lang);
+        });
+      },
+      finish: (result) => {
+        voice.dropTail();
+        this.finish(result);
+      },
     };
     return (this.game = this.mod.create(ctx));
   }
@@ -477,6 +496,7 @@ export class GameScene extends Scene {
 
   destroy() {
     this.gone = true;
+    voice.dropTail();
     // Only our own listener: a later round may already have set its own.
     const heard = onBoing(null);
     if (heard !== this.sawBoing) onBoing(heard);

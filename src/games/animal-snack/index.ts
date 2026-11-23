@@ -1,4 +1,5 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { wordKey } from '../../content/words/pt-PT';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { entryId } from '../../content/journal';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
@@ -977,6 +978,8 @@ class AnimalSnack implements Game {
       await this.eat(f, node);
       node.destroy({ children: true });
       void this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[FAVORITE[f.name]!] });
+      // WL2: she chose the animal, so the animal's word (never the food's too).
+      this.ctx.sayWord(wordKey('animal', f.name));
       this.eatenCount++;
       if (this.eatenCount >= this.plan.rounds) return void this.finale();
       const want = friendsAfter(this.eatenCount, this.round.animals.length);
@@ -1009,6 +1012,8 @@ class AnimalSnack implements Game {
         animal: ANIMAL_WORDS[f.name]!,
         food: FOOD_WORDS[FAVORITE[f.name]!],
       });
+      // WL2: the answer was an animal, whether the question was its food or its sound.
+      this.ctx.sayWord(wordKey('animal', f.name));
       if (this.last) await yum;
       return void this.next();
     }
@@ -1172,6 +1177,8 @@ class AnimalSnack implements Game {
       )!;
       await this.eat(f, item.node);
       void this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[item.food] });
+      // WL2: she chose the snack, so the snack's word.
+      this.ctx.sayWord(wordKey('food', item.food));
       this.eatenCount++;
       this.busy = false;
       if (this.eatenCount >= this.plan.rounds) return void this.finale();
@@ -1226,6 +1233,8 @@ class AnimalSnack implements Game {
     this.wrongs = 0;
     void this.eat(near.f, item.node).then(() => {
       void this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[near.f.name]!, food: FOOD_WORDS[item.food] });
+      // WL2: she delivered the snack, so the snack's word; only level 4's matching, not the later modes that share this drop.
+      if (this.plan.mode === 'match') this.ctx.sayWord(wordKey('food', item.food));
       if (this.snacks.every((s) => s.eaten)) void this.next();
     });
     return true;
