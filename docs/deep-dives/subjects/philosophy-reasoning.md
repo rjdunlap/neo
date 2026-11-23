@@ -93,7 +93,7 @@ Standards are curriculum destinations, not gates, and none shows that a game tea
 | **PR3 Question card** · grown-ups' page | Talk about one picture and one open question | Conversation, reasons, disagreeing kindly (SL.K.1, SL.4.1) | G page, L–U via the grown-up | S | Plain HTML; sources on the card; no learning claim |
 | **PR4 "But what about…?"** co-play role | Grown-up makes the claim, she breaks it; then swap | The same, aloud | G with child, K–U | S | A `coplayHint` and printable claim strips |
 | **PR5 What if? in Story Steps** · hand-off | After a story, "what if it hadn't rained?": choose one of two changed endings; both accepted | Following one change through a story | K, S | S | Handed to the Story Steps dive |
-| **PR6 Truth Bridge** · Lantern Lake, 13+ | Mark truth-tellers and liars from what they say, then cross | Consistency, deduction | G, M | M | A solver and generator; [defined 2026-11-22](../../definitions/truth-bridge.md); levels 1–2 [built](../../games/truth-bridge.md) 2026-11-23, levels 3–4 next |
+| **PR6 Truth Bridge** · Lantern Lake, 13+ | Mark truth-tellers and liars from what they say, then cross | Consistency, deduction | G, M | M | A solver and generator; [defined 2026-11-22](../../definitions/truth-bridge.md); levels 1–2 [built](../../games/truth-bridge.md) 2026-11-23, levels 3–4 claimed by branch `codex/neo-ready-truth-bridge-3-4` |
 
 **Order:** PR1, PR3, PR4, PR2; PR5 goes to the Story Steps dive and PR6 is [defined](../../definitions/truth-bridge.md) (2026-11-22; Lantern Lake pages, so no capacity test).
 
