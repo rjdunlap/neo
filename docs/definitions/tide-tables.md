@@ -1,6 +1,6 @@
 # Tide Tables, levels 1–2
 
-**Proposed:** batch `tide-tables 1`, grown-up touch play in Lantern Lake. This packet defines the opening only. [Oceans study](../deep-dives/subjects/oceans.md#build-slices-in-order) · [Placement decision](../archive/DECISIONS-2026-11-17.md#games)
+**Built:** levels 1–2 (PR #2013), grown-up touch play in Lantern Lake. [Oceans study](../deep-dives/subjects/oceans.md#build-slices-in-order) · [Placement decision](../archive/DECISIONS-2026-11-17.md#games)
 
 ## What you do
 

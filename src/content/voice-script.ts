@@ -169,6 +169,7 @@ import { VOICE as tangramTownVoice } from '../games/tangram-town/voice.ts';
 import { VOICE as teddyDoctorVoice } from '../games/teddy-doctor/voice.ts';
 import { VOICE as thoughtBubblesVoice } from '../games/thought-bubbles/voice.ts';
 import { VOICE as tideLineVoice } from '../games/tide-line/voice.ts';
+import { VOICE as tideTablesVoice } from '../games/tide-tables/voice.ts';
 import { VOICE as tilePairsVoice } from '../games/tile-pairs/voice.ts';
 import { VOICE as timelineTrailVoice } from '../games/timeline-trail/voice.ts';
 import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
@@ -805,6 +806,7 @@ export const SCRIPT = {
   ...teddyDoctorVoice,
   ...thoughtBubblesVoice,
   ...tideLineVoice,
+  ...tideTablesVoice,
   ...tilePairsVoice,
   ...timelineTrailVoice,
   ...trackwayTalesVoice,

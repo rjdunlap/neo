@@ -170,6 +170,7 @@ import { HOW_TO as tangramTownHowTo } from '../games/tangram-town/howto.ts';
 import { HOW_TO as teddyDoctorHowTo } from '../games/teddy-doctor/howto.ts';
 import { HOW_TO as thoughtBubblesHowTo } from '../games/thought-bubbles/howto.ts';
 import { HOW_TO as tideLineHowTo } from '../games/tide-line/howto.ts';
+import { HOW_TO as tideTablesHowTo } from '../games/tide-tables/howto.ts';
 import { HOW_TO as tilePairsHowTo } from '../games/tile-pairs/howto.ts';
 import { HOW_TO as timelineTrailHowTo } from '../games/timeline-trail/howto.ts';
 import { HOW_TO as trackwayTalesHowTo } from '../games/trackway-tales/howto.ts';
@@ -371,6 +372,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'teddy-doctor': teddyDoctorHowTo,
   'thought-bubbles': thoughtBubblesHowTo,
   'tide-line': tideLineHowTo,
+  'tide-tables': tideTablesHowTo,
   'tile-pairs': tilePairsHowTo,
   'timeline-trail': timelineTrailHowTo,
   'trackway-tales': trackwayTalesHowTo,

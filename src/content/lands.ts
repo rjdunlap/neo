@@ -421,6 +421,7 @@ export const LANDS: readonly Land[] = [
       'species-comeback',
       'word-code',
       'sum-crates',
+      'tide-tables',
     ],
   },
 ];

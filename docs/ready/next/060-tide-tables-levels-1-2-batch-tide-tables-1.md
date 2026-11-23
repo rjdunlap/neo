@@ -1,1 +1,0 @@
-**`tide-tables` levels 1–2, batch `tide-tables 1`** (grown-up, Lantern Lake; new-game tier: typecheck, unit tests, one filtered `tidetables` portrait play across both levels, one portrait screenshot, level 2 `fingerdemo`, build with voice assets). [Definition](../../definitions/tide-tables.md#build-checks), [study](../../deep-dives/subjects/oceans.md#build-slices-in-order)
