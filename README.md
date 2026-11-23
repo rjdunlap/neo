@@ -311,7 +311,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Shadow Play](docs/games/shadow-play.md) | Lantern Lake | 4 | a lit lamp, a cloth screen and three flat cut-outs on rails; slide each cut-out nearer the lamp or the screen until its shadow fills the outline of tonight's skyline. |
 | [Fence the Field](docs/games/fence-the-field.md) | Lantern Lake | 4 | dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play. |
 | [Key It Out](docs/games/key-it-out.md) | Lantern Lake | 4 | a page of pencil sketches of invented lake creatures and a field guide's identification key. At level 1 (*By the key*) six sketches show every part: choose one, answer the key's yes-or-no questions from what it shows, and tap the name the branch ends in. Three unstamped sketches carrying their right names at once are stamped together. |
-| [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 2 | Give two workshops a few mornings to make crates and boats for a waiting order. |
+| [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 4 | Give two workshops a few mornings to make crates and boats for a waiting order. |
 
 <!-- end generated -->
 
