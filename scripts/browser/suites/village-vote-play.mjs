@@ -188,6 +188,46 @@ export function createSuite({
       assert.equal(await page.evaluate(() => neo.scene.game.election.fix), 'lower');
       await page.setViewportSize({ width: 1024, height: 768 });
     };
+    const funding = async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('village-vote', 6);
+      assert.equal(await page.evaluate(() => neo.scene.game.view.upright), true);
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      const jar = () => page.evaluate(() => neo.scene.game.election.jar);
+      await geometry();
+      await tap('neo.scene.game.purses[0]');
+      await tap('neo.scene.game.purses[0]');
+      await tap('neo.scene.game.purses[0]');
+      assert.equal(await jar(), 2);
+      assert.equal((await stats()).misses, 0);
+      await tap('neo.scene.game.help');
+      assert.equal(await page.evaluate(() => neo.scene.game.election.glowing), true);
+      await tap('neo.scene.game.help');
+      await page.waitForFunction(() => neo.scene.game.election.jar === 3);
+      await page.waitForFunction(() => neo.scene.game.ghost.idle);
+      await screenshot('funding-jar-upright-phone');
+      await page.setViewportSize({ width: 844, height: 390 });
+      await page.waitForFunction(() => !neo.scene.game.view.upright);
+      await geometry();
+      assert.equal(await jar(), 3);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForFunction(() => neo.scene.game.view.upright);
+      for (let i = 0; i < 9; i++) await tap('neo.scene.game.autotouch().tap.on');
+      await finished('village-vote');
+      const s = await stats();
+      assert.deepEqual([await jar(), s.misses, s.hints], [12, 0, 1]);
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+      await launch('village-vote', 6);
+      const next = await page.evaluate(() => neo.scene.game.election.plan.funding.purses);
+      assert.deepEqual([Math.min(...next), Math.max(...next)], [1, 3]);
+    };
+    if (process.env.VILLAGE_VOTE_ONLY === 'funding') {
+      await funding();
+      log(
+        'Village Vote 6: Chip in, empty purse, glow and ghost hint, rotation, full jar and one sticker passed',
+      );
+      return;
+    }
     if (process.env.VILLAGE_VOTE_ONLY === 'access') {
       await access();
       log(

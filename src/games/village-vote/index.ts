@@ -2,6 +2,7 @@ import { Container, EventBoundary, Graphics, Rectangle, type FederatedPointerEve
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
+import { shell } from '../../art/shore';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { GhostFinger } from '../../engine/ghost';
@@ -9,6 +10,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import { store } from '../../progress/store';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -19,6 +21,8 @@ import {
   LEVELS,
   Election,
   fixture,
+  fundingLayout,
+  fundingRound,
   layout,
   NAMES,
   playLayout,
@@ -50,6 +54,7 @@ export class VillageVote implements Game {
   controls: Control[] = [];
   /** Level 5's fix cards (add a step, a lower slide), present in the fix phase. */
   cards: Container[] = [];
+  purses: Container[] = [];
   /** Level 5: where each friend stands at the built tall slide (for the glow). */
   private spots = new Map<string, Point>();
   /** Level 5: the opening "the tall slide won" beat on the counted board; taps wait for it. */
@@ -75,8 +80,11 @@ export class VillageVote implements Game {
     if (e instanceof PointerEvent && this.pending && e.pointerId !== this.pending.pointer) return;
     this.release();
   };
-  constructor(private ctx: GameContext) {
-    this.election = new Election(ctx.demo ? fixture(ctx.level) : roundFor(ctx.level, ctx.rng));
+  constructor(
+    private ctx: GameContext,
+    plan = ctx.demo ? fixture(ctx.level) : roundFor(ctx.level, ctx.rng),
+  ) {
+    this.election = new Election(plan);
     this.view = ctx.view;
     this.boxes = layout(this.view, this.election);
     this.companion = ctx.companion();
@@ -118,6 +126,11 @@ export class VillageVote implements Game {
   }
   private instruct() {
     const e = this.election;
+    if (e.phase === 'funding') {
+      if (e.jar === 0) void this.ctx.instruct('village-vote.fund', { thing: toyName(e.winner), n: e.cost });
+      else void this.ctx.instruct('village-vote.in-jar', { n: e.jar, a: e.cost - e.jar });
+      return;
+    }
     if (e.plan.level === 5) {
       if (e.phase === 'access' || e.phase === 'fix')
         void this.ctx.instruct(e.phase === 'access' ? 'village-vote.access' : 'village-vote.fixes');
@@ -182,6 +195,7 @@ export class VillageVote implements Game {
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
     this.controls = [];
     this.cards = [];
+    this.purses = [];
     this.spots.clear();
     this.friends.clear();
     this.options = [];
@@ -201,6 +215,10 @@ export class VillageVote implements Game {
     this.companion.visible = e.plan.level === 2;
     if (e.phase === 'playing' || e.phase === 'done') {
       this.drawPlay();
+      return;
+    }
+    if (e.phase === 'funding' || e.phase === 'funded') {
+      this.drawFunding();
       return;
     }
     if (e.plan.level === 5 && !this.introducing) {
@@ -284,6 +302,74 @@ export class VillageVote implements Game {
     if (e.phase === 'preference')
       this.fitPet({ x: 90, y: 420 + (this.view.upright ? uprightDrop(this.view) : 0) });
     this.drawHelp(this.boxes.help);
+  }
+  private drawFunding() {
+    const e = this.election;
+    const scene = fundingLayout(this.view);
+    const winner = toy(e.winner);
+    const cost = label(`${toyName(e.winner)} · ${e.cost} shells`, 26);
+    winner.position.set(scene.toy.x, scene.toy.y);
+    cost.y = 66;
+    winner.addChild(cost);
+    this.board.addChild(winner);
+
+    const jar = new Container();
+    jar.position.set(scene.jar.x, scene.jar.y);
+    jar.eventMode = 'none';
+    const glass = new Graphics()
+      .roundRect(-112, -50, 224, 114, 24)
+      .fill(swatch.blue.light)
+      .stroke({ width: 4, color: swatch.blue.line })
+      .roundRect(-115, -62, 230, 15, 6)
+      .fill(cream)
+      .stroke({ width: 4, color: swatch.blue.line });
+    for (let i = 0; i < e.cost; i++) {
+      const x = ((i % 6) - 2.5) * 33;
+      const y = Math.floor(i / 6) * 29 - 22;
+      if (i < e.jar) shell(glass, x, y + 10, 0.92);
+      else glass.circle(x, y, 11).stroke({ width: 2, color: swatch.blue.line, alpha: 0.55 });
+    }
+    const total = label(`${e.jar} / ${e.cost}`, 24);
+    total.y = 43;
+    jar.addChild(glass, total);
+    this.board.addChild(jar);
+
+    e.npc.forEach((v, i) => {
+      const art = new Container();
+      const c = friend(v.id, 0.18);
+      c.y = 12;
+      const bag = new Graphics()
+        .roundRect(-44, -3, 88, 42, 14)
+        .fill(swatch.orange.light)
+        .stroke({ width: 3, color: wood.line });
+      const left = e.purse(i);
+      for (let j = 0; j < left; j++) shell(bag, (j - (left - 1) / 2) * 23, 29, 0.73);
+      art.addChild(c, bag);
+      this.purses.push(this.button(scene.purses[i], 110, 110, art, () => this.give(i)));
+    });
+    this.drawHelp(scene.help);
+  }
+  private give(i: number) {
+    const e = this.election;
+    const result = e.give(i);
+    if (result === 'ignored') return;
+    if (result === 'empty') {
+      void this.ctx.say('village-vote.purse-empty');
+      return;
+    }
+    sfx.bell(4 + (e.jar % 5), 0.19);
+    this.draw();
+    if (result === 'full') void this.funded(this.generation);
+    else this.instruct();
+  }
+  private async funded(gen: number) {
+    this.busy = true;
+    await this.ctx.say(
+      this.election.equalShares ? 'village-vote.equal-shares' : 'village-vote.uneven-shares',
+    );
+    if (!this.alive || gen !== this.generation || !this.election.buildFundedToy()) return;
+    this.draw();
+    await this.sharedPlay(gen);
   }
   private drawHelp(p: Point) {
     const bulb = new Container();
@@ -541,6 +627,15 @@ export class VillageVote implements Game {
   askForHint() {
     if (!this.alive || this.busy || this.finished || !this.ghost.idle) return;
     const e = this.election;
+    if (e.phase === 'funding') {
+      e.help();
+      if (this.asked.has(e.stage)) this.ghost.start({ tap: { on: this.purses[e.nextPurse] } });
+      else {
+        this.asked.add(e.stage);
+        void this.ctx.say('village-vote.purse-help');
+      }
+      return;
+    }
     if (e.plan.level === 5) {
       // The fix is a free choice: Hint there only says the choice again and records no help.
       if (e.phase !== 'access') {
@@ -646,6 +741,7 @@ export class VillageVote implements Game {
   autotouch(): TouchIntent | null {
     if (!this.alive || this.busy || this.finished) return null;
     const e = this.election;
+    if (e.phase === 'funding') return { tap: { on: this.purses[e.nextPurse] } };
     if (e.phase === 'access') return { tap: { on: this.friends.get(e.unfound[0])! } };
     if (e.phase === 'fix') return { tap: { on: this.cards[0] } };
     if (e.phase === 'preference')
@@ -668,6 +764,10 @@ export class VillageVote implements Game {
     this.glow.clear();
     const e = this.election;
     const width = 6 + Math.sin(this.clock * 5);
+    if (e.glowing && e.phase === 'funding') {
+      const p = this.purses[e.nextPurse];
+      this.glow.roundRect(p.x - 61, p.y - 61, 122, 122, 22).stroke({ width, color: swatch.yellow.fill });
+    }
     if (e.glowing && e.phase === 'counting') {
       const p = this.boxes.options[e.plan.options.indexOf(e.winner)];
       this.glow.roundRect(p.x - 96, p.y - 66, 192, 132, 22).stroke({ width, color: swatch.yellow.fill });
@@ -704,12 +804,14 @@ export class VillageVote implements Game {
     const intro = this.introducing;
     this.introducing = false;
     this.draw();
+    if (this.election.phase === 'funded') void this.funded(this.generation);
     if (this.election.phase === 'playing') {
       this.busy = true;
       void this.sharedPlay(this.generation);
     }
     // A resize can cut the tie line short; the run-off instruction is said again.
     if (
+      this.election.phase === 'funding' ||
       this.election.phase === 'runoff' ||
       this.election.phase === 'fix' ||
       (intro && this.election.plan.level === 5)
@@ -757,9 +859,13 @@ export const villageVote: GameModule = {
   upright: true,
   touchDemo: true,
   coplayHint:
-    'Count aloud while she taps the paws, then swap roles. Choose freely for the pet. After a tie, be a latecomer she asks for a next choice. At the tall slide, ask her who can reach the first step.',
+    'Count aloud while she taps the paws, then swap roles. Choose freely for the pet. After a tie, be a latecomer she asks for a next choice. At the tall slide, ask her who can reach the first step. At the jar, name a purse for her to tap.',
   offScreen: 'With a grown-up, let toy friends choose between two toys and count their preferences.',
   hubIcon: () => new VoteIcon(),
   sticker: (seed) => toy(new Rng(seed).pick(['slide', 'swing', 'sandpit'] as const)),
-  create: (ctx) => new VillageVote(ctx),
+  create: (ctx) => {
+    if (ctx.level !== 6 || ctx.demo) return new VillageVote(ctx);
+    const completed = store.stats('village-vote').history.filter((r) => r.level === ctx.level).length;
+    return new VillageVote(ctx, fundingRound(ctx.rng, completed));
+  },
 };

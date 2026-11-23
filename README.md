@@ -152,7 +152,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Picnic Pantry](docs/games/picnic-pantry.md) | school | Cozy Village | 1 | tap two of three dish cards and watch their tokens hop out of three pantry jars; ring the basket bell to lay a picnic for four friends when the pantry can cover both dishes |
 | [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
 | [Swap Meet](docs/games/swap-meet.md) | toddler–school | Cozy Village | 6 | trade pictured toys, with both objects crossing |
-| [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 5 | count pictured toy preferences, then everyone plays |
+| [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 6 | count pictured toy preferences, then everyone plays |
 | [Relay Woods](docs/games/relay-woods.md) | toddler–school | Cozy Village | 4 | pass a picture along three connected friends |
 | [Helper House](docs/games/helper-house.md) | preschool–school | Cozy Village | 9 | drag the eye or sun sensor to its socket so the house helps a friend, then watch a twelve-step day |
 | [Caravan Days](docs/games/caravan-days.md) | toddler–school | Cozy Village | 7 | tap the camel so it kneels, load it, and walk it to the water, the way caravans once did |
