@@ -118,7 +118,7 @@ The ghost finger follows the hint order on the seeded board and, at levels 2–4
 
 ## Build batches
 
-1. **`shadow-play 1`, levels 1–2.** This is the new game, the light model, the rails and the Light check.
+1. **`shadow-play 1`, levels 1–2** (**claimed 2026-11-23**, branch `claude/shadow-play-1-2`)**.** This is the new game, the light model, the rails and the Light check.
 
    **Checks:** typecheck and unit tests, which cover:
    - the scale at each mark and each shape's part;
