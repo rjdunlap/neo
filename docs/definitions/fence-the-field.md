@@ -1,6 +1,8 @@
 # Fence the Field, levels 1–4 (definition)
 
-Documentation packet, 2026-11-22, branch `claude/define-fence-the-field`, [PR #2021](https://github.com/rjdunlap/neo/pull/2021). Study follow-up SG6 from [strategy games](../deep-dives/subjects/strategy-games.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Proposed game `fence-the-field`; nothing is registered or implemented. **Docs only.** Two build batches follow below.
+**Built:** levels 1–2 (PR #2037); to build level 3, read “Build batches” (batch 2).
+
+Documentation packet, 2026-11-22, branch `claude/define-fence-the-field`, [PR #2021](https://github.com/rjdunlap/neo/pull/2021). Study follow-up SG6 from [strategy games](../deep-dives/subjects/strategy-games.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `fence-the-field`; when this packet was written nothing was registered or implemented (levels 1–2 are built since, see the line above). Two build batches follow below.
 
 ## What you do
 
