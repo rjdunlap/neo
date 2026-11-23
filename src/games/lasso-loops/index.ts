@@ -201,6 +201,8 @@ class LassoLoops implements Game {
   private readonly outlines = new Container();
   /** Level 7: taps on the card that could be right; separate from the loop counter, so it never rings a loop hint. */
   private rangeMisses = 0;
+  /** Level 7 sideways: a soft dusk band behind the cards, so they read as a layer above the meadow. */
+  private rangeBand: Graphics | null = null;
   private rangeHinted = false;
   private readonly guessLayer = new Container();
   /** The jar being filled. */
@@ -436,6 +438,19 @@ class LassoLoops implements Game {
     if (this.guessPhase === 'range') {
       for (const c of this.guessCards)
         if (!this.ctx.tw.busy(c)) c.position.copyFrom(this.L.rangeCards[c.slot]);
+      // Upright the cards have their own row; sideways they stand over the fireflies.
+      const spots = this.L.rangeCards;
+      this.rangeBand?.clear();
+      if (this.rangeBand && !this.L.upright)
+        this.rangeBand
+          .roundRect(
+            spots[0].x - RANGE_HIT.w / 2 - 24,
+            spots[0].y - RANGE_HIT.h / 2 - 16,
+            spots[4].x - spots[0].x + RANGE_HIT.w + 48,
+            RANGE_HIT.h + 32,
+            28,
+          )
+          .fill({ color: swatch.purple.line, alpha: 0.55 });
       return;
     }
     const spots = this.guessPhase === 'revise' ? this.L.guessRevise : this.L.guessFirst;
@@ -445,6 +460,10 @@ class LassoLoops implements Game {
   // Level 7: tap away the numbers that cannot be right. ---------------------------------------------
 
   private showRangeCards() {
+    // The band goes with the cards when the last one becomes the sign (the layer is emptied then).
+    this.rangeBand = new Graphics();
+    this.rangeBand.eventMode = 'none';
+    this.guessLayer.addChild(this.rangeBand);
     this.guessCards = this.ranges!.cards.map((value, slot) => {
       const card = new GuessCard(value, false, slot);
       onTap(card, () => void this.tapRange(card));
@@ -511,6 +530,7 @@ class LassoLoops implements Game {
     this.guessNumber.text = String(this.guess);
     this.guessSign.visible = true;
     this.guessCards = [];
+    this.rangeBand = null;
     this.guessLayer.removeChildren().forEach((c) => c.destroy());
     await line;
     if (this.finished) return;

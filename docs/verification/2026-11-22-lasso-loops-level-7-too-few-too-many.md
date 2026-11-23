@@ -1,0 +1,5 @@
+# 2026-11-22 — Lasso Loops level 7 Too few, too many (PR #2010)
+
+**Changed:** `lasso-loops` level 7 *Too few, too many* (estimation E2): school band 3–7, range cards and shelf in `logic.ts` and `lassoLayout`, scene, seven voice lines (two Kokoro clips rendered), three how-to steps, bot, and a sideways layout test.
+**Ran:** `npm run typecheck`; Lasso Loops rule, upright and sideways layout tests (54), how-to, registry, lands and voice-clip tests; full `npm test` (only the generated game docs were stale, since regenerated); `npm run build`. `BROWSER_SUITE=shortlist SHORTLIST_ONLY=lasso FROM_LEVEL=7` on an upright phone viewport 390×844: benchmark loop, the possible card tapped once (score [1,0], it stayed), four impossible cards tapped away, the near ten became the sign, tens round, saved score and sticker. `BROWSER_SUITE=fingerdemo FINGER_ONLY=lasso-loops FINGER_LEVELS=7 FINGER_BAND=school` passed (21.7 s).
+**Not run:** levels 1–6 browser plays (code paths unchanged), other suites, offline.

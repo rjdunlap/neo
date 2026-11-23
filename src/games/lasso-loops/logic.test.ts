@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { rangeFor } from '../../progress/difficulty';
 import {
   choices,
   compareGuess,
@@ -15,7 +16,6 @@ import {
   rangeSide,
   scatter,
 } from './logic';
-import { rangeFor } from '../../progress/difficulty';
 
 describe('Lasso Loops', () => {
   it('has enough fireflies for every jar, and a question whose answer is what was caught', () => {

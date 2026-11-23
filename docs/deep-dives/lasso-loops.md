@@ -49,7 +49,7 @@ The loop is the game's action and the jar of ten is its representation; both car
 
 What does not fit, or belongs elsewhere: numbers past 39 (the space note above); hundreds (a crate of ten jars is the [number-structure study](subjects/number-structure.md)'s NS6 sketch, its home decided at its own definition); larger equal groups and factor pairs (Orchard Rows 4–6 and Monster Munch's division levels own them); timers or moving fireflies.
 
-**Long arc.** Preschool loops and exact small groups; pre-K fives and tens; school reads, builds and changes two-digit numbers and estimates (6, and E2, defined and not yet built); hundreds and estimating a whole from a part stay with their studies.
+**Long arc.** Preschool loops and exact small groups; pre-K fives and tens; school reads, builds and changes two-digit numbers and estimates (6 and 7, built); hundreds and estimating a whole from a part stay with their studies.
 
 ## Experience and presentation
 
@@ -72,7 +72,7 @@ What does not fit, or belongs elsewhere: numbers past 39 (the space note above);
 
 ### New levels on top
 
-**Level 7 stays reserved** for the estimation study's E2 *Too few, too many* ([estimation study](subjects/estimation.md#first-games-proposed-ladder-lasso-loops-6-and-7)), now [defined](../definitions/lasso-loops-too-few-too-many.md) (2026-11-22, not built; its decision 2 took the lean). This dive numbers its own levels from 8. Because `planFor` reads `PLANS` by position, level 8 cannot ship before a level 7 exists: either E2 is built first, or the developer agrees that this dive's first new level takes ID 7 and E2 takes the next free ID, placed after 6 with `order` (decision 1). Levels 8–9 are written here but not queued: they become queueable once level 7 is built.
+**Level 7 is built** (2026-11-22, [PR #2010](https://github.com/rjdunlap/neo/pull/2010)): the estimation study's E2 *Too few, too many* ([definition](../definitions/lasso-loops-too-few-too-many.md)); decision 1 took its lean. This dive numbers its own levels from 8, which are now queueable: level 8 builds on level 7's `PLANS` position.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -98,13 +98,13 @@ The fresh level-4 teens give pre-K an easier tens round without a new ID. No oth
 
 ## Decisions for the developer
 
-1. **Level numbering (the lean stands; E2 defined 2026-11-22, not built).** Keep 7 for the estimation study's E2 and build this dive's levels only after E2 (lean), or let *Make the number* take ID 7 now and give E2 the next free ID placed after 6 with `order`.
+1. **Level numbering (the lean stood; E2 built as level 7, 2026-11-22).** Keep 7 for the estimation study's E2 and build this dive's levels only after E2 (lean), or let *Make the number* take ID 7 now and give E2 the next free ID placed after 6 with `order`.
 2. **A toddler opening** (a loop that always catches), only after watching a two-year-old try to close a loop.
 
 ## Build slices, in order
 
 1. **Teens, decades and a fresh meadow (batch lasso-loops 2). Built 2026-11-02, [PR #1134](https://github.com/rjdunlap/neo/pull/1134), [archived build note](../archive/COMPLETED-2026-10-09.md#lasso-loops-teens-decades-and-a-fresh-meadow-lasso-loops-batch-2-2026-11-02).** Level 1's seeded 6–9 fireflies; level 3's 1–3 jars with an occasional no-ones round; level 4's teen, decade and 21–39 mix; the no-ones voice lines and pad choices. Level 6 unchanged. *Check:* fresh content on the existing interaction: typecheck, the game's rule tests (every plan's fireflies fit one per cell; a teen, a decade and a 21–39 round all occur at level 4 within a few hundred seeds; level 6 still 21–39; pads stay three distinct positive numbers including the answer; no leaf when there are no ones), one filtered regression play of level 4 on a decade seed with one wrong total, `fingerdemo` at 4 (the bot meets a round with no leaf).
-2. *After decision 1:* **Make the number** (level 8, or 7 by decision 1). New interaction tier: typecheck, rule tests (above), one play with a loop of more than ten, a regroup on the leaf, one wrong *Done* and the glow, then to the sticker; one portrait screenshot of three jars and the leaf; `fingerdemo` at the new level.
+2. **Make the number** (level 8; level 7 is built). New interaction tier: typecheck, rule tests (above), one play with a loop of more than ten, a regroup on the leaf, one wrong *Done* and the glow, then to the sticker; one portrait screenshot of three jars and the leaf; `fingerdemo` at the new level.
 3. *After slice 2:* **Ten more, ten less** (the next level). New levels on level 8's interaction: typecheck, rule tests, one play with a ones-only change (a miss) then the right jar, `fingerdemo` at the new level.
 4. *Decision 2:* a toddler opening, defined only after a device observation.
 
