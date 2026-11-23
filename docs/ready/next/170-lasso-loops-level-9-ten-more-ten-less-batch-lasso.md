@@ -1,0 +1,1 @@
+**`lasso-loops` level 9, *Ten more, ten less*, batch `lasso-loops 9`** (school top; after level 8; new levels on level 8's interaction: typecheck, rule tests, one `shortlist` play with a ones-only change (a miss) then the right jar, `fingerdemo` at level 9). [Dive](../../deep-dives/lasso-loops.md#build-slices-in-order)
