@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { flower } from '../../art/shapes';
 import { picture } from '../rhyme-time/pictures';
@@ -265,14 +266,14 @@ export function partArt(key: string): Container {
 }
 
 /** A picture card: a soft tile with its picture, `size` units square. */
-export function cardArt(key: string, size: number): Container {
+export function cardArt(key: string, size: number, drawing?: Container): Container {
   const c = new Container();
   const bg = new Graphics()
     .roundRect(-size / 2, -size / 2, size, size, 28)
     .fill(0xffffff)
     .stroke({ width: 6, color: swatch.yellow.light });
-  const p = partArt(key);
-  p.scale.set((size * 0.78) / 130);
+  const p = drawing ?? partArt(key);
+  p.scale.set((size * 0.78) / (drawing ? 160 : 130));
   c.addChild(bg, p);
   return c;
 }
@@ -292,11 +293,201 @@ const piece = (draw: (g: Graphics) => void, x = 0, y = 0): Graphics => {
   return g;
 };
 
+function runner(kind: 'dog' | 'horse', x: number, y: number, size: number) {
+  const node = new Critter(CRITTERS[kind]);
+  node.alive = false;
+  node.scale.set(size);
+  node.position.set(x, y);
+  return node;
+}
+
+function sled(g: Graphics) {
+  g.moveTo(-64, 10).lineTo(42, 10).quadraticCurveTo(65, 10, 67, -9).stroke(line(wood.line, 6));
+  g.moveTo(-45, 8).lineTo(-42, -14).moveTo(34, 8).lineTo(37, -14).stroke(line(wood.line, 6));
+  g.roundRect(-63, -24, 119, 13, 5).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+}
+
 /** The thing two parts make, about 160 units across, centred on (0, 0). */
 export function madeArt(word: string): Made {
   const c = new Container();
   const add = (...gs: Container[]) => (c.addChild(...gs), gs);
   switch (word) {
+    case 'houseboat': {
+      const water = piece((g) => g.ellipse(0, 41, 79, 19).fill(swatch.blue.light));
+      const boat = new Container();
+      const cabin = piece(
+        (g) => {
+          g.rect(20, -51, 13, 24).fill(wood.line);
+          house(g, swatch.yellow.fill, swatch.red.fill);
+          g.roundRect(-34, 0, 17, 14, 4).fill(swatch.blue.light);
+        },
+        0,
+        -37,
+      );
+      cabin.scale.set(0.65);
+      const hullNode = piece(hull, 0, 12);
+      hullNode.scale.x = 1.2;
+      const smoke = piece((g) => g.circle(0, 0, 8).fill(swatch.white.line), 17, -62);
+      boat.addChild(cabin, hullNode, smoke);
+      add(water, boat);
+      return {
+        node: c,
+        alive: (t) => {
+          boat.y = Math.sin(t * 7) * 5;
+          smoke.y = -62 - 16 * Math.min(t, 1);
+          smoke.alpha = Math.max(0, 1 - t);
+        },
+      };
+    }
+    case 'boathouse': {
+      const shed = piece((g) => {
+        house(g, wood.light, swatch.blue.fill, false);
+        g.roundRect(-44, -7, 88, 62, 9).fill(wood.line);
+        g.ellipse(0, 58, 76, 14).fill(swatch.blue.light);
+      });
+      shed.scale.set(1.15);
+      const boat = piece(hull, 0, 31);
+      boat.scale.set(0.68);
+      const door = piece(
+        (g) =>
+          g
+            .rect(0, -8, 15, 61)
+            .fill(wood.fill)
+            .stroke(line(wood.line, 3))
+            .moveTo(6, 0)
+            .lineTo(6, 45)
+            .stroke(line(wood.light, 3)),
+        -56,
+        0,
+      );
+      add(shed, boat, door);
+      return {
+        node: c,
+        alive: (t) => {
+          door.scale.x = 1 + 1.3 * Math.max(0, 1 - t * 3);
+        },
+      };
+    }
+    case 'pancake': {
+      const plate = piece((g) =>
+        g.ellipse(0, 25, 76, 29).fill(swatch.blue.light).stroke(line(swatch.blue.line)),
+      );
+      const cake = piece(
+        (g) => {
+          g.ellipse(0, 9, 58, 22).fill(wood.fill).stroke(line(wood.line));
+          g.ellipse(0, 2, 58, 20).fill(swatch.yellow.fill).stroke(line(wood.line));
+          g.roundRect(-10, -10, 22, 14, 4).fill(swatch.yellow.light);
+        },
+        0,
+        14,
+      );
+      add(plate, cake);
+      return {
+        node: c,
+        alive: (t) => {
+          const jump = Math.sin(Math.PI * Math.min(1, t / 0.8));
+          cake.y = 14 - 58 * jump;
+          cake.scale.y = Math.cos(Math.PI * Math.min(1, t / 0.8) * 2);
+        },
+      };
+    }
+    case 'cake pan': {
+      const cake = piece(
+        (g) => g.roundRect(-39, -29, 78, 37, 12).fill(swatch.yellow.light).stroke(line(wood.line)),
+        0,
+        6,
+      );
+      const pan = piece((g) => {
+        g.roundRect(-80, 15, 160, 14, 7).fill(swatch.white.light).stroke(line(swatch.white.line));
+        g.poly([-65, 12, 65, 12, 51, 54, -51, 54]).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
+        for (const x of [-32, -16, 0, 16, 32]) {
+          g.moveTo(x, 23).lineTo(x, 45).stroke(line(swatch.purple.light, 3));
+        }
+      });
+      add(cake, pan);
+      return {
+        node: c,
+        alive: (t) => {
+          cake.y = 6 - 32 * Math.min(1, t);
+        },
+      };
+    }
+    case 'racehorse': {
+      const horse = runner('horse', 0, 68, 0.56);
+      const bib = piece((g) => {
+        g.roundRect(-29, -128, 58, 41, 8).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+        g.moveTo(-7, -116).lineTo(5, -121).lineTo(5, -97).stroke(line(swatch.white.fill, 5));
+      });
+      horse.attach(bib);
+      add(horse);
+      return {
+        node: c,
+        alive: (t) => {
+          horse.y = 68 - Math.abs(Math.sin(t * 9)) * 16;
+          horse.rotation = Math.sin(t * 9) * 0.09;
+        },
+      };
+    }
+    case 'horse race': {
+      const finish = piece((g) => {
+        g.moveTo(56, 54).lineTo(56, -65).stroke(line(wood.line, 5));
+        g.rect(22, -65, 34, 25).fill(swatch.white.fill);
+        for (const [x, y] of [
+          [22, -65],
+          [44, -65],
+          [33, -53],
+        ])
+          g.rect(x, y, 11, 12).fill(ink);
+      });
+      const far = runner('horse', -32, 20, 0.32);
+      const near = runner('horse', -13, 65, 0.37);
+      add(finish, far, near);
+      return {
+        node: c,
+        alive: (t) => {
+          far.x = -32 + Math.min(1, t) * 72;
+          near.x = -13 + Math.min(1, t * 1.2) * 59;
+          far.y = 20 - Math.abs(Math.sin(t * 15)) * 10;
+          near.y = 65 - Math.abs(Math.sin(t * 18)) * 12;
+        },
+      };
+    }
+    case 'sled dog': {
+      const dog = runner('dog', 19, 55, 0.57);
+      const harness = piece((g) => {
+        g.moveTo(-58, -94).lineTo(55, -100).stroke(line(swatch.red.line, 12));
+        g.moveTo(10, -96).lineTo(0, -27).stroke(line(swatch.red.fill, 12));
+        g.circle(0, -91, 9).fill(swatch.yellow.light);
+      });
+      dog.attach(harness);
+      const tether = piece((g) => g.moveTo(-68, 29).lineTo(-13, 5).stroke(line(wood.line, 5)));
+      add(tether, dog);
+      return {
+        node: c,
+        alive: (t) => {
+          dog.rotation = Math.sin(t * 24) * Math.max(0, 0.11 - 0.1 * t);
+        },
+      };
+    }
+    case 'dog sled': {
+      const snow = piece((g) => g.ellipse(0, 37, 79, 18).fill(swatch.blue.light));
+      const woodenSled = piece(
+        (g) => {
+          sled(g);
+          g.moveTo(-52, -23).lineTo(-61, -59).lineTo(-43, -59).stroke(line(wood.line, 6));
+          g.roundRect(-29, -45, 52, 20, 7).fill(wood.light).stroke(line(wood.line, 4));
+        },
+        -7,
+        12,
+      );
+      add(snow, woodenSled);
+      return {
+        node: c,
+        alive: (t) => {
+          woodenSled.x = -7 + 21 * Math.min(1, t);
+        },
+      };
+    }
     case 'sunflower': {
       const stem = piece((g) =>
         g

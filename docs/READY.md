@@ -48,11 +48,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`shadow-play` levels 1–2, batch `shadow-play 1`** (new game, grown-up, Lantern Lake; new-game tier: typecheck and unit tests covering the scale at each mark and each shape's part, the pool counts (44,496 and 30,516) with every pooled board passing both filters, the solution as the only accepted arrangement of a sampled board, a wrong arrangement always naming a rail, the hint walk, miss counting per distinct arrangement (none at level 1), the rail layout test, voice coverage, registry, lands and paging; one filtered `shadowplay` play at 390 × 625 with captions through the normal grown-up route and the Lantern Lake page, finishing level 1, then at level 2 lighting a wrong arrangement, lighting it again, following Help, rotating and finishing with one sticker; one upright screenshot, `fingerdemo` at level 2, build with the generated voice assets). [Definition](definitions/shadow-play.md#build-batches)
-
 - **`shadow-play` levels 3–4, batch `shadow-play 2`** (grown-up; after batch `shadow-play 1`; new interaction tier: typecheck and unit tests (pool counts 51,627 and 38,050, the turn in the light model, the swap, the hint walk over cut-out, mark and turn, voice coverage), one filtered `shadowplay` play at level 4 with one swap, one wrong lighting and one hint, one upright screenshot with a turned cut-out, `fingerdemo` at level 4, build). [Definition](definitions/shadow-play.md#build-batches)
-
-- **`fence-the-field` levels 1–2, batch `fence-the-field 1`** (new game, grown-up, Lantern Lake; new-game tier: typecheck and unit tests covering the solver (value against a brute-force count on small positions), the pools for all four levels (the pool script runs first and the session stops if a pool is empty), sound and unsound rails, miss counting per distinct rail, the hint walk, voice coverage, the upright layout test, registry, lands and paging; one filtered `fencethefield` play at 390 × 625 with captions through the normal grown-up route and the Lantern Lake page, finishing level 1, then at level 2 laying one unsound rail, laying it again, following Help, rotating and finishing with one sticker; one upright screenshot, `fingerdemo` at level 2, build with the generated voice assets). [Definition](definitions/fence-the-field.md#build-batches)
 
 - **`fence-the-field` levels 3–4, batch `fence-the-field 2`** (grown-up; after batch `fence-the-field 1`; new interaction tier: typecheck and unit tests (pools for levels 3–4, the leave-two test, the hint walk, voice coverage), one filtered play at level 4 taking the whole run once and following one hint, one upright screenshot mid-run, `fingerdemo` at level 4, build). [Definition](definitions/fence-the-field.md#build-batches)
 
@@ -63,13 +59,9 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 ### Game slices from the dives (refilled 2026-11-17)
 
 
-- **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
 
 
-
-
-- **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 

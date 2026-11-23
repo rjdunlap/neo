@@ -1,8 +1,8 @@
 # Word Glue, levels 5–6 (definition)
 
-**Built:** level 5 (PR #2024); to build level 6, read “Level 6, Which way round?”. Departures in the build: separate `tap`, `checkTap` and `rightPart` functions rather than overloading `check` and `hintFor`; Show a hint glows the right part and repeats the question (no new spoken hint line); the how-to card adds a step about sliding off and tapping the made thing, and its note reads “this question works in English only”; the parts sit side by side in every view (no stacked arrangement was needed). Level 6 makes school's order `[3, 5, 6]`.
+**Built:** level 5 (PR #2024) and level 6 ([PR #2028](https://github.com/rjdunlap/neo/pull/2028)). Vocal feedback is rendered per full line at level 6. Both choice levels share `tap`, `checkTap` and `rightChoice`. Level 5's parts sit side by side in every view; level 6 stacks its drawings upright and shelves both.
 
-**Status: level 5 built (batch 2); level 6 ready to build (batch 3), no review gate.** Defined 2026-11-22 as slice VW2 of the [vocabulary-and-word-parts study](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order), from its [ladder rows](../deep-dives/subjects/vocabulary-word-parts.md#a-first-games-ladder-word-glue) 4 (*What kind of thing?*) and 5 (*Which way round?*) and its [candidates row](../deep-dives/subjects/vocabulary-word-parts.md#candidates-and-fit) VW2. The study's slice line said "after a child has played level 3"; the developer admitted Word Glue 4–5 for definition on the study's lean without waiting for play on [2026-11-17](../archive/DECISIONS-2026-11-17.md#games). It extends the built game ([levels 1–3 definition](word-glue.md), PR #937) and keeps its compound table, art, shelf, speech pattern and accounting unless this page says otherwise.
+Defined 2026-11-22 as slice VW2 of the [vocabulary-and-word-parts study](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order), from its [ladder rows](../deep-dives/subjects/vocabulary-word-parts.md#a-first-games-ladder-word-glue) 4 (*What kind of thing?*) and 5 (*Which way round?*) and its [candidates row](../deep-dives/subjects/vocabulary-word-parts.md#candidates-and-fit) VW2. The study's slice line said "after a child has played level 3"; the developer admitted Word Glue 4–5 for definition on the study's lean without waiting for play on [2026-11-17](../archive/DECISIONS-2026-11-17.md#games). It extends the built game ([levels 1–3 definition](word-glue.md), PR #937) and keeps its compound table, art, shelf, speech pattern and accounting unless this page says otherwise.
 
 **Numbering.** The study, the decision record and the READY line call these rungs "levels 4–5". Level 4 is now lap's *One big picture* (built 2026-11-13, an entry level in lap's order `[4, 1]`), so the two rungs take the next free numbers: **level 5, *What kind of thing?*** and **level 6, *Which way round?*** Every mention below uses 5 and 6.
 
@@ -78,7 +78,7 @@ The same for levels 5 and 6, and the same shape as levels 2–3 adapted to a two
 ## Build batches
 
 1. **Batch `word-glue 2`: level 5, built 2026-11-22** (no new art; the tap interaction, `kindLayout`, the school band order, speech, how-to, bot and tests).
-2. **Batch `word-glue 3`: level 6**, after batch 2 (the `PAIRS` table, eight drawings, speech, how-to, bot and tests).
+2. **Batch `word-glue 3`: level 6, built 2026-11-23** (the `PAIRS` table, eight drawings, speech, how-to, bot and tests).
 
 ## Check tier
 
