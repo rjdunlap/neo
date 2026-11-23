@@ -46,7 +46,7 @@ import { comebackLayout } from './species-comeback';
 import { makeRound as makeComeback, PLANS as comebackPlans } from './species-comeback/logic';
 import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
-import { shadowLayout } from './shadow-play/layout';
+import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
@@ -265,7 +265,11 @@ const MEASURE: Record<string, () => Size[]> = {
   'shadow-play': () => {
     const l = shadowLayout(v);
     return [
-      ...l.rails.map((r): Size => ['rail row', side(r.row)]),
+      ...l.rails.flatMap((r): Size[] => [
+        ['rail row', side(r.row)],
+        ['swap chip', side(r.chip)],
+        ['turn handle', side(turnArea(r, l.upright))],
+      ]),
       ['button', side(l.help)],
       ['button', side(l.light)],
     ];
@@ -339,7 +343,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'species-comeback': { px: 44.7, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
   'sum-crates': { px: 50.8, what: 'tray fruit' },
-  'shadow-play': { px: 50.8, what: 'rail row' },
+  'shadow-play': { px: 44.7, what: 'turn handle' },
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },

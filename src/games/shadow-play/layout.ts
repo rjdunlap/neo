@@ -19,6 +19,13 @@ export interface RailRow {
 export const markX = (rail: RailRow, distance: number) =>
   rail.lampX + ((rail.screenX - rail.lampX) * distance) / SCREEN_AT;
 
+/** The turn face stops above the numbers, which can still be tapped to move the piece. */
+export function turnArea({ row, handle }: RailRow, upright: boolean) {
+  const top = -row.h / 2;
+  const bottom = upright ? 34 : 46;
+  return { x: -handle.w / 2, y: top, w: handle.w, h: bottom - top };
+}
+
 /** The distance from the lamp of a point on a rail. */
 export const distanceAt = (rail: RailRow, x: number) =>
   ((x - rail.lampX) / (rail.screenX - rail.lampX)) * SCREEN_AT;
@@ -50,9 +57,9 @@ export function shadowLayout({ w, h, upright }: Pick<View, 'w' | 'h' | 'upright'
     return {
       sq,
       screen: box(w / 2 + 58, 12 + drop * 0.4 + (GRID_H * sq) / 2, GRID_W * sq, GRID_H * sq),
-      rails: [0, 1, 2].map((i) => rail(12, 386 + drop + i * 102, w - 24, 100, 64, 26, 96)),
-      help: box(w / 2 - 170, 698 + drop * 1.3, 250, 100),
-      light: box(w / 2 + 130, 698 + drop * 1.3, 330, 100),
+      rails: [0, 1, 2].map((i) => rail(12, 382 + drop + i * 110, w - 24, 108, 100, 26, 96)),
+      help: box(w / 2 - 170, 706 + drop * 1.3, 250, 100),
+      light: box(w / 2 + 130, 706 + drop * 1.3, 330, 100),
       upright: true,
     };
   }
@@ -63,7 +70,7 @@ export function shadowLayout({ w, h, upright }: Pick<View, 'w' | 'h' | 'upright'
   return {
     sq,
     screen: box(left + 384, 30 + (GRID_H * sq) / 2, GRID_W * sq, GRID_H * sq),
-    rails: [0, 1, 2].map((i) => rail(x0, 100 + i * 168, 362, 164, 56, 6, 64)),
+    rails: [0, 1, 2].map((i) => rail(x0, 100 + i * 168, 362, 164, 64, 0, 64)),
     help: box(x0 + 86, 660, 168, 100),
     light: box(x0 + 268, 660, 184, 100),
     upright: false,

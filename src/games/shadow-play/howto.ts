@@ -1,10 +1,11 @@
 import type { GameHowTo } from '../types';
 
 export const HOW_TO: GameHowTo = {
-  goal: 'Make the three cut-outs’ shadow fill the outline on the screen. A cut-out nearer the lamp casts a bigger shadow: 12 divided by its mark, times its size.',
+  goal: 'Fill the outline with the cut-outs’ shadows. Shadow size is cut-out size times 12 divided by its mark.',
   steps: [
-    'Each cut-out stands on its own rail. Drag it along the rail, or tap a mark, to move it nearer the lamp or the screen.',
-    'Read the outline’s sizes off the grid. The first touch of a cut-out says its size; tap it to hear it again.',
+    'Drag a cut-out along its rail or tap a numbered mark.',
+    'Read sizes from the grid. The first touch of a cut-out says its size.',
+    { from: 1, to: 2, text: 'Tap the cut-out where it stands to hear its size again.' },
     {
       from: 1,
       to: 1,
@@ -13,7 +14,17 @@ export const HOW_TO: GameHowTo = {
     {
       from: 2,
       to: 2,
-      text: 'The lamp is out. Work out each mark from the outline: an outline part 6 tall from a cut-out 2 tall is 3 times, and 12 divided by 3 is mark 4.',
+      text: 'With the lamp out, work from the outline: 6 is 3 times 2, so a cut-out 2 tall casts a shadow 6 tall at mark 4.',
+    },
+    {
+      from: 3,
+      to: 4,
+      text: 'Tap the cut-out to turn it. Its shadow is half as wide and just as tall. Tap again to turn it back.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'Tap two chips to swap their cut-outs, keeping each mark and turn. Tap a selected chip again to clear it.',
     },
   ],
   finish: [
@@ -24,9 +35,16 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 2,
-      to: 2,
+      to: 4,
       text: 'Tap Light when every cut-out is set. If the shadow fills the outline, the show begins.',
     },
   ],
-  note: 'Sliding is always free. Lighting a wrong arrangement shows the real shadow and names the first rail that differs; Help works out one rail’s mark.',
+  note: [
+    { from: 1, to: 1, text: 'Sliding is always free. Help works out one rail’s mark.' },
+    {
+      from: 2,
+      to: 4,
+      text: 'Moves are free. Light shows the shadow and names the first differing rail. Help shows one next step.',
+    },
+  ],
 };
