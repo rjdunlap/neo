@@ -1741,7 +1741,10 @@ class SwingRow implements Game {
     });
   }
 
-  /** Lights the answer's friend before she guesses, once a line, with the one-line why; after that it only speaks. */
+  /**
+   * Lights the answer's friend before the friends let go, once a line, and says why for the rope the pet points at;
+   * after that (or between lines) it only speaks.
+   */
   askForHint() {
     if (this.finished) return;
     this.lessonGen++;
@@ -1749,7 +1752,14 @@ class SwingRow implements Game {
       this.hintLit = true;
       this.hints++;
     }
-    if (this.hintLit) void this.ctx.say('swing-pals.row-twice');
+    const pointed = this.row.hooks[this.row.pointed];
+    void this.ctx.say(
+      pointed === 'short'
+        ? 'swing-pals.row-twice'
+        : pointed === 'long'
+          ? 'swing-pals.row-hint-long'
+          : 'swing-pals.row-hint-middle',
+    );
   }
 
   update(dt: number) {
@@ -1807,6 +1817,7 @@ class SwingRow implements Game {
 
   destroy() {
     this.destroyed = true;
+    for (const node of this.friendNodes) node.removeAllListeners();
     for (const r of this.rigs) this.ctx.untrack(r.critter);
   }
 }

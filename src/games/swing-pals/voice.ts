@@ -43,6 +43,10 @@ export const VOICE = {
   'swing-pals.instruct-row': ['Who will come back with {friend} at the same time first? Tap a friend.'],
   'swing-pals.row-met': ['{friend} and {other} came back together!'],
   'swing-pals.row-all': ['All three together again!'],
+  'swing-pals.row-hint-long': [
+    'The short rope comes back twice in one long swing, so it meets the long rope first.',
+  ],
+  'swing-pals.row-hint-middle': ['The short rope comes back most often, so it meets the middle rope first.'],
   'swing-pals.row-twice': ['The short rope comes back twice for every long swing, so they meet first.'],
   'swing-pals.instruct-paint': ['Push the swing, and the paint pot will paint its wiggle.'],
   'swing-pals.paint-try-short': ['Try the short rope!'],

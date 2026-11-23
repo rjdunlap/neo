@@ -90,7 +90,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 10,
       to: 10,
-      text: 'A guess is never wrong here; the swings show the answer. Show a hint in the pause sheet lights the right friend before she taps, which counts as a hint.',
+      text: 'A guess is never wrong here; the swings show the answer. Show a hint in the pause sheet lights the right friend before the swings let go, which counts as a hint.',
     },
     {
       from: 1,
