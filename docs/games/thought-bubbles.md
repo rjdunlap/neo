@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–4 |
+| school | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,12 +17,13 @@
 | 2 | Where will he look? Was the friend there when his thing moved? |
 | 3 | How do we know? The reason, then where the picture shows it |
 | 4 | Two bubbles (about 9 and up): two friends saw different things |
+| 5 | Who is telling? (about 9 and up): which friend was there for every part told |
 
 <!-- end generated -->
 
 **Starts as:** a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble
 
-**Grows into:** level 1 (pre-K): what the friend reaches for (a paw reach and a lean point at it; a decoy sits near). Level 2: where the friend will look, from whether he saw the move (an away story, where the mover kindly shows where it went, or a watching story through the window); the first pick counts, and a wrong place replays the move with "Was he in the room when it moved?". Level 3 (school): why he did it (three picture reasons), then tap the clue in the picture. Level 4 (school, about 9 and up): two friends share a thing that is moved twice while one or both are out; each gets a thought bubble and she drags the place each thinks it is, in either order, then each walks to its place. A wrong card or place is a miss; the friend never walks to a wrong place; a non-clue tap is free and named; two misses on a story glow the answer (one hint), Show me glows the target (one hint). One sticker per round of three stories. Invented island stories about pictured things only. Story Grove
+**Grows into:** level 1 (pre-K): what the friend reaches for (a paw reach and a lean point at it; a decoy sits near). Level 2: where the friend will look, from whether he saw the move (an away story, where the mover kindly shows where it went, or a watching story through the window); the first pick counts, and a wrong place replays the move with "Was he in the room when it moved?". Level 3 (school): why he did it (three picture reasons), then tap the clue in the picture. Level 4 (school, about 9 and up): two friends share a thing that is moved twice while one or both are out; each gets a thought bubble and she drags the place each thinks it is, in either order, then each walks to its place. A wrong card or place is a miss; the friend never walks to a wrong place; a non-clue tap is free and named; two misses on a story glow the answer (one hint), Show me glows the target (one hint). One sticker per round of three stories. Level 5 (school, about 9 and up): two speech bubbles each tell a story from the helper's or the owners' side, and she drags the friend who could have told it (owners or helper) onto each. Invented island stories about pictured things only. Story Grove
 
 ## Design notes
 
@@ -39,5 +40,7 @@ Misses and hints: a wrong card or place is a miss. Two misses on a story glow th
 **Level 4, "Two bubbles" (school 4; PR #2023; [definition](../definitions/thought-bubbles-4.md)).** Two friends share a thing that is put away and moved twice; one or both owners are out for a move. Each friend gets a thought bubble and she drags the place each thinks it is, in either order. Six templates, five patterns (three "different", two "same"); the first round is authored and dealt rounds keep every habit that ignores who was in the room at two or more misses a round. Pre-K stays at levels 1–2. Narration is beat by beat (`beatsOf`); `LEVELS.school` is 1–4.
 
 Misses and hints are per bubble: `Tally` counts wrong cards and glows by bubble index (`wrong(bubble)`, `showMe(stage, bubble)`), not by a `newQuestion()` reset, because the bubbles fill in either order. A wrong card is one miss and replays that friend's last-seen beat with the pet's question; two misses on one bubble glow its card and bubble as one hint; Show me glows the first unfilled bubble. A right card floats home and leaves its picture; a filled bubble refuses drops, free. The per-template `.helped` line names no friend (lines are slot-free; two friends at the wrong place are shown once together). The owners stand beside the red box and between the two floor places so no friend hides a place; a friend who stays "in the room and watches" (no rug or reading prop); a finder hops on its place rather than picking the thing up, so the second friend can still be shown it. The level 4 demonstration plays two of the three stories (47.4 s; the full round took 69.6 s against the 75 s cap).
+
+**Level 5, "Who is telling?" (school 5; PR #2040; [definition](../definitions/thought-bubbles-5.md)).** The helper starts outside and comes in after the put; four patterns (crossed, early, late, stayed). Two speech bubbles per story (smooth outline, tail to a question-mark badge that becomes the teller's head), each telling 2-3 part pictures (a thing on its place) spoken with the story's own put/move lines. Three friend cards sit in a fixed order, owners then helper. Misses and hints are per bubble (`Tally`). A wrong friend is a miss: the pet says `thought.tell.was.{friend}`, the first part that friend missed pulses and that beat replays; two misses on a bubble glow its answer (one hint). Touching a bubble re-says the telling, free. The first round is authored; dealt rounds redraw (bound 200, never reached in 300 seeds) until the round rule holds, and habits cost 4/3/5/2 on the authored round. Level 5 uses level 4's layout; `LEVELS.school` is 1-5. The level-4 badge drawing is now `headBadge()` in `art.ts`, shared with level 5's badge and cards; `beatsOf` takes `{template, events}` and re-adds an owner on `back`; `compile` takes an optional start-outside list. 26 voice lines, clips rendered with Kokoro. The level 5 demonstration plays two of the three stories (55.7 s against the 75 s cap).
 
 Layout: `thoughtLayout(view, level)` returns `bubbles`. Landscape stacks two bubbles in the right column with Replay under them; upright puts them side by side above the stage with Replay under the cards at the right, and on a tall phone the block moves down by 55% of the height beyond 1024 units so the cards sit lower. Level 2's move animation is the shared `moveThing` helper (levels 2 and 4); 57 new voice clips are rendered (`scripts/voice-clips/render.mjs`).

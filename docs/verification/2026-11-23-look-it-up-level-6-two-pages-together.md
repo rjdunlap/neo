@@ -1,0 +1,6 @@
+# 2026-11-23 — Look It Up level 6, Two pages together (PR #2039)
+
+**Changed:** `look-it-up` level 6 (school max 5 to 6): `SHARES`, friend cards and their walk, the two-page hint, voice, how-to and the upright play; one `VisitTally` class now holds every level's per-visitor accounting (no behaviour change at levels 2–5); suite knob `LOOKITUP_FROM=4|6`.
+**Ran** (commit 2485f6941, dev server on localhost:5194, `VITE_SPEECH=off`): typecheck, lint, format; `npm test` 18352 passed, one Bolt Boards level-8 hint test timed out under machine load (load average 22) and passed alone (964/964), a load flake; `npm run build`; `BROWSER_SUITE=lookitup LOOKITUP_FROM=4` passed (levels 4, 5, 6 upright 390×844) and `LOOKITUP_FROM=6` re-passed after the walk fix, with the walk assertion shown failing on the old drop rule; `fingerdemo FINGER_ONLY=look-it-up FINGER_LEVELS=4,6` passed (25.2 s, 33.2 s); the upright screenshot `look-it-up-6-share-upright.png` reviewed.
+**Flake:** full `lookitup` from level 1 failed twice at level 3's wall-clock R4 cap (1869 ms, then 3845 ms against 1800 ms) under that load, on unchanged level-3 code; levels 1–3 were not re-proved this session.
+**Not run:** offline (no clips added: the three new lines have slots and stay on device speech; no persistence, asset or navigation change).

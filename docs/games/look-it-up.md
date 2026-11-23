@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–5 |
+| school | 3–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,12 +20,13 @@
 | 3 | The fact box: find the page and the row, then help |
 | 4 | Contents page: find the animal's name and page, then help |
 | 5 | Picture or words? Read the baby's name, then give it its tag |
+| 6 | Two pages together: find who shares a fact with the visitor |
 
 <!-- end generated -->
 
 **Starts as:** touch a picture label to hear it, or tap an animal's face on the guide's tabs and give it the food its page shows
 
-**Grows into:** seven real animals (cow, pig, duck, rabbit, brown bear, frog, African penguin) with an *Eats*, *Where* and *Baby* row each from opened zoo and wildlife sources; level 1 touches talking labels (nothing to get wrong), level 2 finds a hungry visitor's page and feeds it, level 3 finds the *Eats* or *Where* row and leads the animal to its food or place; level 4 swaps the tabs for a contents page (faces, printed names, page numbers) and printed captions; level 5 gives each visitor's baby the name tag whose printed word matches its caption; turning pages is free and only a wrong food or place is a miss
+**Grows into:** seven real animals (cow, pig, duck, rabbit, brown bear, frog, African penguin) with an *Eats*, *Where* and *Baby* row each from opened zoo and wildlife sources; level 1 touches talking labels (nothing to get wrong), level 2 finds a hungry visitor's page and feeds it, level 3 finds the *Eats* or *Where* row and leads the animal to its food or place; level 4 swaps the tabs for a contents page (faces, printed names, page numbers) and printed captions; level 5 gives each visitor's baby the name tag whose printed word matches its caption; level 6 shows a visitor's row and asks her to find another page that says the same thing, then walks that page's animal beside the visitor; turning pages is free and only a wrong food, place, name tag or friend is a miss
 
 ## Design notes
 
@@ -33,12 +34,16 @@
 
 Misses and hints: turning to any page, re-reading a row or label, tapping the visitor and a drop on empty ground are free. A wrong food or place given to the visitor is one miss per distinct wrong choice, with a kind "Those are seeds. Ducks eat seeds. Let's look in the guide for the cow." and a walk there and back for a wrong place. After two misses on one visitor the right tab, then the right row, then the right picture glows (one hint at most per visitor); a further wrong try lets the pet give the answer so the round finishes. One sticker per round, with or without help.
 
-Bands: toddler 1, preschool 1–2, pre-K 2–3, school 3. Home land Barnyard; subject Story Grove. Known gaps (2026-10-22): the first round of each level is seeded-random, not the authored cow/duck/bear round; baby pictures are the parent critter scaled small rather than distinct baby art, and the duck and rabbit are not tinted mallard or brown; choices are drag-or-tap (a drop that barely moves counts as a tap), so level 3 foods move like places; the level 2 demonstration does not first tap another tab; the supported finish fires after four wrong tries, not three; there is no Start again pause action.
+Bands: toddler 1, preschool 1–2, pre-K 2–3, school 3–6. Home land Barnyard; subject Story Grove. Known gaps (2026-10-22): the first round of each level is seeded-random, not the authored cow/duck/bear round; baby pictures are the parent critter scaled small rather than distinct baby art, and the duck and rabbit are not tinted mallard or brown; choices are drag-or-tap (a drop that barely moves counts as a tap), so level 3 foods move like places; the level 2 demonstration does not first tap another tab; the supported finish fires after four wrong tries, not three; there is no Start again pause action.
 
 **A right picture's fact never holds the next visitor (U7 fix batch 7, 2026-11-12).** At levels 2–3 the fact starts as the visitor eats or goes and the next visitor walks in at once; the ask waits for the fact or her first touch (a tab turns the page and says the ask instead of the title, a row lights and says it, a tap on the visitor says it, and a drop says it, snaps back and is not judged). The supported finish says the row's line once, and the last visitor's fact is heard out before the closing line. Level 1's page reading is unchanged.
 
 **Plays upright on a phone (upright batch 11 onward, 2026-11-18).** Held upright the book starts at y 140 instead of 100, so the first row clears Home and the question mark (column to y 210) and the title sits beside them; the tabs, rows and basket choices move with it. Sideways and an upright tablet keep their layout. `upright.test.ts` checks levels 1–3 on the three upright phone views, the captioned one and a short 375 × 601 one.
 
 **Levels 4–5, Contents page and Picture or words? (batch `look-it-up 2`, 2026-11-22; [definition](../definitions/look-it-up-4-6.md)).** School range is now 3–5. The book is fixed (pages 1–7 in table order) and one Contents button replaces the tabs; the contents page lists faces, printed names and page numbers. Every row carries a printed caption (26 units, 24 when it would run past two lines); each row keeps its picture, scaled, with a small row icon beside the caption. Level 5 asks for the visitor's *Baby*: printed name tags are given to the baby, with truth rules (no duck with the penguin, at most one of pig or duck, the rabbit's tag reads "kit"). First rounds are authored. Hint order is Contents, then the line, then the row, then the choice; a miss is one per distinct wrong picture or tag, and turning pages or opening Contents is free. Three slot-free new voice lines are rendered as clips; the how-to steps are level-scoped, and the ghost finger takes a level-4 demo detour. The demo plays the authored round without using up her own first round.
+
+**Level 6, Two pages together (batch `look-it-up 3`, 2026-11-23; [definition](../definitions/look-it-up-4-6.md)).** School range is now 3–6. A visitor asks about a row; she reads that page's row, then turns to another page whose caption says the same word (`SHARES` in `logic.ts` holds source, row, ask, key and the words that are never accepted). Accepted friends are computed from the captions by whole word, with a plural (`says`, `acceptedFor`); the pages offered as wrong are all the rest (`offeredFor`). The visit carries `share: { q, friend, wrong }`. A friend card is the animal, 60 tall, above its printed name (22 units, wraps). Tapping a friend, or dragging it to the visitor, walks the card beside the visitor: a wrong friend walks there and back, then "{caption} That page doesn't say {key}." (one miss per distinct wrong friend); the right one makes both hop and says "{Friend}'s page says {key} too!". The first glow's spoken step says "Now find another page that says {key}." once the visitor's row has been read. The supported finish opens the accepted friend's page and reads its row. The ghost finger taps the friend. `hintFor` takes a `read` set of pages whose asked row was touched this visit, kept across page turns; a `ChoiceKey` (picture or animal) is the hint's `choice` field (renamed from `picture`), and `{ choice }` move covers friends. Turning pages and re-reading stay free.
+
+Incidental consolidation: one `VisitTally` class in `logic.ts` now holds every level's per-visitor accounting (a miss once per distinct wrong choice, one hint, the glow after 2, the supported finish after 4), replacing the scene's copied tails; no behaviour change at levels 2–5. The browser suite takes `LOOKITUP_FROM=4|6` to start at the contents levels or level 6. The three new voice lines have slots but no clips yet and stay on device speech.
 
 As built against the definition: the page number is printed at the foot of each page (beside the title it collided with "African penguin"); the contents title band is 70 units upright (not 50) so the first line clears Home and help. Known low-severity gaps: the contents instruction line is spoken with `say`, not `instruct`, at the start of each level 4–5 round; a spoken hint step plays only when the glow first turns on; a tag's word is heard twice when it is lifted and then wrongly given.

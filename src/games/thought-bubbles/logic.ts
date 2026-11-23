@@ -202,9 +202,18 @@ export type Action =
 /** An action and every friend who saw it happen. */
 export type StoryEvent = Action & { saw: Friend[] };
 
-/** Who saw each action: a friend sees it in the room or at the window, not outside. Everyone in `cast` starts in the room. */
-export function compile(cast: readonly Friend[], actions: readonly Action[]): StoryEvent[] {
-  const where = new Map<Friend, 'room' | 'window' | 'outside'>(cast.map((f) => [f, 'room']));
+/**
+ * Who saw each action: a friend sees it in the room or at the window, not outside. Everyone in `cast` starts in the room,
+ * except the friends in `outside` (level 5's helper), who come in with a `back` action.
+ */
+export function compile(
+  cast: readonly Friend[],
+  actions: readonly Action[],
+  outside: readonly Friend[] = [],
+): StoryEvent[] {
+  const where = new Map<Friend, 'room' | 'window' | 'outside'>(
+    cast.map((f) => [f, outside.includes(f) ? 'outside' : 'room']),
+  );
   return actions.map((a) => {
     if (a.kind === 'leave') where.set(a.who, a.to);
     if (a.kind === 'back') where.set(a.who, 'room');
@@ -375,8 +384,11 @@ export interface Beat {
   who?: Friend;
 }
 
-/** The story beat by beat. The template owns each line; the pattern only says which beats play and in what order. */
-export function beatsOf(s: TwoStory): Beat[] {
+/**
+ * The story beat by beat. The template owns each line; the pattern only says which beats play and in what order. Level 5's
+ * helper, who is not an owner, comes in with its own line.
+ */
+export function beatsOf(s: { template: TwoTemplate; events: readonly StoryEvent[] }): Beat[] {
   const id = `thought.two.${s.template.id}`;
   const inRoom = new Set<Friend>(s.template.friends);
   const beats: Beat[] = [];
@@ -385,8 +397,12 @@ export function beatsOf(s: TwoStory): Beat[] {
   s.events.forEach((e, i) => {
     if (e.kind === 'put') beats.push({ line: `${id}.put`, event: i });
     else if (e.kind === 'move') beats.push({ line: `${id}.move${++moves}`, event: i });
-    else if (e.kind === 'back') beats.push({ line: `${id}.back.${e.who}`, event: i });
-    else {
+    else if (e.kind === 'back' && !s.template.friends.includes(e.who))
+      beats.push({ line: `thought.tell.in.${e.who}`, event: i });
+    else if (e.kind === 'back') {
+      beats.push({ line: `${id}.back.${e.who}`, event: i });
+      inRoom.add(e.who);
+    } else {
       beats.push({ line: `${id}.out.${e.who}`, event: i });
       inRoom.delete(e.who);
       // One friend stays to watch: said once, when the other has gone and this one is not next out of the door.
@@ -436,6 +452,207 @@ export function twoRound(rng: Rng): TwoStory[] {
       rng.shuffle([...PLACES]) as [Place, Place, Place],
     );
   });
+}
+
+// ---------------------------------------------------------------- level 5
+
+/**
+ * Who is telling? Level 4's templates, with the helper (`movers[1]`) outside until straight after the put, so it never sees
+ * the put and is there for both moves. X and Y are the two owners (`x` says which of `friends` is X); each pattern leaves
+ * every friend out for at least one part. `crossed`: X saw put and move 1, Y put and move 2. `early`: X put and move 1, Y
+ * the put. `late`: X put and move 2, Y the put. `stayed`: X all three, Y the put.
+ */
+export type TellPattern = 'crossed' | 'early' | 'late' | 'stayed';
+export const TELL_PATTERNS: readonly TellPattern[] = ['crossed', 'early', 'late', 'stayed'];
+
+/** A telling: the event indexes of two or three of the story's three parts, in story order. */
+export interface Telling {
+  told: number[];
+}
+
+export interface TellStory {
+  template: TwoTemplate;
+  pattern: TellPattern;
+  x: 0 | 1;
+  start: Place;
+  middle: Place;
+  actual: Place;
+  events: StoryEvent[];
+  /** Bubble 0's telling (left, or top in landscape), then bubble 1's. */
+  tellings: [Telling, Telling];
+}
+
+/** The three friends who might have told it, in card order: the two owners, then the helper. */
+export const candidatesOf = (t: TwoTemplate): [Friend, Friend, Friend] => [
+  t.friends[0],
+  t.friends[1],
+  t.movers[1],
+];
+
+/** The event indexes of the three parts: the put, move 1, move 2. */
+export const partsOf = (events: readonly StoryEvent[]): number[] =>
+  events.flatMap((e, i) => (e.kind === 'put' || e.kind === 'move' ? [i] : []));
+
+export function tellEvents(
+  template: TwoTemplate,
+  pattern: TellPattern,
+  x: 0 | 1,
+  [start, middle, actual]: readonly [Place, Place, Place],
+): StoryEvent[] {
+  const X = template.friends[x];
+  const Y = template.friends[1 - x];
+  const helper = template.movers[1];
+  const thing = template.thing;
+  const put: Action = { kind: 'put', who: template.friends[0], thing, to: start };
+  const move1: Action = { kind: 'move', who: template.movers[0], thing, from: start, to: middle };
+  const move2: Action = { kind: 'move', who: helper, thing, from: middle, to: actual };
+  const out = (who: Friend): Action => ({ kind: 'leave', who, to: 'outside' });
+  const back = (who: Friend): Action => ({ kind: 'back', who });
+  const actions: Record<TellPattern, Action[]> = {
+    crossed: [put, back(helper), out(Y), move1, back(Y), out(X), move2, back(X)],
+    early: [put, back(helper), out(Y), move1, out(X), move2, back(Y), back(X)],
+    late: [put, back(helper), out(X), out(Y), move1, back(X), move2, back(Y)],
+    stayed: [put, back(helper), out(Y), move1, move2, back(Y)],
+  };
+  return compile(candidatesOf(template), actions[pattern], [helper]);
+}
+
+/** Whether `who` was there for every told part. */
+export const couldTell = (events: readonly StoryEvent[], who: Friend, told: readonly number[]): boolean =>
+  told.every((i) => events[i].saw.includes(who));
+
+/** The candidates who could have told it. */
+export const tellersOf = (
+  s: { template: TwoTemplate; events: readonly StoryEvent[] },
+  told: readonly number[],
+) => candidatesOf(s.template).filter((f) => couldTell(s.events, f, told));
+
+/** Every telling of two or three parts that exactly one friend could have told: the only tellings dealt. */
+export function oneTellerTellings(s: { template: TwoTemplate; events: readonly StoryEvent[] }): Telling[] {
+  const [a, b, c] = partsOf(s.events);
+  return [
+    [a, b],
+    [a, c],
+    [b, c],
+    [a, b, c],
+  ]
+    .filter((told) => tellersOf(s, told).length === 1)
+    .map((told) => ({ told }));
+}
+
+/** The one friend who could have told a bubble's telling. */
+export const tellerOf = (s: TellStory, bubble: number): Friend => tellersOf(s, s.tellings[bubble].told)[0];
+
+/** The first told part `who` was not there for (what a miss replays), or -1. */
+export const firstMissed = (events: readonly StoryEvent[], who: Friend, told: readonly number[]): number =>
+  told.find((i) => !events[i].saw.includes(who)) ?? -1;
+
+/** A level-5 story; each telling is given as part numbers (0 the put, 1 move 1, 2 move 2). */
+export function tellStory(
+  template: TwoTemplate,
+  pattern: TellPattern,
+  x: 0 | 1,
+  places: readonly [Place, Place, Place],
+  tellings: readonly [readonly number[], readonly number[]],
+): TellStory {
+  const events = tellEvents(template, pattern, x, places);
+  const parts = partsOf(events);
+  const [start, middle, actual] = places;
+  return {
+    template,
+    pattern,
+    x,
+    start,
+    middle,
+    actual,
+    events,
+    tellings: [{ told: tellings[0].map((p) => parts[p]) }, { told: tellings[1].map((p) => parts[p]) }],
+  };
+}
+
+/** The authored first round: the helper tells once, one telling skips the middle part, and one friend tells twice. */
+export const FIRST_TELL: readonly TellStory[] = [
+  tellStory(
+    two('ball-tidy'),
+    'early',
+    0,
+    ['redBox', 'blueBasket', 'shelf'],
+    [
+      [0, 1],
+      [1, 2],
+    ],
+  ),
+  tellStory(
+    two('book-dust'),
+    'crossed',
+    1,
+    ['blueBasket', 'shelf', 'redBox'],
+    [
+      [0, 2],
+      [0, 1],
+    ],
+  ),
+  tellStory(
+    two('drum-room'),
+    'stayed',
+    1,
+    ['shelf', 'redBox', 'blueBasket'],
+    [
+      [0, 1, 2],
+      [0, 1],
+    ],
+  ),
+];
+
+/** The card position (0 left, 1 middle, 2 right) of each bubble's teller over a round. */
+export const tellPositions = (stories: readonly TellStory[]): number[] =>
+  stories.flatMap((s) => [0, 1].map((b) => candidatesOf(s.template).indexOf(tellerOf(s, b))));
+
+/**
+ * The round rule: three different templates; at least one `crossed` and at most one `stayed`; at least two stories with
+ * two different tellers; each card position the answer one to three times over the six bubbles. So always the same card
+ * costs at least three misses a round and copying the first bubble into the second at least two.
+ */
+export function tellRoundOk(stories: readonly TellStory[]): boolean {
+  const pos = tellPositions(stories);
+  const count = (p: number) => pos.filter((x) => x === p).length;
+  return (
+    new Set(stories.map((s) => s.template.id)).size === stories.length &&
+    stories.some((s) => s.pattern === 'crossed') &&
+    stories.filter((s) => s.pattern === 'stayed').length <= 1 &&
+    stories.filter((s) => tellerOf(s, 0) !== tellerOf(s, 1)).length >= 2 &&
+    [0, 1, 2].every((p) => count(p) >= 1 && count(p) <= 3)
+  );
+}
+
+/** Redraws a dealt round needs at most; the tests check it is never reached. */
+export const TELL_REDRAWS = 200;
+
+/** One draw of three stories, before the round rule. */
+function drawTell(rng: Rng): TellStory[] {
+  const tpls = rng.shuffle([...TWO_TEMPLATES]).slice(0, 3);
+  return tpls.map((t) => {
+    const pattern = rng.pick(TELL_PATTERNS);
+    const x = rng.pick([0, 1] as const);
+    const places = rng.shuffle([...PLACES]) as [Place, Place, Place];
+    const events = tellEvents(t, pattern, x, places);
+    const parts = partsOf(events);
+    const [a, b] = rng.shuffle(oneTellerTellings({ template: t, events }));
+    const asParts = (tl: Telling) => tl.told.map((i) => parts.indexOf(i));
+    return tellStory(t, pattern, x, places, [asParts(a), asParts(b)]);
+  });
+}
+
+/** A dealt round of three, redrawn until the round rule holds; `draws` reports how many it took. */
+export function tellRound(rng: Rng, draws?: { n: number }): TellStory[] {
+  let round = drawTell(rng);
+  let n = 1;
+  while (!tellRoundOk(round) && n < TELL_REDRAWS) {
+    round = drawTell(rng);
+    n++;
+  }
+  if (draws) draws.n = n;
+  return round;
 }
 
 // ---------------------------------------------------------------- level 3
@@ -582,12 +799,13 @@ export type Story =
   | { level: 1; want: WantStory; cards: Thing[] }
   | { level: 2; look: LookStory; cards: Place[] }
   | { level: 3; why: WhyStory; cards: Reason[] }
-  | { level: 4; two: TwoStory; cards: Place[] };
+  | { level: 4; two: TwoStory; cards: Place[] }
+  | { level: 5; tell: TellStory; cards: Friend[] };
 
 export const STORIES_PER_ROUND = 3;
 
 export interface LevelPlan {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   name: string;
 }
 export const PLANS: readonly LevelPlan[] = [
@@ -595,20 +813,22 @@ export const PLANS: readonly LevelPlan[] = [
   { level: 2, name: 'Where will he look? Was the friend there when his thing moved?' },
   { level: 3, name: 'How do we know? The reason, then where the picture shows it' },
   { level: 4, name: 'Two bubbles (about 9 and up): two friends saw different things' },
+  { level: 5, name: 'Who is telling? (about 9 and up): which friend was there for every part told' },
 ];
 
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 5 },
 };
 export const planFor = (level: number): LevelPlan =>
   PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
-/** The right card for a story; at level 4, for one of its two bubbles. */
-export function answerOf(s: Story, bubble = 0): Thing | Place | Reason {
+/** The right card for a story; at levels 4 and 5, for one of its two bubbles. */
+export function answerOf(s: Story, bubble = 0): Thing | Place | Reason | Friend {
   if (s.level === 1) return s.want.cued;
   if (s.level === 2) return lookAnswer(s.look);
   if (s.level === 4) return answersOf(s.two)[bubble];
+  if (s.level === 5) return tellerOf(s.tell, bubble);
   return s.why.supported;
 }
 
@@ -623,7 +843,7 @@ function placed<T>(answer: T, all: readonly T[], story: number): T[] {
 /**
  * Three stories from the level's pool. The first round at each level is authored (the first three, in order, cards in table
  * order); after it the seed picks the stories and their order, the card order and, at level 2, away or watching and the places.
- * Level 4 deals `twoRound`.
+ * Level 4 deals `twoRound`; level 5 deals `tellRound`, its cards always the two owners then the helper, never shuffled.
  */
 export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
   const lv = planFor(level).level;
@@ -658,6 +878,10 @@ export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
         })();
     return looks.map((look) => ({ level: 2, look, cards: first ? [...PLACES] : rng.shuffle([...PLACES]) }));
   }
+  if (lv === 5) {
+    const tells = first ? [...FIRST_TELL] : tellRound(rng);
+    return tells.map((tell) => ({ level: 5, tell, cards: candidatesOf(tell.template) }));
+  }
   if (lv === 4) {
     const twos = first ? [...FIRST_TWO] : twoRound(rng);
     return twos.map((t) => ({ level: 4, two: t, cards: first ? [...PLACES] : rng.shuffle([...PLACES]) }));
@@ -676,14 +900,14 @@ export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
 export type Stage = 'watch' | 'card' | 'point' | 'done';
 
 /** What the glow shows: a card by its value (at level 4 with the bubble it belongs in), or a level-3 region. */
-export type Glow = { card: Thing | Place | Reason; bubble?: number } | { region: RegionArt } | null;
+export type Glow = { card: Thing | Place | Reason | Friend; bubble?: number } | { region: RegionArt } | null;
 
 /** The first bubble not yet filled (left, or top, first), or -1. */
 export const firstUnfilled = (filled: readonly boolean[]): number => [0, 1].find((b) => !filled[b]) ?? -1;
 
-/** What to do now. At level 4 that is the first unfilled bubble and its card; `filled` says which bubbles are done. */
+/** What to do now. At levels 4 and 5 that is the first unfilled bubble and its card; `filled` says which bubbles are done. */
 export function glowFor(story: Story, stage: Stage, filled: readonly boolean[] = []): Glow {
-  if (stage === 'card' && story.level === 4) {
+  if (stage === 'card' && story.level >= 4) {
     const bubble = firstUnfilled(filled);
     return bubble < 0 ? null : { card: answerOf(story, bubble), bubble };
   }
@@ -771,6 +995,10 @@ export const CARD_H = 170;
 export const CARD_GAP = 24;
 export const BUBBLE_W = 220;
 export const BUBBLE_H = 150;
+/** Level 5: a telling's part pictures, up to three in a row inside a speech bubble, and the room left at each side. */
+export const PART_W = 60;
+export const PART_GAP = 10;
+export const PART_INSET = 10;
 /** The bubble's hit area reaches this far past the cloud. */
 export const BUBBLE_MARGIN = 30;
 export const REPLAY_R = 50;

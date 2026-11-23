@@ -21,7 +21,16 @@ import {
   PICTURE_WORDS,
   ROW_H,
   TAB,
+  acceptedFor,
+  offeredFor,
+  rightOf,
+  says,
+  SHARES,
+  VisitTally,
+  HELP_AFTER,
+  type AnimalId,
   type Page,
+  type Picture,
   type Rect,
   type Row,
 } from './logic';
@@ -127,21 +136,22 @@ describe('Look It Up: hints', () => {
       const wrongPage = r.tabs.find((t) => t !== v.animal)!;
       expect(hintFor(r, v, wrongPage, false)).toEqual({ kind: 'tab', animal: v.animal });
       expect(hintFor(r, v, v.animal, false)).toEqual({ kind: 'row', row: v.row });
-      expect(hintFor(r, v, v.animal, true)).toEqual({ kind: 'choice', picture: pictureOf(v) });
+      expect(hintFor(r, v, v.animal, true)).toEqual({ kind: 'choice', choice: pictureOf(v) });
       const r2 = makeRound(2, new Rng(seed));
       expect(hintFor(r2, r2.visits[0], r2.visits[0].animal, false).kind).toBe('choice');
     }
   });
 
   it('the bot plays a level to its end', () => {
-    for (const level of [1, 2, 3, 4, 5]) {
+    for (const level of [1, 2, 3, 4, 5, 6]) {
       const r = makeRound(level, new Rng(9));
       let open: Page = r.open;
       let rowSeen = false;
       let visitor = 0;
       let touched = 0;
-      for (let step = 0; step < 40; step++) {
-        const m = lookTouch(r, { visitor, open, rowSeen, touched });
+      let read = new Set<AnimalId>();
+      for (let step = 0; step < 60; step++) {
+        const m = lookTouch(r, { visitor, open, rowSeen, touched, read });
         if (!m) break;
         if ('label' in m) touched++;
         else if ('contents' in m) open = 'contents';
@@ -151,11 +161,16 @@ describe('Look It Up: hints', () => {
         } else if ('tab' in m) {
           open = m.tab;
           rowSeen = false;
-        } else if ('row' in m) rowSeen = true;
-        else if ('choice' in m) {
+        } else if ('row' in m) {
+          rowSeen = true;
+          if (open !== 'contents') read.add(open);
+        } else if ('choice' in m) {
           expect(check(r, r.visits[visitor], m.choice).kind).toBe('right');
+          // Level 6 reads both pages before the friend.
+          if (level === 6) expect(read.size).toBe(2);
           visitor++;
           rowSeen = false;
+          read = new Set();
         }
       }
       expect(level === 1 ? touched : visitor).toBe(3);
@@ -204,9 +219,10 @@ describe('Look It Up: the fixed book (levels 4 and 5)', () => {
     expect(PAGE_ORDER).toEqual(['cow', 'pig', 'duck', 'rabbit', 'bear', 'frog', 'penguin']);
     expect(pageNumber('cow')).toBe(1);
     expect(pageNumber('penguin')).toBe(7);
-    expect(LEVELS.school).toEqual({ min: 3, max: 5 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 6 });
     expect(planFor(4).mode).toBe('contents');
     expect(planFor(5).mode).toBe('baby');
+    expect(planFor(6).mode).toBe('share');
   });
 
   it('level 4 opens on the contents page with distinct eats and where pictures, both rows asked, one right choice', () => {
@@ -239,7 +255,7 @@ describe('Look It Up: the fixed book (levels 4 and 5)', () => {
       const words = r.tabs.map((t) => PICTURE_WORDS[ANIMALS[t].rows.baby.picture]).sort();
       for (const v of r.visits) {
         const tags = choicesFor(r, v, rng);
-        expect(tags.map((p) => PICTURE_WORDS[p]).sort()).toEqual(words);
+        expect(tags.map((p) => PICTURE_WORDS[p as Picture]).sort()).toEqual(words);
         expect(tags.filter((p) => check(r, v, p).kind === 'right')).toHaveLength(1);
         expect(words).not.toContain('kitten');
       }
@@ -280,7 +296,7 @@ describe('Look It Up: the fixed book (levels 4 and 5)', () => {
         expect(hintFor(r, v, other, false)).toEqual({ kind: 'contents' });
         expect(hintFor(r, v, 'contents', false)).toEqual({ kind: 'line', animal: v.animal });
         expect(hintFor(r, v, v.animal, false)).toEqual({ kind: 'row', row: v.row });
-        expect(hintFor(r, v, v.animal, true)).toEqual({ kind: 'choice', picture: pictureOf(v) });
+        expect(hintFor(r, v, v.animal, true)).toEqual({ kind: 'choice', choice: pictureOf(v) });
       }
     }
   });
@@ -311,5 +327,131 @@ describe('Look It Up: the contents page layout', () => {
   it('keeps the page rows where levels 1–3 had them', () => {
     const view = computeView(1662, 768);
     expect(guideLayout(view, 3, 3, true).rows).toEqual(guideLayout(view, 3, 3).rows);
+  });
+});
+
+describe('Look It Up: two pages together (level 6)', () => {
+  const others = (id: AnimalId) => ANIMAL_IDS.filter((a) => a !== id);
+  /** The definition's table: accepted and offered as wrong, written out so a caption edit fails here. */
+  const TABLE: [AnimalId[], AnimalId[]][] = [
+    [
+      ['rabbit', 'bear'],
+      ['frog', 'penguin'],
+    ],
+    [
+      ['cow', 'bear'],
+      ['frog', 'penguin'],
+    ],
+    [['pig'], ['cow', 'rabbit', 'penguin']],
+    [['bear'], ['cow', 'rabbit', 'frog']],
+    [['frog'], ['cow', 'rabbit', 'bear', 'penguin']],
+    [['duck'], ['cow', 'rabbit', 'bear', 'penguin']],
+  ];
+
+  it('computes each question from the captions: the key is on the source page, and the sets match the table', () => {
+    SHARES.forEach((q, i) => {
+      expect(says(ANIMALS[q.source].rows[q.row].line, q.key), q.ask).toBe(true);
+      expect(acceptedFor(q).sort()).toEqual([...TABLE[i][0]].sort());
+      expect(offeredFor(q).sort()).toEqual([...TABLE[i][1]].sort());
+      for (const id of [...offeredFor(q), ...q.never])
+        expect(says(ANIMALS[id].rows[q.row].line, q.key)).toBe(false);
+      // Accepted, offered and left out cover the other six animals exactly once.
+      expect([...acceptedFor(q), ...offeredFor(q), ...q.never].sort()).toEqual(others(q.source).sort());
+      expect(q.ask).not.toMatch(new RegExp(q.key, 'i'));
+    });
+  });
+
+  it('matches whole words, with a plural allowed', () => {
+    expect(says('Ducks live near ponds and lakes.', 'pond')).toBe(true);
+    expect(says('Cows live in a grassy field.', 'grass')).toBe(false);
+    expect(says('Frogs eat slugs, snails and bugs.', 'bugs')).toBe(true);
+  });
+
+  it('deals three different keys, the frog at most once, one accepted friend and two offered as wrong', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const r = makeRound(6, rng);
+      expect(r.open).toBe('contents');
+      expect(r.book).toBe('contents');
+      expect(r.visits).toHaveLength(3);
+      const qs = r.visits.map((v) => SHARES[v.share!.q]);
+      expect(new Set(qs.map((q) => q.key)).size).toBe(3);
+      expect(qs.filter((q) => q.source === 'frog').length).toBeLessThanOrEqual(1);
+      for (const v of r.visits) {
+        const q = SHARES[v.share!.q];
+        expect(v.animal).toBe(q.source);
+        expect(v.row).toBe(q.row);
+        expect(acceptedFor(q)).toContain(v.share!.friend);
+        expect(v.share!.wrong).toHaveLength(2);
+        expect(new Set(v.share!.wrong).size).toBe(2);
+        for (const w of v.share!.wrong) expect(offeredFor(q)).toContain(w);
+        const friends = choicesFor(r, v, rng);
+        expect(friends.sort()).toEqual([v.share!.friend, ...v.share!.wrong].sort());
+        expect(friends.filter((f) => check(r, v, f).kind === 'right')).toEqual([v.share!.friend]);
+        for (const w of v.share!.wrong) expect(check(r, v, w)).toEqual({ kind: 'wrong', owner: w });
+        expect(check(r, v, 'grass').kind).toBe('ignore');
+      }
+    }
+  });
+
+  it('plays the authored first round from the definition', () => {
+    const r = makeRound(6, new Rng(1), true);
+    expect(
+      r.visits.map((v) => [v.animal, SHARES[v.share!.q].key, v.share!.friend, ...v.share!.wrong]),
+    ).toEqual([
+      ['cow', 'grass', 'rabbit', 'frog', 'penguin'],
+      ['penguin', 'fish', 'bear', 'cow', 'frog'],
+      ['duck', 'pond', 'frog', 'rabbit', 'bear'],
+    ]);
+    for (const v of r.visits) {
+      const q = SHARES[v.share!.q];
+      expect(acceptedFor(q)).toContain(v.share!.friend);
+      for (const w of v.share!.wrong) expect(offeredFor(q)).toContain(w);
+    }
+    // The authored round is a copy: playing it never changes the table.
+    r.visits[0].share!.wrong.pop();
+    expect(AUTHORED[6][0].share!.wrong).toHaveLength(2);
+  });
+
+  it("hints walk the visitor's page and row, then the friend's page and row, then the friend", () => {
+    for (const seed of SEEDS.slice(0, 100)) {
+      const r = makeRound(6, new Rng(seed));
+      for (const v of r.visits) {
+        const friend = v.share!.friend;
+        const stranger = ANIMAL_IDS.find((a) => a !== v.animal && a !== friend)!;
+        const none = new Set<AnimalId>();
+        const own = new Set<AnimalId>([v.animal]);
+        const both = new Set<AnimalId>([v.animal, friend]);
+        expect(hintFor(r, v, 'contents', false, none)).toEqual({ kind: 'line', animal: v.animal });
+        expect(hintFor(r, v, stranger, false, none)).toEqual({ kind: 'contents' });
+        expect(hintFor(r, v, friend, false, none)).toEqual({ kind: 'contents' });
+        expect(hintFor(r, v, v.animal, false, none)).toEqual({ kind: 'row', row: v.row });
+        expect(hintFor(r, v, v.animal, true, own)).toEqual({ kind: 'contents' });
+        expect(hintFor(r, v, 'contents', false, own)).toEqual({ kind: 'line', animal: friend });
+        expect(hintFor(r, v, friend, false, own)).toEqual({ kind: 'row', row: v.row });
+        // Both pages read: the friend, wherever the book is open.
+        for (const open of ['contents', stranger, v.animal, friend] as Page[])
+          expect(hintFor(r, v, open, false, both)).toEqual({ kind: 'choice', choice: friend });
+        // Reading the friend's page first still sends her to the visitor's own page.
+        expect(hintFor(r, v, friend, true, new Set([friend]))).toEqual({ kind: 'contents' });
+        expect(rightOf(v)).toBe(friend);
+      }
+    }
+  });
+
+  it('a scripted visit counts two misses and one hint, then the pet finishes it', () => {
+    const r = makeRound(6, new Rng(1), true);
+    const v = r.visits[0];
+    const [a, b] = v.share!.wrong;
+    const t = new VisitTally();
+    const steps = [t.wrong(a), t.wrong(a), t.wrong(b)];
+    expect(steps.map((s) => s.firstGlow)).toEqual([false, true, false]);
+    expect(t.hint()).toBe(false);
+    expect(t.hint()).toBe(false);
+    const last = t.wrong(a);
+    expect([t.misses, t.hints]).toEqual([2, 1]);
+    expect(t.attempts).toBe(HELP_AFTER);
+    expect(last.help).toBe(true);
+    expect(steps.some((s) => s.help)).toBe(false);
   });
 });
