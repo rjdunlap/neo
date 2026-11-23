@@ -17,9 +17,19 @@ export const HOW_TO: GameHowTo = {
       to: 4,
       text: 'Two friends each get a bubble: drag the place each one thinks the thing is. Who was in the room when it moved?',
     },
+    {
+      from: 5,
+      to: 5,
+      text: 'Two speech bubbles each hold a telling of the story. Drag in the friend who could have told it: who was there for every part?',
+    },
   ],
   finish: 'The round ends after three little stories; one sticker.',
   note: [
+    {
+      from: 5,
+      to: 5,
+      text: "About 9 and up. A friend who was out of the door cannot tell that part, and the helper came in after the thing was put away. One friend can fit both bubbles. On the grown-up side, this is a narrator's point of view; it shows how she answers with the pet's spoken story, not that she reads stories this way on her own.",
+    },
     {
       from: 4,
       to: 4,
