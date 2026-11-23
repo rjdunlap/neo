@@ -54,5 +54,19 @@ export const VOICE = {
   'lasso.make-right-tens': ['Yes! {t} jars of ten make {n}. None left over!'],
   'lasso.make-right-teen': ['Yes! One jar of ten and {r} more make {n}!'],
   'lasso.make-right-both': ['Yes! {t} jars of ten and {r} more make {n}!'],
+  'lasso.shift-more': ['Make {n} ten more! That is {to}. Tap the tick when the jars and the leaf make {to}.'],
+  'lasso.shift-less': ['Make {n} ten less! That is {to}. Tap the tick when the jars and the leaf make {to}.'],
+  'lasso.shift-ones-more': ['You changed the ones. Ten more is a whole jar.'],
+  'lasso.shift-ones-less': ['You changed the ones. Ten less is a whole jar gone.'],
+  'lasso.shift-jar-more': ['Ten more is one more jar, and the ones stay the same.'],
+  'lasso.shift-jar-less': ['Ten less is one jar fewer, and the ones stay the same.'],
+  'lasso.shift-hint-ones': ['The leaf should hold {r}. Loop {d} more for the leaf.'],
+  'lasso.shift-hint-leaf-remove': [
+    'The leaf should hold {r}. Tap the leaf to let its fireflies go, then loop {r}.',
+  ],
+  'lasso.shift-right-more': ['Yes! Ten more than {from} is {n}. One more jar, and the ones stayed the same!'],
+  'lasso.shift-right-less': [
+    'Yes! Ten less than {from} is {n}. One jar fewer, and the ones stayed the same!',
+  ],
   'lasso.done': ['What a firefly catcher!'],
 } satisfies Record<string, string[]>;

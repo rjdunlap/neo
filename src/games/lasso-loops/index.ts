@@ -41,6 +41,9 @@ import {
   rangeCards,
   rangeSide,
   scatter,
+  shiftHint,
+  shiftMistake,
+  shiftTargets,
   tallField,
   type LassoLayout,
   type LassoPlan,
@@ -240,6 +243,10 @@ class LassoLoops implements Game {
   doneButton: RoundButton | null = null;
   private makeWrongs = 0;
   private makeHinted = false;
+  /** Level 9: the round's two numbers, which one is asked for now, and what the jars and the leaf held when it was asked. */
+  private readonly shiftTargets: number[] = [];
+  private shiftIndex = 0;
+  private shiftFrom: MakeState = { jars: 0, leaf: 0 };
 
   private readonly backdrop: Backdrop;
   private readonly trail = new Graphics();
@@ -324,6 +331,23 @@ class LassoLoops implements Game {
         onTap(jar, () => void this.release(jar.flies));
       }
       this.doneButton = new RoundButton(checkIcon(), swatch.green, DONE_R, () => void this.tapDone());
+    }
+    if (this.round.start) {
+      // Level 9 opens with the number already caught: full jars and the ones on the leaf (`resize` places them). Each
+      // keeps its place in the meadow as home, so a jar let go flies back there.
+      this.shiftTargets = shiftTargets(this.round);
+      this.shiftFrom = this.round.start;
+      let k = 0;
+      const hold = (into: Firefly[], small: boolean) => {
+        const f = this.flies[k++];
+        f.caught = true;
+        f.spot = null;
+        if (small) f.scale.set(0.72);
+        into.push(f);
+      };
+      for (let j = 0; j < this.round.start.jars; j++)
+        for (let i = 0; i < 10; i++) hold(this.jars[j].flies, true);
+      for (let i = 0; i < this.round.start.leaf; i++) hold(this.leafFlies, false);
     }
     this.sky.eventMode = 'static';
     this.sky.on('pointerdown', (e) => this.down(e));
@@ -433,8 +457,19 @@ class LassoLoops implements Game {
     }
     const free = this.free;
     if (this.plan.mode === 'make') {
+      // Level 9: a whole jar in or out (the same steps as its hint), then the tick.
+      const step = this.plan.shift ? shiftHint(this.target, this.makeState) : null;
+      if (step?.part === 'jar-remove')
+        return { tap: { on: this.lastFullJar!, x: 0, y: -JAR_H / 2 }, pause: 0.12 };
+      if (step?.part === 'leaf-remove') return { tap: { on: this.leaf, x: 0, y: -8 }, pause: 0.12 };
       // Tens, then the ones, then the tick.
-      const n = makeNext(this.round.target!, this.makeState);
+      const n = this.plan.shift
+        ? step?.part === 'jar-add'
+          ? 10
+          : step?.part === 'ones'
+            ? step.d
+            : 0
+        : makeNext(this.target, this.makeState);
       if (!n) return { tap: { on: this.doneButton! }, pause: 0.12 };
       const loop = demoLoop(
         free.map((f) => ({ x: f.x, y: f.y })),
@@ -469,7 +504,17 @@ class LassoLoops implements Game {
     return this.jars[this.index];
   }
 
-  /** Level 8: the full jars and the fireflies on the leaf. */
+  /** The jar a "let a jar go" hint glows: the last full one. */
+  private get lastFullJar(): Jar | undefined {
+    return [...this.jars].reverse().find((j) => j.flies.length);
+  }
+
+  /** Levels 8 and 9: the number on the sign (at level 9, the ask in hand). */
+  get target(): number {
+    return this.shiftTargets[this.shiftIndex] ?? this.round.target!;
+  }
+
+  /** Levels 8 and 9: the full jars and the fireflies on the leaf. */
   get makeState(): MakeState {
     return { jars: this.jars.filter((j) => j.flies.length).length, leaf: this.leafFlies.length };
   }
@@ -492,6 +537,11 @@ class LassoLoops implements Game {
       return;
     }
     const r = this.round;
+    if (this.plan.shift) {
+      await this.askShift();
+      this.busy = false;
+      return;
+    }
     if (this.plan.mode === 'make') {
       await this.ctx.instruct('lasso.make', { n: r.target! });
       this.busy = false;
@@ -963,11 +1013,59 @@ class LassoLoops implements Game {
     this.leafGlow.visible = false;
   }
 
+  /** Level 9: the sign shows the ask's number and the pet says it (ten more or ten less than what is held now). */
+  private askShift() {
+    this.guessNumber.text = String(this.target);
+    return this.ctx.instruct(`lasso.shift-${this.round.asks![this.shiftIndex]}`, {
+      n: makeTotal(this.shiftFrom),
+      to: this.target,
+    });
+  }
+
+  /** Level 9: a wrong tick is counted aloud, then named (only the ones changed, or a jar is the thing to move). */
+  private async wrongShift(s: MakeState) {
+    const ask = this.round.asks![this.shiftIndex];
+    await this.ctx.say(`lasso.shift-${shiftMistake(this.shiftFrom, s)}-${ask}`);
+    if (this.finished) return;
+    if (this.makeWrongs >= 2) {
+      // The second wrong tick of an ask glows the part to change; one hint an ask.
+      if (!this.makeHinted) {
+        this.makeHinted = true;
+        this.hints++;
+      }
+      const hint = shiftHint(this.target, s)!;
+      this.clearMakeGlow();
+      if (hint.part === 'jar-add') this.jar!.glow.visible = true;
+      else if (hint.part === 'jar-remove') this.lastFullJar!.glow.visible = true;
+      else this.leafGlow.visible = true;
+      if (hint.part === 'ones') void this.ctx.say('lasso.shift-hint-ones', { r: hint.r, d: hint.d });
+      else if (hint.part === 'leaf-remove') void this.ctx.say('lasso.shift-hint-leaf-remove', { r: hint.r });
+      else void this.ctx.say(`lasso.make-hint-${hint.part}`);
+    }
+    this.busy = false;
+  }
+
+  /** Level 9: the number is made. The first ask leads to the second, from what is held now; the second ends the round. */
+  private async rightShift(s: MakeState) {
+    const ask = this.round.asks![this.shiftIndex];
+    await this.ctx.say(`lasso.shift-right-${ask}`, { from: makeTotal(this.shiftFrom), n: this.target });
+    if (this.finished) return;
+    if (this.shiftIndex + 1 >= this.shiftTargets.length) return this.finale();
+    this.shiftIndex++;
+    this.shiftFrom = s;
+    this.makeWrongs = 0;
+    this.makeHinted = false;
+    this.bounce(this.guessSign);
+    // The board opens with the ask (U7 R4): the line is the instruction the guide repeats.
+    this.busy = false;
+    void this.askShift();
+  }
+
   /** The tick: right when the jars and the leaf make the number; otherwise one miss and the count aloud. */
   private async tapDone() {
     if (this.busy || this.finished || this.touch) return;
     const s = this.makeState;
-    const n = this.round.target!;
+    const n = this.target;
     const got = makeTotal(s);
     this.busy = true;
     this.unasked = null;
@@ -976,6 +1074,7 @@ class LassoLoops implements Game {
       this.clearMakeGlow();
       sfx.bell(10, 0.35);
       this.bounce(this.guessSign);
+      if (this.plan.shift) return this.rightShift(s);
       if (!s.leaf) await this.ctx.say('lasso.make-right-tens', { t: s.jars, n });
       else if (s.jars === 1) await this.ctx.say('lasso.make-right-teen', { r: s.leaf, n });
       else await this.ctx.say('lasso.make-right-both', { t: s.jars, r: s.leaf, n });
@@ -992,6 +1091,7 @@ class LassoLoops implements Game {
       n,
     });
     if (this.finished) return;
+    if (this.plan.shift) return this.wrongShift(s);
     if (this.makeWrongs >= 2) {
       // The second wrong tick glows the part to change; one hint a round.
       if (!this.makeHinted) {
@@ -1001,8 +1101,7 @@ class LassoLoops implements Game {
       const hint = makeHint(n, s)!;
       this.clearMakeGlow();
       if (hint.part === 'jar-add') this.jar!.glow.visible = true;
-      else if (hint.part === 'jar-remove')
-        [...this.jars].reverse().find((j) => j.flies.length)!.glow.visible = true;
+      else if (hint.part === 'jar-remove') this.lastFullJar!.glow.visible = true;
       else this.leafGlow.visible = true;
       void this.ctx.say(`lasso.make-hint-${hint.part}`, { d: hint.part === 'more' ? hint.d : 0, n });
     }
