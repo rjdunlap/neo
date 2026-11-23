@@ -1,1 +1,0 @@
-**Define Rain Garden level 5** (docs only, links and diff): give the small board a few more route variants, prove each can hold the required water and pass some to the pond, and freeze the targeted hint and upright layout. [Definition](../../definitions/rain-garden.md)
