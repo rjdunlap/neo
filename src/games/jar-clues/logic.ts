@@ -9,7 +9,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * Everything here is round state built from the seeded rng: nothing is saved.
  */
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 /** The board's numbers, 1 to 60, in six rows of ten (1–10, 11–20 …); a column is a last digit. */
 export const TOP = 60;
@@ -27,7 +27,8 @@ const digits = (n: number) => `its digits are ${tens(n)} and ${ones(n)}`;
 
 // ---- clues ----
 
-export type Kind = 'range' | 'parity' | 'by' | 'ends' | 'sum' | 'order';
+export type Kind =
+  'range' | 'parity' | 'by' | 'ends' | 'sum' | 'order' | 'multiple' | 'notmultiple' | 'special' | 'either';
 
 export interface Clue {
   /** Stable id; its spoken line is `jarclues.clue.<id>`. */
@@ -44,9 +45,20 @@ export interface Clue {
   fails(n: number): string;
   /** Why several numbers do not fit it, given them as a list ("21 to 29 are odd"). */
   failsAll(list: string): string;
+  /** A one-of-two clue's two clues, in the order they are printed and spoken. */
+  pair?: readonly [Clue, Clue];
 }
 
 const FIVES = ['fives', 'tens'] as const;
+const lower = (s: string) => s[0].toLowerCase() + s.slice(1);
+
+/** The smallest factor of `n` above 1 (`n` itself for a prime). */
+const leastFactor = (n: number) => {
+  for (let p = 2; p * p <= n; p++) if (n % p === 0) return p;
+  return n;
+};
+export const isPrime = (n: number) => n > 1 && leastFactor(n) === n;
+export const isSquare = (n: number) => Number.isInteger(Math.sqrt(n));
 
 function makeClues(): Clue[] {
   const out: Clue[] = [];
@@ -138,17 +150,101 @@ function makeClues(): Clue[] {
     fails: (n) => `${n}'s digits are ${tens(n)} and ${ones(n)}, so the tens digit is not the bigger one`,
     failsAll: (list) => `in ${list} the tens digit is not the bigger one`,
   });
+  for (const m of [3, 4, 6, 7, 8, 9])
+    out.push({
+      id: `mult-${m}`,
+      kind: 'multiple',
+      words: `A multiple of ${m}`,
+      test: (n) => n % m === 0,
+      fits: () => `it is a multiple of ${m}`,
+      fails: (n) => `${n} is not a multiple of ${m}`,
+      failsAll: (list) => `${list} are not multiples of ${m}`,
+    });
+  for (const m of [3, 4, 5])
+    out.push({
+      id: `notmult-${m}`,
+      kind: 'notmultiple',
+      words: `Not a multiple of ${m}`,
+      test: (n) => n % m !== 0,
+      fits: () => `it is not a multiple of ${m}`,
+      fails: (n) => `${n} is ${n / m} times ${m}`,
+      failsAll: (list) => `${list} are multiples of ${m}`,
+    });
+  out.push({
+    id: 'prime',
+    kind: 'special',
+    words: 'A prime number',
+    test: isPrime,
+    fits: () => 'it is prime',
+    fails: (n) =>
+      n === 1 ? '1 is not a prime number' : `${n} is ${leastFactor(n)} times ${n / leastFactor(n)}`,
+    failsAll: (list) => `${list} are not prime`,
+  });
+  out.push({
+    id: 'square',
+    kind: 'special',
+    words: 'A square number',
+    test: isSquare,
+    fits: (n) => `it is ${Math.sqrt(n)} times ${Math.sqrt(n)}`,
+    fails: (n) => `${n} is not a whole number times itself`,
+    failsAll: (list) => `${list} are not square numbers`,
+  });
   return out;
 }
 
+/** The 59 plain clues; each has its own spoken line. */
 export const CLUES: readonly Clue[] = makeClues();
-const BY_ID = new Map(CLUES.map((c) => [c.id, c]));
+
+/** Joins "it is …" clauses into one ("it is fewer than 40 and even"); the rest follow, joined by `sep`. */
+function merged(parts: readonly string[], sep: string): string {
+  const is = parts.filter((p) => p.startsWith('it is ')).map((p) => p.slice(6));
+  const rest = parts.filter((p) => !p.startsWith('it is '));
+  return [...(is.length ? [`it is ${andList(is)}`] : []), ...rest].join(sep);
+}
+
+/** The kinds a one-of-two clue draws its two clues from, in the order they are printed. */
+const PAIR_KINDS: readonly Kind[] = ['range', 'parity', 'by', 'multiple'];
+
+/** "Exactly one of these is true": two clues of different kinds, each a range, parity, counting-by or multiple clue. */
+function either(a: Clue, b: Clue): Clue {
+  const one = (n: number) => a.test(n) !== b.test(n);
+  return {
+    id: `either-${a.id}-${b.id}`,
+    kind: 'either',
+    words: `Exactly one of these is true: ${lower(a.words)}, ${lower(b.words)}`,
+    pair: [a, b],
+    test: one,
+    fits: (n) => {
+      const [t, f] = a.test(n) ? [a, b] : [b, a];
+      return `exactly one of the pair is true: ${t.fits(n)}, but ${f.fails(n)}`;
+    },
+    fails: (n) =>
+      a.test(n)
+        ? `${merged([a.fits(n), b.fits(n)], ' and ')}: both are true, and the clue says exactly one`
+        : `${a.fails(n)} and ${b.fails(n)}: neither is true, and the clue says exactly one`,
+    failsAll: (list) => `${list}: for each, both are true or neither is`,
+  };
+}
+
+/** All 248 one-of-two clues. */
+export const EITHERS: readonly Clue[] = (() => {
+  const plain = CLUES.filter((c) => PAIR_KINDS.includes(c.kind));
+  const rank = (c: Clue) => PAIR_KINDS.indexOf(c.kind);
+  const out: Clue[] = [];
+  for (const a of plain) for (const b of plain) if (rank(a) < rank(b)) out.push(either(a, b));
+  return out;
+})();
+
+const BY_ID = new Map([...CLUES, ...EITHERS].map((c) => [c.id, c]));
 export const clueById = (id: string): Clue => {
   const c = BY_ID.get(id);
   if (!c) throw new Error(`no clue ${id}`);
   return c;
 };
 export const clueLine = (c: Clue) => `jarclues.clue.${c.id}`;
+/** The lines a clue speaks in turn: its own, or the one-of-two lead line and then its two clues. */
+export const clueLines = (c: Clue): string[] =>
+  c.pair ? ['jarclues.clue.either', ...c.pair.map(clueLine)] : [clueLine(c)];
 
 // ---- levels ----
 
@@ -168,7 +264,7 @@ export interface Plan {
   tenLine: boolean;
 }
 
-/** Levels 1–2 are built (batch `jar-clues 1`); 3–4 add multiples, primes, the plain jar and one-of-two clues (batch 2). */
+/** Levels 1–2 came in batch `jar-clues 1`; 3–4 (batch 2) add multiples, primes, the plain jar and one-of-two clues. */
 export const PLANS: readonly Plan[] = [
   {
     level: 1,
@@ -190,12 +286,35 @@ export const PLANS: readonly Plan[] = [
     needs: ['sum', 'order'],
     tenLine: true,
   },
+  {
+    level: 3,
+    name: 'Multiples and primes',
+    clues: 4,
+    kinds: ['range', 'parity', 'by', 'sum', 'order', 'multiple', 'notmultiple', 'special'],
+    cut: 3,
+    gap: 9,
+    needs: ['multiple', 'notmultiple', 'special'],
+    tenLine: false,
+  },
+  {
+    level: 4,
+    name: 'One of two',
+    clues: 5,
+    kinds: ['range', 'parity', 'by', 'sum', 'order', 'multiple', 'notmultiple', 'special', 'either'],
+    cut: 2,
+    gap: 9,
+    // Exactly one: `allowedBeside` refuses a second.
+    needs: ['either'],
+    tenLine: false,
+  },
 ];
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 const DESCRIBE = [
   'First clues: three clues about ranges, odd and even, counting by fives and last digits, then choose by the jar',
   'Digit clues: four clues, at least one about what the digits add to or which digit is bigger',
+  'Multiples and primes: four clues with no ten line on the jar, at least one about multiples, primes or squares',
+  'One of two: five clues, one of them two statements of which exactly one is true',
 ];
 export const describeLevel = (level: number) => DESCRIBE[planFor(level).level - 1];
 
@@ -217,9 +336,20 @@ export const lastStanding = (b: Board) => allowedBy(b.clues);
 const smallestGap = (ns: readonly number[]) =>
   ns.slice(1).reduce((m, n, i) => Math.min(m, n - ns[i]), Infinity);
 
-/** Whether `c` may join `chosen` on a board: never twice, and at most one "More than" and one "Fewer than". */
+/** A clue and the plain clues it is made of. */
+const parts = (c: Clue): readonly Clue[] => c.pair ?? [c];
+
+/**
+ * Whether `c` may join `chosen` on a board: never twice (nor as one half of a one-of-two clue already there), at most
+ * one "More than", one "Fewer than" and one one-of-two clue.
+ */
 const allowedBeside = (c: Clue, chosen: readonly Clue[]) =>
-  chosen.every((d) => d.id !== c.id && (!c.side || d.side !== c.side));
+  chosen.every(
+    (d) =>
+      !parts(c).some((p) => parts(d).some((q) => q.id === p.id)) &&
+      (!c.side || d.side !== c.side) &&
+      !(c.pair && d.pair),
+  );
 
 /** Every condition of a valid board at its level (the definition's list). */
 export function valid(b: Board): boolean {
@@ -243,7 +373,7 @@ export function valid(b: Board): boolean {
 export function drawBoard(level: number, rng: Rng): Board | null {
   const plan = planFor(level);
   const count = rng.int(6, TOP);
-  const pool = CLUES.filter((c) => plan.kinds.includes(c.kind) && c.test(count));
+  const pool = [...CLUES, ...EITHERS].filter((c) => plan.kinds.includes(c.kind) && c.test(count));
   const chosen: Clue[] = [];
   let standing = NUMBERS.slice();
   for (let i = 0; i < plan.clues; i++) {
@@ -329,8 +459,6 @@ export function runs(ns: readonly number[]): string {
   return andList(parts);
 }
 
-const lower = (s: string) => s[0].toLowerCase() + s.slice(1);
-
 /** The newest shown clue that rules `n` out. */
 const rulesOut = (b: Board, shown: number, n: number): Clue | null =>
   b.clues
@@ -339,14 +467,14 @@ const rulesOut = (b: Board, shown: number, n: number): Clue | null =>
     .find((c) => !c.test(n)) ?? null;
 
 /** "It fits every clue so far: it is fewer than 40 and even." Never mentions the count, so it reads the same for it. */
-const fitsAll = (b: Board, shown: number, n: number) => {
-  const parts = b.clues.slice(0, shown).map((c) => c.fits(n));
+const fitsAll = (b: Board, shown: number, n: number) =>
   // "it is fewer than 40" and "it is even" become "it is fewer than 40 and even".
-  const is = parts.filter((p) => p.startsWith('it is ')).map((p) => p.slice(6));
-  const rest = parts.filter((p) => !p.startsWith('it is '));
-  const said = [...(is.length ? [`it is ${andList(is)}`] : []), ...rest];
-  return `It fits every clue so far: ${said.join('; ')}.`;
-};
+  `It fits every clue so far: ${merged(
+    b.clues.slice(0, shown).map((c) => c.fits(n)),
+    '; ',
+  )}.`;
+
+const capital = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 /** Why a board that does not hold is wrong: the lowest wrong number and a true reason. Null when it holds. */
 export function fault(b: Board, shown: number, m: Marks): Fault | null {
@@ -358,13 +486,15 @@ export function fault(b: Board, shown: number, m: Marks): Fault | null {
       n,
       kind: 'standing',
       clue: c,
-      words: `${n} is still standing. The clue says ${lower(c.words)}, and ${c.fails(n)}.`,
+      words: c.pair
+        ? `${n} is still standing. ${capital(c.fails(n))}.`
+        : `${n} is still standing. The clue says ${lower(c.words)}, and ${c.fails(n)}.`,
     };
   }
   return { n, kind: 'crossed', clue: null, words: `${n} is crossed off. ${fitsAll(b, shown, n)}` };
 }
 
-export const faultLine = (f: Fault) => `jarclues.fault.${f.kind}`;
+export const faultLine = (f: Fault) => (f.clue?.pair ? 'jarclues.fault.either' : `jarclues.fault.${f.kind}`);
 
 export interface Hint {
   row: number;

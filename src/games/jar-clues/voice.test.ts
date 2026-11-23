@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CLUES, clueLine, fault, faultLine, fresh, hint, hintLine, makeBoard, toggled } from './logic';
+import { CLUES, clueLines, fault, faultLine, fresh, hint, hintLine, makeBoard, toggled } from './logic';
 import { VOICE } from './voice';
 
 const has = (key: string) => key in VOICE;
@@ -8,13 +8,15 @@ const has = (key: string) => key in VOICE;
 describe('Jar Clues voice', () => {
   it('has the closed list: one line per clue, the fault, hint and stage lines, and no slots', () => {
     const keys = Object.keys(VOICE);
-    expect(keys.filter((k) => k.startsWith('jarclues.clue.')).length).toBe(CLUES.length);
+    expect(keys.filter((k) => k.startsWith('jarclues.clue.')).length).toBe(CLUES.length + 1);
     for (const k of [
       'game.jar-clues',
       'jarclues.start',
       'jarclues.guess',
       'jarclues.fault.standing',
       'jarclues.fault.crossed',
+      'jarclues.fault.either',
+      'jarclues.clue.either',
       'jarclues.hint.holds',
       'jarclues.last',
       'jarclues.holds',
@@ -31,10 +33,10 @@ describe('Jar Clues voice', () => {
   it('has a line for every clue, fault and hint a board can produce', () => {
     const used = new Set<string>([hintLine(null)]);
     const rng = new Rng(5);
-    for (const level of [1, 2])
+    for (const level of [1, 2, 3, 4])
       for (let s = 0; s < 120; s++) {
         const b = makeBoard(level, new Rng(600 + s));
-        for (const c of b.clues) used.add(clueLine(c));
+        for (const c of b.clues) for (const id of clueLines(c)) used.add(id);
         for (let k = 1; k <= b.clues.length; k++) {
           let m = fresh();
           for (let j = 0; j < 8; j++) m = toggled(m, rng.int(1, 60));
