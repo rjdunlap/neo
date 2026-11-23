@@ -12,9 +12,11 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  GUESS_HIT,
   JAR_H,
   JAR_W,
   LEVELS,
+  RANGE_HIT,
   choices,
   compareGuess,
   demoLoop,
@@ -25,6 +27,8 @@ import {
   makeRound,
   nearestGroup,
   planFor,
+  rangeCards,
+  rangeSide,
   scatter,
   tallField,
   type LassoLayout,
@@ -135,20 +139,48 @@ class Pad extends Container {
   }
 }
 
-/** Estimates use wooden signs, distinct from the purple count pads. */
+/** Estimates use wooden signs, distinct from the purple count pads; level 7's five number cards are a smaller size. */
 class GuessCard extends Container {
+  readonly glow: Graphics;
+
   constructor(
     readonly value: number,
     selected: boolean,
+    /** Level 7: the card's place in the row of five, kept as cards leave. */
+    readonly slot = -1,
   ) {
     super();
+    const small = slot >= 0;
+    const w = small ? 120 : 130;
+    this.glow = new Graphics()
+      .roundRect(-w / 2 - 14, -69, w + 28, 138, 22)
+      .fill({ color: 0xfff3a0, alpha: 0.85 });
+    this.glow.visible = false;
     this.addChild(
-      new Graphics().roundRect(-65, -55, 130, 110, 12).fill(wood.fill).stroke(line(wood.line, 5)),
-      label(String(value), 52, ink),
+      this.glow,
+      new Graphics()
+        .roundRect(-w / 2, -55, w, 110, 12)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 5)),
+      label(String(value), small ? 48 : 52, ink),
     );
     if (selected) this.addChild(new Graphics().roundRect(-70, -60, 140, 120, 16).stroke(line(0xffffff, 5)));
-    this.hitArea = new Rectangle(-75, -65, 150, 130);
+    const hit = small ? RANGE_HIT : GUESS_HIT;
+    this.hitArea = new Rectangle(-hit.w / 2, -hit.h / 2, hit.w, hit.h);
   }
+}
+
+/** An empty jar drawn in dots: room on level 7's shelf. A picture, never a target. */
+function jarOutline(): Graphics {
+  const g = new Graphics();
+  const x0 = -JAR_W / 2;
+  const y0 = -JAR_H;
+  const dots: Point[] = [];
+  for (let x = x0; x <= -x0; x += 18) dots.push({ x, y: y0 }, { x, y: 0 });
+  for (let y = y0 + 18; y < 0; y += 18) dots.push({ x: x0, y }, { x: -x0, y });
+  for (const d of dots) g.circle(d.x, d.y, 4);
+  g.fill({ color: 0xffffff, alpha: 0.75 });
+  return g;
 }
 
 class LassoLoops implements Game {
@@ -162,7 +194,16 @@ class LassoLoops implements Game {
   readonly guessSign = new Container();
   private readonly guessNumber = label('', 44, ink);
   private estimates?: { cards: number[]; near: number };
-  private guessPhase: 'first' | 'benchmark' | 'revise' | 'count' = 'count';
+  /** Level 7's five number cards and the one that could be right. */
+  private ranges?: { cards: number[]; possible: number };
+  private guessPhase: 'first' | 'benchmark' | 'revise' | 'range' | 'count' = 'count';
+  /** Level 7: the three empty jar outlines beside the full jar. */
+  private readonly outlines = new Container();
+  /** Level 7: taps on the card that could be right; separate from the loop counter, so it never rings a loop hint. */
+  private rangeMisses = 0;
+  /** Level 7 sideways: a soft dusk band behind the cards, so they read as a layer above the meadow. */
+  private rangeBand: Graphics | null = null;
+  private rangeHinted = false;
   private readonly guessLayer = new Container();
   /** The jar being filled. */
   index = 0;
@@ -216,10 +257,18 @@ class LassoLoops implements Game {
       const jar = new Jar(want);
       this.jars.push(jar);
     }
+    if (this.plan.range) {
+      this.ranges = rangeCards(this.round.fireflies, ctx.rng);
+      this.guessPhase = 'benchmark';
+      this.jars.forEach((j, i) => (j.visible = i === 0));
+      for (let k = 0; k < 3; k++) this.outlines.addChild(jarOutline());
+    }
     if (this.plan.guess) {
       this.estimates = guessCards(this.round.fireflies, ctx.rng);
       this.guessPhase = 'first';
       this.jars.forEach((j) => (j.visible = false));
+    }
+    if (this.plan.guess || this.plan.range) {
       const bug = new Firefly({ x: 0, y: 0 });
       bug.position.set(-52, 0);
       this.guessNumber.x = 24;
@@ -231,6 +280,7 @@ class LassoLoops implements Game {
     }
     this.guessSign.visible = false;
     this.guessSign.eventMode = 'none';
+    this.outlines.eventMode = 'none';
     this.leaf.visible = false;
     this.sky.eventMode = 'static';
     this.sky.on('pointerdown', (e) => this.down(e));
@@ -244,6 +294,7 @@ class LassoLoops implements Game {
     ctx.stage.addChild(
       this.backdrop,
       this.leaf,
+      this.outlines,
       ...this.jars,
       this.flyLayer,
       this.sky,
@@ -265,7 +316,8 @@ class LassoLoops implements Game {
     this.sky.hitArea = new Rectangle(L.sky.x, L.sky.y, L.sky.w, L.sky.h);
     for (const f of this.flies) if (f.spot && !this.ctx.tw.busy(f)) f.position.copyFrom(this.place(f.spot));
     this.jars.forEach((j, i) => {
-      j.position.copyFrom(L.jars[i]);
+      if (this.ctx.tw.busy(j)) return;
+      j.position.copyFrom(this.onShelf && i === 0 ? L.shelf[0] : L.jars[i]);
       j.flies.forEach((f, k) => {
         if (this.ctx.tw.busy(f)) return;
         const s = j.slot(k, j.want || j.flies.length);
@@ -283,13 +335,19 @@ class LassoLoops implements Game {
       .lineTo(80, 0)
       .stroke(line(swatch.green.line, 4));
     this.leaf.position.copyFrom(L.leaf);
+    this.outlines.children.forEach((o, k) => o.position.copyFrom(L.shelf[k + 1]));
     this.layoutPads();
     this.layoutGuesses();
     this.guessSign.position.copyFrom(L.sign);
   }
 
   private layout(v: View) {
-    return lassoLayout(v, this.round.jars.length, this.round.ones > 0, !!this.plan.guess);
+    return lassoLayout(v, this.round.jars.length, this.round.ones > 0, !!this.plan.guess, !!this.plan.range);
+  }
+
+  /** Level 7 before the sensible guess: the full jar stands on the shelf beside the outlines. */
+  private get onShelf() {
+    return this.guessPhase === 'benchmark' || this.guessPhase === 'range';
   }
 
   private place(spot: Point) {
@@ -300,6 +358,11 @@ class LassoLoops implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.touch) return null;
+    if (this.guessCards.length && this.guessPhase === 'range') {
+      // Tap away the lowest number that cannot be right; never the one that could be.
+      const card = this.guessCards.find((c) => rangeSide(c.value) !== 'possible');
+      return card ? { tap: { on: card }, pause: 0.12 } : null;
+    }
     if (this.guessCards.length) {
       const value = this.guessPhase === 'first' ? this.estimates!.near : this.guess;
       const card = this.guessCards.find((c) => c.value === value);
@@ -337,6 +400,12 @@ class LassoLoops implements Game {
   }
 
   private async intro() {
+    if (this.plan.range) {
+      this.markJar();
+      await this.ctx.instruct('lasso.benchmark');
+      this.busy = false;
+      return;
+    }
     if (this.plan.guess) {
       this.showGuesses();
       await this.ctx.instruct('lasso.guess');
@@ -366,8 +435,122 @@ class LassoLoops implements Game {
   }
 
   private layoutGuesses() {
+    if (this.guessPhase === 'range') {
+      for (const c of this.guessCards)
+        if (!this.ctx.tw.busy(c)) c.position.copyFrom(this.L.rangeCards[c.slot]);
+      // Upright the cards have their own row; sideways they stand over the fireflies.
+      const spots = this.L.rangeCards;
+      this.rangeBand?.clear();
+      if (this.rangeBand && !this.L.upright)
+        this.rangeBand
+          .roundRect(
+            spots[0].x - RANGE_HIT.w / 2 - 24,
+            spots[0].y - RANGE_HIT.h / 2 - 16,
+            spots[4].x - spots[0].x + RANGE_HIT.w + 48,
+            RANGE_HIT.h + 32,
+            28,
+          )
+          .fill({ color: swatch.purple.line, alpha: 0.55 });
+      return;
+    }
     const spots = this.guessPhase === 'revise' ? this.L.guessRevise : this.L.guessFirst;
     this.guessCards.forEach((c, i) => c.position.copyFrom(spots[i]));
+  }
+
+  // Level 7: tap away the numbers that cannot be right. ---------------------------------------------
+
+  private showRangeCards() {
+    // The band goes with the cards when the last one becomes the sign (the layer is emptied then).
+    this.rangeBand = new Graphics();
+    this.rangeBand.eventMode = 'none';
+    this.guessLayer.addChild(this.rangeBand);
+    this.guessCards = this.ranges!.cards.map((value, slot) => {
+      const card = new GuessCard(value, false, slot);
+      onTap(card, () => void this.tapRange(card));
+      card.scale.set(0);
+      this.guessLayer.addChild(card);
+      void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+      return card;
+    });
+    this.layoutGuesses();
+  }
+
+  private async tapRange(card: GuessCard) {
+    if (this.busy || this.finished || !this.guessCards.includes(card)) return;
+    this.busy = true;
+    this.unasked = null;
+    sfx.bell(6, 0.2);
+    await this.ctx.tw.to(card.scale, { x: 0.9, y: 0.9 }, { duration: 0.08 });
+    const side = rangeSide(card.value);
+    if (side === 'possible') {
+      // It could be right: one miss, it stays, and the jar and the shelf show why.
+      this.misses++;
+      this.rangeMisses++;
+      sfx.boing();
+      void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.12 });
+      const x = card.x;
+      void this.ctx.tw
+        .to(card, { x: x + 12 }, { duration: 0.06 })
+        .then(() => this.ctx.tw.to(card, { x }, { duration: 0.3, ease: ease.outElastic }));
+      this.bounce(this.jars[0]);
+      for (const o of this.outlines.children) this.bounce(o as Container);
+      await this.ctx.say('lasso.could-be', { g: card.value });
+      if (this.rangeMisses >= 2) {
+        if (!this.rangeHinted) {
+          this.rangeHinted = true;
+          this.hints++;
+        }
+        for (const c of this.guessCards) c.glow.visible = rangeSide(c.value) !== 'possible';
+        void this.ctx.say('lasso.range-hint');
+      }
+      this.busy = false;
+      return;
+    }
+    // Too few or too many: the card leaves with its reason.
+    sfx.pop(7);
+    const line = this.ctx.say(side === 'few' ? 'lasso.too-few' : 'lasso.too-many', { g: card.value });
+    await this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.25, ease: ease.inQuad });
+    this.guessCards = this.guessCards.filter((c) => c !== card);
+    card.destroy();
+    if (this.guessCards.length > 1) {
+      this.busy = false;
+      return;
+    }
+    await line;
+    if (this.finished) return;
+    await this.sensible(this.guessCards[0]);
+  }
+
+  /** Only the card that could be right is left: it becomes the guess, and the tens round checks it. */
+  private async sensible(card: GuessCard) {
+    this.guess = card.value;
+    card.glow.visible = false;
+    const line = this.ctx.say('lasso.sensible', { g: card.value });
+    await this.ctx.tw.to(card, { x: this.guessSign.x, y: this.guessSign.y }, { duration: 0.4 });
+    this.guessNumber.text = String(this.guess);
+    this.guessSign.visible = true;
+    this.guessCards = [];
+    this.rangeBand = null;
+    this.guessLayer.removeChildren().forEach((c) => c.destroy());
+    await line;
+    if (this.finished) return;
+    // The outlines fade, the full jar (and its fireflies) moves to its place in the round, and the other jars come out.
+    this.guessPhase = 'count';
+    const jar = this.jars[0];
+    const to = this.L.jars[0];
+    const dx = to.x - jar.x;
+    const dy = to.y - jar.y;
+    void this.ctx.tw.to(this.outlines, { alpha: 0 }, { duration: 0.4 });
+    for (const f of jar.flies)
+      void this.ctx.tw.to(f, { x: f.x + dx, y: f.y + dy }, { duration: 0.5, ease: ease.inOutSine });
+    await this.ctx.tw.to(jar, { x: to.x, y: to.y }, { duration: 0.5, ease: ease.inOutSine });
+    if (this.finished) return;
+    this.outlines.visible = false;
+    this.jars.forEach((j) => (j.visible = true));
+    this.resize(this.ctx.view);
+    this.markJar();
+    this.busy = false;
+    void this.ctx.instruct('lasso.tens');
   }
 
   private showGuesses() {
@@ -568,6 +751,13 @@ class LassoLoops implements Game {
     // is heard out, before what follows would cut it.
     const line = this.ctx.say('count', { n: got.length });
     this.index++;
+    if (this.guessPhase === 'benchmark' && this.plan.range) {
+      this.guessPhase = 'range';
+      this.showRangeCards();
+      this.busy = false;
+      void this.askAfter(line, () => void this.ctx.instruct('lasso.range'));
+      return;
+    }
     if (this.guessPhase === 'benchmark') {
       this.guessPhase = 'revise';
       this.showGuesses();
@@ -646,7 +836,11 @@ class LassoLoops implements Game {
       pad.glow.visible = true;
       sfx.bell(10, 0.35);
       await this.ctx.say('lasso.right', { n: r.answer });
-      if (this.guess !== null) {
+      if (this.plan.range && this.guess !== null) {
+        for (const j of this.jars) this.bounce(j);
+        this.bounce(this.guessSign);
+        await this.ctx.say('lasso.range-end', { g: this.guess, n: r.answer! });
+      } else if (this.guess !== null) {
         for (const j of this.jars) this.bounce(j);
         this.bounce(this.guessSign);
         await this.ctx.say(`lasso.guess-${compareGuess(this.guess, r.answer!)}`, {

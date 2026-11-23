@@ -12,6 +12,8 @@ export type LassoMode = 'free' | 'exact' | 'fives' | 'tens' | 'groups';
 export interface LassoPlan {
   mode: LassoMode;
   guess?: boolean;
+  /** Level 7: rule out the numbers that cannot be right before the tens round checks the one that stays. */
+  range?: boolean;
   name: string;
 }
 
@@ -26,12 +28,17 @@ export const PLANS: LassoPlan[] = [
     guess: true,
     name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number',
   },
+  {
+    mode: 'tens',
+    range: true,
+    name: 'Too few, too many: loop one jar of 10, tap away the numbers that cannot be right, then loop the tens and say the number',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -63,8 +70,8 @@ export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
       return { fireflies: 5 * fives + ones, jars: Array(fives).fill(5), answer: 5 * fives + ones, ones };
     }
     case 'tens': {
-      // Estimation (level 6) keeps its own 21–39 round, drawn exactly as before.
-      if (plan.guess) {
+      // Estimation (levels 6 and 7) keeps its own 21–39 round, drawn exactly as before.
+      if (plan.guess || plan.range) {
         const tens = rng.int(2, 3);
         const ones = rng.int(1, 9);
         return { fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones };
@@ -122,6 +129,26 @@ export function guessCards(n: number, rng: Rng): { cards: number[]; near: number
   const high = Array.from({ length: 9 }, (_, i) => (i + 1) * 10).filter((v) => v >= 2 * n);
   const far = rng.pick([true, false]) ? [10, rng.pick(high)] : rng.shuffle(high).slice(0, 2);
   return { cards: [near, ...far].sort((a, b) => a - b), near };
+}
+
+/** Level 7's shelf: the full jar of ten and room for three more, so anything over 10 and up to 40 could be right. */
+export const SHELF_JARS = 4;
+
+/** Which side of the shelf's range a number card falls on: too few, too many, or one that could be right. */
+export function rangeSide(g: number): 'few' | 'many' | 'possible' {
+  return g <= 10 ? 'few' : g > 10 * SHELF_JARS ? 'many' : 'possible';
+}
+
+/**
+ * Level 7's five cards, ascending: the near ten (the one that could be right), one or two too few from {5, 10} and the
+ * rest too many from {50, …, 90}. The possible card is second or third, so its place gives nothing away.
+ */
+export function rangeCards(n: number, rng: Rng): { cards: number[]; possible: number } {
+  const possible = 10 * Math.floor((n + 5) / 10);
+  const low = rng.int(1, 2);
+  const few = low === 2 ? [5, 10] : [rng.pick([5, 10])];
+  const many = rng.shuffle([50, 60, 70, 80, 90]).slice(0, 4 - low);
+  return { cards: [...few, possible, ...many].sort((a, b) => a - b), possible };
 }
 
 export function compareGuess(g: number, n: number): 'close' | 'more' | 'fewer' {
@@ -239,6 +266,8 @@ export const FIREFLY_R = 32;
 /** The touch boxes of an answer pad (round) and an estimate sign. */
 export const PAD_HIT = 140;
 export const GUESS_HIT = { w: 150, h: 130 };
+/** Level 7's smaller number cards, five to a row. */
+export const RANGE_HIT = { w: 130, h: 130 };
 
 export interface Box {
   x: number;
@@ -263,6 +292,10 @@ export interface LassoLayout {
   guessFirst: Point[];
   guessRevise: Point[];
   sign: Point;
+  /** Level 7: the full jar's foot and three empty jar outlines beside it, on the jar line. */
+  shelf: Point[];
+  /** Level 7: the five number cards' middles. */
+  rangeCards: Point[];
 }
 
 /** `n` places from `left` to `right`, centered, at most `gap` apart (the shell's `spread`, kept here so the rules stay Pixi-free). */
@@ -284,7 +317,10 @@ export function lassoLayout(
   jars: number,
   leaf: boolean,
   guess = false,
+  range = false,
 ): LassoLayout {
+  // Level 7's field is level 6's, so the fireflies stay put from the cards to the count.
+  guess ||= range;
   const upright = v.h > v.w * 1.4;
   const twoRows = upright && jars > 4;
   const jarRight = v.w - (leaf ? 210 : 40);
@@ -316,5 +352,16 @@ export function lassoLayout(
         ? row(3, 40, v.w - 40, 200).map((x) => ({ x, y: reviseY }))
         : row(3, (jarSpots[0]?.x ?? 40) + 150, v.w - 40, 160).map((x) => ({ x, y: v.h - 100 })),
     sign: { x: v.w - 110, y: 58 },
+    // The leaf is not out yet while the shelf shows, so the shelf may run to the right edge (four jars fit at 768 wide).
+    shelf: row(4, 190, v.w - 40, 140).map((x) => ({ x, y: v.h - 30 })),
+    // Upright the cards stand in level 6's keep-or-change row; sideways the field cannot lose a row, so they stand over it
+    // at the answer pads' height while loops are off.
+    rangeCards: upright
+      ? row(5, 40, v.w - 40, 170).map((x) => ({ x, y: reviseY }))
+      : // A field too narrow for five apart (a 768-wide tablet) lends the cards the view's width.
+        (field.w >= 5 * RANGE_HIT.w
+          ? row(5, field.x, field.x + field.w, 180)
+          : row(5, 40, v.w - 40, 170)
+        ).map((x) => ({ x, y: field.y + field.h * 0.45 })),
   };
 }

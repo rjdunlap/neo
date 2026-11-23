@@ -478,8 +478,75 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           },
         };
       });
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
         await launch('lasso-loops', level);
+        if (level === 7) {
+          // Too few, too many: loop the benchmark jar, tap the card that could be right once (a miss; it stays), tap the
+          // others away, and the one left becomes the sign before level 4's tens round checks it. On an upright phone.
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForFunction(() => neo.scene.game.L.upright, null, { timeout: 10000 });
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 7 });
+          assert.equal(await page.evaluate(() => neo.scene.game.jars.filter((j) => j.visible).length), 1);
+          await page.evaluate(async () => lasso.draw(lasso.loop(10)));
+          await page.waitForFunction(
+            () => {
+              const g = neo.scene.game;
+              // The cards grow in; wait until they are full size.
+              return g.guessCards.length === 5 && !g.busy && g.guessCards.every((c) => c.scale.x === 1);
+            },
+            null,
+            { timeout: 30000 },
+          );
+          const possible = 'neo.scene.game.guessCards.find((c) => c.value > 10 && c.value <= 40)';
+          await tap(possible);
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          assert.deepEqual(await counts(), [1, 0]);
+          assert.equal(await page.evaluate(() => neo.scene.game.guessCards.length), 5);
+          await screenshot('lasso-loops-7-tap-away');
+          for (let k = 0; k < 4; k++) {
+            await tap('neo.scene.game.guessCards.find((c) => c.value <= 10 || c.value > 40)');
+            await page.waitForFunction(
+              (left) => !neo.scene.game.busy && neo.scene.game.guessCards.length <= left,
+              4 - k,
+              { timeout: 30000 },
+            );
+          }
+          await page.waitForFunction(
+            () => {
+              const g = neo.scene.game;
+              return !g.busy && g.guessCards.length === 0 && g.jars.every((j) => j.visible);
+            },
+            null,
+            { timeout: 30000 },
+          );
+          assert.equal(
+            await page.evaluate(() => {
+              const g = neo.scene.game;
+              const near = 10 * Math.floor((g.round.fireflies + 5) / 10);
+              return g.guessSign.visible && g.guess === near && g.guessNumber.text === String(near);
+            }),
+            true,
+          );
+          const jars = await page.evaluate(() => neo.scene.game.jars.length);
+          for (let j = 1; j < jars; j++) {
+            await page.evaluate(async () => lasso.draw(lasso.loop(10)));
+            await page.waitForFunction((j) => neo.scene.game.index > j || neo.scene.game.pads.length > 0, j, {
+              timeout: 30000,
+            });
+          }
+          await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, {
+            timeout: 30000,
+          });
+          await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+          await finished('lasso-loops');
+          assert.deepEqual(await score('lasso-loops'), [1, 0]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Lasso Loops 7 (upright phone): benchmark jar on the shelf, a possible card tapped once (one miss, it stayed), four impossible cards tapped away, the near ten became the sign, tens round, saved score and sticker passed',
+          );
+          continue;
+        }
         // Level 4 mixes teens, decades and 21–39: relaunch until a decade, the round with nothing on the leaf.
         for (
           let k = 0;
@@ -514,7 +581,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         });
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
         if (level === 6) {
-          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 6 });
+          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 7 });
           await tap(
             'neo.scene.game.guessCards.find((c) => Math.abs(c.value - neo.scene.game.round.fireflies) >= 10)',
           );

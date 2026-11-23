@@ -52,6 +52,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 ### Game slices from the dives (refilled 2026-11-17)
 
+- **`lasso-loops` level 8, *Make the number*, batch `lasso-loops 8`** (school; after level 7, built; new interaction tier: typecheck, rule tests, one play with a loop of more than ten, a leaf regroup, one wrong *Done* and the glow, one portrait screenshot, `fingerdemo` at level 8). [Dive](deep-dives/lasso-loops.md#new-levels-on-top), [build slices](deep-dives/lasso-loops.md#build-slices-in-order)
+
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
 

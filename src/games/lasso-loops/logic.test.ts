@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { rangeFor } from '../../progress/difficulty';
 import {
   choices,
   compareGuess,
@@ -7,9 +8,12 @@ import {
   guessCards,
   gridFor,
   inside,
+  LEVELS,
   makeRound,
   nearestGroup,
   PLANS,
+  rangeCards,
+  rangeSide,
   scatter,
 } from './logic';
 
@@ -43,7 +47,7 @@ describe('Lasso Loops', () => {
             expect(r.answer).toBe(10 * r.jars.length + r.ones);
             expect(r.ones).toBe(r.fireflies - wanted);
             expect(r.ones >= 0 && r.ones <= 9).toBe(true);
-            if (plan.guess) expect(r.ones >= 1 && r.jars.length >= 2).toBe(true);
+            if (plan.guess || plan.range) expect(r.ones >= 1 && r.jars.length >= 2).toBe(true);
             if (r.ones === 0) expect([20, 30]).toContain(r.answer);
             break;
           case 'groups':
@@ -64,26 +68,30 @@ describe('Lasso Loops', () => {
   });
 
   it('keeps estimation on its own 21–39 tens round, drawn exactly as before', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['free', 'exact', 'fives', 'tens', 'groups', 'tens']);
+    expect(PLANS.map((p) => p.mode)).toEqual(['free', 'exact', 'fives', 'tens', 'groups', 'tens', 'tens']);
     expect(PLANS[5].guess).toBe(true);
     expect(PLANS.slice(0, 5).every((p) => !p.guess)).toBe(true);
-    for (let seed = 1; seed <= 300; seed++) {
-      const a = new Rng(seed),
-        b = new Rng(seed);
-      const round = makeRound(PLANS[5], a);
-      // The level-6 draw before teens and decades came to level 4.
-      const tens = b.int(2, 3);
-      const ones = b.int(1, 9);
-      expect(round).toEqual({
-        fireflies: 10 * tens + ones,
-        jars: Array(tens).fill(10),
-        answer: 10 * tens + ones,
-        ones,
-      });
-      expect(choices(round, a)).toEqual(choices(round, b));
-      expect(round.fireflies).toBeGreaterThanOrEqual(21);
-      expect(round.fireflies).toBeLessThanOrEqual(39);
-    }
+    expect(PLANS[6].range).toBe(true);
+    expect(PLANS[6].guess).toBeUndefined();
+    expect(PLANS.slice(0, 6).every((p) => !p.range)).toBe(true);
+    for (const plan of [PLANS[5], PLANS[6]])
+      for (let seed = 1; seed <= 300; seed++) {
+        const a = new Rng(seed),
+          b = new Rng(seed);
+        const round = makeRound(plan, a);
+        // The level-6 draw before teens and decades came to level 4.
+        const tens = b.int(2, 3);
+        const ones = b.int(1, 9);
+        expect(round).toEqual({
+          fireflies: 10 * tens + ones,
+          jars: Array(tens).fill(10),
+          answer: 10 * tens + ones,
+          ones,
+        });
+        expect(choices(round, a)).toEqual(choices(round, b));
+        expect(round.fireflies).toBeGreaterThanOrEqual(21);
+        expect(round.fireflies).toBeLessThanOrEqual(39);
+      }
   });
 
   it('mixes teens, decades and 21–39 at level 4, and even rounds at level 3', () => {
@@ -146,6 +154,40 @@ describe('Lasso Loops', () => {
     expect(compareGuess(20, 30)).toBe('more');
     expect(compareGuess(40, 30)).toBe('fewer');
     expect(compareGuess(21, 30)).toBe('close');
+  });
+
+  it('puts school at 3–7 and leaves the younger bands alone', () => {
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 3, max: 7 });
+    expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 3 });
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 4 });
+  });
+
+  it('offers five range cards with exactly one that could be right, and both sides ruled out', () => {
+    const positions = new Set<number>();
+    for (let n = 21; n <= 39; n++) {
+      // The shelf rule is true: more than one jar of ten and at most four jars.
+      expect(n > 10 && n <= 40).toBe(true);
+      for (let seed = 1; seed <= 50; seed++) {
+        const { cards, possible } = rangeCards(n, new Rng(seed));
+        expect(cards).toHaveLength(5);
+        expect(new Set(cards).size).toBe(5);
+        expect(cards).toEqual([...cards].sort((a, b) => a - b));
+        expect(cards.filter((g) => rangeSide(g) === 'possible')).toEqual([possible]);
+        expect(possible).toBe(10 * Math.floor((n + 5) / 10));
+        expect(Math.abs(possible - n)).toBeLessThanOrEqual(5);
+        const few = cards.filter((g) => rangeSide(g) === 'few');
+        const many = cards.filter((g) => rangeSide(g) === 'many');
+        expect(few.length).toBeGreaterThanOrEqual(1);
+        expect(many.length).toBeGreaterThanOrEqual(1);
+        for (const g of few) expect([5, 10]).toContain(g);
+        for (const g of many) expect([50, 60, 70, 80, 90]).toContain(g);
+        // A card ruled out is never the count's own ten.
+        for (const g of [...few, ...many]) expect(Math.abs(g - n)).toBeGreaterThan(5);
+        positions.add(cards.indexOf(possible));
+      }
+    }
+    expect([...positions].sort()).toEqual([1, 2]);
+    expect([10, 11, 40, 41].map(rangeSide)).toEqual(['few', 'possible', 'possible', 'many']);
   });
 
   it('offers the swapped tens and ones as a choice when they differ', () => {

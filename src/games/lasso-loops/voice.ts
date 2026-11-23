@@ -26,5 +26,14 @@ export const VOICE = {
   'lasso.guess-close': ['You guessed about {g}. There are {n}. Close!'],
   'lasso.guess-more': ['You guessed about {g}. There are {n}, more than your guess!'],
   'lasso.guess-fewer': ['You guessed about {g}. There are {n}, fewer than your guess!'],
+  'lasso.range': [
+    "One jar holds ten, and there is room for three more jars. Some numbers can't be right. Tap them away!",
+  ],
+  'lasso.too-few': ['Not {g}! One jar already holds ten, and more fireflies are left.'],
+  'lasso.too-many': ['Not {g}! That needs more jars than the shelf holds.'],
+  'lasso.could-be': ["{g} could be right! It's more than one jar and fits on the shelf."],
+  'lasso.range-hint': ["The glowing numbers can't be right."],
+  'lasso.sensible': ["Only {g} is left. That's a sensible guess! Let's check."],
+  'lasso.range-end': ['{n} fireflies: more than ten, and not more than forty. {g} was sensible!'],
   'lasso.done': ['What a firefly catcher!'],
 } satisfies Record<string, string[]>;
