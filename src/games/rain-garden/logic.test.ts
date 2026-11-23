@@ -30,7 +30,12 @@ import {
   SIGN_H,
   SIGN_W,
   arrangementKey,
+  arrangements,
   board4,
+  BOARDS5,
+  ROUTE5,
+  narration,
+  runBoard,
   check,
   flipBed,
   makeRoute,
@@ -48,6 +53,9 @@ import {
   type RouteRound,
   type RouteState,
 } from './logic';
+import { VOICE } from './voice';
+
+const distance = (a: readonly Surface[], b: readonly Surface[]) => a.filter((x, i) => x !== b[i]).length;
 
 const SEEDS = Array.from({ length: 60 }, (_, i) => i * 7919 + 3);
 
@@ -678,4 +686,325 @@ describe('level 4 layout', () => {
         });
       }
   it('returns null rather than shrink', () => expect(routeLayout({ w: 600, h: 400 }, board4(1))).toBeNull());
+});
+
+// ---- level 5 ----
+
+const byId = (id: string) => BOARDS5.find((b) => b.id === id)!;
+const round5 = (id: string, start: Surface[]): RouteRound => ({
+  level: 5,
+  board: byId(id),
+  start,
+  friend: 'frog',
+  mirror: false,
+});
+/** Arrangement → kept per socket, pond, and the result: pass, the dry need's index in `marked`, or pond. */
+type Row = [string, number[], number, 'pass' | 'pond' | number];
+const TABLES: Record<string, Row[]> = {
+  A: [
+    ['stone/stone/stone', [0, 0, 0], 6, 0],
+    ['stone/stone/soil', [0, 0, 2], 4, 0],
+    ['stone/soil/stone', [0, 2, 0], 4, 1],
+    ['stone/soil/soil', [0, 2, 2], 2, 'pass'],
+    ['soil/stone/stone', [2, 0, 0], 4, 0],
+    ['soil/stone/soil', [2, 0, 2], 2, 0],
+    ['soil/soil/stone', [2, 2, 0], 2, 1],
+    ['soil/soil/soil', [2, 2, 2], 0, 'pond'],
+  ],
+  B: [
+    ['stone/stone/stone', [0, 0, 0], 6, 0],
+    ['stone/stone/soil', [0, 0, 2], 4, 0],
+    ['stone/soil/stone', [0, 2, 0], 4, 0],
+    ['stone/soil/soil', [0, 2, 2], 2, 0],
+    ['soil/stone/stone', [2, 0, 0], 4, 1],
+    ['soil/stone/soil', [2, 0, 2], 2, 'pass'],
+    ['soil/soil/stone', [2, 2, 0], 2, 1],
+    ['soil/soil/soil', [2, 2, 2], 0, 'pond'],
+  ],
+  C: [
+    ['stone/soil/stone', [0, 2, 0], 4, 0],
+    ['stone/soil/soil', [0, 2, 2], 2, 'pass'],
+    ['soil/soil/stone', [2, 2, 0], 2, 0],
+    ['soil/soil/soil', [2, 2, 2], 0, 'pond'],
+  ],
+  D: [
+    ['stone/stone/stone', [0, 0, 0], 6, 0],
+    ['stone/stone/soil', [0, 0, 2], 4, 'pass'],
+    ['soil/stone/stone', [2, 0, 0], 4, 0],
+    ['soil/stone/soil', [2, 0, 2], 2, 'pass'],
+  ],
+  E: [
+    ['stone/stone/stone', [0, 0, 0], 6, 0],
+    ['stone/stone/soil', [0, 0, 2], 4, 0],
+    ['stone/soil/stone', [0, 2, 0], 4, 'pass'],
+    ['stone/soil/soil', [0, 2, 2], 2, 'pass'],
+    ['soil/stone/stone', [2, 0, 0], 4, 0],
+    ['soil/stone/soil', [2, 0, 2], 2, 0],
+    ['soil/soil/stone', [2, 2, 0], 2, 'pass'],
+    ['soil/soil/soil', [2, 2, 2], 0, 'pond'],
+  ],
+  F: [
+    ['stone/stone/stone', [0, 0, 0], 4, 0],
+    ['stone/stone/soil', [0, 0, 2], 2, 'pass'],
+    ['stone/soil/stone', [0, 2, 0], 2, 0],
+    ['stone/soil/soil', [0, 2, 2], 0, 'pond'],
+    ['soil/stone/stone', [2, 0, 0], 2, 0],
+    ['soil/stone/soil', [2, 0, 2], 0, 'pond'],
+    ['soil/soil/stone', [2, 2, 0], 0, 0],
+    ['soil/soil/soil', [2, 2, 0], 0, 0],
+  ],
+};
+const parse = (k: string) => k.split('/') as Surface[];
+
+describe('level 5 boards', () => {
+  it('six well-formed boards: one chain to the pond, marked beds tappable, leaf uphill then flower, four or six drops', () => {
+    expect(BOARDS5.map((b) => b.id)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
+    for (const b of BOARDS5) {
+      expect(b.route).toEqual(ROUTE5);
+      // Every socket is reached from socket 0 in order and the chain ends in the pond.
+      let at: number | 'pond' = 0;
+      const seen: number[] = [];
+      while (at !== 'pond') {
+        seen.push(at);
+        at = b.route[at].down;
+      }
+      expect(seen).toEqual([0, 1, 2]);
+      expect(b.marked.length).toBeGreaterThanOrEqual(1);
+      expect(b.marked.length).toBeLessThanOrEqual(2);
+      b.marked.forEach((m, i) => {
+        expect(b.fixed[m.socket]).toBeNull();
+        expect(m.marker).toBe(i === 0 ? 'leaf' : 'flower');
+        if (i) expect(m.socket).toBeGreaterThan(b.marked[i - 1].socket);
+      });
+      expect([4, 6]).toContain(b.units);
+    }
+  });
+
+  it('conserves water after every step and passes a socket only when it is stone or full', () => {
+    for (const b of BOARDS5)
+      for (const a of arrangements(b)) {
+        const t = runBoard(a, b);
+        expect(t.steps.length).toBe(b.units);
+        const kept = [0, 0, 0];
+        let pond = 0;
+        for (const st of t.steps) {
+          expect(st.path[0]).toBe(0);
+          for (const at of st.path.slice(0, -1)) {
+            const i = at as number;
+            expect(a[i] === 'stone' || kept[i] === 2).toBe(true);
+          }
+          const end = st.path.at(-1)!;
+          if (end === 'pond') pond++;
+          else kept[end]++;
+          expect(kept[0] + kept[1] + kept[2] + pond).toBe(st.unit + 1);
+        }
+        expect([kept, pond]).toEqual([t.stored, t.pond]);
+      }
+  });
+
+  it('the six outcome tables: kept, pond and cause for every arrangement', () => {
+    for (const b of BOARDS5) {
+      const rows = TABLES[b.id];
+      expect(arrangements(b).map(k2)).toEqual(rows.map((r) => r[0]));
+      for (const [k, kept, pond, result] of rows) {
+        const t = runBoard(parse(k), b);
+        expect([t.stored, t.pond], `${b.id} ${k}`).toEqual([kept, pond]);
+        const v = check(routeFresh(round5(b.id, parse(k))), round5(b.id, parse(k))).verdict;
+        if (result === 'pass') expect(v.result, `${b.id} ${k}`).toBe('pass');
+        else if (result === 'pond') expect([v.result, v.cause, v.need], `${b.id} ${k}`).toEqual(['miss', 'pond', null]);
+        else expect([v.result, v.cause, v.need], `${b.id} ${k}`).toEqual(['miss', 'dry', result]);
+      }
+    }
+  });
+
+  it('the judge passes exactly what solutions lists: one answer, except two on D and three on E', () => {
+    const counts = Object.fromEntries(BOARDS5.map((b) => [b.id, solutions(b).length]));
+    expect(counts).toEqual({ A: 1, B: 1, C: 1, D: 2, E: 3, F: 1 });
+    for (const b of BOARDS5) {
+      const sols = solutions(b).map(k2);
+      for (const a of arrangements(b))
+        expect(check(routeFresh(round5(b.id, a)), round5(b.id, a)).verdict.result === 'pass').toBe(
+          sols.includes(k2(a)),
+        );
+    }
+  });
+
+  it('seeded rounds start failing on their own board with fixed sockets in place; the authored round is A from soil/soil/stone', () => {
+    expect(makeRoute(new Rng(1), true, 5)).toEqual(round5('A', ['soil', 'soil', 'stone']));
+    const boards = new Set<string>();
+    for (const seed of SEEDS) {
+      const r = makeRoute(new Rng(seed), false, 5);
+      boards.add(r.board.id);
+      expect(r.mirror).toBe(false);
+      r.board.fixed.forEach((f, i) => {
+        if (f) expect(r.start[i]).toBe(f === 'tree' ? 'soil' : 'stone');
+      });
+      expect(arrangements(r.board).map(k2)).toContain(k2(r.start));
+      expect(check(routeFresh(r), r).verdict.result).not.toBe('pass');
+      expect(makeRoute(new Rng(seed), false, 5)).toEqual(r);
+    }
+    expect(boards.size).toBe(6);
+  });
+
+  it('hints preserve a solution: never a fixed socket, strictly closer, at most three steps (two with a fixed socket)', () => {
+    for (const b of BOARDS5)
+      for (const a of arrangements(b)) {
+        const r = round5(b.id, a);
+        let s = routeFresh(r);
+        let steps = 0;
+        while (stepBed(s.sockets, b) !== null) {
+          const i = stepBed(s.sockets, b)!;
+          expect(b.fixed[i]).toBeNull();
+          const before = distance(s.sockets, nearest(s.sockets, b));
+          s = routeHint(s, r).state;
+          expect(distance(s.sockets, nearest(s.sockets, b))).toBeLessThan(before);
+          steps++;
+        }
+        expect(steps).toBeLessThanOrEqual(b.fixed.some(Boolean) ? 2 : 3);
+        expect(check(s, r).verdict.result).toBe('pass');
+      }
+    // Ties go to the first solution in enumeration order: E from soil/stone/soil is one flip from both
+    // stone/soil/soil and soil/soil/stone... and stone/soil/soil comes first.
+    expect(k2(nearest(parse('soil/stone/soil'), byId('E')))).toBe('stone/soil/soil');
+    expect(k2(nearest(parse('stone/stone/stone'), byId('D')))).toBe('stone/stone/soil');
+  });
+
+  it('accounting at level 5: a fixed-socket tap changes and counts nothing; level 4 rules otherwise', () => {
+    const r = round5('C', ['soil', 'soil', 'stone']);
+    let s = check(tryRoute(routeFresh(r), r), r).state;
+    expect([s.misses, s.hints]).toEqual([1, 0]);
+    const same = flipBed(s, 1, r.board);
+    expect(same).toBe(s);
+    expect(check(s, r).verdict.result).toBe('again');
+    s = flipBed(s, 2, r.board); // soil/[soil]/soil: the pond gets none
+    s = check(s, r).state;
+    expect([s.misses, s.hints, s.glow]).toEqual([2, 1, 0]);
+    s = routeHint(s, r).state;
+    expect([k2(s.sockets), s.hints, s.glow]).toEqual(['stone/soil/soil', 2, null]);
+    const c = check(s, r);
+    expect([c.verdict.result, c.state.misses, c.state.hints]).toEqual(['pass', 2, 2]);
+  });
+
+  it('the ghost finger reaches the passing Check from every start; on A: cloud, top bed, low bed, cloud, Check', () => {
+    for (const b of BOARDS5)
+      for (const a of arrangements(b)) {
+        const r = round5(b.id, a);
+        let s = routeFresh(r);
+        for (let taps = 0; taps < 10 && !s.passed; taps++) {
+          const n = routeNext(s, r);
+          if (n.kind === 'cloud') s = tryRoute(s, r);
+          else if (n.kind === 'bed') {
+            expect(b.fixed[n.bed]).toBeNull();
+            s = flipBed(s, n.bed, b);
+          } else s = check(s, r).state;
+        }
+        expect([s.passed, s.misses, s.hints]).toEqual([true, 0, 0]);
+      }
+    const r = round5('A', ['soil', 'soil', 'stone']);
+    let s = routeFresh(r);
+    const seq: string[] = [];
+    while (!s.passed) {
+      const n = routeNext(s, r);
+      seq.push(n.kind === 'bed' ? `bed${n.bed}` : n.kind);
+      s = n.kind === 'cloud' ? tryRoute(s, r) : n.kind === 'bed' ? flipBed(s, n.bed, r.board) : check(s, r).state;
+    }
+    expect(seq).toEqual(['cloud', 'bed0', 'bed2', 'cloud', 'check']);
+  });
+
+  it('narration: one clip per reached socket from the top, the first dry one named once, then the pond; every clip exists', () => {
+    const POS = ['top', 'middle', 'low'];
+    for (const b of BOARDS5)
+      for (const a of arrangements(b)) {
+        const t = runBoard(a, b);
+        const clips = narration(t, b);
+        expect(clips.at(-1)).toBe(`rain.pond.${t.pond}`);
+        for (const c of clips) expect(VOICE, c).toHaveProperty([c]);
+        const none = clips.findIndex((c) => c.endsWith('.none'));
+        // Sockets named are a prefix of the chain; nothing below the first one water missed.
+        expect(clips.length - 1).toBe(none < 0 ? 3 : none + 1);
+        clips.slice(0, -1).forEach((c, i) => {
+          const f = b.fixed[i];
+          if (f) expect(c.startsWith(`rain.${f}.`)).toBe(true);
+          else expect(c.startsWith(`rain.bed.${POS[i]}.`)).toBe(true);
+        });
+      }
+    expect(narration(runBoard(parse('soil/soil/stone'), byId('A')), byId('A'))).toEqual([
+      'rain.bed.top.kept',
+      'rain.bed.middle.kept',
+      'rain.bed.low.stone',
+      'rain.pond.2',
+    ]);
+    expect(narration(runBoard(parse('soil/soil/soil'), byId('F')), byId('F'))).toEqual([
+      'rain.bed.top.kept',
+      'rain.bed.middle.kept',
+      'rain.bed.low.none',
+      'rain.pond.0',
+    ]);
+  });
+});
+
+describe('level 5 layout', () => {
+  const VIEWS = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    upright: computeView(390, 844, undefined, true),
+    uprightTall: computeView(390, 900, undefined, true),
+    uprightPad: computeView(768, 1024, undefined, true),
+    uprightWide: computeView(430, 700, undefined, true),
+  };
+  const overlap = (a: Box, b: Box) =>
+    Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
+  const inside = (b: Box, v: { w: number; h: number }) =>
+    b.x - b.w / 2 >= 0 && b.y - b.h / 2 >= 0 && b.x + b.w / 2 <= v.w && b.y + b.h / 2 <= v.h;
+  const corner = (b: Box, x0: number, y0: number, x1: number, y1: number) =>
+    b.x - b.w / 2 < x1 && b.x + b.w / 2 > x0 && b.y - b.h / 2 < y1 && b.y + b.h / 2 > y0;
+  for (const [name, v] of Object.entries(VIEWS))
+    for (const b of BOARDS5)
+      it(`${name}, board ${b.id}`, () => {
+        const l = routeLayout(v, b)!;
+        expect(l).not.toBeNull();
+        const targets = [l.cloud, ...l.beds.map((x) => x.patch), l.check];
+        const clear = (x: Box) => {
+          expect(corner(x, 0, 0, 120, 215)).toBe(false);
+          expect(corner(x, 0, v.h - (v.upright ? 205 : 170), 170, v.h)).toBe(false);
+          expect(inside(x, v)).toBe(true);
+        };
+        for (const t of targets) {
+          expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+          clear(t);
+        }
+        expect(l.beds.length).toBe(3);
+        for (const x of l.beds) expect([x.patch.w >= 240, x.patch.h >= 130]).toEqual([true, true]);
+        for (let i = 0; i < targets.length; i++)
+          for (let k = i + 1; k < targets.length; k++)
+            expect(overlap(targets[i], targets[k]), `targets ${i}/${k}`).toBe(false);
+        expect(l.bedSigns.length).toBe(b.marked.length);
+        const signs = [...l.bedSigns, l.pondSign];
+        for (const s of signs) {
+          expect([s.w, s.h]).toEqual([SIGN_W, SIGN_H]);
+          clear(s);
+          for (const t of targets) expect(overlap(s, t)).toBe(false);
+          expect(overlap(s, l.pond)).toBe(false);
+        }
+        for (let i = 0; i < signs.length; i++)
+          for (let k = i + 1; k < signs.length; k++) expect(overlap(signs[i], signs[k])).toBe(false);
+        // Each marked bed's sign stands beside it.
+        b.marked.forEach((m, i) => {
+          const p = l.beds[m.socket].patch;
+          expect(Math.abs(l.bedSigns[i].y - p.y)).toBeLessThan(p.h);
+        });
+        expect(l.slots.length).toBe(6);
+        for (const x of [...l.beds.flatMap((y) => y.pockets), ...l.slots]) {
+          expect(Math.min(x.w, x.h)).toBeGreaterThanOrEqual(48);
+          expect(inside(x, v)).toBe(true);
+        }
+        clear(l.pond);
+        for (const t of targets) expect(overlap(t, l.pond)).toBe(false);
+        expect(Math.abs(l.cloud.x - l.beds[0].patch.x)).toBeLessThan(1);
+        for (let i = 1; i < 3; i++) expect(l.beds[i].patch.y).toBeGreaterThan(l.beds[i - 1].patch.y);
+        expect(l.pond.y).toBeGreaterThan(l.beds[2].patch.y);
+      });
+  it('returns null rather than shrink', () => expect(routeLayout({ w: 600, h: 400 }, BOARDS5[0])).toBeNull());
 });
