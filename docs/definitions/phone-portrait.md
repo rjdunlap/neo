@@ -163,6 +163,7 @@ The upright `grownup` games below are measured from its own layout function at t
 | `sum-crates` | 50.8 | tray fruit | Level 3 fruit tray. |
 | `tide-tables` | 48.8 | time row or control, 96 units high | Both levels share the layout. |
 | `tile-pairs` | 50.8 | button, 100 units | Tiles are 108 units (54.8). |
+| `truth-bridge` | 52.8 | Help button | Levels 1–2, upright at 2 and 3 islanders. Sideways, the islanders stack as rows right of the caption bubble. |
 | `word-search` | 44.2 | letter square, 87 units, on a grid that fits; a 10 × 10 grid slides at 86 units (43.7) | Hint and Start over are 88 units high (44.7), fixed 2026-11-18 (were 72, 36.6). The larger grids (12 × 12 and 14 × 14) slide at 64-unit squares (32.5), which the band rule allows; the 10 × 10 grids were fixed 2026-11-18 (were 69 units, 35.0). The square size is `touchSquare` in `src/games/word-search/layout.ts`. |
 | `word-code` | 44.7 | keyboard key, 96 × 88 units | The grown-up five-letter level 3 (7 × 4 keys). School tray keys and picture cards are larger. |
 

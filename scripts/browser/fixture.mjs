@@ -11,6 +11,7 @@ export async function createFixture(browser, suite) {
     viewport: { width: 1024, height: 768 },
     reducedMotion: 'reduce',
     ...(suite === 'tidetables' ||
+    suite === 'truthbridge' ||
     suite === 'dominopond' ||
     suite === 'campsite' ||
     suite === 'sillyscene' ||
