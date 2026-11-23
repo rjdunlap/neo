@@ -30,6 +30,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'A purse of coins lies on the counter: count what the shells are worth and tap the number card that says how much is in the purse. Tap a coin to hear its worth.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Prices go from 11 to 20 and a ten-shell coin joins the purse: tap coins onto the counter to pay the price, then ring the bell. The tag shows the first ten as one bar and the rest as dots, like a ten-shell coin and some ones.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -67,11 +72,17 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'The total is not said: adding it up is the puzzle. A wrong card says whether it is the number of coins or one off; two misses count the coins aloud, biggest first, and light the right card; help counts once per purse.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Any coins that make the price will buy it. The first tap of the ten-shell coin names it. Tap a coin on the mat to put it back. Two misses bring a tip (biggest coin first) and show a payment that starts with the ten; help counts once per order.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
     { from: 6, to: 6, text: 'The round ends when the right change has been given.' },
     { from: 7, to: 7, text: 'The round ends when the price has been paid with the fewest shells.' },
     { from: 8, to: 8, text: 'The round ends when three purses have been counted.' },
+    { from: 9, to: 9, text: 'The round ends when four prices have been paid.' },
   ],
 };

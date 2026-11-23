@@ -6,8 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
 /**
  * Market Stall: buy fruit with shell coins worth 1, 2 and 5 by tapping them onto the counter,
  * then ring the bell. Later: add two prices, pay the same price a second, different way, and
- * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, and finally count
- * a purse of mixed coins and tap the number card that says how much is in it.
+ * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, count a purse of
+ * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin.
  */
 export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse';
 
@@ -59,6 +59,14 @@ export const PLANS: ShopPlan[] = [
     orders: 3,
     name: 'How much is in the purse? Count what each shell is worth, then tap the number',
   },
+  {
+    // Level 9, the ten-shell shell (dive slice 5): any exact payment buys; the tag is a ten bar and the ones.
+    mode: 'mix',
+    coins: [1, 2, 5, 10],
+    price: [11, 20],
+    orders: 4,
+    name: 'Pay 11 to 20 with a ten-shell coin and smaller ones',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -71,6 +79,9 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 
 /** What a customer hands over on change levels. */
 export const PAID = 10;
+
+/** The most any order asks for: a ten-shell coin and up to ten more (level 9). */
+export const TARGET_MAX = 20;
 
 export interface Order {
   /** One price per item (none on 'purse' levels, where nothing is bought). */
@@ -99,7 +110,7 @@ export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
     const one = () => rng.int(plan.price[0], plan.price[1]);
     const o: Order = { prices: plan.mode === 'pair' ? [one(), one()] : [one()] };
     const t = target(plan, o);
-    if (t < 1 || t > 10) continue;
+    if (t < 1 || t > TARGET_MAX) continue;
     // Pairs add up to something worth adding (at least 3), and amounts never repeat back to back.
     if (plan.mode === 'pair' && t < 3) continue;
     if (out.length && target(plan, out.at(-1)!) === t) continue;
@@ -154,7 +165,7 @@ export function countOn(purse: number[]): number[] {
   return out;
 }
 
-/** The fewest coins that make an amount (greedy works for 1, 2 and 5): the hint's suggestion. */
+/** The fewest coins that make an amount (greedy works for 1, 2, 5 and 10): the hint's suggestion. */
 export function fewest(amount: number, coins: number[]): number[] {
   const out: number[] = [];
   let left = amount;
@@ -219,14 +230,15 @@ export const hintCharge = (wrongs: number, shown: boolean, charged: boolean): nu
 /** Original six-fruit sticker draw; adding stall goods must never reinterpret saved seeds. */
 export const stickerGood = (rng: Rng) => rng.int(0, 5);
 
-const COIN_WORDS: Record<number, string> = { 2: 'two', 5: 'five' };
+const COIN_WORDS: Record<number, string> = { 2: 'two', 5: 'five', 10: 'ten' };
 
 /**
- * The word to name a coin the first time it is tapped, or null. Only a coin that is new at levels 2 and 3 (the 2, then the 5)
- * is named, and only once per game start (`named` holds the values already named). Not a miss, not a hint.
+ * The word to name a coin the first time it is tapped, or null. Only a coin that is new at its level (the 2 at level 2, the
+ * 5 at level 3, the 10 at level 9) is named, and only once per game start (`named` holds the values already named). Not a
+ * miss, not a hint.
  */
 export function coinToName(level: number, value: number, named: ReadonlySet<number>): string | null {
-  if (level < 2 || level > 3 || named.has(value)) return null;
+  if (level < 2 || level > PLANS.length || named.has(value)) return null;
   const before = planFor(level - 1).coins;
   return !before.includes(value) && planFor(level).coins.includes(value) ? (COIN_WORDS[value] ?? null) : null;
 }
@@ -280,6 +292,53 @@ export function goodPlacement(kind: PropKind, count: number, index: number) {
   };
 }
 
+/** Each coin's radius before scaling: bigger coins are worth more. */
+export const COIN_R: Record<number, number> = { 1: 30, 2: 35, 3: 38, 5: 40, 10: 44 };
+
+/** Coins on the mat stand this far apart, six to a row. */
+export const MAT_STEP = 80;
+
+/**
+ * How large the coins are drawn on the mat: full size, unless the level's biggest coin would be wider than a mat column (the
+ * 88-wide ten-shell coin), when every coin on the mat shrinks together so the biggest just fits and their sizes still rank.
+ */
+export const matCoinScale = (plan: ShopPlan) =>
+  Math.min(1, MAT_STEP / (2 * Math.max(...plan.coins.map((c) => COIN_R[c]))));
+
+/** Where the i-th coin sits on the mat, in the mat's own units. */
+export const matSlot = (i: number) => ({ x: -200 + (i % 6) * MAT_STEP, y: -32 + Math.floor(i / 6) * 64 });
+
+/** The price tag's box, centred on the tag (its string hole is at the top). */
+export const TAG = { w: 112, h: 88, hole: { y: -36, r: 6 } };
+
+/**
+ * What a price tag shows: the numeral, and one counting dot per shell, five to a row. From 11 the first ten are one ten bar
+ * (a frame of ten cells drawn in a row) and only the ones are dots, so a ten-shell coin matches the bar (decided
+ * 2026-10-23). The numeral and dots are smaller there so the bar fits inside the same tag.
+ */
+export function tagMarks(price: number): {
+  numeral: { y: number; size: number };
+  bar: { x: number; y: number; cell: number; h: number } | null;
+  dots: { x: number; y: number; r: number }[];
+} {
+  const dot = (i: number, top: number, step: number, r: number) => ({
+    x: -40 + (i % 5) * 20,
+    y: top + Math.floor(i / 5) * step,
+    r,
+  });
+  if (price <= 10)
+    return {
+      numeral: { y: -8, size: 40 },
+      bar: null,
+      dots: Array.from({ length: price }, (_, i) => dot(i, 22, 14, 5)),
+    };
+  return {
+    numeral: { y: -14, size: 32 },
+    bar: { x: -45, y: 4, cell: 9, h: 12 },
+    dots: Array.from({ length: price - 10 }, (_, i) => dot(i, 25, 10, 4)),
+  };
+}
+
 /** Where the stall's awning starts, down from the top of the view, and how far its posts and scalloped edge reach from it. */
 export const AWNING = { drop: 360, stripes: 56, scallop: 42.5 };
 /** The coin tap box (hit circle radius 46 at scale 1.25), the bell's round button and the mat's box, in units. */
@@ -303,9 +362,13 @@ export function stallLayout(view: { w: number; h: number; upright?: true }) {
   return { cx, cy, stockX, awningTop: cy - AWNING.drop };
 }
 
-/** Where the coins of the purse rest along the foot of the view, clear of the guide in the bottom-left corner. */
+/**
+ * Where the coins of the purse rest along the foot of the view, clear of the guide in the bottom-left corner. Three coins
+ * keep their old row; a purse of four (with the ten-shell coin) runs nearer the right edge so four whole tap boxes fit the
+ * 768-wide upright view.
+ */
 export function purseFor(view: { w: number; h: number }, n: number): { x: number; y: number }[] {
-  return spread(n, 220, view.w - 160, 170).map((x) => ({ x, y: view.h - 85 }));
+  return spread(n, 220, view.w - (n > 3 ? 60 : 160), 170).map((x) => ({ x, y: view.h - 85 }));
 }
 
 /**

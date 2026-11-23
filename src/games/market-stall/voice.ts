@@ -21,6 +21,9 @@ export const VOICE = {
   'shop.values': [
     'Count what each shell is worth, rather than how many coins you have. A two is worth two, and a five is worth five.',
   ],
+  'shop.values.ten': [
+    'It costs {n}. Count what each shell is worth, rather than how many coins you have: a ten-shell coin is worth ten.',
+  ],
   'shop.one.more': ['One more shell will make the right amount.'],
   'shop.one.less': ['One shell too many. Can you make one less with your coins?'],
   'shop.big': ['One of those coins is worth more than the whole amount. Try smaller coins.'],

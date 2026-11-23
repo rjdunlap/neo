@@ -1262,6 +1262,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('market-stall', level);
         const plan = await page.evaluate(() => ({
           mode: neo.scene.game.plan.mode,
+          coins: neo.scene.game.plan.coins,
           orders: neo.scene.game.orders.length,
         }));
         if (plan.mode === 'purse') {
@@ -1362,6 +1363,45 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await putDown(first);
               await ring();
               if (level === 7) await screenshot('market-stall-7');
+            } else if (plan.coins.includes(10)) {
+              // The ten-shell shell (dive slice 5): the first ten is named, a payment one too much is a miss,
+              // then the tags at 11, 15 and 20 (a ten bar and the ones) are drawn beside the stall for a picture.
+              await putDown([10]);
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.named.has(10)),
+                'the ten-shell coin is named on its first tap',
+              );
+              await putDown([...first, 1]);
+              await ring();
+              await ring();
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.ghost.children.length > 0),
+                'the hint shows a payment',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await page.evaluate(async () => {
+                const { tagArt } = await import('/src/games/market-stall/index.ts');
+                const g = neo.scene.game;
+                const row = new g.goods.constructor();
+                [11, 15, 20].forEach((p, i) => {
+                  const t = tagArt(p);
+                  t.position.set(i * 130, 0);
+                  row.addChild(t);
+                });
+                row.position.set(g.goods.x - 130, g.goods.y + 260);
+                row.label = 'tag-preview';
+                g.goods.parent.addChild(row);
+              });
+              await page.waitForTimeout(100);
+              await screenshot('market-stall-9-tags-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+              await page.evaluate(() => {
+                const g = neo.scene.game;
+                g.goods.parent.children.find((c) => c.label === 'tag-preview')?.destroy({ children: true });
+              });
             } else {
               await putDown(Array(want + 1).fill(1));
               if (level === 3) await screenshot('market-stall-3-total');
