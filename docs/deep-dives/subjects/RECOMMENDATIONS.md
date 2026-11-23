@@ -950,7 +950,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | --- | --- | --- |
 | **LM1 Thought Bubbles 1–3** · new game · pre-K, school | LM1 defined 2026-10-31 ([PR #1065](https://github.com/rjdunlap/neo/pull/1065), [definition](../../definitions/thought-bubbles.md)); build batch `thought-bubbles 1` next | Watch a two-to-four-beat picture story, then drag one of three picture cards (110 units) into a friend's empty thought bubble; the friend acts on it. 1 *What does she want?*: the object the reach or gaze points to; 2 *Where will he look?*: the place he last saw the thing (away or watching stories); 3 *How do we know?*: the supported reason, then the clue in the picture. Belief model and story pools in `logic.ts` with tests; Story Grove (paging), Cozy Village the fallback; nothing kept |
 | **LM3 Story-talk card** · grown-ups' page | built 2026-11-18 ([definition](../../definitions/talk-cards.md), PR #1796) | Questions for any picture book; plain HTML; no learning claim |
-| **LM2 Thought Bubbles 4** · two bubbles | define after 1–3 are played | Two friends, two bubbles, different things seen |
+| **LM2 Thought Bubbles 4** · two bubbles | defined 2026-11-22 ([definition](../../definitions/thought-bubbles-4.md)); build batches queued | Two friends, two bubbles, different things seen |
 | **LM4 Who is telling?** · Thought Bubbles 5 | define after LM2 | Tap the friend who could have told this version |
 | **LM5 Two tellings**, **LM6 What did Fox learn?**, **LM7 Who Knew** | sketches | Comparing versions and a story's message (both need a named reviewer for any real story) and a Lantern Lake belief puzzle (after a capacity test) |
 
