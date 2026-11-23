@@ -9,6 +9,9 @@ export const VOICE = {
   'wordglue.join': ['{first}… {second}… {word}!'],
   'wordglue.miss.make': ['{word}: {first}… and {second}.'],
   'wordglue.miss.for': ["That's a {made}, {meaning}. Who needs a {head} now?"],
+  'wordglue.instruct.kind': ['Is a {word} a {a} or a {b}?'],
+  'wordglue.kind.right': ['Yes! A {word} is a {second}: {meaning}.'],
+  'wordglue.kind.wrong': ["A {word} isn't a {first}. It's a {second}: {meaning}."],
   'wordglue.hint': ['These two go together.'],
   'wordglue.done': ['Look at everything we made!'],
 } satisfies Record<string, string[]>;

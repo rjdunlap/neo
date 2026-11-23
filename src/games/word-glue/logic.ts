@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * Word Glue: two pictures join into a third, and the pet says the parts and the whole. Level 1 joins the only pair,
  * level 2 finds the two parts of an asked word among three pictures, level 3 keeps the second part (a house, a box, a
  * brush) and asks which first part makes the thing a friend needs. Every entry is a transparent compound whose parts
- * can both be drawn; nothing is printed. See docs/definitions/word-glue.md.
+ * can both be drawn; nothing is printed. Level 5 shows a made thing over its two parts and asks which part it is: the
+ * last part names the thing. See docs/definitions/word-glue.md and docs/definitions/word-glue-5-6.md.
  */
 
 export interface Compound {
@@ -24,18 +25,18 @@ export const COMPOUNDS: readonly Compound[] = [
     first: 'sun',
     second: 'flower',
     meaning: 'a flower that turns to the sun',
-    levels: [1, 2],
+    levels: [1, 2, 5],
   },
-  { word: 'cupcake', first: 'cup', second: 'cake', meaning: 'a little cake in a cup', levels: [1, 2] },
-  { word: 'doghouse', first: 'dog', second: 'house', meaning: 'a house for a dog', levels: [1, 2, 3] },
-  { word: 'toothbrush', first: 'tooth', second: 'brush', meaning: 'a brush for teeth', levels: [1, 2, 3] },
+  { word: 'cupcake', first: 'cup', second: 'cake', meaning: 'a little cake in a cup', levels: [1, 2, 5] },
+  { word: 'doghouse', first: 'dog', second: 'house', meaning: 'a house for a dog', levels: [1, 2, 3, 5] },
+  { word: 'toothbrush', first: 'tooth', second: 'brush', meaning: 'a brush for teeth', levels: [1, 2, 3, 5] },
   { word: 'raincoat', first: 'rain', second: 'coat', meaning: 'a coat for the rain', levels: [1, 2] },
-  { word: 'beehive', first: 'bee', second: 'hive', meaning: 'a home for bees', levels: [1, 2] },
-  { word: 'sailboat', first: 'sail', second: 'boat', meaning: 'a boat with a sail', levels: [1, 2] },
+  { word: 'beehive', first: 'bee', second: 'hive', meaning: 'a home for bees', levels: [1, 2, 5] },
+  { word: 'sailboat', first: 'sail', second: 'boat', meaning: 'a boat with a sail', levels: [1, 2, 5] },
   { word: 'mailbox', first: 'mail', second: 'box', meaning: 'a box for mail', levels: [1, 2, 3] },
-  { word: 'birdhouse', first: 'bird', second: 'house', meaning: 'a house for a bird', levels: [3] },
-  { word: 'dollhouse', first: 'doll', second: 'house', meaning: 'a house for a doll', levels: [3] },
-  { word: 'toybox', first: 'toy', second: 'box', meaning: 'a box for toys', levels: [3] },
+  { word: 'birdhouse', first: 'bird', second: 'house', meaning: 'a house for a bird', levels: [3, 5] },
+  { word: 'dollhouse', first: 'doll', second: 'house', meaning: 'a house for a doll', levels: [3, 5] },
+  { word: 'toybox', first: 'toy', second: 'box', meaning: 'a box for toys', levels: [3, 5] },
   { word: 'sandbox', first: 'sand', second: 'box', meaning: 'a box for sand', levels: [3] },
   { word: 'hairbrush', first: 'hair', second: 'brush', meaning: 'a brush for hair', levels: [3] },
   { word: 'paintbrush', first: 'paint', second: 'brush', meaning: 'a brush for paint', levels: [3] },
@@ -195,17 +196,22 @@ export const PLANS: readonly Plan[] = [
     level: 4,
     name: 'One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things)',
   },
+  { level: 5, name: 'What kind of thing? Tap the part the made thing really is (5 asks)' },
 ];
 
 /** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
 export const BIG_LEVEL = 4;
+
+/** Level 5: a made thing and its two parts; a tap on the part it is (its last part) answers. */
+export const KIND_LEVEL = 5;
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
-  school: { min: 3, max: 3 },
+  // An explicit order keeps lap's level 4 out of school's ladder.
+  school: { min: 3, max: KIND_LEVEL, order: [3, KIND_LEVEL] },
 };
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -244,8 +250,13 @@ export const PICTURES: readonly string[] = [
 export interface Ask {
   /** The thing this ask makes. */
   entry: Compound;
-  /** The pictures on the table. At level 3 the head is first, then the three first parts, which stay put for the head's asks. */
+  /**
+   * The pictures on the table. At level 3 the head is first, then the three first parts, which stay put for the head's
+   * asks. At level 5 the entry's two parts in screen order.
+   */
   pictures: string[];
+  /** Level 5: the part the question says first ("a dog or a house?" or "a house or a dog?"), chosen apart from the screen order. */
+  saidFirst?: string;
 }
 
 export interface Round {
@@ -268,6 +279,14 @@ const AUTHORED_2: [string, string][] = [
   ['cupcake', 'star'],
   ['mailbox', 'duck'],
   ['sunflower', 'jar'],
+];
+/** Level 5's first round: the word, whether its right part sits on the first side, and whether the question says it first. */
+const AUTHORED_5: [string, boolean, boolean][] = [
+  ['doghouse', false, false],
+  ['sunflower', true, true],
+  ['toothbrush', true, false],
+  ['cupcake', false, true],
+  ['sailboat', true, false],
 ];
 const AUTHORED_1 = ['sunflower', 'doghouse', 'cupcake', 'beehive', 'sailboat'];
 
@@ -306,6 +325,32 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
       })),
     };
   }
+  if (plan.level === KIND_LEVEL) {
+    // Two or three of five, in a seeded order: neither the side nor the question's order gives the answer away.
+    const flags = () => {
+      const n = rng.int(2, 3);
+      return rng.shuffle([0, 1, 2, 3, 4].map((i) => i < n));
+    };
+    let picks = AUTHORED_5;
+    if (!authored) {
+      const tagged = COMPOUNDS.filter((c) => c.levels.includes(KIND_LEVEL));
+      const heads = rng.shuffle([...new Set(tagged.map((c) => c.second))]).slice(0, 5);
+      const sides = flags(),
+        said = flags();
+      picks = heads.map((h, i) => [rng.pick(tagged.filter((c) => c.second === h)).word, sides[i], said[i]]);
+    }
+    return {
+      plan,
+      asks: picks.map(([word, rightFirst, rightSaidFirst]) => {
+        const entry = byWord(word);
+        return {
+          entry,
+          pictures: rightFirst ? [entry.second, entry.first] : [entry.first, entry.second],
+          saidFirst: rightSaidFirst ? entry.second : entry.first,
+        };
+      }),
+    };
+  }
   const heads: Head[] = authored ? ['house', 'brush'] : rng.shuffle([...HEADS]).slice(0, 2);
   const asks: Ask[] = [];
   for (const head of heads) {
@@ -329,7 +374,7 @@ export interface GlueState {
   hints: number;
   /** Distinct wrong pairs dropped on this ask (sorted "a+b"). */
   wrong: Set<string>;
-  /** Every wrong drop on this ask, repeats included. */
+  /** Every wrong drop on this ask, repeats included; at level 5 every counted wrong tap (two at most). */
   wrongDrops: number;
   /** The right pictures (level 2) or the asking friend (level 3) glow; a hint has been counted for this ask. */
   glow: boolean;
@@ -407,6 +452,43 @@ export function drop(s: GlueState, a: string, b: string): Outcome {
     }
   }
   return { kind: 'wrong', made: makes(a, b), counted, glowed };
+}
+
+/** Level 5: the part that answers the ask in play (the made thing's last part), or null. */
+export function rightPart(s: GlueState): string | null {
+  const ask = currentAsk(s);
+  return ask && s.round.plan.level === KIND_LEVEL ? ask.entry.second : null;
+}
+
+/** What tapping picture `key` would be at level 5, without changing anything. */
+export function checkTap(s: GlueState, key: string): Outcome['kind'] {
+  const ask = currentAsk(s);
+  if (!ask || s.round.plan.level !== KIND_LEVEL || !ask.pictures.includes(key)) return 'ignore';
+  if (key === ask.entry.second) return 'right';
+  return s.wrongDrops >= 2 ? 'assist' : 'wrong';
+}
+
+/**
+ * Level 5: tap a part. With two choices every wrong tap counts, up to two an ask; the second glows the right part (one
+ * hint, unless Show a hint already counted it), and a wrong tap after that plays the right answer with no further count.
+ */
+export function tap(s: GlueState, key: string): Outcome {
+  const kind = checkTap(s, key);
+  const ask = currentAsk(s);
+  if (kind === 'ignore' || !ask) return { kind: 'ignore' };
+  if (kind === 'right' || kind === 'assist') {
+    advance(s);
+    return { kind, entry: ask.entry };
+  }
+  s.wrongDrops++;
+  s.misses++;
+  let glowed = false;
+  if (s.wrongDrops >= 2 && !s.glow) {
+    s.glow = true;
+    s.hints++;
+    glowed = true;
+  }
+  return { kind: 'wrong', made: null, counted: true, glowed };
 }
 
 /** Level 4: a touch anywhere joins the big picture with its partner. Returns the thing made and moves to the next ask. */
@@ -491,6 +573,23 @@ export function tableLayout(v: View, n: number): Pt[] {
     { x: cx + 300, y },
     { x: cx, y: y + 215 },
   ];
+}
+
+/**
+ * Level 5: the made thing at the top of the table, below the shelf, and its two parts side by side under it. The same
+ * arrangement serves a sideways and an upright view; a taller view opens the gap a little.
+ */
+export function kindLayout(v: View): { made: Pt; parts: [Pt, Pt] } {
+  const cx = v.w / 2;
+  const top = Math.max(250, Math.min(v.h * 0.34, 520));
+  const y = top + MADE / 2 + CARD / 2 + Math.max(24, Math.min(v.h * 0.06, 70));
+  return {
+    made: { x: cx, y: top },
+    parts: [
+      { x: cx - 150, y },
+      { x: cx + 150, y },
+    ],
+  };
 }
 
 /** The centre of the table, where a made thing appears. */

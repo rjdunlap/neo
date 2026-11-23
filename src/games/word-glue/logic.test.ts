@@ -15,6 +15,7 @@ import {
   canDrag,
   CARD,
   check,
+  checkTap,
   COMPOUNDS,
   currentAsk,
   DENY,
@@ -25,6 +26,8 @@ import {
   forms,
   HEADS,
   hintFor,
+  KIND_LEVEL,
+  kindLayout,
   MADE,
   makeRound,
   makes,
@@ -33,10 +36,12 @@ import {
   PICTURES,
   POOL,
   restartState,
+  rightPart,
   SHELF,
   shelfLayout,
   tableCentre,
   tableLayout,
+  tap,
   type GlueState,
 } from './logic';
 
@@ -56,7 +61,7 @@ describe('the compound table', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // Levels 1–3 are unchanged.
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5]);
     for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
     expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
     expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
@@ -313,6 +318,135 @@ describe('level 3: Who is it for?', () => {
   });
 });
 
+describe('level 5: What kind of thing?', () => {
+  const tagged = COMPOUNDS.filter((c) => c.levels.includes(KIND_LEVEL));
+  const rightFirst = (s: GlueState) => s.round.asks.filter((a) => a.pictures[0] === a.entry.second).length;
+  const saidFirst = (s: GlueState) => s.round.asks.filter((a) => a.saidFirst === a.entry.second).length;
+
+  it('tags the nine entries whose two parts are both countable, and no other', () => {
+    expect(tagged.map((c) => c.word).sort()).toEqual(
+      [
+        'sunflower',
+        'cupcake',
+        'doghouse',
+        'toothbrush',
+        'beehive',
+        'sailboat',
+        'birdhouse',
+        'dollhouse',
+        'toybox',
+      ].sort(),
+    );
+    // "a rain", "a mail", "a sand", "a hair" and "a paint" would make the question ungrammatical.
+    for (const c of tagged)
+      for (const part of ['rain', 'mail', 'sand', 'hair', 'paint']) expect(c.first).not.toBe(part);
+    // The question says "a" before each part and the word, so none may start with a vowel sound.
+    for (const c of tagged) for (const w of [c.word, c.first, c.second]) expect(w).toMatch(/^[^aeiou]/);
+    for (const id of ['wordglue.instruct.kind', 'wordglue.kind.right', 'wordglue.kind.wrong'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+  });
+
+  it("school climbs 3 then 5, never through lap's level 4, and a carried 4 lands on 3", () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL]);
+    expect(levelsInOrder(LEVELS.school!)).not.toContain(BIG_LEVEL);
+    expect(landing(BIG_LEVEL, LEVELS.school!, [BIG_LEVEL])).toBe(3);
+    expect(stepLevel(3, 1, LEVELS.school!)).toBe(KIND_LEVEL);
+    expect(stepLevel(KIND_LEVEL, -1, LEVELS.school!)).toBe(3);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(KIND_LEVEL);
+  });
+
+  it('the authored round: doghouse, sunflower, toothbrush, cupcake, sailboat, with mixed sides and question orders', () => {
+    const s = stateFor(KIND_LEVEL, 1, true);
+    expect(s.round.asks.map((a) => a.entry.word)).toEqual([
+      'doghouse',
+      'sunflower',
+      'toothbrush',
+      'cupcake',
+      'sailboat',
+    ]);
+    expect(s.round.asks[0].pictures).toEqual(['dog', 'house']);
+    expect(s.round.asks[0].saidFirst).toBe('dog');
+    expect(rightFirst(s)).toBe(3);
+    expect(saidFirst(s)).toBe(2);
+    // The side and the question order are not the same pattern.
+    expect(
+      s.round.asks.some((a) => (a.pictures[0] === a.entry.second) !== (a.saidFirst === a.entry.second)),
+    ).toBe(true);
+  });
+
+  it('over 500 seeds: five asks with five heads, the right part first on two or three sides and in two or three questions', () => {
+    const sides = new Set<string>();
+    let differ = 0;
+    for (const seed of SEEDS) {
+      const s = stateFor(KIND_LEVEL, seed);
+      expect(s.round.asks).toHaveLength(5);
+      expect(new Set(s.round.asks.map((a) => a.entry.second)).size).toBe(5);
+      for (const a of s.round.asks) {
+        expect(a.entry.levels).toContain(KIND_LEVEL);
+        expect([...a.pictures].sort()).toEqual([a.entry.first, a.entry.second].sort());
+        expect([a.entry.first, a.entry.second]).toContain(a.saidFirst);
+      }
+      expect([2, 3]).toContain(rightFirst(s));
+      expect([2, 3]).toContain(saidFirst(s));
+      sides.add(s.round.asks.map((a) => +(a.pictures[0] === a.entry.second)).join(''));
+      if (s.round.asks.some((a) => (a.pictures[0] === a.entry.second) !== (a.saidFirst === a.entry.second)))
+        differ++;
+      // Tapping the right part every time finishes with nothing counted.
+      for (const a of s.round.asks) {
+        expect(rightPart(s)).toBe(a.entry.second);
+        expect(checkTap(s, a.entry.second)).toBe('right');
+        expect(tap(s, a.entry.second).kind).toBe('right');
+      }
+      expect([s.done, s.misses, s.hints]).toEqual([true, 0, 0]);
+    }
+    // No fixed side pattern, and the question order is drawn apart from the side.
+    expect(sides.size).toBeGreaterThan(10);
+    expect(differ).toBeGreaterThan(400);
+  });
+
+  it('accounting: wrong, wrong, Show a hint, wrong is two misses, one hint and a supported answer', () => {
+    const s = stateFor(KIND_LEVEL, 3, true);
+    expect(tap(s, 'dog')).toMatchObject({ kind: 'wrong', counted: true, glowed: false });
+    expect(tap(s, 'dog')).toMatchObject({ kind: 'wrong', counted: true, glowed: true });
+    expect([s.misses, s.hints, s.glow]).toEqual([2, 1, true]);
+    expect(applyHint(s)).not.toBeNull();
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+    expect(checkTap(s, 'dog')).toBe('assist');
+    expect(tap(s, 'dog')).toMatchObject({ kind: 'assist' });
+    expect([s.misses, s.hints, s.index, s.glow]).toEqual([2, 1, 1, false]);
+  });
+
+  it('a hint before any miss counts once, a second request counts nothing, and two misses then add no hint', () => {
+    const s = stateFor(KIND_LEVEL, 3, true);
+    applyHint(s);
+    applyHint(s);
+    expect([s.misses, s.hints, s.glow]).toEqual([0, 1, true]);
+    tap(s, 'dog');
+    expect(tap(s, 'dog')).toMatchObject({ kind: 'wrong', glowed: false });
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+    expect(tap(s, 'house').kind).toBe('right');
+    // The next ask starts clean.
+    expect([s.glow, s.wrongDrops]).toEqual([false, 0]);
+  });
+
+  it('a picture not on the table, or a tap on another level, never counts', () => {
+    const s = stateFor(KIND_LEVEL, 3, true);
+    expect(tap(s, 'moon').kind).toBe('ignore');
+    expect(tap(stateFor(2, 3, true), 'dog').kind).toBe('ignore');
+    expect(rightPart(stateFor(2, 3, true))).toBeNull();
+    expect([s.misses, s.hints, s.index]).toEqual([0, 0, 0]);
+  });
+
+  it('Start again goes back to the first ask and keeps what was counted', () => {
+    const s = stateFor(KIND_LEVEL, 5);
+    tap(s, s.round.asks[0].entry.first);
+    tap(s, s.round.asks[0].entry.second);
+    restartState(s);
+    expect([s.index, s.misses, s.wrongDrops]).toEqual([0, 1, 0]);
+  });
+});
+
 describe('the pictures', () => {
   it('names every part and the pool once', () => {
     expect(new Set(PICTURES).size).toBe(PICTURES.length);
@@ -338,6 +472,20 @@ describe('the table layout', () => {
       expect(overlaps(r, petCorner(v.h))).toBe(false);
       expect(overlaps(r, home)).toBe(false);
       for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
+    });
+    it(`${name}, level 5: the made thing and its two parts are big, inside the view, apart and clear of the corners`, () => {
+      const { made, parts } = kindLayout(v);
+      const rects = [sq(made, MADE), ...parts.map((p) => sq(p, CARD))];
+      const home = { x: 0, y: 0, w: 130, h: 230 };
+      for (const r of rects) {
+        expect(r.x).toBeGreaterThanOrEqual(0);
+        expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+        expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+        expect(overlaps(r, petCorner(v.h))).toBe(false);
+        expect(overlaps(r, home)).toBe(false);
+        for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
+      }
+      for (const [a, b] of pairs(rects)) expect(overlaps(a, b)).toBe(false);
     });
     for (const n of [2, 3, 4]) {
       it(`${name}, ${n} pictures: big, inside the view, clear of the corners and apart`, () => {
