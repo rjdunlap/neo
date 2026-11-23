@@ -53,5 +53,5 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish:
-    'The round ends after grouping the fireflies and answering any total question, or after making the number (at level 9, both numbers).',
+    'The round ends after grouping the fireflies and answering any total question, or after making each number asked for.',
 };
