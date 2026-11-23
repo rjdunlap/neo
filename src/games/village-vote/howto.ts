@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Count the toy preferences and carry out the choice with the most votes, so everyone can use it.',
+  goal: 'Count the toy preferences and carry out the choice with the most votes.',
   steps: [
     {
       from: 2,

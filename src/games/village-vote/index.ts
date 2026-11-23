@@ -352,7 +352,8 @@ export class VillageVote implements Game {
       });
       this.friends.set(v.id, n);
     });
-    if (e.phase === 'fix')
+    // The cards appear once the last "too high" line has finished, when they can be tapped.
+    if (e.phase === 'fix' && !this.busy)
       (['step', 'lower'] as const).forEach((f, i) => {
         const art = new Container(),
           pic = fixedToy(f);
@@ -708,7 +709,12 @@ export class VillageVote implements Game {
       void this.sharedPlay(this.generation);
     }
     // A resize can cut the tie line short; the run-off instruction is said again.
-    if (this.election.phase === 'runoff' || (intro && this.election.plan.level === 5)) this.instruct();
+    if (
+      this.election.phase === 'runoff' ||
+      this.election.phase === 'fix' ||
+      (intro && this.election.plan.level === 5)
+    )
+      this.instruct();
   }
   destroy() {
     this.alive = false;
