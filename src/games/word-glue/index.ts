@@ -211,6 +211,8 @@ class WordGlue implements Game {
       if (c.handle) c.handle.home = { ...pts[i] };
     });
     if (!this.busy || this.reversed) this.relayout();
+    // Level 7's name cards follow the view even while a line plays.
+    else this.drawNameCards();
     const slots = this.shelfSlots();
     this.shelf.forEach((th, i) => {
       if (th.flying) return;
