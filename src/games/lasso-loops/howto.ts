@@ -41,7 +41,17 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Tap a jar or the leaf to let its fireflies go. Tap the tick when the jars and the leaf make the number.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'The jars and the leaf already hold a number. Make it ten more: loop ten fireflies into a jar. Make it ten less: tap a full jar to let its ten go.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Leave the leaf as it is and tap the tick. Each round asks for ten more and ten less, once each.',
+    },
   ],
   finish:
-    'The round ends after grouping the fireflies and answering any total question, or after making the number.',
+    'The round ends after grouping the fireflies and answering any total question, or after making the number (at level 9, both numbers).',
 };

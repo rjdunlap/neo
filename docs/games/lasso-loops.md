@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–3 |
 | pre-K | 2–4 |
-| school | 3–8 |
+| school | 3–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 6 | About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number |
 | 7 | Too few, too many: loop one jar of 10, tap away the numbers that cannot be right, then loop the tens and say the number |
 | 8 | Make the number: catch 23 as jars of 10 and ones on the leaf, then tap the tick |
+| 9 | Ten more, ten less: the jars hold 24; make it 34, then 24 again, a whole jar each time |
 
 <!-- end generated -->
 

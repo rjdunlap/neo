@@ -7,6 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * to exactly two or three, to jars of five and of ten (counting the jars and the ones left over, so 34 is three
  * tens and four), to equal groups ("3 groups of 4") as the first idea of multiplying. At the top she makes a number
  * herself: a sign says 23, a loop of ten fills a jar, a smaller loop rests on the leaf, and ten on the leaf fly into a jar.
+ * Last, the jars start full (24) and she makes the number ten more, then ten less: a whole jar in or out, the ones untouched.
  */
 export type LassoMode = 'free' | 'exact' | 'fives' | 'tens' | 'groups' | 'make';
 
@@ -15,6 +16,8 @@ export interface LassoPlan {
   guess?: boolean;
   /** Level 7: rule out the numbers that cannot be right before the tens round checks the one that stays. */
   range?: boolean;
+  /** Level 9: the jars start full, and she makes the number ten more and ten less (level 8's loops, undo and tick). */
+  shift?: boolean;
   name: string;
 }
 
@@ -38,12 +41,17 @@ export const PLANS: LassoPlan[] = [
     mode: 'make',
     name: 'Make the number: catch 23 as jars of 10 and ones on the leaf, then tap the tick',
   },
+  {
+    mode: 'make',
+    shift: true,
+    name: 'Ten more, ten less: the jars hold 24; make it 34, then 24 again, a whole jar each time',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 8 },
+  school: { min: 3, max: 9 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -57,11 +65,14 @@ export interface LassoRound {
   /** Fireflies left over after the jars are full (fives and tens); 0 means none, and no leaf is drawn. */
   ones: number;
   group?: { count: number; size: number };
-  /** Level 8: the number on the sign, to catch as jars of ten and ones on the leaf. */
+  /** Level 8: the number on the sign, to catch as jars of ten and ones on the leaf. Level 9: the first ask's number. */
   target?: number;
+  /** Level 9: what the jars and the leaf hold when the round opens, and the two asks in order (each from what is held then). */
+  start?: MakeState;
+  asks?: ShiftAsk[];
 }
 
-/** Whether the round has a leaf: where the ones rest, and at level 8 where every loop of fewer than ten lands. */
+/** Whether the round has a leaf: where the ones rest, and at levels 8 and 9 where every loop of fewer than ten lands. */
 export const hasLeaf = (round: LassoRound) => round.ones > 0 || round.target !== undefined;
 
 export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
@@ -93,6 +104,24 @@ export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
       return { fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones };
     }
     case 'make': {
+      if (plan.shift) {
+        // Ten more and ten less come once each, in seeded order; the second undoes the first, so the round ends where it
+        // began. The larger of the two numbers is 21–36, so both stay within 11–39 and three jars, the ones are 1–9 (a
+        // leaf to leave alone), and the meadow has 3–5 fireflies to spare beyond it (a ones-only change is always possible).
+        const asks: ShiftAsk[] = rng.chance(0.5) ? ['more', 'less'] : ['less', 'more'];
+        const tens = rng.int(2, 3);
+        const peak = 10 * tens + rng.int(1, tens === 3 ? SHIFT_PEAK_MAX - 30 : 9);
+        const total = asks[0] === 'more' ? peak - 10 : peak;
+        return {
+          fireflies: Math.min(MEADOW_MAX, peak + rng.int(3, 5)),
+          jars: Array(MAKE_JARS).fill(10),
+          answer: null,
+          ones: 0,
+          target: shiftTarget(total, asks[0]),
+          start: { jars: Math.floor(total / 10), leaf: total % 10 },
+          asks,
+        };
+      }
       // 13–36 with at least three fireflies to spare, so stopping is hers to decide; never more than the meadow's 39.
       const target = rng.int(MAKE_MIN, MAKE_MAX);
       const fireflies = Math.min(MEADOW_MAX, target + rng.int(3, 7));
@@ -232,6 +261,50 @@ export function makeHint(
 export function makeNext(target: number, s: MakeState): number {
   const gap = target - makeTotal(s);
   return gap >= 10 ? 10 : Math.max(0, gap);
+}
+
+// Level 9, Ten more, ten less --------------------------------------------------------------------
+
+export type ShiftAsk = 'more' | 'less';
+/** The larger number of a level-9 round is at most this, so the meadow (39) has three to spare beyond it. */
+export const SHIFT_PEAK_MAX = 36;
+
+export const shiftTarget = (from: number, ask: ShiftAsk) => from + (ask === 'more' ? 10 : -10);
+
+/** The two numbers a level-9 round asks for, in order: each ask is ten more or ten less than what is held then. */
+export function shiftTargets(round: LassoRound): number[] {
+  let n = makeTotal(round.start!);
+  return round.asks!.map((ask) => (n = shiftTarget(n, ask)));
+}
+
+/**
+ * What a wrong tick at level 9 names, after the count aloud: `ones` when the jars are as they were and only the leaf
+ * changed (the mistake the level is about), otherwise `jar` (nothing changed yet, too many jars moved, or both moved).
+ */
+export function shiftMistake(from: MakeState, s: MakeState): 'ones' | 'jar' {
+  return s.jars === from.jars && s.leaf !== from.leaf ? 'ones' : 'jar';
+}
+
+/**
+ * The part to change at level 9 (the second wrong tick of an ask, and the ghost finger's next move), always a step that
+ * can be taken; following it step by step ends at the number with a whole jar moved and the ones as they were. Too many
+ * jars: let one go. Then the leaf: let it go if it holds too many, or loop the `d` it is short of the number's ones `r`.
+ * Then a jar short: loop ten. Null when the number is made.
+ */
+export function shiftHint(
+  target: number,
+  s: MakeState,
+):
+  | { part: 'jar-add' | 'jar-remove' }
+  | { part: 'leaf-remove'; r: number }
+  | { part: 'ones'; d: number; r: number }
+  | null {
+  const tens = Math.floor(target / 10);
+  const r = target % 10;
+  if (s.jars > tens) return { part: 'jar-remove' };
+  if (s.leaf > r) return { part: 'leaf-remove', r };
+  if (s.leaf < r) return { part: 'ones', d: r - s.leaf, r };
+  return s.jars < tens ? { part: 'jar-add' } : null;
 }
 
 // Firefly places and loops ------------------------------------------------------------------------
