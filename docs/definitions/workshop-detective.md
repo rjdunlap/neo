@@ -10,7 +10,7 @@ First decide what the two records can show. Mark each note **fits** or **ruled o
 
 The learning is the study's older inquiry step: tell a working result from evidence for a cause, accept that some records cannot decide, choose a test whose outcome would separate two explanations, and claim only what the records support. Repeating a setup adds nothing, because the lamp does the same thing every time.
 
-Use stable level ID 1 and the `grownup` band only (`levels('grownup')` is 1 to 1). Use Tinker Lab as the learning region, the home of Ramp Race's fair tests, and Logic as the challenge. Add one Lantern Lake tile through the existing land paging: the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) settled that Lantern Lake pages and that the lands tests are its capacity test. Workshop Detective is not on that record's named list; it relies on the same paging rule, and the lands tests in the build batch check it. Mark the game `upright: true`. Use the classic round contract: level progress and one sticker. The lamp, the records and the marks are round state. Nothing is saved between rounds, and no record, lamp or note is kept.
+Use stable level ID 1 and the `grownup` band only (`levels('grownup')` is 1 to 1). Use Tinker Lab as the learning region, the home of Ramp Race's fair tests, and Logic as the challenge. Add one Lantern Lake tile through the existing land paging: the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) settled that Lantern Lake pages and that the lands tests are its capacity test. Workshop Detective is not on that record's named list; it relies on the same paging rule, and the lands tests in the build batch check it. Mark the game `upright: true` (like Truth Bridge, a grown-up upright game at the 64-unit minimum) and add it to the registry test's upright list. Use the classic round contract: level progress and one sticker. The lamp, the records and the marks are round state. Nothing is saved between rounds, and no record, lamp or note is kept.
 
 `describeLevel(1)`: "Two notes, one bench lamp: find the test that tells them apart".
 
@@ -18,7 +18,7 @@ Use stable level ID 1 and the `grownup` band only (`levels('grownup')` is 1 to 1
 
 The lamp is made up, and the game says so. A tag hangs from it, drawn as a small card with a gear: "A made-up lamp. It follows its own rule." The instruction speaks the same idea before the first Check, and the how-to card shows the tag. The lamp has no wick, battery, wire or bulb to reason about; the levers are carved pictures, and nothing about a shell or a feather should suggest a real cause. There is no ramp, car, distance or near and far in it, so it is never read as a change to Ramp Race's height × glide rule, and Ramp Race's levels do not refer to it.
 
-**Every round is a different lamp.** The round draws, with `ctx.rng`, one of two lever pairs (shell and feather, or star and moon), which lever sits on the left, the true note, and a shade colour from four palette colours. The pet opens with "A new lamp from the bench." The bench shows the previous lamp's shade colour on a hook at the side as scenery only, so a player who saw the shell lever decide last time sees that this is another lamp with its own rule. That is why the true note may change between rounds without feeling like a trick.
+**Every round is a different lamp, and a lamp's look fixes its rule.** The round draws, with `ctx.rng`, a *look*: one of two lever pairs (shell and feather, or star and moon), which lever sits on the left, and a shade colour from four palette colours, sixteen looks in all. The true note is a fixed function of the look, not a separate draw: for each pair and side, two shade colours make the left lever's note true and the other two the right lever's, so each note is true in eight looks. A lamp that looks the same therefore always follows the same rule, and a player who saw the shell lever decide on a blue lamp is never contradicted by another blue lamp with the shell on the same side. The pet opens with "A new lamp from the bench." Nothing is kept between rounds.
 
 ## The case
 
@@ -44,7 +44,7 @@ The true note is one of the two. The lamp's result for a setup is the true note'
 
 **Useful tests.** Exactly two: P up with Q down, and P down with Q up. Either one decides the case. After one of them, the other agrees with the same note and adds a record without new information. Repeating an opening setup lights its existing card and adds nothing.
 
-**The record state** is the set of distinct setups tried so far, starting with the two opening setups. It has two kinds:
+**The record state** is one of two kinds, decided by the distinct setups tried so far (starting with the two opening setups). Misses are keyed on the kind, not on the set of setups:
 
 - **undecided:** only the opening setups, so both notes fit every record;
 - **decided:** at least one separating setup, so only the true note fits.
@@ -53,7 +53,7 @@ The true note is one of the two. The lamp's result for a setup is the true note'
 
 Each note card carries two toggles, **fits** and **ruled out**, both unset at the start. Tapping one sets it and clears the other; tapping the set one again clears it. **Check** looks at the marks once both notes are marked; with a note unmarked, Check pulses the unmarked card and says "Mark both notes first.", free.
 
-The two notes give four mark sets. Here is every mark set in both record states. *True* and *other* are the true note and the other note.
+The two notes give four mark sets. Here is every mark set in both record states. Unset marks never reach the table: an incomplete Check is answered before it. *True* and *other* are the true note and the other note.
 
 | Record state | Marks | Verdict | What happens |
 | --- | --- | --- | --- |
@@ -73,8 +73,8 @@ The two notes give four mark sets. Here is every mark set in both record states.
 
 - **Setting the levers.** Tap a lever to flip it up or down. It clicks over on touch-down. The lamp shows a "?" until **Try it**.
 - **Try it.** The lamp glows bright or dim with a soft pentatonic note (a higher note for bright), and the setup becomes a record card on the bench. A repeated setup lights its existing card instead of adding one, and the pet says "Same setup, same light. A repeat adds nothing new." A second separating test adds its card and says nothing more. There are at most four cards.
-- **Free moves.** Flipping levers, trying any setup (repeats and uninformative ones included), tapping a record card or a note card to hear it, setting and clearing marks, and an incomplete Check are always free. Nothing is refused, and there is no limit on tries.
-- **Misses.** A miss is counted only at a complete Check whose marks are wrong. Count **one miss per distinct wrong mark set within a record state**. Checking the same wrong marks again in the same state replays the explanation, free. A new record that changes the state lets the same marks count once more, because they are now a different wrong answer.
+- **Free moves.** Flipping levers, trying any setup (repeats and uninformative ones included), tapping a record card or a note card to hear it, setting and clearing marks, and an incomplete Check are always free. Once the opening Check has passed, nothing is refused and there is no limit on tries. Before it, only the levers are latched, so that the question "can these records decide?" is asked on its own.
+- **Misses.** A miss is counted only at a complete Check whose marks are wrong. Count **one miss per distinct wrong mark set within a record state** (undecided or decided, the two kinds above; not the set of setups). Checking the same wrong marks again in the same state replays the explanation, free. The first separating try moves the state from undecided to decided, so the same marks can count once more there, because they are now a different wrong answer; a later try never changes the state, so it can never make a mark set count again. At most three wrong mark sets exist per state, six misses in all.
 - **Why a miss counts here.** A Check is a worked claim: the records and the notes are on screen and settle the answer before Check is pressed, as with Check in Sorting Machine or Ramp Race's *What can we tell?*.
 - **The second counted miss** gives one assisted hint, and **Help** asks for one at any time. Count each new hint once; repeating the current hint with no change replays it, free.
 - **Predictions are not shown by default.** Each note card shows its rule as a picture (its lever up, then a bright lamp), not a forecast for the current setup. Working out what each note predicts for a setup is the whole of the test-choosing step; showing both forecasts all the time would turn the round into spotting two different lamps. The hint shows them.
@@ -83,7 +83,7 @@ The two notes give four mark sets. Here is every mark set in both record states.
 
 1. **Undecided, the opening Check not yet passed:** light each record with both notes' predictions beside it: "Both down: both notes say dim. Both up: both notes say bright. Both notes fit." The player marks.
 2. **Undecided, the opening Check passed:** pick the separating setup that sets P up and Q down (a fixed choice, so a replayed hint does not move), glow its two levers in their target positions, and show both predictions: "Shell up, feather down: the shell note says bright, the feather note says dim. Try it." The player flips and tries.
-3. **Decided, marks wrong or unset:** ring the first separating record and the note it rules out, and say the line from the decided rows above. The player marks and checks.
+3. **Decided, marks wrong or unset:** ring the first separating record and the note it rules out, and say the line from the decided *both fit* row ("Record [n] rules out the [other note]: …"), then "The [true note] fits every record." The player marks and checks.
 
 From any state, following the hints closes the case in at most three hints. The hint never names the true note without a record that shows it, as the study requires. Help in the decided state with the right marks already set says "These marks fit the records. Check them.", free.
 
@@ -135,11 +135,11 @@ A miss or a hint plays its lines in sequence (for example the record's setup, it
    **Checks:** typecheck and unit tests, which cover:
    - the truth table: for both true notes and both lever pairs, each setup's result is the true note's prediction, the opening records fit both notes, exactly the two mixed setups separate them, and repeats add no card;
    - the verdict table: every mark set in both record states gives the verdict and explanation above, and only the right decided marks close the case;
-   - miss counting: one per distinct wrong mark set per record state, a re-Check of the same marks free, an incomplete Check free;
+   - miss counting: one per distinct wrong mark set per record-state kind (undecided or decided), a re-Check of the same marks free, an incomplete Check free, and a second separating try never making the same marks count again;
    - that lever flips, tries, repeats, uninformative tests and card taps never change misses or hints;
    - the hint walk: from every reachable state, following hints closes the case in at most three hints, and no hint names the true note before a separating record exists;
    - the latch: no try is possible before the opening Check passes;
-   - the seeded draw: pair, side, true note and shade vary across seeds;
+   - the seeded draw: pair, side and shade vary across seeds, the true note is a fixed function of the look, identical looks always give the same true note, and each note is true in eight of the sixteen looks;
    - voice coverage, the layout test, and registry, lands and paging.
 
    **Model wording:** under the study's decision 4, the building session checks the tag, instruction, closing line and grown-ups' wording against reputable sources (museums, universities, government science agencies, established curricula), lists them in the study and records the check in its verification entry.

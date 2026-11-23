@@ -1,7 +1,7 @@
 # 2026-11-23 — Workshop Detective definition (PR #2060)
 
 **Changed:**
-- `docs/definitions/workshop-detective.md` (new): inquiry slice Q6 as its own `grownup` game on Lantern Lake, level 1 only. A labelled made-up bench lamp with two levers and two notes; the four setups and each note's prediction; why both-down/both-up is the only opening pair both notes fit; the two separating tests; the verdict and explanation for every mark set in both record states; free tries and repeats; the opening latch; the three-step hint walk; a new lamp each round so the true note may change honestly; upright layout and fold rule; a finite voice list; one build batch.
+- `docs/definitions/workshop-detective.md` (new): inquiry slice Q6 as its own `grownup` game on Lantern Lake, level 1 only. A labelled made-up bench lamp with two levers and two notes; the four setups and each note's prediction; why both-down/both-up is the only opening pair both notes fit; the two separating tests; the verdict and explanation for every mark set in both record states; free tries and repeats; the opening latch; the three-step hint walk; a new lamp each round whose look fixes its true note, so the same-looking lamp never changes rule; upright layout and fold rule; a finite voice list; one build batch.
 - The inquiry study's Q6 slice, candidates row and example (the Ramp Race level 8 proposal marked superseded by decision 3); IDEAS, ROADMAP, study backlog and recommendation rows; *What can we tell?*'s two pointers to Q6.
 - READY: Next ten line 330 (this definition) replaced by the `workshop-detective 1` build line.
 
