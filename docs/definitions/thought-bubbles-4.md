@@ -1,6 +1,6 @@
 # Thought Bubbles, level 4 (definition)
 
-**Built:** build batch 1, levels 1–3 upright (PR #2020, 2026-11-22); to build level 4, read “Build batches” item 2 and the sections above it. Note for batch 2: on the 390 × 844 phone the upright level-2 screen fits and clears Home and the guide, but its content ends about halfway down, leaving the lower half empty; batch 2 re-lays the upright top row and moves Replay under the cards, so use that to use the height rather than patching it now.
+**Built:** levels 1–4 (batch 1, upright levels 1–3, PR #2020; batch 2, level 4 *Two bubbles*, built 2026-11-22, PR #2023); nothing is left to build here, and the next Thought Bubbles level is LM4 *Who is telling?* (not yet defined). Batch 2 departed from this definition in six places: (1) `Tally` counts wrong cards and glows per bubble by index (`wrong(bubble)`, `showMe(stage, bubble)`) instead of a `newQuestion()` reset, because the bubbles are filled in either order; (2) the per-template `.helped` line names no friend (lines are slot-free and either or both friends may need showing), and two friends at the wrong place are shown once together; (3) the two owners stand beside the red box and between the two floor places, not both centre-front, so no friend hides a place; (4) a friend who stays is said to stay "in the room and watches" (no rug or reading prop); (5) the level 4 demonstration plays two of the three stories (the full round took 69.6 s against the 75 s demo cap; two take 47.4 s); (6) a finder does not pick the thing up: it hops on its place, so the second friend can still be shown it. Tidy-ups: level 2's move animation is now the shared `moveThing` helper used by levels 2 and 4, and the mover's waiting spot is one constant.
 
 **Status: ready to build in two batches, no review gate.** Defined 2026-11-22 as slice LM2 of the [literature and meaning study](../deep-dives/subjects/literature-meaning.md#build-slices-in-order), from its [audience row U](../deep-dives/subjects/literature-meaning.md#a-first-games-ladder-thought-bubbles-13) and [candidates row LM2](../deep-dives/subjects/literature-meaning.md) (*Two bubbles*: two friends, two bubbles, different things seen; RL.3.6). The study's slice line said "after 1–3 are played"; the developer admitted Thought Bubbles 4 for definition on the study's lean without waiting for play on [2026-11-17](../archive/DECISIONS-2026-11-17.md#games), and [OBSERVATIONS](../OBSERVATIONS.md) has no Thought Bubbles notes yet, so nothing below draws on observed play. It extends the built [levels 1–3](thought-bubbles.md) (PR #1122) and changes none of them. Docs only: no code, voice line or art exists yet.
 
@@ -140,7 +140,7 @@ Instructions use `ctx.instruct`; everything else `ctx.say`. Every line is slot-f
 ## Build batches
 
 1. **`thought-bubbles upright`, levels 1–3, built 2026-11-22 (PR #2020)** (phone play; existing-game change to layout): `upright: true`, an `upright.test.ts` walking levels 1–3 through `thoughtLayout` on the 768 × 1024 view (whose portrait branch already exists), and any placement fix that test finds. No rule or speech change.
-2. **`thought-bubbles 2`, level 4, *Two bubbles*** (batch 1 is built): everything above.
+2. **`thought-bubbles 2`, level 4, *Two bubbles*, built 2026-11-22 (PR #2023)**: everything above, with the departures in the Built line.
 
 ## Check tier
 
