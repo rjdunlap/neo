@@ -1,1 +1,0 @@
-**Define `word-glue` *Name the new thing* (VW3)** (docs only; after level 6, built; school: name an invented pictured thing from two familiar parts and hear what the name says about it). [Study](../../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
