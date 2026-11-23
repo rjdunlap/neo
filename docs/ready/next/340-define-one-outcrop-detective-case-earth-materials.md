@@ -1,1 +1,0 @@
-**Define one Outcrop Detective case (earth materials E6)** (docs only, links and diff): freeze the four-event rock-layer case, its masked clue variant, all accepted histories, the preview and hint path, and the host and band. [Study](../../deep-dives/subjects/earth-materials.md#build-slices-in-order)
