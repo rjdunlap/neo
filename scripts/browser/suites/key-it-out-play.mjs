@@ -325,7 +325,7 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     await tapNode('neo.scene.game.help');
     s = await state();
     assert.equal(s.hints, 1);
-    assert.equal(s.tab, 'key');
+    assert.equal(s.tab, s.hint.line === 'note' ? 'table' : 'key', 'a hint opens the page its working is on');
     assert.match(s.note, /Name sketch \d+ \w+\.$/);
     await giveName(s.hint.name);
     await settled();

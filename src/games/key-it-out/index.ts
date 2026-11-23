@@ -101,6 +101,8 @@ class KeyItOut implements Game {
   private readonly score = newTally();
   private readonly counted = new Misses();
   private gen = 0;
+  /** Bumped to stop a reading of the notes. */
+  private reading = 0;
   private L: Layout;
   private clock = 0;
   private noteText = NOTE_START;
@@ -211,7 +213,9 @@ class KeyItOut implements Game {
       answer: this.board.sketches.map((s) => s.name),
       misses: this.score.misses,
       hints: this.score.hints,
-      hint: this.hintNow ? { sketch: this.hintNow.sketch, name: this.hintNow.name } : null,
+      hint: this.hintNow
+        ? { sketch: this.hintNow.sketch, name: this.hintNow.name, line: this.hintNow.line }
+        : null,
       fault: this.faultNow?.kind === 'key' ? this.faultNow.q : null,
       tableFault: this.faultNow?.kind === 'table' ? this.faultNow.habit : null,
       note: this.noteText,
@@ -233,6 +237,7 @@ class KeyItOut implements Game {
   private choose(i: number, fromPage = false) {
     if (this.phase !== 'play') return;
     sfx.tick();
+    this.reading++;
     if (this.chosen !== i) {
       this.chosen = i;
       this.trail = [];
@@ -296,11 +301,12 @@ class KeyItOut implements Game {
     const s = this.board.sketches[this.chosen];
     if (this.phase !== 'play' || !s.notes.length) return;
     sfx.tick();
-    const g = this.gen;
+    const g = ++this.reading;
     const own = this.board.table!.get(s.name)!;
     for (const h of s.notes) {
       await this.ctx.say(line(noteLine(h, own[h])));
-      if (g !== this.gen) return;
+      // Choosing another sketch, naming, or tapping the notes again stops the reading.
+      if (g !== this.reading || this.finished) return;
     }
   }
 
@@ -309,6 +315,7 @@ class KeyItOut implements Game {
   /** Give `name` to the chosen sketch. */
   giveName(name: number) {
     if (this.phase !== 'play') return;
+    this.reading++;
     const on = this.page.names.indexOf(name);
     if (this.page.stamped[this.chosen] || (on >= 0 && this.page.stamped[on])) {
       sfx.tick();
@@ -423,7 +430,9 @@ class KeyItOut implements Game {
     this.faultNow = null;
     this.trail = [];
     this.taken.clear();
-    if (this.L.upright || this.tab === 'table') this.tab = 'key';
+    // A hint a note settles opens the Table at the name's row; any other, the Key at the name's branch.
+    if (h.line === 'note') this.tab = 'table';
+    else if (this.L.upright || this.tab === 'table') this.tab = 'key';
     this.key.reveal(this.key.endOf(h.name).q);
     this.table?.reveal(this.table.rowOf(h.name));
     this.noteText = hintWorking(this.board, h);
@@ -519,6 +528,8 @@ class KeyItOut implements Game {
     const p = L.plate;
     // The sketch's number, and under it the warden's margin notes, each with its habit's icon.
     const own = this.board.table?.get(chosen.name);
+    // The notes are a target only when the sketch has some.
+    this.notesSpot.eventMode = chosen.notes.length ? 'static' : 'none';
     text(this.stripTexts, `Sketch ${this.chosen + 1}`, 30, p.x, chosen.notes.length ? 46 : 78);
     chosen.notes.forEach((h, k) => {
       const y = 84 + k * 30;
@@ -725,7 +736,10 @@ class KeyItOut implements Game {
         },
       };
     }
-    if (!this.shown().showKey) return { tap: { on: this.keyTab, ...centre(this.L.tabs.key) } };
+    const { showKey, showTable } = this.shown();
+    if (showTable && this.table)
+      return { tap: { on: this.table, ...this.tableSpot({ row: this.table.rowOf(h.name), cell: -1 }) } };
+    if (!showKey) return { tap: { on: this.keyTab, ...centre(this.L.tabs.key) } };
     const spot = this.keySpot(this.nameEnd(h.name));
     return { tap: { on: this.key, ...spot } };
   }
