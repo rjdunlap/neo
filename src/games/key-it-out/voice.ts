@@ -3,7 +3,21 @@
  * whole line with no slots and renders as a clip; the sketch numbers and names of a fault or hint are on the screen
  * note, which is fuller than the speech. `voice.test.ts` checks a line exists for everything a board can produce.
  */
-import { NAMES, PARTS, VALUES, barredWords, questionWords, shownWords } from './logic.ts';
+import {
+  HABITS,
+  HABIT_VALUES,
+  NAMES,
+  PARTS,
+  VALUES,
+  barredWords,
+  cellLine,
+  cellWords,
+  habitWords,
+  noteLine,
+  noteWords,
+  questionWords,
+  shownWords,
+} from './logic.ts';
 
 const fixed = {
   'game.key-it-out': ['Key It Out'],
@@ -13,6 +27,7 @@ const fixed = {
   'key.done': ['Every sketch has its name.'],
   'key.hint.one-name': ['Only one name still fits this sketch.'],
   'key.hint.one-sketch': ['Only this sketch can take this name.'],
+  'key.hint.note': ['A note and the table settle this sketch.'],
 };
 
 const lines: Record<string, string[]> = {};
@@ -26,6 +41,18 @@ PARTS.forEach((part, p) =>
       if (w !== v)
         lines[`key.fault.${part}.yes.${value}.${shown}`] = [
           `The key reaches this name through ${shownWords(p, v)}. This one has ${shownWords(p, w)}.`,
+        ];
+    });
+  }),
+);
+HABITS.forEach((habit, h) =>
+  HABIT_VALUES[habit].forEach((value, v) => {
+    lines[cellLine(h, v)] = [`${cellWords(h, v)}.`];
+    lines[noteLine(h, v)] = [noteWords(h, v)];
+    HABIT_VALUES[habit].forEach((other, w) => {
+      if (w !== v)
+        lines[`key.fault.${habit}.${value}.${other}`] = [
+          `The table says this one ${habitWords(h, v)}. The note says it ${habitWords(h, w)}.`,
         ];
     });
   }),
