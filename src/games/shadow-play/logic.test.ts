@@ -8,6 +8,7 @@ import {
   apart,
   boardFor,
   boardKey,
+  candidateArrangements,
   boardsPerRound,
   countsAsMiss,
   demoBoard,
@@ -27,6 +28,8 @@ import {
   scaleAt,
   shadowHeight,
   slide,
+  swap,
+  turnCutout,
   valuesAt,
   wholeSquares,
   type Arrangement,
@@ -100,18 +103,39 @@ describe('Shadow Play pools', () => {
     expect({ near, joinedFaceOn, dark }).toEqual({ near: 44496, joinedFaceOn: 30672, dark: 30516 });
   }, 60_000);
 
+  it.each([
+    [3, 52056, 51627],
+    [4, 41976, 38050],
+  ])(
+    'derives the level %i pool from the full light model',
+    (level, candidates, unique) => {
+      let total = 0;
+      let kept = 0;
+      for (const solution of candidateArrangements(level)) {
+        total++;
+        if (inPool(level, solution)) kept++;
+      }
+      expect({ total, kept }).toEqual({ total: candidates, kept: unique });
+    },
+    60_000,
+  );
+
   it('samples pooled boards whose start has every cut-out off its solution mark, never repeating the last', () => {
     const rng = new Rng(7);
-    for (const level of [1, 2]) {
+    for (const level of [1, 2, 3, 4]) {
       let last: string | undefined;
       for (let i = 0; i < 300; i++) {
         const board = boardFor(level, rng, last);
         expect(inPool(level, board.solution)).toBe(true);
         expect(boardKey(board.solution)).not.toBe(last);
+        if (level === 4)
+          expect(board.start.some((p, rail) => p.cutout !== board.solution[rail].cutout)).toBe(true);
         board.start.forEach((p, rail) => {
-          expect(p.cutout).toBe(board.solution[rail].cutout);
+          const solution =
+            level === 4 ? board.solution.find((want) => want.cutout === p.cutout)! : board.solution[rail];
+          expect(p.cutout).toBe(solution.cutout);
           expect(p.turned).toBe(false);
-          expect(p.mark).not.toBe(board.solution[rail].mark);
+          expect(p.mark).not.toBe(solution.mark);
         });
         last = boardKey(board.solution);
       }
@@ -121,15 +145,15 @@ describe('Shadow Play pools', () => {
   });
 
   it('puts the how-to card’s boards in their pools', () => {
-    for (const level of [1, 2]) expect(inPool(level, demoBoard(level).solution)).toBe(true);
+    for (const level of [1, 2, 3, 4]) expect(inPool(level, demoBoard(level).solution)).toBe(true);
     const tent = demoBoard(1);
     expect(part(tent.start[1]).h * 2).toBe(part(tent.solution[1]).h);
     expect(demoBoard(2).solution.map((p) => part(p).h)).toEqual([4, 6, 6]);
   });
 
   it('has a ladder and a description for each level', () => {
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 2 });
-    expect(describeLevel(1)).not.toBe(describeLevel(2));
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 4 });
+    expect(new Set([1, 2, 3, 4].map(describeLevel)).size).toBe(4);
   });
 });
 
@@ -139,7 +163,7 @@ describe('Shadow Play answers, misses and hints', () => {
 
   it('accepts only the solution among a sampled board’s arrangements, and a wrong one always names a rail', () => {
     for (const board of sampled) {
-      const open = openArrangements(board.solution.map((p) => p.cutout));
+      const open = [...openArrangements(board.solution.map((p) => p.cutout))];
       expect(open).toHaveLength(64);
       const right = open.filter((arr) => accepted(board, arr));
       expect(right).toHaveLength(1);
@@ -188,6 +212,49 @@ describe('Shadow Play answers, misses and hints', () => {
   it('never opens a level 1 board already finished, so nothing at level 1 is checked or missed', () => {
     for (const board of sampled.filter((b) => b.level === 1))
       expect(accepted(board, board.start)).toBe(false);
+  });
+
+  it('turns a cut-out and swaps whole pieces without changing their settings', () => {
+    const { start } = demoBoard(4);
+    const turned = turnCutout(start, 0);
+    expect(turned[0]).toEqual({ ...start[0], turned: true });
+    expect(turnCutout(turned, 0)).toEqual(start);
+    expect(swap(turned, 0, 1)).toEqual([turned[1], turned[0], turned[2]]);
+    const seen = new Set<string>();
+    for (const arrangement of [start, turned, swap(start, 0, 1)])
+      expect(countsAsMiss(seen, 0, arrangement)).toBe(true);
+    expect(countsAsMiss(seen, 0, swap(turned, 0, 0))).toBe(false);
+  });
+
+  it.each([3, 4])('exhausts every starting arrangement on eight level %i boards', (level) => {
+    const rng = new Rng(47);
+    for (let i = 0; i < 8; i++) {
+      const board = boardFor(level, rng);
+      let arrangements = 0;
+      let winners = 0;
+      for (const start of openArrangements(
+        board.solution.map((p) => p.cutout),
+        level,
+      )) {
+        arrangements++;
+        if (accepted(board, start)) winners++;
+        else if (!firstWrong(board, start)) throw new Error('wrong shadow without an explanation');
+        let arr = start;
+        let walked = 0;
+        for (let hint = hintFor(board, arr); hint; hint = hintFor(board, arr)) {
+          if (++walked > valuesAt(level)) throw new Error('hint walk did not converge');
+          const next = follow(arr, hint);
+          for (let rail = 0; rail < hint.rail; rail++)
+            if (next[rail] !== arr[rail]) throw new Error('hint unsettled an earlier rail');
+          if (hint.kind === 'swap' && next[hint.rail].cutout !== board.solution[hint.rail].cutout)
+            throw new Error('swap hint brought the wrong cut-out');
+          arr = next;
+        }
+        if (!accepted(board, arr)) throw new Error('hint walk did not fill the outline');
+      }
+      expect(arrangements).toBe(level === 3 ? 512 : 3072);
+      expect(winners).toBe(1);
+    }
   });
 
   it('snaps a slide to the nearest mark', () => {

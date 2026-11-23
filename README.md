@@ -308,7 +308,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Sum Crates](docs/games/sum-crates.md) | Lantern Lake | 3 | a small stack of wooden crates with a number sign at the start of each row and column: she taps a crate and then a numbered fruit (or drags one in) so every line adds up to its sign with no fruit twice in the same line; the board has exactly one answer, found by using the crossing line to choose between the pairs that make a sign. |
 | [Tide Tables](docs/games/tide-tables.md) | Lantern Lake | 2 | read four tide heights and tap a time for each of three harbor jobs. |
 | [Truth Bridge](docs/games/truth-bridge.md) | Lantern Lake | 4 | two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross. |
-| [Shadow Play](docs/games/shadow-play.md) | Lantern Lake | 2 | a lit lamp, a cloth screen and three flat cut-outs on rails; slide each cut-out nearer the lamp or the screen until its shadow fills the outline of tonight's skyline. |
+| [Shadow Play](docs/games/shadow-play.md) | Lantern Lake | 4 | a lit lamp, a cloth screen and three flat cut-outs on rails; slide each cut-out nearer the lamp or the screen until its shadow fills the outline of tonight's skyline. |
 | [Fence the Field](docs/games/fence-the-field.md) | Lantern Lake | 2 | dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play. |
 
 <!-- end generated -->

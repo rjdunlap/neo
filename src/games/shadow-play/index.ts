@@ -11,7 +11,15 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { distanceAt, markX, shadowLayout, type Box, type RailRow, type ShadowLayout } from './layout';
+import {
+  distanceAt,
+  markX,
+  shadowLayout,
+  turnArea,
+  type Box,
+  type RailRow,
+  type ShadowLayout,
+} from './layout';
 import {
   GRID_H,
   GRID_W,
@@ -35,6 +43,8 @@ import {
   shadowHeight,
   sizeLine,
   slide,
+  swap,
+  turnCutout,
   type Arrangement,
   type Board,
   type Cutout,
@@ -143,6 +153,9 @@ class Round implements Game {
   private readonly handles: { node: Container; art: Graphics; drag: DragHandle }[];
   private readonly numbers: Text[][];
   private readonly sizes: Text[];
+  private readonly diagnostics: Text[];
+  private readonly chips: Container[];
+  private selectedChip: number | null = null;
   private readonly helpButton: Button;
   private readonly lightButton: Button;
   private readonly boards: Board[];
@@ -161,7 +174,9 @@ class Round implements Game {
   private windows = 0;
   private busy = false;
   /** Bumped by every touch, so a hint waiting behind a miss line never speaks over the player. */
-  private turn = 0;
+  private speechTurn = 0;
+  private handlePointer: number | null = null;
+  private ignoreDrag = false;
   private view: View;
   private layout: ShadowLayout;
 
@@ -185,7 +200,7 @@ class Round implements Game {
     this.rows = [0, 1, 2].map((rail) => {
       const row = new Container();
       onTap(row, (e) => {
-        if (this.busy) return;
+        if (this.settling()) return;
         const x = this.root.toLocal(e.global).x;
         this.touch(rail);
         this.move(rail, nearestMark(distanceAt(this.layout.rails[rail], x)));
@@ -207,6 +222,27 @@ class Round implements Game {
       this.root.addChild(t);
       return t;
     });
+    this.diagnostics = this.rows.map(() => {
+      const text = label('', 21);
+      text.eventMode = 'none';
+      this.root.addChild(text);
+      return text;
+    });
+    this.chips = this.rows.map((_, rail) => {
+      const chip = new Container();
+      onTap(chip, () => this.pickChip(rail));
+      chip.visible = level === 4;
+      this.root.addChild(chip);
+      return chip;
+    });
+    ctx.listen(
+      window,
+      'pointercancel',
+      (e) => {
+        if ((e as PointerEvent).pointerId === this.handlePointer) this.ignoreDrag = true;
+      },
+      { capture: true },
+    );
     this.handles = [0, 1, 2].map((rail) => {
       const node = new Container();
       const art = new Graphics();
@@ -215,6 +251,12 @@ class Round implements Game {
       this.root.addChild(node);
       let downX = 0;
       let spoke = false;
+      node.on('pointerdown', (e) => {
+        if (this.settling()) return;
+        downX = this.root.toLocal(e.global).x;
+        this.handlePointer = e.pointerId;
+        this.ignoreDrag = false;
+      });
       const drag = draggable(node, ctx.tw, {
         keepGrab: true,
         onPick: () => {
@@ -222,35 +264,38 @@ class Round implements Game {
           sfx.pop(5);
         },
         onMove: (x) => {
+          if (this.ignoreDrag) {
+            node.position.set(drag.home.x, drag.home.y);
+            return;
+          }
           const r = this.layout.rails[rail];
           const at = Math.min(markX(r, 6), Math.max(markX(r, 2), x));
           node.position.set(at, r.row.y);
           this.sliding = { rail, distance: distanceAt(r, at) };
-          if (this.lit && this.ctx.level > 1) {
-            // The lamp goes out with the move, and the rail's highlight with it.
-            this.dark();
-            this.render();
-          } else this.drawScreen();
+          if (this.ctx.level === 1) this.drawScreen();
         },
         onDrop: () => {
           const from = this.sliding;
           this.sliding = null;
-          if (!drag.tapped && from) this.move(rail, nearestMark(from.distance));
+          this.handlePointer = null;
+          if (this.ignoreDrag) {
+            this.render();
+            return true;
+          }
+          const mark = nearestMark(
+            from && !drag.tapped ? from.distance : distanceAt(this.layout.rails[rail], downX),
+          );
+          if (drag.tapped && level >= 3) {
+            this.change(turnCutout(this.arr, rail));
+            sfx.marimba(this.arr[rail].turned ? 4 : 6);
+          } else if (mark !== this.arr[rail].mark) this.move(rail, mark);
           else {
-            // The marks sit closer than the handle is wide, so a still tap on the handle that is nearer another mark
-            // moves the cut-out there; a tap on the cut-out where it stands says its size again, free.
-            const mark = nearestMark(distanceAt(this.layout.rails[rail], downX));
-            if (mark !== this.arr[rail].mark) this.move(rail, mark);
-            else {
-              if (!spoke) void this.ctx.say(line(sizeLine(this.arr[rail].cutout)));
-              this.render();
-            }
+            if (drag.tapped && !spoke) void this.ctx.say(line(sizeLine(this.arr[rail].cutout)));
+            this.render();
           }
           return true;
         },
       });
-      // Heard before the drag's own listener is asked where the finger went down.
-      node.on('pointerdown', (e) => (downX = this.root.toLocal(e.global).x));
       return { node, art, drag };
     });
     this.helpButton = button(this.root, () => this.askForHint());
@@ -267,17 +312,52 @@ class Round implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.ctx.level === 1 ? 'shadow.start.lit' : 'shadow.start.dark');
+    const { level } = this.ctx;
+    const instruction =
+      level === 1
+        ? 'shadow.start.lit'
+        : level === 2
+          ? 'shadow.start.dark'
+          : level === 3
+            ? 'shadow.start.turn'
+            : 'shadow.start.swap';
+    void this.ctx.instruct(instruction);
   }
 
   /** The first touch of a rail's cut-out on a board says its size. */
   private touch(rail: number) {
-    this.turn++;
-    const key = `${this.at}:${rail}`;
+    this.speechTurn++;
+    const key = `${this.at}:${rail}:${sizeLine(this.arr[rail].cutout)}`;
     if (this.heard.has(key)) return false;
     this.heard.add(key);
     void this.ctx.say(line(sizeLine(this.arr[rail].cutout)));
     return true;
+  }
+
+  private settling() {
+    return this.busy || this.handles.some(({ drag }) => drag.dragging);
+  }
+
+  private pickChip(rail: number) {
+    if (this.settling()) return;
+    const spoke = this.touch(rail);
+    const selected = this.selectedChip;
+    if (selected !== null && selected !== rail) {
+      this.change(swap(this.arr, selected, rail));
+      sfx.marimba(6);
+      return;
+    }
+    this.selectedChip = selected === rail ? null : rail;
+    if (!spoke) void this.ctx.say(line(sizeLine(this.arr[rail].cutout)));
+    sfx.pop(5);
+    this.render();
+  }
+
+  private change(arr: Arrangement) {
+    this.arr = arr;
+    this.selectedChip = null;
+    this.dark();
+    this.render();
   }
 
   /** A move puts the lamp out again at the dark levels, and clears the hint and the last explanation. */
@@ -290,24 +370,24 @@ class Round implements Game {
   /** Sliding is always free; nothing is refused. At level 1 the board finishes by itself when the shadow fills the outline. */
   private move(rail: number, mark: Mark) {
     if (this.busy) return;
-    const changed = this.arr[rail].mark !== mark;
-    this.arr = slide(this.arr, rail, mark);
-    if (changed) {
-      this.dark();
-      sfx.marimba(MARKS.indexOf(mark) * 2);
+    if (this.arr[rail].mark === mark) {
+      this.render();
+      return;
     }
-    this.render();
+    this.change(slide(this.arr, rail, mark));
+    sfx.marimba(MARKS.indexOf(mark) * 2);
     if (this.ctx.level === 1 && accepted(this.board, this.arr)) void this.win();
   }
 
   private key() {
-    return `${this.at}:${this.arr.map((p) => p.mark).join(',')}`;
+    return `${this.at}:${boardKey(this.arr)}`;
   }
 
   /** Shows the next hint, counting it once until the arrangement changes. Null when every cut-out is in place. */
   private showHint(): Step | null {
     this.hint = hintFor(this.board, this.arr);
     if (!this.hint) return null;
+    if (this.hint.kind === 'swap') this.selectedChip = null;
     if (this.hintedAt !== this.key()) {
       hinted(this.counts);
       this.hintedAt = this.key();
@@ -318,8 +398,8 @@ class Round implements Game {
 
   /** The Help button, and the pause sheet's "show a hint". */
   askForHint() {
-    if (this.busy) return;
-    this.turn++;
+    if (this.settling()) return;
+    this.speechTurn++;
     this.wrong = null;
     const hint = this.showHint();
     if (hint) void this.ctx.say(line(hintLine(this.board, hint)));
@@ -331,8 +411,9 @@ class Round implements Game {
 
   /** Light checks a worked answer: the real shadow shows over the outline, and a wrong one names its first rail. */
   private light() {
-    if (this.busy || this.ctx.level === 1) return;
-    this.turn++;
+    if (this.settling() || this.ctx.level === 1) return;
+    this.speechTurn++;
+    this.selectedChip = null;
     this.lit = true;
     if (accepted(this.board, this.arr)) {
       void this.win();
@@ -347,9 +428,9 @@ class Round implements Game {
     this.wrong = wrong;
     this.hint = null;
     this.render();
-    const turn = this.turn;
-    void this.ctx.say(line(missLine(wrong))).then(() => {
-      if (!due || !this.ctx.alive || turn !== this.turn) return;
+    const turn = this.speechTurn;
+    void this.ctx.say(line(missLine(wrong, this.ctx.level))).then(() => {
+      if (!due || !this.ctx.alive || turn !== this.speechTurn) return;
       const hint = this.showHint();
       if (hint) void this.ctx.say(line(hintLine(this.board, hint)));
     });
@@ -483,7 +564,7 @@ class Round implements Game {
   /** Where a rail's table line and mark numbers sit under its handle. */
   private railLine(r: RailRow) {
     return this.layout.upright
-      ? { y: r.row.y + 16, numbers: r.row.y + 35 }
+      ? { y: r.row.y + 16, numbers: r.row.y + 42 }
       : { y: r.row.y + 34, numbers: r.row.y + 58 };
   }
 
@@ -508,36 +589,82 @@ class Round implements Game {
       lamp(g, r.lampX, at.y - 12, 0.8, this.lit);
       MARKS.forEach((mark, i) => {
         const x = markX(r, mark);
-        const target = pointed && this.hint?.mark === mark;
-        g.circle(x, at.y, target ? 12 : 7)
-          .fill(target ? swatch.yellow.fill : wood.fill)
-          .stroke({ color: wood.line, width: 3 });
+        const target = pointed && this.hint?.kind === 'mark' && this.hint.mark === mark;
+        if (this.ctx.level >= 3) {
+          g.moveTo(x, at.y)
+            .lineTo(x, at.numbers - 10)
+            .stroke({ color: wood.line, width: 2 });
+          g.circle(x, at.numbers, target ? 13 : 11)
+            .fill(target ? swatch.yellow.fill : swatch.white.fill)
+            .stroke({ color: wood.line, width: 2 });
+        } else {
+          g.circle(x, at.y, target ? 12 : 7)
+            .fill(target ? swatch.yellow.fill : wood.fill)
+            .stroke({ color: wood.line, width: 3 });
+        }
         this.numbers[rail][i].position.set(x, at.numbers);
       });
-      const { cutout } = this.arr[rail];
-      g.roundRect(chip.x - chip.w / 2, chip.y - chip.h / 2, chip.w, chip.h, 12).fill(swatch.peach.light);
+      const { cutout, turned } = this.arr[rail];
+      const swapHint = this.hint?.kind === 'swap' && (pointed || this.hint.from === rail);
+      const selected = this.selectedChip === rail;
+      const chipColor = selected ? swatch.lavender : swapHint ? swatch.yellow : swatch.peach;
+      g.roundRect(chip.x - chip.w / 2, chip.y - chip.h / 2, chip.w, chip.h, 12)
+        .fill(chipColor.light)
+        .stroke({
+          color: swapHint ? swatch.yellow.line : chipColor.line,
+          width: selected || swapHint ? 5 : 2,
+        });
       drawCutout(g, cutout, chip.x, chip.y + 6, 13, swatch.coral.line);
       this.sizes[rail].text = `${cutout.w} × ${cutout.h}`;
       this.sizes[rail].position.set(chip.x, chip.y + chip.h / 2 - 12);
+      place(this.chips[rail], chip);
+
+      const diagnostic = this.diagnostics[rail];
+      diagnostic.visible = (broken && this.ctx.level >= 3) || (pointed && this.hint?.kind === 'swap');
+      diagnostic.position.set((markX(r, 6) + r.handle.w / 2 + r.screenX) / 2, row.y);
+      if (diagnostic.visible && this.wrong) {
+        const got = part(this.wrong.placed);
+        const { want, fault } = this.wrong;
+        diagnostic.text =
+          fault === 'shape'
+            ? `${got.shape} → ${want.shape}`
+            : fault === 'wide' || fault === 'narrow'
+              ? `Width ${got.w} → ${want.w}`
+              : `Height ${got.h} → ${want.h}`;
+      } else if (diagnostic.visible) {
+        const { w, h } = part(this.board.solution[rail]);
+        diagnostic.text = `Outline ${w} × ${h}`;
+      }
 
       const handle = this.handles[rail];
       place(this.rows[rail], row);
-      handle.node.hitArea = new Rectangle(-r.handle.w / 2, -r.handle.h / 2, r.handle.w, r.handle.h);
+      // At turning levels the handle takes taps above the numbered marks. The row takes the taps on the numbers.
+      const touch =
+        this.ctx.level >= 3
+          ? turnArea(r, layout.upright)
+          : { x: -r.handle.w / 2, y: -r.handle.h / 2, ...r.handle };
+      handle.node.hitArea = new Rectangle(touch.x, touch.y, touch.w, touch.h);
       handle.drag.enabled = !this.busy;
-      if (!handle.drag.dragging) {
-        handle.node.position.set(markX(r, this.arr[rail].mark), row.y);
-        handle.drag.home.x = handle.node.x;
-        handle.drag.home.y = row.y;
-      }
+      const center = markX(r, this.arr[rail].mark);
+      handle.drag.home.x = center;
+      handle.drag.home.y = row.y;
+      if (!handle.drag.dragging || this.ignoreDrag) handle.node.position.set(center, row.y);
       const base = at.y - row.y;
       const a = handle.art.clear();
+      if (pointed && this.hint?.kind === 'turn')
+        a.roundRect(-r.handle.w / 2 + 4, -r.handle.h / 2 + 4, r.handle.w - 8, r.handle.h - 8, 14)
+          .fill({ color: swatch.yellow.fill, alpha: 0.32 })
+          .stroke({ color: swatch.yellow.line, width: 3 });
       a.rect(-2, base - 6, 4, 6).fill(wood.line);
-      drawCutout(a, cutout, 0, base - 6, u, swatch.coral.line);
-      // Its squares, so the size reads off the cut-out as well as the chip.
-      for (let i = 1; i < cutout.w; i++)
-        a.moveTo((i - cutout.w / 2) * u, base - 6).lineTo((i - cutout.w / 2) * u, base - 6 - cutout.h * u);
+      const width = cutout.w / (turned ? 2 : 1);
+      drawCutout(a, { ...cutout, w: width }, 0, base - 6, u, swatch.coral.line);
+      // The chip shows the original dimensions; the handle squares compress across the turned face.
+      for (let i = 1; i < cutout.w; i++) {
+        const x = (i / cutout.w - 0.5) * width * u;
+        a.moveTo(x, base - 6).lineTo(x, base - 6 - cutout.h * u);
+      }
       for (let i = 1; i < cutout.h; i++)
-        a.moveTo((-cutout.w / 2) * u, base - 6 - i * u).lineTo((cutout.w / 2) * u, base - 6 - i * u);
+        a.moveTo((-width / 2) * u, base - 6 - i * u).lineTo((width / 2) * u, base - 6 - i * u);
       if (cutout.w + cutout.h > 2) a.stroke({ color: swatch.coral.light, width: 2 });
     });
     for (const [control, at, main] of [
@@ -558,6 +685,10 @@ class Round implements Game {
   update() {}
 
   resize(view: View) {
+    if (this.handlePointer !== null) {
+      this.ignoreDrag = true;
+      this.sliding = null;
+    }
     this.view = view;
     this.render();
   }
@@ -566,6 +697,13 @@ class Round implements Game {
     if (this.busy || this.handles.some((h) => h.drag.dragging)) return null;
     const next = hintFor(this.board, this.arr);
     if (!next) return this.ctx.level > 1 ? { tap: { on: this.lightButton.node } } : null;
+    if (next.kind === 'turn') return { tap: { on: this.handles[next.rail].node } };
+    if (next.kind === 'swap') {
+      const selected = this.selectedChip;
+      if (selected === next.from) return { tap: { on: this.chips[next.rail] } };
+      if (selected === next.rail) return { tap: { on: this.chips[next.from] } };
+      return { tap: { on: this.chips[selected ?? next.from] } };
+    }
     const r = this.layout.rails[next.rail];
     return {
       drag: { on: this.handles[next.rail].node },
@@ -589,6 +727,7 @@ export const game: GameModule = {
   skills: [
     'how a point of light scales a shadow with distance',
     'reading a joined outline back into its parts',
+    'how turning a cut-out changes its shadow’s width',
   ],
   bands: ['grownup'],
   levels: (band) => rangeFor(LEVELS, band),
