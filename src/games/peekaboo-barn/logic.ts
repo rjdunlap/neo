@@ -30,7 +30,11 @@ export const NEWCOMER_LEVEL = 4;
 
 /** Who can hide at this level. Levels 1–3 and the entry levels keep the seven, so their seeds deal exactly as before. */
 export const poolFor = (level: number): readonly Animal[] =>
-  level >= NEWCOMER_LEVEL && !ENTRY_LEVELS.includes(level) ? ANIMALS : STICKER_ANIMALS;
+  level === SOUND_LEVEL
+    ? SOUND_ANIMALS
+    : level >= NEWCOMER_LEVEL && !ENTRY_LEVELS.includes(level)
+      ? ANIMALS
+      : STICKER_ANIMALS;
 
 export interface PeekPlan {
   /**
@@ -40,8 +44,10 @@ export interface PeekPlan {
    * pair: four animals stand up and she finds the one that matches both parts.
    * swap: they show and hide as in remember, then houses trade places in slow arcs, and she follows the one asked for.
    * went: one animal trots in and hops behind one of the houses while she watches; the others are empty.
+   * sound: animals peek as in find, and the ask is a sound ("Who says moo?"), not a name.
+   * hide: she drags an animal to a house of her choosing, and the seeker looks in the empty houses before hers.
    */
-  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap' | 'pair' | 'went';
+  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap' | 'pair' | 'went' | 'sound' | 'hide';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
@@ -56,8 +62,19 @@ export const ONE_DOOR_LEVEL = 16;
 export const SELF_OPEN_SECONDS = 6;
 /** Where did it go?: easier than level 3 (nobody to name or remember), so `order` places it between 2 and 3. */
 export const WENT_LEVEL = 17;
+/** Who says moo?: the sound is the question (Peekaboo Zoo's idea), so `order` places it between 3 and 4 for toddlers. */
+export const SOUND_LEVEL = 18;
+/** Hide it yourself: she hides, the seeker finds; nothing to get wrong, so `order` places it after level 4. */
+export const HIDE_LEVEL = 19;
 /** Easy rounds with IDs above the ladder, placed by a band's `order`. */
-export const ENTRY_LEVELS: readonly number[] = [ONE_DOOR_LEVEL, WENT_LEVEL];
+export const ENTRY_LEVELS: readonly number[] = [ONE_DOOR_LEVEL, WENT_LEVEL, SOUND_LEVEL, HIDE_LEVEL];
+/**
+ * Who says moo? asks among the first seven, less the bunny: "hop hop" is what it does, not a voice. Every sound and word
+ * here is its own (a rule test checks), so the sound asked names exactly one animal.
+ */
+export const SOUND_ANIMALS: readonly Animal[] = STICKER_ANIMALS.filter((a) => a !== 'bunny');
+/** The asked sound as said mid-sentence: "Who says moo?", "Who says quack quack?". */
+export const soundWord = (animal: Animal) => VOICES[animal].word.toLowerCase();
 
 export const PLANS: PeekPlan[] = [
   { mode: 'free', spots: 3, goal: 8 },
@@ -81,8 +98,10 @@ export const LEVELS: BandLevels = {
   // Level 16 (One door) is the easiest, so lap plays it first and then 1, 2 (see `order`).
   // Where did it go? (17) is her first question, after free play and before finding by name.
   lap: { min: 1, max: 17, order: [16, 1, 2, 17] },
-  toddler: { min: 1, max: 17, order: [1, 2, 17, 3, 4, 5] },
-  preschool: { min: 4, max: 8 },
+  // Who says moo? (18) asks by sound among two, after finding by name among two (3) and before three (4).
+  // Hide it yourself (19) turns the game round after finding among three (4): a breather with nothing to get wrong.
+  toddler: { min: 1, max: 19, order: [1, 2, 17, 3, 18, 4, 19, 5] },
+  preschool: { min: 4, max: 19, order: [4, 19, 5, 6, 7, 8] },
   // Four houses with three swaps and the two-clue questions are school only.
   prek: { min: 6, max: 13 },
   school: { min: 9, max: 15 },
@@ -92,12 +111,39 @@ const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
 
 const WENT: PeekPlan = { mode: 'went', spots: 2, goal: 4 };
 
+const SOUND: PeekPlan = { mode: 'sound', spots: 2, goal: 5 };
+
+const HIDE: PeekPlan = { mode: 'hide', spots: 3, goal: 3 };
+
 export const planFor = (level: number) =>
   level === ONE_DOOR_LEVEL
     ? ONE_DOOR
     : level === WENT_LEVEL
       ? WENT
-      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === SOUND_LEVEL
+        ? SOUND
+        : level === HIDE_LEVEL
+          ? HIDE
+          : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/**
+ * Hide it yourself: the houses (left to right) the seeker looks in, in order. At least one empty house first, sometimes
+ * every one, then the house she chose; no house twice. With a single house there is nothing to look in first.
+ */
+export function seekOrder(rng: Rng, spots: number, hiding: number): number[] {
+  const empty = rng.shuffle(Array.from({ length: spots }, (_, i) => i).filter((i) => i !== hiding));
+  const looks = empty.length ? rng.int(1, empty.length) : 0;
+  return [...empty.slice(0, looks), hiding];
+}
+
+/** Hide it yourself: wherever she lets go, the animal hides at the house nearest across (houses' x, left to right). */
+export function dropHouse(x: number, houses: readonly number[]): number {
+  let best = 0;
+  houses.forEach((hx, i) => {
+    if (Math.abs(x - hx) < Math.abs(x - houses[best])) best = i;
+  });
+  return best;
+}
 
 /** Where did it go?: who trots in, and which house (left to right) it hops behind. Every other house is empty. */
 export interface WentDeal {
@@ -177,6 +223,7 @@ export function spotToTap(
   target: Animal | null,
   last: number,
 ): number | null {
+  if (plan.mode === 'hide') return null;
   if (plan.mode !== 'free') {
     const i = animals.indexOf(target as Animal);
     return target && i >= 0 ? i : null;

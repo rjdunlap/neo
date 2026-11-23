@@ -22,7 +22,9 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Tap a picture in a name card to take it back out; tap the thing itself to hear the question again.',
     },
+    { from: 8, to: 8, text: 'Listen for the word, then join its action to the person.' },
     { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
+    { from: 8, to: 8, text: 'Touch an action or the person to hear it.' },
     {
       from: 5,
       to: 5,
@@ -34,6 +36,7 @@ export const HOW_TO: GameHowTo = {
     { from: 5, to: 5, text: 'Every question is answered and its thing has come alive.' },
     { from: 6, to: 6, text: 'Four pairs of pictures have gone to the shelf.' },
     { from: 7, to: 7, text: 'Five new things are named and have come alive.' },
+    { from: 8, to: 8, text: 'Five words are made and their someones have come alive.' },
   ],
   note: [
     {
@@ -80,6 +83,16 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'A name with the wrong part last is one miss and the pet says what that name would call; after two misses the thing and the last card glow, which counts as a hint.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Every word is a word she knows plus an ending, and the pet always says the whole word and what it means (someone who paints), never the ending alone. These endings are English only.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'A wrong action makes a real someone, and the pet says who; the same action again counts nothing more. After two different wrong actions the right one glows, which counts as a hint.',
     },
   ],
 };

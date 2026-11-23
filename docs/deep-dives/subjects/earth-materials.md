@@ -43,7 +43,7 @@ Read against [GAMES](../../GAMES.md), [IDEAS](../../IDEAS.md), [lands](../../../
 | Fossil Dig, existing seed | Expand from brushing/assembly toward contextual evidence; fossils include traces and plants, not just dinosaur bones. Coordinate named organisms and extinct-life narratives with the unstarted deep-time study |
 | Mole Mine, proposed arcade puzzle | Digging/falling-rock rule puzzle, not realistic soil or stratigraphy. Keep its identity separate and make no geology claim from its falling rules |
 
-**Placement:** Bubble Beach is a candidate for the youngest Sand Table; Tinker Lab for investigations. Check every band's `landLayout` capacity before registration. Discovery Marsh is a proposed zone, not an existing destination. A parent's Outcrop case may suit Lantern Lake only after registration/capacity decisions. No map expansion is needed to define any first round.
+**Placement:** Bubble Beach is a candidate for the youngest Sand Table; Tinker Lab for investigations. Check every band's `landLayout` capacity before registration. Discovery Marsh is a proposed zone, not an existing destination. The Outcrop definition (2026-11-23) defaults the case to school and grownup bands on Lantern Lake, region tinker-lab; the build's landLayout and paging tests confirm capacity. No map expansion is needed to define any first round.
 
 ## Similar games, apps and physical play
 
@@ -137,7 +137,7 @@ Co-play: maker and observer swap after one visible change; a child can describe 
 - Confirm dry Sand Table as the first definition, leaving its water/seeds proposal for later rather than promising the whole sandbox.
 - Decide whether Fossil Dig's reveal plus field-context action earns a new identity; coordinate species/extinction material with deep-time research.
 - Select a geology/model reviewer before realism claims, and a named practical reviewer before any soil/rock/field activity card is released. Screen-only finite definitions can proceed with these limits explicit.
-- Decide school-top versus grownup placement for Outcrop cases after observing older players; M is not a new band. Resolve destination capacity and creative-mode adaptation before registration.
+- Outcrop Detective is defaulted to school and grownup (levels 1–2 each band) by its definition; revisit after observing older players; M is not a new band. Resolve destination capacity and creative-mode adaptation before registration.
 
 ## Build slices in order
 
@@ -148,8 +148,8 @@ These are future single-session packets, not a scheduled queue. A definition pre
 3. **E3 — define sediment evidence (defined 2026-11-09, [definition](../../definitions/sand-table-sediment.md); next E4):** one reviewed breeze transport table and rung 4, with before/after trace and accepted observation answers. No water route scope. Docs only.
 4. **E4 — build that observation round (built 2026-11-10, branch `claude/sand-table-where-did-it-go`):** `sand-table` level 4 *Where did it go?* (school {3,4}) with one breeze puff over one of three authored hills, answer pads, Replay and a three-step hint. Comparisons/design rung 5–6 wait for their own model packet.
 5. **E5 — define Fossil Dig:** **Defined 2026-10-18** with deep-time D1: [definition](../../definitions/fossil-dig.md); **built 2026-10-21** as `fossil-dig` levels 1–2. Original scope: one reviewed leaf impression plus location record and two comparison references; neutral exploration, evidence-based Check/help and supported ending. Audit Splish Splash/Puzzle Pals ownership and deep-time boundary. Docs only; build in a separate session.
-6. **E6 — define Outcrop Detective:** freeze the four-event case, masked ambiguity variant, all accepted histories, input/preview semantics, meaningful hints and destination/range. Docs only.
-7. **E7 — build one Outcrop case:** new-game/new-interaction tier as resolved by E6; no faults, numerical dating or general geology simulator.
+6. **E6 — define Outcrop Detective:** (defined 2026-11-23, [definition](../../definitions/outcrop-detective.md); next E7) froze the four-event case, masked ambiguity variant, all accepted histories, input/preview semantics, meaningful hints and destination/range. Docs only.
+7. **E7 — build one Outcrop case:** `outcrop-detective` levels 1–2 (batch `outcrop-detective 1`), new-game tier as the definition's [Build batch](../../definitions/outcrop-detective.md#build-batch) lists; no faults, numerical dating or general geology simulator.
 8. **E8 — later definitions, one per session:** controlled sediment comparison/design, Rock Workshop, Plate Postcards, existing-game Rock Tray/Soil Window, then Landscape Stories page card with its reviewer dependency. Do not bundle these into the first build.
 
 ## What was built

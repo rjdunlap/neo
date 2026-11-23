@@ -14,6 +14,11 @@ export interface Plan {
   pairs?: boolean;
   /** With pairs: "first my nose, then my ears", in that order. */
   ordered?: boolean;
+  /**
+   * This one! (dive, levels below level 1): each asked part sparkles once as it is named, so the answer is shown, and
+   * nothing counts as a miss. A wrong part still giggles and repeats the request; the sparkle is not a hint.
+   */
+  show?: boolean;
   /** How much wider than `SCRUB_R` the brush is, so a palm-sized pat clears a palm-sized disc. */
   brush?: number;
 }
@@ -28,17 +33,34 @@ export const PLANS: Plan[] = [
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'nose'], shuffle: true, pairs: true },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'nose'], shuffle: true, pairs: true, ordered: true },
   { mode: 'pat', parts: ['tummy', 'head', 'cheeks'] },
+  // This one! plays between levels 2 and 3: level 3's questions, each shown with a sparkle as it is named.
+  { mode: 'parts', parts: ['tummy', 'ears', 'head'], show: true },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 9, order: [9, 1, 2] },
-  toddler: { min: 1, max: 4 },
+  toddler: { min: 1, max: 10, order: [1, 2, 10, 3, 4] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 8 },
 };
 
 /** Pats it takes to wash one patch of mud off in `pat` mode. */
 export const PATS_PER_PATCH = 3;
+
+/** Entry levels: easier than levels with lower IDs, placed by `order`; carried into a band without them, a player starts at its easiest. */
+export const ENTRY_LEVELS = [9, 10];
+
+/** Whether a wrong part counts as a miss: never on a level that shows the answer. */
+export const countsMisses = (plan: Plan) => !plan.show;
+
+/** Seconds the shown part's sparkle lasts: one pass up and back down, as it is named. */
+export const SHOW_FOR = 1.4;
+
+/** The shown sparkle's alpha `t` seconds after the part is named (one rise and fall), or null once it has ended. */
+export function showAlpha(t: number): number | null {
+  if (t < 0 || t >= SHOW_FOR) return null;
+  return 0.9 * Math.sin((Math.PI * t) / SHOW_FOR);
+}
 
 export function planFor(level: number): Plan {
   return PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -318,7 +340,7 @@ export const FRIEND: Record<Friend, FriendSpec> = {
 export const friendPoints = (friend: Friend, part: Part) => FRIEND[friend].points[part] ?? [];
 
 /**
- * Who bathes this round: a friend on a naming level from `FRIEND_FROM`, about a quarter of rounds; otherwise null (her
+ * Who bathes this round: a friend on a naming level from `FRIEND_FROM` (in the ladder: not on This one!), about a quarter of rounds; otherwise null (her
  * pet). `only` (a development hook for the browser checks) puts that friend in the tub on every naming level.
  */
 export function pickBather(
@@ -326,7 +348,9 @@ export function pickBather(
   rng: { next(): number; pick<T>(items: readonly T[]): T },
   only?: Friend,
 ): Friend | null {
-  if (level < FRIEND_FROM || planFor(level).mode !== 'parts') return null;
+  // This one! (`show`) plays before level 3 in the ladder, so her own pet bathes there.
+  const plan = planFor(level);
+  if (level < FRIEND_FROM || plan.mode !== 'parts' || plan.show) return null;
   if (only) return only;
   return rng.next() < FRIEND_SHARE ? rng.pick(FRIENDS) : null;
 }

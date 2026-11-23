@@ -1318,8 +1318,8 @@ class BlockTower implements Game {
     const xs = stack.map((t) => t.x!);
     const falls = topples(xs, 0);
     if (falls >= 0) {
+      // A topple is an experiment, never a miss: it only brings the help closer.
       this.busy = true;
-      this.misses++;
       this.wrongs++;
       // The ghosts of the falling blocks stay a moment with the line through their middle.
       const g = this.explain.clear();
@@ -1392,9 +1392,8 @@ class BlockTower implements Game {
       return void this.next();
     }
     if (stack.length === round.blocks) {
-      this.misses++;
+      // A full stack short of the star is an experiment too: explained, never a miss.
       this.wrongs++;
-      sfx.boing();
       await this.ctx.say('tower.not-yet');
       if (this.wrongs >= 2) this.reachHint();
     }

@@ -193,6 +193,100 @@ function cup(g: Graphics) {
   g.rect(-34, -12, 66, 10).fill(0xffffff);
 }
 
+/* Level 8's person and actions ------------------------------------------------------------------- */
+
+/** The person tile: a soft grey head and shoulders with no face, "someone who…". */
+function person(g: Graphics) {
+  g.circle(0, -30, 30).fill(swatch.white.line);
+  g.moveTo(-54, 58)
+    .lineTo(-54, 30)
+    .quadraticCurveTo(-54, 6, -26, 6)
+    .lineTo(26, 6)
+    .quadraticCurveTo(54, 6, 54, 30)
+    .lineTo(54, 58)
+    .closePath()
+    .fill(swatch.white.line);
+}
+
+/** A loaf in an oven. */
+function bake(g: Graphics) {
+  g.roundRect(-52, -50, 104, 100, 12).fill(swatch.white.light).stroke(line(swatch.white.line));
+  g.circle(-32, -34, 6).circle(-12, -34, 6).fill(ink);
+  g.roundRect(-38, -18, 76, 56, 10).fill(swatch.orange.light).stroke(line(swatch.white.line, 4));
+  loaf(g, 0, 18, 1);
+}
+
+function loaf(g: Graphics, x: number, y: number, k: number) {
+  g.ellipse(x, y, 28 * k, 15 * k)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
+  g.moveTo(x - 12 * k, y - 8 * k)
+    .lineTo(x - 6 * k, y + 2 * k)
+    .moveTo(x + 2 * k, y - 10 * k)
+    .lineTo(x + 8 * k, y)
+    .stroke(line(wood.line, 3));
+}
+
+/** One music note with its head at (x, y). */
+function note(g: Graphics, x: number, y: number, color = swatch.purple) {
+  g.moveTo(x + 11, y)
+    .lineTo(x + 11, y - 44)
+    .quadraticCurveTo(x + 30, y - 34, x + 26, y - 20)
+    .stroke(line(color.line, 5));
+  g.ellipse(x, y, 13, 10).fill(color.fill).stroke(line(color.line, 4));
+}
+
+function sing(g: Graphics) {
+  note(g, -36, 30);
+  note(g, -4, 6, swatch.blue);
+  note(g, 30, 34, swatch.pink);
+}
+
+function waves(g: Graphics, width = 50, rows = [-26, 0, 26]) {
+  for (const y of rows) {
+    g.moveTo(-width, y);
+    for (let x = -width; x < width; x += 25) g.quadraticCurveTo(x + 12.5, y - 14, x + 25, y);
+  }
+  g.stroke(line(swatch.blue.fill, 10));
+}
+
+/** A steering wheel. */
+function wheel(g: Graphics) {
+  g.circle(0, 0, 46).stroke(line(ink, 12));
+  g.moveTo(-44, 0).lineTo(44, 0).moveTo(0, 0).lineTo(0, 44).stroke(line(ink, 9));
+  g.circle(0, 0, 14).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+}
+
+/** An open book. */
+function book(g: Graphics) {
+  g.poly([-60, -34, 0, -24, 60, -34, 60, 38, 0, 48, -60, 38])
+    .fill(swatch.red.fill)
+    .stroke(line(swatch.red.line));
+  g.poly([-54, -32, -2, -22, -2, 40, -54, 30]).fill(0xffffff).stroke(line(swatch.white.line, 3));
+  g.poly([54, -32, 2, -22, 2, 40, 54, 30]).fill(0xffffff).stroke(line(swatch.white.line, 3));
+  for (const y of [-12, 2, 16])
+    g.moveTo(-44, y - 4)
+      .lineTo(-12, y + 2)
+      .moveTo(12, y + 2)
+      .lineTo(44, y - 4);
+  g.stroke(line(swatch.white.line, 3));
+}
+
+const BLOCKS = [swatch.red, swatch.yellow, swatch.blue] as const;
+
+function block(g: Graphics, x: number, y: number, color: (typeof BLOCKS)[number], side = 38) {
+  g.roundRect(x - side / 2, y - side / 2, side, side, 6)
+    .fill(color.fill)
+    .stroke(line(color.line, 4));
+}
+
+/** Three stacked blocks. */
+function build(g: Graphics) {
+  block(g, -4, 38, BLOCKS[0]);
+  block(g, 4, 0, BLOCKS[1]);
+  block(g, -2, -38, BLOCKS[2]);
+}
+
 /** A picture for one part or pool word, about 120 units across and centred on (0, 0). */
 export function partArt(key: string): Container {
   if (SHARED.has(key)) return picture(key);
@@ -258,7 +352,29 @@ export function partArt(key: string): Container {
     case 'paint':
       paint(g);
       break;
+    case 'person':
+      person(g);
+      break;
+    case 'bake':
+      bake(g);
+      break;
+    case 'sing':
+      sing(g);
+      break;
+    case 'swim':
+      waves(g);
+      break;
+    case 'drive':
+      wheel(g);
+      break;
+    case 'read':
+      book(g);
+      break;
+    case 'build':
+      build(g);
+      break;
     default:
+      g.label = 'fallback';
       g.circle(0, 0, 40).fill(0xeeeeee);
   }
   c.addChild(g);
@@ -293,12 +409,186 @@ const piece = (draw: (g: Graphics) => void, x = 0, y = 0): Graphics => {
   return g;
 };
 
-function runner(kind: 'dog' | 'horse', x: number, y: number, size: number) {
+/** A frozen critter for a made thing, standing with its feet at (x, y); about 250 units tall at size 1. */
+function critter(kind: keyof typeof CRITTERS, x: number, y: number, size: number) {
   const node = new Critter(CRITTERS[kind]);
   node.alive = false;
   node.scale.set(size);
   node.position.set(x, y);
   return node;
+}
+
+/** A hat or smock on a critter, drawn in its body's units. */
+const wear = (who: Critter, draw: (g: Graphics) => void) => {
+  const g = new Graphics();
+  draw(g);
+  who.attach(g);
+  return g;
+};
+
+/** Level 8: someone who does the action, about 160 units across like a made thing, with a short comes-alive motion. */
+function doerArt(word: string, c: Container, add: (...gs: Container[]) => Container[]): Made | null {
+  switch (word) {
+    case 'painter': {
+      const cat = critter('cat', -34, 72, 0.5);
+      wear(cat, (g) =>
+        g.roundRect(-70, -60, 140, 58, 24).fill(swatch.blue.light).stroke(line(swatch.blue.line, 6)),
+      );
+      const easel = piece(
+        (g) => {
+          g.moveTo(-26, 72)
+            .lineTo(0, -40)
+            .lineTo(26, 72)
+            .moveTo(0, -40)
+            .lineTo(0, 72)
+            .stroke(line(wood.line, 6));
+          g.rect(-34, -50, 68, 62).fill(0xffffff).stroke(line(wood.line, 5));
+        },
+        50,
+        0,
+      );
+      const stroke = new Graphics();
+      add(easel, stroke, cat);
+      return {
+        node: c,
+        alive: (t) => {
+          const w = Math.min(1, t / 1.1) * 52;
+          stroke.clear().roundRect(24, -32, w, 14, 7).fill(swatch.pink.fill);
+          if (t > 0.4)
+            stroke.roundRect(24, -10, Math.min(1, (t - 0.4) / 1.1) * 44, 14, 7).fill(swatch.green.fill);
+          cat.rotation = Math.sin(t * 9) * 0.05 * Math.max(0, 1.5 - t);
+        },
+      };
+    }
+    case 'baker': {
+      const bear = critter('bear', -18, 76, 0.52);
+      wear(bear, (g) => {
+        g.roundRect(-58, -262, 116, 30, 10).fill(0xffffff).stroke(line(swatch.white.line, 6));
+        for (const x of [-38, 0, 38]) g.circle(x, -290, 34);
+        g.fill(0xffffff).stroke(line(swatch.white.line, 6));
+        g.rect(-56, -268, 112, 18).fill(0xffffff);
+      });
+      const bread = piece((g) => loaf(g, 0, 0, 1.4), 46, 52);
+      const steam = new Graphics();
+      add(bear, bread, steam);
+      return {
+        node: c,
+        alive: (t) => {
+          steam.clear();
+          for (const [i, x] of [32, 48, 64].entries()) {
+            const k = (t * 0.8 + i * 0.3) % 1;
+            steam
+              .moveTo(x, 30 - k * 46)
+              .quadraticCurveTo(x + 8, 18 - k * 46, x, 6 - k * 46)
+              .stroke({ ...line(0xffffff, 5), alpha: Math.max(0, 1 - k) * Math.min(1, t * 2) });
+          }
+        },
+      };
+    }
+    case 'singer': {
+      const duck = critter('duck', -20, 76, 0.52);
+      const notes = [swatch.purple, swatch.blue, swatch.pink].map((color, i) =>
+        piece((g) => note(g, 0, 0, color), 44 + i * 14, -20),
+      );
+      add(duck, ...notes);
+      return {
+        node: c,
+        alive: (t) => {
+          notes.forEach((n, i) => {
+            const k = Math.max(0, t - i * 0.35);
+            n.y = -10 - k * 50;
+            n.x = 40 + i * 12 + Math.sin(k * 6) * 6;
+            n.alpha = k === 0 ? 0 : Math.max(0, 1 - k / 2);
+            n.scale.set(0.8);
+          });
+          duck.rotation = Math.sin(t * 6) * 0.06;
+        },
+      };
+    }
+    case 'swimmer': {
+      const dog = critter('dog', 0, 62, 0.5);
+      const water = piece((g) => {
+        g.roundRect(-80, 34, 160, 46, 20).fill(swatch.blue.light);
+        waves(g, 75, [36, 60]);
+      });
+      add(dog, water);
+      return {
+        node: c,
+        alive: (t) => {
+          dog.y = 62 + Math.sin(t * 5) * 6;
+          dog.rotation = Math.sin(t * 10) * 0.05;
+          water.x = Math.sin(t * 3) * 6;
+        },
+      };
+    }
+    case 'driver': {
+      const pig = critter('pig', -6, 40, 0.42);
+      const car = picture('car');
+      car.scale.set(1.3);
+      car.position.set(0, 26);
+      const beep = new Graphics();
+      add(pig, car, beep);
+      return {
+        node: c,
+        alive: (t) => {
+          car.y = 26 + Math.abs(Math.sin(t * 12)) * -3 * Math.max(0, 1 - t / 2);
+          pig.y = car.y + 14;
+          beep.clear();
+          if (t > 0.3 && t < 1.4)
+            beep
+              .moveTo(84, -8)
+              .lineTo(100, -18)
+              .moveTo(86, 4)
+              .lineTo(104, 4)
+              .moveTo(84, 16)
+              .lineTo(100, 26)
+              .stroke(line(swatch.orange.fill, 5));
+        },
+      };
+    }
+    case 'reader': {
+      const bunny = critter('bunny', 0, 72, 0.48);
+      const open = piece(book, 0, 60);
+      open.scale.set(0.7);
+      const page = piece((g) =>
+        g.poly([0, -22, 48, -30, 48, 28, 0, 36]).fill(0xffffff).stroke(line(swatch.white.line, 3)),
+      );
+      page.position.set(0, 60);
+      page.scale.set(0.7);
+      add(bunny, open, page);
+      return {
+        node: c,
+        alive: (t) => {
+          // The page lifts and turns over from right to left.
+          const k = Math.min(1, Math.max(0, (t - 0.3) / 0.8));
+          page.scale.x = 0.7 * Math.cos(k * Math.PI);
+          page.visible = k < 1;
+        },
+      };
+    }
+    case 'builder': {
+      const mouse = critter('mouse', -40, 76, 0.42);
+      const stack = piece(
+        (g) => {
+          block(g, 0, 58, BLOCKS[0]);
+          block(g, 2, 20, BLOCKS[1]);
+        },
+        44,
+        0,
+      );
+      const top = piece((g) => block(g, 0, 0, BLOCKS[2]), 44, -18);
+      add(stack, top, mouse);
+      return {
+        node: c,
+        alive: (t) => {
+          const k = Math.min(1, t / 0.6);
+          top.y = -18 - (1 - k * k) * 90;
+          top.rotation = (1 - k) * 0.5;
+        },
+      };
+    }
+  }
+  return null;
 }
 
 function sled(g: Graphics) {
@@ -413,7 +703,7 @@ export function madeArt(word: string): Made {
       };
     }
     case 'racehorse': {
-      const horse = runner('horse', 0, 68, 0.56);
+      const horse = critter('horse', 0, 68, 0.56);
       const bib = piece((g) => {
         g.roundRect(-29, -128, 58, 41, 8).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
         g.moveTo(-7, -116).lineTo(5, -121).lineTo(5, -97).stroke(line(swatch.white.fill, 5));
@@ -439,8 +729,8 @@ export function madeArt(word: string): Made {
         ])
           g.rect(x, y, 11, 12).fill(ink);
       });
-      const far = runner('horse', -32, 20, 0.32);
-      const near = runner('horse', -13, 65, 0.37);
+      const far = critter('horse', -32, 20, 0.32);
+      const near = critter('horse', -13, 65, 0.37);
       add(finish, far, near);
       return {
         node: c,
@@ -453,7 +743,7 @@ export function madeArt(word: string): Made {
       };
     }
     case 'sled dog': {
-      const dog = runner('dog', 19, 55, 0.57);
+      const dog = critter('dog', 19, 55, 0.57);
       const harness = piece((g) => {
         g.moveTo(-58, -94).lineTo(55, -100).stroke(line(swatch.red.line, 12));
         g.moveTo(10, -96).lineTo(0, -27).stroke(line(swatch.red.fill, 12));
@@ -772,9 +1062,12 @@ export function madeArt(word: string): Made {
         },
       };
     }
-    default:
+    default: {
+      const someone = doerArt(word, c, add);
+      if (someone) return someone;
       add(partArt(word));
       return { node: c, alive: () => {} };
+    }
   }
 }
 
