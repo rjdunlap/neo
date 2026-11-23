@@ -14,6 +14,7 @@ export const VOICE = {
   'duck.makeStop': ['Put {n} in the pond, then tap the check!'],
   'duck.made': ["That's {n}!", 'Yes, {n}!'],
   'duck.extra': ["Oops, that's {count}! We need {n}."],
+  'duck.extraNone': ['Oops, no ducks yet! We need {n}.'],
   'duck.back': ['Back you go! {count} in the pond.'],
   'duck.howmany': ['How many ducks?', 'How many ducks are swimming?'],
   'duck.none': ['None! No ducks at all!', 'Zero! The pond is empty!'],

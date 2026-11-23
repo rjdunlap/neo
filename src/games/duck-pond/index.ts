@@ -880,7 +880,7 @@ class DuckPond implements Game {
       await this.ctx.say('duck.countus');
       await this.countAloud();
     }
-    await this.ctx.say('duck.extra', { count: plural(n), n: this.want });
+    await this.ctx.say(n ? 'duck.extra' : 'duck.extraNone', { count: plural(n), n: this.want });
     // From the second miss the duck to move glows (or the check, once the number is there); the question counts one hint.
     if (this.wrongThisRound === HINT_AFTER) this.hints++;
     this.refreshHint();
