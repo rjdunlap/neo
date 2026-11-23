@@ -13,6 +13,8 @@ export interface DuckPlan {
   min: number;
   /** make: show dots under the number on the sign. */
   dots?: boolean;
+  /** make: she decides when there are enough (a check ends the round, a duck tapped on the pond hops back to the bank). */
+  stop?: boolean;
   /** add: mix in "some swim away". */
   subtract?: boolean;
   /** howmany: the layouts a round's ducks are dealt in (none: the fixed `SLOTS` in order). */
@@ -36,8 +38,8 @@ export const PLANS: DuckPlan[] = [
   { mode: 'along', rounds: 2, min: 3, max: 3 },
   { mode: 'along', rounds: 2, min: 5, max: 5 },
   { mode: 'make', rounds: 4, min: 1, max: 3, dots: true },
-  { mode: 'make', rounds: 4, min: 2, max: 5, dots: true },
-  { mode: 'make', rounds: 4, min: 3, max: 6, dots: false },
+  { mode: 'make', rounds: 4, min: 2, max: 5, dots: true, stop: true },
+  { mode: 'make', rounds: 4, min: 3, max: 6, dots: false, stop: true },
   { mode: 'howmany', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'], zero: true, padDots: true },
   {
     mode: 'howmany',
@@ -179,6 +181,19 @@ export const FRIEND_SLOTS: [number, number][] = [
 /** Make mode: ducks waiting on the bank, always at least one more than asked for so stopping is a choice. */
 export const bankSize = (plan: DuckPlan) => Math.min(7, plan.max + 1);
 
+/** Levels 4–5: what the check says of the pond: just right, too few or too many. */
+export const stopVerdict = (swimming: number, want: number): 'right' | 'few' | 'many' =>
+  swimming === want ? 'right' : swimming < want ? 'few' : 'many';
+
+/**
+ * The first of `SLOTS` no swimming duck holds (`taken`: the slots' indexes in use), so a duck that hops back leaves a gap the
+ * next one fills rather than landing on a duck already there.
+ */
+export const freeSlot = (taken: readonly number[]) => {
+  const i = SLOTS.findIndex((_, k) => !taken.includes(k));
+  return i < 0 ? taken.length % SLOTS.length : i;
+};
+
 /** The highest number a lily pad shows: ten until a level's `padMax` raises it, and never past twenty. */
 export const PAD_CAP = 20;
 
@@ -215,9 +230,9 @@ export function story(rng: Rng, plan: DuckPlan): PondStory {
 /**
  * What a capable child touches next: a duck on the bank, or lily pad number `pad` (counting from the left), or null while
  * she waits. Ducks: all of them (along, or each swimmer in turn to send it off in bye), or only until there are as many swimming as the sign says (make). Pads: the one
- * with the answer. Always a right one, and never a duck too many.
+ * with the answer. The check (levels 4–5): once the pond holds the sign's number. Always a right one, and never a duck too many.
  */
-export type DuckMove = 'duck' | { pad: number };
+export type DuckMove = 'duck' | 'check' | { pad: number };
 
 export function duckMove(
   plan: DuckPlan,
@@ -228,6 +243,8 @@ export function duckMove(
   answer: number,
 ): DuckMove | null {
   if (plan.mode === 'along') return bank > 0 ? 'duck' : null;
+  if (plan.mode === 'make' && plan.stop)
+    return swimming < want ? (bank > 0 ? 'duck' : null) : swimming === want ? 'check' : null;
   if (plan.mode === 'make') return bank > 0 && swimming < want ? 'duck' : null;
   if (plan.mode === 'bye') return swimming > 0 ? 'duck' : null;
   // One big duck: any touch brings the next friend, until all five are in.
@@ -398,6 +415,8 @@ export const padSpot = (v: PondView, i: number, count = 3) => ({
 
 /** A waiting duck's tap area is a circle of this radius, centered `BANK_HIT_UP` above its feet. */
 export const BANK_HIT_R = 72;
+/** A duck tapped on the pond (bye-bye at level 12, sent back at levels 4–5): seats there are about 106 apart, so 53 keeps each its own. */
+export const POND_HIT_R = 53;
 export const BANK_HIT_UP = 46;
 /** Upright: waiting ducks stand four to a row, this far apart across and up (a tap area is 144 wide and tall). */
 export const BANK_ROW_PITCH = 150;
@@ -427,6 +446,18 @@ export const bankBox = (v: PondView, i: number, n: number) => {
 export const signSpot = (v: PondView) => {
   const c = pondCenter(v);
   return v.upright ? { x: c.x, y: c.y - 340 } : { x: v.w / 2 + 380, y: 150 };
+};
+
+/** Levels 4–5: the "That's enough!" check's radius (its tap circle is 14 wider, as `RoundButton` makes it). */
+export const CHECK_R = 56;
+export const CHECK_HIT_R = CHECK_R + 14;
+/**
+ * The check stands beside the sign: to its right upright (the Home column is on the left), to its left sideways (the sign is
+ * near the right edge), at the board's height, above the heads of the ducks on the pond's far side.
+ */
+export const checkSpot = (v: PondView) => {
+  const s = signSpot(v);
+  return { x: s.x + (v.upright ? 214 : -214), y: s.y };
 };
 
 /** The height ducks swim in from beyond the screen's side. */
