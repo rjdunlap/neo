@@ -426,6 +426,91 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.setViewportSize({ width: 1024, height: 768 });
       log('Word Glue 8 on an upright phone: wrong action twice (one miss), hint, five doers, one sticker');
     };
+    const endingPlay = async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('word-glue', 9);
+      await settle();
+      const snapshot = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          const ask = g.s.round.asks[g.s.index];
+          const nodes = [...g.cards.map((card) => card.node), g.showing.made.node];
+          return {
+            word: ask.entry.word,
+            right: ask.entry.second,
+            upright: g.view.upright,
+            boxes: nodes.map((node) => {
+              const rect = node.getBounds();
+              return [rect.x, rect.y, rect.width, rect.height];
+            }),
+          };
+        });
+      const tapCard = (key) =>
+        page.evaluate((k) => kit.tapOn(neo.scene.game.cards.find((c) => c.key === k).node), key);
+      const stickers = () =>
+        page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'word-glue').length);
+      const before = await stickers();
+      await page.waitForFunction(() => !neo.scene.game.endingPrompt);
+      const first = await snapshot();
+      assert.deepEqual([first.word, first.right, first.upright], ['fruitful', 'full-cup', true]);
+      for (const [x, y, w, h] of first.boxes) {
+        assert.ok(x >= 0 && y >= 0 && x + w <= 390 && y + h <= 844);
+        assert.ok(Math.min(w, h) >= 44);
+      }
+      await page.evaluate(async () => {
+        const empty = neo.scene.game.cards.find((card) => card.key === 'empty-cup').node;
+        const p = empty.getGlobalPosition();
+        await kit.drag(kit.line([p.x, p.y], [p.x, p.y + 110], 8));
+      });
+      await tapCard('fruit');
+      await settle();
+      assert.deepEqual(await tally(), [0, 0], 'hearing a cup or base counts nothing');
+      await tapCard('empty-cup');
+      await settle();
+      assert.deepEqual(await tally(), [1, 0]);
+      assert.equal((await snapshot()).word, first.word);
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      assert.deepEqual(await tally(), [1, 1]);
+      assert.ok(await page.evaluate(() => neo.scene.game.s.glow));
+      await screenshot('word-glue-9-upright-phone');
+      for (let i = 0; i < 5; i++) {
+        await settle();
+        await page.waitForFunction(() => !neo.scene.game.unasked && !neo.scene.game.endingPrompt);
+        await tapCard((await snapshot()).right);
+      }
+      await finished('word-glue');
+      assert.deepEqual(await score(), [1, 1]);
+      assert.equal(await stickers(), before + 1);
+
+      await page.evaluate(async () => {
+        const [{ endingArt }, { ENDINGS }] = await Promise.all([
+          import('/src/games/word-glue/ending-art.ts'),
+          import('/src/games/word-glue/logic.ts'),
+        ]);
+        const Container = neo.root.constructor;
+        const strip = new Container();
+        neo.root.visible = false;
+        ENDINGS.forEach((ending, row) => {
+          ['neutral', 'full', 'without'].forEach((state, column) => {
+            const made = endingArt(ending, state);
+            made.alive(1);
+            made.node.scale.set(0.72);
+            made.node.position.set(65 + column * 130, 96 + row * 154);
+            strip.addChild(made.node);
+          });
+        });
+        neo.pixi.stage.addChild(strip);
+        window.__strip = strip;
+      });
+      await page.waitForTimeout(300);
+      await screenshot('word-glue-9-ending-strip');
+      await page.evaluate(() => {
+        window.__strip.destroy({ children: true });
+        neo.root.visible = true;
+      });
+      log('Word Glue 9 upright: free listens, wrong cup, hint, five changed things and one sticker');
+    };
     const score = () =>
       page.evaluate(() => {
         const r = kit.store.stats('word-glue').history.at(-1);
@@ -466,6 +551,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     if (process.env.WORDGLUE_ONLY === 'reversed') return reversedPlay();
     if (process.env.WORDGLUE_ONLY === 'name') return namePlay();
     if (process.env.WORDGLUE_ONLY === 'doer') return doerPlay();
+    if (process.env.WORDGLUE_ONLY === 'ending') return endingPlay();
     await launch('word-glue', 1);
     await settle();
     await page.evaluate(() => kit.tapOn(neo.scene.game.cards[0].node));

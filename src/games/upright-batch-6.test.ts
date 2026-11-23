@@ -4,6 +4,7 @@ import { driftLayout, PLANS as driftPlans, targetsOf, type Box } from './drift-c
 import {
   BIG,
   CARD,
+  endingLayout,
   kindLayout,
   MADE,
   nameLayout,
@@ -80,6 +81,13 @@ describe.each(Object.entries(views))('School upright batch 6 on %s', (_, v) => {
         // Level 5: the made thing (tapped to hear the question again) over its two parts.
         const { made, parts } = kindLayout(v);
         check(v, [picture('made thing', made, MADE), ...parts.map((c) => picture('part', c, CARD))]);
+      } else if (level === 9) {
+        const { made, tiles } = endingLayout(v);
+        const pictures = [picture('thing', made, MADE), ...tiles.map((c) => picture('tile', c, CARD))];
+        check(v, pictures);
+        expect(
+          uprightProblems(v, [...pictures, ...shelfLayout(v, 5).map((c) => picture('shelf', c, SHELF))], 0),
+        ).toEqual([]);
       } else if (level === 7) {
         // Level 7: the thing to name (tapped to hear the question again), two name cards and the three pictures.
         const { made, cards, tiles } = nameLayout(v);

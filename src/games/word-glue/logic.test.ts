@@ -4,7 +4,8 @@ import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { inventedArt, madeArt, partArt } from './art';
-import { actionLine, choiceLine, doerLine, nameLine } from './voice';
+import { endingArt, endingTileArt } from './ending-art';
+import { actionLine, choiceLine, doerLine, endingLine, endingTileLine, nameLine } from './voice';
 import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
@@ -26,6 +27,12 @@ import {
   DOER_LEVEL,
   DOER_PICTURES,
   DOERS,
+  EMPTY_CUP,
+  ENDING_LEVEL,
+  ENDINGS,
+  endingEntry,
+  endingLayout,
+  FULL_CUP,
   headFixed,
   joined,
   PERSON,
@@ -82,7 +89,7 @@ describe('the compound table', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // Levels 1–3 are unchanged.
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
     expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
     expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
@@ -368,7 +375,14 @@ describe('level 5: What kind of thing?', () => {
   });
 
   it("school climbs 3, 5, 6, 7, 8, never through lap's level 4, and a carried 4 lands on 3", () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL, DOER_LEVEL]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([
+      3,
+      KIND_LEVEL,
+      REVERSED_LEVEL,
+      NAME_LEVEL,
+      DOER_LEVEL,
+      ENDING_LEVEL,
+    ]);
     expect(stepLevel(NAME_LEVEL, 1, LEVELS.school!)).toBe(DOER_LEVEL);
     expect(stepLevel(DOER_LEVEL, -1, LEVELS.school!)).toBe(NAME_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
@@ -865,6 +879,65 @@ describe('level 8: Someone who', () => {
   });
 });
 
+describe('level 9, Full of or without', () => {
+  it('opens with the five authored asks and balances forms and right sides across 500 seeds', () => {
+    const authored = stateFor(ENDING_LEVEL, 0, true).round.asks;
+    expect(authored.map((a) => [a.entry.word, a.pictures.indexOf(a.entry.second)])).toEqual([
+      ['fruitful', 2],
+      ['colorless', 1],
+      ['careful', 1],
+      ['powerless', 2],
+      ['cheerful', 1],
+    ]);
+    for (const seed of SEEDS) {
+      const { asks } = stateFor(ENDING_LEVEL, seed).round;
+      expect(new Set(asks.map((a) => a.ending))).toEqual(new Set(ENDINGS));
+      for (const a of asks) {
+        expect(a.pictures[0]).toBe(a.ending?.base);
+        expect(new Set(a.pictures.slice(1))).toEqual(new Set([FULL_CUP, EMPTY_CUP]));
+      }
+      expect([2, 3]).toContain(asks.filter((a) => a.entry.second === FULL_CUP).length);
+      expect([2, 3]).toContain(asks.filter((a) => a.pictures[1] === a.entry.second).length);
+    }
+    expect(stepLevel(ENDING_LEVEL, 0, LEVELS.prek!)).toBe(3);
+  });
+
+  it('the base tile is free, and two wrong cups followed by Help and another wrong cup count 2/1', () => {
+    const s = stateFor(ENDING_LEVEL, 0, true);
+    expect(tap(s, 'fruit').kind).toBe('ignore');
+    expect(tap(s, EMPTY_CUP)).toMatchObject({ kind: 'wrong', counted: true, glowed: false });
+    expect(tap(s, EMPTY_CUP)).toMatchObject({ kind: 'wrong', counted: true, glowed: true });
+    expect(applyHint(s)).toEqual(['fruit', FULL_CUP]);
+    expect(tap(s, EMPTY_CUP)).toEqual({ kind: 'assist', entry: endingEntry(ENDINGS[0], FULL_CUP) });
+    while (!s.done) expect(tap(s, rightChoice(s)!).kind).toBe('right');
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+  });
+
+  it('every literal pair has pictures and whole-word voice lines', () => {
+    for (const ending of ENDINGS) {
+      expect(endingTileArt(ending.base).getLocalBounds().width).toBeGreaterThan(0);
+      expect(SCRIPT[endingTileLine(ending.base)][0].toLowerCase()).toBe(`${ending.base}!`);
+      for (const state of ['neutral', 'full', 'without'] as const) {
+        const made = endingArt(ending, state);
+        made.alive(1);
+        expect(made.node.getLocalBounds().width).toBeGreaterThan(0);
+      }
+      for (const cup of [FULL_CUP, EMPTY_CUP] as const) {
+        const entry = endingEntry(ending, cup);
+        expect(entry.word).toBe(ending.base + (cup === FULL_CUP ? 'ful' : 'less'));
+        expect(entry.meaning).toBe(`${cup === FULL_CUP ? 'full of' : 'without'} ${ending.base}`);
+        expect(OPAQUE).not.toContain(entry.word);
+        expect(partArt(cup).getLocalBounds().width).toBeGreaterThan(0);
+        for (const kind of ['ask', 'right', 'wrong'] as const) {
+          const [text] = SCRIPT[endingLine(entry.word, kind)];
+          expect(text).toContain(entry.word);
+          expect(text).not.toMatch(/\{|\bful\b|\bless\b/);
+        }
+      }
+    }
+  });
+});
+
 describe('the pictures', () => {
   it('names every part and the pool once', () => {
     expect(new Set(PICTURES).size).toBe(PICTURES.length);
@@ -917,6 +990,22 @@ describe('the table layout', () => {
         expect(overlaps(r, petCorner(v.h))).toBe(false);
       }
       for (const [a, b] of pairs([...cards, ...shelf])) expect(overlaps(a, b)).toBe(false);
+    });
+    it(`${name}, level 9: the thing, word and two cups clear the shelf and controls`, () => {
+      const { made, tiles } = endingLayout(v);
+      const rects = [sq(made, MADE), ...tiles.map((p) => sq(p, CARD))];
+      const home = { x: 0, y: 0, w: 130, h: 230 };
+      expect(CARD).toBeGreaterThanOrEqual(140);
+      for (const r of rects) {
+        expect(r.x).toBeGreaterThanOrEqual(0);
+        expect(r.y).toBeGreaterThanOrEqual(0);
+        expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+        expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+        expect(overlaps(r, petCorner(v.h))).toBe(false);
+        expect(overlaps(r, home)).toBe(false);
+        for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
+      }
+      for (const [a, b] of pairs(rects)) expect(overlaps(a, b)).toBe(false);
     });
     it(`${name}, level 7: the thing, two name cards and three pictures are big, inside the view, apart and clear of the corners`, () => {
       const { made, cards, tiles } = nameLayout(v);
