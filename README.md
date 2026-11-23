@@ -313,7 +313,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Key It Out](docs/games/key-it-out.md) | Lantern Lake | 4 | a page of pencil sketches of invented lake creatures and a field guide's identification key. At level 1 (*By the key*) six sketches show every part: choose one, answer the key's yes-or-no questions from what it shows, and tap the name the branch ends in. Three unstamped sketches carrying their right names at once are stamped together. |
 | [Jar Clues](docs/games/jar-clues.md) | Lantern Lake | 4 | a jar of lake pebbles nobody has counted and a board of the numbers 1 to 60. Tap a number to plant a first guess, then the clues arrive one at a time ("fewer than 35", "an even number", "it ends in 2"): cross off every number each one rules out, by tapping or sweeping along a row, and press Next clue. At level 1 (*First clues*) three clues about ranges, odd and even, counting by fives or tens and last digits leave two or three numbers at least ten apart; choose the one the jar holds by eye, with a ten line etched on the glass, and the jar pours out into rows of ten and is counted. |
 | [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 4 | Give two workshops a few mornings to make crates and boats for a waiting order. |
-| [Workshop Detective](docs/games/workshop-detective.md) | Lantern Lake | 1 | TODO: the first fun action and learning purpose. |
+| [Workshop Detective](docs/games/workshop-detective.md) | Lantern Lake | 1 | mark two notes about a made-up bench lamp against two records, then try the lever setting that tells them apart. |
 
 <!-- end generated -->
 

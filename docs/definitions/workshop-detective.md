@@ -1,6 +1,8 @@
 # Workshop Detective, one case (definition)
 
-Documentation packet, 2026-11-23, branch `claude/define-workshop-detective`, [PR #2060](https://github.com/rjdunlap/neo/pull/2060). Inquiry slice Q6 from the [study](../deep-dives/subjects/inquiry.md#build-slices-in-order), under its decision 3 (a labelled invented mechanism with its own `grownup` entry for 13+). Proposed game `workshop-detective`; nothing is registered or implemented. **Docs only.** One build batch follows below.
+**Built:** level 1 (PR #2065); a later case needs its own definition (see “Build batch”, later proposals).
+
+Documentation packet, 2026-11-23, branch `claude/define-workshop-detective`, [PR #2060](https://github.com/rjdunlap/neo/pull/2060). Inquiry slice Q6 from the [study](../deep-dives/subjects/inquiry.md#build-slices-in-order), under its decision 3 (a labelled invented mechanism with its own `grownup` entry for 13+). Game `workshop-detective`. **Docs only** packet; the build batch below is built.
 
 ## What you do
 
