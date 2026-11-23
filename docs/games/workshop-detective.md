@@ -1,0 +1,12 @@
+# Workshop Detective
+
+<!-- end generated -->
+
+**Starts as:** TODO: the first fun action and learning purpose.
+
+**Grows into:** TODO: the supported ladder and meaningful choices.
+
+## Design notes
+
+Scaffold only: implement the approved definition, mistakes/help, completion and demonstration.
+Run `npm run game-docs` to add the generated inventory block. Complete the game's verification tier before publishing.

@@ -191,6 +191,7 @@ import { HOW_TO as wordCodeHowTo } from '../games/word-code/howto.ts';
 import { HOW_TO as wordGlueHowTo } from '../games/word-glue/howto.ts';
 import { HOW_TO as wordMonstersHowTo } from '../games/word-monsters/howto.ts';
 import { HOW_TO as wordSearchHowTo } from '../games/word-search/howto.ts';
+import { HOW_TO as workshopDetectiveHowTo } from '../games/workshop-detective/howto.ts';
 // END game imports
 
 /**
@@ -399,6 +400,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'word-glue': wordGlueHowTo,
   'word-monsters': wordMonstersHowTo,
   'word-search': wordSearchHowTo,
+  'workshop-detective': workshopDetectiveHowTo,
   // END game entries
 };
 
