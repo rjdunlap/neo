@@ -1,6 +1,6 @@
 # Harbor Orders, levels 1–4 (definition)
 
-**Built:** levels 1–2 ([PR #2051](https://github.com/rjdunlap/neo/pull/2051)); to build levels 3–4, read [Build batches](#build-batches).
+**Built:** levels 1–2 ([PR #2051](https://github.com/rjdunlap/neo/pull/2051)); levels 3–4 claimed by batch `harbor-orders 2` on branch `claude/harbor-orders-2`; read [Build batches](#build-batches).
 
 Documentation packet, 2026-11-23, branch `claude/define-harbor-orders`, [PR #2031](https://github.com/rjdunlap/neo/pull/2031). Study follow-up ME6 from [money and economy](../deep-dives/subjects/money-economy.md#build-slices-in-order); the study's decision 4 was settled on 2026-10-23 (Harbor Orders replaces the household-budget puzzle), and placement by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Two build batches follow below.
 
