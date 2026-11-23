@@ -5,6 +5,8 @@ export type Option = (typeof OPTIONS)[number];
 export interface Vote {
   id: string;
   option: Option;
+  /** Level 4 only: the second choice of a friend in the fewest group, used after a tie. */
+  next?: Option;
 }
 export interface Plan {
   level: number;
@@ -24,17 +26,24 @@ export const FAMILIES: Readonly<Record<number, readonly (readonly number[])[]>> 
     [4, 2, 1],
     [3, 2, 2],
   ],
+  // A tie between the top two; the fewest group's friends all move to one tied picture, so the run-off never ties again.
+  4: [
+    [3, 3, 2],
+    [3, 3, 1],
+    [2, 2, 1],
+  ],
 };
 export const NAMES = [
   'Two choices — count two groups and choose more',
   'Your pet votes too — choose freely, then count',
   'Three choices — compare tallies and choose most',
+  "A tie — move the fewest group's votes to their next choice, then choose most",
 ];
 export function validate(p: Plan) {
   const family = FAMILIES[p.level];
   if (
     !family ||
-    p.options.length !== (p.level === 3 ? 3 : 2) ||
+    p.options.length !== (p.level >= 3 ? 3 : 2) ||
     new Set(p.options).size !== p.options.length ||
     p.options.some((o) => !OPTIONS.includes(o))
   )
@@ -46,47 +55,92 @@ export function validate(p: Plan) {
     throw Error('Invalid roster');
   const counts = p.options.map((o) => p.voters.filter((v) => v.option === o).length).sort((a, b) => b - a);
   if (!family.some((f) => f.join() === counts.join())) throw Error('Invalid vote family');
+  if (p.level !== 4) {
+    if (p.voters.some((v) => v.next !== undefined)) throw Error('Second choices are level 4 only');
+    return;
+  }
+  const by = (o: Option) => p.voters.filter((v) => v.option === o).length;
+  const closed = p.options.reduce((a, b) => (by(b) < by(a) ? b : a));
+  const tied = p.options.filter((o) => o !== closed);
+  if (by(tied[0]) !== by(tied[1]) || by(closed) >= by(tied[0])) throw Error('Level 4 needs a tie between the top two');
+  const nexts = new Set(p.voters.filter((v) => v.option === closed).map((v) => v.next));
+  if (
+    nexts.size !== 1 ||
+    !tied.includes([...nexts][0] as Option) ||
+    p.voters.some((v) => v.option !== closed && v.next !== undefined)
+  )
+    throw Error('The fewest group needs one shared second choice on a tied picture');
+}
+/** The level-4 second choices: every friend of the fewest group moves to one seeded tied picture. */
+function withNext(p: Plan, pick: (tied: Option[]) => Option): Plan {
+  const by = (o: Option) => p.voters.filter((v) => v.option === o).length;
+  const closed = p.options.reduce((a, b) => (by(b) < by(a) ? b : a));
+  const next = pick(p.options.filter((o) => o !== closed));
+  return { ...p, voters: p.voters.map((v) => (v.option === closed ? { ...v, next } : v)) };
 }
 export function roundFor(level: number, rng: Rng): Plan {
   const counts = rng.shuffle([...rng.pick(FAMILIES[level])]);
   const options = rng.shuffle([...OPTIONS]).slice(0, counts.length);
   const assignments = counts.flatMap((n, i) => Array<Option>(n).fill(options[i]));
   rng.shuffle(assignments);
-  const p = { level, options, voters: assignments.map((option, i) => ({ id: `friend-${i}`, option })) };
+  let p: Plan = { level, options, voters: assignments.map((option, i) => ({ id: `friend-${i}`, option })) };
+  if (level === 4) p = withNext(p, (tied) => rng.pick(tied));
   validate(p);
   return p;
 }
 export function fixture(level: number, family = 0): Plan {
   const counts = FAMILIES[level][family],
     options = OPTIONS.slice(0, counts.length);
-  return {
+  const p: Plan = {
     level,
     options,
     voters: counts
       .flatMap((n, i) => Array.from({ length: n }, () => options[i]))
       .map((option, i) => ({ id: `friend-${i}`, option })),
   };
+  // The opening tie: slide 3, swing 3, sandpit 2, and both sandpit friends would go to the swing next (5–3).
+  return level === 4 ? withNext(p, (tied) => tied[1]) : p;
 }
-export type Phase = 'preference' | 'walking' | 'counting' | 'feedback' | 'playing' | 'done';
+export type Phase = 'preference' | 'walking' | 'counting' | 'runoff' | 'feedback' | 'playing' | 'done';
+/** Level 4 has two decisions (the run-off moves, then the final choice); each earns at most one hint. */
+export type Stage = 'runoff' | 'declare';
+export type Send = 'ignored' | 'nudge' | 'closed' | 'wrong' | 'moved' | 'recount';
 /** One election. Marks are support; acceptance always uses the immutable actual roster. */
 export class Election {
   readonly plan: Plan;
   readonly counted = new Set<string>();
   readonly npc: readonly Vote[];
+  /** Friends of the closed group that have walked to their second choice. */
+  readonly moved = new Set<string>();
+  readonly helped = new Set<Stage>();
   phase: Phase;
+  /** The fewest group's picture once the tie is found (level 4); it takes no votes this time. */
+  closed: Option | null = null;
+  selected: string | null = null;
   pet: Option | null = null;
   misses = 0;
-  hints = 0;
-  glowing = false;
   completions = 0;
+  private stageMisses = 0;
+  private resume: Phase = 'counting';
   constructor(plan: Plan) {
     validate(plan);
     this.plan = structuredClone(plan);
     this.npc = this.plan.voters;
     this.phase = plan.level === 2 ? 'preference' : 'counting';
   }
+  /** Every vote as it stands now: a moved friend counts for its second choice. */
   get voters(): readonly Vote[] {
-    return this.pet ? [...this.npc, { id: 'pet', option: this.pet }] : this.npc;
+    const now = this.npc.map((v) => (this.moved.has(v.id) && v.next ? { ...v, option: v.next } : v));
+    return this.pet ? [...now, { id: 'pet', option: this.pet }] : now;
+  }
+  get hints() {
+    return this.helped.size;
+  }
+  get stage(): Stage {
+    return this.phase === 'runoff' ? 'runoff' : 'declare';
+  }
+  get glowing() {
+    return this.helped.has(this.stage);
   }
   total(o: Option) {
     return this.voters.filter((v) => v.option === o).length;
@@ -94,8 +148,25 @@ export class Election {
   marks(o: Option) {
     return this.voters.filter((v) => v.option === o && this.counted.has(v.id)).length;
   }
+  /** The fewest group at level 4 (the picture that closes after the tie). */
+  get fewest(): Option {
+    const first = (o: Option) => this.npc.filter((v) => v.option === o).length;
+    return this.plan.options.reduce((a, b) => (first(b) < first(a) ? b : a));
+  }
+  /** The tie is unresolved while the fewest group's friends have not all moved. */
+  get tied() {
+    return this.plan.level === 4 && this.waiting.length > 0;
+  }
+  /** Closed-group friends still at the closed picture. */
+  get waiting(): readonly Vote[] {
+    return this.plan.level === 4 ? this.npc.filter((v) => v.next && !this.moved.has(v.id)) : [];
+  }
+  /** The picture that wins: at level 4 the run-off result, so a hint before the tie points at a tied picture. */
   get winner(): Option {
-    return this.plan.options.reduce((a, b) => (this.total(b) > this.total(a) ? b : a));
+    const final = (o: Option) =>
+      this.npc.filter((v) => (this.plan.level === 4 && v.next ? v.next : v.option) === o).length +
+      Number(this.pet === o);
+    return this.plan.options.reduce((a, b) => (final(b) > final(a) ? b : a));
   }
   choose(o: Option) {
     if (this.phase !== 'preference' || !this.plan.options.includes(o)) return false;
@@ -107,7 +178,7 @@ export class Election {
     if (this.phase === 'walking') this.phase = 'counting';
   }
   count(id: string) {
-    if (this.phase !== 'counting') return null;
+    if (this.phase !== 'counting' && this.phase !== 'runoff') return null;
     const v = this.voters.find((v) => v.id === id);
     if (!v) return null;
     this.counted.add(id);
@@ -116,24 +187,60 @@ export class Election {
   recount() {
     for (const v of this.voters) this.counted.add(v.id);
   }
-  declare(o: Option): 'ignored' | 'wrong' | 'accepted' {
+  /** Tapping a picture while counting. At level 4 a tied picture before the run-off finds the tie (never a miss). */
+  declare(o: Option): 'ignored' | 'wrong' | 'accepted' | 'tie' | 'closed' {
     if (this.phase !== 'counting' || !this.plan.options.includes(o)) return 'ignored';
-    if (o === this.winner) {
+    if (o === this.closed) return 'closed';
+    if (this.tied && o !== this.fewest) {
+      this.closed = this.fewest;
+      this.recount();
+      this.enter('runoff');
+      return 'tie';
+    }
+    if (o === this.winner && !this.tied) {
       this.phase = 'playing';
       return 'accepted';
     }
-    this.misses++;
+    this.miss();
+    this.resume = 'counting';
     this.phase = 'feedback';
     this.recount();
-    if (this.misses >= 2) this.help();
     return 'wrong';
   }
+  /** Run-off: tap a closed-group friend to pick it up (again to put it down). */
+  select(id: string) {
+    if (this.phase !== 'runoff' || !this.waiting.some((v) => v.id === id)) return false;
+    this.selected = this.selected === id ? null : id;
+    return true;
+  }
+  /** The next choice of the selected friend (what its badge shows). */
+  get selectedNext(): Option | null {
+    return this.npc.find((v) => v.id === this.selected)?.next ?? null;
+  }
+  /** Run-off: tap a picture to walk the selected friend there. */
+  send(o: Option): Send {
+    if (this.phase !== 'runoff' || !this.plan.options.includes(o)) return 'ignored';
+    if (o === this.closed) return 'closed';
+    const next = this.selectedNext;
+    if (!next) return 'nudge';
+    if (o !== next) {
+      this.miss();
+      this.resume = 'runoff';
+      this.phase = 'feedback';
+      return 'wrong';
+    }
+    this.moved.add(this.selected!);
+    this.counted.add(this.selected!);
+    this.selected = null;
+    if (this.waiting.length) return 'moved';
+    this.enter('counting');
+    return 'recount';
+  }
   feedbackDone() {
-    if (this.phase === 'feedback') this.phase = 'counting';
+    if (this.phase === 'feedback') this.phase = this.resume;
   }
   help() {
-    this.hints = 1;
-    this.glowing = true;
+    this.helped.add(this.stage);
   }
   complete() {
     if (this.phase !== 'playing') return false;
@@ -142,7 +249,16 @@ export class Election {
     return true;
   }
   comparison() {
-    return this.plan.options.map((option) => ({ option, total: this.total(option) }));
+    return this.plan.options.filter((o) => o !== this.closed).map((option) => ({ option, total: this.total(option) }));
+  }
+  private enter(phase: Phase) {
+    this.phase = phase;
+    this.stageMisses = 0;
+  }
+  /** Two misses in one decision bring the glow (at levels 1–3 there is only one decision). */
+  private miss() {
+    this.misses++;
+    if (++this.stageMisses >= 2) this.help();
   }
 }
 export interface Point {
@@ -172,6 +288,7 @@ export function layout(view: { w: number; h: number; upright?: true }, e: Electi
   e.plan.options.forEach((o, i) =>
     e.voters
       .filter((v) => v.option === o)
+      .sort((a, b) => Number(e.moved.has(a.id)) - Number(e.moved.has(b.id)))
       .forEach((v, j) => {
         voters[v.id] = { x: xs[i] + xoff + (j % 2 === 0 ? -58 : 58), y: first + Math.floor(j / 2) * gap };
       }),
@@ -204,5 +321,5 @@ export function playLayout(view: { w: number; h: number; upright?: true }, count
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 3 },
+  school: { min: 3, max: 4 },
 };
