@@ -777,9 +777,11 @@ Proof: new-interaction tier, as the [definition's batches section](definitions/p
 
 ### paint-mixer 4: Palette unlock
 
-- **`paint-mixer`, the palette unlock (decision 7)** (status: batch `paint-mixer 3` is built; RW10 is defined, and its [slice 2](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4) follows this batch: the recolour in Dress is RW10's): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
+**Status: built 2026-11-22, PR #2008.**
 
-Proof: shell/save tier, as the definition sets it; to be confirmed when the batch is picked.
+- **`paint-mixer`, the palette unlock (decision 7)** (after batch `paint-mixer 3`; RW10's [slice 2](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4) now follows: the recolour in Dress is RW10's): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
+
+Proof: shell/save tier, as the definition sets it (typecheck, units, build, `BROWSER_SUITE=world` and the production offline check). Built note: [definition](definitions/paint-mixer-5-6.md#built-the-palette-unlock-2026-11-22).
 
 ### spinner-fair 1: Spin, see and pick
 

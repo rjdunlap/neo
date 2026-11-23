@@ -33,7 +33,7 @@ import {
   type WearTables,
 } from '../art/creatures/wearables';
 import { sfx } from '../audio/sfx';
-import type { PetColor } from '../content/world';
+import { MIXED_COLORS, type PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
 import { store } from '../progress/store';
 import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
@@ -173,16 +173,62 @@ export function hueTurn(species: SpeciesId, color: PetColor): number {
   return (((turn % 360) + 540) % 360) - 180;
 }
 
+/** A colour's whiteness: its lowest channel, 0–255. */
+const whiteness = (rgb: number) => Math.min((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
+
+/**
+ * How far a mixed colour (the paint shelf's six, paint-mixer 4) lifts the picture toward white after the hue turn, 0–0.5:
+ * a hue turn alone would make peach the orange friend's twin, and a mixed colour is the paler for its white. Measured
+ * from the swatches: the share of the gap to white that the colour's whiteness adds over the species' own colour, scaled
+ * by 0.65 and capped at a half, so the six keep their order of paleness and the ink lines stay lines. The eight first colours are never lifted, so they look as they always have.
+ */
+export function paleness(species: SpeciesId, color: PetColor): number {
+  if (!(MIXED_COLORS as readonly string[]).includes(color)) return 0;
+  const base = whiteness(swatch[SPECIES[species].color as ColorName].fill);
+  const lift = (whiteness(swatch[color as ColorName].fill) - base) / (255 - base);
+  return Math.min(0.5, Math.max(0, 0.65 * lift));
+}
+
+/** Pixi's hue turn (`ColorMatrixFilter.hue`) as a 5×4 matrix: a turn about the grey axis, so white stays white. */
+export function hueMatrix(degrees: number): number[] {
+  const r = (degrees / 180) * Math.PI;
+  const cos = Math.cos(r);
+  const sin = Math.sin(r);
+  const w = 1 / 3;
+  const s = Math.sqrt(w);
+  const d = cos + (1 - cos) * w;
+  const p = w * (1 - cos) + s * sin;
+  const m = w * (1 - cos) - s * sin;
+  return [d, m, p, 0, 0, p, d, m, 0, 0, m, p, d, 0, 0, 0, 0, 0, 1, 0];
+}
+
+/**
+ * The 5×4 colour matrix that turns the species' picture to her colour: the hue turn, then (a mixed colour only) a step
+ * `paleness` of the way to white. A hue turn keeps white white, so the two commute. Null for the species' own colour.
+ */
+export function recolorMatrix(species: SpeciesId, color: PetColor): number[] | null {
+  if (color === SPECIES[species].color) return null;
+  const turn = hueTurn(species, color);
+  const pale = paleness(species, color);
+  if (turn === 0 && pale === 0) return null;
+  const m = hueMatrix(turn);
+  for (const row of [0, 5, 10]) {
+    for (let i = 0; i < 5; i++) m[row + i] *= 1 - pale;
+    m[row + 4] += pale;
+  }
+  return m;
+}
+
 /** Turns a picture to her chosen colour; nothing (and no filter) for the species' own. */
 export function recolor(node: Container, species: SpeciesId, color: PetColor) {
-  const turn = hueTurn(species, color);
-  if (turn === 0) {
+  const m = recolorMatrix(species, color);
+  if (!m) {
     node.filters = [];
     return;
   }
   // At the screen's own resolution: a filter's default of 1 would soften the art on a 2× iPad.
   const f = new ColorMatrixFilter({ resolution: 'inherit', antialias: 'inherit' });
-  f.hue(turn, false);
+  f.matrix = m as typeof f.matrix;
   node.filters = [f];
   node.once('destroyed', () => f.destroy());
 }

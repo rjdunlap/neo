@@ -7,6 +7,7 @@ import { CHANGERS, EARLY, SUBSTANCES } from '../games/melt-freeze/logic';
 import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
 import { RECIPES } from '../games/paint-mixer/logic';
 import type { LineId } from './voice-script';
+import { MIXED_COLORS, type MixedColor } from './world';
 
 /**
  * The discovery journal: a small, fixed collection of things she has seen for herself. Every entry has one known
@@ -410,6 +411,14 @@ export interface JournalSave {
 }
 
 export const emptyJournal = (): JournalSave => ({ found: [], seen: 0 });
+
+/**
+ * The paint-shelf colours she has mixed, in shelf order: read from the journal's filed entries (batch paint-mixer 4), so
+ * the unlock has no save field of its own, a supported finish counts, a replay changes nothing and nothing is lost.
+ */
+export function mixedColors(journal: Pick<JournalSave, 'found'>): MixedColor[] {
+  return MIXED_COLORS.filter((c) => journal.found.includes(entryId('paint-mixer', c)));
+}
 
 /** What a restored or hand-edited save may keep: known entries, once each, in the order they were found. */
 export function cleanJournal(raw: unknown): JournalSave {

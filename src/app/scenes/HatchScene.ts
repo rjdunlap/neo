@@ -13,7 +13,7 @@ import type { App } from '../App';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { IdleCue, wobble } from '../../ui/idle-cue';
-import { playIcon } from '../../ui/icons';
+import { arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
@@ -25,15 +25,34 @@ import { applySettings } from '../settings';
  */
 export function hatchLayout(w: number, naming: boolean) {
   if (w >= 900)
-    return { cx: (w - 160) / 2, namePitch: 245, next: { x: w - 90, y: 220 }, plateH: 340, formTop: 300 };
+    return {
+      cx: (w - 160) / 2,
+      namePitch: 245,
+      next: { x: w - 90, y: 220 },
+      page: { x: w - 90, y: 95 },
+      plateH: 340,
+      formTop: 300,
+    };
+  const next = { x: w / 2, y: naming ? 370 : 440 };
   return {
     cx: w / 2,
     namePitch: 235,
-    next: { x: w / 2, y: naming ? 370 : 440 },
+    next,
+    page: { x: next.x + 180, y: next.y },
     plateH: naming ? 600 : 500,
     formTop: 450,
   };
 }
+
+/** A page of colour balls: two rows of four. Her mixed colours (paint-mixer 4) make a second page, never smaller balls. */
+export const COLORS_PER_PAGE = 8;
+/** Where colour ball `i` of a page stands. */
+export const colorSpot = (cx: number, i: number) => ({
+  x: cx + ((i % 4) - 1.5) * 138,
+  y: 155 + Math.floor(i / 4) * 125,
+});
+/** The radius of the turn-the-page button (a 100-unit target). */
+export const PAGE_RADIUS = 50;
 
 export class HatchScene extends Scene {
   /** It has a name field, and nothing here has started yet. */
@@ -60,11 +79,17 @@ export class HatchScene extends Scene {
   private readonly nameLabel = label('', 42, swatch.teal.line);
   /** The egg hatches a sprout (RW05): the river and the glider are met later. */
   private color: PetColor = SPECIES.sprout.color;
+  /** Her colours: the eight, then any she has mixed in Paint Mixer (read from her journal when the scene opens). */
+  private colors: readonly PetColor[] = PET_COLORS;
+  private page = 0;
   private name: string = SPECIES.sprout.names[0];
   private readonly names = SPECIES.sprout.names;
   private form: HTMLFormElement | null = null;
   private leaving = false;
   private readonly next = new RoundButton(playIcon(), swatch.green, 58, () => this.advance());
+  /** Turns to her mixed colours and back; there only when she has mixed one. */
+  private readonly more = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_RADIUS, () => this.turnPage());
+  private readonly back = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_RADIUS, () => this.turnPage());
 
   constructor(
     app: App,
@@ -89,14 +114,15 @@ export class HatchScene extends Scene {
   }
 
   init() {
+    this.colors = store.petColors;
     // Include the illustrated sprout's leaves and feet, not only its body polygon.
     const preview = new Companion({ species: 'sprout', look: { color: this.color } });
     this.friendHeight = preview.getLocalBounds().height;
     preview.destroy({ children: true });
     this.showEgg(0);
     this.content.addChild(this.background, this.egg, this.plate, this.choices);
-    this.ui.addChild(this.next, this.nameLabel);
-    this.next.visible = false;
+    this.ui.addChild(this.next, this.more, this.back, this.nameLabel);
+    this.next.visible = this.more.visible = this.back.visible = false;
     this.track({
       update: (dt: number) => {
         if (this.step !== 'egg' || !this.egg.visible) return;
@@ -152,7 +178,7 @@ export class HatchScene extends Scene {
     this.choices.addChild(this.selected);
     this.next.visible = true;
     if (this.step === 'color') {
-      PET_COLORS.forEach((color) => {
+      this.pageColors.forEach((color) => {
         const g = new Graphics()
           .circle(0, 0, 49)
           .fill(swatch[color].fill)
@@ -191,6 +217,21 @@ export class HatchScene extends Scene {
       this.makeForm();
     }
     this.resize(this.view);
+  }
+
+  private get pages() {
+    return Math.ceil(this.colors.length / COLORS_PER_PAGE);
+  }
+
+  private get pageColors() {
+    return this.colors.slice(this.page * COLORS_PER_PAGE, (this.page + 1) * COLORS_PER_PAGE);
+  }
+
+  private turnPage() {
+    if (this.step !== 'color' || this.pages < 2) return;
+    this.page = (this.page + 1) % this.pages;
+    sfx.pop();
+    this.buildChoices();
   }
 
   private makeForm() {
@@ -239,6 +280,11 @@ export class HatchScene extends Scene {
     this.pip?.scale.set(l.stage.scale);
     const l2 = hatchLayout(v.w, this.step === 'name');
     this.next.position.set(l2.next.x, l2.next.y);
+    const paging = this.step === 'color' && this.pages > 1;
+    this.more.visible = paging && this.page < this.pages - 1;
+    this.back.visible = paging && this.page > 0;
+    this.more.position.set(l2.page.x, l2.page.y);
+    this.back.position.set(l2.page.x, l2.page.y);
     this.plate.visible = this.step !== 'egg';
     this.plate
       .clear()
@@ -258,10 +304,11 @@ export class HatchScene extends Scene {
     this.choices.children
       .filter((c) => c !== this.selected)
       .forEach((c, i) => {
-        const x = this.step === 'color' ? l2.cx + ((i % 4) - 1.5) * 138 : l2.cx + (i - 1) * l2.namePitch;
-        const y = this.step === 'color' ? 155 + Math.floor(i / 4) * 125 : 220;
+        const spot = colorSpot(l2.cx, i);
+        const x = this.step === 'color' ? spot.x : l2.cx + (i - 1) * l2.namePitch;
+        const y = this.step === 'color' ? spot.y : 220;
         c.position.set(x, y);
-        if (this.step === 'color' ? PET_COLORS[i] === this.color : this.names[i] === this.name) {
+        if (this.step === 'color' ? this.pageColors[i] === this.color : this.names[i] === this.name) {
           this.selected
             .roundRect(
               x - (this.step === 'color' ? 59 : 119),

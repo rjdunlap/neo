@@ -1,1 +1,0 @@
-**`paint-mixer` 4, the hatch colour step** (the batch as planned, without the dress or collection-book recolour, which is RW10's slice 2). [Batch](../../GAME-BATCHES.md#paint-mixer-4-palette-unlock), [definition](../../definitions/paint-mixer-5-6.md)
