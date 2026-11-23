@@ -6,9 +6,11 @@ import {
   CARD,
   kindLayout,
   MADE,
+  nameLayout,
   PAIRED_SHELF,
   PLANS as glue,
   reversedLayout,
+  SHELF,
   shelfLayout,
   tableCentre,
   tableLayout,
@@ -78,6 +80,21 @@ describe.each(Object.entries(views))('School upright batch 6 on %s', (_, v) => {
         // Level 5: the made thing (tapped to hear the question again) over its two parts.
         const { made, parts } = kindLayout(v);
         check(v, [picture('made thing', made, MADE), ...parts.map((c) => picture('part', c, CARD))]);
+      } else if (level === 7) {
+        // Level 7: the thing to name (tapped to hear the question again), two name cards and the three pictures.
+        const { made, cards, tiles } = nameLayout(v);
+        check(v, [
+          picture('thing', made, MADE),
+          ...cards.map((c) => picture('name card', c, CARD)),
+          ...tiles.map((c) => picture('picture', c, CARD)),
+        ]);
+        expect(
+          uprightProblems(
+            v,
+            [picture('thing', made, MADE), ...shelfLayout(v, 5).map((c) => picture('shelf', c, SHELF))],
+            0,
+          ),
+        ).toEqual([]);
       } else if (level === 6) {
         const pictures = reversedLayout(v).map((c) => picture('compound', c, MADE));
         check(v, pictures);

@@ -208,6 +208,128 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
       await page.setViewportSize({ width: 1024, height: 768 });
     };
+    /**
+     * Level 7, Name the new thing, on an upright phone: a touch that slides off is free, one tile taken back out of a name card
+     * is free, one wrong name (the thing first) is one miss, Show a hint glows the thing and the last card (one hint), then
+     * every thing named with the thing last (1/1), with one sticker. Then a capture strip of the six invented things.
+     */
+    const namePlay = async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('word-glue', 7);
+      await settle();
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.view.upright),
+        true,
+        'the upright layout is played',
+      );
+      const ask = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          const a = g.s.round.asks[g.s.index];
+          return { head: a.invented.head, details: [...a.invented.details], pictures: a.pictures };
+        });
+      const tapTile = (key) =>
+        page.evaluate((k) => kit.tapOn(neo.scene.game.cards.find((c) => c.key === k).node), key);
+      const slots = () => page.evaluate(() => [...neo.scene.game.s.slots]);
+      const stickers = () =>
+        page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'word-glue').length);
+      const before = await stickers();
+      const first = await ask();
+      assert.deepEqual(first.pictures, ['hat', 'star', 'bell'], 'the authored round opens on the hat');
+      // Every target is on screen and at least 44 CSS px.
+      const boxes = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return [...g.cards.map((c) => c.node), g.showing.made.node].map((n) => {
+          const b = n.getBounds();
+          return [b.x, b.y, b.width, b.height];
+        });
+      });
+      for (const [x, y, w, h] of boxes) {
+        assert.ok(
+          x >= 0 && y >= 0 && x + w <= 390 && y + h <= 844,
+          `a picture is on screen (${x}, ${y}, ${w}, ${h})`,
+        );
+        assert.ok(Math.min(w, h) >= 44, `a picture is at least 44 px (${w} x ${h})`);
+      }
+      // A touch on the thing's picture that slides off says its word and places nothing.
+      await page.evaluate(async () => {
+        const p = neo.scene.game.cards.find((c) => c.key === 'hat').node.getGlobalPosition();
+        await kit.drag(kit.line([p.x, p.y], [p.x, p.y + 220], 8));
+      });
+      await settle();
+      assert.deepEqual([...(await tally()), ...(await slots())], [0, 0, null, null], 'sliding off is free');
+      // A detail in, then taken back out: free.
+      await tapTile('star');
+      await page.waitForTimeout(400);
+      assert.deepEqual(await slots(), ['star', null]);
+      await tapTile('star');
+      await page.waitForTimeout(400);
+      assert.deepEqual(
+        [...(await tally()), ...(await slots())],
+        [0, 0, null, null],
+        'taking a tile back is free',
+      );
+      // The thing first: one miss, the cards empty and the ask stays.
+      await tapTile('hat');
+      await page.waitForTimeout(350);
+      await tapTile('star');
+      await page.waitForTimeout(500);
+      await screenshot('word-glue-7-upright-phone');
+      await settle();
+      assert.deepEqual(
+        [...(await tally()), await page.evaluate(() => neo.scene.game.s.index), ...(await slots())],
+        [1, 0, 0, null, null],
+        'a name with the thing first is one miss',
+      );
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      assert.deepEqual(
+        [...(await tally()), await page.evaluate(() => neo.scene.game.s.glow)],
+        [1, 1, true],
+        'Show a hint glows the thing and counts once',
+      );
+      for (let i = 0; i < 8; i++) {
+        await settle();
+        if (await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)) break;
+        await page.waitForFunction(() => !neo.scene.game.unasked);
+        const a = await ask();
+        // Alternate which detail goes first: both are right.
+        await tapTile(a.details[i % 2]);
+        await page.waitForTimeout(300);
+        await tapTile(a.head);
+      }
+      await finished('word-glue');
+      assert.deepEqual(await score(), [1, 1]);
+      assert.equal(await stickers(), before + 1, 'one sticker');
+      // The six invented things side by side, for the legibility check.
+      await page.evaluate(async () => {
+        const { inventedArt } = await import('/src/games/word-glue/art.ts');
+        const Container = inventedArt('hat').node.constructor;
+        const strip = new Container();
+        // Hide the island behind the strip; the cream page shows through.
+        neo.root.visible = false;
+        ['hat', 'boat', 'cake', 'chair', 'cup', 'coat'].forEach((h, i) => {
+          const m = inventedArt(h);
+          m.alive(3);
+          // The stage is in CSS pixels: two columns of three on the 390 x 844 phone.
+          m.node.scale.set(0.95);
+          m.node.position.set(105 + (i % 2) * 185, 150 + Math.floor(i / 2) * 270);
+          strip.addChild(m.node);
+        });
+        neo.pixi.stage.addChild(strip);
+        window.__strip = strip;
+      });
+      await page.waitForTimeout(300);
+      await screenshot('word-glue-7-invented-strip');
+      await page.evaluate(() => {
+        window.__strip.destroy({ children: true });
+        neo.root.visible = true;
+      });
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Word Glue 7 on an upright phone: free slide, tile taken back, wrong name, hint, five names, one sticker',
+      );
+    };
     const score = () =>
       page.evaluate(() => {
         const r = kit.store.stats('word-glue').history.at(-1);
@@ -246,6 +368,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     // `WORDGLUE_ONLY=kind` runs only level 5 in a touch phone context, so the upright layout is the one played.
     if (process.env.WORDGLUE_ONLY === 'kind') return kindPlay();
     if (process.env.WORDGLUE_ONLY === 'reversed') return reversedPlay();
+    if (process.env.WORDGLUE_ONLY === 'name') return namePlay();
     await launch('word-glue', 1);
     await settle();
     await page.evaluate(() => kit.tapOn(neo.scene.game.cards[0].node));

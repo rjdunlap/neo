@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
-| school | 3, 5, 6 |
+| school | 3, 5, 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,12 +22,13 @@
 | 4 | One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things) |
 | 5 | What kind of thing? Tap the part the made thing really is (5 asks) |
 | 6 | Which way round? Tap the thing the pet names (4 asks) |
+| 7 | Name the new thing: tap two pictures, the thing it is last (5 asks) |
 
 <!-- end generated -->
 
 **Starts as:** tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" (lap opens one step earlier, on one big picture)
 
-**Grows into:** level 1 joins any pair of five (counts nothing); level 2 asks for a word and gives three pictures, the two parts and one that makes no word with either (a wrong pair wobbles and the pet says its word); level 3 keeps a shared head (house, box, brush) and a friend asks for it, a wrong friend briefly gets the wrong thing; two misses or Show a hint glow the right pair or friend, one hint per ask; level 4 (lap only, first in lap's order) is one big picture and a touch anywhere sticks its partner on; level 5 (school, after 3) asks "Is a doghouse a dog or a house?" and she taps the part the made thing is; level 6 asks her to hear which thing the pet names, such as a houseboat or a boathouse. Defined, not built: level 7 names an invented thing, the thing last ([definition](../definitions/word-glue-7.md)); levels 8 and 9 add -er (someone who) and -ful and -less (full of, without) as whole spoken words ([definition](../definitions/word-glue-8-9.md))
+**Grows into:** level 1 joins any pair of five (counts nothing); level 2 asks for a word and gives three pictures, the two parts and one that makes no word with either (a wrong pair wobbles and the pet says its word); level 3 keeps a shared head (house, box, brush) and a friend asks for it, a wrong friend briefly gets the wrong thing; two misses or Show a hint glow the right pair or friend, one hint per ask; level 4 (lap only, first in lap's order) is one big picture and a touch anywhere sticks its partner on; level 5 (school, after 3) asks "Is a doghouse a dog or a house?" and she taps the part the made thing is; level 6 asks her to hear which thing the pet names, such as a houseboat or a boathouse. level 7 asks her to name a thing nobody has named (a hat with a star and a bell on it) from its three pictures, the thing last and either detail first. Defined, not built: levels 8 and 9 add -er (someone who) and -ful and -less (full of, without) as whole spoken words ([definition](../definitions/word-glue-8-9.md))
 
 ## Design notes
 
@@ -41,4 +42,6 @@
 
 **Level 6, Which way round? (school, batch `word-glue 3`).** Four pairs contrast houseboat and boathouse, pancake and cake pan, racehorse and horse race, and sled dog and dog sled. Two asks choose each word order, and two correct pictures appear in each position. The pet speaks the whole word, names the other drawing after a wrong choice, and names both when the right one comes alive. Touch a picture and slide off to hear its name for free. The level shares level 5's two-miss and one-hint rules, and the ghost finger starts with a free slide-off. Both drawings go to the shelf after each answer. The 210-unit cards stack upright and sit side by side in landscape. The how-to card flags the US terms, and 32 generated clips cover the two words, prompts and feedback for all four pairs. [Definition](../definitions/word-glue-5-6.md#level-6-which-way-round)
 
-On levels 5 and 6, if the next question is still waiting behind the previous answer, the first touch starts the question for free. A separate tap can answer it.
+**Level 7, Name the new thing (school, batch `word-glue 4`, 2026-11-23).** School plays 3, 5, 6 and 7. Six invented things (`INVENTED`, kept apart from `COMPOUNDS` so no invented name reaches levels 1 to 6) are drawn by `inventedArt`: the head at made size with two details about a third its size sitting on it, each with a short comes-alive motion. The thing sits above two empty name cards with a pause dot between them and three picture tiles below (`nameLayout`, one centred column in every view, all 150 units). A tap sends a tile to the first empty card and a tap on a carded tile takes it back for free; two full cards are judged by `nameIt`. A right name (either detail, then the thing) hops into the thing, which comes alive while the pet says the name, its meaning and the other good name. A wrong name wobbles, counts one miss and the pet says what it would call ("A hat star would be a star! This is a hat, so hat goes last."). The second miss glows the thing's tile and the last card and counts one hint; a wrong name after that plays the supported name with her detail first. Each round places the thing in every tile position at least once and at most twice. All 37 lines are written out in full and have generated clips, so no invented name reaches device speech through a template. The twelve names were checked as not being Merriam-Webster or Cambridge headwords by a site-limited web search; direct page fetches were refused. Check: `BROWSER_SUITE=wordglue WORDGLUE_ONLY=name` and `FINGER_LEVELS=7`. [Definition](../definitions/word-glue-7.md)
+
+On levels 5 to 7, if the next question is still waiting behind the previous answer, the first touch starts the question for free. A separate tap can answer it.
