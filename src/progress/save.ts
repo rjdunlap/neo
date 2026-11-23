@@ -18,8 +18,12 @@ import { isSpecies, MAX_CREATURES, SPECIES, type SpeciesId } from '../creatures/
 import { isGoalId, type GoalId } from '../content/goals';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
+
 import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
+
+/** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
+export type Language2 = 'none' | 'pt-PT';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -119,6 +123,8 @@ export interface SaveData {
     speech: boolean;
     /** "Show the words": a `school` player sees the guide's question written out, for a phone on silent (a `grownup` always does). */
     showWords: boolean;
+    /** A second language the pet adds after a naming line (WL2, `docs/definitions/additional-languages.md`): off, or European Portuguese. */
+    language2: Language2;
   };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
@@ -160,6 +166,7 @@ export function defaults(): SaveData {
       howToCards: true,
       showWords: false,
       speech: true,
+      language2: 'none',
     },
     games: {},
     stickers: [],
@@ -363,6 +370,8 @@ export function migrate(raw: unknown): SaveData {
       howToCards: bool(settings.howToCards, d.settings.howToCards),
       speech: bool(settings.speech, d.settings.speech),
       showWords: bool(settings.showWords, d.settings.showWords),
+      // Exactly one of the two values; `pt`, `pt-BR` or anything else is off, never a guessed variety.
+      language2: settings.language2 === 'pt-PT' ? 'pt-PT' : 'none',
     },
     games,
     stickers,

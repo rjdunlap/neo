@@ -1,3 +1,4 @@
+import type { Language2 } from '../progress/save';
 import { playerChanged, selectPlayer } from '../app/players';
 import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
@@ -173,6 +174,14 @@ ${
         <button class="btn" data-test-voice>Play</button>
       </div>
       <p class="muted" data-voice-note></p>
+      <div class="parent__row">
+        <label for="p-language2">A word in another language</label>
+        <select id="p-language2">
+          <option value="none">None</option>
+          <option value="pt-PT">European Portuguese</option>
+        </select>
+      </div>
+      <p class="muted" data-language2-note></p>
 
       <h2>This week</h2>
       <div data-week></div>
@@ -213,6 +222,7 @@ ${
   const layout = root.querySelector<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
+  const language2 = $<HTMLSelectElement>('#p-language2');
   const musicBox = $<HTMLInputElement>('#p-music');
   let closing = false;
   let gone = false;
@@ -265,6 +275,8 @@ ${
     words.checked = d.settings.showWords;
     volume.value = String(d.settings.volume);
     speechBox.checked = d.settings.speech;
+    language2.value = d.settings.language2;
+    $('[data-language2-note]').textContent = language2Note(d.settings.language2);
     musicBox.checked = d.settings.music;
     const undoAt = store.undoAt;
     $('[data-undo]').toggleAttribute('hidden', undoAt === null);
@@ -403,6 +415,13 @@ ${
     applySettings();
     store.save();
   });
+  language2.addEventListener('change', () => {
+    // A word still waiting on its line belongs to the old setting.
+    voice.dropTail();
+    store.data.settings.language2 = language2.value === 'pt-PT' ? 'pt-PT' : 'none';
+    $('[data-language2-note]').textContent = language2Note(store.data.settings.language2);
+    store.save();
+  });
   musicBox.addEventListener('change', () => {
     store.data.settings.music = musicBox.checked;
     applySettings();
@@ -491,6 +510,23 @@ function voiceNote(): string {
     ? `Speaking: ${now.name}, the device's standard voice.`
     : "Speaking: the device's default voice.";
   return `${who} ${shared} For a clearer voice on an iPad, open Settings → Accessibility → Spoken Content → Voices → English, download a voice marked Enhanced or Premium (Ava, Zoe or Samantha), then close and reopen Puddle Island.`;
+}
+
+/**
+ * WL2's status: off, or which exact European Portuguese voice says the words, or that this device has none. A found voice
+ * is named, never praised; and the words are said to be the assistant's choice, not a family member's.
+ */
+function language2Note(setting: Language2): string {
+  const what =
+    'In Peekaboo Barn, Animal Snack and Bubble Pop the pet adds one word after naming an animal, a snack or a colour. Kept for each player.';
+  if (setting === 'none') return `Off. ${what}`;
+  const who =
+    'The Portuguese words were chosen and checked by an AI assistant against European Portuguese dictionaries, not by a family member; tell us if one is wrong.';
+  const found = voice.wordVoice(setting);
+  const speaking = found
+    ? `Speaking the words: ${found}.`
+    : 'No European Portuguese voice on this device; words stay in English.';
+  return `${speaking} ${what} ${who}`;
 }
 
 /** One game's row: its name and level, with a picker to keep it on a level, then rounds and minutes this week. */

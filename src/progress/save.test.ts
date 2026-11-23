@@ -39,6 +39,7 @@ describe('migrate', () => {
       howToCards: true,
       speech: true,
       showWords: false,
+      language2: 'none',
     });
     expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
@@ -455,6 +456,17 @@ describe('migrate', () => {
     const save = defaults();
     save.favorites = ['duck-pond', 'bubble-pop'];
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts with no second language and repairs it to exactly none or pt-PT (WL2)', () => {
+    expect(defaults().settings.language2).toBe('none');
+    expect(migrate({ settings: { volume: 0.5 } }).settings.language2).toBe('none');
+    for (const bad of [null, {}, 1, 'pt', 'pt-BR', 'pt-pt', 'PT-PT', 'pt_PT', 'es', ''])
+      expect(migrate({ settings: { language2: bad } }).settings.language2).toBe('none');
+    expect(migrate({ settings: { language2: 'pt-PT' } }).settings.language2).toBe('pt-PT');
+    const save = defaults();
+    save.settings.language2 = 'pt-PT';
+    expect(migrate(JSON.parse(JSON.stringify(save))).settings.language2).toBe('pt-PT');
   });
 
   it('starts with "Show the words" off and repairs the switch', () => {
