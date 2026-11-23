@@ -49,6 +49,7 @@ import {
   type RoomItemId,
   type StoryId,
   type StoryStep,
+  colorChoices,
 } from '../content/world';
 import {
   companionOf,
@@ -669,6 +670,20 @@ export class Store {
     const who = this.data.creatures.owned.find((o) => o.id === id);
     if (!who) return false;
     who.look.worn = changeWorn(who.look.worn ?? [], item, on);
+    this.save();
+    this.flush();
+    return true;
+  }
+
+  /**
+   * Gives an owned friend one of her colours (RW10 slice 2, Dress's colour row) and writes at once. False (and nothing
+   * changes) for an id she does not own or a colour she has not got: the first eight, the ones she has mixed, and the
+   * friend's own colour (`colorChoices`). Nothing is used up: every colour stays available to every friend.
+   */
+  recolor(id: string, color: PetColor): boolean {
+    const who = this.data.creatures.owned.find((o) => o.id === id);
+    if (!who || !colorChoices(this.petColors, who.look.color).includes(color)) return false;
+    who.look.color = color;
     this.save();
     this.flush();
     return true;

@@ -42,3 +42,5 @@ Misses and hints: only a Check that does not match is a miss. It names the pot f
 **What the guide repeats.** Level 4's `pm.different-amount` ("make it a different amount") is an instruction; the next sample says the level's instruction again, so the caption never keeps a finished ask.
 
 **The palette unlock (batch `paint-mixer 4`, 2026-11-22).** Once she has mixed one of the shelf's six colours at level 5, the pet's colour step (a second page of balls) and the grown-ups' select offer it; nothing in Paint Mixer itself changes, and nothing is lost or locked again. Built notes: [definition](../definitions/paint-mixer-5-6.md#built-the-palette-unlock-2026-11-22).
+
+**A book launch (RW10 slice 2, 2026-11-22).** The collection book's `colour:<c>` goal starts level 5 with `makeRound(5, rng, recipe)`, which makes the first bucket that recipe (the second stays seeded from the other triple); the round arrives as `ctx.request`, and a book origin with a start level does not adapt or move her saved Paint Mixer level. The mixed colour is then offered in Dress's colour row.

@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js';
-import { ink, swatch, wood } from '../art/palette';
+import { ink, swatch, wood, type ColorName } from '../art/palette';
 import { shapePath, starPoints } from '../art/shapes';
 
 export function islandIcon(): Graphics {
@@ -497,4 +497,14 @@ export function arcadeIcon(): Graphics {
     .fill(swatch.yellow.fill)
     .circle(14, 11, 3.5)
     .fill(swatch.teal.fill);
+}
+
+/** A round colour swatch, a 100-unit target with a highlight: the hatch's colour step and Dress's colour row. */
+export function colourSwatch(color: ColorName): Graphics {
+  return new Graphics()
+    .circle(0, 0, 49)
+    .fill(swatch[color].fill)
+    .stroke({ width: 5, color: swatch[color].line })
+    .circle(-15, -15, 10)
+    .fill(swatch[color].light);
 }

@@ -269,6 +269,7 @@ export class GameScene extends Scene {
       },
       level: this.level,
       band,
+      request: this.origin && 'book' in this.origin ? this.origin.recipe : undefined,
       rng: new Rng(),
       tw: this.tw,
       particles: this.particles,
@@ -772,7 +773,9 @@ export class GameScene extends Scene {
       this.mod.levels(band),
       // A story round plays the story's level, and a Today's six card (or its Again / Next level) the day's preset level: neither
       // moves the game's own level. A discovery opened from the six carries its origin but plays her saved level, so it adapts.
-      !this.story && !(this.origin && 'daily' in this.origin && this.startLevel !== undefined),
+      // A level launched from the collection book's path (RW10 slice 2) leaves her saved level alone the same way.
+      !this.story &&
+        !(this.origin && ('daily' in this.origin || 'book' in this.origin) && this.startLevel !== undefined),
     );
     // Finishing completes the request, however much help it took.
     if (this.story && 'project' in this.story)

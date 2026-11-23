@@ -885,6 +885,29 @@ describe('her friends (RW05)', () => {
     expect(store.data.creatures.owned).toHaveLength(1);
   });
 
+  it('recolours only an owned friend with a colour she has, at once (RW10 slice 2)', async () => {
+    const store = make();
+    await store.load();
+    const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
+    expect(store.recolor('nobody', 'blue')).toBe(false);
+    // A paint-shelf colour she has not mixed is not hers to give.
+    expect(store.recolor(mochi.id, 'peach')).toBe(false);
+    expect(store.companion?.look.color).toBe('pink');
+    expect(store.recolor(mochi.id, 'blue')).toBe(true);
+    await Promise.resolve();
+    expect(savedAs('neo.save').creatures.owned[0].look.color).toBe('blue');
+    store.data.journal.found.push('paint-mixer:peach');
+    expect(store.recolor(mochi.id, 'peach')).toBe(true);
+    expect(store.recolor(mochi.id, 'lilac')).toBe(false);
+    // A colour already given stays valid whatever happens to the journal; once changed it has to be mixed again.
+    store.data.journal.found = [];
+    expect(store.recolor(mochi.id, 'peach')).toBe(true);
+    expect(store.recolor(mochi.id, 'teal')).toBe(true);
+    expect(store.recolor(mochi.id, 'peach')).toBe(false);
+    store.reset();
+    expect(store.companion?.look.color).toBe('teal');
+  });
+
   it('dresses only an owned friend, at once; reset, a backup and another profile keep their own looks (RW06)', async () => {
     const store = make();
     await store.load();

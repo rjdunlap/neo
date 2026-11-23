@@ -23,7 +23,7 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
-import type { PicnicStep, WoodlandStep } from '../content/world';
+import type { MixedColor, PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
@@ -47,7 +47,13 @@ export type StoryRound =
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
  * A `land` origin keeps the page of a full land she opened it from (clamped on arrival); `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type BookOrigin = { book: true };
+/**
+ * The collection book; `recipe` is a colour goal's (RW10 slice 2), handed to the round as `ctx.request`, and `things`
+ * marks Dress opened from a colour on the Things page, whose Back returns to that page.
+ */
+export type BookOrigin = { book: true; recipe?: MixedColor; things?: true };
+/** Where the book opens: a friend's page, the goal just joined, a colour goal's page, or the Things page. */
+export type BookAt = { friend: string } | { joined: true } | { colour: MixedColor } | { things: true };
 
 export type Origin =
   | { land: LandId; page?: number }
@@ -114,7 +120,7 @@ export interface Routes {
   /** The library at the root (RW08 slice 2): the journal and the stories. The island has none, so it opens the treehouse. */
   library(): void;
   /** The collection book, optionally returning to a friend or showing the newcomer once after adoption. */
-  book(at?: { friend: string } | { joined: true }): void;
+  book(at?: BookAt): void;
 }
 
 /** Owns the Pixi app, the logical-unit root, scene switching and the frame loop. */

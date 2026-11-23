@@ -264,6 +264,11 @@ export interface GameContext extends LifetimeContext {
    * `course`: a challenge run on fixed boards, played in a row as one round.
    */
   couch?: { versus: boolean; course?: CouchCourse };
+  /**
+   * What the round was asked for by the collection book's path (RW10 slice 2): Paint Mixer level 5's recipe. A game that
+   * cannot honour it ignores it; a round opened any other way has none.
+   */
+  request?: string;
   /** Set while the how-to card's demonstration plays the game, so a long round can show a short one (a bed with most squares already filled). */
   demo?: true;
   /** End the round. The shell celebrates, saves the result and offers "again". */
