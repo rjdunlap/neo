@@ -13,6 +13,7 @@ import { phoneCrosswordLayout } from './crossword/grownup';
 import { CELL as DOMINO_CELL, TARGET as DOMINO_TARGET, TRAY_W as DOMINO_TRAY_W } from './domino-pond/layout';
 import { gemLayout } from './gem-swap';
 import { LEVELS as gemLevels, planFor as gemPlan } from './gem-swap/logic';
+import { layout as harborLayout } from './harbor-orders/layout';
 import { songLayout } from './hat-band/logic';
 import {
   LEVELS as bridgeLevels,
@@ -142,6 +143,17 @@ const MEASURE: Record<string, () => Size[]> = {
     ...grown(gemLevels.grownup!).map((level): Size => ['gem', gemLayout(v, gemPlan(level).size).pitch]),
     ['button', 88],
   ],
+  'harbor-orders': () => {
+    const l = harborLayout(v);
+    return [
+      ['order card', side(l.order)],
+      ...l.rows.flatMap(({ sign, squares }) => [
+        ['workshop sign', side(sign)] as Size,
+        ...squares.map((square): Size => ['morning square', side(square)]),
+      ]),
+      ...l.controls.map((button): Size => ['button', side(button)]),
+    ];
+  },
   'hat-band': () => {
     const l = songLayout(v);
     return [
@@ -342,6 +354,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'domino-pond': { px: 50.8, what: 'tray' },
   'fence-the-field': { px: 50.8, what: 'rail' },
   'gem-swap': { px: 44.7, what: 'button' },
+  'harbor-orders': { px: 44.7, what: 'workshop sign' },
   'hat-band': { px: 50.8, what: 'song card' },
   'jar-clues': { px: 37.6, what: 'number cell' },
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },

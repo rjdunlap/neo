@@ -58,6 +58,7 @@ import { VOICE as gearGardenVoice } from '../games/gear-garden/voice.ts';
 import { VOICE as gemSwapVoice } from '../games/gem-swap/voice.ts';
 import { VOICE as goodnightRoomVoice } from '../games/goodnight-room/voice.ts';
 import { VOICE as habitatHelpersVoice } from '../games/habitat-helpers/voice.ts';
+import { VOICE as harborOrdersVoice } from '../games/harbor-orders/voice.ts';
 import { VOICE as hatBandVoice } from '../games/hat-band/voice.ts';
 import { VOICE as helperHouseVoice } from '../games/helper-house/voice.ts';
 import { VOICE as inchwormVoice } from '../games/inchworm/voice.ts';
@@ -703,6 +704,7 @@ export const SCRIPT = {
   ...gemSwapVoice,
   ...goodnightRoomVoice,
   ...habitatHelpersVoice,
+  ...harborOrdersVoice,
   ...hatBandVoice,
   ...helperHouseVoice,
   ...inchwormVoice,

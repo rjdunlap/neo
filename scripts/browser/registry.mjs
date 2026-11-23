@@ -42,6 +42,7 @@ import { createSuite as createTideTables } from './suites/tide-tables-play.mjs';
 import { createSuite as createTruthBridge } from './suites/truth-bridge-play.mjs';
 import { createSuite as createShadowPlay } from './suites/shadow-play-play.mjs';
 import { createSuite as createFenceTheField } from './suites/fence-the-field-play.mjs';
+import { createSuite as createHarborOrders } from './suites/harbor-orders-play.mjs';
 import { createSuite as createKeyItOut } from './suites/key-it-out-play.mjs';
 import { createSuite as createJarClues } from './suites/jar-clues-play.mjs';
 import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
@@ -381,6 +382,7 @@ export const SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'harbororders',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -575,6 +577,7 @@ export const ALL_SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'harbororders',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -960,6 +963,7 @@ export function createChecks(fixture) {
   install(createFenceTheField(shared));
   install(createKeyItOut(shared));
   install(createJarClues(shared));
+  install(createHarborOrders(shared));
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
   install(createCouchSunbeams(shared));
@@ -1219,6 +1223,7 @@ export async function runSuite(suite, fixture) {
     fenceTheFieldPlay,
     keyItOutPlay,
     jarCluesPlay,
+    harborOrdersPlay,
     driftCardsPlay,
     gardenRowsPlay,
     dropsJourneyPlay,
@@ -1435,6 +1440,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'fencethefield') await fenceTheFieldPlay();
   if (suite === 'all' || suite === 'keyitout') await keyItOutPlay();
   if (suite === 'all' || suite === 'jarclues') await jarCluesPlay();
+  if (suite === 'all' || suite === 'harbororders') await harborOrdersPlay();
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();
   if (suite === 'all' || suite === 'gardenrows') await gardenRowsPlay();
