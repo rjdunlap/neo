@@ -147,7 +147,7 @@ Still open: the person checks (device speech of each fact sentence, whether a th
 
 1. **IR1 define: Look It Up levels 1–3** (docs only, one packet in `docs/definitions/look-it-up.md`): the friend and fact tables (*Eats* from Animal Snack), round tables, page layout at 100-unit targets in both orientations, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Defined 2026-10-22 ([definition](../../definitions/look-it-up.md)); built 2026-10-22 (PR #830).
 2. **IR1 build, built 2026-10-22 (PR #830)** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong answer and one hint, `fingerdemo`, one portrait screenshot).
-3. **IR2 define and build: levels 4–6**: [defined 2026-11-22](../../definitions/look-it-up-4-6.md) (level 5 amended to the *Baby* name tags); batch `look-it-up 2` (levels 4–5) built (PR #2009); `look-it-up 3` (level 6) queued.
+3. **IR2 define and build: levels 4–6**: [defined 2026-11-22](../../definitions/look-it-up-4-6.md) (level 5 amended to the *Baby* name tags); batch `look-it-up 2` (levels 4–5) built (PR #2009); `look-it-up 3` (level 6) claimed on branch `claude/look-it-up-6`.
 4. **Notes to owners** (docs only, no new slice): LEGO's per-step card to Recipe Workshop's later levels; Curcio's levels to Picture Graph (taken up as its level 11 in [the dive](../picture-graph.md), 2026-11-01); a two-step how-to sign to Read & Do's dive; Diagram Detective to Attic Finds' owner.
 5. **IR4 Key It Out** [defined](../../definitions/key-it-out.md) 2026-11-23 (two build batches queued); **IR5 cards** to the off-screen companions work after an ordinary content review.
 
