@@ -12,6 +12,7 @@ export async function createFixture(browser, suite) {
     reducedMotion: 'reduce',
     ...(suite === 'tidetables' ||
     suite === 'truthbridge' ||
+    suite === 'shadowplay' ||
     suite === 'dominopond' ||
     suite === 'campsite' ||
     suite === 'sillyscene' ||
