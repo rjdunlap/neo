@@ -1,6 +1,6 @@
 # RW10: Collection book and chosen unlock goals (definition)
 
-Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) ([issue #494](https://github.com/rjdunlap/neo/issues/494)); the definition started on the [2026-11-17 decision](../archive/DECISIONS-2026-11-17.md#rework) that RW08's slices 1–2 meet its dependency. Slice 1 is implemented. Slice 2 follows the Paint Mixer palette batch. It builds on the [RW05 collection model](CREATURE-COLLECTION.md) (individuals, `meet()`, the `metAt` token, Friends), [RW06's dressing](HOME.md) (looks, no wardrobe inventory), [RW07's welcome project](WELCOME-BUILD.md) (the adoption token, the basket bed) and [RW08's library](RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home). Every code claim below was checked at `dc3645c94` (`origin/main`, 2026-11-22).
+Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals) ([issue #494](https://github.com/rjdunlap/neo/issues/494)); the definition started on the [2026-11-17 decision](../archive/DECISIONS-2026-11-17.md#rework) that RW08's slices 1–2 meet its dependency. Both slices are implemented. It builds on the [RW05 collection model](CREATURE-COLLECTION.md) (individuals, `meet()`, the `metAt` token, Friends), [RW06's dressing](HOME.md) (looks, no wardrobe inventory), [RW07's welcome project](WELCOME-BUILD.md) (the adoption token, the basket bed) and [RW08's library](RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home). Every code claim below was checked at `dc3645c94` (`origin/main`, 2026-11-22).
 
 ## Summary
 
@@ -9,7 +9,7 @@ Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlo
 - **Two goals exist at first, in different bands.** The **discovery** goal is the welcome project's newcomer (preschool and pre-K, while the project is open). The **customization** goal is a paint-shelf colour from Paint Mixer level 5 (school), which becomes a colour she can give a friend. Lap, toddler and grown-up profiles see the book with no goals.
 - **She chooses one goal; the book shows it first.** The only new save field is the chosen goal's id. Choosing changes nothing in any game.
 - **The put-down test holds by construction.** Goal progress appears only in the book, which she opens by choice. A round's result never mentions a goal, and a test keeps the result code from importing the goal table.
-- **Two build slices:** the book with the discovery goal, then the colour goal, which came after the `paint-mixer 4` batch (built 2026-11-22).
+- **Two build slices:** the book with the discovery goal, then the colour goal, which came after the `paint-mixer 4` batch (both implemented 2026-11-22).
 
 ## What exists today
 
@@ -34,7 +34,7 @@ Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlo
 
 **Pages.** One page at a time, laid out from `view`, paged with the held arrows Friends uses rather than shrunk (`landLayout`'s rule: a target never shrinks below 100 units; tests at every band in four views, upright included):
 
-1. **Goals** (shown first, and only when at least one goal is reachable at her band): a large card per reachable goal, the chosen one first and marked with a star. A card holds the goal's picture (the newcomer's portrait as a dark silhouette, or a paint jar in the colour), a plain-picture path button (the project's icon, or Paint Mixer's), and nothing that counts. A done goal turns into its result: the friend's portrait in colour, or the jar full.
+1. **Goals** (shown first, and only when at least one goal is reachable at her band): one page per reachable goal as built (slice 2; slice 1's single goal had one card), the chosen one first and marked with a star. A card holds the goal's picture (the newcomer's portrait as a dark silhouette, or a paint jar in the colour), a plain-picture path button (the project's icon, or Paint Mixer's), and nothing that counts. A done goal turns into its result: the friend's portrait in colour, or the jar full.
 2. **Friends**, grouped by species: one row per species she owns, headed by that species' portrait and spoken name, with her individuals of that species as 150-unit cards (portrait recoloured to the individual's colour, its name under it). Six cards fit a page; more page. Tapping a card says the name; a second tap on the same card opens `go.friends(id)` with that friend previewed (one tap looks, the next goes, as the Arcade's cards do).
 3. **Things**: what she has earned and can still use. At first that is the basket bed (once adopted; tapping it opens creature play, where the bed is) and, after slice 2, the colours she has mixed (tapping one opens Dress for her companion with the colour row showing). Nothing here can be lost, used up or locked again.
 
@@ -115,7 +115,15 @@ Implemented 2026-11-22.
 
 ## Slice 2: the colour goal (after `paint-mixer 4`)
 
-In progress 2026-11-22 on branch `claude/rw10-colour-goal` (draft [PR #2015](https://github.com/rjdunlap/neo/pull/2015)). Done: the requested recipe (`makeRound(5, rng, recipe)`, rule tests over 300 seeds), `BookOrigin.recipe` handed to the round as `ctx.request`, and the adapt-off rule for a book origin with a start level. Remaining: the goal rows, the book's goal pages and paged Things, the Dress colour row with `store.recolor`, voice lines, the `home` check and the offline check.
+Implemented 2026-11-22 ([PR #2015](https://github.com/rjdunlap/neo/pull/2015)); the bullets below are the plan, and this note records where the build departs from it.
+
+- **One goal per page, not a Goals page of cards.** `bookPages` gives each reachable goal its own page (`{ kind: 'goals'; goal }`, the chosen goal first), so a six-colour school profile pages through the colours between the held arrows, and the page dots close up (`dotStep`) so a book of 13 or more pages still sits between the arrows.
+- **A done colour goal keeps its page** as a full jar with its star; only the path button is hidden. The friend goal keeps its show-once rule. A mixed colour's page therefore never vanishes or reorders when she mixes it.
+- **Things pages hold the bed and the mixed colours** (`PER_PAGE` per page). A mixed colour opens `go.dress(companion, { book: true, things: true })`, and Dress's Back returns to the Things page when opened from there (to Friends otherwise); with no companion the tap only says the colour's name.
+- **Routing.** `go.book(at)` takes a `BookAt` (`{ friend } | { joined } | { colour } | { things }`). A book origin that carries a recipe returns to that colour's goal page, so Home on Paint Mixer's result lands on the jar she just filled. The path button is Paint Mixer's hub icon on a 100-unit round button.
+- **Dress colour row** (`swatchRow`, `dressLayout(v, count, colours)`): one row of 100-unit swatches along the bottom in both orientations, everything else laid out above it; if the colours do not all fit the row pages between an arrow at each end. It opens on the page holding the friend's colour and rings the current one; a tap calls `store.recolor`, rebuilds the stage friend and says `color.<c>`. The grown-ups' panel select goes through `store.recolor` too, and Dress and the hatch colour step share `colourSwatch` (`src/ui/icons.ts`).
+- **Voice:** `book.colour`, `book.mixed` and `book.wear`, their clips rendered.
+- **Checked:** `BROWSER_SUITE=home HOME_ONLY=colour` (`scripts/browser/suites/home-colour.mjs`) plays the whole path (book, peach, Paint Mixer level 5, help to the finish, the jar full, Things, Dress, reload), and the offline check passed ([entry](../verification/2026-11-22-rw10-slice-2-the-colour-goal-and-the-dress-colour-row.md)).
 
 The [`paint-mixer 4` batch](../GAME-BATCHES.md#paint-mixer-4-palette-unlock) (built 2026-11-22, PR #2008) added the six paint-shelf colours to the palette, to save repair's accepted colours, to the hatch colour step and to the grown-ups' select ([its definition](../definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)). This slice adds only what waited for RW10:
 
