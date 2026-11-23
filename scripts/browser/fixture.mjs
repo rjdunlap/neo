@@ -10,7 +10,8 @@ export async function createFixture(browser, suite) {
   const context = await createTestContext(browser, {
     viewport: { width: 1024, height: 768 },
     reducedMotion: 'reduce',
-    ...(suite === 'dominopond' ||
+    ...(suite === 'tidetables' ||
+    suite === 'dominopond' ||
     suite === 'campsite' ||
     suite === 'sillyscene' ||
     (suite === 'swingpals' && (process.env.SWING_LEVELS === '9' || process.env.SWING_LEVELS === '10')) ||

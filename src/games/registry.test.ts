@@ -692,6 +692,7 @@ describe('game registry', () => {
       'swing-pals',
       'tangram-town',
       'teddy-doctor',
+      'tide-tables',
       'tile-pairs',
       'timeline-trail',
       'trackway-tales',

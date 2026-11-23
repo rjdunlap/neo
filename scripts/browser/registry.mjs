@@ -38,6 +38,7 @@ import { createSuite as createNoticeBoard } from './suites/notice-board-play.mjs
 import { createSuite as createMakerLane } from './suites/maker-lane-play.mjs';
 import { createSuite as createShellRows } from './suites/shell-rows-play.mjs';
 import { createSuite as createDominoPond } from './suites/domino-pond-play.mjs';
+import { createSuite as createTideTables } from './suites/tide-tables-play.mjs';
 import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
 import { createSuite as createDriftCards } from './suites/drift-cards-play.mjs';
 import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs';
@@ -369,6 +370,7 @@ export const SUITES = [
   'tideline34',
   'tideline5',
   'tideline6',
+  'tidetables',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -557,6 +559,7 @@ export const ALL_SUITES = [
   'tideline34',
   'tideline5',
   'tideline6',
+  'tidetables',
   'driftcards',
   'blocktopple',
   'gardenrows',
@@ -936,6 +939,7 @@ export function createChecks(fixture) {
   install(createShellRows(shared));
   install(createDominoPond(shared));
   install(createTideLine(shared));
+  install(createTideTables(shared));
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
   install(createCouchSunbeams(shared));
@@ -1189,6 +1193,7 @@ export async function runSuite(suite, fixture) {
     tideLine34Play,
     tideLine5Play,
     tideLine6Play,
+    tideTablesPlay,
     driftCardsPlay,
     gardenRowsPlay,
     dropsJourneyPlay,
@@ -1399,6 +1404,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'tideline34') await tideLine34Play();
   if (suite === 'all' || suite === 'tideline5') await tideLine5Play();
   if (suite === 'all' || suite === 'tideline6') await tideLine6Play();
+  if (suite === 'all' || suite === 'tidetables') await tideTablesPlay();
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();
   if (suite === 'all' || suite === 'gardenrows') await gardenRowsPlay();
