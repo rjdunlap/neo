@@ -15,15 +15,27 @@ export const HOW_TO: GameHowTo = {
       to: 3,
       text: "Tap the animal's tab, touch the food or place picture in its box, then help it.",
     },
+    {
+      from: 4,
+      to: 5,
+      text: "Tap the animal's name on the contents page to find its page; Contents takes you back.",
+    },
+    { from: 4, to: 5, text: 'Touch a sentence to hear it.' },
+    { from: 5, to: 5, text: 'Give the baby the name tag its page says.' },
   ],
   finish: 'Every visitor has been helped.',
   note: [
-    { from: 1, to: 3, text: 'The facts are real and come from zoos and wildlife groups.' },
+    { from: 1, to: 5, text: 'The facts are real and come from zoos and wildlife groups.' },
     { from: 1, to: 1, text: 'Nothing can go wrong here.' },
     {
       from: 2,
-      to: 3,
+      to: 5,
       text: 'Turning pages is always free; only a wrong food or place given to the animal is a miss, and after two misses the right tab or picture glows, which counts as a hint.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: "The picture shows what an animal looks like; the words can tell what the picture can't.",
     },
   ],
 };
