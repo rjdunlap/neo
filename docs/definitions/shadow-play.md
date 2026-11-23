@@ -133,7 +133,7 @@ The ghost finger follows the hint order on the seeded board and, at levels 2–4
    - registry, lands and paging.
 
    **Browser and build:** one filtered `shadowplay` play at 390 × 625 with captions, reaching Lantern Lake through the normal grown-up route and its page. Finish level 1, then at level 2 light a wrong arrangement, light it again (no new miss), follow Help, rotate and finish with one sticker. Take one upright screenshot, run `fingerdemo` at level 2, and build with the generated voice assets.
-2. **`shadow-play 2`, levels 3–4.** This adds the turn, the swap and their hints.
+2. **`shadow-play 2`, levels 3–4.** Claimed on `codex/neo-ready-shadow-play-3-4`. This adds the turn, the swap and their hints after batch 1. Expected changes are the Shadow Play rules, scene, layout, voice and how-to card, focused tests and scripted play, generated voice and game metadata, and the corresponding study, READY and verification records.
 
    **Checks:** typecheck and unit tests (pool counts 51,627 and 38,050, the turn in the light model, the swap, the hint walk over cut-out, mark and turn, voice coverage), one filtered play at level 4 with one swap, one wrong lighting and one hint, one upright screenshot with a turned cut-out, `fingerdemo` at level 4, and a build. The batch runs after batch 1.
 
