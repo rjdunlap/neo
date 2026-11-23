@@ -15,6 +15,8 @@ import { bridgeLayout, type Box } from './layout';
 import {
   LEVELS,
   NAMES,
+  PLANKS,
+  answerKey,
   boardFor,
   boardKey,
   check,
@@ -24,15 +26,18 @@ import {
   describeLevel,
   hintFor,
   hintLine,
+  kindWord,
   missLine,
   roundPools,
   sentenceLine,
+  suppositionWords,
   title,
   words,
   type Board,
   type Domain,
   type Kind,
   type Name,
+  type Plank,
   type PoolId,
   type Step,
 } from './logic';
@@ -41,7 +46,8 @@ import {
 const line = (id: string) => id as LineId;
 
 const RULE = 'A Topsy islander says the opposite of what is so.';
-const WORD: Record<Kind, string> = { straight: 'Straight', topsy: 'Topsy' };
+const PLANK_RULE = 'Which plank is sound? Read what the islanders say.';
+const plankWord = (plank: Plank) => plank[0].toUpperCase() + plank.slice(1);
 
 /** The board each pool showed last, so the next round never repeats it. */
 const lastBoard: Partial<Record<PoolId, string>> = {};
@@ -62,14 +68,25 @@ function lantern(g: Graphics, x: number, y: number, s: number, upside = false, l
 }
 
 /** Where the rope bridge runs in the scene box: `t` from the near bank (0) to the far bank (1). */
-function bridgePoint(scene: Box, t: number) {
+function bridgePoint(scene: Box, t: number, plank: Plank | null = null) {
   const x0 = scene.x - scene.w / 2 + scene.w * 0.16;
   const x1 = scene.x + scene.w / 2 - scene.w * 0.2;
-  return { x: x0 + (x1 - x0) * t, y: scene.y + scene.h * 0.08 + scene.h * 0.14 * 4 * t * (1 - t) };
+  const lane = plank ? PLANKS.indexOf(plank) - 1 : 0;
+  return {
+    x: x0 + (x1 - x0) * t,
+    y: scene.y + scene.h * 0.08 + scene.h * (0.14 + lane * 0.13) * 4 * t * (1 - t),
+  };
 }
 
 /** The lake, both banks, the rope bridge and one lantern post per islander on the far bank. */
-function drawScene(g: Graphics, scene: Box, posts: number, lit: number) {
+function drawScene(
+  g: Graphics,
+  scene: Box,
+  posts: number,
+  lit: number,
+  withPlanks = false,
+  chosen: Plank | null = null,
+) {
   const { x, y, w, h } = scene;
   const left = x - w / 2;
   const top = y - h / 2;
@@ -82,10 +99,12 @@ function drawScene(g: Graphics, scene: Box, posts: number, lit: number) {
   g.ellipse(left + w * 0.9, y + h * 0.32, w * 0.2, h * 0.3).fill(grass);
   g.circle(left + w * 0.5, top + h * 0.22, h * 0.1).fill(cream);
   const steps = 12;
-  for (let i = 0; i <= steps; i++) {
-    const p = bridgePoint(scene, i / steps);
-    g.roundRect(p.x - w * 0.02, p.y - 3, w * 0.04, 7, 3).fill(wood.fill);
-  }
+  for (const plank of withPlanks ? PLANKS : [null])
+    for (let i = 0; i <= steps; i++) {
+      const p = bridgePoint(scene, i / steps, plank);
+      const color = plank && plank === chosen ? swatch.yellow.line : wood.fill;
+      g.roundRect(p.x - w * 0.02, p.y - 3, w * 0.04, 7, 3).fill(color);
+    }
   for (const lift of [0, h * 0.16]) {
     const a = bridgePoint(scene, 0);
     const b = bridgePoint(scene, 1);
@@ -133,6 +152,7 @@ class Round implements Game {
   private readonly scene = new Graphics();
   private readonly status = label(RULE, 26);
   private readonly bubbles: Button[];
+  private readonly planks: Button[];
   private readonly seats: (Button & { word: Text })[];
   private readonly critters: Record<Name, Critter>;
   private readonly helpButton = button(this.root, () => this.askForHint());
@@ -142,6 +162,8 @@ class Round implements Game {
   private readonly counts = newTally();
   private at = 0;
   private marks: Domain[];
+  private plank: Plank | null = null;
+  private plankMissing = false;
   private hint: Step | null = null;
   private hintedAt: string | null = null;
   private wrong: number | null = null;
@@ -149,6 +171,7 @@ class Round implements Game {
   private reading: number | null = null;
   private lit = 0;
   private busy = false;
+  private crossing: { critter: Critter; t: number } | null = null;
   /** Bumped by every touch, so a read-aloud in progress stops speaking over the player. */
   private turn = 0;
   private view: View;
@@ -162,6 +185,8 @@ class Round implements Game {
     });
     const count = this.boards[0].seats.length;
     this.marks = Array<Domain>(count).fill(null);
+    this.planks = this.withPlanks ? PLANKS.map((plank) => button(this.root, () => this.choose(plank))) : [];
+    this.status.text = this.rule;
     this.backdrop.eventMode = this.scene.eventMode = this.status.eventMode = 'none';
     this.status.style.wordWrap = true;
     this.root.addChildAt(this.backdrop, 0);
@@ -197,6 +222,18 @@ class Round implements Game {
     return this.boards[this.at];
   }
 
+  private get withPlanks() {
+    return this.board.solution.plank !== null;
+  }
+
+  private get rule() {
+    return this.withPlanks ? PLANK_RULE : RULE;
+  }
+
+  private get layout() {
+    return bridgeLayout(this.view, this.board.seats.length, this.withPlanks);
+  }
+
   start() {
     void this.open(this.ctx.level === 1);
   }
@@ -206,7 +243,7 @@ class Round implements Game {
     const turn = this.turn;
     if (rule) await this.ctx.say('bridge.topsy');
     if (!this.ctx.alive || turn !== this.turn) return;
-    await this.ctx.instruct('bridge.start');
+    await this.ctx.instruct(this.withPlanks ? 'bridge.start.planks' : 'bridge.start');
     await this.readAll(turn);
   }
 
@@ -226,6 +263,7 @@ class Round implements Game {
     this.turn++;
     this.reading = null;
     this.blank = null;
+    this.plankMissing = false;
   }
 
   /** Tapping a bubble repeats its sentence, free. */
@@ -247,28 +285,42 @@ class Round implements Game {
     if (this.busy) return;
     this.touched();
     this.marks = this.marks.map((m, i) => (i === seat ? cycle(m) : m));
-    this.hint = null;
-    this.wrong = null;
-    this.status.text = RULE;
+    this.clearFeedback();
     this.critters[this.board.seats[seat]].poke();
     sfx.pop(this.marks[seat] === null ? 3 : this.marks[seat] === 'straight' ? 7 : 5);
     this.render();
   }
 
-  private key() {
-    return `${this.at}:${this.marks.join(',')}`;
+  private choose(plank: Plank) {
+    if (this.busy) return;
+    this.touched();
+    this.plank = this.plank === plank ? null : plank;
+    this.clearFeedback();
+    sfx.pop(this.plank ? 7 : 3);
+    this.render();
+  }
+
+  private clearFeedback() {
+    this.hint = null;
+    this.wrong = null;
+    this.status.text = this.rule;
   }
 
   /** Shows the next hint, counting it once until the marks change. Null when every mark is already right. */
   private showHint(): Step | null {
-    this.hint = hintFor(this.board, this.marks);
+    this.hint = hintFor(this.board, this.marks, this.plank);
     if (!this.hint) return null;
-    if (this.hintedAt !== this.key()) {
+    const key = answerKey(this.at, this.marks, this.plank);
+    if (this.hintedAt !== key) {
       hinted(this.counts);
-      this.hintedAt = this.key();
+      this.hintedAt = key;
     }
     const { seats } = this.board;
-    this.status.text = `${title(seats[this.hint.speaker])}’s words settle ${title(seats[this.hint.seat])}: ${WORD[this.hint.kind]}.`;
+    const step = this.hint;
+    const speaker = title(seats[step.speaker]);
+    if (step.suppose) this.status.text = suppositionWords(this.board, step);
+    else if ('plank' in step) this.status.text = `${speaker}’s words leave the ${step.plank} plank.`;
+    else this.status.text = `${speaker}’s words settle ${title(seats[step.seat])}: ${kindWord(step.kind)}.`;
     this.render();
     return this.hint;
   }
@@ -290,7 +342,7 @@ class Round implements Game {
   private cross() {
     if (this.busy) return;
     this.touched();
-    const verdict = check(this.board, this.marks);
+    const verdict = check(this.board, this.marks, this.plank);
     if (verdict.kind === 'cross') {
       void this.walk();
       return;
@@ -303,15 +355,22 @@ class Round implements Game {
       void this.ctx.say(line(`bridge.blank.${seats[verdict.seat]}`));
       return;
     }
+    if (verdict.kind === 'choose-plank') {
+      this.plankMissing = true;
+      this.status.text = 'Choose a plank first.';
+      this.render();
+      void this.ctx.say('bridge.blank.plank');
+      return;
+    }
     // One miss per distinct wrong complete answer; the same marks again replay the explanation, free.
-    const first = countsAsMiss(this.rejected, this.at, this.marks);
+    const first = countsAsMiss(this.rejected, this.at, this.marks, this.plank);
     const due = first && missEvery(this.counts);
     if (first) sfx.boing();
     const speaker = verdict.speaker;
     const marked = this.marks[speaker] as Kind;
     this.wrong = speaker;
     this.hint = null;
-    this.status.text = `${title(seats[speaker])} is marked ${WORD[marked]}, so these words ${marked === 'straight' ? 'should be so. They are not' : 'should not be so. They are'}.`;
+    this.status.text = `${title(seats[speaker])} is marked ${kindWord(marked)}, so these words ${marked === 'straight' ? 'should be so. They are not' : 'should not be so. They are'}.`;
     this.critters[seats[speaker]].setMood('surprised', 1.2);
     this.render();
     const turn = this.turn;
@@ -330,20 +389,17 @@ class Round implements Game {
     this.wrong = null;
     this.status.text = 'Every sentence fits.';
     this.render();
-    const scene = bridgeLayout(this.view, this.board.seats.length).scene;
-    const small = scene.h / 520;
     for (const [seat, name] of this.board.seats.entries()) {
       const critter = this.critters[name];
-      const near = bridgePoint(scene, 0);
+      const near = bridgePoint(this.layout.scene, 0, this.plank);
       await ctx.tw.to(critter, { x: near.x, y: near.y }, { duration: 0.3 });
       if (!ctx.alive) return;
-      critter.scale.set(small);
+      const crossing = { critter, t: 0 };
+      this.crossing = crossing;
       sfx.marimba(2 + seat * 2);
-      for (let i = 1; i <= 4; i++) {
-        const p = bridgePoint(scene, i / 4);
-        await ctx.tw.to(critter, { x: p.x, y: p.y }, { duration: 0.14 });
-        if (!ctx.alive) return;
-      }
+      await ctx.tw.to(crossing, { t: 1 }, { duration: 0.56 });
+      if (!ctx.alive) return;
+      this.crossing = null;
       critter.visible = false;
       this.lit = seat + 1;
       sfx.bell(4 + seat * 2);
@@ -356,7 +412,7 @@ class Round implements Game {
       this.marks = this.marks.map(() => null);
       this.lit = 0;
       this.hintedAt = null;
-      this.status.text = RULE;
+      this.status.text = this.rule;
       this.busy = false;
       this.render();
       const turn = this.turn;
@@ -370,12 +426,13 @@ class Round implements Game {
 
   private render() {
     const { board } = this;
-    const layout = bridgeLayout(this.view, board.seats.length);
+    const layout = this.layout;
     this.backdrop.clear().rect(0, 0, this.view.w, this.view.h).fill(cream);
-    drawScene(this.scene, layout.scene, board.seats.length, this.lit);
+    drawScene(this.scene, layout.scene, board.seats.length, this.lit, this.withPlanks, this.plank);
 
     this.status.position.set(layout.status.x, layout.status.y);
     this.status.style.wordWrapWidth = layout.status.wrap;
+    this.status.style.fontSize = layout.statusSize;
 
     for (const name of NAMES) {
       const critter = this.critters[name];
@@ -413,7 +470,7 @@ class Round implements Game {
       const at = layout.seats[seat];
       place(control, at);
       const mark = this.marks[seat];
-      const target = this.hint?.seat === seat || this.blank === seat;
+      const target = (this.hint && 'seat' in this.hint && this.hint.seat === seat) || this.blank === seat;
       const plateH = layout.rows ? 54 : 88;
       const plateY = at.h / 2 - plateH / 2 - 3;
       const plateW = at.w - 10;
@@ -430,7 +487,7 @@ class Round implements Game {
       control.word.style.fontSize = size;
       control.text.text = title(name);
       control.text.style.fill = ink;
-      control.word.text = mark ? WORD[mark] : 'Tap to mark';
+      control.word.text = mark ? kindWord(mark) : 'Tap to mark';
       control.word.alpha = mark ? 1 : 0.6;
       if (layout.rows) {
         // Sideways the plate is too small for the name as well, so it heads the islander's bubble.
@@ -438,7 +495,7 @@ class Round implements Game {
         control.text.style.fill = swatch.teal.line;
         control.text.position.set(box.x - at.x, -box.h / 2 + 24);
         bubble.text.position.set(0, 10);
-        control.word.text = mark ? WORD[mark] : 'Tap';
+        control.word.text = mark ? kindWord(mark) : 'Tap';
         control.word.position.set(mark ? 14 : 0, plateY);
         if (mark) lantern(control.panel, -plateW / 2 + 22, plateY, 0.7, mark === 'topsy');
       } else {
@@ -446,6 +503,22 @@ class Round implements Game {
         control.word.position.set(mark ? 16 : 0, plateY + 18);
         if (mark) lantern(control.panel, -plateW / 2 + 40, plateY + 16, 0.72, mark === 'topsy');
       }
+    });
+
+    this.planks.forEach((control, i) => {
+      const box = layout.planks[i];
+      const plank = PLANKS[i];
+      const selected = this.plank === plank;
+      const target = (this.hint && 'plank' in this.hint && this.hint.plank === plank) || this.plankMissing;
+      place(control, box);
+      const color = target ? swatch.yellow : selected ? swatch.teal : swatch.peach;
+      control.panel
+        .clear()
+        .roundRect(-box.w / 2 + 4, -box.h / 2 + 7, box.w - 8, box.h - 14, 16)
+        .fill(color.light)
+        .stroke({ color: color.line, width: target || selected ? 6 : 3 });
+      control.text.style.fontSize = layout.rows ? 22 : 27;
+      control.text.text = selected ? `✓ ${plankWord(plank)}` : plankWord(plank);
     });
 
     for (const [control, box, main] of [
@@ -464,7 +537,14 @@ class Round implements Game {
     }
   }
 
-  update() {}
+  update() {
+    if (!this.crossing) return;
+    const { critter, t } = this.crossing;
+    const { scene } = this.layout;
+    const p = bridgePoint(scene, t, this.plank);
+    critter.scale.set(scene.h / 520);
+    critter.position.set(p.x, p.y);
+  }
 
   resize(view: View) {
     this.view = view;
@@ -473,8 +553,10 @@ class Round implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy) return null;
-    const next = hintFor(this.board, this.marks);
-    return { tap: { on: next ? this.seats[next.seat].node : this.crossButton.node } };
+    const next = hintFor(this.board, this.marks, this.plank);
+    if (!next) return { tap: { on: this.crossButton.node } };
+    const control = 'seat' in next ? this.seats[next.seat] : this.planks[PLANKS.indexOf(next.plank)];
+    return { tap: { on: control.node } };
   }
 
   destroy() {

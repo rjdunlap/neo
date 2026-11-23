@@ -4,6 +4,8 @@ import { missEvery, newTally } from '../../progress/coach';
 import {
   KINDS,
   NAMES,
+  PLANKS,
+  POOL_IDS,
   boardFor,
   boardKey,
   check,
@@ -11,7 +13,6 @@ import {
   cycle,
   fits,
   flat,
-  follow,
   hintFor,
   isSo,
   patterns,
@@ -19,17 +20,18 @@ import {
   propagates,
   roundPools,
   solutions,
+  suppositionCount,
   words,
   code,
   type Board,
   type Domain,
   type Kind,
+  type Plank,
   type PoolId,
 } from './logic';
 
 const S: Kind = 'straight';
 const T: Kind = 'topsy';
-const POOL_IDS: PoolId[] = ['gate-flat', 'gate-chained', 'bridge'];
 
 /** Every mark state of a board: blank, Straight or Topsy for each islander. */
 const markStates = (seats: number): Domain[][] =>
@@ -64,13 +66,23 @@ describe('Truth Bridge pools', () => {
       for (const pattern of pool(id)) {
         const found = solutions(pattern);
         expect(found).toHaveLength(1);
-        expect(pattern.every((s, seat) => fits(s, seat, found[0]))).toBe(true);
+        expect(pattern.every((s, seat) => fits(s, seat, found[0].kinds, found[0].plank))).toBe(true);
       }
   });
 
-  it('plays a flat board and then a chained one at level 1, and one board at level 2', () => {
+  it('matches the 404 supposition boards and the plank split of 198 direct and 174 supposition boards', () => {
+    expect(pool('suppose')).toHaveLength(404);
+    expect(pool('suppose').every((p) => suppositionCount(p) === 1)).toBe(true);
+    expect(pool('planks')).toHaveLength(372);
+    expect(pool('planks').filter((p) => suppositionCount(p) === 0)).toHaveLength(198);
+    expect(pool('planks').filter((p) => suppositionCount(p) === 1)).toHaveLength(174);
+  });
+
+  it('plays a flat board and then a chained one at level 1, and one board at each later level', () => {
     expect(roundPools(1)).toEqual(['gate-flat', 'gate-chained']);
     expect(roundPools(2)).toEqual(['bridge']);
+    expect(roundPools(3)).toEqual(['suppose']);
+    expect(roundPools(4)).toEqual(['planks']);
   });
 });
 
@@ -88,6 +100,10 @@ describe('Truth Bridge fit rule', () => {
     expect(isSo({ k: 'some' }, 0, [S, S, T])).toBe(true);
     expect(isSo({ k: 'count', n: 1 }, 0, [T, S, T])).toBe(true);
     expect(isSo({ k: 'count', n: 2 }, 0, [T, S, T])).toBe(false);
+    for (const plank of PLANKS)
+      for (const chosen of PLANKS)
+        for (const sound of [true, false])
+          expect(isSo({ k: 'plank', plank, sound }, 0, [T, S, T], chosen)).toBe((plank === chosen) === sound);
   });
 
   it('fits a true sentence to a straight speaker and a false one to a Topsy speaker', () => {
@@ -115,44 +131,76 @@ describe('Truth Bridge fit rule', () => {
 });
 
 describe('Truth Bridge Cross and hints', () => {
-  it('names the first blank islander, then the first sentence that does not fit, and crosses only on the solution', () => {
+  const planksFor = (board: Board): (Plank | null)[] => (board.solution.plank ? [null, ...PLANKS] : [null]);
+
+  it('names the first blank islander or missing plank, then the first sentence that breaks', () => {
     for (const id of POOL_IDS)
       for (let i = 0; i < pool(id).length; i++) {
         const board = boardOf(id, i);
-        for (const marks of markStates(board.seats.length)) {
-          const verdict = check(board, marks);
-          const blank = marks.indexOf(null);
-          if (blank >= 0) expect(verdict).toEqual({ kind: 'blank', seat: blank });
-          else if (marks.every((m, seat) => m === board.solution[seat])) expect(verdict.kind).toBe('cross');
-          else {
-            expect(verdict.kind).toBe('wrong');
-            if (verdict.kind === 'wrong')
-              expect(fits(board.pattern[verdict.speaker], verdict.speaker, marks as Kind[])).toBe(false);
+        for (const marks of markStates(board.seats.length))
+          for (const plank of planksFor(board)) {
+            const verdict = check(board, marks, plank);
+            const blank = marks.indexOf(null);
+            if (blank >= 0) expect(verdict).toEqual({ kind: 'blank', seat: blank });
+            else if (board.solution.plank && !plank) expect(verdict.kind).toBe('choose-plank');
+            else {
+              const speaker = board.pattern.findIndex((s, seat) => !fits(s, seat, marks as Kind[], plank));
+              expect(verdict).toEqual(speaker < 0 ? { kind: 'cross' } : { kind: 'wrong', speaker });
+              if (speaker < 0) expect({ kinds: marks, plank }).toEqual(board.solution);
+              if (
+                plank !== board.solution.plank &&
+                marks.every((m, seat) => m === board.solution.kinds[seat])
+              )
+                expect(board.pattern[speaker].k).toBe('plank');
+            }
           }
-        }
       }
   });
 
-  it('walks hints from every partial marking to the solution, each setting one more correct kind and clearing none', () => {
-    for (const id of POOL_IDS)
-      for (let i = 0; i < pool(id).length; i++) {
-        const board = boardOf(id, i);
-        const seats = board.seats.length;
-        for (const start of markStates(seats)) {
-          let marks: Domain[] = start;
+  it.each(POOL_IDS)('walks hints from every partial marking and plank choice in %s', (id) => {
+    for (let i = 0; i < pool(id).length; i++) {
+      const board = boardOf(id, i);
+      const seats = board.seats.length;
+      for (const start of markStates(seats))
+        for (const initialPlank of planksFor(board)) {
+          const marks = [...start];
+          let plank = initialPlank;
           let steps = 0;
-          for (let hint = hintFor(board, marks); hint; hint = hintFor(board, marks)) {
-            expect(marks[hint.seat]).not.toBe(board.solution[hint.seat]);
-            expect(hint.kind).toBe(board.solution[hint.seat]);
-            const next = follow(marks, hint);
-            marks.forEach((m, seat) => seat === hint.seat || expect(next[seat]).toBe(m));
-            marks = next;
-            expect(++steps).toBeLessThanOrEqual(seats);
+          for (let hint = hintFor(board, marks, plank); hint; hint = hintFor(board, marks, plank)) {
+            if ('seat' in hint) {
+              expect(marks[hint.seat]).not.toBe(board.solution.kinds[hint.seat]);
+              expect(hint.kind).toBe(board.solution.kinds[hint.seat]);
+              expect(hint.kind).not.toBe(hint.suppose);
+              marks[hint.seat] = hint.kind;
+            } else {
+              expect(plank).not.toBe(board.solution.plank);
+              expect(hint.plank).toBe(board.solution.plank);
+              expect(hint.plank).not.toBe(hint.suppose);
+              plank = hint.plank;
+            }
+            expect(++steps).toBeLessThanOrEqual(seats + Number(id === 'planks'));
           }
-          expect(marks).toEqual(board.solution);
-          expect(check(board, marks).kind).toBe('cross');
+          expect({ kinds: marks, plank }).toEqual(board.solution);
+          expect(check(board, marks, plank).kind).toBe('cross');
         }
+    }
+  });
+
+  it('teaches a supposition on every level 3 board before finishing from blank marks', () => {
+    for (let i = 0; i < pool('suppose').length; i++) {
+      const board = boardOf('suppose', i);
+      const marks: Domain[] = [null, null, null];
+      let suppositions = 0;
+      for (let hint = hintFor(board, marks); hint && 'seat' in hint; hint = hintFor(board, marks)) {
+        if (hint.suppose) {
+          expect(hint.suppose).toBe(hint.kind === S ? T : S);
+          expect(board.pattern[hint.speaker]).toBeDefined();
+          suppositions++;
+        }
+        marks[hint.seat] = hint.kind;
       }
+      expect(suppositions).toBe(1);
+    }
   });
 
   it('counts one miss per distinct wrong complete answer, and the second counted miss brings a hint', () => {
@@ -167,6 +215,9 @@ describe('Truth Bridge Cross and hints', () => {
     expect(counts.misses).toBe(2);
     // The same marks on the round's second board are a different answer.
     expect(countsAsMiss(seen, 1, [S, S])).toBe(true);
+    expect(countsAsMiss(seen, 1, [S, S], 'left')).toBe(true);
+    expect(countsAsMiss(seen, 1, [S, S], 'middle')).toBe(true);
+    expect(countsAsMiss(seen, 1, [S, S], 'left')).toBe(false);
   });
 
   it('cycles a mark blank, Straight, Topsy, blank', () => {
@@ -180,7 +231,7 @@ describe('Truth Bridge boards', () => {
       for (let seed = 1; seed <= 40; seed++) {
         const board = boardFor(id, new Rng(seed));
         expect(board).toEqual(boardFor(id, new Rng(seed)));
-        expect(board.seats).toHaveLength(id === 'bridge' ? 3 : 2);
+        expect(board.seats).toHaveLength(id.startsWith('gate') ? 2 : 3);
         expect(new Set(board.seats).size).toBe(board.seats.length);
         expect(pool(id)).toContain(board.pattern);
         expect(board.solution).toEqual(solutions(board.pattern)[0]);

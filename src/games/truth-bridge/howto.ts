@@ -15,8 +15,17 @@ export const HOW_TO: GameHowTo = {
       to: 2,
       text: 'With three islanders, settle one, then use that to read what the others say.',
     },
+    {
+      from: 3,
+      to: 3,
+      text: 'Try a mark and see what would have to follow. If a sentence can no longer fit, change the mark.',
+    },
+    {
+      from: 4,
+      text: 'Tap Left, Middle or Right to choose the sound plank. A plank sentence still has to fit the kind of islander who said it.',
+    },
   ],
   finish:
-    'Tap Cross when every islander is marked. If every sentence fits its speaker, they all walk over the bridge.',
-  note: 'Marks are free to change. A wrong crossing shows the first sentence that does not fit; Help points to a sentence that settles someone.',
+    'Mark every islander and choose a plank when the board shows planks. Then tap Cross. If every sentence fits its speaker, they all walk over the bridge.',
+  note: 'Marks are free to change. A wrong crossing shows the first sentence that does not fit; Help shows what the sentences let you settle.',
 };

@@ -12,6 +12,7 @@ const views = { ...UPRIGHT_VIEWS, shortPhone: shortPhone.game, sideways: sideway
 
 const targets = (layout: ReturnType<typeof bridgeLayout>) => [
   ...layout.bubbles.map((b, i) => ({ ...b, what: `bubble ${i}` })),
+  ...layout.planks.map((b, i) => ({ ...b, what: `plank ${i}` })),
   ...layout.seats.map((b, i) => ({ ...b, what: `islander ${i}` })),
   { ...layout.help, what: 'Help' },
   { ...layout.cross, what: 'Cross' },
@@ -19,11 +20,17 @@ const targets = (layout: ReturnType<typeof bridgeLayout>) => [
 
 describe('Truth Bridge upright', () => {
   it.each(
-    Object.entries(views).flatMap(([name, view]) => [2, 3].map((seats) => [name, seats, view] as const)),
+    Object.entries(views).flatMap(([name, view]) =>
+      [
+        [2, false],
+        [3, false],
+        [3, true],
+      ].map(([seats, planks]) => [name, Number(seats), Boolean(planks), view] as const),
+    ),
   )(
-    'lays out %s with %i islanders: targets at least 100 units upright (64 sideways), apart, clear of the shell and the caption bubble',
-    (_, seats, view) => {
-      const layout = bridgeLayout(view, seats);
+    'lays out %s with %i islanders (planks: %s): targets at least 100 units upright (64 sideways), apart, clear of the shell and the caption bubble',
+    (_, seats, planks, view) => {
+      const layout = bridgeLayout(view, seats, planks);
       const boxes = targets(layout);
       expect(uprightProblems(view, boxes, view.upright ? 100 : 64)).toEqual([]);
       const caption = captionPlace(view, true);
@@ -37,7 +44,7 @@ describe('Truth Bridge upright', () => {
   );
 
   it('records the smallest target in CSS pixels at 390 x 844: the Help button, 52.8', () => {
-    const boxes = targets(bridgeLayout(UPRIGHT_VIEWS.phone, 3));
+    const boxes = targets(bridgeLayout(UPRIGHT_VIEWS.phone, 3, true));
     expect(thumbPx(Math.min(...boxes.map(({ w, h }) => Math.min(w, h))))).toBe(52.8);
   });
 
@@ -45,10 +52,14 @@ describe('Truth Bridge upright', () => {
     const sentences = Object.entries(VOICE)
       .filter(([id]) => id.startsWith('bridge.s.'))
       .map(([, [text]]) => text);
-    expect(sentences).toHaveLength(25);
+    expect(sentences).toHaveLength(31);
     for (const view of [UPRIGHT_VIEWS.captioned, sideways.game])
-      for (const seats of [2, 3]) {
-        const layout = bridgeLayout(view, seats);
+      for (const [seats, planks] of [
+        [2, false],
+        [3, false],
+        [3, true],
+      ] as const) {
+        const layout = bridgeLayout(view, seats, planks);
         for (const text of sentences)
           expect(wrapCount(text, perLine(layout)), text).toBeLessThanOrEqual(BUBBLE_LINES);
         // Three lines of the label and the tail fit the bubble's height.
