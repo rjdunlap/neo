@@ -25,6 +25,11 @@ export const HOW_TO: GameHowTo = {
       to: 18,
       text: 'Two animals peek. Listen to the sound ("Who says moo?"), then tap the animal that makes it.',
     },
+    {
+      from: 19,
+      to: 19,
+      text: 'Drag the animal to any hiding place (or tap it, then tap a place). The pet looks in the empty places first, then finds it. Any place is right.',
+    },
     { from: 6, to: 8, text: 'Watch who hides where, then tap the hiding place of the animal asked about.' },
     {
       from: 9,
@@ -58,5 +63,6 @@ export const HOW_TO: GameHowTo = {
     { from: 17, to: 17, text: 'The round ends when she has found where the animal went four times.' },
     { from: 18, to: 18, text: 'The round ends when she has found the animal for five sounds.' },
     { from: 3, to: 15, text: 'The round ends when every animal asked about has been found.' },
+    { from: 19, to: 19, text: 'The round ends after she has hidden three animals and each has been found.' },
   ],
 };
