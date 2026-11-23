@@ -158,7 +158,7 @@ The upright `grownup` games below are measured from its own layout function at t
 | `ribbon-workshop` | 49.8 | bow, scissors and Undo | |
 | `snowball-merge` | 50.8 | arrow | |
 | `sorting-machine` | 52.8 | machine button | |
-| `shadow-play` | 50.8 | rail row | Levels 1–2. Sideways, the screen sits left above the caption bubble and the rails stack in a column on the right. |
+| `shadow-play` | 44.7 | turn handle, 88 units high | Levels 3–4 place the numbered mark targets below the turn handle. Level 4’s swap chips are 100 units upright and 64 sideways. Sideways, the screen sits left above the caption bubble and the rails stack in a column on the right. |
 | `species-comeback` | 44.7 | turtle card and Spring, 88 units | The tree slides sideways at levels 2–4. The nests, keeper choices and Spring stay in place. Level 1 fits with 96-unit turtle cards. |
 | `sudoku-garden` | 42.7 | bed square, 84 units | The 9 × 9 bed, fixed 2026-11-18 (was 64 units, 32.5). 6 × 6 squares are 96 units (48.8), number buttons 100 (50.8, two rows at 9 × 9) and Marks, Erase, Hint, Start over and Fill marks 88 units high (44.7). Does not slide. 768 units across nine squares cannot reach 44 pixels (86 units) without sliding or zooming, and 1.3 pixels under does not warrant a sliding board, so it stays on the list. A short view (the 375 × 667 phone) shrinks the bed, never below 72 units in the tested views. |
 | `sum-crates` | 50.8 | tray fruit | Level 3 fruit tray. |

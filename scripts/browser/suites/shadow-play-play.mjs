@@ -26,6 +26,11 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         return {
           counts: { ...g.counts },
           marks: g.arr.map((p) => p.mark),
+          turns: g.arr.map((p) => p.turned),
+          targets: g.board.solution.map((p) => p.turned),
+          order: g.arr.map((p) => `${p.cutout.shape}${p.cutout.w}${p.cutout.h}`),
+          selected: g.selectedChip,
+          diagnostic: g.diagnostics.find((t) => t.visible)?.text,
           solution: g.board.solution.map((p) => p.mark),
           cutouts: g.board.solution.map((p) => `${p.cutout.shape}${p.cutout.w}${p.cutout.h}`),
           hint: g.hint,
@@ -36,19 +41,22 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         };
       });
     /** Where a mark sits on a rail, on the page, at the foot of the row (clear of the handle's cut-out). */
-    const markPoint = (rail, mark) =>
+    const markPoint = (rail, mark, numbers = false) =>
       page.evaluate(
-        ({ rail, mark }) => {
+        ({ rail, mark, numbers }) => {
           const g = neo.scene.game;
           const r = g.layout.rails[rail];
-          const p = g.root.toGlobal({ x: r.lampX + ((r.screenX - r.lampX) * mark) / 12, y: r.row.y });
+          const p = g.root.toGlobal({
+            x: r.lampX + ((r.screenX - r.lampX) * mark) / 12,
+            y: numbers ? g.railLine(r).numbers : r.row.y,
+          });
           return { x: p.x, y: p.y };
         },
-        { rail, mark },
+        { rail, mark, numbers },
       );
     /** Taps a rail at a mark: the row, or the handle when it covers that mark. */
     const tapMark = async (rail, mark) => {
-      const { x, y } = await markPoint(rail, mark);
+      const { x, y } = await markPoint(rail, mark, true);
       await page.touchscreen.tap(x, y);
       await page.waitForTimeout(160);
     };
@@ -178,8 +186,102 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 2 });
     assert.equal(await stickers(), before + 2);
     await back(secondPage);
+    const turn = (rail) => tap(`neo.scene.game.handles[${rail}].node`);
+    const chip = (rail) => tap(`neo.scene.game.chips[${rail}]`);
+    const placeMarksAndTurns = async () => {
+      const before = await state();
+      for (const [rail, mark] of before.solution.entries()) {
+        if (before.marks[rail] !== mark) await tapMark(rail, mark);
+        if (before.turns[rail] !== before.targets[rail]) await turn(rail);
+      }
+      const after = await state();
+      assert.deepEqual(after.marks, before.solution);
+      assert.deepEqual(after.turns, before.targets);
+    };
+
+    const thirdPage = await landOpen(3);
+    const cancelled = await state();
+    const grab = await pointOf('neo.scene.game.handles[0].node');
+    const target = await markPoint(0, cancelled.solution[0]);
+    const touch = await page.context().newCDPSession(page);
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [grab] });
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [target] });
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+    await touch.detach();
+    await page.waitForTimeout(160);
+    assert.deepEqual((await state()).marks, cancelled.marks);
+    assert.deepEqual((await state()).turns, cancelled.turns);
+    const neighbour = { 2: 3, 3: 2, 4: 3, 6: 4 }[cancelled.marks[0]];
+    await page.setViewportSize(landscape);
+    await page.waitForFunction(() => !neo.view.upright);
+    await tapMark(0, neighbour);
+    assert.equal((await state()).marks[0], neighbour);
+    assert.deepEqual((await state()).turns, cancelled.turns);
+    await page.setViewportSize(portrait);
+    await page.waitForFunction(() => neo.view.upright);
+    await placeMarksAndTurns();
+    await light();
+    await finished(id);
+    assert.deepEqual(await lastRound(), { misses: 0, hints: 0, level: 3 });
+    assert.equal(await stickers(), before + 3);
+    await back(thirdPage);
+
+    const fourthPage = await landOpen(4);
+    const initial = await state();
+    const first = initial.order.findIndex((c, rail) => c !== initial.cutouts[rail]);
+    const other = initial.order.indexOf(initial.cutouts[first]);
+    assert.ok(first >= 0 && other >= 0 && first !== other);
+    const unrelated = [0, 1, 2].find((rail) => rail !== first && rail !== other);
+    await chip(unrelated);
+    assert.equal((await state()).selected, unrelated);
+    await chip(unrelated);
+    assert.equal((await state()).selected, null);
+    await light();
+    assert.equal((await state()).lit, true);
+    assert.match((await state()).diagnostic, /→/);
+    await light();
+    assert.deepEqual((await state()).counts, { misses: 1, hints: 0 });
+    // Set any earlier rail's mark so Help asks for the first swap, then select a chip outside that pair.
+    for (let rail = 0; rail < first; rail++) {
+      await tapMark(rail, initial.solution[rail]);
+      if (initial.targets[rail]) await turn(rail);
+    }
+    await chip(unrelated);
+    await help();
+    await help();
+    s = await state();
+    assert.deepEqual(s.counts, { misses: 1, hints: 1 });
+    assert.deepEqual(s.hint, { rail: first, kind: 'swap', from: other });
+    assert.equal(s.selected, null);
+    await turn(other);
+    const beforeSwap = await state();
+    await chip(other);
+    await page.setViewportSize(landscape);
+    await page.waitForFunction(() => !neo.view.upright);
+    assert.equal((await state()).selected, other);
+    await page.setViewportSize(portrait);
+    await page.waitForFunction(() => neo.view.upright);
+    await chip(first);
+    s = await state();
+    assert.equal(s.order[first], initial.cutouts[first]);
+    assert.equal(s.marks[first], beforeSwap.marks[other]);
+    assert.equal(s.turns[first], true);
+    assert.equal(s.selected, null);
+    await screenshot('shadow-play-level-4-portrait');
+    for (let rail = first + 1; rail < 3; rail++) {
+      s = await state();
+      if (s.order[rail] === s.cutouts[rail]) continue;
+      await chip(s.order.indexOf(s.cutouts[rail]));
+      await chip(rail);
+    }
+    await placeMarksAndTurns();
+    await light();
+    await finished(id);
+    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+    assert.equal(await stickers(), before + 4);
+    await back(fourthPage);
     log(
-      'Shadow Play: both levels from Lantern Lake at 390×625 with captions, slides by drag and by tap, a wrong Light counted once, Help counted once, rotation, one sticker per round and return passed',
+      'Shadow Play: levels 1–4 from Lantern Lake at 390×625 with captions, turns, swaps carrying settings, wrong Light and Help counted once, rotation, one sticker per round and return passed',
     );
   }
 

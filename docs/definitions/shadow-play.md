@@ -1,8 +1,8 @@
 # Shadow Play, levels 1–4 (definition)
 
-**Built:** levels 1–2 (PR #2035); to build level 3, read “Build batches” (batch 2).
+**Built:** levels 1–4, with turning and swapping in [PR #2038](https://github.com/rjdunlap/neo/pull/2038). [Game page](../games/shadow-play.md)
 
-Documentation packet, 2026-11-23, branch `claude/define-shadow-play`, [PR #2027](https://github.com/rjdunlap/neo/pull/2027). Study follow-up TP6 from [theatre and puppetry](../deep-dives/subjects/theatre-puppetry.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `shadow-play`: levels 1–2 are built (batch 1); levels 3–4 are batch 2 below.
+Documentation packet, 2026-11-23, branch `claude/define-shadow-play`, [PR #2027](https://github.com/rjdunlap/neo/pull/2027). Study follow-up TP6 from [theatre and puppetry](../deep-dives/subjects/theatre-puppetry.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed).
 
 ## What you do
 
@@ -68,7 +68,7 @@ A level-1 round is two boards. Levels 2–4 are one board a round. Each level sa
 Each rail is a row with the lamp at one end and the screen at the other, the four marks drawn at their true distances, and its cut-out as a handle on the rail. The grid numbers the marks. The cut-out's size is drawn on the handle as squares (for example a tent 2 wide and 2 tall) and is spoken when the handle is first touched.
 
 - **Slide.** Drag the handle along its rail, and it snaps to the nearest mark on release. Tapping a mark moves the cut-out there. Both use `src/engine/drag.ts` and `onTap`.
-- **Turn** (levels 3–4). Tap the handle to switch between face-on and turned. The handle draws narrower when turned.
+- **Turn** (levels 3–4). Tap the handle to switch between face-on and turned. The handle draws narrower when turned. Tap the numbered marks below the handle to move it along the rail.
 - **Swap** (level 4). Each rail has a chip at its lamp end showing its cut-out. Tap one chip and then another, and the two cut-outs change rails, each keeping its own mark and turn. Tapping the same chip twice clears the choice.
 - **Free moves.** Sliding, turning, swapping and re-hearing a size are always free, and nothing is refused.
 
@@ -84,7 +84,7 @@ Each rail is a row with the lamp at one end and the screen at the other, the fou
   - turn: "At mark 4 this block's shadow would be 6 wide. The outline is 3 wide. Turn it."
 
   Repeating the current hint with no change replays it, free. Count each new hint once.
-- **Hints always lead somewhere.** Following a hint sets one more value to the solution's and never unsets one. The rule test walks sampled arrangements of sampled boards at every level and checks that a chain of hints reaches the solution in at most the number of values the level lets the player set (3, 3, 6 and 9).
+- **Hints always lead somewhere.** Following a hint advances the solution from left to right. A swap keeps each cut-out’s mark and turn with it and leaves every earlier rail in place. The rule test walks sampled arrangements of sampled boards at every level and checks that a chain of hints reaches the solution in at most the number of values the level lets the player set (3, 3, 6 and 9).
 - **On acceptance** the lamp glows, the shadow fills the outline, small windows light in the skyline one part at a time on pentatonic notes, and the game finishes once through the normal shell with the round's misses and hints.
 
 ## Play and presentation
@@ -106,7 +106,7 @@ Each rail is a row with the lamp at one end and the screen at the other, the fou
 - **Miss explanations.** One per rail and fault (too tall, too short, too wide, too narrow, the wrong shape), followed by the working for that cut-out, mark and outline size. Generate only the combinations the pools can produce, and list them in `voice.ts` from the logic module at build time.
 - **Hint lines.** One per rail and step, with the working as above, generated the same way.
 
-A unit test checks that every size, miss and hint the pools can produce has a voice line. If the generated list passes 600 lines, speak the rail and the fault and leave the numbers to the caption, and say so on the game's page. The instruction is `ctx.instruct`: at level 1, "Slide the cut-outs until the shadow fills the outline"; at levels 2–4, "Set the cut-outs, then light the lamp."
+A unit test covers the spoken sizes, miss reasons and hint steps. The full numeric list for levels 3–4 exceeds 600 lines, so their spoken Light feedback names the rail and the fault. The highlighted rail shows the comparison. Level 2 keeps its spoken calculation. The opening instruction explains sliding at level 1, Light at level 2, turns at level 3 and swaps at level 4.
 
 **How-to cards.**
 - Level 1 shows sliding a tent from mark 6 to mark 3 while its shadow doubles.
@@ -133,7 +133,7 @@ The ghost finger follows the hint order on the seeded board and, at levels 2–4
    - registry, lands and paging.
 
    **Browser and build:** one filtered `shadowplay` play at 390 × 625 with captions, reaching Lantern Lake through the normal grown-up route and its page. Finish level 1, then at level 2 light a wrong arrangement, light it again (no new miss), follow Help, rotate and finish with one sticker. Take one upright screenshot, run `fingerdemo` at level 2, and build with the generated voice assets.
-2. **`shadow-play 2`, levels 3–4.** This adds the turn, the swap and their hints.
+2. **`shadow-play 2`, levels 3–4** (**built 2026-11-23**, PR #2038). Adds turning, swapping and help for both actions.
 
    **Checks:** typecheck and unit tests (pool counts 51,627 and 38,050, the turn in the light model, the swap, the hint walk over cut-out, mark and turn, voice coverage), one filtered play at level 4 with one swap, one wrong lighting and one hint, one upright screenshot with a turned cut-out, `fingerdemo` at level 4, and a build. The batch runs after batch 1.
 
