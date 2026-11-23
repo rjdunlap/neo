@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 16, 1, 2, 17 |
-| toddler | 1, 2, 17, 3, 18, 4, 5 |
-| preschool | 4–8 |
+| toddler | 1, 2, 17, 3, 18, 4, 19, 5 |
+| preschool | 4, 19, 5, 6, 7, 8 |
 | pre-K | 6–13 |
 | school | 9–15 |
 
@@ -34,6 +34,7 @@
 | 16 | One big house: touch anywhere to see who pops out |
 | 17 | "Where did it go?" Watch an animal hop behind one of two hiding places, then tap where it went |
 | 18 | "Who says moo?" Hear a sound, then find the animal that makes it, two animals peeking |
+| 19 | Hide it yourself: drag an animal to any of three hiding places, then watch it get found. Nothing is wrong |
 
 <!-- end generated -->
 

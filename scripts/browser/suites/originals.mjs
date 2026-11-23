@@ -206,10 +206,75 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
     const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ];
-    for (const level of peekLevels.filter((n) => n >= 1 && n <= 18 && (!only || only === 'peekaboo'))) {
+    for (const level of peekLevels.filter((n) => n >= 1 && n <= 19 && (!only || only === 'peekaboo'))) {
       await launch('peekaboo-barn', level);
+      if (level === 19) {
+        // Hide it yourself: drag to one house, tap-then-tap to another, drop far from the third; the seeker looks in
+        // an empty house first, never twice in one house, and ends at hers. Nothing is ever a miss.
+        await portrait(true);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && g.hider?.visible, 10000);
+        });
+        await screenshot('peekaboo-barn-19-portrait');
+        const looks = await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const { COVER_NAMES } = await import('/src/games/peekaboo-barn/logic.ts');
+          const seen = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, vars) => {
+            seen.push({ id, cover: vars?.cover });
+            return say(id, vars);
+          };
+          const toGlobal = (x, y) => g.ctx.stage.toGlobal({ x, y });
+          for (let hide = 0; hide < 3; hide++) {
+            await kit.until(() => !g.busy && g.hider?.visible, 15000);
+            const house = g.spots[hide];
+            const from = g.hider.getGlobalPosition();
+            if (hide === 0) {
+              const to = toGlobal(house.x, house.y - 80);
+              await kit.drag(kit.line([from.x, from.y - 80], [to.x, to.y], 12));
+            } else if (hide === 1) {
+              kit.tap(from.x, from.y - 80);
+              await kit.sleep(300);
+              if (!g.hiderDrag.held) throw new Error('Hide it yourself: a tap did not pick the animal up');
+              kit.tapOn(house, 0, -110);
+            } else {
+              // Let go high in the sky over the right edge: the nearest house across still takes it.
+              const to = toGlobal(g.view.w - 20, 120);
+              await kit.drag(kit.line([from.x, from.y - 80], [to.x, to.y], 12));
+            }
+            await kit.until(() => g.busy, 3000);
+            const at = seen.length;
+            await kit.until(
+              () => seen.slice(at).some((s) => s.id === 'peek.hide.found') || g.finished,
+              30000,
+            );
+            const round = seen
+              .slice(at)
+              .filter((s) => s.id === 'peek.hide.empty')
+              .map((s) => s.cover);
+            const hidden = seen.slice(at).find((s) => s.id === 'peek.hide.hidden');
+            // Each hide lands where she put it: the first house, the second, then the rightmost from the sky.
+            if (hidden?.cover !== COVER_NAMES[house.kind])
+              throw new Error(
+                `Hide it yourself: hid behind ${hidden?.cover}, not the ${COVER_NAMES[house.kind]}`,
+              );
+            if (!round.length || new Set(round).size !== round.length || round.includes(hidden.cover))
+              throw new Error(`Hide it yourself: seeker looked in ${round.join(', ')} for ${hidden.cover}`);
+          }
+          return seen.filter((s) => s.id === 'peek.hide.hidden').map((s) => s.cover);
+        });
+        await finished('peekaboo-barn');
+        assert.deepEqual(await score('peekaboo-barn'), [0, 0], 'peekaboo 19 score');
+        log(
+          `Peekaboo Barn 19 (hide): hid behind ${looks.join(', ')}; empty looks first, no misses, sticker passed`,
+        );
+        await portrait(false);
+        continue;
+      }
       if (level === 15) {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.evaluate(async () => {

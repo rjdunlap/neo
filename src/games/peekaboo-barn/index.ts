@@ -5,6 +5,7 @@ import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
@@ -40,6 +41,9 @@ import {
   PARTS,
   dealSwaps,
   dealWent,
+  dropHouse,
+  seekOrder,
+  SELF_OPEN_SECONDS,
   ENTRY_LEVELS,
   SWAP_SECONDS,
   SLOW_SWAP_SECONDS,
@@ -512,6 +516,10 @@ class PeekabooBarn implements Game {
   private walker: { critter: Critter; spot: Spot; trot: number; hop: number } | null = null;
   /** The houses the animal went behind so far this round, so it never picks one side three times running. */
   private wentTo: number[] = [];
+  /** Hide it yourself: the animal waiting above the houses for her to carry it to one, and its drag handle. */
+  private hider: Container | null = null;
+  private hiderCritter: Critter | null = null;
+  private hiderDrag: DragHandle | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -587,6 +595,8 @@ class PeekabooBarn implements Game {
       this.dealAnimals();
       this.busy = false;
       void this.ctx.instruct('peek.free');
+    } else if (this.plan.mode === 'hide') {
+      void this.nextHide();
     } else {
       void this.question();
     }
@@ -613,6 +623,7 @@ class PeekabooBarn implements Game {
     this.spots.forEach((s) => s.scale.set(scale));
     this.place();
     this.placeWalker();
+    this.placeHider(scale);
     this.input.hitArea = this.plan.door
       ? new Rectangle(0, 0, v.w, v.h)
       : new Rectangle(
@@ -684,6 +695,12 @@ class PeekabooBarn implements Game {
         this.singIn = 3;
       } else if (this.singIn <= 0) this.singIn = 0.5;
     }
+    // Hide it yourself: a waiting animal hops now and then to invite the carry.
+    if (this.hider?.visible && !this.busy && !this.hiderDrag?.dragging && this.idle >= SELF_OPEN_SECONDS) {
+      this.idle = 0;
+      this.hiderCritter?.hop(0.7);
+      this.say(this.target!);
+    }
     if (
       shouldSelfOpen(
         this.plan,
@@ -711,6 +728,13 @@ class PeekabooBarn implements Game {
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.asking > 0) return null;
+    if (this.plan.mode === 'hide') {
+      // Hide it yourself: carry the animal to the next house along, so the demo shows each one can hide it.
+      if (!this.hider?.visible || this.hiderDrag?.dragging) return null;
+      const i = (this.lastTouched + 1) % this.spots.length;
+      this.lastTouched = i;
+      return { drag: { on: this.hider }, to: { on: this.spots[i], y: -60 } };
+    }
     const i = spotToTap(
       this.plan,
       this.spots.map((s) => s.pose),
@@ -728,6 +752,7 @@ class PeekabooBarn implements Game {
   destroy() {
     this.finished = true;
     this.input.removeAllListeners();
+    this.hiderDrag?.destroy();
   }
 
   /** Different animals in each spot. */
@@ -750,6 +775,7 @@ class PeekabooBarn implements Game {
     }
     spot.wiggle();
     if (this.plan.mode === 'free') return this.freeTap(spot);
+    if (this.plan.mode === 'hide') return;
     const clue = this.clue;
     // Clue questions stand everyone out; elsewhere an animal already out is not an answer.
     const pair = this.pair;
@@ -1131,6 +1157,100 @@ class PeekabooBarn implements Game {
     void this.ask();
   }
 
+  /** Hide it yourself: the waiting animal stands over the middle of the row, high enough to be carried down to any house. */
+  private placeHider(scale: number) {
+    if (!this.hider || !this.slots.length) return;
+    const top = this.slots[0].y - 340 * scale;
+    const home = { x: this.view.w / 2, y: Math.max(260, top - 60) };
+    if (this.hiderDrag) this.hiderDrag.home = home;
+    if (!this.hiderDrag?.dragging) this.hider.position.set(home.x, home.y);
+  }
+
+  /** Hide it yourself: a new animal waits for her to carry it to a house; nothing she does is wrong. */
+  private async nextHide() {
+    this.busy = true;
+    this.spots.forEach((s) => s.setEmpty());
+    this.target = pickTarget(this.ctx.rng, this.pool, this.target);
+    const animal = this.target;
+    if (!this.hider) {
+      this.hider = new Container();
+      // A big grab area round the animal: well over the 100-unit floor, and the whole body, not just the face.
+      this.hider.hitArea = new Rectangle(-110, -230, 220, 250);
+      this.hider.eventMode = 'static';
+      this.ctx.stage.addChildAt(this.hider, this.ctx.stage.getChildIndex(this.input) + 1);
+      this.hiderDrag = draggable(this.hider, this.ctx.tw, {
+        tapToPlace: true,
+        onPick: () => this.target && this.say(this.target),
+        onDrop: (x) => {
+          if (this.busy || this.finished || !this.target) return false;
+          void this.hideAt(
+            this.spots[
+              dropHouse(
+                x,
+                this.slots.map((p) => p.x),
+              )
+            ],
+          );
+          return true;
+        },
+      });
+    }
+    this.hiderCritter?.destroy({ children: true });
+    this.hiderCritter = new Critter(CRITTERS[animal]);
+    this.hiderCritter.scale.set(CRITTER_SCALE);
+    this.hider.addChild(this.hiderCritter);
+    this.placeHider(this.spots[0].scale.x);
+    this.hider.visible = true;
+    this.hider.alpha = 0;
+    await this.ctx.tw.to(this.hider, { alpha: 1 }, { duration: 0.3 });
+    if (this.finished) return;
+    this.hiderCritter.cheer();
+    this.say(animal);
+    this.idle = 0;
+    this.busy = false;
+    await this.ctx.instruct('peek.hide.ask', { animal });
+  }
+
+  /** Hide it yourself: the animal drops behind her house, then the seeker looks in the empty houses before finding it. */
+  private async hideAt(spot: Spot) {
+    this.busy = true;
+    const animal = this.target!;
+    this.hider!.visible = false;
+    this.hiderCritter?.destroy({ children: true });
+    this.hiderCritter = null;
+    spot.arrive(animal);
+    sfx.whoosh();
+    await spot.go('hidden');
+    if (this.finished) return;
+    await this.ctx.say('peek.hide.hidden', { animal, cover: COVER_NAMES[spot.kind] });
+    if (this.finished) return;
+    await this.ctx.say('peek.hide.seek', { animal });
+    for (const i of seekOrder(this.ctx.rng, this.spots.length, this.spots.indexOf(spot))) {
+      if (this.finished) return;
+      const look = this.spots[i];
+      look.wiggle();
+      sfx.marimba(0, 0.08);
+      await this.ctx.tw.wait(0.5);
+      if (this.finished) return;
+      if (look !== spot) {
+        void look.showEmpty();
+        await this.ctx.say('peek.hide.empty', { cover: COVER_NAMES[look.kind] });
+        continue;
+      }
+      void spot.go('out');
+      this.say(animal);
+      this.ctx.pet.cheer();
+      this.done++;
+      await this.ctx.say('peek.hide.found', { animal });
+    }
+    if (this.finished) return;
+    await this.ctx.tw.wait(0.4);
+    await spot.go('hidden');
+    if (this.finished) return;
+    if (this.done >= this.plan.goal) void this.finale();
+    else void this.nextHide();
+  }
+
   /** Everybody out for a bow. */
   private async finale() {
     this.finished = true;
@@ -1310,6 +1430,8 @@ export const peekabooBarn: GameModule = {
       return '"Where did it go?" Watch an animal hop behind one of two hiding places, then tap where it went';
     if (p.mode === 'sound')
       return '"Who says moo?" Hear a sound, then find the animal that makes it, two animals peeking';
+    if (p.mode === 'hide')
+      return 'Hide it yourself: drag an animal to any of three hiding places, then watch it get found. Nothing is wrong';
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
     if (p.mode === 'top')
       return `"Whose ears?" Find the one asked for from the top of its head, ${p.spots} animals`;
