@@ -11,6 +11,9 @@ export const VOICE = {
   'owl.farthest': [
     'Turn over a card. Then choose the owl that hops the farthest, and tap its stone, so everyone gets home sooner!',
   ],
+  'owl.free': [
+    'Help the little owl walk home! Tap a stepping stone, and the owl hops there. Then tap the nest.',
+  ],
   'owl.color': ['{color}!'],
   'owl.tap-stone': ['Now tap the next {color} stone ahead of the owl.'],
   'owl.pick-owl': ['Tap the owl you want to hop with the {color} card.'],

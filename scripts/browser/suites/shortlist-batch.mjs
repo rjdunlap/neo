@@ -1499,6 +1499,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           `Owl Walk Home ${level}: cards turned, the stone tapped for the owl to hop to${level > 1 ? ', the pet taking turns' : ''}${level === 1 ? ', a stone of another color explained with a glow' : ''}${level === 4 ? ', shorter hops explained with a glow' : ''}, everyone home, saved score and sticker passed`,
         );
       }
+
+    if ((!only || only === 'owls') && fromLevel <= 5) {
+      // Level 5, Stepping stones (the lap band): no cards, every touch answers and nothing is a miss.
+      await launch('owl-walk', 5);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.deck.visible),
+        false,
+        'no deck on the stepping stones',
+      );
+      const spot = () => page.evaluate(() => neo.scene.game.owls[0].spot);
+      const settled = () =>
+        page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished, null, { timeout: 20000 });
+      // A touch on the empty sky only pokes the owl.
+      await tap(
+        '({ getGlobalPosition: () => neo.scene.game.touch.toGlobal({ x: neo.scene.game.view.w / 2, y: neo.scene.game.view.h * 0.45 }) })',
+      );
+      assert.equal(await spot(), -1);
+      // A stone two ahead: the owl hops there, singing on each stone.
+      await tap('neo.scene.game.stones[1]');
+      await page.waitForFunction(() => neo.scene.game.owls[0].spot === 1, null, { timeout: 20000 });
+      await settled();
+      await screenshot('owl-walk-5-portrait');
+      // Its own stone and one behind it are soft ticks, never a miss.
+      await tap('neo.scene.game.stones[0]');
+      await tap('neo.scene.game.stones[1]');
+      await settled();
+      assert.equal(await spot(), 1);
+      assert.deepEqual(await counts(), [0, 0]);
+      await tap('neo.scene.game.stones[3]');
+      await page.waitForFunction(() => neo.scene.game.owls[0].spot === 3, null, { timeout: 20000 });
+      await settled();
+      await tap('({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })');
+      await finished('owl-walk');
+      assert.equal(await spot(), 5);
+      assert.deepEqual(await score('owl-walk'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Owl Walk Home 5 (Stepping stones, lap): no deck, sky poke, a hop two ahead, ticks behind, home by the nest, upright, saved score and sticker passed',
+      );
+    }
   }
 
   return { shortlistBatch };

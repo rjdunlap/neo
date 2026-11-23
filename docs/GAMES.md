@@ -546,7 +546,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Owl Walk Home
 
-*toddler–pre-K* · [Owl Walk Home](games/owl-walk.md)
+*lap–pre-K* · [Owl Walk Home](games/owl-walk.md)
 
 ### Attic Finds
 

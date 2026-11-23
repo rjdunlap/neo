@@ -2,13 +2,14 @@
 
 <!-- generated: from src/games/owl-walk; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `owl-walk` · **Land:** Story Grove · **Ages:** toddler–pre-K · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `owl-walk` · **Land:** Story Grove · **Ages:** lap–pre-K · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** colors, taking turns, shared goals, comparing distances
 
 | Band | Levels, easiest first |
 | --- | --- |
-| toddler | 1–2 |
+| lap | 5 |
+| toddler | 5, 1, 2 |
 | preschool | 1–3 |
 | pre-K | 2–4 |
 
@@ -18,6 +19,7 @@
 | 2 | Two owls, one each: take turns with the pet and tap the next stone of the card’s color |
 | 3 | Three owls, taking turns: choose an owl, then tap its stone (or the nest when none is left) |
 | 4 | Which owl hops the farthest with this card? Plan to get everyone home sooner |
+| 5 | Stepping stones: no cards; tap any stone ahead and the owl hops there, singing, then home to the nest |
 
 <!-- end generated -->
 
