@@ -696,7 +696,13 @@ class PeekabooBarn implements Game {
       } else if (this.singIn <= 0) this.singIn = 0.5;
     }
     // Hide it yourself: a waiting animal hops now and then to invite the carry.
-    if (this.hider?.visible && !this.busy && !this.hiderDrag?.dragging && this.idle >= SELF_OPEN_SECONDS) {
+    if (
+      this.hider?.visible &&
+      !this.busy &&
+      !this.hiderDrag?.dragging &&
+      !this.hiderDrag?.held &&
+      this.idle >= SELF_OPEN_SECONDS
+    ) {
       this.idle = 0;
       this.hiderCritter?.hop(0.7);
       this.say(this.target!);
