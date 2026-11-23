@@ -482,14 +482,19 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('lasso-loops', level);
         if (level === 7) {
           // Too few, too many: loop the benchmark jar, tap the card that could be right once (a miss; it stays), tap the
-          // others away, and the one left becomes the sign before level 4's tens round checks it.
-          await page.setViewportSize({ width: 768, height: 1024 });
+          // others away, and the one left becomes the sign before level 4's tens round checks it. On an upright phone.
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForFunction(() => neo.scene.game.L.upright, null, { timeout: 10000 });
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
           assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 7 });
           assert.equal(await page.evaluate(() => neo.scene.game.jars.filter((j) => j.visible).length), 1);
           await page.evaluate(async () => lasso.draw(lasso.loop(10)));
           await page.waitForFunction(
-            () => neo.scene.game.guessCards.length === 5 && !neo.scene.game.busy,
+            () => {
+              const g = neo.scene.game;
+              // The cards grow in; wait until they are full size.
+              return g.guessCards.length === 5 && !g.busy && g.guessCards.every((c) => c.scale.x === 1);
+            },
             null,
             { timeout: 30000 },
           );
@@ -538,7 +543,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.deepEqual(await score('lasso-loops'), [1, 0]);
           await page.setViewportSize({ width: 1024, height: 768 });
           log(
-            'Lasso Loops 7: benchmark jar on the shelf, a possible card tapped once (one miss, it stayed), four impossible cards tapped away, the near ten became the sign, tens round, saved score and sticker passed',
+            'Lasso Loops 7 (upright phone): benchmark jar on the shelf, a possible card tapped once (one miss, it stayed), four impossible cards tapped away, the near ten became the sign, tens round, saved score and sticker passed',
           );
           continue;
         }
