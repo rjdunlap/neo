@@ -26,7 +26,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-No phone-play line is queued; a playtest fix goes in Next ten under the phone lines.
+A playtest fix goes in Next ten under the phone lines.
+
+- **`jar-clues` number cells on an upright phone** (grown-up; existing-game bug fix tier): the ten-across board's cells are 74 units, 37.6 CSS px at 390 × 844, under the comfortable 44 px; `src/games/grownup-thumbs.test.ts` names the game until it is fixed. Sweeping a row is unaffected; if a playtest note says single taps miss, make the tapped number confirm under the finger (a lifted magnifier or a press-and-slide), never a smaller board. [Game page](games/jar-clues.md#design-notes)
 
 ### Puzzle-page follow-ups
 
@@ -50,7 +52,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`jar-clues` levels 3–4, batch `jar-clues 2`** (grown-up; after batch `jar-clues 1`; new interaction tier: typecheck and unit tests (the multiple, not-a-multiple, special and one-of-two clue truth tables, the generator and its required kinds at levels 3–4, the one-of-two explanations for both-true and neither-true numbers, the hint walk, voice coverage), one filtered play at level 4 with one wrong check on the one-of-two clue and one hint, one upright screenshot of a one-of-two clue card, `fingerdemo` at level 4, build). [Definition](definitions/jar-clues.md#build-batches)
 
 
 - **`harbor-orders` levels 3–4, batch `harbor-orders 2`** (grown-up; after batch `harbor-orders 1`; new interaction tier: typecheck and unit tests (`fewest` with three workshops and three goods against the brute-force walk on small boards, the generator and its rows at levels 3–4 with *most-of* failing and level 4's best-maker rule, the hint walk with three rows, voice coverage, the layout test at three rows and six mornings), one filtered play at level 4 with one spare-mornings send and one hint, one upright screenshot of a three-good board, `fingerdemo` at level 4, build). [Definition](definitions/harbor-orders.md#build-batches)

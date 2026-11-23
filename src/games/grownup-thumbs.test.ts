@@ -48,6 +48,7 @@ import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
+import { layout as jarLayout } from './jar-clues/layout';
 import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
@@ -121,6 +122,13 @@ const MEASURE: Record<string, () => Size[]> = {
     return [
       ['rail', l.s / 2],
       ['button', side(l.help)],
+    ];
+  },
+  'jar-clues': () => {
+    const l = jarLayout(v);
+    return [
+      ['number cell', l.board.cell],
+      ['button', Math.min(side(l.help), side(l.next), side(l.clue))],
     ];
   },
   'key-it-out': () => {
@@ -335,6 +343,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'fence-the-field': { px: 50.8, what: 'rail' },
   'gem-swap': { px: 44.7, what: 'button' },
   'hat-band': { px: 50.8, what: 'song card' },
+  'jar-clues': { px: 37.6, what: 'number cell' },
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
@@ -363,7 +372,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed. */
-const UNDER = ['sudoku-garden'];
+const UNDER = ['jar-clues', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);

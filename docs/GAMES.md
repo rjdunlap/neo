@@ -788,4 +788,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Key It Out](games/key-it-out.md)
 
+### Jar Clues
+
+*grown-up* · [Jar Clues](games/jar-clues.md)
+
 <!-- end generated -->
