@@ -1,1 +1,0 @@
-**Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Harbor Orders ([money](../../deep-dives/subjects/money-economy.md)). [Record](../../archive/DECISIONS-2026-11-17.md#games)
