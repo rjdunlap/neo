@@ -875,6 +875,8 @@ class LassoLoops implements Game {
     }
     await this.ctx.tw.wait(0.4);
     sfx.pop(9);
+    // A turn of the screen during the flight moved the jars: settle everything where it stands now.
+    if (!this.finished) this.resize(this.ctx.view);
   }
 
   /** They fly to the leaf's next free places. */
@@ -891,6 +893,7 @@ class LassoLoops implements Game {
       );
     }
     await this.ctx.tw.wait(0.6);
+    if (!this.finished) this.resize(this.ctx.view);
   }
 
   // Level 8, Make the number: loops are never wrong, a jar or the leaf can be let go, and the tick is the answer. ----
@@ -927,7 +930,8 @@ class LassoLoops implements Game {
           const s = leafSlot(k);
           void this.ctx.tw.to(f, { x: this.leaf.x + s.x, y: this.leaf.y + s.y }, { duration: 0.3 });
         });
-        await this.ctx.tw.wait(0.3);
+        await this.ctx.tw.wait(0.35);
+        this.resize(this.ctx.view);
       } else void this.ctx.say('count', { n: this.leafFlies.length });
     }
     this.busy = false;

@@ -48,7 +48,7 @@ export const VOICE = {
   'lasso.make-count-tens': ['{t} jars of ten make {got}. We want {n}.'],
   'lasso.make-count-both': ['{t} jars of ten make {tens}, and {r} more make {got}. We want {n}.'],
   'lasso.make-hint-jar-add': ['The glowing jar needs ten fireflies. Loop ten for it.'],
-  'lasso.make-hint-more': ['{d} more make {n}. Loop {d} more.'],
+  'lasso.make-hint-more': ['You need {d} more for {n}. Loop {d} more.'],
   'lasso.make-hint-jar-remove': ['That is too many. Tap the glowing jar to let its ten go.'],
   'lasso.make-hint-leaf-remove': ['That is too many. Tap the leaf to let its fireflies go, then loop again.'],
   'lasso.make-right-tens': ['Yes! {t} jars of ten make {n}. None left over!'],
