@@ -1,5 +1,7 @@
 # Thought Bubbles, level 4 (definition)
 
+**Built:** build batch 1, levels 1–3 upright (PR #2020, 2026-11-22); to build level 4, read “Build batches” item 2 and the sections above it. Note for batch 2: on the 390 × 844 phone the upright level-2 screen fits and clears Home and the guide, but its content ends about halfway down, leaving the lower half empty; batch 2 re-lays the upright top row and moves Replay under the cards, so use that to use the height rather than patching it now.
+
 **Status: ready to build in two batches, no review gate.** Defined 2026-11-22 as slice LM2 of the [literature and meaning study](../deep-dives/subjects/literature-meaning.md#build-slices-in-order), from its [audience row U](../deep-dives/subjects/literature-meaning.md#a-first-games-ladder-thought-bubbles-13) and [candidates row LM2](../deep-dives/subjects/literature-meaning.md) (*Two bubbles*: two friends, two bubbles, different things seen; RL.3.6). The study's slice line said "after 1–3 are played"; the developer admitted Thought Bubbles 4 for definition on the study's lean without waiting for play on [2026-11-17](../archive/DECISIONS-2026-11-17.md#games), and [OBSERVATIONS](../OBSERVATIONS.md) has no Thought Bubbles notes yet, so nothing below draws on observed play. It extends the built [levels 1–3](thought-bubbles.md) (PR #1122) and changes none of them. Docs only: no code, voice line or art exists yet.
 
 **Fun action and purpose.** Two friends share one thing. It is put away while both watch; then a kind friend moves it, and moves it again, while one or both of the owners are out of the door. When they come back, **both** friends get an empty thought bubble, and she drags a place card into each. Then each friend walks to the place in its own bubble, and the story shows what each one saw. The learning purpose is **two characters' points of view at once: each friend thinks what it last saw, so two friends in one story can think different things, or the same thing, and neither has to be where the thing really is** (CCSS RL.3.6, "distinguish their own point of view from that of the narrator or those of the characters", as read in the [study's anchors](../deep-dives/subjects/literature-meaning.md#anchors-opened-at-their-source)). Nothing has to be read. The how-to card makes no claim of a reading, theory-of-mind, attention or school benefit.
@@ -81,7 +83,7 @@ So two different stories per round cost at least two misses each. The authored f
   - Upright (768 × 1024): the two bubbles side by side above the stage, right of Home (centres about x 300 and 600, hit areas 160–440 and 460–740). Home, two hit areas and Replay do not fit in one 768 row (130 + 2 × 280 + 100 = 790), so at level 4 Replay moves under the card row, at the right (centre about x `w` − 80, 70 below the cards' bottom edge), clear of the guide's bottom-left corner.
 
   These are candidate envelopes. The builder measures the art, safe insets and the guide at runtime and moves things within `view`, never shrinking a target below 100.
-- **Phone first:** Thought Bubbles is not yet `upright` (the [upright sweep](phone-portrait.md#the-upright-sweep-built-2026-11-09) measured it as "fits as is" at level 3), so on an upright phone it shows the turn prompt today. Batch 1 below makes levels 1–3 upright before level 4 is built, and level 4 is upright from its first commit.
+- **Phone first:** Thought Bubbles levels 1–3 are `upright` since batch 1 (PR #2020; the [upright sweep](phone-portrait.md#the-upright-sweep-built-2026-11-09) had measured them as "fits as is"), so an upright phone no longer shows the turn prompt, and level 4 is upright from its first commit.
 
 ## Narration and pacing
 
@@ -137,8 +139,8 @@ Instructions use `ctx.instruct`; everything else `ctx.say`. Every line is slot-f
 
 ## Build batches
 
-1. **`thought-bubbles upright`, levels 1–3** (phone play; existing-game change to layout): `upright: true`, an `upright.test.ts` walking levels 1–3 through `thoughtLayout` on the 768 × 1024 view (whose portrait branch already exists), and any placement fix that test finds. No rule or speech change.
-2. **`thought-bubbles 2`, level 4, *Two bubbles*** (after batch 1): everything above.
+1. **`thought-bubbles upright`, levels 1–3, built 2026-11-22 (PR #2020)** (phone play; existing-game change to layout): `upright: true`, an `upright.test.ts` walking levels 1–3 through `thoughtLayout` on the 768 × 1024 view (whose portrait branch already exists), and any placement fix that test finds. No rule or speech change.
+2. **`thought-bubbles 2`, level 4, *Two bubbles*** (batch 1 is built): everything above.
 
 ## Check tier
 

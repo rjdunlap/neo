@@ -90,6 +90,57 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
+    // `THOUGHT_BUBBLES_PHONE=1` (batch `thought-bubbles upright`): levels 1–3 on a phone held upright, in a touch phone
+    // context, so the upright layout is the one played rather than the turn prompt. Level 1 answered right; level 2 the
+    // authored away story with where the ball really is (a miss) then the start; level 3 a wrong reason, a free tap, the clue.
+    if (process.env.THOUGHT_BUBBLES_PHONE === '1') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(400);
+      const upright = () =>
+        page.evaluate(
+          () =>
+            neo.view.upright === true && neo.turning === false && neo.scene.constructor.name === 'GameScene',
+        );
+      await launch('thought-bubbles', 1, 'Mia', 'prek');
+      assert.equal(await upright(), true, 'level 1 plays upright, no turn prompt');
+      await finishRest('thought-bubbles');
+      assert.deepEqual(await score(), [0, 0], 'level 1 upright saved 0 misses, 0 hints');
+
+      await launch('thought-bubbles', 2, 'Mia', 'school');
+      await ready();
+      assert.equal(await upright(), true, 'level 2 plays upright');
+      let p = await state();
+      assert.deepEqual(
+        [p.kind, p.answer, p.end],
+        ['away', 'redBox', 'blueBasket'],
+        'the authored away story',
+      );
+      await screenshot('thought-bubbles-2-upright');
+      await dropCard('blueBasket');
+      p = await state();
+      assert.deepEqual([p.misses, p.hints], [1, 0], 'upright: where the ball really is, one miss');
+      await finishRest('thought-bubbles');
+      assert.deepEqual(await score(), [1, 0], 'level 2 upright saved 1 miss, 0 hints');
+
+      await launch('thought-bubbles', 3, 'Mia', 'school');
+      await dropCard('birthday');
+      await dropCard('rain');
+      await page.waitForFunction(() => neo.scene.game.stage === 'point', null, { timeout: 20000 });
+      assert.equal(await upright(), true, 'level 3 plays upright');
+      await tapRegion('vase');
+      p = await state();
+      assert.deepEqual([p.misses, p.hints, p.stage], [1, 0, 'point'], 'upright: a tap on the vase is free');
+      await screenshot('thought-bubbles-3-upright');
+      await tapRegion('clouds');
+      await finishRest('thought-bubbles');
+      assert.deepEqual(await score(), [1, 0], 'level 3 upright saved 1 miss, 0 hints');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Thought Bubbles upright phone (390 × 844, touch): level 1 right (0/0); level 2 the actual place then the start (1/0); level 3 a wrong reason, a free tap, the clue (1/0); passed',
+      );
+      return;
+    }
+
     // Level 1 (pre-K), authored: Bunny reaches up for the apple; the cards are ball, apple, kite. Ball (a miss), kite (a second
     // miss and the glow, one hint), then the apple; the other two stories answered right.
     await launch('thought-bubbles', 1, 'Mia', 'prek');
