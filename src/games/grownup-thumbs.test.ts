@@ -47,6 +47,7 @@ import { makeRound as makeComeback, PLANS as comebackPlans } from './species-com
 import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { tableLayout } from './tide-tables/layout';
+import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
@@ -252,6 +253,15 @@ const MEASURE: Record<string, () => Size[]> = {
       ...l.actions.map((r): Size => ['button', side(r)]),
     ];
   },
+  'truth-bridge': () => {
+    const l = truthBridgeLayout(v, 3);
+    return [
+      ...l.bubbles.map((r): Size => ['speech bubble', side(r)]),
+      ...l.seats.map((r): Size => ['islander', side(r)]),
+      ['button', side(l.help)],
+      ['button', side(l.cross)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -312,6 +322,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'sum-crates': { px: 50.8, what: 'tray fruit' },
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
+  'truth-bridge': { px: 52.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
 };
