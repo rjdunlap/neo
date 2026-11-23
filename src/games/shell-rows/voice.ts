@@ -23,4 +23,8 @@ export const VOICE = {
   'sr.tie': ["A tie! Nobody got three. That's good playing!"],
   'sr.go-back': ["I got three! Let's go back to where it turned."],
   'sr.your-turn': ['Your turn!'],
+  'sr.seat-on': ['A grown-up plays the pebbles this game. You still go first!'],
+  'sr.seat-off': ["I'll play the pebbles."],
+  'sr.pebble-turn': ["Pebbles' turn!"],
+  'sr.pebbles-win': ['The pebbles got three! Good game!'],
 } satisfies Record<string, string[]>;

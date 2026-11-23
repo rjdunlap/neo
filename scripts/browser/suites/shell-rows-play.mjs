@@ -32,12 +32,14 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
     // SHELL_LEVELS=4,5 plays only the listed parts (1 and 3 are one part each; 4 and 5 below).
-    const only = process.env.SHELL_LEVELS?.split(',').map(Number);
-    const wants = (l) => !only || only.includes(l);
+    // `seat` is level 5 with a grown-up on the pebbles (SHELL_LEVELS=seat).
+    const only = process.env.SHELL_LEVELS?.split(',');
+    const wants = (l) => !only || only.includes(String(l));
 
     if (wants(1) || wants(3)) await levelsOneAndThree();
     if (wants(4)) await levelFour();
     if (wants(5)) await levelFive();
+    if (wants('seat')) await levelFiveSeat();
   }
 
   async function levelsOneAndThree() {
@@ -281,6 +283,71 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForTimeout(400);
     log(
       `Shell Rows 5 (upright phone): a lost match rewound to its turning point (1 miss), then a ${s.ending}; passed`,
+    );
+  }
+
+  // Level 5 with a grown-up on the pebbles, upright phone: the toggle flips before the first shell and not after; pebble
+  // turns are taps on the same board; Show me answers only on her turn (one hint); the pebbles' three finishes the round
+  // with no miss and no rewind.
+  async function levelFiveSeat() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(600);
+    await launch('shell-rows', 5, 'Mia', 'school');
+    await turn();
+    const tapSeat = async () => {
+      await page.evaluate(() => kit.tapOn(neo.scene.game.seatButton));
+      await page.waitForTimeout(150);
+    };
+    let s = await state();
+    assert.deepEqual([s.seat, s.seatOpen], [false, true], 'the pet plays the pebbles until asked');
+    await tapSeat();
+    assert.equal((await state()).seat, true, 'a tap seats the grown-up');
+    await tapSeat();
+    assert.equal((await state()).seat, false, 'a second tap hands the pebbles back');
+    await tapSeat();
+    await page.waitForTimeout(400);
+    await screenshot('shell-rows-5-seat-phone');
+    const pebbleTurn = () => until(() => neo.scene.game.state.phase === 'grownup');
+    await tap(0);
+    await pebbleTurn();
+    s = await state();
+    assert.deepEqual([s.seat, s.seatOpen, s.moves], [true, false, [0]], 'the first shell closes the choice');
+    await tapSeat();
+    assert.equal((await state()).seat, true, 'the toggle does nothing after the first shell');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.equal((await state()).hints, 0, 'Show me is hers: nothing on a pebble turn');
+    await tap(0);
+    s = await state();
+    assert.deepEqual([s.phase, s.moves], ['grownup', [0]], 'a full square on a pebble turn sets nothing');
+    await tap(3);
+    await turn();
+    s = await state();
+    assert.deepEqual(s.moves, [0, 3], "the grown-up's pebble is on the board and it is her turn");
+    assert.equal(s.board[3], 'pebble');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    s = await state();
+    assert.deepEqual([s.hints, s.glowing], [1, true], 'Show me on her turn: the glow, one hint');
+    await tap(1);
+    await pebbleTurn();
+    await tap(4);
+    await turn();
+    await tap(8);
+    await pebbleTurn();
+    await page.waitForTimeout(300);
+    await screenshot('shell-rows-5-seat-pebble-turn-phone');
+    await tap(5);
+    await finished('shell-rows');
+    s = await state();
+    assert.deepEqual(
+      [s.ending, s.moves, s.misses],
+      ['pebble', [0, 3, 1, 4, 8, 5], 0],
+      "the pebbles' three ends the round: no rewind, no miss",
+    );
+    assert.deepEqual(await score(), [0, 1], 'the seated game saved 0 misses, 1 hint');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    log(
+      'Shell Rows 5, grown-up seat (upright phone): the toggle before the first shell only, pebble turns tapped, Show me hers (0/1), a pebble three finishing the round; passed',
     );
   }
 

@@ -9,10 +9,11 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { miniBoard, pebblePiece, pile, sandBoard, shellPiece } from './art';
+import { miniBoard, pebblePiece, pile, sandBoard, seatToggle, shellPiece } from './art';
 import {
   BORDER,
   GROOVE,
+  GrownUpSeat,
   LEVELS,
   LINES,
   SHELL_COLORS,
@@ -24,6 +25,7 @@ import {
   forkFollow,
   layout,
   makeRound,
+  matchEnd,
   petMove,
   petReply,
   place,
@@ -39,8 +41,8 @@ import {
   type Round,
 } from './logic';
 
-/** `pet`: level 5, her shell is settling or the pet is answering. */
-type Phase = 'turn' | 'replay' | 'between' | 'pet' | 'done';
+/** `pet`: level 5, her shell or a pebble is settling, or the pet is answering. `grownup`: level 5, the grown-up's pebble turn. */
+type Phase = 'turn' | 'replay' | 'between' | 'pet' | 'grownup' | 'done';
 
 const REASON = {
   'took-spot': 'sr.took-spot',
@@ -67,7 +69,10 @@ class ShellRows implements Game {
   finished = false;
   /** Level 5: the match so far, her shells on even turns and the pet's pebbles on odd; and how it ended. */
   moves: number[] = [];
-  ending: 'win' | 'tie' | null = null;
+  ending: 'win' | 'tie' | 'pebble' | null = null;
+  /** Level 5: who plays the pebbles (the pet, or a grown-up tapping the same board). */
+  readonly seat = new GrownUpSeat();
+  readonly seatButton = seatToggle(100);
   /** Level 5: seconds of her turn so far, and whether "Your turn!" may still be said this turn. */
   private idle = 0;
   private nudge = false;
@@ -120,6 +125,9 @@ class ShellRows implements Game {
       this.squares.push(sq);
       this.squareLayer.addChild(sq);
     }
+    this.seatButton.visible = this.plan.id === 'match';
+    this.seatButton.hitArea = new Rectangle(-50, -50, 100, 100);
+    onTap(this.seatButton, () => this.tapSeat());
     ctx.stage.addChild(
       this.backdrop,
       this.boardLayer,
@@ -128,6 +136,7 @@ class ShellRows implements Game {
       this.pieceLayer,
       this.shellPile,
       this.pebblePile,
+      this.seatButton,
     );
     this.resize(ctx.view);
   }
@@ -155,6 +164,8 @@ class ShellRows implements Game {
       finished: this.finished,
       moves: this.moves.slice(),
       ending: this.ending,
+      seat: this.seat.on,
+      seatOpen: this.seat.open,
     };
   }
 
@@ -172,6 +183,7 @@ class ShellRows implements Game {
       this.ctx.tw.kill(p.scale);
     }
     for (const s of this.squares) this.ctx.tw.kill(s.children[0]);
+    this.ctx.tw.kill(this.seatButton.scale);
   }
 
   private instruct() {
@@ -240,8 +252,20 @@ class ShellRows implements Game {
     void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.35 });
   }
 
+  /** Level 5, before the first shell: a grown-up takes the pebbles, or hands them back to the pet. */
+  private tapSeat() {
+    if (this.finished || this.phase !== 'turn' || !this.seat.toggle()) return;
+    this.seatButton.set(this.seat.on, true);
+    this.ctx.tw.kill(this.seatButton.scale);
+    this.seatButton.scale.set(0.9);
+    void this.ctx.tw.to(this.seatButton.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    sfx.pluck(this.seat.on ? 3 : 1, 0.3);
+    this.idle = 0;
+    void this.ctx.say(this.seat.on ? 'sr.seat-on' : 'sr.seat-off');
+  }
+
   private tapSquare(i: number) {
-    if (this.finished || this.phase !== 'turn') return;
+    if (this.finished || (this.phase !== 'turn' && this.phase !== 'grownup')) return;
     this.press(i);
     if (this.board[i]) {
       // A full square wobbles; nothing is set and nothing counts.
@@ -257,6 +281,10 @@ class ShellRows implements Game {
         this.saidFull = true;
         void this.ctx.say('sr.full');
       }
+      return;
+    }
+    if (this.phase === 'grownup') {
+      void this.playPebble(i);
       return;
     }
     if (this.plan.id === 'match') {
@@ -412,11 +440,24 @@ class ShellRows implements Game {
     this.nudge = false;
     const g = ++this.gen;
     this.score.glowing = false;
+    if (this.seat.open) {
+      this.seat.close();
+      this.seatButton.set(this.seat.on, false);
+    }
     this.moves.push(i);
     await this.setShell(i);
     if (g !== this.gen) return;
     if (wonLine(this.board, 'shell')) return this.endMatch('win', g);
     if (!empties(this.board).length) return this.endMatch('tie', g);
+    if (this.seat.on) {
+      // The pet has stepped aside: the next tap on the board is the grown-up's pebble.
+      this.phase = 'grownup';
+      this.idle = 0;
+      this.nudge = true;
+      this.saidFull = false;
+      if (this.moves.length === 1) void this.ctx.say('sr.pebble-turn');
+      return;
+    }
     await this.ctx.tw.wait(0.4);
     if (g !== this.gen) return;
     const pebble = petMove(this.board, this.round.seed ?? 0);
@@ -424,6 +465,27 @@ class ShellRows implements Game {
     await this.slidePebble(pebble);
     if (g !== this.gen) return;
     if (wonLine(this.board, 'pebble')) return this.petWins(g);
+    this.beginTurn(true);
+  }
+
+  /** The grown-up's pebble, set where they tapped. Their three ends the round like any other ending: no rewind, no miss. */
+  private async playPebble(i: number) {
+    this.phase = 'pet';
+    this.nudge = false;
+    const g = ++this.gen;
+    this.moves.push(i);
+    this.board = place(this.board, i, 'pebble');
+    const p = this.pieceFor('pebble');
+    const b = this.L.squares[i];
+    p.position.set(b.x, b.y);
+    p.scale.set(1.25);
+    this.pieceLayer.addChild(p);
+    this.pieces[i] = p;
+    sfx.pluck(1, 0.3);
+    await this.ctx.tw.to(p.scale, { x: 1, y: 1 }, { duration: this.reduce ? 0.15 : 0.3, ease: ease.outBack });
+    if (g !== this.gen) return;
+    const end = matchEnd(this.board);
+    if (end) return this.endMatch(end, g);
     this.beginTurn(true);
   }
 
@@ -466,7 +528,7 @@ class ShellRows implements Game {
     }
   }
 
-  private async endMatch(kind: 'win' | 'tie', g: number) {
+  private async endMatch(kind: 'win' | 'tie' | 'pebble', g: number) {
     this.phase = 'done';
     this.ending = kind;
     this.finished = true;
@@ -475,6 +537,10 @@ class ShellRows implements Game {
       void this.rising(g);
       this.ctx.pet.cheer();
       await this.ctx.say('sr.you-win');
+    } else if (kind === 'pebble') {
+      this.lit = { line: wonLine(this.board, 'pebble')!, color: swatch.purple.light };
+      this.ctx.pet.hop();
+      await this.ctx.say('sr.pebbles-win');
     } else {
       this.lit = { line: [0, 1, 2, 3, 4, 5, 6, 7, 8], color: swatch.blue.light };
       this.ctx.pet.hop();
@@ -517,9 +583,10 @@ class ShellRows implements Game {
     });
     this.shellPile.position.set(L.shellPile.x, L.shellPile.y);
     this.pebblePile.position.set(L.pebblePile.x, L.pebblePile.y);
+    this.seatButton.position.set(L.seat.x, L.seat.y);
     // On her turn nothing is awaited on the pieces, so they are redrawn; mid-replay or mid-settle a piece's tween is
     // awaited (a killed tween never resolves), so the pieces only move to their new squares.
-    if (this.phase === 'turn') this.drawPieces();
+    if (this.phase === 'turn' || this.phase === 'grownup') this.drawPieces();
     else
       this.pieces.forEach((p, i) => {
         if (p && !p.destroyed) p.position.set(L.squares[i].x, L.squares[i].y);
@@ -528,11 +595,11 @@ class ShellRows implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.nudge && this.phase === 'turn') {
+    if (this.nudge && (this.phase === 'turn' || this.phase === 'grownup')) {
       this.idle += dt;
       if (this.idle >= NUDGE_AFTER) {
         this.nudge = false;
-        void this.ctx.say('sr.your-turn');
+        void this.ctx.say(this.phase === 'grownup' ? 'sr.pebble-turn' : 'sr.your-turn');
       }
     }
     this.glow.clear();

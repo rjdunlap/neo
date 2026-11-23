@@ -101,3 +101,28 @@ export function miniBoard(
   });
   return c;
 }
+
+/**
+ * Level 5's "grown-up plays" toggle: a grown-up's head and shoulders over a pebble on a `size` tile, centred on (0, 0).
+ * `set(on, open)` redraws it: lit when a grown-up plays the pebbles, faint once the first shell has closed the choice.
+ */
+export function seatToggle(size: number): Container & { set(on: boolean, open: boolean): void } {
+  const c = new Container() as Container & { set(on: boolean, open: boolean): void };
+  const g = new Graphics();
+  const pebble = pebblePiece(size * 0.6);
+  pebble.position.set(size * 0.2, size * 0.2);
+  c.addChild(g, pebble);
+  c.set = (on, open) => {
+    const h = size / 2;
+    g.clear()
+      .roundRect(-h, -h, size, size, 22)
+      .fill({ color: on ? swatch.yellow.light : 0xffffff, alpha: on ? 1 : 0.8 })
+      .stroke({ color: on ? swatch.yellow.line : GROOVE_INK, width: on ? 6 : 4 });
+    // Head and shoulders, top-left; the pebble sits bottom-right, so it reads "this person, those pieces".
+    g.circle(-size * 0.14, -size * 0.2, size * 0.13).fill(ink);
+    g.roundRect(-size * 0.36, -size * 0.04, size * 0.44, size * 0.3, size * 0.14).fill(ink);
+    c.alpha = open || on ? 1 : 0.35;
+  };
+  c.set(false, true);
+  return c;
+}

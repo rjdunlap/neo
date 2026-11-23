@@ -487,6 +487,39 @@ export class Score {
   }
 }
 
+// ---- level 5: the grown-up seat (batch `shell-rows 3`) ----
+
+/**
+ * Who plays the pebbles at level 5. The seat can change only before the match's first shell; with a grown-up in it the
+ * pet steps aside, pebble turns are taps on the same board, a pebble three ends the round (no rewind, no miss) and
+ * *Show me* stays hers.
+ */
+export class GrownUpSeat {
+  on = false;
+  open = true;
+
+  /** Flip the seat; false (and nothing changes) once the first shell is set. */
+  toggle(): boolean {
+    if (!this.open) return false;
+    this.on = !this.on;
+    return true;
+  }
+
+  /** The first shell is set: the seat stays as it is for the rest of the round. */
+  close() {
+    this.open = false;
+  }
+}
+
+export type MatchEnd = 'win' | 'pebble' | 'tie';
+
+/** How a match stands: her three, the pebbles' three, a full board with no row, or still going (`null`). */
+export function matchEnd(b: Board): MatchEnd | null {
+  if (wonLine(b, 'shell')) return 'win';
+  if (wonLine(b, 'pebble')) return 'pebble';
+  return empties(b).length ? null : 'tie';
+}
+
 // ---- layout ----
 
 export interface Pt {
@@ -509,6 +542,8 @@ export interface Layout {
   squares: Box[];
   shellPile: Box;
   pebblePile: Box;
+  /** Level 5's "grown-up plays" toggle, a 100-unit target beside the pebble pile. */
+  seat: Box;
 }
 
 /** The board right of the pet's corner in landscape, in the middle of the room above the pet's row in portrait; null rather than squares under 100. */
@@ -543,5 +578,10 @@ export function layout(view: { w: number; h: number }): Layout | null {
   const pebblePile = portrait
     ? box(cx + size / 2 - pile, pileY, pile, pile)
     : box(cx + size / 2 + pile / 2 + 12, pileY, pile, pile);
-  return { portrait, cell, board: box(cx, cy, size, size), squares, shellPile, pebblePile };
+  // Upright: right of the pebble pile, resting just above the board. Sideways: under the pile, in the right margin.
+  const SEAT = 100;
+  const seat = portrait
+    ? box(pebblePile.x + pile / 2 + 8 + SEAT / 2, cy - size / 2 - SEAT / 2 - 4, SEAT, SEAT)
+    : box(cx + size / 2 + 12 + SEAT / 2, pileY + pile / 2 + 8 + SEAT / 2, SEAT, SEAT);
+  return { portrait, cell, board: box(cx, cy, size, size), squares, shellPile, pebblePile, seat };
 }
