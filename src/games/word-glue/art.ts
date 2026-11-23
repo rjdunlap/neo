@@ -799,3 +799,108 @@ export function iconArt(): Container {
   c.addChild(s, f, spark);
   return c;
 }
+
+/* Level 7's invented things ----------------------------------------------------------------------- */
+
+/** A part picture as a small detail on an invented thing, at (x, y) in the thing's own units. */
+const detail = (key: string, x: number, y: number, scale: number, rotation = 0): Container => {
+  const p = partArt(key);
+  p.scale.set(scale);
+  p.position.set(x, y);
+  p.rotation = rotation;
+  return p;
+};
+
+/**
+ * A thing nobody has named (level 7): its head drawn big, about 160 units across like a made thing, with its two details
+ * at about a third of its size sitting on or in it, so the head reads as the thing first.
+ */
+export function inventedArt(head: string): Made {
+  const c = new Container();
+  const thing = new Container();
+  thing.scale.set(1.3);
+  c.addChild(thing);
+  const base = partArt(head);
+  thing.addChild(base);
+  const on = (...parts: Container[]) => (thing.addChild(...parts), parts);
+  switch (head) {
+    case 'hat': {
+      const [bell] = on(detail('bell', 30, -46, 0.3, 0.3), detail('star', 0, -10, 0.36));
+      bell.pivot.set(0, -40);
+      bell.y -= 12;
+      return {
+        node: c,
+        alive: (t) => {
+          thing.rotation = -0.14 * Math.sin(Math.PI * Math.min(1, t / 0.7));
+          bell.rotation = 0.3 + 0.5 * Math.sin(t * 11) * Math.max(0, 1 - t / 1.4);
+        },
+      };
+    }
+    case 'boat': {
+      const [tree] = on(detail('tree', 0, -38, 0.38), detail('key', 30, 10, 0.26, -0.3));
+      tree.pivot.set(0, 50);
+      tree.y += 19;
+      return {
+        node: c,
+        alive: (t) => {
+          thing.y = Math.sin(t * 6) * 5;
+          tree.rotation = 0.12 * Math.sin(t * 8) * Math.max(0, 1 - t / 1.6);
+        },
+      };
+    }
+    case 'cake': {
+      const shells = [-34, 0, 34].map((x) => detail('shell', x, 38, 0.2));
+      const [duck] = on(...shells, detail('duck', -26, -22, 0.34)).slice(-1);
+      return {
+        node: c,
+        alive: (t) => {
+          duck.rotation = 0.25 * Math.sin(t * 12) * Math.max(0, 1 - t / 1.4);
+        },
+      };
+    }
+    case 'chair': {
+      thing.removeChild(base);
+      const [sail] = on(detail('sail', 0, -64, 0.48));
+      thing.addChild(base);
+      on(detail('flower', -29, 34, 0.24), detail('flower', 29, 34, 0.24));
+      return {
+        node: c,
+        alive: (t) => {
+          sail.scale.x = 0.48 * (1 + 0.3 * Math.sin(Math.PI * Math.min(1, t / 0.8)));
+        },
+      };
+    }
+    case 'cup': {
+      const [, frog] = on(detail('car', 56, -16, 0.22), detail('frog', -4, 14, 0.32));
+      return {
+        node: c,
+        alive: (t) => {
+          // The frog hops up and round the rim and back down to the cup's side.
+          const p = Math.min(1, t / 1.2);
+          const hop = Math.sin(Math.PI * p);
+          frog.position.set(-4 + 30 * Math.sin(Math.PI * 2 * p), 14 - 56 * hop);
+        },
+      };
+    }
+    case 'coat': {
+      const pockets = new Graphics()
+        .roundRect(-38, 24, 26, 20, 5)
+        .roundRect(12, 24, 26, 20, 5)
+        .fill(swatch.red.line);
+      thing.addChildAt(pockets, 1);
+      const spoons = [detail('spoon', -25, 18, 0.2, -0.2), detail('spoon', 25, 18, 0.2, 0.2)];
+      thing.addChildAt(spoons[0], 1);
+      thing.addChildAt(spoons[1], 1);
+      on(detail('moon', -26, -12, 0.28));
+      return {
+        node: c,
+        alive: (t) => {
+          const k = Math.max(0, 1 - t / 1.4);
+          spoons.forEach((s, i) => (s.rotation = (i ? 0.2 : -0.2) + 0.3 * Math.sin(t * 14 + i) * k));
+        },
+      };
+    }
+    default:
+      return { node: c, alive: () => {} };
+  }
+}

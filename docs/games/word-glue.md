@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
-| school | 3, 5, 6 |
+| school | 3, 5, 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 4 | One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things) |
 | 5 | What kind of thing? Tap the part the made thing really is (5 asks) |
 | 6 | Which way round? Tap the thing the pet names (4 asks) |
+| 7 | Name the new thing: tap two pictures, the thing it is last (5 asks) |
 
 <!-- end generated -->
 

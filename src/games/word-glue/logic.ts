@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * level 2 finds the two parts of an asked word among three pictures, level 3 keeps the second part (a house, a box, a
  * brush) and asks which first part makes the thing a friend needs. Every entry is a transparent compound whose parts
  * can both be drawn; nothing is printed. Level 5 shows a made thing over its two parts and asks which part it is: the
- * last part names the thing. See docs/definitions/word-glue.md and docs/definitions/word-glue-5-6.md.
+ * last part names the thing. Level 6 tells two real words apart by their order, and level 7 names a new thing from its
+ * pictures with the thing last. See docs/definitions/word-glue.md, word-glue-5-6.md and word-glue-7.md.
  */
 
 export interface Compound {
@@ -185,6 +186,83 @@ export const DENY: readonly string[] = [
 
 export const REVERSED_LEVEL = 6;
 
+/** Level 7: a thing nobody has named, and two name cards to fill from its three pictures; the thing goes last. */
+export const NAME_LEVEL = 7;
+
+/**
+ * Level 7's invented things: a head (what it is) with two true details drawn on it. Kept apart from `COMPOUNDS` so
+ * `makes`, `forms` and `distractorsFor` never offer an invented name on levels 1 to 6. Every name is said as two words.
+ */
+export interface Invented {
+  head: string;
+  details: readonly [string, string];
+  /** What each name means, by its detail ("a hat with a star on it"). */
+  meanings: Readonly<Record<string, string>>;
+}
+
+const INVENTED_ROWS = [
+  {
+    head: 'hat',
+    details: ['star', 'bell'],
+    meanings: { star: 'a hat with a star on it', bell: 'a hat with a bell on it' },
+  },
+  {
+    head: 'boat',
+    details: ['tree', 'key'],
+    meanings: { tree: 'a boat with a tree on it', key: 'a boat with a key on it' },
+  },
+  {
+    head: 'cake',
+    details: ['shell', 'duck'],
+    meanings: { shell: 'a cake with shells on it', duck: 'a cake with a duck on top' },
+  },
+  {
+    head: 'chair',
+    details: ['sail', 'flower'],
+    meanings: { sail: 'a chair with a sail', flower: 'a chair with flowers on it' },
+  },
+  {
+    head: 'cup',
+    details: ['frog', 'car'],
+    meanings: { frog: 'a cup with a frog on it', car: 'a cup with a car on it' },
+  },
+  {
+    head: 'coat',
+    details: ['moon', 'spoon'],
+    meanings: { moon: 'a coat with a moon on it', spoon: 'a coat with spoons in its pockets' },
+  },
+] as const satisfies readonly Invented[];
+
+export const INVENTED: readonly Invented[] = INVENTED_ROWS;
+
+type Row = (typeof INVENTED_ROWS)[number];
+type Orders<All extends string, T extends string = All> = T extends string
+  ? `${T}-${Exclude<All, T>}`
+  : never;
+/** Every level-7 line id: a row's head, then the two pictures in the order said. */
+export type NameLineId = Row extends infer R
+  ? R extends {
+      head: infer H extends string;
+      details: readonly [infer A extends string, infer B extends string];
+    }
+    ? `wordglue.name.${H}.${Orders<H | A | B>}`
+    : never
+  : never;
+
+/** An invented name, said as two words: "star hat". */
+export const inventedName = (first: string, last: string) => `${first} ${last}`;
+
+/** Level 7's verdict on a name: right with the head last and a detail first, else what the name would call (its last part). */
+export function judgeName(
+  row: Invented,
+  first: string,
+  last: string,
+): { kind: 'right' } | { kind: 'wrong'; calls: string } {
+  return last === row.head && row.details.includes(first) && first !== last
+    ? { kind: 'right' }
+    : { kind: 'wrong', calls: last };
+}
+
 /** Keep both orders here so the joining rounds still have one meaning per pair. */
 const PAIR_DATA = [
   ['house', 'boat', 'houseboat', 'a boat you can live in', 'boathouse', 'a house for boats'],
@@ -217,6 +295,7 @@ export const PLANS: readonly Plan[] = [
   },
   { level: 5, name: 'What kind of thing? Tap the part the made thing really is (5 asks)' },
   { level: REVERSED_LEVEL, name: 'Which way round? Tap the thing the pet names (4 asks)' },
+  { level: NAME_LEVEL, name: 'Name the new thing: tap two pictures, the thing it is last (5 asks)' },
 ];
 
 /** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
@@ -231,7 +310,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
   // An explicit order keeps lap's level 4 out of school's ladder.
-  school: { min: 3, max: REVERSED_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL] },
+  school: { min: 3, max: NAME_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL] },
 };
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -279,6 +358,8 @@ export interface Ask {
   saidFirst?: string;
   /** Level 6: the other made thing, with its parts in the opposite order. */
   other?: Compound;
+  /** Level 7: the thing to name; `pictures` holds its head and two details in screen order, and `entry` is its first detail's name. */
+  invented?: Invented;
 }
 
 export interface Round {
@@ -311,6 +392,23 @@ const AUTHORED_5: [string, boolean, boolean][] = [
   ['sailboat', true, false],
 ];
 const AUTHORED_1 = ['sunflower', 'doghouse', 'cupcake', 'beehive', 'sailboat'];
+/** Level 7's first round: hat, boat, cake, chair, cup, with the head in each place at least once and at most twice. */
+const AUTHORED_7: string[][] = [
+  ['hat', 'star', 'bell'],
+  ['key', 'tree', 'boat'],
+  ['shell', 'cake', 'duck'],
+  ['chair', 'flower', 'sail'],
+  ['car', 'cup', 'frog'],
+];
+
+/** The name a level-7 ask stands for: its first detail before its head, so the head is `second` as on every level. */
+const inventedEntry = (row: Invented, first = row.details[0]): Compound => ({
+  word: inventedName(first, row.head),
+  first,
+  second: row.head,
+  meaning: row.meanings[first],
+  levels: [NAME_LEVEL],
+});
 
 /** A round at `level`. `authored` gives the definition's first round (the how-to card and demonstration open on it). */
 export function makeRound(level: number, rng: Rng, authored = false): Round {
@@ -373,6 +471,27 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
       }),
     };
   }
+  if (plan.level === NAME_LEVEL) {
+    if (authored)
+      return {
+        plan,
+        asks: AUTHORED_7.map((pictures) => {
+          const row = INVENTED.find((r) => pictures.includes(r.head))!;
+          return { entry: inventedEntry(row), invented: row, pictures };
+        }),
+      };
+    // Five of the six things; the head's place across the round is two, two and one of the three places.
+    const rows = rng.shuffle([...INVENTED]).slice(0, 5);
+    const places = rng.shuffle([0, 1, 2, 0, 1, 2]).slice(0, 5);
+    return {
+      plan,
+      asks: rows.map((row, i) => {
+        const pictures = rng.shuffle([...row.details]);
+        pictures.splice(places[i], 0, row.head);
+        return { entry: inventedEntry(row), invented: row, pictures };
+      }),
+    };
+  }
   if (plan.level === REVERSED_LEVEL) {
     const picks = authored ? [PAIRS[0], PAIRS[1], PAIRS[3], PAIRS[2]] : rng.shuffle([...PAIRS]);
     const reversed = authored ? [false, true, true, false] : rng.shuffle([true, true, false, false]);
@@ -413,6 +532,8 @@ export interface GlueState {
   wrongDrops: number;
   /** The right pictures (level 2) or the asking friend (level 3) glow; a hint has been counted for this ask. */
   glow: boolean;
+  /** Level 7: the two name cards, each empty or holding a picture. */
+  slots: [string | null, string | null];
   done: boolean;
 }
 
@@ -424,6 +545,7 @@ export const newState = (round: Round): GlueState => ({
   wrong: new Set(),
   wrongDrops: 0,
   glow: false,
+  slots: [null, null],
   done: false,
 });
 
@@ -554,6 +676,7 @@ function advance(s: GlueState) {
   s.wrong = new Set();
   s.wrongDrops = 0;
   s.glow = false;
+  s.slots = [null, null];
   if (s.index >= s.round.asks.length) s.done = true;
 }
 
@@ -564,6 +687,67 @@ export function restartState(s: GlueState) {
   s.wrong = new Set();
   s.wrongDrops = 0;
   s.glow = false;
+  s.slots = [null, null];
+}
+
+/* Level 7: name the new thing ------------------------------------------------------------------ */
+
+/** Level 7: send a picture to the first empty name card. Returns the card it went to, or null (not on the table, already in a card, or both full). */
+export function place(s: GlueState, key: string): number | null {
+  const ask = currentAsk(s);
+  if (!ask?.invented || !ask.pictures.includes(key) || s.slots.includes(key)) return null;
+  const i = s.slots.indexOf(null);
+  if (i < 0) return null;
+  s.slots[i] = key;
+  return i;
+}
+
+/** Level 7: take a picture back out of its name card, which is free. Returns the card it left, or null. */
+export function takeBack(s: GlueState, key: string): number | null {
+  const i = s.slots.indexOf(key);
+  if (i < 0) return null;
+  s.slots[i] = null;
+  return i;
+}
+
+export type NameOutcome =
+  | { kind: 'ignore' }
+  /** An accepted name, or the supported one after two counted misses: `first` is the detail said first. */
+  | { kind: 'right' | 'assist'; row: Invented; first: string }
+  /** A name with the wrong part last, said as `first` then `last`; the cards empty and the ask stays. */
+  | { kind: 'wrong'; row: Invented; first: string; last: string; glowed: boolean };
+
+/**
+ * Level 7: judge the name in the two full cards. A wrong name counts, up to two an ask; the second glows the head and the
+ * last card (one hint, unless Show a hint already counted it); a wrong name after that finishes the ask with the head last
+ * and her detail first, with no further count.
+ */
+export function nameIt(s: GlueState): NameOutcome {
+  const ask = currentAsk(s);
+  const [first, last] = s.slots;
+  if (!ask?.invented || !first || !last) return { kind: 'ignore' };
+  const row = ask.invented;
+  if (judgeName(row, first, last).kind === 'right') {
+    advance(s);
+    return { kind: 'right', row, first };
+  }
+  if (s.wrongDrops >= 2) {
+    // Her detail stays first: the first card holding one, else the first detail on the table.
+    const mine = s.slots.find((k) => k !== null && row.details.includes(k));
+    const chosen = mine ?? ask.pictures.find((k) => row.details.includes(k))!;
+    advance(s);
+    return { kind: 'assist', row, first: chosen };
+  }
+  s.wrongDrops++;
+  s.misses++;
+  s.slots = [null, null];
+  let glowed = false;
+  if (s.wrongDrops >= 2 && !s.glow) {
+    s.glow = true;
+    s.hints++;
+    glowed = true;
+  }
+  return { kind: 'wrong', row, first, last, glowed };
 }
 
 /* The table ------------------------------------------------------------------------------------ */
@@ -637,6 +821,38 @@ export function reversedLayout(v: View): Pt[] {
     { x: v.w / 2, y },
     { x: v.w / 2, y: y + MADE + 46 },
   ];
+}
+
+/**
+ * Level 7: the thing to name at the top of the table below the shelf, the two name cards under it with a pause dot between,
+ * and the three pictures in a row under those. The column is centred, so it clears Home and the guide's corner in a
+ * sideways and an upright view; a taller view opens the gaps and centres the column in the room below the shelf.
+ */
+export function nameLayout(v: View): { made: Pt; cards: [Pt, Pt]; dot: Pt; tiles: [Pt, Pt, Pt] } {
+  const cx = v.w / 2;
+  const top = 130,
+    bottom = v.h - 20;
+  const content = MADE + CARD + CARD;
+  const gap = Math.max(16, Math.min((bottom - top - content) / 3, 80));
+  const start = top + Math.max(gap, (bottom - top - content - 2 * gap) / 2);
+  const madeY = start + MADE / 2;
+  const cardY = madeY + MADE / 2 + gap + CARD / 2;
+  const tileY = cardY + CARD + gap;
+  const cardDx = CARD / 2 + 30;
+  const tileDx = CARD + 24;
+  return {
+    made: { x: cx, y: madeY },
+    cards: [
+      { x: cx - cardDx, y: cardY },
+      { x: cx + cardDx, y: cardY },
+    ],
+    dot: { x: cx, y: cardY },
+    tiles: [
+      { x: cx - tileDx, y: tileY },
+      { x: cx, y: tileY },
+      { x: cx + tileDx, y: tileY },
+    ],
+  };
 }
 
 /** The centre of the table, where a made thing appears. */

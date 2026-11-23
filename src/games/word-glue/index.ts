@@ -11,7 +11,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { cardArt, iconArt, madeArt, partArt, type Made } from './art';
+import { cardArt, iconArt, inventedArt, madeArt, partArt, type Made } from './art';
 import {
   LEVELS,
   applyHint,
@@ -29,7 +29,11 @@ import {
   kindLayout,
   MADE,
   makeRound,
+  NAME_LEVEL,
+  nameIt,
+  nameLayout,
   newState,
+  place,
   planFor,
   PAIRED_SHELF,
   REVERSED_LEVEL,
@@ -40,13 +44,14 @@ import {
   shelfLayout,
   tableCentre,
   tableLayout,
+  takeBack,
   tap,
   type Ask,
   type Compound,
   type GlueState,
   type Pt,
 } from './logic';
-import { choiceLine } from './voice';
+import { choiceLine, nameLine } from './voice';
 
 /** The made thing is drawn about 160 across. */
 const MADE_ART = 160;
@@ -84,6 +89,8 @@ class WordGlue implements Game {
   private readonly glow = new Graphics();
   private readonly cardLayer = new Container();
   private readonly madeLayer = new Container();
+  /** Level 7: the two name cards' outlines and the pause dot between them. */
+  private readonly nameCards = new Graphics();
   private readonly shelfLayer = new Container();
   private readonly bubble = new Container();
   /** Level 4: a layer over the whole view takes every touch. */
@@ -122,17 +129,19 @@ class WordGlue implements Game {
       },
       ctx.view,
     );
-    for (const l of [this.glow, this.madeLayer, this.shelfLayer, this.bubble]) l.eventMode = 'none';
+    for (const l of [this.glow, this.madeLayer, this.shelfLayer, this.bubble, this.nameCards])
+      l.eventMode = 'none';
     ctx.stage.addChild(
       this.backdrop,
       this.shelfLayer,
+      this.nameCards,
       this.glow,
       this.cardLayer,
       this.madeLayer,
       this.bubble,
     );
-    // Level 5: the made thing on the table repeats the question when tapped.
-    if (this.kind) this.madeLayer.eventMode = 'passive';
+    // Levels 5 and 7: the thing on the table repeats the question when tapped.
+    if (this.kind || this.naming) this.madeLayer.eventMode = 'passive';
     if (this.choosing) {
       ctx.listen(
         window,
@@ -166,12 +175,19 @@ class WordGlue implements Game {
     return this.level === REVERSED_LEVEL;
   }
 
-  private get choosing() {
-    return this.kind || this.reversed;
+  /** Level 7: a thing nobody has named, two name cards and its three pictures. */
+  private get naming() {
+    return this.level === NAME_LEVEL;
   }
 
-  /** Where a made thing appears: the table's centre, or above the two parts at level 5. */
+  /** Levels 5 to 7 answer by tapping: a touch-down says the picture and only a release on it acts. */
+  private get choosing() {
+    return this.kind || this.reversed || this.naming;
+  }
+
+  /** Where a made thing appears: the table's centre, above the two parts at level 5, or above the name cards at level 7. */
   private madeSpot(): Pt {
+    if (this.naming) return nameLayout(this.view).made;
     return this.kind ? kindLayout(this.view).made : tableCentre(this.view, this.cards.length);
   }
 
@@ -202,7 +218,7 @@ class WordGlue implements Game {
       th.made.node.position.set(slots[i].x, slots[i].y);
     });
     this.placeBubble();
-    if (this.showing && (!this.busy || this.kind)) {
+    if (this.showing && (!this.busy || this.kind || this.naming)) {
       this.ctx.tw.kill(this.showing.made.node);
       this.showing.made.node.position.set(this.madeSpot().x, this.madeSpot().y);
     }
@@ -242,6 +258,7 @@ class WordGlue implements Game {
             receiver: this.touchLayer,
           };
     if (this.busy || this.finished || this.unasked || this.cards.some((c) => c.handle?.dragging)) return null;
+    if (this.naming) return this.nameTouch();
     if (this.choosing) {
       const key = rightChoice(this.s);
       if (this.reversed && this.s.index === 0 && !this.demoTouched) {
@@ -295,6 +312,27 @@ class WordGlue implements Game {
 
   /* -------------------------------------------------------------------------------------------- */
 
+  /** Level 7's ghost finger: it touches the head and slides off (free), then taps a detail and the head. */
+  private nameTouch(): TouchIntent | null {
+    const ask = currentAsk(this.s);
+    const row = ask?.invented;
+    if (!ask || !row) return null;
+    const card = (key: string) => this.cardOf(key);
+    if (this.s.index === 0 && !this.demoTouched) {
+      this.demoTouched = true;
+      const head = card(row.head);
+      if (head)
+        return { trace: { on: head.node }, via: [{ on: head.node, x: CARD / 2 + 40, y: 0 }], pause: 0.7 };
+    }
+    const [a, b] = this.s.slots;
+    // A picture in the wrong card comes back out first.
+    const out = a === row.head ? a : b !== null && b !== row.head ? b : null;
+    if (out) return { tap: { on: card(out)!.node }, pause: 0.6 };
+    const next = a === null ? ask.pictures.find((k) => row.details.includes(k))! : row.head;
+    const c = card(next);
+    return c ? { tap: { on: c.node }, pause: 0.8 } : null;
+  }
+
   /** Put every card not being held at its place (after a resize while busy). */
   private relayout() {
     const pts = this.points();
@@ -304,6 +342,19 @@ class WordGlue implements Game {
       c.node.position.set(pts[i].x, pts[i].y);
     });
     this.placeBubble();
+    this.drawNameCards();
+  }
+
+  /** Level 7: the two empty name cards with a small pause dot between them. */
+  private drawNameCards() {
+    const g = this.nameCards.clear();
+    if (!this.naming || this.finished) return;
+    const { cards, dot } = nameLayout(this.view);
+    for (const p of cards)
+      g.roundRect(p.x - CARD / 2, p.y - CARD / 2, CARD, CARD, 28)
+        .fill({ color: 0xffffff, alpha: 0.45 })
+        .stroke({ width: 6, color: swatch.purple.light });
+    g.circle(dot.x, dot.y, 9).fill(swatch.purple.light);
   }
 
   private points(): Pt[] {
@@ -314,6 +365,14 @@ class WordGlue implements Game {
     }
     if (this.kind) return kindLayout(this.view).parts;
     if (this.reversed) return reversedLayout(this.view);
+    if (this.naming) {
+      // A picture in a name card sits on it; the rest wait in their places in the row.
+      const { cards, tiles } = nameLayout(this.view);
+      return this.cards.map((c, i) => {
+        const slot = this.s.slots.indexOf(c.key);
+        return slot >= 0 ? cards[slot] : tiles[i];
+      });
+    }
     return tableLayout(this.view, Math.max(2, this.cards.length));
   }
 
@@ -344,8 +403,9 @@ class WordGlue implements Game {
       }
       this.cards = ask.pictures.map((key) => this.makeCard(key));
       this.held = null;
-      // Level 5: the made thing is on the table from the start and comes alive as it is asked about.
+      // Levels 5 and 7: the thing is on the table from the start and comes alive as it is asked about.
       if (this.kind) this.showKind(ask.entry);
+      if (ask.invented) this.showInvented(ask.invented.head);
       const pts = this.points();
       const k = this.scaleOf();
       this.cards.forEach((c, i) => {
@@ -465,6 +525,10 @@ class WordGlue implements Game {
       void this.ctx.instruct(choiceLine(ask.entry.word, 'ask'));
       return;
     }
+    if (ask.invented) {
+      void this.ctx.instruct('wordglue.instruct.name');
+      return;
+    }
     const a = ask.saidFirst ?? ask.entry.first;
     const b = a === ask.entry.first ? ask.entry.second : ask.entry.first;
     void this.ctx.instruct('wordglue.instruct.kind', { word: ask.entry.word, a, b });
@@ -495,6 +559,7 @@ class WordGlue implements Game {
     const local = node.toLocal(e.global);
     if (!node.hitArea?.contains(local.x, local.y)) return;
     const ask = this.shownAsk;
+    if (this.naming) return this.nameTap(held.key);
     const out = tap(this.s, held.key);
     if (!ask || out.kind === 'ignore') return;
     if (out.kind === 'wrong') void this.wrongChoice(held.key, ask);
@@ -580,10 +645,126 @@ class WordGlue implements Game {
     await this.shelve([made], said);
   }
 
+  /** Level 7: a tap sends a picture to the first empty name card, or takes one in a card back out; two full cards are judged. */
+  private nameTap(key: string) {
+    if (takeBack(this.s, key) !== null) {
+      sfx.pop(3);
+      this.settleTiles();
+      return;
+    }
+    const slot = place(this.s, key);
+    if (slot === null) return;
+    this.settleTiles();
+    if (this.s.slots.every((k) => k !== null)) void this.judgeName();
+  }
+
+  /** Level 7: every picture glides to its name card or back to its place in the row. */
+  private settleTiles(duration = 0.22) {
+    const pts = this.points();
+    this.cards.forEach((c, i) => {
+      this.ctx.tw.kill(c.node);
+      void this.ctx.tw.to(c.node, { x: pts[i].x, y: pts[i].y }, { duration, ease: ease.inOutSine });
+    });
+  }
+
+  /** Level 7: the pet says the name in the two cards; a name with the thing last joins, any other teaches and empties the cards. */
+  private async judgeName() {
+    this.busy = true;
+    await this.ctx.tw.wait(0.26);
+    if (this.dead) return;
+    const [first, last] = this.s.slots as [string, string];
+    const out = nameIt(this.s);
+    if (out.kind === 'ignore') {
+      this.busy = false;
+      return;
+    }
+    if (out.kind === 'wrong') {
+      sfx.boing();
+      for (const k of [first, last]) {
+        const c = this.cardOf(k);
+        if (!c) continue;
+        this.ctx.tw.kill(c.node);
+        void this.ctx.tw
+          .to(c.node, { rotation: 0.14 }, { duration: 0.08 })
+          .then(() => this.ctx.tw.to(c.node, { rotation: -0.1 }, { duration: 0.1 }))
+          .then(() => this.ctx.tw.to(c.node, { rotation: 0 }, { duration: 0.12 }));
+      }
+      await this.ctx.say(nameLine(out.row.head, first, last));
+      if (this.dead) return;
+      for (const c of this.cards) c.node.rotation = 0;
+      this.settleTiles(0.3);
+      await this.ctx.tw.wait(0.32);
+      if (this.dead) return;
+      this.busy = false;
+      this.relayout();
+      if (this.restartWanted) return this.doRestart();
+      this.askChoice();
+      return;
+    }
+    // A supported name: the head goes to the last card and her detail to the first.
+    if (out.kind === 'assist') {
+      this.s.slots = [out.first, out.row.head];
+      this.settleTiles(0.3);
+      this.s.slots = [null, null];
+      await this.ctx.tw.wait(0.45);
+      if (this.dead) return;
+    }
+    const made = this.showing?.made;
+    if (!made) return;
+    const spot = this.madeSpot();
+    const pair = [out.first, out.row.head].map((k) => this.cardOf(k)!);
+    await Promise.all(
+      pair.map((c) => {
+        this.ctx.tw.kill(c.node);
+        return this.ctx.tw.to(c.node, { x: spot.x, y: spot.y }, { duration: 0.3, ease: ease.inOutSine });
+      }),
+    );
+    if (this.dead) return;
+    sfx.pop(5);
+    void this.ctx.tw.wait(0.12).then(() => !this.dead && sfx.pop(9));
+    for (const c of this.cards) c.node.visible = false;
+    this.ctx.particles.burst(spot.x, spot.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+      count: 12,
+      speed: [80, 200],
+      gravity: 200,
+      life: [0.5, 0.9],
+    });
+    if (this.showing) this.showing.t = 0;
+    const said = this.ctx.say(nameLine(out.row.head, out.first, out.row.head));
+    // The thing comes alive while its name is said, then goes to the shelf.
+    await this.ctx.tw.wait(1.2);
+    if (this.dead) return;
+    await this.shelve([made], said);
+  }
+
+  /** Level 7: put the thing nobody has named on the table; a tap on it asks the question again. */
+  private showInvented(head: string) {
+    this.clearShowing();
+    const made = inventedArt(head);
+    const c = this.madeSpot();
+    made.node.position.set(c.x, c.y);
+    made.node.scale.set(0.2);
+    this.madeLayer.addChild(made.node);
+    this.showing = { made, t: 0 };
+    void this.ctx.tw.to(
+      made.node.scale,
+      { x: MADE / MADE_ART, y: MADE / MADE_ART },
+      { duration: 0.35, ease: ease.outBack },
+    );
+    this.tapToAsk(made);
+  }
+
   /** Level 5: put the made thing on the table above its parts; a tap on it asks the question again. */
   private showKind(entry: Compound) {
     this.clearShowing();
     const made = this.show(entry);
+    this.tapToAsk(made);
+  }
+
+  /** The thing on the table repeats the question when tapped. */
+  private tapToAsk(made: Made) {
     made.node.hitArea = new Rectangle(-MADE_ART / 2, -MADE_ART / 2, MADE_ART, MADE_ART);
     onTap(
       made.node,
@@ -834,6 +1015,7 @@ class WordGlue implements Game {
       c.node.visible = false;
     }
     this.bubble.visible = false;
+    this.nameCards.clear();
     for (const th of this.shelf) th.t = 0;
     sfx.tada();
     this.ctx.pet.cheer();
@@ -891,7 +1073,15 @@ class WordGlue implements Game {
     const ask = currentAsk(this.s);
     if (!ask || this.busy) return;
     if (this.s.glow || this.hintPulse > 0) {
-      if (this.level === 3) ring(this.cardOf(ask.entry.first), swatch.yellow.fill, pulse);
+      if (this.naming) {
+        // The thing's own picture and the last name card, where it goes.
+        ring(this.cardOf(ask.entry.second), swatch.yellow.fill, pulse);
+        const last = nameLayout(this.view).cards[1];
+        g.roundRect(last.x - side / 2 - 10, last.y - side / 2 - 10, side + 20, side + 20, 34).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
+      } else if (this.level === 3) ring(this.cardOf(ask.entry.first), swatch.yellow.fill, pulse);
       else if (this.choosing) ring(this.cardOf(rightChoice(this.s) ?? ''), swatch.yellow.fill, pulse);
       else
         for (const k of [ask.entry.first, ask.entry.second]) ring(this.cardOf(k), swatch.yellow.fill, pulse);
