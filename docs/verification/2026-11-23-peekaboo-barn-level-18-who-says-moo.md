@@ -1,0 +1,7 @@
+# 2026-11-23 — Peekaboo Barn level 18, Who says moo? (PR #2058)
+
+**Changed:** `sound` mode: two animals peek, the asked animal's sound plays, then "Who says moo?". A wrong tap counts a miss; that animal pops out and says its own sound ("That's the pig. Oink oink! Who says moo?"). The second miss counts one hint, glows round the right peeking head and plays its sound again. The pool is the first seven less the bunny (its "hop hop" is not a voice), each sound and word its own. Toddler reaches 18 through `order` (1, 2, 17, 3, 18, 4, 5); no saved level moves.
+
+**Ran:** `npm run typecheck`; Peekaboo rule tests and `src/content` tests (game docs, voice script, how-to) pass; `BROWSER_SUITE=originals ORIGINALS_ONLY=peekaboo PEEK_LEVELS=18` passed (two peeking animals, no bunny; two misses glow the right one, portrait screenshots with and without the glow; every ask is `peek.sound.ask`; score 2 misses, 1 hint, sticker saved); `fingerdemo` `FINGER_ONLY=peekaboo-barn FINGER_LEVELS=18 FINGER_BAND=toddler` passed (24.9 s).
+
+**Not run / flake:** level 3 as a regression failed the R4 timing assert twice (2.8–8.2 s against 2.6 s) with the machine at load average about 24 from other sessions; level 3's code path did not change (the find branch only adds `sound` to its condition), so it is recorded as a load flake. No full `npm test` locally (CI runs it), no build (no shared files or assets changed), other levels, suites or offline.

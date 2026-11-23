@@ -63,6 +63,7 @@ import { VOICE as hatBandVoice } from '../games/hat-band/voice.ts';
 import { VOICE as helperHouseVoice } from '../games/helper-house/voice.ts';
 import { VOICE as inchwormVoice } from '../games/inchworm/voice.ts';
 import { VOICE as islandBridgesVoice } from '../games/island-bridges/voice.ts';
+import { VOICE as jarCluesVoice } from '../games/jar-clues/voice.ts';
 import { VOICE as jarSortVoice } from '../games/jar-sort/voice.ts';
 import { VOICE as jellyDrumsVoice } from '../games/jelly-drums/voice.ts';
 import { VOICE as keepHouseVoice } from '../games/keep-house/voice.ts';
@@ -708,6 +709,7 @@ export const SCRIPT = {
   ...helperHouseVoice,
   ...inchwormVoice,
   ...islandBridgesVoice,
+  ...jarCluesVoice,
   ...jarSortVoice,
   ...jellyDrumsVoice,
   ...keepHouseVoice,

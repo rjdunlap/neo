@@ -26,7 +26,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-No phone-play line is queued; a playtest fix goes in Next ten under the phone lines.
+A playtest fix goes in Next ten under the phone lines.
+
+- **`jar-clues` number cells on an upright phone** (grown-up; existing-game bug fix tier): the ten-across board's cells are 74 units, 37.6 CSS px at 390 × 844, under the comfortable 44 px; `src/games/grownup-thumbs.test.ts` names the game until it is fixed. Sweeping a row is unaffected; if a playtest note says single taps miss, make the tapped number confirm under the finger (a lifted magnifier or a press-and-slide), never a smaller board. [Game page](games/jar-clues.md#design-notes)
 
 ### Puzzle-page follow-ups
 
@@ -50,7 +52,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`jar-clues` levels 3–4, batch `jar-clues 2`** (grown-up; after batch `jar-clues 1`; new interaction tier: typecheck and unit tests (the multiple, not-a-multiple, special and one-of-two clue truth tables, the generator and its required kinds at levels 3–4, the one-of-two explanations for both-true and neither-true numbers, the hint walk, voice coverage), one filtered play at level 4 with one wrong check on the one-of-two clue and one hint, one upright screenshot of a one-of-two clue card, `fingerdemo` at level 4, build). [Definition](definitions/jar-clues.md#build-batches)
 
 
 
@@ -63,9 +64,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
-- **`word-glue` level 8, Someone who, batch `word-glue 5`** (school; after batch `word-glue 4`, built; new interaction tier: typecheck and unit tests (`DOERS` meanings, the round with the right action in each place, level 3's join accounting with the person as head, school's order `[3, 5, 6, 7, 8, 9]`, layout and upright views, voice coverage), one filtered upright `wordglue` play at level 8 with one wrong action dropped twice and one Show a hint, one upright screenshot, `fingerdemo` at 8, the doers' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
-
-- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
+- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`, built; school's order then appends 9; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
 
 
 

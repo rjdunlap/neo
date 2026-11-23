@@ -15,6 +15,7 @@ export async function createFixture(browser, suite) {
     suite === 'shadowplay' ||
     suite === 'fencethefield' ||
     suite === 'keyitout' ||
+    suite === 'jarclues' ||
     suite === 'harbororders' ||
     suite === 'dominopond' ||
     suite === 'campsite' ||
@@ -31,7 +32,7 @@ export async function createFixture(browser, suite) {
     (suite === 'thoughtbubbles' &&
       (process.env.THOUGHT_BUBBLES_PHONE === '1' ||
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||
-    (suite === 'wordglue' && ['kind', 'reversed', 'name'].includes(process.env.WORDGLUE_ONLY)) ||
+    (suite === 'wordglue' && ['kind', 'reversed', 'name', 'doer'].includes(process.env.WORDGLUE_ONLY)) ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
       ? { hasTouch: true, isMobile: true }
       : {}),
