@@ -76,7 +76,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`splish-splash` This one!** (toddler, between levels 2 and 3; new levels on an existing interaction): "Wash my ears!" with the named part sparkling as it is said; a plan field `show: true`, nothing counts as a miss and the sparkle is not a hint. Expected files: `src/games/splish-splash/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/splish-splash.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 
 - **`owl-walk` level 5, Stepping stones, and the lap band** (lap, toddler; new levels on an existing interaction, plus the registry and lands tests because `bands` gains `lap`): five fat stones and a nest with no cards; a tap on a stone ahead hops the owl there with a note per stone, and nothing is wrong. Expected files: `src/games/owl-walk/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/owl-walk.md#build-slices-in-order)
 
