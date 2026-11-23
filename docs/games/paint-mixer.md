@@ -40,3 +40,5 @@ Misses and hints: only a Check that does not match is a miss. It names the pot f
 **Level 4's `pm.one-way` never holds the pour (U7 fix batch 10, 2026-11-12).** `pm.one-way` starts, the bucket empties after the existing 0.4 s and input opens; `pm.different-amount` waits for the line, is said at her first pour or button tap (which then goes on; nothing is judged before Check) or by the guide. The level instruction's follow-on recipe line (`pm.for-every`, levels 3+) now skips while a match's line is playing; before, it cut `pm.one-way` and `pm.match`.
 
 **What the guide repeats.** Level 4's `pm.different-amount` ("make it a different amount") is an instruction; the next sample says the level's instruction again, so the caption never keeps a finished ask.
+
+**The palette unlock (batch `paint-mixer 4`, 2026-11-22).** Once she has mixed one of the shelf's six colours at level 5, the pet's colour step (a second page of balls) and the grown-ups' select offer it; nothing in Paint Mixer itself changes, and nothing is lost or locked again. Built notes: [definition](../definitions/paint-mixer-5-6.md#built-the-palette-unlock-2026-11-22).

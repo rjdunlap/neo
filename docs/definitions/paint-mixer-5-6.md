@@ -1,5 +1,7 @@
 # Paint Mixer, levels 5–6 (definition)
 
+**Built:** levels 5–6 (PR #1135) and the palette unlock, batch `paint-mixer 4` (PR #2008); nothing is left to build here, see “Built: the palette unlock (2026-11-22)”.
+
 Defined 2026-11-02 as the definition half of slice 4 of the [ratio and proportion study](../deep-dives/subjects/ratio-proportion.md#build-slices-in-order) ([packet row RP2](../deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations)), [PR #1117](https://github.com/rjdunlap/neo/pull/1117). Levels 1–4 are built ([definition](paint-mixer.md), PRs #1026 and #1107) and this packet appends to the same game, the same `school` window and the same pots, rows, table, Check and glow; read that definition first, since everything not restated here is unchanged. Decisions 1–7 of the study were taken 2026-10-23 on the developer's delegation; decision 7 (a mixed colour joins the pet's palette as a permanent unlock) is specified below as its own later batch so the levels do not wait on it.
 
 **Fun action and purpose.** Level 5: the sample jar holds **three** pots' drops (1 red, 2 yellow, 1 white: a peach), and the bucket's line is two or three batches deep; she keeps three counts in step while the table fills a column per complete batch. Level 6: **which jars match?** Four lidded jars stand on a shelf, each labelled with its counts (4 : 6, 3 : 5, 6 : 9, 4 : 5); she taps every jar that is the sample's colour, using the labels and the sample's table, then Check; lifting a lid is help. Learning goal: level 5, *the same multiplier on every pot, even three* (6.RP.A.1, 6.RP.A.3.a's table extended to a third quantity); level 6, *equivalent ratios found from the numbers alone* (6.RP.A.3.a, "use tables to compare ratios"). The first mixed colours are filed on a **paint shelf** in the discovery journal.
@@ -102,7 +104,7 @@ Supported finish on both levels: the help always reaches `match` (level 5 by the
 ## Build batches and check tiers
 
 - **Batch `paint-mixer 3` (levels 5–6 and the paint shelf), new-interaction tier:** the n-pot model, level 5, the jar shelf, the reveal, the journal entries, card, voice and layout. Typecheck; the rule tests above with the journal and how-to tests; one scripted play through a `browser-check.mjs` Paint Mixer filter (level 5 with one wrong Check and a match; level 6 with a wrong set twice, the lid opening and its reveal, then the right set) and one portrait screenshot of level 6 with a lid open; `fingerdemo` at levels 5 and 6; `npm run build` because voice, card and journal change. If the allowance cannot cover both levels, stop after a complete level 5 with its shelf, checkpointed in the draft PR.
-- **Batch `paint-mixer 4` (palette unlock), shell/save tier**, after batch `paint-mixer 3` and after RW10's packet if that is defined first; it is not a routine pick until then.
+- **Batch `paint-mixer 4` (palette unlock), shell/save tier**, after batch `paint-mixer 3`: built 2026-11-22 ([note](#built-the-palette-unlock-2026-11-22)).
 - Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Device checks open at the build: whether the six shelf colours read as six on an iPad; whether a three-pot one-more-of-each (1.1–1.6) is seen at all; whether a child reads a jar label as two counts or as one number; whether the circled count in a reveal is understood without the speech.
 
 ## Open decisions
@@ -125,4 +127,13 @@ Batch `paint-mixer 3`, [PR #1135](https://github.com/rjdunlap/neo/pull/1135); LE
 - The closed lid is drawn to fill the lid tap zone (a review fix).
 - Rule-test note: "third pot left out, distance 6 or more" is tested for the third pot (white), as measured above; leaving out red from peach (0:2:1) is 5.84.
 - Checks: typecheck, 88 Paint Mixer rule tests, full units, build, `paintmixer` levels 5-6 twice and `fingerdemo` at 5 and 6. Levels 1-4 browser play not rerun; offline not run. Open device checks are in [DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#paint-mixer-levels-56).
-- Not built: the palette unlock (batch `paint-mixer 4`), which stays waiting.
+- Not built here: the palette unlock, which is batch `paint-mixer 4` (below).
+
+## Built: the palette unlock (2026-11-22)
+
+Batch `paint-mixer 4`, [PR #2008](https://github.com/rjdunlap/neo/pull/2008). The six paint-shelf colours are pet colours once she has mixed them at level 5, derived from `journal.found` (`mixedColors`, `store.petColors`; no new save field). `PET_COLORS` stays the eight; `MIXED_COLORS`, `ALL_PET_COLORS`, `isPetColor`, `isMixedColor` and `colorChoices` are in `src/content/world.ts`, and save repair accepts all fourteen whether or not the profile mixed them. Each swatch's fill is the measured mix (a test re-derives it).
+
+- **Deviation: a second page, not one more row.** The hatch colour step shows the mixed colours as a second page of balls (8 per page) behind a 100-unit page button (`more`/`back`); an extra row would run into the pet stage on a 768-unit-high landscape view and into Next on a phone held upright. Nothing shrinks; `hatchLayout` gains `page` and the layout is tested at 768, 1024 and 1660.
+- **Grown-ups' select:** rebuilt per player, the eight plus that player's mixed colours marked "(mixed in Paint Mixer)", always including the friend's current colour.
+- **Recolour:** `recolorMatrix` in `src/creatures/companion.ts` is the hue turn, then for a mixed colour a lift toward white (0.65 × the whiteness the colour adds, capped at 0.5); the base eight are unchanged, and every mixed colour is more than 3 Oklab units from the other thirteen on every species.
+- **Left for RW10 slice 2:** the Dress colour row and the colour goal ([slice 2](../rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4)).

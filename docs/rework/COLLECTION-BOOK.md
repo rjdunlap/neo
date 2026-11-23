@@ -9,7 +9,7 @@ Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlo
 - **Two goals exist at first, in different bands.** The **discovery** goal is the welcome project's newcomer (preschool and pre-K, while the project is open). The **customization** goal is a paint-shelf colour from Paint Mixer level 5 (school), which becomes a colour she can give a friend. Lap, toddler and grown-up profiles see the book with no goals.
 - **She chooses one goal; the book shows it first.** The only new save field is the chosen goal's id. Choosing changes nothing in any game.
 - **The put-down test holds by construction.** Goal progress appears only in the book, which she opens by choice. A round's result never mentions a goal, and a test keeps the result code from importing the goal table.
-- **Two build slices:** the book with the discovery goal, then the colour goal, which comes after the `paint-mixer 4` batch.
+- **Two build slices:** the book with the discovery goal, then the colour goal, which came after the `paint-mixer 4` batch (built 2026-11-22).
 
 ## What exists today
 
@@ -115,7 +115,7 @@ Implemented 2026-11-22.
 
 ## Slice 2: the colour goal (after `paint-mixer 4`)
 
-The [`paint-mixer 4` batch](../GAME-BATCHES.md#paint-mixer-4-palette-unlock) adds the six paint-shelf colours to the palette, to save repair's accepted colours, to the hatch colour step and to the grown-ups' select ([its definition](../definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)). This slice adds only what waited for RW10:
+The [`paint-mixer 4` batch](../GAME-BATCHES.md#paint-mixer-4-palette-unlock) (built 2026-11-22, PR #2008) added the six paint-shelf colours to the palette, to save repair's accepted colours, to the hatch colour step and to the grown-ups' select ([its definition](../definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)). This slice adds only what waited for RW10:
 
 - **Six `colour:<c>` goal rows**, reachable at school, done from the journal.
 - **A requested recipe.** Level 5 today picks each bucket's recipe from the seed, so a path that said "mix peach" could hand her coral. The book's origin carries the goal's recipe (`{ book: true; recipe: ShelfColour }`), and `makeRound(5, rng, recipe)` makes the first bucket that recipe; the second bucket stays seeded from the other triple. A rule test covers every recipe over 300 seeds. A round opened any other way is unchanged.
@@ -138,6 +138,6 @@ Each has a lean; the build uses the leans, and a [playtest note](../OBSERVATIONS
 1. **Unreachable species are not shown.** Lean: hide them. A silhouette with no way to it is a goal she cannot act on; RW05 already kept silhouettes out of Friends for this reason.
 2. **The entry is the library, not Home.** Lean: the library. Home gains no button, and a goal on Home would put progress in front of her whether or not she chose to look.
 3. **Reset clears the chosen goal.** Lean: clear it, as levels are cleared; creatures and done-states are untouched.
-4. **The colour goal waits for `paint-mixer 4`** rather than absorbing it. Lean: wait, as the 2026-11-17 record split the batch.
+4. **The colour goal waits for `paint-mixer 4`** rather than absorbing it. Decided by the order of work: the batch is built (2026-11-22), so the slice is unblocked.
 
 **Definition checks:** links and `git diff --check`.
