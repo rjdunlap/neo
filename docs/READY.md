@@ -63,10 +63,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
 
-- **`village-vote` level 5, *Everyone can use it*, batch `village-vote 3`** (school; after batch `village-vote 2`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 5 with one hint, one upright screenshot, `fingerdemo` at level 5, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
-
-- **`village-vote` level 6, *Chip in*, batch `village-vote 4`** (school; after batch `village-vote 3`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `villagevote` play on an upright phone at level 6 with one hint, one upright screenshot, `fingerdemo` at level 6, build because voice clips change). [Definition](definitions/village-vote.md#levels-46-definition-cc5), [study](deep-dives/subjects/community-civics.md#build-slices-in-order)
-
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
 
