@@ -48,7 +48,7 @@ Every entry is **transparent and concrete**: its meaning is built from its parts
 | 2 | **What do they make?** | toddler, preschool | Which two of three pictures make the asked word | Five asked words |
 | 3 | **Who is it for?** | preschool, pre-K, school | Which first part makes the thing the asking friend needs | Four asks, two heads |
 
-**Bands:** lap 1, toddler 1–2, preschool 2–3, prek 3, school 3 ([decision 3](#open-decisions)). Levels 4–5 (VW2) add school 4–5 later.
+**Bands:** lap 1, toddler 1–2, preschool 2–3, prek 3, school 3 ([decision 3](#open-decisions)). Levels 5–6 (VW2, called levels 4–5 in the study; lap's built level 4 took that number) add school 5–6 later, [defined](word-glue-5-6.md).
 
 ### First rounds
 
@@ -123,7 +123,7 @@ Device and person checks stay open: how the iPad's speech says each whole compou
 
 ## What comes next
 
-**VW2, levels 4–5** (*What kind of thing?* and *Which way round?*) is defined after a child has played level 3. VW3 and VW4 follow VW2; the study's [build slices](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order) hold the order.
+**VW2** (*What kind of thing?* and *Which way round?*) is [defined 2026-11-22](word-glue-5-6.md) as levels 5 and 6, because lap's built *One big picture* already took level 4; two build batches are queued. VW3 and VW4 follow VW2; the study's [build slices](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order) hold the order.
 
 ## Open decisions
 
@@ -135,7 +135,7 @@ Decisions 1 and 2 blocked the build (settled above); the rest have defaults the 
 
 1. **A new game, and its land** (blocks). Lean: a new game, since no built game joins two pictures into a third. See decision 4 for the land.
 2. **Compound list review** (blocks). An ordinary adult literacy read of the table, the `meaning` sentences, the distractor pool and the deny list: no opaque word on a meaning rung, no makeable real or rude word beside the asked one, regional words flagged.
-3. **Bands.** Default lap 1, toddler 1–2, preschool 2–3, prek 3, school 3. School plays only level 3 until VW2 adds 4–5.
+3. **Bands.** Default lap 1, toddler 1–2, preschool 2–3, prek 3, school 3. School plays only level 3 until VW2 adds 5–6 ([definition](word-glue-5-6.md)).
 4. **Home land.** Default **Story Grove** (12 games today; Puzzle Peaks already lays out 13, so a thirteenth fits). *Look It Up* (IR1) moved to Barnyard when it was defined (2026-10-22), so Story Grove is Word Glue's alone. Fallback **Treehouse** (7 games), not Puzzle Peaks (13 already). The subject stays `story-grove` either way.
 5. **Journal.** Default: nothing filed. Alternative: a page of things she has made, after the rework decides how made things relate to collecting.
 6. **Level-3 heads.** Default house, box and brush, each with three "a ___ for a ___" compounds said as one word. The study's bowl, bed and hat were dropped because their "for" forms (dog bowl, dog bed, sun hat) are said as two words or name a different relation. Alternative fourth head: bell (cowbell, doorbell, handbell), which would need removing cowbell and doorbell from the deny list.
