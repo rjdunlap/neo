@@ -6,8 +6,15 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       const r = kit.store.stats('look-it-up').history.at(-1);
       return [r.misses, r.hints];
     });
-  /** Look It Up: level 1 touches every label on three pages; level 3 finds each visitor's page and row, with both wrong pictures first on the first visitor (the glow hint); level 3 in portrait; levels 4 and 5 upright on a phone. */
+  /** Look It Up: level 1 touches every label on three pages; level 3 finds each visitor's page and row, with both wrong pictures first on the first visitor (the glow hint); level 3 in portrait; levels 4, 5 and 6 upright on a phone. */
   async function lookItUpPlay() {
+    // `LOOKITUP_FROM=4` starts at the contents levels (4, 5 and 6), `LOOKITUP_FROM=6` at level 6 alone.
+    const from = Number(process.env.LOOKITUP_FROM || 1);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    if (from >= 6) return twoPages();
+    if (from >= 4) return contentsLevels();
     const settle = async () => {
       await page.waitForTimeout(300);
       await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 });
@@ -46,10 +53,10 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           const L = await import('/src/games/look-it-up/logic.ts');
           const g = neo.scene.game;
           const v = g.round.visits[g.index];
-          return g.choices.map((c) => c.picture).filter((p) => L.check(g.round, v, p).kind === 'wrong');
+          return g.choices.map((c) => c.key).filter((p) => L.check(g.round, v, p).kind === 'wrong');
         });
         for (const p of wrongs) {
-          await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.picture === p).node), p);
+          await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.key === p).node), p);
           await settle();
         }
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1]);
@@ -73,11 +80,11 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
             const g = neo.scene.game,
               at = g.index,
               t = performance.now();
-            kit.tapOn(g.choices.find((c) => c.picture === p).node);
+            kit.tapOn(g.choices.find((c) => c.key === p).node);
             if (at + 1 >= g.round.visits.length) return null;
             await kit.until(() => g.index > at && !g.busy, 8000);
             return performance.now() - t;
-          }, h.picture);
+          }, h.choice);
           if (ms !== null) {
             r4.push(Math.round(ms));
             assert.ok(ms < 1800, `R4: the next visitor waited for the fact (${Math.round(ms)} ms)`);
@@ -104,14 +111,14 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     const h = await page.evaluate(async () => {
       const L = await import('/src/games/look-it-up/logic.ts');
       const g = neo.scene.game;
-      return L.hintFor(g.round, g.round.visits[g.index], g.open, g.rowSeen);
+      return L.hintFor(g.round, g.round.visits[g.index], g.open, g.rowSeen, g.read);
     });
     if (h.kind === 'contents') await page.evaluate(() => kit.tapOn(neo.scene.game.contentsButton.node));
     else if (h.kind === 'line')
       await page.evaluate((id) => kit.tapOn(neo.scene.game.lines.find((l) => l.id === id).node), h.animal);
     else if (h.kind === 'row')
       await page.evaluate((row) => kit.tapOn(neo.scene.game.rows.find((r) => r.kind === row).node), h.row);
-    else return h.picture;
+    else return h.choice;
     await page.waitForTimeout(350);
     return null;
   }
@@ -181,11 +188,9 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     const wrong = await page.evaluate(async () => {
       const L = await import('/src/games/look-it-up/logic.ts');
       const g = neo.scene.game;
-      return g.choices
-        .map((c) => c.picture)
-        .find((p) => L.check(g.round, g.round.visits[0], p).kind === 'wrong');
+      return g.choices.map((c) => c.key).find((p) => L.check(g.round, g.round.visits[0], p).kind === 'wrong');
     });
-    await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.picture === p).node), wrong);
+    await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.key === p).node), wrong);
     await ready(0);
     await page.evaluate(() => neo.scene.game.askForHint());
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 1]);
@@ -194,7 +199,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       for (let step = 0; step < 6; step++) {
         const pick = await followHint();
         if (!pick) continue;
-        await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.picture === p).node), pick);
+        await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.key === p).node), pick);
         break;
       }
       await page.waitForTimeout(400);
@@ -209,14 +214,14 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       'frog',
       'bear',
     ]);
-    const words = await page.evaluate(() => neo.scene.game.choices.map((c) => c.picture).sort());
+    const words = await page.evaluate(() => neo.scene.game.choices.map((c) => c.key).sort());
     assert.deepEqual(words, ['cub', 'kit', 'tadpole']);
     for (let n = 0; n < 3; n++) {
       await ready(n);
       for (let step = 0; step < 6; step++) {
         const pick = await followHint();
         if (!pick) continue;
-        await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.picture === p).node), pick);
+        await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.key === p).node), pick);
         break;
       }
       if (n === 0) await screenshot('look-it-up-5-tag-upright');
@@ -227,6 +232,53 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
       'Look It Up 4 and 5 upright: authored rounds, contents page, captions fit, a wrong picture and a hint, name tags',
+    );
+    await twoPages();
+  }
+
+  /** Level 6 upright: the authored round, one wrong friend and Show a hint, then both pages and the friend each visit. */
+  async function twoPages() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('look-it-up', 6);
+    await ready(0);
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.round.visits.map((v) => `${v.animal} ${v.share.friend}`)),
+      ['cow rabbit', 'penguin bear', 'duck frog'],
+      'level 6 plays its authored round',
+    );
+    // Friend names fit their cards.
+    const names = await page.evaluate(() =>
+      neo.scene.game.choices.map((c) => {
+        const t = c.node.children.find((x) => typeof x.text === 'string');
+        return [t.text, Math.round(t.width), Math.round(t.height)];
+      }),
+    );
+    for (const [name, w, h] of names) assert.ok(w <= 124 && h <= 50, `${name} fits its card (${w} x ${h})`);
+    await page.evaluate(() => kit.tapOn(neo.scene.game.choices.find((c) => c.key === 'frog').node));
+    await ready(0);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 1]);
+    for (let n = 0; n < 3; n++) {
+      await ready(n);
+      for (let step = 0; step < 10; step++) {
+        const pick = await followHint();
+        if (!pick) continue;
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.read.size),
+          2,
+          'both pages read before the friend',
+        );
+        if (n === 1) await screenshot('look-it-up-6-share-upright');
+        await page.evaluate((p) => kit.tapOn(neo.scene.game.choices.find((c) => c.key === p).node), pick);
+        break;
+      }
+      await page.waitForTimeout(400);
+    }
+    await finished('look-it-up');
+    assert.deepEqual(await score(), [1, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Look It Up 6 upright: authored round, friend names fit, a wrong friend and a hint, two pages then the friend',
     );
   }
 

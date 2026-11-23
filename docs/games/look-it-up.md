@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–5 |
+| school | 3–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 3 | The fact box: find the page and the row, then help |
 | 4 | Contents page: find the animal's name and page, then help |
 | 5 | Picture or words? Read the baby's name, then give it its tag |
+| 6 | Two pages together: find who shares a fact with the visitor |
 
 <!-- end generated -->
 
