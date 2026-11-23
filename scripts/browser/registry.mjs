@@ -40,6 +40,7 @@ import { createSuite as createShellRows } from './suites/shell-rows-play.mjs';
 import { createSuite as createDominoPond } from './suites/domino-pond-play.mjs';
 import { createSuite as createTideTables } from './suites/tide-tables-play.mjs';
 import { createSuite as createTruthBridge } from './suites/truth-bridge-play.mjs';
+import { createSuite as createWorkshopDetective } from './suites/workshop-detective-play.mjs';
 import { createSuite as createShadowPlay } from './suites/shadow-play-play.mjs';
 import { createSuite as createFenceTheField } from './suites/fence-the-field-play.mjs';
 import { createSuite as createHarborOrders } from './suites/harbor-orders-play.mjs';
@@ -378,6 +379,7 @@ export const SUITES = [
   'tideline6',
   'tidetables',
   'truthbridge',
+  'workshopdetective',
   'shadowplay',
   'fencethefield',
   'keyitout',
@@ -573,6 +575,7 @@ export const ALL_SUITES = [
   'tideline6',
   'tidetables',
   'truthbridge',
+  'workshopdetective',
   'shadowplay',
   'fencethefield',
   'keyitout',
@@ -959,6 +962,7 @@ export function createChecks(fixture) {
   install(createTideLine(shared));
   install(createTideTables(shared));
   install(createTruthBridge(shared));
+  install(createWorkshopDetective(shared));
   install(createShadowPlay(shared));
   install(createFenceTheField(shared));
   install(createKeyItOut(shared));
@@ -1219,6 +1223,7 @@ export async function runSuite(suite, fixture) {
     tideLine6Play,
     tideTablesPlay,
     truthBridgePlay,
+    workshopDetectivePlay,
     shadowPlayPlay,
     fenceTheFieldPlay,
     keyItOutPlay,
@@ -1436,6 +1441,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'tideline6') await tideLine6Play();
   if (suite === 'all' || suite === 'tidetables') await tideTablesPlay();
   if (suite === 'all' || suite === 'truthbridge') await truthBridgePlay();
+  if (suite === 'all' || suite === 'workshopdetective') await workshopDetectivePlay();
   if (suite === 'all' || suite === 'shadowplay') await shadowPlayPlay();
   if (suite === 'all' || suite === 'fencethefield') await fenceTheFieldPlay();
   if (suite === 'all' || suite === 'keyitout') await keyItOutPlay();

@@ -38,6 +38,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 6, text: 'Drag the top block to move it, or drag it back to the tray to take it off.' },
     {
+      from: 6,
+      to: 6,
+      text: 'A tumble or a full stack short of the star is an experiment, never a miss. After two, a place that works glows.',
+    },
+    {
       from: 7,
       to: 7,
       text: 'Drag the top block along the block below it, then tap the green button to let the ropes go. Two mended towers finish.',

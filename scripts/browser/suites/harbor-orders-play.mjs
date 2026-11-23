@@ -70,24 +70,27 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     return landPage;
   }
 
-  async function playRow(i, [crates, boats], first = 0) {
+  const sum = (counts) => counts.reduce((a, b) => a + b, 0);
+
+  async function playRow(i, counts, first = 0) {
     const row = (await state()).plan[i].slice(first);
+    const goods = counts.length;
+    const wanted = counts.flatMap((n, good) => Array(n).fill(good));
     // Filled squares cannot go back to a closed door, so assign those squares first.
     const spots = row.map((_, j) => j).sort((a, b) => Number(row[a] === null) - Number(row[b] === null));
-    assert.ok(row.filter((g) => g !== null).length <= crates + boats);
-    for (const [k, j] of spots.slice(0, crates + boats).entries()) {
-      const good = k < crates ? 0 : 1;
-      if (row[j] === null) await tapSquare(i, j + first);
-      if ((row[j] ?? 0) !== good) await tapSquare(i, j + first);
-      assert.equal((await state()).plan[i][j + first], good);
+    assert.ok(row.filter((g) => g !== null).length <= wanted.length);
+    for (const [k, j] of spots.slice(0, wanted.length).entries()) {
+      // A tap steps a closed door to crates, then through the board's goods in turn.
+      const now = row[j];
+      const taps = now === null ? 1 + wanted[k] : (wanted[k] - now + goods) % goods;
+      for (let t = 0; t < taps; t++) await tapSquare(i, j + first);
+      assert.equal((await state()).plan[i][j + first], wanted[k]);
     }
   }
 
   async function fullPlan() {
     const { solution } = await state();
-    const target = solution.plans.find((plan) =>
-      plan.every(([crates, boats]) => crates + boats === solution.mornings),
-    );
+    const target = solution.plans.find((plan) => plan.every((row) => sum(row) === solution.mornings));
     assert.ok(target);
     for (const [i, row] of target.entries()) await playRow(i, row);
   }
@@ -122,7 +125,7 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     const shortest = (await state()).solution.mornings;
     for (let n = 1; n <= shortest; n++) await tapButton(1);
     // Start the filling work in the second column, so shortening the plan takes away some work.
-    const target = (await state()).solution.plans.find((plan) => plan.every(([a, b]) => a + b === shortest));
+    const target = (await state()).solution.plans.find((plan) => plan.every((row) => sum(row) === shortest));
     assert.ok(target);
     for (const [i, row] of target.entries()) await playRow(i, row, 1);
     await tapButton(3);
@@ -155,8 +158,50 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     assert.equal(await stickers(), before + 2);
     assert.deepEqual(await lastRound(), { misses: 1, hints: 1 + rowHints, level: 2 });
     await back(p2);
+
+    // Level 4: three workshops and three goods, one spare-mornings send and one hint.
+    const p4 = await open(4);
+    const board4 = await state();
+    assert.equal(board4.plan.length, 3);
+    assert.equal(board4.order.wanted.length, 3);
+    const fewest4 = board4.solution.mornings;
+    for (let n = 1; n <= fewest4; n++) await tapButton(1);
+    const target4 = board4.solution.plans.find((plan) => plan.every((row) => sum(row) === fewest4));
+    assert.ok(target4);
+    for (const [i, row] of target4.entries()) await playRow(i, row, 1);
+    assert.ok((await state()).plan.flat().includes(2), 'a square shows lanterns');
+    await screenshot('harbor-orders-level-4-portrait');
+    await tapButton(3);
+    assert.deepEqual((await state()).score, { misses: 1, hints: 0 });
+    assert.match((await state()).noteText, new RegExp(`${fewest4} mornings are enough`));
+    await tapButton(2);
+    assert.equal((await state()).hint.kind, 'remove');
+    assert.deepEqual((await state()).score, { misses: 1, hints: 1 });
+    await tapButton(0);
+    // Taking the last morning away removes some of the plan's work; set each row the plan still needs.
+    const full = () =>
+      page.evaluate(() => {
+        const { made, board } = neo.scene.game;
+        return made.every((n, i) => n >= board.order.wanted[i]);
+      });
+    let guard = 0;
+    while (!(await full())) {
+      assert.ok(++guard <= 3);
+      const now = await state();
+      const row = target4.findIndex((counts, i) => {
+        const have = counts.map(() => 0);
+        for (const g of now.plan[i]) if (g !== null) have[g]++;
+        return have.some((n, g) => n !== counts[g]);
+      });
+      await playRow(row, target4[row]);
+    }
+    await tapButton(3);
+    await finished(id);
+    assert.equal(await stickers(), before + 3);
+    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+    await back(p4);
     log(
-      'Harbor Orders: Lantern Lake, fixed and open boards, free short check, spare morning, repeated send, Help, rotation and one sticker each.',
+      'Harbor Orders: Lantern Lake, fixed and open boards, free short check, spare morning, repeated send, Help, rotation, a three-good level 4 board with a spare send and a hint, and one sticker each.',
     );
   }
 

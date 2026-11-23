@@ -249,6 +249,8 @@ export const PREFIXES = [
   'shadow',
   'key',
   'jarclues',
+  'lamp',
+  'workshop-detective',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */

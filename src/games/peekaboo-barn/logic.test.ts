@@ -18,6 +18,9 @@ import {
   ONE_DOOR_LEVEL,
   WENT_LEVEL,
   SOUND_LEVEL,
+  HIDE_LEVEL,
+  seekOrder,
+  dropHouse,
   SOUND_ANIMALS,
   soundWord,
   ENTRY_LEVELS,
@@ -299,7 +302,7 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
   it('is three animals and five clue questions, opening the school window without moving a saved level', () => {
     expect(plan).toEqual({ mode: 'clue', spots: 3, goal: 5 });
     expect(PLANS[8]).toEqual(plan);
-    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 19, order: [4, 19, 5, 6, 7, 8] });
   });
 
   it('reads every part word from the drawn critters, and every animal has something true to say back', () => {
@@ -371,7 +374,7 @@ describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
     expect(planFor(10)).toEqual({ mode: 'top', spots: 3, goal: 5 });
     expect(planFor(11)).toEqual({ mode: 'top', spots: 4, goal: 6 });
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
-    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 19, order: [4, 19, 5, 6, 7, 8] });
     expect(LEVELS.lap).toEqual({ min: 1, max: 17, order: [16, 1, 2, 17] });
   });
 
@@ -507,8 +510,8 @@ describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
     expect(planFor(14)).toEqual({ mode: 'swap', spots: 4, goal: 5, swaps: 3 });
     expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
     expect(LEVELS.school!.max).toBeGreaterThanOrEqual(14);
-    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
-    expect(LEVELS.toddler).toEqual({ min: 1, max: 18, order: [1, 2, 17, 3, 18, 4, 5] });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 19, order: [4, 19, 5, 6, 7, 8] });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 19, order: [1, 2, 17, 3, 18, 4, 19, 5] });
     expect(LEVELS.lap).toEqual({ min: 1, max: 17, order: [16, 1, 2, 17] });
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     // Never more than four places, nothing faster than the dive's 0.9 s, and the hint is slower still.
@@ -635,9 +638,10 @@ describe('Peekaboo Barn level 17, Where did it go?', () => {
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     expect(LEVELS.lap!.order).toEqual([16, 1, 2, 17]);
-    expect(LEVELS.toddler!.order).toEqual([1, 2, 17, 3, 18, 4, 5]);
-    for (const band of ['preschool', 'prek', 'school'] as const) expect(LEVELS[band]!.order).toBeUndefined();
-    expect(ENTRY_LEVELS).toEqual([ONE_DOOR_LEVEL, WENT_LEVEL, SOUND_LEVEL]);
+    expect(LEVELS.toddler!.order).toEqual([1, 2, 17, 3, 18, 4, 19, 5]);
+    for (const band of ['prek', 'school'] as const) expect(LEVELS[band]!.order).toBeUndefined();
+    expect(LEVELS.preschool!.order).not.toContain(WENT_LEVEL);
+    expect(ENTRY_LEVELS).toEqual([ONE_DOOR_LEVEL, WENT_LEVEL, SOUND_LEVEL, HIDE_LEVEL]);
   });
 
   it('keeps the first seven animals, as the other entry level does', () => {
@@ -690,8 +694,8 @@ describe('Peekaboo Barn level 18, Who says moo?', () => {
     const order = LEVELS.toddler!.order!;
     expect(order.indexOf(SOUND_LEVEL)).toBe(order.indexOf(3) + 1);
     expect(order.indexOf(4)).toBe(order.indexOf(SOUND_LEVEL) + 1);
-    for (const band of ['lap', 'preschool', 'prek', 'school'] as const)
-      expect(LEVELS[band]!.max).toBeLessThan(18);
+    for (const band of ['lap', 'prek', 'school'] as const) expect(LEVELS[band]!.max).toBeLessThan(18);
+    expect(LEVELS.preschool!.order).not.toContain(SOUND_LEVEL);
   });
 
   it('asks only among animals whose sound and word are each their own, leaving out the bunny’s hop', () => {
@@ -718,6 +722,79 @@ describe('Peekaboo Barn level 18, Who says moo?', () => {
         expect(spotToTap(plan, ['peek', 'peek'], present, target, -1)).toBe(present.indexOf(target));
         last = target;
       }
+    }
+  });
+});
+
+describe('Peekaboo Barn level 19, Hide it yourself', () => {
+  const plan = planFor(HIDE_LEVEL);
+
+  it('is three houses and three hides, after level 4 for toddler and preschool only', () => {
+    expect(plan).toEqual({ mode: 'hide', spots: 3, goal: 3 });
+    for (const band of ['toddler', 'preschool'] as const) {
+      const order = LEVELS[band]!.order!;
+      expect(order.indexOf(HIDE_LEVEL)).toBe(order.indexOf(4) + 1);
+      expect(LEVELS[band]!.max).toBe(HIDE_LEVEL);
+    }
+    // Preschool still starts at 4 and climbs to 8 as before.
+    expect(LEVELS.preschool!.order![0]).toBe(4);
+    expect(LEVELS.preschool!.order!.at(-1)).toBe(8);
+    for (const band of ['lap', 'prek', 'school'] as const) {
+      expect(LEVELS[band]!.max).toBeLessThan(HIDE_LEVEL);
+      expect(LEVELS[band]!.order ?? []).not.toContain(HIDE_LEVEL);
+    }
+    expect(ENTRY_LEVELS).toContain(HIDE_LEVEL);
+    expect(poolFor(HIDE_LEVEL)).toEqual(STICKER_ANIMALS);
+  });
+
+  it('has the seeker look in an empty house first, never the same house twice, and end at hers', () => {
+    const firstLooks = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const hiding = seed % plan.spots;
+      const order = seekOrder(rng, plan.spots, hiding);
+      expect(new Set(order).size).toBe(order.length);
+      expect(order.at(-1)).toBe(hiding);
+      expect(order.indexOf(hiding)).toBe(order.length - 1);
+      expect(order.length).toBeGreaterThanOrEqual(2);
+      expect(order.length).toBeLessThanOrEqual(plan.spots);
+      for (const i of order) expect(i >= 0 && i < plan.spots).toBe(true);
+      firstLooks.add(order.length);
+    }
+    // Sometimes one empty house, sometimes both: the wait is not always the same.
+    expect([...firstLooks].sort()).toEqual([2, 3]);
+    expect(seekOrder(new Rng(1), 1, 0)).toEqual([0]);
+  });
+
+  it('resolves any drop to the nearest house across, so wherever she lets go is a hiding place', () => {
+    const houses = [280, 572, 864];
+    expect(dropHouse(0, houses)).toBe(0);
+    expect(dropHouse(420, houses)).toBe(0);
+    expect(dropHouse(430, houses)).toBe(1);
+    expect(dropHouse(572, houses)).toBe(1);
+    expect(dropHouse(2000, houses)).toBe(2);
+    // Halfway between two houses keeps the left one.
+    expect(dropHouse(426, houses)).toBe(0);
+    for (let x = -100; x <= 1200; x += 7) {
+      const i = dropHouse(x, houses);
+      for (const h of houses) expect(Math.abs(x - houses[i])).toBeLessThanOrEqual(Math.abs(x - h));
+    }
+  });
+
+  it('never sends the ghost finger to tap a house: it carries the animal instead', () => {
+    expect(spotToTap(plan, ['hidden', 'hidden', 'hidden'], [null, null, null], null, -1)).toBeNull();
+  });
+
+  it('has every line the round says, never a "wrong" or a miss word', () => {
+    for (const id of [
+      'peek.hide.ask',
+      'peek.hide.hidden',
+      'peek.hide.seek',
+      'peek.hide.empty',
+      'peek.hide.found',
+    ] as const) {
+      expect(SCRIPT[id]?.length).toBeGreaterThan(0);
+      for (const line of SCRIPT[id]) expect(line).not.toMatch(/wrong|oops|try again/i);
     }
   });
 });

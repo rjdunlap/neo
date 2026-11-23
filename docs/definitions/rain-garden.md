@@ -173,7 +173,7 @@ Device and person checks stay open: whether a two-year-old taps the cloud again 
 
 ## What comes next
 
-**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and built. **Level 5** (up to six sockets, two marked beds, seeded boards with solver witnesses) needs its own docs-only definition after level 4 is built. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
+**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and built. **Level 5** is [defined below](#level-5-three-beds-downhill-definition) (2026-11-23: three beds, six authored boards) and ready to build. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
 
 ## Open decisions
 
@@ -292,3 +292,166 @@ Device and person checks: whether a six-year-old reads the dashed drops as "need
 ### Level 4 decisions
 
 None is waiting on the developer. Defaults this definition sets: free flips on both beds (four arrangements) rather than one movable soil tile, so the pond's need can fail; a seeded marked-bed variant; no leaf at level 4 (the passing Check finishes). Source check (2026-11-06): [EPA's green-infrastructure types](https://www.epa.gov/green-infrastructure/types-green-infrastructure) (bioretention "collects rainwater from rooftops, sidewalks, and streets"; it can temporarily pond, then soak in or flow through an underdrain) and the [USGS runoff page](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff) (rain that does not soak in moves downhill by gravity; hard surfaces reduce infiltration; earlier rain's soil moisture changes runoff, which stays out until level 6). They support the toy's direction (hard ground uphill feeds a garden below), not its capacities.
+
+## Level 5, *three beds downhill* (definition)
+
+Defined 2026-11-23 as the weather-and-water study's [slice 5](../deep-dives/subjects/weather-water.md#build-slices-in-order), from the [ladder's level-5 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden). One build session, new-level tier: the interaction is level 4's (tap a bed to flip its ground, try with the cloud, judge with the Check) on a longer slope ([Level 5 check tier](#level-5-check-tier)).
+
+**Fun action and purpose:** three beds step down a slope to the pond, and each board marks one or two of them with a sign showing two dashed drops. She flips beds between stone and soil, tries the rain as often as she likes and checks. The learning purpose is level 4's, **reasoning from where water should end up to what the ground uphill must do**, stretched to a budget: every soil bed keeps two of the cloud's drops, so she has to leave enough for the beds below and some for the pond. Boards change what is fixed and how much rain falls, so no single pattern ("make the marked ones soil") answers every board.
+
+**Overlap, rechecked:** as at level 4, the arrows stay fixed and she never draws a route, so Water Paths and Puddle Pipes keep routing. Nothing carries water between showers (level 6) or asks one layout to meet two rain cards (level 7).
+
+### The model, level 5
+
+- **A chain of three sockets:** `top` (0), `middle` (1), `low` (2), then the pond: `ROUTE5 = [{ down: 1 }, { down: 2 }, { down: 'pond' }]`, run by level 4's `runRoute`. With one cloud over socket 0 and one `down` per socket, every reachable board is a single chain, so "route variants" here are boards that differ in **which sockets are fixed, which beds are marked and how much rain falls**, not in branching. A test proves every socket is reachable from socket 0 and no route skips one.
+- **Surfaces:** stone (0) and soil (2) only, as at levels 1–4. A socket is either **tappable** (flips stone ↔ soil) or **fixed**: the **tree's bed** (always soil, drawn with a small tree; it keeps two) or the **stone path** (always stone, drawn as stepping stones). Fixed sockets are as large as beds; tapping one says a line and changes nothing, never a miss or hint. No third surface (decision 4 stays deferred).
+- **The shower** is the board's `units`, **6** or **4**, drawn on the cloud as that many dashed drops before it rains, so it is never a hidden variable. Every stored amount and pond count is even (0, 2, 4 or 6), so narration needs no odd numbers.
+- **Needs:** one or two **marked** tappable beds, each storing **exactly 2**; with two, the **uphill** one carries a **leaf** marker and the lower one a **flower** (A: middle leaf, low flower; B: top leaf, low flower); a lone marked bed carries the leaf. The pond needs **at least 1**. `meets(trial, board)` returns `{ beds: boolean[]; pond: boolean }` and the Check passes when all are true. The Check judges the pictured bounds, never a stored answer key.
+- **Cause:** a failed Check names one cause: `dry` (the uphill-most marked bed that did not keep two; its marker picks the line) before `pond`.
+
+### The six boards
+
+Seeded rounds pick a board uniformly from all six (A included), then a starting arrangement uniformly among its failing ones, and the pond friend. Each table lists every arrangement (fixed sockets in brackets), what each socket kept, the pond, and why it fails. Every board has a solution, every failing arrangement fails for a reason on the screen, and the tables are the rule tests' expected values.
+
+**A, *Leaf and flower below*** (authored first board; 6 drops; middle and low marked; starts soil / soil / stone). One answer: the top bed is stone.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 6 | middle and low dry |
+| stone / stone / soil | 0, 0, 2 | 4 | middle dry |
+| stone / soil / stone | 0, 2, 0 | 4 | low dry |
+| **stone / soil / soil** | 0, 2, 2 | 2 | **passes** |
+| soil / stone / stone | 2, 0, 0 | 4 | middle and low dry |
+| soil / stone / soil | 2, 0, 2 | 2 | middle dry |
+| soil / soil / stone | 2, 2, 0 | 2 | low dry (the authored start) |
+| soil / soil / soil | 2, 2, 2 | 0 | pond got none |
+
+**B, *Top and bottom*** (6 drops; top and low marked). One answer: the middle is stone.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 6 | top and low dry |
+| stone / stone / soil | 0, 0, 2 | 4 | top dry |
+| stone / soil / stone | 0, 2, 0 | 4 | top and low dry |
+| stone / soil / soil | 0, 2, 2 | 2 | top dry |
+| soil / stone / stone | 2, 0, 0 | 4 | low dry |
+| **soil / stone / soil** | 2, 0, 2 | 2 | **passes** |
+| soil / soil / stone | 2, 2, 0 | 2 | low dry |
+| soil / soil / soil | 2, 2, 2 | 0 | pond got none |
+
+**C, *The tree's bed*** (6 drops; the middle is the tree's bed; low marked). One answer: the tree always keeps two, so the top must be stone.
+
+| Top / [tree] / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / [soil] / stone | 0, 2, 0 | 4 | low dry |
+| **stone / [soil] / soil** | 0, 2, 2 | 2 | **passes** |
+| soil / [soil] / stone | 2, 2, 0 | 2 | low dry |
+| soil / [soil] / soil | 2, 2, 2 | 0 | pond got none |
+
+**D, *The stone path*** (6 drops; the middle is the stone path; low marked). Two answers: the top may be either.
+
+| Top / [path] / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / [stone] / stone | 0, 0, 0 | 6 | low dry |
+| **stone / [stone] / soil** | 0, 0, 2 | 4 | **passes** |
+| soil / [stone] / stone | 2, 0, 0 | 4 | low dry |
+| **soil / [stone] / soil** | 2, 0, 2 | 2 | **passes** |
+
+**E, *One bed in the middle*** (6 drops; middle marked). Three answers: the middle is soil and at most one other bed is.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 6 | middle dry |
+| stone / stone / soil | 0, 0, 2 | 4 | middle dry |
+| **stone / soil / stone** | 0, 2, 0 | 4 | **passes** |
+| **stone / soil / soil** | 0, 2, 2 | 2 | **passes** |
+| soil / stone / stone | 2, 0, 0 | 4 | middle dry |
+| soil / stone / soil | 2, 0, 2 | 2 | middle dry |
+| **soil / soil / stone** | 2, 2, 0 | 2 | **passes** |
+| soil / soil / soil | 2, 2, 2 | 0 | pond got none |
+
+**F, *The small cloud*** (**4** drops; low marked). One answer: stone / stone / soil (pond 2). This is the board where water **runs out**: soil / soil / soil keeps 2, 2, 0 and the low bed gets nothing, and soil / stone / soil or stone / soil / soil fill the low bed but leave the pond none.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | low dry |
+| **stone / stone / soil** | 0, 0, 2 | 2 | **passes** |
+| stone / soil / stone | 0, 2, 0 | 2 | low dry |
+| stone / soil / soil | 0, 2, 2 | 0 | pond got none |
+| soil / stone / stone | 2, 0, 0 | 2 | low dry |
+| soil / stone / soil | 2, 0, 2 | 0 | pond got none |
+| soil / soil / stone | 2, 2, 0 | 0 | low dry |
+| soil / soil / soil | 2, 2, 0 | 0 | low dry (no water reached it) |
+
+- **Solver:** `solutions(board)` enumerates the tappable sockets' arrangements (two or three sockets, so four or eight) and returns every one meeting all needs. `nearest(sockets, board)` returns the solution differing in the fewest tappable sockets; **ties go to the first in enumeration order** (top socket first, stone before soil), so the glow never jumps between equal answers. `stepBed` returns the uphill-most tappable socket that differs from `nearest`; fixed sockets never glow and are never flipped by Show me.
+- **Round state** is level 4's `RouteState` unchanged; `RouteRound` gains the board (`sockets` with fixed entries, `marked` with markers, `units`) and loses `mirror` at level 5 (below).
+
+### Screen and controls, level 5
+
+- **Sizes:** beds and fixed sockets 300×130 (at least 240×130, as at level 4), the cloud 260×140 over the top bed, the pond tray about 400 wide with **six** slots (56 each, 62 apart), need signs 140×110, the Check 120×120 top-right. Pockets, slots and drop outlines at least 48.
+- **Signs:** each marked bed's sign stands beside it with two dashed drops over its marker (leaf or flower), and the same small marker stands on the bed itself, so a sign and its bed match without reading; the pond sign is level 4's. Outlines fill as drops settle; a met need gets a tick.
+- **Upright on a phone** (the 768×1024 frame hung from the bottom edge; frame coordinates, centers): cloud (260, 200); top bed (260, 350); middle bed (548, 505); low bed (260, 660); pond (548, 862). The slope zig-zags so the arrows are short diagonals. Signs: top bed's (568, 350), middle bed's (220, 505), low bed's (568, 660), pond's (262, 862).
+- **Landscape** (1024×768 frame, centered): a staircase descending right, cloud (270, 115); top (270, 260); middle (530, 405); low (790, 550); pond (770, 700). Signs: top's (570, 250), middle's (840, 390), low's (500, 560), pond's (470, 700). Portrait's logical view is 1024 wide and uses this frame, as at levels 1–4.
+- **These coordinates were checked on 2026-11-23** with a scratch script applying level 4's layout-test rules at its eight views (landscape, portrait, phone, notch, and four upright) for every marked-bed set: every target at least 100 and inside the view, no target overlap, signs and pond overlap no target, Home's corner (120×215) and the guide's corner clear. The builder copies them into `routeLayout` and extends the level-4 layout test to level 5 (three beds, six slots, one sign per marked bed beside it, the cloud over the top bed, each bed lower than the one before); a view that cannot hold the board returns null rather than shrink.
+- **No mirroring at level 5:** reflecting the staircase would put the pond in the guide's corner; variety comes from the boards.
+- **Why three sockets, not the study's "up to six":** the upright frame holds the cloud, three 130-tall beds with their arrows, the pond and the Check at full size and no more. Six sockets would need scrolling or smaller targets; neither is worth it for this level.
+
+```
+upright (phone)                         landscape
++------------------------+              +--------------------------------------------+
+| [Home]        [Check]  |              | [Home]                            [Check]  |
+|                        |              |   ( cloud ::: )                            |
+|  ( cloud ::: )         |              |   [ top bed ]  [sign]                      |
+|  [ top bed  ] [sign]   |              |          \__ [ middle bed ] [sign]         |
+|        \__ [ middle  ] |              |       [sign]     \__ [ low bed ]           |
+|  [sign]    [  bed    ] |              |  pet         [o+]     [pond . . . . . .]   |
+|  [ low bed ] [sign]    |              +--------------------------------------------+
+|        \__             |
+| pet [o+] [pond ......] |
++------------------------+
+```
+
+### Accounting, help and finishing, level 5
+
+Level 4's rules unchanged: cloud runs, flips, fixed-socket taps, Start again and listening are free; a failed Check counts 1 miss and checking the same arrangement again counts nothing; after the second failed Check the bed to change glows (`stepBed`), counting 1 hint once a round and following the arrangement after flips; Show me flips `stepBed`'s bed (1 hint) or, when the arrangement passes, points at the Check. At most **three** worked steps reach a solution (two on boards with a fixed socket), so assisted completion is always available; finishing with help earns the ordinary one sticker. Smooth and struggling rounds adapt as for any game; school's range becomes 3–5.
+
+### Speech, level 5 (`voice.ts`)
+
+- `rain.instruct.5`: "Each bed with a sign needs two drops, and the pond needs some too. Tap a bed to change its ground. Tap the cloud to try it, then tap the check."
+- **Cloud narration is built from short clips said in turn** (as `route.ts` already chains a miss line and a route line), never one line per arrangement: one clip per socket from the top while water reaches it, then one pond clip. Socket clips, for `top`, `middle` and `low`: `rain.bed.<pos>.kept` "The top bed kept two." / `rain.bed.<pos>.stone` "The top bed is stone, so the water ran past." / `rain.bed.<pos>.none` "No water reached the low bed." (said once, for the first socket the water never reached, and then the sockets below are skipped). Fixed sockets: `rain.tree.kept` "The tree's bed kept two."; `rain.path.past` "The stone path kept none, so the water ran on."; `rain.tree.none` and `rain.path.none` "No water reached the tree." / "No water reached the path." Pond clips: `rain.pond.0` "None reached the pond." `rain.pond.2` "Two reached the pond." `rain.pond.4` "Four reached the pond." `rain.pond.6` "All six reached the pond."
+- Failed Check: `rain.miss.dry` (level 4's leaf line) or `rain.miss.dry.flower` "Boing. The flower bed didn't keep two. Look where the water stayed.", or level 4's `rain.miss.pond`, each followed by the narration.
+- Fixed taps: `rain.fixed.tree` "The tree lives here, so this ground stays soil." `rain.fixed.path` "This is the stone path. It stays stone."
+- Pass: `rain.check.yes` on one-marked boards; `rain.check.yes.both` "The leaf bed and the flower bed kept two, and the pond got some. Every need met!" on two-marked boards. `rain.glow`, `rain.hint.flip` and `rain.hint.check` are reused.
+
+No line says soil drinks it all, that a plant needs the water, or how real slopes behave; "kept" and "ran past" stay the toy's words.
+
+### Rule tests, level 5 (`logic.test.ts`)
+
+1. **Boards are well formed:** every socket is reachable from socket 0 and the chain ends in the pond; every marked socket is tappable; the uphill marked bed carries the leaf and a second marked bed the flower; `units` is 4 or 6.
+2. **Conservation:** for every board and arrangement, after every step `released = sum(stored) + pond`; each path starts at socket 0 and passes a socket only when it is stone or full.
+3. **Outcome tables:** the six tables above exactly (kept, pond, cause).
+4. **Judge accepts every valid arrangement:** for each board the Check passes exactly the arrangements `solutions` lists, which is non-empty; D lists two and E three.
+5. **Seeded rounds:** every seeded start is a failing arrangement of its board, fixed sockets keep their surface, and the authored round is board A from soil / soil / stone.
+6. **Hints preserve a solution:** from every arrangement of every board, flipping `stepBed`'s socket strictly reduces the distance to the nearest solution, never names a fixed socket, and at most three steps (two with a fixed socket) reach a pass; `nearest` breaks ties by enumeration order.
+7. **Accounting:** level 4's accounting test at level 5, plus a fixed-socket tap changes nothing and counts nothing.
+8. **Narration:** the clip sequence for every arrangement of every board ends with the pond clip matching the trial, never names a socket below the first one water missed, and every clip id exists in `voice.ts`.
+9. **Layout:** level 5 at the eight views, as above.
+
+### Code the builder must widen
+
+`RouteRound.level` is the literal `4`; `meets`, `solutions`, `nearest`, `stepBed`, `check` and `routeLayout` take `bed: 0 | 1`; `ARRANGEMENTS` is the fixed two-socket list; `runRoute`'s caller assumes `SHOWER` drops; the layout returns one `bedSign` and four slots; `route.ts` draws two beds and one sign and narrates with `rain.route.<arrangement>`. Level 5 needs a board (sockets with fixed entries, marked beds with markers, units) that level 4's round also expresses (two tappable sockets, one marked, 4 units), so one code path serves both rather than a second scene. `LEVELS` school becomes `{ min: 3, max: 5 }` (no grown-up band yet) and `PLANS` gains "Three beds downhill: leave enough rain for every marked bed and some for the pond". Level 4's fixed route lines stay for level 4.
+
+### Ghost finger, how-to card and registration, level 5
+
+- **Ghost finger** on board A: tap the cloud (the low stone stays dry), tap the top bed (to stone), tap the low bed (to soil), tap the cloud, tap the Check. Level 4's `routeNext` rule produces this unchanged; `fingerdemo` at level 5 must end on the passing Check.
+- **How-to card**, `{ from: 5, to: 5 }`: "Three beds step down to the pond; each bed with a sign needs two drops, and the pond some"; "Every soil bed keeps two, so leave enough for the beds below; the tree's bed and the stone path can't change". The level-4 try and check steps and finish widen to `to: 5`, and the level-4 note widens to `to: 5`.
+- **Bands:** school 3–5; Tinker Lab, unchanged.
+- **Co-play:** one person counts the drops on the cloud and says how many beds can be soil; the other taps them.
+
+### Level 5 check tier
+
+New-level tier on level 4's interaction: typecheck and the rule tests above (plus the how-to test); one scripted play of the `rain-garden` browser case at level 5 (board A: one wrong Check, one requested hint, then the passing Check, asserting `misses` 1 and `hints` at least 1); `fingerdemo` at level 5; one upright phone screenshot after a wrong Check, since the layout is new. `npm run build`, because voice lines and the how-to card change. Levels 1–4's passing evidence is reused.
+
+### Level 5 decisions
+
+None waits on the developer. Defaults set here: three sockets rather than six (upright capacity, measured); free flips, as at level 4, rather than placing two tiles; six authored boards rather than random generation, so every board's proof is a table; a four-drop board so water can run out; leaf and flower markers for two marked beds; no mirroring at level 5. Source check: level 4's EPA and USGS pages cover the direction (rain that hard ground does not hold runs downhill to what lies below); the tree's bed and the stone path add no new claim, since they are labelled soil and stone of the toy.

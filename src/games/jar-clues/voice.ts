@@ -11,6 +11,7 @@ const fixed = {
   'jarclues.guess': ['About how many? Tap your first guess.'],
   'jarclues.fault.standing': ['A number the clue rules out is still standing.'],
   'jarclues.fault.crossed': ['A number you crossed off fits every clue so far.'],
+  'jarclues.fault.either': ['For this number both are true, or neither is.'],
   'jarclues.hint.cross': ['Cross off the lit numbers in this row.'],
   'jarclues.hint.bring': ['Bring the lit number back.'],
   'jarclues.hint.bring-many': ['Bring the lit numbers back.'],
@@ -19,6 +20,8 @@ const fixed = {
   'jarclues.last': ['Which one does the jar hold?'],
   'jarclues.holds': ['The jar holds this many.'],
   'jarclues.close': ['Close from the start.'],
+  // A one-of-two clue: this lead line, then its two clues' own lines.
+  'jarclues.clue.either': ['Exactly one of these is true.'],
 };
 
 const clues: Record<string, string[]> = {};

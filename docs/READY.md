@@ -64,7 +64,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
-- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`, built; school's order then appends 9; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
 
 
 
@@ -75,16 +74,11 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`splish-splash` This one!** (toddler, between levels 2 and 3; new levels on an existing interaction): "Wash my ears!" with the named part sparkling as it is said; a plan field `show: true`, nothing counts as a miss and the sparkle is not a hint. Expected files: `src/games/splish-splash/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/splish-splash.md#levels-below-level-1-waiting-on-the-level-order-decisions)
-
-- **`owl-walk` level 5, Stepping stones, and the lap band** (lap, toddler; new levels on an existing interaction, plus the registry and lands tests because `bands` gains `lap`): five fat stones and a nest with no cards; a tap on a stone ahead hops the owl there with a note per stone, and nothing is wrong. Expected files: `src/games/owl-walk/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/owl-walk.md#build-slices-in-order)
 
 
-- **`word-monsters` My letter** (toddler, preschool; new levels on an existing interaction): three monsters, one wearing the first letter of her name (`nameLetters(ctx.childName)`, with the dive's fallback), asked by letter name only, so it makes no phonics claim; a lookalike guard in the rule tests. Expected files: `src/games/word-monsters/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/word-monsters.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 
-- **`critter-sort` and `critter-crossing` open to preschool** (two small band openings, one session each or together: new levels tier plus the registry and lands tests): Critter Sort's preschool row with `order [6, 1]` on its built three-critter entry; Critter Crossing's level 1 for preschool now that its visible "not" entry exists. Each needs the band row, how-to and voice lines and the saves audit. [Critter Sort dive](deep-dives/critter-sort.md#build-slices-in-order), [Critter Crossing dive](deep-dives/critter-crossing.md#build-slices-in-order)
 
-- **`day-by-day` level 9, Three little skies** (a preschool entry; new levels plus the band, land and entry tests): three pictured observations matched to sunny, cloudy or rainy with the existing buttons, under a truthful observations title and with no weekday claim. Expected files: `src/games/day-by-day/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/day-by-day.md#build-slices-in-order)
+
 
 - **`jelly-drums` sound sets and stages** (all its bands; existing-game content: typecheck, rule tests that every set maps steps 0–4 to the same five pitches, one portrait screenshot per set): a round's instrument comes from the seed (marimba, bells, a soft held tone) with a stage tinted to match. Expected files: `src/games/jelly-drums/{logic,index}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/jelly-drums.md#build-slices-in-order)
 

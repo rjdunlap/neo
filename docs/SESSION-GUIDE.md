@@ -161,7 +161,7 @@ Use the app's recoverable archive for a managed worktree when available; otherwi
 
 Since 2026-11-10 two local desktop scheduled tasks (`neo-roadmap-slice-a` and `-b`, prompts in `~/.claude/scheduled-tasks/` on the developer's Mac) each take one READY slice per hourly run, in a fresh chat.
 
-- **Off-peak schedule (2026-11-19).** To use the weekday off-peak hours, A and B run at `:29` and `:59` Monday to Friday only in hours 0–4 and 11–23 Pacific (nothing 5:00–10:59am, the assumed weekday peak), and the copies `neo-roadmap-slice-a-weekend` and `-b-weekend` run every hour on Saturday and Sunday. A task holds one cron expression, hence four tasks. **A change to the prompt goes into all four.**
+- **Hourly, every day (2026-11-23).** A runs at `:29` and B at `:59`, every hour of every day. The weekday off-peak schedule of 2026-11-19 and its weekend copies are gone: Anthropic [removed the peak-hours reduction](https://www.anthropic.com/news/higher-limits-spacex) for Claude Code on Pro and Max on 2026-05-06, so skipping weekday mornings saved nothing.
 
 - **Their prompts name these paths**, so keep them where they are, or change the prompts in the same step: `AGENTS.md`, `docs/READY.md` (Next ten, Queued), `docs/ROADMAP.md` (Next up), `docs/deep-dives/`, `docs/OBSERVATIONS.md`, `docs/WAITING-ON-DEVELOPER.md`, `scripts/overlap.sh` and the `docs-keeper` subagent.
 - **Never bind a recurring job to a long-lived chat:** each firing re-reads that chat's whole context ([measured 2026-11-06](reviews/WORKFLOW-REVIEWS.md#token-review-2026-11-06)). A fresh-session run lacks the session tools (the same review).

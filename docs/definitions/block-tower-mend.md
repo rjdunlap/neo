@@ -31,7 +31,7 @@ The 2026-10-23 decision makes failed releases and topples at levels 6–9 **unsc
 - **No misses at 7.** A tumble, a let go before any move, a drag, undo, Watch again and Try again never add a miss. `ctx.finish` always reports `misses: 0` at 7.
 - **After two unsuccessful trials on a task** the hint turns on, once for the task (the `hinted` flag and `hints++`, at most one per task, so at most two per round): the hint slot glows as level 6's drop place glows, and "Try a block on the glowing place." (`tower.reach-hint`, the existing line). The glow stays until the task stands and returns after Try again. A let go before any move is not a trial and never brings the hint closer.
 - **What `difficulty.ts` sees.** An unhinted round reports `{ misses: 0, hints: 0 }`, read as smooth, as level 5's observations are; two hinted tasks in a round make it struggling. A hinted round is assisted, not independent mastery.
-- **Level 6 is not changed here.** The same decision makes level 6's topples and short full stacks unscored too, but the level 6 code still counts them as misses (`settled()` in `index.ts`); that is its own existing-game change and gets its own READY line, not part of this build.
+- **Level 6 is not changed here.** The same decision makes level 6's topples and short full stacks unscored too, but the level 6 code still counts them as misses (`settled()` in `index.ts`); that is its own existing-game change and gets its own READY line, not part of this build. *Built 2026-11-23: level 6 counts neither as a miss now.*
 
 ## The model (`logic.ts`)
 

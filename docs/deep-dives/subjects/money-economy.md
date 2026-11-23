@@ -84,7 +84,7 @@ The collecting world already gives creatures things to hold and want, and the is
 | **S** | **Swap Meet 4**: a chain. She holds a leaf, and her pet wants a kite. Duck trades a shell for a leaf, and Frog trades the kite for a shell. Which trade first? Lemonade Stand 1–4 (built) | Swap Meet 5: a longer chain with a tempting side trade (trading back is always allowed, never a miss). **Market Stall 12 *Pick one***: a purse of 9 and three wants at 6, 5 and 4; any choice is accepted and the voice names what was given up |
 | **U** | **Swap Meet 6**: a Harbor stall buys anything for 2 shells and sells anything for 2; reach the goal again and compare the number of trades. **Lemonade Stand 5 *Save for the awning*** | **Lemonade Stand 6 *A rainy-day jar*** (to define after 5): a pictured, stated chance of a tipped jug, and a jar that covers it |
 | **M** | **Harbor Orders** at `school`'s top level: two workshops make crates or boats at different pictured rates; fill an order in the fewest mornings (specialization, D2.Eco.4.3-5; comparative advantage is recalled, not named in the opened K-8 indicators). Lemonade 5–6 | Harbor Orders with three workshops and two orders; an optional "could it take fewer mornings?" after success. Unit pricing (KS3) goes to the `measurement-units` row |
-| **G, play** | **Harbor Orders cases** on `grownup` in Lantern Lake ([definition](../../definitions/harbor-orders.md), levels 1–2 built and levels 3–4 ready) | Larger cases with several minimal plans, proved by enumeration |
+| **G, play** | **Harbor Orders cases** on `grownup` in Lantern Lake ([definition](../../definitions/harbor-orders.md), levels 1–4 built) | Larger cases with several minimal plans, proved by enumeration |
 | **G, play with** | Market Stall's existing shopkeeper swap ([IDEAS two-seat row](../../IDEAS.md#seeds-and-two-seat-modes): the grown-up pays a shell short for her to catch); Swap Meet's two-seat mode: the grown-up holds one friend's basket and asks for a trade aloud | The grown-up "forgets" what Duck wants, and she reminds them from the picture |
 | **G, page card** | **Spend, share, save jars** (after Sesame's materials and CFPB's wait-and-save line; plain HTML; *needs a practical review*) | **Play shop at home**: a price tag, a purse of real or pretend coins, choose one treat, say what you gave up. No allowance advice, amounts or brand names |
 
@@ -195,7 +195,7 @@ ME1 levels1–4 [defined](../../definitions/swap-meet.md) 2026-10-25; [closeout]
 3. **ME3 · Define Market Stall 12 *Pick one*** inside the [Market Stall dive](../market-stall.md) with its decision 7 (docs).
 4. **ME4 · Define Lemonade Stand 5 *Save for the awning*** (docs) after decision 6: a goal jar, a tested plan that reaches it every seeded week, no failed week.
 5. **ME5 · Define Swap Meet 5–6**: [defined](../../definitions/swap-meet.md#levels-56-definition-me5) 2026-11-22; levels 5–6 built (PR #2002).
-6. **ME6 · Define Harbor Orders**: [defined](../../definitions/harbor-orders.md) 2026-11-23 for `grownup` in Lantern Lake, levels 1–2 built ([game](../../games/harbor-orders.md)) and levels 3–4 ready; the `school` top form stays a later proposal.
+6. **ME6 · Define Harbor Orders**: [defined](../../definitions/harbor-orders.md) 2026-11-23 for `grownup` in Lantern Lake, levels 1–4 built ([game](../../games/harbor-orders.md)); the `school` top form stays a later proposal.
 7. **ME7 · Spend, share, save and Play shop cards**, after a named practical review.
 8. **ME8 · Lemonade Stand 6 *A rainy-day jar***, after 5 is played.
 

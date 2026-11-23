@@ -7,7 +7,7 @@ Defined 2026-10-22 as slice **Q5** of the [scientific inquiry study](../deep-div
 **What it adds:** one appended level of `ramp-race` (`src/games/ramp-race/`), level 7.
 - Levels 1–6, their IDs and pins, the pre-K 1–2 window and the stated toy model (distance = height × floor glide, in floor marks) do not change.
 - It adds no band, land, tile, save field, journal entry, creation slot or couch entry, and no general trial-history engine: a case is exactly two cards.
-- Workshop Detective's invented mechanism (Q6) is not part of this level; every result here comes from the public ramp model.
+- Workshop Detective's invented lamp ([Q6 definition](workshop-detective.md)) is not part of this level; every result here comes from the public ramp model.
 
 ## Fun action and learning goal
 
@@ -26,7 +26,7 @@ Defined 2026-10-22 as slice **Q5** of the [scientific inquiry study](../deep-div
 
 `describeLevel(7)`: *What can we tell? Read two cards: did one thing change, or both? Then make it fair.*
 
-Older players (13+) get no route here; the study's older route is Workshop Detective (Q6, after decision 3). This level adds no `grownup` band entry.
+Older players (13+) get no route here; the study's older route is the separate grown-up [Workshop Detective](workshop-detective.md). This level adds no `grownup` band entry.
 
 ## A round: two cases
 
