@@ -24,7 +24,10 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         return {
           counts: { ...g.counts },
           marks: [...g.marks],
-          solution: [...g.board.solution],
+          solution: [...g.board.solution.kinds],
+          plank: g.plank,
+          sound: g.board.solution.plank,
+          plankMissing: g.plankMissing,
           seats: [...g.board.seats],
           hint: g.hint,
           wrong: g.wrong,
@@ -93,6 +96,7 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         return { misses, hints, level };
       }, id);
 
+    if (process.env.TRUTH_BRIDGE_BATCH === '2') return advancedLevels();
     const before = await stickers();
     const firstPage = await landOpen(1);
     // Cross on blank marks names the first islander, free.
@@ -156,6 +160,70 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     log(
       'Truth Bridge: both levels from Lantern Lake at 390×625 with captions, a blank Cross, a wrong Cross counted once, Help counted once, rotation, one sticker per round and return passed',
     );
+    await advancedLevels();
+
+    async function advancedLevels() {
+      const afterEntry = await stickers();
+      const thirdPage = await landOpen(3);
+      let supposed = false;
+      for (let i = 0; i < 3; i++) {
+        await help();
+        const { hint, status } = await state();
+        assert.ok(hint);
+        if (hint.suppose) {
+          assert.match(status, /^Try .* Then .* can’t fit/);
+          supposed = true;
+        }
+        await mark(hint.seat, hint.kind);
+      }
+      assert.equal(supposed, true);
+      await cross();
+      await finished(id);
+      assert.equal(await stickers(), afterEntry + 1);
+      await back(thirdPage);
+
+      const fourthPage = await landOpen(4);
+      const { solution, sound } = await state();
+      const planks = ['left', 'middle', 'right'];
+      const selectPlank = (plank) => tap(`neo.scene.game.planks[${planks.indexOf(plank)}].node`);
+      for (const [i, kind] of solution.entries()) await mark(i, kind);
+      await cross();
+      assert.equal((await state()).plankMissing, true);
+      assert.deepEqual((await state()).counts, { misses: 0, hints: 0 });
+      const wrongPlank = planks.find((plank) => plank !== sound);
+      await selectPlank(wrongPlank);
+      await selectPlank(wrongPlank);
+      assert.equal((await state()).plank, null);
+      await selectPlank(wrongPlank);
+      await cross();
+      await cross();
+      const wrong = await state();
+      assert.deepEqual(wrong.counts, { misses: 1, hints: 0 });
+      assert.match(wrong.status, /is marked (Straight|Topsy), so these words/);
+      assert.equal(await page.evaluate(() => neo.scene.game.board.pattern[neo.scene.game.wrong].k), 'plank');
+      await help();
+      await help();
+      const helped = await state();
+      assert.equal(helped.hint.plank, sound);
+      assert.deepEqual(helped.counts, { misses: 1, hints: 1 });
+      await screenshot('truth-bridge-level-4-portrait');
+      await page.setViewportSize(landscape);
+      await page.waitForFunction(() => !neo.view.upright);
+      assert.equal((await state()).plank, wrongPlank);
+      assert.deepEqual((await state()).hint, helped.hint);
+      await selectPlank(sound);
+      await cross();
+      await page.waitForFunction(() => neo.scene.game.crossing);
+      await page.setViewportSize(portrait);
+      await page.waitForFunction(() => neo.view.upright);
+      await finished(id);
+      assert.equal(await stickers(), afterEntry + 2);
+      assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+      await back(fourthPage);
+      log(
+        'Truth Bridge: levels 3–4 from Lantern Lake, supposition and plank hints, one counted wrong plank, rotation and one sticker per round passed',
+      );
+    }
   }
 
   return { truthBridgePlay };

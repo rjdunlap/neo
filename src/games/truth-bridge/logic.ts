@@ -4,20 +4,25 @@ import type { BandLevels } from '../../progress/difficulty';
  * Truth Bridge's rules (docs/definitions/truth-bridge.md). Islanders either speak straight or play Topsy, where
  * everything they say is the opposite of what is so. Each says one sentence about the group, and a board is valid
  * when exactly one marking of kinds makes every sentence fit its speaker.
- *
- * Levels 1–2 are built: boards the propagation step alone settles. Levels 3–4 (suppositions and planks) are the next
- * batch; their sentence kinds and solver steps are not here yet.
  */
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
-export const describeLevel = (level: number) =>
-  level === 1
-    ? 'Two at the gate: two islanders, one sentence each; mark who speaks straight and who is Topsy'
-    : 'Three on the bridge: three islanders, where one sentence’s result is needed to read another';
+const descriptions = [
+  'Two at the gate: two islanders, one sentence each; mark who speaks straight and who is Topsy',
+  'Three on the bridge: three islanders, where one sentence’s result is needed to read another',
+  'Try it both ways: rule out a possible mark by seeing which sentence stops fitting',
+  'Which plank? Mark three islanders and work out which plank is sound from what they say',
+];
+
+export const describeLevel = (level: number) => descriptions[level - 1];
 
 export type Kind = 'straight' | 'topsy';
 export const KINDS: readonly Kind[] = ['straight', 'topsy'];
-export const other = (kind: Kind): Kind => (kind === 'straight' ? 'topsy' : 'straight');
+export const PLANKS = ['left', 'middle', 'right'] as const;
+export type Plank = (typeof PLANKS)[number];
+type Value = Kind | Plank;
+
+export const kindWord = (kind: Kind) => (kind === 'straight' ? 'Straight' : 'Topsy');
 
 /** The fixed cast, in the name order two-name sentences use. */
 export const NAMES = ['bear', 'cat', 'duck'] as const;
@@ -30,13 +35,14 @@ export type Sentence =
   | { k: 'pair'; same: boolean }
   | { k: 'all'; kind: Kind }
   | { k: 'some' }
-  | { k: 'count'; n: 1 | 2 };
+  | { k: 'count'; n: 1 | 2 }
+  | { k: 'plank'; plank: Plank; sound: boolean };
 
 /** A seat pattern: sentence `i` is said by seat `i`. */
 export type Pattern = readonly Sentence[];
 
 /** Every sentence the speaker in `seat` can say among `seats` islanders, in a fixed order. */
-export function sentencesFor(seat: number, seats: number): Sentence[] {
+export function sentencesFor(seat: number, seats: number, withPlanks = false): Sentence[] {
   const others = [...Array(seats).keys()].filter((s) => s !== seat);
   const out: Sentence[] = [];
   for (const x of others) for (const kind of KINDS) out.push({ k: 'is', x, kind });
@@ -45,11 +51,13 @@ export function sentencesFor(seat: number, seats: number): Sentence[] {
   for (const kind of KINDS) out.push({ k: 'all', kind });
   out.push({ k: 'some' });
   if (seats === 3) for (const n of [1, 2] as const) out.push({ k: 'count', n });
+  if (withPlanks)
+    for (const plank of PLANKS) for (const sound of [true, false]) out.push({ k: 'plank', plank, sound });
   return out;
 }
 
 /** Whether the sentence is so, for the speaker in `seat` and these kinds. */
-export function isSo(s: Sentence, seat: number, kinds: readonly Kind[]): boolean {
+export function isSo(s: Sentence, seat: number, kinds: readonly Kind[], plank: Plank | null = null): boolean {
   switch (s.k) {
     case 'is':
       return kinds[s.x] === s.kind;
@@ -65,12 +73,18 @@ export function isSo(s: Sentence, seat: number, kinds: readonly Kind[]): boolean
       return kinds.includes('topsy');
     case 'count':
       return kinds.filter((kind) => kind === 'straight').length === s.n;
+    case 'plank':
+      return plank !== null && (plank === s.plank) === s.sound;
   }
 }
 
 /** A sentence fits when it is so and its speaker speaks straight, or it is not so and its speaker is Topsy. */
-export const fits = (s: Sentence, seat: number, kinds: readonly Kind[]): boolean =>
-  isSo(s, seat, kinds) === (kinds[seat] === 'straight');
+export const fits = (
+  s: Sentence,
+  seat: number,
+  kinds: readonly Kind[],
+  plank: Plank | null = null,
+): boolean => isSo(s, seat, kinds, plank) === (kinds[seat] === 'straight');
 
 /** Every marking of `seats` islanders, Straight first. */
 export function markings(seats: number): Kind[][] {
@@ -79,106 +93,165 @@ export function markings(seats: number): Kind[][] {
   return out;
 }
 
-/** The markings in which every sentence fits. A valid board has exactly one. */
-export const solutions = (pattern: Pattern): Kind[][] =>
-  markings(pattern.length).filter((kinds) => pattern.every((s, seat) => fits(s, seat, kinds)));
-
-/** What may still be so for one islander: a kind once settled, null while open. */
 export type Domain = Kind | null;
 
-/** One settlement: the sentence said by `speaker` settles the islander in `seat` as `kind`. */
-export interface Step {
-  speaker: number;
-  seat: number;
-  kind: Kind;
+export interface Answer {
+  kinds: Kind[];
+  plank: Plank | null;
 }
 
-/**
- * The propagation step for one sentence: among the markings that agree with the domains and in which this sentence
- * fits its speaker, every islander who takes a single kind is settled. Null when no such marking exists.
- */
-export function settle(pattern: Pattern, speaker: number, domains: readonly Domain[]): Step[] | null {
-  const live = markings(pattern.length).filter(
-    (kinds) =>
-      kinds.every((kind, i) => domains[i] === null || domains[i] === kind) &&
-      fits(pattern[speaker], speaker, kinds),
+function answers(seats: number, withPlanks: boolean): Answer[] {
+  return markings(seats).flatMap((kinds) =>
+    (withPlanks ? PLANKS : [null]).map((plank) => ({ kinds, plank })),
   );
-  if (!live.length) return null;
-  const steps: Step[] = [];
-  domains.forEach((domain, seat) => {
-    if (domain === null && live.every((kinds) => kinds[seat] === live[0][seat]))
-      steps.push({ speaker, seat, kind: live[0][seat] });
-  });
-  return steps;
 }
 
-/**
- * Propagation: the sentences in seat order, again and again until nothing changes. Returns the steps in the order
- * they were made and the domains they leave, or null when the domains contradict a sentence.
- */
-export function propagate(
-  pattern: Pattern,
-  start: readonly Domain[] = pattern.map(() => null),
-): { steps: Step[]; domains: Domain[] } | null {
-  const domains = [...start];
-  const steps: Step[] = [];
+/** The complete answers in which every sentence fits. A valid board has exactly one. */
+export const solutions = (pattern: Pattern): Answer[] =>
+  answers(pattern.length, hasPlanks(pattern)).filter(({ kinds, plank }) =>
+    pattern.every((s, seat) => fits(s, seat, kinds, plank)),
+  );
+
+const hasPlanks = (pattern: Pattern) => pattern.some((s) => s.k === 'plank');
+
+type Target = { seat: number; kind: Kind } | { plank: Plank };
+/** A sentence settles an unknown directly, or by contradicting a supposition about it. */
+export type Step = Target & { speaker: number; suppose?: Value };
+
+const valueAt = ({ kinds, plank }: Answer, index: number): Value =>
+  index < kinds.length ? kinds[index] : plank!;
+
+const targetAt = (seats: number, index: number, value: Value): Target =>
+  index < seats ? { seat: index, kind: value as Kind } : { plank: value as Plank };
+
+function domainsFor(seats: number, withPlanks: boolean): Value[][] {
+  const domains: Value[][] = Array.from({ length: seats }, () => [...KINDS]);
+  if (withPlanks) domains.push([...PLANKS]);
+  return domains;
+}
+
+/** Under one sentence, keep all fitting answers that agree with the domains. Report the values they settle. */
+function settle(domains: readonly Value[][], possible: readonly Answer[]) {
+  const live = possible.filter((answer) => domains.every((values, i) => values.includes(valueAt(answer, i))));
+  if (!live.length) return null;
+  return domains.flatMap((values, index) => {
+    if (values.length < 2) return [];
+    const remaining = values.filter((value) => live.some((answer) => valueAt(answer, index) === value));
+    return remaining.length < values.length ? [{ index, remaining }] : [];
+  });
+}
+
+const FITTING = new WeakMap<Pattern, Answer[][]>();
+
+function fittingAnswers(pattern: Pattern) {
+  let fitting = FITTING.get(pattern);
+  if (!fitting) {
+    const all = answers(pattern.length, hasPlanks(pattern));
+    fitting = pattern.map((s, speaker) => all.filter(({ kinds, plank }) => fits(s, speaker, kinds, plank)));
+    FITTING.set(pattern, fitting);
+  }
+  return fitting;
+}
+
+/** Sweep the sentences in seat order until none settle another unknown, or a sentence cannot fit. */
+function propagate(domains: Value[][], fitting: readonly Answer[][], steps: Step[]): number | null {
+  const seats = fitting.length;
   for (let changed = true; changed;) {
     changed = false;
-    for (let speaker = 0; speaker < pattern.length; speaker++) {
-      const made = settle(pattern, speaker, domains);
-      if (!made) return null;
-      for (const step of made) domains[step.seat] = step.kind;
-      steps.push(...made);
+    for (let speaker = 0; speaker < seats; speaker++) {
+      const made = settle(domains, fitting[speaker]);
+      if (!made) return speaker;
+      for (const { index, remaining } of made) {
+        domains[index] = remaining;
+        if (remaining.length === 1) steps.push({ speaker, ...targetAt(seats, index, remaining[0]) });
+      }
       changed ||= made.length > 0;
     }
   }
-  return { steps, domains };
+  return null;
 }
 
-/** Zero suppositions: propagation alone settles everyone. */
-export const propagates = (pattern: Pattern): boolean =>
-  propagate(pattern)?.domains.every((d) => d !== null) ?? false;
+/** Try unknowns in seat order and values in domain order. If a trial stalls without a
+ * contradiction, skip it. Only a contradiction can rule out its tested value.
+ */
+function solve(pattern: Pattern, domains = domainsFor(pattern.length, hasPlanks(pattern))) {
+  const fitting = fittingAnswers(pattern);
+  const steps: Step[] = [];
+  let suppositions = 0;
+  if (propagate(domains, fitting, steps) !== null) return null;
+  while (true) {
+    if (domains.every((values) => values.length === 1)) return { steps, suppositions };
+    let ruledOut = false;
+    unknown: for (const [index, values] of domains.entries()) {
+      if (values.length === 1) continue;
+      for (const suppose of values) {
+        const trial = domains.slice();
+        trial[index] = [suppose];
+        const speaker = propagate(trial, fitting, []);
+        if (speaker === null) continue;
+        const remaining = values.filter((value) => value !== suppose);
+        domains[index] = remaining;
+        suppositions++;
+        if (remaining.length === 1)
+          steps.push({ speaker, suppose, ...targetAt(pattern.length, index, remaining[0]) });
+        if (propagate(domains, fitting, steps) !== null) return null;
+        ruledOut = true;
+        break unknown;
+      }
+    }
+    if (!ruledOut) return null;
+  }
+}
 
-/** Flat: one pass of each sentence from scratch settles everyone, so no sentence needs another's result. */
+export const suppositionCount = (pattern: Pattern): number | undefined => solve(pattern)?.suppositions;
+export const propagates = (pattern: Pattern): boolean => suppositionCount(pattern) === 0;
+
+/** Flat: one pass of each sentence from scratch settles everyone, so no sentence needs another’s result. */
 export function flat(pattern: Pattern): boolean {
-  const blank = pattern.map(() => null);
-  const settled = new Set(
-    pattern.flatMap((_, speaker) => (settle(pattern, speaker, blank) ?? []).map((s) => s.seat)),
+  const blank = domainsFor(pattern.length, hasPlanks(pattern));
+  const indices = new Set(
+    fittingAnswers(pattern).flatMap((fitting) =>
+      (settle(blank, fitting) ?? []).filter((s) => s.remaining.length === 1).map((s) => s.index),
+    ),
   );
-  return settled.size === pattern.length;
+  return indices.size === blank.length;
 }
 
-/** Every seat pattern for `seats` islanders. */
-export function patterns(seats: number): Pattern[] {
+/** Every seat pattern for this number of islanders. The plank pool requires at least one plank sentence. */
+export function patterns(seats: number, withPlanks = false): Pattern[] {
   let out: Sentence[][] = [[]];
-  for (let seat = 0; seat < seats; seat++)
-    out = out.flatMap((p) => sentencesFor(seat, seats).map((s) => [...p, s]));
-  return out;
+  for (let seat = 0; seat < seats; seat++) {
+    const sentences = sentencesFor(seat, seats, withPlanks);
+    out = out.flatMap((p) => sentences.map((s) => [...p, s]));
+  }
+  return withPlanks ? out.filter(hasPlanks) : out;
 }
 
-export type PoolId = 'gate-flat' | 'gate-chained' | 'bridge';
+export const POOL_IDS = ['gate-flat', 'gate-chained', 'bridge', 'suppose', 'planks'] as const;
+export type PoolId = (typeof POOL_IDS)[number];
 
 const POOLS: Partial<Record<PoolId, Pattern[]>> = {};
 
-/**
- * A level's boards, made once. Level 1 draws a flat board and then a chained one from the valid two-islander boards
- * propagation settles; level 2 draws from the chained three-islander boards.
- */
+/** Build each pool once, filtering on uniqueness before running the teaching solver. */
 export function pool(id: PoolId): Pattern[] {
-  return (POOLS[id] ??= patterns(id === 'bridge' ? 3 : 2).filter(
-    (p) => solutions(p).length === 1 && propagates(p) && flat(p) === (id === 'gate-flat'),
-  ));
+  const gate = id === 'gate-flat' || id === 'gate-chained';
+  return (POOLS[id] ??= patterns(gate ? 2 : 3, id === 'planks').filter((p) => {
+    if (solutions(p).length !== 1) return false;
+    const count = suppositionCount(p);
+    if (id === 'planks') return count === 0 || count === 1;
+    if (id === 'suppose') return count === 1;
+    return count === 0 && flat(p) === (id === 'gate-flat');
+  }));
 }
 
-/** The pools a level's round plays, in order: two boards at level 1, one at level 2. */
-export const roundPools = (level: number): PoolId[] =>
-  level === 1 ? ['gate-flat', 'gate-chained'] : ['bridge'];
+export const roundPools = (level: number): readonly PoolId[] =>
+  level === 1 ? ['gate-flat', 'gate-chained'] : [POOL_IDS[level]];
 
 /** A board on screen: who sits where and what each says. */
 export interface Board {
   seats: Name[];
   pattern: Pattern;
-  solution: Kind[];
+  solution: Answer;
 }
 
 interface Picker {
@@ -222,6 +295,8 @@ export function code(s: Sentence, speaker: number, seats: readonly Name[]): stri
       return 'some';
     case 'count':
       return `count.${s.n}`;
+    case 'plank':
+      return `plank.${s.plank}.${s.sound ? 'sound' : 'rotten'}`;
   }
 }
 
@@ -246,6 +321,8 @@ export function words(sentenceCode: string): string {
       return a === 'straight' ? 'All of us speak straight.' : 'All of us are Topsy.';
     case 'some':
       return 'At least one of us is Topsy.';
+    case 'plank':
+      return `The ${a} plank is ${b}.`;
     default:
       return a === '1' ? 'Exactly one of us speaks straight.' : 'Exactly two of us speak straight.';
   }
@@ -261,16 +338,17 @@ export const cycle = (mark: Domain): Domain =>
 export type Verdict =
   /** The first blank islander: Cross names them, free. */
   | { kind: 'blank'; seat: number }
+  | { kind: 'choose-plank' }
   /** The first sentence, in seat order, that does not fit these marks. */
   | { kind: 'wrong'; speaker: number }
   | { kind: 'cross' };
 
 /** What Cross finds. A complete wrong marking always has a sentence that does not fit, since only the solution fits all. */
-export function check(board: Board, marks: Marks): Verdict {
+export function check(board: Board, marks: Marks, plank: Plank | null = null): Verdict {
   const blank = marks.indexOf(null);
   if (blank >= 0) return { kind: 'blank', seat: blank };
-  const kinds = marks as Kind[];
-  const speaker = board.pattern.findIndex((s, seat) => !fits(s, seat, kinds));
+  if (board.solution.plank && !plank) return { kind: 'choose-plank' };
+  const speaker = board.pattern.findIndex((s, seat) => !fits(s, seat, marks as Kind[], plank));
   return speaker < 0 ? { kind: 'cross' } : { kind: 'wrong', speaker };
 }
 
@@ -278,8 +356,16 @@ export function check(board: Board, marks: Marks): Verdict {
  * Whether Cross on these wrong marks counts: one miss per distinct wrong complete answer on a board, so crossing again
  * with the same marks replays the explanation, free. `seen` is the round's own set.
  */
-export function countsAsMiss(seen: Set<string>, boardAt: number, marks: Marks): boolean {
-  const key = `${boardAt}:${marks.join(',')}`;
+export const answerKey = (boardAt: number, marks: Marks, plank: Plank | null) =>
+  `${boardAt}:${marks.join(',')}:${plank ?? ''}`;
+
+export function countsAsMiss(
+  seen: Set<string>,
+  boardAt: number,
+  marks: Marks,
+  plank: Plank | null = null,
+): boolean {
+  const key = answerKey(boardAt, marks, plank);
   if (seen.has(key)) return false;
   seen.add(key);
   return true;
@@ -289,14 +375,15 @@ export function countsAsMiss(seen: Set<string>, boardAt: number, marks: Marks): 
  * The next hint: the marks that agree with the solution are taken as given and the rest as unknown, and the solver
  * runs to its first step, which settles an islander whose correct kind the player has not set. Null once every mark is right.
  */
-export function hintFor(board: Board, marks: Marks): Step | null {
-  const given = marks.map((mark, seat) => (mark === board.solution[seat] ? mark : null));
-  return propagate(board.pattern, given)?.steps[0] ?? null;
+export function hintFor(board: Board, marks: Marks, plank: Plank | null = null): Step | null {
+  const answer = board.solution;
+  const domains = domainsFor(marks.length, answer.plank !== null);
+  marks.forEach((mark, seat) => {
+    if (mark === answer.kinds[seat]) domains[seat] = [mark];
+  });
+  if (plank && plank === answer.plank) domains[marks.length] = [plank];
+  return solve(board.pattern, domains)?.steps[0] ?? null;
 }
-
-/** The marks after following a hint: one more correct kind, none cleared. */
-export const follow = (marks: Marks, step: Step): Domain[] =>
-  marks.map((mark, seat) => (seat === step.seat ? step.kind : mark));
 
 /** The voice-line id of a spoken sentence. */
 export const sentenceLine = (board: Board, speaker: number) =>
@@ -306,6 +393,20 @@ export const sentenceLine = (board: Board, speaker: number) =>
 export const missLine = (board: Board, speaker: number, marked: Kind) =>
   `bridge.miss.${board.seats[speaker]}.${marked}.${code(board.pattern[speaker], speaker, board.seats)}`;
 
-/** The voice-line id of a hint: the speaker and sentence, and the islander and kind they settle. */
-export const hintLine = (board: Board, step: Step) =>
-  `bridge.hint.${board.seats[step.speaker]}.${code(board.pattern[step.speaker], step.speaker, board.seats)}.${board.seats[step.seat]}.${step.kind}`;
+/** The voice-line id of a hint. Suppositions name the mark tried and the sentence that broke. */
+export function hintLine(board: Board, step: Step) {
+  const speaker = board.seats[step.speaker];
+  const said = code(board.pattern[step.speaker], step.speaker, board.seats);
+  const target = 'seat' in step ? `${board.seats[step.seat]}.${step.kind}` : `plank.${step.plank}`;
+  if (step.suppose) return `bridge.try.${speaker}.${target}.${step.suppose}`;
+  return `bridge.hint.${speaker}.${said}.${target}`;
+}
+
+export function suppositionWords(board: Board, step: Step) {
+  const speaker = title(board.seats[step.speaker]);
+  if ('seat' in step) {
+    const name = title(board.seats[step.seat]);
+    return `Try ${name} as ${kindWord(step.suppose as Kind)}. Then ${speaker}’s words can’t fit. So ${name} is ${kindWord(step.kind)}.`;
+  }
+  return `Try the ${step.suppose} plank. Then ${speaker}’s words can’t fit. Choose the ${step.plank} plank.`;
+}

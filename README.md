@@ -307,7 +307,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Word Code](docs/games/word-code.md) | Lantern Lake | 3 | a hidden picture word. Four pictured words (three letters at level 1, four at level 2) sit in a row and one is hiding; she taps letters from a small tray to try a word and every try comes back marked letter by letter with Secret Code's shapes (a green check in the right spot, a yellow dot elsewhere in the word, a gray cross not in it). The marks are the evidence for the next try. |
 | [Sum Crates](docs/games/sum-crates.md) | Lantern Lake | 3 | a small stack of wooden crates with a number sign at the start of each row and column: she taps a crate and then a numbered fruit (or drags one in) so every line adds up to its sign with no fruit twice in the same line; the board has exactly one answer, found by using the crossing line to choose between the pairs that make a sign. |
 | [Tide Tables](docs/games/tide-tables.md) | Lantern Lake | 2 | read four tide heights and tap a time for each of three harbor jobs. |
-| [Truth Bridge](docs/games/truth-bridge.md) | Lantern Lake | 2 | two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross. |
+| [Truth Bridge](docs/games/truth-bridge.md) | Lantern Lake | 4 | two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross. |
 
 <!-- end generated -->
 
