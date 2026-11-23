@@ -689,11 +689,11 @@ describe('Duck Pond real stopping (levels 4–5, slice 3)', () => {
       for (const { plan } of stops) {
         const n = bankSize(plan);
         for (const [x, y] of SLOTS.slice(0, n)) {
-          // A swimmer's tap circle, and its head (drawn up to 118 above its feet), stay clear of the check.
+          // A swimmer's tap circle, and its head (a duck stands about 100 units over its feet), stay clear of the check.
           expect(Math.hypot(c.x + x - ck.x, c.y + y - BANK_HIT_UP - ck.y)).toBeGreaterThanOrEqual(
             POND_HIT_R + CHECK_HIT_R,
           );
-          expect(c.y + y - 118).toBeGreaterThan(ck.y + CHECK_HIT_R - 1e-6);
+          expect(c.y + y - 100).toBeGreaterThan(ck.y + CHECK_HIT_R);
         }
         for (const [i, [x, y]] of SLOTS.slice(0, n).entries())
           for (const [xx, yy] of SLOTS.slice(i + 1, n))

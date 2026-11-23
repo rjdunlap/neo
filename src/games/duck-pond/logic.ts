@@ -453,11 +453,11 @@ export const CHECK_R = 56;
 export const CHECK_HIT_R = CHECK_R + 14;
 /**
  * The check stands beside the sign: to its right upright (the Home column is on the left), to its left sideways (the sign is
- * near the right edge), raised so it stays above the heads of the ducks on the pond's far side.
+ * near the right edge), at the board's height, above the heads of the ducks on the pond's far side.
  */
 export const checkSpot = (v: PondView) => {
   const s = signSpot(v);
-  return v.upright ? { x: s.x + 214, y: s.y } : { x: s.x - 214, y: 104 };
+  return { x: s.x + (v.upright ? 214 : -214), y: s.y };
 };
 
 /** The height ducks swim in from beyond the screen's side. */

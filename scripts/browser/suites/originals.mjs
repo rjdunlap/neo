@@ -532,6 +532,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               .then(() => screenshot(`duck-pond-${level}-scatter-portrait`))
               .catch(() => log('Duck Pond 7: no scattered round was dealt this run'))
           : null;
+      // Level 5: one portrait screenshot of the check and the bank while the one-too-many pond is counted.
+      const stopShot =
+        level === 5
+          ? page
+              .waitForFunction(
+                () => neo.scene.game.check?.visible && neo.scene.game.misses === 1 && neo.scene.game.busy,
+                null,
+                { timeout: 60000 },
+              )
+              .then(() => page.waitForTimeout(400))
+              .then(() => screenshot(`duck-pond-${level}-stop-portrait`))
+          : null;
       await page.evaluate(async () => {
         window.__duckLayouts = [];
         const g = neo.scene.game;
@@ -733,6 +745,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       });
       if (revealShot) await revealShot;
       if (scatterShot) await scatterShot;
+      if (stopShot) await stopShot;
       const layoutsSeen = await page.evaluate(() => window.__duckLayouts);
       if (layoutsSeen.length) log(`Duck Pond ${level} layouts dealt: ${layoutsSeen.join(', ')}`);
       await screenshot(`duck-pond-${level}`);
