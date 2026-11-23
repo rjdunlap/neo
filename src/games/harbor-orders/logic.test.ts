@@ -4,16 +4,23 @@ import {
   LEVELS,
   RoundCredit,
   arrangement,
+  eachGoodHasItsOwnBest,
   emptyPlan,
+  fallback,
   fewest,
+  fullPlans,
   fills,
   generate,
   mostOfFills,
   nextHint,
+  planCap,
+  planCounts,
   planKey,
   rowCounts,
   send,
   sendWorking,
+  shape,
+  stepGood,
   totals,
   type Good,
   type Order,
@@ -34,24 +41,26 @@ const betterAtBoth: Order = {
   ],
   wanted: [8, 7],
 };
-const marks = [null, 0, 1] as const;
 
-function bruteForce(order: Order) {
-  for (let mornings = 1; mornings <= 3; mornings++) {
+/** Every arrangement of squares (not counts), up to `most` mornings, for any number of workshops and goods. */
+function bruteForce(order: Order, most = 3) {
+  const goods = order.wanted.length;
+  const workshops = order.rates.length;
+  const marks = [null, ...Array.from({ length: goods }, (_, good) => good)];
+  for (let mornings = 1; mornings <= most; mornings++) {
     const accepted = new Set<string>();
-    for (let serial = 0; serial < 3 ** (2 * mornings); serial++) {
-      const amounts = [0, 0];
-      const counts = [0, 0, 0, 0];
-      for (let i = 0; i < 2 * mornings; i++) {
-        const good = marks[Math.floor(serial / 3 ** i) % 3];
+    const squares = workshops * mornings;
+    for (let serial = 0; serial < marks.length ** squares; serial++) {
+      const amounts = Array<number>(goods).fill(0);
+      const counts = Array<number>(workshops * goods).fill(0);
+      for (let i = 0; i < squares; i++) {
+        const good = marks[Math.floor(serial / marks.length ** i) % marks.length];
         if (good === null) continue;
         const workshop = Math.floor(i / mornings);
-        counts[workshop * 2 + good]++;
+        counts[workshop * goods + good]++;
         amounts[good] += order.rates[workshop][good];
       }
-      if (amounts[0] >= order.wanted[0] && amounts[1] >= order.wanted[1]) {
-        accepted.add(counts.join('/'));
-      }
+      if (amounts.every((n, good) => n >= order.wanted[good])) accepted.add(counts.join('/'));
     }
     if (accepted.size) return { mornings, accepted };
   }
@@ -59,14 +68,20 @@ function bruteForce(order: Order) {
 }
 
 describe('Harbor Orders rules', () => {
-  it('keeps the two grown-up levels and counts surplus goods toward a filled order', () => {
-    expect(LEVELS).toEqual({ grownup: { min: 1, max: 2 } });
+  it('keeps the four grown-up levels and counts surplus goods toward a filled order', () => {
+    expect(LEVELS).toEqual({ grownup: { min: 1, max: 4 } });
+    expect([1, 2, 3, 4].map(shape)).toEqual([
+      { workshops: 2, goods: 2 },
+      { workshops: 2, goods: 2 },
+      { workshops: 3, goods: 2 },
+      { workshops: 3, goods: 3 },
+    ]);
     const counts = (
       [
         [1, null],
         [0, 1],
       ] satisfies Plan
-    ).map(rowCounts);
+    ).map((row) => rowCounts(row));
     expect(counts).toEqual([
       [0, 1],
       [1, 1],
@@ -101,6 +116,64 @@ describe('Harbor Orders rules', () => {
     }
   });
 
+  it.each([
+    { workshops: 3, goods: 2, most: 3 },
+    { workshops: 3, goods: 3, most: 2 },
+  ])(
+    'matches the brute-force arrangements with $workshops workshops and $goods goods',
+    ({ workshops, goods, most }) => {
+      const rng = new Rng(2207 + goods);
+      let solved = 0;
+      for (let i = 0; i < 30; i++) {
+        const order: Order = {
+          rates: Array.from({ length: workshops }, () => Array.from({ length: goods }, () => rng.int(1, 4))),
+          wanted: Array.from({ length: goods }, () => rng.int(1, 9)),
+        };
+        const brute = bruteForce(order, most);
+        const solution = fewest(order);
+        if (!brute) {
+          expect(solution === null || solution.mornings > most).toBe(true);
+          continue;
+        }
+        solved++;
+        if (!solution) throw new Error('The count solver missed a filling plan');
+        expect(solution.mornings).toBe(brute.mornings);
+        expect(new Set(solution.plans.map((plan) => plan.flat().join('/')))).toEqual(brute.accepted);
+        expect(solution.plans).toHaveLength(brute.accepted.size);
+      }
+      expect(solved).toBeGreaterThan(10);
+    },
+  );
+
+  it('steps a square from a closed door through each good on the board and back to crates', () => {
+    expect([null, 0, 1].map((g) => stepGood(g, 2))).toEqual([0, 1, 0]);
+    expect([null, 0, 1, 2].map((g) => stepGood(g, 3))).toEqual([0, 1, 2, 0]);
+  });
+
+  it('only lets most-of fail when no choice among a workshop’s tied top rates fills the order', () => {
+    const order: Order = {
+      rates: [
+        [3, 1, 3],
+        [1, 4, 2],
+      ],
+      wanted: [0, 4, 6],
+    };
+    // The first workshop ties crates and lanterns: choosing lanterns fills the order.
+    expect(mostOfFills(order, 2)).toBe(true);
+    expect(mostOfFills({ ...order, wanted: [6, 4, 6] }, 2)).toBe(false);
+  });
+
+  it.each([1, 2, 3, 4])('keeps the level %i fallback board to its level’s row', (level) => {
+    const order = fallback(level);
+    const solution = fewest(order)!;
+    expect(order.rates).toHaveLength(shape(level).workshops);
+    expect(order.wanted).toHaveLength(shape(level).goods);
+    expect(solution.mornings).toBe(level === 1 ? 2 : 3);
+    expect(planCap(level, solution)).toBe(true);
+    if (level > 1) expect(mostOfFills(order, solution.mornings)).toBe(false);
+    if (level === 4) expect(eachGoodHasItsOwnBest(order)).toBe(false);
+  });
+
   it.each([1, 2])('draws valid, varied, repeatable level %i boards within the attempt budget', (level) => {
     const distinct = new Set<string>();
     for (let seed = 1; seed <= 160; seed++) {
@@ -132,6 +205,65 @@ describe('Harbor Orders rules', () => {
       expect(generate(level, new Rng(seed * 493 + 23))).toEqual(board);
     }
     expect(distinct.size).toBeGreaterThan(120);
+  });
+
+  it.each([
+    { level: 3, seeds: 120, distinct: 100 },
+    { level: 4, seeds: 60, distinct: 50 },
+  ])(
+    'draws valid, varied, repeatable level $level boards within the attempt budget',
+    ({ level, seeds, distinct }) => {
+      const boards = new Set<string>();
+      const { workshops, goods } = shape(level);
+      let split = 0;
+      for (let seed = 1; seed <= seeds; seed++) {
+        const board = generate(level, new Rng(seed * 811 + 5));
+        const { order, solution, draws } = board;
+        boards.add(JSON.stringify(order));
+        expect(draws).toBeLessThan(3000);
+        expect(order.rates).toHaveLength(workshops);
+        expect(order.rates.every((r) => r.length === goods && r.some((n) => n !== r[0]))).toBe(true);
+        expect(new Set(order.rates.map((r) => r.join('/'))).size).toBe(workshops);
+        expect(order.rates.flat().every((n) => Number.isInteger(n) && n >= 1 && n <= 5)).toBe(true);
+        const lower = Math.min(...order.wanted);
+        expect(lower).toBeGreaterThanOrEqual(4);
+        expect(Math.max(...order.wanted)).toBeLessThanOrEqual(3 * lower);
+        expect([3, 4]).toContain(solution.mornings);
+        const full = fullPlans(solution).length;
+        expect(full).toBeGreaterThanOrEqual(1);
+        expect(full).toBeLessThanOrEqual(level === 3 ? 4 : 6);
+        expect(mostOfFills(order, solution.mornings)).toBe(false);
+        if (level === 4) expect(eachGoodHasItsOwnBest(order)).toBe(false);
+        if (fullPlans(solution).every((plan) => plan.some((row) => row.filter(Boolean).length > 1))) split++;
+        expect(generate(level, new Rng(seed * 811 + 5))).toEqual(board);
+      }
+      expect(boards.size).toBeGreaterThan(distinct);
+      // Most boards cannot be solved without a workshop splitting its mornings.
+      expect(split).toBeGreaterThan(seeds / 2);
+    },
+  );
+
+  it('names every good with a surplus and the true fewest mornings with three goods', () => {
+    const order = fallback(4);
+    const solution = fewest(order)!;
+    const plan: Plan = [
+      [0, 0, 2, 2],
+      [0, 1, 1, 1],
+      [1, 1, 2, 2],
+    ];
+    const result = send(order, solution, plan);
+    const made = totals(order, planCounts(order, plan));
+    expect(result).toEqual({
+      kind: 'spare',
+      mornings: 4,
+      shortest: 3,
+      surplus: made.map((n, i) => n - order.wanted[i]),
+    });
+    const working = sendWorking(result);
+    expect(working).toMatch(/lanterns? .*extra|lanterns? extra/);
+    expect(working).toMatch(/3 mornings are enough/);
+    expect(working).not.toMatch(/square|row|Oar|Anchor|Bell/i);
+    expect(send(order, solution, emptyPlan(3, 3))).toEqual({ kind: 'short', good: 0, missing: 11 });
   });
 
   it('gives the first short amount or the actual surplus and fewest mornings', () => {
@@ -231,15 +363,17 @@ describe('Harbor Orders rules', () => {
     expect(send(order, solution, plan)).toEqual({ kind: 'ready' });
   });
 
-  it.each([1, 2])('walks level %i help from arbitrary marks without setting any squares', (level) => {
+  it.each([1, 2, 3, 4])('walks level %i help from arbitrary marks without setting any squares', (level) => {
     const rng = new Rng(4472);
-    for (let seed = 1; seed <= 72; seed++) {
+    const { workshops, goods } = shape(level);
+    const marks = [null, ...Array.from({ length: goods }, (_, good) => good)];
+    for (let seed = 1; seed <= (level === 4 ? 36 : 72); seed++) {
       const { order, solution } = generate(level, new Rng(seed * 1301));
       const initialMornings = level === 1 ? solution.mornings : 1 + ((seed - 1) % 6);
-      const plan: Plan = Array.from({ length: 2 }, () =>
+      const plan: Plan = Array.from({ length: workshops }, () =>
         Array.from({ length: initialMornings }, () => rng.pick<Good | null>(marks)),
       );
-      const moveBudget = 2 + Math.abs(initialMornings - solution.mornings);
+      const moveBudget = workshops + Math.abs(initialMornings - solution.mornings);
       const helpedRows = new Set<number>();
       let moves = 0;
       for (; moves < moveBudget; moves++) {
@@ -260,7 +394,7 @@ describe('Harbor Orders rules', () => {
             if (desired[i] === null) expect(row[slot]).toBeNull();
             row[slot] = desired[i];
           });
-          expect(rowCounts(row)).toEqual(hint.counts);
+          expect(rowCounts(row, goods)).toEqual(hint.counts);
         }
         if (hint.kind === 'add') plan.forEach((row) => row.push(null));
         if (hint.kind === 'remove') plan.forEach((row) => row.pop());

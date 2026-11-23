@@ -23,13 +23,33 @@ export function boat(): Graphics {
   return g;
 }
 
-export const goodArt = (good: Good) => (good === 0 ? crate() : boat());
+export function lantern(): Graphics {
+  const g = new Graphics();
+  g.moveTo(-6, -19).quadraticCurveTo(0, -27, 6, -19).stroke({ width: 3, color: ink, cap: 'round' });
+  g.roundRect(-11, -19, 22, 6, 2).fill(ink);
+  g.roundRect(-13, -13, 26, 26, 6).fill(swatch.orange.light).stroke({ width: 3, color: ink });
+  g.moveTo(-5, -13).lineTo(-5, 13).moveTo(5, -13).lineTo(5, 13).stroke({ width: 2, color: ink });
+  g.ellipse(0, 1, 4, 6).fill(swatch.yellow.fill);
+  g.roundRect(-11, 13, 22, 5, 2).fill(ink);
+  return g;
+}
+
+export const goodArt = (good: Good) => (good === 0 ? crate() : good === 1 ? boat() : lantern());
 
 export function workshopArt(row: number): Graphics {
   const g = new Graphics();
   if (row === 0) {
     g.moveTo(-15, 11).lineTo(11, -13).stroke({ width: 5, color: cream, cap: 'round' });
     g.ellipse(-13, 8, 7, 11).fill(swatch.yellow.fill).stroke({ width: 2, color: wood.line });
+  } else if (row === 2) {
+    g.moveTo(-12, 9)
+      .quadraticCurveTo(-11, -14, 0, -14)
+      .quadraticCurveTo(11, -14, 12, 9)
+      .closePath()
+      .stroke({ width: 3, color: cream, join: 'round' });
+    g.moveTo(-16, 9).lineTo(16, 9).stroke({ width: 3, color: cream, cap: 'round' });
+    g.circle(0, 14, 3.5).fill(cream);
+    g.circle(0, -17, 2.5).stroke({ width: 2, color: cream });
   } else {
     g.circle(0, -11, 4).stroke({ width: 3, color: cream });
     g.moveTo(0, -7)
