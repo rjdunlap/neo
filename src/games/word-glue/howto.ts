@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Stick two pictures together to make a new thing, and hear the word they make.',
+  goal: 'Hear how two whole words make the name of a thing.',
   steps: [
     {
       from: 4,
@@ -14,6 +14,8 @@ export const HOW_TO: GameHowTo = {
     { from: 2, to: 2, text: 'Listen for the word, then join the two pictures that make it.' },
     { from: 3, to: 3, text: 'A friend needs the thing in the middle; join that friend to it.' },
     { from: 5, to: 5, text: 'Listen to the question, then tap the part the thing really is.' },
+    { from: 6, to: 6, text: 'Two things from the same parts: tap the one the pet asks for.' },
+    { from: 6, to: 6, text: 'Touch a picture and slide off to hear its name.' },
     { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
     {
       from: 5,
@@ -24,6 +26,7 @@ export const HOW_TO: GameHowTo = {
   finish: [
     { from: 1, to: 4, text: 'Every pair is joined and its new thing has come alive.' },
     { from: 5, to: 5, text: 'Every question is answered and its thing has come alive.' },
+    { from: 6, to: 6, text: 'Four pairs of pictures have gone to the shelf.' },
   ],
   note: [
     {
@@ -50,6 +53,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'In English the last part names the thing: a doghouse is a house. Many languages put it first, so this question works in English only.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'These examples use English word order and US names for cake pan and dog sled. After two misses, the right picture glows and counts as one hint.',
     },
     {
       from: 5,

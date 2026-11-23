@@ -183,6 +183,25 @@ export const DENY: readonly string[] = [
   'moonsail',
 ];
 
+export const REVERSED_LEVEL = 6;
+
+/** Keep both orders here so the joining rounds still have one meaning per pair. */
+const PAIR_DATA = [
+  ['house', 'boat', 'houseboat', 'a boat you can live in', 'boathouse', 'a house for boats'],
+  ['pan', 'cake', 'pancake', 'a flat cake you cook in a pan', 'cake pan', 'a pan for baking a cake'],
+  ['race', 'horse', 'racehorse', 'a horse that runs in races', 'horse race', 'a race for horses'],
+  ['sled', 'dog', 'sled dog', 'a dog that pulls a sled', 'dog sled', 'a sled that dogs pull'],
+] as const;
+
+export type ChoiceWord = (typeof PAIR_DATA)[number][2 | 4];
+
+export const PAIRS: readonly (readonly [Compound, Compound])[] = PAIR_DATA.map(
+  ([first, second, word, meaning, reversed, reversedMeaning]) => [
+    { first, second, word, meaning, levels: [REVERSED_LEVEL] },
+    { first: second, second: first, word: reversed, meaning: reversedMeaning, levels: [REVERSED_LEVEL] },
+  ],
+);
+
 export interface Plan {
   level: number;
   name: string;
@@ -197,6 +216,7 @@ export const PLANS: readonly Plan[] = [
     name: 'One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things)',
   },
   { level: 5, name: 'What kind of thing? Tap the part the made thing really is (5 asks)' },
+  { level: REVERSED_LEVEL, name: 'Which way round? Tap the thing the pet names (4 asks)' },
 ];
 
 /** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
@@ -211,7 +231,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
   // An explicit order keeps lap's level 4 out of school's ladder.
-  school: { min: 3, max: KIND_LEVEL, order: [3, KIND_LEVEL] },
+  school: { min: 3, max: REVERSED_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL] },
 };
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -257,6 +277,8 @@ export interface Ask {
   pictures: string[];
   /** Level 5: the part the question says first ("a dog or a house?" or "a house or a dog?"), chosen apart from the screen order. */
   saidFirst?: string;
+  /** Level 6: the other made thing, with its parts in the opposite order. */
+  other?: Compound;
 }
 
 export interface Round {
@@ -348,6 +370,19 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
           pictures: rightFirst ? [entry.second, entry.first] : [entry.first, entry.second],
           saidFirst: rightSaidFirst ? entry.second : entry.first,
         };
+      }),
+    };
+  }
+  if (plan.level === REVERSED_LEVEL) {
+    const picks = authored ? [PAIRS[0], PAIRS[1], PAIRS[3], PAIRS[2]] : rng.shuffle([...PAIRS]);
+    const reversed = authored ? [false, true, true, false] : rng.shuffle([true, true, false, false]);
+    const rightFirst = authored ? [false, true, true, false] : rng.shuffle([true, true, false, false]);
+    return {
+      plan,
+      asks: picks.map(([first, second], i) => {
+        const [entry, other] = reversed[i] ? [second, first] : [first, second];
+        const words = [entry.word, other.word];
+        return { entry, other, pictures: rightFirst[i] ? words : words.reverse() };
       }),
     };
   }
@@ -454,22 +489,25 @@ export function drop(s: GlueState, a: string, b: string): Outcome {
   return { kind: 'wrong', made: makes(a, b), counted, glowed };
 }
 
-/** Level 5: the part that answers the ask in play (the made thing's last part), or null. */
-export function rightPart(s: GlueState): string | null {
+/** The picture that answers an ask by tapping, if the round uses a choice. */
+export function rightChoice(s: GlueState): string | null {
   const ask = currentAsk(s);
-  return ask && s.round.plan.level === KIND_LEVEL ? ask.entry.second : null;
+  if (!ask) return null;
+  if (ask.other) return ask.entry.word;
+  return s.round.plan.level === KIND_LEVEL ? ask.entry.second : null;
 }
 
-/** What tapping picture `key` would be at level 5, without changing anything. */
+/** What tapping picture `key` would do, without changing anything. */
 export function checkTap(s: GlueState, key: string): Outcome['kind'] {
   const ask = currentAsk(s);
-  if (!ask || s.round.plan.level !== KIND_LEVEL || !ask.pictures.includes(key)) return 'ignore';
-  if (key === ask.entry.second) return 'right';
+  const right = rightChoice(s);
+  if (!ask || !right || !ask.pictures.includes(key)) return 'ignore';
+  if (key === right) return 'right';
   return s.wrongDrops >= 2 ? 'assist' : 'wrong';
 }
 
 /**
- * Level 5: tap a part. With two choices every wrong tap counts, up to two an ask; the second glows the right part (one
+ * Levels 5–6: tap a picture. With two choices every wrong tap counts, up to two an ask; the second glows the right part (one
  * hint, unless Show a hint already counted it), and a wrong tap after that plays the right answer with no further count.
  */
 export function tap(s: GlueState, key: string): Outcome {
@@ -592,12 +630,31 @@ export function kindLayout(v: View): { made: Pt; parts: [Pt, Pt] } {
   };
 }
 
+export function reversedLayout(v: View): Pt[] {
+  if (!v.upright) return tableLayout(v, 2);
+  const y = Math.max(360, Math.min(v.h * 0.36, 540));
+  return [
+    { x: v.w / 2, y },
+    { x: v.w / 2, y: y + MADE + 46 },
+  ];
+}
+
 /** The centre of the table, where a made thing appears. */
 export const tableCentre = (v: View, n: number): Pt =>
   n === 4 ? tableLayout(v, 4)[0] : { x: v.w / 2, y: v.h * 0.55 };
 
 /** The shelf's slots along the top, one per ask. */
-export function shelfLayout(v: View, n: number): Pt[] {
+export const PAIRED_SHELF = 68;
+
+export function shelfLayout(v: View, n: number, paired = false): Pt[] {
+  if (paired) {
+    // Two pairs per row, with a wider gap between pairs than within them.
+    const offsets = [-132, -54, 54, 132];
+    return Array.from({ length: n * 2 }, (_, i) => ({
+      x: v.w / 2 + offsets[i % 4],
+      y: 78 + Math.floor(i / 4) * 78,
+    }));
+  }
   const gap = SHELF + 16;
   return Array.from({ length: n }, (_, i) => ({ x: v.w / 2 + (i - (n - 1) / 2) * gap, y: 78 }));
 }

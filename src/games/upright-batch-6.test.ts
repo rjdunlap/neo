@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS, type View } from '../engine/view';
 import { driftLayout, PLANS as driftPlans, targetsOf, type Box } from './drift-cards/logic';
-import { BIG, CARD, kindLayout, MADE, PLANS as glue, tableCentre, tableLayout } from './word-glue/logic';
+import {
+  BIG,
+  CARD,
+  kindLayout,
+  MADE,
+  PAIRED_SHELF,
+  PLANS as glue,
+  reversedLayout,
+  shelfLayout,
+  tableCentre,
+  tableLayout,
+} from './word-glue/logic';
 import {
   BOARD_RIM,
   CELL,
@@ -67,6 +78,16 @@ describe.each(Object.entries(views))('School upright batch 6 on %s', (_, v) => {
         // Level 5: the made thing (tapped to hear the question again) over its two parts.
         const { made, parts } = kindLayout(v);
         check(v, [picture('made thing', made, MADE), ...parts.map((c) => picture('part', c, CARD))]);
+      } else if (level === 6) {
+        const pictures = reversedLayout(v).map((c) => picture('compound', c, MADE));
+        check(v, pictures);
+        expect(
+          uprightProblems(
+            v,
+            [...pictures, ...shelfLayout(v, 4, true).map((c) => picture('shelf', c, PAIRED_SHELF))],
+            0,
+          ),
+        ).toEqual([]);
       } else {
         const pts = tableLayout(v, n);
         expect(pts).toHaveLength(n);

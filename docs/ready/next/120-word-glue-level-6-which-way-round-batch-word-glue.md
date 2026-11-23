@@ -1,1 +1,0 @@
-**`word-glue` level 6, *Which way round?*, batch `word-glue 3`** (school; after batch `word-glue 2`, built; same tier, with a capture strip of the eight new drawings). [Definition](../../definitions/word-glue-5-6.md#check-tier), [dive](../../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)

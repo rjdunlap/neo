@@ -85,6 +85,101 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         'Word Glue 5 on an upright phone: free touch, repeated question, wrong part, hint, saved score passed',
       );
     };
+    const reversedPlay = async () => {
+      const portrait = { width: 390, height: 625 };
+      await page.setViewportSize(portrait);
+      await page.evaluate(() => {
+        kit.store.data.settings.showWords = true;
+      });
+      await launch('word-glue', 6);
+      const nextAsk = (index) =>
+        page.waitForFunction(
+          (index) => {
+            const g = neo.scene.game;
+            return g.s.index === index && !g.busy && !g.unasked;
+          },
+          index,
+          { timeout: 25000 },
+        );
+      const location = (key) =>
+        page.evaluate((key) => {
+          const p = neo.scene.game.cards.find((card) => card.key === key).node.getGlobalPosition();
+          return { x: p.x, y: p.y };
+        }, key);
+      const tap = async (key) => {
+        const { x, y } = await location(key);
+        await page.touchscreen.tap(x, y);
+      };
+      const stickers = () =>
+        page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'word-glue').length);
+
+      await nextAsk(0);
+      assert.deepEqual(
+        await page.evaluate(() => ({
+          upright: neo.scene.game.view.upright,
+          pictures: neo.scene.game.cards.map((c) => c.key),
+        })),
+        { upright: true, pictures: ['boathouse', 'houseboat'] },
+      );
+      const before = await stickers();
+      await screenshot('word-glue-6-upright-phone');
+
+      const touch = await page.context().newCDPSession(page);
+      const p = await location('boathouse');
+      const send = (type, touchPoints = []) => touch.send('Input.dispatchTouchEvent', { type, touchPoints });
+      await send('touchStart', [p]);
+      await page.waitForFunction(() => neo.scene.game.held?.key === 'boathouse');
+      await send('touchMove', [{ x: p.x + 101, y: p.y }]);
+      await send('touchEnd');
+      await page.waitForFunction(() => !neo.scene.game.held);
+      await page.waitForTimeout(350);
+      await send('touchStart', [p]);
+      await page.waitForFunction(() => neo.scene.game.held?.key === 'boathouse');
+      await send('touchCancel');
+      await page.waitForFunction(() => !neo.scene.game.held);
+      await touch.detach();
+      assert.deepEqual(await tally(), [0, 0], 'sliding off and cancellation are free');
+
+      await page.waitForTimeout(350);
+      await tap('boathouse');
+      await nextAsk(0);
+      assert.deepEqual(await tally(), [1, 0]);
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForFunction(() => neo.scene.game.s.glow);
+      assert.deepEqual(await tally(), [1, 1]);
+      await page.setViewportSize({ width: 625, height: 390 });
+      await page.waitForFunction(() => !neo.scene.game.view.upright);
+      await page.setViewportSize(portrait);
+      await page.waitForFunction(() => neo.scene.game.view.upright);
+      assert.deepEqual(await tally(), [1, 1]);
+
+      for (const [i, answer] of ['houseboat', 'cake pan', 'dog sled', 'racehorse'].entries()) {
+        await nextAsk(i);
+        const cards = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return g.cards.map(({ node }) => {
+            const b = node.getBounds();
+            return { x: b.x, y: b.y, w: b.width, h: b.height };
+          });
+        });
+        for (const { x, y, w, h } of cards) {
+          assert.ok(
+            w >= 100 && h >= 100 && x >= 0 && y >= 0 && x + w <= 390 && y + h <= 625,
+            'each upright choice is full-size and on screen',
+          );
+        }
+        await screenshot(`word-glue-6-pair-${i + 1}`);
+        await tap(answer);
+      }
+      await finished('word-glue');
+      assert.equal(await stickers(), before + 1);
+      assert.deepEqual(await score(), [1, 1]);
+      assert.equal(await page.evaluate(() => neo.scene.game.shelf.length), 8);
+      log(
+        'Word Glue 6: four upright pairs, free slide and cancel, wrong tap, hint, rotation and one sticker',
+      );
+      await page.setViewportSize({ width: 1024, height: 768 });
+    };
     const score = () =>
       page.evaluate(() => {
         const r = kit.store.stats('word-glue').history.at(-1);
@@ -122,6 +217,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     });
     // `WORDGLUE_ONLY=kind` runs only level 5 in a touch phone context, so the upright layout is the one played.
     if (process.env.WORDGLUE_ONLY === 'kind') return kindPlay();
+    if (process.env.WORDGLUE_ONLY === 'reversed') return reversedPlay();
     await launch('word-glue', 1);
     await settle();
     await page.evaluate(() => kit.tapOn(neo.scene.game.cards[0].node));

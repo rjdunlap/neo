@@ -1,0 +1,1 @@
+**`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](../../definitions/look-it-up-4-6.md#check-tier), [dive](../../deep-dives/subjects/informational-reading.md#build-slices-in-order)

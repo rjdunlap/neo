@@ -1,0 +1,1 @@
+**Define *Suffix Workshop* (VW4)** (docs only; after Word Glue level 6, built; upper school: use -er, -ful and -less on familiar whole words, with spoken words and pictured meanings). [Study](../../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)

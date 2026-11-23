@@ -1,7 +1,10 @@
+import type { Container } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { madeArt } from './art';
+import { choiceLine } from './voice';
 import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
@@ -35,8 +38,12 @@ import {
   OPAQUE,
   PICTURES,
   POOL,
+  PAIRS,
+  PAIRED_SHELF,
+  REVERSED_LEVEL,
+  reversedLayout,
   restartState,
-  rightPart,
+  rightChoice,
   SHELF,
   shelfLayout,
   tableCentre,
@@ -61,7 +68,7 @@ describe('the compound table', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // Levels 1–3 are unchanged.
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
     for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
     expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
     expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
@@ -346,8 +353,8 @@ describe('level 5: What kind of thing?', () => {
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
   });
 
-  it("school climbs 3 then 5, never through lap's level 4, and a carried 4 lands on 3", () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL]);
+  it("school climbs 3, 5, 6, never through lap's level 4, and a carried 4 lands on 3", () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL]);
     expect(levelsInOrder(LEVELS.school!)).not.toContain(BIG_LEVEL);
     expect(landing(BIG_LEVEL, LEVELS.school!, [BIG_LEVEL])).toBe(3);
     expect(stepLevel(3, 1, LEVELS.school!)).toBe(KIND_LEVEL);
@@ -394,7 +401,7 @@ describe('level 5: What kind of thing?', () => {
         differ++;
       // Tapping the right part every time finishes with nothing counted.
       for (const a of s.round.asks) {
-        expect(rightPart(s)).toBe(a.entry.second);
+        expect(rightChoice(s)).toBe(a.entry.second);
         expect(checkTap(s, a.entry.second)).toBe('right');
         expect(tap(s, a.entry.second).kind).toBe('right');
       }
@@ -434,7 +441,7 @@ describe('level 5: What kind of thing?', () => {
     const s = stateFor(KIND_LEVEL, 3, true);
     expect(tap(s, 'moon').kind).toBe('ignore');
     expect(tap(stateFor(2, 3, true), 'dog').kind).toBe('ignore');
-    expect(rightPart(stateFor(2, 3, true))).toBeNull();
+    expect(rightChoice(stateFor(2, 3, true))).toBeNull();
     expect([s.misses, s.hints, s.index]).toEqual([0, 0, 0]);
   });
 
@@ -444,6 +451,87 @@ describe('level 5: What kind of thing?', () => {
     tap(s, s.round.asks[0].entry.second);
     restartState(s);
     expect([s.index, s.misses, s.wrongDrops]).toEqual([0, 1, 0]);
+  });
+});
+
+describe('level 6: Which way round?', () => {
+  it('uses all four concrete pairs with independently balanced word and picture order over 500 seeds', () => {
+    const sidePatterns = new Set<string>();
+    const mismatches = new Set<number>();
+    for (const seed of SEEDS) {
+      const s = stateFor(REVERSED_LEVEL, seed);
+      const asks = s.round.asks;
+      expect(asks).toHaveLength(4);
+      const pairOrders = asks.map(({ entry, other }) => {
+        expect(other).toBeDefined();
+        const i = PAIRS.findIndex((p) => p.includes(entry) && p.includes(other!));
+        expect(i).toBeGreaterThanOrEqual(0);
+        return [i, PAIRS[i][0] === entry] as const;
+      });
+      expect(new Set(pairOrders.map(([i]) => i)).size).toBe(4);
+      expect(pairOrders.filter(([, first]) => first)).toHaveLength(2);
+      const sides = asks.map((a) => a.pictures[0] === a.entry.word);
+      expect(sides.filter(Boolean)).toHaveLength(2);
+      sidePatterns.add(sides.join(','));
+      mismatches.add(sides.filter((first, i) => first !== pairOrders[i][1]).length);
+      for (const ask of asks) {
+        expect(new Set(ask.pictures)).toEqual(new Set([ask.entry.word, ask.other?.word]));
+        expect(rightChoice(s)).toBe(ask.entry.word);
+        expect(checkTap(s, ask.other!.word)).toBe('wrong');
+        expect(tap(s, ask.entry.word).kind).toBe('right');
+      }
+      expect([s.done, s.misses, s.hints]).toEqual([true, 0, 0]);
+    }
+    expect(sidePatterns.size).toBe(6);
+    expect(mismatches).toEqual(new Set([0, 2, 4]));
+  });
+
+  it('opens on the authored pair order and counts a wrong drawing, help, and a supported choice', () => {
+    const s = stateFor(REVERSED_LEVEL, 23, true);
+    expect(s.round.asks.map((a) => [a.entry.word, a.pictures.indexOf(a.entry.word)])).toEqual([
+      ['houseboat', 1],
+      ['cake pan', 0],
+      ['dog sled', 0],
+      ['racehorse', 1],
+    ]);
+    expect(tap(s, 'boat').kind).toBe('ignore');
+    expect(tap(s, 'boathouse').kind).toBe('wrong');
+    applyHint(s);
+    applyHint(s);
+    expect(tap(s, 'boathouse')).toMatchObject({ kind: 'wrong', glowed: false });
+    expect(tap(s, 'boathouse')).toMatchObject({ kind: 'assist', entry: { word: 'houseboat' } });
+    expect([s.index, s.misses, s.hints, s.glow]).toEqual([1, 2, 1, false]);
+  });
+
+  it('keeps the new words out of drag rounds and gives each ordered compound complete art and voice', () => {
+    const pose = (node: Container): unknown[] => [
+      node.x,
+      node.y,
+      node.rotation,
+      node.scale.x,
+      node.scale.y,
+      node.alpha,
+      node.children.map(pose),
+    ];
+    for (const pair of PAIRS) {
+      expect(pair[0].first).toBe(pair[1].second);
+      expect(pair[0].second).toBe(pair[1].first);
+      for (const item of pair) {
+        expect(item.word.replaceAll(' ', '')).toBe(item.first + item.second);
+        expect(item.meaning).toMatch(/^a /);
+        expect(OPAQUE).not.toContain(item.word);
+        expect(COMPOUNDS).not.toContain(item);
+        expect(makes(item.first, item.second)).toBeNull();
+        const art = madeArt(item.word);
+        const still = pose(art.node);
+        art.alive(0.19);
+        expect(pose(art.node), item.word).not.toEqual(still);
+        art.node.destroy({ children: true });
+        for (const kind of ['name', 'ask', 'right', 'wrong'] as const) {
+          expect(SCRIPT[choiceLine(item.word, kind)]?.[0]).toBeTruthy();
+        }
+      }
+    }
   });
 });
 
@@ -486,6 +574,19 @@ describe('the table layout', () => {
         for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
       }
       for (const [a, b] of pairs(rects)) expect(overlaps(a, b)).toBe(false);
+    });
+    it(`${name}, level 6: two drawings clear the shelf and controls`, () => {
+      const cards = reversedLayout(v).map((p) => sq(p, MADE));
+      const shelf = shelfLayout(v, 4, true).map((p) => sq(p, PAIRED_SHELF));
+      expect(shelf).toHaveLength(8);
+      for (const r of [...cards, ...shelf]) {
+        expect(r.x).toBeGreaterThan(115);
+        expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+        expect(r.y).toBeGreaterThanOrEqual(0);
+        expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+        expect(overlaps(r, petCorner(v.h))).toBe(false);
+      }
+      for (const [a, b] of pairs([...cards, ...shelf])) expect(overlaps(a, b)).toBe(false);
     });
     for (const n of [2, 3, 4]) {
       it(`${name}, ${n} pictures: big, inside the view, clear of the corners and apart`, () => {
