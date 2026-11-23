@@ -878,7 +878,8 @@ export const owlWalk: GameModule = {
   coplayHint:
     'Take turns with {name}: you flip a card, then {name} does. Say the color together, and cheer each owl home.',
   // Lap plays the stepping stones (no cards): the tip and the off-screen idea are about hopping along, not turns.
-  coplayHintLap: 'Tap a stone together with {name} and watch the owl hop. Hum each note, and cheer when it reaches the nest.',
+  coplayHintLap:
+    'Tap a stone together with {name} and watch the owl hop. Hum each note, and cheer when it reaches the nest.',
   offScreen: {
     all: 'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
     lap: 'Lay cushions in a row on the floor and help {name} step or crawl from one to the next, all the way to a blanket nest.',
