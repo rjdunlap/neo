@@ -241,6 +241,117 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 2 });
     assert.equal(await stickers(), before + 2);
     await back(secondPage);
+
+    // Level 4: twelve names in the guide, notes and the Table page.
+    const fourthPage = await landOpen(4);
+    s = await state();
+    assert.equal(s.level, 4);
+    assert.equal(s.names.length, 9);
+    assert.equal(await page.evaluate(() => neo.scene.game.board.guide.length), 12);
+    await choose(0);
+    await tapNode('neo.scene.game.tableTab');
+    assert.equal((await state()).tab, 'table');
+    /** A real tap on the Table page: a row's name (`cell` -1) or one of its cells, slid into view first. */
+    const tapTable = async (t) => {
+      if ((await state()).tab !== 'table') await tapNode('neo.scene.game.tableTab');
+      const at = await page.evaluate((t) => {
+        const g = neo.scene.game;
+        const p = g.table.toGlobal(g.tableSpot(t));
+        return { x: p.x, y: p.y };
+      }, t);
+      await page.waitForTimeout(60);
+      await tapAt(at);
+    };
+    // A cell speaks and names nothing; a row's name names the chosen sketch, and the plate lifts it off again.
+    await tapTable({ row: 0, cell: 1 });
+    assert.equal(
+      (await state()).names.every((n) => n === null),
+      true,
+      'a table cell names nothing',
+    );
+    const firstName = await page.evaluate(() => neo.scene.game.board.guide[0].name);
+    await tapTable({ row: 0, cell: -1 });
+    await settled();
+    assert.equal((await state()).names[0], firstName, 'a table name names the chosen sketch');
+    await page.waitForTimeout(300);
+    await screenshot('key-it-out-level-4-table-portrait');
+    await tapNode('neo.scene.game.plate');
+    assert.equal((await state()).names[0], null);
+    // A full wrong page with no right name, built so that sketch 1's name is one its note rules out, when the board has one.
+    const plan = await page.evaluate(async () => {
+      const logic = await import('/src/games/key-it-out/logic.ts');
+      const b = neo.scene.game.board;
+      const answer = b.sketches.map((x) => x.name);
+      const names = answer.map((_, i) => answer[(i + 1) % answer.length]);
+      for (const c of b.guide) {
+        const n = c.name;
+        if (n === answer[0] || !logic.keyFits(b, 0, n) || logic.fits(b, 0, n)) continue;
+        const at = names.indexOf(n);
+        if (at >= 0) names[at] = names[0];
+        names[0] = n;
+        break;
+      }
+      const page = { names, stamped: names.map(() => false) };
+      return { names, right: logic.rightOpen(b, page).length, kind: logic.fault(b, page)?.kind };
+    });
+    assert.ok(plan.right <= 2);
+    for (let i = 0; i < plan.names.length; i++) await name(i, plan.names[i]);
+    s = await state();
+    assert.deepEqual(s.names, plan.names);
+    assert.equal(s.misses, 1, 'a full wrong page is one miss');
+    assert.match(s.note, /^Sketch \d+ is named \w+\. The (key reaches|table says)/);
+    if (plan.kind === 'table') {
+      assert.equal(s.tab, 'table', 'a note the table disagrees with opens the Table page');
+      assert.notEqual(s.tableFault, null);
+      await page.waitForTimeout(300);
+      await screenshot('key-it-out-level-4-table-fault-portrait');
+    }
+    // An unused name replacing a wrong one keeps the page full: a revision of a judged page, not judged again.
+    const swap = await page.evaluate(() => {
+      const g = neo.scene.game;
+      const { names } = g.page;
+      const answer = g.board.sketches.map((x) => x.name);
+      const unused = g.board.guide.map((c) => c.name).filter((n) => !names.includes(n));
+      for (let i = 0; i < names.length; i++)
+        for (const n of unused) if (names[i] !== answer[i] && n !== answer[i]) return { i, n };
+      return null;
+    });
+    await name(swap.i, swap.n);
+    s = await state();
+    assert.equal(s.names[swap.i], swap.n);
+    assert.equal(s.names.includes(null), false, 'the page is still full');
+    assert.equal(s.misses, 1, 'a revision of a full page is not judged');
+    assert.deepEqual([s.fault, s.tableFault], [null, null]);
+    await tapNode('neo.scene.game.help');
+    s = await state();
+    assert.equal(s.hints, 1);
+    assert.equal(s.tab, s.hint.line === 'note' ? 'table' : 'key', 'a hint opens the page its working is on');
+    assert.match(s.note, /Name sketch \d+ \w+\.$/);
+    await giveName(s.hint.name);
+    await settled();
+    assert.equal((await state()).names[s.hint.sketch], s.hint.name);
+    // Lift the names still wrong, then name the rest.
+    const wrongNow = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return g.page.names.flatMap((n, i) =>
+        !g.page.stamped[i] && n !== g.board.sketches[i].name ? [i] : [],
+      );
+    });
+    for (const i of wrongNow) {
+      await choose(i);
+      await tapNode('neo.scene.game.plate');
+    }
+    assert.equal((await state()).misses, 1);
+    await playOut();
+    await finished(id);
+    s = await state();
+    assert.deepEqual(s.names, s.answer);
+    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+    assert.equal(await stickers(), before + 3);
+    await back(fourthPage);
+    log(
+      `Key It Out level 4: twelve names, the Table page (a cell spoken, a name given and lifted), a full wrong page (${plan.kind} fault) counted once, an unused name swapped in unjudged, Help, one sticker and return passed`,
+    );
     log(
       'Key It Out: both levels from Lantern Lake at 390×625 with captions, a key question read and a branch followed (free), level 1 named in two stampings, a full wrong page counted once and refilled free, Help counted once, rotation keeping the page, one sticker per round and return passed',
     );

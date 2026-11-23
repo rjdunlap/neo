@@ -53,7 +53,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **`jar-clues` levels 3–4, batch `jar-clues 2`** (grown-up; after batch `jar-clues 1`; new interaction tier: typecheck and unit tests (the multiple, not-a-multiple, special and one-of-two clue truth tables, the generator and its required kinds at levels 3–4, the one-of-two explanations for both-true and neither-true numbers, the hint walk, voice coverage), one filtered play at level 4 with one wrong check on the one-of-two clue and one hint, one upright screenshot of a one-of-two clue card, `fingerdemo` at level 4, build). [Definition](definitions/jar-clues.md#build-batches)
 
 
-- **`harbor-orders` levels 3–4, batch `harbor-orders 2`** (grown-up; after batch `harbor-orders 1`; new interaction tier: typecheck and unit tests (`fewest` with three workshops and three goods against the brute-force walk on small boards, the generator and its rows at levels 3–4 with *most-of* failing and level 4's best-maker rule, the hint walk with three rows, voice coverage, the layout test at three rows and six mornings), one filtered play at level 4 with one spare-mornings send and one hint, one upright screenshot of a three-good board, `fingerdemo` at level 4, build). [Definition](definitions/harbor-orders.md#build-batches)
 
 ### Game slices from the dives (refilled 2026-11-17)
 
@@ -76,7 +75,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
 
-- **`peekaboo-barn` Who says moo?, then Hide it yourself** (toddler, preschool; two sessions' worth if the second runs long: *Who says moo?* is new levels on the find interaction, *Hide it yourself* is a new interaction with `drag.ts`): the two entries dive slice 9 still lists as to build. Two animals peek and a sound asks who makes it (a wrong animal names itself, glow after two); she drags an animal to a house and the pet looks in the wrong houses first (three hides, never wrong). Expected files: `src/games/peekaboo-barn/{logic,index,voice,howto}.ts`, `logic.test.ts`, the browser case, the game page. [Dive](deep-dives/peekaboo-barn.md#earlier-play-entries-in-level-order)
 
 - **`splish-splash` This one!** (toddler, between levels 2 and 3; new levels on an existing interaction): "Wash my ears!" with the named part sparkling as it is said; a plan field `show: true`, nothing counts as a miss and the sparkle is not a hint. Expected files: `src/games/splish-splash/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/splish-splash.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 
