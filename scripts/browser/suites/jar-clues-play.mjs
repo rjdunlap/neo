@@ -225,8 +225,45 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 2 });
     assert.equal(await stickers(), before + 2);
     await back(secondPage);
+
+    // Level 4: a plain jar and one one-of-two clue. Play right up to it, leave its ruled-out numbers standing and press
+    // Next clue (one miss, explained as both true or neither), then take one hint and finish.
+    const fourthPage = await landOpen(4);
+    await tapNumber(30);
+    await next();
+    const pairAt = await page.evaluate(() => neo.scene.game.board.clues.findIndex((c) => c.pair));
+    assert.ok(pairAt >= 0, 'a level-4 board has a one-of-two clue');
+    assert.equal(await page.evaluate(() => neo.scene.game.board.clues.filter((c) => c.pair).length), 1);
+    for (s = await state(); s.shown < pairAt + 1; s = await state()) {
+      await solveClue();
+      await next();
+    }
+    s = await state();
+    assert.match(s.clues[s.shown - 1], /^Exactly one of these is true: /);
+    await page.waitForTimeout(300);
+    await screenshot('jar-clues-level-4-one-of-two-portrait');
+    assert.ok(s.wrong.length > 0, 'the one-of-two clue rules something out');
+    await next();
+    s = await state();
+    assert.equal(s.misses, 1, 'a board that does not hold is one miss');
+    assert.match(s.note, /: (both are true|neither is true), and the clue says exactly one\.$/);
+    await page.waitForTimeout(300);
+    await tapNode('neo.scene.game.help');
+    s = await state();
+    assert.equal(s.hints, 1);
+    for (const n of s.hint.lit) await tapNumber(n);
+    await solveClue();
+    await next();
+    await throughClues(pairAt + 2);
+    s = await state();
+    assert.equal(s.level, 4);
+    await tapNode(`neo.scene.game.cards[${s.last.indexOf(s.count)}]`);
+    await finished(id);
+    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+    assert.equal(await stickers(), before + 3);
+    await back(fourthPage);
     log(
-      'Jar Clues: both levels from Lantern Lake at 390×625 with captions; First clue waiting for a guess, the guess moved free, level 1 swept clean; level 2 a ruled-out number left standing counted once and rechecked free, Help counted once and followed, rotation keeping the board, a card that was not the count chosen with no miss, one sticker per round and return passed',
+      'Jar Clues: levels 1, 2 and 4 from Lantern Lake at 390×625 with captions; First clue waiting for a guess, the guess moved free, level 1 swept clean; level 2 a ruled-out number left standing counted once and rechecked free, Help counted once and followed, rotation keeping the board, a card that was not the count chosen with no miss; level 4 a wrong check on the one-of-two clue explained as both or neither, one hint followed; one sticker per round and return passed',
     );
   }
 
