@@ -31,6 +31,17 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap away the numbers that cannot be right: too few or too many. One sensible number stays.',
     },
     { from: 7, to: 7, text: 'Loop the rest ten at a time and say how many in all.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Catch the number on the sign. A loop of ten fills a jar; a smaller loop rests on the leaf, and ten on the leaf fly into a jar.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Tap a jar or the leaf to let its fireflies go. Tap the tick when the jars and the leaf make the number.',
+    },
   ],
-  finish: 'The round ends after grouping the fireflies and answering any total question.',
+  finish:
+    'The round ends after grouping the fireflies and answering any total question, or after making the number.',
 };

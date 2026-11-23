@@ -478,15 +478,153 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           },
         };
       });
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
         await launch('lasso-loops', level);
+        if (level === 8) {
+          // Make the number, on an upright phone: a loop of more than ten is let go (free), nine then four regroup on the
+          // leaf, two wrong ticks (two misses, then the glow and one hint), the leaf and the jar are let go (free), the
+          // phone turns, and tens then ones make the number.
+          await page.setViewportSize({ width: 390, height: 844 });
+          for (let k = 0; k < 30 && (await page.evaluate(() => neo.scene.game.round.target < 24)); k++)
+            await launch('lasso-loops', level);
+          await page.waitForFunction(() => neo.scene.game.L.upright && !neo.scene.game.busy, null, {
+            timeout: 30000,
+          });
+          const state = () => page.evaluate(() => neo.scene.game.makeState);
+          const settle = () => page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          const { target, fireflies } = await page.evaluate(() => neo.scene.game.round);
+          assert.ok(target >= 24 && target <= 36 && fireflies >= target + 3 && fireflies <= 39);
+          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 8 });
+          assert.equal(
+            await page.evaluate(() => {
+              const g = neo.scene.game;
+              return (
+                g.guessSign.visible &&
+                g.guessNumber.text === String(g.round.target) &&
+                g.leaf.visible &&
+                g.jars.length === 3 &&
+                g.doneButton.visible
+              );
+            }),
+            true,
+          );
+          await page.evaluate(async () => lasso.draw(lasso.loop(11)));
+          await settle();
+          assert.deepEqual(await state(), { jars: 0, leaf: 0 });
+          assert.deepEqual(await counts(), [0, 0]);
+          await page.evaluate(async () => lasso.draw(lasso.loop(9)));
+          await page.waitForFunction(
+            () => neo.scene.game.leafFlies.length === 9 && !neo.scene.game.busy,
+            null,
+            {
+              timeout: 30000,
+            },
+          );
+          await page.evaluate(async () => lasso.draw(lasso.loop(4)));
+          await page.waitForFunction(
+            () => neo.scene.game.jars[0].flies.length === 10 && !neo.scene.game.busy,
+            null,
+            {
+              timeout: 30000,
+            },
+          );
+          assert.deepEqual(await state(), { jars: 1, leaf: 3 });
+          assert.equal(await page.evaluate(() => neo.scene.game.free.length), fireflies - 13);
+          await tap('neo.scene.game.doneButton');
+          await page.waitForFunction(() => neo.scene.game.misses === 1 && !neo.scene.game.busy, null, {
+            timeout: 30000,
+          });
+          assert.deepEqual(await counts(), [1, 0]);
+          assert.equal(await page.evaluate(() => neo.scene.game.jars.some((j) => j.glow.visible)), false);
+          await page.waitForTimeout(450);
+          await tap('neo.scene.game.doneButton');
+          await page.waitForFunction(() => neo.scene.game.misses === 2 && !neo.scene.game.busy, null, {
+            timeout: 30000,
+          });
+          assert.deepEqual(await counts(), [2, 1]);
+          // Short by ten or more: the next empty jar glows.
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.jars.map((j) => j.glow.visible)), [
+            false,
+            true,
+            false,
+          ]);
+          await page.waitForTimeout(300);
+          await screenshot('lasso-loops-8-make-the-number');
+          // Free undo: the leaf, then the jar (tapped on its glass, above its foot).
+          await tap('neo.scene.game.leaf');
+          await page.waitForFunction(
+            () => neo.scene.game.leafFlies.length === 0 && !neo.scene.game.busy,
+            null,
+            {
+              timeout: 30000,
+            },
+          );
+          await page.evaluate(() => kit.tapOn(neo.scene.game.jars[0], 0, -30));
+          await page.waitForFunction(
+            () => neo.scene.game.jars[0].flies.length === 0 && !neo.scene.game.busy,
+            null,
+            {
+              timeout: 30000,
+            },
+          );
+          assert.deepEqual(await state(), { jars: 0, leaf: 0 });
+          assert.equal(await page.evaluate(() => neo.scene.game.free.length), fireflies);
+          assert.equal(
+            await page.evaluate(
+              () => neo.scene.game.jars.some((j) => j.glow.visible) || neo.scene.game.leafGlow.visible,
+            ),
+            false,
+          );
+          assert.deepEqual(await counts(), [2, 1]);
+          // Turned sideways the tick stands on the jar line; every free firefly is back in the field.
+          await page.setViewportSize({ width: 844, height: 390 });
+          await page.waitForFunction(() => !neo.scene.game.L.upright, null, { timeout: 10000 });
+          await page.waitForTimeout(300);
+          assert.equal(
+            await page.evaluate(() => {
+              const g = neo.scene.game;
+              const f = g.L.field;
+              return (
+                g.doneButton.x === g.L.done.x &&
+                g.doneButton.y === g.L.done.y &&
+                g.free.every((b) => b.x >= f.x && b.x <= f.x + f.w && b.y >= f.y && b.y <= f.y + f.h)
+              );
+            }),
+            true,
+          );
+          for (let j = 0; j < Math.floor(target / 10); j++) {
+            await page.evaluate(async () => lasso.draw(lasso.loop(10)));
+            await page.waitForFunction((j) => neo.scene.game.makeState.jars > j && !neo.scene.game.busy, j, {
+              timeout: 30000,
+            });
+          }
+          if (target % 10) {
+            await page.evaluate(async (n) => lasso.draw(lasso.loop(n)), target % 10);
+            await page.waitForFunction(
+              (n) => neo.scene.game.leafFlies.length === n && !neo.scene.game.busy,
+              target % 10,
+              {
+                timeout: 30000,
+              },
+            );
+          }
+          assert.deepEqual(await state(), { jars: Math.floor(target / 10), leaf: target % 10 });
+          await tap('neo.scene.game.doneButton');
+          await finished('lasso-loops');
+          assert.deepEqual(await score('lasso-loops'), [2, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            `Lasso Loops 8 (upright phone, then turned): make ${target} from ${fireflies}; a loop of 11 let go free, 9 then 4 regrouped to a jar and 3, two wrong ticks (two misses, the empty jar glowed, one hint), leaf and jar let go free, tens then ones after the turn, saved score and sticker passed`,
+          );
+          continue;
+        }
         if (level === 7) {
           // Too few, too many: loop the benchmark jar, tap the card that could be right once (a miss; it stays), tap the
           // others away, and the one left becomes the sign before level 4's tens round checks it. On an upright phone.
           await page.setViewportSize({ width: 390, height: 844 });
           await page.waitForFunction(() => neo.scene.game.L.upright, null, { timeout: 10000 });
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
-          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 7 });
+          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 8 });
           assert.equal(await page.evaluate(() => neo.scene.game.jars.filter((j) => j.visible).length), 1);
           await page.evaluate(async () => lasso.draw(lasso.loop(10)));
           await page.waitForFunction(
@@ -581,7 +719,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         });
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
         if (level === 6) {
-          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 7 });
+          assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 8 });
           await tap(
             'neo.scene.game.guessCards.find((c) => Math.abs(c.value - neo.scene.game.round.fireflies) >= 10)',
           );

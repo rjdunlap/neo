@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView, NO_INSETS, type View } from '../../engine/view';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import {
+  DONE_HIT,
   FIREFLY_R,
   GUESS_HIT,
   JAR_H,
@@ -12,8 +13,11 @@ import {
   PLANS,
   RANGE_HIT,
   gridFor,
+  hasLeaf,
   lassoLayout,
+  LEAF_HIT,
   makeRound,
+  planFor,
   tallField,
   type LassoLayout,
   type Point,
@@ -43,7 +47,9 @@ const field = (L: LassoLayout): Target =>
     L.field.w + 2 * FIREFLY_R,
     L.field.h + 2 * FIREFLY_R,
   );
-const leaf = (L: LassoLayout): Target => at('leaf', { x: L.leaf.x, y: L.leaf.y - 8 }, 180, 104);
+const leaf = (L: LassoLayout): Target => at('leaf', { x: L.leaf.x, y: L.leaf.y - 8 }, LEAF_HIT.w, LEAF_HIT.h);
+/** Level 8's jars are tapped (to let their fireflies go) on the glass, below the number badge. */
+const jarTap = (p: Point): Target => at('jar', { x: p.x, y: p.y - JAR_H / 2 }, JAR_W, JAR_H);
 
 function check(v: View, targets: Target[]) {
   expect(uprightProblems(v, targets), `${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
@@ -53,9 +59,12 @@ describe.each(Object.entries(views))('Lasso Loops upright on %s', (_, v) => {
   it.each(PLANS.map((p, i) => [i + 1, p] as const))('level %i fits', (_level, plan) => {
     for (let seed = 0; seed < 120; seed++) {
       const round = makeRound(plan, new Rng(seed));
-      const L = lassoLayout(v, round.jars.length, round.ones > 0, !!plan.guess, !!plan.range);
+      const make = plan.mode === 'make';
+      const L = lassoLayout(v, round.jars.length, hasLeaf(round), !!plan.guess, !!plan.range, make);
       expect(L.upright).toBe(true);
-      const pictures = [...L.jars.map(jar), ...(round.ones ? [leaf(L)] : [])];
+      const pictures = [...L.jars.map(jar), ...(hasLeaf(round) ? [leaf(L)] : [])];
+      // Level 8: the tick, the jars and the leaf are tapped, apart from each other and from the fireflies.
+      if (make) check(v, [field(L), ...pictures, at('tick', L.done, DONE_HIT)]);
       // Looping: the field, the jars and the leaf stand apart, in view, clear of the corners.
       check(v, [field(L), ...pictures]);
       // Room for a loop: a field of at least 450 units each way, a lane of 50 to its right and 60 above, cells of 60.
@@ -142,5 +151,30 @@ describe('Lasso Loops level 7 sideways', () => {
     expect(L.shelf).toHaveLength(4);
     for (let i = 1; i < 4; i++) expect(L.shelf[i].x - L.shelf[i - 1].x).toBeGreaterThanOrEqual(JAR_W + 20);
     expect(L.shelf[3].x + JAR_W / 2).toBeLessThanOrEqual(w);
+  });
+});
+
+describe('Lasso Loops level 8 sideways and on a tablet', () => {
+  it.each([
+    [1024, 768],
+    [1662, 768],
+    [1366, 1024],
+    [768, 1024],
+  ])('%i x %i keeps the tick clear of the jars, the leaf and the fireflies', (w, h) => {
+    const v = { w, h };
+    for (let seed = 0; seed < 60; seed++) {
+      const round = makeRound(planFor(8), new Rng(seed));
+      const L = lassoLayout(v, round.jars.length, true, false, false, true);
+      expect(L.upright).toBe(false);
+      check(v as View, [field(L), ...L.jars.map(jarTap), leaf(L), at('tick', L.done, DONE_HIT)]);
+      // The loop layer ends above what is tapped below it.
+      expect(L.sky.y + L.sky.h).toBeLessThanOrEqual(h - 30 - JAR_H);
+      expect(L.sky.y + L.sky.h).toBeLessThanOrEqual(L.leaf.y - 8 - LEAF_HIT.h / 2);
+      // A wide view keeps the whole field; a narrow one still leaves cells a finger can pass between.
+      if (w >= 980) expect(L.field).toEqual(lassoLayout(v, 3, true).field);
+      const grid = gridFor(round.fireflies, tallField(L));
+      expect(L.field.w / grid.cols).toBeGreaterThanOrEqual(60);
+      expect(L.field.h / grid.rows).toBeGreaterThanOrEqual(60);
+    }
   });
 });
