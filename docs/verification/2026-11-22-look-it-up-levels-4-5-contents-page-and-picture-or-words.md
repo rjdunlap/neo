@@ -1,0 +1,5 @@
+# 2026-11-22 — Look It Up levels 4–5 Contents page and Picture or words? (PR #2009)
+
+**Changed:** Look It Up levels 4 (contents page, printed captions) and 5 (printed name tags for each visitor's baby), school range 3–5: fixed book, truth rules, authored first rounds, hint order, three new voice lines with rendered clips, level-scoped how-to, ghost-finger bot with a level-4 detour, upright and landscape layout. Checks ran on `7394c9626`; `27c31a1d9` only changed contents-name sizing (unit-tested).
+**Ran:** typecheck; `npm test` (475 files, after rendering 3 clips); `BROWSER_SUITE=lookitup` (VITE_SPEECH=off): levels 1 and 3 regression, levels 4–5 upright at 390×844 with authored rounds, contents screenshot, captions at most two lines upright and at 844×390, one wrong picture plus Show a hint = 1 miss 1 hint, level 5 name tags; `BROWSER_SUITE=fingerdemo FINGER_ONLY=look-it-up FINGER_LEVELS=4,5` (25.1 s, 23.2 s); `npm run build`; `OFFLINE_SUITE=classic npm run test:offline` against a preview.
+**Not run:** the root offline suite (unchanged code); a real phone.

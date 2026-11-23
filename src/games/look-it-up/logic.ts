@@ -257,36 +257,57 @@ export const ANIMALS: Record<AnimalId, Animal> = {
 export const ANIMAL_IDS = Object.keys(ANIMALS) as AnimalId[];
 
 export interface LookPlan {
-  /** 'labels' touches words; 'page' finds a page, then a food; 'row' finds the page, the row, then the thing. */
-  mode: 'labels' | 'page' | 'row';
+  /**
+   * 'labels' touches words; 'page' finds a page, then a food; 'row' finds the page, the row, then the thing; 'contents'
+   * finds the page from a contents page in a fixed book, with printed captions; 'baby' reads the baby's name on its page
+   * and gives the baby its printed name tag.
+   */
+  mode: 'labels' | 'page' | 'row' | 'contents' | 'baby';
   name: string;
 }
 export const PLANS: LookPlan[] = [
   { mode: 'labels', name: 'Talking labels: touch a word on the page to hear it' },
   { mode: 'page', name: "Find the page: tap the visitor's tab, then give it the food" },
   { mode: 'row', name: 'The fact box: find the page and the row, then help' },
+  { mode: 'contents', name: "Contents page: find the animal's name and page, then help" },
+  { mode: 'baby', name: "Picture or words? Read the baby's name, then give it its tag" },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
+  school: { min: 3, max: 5 },
 };
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Visit {
   animal: AnimalId;
-  row: 'eats' | 'where';
+  row: Row;
 }
+/** A page of the guide: an animal's, or (levels 4 and up) the contents page. */
+export type Page = AnimalId | 'contents';
 export interface Round {
   level: number;
-  /** The animals on the tabs, in tab order (level 1: its three pages, in the order they turn). */
+  /**
+   * The round's animals: at levels 1–3 the tabs, in tab order (level 1: its three pages, in the order they turn); from
+   * level 4 the three visitors, whose pictures or name tags are the choices, while the book holds every page.
+   */
   tabs: AnimalId[];
   visits: Visit[];
   /** The page the guide opens on. */
-  open: AnimalId;
+  open: Page;
+  /** 'tabs' at levels 1–3; from level 4 a fixed book with a contents page and one Contents button. */
+  book: 'tabs' | 'contents';
 }
+
+/** The fixed book's pages from level 4, in the fact table's order: Cow is page 1, African penguin page 7. */
+export const PAGE_ORDER: readonly AnimalId[] = ANIMAL_IDS;
+export const pageNumber = (id: AnimalId) => PAGE_ORDER.indexOf(id) + 1;
+export const usesContents = (level: number) => {
+  const mode = planFor(level).mode;
+  return mode === 'contents' || mode === 'baby';
+};
 
 const factOf = (animal: AnimalId, row: Row) => ANIMALS[animal].rows[row];
 export const pictureOf = (v: Visit) => factOf(v.animal, v.row).picture;
@@ -302,22 +323,59 @@ function pickTabs(rows: Row[], rng: Rng): AnimalId[] {
   return tabs;
 }
 
-export function makeRound(level: number, rng: Rng): Round {
+/**
+ * Level 5's visitors: never duck with penguin (a duckling is also called a chick, so a chick tag would be wrongly
+ * wrong), and at most one of pig and duck (piglet and duckling give the parent away).
+ */
+export function babyVisitorsOk(ids: readonly AnimalId[]): boolean {
+  if (ids.includes('duck') && ids.includes('penguin')) return false;
+  return !(ids.includes('pig') && ids.includes('duck'));
+}
+
+/** Each level's authored first round (levels 4 and 5): visitors and rows in order; the guide opens on the contents page. */
+export const AUTHORED: Record<4 | 5, readonly Visit[]> = {
+  4: [
+    { animal: 'pig', row: 'where' },
+    { animal: 'penguin', row: 'eats' },
+    { animal: 'rabbit', row: 'where' },
+  ],
+  5: [
+    { animal: 'rabbit', row: 'baby' },
+    { animal: 'frog', row: 'baby' },
+    { animal: 'bear', row: 'baby' },
+  ],
+};
+
+export function makeRound(level: number, rng: Rng, authored = false): Round {
   const mode = planFor(level).mode;
   if (mode === 'labels') {
     const tabs = rng.shuffle([...ANIMAL_IDS]).slice(0, 3);
-    return { level, tabs, visits: [], open: tabs[0] };
+    return { level, tabs, visits: [], open: tabs[0], book: 'tabs' };
+  }
+  if (mode === 'contents' || mode === 'baby') {
+    let visits: Visit[];
+    if (authored) visits = AUTHORED[mode === 'contents' ? 4 : 5].map((v) => ({ ...v }));
+    else if (mode === 'baby') {
+      let ids = rng.shuffle([...ANIMAL_IDS]).slice(0, 3);
+      while (!babyVisitorsOk(ids)) ids = rng.shuffle([...ANIMAL_IDS]).slice(0, 3);
+      visits = ids.map((animal) => ({ animal, row: 'baby' as const }));
+    } else {
+      const ids = rng.shuffle(pickTabs(['eats', 'where'], rng));
+      const rows = rng.shuffle(['eats', 'where', rng.chance(0.5) ? 'eats' : 'where'] as Row[]);
+      visits = ids.map((animal, i) => ({ animal, row: rows[i] }));
+    }
+    return { level, tabs: visits.map((v) => v.animal), visits, open: 'contents', book: 'contents' };
   }
   const tabs = pickTabs(mode === 'page' ? ['eats'] : ['eats', 'where'], rng);
   const order = rng.shuffle([...tabs]);
-  let rows: ('eats' | 'where')[] = order.map(() => 'eats');
+  let rows: Row[] = order.map(() => 'eats');
   if (mode === 'row') {
     rows = rng.shuffle(['eats', 'where', rng.chance(0.5) ? 'eats' : 'where'] as ('eats' | 'where')[]);
   }
   const visits = order.map((animal, i) => ({ animal, row: rows[i] }));
   // The guide never opens on the first visitor's page, so finding it is always a turn.
   const open = rng.pick(tabs.filter((t) => t !== visits[0].animal));
-  return { level, tabs, visits, open };
+  return { level, tabs, visits, open, book: 'tabs' };
 }
 
 /** What the scene offers for a visit: each tab animal's picture for the asked row, in a seeded order. */
@@ -337,13 +395,22 @@ export function check(round: Round, visit: Visit, choice: Picture | null): Verdi
 
 export type Hint =
   | { kind: 'tab'; animal: AnimalId }
-  | { kind: 'row'; row: 'eats' | 'where' }
+  | { kind: 'contents' }
+  | { kind: 'line'; animal: AnimalId }
+  | { kind: 'row'; row: Row }
   | { kind: 'choice'; picture: Picture };
 
-/** The tab while another page is open; then, at level 3, the asked row until it has been touched; then the answer. */
-export function hintFor(round: Round, visit: Visit, open: AnimalId, rowSeen: boolean): Hint {
-  if (open !== visit.animal) return { kind: 'tab', animal: visit.animal };
-  if (planFor(round.level).mode === 'row' && !rowSeen) return { kind: 'row', row: visit.row };
+/**
+ * Levels 1–3: the tab while another page is open. From level 4: the Contents button while another animal's page is
+ * open, the visitor's line on the contents page. Then, from level 3, the asked row until it has been touched; then the
+ * answer (a picture, or at level 5 the name tag of the baby's picture).
+ */
+export function hintFor(round: Round, visit: Visit, open: Page, rowSeen: boolean): Hint {
+  if (open !== visit.animal) {
+    if (round.book === 'tabs') return { kind: 'tab', animal: visit.animal };
+    return open === 'contents' ? { kind: 'line', animal: visit.animal } : { kind: 'contents' };
+  }
+  if (planFor(round.level).mode !== 'page' && !rowSeen) return { kind: 'row', row: visit.row };
   return { kind: 'choice', picture: pictureOf(visit) };
 }
 
@@ -382,8 +449,10 @@ export interface GuideLayout {
   rows: Rect[];
   /** Where the visitor stands. */
   visitor: { x: number; y: number };
-  /** Choices (basket foods or places). */
+  /** Choices (basket foods or places, or name tags). */
   choices: Rect[];
+  /** The contents page's seven lines in page order (empty without `contents`). */
+  lines: Rect[];
 }
 
 export const TAB = 110;
@@ -391,8 +460,19 @@ export const ROW_H = 100;
 export const CHOICE = 130;
 const PET_CORNER = { w: 160, h: 170 };
 
-/** Book and tabs on one side, the scene with its basket on the other; the bottom-left pet stays clear. */
-export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLayout {
+/**
+ * The contents page's lines: a 50-unit title band (70 upright, so the first line clears Home and the help button as
+ * the rows do), then 100-unit lines in two columns with 8-unit gaps.
+ */
+export const LINE_GAP = 8;
+const contentsTop = (landscape: boolean) => (landscape ? 50 : 70);
+
+/**
+ * Book and tabs on one side, the scene with its basket on the other; the bottom-left pet stays clear. With `contents`
+ * (levels 4 and up) the tab column holds the one Contents button and the book is tall enough for the contents page's
+ * seven lines: three on the left (above the pet corner in landscape) and four on the right, or four and three upright.
+ */
+export function guideLayout(view: View, rowCount = 3, choiceCount = 3, contents = false): GuideLayout {
   const { w, h } = view;
   const landscape = w >= h;
   const tabs: Rect[] = [];
@@ -404,8 +484,10 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
     const bookW = Math.min(w * 0.46, 520);
     book = { x: 30, y: 100, w: bookW, h: Math.min(h - 100 - PET_CORNER.h, 100 + rowCount * ROW_H + 40) };
     book.h = Math.max(book.h, 70 + rowCount * ROW_H + 20);
+    if (contents) book.h = Math.max(book.h, contentsTop(landscape) + 4 * ROW_H + 3 * LINE_GAP + 20);
     const tx = book.x + book.w + 6;
-    for (let i = 0; i < 3; i++) tabs.push({ x: tx, y: book.y + 10 + i * (TAB + 14), w: TAB, h: TAB });
+    for (let i = 0; i < (contents ? 1 : 3); i++)
+      tabs.push({ x: tx, y: book.y + 10 + i * (TAB + 14), w: TAB, h: TAB });
     const sceneX = tx + TAB + 24;
     const sceneW = w - sceneX - 20;
     visitor = { x: sceneX + sceneW / 2, y: 330 };
@@ -420,8 +502,10 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
   } else {
     // Upright, the first row starts below Home and the "?" column (y 210); the book's title sits beside them.
     book = { x: 20, y: 140, w: w - 20 - TAB - 30, h: 70 + rowCount * ROW_H + 20 };
+    if (contents) book.h = Math.max(book.h, contentsTop(landscape) + 4 * ROW_H + 3 * LINE_GAP + 20);
     const tx = book.x + book.w + 6;
-    for (let i = 0; i < 3; i++) tabs.push({ x: tx, y: book.y + 10 + i * (TAB + 14), w: TAB, h: TAB });
+    for (let i = 0; i < (contents ? 1 : 3); i++)
+      tabs.push({ x: tx, y: book.y + 10 + i * (TAB + 14), w: TAB, h: TAB });
     const top = book.y + book.h + 20;
     visitor = { x: Math.max(120, w * 0.2), y: top + 210 };
     const gap = 14;
@@ -433,15 +517,36 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
   }
   for (let i = 0; i < rowCount; i++)
     rows.push({ x: book.x + 14, y: book.y + 70 + i * ROW_H, w: book.w - 28, h: ROW_H });
-  return { book, tabs, rows, visitor, choices };
+  const lines: Rect[] = [];
+  if (contents) {
+    const colW = (book.w - 28 - LINE_GAP) / 2;
+    const left = landscape ? 3 : 4;
+    PAGE_ORDER.forEach((_, i) => {
+      const col = i < left ? 0 : 1;
+      const k = col === 0 ? i : i - left;
+      lines.push({
+        x: book.x + 14 + col * (colW + LINE_GAP),
+        y: book.y + contentsTop(landscape) + k * (ROW_H + LINE_GAP),
+        w: colW,
+        h: ROW_H,
+      });
+    });
+  }
+  return { book, tabs, rows, visitor, choices, lines };
 }
 
 /** What the ghost finger does next: the right tab, the asked row at level 3, then the right choice (a look at another tab first at level 2 is the how-to's). */
-export type LookMove = { tab: AnimalId } | { row: Row } | { label: number } | { choice: Picture };
+export type LookMove =
+  | { tab: AnimalId }
+  | { contents: true }
+  | { line: AnimalId }
+  | { row: Row }
+  | { label: number }
+  | { choice: Picture };
 
 export function lookTouch(
   round: Round,
-  state: { visitor: number; open: AnimalId; rowSeen: boolean; touched: number },
+  state: { visitor: number; open: Page; rowSeen: boolean; touched: number },
 ): LookMove | null {
   const mode = planFor(round.level).mode;
   if (mode === 'labels') return state.touched < 3 ? { label: state.touched } : null;
@@ -449,6 +554,8 @@ export function lookTouch(
   if (!visit) return null;
   const hint = hintFor(round, visit, state.open, state.rowSeen);
   if (hint.kind === 'tab') return { tab: hint.animal };
+  if (hint.kind === 'contents') return { contents: true };
+  if (hint.kind === 'line') return { line: hint.animal };
   if (hint.kind === 'row') return { row: hint.row };
   return { choice: hint.picture };
 }
