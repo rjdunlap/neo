@@ -644,9 +644,9 @@ export function headBadge(name: Friend, r = 34): Container {
 export function askBadge(r = 34): Container {
   const c = new Container();
   const g = new Graphics().circle(0, 0, r).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
-  g.arc(0, -8, 11, Math.PI * 1.05, Math.PI * 0.45).stroke(line(ink, 6));
-  g.moveTo(4, 2).lineTo(1, 9).stroke(line(ink, 6));
-  g.circle(0, 19, 3.5).fill(ink);
+  g.arc(0, -8, 10, Math.PI * 1.1, Math.PI * 0.5).stroke(line(ink, 6));
+  g.moveTo(0, 2).lineTo(0, 8).stroke(line(ink, 6));
+  g.circle(0, 18, 3.5).fill(ink);
   c.addChild(g);
   return c;
 }
