@@ -1,6 +1,6 @@
 # Village Vote levels 1–6 (CC1 / CC4 / CC5)
 
-**Built:** levels 1–4 (levels 1–3 PR #983; level 4, batch `village-vote 2`, see the [game page](../games/village-vote.md)); to build level 5, read “Level 5, *Everyone can use it*”.
+**Built:** levels 1–4 (levels 1–3 PR #983; level 4, batch `village-vote 2`, PR #2012, see the [game page](../games/village-vote.md)); to build level 5, read “Level 5, *Everyone can use it*”.
 
 Defined 2026-10-25 from the [community-civics study](../deep-dives/subjects/community-civics.md#first-games-proposed-ladder-village-vote), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and [adopted October23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). Worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`, branch `codex/village-vote-cc1-definition`, claim `4796460e`, [PR #969](https://github.com/rjdunlap/neo/pull/969), base `da20f87c` plus docs diff. **CC1 defined the packet; CC4 built levels1–3 on2026-10-26 ([PR #983](https://github.com/rjdunlap/neo/pull/983)).** The implemented contract follows; current proof and remaining person/device gates are recorded below.
 
