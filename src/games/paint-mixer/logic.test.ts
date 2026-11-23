@@ -11,6 +11,7 @@ import {
   SOLVE_STEPS,
   planFor,
   makeRound,
+  isShelfColour,
   total,
   sizeFor,
   countsOf,
@@ -926,4 +927,27 @@ describe('level 5: layout with a three-pot table', () => {
       expect(l.portrait).toBe(v.h > v.w);
     });
   }
+});
+
+describe('level 5: a requested recipe (the collection book)', () => {
+  it('makes the first bucket the asked recipe and the second the other triple, over 300 seeds', () => {
+    for (const r of RECIPES)
+      for (let seed = 1; seed <= 300; seed++) {
+        const [first, second] = makeRound(5, new Rng(seed), r.name);
+        expect(recipeOf(first)?.name).toBe(r.name);
+        expect([2, 3]).toContain(first.batches);
+        expect(second.pots).not.toEqual(first.pots);
+        expect(recipeOf(second)).not.toBeNull();
+      }
+  });
+
+  it('changes nothing without a request or below level 5', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      expect(makeRound(5, new Rng(seed), undefined)).toEqual(makeRound(5, new Rng(seed)));
+      for (const level of [1, 2, 3, 4, 6])
+        expect(makeRound(level, new Rng(seed), 'peach')).toEqual(makeRound(level, new Rng(seed)));
+    }
+    expect(isShelfColour('peach')).toBe(true);
+    expect(isShelfColour('teal')).toBe(false);
+  });
 });

@@ -13,7 +13,7 @@ import type { App } from '../App';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { IdleCue, wobble } from '../../ui/idle-cue';
-import { arrowIcon, playIcon } from '../../ui/icons';
+import { arrowIcon, colourSwatch, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
@@ -179,12 +179,7 @@ export class HatchScene extends Scene {
     this.next.visible = true;
     if (this.step === 'color') {
       this.pageColors.forEach((color) => {
-        const g = new Graphics()
-          .circle(0, 0, 49)
-          .fill(swatch[color].fill)
-          .stroke({ width: 5, color: swatch[color].line })
-          .circle(-15, -15, 10)
-          .fill(swatch[color].light);
+        const g = colourSwatch(color);
         onTap(
           g,
           () => {
