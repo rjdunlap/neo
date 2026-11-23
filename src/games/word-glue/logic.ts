@@ -8,7 +8,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * brush) and asks which first part makes the thing a friend needs. Every entry is a transparent compound whose parts
  * can both be drawn; nothing is printed. Level 5 shows a made thing over its two parts and asks which part it is: the
  * last part names the thing. Level 6 tells two real words apart by their order, and level 7 names a new thing from its
- * pictures with the thing last. See docs/definitions/word-glue.md, word-glue-5-6.md and word-glue-7.md.
+ * pictures with the thing last; level 8 joins an action to a person to make a word for someone who does it (painter).
+ * See docs/definitions/word-glue.md, word-glue-5-6.md, word-glue-7.md and word-glue-8-9.md.
  */
 
 export interface Compound {
@@ -280,6 +281,42 @@ export const PAIRS: readonly (readonly [Compound, Compound])[] = PAIR_DATA.map(
   ],
 );
 
+/** Level 8: an action joins the person in the middle to make someone who does it. */
+export const DOER_LEVEL = 8;
+/** Level 8's fixed tile in the middle: a soft grey figure, "someone who…". */
+export const PERSON = 'person';
+
+const DOER_ROWS = [
+  { action: 'paint', word: 'painter', meaning: 'someone who paints' },
+  { action: 'bake', word: 'baker', meaning: 'someone who bakes' },
+  { action: 'sing', word: 'singer', meaning: 'someone who sings' },
+  { action: 'swim', word: 'swimmer', meaning: 'someone who swims' },
+  { action: 'drive', word: 'driver', meaning: 'someone who drives' },
+  { action: 'read', word: 'reader', meaning: 'someone who reads' },
+  { action: 'build', word: 'builder', meaning: 'someone who builds' },
+] as const;
+export type DoerWord = (typeof DOER_ROWS)[number]['word'];
+export type Action = (typeof DOER_ROWS)[number]['action'];
+
+/**
+ * Level 8's words: each is a plain action she knows plus -er, meaning someone who does it. Each row is shaped like a
+ * compound (the action first, the person second) so an ask and a drop keep one type; none is in `COMPOUNDS`, so the
+ * compound rungs never see them. A drop resolves to these very objects, so `check` can compare by identity.
+ */
+export const DOERS: readonly Compound[] = DOER_ROWS.map(({ action, word, meaning }) => ({
+  word,
+  first: action,
+  second: PERSON,
+  meaning,
+  levels: [DOER_LEVEL],
+}));
+
+/** Level 8's pictures: the person and the seven actions. */
+export const DOER_PICTURES: readonly string[] = [PERSON, ...DOERS.map((d) => d.first)];
+
+/** Levels whose middle picture stays put: only the pictures round it move, and only onto it. */
+export const headFixed = (level: number) => level === 3 || level === DOER_LEVEL;
+
 export interface Plan {
   level: number;
   name: string;
@@ -296,6 +333,10 @@ export const PLANS: readonly Plan[] = [
   { level: 5, name: 'What kind of thing? Tap the part the made thing really is (5 asks)' },
   { level: REVERSED_LEVEL, name: 'Which way round? Tap the thing the pet names (4 asks)' },
   { level: NAME_LEVEL, name: 'Name the new thing: tap two pictures, the thing it is last (5 asks)' },
+  {
+    level: DOER_LEVEL,
+    name: 'Someone who: join an action to the person to make the asked word, like painter (5 asks)',
+  },
 ];
 
 /** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
@@ -310,7 +351,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
   // An explicit order keeps lap's level 4 out of school's ladder.
-  school: { min: 3, max: NAME_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL] },
+  school: { min: 3, max: DOER_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL, DOER_LEVEL] },
 };
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -335,6 +376,12 @@ export function makes(a: string, b: string): Compound | null {
   );
 }
 
+/** The thing two pictures make at `level`: a doer at level 8, a listed compound everywhere else. */
+export function joined(level: number, a: string, b: string): Compound | null {
+  if (level !== DOER_LEVEL) return makes(a, b);
+  return DOERS.find((d) => (d.first === a && d.second === b) || (d.first === b && d.second === a)) ?? null;
+}
+
 /** Whether a joined string is a listed or denied word, in either order. */
 export function forms(a: string, b: string): boolean {
   const words = new Set([...COMPOUNDS.map((c) => c.word), ...DENY]);
@@ -350,8 +397,8 @@ export interface Ask {
   /** The thing this ask makes. */
   entry: Compound;
   /**
-   * The pictures on the table. At level 3 the head is first, then the three first parts, which stay put for the head's
-   * asks. At level 5 the entry's two parts in screen order.
+   * The pictures on the table. At levels 3 and 8 the head (the person at 8) is first, then the three first parts; level
+   * 3's stay put for the head's asks. At level 5 the entry's two parts in screen order.
    */
   pictures: string[];
   /** Level 5: the part the question says first ("a dog or a house?" or "a house or a dog?"), chosen apart from the screen order. */
@@ -400,6 +447,21 @@ const AUTHORED_7: string[][] = [
   ['chair', 'flower', 'sail'],
   ['car', 'cup', 'frog'],
 ];
+
+/** Level 8's first round: the asked word and its three actions in screen order, the right one in each place at least once. */
+const AUTHORED_8: [string, string[]][] = [
+  ['painter', ['paint', 'bake', 'sing']],
+  ['swimmer', ['read', 'swim', 'drive']],
+  ['baker', ['build', 'bake', 'paint']],
+  ['driver', ['drive', 'sing', 'read']],
+  ['builder', ['swim', 'read', 'build']],
+];
+
+const doer = (word: string): Compound => {
+  const d = DOERS.find((x) => x.word === word);
+  if (!d) throw new Error(`no doer ${word}`);
+  return d;
+};
 
 /** The name a level-7 ask stands for: its first detail before its head, so the head is `second` as on every level. */
 const inventedEntry = (row: Invented, first = row.details[0]): Compound => ({
@@ -492,6 +554,27 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
       }),
     };
   }
+  if (plan.level === DOER_LEVEL) {
+    if (authored)
+      return {
+        plan,
+        asks: AUTHORED_8.map(([word, actions]) => ({ entry: doer(word), pictures: [PERSON, ...actions] })),
+      };
+    // Five of the seven words; the right action's place is two, two and one of the three places.
+    const rows = rng.shuffle([...DOERS]).slice(0, 5);
+    const places = rng.shuffle([0, 1, 2, 0, 1, 2]).slice(0, 5);
+    return {
+      plan,
+      asks: rows.map((entry, i) => {
+        const others = rng
+          .shuffle(DOERS.filter((d) => d !== entry))
+          .slice(0, 2)
+          .map((d) => d.first);
+        others.splice(places[i], 0, entry.first);
+        return { entry, pictures: [PERSON, ...others] };
+      }),
+    };
+  }
   if (plan.level === REVERSED_LEVEL) {
     const picks = authored ? [PAIRS[0], PAIRS[1], PAIRS[3], PAIRS[2]] : rng.shuffle([...PAIRS]);
     const reversed = authored ? [false, true, true, false] : rng.shuffle([true, true, false, false]);
@@ -553,17 +636,17 @@ export const currentAsk = (s: GlueState): Ask | null => (s.done ? null : s.round
 
 const pairKey = (a: string, b: string) => [a, b].sort().join('+');
 
-/** The pair that makes the ask: the two parts at levels 1–2, the asked first part and the head at level 3. */
+/** The pair that makes the ask: the two parts at levels 1–2, the asked first part and the head at levels 3 and 8. */
 export function hintFor(s: GlueState): [string, string] | null {
   const ask = currentAsk(s);
   return ask ? [ask.entry.first, ask.entry.second] : null;
 }
 
-/** Which pictures can be dragged now: every one at levels 1–2, only the first parts at level 3. */
+/** Which pictures can be dragged now: every one at levels 1–2, only the first parts at levels 3 and 8. */
 export function canDrag(s: GlueState, picture: string): boolean {
   const ask = currentAsk(s);
   if (!ask || !ask.pictures.includes(picture)) return false;
-  return s.round.plan.level !== 3 || picture !== ask.pictures[0];
+  return !headFixed(s.round.plan.level) || picture !== ask.pictures[0];
 }
 
 export type Outcome =
@@ -577,8 +660,9 @@ export type Outcome =
 export function check(s: GlueState, a: string, b: string): Outcome['kind'] {
   const ask = currentAsk(s);
   if (!ask || a === b || !ask.pictures.includes(a) || !ask.pictures.includes(b)) return 'ignore';
-  if (s.round.plan.level === 3 && (a === ask.pictures[0] || b !== ask.pictures[0])) return 'ignore';
-  return makes(a, b) === ask.entry ? 'right' : 'wrong';
+  const level = s.round.plan.level;
+  if (headFixed(level) && (a === ask.pictures[0] || b !== ask.pictures[0])) return 'ignore';
+  return joined(level, a, b) === ask.entry ? 'right' : 'wrong';
 }
 
 /** Drop picture `a` onto picture `b`: count it and move on to the next ask after a join. */
@@ -608,7 +692,7 @@ export function drop(s: GlueState, a: string, b: string): Outcome {
       glowed = true;
     }
   }
-  return { kind: 'wrong', made: makes(a, b), counted, glowed };
+  return { kind: 'wrong', made: joined(s.round.plan.level, a, b), counted, glowed };
 }
 
 /** The picture that answers an ask by tapping, if the round uses a choice. */
