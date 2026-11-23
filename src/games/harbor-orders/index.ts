@@ -13,29 +13,35 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { boat, closedDoor, dock, goodArt, icon, workshopArt } from './art';
 import { layout, type Box } from './layout';
 import {
+  arrangement,
   emptyPlan,
   fills,
   generate,
   goodsWords,
   LEVELS,
+  listWords,
   describeLevel,
   MAX_MORNINGS,
   nextHint,
+  planCounts,
   rowCounts,
   RoundCredit,
   send,
   sendWorking,
+  shape,
+  stepGood,
   totals,
   WORKSHOPS,
   type Hint,
   type Plan,
 } from './logic';
 
-const ALL_GOODS = [0, 1] as const;
-const WORKSHOP_LINES = ['harbor-orders.oar', 'harbor-orders.anchor'] as const;
+const WORKSHOP_LINES = ['harbor-orders.oar', 'harbor-orders.anchor', 'harbor-orders.bell'] as const;
+const GOOD_COLORS = [swatch.orange, swatch.blue, swatch.purple] as const;
 const BUTTONS = ['− Morning', '+ Morning', 'Help', 'Send it'] as const;
 
 type Control = { node: Container; face: Container };
+const GOODS_PLURAL = ['crates', 'boats', 'lanterns'] as const;
 
 function control(parent: Container, action: () => void): Control {
   const node = new Container();
@@ -88,7 +94,10 @@ class Round implements Game {
   private readonly squares: Control[][];
   private readonly buttons: Control[];
   private readonly board;
-  private readonly credit = new RoundCredit();
+  private readonly shape;
+  /** The goods on this board, in tapping order. */
+  private readonly goods: number[];
+  private readonly credit;
   private L;
   private hint: Hint | null = null;
   private noteText = '';
@@ -102,8 +111,11 @@ class Round implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.board = generate(ctx.level, ctx.rng);
-    this.plan = emptyPlan(WORKSHOPS.length, ctx.level === 1 ? this.board.solution.mornings : 1);
-    this.L = layout(ctx.view);
+    this.shape = shape(ctx.level);
+    this.goods = Array.from({ length: this.shape.goods }, (_, good) => good);
+    this.credit = new RoundCredit(this.shape.goods);
+    this.plan = emptyPlan(this.shape.workshops, ctx.level === 1 ? this.board.solution.mornings : 1);
+    this.L = layout(ctx.view, this.shape.workshops, this.shape.goods);
     ctx.stage.addChild(this.root);
     this.root.addChild(this.jetty, this.headers, this.note);
     const hull = boat();
@@ -111,8 +123,9 @@ class Round implements Game {
     this.ship.addChild(hull);
     this.root.addChild(this.ship);
     this.orderCard = control(this.root, () => this.readOrder());
-    this.signs = WORKSHOPS.map((_, i) => control(this.root, () => this.readSign(i)));
-    this.squares = WORKSHOPS.map((_, i) =>
+    const workshops = WORKSHOPS.slice(0, this.shape.workshops);
+    this.signs = workshops.map((_, i) => control(this.root, () => this.readSign(i)));
+    this.squares = workshops.map((_, i) =>
       Array.from({ length: MAX_MORNINGS }, (_, j) => control(this.root, () => this.choose(i, j))),
     );
     this.buttons = [
@@ -134,28 +147,28 @@ class Round implements Game {
   }
 
   private get made() {
-    return totals(this.board.order, this.plan.map(rowCounts));
+    return totals(this.board.order, planCounts(this.board.order, this.plan));
   }
 
   private idleNote() {
     const n = this.board.solution.mornings;
     return this.ctx.level === 1
       ? `The order needs ${n} mornings. Choose what each workshop makes.`
-      : 'Find the fewest mornings that can fill both lines of the order.';
+      : `Find the fewest mornings that can fill ${this.shape.goods === 2 ? 'both' : 'all three'} lines of the order.`;
   }
 
   private readOrder() {
     if (this.finished) return;
-    const [crates, boats] = this.board.order.wanted;
-    this.noteText = `The order asks for ${goodsWords(crates, 0)} and ${goodsWords(boats, 1)}.`;
+    const wanted = this.board.order.wanted.map((n, good) => goodsWords(n, good));
+    this.noteText = `The order asks for ${listWords(wanted)}.`;
     this.drawNote();
     void this.ctx.say('harbor-orders.order');
   }
 
   private readSign(i: number) {
     if (this.finished) return;
-    const [crates, boats] = this.board.order.rates[i];
-    this.noteText = `The ${WORKSHOPS[i]} can make ${goodsWords(crates, 0)} or ${goodsWords(boats, 1)} each morning.`;
+    const rates = this.board.order.rates[i].map((n, good) => goodsWords(n, good));
+    this.noteText = `The ${WORKSHOPS[i]} can make ${listWords(rates, 'or')} each morning.`;
     this.drawNote();
     void this.ctx.say(WORKSHOP_LINES[i]);
   }
@@ -164,7 +177,7 @@ class Round implements Game {
     this.revision++;
     this.autoHint = false;
     const row = square && this.hint?.kind === 'row' ? this.hint : null;
-    if (row && rowCounts(this.plan[row.row]).some((n, i) => n !== row.counts[i])) {
+    if (row && rowCounts(this.plan[row.row], this.shape.goods).some((n, i) => n !== row.counts[i])) {
       this.noteText = this.rowWorking(row);
     } else {
       this.hint = null;
@@ -175,8 +188,9 @@ class Round implements Game {
 
   private choose(i: number, j: number) {
     if (this.finished || j >= this.mornings) return;
-    this.plan[i][j] = this.plan[i][j] === 0 ? 1 : 0;
-    sfx.pluck(this.plan[i][j] === 0 ? 2 : 4, 0.13);
+    const good = stepGood(this.plan[i][j], this.shape.goods);
+    this.plan[i][j] = good;
+    sfx.pluck(2 + good * 2, 0.13);
     this.changed(true);
   }
 
@@ -249,13 +263,11 @@ class Round implements Game {
   }
 
   private rowWorking(hint: Extract<Hint, { kind: 'row' }>) {
-    const [crates, boats] = hint.counts;
-    const empty = this.board.solution.mornings - crates - boats;
+    const empty = this.board.solution.mornings - hint.counts.reduce((a, b) => a + b, 0);
     const jobs = [
-      crates && `${crates} for crates`,
-      boats && `${boats} for boats`,
-      empty && `${empty} left empty`,
-    ].filter(Boolean);
+      ...hint.counts.flatMap((n, good) => (n ? [`${n} for ${GOODS_PLURAL[good]}`] : [])),
+      ...(empty ? [`${empty} left empty`] : []),
+    ];
     return `The ${WORKSHOPS[hint.row]}: ${jobs.join(', ')}.`;
   }
 
@@ -266,7 +278,7 @@ class Round implements Game {
     this.noteText = `${n} mornings. No plan fills this order in ${n - 1}.`;
     this.draw();
     const spoken = this.ctx.say('harbor-orders.done');
-    for (const good of ALL_GOODS) {
+    for (const good of this.goods) {
       await this.ctx.tw.wait(0.22);
       if (!this.ctx.alive) return;
       this.shipment++;
@@ -287,10 +299,10 @@ class Round implements Game {
     this.ship.position.set(x - w * 0.16 + this.voyage * w * 0.65, y + 5);
     this.ship.alpha = 1 - this.voyage ** 3;
     for (const child of this.ship.children.slice(1)) child.destroy();
-    for (const good of ALL_GOODS.slice(0, this.shipment)) {
+    for (const good of this.goods.slice(0, this.shipment)) {
       const cargo = goodArt(good);
       cargo.scale.set(0.56);
-      cargo.position.set(good * 22 - 11, -11);
+      cargo.position.set((good - (this.shape.goods - 1) / 2) * 22, -11);
       this.ship.addChild(cargo);
     }
   }
@@ -304,7 +316,7 @@ class Round implements Game {
   }
 
   resize(view: View) {
-    this.L = layout(view);
+    this.L = layout(view, this.shape.workshops, this.shape.goods);
     const { jetty } = this.L;
     this.jetty.position.set(jetty.x, jetty.y);
     replace(this.jetty, dock(jetty.w, jetty.h));
@@ -338,13 +350,14 @@ class Round implements Game {
     const title = label('Harbor order', 31);
     title.y = -b.h / 2 + 25;
     const compact = b.w < 400;
-    const items = ALL_GOODS.flatMap((good) => {
+    const n = this.shape.goods;
+    const items = this.goods.flatMap((good) => {
       const wanted = this.board.order.wanted[good];
       const full = made[good] >= wanted;
-      const x = compact ? 0 : (good - 0.5) * 300;
-      const y = compact ? good * 45 - 10 : 18;
+      const x = compact ? 0 : (good - (n - 1) / 2) * (n === 2 ? 300 : 205);
+      const y = compact ? good * 45 - 10 - (n - 2) * 22 : 18;
       const image = goodArt(good);
-      image.position.set(x - 72, y);
+      image.position.set(x - 78, y);
       const counts = label(`${made[good]} / ${wanted}`, 34);
       counts.position.set(x + 7, y);
       const status = new Graphics()
@@ -380,13 +393,14 @@ class Round implements Game {
     sign.position.set(-52, -23);
     const title = label(WORKSHOPS[i], 24, cream);
     title.position.set(13, -23);
-    const rates = ALL_GOODS.flatMap((good) => {
-      const x = (good - 0.5) * 76;
+    const n = this.shape.goods;
+    const rates = this.goods.flatMap((good) => {
+      const x = (good - (n - 1) / 2) * (n === 2 ? 76 : 50);
       const image = goodArt(good);
-      image.scale.set(0.67);
-      image.position.set(x - 13, 16);
-      const rate = label(String(this.board.order.rates[i][good]), 25, cream);
-      rate.position.set(x + 17, 16);
+      image.scale.set(n === 2 ? 0.67 : 0.5);
+      image.position.set(x - (n === 2 ? 13 : 10), 16);
+      const rate = label(String(this.board.order.rates[i][good]), n === 2 ? 25 : 22, cream);
+      rate.position.set(x + (n === 2 ? 17 : 12), 16);
       return [image, rate];
     });
     const mark = this.hint?.kind === 'row' && this.hint.row === i;
@@ -395,7 +409,7 @@ class Round implements Game {
 
   private drawSquare(i: number, j: number, b: Box) {
     const good = this.plan[i][j];
-    const color = good === 0 ? swatch.orange : good === 1 ? swatch.blue : swatch.brown;
+    const color = good === null ? swatch.brown : GOOD_COLORS[good];
     const face = slab(b, color.light, color.line);
     if (good === null) {
       position(this.squares[i][j], b, face, closedDoor());
@@ -430,10 +444,11 @@ class Round implements Game {
     if (this.mornings < mornings) return this.tap(this.buttons[1]);
     if (this.mornings > mornings) return this.tap(this.buttons[0]);
     if (fills(this.board.order, this.made)) return this.tap(this.buttons[3]);
-    const target = plans.find((p) => p.every(([crates, boats]) => crates + boats === mornings))!;
+    const target = plans.find((p) => p.every((row) => row.reduce((a, b) => a + b, 0) === mornings))!;
     for (const [i, row] of this.plan.entries()) {
+      const wanted = arrangement(target[i], mornings);
       for (const [j, good] of row.entries()) {
-        if (good !== (j < target[i][0] ? 0 : 1)) return this.tap(this.squares[i][j]);
+        if (good !== wanted[j]) return this.tap(this.squares[i][j]);
       }
     }
     return null;
