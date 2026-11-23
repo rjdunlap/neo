@@ -123,7 +123,7 @@ Device and person checks stay open: how the iPad's speech says each whole compou
 
 ## What comes next
 
-**VW2** (*What kind of thing?* and *Which way round?*) is [defined 2026-11-22](word-glue-5-6.md) as levels 5 and 6, because lap's built *One big picture* already took level 4; two build batches are queued. VW3 and VW4 follow VW2; the study's [build slices](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order) hold the order.
+**VW2** (*What kind of thing?* and *Which way round?*) is [defined 2026-11-22](word-glue-5-6.md) as levels 5 and 6, because lap's built *One big picture* already took level 4; both are built. **VW3** (*Name the new thing*) is [defined 2026-11-23](word-glue-7.md) as level 7; VW4 follows; the study's [build slices](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order) hold the order.
 
 ## Open decisions
 
