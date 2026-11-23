@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { captionPlace } from '../../ui/caption-layout';
 import { thumbPx, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { ROW, layout, maxScroll, rowParts, sketchCells, type Box } from './layout';
+import { ROW, layout, maxScroll, rowParts, sketchCells, tableParts, type Box } from './layout';
 
 /**
  * Key It Out held upright, on the upright screens, the short captioned phone the browser play uses (390 × 625), and two
@@ -16,31 +16,41 @@ type V = (typeof views)[keyof typeof views];
 
 const target = (what: string, b: Box): Target => ({ what, ...b });
 
-const chrome = (v: V) => {
-  const l = layout(v);
+const chrome = (v: V, table = false) => {
+  const l = layout(v, table);
   return [
     target('back', l.prev),
     target('next', l.next),
     target('name plate', l.plate),
+    target('notes', l.notes),
     target('Key tab', l.tabs.key),
     target('Help', l.tabs.help),
     ...(l.tabs.sketches ? [target('Sketches tab', l.tabs.sketches)] : []),
+    ...(l.tabs.table ? [target('Table tab', l.tabs.table)] : []),
   ];
 };
-const cells = (v: V, n: number) => sketchCells(layout(v), n).map((b, i) => target(`sketch ${i + 1}`, b));
-/** The key rows wholly on the page before it scrolls: each question and its two ends, on screen. */
-function keyRows(v: V, rows: number) {
-  const l = layout(v);
+const cells = (v: V, n: number, table = false) =>
+  sketchCells(layout(v, table), n).map((b, i) => target(`sketch ${i + 1}`, b));
+/** The rows wholly on the page before it scrolls, on screen: a key row's question and two ends, or a table row's name and cells. */
+function pageRows(v: V, rows: number, table = false, of: 'key' | 'table' = 'key') {
+  const l = layout(v, table);
   const x0 = l.page.x - l.page.w / 2,
     y0 = l.page.y - l.page.h / 2;
   const out: Target[] = [];
+  const at = (what: string, b: Box) => target(what, { ...b, x: b.x + x0, y: b.y + y0 });
   for (let i = 0; i < rows && (i + 1) * ROW <= l.page.h; i++) {
+    if (of === 'table') {
+      const parts = tableParts(l, i);
+      out.push(at(`table row ${i + 1} name`, parts.name));
+      parts.cells.forEach((b, c) => out.push(at(`table row ${i + 1} cell ${c + 1}`, b)));
+      continue;
+    }
     const parts = rowParts(l, i);
-    for (const k of ['question', 'yes', 'no'] as const)
-      out.push(target(`row ${i + 1} ${k}`, { ...parts[k], x: parts[k].x + x0, y: parts[k].y + y0 }));
+    for (const k of ['question', 'yes', 'no'] as const) out.push(at(`row ${i + 1} ${k}`, parts[k]));
   }
   return out;
 }
+const keyRows = (v: V, rows: number, table = false) => pageRows(v, rows, table);
 
 describe.each(Object.entries(views))('Key It Out on %s', (name, v) => {
   it.each([6, 9])(
@@ -54,6 +64,22 @@ describe.each(Object.entries(views))('Key It Out on %s', (name, v) => {
       expect(
         uprightProblems(v, [target('strip', l.strip), target('note', l.note), target('page', l.page)], 0),
       ).toEqual([]);
+    },
+  );
+
+  it.each([9, 12])(
+    'with the table (levels 3–4, %i in the guide) fits four tabs, the key and the table rows: at least 64 units, apart, in view',
+    (guide) => {
+      const l = layout(v, true);
+      expect(l.tabs.table).not.toBeNull();
+      const pages = l.upright
+        ? [cells(v, 9, true), keyRows(v, guide - 1, true), pageRows(v, guide, true, 'table')]
+        : [
+            [...cells(v, 9, true), ...keyRows(v, guide - 1, true)],
+            [...cells(v, 9, true), ...pageRows(v, guide, true, 'table')],
+          ];
+      for (const page of pages)
+        expect(uprightProblems(v, [...chrome(v, true), ...page], 64), `${name}`).toEqual([]);
     },
   );
 
