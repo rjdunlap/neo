@@ -17,8 +17,13 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 2, text: 'Tap a duck to send it into the pond; the ducks are counted aloud.' },
     {
       from: 3,
-      to: 5,
+      to: 3,
       text: 'Tap ducks into the pond until the number asked for is there; they are counted aloud.',
+    },
+    {
+      from: 4,
+      to: 5,
+      text: 'Tap ducks into the pond, counted aloud, then tap the green check when the number asked for is there. A duck tapped on the pond hops back to the bank.',
     },
     {
       from: 6,
@@ -51,7 +56,12 @@ export const HOW_TO: GameHowTo = {
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
     { from: 12, to: 12, text: 'The round ends when the ducks have come back and been counted.' },
     { from: 1, to: 2, text: 'The round ends when all the ducks are in the pond.' },
-    { from: 3, to: 5, text: 'The round ends when the right number of ducks is in the pond.' },
+    { from: 3, to: 3, text: 'The round ends when the right number of ducks is in the pond.' },
+    {
+      from: 4,
+      to: 5,
+      text: 'The round ends when she taps the check with the right number of ducks in the pond.',
+    },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
     { from: 14, to: 15, text: 'The round ends when the answer is right.' },
   ],
@@ -65,6 +75,11 @@ export const HOW_TO: GameHowTo = {
       from: 3,
       to: 4,
       text: 'The dots beside a number are there to count; counting them aloud together helps.',
+    },
+    {
+      from: 4,
+      to: 5,
+      text: 'There is always one duck more than she needs, so stopping is her choice. Too few or too many at the check is counted together and tried again; sending a duck back costs nothing.',
     },
     {
       from: 6,
