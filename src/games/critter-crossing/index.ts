@@ -768,7 +768,7 @@ export const critterCrossing: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'logic',
   skills: ['deduction', 'using-evidence', 'attributes', 'reasoning'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [8],

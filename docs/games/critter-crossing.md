@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/critter-crossing; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `critter-crossing` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `critter-crossing` · **Land:** Puzzle Peaks · **Ages:** preschool–school · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** deduction, using-evidence, attributes, reasoning
 
 | Band | Levels, easiest first |
 | --- | --- |
+| preschool | 1 |
 | pre-K | 1, 8, 2, 3 |
 | school | 2–7 |
 

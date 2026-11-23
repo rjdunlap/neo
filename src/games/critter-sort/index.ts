@@ -700,7 +700,7 @@ export const critterSort: GameModule = {
   region: 'barnyard',
   challenge: 'noticing',
   skills: ['sorting', 'logic', 'attributes', 'data'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [6],
   describeLevel: (level) => planFor(level).name,
