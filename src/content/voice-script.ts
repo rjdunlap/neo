@@ -143,6 +143,7 @@ import { VOICE as secretCodeVoice } from '../games/secret-code/voice.ts';
 import { VOICE as seedTravelersVoice } from '../games/seed-travelers/voice.ts';
 import { VOICE as seesawBalanceVoice } from '../games/seesaw-balance/voice.ts';
 import { VOICE as senseDetectiveVoice } from '../games/sense-detective/voice.ts';
+import { VOICE as shadowPlayVoice } from '../games/shadow-play/voice.ts';
 import { VOICE as shapeBuddiesVoice } from '../games/shape-buddies/voice.ts';
 import { VOICE as shapeSorterVoice } from '../games/shape-sorter/voice.ts';
 import { VOICE as shellRowsVoice } from '../games/shell-rows/voice.ts';
@@ -785,6 +786,7 @@ export const SCRIPT = {
   ...seedTravelersVoice,
   ...seesawBalanceVoice,
   ...senseDetectiveVoice,
+  ...shadowPlayVoice,
   ...shapeBuddiesVoice,
   ...shapeSorterVoice,
   ...shellRowsVoice,

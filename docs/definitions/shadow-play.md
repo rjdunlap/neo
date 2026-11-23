@@ -1,6 +1,8 @@
 # Shadow Play, levels 1–4 (definition)
 
-Documentation packet, 2026-11-23, branch `claude/define-shadow-play`, [PR #2027](https://github.com/rjdunlap/neo/pull/2027). Study follow-up TP6 from [theatre and puppetry](../deep-dives/subjects/theatre-puppetry.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Proposed game `shadow-play`; nothing is registered or implemented. **Docs only.** Two build batches follow below.
+**Built:** levels 1–2 (PR #2035); to build level 3, read “Build batches” (batch 2).
+
+Documentation packet, 2026-11-23, branch `claude/define-shadow-play`, [PR #2027](https://github.com/rjdunlap/neo/pull/2027). Study follow-up TP6 from [theatre and puppetry](../deep-dives/subjects/theatre-puppetry.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `shadow-play`: levels 1–2 are built (batch 1); levels 3–4 are batch 2 below.
 
 ## What you do
 
@@ -118,7 +120,7 @@ The ghost finger follows the hint order on the seeded board and, at levels 2–4
 
 ## Build batches
 
-1. **`shadow-play 1`, levels 1–2.** This is the new game, the light model, the rails and the Light check.
+1. **`shadow-play 1`, levels 1–2** (**built 2026-11-23**, PR #2035)**.** This is the new game, the light model, the rails and the Light check.
 
    **Checks:** typecheck and unit tests, which cover:
    - the scale at each mark and each shape's part;
