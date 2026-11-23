@@ -292,3 +292,7 @@ Device and person checks: whether a six-year-old reads the dashed drops as "need
 ### Level 4 decisions
 
 None is waiting on the developer. Defaults this definition sets: free flips on both beds (four arrangements) rather than one movable soil tile, so the pond's need can fail; a seeded marked-bed variant; no leaf at level 4 (the passing Check finishes). Source check (2026-11-06): [EPA's green-infrastructure types](https://www.epa.gov/green-infrastructure/types-green-infrastructure) (bioretention "collects rainwater from rooftops, sidewalks, and streets"; it can temporarily pond, then soak in or flow through an underdrain) and the [USGS runoff page](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff) (rain that does not soak in moves downhill by gravity; hard surfaces reduce infiltration; earlier rain's soil moisture changes runoff, which stays out until level 6). They support the toy's direction (hard ground uphill feeds a garden below), not its capacities.
+
+## Level 5, *three beds downhill* (claimed)
+
+Being defined on `claude/define-rain-garden-5` (docs only): the weather-water study's [slice 5](../deep-dives/subjects/weather-water.md#build-slices-in-order).
