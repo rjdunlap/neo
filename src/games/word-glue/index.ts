@@ -460,7 +460,9 @@ class WordGlue implements Game {
         // No hop: the asked word's action is the answer, so nothing on the table points at it.
         if (!first) return this.askDoer();
         void this.ctx.say('wordglue.instruct.doer').then(() => {
-          if (!this.dead && !this.finished && currentAsk(this.s) === ask) this.askDoer();
+          // A miss during the instruction has already asked again.
+          if (!this.dead && !this.finished && !this.busy && !this.s.wrongDrops && currentAsk(this.s) === ask)
+            this.askDoer();
         });
       } else {
         this.hop(this.cardOf(ask.entry.first));
