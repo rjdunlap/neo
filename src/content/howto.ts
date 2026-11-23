@@ -59,6 +59,7 @@ import { HOW_TO as gearGardenHowTo } from '../games/gear-garden/howto.ts';
 import { HOW_TO as gemSwapHowTo } from '../games/gem-swap/howto.ts';
 import { HOW_TO as goodnightRoomHowTo } from '../games/goodnight-room/howto.ts';
 import { HOW_TO as habitatHelpersHowTo } from '../games/habitat-helpers/howto.ts';
+import { HOW_TO as harborOrdersHowTo } from '../games/harbor-orders/howto.ts';
 import { HOW_TO as hatBandHowTo } from '../games/hat-band/howto.ts';
 import { HOW_TO as helperHouseHowTo } from '../games/helper-house/howto.ts';
 import { HOW_TO as inchwormHowTo } from '../games/inchworm/howto.ts';
@@ -265,6 +266,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'gem-swap': gemSwapHowTo,
   'goodnight-room': goodnightRoomHowTo,
   'habitat-helpers': habitatHelpersHowTo,
+  'harbor-orders': harborOrdersHowTo,
   'hat-band': hatBandHowTo,
   'helper-house': helperHouseHowTo,
   'inchworm': inchwormHowTo,

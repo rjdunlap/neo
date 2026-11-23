@@ -1,0 +1,1 @@
+**Define one Workshop Detective case (inquiry Q6)** (docs only, links and diff): freeze the four setups, two explicitly invented mechanisms, every useful test and the claims the records support. Use the settled separate grown-up entry and leave practical instructions out. [Study](../../deep-dives/subjects/inquiry.md#build-slices-in-order)

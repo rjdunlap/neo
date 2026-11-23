@@ -788,4 +788,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Key It Out](games/key-it-out.md)
 
+### Harbor Orders
+
+*grown-up* · [Harbor Orders](games/harbor-orders.md)
+
 <!-- end generated -->
