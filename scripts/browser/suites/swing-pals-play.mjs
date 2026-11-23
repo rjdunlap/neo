@@ -78,9 +78,86 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     );
   }
 
+  /**
+   * Swing Pals 10 upright (SWING_LEVELS=10): a requested hint lights the answer once; a tap on the pointed friend only
+   * repeats the question; a guess that does not meet first is watched and named, never a miss; the rest are guessed
+   * right; one sticker, no misses, one hint.
+   */
+  async function rowOfThree() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('swing-pals', 10);
+    const idle = () =>
+      page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, {
+        timeout: 30000,
+      });
+    await idle();
+    await page.waitForTimeout(400);
+    const n = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal(await page.evaluate(() => neo.scene.game.view.upright), true, 'played upright');
+    const tapFriend = async (i) => {
+      const p = await page.evaluate((i) => {
+        const g = neo.scene.game;
+        const q = g.ctx.stage.toGlobal(g.friendNodes[i].position);
+        const c = document.querySelector('canvas').getBoundingClientRect();
+        return { x: q.x + c.left, y: q.y + c.top };
+      }, i);
+      await page.evaluate(({ x, y }) => kit.tap(x, y), p);
+      await page.waitForTimeout(200);
+    };
+    const line = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        const r = g.row;
+        const p = r.hooks[r.pointed];
+        const answer = r.hooks.indexOf(p === 'short' ? 'long' : 'short');
+        return { pointed: r.pointed, answer, other: [0, 1, 2].find((k) => k !== r.pointed && k !== answer) };
+      });
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.hints, neo.scene.game.hintLit]),
+      [1, true],
+      'a requested hint lights the answer once',
+    );
+    let l = await line();
+    await tapFriend(l.pointed);
+    assert.equal(await page.evaluate(() => neo.scene.game.guess), null, 'the pointed friend is not a guess');
+    await tapFriend(l.other);
+    assert.equal(await page.evaluate(() => neo.scene.game.guess), l.other, 'the tap is her guess');
+    await page.waitForFunction(() => neo.scene.game.released, null, { timeout: 5000 });
+    await page.waitForTimeout(2300);
+    await screenshot('swing-pals-10-portrait');
+    await page.waitForFunction(() => neo.scene.finished || neo.scene.game.line === 1, null, {
+      timeout: 30000,
+    });
+    for (let guard = 0; guard < 6; guard++) {
+      if (await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)) break;
+      await idle();
+      await page.waitForTimeout(200);
+      l = await line();
+      await tapFriend(l.answer);
+      const at = await page.evaluate(() => neo.scene.game.line);
+      await page.waitForFunction((at) => neo.scene.finished || neo.scene.game.line !== at, at, {
+        timeout: 30000,
+      });
+    }
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, n, { timeout: 30000 });
+    const record = await page.evaluate(() => kit.store.stats('swing-pals').history.at(-1));
+    assert.deepEqual(
+      [record.misses, record.hints],
+      [0, 1],
+      'level 10: a guess that did not meet first is no miss; one hint',
+    );
+    assert.deepEqual(errors, [], 'page errors');
+    log(
+      'Swing Pals 10 upright: hint lit once, pointed tap repeats the question, a guess that missed is named, one sticker',
+    );
+  }
+
   /** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright; level 7 upright with a wrong guess (never a miss) and a lit rope (one hint), filing the journal's longer-rope entry; level 8 with one wrong hook. */
   async function swingPalsPlay() {
     if (process.env.SWING_LEVELS === '9') return paintTheBeat();
+    if (process.env.SWING_LEVELS === '10') return rowOfThree();
     const state = () =>
       page.evaluate(() => {
         const g = neo.scene.game;

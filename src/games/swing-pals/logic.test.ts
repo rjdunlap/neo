@@ -62,7 +62,20 @@ import {
   WANTED,
   type Race,
   type Request,
+  allMeetTime,
+  authoredRow,
+  BELL_ROW,
+  bellFor,
+  firstMeet,
+  meetTime,
+  rowChoices,
+  rowLayout,
+  rowMeetings,
+  rowTempts,
+  rowWatch,
+  type RowLine,
 } from './logic';
+import { UPRIGHT_VIEWS } from '../upright-check';
 import { stepLevel } from '../../progress/difficulty';
 
 const VIEWS = {
@@ -666,8 +679,136 @@ describe('level 8: twice as quick', () => {
   }
 });
 
+describe('level 10: a row of three', () => {
+  const plan = planFor(10);
+  const rows = (authored: boolean) =>
+    Array.from({ length: 500 }, (_, i) => {
+      const { round } = makeRound(plan, new Rng(i + 1), authored);
+      if (round.kind !== 'row') throw new Error('row');
+      return round.lines;
+    });
+  /** Times (to 6 s, in hundredths) a swing on `hook` released together at t = 0 is at its back point. */
+  const backs = (hook: Hook) => {
+    const out = new Set<number>();
+    for (let t = 0.01; t <= 6.001; t += 0.01)
+      if (phaseAt(hook, 0, t) < -1 + 1e-6) out.add(Math.round(t * 100));
+    return out;
+  };
+
+  it('pairs meet at 2 s (short, long), 3 s (short, middle) and 6 s (middle, long); all three at 6 s', () => {
+    expect(meetTime('short', 'long')).toBe(2);
+    expect(meetTime('long', 'short')).toBe(2);
+    expect(meetTime('short', 'middle')).toBe(3);
+    expect(meetTime('middle', 'long')).toBe(6);
+    expect(allMeetTime(HOOKS)).toBe(6);
+    expect(plan.mode).toBe('row');
+    expect(bellFor(plan)).toBe(BELL_ROW);
+    // In the swing model, the first shared back point after letting go is exactly the meeting time, whoever rides.
+    for (const [i, a] of HOOKS.entries())
+      for (const b of HOOKS.slice(i + 1)) {
+        const A = backs(a),
+          B = backs(b);
+        const shared = [...A].filter((t) => B.has(t)).sort((x, y) => x - y);
+        expect(shared[0] / 100, `${a} ${b}`).toBeCloseTo(meetTime(a, b), 6);
+      }
+  });
+
+  it('firstMeet: short for pointed long and middle, long for pointed short, never the pointed friend', () => {
+    for (const hooks of [
+      ['short', 'middle', 'long'],
+      ['long', 'middle', 'short'],
+    ] as [Hook, Hook, Hook][])
+      for (let pointed = 0; pointed < 3; pointed++) {
+        const line: RowLine = { hooks, friends: ['cat', 'cow', 'frog'], pointed };
+        const answer = firstMeet(line);
+        expect(answer).not.toBe(pointed);
+        expect(rowChoices(line)).toContain(answer);
+        expect(hooks[answer]).toBe(hooks[pointed] === 'short' ? 'long' : 'short');
+        expect(rowTempts(line)).toBe(hooks[pointed] === 'short');
+      }
+  });
+
+  it('every round points at each rope once, line 1 is authored, mirroring varies, friends are three different', () => {
+    let mirrored = 0,
+      plain = 0;
+    for (const authored of [true, false])
+      for (const lines of rows(authored)) {
+        expect(lines).toHaveLength(3);
+        if (authored) expect(lines[0]).toEqual(authoredRow());
+        expect(new Set(lines.map((l) => l.hooks[l.pointed]))).toEqual(new Set(HOOKS));
+        expect(lines.filter(rowTempts)).toHaveLength(1);
+        for (const l of lines) {
+          expect(new Set(l.friends).size).toBe(3);
+          if (l.hooks[0] === 'short') plain++;
+          else mirrored++;
+        }
+      }
+    expect(authoredRow()).toEqual({
+      hooks: ['short', 'middle', 'long'],
+      friends: ['mouse', 'duck', 'bear'],
+      pointed: 2,
+    });
+    expect(mirrored).toBeGreaterThan(500);
+    expect(plain).toBeGreaterThan(500);
+  });
+
+  it('the watch lasts past the all-three meeting, and every pair claps before it ends', () => {
+    for (const lines of rows(false))
+      for (const l of lines) {
+        expect(rowWatch(l)).toBeGreaterThan(6);
+        expect(rowWatch(l)).toBeLessThanOrEqual(7);
+        expect(rowMeetings(l).map((m) => m.at)).toEqual([2, 3, 6]);
+      }
+  });
+
+  const rowViews = { ...VIEWS, ...UPRIGHT_VIEWS };
+  for (const [name, v] of Object.entries(rowViews))
+    for (const hooks of [
+      ['short', 'middle', 'long'],
+      ['long', 'middle', 'short'],
+    ] as Hook[][])
+      it(`${name}, ${hooks[0]} first: the fitted row keeps ropes long, arcs in view and clear, targets big and apart`, () => {
+        const L = rowLayout(v, hooks);
+        expect(L.bell).toBe(BELL_ROW);
+        expect(L.scale).toBeGreaterThan(300);
+        // The short rope is at least as long as two swings' short rope, so the rider rule holds as it does there.
+        expect(ropeOf(L, 'short')).toBeGreaterThanOrEqual(ropeOf(swingLayout(2, v), 'short') - 1e-6);
+        const keepOut = [petCorner(v), ...shellButtons(v)];
+        for (const [k, h] of hooks.entries()) {
+          const col = L.columns[k];
+          for (let a = -BELL_ROW; a <= BELL_ROW; a += 1) {
+            const box = friendBox(seatAt(L, col, h, a));
+            expect(box.x).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.w).toBeLessThanOrEqual(v.w);
+            expect(box.y).toBeGreaterThanOrEqual(0);
+            expect(box.y + box.h).toBeLessThanOrEqual(v.h);
+            for (const z of keepOut) expect(rectsOverlap(box, z), `${name} ${h} ${a}`).toBe(false);
+            // Each swing stays in its own column, so no two friends ever overlap.
+            expect(box.x).toBeGreaterThanOrEqual(col.zone.x - 1e-6);
+            expect(box.x + box.w).toBeLessThanOrEqual(col.zone.x + col.zone.w + 1e-6);
+          }
+          const m = col.mitten[h];
+          const dot = { x: m.x - 30, y: m.y - 30, w: 60, h: 60 };
+          expect(m.x).toBeGreaterThan(30);
+          for (const z of keepOut) expect(rectsOverlap(dot, z)).toBe(false);
+          for (const f of FRIENDS) {
+            expect(friendHeight(f) - ropeOf(L, 'short')).toBeLessThanOrEqual(
+              Math.max(...(['bunny', 'duck', 'mouse', 'bear', 'frog'] as const).map(friendHeight)) -
+                ropeOf(swingLayout(2, v), 'short') +
+                1e-6,
+            );
+          }
+        }
+        const backs = hooks.map((h, k) => friendBox(seatAt(L, L.columns[k], h, -BELL_ROW)));
+        for (const [i, a] of backs.entries()) {
+          expect(Math.min(a.w, a.h)).toBeGreaterThanOrEqual(100);
+          for (const b of backs.slice(i + 1)) expect(rectsOverlap(a, b)).toBe(false);
+        }
+      });
+});
+
 describe('level order', () => {
-  it("pre-K steps 3 → 7 → 9 → 4; school runs 4 to 9; level 7's window includes pre-K and school", async () => {
+  it("pre-K steps 3 → 7 → 9 → 4; school runs 4 to 10; level 7's window includes pre-K and school", async () => {
     const { swingPals } = await import('./index');
     const prek = swingPals.levels('prek');
     expect(stepLevel(3, 1, prek)).toBe(7);
@@ -675,7 +816,10 @@ describe('level order', () => {
     expect(stepLevel(9, 1, prek)).toBe(4);
     expect(stepLevel(4, -1, prek)).toBe(9);
     const school = swingPals.levels('school');
-    expect([school.min, school.max]).toEqual([4, 9]);
+    expect([school.min, school.max]).toEqual([4, 10]);
+    expect(stepLevel(9, 1, school)).toBe(10);
+    expect(swingPals.levels('prek').max).toBe(9);
+    expect(swingPals.describeLevel?.(10)).toBe('A row of three');
     expect(stepLevel(8, 1, school)).toBe(9);
     expect(stepLevel(3, 1, swingPals.levels('preschool'))).toBe(9);
     expect(stepLevel(6, 1, school)).toBe(7);

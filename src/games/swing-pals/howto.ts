@@ -40,6 +40,13 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap a hook to change the rope. The wiggles sit closer together on a shorter rope.',
     },
     { from: 9, to: 9, text: 'A bigger push makes a wider wiggle. The space between wiggles stays the same.' },
+    { from: 10, to: 10, text: 'Three friends swing in a row: short, middle and long ropes.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'The paw points at one friend. Tap the friend you think will be back with it at the same time first.',
+    },
+    { from: 10, to: 10, text: 'Watch: a short rope comes back twice for every long swing.' },
   ],
   finish: [
     { from: 1, to: 3, text: 'Every friend reaches the bell, chimes, apple or nest.' },
@@ -47,6 +54,11 @@ export const HOW_TO: GameHowTo = {
     { from: 7, to: 7, text: 'Three races are watched, whoever she picks.' },
     { from: 8, to: 8, text: 'Every pair swings the way the dots ask.' },
     { from: 9, to: 9, text: 'Tap the tick when your painting is done. You can hang it in the treehouse.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'Three rows are watched until all three friends are back together, whoever she picks.',
+    },
   ],
   note: [
     {
@@ -76,8 +88,13 @@ export const HOW_TO: GameHowTo = {
       text: 'A guess is never a miss: the friend who came back first is named. Show a hint in the pause sheet lights the shorter rope before she taps, which counts as a hint.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'A guess is never wrong here; the swings show the answer. Show a hint in the pause sheet lights the right friend before the swings let go, which counts as a hint.',
+    },
+    {
       from: 1,
-      to: 8,
+      to: 10,
       text: "The swing follows the small-swing rule: only the rope's length changes how fast it swings back and forth. That is close to real swings, not exact.",
     },
   ],

@@ -15,7 +15,11 @@ import {
   LEVELS,
   makeRound,
   planFor,
+  markerAt,
+  MARK_R,
   requestStrip,
+  rowChoices,
+  rowLayout,
   seatAt,
   swingLayout,
   type Hook,
@@ -148,21 +152,55 @@ function checkPaint(v: View) {
   expect(meets(layout.paper, around(layout.tick, 74))).toBe(false);
 }
 
+/** Level 10: the two friends she may choose are targets; the three swings' arcs, mittens and both paws stay in view. */
+function checkRow(v: View) {
+  const plan = planFor(10);
+  for (const seed of SEEDS)
+    for (const authored of [true, false]) {
+      const { round } = makeRound(plan, new Rng(seed), authored);
+      if (round.kind !== 'row') throw new Error('expected a row round');
+      for (const line of round.lines) {
+        const L = rowLayout(v, line.hooks);
+        const where = `seed ${seed}, ${Math.round(v.w)} x ${Math.round(v.h)}`;
+        const targets = rowChoices(line).map((k) =>
+          rect('friend', friendBox(seatAt(L, L.columns[k], line.hooks[k], -L.bell))),
+        );
+        expect(uprightProblems(v, targets), where).toEqual([]);
+        if (v === UPRIGHT_VIEWS.phone)
+          expect(Math.min(...targets.map((t) => Math.min(t.w, t.h))) * v.scale).toBeGreaterThanOrEqual(44);
+        const pictures = line.hooks.flatMap((h, k) => [
+          ...arc(L, k, h),
+          around(L.columns[k].mitten[h], 30),
+          ...[-L.bell, 0, L.bell].map((a) =>
+            around(markerAt(seatAt(L, L.columns[k], h, a), line.friends[k]), MARK_R),
+          ),
+        ]);
+        for (const p of pictures) {
+          expect(inView(p, v), `${where}: a picture leaves the view`).toBe(true);
+          expect(meets(p, HOME) || meets(p, guide(v)), `${where}: a picture is over a corner`).toBe(false);
+        }
+      }
+    }
+}
+
 describe.each(Object.entries(views))('Swing Pals upright on %s', (_, v) => {
-  it('covers levels 1 to 9', () => {
-    expect([...new Set(cases.map(([, level]) => level))].sort()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  it('covers levels 1 to 10', () => {
+    expect([...new Set(cases.map(([, level]) => level))].sort((a, b) => a - b)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    ]);
   });
 
   it.each(cases)(
     '%s level %i: every target is big enough, apart, in view and clear of Home and the guide',
     (_band, level) => {
       if (level === 9) return checkPaint(v);
+      if (level === 10) return checkRow(v);
       const plan = planFor(level);
       const L = swingLayout(plan.two ? 2 : 1, v);
       for (const seed of SEEDS)
         for (const authored of [true, false]) {
           const { round } = makeRound(plan, new Rng(seed), authored);
-          if (round.kind === 'paint') throw new Error('expected a swing round');
+          if (round.kind === 'paint' || round.kind === 'row') throw new Error('expected a swing round');
           const all = screens(round, L, v);
           expect(all).toHaveLength(plan.lines);
           for (const { targets, pictures } of all) {
