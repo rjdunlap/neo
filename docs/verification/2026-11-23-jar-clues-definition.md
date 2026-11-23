@@ -1,0 +1,5 @@
+# 2026-11-23 — Jar Clues definition (PR #2030)
+
+**Changed:** new definition `docs/definitions/jar-clues.md` (E5, grown-up Lantern Lake, levels 1–4, two build batches), the estimation study (E5 now defined), RECOMMENDATIONS, the subjects table and the idea notebook; READY (Jar Clues removed from the Lantern Lake definitions line, two build lines queued, and Next ten refilled with three builds from Queued) and the docs map. Also corrected two rows the Key It Out closeout (PR #2029) had pointed at the wrong game (Box Balance in RECOMMENDATIONS, Root Words in IDEAS) and updated the real Key It Out rows.
+**Ran:** `node scripts/check-links.mjs` and `git diff --check`. The generator's keep rates in the definition (7,448, 5,106, 6,058 and 6,715 of 20,000 draws at levels 1–4) came from a prototype script run while writing the packet and not committed; they are indicative only, and the build's rule tests check the properties on their own seeds.
+**Not run:** code checks, browser suites and build (docs only; nothing built); no game was opened or played.
