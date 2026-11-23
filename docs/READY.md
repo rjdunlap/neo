@@ -64,15 +64,17 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
+- **`word-glue` level 8, Someone who, batch `word-glue 5`** (school; after batch `word-glue 4`; new interaction tier: typecheck and unit tests (`DOERS` meanings, the round with the right action in each place, level 3's join accounting with the person as head, school's order `[3, 5, 6, 7, 8, 9]`, layout and upright views, voice coverage), one filtered upright `wordglue` play at level 8 with one wrong action dropped twice and one Show a hint, one upright screenshot, `fingerdemo` at 8, the doers' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
+
+- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
 
 
 
-- **`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](deep-dives/block-tower.md#decisions-for-the-developer)
+
 
 
 One game per session; each line's placement or band was settled by its dive's *Decided 2026-10-23* note, so a "decision" label on the slice line is stale and is corrected at closeout. A new level takes the next free ID where the dive's number has since been used.
 
-- **`duck-pond` real stopping at levels 4–5** (toddler, preschool; a new interaction on existing levels: typecheck, rule tests, one filtered play at 4 and 5 with one wrong count, `fingerdemo`, one portrait screenshot): a "That's enough!" check ends the round, too few or too many is a gentle miss with the spoken count (the unused `duck.extra` line), and a duck tapped on the pond hops back as a free undo; level 3 stays as it is. Expected files: `src/games/duck-pond/{logic,index,howto,voice}.ts`, `logic.test.ts`, the browser case, the game page. [Dive slice 3](deep-dives/duck-pond.md#build-slices-in-order)
 
 - **`peekaboo-barn` Who says moo?, then Hide it yourself** (toddler, preschool; two sessions' worth if the second runs long: *Who says moo?* is new levels on the find interaction, *Hide it yourself* is a new interaction with `drag.ts`): the two entries dive slice 9 still lists as to build. Two animals peek and a sound asks who makes it (a wrong animal names itself, glow after two); she drags an animal to a house and the pet looks in the wrong houses first (three hides, never wrong). Expected files: `src/games/peekaboo-barn/{logic,index,voice,howto}.ts`, `logic.test.ts`, the browser case, the game page. [Dive](deep-dives/peekaboo-barn.md#earlier-play-entries-in-level-order)
 

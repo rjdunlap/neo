@@ -1,0 +1,1 @@
+**`block-tower` level 6: failed topples and short stacks become unscored experiments, as decided 2026-10-23** (existing-game bug fix tier). `settled()` in `src/games/block-tower/index.ts` still counts a miss for both; one counted hint after two unsuccessful trials. [Decision](../../deep-dives/block-tower.md#decisions-for-the-developer)
