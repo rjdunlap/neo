@@ -16,6 +16,12 @@ export const HOW_TO: GameHowTo = {
     { from: 5, to: 5, text: 'Listen to the question, then tap the part the thing really is.' },
     { from: 6, to: 6, text: 'Two things from the same parts: tap the one the pet asks for.' },
     { from: 6, to: 6, text: 'Touch a picture and slide off to hear its name.' },
+    { from: 7, to: 7, text: 'Tap two pictures to name the new thing: the thing it is goes last.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap a picture in a name card to take it back out; tap the thing itself to hear the question again.',
+    },
     { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
     {
       from: 5,
@@ -27,6 +33,7 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 4, text: 'Every pair is joined and its new thing has come alive.' },
     { from: 5, to: 5, text: 'Every question is answered and its thing has come alive.' },
     { from: 6, to: 6, text: 'Four pairs of pictures have gone to the shelf.' },
+    { from: 7, to: 7, text: 'Five new things are named and have come alive.' },
   ],
   note: [
     {
@@ -51,7 +58,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
-      to: 5,
+      to: 7,
       text: 'In English the last part names the thing: a doghouse is a house. Many languages put it first, so this question works in English only.',
     },
     {
@@ -63,6 +70,16 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'A wrong tap is one miss and the pet says what the thing is; after two misses the right picture glows, which counts as a hint.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Either detail can go first: a star hat and a bell hat are both good names.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A name with the wrong part last is one miss and the pet says what that name would call; after two misses the thing and the last card glow, which counts as a hint.',
     },
   ],
 };
