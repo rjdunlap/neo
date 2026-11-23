@@ -149,7 +149,7 @@ Still open: the person checks (device speech of each fact sentence, whether a th
 2. **IR1 build, built 2026-10-22 (PR #830)** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong answer and one hint, `fingerdemo`, one portrait screenshot).
 3. **IR2 define and build: levels 4–6**: [defined 2026-11-22](../../definitions/look-it-up-4-6.md) (level 5 amended to the *Baby* name tags); batch `look-it-up 2` (levels 4–5) built (PR #2009); `look-it-up 3` (level 6) queued.
 4. **Notes to owners** (docs only, no new slice): LEGO's per-step card to Recipe Workshop's later levels; Curcio's levels to Picture Graph (taken up as its level 11 in [the dive](../picture-graph.md), 2026-11-01); a two-step how-to sign to Read & Do's dive; Diagram Detective to Attic Finds' owner.
-5. **IR4 Key It Out** [defined](../../definitions/key-it-out.md) 2026-11-23 (two build batches queued); batch `key-it-out 1` (levels 1–2) claimed 2026-11-23 on `claude/key-it-out-1`; **IR5 cards** to the off-screen companions work after an ordinary content review.
+5. **IR4 Key It Out** [defined](../../definitions/key-it-out.md) 2026-11-23 (two build batches queued); batch `key-it-out 1` (levels 1–2) built 2026-11-23 ([PR #2041](https://github.com/rjdunlap/neo/pull/2041)), batch 2 queued; **IR5 cards** to the off-screen companions work after an ordinary content review.
 
 ## What was built
 
