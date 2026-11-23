@@ -115,6 +115,8 @@ Implemented 2026-11-22.
 
 ## Slice 2: the colour goal (after `paint-mixer 4`)
 
+In progress 2026-11-22 on branch `claude/rw10-colour-goal`.
+
 The [`paint-mixer 4` batch](../GAME-BATCHES.md#paint-mixer-4-palette-unlock) (built 2026-11-22, PR #2008) added the six paint-shelf colours to the palette, to save repair's accepted colours, to the hatch colour step and to the grown-ups' select ([its definition](../definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)). This slice adds only what waited for RW10:
 
 - **Six `colour:<c>` goal rows**, reachable at school, done from the journal.
