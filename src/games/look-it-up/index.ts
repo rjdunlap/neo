@@ -18,10 +18,7 @@ import {
   ANIMALS,
   choicesFor,
   check,
-  countsAsMiss,
-  GLOW_AFTER,
   guideLayout,
-  HELP_AFTER,
   hintFor,
   lookTouch,
   makeRound,
@@ -32,7 +29,11 @@ import {
   pictureOf,
   planFor,
   askOf,
+  rightOf,
+  SHARES,
+  VisitTally,
   type AnimalId,
+  type ChoiceKey,
   type Hint,
   type Page,
   type Picture,
@@ -41,7 +42,7 @@ import {
   type Row,
 } from './logic';
 
-/** Levels whose authored first round has been played this session (levels 4 and 5); a demo always plays it. */
+/** Levels whose authored first round has been played this session (levels 4 to 6); a demo always plays it. */
 const authoredShown = new Set<number>();
 
 /** Printed words on the page, left-aligned and wrapped: 26 units, or 24 when 26 would take more than two lines. */
@@ -113,7 +114,8 @@ interface ContentsLine {
   bg: Graphics;
 }
 interface Choice {
-  picture: Picture;
+  /** A picture or name tag, or at level 6 a friend. */
+  key: ChoiceKey;
   node: Container;
   drag: DragHandle;
   used: boolean;
@@ -135,8 +137,6 @@ class LookItUp implements Game {
   open: Page;
   /** The visitor being helped (levels 2–3), or the page count (level 1). */
   index = -1;
-  misses = 0;
-  hints = 0;
   busy = true;
   finished = false;
   /** Level 1: labels touched on the open page; the asked row touched this visit. */
@@ -149,10 +149,12 @@ class LookItUp implements Game {
   /** The waiting ask is being spoken: the ghost finger lets it finish, as it did when the ask held input. */
   private asking = 0;
   private clock = 0;
-  private attempts = 0;
-  private hinted = false;
-  private glowOn = false;
-  private wrongSeen = new Set<Picture>();
+  /** This visitor's misses, hint and wrong tries; earlier visitors' are in `pastMisses` and `pastHints`. */
+  tally = new VisitTally();
+  private pastMisses = 0;
+  private pastHints = 0;
+  /** Level 6: the pages whose asked row has been touched this visit, kept across page turns. */
+  read = new Set<AnimalId>();
   /** Level 5: the first Baby row touched this round adds the picture-or-words line. */
   private babyRead = false;
   /** Bumped by each new row touch, so a line chained after an earlier touch's caption is dropped. */
@@ -221,6 +223,13 @@ class LookItUp implements Game {
     );
   }
 
+  get misses() {
+    return this.pastMisses + this.tally.misses;
+  }
+  get hints() {
+    return this.pastHints + this.tally.hints;
+  }
+
   private get visit() {
     return this.round.visits[this.index];
   }
@@ -248,12 +257,16 @@ class LookItUp implements Game {
   update(dt: number) {
     this.clock += dt;
     this.glow.clear();
-    if (!this.glowOn || this.busy || this.finished || this.mode === 'labels') return;
-    const r = this.hintRect(hintFor(this.round, this.visit, this.open, this.rowSeen));
+    if (!this.tally.glow || this.busy || this.finished || this.mode === 'labels') return;
+    const r = this.hintRect(this.hint());
     if (r)
       this.glow
         .roundRect(r.x - 6, r.y - 6, r.w + 12, r.h + 12, 22)
         .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+  }
+
+  private hint(): Hint {
+    return hintFor(this.round, this.visit, this.open, this.rowSeen, this.read);
   }
 
   private hintRect(h: Hint): Rect | null {
@@ -268,7 +281,7 @@ class LookItUp implements Game {
       const r = this.rows.find((x) => x.kind === h.row);
       return r ? r.rect : null;
     }
-    const c = this.choices.find((x) => x.picture === h.picture && !x.used);
+    const c = this.choices.find((x) => x.key === h.choice && !x.used);
     return c ? this.rectOf(c.node, 130, 130) : null;
   }
 
@@ -484,7 +497,10 @@ class LookItUp implements Game {
       if (this.touched.size === 3) await this.pageDone();
       return;
     }
-    if (this.visit && row.kind === this.visit.row) this.rowSeen = true;
+    if (this.visit && row.kind === this.visit.row) {
+      this.rowSeen = true;
+      if (this.open !== 'contents') this.read.add(this.open);
+    }
     if (this.unasked) return this.askNow();
     const seq = ++this.touchSeq;
     const said = this.ctx.say('lookitup.say', { text: row.line });
@@ -545,11 +561,11 @@ class LookItUp implements Game {
     this.busy = true;
     this.unasked = false;
     this.index++;
-    this.attempts = 0;
-    this.hinted = false;
-    this.glowOn = false;
+    this.pastMisses += this.tally.misses;
+    this.pastHints += this.tally.hints;
+    this.tally = new VisitTally();
     this.rowSeen = false;
-    this.wrongSeen = new Set();
+    this.read = new Set();
     if (this.mode === 'labels') {
       this.index = 0;
       await this.ctx.instruct('lookitup.instruct.labels');
@@ -583,7 +599,7 @@ class LookItUp implements Game {
       this.babyNode = baby;
     } else this.babyNode = null;
     this.scene.addChild(holder);
-    this.choices = choicesFor(this.round, visit, this.rng).map((picture) => {
+    this.choices = choicesFor(this.round, visit, this.rng).map((key) => {
       const node = new Container();
       node.addChild(
         new Graphics()
@@ -591,7 +607,30 @@ class LookItUp implements Game {
           .fill(visit.row === 'baby' ? cream : swatch.white.fill)
           .stroke({ width: 5, color: wood.line }),
       );
-      if (visit.row === 'baby') {
+      if (visit.share) {
+        // Level 6: a friend standing on its card above its printed name; tapping it walks it to the visitor.
+        // "African penguin" and "Brown bear" wrap to two lines under a shorter friend.
+        const friend = key as AnimalId;
+        const art = animalArt(friend, 60);
+        art.y = 4;
+        const name = new Text({
+          text: ANIMALS[friend].title,
+          style: {
+            fontFamily: FONT,
+            fontSize: 22,
+            fill: ink,
+            fontWeight: '600',
+            align: 'center',
+            wordWrap: true,
+            wordWrapWidth: 118,
+            lineHeight: 22,
+          },
+        });
+        name.anchor.set(0.5, 0.5);
+        name.eventMode = 'none';
+        name.y = 36;
+        node.addChild(art, name);
+      } else if (visit.row === 'baby') {
         // A printed name tag on a string: the word only, no picture, so the page's words are what tell.
         const hole = new Graphics()
           .moveTo(0, -48)
@@ -600,17 +639,17 @@ class LookItUp implements Game {
           .circle(0, -46, 8)
           .fill(swatch.white.fill)
           .stroke({ width: 3, color: wood.line });
-        const word = label(PICTURE_WORDS[picture], 32, ink);
+        const word = label(PICTURE_WORDS[key as Picture], 32, ink);
         word.y = 8;
         if (word.width > 116) word.scale.set(116 / word.width);
         node.addChild(hole, word);
       } else {
-        const art = pictureArt(picture);
+        const art = pictureArt(key as Picture);
         art.scale.set(1.15);
         node.addChild(art);
       }
       node.hitArea = new Rectangle(-65, -65, 130, 130);
-      const choice: Choice = { picture, node, used: false, drag: null as unknown as DragHandle };
+      const choice: Choice = { key, node, used: false, drag: null as unknown as DragHandle };
       this.scene.addChild(node);
       return choice;
     });
@@ -622,7 +661,7 @@ class LookItUp implements Game {
           sfx.tick();
           // A name tag says its word when it is lifted: reading a tag is free.
           if (visit.row === 'baby' && !this.busy && !this.unasked)
-            void this.ctx.say('lookitup.say', { text: PICTURE_WORDS[c.picture] });
+            void this.ctx.say('lookitup.say', { text: PICTURE_WORDS[c.key as Picture] });
         },
         onDrop: (x, y) => this.dropped(c, x, y),
       });
@@ -669,43 +708,58 @@ class LookItUp implements Game {
     const targets = [{ x: v.x, y: v.y - 95 }];
     if (this.babyNode) targets.push({ x: v.x + this.babyNode.x, y: v.y + this.babyNode.y });
     const near = nearestPoint(targets, x, y, 200) >= 0;
-    if (moved < 30 || near) void this.choose(c);
-    return false;
+    if (!(moved < 30 || near)) return false;
+    void this.choose(c);
+    // A friend card walks itself (level 6): the drag handle must not glide it home over that walk.
+    return !!this.visit.share;
   }
 
   private async choose(c: Choice) {
     if (this.busy || this.finished || c.used) return;
     this.busy = true;
     const visit = this.visit;
-    const verdict = check(this.round, visit, c.picture);
+    const verdict = check(this.round, visit, c.key);
     if (verdict.kind === 'ignore') {
       this.busy = false;
       return;
     }
     const v = this.visitorNode!;
     if (verdict.kind === 'right') return void this.resolve(c, true);
-    this.attempts++;
-    if (countsAsMiss(this.wrongSeen, c.picture)) {
-      this.wrongSeen.add(c.picture);
-      this.misses++;
-    }
+    const after = this.tally.wrong(c.key);
     sfx.boing();
-    if (visit.row === 'baby') {
+    if (visit.share) {
+      // Level 6: the friend walks over and back, and the pet reads that friend's row.
+      const share = SHARES[visit.share.q];
+      await this.ctx.tw.to(c.node, this.besideVisitor(), { duration: 0.5, ease: ease.inOutSine });
+      if (!this.alive) return;
+      await this.ctx.tw.to(c.node, c.drag.home, { duration: 0.5, ease: ease.inOutSine });
+      if (!this.alive) return;
+      await this.ctx.say('lookitup.miss.share', {
+        caption: ANIMALS[verdict.owner].rows[visit.row].line,
+        key: share.key,
+      });
+    } else if (visit.row === 'baby') {
       // The baby shakes its head at a tag that is not its name.
       if (this.babyNode) await this.shake(this.babyNode);
       if (!this.alive) return;
-      const word = PICTURE_WORDS[c.picture];
+      const word = PICTURE_WORDS[c.key as Picture];
       await this.ctx.say('lookitup.miss.tag', {
         word,
         owner: ANIMALS[verdict.owner].kind,
         kind: ANIMALS[visit.animal].kind,
       });
-      if (!this.alive) return;
-      if (this.attempts >= GLOW_AFTER) this.addHint();
-      if (this.attempts >= HELP_AFTER) return void this.supported();
-      this.busy = false;
-      return;
+    } else {
+      await this.missPicture(c, v, verdict.owner);
     }
+    if (!this.alive) return;
+    if (after.firstGlow) this.sayGlowStep();
+    if (after.help) return void this.supported();
+    this.busy = false;
+  }
+
+  /** Levels 2–5: a wrong picture; the visitor walks to a wrong place or shakes its head at a wrong food. */
+  private async missPicture(c: Choice, v: Container, owner: AnimalId) {
+    const visit = this.visit;
     if (visit.row === 'where') {
       const home = { x: v.x, y: v.y };
       await this.ctx.tw.to(v, { x: c.node.x, y: c.node.y + 40 }, { duration: 0.5, ease: ease.inOutSine });
@@ -713,29 +767,31 @@ class LookItUp implements Game {
       await this.ctx.tw.to(v, home, { duration: 0.5, ease: ease.inOutSine });
     } else await this.shake(v);
     if (!this.alive) return;
-    const owner = ANIMALS[verdict.owner];
     await this.ctx.say('lookitup.miss', {
-      what: WHAT[c.picture],
-      fact: owner.rows[visit.row].line,
+      what: WHAT[c.key as Picture],
+      fact: ANIMALS[owner].rows[visit.row].line,
       kind: ANIMALS[visit.animal].kind,
     });
-    if (!this.alive) return;
-    if (this.attempts >= GLOW_AFTER) this.addHint();
-    if (this.attempts >= HELP_AFTER) return void this.supported();
-    this.busy = false;
   }
 
-  private addHint() {
-    if (!this.hinted) {
-      this.hinted = true;
-      this.hints++;
-    }
-    const first = !this.glowOn;
-    this.glowOn = true;
-    // From level 4 the glow's first step back to the contents page is also said.
-    if (!first || this.round.book !== 'contents' || !this.visit) return;
-    const h = hintFor(this.round, this.visit, this.open, this.rowSeen);
-    if (h.kind === 'contents') void this.ctx.say('lookitup.hint.contents');
+  /** Where a friend card stands beside the visitor (level 6). */
+  private besideVisitor() {
+    const v = this.visitorNode!;
+    const right = v.x + 150 + 65 <= this.view.w - 10;
+    return { x: v.x + (right ? 150 : -150), y: v.y - 60 };
+  }
+
+  /**
+   * From level 4 the glow's first step is also said: back to the contents page, or the line to find; at level 6, once
+   * the visitor's own row is read, the step toward the second page says the key word to look for.
+   */
+  private sayGlowStep() {
+    if (this.round.book !== 'contents' || !this.visit) return;
+    const h = this.hint();
+    const share = this.visit.share;
+    if (share && this.read.has(this.visit.animal) && (h.kind === 'contents' || h.kind === 'line'))
+      void this.ctx.say('lookitup.hint.second', { key: SHARES[share.q].key });
+    else if (h.kind === 'contents') void this.ctx.say('lookitup.hint.contents');
     else if (h.kind === 'line') void this.ctx.say('lookitup.hint.line', { title: ANIMALS[h.animal].title });
   }
 
@@ -743,15 +799,19 @@ class LookItUp implements Game {
     for (const r of [0.08, -0.08, 0]) await this.ctx.tw.to(n, { rotation: r }, { duration: 0.08 });
   }
 
-  /** After the glow and more tries, the pet opens the page, reads the row and gives the right choice: no more misses. */
+  /**
+   * After the glow and more tries, the pet opens the page (at level 6 the accepted friend's), reads the row and gives the
+   * right choice: no more misses.
+   */
   private async supported() {
     const visit = this.visit;
+    const page = visit.share?.friend ?? visit.animal;
     this.busy = false;
-    await this.turnTo(visit.animal, false);
+    await this.turnTo(page, false);
     this.busy = true;
-    await this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
+    await this.ctx.say('lookitup.say', { text: ANIMALS[page].rows[visit.row].line });
     if (!this.alive) return;
-    const c = this.choices.find((x) => x.picture === pictureOf(visit))!;
+    const c = this.choices.find((x) => x.key === rightOf(visit))!;
     void this.resolve(c, true, true);
   }
 
@@ -759,11 +819,20 @@ class LookItUp implements Game {
   private async resolve(c: Choice, _right: boolean, read = false) {
     const visit = this.visit;
     const v = this.visitorNode!;
-    this.glowOn = false;
+    this.tally.glow = false;
     c.used = true;
     c.drag.enabled = false;
     sfx.pop(4);
-    if (visit.row === 'baby' && this.babyNode) {
+    if (visit.share) {
+      // The friend walks over and the two share the fact: both hop together.
+      await this.ctx.tw.to(c.node, this.besideVisitor(), { duration: 0.5, ease: ease.inOutSine });
+      if (!this.alive) return;
+      for (const lift of [-30, 30]) {
+        void this.ctx.tw.to(c.node, { y: c.node.y + lift }, { duration: 0.15, ease: ease.inOutSine });
+        await this.ctx.tw.to(v, { y: v.y + lift }, { duration: 0.15, ease: ease.inOutSine });
+        if (!this.alive) return;
+      }
+    } else if (visit.row === 'baby' && this.babyNode) {
       // The right tag hangs on the baby, which hops.
       const b = this.babyNode;
       await this.ctx.tw.to(
@@ -799,9 +868,14 @@ class LookItUp implements Game {
     // once and asks when it ends. The last visitor's fact is heard out before the closing line.
     this.done.add(visit.animal);
     const last = this.index + 1 >= this.round.visits.length;
-    const fact = read
-      ? Promise.resolve()
-      : this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
+    const fact = visit.share
+      ? this.ctx.say('lookitup.share.right', {
+          friend: ANIMALS[visit.share.friend].title,
+          key: SHARES[visit.share.q].key,
+        })
+      : read
+        ? Promise.resolve()
+        : this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
     if (last) {
       await fact;
       if (!this.alive) return;
@@ -818,6 +892,7 @@ class LookItUp implements Game {
       open: this.open,
       rowSeen: this.rowSeen,
       touched: this.touched.size,
+      read: this.read,
     });
     if (!move) return null;
     if (this.ctx.demo && this.mode === 'contents' && !this.detoured && this.index === 0 && 'line' in move) {
@@ -838,8 +913,10 @@ class LookItUp implements Game {
     if ('tab' in move) return { tap: { on: this.tabs.find((t) => t.id === move.tab)!.node } };
     if ('row' in move) return { tap: { on: this.rows.find((r) => r.kind === move.row)!.node } };
     if (!('choice' in move)) return null;
-    const c = this.choices.find((x) => x.picture === move.choice && !x.used);
+    const c = this.choices.find((x) => x.key === move.choice && !x.used);
     if (!c || !this.visitorNode) return null;
+    // A friend walks over by itself when tapped.
+    if (this.visit.share) return { tap: { on: c.node } };
     if (this.babyNode) return { drag: { on: c.node }, to: { on: this.babyNode } };
     return { drag: { on: c.node }, to: { on: this.visitorNode, y: -100 } };
   }
@@ -847,14 +924,14 @@ class LookItUp implements Game {
   /** The pause sheet's Show a hint: the same glow, and the same single hint for this visitor. */
   askForHint() {
     if (this.busy || this.finished || this.mode === 'labels') return;
-    this.addHint();
+    if (this.tally.hint()) this.sayGlowStep();
   }
 
   private async finale() {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    this.glowOn = false;
+    this.tally.glow = false;
     sfx.tada();
     if (this.visitorNode && !this.visitorNode.destroyed) void this.shake(this.visitorNode);
     await this.ctx.say('lookitup.done');

@@ -11,5 +11,8 @@ export const VOICE = {
   'lookitup.hint.contents': ["Let's go back to the contents page."],
   'lookitup.hint.line': ['Find {title} on the contents page.'],
   'lookitup.miss.tag': ["That tag says {word}. A {word} is a baby {owner}. Let's read the {kind}'s page."],
+  'lookitup.hint.second': ['Now find another page that says {key}.'],
+  'lookitup.share.right': ["{friend}'s page says {key} too!"],
+  'lookitup.miss.share': ["{caption} That page doesn't say {key}."],
   'lookitup.done': ['Every visitor has been helped. Thank you!'],
 } satisfies Record<string, string[]>;
