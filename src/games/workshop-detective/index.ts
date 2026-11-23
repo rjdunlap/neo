@@ -399,9 +399,11 @@ class Round implements Game {
     } else if (verdict.kind === 'miss-true') this.ringNotes.add(verdict.truth);
     this.render();
     const turn = this.turn;
+    // The assisted hint is owed once per round: a touch that cuts the explanation short still gets it, for the state
+    // she is in now, unless the case is already closing.
     void this.sayAll(words.lines, turn).then(() => {
-      if (!due || !this.ctx.alive || turn !== this.turn) return;
-      this.giveHint(turn);
+      if (!due || !this.ctx.alive || this.busy) return;
+      this.giveHint(this.turn);
     });
   }
 
