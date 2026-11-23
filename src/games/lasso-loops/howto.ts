@@ -20,6 +20,17 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Loop the rest ten at a time and say how many in all; the pet compares it with your guess.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Loop ten fireflies for the first jar. The shelf has room for three more jars.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap away the numbers that cannot be right: too few or too many. One sensible number stays.',
+    },
+    { from: 7, to: 7, text: 'Loop the rest ten at a time and say how many in all.' },
   ],
   finish: 'The round ends after grouping the fireflies and answering any total question.',
 };

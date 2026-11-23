@@ -10,6 +10,7 @@ import {
   JAR_W,
   PAD_HIT,
   PLANS,
+  RANGE_HIT,
   gridFor,
   lassoLayout,
   makeRound,
@@ -52,7 +53,7 @@ describe.each(Object.entries(views))('Lasso Loops upright on %s', (_, v) => {
   it.each(PLANS.map((p, i) => [i + 1, p] as const))('level %i fits', (_level, plan) => {
     for (let seed = 0; seed < 120; seed++) {
       const round = makeRound(plan, new Rng(seed));
-      const L = lassoLayout(v, round.jars.length, round.ones > 0, !!plan.guess);
+      const L = lassoLayout(v, round.jars.length, round.ones > 0, !!plan.guess, !!plan.range);
       expect(L.upright).toBe(true);
       const pictures = [...L.jars.map(jar), ...(round.ones ? [leaf(L)] : [])];
       // Looping: the field, the jars and the leaf stand apart, in view, clear of the corners.
@@ -69,6 +70,14 @@ describe.each(Object.entries(views))('Lasso Loops upright on %s', (_, v) => {
       expect(L.sky.w).toBe(v.w);
       // The answer pads come up over the emptied field, above the jars and the leaf.
       if (round.answer !== null) check(v, [...L.pads.map((p) => at('answer pad', p, PAD_HIT)), ...pictures]);
+      if (plan.range) {
+        // Level 7's tap-away step: the fireflies out, the full jar and three outlines on the shelf, five cards above.
+        check(v, [
+          field(L),
+          ...L.shelf.map(jar),
+          ...L.rangeCards.map((p) => at('range card', p, RANGE_HIT.w, RANGE_HIT.h)),
+        ]);
+      }
       if (plan.guess) {
         // The first guess: only the three signs (the jars are hidden).
         check(v, [field(L), ...L.guessFirst.map((p) => at('estimate', p, GUESS_HIT.w, GUESS_HIT.h))]);
@@ -108,5 +117,27 @@ describe('Lasso Loops sideways and on a tablet', () => {
     expect(L.pads[0].y).toBeCloseTo(96 + (h - 366) * 0.45);
     expect(lassoLayout({ w, h }, 6, false).jars.every((j) => j.y === h - 30)).toBe(true);
     expect(tallField(L)).toBe(false);
+  });
+});
+
+describe('Lasso Loops level 7 sideways', () => {
+  it.each([
+    [1024, 768],
+    [1662, 768],
+    [1366, 1024],
+  ])('%i x %i keeps the cards apart, over the field, and the shelf jars apart', (w, h) => {
+    const L = lassoLayout({ w, h }, 3, true, false, true);
+    expect(L.upright).toBe(false);
+    expect(L.field).toEqual(lassoLayout({ w, h }, 3, true, true).field);
+    expect(L.rangeCards).toHaveLength(5);
+    for (let i = 1; i < 5; i++)
+      expect(L.rangeCards[i].x - L.rangeCards[i - 1].x).toBeGreaterThanOrEqual(RANGE_HIT.w);
+    expect(L.rangeCards[0].x - RANGE_HIT.w / 2).toBeGreaterThanOrEqual(L.field.x - 10);
+    expect(L.rangeCards[4].x + RANGE_HIT.w / 2).toBeLessThanOrEqual(L.field.x + L.field.w + 10);
+    // The cards stand clear above the jar line.
+    for (const c of L.rangeCards) expect(c.y + RANGE_HIT.h / 2).toBeLessThan(h - 30 - JAR_H - JAR_TAG);
+    expect(L.shelf).toHaveLength(4);
+    for (let i = 1; i < 4; i++) expect(L.shelf[i].x - L.shelf[i - 1].x).toBeGreaterThanOrEqual(JAR_W + 20);
+    expect(L.shelf[3].x + JAR_W / 2).toBeLessThanOrEqual(w);
   });
 });
