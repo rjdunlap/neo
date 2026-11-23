@@ -115,7 +115,7 @@ Implemented 2026-11-22.
 
 ## Slice 2: the colour goal (after `paint-mixer 4`)
 
-In progress 2026-11-22 on branch `claude/rw10-colour-goal`.
+In progress 2026-11-22 on branch `claude/rw10-colour-goal` (draft [PR #2015](https://github.com/rjdunlap/neo/pull/2015)). Done: the requested recipe (`makeRound(5, rng, recipe)`, rule tests over 300 seeds), `BookOrigin.recipe` handed to the round as `ctx.request`, and the adapt-off rule for a book origin with a start level. Remaining: the goal rows, the book's goal pages and paged Things, the Dress colour row with `store.recolor`, voice lines, the `home` check and the offline check.
 
 The [`paint-mixer 4` batch](../GAME-BATCHES.md#paint-mixer-4-palette-unlock) (built 2026-11-22, PR #2008) added the six paint-shelf colours to the palette, to save repair's accepted colours, to the hatch colour step and to the grown-ups' select ([its definition](../definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)). This slice adds only what waited for RW10:
 

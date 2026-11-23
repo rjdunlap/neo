@@ -23,7 +23,7 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
-import type { PicnicStep, WoodlandStep } from '../content/world';
+import type { MixedColor, PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
@@ -47,7 +47,8 @@ export type StoryRound =
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
  * A `land` origin keeps the page of a full land she opened it from (clamped on arrival); `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type BookOrigin = { book: true };
+/** The collection book; `recipe` is a colour goal's (RW10 slice 2), handed to the round as `ctx.request`. */
+export type BookOrigin = { book: true; recipe?: MixedColor };
 
 export type Origin =
   | { land: LandId; page?: number }

@@ -242,12 +242,21 @@ export function makeSample(level: number, rng: Rng, avoid?: Sample): Sample {
   };
 }
 
-export function makeRound(level: number, rng: Rng): Sample[] {
+/**
+ * A round's buckets. At level 5 a requested recipe (the collection book's colour goal, RW10 slice 2) makes the first
+ * bucket that recipe, its depth still seeded; the second takes the other triple as usual. Without one nothing changes.
+ */
+export function makeRound(level: number, rng: Rng, recipe?: ShelfColour): Sample[] {
   const plan = planFor(level);
-  const out: Sample[] = [];
-  for (let i = 0; i < plan.buckets; i++) out.push(makeSample(level, rng, out[i - 1]));
+  const asked = plan.level === 5 && recipe ? RECIPES.find((r) => r.name === recipe) : undefined;
+  const out: Sample[] = asked
+    ? [{ pots: asked.pots, counts: [...asked.counts], batches: rng.int(2, 3) }]
+    : [];
+  for (let i = out.length; i < plan.buckets; i++) out.push(makeSample(level, rng, out[i - 1]));
   return out;
 }
+
+export const isShelfColour = (c: unknown): c is ShelfColour => RECIPES.some((r) => r.name === c);
 
 // ---- colour ----
 

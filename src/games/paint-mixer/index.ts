@@ -35,6 +35,7 @@ import {
   glowFor,
   layout,
   makeRound,
+  isShelfColour,
   mix,
   mixName,
   multipleOf,
@@ -110,7 +111,7 @@ class PaintMixer implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.samples = makeRound(ctx.level, ctx.rng);
+    this.samples = makeRound(ctx.level, ctx.rng, isShelfColour(ctx.request) ? ctx.request : undefined);
     this.pots = potsFor(this.sample);
     this.backdrop = new Backdrop(
       {
