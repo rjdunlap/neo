@@ -1,8 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
-import type { Option } from './logic';
+import type { Fix, Option } from './logic';
 /** Three different silhouettes; voting never depends on a color name. */
 export function toy(option: Option): Container {
+  if (option === 'tall-slide') return tallSlide(false);
   const c = new Container(),
     g = new Graphics(),
     line = { width: 5, color: ink, cap: 'round' as const, join: 'round' as const };
@@ -51,6 +52,39 @@ export function toy(option: Option): Container {
       .stroke({ width: 3, color: swatch.orange.line });
   return c;
 }
+/**
+ * Level 5's tall slide: a high deck whose ladder's first rung is well above the ground, so a small friend cannot reach it.
+ * With `step`, a wooden step box stands under the ladder.
+ */
+export function tallSlide(step: boolean): Container {
+  const c = new Container(),
+    g = new Graphics();
+  c.addChild(g);
+  c.eventMode = 'none';
+  g.moveTo(-50, 42)
+    .lineTo(-50, -62)
+    .lineTo(-15, -62)
+    .lineTo(48, 38)
+    .lineTo(64, 38)
+    .stroke({ width: 12, color: swatch.purple.fill, join: 'round' })
+    .moveTo(-62, -60)
+    .lineTo(-62, 42)
+    .moveTo(-50, -60)
+    .lineTo(-50, 42)
+    .stroke({ width: 6, color: wood.line });
+  // The rungs stop high: nothing between the ground (42) and the first rung (-12).
+  for (const y of [-48, -30, -12]) g.moveTo(-62, y).lineTo(-50, y).stroke({ width: 5, color: wood.line });
+  if (step)
+    g.rect(-78, 18, 34, 24)
+      .fill(wood.light)
+      .stroke({ width: 4, color: wood.line })
+      .moveTo(-74, 26)
+      .lineTo(-48, 26)
+      .stroke({ width: 2, color: wood.line });
+  return c;
+}
+/** The toy everyone plays on after the fix: the tall slide with a step, or a lower slide built again. */
+export const fixedToy = (fix: Fix | null) => (fix === 'lower' ? toy('slide') : tallSlide(fix === 'step'));
 export function paw(): Graphics {
   const g = new Graphics()
     .ellipse(0, 10, 14, 12)

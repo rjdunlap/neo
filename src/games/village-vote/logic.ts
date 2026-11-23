@@ -1,7 +1,11 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+/** The toys levels 1–4 draw from; level 5 adds the tall slide, which only it uses. */
 export const OPTIONS = ['slide', 'swing', 'sandpit'] as const;
-export type Option = (typeof OPTIONS)[number];
+export type Option = (typeof OPTIONS)[number] | 'tall-slide';
+/** What the voice and labels call a toy (never the raw ID's hyphen). */
+export const toyName = (o: Option) => (o === 'tall-slide' ? 'tall slide' : o);
+export type Fix = 'step' | 'lower';
 export interface Vote {
   id: string;
   option: Option;
@@ -12,6 +16,8 @@ export interface Plan {
   level: number;
   options: Option[];
   voters: Vote[];
+  /** Level 5 only: the friends the tall slide's first step leaves out (all from the group that wanted the other toy). */
+  leftOut?: string[];
 }
 export const FAMILIES: Readonly<Record<number, readonly (readonly number[])[]>> = {
   1: [
@@ -32,20 +38,27 @@ export const FAMILIES: Readonly<Record<number, readonly (readonly number[])[]>> 
     [3, 3, 1],
     [2, 2, 1],
   ],
+  // The tall slide has already won; one to three friends of the other group cannot reach its first step.
+  5: [
+    [5, 3],
+    [4, 2],
+  ],
 };
 export const NAMES = [
   'Two choices — count two groups and choose more',
   'Your pet votes too — choose freely, then count',
   'Three choices — compare tallies and choose most',
   "A tie — move the fewest group's votes to their next choice, then choose most",
+  'Everyone can use it — find who the built toy leaves out, then choose a fix',
 ];
 export function validate(p: Plan) {
   const family = FAMILIES[p.level];
   if (
     !family ||
-    p.options.length !== (p.level >= 3 ? 3 : 2) ||
+    p.options.length !== (p.level === 3 || p.level === 4 ? 3 : 2) ||
     new Set(p.options).size !== p.options.length ||
-    p.options.some((o) => !OPTIONS.includes(o))
+    p.options.some((o) => !(OPTIONS as readonly Option[]).includes(o) && o !== 'tall-slide') ||
+    p.options.includes('tall-slide') !== (p.level === 5)
   )
     throw Error('Invalid options');
   if (
@@ -55,6 +68,19 @@ export function validate(p: Plan) {
     throw Error('Invalid roster');
   const counts = p.options.map((o) => p.voters.filter((v) => v.option === o).length).sort((a, b) => b - a);
   if (!family.some((f) => f.join() === counts.join())) throw Error('Invalid vote family');
+  if (p.level === 5) {
+    const by = (o: Option) => p.voters.filter((v) => v.option === o).length,
+      other = p.options.find((o) => o !== 'tall-slide')!,
+      out = p.leftOut ?? [];
+    if (by('tall-slide') <= by(other)) throw Error('The tall slide wins at level 5');
+    if (
+      out.length < 1 ||
+      out.length > 3 ||
+      new Set(out).size !== out.length ||
+      out.some((id) => p.voters.find((v) => v.id === id)?.option !== other)
+    )
+      throw Error('Level 5 leaves out one to three friends of the other group');
+  } else if (p.leftOut !== undefined) throw Error('Left-out friends are level 5 only');
   if (p.level !== 4) {
     if (p.voters.some((v) => v.next !== undefined)) throw Error('Second choices are level 4 only');
     return;
@@ -80,6 +106,7 @@ function withNext(p: Plan, pick: (tied: Option[]) => Option): Plan {
   return { ...p, voters: p.voters.map((v) => (v.option === closed ? { ...v, next } : v)) };
 }
 export function roundFor(level: number, rng: Rng): Plan {
+  if (level === 5) return accessRound(rng);
   const counts = rng.shuffle([...rng.pick(FAMILIES[level])]);
   const options = rng.shuffle([...OPTIONS]).slice(0, counts.length);
   const assignments = counts.flatMap((n, i) => Array<Option>(n).fill(options[i]));
@@ -89,7 +116,35 @@ export function roundFor(level: number, rng: Rng): Plan {
   validate(p);
   return p;
 }
+/** Level 5: the tall slide won against one other toy (either slot); some of that toy's friends are left out. */
+function accessRound(rng: Rng): Plan {
+  const [win, lose] = rng.pick(FAMILIES[5]),
+    other = rng.pick(OPTIONS.filter((o) => o !== 'slide')),
+    options = rng.shuffle<Option>(['tall-slide', other]);
+  const assignments = rng.shuffle([
+    ...Array<Option>(win).fill('tall-slide'),
+    ...Array<Option>(lose).fill(other),
+  ]);
+  const voters = assignments.map((option, i) => ({ id: `friend-${i}`, option }));
+  const losers = rng.shuffle(voters.filter((v) => v.option === other).map((v) => v.id));
+  const p: Plan = { level: 5, options, voters, leftOut: losers.slice(0, rng.int(1, Math.min(3, lose))) };
+  validate(p);
+  return p;
+}
 export function fixture(level: number, family = 0): Plan {
+  if (level === 5) {
+    // The opening round: tall slide 5, swing 3, and all three swing friends cannot reach the first step.
+    const [win, lose] = FAMILIES[5][family];
+    const voters = [...Array<Option>(win).fill('tall-slide'), ...Array<Option>(lose).fill('swing')].map(
+      (option, i) => ({ id: `friend-${i}`, option }),
+    );
+    return {
+      level,
+      options: ['tall-slide', 'swing'],
+      voters,
+      leftOut: voters.filter((v) => v.option === 'swing').map((v) => v.id),
+    };
+  }
   const counts = FAMILIES[level][family],
     options = OPTIONS.slice(0, counts.length);
   const p: Plan = {
@@ -102,10 +157,13 @@ export function fixture(level: number, family = 0): Plan {
   // The opening tie: slide 3, swing 3, sandpit 2, and both sandpit friends would go to the swing next (5–3).
   return level === 4 ? withNext(p, (tied) => tied[1]) : p;
 }
-export type Phase = 'preference' | 'walking' | 'counting' | 'runoff' | 'feedback' | 'playing' | 'done';
+export type Phase =
+  'preference' | 'walking' | 'counting' | 'runoff' | 'access' | 'fix' | 'feedback' | 'playing' | 'done';
 /** Level 4 has two decisions (the run-off moves, then the final choice); each earns at most one hint. */
 export type Stage = 'runoff' | 'declare';
 export type Send = 'ignored' | 'nudge' | 'closed' | 'wrong' | 'moved' | 'recount';
+/** Level 5: tapping a friend at the built tall slide. */
+export type Find = 'ignored' | 'on-slide' | 'found' | 'again' | 'all-found';
 /** One election. Marks are support; acceptance always uses the immutable actual roster. */
 export class Election {
   readonly plan: Plan;
@@ -114,6 +172,10 @@ export class Election {
   /** Friends of the closed group that have walked to their second choice. */
   readonly moved = new Set<string>();
   readonly helped = new Set<Stage>();
+  /** Level 5: the left-out friends she has found so far. */
+  readonly found = new Set<string>();
+  /** Level 5: the fix she chose once everyone left out was found. */
+  fix: Fix | null = null;
   phase: Phase;
   /** The fewest group's picture once the tie is found (level 4); it takes no votes this time. */
   closed: Option | null = null;
@@ -129,7 +191,36 @@ export class Election {
     validate(plan);
     this.plan = structuredClone(plan);
     this.npc = this.plan.voters;
-    this.phase = plan.level === 2 ? 'preference' : 'counting';
+    this.phase = plan.level === 2 ? 'preference' : plan.level === 5 ? 'access' : 'counting';
+    // Level 5 opens on a vote already counted: every tally is full.
+    if (plan.level === 5) this.recount();
+  }
+  get leftOut(): readonly string[] {
+    return this.plan.leftOut ?? [];
+  }
+  /** Level 5: left-out friends not found yet. */
+  get unfound(): readonly string[] {
+    return this.leftOut.filter((id) => !this.found.has(id));
+  }
+  /** Level 5: tap a friend. One on the slide is a miss; a left-out friend is found (again is free). */
+  find(id: string): Find {
+    if (this.phase !== 'access' || !this.npc.some((v) => v.id === id)) return 'ignored';
+    if (!this.leftOut.includes(id)) {
+      this.miss();
+      return 'on-slide';
+    }
+    if (this.found.has(id)) return 'again';
+    this.found.add(id);
+    if (this.unfound.length) return 'found';
+    this.enter('fix');
+    return 'all-found';
+  }
+  /** Level 5: either fix is accepted; everyone then plays. */
+  chooseFix(f: Fix) {
+    if (this.phase !== 'fix') return false;
+    this.fix = f;
+    this.phase = 'playing';
+    return true;
   }
   /** Every vote as it stands now: a moved friend counts for its second choice. */
   get voters(): readonly Vote[] {
@@ -328,8 +419,33 @@ export function playLayout(view: { w: number; h: number; upright?: true }, count
   };
 }
 
+/** Level 5's fix cards (210 × 150), the friends and the Hint at the built tall slide. */
+export const CARD = { w: 210, h: 150 };
+export function accessLayout(view: { w: number; h: number; upright?: true }, count: number) {
+  const up = view.upright === true,
+    dy = up ? uprightDrop(view) : 0,
+    play = playLayout(view, count);
+  // Upright, the cards sit in a row below the friends, clear of the guide (x < 150) and the Hint (x > 623); sideways they
+  // flank the toy.
+  const cards: Point[] = up
+    ? [
+        { x: 270, y: 880 + dy },
+        { x: 500, y: 880 + dy },
+      ]
+    : [
+        { x: play.toy.x - 272, y: play.toy.y - 20 },
+        { x: play.toy.x + 272, y: play.toy.y - 20 },
+      ];
+  return {
+    toy: play.toy,
+    voters: play.voters,
+    cards,
+    help: up ? { x: view.w - 90, y: view.h - 100 } : { x: 90, y: 280 },
+  };
+}
+
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 4 },
+  school: { min: 3, max: 5 },
 };
