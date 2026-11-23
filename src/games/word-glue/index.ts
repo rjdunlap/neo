@@ -437,11 +437,12 @@ class WordGlue implements Game {
   }
 
   private release(key: string, node: Container, onIt: boolean) {
-    if (this.held !== key) return;
-    this.held = null;
     if (this.dead || node.destroyed) return;
+    // Settle the lift even when another finger has since taken `held`.
     this.ctx.tw.kill(node.scale);
     void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    if (this.held !== key) return;
+    this.held = null;
     if (!onIt || this.finished || this.busy) return;
     const ask = this.shownAsk;
     const out = tap(this.s, key);
@@ -471,16 +472,18 @@ class WordGlue implements Game {
     if (this.dead) return;
     this.busy = false;
     this.relayout();
+    // A short line can end before the wobble does; never leave the part tilted.
+    if (c && !c.node.destroyed) c.node.rotation = 0;
     if (this.restartWanted) return this.doRestart();
     this.askKind();
   }
 
   /** Level 5, the right part (or the supported finish): it hops into the made thing, which then goes to the shelf. */
   private async joinKind(entry: Compound) {
-    this.busy = true;
     const made = this.showing?.made;
     const right = this.cardOf(entry.second);
     if (!made || !right) return;
+    this.busy = true;
     const spot = this.madeSpot();
     this.ctx.tw.kill(right.node);
     await this.ctx.tw.to(right.node, { x: spot.x, y: spot.y }, { duration: 0.3, ease: ease.inOutSine });
