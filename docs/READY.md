@@ -26,7 +26,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-- **`thought-bubbles` upright, levels 1–3, batch `thought-bubbles upright`** (prek and school; existing-game layout change: typecheck, its rule and new upright tests, one filtered `BROWSER_SUITE=thoughtbubbles` play on an upright phone, one upright screenshot at level 2). [Definition](definitions/thought-bubbles-4.md#build-batches)
+No phone-play line is queued; a playtest fix goes in Next ten under the phone lines.
 
 ### Puzzle-page follow-ups
 
@@ -46,24 +46,19 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`truth-bridge` levels 1–2, batch `truth-bridge 1`** (new game, grown-up, Lantern Lake; new-game tier: typecheck and unit tests covering the pool counts (26, 1,191), the fit rule, the hint walk, miss counting per distinct answer, voice coverage, registry, lands and paging; one filtered `truthbridge` play at 390 × 625 with captions through the normal grown-up route, finishing level 1, then at level 2 crossing wrong, again with the same marks, following Help, rotating and finishing with one sticker; one upright screenshot, `fingerdemo` at level 2, build with the generated voice assets). [Definition](definitions/truth-bridge.md#build-batches)
 
 - **`truth-bridge` levels 3–4, batch `truth-bridge 2`** (grown-up; after batch `truth-bridge 1`; new interaction tier: typecheck and unit tests (pool counts 404 and 372, the supposition hint, the plank hint walk, voice coverage), one filtered `truthbridge` play at level 4 with a wrong plank and one hint, one upright screenshot with the planks, `fingerdemo` at level 4, build). [Definition](definitions/truth-bridge.md#build-batches)
 
-- **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
 
-- **`lasso-loops` level 8, *Make the number*, batch `lasso-loops 8`** (school; after level 7, built; new interaction tier: typecheck, rule tests, one play with a loop of more than ten, a leaf regroup, one wrong *Done* and the glow, one portrait screenshot, `fingerdemo` at level 8). [Dive](deep-dives/lasso-loops.md#new-levels-on-top), [build slices](deep-dives/lasso-loops.md#build-slices-in-order)
 
 - **`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](definitions/shell-rows-4-5.md#check-tier), [dive](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
 
-- **`word-glue` level 5, *What kind of thing?*, batch `word-glue 2`** (school; new interaction tier: typecheck and unit tests including rule, layout and upright tests, one filtered `wordglue` play on an upright phone at level 5 with one wrong tap and one hint, one upright phone screenshot, `fingerdemo` at level 5, build because voice lines and clips are added). [Definition](definitions/word-glue-5-6.md#check-tier), [dive](deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
 
 - **`word-glue` level 6, *Which way round?*, batch `word-glue 3`** (school; after batch `word-glue 2`; same tier, with a capture strip of the eight new drawings). [Definition](definitions/word-glue-5-6.md#check-tier), [dive](deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
 
-- **`thought-bubbles` level 4, *Two bubbles*, batch `thought-bubbles 2`** (school 4, about 9 and up; after batch `thought-bubbles upright`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `thoughtbubbles` play on an upright phone at level 4 with a wrong card, the glow and a *same* story, one upright screenshot, `fingerdemo` at level 4). [Definition](definitions/thought-bubbles-4.md#check-tier), [study](deep-dives/subjects/literature-meaning.md#build-slices-in-order)
 
 - **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
 
