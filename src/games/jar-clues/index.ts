@@ -19,7 +19,7 @@ import {
   LEVELS,
   Misses,
   NUMBERS,
-  clueLine,
+  clueLines,
   describeLevel,
   fault,
   faultLine,
@@ -38,6 +38,7 @@ import {
   toggled,
   wrongNumbers,
   type Board,
+  type Clue,
   type Hint,
   type Marks,
   type Pebble,
@@ -91,6 +92,8 @@ class JarClues implements Game {
   /** The boards a hint has been counted on: a hint on the same board again is free, however it was asked for. */
   private readonly hintedOn = new Set<string>();
   private gen = 0;
+  /** Bumped by every line said, so a clue's later lines give way. */
+  private voice = 0;
   private L: Layout;
   private clock = 0;
   /** The note's words; null shows the default for the phase (what to do, or the earlier clues). */
@@ -266,15 +269,31 @@ class JarClues implements Game {
     return this.board.clues[this.shown - 1];
   }
 
+  /** One line. Anything said stops a clue's lines still to come. */
+  private say(id: string) {
+    this.voice++;
+    return this.ctx.say(line(id));
+  }
+
+  /** A clue's lines in turn: a one-of-two clue says its lead line and then its two clues, unless something else is said. */
+  private async sayClue(c: Clue) {
+    const v = ++this.voice;
+    const g = this.gen;
+    for (const id of clueLines(c)) {
+      if (v !== this.voice || g !== this.gen) return;
+      await this.ctx.say(line(id));
+    }
+  }
+
   /** The clue card: the clue again, and the note back to the earlier clues. */
   private rehear() {
     if (this.phase === 'clues' && this.noteText !== null) {
       this.noteText = null;
       this.draw();
     }
-    if (this.phase === 'clues' && this.current) void this.ctx.say(line(clueLine(this.current)));
-    else if (this.phase === 'guess') void this.ctx.say(line('jarclues.guess'));
-    else if (this.phase === 'last') void this.ctx.say(line('jarclues.last'));
+    if (this.phase === 'clues' && this.current) void this.sayClue(this.current);
+    else if (this.phase === 'guess') void this.say('jarclues.guess');
+    else if (this.phase === 'last') void this.say('jarclues.last');
   }
 
   /** First clue, Next clue or Last look. */
@@ -283,7 +302,7 @@ class JarClues implements Game {
     if (this.phase === 'guess') {
       if (this.guess === null) {
         sfx.tick();
-        void this.ctx.say(line('jarclues.guess'));
+        void this.say('jarclues.guess');
         return;
       }
       return this.nextClue();
@@ -302,7 +321,7 @@ class JarClues implements Game {
     this.hintNow = null;
     this.noteText = null;
     this.draw();
-    void this.ctx.say(line(clueLine(this.current)));
+    void this.sayClue(this.current);
   }
 
   /** A board that does not hold: a boing and the lowest wrong number with a true reason. One miss per distinct board at a clue. */
@@ -316,9 +335,11 @@ class JarClues implements Game {
     this.draw();
     const g = this.gen;
     const at = this.boardKey();
-    void this.ctx
-      .say(line(faultLine(f)))
-      .then(() => (g === this.gen ? this.ctx.say(line(clueLine(f.clue ?? this.current))) : undefined))
+    const said = this.say(faultLine(f));
+    // The clue follows only if nothing else has been said since; the earned hint still comes for this board.
+    const v = this.voice;
+    void said
+      .then(() => (g === this.gen && v === this.voice ? this.sayClue(f.clue ?? this.current) : undefined))
       .then(() => {
         // The second counted miss brings one assisted hint, for the board it was earned on.
         if (due && g === this.gen && this.phase === 'clues' && this.boardKey() === at) this.showHint();
@@ -341,7 +362,7 @@ class JarClues implements Game {
       this.hintNow = null;
       this.noteText = 'This board fits the clue. Ask for the next one.';
       this.draw();
-      void this.ctx.say(line(hintLine(null)));
+      void this.say(hintLine(null));
       return;
     }
     if (!this.hintedOn.has(at)) {
@@ -354,18 +375,18 @@ class JarClues implements Game {
     this.draw();
     // The hint's line, then the clue's own while the numbers are lit.
     const g = this.gen;
-    void this.ctx
-      .say(line(hintLine(this.hintNow)))
-      .then(() =>
-        g === this.gen && this.phase === 'clues' ? this.ctx.say(line(clueLine(this.current))) : undefined,
-      );
+    const said = this.say(hintLine(this.hintNow));
+    const v = this.voice;
+    void said.then(() =>
+      g === this.gen && v === this.voice && this.phase === 'clues' ? this.sayClue(this.current) : undefined,
+    );
   }
 
   /** The Help button, and the pause sheet's "show a hint". */
   askForHint() {
     if (this.finished) return;
     sfx.tick();
-    if (this.phase === 'guess') return void this.ctx.say(line('jarclues.guess'));
+    if (this.phase === 'guess') return void this.say('jarclues.guess');
     if (this.phase === 'clues') this.showHint();
   }
 
@@ -378,7 +399,7 @@ class JarClues implements Game {
     this.hintNow = null;
     this.noteText = 'The clues have run out. Look at the jar: which one does it hold?';
     this.draw();
-    void this.ctx.say(line('jarclues.last'));
+    void this.say('jarclues.last');
   }
 
   /** A card is chosen: a judgement, never a miss. */
@@ -422,9 +443,9 @@ class JarClues implements Game {
     this.draw();
     this.ctx.pet.cheer();
     sfx.tada();
-    await this.ctx.say(line('jarclues.holds'));
+    await this.say('jarclues.holds');
     if (g !== this.gen) return;
-    if (close) await this.ctx.say(line('jarclues.close'));
+    if (close) await this.say('jarclues.close');
     if (g !== this.gen) return;
     await this.ctx.tw.wait(0.6);
     if (g !== this.gen) return;

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   CLUES,
+  EITHERS,
   JAR,
   Misses,
   NUMBERS,
@@ -9,10 +10,12 @@ import {
   PLANS,
   allowedBy,
   clueById,
+  clueLines,
   drawBoard,
   fault,
   fillShare,
   follow,
+  faultLine,
   fresh,
   hint,
   holds,
@@ -41,12 +44,26 @@ const right = (b: Board, shown: number): Marks => {
 };
 
 describe('Jar Clues clues', () => {
-  it('has the closed list for levels 1–2: 22 range, 2 parity, 2 counting by, 10 ends in, 10 digit sums, 2 digit orders', () => {
+  it('has the closed list: 59 plain clues by kind and 248 one-of-two clues', () => {
     const by = (k: string) => CLUES.filter((c) => c.kind === k).length;
-    expect([by('range'), by('parity'), by('by'), by('ends'), by('sum'), by('order')]).toEqual([
-      22, 2, 2, 10, 10, 2,
-    ]);
-    expect(new Set(CLUES.map((c) => c.id)).size).toBe(CLUES.length);
+    expect(
+      ['range', 'parity', 'by', 'ends', 'sum', 'order', 'multiple', 'notmultiple', 'special'].map(by),
+    ).toEqual([22, 2, 2, 10, 10, 2, 6, 3, 2]);
+    expect(CLUES.length).toBe(59);
+    expect(EITHERS.length).toBe(248);
+    const ids = [...CLUES, ...EITHERS].map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    // Each one-of-two clue pairs two clues of different kinds, each a range, parity, counting-by or multiple clue.
+    for (const c of EITHERS) {
+      const [a, b] = c.pair!;
+      expect(a.kind).not.toBe(b.kind);
+      for (const p of [a, b]) expect(['range', 'parity', 'by', 'multiple']).toContain(p.kind);
+      expect(clueLines(c)).toEqual([
+        'jarclues.clue.either',
+        `jarclues.clue.${a.id}`,
+        `jarclues.clue.${b.id}`,
+      ]);
+    }
   });
 
   it('tells the truth about every number from 1 to 60', () => {
@@ -72,8 +89,40 @@ describe('Jar Clues clues', () => {
     expect(clueById('tens-bigger').fails(7)).toContain('digits are 0 and 7');
   });
 
+  it('tells the truth about multiples, primes and squares', () => {
+    expect(truthOf('mult-7')).toEqual([7, 14, 21, 28, 35, 42, 49, 56]);
+    expect(truthOf('mult-9')).toEqual([9, 18, 27, 36, 45, 54]);
+    expect(truthOf('mult-4').length).toBe(15);
+    expect(truthOf('notmult-3').length).toBe(40);
+    expect(truthOf('notmult-5')).not.toContain(35);
+    expect(truthOf('prime')).toEqual([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]);
+    expect(truthOf('square')).toEqual([1, 4, 9, 16, 25, 36, 49]);
+    expect(clueById('prime').fails(1)).toBe('1 is not a prime number');
+    expect(clueById('prime').fails(51)).toBe('51 is 3 times 17');
+    expect(clueById('notmult-4').fails(28)).toBe('28 is 7 times 4');
+  });
+
+  it('a one-of-two clue holds exactly when one of its two holds', () => {
+    const c = clueById('either-more-20-mult-3');
+    expect(c.words).toBe('Exactly one of these is true: more than 20, a multiple of 3');
+    for (const n of NUMBERS) expect(c.test(n)).toBe(n > 20 !== (n % 3 === 0));
+    expect(truthOf(c.id).slice(0, 6)).toEqual([3, 6, 9, 12, 15, 18]);
+    expect(c.test(24)).toBe(false);
+    expect(c.test(22)).toBe(true);
+    expect(c.fails(24)).toBe(
+      'it is more than 20 and a multiple of 3: both are true, and the clue says exactly one',
+    );
+    expect(c.fails(14)).toBe(
+      '14 is less than 20 and 14 is not a multiple of 3: neither is true, and the clue says exactly one',
+    );
+    expect(c.fits(22)).toBe(
+      'exactly one of the pair is true: it is more than 20, but 22 is not a multiple of 3',
+    );
+    expect(c.fits(9)).toBe('exactly one of the pair is true: it is a multiple of 3, but 9 is less than 20');
+  });
+
   it('gives every clue a reason true of each number: fits when it fits, fails when it does not', () => {
-    for (const c of CLUES)
+    for (const c of [...CLUES, ...EITHERS])
       for (const n of NUMBERS) {
         const said = c.test(n) ? c.fits(n) : c.fails(n);
         expect(said.length).toBeGreaterThan(4);
@@ -83,7 +132,7 @@ describe('Jar Clues clues', () => {
 });
 
 describe('Jar Clues generator', () => {
-  it.each([1, 2])('finds a valid board within 200 draws at level %i, meeting its row', (level) => {
+  it.each([1, 2, 3, 4])('finds a valid board within 200 draws at level %i, meeting its row', (level) => {
     const plan = planFor(level);
     for (const b of boards(level)) {
       expect(b.draws).toBeLessThanOrEqual(200);
@@ -93,10 +142,15 @@ describe('Jar Clues generator', () => {
       if (plan.needs.length) expect(b.clues.some((c) => plan.needs.includes(c.kind))).toBe(true);
       expect(b.clues.filter((c) => c.side === 'more').length).toBeLessThanOrEqual(1);
       expect(b.clues.filter((c) => c.side === 'fewer').length).toBeLessThanOrEqual(1);
+      // No plain clue twice, whether on its own or as half of the one-of-two clue.
+      const halves = b.clues.flatMap((c) => c.pair ?? [c]).map((c) => c.id);
+      expect(new Set(halves).size).toBe(halves.length);
+      if (level >= 3) expect(b.clues.some((c) => c.kind === 'ends')).toBe(false);
+      expect(b.clues.filter((c) => c.kind === 'either').length).toBe(level === 4 ? 1 : 0);
     }
   });
 
-  it.each([1, 2])(
+  it.each([1, 2, 3, 4])(
     'keeps the count among the last two or three numbers, the level gap apart, at level %i',
     (level) => {
       const { gap, cut } = planFor(level);
@@ -118,7 +172,7 @@ describe('Jar Clues generator', () => {
   );
 
   it('covers most counts and many different boards', () => {
-    for (const level of [1, 2]) {
+    for (const level of [1, 2, 3, 4]) {
       const bs = boards(level, 400, 5000);
       expect(new Set(bs.map((b) => b.count)).size).toBeGreaterThan(40);
       expect(new Set(bs.map((b) => b.clues.map((c) => c.id).join())).size).toBeGreaterThan(200);
@@ -148,6 +202,23 @@ describe('Jar Clues generator', () => {
     // The definition's level-2 example: fewer than 40, more than 5, even, digits add to 3 leaves 12 and 30.
     expect(lastStanding(c(['fewer-40', 'more-5', 'even', 'sum-3'], 12, 2))).toEqual([12, 30]);
     expect(valid(c(['fewer-40', 'more-5', 'even', 'sum-3'], 12, 2))).toBe(true);
+    // Level 3: more than 25, fewer than 50, not a multiple of 3, digits add to 10 leaves 28, 37 and 46.
+    const three = ['more-25', 'fewer-50', 'notmult-3', 'sum-10'];
+    expect(lastStanding(c(three, 37, 3))).toEqual([28, 37, 46]);
+    expect(valid(c(three, 37, 3))).toBe(true);
+    // A level-3 board needs a multiple, not-a-multiple or special clue, and "ends in" has left the pool.
+    expect(valid(c(['more-25', 'fewer-50', 'odd', 'sum-10'], 37, 3))).toBe(false);
+    expect(valid(c(['more-25', 'fewer-50', 'notmult-3', 'ends-7'], 37, 3))).toBe(false);
+    // Level 4: the definition's example leaves 34, 43 and 52.
+    const four = ['either-more-20-mult-3', 'fewer-55', 'more-10', 'notmult-5', 'sum-7'];
+    expect(lastStanding(c(four, 43, 4))).toEqual([34, 43, 52]);
+    expect(valid(c(four, 43, 4))).toBe(true);
+    // The one-of-two clue's "more than" is not a board "More than"; but no plain clue may repeat one of its halves,
+    // and a level-4 board needs exactly one one-of-two clue.
+    expect(valid(c(['either-more-20-mult-3', 'fewer-55', 'more-20', 'notmult-5', 'sum-7'], 43, 4))).toBe(
+      false,
+    );
+    expect(valid(c(['more-25', 'fewer-55', 'more-10', 'notmult-5', 'sum-7'], 43, 4))).toBe(false);
   });
 
   it('a draw that cannot finish returns null rather than a bad board', () => {
@@ -158,7 +229,7 @@ describe('Jar Clues generator', () => {
 });
 
 describe('Jar Clues check, misses and explanations', () => {
-  const sample = [...boards(1, 40, 7000), ...boards(2, 40, 8000)];
+  const sample = [1, 2, 3, 4].flatMap((level) => boards(level, 40, 7000 + level * 1000));
 
   it('a board holds exactly when the standing numbers are the ones every shown clue allows', () => {
     for (const b of sample)
@@ -200,7 +271,9 @@ describe('Jar Clues check, misses and explanations', () => {
             expect(m[f!.n - 1]).toBe(false);
             expect(f!.clue!.test(f!.n)).toBe(false);
             expect(b.clues.slice(0, k)).toContain(f!.clue);
-            expect(f!.words).toContain(f!.clue!.fails(f!.n));
+            // A one-of-two reason starts the sentence, so it is capitalised.
+            expect(f!.words).toContain(f!.clue!.fails(f!.n).slice(1));
+            expect(faultLine(f!)).toBe(f!.clue!.pair ? 'jarclues.fault.either' : 'jarclues.fault.standing');
           } else {
             expect(m[f!.n - 1]).toBe(true);
             expect(b.clues.slice(0, k).every((c) => c.test(f!.n))).toBe(true);
@@ -228,6 +301,25 @@ describe('Jar Clues check, misses and explanations', () => {
       "5 is still standing. The clue says the digits add to 7, and 5's digits are 0 and 5, which add to 5.",
     );
   });
+
+  it('explains a one-of-two clue for a both-true and a neither-true number', () => {
+    const b: Board = { level: 4, count: 43, clues: ['either-more-20-mult-3', 'fewer-55'].map(clueById) };
+    const ok = right(b, 1);
+    const both = fault(b, 1, toggled(ok, 24, false))!;
+    expect(both.words).toBe(
+      '24 is still standing. It is more than 20 and a multiple of 3: both are true, and the clue says exactly one.',
+    );
+    expect(faultLine(both)).toBe('jarclues.fault.either');
+    const neither = fault(b, 1, toggled(ok, 14, false))!;
+    expect(neither.words).toBe(
+      '14 is still standing. 14 is less than 20 and 14 is not a multiple of 3: neither is true, and the clue says exactly one.',
+    );
+    // Crossed off but allowed: the pair's true half and its false half.
+    const back = fault(b, 1, toggled(ok, 22, true))!;
+    expect(back.words).toBe(
+      '22 is crossed off. It fits every clue so far: exactly one of the pair is true: it is more than 20, but 22 is not a multiple of 3.',
+    );
+  });
 });
 
 describe('Jar Clues hints', () => {
@@ -248,7 +340,7 @@ describe('Jar Clues hints', () => {
 
   it('following hints makes one more row right each time and reaches the board that holds in at most six', () => {
     const rng = new Rng(77);
-    for (const level of [1, 2])
+    for (const level of [1, 2, 3, 4])
       for (const b of boards(level, 60, 9000 + level * 100))
         for (let k = 1; k <= b.clues.length; k++) {
           // A wrong board: the right one with some numbers flipped, or the untouched board.
@@ -287,6 +379,14 @@ describe('Jar Clues guess and last choice', () => {
   });
 });
 
+describe('Jar Clues levels', () => {
+  it('has levels 1–4, the ten line at 1–2 and a plain jar at 3–4', () => {
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
+    expect(PLANS.map((p) => p.tenLine)).toEqual([true, true, false, false]);
+    expect(PLANS.map((p) => p.clues)).toEqual([3, 4, 4, 5]);
+  });
+});
+
 describe('Jar Clues jar', () => {
   it('fills the jar to the count’s share: 30 half fills it', () => {
     expect(fillShare(30)).toBe(0.5);
@@ -306,7 +406,7 @@ describe('Jar Clues jar', () => {
   });
 
   it('separates the last numbers by several pebbles’ height', () => {
-    for (const level of [1, 2])
+    for (const level of [1, 2, 3, 4])
       for (const b of boards(level, 60, 4000)) {
         const last = lastStanding(b);
         for (let i = 1; i < last.length; i++)
