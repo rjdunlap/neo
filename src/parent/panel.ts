@@ -18,7 +18,7 @@ import { atHomeCard } from '../content/athome';
 import { talkCards } from '../content/talk';
 import { puzzlePageCard } from '../content/puzzle-page';
 import { projectRecap } from './recap';
-import { PET_COLORS, type PetColor } from '../content/world';
+import { colorChoices, isMixedColor, type PetColor } from '../content/world';
 import { SPECIES } from '../creatures/species';
 import {
   ageCopy,
@@ -122,7 +122,7 @@ export function openParentPanel(
       </div>
       <div class="parent__row">
         <label for="p-pet-color">Your friend's color</label>
-        <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
+        <select id="p-pet-color"></select>
       </div>
       <p class="muted" data-no-friend hidden>No friend yet: they meet one when their egg hatches.</p>
 
@@ -247,6 +247,10 @@ ${
     const { birth, startBand } = store.entry;
     const friend = store.companion;
     petName.value = friend?.name ?? '';
+    // This player's colours: the eight, the paint-shelf colours they have mixed in Paint Mixer, and the friend's own.
+    petColor.innerHTML = colorChoices(store.petColors, friend?.look.color)
+      .map((c) => `<option value="${c}">${isMixedColor(c) ? `${c} (mixed in Paint Mixer)` : c}</option>`)
+      .join('');
     petColor.value = friend?.look.color ?? 'teal';
     petName.disabled = petColor.disabled = !friend;
     $('[data-no-friend]').toggleAttribute('hidden', !!friend);

@@ -24,7 +24,31 @@ export const PET_COLORS = [
   'orange',
   'red',
 ] as const satisfies readonly ColorName[];
-export type PetColor = (typeof PET_COLORS)[number];
+/**
+ * The paint shelf's six colours (Paint Mixer level 5, the same names as its recipes): a friend's colour once she has
+ * mixed one (batch paint-mixer 4). Which she has is read from her journal (`mixedColors`), never stored, so nothing is lost.
+ */
+export const MIXED_COLORS = [
+  'peach',
+  'coral',
+  'blush',
+  'lavender',
+  'rose',
+  'lilac',
+] as const satisfies readonly ColorName[];
+export type MixedColor = (typeof MIXED_COLORS)[number];
+/** Every colour a friend may wear: the eight everyone has, then the mixed six. Save repair accepts all of them. */
+export const ALL_PET_COLORS = [...PET_COLORS, ...MIXED_COLORS] as const;
+export type PetColor = (typeof ALL_PET_COLORS)[number];
+export const isPetColor = (c: unknown): c is PetColor => (ALL_PET_COLORS as readonly unknown[]).includes(c);
+export const isMixedColor = (c: unknown): c is MixedColor => (MIXED_COLORS as readonly unknown[]).includes(c);
+/**
+ * The colours to offer for a friend: hers (`have`), in the order of `ALL_PET_COLORS`, plus the friend's own colour when
+ * it is not among them (a restored or copied friend keeps a colour this profile has not mixed).
+ */
+export function colorChoices(have: readonly PetColor[], current?: PetColor | null): PetColor[] {
+  return ALL_PET_COLORS.filter((c) => have.includes(c) || c === current);
+}
 export const STICKER_PAGES = ['meadow', 'beach', 'farm', 'sea', 'space'] as const;
 export type StickerPage = (typeof STICKER_PAGES)[number];
 /** The treehouse's six free furnishings. Everyone has all of them from the start; they can be moved and turned, never lost. */
