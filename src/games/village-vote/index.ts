@@ -327,7 +327,7 @@ export class VillageVote implements Game {
             .lineTo(46, -40)
             .stroke({ width: 5, color: wood.line }),
         );
-        const c = friend(v.id, 0.17);
+        const c = friend(v.id, 0.15);
         c.position.set(-14, 46);
         art.addChild(c);
       } else {
@@ -335,7 +335,7 @@ export class VillageVote implements Game {
         mini.scale.set(0.5);
         mini.position.set(6, 22);
         art.addChild(mini);
-        const c = friend(v.id, 0.17);
+        const c = friend(v.id, 0.19);
         c.position.set(-14, -10);
         art.addChild(c);
       }

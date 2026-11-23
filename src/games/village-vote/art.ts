@@ -72,8 +72,8 @@ export function tallSlide(step: boolean): Container {
     .moveTo(-50, -60)
     .lineTo(-50, 42)
     .stroke({ width: 6, color: wood.line });
-  // The rungs stop high: nothing between the ground (42) and the first rung (2).
-  for (const y of [-42, -20, 2]) g.moveTo(-62, y).lineTo(-50, y).stroke({ width: 5, color: wood.line });
+  // The rungs stop high: nothing between the ground (42) and the first rung (-12).
+  for (const y of [-48, -30, -12]) g.moveTo(-62, y).lineTo(-50, y).stroke({ width: 5, color: wood.line });
   if (step)
     g.rect(-78, 18, 34, 24)
       .fill(wood.light)
