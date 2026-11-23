@@ -135,7 +135,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 1. **LM1 · Define Thought Bubbles 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/thought-bubbles.md), PR #1065): the stage, the bubble and cards at 110 units, the authored story pools (about eight per level) and their beats, the belief model and its rule tests, the away/watching mix, accounting, how-to steps, voice lines, the land decision and the bot.
 2. **Build Thought Bubbles 1–3** (new-game tier): **built 2026-11-02**, PR #1122.
 3. **LM3 · Story-talk card** (grown-ups' page, plain HTML): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1796.
-4. **LM2 · Define Thought Bubbles 4**: **defined 2026-11-22**, [definition](../../definitions/thought-bubbles-4.md), two build batches queued; next to define is **LM4 Who is telling?**
+4. **LM2 · Define Thought Bubbles 4**: **defined 2026-11-22**, [definition](../../definitions/thought-bubbles-4.md), batch 1 built (PR #2020); batch `thought-bubbles 2` (level 4, *Two bubbles*: `src/games/thought-bubbles/`, its how-to card, voice lines and the `thoughtbubbles` suite) claimed on `claude/thought-bubbles-two-bubbles`; next to define is **LM4 Who is telling?**
 5. LM5, LM6 and LM7 stay sketches (LM5 and LM6 need a reviewer for any real story; LM7 waits on a Lantern Lake capacity test).
 
 ## What was built and what ran
