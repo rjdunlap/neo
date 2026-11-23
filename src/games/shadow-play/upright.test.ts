@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { captionPlace } from '../../ui/caption-layout';
 import { thumbPx, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
-import { distanceAt, markX, shadowLayout } from './layout';
+import { distanceAt, markX, shadowLayout, turnArea } from './layout';
 import { MARKS } from './logic';
 
 const shortPhone = captionPlace(computeView(390, 625, NO_INSETS, true), true);
@@ -51,6 +51,10 @@ describe('Shadow Play upright', () => {
         // To scale: mark 6 is half way to the screen, and a point reads back as its distance.
         expect(markX(r, 6)).toBeCloseTo((r.lampX + r.screenX) / 2, 6);
         expect(distanceAt(r, markX(r, 4))).toBeCloseTo(4, 6);
+        expect(Math.min(r.chip.w, r.chip.h)).toBeGreaterThanOrEqual(64);
+        const turn = turnArea(r, !!view.upright);
+        expect(Math.min(turn.w, turn.h)).toBeGreaterThanOrEqual(64);
+        expect(turn.y + turn.h).toBeLessThan(view.upright ? 42 : 58);
         expect(xs[0] - r.handle.w / 2).toBeGreaterThanOrEqual(r.chip.x + r.chip.w / 2);
         expect(Math.min(r.handle.w, r.handle.h)).toBeGreaterThanOrEqual(64);
         expect(markX(r, 6) + r.handle.w / 2).toBeLessThanOrEqual(r.row.x + r.row.w / 2);
@@ -58,8 +62,9 @@ describe('Shadow Play upright', () => {
     },
   );
 
-  it('records the smallest target in CSS pixels at 390 x 844: a rail row, 50.8', () => {
-    const boxes = targets(shadowLayout(UPRIGHT_VIEWS.phone));
-    expect(thumbPx(Math.min(...boxes.map(({ w, h }) => Math.min(w, h))))).toBe(50.8);
+  it('records the smallest target in CSS pixels at 390 x 844: the turn handle, 44.7', () => {
+    const layout = shadowLayout(UPRIGHT_VIEWS.phone);
+    const boxes = [...targets(layout), ...layout.rails.flatMap((r) => [r.chip, turnArea(r, true)])];
+    expect(thumbPx(Math.min(...boxes.map(({ w, h }) => Math.min(w, h))))).toBe(44.7);
   });
 });
