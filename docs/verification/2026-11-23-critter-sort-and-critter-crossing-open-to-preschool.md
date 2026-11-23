@@ -1,0 +1,5 @@
+# 2026-11-23 — Critter Sort and Critter Crossing open to preschool (PR #2072)
+
+**Changed:** Critter Sort gained a `preschool` row (`{ min: 1, max: 6, order: [6, 1] }`) and Critter Crossing `preschool: { min: 1, max: 1 }`; no new plans, voice or how-to lines. Saves audit: preschool had no saved levels for either game; a preschool profile with a saved Crossing level 8 lands on 1 (registry test). Pre-K and school ladders unchanged.
+**Ran:** `npm run typecheck`; full `npm test` (504 files) after updating the registry band assertion and regenerating docs; targeted rerun of registry, content and both games' tests (32 files, 353 passed); `fingerdemo` with `FINGER_ONLY=critter-sort,critter-crossing FINGER_BAND=preschool` (Sort level 6 preschool 6.2 s, level 11 school 51.1 s; Crossing level 1 preschool 7.2 s, level 7 school 21.6 s); a landscape phone (844 × 390) probe with a preschool profile showed Sort on Barnyard's first page and Crossing on Puzzle Peaks' second page, no page errors.
+**Not run:** build (no shared files or assets changed), a full scripted round play (levels unchanged), offline.
