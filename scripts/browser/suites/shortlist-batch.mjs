@@ -352,9 +352,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await drop(3);
               await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0);
               await drop(-3);
-              await drop(-3); // Stable, full, short stack: a different explained miss.
+              await drop(-3); // Stable, full, short stack: a different explained experiment.
               await idle(n); // Its spoken explanation finishes before constructive help appears.
-              assert.deepEqual(await counts(), [2, 1]);
+              assert.deepEqual(await counts(), [0, 1], 'a topple and a short stack are unscored experiments');
               assert.ok(
                 await page.evaluate(() => neo.scene.game.glowTop),
                 'impossible prefix highlights the actual top block',
@@ -366,7 +366,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await page.waitForTimeout(500);
               // Repeating help after revision keeps the task's hint counted once.
               await page.evaluate(() => neo.scene.game.reachHint());
-              assert.deepEqual(await counts(), [2, 1]);
+              assert.deepEqual(await counts(), [0, 1]);
               assert.ok(
                 await page.evaluate(() => neo.scene.game.hintGhost.visible),
                 'a glowing place for the next block',
@@ -409,15 +409,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
         assert.deepEqual(
           await score('block-tower'),
-          mode === 'flag' || mode === 'match' || mode === 'reach'
+          mode === 'flag' || mode === 'match'
             ? [2, 1]
-            : mode === 'mend'
+            : mode === 'mend' || mode === 'reach'
               ? [0, 1]
               : [0, 0],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
+          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'unscored topple and short stack explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
         );
       }
 
