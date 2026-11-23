@@ -1,1 +1,0 @@
-**Define Word Glue levels 4–5** (docs only, one session; study follow-up VW2). [Study](../../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order), [record](../../archive/DECISIONS-2026-11-17.md#games)

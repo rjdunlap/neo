@@ -25,7 +25,7 @@
 
 **Starts as:** tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" (lap opens one step earlier, on one big picture)
 
-**Grows into:** level 1 joins any pair of five (counts nothing); level 2 asks for a word and gives three pictures, the two parts and one that makes no word with either (a wrong pair wobbles and the pet says its word); level 3 keeps a shared head (house, box, brush) and a friend asks for it, a wrong friend briefly gets the wrong thing; two misses or Show a hint glow the right pair or friend, one hint per ask; level 4 (lap only, first in lap's order) is one big picture and a touch anywhere sticks its partner on; the definition's next levels (what kind of thing, which way round) are not built, and take the next free level numbers
+**Grows into:** level 1 joins any pair of five (counts nothing); level 2 asks for a word and gives three pictures, the two parts and one that makes no word with either (a wrong pair wobbles and the pet says its word); level 3 keeps a shared head (house, box, brush) and a friend asks for it, a wrong friend briefly gets the wrong thing; two misses or Show a hint glow the right pair or friend, one hint per ask; level 4 (lap only, first in lap's order) is one big picture and a touch anywhere sticks its partner on; the [next levels](../definitions/word-glue-5-6.md) (what kind of thing, which way round; saved as levels 5 and 6) are defined but not built, and take the next free level numbers
 
 ## Design notes
 
