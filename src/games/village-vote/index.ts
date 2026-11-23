@@ -291,6 +291,8 @@ export class VillageVote implements Game {
     this.busy = true;
     const gen = this.generation;
     if (result === 'tie') {
+      // A new decision: Hint speaks again before it shows the ghost (it still counts once per decision).
+      this.asked.delete('declare');
       this.draw();
       sfx.bell(3);
       const [a] = e.comparison();
@@ -535,6 +537,8 @@ export class VillageVote implements Game {
       this.busy = true;
       void this.sharedPlay(this.generation);
     }
+    // A resize can cut the tie line short; the run-off instruction is said again.
+    if (this.election.phase === 'runoff') this.instruct();
   }
   destroy() {
     this.alive = false;

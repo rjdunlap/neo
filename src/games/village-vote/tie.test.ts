@@ -157,12 +157,23 @@ describe('Village Vote level 4, a tie', () => {
     expect(e.hints).toBe(1);
     moveAll(e);
     expect(e.glowing).toBe(false);
+    e.help();
+    expect([e.glowing, e.hints]).toEqual([true, 2]);
     e.declare('slide');
     e.feedbackDone();
     e.declare('slide');
     e.feedbackDone();
     expect([e.glowing, e.hints, e.misses]).toEqual([true, 2, 4]);
+  });
+  it("help before the tie is the final decision's one hint and does not light the final choice after the run-off", () => {
+    const e = new Election(fixture(4, 0));
     e.help();
-    expect(e.hints).toBe(2);
+    expect([e.glowing, e.hints]).toEqual([true, 1]);
+    e.declare('swing');
+    expect(e.glowing).toBe(false);
+    moveAll(e);
+    expect([e.glowing, e.hints]).toEqual([false, 1]);
+    e.help();
+    expect(e.hints).toBe(1);
   });
 });

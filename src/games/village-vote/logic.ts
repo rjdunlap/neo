@@ -122,6 +122,8 @@ export class Election {
   misses = 0;
   completions = 0;
   private stageMisses = 0;
+  /** The glow shows only for help given in the current decision, so help before the tie does not light the final choice. */
+  private lit = false;
   private resume: Phase = 'counting';
   constructor(plan: Plan) {
     validate(plan);
@@ -141,7 +143,7 @@ export class Election {
     return this.phase === 'runoff' ? 'runoff' : 'declare';
   }
   get glowing() {
-    return this.helped.has(this.stage);
+    return this.lit;
   }
   total(o: Option) {
     return this.voters.filter((v) => v.option === o).length;
@@ -242,6 +244,7 @@ export class Election {
   }
   help() {
     this.helped.add(this.stage);
+    this.lit = true;
   }
   complete() {
     if (this.phase !== 'playing') return false;
@@ -257,6 +260,7 @@ export class Election {
   private enter(phase: Phase) {
     this.phase = phase;
     this.stageMisses = 0;
+    this.lit = false;
   }
   /** Two misses in one decision bring the glow (at levels 1–3 there is only one decision). */
   private miss() {
@@ -293,9 +297,9 @@ export function layout(view: { w: number; h: number; upright?: true }, e: Electi
       .filter((v) => v.option === o)
       .sort((a, b) => Number(e.moved.has(a.id)) - Number(e.moved.has(b.id)))
       .forEach((v, j) => {
-        // Upright, pairs sit at ±62 and the left column fills from its right, so a lone third-row friend (a five-vote column
+        // Level 4 upright, pairs sit at ±62 and the left column fills from its right, so a lone third-row friend (a five-vote column
         // on the left after a run-off) stays clear of the guide's corner; the right column's stays clear of the Hint.
-        const side = (j % 2 === 0 ? -1 : 1) * (up ? (i === 0 ? -62 : 62) : 58);
+        const side = (j % 2 === 0 ? -1 : 1) * (up && e.plan.level === 4 ? (i === 0 ? -62 : 62) : 58);
         voters[v.id] = { x: xs[i] + xoff + side, y: first + Math.floor(j / 2) * gap };
       }),
   );
