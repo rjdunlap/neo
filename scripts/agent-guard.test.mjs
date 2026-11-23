@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { blockReason } from './agent-guard.mjs';
+import { blockReason, evaluateHookPayload } from './agent-guard.mjs';
+import { findAgentDrift } from './sync-agents.mjs';
+
+const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
 
 describe('agent guard hook', () => {
   it('blocks an unfiltered browser run and allows a filtered one', () => {
@@ -38,10 +42,42 @@ describe('agent guard hook', () => {
     expect(blockReason('git status --short')).toBeNull();
     expect(blockReason(undefined)).toBeNull();
   });
+
+  it('speaks Claude Code / Codex and Antigravity PreToolUse payloads', () => {
+    const blockedClaude = evaluateHookPayload(
+      JSON.stringify({ tool_input: { command: 'npm run test:browser' } }),
+      'darwin',
+    );
+    expect(blockedClaude.exitCode).toBe(2);
+    expect(blockedClaude.stderr).toMatch(/BROWSER_SUITE/);
+
+    const allowedClaude = evaluateHookPayload(
+      JSON.stringify({ tool_input: { command: 'git status --short' } }),
+      'darwin',
+    );
+    expect(allowedClaude).toEqual({ exitCode: 0 });
+
+    const blockedAgy = evaluateHookPayload(
+      JSON.stringify({ toolCall: { name: 'run_command', args: { CommandLine: 'npm run test:browser' } } }),
+      'darwin',
+    );
+    expect(blockedAgy.exitCode).toBe(0);
+    expect(JSON.parse(blockedAgy.stdout)).toMatchObject({ decision: 'deny' });
+    expect(JSON.parse(blockedAgy.stdout).reason).toMatch(/BROWSER_SUITE/);
+
+    const allowedAgy = evaluateHookPayload(
+      JSON.stringify({ toolCall: { name: 'run_command', args: { CommandLine: 'git status --short' } } }),
+      'darwin',
+    );
+    expect(allowedAgy.exitCode).toBe(0);
+    expect(JSON.parse(allowedAgy.stdout)).toEqual({ decision: 'allow' });
+
+    expect(evaluateHookPayload('not json', 'darwin')).toEqual({ exitCode: 0 });
+  });
 });
 
-// Codex stops reading instruction files at project_doc_max_bytes: 32 KiB by default, raised to 64 KiB on the
-// developer's machine (2026-10-23). Past the limit Codex silently loses the end of AGENTS.md (Git, claims, merging).
+// Codex stops reading instruction files at project_doc_max_bytes (32 KiB by default), and Antigravity caps each
+// rule file at 24,000 bytes. Past either limit an agent silently loses the end of AGENTS.md (Git, claims, merging).
 describe('AGENTS.md size', () => {
   it('stays under the Codex instruction limit with room to spare', () => {
     const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length;
@@ -58,14 +94,37 @@ describe('AGENTS.md size', () => {
       'AGENTS.md passed 32 KiB: move detail into docs/SESSION-GUIDE.md or its owning doc',
     ).toBeLessThanOrEqual(32 * 1024);
   });
-  // It was trimmed under 32 KiB twice (2026-10-23, 2026-11-06) and crept back each time, so sessions kept shaving a few
-  // bytes. On 2026-11-07 it became rules and pointers only (about 16 KB). This budget leaves 8 KB to grow before it fails,
-  // and when it does fail the fix is to move detail out, not to trim words: see docs/SESSION-GUIDE.md#keeping-agentsmd-small.
-  it('stays within its 24 KiB budget of rules and pointers', () => {
+  // Antigravity caps each rule file at 24,000 bytes (and on 2026-11-07 AGENTS.md became rules and pointers only,
+  // about 18 KB). When this fails the fix is to move detail out, not to trim words: docs/SESSION-GUIDE.md.
+  it('stays within its 24,000-byte budget of rules and pointers', () => {
     const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length;
     expect(
       bytes,
-      'AGENTS.md passed its 24 KiB budget: it holds rules and pointers only. Move detail, reasons and dates to docs/SESSION-GUIDE.md, DESIGN.md or the owning doc and link to it',
-    ).toBeLessThanOrEqual(24 * 1024);
+      'AGENTS.md passed its 24,000-byte budget (Antigravity rule cap): it holds rules and pointers only. Move detail, reasons and dates to docs/SESSION-GUIDE.md, DESIGN.md or the owning doc and link to it',
+    ).toBeLessThanOrEqual(24_000);
+  });
+});
+
+describe('multi-agent configs and synced subagents', () => {
+  it('keeps Codex and Antigravity subagent definitions in sync with .claude/agents/', () => {
+    expect(
+      findAgentDrift(root),
+      'Run `node scripts/sync-agents.mjs` to regenerate .codex/agents/ and .agents/plugins/puddle-island/agents/',
+    ).toEqual([]);
+  });
+
+  it('wires scripts/agent-guard.mjs in Claude Code, Codex, and Antigravity hook configs', () => {
+    const claude = JSON.parse(readFileSync(join(root, '.claude', 'settings.json'), 'utf8'));
+    const codex = JSON.parse(readFileSync(join(root, '.codex', 'hooks.json'), 'utf8'));
+    const agyHooks = JSON.parse(
+      readFileSync(join(root, '.agents', 'plugins', 'puddle-island', 'hooks.json'), 'utf8'),
+    );
+    const agyPlugin = JSON.parse(
+      readFileSync(join(root, '.agents', 'plugins', 'puddle-island', 'plugin.json'), 'utf8'),
+    );
+    expect(claude.hooks.PreToolUse[0].hooks[0].command).toMatch(/agent-guard\.mjs/);
+    expect(codex.hooks.PreToolUse[0].hooks[0].command).toMatch(/agent-guard\.mjs/);
+    expect(agyHooks['agent-guard'].PreToolUse[0].hooks[0].command).toMatch(/agent-guard\.mjs/);
+    expect(agyPlugin.name).toBe('puddle-island');
   });
 });

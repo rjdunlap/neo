@@ -64,6 +64,7 @@ import { HOW_TO as hatBandHowTo } from '../games/hat-band/howto.ts';
 import { HOW_TO as helperHouseHowTo } from '../games/helper-house/howto.ts';
 import { HOW_TO as inchwormHowTo } from '../games/inchworm/howto.ts';
 import { HOW_TO as islandBridgesHowTo } from '../games/island-bridges/howto.ts';
+import { HOW_TO as jarCluesHowTo } from '../games/jar-clues/howto.ts';
 import { HOW_TO as jarSortHowTo } from '../games/jar-sort/howto.ts';
 import { HOW_TO as jellyDrumsHowTo } from '../games/jelly-drums/howto.ts';
 import { HOW_TO as keepHouseHowTo } from '../games/keep-house/howto.ts';
@@ -271,6 +272,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'helper-house': helperHouseHowTo,
   'inchworm': inchwormHowTo,
   'island-bridges': islandBridgesHowTo,
+  'jar-clues': jarCluesHowTo,
   'jar-sort': jarSortHowTo,
   'jelly-drums': jellyDrumsHowTo,
   'keep-house': keepHouseHowTo,
