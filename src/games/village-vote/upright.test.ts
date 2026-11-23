@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { Election, FAMILIES, fixture, layout, OPTIONS, playLayout } from './logic';
+import { Rng } from '../../engine/random';
+import { Election, FAMILIES, fixture, layout, OPTIONS, playLayout, roundFor } from './logic';
 
 /**
  * Village Vote held upright (chunk 31, docs/definitions/phone-portrait.md): every level and vote family at the upright
@@ -51,6 +52,40 @@ describe.each(Object.entries(views))('Village Vote upright on %s', (_, v) => {
     });
   }
 });
+
+describe.each(Object.entries(views))(
+  'Village Vote level 4 upright on %s, every seeded round and winner slot',
+  (_, v) => {
+    it('keeps the paws apart and off the guide before the tie, mid run-off and after every move', () => {
+      const slots = new Set<number>();
+      for (let seed = 1; seed <= 60; seed++) {
+        const e = new Election(roundFor(4, new Rng(seed)));
+        slots.add(e.plan.options.indexOf(e.winner));
+        const check = () => {
+          const lay = layout(v, e);
+          const t: Target[] = Object.entries(lay.voters).map(([id, p]) => ({
+            what: `paw ${id}`,
+            x: p.x,
+            y: p.y,
+            w: 110,
+            h: 110,
+          }));
+          lay.boards.forEach((p, i) => t.push({ what: `tally ${i}`, x: p.x, y: p.y, w: 190, h: 105 }));
+          t.push({ what: 'help', x: lay.help.x, y: lay.help.y, w: 110, h: 110 });
+          expect(uprightProblems(v, t, 100), `seed ${seed} ${e.phase} moved ${e.moved.size}`).toEqual([]);
+        };
+        check();
+        e.declare(e.winner);
+        for (const w of [...e.waiting]) {
+          e.select(w.id);
+          e.send(w.next!);
+          check();
+        }
+      }
+      expect(slots.size).toBe(3);
+    });
+  },
+);
 
 describe('Village Vote sideways layout is unchanged', () => {
   it('keeps the buttons, paws and the play scene where they were', () => {

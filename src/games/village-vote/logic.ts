@@ -293,7 +293,10 @@ export function layout(view: { w: number; h: number; upright?: true }, e: Electi
       .filter((v) => v.option === o)
       .sort((a, b) => Number(e.moved.has(a.id)) - Number(e.moved.has(b.id)))
       .forEach((v, j) => {
-        voters[v.id] = { x: xs[i] + xoff + (j % 2 === 0 ? -58 : 58), y: first + Math.floor(j / 2) * gap };
+        // Upright, pairs sit at ±62 and the left column fills from its right, so a lone third-row friend (a five-vote column
+        // on the left after a run-off) stays clear of the guide's corner; the right column's stays clear of the Hint.
+        const side = (j % 2 === 0 ? -1 : 1) * (up ? (i === 0 ? -62 : 62) : 58);
+        voters[v.id] = { x: xs[i] + xoff + side, y: first + Math.floor(j / 2) * gap };
       }),
   );
   return {
