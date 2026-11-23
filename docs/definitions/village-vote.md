@@ -1,6 +1,6 @@
 # Village Vote levels 1–6 (CC1 / CC4 / CC5)
 
-**Built:** levels 1–5 (levels 1–3 PR #983; level 4, batch `village-vote 2`, PR #2012; level 5, batch `village-vote 3`, PR #2018; see the [game page](../games/village-vote.md)); to build level 6, read “Level 6, *Chip in*”.
+**Built:** levels 1–6 (levels 1–3 PR #983; level 4 PR #2012; level 5 PR #2018; level 6 PR #2022). See the [game page](../games/village-vote.md).
 
 Defined 2026-10-25 from the [community-civics study](../deep-dives/subjects/community-civics.md#first-games-proposed-ladder-village-vote), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and [adopted October23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). Worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`, branch `codex/village-vote-cc1-definition`, claim `4796460e`, [PR #969](https://github.com/rjdunlap/neo/pull/969), base `da20f87c` plus docs diff. **CC1 defined the packet; CC4 built levels1–3 on2026-10-26 ([PR #983](https://github.com/rjdunlap/neo/pull/983)).** The implemented contract follows; current proof and remaining person/device gates are recorded below.
 
@@ -167,11 +167,11 @@ The generator never gives the two friends in family A different second choices: 
 | Uneven A | 10 | 1, 1, 2, 2, 3, 3 | 19 | none (a 1-shell purse caps equal shares at 6) |
 | Uneven B | 12 | 1, 2, 2, 3, 3, 3 | 20 | none |
 
-Counts from one uncommitted enumeration in the session's scratch folder; the builder's rule tests derive them, not this table.
+The first school round uses Equal. The second draws from the uneven families. Subsequent rounds draw from all three. The rule tests enumerate the contribution plans for each family.
 
 **Taps.** An empty purse ignores taps with "That purse is empty"; no miss. Taps after the jar is full are ignored. There is no wrong tap at this level, so it records no misses.
 
-**Model.** A level-6 plan carries `cost` and `purses: number[]` beside the voters; `Election` gains `jar` and `given: number[]` and a `give(i)` that refuses an empty purse or a full jar. The vote shown is a fixed two-picture count (as level 5), any winner slot.
+**Model.** A level-6 plan carries `funding` with `cost` and `purses: number[]` beside the voters; `Election` gains `jar` and `given: number[]` and a `give(i)` that refuses an empty purse or a full jar. The vote shown is a fixed two-picture count (as level 5), any winner slot.
 
 ### Accounting, help and finishing
 
@@ -222,7 +222,7 @@ These are starting points; the builder measures art, speech labels, safe insets 
 
 1. **`village-vote 2` (level 4, *A tie*)**, built 2026-11-22.
 2. **`village-vote 3` (level 5, *Everyone can use it*)**, built 2026-11-22.
-3. **`village-vote 4` (level 6, *Chip in*)**, the next build. Shell art reuses Market Stall's `coinArt` (`src/games/market-stall/index.ts`) or the reuse map's coin entry if one exists by then; the taps stay `onTap` on whole purses.
+3. **`village-vote 4` (level 6, *Chip in*)**, built 2026-11-22. The jar and purses use the shared cockle shell drawing from `src/art/shore.ts`. Whole purses use `onTap`.
 
 ### Check tier
 

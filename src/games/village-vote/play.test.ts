@@ -155,7 +155,7 @@ describe('Village Vote public taps and lifecycle', () => {
   });
   it('the public-input bot finishes every level/family with clean accounting, including losing-pet choices', async () => {
     const seen = new Set<string>();
-    for (const level of [1, 2, 3, 4, 5])
+    for (const level of [1, 2, 3, 4, 5, 6])
       for (let seed = 1; seed <= 12; seed++) {
         const { g, ctx, tap, settle } = make(level, seed);
         seen.add(
@@ -175,7 +175,7 @@ describe('Village Vote public taps and lifecycle', () => {
         if (level === 2) expect(g.election.pet).not.toBe(g.election.winner);
         g.destroy();
       }
-    expect(seen.size).toBe(11);
+    expect(seen.size).toBe(12);
   });
   it('level 4: the tie, a wrong send, the run-off glow and ghost, and the final choice count one hint per decision', async () => {
     const { g, ctx, tap, settle } = make(4);

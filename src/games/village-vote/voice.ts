@@ -33,4 +33,10 @@ export const VOICE = {
   'village-vote.fix-lower': [
     'A lower slide meant building it again. A step would have been quick to add. Now everyone can play!',
   ],
+  'village-vote.fund': ['The {thing} costs {n} shells. Tap the purses to fill the jar.'],
+  'village-vote.in-jar': ['{n} in the jar. Still {a} to go.'],
+  'village-vote.purse-empty': ['That purse is empty.'],
+  'village-vote.purse-help': ['Tap a purse that still has shells.'],
+  'village-vote.equal-shares': ['The jar is full! Everyone gave the same.'],
+  'village-vote.uneven-shares': ['The jar is full! Some friends gave more.'],
 } satisfies Record<string, string[]>;

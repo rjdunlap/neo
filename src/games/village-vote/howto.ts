@@ -40,9 +40,19 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Then choose a fix: add a step, or build a lower slide. Either one lets everyone play.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'Tap any purse with shells to put one in the jar. Fill all the jar slots to build the winning toy.',
+    },
   ],
   finish: 'Everyone tries the chosen toy, then the round ends with one sticker.',
   note: [
+    {
+      from: 6,
+      to: 6,
+      text: 'Any way of filling the jar works. Empty purse taps are free. Help shows a purse that still has shells.',
+    },
     {
       from: 2,
       to: 2,
