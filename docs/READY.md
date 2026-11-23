@@ -46,6 +46,10 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
+- **`truth-bridge` levels 1–2, batch `truth-bridge 1`** (new game, grown-up, Lantern Lake; new-game tier: typecheck and unit tests covering the pool counts (26, 1,191), the fit rule, the hint walk, miss counting per distinct answer, voice coverage, registry, lands and paging; one filtered `truthbridge` play at 390 × 625 with captions through the normal grown-up route, finishing level 1, then at level 2 crossing wrong, again with the same marks, following Help, rotating and finishing with one sticker; one upright screenshot, `fingerdemo` at level 2, build with the generated voice assets). [Definition](definitions/truth-bridge.md#build-batches)
+
+- **`truth-bridge` levels 3–4, batch `truth-bridge 2`** (grown-up; after batch `truth-bridge 1`; new interaction tier: typecheck and unit tests (pool counts 404 and 372, the supposition hint, the plank hint walk, voice coverage), one filtered `truthbridge` play at level 4 with a wrong plank and one hint, one upright screenshot with the planks, `fingerdemo` at level 4, build). [Definition](definitions/truth-bridge.md#build-batches)
+
 - **Definitions of the grown-up Lantern Lake games** (one docs-only session each; the land pages, so no capacity test is owed): Fence the Field ([strategy games](deep-dives/subjects/strategy-games.md)), Shadow Play ([theatre](deep-dives/subjects/theatre-puppetry.md)), Key It Out ([informational reading](deep-dives/subjects/informational-reading.md)), Jar Clues ([estimation](deep-dives/subjects/estimation.md)), Harbor Orders ([money](deep-dives/subjects/money-economy.md)). [Record](archive/DECISIONS-2026-11-17.md#games)
 
 ### Game slices from the dives (refilled 2026-11-17)
