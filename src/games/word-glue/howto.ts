@@ -13,9 +13,18 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 1, text: 'Drag one picture onto the other, or tap one, and they join.' },
     { from: 2, to: 2, text: 'Listen for the word, then join the two pictures that make it.' },
     { from: 3, to: 3, text: 'A friend needs the thing in the middle; join that friend to it.' },
+    { from: 5, to: 5, text: 'Listen to the question, then tap the part the thing really is.' },
     { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
+    {
+      from: 5,
+      to: 5,
+      text: 'Touch a part and slide off to hear its word without answering; tap the thing itself to hear the question again.',
+    },
   ],
-  finish: 'Every pair is joined and its new thing has come alive.',
+  finish: [
+    { from: 1, to: 4, text: 'Every pair is joined and its new thing has come alive.' },
+    { from: 5, to: 5, text: 'Every question is answered and its thing has come alive.' },
+  ],
   note: [
     {
       from: 1,
@@ -36,6 +45,16 @@ export const HOW_TO: GameHowTo = {
       from: 3,
       to: 3,
       text: 'Every new word is two whole words she already knows. A wrong friend makes a real thing, and the pet says who it is for; that is one miss. After two misses the friend who asked glows, which counts as a hint. Hearing a word again never counts.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'In English the last part names the thing: a doghouse is a house. Many languages put it first, so this question works in English only.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'A wrong tap is one miss and the pet says what the thing is; after two misses the right picture glows, which counts as a hint.',
     },
   ],
 };

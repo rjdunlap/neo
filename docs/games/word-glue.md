@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
-| school | 3 |
+| school | 3, 5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 2 | What do they make? Find the two pictures that make the asked word |
 | 3 | Who is it for? Join the friend who needs the thing in the middle |
 | 4 | One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things) |
+| 5 | What kind of thing? Tap the part the made thing really is (5 asks) |
 
 <!-- end generated -->
 
