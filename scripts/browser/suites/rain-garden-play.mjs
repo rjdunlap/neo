@@ -131,53 +131,107 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
     }
 
-    // Level 4 in portrait (authored: soil over stone, low bed marked): try it, a wrong Check (one miss) and its screenshot,
-    // the same arrangement checked again counts nothing, Show me flips the top bed (one hint), she flips the low bed, the Check passes 1/1.
-    await page.setViewportSize({ width: 768, height: 1024 });
+    if (from <= 4) {
+      // Level 4 in portrait (authored: soil over stone, low bed marked): try it, a wrong Check (one miss) and its screenshot,
+      // the same arrangement checked again counts nothing, Show me flips the top bed (one hint), she flips the low bed, the Check passes 1/1.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(600);
+      await launch('rain-garden', 4, 'Mia', 'school');
+      await settle();
+      s = await state();
+      assert.deepEqual([s.level, s.bed, s.surfaces, s.current], [4, 1, ['soil', 'stone'], null]);
+      await cloud();
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.current, s.drops, s.misses],
+        [[2, 0, 2], 4, 0],
+        'the top soil kept two, two ran past the stone',
+      );
+      const checkTap = () => page.evaluate(() => kit.tapOn(neo.scene.game.check));
+      await checkTap();
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.passed, s.drops],
+        [1, 0, false, 4],
+        'a wrong Check: one miss, drops stay',
+      );
+      await screenshot('rain-garden-4-portrait-wrong-check');
+      await checkTap();
+      await settle();
+      assert.equal((await state()).misses, 1, 'the same arrangement again counts nothing');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.surfaces, s.hints, s.current, s.drops],
+        [['stone', 'stone'], 1, null, 0],
+        'Show me flips the top bed to fresh',
+      );
+      await page.evaluate(() => kit.tapOn(neo.scene.game.beds[1]));
+      await settle();
+      assert.deepEqual((await state()).surfaces, ['stone', 'soil']);
+      await checkTap();
+      await finished('rain-garden');
+      assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        'Rain Garden 4: portrait, try it, wrong Check 1 miss (screenshot), same arrangement again no miss, Show me flips the top bed (1 hint), low bed flipped, Check passes 1/1; passed',
+      );
+    }
+
+    // Level 5 on a phone held upright (authored board A: soil / soil / stone, middle and low marked, six drops): try it,
+    // a wrong Check (the flower bed stayed dry; one miss) and its screenshot, Show me flips the top bed (one hint), she
+    // flips the low bed, the Check passes 1/1.
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(600);
-    await launch('rain-garden', 4, 'Mia', 'school');
+    await launch('rain-garden', 5, 'Mia', 'school');
     await settle();
     s = await state();
-    assert.deepEqual([s.level, s.bed, s.surfaces, s.current], [4, 1, ['soil', 'stone'], null]);
+    assert.deepEqual(
+      [s.level, s.board, s.marked, s.units, s.surfaces, s.current],
+      [5, 'A', [1, 2], 6, ['soil', 'soil', 'stone'], null],
+    );
+    // FROM_LEVEL=5 runs on a touch phone (fixture.mjs), so the board lays out on the upright area.
+    if (from >= 5) assert.equal(await page.evaluate(() => neo.view.upright), true, 'an upright view');
     await cloud();
     await settle();
     s = await state();
     assert.deepEqual(
       [s.current, s.drops, s.misses],
-      [[2, 0, 2], 4, 0],
-      'the top soil kept two, two ran past the stone',
+      [[2, 2, 0, 2], 6, 0],
+      'top and middle kept two, two ran past the low stone',
     );
-    const checkTap = () => page.evaluate(() => kit.tapOn(neo.scene.game.check));
-    await checkTap();
+    const checkTap5 = () => page.evaluate(() => kit.tapOn(neo.scene.game.check));
+    await checkTap5();
     await settle();
     s = await state();
     assert.deepEqual(
       [s.misses, s.hints, s.passed, s.drops],
-      [1, 0, false, 4],
+      [1, 0, false, 6],
       'a wrong Check: one miss, drops stay',
     );
-    await screenshot('rain-garden-4-portrait-wrong-check');
-    await checkTap();
-    await settle();
-    assert.equal((await state()).misses, 1, 'the same arrangement again counts nothing');
+    await screenshot('rain-garden-5-upright-wrong-check');
     await page.evaluate(() => neo.scene.game.askForHint());
     await settle();
     s = await state();
     assert.deepEqual(
-      [s.surfaces, s.hints, s.current, s.drops],
-      [['stone', 'stone'], 1, null, 0],
-      'Show me flips the top bed to fresh',
+      [s.surfaces, s.hints, s.current],
+      [['stone', 'soil', 'stone'], 1, null],
+      'Show me flips the top bed to stone',
     );
-    await page.evaluate(() => kit.tapOn(neo.scene.game.beds[1]));
+    await page.evaluate(() => kit.tapOn(neo.scene.game.beds[2]));
     await settle();
-    assert.deepEqual((await state()).surfaces, ['stone', 'soil']);
-    await checkTap();
+    assert.deepEqual((await state()).surfaces, ['stone', 'soil', 'soil']);
+    await checkTap5();
     await finished('rain-garden');
-    assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+    assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(400);
     log(
-      'Rain Garden 4: portrait, try it, wrong Check 1 miss (screenshot), same arrangement again no miss, Show me flips the top bed (1 hint), low bed flipped, Check passes 1/1; passed',
+      'Rain Garden 5: upright phone, board A, try it, wrong Check 1 miss (screenshot), Show me flips the top bed (1 hint), low bed flipped, Check passes 1/1; passed',
     );
   }
   return { rainGardenPlay };

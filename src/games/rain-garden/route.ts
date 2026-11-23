@@ -109,7 +109,7 @@ export class RainRoute implements Game {
     const c = this.layout.cloud;
     this.cloud = cloudArt(c.w, c.h);
     // Level 5's shower size changes by board, so the cloud shows it before it rains.
-    if (this.round.level === 5) this.cloud.addChild(cloudDropsArt(this.round.board.units, c.h / 2 + 4));
+    if (this.round.level === 5) this.cloud.addChild(cloudDropsArt(this.round.board.units, c.h / 2 - 16));
     this.cloud.hitArea = new Rectangle(-c.w / 2, -c.h / 2, c.w, c.h);
     onTap(this.cloud, () => this.tapCloud());
     this.rewind.visible = false;

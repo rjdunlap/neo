@@ -27,6 +27,7 @@ export async function createFixture(browser, suite) {
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
     (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
+    (suite === 'raingarden' && Number(process.env.FROM_LEVEL) >= 5) ||
     (suite === 'bunnypatches' && process.env.BUNNY_ONLY === 'upright') ||
     (suite === 'sumcrates' && process.env.SUMCRATES_ONLY === 'upright') ||
     (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1') ||
