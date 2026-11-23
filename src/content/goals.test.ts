@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BANDS } from '../progress/bands';
 import { defaults, MAX_CREATURES, meetIn, migrate } from '../progress/save';
-import { WELCOME_GOAL } from './goals';
+import { COLOUR_GOALS, GOALS, isGoalId, WELCOME_GOAL } from './goals';
+import { RECIPES } from '../games/paint-mixer/logic';
+import { MIXED_COLORS } from './world';
 import { beginWelcome, showsContinue, WELCOME_MET_AT } from './welcome';
 
 describe('the welcome goal', () => {
@@ -42,6 +44,26 @@ describe('the welcome goal', () => {
       expect(migrate({ book: { goal } }).book).toEqual({ goal: null });
     expect(migrate({ profile: { band: 'school' }, book: { goal: WELCOME_GOAL.id } }).book.goal).toBe(
       WELCOME_GOAL.id,
+    );
+  });
+
+  it('has one colour goal per paint-shelf recipe, at school, done exactly when the journal holds the colour', () => {
+    expect(COLOUR_GOALS.map((goal) => goal.colour)).toEqual([...MIXED_COLORS]);
+    expect(COLOUR_GOALS.map((goal) => goal.path.recipe).sort()).toEqual(RECIPES.map((r) => r.name).sort());
+    expect(new Set(GOALS.map((goal) => goal.id)).size).toBe(GOALS.length);
+    const save = defaults();
+    for (const goal of COLOUR_GOALS) {
+      expect(goal.id).toBe(`colour:${goal.colour}`);
+      expect(isGoalId(goal.id)).toBe(true);
+      expect(goal.path).toEqual({ game: 'paint-mixer', level: 5, recipe: goal.colour });
+      for (const { id } of BANDS) expect(goal.reachable(save, id), id).toBe(id === 'school');
+      expect(goal.done(save)).toBe(false);
+    }
+    save.journal.found.push('paint-mixer:peach');
+    expect(COLOUR_GOALS.filter((goal) => goal.done(save)).map((goal) => goal.id)).toEqual(['colour:peach']);
+    // A chosen colour goal survives repair, at any band.
+    expect(migrate({ profile: { band: 'prek' }, book: { goal: 'colour:lilac' } }).book.goal).toBe(
+      'colour:lilac',
     );
   });
 

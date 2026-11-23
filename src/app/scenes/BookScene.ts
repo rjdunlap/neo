@@ -3,22 +3,24 @@ import { cream, swatch, wood } from '../../art/palette';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import type { Goal } from '../../content/goals';
+import type { ColourGoal, Goal, WELCOME_GOAL } from '../../content/goals';
 import type { LineId } from '../../content/voice-script';
 import { welcomeFriend } from '../../content/welcome';
-import { BOOK_ARROW_RADIUS, BOOK_HEADING, bookLayout, bookPages } from '../../creatures/book-layout';
+import type { MixedColor } from '../../content/world';
+import { BOOK_ARROW_RADIUS, BOOK_HEADING, bookLayout, bookPages, dotStep } from '../../creatures/book-layout';
 import { makePortrait } from '../../creatures/companion';
 import { CARD } from '../../creatures/friends-layout';
 import { CORNER_RADIUS } from '../../creatures/home-layout';
 import { SPECIES } from '../../creatures/species';
 import { onTap } from '../../engine/input';
+import { gameById } from '../../games/registry';
 import type { View } from '../../engine/view';
 import type { Individual } from '../../progress/save';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton, spring, squash } from '../../ui/buttons';
 import { arrowIcon, basketIcon, houseIcon } from '../../ui/icons';
 import { label, namePill } from '../../ui/text';
-import type { App } from '../App';
+import type { App, BookAt } from '../App';
 import { WayOut } from '../leave';
 import { Scene } from '../Scene';
 
@@ -36,6 +38,22 @@ function bedArt() {
     .lineTo(39, 20)
     .stroke({ color: wood.line, width: 3 });
 }
+
+/** A paint jar for a shelf colour: empty with a dab of the colour on its label, or full once she has mixed it. */
+function jarArt(colour: MixedColor, full: boolean) {
+  const { fill, line, light } = swatch[colour];
+  const jar = new Graphics().roundRect(-40, -34, 80, 84, 16).fill(swatch.white.fill);
+  if (full) jar.roundRect(-40, -18, 80, 68, 16).fill(fill).ellipse(-18, 2, 7, 16).fill(light);
+  else jar.circle(0, 12, 17).fill(fill).stroke({ color: line, width: 3 });
+  return jar
+    .roundRect(-40, -34, 80, 84, 16)
+    .stroke({ color: wood.line, width: 5 })
+    .roundRect(-33, -52, 66, 20, 7)
+    .fill(full ? fill : cream)
+    .stroke({ color: wood.line, width: 5 });
+}
+
+const colourName = (colour: MixedColor) => colour[0].toUpperCase() + colour.slice(1);
 
 /** Read-only collection pages, apart from the optional starred goal. */
 export class BookScene extends Scene {
@@ -58,6 +76,8 @@ export class BookScene extends Scene {
   private readonly spread = new Container();
   readonly cards: Container[] = [];
   private goalArt?: Container;
+  /** Paint Mixer's hub icon on a colour goal's path button: tracked while its page shows. */
+  private pathIcon?: ReturnType<Scene['track']>;
   star?: RoundButton;
   path?: RoundButton;
   private previewed?: string;
@@ -68,15 +88,18 @@ export class BookScene extends Scene {
     this.root,
   );
 
-  constructor(app: App, at?: { friend: string } | { joined: true }) {
+  constructor(app: App, at?: BookAt) {
     super(app);
     this.pages = bookPages(store.data, !!at && 'joined' in at);
-    if (at && 'friend' in at) {
-      const page = this.pages.findIndex(
-        (p) => p.kind === 'friends' && p.friends.some((f) => f.id === at.friend),
-      );
-      if (page >= 0) this.page = page;
-    }
+    if (!at || 'joined' in at) return;
+    const page = this.pages.findIndex((p) =>
+      'friend' in at
+        ? p.kind === 'friends' && p.friends.some((f) => f.id === at.friend)
+        : 'colour' in at
+          ? p.kind === 'goals' && p.goal.kind === 'colour' && p.goal.colour === at.colour
+          : p.kind === 'things',
+    );
+    if (page >= 0) this.page = page;
   }
 
   private arrow(dir: -1 | 1) {
@@ -128,16 +151,20 @@ export class BookScene extends Scene {
   private sayPage() {
     this.speechRequest++;
     const page = this.pages[this.page];
-    void voice.say(
-      page.kind === 'friends' && page.species
-        ? `species.${page.species}`
-        : page.kind === 'things'
-          ? 'book.things'
-          : 'book.pick',
-    );
+    if (page.kind === 'goals' && page.goal.kind === 'colour') void this.sayColour(page.goal);
+    else
+      void voice.say(
+        page.kind === 'friends' && page.species
+          ? `species.${page.species}`
+          : page.kind === 'things'
+            ? 'book.things'
+            : 'book.pick',
+      );
   }
 
   private buildPage() {
+    if (this.pathIcon) this.untrack(this.pathIcon);
+    this.pathIcon = undefined;
     this.spread.removeChildren().forEach((node) => node.destroy({ children: true }));
     this.heading.removeChildren().forEach((node) => node.destroy({ children: true }));
     this.cards.length = 0;
@@ -156,7 +183,10 @@ export class BookScene extends Scene {
       34,
     );
     this.heading.addChild(title);
-    if (page.kind === 'goals') this.buildGoal(page.goals[0]);
+    if (page.kind === 'goals') {
+      if (page.goal.kind === 'colour') this.buildColourGoal(page.goal);
+      else this.buildGoal(page.goal);
+    }
     if (page.kind === 'friends') {
       if (page.species) {
         const portrait = makePortrait(
@@ -168,15 +198,19 @@ export class BookScene extends Scene {
       }
       for (const who of page.friends) this.cards.push(this.friendCard(who));
     }
-    if (page.kind === 'things' && page.bed)
-      this.cards.push(
-        this.card(bedArt(), 'Basket bed', (node) => this.leave(node, () => this.app.go.room(), 'book.bed')),
-      );
+    if (page.kind === 'things') {
+      if (page.bed)
+        this.cards.push(
+          this.card(bedArt(), 'Basket bed', (node) => this.leave(node, () => this.app.go.room(), 'book.bed')),
+        );
+      for (const colour of page.colours) this.cards.push(this.colourCard(colour));
+    }
     for (const card of this.cards) this.spread.addChild(card);
     this.dots.clear();
+    const step = dotStep(this.pages.length);
     this.pages.forEach((_, i) =>
       this.dots
-        .circle((i - (this.pages.length - 1) / 2) * 24, 0, i === this.page ? 8 : 5)
+        .circle((i - (this.pages.length - 1) / 2) * step, 0, i === this.page ? 8 : 5)
         .fill(i === this.page ? swatch.teal.line : swatch.teal.fill),
     );
     this.resize(this.view);
@@ -227,15 +261,19 @@ export class BookScene extends Scene {
     });
   }
 
-  private buildGoal(goal: Goal) {
-    const adopted = welcomeFriend(store.data.creatures.owned);
-    if (adopted) {
-      this.cards.push(this.friendCard(adopted));
-      return;
-    }
-    const species = goal.species(store.data);
-    const portrait = makePortrait({ species, look: { color: SPECIES[species].color } }, CARD, true);
-    this.goalArt = this.card(portrait, SPECIES[species].name, () => void this.sayGoal(species));
+  /** A mixed colour among her things: a tap opens Dress for her companion, where the colour row offers it. */
+  private colourCard(colour: MixedColor) {
+    return this.card(jarArt(colour, true), colourName(colour), (node) => {
+      const companion = store.companion;
+      if (!companion) {
+        void voice.say(`color.${colour}`);
+        return;
+      }
+      this.leave(node, () => this.app.go.dress(companion.id, { book: true, things: true }), 'book.wear');
+    });
+  }
+
+  private starButton(goal: Goal) {
     const star = new Graphics();
     const drawStar = () => {
       star
@@ -245,7 +283,7 @@ export class BookScene extends Scene {
         .stroke({ color: swatch.yellow.line, width: 4 });
     };
     drawStar();
-    this.star = new RoundButton(star, swatch.white, CORNER_RADIUS, () => {
+    return new RoundButton(star, swatch.white, CORNER_RADIUS, () => {
       if (this.out.leaving) return;
       this.speechRequest++;
       const chosen = store.data.book.goal !== goal.id;
@@ -253,13 +291,64 @@ export class BookScene extends Scene {
       drawStar();
       void voice.say(chosen ? 'book.chosen' : 'book.cleared');
     });
+  }
+
+  /**
+   * A paint-shelf colour (RW10 slice 2): an empty jar and a path into Paint Mixer level 5 with that recipe requested, or
+   * the full jar once her journal holds the colour. Binary, never a count; a mixed colour keeps its page.
+   */
+  private buildColourGoal(goal: ColourGoal) {
+    const done = goal.done(store.data);
+    this.goalArt = this.card(
+      jarArt(goal.colour, done),
+      colourName(goal.colour),
+      () => void this.sayColour(goal),
+    );
+    this.star = this.starButton(goal);
+    this.spread.addChild(this.goalArt, this.star);
+    const mixer = gameById(goal.path.game);
+    if (done || !mixer) return;
+    const { level, recipe } = goal.path;
+    const icon = this.track(mixer.hubIcon());
+    this.pathIcon = icon;
+    // A hub icon is drawn for a land's large card: here it is the picture on a 100-unit round button.
+    const art = new Container();
+    art.addChild(icon);
+    const bounds = art.getLocalBounds();
+    art.scale.set(70 / Math.max(1, bounds.width, bounds.height));
+    art.pivot.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    this.path = new RoundButton(art, swatch.white, CORNER_RADIUS, () =>
+      this.leave(this.path!, () =>
+        this.app.go.game(mixer.id, store.data.profile.band, undefined, false, { book: true, recipe }, level),
+      ),
+    );
+    this.spread.addChild(this.path);
+  }
+
+  private async sayColour(goal: ColourGoal) {
+    const request = ++this.speechRequest;
+    await voice.say(`color.${goal.colour}`);
+    if (this.app.scene === this && request === this.speechRequest && !this.out.leaving)
+      void voice.say(goal.done(store.data) ? 'book.mixed' : 'book.colour');
+  }
+
+  private buildGoal(goal: typeof WELCOME_GOAL) {
+    const adopted = welcomeFriend(store.data.creatures.owned);
+    if (adopted) {
+      this.cards.push(this.friendCard(adopted));
+      return;
+    }
+    const species = goal.species(store.data);
+    const portrait = makePortrait({ species, look: { color: SPECIES[species].color } }, CARD, true);
+    this.goalArt = this.card(portrait, SPECIES[species].name, () => void this.sayGoal(species));
+    this.star = this.starButton(goal);
     this.path = new RoundButton(basketIcon(), swatch.orange, CORNER_RADIUS, () =>
       this.leave(this.path!, () => this.app.go.project(undefined, { book: goal.path.project }), 'book.meet'),
     );
     this.spread.addChild(this.goalArt, this.star, this.path);
   }
 
-  private async sayGoal(species: ReturnType<Goal['species']>) {
+  private async sayGoal(species: ReturnType<(typeof WELCOME_GOAL)['species']>) {
     const request = ++this.speechRequest;
     await voice.say(`species.${species}`);
     if (this.app.scene === this && request === this.speechRequest && !this.out.leaving)

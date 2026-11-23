@@ -339,8 +339,7 @@ ${
   petColor.addEventListener('change', () => {
     const friend = store.companion;
     if (!friend) return;
-    friend.look.color = petColor.value as PetColor;
-    store.save();
+    store.recolor(friend.id, petColor.value as PetColor);
   });
 
   name.addEventListener('input', () => {
