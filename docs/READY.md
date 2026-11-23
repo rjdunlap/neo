@@ -60,7 +60,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`word-glue` level 6, *Which way round?*, batch `word-glue 3`** (school; after batch `word-glue 2`; same tier, with a capture strip of the eight new drawings). [Definition](definitions/word-glue-5-6.md#check-tier), [dive](deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
 
 
 - **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)

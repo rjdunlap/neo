@@ -1,0 +1,5 @@
+# 2026-11-22 — Word Glue level 5, What kind of thing? (PR #2024)
+
+**Changed:** Word Glue level 5, *What kind of thing?* (school's ladder `[3, 5]`; nine compounds tagged 5; tap the part the made thing is; three voice lines on device speech, no new art), PR #2024, head 0dbbcd2d6.
+**Ran:** `npm run typecheck`; full `npm test` (482 files) passed at 544642bb0 after a one-line how-to wording fix, and Word Glue's rule tests (50) again at head; `npm run lint` and `npm run build` at 544642bb0; `BROWSER_SUITE=wordglue WORDGLUE_ONLY=kind` at head (level 5 in a 390 × 844 touch context: authored first ask, targets on screen and at least 44 px, a slide-off and a tap on the made thing count nothing, one wrong tap one miss, Show a hint one hint with the glow, saved 1 miss / 1 hint, screenshot `word-glue-5-upright-phone`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-glue FINGER_LEVELS=5` (15.7 s) at 544642bb0. A `game-reviewer` pass found no serious bugs; three small fixes landed in 0dbbcd2d6.
+**Not run:** the rest of the `wordglue` suite (levels 1–3; unchanged paths apart from the shared `join` split into `join` and `shelve`), offline, `world`.
