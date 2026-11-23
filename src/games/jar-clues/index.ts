@@ -335,8 +335,11 @@ class JarClues implements Game {
     this.draw();
     const g = this.gen;
     const at = this.boardKey();
-    void this.say(faultLine(f))
-      .then(() => (g === this.gen ? this.sayClue(f.clue ?? this.current) : undefined))
+    const said = this.say(faultLine(f));
+    // The clue follows only if nothing else has been said since; the earned hint still comes for this board.
+    const v = this.voice;
+    void said
+      .then(() => (g === this.gen && v === this.voice ? this.sayClue(f.clue ?? this.current) : undefined))
       .then(() => {
         // The second counted miss brings one assisted hint, for the board it was earned on.
         if (due && g === this.gen && this.phase === 'clues' && this.boardKey() === at) this.showHint();
@@ -372,8 +375,10 @@ class JarClues implements Game {
     this.draw();
     // The hint's line, then the clue's own while the numbers are lit.
     const g = this.gen;
-    void this.say(hintLine(this.hintNow)).then(() =>
-      g === this.gen && this.phase === 'clues' ? this.sayClue(this.current) : undefined,
+    const said = this.say(hintLine(this.hintNow));
+    const v = this.voice;
+    void said.then(() =>
+      g === this.gen && v === this.voice && this.phase === 'clues' ? this.sayClue(this.current) : undefined,
     );
   }
 

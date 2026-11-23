@@ -1,5 +1,13 @@
-# 2026-11-23 — Jar Clues levels 3–4
+# 2026-11-23 — Jar Clues levels 3–4 (PR #2061)
 
-**Changed:** 
-**Ran:** 
-**Not run:** 
+**Changed:** Jar Clues levels 3 (*Multiples and primes*, plain jar) and 4 (*One of two*), batch `jar-clues 2`: the multiple, not-a-multiple, prime and square clues (59 plain clues in all), the 248 one-of-two clues built from two plain clues of different kinds, a one-of-two fault ("both are true" or "neither is true") with its own spoken line, a one-of-two clue spoken as a lead line and its two halves (anything said meanwhile stops the halves still to come, and the follow-on clue after a fault or hint is skipped once something newer was said), level-scoped how-to steps for 3 and 4, 13 new Kokoro clips, and a level-4 section in the `jarclues` suite.
+
+**Ran (2026-11-23, this Mac, base `origin/main` 5aec51fe7 plus the branch):** `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm test` (501 files, 18,592 passed, 1 skipped) and `npm run build`. The game's 72 unit tests now cover the new kinds' truth tables (multiples, primes, squares, the one-of-two rule over 1 to 60), the generator at all four levels (a valid board within 200 draws, exactly one one-of-two clue at level 4, no plain clue repeating one of its halves, no "ends in" at 3–4), the definition's level 3 and 4 examples, the both-true, neither-true and crossed-but-allowed explanations, the hint walk and the jar separation at all levels, and voice coverage at all levels. A probe of 5,000 draws per level kept 38%, 25%, 31% and 34% of draws, close to the definition's prototype.
+
+**Ran in Chromium (headless shell, dev server on http://localhost:5187 with `VITE_SPEECH=off`):** `BROWSER_SUITE=jarclues` passed (levels 1, 2 and the new level 4 via Lantern Lake at 390 × 625 with captions: the board played right up to the one-of-two clue, Next clue with its ruled-out numbers standing was one miss explained as both or neither, one Help followed, finished with 1 miss, 1 hint and one sticker), after the review fix too. The first attempt timed out at load because clip rendering was reloading the dev server. `BROWSER_SUITE=fingerdemo FINGER_ONLY=jar-clues FINGER_LEVELS=4` passed in 71.8 s.
+
+**Screenshot looked at (not committed):** the level-4 one-of-two clue card upright. The card's two lines read clearly, and the jar has no ten line.
+
+**Review:** the game reviewer found that the clue that follows a fault or hint line could talk over a newer clue or hint, which matters more now that a one-of-two clue is three lines long. That is fixed (see Changed), and the checks above were rerun after it.
+
+**Not run:** a browser play at level 3 (its unit tests and the plain-jar flag cover it), offline, `world`, any other suite. Nobody listened to the new clips.
