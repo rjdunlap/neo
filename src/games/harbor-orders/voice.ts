@@ -12,6 +12,7 @@ export const VOICE = {
   'harbor-orders.row': ['Set the lit workshop’s mornings.'],
   'harbor-orders.oar': ['The Oar.'],
   'harbor-orders.anchor': ['The Anchor.'],
+  'harbor-orders.bell': ['The Bell.'],
   'harbor-orders.done': ['The order is on its way.'],
   'harbor-orders.shortest': ['No plan fills it sooner.'],
 };
