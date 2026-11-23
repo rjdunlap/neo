@@ -138,6 +138,63 @@ export function createSuite({
       assert.deepEqual([tie.misses, tie.hints], [2, 1]);
       await page.setViewportSize({ width: 1024, height: 768 });
     };
+    // Level 5, everyone can use it, on an upright phone: one tap on a friend on the slide, find the rest with one hint
+    // (glow, then the ghost), then a fix card. `VILLAGE_VOTE_ONLY=access` runs only this, in a touch phone context.
+    const access = async () => {
+      await seeded(5, '5,3');
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForFunction(
+        () => neo.scene.game.election.phase === 'access' && !neo.scene.game.busy,
+        null,
+        {
+          timeout: 8000,
+        },
+      );
+      if (process.env.VILLAGE_VOTE_ONLY === 'access')
+        assert.equal(await page.evaluate(() => neo.scene.game.view.upright), true);
+      await geometry();
+      const out = await page.evaluate(() => neo.scene.game.election.leftOut.length);
+      await tap(
+        'neo.scene.game.friends.get(neo.scene.game.election.plan.voters.find((v) => !neo.scene.game.election.leftOut.includes(v.id)).id)',
+      );
+      await idle();
+      let s = await stats();
+      assert.deepEqual([s.phase, s.misses, s.hints], ['access', 1, 0]);
+      await screenshot('access-left-out-upright-phone');
+      await tap('neo.scene.game.help');
+      await idle();
+      assert.equal(await page.evaluate(() => neo.scene.game.election.glowing), true);
+      await tap('neo.scene.game.help');
+      await page.waitForFunction(() => neo.scene.game.election.found.size === 1, null, { timeout: 8000 });
+      await idle();
+      for (let i = 0; i < 10; i++) {
+        if (await page.evaluate(() => neo.scene.game.election.phase !== 'access')) break;
+        await page.evaluate(() => {
+          const a = neo.scene.game.autotouch();
+          if (a && 'tap' in a) kit.tapOn(a.tap.on);
+        });
+        await page.waitForTimeout(180);
+        await idle();
+      }
+      s = await stats();
+      assert.equal(s.phase, 'fix');
+      assert.equal(await page.evaluate(() => neo.scene.game.cards.length), 2);
+      await geometry();
+      await screenshot('access-fix-cards-upright-phone');
+      await tap('neo.scene.game.cards[1]');
+      await finished('village-vote');
+      s = await stats();
+      assert.deepEqual([s.misses, s.hints, out > 0], [1, 1, true]);
+      assert.equal(await page.evaluate(() => neo.scene.game.election.fix), 'lower');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    };
+    if (process.env.VILLAGE_VOTE_ONLY === 'access') {
+      await access();
+      log(
+        'Village Vote 5: everyone can use it on an upright phone (on-slide miss, glow, ghost hint, fix card) passed',
+      );
+      return;
+    }
     if (process.env.VILLAGE_VOTE_ONLY === 'tie') {
       await tie();
       log('Village Vote 4: a tie on an upright phone (wrong send, glow, ghost hint, run-off result) passed');
@@ -233,6 +290,7 @@ export function createSuite({
       assert.deepEqual([(await stats()).misses, (await stats()).hints], [0, 0]);
     }
     await tie();
+    await access();
     await page.setViewportSize({ width: 1024, height: 768 });
     await seeded(2, '3,1');
     const old = await page.evaluate(() => kit.store.stats('village-vote').plays);
@@ -284,7 +342,7 @@ export function createSuite({
     await scene('LocationScene');
     assert.equal(await page.evaluate(() => neo.scene.page), rp);
     log(
-      'Village Vote 1–4: canonical seeded families, a level-4 tie on an upright phone (wrong send, glow, ghost hint, run-off result), both pet choices/losses, zero/five votes, partial/repeat counts, cancel, mistakes/help/ghost finish, seven visible voters, transformed targets, portrait, cleanup and both origins passed',
+      'Village Vote 1–5: canonical seeded families, a level-4 tie on an upright phone (wrong send, glow, ghost hint, run-off result), level 5 at the tall slide (on-slide miss, glow, ghost, fix card), both pet choices/losses, zero/five votes, partial/repeat counts, cancel, mistakes/help/ghost finish, seven visible voters, transformed targets, portrait, cleanup and both origins passed',
     );
   }
   return { villageVotePlay };

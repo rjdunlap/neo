@@ -878,7 +878,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | **TP5 Puppet-show card** · grown-ups' page | built 2026-11-18 ([definition](../../definitions/talk-cards.md), PR #1804); no cutting and no printed story cards on the card | A sock or paper-bag puppet (the grown-up cuts) and a three-scene home show from the island's printed story cards; sources on the card; no learning claim beyond pretend together |
 | **TP3 Director's chair (level 7)** · about 10 and up | define after TP1–TP2 are played and a written diff against Cue Studio | Order cue cards for two puppets, then perform the show herself; change one direction and compare the audience |
 | **TP4 Yes, and (level 8)** · 11–14 mode | define after TP3 | Accept-and-add reply cards in a three-turn scene with the companion; a blocked scene stops, uncounted. After Hainselin 2018 (30 seventh-graders, not randomized, "preliminary") |
-| **TP6 Shadow Play** · 13+ / parents | sketch; after a Lantern Lake capacity test | Place cut-outs between a lamp and a screen so the shadow matches a silhouette; a simplified light model in `logic.ts`. The notebook's Shadow Stage (4–8) waits on the same model |
+| **TP6 Shadow Play** · 13+ / parents | sketch; an ordinary next definition (Lantern Lake pages, 2026-11-17 record) | Place cut-outs between a lamp and a screen so the shadow matches a silhouette; a simplified light model in `logic.ts`. The notebook's Shadow Stage (4–8) waits on the same model |
 | **TP7 Read it in a voice** · school · mode in Story Weaver | hand to the Story Weaver dive | The reader takes her tile story in a chosen puppet voice; needs TP1's voice presets |
 
 [Ordered slices](theatre-puppetry.md#build-slices-in-order). Completion with spoken support is not evidence of independent understanding, nothing scores how well she acted, and a chosen synthetic voice is the nearest a microphone-free app comes to the kindergarten "use voice and sound" standard.
@@ -923,7 +923,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | **SG2 Shell Rows 4–5** · school | defined 2026-11-22 ([definition](../../definitions/shell-rows-4-5.md)); build batches `shell-rows 2` and `3` queued | Two ways to win (a fork); play it out, a whole gentle match where a tie is a good ending |
 | **SG3 Last Pebble** · school top, 13+ | define after Shell Rows 5 | Nim and *Got It* as stepping stones across a stream, working backwards from the far bank; reuses the replay |
 | **SG4 Seed Bowls** · preschool–school · *needs review* | after a cultural-source review | Sowing with the pet toward a shared store; generic until reviewed, no mancala or oware line |
-| **SG6 Fence the Field** · Lantern Lake, 13+ | sketch; after a Lantern Lake capacity test | Dots and boxes or chain puzzles against the pet |
+| **SG6 Fence the Field** · Lantern Lake, 13+ | defined 2026-11-22 ([definition](../../definitions/fence-the-field.md), [PR #2021](https://github.com/rjdunlap/neo/pull/2021)); build batches queued | Dots and boxes or chain puzzles against the pet |
 
 [Ordered slices](strategy-games.md#build-slices-in-order). Solving a one-move puzzle with spoken support is not evidence of independent planning; whether a five-year-old looks at the pet's pebbles before setting a shell, and whether the replay reads as a lesson rather than a loss, are person checks.
 
@@ -950,7 +950,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | --- | --- | --- |
 | **LM1 Thought Bubbles 1–3** · new game · pre-K, school | LM1 defined 2026-10-31 ([PR #1065](https://github.com/rjdunlap/neo/pull/1065), [definition](../../definitions/thought-bubbles.md)); build batch `thought-bubbles 1` next | Watch a two-to-four-beat picture story, then drag one of three picture cards (110 units) into a friend's empty thought bubble; the friend acts on it. 1 *What does she want?*: the object the reach or gaze points to; 2 *Where will he look?*: the place he last saw the thing (away or watching stories); 3 *How do we know?*: the supported reason, then the clue in the picture. Belief model and story pools in `logic.ts` with tests; Story Grove (paging), Cozy Village the fallback; nothing kept |
 | **LM3 Story-talk card** · grown-ups' page | built 2026-11-18 ([definition](../../definitions/talk-cards.md), PR #1796) | Questions for any picture book; plain HTML; no learning claim |
-| **LM2 Thought Bubbles 4** · two bubbles | define after 1–3 are played | Two friends, two bubbles, different things seen |
+| **LM2 Thought Bubbles 4** · two bubbles | defined 2026-11-22 ([definition](../../definitions/thought-bubbles-4.md)); build batches queued | Two friends, two bubbles, different things seen |
 | **LM4 Who is telling?** · Thought Bubbles 5 | define after LM2 | Tap the friend who could have told this version |
 | **LM5 Two tellings**, **LM6 What did Fox learn?**, **LM7 Who Knew** | sketches | Comparing versions and a story's message (both need a named reviewer for any real story) and a Lantern Lake belief puzzle (after a capacity test) |
 

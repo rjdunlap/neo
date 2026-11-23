@@ -259,7 +259,7 @@ Browser automation establishes none of these.
 
 ## What comes next
 
-**LM3** the grown-ups' story-talk card follows the build. **LM2** Thought Bubbles 4 *Two bubbles* (two friends who saw different things, and the two-move stories the model already handles) is defined after levels 1–3 are played; then **LM4** *Who is telling?*.
+**LM3** the grown-ups' story-talk card follows the build. **LM2** Thought Bubbles 4 *Two bubbles* (two friends who saw different things, and the two-move stories the model already handles) is defined in [thought-bubbles-4.md](thought-bubbles-4.md) (2026-11-22); then **LM4** *Who is telling?*.
 
 ## Open decisions
 
