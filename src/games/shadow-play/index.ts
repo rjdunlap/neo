@@ -226,8 +226,11 @@ class Round implements Game {
           const at = Math.min(markX(r, 6), Math.max(markX(r, 2), x));
           node.position.set(at, r.row.y);
           this.sliding = { rail, distance: distanceAt(r, at) };
-          if (this.lit && this.ctx.level > 1) this.dark();
-          this.drawScreen();
+          if (this.lit && this.ctx.level > 1) {
+            // The lamp goes out with the move, and the rail's highlight with it.
+            this.dark();
+            this.render();
+          } else this.drawScreen();
         },
         onDrop: () => {
           const from = this.sliding;

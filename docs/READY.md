@@ -48,7 +48,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`shadow-play` levels 3–4, batch `shadow-play 2`** (grown-up; after batch `shadow-play 1`; new interaction tier: typecheck and unit tests (pool counts 51,627 and 38,050, the turn in the light model, the swap, the hint walk over cut-out, mark and turn, voice coverage), one filtered `shadowplay` play at level 4 with one swap, one wrong lighting and one hint, one upright screenshot with a turned cut-out, `fingerdemo` at level 4, build). [Definition](definitions/shadow-play.md#build-batches)
 
 - **`fence-the-field` levels 3–4, batch `fence-the-field 2`** (grown-up; after batch `fence-the-field 1`; new interaction tier: typecheck and unit tests (pools for levels 3–4, the leave-two test, the hint walk, voice coverage), one filtered play at level 4 taking the whole run once and following one hint, one upright screenshot mid-run, `fingerdemo` at level 4, build). [Definition](definitions/fence-the-field.md#build-batches)
 
