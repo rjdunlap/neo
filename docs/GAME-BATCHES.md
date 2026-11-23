@@ -777,7 +777,7 @@ Proof: new-interaction tier, as the [definition's batches section](definitions/p
 
 ### paint-mixer 4: Palette unlock
 
-- **`paint-mixer`, the palette unlock (decision 7)** (status: batch `paint-mixer 3` is built; RW10 is defined, and its [slice 2](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4) follows this batch: the recolour in Dress is RW10's): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
+- **`paint-mixer`, the palette unlock (decision 7)** (status: **claimed 2026-11-22** by branch `claude/paint-mixer-4-hatch-colours`; batch `paint-mixer 3` is built; RW10 is defined, and its [slice 2](rework/COLLECTION-BOOK.md#slice-2-the-colour-goal-after-paint-mixer-4) follows this batch: the recolour in Dress is RW10's): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
 
 Proof: shell/save tier, as the definition sets it; to be confirmed when the batch is picked.
 
