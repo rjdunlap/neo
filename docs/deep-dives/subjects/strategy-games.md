@@ -138,7 +138,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 3. **SG5 · Table games card** (grown-ups' page, plain HTML): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1804; no sowing game.
 4. **SG2 · Define Shell Rows 4–5**, after 1–3 are played; then build. **Defined 2026-11-22** (docs only; [definition](../../definitions/shell-rows-4-5.md)): two build batches, `shell-rows 2` (levels 4–5 with the pet) and `shell-rows 3` (the grown-up seat at level 5, after batch 2), both queued in [READY](../../READY.md). **Batch `shell-rows 2` built 2026-11-22** (levels 4–5, [PR #2000](https://github.com/rjdunlap/neo/pull/2000)); `shell-rows 3` is not built.
 5. **SG3 · Define Last Pebble**, after Shell Rows 5 (it reuses the replay).
-6. **SG4 Seed Bowls** after its review; **SG6 Fence the Field** [defined](../../definitions/fence-the-field.md) 2026-11-22 ([PR #2021](https://github.com/rjdunlap/neo/pull/2021)), build queued in two batches.
+6. **SG4 Seed Bowls** after its review; **SG6 Fence the Field** [defined](../../definitions/fence-the-field.md) 2026-11-22 ([PR #2021](https://github.com/rjdunlap/neo/pull/2021)), build queued in two batches; batch `fence-the-field 1` (levels 1–2) claimed 2026-11-23 on `claude/fence-the-field-1-2`.
 
 ## What was built and what ran
 
