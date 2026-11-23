@@ -1,5 +1,10 @@
 import {
   DOERS,
+  ENDINGS,
+  FULL_CUP,
+  EMPTY_CUP,
+  endingEntry,
+  type Ending,
   INVENTED,
   PAIRS,
   inventedName,
@@ -98,7 +103,48 @@ const doers = Object.fromEntries(
   ]),
 ) as Record<DoerLine | `wordglue.action.${Action}`, string[]>;
 
+type EndingWord = Ending['full' | 'without'];
+type EndingLine = `wordglue.ending.${EndingWord}.${'ask' | 'right' | 'wrong'}`;
+
+export function endingLine(word: string, kind: 'ask' | 'right' | 'wrong'): EndingLine {
+  return `wordglue.ending.${word}.${kind}` as EndingLine;
+}
+
+export function endingTileLine(base: Ending['base']): `wordglue.ending.base.${Ending['base']}` {
+  return `wordglue.ending.base.${base}`;
+}
+
+const endings = Object.fromEntries(
+  ENDINGS.flatMap((ending) => {
+    const full = endingEntry(ending, FULL_CUP);
+    const empty = endingEntry(ending, EMPTY_CUP);
+    return [
+      [endingTileLine(ending.base), [`${capitalize(ending.base)}!`]],
+      ...[
+        [full, empty],
+        [empty, full],
+      ].flatMap(([entry, other]) => [
+        [endingLine(entry.word, 'ask'), [`Make the ${ending.thing} ${entry.word}!`]],
+        [
+          endingLine(entry.word, 'right'),
+          [`${capitalize(ending.base)}… ${entry.word}! ${capitalize(entry.meaning)}.`],
+        ],
+        [
+          endingLine(entry.word, 'wrong'),
+          [
+            `${capitalize(other.word)} means ${other.meaning}. Make the ${ending.thing} ${entry.word}: ${entry.meaning}.`,
+          ],
+        ],
+      ]),
+    ];
+  }),
+) as Record<EndingLine | ReturnType<typeof endingTileLine>, string[]>;
+
 export const VOICE = {
+  ...endings,
+  'wordglue.instruct.ending': ['Tap the cup that makes the word.'],
+  'wordglue.ending.cup.full': ['Full of!'],
+  'wordglue.ending.cup.empty': ['Without!'],
   ...doers,
   'wordglue.instruct.doer': ['Join an action to the person.'],
   'wordglue.doer.person': ['Someone who…'],

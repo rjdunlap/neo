@@ -317,6 +317,31 @@ export const DOER_PICTURES: readonly string[] = [PERSON, ...DOERS.map((d) => d.f
 /** Levels whose middle picture stays put: only the pictures round it move, and only onto it. */
 export const headFixed = (level: number) => level === 3 || level === DOER_LEVEL;
 
+export const ENDING_LEVEL = 9;
+export const FULL_CUP = 'full-cup';
+export const EMPTY_CUP = 'empty-cup';
+export type Cup = typeof FULL_CUP | typeof EMPTY_CUP;
+
+export const ENDINGS = [
+  { base: 'fruit', thing: 'tree', full: 'fruitful', without: 'fruitless' },
+  { base: 'color', thing: 'fish', full: 'colorful', without: 'colorless' },
+  { base: 'power', thing: 'lamp', full: 'powerful', without: 'powerless' },
+  { base: 'cheer', thing: 'room', full: 'cheerful', without: 'cheerless' },
+  { base: 'care', thing: 'bear', full: 'careful', without: 'careless' },
+] as const;
+export type Ending = (typeof ENDINGS)[number];
+
+export function endingEntry(ending: Ending, cup: Cup): Compound {
+  const full = cup === FULL_CUP;
+  return {
+    first: ending.base,
+    second: cup,
+    word: full ? ending.full : ending.without,
+    meaning: `${full ? 'full of' : 'without'} ${ending.base}`,
+    levels: [ENDING_LEVEL],
+  };
+}
+
 export interface Plan {
   level: number;
   name: string;
@@ -337,6 +362,7 @@ export const PLANS: readonly Plan[] = [
     level: DOER_LEVEL,
     name: 'Someone who: join an action to the person to make the asked word, like painter (5 asks)',
   },
+  { level: ENDING_LEVEL, name: 'Full of or without: tap a meaning cup to make the asked word (5 asks)' },
 ];
 
 /** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
@@ -351,7 +377,11 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
   // An explicit order keeps lap's level 4 out of school's ladder.
-  school: { min: 3, max: DOER_LEVEL, order: [3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL, DOER_LEVEL] },
+  school: {
+    min: 3,
+    max: ENDING_LEVEL,
+    order: [3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL, DOER_LEVEL, ENDING_LEVEL],
+  },
 };
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -407,6 +437,8 @@ export interface Ask {
   other?: Compound;
   /** Level 7: the thing to name; `pictures` holds its head and two details in screen order, and `entry` is its first detail's name. */
   invented?: Invented;
+  /** Level 9: the pictured thing whose state changes. */
+  ending?: Ending;
 }
 
 export interface Round {
@@ -463,6 +495,12 @@ const doer = (word: string): Compound => {
   return d;
 };
 
+/** Two or three of five, in a seeded order. */
+function balancedFlags(rng: Rng): boolean[] {
+  const n = rng.int(2, 3);
+  return rng.shuffle(Array.from({ length: 5 }, (_, i) => i < n));
+}
+
 /** The name a level-7 ask stands for: its first detail before its head, so the head is `second` as on every level. */
 const inventedEntry = (row: Invented, first = row.details[0]): Compound => ({
   word: inventedName(first, row.head),
@@ -507,18 +545,29 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
       })),
     };
   }
-  if (plan.level === KIND_LEVEL) {
-    // Two or three of five, in a seeded order: neither the side nor the question's order gives the answer away.
-    const flags = () => {
-      const n = rng.int(2, 3);
-      return rng.shuffle([0, 1, 2, 3, 4].map((i) => i < n));
+  if (plan.level === ENDING_LEVEL) {
+    const rows = authored
+      ? [ENDINGS[0], ENDINGS[1], ENDINGS[4], ENDINGS[2], ENDINGS[3]]
+      : rng.shuffle([...ENDINGS]);
+    const full = authored ? [true, false, true, false, true] : balancedFlags(rng);
+    const rightFirst = authored ? [false, true, true, false, true] : balancedFlags(rng);
+    return {
+      plan,
+      asks: rows.map((ending, i) => {
+        const right = full[i] ? FULL_CUP : EMPTY_CUP;
+        const other = full[i] ? EMPTY_CUP : FULL_CUP;
+        const cups = rightFirst[i] ? [right, other] : [other, right];
+        return { ending, entry: endingEntry(ending, right), pictures: [ending.base, ...cups] };
+      }),
     };
+  }
+  if (plan.level === KIND_LEVEL) {
     let picks = AUTHORED_5;
     if (!authored) {
       const tagged = COMPOUNDS.filter((c) => c.levels.includes(KIND_LEVEL));
       const heads = rng.shuffle([...new Set(tagged.map((c) => c.second))]).slice(0, 5);
-      const sides = flags(),
-        said = flags();
+      const sides = balancedFlags(rng),
+        said = balancedFlags(rng);
       picks = heads.map((h, i) => [rng.pick(tagged.filter((c) => c.second === h)).word, sides[i], said[i]]);
     }
     return {
@@ -700,6 +749,7 @@ export function rightChoice(s: GlueState): string | null {
   const ask = currentAsk(s);
   if (!ask) return null;
   if (ask.other) return ask.entry.word;
+  if (ask.ending) return ask.entry.second;
   return s.round.plan.level === KIND_LEVEL ? ask.entry.second : null;
 }
 
@@ -707,13 +757,13 @@ export function rightChoice(s: GlueState): string | null {
 export function checkTap(s: GlueState, key: string): Outcome['kind'] {
   const ask = currentAsk(s);
   const right = rightChoice(s);
-  if (!ask || !right || !ask.pictures.includes(key)) return 'ignore';
+  if (!ask || !right || !ask.pictures.includes(key) || key === ask.ending?.base) return 'ignore';
   if (key === right) return 'right';
   return s.wrongDrops >= 2 ? 'assist' : 'wrong';
 }
 
 /**
- * Levels 5–6: tap a picture. With two choices every wrong tap counts, up to two an ask; the second glows the right part (one
+ * Levels 5, 6 and 9: tap a picture. With two choices every wrong tap counts, up to two an ask; the second glows the right part (one
  * hint, unless Show a hint already counted it), and a wrong tap after that plays the right answer with no further count.
  */
 export function tap(s: GlueState, key: string): Outcome {
@@ -894,6 +944,21 @@ export function kindLayout(v: View): { made: Pt; parts: [Pt, Pt] } {
     parts: [
       { x: cx - 150, y },
       { x: cx + 150, y },
+    ],
+  };
+}
+
+/** Level 9: the base tile sits between the two meaning cups in one centred row. */
+export function endingLayout(v: View): { made: Pt; tiles: [Pt, Pt, Pt] } {
+  const { made, parts } = kindLayout(v);
+  const dx = CARD + 30;
+  const y = parts[0].y;
+  return {
+    made,
+    tiles: [
+      { x: made.x, y },
+      { x: made.x - dx, y },
+      { x: made.x + dx, y },
     ],
   };
 }

@@ -3,6 +3,7 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { flower } from '../../art/shapes';
 import { picture } from '../rhyme-time/pictures';
+import { EMPTY_CUP, FULL_CUP } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -306,6 +307,17 @@ export function partArt(key: string): Container {
       return c;
     case 'cup':
       cup(g);
+      break;
+    case EMPTY_CUP:
+    case FULL_CUP:
+      cup(g);
+      g.ellipse(0, -30, 40, 13).fill(swatch.blue.line);
+      if (key === FULL_CUP) {
+        g.ellipse(0, -32, 35, 10).fill(swatch.yellow.fill);
+        g.ellipse(-12, -35, 11, 2).fill(swatch.yellow.light);
+      } else {
+        g.ellipse(0, -27, 30, 6).fill(swatch.blue.light);
+      }
       break;
     case 'house':
       house(g, swatch.yellow.light, swatch.red.fill);
