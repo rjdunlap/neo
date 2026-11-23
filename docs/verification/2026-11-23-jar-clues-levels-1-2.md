@@ -8,4 +8,6 @@
 
 **Screenshots looked at (not committed):** the level 2 hint upright (board mid-round with the jar), the last clue upright, the last look upright, sideways, and the jar capture. After the first look the last-look cards were moved off the note, the ten line's label put on a small card at the line's end, and the earlier-clues line (unreadably small at clue 4) folded into the note, one clue per line. **The jar-gap call the definition leaves to this session:** jars at 12, 21, 30, 42, 51 and 60 side by side read apart clearly at the upright strip's size, so the level table's gaps (10 and 9) stand.
 
+**Review fix:** the game reviewer found that Help could count a second hint on the same board after Next clue was pressed again unchanged (or when a second miss brought the hint on a board Help had already hinted); hints are now counted once per board through a set of hinted boards. Typecheck, lint, the game's unit tests and `BROWSER_SUITE=jarclues` passed again after it.
+
 **Not run:** the offline suite, `world`, any other browser suite. Nobody listened to the clue clips. Chrome automation does not establish how the 37.6 px cells feel on a real phone; READY queues that line.

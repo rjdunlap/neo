@@ -88,6 +88,8 @@ class JarClues implements Game {
   poured = 0;
   private readonly score = newTally();
   private readonly counted = new Misses();
+  /** The boards a hint has been counted on: a hint on the same board again is free, however it was asked for. */
+  private readonly hintedOn = new Set<string>();
   private gen = 0;
   private L: Layout;
   private clock = 0;
@@ -342,10 +344,11 @@ class JarClues implements Game {
       void this.ctx.say(line(hintLine(null)));
       return;
     }
-    if (this.hintNow?.at !== at) {
+    if (!this.hintedOn.has(at)) {
       hinted(this.score);
-      this.hintNow = { ...h, at };
+      this.hintedOn.add(at);
     }
+    this.hintNow = { ...h, at };
     this.faultN = null;
     this.noteText = this.hintNow.words;
     this.draw();
