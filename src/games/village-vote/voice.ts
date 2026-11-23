@@ -22,4 +22,15 @@ export const VOICE = {
   'village-vote.closed': ['The {thing} is closed this time.'],
   'village-vote.nudge': ['Move every friend from the {thing} first.'],
   'village-vote.result': ["The {thing} has the most votes. Let's all try it!"],
+  'village-vote.won': ["The tall slide won, {n} to {a}. Let's build it!"],
+  'village-vote.access': ["Who can't use it? Tap them."],
+  'village-vote.too-high': ['The first step is too high.'],
+  'village-vote.on-slide': ['This friend is on the slide!'],
+  'village-vote.fixes': ['How could everyone use it? Add a step, or a lower slide.'],
+  'village-vote.fix-step': [
+    'A step was quick to add. A lower slide would mean building it again. Now everyone can play!',
+  ],
+  'village-vote.fix-lower': [
+    'A lower slide meant building it again. A step would have been quick to add. Now everyone can play!',
+  ],
 } satisfies Record<string, string[]>;

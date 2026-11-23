@@ -155,7 +155,7 @@ describe('Village Vote public taps and lifecycle', () => {
   });
   it('the public-input bot finishes every level/family with clean accounting, including losing-pet choices', async () => {
     const seen = new Set<string>();
-    for (const level of [1, 2, 3, 4])
+    for (const level of [1, 2, 3, 4, 5])
       for (let seed = 1; seed <= 12; seed++) {
         const { g, ctx, tap, settle } = make(level, seed);
         seen.add(
@@ -175,7 +175,7 @@ describe('Village Vote public taps and lifecycle', () => {
         if (level === 2) expect(g.election.pet).not.toBe(g.election.winner);
         g.destroy();
       }
-    expect(seen.size).toBe(9);
+    expect(seen.size).toBe(11);
   });
   it('level 4: the tie, a wrong send, the run-off glow and ghost, and the final choice count one hint per decision', async () => {
     const { g, ctx, tap, settle } = make(4);
@@ -231,5 +231,75 @@ describe('Village Vote public taps and lifecycle', () => {
     await settle();
     expect(e.moved.size).toBe(1);
     g.destroy();
+  });
+  it('level 5: an on-slide tap is one miss, a found friend again is free, Hint glows then shows, and a fix finishes once', async () => {
+    const { g, ctx, tap, settle } = make(5);
+    await settle();
+    const e = g.election;
+    expect(ctx.say).toHaveBeenCalledWith('village-vote.won', {
+      n: e.total('tall-slide'),
+      a: expect.any(Number),
+    });
+    expect(ctx.instruct).toHaveBeenLastCalledWith('village-vote.access');
+    const onSlide = e.plan.voters.find((v) => !e.leftOut.includes(v.id))!.id;
+    tap(g.friends.get(onSlide)!);
+    tap(g.friends.get(onSlide)!);
+    await settle();
+    expect(g.misses).toBe(1);
+    expect(ctx.say).toHaveBeenCalledWith('village-vote.on-slide');
+    const first = e.unfound[0];
+    tap(g.friends.get(first)!);
+    await settle();
+    tap(g.friends.get(first)!);
+    await settle();
+    expect([g.misses, e.found.size]).toEqual([1, 1]);
+    if (e.unfound.length) {
+      g.askForHint();
+      await settle();
+      expect([g.hints, e.glowing]).toEqual([1, true]);
+      g.askForHint();
+      expect(g.ghost.idle).toBe(false);
+      expect(g.hints).toBe(1);
+      g.ghost.stop();
+      while (e.unfound.length) {
+        tap(g.friends.get(e.unfound[0])!);
+        await settle();
+      }
+    }
+    expect(e.phase).toBe('fix');
+    expect(ctx.instruct).toHaveBeenLastCalledWith('village-vote.fixes');
+    expect(g.cards).toHaveLength(2);
+    tap(g.cards[1]);
+    // The cards are gone with the build: no second fix.
+    expect(g.cards).toHaveLength(0);
+    await settle();
+    expect(e.fix).toBe('lower');
+    expect(ctx.say).toHaveBeenCalledWith('village-vote.fix-lower');
+    expect(ctx.finish).toHaveBeenCalledExactlyOnceWith({ misses: 1, hints: e.leftOut.length > 1 ? 1 : 0 });
+    g.destroy();
+  });
+  it('level 5: Hint at the free fix choice records nothing; resizes keep the round; leaving during the fix never finishes', async () => {
+    const { g, ctx, tap, settle, tw } = make(5, 3);
+    g.resize({ w: 1024, h: 1365, scale: 1 });
+    await settle();
+    const e = g.election;
+    expect([e.phase, g.busy]).toEqual(['access', false]);
+    expect(ctx.instruct).toHaveBeenLastCalledWith('village-vote.access');
+    while (e.unfound.length) {
+      tap(g.friends.get(e.unfound[0])!);
+      await settle();
+    }
+    g.resize({ w: 1024, h: 768, scale: 1 });
+    expect([e.phase, g.cards.length]).toEqual(['fix', 2]);
+    g.askForHint();
+    expect(g.hints).toBe(0);
+    expect(ctx.instruct).toHaveBeenLastCalledWith('village-vote.fixes');
+    tap(g.cards[0]);
+    g.destroy();
+    for (let i = 0; i < 100; i++) {
+      tw.update(0.1);
+      await Promise.resolve();
+    }
+    expect(ctx.finish).not.toHaveBeenCalled();
   });
 });
