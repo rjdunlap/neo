@@ -21,7 +21,7 @@ vi.mock('../../art/scenery', async () => {
     },
   };
 });
-vi.mock('../../audio/sfx', () => ({ sfx: { boing: vi.fn(), bell: vi.fn() } }));
+vi.mock('../../audio/sfx', () => ({ sfx: { boing: vi.fn(), bell: vi.fn(), pop: vi.fn() } }));
 const lifetimes: Lifetime[] = [];
 function make(level: number, seed = 1) {
   vi.stubGlobal('window', {
@@ -155,7 +155,7 @@ describe('Village Vote public taps and lifecycle', () => {
   });
   it('the public-input bot finishes every level/family with clean accounting, including losing-pet choices', async () => {
     const seen = new Set<string>();
-    for (const level of [1, 2, 3])
+    for (const level of [1, 2, 3, 4])
       for (let seed = 1; seed <= 12; seed++) {
         const { g, ctx, tap, settle } = make(level, seed);
         seen.add(
@@ -164,7 +164,7 @@ describe('Village Vote public taps and lifecycle', () => {
             .sort((a, b) => b - a)
             .join()}`,
         );
-        for (let i = 0; i < 20 && !g.finished; i++) {
+        for (let i = 0; i < 30 && !g.finished; i++) {
           await settle();
           const a = g.autotouch();
           if (a && 'tap' in a) tap(a.tap.on);
@@ -175,6 +175,61 @@ describe('Village Vote public taps and lifecycle', () => {
         if (level === 2) expect(g.election.pet).not.toBe(g.election.winner);
         g.destroy();
       }
-    expect(seen.size).toBe(6);
+    expect(seen.size).toBe(9);
+  });
+  it('level 4: the tie, a wrong send, the run-off glow and ghost, and the final choice count one hint per decision', async () => {
+    const { g, ctx, tap, settle } = make(4);
+    const e = g.election,
+      pic = (o: string) => g.options[e.plan.options.indexOf(o as never)];
+    tap(pic(e.fewest));
+    await settle();
+    expect(g.misses).toBe(1);
+    const tied = e.plan.options.filter((o) => o !== e.fewest);
+    tap(pic(tied[0]));
+    await settle();
+    expect([e.phase, e.closed, g.misses]).toEqual(['runoff', e.fewest, 1]);
+    expect(ctx.say).toHaveBeenCalledWith('village-vote.tie', expect.anything());
+    tap(pic(tied[0]));
+    expect(ctx.say).toHaveBeenLastCalledWith('village-vote.nudge', { thing: e.fewest });
+    tap(pic(e.fewest));
+    expect(ctx.say).toHaveBeenLastCalledWith('village-vote.closed', { thing: e.fewest });
+    const first = e.waiting[0],
+      wrong = tied.find((o) => o !== first.next)!;
+    tap(g.friends.get(first.id)!);
+    expect(e.selected).toBe(first.id);
+    tap(pic(wrong));
+    await settle();
+    expect([g.misses, e.phase, e.selected]).toEqual([2, 'runoff', first.id]);
+    g.askForHint();
+    await settle();
+    expect(g.hints).toBe(1);
+    g.askForHint();
+    expect(g.ghost.idle).toBe(false);
+    expect(g.hints).toBe(1);
+    g.ghost.stop();
+    tap(pic(first.next!));
+    await settle();
+    expect(e.moved.has(first.id)).toBe(true);
+    for (let i = 0; i < 20 && !g.finished; i++) {
+      await settle();
+      const a = g.autotouch();
+      if (a && 'tap' in a) tap(a.tap.on);
+    }
+    await settle();
+    expect(ctx.finish).toHaveBeenCalledExactlyOnceWith({ misses: 2, hints: 1 });
+    g.destroy();
+  });
+  it('level 4: a resize mid run-off keeps the run-off and the selected friend', async () => {
+    const { g, tap, settle } = make(4);
+    const e = g.election;
+    tap(g.options[e.plan.options.indexOf(e.winner)]);
+    await settle();
+    tap(g.friends.get(e.waiting[0].id)!);
+    g.resize({ w: 1024, h: 1365, scale: 1 });
+    expect([e.phase, e.selected]).toEqual(['runoff', e.waiting[0].id]);
+    tap(g.options[e.plan.options.indexOf(e.selectedNext!)]);
+    await settle();
+    expect(e.moved.size).toBe(1);
+    g.destroy();
   });
 });

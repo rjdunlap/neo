@@ -24,6 +24,7 @@ import {
   uprightDrop,
   type Option,
   type Point,
+  type Stage,
 } from './logic';
 interface Control {
   node: Container;
@@ -51,7 +52,7 @@ export class VillageVote implements Game {
   finished = false;
   private generation = 0;
   private pending: { control: Control; pointer: number } | null = null;
-  private asked = false;
+  private asked = new Set<Stage>();
   private replayed = false;
   private clock = 0;
   get misses() {
@@ -87,14 +88,21 @@ export class VillageVote implements Game {
     this.instruct();
   }
   private instruct() {
+    const e = this.election;
+    if (e.phase === 'runoff' && e.closed) {
+      void this.ctx.instruct('village-vote.runoff', { thing: e.closed });
+      return;
+    }
     void this.ctx.instruct(
-      this.election.phase === 'preference'
+      e.phase === 'preference'
         ? 'village-vote.preference'
-        : this.election.plan.level === 3
-          ? 'village-vote.three'
-          : this.election.plan.level === 2
-            ? 'village-vote.pet-count'
-            : 'village-vote.two',
+        : e.closed
+          ? 'village-vote.recount'
+          : e.plan.level >= 3
+            ? 'village-vote.three'
+            : e.plan.level === 2
+              ? 'village-vote.pet-count'
+              : 'village-vote.two',
     );
   }
   private release() {
@@ -165,11 +173,12 @@ export class VillageVote implements Game {
       const name = label(o, 21);
       name.y = 44;
       art.addChild(name);
-      this.options.push(
-        this.button(this.boxes.options[i], 180, 120, art, () => {
-          void this.choose(o);
-        }),
-      );
+      const pick = this.button(this.boxes.options[i], 180, 120, art, () => {
+        void this.choose(o);
+      });
+      // The fewest group's picture is closed this time: dimmed, still answering a tap with why.
+      if (o === e.closed) pick.alpha = 0.4;
+      this.options.push(pick);
       const marks = new Container();
       const count = e.marks(o),
         actual = e.total(o);
@@ -185,11 +194,11 @@ export class VillageVote implements Game {
       const caption = label(count === actual ? 'all counted' : 'counted so far', 17);
       caption.y = 32;
       marks.addChild(caption);
-      this.boards.push(
-        this.button(this.boxes.boards[i], 190, 105, marks, () => {
-          void this.replay(o);
-        }),
-      );
+      const board = this.button(this.boxes.boards[i], 190, 105, marks, () => {
+        void this.replay(o);
+      });
+      if (o === e.closed) board.alpha = 0.4;
+      this.boards.push(board);
     });
     for (const v of e.voters) {
       const art = new Container(),
@@ -205,6 +214,21 @@ export class VillageVote implements Game {
       const raised = paw();
       raised.position.set(30, -23);
       art.addChild(raised);
+      const next = e.closed ? e.waiting.find((w) => w.id === v.id)?.next : undefined;
+      if (next) {
+        // The second-choice badge (48 units, inside the panel): where this friend would go next.
+        const badge = toy(next);
+        badge.scale.set(0.4);
+        badge.position.set(26, 36);
+        art.addChild(badge);
+      }
+      if (e.selected === v.id) {
+        art.y = -14;
+        art.addChildAt(
+          new Graphics().roundRect(-52, -52, 104, 104, 18).stroke({ width: 6, color: swatch.yellow.fill }),
+          0,
+        );
+      }
       if (e.counted.has(v.id))
         art.addChild(
           new Graphics()
@@ -214,7 +238,8 @@ export class VillageVote implements Game {
             .stroke({ width: 6, color: swatch.green.line }),
         );
       const n = this.button(this.boxes.voters[v.id], 110, 110, art, () => {
-        void this.count(v.id);
+        if (next && e.select(v.id)) this.draw();
+        else void this.count(v.id);
       });
       this.friends.set(v.id, n);
       if (isPet) this.fitPet(this.boxes.voters[v.id]);
@@ -247,16 +272,36 @@ export class VillageVote implements Game {
       await this.ctx.tw.to(this.companion, target, { duration: 0.5 });
       if (!this.alive || gen !== this.generation) return;
       e.arrived();
-      this.asked = false;
+      this.asked.clear();
       this.busy = false;
       this.draw();
       this.instruct();
       return;
     }
+    if (e.phase === 'runoff') {
+      await this.send(o);
+      return;
+    }
     const result = e.declare(o);
     if (result === 'ignored') return;
+    if (result === 'closed') {
+      void this.ctx.say('village-vote.closed', { thing: o });
+      return;
+    }
     this.busy = true;
     const gen = this.generation;
+    if (result === 'tie') {
+      // A new decision: Hint speaks again before it shows the ghost (it still counts once per decision).
+      this.asked.delete('declare');
+      this.draw();
+      sfx.bell(3);
+      const [a] = e.comparison();
+      await this.ctx.say('village-vote.tie', { n: a.total });
+      if (!this.alive || gen !== this.generation) return;
+      this.busy = false;
+      this.instruct();
+      return;
+    }
     if (result === 'accepted') {
       this.draw();
       sfx.bell(5);
@@ -273,6 +318,45 @@ export class VillageVote implements Game {
     e.feedbackDone();
     this.busy = false;
     this.draw();
+  }
+  /** Run-off: walk the selected friend to the tapped picture, or say why not. */
+  private async send(o: Option) {
+    const e = this.election,
+      id = e.selected,
+      next = e.selectedNext,
+      result = e.send(o);
+    if (result === 'ignored') return;
+    if (result === 'nudge' || result === 'closed') {
+      void this.ctx.say(result === 'nudge' ? 'village-vote.nudge' : 'village-vote.closed', {
+        thing: e.closed!,
+      });
+      return;
+    }
+    this.busy = true;
+    const gen = this.generation,
+      n = this.friends.get(id!)!;
+    if (result === 'wrong') {
+      // The friend shakes its head; its badge still shows where it would go.
+      sfx.boing();
+      const x = n.x;
+      void this.ctx.say('village-vote.not-next', { thing: next! });
+      for (const dx of [-10, 10, -6, 0]) {
+        await this.ctx.tw.to(n, { x: x + dx }, { duration: 0.08 });
+        if (!this.alive || gen !== this.generation) return;
+      }
+      e.feedbackDone();
+      this.busy = false;
+      this.draw();
+      return;
+    }
+    sfx.pop();
+    const to = layout(this.view, e).voters[id!];
+    this.board.addChild(n);
+    await this.ctx.tw.to(n, { x: to.x, y: to.y }, { duration: 0.45 });
+    if (!this.alive || gen !== this.generation) return;
+    this.busy = false;
+    this.draw();
+    if (result === 'recount') this.instruct();
   }
   private async speakCounts(gen: number) {
     for (const { option, total } of this.election.comparison()) {
@@ -311,13 +395,15 @@ export class VillageVote implements Game {
     if (!this.alive || this.busy || this.finished || !this.ghost.idle) return;
     const e = this.election;
     e.help();
-    if (this.asked) {
-      const target =
-        e.phase === 'preference' ? this.options[0] : this.options[e.plan.options.indexOf(e.winner)];
-      this.ghost.start({ tap: { on: target } });
+    if (this.asked.has(e.stage)) {
+      this.ghost.start({ tap: { on: this.hintTarget() } });
       return;
     }
-    this.asked = true;
+    this.asked.add(e.stage);
+    if (e.phase === 'runoff') {
+      this.instruct();
+      return;
+    }
     if (e.phase === 'preference') {
       void this.ctx.say('village-vote.free');
       return;
@@ -326,12 +412,28 @@ export class VillageVote implements Game {
     this.draw();
     void this.showHint(this.generation);
   }
+  /** What help points at: the right picture, or in the run-off the next friend and then its badge's picture. */
+  private hintTarget(): Container {
+    const e = this.election;
+    if (e.phase === 'preference') return this.options[0];
+    if (e.phase === 'runoff') {
+      const next = e.selectedNext;
+      return next ? this.options[e.plan.options.indexOf(next)] : this.friends.get(e.waiting[0].id)!;
+    }
+    return this.options[e.plan.options.indexOf(e.winner)];
+  }
   private async showHint(gen: number) {
     this.busy = true;
     await this.speakCounts(gen);
     if (!this.alive || gen !== this.generation) return;
-    const e = this.election,
-      other = e.plan.options.filter((o) => o !== e.winner).map((o) => e.total(o));
+    const e = this.election;
+    if (e.tied) {
+      // Before the tie is found the most is shared: the hint names the tie and glows one tied picture.
+      await this.ctx.say('village-vote.tie', { n: e.total(e.winner) });
+      if (this.alive && gen === this.generation) this.busy = false;
+      return;
+    }
+    const other = e.plan.options.filter((o) => o !== e.winner).map((o) => e.total(o));
     await this.ctx.say(other.length === 2 ? 'village-vote.compare-three' : 'village-vote.compare-two', {
       n: e.total(e.winner),
       a: other[0],
@@ -386,6 +488,12 @@ export class VillageVote implements Game {
     const e = this.election;
     if (e.phase === 'preference')
       return { tap: { on: this.options[e.plan.options.findIndex((o) => o !== e.winner)] } };
+    if (e.phase === 'runoff') {
+      const next = e.selectedNext;
+      return {
+        tap: { on: next ? this.options[e.plan.options.indexOf(next)] : this.friends.get(e.waiting[0].id)! },
+      };
+    }
     if (e.phase !== 'counting') return null;
     const next = e.voters.find((v) => !e.counted.has(v.id));
     if (next) return { tap: { on: this.friends.get(next.id)! } };
@@ -397,11 +505,20 @@ export class VillageVote implements Game {
     this.ghost.update(dt);
     this.glow.clear();
     const e = this.election;
+    const width = 6 + Math.sin(this.clock * 5);
     if (e.glowing && e.phase === 'counting') {
       const p = this.boxes.options[e.plan.options.indexOf(e.winner)];
-      this.glow
-        .roundRect(p.x - 96, p.y - 66, 192, 132, 22)
-        .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+      this.glow.roundRect(p.x - 96, p.y - 66, 192, 132, 22).stroke({ width, color: swatch.yellow.fill });
+    }
+    if (e.glowing && e.phase === 'runoff' && e.waiting.length) {
+      const next = e.selectedNext;
+      if (next) {
+        const p = this.boxes.options[e.plan.options.indexOf(next)];
+        this.glow.roundRect(p.x - 96, p.y - 66, 192, 132, 22).stroke({ width, color: swatch.yellow.fill });
+      } else {
+        const p = this.boxes.voters[e.waiting[0].id];
+        this.glow.roundRect(p.x - 61, p.y - 61, 122, 122, 22).stroke({ width, color: swatch.yellow.fill });
+      }
     }
   }
   resize(v: View) {
@@ -420,6 +537,8 @@ export class VillageVote implements Game {
       this.busy = true;
       void this.sharedPlay(this.generation);
     }
+    // A resize can cut the tie line short; the run-off instruction is said again.
+    if (this.election.phase === 'runoff') this.instruct();
   }
   destroy() {
     this.alive = false;
@@ -449,11 +568,12 @@ export const villageVote: GameModule = {
   skills: ['counting', 'comparing', 'group-decisions'],
   bands: ['preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
-  describeLevel: (l) => NAMES[Math.max(0, Math.min(2, l - 1))],
+  describeLevel: (l) => NAMES[Math.max(0, Math.min(NAMES.length - 1, l - 1))],
   music: STYLES.paint,
   upright: true,
   touchDemo: true,
-  coplayHint: 'Count aloud while she taps the paws, then swap roles. Choose freely for the pet.',
+  coplayHint:
+    'Count aloud while she taps the paws, then swap roles. Choose freely for the pet. After a tie, be a latecomer she asks for a next choice.',
   offScreen: 'With a grown-up, let toy friends choose between two toys and count their preferences.',
   hubIcon: () => new VoteIcon(),
   sticker: (seed) => toy(new Rng(seed).pick(['slide', 'swing', 'sandpit'] as const)),

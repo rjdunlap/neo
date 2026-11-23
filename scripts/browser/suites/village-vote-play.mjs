@@ -87,6 +87,62 @@ export function createSuite({
       );
       await finished('village-vote');
     };
+    // Level 4, a tie, on an upright phone: find the tie, one wrong send and the glow, one hint, then the run-off result.
+    // `VILLAGE_VOTE_ONLY=tie` runs only this, in a touch phone context, so the upright layout is the one played.
+    const tie = async () => {
+      await seeded(4, '3,3,2');
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(250);
+      await geometry();
+      if (process.env.VILLAGE_VOTE_ONLY === 'tie')
+        assert.equal(await page.evaluate(() => neo.scene.game.view.upright), true);
+      await tap(
+        'neo.scene.game.options[neo.scene.game.election.plan.options.indexOf(neo.scene.game.election.winner)]',
+      );
+      await idle();
+      let tie = await stats();
+      assert.deepEqual([tie.phase, tie.misses], ['runoff', 0]);
+      await tap('neo.scene.game.friends.get(neo.scene.game.election.waiting[0].id)');
+      await screenshot('tie-runoff-badges-upright-phone');
+      const wrongSend =
+        'neo.scene.game.options[neo.scene.game.election.plan.options.findIndex((o) => o !== neo.scene.game.election.closed && o !== neo.scene.game.election.selectedNext)]';
+      for (const n of [1, 2]) {
+        await tap(wrongSend);
+        await idle();
+        tie = await stats();
+        assert.deepEqual([tie.phase, tie.misses, tie.hints], ['runoff', n, n - 1]);
+      }
+      assert.equal(await page.evaluate(() => neo.scene.game.election.glowing), true);
+      await geometry();
+      await tap('neo.scene.game.help');
+      await idle();
+      await tap('neo.scene.game.help');
+      await page.waitForFunction(() => neo.scene.game.election.moved.size === 1, null, { timeout: 8000 });
+      await idle();
+      for (let i = 0; i < 20; i++) {
+        if (await page.evaluate(() => neo.scene.game.election.phase !== 'runoff')) break;
+        await page.evaluate(() => {
+          const a = neo.scene.game.autotouch();
+          if (a && 'tap' in a) kit.tapOn(a.tap.on);
+        });
+        await page.waitForTimeout(180);
+        await idle();
+      }
+      tie = await stats();
+      assert.equal(tie.phase, 'counting');
+      assert.equal(tie.counts.length, 2);
+      await geometry();
+      await screenshot('tie-after-moves-upright-phone');
+      await win();
+      tie = await stats();
+      assert.deepEqual([tie.misses, tie.hints], [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+    };
+    if (process.env.VILLAGE_VOTE_ONLY === 'tie') {
+      await tie();
+      log('Village Vote 4: a tie on an upright phone (wrong send, glow, ghost hint, run-off result) passed');
+      return;
+    }
     await seeded(1, '3,1');
     await geometry();
     await page.evaluate(() => {
@@ -176,6 +232,7 @@ export function createSuite({
       await finished('village-vote');
       assert.deepEqual([(await stats()).misses, (await stats()).hints], [0, 0]);
     }
+    await tie();
     await page.setViewportSize({ width: 1024, height: 768 });
     await seeded(2, '3,1');
     const old = await page.evaluate(() => kit.store.stats('village-vote').plays);
@@ -227,7 +284,7 @@ export function createSuite({
     await scene('LocationScene');
     assert.equal(await page.evaluate(() => neo.scene.page), rp);
     log(
-      'Village Vote 1–3: canonical seeded families, both pet choices/losses, zero/five votes, partial/repeat counts, cancel, mistakes/help/ghost finish, seven visible voters, transformed targets, portrait, cleanup and both origins passed',
+      'Village Vote 1–4: canonical seeded families, a level-4 tie on an upright phone (wrong send, glow, ghost hint, run-off result), both pet choices/losses, zero/five votes, partial/repeat counts, cancel, mistakes/help/ghost finish, seven visible voters, transformed targets, portrait, cleanup and both origins passed',
     );
   }
   return { villageVotePlay };
