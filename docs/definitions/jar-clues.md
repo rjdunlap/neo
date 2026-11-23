@@ -1,6 +1,6 @@
 # Jar Clues, levels 1–4 (definition)
 
-Documentation packet, 2026-11-23, branch `claude/define-jar-clues`, [PR #2030](https://github.com/rjdunlap/neo/pull/2030). Study follow-up E5 from [estimation](../deep-dives/subjects/estimation.md#candidates-and-fit); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed, and Jar Clues is an ordinary next definition that no longer waits for Weights Case or Box Balance). **Batch `jar-clues 1` (levels 1–2) built 2026-11-23** ([PR #2048](https://github.com/rjdunlap/neo/pull/2048); [game page](../games/jar-clues.md)); batch 2 (levels 3–4) is queued. Two build batches follow below.
+Documentation packet, 2026-11-23, branch `claude/define-jar-clues`, [PR #2030](https://github.com/rjdunlap/neo/pull/2030). Study follow-up E5 from [estimation](../deep-dives/subjects/estimation.md#candidates-and-fit); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed, and Jar Clues is an ordinary next definition that no longer waits for Weights Case or Box Balance). **Batch `jar-clues 1` (levels 1–2) built 2026-11-23** ([PR #2048](https://github.com/rjdunlap/neo/pull/2048); [game page](../games/jar-clues.md)); batch `jar-clues 2` (levels 3–4) is being built on branch `claude/jar-clues-2`. Two build batches follow below.
 
 ## What you do
 
