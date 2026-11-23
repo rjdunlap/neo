@@ -622,6 +622,12 @@ export const SHARED = {
   'color.pink': ['Pink!'],
   'color.white': ['White!'],
   'color.brown': ['Brown!'],
+  'color.peach': ['Peach!'],
+  'color.coral': ['Coral!'],
+  'color.blush': ['Blush!'],
+  'color.lavender': ['Lavender!'],
+  'color.rose': ['Rose!'],
+  'color.lilac': ['Lilac!'],
 
   count: ['{n}!'],
 } satisfies Record<string, string[]>;

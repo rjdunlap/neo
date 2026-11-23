@@ -27,7 +27,7 @@ import { setNote, type PlaytestNote } from '../content/playtest';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { isGoalId, type GoalId } from '../content/goals';
-import { discover, hasNew, markSeen } from '../content/journal';
+import { discover, hasNew, markSeen, mixedColors } from '../content/journal';
 import {
   beginWelcome,
   completeWelcome,
@@ -42,7 +42,14 @@ import {
   type WelcomeStep,
 } from '../content/welcome';
 import { isNew, toggleFavorite } from '../content/shelf';
-import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
+import {
+  PET_COLORS,
+  STORY_STEPS,
+  type PetColor,
+  type RoomItemId,
+  type StoryId,
+  type StoryStep,
+} from '../content/world';
 import {
   companionOf,
   defaults,
@@ -291,6 +298,11 @@ export class Store {
     if (next === this.data.journal) return;
     this.data.journal = next;
     this.save();
+  }
+
+  /** The colours she may give a friend: the eight everyone has, then the paint-shelf colours she has mixed (paint-mixer 4). */
+  get petColors(): PetColor[] {
+    return [...PET_COLORS, ...mixedColors(this.data.journal)];
   }
 
   get journalHasNew(): boolean {

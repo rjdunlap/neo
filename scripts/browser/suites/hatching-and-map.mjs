@@ -12,6 +12,25 @@ export function createSuite({ page, log, ready, scene, pickFirst, addFirstPlayer
     }
     assert.equal(await page.evaluate(() => neo.scene.step), 'color');
     assert.equal(await page.evaluate(() => neo.scene.choices.children.length), 9);
+    assert.equal(await page.evaluate(() => neo.scene.more.visible), false);
+    // Paint Mixer 4: colours she has mixed (filed in her journal) are a second page of balls behind the page button.
+    await page.evaluate(() => {
+      kit.store.data.journal.found.push('paint-mixer:lilac', 'paint-mixer:peach');
+      kit.store.save();
+      neo.go.hatch(true);
+    });
+    await scene('HatchScene');
+    await page.waitForFunction(() => neo.scene.step === 'color' && neo.scene.more?.visible);
+    await tap('neo.scene.more');
+    assert.deepEqual(
+      await page.evaluate(() => ({ balls: neo.scene.choices.children.length, back: neo.scene.back.visible })),
+      { balls: 3, back: true },
+    );
+    await tap('neo.scene.choices.children[1]');
+    assert.equal(await page.evaluate(() => neo.scene.color), 'peach');
+    await screenshot('hatch-mixed-colours');
+    await tap('neo.scene.back');
+    assert.equal(await page.evaluate(() => neo.scene.choices.children.length), 9);
     await tap('neo.scene.choices.children[4]');
     await screenshot('hatch-color');
     await tap('neo.scene.next');
@@ -177,6 +196,19 @@ export function createSuite({ page, log, ready, scene, pickFirst, addFirstPlayer
     await page.locator('[data-band="prek"]').click();
     await page.locator('#p-name').fill('Mia');
     await page.locator('#p-pet-name').fill('Clover');
+    // Her mixed colours are offered there too, marked as mixed in Paint Mixer.
+    assert.deepEqual(await page.locator('#p-pet-color option').allTextContents(), [
+      'teal',
+      'pink',
+      'blue',
+      'purple',
+      'green',
+      'yellow',
+      'orange',
+      'red',
+      'peach (mixed in Paint Mixer)',
+      'lilac (mixed in Paint Mixer)',
+    ]);
     await page.locator('#p-pet-color').selectOption('pink');
     await page.locator('[data-done]').click();
     await scene('MapScene');

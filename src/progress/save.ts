@@ -1,6 +1,6 @@
 import type { Band } from './bands';
 import {
-  PET_COLORS,
+  isPetColor,
   ROOM_ITEMS,
   STICKER_PAGES,
   STORY_STEPS,
@@ -261,7 +261,7 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
       id: c.id,
       species: c.species,
       name: str(c.name, '').trim().slice(0, 40) || sp.names[0],
-      look: { color: PET_COLORS.find((p) => p === look.color) ?? sp.color, worn: cleanWorn(look.worn) },
+      look: { color: isPetColor(look.color) ? look.color : sp.color, worn: cleanWorn(look.worn) },
       metAt: str(c.metAt, '').slice(0, 60),
     });
   }
@@ -292,7 +292,7 @@ export function meetIn(
     id,
     species,
     name: name.trim().slice(0, 40) || sp.names[0],
-    look: { color: PET_COLORS.includes(color) ? color : sp.color, worn: [] },
+    look: { color: isPetColor(color) ? color : sp.color, worn: [] },
     metAt: token,
   };
   c.owned.push(met);
