@@ -94,7 +94,7 @@ So the hidden contact decides between the two stories either way, and the seed d
 
 ## Build batch
 
-1. **`outcrop-detective 1`, levels 1–2.** The new game: the cliff, the story frame and Play, the ribbon, Check, for-sure, the looks and lens, the hint walk and the close.
+1. **`outcrop-detective 1`, levels 1–2.** In progress on `claude/outcrop-detective-1`. The new game: the cliff, the story frame and Play, the ribbon, Check, for-sure, the looks and lens, the hint walk and the close.
 
    **Checks:** typecheck and unit tests, which cover:
    - the preview rule: `predict` for all 24 ribbons (stack order, cut or covers per layer), including X first and X last;
