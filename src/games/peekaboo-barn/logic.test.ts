@@ -17,6 +17,9 @@ import {
   planFor,
   ONE_DOOR_LEVEL,
   WENT_LEVEL,
+  SOUND_LEVEL,
+  SOUND_ANIMALS,
+  soundWord,
   ENTRY_LEVELS,
   dealWent,
   wentHouses,
@@ -505,7 +508,7 @@ describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
     expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
     expect(LEVELS.school!.max).toBeGreaterThanOrEqual(14);
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
-    expect(LEVELS.toddler).toEqual({ min: 1, max: 17, order: [1, 2, 17, 3, 4, 5] });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 18, order: [1, 2, 17, 3, 18, 4, 5] });
     expect(LEVELS.lap).toEqual({ min: 1, max: 17, order: [16, 1, 2, 17] });
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     // Never more than four places, nothing faster than the dive's 0.9 s, and the hint is slower still.
@@ -632,9 +635,9 @@ describe('Peekaboo Barn level 17, Where did it go?', () => {
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     expect(LEVELS.lap!.order).toEqual([16, 1, 2, 17]);
-    expect(LEVELS.toddler!.order).toEqual([1, 2, 17, 3, 4, 5]);
+    expect(LEVELS.toddler!.order).toEqual([1, 2, 17, 3, 18, 4, 5]);
     for (const band of ['preschool', 'prek', 'school'] as const) expect(LEVELS[band]!.order).toBeUndefined();
-    expect(ENTRY_LEVELS).toEqual([ONE_DOOR_LEVEL, WENT_LEVEL]);
+    expect(ENTRY_LEVELS).toEqual([ONE_DOOR_LEVEL, WENT_LEVEL, SOUND_LEVEL]);
   });
 
   it('keeps the first seven animals, as the other entry level does', () => {
@@ -676,5 +679,45 @@ describe('Peekaboo Barn level 17, Where did it go?', () => {
       expect(spotToTap(plan, ['hidden', 'hidden'], wentHouses(d, plan.spots), d.animal, -1)).toBe(d.house);
     }
     expect(spotToTap(plan, ['hidden', 'hidden'], [null, null], 'cow', -1)).toBeNull();
+  });
+});
+
+describe('Peekaboo Barn level 18, Who says moo?', () => {
+  const plan = planFor(SOUND_LEVEL);
+
+  it('is two peeking animals and five sounds, placed between 3 and 4 for toddlers only', () => {
+    expect(plan).toEqual({ mode: 'sound', spots: 2, goal: 5 });
+    const order = LEVELS.toddler!.order!;
+    expect(order.indexOf(SOUND_LEVEL)).toBe(order.indexOf(3) + 1);
+    expect(order.indexOf(4)).toBe(order.indexOf(SOUND_LEVEL) + 1);
+    for (const band of ['lap', 'preschool', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.max).toBeLessThan(18);
+  });
+
+  it('asks only among animals whose sound and word are each their own, leaving out the bunny’s hop', () => {
+    expect(poolFor(SOUND_LEVEL)).toBe(SOUND_ANIMALS);
+    expect(SOUND_ANIMALS).not.toContain('bunny');
+    for (const a of SOUND_ANIMALS) expect(STICKER_ANIMALS).toContain(a);
+    expect(new Set(SOUND_ANIMALS.map((a) => VOICES[a].sound)).size).toBe(SOUND_ANIMALS.length);
+    expect(new Set(SOUND_ANIMALS.map(soundWord)).size).toBe(SOUND_ANIMALS.length);
+    // No other animal she could meet makes an asked sound either.
+    for (const a of ANIMALS.filter((x) => !SOUND_ANIMALS.includes(x)))
+      expect(SOUND_ANIMALS.map(soundWord)).not.toContain(soundWord(a));
+    expect(soundWord('cow')).toBe('moo');
+  });
+
+  it('asks for a sound that belongs to exactly one animal present, never the same one twice running', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      let last: Animal | null = null;
+      for (let q = 0; q < plan.goal; q++) {
+        const present = deal(rng, plan.spots, poolFor(SOUND_LEVEL));
+        const target = pickTarget(rng, present, last);
+        expect(present.filter((a) => soundWord(a) === soundWord(target))).toEqual([target]);
+        expect(target).not.toBe(last);
+        expect(spotToTap(plan, ['peek', 'peek'], present, target, -1)).toBe(present.indexOf(target));
+        last = target;
+      }
+    }
   });
 });
