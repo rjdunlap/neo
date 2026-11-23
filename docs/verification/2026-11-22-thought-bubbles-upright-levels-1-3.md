@@ -1,0 +1,5 @@
+# 2026-11-22 — Thought Bubbles upright, levels 1-3 (PR #2020)
+
+**Changed:** `upright: true` on Thought Bubbles (no placement change; the portrait branch of `thoughtLayout` already fit); new `upright.test.ts` (levels 1–3 on four phone views: cards, bubble drop area, Replay and level 3's picture regions inside the view and apart, cards at least 44 px on the phone); registry upright list; the `thoughtbubbles` browser suite's `THOUGHT_BUBBLES_PHONE=1` option (touch 390 × 844).
+**Ran:** typecheck; vitest for `src/games/thought-bubbles` and `src/games/registry` (80 tests, 16 of them the new upright tests); `BROWSER_SUITE=thoughtbubbles THOUGHT_BUBBLES_PHONE=1` against Vite on port 5592: levels 1–3 upright with no turn prompt (level 1 right, 0/0; level 2 away story, wrong card then right, 1/0; level 3 wrong reason, free vase tap, clue, 1/0); screenshots at levels 2 and 3. On the phone everything fits and clears Home and the guide, but the content ends about halfway down, left for level 4's re-layout.
+**Not run:** build (no shared files or assets changed), full `npm test` (CI runs it), `fingerdemo`, other suites.
