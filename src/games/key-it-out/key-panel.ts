@@ -55,13 +55,21 @@ export class KeyPanel extends Container {
   private readonly clip = new Graphics();
   private texts: Text[] = [];
   private l!: Layout;
-  private drag: { id: number; y: number; scroll: number; moved: boolean; target: KeyTarget | null } | null =
-    null;
+  private drag: {
+    id: number;
+    x: number;
+    y: number;
+    scroll: number;
+    moved: boolean;
+    target: KeyTarget | null;
+  } | null = null;
 
   constructor(
     private readonly board: Board,
     life: LifetimeContext,
     private readonly act: (t: KeyTarget) => void,
+    /** Whether the page takes touches now (not while the warden stamps or the page colours in). */
+    private readonly live: () => boolean,
   ) {
     super();
     this.eventMode = 'static';
@@ -143,8 +151,8 @@ export class KeyPanel extends Container {
     const p = e.getLocalPosition(this);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     const target = this.targetAt(p.x, p.y);
-    this.drag = { id: e.pointerId, y: p.y, scroll: this.scroll, moved: false, target };
-    if (target) {
+    this.drag = { id: e.pointerId, x: p.x, y: p.y, scroll: this.scroll, moved: false, target };
+    if (target && this.live()) {
       const b = this.boxOf(target);
       this.press
         .clear()
@@ -158,9 +166,13 @@ export class KeyPanel extends Container {
     if (!d || e.pointerId !== d.id) return;
     const p = e.getLocalPosition(this);
     if (!Number.isFinite(p.y)) return;
-    if (!d.moved && Math.abs(p.y - d.y) < TAP_TRAVEL) return;
-    d.moved = true;
-    this.press.clear();
+    // A finger that travels any way is not a tap; the rows follow only its travel past the threshold, so they do not jump.
+    if (!d.moved) {
+      if (Math.hypot(p.x - d.x, p.y - d.y) < TAP_TRAVEL) return;
+      d.moved = true;
+      d.y = p.y;
+      this.press.clear();
+    }
     this.setScroll(d.scroll - (p.y - d.y));
   }
 

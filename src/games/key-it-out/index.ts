@@ -138,7 +138,12 @@ class KeyItOut implements Game {
     this.note.eventMode = 'none';
     this.note.style.wordWrap = true;
     this.note.style.fontWeight = '500';
-    this.key = new KeyPanel(this.board, ctx, (t) => this.tapKey(t));
+    this.key = new KeyPanel(
+      this.board,
+      ctx,
+      (t) => this.tapKey(t),
+      () => this.phase === 'play',
+    );
     onTap(this.prev, () => this.step(-1));
     onTap(this.next, () => this.step(1));
     onTap(this.plate, () => this.liftChosen());
@@ -341,9 +346,10 @@ class KeyItOut implements Game {
     this.noteText = faultWorking(f);
     this.draw();
     const g = this.gen;
+    const at = pageKey(this.page);
     void this.ctx.say(line(faultLine(f))).then(() => {
-      // The second counted miss of the round brings one assisted hint.
-      if (due && g === this.gen && this.phase === 'play') this.showHint();
+      // The second counted miss of the round brings one assisted hint, for the page it was earned on.
+      if (due && g === this.gen && this.phase === 'play' && pageKey(this.page) === at) this.showHint();
     });
   }
 
