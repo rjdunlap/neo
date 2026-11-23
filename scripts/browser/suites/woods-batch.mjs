@@ -1259,6 +1259,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         (await page.evaluate(async () => (await import('/src/games/market-stall/logic.ts')).PLANS.length));
         level++
       ) {
+        const twoBaskets = level === 10;
+        const stickerCount = await page.evaluate(() => kit.store.data.stickers.length);
+        if (twoBaskets) await page.setViewportSize({ width: 390, height: 844 });
         await launch('market-stall', level);
         const plan = await page.evaluate(() => ({
           mode: neo.scene.game.plan.mode,
@@ -1363,6 +1366,27 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await putDown(first);
               await ring();
               if (level === 7) await screenshot('market-stall-7');
+            } else if (twoBaskets) {
+              const onePrice = await page.evaluate(async () => {
+                const S = await import('/src/games/market-stall/logic.ts');
+                const g = neo.scene.game;
+                const say = g.ctx.say.bind(g.ctx);
+                g.spokenLines = [];
+                g.ctx.say = (line, vars) => {
+                  g.spokenLines.push(line);
+                  return say(line, vars);
+                };
+                return S.fewest(g.order.prices[0], g.plan.coins);
+              });
+              assert.equal(await page.evaluate(() => neo.scene.game.goods.children.length), 4);
+              await putDown(onePrice);
+              await ring();
+              assert.deepEqual(await counts(), [1, 0]);
+              assert.ok(await page.evaluate(() => neo.scene.game.spokenLines.includes('shop.oneprice')));
+              await ring();
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.equal(await page.evaluate(() => neo.scene.game.ghost.children.length), first.length);
+              await screenshot('market-stall-10-upright');
             } else if (plan.coins.includes(10)) {
               // The ten-shell shell (dive slice 5): the first ten is named, a payment one too much is a miss,
               // then the tags at 11, 15 and 20 (a ten bar and the ones) are drawn beside the stall for a picture.
@@ -1419,7 +1443,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             }
           }
           // The first fewest-mode order was already paid after its supported retry.
-          if (!(plan.mode === 'fewest' && n === 0)) (await putDown(first), await ring());
+          if (twoBaskets && n === 0) {
+            // The hint starts with a ten; an exact payment with smaller shells buys both goods too.
+            await putDown([5, 5, ...first.slice(1)]);
+            await ring();
+          } else if (!(plan.mode === 'fewest' && n === 0)) {
+            await putDown(first);
+            await ring();
+          }
           if (plan.mode === 'ways') {
             const second = await page.evaluate(
               async ({ want, first }) => {
@@ -1441,8 +1472,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('market-stall');
         assert.deepEqual(await score('market-stall'), [plan.mode === 'ways' ? 4 : 2, 1]);
+        if (twoBaskets) {
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          await page.setViewportSize({ width: 1024, height: 768 });
+        }
         log(
-          `Market Stall ${level} (${plan.mode}): coins tapped down and back, too much, hint coins, ${plan.mode === 'ways' ? 'a second way, ' : ''}saved score and sticker passed`,
+          `Market Stall ${level} (${plan.mode}): coins tapped down and back, ${twoBaskets ? 'one price paid' : 'too much'}, hint coins, ${plan.mode === 'ways' || twoBaskets ? 'a second way, ' : ''}saved score and sticker passed`,
         );
       }
 
