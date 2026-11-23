@@ -25,6 +25,9 @@ import {
   LEVELS,
   allowedParts,
   askedParts,
+  countsMisses,
+  ENTRY_LEVELS,
+  showAlpha,
   askedPhrase,
   cleanPhrase,
   IdleNudge,
@@ -233,6 +236,9 @@ class SplishSplash implements Game {
   private readonly idle = new IdleNudge();
   private readonly help = new QuestionHelp();
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** This one!: the asked splotches sparkling once as they are named, and how far into that one pass (-1 when none). */
+  private shown: Mud[] = [];
+  private showT = -1;
   private readonly lift = (e: { pointerId: number }) => {
     this.last.delete(e.pointerId);
     this.scrubbed.delete(e.pointerId);
@@ -398,6 +404,17 @@ class SplishSplash implements Game {
       }
     }
     for (const m of this.muds) if (m.glow.visible) m.glow.alpha = 0.5 + 0.4 * Math.sin(this.clock * 7);
+    if (this.showT >= 0) {
+      this.showT += dt;
+      const a = showAlpha(this.showT);
+      for (const m of this.shown)
+        if (a === null) m.glow.visible = false;
+        else m.glow.alpha = a;
+      if (a === null) {
+        this.showT = -1;
+        this.shown = [];
+      }
+    }
   }
 
   /** The ghost finger: pat the pet's patch, or scrub the next muddy splotch the question allows, back and forth until no mud is left in reach. */
@@ -441,6 +458,7 @@ class SplishSplash implements Game {
     if (!this.instruction || this.finished) return;
     this.rubberDuck.poke();
     sfx.squeak(9);
+    this.showAsked();
     void this.ctx.say(this.instruction.id, this.instruction.vars);
   }
 
@@ -495,6 +513,7 @@ class SplishSplash implements Game {
 
   private async askForPart(fresh = true) {
     if (fresh) this.help.ask();
+    this.showAsked();
     const [a, b] = this.asked();
     if (!b) await this.instruct('bath.part', { part: askedPhrase([a], this.words) });
     else
@@ -622,6 +641,18 @@ class SplishSplash implements Game {
     return onPip;
   }
 
+  /** This one!: the asked parts sparkle once, rising and fading, as they are named. Shows the answer; never a hint. */
+  private showAsked() {
+    if (!this.plan.show || this.plan.mode !== 'parts') return;
+    // A splotch already glowing (the free reminder) keeps its glow.
+    this.shown = this.muds.filter((m) => this.asked().includes(m.part) && !m.clean && !m.glow.visible);
+    this.showT = 0;
+    for (const m of this.shown) {
+      m.glow.visible = true;
+      m.glow.alpha = 0;
+    }
+  }
+
   private glowAsked() {
     for (const m of this.muds) if (this.allowed().includes(m.part) && !m.clean) m.glow.visible = true;
   }
@@ -629,8 +660,9 @@ class SplishSplash implements Game {
   private notThatPart(touched: Part) {
     if (this.clock - this.lastNag < 4) return;
     this.lastNag = this.clock;
-    this.misses++;
-    if (this.help.miss()) {
+    // This one! shows the answer: a wrong part still giggles and repeats the request, but nothing counts.
+    if (countsMisses(this.plan)) this.misses++;
+    if (countsMisses(this.plan) && this.help.miss()) {
       this.hints++;
       this.glowAsked();
     }
@@ -881,13 +913,14 @@ export const splishSplash: GameModule = {
   challenge: 'hands',
   skills: ['fine-motor', 'body-parts'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  entryLevels: [9],
+  entryLevels: ENTRY_LEVELS,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of the mess off, nothing to aim';
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
     if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
+    if (p.show) return 'Wash one body part at a time, shown with a sparkle as it is named: tummy, ears, head';
     return p.shuffle
       ? `Wash ${p.parts.length} body parts in a different order each round`
       : p.mode === 'free'

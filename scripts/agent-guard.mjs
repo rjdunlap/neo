@@ -1,7 +1,12 @@
-// Claude Code PreToolUse hook for Bash (.claude/settings.json): blocks commands AGENTS.md says never to run.
-// Reads the hook's JSON on stdin; exit 2 with a reason on stderr blocks the call and tells the agent why.
+// PreToolUse hook for Bash / run_command across Claude Code (.claude/settings.json), Codex (.codex/hooks.json),
+// and Antigravity (.agents/plugins/puddle-island/hooks.json): blocks commands AGENTS.md says never to run.
+// Reads the hook's JSON on stdin and replies using the caller's contract:
+//   - Claude Code / Codex (`tool_input.command`): exit 2 with the reason on stderr when blocked; exit 0 when allowed.
+//   - Antigravity (`toolCall.args.CommandLine`): JSON decision on stdout (`deny` with reason, or `allow`), exit 0.
 //
 //   echo '{"tool_input":{"command":"npm run test:browser"}}' | node scripts/agent-guard.mjs   # exit 2
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 /** Why `command` must not run, or null when it may. `platform` decides the macOS-only sed rule. */
 export function blockReason(command, platform = process.platform) {
@@ -25,23 +30,39 @@ export function blockReason(command, platform = process.platform) {
   return null;
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+/** Evaluate a raw JSON stdin payload and return `{ exitCode, stdout?, stderr? }` for the caller's hook contract. */
+export function evaluateHookPayload(input, platform = process.platform) {
+  let payload;
+  try {
+    payload = JSON.parse(input);
+  } catch {
+    return { exitCode: 0 }; // Not our input: never block on a parse problem.
+  }
+  if (payload && typeof payload.toolCall === 'object' && payload.toolCall !== null) {
+    const command = payload.toolCall.args?.CommandLine;
+    const reason = blockReason(command, platform);
+    if (reason) {
+      return { exitCode: 0, stdout: `${JSON.stringify({ decision: 'deny', reason })}\n` };
+    }
+    return { exitCode: 0, stdout: `${JSON.stringify({ decision: 'allow' })}\n` };
+  }
+  const command = payload?.tool_input?.command;
+  const reason = blockReason(command, platform);
+  if (reason) {
+    return { exitCode: 2, stderr: `${reason}\n` };
+  }
+  return { exitCode: 0 };
+}
+
+const isMain = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 if (isMain) {
   let input = '';
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', (chunk) => (input += chunk));
   process.stdin.on('end', () => {
-    let command;
-    try {
-      command = JSON.parse(input)?.tool_input?.command;
-    } catch {
-      process.exit(0); // Not our input: never block on a parse problem.
-    }
-    const reason = blockReason(command);
-    if (reason) {
-      process.stderr.write(reason + '\n');
-      process.exit(2);
-    }
-    process.exit(0);
+    const result = evaluateHookPayload(input);
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    process.exit(result.exitCode);
   });
 }

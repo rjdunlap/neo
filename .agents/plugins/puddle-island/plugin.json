@@ -1,0 +1,6 @@
+{
+  "name": "puddle-island",
+  "displayName": "Puddle Island",
+  "version": "1.0.0",
+  "description": "Shared Puddle Island command guard and specialist subagents (rules-tester, game-reviewer, docs-keeper), synced from .claude/agents/."
+}

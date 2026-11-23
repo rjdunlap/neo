@@ -206,10 +206,75 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
     const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ];
-    for (const level of peekLevels.filter((n) => n >= 1 && n <= 17 && (!only || only === 'peekaboo'))) {
+    for (const level of peekLevels.filter((n) => n >= 1 && n <= 19 && (!only || only === 'peekaboo'))) {
       await launch('peekaboo-barn', level);
+      if (level === 19) {
+        // Hide it yourself: drag to one house, tap-then-tap to another, drop far from the third; the seeker looks in
+        // an empty house first, never twice in one house, and ends at hers. Nothing is ever a miss.
+        await portrait(true);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && g.hider?.visible, 10000);
+        });
+        await screenshot('peekaboo-barn-19-portrait');
+        const looks = await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const { COVER_NAMES } = await import('/src/games/peekaboo-barn/logic.ts');
+          const seen = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, vars) => {
+            seen.push({ id, cover: vars?.cover });
+            return say(id, vars);
+          };
+          const toGlobal = (x, y) => g.ctx.stage.toGlobal({ x, y });
+          for (let hide = 0; hide < 3; hide++) {
+            await kit.until(() => !g.busy && g.hider?.visible, 15000);
+            const house = g.spots[hide];
+            const from = g.hider.getGlobalPosition();
+            if (hide === 0) {
+              const to = toGlobal(house.x, house.y - 80);
+              await kit.drag(kit.line([from.x, from.y - 80], [to.x, to.y], 12));
+            } else if (hide === 1) {
+              kit.tap(from.x, from.y - 80);
+              await kit.sleep(300);
+              if (!g.hiderDrag.held) throw new Error('Hide it yourself: a tap did not pick the animal up');
+              kit.tapOn(house, 0, -110);
+            } else {
+              // Let go high in the sky over the right edge: the nearest house across still takes it.
+              const to = toGlobal(g.view.w - 20, 120);
+              await kit.drag(kit.line([from.x, from.y - 80], [to.x, to.y], 12));
+            }
+            await kit.until(() => g.busy, 3000);
+            const at = seen.length;
+            await kit.until(
+              () => seen.slice(at).some((s) => s.id === 'peek.hide.found') || g.finished,
+              30000,
+            );
+            const round = seen
+              .slice(at)
+              .filter((s) => s.id === 'peek.hide.empty')
+              .map((s) => s.cover);
+            const hidden = seen.slice(at).find((s) => s.id === 'peek.hide.hidden');
+            // Each hide lands where she put it: the first house, the second, then the rightmost from the sky.
+            if (hidden?.cover !== COVER_NAMES[house.kind])
+              throw new Error(
+                `Hide it yourself: hid behind ${hidden?.cover}, not the ${COVER_NAMES[house.kind]}`,
+              );
+            if (!round.length || new Set(round).size !== round.length || round.includes(hidden.cover))
+              throw new Error(`Hide it yourself: seeker looked in ${round.join(', ')} for ${hidden.cover}`);
+          }
+          return seen.filter((s) => s.id === 'peek.hide.hidden').map((s) => s.cover);
+        });
+        await finished('peekaboo-barn');
+        assert.deepEqual(await score('peekaboo-barn'), [0, 0], 'peekaboo 19 score');
+        log(
+          `Peekaboo Barn 19 (hide): hid behind ${looks.join(', ')}; empty looks first, no misses, sticker passed`,
+        );
+        await portrait(false);
+        continue;
+      }
       if (level === 15) {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.evaluate(async () => {
@@ -273,6 +338,40 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         });
         await portrait(false);
       }
+      if (level === 18) {
+        // Who says moo?: the ask is the sound in words, never the animal's name, and both animals peek.
+        await portrait(true);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy, 10000);
+          if (
+            g.spots.length !== 2 ||
+            g.spots.some((s) => s.pose !== 'peek') ||
+            g.spots.some((s) => s.animal === 'bunny')
+          )
+            throw new Error('Who says moo: two peeking animals, no bunny');
+        });
+        await screenshot('peekaboo-barn-18-portrait');
+        // Two wrong taps: the right animal glows round its peeking head.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && !g.asking, 10000);
+          for (let i = 0; i < 2; i++) {
+            kit.tapOn(
+              g.spots.find((s) => s.animal !== g.target),
+              0,
+              -110,
+            );
+            await kit.sleep(300);
+            await kit.until(() => !g.busy, 10000);
+          }
+          if (!g.spots.find((s) => s.animal === g.target).clueGlow?.visible)
+            throw new Error('Who says moo: no glow after two misses');
+        });
+        await screenshot('peekaboo-barn-18-hint-portrait');
+        await portrait(false);
+        await launch('peekaboo-barn', level);
+      }
       if (level === 5) {
         await portrait(true);
         await screenshot('peekaboo-barn-5-portrait');
@@ -307,6 +406,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.evaluate(async () => {
         const g = neo.scene.game;
         const pairMode = g.plan.mode === 'pair';
+        // Guess who and Who says moo? speak their ask while the places are open; the bot hears it out.
+        const waitAsk = pairMode || g.plan.mode === 'sound';
         const tapChoice = (spot) => {
           if (!pairMode) return kit.tapOn(spot, 0, -110);
           const point = spot.toGlobal({ x: 0, y: -230 });
@@ -328,12 +429,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         }
         // The next ask waits behind a right find's line (U7 R4); a tap before it only says the ask, so wait for it.
         const ready = () =>
-          kit.until(() => (!g.busy && !g.unasked && (!pairMode || !g.asking)) || g.finished, 15000);
+          kit.until(() => (!g.busy && !g.unasked && (!waitAsk || !g.asking)) || g.finished, 15000);
         // U7 R4: from a right find's line to the next question's places being open, at the find levels.
         const say = g.ctx.say.bind(g.ctx);
         window.peekR4 = [];
         g.ctx.say = (id, vars) => {
-          if (['peek.yes', 'peek.hasit', 'peek.feelsit'].includes(id) && g.done < g.plan.goal) {
+          if (
+            ['peek.yes', 'peek.hasit', 'peek.feelsit', 'peek.sound.yes'].includes(id) &&
+            g.done < g.plan.goal
+          ) {
             const t = performance.now();
             void kit
               .until(() => !g.busy, 8000)
@@ -400,6 +504,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(
           `Peekaboo Barn ${level}: R4, next places open ${opens.map(Math.round).join(', ')} ms after peek.yes`,
         );
+      }
+      if (mode === 'sound') {
+        const asks = await page.evaluate(() => window.peekAsks ?? []);
+        assert.ok(
+          asks.length && asks.every((id) => id === 'peek.sound.ask'),
+          `Peekaboo Barn 18 asks: ${asks.join(', ')}`,
+        );
+        log(`Peekaboo Barn 18: asked by sound only (${asks.length} asks)`);
       }
       if (mode === 'clue') {
         const asks = await page.evaluate(() => window.peekAsks ?? []);
