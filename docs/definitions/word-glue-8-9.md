@@ -221,7 +221,7 @@ Each batch is the new-interaction tier, after level 7 is built.
    - `fingerdemo` at 8;
    - the doers' capture strip;
    - `npm run build`.
-2. **Batch `word-glue 6`: level 9.** It builds `ENDINGS`, the cups, the base tiles and things, speech, how-to, the ghost finger and the tests.
+2. **Batch `word-glue 6`: level 9.** In progress on `codex/neo-ready-word-glue-9`. It builds `ENDINGS`, the cups, the base tiles and things, speech, how-to, the ghost finger and the tests.
 
    **Checks:**
    - typecheck and unit tests;
