@@ -599,7 +599,12 @@ describe('level 4 route', () => {
     while (!s.passed) {
       const n = routeNext(s, r);
       seq.push(n.kind === 'bed' ? `bed${n.bed}` : n.kind);
-      s = n.kind === 'cloud' ? tryRoute(s, r) : n.kind === 'bed' ? flipBed(s, n.bed, r.board) : check(s, r).state;
+      s =
+        n.kind === 'cloud'
+          ? tryRoute(s, r)
+          : n.kind === 'bed'
+            ? flipBed(s, n.bed, r.board)
+            : check(s, r).state;
     }
     expect(seq).toEqual(['cloud', 'bed0', 'bed1', 'cloud', 'check']);
   });
@@ -811,7 +816,8 @@ describe('level 5 boards', () => {
         expect([t.stored, t.pond], `${b.id} ${k}`).toEqual([kept, pond]);
         const v = check(routeFresh(round5(b.id, parse(k))), round5(b.id, parse(k))).verdict;
         if (result === 'pass') expect(v.result, `${b.id} ${k}`).toBe('pass');
-        else if (result === 'pond') expect([v.result, v.cause, v.need], `${b.id} ${k}`).toEqual(['miss', 'pond', null]);
+        else if (result === 'pond')
+          expect([v.result, v.cause, v.need], `${b.id} ${k}`).toEqual(['miss', 'pond', null]);
         else expect([v.result, v.cause, v.need], `${b.id} ${k}`).toEqual(['miss', 'dry', result]);
       }
     }
@@ -906,7 +912,12 @@ describe('level 5 boards', () => {
     while (!s.passed) {
       const n = routeNext(s, r);
       seq.push(n.kind === 'bed' ? `bed${n.bed}` : n.kind);
-      s = n.kind === 'cloud' ? tryRoute(s, r) : n.kind === 'bed' ? flipBed(s, n.bed, r.board) : check(s, r).state;
+      s =
+        n.kind === 'cloud'
+          ? tryRoute(s, r)
+          : n.kind === 'bed'
+            ? flipBed(s, n.bed, r.board)
+            : check(s, r).state;
     }
     expect(seq).toEqual(['cloud', 'bed0', 'bed2', 'cloud', 'check']);
   });

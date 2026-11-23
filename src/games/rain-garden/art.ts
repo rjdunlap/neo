@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { frogArt, turtleArt } from '../../art/animals';
 import { CRITTERS, Critter } from '../../art/critter';
 import { ink, swatch } from '../../art/palette';
-import type { Box, Friend, Surface, Trial } from './logic';
+import type { Box, Fixed, Friend, Marker, Surface, Trial } from './logic';
 
 const WATER = swatch.blue;
 const STONE = { fill: 0xa8a8b4, line: 0x55556a, light: 0xc8c8d2 };
@@ -342,6 +342,74 @@ function leafMark(g: Graphics, x: number, y: number, r: number) {
     .stroke({ width: 2, color: swatch.green.line });
 }
 
+function flowerMark(g: Graphics, x: number, y: number, r: number) {
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    g.circle(x + Math.cos(a) * r * 0.62, y + Math.sin(a) * r * 0.62, r * 0.48)
+      .fill(swatch.pink.fill)
+      .stroke({ width: 2, color: swatch.pink.line });
+  }
+  g.circle(x, y, r * 0.38)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 2, color: swatch.yellow.line });
+}
+
+/** The small leaf or flower standing on a marked bed, matching its sign. */
+export function markerArt(marker: Marker, r = 15): Graphics {
+  const g = new Graphics();
+  g.circle(0, 0, r + 8)
+    .fill({ color: 0xfffdf4, alpha: 0.92 })
+    .stroke({ width: 3, color: swatch.brown.line });
+  (marker === 'flower' ? flowerMark : leafMark)(g, 0, 0, r);
+  return g;
+}
+
+/**
+ * What marks a fixed socket, drawn over its ground around the patch's middle: a small tree at the uphill end of the
+ * tree's bed (clear of its pockets), or flat stepping stones along the stone path. `dir` is the way the bed's arrow runs.
+ */
+export function fixedArt(kind: Fixed, w: number, h: number, dir: 1 | -1): Graphics {
+  const g = new Graphics();
+  if (kind === 'tree') {
+    const x = -dir * (w / 2 - 30),
+      y = -h / 2 + 4;
+    g.roundRect(x - 7, y - 30, 14, 40, 5)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 3, color: swatch.brown.line });
+    g.circle(x, y - 52, 30)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
+    g.circle(x - 10, y - 60, 9).fill({ color: 0xffffff, alpha: 0.35 });
+    return g;
+  }
+  for (const [fx, fy, r] of [
+    [-0.3, -0.05, 26],
+    [0.02, 0.18, 24],
+    [0.32, -0.02, 26],
+  ] as const)
+    g.ellipse(fx * w, fy * h, r * 1.3, r * 0.8)
+      .fill(STONE.light)
+      .stroke({ width: 3, color: STONE.line });
+  return g;
+}
+
+/** The shower's size, shown under the cloud before it rains: one small dashed drop per drop. */
+export function cloudDropsArt(n: number, y: number): Graphics {
+  const g = new Graphics();
+  const gap = 30;
+  for (let i = 0; i < n; i++) {
+    const x = (i - (n - 1) / 2) * gap;
+    g.moveTo(x, y - 14)
+      .bezierCurveTo(x + 3, y - 9, x + 8, y - 5, x + 8, y)
+      .bezierCurveTo(x + 8, y + 5, x + 4, y + 8, x, y + 8)
+      .bezierCurveTo(x - 4, y + 8, x - 8, y + 5, x - 8, y)
+      .bezierCurveTo(x - 8, y - 5, x - 3, y - 9, x, y - 14)
+      .fill({ color: WATER.light, alpha: 0.7 })
+      .stroke({ width: 3, color: WATER.line });
+  }
+  return g;
+}
+
 /**
  * A need sign, drawn around its middle: dashed drop outlines for what is needed (the bed's two over a leaf, or the pond's
  * one with a plus), filled as drops settle, with a tick once met. A picture, not a target.
@@ -352,6 +420,7 @@ export function needSignArt(
   met: boolean,
   w: number,
   h: number,
+  marker: Marker = 'leaf',
 ): Container {
   const c = new Container();
   const g = new Graphics();
@@ -383,7 +452,7 @@ export function needSignArt(
     c.addChild(o);
   });
   const extra = new Graphics();
-  if (kind === 'bed') leafMark(extra, 0, h / 2 - 28, 14);
+  if (kind === 'bed') (marker === 'flower' ? flowerMark : leafMark)(extra, 0, h / 2 - 28, 14);
   else
     extra
       .moveTo(18, -10)

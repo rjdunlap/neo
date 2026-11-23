@@ -56,7 +56,5 @@ export const VOICE = {
   'rain.miss.dry.flower': ["Boing. The flower bed didn't keep two. Look where the water stayed."],
   'rain.fixed.tree': ['The tree lives here, so this ground stays soil.'],
   'rain.fixed.path': ['This is the stone path. It stays stone.'],
-  'rain.check.yes.both': [
-    'The leaf bed and the flower bed kept two, and the pond got some. Every need met!',
-  ],
+  'rain.check.yes.both': ['The leaf bed and the flower bed kept two, and the pond got some. Every need met!'],
 } satisfies Record<string, string[]>;

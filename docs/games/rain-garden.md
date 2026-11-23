@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–4 |
+| school | 3–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 2 | Two gardens, same rain: pick stone or soil for each, then rain on both |
 | 3 | Change it and try again: the first rain is kept on a card to compare |
 | 4 | Two beds downhill: change the ground so the leaf bed gets two drops and the pond some |
+| 5 | Three beds downhill: leave enough rain for every marked bed and some for the pond |
 
 <!-- end generated -->
 

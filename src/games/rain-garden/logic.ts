@@ -486,7 +486,8 @@ const distance = (a: readonly Surface[], b: readonly Surface[]) => a.filter((s, 
 /** The solution that differs from `sockets` in the fewest beds; ties go to the first in enumeration order. */
 export function nearest(sockets: readonly Surface[], board: RouteBoard): Surface[] {
   let best: Surface[] | null = null;
-  for (const sol of solutions(board)) if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
+  for (const sol of solutions(board))
+    if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
   return best!;
 }
 
@@ -518,7 +519,8 @@ export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 = 4): RouteR
     const failing = arrangements(board).filter((a) => !passes(a, board));
     return { level: 5, board, start: rng.pick(failing).slice(), friend: rng.pick(FRIENDS), mirror: false };
   }
-  if (authored) return { level: 4, board: board4(1), start: ['soil', 'stone'], friend: 'frog', mirror: false };
+  if (authored)
+    return { level: 4, board: board4(1), start: ['soil', 'stone'], friend: 'frog', mirror: false };
   const board = board4(rng.chance(0.5) ? 1 : 0);
   const failing = ARRANGEMENTS.filter((a) => !passes(a, board));
   return {
@@ -573,7 +575,13 @@ export function flipBed(s: RouteState, i: number, board: RouteBoard): RouteState
   if (board.fixed[i]) return s;
   const sockets = s.sockets.slice();
   sockets[i] = flip(sockets[i]);
-  return { ...s, sockets, current: null, pointing: false, glow: s.glowShown ? stepBed(sockets, board) : null };
+  return {
+    ...s,
+    sockets,
+    current: null,
+    pointing: false,
+    glow: s.glowShown ? stepBed(sockets, board) : null,
+  };
 }
 
 export type Cause = 'dry' | 'pond';
