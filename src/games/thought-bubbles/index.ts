@@ -726,6 +726,7 @@ export const thoughtBubbles: GameModule = {
   offScreen: 'Hide a toy while teddy is "asleep", then ask: where will teddy look for it? How do you know?',
   hubIcon: () => new ThoughtIcon(),
   touchDemo: true,
+  upright: true,
   sticker: () => bubblePicture('apple'),
   create: (ctx) => new ThoughtBubbles(ctx),
 };
