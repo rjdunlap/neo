@@ -495,7 +495,7 @@ class ThoughtBubbles implements Game {
       if (reveal && part) part.visible = true;
       this.pulsingPart = part ?? null;
       await this.ctx.say(partLine(s, e));
-      if (this.finished || this.story !== s) return;
+      if (this.finished || this.story !== s) break;
     }
     this.pulsingPart = null;
     this.pulsing = -1;
@@ -505,9 +505,11 @@ class ThoughtBubbles implements Game {
   private async retell(bubble: number) {
     const s = this.story;
     if (this.busy || this.finished || this.retelling || this.stage !== 'card' || s.level !== 5) return;
-    this.retelling = true;
+    // Busy while it is said, so a card let go meanwhile floats home, free, rather than talking over it.
+    this.retelling = this.busy = true;
     await this.sayTelling(s, bubble);
     this.retelling = false;
+    if (!this.finished && this.story === s && this.stage === 'card') this.busy = false;
   }
 
   private dealCards() {
