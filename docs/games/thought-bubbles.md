@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 1–4 |
+| school | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,6 +17,7 @@
 | 2 | Where will he look? Was the friend there when his thing moved? |
 | 3 | How do we know? The reason, then where the picture shows it |
 | 4 | Two bubbles (about 9 and up): two friends saw different things |
+| 5 | Who is telling? (about 9 and up): which friend was there for every part told |
 
 <!-- end generated -->
 

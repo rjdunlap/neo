@@ -52,11 +52,11 @@ function targets(l: ThoughtLayout, level: number): Target[] {
 describe.each(Object.entries(UPRIGHT_VIEWS))('Thought Bubbles upright on %s', (_, v: View) => {
   const l = thoughtLayout(v);
 
-  it.each([1, 2, 3, 4])(
+  it.each([1, 2, 3, 4, 5])(
     'level %i: every target fits, at least 100 units, apart and clear of Home and the guide',
     (level) => {
       const at = thoughtLayout(v, level);
-      expect(at.bubbles.length).toBe(level === 4 ? 2 : 1);
+      expect(at.bubbles.length).toBe(level >= 4 ? 2 : 1);
       expect(uprightProblems(v, targets(at, level)), `${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
     },
   );

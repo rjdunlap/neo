@@ -5,7 +5,7 @@ import { prop } from '../../art/props';
 import { windowArt } from '../../art/room';
 import { musicNote, puffs } from '../../art/shapes';
 import type { Friend, Place, Reason, RegionArt, Thing, WantStory, WhyAction } from './logic';
-import { STAGE_H, STAGE_W, BUBBLE_W, BUBBLE_H } from './logic';
+import { STAGE_H, STAGE_W, BUBBLE_W, BUBBLE_H, PART_W } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -600,6 +600,72 @@ export function bubbleArt(g: Graphics, lit: boolean): Graphics {
     lit ? 10 : 6,
   );
   return g;
+}
+
+/**
+ * Level 5's speech bubble: a smooth rounded outline with a pointed tail down to the badge at its bottom-left, so a telling
+ * does not look like a thought (puffs) and shows no owner.
+ */
+export function speechArt(g: Graphics, lit: boolean): Graphics {
+  const w = BUBBLE_W / 2;
+  const h = BUBBLE_H / 2;
+  const stroke = line(lit ? swatch.yellow.fill : swatch.white.line, lit ? 10 : 6);
+  g.clear();
+  g.poly([-w + 44, h - 24, -w + 76, h - 24, SPEECH_BADGE.x, SPEECH_BADGE.y])
+    .fill(0xffffff)
+    .stroke(stroke);
+  g.roundRect(-w, -h, BUBBLE_W, BUBBLE_H - 16, 34)
+    .fill(0xffffff)
+    .stroke(stroke);
+  // Cover the tail's base so the outline runs smoothly into it.
+  g.rect(-w + 48, h - 30, 24, 10).fill(0xffffff);
+  return g;
+}
+
+/** Where a speech bubble's badge sits, over the tip of its tail, and its radius. */
+export const SPEECH_BADGE = { x: -BUBBLE_W / 2 + 20, y: BUBBLE_H / 2 - 4, r: 28 };
+
+/** A friend's head in a white ring of radius `r`, centred on (0, 0): the bubble badge and the level-5 card picture. */
+export function headBadge(name: Friend, r = 34): Container {
+  const c = new Container();
+  const face = new Critter(CRITTERS[name]);
+  face.alive = false;
+  face.eventMode = 'none';
+  face.scale.set((0.25 * r) / 34);
+  face.position.set(0, (48 * r) / 34);
+  const ring = new Graphics().circle(0, 0, r).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
+  const mask = new Graphics().circle(0, 0, r - 3).fill(0xffffff);
+  face.mask = mask;
+  c.addChild(ring, mask, face);
+  return c;
+}
+
+/** Level 5's empty badge: a question mark in the ring, until the teller's head takes its place. */
+export function askBadge(r = 34): Container {
+  const c = new Container();
+  const g = new Graphics().circle(0, 0, r).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
+  g.arc(0, -8, 11, Math.PI * 1.05, Math.PI * 0.45).stroke(line(ink, 6));
+  g.moveTo(4, 2).lineTo(1, 9).stroke(line(ink, 6));
+  g.circle(0, 19, 3.5).fill(ink);
+  c.addChild(g);
+  return c;
+}
+
+/** How far above a place's centre the thing rests on it, in stage units. */
+const RESTS_ABOVE: Record<Place, number> = { redBox: 50, blueBasket: 46, shelf: 22 };
+
+/** One part of a telling: the thing in or on its place, about PART_W across, centred on (0, 0). Not a target. */
+export function partArt(thing: Thing, place: Place): Container {
+  const c = new Container();
+  const k = PART_W / 120;
+  const at = placeArt(place);
+  const it = thingArt(thing);
+  it.scale.set(k);
+  at.scale.set(k);
+  at.position.set(0, (RESTS_ABOVE[place] * k) / 2);
+  it.position.set(0, (-RESTS_ABOVE[place] * k) / 2);
+  c.addChild(at, it);
+  return c;
 }
 
 /** A friend for the stage, alive and at story scale. */

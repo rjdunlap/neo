@@ -212,7 +212,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Story Weaver](docs/games/story-weaver.md) | school | Story Grove | 3 | build a little picture-book story out of tiles, hear the pet read it back with each word lighting, then answer an owl's question or choose a reason |
 | [River Tablets](docs/games/river-tablets.md) | preschool–school | Story Grove | 6 | press a clay record of real things and line it up against them one to one, the way people by the big rivers once did |
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 6 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |
-| [Thought Bubbles](docs/games/thought-bubbles.md) | pre-K–school | Story Grove | 4 | a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble |
+| [Thought Bubbles](docs/games/thought-bubbles.md) | pre-K–school | Story Grove | 5 | a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble |
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 15 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |

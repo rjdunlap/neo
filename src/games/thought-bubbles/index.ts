@@ -14,15 +14,20 @@ import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   actionArt,
+  askBadge,
   bubbleArt,
   cardFace,
   doorArt,
   friendNode,
+  headBadge,
   lookRoomArt,
+  partArt,
   PLACE_AT,
   placeArt,
   reachArm,
   reasonArt,
+  SPEECH_BADGE,
+  speechArt,
   thingArt,
   wantSceneArt,
   whyRoomArt,
@@ -35,6 +40,8 @@ import {
   answersOf,
   beatsOf,
   bubbleAt,
+  candidatesOf,
+  firstMissed,
   firstUnfilled,
   lastSeen,
   BUBBLE_H,
@@ -44,6 +51,9 @@ import {
   CARD_W,
   clueOf,
   glowFor,
+  PART_GAP,
+  PART_W,
+  partsOf,
   planFor,
   rectToScreen,
   regionAt,
@@ -54,6 +64,7 @@ import {
   Tally,
   thoughtLayout,
   toScreen,
+  tellerOf,
   WHY_FRIEND_AT,
   type Friend,
   type Glow,
@@ -61,7 +72,6 @@ import {
   type Reason,
   type Stage,
   type Story,
-  type StoryEvent,
   type Thing,
   type ThoughtLayout,
 } from './logic';
@@ -69,7 +79,7 @@ import {
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
 
-type CardValue = Thing | Place | Reason;
+type CardValue = Thing | Place | Reason | Friend;
 
 interface Card {
   value: CardValue;
@@ -77,7 +87,10 @@ interface Card {
   drag: DragHandle;
 }
 
-/** A thought bubble: its cloud, what it holds and, at level 4, the head of the friend it belongs to. */
+/**
+ * A thought bubble: its cloud, what it holds and, at level 4, the head of the friend it belongs to. At level 5 a speech
+ * bubble holding a telling's part pictures, with a question-mark badge until its teller fills it.
+ */
 interface Bubble {
   node: Container;
   cloud: Graphics;
@@ -85,15 +98,40 @@ interface Bubble {
   badge: Container;
   filled: boolean;
   over: boolean;
+  /** Level 5: the telling's part pictures, in story order. */
+  parts: Container[];
 }
 
 type TwoStoryOf = Extract<Story, { level: 4 }>;
+type TellStoryOf = Extract<Story, { level: 5 }>;
+/** A story played on the cottage stage, beat by beat: level 4's or level 5's. */
+type StageStory = TwoStoryOf | TellStoryOf;
+const staged = (s: StageStory) => (s.level === 4 ? s.two : s.tell);
 
 const line = (id: string) => id as LineId;
 const nameLine = (s: Story, v: CardValue) =>
-  line(s.level === 1 ? `thought.thing.${v}` : s.level === 3 ? `thought.reason.${v}` : `thought.place.${v}`);
+  line(
+    s.level === 1
+      ? `thought.thing.${v}`
+      : s.level === 3
+        ? `thought.reason.${v}`
+        : s.level === 5
+          ? `thought.friend.${v}`
+          : `thought.place.${v}`,
+  );
 const pictureOf = (s: Story, v: CardValue) =>
-  s.level === 1 ? thingArt(v as Thing) : s.level === 3 ? reasonArt(v as Reason) : placeArt(v as Place);
+  s.level === 1
+    ? thingArt(v as Thing)
+    : s.level === 3
+      ? reasonArt(v as Reason)
+      : s.level === 5
+        ? headBadge(v as Friend, 52)
+        : placeArt(v as Place);
+/** The story's own line for a part of a telling: the put, move 1 or move 2. */
+const partLine = (s: TellStoryOf, event: number) =>
+  line(
+    `thought.two.${s.tell.template.id}.${['put', 'move1', 'move2'][partsOf(s.tell.events).indexOf(event)]}`,
+  );
 
 /** Where a thing rests on each place, in stage units. */
 const ON_PLACE: Record<Place, { x: number; y: number }> = {
@@ -121,7 +159,7 @@ const FRONT = [
 
 class ThoughtBubbles implements Game {
   readonly hintLabel = 'Show me';
-  readonly level: 1 | 2 | 3 | 4;
+  readonly level: 1 | 2 | 3 | 4 | 5;
   readonly stories: Story[];
   readonly tally = new Tally();
   index = -1;
@@ -148,6 +186,9 @@ class ThoughtBubbles implements Game {
   /** Level 4: which bubbles' glow is on (after two misses or Show me), and the bubble pulsing while its beat replays. */
   private twoGlow = [false, false];
   private pulsing = -1;
+  /** Level 5: the part picture pulsing while its line is said, and whether a telling is being said again. */
+  private pulsingPart: Container | null = null;
+  private retelling = false;
   /** The friend's resting lean (level 1 leans toward the reach), which a head shake returns to. */
   private restRotation = 0;
 
@@ -166,18 +207,18 @@ class ThoughtBubbles implements Game {
     const first = !!ctx.demo || !authoredShown.has(this.level);
     authoredShown.add(this.level);
     const round = roundFor(this.level, ctx.rng, first);
-    // Level 4's stories are long (a put, two moves, two friends coming and going), so its demonstration shows two of the
-    // three: the authored different story and the same one.
-    this.stories = ctx.demo && this.level === 4 ? round.slice(0, 2) : round;
+    // Level 4's and 5's stories are long (a put, two moves, friends coming and going), so the demonstration shows two of
+    // the three authored ones.
+    this.stories = ctx.demo && this.level >= 4 ? round.slice(0, 2) : round;
 
     this.stageBox.addChild(this.scene, this.actors, this.pointer);
     this.pointer.hitArea = new Rectangle(0, 0, STAGE_W, STAGE_H);
     this.pointer.eventMode = 'none';
     onTap(this.pointer, (e) => this.tapPicture(this.stageBox.toLocal(e.global)), { cooldown: 250 });
 
-    this.bubbles = Array.from({ length: this.level === 4 ? 2 : 1 }, () => {
+    this.bubbles = Array.from({ length: this.level >= 4 ? 2 : 1 }, (_, i) => {
       const node = new Container();
-      const cloud = bubbleArt(new Graphics(), false);
+      const cloud = this.cloudArt(new Graphics(), false);
       const held = new Container();
       const badge = new Container();
       node.addChild(cloud, held, badge);
@@ -188,7 +229,9 @@ class ThoughtBubbles implements Game {
         BUBBLE_H + 2 * BUBBLE_MARGIN,
       );
       node.visible = false;
-      return { node, cloud, held, badge, filled: false, over: false };
+      // Level 5: touching a speech bubble says its telling again, free.
+      if (this.level === 5) onTap(node, () => void this.retell(i), { cooldown: 400 });
+      return { node, cloud, held, badge, filled: false, over: false, parts: [] };
     });
     this.dots.visible = false;
     this.glow.eventMode = 'none';
@@ -197,6 +240,11 @@ class ThoughtBubbles implements Game {
     this.replay.visible = false;
     ctx.stage.addChild(this.stageBox, this.dots, ...this.bubbles.map((b) => b.node), this.replay, this.glow);
     this.resize(ctx.view);
+  }
+
+  /** A thought bubble's cloud, or at level 5 a speech bubble. */
+  private cloudArt(g: Graphics, lit: boolean): Graphics {
+    return this.level === 5 ? speechArt(g, lit) : bubbleArt(g, lit);
   }
 
   /** The first bubble (the only one at levels 1–3). */
@@ -249,9 +297,11 @@ class ThoughtBubbles implements Game {
         this.cards.some((c) => c.drag.dragging && bubbleAt(this.layout, c.node.x, c.node.y) === i);
       if (over !== b.over) {
         b.over = over;
-        bubbleArt(b.cloud, over);
+        this.cloudArt(b.cloud, over);
       }
       b.node.scale.set((over ? 1.08 : 1) * (this.pulsing === i ? 1 + 0.05 * Math.sin(this.clock * 8) : 1));
+      for (const p of b.parts)
+        p.scale.set(p === this.pulsingPart ? 1.15 + 0.1 * Math.sin(this.clock * 10) : 1);
     });
     const g = this.glow.clear();
     if (!this.glowing || this.busy) return;
@@ -289,7 +339,7 @@ class ThoughtBubbles implements Game {
   askForHint() {
     if (this.busy || this.finished) return;
     const s = this.story;
-    if (s.level === 4) {
+    if (s.level >= 4) {
       // The first unfilled bubble (left or top first) and its card, unless that bubble's glow is already on.
       const b = firstUnfilled(this.filled);
       if (this.stage !== 'card' || b < 0 || !this.tally.showMe('card', b)) return;
@@ -316,7 +366,7 @@ class ThoughtBubbles implements Game {
   /** The ghost finger: drag the right card into the bubble, then at level 3 tap the clue. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
-    if (this.stage === 'card' && this.story.level === 4) {
+    if (this.stage === 'card' && this.story.level >= 4) {
       const g = glowFor(this.story, 'card', this.filled);
       if (!g || !('card' in g)) return null;
       const card = this.cards.find((c) => c.value === g.card);
@@ -350,9 +400,11 @@ class ThoughtBubbles implements Game {
     this.clearCards();
     this.twoGlow = [false, false];
     this.pulsing = -1;
+    this.pulsingPart = null;
     for (const b of this.bubbles) {
       b.node.visible = false;
       b.filled = false;
+      b.parts = [];
     }
     this.dots.visible = false;
     this.replay.visible = false;
@@ -363,9 +415,20 @@ class ThoughtBubbles implements Game {
     this.dealCards();
     this.setBadges();
     for (const b of this.bubbles) b.node.visible = true;
-    this.dots.visible = true;
+    this.dots.visible = this.level !== 5;
     this.replay.visible = true;
     this.drawDots();
+    const told = this.story;
+    if (told.level === 5) {
+      // The two tellings, said left (or top) bubble first, each part picture appearing as its line is said.
+      this.setParts(told);
+      for (const b of [0, 1]) {
+        await this.ctx.say(line(`thought.tell.intro.${b}`));
+        if (this.finished) return;
+        await this.sayTelling(told, b, true);
+        if (this.finished) return;
+      }
+    }
     this.stage = 'card';
     this.busy = false;
     const s = this.story;
@@ -386,26 +449,65 @@ class ThoughtBubbles implements Game {
     for (const b of this.bubbles) b.held.removeChildren().forEach((c) => c.destroy({ children: true }));
   }
 
-  /** Level 4: each bubble carries its friend's head on its rim, so whose it is shows without reading. */
+  /**
+   * Level 4: each bubble carries its friend's head on its rim, so whose it is shows without reading. Level 5: a question
+   * mark, until the teller's head fills it.
+   */
   private setBadges() {
     const s = this.story;
     this.bubbles.forEach((b, i) => {
       b.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
-      if (s.level !== 4) return;
-      const face = new Critter(CRITTERS[s.two.template.friends[i]]);
-      face.alive = false;
-      face.eventMode = 'none';
-      face.scale.set(0.25);
-      face.position.set(0, 48);
-      const ring = new Graphics()
-        .circle(0, 0, 34)
-        .fill(0xffffff)
-        .stroke({ width: 4, color: swatch.white.line });
-      const mask = new Graphics().circle(0, 0, 31).fill(0xffffff);
-      face.mask = mask;
-      b.badge.addChild(ring, mask, face);
-      b.badge.position.set(-98, 44);
+      if (s.level === 4) {
+        b.badge.addChild(headBadge(s.two.template.friends[i]));
+        b.badge.position.set(-98, 44);
+      } else if (s.level === 5) {
+        b.badge.addChild(askBadge(SPEECH_BADGE.r));
+        b.badge.position.set(SPEECH_BADGE.x, SPEECH_BADGE.y);
+      }
     });
+  }
+
+  /** Level 5: each bubble's part pictures, hidden until the telling is said. */
+  private setParts(s: TellStoryOf) {
+    const { template, events, tellings } = s.tell;
+    this.bubbles.forEach((b, i) => {
+      const told = tellings[i].told;
+      b.parts = told.map((e, k) => {
+        const ev = events[e];
+        const pic = partArt(template.thing, ev.kind === 'move' || ev.kind === 'put' ? ev.to : 'shelf');
+        const pivot = new Container();
+        pivot.addChild(pic);
+        pivot.position.set((k - (told.length - 1) / 2) * (PART_W + PART_GAP), -10);
+        pivot.visible = false;
+        pivot.eventMode = 'none';
+        b.held.addChild(pivot);
+        return pivot;
+      });
+    });
+  }
+
+  /** Say a bubble's telling, its bubble and each part pulsing as that part's line is said; `reveal` shows each part as it comes. */
+  private async sayTelling(s: TellStoryOf, bubble: number, reveal = false) {
+    const b = this.bubbles[bubble];
+    this.pulsing = bubble;
+    for (const [k, e] of s.tell.tellings[bubble].told.entries()) {
+      const part = b.parts[k];
+      if (reveal && part) part.visible = true;
+      this.pulsingPart = part ?? null;
+      await this.ctx.say(partLine(s, e));
+      if (this.finished || this.story !== s) return;
+    }
+    this.pulsingPart = null;
+    this.pulsing = -1;
+  }
+
+  /** Level 5: touching a speech bubble says its telling again, free. */
+  private async retell(bubble: number) {
+    const s = this.story;
+    if (this.busy || this.finished || this.retelling || this.stage !== 'card' || s.level !== 5) return;
+    this.retelling = true;
+    await this.sayTelling(s, bubble);
+    this.retelling = false;
   }
 
   private dealCards() {
@@ -420,6 +522,8 @@ class ThoughtBubbles implements Game {
         onPick: () => {
           sfx.tick();
           void this.ctx.say(nameLine(s, value));
+          // Level 5: that friend hops on the stage.
+          if (s.level === 5) this.critterOf(value as Friend)?.hop(0.45);
         },
         onDrop: (x, y) => this.drop(card, x, y),
       });
@@ -432,6 +536,7 @@ class ThoughtBubbles implements Game {
     const at = bubbleAt(this.layout, x, y);
     if (this.busy || this.finished || this.stage !== 'card' || at < 0) return false;
     if (this.story.level === 4) return this.dropTwo(this.story, card, at);
+    if (this.story.level === 5) return this.dropTell(this.story, card, at);
     if (card.value === answerOf(this.story)) {
       this.glowing = null;
       for (const c of this.cards) c.drag.enabled = false;
@@ -470,7 +575,7 @@ class ThoughtBubbles implements Game {
   }
 
   /** Level 4: the glow follows the first unfilled bubble whose glow is on. */
-  private showTwoGlow(s: TwoStoryOf) {
+  private showTwoGlow(s: StageStory) {
     const b = [0, 1].find((i) => this.twoGlow[i] && !this.bubbles[i].filled);
     this.glowing = b === undefined ? null : { card: answerOf(s, b), bubble: b };
   }
@@ -531,6 +636,74 @@ class ThoughtBubbles implements Game {
     }
     for (const f of this.friends) f.cheer();
     await this.ctx.say(answers[0] === answers[1] ? 'thought.two.done.same' : 'thought.two.done.different');
+    await this.ctx.tw.wait(0.4);
+    return this.next();
+  }
+
+  /**
+   * Level 5: a friend card let go in a speech bubble. The right friend floats home and leaves its head on the bubble's
+   * badge, so one card can fill both bubbles; a filled bubble takes no more drops, free; a wrong friend is that bubble's miss.
+   */
+  private dropTell(s: TellStoryOf, card: Card, at: number): boolean {
+    const b = this.bubbles[at];
+    if (b.filled) return false;
+    const who = card.value as Friend;
+    if (who !== tellerOf(s.tell, at)) {
+      void this.wrongTell(s, at, who);
+      return false;
+    }
+    b.filled = true;
+    sfx.sparkle();
+    b.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const head = headBadge(who, SPEECH_BADGE.r);
+    head.scale.set(0.3);
+    b.badge.addChild(head);
+    void this.ctx.tw.to(head.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outQuad });
+    this.critterOf(who)?.hop(0.6);
+    this.showTwoGlow(s);
+    if (this.bubbles.every((x) => x.filled)) void this.rightTell(s, who);
+    else void this.ctx.say(line(`thought.tell.there.${who}`));
+    return false;
+  }
+
+  /**
+   * Level 5: a wrong friend. The pet asks whether that friend was there; the first part of the telling it missed pulses and
+   * that beat plays again, with the friend out of the door.
+   */
+  private async wrongTell(s: TellStoryOf, at: number, who: Friend) {
+    const glow = this.tally.wrong(at);
+    sfx.boing();
+    this.shakeHead(this.critterOf(who));
+    this.busy = true;
+    this.pulsing = at;
+    const { events, tellings } = s.tell;
+    const missed = firstMissed(events, who, tellings[at].told);
+    this.pulsingPart = this.bubbles[at].parts[tellings[at].told.indexOf(missed)] ?? null;
+    await Promise.all([this.ctx.say(line(`thought.tell.was.${who}`)), this.replayBeat(s, missed)]);
+    if (this.finished) return;
+    this.pulsing = -1;
+    this.pulsingPart = null;
+    if (glow) this.twoGlow[at] = true;
+    this.showTwoGlow(s);
+    this.busy = false;
+  }
+
+  /** Level 5, both speech bubbles filled: the helper hops where the thing is now, and the pet sums up. */
+  private async rightTell(s: TellStoryOf, last: Friend) {
+    this.busy = true;
+    this.stage = 'done';
+    this.glowing = null;
+    for (const c of this.cards) c.drag.enabled = false;
+    await this.ctx.say(line(`thought.tell.there.${last}`));
+    if (this.finished) return;
+    if (this.mover) {
+      await this.walk(this.mover, { x: STAND_AT[s.tell.actual].x + 40, y: 390 });
+      sfx.sparkle();
+      this.mover.cheer();
+      await this.liftThing();
+    }
+    for (const f of this.friends) f.cheer();
+    await this.ctx.say('thought.tell.done');
     await this.ctx.tw.wait(0.4);
     return this.next();
   }
@@ -736,13 +909,14 @@ class ThoughtBubbles implements Game {
       if (t.mover !== 'wind') this.mover = this.addFriend(t.mover, MOVER_REST);
       this.friend = this.addFriend(t.owner, MIDDLE);
       this.actors.addChild(this.thing);
-    } else if (s.level === 4) {
-      // The level-2 cottage; the window is not used. Two owners at the front, and the friend who makes the second move.
+    } else if (s.level === 4 || s.level === 5) {
+      // The level-2 cottage; the window is not used. Two owners at the front, and the friend who makes the second move
+      // (at level 5 the helper, who waits outside until the thing is put away).
       this.scene.addChild(lookRoomArt());
       this.door = new Container();
       this.scene.addChild(this.door);
       this.setDoor(true);
-      const t = s.two.template;
+      const t = staged(s).template;
       this.thing = thingArt(t.thing);
       this.thing.visible = false;
       this.mover = this.addFriend(t.movers[1], MOVER_REST);
@@ -778,13 +952,13 @@ class ThoughtBubbles implements Game {
   /** Play the story once, narrated. */
   private async play() {
     const s = this.story;
-    if (s.level === 4) {
+    if (s.level === 4 || s.level === 5) {
       // Beat by beat: one short line as each beat plays. A friend who stays behind looks up; nothing else moves.
       this.setTwoStage(s, 0);
-      for (const beat of beatsOf(s.two)) {
+      for (const beat of beatsOf(staged(s))) {
         const say = this.ctx.say(line(beat.line));
         if (beat.event !== null) await this.playEvent(s, beat.event);
-        else if (beat.who) this.friends[s.two.template.friends.indexOf(beat.who)]?.poke();
+        else if (beat.who) this.critterOf(beat.who)?.poke();
         await say;
         if (this.finished) return;
         await this.ctx.tw.wait(0.2);
@@ -897,22 +1071,31 @@ class ThoughtBubbles implements Game {
     }
   }
 
-  // ---------------------------------------------------------------- level 4's stage
+  // ---------------------------------------------------------------- level 4's and 5's stage
 
-  /** Who is out of the door after the first `n` events. */
-  private outAfter(events: readonly StoryEvent[], n: number): Set<Friend> {
-    const out = new Set<Friend>();
-    for (const e of events.slice(0, n)) {
-      if (e.kind === 'leave') out.add(e.who);
-      if (e.kind === 'back') out.delete(e.who);
-    }
-    return out;
+  /** The stage critter for a friend: an owner at the front, or the friend who moves things (level 5's helper). */
+  private critterOf(who: Friend): Critter | null {
+    const s = this.story;
+    if (s.level !== 4 && s.level !== 5) return null;
+    const at = staged(s).template.friends.indexOf(who);
+    return at >= 0 ? (this.friends[at] ?? null) : this.mover;
+  }
+
+  /**
+   * Who is out of the door after the first `n` events, read from who saw the last of them; before any, level 5's helper
+   * is outside. The level-4 mover is never out.
+   */
+  private outAfter(s: StageStory, n: number): Set<Friend> {
+    const { template: t, events } = staged(s);
+    const cast = candidatesOf(t);
+    if (n === 0) return new Set(s.level === 5 ? [t.movers[1]] : []);
+    return new Set(cast.filter((f) => !events[n - 1].saw.includes(f)));
   }
 
   /** Put the stage as it stands after the first `n` events: who is in the room, the door, where the thing is. */
-  private setTwoStage(s: TwoStoryOf, n: number) {
-    const { template: t, events } = s.two;
-    const out = this.outAfter(events, n);
+  private setTwoStage(s: StageStory, n: number) {
+    const { template: t, events } = staged(s);
+    const out = this.outAfter(s, n);
     this.friends.forEach((f, i) => {
       f.position.set(FRONT[i].x, FRONT[i].y);
       f.rotation = 0;
@@ -920,6 +1103,10 @@ class ThoughtBubbles implements Game {
     });
     this.setDoor(out.size === 0);
     this.mover?.position.set(MOVER_REST.x, MOVER_REST.y);
+    if (this.mover) {
+      this.mover.rotation = 0;
+      this.mover.alpha = out.has(t.movers[1]) ? 0 : 1;
+    }
     const thing = this.thing!;
     const at = actualPlace(events.slice(0, n), t.thing);
     thing.visible = true;
@@ -928,8 +1115,8 @@ class ThoughtBubbles implements Game {
   }
 
   /** Play one event from the stage as it stands before it. The two moves take the same time whoever is watching. */
-  private async playEvent(s: TwoStoryOf, i: number) {
-    const { template: t, events } = s.two;
+  private async playEvent(s: StageStory, i: number) {
+    const { template: t, events } = staged(s);
     const e = events[i];
     const thing = this.thing!;
     if (e.kind === 'put') {
@@ -950,29 +1137,33 @@ class ThoughtBubbles implements Game {
       await this.ctx.tw.to(f, { alpha: 0 }, { duration: 0.3 });
       this.setDoor(false);
     } else {
+      // Back in (or, at level 5, the helper coming in for the first time) to its own spot.
       const at = t.friends.indexOf(e.who);
-      const f = this.friends[at];
+      const f = this.critterOf(e.who);
+      if (!f) return;
       this.setDoor(true);
       f.position.set(DOORWAY.x + 20, 390);
       await this.ctx.tw.to(f, { alpha: 1 }, { duration: 0.3 });
-      await this.walk(f, FRONT[at]);
-      this.setDoor(this.outAfter(events, i + 1).size === 0);
+      await this.walk(f, at >= 0 ? FRONT[at] : MOVER_REST);
+      this.setDoor(this.outAfter(s, i + 1).size === 0);
     }
   }
 
   /** A miss replays the beat that friend saw last, then the stage returns to the story's end. */
-  private async replayBeat(s: TwoStoryOf, i: number) {
+  private async replayBeat(s: StageStory, i: number) {
     this.setTwoStage(s, i);
     await this.ctx.tw.wait(0.4);
     await this.playEvent(s, i);
     await this.ctx.tw.wait(0.3);
     if (this.finished) return;
-    this.setTwoStage(s, s.two.events.length);
+    this.setTwoStage(s, staged(s).events.length);
   }
 
   /** The trailing dots from each bubble down to its friend's head. */
   private drawDots() {
     const g = this.dots.clear();
+    // A level-5 telling shows no owner: its speech bubble's tail points at the badge instead.
+    if (this.level === 5) return;
     this.layout.bubbles.forEach((at, i) => {
       const friend = this.level === 4 ? this.friends[i] : this.friend;
       if (!friend) return;
