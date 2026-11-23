@@ -772,4 +772,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Tide Tables](games/tide-tables.md)
 
+### Truth Bridge
+
+*grown-up* · [Truth Bridge](games/truth-bridge.md)
+
 <!-- end generated -->

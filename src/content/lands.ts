@@ -422,6 +422,7 @@ export const LANDS: readonly Land[] = [
       'word-code',
       'sum-crates',
       'tide-tables',
+      'truth-bridge',
     ],
   },
 ];
