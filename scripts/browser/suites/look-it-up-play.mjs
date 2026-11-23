@@ -254,8 +254,23 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       }),
     );
     for (const [name, w, h] of names) assert.ok(w <= 124 && h <= 50, `${name} fits its card (${w} x ${h})`);
-    await page.evaluate(() => kit.tapOn(neo.scene.game.choices.find((c) => c.key === 'frog').node));
+    // A wrong friend walks to the visitor and back: mid-walk it is well away from its place (no glide home over it).
+    const away = await page.evaluate(async () => {
+      const c = neo.scene.game.choices.find((c) => c.key === 'frog');
+      kit.tapOn(c.node);
+      await kit.sleep(350);
+      return Math.round(Math.hypot(c.node.x - c.drag.home.x, c.node.y - c.drag.home.y));
+    });
+    assert.ok(away > 60, `the wrong friend walks toward the visitor (${away} units from its place mid-walk)`);
     await ready(0);
+    assert.equal(
+      await page.evaluate(() => {
+        const c = neo.scene.game.choices.find((c) => c.key === 'frog');
+        return Math.hypot(c.node.x - c.drag.home.x, c.node.y - c.drag.home.y) < 2;
+      }),
+      true,
+      'the wrong friend walks back to its place',
+    );
     await page.evaluate(() => neo.scene.game.askForHint());
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 1]);
     for (let n = 0; n < 3; n++) {

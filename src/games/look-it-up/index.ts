@@ -708,8 +708,10 @@ class LookItUp implements Game {
     const targets = [{ x: v.x, y: v.y - 95 }];
     if (this.babyNode) targets.push({ x: v.x + this.babyNode.x, y: v.y + this.babyNode.y });
     const near = nearestPoint(targets, x, y, 200) >= 0;
-    if (moved < 30 || near) void this.choose(c);
-    return false;
+    if (!(moved < 30 || near)) return false;
+    void this.choose(c);
+    // A friend card walks itself (level 6): the drag handle must not glide it home over that walk.
+    return !!this.visit.share;
   }
 
   private async choose(c: Choice) {
