@@ -432,7 +432,7 @@ function doerArt(word: string, c: Container, add: (...gs: Container[]) => Contai
     case 'painter': {
       const cat = critter('cat', -34, 72, 0.5);
       wear(cat, (g) =>
-        g.roundRect(-74, -118, 148, 112, 30).fill(swatch.blue.light).stroke(line(swatch.blue.line, 6)),
+        g.roundRect(-70, -60, 140, 58, 24).fill(swatch.blue.light).stroke(line(swatch.blue.line, 6)),
       );
       const easel = piece(
         (g) => {
@@ -461,25 +461,25 @@ function doerArt(word: string, c: Container, add: (...gs: Container[]) => Contai
       };
     }
     case 'baker': {
-      const bear = critter('bear', 0, 76, 0.52);
+      const bear = critter('bear', -18, 76, 0.52);
       wear(bear, (g) => {
         g.roundRect(-58, -262, 116, 30, 10).fill(0xffffff).stroke(line(swatch.white.line, 6));
         for (const x of [-38, 0, 38]) g.circle(x, -290, 34);
         g.fill(0xffffff).stroke(line(swatch.white.line, 6));
         g.rect(-56, -268, 112, 18).fill(0xffffff);
       });
-      const bread = piece((g) => loaf(g, 0, 0, 1.5), 0, 30);
+      const bread = piece((g) => loaf(g, 0, 0, 1.4), 46, 52);
       const steam = new Graphics();
       add(bear, bread, steam);
       return {
         node: c,
         alive: (t) => {
           steam.clear();
-          for (const [i, x] of [-14, 2, 18].entries()) {
+          for (const [i, x] of [32, 48, 64].entries()) {
             const k = (t * 0.8 + i * 0.3) % 1;
             steam
-              .moveTo(x, 8 - k * 46)
-              .quadraticCurveTo(x + 8, -4 - k * 46, x, -16 - k * 46)
+              .moveTo(x, 30 - k * 46)
+              .quadraticCurveTo(x + 8, 18 - k * 46, x, 6 - k * 46)
               .stroke({ ...line(0xffffff, 5), alpha: Math.max(0, 1 - k) * Math.min(1, t * 2) });
           }
         },
@@ -506,16 +506,16 @@ function doerArt(word: string, c: Container, add: (...gs: Container[]) => Contai
       };
     }
     case 'swimmer': {
-      const dog = critter('dog', 0, 96, 0.5);
+      const dog = critter('dog', 0, 62, 0.5);
       const water = piece((g) => {
-        g.roundRect(-80, 28, 160, 52, 20).fill(swatch.blue.light);
-        waves(g, 75, [30, 56]);
+        g.roundRect(-80, 34, 160, 46, 20).fill(swatch.blue.light);
+        waves(g, 75, [36, 60]);
       });
       add(dog, water);
       return {
         node: c,
         alive: (t) => {
-          dog.y = 96 + Math.sin(t * 5) * 6;
+          dog.y = 62 + Math.sin(t * 5) * 6;
           dog.rotation = Math.sin(t * 10) * 0.05;
           water.x = Math.sin(t * 3) * 6;
         },
@@ -547,21 +547,21 @@ function doerArt(word: string, c: Container, add: (...gs: Container[]) => Contai
       };
     }
     case 'reader': {
-      const bunny = critter('bunny', 0, 78, 0.48);
-      const open = piece(book, 0, 22);
-      open.scale.set(0.9);
+      const bunny = critter('bunny', 0, 72, 0.48);
+      const open = piece(book, 0, 60);
+      open.scale.set(0.7);
       const page = piece((g) =>
         g.poly([0, -22, 48, -30, 48, 28, 0, 36]).fill(0xffffff).stroke(line(swatch.white.line, 3)),
       );
-      page.position.set(0, 22);
-      page.scale.set(0.9);
+      page.position.set(0, 60);
+      page.scale.set(0.7);
       add(bunny, open, page);
       return {
         node: c,
         alive: (t) => {
           // The page lifts and turns over from right to left.
           const k = Math.min(1, Math.max(0, (t - 0.3) / 0.8));
-          page.scale.x = 0.9 * Math.cos(k * Math.PI);
+          page.scale.x = 0.7 * Math.cos(k * Math.PI);
           page.visible = k < 1;
         },
       };

@@ -330,6 +330,102 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         'Word Glue 7 on an upright phone: free slide, tile taken back, wrong name, hint, five names, one sticker',
       );
     };
+    /**
+     * Level 8, Someone who, on an upright phone: the same wrong action dropped twice is one miss, Show a hint glows the right
+     * action (one hint), then every word made (1/1) with one sticker. Then a capture strip of the seven doers.
+     */
+    const doerPlay = async () => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('word-glue', 8);
+      await settle();
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.view.upright),
+        true,
+        'the upright layout is played',
+      );
+      const ask = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          const a = g.s.round.asks[g.s.index];
+          return { word: a.entry.word, first: a.entry.first, pictures: a.pictures };
+        });
+      const stickers = () =>
+        page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'word-glue').length);
+      const before = await stickers();
+      const first = await ask();
+      assert.deepEqual(
+        [first.word, first.pictures],
+        ['painter', ['person', 'paint', 'bake', 'sing']],
+        'the authored round opens on the painter',
+      );
+      const boxes = await page.evaluate(() =>
+        neo.scene.game.cards.map(({ node }) => {
+          const b = node.getBounds();
+          return [b.x, b.y, b.width, b.height];
+        }),
+      );
+      for (const [x, y, w, h] of boxes) {
+        assert.ok(
+          x >= 0 && y >= 0 && x + w <= 390 && y + h <= 844,
+          `a picture is on screen (${x}, ${y}, ${w}, ${h})`,
+        );
+        assert.ok(Math.min(w, h) >= 44, `a picture is at least 44 px (${w} x ${h})`);
+      }
+      await screenshot('word-glue-8-upright-phone');
+      await join('bake', 'person');
+      await page.waitForTimeout(500);
+      await screenshot('word-glue-8-wrong-baker');
+      await settle();
+      await join('bake', 'person');
+      await settle();
+      assert.deepEqual(
+        [...(await tally()), await page.evaluate(() => neo.scene.game.s.index)],
+        [1, 0, 0],
+        'the same wrong action twice is one miss and the ask stays',
+      );
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      assert.deepEqual(
+        [...(await tally()), await page.evaluate(() => neo.scene.game.s.glow)],
+        [1, 1, true],
+        'Show a hint glows the right action and counts once',
+      );
+      // The scale a shelf thing is drawn at, before the scene closes.
+      const shelfScale = await page.evaluate(() => (84 / 160) * (window.innerWidth / neo.scene.game.view.w));
+      await playOut();
+      await finished('word-glue');
+      assert.deepEqual(await score(), [1, 1]);
+      assert.equal(await stickers(), before + 1, 'one sticker');
+      // The seven doers at the shelf's size and at made size, for the legibility check.
+      await page.evaluate(async (shelfScale) => {
+        const { madeArt } = await import('/src/games/word-glue/art.ts');
+        const Container = madeArt('painter').node.constructor;
+        const strip = new Container();
+        neo.root.visible = false;
+        ['painter', 'baker', 'singer', 'swimmer', 'driver', 'reader', 'builder'].forEach((w, i) => {
+          const big = madeArt(w);
+          big.alive(1.5);
+          big.node.scale.set(0.9);
+          big.node.position.set(105 + (i % 2) * 185, 95 + Math.floor(i / 2) * 165);
+          const small = madeArt(w);
+          small.alive(3);
+          // Along the bottom at about the shelf's size on this phone (84 of 160 units, in CSS pixels).
+          small.node.position.set(40 + i * 52, 790);
+          small.node.scale.set(shelfScale);
+          strip.addChild(big.node, small.node);
+        });
+        neo.pixi.stage.addChild(strip);
+        window.__strip = strip;
+      }, shelfScale);
+      await page.waitForTimeout(300);
+      await screenshot('word-glue-8-doer-strip');
+      await page.evaluate(() => {
+        window.__strip.destroy({ children: true });
+        neo.root.visible = true;
+      });
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Word Glue 8 on an upright phone: wrong action twice (one miss), hint, five doers, one sticker');
+    };
     const score = () =>
       page.evaluate(() => {
         const r = kit.store.stats('word-glue').history.at(-1);
@@ -369,6 +465,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     if (process.env.WORDGLUE_ONLY === 'kind') return kindPlay();
     if (process.env.WORDGLUE_ONLY === 'reversed') return reversedPlay();
     if (process.env.WORDGLUE_ONLY === 'name') return namePlay();
+    if (process.env.WORDGLUE_ONLY === 'doer') return doerPlay();
     await launch('word-glue', 1);
     await settle();
     await page.evaluate(() => kit.tapOn(neo.scene.game.cards[0].node));

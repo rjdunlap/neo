@@ -22,8 +22,10 @@ import {
   CARD,
   COMPOUNDS,
   currentAsk,
+  DOER_LEVEL,
   drop,
   dropTarget,
+  headFixed,
   hintFor,
   KIND_LEVEL,
   kindLayout,
@@ -36,6 +38,7 @@ import {
   place,
   planFor,
   PAIRED_SHELF,
+  PERSON,
   REVERSED_LEVEL,
   reversedLayout,
   restartState,
@@ -51,7 +54,7 @@ import {
   type GlueState,
   type Pt,
 } from './logic';
-import { choiceLine, nameLine } from './voice';
+import { actionLine, choiceLine, doerLine, nameLine } from './voice';
 
 /** The made thing is drawn about 160 across. */
 const MADE_ART = 160;
@@ -178,6 +181,11 @@ class WordGlue implements Game {
   /** Level 7: a thing nobody has named, two name cards and its three pictures. */
   private get naming() {
     return this.level === NAME_LEVEL;
+  }
+
+  /** Level 8: an action joins the person to make someone who does it. */
+  private get doing() {
+    return this.level === DOER_LEVEL;
   }
 
   /** Levels 5 to 7 answer by tapping: a touch-down says the picture and only a release on it acts. */
@@ -448,6 +456,12 @@ class WordGlue implements Game {
       } else if (this.choosing) {
         if (this.showing) this.showing.t = 0;
         this.askChoice();
+      } else if (this.doing) {
+        // No hop: the asked word's action is the answer, so nothing on the table points at it.
+        if (!first) return this.askDoer();
+        void this.ctx.say('wordglue.instruct.doer').then(() => {
+          if (!this.dead && !this.finished && currentAsk(this.s) === ask) this.askDoer();
+        });
       } else {
         this.hop(this.cardOf(ask.entry.first));
         void this.ctx.instruct('wordglue.ask', { head: ask.entry.second });
@@ -460,6 +474,12 @@ class WordGlue implements Game {
     void said.then(() => {
       if (gen === this.askGen) this.askNow();
     });
+  }
+
+  /** Level 8: the word to make, the line the pet repeats. */
+  private askDoer() {
+    const ask = currentAsk(this.s);
+    if (ask) void this.ctx.instruct(doerLine(ask.entry.word, 'ask'));
   }
 
   /** Says the waiting ask, if there is one. */
@@ -515,6 +535,7 @@ class WordGlue implements Game {
     const ask = currentAsk(this.s);
     if (this.level === 3 && ask && key === ask.entry.first)
       void this.ctx.say('wordglue.ask', { head: ask.entry.second });
+    else if (this.doing) void this.ctx.say(key === PERSON ? 'wordglue.doer.person' : actionLine(key));
     else if (this.reversed) void this.ctx.say(choiceLine(key, 'name'));
     else void this.ctx.say('wordglue.word', { word: key });
   }
@@ -795,7 +816,7 @@ class WordGlue implements Game {
       own,
       x,
       y,
-      this.level === 3 ? [0] : undefined,
+      headFixed(this.level) ? [0] : undefined,
     );
   }
 
@@ -817,7 +838,7 @@ class WordGlue implements Game {
       return out.kind === 'right';
     }
     const ask = this.shownAsk!;
-    if (this.level === 3 && out.made) void this.wrongMade(out.made, ask, card);
+    if (headFixed(this.level) && out.made) void this.wrongMade(out.made, ask, card);
     else void this.wrongPair(card, other, ask);
     return false;
   }
@@ -876,7 +897,10 @@ class WordGlue implements Game {
     if (this.restartWanted) this.doRestart();
   }
 
-  /** Level 3: the wrong thing appears for a moment, the pet says what it is and who it is for, and it pops apart. */
+  /**
+   * Levels 3 and 8: the wrong thing appears for a moment, the pet says what it is (and at level 3 who it is for), and it
+   * pops apart.
+   */
   private async wrongMade(made: Compound, ask: Ask, card: CardNode) {
     this.busy = true;
     sfx.boing();
@@ -884,11 +908,13 @@ class WordGlue implements Game {
     card.node.visible = false;
     head.node.visible = false;
     const shown = this.show(made);
-    await this.ctx.say('wordglue.miss.for', {
-      made: made.word,
-      meaning: made.meaning,
-      head: ask.entry.second,
-    });
+    if (this.doing) await this.ctx.say(doerLine(made.word, 'made'));
+    else
+      await this.ctx.say('wordglue.miss.for', {
+        made: made.word,
+        meaning: made.meaning,
+        head: ask.entry.second,
+      });
     if (this.dead) return;
     sfx.pop(3);
     await this.ctx.tw.to(shown.node.scale, { x: 0.01, y: 0.01 }, { duration: 0.25 });
@@ -900,6 +926,7 @@ class WordGlue implements Game {
     this.busy = false;
     this.relayout();
     if (this.restartWanted) return this.doRestart();
+    if (this.doing) return this.askDoer();
     this.hop(this.cardOf(ask.entry.first));
     void this.ctx.say('wordglue.ask', { head: ask.entry.second });
   }
@@ -954,11 +981,13 @@ class WordGlue implements Game {
     });
     const made = this.show(entry);
     this.bubble.visible = false;
-    const said = this.ctx.say('wordglue.join', {
-      first: entry.first,
-      second: entry.second,
-      word: entry.word,
-    });
+    const said = this.doing
+      ? this.ctx.say(doerLine(entry.word, 'right'))
+      : this.ctx.say('wordglue.join', {
+          first: entry.first,
+          second: entry.second,
+          word: entry.word,
+        });
     await this.shelve([made], said);
   }
 
@@ -1083,7 +1112,7 @@ class WordGlue implements Game {
           width: pulse,
           color: swatch.yellow.fill,
         });
-      } else if (this.level === 3) ring(this.cardOf(ask.entry.first), swatch.yellow.fill, pulse);
+      } else if (headFixed(this.level)) ring(this.cardOf(ask.entry.first), swatch.yellow.fill, pulse);
       else if (this.choosing) ring(this.cardOf(rightChoice(this.s) ?? ''), swatch.yellow.fill, pulse);
       else
         for (const k of [ask.entry.first, ask.entry.second]) ring(this.cardOf(k), swatch.yellow.fill, pulse);
