@@ -32,10 +32,10 @@ Each level's pool is a generated list of start positions, by symmetry class (the
 | --- | --- | --- |
 | 1 · *Close it* | 6–9 | At least one plot is ready, and every sound first rail is a claim. At least one unsound rail exists |
 | 2 · *Don't hand it over* | 8–12 | No plot is ready, at least one safe rail exists, every sound first rail is a safe rail, and at least one give is unsound |
-| 3 · *Smallest first* | 8–12 | No plot is ready and no safe rail exists (every rail gives), the open plots form at least two runs of different lengths, and at least one give is unsound |
-| 4 · *Leave two* | 9–12 | The pet has just given a run of three or more, so a claim is available; somewhere in her best play she must lay a leave-two (every sound rail at that moment is a leave-two), and taking the whole run there is unsound |
+| 3 · *Smallest first* | 8–12 | No plot is ready and no safe rail exists (every rail gives); every open plot is in a run (none has three or more rails open); the runs are at least two, of different lengths; the give into the middle of a shortest run is sound and some give into a longer run is unsound |
+| 4 · *Leave two* | 9–12 | The pet has just given a chain (not a loop) of three or more, so a claim is available and no other plot is ready; every sequence of sound rails she can lay this turn contains a leave-two, and claiming the last two plots of the chain is unsound |
 
-A level-1 round is short: claim what is ready, then the rest. The later tests describe only the first decision; the rest of the play-out may hold other decisions of any kind, all scored the same way.
+A level-1 round is short: claim what is ready, then the rest. The tests describe the first decision; the rest of the play-out is scored the same way. So that no level charges a miss for a skill it has not taught, levels 1–3 also keep only positions where no sequence of sound rails reaches a turn of hers whose only sound rails are leave-twos, and levels 1–2 only positions where none reaches a turn whose only sound rails are gives into a shortest run. Every hint kind and its line stay available at every level for the decisions a play-out does hold. **In a run of two**, giving by the middle rail and by an end rail can differ: by an end, the pet can lay the far rail and hand the pair back. A hint into a run of two names the middle rail ("Give the two by the middle rail, so they can't come back to you"), and an unsound end rail's replay shows the pet's leave-two.
 
 ## Turns, misses, hints and credit
 
@@ -49,7 +49,7 @@ Lay a rail by tapping between two posts. Touch-down darkens the rail at once; li
 ## Play and presentation
 
 - **Scaffold and helpers.** Use the [new-game scaffold](../NEW-GAME.md), `onTap`, the coach helpers and Shell Rows' replay pattern.
-- **Geometry.** Plots are `s` units square. Each rail's target is a square of `s / 2` centred on the rail, so neighbouring targets meet at the posts without overlapping and the posts themselves are not targets. Upright, `s` is 200, so every target is 100 units and the field is 700 by 700 including half a target outside the border. Landscape, `s` is 180 (targets 90).
+- **Geometry.** Plots are `s` units square. Each rail's target is a square of `s / 2` centred on the rail, so neighbouring targets meet at the posts without overlapping (the upright test allows touching) and the posts themselves are not targets. A tap anywhere inside a plot picks the plot's nearest open rail, so no part of the field is dead; the test measures the squares. Upright, `s` is 200, so every target is 100 units and the field is 700 by 700 including half a target outside the border. Landscape, `s` is 180 (targets 90).
 - **Upright phone first.** At 390 × 625 with captions and the active guide, top to bottom: the score strip below Home and "?", the field, then Help. Reserve the caption and guide space first; the field sits clear of the top-left column and the bottom-left guide.
 - **Landscape.** The field on the left, the score strip and Help on the right.
 - **Art.** Posts, rails, the grass, the lantern and paw marks and the new hub icon (a fence corner with a lantern) in palette colours with `Graphics`. Rails she laid and rails the pet laid look alike; the plot marks carry ownership. Use existing confirmation sounds and pentatonic notes (a rising step for each claimed plot).
@@ -58,7 +58,7 @@ Lay a rail by tapping between two posts. Touch-down darkens the rail at once; li
 
 - the instruction, through `ctx.instruct`: "Lay one rail each. Close a plot to claim it and go again. Get as many as you can.";
 - targets "You can get *n*" for *n* 0–9, cost lines "That handed me *n*" (1–9) and "Now you could only get *n*" (0–8), and finishing scores for each split of nine;
-- the four hint lines above, plus "Give the run of *n*" for *n* 1–3 and "the loop" at level 3;
+- the four hint lines above, plus "Give the run of *n*" for *n* 1–3, the middle-rail line for a run of two, and "the loop";
 - the pet's turn-pass lines ("Your turn", "My turn again").
 
 A unit test checks that every line the pools and the play-out can produce has a voice line.
@@ -69,7 +69,9 @@ A unit test checks that every line the pools and the play-out can produce has a 
 
 ## Build batches
 
-1. **`fence-the-field 1`, levels 1–2.** The new game, the field, the solver, the pet, the replay and the claim and safe-rail hints, with the pool script and its pools for levels 1–2.
+**The pool script runs first.** The counts are not derived in this packet. If any level's pool comes out empty or under about 20 classes, the building session stops before the scene, records the counts and the failing test in the [study](../deep-dives/subjects/strategy-games.md#build-slices-in-order), and leaves the level to a revised definition.
+
+1. **`fence-the-field 1`, levels 1–2.** The new game, the field, the solver, the pet, the replay and the claim and safe-rail hints, with the pool script and its pools for all four levels (only levels 1–2 registered).
 
    **Checks:** typecheck and unit tests covering the solver (value against a brute-force count on small positions), the pools (every listed position passes its level's test, classes distinct under symmetry, the printed counts recorded here), sound and unsound rails, miss counting per distinct rail, the hint walk, voice coverage, the upright layout test (every rail target 100 units upright, at least 64 everywhere), registry, lands and paging. **Browser and build:** one filtered `fencethefield` play at 390 × 625 with captions through the normal grown-up route and the Lantern Lake page: finish level 1, then at level 2 lay one unsound rail (watch the replay and the step back), lay it again (no new miss), follow Help, rotate and finish with one sticker. One upright screenshot, `fingerdemo` at level 2, build with the generated voice assets.
 2. **`fence-the-field 2`, levels 3–4.** The runs, the shortest-run and leave-two hints, and their pools. After batch 1.
