@@ -497,7 +497,7 @@ describe('Word Monsters', () => {
   it("level 15 takes the first letter of her name, and Pip's p with no usable name", () => {
     expect(myLetter('Dana')).toMatchObject({ letter: 'd', own: true });
     expect(myLetter('  émile ')).toMatchObject({ letter: 'e', own: true });
-    expect(myLetter('Zoë-Ann')).toMatchObject({ letter: 'z', own: true });
+    expect(myLetter('Zoë-Ann')).toEqual({ letter: 'z', own: true, name: 'zoeann' });
     for (const none of ['', '   ', '小明', '42', 'friend', 'Friend'])
       expect(myLetter(none), JSON.stringify(none)).toEqual({ letter: 'p', own: false, name: 'pip' });
   });

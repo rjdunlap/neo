@@ -8,7 +8,7 @@ export const VOICE = {
     'Where is {letter}? {letter} starts your name!',
     'Find {letter}, the first letter of your name!',
   ],
-  'monster.mine.pip': ['Where is {letter}? {letter} is for Pip!', "Find {letter}, Pip's letter!"],
+  'monster.mine.pip': ["Where is {letter}? Find Pip's letter!", "Find {letter}, Pip's letter!"],
   'monster.mine.yes': ['{letter}! Your letter!', 'Yes, {letter}! It starts your name.'],
   'monster.mine.yes.pip': ["{letter}! Pip's letter!"],
   'monster.who': ['Who says {sound}?'],
