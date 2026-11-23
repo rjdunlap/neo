@@ -39,6 +39,14 @@ import {
   purseMiss,
   countOn,
   PURSE_MAX,
+  TARGET_MAX,
+  COIN_R,
+  MAT_STEP,
+  matCoinScale,
+  matSlot,
+  TAG,
+  tagMarks,
+  purseFor,
 } from './logic';
 
 /** Every level where she pays; the purse level asks for a total instead. */
@@ -101,7 +109,7 @@ describe('Market Stall', () => {
     }
   });
 
-  it("asks for amounts from 1 to 10 that the level's coins can make, never the same twice running", () => {
+  it("asks for amounts the level's coins can make (to 10, or 11 to 20 with the ten-shell coin), never the same twice running", () => {
     for (const plan of PAYING) {
       for (let seed = 1; seed <= 300; seed++) {
         const orders = makeOrders(plan, new Rng(seed));
@@ -109,7 +117,7 @@ describe('Market Stall', () => {
         orders.forEach((o, i) => {
           const t = target(plan, o);
           expect(t).toBeGreaterThanOrEqual(1);
-          expect(t).toBeLessThanOrEqual(10);
+          expect(t).toBeLessThanOrEqual(plan.coins.includes(10) ? TARGET_MAX : 10);
           expect(sum(fewest(t, plan.coins))).toBe(t);
           for (const p of o.prices)
             (expect(p).toBeGreaterThanOrEqual(plan.price[0]), expect(p).toBeLessThanOrEqual(plan.price[1]));
@@ -255,7 +263,7 @@ describe('Market Stall', () => {
     }
   });
 
-  it('names only a coin that is new at levels 2 and 3, and only once per game start', () => {
+  it('names only a coin that is new at its level (2, 3 and 9), and only once per game start', () => {
     const none = new Set<number>();
     expect(coinToName(1, 1, none)).toBeNull();
     expect(coinToName(2, 1, none)).toBeNull();
@@ -266,6 +274,9 @@ describe('Market Stall', () => {
     expect(coinToName(2, 2, new Set([2]))).toBeNull();
     for (let level = 4; level <= PLANS.length; level++)
       for (const c of [1, 2, 5]) expect(coinToName(level, c, none)).toBeNull();
+    expect(coinToName(9, 10, none)).toBe('ten');
+    expect(coinToName(9, 10, new Set([10]))).toBeNull();
+    expect(coinToName(PLANS.length + 1, 10, none)).toBeNull();
   });
   it('draws one pip per shell of value, five to a row, inside the coin and clear of its rim dots', () => {
     for (const value of [1, 2, 3, 5, 10])
@@ -317,7 +328,7 @@ describe('Market Stall', () => {
   describe('a total she can see (TotoLogic P8)', () => {
     it('is shown on every level but the two where the total is the puzzle', () => {
       expect(PLANS.filter((p) => !showsTotal(p)).map((p) => p.mode)).toEqual(['pair', 'change', 'purse']);
-      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7]);
+      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9]);
     });
 
     it('is the sum of the coins on the counter, and nothing while the counter is empty', () => {
@@ -409,9 +420,9 @@ describe('Market Stall', () => {
   describe('level 8, How much is in the purse?', () => {
     const plan = PLANS[7];
 
-    it('is the last school level, appended after the fewest-coins level', () => {
+    it('is a school level, appended after the fewest-coins level', () => {
       expect(plan.mode).toBe('purse');
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: 8 });
+      expect(marketStall.levels('school').max).toBeGreaterThanOrEqual(8);
       expect(marketStall.describeLevel(8)).toBe(plan.name);
     });
 
@@ -492,6 +503,125 @@ describe('Market Stall', () => {
       expect(totalShown(plan, [5, 2, 2, 1])).toBeNull();
       expect(teachLine(plan, null)).toBeNull();
       expect(countsUp(plan)).toBe(false);
+    });
+  });
+
+  describe('level 9, The ten-shell shell', () => {
+    const plan = PLANS[8];
+
+    it('is the last school level: a mix level with a ten-shell coin in the purse and prices 11 to 20', () => {
+      expect(plan.mode).toBe('mix');
+      expect(plan.coins).toEqual([1, 2, 5, 10]);
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: 9 });
+      expect(marketStall.describeLevel(9)).toBe(plan.name);
+      expect(showsTotal(plan)).toBe(true);
+      expect(teachLine(plan, null)).toBe('biggest');
+    });
+
+    it('asks for every price from 11 to 20 over many rounds, never twice running', () => {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 400; seed++) {
+        const orders = makeOrders(plan, new Rng(seed));
+        expect(orders).toHaveLength(plan.orders);
+        orders.forEach((o, i) => {
+          expect(o.prices).toHaveLength(1);
+          const t = target(plan, o);
+          expect(t).toBeGreaterThanOrEqual(11);
+          expect(t).toBeLessThanOrEqual(TARGET_MAX);
+          if (i > 0) expect(t).not.toBe(target(plan, orders[i - 1]));
+          seen.add(t);
+        });
+      }
+      expect([...seen].sort((a, b) => a - b)).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
+    });
+
+    it('pays every price with a ten in the fewest coins, within the twelve the counter holds, and the bot pays it', () => {
+      for (let want = 10; want <= TARGET_MAX; want++) {
+        const best = fewest(want, plan.coins);
+        expect(sum(best)).toBe(want);
+        expect(best[0]).toBe(10);
+        expect(best.length).toBeLessThanOrEqual(12);
+        // Greedy is the true minimum for 1, 2, 5 and 10: no exact payment uses fewer coins.
+        const min = Array<number>(want + 1).fill(Infinity);
+        min[0] = 0;
+        for (let a = 1; a <= want; a++)
+          for (const c of plan.coins) if (c <= a) min[a] = Math.min(min[a], min[a - c] + 1);
+        expect(best.length).toBe(min[want]);
+        const pay = paymentFor(plan, { prices: [want] }, null);
+        expect(pay).toEqual(best);
+        expect(payTouch(pay, pay)).toBe('bell');
+      }
+    });
+
+    it('accepts any exact payment, and names the usual wrong ones', () => {
+      const order = { prices: [14] };
+      expect(missKind(plan, order, [10, 2, 2])).toBeNull();
+      expect(missKind(plan, order, [5, 5, 2, 2])).toBeNull();
+      expect(missKind(plan, order, Array(14).fill(1))).toBeNull();
+      // Fourteen coins counted as fourteen, whatever they are worth.
+      expect(missKind(plan, order, [10, ...Array(13).fill(1)])).toBe('counted-coins');
+      expect(missKind(plan, order, [10, 2, 1])).toBe('one-more');
+      expect(missKind(plan, order, [10, 5])).toBe('one-less');
+      expect(missKind(plan, order, [10, 10])).toBe('over');
+      expect(missKind(plan, order, [10])).toBe('short');
+    });
+
+    it('draws the mat coins so the ten-shell coin fits a mat column, and leaves other levels full size', () => {
+      expect(matCoinScale(plan) * 2 * COIN_R[10]).toBeLessThanOrEqual(MAT_STEP);
+      // Neighbouring coins on a row, and the rows, never meet.
+      const r = matCoinScale(plan) * COIN_R[10];
+      expect(matSlot(1).x - matSlot(0).x).toBeGreaterThanOrEqual(2 * r);
+      expect(matSlot(6).y - matSlot(0).y + 1e-9).toBeGreaterThan(r * 1.4);
+      // Bigger coins stay bigger on the mat.
+      expect(COIN_R[10] * matCoinScale(plan)).toBeGreaterThan(COIN_R[5] * matCoinScale(plan));
+      for (const p of PLANS.filter((q) => !q.coins.includes(10))) expect(matCoinScale(p)).toBe(1);
+      // Twelve coins stay on the mat's box.
+      for (let i = 0; i < 12; i++) {
+        const at = matSlot(i);
+        expect(Math.abs(at.x) + r).toBeLessThanOrEqual(250);
+      }
+    });
+
+    it('draws each tag as dots to 10, then a ten bar and the ones, inside the tag at every price', () => {
+      const inner = { x: TAG.w / 2 - 3, y: TAG.h / 2 - 3 };
+      for (let price = 1; price <= TARGET_MAX; price++) {
+        const m = tagMarks(price);
+        expect(m.bar === null).toBe(price <= 10);
+        expect(m.dots).toHaveLength(price <= 10 ? price : price - 10);
+        for (const d of m.dots) {
+          expect(Math.abs(d.x) + d.r).toBeLessThanOrEqual(inner.x);
+          expect(d.y + d.r).toBeLessThanOrEqual(inner.y);
+          if (m.bar) expect(d.y - d.r).toBeGreaterThan(m.bar.y + m.bar.h);
+        }
+        // Five dots to a row.
+        const rows = new Map<number, number>();
+        for (const d of m.dots) rows.set(d.y, (rows.get(d.y) ?? 0) + 1);
+        expect([...rows.values()].every((n) => n <= 5)).toBe(true);
+        if (m.bar) {
+          expect(m.bar.x).toBeGreaterThanOrEqual(-inner.x);
+          expect(m.bar.x + 10 * m.bar.cell).toBeLessThanOrEqual(inner.x);
+          // Below the string hole and the numeral (its glyphs about 0.35 of the size either side of its centre).
+          expect(m.bar.y).toBeGreaterThan(m.numeral.y + 0.35 * m.numeral.size);
+          expect(m.numeral.y - 0.35 * m.numeral.size).toBeGreaterThan(TAG.hole.y + TAG.hole.r);
+        }
+      }
+      // Up to ten the tag is unchanged.
+      expect(tagMarks(7)).toEqual({
+        numeral: { y: -8, size: 40 },
+        bar: null,
+        dots: Array.from({ length: 7 }, (_, i) => ({
+          x: -40 + (i % 5) * 20,
+          y: 22 + Math.floor(i / 5) * 14,
+          r: 5,
+        })),
+      });
+    });
+
+    it('keeps the three-coin purse where it was and fits four coins along the foot', () => {
+      const v = computeView(1024, 768);
+      expect(purseFor(v, 3).map((p) => p.x)).toEqual([372, 542, 712]);
+      const four = purseFor(v, 4);
+      four.forEach((p, i) => i && expect(p.x - four[i - 1].x).toBeGreaterThanOrEqual(115));
     });
   });
 });

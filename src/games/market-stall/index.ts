@@ -17,6 +17,11 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   CARD_HIT,
+  COIN_R,
+  matCoinScale,
+  matSlot,
+  TAG,
+  tagMarks,
   countOn,
   purseCards,
   purseMiss,
@@ -90,17 +95,12 @@ export const STALLS = {
   },
 } satisfies Record<StallId, { awning: ColorName; keeper: keyof typeof CRITTERS; goods: typeof GOODS }>;
 
-const COIN_LOOK: Record<number, { color: ColorName; r: number }> = {
-  1: { color: 'yellow', r: 30 },
-  2: { color: 'teal', r: 35 },
-  3: { color: 'green', r: 38 },
-  5: { color: 'pink', r: 40 },
-  10: { color: 'purple', r: 44 },
-};
+const COIN_COLOR: Record<number, ColorName> = { 1: 'yellow', 2: 'teal', 3: 'green', 5: 'pink', 10: 'purple' };
+const COIN_LOOK = (value: number) => ({ color: COIN_COLOR[value], r: COIN_R[value] });
 
 /** A shell coin: bigger coins are worth more, and each shows its number. */
 export function coinArt(value: number): Container {
-  const { color, r } = COIN_LOOK[value];
+  const { color, r } = COIN_LOOK(value);
   const sw = swatch[color];
   const c = new Container();
   const g = new Graphics()
@@ -121,7 +121,7 @@ export function coinArt(value: number): Container {
 function shopCoin(value: number, level: number): Container {
   const c = coinArt(value);
   if (level > PIP_LEVELS) return c;
-  const { r } = COIN_LOOK[value];
+  const r = COIN_R[value];
   // Shrink and lift the numeral so the pips sit clear of it.
   c.children[1].scale.set(PIP_NUMERAL.scale);
   c.children[1].y = r * PIP_NUMERAL.y;
@@ -131,24 +131,32 @@ function shopCoin(value: number, level: number): Container {
   return c;
 }
 
-function tagArt(price: number): Container {
+/** A price tag: the numeral and counting dots; from 11, a ten bar for the first ten and dots for the ones (`tagMarks`). */
+export function tagArt(price: number): Container {
   const c = new Container();
   c.addChild(
     new Graphics()
-      .roundRect(-56, -44, 112, 88, 16)
+      .roundRect(-TAG.w / 2, -TAG.h / 2, TAG.w, TAG.h, 16)
       .fill(0xffffff)
       .stroke({ width: 5, color: wood.line })
-      .circle(0, -36, 6)
+      .circle(0, TAG.hole.y, TAG.hole.r)
       .fill(wood.line),
   );
-  const n = label(String(price), 40, ink);
-  n.y = -8;
+  const marks = tagMarks(price);
+  const n = label(String(price), marks.numeral.size, ink);
+  n.y = marks.numeral.y;
   c.addChild(n);
-  // Dots for counting, five to a row.
-  const dots = new Graphics();
-  for (let i = 0; i < price; i++)
-    dots.circle(-40 + (i % 5) * 20, 22 + Math.floor(i / 5) * 14, 5).fill(swatch.green.fill);
-  c.addChild(dots);
+  const g = new Graphics();
+  if (marks.bar) {
+    const { x, y, cell, h } = marks.bar;
+    for (let i = 0; i < 10; i++)
+      g.rect(x + i * cell, y, cell, h)
+        .fill(swatch.green.fill)
+        .stroke({ width: 1.5, color: swatch.green.line });
+    g.rect(x, y, cell * 10, h).stroke({ width: 3, color: swatch.green.line });
+  }
+  for (const d of marks.dots) g.circle(d.x, d.y, d.r).fill(swatch.green.fill);
+  c.addChild(g);
   return c;
 }
 
@@ -352,7 +360,10 @@ class MarketStall implements Game {
 
   /** Coins sit on the mat in rows of six. */
   private layoutMat() {
-    this.onMat.forEach((c, i) => c.node.position.set(-200 + (i % 6) * 80, -32 + Math.floor(i / 6) * 64));
+    this.onMat.forEach((c, i) => {
+      const at = matSlot(i);
+      c.node.position.set(at.x, at.y);
+    });
   }
 
   update() {}
@@ -438,6 +449,7 @@ class MarketStall implements Game {
     }
     const node = shopCoin(value, this.ctx.level);
     node.eventMode = 'none';
+    node.scale.set(matCoinScale(this.plan));
     this.mat.addChild(node);
     this.onMat.push({ value, node });
     this.layoutMat();
@@ -554,7 +566,7 @@ class MarketStall implements Game {
       const lines = {
         price: 'shop.price',
         'one-price': 'shop.oneprice',
-        'counted-coins': 'shop.values',
+        'counted-coins': this.plan.coins.includes(10) ? 'shop.values.ten' : 'shop.values',
         'one-more': 'shop.one.more',
         'one-less': 'shop.one.less',
         'big-coin': 'shop.big',
@@ -657,6 +669,7 @@ class MarketStall implements Game {
       | 'shop.price'
       | 'shop.oneprice'
       | 'shop.values'
+      | 'shop.values.ten'
       | 'shop.one.more'
       | 'shop.one.less'
       | 'shop.big',
