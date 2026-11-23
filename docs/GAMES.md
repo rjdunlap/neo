@@ -784,4 +784,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Fence the Field](games/fence-the-field.md)
 
+### Key It Out
+
+*grown-up* · [Key It Out](games/key-it-out.md)
+
 <!-- end generated -->

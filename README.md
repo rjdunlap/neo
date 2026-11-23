@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (19, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (20, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 188 games; the 167 child games are listed below and the 21 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 30 games: the 21 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 189 games; the 167 child games are listed below and the 22 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 31 games: the 22 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -279,7 +279,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 21 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 19 in Lantern Lake. All play by touch on the island; 13 are touch-only, and 8 also play with a controller on the couch.
+These 22 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 20 in Lantern Lake. All play by touch on the island; 14 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -310,6 +310,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Truth Bridge](docs/games/truth-bridge.md) | Lantern Lake | 4 | two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross. |
 | [Shadow Play](docs/games/shadow-play.md) | Lantern Lake | 2 | a lit lamp, a cloth screen and three flat cut-outs on rails; slide each cut-out nearer the lamp or the screen until its shadow fills the outline of tonight's skyline. |
 | [Fence the Field](docs/games/fence-the-field.md) | Lantern Lake | 2 | dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play. |
+| [Key It Out](docs/games/key-it-out.md) | Lantern Lake | 2 | a page of pencil sketches of invented lake creatures and a field guide's identification key. At level 1 (*By the key*) six sketches show every part: choose one, answer the key's yes-or-no questions from what it shows, and tap the name the branch ends in. Three unstamped sketches carrying their right names at once are stamped together. |
 
 <!-- end generated -->
 
