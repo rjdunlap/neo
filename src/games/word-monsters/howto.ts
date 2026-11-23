@@ -11,6 +11,11 @@ export const HOW_TO: GameHowTo = {
       text: 'One big letter monster. Touch anywhere: it says its sound, its picture pops up to the top and stays, and the next monster wakes. Make each sound together.',
     },
     { from: 9, to: 9, text: 'Six monsters leave six pictures along the top.' },
+    {
+      from: 15,
+      to: 15,
+      text: "One of three monsters wears the first letter of her name (Pip's P if no name is set). Tap it when its letter is named; only letter names are said.",
+    },
     { from: 2, to: 2, text: 'Tap the monster whose letter was named.' },
     { from: 3, to: 3, text: 'Tap the monster whose letter makes the sound you hear.' },
     { from: 4, to: 4, text: 'Listen to the word, then tap the monster whose letter makes its first sound.' },

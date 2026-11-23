@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { latinLetters } from '../../learning/words/name-letters';
 
 /**
  * Word Monsters, after Endless Alphabet and Reader Rabbit: every letter is a little monster
@@ -18,7 +19,8 @@ export type MonsterMode =
   | 'last'
   | 'slow'
   | 'repair'
-  | 'team';
+  | 'team'
+  | 'mine';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -137,10 +139,23 @@ export const FOUR_PLAN: MonsterPlan = {
   name: 'Four sounds: say a pictured word slowly and build it in four boxes, with a spare letter',
 };
 
+/**
+ * Level 15, My letter (toddler and preschool's entry): three monsters, one wearing the first letter of her name, asked for
+ * by its letter name only ("Where is D?"), never by a sound, so it makes no phonics claim. Toddler meets it between the
+ * free taps of 1 and the two-monster "find" of 2; preschool starts on it.
+ */
+export const MINE_LEVEL = 15;
+export const MINE_PLAN: MonsterPlan = {
+  mode: 'mine',
+  rounds: 4,
+  choices: 3,
+  name: 'My letter: find the first letter of her name among three monsters, asked by its letter name',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 5 },
+  toddler: { min: 1, max: MINE_LEVEL, order: [1, MINE_LEVEL, 2] },
+  preschool: { min: 2, max: MINE_LEVEL, order: [MINE_LEVEL, 2, 3, 4, 5] },
   prek: { min: 3, max: 6 },
   // 9 is lap's big monster, so the school order skips it.
   school: {
@@ -181,7 +196,9 @@ export const planFor = (level: number) =>
             ? TEAM_PLAN
             : level === FOUR_LEVEL
               ? FOUR_PLAN
-              : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+              : level === MINE_LEVEL
+                ? MINE_PLAN
+                : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -360,6 +377,58 @@ export interface Question {
 /** The word's boxes, one unit each: a letter, or on level 13 a two-letter team. */
 export const unitsOf = (q: Question): readonly string[] => q.units ?? q.answer.split('');
 
+/**
+ * Level 15's letter: the first letter of her name (accents dropped), or Pip's p when the name has no Latin letter or is
+ * the couch's stand-in "friend". `own` says which, so the voice never tells her a borrowed letter starts her name.
+ */
+export function myLetter(childName: string): { letter: string; own: boolean; name: string } {
+  const letters = childName.trim().toLowerCase() === 'friend' ? '' : latinLetters(childName).toLowerCase();
+  return letters
+    ? { letter: letters[0], own: true, name: letters }
+    : { letter: 'p', own: false, name: 'pip' };
+}
+
+/** Capitals that look alike (the tummy shows both cases, Dd), kept apart from her letter on level 15. */
+const CAPITAL_LOOKALIKES = ['mw', 'nz', 'ef', 'cgoq', 'pr', 'ij'];
+export const capitalLookalike = (a: string, b: string) =>
+  a !== b && CAPITAL_LOOKALIKES.some((set) => set.includes(a) && set.includes(b));
+
+/**
+ * Level 15's round: her letter in every question among two others that are not in her name and look like neither it
+ * (small or capital) nor each other. The spares change each question when they can, and her letter never stands in the
+ * same place twice running, so she looks rather than taps a spot. A name holding most of the alphabet borrows its
+ * other letters back rather than run short.
+ */
+export function mineQuestions(plan: MonsterPlan, rng: Rng, childName: string): Question[] {
+  const { letter, name } = myLetter(childName);
+  const fair = WHO_POOL.filter(
+    (l) => l !== letter && !lookalike(l, letter) && !capitalLookalike(l, letter) && !soundTwin(l, letter),
+  );
+  const outside = fair.filter((l) => !name.includes(l));
+  const pool = outside.length >= plan.choices + 2 ? outside : fair;
+  const out: Question[] = [];
+  let last: string[] = [];
+  for (let i = 0; i < plan.rounds; i++) {
+    const fresh = pool.filter((l) => !last.includes(l));
+    const spares: string[] = [];
+    for (const l of rng.shuffle([...(fresh.length >= plan.choices - 1 ? fresh : pool)])) {
+      if (spares.length >= plan.choices - 1) break;
+      if (spares.some((o) => lookalike(o, l) || capitalLookalike(o, l) || soundTwin(o, l))) continue;
+      spares.push(l);
+    }
+    let monsters = rng.shuffle([letter, ...spares]);
+    const before = out.at(-1)?.monsters.indexOf(letter);
+    if (monsters.indexOf(letter) === before) {
+      const at = (before + 1 + rng.int(0, plan.choices - 2)) % plan.choices;
+      monsters = monsters.filter((l) => l !== letter);
+      monsters.splice(at, 0, letter);
+    }
+    out.push({ answer: letter, monsters });
+    last = monsters;
+  }
+  return out;
+}
+
 /** Pick `n` different letters including `must`, with no lookalikes among them. */
 export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET): string[] {
   const out = [...must];
@@ -371,7 +440,9 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
   return rng.shuffle(out);
 }
 
-export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
+/** A round's questions; level 15 reads her name (`ctx.childName`), every other level ignores it. */
+export function makeQuestions(plan: MonsterPlan, rng: Rng, childName = ''): Question[] {
+  if (plan.mode === 'mine') return mineQuestions(plan, rng, childName);
   const out: Question[] = [];
   if (plan.mode === 'repair') {
     return rng.shuffle(

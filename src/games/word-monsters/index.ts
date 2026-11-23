@@ -25,6 +25,8 @@ import {
   fits,
   FIRST_WORDS,
   makeQuestions,
+  MINE_LEVEL,
+  myLetter,
   nextMonster,
   planFor,
   sounded,
@@ -181,7 +183,7 @@ class WordMonsters implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.questions = makeQuestions(this.plan, ctx.rng);
+    this.questions = makeQuestions(this.plan, ctx.rng, ctx.childName);
     this.backdrop = new Backdrop(
       {
         sky: [0xc9b8f0, 0xf3ecff],
@@ -493,7 +495,7 @@ class WordMonsters implements Game {
     } else {
       this.showPicture(null);
     }
-    this.setMonsters(q.monsters, this.plan.mode === 'find');
+    this.setMonsters(q.monsters, this.plan.mode === 'find' || this.plan.mode === 'mine');
     if (q.repair) {
       this.filled = q.repair.slot;
       for (const m of this.monsters) {
@@ -628,6 +630,10 @@ class WordMonsters implements Game {
     switch (this.plan.mode) {
       case 'find':
         return this.ctx.instruct('monster.find', { letter: q.answer.toUpperCase() });
+      case 'mine':
+        return this.ctx.instruct(myLetter(this.ctx.childName).own ? 'monster.mine' : 'monster.mine.pip', {
+          letter: q.answer.toUpperCase(),
+        });
       case 'who':
         return this.ctx.instruct('monster.who', { sound });
       case 'first':
@@ -670,7 +676,13 @@ class WordMonsters implements Game {
         gravity: 0,
         life: [0.5, 0.9],
       });
-      const said = this.ctx.say(soundLine(m.letter));
+      // Level 15 says her letter's name, never a sound: it asks by name and makes no phonics claim.
+      const said =
+        this.plan.mode === 'mine'
+          ? this.ctx.say(myLetter(this.ctx.childName).own ? 'monster.mine.yes' : 'monster.mine.yes.pip', {
+              letter: m.letter.toUpperCase(),
+            })
+          : this.ctx.say(soundLine(m.letter));
       if (this.index + 1 < this.questions.length) {
         // The sound starts and the next question's monsters come at once, its ask waiting for the sound (U7 R4).
         await this.next(said);
@@ -690,8 +702,14 @@ class WordMonsters implements Game {
   private wrong(m: Monster) {
     this.misses++;
     this.wrongs++;
-    sfx.boing();
-    void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: SOUNDS[m.letter] });
+    if (this.plan.mode !== 'mine') {
+      sfx.boing();
+      void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: SOUNDS[m.letter] });
+    } else {
+      // Level 15: the monster says only its name, and a toddler hears no boing (the dive's entry).
+      if (this.ctx.band !== 'toddler') sfx.boing();
+      void this.ctx.say('monster.iam.name', { letter: m.letter.toUpperCase() });
+    }
     if (this.wrongs >= 2) this.hint();
   }
 
@@ -906,7 +924,7 @@ export const wordMonsters: GameModule = {
   skills: ['letter-sounds', 'phonics', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [BIG_LEVEL],
+  entryLevels: [BIG_LEVEL, MINE_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,

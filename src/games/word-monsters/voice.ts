@@ -4,6 +4,13 @@ export const VOICE = {
   'monster.play': ['Tap a letter monster to hear its sound!'],
   'monster.big': ['Touch anywhere to wake the letter monster!'],
   'monster.find': ['Find {letter}!', 'Where is {letter}?'],
+  'monster.mine': [
+    'Where is {letter}? {letter} starts your name!',
+    'Find {letter}, the first letter of your name!',
+  ],
+  'monster.mine.pip': ['Where is {letter}? {letter} is for Pip!', "Find {letter}, Pip's letter!"],
+  'monster.mine.yes': ['{letter}! Your letter!', 'Yes, {letter}! It starts your name.'],
+  'monster.mine.yes.pip': ["{letter}! Pip's letter!"],
   'monster.who': ['Who says {sound}?'],
   'monster.first': ['{word} starts with {sound}. Who says {sound}?'],
   'monster.build': ['Let us make {word}! {sounds}.'],
@@ -21,6 +28,7 @@ export const VOICE = {
   'monster.team.half': ['That is just {sound}. Two letters make {team}.'],
   'monster.blend': ['{word}!'],
   'monster.iam': ["I'm {letter}! I say {sound}."],
+  'monster.iam.name': ["I'm {letter}!"],
   'monster.next': ['Next sound: {sound}.'],
   'monster.done': ['The word monsters say thank you!', 'Monster-ific!'],
   /** Letter sounds, written for the device voice. Recorded voices should say the real sound. */
