@@ -59,7 +59,8 @@ describe('Fence the Field voice', () => {
         used.add(`fence.score.${her}`);
       }
     expect([...used].filter((key) => !has(key))).toEqual([]);
-    // Levels 1 and 2 are built; their hint kinds are among the lines.
-    expect(used.has('fence.hint.claim') && used.has('fence.hint.safe')).toBe(true);
+    // Each level's own hint is among the lines play reaches.
+    for (const kind of ['claim', 'safe', 'run1', 'run2', 'leave-two'])
+      expect(used.has(`fence.hint.${kind}`)).toBe(true);
   });
 });

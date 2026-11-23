@@ -278,7 +278,7 @@ class FenceTheField implements Game {
 
   // ---- show me why ----
 
-  /** A costly rail: it is laid, the pet's best answer plays, then the field steps back to before it. */
+  /** A costly rail: it is laid, the play to the pet's best answer follows, then the field steps back to before it. */
   private async showWhy(e: number) {
     const g = ++this.gen;
     const before = { mask: this.mask, owners: this.owners.slice() };
@@ -289,10 +289,10 @@ class FenceTheField implements Game {
     this.hintNow = null;
     this.lay(e, 'her');
     const reply = petReply(before.mask, e);
-    for (const rail of reply.rails) {
+    for (const step of reply.steps) {
       await this.ctx.tw.wait(PACE);
       if (g !== this.gen) return;
-      this.lay(rail, 'pet');
+      this.lay(step.rail, step.who);
     }
     await this.ctx.tw.wait(0.4);
     if (g !== this.gen) return;
