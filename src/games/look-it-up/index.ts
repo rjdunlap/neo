@@ -173,7 +173,8 @@ class LookItUp implements Game {
     this.rng = new Rng(ctx.rng.int(1, 2 ** 30));
     const authored = !!ctx.demo || !authoredShown.has(ctx.level);
     this.round = makeRound(ctx.level, ctx.rng, authored);
-    if (this.round.book === 'contents') authoredShown.add(ctx.level);
+    // The how-to card's demonstration plays the authored round too, without using up the player's own first round.
+    if (this.round.book === 'contents' && !ctx.demo) authoredShown.add(ctx.level);
     this.open = this.round.open;
     this.backdrop = new Backdrop(
       {
@@ -343,9 +344,9 @@ class LookItUp implements Game {
     face.position.set(l.book.x + l.book.w - 70, l.book.y + 62);
     this.page.addChild(title, face);
     if (printed) {
-      // The fixed book prints its page number beside the title.
-      const num = label(String(pageNumber(open)), 30, wood.line);
-      num.position.set(l.book.x + l.book.w - 130, l.book.y + 42);
+      // The fixed book prints its page number at the foot of the page, below the rows, as a real book does.
+      const num = label(String(pageNumber(open)), 32, wood.line);
+      num.position.set(l.book.x + l.book.w / 2, l.book.y + l.book.h - 42);
       num.eventMode = 'none';
       this.page.addChild(num);
     }
