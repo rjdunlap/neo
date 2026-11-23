@@ -76,6 +76,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       for (let i = 0; i < 6; i++) {
         await settle();
         if (await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)) break;
+        await page.waitForFunction(() => !neo.scene.game.unasked);
         await tapPart((await ask()).second);
       }
       await finished('word-glue');
@@ -153,7 +154,34 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.waitForFunction(() => neo.scene.game.view.upright);
       assert.deepEqual(await tally(), [1, 1]);
 
+      // Keep the first answer line pending so the next choice arrives before its question.
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const say = g.ctx.say;
+        g.ctx.say = (id, vars) => {
+          if (id !== 'wordglue.which.houseboat.right') return say(id, vars);
+          g.ctx.say = say;
+          void say(id, vars);
+          return new Promise((resolve) => {
+            g.releaseTestLine = resolve;
+          });
+        };
+      });
       for (const [i, answer] of ['houseboat', 'cake pan', 'dog sled', 'racehorse'].entries()) {
+        if (i === 1) {
+          await page.waitForFunction(() => {
+            const g = neo.scene.game;
+            return g.s.index === 1 && !g.busy && !!g.unasked;
+          });
+          await tap('pancake');
+          await page.waitForFunction(() => !neo.scene.game.unasked);
+          assert.deepEqual(await tally(), [1, 1], 'the touch that starts the queued question is free');
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            g.releaseTestLine();
+            delete g.releaseTestLine;
+          });
+        }
         await nextAsk(i);
         const cards = await page.evaluate(() => {
           const g = neo.scene.game;

@@ -102,7 +102,7 @@ class WordGlue implements Game {
   private demoTouched = false;
   private shownAsk: Ask | null = null;
   /** The finger and picture that started a choice. */
-  private held: { id: number; key: string; node: Container } | null = null;
+  private held: { id: number; key: string; node: Container; canAnswer: boolean } | null = null;
   private dead = false;
 
   constructor(private readonly ctx: GameContext) {
@@ -472,7 +472,8 @@ class WordGlue implements Game {
 
   private hold(key: string, node: Container, id: number) {
     if (this.finished || this.dead || this.busy || this.held) return;
-    this.held = { id, key, node };
+    // A touch that starts a waiting question cannot also answer it.
+    this.held = { id, key, node, canAnswer: !this.unasked };
     this.ctx.tw.kill(node.scale);
     node.scale.set(1.1);
     this.touch(key);
@@ -490,7 +491,7 @@ class WordGlue implements Game {
     const held = this.held;
     if (this.dead || held?.id !== e.pointerId || held.node !== node) return;
     this.cancelChoice();
-    if (!onIt || this.finished || this.busy) return;
+    if (!onIt || !held.canAnswer || this.finished || this.busy) return;
     const local = node.toLocal(e.global);
     if (!node.hitArea?.contains(local.x, local.y)) return;
     const ask = this.shownAsk;
