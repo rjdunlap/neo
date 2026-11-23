@@ -13,6 +13,7 @@ export async function createFixture(browser, suite) {
     ...(suite === 'tidetables' ||
     suite === 'truthbridge' ||
     suite === 'shadowplay' ||
+    suite === 'fencethefield' ||
     suite === 'dominopond' ||
     suite === 'campsite' ||
     suite === 'sillyscene' ||

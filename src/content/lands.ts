@@ -424,6 +424,7 @@ export const LANDS: readonly Land[] = [
       'tide-tables',
       'truth-bridge',
       'shadow-play',
+      'fence-the-field',
     ],
   },
 ];

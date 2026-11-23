@@ -41,6 +41,7 @@ import { VOICE as eggCatchVoice } from '../games/egg-catch/voice.ts';
 import { VOICE as exampleExpressVoice } from '../games/example-express/voice.ts';
 import { VOICE as farLightsVoice } from '../games/far-lights/voice.ts';
 import { VOICE as feelingsFacesVoice } from '../games/feelings-faces/voice.ts';
+import { VOICE as fenceTheFieldVoice } from '../games/fence-the-field/voice.ts';
 import { VOICE as ferryJamVoice } from '../games/ferry-jam/voice.ts';
 import { VOICE as fillDumpVoice } from '../games/fill-dump/voice.ts';
 import { VOICE as fluffySalonVoice } from '../games/fluffy-salon/voice.ts';
@@ -683,6 +684,7 @@ export const SCRIPT = {
   ...exampleExpressVoice,
   ...farLightsVoice,
   ...feelingsFacesVoice,
+  ...fenceTheFieldVoice,
   ...ferryJamVoice,
   ...fillDumpVoice,
   ...fluffySalonVoice,
