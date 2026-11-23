@@ -173,8 +173,8 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 2. **Built 2026-10-13.** **Level 1: tap the stone.** `judgeStone` and the deck policy in `logic.ts` with tests; the stone hit areas and nearest-stone routing; the twinkle; the third-miss pet hop; a new `autotouch()`; the how-to and voice lines. *Tier: new interaction: typecheck, unit tests, one scripted play of level 1 (a wrong color, a wrong "far" stone, a hint), one portrait screenshot, `fingerdemo` at level 1.* Ready after decision 2.
 3. **Built 2026-10-13.** **Level 2: each owl has a player.** Assigned owls and the turn order with the finish rule; the pet's narrated paw touch; the spotlight. *Tier: the same filtered play at 2 and `fingerdemo` at 2.* Needs decision 3.
 4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
-5. **Level 5, Stepping stones, and the lap band.** Needs decision 6. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
-6. **Level 6, Color or shape.** Needs decision 7 and the iPad speech check. *Tier: new interaction: as slice 2.*
+5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
+6. **Level 6, Color or shape.** Decision 7 is settled, so it may be built now. *Tier: new interaction: as slice 2.*
 7. **A grown-up in the second seat.** Needs decision 5.
 8. **Levels 7 and 8.** Sketches; define first after a person has played level 4.
 
@@ -199,3 +199,13 @@ Nothing: the dive session (2026-10-12) was research and ideation only. It checke
 - **Known gaps:** a stone with an owl on it can no longer be tapped as "a friend is sitting there" (`judgeStone` still returns `occupied`, but no tap reaches it); the pet's longer turn and the second tap per turn lengthen the level 3–4 demonstrations to 61 and 67 s of 75.
 - **Not built:** Stepping stones and the lap band (decision 6), Color or shape (7), the grown-up seat (5), levels 7–8, and the ring-as-answer option for level 4.
 - **Checks:** the how-to card at each level fits in landscape and portrait (tallest: level 4 in landscape, 25 to 747 of 768). Typecheck, the full unit suite (139 files, 1,163 tests) and `npm run build` passed. `BROWSER_SUITE=shortlist SHORTLIST_ONLY=owls` (levels 1–4; the script's owl block was rewritten for the new taps) passed, level 2 in portrait. `fingerdemo` for `owl-walk` levels 1–4 finished clean in 32, 43, 61 and 67 s of the 75 allowed (the longest demonstration now; the second tap per turn and the pet's narrated turn add time). Not established: a child, an iPad, device speech for the new lines, whether the fireflies read as "these match", whether the pet's turn is too long.
+
+## What was built: slice 5 (2026-11-23)
+
+*Branch `claude/owl-walk-5`, [PR #2068](https://github.com/rjdunlap/neo/pull/2068). Decision 6 applied.*
+
+- **Level 5, Stepping stones (lap, toddler).** One owl, five stones in three decorative colors, a nest and no cards. A tap on a stone ahead hops the owl there with a marimba note per stone (not counted aloud); the nest flies it home and finishes with 0 misses, 0 hints and the sticker. `stepTo` in `logic.ts` answers hop, home or stay and never a miss: its own stone, a stone behind, the owl or empty ground is a soft tick and an owl poke.
+- **Ladders.** `LEVELS` gains `lap: 5..5`; toddler becomes `min 1, max 5, order [5, 1, 2]` so a toddler meets the free toy first; preschool and pre-K are unchanged. `bands` gains `lap`, `entryLevels: [5]`, a lap-only co-play tip and an off-screen line (cushion stepping stones to a blanket nest).
+- **Bigger stones.** `stoneLayout`, `nestPointIn`, `stoneReach` (90 at level 5, 56 elsewhere) and `stoneScale` (1.6 at level 5) moved from `index.ts` into `logic.ts`, so a rule test checks touch areas of at least 100 units, no overlap and a clear nest at six view sizes.
+- **Words and help.** `owl.free` voice line (clip rendered with Kokoro); the how-to step is `from: 5` and step 4 is now `to: 4`; `autotouch()` taps the next stone, then the nest.
+- **Not built:** Color or shape (slice 6), the grown-up seat (5), levels 7–8.

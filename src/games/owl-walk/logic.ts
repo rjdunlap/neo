@@ -10,7 +10,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * all of us: level 2 gives each owl its own player (the pet plays the other), level 3 shares the owls and asks which
  * one to hop, and the top level asks which owl a card would carry the farthest, so everyone gets home sooner.
  */
-export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest';
+export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest' | 'free';
 
 export interface OwlPlan {
   mode: OwlMode;
@@ -61,10 +61,24 @@ export const PLANS: OwlPlan[] = [
     safeCards: false,
     name: 'Which owl hops the farthest with this card? Plan to get everyone home sooner',
   },
+  {
+    mode: 'free',
+    owls: 1,
+    colors: 3,
+    stones: 5,
+    twinkle: false,
+    safeCards: true,
+    name: 'Stepping stones: no cards; tap any stone ahead and the owl hops there, singing, then home to the nest',
+  },
 ];
 
+/** Level 5, the free lap toy: appended above the ladder and played first by the youngest (an easy entry). */
+export const STEPPING_LEVEL = 5;
+export const ENTRY_LEVELS = [STEPPING_LEVEL] as const;
+
 export const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
+  lap: { min: STEPPING_LEVEL, max: STEPPING_LEVEL },
+  toddler: { min: 1, max: STEPPING_LEVEL, order: [STEPPING_LEVEL, 1, 2] },
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
 };
@@ -171,3 +185,35 @@ export const owlToHop = (
   spots: readonly Spot[],
   color: ColorName,
 ): number | null => farthest(path, spots, color)[0] ?? null;
+
+/** What a tap means on the stepping-stones level: a hop to a stone ahead, the flight home, or a soft tick (never a miss). */
+export type StepVerdict = 'hop' | 'home' | 'stay';
+
+/** Level 5 has no wrong taps: a stone ahead (or the nest) is where the owl goes; its own stone or one behind it only ticks. */
+export function stepTo(stones: number, spot: Spot, tapped: number | 'nest'): StepVerdict {
+  if (spot >= stones) return 'stay';
+  if (tapped === 'nest') return 'home';
+  return tapped > spot ? 'hop' : 'stay';
+}
+
+/** How far a touch still means a stone, from its middle: the stepping stones are drawn bigger than the card levels' ones. */
+export const stoneReach = (plan: OwlPlan) => (plan.mode === 'free' ? 90 : 56);
+/** The stepping stones' art scale: five fat stones for a lap player. */
+export const stoneScale = (plan: OwlPlan) => (plan.mode === 'free' ? 1.6 : 1);
+
+/** Two rows: right to left along the bottom, a turn, then left to right up to the nest, for `n` stones in a `w` by `h` view. */
+export function stoneLayout(n: number, w: number, h: number): { x: number; y: number }[] {
+  const perRow = Math.ceil(n / 2);
+  const left = 250;
+  const right = w - 230;
+  const step = (right - left) / (perRow - 1);
+  const bottom = h - 110;
+  const top = h - 330;
+  return Array.from({ length: n }, (_, i) =>
+    i < perRow ? { x: right - i * step, y: bottom } : { x: left + (i - perRow) * step, y: top },
+  );
+}
+
+/** The middle of the nest basket in a `w` by `h` view (what a tap there means). */
+export const nestPointIn = (w: number, h: number) => ({ x: w - 120, y: h - 440 });
+export const NEST_REACH = 95;

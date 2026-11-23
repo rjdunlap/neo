@@ -20,7 +20,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
+      to: 4,
       text: 'Flip a color card, tap the owl that hops the farthest with it (the rings show how far), then tap its stone, or the nest when no stone of that color is left.',
+    },
+    {
+      from: 5,
+      text: 'Tap any stepping stone ahead of the owl, and it hops there, a note on every stone. Tap the nest to fly home. Nothing is wrong.',
     },
   ],
   finish: 'The round ends when the owls are home.',

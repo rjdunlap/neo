@@ -15,7 +15,9 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  ENTRY_LEVELS,
   LEVELS,
+  NEST_REACH,
   allHome,
   drawCardFor,
   farthest,
@@ -25,7 +27,12 @@ import {
   makePath,
   owlOf,
   owlToHop,
+  nestPointIn,
   planFor,
+  stepTo,
+  stoneLayout,
+  stoneReach,
+  stoneScale,
   type OwlPlan,
   type Spot,
 } from './logic';
@@ -97,9 +104,7 @@ interface Owl {
 type Hit = { kind: 'stone'; i: number } | { kind: 'owl'; i: number } | { kind: 'nest' };
 
 /** How far from a stone's, an owl's or the nest's middle a touch still means it: stones are 78 units apart at the most crowded level, so the nearest wins. */
-const STONE_REACH = 56;
 const OWL_REACH = 62;
-const NEST_REACH = 95;
 const RING_REACH = 44;
 
 /** "red heart": the color and the shape a stone carries, so a spoken miss can name what was touched. */
@@ -170,7 +175,11 @@ class OwlWalk implements Game {
     this.moon.circle(0, 0, 40).fill(swatch.yellow.light).circle(16, -10, 34).fill(swatch.purple.line);
     this.dawn.alpha = 0;
     this.sun.visible = false;
-    for (const color of this.path) this.stones.push(stoneArt(color));
+    for (const color of this.path) {
+      const stone = stoneArt(color);
+      stone.scale.set(stoneScale(this.plan));
+      this.stones.push(stone);
+    }
     const tree = new Graphics().roundRect(-24, -150, 48, 160, 12).fill(wood.fill).stroke(line(wood.line, 5));
     puffs(
       tree,
@@ -195,6 +204,8 @@ class OwlWalk implements Game {
     back2.position.set(6, 6);
     this.deck.addChildAt(back2, 0);
     this.deck.hitArea = new Circle(0, 0, 90);
+    // The stepping stones have no cards: the deck is not there to tap.
+    this.deck.visible = this.plan.mode !== 'free';
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
     this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.hintGlow.visible = false;
@@ -238,17 +249,9 @@ class OwlWalk implements Game {
     }
   }
 
-  /** Two rows: right to left along the bottom, a turn, then left to right up to the nest. */
+  /** Two rows: right to left along the bottom, a turn, then left to right up to the nest (`stoneLayout`). */
   stoneAt(i: number) {
-    const v = this.view;
-    const n = this.path.length;
-    const perRow = Math.ceil(n / 2);
-    const left = 250;
-    const right = v.w - 230;
-    const step = (right - left) / (perRow - 1);
-    const bottom = v.h - 110;
-    const top = v.h - 330;
-    return i < perRow ? { x: right - i * step, y: bottom } : { x: left + (i - perRow) * step, y: top };
+    return stoneLayout(this.path.length, this.view.w, this.view.h)[i];
   }
 
   /** Where an owl stands: in the woods by the first stone, on a stone, or in the nest. */
@@ -262,7 +265,7 @@ class OwlWalk implements Game {
 
   /** The middle of the nest basket, which is what she taps when no stone of the color is left. */
   private nestPoint() {
-    return { x: this.nest.x, y: this.nest.y - 120 };
+    return nestPointIn(this.view.w, this.view.h);
   }
 
   /** A stone's middle, or the nest's. */
@@ -315,6 +318,13 @@ class OwlWalk implements Game {
   /** The ghost finger: flip a card, pick the owl (on the levels that ask), then tap the stone it hops to, or the nest. The pet's turns play themselves. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.turn !== 'child') return null;
+    if (this.plan.mode === 'free') {
+      // The stepping stones: the next stone ahead, one at a time, then the nest.
+      const next = this.owls[0].spot + 1;
+      return next >= this.path.length
+        ? { tap: { on: this.nest, x: 0, y: -120 }, receiver: this.touch }
+        : { tap: { on: this.stones[next] }, receiver: this.touch };
+    }
     if (!this.card) return { tap: { on: this.deck } };
     const spots = this.owls.map((o) => o.spot);
     const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest';
@@ -341,6 +351,7 @@ class OwlWalk implements Game {
       turns: 'owl.turns',
       choose: 'owl.choose',
       farthest: 'owl.farthest',
+      free: 'owl.free',
     } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
@@ -353,7 +364,7 @@ class OwlWalk implements Game {
   /** The owl the child's stone tap is for: her own on the first levels, the one she picked on the others. */
   private actorOwl(): number | null {
     const spots = this.owls.map((o) => o.spot);
-    if (this.plan.mode === 'one') return 0;
+    if (this.plan.mode === 'one' || this.plan.mode === 'free') return 0;
     if (this.plan.mode === 'turns') return owlOf(this.path, spots, 0);
     return this.selected;
   }
@@ -459,7 +470,8 @@ class OwlWalk implements Game {
     };
     // A stone with an owl on it belongs to the owl: touching either one means the owl.
     this.stones.forEach((_, i) => {
-      if (!this.owls.some((o) => o.spot === i)) consider({ kind: 'stone', i }, this.stoneAt(i), STONE_REACH);
+      if (!this.owls.some((o) => o.spot === i))
+        consider({ kind: 'stone', i }, this.stoneAt(i), stoneReach(this.plan));
     });
     consider({ kind: 'nest' }, this.nestPoint(), NEST_REACH);
     this.owls.forEach((o, i) => {
@@ -482,8 +494,15 @@ class OwlWalk implements Game {
     const now = performance.now();
     if (now - this.lastTap < 150 || palmOnGlass()) return;
     this.lastTap = now;
+    if (this.plan.mode === 'free' && this.busy && !this.finished) {
+      // The stepping stones answer every touch, even mid-hop: a ring where the finger landed.
+      const p = this.touch.toLocal(e.global);
+      this.ripple(p.x, p.y);
+      return;
+    }
     if (this.busy || this.finished || this.turn !== 'child') return;
     const hit = this.nearest(this.touch.toLocal(e.global));
+    if (this.plan.mode === 'free') return this.step(hit);
     if (!hit) return;
     // Touch-down answers at once, before the judgment: the stone squashes and a ring spreads.
     const at =
@@ -505,6 +524,26 @@ class OwlWalk implements Game {
     this.askGen++;
     if (hit.kind === 'owl') void this.pickOwl(hit.i);
     else void this.tapStone(hit.kind === 'stone' ? hit.i : 'nest');
+  }
+
+  /**
+   * The stepping stones (level 5): every touch answers. A stone ahead hops the owl there and the nest flies it home; its own
+   * stone, a stone behind or the owl itself is a soft tick and a little bounce, and a touch on nothing pokes the owl. Never a miss.
+   */
+  private step(hit: Hit | null) {
+    const owl = this.owls[0];
+    if (hit && hit.kind !== 'owl') {
+      const tapped = hit.kind === 'stone' ? hit.i : 'nest';
+      const at = this.targetPoint(tapped);
+      this.ripple(at.x, at.y);
+      if (hit.kind === 'stone') this.squash(this.stones[hit.i]);
+      if (stepTo(this.path.length, owl.spot, tapped) !== 'stay') {
+        void this.move(0, tapped === 'nest' ? this.path.length : tapped).then(() => this.endTurn());
+        return;
+      }
+    }
+    sfx.tick();
+    owl.critter.poke();
   }
 
   /** The owl step of levels 3 and 4: a free choice on 3, and on 4 it must be one that hops the farthest. */
@@ -661,11 +700,17 @@ class OwlWalk implements Game {
   }
 
   /** Hop by hop along the stones to the landing spot (or all the way home), counting the stones aloud. */
-  private async move(i: number) {
+  private async move(
+    i: number,
+    to = hop(
+      this.path,
+      this.owls.map((o) => o.spot),
+      i,
+      this.card!,
+    ),
+  ) {
     this.busy = true;
     const owl = this.owls[i];
-    const spots = this.owls.map((o) => o.spot);
-    const to = hop(this.path, spots, i, this.card!);
     this.clearHint();
     this.clearTwinkle();
     this.setRing(null);
@@ -673,7 +718,8 @@ class OwlWalk implements Game {
     const stops: Spot[] = [];
     for (let s = Math.max(0, owl.spot + 1); s < Math.min(to, this.path.length); s++) stops.push(s);
     stops.push(to);
-    const counted = to < this.path.length;
+    // Counted aloud on the card levels; the stepping stones only sing, so a quick tap after tap stays music.
+    const counted = to < this.path.length && this.plan.mode !== 'free';
     for (const s of stops) {
       const p = this.spotAt(s, i);
       const k = stops.indexOf(s);
@@ -708,7 +754,7 @@ class OwlWalk implements Game {
       )
     )
       return this.finale();
-    if (this.plan.mode === 'one') {
+    if (this.plan.mode === 'one' || this.plan.mode === 'free') {
       this.busy = false;
       return;
     }
@@ -830,14 +876,20 @@ export const owlWalk: GameModule = {
   region: 'rainbow-meadow',
   challenge: 'logic',
   skills: ['colors', 'taking turns', 'shared goals', 'comparing distances'],
-  bands: ['toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
   coplayHint:
     'Take turns with {name}: you flip a card, then {name} does. Say the color together, and cheer each owl home.',
-  offScreen:
-    'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
+  // Lap plays the stepping stones (no cards): the tip and the off-screen idea are about hopping along, not turns.
+  coplayHintLap:
+    'Tap a stone together with {name} and watch the owl hop. Hum each note, and cheer when it reaches the nest.',
+  offScreen: {
+    all: 'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
+    lap: 'Lay cushions in a row on the floor and help {name} step or crawl from one to the next, all the way to a blanket nest.',
+  },
   hubIcon: () => new OwlIcon(),
   touchDemo: true,
   sticker,

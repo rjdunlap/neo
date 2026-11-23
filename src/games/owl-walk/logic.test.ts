@@ -11,8 +11,16 @@ import {
   makePath,
   owlOf,
   owlToHop,
+  LEVELS,
+  NEST_REACH,
+  nestPointIn,
   PLANS,
+  planFor,
+  STEPPING_LEVEL,
   STONE_COLORS,
+  stepTo,
+  stoneLayout,
+  stoneReach,
   type Spot,
 } from './logic';
 
@@ -23,8 +31,10 @@ describe('Owl Walk Home', () => {
         const path = makePath(plan, new Rng(seed));
         expect(path).toHaveLength(plan.stones);
         path.slice(1).forEach((c, i) => expect(c).not.toBe(path[i]));
-        for (const c of STONE_COLORS.slice(0, plan.colors))
-          expect(path.filter((p) => p === c).length).toBeGreaterThanOrEqual(2);
+        // The stepping stones have no cards, so their colors are only decoration.
+        if (plan.mode !== 'free')
+          for (const c of STONE_COLORS.slice(0, plan.colors))
+            expect(path.filter((p) => p === c).length).toBeGreaterThanOrEqual(2);
       }
   });
 
@@ -161,5 +171,61 @@ describe('Owl Walk Home', () => {
         expect(++turns).toBeLessThan(plan.stones * 2 + 2);
       }
     }
+  });
+
+  describe('Stepping stones (level 5)', () => {
+    const plan = planFor(STEPPING_LEVEL);
+
+    it('is a free toy of five stones, first for the lap band and an easy entry for toddlers', () => {
+      expect(plan.mode).toBe('free');
+      expect(plan.stones).toBe(5);
+      expect(plan.owls).toBe(1);
+      expect(LEVELS.lap).toEqual({ min: 5, max: 5 });
+      expect(LEVELS.toddler?.order?.[0]).toBe(STEPPING_LEVEL);
+    });
+
+    it('reaches the nest from every spot, hops to every stone ahead, and never judges a tap', () => {
+      for (let spot: Spot = -1; spot < plan.stones; spot++) {
+        expect(stepTo(plan.stones, spot, 'nest')).toBe('home');
+        for (let t = 0; t < plan.stones; t++)
+          expect(stepTo(plan.stones, spot, t)).toBe(t > spot ? 'hop' : 'stay');
+      }
+      expect(stepTo(plan.stones, plan.stones, 'nest')).toBe('stay');
+      // From the woods, stone after stone, then the nest: home in at most six taps.
+      let spot: Spot = -1;
+      for (let taps = 0; spot < plan.stones; taps++) {
+        expect(taps).toBeLessThan(plan.stones + 1);
+        spot =
+          stepTo(plan.stones, spot, spot + 1 < plan.stones ? spot + 1 : 'nest') === 'home'
+            ? plan.stones
+            : spot + 1;
+      }
+    });
+
+    it('gives each stone and the nest a touch area of at least 100 units that never overlaps another, at every view', () => {
+      const reach = stoneReach(plan);
+      expect(reach * 2).toBeGreaterThanOrEqual(100);
+      for (const [w, h] of [
+        [1024, 768],
+        [1180, 768],
+        [1366, 768],
+        [1024, 1024],
+        [1024, 1366],
+        [1700, 768],
+      ]) {
+        const pts = stoneLayout(plan.stones, w, h);
+        for (let a = 0; a < pts.length; a++)
+          for (let b = a + 1; b < pts.length; b++)
+            expect(Math.hypot(pts[a].x - pts[b].x, pts[a].y - pts[b].y)).toBeGreaterThanOrEqual(reach * 2);
+        const nest = nestPointIn(w, h);
+        for (const p of pts)
+          expect(Math.hypot(p.x - nest.x, p.y - nest.y)).toBeGreaterThanOrEqual(reach + NEST_REACH);
+        for (const p of pts) {
+          expect(p.x - reach).toBeGreaterThanOrEqual(0);
+          expect(p.x + reach).toBeLessThanOrEqual(w);
+          expect(p.y + reach).toBeLessThanOrEqual(h);
+        }
+      }
+    });
   });
 });
