@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2, 3, 9 |
 | pre-K | 3, 7, 9, 4 |
-| school | 4–9 |
+| school | 4–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 7 | Who comes back first? |
 | 8 | Twice as quick |
 | 9 | Paint the beat |
+| 10 | A row of three |
 
 <!-- end generated -->
 

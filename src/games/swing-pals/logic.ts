@@ -270,12 +270,110 @@ export function widestApart(a: Hook, b: Hook, watch: number, step = 0.01): numbe
   return most;
 }
 
+/* A row of three (level 10) ---------------------------------------------------------------------- */
+
+/** Level 10's release height in degrees: low enough that three fitted arcs share an upright phone's width. */
+export const BELL_ROW = 12;
+
+/** Three friends on three swings, short to long left to right or mirrored; the pet points at one of them. */
+export interface RowLine {
+  hooks: [Hook, Hook, Hook];
+  friends: [Friend, Friend, Friend];
+  /** Which swing (0–2, from the left) the pet points at. */
+  pointed: number;
+}
+
+export interface RowRound {
+  kind: 'row';
+  lines: RowLine[];
+}
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+/**
+ * The first time after letting go together that two swings are both back at the pusher: the least common multiple of
+ * their beats, worked in half-seconds (2, 3 and 4) so no rounding creeps in. Short and long 2 s, short and middle 3 s,
+ * middle and long 6 s.
+ */
+export function meetTime(a: Hook, b: Hook): number {
+  const x = Math.round(period(a) * 2),
+    y = Math.round(period(b) * 2);
+  return (x * y) / gcd(x, y) / 2;
+}
+
+/** When all three are back together again: 6 s, the short rope's sixth return, the middle's fourth, the long's third. */
+export function allMeetTime(hooks: readonly Hook[]): number {
+  const halves = hooks.map((h) => Math.round(period(h) * 2));
+  return halves.reduce((m, x) => (m * x) / gcd(m, x)) / 2;
+}
+
+/** The two swings other than the pointed one, left first. */
+export function rowChoices(line: RowLine): [number, number] {
+  const others = [0, 1, 2].filter((i) => i !== line.pointed);
+  return [others[0], others[1]];
+}
+
+/** Which of the other two swings is back at the pusher with the pointed one first. Never the pointed one. */
+export function firstMeet(line: RowLine): number {
+  const [a, b] = rowChoices(line);
+  const p = line.hooks[line.pointed];
+  return meetTime(p, line.hooks[a]) <= meetTime(p, line.hooks[b]) ? a : b;
+}
+
+/** The tempting line: the pet points at the short rope, and the slowest swing meets it first. */
+export function rowTempts(line: RowLine): boolean {
+  return line.hooks[line.pointed] === 'short';
+}
+
+/** How long a row is watched: until all three are back together, and a breath more to see the line-up. */
+export function rowWatch(line: RowLine): number {
+  return allMeetTime(line.hooks) + 0.6;
+}
+
+/** Each pair's first meeting after letting go, soonest first. */
+export function rowMeetings(line: RowLine): { at: number; pair: [number, number] }[] {
+  const out: { at: number; pair: [number, number] }[] = [];
+  for (let i = 0; i < 3; i++)
+    for (let j = i + 1; j < 3; j++) out.push({ at: meetTime(line.hooks[i], line.hooks[j]), pair: [i, j] });
+  return out.sort((a, b) => a.at - b.at);
+}
+
+export function authoredRow(): RowLine {
+  return { hooks: ['short', 'middle', 'long'], friends: ['mouse', 'duck', 'bear'], pointed: 2 };
+}
+
+/** A row round: the authored line first when asked, then each rope pointed at once, in a seeded order. */
+function seededRow(rng: Rng, authored: boolean): RowRound {
+  const asks: Hook[] = authored
+    ? ['long', ...rng.shuffle(['middle', 'short'] as Hook[])]
+    : rng.shuffle([...HOOKS]);
+  const lines = asks.map((ask, i): RowLine => {
+    if (i === 0 && authored) return authoredRow();
+    const hooks: [Hook, Hook, Hook] = rng.chance(0.5)
+      ? ['short', 'middle', 'long']
+      : ['long', 'middle', 'short'];
+    const [a, b, c] = rng.shuffle([...FRIENDS]);
+    return { hooks, friends: [a, b, c], pointed: hooks.indexOf(ask) };
+  });
+  return { kind: 'row', lines };
+}
+
+function rowFits(plan: Plan, round: RowRound): boolean {
+  if (round.lines.length !== plan.lines) return false;
+  const ordered = (h: readonly Hook[]) =>
+    h.join() === 'short,middle,long' || h.join() === 'long,middle,short';
+  if (!round.lines.every((l) => ordered(l.hooks) && new Set(l.friends).size === 3)) return false;
+  if (!round.lines.every((l) => l.pointed >= 0 && l.pointed < 3)) return false;
+  // Every rope is pointed at once, so every round holds the tempting line.
+  return new Set(round.lines.map((l) => l.hooks[l.pointed])).size === 3;
+}
+
 /* Plans -------------------------------------------------------------------------------------------- */
 
 export interface Plan {
   id: number;
   name: string;
-  mode: 'push' | 'together' | 'predict' | 'paint';
+  mode: 'push' | 'together' | 'predict' | 'paint' | 'row';
   /** Lines (friends or pairs) in a round. */
   lines: number;
   /** Level 3: two swings, short and long. */
@@ -331,6 +429,7 @@ export const PLANS: readonly Plan[] = [
     requests: true,
   },
   { id: 9, name: 'Paint the beat', mode: 'paint', lines: 1, two: false, weights: false, heights: false },
+  { id: 10, name: 'A row of three', mode: 'row', lines: 3, two: false, weights: false, heights: false },
 ];
 
 export const LEVELS: BandLevels = {
@@ -339,7 +438,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 9, order: [2, 3, 9] },
   // Pre-K sees the race and painting before matching two swings.
   prek: { min: 3, max: 9, order: [3, 7, 9, 4] },
-  school: { min: 4, max: 9 },
+  school: { min: 4, max: 10 },
 };
 
 export function planFor(level: number): Plan {
@@ -348,6 +447,7 @@ export function planFor(level: number): Plan {
 
 /** The bell height for a plan's screen. */
 export function bellFor(plan: Plan): number {
+  if (plan.mode === 'row') return BELL_ROW;
   return plan.two ? BELL_TWO : BELL_ONE;
 }
 
@@ -367,7 +467,7 @@ export interface PaintRound {
   friend: Friend;
 }
 
-export type PlannedRound = Round | PaintRound;
+export type PlannedRound = Round | PaintRound | RowRound;
 
 /** The journal entry's key for "a longer rope swings slower" (`swing-pals:longer-slower`). Never rename it. */
 export const SLOWER = 'longer-slower';
@@ -511,6 +611,8 @@ export const heavyTempts = (l: Line) =>
 
 /** Does a round meet its plan's filter (the definition's table)? */
 export function roundFits(plan: Plan, round: PlannedRound): boolean {
+  if (plan.mode === 'row' || round.kind === 'row')
+    return plan.mode === 'row' && round.kind === 'row' && rowFits(plan, round);
   if (plan.mode === 'paint' || round.kind === 'paint')
     return (
       plan.mode === 'paint' &&
@@ -559,6 +661,15 @@ export function roundFits(plan: Plan, round: PlannedRound): boolean {
 
 /** The fallback round, used only if 50 seeded tries all miss the filter (a test asserts it never happens). */
 export function fallbackRound(plan: Plan): PlannedRound {
+  if (plan.mode === 'row')
+    return {
+      kind: 'row',
+      lines: [
+        authoredRow(),
+        { hooks: ['long', 'middle', 'short'], friends: ['frog', 'cat', 'pig'], pointed: 1 },
+        { hooks: ['short', 'middle', 'long'], friends: ['dog', 'cow', 'bunny'], pointed: 0 },
+      ],
+    };
   if (plan.mode === 'paint') return { kind: 'paint', hook: 'long', friend: 'duck' };
   if (plan.mode === 'predict') {
     return {
@@ -653,6 +764,13 @@ export function makeRound(
       },
       fellBack: false,
     };
+  }
+  if (plan.mode === 'row') {
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const round = seededRow(rng, authored);
+      if (roundFits(plan, round)) return { round, fellBack: false };
+    }
+    return { round: fallbackRound(plan), fellBack: true };
   }
   const goal: Goal = authored ? 'bell' : rng.pick(GOALS);
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -837,6 +955,49 @@ export function swingLayout(
       col.zone =
         i === 0 ? { x: 0, y: 130, w: mid, h: v.h - 130 } : { x: mid, y: 130, w: v.w - mid, h: v.h - 130 };
     }
+  }
+  return layout;
+}
+
+/**
+ * Level 10's row of three: one rope per swing, so each column is only as wide as its own swing's arc at `BELL_ROW` (the
+ * short rope's much narrower than the long rope's) and the long rope keeps a usable length on an upright phone, where
+ * three equal columns would not (the probe in docs/definitions/swing-pals-row-of-three.md). Seats sit at one height,
+ * raised upright above the pet's corner as for two swings; any width left over is shared between the columns. Every
+ * column's pivots all sit at its one swing's middle, so `seatAt` works with any hook as with `swingLayout`.
+ */
+export function rowLayout(v: View, hooks: readonly Hook[]): SwingLayout {
+  const bell = BELL_ROW;
+  const raised = v.upright === true;
+  const seatY = v.h - (raised ? RAISED_SEAT_UP : SEAT_UP);
+  const pet = petCorner(v);
+  const x0 = seatY + FRIEND_DOWN > pet.y ? pet.x + pet.w + 10 : 20;
+  const x1 = v.w - 20;
+  const sin = Math.sin((bell * Math.PI) / 180);
+  const margin = FRIEND_HALF + 10;
+  const share = hooks.reduce((n, h) => n + LENGTH[h] / 4, 0);
+  const scale = Math.min(460, seatY - 60, (x1 - x0 - hooks.length * 2 * margin) / (2 * sin * share));
+  const widths = hooks.map((h) => 2 * ((LENGTH[h] / 4) * scale * sin + margin));
+  const spare = (x1 - x0 - widths.reduce((n, w) => n + w, 0)) / hooks.length;
+  const layout: SwingLayout = { scale, seatY, bell, columns: [] };
+  let left = x0;
+  for (const [i, hook] of hooks.entries()) {
+    const w = widths[i] + spare;
+    const cx = left + w / 2;
+    left += w;
+    const pivot = {} as Record<Hook, Pt>;
+    for (const h of HOOKS) pivot[h] = { x: cx, y: seatY - (LENGTH[h] / 4) * scale };
+    const col: Column = {
+      pivot,
+      mitten: {} as Record<Hook, Pt>,
+      bell: {} as Record<Hook, Pt>,
+      basket: {} as Record<Hook, Pt>,
+      zone: { x: left - w, y: 130, w, h: v.h - 130 },
+    };
+    layout.columns.push(col);
+    const back = seatAt(layout, col, hook, -bell);
+    for (const h of HOOKS) col.mitten[h] = col.bell[h] = col.basket[h] = { x: 0, y: 0 };
+    col.mitten[hook] = { x: back.x - FRIEND_HALF + 10, y: back.y - 40 };
   }
   return layout;
 }

@@ -35,6 +35,14 @@ import {
   planFor,
   raceTempts,
   raceWatch,
+  allMeetTime,
+  firstMeet,
+  rowLayout,
+  rowMeetings,
+  rowTempts,
+  rowWatch,
+  type RowLine,
+  type RowRound,
   requestStrip,
   rightHook,
   ropeOf,
@@ -269,16 +277,16 @@ function basketArt(): Graphics {
 }
 
 /** Level 7's guess marker: a small paw over the friend she picked. */
-function pawArt(g: Graphics): Graphics {
-  g.circle(0, 0, MARK_R).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 4, color: swatch.red.line });
-  g.ellipse(0, 6, 12, 10).fill(swatch.red.fill);
+function pawArt(g: Graphics, color: { fill: number; line: number } = swatch.red): Graphics {
+  g.circle(0, 0, MARK_R).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 4, color: color.line });
+  g.ellipse(0, 6, 12, 10).fill(color.fill);
   for (const [x, y] of [
     [-13, -8],
     [-4, -14],
     [5, -14],
     [14, -8],
   ])
-    g.circle(x, y, 5).fill(swatch.red.fill);
+    g.circle(x, y, 5).fill(color.fill);
   return g;
 }
 
@@ -392,7 +400,9 @@ function drawSwingTree(g: Graphics, L: SwingLayout, view: View, boughs: readonly
   const trunkX =
     cols.length === 1
       ? Math.min(view.w - 60, cols[0].pivot.middle.x + 300)
-      : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
+      : cols.length === 3
+        ? (cols[1].pivot.middle.x + cols[2].pivot.middle.x) / 2
+        : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
   g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26)
     .fill(wood.fill)
     .stroke({ width: 5, color: wood.line });
@@ -1413,6 +1423,394 @@ class SwingPals implements Game {
   }
 }
 
+/**
+ * Level 10, a row of three: short, middle and long ropes let go together from `BELL_ROW`; the pet points at one friend
+ * and she guesses which of the other two is back at the mittens with it first. Never a miss: the swings show the answer.
+ * Shares the rig, tree and art with the other levels; the row has its own layout per line (`rowLayout`).
+ */
+class SwingRow implements Game {
+  readonly hintLabel = 'Show a hint';
+  line = 0;
+  rigs: Rig[] = [];
+  misses = 0;
+  hints = 0;
+  busy = true;
+  finished = false;
+  /** Her guess (a swing index, 0–2), movable until "go"; whether the hint has lit the answer this line. */
+  guess: number | null = null;
+  hintLit = false;
+  /** Whether the friends have been let go on this line. */
+  released = false;
+  t = 0;
+
+  private layout: SwingLayout;
+  private view: View;
+  private readonly backdrop: Backdrop;
+  private readonly tree = new Graphics();
+  private readonly swingLayer = new Container();
+  private readonly glow = new Graphics();
+  private readonly mittens: Container[] = [];
+  readonly friendNodes: Container[] = [];
+  private readonly pointer = new Graphics();
+  private readonly marker = new Graphics();
+  private readonly hold = { k: 0 };
+  /** What the watch still plays, in seconds after letting go: notes, claps and the chord. */
+  private events: { at: number; run: () => void }[] = [];
+  private releasedAt = 0;
+  private lookT = 0;
+  private giggledAt = -10;
+  private going = false;
+  private destroyed = false;
+  private lessonGen = 0;
+
+  constructor(
+    private readonly ctx: GameContext,
+    readonly round: RowRound,
+  ) {
+    this.view = ctx.view;
+    this.layout = rowLayout(ctx.view, this.row.hooks);
+    this.backdrop = swingBackdrop(ctx.view);
+    for (const g of [this.tree, this.glow, this.swingLayer, this.pointer, this.marker]) g.eventMode = 'none';
+    pawArt(this.pointer, swatch.blue);
+    pawArt(this.marker);
+    this.marker.visible = false;
+    for (let i = 0; i < 3; i++) {
+      const m = new Container();
+      m.addChild(mittenArt());
+      m.eventMode = 'none';
+      m.scale.set(0);
+      this.mittens.push(m);
+    }
+    const targets = new Container();
+    for (let i = 0; i < 3; i++) {
+      const node = new Container();
+      onTap(node, () => this.chooseFriend(i));
+      targets.addChild(node);
+      this.friendNodes.push(node);
+    }
+    ctx.stage.addChild(
+      this.backdrop,
+      this.tree,
+      this.glow,
+      this.swingLayer,
+      ...this.mittens,
+      this.pointer,
+      this.marker,
+      targets,
+    );
+    this.buildLine();
+  }
+
+  get row(): RowLine {
+    return this.round.lines[Math.min(this.line, this.round.lines.length - 1)];
+  }
+
+  start() {
+    this.instruct();
+  }
+
+  private instruct() {
+    void this.ctx.instruct('swing-pals.instruct-row', { friend: NAMES[this.row.friends[this.row.pointed]] });
+  }
+
+  private buildLine() {
+    for (const r of this.rigs) {
+      this.ctx.untrack(r.critter);
+      r.destroy();
+    }
+    this.layout = rowLayout(this.view, this.row.hooks);
+    this.rigs = this.row.hooks.map((h, i) => {
+      const rig = new Rig(h, this.row.friends[i], this.layout.columns[i]);
+      rig.L = ropeOf(this.layout, h);
+      rig.held = 0;
+      this.swingLayer.addChild(rig.arm);
+      this.ctx.track(rig.critter);
+      rig.critter.alpha = 0;
+      void this.ctx.tw.to(rig.critter, { alpha: 1 }, { duration: 0.35 });
+      return rig;
+    });
+    // All three draw back to the mittens and wait there for her guess.
+    this.ctx.tw.kill(this.hold);
+    this.hold.k = 0;
+    void this.ctx.tw.to(this.hold, { k: 1 }, { duration: 0.9, ease: ease.inOutSine });
+    this.guess = null;
+    this.hintLit = false;
+    this.released = false;
+    this.going = false;
+    this.marker.visible = false;
+    this.pointer.visible = true;
+    this.events = [];
+    this.lookT = 0;
+    this.layoutAll();
+    this.busy = false;
+  }
+
+  resize(v: View) {
+    this.view = v;
+    this.backdrop.resize(v);
+    this.layout = rowLayout(v, this.row.hooks);
+    for (const [i, r] of this.rigs.entries()) {
+      (r as { col: Column }).col = this.layout.columns[i];
+      r.L = ropeOf(this.layout, r.hook);
+    }
+    this.layoutAll();
+  }
+
+  private layoutAll() {
+    const L = this.layout;
+    drawSwingTree(
+      this.tree,
+      L,
+      this.view,
+      this.rigs.map((r) => [r.hook]),
+    );
+    for (const [i, node] of this.friendNodes.entries()) {
+      const rig = this.rigs[i];
+      if (!rig) continue;
+      const box = friendBox(seatAt(L, L.columns[i], rig.hook, -L.bell));
+      node.position.set(box.x + box.w / 2, box.y + box.h / 2);
+      node.hitArea = new Rectangle(-box.w / 2, -box.h / 2, box.w, box.h);
+      const m = this.mittens[i];
+      m.position.copyFrom(L.columns[i].mitten[rig.hook]);
+    }
+  }
+
+  /** A tap on a friend: the pointed one only hears the question again; another is her guess until "go". */
+  chooseFriend(i: number) {
+    if (this.busy || this.finished || this.released) return;
+    this.lessonGen++;
+    const rig = this.rigs[i];
+    rig.critter.hop(0.5);
+    if (i === this.row.pointed) {
+      this.instruct();
+      return;
+    }
+    this.guess = i;
+    this.marker.visible = true;
+    this.ctx.tw.kill(this.marker.scale);
+    this.marker.scale.set(0.5);
+    void this.ctx.tw.to(this.marker.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    sfx.pop();
+    if (!this.going) void this.go();
+  }
+
+  /** "Ready… go!" a short beat after her first guess, so a second tap before it only moves the paw. */
+  private async go() {
+    this.going = true;
+    await this.ctx.tw.wait(0.8);
+    if (this.destroyed) return;
+    this.busy = true;
+    void this.ctx.say('swing-pals.ready-go');
+    this.ctx.tw.kill(this.hold);
+    await this.ctx.tw.to(
+      this.hold,
+      { k: 1 },
+      { duration: 0.2 + 0.7 * (1 - this.hold.k), ease: ease.inOutSine },
+    );
+    if (this.destroyed) return;
+    await this.ctx.tw.wait(0.4);
+    if (this.destroyed) return;
+    await this.watch();
+  }
+
+  private async watch() {
+    const line = this.row;
+    const L = this.layout;
+    for (const rig of this.rigs) {
+      rig.A = L.bell;
+      rig.held = null;
+      rig.t0 = this.t;
+    }
+    this.released = true;
+    this.releasedAt = this.t;
+    sfx.whoosh();
+    const all = allMeetTime(line.hooks);
+    const answer = firstMeet(line);
+    const events: { at: number; run: () => void }[] = [];
+    // Every return taps its friend's note and pops its mitten.
+    for (const [i, rig] of this.rigs.entries())
+      for (const at of backTimes(rig.hook, all))
+        events.push({
+          at,
+          run: () => {
+            sfx.pluck(NOTES[rig.friend], 0.12);
+            this.popMitten(i);
+          },
+        });
+    // Each pair's first meeting claps over its two mittens; the one asked about claps brighter and is named.
+    for (const { at, pair } of rowMeetings(line)) {
+      if (at >= all - 1e-9) continue;
+      const asked = pair.includes(line.pointed) && pair.includes(answer);
+      events.push({
+        at: at + 0.001,
+        run: () => {
+          sfx.clap();
+          this.burst(pair, asked ? 18 : 8);
+          if (!asked) return;
+          sfx.bell(NOTES[line.friends[answer]] + 5, 0.3);
+          for (const k of pair) this.rigs[k].critter.setMood('happy', 1);
+          void this.ctx.say('swing-pals.row-met', {
+            friend: NAMES[line.friends[line.pointed]],
+            other: NAMES[line.friends[answer]],
+          });
+        },
+      });
+    }
+    events.push({
+      at: all + 0.002,
+      run: () => {
+        sfx.clap();
+        this.burst([0, 1, 2], 24);
+        for (const f of line.friends) sfx.bell(NOTES[f], 0.3);
+        for (const r of this.rigs) r.critter.setMood('happy', 1);
+        void this.ctx.say('swing-pals.row-all');
+      },
+    });
+    this.events = events.sort((a, b) => a.at - b.at);
+    await this.ctx.tw.wait(rowWatch(line));
+    if (this.destroyed) return;
+    await Promise.all(this.rigs.map((r) => this.ctx.tw.to(r, { A: 0 }, { duration: 1.1 })));
+    if (this.destroyed) return;
+    for (const r of this.rigs) r.t0 = null;
+    const right = this.guess === answer;
+    if (right) {
+      sfx.tada();
+      this.ctx.pet.cheer();
+      this.rigs[answer].critter.hop(0.8);
+    }
+    this.marker.visible = false;
+    this.pointer.visible = false;
+    this.hintLit = false;
+    await this.nextLine(this.lessonLines(right, line));
+  }
+
+  /** After a row: her guess's reaction, and on the tempting line why the slow swing met the quick one first. */
+  private async lessonLines(right: boolean, line: RowLine) {
+    const gen = this.lessonGen;
+    if (right) await this.ctx.say('swing-pals.first-yes');
+    if (this.destroyed || this.lessonGen !== gen) return;
+    if (rowTempts(line)) await this.ctx.say('swing-pals.row-twice');
+  }
+
+  private async nextLine(said: Promise<unknown>) {
+    this.busy = true;
+    await this.ctx.tw.wait(0.6);
+    if (this.destroyed) return;
+    for (const r of this.rigs) {
+      r.critter.hop(1);
+      void this.ctx.tw.to(r.critter, { alpha: 0 }, { duration: 0.5, delay: 0.25 });
+    }
+    await this.ctx.tw.wait(0.8);
+    if (this.destroyed) return;
+    this.line++;
+    if (this.line >= this.round.lines.length) {
+      await said;
+      if (this.destroyed) return;
+      void this.finale();
+      return;
+    }
+    this.buildLine();
+    // The new question waits for the last line's lesson, unless she has already guessed.
+    const at = this.line;
+    void said.then(() => {
+      if (!this.destroyed && this.line === at && this.guess === null) this.instruct();
+    });
+  }
+
+  private popMitten(i: number) {
+    const m = this.mittens[i];
+    this.ctx.tw.kill(m.scale);
+    m.scale.set(0.5);
+    void this.ctx.tw.to(m.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack }).then(() => {
+      if (this.destroyed) return;
+      return this.ctx.tw.to(m.scale, { x: 0, y: 0 }, { duration: 0.25, delay: 0.25 });
+    });
+  }
+
+  private burst(pair: readonly number[], count: number) {
+    const ms = pair.map((k) => this.mittens[k].position);
+    const x = ms.reduce((n, p) => n + p.x, 0) / ms.length;
+    const y = Math.min(...ms.map((p) => p.y)) - 60;
+    this.ctx.particles.burst(x, y, {
+      kind: 'star',
+      colors: [0xffffff, swatch.yellow.light, swatch.yellow.fill],
+      count,
+      speed: [80, 220],
+      gravity: 0,
+      life: [0.4, 0.8],
+    });
+  }
+
+  /** Lights the answer's friend before she guesses, once a line, with the one-line why; after that it only speaks. */
+  askForHint() {
+    if (this.finished) return;
+    this.lessonGen++;
+    if (!this.busy && !this.released && !this.hintLit) {
+      this.hintLit = true;
+      this.hints++;
+    }
+    if (this.hintLit) void this.ctx.say('swing-pals.row-twice');
+  }
+
+  update(dt: number) {
+    if (this.destroyed) return;
+    this.t += dt;
+    const L = this.layout;
+    if (this.released) {
+      const since = this.t - this.releasedAt;
+      while (this.events.length && this.events[0].at <= since) this.events.shift()?.run();
+    }
+    for (const [i, rig] of this.rigs.entries()) {
+      if (rig.held !== null) rig.held = -L.bell * this.hold.k;
+      const p = rig.col.pivot[rig.hook];
+      if (rig.draw(this.t, p.x, p.y) && this.t - this.giggledAt > 1.4) {
+        this.giggledAt = this.t;
+        sfx.giggle();
+      }
+      if (i === this.row.pointed && this.pointer.visible)
+        this.pointer.position.copyFrom(markerAt(seatAt(L, rig.col, rig.hook, rig.angle(this.t)), rig.friend));
+      if (i === this.guess && this.marker.visible)
+        this.marker.position.copyFrom(markerAt(seatAt(L, rig.col, rig.hook, rig.angle(this.t)), rig.friend));
+    }
+    this.glow.clear();
+    if (this.hintLit && this.line < this.round.lines.length) {
+      const rig = this.rigs[firstMeet(this.row)];
+      const box = friendBox(seatAt(L, rig.col, rig.hook, rig.angle(this.t)));
+      this.glow
+        .roundRect(box.x - 8, box.y - 8, box.w + 16, box.h + 16, 30)
+        .stroke({ width: 8 + 3 * Math.sin(this.t * 5), color: swatch.yellow.fill, alpha: 0.8 });
+    }
+    if (!this.busy) this.lookT += dt;
+  }
+
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.released || this.guess !== null || this.lookT < 1) return null;
+    return { tap: { on: this.friendNodes[firstMeet(this.row)] } };
+  }
+
+  private async finale() {
+    this.finished = true;
+    this.busy = true;
+    for (const r of this.rigs) {
+      r.critter.alpha = 1;
+      r.critter.hop(0.8);
+    }
+    sfx.tada();
+    this.ctx.pet.cheer();
+    await this.ctx.say('swing-pals.done');
+    if (this.destroyed) return;
+    await this.ctx.tw.wait(0.6);
+    if (this.destroyed) return;
+    // Nothing new is filed: "a longer rope swings slower" keeps its triggers at levels 3, 7 and 9.
+    this.ctx.finish({ misses: this.misses, hints: this.hints });
+  }
+
+  destroy() {
+    this.destroyed = true;
+    for (const r of this.rigs) this.ctx.untrack(r.critter);
+  }
+}
+
 /** Level 9 shares the swing rig and tree. Its paper, controls and finish have their own lifecycle. */
 class SwingPaint implements Game {
   readonly hintLabel = 'Show a hint';
@@ -1858,6 +2256,8 @@ export const swingPals: GameModule = {
       ctx.rng,
       plan.mode === 'paint' ? authored || !!ctx.demo : authored && !ctx.demo,
     );
-    return round.kind === 'paint' ? new SwingPaint(ctx, round) : new SwingPals(ctx, plan, round);
+    if (round.kind === 'paint') return new SwingPaint(ctx, round);
+    if (round.kind === 'row') return new SwingRow(ctx, round);
+    return new SwingPals(ctx, plan, round);
   },
 };
