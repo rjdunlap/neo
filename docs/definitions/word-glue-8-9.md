@@ -76,16 +76,19 @@ The first round of a session is authored: painter (paint, bake, sing), swimmer (
 | fruit | an apple | a tree with a few leaves | fruitful: full of fruit; the tree fills with fruit | fruitless: without fruit; its last fruit drops away |
 | color | three paint blobs | a fish, half coloured | colorful: full of color; stripes of every colour | colorless: without color; it fades to grey |
 | power | a lightning bolt | a lamp, glowing dimly | powerful: full of power; a bright beam | powerless: without power; it goes dark, its plug out |
-| rest | a pillow | a critter half asleep | restful: full of rest; sleeps soundly, Zzz | restless: without rest; tosses and turns |
-| care | two hands holding a cup | a critter carrying a cup of water | careful: full of care; walks slowly, not a drop lost | careless: without care; trots, and water splashes out |
+| cheer | two balloons | a room, half lit | cheerful: full of cheer; curtains open, flowers, bright | cheerless: without cheer; grey and dim |
+| care | two hands round a small heart | a bear carrying a stack of blocks | careful: full of care; walks slowly, the stack steady | careless: without care; trots, and the top block tumbles off |
 
 Notes on the table:
 - *Fruitful* is used for its literal meaning, "full of fruit", the one the tree shows. The grown-ups' note says it also means "producing a lot".
 - *Color* is the US spelling; it is spoken the same, and nothing is printed.
+- Every ask reads as "Make the {thing} {word}!": the tree fruitful, the fish colorful, the lamp powerful, the room cheerful, the bear careful, and each *-less* form the same way.
+- **No cup but the two meaning cups** is on screen: the care tile and the care scene carry no cup, so the only cups are the answers.
 - **Left out:**
   - words with only one real form (spotless, cloudless and toothless have no *-ful*; playful and spoonful have no *-less*);
   - pairs whose meanings are not "full of" and "without" (tasteful and tasteless);
-  - painful, harmful and fearful, which picture hurt or fear.
+  - painful, harmful and fearful, which picture hurt or fear;
+  - restful and restless, because restful describes a sleep or a place, not an animal, and does not mean "full of rest".
 
 **The two cups** are the meaning tiles: a cup filled to the brim ("full of") and an empty cup ("without"), drawn with the existing `cup` part. Touch-down says "Full of!" or "Without!".
 
@@ -93,7 +96,7 @@ Notes on the table:
 - *-ful* is asked two or three times, and *-less* the rest;
 - the right cup is on the left two or three times.
 
-So neither the side nor a habit answers; only the ending does. The first round of a session is authored: fruitful (full cup on the right), colorless (empty cup on the left), careful (full cup on the left), powerless (empty cup on the right), restful (full cup on the left).
+So neither the side nor a habit answers; only the ending does. The first round of a session is authored: fruitful (full cup on the right), colorless (empty cup on the left), careful (full cup on the left), powerless (empty cup on the right), cheerful (full cup on the left).
 
 **Screen.** `kindLayout(view)` places it, as at level 5:
 - the thing at the top at made size;
@@ -128,15 +131,20 @@ If the tile does not fit at card size above the cups, the build adds a sibling l
 - `DOERS` holds `{ action, word, meaning }`.
 - `ENDINGS` holds `{ base, full: { word, meaning }, without: { word, meaning } }`.
 - An `Ask` at level 8 carries its doer and three action keys; at level 9 its ending row, the asked form and the cups' screen order.
-- Level 8 reuses `drop`, `hintFor` and `canDrag` with the person as the fixed head, as level 3 does with its head. Level 9 reuses `tap`, `checkTap` and `rightChoice`.
-- None of the new rows enter `COMPOUNDS`, so `makes`, `forms` and `distractorsFor` and levels 1–7 are untouched.
+- **Level 8 follows level 3's join, but the code needs these changes**, because today's join helpers read `COMPOUNDS` and test `plan.level === 3`:
+  - `check` and `drop` resolve a pair through a level-aware lookup: at level 8 an action dropped on the person finds its `DOERS` row (and `drop`'s `made`, the wrong thing shown briefly, is that row); every other level still uses `makes`.
+  - The fixed-head rule in `check` and `canDrag` widens from level 3 to levels 3 and 8: only an action moves, and only onto the person.
+  - `hintFor` returns the asked action and the person at level 8.
+  - `DOERS` rows can be shaped like a `Compound` (`first`: the action, `second`: `'person'`) so `Ask.entry` and `drop` keep their types.
+- **Level 9** uses `tap` and `checkTap`; `rightChoice` gains level 9 (the asked form's cup).
+- None of the new rows enter `COMPOUNDS`, so `makes`, `forms` and `distractorsFor` stay as they are. A test checks that levels 2 and 3 still resolve through `COMPOUNDS` and that an action and the person make nothing there.
 
 **Tests over 500 seeds:**
 - **Level 8:** five asks, five distinct words; three distinct actions per ask, the right one among them; the right action in each place at least once per round; the authored round matches.
 - **Level 9:** five asks, the five words once each; *-ful* asked two or three times; the right cup on the left two or three times; the authored round matches.
 
 **Tables:**
-- every `DOERS` meaning is "someone who" plus the action with an *s*, and every word is the action plus *-er* or *-r* as spoken;
+- every `DOERS` meaning is "someone who" plus the action with an *s*, and every word is the action followed by *-er* as spoken, allowing a dropped final *e* (bake, baker) and a doubled last letter (swim, swimmer);
 - every `ENDINGS` row's meanings are "full of" and "without" plus the base;
 - no word or line has a hyphen or a bare ending;
 - no new word is in `OPAQUE`;
@@ -187,7 +195,7 @@ Clips are keyed by text, so a line that already exists reuses its clip.
 
 **Registration:** `describeLevel` gains both plan names; skills, land, icon and sticker are unchanged. `npm run game-docs` regenerates the page's tables, and the game page's *Grows into* line gains both levels.
 
-**Co-play and off-screen:** "Someone who…": take turns naming someone who does what the other mimes (a swimmer, a singer). Around the house, find something careful and something colorful.
+**Co-play and off-screen:** "Someone who…": take turns naming someone who does what the other mimes (a swimmer, a singer). Around the house, find something colorful and someone being careful.
 
 ## Art (`src/games/word-glue/art.ts`, palette colours)
 
@@ -196,7 +204,7 @@ Clips are keyed by text, so a line that already exists reuses its clip.
   - six new action tiles (bake, sing, swim, drive, read, build; paint reuses the level-3 `paint` part);
   - seven doers built on existing `Critter` rigs (cat, bear, duck, dog, pig, bunny, mouse) with one prop each, each with a short comes-alive motion.
 - **Level 9:**
-  - four new base tiles (fruit, color, power, rest; care is two hands round the existing cup);
+  - five new base tiles (fruit, color, power, cheer, care), none of them a cup;
   - five things, each drawn in three states (neutral, full of, without), with short changes between them.
 - **Legibility check:** a capture strip of the seven doers and the five things in all three states. Each doer must read as the action at the shelf's 84 units, and each thing's two changed states must differ at a glance.
 
