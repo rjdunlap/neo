@@ -49,7 +49,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`key-it-out` levels 3–4, batch `key-it-out 2`** (grown-up; after batch `key-it-out 1`, built; new interaction tier: typecheck and unit tests (the note fit rule, the generator and filters at levels 3–4, step 1 alone solving every kept level-4 board, the hint walk with note steps, voice coverage), one filtered play at level 4 with one full wrong page and one hint, one upright screenshot of the Table page, `fingerdemo` at level 4, build). [Definition](definitions/key-it-out.md#build-batches)
 
 - **`jar-clues` levels 3–4, batch `jar-clues 2`** (grown-up; after batch `jar-clues 1`; new interaction tier: typecheck and unit tests (the multiple, not-a-multiple, special and one-of-two clue truth tables, the generator and its required kinds at levels 3–4, the one-of-two explanations for both-true and neither-true numbers, the hint walk, voice coverage), one filtered play at level 4 with one wrong check on the one-of-two clue and one hint, one upright screenshot of a one-of-two clue card, `fingerdemo` at level 4, build). [Definition](definitions/jar-clues.md#build-batches)
 
