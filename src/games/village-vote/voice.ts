@@ -13,5 +13,13 @@ export const VOICE = {
   'village-vote.free': ['Choose either picture for your pet.'],
   'village-vote.compare-two': ['{n} is more than {a}. Choose the {thing}.'],
   'village-vote.compare-three': ['{n} is more than {a}, and more than {b}. Choose the {thing}.'],
+  'village-vote.tie': ["It's a tie! {n} votes and {n} votes."],
+  'village-vote.runoff': [
+    'The {thing} has fewest. Where would those friends go next? Tap a friend, then its picture.',
+  ],
+  'village-vote.recount': ['Count again. Which picture has the most votes now?'],
+  'village-vote.not-next': ["This friend's next choice is the {thing}."],
+  'village-vote.closed': ['The {thing} is closed this time.'],
+  'village-vote.nudge': ['Move every friend from the {thing} first.'],
   'village-vote.result': ["The {thing} has the most votes. Let's all try it!"],
 } satisfies Record<string, string[]>;

@@ -11,13 +11,20 @@ import { Election, FAMILIES, fixture, layout, OPTIONS, playLayout } from './logi
 const views = { ...UPRIGHT_VIEWS, minimum: computeView(768, 1024, NO_INSETS, true) };
 
 describe.each(Object.entries(views))('Village Vote upright on %s', (_, v) => {
-  for (const level of [1, 2, 3]) {
+  for (const level of [1, 2, 3, 4]) {
     FAMILIES[level].forEach((_f, family) => {
-      for (const pet of level === 2 ? OPTIONS.slice(0, 2) : [null]) {
-        it(`level ${level} family ${family}${pet ? ` pet votes ${pet}` : ''}: buttons, tallies, paws and the pet fit and apart`, () => {
+      // Level 4 is checked before the tie, mid run-off (one friend moved) and after every move.
+      for (const pet of level === 2 ? OPTIONS.slice(0, 2) : level === 4 ? [null, 'one', 'all'] : [null]) {
+        it(`level ${level} family ${family}${pet ? ` ${level === 4 ? `moved ${pet}` : `pet votes ${pet}`}` : ''}: buttons, tallies, paws and the pet fit and apart`, () => {
           const e = new Election(fixture(level, family));
-          if (pet) {
-            e.choose(pet);
+          if (level === 4 && pet) {
+            e.declare(e.winner);
+            for (const v of pet === 'one' ? e.waiting.slice(0, 1) : [...e.waiting]) {
+              e.select(v.id);
+              e.send(v.next!);
+            }
+          } else if (pet) {
+            e.choose(pet as (typeof OPTIONS)[number]);
             e.arrived();
           }
           const lay = layout(v, e);

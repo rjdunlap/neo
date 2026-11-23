@@ -10,13 +10,14 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–3 |
-| school | 3 |
+| school | 3–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Two choices — count two groups and choose more |
 | 2 | Your pet votes too — choose freely, then count |
 | 3 | Three choices — compare tallies and choose most |
+| 4 | A tie — move the fewest group's votes to their next choice, then choose most |
 
 <!-- end generated -->
 
