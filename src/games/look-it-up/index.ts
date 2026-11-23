@@ -294,12 +294,15 @@ class LookItUp implements Game {
         .roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18)
         .fill(swatch.white.fill)
         .stroke({ width: 3, color: wood.light });
-      const face = animalArt(id, 70);
-      face.position.set(-rect.w / 2 + 46, 34);
-      const name = caption(ANIMALS[id].title, rect.w - 92 - 50);
-      name.position.set(-rect.w / 2 + 90, 0);
+      const face = animalArt(id, 64);
+      face.position.set(-rect.w / 2 + 40, 32);
+      // The name wraps to two lines rather than shrink; a single word wider than its slot (narrow landscape) is scaled.
+      const room = rect.w - 76 - 44;
+      const name = caption(ANIMALS[id].title, room);
+      if (name.width > room) name.scale.set(room / name.width);
+      name.position.set(-rect.w / 2 + 76, 0);
       const num = label(String(pageNumber(id)), 34, ink);
-      num.position.set(rect.w / 2 - 26, 0);
+      num.position.set(rect.w / 2 - 22, 0);
       num.eventMode = 'none';
       node.addChild(bg, face, name, num);
       node.hitArea = new Rectangle(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
