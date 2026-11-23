@@ -73,7 +73,7 @@ The same shape as levels 5 and 6:
 
 ## Build batch
 
-1. **Batch `word-glue 4`: level 7** (the `INVENTED` table and six drawings, `nameLayout`, the name cards, school's order, 36 voice lines, how-to, bot and tests).
+1. **Batch `word-glue 4`: level 7** (the `INVENTED` table and six drawings, `nameLayout`, the name cards, school's order, 36 voice lines, how-to, bot and tests). Built 2026-11-23 on `claude/word-glue-7`, [PR #2050](https://github.com/rjdunlap/neo/pull/2050) ([game page](../games/word-glue.md)); the dictionary check ran as a site-limited web search because both dictionaries refused direct fetches.
 
 ## Check tier
 

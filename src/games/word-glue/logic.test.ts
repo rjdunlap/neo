@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { madeArt } from './art';
-import { choiceLine } from './voice';
+import { inventedArt, madeArt } from './art';
+import { choiceLine, nameLine } from './voice';
 import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
@@ -34,7 +34,15 @@ import {
   MADE,
   makeRound,
   makes,
+  INVENTED,
+  inventedName,
+  judgeName,
+  NAME_LEVEL,
+  nameIt,
+  nameLayout,
   newState,
+  place,
+  takeBack,
   OPAQUE,
   PICTURES,
   POOL,
@@ -68,7 +76,7 @@ describe('the compound table', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // Levels 1–3 are unchanged.
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
     expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
     expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
@@ -353,8 +361,8 @@ describe('level 5: What kind of thing?', () => {
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
   });
 
-  it("school climbs 3, 5, 6, never through lap's level 4, and a carried 4 lands on 3", () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL]);
+  it("school climbs 3, 5, 6, 7, never through lap's level 4, and a carried 4 lands on 3", () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([3, KIND_LEVEL, REVERSED_LEVEL, NAME_LEVEL]);
     expect(levelsInOrder(LEVELS.school!)).not.toContain(BIG_LEVEL);
     expect(landing(BIG_LEVEL, LEVELS.school!, [BIG_LEVEL])).toBe(3);
     expect(stepLevel(3, 1, LEVELS.school!)).toBe(KIND_LEVEL);
@@ -535,6 +543,183 @@ describe('level 6: Which way round?', () => {
   });
 });
 
+describe('level 7: Name the new thing', () => {
+  const heads = (s: GlueState) => s.round.asks.map((a) => a.invented!.head);
+  /** Send two pictures to the name cards, in order, and judge them. */
+  const say = (s: GlueState, first: string, last: string) => {
+    place(s, first);
+    place(s, last);
+    return nameIt(s);
+  };
+
+  it('every tile is a drawn picture, and every name is invented: not listed, paired, denied or opaque', () => {
+    const known = new Set([
+      ...COMPOUNDS.map((c) => c.word),
+      ...PAIRS.flat().map((c) => c.word.replaceAll(' ', '')),
+      ...DENY,
+      ...OPAQUE,
+    ]);
+    expect(INVENTED).toHaveLength(6);
+    expect(new Set(INVENTED.map((r) => r.head)).size).toBe(6);
+    for (const row of INVENTED) {
+      for (const k of [row.head, ...row.details]) expect(PICTURES, k).toContain(k);
+      expect(row.details[0]).not.toBe(row.details[1]);
+      for (const d of row.details) {
+        const name = inventedName(d, row.head);
+        expect(known.has(name.replace(' ', '')), name).toBe(false);
+        expect(known.has(row.head + d), name).toBe(false);
+        expect(makes(d, row.head), name).toBeNull();
+        expect(row.meanings[d]).toMatch(new RegExp(`^a ${row.head} with `));
+        expect(row.meanings[d]).not.toMatch(/-/);
+      }
+      for (const w of [row.head, ...row.details]) expect(w).toMatch(/^[^aeiou]/);
+    }
+  });
+
+  it('judges all six orders of each row: exactly the two with the thing last are right, and each wrong one calls its last part', () => {
+    for (const row of INVENTED) {
+      const tiles = [row.head, ...row.details];
+      let right = 0;
+      for (const a of tiles)
+        for (const b of tiles) {
+          if (a === b) continue;
+          const v = judgeName(row, a, b);
+          if (b === row.head) {
+            expect(v.kind, `${a} ${b}`).toBe('right');
+            right++;
+          } else expect(v).toEqual({ kind: 'wrong', calls: b });
+        }
+      expect(right).toBe(2);
+    }
+  });
+
+  it('the authored round: hat, boat, cake, chair, cup, with the thing in each place once or twice', () => {
+    const s = stateFor(NAME_LEVEL, 1, true);
+    expect(heads(s)).toEqual(['hat', 'boat', 'cake', 'chair', 'cup']);
+    const places = s.round.asks.map((a) => a.pictures.indexOf(a.invented!.head));
+    expect([0, 1, 2].map((p) => places.filter((x) => x === p).length).sort()).toEqual([1, 2, 2]);
+  });
+
+  it('over 500 seeds: five different things, each with its three pictures once, and no place gives the thing away', () => {
+    for (const seed of SEEDS) {
+      const s = stateFor(NAME_LEVEL, seed);
+      expect(new Set(heads(s)).size).toBe(5);
+      for (const a of s.round.asks) {
+        const row = a.invented!;
+        expect([...a.pictures].sort()).toEqual([row.head, ...row.details].sort());
+        expect(a.entry.second).toBe(row.head);
+      }
+      const places = s.round.asks.map((a) => a.pictures.indexOf(a.invented!.head));
+      for (const p of [0, 1, 2]) {
+        const n = places.filter((x) => x === p).length;
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+
+  it('a right name with either detail first counts nothing and moves on', () => {
+    for (const d of [0, 1]) {
+      const s = stateFor(NAME_LEVEL, 3, true);
+      const row = currentAsk(s)!.invented!;
+      expect(say(s, row.details[d], row.head)).toMatchObject({ kind: 'right', first: row.details[d] });
+      expect([s.index, s.misses, s.hints, s.slots]).toEqual([1, 0, 0, [null, null]]);
+    }
+  });
+
+  it('taking a picture back out is free, and a picture fills the first empty card', () => {
+    const s = stateFor(NAME_LEVEL, 3, true);
+    const row = currentAsk(s)!.invented!;
+    expect(place(s, row.head)).toBe(0);
+    expect(place(s, row.head)).toBeNull();
+    expect(takeBack(s, row.head)).toBe(0);
+    expect(place(s, row.details[0])).toBe(0);
+    expect(place(s, 'moon')).toBeNull();
+    expect(nameIt(s)).toEqual({ kind: 'ignore' });
+    expect(place(s, row.head)).toBe(1);
+    expect(takeBack(s, row.details[0])).toBe(0);
+    expect(place(s, row.details[1])).toBe(0);
+    expect(s.slots).toEqual([row.details[1], row.head]);
+    expect([s.misses, s.hints]).toEqual([0, 0]);
+  });
+
+  it('accounting: wrong, wrong, Show a hint, wrong is two misses, one hint and the supported name with her detail first', () => {
+    const s = stateFor(NAME_LEVEL, 3, true);
+    const row = currentAsk(s)!.invented!;
+    const [star, bell] = row.details;
+    expect(say(s, row.head, star)).toMatchObject({
+      kind: 'wrong',
+      first: row.head,
+      last: star,
+      glowed: false,
+    });
+    expect(s.slots).toEqual([null, null]);
+    expect([s.misses, s.hints]).toEqual([1, 0]);
+    expect(say(s, star, bell)).toMatchObject({ kind: 'wrong', glowed: true });
+    expect([s.misses, s.hints, s.glow]).toEqual([2, 1, true]);
+    applyHint(s);
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+    expect(say(s, row.head, bell)).toEqual({ kind: 'assist', row, first: bell });
+    expect([s.index, s.misses, s.hints]).toEqual([1, 2, 1]);
+  });
+
+  it("a hint before any miss counts once, and a supported name after two details keeps the first card's detail first", () => {
+    const s = stateFor(NAME_LEVEL, 3, true);
+    const ask = currentAsk(s)!;
+    const row = ask.invented!;
+    applyHint(s);
+    applyHint(s);
+    expect(s.hints).toBe(1);
+    const [d0, d1] = row.details;
+    say(s, d0, d1);
+    say(s, d1, d0);
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+    // Two details in the cards: the first card's stays first.
+    expect(say(s, d1, d0)).toMatchObject({ kind: 'assist', first: d1 });
+  });
+
+  it('Start again empties the name cards and keeps what was counted', () => {
+    const s = stateFor(NAME_LEVEL, 3, true);
+    const row = currentAsk(s)!.invented!;
+    say(s, row.head, row.details[0]);
+    place(s, row.details[0]);
+    restartState(s);
+    expect([s.index, s.misses, s.slots]).toEqual([0, 1, [null, null]]);
+  });
+
+  it('every row has its drawing, which comes alive, and all six lines of speech', () => {
+    const pose = (node: Container): unknown[] => [
+      node.x,
+      node.y,
+      node.rotation,
+      node.scale.x,
+      node.scale.y,
+      node.children.map(pose),
+    ];
+    for (const row of INVENTED) {
+      const art = inventedArt(row.head);
+      expect(art.node.children.length).toBeGreaterThan(0);
+      art.alive(0);
+      const still = pose(art.node);
+      art.alive(0.4);
+      expect(pose(art.node), row.head).not.toEqual(still);
+      art.node.destroy({ children: true });
+      const tiles = [row.head, ...row.details];
+      for (const a of tiles)
+        for (const b of tiles) {
+          if (a === b) continue;
+          const text = SCRIPT[nameLine(row.head, a, b)]?.[0];
+          expect(text, `${a} ${b}`).toBeTruthy();
+          expect(text).not.toMatch(/[{}]/);
+          expect(text).toContain(`${a[0].toUpperCase()}${a.slice(1)}… ${b}.`);
+          if (b === row.head) expect(text).toContain(row.meanings[a]);
+          else expect(text).toContain(`so ${row.head} goes last`);
+        }
+    }
+    expect(SCRIPT['wordglue.instruct.name']?.[0]).toBeTruthy();
+  });
+});
+
 describe('the pictures', () => {
   it('names every part and the pool once', () => {
     expect(new Set(PICTURES).size).toBe(PICTURES.length);
@@ -587,6 +772,22 @@ describe('the table layout', () => {
         expect(overlaps(r, petCorner(v.h))).toBe(false);
       }
       for (const [a, b] of pairs([...cards, ...shelf])) expect(overlaps(a, b)).toBe(false);
+    });
+    it(`${name}, level 7: the thing, two name cards and three pictures are big, inside the view, apart and clear of the corners`, () => {
+      const { made, cards, tiles } = nameLayout(v);
+      const rects = [sq(made, MADE), ...cards.map((p) => sq(p, CARD)), ...tiles.map((p) => sq(p, CARD))];
+      const home = { x: 0, y: 0, w: 130, h: 230 };
+      expect(CARD).toBeGreaterThanOrEqual(140);
+      for (const r of rects) {
+        expect(r.x).toBeGreaterThanOrEqual(0);
+        expect(r.y).toBeGreaterThanOrEqual(0);
+        expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+        expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+        expect(overlaps(r, petCorner(v.h))).toBe(false);
+        expect(overlaps(r, home)).toBe(false);
+        for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
+      }
+      for (const [a, b] of pairs(rects)) expect(overlaps(a, b)).toBe(false);
     });
     for (const n of [2, 3, 4]) {
       it(`${name}, ${n} pictures: big, inside the view, clear of the corners and apart`, () => {
