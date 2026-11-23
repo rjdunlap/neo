@@ -48,6 +48,15 @@ import {
   teenRounds,
   teenAnswer,
   teenPadRange,
+  BANK_HIT_R,
+  BANK_HIT_UP,
+  CHECK_HIT_R,
+  POND_HIT_R,
+  bankSpot,
+  checkSpot,
+  freeSlot,
+  signSpot,
+  stopVerdict,
 } from './logic';
 import { computeView } from '../../engine/view';
 
@@ -596,5 +605,106 @@ describe('Duck Pond level 15, Ten and some more (slice 8)', () => {
     expect(duckMove(plan, 0, 14, 0, [3, 5, 4], 4)).toEqual({ pad: 2 });
     expect(numberSentence(10, 4)).toBe('10 + 4 = 14');
     expect(duckPond.describeLevel!(15)).toMatch(/Ten and some more/);
+  });
+});
+
+describe('Duck Pond real stopping (levels 4–5, slice 3)', () => {
+  const stops = PLANS.map((p, i) => ({ level: i + 1, plan: p })).filter(({ plan }) => plan.stop);
+
+  it('asks her to stop at levels 4 and 5 only; level 3 still finishes by itself at the number', () => {
+    expect(stops.map(({ level }) => level)).toEqual([4, 5]);
+    for (const { plan } of stops) expect(plan.mode).toBe('make');
+    const three = planFor(3);
+    for (let want = three.min; want <= three.max; want++)
+      expect(duckMove(three, bankSize(three) - want, want, want, [], 0)).toBeNull();
+  });
+
+  it('ends a round on the check only when the pond holds exactly the sign’s number', () => {
+    for (const { plan } of stops)
+      for (let want = plan.min; want <= plan.max; want++) {
+        // The bank always has one more than the number, so too many can be reached.
+        expect(bankSize(plan)).toBeGreaterThan(want);
+        for (let n = 0; n <= bankSize(plan); n++)
+          expect(stopVerdict(n, want)).toBe(n === want ? 'right' : n < want ? 'few' : 'many');
+      }
+  });
+
+  it('the ghost finger brings ducks in up to the number, then presses the check, never one too many', () => {
+    for (const { plan } of stops)
+      for (let want = plan.min; want <= plan.max; want++) {
+        let bank = bankSize(plan);
+        let swimming = 0;
+        let move = duckMove(plan, bank, swimming, want, [], 0);
+        while (move === 'duck') {
+          bank--;
+          swimming++;
+          move = duckMove(plan, bank, swimming, want, [], 0);
+        }
+        expect(move).toBe('check');
+        expect(swimming).toBe(want);
+        expect(stopVerdict(swimming, want)).toBe('right');
+      }
+  });
+
+  it('sending ducks back returns exactly one each time, never below zero, and no two swimmers ever share a place', () => {
+    for (const { plan } of stops)
+      for (let seed = 1; seed <= 40; seed++) {
+        const rng = new Rng(seed);
+        const size = bankSize(plan);
+        let taken: number[] = [];
+        for (let step = 0; step < 60; step++) {
+          const bank = size - taken.length;
+          if (bank > 0 && (taken.length === 0 || rng.chance(0.6))) taken = [...taken, freeSlot(taken)];
+          else if (taken.length > 0) {
+            const before = taken.length;
+            const out = rng.int(0, taken.length - 1);
+            taken = taken.filter((_, i) => i !== out);
+            expect(taken.length).toBe(before - 1);
+          }
+          expect(new Set(taken).size).toBe(taken.length);
+          // The places stay among the first few, so the pond's seats the layout tests check are the ones used.
+          for (const k of taken) expect(k).toBeLessThan(size);
+        }
+      }
+  });
+
+  it('stands the check beside the sign, clear of every duck on the pond and on the bank, at every sideways view', () => {
+    const views = {
+      landscape: computeView(1024, 768),
+      portrait: computeView(768, 1024),
+      phone: computeView(844, 390),
+      notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    };
+    for (const v of Object.values(views)) {
+      const ck = checkSpot(v);
+      const s = signSpot(v);
+      const c = pondCenter(v);
+      expect(ck.x - CHECK_HIT_R).toBeGreaterThan(115);
+      expect(ck.x + CHECK_HIT_R).toBeLessThanOrEqual(v.w);
+      expect(ck.y - CHECK_HIT_R).toBeGreaterThanOrEqual(0);
+      // Clear of the sign's board (220 wide, 132 tall).
+      expect(Math.abs(ck.x - s.x) >= 110 + CHECK_HIT_R || Math.abs(ck.y - s.y) >= 66 + CHECK_HIT_R).toBe(
+        true,
+      );
+      for (const { plan } of stops) {
+        const n = bankSize(plan);
+        for (const [x, y] of SLOTS.slice(0, n)) {
+          // A swimmer's tap circle, and its head (drawn up to 118 above its feet), stay clear of the check.
+          expect(Math.hypot(c.x + x - ck.x, c.y + y - BANK_HIT_UP - ck.y)).toBeGreaterThanOrEqual(
+            POND_HIT_R + CHECK_HIT_R,
+          );
+          expect(c.y + y - 118).toBeGreaterThan(ck.y + CHECK_HIT_R - 1e-6);
+        }
+        for (const [i, [x, y]] of SLOTS.slice(0, n).entries())
+          for (const [xx, yy] of SLOTS.slice(i + 1, n))
+            expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(2 * POND_HIT_R);
+        for (let i = 0; i < n; i++) {
+          const b = bankSpot(v, i, n);
+          expect(Math.hypot(b.x - ck.x, b.y - BANK_HIT_UP - ck.y)).toBeGreaterThanOrEqual(
+            BANK_HIT_R + CHECK_HIT_R,
+          );
+        }
+      }
+    }
   });
 });

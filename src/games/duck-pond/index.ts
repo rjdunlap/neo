@@ -8,6 +8,8 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { RoundButton } from '../../ui/buttons';
+import { checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -45,6 +47,13 @@ import {
   type PondStory,
   padSpot,
   bankSpot,
+  checkSpot,
+  CHECK_HIT_R,
+  CHECK_R,
+  BANK_HIT_R,
+  POND_HIT_R,
+  freeSlot,
+  stopVerdict,
   enterY,
   pondCenter,
   pondDrawRx,
@@ -73,6 +82,10 @@ class Duck extends Container {
   pondOffset: [number, number] | null = null;
   /** Sitting this one out (for example once enough ducks are in). */
   resting = false;
+  /** Its place in the bank's row, kept while it swims, so a duck sent back (levels 4–5) returns to where it stood. */
+  home = 0;
+  private readonly glowRing = new Graphics();
+  private glowing = false;
   private readonly ripple = new Graphics()
     .ellipse(0, -6, 66, 26)
     .fill(WATER)
@@ -93,8 +106,19 @@ class Duck extends Container {
     super();
     this.critter.scale.set(0.36);
     this.ripple.visible = false;
-    this.addChild(this.critter, this.ripple);
+    this.addChild(this.glowRing, this.critter, this.ripple);
     this.hitArea = new Circle(0, -46, 72);
+  }
+
+  /** Still on its way along an arc (a tap then waits: a second hop would drop the first one's landing). */
+  get hopping() {
+    return this.arc !== null;
+  }
+
+  /** The hint at levels 4–5: a soft ring behind the duck to move next. */
+  glow(on: boolean) {
+    this.glowing = on;
+    if (!on) this.glowRing.clear();
   }
 
   hopTo(x: number, y: number, duration = 0.65, height = 130): Promise<void> {
@@ -133,6 +157,11 @@ class Duck extends Container {
       }
     }
     this.critter.y = this.swimming ? 6 + 3 * Math.sin(this.clock * 2.6) : 0;
+    if (this.glowing)
+      this.glowRing
+        .clear()
+        .circle(0, -46, 62 + 5 * Math.sin(this.clock * 8))
+        .fill({ color: 0xfff3a0, alpha: 0.7 });
   }
 }
 
@@ -198,6 +227,8 @@ class DuckPond implements Game {
   private readonly ducks = new Container();
   private readonly padLayer = new Container();
   private bank: Duck[] = [];
+  /** How many ducks the bank was dealt this round: the row's length, which a duck's `home` place is counted in. */
+  private bankCount = 0;
   private swimmers: Duck[] = [];
   private pads: Pad[] = [];
   private view: View;
@@ -228,6 +259,9 @@ class DuckPond implements Game {
   private finished = false;
   /** Level 13: the one big duck, and the layer over the whole screen whose touch brings her a friend. */
   private bigDuck: Duck | null = null;
+  /** Levels 4–5: "That's enough!", and the ring that glows behind it as a hint once the pond holds the number. */
+  private check: RoundButton | null = null;
+  private readonly checkRing = new Graphics();
   private readonly touch = new Container();
   /** Level 13: friends called so far (the count), quiet time since the last touch, and when a spare touch last quacked. */
   private friends = 0;
@@ -263,6 +297,11 @@ class DuckPond implements Game {
     // Ducks lower on the screen (nearer to us) draw in front.
     this.ducks.sortableChildren = true;
     ctx.stage.addChild(this.backdrop, this.pond, this.sign, this.bridge, this.ducks, this.padLayer);
+    if (this.plan.stop) {
+      this.check = new RoundButton(checkIcon(), swatch.green, CHECK_R, () => void this.pressCheck());
+      this.check.visible = this.checkRing.visible = false;
+      ctx.stage.addChild(this.checkRing, this.check);
+    }
     if (this.plan.mode === 'friends') {
       // Lap's level: the big duck is on the pond from the start, and a layer over the whole screen takes every touch.
       const big = new Duck();
@@ -347,6 +386,9 @@ class DuckPond implements Game {
     bridge.visible = this.plan.mode === 'hide' || !!this.plan.split;
     const sg = signSpot(v);
     this.sign.position.set(sg.x, sg.y);
+    const ck = checkSpot(v);
+    this.check?.position.set(ck.x, ck.y);
+    this.checkRing.position.set(ck.x, ck.y);
     this.layoutBank();
     this.layoutPads();
     this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
@@ -373,6 +415,9 @@ class DuckPond implements Game {
     }
     for (const d of [...this.bank, ...this.swimmers]) d.update(dt);
     for (const p of this.pads) p.update(dt);
+    const ring = this.checkRing.clear();
+    if (this.check?.visible && this.wrongThisRound >= HINT_AFTER && this.swimmers.length === this.want)
+      ring.circle(0, 0, CHECK_HIT_R + 4 + 5 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.7 });
   }
 
   /** The ghost finger on the how-to card: send the ducks in (all of them, or as many as the sign says), or touch the lily pad with the answer. */
@@ -387,6 +432,7 @@ class DuckPond implements Game {
       this.answer,
     );
     if (move === null) return null;
+    if (move === 'check') return this.check ? { tap: { on: this.check } } : null;
     // Level 13: the finger touches the water or the grass well away from the big duck, to show that anywhere will do.
     if (move === 'duck' && this.bigDuck)
       return {
@@ -400,7 +446,9 @@ class DuckPond implements Game {
     if (move === 'duck')
       return {
         tap: {
-          on: (this.plan.mode === 'bye' ? this.swimmers[0] : this.bank.find((d) => !d.resting))!,
+          on: (this.plan.mode === 'bye'
+            ? this.swimmers[0]
+            : this.bank.find((d) => !d.resting && !d.hopping))!,
           y: -46,
         },
       };
@@ -416,9 +464,13 @@ class DuckPond implements Game {
   // ----- ducks coming and going -----
 
   private spawnBank(n: number) {
-    this.bank = Array.from({ length: n }, () => {
+    this.bankCount = n;
+    this.bank = Array.from({ length: n }, (_, i) => {
       const d = new Duck();
-      onTap(d, () => void this.tapBank(d), { cooldown: 300 });
+      d.home = i;
+      onTap(d, () => void (this.swimmers.includes(d) ? this.sendBack(d) : this.tapBank(d)), {
+        cooldown: 300,
+      });
       this.ducks.addChild(d);
       return d;
     });
@@ -429,13 +481,15 @@ class DuckPond implements Game {
     });
   }
 
+  /** Each waiting duck stands at its own place in the row it was dealt in, so the row never shifts as ducks come and go. */
   private layoutBank() {
     const v = this.view;
-    this.bank.forEach((d, i) => {
-      const at = bankSpot(v, i, this.bank.length);
+    for (const d of this.bank) {
+      if (d.hopping) continue;
+      const at = bankSpot(v, d.home, this.bankCount);
       d.position.set(at.x, at.y);
       d.zIndex = 10000;
-    });
+    }
   }
 
   /** A duck hops from wherever it is into the next free spot on the pond. */
@@ -617,7 +671,7 @@ class DuckPond implements Game {
       for (let i = 0; i < p.max; i++) {
         const d = new Duck();
         // Five ducks sit 106 units apart, so each target is a 106-unit circle that stays its own.
-        d.hitArea = new Circle(0, -46, 53);
+        d.hitArea = new Circle(0, -46, POND_HIT_R);
         d.position.set(-80, enterY(this.view));
         this.ducks.addChild(d);
         onTap(d, () => void this.tapSwimmer(d), { cooldown: 300 });
@@ -637,7 +691,12 @@ class DuckPond implements Game {
       this.want = rng.int(p.min, p.max);
       this.showSign(this.want, !!p.dots);
       this.spawnBank(bankSize(p));
-      await this.ctx.instruct('duck.make', { n: plural(this.want) });
+      await this.ctx.instruct(p.stop ? 'duck.makeStop' : 'duck.make', { n: plural(this.want) });
+      if (this.check) {
+        this.check.visible = this.checkRing.visible = true;
+        this.check.scale.set(0);
+        void this.tw.to(this.check.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+      }
       this.busy = false;
       return;
     }
@@ -754,6 +813,16 @@ class DuckPond implements Game {
       }
       return;
     }
+    if (p.mode === 'make' && p.stop) {
+      // Levels 4–5: she decides when it is enough, so every duck may go in; each takes the first free place on the pond.
+      if (d.hopping) return;
+      const n = this.swimmers.length + 1;
+      d.hitArea = new Circle(0, -46, POND_HIT_R);
+      void this.swimIn(d, SLOTS[freeSlot(this.swimmers.map((w) => SLOTS.indexOf(w.pondOffset!)))]);
+      void this.ctx.say('count', { n });
+      this.refreshHint();
+      return;
+    }
     if (p.mode === 'make') {
       const n = this.swimmers.length + 1;
       void this.swimIn(d);
@@ -767,6 +836,64 @@ class DuckPond implements Game {
         await this.roundWon(n, false);
       }
     }
+  }
+
+  /** Levels 4–5: a duck tapped on the pond hops back to its place on the bank, a free undo that counts nothing. */
+  private async sendBack(d: Duck) {
+    if (this.busy || !this.plan.stop || !d.swimming || d.hopping) return;
+    this.swimmers = this.swimmers.filter((w) => w !== d);
+    this.bank.push(d);
+    d.setSwimming(false);
+    d.pondOffset = null;
+    d.hitArea = new Circle(0, -46, BANK_HIT_R);
+    d.zIndex = 10000;
+    sfx.animal('quack');
+    void this.ctx.say('duck.back', { count: plural(this.swimmers.length) });
+    this.refreshHint();
+    const at = bankSpot(this.view, d.home, this.bankCount);
+    await d.hopTo(at.x, at.y, 0.55, 110);
+    if (d.destroyed) return;
+    // A resize during the hop moved the bank: stand where its place is now.
+    const now = bankSpot(this.view, d.home, this.bankCount);
+    d.position.set(now.x, now.y);
+  }
+
+  /** Levels 4–5: "That's enough!" Just the sign's number ends the round; too few or too many is a gentle miss, counted aloud. */
+  private async pressCheck() {
+    if (this.busy || this.finished || !this.check?.visible) return;
+    this.busy = true;
+    // A duck still on its way counts once it lands.
+    while ([...this.swimmers, ...this.bank].some((d) => d.hopping)) await this.tw.wait(0.1);
+    const n = this.swimmers.length;
+    if (stopVerdict(n, this.want) === 'right') {
+      this.check.visible = this.checkRing.visible = false;
+      for (const d of [...this.bank, ...this.swimmers]) d.glow(false);
+      this.bank.forEach((b) => b.rest());
+      void this.ctx.say('duck.made', { n: plural(n) });
+      await this.roundWon(n, false);
+      return;
+    }
+    this.misses++;
+    this.wrongThisRound++;
+    sfx.boing();
+    if (n) {
+      await this.ctx.say('duck.countus');
+      await this.countAloud();
+    }
+    await this.ctx.say('duck.extra', { count: plural(n), n: this.want });
+    // From the second miss the duck to move glows (or the check, once the number is there); the question counts one hint.
+    if (this.wrongThisRound === HINT_AFTER) this.hints++;
+    this.refreshHint();
+    this.busy = false;
+  }
+
+  /** The hint at levels 4–5, kept up to date as ducks come and go: a waiting duck glows while too few swim, a swimmer while too many. */
+  private refreshHint() {
+    for (const d of [...this.bank, ...this.swimmers]) d.glow(false);
+    if (!this.plan.stop || this.wrongThisRound < HINT_AFTER) return;
+    const verdict = stopVerdict(this.swimmers.length, this.want);
+    if (verdict === 'few') (this.bank.find((d) => !d.hopping) ?? this.bank[0])?.glow(true);
+    if (verdict === 'many') this.swimmers[this.swimmers.length - 1]?.glow(true);
   }
 
   /** Bye-bye ducks: the tapped duck waves and swims off, the voice counts down, and the last one brings them all back. */
@@ -1139,7 +1266,7 @@ export const duckPond: GameModule = {
     if (p.mode === 'bye') return 'Wave bye-bye as each of five ducks swims off, then count them back';
     if (p.mode === 'friends') return 'One big duck: a touch anywhere brings a friend, up to five';
     if (p.mode === 'make')
-      return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
+      return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}${p.stop ? ', then tap the check' : ''}`;
     if (p.mode === 'howmany')
       return p.zero
         ? `How many ducks? 0 to ${p.max}, ${p.layouts?.includes('scatter') ? 'dice, rows or scattered' : 'dice or rows'}, dotted pads`

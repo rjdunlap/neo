@@ -19,8 +19,8 @@
 | 1 | Count along as 3 ducks hop in |
 | 2 | Count along as 5 ducks hop in |
 | 3 | Put 1 to 3 ducks in the pond (number and dots) |
-| 4 | Put 2 to 5 ducks in the pond (number and dots) |
-| 5 | Put 3 to 6 ducks in the pond (number only) |
+| 4 | Put 2 to 5 ducks in the pond (number and dots), then tap the check |
+| 5 | Put 3 to 6 ducks in the pond (number only), then tap the check |
 | 6 | How many ducks? 0 to 5, dice or rows, dotted pads |
 | 7 | How many ducks? 0 to 8, dice, rows or scattered, dotted pads |
 | 8 | Adding, up to 5 |

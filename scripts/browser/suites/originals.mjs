@@ -482,10 +482,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     const duckLevels =
       process.env.DUCK_LEVELS?.split(',').map(Number) ?? Array.from({ length: duckTop }, (_, i) => i + 1);
     for (const level of duckLevels.filter((n) => n >= 1 && n <= duckTop && (!only || only === 'ducks'))) {
-      if (level === 7 || level === 9 || level === duckTop) await portrait(true);
+      if (level === 5 || level === 7 || level === 9 || level === duckTop) await portrait(true);
       await launch('duck-pond', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+      const stop = await page.evaluate(() => !!neo.scene.game.plan.stop);
       await page.waitForFunction(() => !neo.scene.game.busy);
       await page.waitForFunction(() =>
         [...neo.scene.game.bank, ...neo.scene.game.swimmers].every((d) =>
@@ -613,6 +614,39 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (before !== 5) throw new Error(`Bye-bye ducks began with ${before}`);
             continue;
           }
+          if (g.plan.mode === 'make' && g.plan.stop) {
+            // Levels 4–5: she stops. Round one: one duck too many and the check is a miss (no hint yet); a duck tapped on the
+            // pond hops back for free; the check with the number wins. Later rounds: up to the number, then the check.
+            const want = g.want;
+            const until = async (n) => {
+              while (g.swimmers.length < n && !g.busy) await tapDuck();
+              await kit.until(() => [...g.swimmers, ...g.bank].every((d) => !d.hopping), 5000);
+            };
+            await kit.until(() => g.check.visible, 5000);
+            if (g.bank.length <= want) throw new Error(`Stop: a bank of ${g.bank.length} for ${want}`);
+            if (r === 0) {
+              await until(want + 1);
+              const misses = g.misses;
+              kit.tapOn(g.check);
+              await kit.sleep(300);
+              await ready();
+              if (g.misses !== misses + 1 || g.hints !== 0 || g.round !== 0)
+                throw new Error(`Stop one too many: ${g.misses} ${g.hints} round ${g.round}`);
+              const back = g.swimmers[g.swimmers.length - 1];
+              kit.tapOn(back, 0, -46);
+              await kit.sleep(150);
+              await kit.until(() => !back.hopping, 5000);
+              if (g.swimmers.length !== want || !g.bank.includes(back) || g.misses !== misses + 1)
+                throw new Error(`Stop undo: ${g.swimmers.length} of ${want}, misses ${g.misses}`);
+              const ids = g.swimmers.map((d) => d.pondOffset.join());
+              if (new Set(ids).size !== ids.length) throw new Error('Stop: two ducks share a place');
+            }
+            await until(want);
+            if (g.swimmers.length !== want) throw new Error(`Stop made ${g.swimmers.length} of ${want}`);
+            kit.tapOn(g.check);
+            await kit.until(() => g.round > r || g.finished, 15000);
+            continue;
+          }
           if (g.plan.mode === 'make') {
             const want = g.want;
             while (g.swimmers.length < want && !g.busy) await tapDuck();
@@ -705,10 +739,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await finished('duck-pond');
       assert.deepEqual(
         await score('duck-pond'),
-        mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends' ? [0, 0] : [2, 1],
+        stop
+          ? [1, 0]
+          : mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends'
+            ? [0, 0]
+            : [2, 1],
         `ducks ${level} score`,
       );
-      if (level === 7 || level === 9 || level === duckTop) await portrait(false);
+      if (level === 5 || level === 7 || level === 9 || level === duckTop) await portrait(false);
       log(
         `Duck Pond ${level} (${mode}): counting along, stopping at a number, answers, mistakes, hint, saved score and sticker passed`,
       );
