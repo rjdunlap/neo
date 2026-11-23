@@ -78,7 +78,7 @@ export const flip = (s: Surface): Surface => (s === 'stone' ? 'soil' : 'stone');
 // ---- levels ----
 
 export interface Plan {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   name: string;
 }
 export const PLANS: readonly Plan[] = [
@@ -86,15 +86,16 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Two gardens, same rain: pick stone or soil for each, then rain on both' },
   { level: 3, name: 'Change it and try again: the first rain is kept on a card to compare' },
   { level: 4, name: 'Two beds downhill: change the ground so the leaf bed gets two drops and the pond some' },
+  { level: 5, name: 'Three beds downhill: leave enough rain for every marked bed and some for the pond' },
 ];
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 4 },
+  school: { min: 3, max: 5 },
 };
 export function planFor(level: number): Plan {
-  return PLANS[Math.max(1, Math.min(4, Math.round(level))) - 1];
+  return PLANS[Math.max(1, Math.min(5, Math.round(level))) - 1];
 }
 
 export type Friend = 'frog' | 'duck' | 'turtle';
@@ -341,19 +342,21 @@ export function stickerPick(seed: number): { friend: Friend; drops: number } {
   return { friend: FRIENDS[n % 3], drops: 1 + (Math.floor(n / 3) % 2) };
 }
 
-// ---- level 4: two beds downhill ----
+// ---- levels 4 and 5: beds downhill ----
 //
-// Two sockets in a fixed chain, the top bed (0) and the low bed (1). The shower falls on the top bed; what a bed can't
-// hold runs down its fixed arrow, the top bed's into the low bed and the low bed's into the pond. One bed is marked and
-// must keep exactly two drops; the pond must get at least one. She sets each bed's ground, tries it, then checks.
+// Sockets in a fixed chain: the shower falls on the top bed (0), and what a bed can't hold runs down its fixed arrow to
+// the next bed and finally into the pond. Level 4 has two tappable beds, one marked; level 5 has three sockets on six
+// authored boards, some fixed (the tree's bed, the stone path), one or two marked, and a shower of four or six drops.
+// A marked bed must keep exactly two; the pond must get at least one. She sets the beds' ground, tries it, then checks.
 
 /** Where a drop can be: a socket's index, or the pond. */
 export type Place = number | 'pond';
-/** Each socket names where its overflow runs. Written for any chain so a longer board can reuse it. */
+/** Each socket names where its overflow runs. */
 export interface Link {
   down: Place;
 }
 export const ROUTE4: readonly Link[] = [{ down: 1 }, { down: 'pond' }];
+export const ROUTE5: readonly Link[] = [{ down: 1 }, { down: 2 }, { down: 'pond' }];
 /** One drop's trip: every place it visited in order; the last is where it is counted. */
 export interface RouteStep {
   unit: number;
@@ -399,57 +402,130 @@ export function runRoute(
   return { sockets: sockets.slice(), steps, stored, pond };
 }
 
-/** The marked bed must keep exactly two; the pond must get at least one. */
-export function meets(t: RouteTrial, bed: 0 | 1): { bed: boolean; pond: boolean } {
-  return { bed: t.stored[bed] === 2, pond: t.pond >= 1 };
+/** A socket she cannot change: the tree's bed is always soil, the stone path always stone. */
+export type Fixed = 'tree' | 'path';
+export const FIXED_SURFACE: Record<Fixed, Surface> = { tree: 'soil', path: 'stone' };
+/** The picture on a marked bed and its sign: the uphill marked bed has the leaf, a second one the flower. */
+export type Marker = 'leaf' | 'flower';
+
+/** One board: its chain, which sockets are fixed, which beds are marked, and how much rain falls (drawn on the cloud). */
+export interface RouteBoard {
+  id: string;
+  route: readonly Link[];
+  /** Per socket, top first: null for a bed she can flip, or what is fixed there. */
+  fixed: readonly (Fixed | null)[];
+  /** The marked beds, uphill first; each must keep exactly two. */
+  marked: readonly { socket: number; marker: Marker }[];
+  units: number;
 }
-const passes = (sockets: readonly Surface[], bed: 0 | 1) => {
-  const m = meets(runRoute(sockets), bed);
-  return m.bed && m.pond;
+
+/** Level 4's board: two beds, one marked with the leaf, four drops. */
+export const board4 = (bed: 0 | 1): RouteBoard => ({
+  id: bed ? 'low' : 'top',
+  route: ROUTE4,
+  fixed: [null, null],
+  marked: [{ socket: bed, marker: 'leaf' }],
+  units: SHOWER,
+});
+
+const three = (
+  id: string,
+  marked: number[],
+  fixed: (Fixed | null)[] = [null, null, null],
+  units = 6,
+): RouteBoard => ({
+  id,
+  route: ROUTE5,
+  fixed,
+  marked: marked.map((socket, i) => ({ socket, marker: i === 0 ? 'leaf' : 'flower' })),
+  units,
+});
+
+/** Level 5's six authored boards (docs/definitions/rain-garden.md#the-six-boards); A is the authored first board. */
+export const BOARDS5: readonly RouteBoard[] = [
+  three('A', [1, 2]),
+  three('B', [0, 2]),
+  three('C', [2], [null, 'tree', null]),
+  three('D', [2], [null, 'path', null]),
+  three('E', [1]),
+  three('F', [2], [null, null, null], 4),
+];
+
+export const runBoard = (sockets: readonly Surface[], board: RouteBoard) =>
+  runRoute(sockets, board.route, board.units);
+
+/** Each marked bed must keep exactly two (in `board.marked` order); the pond must get at least one. */
+export function meets(t: RouteTrial, board: RouteBoard): { beds: boolean[]; pond: boolean } {
+  return { beds: board.marked.map((m) => t.stored[m.socket] === 2), pond: t.pond >= 1 };
+}
+const passes = (sockets: readonly Surface[], board: RouteBoard) => {
+  const m = meets(runBoard(sockets, board), board);
+  return m.beds.every(Boolean) && m.pond;
 };
 export const arrangementKey = (sockets: readonly Surface[]) => sockets.join('/');
-/** All four arrangements, top bed first. */
-export const ARRANGEMENTS: readonly Surface[][] = SURFACES.flatMap((a) => SURFACES.map((b) => [a, b]));
 
-/** Every arrangement that meets both needs. */
-export function solutions(bed: 0 | 1): Surface[][] {
-  return ARRANGEMENTS.filter((a) => passes(a, bed)).map((a) => a.slice());
+/** Every arrangement of a board, top socket first and stone before soil, fixed sockets on their own ground. */
+export function arrangements(board: RouteBoard): Surface[][] {
+  let out: Surface[][] = [[]];
+  for (const f of board.fixed) {
+    const options: readonly Surface[] = f ? [FIXED_SURFACE[f]] : SURFACES;
+    out = out.flatMap((a) => options.map((x) => [...a, x]));
+  }
+  return out;
+}
+/** Level 4's four arrangements, top bed first. */
+export const ARRANGEMENTS: readonly Surface[][] = arrangements(board4(1));
+
+/** Every arrangement that meets every need. */
+export function solutions(board: RouteBoard): Surface[][] {
+  return arrangements(board).filter((a) => passes(a, board));
 }
 
 const distance = (a: readonly Surface[], b: readonly Surface[]) => a.filter((s, i) => s !== b[i]).length;
 
-/** The solution that differs from `sockets` in the fewest beds. */
-export function nearest(sockets: readonly Surface[], bed: 0 | 1): Surface[] {
+/** The solution that differs from `sockets` in the fewest beds; ties go to the first in enumeration order. */
+export function nearest(sockets: readonly Surface[], board: RouteBoard): Surface[] {
   let best: Surface[] | null = null;
-  for (const sol of solutions(bed)) if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
+  for (const sol of solutions(board))
+    if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
   return best!;
 }
 
 /** The bed a worked step flips and the glow marks: the first, from the top, that differs from `nearest`; null when it passes. */
-export function stepBed(sockets: readonly Surface[], bed: 0 | 1): number | null {
-  const goal = nearest(sockets, bed);
-  const i = sockets.findIndex((s, k) => s !== goal[k]);
+export function stepBed(sockets: readonly Surface[], board: RouteBoard): number | null {
+  const goal = nearest(sockets, board);
+  const i = sockets.findIndex((s, k) => s !== goal[k] && !board.fixed[k]);
   return i < 0 ? null : i;
 }
 
 export interface RouteRound {
-  level: 4;
-  /** The marked bed: 0 the top bed, 1 the low bed. */
-  bed: 0 | 1;
+  level: 4 | 5;
+  board: RouteBoard;
   start: Surface[];
   friend: Friend;
-  /** The cloud and the top bed on the right, the arrows running left. */
+  /** Level 4: the cloud and the top bed on the right, the arrows running left. Never at level 5. */
   mirror: boolean;
 }
 
-/** The authored board is soil over stone with the low bed marked; a seeded board starts on one of its variant's failing arrangements. */
-export function makeRoute(rng: Rng, authored: boolean): RouteRound {
-  if (authored) return { level: 4, bed: 1, start: ['soil', 'stone'], friend: 'frog', mirror: false };
-  const bed: 0 | 1 = rng.chance(0.5) ? 1 : 0;
-  const failing = ARRANGEMENTS.filter((a) => !passes(a, bed));
+/**
+ * Level 4's authored board is soil over stone with the low bed marked; level 5's is board A from soil / soil / stone.
+ * A seeded round picks its variant (level 4) or board (level 5), then one of its failing arrangements.
+ */
+export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 = 4): RouteRound {
+  if (level === 5) {
+    if (authored)
+      return { level: 5, board: BOARDS5[0], start: ['soil', 'soil', 'stone'], friend: 'frog', mirror: false };
+    const board = rng.pick(BOARDS5);
+    const failing = arrangements(board).filter((a) => !passes(a, board));
+    return { level: 5, board, start: rng.pick(failing).slice(), friend: rng.pick(FRIENDS), mirror: false };
+  }
+  if (authored)
+    return { level: 4, board: board4(1), start: ['soil', 'stone'], friend: 'frog', mirror: false };
+  const board = board4(rng.chance(0.5) ? 1 : 0);
+  const failing = ARRANGEMENTS.filter((a) => !passes(a, board));
   return {
     level: 4,
-    bed,
+    board,
     start: rng.pick(failing).slice(),
     friend: rng.pick(FRIENDS),
     mirror: rng.chance(0.5),
@@ -487,44 +563,59 @@ export function routeFresh(round: RouteRound): RouteState {
 }
 
 /** The cloud: a free, unscored trial of the current arrangement. */
-export function tryRoute(s: RouteState): RouteState {
-  return { ...s, current: runRoute(s.sockets) };
+export function tryRoute(s: RouteState, round: RouteRound): RouteState {
+  return { ...s, current: runBoard(s.sockets, round.board) };
 }
 
-/** Flip one bed's ground. Both beds and the pond go back to fresh; a lit glow moves to the bed the new arrangement still needs changed. */
-export function flipBed(s: RouteState, i: number, bed: 0 | 1): RouteState {
+/**
+ * Flip one bed's ground. Every bed and the pond go back to fresh; a lit glow moves to the bed the new arrangement still
+ * needs changed. A fixed socket never changes (the scene says why).
+ */
+export function flipBed(s: RouteState, i: number, board: RouteBoard): RouteState {
+  if (board.fixed[i]) return s;
   const sockets = s.sockets.slice();
   sockets[i] = flip(sockets[i]);
-  return { ...s, sockets, current: null, pointing: false, glow: s.glowShown ? stepBed(sockets, bed) : null };
+  return {
+    ...s,
+    sockets,
+    current: null,
+    pointing: false,
+    glow: s.glowShown ? stepBed(sockets, board) : null,
+  };
 }
 
 export type Cause = 'dry' | 'pond';
 export interface Verdict {
   result: 'pass' | 'miss' | 'again' | 'ignored';
   cause: Cause | null;
+  /** For a dry cause: the uphill-most marked bed that did not keep two (its index in `board.marked`). */
+  need: number | null;
 }
 
 /**
- * The Check: runs the shower if the arrangement hasn't settled, then judges both needs. A failed Check counts one miss,
+ * The Check: runs the shower if the arrangement hasn't settled, then judges every need. A failed Check counts one miss,
  * unless it judges the same arrangement as the last failed one. From the second miss the glow marks the bed to change,
  * counting one hint the first time it lights.
  */
 export function check(s: RouteState, round: RouteRound): { state: RouteState; verdict: Verdict } {
-  if (s.passed) return { state: s, verdict: { result: 'ignored', cause: null } };
-  const current = s.current ?? runRoute(s.sockets);
-  const m = meets(current, round.bed);
-  if (m.bed && m.pond)
+  if (s.passed) return { state: s, verdict: { result: 'ignored', cause: null, need: null } };
+  const board = round.board;
+  const current = s.current ?? runBoard(s.sockets, board);
+  const m = meets(current, board);
+  const dry = m.beds.indexOf(false);
+  if (dry < 0 && m.pond)
     return {
       state: { ...s, current, passed: true, glow: null, pointing: false },
-      verdict: { result: 'pass', cause: null },
+      verdict: { result: 'pass', cause: null, need: null },
     };
-  const cause: Cause = m.bed ? 'pond' : 'dry';
+  const cause: Cause = dry < 0 ? 'pond' : 'dry';
+  const need = dry < 0 ? null : dry;
   const k = arrangementKey(s.sockets);
-  if (k === s.checked) return { state: { ...s, current }, verdict: { result: 'again', cause } };
+  if (k === s.checked) return { state: { ...s, current }, verdict: { result: 'again', cause, need } };
   const misses = s.misses + 1;
   let { hints, glow, glowShown } = s;
   if (misses >= 2) {
-    glow = stepBed(s.sockets, round.bed);
+    glow = stepBed(s.sockets, board);
     if (!glowShown) {
       hints++;
       glowShown = true;
@@ -532,7 +623,7 @@ export function check(s: RouteState, round: RouteRound): { state: RouteState; ve
   }
   return {
     state: { ...s, current, checked: k, misses, hints, glow, glowShown },
-    verdict: { result: 'miss', cause },
+    verdict: { result: 'miss', cause, need },
   };
 }
 
@@ -541,13 +632,13 @@ export type RouteHint = { kind: 'flip'; bed: number } | { kind: 'check' };
 /** Show me: the pet flips one bed toward `nearest` (one hint), or, when it already passes, points at the Check (one hint if newly pointed). */
 export function routeHint(s: RouteState, round: RouteRound): { state: RouteState; hint: RouteHint } {
   if (s.passed) return { state: s, hint: { kind: 'check' } };
-  const i = stepBed(s.sockets, round.bed);
+  const i = stepBed(s.sockets, round.board);
   if (i === null)
     return {
       state: { ...s, pointing: true, hints: s.pointing ? s.hints : s.hints + 1 },
       hint: { kind: 'check' },
     };
-  return { state: flipBed({ ...s, hints: s.hints + 1 }, i, round.bed), hint: { kind: 'flip', bed: i } };
+  return { state: flipBed({ ...s, hints: s.hints + 1 }, i, round.board), hint: { kind: 'flip', bed: i } };
 }
 
 /** Start again: the starting arrangement from fresh. Misses and hints already made keep counting; the glow follows the new arrangement. */
@@ -558,7 +649,7 @@ export function routeRestart(s: RouteState, round: RouteRound): RouteState {
     sockets,
     current: null,
     pointing: false,
-    glow: s.glowShown ? stepBed(sockets, round.bed) : null,
+    glow: s.glowShown ? stepBed(sockets, round.board) : null,
   };
 }
 
@@ -567,24 +658,46 @@ export function routeNext(
   s: RouteState,
   round: RouteRound,
 ): { kind: 'cloud' } | { kind: 'bed'; bed: number } | { kind: 'check' } {
-  const i = stepBed(s.sockets, round.bed);
+  const i = stepBed(s.sockets, round.board);
   const moved = arrangementKey(s.sockets) !== arrangementKey(round.start);
   if (i !== null && (s.current || moved)) return { kind: 'bed', bed: i };
   if (!s.current) return { kind: 'cloud' };
   return { kind: 'check' };
 }
 
+const POSITION = ['top', 'middle', 'low'] as const;
+
+/**
+ * Level 5's narration of a settled run, as clip ids said in turn: one per socket from the top while water reaches it
+ * (the first socket it never reached is named once and the rest skipped), then the pond.
+ */
+export function narration(t: RouteTrial, board: RouteBoard): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < t.sockets.length; i++) {
+    const f = board.fixed[i];
+    if (!t.steps.some((st) => st.path.includes(i))) {
+      out.push(f ? `rain.${f}.none` : `rain.bed.${POSITION[i]}.none`);
+      break;
+    }
+    if (f === 'tree') out.push('rain.tree.kept');
+    else if (f === 'path') out.push('rain.path.past');
+    else out.push(`rain.bed.${POSITION[i]}.${t.sockets[i] === 'soil' ? 'kept' : 'stone'}`);
+  }
+  out.push(`rain.pond.${t.pond}`);
+  return out;
+}
+
 export interface RouteLayout {
   cloud: Box;
-  /** The top bed, then the low bed, each with its two pockets. */
+  /** Each bed from the top, with its two pockets. */
   beds: { patch: Box; pockets: Box[] }[];
-  /** Top bed to low bed, then low bed to the pond. */
+  /** Out of each bed: to the next one, and from the last to the pond. */
   arrows: { x1: number; y1: number; x2: number; y2: number }[];
   pond: Box;
   slots: Box[];
   friend: { x: number; y: number };
-  /** The marked bed's need sign and the pond's: pictures, not targets. */
-  bedSign: Box;
+  /** One need sign per marked bed (in `board.marked` order) and the pond's: pictures, not targets. */
+  bedSigns: Box[];
   pondSign: Box;
   check: Box;
 }
@@ -592,6 +705,7 @@ export interface RouteLayout {
 export const CHECK = 120,
   BED_W = 300,
   BED_H = 150,
+  BED5_H = 130,
   SIGN_W = 140,
   SIGN_H = 110;
 
@@ -600,19 +714,14 @@ export const CHECK = 120,
  * 768-wide screen (mirroring is ignored: it would put the pond beside the guide) and hung up from the bottom edge. The beds step right, so the pond sits right of the guide corner; the
  * need signs stand beside what they name, in the free space left of the low bed, right of the top bed and left of the pond.
  */
-function uprightRouteLayout(w: number, h: number, bed: 0 | 1): RouteLayout | null {
+function uprightRouteLayout(w: number, h: number, bed: number): RouteLayout | null {
   if (w < UW - 1 || h < UH - 1) return null;
   const ox = (w - UW) / 2,
     oy = h - UH;
   const low = board(ox + 548, oy + 650, BED_W, BED_H, ox + 548, oy + 840, 240, 56, 58, 1);
   const tx = ox + 220,
     ty = oy + 470;
-  const top = {
-    patch: box(tx, ty, BED_W, BED_H),
-    pockets: [-1, 1].map((k) =>
-      box(tx + k * BED_W * 0.22, ty + BED_H * 0.08, Math.min(96, BED_W * 0.27), 60),
-    ),
-  };
+  const top = { patch: box(tx, ty, BED_W, BED_H), pockets: pocketsOf(tx, ty, BED_W, BED_H) };
   const edge = tx + BED_W / 2;
   const arrow1 = { x1: edge - 10, y1: ty - 16, x2: edge + 30, y2: low.patch.y - BED_H / 2 - 10 };
   return {
@@ -622,22 +731,123 @@ function uprightRouteLayout(w: number, h: number, bed: 0 | 1): RouteLayout | nul
     pond: low.pond,
     slots: low.slots,
     friend: low.friend,
-    bedSign: bed === 1 ? box(ox + 220, oy + 650, SIGN_W, SIGN_H) : box(ox + 500, oy + 450, SIGN_W, SIGN_H),
+    bedSigns: [bed === 1 ? box(ox + 220, oy + 650, SIGN_W, SIGN_H) : box(ox + 500, oy + 450, SIGN_W, SIGN_H)],
     pondSign: box(ox + 290, oy + 840, SIGN_W, SIGN_H),
     check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
   };
 }
 
+const pocketsOf = (px: number, py: number, pw: number, ph: number) =>
+  [-1, 1].map((k) => box(px + k * pw * 0.22, py + ph * 0.08, Math.min(96, pw * 0.27), 60));
+
 /**
- * Level 4's board in the 1024×768 frame: the cloud over the top bed, the low bed one terrace down and across, the pond
- * at the bottom of the downhill side. Mirroring reflects it about x = 525 so the pond stays clear of the pet.
+ * Level 5's three beds, in frame coordinates measured in the definition (centers): the cloud over the top bed, each bed
+ * lower than the one before, the pond with six slots at the bottom, a sign beside each bed (used when it is marked).
+ * `last` is the way the low bed's arrow runs to the pond.
+ */
+function threeBeds(
+  ox: number,
+  oy: number,
+  w: number,
+  cloud: [number, number],
+  beds: [number, number][],
+  pond: [number, number],
+  signs: [number, number][],
+  pondSign: [number, number],
+  last: 1 | -1,
+  board: RouteBoard,
+): RouteLayout {
+  const at = ([x, y]: [number, number], bw: number, bh: number) => box(ox + x, oy + y, bw, bh);
+  const patches = beds.map((b) => at(b, BED_W, BED5_H));
+  const tray = at(pond, 400, 56 + 30);
+  const slots = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5].map((k) => box(tray.x + k * 62, tray.y, 56, 56));
+  const arrows = patches.map((p, i) => {
+    const next = patches[i + 1];
+    const dir = next ? Math.sign(next.x - p.x) || 1 : last;
+    const edge = p.x + (dir * p.w) / 2;
+    if (next) return { x1: edge - dir * 10, y1: p.y - 16, x2: edge + dir * 30, y2: next.y - next.h / 2 - 10 };
+    // Into the pond's near end when the pond lies beyond the bed, else straight down just inside the bed's edge.
+    const near = tray.x - dir * (tray.w / 2 - 30);
+    const x2 = dir * (near - edge) > 0 ? near : edge - dir * 20;
+    return { x1: edge - dir * 10, y1: p.y + p.h / 2 - 16, x2, y2: tray.y - tray.h / 2 - 6 };
+  });
+  const a = arrows[arrows.length - 1];
+  const friend = {
+    x: last * (a.x2 - tray.x) > 0 ? tray.x - last * (tray.w / 2 - 40) : tray.x + last * (tray.w / 2 - 40),
+    y: tray.y - tray.h / 2 - 34,
+  };
+  return {
+    cloud: at(cloud, 260, 140),
+    beds: patches.map((p) => ({ patch: p, pockets: pocketsOf(p.x, p.y, p.w, p.h) })),
+    arrows,
+    pond: tray,
+    slots,
+    friend,
+    bedSigns: board.marked.map((m) => at(signs[m.socket], SIGN_W, SIGN_H)),
+    pondSign: at(pondSign, SIGN_W, SIGN_H),
+    check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
+  };
+}
+
+/**
+ * The board of levels 4 and 5. Level 4 sits in the 1024×768 frame: the cloud over the top bed, the low bed one terrace
+ * down and across, the pond at the bottom of the downhill side; mirroring reflects it about x = 525 so the pond stays
+ * clear of the pet. Level 5 (a three-socket board) is a staircase descending right, or a zig-zag upright, never mirrored.
+ * Null when a view cannot hold the board without shrinking a target.
  */
 export function routeLayout(
   view: { w: number; h: number; upright?: true },
-  bed: 0 | 1,
+  b: RouteBoard,
   mirror = false,
 ): RouteLayout | null {
   const { w, h } = view;
+  if (b.route.length === 3) {
+    if (view.upright) {
+      if (w < UW - 1 || h < UH - 1) return null;
+      return threeBeds(
+        (w - UW) / 2,
+        h - UH,
+        w,
+        [260, 200],
+        [
+          [260, 350],
+          [548, 505],
+          [260, 660],
+        ],
+        [548, 862],
+        [
+          [568, 350],
+          [220, 505],
+          [568, 660],
+        ],
+        [262, 862],
+        1,
+        b,
+      );
+    }
+    if (w < FW - 1 || h < FH - 1) return null;
+    return threeBeds(
+      (w - FW) / 2,
+      (h - FH) / 2,
+      w,
+      [270, 115],
+      [
+        [270, 260],
+        [530, 405],
+        [790, 550],
+      ],
+      [770, 700],
+      [
+        [570, 250],
+        [840, 390],
+        [500, 560],
+      ],
+      [470, 700],
+      1,
+      b,
+    );
+  }
+  const bed = b.marked[0].socket;
   if (view.upright) return uprightRouteLayout(w, h, bed);
   if (w < FW - 1 || h < FH - 1) return null;
   const ox = (w - FW) / 2,
@@ -647,12 +857,7 @@ export function routeLayout(
   const low = board(mx(520), oy + 510, BED_W, BED_H, mx(760), oy + 680, 240, 56, 58, dir);
   const tx = mx(300),
     ty = oy + 320;
-  const top = {
-    patch: box(tx, ty, BED_W, BED_H),
-    pockets: [-1, 1].map((k) =>
-      box(tx + k * BED_W * 0.22, ty + BED_H * 0.08, Math.min(96, BED_W * 0.27), 60),
-    ),
-  };
+  const top = { patch: box(tx, ty, BED_W, BED_H), pockets: pocketsOf(tx, ty, BED_W, BED_H) };
   const edge = tx + (dir * BED_W) / 2;
   const arrow1 = { x1: edge - dir * 10, y1: ty - 16, x2: edge + dir * 30, y2: low.patch.y - BED_H / 2 - 10 };
   const bedSign = bed === 1 ? box(mx(200), oy + 510, SIGN_W, SIGN_H) : box(mx(570), oy + 300, SIGN_W, SIGN_H);
@@ -663,7 +868,7 @@ export function routeLayout(
     pond: low.pond,
     slots: low.slots,
     friend: low.friend,
-    bedSign,
+    bedSigns: [bedSign],
     pondSign: box(mx(920), oy + 540, SIGN_W, SIGN_H),
     check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
   };
