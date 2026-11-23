@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: "Watch a little story, then put a picture in a friend's thought bubble: what the friend wants, thinks or why they did something; later, what two friends each think.",
+  goal: "Watch a little story, then put a picture in a friend's thought bubble: what the friend wants, thinks or why they did something.",
   steps: [
     'Watch the story; the replay button plays it again.',
     { from: 1, to: 1, text: 'Drag what the friend is reaching for into the bubble.' },
