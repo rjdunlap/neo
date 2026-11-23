@@ -78,9 +78,7 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`critter-sort` and `critter-crossing` open to preschool** (two small band openings, one session each or together: new levels tier plus the registry and lands tests): Critter Sort's preschool row with `order [6, 1]` on its built three-critter entry; Critter Crossing's level 1 for preschool now that its visible "not" entry exists. Each needs the band row, how-to and voice lines and the saves audit. [Critter Sort dive](deep-dives/critter-sort.md#build-slices-in-order), [Critter Crossing dive](deep-dives/critter-crossing.md#build-slices-in-order)
 
-- **`day-by-day` level 9, Three little skies** (a preschool entry; new levels plus the band, land and entry tests): three pictured observations matched to sunny, cloudy or rainy with the existing buttons, under a truthful observations title and with no weekday claim. Expected files: `src/games/day-by-day/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/day-by-day.md#build-slices-in-order)
 
 - **`jelly-drums` sound sets and stages** (all its bands; existing-game content: typecheck, rule tests that every set maps steps 0–4 to the same five pitches, one portrait screenshot per set): a round's instrument comes from the seed (marimba, bells, a soft held tone) with a stage tinted to match. Expected files: `src/games/jelly-drums/{logic,index}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/jelly-drums.md#build-slices-in-order)
 

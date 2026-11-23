@@ -1,6 +1,6 @@
 # Word Glue, levels 8–9: Suffix Workshop (definition)
 
-Defined 2026-11-23 as slice VW4 of the [vocabulary-and-word-parts study](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order), from its [audience row](../deep-dives/subjects/vocabulary-word-parts.md#what-people-can-do-and-an-answer-for-every-audience) for 9–12 ("join a word to a meaning tile (a person silhouette for 'someone who', an empty cup for 'without'); the voice says the whole word (painter, careless)") and its [candidates row](../deep-dives/subjects/vocabulary-word-parts.md#candidates-and-fit) VW4. The study makes Suffix Workshop a Word Glue rung, so it extends the built game ([levels 1–3](word-glue.md), [levels 5–6](word-glue-5-6.md)) and the defined [level 7](word-glue-7.md). It keeps the game's art, shelf, join and tap input, speech pattern and accounting unless this page says otherwise. **Level 8 built 2026-11-23** (batch `word-glue 5`, [game page](../games/word-glue.md#design-notes)): school is `{ min: 3, max: 8, order: [3, 5, 6, 7, 8] }` until level 9 is built, and the join is drag-only, as at level 3, because a tap that flew an action in would make hearing a wrong action a miss. Level 9 is not built.
+Defined 2026-11-23 as slice VW4 of the [vocabulary-and-word-parts study](../deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order), from its [audience row](../deep-dives/subjects/vocabulary-word-parts.md#what-people-can-do-and-an-answer-for-every-audience) for 9–12 ("join a word to a meaning tile (a person silhouette for 'someone who', an empty cup for 'without'); the voice says the whole word (painter, careless)") and its [candidates row](../deep-dives/subjects/vocabulary-word-parts.md#candidates-and-fit) VW4. The study makes Suffix Workshop a Word Glue rung, so it extends the built game ([levels 1–3](word-glue.md), [levels 5–6](word-glue-5-6.md)) and the defined [level 7](word-glue-7.md). It keeps the game's art, shelf, join and tap input, speech pattern and accounting unless this page says otherwise. **Level 8 built 2026-11-23** (batch `word-glue 5`, [game page](../games/word-glue.md#design-notes)): the join is drag-only, as at level 3, so hearing an action is free. **Level 9 built 2026-11-23** (batch `word-glue 6`, [PR #2066](https://github.com/rjdunlap/neo/pull/2066)). School plays `[3, 5, 6, 7, 8, 9]`.
 
 **Numbering.** The study's candidates row called this rung "Word Glue 7–8". Level 7 is *Name the new thing* (VW3), so Suffix Workshop takes **level 8, *Someone who*** (-er) and **level 9, *Full of or without*** (-ful and -less).
 
@@ -221,7 +221,7 @@ Each batch is the new-interaction tier, after level 7 is built.
    - `fingerdemo` at 8;
    - the doers' capture strip;
    - `npm run build`.
-2. **Batch `word-glue 6`: level 9.** In progress on `codex/neo-ready-word-glue-9`. It builds `ENDINGS`, the cups, the base tiles and things, speech, how-to, the ghost finger and the tests.
+2. **Batch `word-glue 6`: level 9.** **Built 2026-11-23** in [PR #2066](https://github.com/rjdunlap/neo/pull/2066). Includes the five spoken word pairs, meaning cups, pictured changes, how-to, ghost finger and tests.
 
    **Checks:**
    - typecheck and unit tests;

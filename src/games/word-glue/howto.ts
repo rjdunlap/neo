@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Hear how two whole words make the name of a thing.',
+  goal: 'Hear how the parts of a word give it meaning.',
   steps: [
     {
       from: 4,
@@ -25,6 +25,12 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Listen for the word, then join its action to the person.' },
     { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
     { from: 8, to: 8, text: 'Touch an action or the person to hear it.' },
+    { from: 9, to: 9, text: 'Listen to how the word ends, then tap the full cup or the empty cup.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'Touch a cup and slide off to hear its meaning. Tap the thing to hear the question again.',
+    },
     {
       from: 5,
       to: 5,
@@ -37,8 +43,19 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'Four pairs of pictures have gone to the shelf.' },
     { from: 7, to: 7, text: 'Five new things are named and have come alive.' },
     { from: 8, to: 8, text: 'Five words are made and their someones have come alive.' },
+    { from: 9, to: 9, text: 'Five words are made and their things have come alive.' },
   ],
   note: [
+    {
+      from: 9,
+      to: 9,
+      text: 'The pet says the whole word and its meaning in English. Fruitful means full of fruit here, and can also mean producing a lot.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'After two wrong taps the right cup glows and counts as one hint. A further wrong tap plays the right answer.',
+    },
     {
       from: 1,
       to: 1,
