@@ -1,0 +1,5 @@
+# 2026-11-23 — Rain Garden level 5, three beds downhill (PR #2069)
+
+**Changed:** `rain-garden` level 5 (three beds, six authored boards A to F, 4- or 6-drop showers, chained narration, upright and landscape layouts; 21 new voice lines rendered to clips); level 4 folded into the same board model (`RouteBoard`, `board4`) with unchanged behaviour; school band now levels 3–5.
+**Ran:** typecheck; `npm test` (504 files, all pass); `npm run build`; `BROWSER_SUITE=raingarden FROM_LEVEL=5` on an upright phone (390×844), board A: try, wrong Check (1 miss), screenshot, Show me flips the top bed (1 hint), low bed flipped, Check passes, saved 1/1: pass; `BROWSER_SUITE=fingerdemo FINGER_ONLY=rain-garden FINGER_LEVELS=5`: pass (27.5 s).
+**Not run:** browser play of levels 1–4 (unchanged evidence reused); offline.
