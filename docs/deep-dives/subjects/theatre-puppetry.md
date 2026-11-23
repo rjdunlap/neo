@@ -97,7 +97,7 @@ I read [GAMES](../../GAMES.md) for Story Steps (Story Theater 12–13), Movie Ni
 | **TP3 Director's chair** · level 7 | Order cue cards for two puppets, then perform the show; change one and compare | Choices and their effect on an audience (TH:Re7.a.2–3) | U | M | Cue cards; a diff against Cue Studio before definition (decision 5) |
 | **TP4 Yes, and** · level 8, M mode | Accept-and-add reply cards in a three-turn scene with the companion | Improvised co-construction (Hainselin 2018, preliminary) | M, U | S–M | Authored scene openers and reply sets; a rule test that every opener has at least two accepting replies |
 | **TP5 Puppet-show card** · grown-ups' page | A sock puppet and a three-scene home show; printable story cards | Off-screen pretend together | G page | S | Plain HTML; sources listed on the card |
-| **TP6 Shadow Play** · Lantern Lake, 13+ | Place cut-outs so the shadow matches a silhouette | Position, shape and light (the notebook's Shadow Stage requirement) | G, M | M | A simplified light model in `logic.ts`; defined 2026-11-23 ([definition](../../definitions/shadow-play.md), PR #2027; two build batches queued, and it adopts the review's turn gesture). The [Spark AI Games review](../../reviews/SPARK-AI-GAMES.md#p5-turn-the-shadow-the-interaction-for-an-existing-sketch-m) proposes the gesture: turn a mobile of flat plates on one axis until the shadows join |
+| **TP6 Shadow Play** · Lantern Lake, 13+ | Place cut-outs so the shadow matches a silhouette | Position, shape and light (the notebook's Shadow Stage requirement) | G, M | M | A simplified light model in `logic.ts`; defined 2026-11-23 ([definition](../../definitions/shadow-play.md), PR #2027; levels 1–2 built, PR #2035, levels 3–4 queued as batch `shadow-play 2`; it adopts the review's turn gesture). The [Spark AI Games review](../../reviews/SPARK-AI-GAMES.md#p5-turn-the-shadow-the-interaction-for-an-existing-sketch-m) proposes the gesture: turn a mobile of flat plates on one axis until the shadows join |
 | **TP7 Read it in a voice** · Story Weaver mode | The reader takes her tile story in a chosen puppet voice | Voice as a choice about a story (TH:Cr1.c.2) | S | S | Puppet voices (TP1); handed to the Story Weaver dive |
 | **Shadow Stage** (notebook, 4–8) | Move a lamp or prop until the shadow fits; the puppet dances | Light and shape | K, S | M | Stays in the notebook until TP6's light model is built (defined 2026-11-23); then a Puppet Stage level or a Shadow Play school rung |
 
@@ -159,7 +159,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 4. **Build Puppet Stage 4–6** (new levels on an existing interaction, plus the premiere). **Built 2026-11-03** ([PR #1159](https://github.com/rjdunlap/neo/pull/1159)).
 5. **Puppet-show card** (grown-ups' page, plain HTML, sources on the card): **defined 2026-11-17**, [definition](../../definitions/talk-cards.md); build 2; no cutting or printed story cards.
 6. **Define Director's chair (level 7)** after a Cue Studio diff (decision 5); **define Yes, and (level 8)** after it.
-7. **Shadow Play** (Lantern Lake, 13+) defined 2026-11-23 ([definition](../../definitions/shadow-play.md), PR #2027; build queued as `shadow-play 1` and `2`); **Read it in a voice** to the Story Weaver dive.
+7. **Shadow Play** (Lantern Lake, 13+) defined 2026-11-23 ([definition](../../definitions/shadow-play.md), PR #2027; levels 1–2 built in PR #2035, levels 3–4 queued as `shadow-play 2`); **Read it in a voice** to the Story Weaver dive.
 
 ## What was built and what ran
 

@@ -143,6 +143,7 @@ import { HOW_TO as secretCodeHowTo } from '../games/secret-code/howto.ts';
 import { HOW_TO as seedTravelersHowTo } from '../games/seed-travelers/howto.ts';
 import { HOW_TO as seesawBalanceHowTo } from '../games/seesaw-balance/howto.ts';
 import { HOW_TO as senseDetectiveHowTo } from '../games/sense-detective/howto.ts';
+import { HOW_TO as shadowPlayHowTo } from '../games/shadow-play/howto.ts';
 import { HOW_TO as shapeBuddiesHowTo } from '../games/shape-buddies/howto.ts';
 import { HOW_TO as shapeSorterHowTo } from '../games/shape-sorter/howto.ts';
 import { HOW_TO as shellRowsHowTo } from '../games/shell-rows/howto.ts';
@@ -346,6 +347,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'seed-travelers': seedTravelersHowTo,
   'seesaw-balance': seesawBalanceHowTo,
   'sense-detective': senseDetectiveHowTo,
+  'shadow-play': shadowPlayHowTo,
   'shape-buddies': shapeBuddiesHowTo,
   'shape-sorter': shapeSorterHowTo,
   'shell-rows': shellRowsHowTo,

@@ -46,6 +46,7 @@ import { comebackLayout } from './species-comeback';
 import { makeRound as makeComeback, PLANS as comebackPlans } from './species-comeback/logic';
 import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
+import { shadowLayout } from './shadow-play/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { tilePairsLayout } from './tile-pairs';
@@ -253,6 +254,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ...l.actions.map((r): Size => ['button', side(r)]),
     ];
   },
+  'shadow-play': () => {
+    const l = shadowLayout(v);
+    return [
+      ...l.rails.map((r): Size => ['rail row', side(r.row)]),
+      ['button', side(l.help)],
+      ['button', side(l.light)],
+    ];
+  },
   'truth-bridge': () => {
     const l = truthBridgeLayout(v, 3, true);
     return [
@@ -321,6 +330,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'species-comeback': { px: 44.7, what: 'turtle card' },
   'sudoku-garden': { px: 42.7, what: 'bed square' },
   'sum-crates': { px: 50.8, what: 'tray fruit' },
+  'shadow-play': { px: 50.8, what: 'rail row' },
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },
