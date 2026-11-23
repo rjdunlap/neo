@@ -2,7 +2,10 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
-/** A tiny picture story, then a friend's empty thought bubble: what she wants (1), where he will look (2), why she did it (3). */
+/**
+ * A tiny picture story, then a friend's empty thought bubble: what she wants (1), where he will look (2), why she did it (3),
+ * and two friends with a bubble each who saw different things (4).
+ */
 
 export type Thing =
   'apple' | 'ball' | 'kite' | 'cup' | 'book' | 'drum' | 'boat' | 'balloon' | 'teddy' | 'shell';
@@ -278,6 +281,163 @@ export const FIRST_LOOK: readonly LookStory[] = [
   lookStory(tpl('bunny-book'), 'away', 'blueBasket', 'shelf'),
 ];
 
+// ---------------------------------------------------------------- level 4
+
+/** Two friends share one thing; it moves twice. The second mover is always a friend, so someone can show where it went. */
+export interface TwoTemplate {
+  id: string;
+  friends: [Friend, Friend];
+  thing: Thing;
+  movers: [Who, Friend];
+}
+
+/** Every move is kind: tidying, making room, a puppy, the wind. At most three critters share the stage. */
+export const TWO_TEMPLATES: readonly TwoTemplate[] = [
+  { id: 'ball-tidy', friends: ['bear', 'bunny'], thing: 'ball', movers: ['duck', 'duck'] },
+  { id: 'shell-wind', friends: ['cat', 'pig'], thing: 'shell', movers: ['wind', 'duck'] },
+  { id: 'teddy-puppy', friends: ['duck', 'cat'], thing: 'teddy', movers: ['dog', 'dog'] },
+  { id: 'drum-room', friends: ['pig', 'duck'], thing: 'drum', movers: ['bunny', 'bunny'] },
+  { id: 'book-dust', friends: ['bunny', 'dog'], thing: 'book', movers: ['cat', 'cat'] },
+  { id: 'apple-safe', friends: ['bear', 'pig'], thing: 'apple', movers: ['duck', 'duck'] },
+];
+
+/**
+ * Which moves each friend saw. A friend who does not see a move has gone out of the door (the window is not used here).
+ * `oneMove`: one saw move 1 then went out, the other was out for both. `bothMoves`: one stayed for both, the other was out
+ * for both. `lastMove`: one stayed for both, the other saw move 1 then went out. `sameMiddle`: both saw move 1, then went
+ * out together. `sameStart`: both went out before move 1.
+ */
+export type TwoPattern = 'oneMove' | 'bothMoves' | 'lastMove' | 'sameMiddle' | 'sameStart';
+export const DIFFERENT_PATTERNS: readonly TwoPattern[] = ['oneMove', 'bothMoves', 'lastMove'];
+export const SAME_PATTERNS: readonly TwoPattern[] = ['sameMiddle', 'sameStart'];
+export const TWO_PATTERNS: readonly TwoPattern[] = [...DIFFERENT_PATTERNS, ...SAME_PATTERNS];
+export const isDifferent = (p: TwoPattern) => DIFFERENT_PATTERNS.includes(p);
+
+export interface TwoStory {
+  template: TwoTemplate;
+  pattern: TwoPattern;
+  /** Which of the two friends saw more (it has bubble 0 when this is 0). In a same story neither did. */
+  more: 0 | 1;
+  /** Where it was put, where move 1 took it, where move 2 took it: the three places, all different. */
+  start: Place;
+  middle: Place;
+  actual: Place;
+  events: StoryEvent[];
+}
+
+export function twoStory(
+  template: TwoTemplate,
+  pattern: TwoPattern,
+  more: 0 | 1,
+  [start, middle, actual]: readonly [Place, Place, Place],
+): TwoStory {
+  const [f0, f1] = template.friends;
+  const m = template.friends[more];
+  const o = template.friends[1 - more];
+  const thing = template.thing;
+  const put: Action = { kind: 'put', who: f0, thing, to: start };
+  const move1: Action = { kind: 'move', who: template.movers[0], thing, from: start, to: middle };
+  const move2: Action = { kind: 'move', who: template.movers[1], thing, from: middle, to: actual };
+  const out = (who: Friend): Action => ({ kind: 'leave', who, to: 'outside' });
+  const back = (who: Friend): Action => ({ kind: 'back', who });
+  // Everyone who went out comes back after move 2, in the order they left.
+  const actions: Record<TwoPattern, Action[]> = {
+    oneMove: [put, out(o), move1, out(m), move2, back(o), back(m)],
+    bothMoves: [put, out(o), move1, move2, back(o)],
+    lastMove: [put, move1, out(o), move2, back(o)],
+    sameMiddle: [put, move1, out(f0), out(f1), move2, back(f0), back(f1)],
+    sameStart: [put, out(f0), out(f1), move1, move2, back(f0), back(f1)],
+  };
+  const cast = [...new Set<Friend>([f0, f1, ...template.movers.filter((w): w is Friend => w !== 'wind')])];
+  return { template, pattern, more, start, middle, actual, events: compile(cast, actions[pattern]) };
+}
+
+/** Where each friend thinks the thing is, read from the event list: bubble 0 is `friends[0]`'s. */
+export const answersOf = (s: TwoStory): [Place, Place] => [
+  believedPlace(s.events, s.template.friends[0], s.template.thing)!,
+  believedPlace(s.events, s.template.friends[1], s.template.thing)!,
+];
+
+/** The index of the last put or move of the thing that `who` saw: the beat a miss replays. */
+export function lastSeen(events: readonly StoryEvent[], who: Friend, thing: Thing): number {
+  let at = -1;
+  events.forEach((e, i) => {
+    if ((e.kind === 'put' || e.kind === 'move') && e.thing === thing && e.saw.includes(who)) at = i;
+  });
+  return at;
+}
+
+/** A narrated beat: its voice line, and the event it plays (null for a friend who stays behind, which moves nothing). */
+export interface Beat {
+  line: string;
+  event: number | null;
+  /** The friend a stay beat is about. */
+  who?: Friend;
+}
+
+/** The story beat by beat. The template owns each line; the pattern only says which beats play and in what order. */
+export function beatsOf(s: TwoStory): Beat[] {
+  const id = `thought.two.${s.template.id}`;
+  const inRoom = new Set<Friend>(s.template.friends);
+  const beats: Beat[] = [];
+  let moves = 0;
+  let stayed = false;
+  s.events.forEach((e, i) => {
+    if (e.kind === 'put') beats.push({ line: `${id}.put`, event: i });
+    else if (e.kind === 'move') beats.push({ line: `${id}.move${++moves}`, event: i });
+    else if (e.kind === 'back') beats.push({ line: `${id}.back.${e.who}`, event: i });
+    else {
+      beats.push({ line: `${id}.out.${e.who}`, event: i });
+      inRoom.delete(e.who);
+      // One friend stays to watch: said once, when the other has gone and this one is not next out of the door.
+      const next = s.events[i + 1];
+      const [left] = [...inRoom];
+      if (!stayed && inRoom.size === 1 && !(next.kind === 'leave' && next.who === left)) {
+        stayed = true;
+        beats.push({ line: `${id}.stay.${left}`, event: null, who: left });
+      }
+    }
+  });
+  return beats;
+}
+
+const two = (id: string) => TWO_TEMPLATES.find((t) => t.id === id)!;
+
+/**
+ * The authored first round: the same place is right for different friends for different reasons, the two bubbles agree
+ * once, and the place where it really is is right once.
+ */
+export const FIRST_TWO: readonly TwoStory[] = [
+  twoStory(two('ball-tidy'), 'oneMove', 0, ['redBox', 'blueBasket', 'shelf']),
+  twoStory(two('drum-room'), 'sameStart', 0, ['shelf', 'redBox', 'blueBasket']),
+  twoStory(two('book-dust'), 'bothMoves', 1, ['blueBasket', 'shelf', 'redBox']),
+];
+
+/**
+ * A dealt round of three: two different stories with two different patterns, the friend who saw more on the left in one
+ * and on the right in the other, and a third story of any pattern. So every habit that ignores who was in the room
+ * (always the start, the middle or the real place, or copying one bubble into the other) costs at least two misses.
+ */
+export function twoRound(rng: Rng): TwoStory[] {
+  const tpls = rng.shuffle([...TWO_TEMPLATES]).slice(0, 3);
+  const [a, b] = rng.shuffle([...DIFFERENT_PATTERNS]);
+  const [sideA, sideB] = rng.shuffle<0 | 1>([0, 1]);
+  const picks = rng.shuffle<[TwoPattern, 0 | 1]>([
+    [a, sideA],
+    [b, sideB],
+    [rng.pick(TWO_PATTERNS), rng.pick([0, 1] as const)],
+  ]);
+  return tpls.map((t, i) => {
+    const [pattern, more] = picks[i];
+    return twoStory(
+      t,
+      pattern,
+      isDifferent(pattern) ? more : 0,
+      rng.shuffle([...PLACES]) as [Place, Place, Place],
+    );
+  });
+}
+
 // ---------------------------------------------------------------- level 3
 
 /** Where a region sits in the stage: the door side, the back wall, the window, beside the friend, the floor on the right. */
@@ -421,30 +581,34 @@ export const regionRect = (r: Region) => SLOTS[r.slot];
 export type Story =
   | { level: 1; want: WantStory; cards: Thing[] }
   | { level: 2; look: LookStory; cards: Place[] }
-  | { level: 3; why: WhyStory; cards: Reason[] };
+  | { level: 3; why: WhyStory; cards: Reason[] }
+  | { level: 4; two: TwoStory; cards: Place[] };
 
 export const STORIES_PER_ROUND = 3;
 
 export interface LevelPlan {
-  level: 1 | 2 | 3;
+  level: 1 | 2 | 3 | 4;
   name: string;
 }
 export const PLANS: readonly LevelPlan[] = [
   { level: 1, name: 'What does she want? A friend reaches for one of three things' },
   { level: 2, name: 'Where will he look? Was the friend there when his thing moved?' },
   { level: 3, name: 'How do we know? The reason, then where the picture shows it' },
+  { level: 4, name: 'Two bubbles (about 9 and up): two friends saw different things' },
 ];
 
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 3 },
+  school: { min: 1, max: 4 },
 };
-export const planFor = (level: number): LevelPlan => PLANS[Math.max(1, Math.min(3, Math.round(level))) - 1];
+export const planFor = (level: number): LevelPlan =>
+  PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
-/** The right card for a story. */
-export function answerOf(s: Story): Thing | Place | Reason {
+/** The right card for a story; at level 4, for one of its two bubbles. */
+export function answerOf(s: Story, bubble = 0): Thing | Place | Reason {
   if (s.level === 1) return s.want.cued;
   if (s.level === 2) return lookAnswer(s.look);
+  if (s.level === 4) return answersOf(s.two)[bubble];
   return s.why.supported;
 }
 
@@ -459,6 +623,7 @@ function placed<T>(answer: T, all: readonly T[], story: number): T[] {
 /**
  * Three stories from the level's pool. The first round at each level is authored (the first three, in order, cards in table
  * order); after it the seed picks the stories and their order, the card order and, at level 2, away or watching and the places.
+ * Level 4 deals `twoRound`.
  */
 export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
   const lv = planFor(level).level;
@@ -493,6 +658,10 @@ export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
         })();
     return looks.map((look) => ({ level: 2, look, cards: first ? [...PLACES] : rng.shuffle([...PLACES]) }));
   }
+  if (lv === 4) {
+    const twos = first ? [...FIRST_TWO] : twoRound(rng);
+    return twos.map((t) => ({ level: 4, two: t, cards: first ? [...PLACES] : rng.shuffle([...PLACES]) }));
+  }
   const whys = first ? WHY_STORIES.slice(0, 3) : rng.shuffle([...WHY_STORIES]).slice(0, 3);
   return whys.map((why, i) => ({
     level: 3,
@@ -506,10 +675,18 @@ export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
 /** A story's part in play: watching it, choosing a card, pointing in the picture (level 3), finished. */
 export type Stage = 'watch' | 'card' | 'point' | 'done';
 
-/** What the glow shows: a card by its value, or a level-3 region. */
-export type Glow = { card: Thing | Place | Reason } | { region: RegionArt } | null;
+/** What the glow shows: a card by its value (at level 4 with the bubble it belongs in), or a level-3 region. */
+export type Glow = { card: Thing | Place | Reason; bubble?: number } | { region: RegionArt } | null;
 
-export function glowFor(story: Story, stage: Stage): Glow {
+/** The first bubble not yet filled (left, or top, first), or -1. */
+export const firstUnfilled = (filled: readonly boolean[]): number => [0, 1].find((b) => !filled[b]) ?? -1;
+
+/** What to do now. At level 4 that is the first unfilled bubble and its card; `filled` says which bubbles are done. */
+export function glowFor(story: Story, stage: Stage, filled: readonly boolean[] = []): Glow {
+  if (stage === 'card' && story.level === 4) {
+    const bubble = firstUnfilled(filled);
+    return bubble < 0 ? null : { card: answerOf(story, bubble), bubble };
+  }
   if (stage === 'card') return { card: answerOf(story) };
   if (stage === 'point' && story.level === 3) return { region: clueOf(story.why).id };
   return null;
@@ -518,29 +695,30 @@ export function glowFor(story: Story, stage: Stage): Glow {
 /**
  * The round's misses and hints. A wrong card is one miss; two on one story glow the answer as one hint. At level 3's
  * pointing stage every non-clue tap is free, and the third asks again and glows the clue as one hint, once per story.
- * Replay, a card's name and a card dropped off the bubble never reach here.
+ * Replay, a card's name and a card dropped off the bubble never reach here. At level 4 each bubble is its own question:
+ * its wrong cards and its glow are counted by the bubble's number, so the two can be filled in either order.
  */
 export class Tally {
   misses = 0;
   hints = 0;
-  private wrongs = 0;
-  private cardHinted = false;
+  private wrongs = [0, 0];
+  private cardHinted = [false, false];
   private taps = 0;
   private pointHinted = false;
 
   newStory() {
-    this.wrongs = 0;
-    this.cardHinted = false;
+    this.wrongs = [0, 0];
+    this.cardHinted = [false, false];
     this.taps = 0;
     this.pointHinted = false;
   }
 
-  /** A wrong card in the bubble. True when this one turns the glow on. */
-  wrong(): boolean {
+  /** A wrong card in a bubble. True when this one turns that bubble's glow on. */
+  wrong(bubble = 0): boolean {
     this.misses++;
-    this.wrongs++;
-    if (this.wrongs >= 2 && !this.cardHinted) {
-      this.cardHinted = true;
+    this.wrongs[bubble]++;
+    if (this.wrongs[bubble] >= 2 && !this.cardHinted[bubble]) {
+      this.cardHinted[bubble] = true;
       this.hints++;
       return true;
     }
@@ -559,8 +737,9 @@ export class Tally {
   }
 
   /** Show me: glows the current target and counts a hint, unless that stage's glow is already on. */
-  showMe(stage: Stage): boolean {
-    if (stage === 'card' && !this.cardHinted) return ((this.cardHinted = true), this.hints++, true);
+  showMe(stage: Stage, bubble = 0): boolean {
+    if (stage === 'card' && !this.cardHinted[bubble])
+      return ((this.cardHinted[bubble] = true), this.hints++, true);
     if (stage === 'point' && !this.pointHinted) return ((this.pointHinted = true), this.hints++, true);
     return false;
   }
@@ -578,8 +757,10 @@ export interface Box {
 export interface ThoughtLayout {
   /** The stage's top-left and its scale. */
   stage: { x: number; y: number; scale: number };
-  /** The bubble's centre; the cloud is 220 × 150. */
+  /** The first bubble's centre; the cloud is 220 × 150. */
   bubble: Pt;
+  /** Every bubble's centre: one, or at level 4 two (bubble 0 on the left, or on top in landscape). */
+  bubbles: Pt[];
   replay: Pt;
   /** The three card centres; each card is CARD_W × CARD_H. */
   cards: Pt[];
@@ -598,8 +779,12 @@ export const PET_W = 210;
 export const PET_H = 210;
 export const HOME_W = 130;
 
-export function thoughtLayout(v: Pick<View, 'w' | 'h'>): ThoughtLayout {
+export function thoughtLayout(v: Pick<View, 'w' | 'h'>, level = 1): ThoughtLayout {
   const row = 3 * CARD_W + 2 * CARD_GAP;
+  const two = Math.round(level) >= 4;
+  const hitW = BUBBLE_W + 2 * BUBBLE_MARGIN;
+  const hitH = BUBBLE_H + 2 * BUBBLE_MARGIN;
+  let bubbles: Pt[];
   let stage: ThoughtLayout['stage'];
   let bubble: Pt;
   let replay: Pt;
@@ -613,14 +798,30 @@ export function thoughtLayout(v: Pick<View, 'w' | 'h'>): ThoughtLayout {
     const y = 30;
     stage = { x, y, scale };
     bubble = { x: x + STAGE_W * scale + 20 + side / 2, y: y + BUBBLE_H / 2 + 20 };
-    replay = { x: bubble.x, y: bubble.y + BUBBLE_H / 2 + BUBBLE_MARGIN + REPLAY_R + 20 };
+    // Level 4 stacks its two bubbles in that column, 20 apart, with Replay under them.
+    bubbles = two ? [bubble, { x: bubble.x, y: bubble.y + hitH + 20 }] : [bubble];
+    replay = { x: bubble.x, y: bubbles[bubbles.length - 1].y + hitH / 2 + REPLAY_R + 20 };
     cardsY = y + STAGE_H * scale + 24 + CARD_H / 2;
+  } else if (two) {
+    // Upright at level 4: the two bubbles side by side above the stage, right of Home; Home, two drop areas and Replay
+    // do not fit one 768 row, so Replay sits under the cards at the right, clear of the guide. A taller screen (a phone)
+    // moves the whole block down by a share of the spare height, toward the thumbs.
+    const scale = Math.min(1.1, (v.w - 48) / STAGE_W);
+    const top = 40 + Math.max(0, v.h - 1024) * 0.55;
+    const y = top + BUBBLE_H + 30;
+    stage = { x: (v.w - STAGE_W * scale) / 2, y, scale };
+    const right = { x: v.w - 28 - hitW / 2, y: top + BUBBLE_H / 2 };
+    bubbles = [{ x: right.x - hitW - 20, y: right.y }, right];
+    bubble = bubbles[0];
+    cardsY = y + STAGE_H * scale + 24 + CARD_H / 2;
+    replay = { x: v.w - 30 - REPLAY_R, y: cardsY + CARD_H / 2 + 20 + REPLAY_R };
   } else {
     // Portrait: the bubble and Replay above the stage (right of the home button), the cards below it.
     const scale = Math.min(1.1, (v.w - 48) / STAGE_W);
     const y = 40 + BUBBLE_H + 30;
     stage = { x: (v.w - STAGE_W * scale) / 2, y, scale };
     bubble = { x: v.w - 30 - BUBBLE_W / 2, y: 40 + BUBBLE_H / 2 };
+    bubbles = [bubble];
     replay = { x: bubble.x - BUBBLE_W / 2 - BUBBLE_MARGIN - REPLAY_R - 30, y: bubble.y };
     cardsY = y + STAGE_H * scale + 24 + CARD_H / 2;
   }
@@ -629,7 +830,7 @@ export function thoughtLayout(v: Pick<View, 'w' | 'h'>): ThoughtLayout {
   if (cardsY + CARD_H / 2 > v.h - PET_H && cx - row / 2 < PET_W) cx = PET_W + row / 2;
   cx = Math.min(cx, v.w - 10 - row / 2);
   const cards = [-1, 0, 1].map((i) => ({ x: cx + i * (CARD_W + CARD_GAP), y: cardsY }));
-  return { stage, bubble, replay, cards };
+  return { stage, bubble, bubbles, replay, cards };
 }
 
 /** A stage point on screen. */
@@ -654,10 +855,13 @@ export function regionAt(story: WhyStory, p: Pt): Region | null {
   );
 }
 
-/** Whether a card let go at (x, y) lands in the bubble's hit area. */
-export function inBubble(l: ThoughtLayout, x: number, y: number): boolean {
-  return (
-    Math.abs(x - l.bubble.x) <= BUBBLE_W / 2 + BUBBLE_MARGIN &&
-    Math.abs(y - l.bubble.y) <= BUBBLE_H / 2 + BUBBLE_MARGIN
+/** The bubble whose hit area holds (x, y), or -1. The hit areas never overlap. */
+export function bubbleAt(l: ThoughtLayout, x: number, y: number): number {
+  return l.bubbles.findIndex(
+    (b) =>
+      Math.abs(x - b.x) <= BUBBLE_W / 2 + BUBBLE_MARGIN && Math.abs(y - b.y) <= BUBBLE_H / 2 + BUBBLE_MARGIN,
   );
 }
+
+/** Whether a card let go at (x, y) lands in a bubble's hit area. */
+export const inBubble = (l: ThoughtLayout, x: number, y: number): boolean => bubbleAt(l, x, y) >= 0;

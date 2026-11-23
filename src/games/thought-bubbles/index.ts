@@ -30,7 +30,13 @@ import {
 } from './art';
 import {
   LEVELS,
+  actualPlace,
   answerOf,
+  answersOf,
+  beatsOf,
+  bubbleAt,
+  firstUnfilled,
+  lastSeen,
   BUBBLE_H,
   BUBBLE_MARGIN,
   BUBBLE_W,
@@ -38,7 +44,6 @@ import {
   CARD_W,
   clueOf,
   glowFor,
-  inBubble,
   planFor,
   rectToScreen,
   regionAt,
@@ -56,6 +61,7 @@ import {
   type Reason,
   type Stage,
   type Story,
+  type StoryEvent,
   type Thing,
   type ThoughtLayout,
 } from './logic';
@@ -71,11 +77,23 @@ interface Card {
   drag: DragHandle;
 }
 
+/** A thought bubble: its cloud, what it holds and, at level 4, the head of the friend it belongs to. */
+interface Bubble {
+  node: Container;
+  cloud: Graphics;
+  held: Container;
+  badge: Container;
+  filled: boolean;
+  over: boolean;
+}
+
+type TwoStoryOf = Extract<Story, { level: 4 }>;
+
 const line = (id: string) => id as LineId;
 const nameLine = (s: Story, v: CardValue) =>
-  line(s.level === 1 ? `thought.thing.${v}` : s.level === 2 ? `thought.place.${v}` : `thought.reason.${v}`);
+  line(s.level === 1 ? `thought.thing.${v}` : s.level === 3 ? `thought.reason.${v}` : `thought.place.${v}`);
 const pictureOf = (s: Story, v: CardValue) =>
-  s.level === 1 ? thingArt(v as Thing) : s.level === 2 ? placeArt(v as Place) : reasonArt(v as Reason);
+  s.level === 1 ? thingArt(v as Thing) : s.level === 3 ? reasonArt(v as Reason) : placeArt(v as Place);
 
 /** Where a thing rests on each place, in stage units. */
 const ON_PLACE: Record<Place, { x: number; y: number }> = {
@@ -91,10 +109,19 @@ const STAND_AT: Record<Place, { x: number; y: number }> = {
   blueBasket: { x: 520, y: 390 },
   shelf: { x: 470, y: 390 },
 };
+/**
+ * Where a friend who moves things waits, and at level 4 where the two owners stand (bubble 0's on the left): beside the
+ * red box and between the two floor places, so no friend hides a place.
+ */
+const MOVER_REST = { x: 560, y: 390 };
+const FRONT = [
+  { x: 138, y: 392 },
+  { x: 330, y: 392 },
+];
 
 class ThoughtBubbles implements Game {
   readonly hintLabel = 'Show me';
-  readonly level: 1 | 2 | 3;
+  readonly level: 1 | 2 | 3 | 4;
   readonly stories: Story[];
   readonly tally = new Tally();
   index = -1;
@@ -109,9 +136,8 @@ class ThoughtBubbles implements Game {
   private readonly actors = new Container();
   /** Level 3: catches taps anywhere on the picture and finds the region under them. */
   private readonly pointer = new Container();
-  private readonly bubble = new Container();
-  private readonly bubbleCloud = new Graphics();
-  private readonly bubbleHeld = new Container();
+  /** One bubble; at level 4 two, bubble 0 for the first friend. */
+  private readonly bubbles: Bubble[];
   private readonly dots = new Graphics();
   private readonly glow = new Graphics();
   private readonly replay: RoundButton;
@@ -119,45 +145,68 @@ class ThoughtBubbles implements Game {
   private glowing: Glow = null;
   private clock = 0;
   private hopIn = 2;
-  private overBubble = false;
+  /** Level 4: which bubbles' glow is on (after two misses or Show me), and the bubble pulsing while its beat replays. */
+  private twoGlow = [false, false];
+  private pulsing = -1;
   /** The friend's resting lean (level 1 leans toward the reach), which a head shake returns to. */
   private restRotation = 0;
 
   // The story's actors.
   private friend: Critter | null = null;
+  /** Level 4: the two owners, in bubble order. */
+  private friends: Critter[] = [];
   private mover: Critter | null = null;
   private thing: Container | null = null;
   private door = new Container();
   private windowFace: Critter | null = null;
 
   constructor(private readonly ctx: GameContext) {
-    this.layout = thoughtLayout(ctx.view);
     this.level = planFor(ctx.level).level;
+    this.layout = thoughtLayout(ctx.view, this.level);
     const first = !!ctx.demo || !authoredShown.has(this.level);
     authoredShown.add(this.level);
-    this.stories = roundFor(this.level, ctx.rng, first);
+    const round = roundFor(this.level, ctx.rng, first);
+    // Level 4's stories are long (a put, two moves, two friends coming and going), so its demonstration shows two of the
+    // three: the authored different story and the same one.
+    this.stories = ctx.demo && this.level === 4 ? round.slice(0, 2) : round;
 
     this.stageBox.addChild(this.scene, this.actors, this.pointer);
     this.pointer.hitArea = new Rectangle(0, 0, STAGE_W, STAGE_H);
     this.pointer.eventMode = 'none';
     onTap(this.pointer, (e) => this.tapPicture(this.stageBox.toLocal(e.global)), { cooldown: 250 });
 
-    this.bubble.addChild(this.bubbleCloud, this.bubbleHeld);
-    bubbleArt(this.bubbleCloud, false);
-    this.bubble.hitArea = new Rectangle(
-      -BUBBLE_W / 2 - BUBBLE_MARGIN,
-      -BUBBLE_H / 2 - BUBBLE_MARGIN,
-      BUBBLE_W + 2 * BUBBLE_MARGIN,
-      BUBBLE_H + 2 * BUBBLE_MARGIN,
-    );
-    this.bubble.visible = false;
+    this.bubbles = Array.from({ length: this.level === 4 ? 2 : 1 }, () => {
+      const node = new Container();
+      const cloud = bubbleArt(new Graphics(), false);
+      const held = new Container();
+      const badge = new Container();
+      node.addChild(cloud, held, badge);
+      node.hitArea = new Rectangle(
+        -BUBBLE_W / 2 - BUBBLE_MARGIN,
+        -BUBBLE_H / 2 - BUBBLE_MARGIN,
+        BUBBLE_W + 2 * BUBBLE_MARGIN,
+        BUBBLE_H + 2 * BUBBLE_MARGIN,
+      );
+      node.visible = false;
+      return { node, cloud, held, badge, filled: false, over: false };
+    });
     this.dots.visible = false;
     this.glow.eventMode = 'none';
     this.dots.eventMode = 'none';
     this.replay = new RoundButton(replayArt(), swatch.yellow, 50, () => void this.replayStory());
     this.replay.visible = false;
-    ctx.stage.addChild(this.stageBox, this.dots, this.bubble, this.replay, this.glow);
+    ctx.stage.addChild(this.stageBox, this.dots, ...this.bubbles.map((b) => b.node), this.replay, this.glow);
     this.resize(ctx.view);
+  }
+
+  /** The first bubble (the only one at levels 1–3). */
+  get bubble(): Container {
+    return this.bubbles[0].node;
+  }
+
+  /** Which bubbles are filled, in bubble order. */
+  get filled(): boolean[] {
+    return this.bubbles.map((b) => b.filled);
   }
 
   get story(): Story {
@@ -169,14 +218,14 @@ class ThoughtBubbles implements Game {
   }
 
   resize(v: View) {
-    const l = (this.layout = thoughtLayout(v));
+    const l = (this.layout = thoughtLayout(v, this.level));
     this.stageBox.position.set(l.stage.x, l.stage.y);
     this.stageBox.scale.set(l.stage.scale);
-    this.bubble.position.set(l.bubble.x, l.bubble.y);
+    this.bubbles.forEach((b, i) => b.node.position.set(l.bubbles[i].x, l.bubbles[i].y));
     this.replay.position.set(l.replay.x, l.replay.y);
     this.cards.forEach((c, i) => {
       c.drag.home = { ...l.cards[i] };
-      if (!c.drag.dragging && c.node.parent !== this.bubbleHeld)
+      if (!c.drag.dragging && !this.bubbles.some((b) => c.node.parent === b.held))
         c.node.position.set(l.cards[i].x, l.cards[i].y);
     });
     this.drawDots();
@@ -193,13 +242,17 @@ class ThoughtBubbles implements Game {
         this.friend.hop(0.45);
       }
     }
-    // The bubble swells while a card is carried over it.
-    const over = this.cards.some((c) => c.drag.dragging && inBubble(this.layout, c.node.x, c.node.y));
-    if (over !== this.overBubble) {
-      this.overBubble = over;
-      bubbleArt(this.bubbleCloud, over);
-      this.bubble.scale.set(over ? 1.08 : 1);
-    }
+    // A bubble swells while a card is carried over it, and pulses while its friend's beat replays.
+    this.bubbles.forEach((b, i) => {
+      const over =
+        !b.filled &&
+        this.cards.some((c) => c.drag.dragging && bubbleAt(this.layout, c.node.x, c.node.y) === i);
+      if (over !== b.over) {
+        b.over = over;
+        bubbleArt(b.cloud, over);
+      }
+      b.node.scale.set((over ? 1.08 : 1) * (this.pulsing === i ? 1 + 0.05 * Math.sin(this.clock * 8) : 1));
+    });
     const g = this.glow.clear();
     if (!this.glowing || this.busy) return;
     const w = 6 + 2 * Math.sin(this.clock * 5);
@@ -213,6 +266,16 @@ class ThoughtBubbles implements Game {
           CARD_H + 20,
           24,
         ).stroke({ width: w, color: swatch.yellow.fill });
+      // Level 4: the bubble the card belongs in glows too.
+      const at = this.glowing.bubble === undefined ? null : this.layout.bubbles[this.glowing.bubble];
+      if (at)
+        g.roundRect(
+          at.x - BUBBLE_W / 2 - 14,
+          at.y - BUBBLE_H / 2 - 14,
+          BUBBLE_W + 28,
+          BUBBLE_H + 28,
+          70,
+        ).stroke({ width: w, color: swatch.yellow.fill });
     } else if (this.story.level === 3) {
       const region = this.story.why.regions.find((r) => r.id === (this.glowing as { region: string }).region);
       if (region) {
@@ -224,8 +287,17 @@ class ThoughtBubbles implements Game {
 
   /** Show me: glow what to do now, as one hint. */
   askForHint() {
-    if (this.busy || this.finished || !this.tally.showMe(this.stage)) return;
+    if (this.busy || this.finished) return;
     const s = this.story;
+    if (s.level === 4) {
+      // The first unfilled bubble (left or top first) and its card, unless that bubble's glow is already on.
+      const b = firstUnfilled(this.filled);
+      if (this.stage !== 'card' || b < 0 || !this.tally.showMe('card', b)) return;
+      this.twoGlow[b] = true;
+      this.glowing = glowFor(s, 'card', this.filled);
+      return;
+    }
+    if (!this.tally.showMe(this.stage)) return;
     if (s.level !== 2) {
       this.glowing = glowFor(s, this.stage);
       return;
@@ -244,6 +316,12 @@ class ThoughtBubbles implements Game {
   /** The ghost finger: drag the right card into the bubble, then at level 3 tap the clue. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
+    if (this.stage === 'card' && this.story.level === 4) {
+      const g = glowFor(this.story, 'card', this.filled);
+      if (!g || !('card' in g)) return null;
+      const card = this.cards.find((c) => c.value === g.card);
+      return card ? { drag: { on: card.node }, to: { on: this.bubbles[g.bubble!].node } } : null;
+    }
     if (this.stage === 'card') {
       const card = this.cards.find((c) => c.value === answerOf(this.story));
       return card ? { drag: { on: card.node }, to: { on: this.bubble } } : null;
@@ -270,7 +348,12 @@ class ThoughtBubbles implements Game {
     if (this.index >= this.stories.length) return this.finale();
     this.stage = 'watch';
     this.clearCards();
-    this.bubble.visible = false;
+    this.twoGlow = [false, false];
+    this.pulsing = -1;
+    for (const b of this.bubbles) {
+      b.node.visible = false;
+      b.filled = false;
+    }
     this.dots.visible = false;
     this.replay.visible = false;
     this.pointer.eventMode = 'none';
@@ -278,7 +361,8 @@ class ThoughtBubbles implements Game {
     await this.play();
     if (this.finished) return;
     this.dealCards();
-    this.bubble.visible = true;
+    this.setBadges();
+    for (const b of this.bubbles) b.node.visible = true;
     this.dots.visible = true;
     this.replay.visible = true;
     this.drawDots();
@@ -290,6 +374,7 @@ class ThoughtBubbles implements Game {
     if (this.finished || this.story !== s || this.stage !== 'card') return;
     if (s.level === 2) void this.ctx.instruct(line(`thought.look.${s.look.template.id}.ask`));
     if (s.level === 3) void this.ctx.instruct(line(`thought.why.${s.why.id}.ask`));
+    if (s.level === 4) void this.ctx.instruct(line(`thought.two.${s.two.template.id}.ask`));
   }
 
   private clearCards() {
@@ -298,7 +383,29 @@ class ThoughtBubbles implements Game {
       c.node.destroy({ children: true });
     }
     this.cards = [];
-    this.bubbleHeld.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (const b of this.bubbles) b.held.removeChildren().forEach((c) => c.destroy({ children: true }));
+  }
+
+  /** Level 4: each bubble carries its friend's head on its rim, so whose it is shows without reading. */
+  private setBadges() {
+    const s = this.story;
+    this.bubbles.forEach((b, i) => {
+      b.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
+      if (s.level !== 4) return;
+      const face = new Critter(CRITTERS[s.two.template.friends[i]]);
+      face.alive = false;
+      face.eventMode = 'none';
+      face.scale.set(0.25);
+      face.position.set(0, 48);
+      const ring = new Graphics()
+        .circle(0, 0, 34)
+        .fill(0xffffff)
+        .stroke({ width: 4, color: swatch.white.line });
+      const mask = new Graphics().circle(0, 0, 31).fill(0xffffff);
+      face.mask = mask;
+      b.badge.addChild(ring, mask, face);
+      b.badge.position.set(-98, 44);
+    });
   }
 
   private dealCards() {
@@ -322,11 +429,13 @@ class ThoughtBubbles implements Game {
 
   /** A card let go: in the bubble it is her answer; anywhere else it floats home, free. */
   private drop(card: Card, x: number, y: number): boolean {
-    if (this.busy || this.finished || this.stage !== 'card' || !inBubble(this.layout, x, y)) return false;
+    const at = bubbleAt(this.layout, x, y);
+    if (this.busy || this.finished || this.stage !== 'card' || at < 0) return false;
+    if (this.story.level === 4) return this.dropTwo(this.story, card, at);
     if (card.value === answerOf(this.story)) {
       this.glowing = null;
       for (const c of this.cards) c.drag.enabled = false;
-      this.bubbleHeld.addChild(card.node);
+      this.bubbles[0].held.addChild(card.node);
       card.node.position.set(card.node.x - this.bubble.x, card.node.y - this.bubble.y);
       void this.ctx.tw.to(card.node, { x: 0, y: 0 }, { duration: 0.25, ease: ease.outQuad });
       void this.ctx.tw.to(card.node.scale, { x: 0.72, y: 0.72 }, { duration: 0.25 });
@@ -335,6 +444,103 @@ class ThoughtBubbles implements Game {
     }
     void this.wrong(card.value);
     return false;
+  }
+
+  /**
+   * Level 4: a card let go in one of the two bubbles. A right card floats home and leaves its picture, so one place
+   * card can fill both bubbles; a filled bubble takes no more drops, free; a wrong card is that bubble's miss.
+   */
+  private dropTwo(s: TwoStoryOf, card: Card, at: number): boolean {
+    const b = this.bubbles[at];
+    if (b.filled) return false;
+    if (card.value !== answerOf(s, at)) {
+      void this.wrongTwo(s, at);
+      return false;
+    }
+    b.filled = true;
+    sfx.sparkle();
+    const kept = cardFace(placeArt(card.value as Place), CARD_W, CARD_H);
+    kept.scale.set(0.3);
+    b.held.addChild(kept);
+    void this.ctx.tw.to(kept.scale, { x: 0.72, y: 0.72 }, { duration: 0.25, ease: ease.outQuad });
+    this.friends[at]?.poke();
+    this.showTwoGlow(s);
+    if (this.bubbles.every((x) => x.filled)) void this.rightTwo(s);
+    return false;
+  }
+
+  /** Level 4: the glow follows the first unfilled bubble whose glow is on. */
+  private showTwoGlow(s: TwoStoryOf) {
+    const b = [0, 1].find((i) => this.twoGlow[i] && !this.bubbles[i].filled);
+    this.glowing = b === undefined ? null : { card: answerOf(s, b), bubble: b };
+  }
+
+  /** Level 4: a wrong card. The pet asks what that friend saw last and that beat plays again, the friend's bubble pulsing. */
+  private async wrongTwo(s: TwoStoryOf, at: number) {
+    const glow = this.tally.wrong(at);
+    sfx.boing();
+    this.shakeHead(this.friends[at]);
+    this.busy = true;
+    this.pulsing = at;
+    const who = s.two.template.friends[at];
+    await Promise.all([
+      this.ctx.say(line(`thought.two.saw.${who}`)),
+      this.replayBeat(s, lastSeen(s.two.events, who, s.two.template.thing)),
+    ]);
+    if (this.finished) return;
+    this.pulsing = -1;
+    if (glow) this.twoGlow[at] = true;
+    this.showTwoGlow(s);
+    this.busy = false;
+  }
+
+  /**
+   * Level 4, both bubbles filled: each friend walks to the place in its own bubble, bubble 0 first. One who thought where
+   * it really is finds it; the others are kindly shown where it went. No friend walks to a place that was not its answer.
+   */
+  private async rightTwo(s: TwoStoryOf) {
+    this.busy = true;
+    this.stage = 'done';
+    this.glowing = null;
+    this.dots.visible = false;
+    for (const c of this.cards) c.drag.enabled = false;
+    const two = s.two;
+    const answers = answersOf(two);
+    const lost = answers.map((a) => a !== two.actual);
+    await this.ctx.tw.wait(0.4);
+    for (const b of [0, 1]) {
+      const f = this.friends[b];
+      const spot = STAND_AT[answers[b]];
+      await this.walk(f, { x: spot.x + (b === 1 && answers[0] === answers[1] ? 62 : 0), y: spot.y });
+      if (!lost[b]) {
+        sfx.sparkle();
+        f.cheer();
+        await Promise.all([this.ctx.say('thought.two.found'), this.liftThing()]);
+      } else {
+        f.setMood('surprised', 1.4);
+        // Two friends at the wrong place are shown together, once.
+        if (b === 0 && lost[1]) await this.ctx.tw.wait(0.3);
+        else {
+          const helped = this.ctx.say(line(`thought.two.${two.template.id}.helped`));
+          if (this.mover) await this.walk(this.mover, { x: STAND_AT[two.actual].x + 40, y: 390 });
+          await this.liftThing();
+          await helped;
+        }
+      }
+      if (this.finished) return;
+    }
+    for (const f of this.friends) f.cheer();
+    await this.ctx.say(answers[0] === answers[1] ? 'thought.two.done.same' : 'thought.two.done.different');
+    await this.ctx.tw.wait(0.4);
+    return this.next();
+  }
+
+  /** The thing hops up from its place and settles again: here it is. */
+  private async liftThing() {
+    const thing = this.thing!;
+    const y = thing.y;
+    await this.ctx.tw.to(thing, { y: y - 36 }, { duration: 0.3, ease: ease.outQuad });
+    await this.ctx.tw.to(thing, { y }, { duration: 0.3, ease: ease.inQuad });
   }
 
   private async wrong(value: CardValue) {
@@ -362,8 +568,7 @@ class ThoughtBubbles implements Game {
     }
   }
 
-  private shakeHead() {
-    const f = this.friend;
+  private shakeHead(f = this.friend) {
     if (!f) return;
     const base = this.restRotation;
     this.ctx.tw.kill(f);
@@ -489,6 +694,7 @@ class ThoughtBubbles implements Game {
     this.scene.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.actors.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.friend = this.mover = this.windowFace = null;
+    this.friends = [];
     this.restRotation = 0;
     this.thing = null;
     const s = this.story;
@@ -527,8 +733,21 @@ class ThoughtBubbles implements Game {
       this.windowFace = face;
       this.thing = thingArt(t.thing);
       this.thing.visible = false;
-      if (t.mover !== 'wind') this.mover = this.addFriend(t.mover, { x: 560, y: 390 });
+      if (t.mover !== 'wind') this.mover = this.addFriend(t.mover, MOVER_REST);
       this.friend = this.addFriend(t.owner, MIDDLE);
+      this.actors.addChild(this.thing);
+    } else if (s.level === 4) {
+      // The level-2 cottage; the window is not used. Two owners at the front, and the friend who makes the second move.
+      this.scene.addChild(lookRoomArt());
+      this.door = new Container();
+      this.scene.addChild(this.door);
+      this.setDoor(true);
+      const t = s.two.template;
+      this.thing = thingArt(t.thing);
+      this.thing.visible = false;
+      this.mover = this.addFriend(t.movers[1], MOVER_REST);
+      this.friends = t.friends.map((f, i) => this.addFriend(f, FRONT[i]));
+      this.friend = this.friends[0];
       this.actors.addChild(this.thing);
     } else {
       const w = s.why;
@@ -559,6 +778,19 @@ class ThoughtBubbles implements Game {
   /** Play the story once, narrated. */
   private async play() {
     const s = this.story;
+    if (s.level === 4) {
+      // Beat by beat: one short line as each beat plays. A friend who stays behind looks up; nothing else moves.
+      this.setTwoStage(s, 0);
+      for (const beat of beatsOf(s.two)) {
+        const say = this.ctx.say(line(beat.line));
+        if (beat.event !== null) await this.playEvent(s, beat.event);
+        else if (beat.who) this.friends[s.two.template.friends.indexOf(beat.who)]?.poke();
+        await say;
+        if (this.finished) return;
+        await this.ctx.tw.wait(0.2);
+      }
+      return;
+    }
     if (s.level === 1) {
       await this.ctx.say(line(`thought.want.${s.want.id}.story`));
       await this.ctx.tw.wait(0.5);
@@ -591,7 +823,7 @@ class ThoughtBubbles implements Game {
     owner.alpha = 1;
     this.windowFace!.visible = false;
     this.setDoor(true);
-    if (this.mover) this.mover.position.set(560, 390);
+    if (this.mover) this.mover.position.set(MOVER_REST.x, MOVER_REST.y);
     thing.visible = true;
     thing.position.set(owner.x, owner.y - 70);
     await this.walk(owner, STAND_AT[look.start]);
@@ -623,34 +855,10 @@ class ThoughtBubbles implements Game {
       if (look.kind === 'away') this.setDoor(false);
       else this.windowFace!.visible = true;
       thing.position.set(ON_PLACE[look.start].x, ON_PLACE[look.start].y);
-      if (this.mover) this.mover.position.set(560, 390);
+      if (this.mover) this.mover.position.set(MOVER_REST.x, MOVER_REST.y);
       await this.ctx.tw.wait(0.4);
     }
-    if (this.mover) {
-      await this.walk(this.mover, STAND_AT[look.start]);
-      await this.ctx.tw.to(thing, { x: this.mover.x, y: this.mover.y - 70 }, { duration: 0.3 });
-      await Promise.all([
-        this.walk(this.mover, STAND_AT[look.end], 0.9),
-        this.ctx.tw.to(
-          thing,
-          { x: STAND_AT[look.end].x, y: STAND_AT[look.end].y - 70 },
-          { duration: 0.9, ease: ease.inOutSine },
-        ),
-      ]);
-      await this.ctx.tw.to(thing, ON_PLACE[look.end], { duration: 0.35, ease: ease.outQuad });
-      await this.walk(this.mover, { x: 560, y: 390 }, 0.5);
-    } else {
-      // The wind: the shell tumbles along through the air.
-      sfx.whoosh();
-      const from = ON_PLACE[look.start];
-      const to = ON_PLACE[look.end];
-      await this.ctx.tw.to(
-        thing,
-        { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 80, rotation: 2 },
-        { duration: 0.8, ease: ease.outQuad },
-      );
-      await this.ctx.tw.to(thing, { x: to.x, y: to.y, rotation: 0 }, { duration: 0.8, ease: ease.inQuad });
-    }
+    await this.moveThing(look.template.mover === 'wind' ? null : this.mover, look.start, look.end);
     if (replay) {
       await this.ctx.tw.wait(0.3);
       this.setDoor(true);
@@ -659,20 +867,126 @@ class ThoughtBubbles implements Game {
     }
   }
 
-  /** The trailing dots from the bubble down to the friend's head. */
+  /** A thing goes from one place to another: carried by a friend, who then goes back to wait, or blown by the wind (null). */
+  private async moveThing(mover: Critter | null, from: Place, to: Place) {
+    const thing = this.thing!;
+    if (mover) {
+      await this.walk(mover, STAND_AT[from]);
+      await this.ctx.tw.to(thing, { x: mover.x, y: mover.y - 70 }, { duration: 0.3 });
+      await Promise.all([
+        this.walk(mover, STAND_AT[to], 0.9),
+        this.ctx.tw.to(
+          thing,
+          { x: STAND_AT[to].x, y: STAND_AT[to].y - 70 },
+          { duration: 0.9, ease: ease.inOutSine },
+        ),
+      ]);
+      await this.ctx.tw.to(thing, ON_PLACE[to], { duration: 0.35, ease: ease.outQuad });
+      await this.walk(mover, MOVER_REST, 0.5);
+    } else {
+      // The wind: the thing tumbles along through the air.
+      sfx.whoosh();
+      const a = ON_PLACE[from];
+      const b = ON_PLACE[to];
+      await this.ctx.tw.to(
+        thing,
+        { x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 80, rotation: 2 },
+        { duration: 0.8, ease: ease.outQuad },
+      );
+      await this.ctx.tw.to(thing, { x: b.x, y: b.y, rotation: 0 }, { duration: 0.8, ease: ease.inQuad });
+    }
+  }
+
+  // ---------------------------------------------------------------- level 4's stage
+
+  /** Who is out of the door after the first `n` events. */
+  private outAfter(events: readonly StoryEvent[], n: number): Set<Friend> {
+    const out = new Set<Friend>();
+    for (const e of events.slice(0, n)) {
+      if (e.kind === 'leave') out.add(e.who);
+      if (e.kind === 'back') out.delete(e.who);
+    }
+    return out;
+  }
+
+  /** Put the stage as it stands after the first `n` events: who is in the room, the door, where the thing is. */
+  private setTwoStage(s: TwoStoryOf, n: number) {
+    const { template: t, events } = s.two;
+    const out = this.outAfter(events, n);
+    this.friends.forEach((f, i) => {
+      f.position.set(FRONT[i].x, FRONT[i].y);
+      f.rotation = 0;
+      f.alpha = out.has(t.friends[i]) ? 0 : 1;
+    });
+    this.setDoor(out.size === 0);
+    this.mover?.position.set(MOVER_REST.x, MOVER_REST.y);
+    const thing = this.thing!;
+    const at = actualPlace(events.slice(0, n), t.thing);
+    thing.visible = true;
+    thing.rotation = 0;
+    thing.position.set(at ? ON_PLACE[at].x : FRONT[0].x, at ? ON_PLACE[at].y : FRONT[0].y - 70);
+  }
+
+  /** Play one event from the stage as it stands before it. The two moves take the same time whoever is watching. */
+  private async playEvent(s: TwoStoryOf, i: number) {
+    const { template: t, events } = s.two;
+    const e = events[i];
+    const thing = this.thing!;
+    if (e.kind === 'put') {
+      const f = this.friends[0];
+      const at = STAND_AT[e.to];
+      await Promise.all([
+        this.walk(f, at),
+        this.ctx.tw.to(thing, { x: at.x, y: at.y - 70 }, { duration: 0.7, ease: ease.inOutSine }),
+      ]);
+      await this.ctx.tw.to(thing, ON_PLACE[e.to], { duration: 0.4, ease: ease.outQuad });
+      await this.walk(f, FRONT[0]);
+    } else if (e.kind === 'move') {
+      await this.moveThing(e.who === 'wind' ? null : this.mover, e.from, e.to);
+    } else if (e.kind === 'leave') {
+      const f = this.friends[t.friends.indexOf(e.who)];
+      this.setDoor(true);
+      await this.walk(f, DOORWAY, 0.9);
+      await this.ctx.tw.to(f, { alpha: 0 }, { duration: 0.3 });
+      this.setDoor(false);
+    } else {
+      const at = t.friends.indexOf(e.who);
+      const f = this.friends[at];
+      this.setDoor(true);
+      f.position.set(DOORWAY.x + 20, 390);
+      await this.ctx.tw.to(f, { alpha: 1 }, { duration: 0.3 });
+      await this.walk(f, FRONT[at]);
+      this.setDoor(this.outAfter(events, i + 1).size === 0);
+    }
+  }
+
+  /** A miss replays the beat that friend saw last, then the stage returns to the story's end. */
+  private async replayBeat(s: TwoStoryOf, i: number) {
+    this.setTwoStage(s, i);
+    await this.ctx.tw.wait(0.4);
+    await this.playEvent(s, i);
+    await this.ctx.tw.wait(0.3);
+    if (this.finished) return;
+    this.setTwoStage(s, s.two.events.length);
+  }
+
+  /** The trailing dots from each bubble down to its friend's head. */
   private drawDots() {
     const g = this.dots.clear();
-    if (!this.friend) return;
-    const head = toScreen(this.layout, { x: this.friend.x, y: this.friend.y - 120 });
-    const from = { x: this.layout.bubble.x, y: this.layout.bubble.y + BUBBLE_H / 2 };
-    for (const [t, r] of [
-      [0.35, 12],
-      [0.65, 8],
-    ] as const) {
-      g.circle(from.x + (head.x - from.x) * t, from.y + (head.y - from.y) * t, r)
-        .fill(0xffffff)
-        .stroke({ width: 4, color: swatch.white.line });
-    }
+    this.layout.bubbles.forEach((at, i) => {
+      const friend = this.level === 4 ? this.friends[i] : this.friend;
+      if (!friend) return;
+      const head = toScreen(this.layout, { x: friend.x, y: friend.y - 120 });
+      const from = { x: at.x, y: at.y + BUBBLE_H / 2 };
+      for (const [t, r] of [
+        [0.35, 12],
+        [0.65, 8],
+      ] as const) {
+        g.circle(from.x + (head.x - from.x) * t, from.y + (head.y - from.y) * t, r)
+          .fill(0xffffff)
+          .stroke({ width: 4, color: swatch.white.line });
+      }
+    });
   }
 }
 

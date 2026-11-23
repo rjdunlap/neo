@@ -18,14 +18,18 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           hints: g.tally.hints,
           glowing: g.glowing,
           cards: g.cards.map((c) => c.value),
+          filled: g.filled,
+          level: g.story.level,
           answer:
-            g.story.cards && g.story.level === 1
-              ? g.story.want.cued
-              : g.story.level === 2
-                ? g.story.look.kind === 'away'
-                  ? g.story.look.start
-                  : g.story.look.end
-                : g.story.why.supported,
+            g.story.level === 4
+              ? null
+              : g.story.cards && g.story.level === 1
+                ? g.story.want.cued
+                : g.story.level === 2
+                  ? g.story.look.kind === 'away'
+                    ? g.story.look.start
+                    : g.story.look.end
+                  : g.story.why.supported,
           kind: g.story.look?.kind,
           end: g.story.look?.end,
         };
@@ -39,17 +43,32 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.waitForTimeout(250);
     };
     /** Carry a card into the bubble; the card rides 40 units above the finger. */
-    const dropCard = async (value) => {
+    const dropCard = async (value, bubble = 0) => {
       await ready();
-      await page.evaluate(async (value) => {
-        const g = neo.scene.game,
-          card = g.cards.find((c) => c.value === value),
-          b = g.bubble.getGlobalPosition(),
-          s = neo.view.scale;
-        await kit.dragTo(card.node, { x: b.x, y: b.y + 40 * s }, 12);
-      }, value);
-      await page.waitForTimeout(300);
+      await page.evaluate(
+        async ([value, bubble]) => {
+          const g = neo.scene.game,
+            card = g.cards.find((c) => c.value === value),
+            b = g.bubbles[bubble].node.getGlobalPosition(),
+            s = neo.view.scale;
+          await kit.dragTo(card.node, { x: b.x, y: b.y + 40 * s }, 12);
+        },
+        [value, bubble],
+      );
+      // A right card at level 4 floats home before the next drag can pick it up.
+      await page.waitForTimeout(600);
     };
+    /** Level 4: where each of the two friends thinks the thing is, and where it really is, read from the story's events. */
+    const twoState = () =>
+      page.evaluate(() => {
+        const { template: t, events, pattern, actual } = neo.scene.game.story.two;
+        const believed = (who) =>
+          events.reduce(
+            (at, e) => ((e.kind === 'put' || e.kind === 'move') && e.saw.includes(who) ? e.to : at),
+            null,
+          );
+        return { id: t.id, pattern, actual, answers: t.friends.map(believed) };
+      });
     const tapRegion = async (id) => {
       await ready();
       await page.evaluate((id) => {
@@ -73,7 +92,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         await ready();
         if (await page.evaluate(() => neo.scene.finished)) break;
         const s = await state();
-        if (s.stage === 'card') await dropCard(s.answer);
+        if (s.stage === 'card' && s.level === 4) {
+          const at = s.filled.indexOf(false);
+          await dropCard((await twoState()).answers[at], at);
+        } else if (s.stage === 'card') await dropCard(s.answer);
         else if (s.stage === 'point')
           await tapRegion(
             await page.evaluate(
@@ -89,6 +111,83 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
+
+    // `THOUGHT_BUBBLES_ONLY=two` (batch `thought-bubbles 2`): level 4, *Two bubbles*, on a phone held upright in a touch
+    // phone context. The authored round: Bear and Bunny's ball (Bear saw the first move, Bunny neither). Where the ball
+    // really is in Bear's bubble (a miss, his last-seen beat replays), then the start place there (a second miss and that
+    // bubble's glow, one hint), then the blue basket; a card dropped on the filled bubble is free; Bunny's red box. Then the
+    // same story (both think the shelf) filled right bubble first with one card, and the last story as the glow would.
+    if (process.env.THOUGHT_BUBBLES_ONLY === 'two') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(400);
+      await launch('thought-bubbles', 4, 'Mia', 'school');
+      await ready();
+      assert.equal(
+        await page.evaluate(
+          () =>
+            neo.view.upright === true && neo.turning === false && neo.scene.constructor.name === 'GameScene',
+        ),
+        true,
+        'level 4 plays upright, no turn prompt',
+      );
+      let t = await twoState();
+      assert.deepEqual(
+        [t.id, t.pattern, t.answers, t.actual],
+        ['ball-tidy', 'oneMove', ['blueBasket', 'redBox'], 'shelf'],
+        'the authored first story: Bear thinks the blue basket, Bunny the red box, and it is on the shelf',
+      );
+      const shown = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return [g.bubbles.filter((b) => b.node.visible).length, g.cards.length, g.replay.visible];
+      });
+      assert.deepEqual(shown, [2, 3, true], 'two bubbles, three cards and Replay are on screen');
+      await screenshot('thought-bubbles-4-upright');
+      await dropCard('shelf', 0);
+      let p = await state();
+      assert.deepEqual([p.misses, p.hints, p.filled], [1, 0, [false, false]], 'where it really is: one miss');
+      await ready();
+      p = await state();
+      assert.equal(p.glowing, null, 'one miss on a bubble does not glow');
+      await dropCard('redBox', 0);
+      await ready();
+      p = await state();
+      assert.deepEqual(
+        [p.misses, p.hints, p.glowing],
+        [2, 1, { card: 'blueBasket', bubble: 0 }],
+        "a second wrong card on Bear's bubble glows his card and bubble: one hint",
+      );
+      await dropCard('blueBasket', 0);
+      p = await state();
+      assert.deepEqual(
+        [p.filled, p.glowing],
+        [[true, false], null],
+        "Bear's bubble is filled and the glow is off",
+      );
+      await dropCard('shelf', 0);
+      p = await state();
+      assert.deepEqual([p.misses, p.hints, p.index], [2, 1, 0], 'a card dropped on a filled bubble is free');
+      await dropCard('redBox', 1);
+      await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 60000 });
+      await ready();
+      t = await twoState();
+      assert.deepEqual(
+        [t.id, t.pattern, t.answers],
+        ['drum-room', 'sameStart', ['shelf', 'shelf']],
+        'the authored same story: both think the shelf',
+      );
+      await dropCard('shelf', 1);
+      p = await state();
+      assert.deepEqual(p.filled, [false, true], 'the right bubble can be filled first');
+      await dropCard('shelf', 0);
+      await page.waitForFunction(() => neo.scene.game.index === 2, null, { timeout: 60000 });
+      await finishRest('thought-bubbles');
+      assert.deepEqual(await score(), [2, 1], 'level 4 upright saved 2 misses, 1 hint');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Thought Bubbles 4 upright phone (390 × 844, touch): a wrong card in a bubble (the miss, the replayed beat), a second on it (the glow, one hint), a free drop on the filled bubble, the same story filled right bubble first, the third as the glow shows (2/1); passed',
+      );
+      return;
+    }
 
     // `THOUGHT_BUBBLES_PHONE=1` (batch `thought-bubbles upright`): levels 1–3 on a phone held upright, in a touch phone
     // context, so the upright layout is the one played rather than the turn prompt. Level 1 answered right; level 2 the

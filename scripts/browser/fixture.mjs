@@ -23,7 +23,8 @@ export async function createFixture(browser, suite) {
     (suite === 'bunnypatches' && process.env.BUNNY_ONLY === 'upright') ||
     (suite === 'sumcrates' && process.env.SUMCRATES_ONLY === 'upright') ||
     (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1') ||
-    (suite === 'thoughtbubbles' && process.env.THOUGHT_BUBBLES_PHONE === '1') ||
+    (suite === 'thoughtbubbles' &&
+      (process.env.THOUGHT_BUBBLES_PHONE === '1' || process.env.THOUGHT_BUBBLES_ONLY === 'two')) ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
       ? { hasTouch: true, isMobile: true }
       : {}),

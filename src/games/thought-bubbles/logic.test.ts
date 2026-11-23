@@ -4,6 +4,22 @@ import { SCRIPT } from '../../content/voice-script';
 import {
   actualPlace,
   answerOf,
+  answersOf,
+  beatsOf,
+  bubbleAt,
+  DIFFERENT_PATTERNS,
+  FIRST_TWO,
+  firstUnfilled,
+  HOME_W,
+  isDifferent,
+  lastSeen,
+  LEVELS,
+  planFor,
+  SAME_PATTERNS,
+  TWO_PATTERNS,
+  TWO_TEMPLATES,
+  twoRound,
+  twoStory,
   believedPlace,
   BUBBLE_H,
   BUBBLE_MARGIN,
@@ -38,7 +54,9 @@ import {
   WANT_STORIES,
   WHY_STORIES,
   type Box,
+  type Place,
   type Story,
+  type TwoStory,
 } from './logic';
 
 const seeds = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -383,6 +401,266 @@ describe('layout', () => {
   }
 });
 
+// ---------------------------------------------------------------- level 4, Two bubbles
+
+const ORDERS: [Place, Place, Place][] = [
+  ['redBox', 'blueBasket', 'shelf'],
+  ['redBox', 'shelf', 'blueBasket'],
+  ['blueBasket', 'redBox', 'shelf'],
+  ['blueBasket', 'shelf', 'redBox'],
+  ['shelf', 'redBox', 'blueBasket'],
+  ['shelf', 'blueBasket', 'redBox'],
+];
+const everyTwo = (): TwoStory[] =>
+  TWO_TEMPLATES.flatMap((t) =>
+    TWO_PATTERNS.flatMap((p) =>
+      ([0, 1] as const).flatMap((more) => ORDERS.map((o) => twoStory(t, p, more, o))),
+    ),
+  );
+const twos = (round: Story[]): TwoStory[] => round.map((s) => (s.level === 4 ? s.two : null!));
+
+/** How many bubbles a habit that ignores who was in the room gets wrong in a story. */
+const HABITS: Record<string, (s: TwoStory) => number> = {
+  'always the start place': (s) => answersOf(s).filter((a) => a !== s.start).length,
+  'always the middle place': (s) => answersOf(s).filter((a) => a !== s.middle).length,
+  'always where it really is': (s) => answersOf(s).filter((a) => a !== s.actual).length,
+  'copy the first bubble into the second': (s) => (answersOf(s)[0] === answersOf(s)[1] ? 0 : 1),
+};
+
+describe('level 4 compile', () => {
+  it('every template, pattern, side and place order: both see the put, and the beliefs follow the pattern table', () => {
+    for (const s of everyTwo()) {
+      const [f0, f1] = s.template.friends;
+      const thing = s.template.thing;
+      expect(s.events[0].kind).toBe('put');
+      expect(s.events[0].saw).toEqual(expect.arrayContaining([f0, f1]));
+      expect(new Set([s.start, s.middle, s.actual]).size).toBe(3);
+      expect(actualPlace(s.events, thing)).toBe(s.actual);
+      const table = {
+        oneMove: [s.middle, s.start],
+        bothMoves: [s.actual, s.start],
+        lastMove: [s.actual, s.middle],
+        sameMiddle: [s.middle, s.middle],
+        sameStart: [s.start, s.start],
+      }[s.pattern];
+      const answers = answersOf(s);
+      expect([answers[s.more], answers[1 - s.more]], `${s.template.id} ${s.pattern}`).toEqual(table);
+      // Everyone is back in the room at the end, and each friend's last-seen beat ends at its answer.
+      expect(s.events.filter((e) => e.kind === 'leave').length).toBe(
+        s.events.filter((e) => e.kind === 'back').length,
+      );
+      [f0, f1].forEach((f, b) => {
+        const e = s.events[lastSeen(s.events, f, thing)];
+        expect(e && (e.kind === 'put' || e.kind === 'move') && e.to).toBe(answers[b]);
+        expect(answerOf({ level: 4, two: s, cards: [...PLACES] }, b)).toBe(answers[b]);
+      });
+    }
+  });
+
+  it('kinds: different patterns give two answers, same patterns one; only bothMoves and lastMove reach the real place', () => {
+    for (const s of everyTwo()) {
+      const [a, b] = answersOf(s);
+      expect(a !== b).toBe(isDifferent(s.pattern));
+      expect([a, b].includes(s.actual)).toBe(s.pattern === 'bothMoves' || s.pattern === 'lastMove');
+    }
+    expect([...DIFFERENT_PATTERNS, ...SAME_PATTERNS].sort()).toEqual([...TWO_PATTERNS].sort());
+  });
+
+  it('casts: at most three critters, never bear with dog, the second mover is a friend, every move by its mover', () => {
+    for (const t of TWO_TEMPLATES) {
+      const cast = new Set<string>([...t.friends, ...t.movers.filter((m) => m !== 'wind')]);
+      expect(cast.size).toBeLessThanOrEqual(3);
+      expect(cast.has('bear') && cast.has('dog')).toBe(false);
+      expect(t.movers[1]).not.toBe('wind');
+      expect(t.friends).not.toContain(t.movers[1]);
+      expect(t.friends[0]).not.toBe(t.friends[1]);
+      expect(THINGS).toContain(t.thing);
+    }
+    expect(new Set(TWO_TEMPLATES.map((t) => t.id)).size).toBe(TWO_TEMPLATES.length);
+  });
+
+  it('beats: every event is narrated once in order, and one friend who stays behind is said to stay', () => {
+    for (const s of everyTwo()) {
+      const beats = beatsOf(s);
+      expect(beats.filter((b) => b.event !== null).map((b) => b.event)).toEqual(s.events.map((_, i) => i));
+      const stays = beats.filter((b) => b.event === null);
+      expect(stays.length).toBe(isDifferent(s.pattern) ? 1 : 0);
+      // The friend who stays is the one who saw more, and is in the room for the next move.
+      for (const st of stays) expect(st.who).toBe(s.template.friends[s.more]);
+      for (const b of beats) expect(Object.prototype.hasOwnProperty.call(SCRIPT, b.line), b.line).toBe(true);
+    }
+  });
+});
+
+describe('level 4 rounds', () => {
+  const rounds = seeds.map((seed) => twos(roundFor(4, new Rng(seed), false)));
+
+  it('three templates; two different stories with two patterns, the friend who saw more once on each side', () => {
+    const patterns = new Set<string>();
+    const templates = new Set<string>();
+    const answers = new Set<string>();
+    for (const round of rounds) {
+      expect(round.length).toBe(3);
+      expect(new Set(round.map((s) => s.template.id)).size).toBe(3);
+      const different = round.filter((s) => isDifferent(s.pattern));
+      expect(different.length).toBeGreaterThanOrEqual(2);
+      const ok = different.some((a) =>
+        different.some((b) => a !== b && a.pattern !== b.pattern && a.more === 0 && b.more === 1),
+      );
+      expect(ok).toBe(true);
+      for (const s of round) {
+        patterns.add(s.pattern);
+        templates.add(s.template.id);
+        for (const a of answersOf(s)) answers.add(a);
+      }
+    }
+    expect(patterns.size).toBe(5);
+    expect(templates.size).toBe(TWO_TEMPLATES.length);
+    expect(answers.size).toBe(3);
+  });
+
+  it('the same seed gives the same round; the cards are the three places', () => {
+    for (const seed of seeds.slice(0, 40)) {
+      const a = roundFor(4, new Rng(seed), false);
+      expect(roundFor(4, new Rng(seed), false)).toEqual(a);
+      for (const s of a) expect([...s.cards].sort()).toEqual([...PLACES].sort());
+    }
+    expect(twoRound(new Rng(7))).toEqual(twoRound(new Rng(7)));
+  });
+
+  it('the first round is the authored list', () => {
+    const first = twos(roundFor(4, new Rng(1), true));
+    expect(first).toEqual([...FIRST_TWO]);
+    expect(first.map((s) => [s.template.id, s.pattern, ...answersOf(s), s.actual])).toEqual([
+      ['ball-tidy', 'oneMove', 'blueBasket', 'redBox', 'shelf'],
+      ['drum-room', 'sameStart', 'shelf', 'shelf', 'blueBasket'],
+      ['book-dust', 'bothMoves', 'blueBasket', 'redBox', 'redBox'],
+    ]);
+    expect(first[0].template.friends[first[0].more]).toBe('bear');
+    expect(first[2].template.friends[first[2].more]).toBe('dog');
+  });
+
+  it('the habit property: every habit that ignores who was in the room costs at least two misses a round', () => {
+    const cost = (round: TwoStory[], habit: (s: TwoStory) => number) =>
+      round.reduce((n, s) => n + habit(s), 0);
+    expect(Object.values(HABITS).map((h) => cost([...FIRST_TWO], h))).toEqual([2, 5, 5, 2]);
+    for (const round of rounds)
+      for (const [name, habit] of Object.entries(HABITS))
+        expect(cost(round, habit), name).toBeGreaterThanOrEqual(2);
+  });
+
+  it('the ladder: school reaches level 4, pre-K stops at 2, and level 4 says who it is for', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 4 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
+    expect(planFor(4).level).toBe(4);
+    expect(planFor(9).level).toBe(4);
+    expect(planFor(4).name).toMatch(/about 9 and up/);
+  });
+});
+
+describe('level 4 accounting and help', () => {
+  it('a wrong card in either bubble is one miss; two on one bubble give one hint for that bubble', () => {
+    const t = new Tally();
+    t.newStory();
+    expect(t.wrong(0)).toBe(false);
+    expect(t.wrong(1)).toBe(false);
+    expect([t.misses, t.hints]).toEqual([2, 0]);
+    expect(t.wrong(1)).toBe(true);
+    expect(t.wrong(1)).toBe(false);
+    expect([t.misses, t.hints]).toEqual([4, 1]);
+    expect(t.wrong(0)).toBe(true);
+    expect([t.misses, t.hints]).toEqual([5, 2]);
+    // The next story starts both bubbles afresh.
+    t.newStory();
+    expect(t.wrong(0)).toBe(false);
+    expect([t.misses, t.hints]).toEqual([6, 2]);
+  });
+
+  it('show me is one hint for a bubble, unless that bubble glows already', () => {
+    const t = new Tally();
+    t.newStory();
+    expect(t.showMe('card', 0)).toBe(true);
+    expect(t.showMe('card', 0)).toBe(false);
+    expect(t.showMe('card', 1)).toBe(true);
+    expect([t.misses, t.hints]).toEqual([0, 2]);
+    t.newStory();
+    t.wrong(1);
+    t.wrong(1);
+    expect(t.showMe('card', 1)).toBe(false);
+    expect(t.hints).toBe(3);
+  });
+
+  it('hints lead somewhere: the glow is the first unfilled bubble and its card, then the other, then nothing', () => {
+    for (const s of everyTwo().filter((_, i) => i % 7 === 0)) {
+      const story: Story = { level: 4, two: s, cards: [...PLACES] };
+      const answers = answersOf(s);
+      expect(glowFor(story, 'card', [false, false])).toEqual({ card: answers[0], bubble: 0 });
+      expect(glowFor(story, 'card', [true, false])).toEqual({ card: answers[1], bubble: 1 });
+      expect(glowFor(story, 'card', [false, true])).toEqual({ card: answers[0], bubble: 0 });
+      expect(glowFor(story, 'card', [true, true])).toBeNull();
+      expect(glowFor(story, 'watch')).toBeNull();
+    }
+    expect(firstUnfilled([true, true])).toBe(-1);
+  });
+});
+
+describe('level 4 layout', () => {
+  const hitW = BUBBLE_W + 2 * BUBBLE_MARGIN;
+  const hitH = BUBBLE_H + 2 * BUBBLE_MARGIN;
+  for (const v of VIEWS) {
+    it(`two bubbles fit ${v.w}x${v.h}`, () => {
+      const l = thoughtLayout(v, 4);
+      expect(l.bubbles.length).toBe(2);
+      expect(l.bubble).toEqual(l.bubbles[0]);
+      expect(l.stage.scale).toBeGreaterThanOrEqual(0.85);
+      const stageBox: Box = {
+        x: l.stage.x,
+        y: l.stage.y,
+        w: STAGE_W * l.stage.scale,
+        h: STAGE_H * l.stage.scale,
+      };
+      expect(inside(stageBox, v)).toBe(true);
+      const pet: Box = { x: 0, y: v.h - PET_H, w: PET_W, h: PET_H };
+      const home: Box = { x: 0, y: 0, w: HOME_W, h: 130 };
+      const cards = l.cards.map((c) => ({ x: c.x - CARD_W / 2, y: c.y - CARD_H / 2, w: CARD_W, h: CARD_H }));
+      const bubbles = l.bubbles.map((b) => ({ x: b.x - hitW / 2, y: b.y - hitH / 2, w: hitW, h: hitH }));
+      const replay: Box = {
+        x: l.replay.x - REPLAY_R,
+        y: l.replay.y - REPLAY_R,
+        w: 2 * REPLAY_R,
+        h: 2 * REPLAY_R,
+      };
+      const all = [...cards, ...bubbles, replay];
+      for (const b of all) {
+        expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
+        expect(inside(b, v)).toBe(true);
+        expect(overlap(b, home)).toBe(false);
+      }
+      all.forEach((a, i) => all.slice(i + 1).forEach((b) => expect(overlap(a, b)).toBe(false)));
+      for (const c of cards) {
+        expect(overlap(c, stageBox)).toBe(false);
+        expect(overlap(c, pet)).toBe(false);
+      }
+      expect(overlap(replay, pet)).toBe(false);
+      expect(overlap(replay, stageBox)).toBe(false);
+      // Bubble 0 is on the left when upright, on top when sideways; a drop finds the bubble it lands in.
+      if (v.w > v.h) expect(l.bubbles[0].y).toBeLessThan(l.bubbles[1].y);
+      else expect(l.bubbles[0].x).toBeLessThan(l.bubbles[1].x);
+      l.bubbles.forEach((b, i) => expect(bubbleAt(l, b.x, b.y)).toBe(i));
+      for (const c of l.cards) expect(bubbleAt(l, c.x, c.y)).toBe(-1);
+    });
+  }
+
+  it('levels 1–3 keep one bubble where it was', () => {
+    for (const v of VIEWS)
+      for (const level of [1, 2, 3]) {
+        const l = thoughtLayout(v, level);
+        expect(l).toEqual(thoughtLayout(v));
+        expect(l.bubbles).toEqual([l.bubble]);
+      }
+  });
+});
+
 describe('voice lines', () => {
   const has = (id: string) => expect(Object.prototype.hasOwnProperty.call(SCRIPT, id), id).toBe(true);
   it('every dynamically built id exists', () => {
@@ -392,7 +670,7 @@ describe('voice lines', () => {
       has(`thought.reason.${r}`);
       has(`thought.need.${r}`);
     }
-    for (const n of [1, 2, 3]) has(`thought.instruct.${n}`);
+    for (const n of [1, 2, 3, 4]) has(`thought.instruct.${n}`);
     for (const w of WANT_STORIES) for (const k of ['story', 'hint', 'got']) has(`thought.want.${w.id}.${k}`);
     for (const t of LOOK_TEMPLATES)
       for (const k of ['away', 'watching', 'ask', 'saw', 'helped']) has(`thought.look.${t.id}.${k}`);
@@ -400,5 +678,20 @@ describe('voice lines', () => {
       for (const k of ['story', 'ask', 'found', 'again']) has(`thought.why.${w.id}.${k}`);
       for (const r of w.regions) has(`thought.region.${w.id}.${r.id}`);
     }
+    for (const t of TWO_TEMPLATES) {
+      for (const k of ['put', 'move1', 'move2', 'ask', 'helped']) has(`thought.two.${t.id}.${k}`);
+      for (const f of t.friends) {
+        for (const k of ['out', 'stay', 'back']) has(`thought.two.${t.id}.${k}.${f}`);
+        has(`thought.two.saw.${f}`);
+      }
+    }
+    for (const k of ['found', 'done.different', 'done.same']) has(`thought.two.${k}`);
+  });
+
+  it('level 4 says thinks and saw, never wrong, trick, silly or fooled', () => {
+    for (const [id, lines] of Object.entries(SCRIPT))
+      if (id.startsWith('thought.two.') || id === 'thought.instruct.4')
+        for (const text of lines as readonly string[])
+          expect(text, id).not.toMatch(/wrong|trick|silly|fooled/i);
   });
 });
