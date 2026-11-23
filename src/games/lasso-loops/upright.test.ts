@@ -125,6 +125,7 @@ describe('Lasso Loops level 7 sideways', () => {
     [1024, 768],
     [1662, 768],
     [1366, 1024],
+    [768, 1024],
   ])('%i x %i keeps the cards apart, over the field, and the shelf jars apart', (w, h) => {
     const L = lassoLayout({ w, h }, 3, true, false, true);
     expect(L.upright).toBe(false);
@@ -132,8 +133,10 @@ describe('Lasso Loops level 7 sideways', () => {
     expect(L.rangeCards).toHaveLength(5);
     for (let i = 1; i < 5; i++)
       expect(L.rangeCards[i].x - L.rangeCards[i - 1].x).toBeGreaterThanOrEqual(RANGE_HIT.w);
-    expect(L.rangeCards[0].x - RANGE_HIT.w / 2).toBeGreaterThanOrEqual(L.field.x - 10);
-    expect(L.rangeCards[4].x + RANGE_HIT.w / 2).toBeLessThanOrEqual(L.field.x + L.field.w + 10);
+    // Over the field, or across the view (40 from each side) where the field is too narrow for five.
+    const [left, right] = L.field.w >= 5 * RANGE_HIT.w ? [L.field.x, L.field.x + L.field.w] : [40, w - 40];
+    expect(L.rangeCards[0].x - RANGE_HIT.w / 2).toBeGreaterThanOrEqual(left - 10);
+    expect(L.rangeCards[4].x + RANGE_HIT.w / 2).toBeLessThanOrEqual(right + 10);
     // The cards stand clear above the jar line.
     for (const c of L.rangeCards) expect(c.y + RANGE_HIT.h / 2).toBeLessThan(h - 30 - JAR_H - JAR_TAG);
     expect(L.shelf).toHaveLength(4);

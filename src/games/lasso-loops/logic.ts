@@ -352,11 +352,16 @@ export function lassoLayout(
         ? row(3, 40, v.w - 40, 200).map((x) => ({ x, y: reviseY }))
         : row(3, (jarSpots[0]?.x ?? 40) + 150, v.w - 40, 160).map((x) => ({ x, y: v.h - 100 })),
     sign: { x: v.w - 110, y: 58 },
-    shelf: row(4, 190, v.w - (upright ? 40 : 210), 140).map((x) => ({ x, y: v.h - 30 })),
+    // The leaf is not out yet while the shelf shows, so the shelf may run to the right edge (four jars fit at 768 wide).
+    shelf: row(4, 190, v.w - 40, 140).map((x) => ({ x, y: v.h - 30 })),
     // Upright the cards stand in level 6's keep-or-change row; sideways the field cannot lose a row, so they stand over it
     // at the answer pads' height while loops are off.
     rangeCards: upright
       ? row(5, 40, v.w - 40, 170).map((x) => ({ x, y: reviseY }))
-      : row(5, field.x, field.x + field.w, 180).map((x) => ({ x, y: field.y + field.h * 0.45 })),
+      : // A field too narrow for five apart (a 768-wide tablet) lends the cards the view's width.
+        (field.w >= 5 * RANGE_HIT.w
+          ? row(5, field.x, field.x + field.w, 180)
+          : row(5, 40, v.w - 40, 170)
+        ).map((x) => ({ x, y: field.y + field.h * 0.45 })),
   };
 }
