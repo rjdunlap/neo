@@ -82,6 +82,7 @@ Each is dated and keeps its numbered proposals (P1…, U1…); what was adopted 
 | [CRITTER-DAILY.md](reviews/CRITTER-DAILY.md), [TYPING-LAND.md](reviews/TYPING-LAND.md), [SPARK-AI-GAMES.md](reviews/SPARK-AI-GAMES.md), [POK-POK.md](reviews/POK-POK.md), [TOTOLOGIC.md](reviews/TOTOLOGIC.md) | Other games and apps, played as references |
 | [UX-REVIEW-2026-11-09.md](reviews/UX-REVIEW-2026-11-09.md) | Our own screens and navigation |
 | [CODEBASE-REVIEW-2026-11-07.md](reviews/CODEBASE-REVIEW-2026-11-07.md) | Our own code structure |
+| [CLAUDE-3D-ANIMATION-2026-11-22.md](reviews/CLAUDE-3D-ANIMATION-2026-11-22.md) | Tools and practices for 3D models and animation made with Claude, with a verdict on each for our creature art |
 | [WORKFLOW-REVIEWS.md](reviews/WORKFLOW-REVIEWS.md) | How sessions work here: what was measured, what changed and why (the reasons behind the session guide) |
 
 ## History
