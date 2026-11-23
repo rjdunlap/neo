@@ -137,7 +137,7 @@ Instructions use `ctx.instruct`; everything else `ctx.say`. Every line is slot-f
 
 ## Build batches
 
-1. **`thought-bubbles` upright, levels 1–3** (phone play; existing-game change to layout): `upright: true`, an `upright.test.ts` walking levels 1–3 through `thoughtLayout` on the 768 × 1024 view (whose portrait branch already exists), and any placement fix that test finds. No rule or speech change.
+1. **`thought-bubbles upright`, levels 1–3** (phone play; existing-game change to layout): `upright: true`, an `upright.test.ts` walking levels 1–3 through `thoughtLayout` on the 768 × 1024 view (whose portrait branch already exists), and any placement fix that test finds. No rule or speech change.
 2. **`thought-bubbles 2`, level 4, *Two bubbles*** (after batch 1): everything above.
 
 ## Check tier

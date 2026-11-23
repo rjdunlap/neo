@@ -26,7 +26,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ### Phone play
 
-None queued: the next phone line is in Next ten.
+- **`thought-bubbles` upright, levels 1–3, batch `thought-bubbles upright`** (prek and school; existing-game layout change: typecheck, its rule and new upright tests, one filtered `BROWSER_SUITE=thoughtbubbles` play on an upright phone, one upright screenshot at level 2). [Definition](definitions/thought-bubbles-4.md#build-batches)
 
 ### Puzzle-page follow-ups
 
@@ -58,6 +58,8 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 - **`word-glue` level 5, *What kind of thing?*, batch `word-glue 2`** (school; new interaction tier: typecheck and unit tests including rule, layout and upright tests, one filtered `wordglue` play on an upright phone at level 5 with one wrong tap and one hint, one upright phone screenshot, `fingerdemo` at level 5, build because voice lines and clips are added). [Definition](definitions/word-glue-5-6.md#check-tier), [dive](deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
 
 - **`word-glue` level 6, *Which way round?*, batch `word-glue 3`** (school; after batch `word-glue 2`; same tier, with a capture strip of the eight new drawings). [Definition](definitions/word-glue-5-6.md#check-tier), [dive](deep-dives/subjects/vocabulary-word-parts.md#build-slices-in-order)
+
+- **`thought-bubbles` level 4, *Two bubbles*, batch `thought-bubbles 2`** (school 4, about 9 and up; after batch `thought-bubbles upright`; new interaction tier: typecheck and unit tests including rule and upright tests, one filtered `thoughtbubbles` play on an upright phone at level 4 with a wrong card, the glow and a *same* story, one upright screenshot, `fingerdemo` at level 4). [Definition](definitions/thought-bubbles-4.md#check-tier), [study](deep-dives/subjects/literature-meaning.md#build-slices-in-order)
 
 - **`look-it-up` level 6, *Two pages together*, batch `look-it-up 3`** (school; after batch `look-it-up 2`; same tier with one level-6 play taking a wrong friend and one hint). [Definition](definitions/look-it-up-4-6.md#check-tier), [dive](deep-dives/subjects/informational-reading.md#build-slices-in-order)
 
