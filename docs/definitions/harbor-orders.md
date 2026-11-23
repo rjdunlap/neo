@@ -1,6 +1,8 @@
 # Harbor Orders, levels 1–4 (definition)
 
-Documentation packet, 2026-11-23, branch `claude/define-harbor-orders`, [PR #2031](https://github.com/rjdunlap/neo/pull/2031). Study follow-up ME6 from [money and economy](../deep-dives/subjects/money-economy.md#build-slices-in-order); the study's decision 4 was settled on 2026-10-23 (Harbor Orders replaces the household-budget puzzle), and placement by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Proposed game `harbor-orders`; nothing is registered or implemented. **Docs only.** Two build batches follow below.
+**Built:** levels 1–2 ([PR #2051](https://github.com/rjdunlap/neo/pull/2051)); to build levels 3–4, read [Build batches](#build-batches).
+
+Documentation packet, 2026-11-23, branch `claude/define-harbor-orders`, [PR #2031](https://github.com/rjdunlap/neo/pull/2031). Study follow-up ME6 from [money and economy](../deep-dives/subjects/money-economy.md#build-slices-in-order); the study's decision 4 was settled on 2026-10-23 (Harbor Orders replaces the household-budget puzzle), and placement by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Two build batches follow below.
 
 ## What you do
 
@@ -78,7 +80,7 @@ One board is a round at every level. Redisplay the same board, order, mornings a
   1. The board has fewer mornings than the fewest: "No plan fills this order in two mornings. Add a morning." The button is lit.
   2. The board has more: "Three mornings are enough. Take a morning away."
   3. The plan already fills the order: "This plan fills the order. Send it." This one is free.
-  4. Otherwise take the fewest-morning plan that agrees with the most workshops' rows on the board (the first in enumeration order when several tie), light the first workshop whose row differs, and say how that workshop spends its mornings: "The Bell: one morning of crates and two of boats." The player sets the squares.
+  4. Otherwise take the reachable fewest-morning plan that agrees with the most workshops' rows on the board (the first in enumeration order when several tie), light the first workshop whose row differs, and say how that workshop spends its mornings: "The Bell: one morning of crates and two of boats." The player sets the squares. A target row must use at least as many squares as are already set, since a square cannot go back to a closed door. Keep the lit row and the directions visible until the counts match.
 
   Repeating the current hint with no change replays it, free. Count each new hint once.
 - **Hints always lead somewhere.** Following a hint of kind 4 makes one more row agree with a fewest-morning plan, and the next hint keeps every row that already agrees. The rule test walks sampled boards from sampled starting plans at every level and checks that following hints reaches a plan that fills in the fewest mornings within the number of workshops plus the number of mornings to add or remove.
@@ -105,7 +107,7 @@ One board is a round at every level. Redisplay the same board, order, mornings a
 - **Hint lines:** four ("Add a morning." "Take a morning away." "This plan fills the order. Send it." "Set the lit workshop's mornings.").
 - **Workshop names:** three ("The Oar." "The Anchor." "The Bell.").
 
-A miss or a hint speaks its fault or hint line, and a hint of kind 4 speaks the workshop's name first; the caption carries the whole working with its numbers. The order and the rates are read with the shell's number words if the [reuse map](../DESIGN.md#reuse-map) has them for the numbers in play (rates to 5, orders to 60), and otherwise by a stage line while the card carries the numbers. Say on the game's page that the caption is fuller than the speech. A unit test checks that every fault and hint a board can produce has a voice line. The instruction is `ctx.instruct`: "Choose what each workshop makes each morning, and fill the order as soon as it can be filled."
+A miss or a hint speaks its fault or hint line, and a hint of kind 4 speaks the workshop's name first. The on-board note carries the whole working with its numbers; the shell caption mirrors the short spoken cue. Tapping the order or a workshop's sign gives a short cue and puts its quantities in the on-board note. A unit test checks that every fault and hint a board can produce has a voice line. The instruction is `ctx.instruct`: "Choose what each workshop makes each morning, and fill the order as soon as it can be filled."
 
 **How-to cards.**
 - Level 1 shows a sign with its two rates, a square stepping from crates to boats, the order card's tallies filling and **Send it**.

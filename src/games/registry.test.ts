@@ -610,6 +610,7 @@ describe('game registry', () => {
       'garden-rows',
       'gem-swap',
       'habitat-helpers',
+      'harbor-orders',
       'hat-band',
       'helper-house',
       'inchworm',

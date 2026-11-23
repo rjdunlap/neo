@@ -144,6 +144,7 @@ The upright `grownup` games below are measured from its own layout function at t
 | `crossword` | 44.7 | square and key, 88 units | |
 | `domino-pond` | 50.8 | tray and buttons, 100 units | Board cells are 108 units (54.8). |
 | `gem-swap` | 44.7 | button, 88 units high | Gems are 49.8 at the largest tray. |
+| `harbor-orders` | 44.7 | workshop sign and buttons, 88 units high | Up to six 89-unit morning squares fit across the board. |
 | `hat-band` | 50.8 | song card | |
 | `island-bridges` | 44.7 | sea square, 88 units (the 5 × 5 and 7 × 7 seas); the 9 × 9 and 11 × 11 seas slide at 86 units (43.7) | The 9 × 9 seas (levels 2, 3, 6, 7) and the 11 × 11 sea (level 4) slide in a window, fixed 2026-11-18 (were 74 units, 37.6, and 64 units, 32.5); the 5 × 5 and 7 × 7 seas grew from 80 to 88 (40.6 to 44.7) and show whole. Buttons are 88 units high (44.7), fixed 2026-11-18 (were 72 to 76, 36.6 to 38.6). `touchLayout` in `src/games/island-bridges/logic.ts` returns the window. |
 | `lantern-lights` | 50.8 | button | Lanterns are 58.9 or more. |

@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (20, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (21, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 189 games; the 167 child games are listed below and the 22 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 31 games: the 22 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 190 games; the 167 child games are listed below and the 23 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 32 games: the 23 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -279,7 +279,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 22 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 20 in Lantern Lake. All play by touch on the island; 14 are touch-only, and 8 also play with a controller on the couch.
+These 23 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 21 in Lantern Lake. All play by touch on the island; 15 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -311,6 +311,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Shadow Play](docs/games/shadow-play.md) | Lantern Lake | 4 | a lit lamp, a cloth screen and three flat cut-outs on rails; slide each cut-out nearer the lamp or the screen until its shadow fills the outline of tonight's skyline. |
 | [Fence the Field](docs/games/fence-the-field.md) | Lantern Lake | 4 | dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play. |
 | [Key It Out](docs/games/key-it-out.md) | Lantern Lake | 4 | a page of pencil sketches of invented lake creatures and a field guide's identification key. At level 1 (*By the key*) six sketches show every part: choose one, answer the key's yes-or-no questions from what it shows, and tap the name the branch ends in. Three unstamped sketches carrying their right names at once are stamped together. |
+| [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 2 | Give two workshops a few mornings to make crates and boats for a waiting order. |
 
 <!-- end generated -->
 
@@ -522,6 +523,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `tidetables` | Tide Tables levels 1–2 via Lantern Lake at 390×625, including an order conflict, Help, undo, rotation, one sticker per round and return to the same land page. | Ghost finger: `FINGER_ONLY=tide-tables FINGER_LEVELS=2 FINGER_BAND=grownup` |
 | `truthbridge` | Truth Bridge levels 1–2 via Lantern Lake at 390×625 with captions: a blank Cross, both level 1 boards, a wrong Cross counted once, Help counted once, rotation, one sticker per round and return to the same land page. | Ghost finger: `FINGER_ONLY=truth-bridge FINGER_LEVELS=2 FINGER_BAND=grownup` |
 | `fencethefield` | Fence the Field levels 1, 2 and 4 via Lantern Lake at 390×625 with captions: at level 1 a laid rail tapped (free) and sound rails to the last one (0 misses, 0 hints); at level 2 a rail that costs a plot laid, answered by the pet and stepped back (one miss), the same rail again (free), Help twice (one hint), rotation to sideways keeping the field, count and glow; at level 4 the whole run taken (her claims, the run she must open and the pet taking it replayed, then stepped back: one miss) and the leave-two hint followed; one sticker per round and return to the same land page. `FENCE_FROM=4` plays level 4 alone. | Ghost finger: `FINGER_ONLY=fence-the-field FINGER_LEVELS=4 FINGER_BAND=grownup` |
+| `harbororders` | Harbor Orders levels 1–2 on Lantern Lake, with captions at 390×625, a free short check, one counted spare-morning send, Help, rotation and one sticker per order. | `BROWSER_SUITE=harbororders`; demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=harbor-orders FINGER_LEVELS=2` |
 | `keyitout` | Key It Out levels 1, 2 and 4 via Lantern Lake at 390×625 with captions: at level 1 a key question read and a branch followed (free), then six sketches named in two stampings (0 misses, 0 hints) and the capture strip of the twelve part values and four hidden forms; at level 2 the page filled with no right name (one miss, the note giving the fault), a name lifted and put back (same page, free), Help twice (one hint), rotation to sideways keeping the page, chosen sketch and hint, one sticker per round and return to the same land page; at level 4 the Table page (a cell spoken, a name given and lifted), a full wrong page whose fault is a note the table disagrees with (one miss, the Table page opened at the row), an unused name swapped onto the full page (not judged), Help, the page finished. | Ghost finger: `FINGER_ONLY=key-it-out FINGER_LEVELS=4 FINGER_BAND=grownup` |
 | `shadowplay` | Shadow Play levels 1–2 via Lantern Lake at 390×625 with captions: both level 1 boards by drag and by tap, a wrong Light counted once and lit again free, Help counted once, rotation, one sticker per round and return to the same land page. | Ghost finger: `FINGER_ONLY=shadow-play FINGER_LEVELS=2 FINGER_BAND=grownup` |
 | `tideline34` | Tide Line levels 3–4 by touch: level 3 an early wave not counted, a dry round 1, then round 2 with the pail between the lines floated and fetched while the flag and towel stay dry, saved 1 miss/0 hints; level 4 in portrait two wrong cards then the glow, two strips, saved 2 misses/1 hint | Ghost finger: `FINGER_ONLY=tide-line FINGER_LEVELS=3,4` |
