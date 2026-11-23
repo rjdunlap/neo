@@ -768,4 +768,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school–grown-up* · [Sum Crates](games/sum-crates.md)
 
+### Tide Tables
+
+*grown-up* · [Tide Tables](games/tide-tables.md)
+
 <!-- end generated -->

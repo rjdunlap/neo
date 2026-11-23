@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict';
 
-export function createSuite({ page, ready, scene, turnToGame, finished, screenshot, log }) {
+export function createSuite({ page, ready, scene, finished, screenshot, log }) {
   async function tideTablesPlay() {
     const id = 'tide-tables';
     const portrait = { width: 390, height: 625 };
-    await page.setViewportSize(portrait);
+    const landscape = { width: 625, height: 390 };
     await ready();
     const tap = async (expression) => {
       const { x, y } = await page.evaluate((expression) => {
         const node = Function(`return (${expression})`)();
-        const p = node.getGlobalPosition();
-        if (neo.app?.renderer && !node.visible) throw Error('Invisible Tide Tables target');
+        const area = node.hitArea;
+        const p = area
+          ? node.toGlobal({ x: area.x + (area.width ?? 0) / 2, y: area.y + (area.height ?? 0) / 2 })
+          : node.getGlobalPosition();
         return { x: p.x, y: p.y };
       }, expression);
       await page.touchscreen.tap(x, y);
@@ -36,6 +38,8 @@ export function createSuite({ page, ready, scene, turnToGame, finished, screensh
     const stickers = () =>
       page.evaluate((id) => kit.store.data.stickers.filter((s) => s.game === id).length, id);
     const landOpen = async (level, variant) => {
+      // The classic map still asks for landscape. An upright round can then rotate into portrait.
+      await page.setViewportSize(landscape);
       await page.evaluate(
         async ({ id, level, variant }) => {
           const { Rng } = await import('/src/engine/random.ts');
@@ -56,18 +60,28 @@ export function createSuite({ page, ready, scene, turnToGame, finished, screensh
       );
       try {
         await scene('LandScene');
-        await turnToGame(id);
+        while (await page.evaluate((id) => !neo.scene.showing.some(({ mod }) => mod.id === id), id)) {
+          const { current, more } = await page.evaluate(() => ({
+            current: neo.scene.page,
+            more: neo.scene.nextArrow.visible,
+          }));
+          assert.equal(more, true, 'Tide Tables should appear on a later page of Lantern Lake');
+          await tap('neo.scene.nextArrow');
+          await page.waitForFunction((current) => neo.scene.page !== current, current, { timeout: 5000 });
+          await page.waitForTimeout(300);
+        }
         const landPage = await page.evaluate(() => neo.scene.page);
         await tap("neo.scene.showing.find(({ mod }) => mod.id === 'tide-tables').node");
         await scene('GameScene');
         await page.waitForFunction(() => neo.scene.game && neo.scene.place.mode !== 'none');
         assert.equal(await page.evaluate(() => neo.scene.level), level);
-        assert.equal(await page.evaluate(() => neo.view.upright), true);
+        await page.setViewportSize(portrait);
+        await page.waitForFunction(() => neo.view.upright);
         assert.equal(await page.evaluate(() => neo.scene.game.board.times[0]), variant ? '07:30' : '07:00');
         return landPage;
       } finally {
         await page.evaluate(() => {
-          window.restoreTideRandom();
+          window.restoreTideRandom?.();
           delete window.restoreTideRandom;
         });
       }
@@ -126,7 +140,7 @@ export function createSuite({ page, ready, scene, turnToGame, finished, screensh
     assert.deepEqual(hint.counts, { misses: 2, hints: 2 });
     assert.deepEqual(hint.hint, { job: 1, row: 1 });
     await screenshot('tide-tables-level-2-portrait');
-    await page.setViewportSize({ width: 625, height: 390 });
+    await page.setViewportSize(landscape);
     await page.waitForFunction(() => !neo.view.upright);
     assert.deepEqual(await draft(), [0, 3, 1]);
     assert.deepEqual((await state()).hint, hint.hint);

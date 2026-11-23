@@ -23,6 +23,7 @@ export const VOICE = {
   'tides.hint.picnic.any': ['Try the terrace at {time}. The picnic fits at any tide.'],
   'tides.hint.picnic.before': ['Try the terrace at {time}. This leaves room to sketch later.'],
   'tides.hint.picnic.after': ['Try the terrace at {time}. This leaves room to float the boat earlier.'],
+  'tides.auto.assist': ['{error} {move}'],
   'tides.hint.done': ['Every job fits. Tap Check to run your plan.'],
   'tides.replay': ['{time}. Time for {job}.'],
   'tides.done': ['Every job had a time that worked!'],

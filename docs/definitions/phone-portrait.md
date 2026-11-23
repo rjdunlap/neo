@@ -131,7 +131,7 @@ Batch 7 brought the fully upright-ready games to 38 (40 once `beat-builder` and 
 
 ### Thumb sizes of the upright grown-up games (measured 2026-11-18)
 
-Each of the 23 upright `grownup` games was measured from its own layout function at the grown-up band's levels on the 390 × 844 upright view: the design area is 768 units wide at scale 0.508, so 100 units are 50.8 CSS pixels and the band's 64-unit minimum is 32.5 pixels. The smallest fixed target is listed, meaning a thing she taps or a place she drops on. A board that slides is judged by its window, and the grown-up band rule already allows a board that cannot fit to zoom or scroll.
+The upright `grownup` games below are measured from its own layout function at the grown-up band's levels on the 390 × 844 upright view: the design area is 768 units wide at scale 0.508, so 100 units are 50.8 CSS pixels and the band's 64-unit minimum is 32.5 pixels. The smallest fixed target is listed, meaning a thing she taps or a place she drops on. A board that slides is judged by its window, and the grown-up band rule already allows a board that cannot fit to zoom or scroll.
 
 [`src/games/grownup-thumbs.test.ts`](../../src/games/grownup-thumbs.test.ts) guards the table (`thumbPx` in `src/games/upright-check.ts` turns units into pixels). A layout change that alters a number fails it, and it fails if an upright grown-up game is not measured. It also keeps an `UNDER` list of the games with a fixed target under 44 pixels, so a fix updates the list and this table together.
 
@@ -139,6 +139,7 @@ Each of the 23 upright `grownup` games was measured from its own layout function
 | --- | --- | --- | --- |
 | `block-garden` | 45.7 | bed square, 90 units | The 8 × 8 beds of levels 7, 8 and 12, a drop place for a dragged piece rather than a tap. Fixed 2026-11-18 (was 72 units, 36.6), on an upright phone only; sideways and on the iPad the square stays 72. 6 × 6 beds are still 100 units (50.8). |
 | `brain-break` | 50.8 | stone | |
+| `bunny-patches` | 50.8 | button | Level 3 meadow controls. |
 | `crossword` | 44.7 | square and key, 88 units | |
 | `domino-pond` | 50.8 | tray and buttons, 100 units | Board cells are 108 units (54.8). |
 | `gem-swap` | 44.7 | button, 88 units high | Gems are 49.8 at the largest tray. |
@@ -158,6 +159,8 @@ Each of the 23 upright `grownup` games was measured from its own layout function
 | `sorting-machine` | 52.8 | machine button | |
 | `species-comeback` | 44.7 | turtle card and Spring, 88 units | The tree slides sideways at levels 2–4. The nests, keeper choices and Spring stay in place. Level 1 fits with 96-unit turtle cards. |
 | `sudoku-garden` | 42.7 | bed square, 84 units | The 9 × 9 bed, fixed 2026-11-18 (was 64 units, 32.5). 6 × 6 squares are 96 units (48.8), number buttons 100 (50.8, two rows at 9 × 9) and Marks, Erase, Hint, Start over and Fill marks 88 units high (44.7). Does not slide. 768 units across nine squares cannot reach 44 pixels (86 units) without sliding or zooming, and 1.3 pixels under does not warrant a sliding board, so it stays on the list. A short view (the 375 × 667 phone) shrinks the bed, never below 72 units in the tested views. |
+| `sum-crates` | 50.8 | tray fruit | Level 3 fruit tray. |
+| `tide-tables` | 48.8 | time row or control, 96 units high | Both levels share the layout. |
 | `tile-pairs` | 50.8 | button, 100 units | Tiles are 108 units (54.8). |
 | `word-search` | 44.2 | letter square, 87 units, on a grid that fits; a 10 × 10 grid slides at 86 units (43.7) | Hint and Start over are 88 units high (44.7), fixed 2026-11-18 (were 72, 36.6). The larger grids (12 × 12 and 14 × 14) slide at 64-unit squares (32.5), which the band rule allows; the 10 × 10 grids were fixed 2026-11-18 (were 69 units, 35.0). The square size is `touchSquare` in `src/games/word-search/layout.ts`. |
 | `word-code` | 44.7 | keyboard key, 96 × 88 units | The grown-up five-letter level 3 (7 × 4 keys). School tray keys and picture cards are larger. |

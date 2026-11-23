@@ -2,6 +2,8 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { voice } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { hinted, missEvery, newTally, tally } from '../../progress/coach';
@@ -56,11 +58,12 @@ function button(root: Container, run: () => void) {
   const main = label('', 30);
   const detail = label('', 25, ink, '500');
   const aside = label('', 25);
-  for (const child of [panel, art, main, detail, aside]) child.eventMode = 'none';
-  node.addChild(panel, art, main, detail, aside);
+  const mark = label('', 23);
+  for (const child of [panel, art, main, detail, aside, mark]) child.eventMode = 'none';
+  node.addChild(panel, art, main, detail, aside, mark);
   onTap(node, run);
   root.addChild(node);
-  return { node, panel, art, main, detail, aside };
+  return { node, panel, art, main, detail, aside, mark };
 }
 
 type Button = ReturnType<typeof button>;
@@ -82,7 +85,7 @@ class Round implements Game {
   private readonly root = new Container();
   private readonly backdrop = new Graphics();
   private readonly heading = label('Fictional harbor', 40);
-  private readonly columns = label('Time     •     Height     •     Job', 27);
+  private readonly columns = ['Time', 'Height', 'Job'].map((name) => label(name, 27));
   private readonly status = label(STATUS, 26);
   private readonly rows = ROWS.map((row) => button(this.root, () => this.tapRow(row)));
   private readonly jobs = JOBS.map((job) => button(this.root, () => this.select(job)));
@@ -112,7 +115,7 @@ class Round implements Game {
     this.view = ctx.view;
     this.backdrop.eventMode = 'none';
     this.root.addChildAt(this.backdrop, 0);
-    this.root.addChild(this.heading, this.columns, this.status);
+    this.root.addChild(this.heading, ...this.columns, this.status);
     ctx.stage.addChild(this.root);
     this.render();
   }
@@ -196,31 +199,39 @@ class Round implements Game {
   }
 
   askForHint() {
-    this.showHint(true);
-  }
-
-  private showHint(speak: boolean) {
     if (this.running) return;
-    this.hint = hintFor(this.plans, this.draft);
-    if (!this.hint) {
+    const hint = this.showHint();
+    if (!hint) {
       this.status.text = 'All jobs fit. Tap Check.';
-      if (speak) void this.ctx.say('tides.hint.done');
+      void this.ctx.say('tides.hint.done');
       return;
     }
+    this.status.text = `Try ${SHORT[hint.job].toLowerCase()} at ${this.board.times[hint.row]}.`;
+    const { line, vars } = this.hintSpeech(hint);
+    void this.ctx.say(line, vars);
+  }
+
+  private showHint() {
+    this.hint = hintFor(this.plans, this.draft);
+    if (!this.hint) return null;
     const key = this.draft.join(',');
     if (this.hintedDraft !== key) {
       hinted(this.counts);
       this.hintedDraft = key;
     }
-    const { job, row } = this.hint;
-    this.selected = job;
-    this.status.text = `Try ${SHORT[job].toLowerCase()} at ${this.board.times[row]}.`;
+    this.selected = this.hint.job;
     this.render();
-    if (!speak) return;
-    const vars = { time: this.board.times[row], height: metres(this.board.heights[row]) };
-    if (job === 0) void this.ctx.say('tides.hint.sketch', vars);
-    else if (job === 1) void this.ctx.say('tides.hint.boat', vars);
-    else void this.ctx.say(`tides.hint.picnic.${this.board.order}`, vars);
+    return this.hint;
+  }
+
+  private hintSpeech({ job, row }: NonNullable<ReturnType<typeof hintFor>>) {
+    const line: LineId =
+      job === 0
+        ? 'tides.hint.sketch'
+        : job === 1
+          ? 'tides.hint.boat'
+          : `tides.hint.picnic.${this.board.order}`;
+    return { line, vars: { time: this.board.times[row], height: metres(this.board.heights[row]) } };
   }
 
   private submit() {
@@ -240,11 +251,10 @@ class Round implements Game {
     this.rejected.add(key);
     const due = first && missEvery(this.counts);
     if (first) sfx.boing();
-    this.explain(verdict);
-    if (due) this.showHint(false);
+    this.explain(verdict, due ? this.showHint() : null);
   }
 
-  private explain(verdict: Extract<Verdict, { row: Row }>) {
+  private explain(verdict: Extract<Verdict, { row: Row }>, hint: ReturnType<typeof hintFor>) {
     const { row, kind } = verdict;
     const time = this.board.times[row];
     this.status.text = {
@@ -253,10 +263,20 @@ class Round implements Game {
       before: `Set up the picnic before ${time}.`,
       after: `Set up the picnic after ${time}.`,
     }[kind];
-    void this.ctx.say(`tides.miss.${kind}`, {
+    const line = `tides.miss.${kind}` as const;
+    const vars = {
       time,
       height: metres(this.board.heights[row]),
       limit: metres(this.board.sketchMax),
+    };
+    if (!hint) {
+      void this.ctx.say(line, vars);
+      return;
+    }
+    const move = this.hintSpeech(hint);
+    void this.ctx.say('tides.auto.assist', {
+      error: voice.line(line, vars),
+      move: voice.line(move.line, move.vars),
     });
   }
 
@@ -297,7 +317,11 @@ class Round implements Game {
       .closePath()
       .fill(cream);
     this.heading.position.copyFrom(layout.heading);
-    this.columns.position.set(layout.heading.x, layout.heading.y + 43);
+    const rowBox = layout.rows[0];
+    const columnX = [-0.32, -0.01, upright ? 0.3 : 0.32];
+    this.columns.forEach((column, i) => {
+      column.position.set(rowBox.x + rowBox.w * columnX[i], layout.heading.y + 43);
+    });
     this.status.position.copyFrom(layout.status);
 
     for (const row of ROWS) {
@@ -317,9 +341,9 @@ class Round implements Game {
         pointing || active || inspect ? 6 : 2,
       );
       control.main.text = this.board.times[row];
-      control.main.position.set(-box.w * 0.32, 0);
+      control.main.position.set(box.w * columnX[0], 0);
       control.detail.text = `${metres(this.board.heights[row])} m`;
-      control.detail.position.set(-box.w * 0.01, 0);
+      control.detail.position.set(box.w * columnX[1], 0);
       control.aside.text = occupant === undefined ? '—' : done ? '✓' : upright ? SHORT[occupant] : '';
       control.aside.position.set(box.w * 0.38, 0);
       if (occupant !== undefined)
@@ -346,10 +370,19 @@ class Round implements Game {
       control.main.position.set(0, 7);
       control.detail.text = this.condition(job);
       control.detail.position.set(0, 36);
-      if (job === 2 && this.board.order !== 'any' && upright) {
-        jobArt(control.art, this.board.order === 'before' ? 'shows' : 'boat', 84, 36, 0.27);
-        control.detail.x = -11;
-      } else control.detail.x = 0;
+      control.mark.text = selected ? '✓' : '';
+      control.mark.position.set(-layout.jobs[job].w / 2 + 17, -34);
+      if (job === 2 && this.board.order !== 'any') {
+        jobArt(
+          control.art,
+          this.board.order === 'before' ? 'shows' : 'boat',
+          layout.jobs[job].w / 2 - 18,
+          36,
+          0.23,
+        );
+        control.detail.x = -10;
+        control.detail.style.fontSize = upright ? 25 : 21;
+      }
     }
 
     for (const i of JOBS) {
