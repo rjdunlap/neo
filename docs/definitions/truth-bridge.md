@@ -97,7 +97,7 @@ The ghost finger follows the solver's own steps on the seeded board and taps Cro
 
 ## Build batches
 
-1. **`truth-bridge 1`, levels 1–2.** This is the new game, the mark-and-cross interaction and the propagation hints.
+1. **`truth-bridge 1`, levels 1–2.** This is the new game, the mark-and-cross interaction and the propagation hints. Claimed on `claude/truth-bridge-1-2`: `src/games/truth-bridge/`, its how-to card, voice lines, the Lantern Lake land line and the `truthbridge` suite.
 
    **Checks:** typecheck and unit tests, which cover:
    - the pool counts above (26, 1,191) and uniqueness of every board;
