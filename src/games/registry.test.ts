@@ -617,6 +617,7 @@ describe('game registry', () => {
       'jar-sort',
       'jelly-drums',
       'keep-house',
+      'key-it-out',
       'lantern-lights',
       'lasso-loops',
       'lemonade-stand',

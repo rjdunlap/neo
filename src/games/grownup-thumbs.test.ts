@@ -48,6 +48,7 @@ import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
+import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { tilePairsLayout } from './tile-pairs';
@@ -120,6 +121,13 @@ const MEASURE: Record<string, () => Size[]> = {
     return [
       ['rail', l.s / 2],
       ['button', side(l.help)],
+    ];
+  },
+  'key-it-out': () => {
+    const l = keyLayout(v);
+    return [
+      ['branch end and name plate', Math.min(KEY_END.h, side(l.plate))],
+      ['button', Math.min(side(l.tabs.key), side(l.tabs.help), side(l.prev))],
     ];
   },
   'gem-swap': () => [
@@ -327,6 +335,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'fence-the-field': { px: 50.8, what: 'rail' },
   'gem-swap': { px: 44.7, what: 'button' },
   'hat-band': { px: 50.8, what: 'song card' },
+  'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
   'log-roll': { px: 50.8, what: 'direction button' },

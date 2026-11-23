@@ -246,6 +246,7 @@ export const PREFIXES = [
   'book',
   'bridge',
   'shadow',
+  'key',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */

@@ -66,6 +66,7 @@ import { HOW_TO as islandBridgesHowTo } from '../games/island-bridges/howto.ts';
 import { HOW_TO as jarSortHowTo } from '../games/jar-sort/howto.ts';
 import { HOW_TO as jellyDrumsHowTo } from '../games/jelly-drums/howto.ts';
 import { HOW_TO as keepHouseHowTo } from '../games/keep-house/howto.ts';
+import { HOW_TO as keyItOutHowTo } from '../games/key-it-out/howto.ts';
 import { HOW_TO as lanternLightsHowTo } from '../games/lantern-lights/howto.ts';
 import { HOW_TO as lassoLoopsHowTo } from '../games/lasso-loops/howto.ts';
 import { HOW_TO as lemonadeStandHowTo } from '../games/lemonade-stand/howto.ts';
@@ -271,6 +272,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'jar-sort': jarSortHowTo,
   'jelly-drums': jellyDrumsHowTo,
   'keep-house': keepHouseHowTo,
+  'key-it-out': keyItOutHowTo,
   'lantern-lights': lanternLightsHowTo,
   'lasso-loops': lassoLoopsHowTo,
   'lemonade-stand': lemonadeStandHowTo,

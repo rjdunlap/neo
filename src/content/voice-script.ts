@@ -65,6 +65,7 @@ import { VOICE as islandBridgesVoice } from '../games/island-bridges/voice.ts';
 import { VOICE as jarSortVoice } from '../games/jar-sort/voice.ts';
 import { VOICE as jellyDrumsVoice } from '../games/jelly-drums/voice.ts';
 import { VOICE as keepHouseVoice } from '../games/keep-house/voice.ts';
+import { VOICE as keyItOutVoice } from '../games/key-it-out/voice.ts';
 import { VOICE as lanternLightsVoice } from '../games/lantern-lights/voice.ts';
 import { VOICE as lassoLoopsVoice } from '../games/lasso-loops/voice.ts';
 import { VOICE as lemonadeStandVoice } from '../games/lemonade-stand/voice.ts';
@@ -708,6 +709,7 @@ export const SCRIPT = {
   ...jarSortVoice,
   ...jellyDrumsVoice,
   ...keepHouseVoice,
+  ...keyItOutVoice,
   ...lanternLightsVoice,
   ...lassoLoopsVoice,
   ...lemonadeStandVoice,

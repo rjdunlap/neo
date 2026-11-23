@@ -1,6 +1,6 @@
 # Key It Out, levels 1–4 (definition)
 
-Documentation packet, 2026-11-23, branch `claude/define-key-it-out`, [PR #2029](https://github.com/rjdunlap/neo/pull/2029). Study follow-up IR4 from [informational reading](../deep-dives/subjects/informational-reading.md#candidates-and-fit); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Proposed game `key-it-out`; nothing is registered or implemented. **Docs only.** Two build batches follow below.
+Documentation packet, 2026-11-23, branch `claude/define-key-it-out`, [PR #2029](https://github.com/rjdunlap/neo/pull/2029). Study follow-up IR4 from [informational reading](../deep-dives/subjects/informational-reading.md#candidates-and-fit); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). **Batch `key-it-out 1` (levels 1–2) built 2026-11-23** on `claude/key-it-out-1`, [PR #2041](https://github.com/rjdunlap/neo/pull/2041) ([game page](../games/key-it-out.md)); one deviation: the shell's caption shows what is spoken, so the full working of a fault or hint is on the game's own note under the tabs while the speech is the slot-free clip line. Batch `key-it-out 2` (levels 3–4) is not built. Two build batches follow below.
 
 ## What you do
 
