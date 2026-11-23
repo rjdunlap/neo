@@ -711,6 +711,7 @@ describe('game registry', () => {
       'word-glue',
       'word-monsters',
       'word-search',
+      'workshop-detective',
     ];
     expect(
       GAMES.filter((g) => g.upright)

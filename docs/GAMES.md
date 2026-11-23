@@ -796,4 +796,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Harbor Orders](games/harbor-orders.md)
 
+### Workshop Detective
+
+*grown-up* · [Workshop Detective](games/workshop-detective.md)
+
 <!-- end generated -->
