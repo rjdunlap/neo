@@ -324,3 +324,105 @@ export function drawSketch(
   paint(g, sketchShapes(look, hidden, coloured), x, y, k, { colour: coloured, sw: NAME_SWATCH[name] });
   if (!coloured) for (const p of hidden) tag(g, p, x, y, k);
 }
+
+/** Points around an arc, for a crescent or a shell drawn as a polygon. */
+const arcPts = (x: number, y: number, r: number, a0: number, a1: number, n = 10) =>
+  Array.from({ length: n + 1 }, (_, i) => {
+    const a = a0 + ((a1 - a0) * i) / n;
+    return [x + r * Math.cos(a), y + r * Math.sin(a)];
+  }).flat();
+
+/**
+ * A habit's icon (call, time, food), about 60 units across around the origin: a note, two clicks or a hum's wave; the sun
+ * rising, high or a moon; reeds, berries or a snail.
+ */
+export function habitShapes(h: number, v: number): Shape[] {
+  if (h === 0) {
+    if (v === 0)
+      return [
+        { k: 'ellipse', x: -8, y: 16, rx: 12, ry: 9, f: 'mark' },
+        { k: 'line', pts: [3, 14, 3, -24], w: 5, f: 'body' },
+        { k: 'line', pts: [3, -24, 20, -12], w: 5, f: 'body' },
+      ];
+    if (v === 1)
+      return [
+        { k: 'line', pts: [-18, 18, -6, -18], w: 7, f: 'body' },
+        { k: 'line', pts: [4, 18, 16, -18], w: 7, f: 'body' },
+        { k: 'circle', x: 26, y: -20, r: 4, f: 'mark' },
+      ];
+    // A hum: a long, even wave.
+    return Array.from({ length: 12 }, (_, i) => {
+      const x0 = -30 + i * 5,
+        x1 = x0 + 5;
+      return {
+        k: 'line' as const,
+        pts: [x0, 9 * Math.sin(x0 / 6), x1, 9 * Math.sin(x1 / 6)],
+        w: 5,
+        f: 'body' as const,
+      };
+    });
+  }
+  if (h === 1) {
+    if (v === 0)
+      return [
+        { k: 'poly', pts: arcPts(0, 14, 18, Math.PI, Math.PI * 2), f: 'tag' },
+        { k: 'line', pts: [-28, 14, 28, 14], w: 5, f: 'body' },
+        { k: 'line', pts: [0, -10, 0, -20], w: 4, f: 'body' },
+        { k: 'line', pts: [-18, -4, -25, -11], w: 4, f: 'body' },
+        { k: 'line', pts: [18, -4, 25, -11], w: 4, f: 'body' },
+      ];
+    if (v === 1)
+      return [
+        { k: 'circle', x: 0, y: 0, r: 15, f: 'tag' },
+        ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const a = (i * Math.PI) / 4;
+          return {
+            k: 'line' as const,
+            pts: [20 * Math.cos(a), 20 * Math.sin(a), 28 * Math.cos(a), 28 * Math.sin(a)],
+            w: 4,
+            f: 'body' as const,
+          };
+        }),
+      ];
+    return [
+      {
+        k: 'poly',
+        pts: [
+          ...arcPts(0, 0, 22, Math.PI * 0.35, Math.PI * 1.65),
+          ...arcPts(10, -2, 17, Math.PI * 1.45, Math.PI * 0.55),
+        ],
+        f: 'tag',
+      },
+      { k: 'circle', x: 16, y: -16, r: 2.5, f: 'mark' },
+    ];
+  }
+  if (v === 0)
+    return [-12, 0, 12].flatMap((x, i) => [
+      { k: 'line' as const, pts: [x, 26, x + (i - 1) * 3, -22], w: 4, f: 'reed' as const },
+      ...(i === 1
+        ? []
+        : [{ k: 'ellipse' as const, x: x + (i - 1) * 2, y: -10, rx: 5, ry: 11, f: 'mark' as const }]),
+    ]);
+  if (v === 1)
+    return [
+      { k: 'line', pts: [0, -26, 0, -8], w: 4, f: 'reed' },
+      { k: 'ellipse', x: 10, y: -22, rx: 9, ry: 5, f: 'body' },
+      ...[
+        [-10, 4],
+        [10, 4],
+        [0, -6],
+        [0, 16],
+      ].map(([x, y]) => ({ k: 'circle' as const, x, y, r: 9, f: 'mark' as const })),
+    ];
+  return [
+    { k: 'ellipse', x: 0, y: 18, rx: 26, ry: 6, f: 'body' },
+    { k: 'circle', x: 2, y: 2, r: 16, f: 'body' },
+    { k: 'arc', x: 2, y: 2, r: 8, a0: 0, a1: Math.PI * 1.6, w: 3.5, f: 'mark' },
+    { k: 'line', pts: [-20, 16, -24, -2], w: 3.5, f: 'body' },
+  ];
+}
+
+/** Draw a habit's icon at scale `k` about (x, y), in pencil. */
+export function habitIcon(g: Graphics, h: number, v: number, x: number, y: number, k: number) {
+  paint(g, habitShapes(h, v), x, y, k, { colour: false, sw: swatch.white });
+}
