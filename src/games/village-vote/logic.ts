@@ -18,7 +18,13 @@ export interface Plan {
   voters: Vote[];
   /** Level 5 only: the friends the tall slide's first step leaves out (all from the group that wanted the other toy). */
   leftOut?: string[];
+  funding?: { cost: number; purses: number[] };
 }
+const FUNDING = [
+  { cost: 12, purses: [2, 2, 2, 2, 2, 2] },
+  { cost: 10, purses: [1, 1, 2, 2, 3, 3] },
+  { cost: 12, purses: [1, 2, 2, 3, 3, 3] },
+];
 export const FAMILIES: Readonly<Record<number, readonly (readonly number[])[]>> = {
   1: [
     [3, 1],
@@ -43,6 +49,7 @@ export const FAMILIES: Readonly<Record<number, readonly (readonly number[])[]>> 
     [5, 3],
     [4, 2],
   ],
+  6: [[4, 2]],
 };
 export const NAMES = [
   'Two choices — count two groups and choose more',
@@ -50,6 +57,7 @@ export const NAMES = [
   'Three choices — compare tallies and choose most',
   "A tie — move the fewest group's votes to their next choice, then choose most",
   'Everyone can use it — find who the built toy leaves out, then choose a fix',
+  'Chip in — fill the shared jar from the friends’ purses',
 ];
 export function validate(p: Plan) {
   const family = FAMILIES[p.level];
@@ -81,6 +89,17 @@ export function validate(p: Plan) {
     )
       throw Error('Level 5 leaves out one to three friends of the other group');
   } else if (p.leftOut !== undefined) throw Error('Left-out friends are level 5 only');
+  const funding = p.funding;
+  if (p.level === 6) {
+    if (
+      !funding ||
+      !FUNDING.some(
+        (f) =>
+          f.cost === funding.cost && f.purses.join() === [...funding.purses].sort((a, b) => a - b).join(),
+      )
+    )
+      throw Error('Invalid purse family');
+  } else if (funding) throw Error('Purses are level 6 only');
   if (p.level !== 4) {
     if (p.voters.some((v) => v.next !== undefined)) throw Error('Second choices are level 4 only');
     return;
@@ -105,7 +124,7 @@ function withNext(p: Plan, pick: (tied: Option[]) => Option): Plan {
   const next = pick(p.options.filter((o) => o !== closed));
   return { ...p, voters: p.voters.map((v) => (v.option === closed ? { ...v, next } : v)) };
 }
-export function roundFor(level: number, rng: Rng): Plan {
+export function roundFor(level: number, rng: Rng, includeEqual = true): Plan {
   if (level === 5) return accessRound(rng);
   const counts = rng.shuffle([...rng.pick(FAMILIES[level])]);
   const options = rng.shuffle([...OPTIONS]).slice(0, counts.length);
@@ -113,6 +132,10 @@ export function roundFor(level: number, rng: Rng): Plan {
   rng.shuffle(assignments);
   let p: Plan = { level, options, voters: assignments.map((option, i) => ({ id: `friend-${i}`, option })) };
   if (level === 4) p = withNext(p, (tied) => rng.pick(tied));
+  if (level === 6) {
+    const { cost, purses } = rng.pick(includeEqual ? FUNDING : FUNDING.slice(1));
+    p.funding = { cost, purses: rng.shuffle([...purses]) };
+  }
   validate(p);
   return p;
 }
@@ -131,6 +154,11 @@ function accessRound(rng: Rng): Plan {
   validate(p);
   return p;
 }
+/** Introduce equal shares, then let the player see a funding plan with different contributions. */
+export function fundingRound(rng: Rng, completed: number): Plan {
+  return completed === 0 ? fixture(6) : roundFor(6, rng, completed > 1);
+}
+
 export function fixture(level: number, family = 0): Plan {
   if (level === 5) {
     // The opening round: tall slide 5, swing 3, and all three swing friends cannot reach the first step.
@@ -145,22 +173,33 @@ export function fixture(level: number, family = 0): Plan {
       leftOut: voters.filter((v) => v.option === 'swing').map((v) => v.id),
     };
   }
-  const counts = FAMILIES[level][family],
-    options = OPTIONS.slice(0, counts.length);
+  const counts = FAMILIES[level][level === 6 ? 0 : family],
+    options = level === 6 ? (['swing', 'slide'] as const) : OPTIONS.slice(0, counts.length);
   const p: Plan = {
     level,
-    options,
+    options: [...options],
     voters: counts
       .flatMap((n, i) => Array.from({ length: n }, () => options[i]))
       .map((option, i) => ({ id: `friend-${i}`, option })),
   };
+  if (level === 6) p.funding = structuredClone(FUNDING[family]);
   // The opening tie: slide 3, swing 3, sandpit 2, and both sandpit friends would go to the swing next (5–3).
   return level === 4 ? withNext(p, (tied) => tied[1]) : p;
 }
 export type Phase =
-  'preference' | 'walking' | 'counting' | 'runoff' | 'access' | 'fix' | 'feedback' | 'playing' | 'done';
+  | 'preference'
+  | 'walking'
+  | 'counting'
+  | 'runoff'
+  | 'access'
+  | 'fix'
+  | 'funding'
+  | 'funded'
+  | 'feedback'
+  | 'playing'
+  | 'done';
 /** Level 4 has two decisions (the run-off moves, then the final choice); each earns at most one hint. */
-export type Stage = 'runoff' | 'declare';
+export type Stage = 'runoff' | 'declare' | 'funding';
 export type Send = 'ignored' | 'nudge' | 'closed' | 'wrong' | 'moved' | 'recount';
 /** Level 5: tapping a friend at the built tall slide. */
 export type Find = 'ignored' | 'on-slide' | 'found' | 'again' | 'all-found';
@@ -176,6 +215,7 @@ export class Election {
   readonly found = new Set<string>();
   /** Level 5: the fix she chose once everyone left out was found. */
   fix: Fix | null = null;
+  readonly given: number[];
   phase: Phase;
   /** The fewest group's picture once the tie is found (level 4); it takes no votes this time. */
   closed: Option | null = null;
@@ -191,9 +231,46 @@ export class Election {
     validate(plan);
     this.plan = structuredClone(plan);
     this.npc = this.plan.voters;
-    this.phase = plan.level === 2 ? 'preference' : plan.level === 5 ? 'access' : 'counting';
-    // Level 5 opens on a vote already counted: every tally is full.
-    if (plan.level === 5) this.recount();
+    this.given = (plan.funding?.purses ?? []).map(() => 0);
+    this.phase =
+      plan.level === 2
+        ? 'preference'
+        : plan.level === 5
+          ? 'access'
+          : plan.level === 6
+            ? 'funding'
+            : 'counting';
+    if (plan.level >= 5) this.recount();
+  }
+  get jar() {
+    return this.given.reduce((sum, n) => sum + n, 0);
+  }
+  get cost() {
+    return this.plan.funding?.cost ?? 0;
+  }
+  purse(i: number) {
+    return (this.plan.funding?.purses[i] ?? 0) - (this.given[i] ?? 0);
+  }
+  /** Cycle through the purses for the demonstration; Help can show the very same tap. */
+  get nextPurse() {
+    const start = this.jar % this.given.length;
+    return this.given.map((_, i) => (start + i) % this.given.length).find((i) => this.purse(i) > 0) ?? -1;
+  }
+  get equalShares() {
+    return this.given.every((n) => n === this.given[0]);
+  }
+  give(i: number): 'ignored' | 'empty' | 'given' | 'full' {
+    if (this.phase !== 'funding' || !Number.isInteger(i) || i < 0 || i >= this.given.length) return 'ignored';
+    if (this.purse(i) === 0) return 'empty';
+    this.given[i]++;
+    if (this.jar < this.cost) return 'given';
+    this.phase = 'funded';
+    return 'full';
+  }
+  buildFundedToy() {
+    if (this.phase !== 'funded') return false;
+    this.phase = 'playing';
+    return true;
   }
   get leftOut(): readonly string[] {
     return this.plan.leftOut ?? [];
@@ -231,7 +308,7 @@ export class Election {
     return this.helped.size;
   }
   get stage(): Stage {
-    return this.phase === 'runoff' ? 'runoff' : 'declare';
+    return this.phase === 'runoff' || this.phase === 'funding' ? this.phase : 'declare';
   }
   get glowing() {
     return this.lit;
@@ -444,8 +521,24 @@ export function accessLayout(view: { w: number; h: number; upright?: true }, cou
   };
 }
 
+/** The jar and winner sit above six whole-purse targets. */
+export function fundingLayout(view: { w: number; h: number; upright?: true }) {
+  const up = view.upright === true;
+  const dy = up ? uprightDrop(view) : 0;
+  const mid = view.w / 2;
+  return {
+    toy: { x: up ? mid : mid - 172, y: (up ? 275 : 308) + dy },
+    jar: { x: up ? mid : mid + 130, y: (up ? 430 : 308) + dy },
+    purses: Array.from({ length: 6 }, (_, i) => ({
+      x: mid + ((i % 3) - 1) * (up ? 164 : 192),
+      y: (up ? 620 + 154 * Math.floor(i / 3) : 492 + 138 * Math.floor(i / 3)) + dy,
+    })),
+    help: up ? { x: view.w - 90, y: view.h - 100 } : { x: 90, y: 280 },
+  };
+}
+
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
