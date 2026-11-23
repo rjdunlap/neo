@@ -860,13 +860,13 @@ export function inventedArt(head: string): Made {
     }
     case 'chair': {
       thing.removeChild(base);
-      const [sail] = on(detail('sail', 0, -64, 0.48));
+      const [sail] = on(detail('sail', 4, -86, 0.5));
       thing.addChild(base);
       on(detail('flower', -29, 34, 0.24), detail('flower', 29, 34, 0.24));
       return {
         node: c,
         alive: (t) => {
-          sail.scale.x = 0.48 * (1 + 0.3 * Math.sin(Math.PI * Math.min(1, t / 0.8)));
+          sail.scale.x = 0.5 * (1 + 0.3 * Math.sin(Math.PI * Math.min(1, t / 0.8)));
         },
       };
     }
