@@ -64,9 +64,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 - **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
-- **`word-glue` level 8, Someone who, batch `word-glue 5`** (school; after batch `word-glue 4`, built; new interaction tier: typecheck and unit tests (`DOERS` meanings, the round with the right action in each place, level 3's join accounting with the person as head, school's order `[3, 5, 6, 7, 8, 9]`, layout and upright views, voice coverage), one filtered upright `wordglue` play at level 8 with one wrong action dropped twice and one Show a hint, one upright screenshot, `fingerdemo` at 8, the doers' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
-
-- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
+- **`word-glue` level 9, Full of or without, batch `word-glue 6`** (school; after batch `word-glue 5`, built; school's order then appends 9; new interaction tier: typecheck and unit tests (`ENDINGS` with both forms real, the round's balance of endings and sides, the two-way tap accounting, layout and upright views, voice coverage), one filtered upright play at level 9 with one wrong cup and one Show a hint, one upright screenshot, `fingerdemo` at 9, the things' capture strip, build). [Definition](definitions/word-glue-8-9.md#build-batches)
 
 
 
@@ -77,7 +75,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`splish-splash` This one!** (toddler, between levels 2 and 3; new levels on an existing interaction): "Wash my ears!" with the named part sparkling as it is said; a plan field `show: true`, nothing counts as a miss and the sparkle is not a hint. Expected files: `src/games/splish-splash/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/splish-splash.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 
 - **`owl-walk` level 5, Stepping stones, and the lap band** (lap, toddler; new levels on an existing interaction, plus the registry and lands tests because `bands` gains `lap`): five fat stones and a nest with no cards; a tap on a stone ahead hops the owl there with a note per stone, and nothing is wrong. Expected files: `src/games/owl-walk/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/owl-walk.md#build-slices-in-order)
 

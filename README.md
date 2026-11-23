@@ -109,7 +109,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Recipe Workshop](docs/games/recipe-workshop.md) | toddler–pre-K | Painted Canyon | 3 | tap pots of pretend fruit mash and a white base into a bowl, stir with the spoon until it blends, add a star or leaf and Serve |
 | [Gear Garden](docs/games/gear-garden.md) | lap–school | Painted Canyon | 3 | tap a machine of equal gears to spin a flower, drop the loose gear into a gap, then choose one of two broken machines, mend it and turn it, hearing whether the last flower turns the same way or the other way |
 | [Gadget Bench](docs/games/gadget-bench.md) | preschool–school | Painted Canyon | 6 | help a neighbor's cart through a pictured path (bumps, a puddle, rain, the dark) by trying wooden parts: big wheels, a float, an umbrella, a lantern, and a flag that does nothing |
-| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–school | Barnyard | 17 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
+| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–school | Barnyard | 18 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 13 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
@@ -137,7 +137,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Ribbon Workshop](docs/games/ribbon-workshop.md) | school–grown-up | Counting Cove | 5 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |
 | [Paint Mixer](docs/games/paint-mixer.md) | school | Counting Cove | 6 | tap a pot to pour a drop into the bucket until its colour is the sample jar's, the way a recipe scales |
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
-| [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 9 | scrub mud off the pet |
+| [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 10 | scrub mud off the pet |
 | [Feelings Faces](docs/games/feelings-faces.md) | lap–school | Cozy Village | 13 | tap bubbles or poke the pet, choose a helper, compare two friends’ reactions, use a leftover clue, or ask a friend what they want |
 | [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–pre-K | Cozy Village | 10 | tap the sky to change the weather (four weathers) |
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |
@@ -208,7 +208,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Trackway Tales](docs/games/trackway-tales.md) | school | Story Grove | 3 | tap a movement card's round Play to watch an invented gray mud walker replay it on a clear practice strip (drag the strip to scrub), tap the card onto the study board and Check: its prints slide onto the dried-mud strip and light green column by column until a mismatch flashes orange |
 | [Pond Typing](docs/games/pond-typing.md) | school | Story Grove | 6 | a keyboard-only couch game (a real or laptop keyboard): press the key on the bubble that waits |
 | [Crossword](docs/games/crossword.md) | pre-K–grown-up | Story Grove | 6 | drag letters into a little crossword of picture words; one letter can serve two words |
-| [Word Glue](docs/games/word-glue.md) | lap–school | Story Grove | 7 | tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" (lap opens one step earlier, on one big picture) |
+| [Word Glue](docs/games/word-glue.md) | lap–school | Story Grove | 8 | tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" (lap opens one step earlier, on one big picture) |
 | [Story Weaver](docs/games/story-weaver.md) | school | Story Grove | 3 | build a little picture-book story out of tiles, hear the pet read it back with each word lighting, then answer an owl's question or choose a reason |
 | [River Tablets](docs/games/river-tablets.md) | preschool–school | Story Grove | 6 | press a clay record of real things and line it up against them one to one, the way people by the big rivers once did |
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 6 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |

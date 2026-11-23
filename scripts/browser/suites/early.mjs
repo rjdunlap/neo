@@ -222,13 +222,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
     const bathSpecies = process.env.BATH_SPECIES;
     if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
-    // BATH_FROM and BATH_TO play only those levels (default 1-9). BATH_FRIEND=pig|duck|dog|cow|bear|bunny|cat puts that friend in the tub on each naming level (3-8).
+    // BATH_FROM and BATH_TO play only those levels (default 1-10; 10 is This one!). BATH_FRIEND=pig|duck|dog|cow|bear|bunny|cat puts that friend in the tub on each naming level (3-8).
     const bathFriend = process.env.BATH_FRIEND;
     // The dev server's hook puts that friend in the tub on every naming level (each of the seven is only about 1 round in 28).
     if (bathFriend) await page.evaluate((f) => (window.bathFriend = f), bathFriend);
     for (
       let level = Number(process.env.BATH_FROM ?? 1);
-      level <= Number(process.env.BATH_TO ?? 9) && (!only || only === 'bath');
+      level <= Number(process.env.BATH_TO ?? 10) && (!only || only === 'bath');
       level++
     ) {
       await launch('splish-splash', level);
@@ -266,6 +266,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const wrongPart =
           g.plan.mode === 'parts' &&
           (g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p)));
+        if (g.plan.show) {
+          // This one!: the asked part sparkles as it is named (again on the duck's replay), then the sparkle ends by itself.
+          await kit.sleep(1800);
+          kit.tapOn(g.rubberDuck);
+          await kit.sleep(300);
+          const shown = () => g.muds.some((m) => !m.clean && g.allowed().includes(m.part) && m.glow.visible);
+          if (!shown()) throw new Error('This one!: the asked part did not sparkle');
+          await kit.sleep(1800);
+          if (shown()) throw new Error('This one!: the sparkle did not end');
+        }
         if (level === 4) {
           // A quiet spell lights the asked-for glow for free (before the wrong drag, so its nag gap still covers the scrubbing).
           await kit.sleep(7600);
@@ -277,7 +287,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           // A short wiggle in the middle, so it can't reach a neighboring part that is allowed.
           const p = g.muds.find((m) => m.part === wrongPart).sprite.getGlobalPosition();
           await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
-          if (g.misses !== 1) throw new Error('Wrong part not noticed');
+          if (g.misses !== (g.plan.show ? 0 : 1))
+            throw new Error(`Wrong part: ${g.misses} misses on a ${g.plan.show ? 'shown' : 'counted'} level`);
           if (g.muds.find((m) => m.part === wrongPart).clean) throw new Error('Wrong part got washed');
           const askedGlow = () =>
             g.muds.some((m) => !m.clean && g.allowed().includes(m.part) && m.glow.visible);
@@ -298,7 +309,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         return !!wrongPart;
       }, level);
-      if ([1, 6, 8, 9].includes(level))
+      if ([1, 6, 8, 9, 10].includes(level))
         await screenshot(`splish-splash-${level}${bathFriend ? `-${bathFriend}` : ''}`);
       await finished('splish-splash');
       const r = await page.evaluate(() => {
@@ -307,7 +318,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       });
       assert.deepEqual(
         r,
-        level === 3 ? [2, 1] : parts ? [1, 0] : [0, 0],
+        level === 3 ? [2, 1] : parts && level !== 10 ? [1, 0] : [0, 0],
         `bath ${level} score (misses, hints): ${JSON.stringify(r)}`,
       );
       log(`Splish Splash ${level}: ${parts ? 'wrong part, ' : ''}every part washed, sticker passed`);

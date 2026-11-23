@@ -57,6 +57,11 @@ import {
   FRIEND_FROM,
   phraseOf,
   pickBather,
+  countsMisses,
+  ENTRY_LEVELS,
+  LEVELS,
+  SHOW_FOR,
+  showAlpha,
   friendPoints,
   roomsFor,
   type Part,
@@ -74,6 +79,48 @@ const spotsFor = (species: SpeciesId, plan: Plan): Spot[] =>
 const ALL: readonly Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
 
 describe('Splish Splash', () => {
+  describe('This one! (level 10)', () => {
+    const plan = planFor(10);
+
+    it('shows each asked part, plays between levels 2 and 3 for toddlers, and is an entry level', () => {
+      expect(plan.show).toBe(true);
+      expect(plan.mode).toBe('parts');
+      expect(plan.pairs).toBeFalsy();
+      expect(LEVELS.toddler?.order).toEqual([1, 2, 10, 3, 4]);
+      expect(ENTRY_LEVELS).toContain(10);
+      // No other level shows the answer.
+      expect(PLANS.filter((p) => p.show)).toEqual([plan]);
+    });
+
+    it('every asked part is in the plan, on every species and every friend, and none is left with nothing to wash', () => {
+      const bathers = [...SPECIES_IDS.map((sp) => STAR[sp].parts), ...FRIENDS.map((f) => FRIEND[f].parts)];
+      for (const parts of bathers) {
+        const on = planOn(plan, parts);
+        expect(on.parts.length, parts.join()).toBeGreaterThan(0);
+        for (let i = 0; i < on.parts.length; i++) expect(on.parts).toContain(askedParts(on, i)[0]);
+      }
+    });
+
+    it('nothing counts as a miss there; every other naming level counts them', () => {
+      expect(countsMisses(plan)).toBe(false);
+      for (const p of PLANS.filter((q) => q.mode === 'parts' && !q.show)) expect(countsMisses(p)).toBe(true);
+    });
+
+    it('her own pet bathes, never a friend', () => {
+      for (let seed = 1; seed <= 400; seed++) expect(pickBather(10, new Rng(seed))).toBeNull();
+      expect(pickBather(10, new Rng(1), 'pig')).toBeNull();
+    });
+
+    it('the sparkle rises and falls once, then ends', () => {
+      expect(showAlpha(-0.1)).toBeNull();
+      expect(showAlpha(0)).toBe(0);
+      expect(showAlpha(SHOW_FOR / 2)!).toBeGreaterThan(0.8);
+      expect(showAlpha(SHOW_FOR)).toBeNull();
+      expect(showAlpha(SHOW_FOR * 3)).toBeNull();
+      for (let t = 0; t < SHOW_FOR; t += 0.05) expect(showAlpha(t)!).toBeGreaterThanOrEqual(0);
+    });
+  });
+
   it('asks for every part exactly once, one or two at a time', () => {
     for (const plan of PLANS.filter((p) => p.mode === 'parts')) {
       const seen = [];
@@ -533,7 +580,8 @@ describe('Splish Splash', () => {
             seen.add(f);
           }
         }
-        if (level < FRIEND_FROM || planFor(level).mode !== 'parts') expect(friends, `level ${level}`).toBe(0);
+        if (level < FRIEND_FROM || planFor(level).mode !== 'parts' || planFor(level).show)
+          expect(friends, `level ${level}`).toBe(0);
         else {
           expect(friends / n, `level ${level}`).toBeGreaterThan(0.18);
           expect(friends / n, `level ${level}`).toBeLessThan(0.32);
@@ -722,7 +770,7 @@ describe('Splish Splash', () => {
       for (const friend of FRIENDS)
         for (let level = 1; level <= PLANS.length; level++)
           expect(pickBather(level, new Rng(level), friend)).toBe(
-            level >= FRIEND_FROM && planFor(level).mode === 'parts' ? friend : null,
+            level >= FRIEND_FROM && planFor(level).mode === 'parts' && !planFor(level).show ? friend : null,
           );
     });
 

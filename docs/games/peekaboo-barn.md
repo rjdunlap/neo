@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 16, 1, 2, 17 |
-| toddler | 1, 2, 17, 3, 4, 5 |
+| toddler | 1, 2, 17, 3, 18, 4, 5 |
 | preschool | 4–8 |
 | pre-K | 6–13 |
 | school | 9–15 |
@@ -33,6 +33,7 @@
 | 15 | "Guess who!" Find the animal that fits both clues, four animals |
 | 16 | One big house: touch anywhere to see who pops out |
 | 17 | "Where did it go?" Watch an animal hop behind one of two hiding places, then tap where it went |
+| 18 | "Who says moo?" Hear a sound, then find the animal that makes it, two animals peeking |
 
 <!-- end generated -->
 
@@ -57,5 +58,7 @@ Each round’s seed chooses a barnyard, garden, beach or bedroom. The garden has
 **Level 15, Guess who! (2026-11-15).** Four animals stand out over their covers for each of five questions. The answer has both features, one other animal has the first feature, one has the second, and one has neither. Clues describe visible parts and white or brown coats. A wrong tap gets a gentle boing and explains which feature the animal has and which it lacks, or repeats both clues when the animal has neither. Two misses on a question make the answer glow and count as one hint. The guide repeats the clues. Portrait arranges the animals in two rows, and the ghost finger taps the visible animal. The school range is 9–15.
 
 **Level 17, Where did it go? (2026-11-16).** Two houses, four questions, the first seven animals. One animal trots in from the right along the front, calls, hops over a house and drops behind it, and she taps where it went. A tap on the empty house counts one miss and opens on nobody ("Nobody home!"); the second miss counts one hint, wiggles the right house and sounds the animal again. The same animal never comes twice running and the same side never three times (`dealWent`). Lap plays 16, 1, 2, 17 and toddler 1, 2, 17, 3, 4, 5 by `order`; no saved level moves.
+
+**Level 18, Who says moo? (2026-11-23).** Two animals peek, as at level 3, but the question is a sound: the asked animal's own call plays, then "Who says moo?" (the sound in words, so the guide's repeat keeps it). A wrong tap counts one miss; that animal pops out and says its own sound, then the asked sound is said again. The second miss counts one hint, glows round the right peeking head and plays its sound. A tap during the sound is judged (the sound is the question), and the words are then not said. The pool is the first seven less the bunny, whose "hop hop" is what it does, not a voice; every sound and word in it is its own. Five sounds a round. Toddler plays 1, 2, 17, 3, 18, 4, 5 by `order`; no saved level moves.
 
 **More animals (level 4 and up, 2026-11-15).** The sheep, horse, hen and mouse (already drawn in `critter.ts` and voiced in `sfx.animal` for Animal Snack) join the hiding pool from level 4 through `poolFor(level)` (`NEWCOMER_LEVEL = 4`); levels 1–3 and level 16 (One door) keep the first seven animals and deal as before. Sounds and words: Baa, Neigh, Cluck cluck, Squeak squeak (`VOICES` now lives in `logic.ts`). Level 9 clues gained wool, a mane and a red comb; the mouse's big ears count as round ears (drawn as circles), so bear and mouse together never make "round ears" unique, and there is no beak clue because a duck's bill is a beak too. At levels 10–11 all eleven tops differ (tested over every 3- and 4-subset). Stickers and the map icon stay on the original seven.
