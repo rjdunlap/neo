@@ -46,6 +46,7 @@ import { comebackLayout } from './species-comeback';
 import { makeRound as makeComeback, PLANS as comebackPlans } from './species-comeback/logic';
 import { touchLayout as bedLayout } from './sudoku-garden/layout';
 import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
+import { layout as fenceLayout } from './fence-the-field/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { tilePairsLayout } from './tile-pairs';
@@ -113,6 +114,13 @@ const MEASURE: Record<string, () => Size[]> = {
     ['tray', Math.min(DOMINO_TRAY_W, DOMINO_TARGET)],
     ['button', DOMINO_TARGET],
   ],
+  'fence-the-field': () => {
+    const l = fenceLayout(v);
+    return [
+      ['rail', l.s / 2],
+      ['button', side(l.help)],
+    ];
+  },
   'gem-swap': () => [
     ...grown(gemLevels.grownup!).map((level): Size => ['gem', gemLayout(v, gemPlan(level).size).pitch]),
     ['button', 88],
@@ -303,6 +311,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'brain-break': { px: 50.8, what: 'stone' },
   crossword: { px: 44.7, what: 'square and key' },
   'domino-pond': { px: 50.8, what: 'tray' },
+  'fence-the-field': { px: 50.8, what: 'rail' },
   'gem-swap': { px: 44.7, what: 'button' },
   'hat-band': { px: 50.8, what: 'song card' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },

@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (17, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (18, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 186 games; the 167 child games are listed below and the 19 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 28 games: the 19 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 187 games; the 167 child games are listed below and the 20 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 29 games: the 20 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -279,7 +279,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 19 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 17 in Lantern Lake. All play by touch on the island; 11 are touch-only, and 8 also play with a controller on the couch.
+These 20 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 18 in Lantern Lake. All play by touch on the island; 12 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -308,6 +308,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Sum Crates](docs/games/sum-crates.md) | Lantern Lake | 3 | a small stack of wooden crates with a number sign at the start of each row and column: she taps a crate and then a numbered fruit (or drags one in) so every line adds up to its sign with no fruit twice in the same line; the board has exactly one answer, found by using the crossing line to choose between the pairs that make a sign. |
 | [Tide Tables](docs/games/tide-tables.md) | Lantern Lake | 2 | read four tide heights and tap a time for each of three harbor jobs. |
 | [Truth Bridge](docs/games/truth-bridge.md) | Lantern Lake | 4 | two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross. |
+| [Fence the Field](docs/games/fence-the-field.md) | Lantern Lake | 2 | dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play. |
 
 <!-- end generated -->
 

@@ -42,6 +42,7 @@ import { HOW_TO as eggCatchHowTo } from '../games/egg-catch/howto.ts';
 import { HOW_TO as exampleExpressHowTo } from '../games/example-express/howto.ts';
 import { HOW_TO as farLightsHowTo } from '../games/far-lights/howto.ts';
 import { HOW_TO as feelingsFacesHowTo } from '../games/feelings-faces/howto.ts';
+import { HOW_TO as fenceTheFieldHowTo } from '../games/fence-the-field/howto.ts';
 import { HOW_TO as ferryJamHowTo } from '../games/ferry-jam/howto.ts';
 import { HOW_TO as fillDumpHowTo } from '../games/fill-dump/howto.ts';
 import { HOW_TO as fluffySalonHowTo } from '../games/fluffy-salon/howto.ts';
@@ -245,6 +246,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'example-express': exampleExpressHowTo,
   'far-lights': farLightsHowTo,
   'feelings-faces': feelingsFacesHowTo,
+  'fence-the-field': fenceTheFieldHowTo,
   'ferry-jam': ferryJamHowTo,
   'fill-dump': fillDumpHowTo,
   'fluffy-salon': fluffySalonHowTo,

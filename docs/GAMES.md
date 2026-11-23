@@ -776,4 +776,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Truth Bridge](games/truth-bridge.md)
 
+### Fence the Field
+
+*grown-up* · [Fence the Field](games/fence-the-field.md)
+
 <!-- end generated -->

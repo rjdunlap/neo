@@ -84,6 +84,21 @@ Later proposals, not in these batches:
 - a four by four field, whose rail targets (80 units at `s` 160) fit the grown-up minimum but whose positions no longer solve quickly in a test;
 - a school opening for the study's M audience, with its own wording check.
 
+## Build notes
+
+Batch `fence-the-field 1`, in progress on `claude/fence-the-field-1-2` ([PR #2037](https://github.com/rjdunlap/neo/pull/2037)), 2026-11-23. What the build settled, where the packet left room or could not be met:
+
+- **Pool counts.** `node scripts/fence-the-field-pool.mjs` prints: level 1, 16,727 classes tried, 15,704 pass; level 2, 2,458 tried, 385 pass; level 3, 342 tried, 86 pass; level 4, 37,328 tried, 791 pass. It keeps the first 60 classes of each level in `pools.json`. No pool is under the 20-class floor.
+- **The sampler is fitted to the level.** Rails laid at random without completing a plot almost never leave a field with no plot ready (68 of 35,542 classes), which levels 2 and 3 start from. Level 2's tries therefore never lay a plot's third rail, and level 3 (every plot with exactly two rails open) is counted in full: 2,604 positions in 342 classes.
+- **The two play-out filters** read a turn as needing a skill only when it can cost a miss: some rail there is unsound, and every sound rail is a leave-two (levels 1–3) or a give into a shortest run (levels 1–2). A turn where every rail is sound is kept.
+- **A leave-two** is a give laid while a plot was ready that leaves two neighbouring ready plots sharing their last open rail. **Level 4's chain** is the ready plots and the two-rail plots joined to them through open rails.
+- **Hint lines.** "Every rail gives something" is only said when it is true of the position. A sound give that is not into a shortest run by the rule gets a plain line, "Give this one: it costs least." (new). A tap on a laid rail says "That rail is down already." once a round (new) and counts nothing.
+- **An unsound rail that claims a plot** has no pet answer to play, because the turn is still hers: the field steps back and only "Now you could only get *n*" is said.
+- **Laying on touch-down.** `onTap` answers on touch-down, as every tap in the app does, so the rail darkens and is laid at once, not on lifting.
+- **Pet's lines.** "My turn again" is said on the pet's first extra rail, "Your turn" only after a turn in which the pet laid more than one rail.
+- **Upright size.** Plots are 200 units (rail targets 100, 50.8 CSS pixels at 390 × 844) on every screen tall enough for the caption strip. A short phone shows the caption as a bubble over the view, and a 700-unit field cannot sit between Home and that bubble, so there the field shrinks until its rails clear the bubble, never under 64-unit targets (at 390 × 625, plots of 177 units, targets 88). A game cannot tell a 1,206-unit strip view (a 375 × 667 phone) from a short bubble screen, so that phone gets plots of 170 units.
+- **Sideways.** The caption bubble covers the left 640 units, so the field sits on the right and the strip and Help on the left above the bubble (the packet had them the other way round). On a 1024 × 768 screen there is no room for both, so the field keeps 180-unit plots and the bubble crosses its left edge while the pet speaks.
+
 ## Source check
 
 The [Dots and Boxes article](https://en.wikipedia.org/wiki/Dots_and_boxes) (opened 2026-11-22) says:

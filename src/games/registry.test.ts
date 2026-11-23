@@ -599,6 +599,7 @@ describe('game registry', () => {
       'example-express',
       'far-lights',
       'feelings-faces',
+      'fence-the-field',
       'ferry-jam',
       'food-web-workshop',
       'forecast-detective',
