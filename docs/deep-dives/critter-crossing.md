@@ -103,7 +103,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
 4. **Visible "not" entry** (built 2026-10-15, [PR #422](https://github.com/rjdunlap/neo/pull/422)): stable ID 8, pre-K order `[1, 8, 2, 3]`, pictured/slashed rule and `entryLevels`; school remains 2–7. Rule tests, filtered play and `fingerdemo`; [build note](../archive/COMPLETED-2026-10-09.md#critter-crossing-visible-not-entry-2026-10-15).
 5. **Third critter feature**, shared with Critter Sort (after decision 2): rule tests for both games plus the fairness test across the larger pool.
-6. **Preschool opening** (after decision 1): levels table, registry and lands tests, voice.
+6. **Preschool opening** *(claimed 2026-11-23, branch `claude/critter-preschool`)* (after decision 1): levels table, registry and lands tests, voice.
 7. **Be the gate** (after decision 3): a new interaction; its own definition first.
 
 ## What was built in this session
