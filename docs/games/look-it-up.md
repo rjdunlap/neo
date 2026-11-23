@@ -11,13 +11,15 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3 |
+| school | 3–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Talking labels: touch a word on the page to hear it |
 | 2 | Find the page: tap the visitor's tab, then give it the food |
 | 3 | The fact box: find the page and the row, then help |
+| 4 | Contents page: find the animal's name and page, then help |
+| 5 | Picture or words? Read the baby's name, then give it its tag |
 
 <!-- end generated -->
 

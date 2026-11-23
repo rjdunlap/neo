@@ -5,5 +5,11 @@ export const VOICE = {
   'lookitup.ask': ["{text} Let's look it up!"],
   'lookitup.instruct.labels': ['Touch a word to hear it.'],
   'lookitup.miss': ["{what} {fact} Let's look in the guide for the {kind}."],
+  'lookitup.instruct.contents': ["Find the animal's name on the contents page, then tap it."],
+  'lookitup.page': ['Page {n}. {title}.'],
+  'lookitup.picture-words': ['The picture shows the baby. The words tell its name.'],
+  'lookitup.hint.contents': ["Let's go back to the contents page."],
+  'lookitup.hint.line': ['Find {title} on the contents page.'],
+  'lookitup.miss.tag': ["That tag says {word}. A {word} is a baby {owner}. Let's read the {kind}'s page."],
   'lookitup.done': ['Every visitor has been helped. Thank you!'],
 } satisfies Record<string, string[]>;

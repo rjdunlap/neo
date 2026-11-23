@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -9,7 +9,7 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
-import { label } from '../../ui/text';
+import { FONT, label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { animalArt, bookArt, pictureArt, rowIcon, tabFace } from './art';
@@ -26,17 +26,47 @@ import {
   lookTouch,
   makeRound,
   nearestPoint,
+  PAGE_ORDER,
+  pageNumber,
   PICTURE_WORDS,
   pictureOf,
   planFor,
   askOf,
   type AnimalId,
   type Hint,
+  type Page,
   type Picture,
   type Rect,
   type Round,
   type Row,
 } from './logic';
+
+/** Levels whose authored first round has been played this session (levels 4 and 5); a demo always plays it. */
+const authoredShown = new Set<number>();
+
+/** Printed words on the page, left-aligned and wrapped: 26 units, or 24 when 26 would take more than two lines. */
+function caption(text: string, width: number): Text {
+  let t: Text | null = null;
+  for (const size of [26, 24]) {
+    t?.destroy();
+    t = new Text({
+      text,
+      style: {
+        fontFamily: FONT,
+        fontSize: size,
+        fill: ink,
+        fontWeight: '500',
+        wordWrap: true,
+        wordWrapWidth: width,
+        lineHeight: size * 1.15,
+      },
+    });
+    if (t.height <= size * 1.15 * 2 + 4) break;
+  }
+  t!.anchor.set(0, 0.5);
+  t!.eventMode = 'none';
+  return t!;
+}
 
 /** What the pet says a wrong choice is. */
 const WHAT: Record<Picture, string> = {
@@ -76,6 +106,12 @@ interface TabNode {
   node: Container;
   bg: Graphics;
 }
+interface ContentsLine {
+  id: AnimalId;
+  rect: Rect;
+  node: Container;
+  bg: Graphics;
+}
 interface Choice {
   picture: Picture;
   node: Container;
@@ -88,9 +124,15 @@ class LookItUp implements Game {
   readonly round: Round;
   readonly tabs: TabNode[] = [];
   rows: PageRow[] = [];
+  /** The contents page's lines while it is open (levels 4 and up). */
+  lines: ContentsLine[] = [];
+  /** The one Contents button that replaces the tabs from level 4. */
+  readonly contentsButton: { node: Container; bg: Graphics } | null = null;
   choices: Choice[] = [];
   visitorNode: Container | null = null;
-  open: AnimalId;
+  /** Level 5: the visitor's baby beside it, which the right name tag hangs on. */
+  babyNode: Container | null = null;
+  open: Page;
   /** The visitor being helped (levels 2–3), or the page count (level 1). */
   index = -1;
   misses = 0;
@@ -111,6 +153,12 @@ class LookItUp implements Game {
   private hinted = false;
   private glowOn = false;
   private wrongSeen = new Set<Picture>();
+  /** Level 5: the first Baby row touched this round adds the picture-or-words line. */
+  private babyRead = false;
+  /** Bumped by each new row touch, so a line chained after an earlier touch's caption is dropped. */
+  private touchSeq = 0;
+  /** The level-4 demonstration opens one other page first, to show that looking is free. */
+  private detoured = false;
   private view: View;
   private readonly rng: Rng;
   private readonly backdrop: Backdrop;
@@ -123,7 +171,9 @@ class LookItUp implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.rng = new Rng(ctx.rng.int(1, 2 ** 30));
-    this.round = makeRound(ctx.level, ctx.rng);
+    const authored = !!ctx.demo || !authoredShown.has(ctx.level);
+    this.round = makeRound(ctx.level, ctx.rng, authored);
+    if (this.round.book === 'contents') authoredShown.add(ctx.level);
     this.open = this.round.open;
     this.backdrop = new Backdrop(
       {
@@ -138,7 +188,20 @@ class LookItUp implements Game {
     );
     this.glow.eventMode = 'none';
     this.scene.sortableChildren = false;
-    for (const id of this.round.tabs) {
+    if (this.round.book === 'contents') {
+      const node = new Container();
+      const bg = new Graphics();
+      const icon = new Graphics();
+      for (const y of [-24, 0, 24]) {
+        icon.circle(-28, y, 6).fill(wood.line);
+        icon.moveTo(-14, y).lineTo(32, y).stroke({ width: 7, color: wood.line, cap: 'round' });
+      }
+      node.addChild(bg, icon);
+      node.hitArea = new Rectangle(-55, -55, 110, 110);
+      onTap(node, () => void this.turnTo('contents'), { cooldown: 200 });
+      this.contentsButton = { node, bg };
+    }
+    for (const id of this.round.book === 'tabs' ? this.round.tabs : []) {
       const node = new Container();
       const bg = new Graphics();
       node.addChild(bg, tabFace(id));
@@ -151,6 +214,7 @@ class LookItUp implements Game {
       this.book,
       this.page,
       ...this.tabs.map((t) => t.node),
+      ...(this.contentsButton ? [this.contentsButton.node] : []),
       this.scene,
       this.glow,
     );
@@ -192,6 +256,9 @@ class LookItUp implements Game {
   }
 
   private hintRect(h: Hint): Rect | null {
+    if (h.kind === 'contents')
+      return this.contentsButton ? this.rectOf(this.contentsButton.node, 110, 110) : null;
+    if (h.kind === 'line') return this.lines.find((x) => x.id === h.animal)?.rect ?? null;
     if (h.kind === 'tab') {
       const t = this.tabs.find((x) => x.id === h.animal);
       return t ? this.rectOf(t.node, 110, 110) : null;
@@ -209,7 +276,49 @@ class LookItUp implements Game {
   }
 
   private layout() {
-    return guideLayout(this.view, this.mode === 'page' ? 1 : 3, 3);
+    return guideLayout(this.view, this.mode === 'page' ? 1 : 3, 3, this.round.book === 'contents');
+  }
+
+  /** The contents page: each of the seven animals' face, printed name and page number; a line turns to its page. */
+  private drawContents(l: ReturnType<typeof guideLayout>) {
+    const title = label('Contents', 34, ink);
+    title.position.set(l.book.x + 96 + title.width / 2, l.lines[0].y - 26);
+    title.eventMode = 'none';
+    this.page.addChild(title);
+    PAGE_ORDER.forEach((id, i) => {
+      const rect = l.lines[i];
+      const node = new Container();
+      node.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2);
+      const bg = new Graphics()
+        .roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18)
+        .fill(swatch.white.fill)
+        .stroke({ width: 3, color: wood.light });
+      const face = animalArt(id, 70);
+      face.position.set(-rect.w / 2 + 46, 34);
+      const name = caption(ANIMALS[id].title, rect.w - 92 - 50);
+      name.position.set(-rect.w / 2 + 90, 0);
+      const num = label(String(pageNumber(id)), 34, ink);
+      num.position.set(rect.w / 2 - 26, 0);
+      num.eventMode = 'none';
+      node.addChild(bg, face, name, num);
+      node.hitArea = new Rectangle(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+      const line: ContentsLine = { id, rect, node, bg };
+      onTap(node, () => void this.touchLine(line), { cooldown: 250 });
+      this.lines.push(line);
+      this.page.addChild(node);
+    });
+  }
+
+  /** A contents line: it lifts, says the name and turns to that page. Free, never a miss. */
+  private async touchLine(line: ContentsLine) {
+    if (this.busy || this.finished) return;
+    const { w, h } = line.rect;
+    line.bg
+      .clear()
+      .roundRect(-w / 2, -h / 2 + 3, w, h - 6, 18)
+      .fill(swatch.yellow.light)
+      .stroke({ width: 4, color: swatch.yellow.fill });
+    await this.turnTo(line.id);
   }
 
   /** Lay out the book, tabs and the open page's rows from scratch (a turn and a resize both come here). */
@@ -221,13 +330,25 @@ class LookItUp implements Game {
     this.book.addChild(art);
     this.page.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.rows = [];
-    const animal = ANIMALS[this.open];
+    this.lines = [];
+    this.placeButtons(l);
+    if (this.open === 'contents') return this.drawContents(l);
+    const open = this.open;
+    const animal = ANIMALS[open];
+    const printed = this.round.book === 'contents';
     const title = label(animal.title, 40, ink);
     title.position.set(l.book.x + 96 + title.width / 2, l.book.y + 42);
     title.eventMode = 'none';
-    const face = animalArt(this.open, 56);
+    const face = animalArt(open, 56);
     face.position.set(l.book.x + l.book.w - 70, l.book.y + 62);
     this.page.addChild(title, face);
+    if (printed) {
+      // The fixed book prints its page number beside the title.
+      const num = label(String(pageNumber(open)), 30, wood.line);
+      num.position.set(l.book.x + l.book.w - 130, l.book.y + 42);
+      num.eventMode = 'none';
+      this.page.addChild(num);
+    }
     const kinds: RowKind[] =
       this.mode === 'labels'
         ? ['name', 'eats', 'baby']
@@ -255,8 +376,25 @@ class LookItUp implements Game {
           .roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18)
           .fill(swatch.yellow.light)
           .stroke({ width: 4, color: swatch.yellow.fill });
-      const pic = kind === 'name' ? animalArt(this.open, 80) : pictureArt(picture!);
+      const pic = kind === 'name' ? animalArt(open, 80) : pictureArt(picture!);
       if (kind === 'name') pic.y = 34;
+      if (printed && kind !== 'name') {
+        // From level 4 a row is its picture with a small row icon, and its sentence in print.
+        pic.scale.set(0.78);
+        pic.position.x = -rect.w / 2 + 62;
+        const icon = rowIcon(kind);
+        icon.scale.set(0.6);
+        icon.position.set(-rect.w / 2 + 22, -rect.h / 2 + 26);
+        const text = caption(line, rect.w - 124 - 12);
+        text.position.set(-rect.w / 2 + 120, 0);
+        node.addChild(pic, icon, text);
+        node.hitArea = new Rectangle(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+        const row: PageRow = { kind, rect, node, bg, picture, word, line };
+        onTap(node, () => void this.touchRow(row), { cooldown: 250 });
+        this.rows.push(row);
+        this.page.addChild(node);
+        return;
+      }
       if (this.mode !== 'labels' && kind !== 'name') {
         const icon = rowIcon(kind);
         icon.position.set(-rect.w / 2 + 50, 0);
@@ -281,9 +419,16 @@ class LookItUp implements Game {
       this.rows.push(row);
       this.page.addChild(node);
     });
-    this.tabs.forEach((t, i) => {
+  }
+
+  /** The tabs (levels 1–3) or the Contents button (levels 4 and up); the one for the open page sits pressed in. */
+  private placeButtons(l: ReturnType<typeof guideLayout>) {
+    const buttons = this.contentsButton
+      ? [{ node: this.contentsButton.node, bg: this.contentsButton.bg, page: 'contents' as Page }]
+      : this.tabs.map((t) => ({ node: t.node, bg: t.bg, page: t.id as Page }));
+    buttons.forEach((t, i) => {
       const r = l.tabs[i];
-      const isOpen = t.id === this.open;
+      const isOpen = t.page === this.open;
       t.node.position.set(r.x + r.w / 2 + (isOpen ? -8 : 0), r.y + r.h / 2);
       t.bg
         .clear()
@@ -304,7 +449,7 @@ class LookItUp implements Game {
     });
   }
 
-  private async turnTo(id: AnimalId, speak = true) {
+  private async turnTo(id: Page, speak = true) {
     if (this.busy || this.finished) return;
     const same = id === this.open;
     sfx.pop(same ? 3 : 1);
@@ -315,7 +460,10 @@ class LookItUp implements Game {
     if (!speak) return;
     // A touch before the visitor has asked: the page turns, and the ask is what she hears.
     if (this.unasked) return this.askNow();
-    if (this.mode === 'page') void this.ctx.say('lookitup.say', { text: ANIMALS[id].rows.eats.line });
+    if (id === 'contents') void this.ctx.say('lookitup.say', { text: 'Contents.' });
+    else if (this.round.book === 'contents')
+      void this.ctx.say('lookitup.page', { n: pageNumber(id), title: ANIMALS[id].title });
+    else if (this.mode === 'page') void this.ctx.say('lookitup.say', { text: ANIMALS[id].rows.eats.line });
     else void this.ctx.say('lookitup.say', { text: ANIMALS[id].title });
   }
 
@@ -334,7 +482,13 @@ class LookItUp implements Game {
     }
     if (this.visit && row.kind === this.visit.row) this.rowSeen = true;
     if (this.unasked) return this.askNow();
-    void this.ctx.say('lookitup.say', { text: row.line });
+    const seq = ++this.touchSeq;
+    const said = this.ctx.say('lookitup.say', { text: row.line });
+    if (this.mode === 'baby' && row.kind === 'baby' && !this.babyRead) {
+      this.babyRead = true;
+      await said;
+      if (this.alive && seq === this.touchSeq && !this.finished) void this.ctx.say('lookitup.picture-words');
+    }
   }
 
   private glowRow(row: PageRow, on: boolean) {
@@ -353,6 +507,7 @@ class LookItUp implements Game {
 
   /** Level 1: all three labels on a page spoke; the pet reads the page and the next page turns by itself. */
   private async pageDone() {
+    if (this.open === 'contents') return;
     this.busy = true;
     this.done.add(this.open);
     const animal = ANIMALS[this.open];
@@ -416,18 +571,40 @@ class LookItUp implements Game {
     holder.position.set(l.visitor.x, l.visitor.y);
     holder.alpha = 0;
     this.visitorNode = holder;
+    if (visit.row === 'baby') {
+      // Level 5: the baby stands beside its parent, waiting for its name tag.
+      const baby = pictureArt(pictureOf(visit));
+      baby.position.set(120, -40);
+      holder.addChild(baby);
+      this.babyNode = baby;
+    } else this.babyNode = null;
     this.scene.addChild(holder);
     this.choices = choicesFor(this.round, visit, this.rng).map((picture) => {
       const node = new Container();
       node.addChild(
         new Graphics()
           .roundRect(-65, -65, 130, 130, 24)
-          .fill(swatch.white.fill)
+          .fill(visit.row === 'baby' ? cream : swatch.white.fill)
           .stroke({ width: 5, color: wood.line }),
       );
-      const art = pictureArt(picture);
-      art.scale.set(1.15);
-      node.addChild(art);
+      if (visit.row === 'baby') {
+        // A printed name tag on a string: the word only, no picture, so the page's words are what tell.
+        const hole = new Graphics()
+          .moveTo(0, -48)
+          .lineTo(0, -80)
+          .stroke({ width: 4, color: wood.line })
+          .circle(0, -46, 8)
+          .fill(swatch.white.fill)
+          .stroke({ width: 3, color: wood.line });
+        const word = label(PICTURE_WORDS[picture], 32, ink);
+        word.y = 8;
+        if (word.width > 116) word.scale.set(116 / word.width);
+        node.addChild(hole, word);
+      } else {
+        const art = pictureArt(picture);
+        art.scale.set(1.15);
+        node.addChild(art);
+      }
       node.hitArea = new Rectangle(-65, -65, 130, 130);
       const choice: Choice = { picture, node, used: false, drag: null as unknown as DragHandle };
       this.scene.addChild(node);
@@ -437,13 +614,22 @@ class LookItUp implements Game {
       const r = l.choices[i];
       c.node.position.set(r.x + r.w / 2, r.y + r.h / 2);
       c.drag = draggable(c.node, this.ctx.tw, {
-        onPick: () => sfx.tick(),
+        onPick: () => {
+          sfx.tick();
+          // A name tag says its word when it is lifted: reading a tag is free.
+          if (visit.row === 'baby' && !this.busy && !this.unasked)
+            void this.ctx.say('lookitup.say', { text: PICTURE_WORDS[c.picture] });
+        },
         onDrop: (x, y) => this.dropped(c, x, y),
       });
       c.drag.home = { x: c.node.x, y: c.node.y };
     });
     await this.ctx.tw.to(holder, { alpha: 1 }, { duration: 0.3 });
     if (!this.alive) return;
+    if (this.index === 0 && this.round.book === 'contents') {
+      await this.ctx.say('lookitup.instruct.contents');
+      if (!this.alive) return;
+    }
     if (!after) {
       await this.ctx.instruct('lookitup.ask', { text: askOf(visit) });
       this.busy = false;
@@ -463,6 +649,7 @@ class LookItUp implements Game {
     }
     if (this.visitorNode && !this.visitorNode.destroyed) this.visitorNode.destroy({ children: true });
     this.visitorNode = null;
+    this.babyNode = null;
   }
 
   /** A pick up and drop. A drop that barely moved is a tap; a drop near the visitor is a choice; anything else is ignored. */
@@ -475,7 +662,9 @@ class LookItUp implements Game {
     }
     const moved = Math.hypot(x - c.drag.home.x, y - c.drag.home.y);
     const v = this.visitorNode;
-    const near = nearestPoint([{ x: v.x, y: v.y - 95 }], x, y, 200) >= 0;
+    const targets = [{ x: v.x, y: v.y - 95 }];
+    if (this.babyNode) targets.push({ x: v.x + this.babyNode.x, y: v.y + this.babyNode.y });
+    const near = nearestPoint(targets, x, y, 200) >= 0;
     if (moved < 30 || near) void this.choose(c);
     return false;
   }
@@ -497,6 +686,22 @@ class LookItUp implements Game {
       this.misses++;
     }
     sfx.boing();
+    if (visit.row === 'baby') {
+      // The baby shakes its head at a tag that is not its name.
+      if (this.babyNode) await this.shake(this.babyNode);
+      if (!this.alive) return;
+      const word = PICTURE_WORDS[c.picture];
+      await this.ctx.say('lookitup.miss.tag', {
+        word,
+        owner: ANIMALS[verdict.owner].kind,
+        kind: ANIMALS[visit.animal].kind,
+      });
+      if (!this.alive) return;
+      if (this.attempts >= GLOW_AFTER) this.addHint();
+      if (this.attempts >= HELP_AFTER) return void this.supported();
+      this.busy = false;
+      return;
+    }
     if (visit.row === 'where') {
       const home = { x: v.x, y: v.y };
       await this.ctx.tw.to(v, { x: c.node.x, y: c.node.y + 40 }, { duration: 0.5, ease: ease.inOutSine });
@@ -521,7 +726,13 @@ class LookItUp implements Game {
       this.hinted = true;
       this.hints++;
     }
+    const first = !this.glowOn;
     this.glowOn = true;
+    // From level 4 the glow's first step back to the contents page is also said.
+    if (!first || this.round.book !== 'contents' || !this.visit) return;
+    const h = hintFor(this.round, this.visit, this.open, this.rowSeen);
+    if (h.kind === 'contents') void this.ctx.say('lookitup.hint.contents');
+    else if (h.kind === 'line') void this.ctx.say('lookitup.hint.line', { title: ANIMALS[h.animal].title });
   }
 
   private async shake(n: Container) {
@@ -548,7 +759,21 @@ class LookItUp implements Game {
     c.used = true;
     c.drag.enabled = false;
     sfx.pop(4);
-    if (visit.row === 'eats') {
+    if (visit.row === 'baby' && this.babyNode) {
+      // The right tag hangs on the baby, which hops.
+      const b = this.babyNode;
+      await this.ctx.tw.to(
+        c.node,
+        { x: v.x + b.x, y: v.y + b.y + 10 },
+        { duration: 0.4, ease: ease.inOutSine },
+      );
+      if (!this.alive) return;
+      await this.ctx.tw.to(c.node.scale, { x: 0.55, y: 0.55 }, { duration: 0.15 });
+      if (!this.alive) return;
+      await this.ctx.tw.to(b, { y: b.y - 30 }, { duration: 0.15, ease: ease.inOutSine });
+      if (!this.alive) return;
+      await this.ctx.tw.to(b, { y: b.y + 30 }, { duration: 0.15, ease: ease.inOutSine });
+    } else if (visit.row === 'eats') {
       await this.ctx.tw.to(c.node, { x: v.x, y: v.y - 100 }, { duration: 0.4, ease: ease.inOutSine });
       if (!this.alive) return;
       c.node.visible = false;
@@ -591,14 +816,28 @@ class LookItUp implements Game {
       touched: this.touched.size,
     });
     if (!move) return null;
+    if (this.ctx.demo && this.mode === 'contents' && !this.detoured && this.index === 0 && 'line' in move) {
+      // The demonstration first opens another page: looking is free.
+      this.detoured = true;
+      const other = this.lines.find((x) => x.id !== move.line);
+      if (other) return { tap: { on: other.node } };
+    }
+    if ('contents' in move) return this.contentsButton ? { tap: { on: this.contentsButton.node } } : null;
+    if ('line' in move) {
+      const line = this.lines.find((x) => x.id === move.line);
+      return line ? { tap: { on: line.node } } : null;
+    }
     if ('label' in move) {
       const row = this.rows.find((r) => !this.touched.has(r.kind));
       return row ? { tap: { on: row.node } } : null;
     }
     if ('tab' in move) return { tap: { on: this.tabs.find((t) => t.id === move.tab)!.node } };
     if ('row' in move) return { tap: { on: this.rows.find((r) => r.kind === move.row)!.node } };
+    if (!('choice' in move)) return null;
     const c = this.choices.find((x) => x.picture === move.choice && !x.used);
-    return c && this.visitorNode ? { drag: { on: c.node }, to: { on: this.visitorNode, y: -100 } } : null;
+    if (!c || !this.visitorNode) return null;
+    if (this.babyNode) return { drag: { on: c.node }, to: { on: this.babyNode } };
+    return { drag: { on: c.node }, to: { on: this.visitorNode, y: -100 } };
   }
 
   /** The pause sheet's Show a hint: the same glow, and the same single hint for this visitor. */
