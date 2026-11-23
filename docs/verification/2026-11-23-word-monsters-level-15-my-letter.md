@@ -1,0 +1,5 @@
+# 2026-11-23 — Word Monsters level 15, My letter (PR #2070)
+
+**Changed:** Word Monsters level 15, My letter: three monsters, one wearing the first letter of her name (Pip's p with no Latin letter or the couch name "friend"), asked by letter name only; toddler order [1, 15, 2], preschool [15, 2, 3, 4, 5]; the name-letters helper now shared as `latinLetters`; a how-to card step.
+**Ran:** `npm run typecheck`; Word Monsters rule and upright tests (101 pass); full `npm test` passed except the generated game-docs check, fixed by `npm run game-docs`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-monsters FINGER_LEVELS=15 FINGER_BAND=toddler` passed in 5.9 s; a scripted headless play at 390×844: toddler "Dana" with two wrong taps (misses 2, hints 1, her d glowed) then finished, and preschool with no name (letter p, one wrong tap, finished), no page errors; one upright screenshot looked right.
+**Not run:** `npm run build` (no shared assets; voice lines fall back to device speech until clips are generated), offline, `world`.

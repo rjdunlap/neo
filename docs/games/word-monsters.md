@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 9, 1 |
-| toddler | 1–2 |
-| preschool | 2–5 |
+| toddler | 1, 15, 2 |
+| preschool | 15, 2, 3, 4, 5 |
 | pre-K | 3–6 |
 | school | 5, 6, 7, 8, 10, 11, 12, 14, 13 |
 
@@ -30,12 +30,13 @@
 | 12 | Fix the pet's word: tap out the wrong letter and put the right one in |
 | 13 | Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box |
 | 14 | Four sounds: say a pictured word slowly and build it in four boxes, with a spare letter |
+| 15 | My letter: find the first letter of her name among three monsters, asked by its letter name |
 
 <!-- end generated -->
 
 **Starts as:** tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster)
 
-**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word, then build words where one monster wears two letters for one sound (fish, duck, bath)
+**Grows into:** find the first letter of her name, then find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word, then build words where one monster wears two letters for one sound (fish, duck, bath)
 
 ## Design notes
 
@@ -51,6 +52,8 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 
 **Level 13, Two letters, one sound.** A wide team monster wearing two letters (sh, ch, th or ck) fills one sound box. Only the word is said ("Make fish! Two letters can make one sound."); tap the picture to hear it again (free) or the boxes to hear the sounds box by box (one hint per word). A wrong drop says who the monster is; dropping one letter of the wanted team says "That is just sss. Two letters make shh."; two misses glow the next monster. Nine words: fish, dish, ship, chick, duck, sock, rock, bath, moth, three per round with three different teams. A spare monster is half the time one letter of a team (never both, and never c or k beside ck) and otherwise an unrelated letter that is no lookalike or sound twin. Team words never appear at levels 10 and 11. Known gap: a ck monster dropped in chick's ch box gets the generic "I'm CK" line.
 
+**Level 15, My letter (toddler and preschool's entry, 2026-11-23, PR #2070).** Three monsters, one wearing the first letter of her name (`myLetter(ctx.childName)`, from the shared `latinLetters` in `src/learning/words/name-letters.ts`); Pip's p when the name has no Latin letter or is the couch stand-in "friend". Asked and answered by letter name only ("Where is D? D starts your name!"), with no sound line, so it makes no phonics claim. Four questions; spares are never in her name and never lowercase or capital lookalikes of her letter or each other, and her letter never stands in the same spot twice running. A wrong tap makes that monster say only who it is ("I'm B!"); boing except at toddler. Misses are wrong taps; a hint is the glow on her letter after two. ID 15 is placed by order, not by number: toddler order [1, 15, 2], preschool [15, 2, 3, 4, 5], `entryLevels` [9, 15].
+
 **What the guide repeats (2026-11-18).** Level 12: once the wrong letter is tapped out, `monster.repair.replace` ("Put the right letter in to make {word}.") is the instruction (`ctx.instruct`), so the caption no longer keeps the "Tap the letter I should take out." line through the round's second step; the next word instructs `monster.repair` again. `monster.repair.keep`, `monster.next`, `monster.iam` and `monster.team.half` are replies and stay `say`.
 
-**Upright on a phone (2026-11-18).** Plays held upright at every level 1–14: four loose monsters stand two by two, five (level 14) as three over two, lifted clear of the guide's corner, with the picture and boxes above them so the word is built in the lower half of a tall screen. The layout is pure functions in `layout.ts` (`topSpot`, `slotSpot`, `looseSpots`, `rowSizes`, `bigSpot`, `shelfSpot`, the touch sizes); sideways is unchanged, and `upright.test.ts` checks every level, question and five phone views (targets at least 100 units, apart, in view, clear of Home and the guide).
+**Upright on a phone (2026-11-18).** Plays held upright at every level 1–15: four loose monsters stand two by two, five (level 14) as three over two, lifted clear of the guide's corner, with the picture and boxes above them so the word is built in the lower half of a tall screen. The layout is pure functions in `layout.ts` (`topSpot`, `slotSpot`, `looseSpots`, `rowSizes`, `bigSpot`, `shelfSpot`, the touch sizes); sideways is unchanged, and `upright.test.ts` checks every level, question and five phone views (targets at least 100 units, apart, in view, clear of Home and the guide).

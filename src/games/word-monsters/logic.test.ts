@@ -24,8 +24,13 @@ import {
   FOUR_LEVEL,
   FOUR_PLAN,
   FOUR_WORDS,
+  capitalLookalike,
   lookalike,
   makeQuestions,
+  MINE_LEVEL,
+  MINE_PLAN,
+  mineQuestions,
+  myLetter,
   soundTwin,
   WHO_POOL,
   nextMonster,
@@ -454,5 +459,113 @@ describe('Word Monsters', () => {
     // ck words offer neither c nor k as a spare.
     for (let seed = 1; seed <= 100; seed++)
       for (const m of teamMonsters(new Rng(seed), ['d', 'u', 'ck'], 4)) expect(['c', 'k']).not.toContain(m);
+  });
+
+  it("level 15 is toddler and preschool's My letter: placed between 1 and 2, and first for preschool", () => {
+    expect(planFor(MINE_LEVEL)).toBe(MINE_PLAN);
+    expect(levelsInOrder(LEVELS.toddler!)).toEqual([1, MINE_LEVEL, 2]);
+    expect(levelsInOrder(LEVELS.preschool!)).toEqual([MINE_LEVEL, 2, 3, 4, 5]);
+    expect(stepLevel(1, 1, LEVELS.toddler!)).toBe(MINE_LEVEL);
+    expect(stepLevel(MINE_LEVEL, 1, LEVELS.toddler!)).toBe(2);
+    for (const band of ['lap', 'prek', 'school'] as const) {
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(MINE_LEVEL);
+      // A save or pin carried into a band that does not list it lands on that band's own easiest level.
+      expect(landing(MINE_LEVEL, LEVELS[band]!, [BIG_LEVEL, MINE_LEVEL])).toBe(
+        levelsInOrder(LEVELS[band]!)[0],
+      );
+    }
+    for (const id of [
+      'monster.mine',
+      'monster.mine.pip',
+      'monster.mine.yes',
+      'monster.mine.yes.pip',
+      'monster.iam.name',
+    ])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+    // Asked and answered by letter name: no line on this level carries a sound.
+    for (const id of [
+      'monster.mine',
+      'monster.mine.pip',
+      'monster.mine.yes',
+      'monster.mine.yes.pip',
+      'monster.iam.name',
+    ])
+      for (const line of SCRIPT[id as keyof typeof SCRIPT] as readonly string[])
+        expect(line).not.toContain('{sound}');
+  });
+
+  it("level 15 takes the first letter of her name, and Pip's p with no usable name", () => {
+    expect(myLetter('Dana')).toMatchObject({ letter: 'd', own: true });
+    expect(myLetter('  émile ')).toMatchObject({ letter: 'e', own: true });
+    expect(myLetter('Zoë-Ann')).toEqual({ letter: 'z', own: true, name: 'zoeann' });
+    for (const none of ['', '   ', '小明', '42', 'friend', 'Friend'])
+      expect(myLetter(none), JSON.stringify(none)).toEqual({ letter: 'p', own: false, name: 'pip' });
+  });
+
+  it('level 15 offers her letter each time among two fair others: not in her name, no lookalike, a new place each time', () => {
+    const names = [
+      'Dana',
+      'Bob',
+      'Mia',
+      'Wren',
+      'Quinn',
+      'Ezra',
+      'Pip',
+      '',
+      'Olivia',
+      'Nzinga',
+      'Christopher Abernathy',
+    ];
+    for (const name of names) {
+      const { letter, name: letters } = myLetter(name);
+      for (let seed = 1; seed <= 200; seed++) {
+        const qs = mineQuestions(MINE_PLAN, new Rng(seed), name);
+        expect(qs).toHaveLength(MINE_PLAN.rounds);
+        let before = -1;
+        for (const q of qs) {
+          expect(q.answer).toBe(letter);
+          expect(q.monsters).toHaveLength(MINE_PLAN.choices);
+          expect(new Set(q.monsters).size).toBe(MINE_PLAN.choices);
+          expect(q.monsters.filter((l) => l === letter)).toHaveLength(1);
+          for (const other of q.monsters.filter((l) => l !== letter)) {
+            expect(letters.includes(other), `${name}: ${other} is in the name`).toBe(false);
+            expect(lookalike(other, letter) || capitalLookalike(other, letter), `${name}: ${other}`).toBe(
+              false,
+            );
+            expect(WHO_POOL).toContain(other);
+          }
+          const [a, b] = q.monsters.filter((l) => l !== letter);
+          expect(lookalike(a, b) || capitalLookalike(a, b), `${name} ${a}${b}`).toBe(false);
+          const at = q.monsters.indexOf(letter);
+          expect(at, `${name} seed ${seed}`).not.toBe(before);
+          before = at;
+          // The ghost finger taps her letter.
+          const ms = q.monsters.map((l) => ({ letter: l, placed: false }));
+          expect(nextMonster(MINE_PLAN, q, ms, 0, 0)?.letter).toBe(letter);
+        }
+      }
+    }
+    // A name holding nearly the whole alphabet borrows its other letters rather than run short.
+    const qs = mineQuestions(MINE_PLAN, new Rng(3), 'The quick brown fox jumps over the lazy dog');
+    for (const q of qs) expect(new Set(q.monsters).size).toBe(MINE_PLAN.choices);
+  });
+
+  it('level 15 changes the spares between questions, so she looks for her letter rather than at the others', () => {
+    let changed = 0;
+    let pairs = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = mineQuestions(MINE_PLAN, new Rng(seed), 'Dana');
+      for (let i = 1; i < qs.length; i++) {
+        pairs++;
+        const spares = (q: (typeof qs)[number]) =>
+          q.monsters
+            .filter((l) => l !== 'd')
+            .sort()
+            .join('');
+        if (spares(qs[i]) !== spares(qs[i - 1])) changed++;
+        expect(qs[i].monsters.filter((l) => l !== 'd' && qs[i - 1].monsters.includes(l))).toHaveLength(0);
+      }
+    }
+    expect(changed).toBe(pairs);
   });
 });
