@@ -306,12 +306,12 @@ Defined 2026-11-23 as the weather-and-water study's [slice 5](../deep-dives/subj
 - **A chain of three sockets:** `top` (0), `middle` (1), `low` (2), then the pond: `ROUTE5 = [{ down: 1 }, { down: 2 }, { down: 'pond' }]`, run by level 4's `runRoute`. With one cloud over socket 0 and one `down` per socket, every reachable board is a single chain, so "route variants" here are boards that differ in **which sockets are fixed, which beds are marked and how much rain falls**, not in branching. A test proves every socket is reachable from socket 0 and no route skips one.
 - **Surfaces:** stone (0) and soil (2) only, as at levels 1–4. A socket is either **tappable** (flips stone ↔ soil) or **fixed**: the **tree's bed** (always soil, drawn with a small tree; it keeps two) or the **stone path** (always stone, drawn as stepping stones). Fixed sockets are as large as beds; tapping one says a line and changes nothing, never a miss or hint. No third surface (decision 4 stays deferred).
 - **The shower** is the board's `units`, **6** or **4**, drawn on the cloud as that many dashed drops before it rains, so it is never a hidden variable. Every stored amount and pond count is even (0, 2, 4 or 6), so narration needs no odd numbers.
-- **Needs:** one or two **marked** tappable beds, each storing **exactly 2**; with two, one carries a **leaf** marker and the other a **flower**. The pond needs **at least 1**. `meets(trial, board)` returns `{ beds: boolean[]; pond: boolean }` and the Check passes when all are true. The Check judges the pictured bounds, never a stored answer key.
+- **Needs:** one or two **marked** tappable beds, each storing **exactly 2**; with two, the **uphill** one carries a **leaf** marker and the lower one a **flower** (A: middle leaf, low flower; B: top leaf, low flower); a lone marked bed carries the leaf. The pond needs **at least 1**. `meets(trial, board)` returns `{ beds: boolean[]; pond: boolean }` and the Check passes when all are true. The Check judges the pictured bounds, never a stored answer key.
 - **Cause:** a failed Check names one cause: `dry` (the uphill-most marked bed that did not keep two; its marker picks the line) before `pond`.
 
 ### The six boards
 
-Seeded rounds pick a board, then a **starting arrangement among its failing ones**, and the pond friend. Each table lists every arrangement (fixed sockets in brackets), what each socket kept, the pond, and why it fails. Every board has a solution, every failing arrangement fails for a reason on the screen, and the tables are the rule tests' expected values.
+Seeded rounds pick a board uniformly from all six (A included), then a starting arrangement uniformly among its failing ones, and the pond friend. Each table lists every arrangement (fixed sockets in brackets), what each socket kept, the pond, and why it fails. Every board has a solution, every failing arrangement fails for a reason on the screen, and the tables are the rule tests' expected values.
 
 **A, *Leaf and flower below*** (authored first board; 6 drops; middle and low marked; starts soil / soil / stone). One answer: the top bed is stone.
 
@@ -326,7 +326,18 @@ Seeded rounds pick a board, then a **starting arrangement among its failing ones
 | soil / soil / stone | 2, 2, 0 | 2 | low dry (the authored start) |
 | soil / soil / soil | 2, 2, 2 | 0 | pond got none |
 
-**B, *Top and bottom*** (6 drops; top and low marked). One answer: soil / stone / soil; soil / soil / soil fails the pond, and every arrangement with a stone top or low fails dry.
+**B, *Top and bottom*** (6 drops; top and low marked). One answer: the middle is stone.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 6 | top and low dry |
+| stone / stone / soil | 0, 0, 2 | 4 | top dry |
+| stone / soil / stone | 0, 2, 0 | 4 | top and low dry |
+| stone / soil / soil | 0, 2, 2 | 2 | top dry |
+| soil / stone / stone | 2, 0, 0 | 4 | low dry |
+| **soil / stone / soil** | 2, 0, 2 | 2 | **passes** |
+| soil / soil / stone | 2, 2, 0 | 2 | low dry |
+| soil / soil / soil | 2, 2, 2 | 0 | pond got none |
 
 **C, *The tree's bed*** (6 drops; the middle is the tree's bed; low marked). One answer: the tree always keeps two, so the top must be stone.
 
@@ -346,7 +357,18 @@ Seeded rounds pick a board, then a **starting arrangement among its failing ones
 | soil / [stone] / stone | 2, 0, 0 | 4 | low dry |
 | **soil / [stone] / soil** | 2, 0, 2 | 2 | **passes** |
 
-**E, *One bed in the middle*** (6 drops; middle marked). Three answers: the middle is soil and at most one other bed is: stone / soil / stone (pond 4), stone / soil / soil (2), soil / soil / stone (2). All three soil leaves the pond none; a stone middle is dry.
+**E, *One bed in the middle*** (6 drops; middle marked). Three answers: the middle is soil and at most one other bed is.
+
+| Top / middle / low | Kept | Pond | Result |
+| --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 6 | middle dry |
+| stone / stone / soil | 0, 0, 2 | 4 | middle dry |
+| **stone / soil / stone** | 0, 2, 0 | 4 | **passes** |
+| **stone / soil / soil** | 0, 2, 2 | 2 | **passes** |
+| soil / stone / stone | 2, 0, 0 | 4 | middle dry |
+| soil / stone / soil | 2, 0, 2 | 2 | middle dry |
+| **soil / soil / stone** | 2, 2, 0 | 2 | **passes** |
+| soil / soil / soil | 2, 2, 2 | 0 | pond got none |
 
 **F, *The small cloud*** (**4** drops; low marked). One answer: stone / stone / soil (pond 2). This is the board where water **runs out**: soil / soil / soil keeps 2, 2, 0 and the low bed gets nothing, and soil / stone / soil or stone / soil / soil fill the low bed but leave the pond none.
 
@@ -405,7 +427,7 @@ No line says soil drinks it all, that a plant needs the water, or how real slope
 
 ### Rule tests, level 5 (`logic.test.ts`)
 
-1. **Boards are well formed:** every socket is reachable from socket 0 and the chain ends in the pond; every marked socket is tappable; two-marked boards carry one leaf and one flower; `units` is 4 or 6.
+1. **Boards are well formed:** every socket is reachable from socket 0 and the chain ends in the pond; every marked socket is tappable; the uphill marked bed carries the leaf and a second marked bed the flower; `units` is 4 or 6.
 2. **Conservation:** for every board and arrangement, after every step `released = sum(stored) + pond`; each path starts at socket 0 and passes a socket only when it is stone or full.
 3. **Outcome tables:** the six tables above exactly (kept, pond, cause).
 4. **Judge accepts every valid arrangement:** for each board the Check passes exactly the arrangements `solutions` lists, which is non-empty; D lists two and E three.
