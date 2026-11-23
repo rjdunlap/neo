@@ -53,6 +53,7 @@ import { layout as jarLayout } from './jar-clues/layout';
 import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
+import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
@@ -312,6 +313,18 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', side(l.cross)],
     ];
   },
+  'workshop-detective': () => {
+    const l = workshopDetectiveLayout(v);
+    return [
+      ...l.levers.map((r): Size => ['lever', side(r)]),
+      ['button', side(l.tryIt)],
+      ...l.records.map((r): Size => ['record card', side(r)]),
+      ...l.notes.map((r): Size => ['note card', side(r)]),
+      ...l.toggles.flat().map((r): Size => ['mark toggle', side(r)]),
+      ['button', side(l.help)],
+      ['button', side(l.check)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -380,6 +393,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'truth-bridge': { px: 52.8, what: 'plank' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
+  'workshop-detective': { px: 45.7, what: 'mark toggle' },
 };
 
 /** About a comfortable thumb, in CSS pixels (roadmap recommendation 6). */

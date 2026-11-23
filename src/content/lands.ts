@@ -428,6 +428,7 @@ export const LANDS: readonly Land[] = [
       'key-it-out',
       'jar-clues',
       'harbor-orders',
+      'workshop-detective',
     ],
   },
 ];

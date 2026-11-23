@@ -190,6 +190,7 @@ import { VOICE as wordCodeVoice } from '../games/word-code/voice.ts';
 import { VOICE as wordGlueVoice } from '../games/word-glue/voice.ts';
 import { VOICE as wordMonstersVoice } from '../games/word-monsters/voice.ts';
 import { VOICE as wordSearchVoice } from '../games/word-search/voice.ts';
+import { VOICE as workshopDetectiveVoice } from '../games/workshop-detective/voice.ts';
 // END game imports
 
 /**
@@ -836,6 +837,7 @@ export const SCRIPT = {
   ...wordGlueVoice,
   ...wordMonstersVoice,
   ...wordSearchVoice,
+  ...workshopDetectiveVoice,
   // END game entries
 } satisfies Record<string, string[]>;
 

@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (22, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (23, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 191 games; the 167 child games are listed below and the 24 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 33 games: the 24 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 192 games; the 167 child games are listed below and the 25 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 151 games, and "grown-up" (13 and up) is played by 34 games: the 25 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -279,7 +279,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 24 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 22 in Lantern Lake. All play by touch on the island; 16 are touch-only, and 8 also play with a controller on the couch.
+These 25 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 23 in Lantern Lake. All play by touch on the island; 17 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -313,6 +313,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Key It Out](docs/games/key-it-out.md) | Lantern Lake | 4 | a page of pencil sketches of invented lake creatures and a field guide's identification key. At level 1 (*By the key*) six sketches show every part: choose one, answer the key's yes-or-no questions from what it shows, and tap the name the branch ends in. Three unstamped sketches carrying their right names at once are stamped together. |
 | [Jar Clues](docs/games/jar-clues.md) | Lantern Lake | 4 | a jar of lake pebbles nobody has counted and a board of the numbers 1 to 60. Tap a number to plant a first guess, then the clues arrive one at a time ("fewer than 35", "an even number", "it ends in 2"): cross off every number each one rules out, by tapping or sweeping along a row, and press Next clue. At level 1 (*First clues*) three clues about ranges, odd and even, counting by fives or tens and last digits leave two or three numbers at least ten apart; choose the one the jar holds by eye, with a ten line etched on the glass, and the jar pours out into rows of ten and is counted. |
 | [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 4 | Give two workshops a few mornings to make crates and boats for a waiting order. |
+| [Workshop Detective](docs/games/workshop-detective.md) | Lantern Lake | 1 | mark two notes about a made-up bench lamp against two records, then try the lever setting that tells them apart. |
 
 <!-- end generated -->
 
