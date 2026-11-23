@@ -20,7 +20,9 @@ import {
   forkSquares,
   herTurn,
   key,
+  GrownUpSeat,
   layout,
+  matchEnd,
   makeRound,
   other,
   petMove,
@@ -320,6 +322,17 @@ describe('layout', () => {
         for (let j = i + 1; j < 9; j++) expect(overlap(L.squares[i], L.squares[j])).toBe(false);
       for (const s of L.squares)
         for (const p of [L.shellPile, L.pebblePile]) expect(overlap(s, p)).toBe(false);
+      // Level 5's grown-up toggle: a full 100-unit target in view, off every square, both piles and the corners.
+      const r = rect(L.seat);
+      expect(Math.min(L.seat.w, L.seat.h)).toBeGreaterThanOrEqual(100);
+      expect(r.l).toBeGreaterThanOrEqual(0);
+      expect(r.t).toBeGreaterThanOrEqual(0);
+      expect(r.r).toBeLessThanOrEqual(view.w);
+      expect(r.b).toBeLessThanOrEqual(view.h);
+      expect(hits(L.seat, 0, view.h - 170, 170, view.h)).toBe(false);
+      expect(hits(L.seat, 0, 0, 120, 120)).toBe(false);
+      expect(hits(L.seat, view.w - 120, 0, view.w, 120)).toBe(false);
+      for (const o of [...L.squares, L.shellPile, L.pebblePile]) expect(overlap(L.seat, o)).toBe(false);
     });
   it('null rather than squares under 100', () => {
     expect(layout({ w: 500, h: 380 })).toBe(null);
@@ -632,5 +645,58 @@ describe('level 5, Play it out', () => {
     s.newTurn();
     expect(s.petWon()).toBe(false);
     expect([s.misses, s.hints]).toEqual([3, 2]);
+  });
+});
+
+// ---- level 5, the grown-up seat (batch `shell-rows 3`, docs/definitions/shell-rows-4-5.md#build-batches) ----
+
+describe('level 5, the grown-up seat', () => {
+  it('starts with the pet on the pebbles and flips only before the first shell', () => {
+    const seat = new GrownUpSeat();
+    expect([seat.on, seat.open]).toEqual([false, true]);
+    expect(seat.toggle()).toBe(true);
+    expect(seat.on).toBe(true);
+    expect(seat.toggle()).toBe(true);
+    expect(seat.on).toBe(false);
+    seat.toggle();
+    seat.close();
+    expect(seat.toggle()).toBe(false);
+    expect([seat.on, seat.open]).toEqual([true, false]);
+  });
+
+  it('matchEnd names her three, the pebbles three, a tie, or a game still going', () => {
+    expect(matchEnd(boardAfter([]))).toBe(null);
+    expect(matchEnd(boardAfter([0, 3, 1, 4, 2]))).toBe('win');
+    expect(matchEnd(boardAfter([0, 3, 1, 4, 8, 5]))).toBe('pebble');
+    expect(matchEnd(boardAfter([0, 1, 2, 4, 3, 5, 7, 6, 8]))).toBe('tie');
+    expect(matchEnd(boardAfter([0, 1, 2, 4]))).toBe(null);
+  });
+
+  it('every two-sided game of free taps ends in exactly one of the three endings, the last move deciding it', () => {
+    // Any legal sequence a child and a grown-up could tap: the round always completes, and never before an ending.
+    let games = 0;
+    const seen = new Set<string>();
+    const walk = (moves: number[]) => {
+      const b = boardAfter(moves);
+      const end = matchEnd(b);
+      if (end) {
+        games++;
+        seen.add(end);
+        // The side that just moved is the only one that can have three; a tie needs all nine.
+        if (end === 'win') expect(moves.length % 2).toBe(1);
+        if (end === 'pebble') expect(moves.length % 2).toBe(0);
+        if (end === 'tie') expect(moves.length).toBe(9);
+        return;
+      }
+      for (const i of empties(b)) walk([...moves, i]);
+    };
+    walk([]);
+    expect(games).toBe(255168);
+    expect([...seen].sort()).toEqual(['pebble', 'tie', 'win']);
+  });
+
+  it('the new lines exist', () => {
+    for (const k of ['sr.seat-on', 'sr.seat-off', 'sr.pebble-turn', 'sr.pebbles-win'])
+      expect(SCRIPT[k as keyof typeof SCRIPT], k).toBeDefined();
   });
 });

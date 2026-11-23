@@ -9,6 +9,11 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 3, text: 'Both have two in a row: take the square that makes your three first.' },
     { from: 4, to: 4, text: 'Nobody has two in a row: tap the square that makes two rows at once.' },
     { from: 5, to: 5, text: "A whole game: you go first; make three, and stop the pet's rows." },
+    {
+      from: 5,
+      to: 5,
+      text: 'To play the pebbles yourself, tap the grown-up button by the pebble pile before the first shell; then take turns on the board.',
+    },
   ],
   finish: [
     { to: 4, text: 'Three puzzles make a round; one sticker.' },
@@ -24,7 +29,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
-      text: 'If the pet gets three, the board goes back to where the game turned (one miss); after a second time, the square that keeps the game safe glows (one hint). A tap on a full square is never counted.',
+      text: 'If the pet gets three, the board goes back to where the game turned (one miss); after a second time, the square that keeps the game safe glows (one hint). A tap on a full square is never counted. With a grown-up on the pebbles, any ending finishes the round: a pebble three is not a miss and nothing goes back; Show me stays hers.',
     },
   ],
 };

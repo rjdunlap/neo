@@ -1,1 +1,0 @@
-**`shell-rows` level 5, the grown-up seat, batch `shell-rows 3`** (school; after batch `shell-rows 2`; same tier with one level-5 play in grown-up mode). [Definition](../../definitions/shell-rows-4-5.md#check-tier), [dive](../../deep-dives/subjects/strategy-games.md#build-slices-in-order)
