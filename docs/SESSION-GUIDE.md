@@ -25,10 +25,10 @@ For a docs-only session, step 5 is `node scripts/check-links.mjs` and `git diff 
 | `npm run game-docs`, `node scripts/content-barrels.mjs` | Rewrite the generated game docs (page blocks, README tables, GAMES.md); regather each game's `voice.ts` and `howto.ts` |
 | `npm run new-game -- <id> …` | The [new game scaffold](NEW-GAME.md) |
 | `scripts/concept-art.sh skip\|status\|restore` | Leaves the 150 MB of concept-art PNGs out of a code worktree, or brings them back |
-| `scripts/snapshot-serve.sh` | Serves a frozen copy of the tree on port 5180 for a slow suite |
+| `scripts/snapshot-serve.sh` | Serves a frozen copy of the tree on `SNAP_PORT` (default 5180) in a per-worktree cache dir for a slow suite |
 | `scripts/codex-image.sh` (the `codex-image` skill) | Asks for a generated image from a brief and reference images |
-| Subagents `rules-tester`, `game-reviewer`, `docs-keeper` | Rule tests for a `logic.ts`; a read-only review of a game's diff; the doc closeout (`.claude/agents/`) |
-| `scripts/agent-guard.mjs` (a hook in `.claude/settings.json`) | Blocks `npm run test:browser` without `BROWSER_SUITE`, and `sed -i -e` on macOS |
+| Subagents `rules-tester`, `game-reviewer`, `docs-keeper` | Rule tests for a `logic.ts`; read-only game review; doc closeout (`.claude/agents/`, synced to Codex and Antigravity via `node scripts/sync-agents.mjs`) |
+| `scripts/agent-guard.mjs` | PreToolUse hook (`.claude/settings.json`, `.codex/hooks.json`, `.agents/plugins/puddle-island/hooks.json`) blocking unfiltered `test:browser` and macOS `sed -i -e` |
 
 ## Avoiding duplicate parallel work
 
@@ -58,6 +58,8 @@ Developer direction, 2026-10-21: an implementation slice is a predeclared same-g
 ## Setting up a worktree
 
 In a fresh worktree, run `scripts/concept-art.sh skip` unless the session does art, and `npm ci`; never borrow another worktree's `node_modules`. Choose an explicit available port, start Vite with `--strictPort`, and set `GAME_URL` to exactly that URL. Keep any custom Vite cache within that worktree; concurrent worktrees must not share a mutable cache. Stop the session's dev, preview and snapshot servers when its checks finish.
+
+Antigravity worktrees (`~/.gemini/antigravity/worktrees/neo/`) keep their `.git` metadata in the main checkout, so git commands and `scripts/overlap.sh` need access to that `.git` directory.
 
 **Concept art** (the developer, 2026-11-07): the originals are 113 PNGs, about 150 MB, under `docs/rework/concepts/`, and code sessions leave them out.
 
@@ -194,6 +196,8 @@ For a reference review of an app that only runs on a phone (first used for [Toto
 
 ## Keeping AGENTS.md small
 
-Every session and subagent re-reads AGENTS.md on every turn, and Codex reads only its first 32 KiB by default (`scripts/agent-guard.test.mjs` fails past that). It was trimmed under the limit on 2026-10-23 and 2026-11-06 and crept back each time, because each session added a rule in place. Since 2026-11-07 it holds rules and pointers only (about 18 KB, with a 24 KiB budget test): add a new rule as one line there and its detail, reasons and dates here, in DESIGN.md or in the owning doc. The same goes for this guide and the subagent prompts: a rule lives in one place, and the others point to it.
+Every session and subagent re-reads AGENTS.md on every turn. Codex reads only its first 32 KiB by default and Antigravity caps each rule file at 24,000 bytes (`scripts/agent-guard.test.mjs` enforces both).
+
+It was trimmed under the limit on 2026-10-23 and 2026-11-06 and crept back each time, because each session added a rule in place. Since 2026-11-07 it holds rules and pointers only (about 18 KB): add a new rule as one line there and its detail, reasons and dates here, in DESIGN.md or in the owning doc. The same goes for this guide and the subagent prompts (synced from `.claude/agents/` by `node scripts/sync-agents.mjs`): a rule lives in one place, and the others point to it.
 
 This guide keeps every line under 600 characters, the width `node scripts/peek.mjs section` prints, so a session or subagent reading one section sees all of it (`scripts/docs-map.test.mjs`): split a long paragraph rather than extend it.

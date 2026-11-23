@@ -6,6 +6,8 @@ import {
   BANK_HIT_R,
   BANK_HIT_UP,
   BIG_DUCK_SPOT,
+  CHECK_HIT_R,
+  POND_HIT_R,
   FRIEND_SLOTS,
   HIDING_SLOTS,
   PAD_HIT_R,
@@ -17,6 +19,7 @@ import {
   bankBox,
   bankSize,
   bankSpot,
+  checkSpot,
   enterY,
   frameSeats,
   layoutFor,
@@ -32,8 +35,9 @@ import {
 
 /**
  * Duck Pond held upright (chunk 31, docs/definitions/phone-portrait.md): all fifteen levels at the upright phone views.
- * The tap targets are the waiting ducks (levels 1–5), the five ducks that wave bye-bye (level 12) and the answer pads;
- * level 13 takes a touch anywhere. The ducks on the pond are counted, never tapped, but must stay on the water and on screen.
+ * The tap targets are the waiting ducks (levels 1–5), the check and the ducks sent back from the pond (levels 4–5), the five
+ * ducks that wave bye-bye (level 12) and the answer pads; level 13 takes a touch anywhere. Every other duck on the pond is
+ * counted, never tapped, but must stay on the water and on screen.
  */
 const views = { ...UPRIGHT_VIEWS, minimum: computeView(768, 1024, NO_INSETS, true) };
 const DUCK_HALF = 66;
@@ -84,7 +88,34 @@ describe.each(Object.entries(views))('Duck Pond upright on %s', (_, v) => {
 
     if (plan.mode === 'make' || plan.mode === 'along') {
       it('seats the ducks that swim in on the pond', () => {
-        ripple({ slots: SLOTS.slice(0, plan.max), scale: 1 }, `level ${level}`);
+        // At levels 4–5 she may send in every duck on the bank, one more than the sign's top.
+        ripple({ slots: SLOTS.slice(0, plan.stop ? bankSize(plan) : plan.max), scale: 1 }, `level ${level}`);
+      });
+    }
+
+    if (plan.stop) {
+      it('stands the check beside the sign, apart from the bank, and keeps each duck on the pond its own target', () => {
+        const n = bankSize(plan);
+        const check = { what: 'the check', ...checkSpot(v), w: 2 * CHECK_HIT_R, h: 2 * CHECK_HIT_R };
+        const bank: Target[] = Array.from({ length: n }, (_, i) => ({
+          what: `duck ${i + 1}`,
+          ...bankBox(v, i, n),
+        }));
+        expect(uprightProblems(v, [check, ...bank])).toEqual([]);
+        // Clear of the sign's board.
+        const s = signSpot(v);
+        expect(Math.abs(check.x - s.x)).toBeGreaterThanOrEqual(110 + CHECK_HIT_R);
+        // Round tap areas on the pond, checked by distance: each its own, and clear of the check and the waiting ducks.
+        const pond = SLOTS.slice(0, n).map(([x, y]) => ({ x: c.x + x, y: c.y + y - BANK_HIT_UP }));
+        for (const [i, p] of pond.entries()) {
+          expect(
+            uprightProblems(v, [{ what: `swimmer ${i + 1}`, ...p, w: 2 * POND_HIT_R, h: 2 * POND_HIT_R }]),
+          ).toEqual([]);
+          expect(Math.hypot(p.x - check.x, p.y - check.y)).toBeGreaterThanOrEqual(POND_HIT_R + CHECK_HIT_R);
+          for (const q of pond.slice(i + 1))
+            expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(2 * POND_HIT_R);
+          for (const b of bank) expect(p.y + POND_HIT_R).toBeLessThanOrEqual(b.y - b.h / 2);
+        }
       });
     }
 
