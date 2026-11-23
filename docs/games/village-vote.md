@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–3 |
-| school | 3–4 |
+| school | 3–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 2 | Your pet votes too — choose freely, then count |
 | 3 | Three choices — compare tallies and choose most |
 | 4 | A tie — move the fewest group's votes to their next choice, then choose most |
+| 5 | Everyone can use it — find who the built toy leaves out, then choose a fix |
 
 <!-- end generated -->
 

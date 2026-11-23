@@ -12,8 +12,10 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { paw, toy } from './art';
+import { fixedToy, paw, tallSlide, toy } from './art';
 import {
+  accessLayout,
+  CARD,
   LEVELS,
   Election,
   fixture,
@@ -21,7 +23,9 @@ import {
   NAMES,
   playLayout,
   roundFor,
+  toyName,
   uprightDrop,
+  type Fix,
   type Option,
   type Point,
   type Stage,
@@ -44,6 +48,12 @@ export class VillageVote implements Game {
   boards: Container[] = [];
   friends = new Map<string, Container>();
   controls: Control[] = [];
+  /** Level 5's fix cards (add a step, a lower slide), present in the fix phase. */
+  cards: Container[] = [];
+  /** Level 5: where each friend stands at the built tall slide (for the glow). */
+  private spots = new Map<string, Point>();
+  /** Level 5: the opening "the tall slide won" beat on the counted board; taps wait for it. */
+  private introducing = false;
   help!: Container;
   boxes;
   view: View;
@@ -84,11 +94,35 @@ export class VillageVote implements Game {
     this.ctx.listen(window, 'blur', this.cancel);
   }
   start() {
+    if (this.election.plan.level === 5) {
+      void this.intro();
+      return;
+    }
+    this.draw();
+    this.instruct();
+  }
+  /** Level 5 opens on the counted vote: the tall slide has won, and it is built. */
+  private async intro() {
+    const e = this.election,
+      gen = this.generation;
+    this.introducing = true;
+    this.busy = true;
+    this.draw();
+    const [n, a] = e.plan.options.map((o) => e.total(o)).sort((x, y) => y - x);
+    await this.ctx.say('village-vote.won', { n, a });
+    if (!this.alive || gen !== this.generation) return;
+    this.introducing = false;
+    this.busy = false;
     this.draw();
     this.instruct();
   }
   private instruct() {
     const e = this.election;
+    if (e.plan.level === 5) {
+      if (e.phase === 'access' || e.phase === 'fix')
+        void this.ctx.instruct(e.phase === 'access' ? 'village-vote.access' : 'village-vote.fixes');
+      return;
+    }
     if (e.phase === 'runoff' && e.closed) {
       void this.ctx.instruct('village-vote.runoff', { thing: e.closed });
       return;
@@ -147,6 +181,8 @@ export class VillageVote implements Game {
     this.companion.removeFromParent();
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
     this.controls = [];
+    this.cards = [];
+    this.spots.clear();
     this.friends.clear();
     this.options = [];
     this.boards = [];
@@ -167,10 +203,14 @@ export class VillageVote implements Game {
       this.drawPlay();
       return;
     }
+    if (e.plan.level === 5 && !this.introducing) {
+      this.drawAccess();
+      return;
+    }
     e.plan.options.forEach((o, i) => {
       const art = toy(o);
       art.y = -10;
-      const name = label(o, 21);
+      const name = label(toyName(o), 21);
       name.y = 44;
       art.addChild(name);
       const pick = this.button(this.boxes.options[i], 180, 120, art, () => {
@@ -204,11 +244,8 @@ export class VillageVote implements Game {
       const art = new Container(),
         isPet = v.id === 'pet';
       if (!isPet) {
-        const c = new Critter(CRITTERS[Number(v.id.split('-')[1]) % 2 ? 'duck' : 'bunny']);
-        c.alive = false;
-        c.scale.set(0.23);
+        const c = friend(v.id, 0.23);
         c.position.set(-12, 35);
-        c.eventMode = 'none';
         art.addChild(c);
       }
       const raised = paw();
@@ -246,6 +283,9 @@ export class VillageVote implements Game {
     }
     if (e.phase === 'preference')
       this.fitPet({ x: 90, y: 420 + (this.view.upright ? uprightDrop(this.view) : 0) });
+    this.drawHelp(this.boxes.help);
+  }
+  private drawHelp(p: Point) {
     const bulb = new Container();
     bulb.addChild(
       new Graphics()
@@ -256,8 +296,114 @@ export class VillageVote implements Game {
         .lineTo(13, 19)
         .stroke({ width: 6, color: ink }),
     );
-    this.help = this.button(this.boxes.help, 110, 110, bulb, () => this.askForHint());
+    this.help = this.button(p, 110, 110, bulb, () => this.askForHint());
     this.root.addChild(this.glow, this.ghost.hand);
+  }
+  /**
+   * Level 5 at the built tall slide: friends who can use it sit on a small slide; the ones its high first step leaves out
+   * stand on the ground under a ladder whose first rung is out of reach. Once all are found, the two fix cards appear.
+   */
+  private drawAccess() {
+    const e = this.election,
+      scene = accessLayout(this.view, e.npc.length),
+      big = tallSlide(false);
+    big.scale.set(2.3);
+    big.position.set(scene.toy.x, scene.toy.y);
+    this.board.addChild(big);
+    e.npc.forEach((v, i) => {
+      const p = scene.voters[i],
+        out = e.leftOut.includes(v.id),
+        art = new Container();
+      this.spots.set(v.id, p);
+      if (out) {
+        // A ladder foot beside her whose first rung is above her head: the step is the problem, never the friend.
+        art.addChild(
+          new Graphics()
+            .moveTo(22, -52)
+            .lineTo(22, 50)
+            .moveTo(46, -52)
+            .lineTo(46, 50)
+            .moveTo(22, -40)
+            .lineTo(46, -40)
+            .stroke({ width: 5, color: wood.line }),
+        );
+        const c = friend(v.id, 0.17);
+        c.position.set(-14, 46);
+        art.addChild(c);
+      } else {
+        const mini = toy('tall-slide');
+        mini.scale.set(0.5);
+        mini.position.set(6, 22);
+        art.addChild(mini);
+        const c = friend(v.id, 0.17);
+        c.position.set(-14, -10);
+        art.addChild(c);
+      }
+      if (e.found.has(v.id))
+        art.addChild(
+          new Graphics()
+            .moveTo(-42, -35)
+            .lineTo(-33, -24)
+            .lineTo(-16, -44)
+            .stroke({ width: 6, color: swatch.green.line }),
+        );
+      const n = this.button(p, 110, 110, art, () => {
+        void this.find(v.id);
+      });
+      this.friends.set(v.id, n);
+    });
+    if (e.phase === 'fix')
+      (['step', 'lower'] as const).forEach((f, i) => {
+        const art = new Container(),
+          pic = fixedToy(f);
+        pic.scale.set(0.75);
+        pic.y = -14;
+        const name = label(f === 'step' ? 'add a step' : 'a lower slide', 21);
+        name.y = 52;
+        art.addChild(pic, name);
+        this.cards.push(this.button(scene.cards[i], CARD.w, CARD.h, art, () => void this.pickFix(f)));
+      });
+    this.drawHelp(scene.help);
+  }
+  /** Level 5: tap a friend at the tall slide. */
+  private async find(id: string) {
+    const e = this.election,
+      r = e.find(id);
+    if (r === 'ignored') return;
+    this.busy = true;
+    const gen = this.generation;
+    if (r === 'on-slide') sfx.boing();
+    else sfx.pop();
+    if (r === 'found' || r === 'all-found') this.draw();
+    const line = r === 'on-slide' ? 'village-vote.on-slide' : 'village-vote.too-high';
+    const spoken = this.ctx.say(line);
+    const n = this.friends.get(id)!,
+      y = n.y;
+    // A hop: the found friend bounces; one on the slide waves from where it sits.
+    for (const dy of [-16, 0]) {
+      await this.ctx.tw.to(n, { y: y + dy }, { duration: 0.14 });
+      if (!this.alive || gen !== this.generation) return;
+    }
+    if (r === 'all-found') {
+      await spoken;
+      if (!this.alive || gen !== this.generation) return;
+      this.busy = false;
+      this.draw();
+      this.instruct();
+      return;
+    }
+    this.busy = false;
+  }
+  /** Level 5: either fix is built, the voice names what each takes, and everyone plays. */
+  private async pickFix(f: Fix) {
+    const e = this.election;
+    if (!e.chooseFix(f)) return;
+    this.busy = true;
+    const gen = this.generation;
+    this.draw();
+    sfx.bell(5);
+    void this.ctx.say(f === 'step' ? 'village-vote.fix-step' : 'village-vote.fix-lower');
+    await this.sharedPlay(gen);
   }
   private async choose(o: Option) {
     const e = this.election;
@@ -394,6 +540,20 @@ export class VillageVote implements Game {
   askForHint() {
     if (!this.alive || this.busy || this.finished || !this.ghost.idle) return;
     const e = this.election;
+    if (e.plan.level === 5) {
+      // The fix is a free choice: Hint there only says the choice again and records no help.
+      if (e.phase !== 'access') {
+        this.instruct();
+        return;
+      }
+      e.help();
+      if (this.asked.has(e.stage)) this.ghost.start({ tap: { on: this.friends.get(e.unfound[0])! } });
+      else {
+        this.asked.add(e.stage);
+        void this.ctx.say('village-vote.too-high').then(() => this.alive && this.instruct());
+      }
+      return;
+    }
     e.help();
     if (this.asked.has(e.stage)) {
       this.ghost.start({ tap: { on: this.hintTarget() } });
@@ -444,7 +604,7 @@ export class VillageVote implements Game {
   }
   private drawPlay() {
     const e = this.election,
-      big = toy(e.winner);
+      big = e.plan.level === 5 ? fixedToy(e.fix) : toy(e.winner);
     const scene = playLayout(this.view, e.voters.length);
     big.scale.set(2.3);
     big.position.set(scene.toy.x, scene.toy.y);
@@ -457,9 +617,8 @@ export class VillageVote implements Game {
       n.eventMode = 'none';
       if (v.id === 'pet') this.fitPet(p);
       else {
-        const c = new Critter(CRITTERS[i % 2 ? 'duck' : 'bunny']);
-        c.alive = false;
-        c.scale.set(0.3);
+        // The same friend as on the vote board; at level 5 the friends the step left out keep their size.
+        const c = friend(v.id, e.leftOut.includes(v.id) ? 0.2 : 0.3);
         c.y = 45;
         n.addChild(c);
       }
@@ -486,6 +645,8 @@ export class VillageVote implements Game {
   autotouch(): TouchIntent | null {
     if (!this.alive || this.busy || this.finished) return null;
     const e = this.election;
+    if (e.phase === 'access') return { tap: { on: this.friends.get(e.unfound[0])! } };
+    if (e.phase === 'fix') return { tap: { on: this.cards[0] } };
     if (e.phase === 'preference')
       return { tap: { on: this.options[e.plan.options.findIndex((o) => o !== e.winner)] } };
     if (e.phase === 'runoff') {
@@ -510,6 +671,12 @@ export class VillageVote implements Game {
       const p = this.boxes.options[e.plan.options.indexOf(e.winner)];
       this.glow.roundRect(p.x - 96, p.y - 66, 192, 132, 22).stroke({ width, color: swatch.yellow.fill });
     }
+    if (e.glowing && e.phase === 'access')
+      for (const id of e.unfound) {
+        const p = this.spots.get(id);
+        if (p)
+          this.glow.roundRect(p.x - 61, p.y - 61, 122, 122, 22).stroke({ width, color: swatch.yellow.fill });
+      }
     if (e.glowing && e.phase === 'runoff' && e.waiting.length) {
       const next = e.selectedNext;
       if (next) {
@@ -532,13 +699,16 @@ export class VillageVote implements Game {
     this.election.arrived();
     this.election.feedbackDone();
     this.busy = false;
+    // A resize cuts level 5's opening line short: the slide is built and the round goes on.
+    const intro = this.introducing;
+    this.introducing = false;
     this.draw();
     if (this.election.phase === 'playing') {
       this.busy = true;
       void this.sharedPlay(this.generation);
     }
     // A resize can cut the tie line short; the run-off instruction is said again.
-    if (this.election.phase === 'runoff') this.instruct();
+    if (this.election.phase === 'runoff' || (intro && this.election.plan.level === 5)) this.instruct();
   }
   destroy() {
     this.alive = false;
@@ -549,6 +719,14 @@ export class VillageVote implements Game {
     for (const n of this.friends.values()) this.ctx.tw.kill(n);
     this.ctx.untrack(this.companion);
   }
+}
+/** A friend, the same animal on every screen (by its ID). */
+function friend(id: string, scale: number) {
+  const c = new Critter(CRITTERS[Number(id.split('-')[1]) % 2 ? 'duck' : 'bunny']);
+  c.alive = false;
+  c.scale.set(scale);
+  c.eventMode = 'none';
+  return c;
 }
 class VoteIcon extends WigglyIcon {
   constructor() {
@@ -573,7 +751,7 @@ export const villageVote: GameModule = {
   upright: true,
   touchDemo: true,
   coplayHint:
-    'Count aloud while she taps the paws, then swap roles. Choose freely for the pet. After a tie, be a latecomer she asks for a next choice.',
+    'Count aloud while she taps the paws, then swap roles. Choose freely for the pet. After a tie, be a latecomer she asks for a next choice. At the tall slide, ask her who can reach the first step.',
   offScreen: 'With a grown-up, let toy friends choose between two toys and count their preferences.',
   hubIcon: () => new VoteIcon(),
   sticker: (seed) => toy(new Rng(seed).pick(['slide', 'swing', 'sandpit'] as const)),

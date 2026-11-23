@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { Rng } from '../../engine/random';
-import { Election, FAMILIES, fixture, layout, OPTIONS, playLayout, roundFor } from './logic';
+import {
+  accessLayout,
+  CARD,
+  Election,
+  FAMILIES,
+  fixture,
+  layout,
+  OPTIONS,
+  playLayout,
+  roundFor,
+} from './logic';
 
 /**
  * Village Vote held upright (chunk 31, docs/definitions/phone-portrait.md): every level and vote family at the upright
@@ -86,6 +96,31 @@ describe.each(Object.entries(views))(
     });
   },
 );
+
+describe.each(
+  Object.entries({ ...views, sideways: computeView(1024, 768), tablet: computeView(1024, 1365) }),
+)('Village Vote level 5 on %s', (name, v) => {
+  it('the counted board, the friends at the tall slide, the fix cards and the Hint fit and stay apart', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const e = new Election(seed <= 2 ? fixture(5, seed - 1) : roundFor(5, new Rng(seed)));
+      const board = layout(v, e),
+        t: Target[] = [];
+      board.options.forEach((p, i) => t.push({ what: `toy ${i}`, x: p.x, y: p.y, w: 180, h: 120 }));
+      board.boards.forEach((p, i) => t.push({ what: `tally ${i}`, x: p.x, y: p.y, w: 190, h: 105 }));
+      for (const [id, p] of Object.entries(board.voters))
+        t.push({ what: `paw ${id}`, x: p.x, y: p.y, w: 110, h: 110 });
+      if (name !== 'sideways' && name !== 'tablet')
+        expect(uprightProblems(v, t, 100), `seed ${seed} board`).toEqual([]);
+      const s = accessLayout(v, e.npc.length);
+      const a: Target[] = s.voters.map((p, i) => ({ what: `friend ${i}`, x: p.x, y: p.y, w: 110, h: 110 }));
+      s.cards.forEach((p, i) => a.push({ what: `card ${i}`, x: p.x, y: p.y, w: CARD.w, h: CARD.h }));
+      a.push({ what: 'help', x: s.help.x, y: s.help.y, w: 110, h: 110 });
+      // The tall slide (2.3 × its 142 × 104 art) is drawn, not tapped, but nothing tappable sits on it.
+      a.push({ what: 'tall slide', x: s.toy.x + 2, y: s.toy.y - 23, w: 300, h: 240 });
+      expect(uprightProblems(v, a, 100), `seed ${seed} at the slide`).toEqual([]);
+    }
+  });
+});
 
 describe('Village Vote sideways layout is unchanged', () => {
   it('keeps the buttons, paws and the play scene where they were', () => {
