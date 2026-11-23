@@ -8,22 +8,24 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–2 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Close it: claim the plots that are ready, then play out the field |
 | 2 | Don't hand it over: find the rail that makes no plot ready |
+| 3 | Smallest first: every rail gives something, so give the short run |
+| 4 | Leave two: take all but the last two plots of a run |
 
 <!-- end generated -->
 
 **Starts as:** dots and boxes against the pet on a field of nine plots that is already part-fenced. At level 1 (*Close it*) a plot has three rails: lay the fourth to claim it and go again, then play the field out. The strip says how many plots she can get against the pet's best play.
 
-**Grows into:** level 2 (*Don't hand it over*), where no plot is ready and the sound rail is the one that leaves every plot with two rails or fewer. Levels 3–4 (*Smallest first*, *Leave two*) are defined and their start positions are generated, but they are not registered yet (batch `fence-the-field 2`).
+**Grows into:** level 2 (*Don't hand it over*), where no plot is ready and the sound rail is the one that leaves every plot with two rails or fewer; level 3 (*Smallest first*), where every rail makes a plot ready and the sound give is the shortest run, a run of two by its middle rail; and level 4 (*Leave two*), where the pet has given her a run: she takes all but the last two and lays the far rail, so the pet has to take two and open the next run for her.
 
 ## Design notes
 
 - [Definition](../definitions/fence-the-field.md). The rules, the solver, the four level tests and the hints are in `logic.ts`; the layout and the touch-to-rail rule in `layout.ts`. `pools.json` holds 60 start positions a level, one per symmetry class, written by `node scripts/fence-the-field-pool.mjs`.
-- A rail that costs a plot is laid, the pet's best answer plays rail by rail, and the field steps back to before it. Each different costly rail at a position is one miss; the second miss of a round, or Help, glows one sound rail with its line (one hint each, free when asked again at the same position). The pet only ever lays sound rails, so a finished round always ends on her target.
+- A rail that costs a plot is laid, best play on both sides follows rail by rail until the pet has taken plots and it is her turn again, and the field steps back to before it. A costly claim (taking the whole run at level 4) plays her own claims and the rail she must then give first. Each different costly rail at a position is one miss; the second miss of a round, or Help, glows one sound rail with its line (on a turn that only a leave-two finishes well, a glowing claim says the leave-two plan; one hint each, free when asked again at the same position). The pet only ever lays sound rails, so a finished round always ends on her target.
 - The whole field is one touch surface: a touch on a rail's target (half a plot square) lays that rail, and a touch inside a plot lays the plot's nearest open rail.
 - Upright the plots are 200 units (rail targets 100) on phones tall enough for the caption strip. On a short phone the caption is a bubble over the view, so the field shrinks to keep its rails above it, never under 64-unit targets.

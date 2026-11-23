@@ -24,9 +24,13 @@ import {
   petReply,
   pickStart,
   readyPlots,
+  runOf,
+  runs,
+  shortGive,
   sound,
   soundRails,
   transform,
+  turnEndsOnLeaveTwo,
   value,
   type Pools,
 } from './logic';
@@ -112,8 +116,8 @@ describe('Fence the Field: the field and the solver', () => {
 });
 
 describe('Fence the Field: the pools', () => {
-  it('registers levels 1 and 2 and describes all four', () => {
-    expect(LEVELS).toEqual({ grownup: { min: 1, max: 2 } });
+  it('registers and describes all four levels', () => {
+    expect(LEVELS).toEqual({ grownup: { min: 1, max: 4 } });
     expect(new Set(PLANS.map((p) => describeLevel(p.level))).size).toBe(4);
   });
 
@@ -130,7 +134,7 @@ describe('Fence the Field: the pools', () => {
     expect(fits(level, mask)).toBe(true);
   });
 
-  it('shows what each of the built levels teaches on the first rail', () => {
+  it('shows what each level teaches on the first rail', () => {
     for (const mask of POOLS[1]) {
       expect(readyPlots(mask).length).toBeGreaterThan(0);
       expect(soundRails(mask).every((e) => kindOf(mask, e) === 'claim')).toBe(true);
@@ -142,6 +146,41 @@ describe('Fence the Field: the pools', () => {
       expect(soundRails(mask).every((e) => kindOf(mask, e) === 'safe')).toBe(true);
       expect(openRails(mask).some((e) => kindOf(mask, e) === 'give' && !sound(mask, e))).toBe(true);
       expect(hint(mask, 2).kind).toBe('safe');
+    }
+    for (const mask of POOLS[3]) {
+      // Every rail gives; the hint gives the shortest run, a run of two by its middle rail.
+      expect(openRails(mask).every((e) => kindOf(mask, e) === 'give')).toBe(true);
+      const h = hint(mask, 3);
+      expect(['run1', 'run2', 'run3', 'loop']).toContain(h.kind);
+      expect(shortGive(mask, h.rail, true)).toBe(true);
+      // And some give into a longer run costs a plot.
+      const shortest = Math.min(...runs(mask).map((r) => r.plots.length));
+      expect(openRails(mask).some((e) => !sound(mask, e) && runOf(mask, e)!.plots.length > shortest)).toBe(
+        true,
+      );
+    }
+  });
+
+  it('level 4: only a leave-two finishes the turn well, and taking the whole run is played on until the pet takes plots', () => {
+    for (const start of POOLS[4]) {
+      expect(turnEndsOnLeaveTwo(start)).toBe(true);
+      // The glow is a claim or the leave-two itself, and the line is the plan.
+      expect(hint(start, 4).kind).toBe('leave-two');
+      // Follow the hinted claims until the hint is the leave-two itself: then claiming the last two costs a plot.
+      let mask = start;
+      while (kindOf(mask, hint(mask, 4).rail) !== 'leave-two') {
+        expect(kindOf(mask, hint(mask, 4).rail)).toBe('claim');
+        mask |= 1 << hint(mask, 4).rail;
+      }
+      const greedy = openRails(mask).filter((e) => completes(mask, e).length && !sound(mask, e));
+      expect(greedy.length).toBeGreaterThan(0);
+      // Show me why plays her own claims and the rail she must give, then the pet's answer, which hands plots over.
+      for (const e of greedy) {
+        const reply = petReply(mask, e);
+        expect(reply.steps[0].who).toBe('her');
+        expect(reply.steps.at(-1)!.who).toBe('pet');
+        expect(reply.handed).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -181,7 +220,7 @@ describe('Fence the Field: turns, misses and hints', () => {
     }
   });
 
-  it('has the pet claim when a claim is sound, and answer an unsound rail up to her next turn', () => {
+  it('has the pet claim when a claim is sound, and play an unsound rail on until the pet has taken plots', () => {
     for (const [, mask] of every) {
       const choices = petChoices(mask);
       expect(choices.every((e) => sound(mask, e))).toBe(true);
@@ -190,18 +229,21 @@ describe('Fence the Field: turns, misses and hints', () => {
       for (const e of openRails(mask).filter((x) => !sound(mask, x))) {
         const reply = petReply(mask, e);
         let m = mask | (1 << e),
-          handed = 0;
-        reply.rails.forEach((rail, i) => {
-          const k = completes(m, rail).length;
-          expect(sound(m, rail)).toBe(true);
-          // Every rail but the last claimed, so the pet went again.
-          if (i < reply.rails.length - 1) expect(k).toBeGreaterThan(0);
-          handed += k;
-          m |= 1 << rail;
-        });
+          handed = 0,
+          who = completes(mask, e).length ? 'her' : 'pet';
+        for (const step of reply.steps) {
+          // Best play on both sides, turns passing on a rail that claims nothing.
+          const k = completes(m, step.rail).length;
+          expect(sound(m, step.rail)).toBe(true);
+          expect(step.who).toBe(who);
+          if (step.who === 'pet') handed += k;
+          if (!k) who = who === 'her' ? 'pet' : 'her';
+          m |= 1 << step.rail;
+        }
         expect(reply.handed).toBe(handed);
-        if (completes(mask, e).length) expect(reply.rails).toEqual([]);
-        else expect(reply.rails.length).toBeGreaterThan(0);
+        // It stops on her turn once the pet has taken a plot, or on the last rail; a costly rail always hands some.
+        expect(handed).toBeGreaterThan(0);
+        expect(m === FULL || who === 'her').toBe(true);
       }
     }
   });

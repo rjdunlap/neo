@@ -42,6 +42,9 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         return {
           sound: logic.hint(mask, level).rail,
           unsound: open.filter((e) => !logic.sound(mask, e)),
+          /** Claims that cost a plot: at level 4, taking the last two of the run. */
+          greedy: open.filter((e) => logic.completes(mask, e).length && !logic.sound(mask, e)),
+          claims: open.filter((e) => logic.completes(mask, e).length && logic.sound(mask, e)),
           laid: [...Array(logic.RAILS).keys()].find((e) => mask & (1 << e)),
         };
       });
@@ -108,68 +111,125 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
       }, id);
 
     const before = await stickers();
-
-    // Level 1: a laid rail stays down and costs nothing; sound rails to the last one give one sticker.
-    const firstPage = await landOpen(1);
-    await turn();
-    let s = await state();
-    assert.equal(s.level, 1);
-    await tapRail((await rules()).laid);
-    assert.deepEqual(await state(), s, 'a laid rail changes nothing');
-    await playOut();
-    await finished(id);
-    s = await state();
-    assert.equal(s.her + s.pet, 9);
-    assert.ok(s.her >= s.target, `she gets at least the ${s.target} the strip promised (got ${s.her})`);
-    assert.equal(await stickers(), before + 1);
-    assert.deepEqual(await lastRound(), { misses: 0, hints: 0, level: 1 });
-    await back(firstPage);
-
-    // Level 2: a rail that costs a plot is laid, answered by the pet and stepped back: one miss.
-    const secondPage = await landOpen(2);
-    await turn();
-    const start = await state();
-    const { unsound } = await rules();
-    assert.ok(unsound.length > 0, 'a level 2 field opens with a rail that costs a plot');
-    await tapRail(unsound[0]);
-    s = await state();
-    assert.equal(s.phase, 'replay');
-    assert.notEqual(s.mask, start.mask);
-    await page.waitForFunction((mask) => neo.scene.game.state.mask !== mask, s.mask, { timeout: 5000 });
-    await screenshot('fence-the-field-level-2-portrait');
-    await turn();
-    s = await state();
-    assert.deepEqual(s, { ...start, misses: 1 }, 'the field steps back to before the rail');
-    // The same rail at the same position replays, free.
-    await tapRail(unsound[0]);
-    assert.equal((await state()).phase, 'replay');
-    await turn();
-    assert.deepEqual(await state(), { ...start, misses: 1 });
-    // Help glows one sound rail and counts once; asking again at the same position is free.
-    await tapNode('neo.scene.game.help');
-    await tapNode('neo.scene.game.help');
-    s = await state();
-    assert.equal(s.hints, 1);
-    assert.equal(s.hint, (await rules()).sound);
-    await page.setViewportSize(landscape);
-    await page.waitForFunction(() => !neo.view.upright);
-    assert.deepEqual(await state(), s, 'rotating keeps the field, the count and the glow');
-    await screenshot('fence-the-field-level-2-sideways');
-    await tapRail(s.hint);
-    assert.notEqual((await state()).mask, s.mask);
-    await page.setViewportSize(portrait);
-    await page.waitForFunction(() => neo.view.upright);
-    await playOut();
-    await finished(id);
-    s = await state();
-    assert.equal(s.her + s.pet, 9);
-    assert.ok(s.her >= s.target);
-    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 2 });
-    assert.equal(await stickers(), before + 2);
-    await back(secondPage);
+    // `FENCE_FROM=4` plays level 4 alone.
+    const from = Number(process.env.FENCE_FROM || 1);
+    if (from <= 2) await levelsOneTwo();
+    await levelFour(from <= 2 ? 2 : 0);
     log(
-      'Fence the Field: both levels from Lantern Lake at 390×625 with captions, a laid rail free, a costly rail replayed and stepped back (counted once, laid again free), Help counted once, rotation, one sticker per round and return passed',
+      'Fence the Field: ' +
+        (from <= 2
+          ? 'levels 1 and 2 (a laid rail free, a costly rail replayed and stepped back, counted once, laid again free; Help counted once; rotation) and '
+          : '') +
+        'level 4 (taking the whole run replayed to the pet taking the run she had to open, stepped back with one miss, the leave-two hint followed) from Lantern Lake at 390×625 with captions, one sticker per round and return passed',
     );
+
+    async function levelsOneTwo() {
+      // Level 1: a laid rail stays down and costs nothing; sound rails to the last one give one sticker.
+      const firstPage = await landOpen(1);
+      await turn();
+      let s = await state();
+      assert.equal(s.level, 1);
+      await tapRail((await rules()).laid);
+      assert.deepEqual(await state(), s, 'a laid rail changes nothing');
+      await playOut();
+      await finished(id);
+      s = await state();
+      assert.equal(s.her + s.pet, 9);
+      assert.ok(s.her >= s.target, `she gets at least the ${s.target} the strip promised (got ${s.her})`);
+      assert.equal(await stickers(), before + 1);
+      assert.deepEqual(await lastRound(), { misses: 0, hints: 0, level: 1 });
+      await back(firstPage);
+
+      // Level 2: a rail that costs a plot is laid, answered by the pet and stepped back: one miss.
+      const secondPage = await landOpen(2);
+      await turn();
+      const start = await state();
+      const { unsound } = await rules();
+      assert.ok(unsound.length > 0, 'a level 2 field opens with a rail that costs a plot');
+      await tapRail(unsound[0]);
+      s = await state();
+      assert.equal(s.phase, 'replay');
+      assert.notEqual(s.mask, start.mask);
+      await page.waitForFunction((mask) => neo.scene.game.state.mask !== mask, s.mask, { timeout: 5000 });
+      await screenshot('fence-the-field-level-2-portrait');
+      await turn();
+      s = await state();
+      assert.deepEqual(s, { ...start, misses: 1 }, 'the field steps back to before the rail');
+      // The same rail at the same position replays, free.
+      await tapRail(unsound[0]);
+      assert.equal((await state()).phase, 'replay');
+      await turn();
+      assert.deepEqual(await state(), { ...start, misses: 1 });
+      // Help glows one sound rail and counts once; asking again at the same position is free.
+      await tapNode('neo.scene.game.help');
+      await tapNode('neo.scene.game.help');
+      s = await state();
+      assert.equal(s.hints, 1);
+      assert.equal(s.hint, (await rules()).sound);
+      await page.setViewportSize(landscape);
+      await page.waitForFunction(() => !neo.view.upright);
+      assert.deepEqual(await state(), s, 'rotating keeps the field, the count and the glow');
+      await screenshot('fence-the-field-level-2-sideways');
+      await tapRail(s.hint);
+      assert.notEqual((await state()).mask, s.mask);
+      await page.setViewportSize(portrait);
+      await page.waitForFunction(() => neo.view.upright);
+      await playOut();
+      await finished(id);
+      s = await state();
+      assert.equal(s.her + s.pet, 9);
+      assert.ok(s.her >= s.target);
+      assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 2 });
+      assert.equal(await stickers(), before + 2);
+      await back(secondPage);
+    }
+
+    /** Level 4: take the whole run once (replayed and stepped back), then follow the leave-two hint. */
+    async function levelFour(earlier) {
+      const page4 = await landOpen(4);
+      await turn();
+      let s = await state();
+      assert.equal(s.level, 4);
+      // Claim until taking the rest of the run would cost a plot.
+      let r = await rules();
+      for (let i = 0; i < 9 && !r.greedy.length; i++) {
+        assert.ok(r.claims.length, 'a level 4 field opens on a run given to her');
+        await tapRail(r.claims[0]);
+        r = await rules();
+      }
+      assert.ok(r.greedy.length, 'taking the last two of the run costs a plot');
+      const start = await state();
+      await tapRail(r.greedy[0]);
+      assert.equal((await state()).phase, 'replay');
+      // The replay goes past her own claims to the pet's: the pet ends with plots.
+      await page.waitForFunction(() => neo.scene.game.state.pet > 0, null, { timeout: 15000 });
+      await turn();
+      assert.deepEqual(
+        await state(),
+        { ...start, misses: 1 },
+        'the field steps back to before the greedy claim',
+      );
+      await tapNode('neo.scene.game.help');
+      s = await state();
+      assert.equal(s.hints, 1);
+      const hinted = await page.evaluate(async () => {
+        const logic = await import('/src/games/fence-the-field/logic.ts');
+        const { mask, level } = neo.scene.game.state;
+        return logic.hint(mask, level);
+      });
+      assert.equal(hinted.kind, 'leave-two');
+      assert.equal(s.hint, hinted.rail);
+      await screenshot('fence-the-field-level-4-portrait');
+      await tapRail(s.hint);
+      await playOut();
+      await finished(id);
+      s = await state();
+      assert.equal(s.her + s.pet, 9);
+      assert.ok(s.her >= s.target);
+      assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
+      assert.equal(await stickers(), before + earlier + 1);
+      await back(page4);
+    }
   }
 
   return { fenceTheFieldPlay };

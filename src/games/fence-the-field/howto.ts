@@ -10,6 +10,16 @@ export const HOW_TO: GameHowTo = {
       text: 'A plot with three rails is ready: tap its last rail to claim it, then lay again.',
     },
     { from: 2, to: 2, text: 'No plot is ready: tap a rail that leaves every plot with two rails or fewer.' },
+    {
+      from: 3,
+      to: 3,
+      text: 'Every rail makes a plot ready: give the shortest run of plots, a run of two by its middle rail.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'The pet gave you a run: take all but the last two, then lay the far rail, so the pet takes two and opens the next run.',
+    },
     { text: 'Tap between two posts to lay a rail; a tap inside a plot lays its nearest open rail.' },
   ],
   finish:

@@ -9,7 +9,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * (`r` 0–3, `c` 0–2), down rail `12 + r * 4 + c` along the left of column `c` (`r` 0–2, `c` 0–3).
  */
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 export const RAILS = 24;
 export const PLOTS = 9;
@@ -22,7 +22,6 @@ export interface Plan {
   open: [number, number];
 }
 
-/** All four levels have pools; `LEVELS` registers the ones that are built. */
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Close it', open: [6, 9] },
   { level: 2, name: "Don't hand it over", open: [8, 12] },
@@ -234,6 +233,8 @@ export interface Hint {
 /** What a hinted rail is called, so its line is true of the position. */
 export function hintKind(mask: number, e: number): HintKind {
   const kind = kindOf(mask, e);
+  // A claim on a turn that only a leave-two finishes well says the plan, not just "close this plot".
+  if (kind === 'claim' && turnEndsOnLeaveTwo(mask)) return 'leave-two';
   if (kind !== 'give') return kind;
   // "Every rail gives something" is only said when it is so.
   const allGive = openRails(mask).every((x) => kindOf(mask, x) === 'give');
@@ -270,31 +271,38 @@ export function hint(mask: number, level: number): Hint {
 
 // ---- the pet ----
 
-/** The pet's choices: its sound rails, only the claims when a claim is sound. */
+/** The mover's choices: its sound rails, only the claims when a claim is sound. The pet plays from these. */
 export function petChoices(mask: number): number[] {
   const rails = soundRails(mask);
   const claims = rails.filter((e) => completes(mask, e).length);
   return claims.length ? claims : rails;
 }
 
+export interface Step {
+  rail: number;
+  who: 'her' | 'pet';
+}
+
 /**
- * The pet's best answer to her rail, rail by rail, up to her next turn (or the last rail): what *show me why* plays.
- * Empty when her rail claimed a plot, because the turn is still hers.
+ * What *show me why* plays after her rail `e`: best play on both sides, rail by rail, until the pet has taken a plot and
+ * it is her turn again (or the last rail). When `e` claimed a plot the turn is still hers, so her own play comes first:
+ * taking a whole run shows the run she must open next and what the pet does with it. When the pet's first answer takes
+ * nothing (it leaves two, or lays a quiet rail), play goes on to where the cost shows. `handed` counts the pet's plots.
  */
-export function petReply(mask: number, e: number): { rails: number[]; handed: number } {
-  const out: number[] = [];
+export function petReply(mask: number, e: number): { steps: Step[]; handed: number } {
+  const steps: Step[] = [];
   let handed = 0;
-  if (completes(mask, e).length) return { rails: out, handed };
   let m = mask | (1 << e);
-  while (m !== FULL) {
+  let who: Step['who'] = completes(mask, e).length ? 'her' : 'pet';
+  while (m !== FULL && !(who === 'her' && handed > 0)) {
     const rail = petChoices(m)[0];
     const k = completes(m, rail).length;
-    out.push(rail);
-    handed += k;
+    steps.push({ rail, who });
+    if (who === 'pet') handed += k;
     m |= 1 << rail;
-    if (!k) break;
+    if (!k) who = who === 'her' ? 'pet' : 'her';
   }
-  return { rails: out, handed };
+  return { steps, handed };
 }
 
 // ---- symmetry ----
@@ -355,8 +363,8 @@ function reaches(start: number, only: (mask: number, e: number) => boolean): boo
 const needsLeaveTwo = (start: number) => reaches(start, (m, e) => kindOf(m, e) === 'leave-two');
 const needsShortest = (start: number) => reaches(start, (m, e) => shortGive(m, e));
 
-/** Level 4: every way to play this turn with sound rails ends on a leave-two. */
-function turnEndsOnLeaveTwo(mask: number): boolean {
+/** Every way to play this turn with sound rails ends on a leave-two (level 4's test, and the plan its hint says). */
+export function turnEndsOnLeaveTwo(mask: number): boolean {
   if (mask === FULL) return false;
   return soundRails(mask).every((e) =>
     completes(mask, e).length ? turnEndsOnLeaveTwo(mask | (1 << e)) : kindOf(mask, e) === 'leave-two',
