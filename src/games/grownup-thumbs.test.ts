@@ -254,8 +254,9 @@ const MEASURE: Record<string, () => Size[]> = {
     ];
   },
   'truth-bridge': () => {
-    const l = truthBridgeLayout(v, 3);
+    const l = truthBridgeLayout(v, 3, true);
     return [
+      ...l.planks.map((r): Size => ['plank', side(r)]),
       ...l.bubbles.map((r): Size => ['speech bubble', side(r)]),
       ...l.seats.map((r): Size => ['islander', side(r)]),
       ['button', side(l.help)],
@@ -322,7 +323,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'sum-crates': { px: 50.8, what: 'tray fruit' },
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
-  'truth-bridge': { px: 52.8, what: 'button' },
+  'truth-bridge': { px: 52.8, what: 'plank' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
 };

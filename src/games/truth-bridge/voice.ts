@@ -1,69 +1,103 @@
 import {
-  KINDS,
   NAMES,
+  PLANKS,
+  POOL_IDS,
+  check,
   code,
-  fits,
+  hintFor,
+  hintLine,
+  kindWord,
   markings,
-  sentencesFor,
-  settle,
+  missLine,
+  pool,
+  sentenceLine,
+  solutions,
+  suppositionWords,
   title,
   words,
+  type Board,
   type Domain,
   type Kind,
   type Name,
+  type Step,
 } from './logic.ts';
 
-/**
- * Truth Bridge's spoken lines. The cast and the sentence kinds are closed, so every sentence, miss explanation and
- * hint is a whole line with no slot and gets a rendered clip. The lists are built from the rules: a miss line exists
- * for each speaker, marked kind and sentence that can fail to fit, and a hint line for each sentence and the islander
- * and kind it can settle. `voice.test.ts` checks that the level pools can produce every one of them and nothing else.
- * Their ids are computed, so they are not in the `LineId` union: the game casts the ids `logic.ts` builds.
- */
 type Lines = Record<string, string[]>;
 
-const is = (name: Name, kind: Kind) =>
-  `${title(name)} ${kind === 'straight' ? 'speaks straight' : 'is Topsy'}`;
-const quoted = (sentenceCode: string) => `“${words(sentenceCode).slice(0, -1)}”`;
-
-/** Every seating of two or three of the cast. */
-function seatings(): Name[][] {
-  const out: Name[][] = [];
-  const seat = (seats: Name[]) => {
-    if (seats.length >= 2) out.push(seats);
-    if (seats.length < 3) for (const name of NAMES) if (!seats.includes(name)) seat([...seats, name]);
-  };
-  seat([]);
-  return out;
+function seatings(seats: number): Name[][] {
+  const choices: Name[][] = [];
+  for (const first of NAMES)
+    for (const second of NAMES) {
+      if (first === second) continue;
+      if (seats === 2) choices.push([first, second]);
+      else choices.push([first, second, NAMES.find((n) => n !== first && n !== second)!]);
+    }
+  return choices;
 }
 
-const sentences: Lines = {};
-const misses: Lines = {};
-const hints: Lines = {};
+const cast = { 2: seatings(2), 3: seatings(3) };
 
-for (const seats of seatings()) {
-  const domainSets = seats.reduce<Domain[][]>(
-    (sets) => sets.flatMap((set) => [null, ...KINDS].map((d) => [...set, d])),
-    [[]],
-  );
-  seats.forEach((speaker, seat) => {
-    for (const sentence of sentencesFor(seat, seats.length)) {
-      const said = code(sentence, seat, seats);
-      const pattern = seats.map(() => sentence);
-      sentences[`bridge.s.${said}`] = [words(said)];
-      for (const kinds of markings(seats.length)) {
-        if (fits(sentence, seat, kinds)) continue;
-        misses[`bridge.miss.${speaker}.${kinds[seat]}.${said}`] = [
-          `${title(speaker)} is marked ${kinds[seat] === 'straight' ? 'Straight' : 'Topsy'}. With these marks, ${title(speaker)}’s words, ${quoted(said)}, are ${kinds[seat] === 'straight' ? 'not so' : 'so'}.`,
-        ];
+const quoted = (sentenceCode: string) => `“${words(sentenceCode).slice(0, -1)}”`;
+
+function explainMiss(board: Board, speaker: number, kind: Kind) {
+  const name = title(board.seats[speaker]);
+  const said = quoted(code(board.pattern[speaker], speaker, board.seats));
+  return `${name} is marked ${kindWord(kind)}. With these marks, ${name}’s words, ${said}, are ${kind === 'straight' ? 'not so' : 'so'}.`;
+}
+
+function explainHint(board: Board, step: Step) {
+  if (step.suppose) return suppositionWords(board, step);
+  const speaker = title(board.seats[step.speaker]);
+  const said = quoted(code(board.pattern[step.speaker], step.speaker, board.seats));
+  if ('plank' in step) return `${speaker}’s words, ${said}, leave the ${step.plank} plank as the sound one.`;
+  const name = title(board.seats[step.seat]);
+  return `${speaker}’s words, ${said}, settle ${name}: ${name} ${step.kind === 'straight' ? 'speaks straight' : 'is Topsy'}.`;
+}
+
+/** Compute findings once per pattern. Every wrong or blank mark is equivalent to unknown for a hint. */
+function spokenLines(): Lines {
+  const out: Lines = {};
+  for (const id of POOL_IDS) {
+    for (const pattern of pool(id)) {
+      const seats = pattern.length as 2 | 3;
+      const solution = solutions(pattern)[0];
+      const board: Board = { pattern, solution, seats: cast[seats][0] };
+      const planks = solution.plank ? PLANKS : [null];
+      const misses = new Set<`${number}:${Kind}`>();
+      for (const marks of markings(seats))
+        for (const plank of planks) {
+          const verdict = check(board, marks, plank);
+          if (verdict.kind === 'wrong') misses.add(`${verdict.speaker}:${marks[verdict.speaker]}`);
+        }
+      const starts = solution.kinds.reduce<Domain[][]>(
+        (states, kind) =>
+          states.flatMap((marks) => [
+            [...marks, null],
+            [...marks, kind],
+          ]),
+        [[]],
+      );
+      const hints = new Map<string, Step>();
+      for (const marks of starts)
+        for (const plank of new Set([null, solution.plank])) {
+          const hint = hintFor(board, marks, plank);
+          if (hint) hints.set(hintLine(board, hint), hint);
+        }
+      for (const names of cast[seats]) {
+        const named = { ...board, seats: names };
+        pattern.forEach((statement, speaker) => {
+          out[sentenceLine(named, speaker)] ??= [words(code(statement, speaker, names))];
+        });
+        for (const miss of misses) {
+          const [seat, kind] = miss.split(':') as [string, Kind];
+          const speaker = Number(seat);
+          out[missLine(named, speaker, kind)] ??= [explainMiss(named, speaker, kind)];
+        }
+        for (const hint of hints.values()) out[hintLine(named, hint)] ??= [explainHint(named, hint)];
       }
-      for (const domains of domainSets)
-        for (const step of settle(pattern, seat, domains) ?? [])
-          hints[`bridge.hint.${speaker}.${said}.${seats[step.seat]}.${step.kind}`] = [
-            `${title(speaker)}’s words, ${quoted(said)}, settle ${title(seats[step.seat])}: ${is(seats[step.seat], step.kind)}.`,
-          ];
     }
-  });
+  }
+  return out;
 }
 
 const blanks = Object.fromEntries(
@@ -73,14 +107,14 @@ const blanks = Object.fromEntries(
 export const VOICE = {
   'game.truth-bridge': ['Truth Bridge!'],
   'bridge.start': ['Mark who speaks straight and who is Topsy, then cross.'],
+  'bridge.start.planks': ['Mark who speaks straight and who is Topsy. Choose the sound plank, then cross.'],
   'bridge.topsy': [
     'On Lantern Night, a Topsy islander says the opposite of what is so. Everyone else speaks straight.',
   ],
   'bridge.next': ['Two more at the gate. This time, one sentence helps you read the other.'],
+  'bridge.blank.plank': ['Choose a plank first.'],
   'bridge.hint.done': ['Every sentence fits. Tap Cross.'],
   'bridge.done': ['Every sentence fits. Everyone is across!'],
   ...blanks,
-  ...sentences,
-  ...misses,
-  ...hints,
+  ...spokenLines(),
 };

@@ -8,18 +8,20 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–2 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Two at the gate: two islanders, one sentence each; mark who speaks straight and who is Topsy |
 | 2 | Three on the bridge: three islanders, where one sentence’s result is needed to read another |
+| 3 | Try it both ways: rule out a possible mark by seeing which sentence stops fitting |
+| 4 | Which plank? Mark three islanders and work out which plank is sound from what they say |
 
 <!-- end generated -->
 
 **Starts as:** two islanders at the gate each say one sentence; tap each to mark them Straight or Topsy until both sentences fit, then tap Cross.
 
-**Grows into:** three islanders on the bridge, where settling one speaker is needed to read what another says.
+**Grows into:** three islanders on the bridge, trying a mark to see what it would contradict, then using what the islanders say to choose the sound plank.
 
 ## Design notes
 
@@ -27,4 +29,6 @@ On Lantern Night a Topsy islander says the opposite of what is so, and everyone 
 
 Tapping an islander cycles blank, Straight (an upright lantern) and Topsy (the lantern upside down); tapping a bubble repeats its sentence. Both are always free. Cross with a blank mark names the first unmarked islander, also free. Cross on a wrong complete marking shows and says the first sentence, in seat order, that does not fit, and counts one miss for each distinct wrong marking; the same marks again replay the explanation. Help, and the second counted miss, point to a sentence and the islander it settles, starting from the marks that are already right. A hint counts once until the marks change. When every sentence fits, the islanders cross in seat order, a lantern lights for each, and the round ends with one sticker.
 
-Every sentence, miss explanation and hint is a whole spoken line with a rendered clip, built in `voice.ts` from the rules. Levels 3–4 (suppositions and planks) are the next batch. [Definition](../definitions/truth-bridge.md)
+Level 3 adds supposition hints: Help names a mark to try, the sentence that would stop fitting, and the mark that follows. Level 4 adds three tappable planks. Tap the selected plank again to clear it. Cross asks for a missing plank for free and counts a wrong complete combination of marks and plank once. The islanders take the chosen plank after every sentence fits. The solver keeps all remaining plank choices, so two separate rotten-plank clues can leave the sound one.
+
+Every sentence, miss explanation and hint is a whole spoken line with a rendered clip. The script enumerates the lines the pools can ask for, including the current cast order. [Definition](../definitions/truth-bridge.md)

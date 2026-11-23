@@ -3,6 +3,8 @@ import { SCRIPT } from '../../content/voice-script';
 import {
   KINDS,
   NAMES,
+  PLANKS,
+  POOL_IDS,
   check,
   hintFor,
   hintLine,
@@ -14,7 +16,6 @@ import {
   type Domain,
   type Kind,
   type Name,
-  type PoolId,
 } from './logic';
 import { VOICE } from './voice';
 
@@ -31,7 +32,7 @@ const seatings = (seats: number): Name[][] => {
 /** Every line id the level pools can ask for: each board, seating and mark state. */
 function produced() {
   const ids = new Set<string>();
-  for (const id of ['gate-flat', 'gate-chained', 'bridge'] as PoolId[])
+  for (const id of POOL_IDS)
     for (const pattern of pool(id)) {
       const solution = solutions(pattern)[0];
       const states = pattern.reduce<Domain[][]>(
@@ -41,23 +42,26 @@ function produced() {
       for (const seats of seatings(pattern.length)) {
         const board: Board = { seats, pattern, solution };
         pattern.forEach((_, seat) => ids.add(sentenceLine(board, seat)));
-        for (const marks of states) {
-          const verdict = check(board, marks);
-          if (verdict.kind === 'blank') ids.add(`bridge.blank.${seats[verdict.seat]}`);
-          if (verdict.kind === 'wrong')
-            ids.add(missLine(board, verdict.speaker, marks[verdict.speaker] as Kind));
-          const hint = hintFor(board, marks);
-          if (hint) ids.add(hintLine(board, hint));
-        }
+        for (const marks of states)
+          for (const plank of solution.plank ? [null, ...PLANKS] : [null]) {
+            const verdict = check(board, marks, plank);
+            if (verdict.kind === 'blank') ids.add(`bridge.blank.${seats[verdict.seat]}`);
+            if (verdict.kind === 'choose-plank') ids.add('bridge.blank.plank');
+            if (verdict.kind === 'wrong')
+              ids.add(missLine(board, verdict.speaker, marks[verdict.speaker] as Kind));
+            const hint = hintFor(board, marks, plank);
+            if (hint) ids.add(hintLine(board, hint));
+          }
       }
     }
   return ids;
 }
 
-it('has a spoken line for every sentence, miss and hint the pools can produce, and only three lines they cannot', () => {
+it('has a spoken line for every sentence, miss and hint the pools can produce, and no unused lines', () => {
   const fixed = [
     'game.truth-bridge',
     'bridge.start',
+    'bridge.start.planks',
     'bridge.topsy',
     'bridge.next',
     'bridge.hint.done',
@@ -66,13 +70,10 @@ it('has a spoken line for every sentence, miss and hint the pools can produce, a
   const want = new Set([...produced(), ...fixed]);
   const have = Object.keys(VOICE);
   expect([...want].filter((id) => !have.includes(id))).toEqual([]);
-  // The rule-built list holds three lines no level 1–2 board asks for: no valid two-islander board has a Topsy
-  // islander saying "Both of us speak straight" beside another Topsy islander.
-  expect(have.filter((id) => !want.has(id))).toEqual(
-    NAMES.map((name) => `bridge.hint.${name}.all2.straight.${name}.topsy`),
-  );
-  const count = (prefix: string) => [...want].filter((id) => id.startsWith(prefix)).length;
-  expect([count('bridge.s.'), count('bridge.miss.'), count('bridge.hint.') - 1]).toEqual([25, 96, 168]);
+  expect(have.filter((id) => !want.has(id))).toEqual([]);
+  expect([...want].filter((id) => id.startsWith('bridge.s.'))).toHaveLength(31);
+  expect([...want].some((id) => id.startsWith('bridge.try.'))).toBe(true);
+  expect([...want].some((id) => id.startsWith('bridge.hint.') && id.endsWith('.plank.left'))).toBe(true);
 });
 
 it('keeps every line whole, with no slot, so each one gets a rendered clip, and puts them in the script', () => {

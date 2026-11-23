@@ -894,7 +894,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | **PR4 "But what about…?"** · co-play role | with or after the PR1 build | The grown-up makes the claim from a printed strip, she breaks it, then they swap; supported completion (S5) |
 | **PR2 Not Always 4–6** · school, about 10 and up at 5–6 | [defined 2026-11-22](../../definitions/not-always.md#levels-46-definition-philosophy-and-reasoning-pr2), build ready | Only the red ones count (a card that fails the "if" is not a counterexample); show me why (a reason card versus being sure, SL.4.3); both can be true, with an uncounted kind/rude reply |
 | **PR5 What if? in Story Steps** | hand to the Story Steps dive | Two changed endings after a story, both accepted |
-| **PR6 Truth Bridge** · 13+ / parents | sketch; after a Lantern Lake capacity test | Knights-and-knaves islanders on a bridge; a solver accepts every consistent marking, generated puzzles have a unique solution |
+| **PR6 Truth Bridge** · 13+ / parents | [levels 1–4 built](../../games/truth-bridge.md) | Knights-and-knaves islanders on a bridge; a solver accepts every consistent marking, generated puzzles have a unique solution |
 
 [Ordered slices](philosophy-reasoning.md#build-slices-in-order). Finding a counterexample with spoken support is not evidence of independent reasoning; whether a four-year-old listens to the claim or just taps the odd one out is a person check.
 

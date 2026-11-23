@@ -1,8 +1,8 @@
 # Truth Bridge, levels 1–4 (definition)
 
-**Built:** levels 1–2 (PR #2026); to build level 3, read “Build batches” (batch 2).
+**Built:** levels 1–4 (PR #2034 completed the ladder).
 
-Documentation packet, 2026-11-22, branch `claude/define-truth-bridge`, [PR #2017](https://github.com/rjdunlap/neo/pull/2017). Study follow-up PR6 from [philosophy and reasoning](../deep-dives/subjects/philosophy-reasoning.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `truth-bridge`: batch 1 (levels 1–2) is built ([PR #2026](https://github.com/rjdunlap/neo/pull/2026)) and batch 2 (levels 3–4) is next. Two build batches follow below.
+Documentation packet, 2026-11-22, branch `claude/define-truth-bridge`, [PR #2017](https://github.com/rjdunlap/neo/pull/2017). Study follow-up PR6 from [philosophy and reasoning](../deep-dives/subjects/philosophy-reasoning.md#candidates-and-recommended-order); placement settled by the [2026-11-17 record](../archive/DECISIONS-2026-11-17.md#games) (Lantern Lake pages, so no capacity test is owed). Game `truth-bridge`: batch 1 (levels 1–2) is built ([PR #2026](https://github.com/rjdunlap/neo/pull/2026)) and batch 2 (levels 3–4) is built. Two build batches follow below.
 
 ## What you do
 
@@ -41,8 +41,8 @@ Leave out "I am Topsy." Nobody can say it, because it would be true for a Topsy 
 
 Keep the rules in `logic.ts`. A board is a seat list (islander names) and one sentence per seat. The solver works on a **domain** per unknown: {Straight, Topsy} for each islander and {left, middle, right} for the plank at level 4.
 
-- **Propagation step.** For one sentence, list every assignment that agrees with the current domains and in which that sentence fits its speaker. If one unknown takes a single value in all of them, that sentence settles it. Repeat over the sentences in seat order until nothing changes. If a sentence has no such assignment, the domains contradict.
-- **Supposition.** Take the first unsettled unknown in seat order (the plank last) and the first of its values. Suppose it and propagate. If that contradicts, remove the value and propagate again. Each removal counts as one supposition.
+- **Propagation step.** For one sentence, list every assignment that agrees with the current domains and in which that sentence fits its speaker. Remove values that appear in none of those assignments. If one unknown is left with a single value, that sentence settles it. Repeat over the sentences in seat order until nothing changes. If a sentence has no such assignment, the domains contradict.
+- **Supposition.** Try the unsettled unknowns in seat order (the plank last) and their remaining values in order. Suppose a value and propagate. If that contradicts, remove the value and propagate again. If a trial gives no contradiction, continue to the next value or unknown. Each removal counts as one supposition.
 - **Supposition count.** This is the number of removals needed before propagation settles every unknown. Count with the earliest-first order above, so the count is deterministic.
 
 Brute-force enumeration over seat patterns (before names are applied), with the closed sentence list above, gives the pools below. Use these exact numbers as rule-test totals.
@@ -116,7 +116,7 @@ The ghost finger follows the solver's own steps on the seeded board and taps Cro
    - registry, lands and paging.
 
    **Browser and build:** one filtered `truthbridge` play at 390 × 625 with captions, reaching Lantern Lake through the normal grown-up route and its page. Finish level 1, then at level 2 cross once wrong, cross again with the same marks (no new miss), follow Help, rotate and finish with one sticker. Take one upright screenshot, run `fingerdemo` at level 2, and build with the generated voice assets.
-2. **`truth-bridge 2`, levels 3–4.** This adds the supposition hint, the planks and the plank sentences.
+2. **`truth-bridge 2`, levels 3–4.** Built (PR #2034), with supposition hints, selectable planks and spoken plank sentences. Sideways, the planks sit to the left above the caption bubble. The spoken catalog is generated from the answers and hints the pools actually produce.
 
    **Checks:** typecheck and unit tests (pool counts 404 and 372, the supposition hint, the plank hint walk, voice coverage), one filtered play at level 4 with a wrong plank and one hint, one upright screenshot with the planks, `fingerdemo` at level 4, and a build. The batch runs after batch 1.
 
