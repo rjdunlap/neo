@@ -27,12 +27,14 @@ import {
   CUPS,
   CUTOFF,
   driftOf,
+  GOLD_PEG,
   dropAt,
   guided,
   HIT,
   ledgeX,
   makeBoard,
   makeCupRound,
+  makeFlowerRound,
   makePlantRound,
   pickTheme,
   planFor,
@@ -79,7 +81,12 @@ class Bud extends Container {
     rng: Rng,
   ) {
     super();
-    this.color = spot.kind === 'special' ? SPECIAL : rng.pick(PETALS.filter((c) => c !== SPECIAL));
+    this.color =
+      spot.kind === 'special'
+        ? SPECIAL
+        : spot.kind === 'golden'
+          ? 'yellow'
+          : rng.pick(PETALS.filter((c) => c !== SPECIAL));
     this.position.set(spot.x, spot.y);
     this.addChild(this.art);
     if (typeof spot.kind === 'number') {
@@ -115,10 +122,15 @@ class Bud extends Container {
     const numbered = typeof this.spot.kind === 'number';
     if (!this.bloomed) {
       // A closed bud: the special ones already show their color.
-      const fill = this.spot.kind === 'special' ? sw.light : numbered ? 0xffffff : 0xc8ecb0;
-      const line = this.spot.kind === 'special' ? sw.line : numbered ? swatch.blue.line : 0x7cc463;
+      const showy = this.spot.kind === 'special' || this.spot.kind === 'golden';
+      const fill = showy ? sw.light : numbered ? 0xffffff : 0xc8ecb0;
+      const line = showy ? sw.line : numbered ? swatch.blue.line : 0x7cc463;
       g.circle(0, 0, r).fill(fill).stroke({ width: 5, color: line });
-      if (!numbered)
+      // The golden bud wears a second ring and a star, so it is the one to aim at.
+      if (this.spot.kind === 'golden') {
+        g.circle(0, 0, r * 0.62).stroke({ width: 4, color: sw.fill });
+        g.star(0, 0, 5, r * 0.4, r * 0.18).fill(sw.fill);
+      } else if (!numbered)
         g.moveTo(0, -r * 0.6)
           .lineTo(0, r * 0.6)
           .stroke({ width: 3, color: line, alpha: 0.6 });
@@ -242,6 +254,10 @@ class PegGarden implements Game {
       const round = makePlantRound(this.plan, ctx.rng, this.theme.shape);
       ({ spots, places: this.places, dropX: this.dropX, cup: this.friendCup, hint: this.hintPlace } = round);
       this.targets = [];
+    } else if (this.plan.mode === 'flower') {
+      const round = makeFlowerRound(this.plan, ctx.rng, this.theme.shape);
+      ({ spots, places: this.places } = round);
+      this.targets = this.places.map((_, i) => i);
     } else {
       spots = makeBoard(this.plan, ctx.rng, this.theme.shape);
       this.targets = targets(this.plan, ctx.rng);
@@ -381,7 +397,12 @@ class PegGarden implements Game {
   }
 
   private get aimed() {
-    return this.plan.mode === 'number' || this.plan.mode === 'order' || this.plan.mode === 'cup';
+    return (
+      this.plan.mode === 'number' ||
+      this.plan.mode === 'order' ||
+      this.plan.mode === 'cup' ||
+      this.plan.mode === 'flower'
+    );
   }
 
   get target(): number | undefined {
@@ -411,6 +432,8 @@ class PegGarden implements Game {
         return void this.ctx.instruct('peg.cup', { n: this.target! });
       case 'plant':
         return void this.ctx.instruct('peg.plant');
+      case 'flower':
+        return void this.ctx.instruct('peg.flower');
     }
   }
 
@@ -527,16 +550,14 @@ class PegGarden implements Game {
     return this.target === undefined ? -1 : this.dots.indexOf(this.target);
   }
 
+  /** The bud the launcher is asked to reach: the numbered one asked for, or the golden one. */
+  private get askedBud() {
+    return this.buds.findIndex((b) => b.spot.kind === (this.plan.mode === 'flower' ? 'golden' : this.target));
+  }
+
   /** An angle near the current one whose shot (and its neighbors) touches the wanted flower; straight down if none does. */
   private bestAim(): number {
-    return (
-      aimAt(
-        this.world,
-        this.buds.findIndex((b) => b.spot.kind === this.target),
-        this.aim,
-        [0.012],
-      ) ?? 0
-    );
+    return aimAt(this.world, this.askedBud, this.aim, [0.012]) ?? 0;
   }
 
   /**
@@ -558,11 +579,7 @@ class PegGarden implements Game {
       const to =
         mode === 'cup'
           ? aimInto(this.world, this.table, this.askedCup)
-          : aimAt(
-              this.world,
-              this.buds.findIndex((b) => b.spot.kind === this.target),
-              this.aim,
-            );
+          : aimAt(this.world, this.askedBud, this.aim);
       return { trace: finger(this.aim), via: [finger(to ?? 0)] };
     }
     if (mode === 'plant') {
@@ -798,6 +815,19 @@ class PegGarden implements Game {
           for (const q of this.seeds) if (q.place !== null && q.place !== this.hintPlace) this.unplant(q);
         return;
       }
+      case 'flower': {
+        if (lit.some((b) => b.spot.kind === 'golden')) return void this.hit('peg.flowerNext');
+        // The whole path was on show, so a shot that misses is an experiment with the launcher, not a miss: a boing and a
+        // hint to look at the dots; two of them glow the golden flower (a hint, counted as one).
+        sfx.boing();
+        void this.ctx.say('peg.flowerMissed');
+        if (++this.wrongs >= 2 && !this.hinting) {
+          this.hinting = true;
+          this.hints++;
+          this.wrongs = 0;
+        }
+        return;
+      }
       default: {
         const t = this.target!;
         if (lit.some((b) => b.spot.kind === t)) {
@@ -809,15 +839,27 @@ class PegGarden implements Game {
   }
 
   /** The asked flower or cup was reached: praise, then the next ask or the finish. */
-  private async hit(next: 'peg.next' | 'peg.cupNext') {
+  private async hit(next: 'peg.next' | 'peg.cupNext' | 'peg.flowerNext') {
     this.wrongs = 0;
     this.hinting = false;
     this.goal++;
+    if (this.plan.mode === 'flower' && this.target !== undefined) this.growGolden(this.places[this.goal]);
     sfx.sparkle();
     this.ctx.pet.cheer();
     await this.ctx.say('praise');
     if (this.target === undefined) return void this.finale();
     await this.ctx.instruct(next, { n: this.target });
+  }
+
+  /** The golden bud closes and grows again at a new place, so the next shot is aimed afresh. */
+  private growGolden(at: Place) {
+    const bud = this.buds[this.askedBud];
+    const peg = this.world.pegs[this.askedBud];
+    bud.close();
+    bud.position.set(at.x, at.y);
+    bud.scale.set(0.2);
+    peg.x = at.x;
+    peg.y = at.y;
   }
 
   /** A planted seed floats back to its dish in the tray. */
@@ -1017,7 +1059,7 @@ class PegGarden implements Game {
       this.shotStart(),
       this.world,
       BOARD.h,
-      this.hinting ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35,
+      this.hinting || this.plan.mode === 'flower' ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35,
       1 / 30,
     );
     for (let i = 1; i < path.length; i += 2)
@@ -1058,7 +1100,15 @@ class PegGarden implements Game {
       return;
     }
     let bud: Bud | undefined;
-    if (this.plan.mode === 'color') bud = this.buds.find((b) => b.spot.kind === 'special' && !b.bloomed);
+    if (this.plan.mode === 'flower') {
+      // The golden flower glows, with the arrow over it; the launcher's guide already shows the whole path.
+      bud = this.buds[this.askedBud];
+      const pulse = 1 + 0.08 * Math.sin(this.clock * 5);
+      g.circle(bud.x, bud.y, (GOLD_PEG + 14) * pulse)
+        .fill({ color: swatch.yellow.light, alpha: 0.45 })
+        .stroke({ width: 6, color: swatch.yellow.line });
+    } else if (this.plan.mode === 'color')
+      bud = this.buds.find((b) => b.spot.kind === 'special' && !b.bloomed);
     else if (this.target !== undefined) bud = this.buds.find((b) => b.spot.kind === this.target);
     if (!bud) return;
     if (this.hintX !== null) {

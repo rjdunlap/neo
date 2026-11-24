@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * Every bud it touches blooms and chimes. Nothing is ever lost; the ladder asks for
  * particular flowers, then for aiming at numbers.
  */
-export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup' | 'plant';
+export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup' | 'plant' | 'flower';
 
 export interface PegPlan {
   mode: PegMode;
@@ -36,8 +36,8 @@ export const PLANS: PegPlan[] = [
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1] },
   toddler: { min: 1, max: 8, order: [8, 1, 2] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 7 },
+  preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
+  prek: { min: 3, max: 9, order: [3, 9, 4, 5, 6, 7] },
 };
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
@@ -49,8 +49,21 @@ export const BIG_PLAN: PegPlan = {
   name: 'Four huge flowers: any pearl that touches one makes it bloom',
 };
 
+/** Level 9, the preschool bridge between colours and numbers: one big golden bud to aim the launcher at, three times. */
+export const FLOWER_LEVEL = 9;
+export const FLOWER_PLAN: PegPlan = {
+  mode: 'flower',
+  pegs: 12,
+  count: 3,
+  name: 'Aim at the big flower: swing the launcher, with the whole path shown, so the pearl reaches the golden flower',
+};
+
 export const planFor = (level: number) =>
-  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === BIG_LEVEL
+    ? BIG_PLAN
+    : level === FLOWER_LEVEL
+      ? FLOWER_PLAN
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** The huge buds' radius: nearly three plain buds across, so a pearl dropped anywhere near one touches it. */
 export const BIG_PEG = 60;
@@ -70,7 +83,7 @@ export interface PegSpot {
   x: number;
   y: number;
   /** 'plain', a special color bud, or a number 1..n. */
-  kind: 'plain' | 'special' | number;
+  kind: 'plain' | 'special' | 'golden' | number;
   /** A bud's radius when it is not a plain bud's. */
   r?: number;
 }
@@ -111,6 +124,7 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 }
 
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
+  if (plan.mode === 'flower') return makeFlowerRound(plan, rng, shape).spots;
   if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
   // Into the cup and Plant a bud keep their buds a pearl's width above the cups along the sand.
   const places =
@@ -472,4 +486,50 @@ export function snapPlace(
       best = i;
   });
   return best;
+}
+
+// Level 9, Aim at the big flower ---------------------------------------------------------------------------------------
+
+/** The golden bud's radius: about 1.6 plain buds across, so it is the easiest flower on the board to see and to hit. */
+export const GOLD_PEG = 35;
+/** Golden places stay this far from the side walls and from each other, so the next flower is clearly somewhere new. */
+export const GOLD_WALL = 100;
+export const GOLD_GAP = 150;
+
+/**
+ * A board of Aim at the big flower: plain buds and one golden bud, with the three places it will grow in turn (the golden bud
+ * is the last spot, standing on the first place). Every place can be hit by some aim with room to spare, checked by fresh
+ * shots a hair either side, with the golden bud standing there; a board that fails is grown again from the same seed.
+ */
+export function makeFlowerRound(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows') {
+  let last = { spots: [] as PegSpot[], places: [] as Place[] };
+  for (let tries = 0; tries < 80; tries++) {
+    const all = rng.shuffle(grid(shape).filter((p) => p.y + GOLD_PEG + 2 * BOARD.ball < CUP_TOP));
+    const places: Place[] = [];
+    for (const p of all)
+      if (
+        places.length < plan.count &&
+        p.x >= GOLD_WALL &&
+        p.x <= BOARD.w - GOLD_WALL &&
+        places.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= GOLD_GAP)
+      )
+        places.push(p);
+    if (places.length < plan.count) continue;
+    const isPlace = (p: Place) => places.some((q) => q.x === p.x && q.y === p.y);
+    const plain = all
+      .filter((p) => !isPlace(p))
+      .slice(0, plan.pegs)
+      .map((p): PegSpot => ({ ...p, kind: 'plain' }));
+    const spots = [...plain, { ...places[0], kind: 'golden' as const, r: GOLD_PEG }];
+    last = { spots, places };
+    if (places.every((_, i) => goldReachable(spots, places[i]))) return last;
+  }
+  // Eighty failed boards in a row never happen on the shipped shapes (a rule test grows hundreds); this keeps the type total.
+  return last;
+}
+
+/** Whether some aim hits a golden bud standing at `at` with room to spare either side. */
+export function goldReachable(spots: PegSpot[], at: Place): boolean {
+  const moved = spots.map((s, i): PegSpot => (i === spots.length - 1 ? { ...s, x: at.x, y: at.y } : s));
+  return aimAt(worldOf(moved), moved.length - 1, 0, [CUP_MARGIN]) !== null;
 }

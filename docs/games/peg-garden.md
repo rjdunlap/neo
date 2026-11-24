@@ -10,8 +10,8 @@
 | --- | --- |
 | lap | 8, 1 |
 | toddler | 8, 1, 2 |
-| preschool | 2–4 |
-| pre-K | 3–7 |
+| preschool | 2, 3, 9, 4 |
+| pre-K | 3, 9, 4, 5, 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 6 | Into the cup: aim the pearl into the cup with that many dots |
 | 7 | Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup |
 | 8 | Four huge flowers: any pearl that touches one makes it bloom |
+| 9 | Aim at the big flower: swing the launcher, with the whole path shown, so the pearl reaches the golden flower |
 
 <!-- end generated -->
 

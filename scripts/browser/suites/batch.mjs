@@ -444,6 +444,27 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           if (!g.path.length) throw new Error('Peg cup: no faint trail after a shot');
           return;
         }
+        if (g.plan.mode === 'flower') {
+          // Aim at the big flower: the whole path shows while aiming, two shots that miss it are no miss (a hint after two),
+          // then a shot at the golden flower each time, which grows again somewhere new.
+          const gold = () => g.buds.findIndex((b) => b.spot.kind === 'golden');
+          for (let k = 0; k < 2; k++) await shoot((hits) => !hits.includes(gold()));
+          if (g.misses !== 0 || g.hints !== 1 || !g.hinting)
+            throw new Error(`Peg flower hint: ${g.misses} ${g.hints}`);
+          const seen = new Set();
+          for (let guard = 0; guard < 8 && !g.finished; guard++) {
+            if (g.target === undefined) {
+              await kit.sleep(300);
+              continue;
+            }
+            seen.add(`${g.buds[gold()].x},${g.buds[gold()].y}`);
+            const goal = g.goal;
+            await shoot(null, gold());
+            await kit.until(() => g.goal > goal || g.finished, 4000);
+          }
+          if (seen.size !== 3) throw new Error(`Peg flower: the golden flower stood in ${seen.size} places`);
+          return;
+        }
         // A cancelled aim (a system gesture, a palm) lets nothing go.
         await done();
         const at = screen(BOARD.w / 2, 300);
@@ -497,6 +518,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       log(`Peg Garden ${level} (${mode}): score ${r}`);
       if (mode === 'drop' || mode === 'bloom' || mode === 'big')
         assert.deepEqual(r, [0, 0], `pegs ${level} score`);
+      else if (mode === 'flower') assert.deepEqual(r, [0, 1], `pegs ${level} score`);
       else assert.ok(r[0] >= 2 && r[1] === 1, `pegs ${level} score ${r}`);
       log(`Peg Garden ${level} (${mode}): drops, aiming, blooms, hint, saved score and sticker passed`);
     }
