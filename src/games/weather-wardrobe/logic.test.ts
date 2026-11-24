@@ -25,6 +25,8 @@ import {
   shieldFor,
   wardrobeFor,
   friendFor,
+  ALSO,
+  suits,
 } from './logic';
 import { PARTS } from '../../creatures/parts';
 import { SPECIES_IDS } from '../../creatures/species';
@@ -71,7 +73,9 @@ describe('Weather Wardrobe', () => {
   });
 
   it('offers the right things to wear among distinct choices from other weathers', () => {
-    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
+    for (const plan of WARDROBE_PLANS.filter(
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+    )) {
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = outfits(plan, new Rng(seed));
         expect(rounds).toHaveLength(plan.rounds);
@@ -116,7 +120,9 @@ describe('Weather Wardrobe', () => {
         expect(new Set(slotsOf(outfit)).size).toBe(outfit.length);
         expect(new Set(slotsOf(outfit))).toEqual(new Set(slotsOf(itemsFor(w))));
       }
-      for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
+      for (const plan of WARDROBE_PLANS.filter(
+        (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+      )) {
         for (const o of outfits(plan, new Rng(seed))) {
           const sets =
             plan.mode === 'trip'
@@ -153,7 +159,9 @@ describe('Weather Wardrobe', () => {
   });
 
   it("gives the ghost finger's bot only things that fit the weather, each once, until the outfit is complete", () => {
-    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
+    for (const plan of WARDROBE_PLANS.filter(
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+    )) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const o of outfits(plan, new Rng(seed))) {
           const used = new Set<Item>();
@@ -280,7 +288,7 @@ describe('Weather Wardrobe', () => {
     for (const sp of SPECIES_IDS) {
       const wear = WARDROBE[sp];
       WARDROBE_PLANS.forEach((plan, i) => {
-        if (plan.mode === 'friends') return; // Friends use the full wardrobe, not companion anatomy.
+        if (plan.mode === 'friends' || plan.keep) return; // Keep rounds have their own test. Friends use the full wardrobe, not companion anatomy.
         for (let seed = 1; seed <= 40; seed++) {
           const rounds = outfits(plan, new Rng(seed), wear);
           expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);
@@ -316,6 +324,98 @@ describe('Weather Wardrobe', () => {
           }
         }
       });
+    }
+  });
+
+  it('has a table of two-weather items that is small, explicit and consistent', () => {
+    expect(Object.keys(ALSO).sort()).toEqual(['boots', 'raincoat']);
+    for (const [item, w] of Object.entries(ALSO)) {
+      expect(w).not.toBe(ITEMS[item as Item]);
+      expect(suits(item as Item, w)).toBe(true);
+      expect(suits(item as Item, ITEMS[item as Item])).toBe(true);
+    }
+    expect(suits('sunhat', 'rainy')).toBe(false);
+    // The sticker's eight were fixed before the table existed; its pool keeps each item's home weather.
+    for (const i of STICKER_ITEMS) expect(STICKER_WEATHERS).toContain(ITEMS[i]);
+  });
+
+  it('never makes the single-answer levels ambiguous: no distractor suits a round weather, sky and friends use one-weather items', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const plan of WARDROBE_PLANS.filter(
+        (p) => !['play', 'friends', 'sky'].includes(p.mode) && !p.keep,
+      ))
+        for (const o of outfits(plan, new Rng(seed))) {
+          const target = plan.mode === 'change' ? [o.weathers[1]] : o.weathers;
+          for (const item of o.options)
+            if (!o.needed.includes(item)) for (const w of target) expect(suits(item, w)).toBe(false);
+        }
+      for (const o of outfits(wardrobePlan(9), new Rng(seed)))
+        for (const item of o.worn!) expect(ALSO[item]).toBeUndefined();
+      for (const o of outfits(wardrobePlan(10), new Rng(seed))) {
+        for (const item of o.needed) expect(ALSO[item]).toBeUndefined();
+        for (const item of o.needed) expect(friendFor(o, item)).not.toBeNull();
+      }
+    }
+  });
+
+  it('level 11 keeps what still fits: a keeper suits both weathers, the rest suits only the old one, and a full outfit results', () => {
+    const plan = wardrobePlan(11);
+    expect(plan.keep).toBe(true);
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = outfits(plan, new Rng(seed));
+      expect(rounds).toHaveLength(3);
+      const pairs = new Set<string>();
+      rounds.forEach((o) => {
+        const [from, to] = o.weathers;
+        expect(from).not.toBe(to);
+        pairs.add(from + to);
+        expect(o.keep!.length).toBeGreaterThan(0);
+        for (const k of o.keep!) {
+          expect(suits(k, from)).toBe(true);
+          expect(suits(k, to)).toBe(true);
+        }
+        expect(o.remove!.length).toBeGreaterThan(0);
+        for (const r of o.remove!) {
+          expect(suits(r, from)).toBe(true);
+          expect(suits(r, to)).toBe(false);
+        }
+        for (const n of o.needed) expect(suits(n, to)).toBe(true);
+        // What she wears at the end (kept plus added) is one thing per slot and as many slots as the new weather's whole outfit.
+        const end = [...o.keep!, ...o.needed];
+        expect(new Set(end.map((i) => SLOTS[i])).size).toBe(end.length);
+        expect(new Set(end.map((i) => SLOTS[i]))).toEqual(
+          new Set([...itemsFor(to), ...o.keep!].map((i) => SLOTS[i])),
+        );
+        // What she wears at the start is one thing per slot too.
+        const start = [...o.keep!, ...o.remove!];
+        expect(new Set(start.map((i) => SLOTS[i])).size).toBe(start.length);
+        expect(o.options).toHaveLength(plan.choices);
+        for (const item of o.needed) expect(o.options).toContain(item);
+        for (const item of o.options) {
+          expect(o.keep).not.toContain(item);
+          if (!o.needed.includes(item)) expect(suits(item, to)).toBe(false);
+        }
+        // The bot finds exactly the missing things.
+        const used = new Set<Item>();
+        for (let item = itemToTap(o, used); item; item = itemToTap(o, used)) used.add(item);
+        expect([...used].sort()).toEqual([...o.needed].sort());
+      });
+      expect(pairs.size).toBe(3);
+    }
+  });
+
+  it('level 11 plays on every species: with a keeper it keeps it, and without one (the glider) everything comes off', () => {
+    for (const sp of SPECIES_IDS) {
+      const wear = WARDROBE[sp];
+      for (let seed = 1; seed <= 100; seed++)
+        for (const o of outfits(wardrobePlan(11), new Rng(seed), wear)) {
+          for (const item of [...o.needed, ...o.options, ...(o.remove ?? []), ...(o.keep ?? [])])
+            expect(wear, sp).toContain(item);
+          expect(o.remove!.length, sp).toBeGreaterThan(0);
+          expect(o.needed.length, sp).toBeGreaterThan(0);
+          if (!wear.includes('boots') && !wear.includes('raincoat')) expect(o.keep, sp).toBeUndefined();
+          else expect(o.keep!.length, sp).toBeGreaterThan(0);
+        }
     }
   });
 });

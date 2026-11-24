@@ -11,7 +11,7 @@
 | lap | 1, 8, 2 |
 | toddler | 2, 9, 3, 4 |
 | preschool | 3, 9, 4, 5 |
-| pre-K | 4, 5, 10, 6, 7 |
+| pre-K | 4, 5, 10, 6, 7, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,12 +25,13 @@
 | 8 | Try things on in the weather: the one that fits stops it (no mistakes) |
 | 9 | See what the pet is wearing and pick the weather it is dressed for |
 | 10 | Drag four items to two friends in different weather |
+| 11 | The weather changes: keep what still fits, take off the rest, then add what is missing |
 
 <!-- end generated -->
 
 **Starts as:** tap the sky to change the weather (four weathers)
 
-**Grows into:** try things on at lap (the fitting item stops the weather), dress the pet for sun, rain, snow or wind, pack for two kinds of weather and watch the trip unpack, name the sky from an outfit (Which sky?), drag clothes to two friends in different weather (pre-K 10), then change outfits when the weather changes (pre-K)
+**Grows into:** try things on at lap (the fitting item stops the weather), dress the pet for sun, rain, snow or wind, pack for two kinds of weather and watch the trip unpack, name the sky from an outfit (Which sky?), drag clothes to two friends in different weather (pre-K 10), then change outfits when the weather changes, first keeping what still fits (pre-K 11)
 
 ## Design notes
 
@@ -39,3 +40,5 @@ Sun, rain, snow and wind fill the sky (wind added 2026-10-26: a low sun, driftin
 Per species (RW05 slice 2b): the same code-drawn clothes hang on the companion's parts (earmuffs on the ears, one piece per point for boots, mittens and sandals), and a species is offered only items it can wear. The river has no mittens, raincoat or puffy coat; the glider has no scarf, mittens, boots, sandals, raincoat or puffy coat; every weather keeps at least one item (glider snow: beanie or earmuffs). The umbrella and the kite are held in the sprout's hand and stand on the back of the river and glider. The river and glider cannot wear the windbreaker, for the same reasons as the raincoat; they keep the kite and the hat with a strap. Both pieces of a worn pair answer a touch.
 
 Pre-K level 10, *Two friends, two places*, shows a cat and bear beneath different weather signs. Drag four clothes tiles to the friend whose weather each suits; each friend receives two slot-distinct items, which stay on its body. Three pairs complete one round and earn one shell sticker. A wrong friend returns the item and explains its weather (one miss); two misses in a pair glow an item and its friend (one hint per pair, persisting for the remaining items). Empty-space and cancelled drops are free, and touching a friend repeats the instruction. The companion stays in its guide corner; these upright friends use the full wardrobe independently of companion anatomy. Pre-K order is `[4, 5, 10, 6, 7]`, with existing IDs and pins preserved.
+
+Two-weather items (`ALSO` in `logic.ts`, read through `suits()`): rain boots also suit snowy and the raincoat also suits windy. Single-answer levels (2 to 6, 8, 9, 10) never offer a two-weather item against its second weather, so each still has one right answer. Pre-K level 11, *Keep what still fits* (plan `keep: true`, order `[4, 5, 10, 6, 7, 11]`), is level 7 with a keeper: the worn outfit includes an item that still fits the new weather. Taking a keeper off is a miss with a spoken reason (`weather.keep.*`) and it stays on; two misses in a row count one hint and the removable item wiggles. After the removals she dresses for what is missing. A glider, which cannot wear boots or the raincoat, has no keeper and plays level 11 as level 7.

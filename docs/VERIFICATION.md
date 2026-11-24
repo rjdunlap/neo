@@ -213,7 +213,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `vinesnip` | 2026-11-22 · [Vine Snip level 6, Where will it land?](verification/2026-11-22-vine-snip-level-6-where-will-it-land.md) | `VINE_LEVELS=6` |
 | `wardrobe10` | 2026-10-26 · [Weather Wardrobe two friends level 10](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-two-friends-level-10) | Levels 1 and 10 |
 | `wardrobe6` | 2026-10-23 · [Weather Wardrobe batch 2: the trip happens and level 9 Which sky? (slices 5–6)](archive/VERIFICATION-2026-10-23.md#2026-10-23--weather-wardrobe-batch-2-the-trip-happens-and-level-9-which-sky-slices-56) | Level 6 trip and unpack |
-| `wardrobe7` | 2026-10-23 · [RW05 slice 2b: Splish Splash and Weather Wardrobe on the companion rig](archive/VERIFICATION-2026-10-23.md#2026-10-23--rw05-slice-2b-splish-splash-and-weather-wardrobe-on-the-companion-rig) | Glider and river species |
+| `wardrobe7` | 2026-11-24 · [Weather Wardrobe two-weather items and level 11 (PR #2098)](verification/2026-11-24-weather-wardrobe-two-weather-items-and-level-11.md) | Levels 7 and 11 at 768x1024 portrait; glider and river species last checked 2026-10-23 |
 | `wardrobe9` | 2026-10-26 · [Weather Wardrobe: wind (slice 7)](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-wind-slice-7) | — |
 | `waterflow` | 2026-10-31 · [Water Road levels 4–5 (ancient-mediterranean AM3)](archive/VERIFICATION-2026-10-31.md#2026-10-31--water-road-levels-45-ancient-mediterranean-am3) | — |
 | `waterroad` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, ninth session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-ninth-session.md) | — |

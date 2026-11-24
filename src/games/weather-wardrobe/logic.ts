@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
 export const WEATHERS = ['sunny', 'rainy', 'snowy', 'windy'] as const;
 export type Weather = (typeof WEATHERS)[number];
 
-/** Every piece of clothing belongs to exactly one weather, so a choice is never ambiguous. */
+/** Every piece of clothing has one home weather; `ALSO` names the few that suit a second one. */
 export const ITEMS = {
   sunhat: 'sunny',
   sunglasses: 'sunny',
@@ -26,10 +26,22 @@ export const ITEMS = {
   straphat: 'windy',
 } as const satisfies Record<string, Weather>;
 export type Item = keyof typeof ITEMS;
+
+/**
+ * The items that suit a second weather (decided 2026-10-23): rain boots keep feet dry in snow, a raincoat sheds the
+ * wind. Every other item suits its home weather alone. Level 11 builds on these; the rounds where a wrong answer must be
+ * unambiguous (levels 2–6, 8, 9, 10) never offer one against its second weather.
+ */
+export const ALSO: Partial<Record<Item, Weather>> = { boots: 'snowy', raincoat: 'windy' };
+/** Does this item suit this weather, at home or as a second one? */
+export const suits = (i: Item, w: Weather) => ITEMS[i] === w || ALSO[i] === w;
 export const ALL_ITEMS = Object.keys(ITEMS) as Item[];
 /** A weather's items, out of those the pet can wear. */
 export const itemsFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS) =>
   wearable.filter((i) => ITEMS[i] === w);
+
+/** The items with one weather only: where one weather must be the single answer (the sky and friends levels). */
+const ONE_WEATHER: readonly Item[] = ALL_ITEMS.filter((i) => !ALSO[i]);
 
 export type Slot = 'head' | 'eyes' | 'neck' | 'body' | 'hands' | 'feet' | 'held';
 
@@ -198,6 +210,8 @@ export interface WardrobePlan {
   need: number;
   rounds: number;
   name: string;
+  /** Change mode only: some worn clothes still fit the new weather, and only the rest come off. */
+  keep?: boolean;
 }
 
 export const WARDROBE_PLANS: WardrobePlan[] = [
@@ -241,6 +255,14 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
     rounds: 3,
     name: 'Drag four items to two friends in different weather',
   },
+  {
+    mode: 'change',
+    choices: 5,
+    need: 0,
+    rounds: 3,
+    keep: true,
+    name: 'The weather changes: keep what still fits, take off the rest, then add what is missing',
+  },
 ];
 
 export const wardrobePlan = (level: number) =>
@@ -253,6 +275,8 @@ export interface Outfit {
   options: Item[];
   /** In weather-change rounds, these are the worn clothes to remove before dressing for the new weather. */
   remove?: Item[];
+  /** Level 11: worn clothes that suit both weathers and stay on; taking one off is a miss. */
+  keep?: Item[];
   /** Which sky: what the pet already wears, the skies on offer, and the one it suits. */
   worn?: Item[];
   skies?: Weather[];
@@ -263,6 +287,41 @@ export interface Outfit {
 export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] =>
   o.weathers.map((weather) => ({ weather, items: o.needed.filter((i) => ITEMS[i] === weather) }));
 
+/** The weather changes that keep something on, with the item that stays: boots from rain into snow and back, a raincoat between rain and wind. */
+const KEEP_CHANGES: { from: Weather; to: Weather; keep: Item }[] = [
+  { from: 'rainy', to: 'snowy', keep: 'boots' },
+  { from: 'snowy', to: 'rainy', keep: 'boots' },
+  { from: 'rainy', to: 'windy', keep: 'raincoat' },
+  { from: 'windy', to: 'rainy', keep: 'raincoat' },
+];
+
+/** What the pet wears in `w`, one item per slot, with `keep` in its slot (so a raincoat in wind stands in for the windbreaker). */
+function outfitKeeping(w: Weather, keep: Item, rng: Rng, wearable: readonly Item[]): Item[] {
+  const rest = outfitFor(w, rng, wearable).filter((i) => SLOTS[i] !== SLOTS[keep] && i !== keep);
+  return [...rest, keep];
+}
+
+/** One level-11 round: she wears an outfit for `from`, which still has `keep` that fits `to`. */
+function keepRound(
+  c: (typeof KEEP_CHANGES)[number],
+  rng: Rng,
+  wearable: readonly Item[],
+  choices: number,
+): Outfit {
+  const worn = outfitKeeping(c.from, c.keep, rng, wearable);
+  const remove = worn.filter((i) => i !== c.keep);
+  const target = outfitKeeping(c.to, c.keep, rng, wearable);
+  const needed = target.filter((i) => i !== c.keep);
+  const others = rng.shuffle(wearable.filter((i) => !suits(i, c.to) && i !== c.keep));
+  return {
+    weathers: [c.from, c.to],
+    remove,
+    keep: [c.keep],
+    needed,
+    options: rng.shuffle([...needed, ...others.slice(0, Math.max(0, choices - needed.length))]),
+  };
+}
+
 /**
  * One round's weather and choices. Weathers change from round to round. Everything is drawn from `wearable`, what this
  * pet can wear, so a species with fewer parts finds fewer things (every weather keeps at least one): "everything" is
@@ -271,6 +330,7 @@ export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] =>
 export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] = ALL_ITEMS): Outfit[] {
   const out: Outfit[] = [];
   let order: Weather[] = [];
+  let pool: typeof KEEP_CHANGES = [];
   // Weather-change rounds wear one outfit per weather all game, so the clothes to take off are the ones she just put on.
   const dress =
     plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng, wearable)])) : null;
@@ -278,7 +338,7 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
     if (plan.mode === 'friends') {
       // These upright critters wear the full wardrobe, independently of the player's companion species.
       const weathers = rng.shuffle([...WEATHERS]).slice(0, 2);
-      const needed = weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng)).slice(0, 2));
+      const needed = weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng, ONE_WEATHER)).slice(0, 2));
       out.push({ weathers, needed, options: rng.shuffle([...needed]) });
       continue;
     }
@@ -295,18 +355,35 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
         weathers: [answer],
         needed: [],
         options: [],
-        worn: rng.shuffle(outfitFor(answer, rng, wearable)).slice(0, 2),
+        worn: rng
+          .shuffle(
+            outfitFor(
+              answer,
+              rng,
+              wearable.filter((i) => !ALSO[i]),
+            ),
+          )
+          .slice(0, 2),
         skies,
         answer,
       });
       continue;
+    }
+    if (plan.mode === 'change' && plan.keep) {
+      // A pet that cannot wear any keeper (a glider has no boots or raincoat) plays it as level 7 does: everything comes off.
+      const changes = KEEP_CHANGES.filter((c) => wearable.includes(c.keep));
+      if (changes.length) {
+        if (!pool.length) pool = rng.shuffle([...changes]);
+        out.push(keepRound(pool.shift()!, rng, wearable, plan.choices));
+        continue;
+      }
     }
     if (plan.mode === 'change') {
       if (!order.length) order = rng.shuffle([...WEATHERS]);
       const from = order[r]!;
       const to = order[(r + 1) % order.length];
       const needed = dress!.get(to)!;
-      const others = rng.shuffle(wearable.filter((i) => ITEMS[i] !== to));
+      const others = rng.shuffle(wearable.filter((i) => !suits(i, to)));
       out.push({
         weathers: [from, to],
         remove: [...dress!.get(from)!],
@@ -324,7 +401,7 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
         : plan.mode === 'trip'
           ? weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng, wearable)).slice(0, 2))
           : rng.shuffle(outfitFor(weathers[0], rng, wearable)).slice(0, plan.need);
-    const others = rng.shuffle(wearable.filter((i) => !weathers.includes(ITEMS[i])));
+    const others = rng.shuffle(wearable.filter((i) => !weathers.some((w) => suits(i, w))));
     const options = rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]);
     out.push({ weathers, needed, options });
   }
@@ -346,5 +423,5 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [1, 8, 2] },
   toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
   preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  prek: { min: 4, max: 10, order: [4, 5, 10, 6, 7] },
+  prek: { min: 4, max: 11, order: [4, 5, 10, 6, 7, 11] },
 };

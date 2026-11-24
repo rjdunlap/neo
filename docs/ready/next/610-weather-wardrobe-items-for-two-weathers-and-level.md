@@ -1,1 +1,0 @@
-**`weather-wardrobe` items for two weathers and level 11, Keep what still fits** (then level 12 Pack light and the school window; decisions 1–3 and 5 settled). [Dive](../../deep-dives/weather-wardrobe.md#build-slices-in-order)

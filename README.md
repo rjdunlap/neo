@@ -139,7 +139,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
 | [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 11 | scrub mud off the pet |
 | [Feelings Faces](docs/games/feelings-faces.md) | lap–school | Cozy Village | 13 | tap bubbles or poke the pet, choose a helper, compare two friends’ reactions, use a leftover clue, or ask a friend what they want |
-| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–pre-K | Cozy Village | 10 | tap the sky to change the weather (four weathers) |
+| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–pre-K | Cozy Village | 11 | tap the sky to change the weather (four weathers) |
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |
 | [Mail Carrier](docs/games/mail-carrier.md) | lap–school | Cozy Village | 15 | tap any mailbox to post a letter |
 | [Teddy Doctor](docs/games/teddy-doctor.md) | lap–school | Cozy Village | 8 | touch the patient to put bandages on boo-boos |
