@@ -7,7 +7,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['bubbles', 'scenes', 'jelly', 'peekaboo', 'ducks', 'shapes', 'fill', 'garden'],
+        ['bubbles', 'scenes', 'jelly', 'jellysets', 'peekaboo', 'ducks', 'shapes', 'fill', 'garden'],
         'ORIGINALS_ONLY',
       );
     const score = (id) =>
@@ -202,6 +202,44 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log(
         `Jelly Drums ${level} (${mode}): notes, tunes, mistakes, slow replay, hint, saved score and sticker passed`,
       );
+    }
+
+    // Jelly Drums' sound sets: a round draws the marimba (Music Mountain), bells (the moon stage) or a soft hum (the beach);
+    // each is played and shown on a phone upright (free play) and sideways (a tune level). Only `jellysets` runs as a touch
+    // phone (see the fixture), so the upright layout is the phone's.
+    if (only === 'jellysets') {
+      for (const set of ['marimba', 'bells', 'hum']) {
+        for (const [w, h, level, name] of [
+          [390, 844, 1, 'upright'],
+          [844, 390, 5, 'sideways'],
+        ]) {
+          await page.setViewportSize({ width: w, height: h });
+          let found = false;
+          for (let tries = 0; tries < 40 && !found; tries++) {
+            await launch('jelly-drums', level);
+            found = await page.evaluate((want) => neo.scene.game.sounds === want, set);
+          }
+          assert.ok(found, `Jelly Drums: a ${set} round turned up at level ${level}`);
+          await page.waitForTimeout(400);
+          assert.equal(
+            await page.evaluate(() => neo.view.upright === true),
+            name === 'upright',
+            `${set} ${name} view`,
+          );
+          const lit = await page.evaluate(async () => {
+            const g = neo.scene.game;
+            for (let n = 0; n < 12; n++) {
+              kit.tapOn(g.jellies[n % 5], 0, -50);
+              await kit.sleep(140);
+            }
+            return g.lit;
+          });
+          if (level === 1) assert.ok(lit > 0, `Jelly Drums ${set}: notes light the garland`);
+          await screenshot(`jelly-drums-set-${set}-${name}`);
+        }
+      }
+      await portrait(false);
+      log('Jelly Drums sound sets: marimba, bells and hum each played and shown upright and sideways');
     }
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.

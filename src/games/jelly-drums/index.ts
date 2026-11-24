@@ -13,6 +13,7 @@ import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
+import { drawBackdrop, STAGES, type StageLook } from './stages';
 import { jellyLayout, type Layout } from './layout';
 import {
   LEVELS,
@@ -25,6 +26,10 @@ import {
   nearestAwake,
   planFor,
   ScaleWatch,
+  SET_STEPS,
+  soundSetFor,
+  STAGE_OF,
+  type SoundSet,
   type JellyPhase,
   type JellyPlan,
   type Tune,
@@ -33,7 +38,6 @@ import { rangeFor } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right, in the one rainbow every pitched colour uses. */
 const COLORS = PITCH_COLORS;
-const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
 
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
@@ -42,7 +46,12 @@ const FAN_VOICES: AnimalSound[] = ['quack', 'hop', 'meow', 'oink'];
 
 class JellyDrums implements Game {
   private readonly plan: JellyPlan;
-  private readonly sky = new Sprite(gradientTexture(0xa9c1ff, 0xffe3f1));
+  /** The round's instrument, from its seed, and the stage it plays on. */
+  readonly sounds: SoundSet;
+  private readonly look: StageLook;
+  private readonly sky: Sprite;
+  /** The moon and stars, or the sun. */
+  private readonly skyThings = new Graphics();
   private readonly mountains = new Graphics();
   private readonly stageG = new Graphics();
   private readonly garland = new Graphics();
@@ -78,6 +87,11 @@ class JellyDrums implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.sounds = soundSetFor(ctx.rng);
+    this.look = STAGES[STAGE_OF[this.sounds]];
+    this.sky = new Sprite(gradientTexture(...this.look.sky));
+    this.skyThings.eventMode = 'none';
+    this.mountains.eventMode = 'none';
     this.view = ctx.view;
     this.lay = jellyLayout(ctx.view);
     this.jellies = COLORS.map((c, i) => {
@@ -96,6 +110,7 @@ class JellyDrums implements Game {
     this.again.visible = this.plan.mode === 'echo' && !ctx.couch;
     ctx.stage.addChild(
       this.sky,
+      this.skyThings,
       this.mountains,
       this.garland,
       this.stageG,
@@ -135,23 +150,7 @@ class JellyDrums implements Game {
     this.sky.width = v.w;
     this.sky.height = v.h;
 
-    const m = this.mountains.clear();
-    for (const [k, [x, y, half]] of l.peaks.entries()) {
-      // The third, middle peak is the darker one.
-      const color = k === 2 ? 0x9f8be6 : 0xb7a6f0;
-      m.moveTo(x - half, top)
-        .quadraticCurveTo(x - 30, y - 30, x, y)
-        .quadraticCurveTo(x + 30, y - 30, x + half, top)
-        .closePath()
-        .fill(color);
-      m.moveTo(x - 58, y + 52)
-        .quadraticCurveTo(x - 20, y - 22, x, y - 4)
-        .quadraticCurveTo(x + 20, y - 22, x + 58, y + 52)
-        .quadraticCurveTo(x + 30, y + 36, x + 12, y + 50)
-        .quadraticCurveTo(x - 10, y + 34, x - 30, y + 50)
-        .closePath()
-        .fill(0xffffff);
-    }
+    drawBackdrop(this.skyThings, this.mountains, this.look, l, v);
 
     const { x: sx, w: sw, skirt } = l.stage;
     this.stageG
@@ -298,7 +297,7 @@ class JellyDrums implements Game {
   private sing(i: number, power = 1) {
     const j = this.jellies[i];
     j.hit(power);
-    sfx.marimba(STEPS[i]);
+    this.note(SET_STEPS[this.sounds][i]);
     this.ctx.particles.burst(j.x + (Math.random() - 0.5) * 30, j.y - j.height * 0.9, {
       kind: 'note',
       colors: [swatch[j.color].line],
@@ -311,6 +310,13 @@ class JellyDrums implements Game {
       spin: 1,
     });
     this.ctx.rng.pick(this.fans).hop(0.5);
+  }
+
+  /** One note on the round's instrument; `soft` scales it (the finale's chord). */
+  private note(step: number, soft = 1) {
+    if (this.sounds === 'bells') sfx.bell(step, 0.34 * soft);
+    else if (this.sounds === 'hum') sfx.hum(step, 0.32 * soft);
+    else sfx.marimba(step, 0.45 * soft);
   }
 
   private setLit(n: number) {
@@ -327,18 +333,18 @@ class JellyDrums implements Game {
     const g = this.garland.clear();
     g.moveTo(x0, y)
       .quadraticCurveTo(cx, y + sag * 2, x1, y)
-      .stroke({ width: 4, color: 0x6b5aa8 });
+      .stroke({ width: 4, color: this.look.string });
     for (let k = 0; k < BULBS; k++) {
       const t = (k + 0.5) / BULBS;
       const bx = (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * x1;
       const by = (1 - t) * (1 - t) * y + 2 * (1 - t) * t * (y + sag * 2) + t * t * y;
       const on = k < this.lit;
       const color = swatch[RAINBOW[k % RAINBOW.length]];
-      g.rect(bx - 6, by - 4, 12, 10).fill(0x6b5aa8);
+      g.rect(bx - 6, by - 4, 12, 10).fill(this.look.string);
       if (on) g.circle(bx, by + 20, 26).fill({ color: color.fill, alpha: 0.25 });
       g.circle(bx, by + 20, 15)
-        .fill(on ? color.fill : 0xf4f0ff)
-        .stroke({ width: 4, color: on ? color.line : 0xcfc6ee });
+        .fill(on ? color.fill : this.look.bulbOff[0])
+        .stroke({ width: 4, color: on ? color.line : this.look.bulbOff[1] });
     }
   }
 
@@ -419,7 +425,7 @@ class JellyDrums implements Game {
     }
     await this.ctx.tw.wait(0.2);
     this.jellies.forEach((j) => j.hit(1.4));
-    [0, 2, 3, 5].forEach((s) => sfx.marimba(s, 0.3));
+    [0, 2, 3, 5].forEach((s) => this.note(s, 0.3));
     this.fans.forEach((f) => f.cheer());
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
