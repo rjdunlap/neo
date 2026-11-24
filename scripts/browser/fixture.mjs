@@ -32,6 +32,7 @@ export async function createFixture(browser, suite) {
     (suite === 'bunnypatches' && process.env.BUNNY_ONLY === 'upright') ||
     (suite === 'sumcrates' && process.env.SUMCRATES_ONLY === 'upright') ||
     (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1') ||
+    (suite === 'originals' && process.env.ORIGINALS_ONLY === 'jellysets') ||
     (suite === 'thoughtbubbles' &&
       (process.env.THOUGHT_BUBBLES_PHONE === '1' ||
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||

@@ -48,6 +48,12 @@ export function marimba(ctx: BaseAudioContext, dest: AudioNode, t: number, hz: n
   tone(ctx, dest, 'sine', hz * 4, t, gain * 0.22, 0.002, 0.06);
 }
 
+/** A soft held tone: a slow swell and a long fade, like a hum or a blown bottle. Two sines, the octave quiet. */
+export function hum(ctx: BaseAudioContext, dest: AudioNode, t: number, hz: number, gain = 0.3) {
+  tone(ctx, dest, 'sine', hz, t, gain, 0.06, 1.5);
+  tone(ctx, dest, 'sine', hz * 2, t, gain * 0.1, 0.08, 0.9);
+}
+
 /** A plucked string, filtered down as it decays. */
 export function pluck(ctx: BaseAudioContext, dest: AudioNode, t: number, hz: number, gain = 0.25) {
   const f = ctx.createBiquadFilter();

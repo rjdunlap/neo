@@ -1,5 +1,5 @@
 import { audio } from './engine';
-import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
+import { bell, hum, marimba, noise, pluck, tone, voiced } from './instruments';
 import { midiToHz, stepHz } from './notes';
 import { soundCount } from './sound-count';
 
@@ -45,6 +45,12 @@ export const sfx = {
   marimba(step: number, gain = 0.45) {
     const o = out();
     if (o) marimba(o.ctx, o.dest, o.t, stepHz(step), gain);
+  },
+
+  /** A soft held tone on the scale: Jelly Drums' third sound set. */
+  hum(step: number, gain = 0.3) {
+    const o = out();
+    if (o) hum(o.ctx, o.dest, o.t, stepHz(step), gain);
   },
 
   /**

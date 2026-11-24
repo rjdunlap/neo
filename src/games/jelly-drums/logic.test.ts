@@ -10,7 +10,13 @@ import {
   NAME_EVERY,
   ScaleWatch,
   planFor,
+  SET_STEPS,
+  SOUND_SETS,
+  soundSetFor,
+  STAGE_OF,
 } from './logic';
+import { STAGES } from './stages';
+import { stepHz } from '../../audio/notes';
 import {
   awakeJellies,
   nearestAwake,
@@ -265,5 +271,54 @@ describe('Jelly Drums', () => {
       const at = lines.indexOf('jelly.lowhigh');
       expect(at).toBeGreaterThanOrEqual(12);
     });
+  });
+});
+
+describe('Jelly Drums sound sets and stages', () => {
+  it('every set maps steps 0–4 to the same five pentatonic pitches, so a tune is the same tune on any of them', () => {
+    const marimba = SET_STEPS.marimba.map(stepHz);
+    expect(marimba).toEqual([0, 1, 2, 3, 4].map(stepHz));
+    for (const set of SOUND_SETS) {
+      expect(SET_STEPS[set]).toHaveLength(JELLIES);
+      expect(SET_STEPS[set].map(stepHz)).toEqual(marimba);
+    }
+  });
+
+  it('each set has its own stage, and every stage has a look', () => {
+    const stages = SOUND_SETS.map((s) => STAGE_OF[s]);
+    expect(new Set(stages).size).toBe(SOUND_SETS.length);
+    for (const s of stages) expect(STAGES[s]).toBeDefined();
+    // Music Mountain by day stays the marimba's, as it always looked.
+    expect(STAGE_OF.marimba).toBe('mountain');
+  });
+
+  it('the seed picks every set, about evenly, and the same seed picks the same one', () => {
+    const counts = new Map<string, number>();
+    for (let seed = 1; seed <= 600; seed++) {
+      const set = soundSetFor(new Rng(seed));
+      counts.set(set, (counts.get(set) ?? 0) + 1);
+      expect(soundSetFor(new Rng(seed))).toBe(set);
+    }
+    for (const set of SOUND_SETS) expect(counts.get(set) ?? 0).toBeGreaterThan(120);
+  });
+
+  it("the garland's unlit bulbs and string stand out from each stage's sky", () => {
+    const lum = (c: number) => {
+      const ch = (v: number) => {
+        const x = v / 255;
+        return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * ch((c >> 16) & 255) + 0.7152 * ch((c >> 8) & 255) + 0.0722 * ch(c & 255);
+    };
+    const contrast = (a: number, b: number) => {
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    for (const look of Object.values(STAGES)) {
+      // The garland hangs near the top of the sky.
+      expect(contrast(look.string, look.sky[0])).toBeGreaterThan(3);
+      // An unlit bulb shows by its fill or its rim (Music Mountain's pale bulbs show by their fill).
+      expect(Math.max(...look.bulbOff.map((c) => contrast(c, look.sky[0])))).toBeGreaterThan(1.5);
+    }
   });
 });
