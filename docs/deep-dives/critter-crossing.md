@@ -22,7 +22,7 @@ Each level plays two rounds (`rounds: 2`). Pools: six rules, seven animals (`cow
 - School starts at level 2, so a school child meets only four plans, and only two of them add anything new (levels 4 and 5).
 - A critter has only two independent features (animal and hat). "Brown", "white", "floppy", "pointy" and "whiskers" are all functions of the animal, so a "both" rule often reduces to one animal, and "hat and X" is the only truly independent pairing. Richer rules need another visible feature, which is shared with Critter Sort's `SortCritter`.
 - Evidence used to be held only by the red marks and who had crossed. The bank shelf (built 2026-10-15) now keeps a crossed row and a waited row on hidden levels; whether it reads at tablet size is still a device check.
-- Only prek and school play it; there is no preschool or younger entry. Level 1 is the only place the sign is visible, and it never shows "not" or "both".
+- Preschool (level 1 only, built 2026-11-23), prek and school play it; there is no toddler or younger entry. Level 1 is the only place the sign is visible, and it never shows "not" or "both".
 - Couch: none. Journal: no entries. Picnic: none.
 
 ## Similar games
@@ -103,7 +103,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
 4. **Visible "not" entry** (built 2026-10-15, [PR #422](https://github.com/rjdunlap/neo/pull/422)): stable ID 8, pre-K order `[1, 8, 2, 3]`, pictured/slashed rule and `entryLevels`; school remains 2–7. Rule tests, filtered play and `fingerdemo`; [build note](../archive/COMPLETED-2026-10-09.md#critter-crossing-visible-not-entry-2026-10-15).
 5. **Third critter feature**, shared with Critter Sort (after decision 2): rule tests for both games plus the fairness test across the larger pool.
-6. **Preschool opening** (after decision 1): levels table, registry and lands tests, voice.
+6. **Preschool opening** *(built 2026-11-23: `preschool: { min: 1, max: 1 }`, level 1 only; no new voice or how-to lines)* (after decision 1): levels table, registry and lands tests, voice.
 7. **Be the gate** (after decision 3): a new interaction; its own definition first.
 
 ## What was built in this session

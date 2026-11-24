@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/critter-sort; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `critter-sort` · **Land:** Barnyard · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `critter-sort` · **Land:** Barnyard · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** sorting, logic, attributes, data
 
 | Band | Levels, easiest first |
 | --- | --- |
+| preschool | 6, 1 |
 | pre-K | 6, 1, 12, 2, 3, 13 |
 | school | 2, 12, 3, 13, 4, 5, 7, 8, 9, 11 |
 
