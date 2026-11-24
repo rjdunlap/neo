@@ -187,8 +187,12 @@ describe('accounting', () => {
 
   it('counts a level 1 Not enough to tell once and waits for Yes', () => {
     let s = check(setRibbon(at(1, 'AXCB'), ABXC)).state;
-    s = answer(s, 'unsure').state;
-    s = answer(s, 'unsure').state;
+    const wrong = answer(s, 'unsure');
+    const shown = wrong.events[0].kind === 'sure-wrong' ? wrong.events[0].other : undefined;
+    // The pet plays one other order: same stack, broken contact; her ribbon stays.
+    expect(shown && whyNot(shown, LEVEL1_OBS)?.rule).toMatch(/^(cut|cover)$/);
+    expect(key(wrong.state.ribbon)).toBe('ABXC');
+    s = answer(wrong.state, 'unsure').state;
     expect([s.misses, s.step]).toEqual([1, 'sure']);
     expect(answer(s, 'yes').state.step).toBe('done');
   });

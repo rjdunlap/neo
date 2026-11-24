@@ -314,13 +314,20 @@ export function check(s: State): Result {
 
 export const rightAnswer = (s: State): Answer => (fitting(obsOf(s)).length === 1 ? 'yes' : 'unsure');
 
+/** An order with the cliff's stack (A, B, C) that breaks a visible contact: the one the pet plays to show why only one fits. */
+export const brokenNeighbour = (obs: Obs): Ribbon | undefined =>
+  RIBBONS.find((r) => whyNot(r, obs)?.rule === 'cut' || whyNot(r, obs)?.rule === 'cover');
+
 export function answer(s: State, a: Answer): Result {
   if (s.step !== 'sure') return { state: s, events: [{ kind: 'ignored' }] };
   if (a === rightAnswer(s)) {
     return { state: nextStep(s, s.round.level === 1 ? 'done' : 'look'), events: [{ kind: 'sure-right' }] };
   }
-  const other = a === 'yes' ? fitting(obsOf(s)).find((r) => !sameRibbon(r, s.ribbon)) : undefined;
-  const ribbon = other ? [...other] : s.ribbon;
+  // A wrong Yes (level 2) swaps to the other story that fits; a second wrong Yes swaps back, free. A wrong Not enough
+  // to tell (level 1) shows one other order that keeps the stack but breaks a contact, and her ribbon stays.
+  const other =
+    a === 'yes' ? fitting(obsOf(s)).find((r) => !sameRibbon(r, s.ribbon)) : brokenNeighbour(obsOf(s));
+  const ribbon = a === 'yes' && other ? [...other] : s.ribbon;
   if (s.sureMissed)
     return { state: { ...s, ribbon }, events: [{ kind: 'sure-wrong', counted: false, other }] };
   const events: Event[] = [{ kind: 'sure-wrong', counted: true, other }];
