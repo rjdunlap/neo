@@ -1,0 +1,5 @@
+# 2026-11-24 — Pond Conga, the pond turns to fill an upright phone
+
+**Changed:** On an upright phone the wide pond is drawn a quarter turn clockwise when that gives larger cells (15 by 9: 78 units, was 47), with the swipe layer turned with it; the line of help wraps right of the guide. Found by screenshotting all 35 upright grown-up games at their top grown-up level at 390 × 844.
+**Ran:** typecheck, Pond Conga's layout, rule and course tests (layout tests now check the turned pond in every upright view and that it stays flat sideways), full `npm test`, scoped ESLint and Prettier; a scripted play at 390 × 844 (level 8: a swipe left, up, right and down each moved the leader one cell that way on screen, no bump); upright screenshots of levels 8 and 9; the how-to demonstration at levels 8 and 9 at phone size (finished, no bump); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pond-conga` and `BROWSER_SUITE=congatouch`.
+**Not run:** build (no shared files or assets changed), couch suites (the couch layout is unchanged).
