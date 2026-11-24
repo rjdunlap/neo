@@ -1320,6 +1320,105 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           continue;
         }
+        if (plan.mode === 'afford') {
+          // Can I buy it? (dive slice 10): a free tap on a purse coin, a too-dear tap (a miss) and a second (the nudge, one
+          // hint, an affordable good lit), then the bell with nothing picked (free), a third pick refused (free), a wrong
+          // pair (the second miss) swapped for the right one; the other orders are answered straight away.
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          const good = (i) => `neo.scene.game.shelf[${i}].node`;
+          const order = () =>
+            page.evaluate(async () => {
+              const S = await import('/src/games/market-stall/logic.ts');
+              const o = neo.scene.game.order;
+              return {
+                kind: o.afford.kind,
+                purse: o.afford.purse,
+                prices: o.prices,
+                cheap: S.affordHint(o),
+                pair: o.afford.kind === 'spend' ? S.spendHint(o) : null,
+              };
+            });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const o = await order();
+            if (o.kind === 'choose') {
+              if (n === 0) {
+                assert.deepEqual(
+                  await page.evaluate(() => [
+                    neo.scene.game.bell.visible,
+                    neo.scene.game.purse.length,
+                    neo.scene.game.shownTotal,
+                  ]),
+                  [false, 0, o.purse],
+                  'no bell or foot purse; the slate shows the purse',
+                );
+                const coins = await page.evaluate(() => neo.scene.game.onMat.length);
+                await tap('neo.scene.game.onMat[0].node');
+                assert.equal(
+                  await page.evaluate(() => neo.scene.game.onMat.length),
+                  coins,
+                  'a tapped coin stays',
+                );
+                assert.deepEqual(await counts(), [0, 0], 'hearing a coin is free');
+                const dear = o.prices.findIndex((p) => p > o.purse);
+                await tap(good(dear));
+                await settle();
+                assert.deepEqual(await counts(), [1, 0], 'the first too-dear tap is a miss');
+                await tap(good(dear));
+                await settle();
+                assert.deepEqual(await counts(), [1, 1], 'the second is the nudge');
+                assert.ok(
+                  await page.evaluate(() => neo.scene.game.shelfGlow.getLocalBounds().width > 0),
+                  'an affordable good is lit',
+                );
+              }
+              await tap(good(o.cheap));
+              continue;
+            }
+            const [i, j] = o.pair;
+            const other = [0, 1, 2].find((k) => k !== i && k !== j);
+            if (n === 2) {
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.bell.visible),
+                true,
+                'the bell shows to spend',
+              );
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(await counts(), [1, 1], 'the bell with nothing picked is free');
+              await tap(good(i));
+              await tap(good(other));
+              await tap(good(j));
+              assert.deepEqual(
+                await page.evaluate(() => [...neo.scene.game.picked]),
+                [i, other],
+                'a third pick is refused',
+              );
+              await tap('neo.scene.game.bell');
+              await page.waitForTimeout(300);
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'a wrong pair is a miss');
+              await tap(good(other));
+              await tap(good(j));
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-12-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            } else {
+              await tap(good(i));
+              await tap(good(j));
+            }
+            await tap('neo.scene.game.bell');
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          log(
+            'Market Stall 12 (afford): a coin heard, a too-dear tap and the nudge, a free empty bell, a refused third pick, a wrong pair swapped, saved score and sticker passed',
+          );
+          continue;
+        }
         const ring = async () => {
           await tap('neo.scene.game.bell');
           await page.waitForTimeout(300);
