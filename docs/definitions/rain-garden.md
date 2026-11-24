@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–5 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069); to build level 6, read “Level 6” once it is defined (the weather-and-water study’s slice 6 has no definition yet).
+**Built:** levels 1–5 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069); to build level 6, read [Level 6](#level-6-rain-again-on-wet-ground-definition) (defined 2026-11-23: two rains on level 4's board, storage carried between them, an optional guess).
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
@@ -175,7 +175,7 @@ Device and person checks stay open: whether a two-year-old taps the cloud again 
 
 ## What comes next
 
-**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and built. **Level 5** is [defined below](#level-5-three-beds-downhill-definition) (2026-11-23: three beds, six authored boards) and ready to build. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
+**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and built. **Level 5** is [defined below](#level-5-three-beds-downhill-definition) (2026-11-23: three beds, six authored boards) and built. **Level 6** is [defined below](#level-6-rain-again-on-wet-ground-definition) (2026-11-23: rain again on wet ground) and ready to build. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
 
 ## Open decisions
 
@@ -459,3 +459,127 @@ New-level tier on level 4's interaction: typecheck and the rule tests above (plu
 ### Level 5 decisions
 
 None waits on the developer. Defaults set here: three sockets rather than six (upright capacity, measured); free flips, as at level 4, rather than placing two tiles; six authored boards rather than random generation, so every board's proof is a table; a four-drop board so water can run out; leaf and flower markers for two marked beds; no mirroring at level 5. Source check: level 4's EPA and USGS pages cover the direction (rain that hard ground does not hold runs downhill to what lies below); the tree's bed and the stone path add no new claim, since they are labelled soil and stone of the toy.
+
+## Level 6, *rain again on wet ground* (definition)
+
+Defined 2026-11-23 as the weather-and-water study's [slice 6](../deep-dives/subjects/weather-water.md#build-slices-in-order), from the [ladder's level-6 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and its accounting paragraph (levels 1–3 and 6 are exploration). One build session, new-interaction tier ([Level 6 check tier](#level-6-check-tier)): the stateful two-shower trial and the optional prediction are new; the board and its flips are level 4's.
+
+**Fun action and purpose:** two garden beds step down to the pond, as at level 4. She taps the cloud: the first rain falls on dry ground and the soil keeps what it can. The beds stay wet, the cloud fills again with the same rain, and she may tap a picture to guess what the second rain will do. She taps the cloud again: this time the full soil holds nothing more, so the water runs past it, and the pond's two rows show the first rain's water and the second's side by side. The learning purpose is **comparing the same rain on dry and on already-wet ground** (one changed starting condition, the next step after level 3's one changed surface): ground that already holds water can keep less of the next rain, so more runs off. Nothing is a wrong answer: a guess that does not come true is an experiment.
+
+**Overlap, rechecked:** level 3 changes the ground between two fresh trials; level 6 keeps the ground and changes only how wet it starts, so the two comparisons are distinct. The beds never dry while she waits and drops never rise to the cloud, so nothing here is evaporation (Drop's Journey owns the water cycle). The carried-storage rule is told and shown, never inferred: telling two hidden rules apart from a trace is level 8. Day by Day keeps weather records; no rain here is "yesterday's". Water Paths and Puddle Pipes keep routing: the arrows stay fixed.
+
+### The model, level 6
+
+- **The board** is level 4's two-socket chain on `RouteBoard`: `board6(units)` = `{ id: 'wet' + units, route: ROUTE4, fixed: [null, null], marked: [], units }`. Both beds are tappable (stone or soil, capacities 0 and 2); no bed is marked, there is no need sign, no pond sign and no Check. Never mirrored (as at level 5: the measured layout below has one orientation per frame).
+- **The shower** is the board's `units`, **4** or **2**, the same for both rains of a round and drawn on the cloud as that many dashed drops before each rain.
+- **Carried storage:** `runRoute(sockets, route, units, start)` gains a `start: number[]` argument (default all zero, so levels 4–5 are unchanged), with `0 ≤ start[i] ≤ capacity(sockets[i])`. A unit stays in a socket while `stored < capacity`, counting what was already there. Conservation for one shower becomes levels 1–3's identity again: `units + sum(start) = sum(stored) + pond`, after every step.
+- **The two-shower trial:** `runTwo(sockets, board)` returns `[first, second]`: `first = runRoute(…, zeros)` and `second = runRoute(…, first.stored)`. Each trial's `pond` counts **that shower's** water only (the scene draws them in two rows). Across the sequence `2 × units = sum(second.stored) + first.pond + second.pond`.
+- **All outcomes**, the whole table (kept is per bed after that shower, top then low; the comparison is of the two pond rows):
+
+  | Top / low | Drops | First rain kept | First pond | Second rain kept | Second pond | Comparison |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | **soil / soil** (authored) | 4 | 2, 2 | 0 | 2, 2 | 4 | more |
+  | stone / soil | 4 | 0, 2 | 2 | 0, 2 | 4 | more |
+  | soil / stone | 4 | 2, 0 | 2 | 2, 0 | 4 | more |
+  | stone / stone | 4 | 0, 0 | 4 | 0, 0 | 4 | same (stone) |
+  | soil / soil | 2 | 2, 0 | 0 | 2, 2 | 0 | same, ran further |
+  | stone / soil | 2 | 0, 2 | 0 | 0, 2 | 2 | more |
+  | soil / stone | 2 | 2, 0 | 0 | 2, 0 | 2 | more |
+  | stone / stone | 2 | 0, 0 | 2 | 0, 0 | 2 | same (stone) |
+
+  In every row a soil bed gains 0 or 2 in a shower, never 1, and the second pond is never smaller than the first: carried storage only ever leaves less room. `compareWet(first, second)` returns `{ pond: 'more' | 'same', further: boolean }`, where `further` is true when the second rain reached a socket the first never did (only soil / soil with 2 drops).
+- **Round state** (`WetState`): `sockets`, `first: RouteTrial | null`, `second: RouteTrial | null`, `prediction: 'more' | 'same' | null`, `sequences` (settled two-shower trials this round), `hints`, `pointing`, `finished`. The phase is derived: fresh (no `first`), wet (`first` but no `second`), done (both).
+  - `wetRain(s, round)`: fresh → runs the first rain from zero; wet → runs the second from `first.stored` and adds one to `sequences`; done → resets to fresh on the same arrangement (the cloud shows the rewind badge), keeping `sequences` and `hints`.
+  - `wetFlip(s, i)`: flips bed `i` and resets to fresh (both trials and the prediction cleared), as level 4's flip does. Allowed in any phase; it is how she starts a new experiment.
+  - `predict(s, p)`: allowed only in the wet phase; sets or changes `prediction`. It never changes the trials, misses or hints, and the cloud never waits for it.
+  - `wetRestart(round)`: the round's starting arrangement, fresh, keeping `hints` and `sequences` (Start again, as at levels 1–3).
+  - `canFinish(s)`: `sequences ≥ 1`. `wetNext(s)`: the cloud (fresh or wet phase), then the leaf.
+- **Nothing changes without a tap:** storage changes only in `wetRain`; no timer dries, drains or refills a bed, and a new round, Start again, a flip and the done-phase cloud tap all start from zero. Nothing carries between rounds.
+- **Authored first round:** soil / soil, 4 drops, frog (the clearest contrast: none to the pond, then all four). **Seeded rounds:** drops 4 or 2 (even chance), a starting arrangement uniformly among the four, the pond friend. Every seeded round is valid; stone / stone is kept as a round because "stone holds none, wet or dry" is its own finding.
+
+### Screen and controls, level 6
+
+- **The board** is level 4's: the cloud (260×140) over the top bed, beds 300×150 with two dashed pockets (stone draws none), fixed arrows, the pond friend at the tray's far end. Drops stored by the first rain **stay in their pockets**, and a bed holding water draws its soil one shade darker with a ripple line, so the changed starting condition is pictured before the second rain falls.
+- **The pond tray has two rows** of four slots (56 each, 58 apart), one per rain, each with a small picture badge at its left end (56×56, not a target): a cloud with one dot for the first rain, a cloud with two dots for the second. The rows line up, so "more" reads as a longer second row without counting.
+- **Prediction pictures** (two targets, 120×120 each), shown only in the wet phase: **more** (a pond with a short top row and a long bottom row) and **same** (two equal rows). Touch-down squashes; tapping one lifts it and lights it, tapping the other moves the light. No third "less" picture ([decision](#level-6-decisions)). Navigation never requires reading.
+- **The cloud** shows its drops as dashed outlines, plus the one-dot or two-dot badge of the rain it will drop next; in the done phase it shows level 1's rewind badge, and tapping it plays the fresh-garden wipe. Taps during a shower are ignored; nothing is timed.
+- **The leaf** (120×120, where the Check sits at levels 4–5) appears once `canFinish` is true, as at levels 1–3.
+- **Measured coordinates (frame centers):**
+  - Landscape (1024×768 frame, centered): cloud (300, 150); top bed (300, 320); low bed (520, 510); pond tray (790, 662), 320×148, rows at the tray's y ∓ 31, slots centered at tray x + 30 + k × 58 (k = −1.5 … 1.5), badges at tray x − 130; prediction pictures (660, 230) and (800, 230).
+  - Upright on a phone (768×1024 frame hung from the bottom edge): cloud (220, 300); top bed (220, 470); low bed (548, 650); pond tray (548, 862), same internal spacing; prediction pictures (470, 300) and (610, 300).
+  - Portrait's logical view is 1024 wide and uses the landscape frame, as at levels 1–5. The leaf is the view's top-right box, as the Check is.
+- **These coordinates were checked on 2026-11-23** with a scratch test applying level 4's layout-test rules at its eight views (landscape, portrait, phone, notch and the four upright views): every target (cloud, both beds, both pictures, leaf) at least 100 and inside the view, no target overlap, the tray, its slots and badges inside the view and overlapping no target, badges clear of slots, Home's corner (120×215) and the guide's corner clear. Arrows were not checked: the low bed's arrow follows level 4's rule and in landscape ends just above the tray's left end, over the badges; the builder confirms it reads in the screenshot. The builder adds a level-6 branch to `routeLayout` (or a `wetLayout`) with these numbers and a layout test at the eight views; a view that cannot hold the board returns null rather than shrink.
+
+```
+upright (phone)                          landscape
++-------------------------+              +---------------------------------------------+
+| [Home]          [leaf]  |              | [Home]                             [leaf]   |
+|                         |              |    ( cloud :: )                             |
+|  ( cloud :: ) [more][=] |              |                       [more] [same]         |
+|  [ top bed  ]           |              |    [ top bed  ]\                            |
+|            \__          |              |              \__ [ low bed  ]\              |
+|           [ low bed  ]\ |              |                         (1) [. . . .] frog  |
+|      (1) [. . . .] frog|              |  pet                    (2) [. . . .]       |
+| pet  (2) [. . . .]      |              +---------------------------------------------+
++-------------------------+
+```
+
+### Accounting, help and finishing, level 6
+
+- **No misses at level 6.** Every rain, flip, guess, replay and Start again is a valid experiment; `misses: 0` always, and no boing plays. A guess that does not come true is answered with the surprise line, never "wrong", and counts nothing.
+- **Hint:** Show me (pause sheet) has the pet do the next useful action from `wetNext`: tap the cloud (fresh or wet) or point at the leaf; **1 hint** per requested hint (pointing counts only if newly pointed, as at levels 1–3). There is no causal glow. Two idle cues in a row repeat the instruction and count nothing.
+- **Leaf nudge (not a hint):** after the second settled two-shower trial the leaf glows and the pet says `rain.done`.
+- **Finish:** the leaf ends the round through `ctx.finish({ misses: 0, hints })`, once. Finishing with help earns the ordinary one sticker.
+- **Adaptation:** a hint-free round is smooth to the shell; that means she joined in, not that she understands saturation, and the grown-ups' note says so (as at levels 1–3). School's range becomes 3–6; level 6 is its top, so stepping up clamps there.
+
+### Speech, level 6 (`voice.ts`)
+
+- `rain.instruct.6`: "Tap the cloud to rain on the garden. Then rain again on the wet ground, and see where the water goes."
+- **Each rain is narrated with level 5's clip chain**, one clip per socket from the top while water reaches it, then the pond clip, with two changes: the sockets are named `top` and `low` (level 5's `POSITION` maps index 1 to `middle`, so a two-socket board needs its own names), and a soil bed that was **already full when this rain began** says a new clip instead of `kept`: `rain.bed.top.full` "The top bed was already full, so the water ran past." / `rain.bed.low.full` "The low bed was already full, so the water ran on." Reused: `rain.bed.top.kept`, `rain.bed.low.kept`, `rain.bed.top.stone`, `rain.bed.low.stone`, `rain.bed.low.none`, `rain.pond.0`, `rain.pond.2`, `rain.pond.4` (`rain.pond.6` can never fire: one rain is at most four drops).
+- `rain.wet.ready` (after the first rain settles): "The ground is still wet from the first rain. Will the second rain send more to the pond, or the same? Tap a picture if you like, then tap the cloud."
+- Before the second rain's narration, if she guessed: `rain.guess.more` "You thought more would run to the pond." or `rain.guess.same` "You thought it would be the same." After the comparison line: `rain.guess.yes` "Just as you thought." or `rain.guess.surprise` "A surprise! That's what experiments are for."
+- **Comparison** (after the second rain, from `compareWet`): `rain.wet.more` "The soil was already full of water, so more ran down to the pond the second time." / `rain.wet.stone` "Stone holds none, wet or dry, so the pond got the same both times." / `rain.wet.further` "The pond got none both times, but the second rain ran further down, because the top bed was already full."
+- Reused: `rain.again` (the wipe to a fresh garden), `rain.done`, `rain.hint.cloud`.
+
+No line says the soil "drinks", that it "can't drink any more", that a plant needs the water, how long real ground stays wet, or anything about floods; "kept", "full" and "ran past" stay the toy's words. 11 new lines in all, rendered to clips by the build.
+
+### Rule tests, level 6 (`logic.test.ts`)
+
+1. **Carried conservation:** for all four arrangements and both shower sizes, after every step of each rain `released + sum(start) = sum(stored) + pond`; across the sequence `2 × units = sum(second.stored) + first.pond + second.pond`; each rain has `units` steps and each unit appears once.
+2. **Outcome table:** the eight rows above exactly (kept, both ponds, comparison).
+3. **Bounds:** carried storage never exceeds a socket's capacity; the first rain always starts at zero; a socket gains 0 or 2 per rain; `runRoute` with the default `start` gives levels 4–5's results unchanged.
+4. **Never less:** for every row the second pond is at least the first; `compareWet` returns `more` or `same` as tabled, and `further` only for soil / soil with 2 drops.
+5. **Fresh starts and no leak:** a flip in any phase, the done-phase cloud tap, Start again and a new round each start every socket at zero with both pond rows empty; no state function except `wetRain` changes storage; a seeded round never inherits the previous round's storage.
+6. **Guesses:** `predict` is ignored outside the wet phase, never changes trials, misses or hints, can be changed before the second rain, and is cleared by any reset; the second rain runs with no guess.
+7. **Accounting:** `misses` stays 0 through every action sequence of a bounded search (rains, flips, guesses, restarts, hints); a requested hint counts 1 and performs `wetNext`; `canFinish` is false until a second rain has settled; Finish happens once.
+8. **Narration:** for every row, each rain's clip chain ends with the pond clip matching that rain's pond, says `.full` exactly for a soil socket full at that rain's start, never names a socket below the first one water missed, and never `rain.pond.6`; every clip id exists in `voice.ts`.
+9. **Seeded rounds:** drops are 2 or 4, any arrangement, the friend from `FRIENDS`; the authored round is soil / soil with 4 drops and the frog.
+10. **Layout:** level 6 at the eight views, as measured above.
+
+### Code the builder must widen
+
+`runRoute` hard-codes `stored = sockets.map(() => 0)` and needs the `start` argument. `RouteRound.level` is `4 | 5` and `makeRoute`, `planFor` (clamps at 5) and the scene's level dispatch stop at 5; level 6 needs its own round and state (`WetState`) rather than level 4's Check state, since nothing is judged. `routeLayout` reads `b.marked[0].socket` for every two-socket board, which a board with no marked bed breaks, so level 6 gets its own branch. `narration`'s `POSITION` is three-socket only. `route.ts` draws one pond row, need signs and a Check: level 6 draws two rows with badges, no signs, the prediction pictures, the darker wet soil and the leaf. `LEVELS` school becomes `{ min: 3, max: 6 }` (no grown-up band yet) and `PLANS` gains "Rain twice: see where the second rain goes when the ground is already wet". The browser fixture's upright switch (`FROM_LEVEL` 5 or more) already covers 6.
+
+### Ghost finger, how-to card and registration, level 6
+
+- **Ghost finger** on the authored round: tap the cloud (both beds keep two), tap the **more** picture, tap the cloud (all four run to the pond), tap the leaf. `fingerdemo` at level 6 must end on the leaf. The demonstration guesses so the picture's use is shown; `wetNext` itself never requires a guess.
+- **How-to card**, `{ from: 6, to: 6 }` steps: "Tap the cloud: the first rain falls on dry ground and the soil keeps what it can"; "Tap the cloud again: the same rain on wet ground; the pond's two rows show both rains side by side"; "Before the second rain she can tap a picture to guess; a guess is never wrong". Finish: "Tap the leaf when she's done; it appears after both rains." Note: "Every choice is fine here: no misses. A pretend model: soil holds two drops, stone none, and the ground stays wet only between these two rains. Real ground that is already wet soaks up less of the next rain, so more runs off; real ground also drains and dries over time. Show me counts as help. Rounds without hints move her up, which means she joined in." The builder keeps the card under the how-to test's 840-character cap, shortening the note before any step.
+- **Bands:** school 3–6. Tinker Lab, unchanged; no new game, so no lands change.
+- **Co-play:** one person guesses with a picture and says why; the other taps the cloud; then swap.
+
+### Level 6 check tier
+
+New-interaction tier, one build session: typecheck and the rule tests above (plus the how-to, voice and layout tests); one scripted play of the `raingarden` browser case filtered to level 6 on an upright phone (`FROM_LEVEL=6`): the first rain, a guess, the second rain, a flip that resets (assert empty pockets and both pond rows empty), one requested hint and the leaf, asserting `misses` 0 and `hints` at least 1. Like levels 1–3 it has **no wrong answer to fabricate**; the guess that does not come true is the one to exercise. One upright phone screenshot after the second rain (both rows and the wet beds). `fingerdemo` at level 6. `npm run build` and the offline check, because voice lines and their clips are added. Levels 1–5's passing evidence is reused.
+
+Device and person checks stay parked: whether a school child reads the darker soil and filled pockets as "still wet", and whether "already full" is clear in phone speech.
+
+### Level 6 decisions
+
+None waits on the developer. Defaults this definition sets:
+
+- **Two sockets, not level 5's three:** level 4's measured board leaves room for the second pond row and the two pictures on an upright phone; three beds and two rows would not fit at full size. "On level 5's board model" is kept as the shared `RouteBoard` and its clip narration.
+- **The wet condition comes only from a rain she watched:** no round starts pre-wet, because ground that is wet for a reason she did not see is a hidden variable.
+- **Two guess pictures, no "less":** in this toy wet ground never takes more, so "less" could never come true; offering it would be a choice the model always refuses. The note to grown-ups carries the real-world caveat instead.
+- **Two rains, then the rewind:** a third rain would show nothing new (the beds are already full after the second at most); the sequence replays from fresh.
+- **Shower size 2 or 4, shown on the cloud:** the two-drop rounds make the "ran further" and "pond got two the second time" cases, so "make everything soil" is not one answer to remember.
+- **Source:** the [USGS runoff page](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff) recorded at level 4 says earlier rain's soil moisture changes runoff; that supports the direction of the comparison line ("already full, so more ran to the pond"), not the capacities. The building session reopens it and records the check in its verification entry, as decision 2 asks.
