@@ -50,6 +50,8 @@ export interface MunchPlan {
   amounts?: number[];
   /** Each round picks its food (two at `two`) from all of `FOODS`, rather than cookies (and apples). */
   pool?: boolean;
+  /** exact: a monster takes a food past its order; the bell hands the extras back (not a miss). */
+  overfeed?: boolean;
   name: string;
 }
 
@@ -86,7 +88,8 @@ export const MUNCH_PLANS: MunchPlan[] = [
     min: 3,
     max: 7,
     pool: true,
-    name: 'Feed 3 to 7 of one food (number only), then ring the bell',
+    overfeed: true,
+    name: 'Feed 3 to 7 of one food (number only; extras come back at the bell), then ring the bell',
   },
   {
     mode: 'two',
@@ -270,6 +273,13 @@ export const total = (o: Order) => FOODS.reduce((n, f) => n + o[f], 0);
 
 /** A monster refuses a food once it has all of that food it asked for. */
 export const wantsMore = (want: Order, have: Order, food: Food) => have[food] < want[food];
+
+/** The foods a monster holds past its order: the bell at an overfeeding level hands these back. */
+export function overfed(want: Order, have: Order): Order {
+  const o = noFood();
+  for (const f of FOODS) o[f] = Math.max(0, have[f] - want[f]);
+  return o;
+}
 
 /** After sharing, how many cookies each monster gives back so that everyone has `each`. */
 export function extras(counts: number[], each: number): number[] {

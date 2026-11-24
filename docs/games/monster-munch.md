@@ -20,7 +20,7 @@
 | 2 | Feed three, then five cookies while the monster counts them |
 | 3 | Give each monster one cookie |
 | 4 | Feed 1 to 4 of one food (number and dots), then ring the bell |
-| 5 | Feed 3 to 7 of one food (number only), then ring the bell |
+| 5 | Feed 3 to 7 of one food (number only; extras come back at the bell), then ring the bell |
 | 6 | Feed two foods at once, like "2 carrots and 1 apple" |
 | 7 | Share one food fairly, then say how many each monster got |
 | 8 | Share fairly when it does not come out even: how many each, and how many left over? |

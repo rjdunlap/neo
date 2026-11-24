@@ -15,6 +15,7 @@ export const VOICE = {
   'munch.want': ['Feed me {food}! Then ring the bell.'],
   'munch.need': ['I have {have}. I still need {food}!'],
   'munch.enough': ['That is enough {kind}! Here, you can have it back.'],
+  'munch.hand-back': ['That is more than I asked for! Here, take {food} back.'],
   'munch.right': ['Yes! {food}! Thank you!'],
   'munch.share-kinds': [
     'Share the cookies and apples fairly. Every monster needs the same number of cookies, and the same number of apples!',
