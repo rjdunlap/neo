@@ -22,7 +22,6 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [ROADMAP.md](ROADMAP.md) | For direction: the chunks, their status and what is only proposed |
 | [OBSERVATIONS.md](OBSERVATIONS.md) | What the developer and their wife said after playing on their phones; it decides what comes first |
 | [STUDY-BACKLOG.md](STUDY-BACKLOG.md) | Which studies and dives exist and the next bounded action for each |
-| [GAME-BATCHES.md](GAME-BATCHES.md) | The October 2026 same-game batch plans, now built; a scope reference for an old batch |
 | [IDEAS.md](IDEAS.md) | The idea notebook: proposals, not a mandate |
 | [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) | Only before work that depends on a call the developer alone can make |
 | [DEVICE-CHECKS.md](DEVICE-CHECKS.md) | The parked device and child checks, and what a phone playtest can answer |

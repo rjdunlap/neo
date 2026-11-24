@@ -9,13 +9,13 @@
 
 ## 2026-10-30 — Caravan Days 4–5 definition (CS3, docs only)
 
-- [PR #1029](https://github.com/rjdunlap/neo/pull/1029), branch `claude/define-caravan-days-4-5`: [definition](../definitions/caravan-days.md#levels-45-cs3-swap-at-the-stop-worth-more-far-away) (level 4 Swap at the stop, level 5 Worth more far away; school range 3–5), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#caravan-days-2-swap-at-the-stop-and-worth-more-far-away); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
+- [PR #1029](https://github.com/rjdunlap/neo/pull/1029), branch `claude/define-caravan-days-4-5`: [definition](../definitions/caravan-days.md#levels-45-cs3-swap-at-the-stop-worth-more-far-away) (level 4 Swap at the stop, level 5 Worth more far away; school range 3–5), a batch plan in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#caravan-days-2-swap-at-the-stop-and-worth-more-far-away); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history lines; the build runs the new-interaction tier; the three [device checks](DEVICE-CHECKS-2026-11-09.md#caravan-days-levels-45-cs3-2026-10-30) wait for the built levels.
 
 ## 2026-10-30 — River Tablets 4–6 definition (AR3, docs only)
 
-- [PR #1030](https://github.com/rjdunlap/neo/pull/1030), branch `claude/define-river-tablets-4-6`: [definition](../definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) (level 4 a ten-mark, level 5 check the delivery, level 6 two tablets disagree; school range 3–6), batch plans [river-tablets 2](../GAME-BATCHES.md#river-tablets-2-a-ten-mark-and-check-the-delivery) and [3](../GAME-BATCHES.md#river-tablets-3-two-tablets-disagree); READY, backlog, roadmap, packet and study point to it. Nothing built, no code changed.
+- [PR #1030](https://github.com/rjdunlap/neo/pull/1030), branch `claude/define-river-tablets-4-6`: [definition](../definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) (level 4 a ten-mark, level 5 check the delivery, level 6 two tablets disagree; school range 3–6), batch plans [river-tablets 2](GAME-BATCHES-2026-11-23.md#river-tablets-2-a-ten-mark-and-check-the-delivery) and [3](GAME-BATCHES-2026-11-23.md#river-tablets-3-two-tablets-disagree); READY, backlog, roadmap, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history line; each build runs the new-interaction tier; the four [device checks](DEVICE-CHECKS-2026-11-09.md#river-tablets-levels-46-ar3-2026-10-30) wait for the built levels.
 
@@ -43,7 +43,7 @@
 
 ## 2026-10-30 — Keep House 5–6 definition (ML3, docs only)
 
-- [PR #1034](https://github.com/rjdunlap/neo/pull/1034), branch `claude/define-keep-house-5-6`: [definition](../definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber) (level 5 Read the ruin, level 6 Stone or timber; school range 4–6), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#keep-house-2-read-the-ruin-and-stone-or-timber); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
+- [PR #1034](https://github.com/rjdunlap/neo/pull/1034), branch `claude/define-keep-house-5-6`: [definition](../definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber) (level 5 Read the ruin, level 6 Stone or timber; school range 4–6), a batch plan in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#keep-house-2-read-the-ruin-and-stone-or-timber); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history lines; the build runs the new-interaction tier.
 
@@ -62,6 +62,6 @@
 
 ## 2026-10-30 — Same Job, Different Tools definition (H4, docs only)
 
-- [PR #1041](https://github.com/rjdunlap/neo/pull/1041), branch `claude/define-same-job`: [definition](../definitions/same-job.md) (Attic Finds levels 5 *Same job* and 6 *Right for the job*; pre-K and school), batch plan [attic-finds 2](../GAME-BATCHES.md#attic-finds-2-same-job-and-right-for-the-job), READY, backlog, study, ideas and device-check updates.
+- [PR #1041](https://github.com/rjdunlap/neo/pull/1041), branch `claude/define-same-job`: [definition](../definitions/same-job.md) (Attic Finds levels 5 *Same job* and 6 *Right for the job*; pre-K and school), batch plan [attic-finds 2](GAME-BATCHES-2026-11-23.md#attic-finds-2-same-job-and-right-for-the-job), READY, backlog, study, ideas and device-check updates.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-interaction tier (`atticjobs`, `fingerdemo` at 5 and 6, one portrait screenshot); device checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md) stay open.

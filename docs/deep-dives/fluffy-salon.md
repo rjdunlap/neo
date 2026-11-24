@@ -133,7 +133,7 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`fluffy-salon` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`fluffy-salon` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Support truth** (built 2026-10-21, `claude/fluffy-salon-support-truth`, [PR #717](https://github.com/rjdunlap/neo/pull/717); existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 3, `fingerdemo` at 3 since the hint timer is what the bot's 12-second test guards): the quiet-time hint, every touch answered, the mirror invitation, "more pink" with the old-color glow, the how-to note. IDs and windows unchanged.
 2. **Customers, rooms and start looks** (built 2026-10-26 with 5, `claude/fluffy-salon-batch1`, [PR #995](https://github.com/rjdunlap/neo/pull/995); logic tier plus one filtered play of 4 and one screenshot): seeded friends in the chair with `{who}` lines, seeded wall and cape colors, five free-play start looks.

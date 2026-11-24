@@ -141,7 +141,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## Build slices, in order
 
 1. **PR1 · Define Not Always 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/not-always.md)): the claim model and attribute vocabulary, the cards and their sizes, the crate, sign and stamp, spoken claims, accounting, how-to and bot, land placement by decision 2, rule tests.
-2. **Build Not Always 1–3** (new-game tier; **built 2026-11-01**, batch [not-always 1](../../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better); [build note](../../archive/COMPLETED-2026-10-09.md#not-always-levels-13-philosophy-reasoning-pr1-not-always-1-2026-11-01)).
+2. **Build Not Always 1–3** (new-game tier; **built 2026-11-01**, batch [not-always 1](../../archive/GAME-BATCHES-2026-11-23.md#not-always-1-not-all-of-them-every-one-and-say-it-better); [build note](../../archive/COMPLETED-2026-10-09.md#not-always-levels-13-philosophy-reasoning-pr1-not-always-1-2026-11-01)).
 3. **PR3 · Question card** (grown-ups' page, plain HTML, sources on the card): **built 2026-11-18**, [definition](../../definitions/talk-cards.md), PR #1796.
 4. **PR4 · "But what about…?" co-play role** (with the build or right after it).
 5. **PR2 · Not Always 4–6** (new interaction on the existing game): [defined 2026-11-22](../../definitions/not-always.md#levels-46-definition-philosophy-and-reasoning-pr2); **built 2026-11-22** as one school batch.

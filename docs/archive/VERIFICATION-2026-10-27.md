@@ -111,7 +111,7 @@
 
 ## 2026-10-27 — Paint Mixer 1–4 definition (RP1, docs only)
 
-- [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](../definitions/paint-mixer.md), two batches in [GAME-BATCHES](../GAME-BATCHES.md#paint-mixer-1-copy-the-row-and-twice-as-much) and the study's measured-colour note; READY, backlog, roadmap, ideas and packet point to it. Nothing built, no code changed.
+- [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](../definitions/paint-mixer.md), two batches in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#paint-mixer-1-copy-the-row-and-twice-as-much) and the study's measured-colour note; READY, backlog, roadmap, ideas and packet point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game and new-interaction tiers; device checks are named in the definition.
 
@@ -130,6 +130,6 @@
 
 ## 2026-10-27 — Puppet Stage 1–3 definition (TP1, docs only)
 
-- [PR #1027](https://github.com/rjdunlap/neo/pull/1027), branch `claude/define-puppet-stage`: [definition](../definitions/puppet-stage.md), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#puppet-stage-1-pop-up-make-bunny-talk-and-say-it-like); READY, backlog, ideas, packet, study and device checks point to it. Nothing built, no code changed.
+- [PR #1027](https://github.com/rjdunlap/neo/pull/1027), branch `claude/define-puppet-stage`: [definition](../definitions/puppet-stage.md), a batch plan in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#puppet-stage-1-pop-up-make-bunny-talk-and-say-it-like); READY, backlog, ideas, packet, study and device checks point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-game tier; the four [device checks](DEVICE-CHECKS-2026-11-09.md#puppet-stage-levels-13-tp1-2026-10-27) wait for the built game.
