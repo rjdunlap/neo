@@ -21,6 +21,8 @@ export interface DuckPlan {
   layouts?: Layout[];
   /** howmany: one round in the level may start with an empty pond (never the first), and the pads run from 0. add: one round may be "they all swim away". */
   zero?: boolean;
+  /** howmany: how many of the level's rounds (never the first, never the empty pond) share the pond with frogs and ask about one kind. */
+  mixed?: number;
   /** Answer pads carry their dots, grouped in fives, under the numeral. */
   padDots?: boolean;
   /** The highest pad value (default 10; at most `PAD_CAP`), for levels whose answers pass ten. */
@@ -40,7 +42,16 @@ export const PLANS: DuckPlan[] = [
   { mode: 'make', rounds: 4, min: 1, max: 3, dots: true },
   { mode: 'make', rounds: 4, min: 2, max: 5, dots: true, stop: true },
   { mode: 'make', rounds: 4, min: 3, max: 6, dots: false, stop: true },
-  { mode: 'howmany', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'], zero: true, padDots: true },
+  {
+    mode: 'howmany',
+    rounds: 5,
+    min: 1,
+    max: 5,
+    layouts: ['dice', 'rows'],
+    zero: true,
+    padDots: true,
+    mixed: 1,
+  },
   {
     mode: 'howmany',
     rounds: 5,
@@ -49,6 +60,7 @@ export const PLANS: DuckPlan[] = [
     layouts: ['dice', 'rows', 'scatter'],
     zero: true,
     padDots: true,
+    mixed: 2,
   },
   { mode: 'add', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'] },
   // One round in the level may be "they all swim away" (zero), never first; the pads then run from 0.
@@ -313,6 +325,48 @@ export function howManyAnswers(rng: Rng, plan: DuckPlan): number[] {
     if (n !== out.at(-1) || plan.min === plan.max) out.push(n);
   }
   return out;
+}
+
+export type Kind = 'duck' | 'frog';
+
+/** A mixed round (levels 6–7): ducks and frogs share the pond and she counts one kind. */
+export interface MixedRound {
+  ducks: number;
+  frogs: number;
+  ask: Kind;
+}
+
+/** What a round of levels 6–7 shows: just ducks (`answer` of them) or a mixed pond. */
+export interface HowManyRound {
+  /** The number she is asked for: the ducks, or the asked kind in a mixed round. */
+  answer: number;
+  mixed?: MixedRound;
+}
+
+export const mixedTotal = (m: MixedRound) => m.ducks + m.frogs;
+export const mixedAnswer = (m: MixedRound) => (m.ask === 'duck' ? m.ducks : m.frogs);
+
+/** One mixed round from `total` creatures (at least 2): both kinds are there, so the asked count is never the total. */
+export function mixedRound(rng: Rng, total: number): MixedRound {
+  const t = Math.max(2, total);
+  const frogs = rng.int(1, t - 1);
+  return { ducks: t - frogs, frogs, ask: rng.chance(0.6) ? 'frog' : 'duck' };
+}
+
+/** Who sits in each seat of a mixed pond, in counting order. */
+export function mixedKinds(rng: Rng, m: MixedRound): Kind[] {
+  return rng.shuffle<Kind>([...Array<Kind>(m.ducks).fill('duck'), ...Array<Kind>(m.frogs).fill('frog')]);
+}
+
+/** Levels 6–7's rounds: the plain duck counts of `howManyAnswers`, with `plan.mixed` later non-empty rounds made mixed. */
+export function howManyRounds(rng: Rng, plan: DuckPlan): HowManyRound[] {
+  const rounds: HowManyRound[] = howManyAnswers(rng, plan).map((answer) => ({ answer }));
+  const candidates = rounds.map((_, i) => i).filter((i) => i > 0 && rounds[i].answer > 0);
+  for (const i of rng.shuffle(candidates).slice(0, plan.mixed ?? 0)) {
+    const m = mixedRound(rng, rounds[i].answer);
+    rounds[i] = { answer: mixedAnswer(m), mixed: m };
+  }
+  return rounds;
 }
 
 /** Ducks on the pond are at least this far apart (a duck's own width), so each is counted on its own. */

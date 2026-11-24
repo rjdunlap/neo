@@ -26,6 +26,10 @@ import {
   tenStarts,
   layoutFor,
   howManyAnswers,
+  howManyRounds,
+  mixedAnswer,
+  mixedKinds,
+  mixedTotal,
   countingOrder,
   dotRows,
   DUCK_GAP,
@@ -777,5 +781,50 @@ describe('Duck Pond starting ponds and the all-swim-away story (levels 8–9)', 
 
   it('a capable child touches the 0 pad for an all-swim-away story', () => {
     expect(duckMove(taking, 0, 0, 0, [2, 0, 1], 0)).toEqual({ pad: 1 });
+  });
+});
+
+describe('mixed ponds (levels 6-7)', () => {
+  const six = planFor(6);
+  const seven = planFor(7);
+
+  it('deals the planned number of mixed rounds, never first and never the empty pond', () => {
+    for (const plan of [six, seven])
+      for (let seed = 0; seed < 300; seed++) {
+        const rounds = howManyRounds(new Rng(seed), plan);
+        expect(rounds).toHaveLength(plan.rounds);
+        expect(rounds[0].mixed).toBeUndefined();
+        expect(rounds.filter((r) => r.mixed)).toHaveLength(plan.mixed ?? 0);
+        for (const r of rounds) if (r.mixed) expect(r.answer).toBeGreaterThan(0);
+      }
+  });
+
+  it('puts both kinds in every mixed round, so the asked count is never the total, and seats every creature', () => {
+    for (const plan of [six, seven])
+      for (let seed = 0; seed < 300; seed++) {
+        const rng = new Rng(seed);
+        for (const r of howManyRounds(rng, plan)) {
+          const m = r.mixed;
+          if (!m) continue;
+          expect(m.ducks).toBeGreaterThanOrEqual(1);
+          expect(m.frogs).toBeGreaterThanOrEqual(1);
+          expect(r.answer).toBe(mixedAnswer(m));
+          expect(r.answer).toBeLessThan(mixedTotal(m));
+          expect(mixedTotal(m)).toBeLessThanOrEqual(plan.max);
+          const kinds = mixedKinds(rng, m);
+          expect(kinds).toHaveLength(mixedTotal(m));
+          expect(kinds.filter((k) => k === 'frog')).toHaveLength(m.frogs);
+          // Its seats exist and are apart, as for any pond of that many.
+          const { slots } = layoutFor(rng, plan, mixedTotal(m));
+          expect(slots).toHaveLength(mixedTotal(m));
+        }
+      }
+  });
+
+  it('leaves levels without mixed ponds exactly as they were', () => {
+    for (let level = 1; level <= 15; level++) {
+      if (level === 6 || level === 7) continue;
+      expect(planFor(level).mixed).toBeUndefined();
+    }
   });
 });
