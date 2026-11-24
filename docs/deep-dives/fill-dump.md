@@ -126,7 +126,7 @@ Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewr
 6. **Pouring feel** (after the V3 definition). Tier: rule tests unchanged, one filtered play of level 5, `fingerdemo` at 5, landscape and portrait screenshots.
 7. **Busy-window acknowledgment** (built 2026-11-24, [PR #2116](https://github.com/rjdunlap/neo/pull/2116); V2's pilot is built, [PR #446](https://github.com/rjdunlap/neo/pull/446); its person check is parked, and [nothing waits on a parked check](../DEVICE-CHECKS.md), so this is not gated). Tier: rule tests, a rapid-tap regression play.
 8. **Level 8, Tricky pairs** (built 2026-11-24, [PR #2120](https://github.com/rjdunlap/neo/pull/2120); opens pre-K at `{min 5, max 8, order [5,7,8]}`; Counting Cove's pre-K layout checked; two answers, no "holds the same"). Tier: new level on an existing interaction: typecheck, rule tests, one browser play of level 8 and `fingerdemo` at 8.
-9. **Level 9, How many cups?** (decisions 1–2 settled 2026-10-23; pre-K; a new interaction tier), then the toddler pour rung (decision 3: built only if a person sees a two-year-old pull the jug without help; that child check is parked, so the rung is deferred, not queued) and Two jugs (decision 4 settled: stays here in a school window).
+9. **Level 9, How many cups?** (decisions 1–2 settled 2026-10-23; pre-K; a new interaction tier; in progress 2026-11-24 on `claude/project-thread-4w23gx`), then the toddler pour rung (decision 3: built only if a person sees a two-year-old pull the jug without help; that child check is parked, so the rung is deferred, not queued) and Two jugs (decision 4 settled: stays here in a school window).
 
 ## What was built in this session
 
