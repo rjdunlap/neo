@@ -441,6 +441,7 @@ class Round implements Game {
       await this.ctx.tw.wait(0.25);
     }
     this.playing = false;
+    this.render();
     return this.ctx.alive && turn === this.turn;
   }
 
@@ -759,6 +760,17 @@ class Round implements Game {
     this.lookButton.node.visible = looking;
     place(this.lookButton, l.look);
     frame(this.lookButton, l.look, this.picked ? swatch.teal : swatch.white, !!this.picked);
+    // While the case closes, every control dims: taps do nothing then.
+    if (this.busy)
+      for (const b of [
+        this.play,
+        this.checkButton,
+        ...this.answers,
+        ...this.lookCards,
+        this.lookButton,
+        ...this.cards,
+      ])
+        b.node.alpha = 0.55;
     this.root.addChild(this.lens);
   }
 
