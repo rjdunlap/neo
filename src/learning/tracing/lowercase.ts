@@ -39,9 +39,15 @@ const STEM_X = 0.5 + r * 1.05;
 /** The magic c of a, d and g: start at the middle line's right, round the top and down the left, and back up to where a c would close. */
 const magicC = (): Point[] => arc(0.5, cy, r * 1.05, r, -45, -360, 16);
 
+/** The dot over an i or a j: a short dab above the stem, between the top line and the middle line. */
+const DOT: Stroke = [
+  [0.5, 0.19],
+  [0.5, 0.26],
+];
+
 /**
  * Little letters in stroke order, in the frame above. The first tranche is level 10's group (Handwriting Without
- * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); levels 12–14 add theirs. Every letter starts at the top of
+ * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; levels 13–14 add theirs. Every letter starts at the top of
  * its first stroke: c, o and s on the middle line's curve, v and w on the middle line, t on the top line.
  */
 export const LOWER: Record<string, readonly Stroke[]> = {
@@ -110,6 +116,68 @@ export const LOWER: Record<string, readonly Stroke[]> = {
       ...arc(STEM_X - 0.1, FRAME.bottom - 0.1, 0.1, 0.1, 0, 90, 6).slice(1),
     ],
   ],
+  // Down the left, round the bottom and up the right, then a short line down the right side again.
+  u: [
+    [
+      [0.38, FRAME.mid],
+      [0.38, FRAME.base - 0.1],
+      ...arc(0.5, FRAME.base - 0.1, 0.12, 0.1, 180, 0, 10).slice(1),
+      [0.62, FRAME.mid],
+    ],
+    [
+      [0.62, FRAME.mid],
+      [0.62, FRAME.base],
+    ],
+  ],
+  // A short line down from the middle line to the base line, then a dot above it.
+  i: [
+    [
+      [0.5, FRAME.mid],
+      [0.5, FRAME.base],
+    ],
+    DOT,
+  ],
+  // A tall line down from the top line to the base line.
+  l: [
+    [
+      [0.5, FRAME.top],
+      [0.5, FRAME.base],
+    ],
+  ],
+  // A tall line, then a little line in and a little line out: one stroke from the middle line, in to the tall line and out.
+  k: [
+    [
+      [0.38, FRAME.top],
+      [0.38, FRAME.base],
+    ],
+    [
+      [0.64, FRAME.mid],
+      [0.38, FRAME.mid + XH * 0.62],
+      [0.66, FRAME.base],
+    ],
+  ],
+  // Slide down to the base line, then a long slide down from the other side, past the base line to the bottom line.
+  y: [
+    [
+      [0.37, FRAME.mid],
+      [0.5, FRAME.base],
+    ],
+    [
+      [0.63, FRAME.mid],
+      [0.37, FRAME.bottom],
+    ],
+  ],
+  // A line down past the base line, its tail turning left, then a dot above it.
+  j: [
+    [
+      [0.5, FRAME.mid],
+      [0.5, FRAME.bottom - 0.1],
+      ...arc(0.4, FRAME.bottom - 0.1, 0.1, 0.1, 0, 90, 6).slice(1),
+    ],
+    DOT,
+  ],
+  // The one that starts in the middle: a line across the middle of the round, then up and round anticlockwise.
+  e: [[[0.5 - r * 1.05, cy], [0.5 + r * 1.05, cy], ...arc(0.5, cy, r * 1.05, r, 0, -300, 16).slice(1)]],
 };
 
 /** Whether a letter is a little letter traced in the frame. */
