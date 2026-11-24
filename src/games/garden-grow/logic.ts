@@ -120,7 +120,7 @@ export function makeRequests(plan: GardenPlan, rng: Rng): Request[] {
       const shown = rng.int(1, 4);
       r = { kind, want: { [color]: shown + 1 }, shown: { [color]: shown } };
     } else if (plan.mode === 'array') {
-      const color = SEEDS[out.length % SEEDS.length];
+      const color = rng.pick(SEEDS);
       r = { kind, want: { [color]: 6 }, shown: { [color]: 6 } };
     } else if (plan.mode === 'rows') {
       const [top, bottom] = rng.shuffle(SEEDS.slice(0, 4));

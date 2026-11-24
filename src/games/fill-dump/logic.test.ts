@@ -9,6 +9,7 @@ import {
   POUR_TOLERANCE,
   recoverTray,
   startPour,
+  busyTouch,
 } from './logic';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
@@ -401,7 +402,7 @@ describe('Pouring to a line', () => {
 describe('Full and empty (level 6)', () => {
   it('routes each level ID through the plan table: basket 1–4, the jug at 5, the pair at 6', () => {
     expect([1, 2, 3, 4, 5, 6].map(kindFor)).toEqual(['basket', 'basket', 'basket', 'basket', 'pour', 'pair']);
-    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(describeFill(6)).toMatch(/full/i);
     expect(describeFill(5)).toMatch(/jug/);
   });
@@ -537,5 +538,17 @@ describe('things to put away', () => {
       }
     }
     expect(SCRIPT['fill.hintadd'].join(' ')).toContain('piece');
+  });
+});
+
+describe('busy-window acknowledgment', () => {
+  it('answers a touch while the basket tips, and only then', () => {
+    expect(busyTouch(true, false, 'basket')).toBe('squish');
+    expect(busyTouch(true, false, 'ground')).toBe('squish');
+    expect(busyTouch(true, false, 'piece')).toBe('wiggle');
+    for (const on of ['basket', 'piece', 'ground'] as const) {
+      expect(busyTouch(false, false, on)).toBeNull();
+      expect(busyTouch(true, true, on)).toBeNull();
+    }
   });
 });

@@ -103,6 +103,7 @@ describe('Word Monsters', () => {
 
   it('keeps word families of at least three words that share the ending and start with a plain sound', () => {
     expect(RIMES).toEqual(expect.arrayContaining(['en', 'et', 'ug']));
+    expect(FAMILIES.un).toContain('sun');
     for (const rime of RIMES) {
       const words = FAMILIES[rime];
       expect(words.length, rime).toBeGreaterThanOrEqual(3);
@@ -144,11 +145,6 @@ describe('Word Monsters', () => {
             expect(q.fixed).toBe(q.answer.slice(0, 2));
             expect(END_WORDS).toContain(q.answer);
             expect(q.monsters).toContain(q.answer[2]);
-            expect(
-              q.monsters.filter((letter) =>
-                END_WORDS.some((word) => word.startsWith(q.fixed!) && word[2] === letter),
-              ),
-            ).toEqual([q.answer[2]]);
           } else for (const l of q.answer) expect(q.monsters).toContain(l);
           // Spare letters never look like a letter already in play.
           const spares = q.monsters.filter((l) => !q.answer.includes(l));
@@ -161,6 +157,51 @@ describe('Word Monsters', () => {
         if (plan.mode === 'family') expect(new Set(qs.map((q) => q.fixed)).size).toBe(2);
       }
     }
+  });
+
+  it('level 8 deals three different stems with only one real completion each and varied decoys', () => {
+    const plan = planFor(8);
+    expect(plan).toMatchObject({ mode: 'end', rounds: 3, choices: 3 });
+    const words = new Set([
+      ...PICTURE_WORDS,
+      ...'cab cad cal cam can cap car cat caw cay'.split(' '),
+      ...'had hag hah ham hap has hat haw hay'.split(' '),
+      ...'doc dog don dos dot dow'.split(' '),
+      ...'pic pig pin pip pit pix'.split(' '),
+      ...'cub cud cup cur cut cuz'.split(' '),
+    ]);
+    const answers = new Set<string>();
+    const decoys = new Map<string, Set<string>>();
+
+    for (let seed = 1; seed <= 300; seed++) {
+      const questions = makeQuestions(plan, new Rng(seed));
+      expect(questions, `seed ${seed}`).toHaveLength(3);
+      expect(new Set(questions.map((q) => q.fixed)).size, `seed ${seed}`).toBe(3);
+      for (const { answer, fixed, monsters } of questions) {
+        const stem = answer.slice(0, 2);
+        const ending = answer[2];
+        expect(fixed, answer).toBe(stem);
+        expect(new Set(monsters).size, answer).toBe(3);
+        expect(
+          monsters.filter((letter) => words.has(stem + letter)),
+          answer,
+        ).toEqual([ending]);
+
+        answers.add(answer);
+        const pairs = decoys.get(stem) ?? new Set<string>();
+        pairs.add(
+          monsters
+            .filter((letter) => letter !== ending)
+            .sort()
+            .join(''),
+        );
+        decoys.set(stem, pairs);
+      }
+    }
+
+    expect([...answers].sort()).toEqual(['can', 'cap', 'cat', 'cup', 'dog', 'hat', 'pig']);
+    for (const [stem, pairs] of decoys) expect(pairs.size, stem).toBeGreaterThan(1);
+    expect(makeQuestions(plan, new Rng(37))).toEqual(makeQuestions(plan, new Rng(37)));
   });
 
   it('never offers two letters with the same sound, and keeps q and x out of "who says"', () => {

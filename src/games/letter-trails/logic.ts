@@ -19,11 +19,12 @@ export const PLANS = [
     name: 'Less help each time: trace one capital three times, with a solid trail, then dots, then only the start',
   },
   { letters: 'cosvwt', name: 'Little letters like their capitals: c, o, s, v, w, t in a four-line frame' },
+  { letters: 'adg', name: 'Magic c: a, d and g start with a little c, then a line' },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
   prek: { min: 3, max: 10 },
-  school: { min: 7, max: 10 },
+  school: { min: 7, max: 11 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
@@ -34,8 +35,14 @@ export const THREE_LEVEL = 9;
 /** Level 10 traces one little letter (c o s v w t) in the four-line frame, its capital beside it. */
 export const LITTLE_LEVEL = 10;
 
+/** Level 11 traces one of a, d, g: a little c, then a line (a short one, a tall one, one that reaches below the base). */
+export const MAGIC_LEVEL = 11;
+
 /** Whether the round's letters are little letters, traced in the frame. */
-export const inFrame = (level: number): boolean => trailLevel(level) === LITTLE_LEVEL;
+export const inFrame = (level: number): boolean => {
+  const l = trailLevel(level);
+  return l === LITTLE_LEVEL || l === MAGIC_LEVEL;
+};
 
 /** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */
 export const severalLetters = (level: number): boolean => {
@@ -91,8 +98,14 @@ export function fullName(name: string): string {
   return nameLetters(name);
 }
 
+/**
+ * How far from the trail a finger may stray (a share of the box; a wander is twice this). Little letters are about a
+ * third the size of capitals, so theirs is tighter: twice it stays under a little o's radius (0.15), so the middle of
+ * an o or a c is a wander and not a place to scribble.
+ */
+export const LITTLE_TOLERANCE = 0.06;
 export function trailTolerance(level: number): number {
-  return trailLevel(level) <= 2 ? 0.095 : 0.075;
+  return inFrame(level) ? LITTLE_TOLERANCE : trailLevel(level) <= 2 ? 0.095 : 0.075;
 }
 
 /**

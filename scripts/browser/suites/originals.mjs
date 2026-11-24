@@ -152,7 +152,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-    for (let level = 1; level <= 10 && (!only || only === 'jelly'); level++) {
+    for (let level = 1; level <= 11 && (!only || only === 'jelly'); level++) {
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -185,13 +185,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               throw new Error(`Jelly listen-again counted: ${g.misses} ${g.hints}`);
             for (let k = 0; k < 2; k++) {
               await turn();
-              await hit((g.tune[0] + 1) % 5);
+              await hit((g.answer[0] + 1) % 5);
             }
             await turn();
-            if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.tune[0]].glowLeft <= 0)
+            if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.answer[0]].glowLeft <= 0)
               throw new Error(`Jelly hint: ${g.misses} ${g.hints}`);
           }
-          const tune = [...g.tune];
+          const tune = [...g.answer];
           for (const i of tune) await hit(i);
           await kit.until(() => g.phase !== 'turn', 3000);
         }
@@ -248,6 +248,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     ];
     for (const level of peekLevels.filter((n) => n >= 1 && n <= 19 && (!only || only === 'peekaboo'))) {
       await launch('peekaboo-barn', level);
+      if (level === 1) {
+        // {pet} hides too: force the surprise on the first reveal; the pet comes out, its written name shows, no miss.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy, 10000);
+          g.petAt = 0;
+          g.pool.length && (g.spots[0].eventMode = 'none');
+          g.freeTap(g.spots[0]);
+        });
+        await page.waitForTimeout(900);
+        const shown = await page.evaluate(() => {
+          const spot = neo.scene.game.spots[0];
+          return { isPet: spot.isPet, pose: spot.pose, tag: spot.tag.visible ? spot.tag.text : null };
+        });
+        assert.ok(
+          shown.isPet && shown.pose === 'out' && shown.tag,
+          `Peekaboo 1: pet reveal ${JSON.stringify(shown)}`,
+        );
+        await screenshot('peekaboo-barn-1-pet');
+        log(`Peekaboo Barn 1: the pet hid too, its name "${shown.tag}" written under it`);
+        await launch('peekaboo-barn', level);
+      }
       if (level === 19) {
         // Hide it yourself: drag to one house, tap-then-tap to another, drop far from the third; the seeker looks in
         // an empty house first, never twice in one house, and ends at hers. Nothing is ever a miss.
@@ -1140,11 +1162,35 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7').split(',').map(Number);
+    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
     for (const level of !only || only === 'fill' ? fillLevels : []) {
       if (level === 4) await portrait(true);
       await launch('fill-dump', level);
       await page.waitForTimeout(400);
+      if (level <= 2) {
+        // Busy window: touches while the basket tips are answered (squish, wiggle) and never counted.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          if (g.state.target !== null || g.busy) throw new Error('Level 1-2 starts as a tip-out');
+          kit.tapOn(g.basket.front);
+          await kit.sleep(500);
+          if (!g.busy) throw new Error('A full basket tips');
+          const before = JSON.stringify(g.state);
+          kit.tapOn(g.basket.front);
+          await kit.sleep(100);
+          if (!(g.basket.pop > 0)) throw new Error('A touch on the tipping basket squishes it');
+          const landed = g.pieces.find((p) => p.view.eventMode === 'static');
+          if (landed) {
+            kit.tapOn(landed.view);
+            await kit.sleep(100);
+            if (!g.wiggles.has(landed.i)) throw new Error('A landed fruit wiggles when touched');
+          }
+          if (JSON.stringify(g.state) !== before) throw new Error('A busy touch must not change the round');
+          while (g.busy) await kit.sleep(100);
+          await kit.sleep(500);
+          if (g.wiggles.size) throw new Error('Wiggles settle');
+        });
+      }
       if (level === 5) {
         await page.evaluate(async () => {
           const g = neo.scene.game;
@@ -1246,6 +1292,56 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         assert.deepEqual(await score('fill-dump'), [2, 1]);
         log(
           'Fill and Dump 7: free prediction/partial pour/re-pour, conserved spill, two wrong answers, one evidence hint, portrait and three pairs passed',
+        );
+        continue;
+      }
+      if (level === 8) {
+        // Tricky pairs: a free guess, a full pour, two wrong answers (one hint), a re-pour, then three pairs by the bot.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const hit = async (on, y = 0) => {
+            kit.tapOn(on, 0, y);
+            await kit.sleep(300);
+          };
+          const pourAll = async () => {
+            const a = g.jug.toGlobal({ x: 0, y: -60 });
+            const b = g.jug.toGlobal({ x: g.state.jug * 240 + 1, y: -60 });
+            await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+            await kit.sleep(150);
+          };
+          if (!g.tricky) throw new Error('Level 8 is the tricky pairs');
+          await hit(g.jug, -60); // Any guess is free.
+          if (g.state.misses || g.state.phase !== 'pour') throw new Error('Tricky guess must be free');
+          await pourAll();
+          await hit(g.tick);
+          if (g.state.phase !== 'answer') throw new Error('A full pour is the evidence');
+          const wrong = g.autotouch().tap.on === g.jug ? g.cup : g.jug;
+          await hit(wrong, -60);
+          await hit(wrong, -60);
+          if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped)
+            throw new Error('Tricky supported answer accounting');
+        });
+        await portrait(true);
+        await screenshot('fill-dump-8-portrait');
+        await portrait(false);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let guard = 0; guard < 20 && !g.state.done; guard++) {
+            const intent = g.autotouch();
+            if (intent?.tap) kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+            else if (intent?.drag) {
+              const a = intent.drag.on.toGlobal({ x: intent.drag.x || 0, y: intent.drag.y || 0 });
+              const b = intent.to.on.toGlobal({ x: intent.to.x || 0, y: intent.to.y || 0 });
+              await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+            }
+            await kit.sleep(300);
+          }
+          if (!g.state.done || g.state.round !== 3) throw new Error('Tricky three-pair completion');
+        });
+        await finished('fill-dump');
+        assert.deepEqual(await score('fill-dump'), [2, 1]);
+        log(
+          'Fill and Dump 8: free guess, full pour, two wrong answers, one hint, portrait and three tricky pairs passed',
         );
         continue;
       }
@@ -1574,7 +1670,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 10,
+      'jelly-drums': 11,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

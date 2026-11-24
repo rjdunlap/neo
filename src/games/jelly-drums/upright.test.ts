@@ -21,8 +21,8 @@ const jellyTargets = (v: View): Target[] => {
   return HALF_WIDTHS.map((_, i) => ({ what: `jelly ${i + 1}`, ...jellyHit(l, i) }));
 };
 
-it('covers levels 1 to 10: free play, tunes and the wake level', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+it('covers levels 1 to 11: free play, tunes and the wake level', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(new Set(['free', 'echo', 'wake']));
 });
 

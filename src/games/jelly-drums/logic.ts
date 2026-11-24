@@ -13,6 +13,10 @@ export interface JellyPlan {
   length: number;
   /** Free play's twist: at level 2 the fans answer, at level 3 a scale sparkles. Neither is a goal. */
   twist?: 'fans' | 'scale';
+  /** Level 11, "Backwards": she plays the tune in reverse, the last note first. */
+  reverse?: boolean;
+  /** Backwards: the last tune of the round is this long (the earlier ones are `length`). */
+  lastLength?: number;
 }
 
 export const PLANS: JellyPlan[] = [
@@ -27,6 +31,8 @@ export const PLANS: JellyPlan[] = [
   { mode: 'echo', goal: 5, length: 5 },
   // Level 10, "One big jelly": the easiest entry, placed first for lap by the band's `order`.
   { mode: 'wake', goal: 24, length: 0 },
+  // Level 11, "Backwards": four tunes of three notes, then one of four, each played back last note first.
+  { mode: 'echo', goal: 5, length: 3, reverse: true, lastLength: 4 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -34,8 +40,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 4, max: 7 },
-  prek: { min: 5, max: 9 },
-  school: { min: 8, max: 9 },
+  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11) follows level 9 (see `order`).
+  prek: { min: 5, max: 11, order: [5, 6, 7, 8, 9, 11] },
+  school: { min: 8, max: 11, order: [8, 9, 11] },
 };
 
 /** The order the jellies wake in on the wake level: the big low one, the little high one, then the rest one by one. */
@@ -53,8 +60,16 @@ export function nearestAwake(xs: readonly number[], awake: readonly number[], x:
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
+/** The notes she taps for a tune: the tune itself, or on a backwards level the same notes last first. */
+export const answerOf = (plan: Pick<JellyPlan, 'reverse'>, tune: readonly number[]): number[] =>
+  plan.reverse ? [...tune].reverse() : [...tune];
+
+/** How many notes the `n`th tune (from 0) of a round has. */
+export const tuneLength = (plan: JellyPlan, n: number): number =>
+  plan.lastLength !== undefined && n === plan.goal - 1 ? plan.lastLength : plan.length;
+
 /** What a tune is: a shape (the same at every length) or a phrase of a real song. */
-export type TuneKind = 'up' | 'down' | 'hop' | 'wiggle' | SongId;
+export type TuneKind = 'up' | 'down' | 'hop' | 'wiggle' | 'twist' | SongId;
 
 export interface Tune {
   notes: number[];
@@ -100,6 +115,20 @@ export function tunesOf(length: number): Tune[] {
   return out;
 }
 
+/** Backwards levels only: every tune of this length with no jelly twice in a row that is not a staircase, hop or wiggle. */
+export function twistsOf(length: number): Tune[] {
+  const out: Tune[] = [];
+  const grow = (notes: number[]) => {
+    if (notes.length === length) {
+      if (!tunesOf(length).some((t) => same(t.notes, notes))) out.push({ notes, kind: 'twist' });
+      return;
+    }
+    for (let i = 0; i < JELLIES; i++) if (i !== notes.at(-1)) grow([...notes, i]);
+  };
+  grow([]);
+  return out;
+}
+
 const same = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((n, k) => n === b[k]);
 
@@ -107,8 +136,11 @@ const same = (a: readonly number[], b: readonly number[]) =>
  * The next tune to copy. A kind is picked first, so a song comes round as often as a shape; never the kind just
  * played while another is left, and never a tune already in `played` (the round's earlier tunes).
  */
-export function drawTune(rng: Rng, length: number, played: readonly Tune[] = []): Tune {
-  const fresh = tunesOf(length).filter((t) => !played.some((p) => same(p.notes, t.notes)));
+export function drawTune(rng: Rng, length: number, played: readonly Tune[] = [], reverse = false): Tune {
+  // Backwards: a tune that reads the same both ways would have nothing to reverse, so it is never drawn.
+  const fresh = (reverse ? [...tunesOf(length), ...twistsOf(length)] : tunesOf(length)).filter(
+    (t) => !played.some((p) => same(p.notes, t.notes)) && !(reverse && same(t.notes, [...t.notes].reverse())),
+  );
   const kinds = [...new Set(fresh.map((t) => t.kind))];
   const last = played.at(-1)?.kind;
   const choices = kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds;

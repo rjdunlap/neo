@@ -10,6 +10,7 @@ import {
   KINDS,
   gardenTouch,
   makeRequests,
+  SEEDS,
   matches,
   packetsFor,
   planFor,
@@ -58,6 +59,18 @@ describe('Garden Grow', () => {
     expect(planFor(6).mode).toBe('more');
     expect(planFor(7).mode).toBe('array');
     expect(planFor(8).mode).toBe('big');
+  });
+
+  it('draws level 7 colors from the whole pool, not a fixed red, yellow, blue run', () => {
+    const seen = new Set<string>();
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const rs = makeRequests(planFor(7), new Rng(seed));
+      firsts.add(Object.keys(rs[0].want)[0]);
+      for (const r of rs) Object.keys(r.want).forEach((c) => seen.add(c));
+    }
+    expect(seen.size).toBe(SEEDS.length);
+    expect(firsts.size).toBeGreaterThan(1);
   });
 
   it('checks plantings by color and number, in any order', () => {

@@ -15,6 +15,7 @@ import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  busyTouch,
   PIECE_HIT,
   basketSlot,
   countSign,
@@ -147,6 +148,8 @@ class FillDump implements Game {
   private idle = 0;
   private invitation: { target: 'basket' | number; elapsed: number } | null = null;
   private glow: { target: 'tick' | 'basket' | number; left: number } | null = null;
+  /** Fruit wiggling because it was touched while the basket tipped: piece index to seconds elapsed. */
+  private wiggles = new Map<number, number>();
 
   constructor(private readonly ctx: GameContext) {
     const plan = planFor(ctx.level);
@@ -176,6 +179,7 @@ class FillDump implements Game {
         this.floor,
         (e) => {
           const action = groundTap(this.state, this.spots, this.ctx.stage.toLocal(e.global));
+          if (this.busyAnswer('ground')) return;
           if (!action || this.finished || this.busy) return;
           this.resetInvitation();
           this.basket.squish();
@@ -232,6 +236,16 @@ class FillDump implements Game {
   update(dt: number) {
     this.clock += dt;
     this.basket.update(dt);
+    for (const [i, t] of this.wiggles) {
+      const view = this.pieces[i].view;
+      if (t >= 0.3) {
+        view.rotation = 0;
+        this.wiggles.delete(i);
+      } else {
+        view.rotation = Math.sin(t * Math.PI * 8) * 0.18 * (1 - t / 0.3);
+        this.wiggles.set(i, t + dt);
+      }
+    }
     // Lap invitation only: no speech, halo or accounting, and no motion over an active flight.
     if (this.state.target === null && !this.finished && !this.gone) {
       if (this.busy || this.flying > 0) this.resetInvitation();
@@ -270,6 +284,7 @@ class FillDump implements Game {
 
   destroy() {
     this.resetInvitation();
+    this.wiggles.clear();
     this.gone = true;
   }
 
@@ -345,7 +360,19 @@ class FillDump implements Game {
 
   // ---- Touches --------------------------------------------------------------------------------------------------
 
+  /** While the basket tips a touch is answered, never counted: squish or wiggle, one quiet tick. True if it was. */
+  private busyAnswer(on: 'basket' | 'piece' | 'ground', piece = -1): boolean {
+    const answer = busyTouch(this.busy, this.finished, on);
+    if (!answer) return false;
+    this.resetInvitation();
+    sfx.tick();
+    if (answer === 'wiggle') this.wiggles.set(piece, 0);
+    else this.basket.squish();
+    return true;
+  }
+
   private touchBasket() {
+    if (this.busyAnswer('basket')) return;
     this.resetInvitation();
     if (this.finished || this.busy) return;
     this.basket.squish();
@@ -362,6 +389,7 @@ class FillDump implements Game {
   }
 
   private touchPiece(i: number) {
+    if (this.busyAnswer('piece', i)) return;
     this.resetInvitation();
     if (this.finished || this.busy) return;
     this.handle(tap(this.state, { on: 'piece', i }));
@@ -599,7 +627,7 @@ export const fillDump: GameModule = {
   region: 'counting-cove',
   challenge: 'numbers',
   skills: ['containment', 'counting', 'cause-effect', 'capacity'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeFill,
   music: STYLES.stickers,

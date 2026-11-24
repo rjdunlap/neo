@@ -59,6 +59,8 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 6, order: [1, 2, 6, 3, 4] },
   preschool: { min: 1, max: 7, order: [1, 2, 6, 3, 4, 5, 7] },
+  // Pre-K opens at the pouring level and takes the capacity levels, ending on pairs where the eye misleads.
+  prek: { min: 5, max: 8, order: [5, 7, 8] },
 };
 
 /** The number she is asked to put in, drawn from the plan's range. Null in the tip-out levels. */
@@ -75,11 +77,16 @@ export const FILL_LEVELS: Readonly<Record<number, FillKind>> = {
   5: 'pour',
   6: 'pair',
   7: 'capacity',
+  8: 'capacity',
 };
 export const kindFor = (level: number): FillKind => FILL_LEVELS[level] ?? 'basket';
+/** Level 8, Tricky pairs: the same guess, pour and answer as level 7, with a tall thin and a short wide container. */
+export const isTrickyLevel = (level: number): boolean => level === 8;
 
 export const describeFill = (level: number): string => {
   const kind = kindFor(level);
+  if (isTrickyLevel(level))
+    return 'Tricky pairs: tall and thin or short and wide; guess which holds more, pour to test';
   if (kind === 'capacity')
     return 'Guess which holds more, pour to test, then answer from the evidence: three pairs';
   if (kind === 'pour') return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
@@ -283,6 +290,20 @@ export function groundTap(
 }
 
 /**
+ * How the tip-out levels answer a touch while the basket is tipping (the busy window): a touch never feeds, scoops or counts,
+ * but it is never silent. The basket (or open grass) squishes, a fruit that has landed wiggles; once the round is over the
+ * celebration owns the screen. Null means the ordinary handler runs.
+ */
+export function busyTouch(
+  busy: boolean,
+  finished: boolean,
+  on: 'basket' | 'piece' | 'ground',
+): 'squish' | 'wiggle' | null {
+  if (!busy || finished) return null;
+  return on === 'piece' ? 'wiggle' : 'squish';
+}
+
+/**
  * What a capable child touches next, for the ghost finger on the how-to card: tip a full basket, scoop up the pieces on
  * the ground, or in a counting level put in the number and then tap the check. Null once the round is done.
  */
@@ -466,6 +487,13 @@ export const CAPACITY_VESSELS = {
   cup: { capacity: 1, width: 100 },
   bucket: { capacity: 1.8, width: 180 },
   mug: { capacity: 1, width: 100 },
+  // Level 8: tall thin ones against short wide ones, 15–30% apart (capacity over width is the height).
+  glass: { capacity: 1, width: 100 },
+  dish: { capacity: 1.25, width: 200 },
+  vase: { capacity: 1.1, width: 110 },
+  platter: { capacity: 1.35, width: 220 },
+  jar: { capacity: 1.5, width: 140 },
+  tub: { capacity: 1.2, width: 200 },
 } as const;
 export type Vessel = keyof typeof CAPACITY_VESSELS;
 export interface CapacityPair {
@@ -473,7 +501,18 @@ export interface CapacityPair {
   right: Vessel;
 }
 /** The first pair is always the obvious full bowl and empty cup; the other two vary in order. */
-export function capacityPairs(rng: Rng): CapacityPair[] {
+export function capacityPairs(rng: Rng, tricky = false): CapacityPair[] {
+  if (tricky) {
+    // Two pairs where the taller holds less and one where it holds more, so "taller" is never the rule; sides vary.
+    const flip = (p: CapacityPair): CapacityPair => (rng.int(0, 1) ? { left: p.right, right: p.left } : p);
+    return rng
+      .shuffle<CapacityPair>([
+        { left: 'glass', right: 'dish' },
+        { left: 'vase', right: 'platter' },
+        { left: 'jar', right: 'tub' },
+      ])
+      .map(flip);
+  }
   return [
     { left: 'bowl', right: 'cup' },
     ...rng.shuffle<CapacityPair>([
@@ -495,8 +534,8 @@ export interface CapacityState extends RequestTally {
 export const capacityPair = (s: CapacityState) => s.pairs[Math.min(s.round, s.pairs.length - 1)];
 export const capacityMore = (p: CapacityPair): 0 | 1 =>
   CAPACITY_VESSELS[p.left].capacity > CAPACITY_VESSELS[p.right].capacity ? 0 : 1;
-export function startCapacity(rng: Rng): CapacityState {
-  const pairs = capacityPairs(rng);
+export function startCapacity(rng: Rng, tricky = false): CapacityState {
+  const pairs = capacityPairs(rng, tricky);
   return {
     pairs,
     round: 0,
@@ -512,6 +551,9 @@ export function startCapacity(rng: Rng): CapacityState {
     done: false,
   };
 }
+/** Which one of a pair stands taller (its volume divided by its width is the height). Level 8's voice names the one that held more. */
+export const capacityTaller = (p: CapacityPair): 0 | 1 =>
+  capacityHeight(p.left) > capacityHeight(p.right) ? 0 : 1;
 export function capacityPour(s: CapacityState, amount: number) {
   if (s.phase === 'pour') pour(s, amount, CAPACITY_VESSELS[capacityPair(s).right].capacity);
 }

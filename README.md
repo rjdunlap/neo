@@ -90,7 +90,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 4 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
-| [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |
+| [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 11 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 9 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |
 | [Rhythm Neighbors](docs/games/rhythm-neighbors.md) | lap–school | Music Mountain | 10 | tap a bird and a frog chorus; knock the tree and a frog answers (lap); knock your own call and the frog answers it with the gaps flipped (toddler, preschool); hear a bird and a frog, then say whether the frog copied or answered (pre-K, school) |
@@ -124,13 +124,13 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Who Am I?](docs/games/who-am-i.md) | pre-K–school | Barnyard | 8 | a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out |
 | [Timeline Trail](docs/games/timeline-trail.md) | preschool–school | Barnyard | 7 | hang pictures of one island place on the pet's clothesline between a long-ago post and a now post, then watch the place grow as a flipbook |
 | [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 15 | count along as illustrated ducks hop in |
-| [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 12 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
+| [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 13 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
 | [Pet Kitchen](docs/games/pet-kitchen.md) | lap–school | Counting Cove | 15 | tap pieces onto the plate with fewest (lap), cut a sandwich or pie in halves and share; friends eat the meal |
 | [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 13 | hop to a number on the lily pads |
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 9 | draw a loop around fireflies: they fly into a jar |
-| [Fill and Dump](docs/games/fill-dump.md) | lap–preschool | Counting Cove | 7 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
+| [Fill and Dump](docs/games/fill-dump.md) | lap–pre-K | Counting Cove | 8 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
 | [Number Trails](docs/games/number-trails.md) | preschool–school | Counting Cove | 7 | follow a firefly along a numeral, starting at the green ring and arrow (at preschool, *First numbers*: just 1, 2, 3 or 7), then watch that many things pop up and count them |
 | [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
 | [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
@@ -194,7 +194,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Bunny Patches](docs/games/bunny-patches.md) | pre-K–grown-up | Puzzle Peaks | 3 | a 4×4 meadow of coloured patches with one bunny already sitting: she taps squares to put one bunny in every row, column and patch, and the shaded reach of each bunny shows what it rules out. |
 | [Campsite](docs/games/campsite.md) | school | Puzzle Peaks | 1 | one authored 4×4 camp with three trees: she pitches a tent beside each tree so every row and column matches its count sign and no two tents touch, even at a corner, then taps Check camp. The counts and the corner rule rule squares out until each tree has one place left. |
 | [Silly Scene](docs/games/silly-scene.md) | preschool–school | Puzzle Peaks | 3 | Tap the fish in the tree to hear why it belongs in the pond and watch it splash back into the water. |
-| [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 10 | follow a firefly along capital strokes |
+| [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 11 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 15 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 15 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
@@ -292,7 +292,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 9 | jump a marble over a neighbour into an empty hole to leave one |
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 7 | slide equal numbered snowballs together to make the pictured target |
-| [Brain Break](docs/games/brain-break.md) | Lantern Lake | 13 | find and light 1 to 9 on a shuffled pond of numbered stones |
+| [Brain Break](docs/games/brain-break.md) | Lantern Lake | 14 | find and light 1 to 9 on a shuffled pond of numbered stones |
 | [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 10 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
 | [Number Nook](docs/games/number-nook.md) | Lantern Lake | 7 | tap a numbered tile beside the gap to put a 2 by 2 board in row order |
 | [Gem Swap](docs/games/gem-swap.md) | Lantern Lake | 8 | swap occupied neighbours to make matching lines of three and clear a finite tray |

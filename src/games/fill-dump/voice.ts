@@ -11,6 +11,8 @@ export const VOICE = {
   'fill.capacity.room': ['Look — there is room left. The one we poured into holds more!'],
   'fill.capacity.repour': ['All the water is back. Pull right to pour again, then tap the check.'],
   'fill.capacity.done': ['Three pairs explored! Pouring showed which holds more!'],
+  'fill.tricky.shortmore': ['The short one held more! Tall does not always mean more.'],
+  'fill.tricky.tallmore': ['The tall one held more!'],
   'fill.pour': ['Pull the jug to the right to pour. Lift to stop at the purple line. Then tap the check!'],
   'fill.nextcup': ['Just right! Fill the next cup to its purple line.'],
   'fill.empty': ['The cup tips into the tray. Tap the tray to put the water back in the jug.'],

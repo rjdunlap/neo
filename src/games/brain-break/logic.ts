@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 13 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 14 } };
 export const PLANS = [
   { side: 3, name: 'Find 1 to 9 on nine shuffled stones' },
   { side: 4, name: 'Find 1 to 16 on sixteen shuffled stones' },
@@ -16,6 +16,7 @@ export const PLANS = [
   { side: 4, name: 'Two trails: 1, A, 2, B' },
   { side: 5, name: 'Two trails: 1, L, 2, K' },
   { side: 3, name: 'Fractions and decimals, smallest first' },
+  { side: 3, name: 'Work them out, smallest first' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 /** Levels 4–6 show a sum (from 6, a sum or a take-away) on each stone instead of its number. */
@@ -185,6 +186,53 @@ export function makeParts(rng: Rng): Part[] {
   }
 }
 
+/** Level 14 holds sums, take-aways and times, smallest answer first. */
+export const worksThemOut = (level: number) => Math.floor(level) === 14;
+export const TIMES = '\u00d7';
+const TABLE_MAX = 9;
+/** Nine stones with different answers within 1–81, at least two of each kind, smallest answer first. Drawn after the board. */
+export function makeWorks(rng: Rng): Part[] {
+  for (;;) {
+    const kinds = rng.shuffle([
+      'sum',
+      'sum',
+      'take',
+      'take',
+      'times',
+      'times',
+      ...Array.from({ length: 3 }, () => rng.pick(['sum', 'take', 'times'])),
+    ]);
+    const used = new Set<number>(),
+      out: Part[] = [];
+    for (const kind of kinds) {
+      let part: Part | null = null;
+      for (let tries = 0; tries < 40 && !part; tries++) {
+        const b = rng.int(1, STEP_MAX);
+        let text: string, value: number;
+        if (kind === 'sum') {
+          value = rng.int(Math.max(2, b + 1), TAKE_FROM_MAX);
+          const a = value - b;
+          text = rng.chance(0.5) ? `${a}+${b}` : `${b}+${a}`;
+        } else if (kind === 'take') {
+          const from = rng.int(b + 1, TAKE_FROM_MAX);
+          value = from - b;
+          text = `${from}${MINUS}${b}`;
+        } else {
+          const x = rng.int(2, TABLE_MAX),
+            y = rng.int(2, TABLE_MAX);
+          value = x * y;
+          text = `${x}${TIMES}${y}`;
+        }
+        if (!used.has(value) && text.length <= 4) part = { text, value, spoken: String(value) };
+      }
+      if (!part) break;
+      used.add(part.value);
+      out.push(part);
+    }
+    if (out.length === 9) return out.sort((a, b) => a.value - b.value);
+  }
+}
+
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
 /** Board indexes in the order they are found: `trailOrder(board)[r - 1]` is the stone that holds rank `r`. */
@@ -242,18 +290,22 @@ export function makeRound(level: number, rng: Rng) {
   const values = smallestFirst ? makeValues(level, rng) : null;
   const alternating = twoTrails(level) ? alternatingLabels(level) : null;
   const parts = comparesParts(level) ? makeParts(rng) : null;
+  const works = worksThemOut(level) ? makeWorks(rng) : null;
   if (rule) labels = board.map((rank) => String(trailValue(rule, rank)));
   else if (values) labels = board.map((rank) => writeNumber(values[rank - 1]));
   else if (alternating) labels = board.map((rank) => alternating[rank - 1]);
   else if (parts) labels = board.map((rank) => parts[rank - 1].text);
-  return { board, labels, look, rule, values, alternating, parts };
+  else if (works) labels = board.map((rank) => works[rank - 1].text);
+  return { board, labels, look, rule, values, alternating, parts, works };
 }
 
 /** What a stone's label makes: its number, or its sum or take-away worked out. */
 export function evaluate(text: string): number {
-  const m = /^(\d+)([+−])(\d+)$/.exec(text);
+  const m = /^(\d+)([+−×])(\d+)$/.exec(text);
   if (!m) return Number(text);
-  return m[2] === '+' ? Number(m[1]) + Number(m[3]) : Number(m[1]) - Number(m[3]);
+  const a = Number(m[1]),
+    b = Number(m[3]);
+  return m[2] === '+' ? a + b : m[2] === '×' ? a * b : a - b;
 }
 
 /** A fixed-size board keeps every stone at least 100 units across, including in portrait. */
