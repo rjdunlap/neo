@@ -223,3 +223,25 @@ export function jellyToTap(
   if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
   return phase === 'turn' ? (tune[at] ?? null) : null;
 }
+
+/**
+ * The instrument a round plays on (dive slice 3, decision 8): the marimba on Music Mountain by day, bells on the moon
+ * stage at night, and a soft held hum on the beach bandstand. Every set plays the same five pentatonic steps, so a tune
+ * is the same tune on any of them and a colour always means the same pitch.
+ */
+export const SOUND_SETS = ['marimba', 'bells', 'hum'] as const;
+export type SoundSet = (typeof SOUND_SETS)[number];
+
+/** Where each set plays. */
+export type StageName = 'mountain' | 'moon' | 'beach';
+export const STAGE_OF: Record<SoundSet, StageName> = { marimba: 'mountain', bells: 'moon', hum: 'beach' };
+
+/** The pentatonic step each jelly sings on each set, biggest (lowest) first: C D E G A on all three. */
+export const SET_STEPS: Record<SoundSet, readonly number[]> = {
+  marimba: [0, 1, 2, 3, 4],
+  bells: [0, 1, 2, 3, 4],
+  hum: [0, 1, 2, 3, 4],
+};
+
+/** A round's set, from its seed: any of the three, so the same toy sounds and looks new from one round to the next. */
+export const soundSetFor = (rng: Rng): SoundSet => rng.pick(SOUND_SETS);
