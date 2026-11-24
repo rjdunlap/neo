@@ -189,6 +189,11 @@ export class CupsGame implements Game {
 
   private touchBowl(side: 0 | 1) {
     if (this.gone || this.held) return;
+    // While both tallies are being counted aloud, a bowl answers with a tick and waits, so one recount never overlaps another.
+    if (this.pulse !== null) {
+      sfx.tick();
+      return;
+    }
     const ev = cupsBowl(this.state, side);
     switch (ev.kind) {
       case 'empty':
