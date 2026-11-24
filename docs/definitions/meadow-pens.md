@@ -163,7 +163,7 @@ No line says to fence a real animal in or names an animal as kept.
 
 ## Check tier
 
-The build is one declared same-game batch, [meadow-pens 1](../GAME-BATCHES.md#meadow-pens-1-levels-13), in one worker and PR: the new-game tier (typecheck, unit tests including the rule tests above, one new `browser-check.mjs` case filtered to Meadow Pens covering levels 1 and 3 with one wrong ring each and a requested hint, plus one wrong card at level 2, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, and `npm run build` for the registry, lands, voice and how-to files). If the allowance cannot cover all three levels, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. **Merge gate:** the developer's approval of the [level-2 card table](#level-2-card-table).
+The build is one declared same-game batch, [meadow-pens 1](../archive/GAME-BATCHES-2026-11-23.md#meadow-pens-1-levels-13), in one worker and PR: the new-game tier (typecheck, unit tests including the rule tests above, one new `browser-check.mjs` case filtered to Meadow Pens covering levels 1 and 3 with one wrong ring each and a requested hint, plus one wrong card at level 2, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, and `npm run build` for the registry, lands, voice and how-to files). If the allowance cannot cover all three levels, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. **Merge gate:** the developer's approval of the [level-2 card table](#level-2-card-table).
 
 ## Open decisions
 

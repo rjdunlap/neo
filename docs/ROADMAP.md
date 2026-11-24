@@ -44,7 +44,7 @@ Scheduled runs and sessions a person starts both pick from [READY.md](READY.md),
 
 **How to pick a slice (routines and people alike):**
 
-Implementation queue items are [same-game batches](GAME-BATCHES.md), normally 2–4 related original level/content subtasks in one session/PR (developer direction, 2026-10-21). Original slice numbers describe substeps, not mandatory separate chats; one declared batch occupies one dispatch slot. Keep research/definition slots and existing gates.
+Implementation queue items are [same-game batches](SESSION-GUIDE.md#same-game-batches), normally 2–4 related original level/content subtasks in one session/PR (developer direction, 2026-10-21). Original slice numbers describe substeps, not mandatory separate chats; one declared batch occupies one dispatch slot. Keep research/definition slots and existing gates.
 
 1. If you own an unfinished slice, finish it first.
 2. Otherwise take the **first line of [READY.md's Next ten](READY.md#next-ten) that no open PR, branch or worktree claims** (`scripts/overlap.sh <game-id> <path>…`). Read that game's dive section, or the work item's packet, before claiming; the dive is the authority on scope and gates.

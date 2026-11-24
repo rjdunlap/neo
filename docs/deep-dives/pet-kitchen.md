@@ -126,7 +126,7 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`pet-kitchen` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`pet-kitchen` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Support truth** (built 2026-10-21, `claude/pet-kitchen-support-truth`, [PR #716](https://github.com/rjdunlap/neo/pull/716)): the how-to's open ranges close; `kitchen.short` and `kitchen.empty`; the uncut whole answers a touch and the cut button bounces after six seconds idle; the serve at 7 counts aloud. IDs and windows unchanged.
 2. **Friends, the meal eaten, round wholes, the fraction seen and a third fruit** (built 2026-10-23, [PR #860](https://github.com/rjdunlap/neo/pull/860), `claude/pet-kitchen-meals-lap`; [build note](../archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-1-meal-variety-and-lap-tap-sharing-slices-2-3-2026-10-23)) (fresh content: typecheck, rule tests for the pie's cuts and the fruit pool, one filtered play of 2 and 7, `fingerdemo` at 7): decisions 2 and 3, the chew, the bubble at 7, the banana.
