@@ -19,7 +19,7 @@ Band windows are the actual adaptive ranges: lap 1, toddler 1–2, preschool 2�
 ### How it plays, from the source
 
 - Both paddles' hits add to one `rally` count, so a goal of 8 is four of hers. `count` is spoken on each hit.
-- The paddle bounce angles the ball by where it strikes (offset × 0.85 rad), the middle returning it straight; the pet centres on the ball, so its return is always straight and the child alone aims. Stars at 4 are therefore only reachable by sliding the paddle off-centre.
+- The paddle bounce angles the ball by where it strikes (offset × 0.85 rad), the middle returning it straight; the pet centres on the ball on the star, color, goal and solo levels, so its return there is straight and the child alone aims (the rally levels lob, see Pet-specific returns). Stars at 4 are therefore only reachable by sliding the paddle off-centre.
 - A hint (`hinting`) is set after two misses in a row, counted once per round, slows the ball to 75 % and shows a ring where it will arrive. It never turns off again for that round.
 - Misses are balls past her paddle only. The pet never misses and the ball never leaves the table on her side without a gentle boing.
 - The ghost finger (`autotouch`) and the couch bot (`autoplay`) both use `predictY`/`paddleTarget`; the stars bot slides the paddle so the bounce goes through the star, and a rule test asserts it reaches more than 85 % of random stars.
@@ -62,7 +62,7 @@ Keep the paddle, the ball and the pet. The game grows through what the ball does
 
 - **Courts** (from IDEAS): a beach with a driftwood net, a pond with lily-pad stars, snow. Only drawing and a spoken name change, no rules.
 - **Balls with a voice**: beach ball, balloon, a duckling that quacks on each hit; sounds are `sfx` voices and the sticker seed stays pinned.
-- **Pet-specific returns**: the pet's return is straight today. A little variety (a gentle lob angle up to 0.3 rad on levels 3 and 5) makes the pet less predictable without making it fail; the child's paddle must still be able to meet every ball.
+- **Pet-specific returns**: the pet lobs on the rally, together, count and skip levels (built, 0.3 of half the paddle) and aims away from a parked paddle; it is still straight on solo, stars, colors, goal and versus. The variety makes the pet less predictable without making it fail; the child's paddle must still be able to meet every ball.
 - **Gentler resets**: a miss does not zero the rally (see decisions). Count the best run as "so far".
 - **Counting by hers**: at level 5 count only her bounces ("your bounces") or speak a "that's 5!" at the halfway point.
 
@@ -107,7 +107,7 @@ Speeding up until someone fails, shrinking paddles, lives, tokens, power-ups tha
 1. **Should a miss reset the rally** on levels 2, 3 and 5? Lean: no; keep the best run so far, or only reset at level 5 as a restart. Needs your call because adaptation uses misses.
 2. **Should the hint wear off** after the next bounce, and should it slow the ball? Lean: slow only until the next hit, and let a second hint come after another two misses.
 3. **School window:** decided that older play may be competitive. Open: whether levels 6 (bounce to a color), 7 (goal) and 8 (rally to win) all go in the island, and whether a versus loss counts as a miss for adaptation (lean: no; adapt on the pet's skill and the margin).
-4. **Is the pet's straight return a fixed rule or a lever?** Lean: lob a little on levels 3 and 5.
+4. **Is the pet's straight return a fixed rule or a lever?** Decided: a lever; it lobs on the rally levels (2, 3, 5, 10, 11).
 5. **Younger entries:** add a level 0 for follow-the-ball? Waiting on the level-order decisions.
 
 **Decided 2026-10-23 (on the developer's delegation):** the couch face-off stays first to five goals; two real people on two controllers is a later device check, not a blocker; the follow-the-ball entry is a new stable level ID placed below level 1 with `order` (no renumbering), and the duel demo may be built.
@@ -141,4 +141,6 @@ Slice 3 followed on `codex/bounce-back-courts`: three courts (pond, beach, snow)
 
 The lap level 12 followed on `claude/bounce-back-lap` (PR #1568): see Younger-band openings. Typecheck, the unit suite, the game's rule tests (lap order, no-miss rule, drift reaches the ball at six view sizes), a `BATCH_ONLY=bounce BOUNCE_FROM=12` section and `FINGER_LEVELS=12` passed.
 
-The slice 1 rule guards followed on `claude/bounce-back-rule-guards` (2026-11-23, test-only): `logic.test.ts` pins the sticker drawings for seeds 0–99 (snapshot) and checks that every rally-counted goal needs at least two of her own bounces. Typecheck and the game's rule tests (17) passed; not run: `BATCH_ONLY=bounce` (no game code changed). One finding from the idealised pet model: an untouched paddle at table centre still finishes some rally rounds (see the READY line on it).
+The slice 1 rule guards followed on `claude/bounce-back-rule-guards` (2026-11-23, test-only): `logic.test.ts` pins the sticker drawings for seeds 0–99 (snapshot) and checks that every rally-counted goal needs at least two of her own bounces. Typecheck and the game's rule tests (17) passed; not run: `BATCH_ONLY=bounce` (no game code changed). One finding from the idealised pet model: an untouched paddle at table centre still finishes some rally rounds (fixed by the idle-paddle slice below).
+
+The idle-paddle fix followed on `claude/bounce-back-idle-paddle` (PR #2093, 2026-11-24): `nextLob()` uses `isAwayMode`, `returnArrival` and `petLobAway` at her right-paddle hit, so on rally, together, count and skip levels the pet holds its paddle (within the 0.3 lob limit) so its return arrives clear of the parked paddle; level 2 now lobs too (its straight returns were the cause). Solo, stars, colors, goal, versus and pat are unchanged. Typecheck, the 19 rule tests (idle paddle never meets returns on 1024x768 and a narrow table; the usual lob is kept when already clear) and `FINGER_ONLY=bounce-back` at levels 12 and 11 passed.
