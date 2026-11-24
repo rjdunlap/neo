@@ -31,7 +31,7 @@ Bands below mean the actual adaptive window: lap 1–2, toddler 2–3, preschool
 
 The how-to's level-2 basket/remove instruction is false: basket, bell and tower undo are only visible on 3–4; level 2 taps anywhere. The level-5 finish line says a tower is built, although the child predicts, and the whole-ladder goal omits predicting/revising. Bound the open-ended level-6 text before adding later modes. Put the actual inputs and number of tasks on each card.
 
-The taller glow appears on the first wrong check at 3–4, while counted assistance begins after two. Preserve this distinction in the first wording slice; changing hint timing/accounting needs an explicit choice. Level-6 topples and short full stacks are unscored experiments since 2026-11-23 (decision 2), with one counted hint after two.
+Since 2026-11-24 (decision 2) the too-tall top-block glow at 3–4 waits for the second miss, like the counted help; wrong heights there stay misses. Level-6 topples and short full stacks are unscored experiments since 2026-11-23 (decision 2), with one counted hint after two.
 
 Slice 2 reproduced a pickup during landing, cancellation committing a table placement, and stale help during pickup. The fixes lock pickup through settlement/result, order committed blocks by depth rather than animated y, return cancellation to the tray, clear help on pickup and share the solver slot domain. Resize during a fall and leaving it produced no errors in the isolated probe; no extra fall/lifecycle changes were made. The focused regression covers a resize during landing and subsequent top-lift recovery. Actual device cancellation and dragging remain open.
 

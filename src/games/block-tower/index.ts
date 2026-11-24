@@ -786,7 +786,8 @@ class BlockTower implements Game {
     if (this.plan.mode === 'match')
       await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target, friend: 'Duck' });
     else await this.ctx.say(result === 'short' ? 'tower.short' : 'tower.tall');
-    if (result === 'tall') this.glowTop = true;
+    // The top block glows only once help is due (two misses), per the 2026-10-23 decision.
+    if (result === 'tall' && this.wrongs >= 2) this.glowTop = true;
     if (this.wrongs >= 2) {
       // Count them together: the child's blocks bounce one by one.
       if (!this.hinted) {
