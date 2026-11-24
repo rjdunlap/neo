@@ -27,6 +27,7 @@ import {
   capitalLookalike,
   lookalike,
   makeQuestions,
+  toldLine,
   MINE_LEVEL,
   MINE_PLAN,
   mineQuestions,
@@ -608,5 +609,19 @@ describe('Word Monsters', () => {
       }
     }
     expect(changed).toBe(pairs);
+  });
+
+  it('levels 7 and 8 are told, then asked: only the first question says a sound', () => {
+    for (const mode of ['family', 'end'] as const) {
+      const lines = [0, 1, 2, 3, 4, 5].map((i) => toldLine(mode, i));
+      expect(lines[0]).toBe(`monster.${mode}`);
+      for (const l of lines.slice(1)) expect(l).toBe(`monster.${mode}.word`);
+      const told = SCRIPT[lines[0]].join(' ');
+      expect(told).toContain('{sound}');
+      for (const text of SCRIPT[lines[1]]) {
+        expect(text).toContain('{word}');
+        expect(text).not.toMatch(/\{(sound|first|second|sounds)\}/);
+      }
+    }
   });
 });
