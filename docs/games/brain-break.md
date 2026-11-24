@@ -4,11 +4,11 @@
 
 **ID:** `brain-break` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
-**Skills:** Visual search, Number order, Adding and taking away, Counting by steps, Comparing numbers, Alternating number and letter order, Fractions and decimals
+**Skills:** Visual search, Number order, Adding and taking away, Counting by steps, Comparing numbers, Alternating number and letter order, Fractions and decimals, Mental arithmetic
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–13 |
+| grown-up | 1–14 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,12 +25,13 @@
 | 11 | Two trails: 1, A, 2, B |
 | 12 | Two trails: 1, L, 2, K |
 | 13 | Fractions and decimals, smallest first |
+| 14 | Work them out, smallest first |
 
 <!-- end generated -->
 
 **Starts as:** find and light 1 to 9 on a shuffled pond of numbered stones
 
-**Grows into:** bigger boards, sums and take-aways, counting by steps, sorting numbers including below zero, alternating between number and letter trails, and ordering fractions and decimals
+**Grows into:** bigger boards, sums and take-aways, counting by steps, sorting numbers including below zero, alternating between number and letter trails, ordering fractions and decimals, and working out sums, take-aways and times
 
 ## Design notes
 

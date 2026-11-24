@@ -56,6 +56,8 @@ class BrainBreak implements Game {
   readonly values: number[] | null;
   /** At level 13 the stones hold fractions and decimals, smallest first, with their spoken forms. */
   private readonly parts: Part[] | null;
+  /** At level 14 the stones hold sums, take-aways and times, smallest answer first; `value` is the answer. */
+  private readonly works: Part[] | null;
   readonly sums: boolean;
   private readonly alternating: string[] | null;
   readonly stones: Container[] = [];
@@ -86,6 +88,7 @@ class BrainBreak implements Game {
     this.values = round.values;
     this.alternating = round.alternating;
     this.parts = round.parts;
+    this.works = round.works;
     this.order = trailOrder(this.board);
     this.background.eventMode =
       this.status.eventMode =
@@ -122,6 +125,7 @@ class BrainBreak implements Game {
     const r = this.rule;
     if (this.alternating)
       void this.ctx.instruct(lettersBack(this.ctx.level) ? 'brain.two.startBack' : 'brain.two.start');
+    else if (this.works) void this.ctx.instruct('brain.work.start');
     else if (this.parts) void this.ctx.instruct('brain.parts.start');
     else if (this.values)
       void this.ctx.instruct(this.values.some((v) => v < 0) ? 'brain.order.startBelow' : 'brain.order.start');
@@ -143,6 +147,7 @@ class BrainBreak implements Game {
       this.nudge(this.stones[i]);
       if (this.consecutive === 2) this.askForHint();
       else if (this.alternating) this.sayAlternatingTurn(this.labels[i]);
+      else if (this.works) void this.ctx.say('brain.work.try', { m: this.works[this.board[i] - 1].value });
       else if (this.parts) void this.ctx.say('brain.order.try', { m: this.parts[this.board[i] - 1].spoken });
       else if (this.values)
         void this.ctx.say('brain.order.try', { m: speakNumber(this.values[this.board[i] - 1]) });
@@ -154,6 +159,7 @@ class BrainBreak implements Game {
     sfx.bell((this.next - 1) % 5, 0.3);
     this.squash(this.stones[i]);
     if (this.sums) setLabel(this.texts[i], String(this.board[i]));
+    else if (this.works) setLabel(this.texts[i], String(this.works[this.board[i] - 1].value));
     this.next++;
     this.consecutive = 0;
     this.hinted = -1;
@@ -162,6 +168,7 @@ class BrainBreak implements Game {
       this.finished = true;
       void this.complete();
     } else if (this.alternating) this.sayAlternatingTurn();
+    else if (this.works) void this.ctx.say('brain.work.next', { p: this.works[this.next - 2].value });
     else if (this.parts) void this.ctx.say('brain.order.next', { p: this.parts[this.next - 2].spoken });
     else if (this.values)
       void this.ctx.say('brain.order.next', { p: speakNumber(this.values[this.next - 2]) });
@@ -250,6 +257,7 @@ class BrainBreak implements Game {
     this.hinted = hintIndex(this.board, this.next);
     this.draw();
     if (this.alternating) void this.ctx.say('brain.two.hint', { v: this.alternating[this.next - 1] });
+    else if (this.works) void this.ctx.say('brain.work.hint', { v: this.works[this.next - 1].value });
     else if (this.parts) void this.ctx.say('brain.order.hint', { v: this.parts[this.next - 1].spoken });
     else if (this.values)
       void this.ctx.say('brain.order.hint', { v: speakNumber(this.values[this.next - 1]) });
@@ -261,16 +269,21 @@ class BrainBreak implements Game {
     else {
       const prompt = this.alternating
         ? alternatingSign(this.alternating, this.next)
-        : this.parts
+        : this.works
           ? orderSignOf(
-              this.parts.map((p) => p.text),
+              this.works.map((p) => String(p.value)),
               this.next,
             )
-          : this.values
-            ? orderSign(this.values, this.next)
-            : this.rule
-              ? ruleSign(this.rule, this.next)
-              : `${this.sums ? 'Make' : 'Find'} ${this.next}`;
+          : this.parts
+            ? orderSignOf(
+                this.parts.map((p) => p.text),
+                this.next,
+              )
+            : this.values
+              ? orderSign(this.values, this.next)
+              : this.rule
+                ? ruleSign(this.rule, this.next)
+                : `${this.sums ? 'Make' : 'Find'} ${this.next}`;
       this.status.text = `${prompt}   ·   ${this.next - 1} / ${this.board.length}`;
     }
     this.drawTrail(this.next - 1);
@@ -328,6 +341,7 @@ export const brainBreak: GameModule = {
     'Comparing numbers',
     'Alternating number and letter order',
     'Fractions and decimals',
+    'Mental arithmetic',
   ],
   bands: ['grownup'],
   levels: (band) => rangeFor(LEVELS, band),
@@ -336,7 +350,7 @@ export const brainBreak: GameModule = {
   touchDemo: true,
   upright: true,
   coplayHint:
-    'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes. With fractions and decimals, one person says which is smaller aloud. In Two trails, one person finds the numbers and the other finds the letters.',
+    'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes. With fractions and decimals, one person says which is smaller aloud. With sums, take-aways and times, one person works each out aloud and the other says which is smaller. In Two trails, one person finds the numbers and the other finds the letters.',
   offScreen:
     'Shuffle numbered paper squares on a table and point to them in order, at your own pace; later, write sums on the squares and lay them out in order.',
   hubIcon: () => new WigglyIcon(stoneArt('1')),

@@ -127,7 +127,7 @@ None needed. Level 1 (nine stones, target named) is already a gentle entry, and 
 3. **Levels 9–10, Smallest first and Below zero** (**built**, PR #2099). After slice 2. Same tier, played at 10.
 4. **Levels 11–12, Two trails** (**built**, PR #2103). After slice 2. Same tier, played at 12; the co-play line gains the two roles.
 5. **Level 13, Parts in order** (**built**, PR #2110). After slice 3. Same tier, played at 13, with the upright screenshot checking the four-character labels; takes decision 3's default.
-6. **Level 14, Work them out, smallest first.** After slice 3. Same tier, played at 14.
+6. **Level 14, Work them out, smallest first** (**built**, PR #2115). After slice 3. Same tier, played at 14.
 
 Not queued: the school opening (decision 1) and family-language number words (decision 4).
 

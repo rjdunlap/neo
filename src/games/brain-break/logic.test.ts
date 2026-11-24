@@ -6,6 +6,8 @@ import {
   comparesParts,
   isFraction,
   makeParts,
+  makeWorks,
+  worksThemOut,
   orderSignOf,
   PART_POOL,
   speakDecimal,
@@ -103,10 +105,10 @@ describe('Brain Break number order', () => {
 
 describe('Brain Break sums in order (levels 4–6)', () => {
   const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
-  it('clamps the ladder to 1..13', () => {
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 13 });
+  it('clamps the ladder to 1..14', () => {
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 14 });
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(14)).toBe(planFor(13));
+    expect(planFor(15)).toBe(planFor(14));
     expect([4, 5, 6].map((l) => planFor(l).side)).toEqual([3, 4, 5]);
   });
   it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
@@ -426,5 +428,54 @@ describe('Brain Break Parts in order (level 13)', () => {
   });
   it('leaves the boards of levels 1 to 12 unchanged', () => {
     for (let level = 1; level <= 12; level++) expect(makeRound(level, new Rng(5)).parts).toBeNull();
+  });
+});
+
+describe('Brain Break Work them out (level 14)', () => {
+  const kind = (t: string) => (t.includes('+') ? 'sum' : t.includes(MINUS) ? 'take' : 'times');
+  it('draws nine different answers within 1–81, at least two of each kind, labels within four characters', () => {
+    for (let seed = 1; seed <= 400; seed++) {
+      const works = makeWorks(new Rng(seed));
+      expect(works).toHaveLength(9);
+      expect(new Set(works.map((w) => w.value)).size).toBe(9);
+      for (const [i, w] of works.entries()) {
+        expect(w.text.length).toBeLessThanOrEqual(4);
+        expect(w.value).toBeGreaterThanOrEqual(1);
+        expect(w.value).toBeLessThanOrEqual(81);
+        expect(evaluate(w.text)).toBe(w.value);
+        if (i) expect(w.value).toBeGreaterThan(works[i - 1].value);
+        const m = /^(\d+)([+\u2212\u00d7])(\d+)$/.exec(w.text)!;
+        const [a, b] = [Number(m[1]), Number(m[3])];
+        if (m[2] === '\u00d7') expect(Math.max(a, b)).toBeLessThanOrEqual(9);
+        else if (m[2] === MINUS) {
+          expect(a).toBeLessThanOrEqual(30);
+          expect(b).toBeLessThanOrEqual(9);
+        } else {
+          expect(a + b).toBeLessThanOrEqual(30);
+          expect(Math.min(a, b)).toBeLessThanOrEqual(9);
+        }
+      }
+      for (const k of ['sum', 'take', 'times'])
+        expect(works.filter((w) => kind(w.text) === k).length).toBeGreaterThanOrEqual(2);
+    }
+  });
+  it('evaluates times', () => {
+    expect(evaluate('6\u00d77')).toBe(42);
+  });
+  it('is a 3x3 round whose stones are in smallest-answer rank order, leaving other levels unchanged', () => {
+    expect(planFor(14).side).toBe(3);
+    expect(worksThemOut(14)).toBe(true);
+    expect([13, 15].some((l) => worksThemOut(l))).toBe(false);
+    for (let level = 1; level <= 13; level++) expect(makeRound(level, new Rng(5)).works).toBeNull();
+    for (let seed = 1; seed <= 100; seed++) {
+      const round = makeRound(14, new Rng(seed));
+      expect(makeRound(14, new Rng(seed))).toEqual(round);
+      const works = round.works!;
+      expect(trailOrder(round.board).map((i) => round.labels[i])).toEqual(works.map((w) => w.text));
+      for (let next = 1; next <= 9; next++) {
+        expect(evaluate(round.labels[hintIndex(round.board, next)])).toBe(works[next - 1].value);
+        if (next < 9) expect(judge(round.board[hintIndex(round.board, next + 1)], next)).toBe('wrong');
+      }
+    }
   });
 });

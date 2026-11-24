@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Brain Break: real taps, stable checked stones, hints and one reward per board. */
   async function brainBreakPlay() {
-    const only = { 'two-trails': [12], parts: [13] }[process.env.BRAINBREAK_ONLY];
-    const levels = only ?? [1, 6, 8, 10, 12, 13];
+    const only = { 'two-trails': [12], parts: [13], work: [14] }[process.env.BRAINBREAK_ONLY];
+    const levels = only ?? [1, 6, 8, 10, 12, 13, 14];
     for (const level of levels) {
       const alternating = level === 12;
       if (alternating) await page.setViewportSize({ width: 390, height: 844 });
@@ -55,6 +55,18 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await page.waitForTimeout(450);
         await screenshot('brain-break-parts-in-order-portrait');
       }
+      if (level === 14) {
+        const labels = await page.evaluate(() => neo.scene.game.labels);
+        assert.equal(labels.length, 9);
+        assert.ok(
+          labels.every((t) => t.length <= 4 && /^\d+[+\u2212\u00d7]\d+$/.test(t)),
+          'sums, take-aways and times, at most four characters',
+        );
+        assert.equal(await page.evaluate(() => neo.scene.game.status.text.split('   ')[0]), 'Smallest first');
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(450);
+        await screenshot('brain-break-work-them-out-portrait');
+      }
       if (level === 10) {
         assert.equal(
           await page.evaluate(() => neo.scene.game.status.text.split('·')[0].trim()),
@@ -76,7 +88,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               : 'brain-break-below-zero-portrait',
         );
       }
-      for (let n = first; n <= (level === 1 || level === 13 ? 9 : 25); n++) {
+      for (let n = first; n <= (level === 1 || level >= 13 ? 9 : 25); n++) {
         const i = await page.evaluate((n) => neo.scene.game.board.indexOf(n), n);
         await tap(`neo.scene.game.stones[${i}]`);
         if (level === 6 && n === 1) {
@@ -91,6 +103,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.ok(
             await page.evaluate(() => neo.scene.game.texts.every((t) => t.width <= 88)),
             'every label fits its stone',
+          );
+        }
+        if (level === 14 && n === 1) {
+          assert.equal(
+            await page.evaluate(
+              (i) => neo.scene.game.texts[i].text === String(neo.scene.game.works[0].value),
+              i,
+            ),
+            true,
+            'a lit stone shows its answer',
           );
         }
         if ((level === 8 || level === 10) && n === 1) {
