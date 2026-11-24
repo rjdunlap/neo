@@ -5,6 +5,7 @@ import {
   friendsReady,
   munchAnswer,
   shareReturns,
+  isEven,
   isTapMode,
   complete,
   extras,
@@ -143,7 +144,7 @@ describe('Monster Munch rounds', () => {
     }
   });
   it('the ghost finger plays every round of every level with no refusal, a fair share, the bell only when the order is right, and the right numbers', () => {
-    for (const plan of MUNCH_PLANS) {
+    for (const plan of MUNCH_PLANS.filter((p) => p.mode !== 'even')) {
       for (let seed = 1; seed <= 60; seed++) {
         const rng = new Rng(seed);
         const rounds = munchRounds(plan, rng);
@@ -220,6 +221,8 @@ describe('Monster Munch rounds', () => {
               expect(t.snacks[move.tap].eaten).toBe(false);
               t.snacks[move.tap].eaten = true;
               if (t.snacks.every((x) => x.eaten)) won = true;
+            } else if ('take' in move!) {
+              throw new Error('only Even it out takes food back out of a tummy');
             } else {
               const snack = t.snacks[move!.give];
               expect(snack.eaten).toBe(false);
@@ -260,8 +263,8 @@ describe('Monster Munch foods', () => {
   const pooled = MUNCH_PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => p.pool);
   const fixed = MUNCH_PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => !p.pool);
 
-  it('pools exactly levels 4 to 8, and keeps 1, 2, 3, 9 and 10 off the pool', () => {
-    expect(pooled.map((x) => x.level)).toEqual([4, 5, 6, 7, 8]);
+  it('pools exactly levels 4 to 8 and 13, and keeps 1, 2, 3, 9 and 10 off the pool', () => {
+    expect(pooled.map((x) => x.level)).toEqual([4, 5, 6, 7, 8, 13]);
     expect(fixed.map((x) => x.level)).toEqual([1, 2, 3, 9, 10, 11, 12]);
   });
 
@@ -425,7 +428,7 @@ describe('Monster Munch band tables', () => {
     expect(monsterMunch.levels('toddler')).toEqual({ min: 2, max: 10, order: [2, 3, 10, 4] });
     expect(rangeFor).toBeTypeOf('function');
     expect(monsterMunch.entryLevels).toEqual([9, 10]);
-    expect(monsterMunch.levels('school')).toEqual({ min: 6, max: 12, order: [6, 7, 12, 8, 11] });
+    expect(monsterMunch.levels('school')).toEqual({ min: 6, max: 13, order: [6, 7, 12, 8, 11, 13] });
   });
 });
 
@@ -529,5 +532,89 @@ describe('Monster Munch sharing both kinds and choosing group counts', () => {
         expect(complete(r.want, { ...full, [k]: full[k] - back[k] })).toBe(true);
       }
     }
+  });
+});
+
+describe('Monster Munch level 13, Even it out', () => {
+  const plan = MUNCH_PLANS[12];
+
+  it('opens every round uneven, with the fair share a whole number and a clear gap to close', () => {
+    expect(plan.mode).toBe('even');
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = munchRounds(plan, new Rng(seed));
+      expect(rounds.map((r) => r.monsters)).toEqual([2, 3]);
+      for (const r of rounds) {
+        const each = r.want[r.kinds[0]];
+        expect(r.start).toHaveLength(r.monsters);
+        expect(
+          r.start!.reduce((a, b) => a + b, 0),
+          'nothing is lost or added',
+        ).toBe(each * r.monsters);
+        expect(r.tray[r.kinds[0]]).toBe(each * r.monsters);
+        expect(total(r.tray)).toBeLessThanOrEqual(TRAY_MAX);
+        expect(isEven(r.start!), 'uneven at the start').toBe(false);
+        expect(Math.max(...r.start!) - Math.min(...r.start!)).toBeGreaterThanOrEqual(2);
+        expect(each).toBeGreaterThanOrEqual(2);
+        expect(Math.min(...r.start!), 'nobody starts empty').toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+
+  it('the ghost finger moves food to the fewest monster and rings the bell only when all are even, then answers', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      for (const r of munchRounds(plan, rng)) {
+        const k = r.kinds[0];
+        const t: MunchTable = {
+          want: r.want,
+          kinds: r.kinds,
+          snacks: Array.from({ length: r.tray[k] }, () => ({ food: k, eaten: false })),
+          fed: r.start!.map((n) => ({ ...noFood(), [k]: n })),
+          pads: [],
+          asking: 'each',
+        };
+        // The round opens with every food in a tummy.
+        t.fed.forEach((f, i) => {
+          for (let n = 0; n < f[k]; n++) t.snacks.find((s) => !s.eaten)!.eaten = true;
+          expect(i).toBeLessThan(r.monsters);
+        });
+        let won = false;
+        for (let step = 0; step < 30 && !won; step++) {
+          const move = munchTouch(plan, t);
+          expect(move, `seed ${seed} step ${step}`).not.toBeNull();
+          if (t.pads.length) {
+            expect(move).toEqual({ pad: r.want[k] });
+            won = true;
+          } else if (move === 'bell') {
+            expect(isEven(t.fed.map((f) => f[k]))).toBe(true);
+            expect(t.snacks.every((s) => s.eaten)).toBe(true);
+            t.pads = numberChoices(r.want[k], rng);
+          } else if (typeof move === 'object' && move && 'take' in move) {
+            expect(t.fed[move.take][k]).toBeGreaterThan(r.want[k]);
+            t.fed[move.take][k]--;
+            t.snacks.find((s) => s.eaten)!.eaten = false;
+          } else {
+            const m = move as { give: number; to: number };
+            expect(t.snacks[m.give].eaten).toBe(false);
+            expect(t.fed[m.to][k]).toBeLessThan(r.want[k]);
+            t.snacks[m.give].eaten = true;
+            t.fed[m.to][k]++;
+          }
+        }
+        expect(won, `seed ${seed}: a round is won`).toBe(true);
+      }
+    }
+  });
+
+  it('glows the monsters that are not at the fair share', () => {
+    const t: MunchTable = {
+      want: { ...noFood(), cookie: 3 },
+      kinds: ['cookie'],
+      snacks: [],
+      fed: [4, 2].map((n) => ({ ...noFood(), cookie: n })),
+      pads: [],
+      asking: 'each',
+    };
+    expect(munchHint(plan, t)).toBe('monster');
   });
 });

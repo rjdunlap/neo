@@ -106,6 +106,7 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
       10: [2, 1],
       11: [5, 1],
       12: [4, 1],
+      13: [2, 1],
     };
     const levels =
       munchLevels ??
@@ -153,7 +154,7 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
       });
       await page.evaluate(feedHelpers);
       await page.waitForTimeout(700);
-      if ([1, 3, 6, 7, 9, 10].includes(level)) await screenshot(`monster-munch-${level}`);
+      if ([1, 3, 6, 7, 9, 10, 13].includes(level)) await screenshot(`monster-munch-${level}`);
       const playing = page.evaluate(async () => {
         const g = mm.g();
         const mode = g.plan.mode;
@@ -370,6 +371,42 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
               while (m.count(k) < r.want[k] && mm.free()) await mm.feed(mm.free(), m);
             await kit.until(() => g.pads.length > 0 || g.done, 8000);
             await kit.sleep(400);
+          } else if (mode === 'even') {
+            if (g.pads.length) {
+              kit.tapOn(g.pads.find((p) => p.value === r.want[k]).node);
+              await kit.sleep(900);
+              continue;
+            }
+            if (g.round === 0 && mistakes === 0) {
+              // The bell while the tummies are uneven is a miss, and the second brings the glow.
+              for (let i = 0; i < 2; i++) {
+                kit.tapOn(g.bell);
+                await kit.sleep(400);
+                await mm.ready();
+              }
+              mistakes = 2;
+              if (g.misses !== 2 || g.hints !== 1) throw new Error(`Even it out hint ${g.misses} ${g.hints}`);
+            }
+            // A tap takes one out of an overfull monster (never a miss); she gives it to one with fewer.
+            for (let guardMoves = 0; guardMoves < 12; guardMoves++) {
+              const from = g.monsters.find((m) => m.count(k) > r.want[k]);
+              if (!from) break;
+              const before = from.count(k);
+              kit.tapOn(from, 0, -150 * from.scale.y * neo.view.scale);
+              await kit.sleep(1000);
+              if (from.count(k) !== before - 1) throw new Error('A tap did not take food out of a tummy');
+              await mm.feed(
+                mm.free(),
+                g.monsters.find((m) => m.count(k) < r.want[k]),
+              );
+            }
+            if (g.round === 0 && g.misses === 2) {
+              // Everyone holds the same, so the bell is right.
+              if (!g.monsters.every((m) => m.count(k) === r.want[k])) throw new Error('Not even after moves');
+            }
+            kit.tapOn(g.bell);
+            await kit.until(() => g.pads.length > 0 || g.done, 8000);
+            await kit.sleep(450);
           } else if (mode === 'leftover') {
             if (g.pads.length) {
               // First how many each, then how many are left over.
@@ -411,6 +448,7 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
       }
       await playing;
       if (level === 12) await screenshot('monster-munch-12-finished');
+      if (level === 13) await screenshot('monster-munch-13-finished');
       await finished('monster-munch');
       const munchTimed = await page.evaluate(() => munchR4);
       if ([7, 8, 11, 12].includes(level)) {

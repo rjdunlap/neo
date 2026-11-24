@@ -124,7 +124,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Who Am I?](docs/games/who-am-i.md) | pre-K–school | Barnyard | 8 | a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out |
 | [Timeline Trail](docs/games/timeline-trail.md) | preschool–school | Barnyard | 7 | hang pictures of one island place on the pet's clothesline between a long-ago post and a now post, then watch the place grow as a flipbook |
 | [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 15 | count along as illustrated ducks hop in |
-| [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 12 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
+| [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 13 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
 | [Pet Kitchen](docs/games/pet-kitchen.md) | lap–school | Counting Cove | 15 | tap pieces onto the plate with fewest (lap), cut a sandwich or pie in halves and share; friends eat the meal |
 | [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 13 | hop to a number on the lily pads |
