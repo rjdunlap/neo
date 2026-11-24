@@ -30,7 +30,16 @@ export const HOW_TO: GameHowTo = {
       text: 'Alternate numbers and letters. Start with 1, then A, 2, B, and keep both trails going up.',
     },
     { from: 12, to: 12, text: 'Start with 1, then L, 2, K. Numbers go up and letters go backwards.' },
-    { from: 11, text: 'The sign shows up to two lit stones and whether a number or letter comes next.' },
+    {
+      from: 13,
+      to: 13,
+      text: 'Some stones are fractions and some are decimals. Find the smallest one still unlit, such as 2/3 before 0.7.',
+    },
+    {
+      from: 11,
+      to: 12,
+      text: 'The sign shows up to two lit stones and whether a number or letter comes next.',
+    },
     'Hint outlines the next stone; there is no time limit.',
   ],
   finish: 'Finding the final stone finishes the round, including with help.',

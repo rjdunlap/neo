@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Brain Break: real taps, stable checked stones, hints and one reward per board. */
   async function brainBreakPlay() {
-    const levels = process.env.BRAINBREAK_ONLY === 'two-trails' ? [12] : [1, 6, 8, 10, 12];
+    const only = { 'two-trails': [12], parts: [13] }[process.env.BRAINBREAK_ONLY];
+    const levels = only ?? [1, 6, 8, 10, 12, 13];
     for (const level of levels) {
       const alternating = level === 12;
       if (alternating) await page.setViewportSize({ width: 390, height: 844 });
@@ -41,6 +42,19 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.match(sign, /^Count (back )?by \d · (start at|after) \d+/, 'the sign names the rule');
         assert.ok(!sign.includes(' 1 /'), 'the sign never shows a rank');
       }
+      if (level === 13) {
+        const labels = await page.evaluate(() => neo.scene.game.labels);
+        assert.equal(labels.length, 9);
+        assert.ok(
+          labels.every((t) => t.length <= 4 && /^(\d+\/\d+|\d\.\d+)$/.test(t)),
+          'fractions and decimals, at most four characters',
+        );
+        assert.ok(labels.some((t) => t.includes('/')) && labels.some((t) => t.includes('.')));
+        assert.equal(await page.evaluate(() => neo.scene.game.status.text.split('   ')[0]), 'Smallest first');
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(450);
+        await screenshot('brain-break-parts-in-order-portrait');
+      }
       if (level === 10) {
         assert.equal(
           await page.evaluate(() => neo.scene.game.status.text.split('·')[0].trim()),
@@ -51,7 +65,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'some stones are below zero, with a true minus sign',
         );
       }
-      if (level >= 6 && !alternating) {
+      if (level >= 6 && level < 13 && !alternating) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(450);
         await screenshot(
@@ -62,7 +76,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               : 'brain-break-below-zero-portrait',
         );
       }
-      for (let n = first; n <= (level === 1 ? 9 : 25); n++) {
+      for (let n = first; n <= (level === 1 || level === 13 ? 9 : 25); n++) {
         const i = await page.evaluate((n) => neo.scene.game.board.indexOf(n), n);
         await tap(`neo.scene.game.stones[${i}]`);
         if (level === 6 && n === 1) {

@@ -1,6 +1,6 @@
 # Brain Break: number order first slice
 
-**Built:** levels 1–12 ([PR #2103](https://github.com/rjdunlap/neo/pull/2103)). To build level 13, read “Build slices, in order” in the [deep dive](../deep-dives/brain-break.md#build-slices-in-order).
+**Built:** levels 1–13 ([PR #2110](https://github.com/rjdunlap/neo/pull/2110)). To build level 14, read “Build slices, in order” in the [deep dive](../deep-dives/brain-break.md#build-slices-in-order).
 
 Claimed 2026-10-13 on `codex/brain-break-number-order` for roadmap step 9.
 

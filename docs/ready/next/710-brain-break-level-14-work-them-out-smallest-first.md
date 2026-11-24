@@ -1,0 +1,1 @@
+**`brain-break` level 14, Work them out, smallest first** (grownup, Lantern Lodge; new level on an existing interaction: typecheck, rule tests, one scripted play and ghost finger at 14, upright screenshot of the short labels). [Dive slice 6](../../deep-dives/brain-break.md#build-slices-in-order)
