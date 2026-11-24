@@ -12,6 +12,7 @@ import {
   FEELING_CHANCE,
   nearestSpot,
   pickFeeling,
+  petReveal,
   shouldNudge,
   shouldSelfOpen,
   planFor,
@@ -796,5 +797,26 @@ describe('Peekaboo Barn level 19, Hide it yourself', () => {
       expect(SCRIPT[id]?.length).toBeGreaterThan(0);
       for (const line of SCRIPT[id]) expect(line).not.toMatch(/wrong|oops|try again/i);
     }
+  });
+});
+
+describe('{pet} hides too', () => {
+  it('is a surprise only in free play, once a round, never first or last', () => {
+    for (const level of [1, 2, ONE_DOOR_LEVEL]) {
+      const plan = planFor(level);
+      for (let seed = 1; seed <= 200; seed++) {
+        const at = petReveal(new Rng(seed), plan);
+        expect(at).not.toBeNull();
+        expect(at!).toBeGreaterThanOrEqual(1);
+        expect(at!).toBeLessThanOrEqual(plan.goal - 2);
+      }
+    }
+  });
+  it('never appears in a level that asks for someone', () => {
+    for (let level = 3; level <= 15; level++) expect(petReveal(new Rng(7), planFor(level))).toBeNull();
+    expect(petReveal(new Rng(7), { mode: 'free', spots: 1, goal: 2 })).toBeNull();
+  });
+  it('has a spoken line that names the pet', () => {
+    expect(SCRIPT['peek.pet'].every((l) => l.includes('{pet}'))).toBe(true);
   });
 });

@@ -1,15 +1,18 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { RAINBOW, swatch, wood } from '../../art/palette';
+import { ink, RAINBOW, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { voice } from '../../audio/voice';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import type { CompanionRig } from '../../creatures/companion';
+import { FONT } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -27,6 +30,7 @@ import {
   soundWord,
   VOICES,
   pickFeeling,
+  petReveal,
   pickTarget,
   planFor,
   spotToTap,
@@ -267,7 +271,20 @@ class Spot extends Container {
   pose: Pose = 'hidden';
   hint = false;
   private clueGlow: Graphics | null = null;
-  private critter: Critter | null = null;
+  private critter: Critter | CompanionRig | null = null;
+  /** {pet} is the one hiding here (free play's surprise); `animal` then means nothing. */
+  isPet = false;
+  /** The written name under a revealed friend, lowercase; shown only while the friend is out. */
+  private readonly tag = new Text({
+    text: '',
+    style: {
+      fontFamily: FONT,
+      fontSize: 46,
+      fontWeight: '700',
+      fill: ink,
+      stroke: { color: 0xffffff, width: 8 },
+    },
+  });
   private readonly holder = new Container();
   private readonly cover = new Container();
   private readonly panels: Graphics[] = [];
@@ -325,11 +342,15 @@ class Spot extends Container {
       }
     }
     this.leaf.visible = false;
+    this.tag.anchor.set(0.5);
+    this.tag.position.set(0, -50);
+    this.tag.visible = false;
     this.addChild(
       this.holder,
       this.cover,
       this.leaf,
       new Graphics().roundRect(-130, -6, 260, 120, 20).fill(ground(kind)),
+      this.tag,
     );
     this.eventMode = 'none';
     this.hitArea = new Rectangle(-130, -340, 260, 350);
@@ -341,6 +362,8 @@ class Spot extends Container {
     this.critter?.destroy({ children: true });
     this.animal = animal;
     this.empty = false;
+    this.isPet = false;
+    this.tag.visible = false;
     this.critter = new Critter(CRITTERS[animal]);
     this.critter.scale.set(CRITTER_SCALE);
     this.critter.y = POSE.hidden;
@@ -350,11 +373,35 @@ class Spot extends Container {
     this.holder.addChild(this.critter);
   }
 
+  /** {pet} behind the cover instead of an animal (it starts hidden). */
+  setPet(rig: CompanionRig) {
+    if (this.critter) this.tw.kill(this.critter);
+    this.critter?.destroy({ children: true });
+    this.isPet = true;
+    this.empty = false;
+    this.tag.visible = false;
+    this.critter = rig;
+    rig.scale.set(CRITTER_SCALE);
+    rig.y = POSE.hidden;
+    this.pose = 'hidden';
+    this.tw.kill(this.opening);
+    this.opening.amount = 0;
+    this.holder.addChild(rig);
+  }
+
+  /** Writes the revealed friend's name under the house until it hides again (`go` clears it). */
+  showName(name: string) {
+    this.tag.text = name;
+    this.tag.visible = true;
+  }
+
   /** Nobody behind the cover. */
   setEmpty() {
     if (this.critter) this.tw.kill(this.critter);
     this.critter?.destroy({ children: true });
     this.critter = null;
+    this.isPet = false;
+    this.tag.visible = false;
     this.empty = true;
     this.pose = 'hidden';
     this.tw.kill(this.opening);
@@ -382,6 +429,7 @@ class Spot extends Container {
     if (!c) return;
     const opens = pose === 'out' && this.pose !== 'out';
     this.pose = pose;
+    if (pose !== 'out') this.tag.visible = false;
     this.tw.kill(this.opening);
     void this.tw.to(
       this.opening,
@@ -491,6 +539,8 @@ class PeekabooBarn implements Game {
   private idle = 0;
   private nudgeCount = 0;
   private lastFeeling: Feeling | null = null;
+  /** Free play: the counted reveal where {pet} is the surprise friend (null: none this round). */
+  private petAt: number | null = null;
   /** The next question's ask, waiting behind the last find's `peek.yes` (U7 R4), or said at her first tap. */
   private unasked = false;
   /** The waiting ask is being spoken: the ghost finger lets it finish, as it did when the ask held input. */
@@ -592,6 +642,7 @@ class PeekabooBarn implements Game {
 
   start() {
     if (this.plan.mode === 'free') {
+      this.petAt = petReveal(this.ctx.rng, this.plan);
       this.dealAnimals();
       this.busy = false;
       void this.ctx.instruct('peek.free');
@@ -934,9 +985,11 @@ class PeekabooBarn implements Game {
 
   private async freeTap(spot: Spot, counts = true) {
     if (spot.pose === 'out') {
-      this.say(spot.animal);
+      if (spot.isPet) spot.poke();
+      else this.say(spot.animal);
       return;
     }
+    if (counts && this.done === this.petAt && !spot.isPet) return this.petTap(spot);
     const animal = spot.animal;
     const feeling = counts ? pickFeeling(this.ctx.rng, this.plan, this.lastFeeling) : null;
     if (feeling) this.lastFeeling = feeling;
@@ -947,6 +1000,7 @@ class PeekabooBarn implements Game {
       sfx.marimba(4, 0.3);
       sfx.marimba(7, 0.3);
     }
+    spot.showName(animal);
     const words = { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] };
     if (feeling) void this.ctx.say('peek.feel', { ...words, feeling: FEELING_WORDS[feeling] });
     else void this.ctx.say('peek.found', words);
@@ -965,6 +1019,30 @@ class PeekabooBarn implements Game {
     await spot.go('hidden');
     this.idle = 0;
     // Someone new sneaks in, never the same as a neighbour.
+    const taken = this.spots.map((s) => s.animal);
+    spot.setAnimal(newcomer(this.ctx.rng, taken, this.pool));
+  }
+
+  /** Free play's surprise: {pet} was hiding behind this house too. Counts as a reveal, never asked for, so never a miss. */
+  private async petTap(spot: Spot) {
+    this.petAt = null;
+    const rig = this.ctx.companion();
+    spot.setPet(rig);
+    void spot.go('out');
+    spot.showName(voice.pet.toLowerCase());
+    sfx.marimba(7, 0.2);
+    void this.ctx.say('peek.pet');
+    this.done++;
+    if (this.done >= this.plan.goal) {
+      this.busy = true;
+      await this.ctx.tw.wait(1.4);
+      void this.finale();
+      return;
+    }
+    await this.ctx.tw.wait(2.4);
+    if (this.finished) return;
+    await spot.go('hidden');
+    this.idle = 0;
     const taken = this.spots.map((s) => s.animal);
     spot.setAnimal(newcomer(this.ctx.rng, taken, this.pool));
   }
