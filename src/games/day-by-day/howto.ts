@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Make and read pretend records of days and weather.',
+  goal: 'Match pictured skies to their weather, then make and read pretend records of days and weather.',
   steps: [
     {
       to: 5,

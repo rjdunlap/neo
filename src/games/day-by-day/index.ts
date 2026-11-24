@@ -718,7 +718,7 @@ export const dayByDay: GameModule = {
   touchDemo: true,
   entryLevels: [COUNT_LEVEL, SKIES_LEVEL],
   coplayHint:
-    'Take turns: one person names and places the day, the other records its pictured weather. Ask what comes before and after.',
+    'Take turns: one person names and places the day, the other records its pictured weather. Ask what comes before and after. With a little one, say each sky picture together: sunny, cloudy or rainy.',
   offScreen:
     'Make seven day cards for a pretend week. Lay them out, turn Sunday back toward Monday, and talk about yesterday and tomorrow.',
   hubIcon: () => {
