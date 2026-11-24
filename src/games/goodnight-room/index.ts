@@ -10,6 +10,7 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import type { LineId } from '../../content/voice-script';
+import { IdleCue } from '../../ui/idle-cue';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -27,6 +28,8 @@ import {
   SLOTS,
   thingToTap,
   isLight,
+  YAWN,
+  yawner,
   type NightPlan,
   type NightRoom,
   type Thing,
@@ -55,6 +58,8 @@ class Sleeper extends Container {
   private readonly art = new Graphics();
   private readonly glow = new Graphics();
   private clock = Math.random() * 5;
+  /** How far through a yawn, 0 to 1, or null when not yawning. */
+  private stretch: number | null = null;
 
   constructor(
     readonly thing: Thing,
@@ -156,7 +161,21 @@ class Sleeper extends Container {
     }
   }
 
+  /**
+   * The yawn nudge: a slow stretch up and a settle as `k` runs 0 to 1 (null ends it); a critter's eyes droop for the
+   * length of it and open again by themselves. A friend asleep never yawns.
+   */
+  yawn(k: number | null) {
+    const k2 = this.asleep ? null : k;
+    if (k2 !== null && this.stretch === null) this.critter?.setMood('sleepy', YAWN.length);
+    this.stretch = k2;
+    const s = k2 === null ? 0 : 0.1 * Math.sin(k2 * Math.PI);
+    const base = this.critter ? 0.46 : 1;
+    (this.critter ?? this.art).scale.set(base * (1 - s / 2), base * (1 + s));
+  }
+
   sleep() {
+    this.yawn(null);
     this.asleep = true;
     if (this.critter) this.critter.setMood('sleepy');
     this.drawArt();
@@ -165,7 +184,9 @@ class Sleeper extends Container {
   update(dt: number) {
     this.clock += dt;
     this.critter?.update(dt);
-    if (!this.critter && !this.asleep) this.art.rotation = 0.02 * Math.sin(this.clock * 2);
+    // A thing sways a little more while it yawns, in the same line so the sway never overwrites it.
+    const lean = this.stretch === null ? 0 : 0.06 * Math.sin(this.stretch * Math.PI);
+    if (!this.critter && !this.asleep) this.art.rotation = 0.02 * Math.sin(this.clock * 2) + lean;
   }
 }
 
@@ -236,6 +257,13 @@ class GoodnightRoom implements Game {
   private readonly catcher = new Container();
   /** Level 11: which friend is the big one in the middle; those before it sleep in their spots, those after wait. */
   private bigAt = 0;
+  /** The yawn nudge (`YAWN`): quiet since her last touch, the friend yawning now, and how many have yawned since. */
+  private readonly idle = new IdleCue(YAWN.first, YAWN.every, YAWN.length);
+  private yawning: Sleeper | null = null;
+  private lastYawner: Thing | null = null;
+  private yawns = 0;
+  private cueOn = false;
+  private ticks = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -269,6 +297,7 @@ class GoodnightRoom implements Game {
 
   /** Put this room's friends in their slots, replacing the last room's on a tour. */
   private placeFriends(asleep: readonly Thing[] = []) {
+    this.yawning = null;
     for (const s of this.sleepers) {
       this.ctx.untrack(s);
       s.destroy({ children: true });
@@ -297,6 +326,7 @@ class GoodnightRoom implements Game {
   /** The arrow was tapped: the room goes dark, the next room's friends wait awake, and the voice names it. */
   private async walkOn() {
     if (!this.arrow.visible || this.busy || this.finished) return;
+    this.touched();
     this.busy = true;
     this.arrow.visible = false;
     sfx.bell(6, 0.2);
@@ -503,6 +533,7 @@ class GoodnightRoom implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    this.updateYawn(dt);
     const g = this.glow.clear();
     if (this.glowing && !this.busy) {
       const b = this.glowing.getBounds();
@@ -536,6 +567,58 @@ class GoodnightRoom implements Game {
   }
 
   destroy() {}
+
+  /** A touch: the quiet starts over, and the yawns with it. */
+  private touched() {
+    this.rest();
+    this.yawns = 0;
+  }
+
+  private rest() {
+    this.idle.reset();
+    this.cueOn = false;
+    this.yawning?.yawn(null);
+    this.yawning = null;
+  }
+
+  /**
+   * The yawn nudge, in the levels where any friend still awake is right (`yawner`): after a long quiet one of them yawns,
+   * a sound and a stretch, at most `YAWN.most` times until she touches again. The quiet only counts while the room waits
+   * for her, never while a goodnight, a walk or the finale plays, and nothing here is a miss or a hint.
+   */
+  private updateYawn(dt: number) {
+    const open = (this.plan.mode === 'all' || this.plan.mode === 'tour') && !this.arrow.visible;
+    if (!open || this.busy || this.finished || this.unasked) return this.rest();
+    this.idle.update(dt);
+    const k = this.idle.progress;
+    if (k !== null && !this.cueOn) {
+      this.cueOn = true;
+      if (this.yawns < YAWN.most) this.startYawn();
+    } else if (k === null && this.cueOn) {
+      this.cueOn = false;
+      this.yawning?.yawn(null);
+      this.yawning = null;
+    }
+    if (!this.yawning || k === null) return;
+    this.yawning.yawn(k);
+    // The clock yawns in slow ticks, three through the stretch.
+    if (this.yawning.thing === 'clock' && this.ticks < 3 && k >= this.ticks * 0.33) {
+      this.ticks++;
+      sfx.tick();
+    }
+  }
+
+  private startYawn() {
+    const asleep = new Set(this.sleepers.filter((x) => x.asleep).map((x) => x.thing));
+    const who = yawner(this.plan, this.friends, asleep, this.ctx.rng, this.lastYawner);
+    const s = this.sleepers.find((x) => x.thing === who);
+    if (!s) return;
+    this.yawns++;
+    this.lastYawner = s.thing;
+    this.yawning = s;
+    this.ticks = 0;
+    if (s.thing !== 'clock') sfx.yawn();
+  }
 
   private async next(said?: Promise<unknown>) {
     this.busy = true;
@@ -632,6 +715,7 @@ class GoodnightRoom implements Game {
 
   private async tap(s: Sleeper) {
     if (this.busy || this.finished) return;
+    this.touched();
     if (s.asleep) {
       // Already asleep: a soft "shh", never a mistake.
       sfx.tick();

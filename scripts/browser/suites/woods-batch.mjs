@@ -2238,6 +2238,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         };
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
         await page.waitForTimeout(150);
+        // The yawn nudge (dive slice 10): after a long quiet a friend still awake yawns; a touch starts the quiet over.
+        if (level === 1) {
+          await page.waitForFunction(() => neo.scene.game.yawns === 1, null, { timeout: 20000 });
+          const yawn = await page.evaluate(() => {
+            const g = neo.scene.game;
+            return { who: g.yawning?.thing ?? g.lastYawner, asleep: g.yawning?.asleep ?? false };
+          });
+          assert.ok(yawn.who && !yawn.asleep, `a friend awake yawns: ${JSON.stringify(yawn)}`);
+          log(`Goodnight Room level 1: ${yawn.who} yawned after the quiet`);
+        }
         if (level >= 5) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(250);
