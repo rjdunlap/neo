@@ -60,16 +60,12 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
 - **`word-monsters` the rest of slice 1's guards** (level 8's decoys are still fixed at x and z, no pinned sticker test; typecheck and rule tests), then slice 3 Told, then asked. [Dive](deep-dives/word-monsters.md#build-slices-in-order)
-- **`garden-grow` level 7's colours from the pool** (`makeRequests` still gives red, yellow and blue; existing-game bug fix). [Dive](deep-dives/garden-grow.md#build-slices-in-order)
-- **`fill-dump` the busy-window acknowledgment** (rule tests and a rapid-tap regression play), then pre-K 8–9. [Dive](deep-dives/fill-dump.md#build-slices-in-order)
-- **`monster-munch` overfeed and hand back at level 5** (level 5 still refuses as a miss), then 13 Even it out. [Dive](deep-dives/monster-munch.md#build-slices-in-order)
 - **`letter-trails` level 11, the first lowercase group** (of levels 11–14; the building session checks strokes against the Handwriting Without Tears chart). [Dive](deep-dives/letter-trails.md#build-slices-in-order)
-- **`bubble-pop` blow, then pop** (lap, ID 19; new interaction; the person check is not a gate). [Dive](deep-dives/bubble-pop.md#build-slices-in-order)
 - **`bouncy-launch` notches, rising notes, puffs and skies** (levels 1–3; typecheck, unit tests, scripted play of levels 1–3, a portrait screenshot, Cloud Hopper `course.test.ts`). [Dive](deep-dives/bouncy-launch.md#build-slices-in-order)
-- **`peekaboo-barn` the pet hides too, and the written name** (decision 5: yes to both, never a miss). [Dive](deep-dives/peekaboo-barn.md#build-slices-in-order)
 - **`duck-pond` the 8–9 starting ponds in the new layouts and the level 9 zero story** (the rest of slice 4), then slice 5's mixed ponds and scenes. [Dive](deep-dives/duck-pond.md#build-slices-in-order)
 - **`robot-path` level 15 starts on the first board** (it is a seeded pick today; existing-game bug fix). [Dive](deep-dives/robot-path.md#build-slices-in-order)
 - **`critter-crossing` and `critter-sort` the scarf** (the shared third critter feature; both games' rule tests plus the fairness test across the larger pool). [Dive](deep-dives/critter-crossing.md#build-slices-in-order)
+- **`weather-wardrobe` school level 13, Warm or cold?** (decision 3 settled, after the school window and Pack light): add a picture thermometer beside the sky so temperature and weather both inform the outfit. [Dive](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 
 

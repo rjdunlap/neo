@@ -21,6 +21,11 @@ export const HOW_TO: GameHowTo = {
     { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
     { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
     {
+      from: 12,
+      to: 12,
+      text: 'Tap clothes for both rain and snow. In the three-space case, pack two things for each sky by sharing one item.',
+    },
+    {
       from: 7,
       to: 7,
       text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.',
@@ -38,6 +43,11 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 9, text: 'Look at what the pet is wearing, then tap the sky it is dressed for.' },
   ],
   finish: [
+    {
+      from: 12,
+      to: 12,
+      text: 'Pack for both forecasts in two trips. Watch the pet wear what you packed at each stop.',
+    },
     {
       to: 6,
       text: 'The round ends when the pet is dressed for the weather (or the trip, which then plays out weather by weather).',
@@ -57,6 +67,11 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   note: [
+    {
+      from: 12,
+      to: 12,
+      text: 'The same boots fit both skies, so they take just one space. The glider uses a two-space case with one thing for each sky. A choice that leaves too little room stays on the shelf. After two misses, a useful choice glows.',
+    },
     {
       from: 2,
       to: 7,
