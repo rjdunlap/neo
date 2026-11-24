@@ -1,1 +1,0 @@
-**`duck-pond` the 8–9 starting ponds in the new layouts and the level 9 zero story** (the rest of slice 4), then slice 5's mixed ponds and scenes. [Dive](../../deep-dives/duck-pond.md#build-slices-in-order)
