@@ -17,4 +17,13 @@ export const VOICE = {
   'brain.count.next': ['After {p}, count on by {s}.'],
   'brain.count.nextBack': ['After {p}, count back by {s}.'],
   'brain.count.hint': ['The next number is {v}. Its stone has a golden outline.'],
+  'brain.order.start': [
+    'Find the numbers from the smallest to the biggest. Start with the smallest one. Take your time.',
+  ],
+  'brain.order.startBelow': [
+    'Find the numbers from the smallest to the biggest. Some are below zero, and minus twelve comes before minus three. Take your time.',
+  ],
+  'brain.order.try': ['That one is {m}. A smaller one is still unlit.'],
+  'brain.order.next': ['After {p}, find the next one up.'],
+  'brain.order.hint': ['The smallest one left is {v}. Its stone has a golden outline.'],
 } satisfies Record<string, string[]>;

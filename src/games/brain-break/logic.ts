@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 10 } };
 export const PLANS = [
   { side: 3, name: 'Find 1 to 9 on nine shuffled stones' },
   { side: 4, name: 'Find 1 to 16 on sixteen shuffled stones' },
@@ -11,6 +11,8 @@ export const PLANS = [
   { side: 5, name: 'Find sums and take-aways that make 1 to 25, in order' },
   { side: 4, name: 'Count by twos, threes, fives or tens' },
   { side: 5, name: 'Count by harder steps, up or back' },
+  { side: 4, name: 'Any sixteen numbers, smallest first' },
+  { side: 5, name: 'Numbers below zero, smallest first' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 /** Levels 4–6 show a sum (from 6, a sum or a take-away) on each stone instead of its number. */
@@ -38,6 +40,44 @@ export const ruleSign = (t: Trail, next: number) => {
   const by = `Count ${t.back ? 'back ' : ''}by ${t.step}`;
   return next <= 1 ? `${by} · start at ${trailValue(t, 1)}` : `${by} · after ${trailValue(t, next - 1)}`;
 };
+/** From level 9 the stones hold any different numbers and the order is smallest first (level 10 reaches below zero). */
+export const sortsValues = (level: number) => Math.floor(level) >= 9;
+const MINUS_SIGN = '\u2212';
+/** A number as written on a stone, with a true minus sign. */
+export const writeNumber = (v: number) => (v < 0 ? `${MINUS_SIGN}${-v}` : String(v));
+/** A number as spoken: "minus twelve" reads the sign aloud. */
+export const speakNumber = (v: number) => (v < 0 ? `minus ${-v}` : String(v));
+/**
+ * The numbers a smallest-first round holds, smallest first: `values[r - 1]` is what rank `r` stands for.
+ * Level 9: sixteen different numbers from 1 to 99 with one swapped-digit pair (37 and 73). Level 10: twenty-five different
+ * whole numbers from -20 to 20, at least eight below zero and eight above, with one pair n and -n. Drawn after the board.
+ */
+export function makeValues(level: number, rng: Rng): number[] {
+  const l = Math.floor(level),
+    n = planFor(l).side ** 2;
+  for (;;) {
+    const pair: number[] = [];
+    let pool: number[];
+    if (l >= 10) {
+      const k = rng.int(1, 20);
+      pair.push(k, -k);
+      pool = Array.from({ length: 41 }, (_, i) => i - 20);
+    } else {
+      const a = rng.int(1, 9),
+        b = ((a + rng.int(0, 7)) % 9) + 1;
+      pair.push(10 * a + b, 10 * b + a);
+      pool = Array.from({ length: 99 }, (_, i) => i + 1);
+    }
+    const values = [...pair, ...rng.shuffle(pool.filter((v) => !pair.includes(v))).slice(0, n - 2)];
+    if (l >= 10 && (values.filter((v) => v < 0).length < 8 || values.filter((v) => v > 0).length < 8))
+      continue;
+    if (new Set(values).size !== n) continue;
+    return values.sort((x, y) => x - y);
+  }
+}
+/** The sign for a smallest-first round: it names the rule and the last lit number, never the answer. */
+export const orderSign = (values: readonly number[], next: number) =>
+  next <= 1 ? 'Smallest first' : `After ${writeNumber(values[next - 2])}`;
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
 /** Board indexes in the order they are found: `trailOrder(board)[r - 1]` is the stone that holds rank `r`. */
