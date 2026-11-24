@@ -1162,7 +1162,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
+    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8,9').split(',').map(Number);
     for (const level of !only || only === 'fill' ? fillLevels : []) {
       if (level === 4) await portrait(true);
       await launch('fill-dump', level);
@@ -1234,6 +1234,62 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await portrait(false);
         log(
           'Fill and Dump 5: pour displacement, caught overflow, two wrong checks, one hint, resize, recovery, three cups and one sticker passed',
+        );
+        continue;
+      }
+      if (level === 9) {
+        // How many cups: scoop and pour by taps, free reminders while filling, two wrong picks (one hint), then the bot.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const hit = async (on) => {
+            kit.tapOn(on, 0, -60);
+            await kit.sleep(250);
+            await kit.until(() => !g.move, 3000);
+          };
+          if (!g.bowls || !g.tub) throw new Error('Level 9 is the cups game');
+          await hit(g.bowls[0]); // An empty cup: a reminder, not a miss.
+          await hit(g.tub);
+          await hit(g.tub); // Already full: nothing changes.
+          if (!g.state.scooped || g.state.misses) throw new Error('Cups: scooping is free');
+          await hit(g.bowls[0]);
+          if (g.state.poured[0] !== 1 || g.state.scooped) throw new Error('Cups: one pour, one tally');
+          while (g.state.phase === 'fill') {
+            const next = g.autotouch();
+            if (!next) {
+              await kit.sleep(100);
+              continue;
+            }
+            await hit(next.tap.on);
+          }
+          const p = g.state.pairs[0];
+          if (g.state.poured[0] !== p[0].cups || g.state.poured[1] !== p[1].cups)
+            throw new Error('Cups: the tallies match the pours');
+          const more = p[0].cups > p[1].cups ? 0 : 1;
+          await hit(g.bowls[1 - more]);
+          await hit(g.bowls[1 - more]);
+          if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped)
+            throw new Error(`Cups: wrong picks ${g.state.misses} ${g.state.hints}`);
+        });
+        await page.waitForTimeout(1500);
+        await portrait(true);
+        await screenshot('fill-dump-9-portrait');
+        await portrait(false);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let guard = 0; guard < 120 && !g.state.done; guard++) {
+            const intent = g.autotouch();
+            if (intent?.tap) {
+              kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+              await kit.sleep(250);
+              await kit.until(() => !g.move, 3000);
+            } else await kit.sleep(150);
+          }
+          if (!g.state.done || g.state.round !== 2) throw new Error('Cups: two pairs completed');
+        });
+        await finished('fill-dump');
+        assert.deepEqual(await score('fill-dump'), [2, 1]);
+        log(
+          'Fill and Dump 9: scoop and pour by taps, free reminders, tallies match pours, two wrong picks, one hint, portrait and two pairs passed',
         );
         continue;
       }

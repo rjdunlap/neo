@@ -11,7 +11,7 @@
 | lap | 1–2 |
 | toddler | 1, 2, 6, 3, 4 |
 | preschool | 1, 2, 6, 3, 4, 5, 7 |
-| pre-K | 5, 7, 8 |
+| pre-K | 5, 7, 8, 9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 6 | Full and empty: 4 times, tip out the full basket or fill the empty one |
 | 7 | Guess which holds more, pour to test, then answer from the evidence: three pairs |
 | 8 | Tricky pairs: tall and thin or short and wide; guess which holds more, pour to test |
+| 9 | How many cups? Scoop cupfuls into two bowls, count them, then tap the bowl that took more: 2 pairs |
 
 <!-- end generated -->
 
