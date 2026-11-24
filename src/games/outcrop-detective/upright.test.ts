@@ -17,7 +17,10 @@ const views = {
 };
 
 const inside = (outer: { x: number; y: number; w: number; h: number }, v: { w: number; h: number }) =>
-  outer.x - outer.w / 2 >= 0 && outer.y - outer.h / 2 >= 0 && outer.x + outer.w / 2 <= v.w && outer.y + outer.h / 2 <= v.h;
+  outer.x - outer.w / 2 >= 0 &&
+  outer.y - outer.h / 2 >= 0 &&
+  outer.x + outer.w / 2 <= v.w &&
+  outer.y + outer.h / 2 <= v.h;
 
 describe('Outcrop Detective layout', () => {
   for (const [name, view] of Object.entries(views)) {
@@ -37,7 +40,9 @@ describe('Outcrop Detective layout', () => {
           expect(inside(f, view)).toBe(true);
           expect(f.x - f.w / 2 >= 115 || f.y - f.h / 2 >= 210).toBe(true);
           for (const b of boxes)
-            expect(Math.abs(f.x - b.x) * 2 >= f.w + b.w || Math.abs(f.y - b.y) * 2 >= f.h + b.h, b.what).toBe(true);
+            expect(Math.abs(f.x - b.x) * 2 >= f.w + b.w || Math.abs(f.y - b.y) * 2 >= f.h + b.h, b.what).toBe(
+              true,
+            );
         }
       },
     );

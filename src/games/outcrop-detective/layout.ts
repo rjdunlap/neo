@@ -65,12 +65,10 @@ export type OutcropLayout = ReturnType<typeof outcropLayout>;
 
 /** Every target the step shows, with a name, for the layout tests and the browser play. */
 export function targets(l: OutcropLayout, step: Step) {
-  const out = [
-    ...l.cards.map((b, i) => ({ ...b, what: `card ${i + 1}` })),
-    { ...l.play, what: 'Play' },
-  ];
+  const out = [...l.cards.map((b, i) => ({ ...b, what: `card ${i + 1}` })), { ...l.play, what: 'Play' }];
   if (step === 'order' || step === 'again') out.push({ ...l.check, what: 'Check' });
-  if (step === 'sure') out.push(...l.answers.map((b, i) => ({ ...b, what: i ? 'Not enough to tell' : 'Yes' })));
+  if (step === 'sure')
+    out.push(...l.answers.map((b, i) => ({ ...b, what: i ? 'Not enough to tell' : 'Yes' })));
   if (step === 'look')
     out.push(...l.looks.map((b, i) => ({ ...b, what: `look card ${i + 1}` })), { ...l.look, what: 'Look' });
   return out;

@@ -101,6 +101,7 @@ import { HOW_TO as numberNookHowTo } from '../games/number-nook/howto.ts';
 import { HOW_TO as numberTrailsHowTo } from '../games/number-trails/howto.ts';
 import { HOW_TO as oppositesHowTo } from '../games/opposites/howto.ts';
 import { HOW_TO as orchardRowsHowTo } from '../games/orchard-rows/howto.ts';
+import { HOW_TO as outcropDetectiveHowTo } from '../games/outcrop-detective/howto.ts';
 import { HOW_TO as owlWalkHowTo } from '../games/owl-walk/howto.ts';
 import { HOW_TO as paintMixerHowTo } from '../games/paint-mixer/howto.ts';
 import { HOW_TO as patternTrainHowTo } from '../games/pattern-train/howto.ts';
@@ -310,6 +311,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'number-trails': numberTrailsHowTo,
   'opposites': oppositesHowTo,
   'orchard-rows': orchardRowsHowTo,
+  'outcrop-detective': outcropDetectiveHowTo,
   'owl-walk': owlWalkHowTo,
   'paint-mixer': paintMixerHowTo,
   'pattern-train': patternTrainHowTo,

@@ -649,6 +649,7 @@ describe('game registry', () => {
       'notice-board',
       'number-nook',
       'orchard-rows',
+      'outcrop-detective',
       'paint-mixer',
       'peekaround-island',
       'penguin-slide',
