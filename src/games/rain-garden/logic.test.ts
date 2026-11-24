@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { captionPlace } from '../../ui/caption-layout';
 import {
   CAPACITY,
   LEVELS,
@@ -32,6 +33,22 @@ import {
   arrangementKey,
   arrangements,
   board4,
+  board6,
+  compareWet,
+  FRIENDS,
+  predict,
+  runTwo,
+  wetCanFinish,
+  wetFinish,
+  wetFlip,
+  wetFresh,
+  wetHint,
+  wetLayout,
+  wetNext,
+  wetRain,
+  wetRestart,
+  type RouteTrial,
+  type WetState,
   BOARDS5,
   ROUTE5,
   narration,
@@ -286,15 +303,15 @@ describe('rounds and levels', () => {
   });
 
   it('LEVELS and planFor', () => {
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(planFor(0).level).toBe(1);
     expect(planFor(2.4).level).toBe(2);
-    expect(planFor(99).level).toBe(5);
+    expect(planFor(99).level).toBe(6);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 5 },
+      school: { min: 3, max: 6 },
     });
     for (const r of Object.values(LEVELS))
       for (let l = r!.min; l <= r!.max; l++) expect(planFor(l).level).toBe(l);
@@ -1018,4 +1035,321 @@ describe('level 5 layout', () => {
         expect(l.pond.y).toBeGreaterThan(l.beds[2].patch.y);
       });
   it('returns null rather than shrink', () => expect(routeLayout({ w: 600, h: 400 }, BOARDS5[0])).toBeNull());
+});
+
+const WET_OUTCOMES = [
+  { ground: 'soil/soil', units: 4, first: [2, 2, 0], second: [2, 2, 4], pond: 'more', further: false },
+  { ground: 'stone/soil', units: 4, first: [0, 2, 2], second: [0, 2, 4], pond: 'more', further: false },
+  { ground: 'soil/stone', units: 4, first: [2, 0, 2], second: [2, 0, 4], pond: 'more', further: false },
+  { ground: 'stone/stone', units: 4, first: [0, 0, 4], second: [0, 0, 4], pond: 'same', further: false },
+  { ground: 'soil/soil', units: 2, first: [2, 0, 0], second: [2, 2, 0], pond: 'same', further: true },
+  { ground: 'stone/soil', units: 2, first: [0, 2, 0], second: [0, 2, 2], pond: 'more', further: false },
+  { ground: 'soil/stone', units: 2, first: [2, 0, 0], second: [2, 0, 2], pond: 'more', further: false },
+  { ground: 'stone/stone', units: 2, first: [0, 0, 2], second: [0, 0, 2], pond: 'same', further: false },
+] as const;
+
+const total = (counts: readonly number[]) => counts.reduce((sum, n) => sum + n, 0);
+
+describe('level 6 trials on dry and wet soil', () => {
+  it.each(WET_OUTCOMES)(
+    '$ground, $units drops: predicts the measured outcome and conserves both rains',
+    (row) => {
+      const board = board6(row.units);
+      const sockets = parse(row.ground);
+      const [first, second] = runTwo(sockets, board);
+      expect([...first.stored, first.pond]).toEqual(row.first);
+      expect([...second.stored, second.pond]).toEqual(row.second);
+      expect(compareWet(first, second)).toEqual({ pond: row.pond, further: row.further });
+      expect(second.pond).toBeGreaterThanOrEqual(first.pond);
+      expect(total(second.stored) + first.pond + second.pond).toBe(2 * row.units);
+
+      const checkShower = (shower: RouteTrial, start: readonly number[]) => {
+        const kept = [...start];
+        let pond = 0;
+        expect(shower.steps.map((step) => step.unit)).toEqual(Array.from({ length: row.units }, (_, i) => i));
+        for (const { path, unit } of shower.steps) {
+          expect(path[0]).toBe(0);
+          path.slice(0, -1).forEach((at, i) => {
+            if (at === 'pond') throw new Error('A drop must stop at the pond');
+            expect(kept[at]).toBe(CAPACITY[sockets[at]]);
+            expect(path[i + 1]).toBe(board.route[at].down);
+          });
+          const end = path.at(-1)!;
+          if (end === 'pond') pond++;
+          else {
+            kept[end]++;
+            expect(kept[end]).toBeLessThanOrEqual(CAPACITY[sockets[end]]);
+          }
+          expect(total(kept) + pond).toBe(total(start) + unit + 1);
+        }
+        expect([kept, pond]).toEqual([shower.stored, shower.pond]);
+        for (const [i, n] of kept.entries()) expect([0, 2]).toContain(n - start[i]);
+      };
+      checkShower(first, [0, 0]);
+      checkShower(second, first.stored);
+      expect(runRoute(sockets, board.route, board.units, first.stored)).toEqual(second);
+      expect([...first.stored, first.pond]).toEqual(row.first);
+    },
+  );
+
+  it('preserves fresh-start routes for levels 4 and 5', () => {
+    for (const board of [board4(0), board4(1), ...BOARDS5])
+      for (const sockets of arrangements(board))
+        expect(
+          runRoute(
+            sockets,
+            board.route,
+            board.units,
+            sockets.map(() => 0),
+          ),
+        ).toEqual(runBoard(sockets, board));
+  });
+
+  it.each(WET_OUTCOMES)('$ground, $units drops: names the correct beds and pond in both rains', (row) => {
+    const board = board6(row.units);
+    const sockets = parse(row.ground);
+    const [first, second] = runTwo(sockets, board);
+    for (const [trial, start] of [
+      [first, [0, 0]],
+      [second, first.stored],
+    ] as const) {
+      const clips = narration(trial, board, start);
+      const expected: string[] = [];
+      for (const [i, position] of ['top', 'low'].entries()) {
+        const reached = trial.steps.some(({ path }) => path.includes(i));
+        const result = !reached
+          ? 'none'
+          : sockets[i] === 'stone'
+            ? 'stone'
+            : start[i] === 2
+              ? 'full'
+              : 'kept';
+        expected.push(`rain.bed.${position}.${result}`);
+        if (!reached) break;
+      }
+      expected.push(`rain.pond.${trial.pond}`);
+      expect(clips).toEqual(expected);
+      expect(clips).not.toContain('rain.pond.6');
+      for (const id of clips) expect(VOICE, id).toHaveProperty([id]);
+    }
+  });
+
+  it('uses the authored contrast first and produces all eight board/ground pairs across stable seeds', () => {
+    expect(makeRoute(new Rng(100), true, 6)).toEqual({
+      level: 6,
+      board: board6(4),
+      start: ['soil', 'soil'],
+      friend: 'frog',
+      mirror: false,
+    });
+    const seen = new Set<string>();
+    for (const seed of SEEDS) {
+      const round = makeRoute(new Rng(seed), false, 6);
+      expect(makeRoute(new Rng(seed), false, 6)).toEqual(round);
+      expect(round.level).toBe(6);
+      expect(round.start).toHaveLength(2);
+      expect(round.start.every((surface) => SURFACES.includes(surface))).toBe(true);
+      expect(FRIENDS).toContain(round.friend);
+      expect(round.mirror).toBe(false);
+      expect([2, 4]).toContain(round.board.units);
+      expect(round.board.route).toEqual(ROUTE4);
+      expect(round.board.fixed).toEqual([null, null]);
+      expect(round.board.marked).toEqual([]);
+      const fresh = wetFresh(round);
+      expect(fresh).toMatchObject({
+        first: null,
+        second: null,
+        prediction: null,
+        hints: 0,
+        sequences: 0,
+      });
+      expect(wetNext(fresh)).toBe('cloud');
+      const first = wetRain(fresh, round);
+      expect(wetNext(first)).toBe('cloud');
+      const second = wetRain(first, round);
+      expect(wetNext(second)).toBe('leaf');
+      expect(wetFinish(second).finished).toBe(true);
+      seen.add(`${round.start.join('/')}:${round.board.units}`);
+    }
+    expect(seen).toEqual(new Set(WET_OUTCOMES.map(({ ground, units }) => `${ground}:${units}`)));
+  });
+});
+
+describe('level 6 wet round actions', () => {
+  const round = makeRoute(new Rng(12), true, 6);
+  const initial = wetFresh(round);
+  const fresh = { first: null, second: null, prediction: null, pointing: null };
+
+  it('starts fresh after a flip in every phase, a finished trial replay, or Start again', () => {
+    const first = predict(wetRain(initial, round), 'more');
+    const second = wetHint(wetRain(first, round));
+    for (const s of [initial, first, second]) {
+      for (const i of [0, 1]) {
+        const flipped = wetFlip(s, i);
+        expect(flipped).toMatchObject({ ...fresh, sequences: s.sequences, hints: s.hints });
+        expect(flipped.sockets).toEqual(s.sockets.map((surface, j) => (i === j ? flip(surface) : surface)));
+        expect(wetRain(flipped, round).first).toEqual(runBoard(flipped.sockets, round.board));
+      }
+      expect(wetRestart(s, round)).toMatchObject({
+        ...fresh,
+        sockets: round.start,
+        sequences: s.sequences,
+        hints: s.hints,
+      });
+    }
+    const replay = wetRain(second, round);
+    expect(replay).toMatchObject({ ...fresh, sockets: second.sockets, sequences: 1, hints: second.hints });
+    expect(wetRain(replay, round).first).toEqual(first.first);
+    expect(wetCanFinish(replay)).toBe(true);
+  });
+
+  it('keeps guesses optional, changeable and separate from the rain results and help count', () => {
+    expect(predict(initial, 'more')).toEqual(initial);
+    const wet = wetHint(wetRain(initial, round));
+    const changed = predict(predict(wet, 'more'), 'same');
+    expect(changed.prediction).toBe('same');
+    const guess = wetRain(changed, round);
+    const skip = wetRain(wet, round);
+    expect(guess).toMatchObject({ first: skip.first, second: skip.second, hints: wet.hints, sequences: 1 });
+    expect(guess.prediction).toBe('same');
+    expect(skip.prediction).toBeNull();
+    expect(predict(guess, 'more')).toEqual(guess);
+    expect(compareWet(guess.first!, guess.second!).pond).toBe('more');
+  });
+
+  it('points to useful actions, counts each newly pointed action once, and finishes once', () => {
+    const hinted = wetHint(initial);
+    expect(wetNext(initial)).toBe('cloud');
+    expect(hinted).toMatchObject({ pointing: 'cloud', hints: 1, first: null, second: null });
+    expect(wetHint(hinted)).toEqual(hinted);
+    expect(wetCanFinish(initial)).toBe(false);
+    expect(wetFinish(initial)).toEqual(initial);
+
+    const first = wetRain(hinted, round);
+    expect(wetNext(first)).toBe('cloud');
+    expect(wetHint(first)).toMatchObject({ pointing: 'cloud', hints: 2 });
+    expect(wetCanFinish(first)).toBe(false);
+    expect(wetFinish(first)).toEqual(first);
+
+    const second = wetRain(first, round);
+    expect(wetCanFinish(second)).toBe(true);
+    expect(wetNext(second)).toBe('leaf');
+    const leaf = wetHint(second);
+    expect(leaf).toMatchObject({ pointing: 'leaf', hints: 2 });
+    expect(wetHint(leaf)).toEqual(leaf);
+    const finished = wetFinish(leaf);
+    expect(finished).toMatchObject({ finished: true, hints: 2, sequences: 1 });
+    expect(wetFinish(finished)).toEqual(finished);
+    expect(wetRain(finished, round)).toEqual(finished);
+    expect(wetFlip(finished, 0)).toEqual(finished);
+    expect(wetHint(finished)).toEqual(finished);
+    expect(wetRestart(finished, round)).toEqual(finished);
+  });
+
+  it('keeps storage, help and sequence counts consistent across bounded action sequences', () => {
+    for (const units of [2, 4] as const) {
+      const board = { ...round, board: board6(units) };
+      const actions = {
+        rain: (s: WetState) => wetRain(s, board),
+        flipTop: (s: WetState) => wetFlip(s, 0),
+        flipLow: (s: WetState) => wetFlip(s, 1),
+        guessMore: (s: WetState) => predict(s, 'more'),
+        guessSame: (s: WetState) => predict(s, 'same'),
+        restart: (s: WetState) => wetRestart(s, board),
+        hint: wetHint,
+      };
+      let states = [wetFresh(board)];
+      for (let depth = 0; depth < 6; depth++) {
+        const next = new Map<string, WetState>();
+        for (const s of states) {
+          for (const [name, action] of Object.entries(actions)) {
+            const result = action(s);
+            expect(result.sequences - s.sequences).toBe(name === 'rain' && s.first && !s.second ? 1 : 0);
+            expect(result.hints - s.hints).toBe(name === 'hint' && s.pointing !== wetNext(s) ? 1 : 0);
+            expect('misses' in result ? result.misses : 0).toBe(0);
+            expect(wetCanFinish(result)).toBe(result.sequences > 0);
+            const [first, second] = runTwo(result.sockets, board.board);
+            if (result.first) expect(result.first).toEqual(first);
+            if (result.second) expect(result.second).toEqual(second);
+            if (!result.first) expect([result.second, result.prediction]).toEqual([null, null]);
+            next.set(JSON.stringify(result), result);
+          }
+        }
+        states = [...next.values()];
+      }
+    }
+  });
+});
+
+describe('level 6 layout', () => {
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    upright: computeView(390, 844, undefined, true),
+    uprightTall: computeView(390, 900, undefined, true),
+    uprightPad: computeView(768, 1024, undefined, true),
+    uprightWide: computeView(430, 700, undefined, true),
+  };
+  const overlap = (a: Box, b: Box) =>
+    Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
+  const contains = (outer: Box, inner: Box) =>
+    Math.abs(outer.x - inner.x) * 2 + inner.w <= outer.w &&
+    Math.abs(outer.y - inner.y) * 2 + inner.h <= outer.h;
+
+  for (const [name, view] of Object.entries(views)) {
+    it(`${name}: six full-size targets and two aligned, unobstructed pond rows`, () => {
+      const layout = wetLayout(view);
+      expect(layout).not.toBeNull();
+      const { cloud, beds, check, pond, wet } = layout!;
+      const targets = [cloud, ...beds.map(({ patch }) => patch), ...wet.predictions, check];
+      expect(targets).toHaveLength(6);
+      const { w, h } = view;
+      const frame = { x: w / 2, y: h / 2, w, h };
+      const home = { x: 60, y: 107.5, w: 120, h: 215 };
+      const guideHeight = view.upright ? 205 : 170;
+      const guide = { x: 85, y: h - guideHeight / 2, w: 170, h: guideHeight };
+      for (const box of [...targets, pond]) {
+        expect(contains(frame, box)).toBe(true);
+        expect(overlap(box, home)).toBe(false);
+        expect(overlap(box, guide)).toBe(false);
+      }
+      for (const [i, box] of targets.entries()) {
+        expect(Math.min(box.w, box.h)).toBeGreaterThanOrEqual(100);
+        for (const other of [...targets.slice(i + 1), pond]) expect(overlap(box, other)).toBe(false);
+      }
+      expect(wet.rows.map((row) => row.length)).toEqual([4, 4]);
+      expect(wet.rows[0].map(({ x }) => x)).toEqual(wet.rows[1].map(({ x }) => x));
+      expect(wet.rows[0][0].y).toBeLessThan(wet.rows[1][0].y);
+      const pondPictures = [...wet.badges, ...wet.rows.flat()];
+      expect(wet.badges).toHaveLength(2);
+      wet.badges.forEach((badge, i) => {
+        expect(badge.y).toBe(wet.rows[i][0].y);
+        expect(badge.x).toBeLessThan(wet.rows[i][0].x);
+      });
+      for (const [i, picture] of pondPictures.entries()) {
+        expect(contains(pond, picture)).toBe(true);
+        for (const other of pondPictures.slice(i + 1)) expect(overlap(picture, other)).toBe(false);
+      }
+    });
+  }
+  it.each([computeView(390, 625, undefined, true), computeView(625, 390)])(
+    'keeps the beds and pond rows visible beneath a fallback caption',
+    (view) => {
+      const caption = captionPlace(view, true);
+      expect(caption.mode).toBe('bubble');
+      const { x, y, w, h } = caption.band!;
+      const bubble = { x: x + w / 2, y: y + h / 2, w, h };
+      const layout = wetLayout(view)!;
+      for (const part of [...layout.beds.map(({ patch }) => patch), layout.pond]) {
+        expect(overlap(bubble, part)).toBe(false);
+      }
+    },
+  );
+
+  it('returns null when the board cannot keep its targets full size', () => {
+    expect(wetLayout({ w: 600, h: 400 })).toBeNull();
+    expect(wetLayout({ w: 700, h: 1000, upright: true })).toBeNull();
+  });
 });

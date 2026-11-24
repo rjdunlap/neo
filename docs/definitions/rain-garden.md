@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–5 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069); to build level 6, read [Level 6](#level-6-rain-again-on-wet-ground-definition) (defined 2026-11-23: two rains on level 4's board, storage carried between them, an optional guess).
+**Built:** levels 1–6 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077). Level 7 needs its [two-condition puzzle definition](../deep-dives/subjects/weather-water.md#build-slices-in-order).
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
@@ -487,7 +487,7 @@ Defined 2026-11-23 as the weather-and-water study's [slice 6](../deep-dives/subj
   | soil / stone | 2 | 2, 0 | 0 | 2, 0 | 2 | more |
   | stone / stone | 2 | 0, 0 | 2 | 0, 0 | 2 | same (stone) |
 
-  In every row a soil bed gains 0 or 2 in a shower, never 1, and the second pond is never smaller than the first: carried storage only ever leaves less room. `compareWet(first, second)` returns `{ pond: 'more' | 'same', further: boolean }`, where `further` is true when the second rain reached a socket the first never did (only soil / soil with 2 drops).
+  In every row a soil bed gains 0 or 2 in a shower, never 1, and the second pond is never smaller than the first: carried storage only ever leaves less room. `compareWet(first, second)` returns `{ pond: 'more' | 'same', further: boolean }`, where `further` is true when both pond rows are equal and the second rain reaches a socket the first never reached (only soil / soil with 2 drops).
 - **Round state** (`WetState`): `sockets`, `first: RouteTrial | null`, `second: RouteTrial | null`, `prediction: 'more' | 'same' | null`, `sequences` (settled two-shower trials this round), `hints`, `pointing`, `finished`. The phase is derived: fresh (no `first`), wet (`first` but no `second`), done (both).
   - `wetRain(s, round)`: fresh → runs the first rain from zero; wet → runs the second from `first.stored` and adds one to `sequences`; done → resets to fresh on the same arrangement (the cloud shows the rewind badge), keeping `sequences` and `hints`.
   - `wetFlip(s, i)`: flips bed `i` and resets to fresh (both trials and the prediction cleared), as level 4's flip does. Allowed in any phase; it is how she starts a new experiment.
@@ -504,25 +504,11 @@ Defined 2026-11-23 as the weather-and-water study's [slice 6](../deep-dives/subj
 - **Prediction pictures** (two targets, 120×120 each), shown only in the wet phase: **more** (a pond with a short top row and a long bottom row) and **same** (two equal rows). Touch-down squashes; tapping one lifts it and lights it, tapping the other moves the light. No third "less" picture ([decision](#level-6-decisions)). Navigation never requires reading.
 - **The cloud** shows its drops as dashed outlines, plus the one-dot or two-dot badge of the rain it will drop next; in the done phase it shows level 1's rewind badge, and tapping it plays the fresh-garden wipe. Taps during a shower are ignored; nothing is timed.
 - **The leaf** (120×120, where the Check sits at levels 4–5) appears once `canFinish` is true, as at levels 1–3.
-- **Measured coordinates (frame centers):**
-  - Landscape (1024×768 frame, centered): cloud (300, 150); top bed (300, 320); low bed (520, 510); pond tray (790, 662), 320×148, rows at the tray's y ∓ 31, slots centered at tray x + 30 + k × 58 (k = −1.5 … 1.5), badges at tray x − 130; prediction pictures (660, 230) and (800, 230).
-  - Upright on a phone (768×1024 frame hung from the bottom edge): cloud (220, 300); top bed (220, 470); low bed (548, 650); pond tray (548, 862), same internal spacing; prediction pictures (470, 300) and (610, 300).
-  - Portrait's logical view is 1024 wide and uses the landscape frame, as at levels 1–5. The leaf is the view's top-right box, as the Check is.
-- **These coordinates were checked on 2026-11-23** with a scratch test applying level 4's layout-test rules at its eight views (landscape, portrait, phone, notch and the four upright views): every target (cloud, both beds, both pictures, leaf) at least 100 and inside the view, no target overlap, the tray, its slots and badges inside the view and overlapping no target, badges clear of slots, Home's corner (120×215) and the guide's corner clear. Arrows were not checked: the low bed's arrow follows level 4's rule and in landscape ends just above the tray's left end, over the badges; the builder confirms it reads in the screenshot. The builder adds a level-6 branch to `routeLayout` (or a `wetLayout`) with these numbers and a layout test at the eight views; a view that cannot hold the board returns null rather than shrink.
-
-```
-upright (phone)                          landscape
-+-------------------------+              +---------------------------------------------+
-| [Home]          [leaf]  |              | [Home]                             [leaf]   |
-|                         |              |    ( cloud :: )                             |
-|  ( cloud :: ) [more][=] |              |                       [more] [same]         |
-|  [ top bed  ]           |              |    [ top bed  ]\                            |
-|            \__          |              |              \__ [ low bed  ]\              |
-|           [ low bed  ]\ |              |                         (1) [. . . .] frog  |
-|      (1) [. . . .] frog|              |  pet                    (2) [. . . .]       |
-| pet  (2) [. . . .]      |              +---------------------------------------------+
-+-------------------------+
-```
+- **Built coordinates (frame centers, `wetLayout`):**
+  - Landscape (1024×768 frame, centered): cloud (300, 110), top bed (300, 260), low bed (798, 465), pond tray (823, 662), prediction pictures (660, 230) and (800, 230).
+  - Upright on a phone (768×1024 frame hung from the bottom edge): cloud (220, 300), top bed (220, 470), low bed (548, 523), pond tray (548, 918), prediction pictures (470, 300) and (610, 300).
+  - The 320×148 tray has rows at its y ∓ 31, slots centered at tray x + 30 + k × 58 (k = −1.5 … 1.5), and badges centered at tray x − 130. The leaf uses the view's top-right box, as the Check does at levels 4–5.
+- **Caption clearance:** on short upright phones the beds sit above the bubble and the tray sits below it. Sideways, the high bed sits above the bubble and the low bed to its right. Layout tests cover targets, both pond rows, badges, Home and guide clearance across eight views. A view that cannot hold the layout returns null.
 
 ### Accounting, help and finishing, level 6
 
@@ -536,7 +522,7 @@ upright (phone)                          landscape
 
 - `rain.instruct.6`: "Tap the cloud to rain on the garden. Then rain again on the wet ground, and see where the water goes."
 - **Each rain is narrated with level 5's clip chain**, one clip per socket from the top while water reaches it, then the pond clip, with two changes: the sockets are named `top` and `low` (level 5's `POSITION` maps index 1 to `middle`, so a two-socket board needs its own names), and a soil bed that was **already full when this rain began** says a new clip instead of `kept`: `rain.bed.top.full` "The top bed was already full, so the water ran past." / `rain.bed.low.full` "The low bed was already full, so the water ran on." Reused: `rain.bed.top.kept`, `rain.bed.low.kept`, `rain.bed.top.stone`, `rain.bed.low.stone`, `rain.bed.low.none`, `rain.pond.0`, `rain.pond.2`, `rain.pond.4` (`rain.pond.6` can never fire: one rain is at most four drops).
-- `rain.wet.ready` (after the first rain settles): "The ground is still wet from the first rain. Will the second rain send more to the pond, or the same? Tap a picture if you like, then tap the cloud."
+- `rain.wet.ready` (after the first rain settles): "Time to rain on the same ground again. Will the second rain send more to the pond, or the same? Tap a picture if you like, then tap the cloud."
 - Before the second rain's narration, if she guessed: `rain.guess.more` "You thought more would run to the pond." or `rain.guess.same` "You thought it would be the same." After the comparison line: `rain.guess.yes` "Just as you thought." or `rain.guess.surprise` "A surprise! That's what experiments are for."
 - **Comparison** (after the second rain, from `compareWet`): `rain.wet.more` "The soil was already full of water, so more ran down to the pond the second time." / `rain.wet.stone` "Stone holds none, wet or dry, so the pond got the same both times." / `rain.wet.further` "The pond got none both times, but the second rain ran further down, because the top bed was already full."
 - Reused: `rain.again` (the wipe to a fresh garden), `rain.done`, `rain.hint.cloud`.

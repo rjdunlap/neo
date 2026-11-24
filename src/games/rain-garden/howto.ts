@@ -37,12 +37,28 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Tap the check when each marked bed gets two drops and the pond at least one.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'Tap the cloud: the first rain falls on dry ground and the soil keeps what it can.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'Tap the cloud again: the same rain falls on wet ground. The pond shows both rains in two rows.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'Before the second rain, she can tap a picture to guess. Every guess is welcome.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: "Tap the leaf when she's done; it appears after one rain." },
     { from: 2, to: 2, text: "Tap the leaf when she's done; it appears after one rain on both gardens." },
     { from: 3, to: 3, text: "Tap the leaf when she's done; it appears after rain on two different grounds." },
     { from: 4, to: 5, text: 'The round ends when the check finds every need met.' },
+    { from: 6, to: 6, text: "Tap the leaf when she's done. It appears after both rains." },
   ],
   note: [
     {
@@ -58,6 +74,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'Trying and changing the ground are free. A check that misses counts one miss and says where the water stayed; after two, the bed to change glows, which counts as help, as does Show me. A pretend model: soil holds two drops, stone none.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'There are no misses. In this model, soil holds two drops and stone holds none. Real wet ground soaks up less of the next rain, so more runs off. Real ground also drains and dries over time. Show me counts as help. Rounds without hints move her up, which means she joined in.',
     },
   ],
 };
