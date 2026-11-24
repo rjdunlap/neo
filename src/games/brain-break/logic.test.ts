@@ -3,6 +3,13 @@ import { Rng } from '../../engine/random';
 import {
   alternatingLabels,
   alternatingSign,
+  comparesParts,
+  isFraction,
+  makeParts,
+  orderSignOf,
+  PART_POOL,
+  speakDecimal,
+  speakFraction,
   countsBy,
   evaluate,
   hintIndex,
@@ -96,10 +103,10 @@ describe('Brain Break number order', () => {
 
 describe('Brain Break sums in order (levels 4–6)', () => {
   const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
-  it('clamps the ladder to 1..12', () => {
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 12 });
+  it('clamps the ladder to 1..13', () => {
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 13 });
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(13)).toBe(planFor(12));
+    expect(planFor(14)).toBe(planFor(13));
     expect([4, 5, 6].map((l) => planFor(l).side)).toEqual([3, 4, 5]);
   });
   it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
@@ -363,5 +370,61 @@ describe('Brain Break Two trails (levels 11–12)', () => {
     expect(alternatingSign(back, 3)).toBe('1 · L · ?   Numbers');
     expect(alternatingSign(back, 24)).toBe('B · 12 · ?   Letters');
     expect(alternatingSign(back, 25)).toBe('12 · A · ?   Numbers');
+  });
+});
+
+describe('Brain Break Parts in order (level 13)', () => {
+  it('draws nine different parts between 0 and 2, at least 0.03 apart, mixed fractions and decimals', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const parts = makeParts(new Rng(seed));
+      expect(parts).toHaveLength(9);
+      parts.forEach((p, i) => {
+        expect(p.value).toBeGreaterThan(0);
+        expect(p.value).toBeLessThan(2);
+        expect(p.text.length).toBeLessThanOrEqual(4);
+        if (i) expect(p.value - parts[i - 1].value).toBeGreaterThanOrEqual(0.03 - 1e-9);
+      });
+      expect(parts.filter(isFraction).length).toBeGreaterThanOrEqual(3);
+      expect(parts.filter((p) => !isFraction(p)).length).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('writes fractions only over 2, 3, 4, 5, 8 or 10, each in lowest terms with a spoken form', () => {
+    for (const p of PART_POOL) {
+      expect(p.spoken).toMatch(/^[a-z ]+$/);
+      if (!isFraction(p)) continue;
+      const [n, d] = p.text.split('/').map(Number);
+      expect([2, 3, 4, 5, 8, 10]).toContain(d);
+      expect(p.value).toBeCloseTo(n / d, 9);
+    }
+  });
+  it('says parts in words', () => {
+    expect(speakFraction(3, 4)).toBe('three quarters');
+    expect(speakFraction(1, 2)).toBe('one half');
+    expect(speakFraction(5, 3)).toBe('five thirds');
+    expect(speakDecimal('0.6')).toBe('zero point six');
+    expect(speakDecimal('1.25')).toBe('one point two five');
+  });
+  it('is a 3x3 round whose stones are the parts in smallest-first rank order', () => {
+    expect(planFor(13).side).toBe(3);
+    expect(comparesParts(13)).toBe(true);
+    expect([12, 14].some((l) => comparesParts(l))).toBe(false);
+    expect(sortsValues(13)).toBe(false);
+    for (let seed = 1; seed <= 100; seed++) {
+      const round = makeRound(13, new Rng(seed));
+      expect(makeRound(13, new Rng(seed))).toEqual(round);
+      const parts = round.parts!;
+      expect(trailOrder(round.board).map((i) => round.labels[i])).toEqual(parts.map((p) => p.text));
+      for (let next = 1; next <= 9; next++) {
+        expect(round.labels[hintIndex(round.board, next)]).toBe(parts[next - 1].text);
+        if (next < 9) expect(judge(round.board[hintIndex(round.board, next + 1)], next)).toBe('wrong');
+      }
+    }
+  });
+  it('shows the last lit label in the sign', () => {
+    expect(orderSignOf(['1/3', '0.4'], 1)).toBe('Smallest first');
+    expect(orderSignOf(['1/3', '0.4'], 2)).toBe('After 1/3');
+  });
+  it('leaves the boards of levels 1 to 12 unchanged', () => {
+    for (let level = 1; level <= 12; level++) expect(makeRound(level, new Rng(5)).parts).toBeNull();
   });
 });
