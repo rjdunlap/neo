@@ -26,7 +26,7 @@ export const LOOKS = {
 } as const;
 export type Look = keyof typeof LOOKS;
 export const pickLook = (rng: Rng): Look => rng.pick(Object.keys(LOOKS) as Look[]);
-export type Verdict ='right' | 'wrong' | 'done';
+export type Verdict = 'right' | 'wrong' | 'done';
 export const judge = (value: number, next: number): Verdict =>
   value < next ? 'done' : value === next ? 'right' : 'wrong';
 export const hintIndex = (board: readonly number[], next: number) => board.indexOf(next);

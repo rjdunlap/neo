@@ -69,7 +69,13 @@ class BrainBreak implements Game {
     // Drawn after the board and labels, so a look never changes which board a seed gives.
     this.look = pickLook(ctx.rng);
     this.order = trailOrder(this.board);
-    this.background.eventMode = this.status.eventMode = this.marks.eventMode = this.glow.eventMode = this.trail.eventMode = this.dot.eventMode = 'none';
+    this.background.eventMode =
+      this.status.eventMode =
+      this.marks.eventMode =
+      this.glow.eventMode =
+      this.trail.eventMode =
+      this.dot.eventMode =
+        'none';
     this.dot.circle(0, 0, 16).fill(cream).stroke({ width: 5, color: swatch.yellow.line });
     this.dot.visible = false;
     this.board.forEach((_, i) => {
