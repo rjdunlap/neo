@@ -248,6 +248,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     ];
     for (const level of peekLevels.filter((n) => n >= 1 && n <= 19 && (!only || only === 'peekaboo'))) {
       await launch('peekaboo-barn', level);
+      if (level === 1) {
+        // {pet} hides too: force the surprise on the first reveal; the pet comes out, its written name shows, no miss.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy, 10000);
+          g.petAt = 0;
+          g.pool.length && (g.spots[0].eventMode = 'none');
+          g.freeTap(g.spots[0]);
+        });
+        await page.waitForTimeout(900);
+        const shown = await page.evaluate(() => {
+          const spot = neo.scene.game.spots[0];
+          return { isPet: spot.isPet, pose: spot.pose, tag: spot.tag.visible ? spot.tag.text : null };
+        });
+        assert.ok(
+          shown.isPet && shown.pose === 'out' && shown.tag,
+          `Peekaboo 1: pet reveal ${JSON.stringify(shown)}`,
+        );
+        await screenshot('peekaboo-barn-1-pet');
+        log(`Peekaboo Barn 1: the pet hid too, its name "${shown.tag}" written under it`);
+        await launch('peekaboo-barn', level);
+      }
       if (level === 19) {
         // Hide it yourself: drag to one house, tap-then-tap to another, drop far from the third; the seeker looks in
         // an empty house first, never twice in one house, and ends at hers. Nothing is ever a miss.
