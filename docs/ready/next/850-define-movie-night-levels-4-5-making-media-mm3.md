@@ -1,0 +1,1 @@
+**Define Movie Night levels 4–5 (making media MM3)** (docs only, links and diff): the shot-fact model, briefs, enumerated accepted strips and the Story Steps overlap test; then enqueue the MM4 build. [Study](../../deep-dives/subjects/making-media.md#build-slices-in-order)
