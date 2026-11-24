@@ -53,6 +53,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Outcrop Detective](definitions/outcrop-detective.md) | Earth materials E6, levels 1–2: reorder four event cards to build a cliff's story, then say whether the rocks tell the order for sure and choose the look that decides; school and grownup, Lantern Lake |
 | [Shadow Play](definitions/shadow-play.md) | Slide three flat cut-outs between a lamp and a screen (later turn them and swap rails) until the shadow fills a skyline outline; levels 1–4, both batches built; grown-up, Lantern Lake |
 | [Fence the Field](definitions/fence-the-field.md) | Dots and boxes on a small field against the pet: claim a safe rail, then runs and the leave-two answer; levels 1–4, both batches built; grown-up, Lantern Lake |
+| [Last Pebble](definitions/last-pebble.md) | Strategy-games SG3, levels 1–2: lay one or two stones across a stream in turn to reach the far bank, finding stepping stones back from the end; school (about 10 and up) and grown-up, Puzzle Peaks |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
