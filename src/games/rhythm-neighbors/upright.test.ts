@@ -9,6 +9,7 @@ import {
   BIRD_RADIUS,
   BUTTON_RADIUS,
   FROG_RADIUS,
+  TILE_SIZE,
   TREE_BOX,
   neighborsLayout,
 } from './layout';
@@ -46,13 +47,17 @@ function targets(v: View, level: number): Target[] {
   out.push(square('bird', { x: l.bird.x, y: l.bird.y - BIRD_LIFT }, BIRD_RADIUS * 2));
   l.frogs.forEach((f, i) => out.push(square(`frog ${i + 1}`, f, FROG_RADIUS * 2)));
   out.push(square('listen again', l.replay, BUTTON_RADIUS * 2));
+  if (plan.pairs) {
+    out.push(square('copy tile', l.tiles.copy, TILE_SIZE), square('answer tile', l.tiles.answer, TILE_SIZE));
+    return out;
+  }
   if (!plan.free && !plan.turn) out.push(square('help', l.help, BUTTON_RADIUS * 2));
   if (!plan.turn) out.push(square('send', l.submit, BUTTON_RADIUS * 2));
   return out;
 }
 
-it('covers levels 1 to 9: free play, replies, turns, the tree and the call', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+it('covers levels 1 to 10: free play, replies, turns, the tree, the call and the pairs', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   expect(levels.filter(treeLevel)).toEqual([7, 9]);
 });
 

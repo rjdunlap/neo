@@ -1,1 +1,0 @@
-**`rhythm-neighbors` level 10, Copy or answer?** (new levels on an existing interaction plus one portrait screenshot; decisions 1, 3 and 4 settled 2026-10-23). [Dive](../../deep-dives/rhythm-neighbors.md#build-slices-in-order)
