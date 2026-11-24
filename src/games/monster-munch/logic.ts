@@ -34,7 +34,8 @@ export type MunchMode =
   | 'share'
   | 'leftover'
   | 'friends'
-  | 'sharekind';
+  | 'sharekind'
+  | 'even';
 
 export interface MunchPlan {
   mode: MunchMode;
@@ -149,6 +150,15 @@ export const MUNCH_PLANS: MunchPlan[] = [
     monsters: [2],
     name: 'Share cookies and apples fairly, then count how many of each per monster',
   },
+  {
+    mode: 'even',
+    rounds: 2,
+    min: 2,
+    max: 3,
+    monsters: [2, 3],
+    pool: true,
+    name: 'Move food from monster to monster until everyone has the same, then say how many each',
+  },
 ];
 
 /** Tapping levels: a tap feeds the next cookie, and nothing can go wrong. */
@@ -166,6 +176,8 @@ export interface MunchRound {
   tray: Order;
   /** Leftover levels: foods that can't be shared fairly. */
   left?: number;
+  /** Even it out: how many each monster already holds when the round opens (uneven; they add up to `monsters * want`). */
+  start?: number[];
 }
 
 /** An order of `a` of the first kind and `b` of the second. */
@@ -184,6 +196,30 @@ function pickKinds(plan: MunchPlan, rng: Rng, last: Food | undefined): Food[] {
   if (!two) return [first];
   return [first, rng.pick(FOODS.filter((f) => f !== first && !lookAlike(f, first)))];
 }
+
+/** Even it out: everyone starts with `each`, then a few moves of one or two make the tummies uneven (never all alike, never empty). */
+export function unevenStart(monsters: number, each: number, rng: Rng): number[] {
+  const counts = Array<number>(monsters).fill(each);
+  for (let tries = 0; tries < 20; tries++) {
+    for (let k = 0; k < 3; k++) {
+      const from = rng.pick(counts.flatMap((c, i) => (c > 0 ? [i] : [])));
+      const to = rng.pick(counts.flatMap((_, i) => (i === from ? [] : [i])));
+      const n = Math.min(counts[from], rng.int(1, 2));
+      counts[from] -= n;
+      counts[to] += n;
+    }
+    // One monster holds clearly more than another, so there is something to move.
+    // Nobody starts empty: every monster has something, and something to give or to get.
+    if (Math.min(...counts) >= 1 && Math.max(...counts) - Math.min(...counts) >= 2) return counts;
+  }
+  const out = Array<number>(monsters).fill(each);
+  out[0] += 1;
+  out[1] -= 1;
+  return out;
+}
+
+/** Even it out: the same food in every tummy. */
+export const isEven = (counts: number[]) => counts.every((c) => c === counts[0]);
 
 /** The tray holds at most this many foods, so everything stays big enough to grab. */
 export const TRAY_MAX = 10;
@@ -237,6 +273,12 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
         const a = r === 0 ? 2 : rng.int(1, 3);
         const b = r === 0 ? 1 : rng.int(1, Math.min(3, Math.floor(TRAY_MAX / monsters) - a));
         rounds.push({ monsters, kinds, want: of(a, b), tray: of(a * monsters, b * monsters) });
+        break;
+      }
+      case 'even': {
+        const each = rng.int(plan.min, Math.min(plan.max, Math.floor(TRAY_MAX / monsters)));
+        const start = unevenStart(monsters, each, rng);
+        rounds.push({ monsters, kinds, want: of(each), tray: of(each * monsters), start });
         break;
       }
       case 'share': {
@@ -303,7 +345,7 @@ export function orderWords(o: Order, more = false): string {
 }
 
 /** One touch of the ghost finger: tap a waiting food, carry one to a monster, ring the bell, or tap a number (by its value). */
-export type MunchTouch = { tap: number } | { give: number; to: number } | 'bell' | 'call' | { pad: number };
+export type MunchTouch = { tap: number } | { take: number } | { give: number; to: number } | 'bell' | 'call' | { pad: number };
 
 /** What the table looks like to the finger. */
 export interface MunchTable {
@@ -357,6 +399,19 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
       }
       return null;
     }
+    case 'even': {
+      const kind = t.kinds[0];
+      const each = t.want[kind];
+      // A cookie waiting on the tray goes to whoever has the fewest.
+      const i = waiting(kind);
+      if (i >= 0) {
+        const to = t.fed.reduce((best, f, m) => (f[kind] < t.fed[best][kind] ? m : best), 0);
+        return { give: i, to };
+      }
+      // Otherwise whoever holds more than the fair share hands one back to the tray.
+      const from = t.fed.findIndex((f) => f[kind] > each);
+      return from >= 0 ? { take: from } : 'bell';
+    }
     case 'friends': {
       for (let to = 0; to < t.fed.length; to++) {
         if (t.fed[to][t.kinds[0]] < t.want[t.kinds[0]]) {
@@ -405,6 +460,7 @@ export function munchHint(plan: MunchPlan, t: MunchTable): MunchHint | null {
     const move = munchTouch(plan, t);
     return move === 'call' ? 'call' : move === 'bell' ? 'bell' : 'monster';
   }
+  if (plan.mode === 'even') return 'monster';
   if (plan.mode === 'exact' || plan.mode === 'two') {
     const need = missing(t.want, t.fed[0]);
     return total(need) === 0 ? 'bell' : 'food';
@@ -451,5 +507,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 10, order: [2, 3, 10, 4] },
   preschool: { min: 4, max: 6 },
   prek: { min: 5, max: 7 },
-  school: { min: 6, max: 12, order: [6, 7, 12, 8, 11] },
+  school: { min: 6, max: 13, order: [6, 7, 12, 8, 11, 13] },
 };

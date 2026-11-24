@@ -33,6 +33,7 @@ import {
   shareReturns,
   complete,
   extras,
+  isEven,
   foodWord,
   FOODS,
   isTapMode,
@@ -110,7 +111,8 @@ class MonsterMunch implements Game {
       this.plan.mode === 'exact' ||
       this.plan.mode === 'two' ||
       this.plan.mode === 'leftover' ||
-      this.plan.mode === 'friends';
+      this.plan.mode === 'friends' ||
+      this.plan.mode === 'even';
     const door = new Graphics()
       .roundRect(-40, -45, 80, 95, 38)
       .fill(wood.line)
@@ -209,6 +211,7 @@ class MonsterMunch implements Game {
       this.snacks.push(snack);
       ctx.stage.addChild(node);
     });
+    if (r.start) this.prefeed(r.start);
     this.drawSign(r.want);
     this.resize(this.view);
     switch (this.plan.mode) {
@@ -230,6 +233,9 @@ class MonsterMunch implements Game {
       case 'friends':
         void this.instruct('munch.friends', { n: r.want[this.kind] });
         break;
+      case 'even':
+        void this.instruct('munch.even', this.kindVars);
+        break;
       case 'sharekind':
         void this.instruct('munch.share-kinds');
         break;
@@ -243,6 +249,21 @@ class MonsterMunch implements Game {
         void this.instruct('munch.want', { food: orderWords(r.want) });
     }
     this.busy = false;
+  }
+
+  /** Even it out: the round opens with each monster already holding its uneven share, nothing left on the tray. */
+  private prefeed(start: number[]) {
+    const waiting = this.snacks.filter((s) => !s.eatenBy);
+    start.forEach((n, i) => {
+      for (let k = 0; k < n; k++) {
+        const snack = waiting.pop()!;
+        snack.eatenBy = this.monsters[i];
+        this.monsters[i].eat(snack.food);
+        if (snack.drag) snack.drag.enabled = false;
+        this.ctx.tw.kill(snack.node.scale);
+        snack.node.visible = false;
+      }
+    });
   }
 
   private addMonster(look = monsterLooks(1, this.ctx.rng)[0], delay = 0) {
@@ -402,6 +423,7 @@ class MonsterMunch implements Game {
   /** A tap on the monster (or, at big bites, anywhere) feeds it the next food; with nothing to feed it beams and giggles. */
   private touchFeed(m: Monster | undefined = this.monsters[0]) {
     if (!m) return;
+    if (this.plan.mode === 'even') return this.takeOut(m);
     const next =
       isTapMode(this.plan.mode) && !this.busy && !this.done ? this.snacks.find((s) => !s.eatenBy) : undefined;
     if (next) this.feed(m, next);
@@ -409,6 +431,21 @@ class MonsterMunch implements Game {
       m.beam(0.6);
       sfx.giggle();
     }
+  }
+
+  /** Even it out: a tap on a monster takes one food out of its tummy onto the tray, to give to another. Free, never a miss. */
+  private takeOut(m: Monster) {
+    if (this.busy || this.done || this.pads.length) return;
+    const n = m.count(this.kind);
+    if (n === 0) {
+      m.beam(0.6);
+      sfx.giggle();
+      return;
+    }
+    this.returnFood(m, this.kind, 1);
+    sfx.pop(5);
+    void this.ctx.say('count', { n: n - 1 });
+    this.drawGlow();
   }
 
   /** Big bites: the next cookie pops onto the tray. */
@@ -470,6 +507,10 @@ class MonsterMunch implements Game {
       case 'leftover':
         monster.beam();
         break;
+      case 'even':
+        monster.beam();
+        void ctx.say('count', { n: monster.count(snack.food) });
+        break;
       default: {
         // Exact and two: count each food of its kind, so the last number said is how many.
         const n = monster.count(snack.food);
@@ -502,6 +543,7 @@ class MonsterMunch implements Game {
     if (this.pads.length) return;
     if (this.plan.mode === 'friends') return void this.checkFriends();
     if (this.plan.mode === 'leftover') return void this.checkLeftover();
+    if (this.plan.mode === 'even') return void this.checkEven();
     const r = this.current;
     const have = this.have(this.monsters[0]);
     const extra = overfed(r.want, have);
@@ -628,6 +670,22 @@ class MonsterMunch implements Game {
     });
     this.busy = false;
     this.drawGlow();
+  }
+
+  /** The bell at Even it out: every monster holds the same, and nothing waits on the tray. */
+  private checkEven() {
+    const r = this.current;
+    const counts = this.monsters.map((m) => m.count(this.kind));
+    if (isEven(counts) && counts[0] === r.want[this.kind]) {
+      this.monsters.forEach((m) => m.beam(2));
+      sfx.sparkle();
+      const line = this.ctx.say('munch.fair');
+      this.asking = 'each';
+      this.showPads(r.want[this.kind]);
+      void this.askAfter(line, () => void this.instruct('munch.each-how', this.kindVars));
+      return;
+    }
+    void this.mistake(null, 'munch.even-no');
   }
 
   private showPads(answer: number) {
@@ -871,6 +929,8 @@ class MonsterMunch implements Game {
     const move = munchTouch(this.plan, this.table());
     if (!move) return null;
     if (move === 'call') return { tap: { on: this.cave } };
+    if (typeof move === 'object' && 'take' in move)
+      return { tap: { on: this.monsters[move.take], x: 0, y: MOUTH_Y }, pause: 0.5 };
     if (move === 'bell') return { tap: { on: this.bell } };
     if ('pad' in move) return { tap: { on: this.pads.find((p) => p.value === move.pad)!.node } };
     if ('tap' in move) return { tap: { on: this.snacks[move.tap].node }, pause: 0.25 };

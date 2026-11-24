@@ -12,7 +12,7 @@
 | toddler | 2, 3, 10, 4 |
 | preschool | 4–6 |
 | pre-K | 5–7 |
-| school | 6, 7, 12, 8, 11 |
+| school | 6, 7, 12, 8, 11, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 10 | Give each monster a cookie and an apple |
 | 11 | Call friends for groups of 2 or 3 cookies, then count friends and leftovers (including zero) |
 | 12 | Share cookies and apples fairly, then count how many of each per monster |
+| 13 | Move food from monster to monster until everyone has the same, then say how many each |
 
 <!-- end generated -->
 

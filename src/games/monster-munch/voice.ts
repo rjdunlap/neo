@@ -50,6 +50,10 @@ export const VOICE = {
   'munch.hint.bell': ['That is just right. Ring the bell now!'],
   'munch.hint.monster': ['Who still needs one? Look at the glow!'],
   'munch.hint.pad': ['Try the glowing number!'],
+  'munch.even': [
+    'Some monsters have more {kind} than others! Tap a monster to take one out, then give it to a monster with fewer. When everyone has the same, ring the bell!',
+  ],
+  'munch.even-no': ['Not the same yet! Who has more? Who has fewer?'],
   'munch.bite': ['{food}!'],
   'munch.hm': ['Hm?'],
   'munch.left-no': ['Let us count the {kind} on the tray together.'],
