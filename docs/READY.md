@@ -80,7 +80,6 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`jelly-drums` sound sets and stages** (all its bands; existing-game content: typecheck, rule tests that every set maps steps 0–4 to the same five pitches, one portrait screenshot per set): a round's instrument comes from the seed (marimba, bells, a soft held tone) with a stage tinted to match. Expected files: `src/games/jelly-drums/{logic,index}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/jelly-drums.md#build-slices-in-order)
 
 
 
