@@ -546,7 +546,10 @@ describe('Monster Munch level 13, Even it out', () => {
       for (const r of rounds) {
         const each = r.want[r.kinds[0]];
         expect(r.start).toHaveLength(r.monsters);
-        expect(r.start!.reduce((a, b) => a + b, 0), 'nothing is lost or added').toBe(each * r.monsters);
+        expect(
+          r.start!.reduce((a, b) => a + b, 0),
+          'nothing is lost or added',
+        ).toBe(each * r.monsters);
         expect(r.tray[r.kinds[0]]).toBe(each * r.monsters);
         expect(total(r.tray)).toBeLessThanOrEqual(TRAY_MAX);
         expect(isEven(r.start!), 'uneven at the start').toBe(false);

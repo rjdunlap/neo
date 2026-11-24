@@ -345,7 +345,8 @@ export function orderWords(o: Order, more = false): string {
 }
 
 /** One touch of the ghost finger: tap a waiting food, carry one to a monster, ring the bell, or tap a number (by its value). */
-export type MunchTouch = { tap: number } | { take: number } | { give: number; to: number } | 'bell' | 'call' | { pad: number };
+export type MunchTouch =
+  { tap: number } | { take: number } | { give: number; to: number } | 'bell' | 'call' | { pad: number };
 
 /** What the table looks like to the finger. */
 export interface MunchTable {
