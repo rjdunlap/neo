@@ -195,7 +195,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 4. **Level 8, How much is in the purse?** Built 2026-11-21 ([PR #1959](https://github.com/rjdunlap/neo/pull/1959)). A new interaction (cards, tap-to-count). Tier: typecheck, rule tests, **one** scripted play (first and last level, one wrong card, one hint) and one portrait screenshot.
 5. **Level 9, The ten-shell shell** (decision 3). Built 2026-11-23 ([PR #2053](https://github.com/rjdunlap/neo/pull/2053)). The 10-coin purse, the raised target cap, the ten-bar tag and the row spacing. Same tier plus a screenshot of the tag at price 11, 15 and 20.
 6. **Level 10, Two baskets to twenty.** Built 2026-11-23 ([PR #2071](https://github.com/rjdunlap/neo/pull/2071)). [Game notes](../games/market-stall.md#design-notes).
-7. **Level 11, Change from twenty** (after 3 and 5). `paid` becomes a plan field. Same tier.
+7. **Level 11, Change from twenty** (after 3 and 5). Built 2026-11-23 ([PR #2075](https://github.com/rjdunlap/neo/pull/2075)). `paid` is now a plan field. [Game notes](../games/market-stall.md#design-notes).
 8. **More stalls** — built 2026-10-16 ([PR #444](https://github.com/rjdunlap/neo/pull/444)); fruit, flower and balloon stalls seeded per round, with unchanged sticker art. [Build note](../archive/COMPLETED-2026-10-09.md#market-stall-more-stalls-2026-10-16).
 9. **Entries below and between level 1** (wait on the level-order decisions): *Which coin?* and *Which costs more?* first (no band change), then *Shell in the jar* and *Give me one, two, three*, which add `lap` and `toddler` to `bands`: update the README and roadmap counts, run `lands.test.ts` and add the fit to the person checks.
 10. **Level 12, Can I buy it?** (decision 7; define with a child first), then **level 13, Trade up** (decision 5, prototype first). Defined 2026-11-21 in [market-stall-12-13](../definitions/market-stall-12-13.md); built after slices 4–7, in two sessions (12, then 13).
@@ -226,3 +226,7 @@ Level 8, *How much is in the purse?* (plan mode `purse`, `PLANS[7]`; the school 
 ## Slice 5 built (2026-11-23)
 
 Level 9, *The ten-shell shell* (`PLANS[8]`, mode `mix`; the school window is now 3–9). The 10-coin joins the purse, prices run 11–20, the target cap is `TARGET_MAX` (20), the tag from 11 is a ten bar and the ones (`tagMarks`), mat coins shrink together to fit the 88-wide coin (`matCoinScale`), a four-coin purse fits upright (`purseFor`), the first ten is named and the counted-coins miss has a ten line. Gap 1 above is addressed. See the [game page](../games/market-stall.md#design-notes).
+
+## Slice 7 built (2026-11-23)
+
+Level 11, *Change from twenty* (`PLANS[10]`, mode `change`, coins 1, 2 and 5, prices 11–19, paid 20; the school window is now 3–11). `paid` is an optional plan field read through `paidFor(plan)` (level 6 now says `paid: 10`), the customer's 20 is two ten-shell coins, and the ten strip becomes two rows of ten. Any change that totals right is accepted. Departure: the row asked for the next counting-up coin to glow after two misses; it is built as faint hint coins in count-up order plus the spoken count-up. See the [game page](../games/market-stall.md#design-notes).

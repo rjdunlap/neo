@@ -43,13 +43,17 @@ import {
   TOTAL_SLATE,
   countUpSaid,
   tenStrip,
+  stripLayout,
+  paidCoins,
+  paidFor,
+  countUpHint,
+  hintCountsUp,
   missKind,
   hintCharge,
   stickerGood,
   anotherWay,
   fewest,
   makeOrders,
-  PAID,
   paymentFor,
   payTouch,
   planFor,
@@ -416,15 +420,17 @@ class MarketStall implements Game {
     });
     if (o.purse) this.goods.addChild(pouchArt());
     if (this.plan.mode === 'change') {
-      // The customer's 10 coin, on the counter beside the fruit.
-      const ten = coinArt(PAID);
-      ten.position.set(150, -40);
-      this.goods.addChild(ten);
+      // The customer's payment on the counter beside the fruit: a 10, or two 10s for a 20.
+      for (const c of paidCoins(paidFor(this.plan))) {
+        const coin = coinArt(c.value);
+        coin.position.set(c.x, c.y);
+        this.goods.addChild(coin);
+      }
     }
     this.strip = null;
     if (countsUp(this.plan)) {
       this.strip = new Graphics();
-      this.strip.position.set(0, -88);
+      this.strip.position.set(0, stripLayout(paidFor(this.plan)).y);
       this.goods.addChild(this.strip);
       this.drawStrip();
     }
@@ -434,7 +440,11 @@ class MarketStall implements Game {
     const n = o.prices[0];
     if (this.plan.mode === 'pair')
       return this.ctx.instruct('shop.pair', { a: this.names[0], n, b: this.names[1], m: o.prices[1] });
-    if (this.plan.mode === 'change') return this.ctx.instruct('shop.change', { fruit: this.names[0], n });
+    if (this.plan.mode === 'change')
+      return this.ctx.instruct(paidFor(this.plan) > 10 ? 'shop.change20' : 'shop.change', {
+        fruit: this.names[0],
+        n,
+      });
     if (this.plan.mode === 'fewest') return this.ctx.instruct('shop.fewest', { fruit: this.names[0], n });
     if (o.purse) return this.ctx.instruct('shop.purse');
     return this.ctx.instruct('shop.pay', { fruit: this.names[0], n });
@@ -557,6 +567,7 @@ class MarketStall implements Game {
     const want = target(this.plan, this.order);
     const got = sum(coins);
     const n = this.order.prices.reduce((a, b) => a + b, 0);
+    const twenty = this.plan.mode === 'change' && paidFor(this.plan) > 10;
     if (got === want && this.firstWay && sameWay(coins, this.firstWay)) {
       await this.wrong('shop.sameway', {});
       return;
@@ -564,14 +575,18 @@ class MarketStall implements Game {
     if (got !== want) {
       const kind = missKind(this.plan, this.order, coins)!;
       const lines = {
-        price: 'shop.price',
+        price: twenty ? 'shop.price20' : 'shop.price',
         'one-price': 'shop.oneprice',
         'counted-coins': this.plan.coins.includes(10) ? 'shop.values.ten' : 'shop.values',
         'one-more': 'shop.one.more',
         'one-less': 'shop.one.less',
         'big-coin': 'shop.big',
-        short: this.plan.mode === 'change' ? 'shop.change.short' : 'shop.short',
-        over: this.plan.mode === 'change' ? 'shop.change.over' : 'shop.over',
+        short: twenty
+          ? 'shop.change20.short'
+          : this.plan.mode === 'change'
+            ? 'shop.change.short'
+            : 'shop.short',
+        over: twenty ? 'shop.change20.over' : this.plan.mode === 'change' ? 'shop.change.over' : 'shop.over',
       } as const;
       await this.wrong(lines[kind], { n });
       return;
@@ -664,6 +679,9 @@ class MarketStall implements Game {
       | 'shop.over'
       | 'shop.change.short'
       | 'shop.change.over'
+      | 'shop.change20.short'
+      | 'shop.change20.over'
+      | 'shop.price20'
       | 'shop.sameway'
       | 'shop.fewer'
       | 'shop.price'
@@ -687,9 +705,15 @@ class MarketStall implements Game {
       const teach = teachLine(this.plan, this.firstWay);
       if (teach) await this.ctx.say(teach === 'swap' ? 'shop.hint.swap' : 'shop.hint.biggest');
       const want = target(this.plan, this.order);
-      const idea = this.firstWay
-        ? anotherWay(want, this.plan.coins, this.firstWay)
-        : fewest(want, this.plan.coins);
+      // From a 20 the hint counts up: the change smallest first, so from below 15 the count passes 15 on its way to 20.
+      const up = hintCountsUp(this.plan)
+        ? countUpHint(this.order.prices[0], paidFor(this.plan), this.plan.coins)
+        : null;
+      const idea = up
+        ? up.coins
+        : this.firstWay
+          ? anotherWay(want, this.plan.coins, this.firstWay)
+          : fewest(want, this.plan.coins);
       idea.forEach((v, i) => {
         const c = shopCoin(v, this.ctx.level);
         c.alpha = 0.45;
@@ -697,25 +721,29 @@ class MarketStall implements Game {
         c.position.set(-200 + i * 60, -110);
         this.ghost.addChild(c);
       });
-      void this.ctx.say('shop.hint');
+      if (up)
+        void this.ctx.say('shop.hint.countup', { n: `${this.order.prices[0]}… ${up.stops.join(', ')}` });
+      else void this.ctx.say('shop.hint');
     }
     this.busy = false;
   }
 
-  /** Ten cells to what the customer paid: the price filled, then one cell per shell of change; too much turns the edge red. */
+  /**
+   * One cell per shell up to what the customer paid (a strip of ten, or two for a 20): the price filled, then one cell per
+   * shell of change; too much turns the edge red.
+   */
   private drawStrip() {
     if (!this.strip || !this.order) return;
-    const { cells, over } = tenStrip(this.order.prices[0], sum(this.onMat.map((c) => c.value)));
-    const w = 20;
-    const left = (-cells.length * w) / 2;
+    const paid = paidFor(this.plan);
+    const { cells, over } = tenStrip(this.order.prices[0], sum(this.onMat.map((c) => c.value)), paid);
+    const at = stripLayout(paid);
     const g = this.strip.clear();
     cells.forEach((cell, i) => {
       const fill = cell === 'price' ? swatch.green.fill : cell === 'change' ? swatch.yellow.fill : 0xffffff;
-      g.rect(left + i * w + (i >= 5 ? 4 : 0), -10, w, 20)
-        .fill(fill)
-        .stroke({ width: 2, color: ink });
+      const r = at.cells[i];
+      g.rect(r.x, r.y, r.w, r.h).fill(fill).stroke({ width: 2, color: ink });
     });
-    g.roundRect(left - 4, -14, cells.length * w + 12, 28, 6).stroke({
+    g.roundRect(at.frame.x, at.frame.y, at.frame.w, at.frame.h, 6).stroke({
       width: 4,
       color: over ? swatch.red.line : wood.line,
     });

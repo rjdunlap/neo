@@ -40,6 +40,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Add the two prices, tap coins onto the counter to pay for both, then ring the bell. A ten-shell coin and smaller shells can make the total.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'The customer pays 20 for a price from 11 to 19: tap coins onto the counter to give the change, then ring the bell. Each coin says its value, then the shopkeeper counts up from the price, and the two strips under the tag fill to 20.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -87,6 +92,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Tap a coin on the mat to put it back. Paying one price gets a reminder to add both. Two misses show a payment, with one hint counted per order.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Tap a coin on the mat to put it back. Giving back the price itself gets a reminder that they paid 20. Two misses show the change smallest coin first and count up from the price (from 13: 15, 20); any coins that make the change are right, not only the fewest. Help counts once per order.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
@@ -95,5 +105,6 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'The round ends when three purses have been counted.' },
     { from: 9, to: 9, text: 'The round ends when four prices have been paid.' },
     { from: 10, to: 10, text: 'The round ends when three pairs of goods have been paid for.' },
+    { from: 11, to: 11, text: 'The round ends when the right change has been given three times.' },
   ],
 };

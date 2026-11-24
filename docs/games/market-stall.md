@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–10 |
+| school | 3–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 8 | How much is in the purse? Count what each shell is worth, then tap the number |
 | 9 | Pay 11 to 20 with a ten-shell coin and smaller ones |
 | 10 | Two baskets to twenty: add two prices past ten, then pay |
+| 11 | Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change |
 
 <!-- end generated -->
 
@@ -44,5 +45,7 @@ Level 6 counts up the change: each change coin says its value, then the shopkeep
 **Level 9, The ten-shell shell (2026-11-23).** A `mix` plan with coins 1, 2, 5 and 10 and prices 11–20, four orders a round; any exact payment buys, and the running total is said and shown on the slate as at levels 1, 2, 3, 5 and 7. `makeOrders` now caps targets at `TARGET_MAX` (20) instead of 10, which changes no earlier level's draws (their prices never passed 10). The tag from 11 shows the first ten as one bar of ten green cells and the rest as dots, five to a row, inside the same 112 × 88 tag (`tagMarks` in `logic.ts`; up to 10 it is unchanged). The first tap of the 10 names it ("That is a ten. It is worth ten."; `coinToName` now names any coin new at its level), and paying by coin count gets its own line, `shop.values.ten`, which says the price and so stays on device speech. On the mat every coin is drawn at `matCoinScale` (80/88) so the 88-wide 10 fits an 80-unit column and sizes still rank; levels without the 10 use full-size mat coins. Four purse coins run nearer the right edge (`purseFor`) so their tap boxes fit the 768-wide upright view; three-coin purses are where they were. The hint is level 3's: biggest coin first, then the fewest set, which always starts with the 10 (greedy is the true minimum for these coins, tested against a full search).
 
 **Level 10, Two baskets to twenty (2026-11-23).** Three orders pair two goods with distinct prices from 4 to 10. The sum is 11–19 and changes from one order to the next. The shopkeeper says both prices and asks what they cost together. The price tags stay visible and the player works out what to pay using 1-, 2-, 5- and 10-shell coins. Any exact payment buys both goods. If she pays one price, the shopkeeper asks her to add both. Two misses show the fewest coins that pay the total, with one hint counted per order.
+
+**Level 11, Change from twenty (2026-11-23).** A `change` plan like level 6 with coins 1, 2 and 5, prices 11–19 and a new optional plan field `paid` (20; `paidFor(plan)` defaults to 10 and level 6 now says `paid: 10`). The customer's 20 is drawn as two ten-shell coins (`paidCoins`), the ten strip becomes two rows of ten (`tenStrip(price, given, paid)`, `stripLayout(paid)`) and the count-up voice ends on 20. Any change that totals right is accepted, not only the fewest coins. Misses: giving back the price says `shop.price20`; too little or too much says `shop.change20.short` or `.over`; one-off and counted-coins misses are as before. After two misses the hint lays the fewest change, smallest coin first (`countUpHint`, `hintCountsUp`), and says `shop.hint.countup` ("Count up from the price to 20: 13… 15, 20"), one hint per order. The instruction is `shop.change20`. Departure from the dive row, which said two misses glow the next coin that counts up: it is built as faint hint coins in count-up order plus the spoken count-up, with no purse glow.
 
 **Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.

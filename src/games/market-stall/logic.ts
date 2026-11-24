@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * Market Stall: buy fruit with shell coins worth 1, 2 and 5 by tapping them onto the counter,
  * then ring the bell. Later: add two prices, pay the same price a second, different way, and
  * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, count a purse of
- * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin.
+ * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin,
+ * and at the top give the change from a 20, counting up from the price.
  */
 export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse';
 
@@ -18,6 +19,8 @@ export interface ShopPlan {
   price: [number, number];
   orders: number;
   pairRules?: { minTotal: number; distinctPrices: boolean };
+  /** On 'change' levels: what the customer hands over (10, or 20 at level 11). */
+  paid?: number;
   name: string;
 }
 
@@ -44,6 +47,7 @@ export const PLANS: ShopPlan[] = [
     mode: 'change',
     coins: [1, 2, 5],
     price: [2, 9],
+    paid: 10,
     orders: 3,
     name: 'Keep the stall: a customer pays 10, give the change',
   },
@@ -77,6 +81,15 @@ export const PLANS: ShopPlan[] = [
     orders: 3,
     name: 'Two baskets to twenty: add two prices past ten, then pay',
   },
+  {
+    // Level 11, change from twenty (dive slice 7): count up from the price to 20 on a strip of two tens.
+    mode: 'change',
+    coins: [1, 2, 5],
+    price: [11, 19],
+    paid: 20,
+    orders: 3,
+    name: 'Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -87,8 +100,11 @@ export const LEVELS: BandLevels = {
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-/** What a customer hands over on change levels. */
+/** What a customer hands over on change levels unless the plan says otherwise. */
 export const PAID = 10;
+
+/** What the customer hands over on this change level: 10 at level 6, 20 at level 11. */
+export const paidFor = (plan: ShopPlan) => plan.paid ?? PAID;
 
 /** The most any order asks for: a ten-shell coin and up to ten more (levels 9 and 10). */
 export const TARGET_MAX = 20;
@@ -100,11 +116,11 @@ export interface Order {
   purse?: number[];
 }
 
-/** The amount to put on the counter (the price, both prices, or the change from 10), or what the purse holds. */
+/** The amount to put on the counter (the price, both prices, or the change from what was paid), or what the purse holds. */
 export function target(plan: ShopPlan, o: Order): number {
   if (o.purse) return sum(o.purse);
   const total = o.prices.reduce((a, b) => a + b, 0);
-  return plan.mode === 'change' ? PAID - total : total;
+  return plan.mode === 'change' ? paidFor(plan) - total : total;
 }
 
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
@@ -416,13 +432,56 @@ export const countUpText = (words: number[], price: number) =>
 
 export type StripCell = 'price' | 'change' | 'empty';
 
-/** The ten strip under the tag: the price's cells, then the change given so far, up to what the customer paid. */
-export function tenStrip(price: number, given: number): { cells: StripCell[]; over: number } {
-  const cells = Array.from({ length: PAID }, (_, i): StripCell =>
+/**
+ * The ten strip under the tag: the price's cells, then the change given so far, up to what the customer paid. A 20 makes
+ * two strips of ten, drawn one above the other (`STRIP` rows).
+ */
+export function tenStrip(price: number, given: number, paid = PAID): { cells: StripCell[]; over: number } {
+  const cells = Array.from({ length: paid }, (_, i): StripCell =>
     i < price ? 'price' : i < price + given ? 'change' : 'empty',
   );
-  return { cells, over: Math.max(0, price + given - PAID) };
+  return { cells, over: Math.max(0, price + given - paid) };
 }
+
+/**
+ * How the strip is drawn, in the goods' units, centred under the tag: one row of ten 20-unit cells for a 10, two rows of
+ * shorter cells for a 20, with the frame's outer box. A gap splits each row after five cells.
+ */
+export function stripLayout(paid: number) {
+  const rows = paid / 10;
+  const w = 20;
+  const h = rows > 1 ? 16 : 20;
+  const gap = 2;
+  const top = rows > 1 ? -h - gap / 2 : -h / 2;
+  const cells = Array.from({ length: paid }, (_, i) => {
+    const col = i % 10;
+    return { x: -100 + col * w + (col >= 5 ? 4 : 0), y: top + Math.floor(i / 10) * (h + gap), w, h };
+  });
+  const height = rows * h + (rows - 1) * gap;
+  return { y: rows > 1 ? -84 : -88, cells, frame: { x: -104, y: top - 4, w: 212, h: height + 8 } };
+}
+
+/** Where the customer's coins lie on the counter beside the goods: one 10, or two 10s for a 20 (there is no 20-coin). */
+export const paidCoins = (paid: number) =>
+  Array.from({ length: paid / 10 }, (_, i) => ({ value: 10, x: 150 + i * 14, y: -40 + i * 10 }));
+
+/**
+ * The count-up hint at level 11: the fewest coins of change, smallest first, so from a price below 15 the count passes 15 on
+ * its way to 20 (13, then a 2 to 15, then a 5 to 20). Returns the coins and the stops said after the price.
+ */
+export function countUpHint(
+  price: number,
+  paid: number,
+  coins: number[],
+): { coins: number[]; stops: number[] } {
+  const up = fewest(paid - price, coins).sort((a, b) => a - b);
+  const stops: number[] = [];
+  for (const c of up) stops.push((stops.at(-1) ?? price) + c);
+  return { coins: up, stops };
+}
+
+/** Change levels where the hint counts up coin by coin instead of showing one way: the change from a 20. */
+export const hintCountsUp = (plan: ShopPlan) => plan.mode === 'change' && paidFor(plan) > PAID;
 
 /** What is said when change lands: the coin's own value first, then the count up ("2. 7… 8, 9"). */
 export const countUpSaid = (price: number, before: number, value: number) =>

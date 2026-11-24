@@ -1426,6 +1426,46 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 const g = neo.scene.game;
                 g.goods.parent.children.find((c) => c.label === 'tag-preview')?.destroy({ children: true });
               });
+            } else if (plan.mode === 'change' && level === 11) {
+              // Change from twenty (dive slice 7): giving back the price is a miss with its own line, one too much is
+              // the second, and the hint lays the change smallest first and counts up to 20; the two strips of ten show it.
+              const price = await page.evaluate(async () => {
+                const g = neo.scene.game;
+                const say = g.ctx.say.bind(g.ctx);
+                g.spokenLines = [];
+                g.ctx.say = (line, vars) => {
+                  g.spokenLines.push(line);
+                  return say(line, vars);
+                };
+                return g.order.prices[0];
+              });
+              const pricePaid = await page.evaluate(async (price) => {
+                const S = await import('/src/games/market-stall/logic.ts');
+                return S.fewest(price, neo.scene.game.plan.coins);
+              }, price);
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await putDown(pricePaid);
+              await ring();
+              assert.deepEqual(await counts(), [1, 0]);
+              assert.ok(await page.evaluate(() => neo.scene.game.spokenLines.includes('shop.price20')));
+              await putDown(Array(want + 1).fill(1));
+              await ring();
+              assert.deepEqual(await counts(), [2, 1]);
+              const hint = await page.evaluate(async (price) => {
+                const S = await import('/src/games/market-stall/logic.ts');
+                const g = neo.scene.game;
+                return {
+                  ghost: g.ghost.children.length,
+                  up: S.countUpHint(price, 20, g.plan.coins).coins.length,
+                  said: g.spokenLines.includes('shop.hint.countup'),
+                  strip: !!g.strip?.parent,
+                };
+              }, price);
+              assert.deepEqual(hint, { ghost: hint.up, up: hint.up, said: true, strip: true });
+              await screenshot('market-stall-11-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
             } else {
               await putDown(Array(want + 1).fill(1));
               if (level === 3) await screenshot('market-stall-3-total');

@@ -19,6 +19,11 @@ import {
   fewest,
   makeOrders,
   PAID,
+  paidFor,
+  stripLayout,
+  paidCoins,
+  countUpHint,
+  hintCountsUp,
   paymentFor,
   payTouch,
   PLANS,
@@ -123,7 +128,7 @@ describe('Market Stall', () => {
             (expect(p).toBeGreaterThanOrEqual(plan.price[0]), expect(p).toBeLessThanOrEqual(plan.price[1]));
           if (i > 0) expect(t).not.toBe(target(plan, orders[i - 1]));
           if (plan.mode === 'pair') expect(o.prices).toHaveLength(2);
-          if (plan.mode === 'change') expect(t).toBe(PAID - o.prices[0]);
+          if (plan.mode === 'change') expect(t).toBe(paidFor(plan) - o.prices[0]);
         });
       }
     }
@@ -328,7 +333,7 @@ describe('Market Stall', () => {
 
   describe('a total she can see (TotoLogic P8)', () => {
     it('stays hidden on pair, change and purse levels', () => {
-      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10]);
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10, 11]);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9]);
     });
 
@@ -368,8 +373,8 @@ describe('Market Stall', () => {
         ? [[]]
         : coins.filter((c) => c <= amount).flatMap((c) => payments(amount - c, coins).map((p) => [c, ...p]));
 
-    it('only the change level counts up', () => {
-      expect(PLANS.filter(countsUp).map((p) => p.mode)).toEqual(['change']);
+    it('only the change levels count up', () => {
+      expect(PLANS.filter(countsUp).map((p) => PLANS.indexOf(p) + 1)).toEqual([6, 11]);
     });
 
     it('a correct change counts up one at a time from the price and ends on what they paid', () => {
@@ -632,7 +637,6 @@ describe('Market Stall', () => {
       expect(plan.mode).toBe('pair');
       expect(plan.coins).toEqual([1, 2, 5, 10]);
       expect(plan.orders).toBe(3);
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: 10 });
       expect(marketStall.describeLevel(10)).toBe(plan.name);
     });
 
@@ -684,6 +688,128 @@ describe('Market Stall', () => {
       expect(missKind(plan, order, [2, ...Array(10).fill(1)])).toBe('counted-coins');
       expect(missKind(plan, order, [5])).toBe('short');
       expect(missKind(plan, order, [10, 5])).toBe('over');
+    });
+  });
+
+  describe('level 11, Change from twenty', () => {
+    const plan = PLANS[10];
+    /** Every way to make an amount with the plan's coins, in every landing order. */
+    const payments = (amount: number, coins: number[]): number[][] =>
+      amount === 0
+        ? [[]]
+        : coins.filter((c) => c <= amount).flatMap((c) => payments(amount - c, coins).map((p) => [c, ...p]));
+
+    it('tops the school ladder: three customers paying 20 for 11 to 19, change with ones, twos and fives', () => {
+      expect(plan.mode).toBe('change');
+      expect(plan.coins).toEqual([1, 2, 5]);
+      expect(plan.price).toEqual([11, 19]);
+      expect(paidFor(plan)).toBe(20);
+      expect(paidFor(PLANS[5])).toBe(PAID);
+      expect(plan.orders).toBe(3);
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: 11 });
+      expect(marketStall.describeLevel(11)).toBe(plan.name);
+      expect(hintCountsUp(plan)).toBe(true);
+      expect(PLANS.filter(hintCountsUp)).toEqual([plan]);
+    });
+
+    it('asks for change 1 to 9, every amount payable in at most four coins, never the same change twice running', () => {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const orders = makeOrders(plan, new Rng(seed));
+        expect(orders).toEqual(makeOrders(plan, new Rng(seed)));
+        orders.forEach((o, i) => {
+          const price = o.prices[0];
+          expect(price).toBeGreaterThanOrEqual(11);
+          expect(price).toBeLessThanOrEqual(19);
+          const change = target(plan, o);
+          expect(change).toBe(20 - price);
+          expect(change).toBeGreaterThanOrEqual(1);
+          expect(change).toBeLessThanOrEqual(9);
+          expect(fewest(change, plan.coins).length).toBeLessThanOrEqual(4);
+          if (i) expect(change).not.toBe(target(plan, orders[i - 1]));
+          seen.add(change);
+        });
+      }
+      expect([...seen].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    });
+
+    it('accepts any coins that make the change, not only the fewest, and counts every one up to 20', () => {
+      for (let price = 11; price <= 19; price++) {
+        const order = { prices: [price] };
+        for (const coins of payments(20 - price, plan.coins)) {
+          expect(missKind(plan, order, coins)).toBeNull();
+          let before = 0;
+          const said: number[] = [];
+          for (const v of coins) (said.push(...countUpWords(price, before, v)), (before += v));
+          expect(said[0]).toBe(price);
+          said.forEach((n, i) => i && expect(n).toBe(said[i - 1] + 1));
+          expect(said.at(-1)).toBe(20);
+        }
+      }
+    });
+
+    it('names giving back the price, and one off', () => {
+      const order = { prices: [13] };
+      expect(missKind(plan, order, [10, 2, 1])).toBe('price');
+      expect(missKind(plan, order, [5, 1])).toBe('one-more');
+      expect(missKind(plan, order, [5, 2, 1])).toBe('one-less');
+      expect(missKind(plan, order, [2])).toBe('short');
+      expect(missKind(plan, order, [5, 5])).toBe('over');
+    });
+
+    it('the bot gives the right change', () => {
+      for (let price = 11; price <= 19; price++) {
+        const pay = paymentFor(plan, { prices: [price] }, null);
+        expect(sum(pay)).toBe(20 - price);
+      }
+    });
+
+    it('the hint counts up smallest coin first, passing 15 on the way to 20 when the change is 5 or more', () => {
+      expect(countUpHint(13, 20, plan.coins)).toEqual({ coins: [2, 5], stops: [15, 20] });
+      expect(countUpHint(11, 20, plan.coins)).toEqual({ coins: [2, 2, 5], stops: [13, 15, 20] });
+      for (let price = 11; price <= 19; price++) {
+        const { coins, stops } = countUpHint(price, 20, plan.coins);
+        expect(sum(coins)).toBe(20 - price);
+        expect(coins).toEqual(fewest(20 - price, plan.coins).sort((a, b) => a - b));
+        expect(stops.at(-1)).toBe(20);
+        if (price < 15) expect(stops).toContain(15);
+        // At most five faint coins fit left of the slate.
+        expect(coins.length).toBeLessThanOrEqual(5);
+      }
+    });
+
+    it('the two strips of ten fill to 20, and the price fills the whole first strip', () => {
+      for (let price = 11; price <= 19; price++)
+        for (let given = 0; given <= 12; given++) {
+          const { cells, over } = tenStrip(price, given, 20);
+          expect(cells).toHaveLength(20);
+          expect(cells.slice(0, 10).every((c) => c === 'price')).toBe(true);
+          expect(cells.filter((c) => c === 'change')).toHaveLength(Math.min(given, 20 - price));
+          expect(over).toBe(Math.max(0, price + given - 20));
+        }
+    });
+
+    it('draws the strips as one row of ten at level 6 and two rows at 11, between the tag and the goods, clear of the paid coins', () => {
+      expect(new Set(stripLayout(10).cells.map((c) => c.y)).size).toBe(1);
+      const two = stripLayout(20);
+      expect(new Set(two.cells.map((c) => c.y)).size).toBe(2);
+      for (const paid of [10, 20]) {
+        const at = stripLayout(paid);
+        // Cells of a row do not overlap, and each row's eleventh cell starts under its first.
+        at.cells.forEach((c, i) => i % 10 && expect(c.x).toBeGreaterThanOrEqual(at.cells[i - 1].x + c.w));
+        for (const c of at.cells) {
+          expect(c.x).toBeGreaterThanOrEqual(at.frame.x);
+          expect(c.x + c.w).toBeLessThanOrEqual(at.frame.x + at.frame.w);
+          expect(at.y + c.y).toBeGreaterThanOrEqual(at.y + at.frame.y);
+          expect(c.y + c.h).toBeLessThanOrEqual(at.frame.y + at.frame.h);
+        }
+        // Below the tag (at -150, 88 tall), the cells clear of the customer's coins (radius 44 at x 150).
+        expect(at.y + at.frame.y).toBeGreaterThanOrEqual(-150 + TAG.h / 2);
+        for (const coin of paidCoins(paid))
+          for (const c of at.cells) expect(c.x + c.w).toBeLessThanOrEqual(coin.x - COIN_R[10]);
+      }
+      expect(paidCoins(10)).toHaveLength(1);
+      expect(paidCoins(20).map((c) => c.value)).toEqual([10, 10]);
     });
   });
 });
