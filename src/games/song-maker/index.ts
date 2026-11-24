@@ -17,6 +17,7 @@ import {
   awakeSpots,
   barOf,
   beadToTap,
+  composeReady,
   key,
   makeSong,
   MOTIF_WINDOW,
@@ -33,6 +34,15 @@ import {
 /** Row 0 is the top, highest row; the bottom, lowest row is red, as the big low jelly is in Jelly Drums. */
 const rowColor = (row: number, rows: number) => pitchColor(rows - 1 - row, rows);
 const FALLBACK_BPM = 92;
+
+/** The check button's tick, for My song. */
+function checkArt(): Graphics {
+  return new Graphics()
+    .moveTo(-24, 2)
+    .lineTo(-7, 20)
+    .lineTo(26, -20)
+    .stroke({ width: 13, color: ink, cap: 'round', join: 'round' });
+}
 // Session-only, keyed by the loaded profile's save. Replaced/reset saves start fresh; demos never consume it.
 const recentMotifs = new WeakMap<object, string[]>();
 
@@ -133,6 +143,11 @@ class SongMaker implements Game {
   private readonly glow = new Graphics();
   private readonly card = new Container();
   readonly replay: RoundButton | null = null;
+  /** My song: the check button, asleep until she has lit three jellies and the loop has played a whole round since her last change. */
+  readonly check: RoundButton | null = null;
+  /** My song: beats played since her last change, and whether the check is awake. */
+  beatsSinceChange = 0;
+  checkAwake = false;
   private cell = 100;
   private lay: SongLayout | null = null;
   private view: View | null = null;
@@ -177,6 +192,12 @@ class SongMaker implements Game {
       ctx.stage.addChild(this.anywhere);
       this.wakeLayout();
     }
+    if (this.plan.mode === 'compose') {
+      this.check = new RoundButton(checkArt(), swatch.green, 50, () => this.checkPressed());
+      this.check.eventMode = 'none';
+      this.check.alpha = 0.35;
+      ctx.stage.addChild(this.check);
+    }
     if (this.plan.mode === 'listen') {
       this.replay = new RoundButton(replayArt(), swatch.yellow, 50, () => void this.playTune());
       ctx.stage.addChild(this.replay);
@@ -190,6 +211,9 @@ class SongMaker implements Game {
         break;
       case 'wake':
         void this.ctx.instruct('song.wake');
+        break;
+      case 'compose':
+        void this.ctx.instruct('song.compose');
         break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
@@ -211,6 +235,11 @@ class SongMaker implements Game {
   /** The ghost finger on the how-to card: light the song (free play), or tap what the round asks for, once a heard tune has finished playing. */
   autotouch(): TouchIntent | null {
     if (this.done || this.listening) return null;
+    // My song: once the check is awake it is the next thing to press; until then the loop just plays.
+    if (this.plan.mode === 'compose' && this.check) {
+      const lit = this.beads.filter((b) => b.lit).length;
+      if (lit >= this.plan.notes) return this.checkAwake ? { tap: { on: this.check }, pause: 0.3 } : null;
+    }
     const note = beadToTap(this.plan, this.song, this.placed);
     const bead = note && this.beads.find((b) => b.note.col === note.col && b.note.row === note.row);
     if (!bead) return null;
@@ -254,7 +283,7 @@ class SongMaker implements Game {
   private tap(bead: Bead) {
     this.sing(bead);
     if (this.done || bead.given) return;
-    if (this.plan.mode === 'free' || this.plan.mode === 'wake') {
+    if (this.plan.mode === 'free' || this.plan.mode === 'wake' || this.plan.mode === 'compose') {
       bead.lit = !bead.lit;
       if (bead.lit) this.placed.add(key(bead.note));
       else this.placed.delete(key(bead.note));
@@ -267,6 +296,12 @@ class SongMaker implements Game {
         gravity: -40,
         size: [0.5, 0.8],
       });
+      if (this.plan.mode === 'compose') {
+        // Any change, a light or putting one out, starts the check's wait again so it only ever confirms what she just heard.
+        this.beatsSinceChange = 0;
+        this.syncCheck();
+        return;
+      }
       if (this.plan.mode === 'wake') {
         // Only a light counts toward the round and wakes a friend; putting one out is free. Two must stay lit to finish.
         if (!bead.lit) {
@@ -316,6 +351,34 @@ class SongMaker implements Game {
     this.drawGlow();
   }
 
+  private litCount() {
+    return this.beads.filter((b) => b.lit).length;
+  }
+
+  /** My song: wakes or puts the check back to sleep to match what she has lit and how long the loop has played since. */
+  private syncCheck() {
+    const check = this.check;
+    if (!check || this.done) return;
+    const ready = composeReady(this.plan, this.litCount(), this.beatsSinceChange);
+    if (ready === this.checkAwake) return;
+    this.checkAwake = ready;
+    check.eventMode = ready ? 'static' : 'none';
+    check.alpha = ready ? 1 : 0.35;
+    if (ready) {
+      sfx.sparkle();
+      void this.ctx.say('song.compose.ready');
+    }
+  }
+
+  /** My song: the check plays her song round once more, then finishes. Nothing was ever wrong, so nothing is counted. */
+  private checkPressed() {
+    if (this.done || !this.checkAwake) return;
+    this.done = true;
+    this.glow.clear();
+    if (this.check) this.check.eventMode = 'none';
+    void this.ctx.tw.wait((60 / (music.bpm() ?? FALLBACK_BPM)) * this.plan.cols).then(() => this.celebrate());
+  }
+
   /** Plays the tune to copy, one beat per column, lighting each column as it goes. */
   private async playTune(first = false) {
     if ((this.listening && !first) || this.done) return;
@@ -356,7 +419,7 @@ class SongMaker implements Game {
       });
     // A song she made on the free loop is hers to keep; a copied one is not.
     const creation =
-      this.plan.mode === 'free' || this.plan.mode === 'wake'
+      this.plan.mode === 'free' || this.plan.mode === 'wake' || this.plan.mode === 'compose'
         ? {
             kind: 'tune' as const,
             cols: this.plan.cols,
@@ -382,6 +445,8 @@ class SongMaker implements Game {
     if (col === this.col) return;
     const wrapped = col < this.col;
     this.col = col;
+    this.beatsSinceChange++;
+    this.syncCheck();
     this.drawPlayhead(col);
     for (const b of this.beads) if (b.lit && b.note.col === col) this.sing(b, 0.4);
     if (wrapped && this.finishing && !this.done) {
@@ -436,6 +501,7 @@ class SongMaker implements Game {
     this.wakeLayout();
     this.drawCard(lay);
     this.replay?.position.set(lay.replay.x, lay.replay.y);
+    this.check?.position.set(lay.replay.x, lay.replay.y);
     if (this.col >= 0) this.drawPlayhead(this.col);
     this.drawGlow();
   }

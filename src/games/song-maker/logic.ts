@@ -1,13 +1,13 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
-export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake';
+export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake' | 'compose';
 
 export interface SongPlan {
   mode: SongMode;
   cols: number;
   rows: number;
-  /** ghost and card: how many notes the song has. Free play: taps before the round ends. Wake: lights before it ends. */
+  /** ghost and card: how many notes the song has. Free play: taps before the round ends. Wake: lights before it ends. Compose: jellies lit before the check can wake. */
   notes: number;
   name: string;
 }
@@ -39,6 +39,14 @@ export const SONG_PLANS: SongPlan[] = [
     rows: 3,
     notes: 12,
     name: 'One big jelly on a 4-beat loop; any touch lights the nearest, and more jellies wake',
+  },
+  // Level 9, My song: any song on a 6-beat loop; the check button wakes once enough jellies have played a full loop.
+  {
+    mode: 'compose',
+    cols: 6,
+    rows: 4,
+    notes: 3,
+    name: 'Make your own song on a 6-beat loop, then press the check to hear it once more',
   },
 ];
 
@@ -125,7 +133,8 @@ export interface Song {
 
 /** A song for one round. Every note has its own column, and a song never sits on a single pitch. */
 export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = []): Song {
-  if (plan.mode === 'free' || plan.mode === 'wake') return { notes: [], given: [] };
+  if (plan.mode === 'free' || plan.mode === 'wake' || plan.mode === 'compose')
+    return { notes: [], given: [] };
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
     const notes = Array.from({ length: plan.cols }, (_, col) => ({ col, row: p.rows[col % p.rows.length] }));
@@ -177,7 +186,7 @@ export function freeSong(plan: SongPlan): Note[] {
 export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string>): Note | null {
   // Wake: the next spot in the order it wakes; the ghost finger only ever lights, so each one is awake by its turn.
   if (plan.mode === 'wake') return awakeSpots(placed.size).find((n) => !placed.has(key(n))) ?? null;
-  const notes = plan.mode === 'free' ? freeSong(plan) : song.notes;
+  const notes = plan.mode === 'free' || plan.mode === 'compose' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
 }
 
@@ -214,6 +223,14 @@ export function wakeTouch(
   const unlit = nearest(spots.filter((s) => !s.lit));
   return unlit ? { note: unlit.note, act: 'light' } : { note: near.note, act: 'sing' };
 }
+
+/**
+ * My song: whether the check button is awake. At least `plan.notes` jellies are lit and the loop has played a whole round
+ * (`plan.cols` beats) since her last change, so what she checks is what she has just heard. Any taps leave it either asleep
+ * or awake, never a mistake.
+ */
+export const composeReady = (plan: SongPlan, lit: number, beatsSinceChange: number) =>
+  lit >= plan.notes && beatsSinceChange >= plan.cols;
 
 /** One block of the grid: beats `from`..`from + cols - 1` drawn at `cell` from (x0, y0). A block that is not `tappable` is a shown, given bar. */
 export interface SongBar {
@@ -288,7 +305,7 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
     };
   }
   const left = plan.mode === 'card' ? v.w * 0.36 : 175;
-  const right = v.w - (plan.mode === 'listen' ? 130 : 40);
+  const right = v.w - (plan.mode === 'listen' || plan.mode === 'compose' ? 130 : 40);
   const top = 130;
   const bottom = v.h - 40;
   const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
@@ -308,7 +325,8 @@ export const LEVELS: BandLevels = {
   // Level 8 (one big jelly that answers anywhere) is the easiest, so lap plays it first, then 1 and 2.
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
-  preschool: { min: 4, max: 6 },
-  prek: { min: 5, max: 7 },
-  school: { min: 6, max: 7 },
+  // Level 9 (My song, compose) comes last in each window: it has no wrong answer, so it follows the copy levels.
+  preschool: { min: 4, max: 9, order: [4, 5, 6, 9] },
+  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
+  school: { min: 6, max: 9, order: [6, 7, 9] },
 };

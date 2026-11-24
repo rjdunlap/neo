@@ -7,7 +7,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'song8', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        ['song', 'song8', 'song9', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -90,6 +90,48 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(r, [0, 0], 'song 8 score');
       log(
         'Song Maker 8: one big jelly, touch anywhere, friends wake, a lit one put out free, sticker passed',
+      );
+    }
+
+    // Song Maker 9, My song: any jellies, the check wakes at three lit and a full loop since the last change, and presses finish with 0/0.
+    if (!only || only === 'song' || only === 'song9') {
+      await launch('song-maker', 9);
+      await page.waitForTimeout(600);
+      const r9 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const at = (i) => g.beads[i];
+        const asleep0 = !g.checkAwake && g.check.eventMode === 'none';
+        kit.tapOn(at(0));
+        kit.tapOn(at(5));
+        await kit.sleep(5500);
+        const twoStayAsleep = !g.checkAwake;
+        kit.tapOn(at(10));
+        const justLit = !g.checkAwake;
+        const woke = await kit.until(() => g.checkAwake, 9000);
+        // Any change puts it back to sleep: putting a jelly out, then waiting a full loop again.
+        kit.tapOn(at(10));
+        const backToSleep = !g.checkAwake;
+        await kit.sleep(300);
+        kit.tapOn(at(10));
+        const wokeAgain = await kit.until(() => g.checkAwake, 9000);
+        const size = g.check.radius * 2;
+        kit.tapOn(g.check);
+        return { asleep0, twoStayAsleep, justLit, woke, backToSleep, wokeAgain, size, misses: g.misses };
+      });
+      assert.ok(
+        r9.asleep0 && r9.twoStayAsleep && r9.justLit && r9.woke && r9.backToSleep && r9.wokeAgain,
+        `song 9 check ${JSON.stringify(r9)}`,
+      );
+      assert.ok(r9.size >= 100, 'song 9 check is a whole target');
+      await screenshot('song-maker-9');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const r = kit.store.stats('song-maker').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'song 9 score');
+      log(
+        'Song Maker 9: any jellies, the check wakes after three and a full loop, a change puts it back to sleep, sticker passed',
       );
     }
 
