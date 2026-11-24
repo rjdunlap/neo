@@ -134,7 +134,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `numbernook` | 2026-11-09 · [Number Nook slice 6: level 7 The fifteen](archive/VERIFICATION-2026-11-09.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432) | `NOOK_LEVELS=7` |
 | `numbertrails` | 2026-11-21 · [Number Trails level 7, Ten and some more](verification/2026-11-21-number-trails-level-7-ten-and-some-more.md) | `NT_LEVEL=7` |
 | `orchard` | 2026-11-12 · [U7d fix batch 7: peekaboo-barn, orchard-rows and look-it-up never hold a tap on a right answer's or a counted row's line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-7-peekaboo-barn-orchard-rows-and-look-it-up-never-hold-a-tap-on-a-right-answers-or-a-counted-rows-line-pr-1547) | `ORCHARD_LEVELS=2,5,7` |
-| `originals` | 2026-11-23 · [Jelly Drums sound sets and stages](verification/2026-11-23-jelly-drums-sound-sets-and-stages.md) | `ORIGINALS_ONLY=jellysets` |
+| `originals` | 2026-11-24 · [Jelly Drums resume where she was](verification/2026-11-24-jelly-drums-resume-where-she-was.md) | `ORIGINALS_ONLY=jelly` (levels 1–10; no mid-tune miss played) |
 | `outcropdetective` | 2026-11-23 · [Outcrop Detective levels 1-2 (batch outcrop-detective 1)](verification/2026-11-23-outcrop-detective-levels-1-2-batch-outcrop-detective-1.md) | Levels 1–2 |
 | `paintmixer` | 2026-11-12 · [U7d fix batch 10: picture-graph, paint-mixer and spinner-fair never hold a tap on a cut line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-10-picture-graph-paint-mixer-and-spinner-fair-never-hold-a-tap-on-a-cut-line-pr-1550) | `PAINT_LEVELS=4` |
 | `pantry` | 2026-11-17 · [Picnic Pantry level 1, Two dishes, one pantry](verification/2026-11-17-picnic-pantry-level-1-two-dishes-one-pantry.md) | — |

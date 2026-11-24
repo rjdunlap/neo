@@ -116,6 +116,15 @@ export function drawTune(rng: Rng, length: number, played: readonly Tune[] = [])
   return rng.pick(fresh.filter((t) => t.kind === kind));
 }
 
+/** Tunes of this many notes or more keep her place after a miss; shorter ones restart, since a restart there is short. */
+export const RESUME_FROM_LENGTH = 4;
+
+/**
+ * Where she carries on after a wrong jelly (dive slice 4, decision 4): the notes she already had right stay right on a four-
+ * or five-note tune, so the tune replays in full and she continues from her place `at`; a shorter tune starts again.
+ */
+export const placeAfterMiss = (length: number, at: number): number => (length >= RESUME_FROM_LENGTH ? at : 0);
+
 /** Seconds without a touch in free play before a jelly wiggles to invite her back. */
 export const NUDGE_AFTER = 8;
 
