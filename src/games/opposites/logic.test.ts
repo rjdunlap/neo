@@ -26,6 +26,10 @@ import {
   PLANS,
   WORD_LEVEL,
   WORD_PLAN,
+  UN_CONCEPTS,
+  UN_LEVEL,
+  UN_PLAN,
+  unParts,
   word,
 } from './logic';
 
@@ -60,8 +64,10 @@ describe('Opposites', () => {
     expect(poolFor(1)).toEqual(['size', 'mood', 'height', 'lid', 'cup', 'temp', 'sky', 'speed']);
     expect(poolFor(2)).toEqual(CONCEPT_IDS.filter((c) => CONCEPTS[c].from <= 2));
     expect(poolFor(2)).toHaveLength(12);
-    expect(poolFor(3)).toEqual(CONCEPT_IDS);
+    expect(poolFor(3)).toEqual(CONCEPT_IDS.filter((c) => CONCEPTS[c].family !== 'un'));
     expect(poolFor(4)).toHaveLength(16);
+    // The un- words enter only at level 10, so no earlier level's pool grows.
+    expect(poolFor(WORD_LEVEL)).toEqual(poolFor(3));
     expect(STICKER_CONCEPTS).toEqual(['sky', 'temp', 'cup', 'lid', 'stature', 'lamp', 'wake', 'basket']);
   });
 
@@ -272,14 +278,14 @@ describe('Opposites', () => {
     expect(planFor(WORD_LEVEL)).toBe(WORD_PLAN);
     expect(WORD_PLAN.mode).toBe('opposite');
     expect(WORD_PLAN.hidden).toBe(true);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL]);
     expect(stepLevel(ORDER_LEVEL, 1, LEVELS.school!)).toBe(WORD_LEVEL);
     // A new school player starts at the window's start, Line them up, shared with pre-K's top.
     expect(firstLevel(LEVELS.school!, [BIG_LEVEL])).toBe(ORDER_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(WORD_LEVEL);
     // Only the word draws from every pair, so the heard word is never limited to the pictures she already knows.
-    expect(new Set(poolFor(WORD_LEVEL))).toEqual(new Set(CONCEPT_IDS));
+    const pictures = CONCEPT_IDS.filter((c) => !UN_CONCEPTS.includes(c));
+    expect(new Set(poolFor(WORD_LEVEL))).toEqual(new Set(pictures));
     const asked = new Set<string>();
     for (let seed = 1; seed <= 300; seed++) {
       for (const r of makeRounds(WORD_PLAN, new Rng(seed))) {
@@ -301,7 +307,49 @@ describe('Opposites', () => {
       }
     }
     // Across seeds every word of every pair is heard.
-    expect(asked.size).toBe(CONCEPT_IDS.length * 2);
+    expect(asked.size).toBe(pictures.length * 2);
     expect(SCRIPT['opp.heard']).toBeDefined();
+  });
+
+  it('level 10, Un- words: school steps 9 to 10; every pair is a word and un + that word, the un- one asked, and the bot taps it', () => {
+    expect(planFor(UN_LEVEL)).toBe(UN_PLAN);
+    expect(UN_PLAN).toMatchObject({ level: 10, mode: 'un', rounds: 4 });
+    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL, UN_LEVEL]);
+    expect(stepLevel(WORD_LEVEL, 1, LEVELS.school!)).toBe(UN_LEVEL);
+    expect(firstLevel(LEVELS.school!, [BIG_LEVEL])).toBe(ORDER_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(UN_LEVEL);
+    // Only reversible words a picture can show done and undone; happy/unhappy stays out ("happy" is the mood pair's).
+    expect([...UN_CONCEPTS].sort()).toEqual(['button', 'fold', 'lock', 'tie', 'wrap', 'zip']);
+    for (const c of UN_CONCEPTS) {
+      const [base, un] = CONCEPTS[c].words;
+      expect(un).toBe(`un${base}`);
+      expect(unParts(c)).toEqual(['un', base]);
+      expect(CONCEPTS[c].from).toBe(UN_LEVEL);
+    }
+    for (const line of ['opp.un', 'opp.notun', 'opp.isun'] as const) expect(SCRIPT[line]).toBeDefined();
+    const asked = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = makeRounds(UN_PLAN, new Rng(seed));
+      expect(rounds).toEqual(makeRounds(UN_PLAN, new Rng(seed)));
+      expect(rounds).toHaveLength(4);
+      // Four different words a round.
+      expect(new Set(rounds.map((r) => r.ask!.concept)).size).toBe(4);
+      for (const r of rounds) {
+        expect(UN_CONCEPTS).toContain(r.ask!.concept);
+        // The two cards are the word and its un- word, and the un- one is asked for: exactly one card says it.
+        expect(r.cards).toHaveLength(2);
+        expect(new Set(r.cards.map((c) => c.concept))).toEqual(new Set([r.ask!.concept]));
+        expect(opposites(r.cards[0], r.cards[1])).toBe(true);
+        expect(r.ask!.side).toBe(1);
+        expect(word(r.ask!).startsWith('un')).toBe(true);
+        expect(r.cards.filter((c) => word(c) === word(r.ask!))).toHaveLength(1);
+        asked.add(r.ask!.concept);
+        const i = cardToTap(UN_PLAN, r, [false, false], null)!;
+        expect(word(r.cards[i])).toBe(word(r.ask!));
+      }
+    }
+    // Every un- word comes up across seeds.
+    expect([...asked].sort()).toEqual([...UN_CONCEPTS].sort());
   });
 });
