@@ -22,7 +22,6 @@ export const VOICE = {
   'duck.countus': ["Let's count together!"],
   'duck.more': ['{a} ducks are swimming. {b} more come!'],
   'duck.away': ['{a} ducks are swimming. {b} swim away!'],
-  'duck.noneLeft': ['They all swam away! None left!', 'Zero! No ducks left!'],
   'duck.now': ['How many now?'],
   'duck.plus': ['{a} plus {b} makes {n}!'],
   'duck.minus': ['{a} minus {b} makes {n}!'],

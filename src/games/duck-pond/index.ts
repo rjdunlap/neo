@@ -1101,10 +1101,9 @@ class DuckPond implements Game {
         return;
       } else if (this.answer === 0) {
         // An empty pond: none is a number too.
-        if (this.plan.mode === 'add' && this.pondStory) {
-          await this.ctx.say('duck.noneLeft');
+        await this.ctx.say('duck.none');
+        if (this.plan.mode === 'add' && this.pondStory)
           await this.showSentence(this.pondStory.a, this.pondStory.b, true);
-        } else await this.ctx.say('duck.none');
         this.clearPads();
         await this.roundWon(0, false);
         return;
