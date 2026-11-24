@@ -88,6 +88,8 @@ const SCENES: Pick<BackdropStyle, 'sky' | 'hills'>[] = [
   { sky: [0x9ad8d0, 0xe3f7e8], hills: [0x9fd88c, 0x6fc272] },
 ];
 
+const kindWord = (k: Kind) => (k === 'frog' ? 'frogs' : 'ducks');
+
 const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 
 /** A duck that waits on the bank, hops along an arc, and bobs on the water up to its middle. */
@@ -765,13 +767,8 @@ class DuckPond implements Game {
         this.answer = rng.int(p.min, p.max);
         await this.arrive(this.answer);
       }
-      await this.ctx.instruct(
-        this.mixed
-          ? this.mixed.ask === 'frog'
-            ? 'duck.howmanyFrogs'
-            : 'duck.howmanyDucksHere'
-          : 'duck.howmany',
-      );
+      if (this.mixed) await this.ctx.instruct('duck.howmanyKind', { kind: kindWord(this.mixed.ask) });
+      else await this.ctx.instruct('duck.howmany');
       this.showPads(this.answer);
       this.busy = false;
       return;
@@ -1219,9 +1216,8 @@ class DuckPond implements Game {
     } else if (this.swimmers.length === 0) {
       await this.ctx.say('duck.noneHere');
     } else {
-      await this.ctx.say(
-        this.mixed ? (this.mixed.ask === 'frog' ? 'duck.countFrogs' : 'duck.countDucks') : 'duck.countus',
-      );
+      if (this.mixed) await this.ctx.say('duck.countKind', { kind: kindWord(this.mixed.ask) });
+      else await this.ctx.say('duck.countus');
       await this.countAloud();
     }
     // The right pad glows from the second miss on a question, and that question counts one hint, however many more misses.
