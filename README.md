@@ -75,7 +75,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 
 | Game | Ages | Land | Levels | Starts as |
 | --- | --- | --- | --- | --- |
-| [Bubble Pop](docs/games/bubble-pop.md) | lap–school | Bubble Beach | 18 | pop anything (or tap anywhere to pop the nearest) |
+| [Bubble Pop](docs/games/bubble-pop.md) | lap–school | Bubble Beach | 19 | pop anything (or tap anywhere to pop the nearest) |
 | [Peg Garden](docs/games/peg-garden.md) | lap–pre-K | Bubble Beach | 9 | tap the top and a pearl tumbles through flower pegs on a seeded board and backdrop, then rolls into a shell tray |
 | [Bounce Back](docs/games/bounce-back.md) | lap–school | Bubble Beach | 12 | touch anywhere and a huge paddle goes to a slow ball (lap, level 12), then bounce a slow ball back to the pet with a huge paddle |
 | [Bumper Garden](docs/games/bumper-garden.md) | lap–pre-K | Bubble Beach | 11 | lap starts at level 10: one big flower, and a touch anywhere launches the ladybug; level 1 then has her tap to launch it through several flower bumpers |

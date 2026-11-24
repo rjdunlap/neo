@@ -78,6 +78,23 @@ export function modePicture(p: ModePicture): Container {
       bubble(c, -16, -18, 34, null);
       palm(c, 22, 30);
       break;
+    case 'blow': {
+      // A swipe from the lower left, the bubbles it blows getting bigger as they float away.
+      c.addChild(
+        new Graphics()
+          .moveTo(-40, 34)
+          .quadraticCurveTo(-18, 22, -6, 8)
+          .stroke({ width: 5, color: ink, alpha: 0.35, cap: 'round' }),
+      );
+      for (const [x, y, r] of [
+        [-6, 6, 13],
+        [14, -10, 17],
+        [34, -26, 21],
+      ] as const)
+        bubble(c, x, y, r, null);
+      palm(c, -34, 40);
+      break;
+    }
     case 'plain': {
       const spots = [
         [-24, -22],
