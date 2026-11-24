@@ -425,7 +425,8 @@ class JellyDrums implements Game {
     }
     await this.ctx.tw.wait(0.2);
     this.jellies.forEach((j) => j.hit(1.4));
-    [0, 2, 3, 5].forEach((s) => this.note(s, 0.3));
+    // Two thirds of a full note: the marimba keeps its old chord gain of 0.3.
+    [0, 2, 3, 5].forEach((s) => this.note(s, 2 / 3));
     this.fans.forEach((f) => f.cheer());
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
