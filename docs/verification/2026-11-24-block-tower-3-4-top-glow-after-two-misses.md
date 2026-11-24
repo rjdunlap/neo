@@ -1,0 +1,5 @@
+# 2026-11-24 — Block Tower 3–4 top glow after two misses
+
+**Changed:** at levels 3–4 (flag and Duck's tower) a too-tall bell check no longer glows the top block on the first miss; the glow waits for the second miss, alongside the counted counting help (2026-10-23 decision 2). Wrong heights stay misses and the hint is still counted once per task. A 3–4 how-to line says so. The `shortlist` tower case at 3–4 now plays too tall (no glow), too short (counted hint), too tall again (glow, no second hint) and expects 3 misses and 1 hint.
+**Ran:** typecheck; block-tower rule tests and `howto.test.ts` (225 passed); `game-docs.test.ts`; `BROWSER_SUITE=shortlist SHORTLIST_ONLY=tower FROM_LEVEL=3 TO_LEVEL=4` passed (and failed on the first-miss glow assertion with the old code); `BROWSER_SUITE=howto HOWTO_ONLY=block-tower` with `HOWTO_LEVEL=3` and `4`: the card fits in landscape and portrait, then the suite's Bubble Pop level-arrow step fails `3 !== 4`, the same with and without this change.
+**Not run:** build (no shared files or assets), `fingerdemo` (bot unchanged), levels 1–2 and 5–7 in the browser.

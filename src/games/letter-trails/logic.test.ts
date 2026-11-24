@@ -32,6 +32,7 @@ import {
   THREE_LEVEL,
   LITTLE_LEVEL,
   MAGIC_LEVEL,
+  HOOKS_LEVEL,
   LITTLE_TOLERANCE,
   inFrame,
 } from './logic';
@@ -245,7 +246,7 @@ describe('Level 10, little letters in a four-line frame', () => {
   const eps = 1e-9;
 
   it("draws one of the programme's first group, c o s v w t, each with its capital's picture", () => {
-    expect(Object.keys(LOWER).sort().join('')).toBe([...group, ...'adg'].sort().join(''));
+    expect(Object.keys(LOWER).sort().join('')).toBe([...group, ...'adg', ...'uielkyj'].sort().join(''));
     const seen = new Set<string>();
     for (let seed = 0; seed < 300; seed++) {
       const word = trailWord(LITTLE_LEVEL, 'Ana', new Rng(seed));
@@ -357,7 +358,7 @@ describe('Level 11, Magic c: a, d and g', () => {
   it('draws a, d or g, each with its capital’s picture, in the frame, for school', () => {
     expect(MAGIC_LEVEL).toBe(11);
     expect(inFrame(MAGIC_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(MAGIC_LEVEL);
+    expect(LEVELS.school!.max).toBe(HOOKS_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(MAGIC_LEVEL)).toEqual(['solid']);
     expect(severalLetters(MAGIC_LEVEL)).toBe(false);
@@ -413,5 +414,98 @@ describe('Level 11, Magic c: a, d and g', () => {
     const curve = sampleStroke(strokesOf('a')[0]);
     const nearest = Math.min(...curve.map((p) => Math.hypot(p[0] - centre[0], p[1] - centre[1])));
     expect(tol * 2).toBeLessThan(nearest);
+  });
+});
+
+describe('Level 12, Lines and hooks: u i e l k y j', () => {
+  const group = 'uielkyj';
+  const pts = (l: string) => strokesOf(l).flatMap((s) => sampleStroke(s));
+  const eps = 1e-9;
+
+  it('draws one of the seven, each with its capital’s picture, in the frame, for school only', () => {
+    expect(HOOKS_LEVEL).toBe(12);
+    expect(inFrame(HOOKS_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBe(HOOKS_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(HOOKS_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(HOOKS_LEVEL)).toBe(false);
+    expect(trailTolerance(HOOKS_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const word = trailWord(HOOKS_LEVEL, 'Ana', new Rng(seed));
+      expect(group).toContain(word);
+      expect(WORDS[word.toUpperCase()]).toBeTruthy();
+      seen.add(word);
+    }
+    expect(seen.size).toBe(group.length);
+  });
+
+  it('keeps every stroke in the frame, each letter reaching its own lines', () => {
+    const tall = 'lk';
+    const below = 'yj';
+    for (const l of group) {
+      const ys = pts(l).map((p) => p[1]);
+      for (const [x, y] of pts(l)) {
+        expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+        expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+        expect(y).toBeGreaterThanOrEqual(FRAME.top - eps);
+        expect(y).toBeLessThanOrEqual(FRAME.bottom + eps);
+      }
+      if (tall.includes(l)) expect(Math.min(...ys)).toBeCloseTo(FRAME.top, 2);
+      else if (l === 'i' || l === 'j')
+        expect(Math.min(...ys)).toBeLessThan(FRAME.mid - 0.05); // the dot
+      else expect(Math.min(...ys)).toBeGreaterThanOrEqual(FRAME.mid - eps);
+      expect(Math.max(...ys)).toBeCloseTo(below.includes(l) ? FRAME.bottom : FRAME.base, 1);
+    }
+  });
+
+  it('starts each letter at the top of its first stroke, except e, which starts mid-round', () => {
+    for (const l of group.replace('e', '')) {
+      const first = strokesOf(l)[0];
+      const top = 'lk'.includes(l) ? FRAME.top : FRAME.mid;
+      expect(first[0][1] - top).toBeLessThanOrEqual(0.02);
+    }
+    const e = strokesOf('e')[0];
+    expect(e[0][1]).toBeCloseTo(FRAME.mid + (FRAME.base - FRAME.mid) / 2, 5);
+    expect(e[1][0]).toBeGreaterThan(e[0][0]); // across to the right first
+    expect(e.at(-1)![1]).toBeGreaterThan(FRAME.mid + (FRAME.base - FRAME.mid) / 2); // and ends low on the right
+    expect(e.at(-1)![0]).toBeGreaterThan(0.5);
+  });
+
+  it('dots i and j over their lines, after the line, and turns j’s tail left', () => {
+    for (const l of 'ij') {
+      const [line, dot] = strokesOf(l);
+      expect(strokesOf(l)).toHaveLength(2);
+      expect(dot[0][0]).toBeCloseTo(line[0][0], 5);
+      expect(dot.at(-1)![1]).toBeLessThan(FRAME.mid);
+    }
+    const j = strokesOf('j')[0];
+    expect(j.at(-1)![0]).toBeLessThan(j[0][0] - 0.05);
+  });
+
+  it('writes k with a tall line then one in-and-out stroke, y with two slides, u with a curve then a line', () => {
+    const [stem, kick] = strokesOf('k');
+    expect(stem[0][0]).toBe(stem[1][0]);
+    expect(kick[0][0]).toBeGreaterThan(stem[0][0]);
+    expect(kick[1][0]).toBeCloseTo(stem[0][0], 2);
+    expect(kick.at(-1)![0]).toBeGreaterThan(stem[0][0]);
+    expect(kick[1][1]).toBeGreaterThan(kick[0][1]);
+    expect(kick.at(-1)![1]).toBeGreaterThan(kick[1][1]);
+    expect(strokesOf('y')).toHaveLength(2);
+    const [left, right] = strokesOf('y');
+    expect(right[0][0]).toBeGreaterThan(left[0][0]);
+    expect(right.at(-1)![0]).toBeLessThan(right[0][0]);
+    expect(strokesOf('u')).toHaveLength(2);
+    const [bowl, line] = strokesOf('u');
+    expect(bowl.at(-1)![0]).toBeCloseTo(line[0][0], 5);
+  });
+
+  it('accepts each stroke in order at the little corridor', () => {
+    const tol = trailTolerance(HOOKS_LEVEL);
+    for (const l of group)
+      for (const stroke of strokesOf(l)) {
+        const points = sampleStroke(stroke);
+        for (let i = 1; i < points.length; i++) expect(offTrail(points[i], points[i - 1], tol)).toBe(false);
+      }
   });
 });
