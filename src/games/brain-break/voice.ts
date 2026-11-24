@@ -9,4 +9,12 @@ export const VOICE = {
   'brain.sums.start': ['Find the sums in order, from the one that makes one up to {n}. Take your time.'],
   'brain.sums.try': ['That one makes {m}. Look for the one that makes {n}.'],
   'brain.sums.hint': ['The one that makes {n} has a golden outline.'],
+  'brain.count.start': ['Count by {s}. Start at {v}, then keep counting on. Take your time.'],
+  'brain.count.startBack': ['Count back by {s}. Start at {v}, then keep counting back. Take your time.'],
+  'brain.count.first': ['That one is {m}. Start at {v}.'],
+  'brain.count.try': ['That one is {m}. Count on {s} from {p}.'],
+  'brain.count.tryBack': ['That one is {m}. Count back {s} from {p}.'],
+  'brain.count.next': ['After {p}, count on by {s}.'],
+  'brain.count.nextBack': ['After {p}, count back by {s}.'],
+  'brain.count.hint': ['The next number is {v}. Its stone has a golden outline.'],
 } satisfies Record<string, string[]>;

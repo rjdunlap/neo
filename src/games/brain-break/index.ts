@@ -10,6 +10,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  countsBy,
   hintIndex,
   judge,
   layoutFor,
@@ -17,11 +18,15 @@ import {
   LOOKS,
   makeBoard,
   makeLabels,
+  makeTrail,
   pickLook,
   planFor,
+  ruleSign,
   showsSums,
   trailOrder,
+  trailValue,
   type Look,
+  type Trail,
 } from './logic';
 
 /** Sets a stone's label, shrinking a sum to stay inside the stone. */
@@ -42,7 +47,9 @@ function stoneArt(text: string, color: ColorName = 'teal'): Container {
 
 class BrainBreak implements Game {
   readonly board: number[];
-  readonly labels: string[];
+  labels: string[];
+  /** The count-by rule from level 7; the board then holds ranks and the stones show what the rule makes. */
+  readonly rule: Trail | null;
   readonly sums: boolean;
   readonly stones: Container[] = [];
   private readonly texts: Text[] = [];
@@ -68,6 +75,8 @@ class BrainBreak implements Game {
     this.sums = showsSums(ctx.level);
     // Drawn after the board and labels, so a look never changes which board a seed gives.
     this.look = pickLook(ctx.rng);
+    this.rule = countsBy(ctx.level) ? makeTrail(ctx.level, ctx.rng) : null;
+    if (this.rule) this.labels = this.board.map((rank) => String(trailValue(this.rule!, rank)));
     this.order = trailOrder(this.board);
     this.background.eventMode =
       this.status.eventMode =
@@ -101,7 +110,13 @@ class BrainBreak implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct(this.sums ? 'brain.sums.start' : 'brain.start', { n: this.board.length });
+    const r = this.rule;
+    if (r)
+      void this.ctx.instruct(r.back ? 'brain.count.startBack' : 'brain.count.start', {
+        s: r.step,
+        v: trailValue(r, 1),
+      });
+    else void this.ctx.instruct(this.sums ? 'brain.sums.start' : 'brain.start', { n: this.board.length });
   }
   private choose(i: number) {
     if (this.finished) return;
@@ -113,6 +128,7 @@ class BrainBreak implements Game {
       sfx.boing();
       this.nudge(this.stones[i]);
       if (this.consecutive === 2) this.askForHint();
+      else if (this.rule) this.sayCountTry(this.rule, this.board[i]);
       else if (this.sums) void this.ctx.say('brain.sums.try', { m: this.board[i], n: this.next });
       else void this.ctx.say('brain.try', { n: this.next });
       return;
@@ -127,7 +143,24 @@ class BrainBreak implements Game {
     if (this.next > this.board.length) {
       this.finished = true;
       void this.complete();
+    } else if (this.rule) {
+      const r = this.rule;
+      void this.ctx.say(r.back ? 'brain.count.nextBack' : 'brain.count.next', {
+        p: trailValue(r, this.next - 1),
+        s: r.step,
+      });
     } else void this.ctx.say('brain.next', { n: this.next });
+  }
+  /** A wrong stone says what it is and how to count on from the last lit stone, never the answer. */
+  private sayCountTry(r: Trail, rank: number) {
+    const m = trailValue(r, rank);
+    if (this.next === 1) void this.ctx.say('brain.count.first', { m, v: trailValue(r, 1) });
+    else
+      void this.ctx.say(r.back ? 'brain.count.tryBack' : 'brain.count.try', {
+        m,
+        s: r.step,
+        p: trailValue(r, this.next - 1),
+      });
   }
   /** A short press squash on every tap. */
   private squash(stone: Container) {
@@ -184,13 +217,16 @@ class BrainBreak implements Game {
     this.hints++;
     this.hinted = hintIndex(this.board, this.next);
     this.draw();
-    void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
+    if (this.rule) void this.ctx.say('brain.count.hint', { v: trailValue(this.rule, this.next) });
+    else void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
   }
   private draw() {
     this.status.text =
       this.next > this.board.length
         ? 'All stones lit!'
-        : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
+        : this.rule
+          ? `${ruleSign(this.rule, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
+          : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
     this.drawTrail(this.next - 1);
     this.marks.clear();
     this.glow.clear();
@@ -238,7 +274,7 @@ export const brainBreak: GameModule = {
   titleLine: 'game.brain-break',
   region: 'puzzle-peaks',
   challenge: 'noticing',
-  skills: ['Visual search', 'Number order', 'Adding and taking away'],
+  skills: ['Visual search', 'Number order', 'Adding and taking away', 'Counting by steps'],
   bands: ['grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

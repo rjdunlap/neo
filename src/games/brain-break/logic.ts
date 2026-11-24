@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
 export const PLANS = [
   { side: 3, name: 'Find 1 to 9 on nine shuffled stones' },
   { side: 4, name: 'Find 1 to 16 on sixteen shuffled stones' },
@@ -9,10 +9,35 @@ export const PLANS = [
   { side: 3, name: 'Find the sums that make 1 to 9, in order' },
   { side: 4, name: 'Find the sums that make 1 to 16, in order' },
   { side: 5, name: 'Find sums and take-aways that make 1 to 25, in order' },
+  { side: 4, name: 'Count by twos, threes, fives or tens' },
+  { side: 5, name: 'Count by harder steps, up or back' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 /** Levels 4–6 show a sum (from 6, a sum or a take-away) on each stone instead of its number. */
-export const showsSums = (level: number) => Math.floor(level) >= 4;
+export const showsSums = (level: number) => Math.floor(level) >= 4 && Math.floor(level) <= 6;
+/** From level 7 the sign names a counting rule and the stones show the numbers it makes. */
+export const countsBy = (level: number) => Math.floor(level) >= 7;
+/** The steps a count-by round may use: level 7 the easy ones, level 8 the harder ones. */
+export const STEPS: Record<number, readonly number[]> = { 7: [2, 3, 5, 10], 8: [4, 6, 7, 8, 9] };
+/** A count-by round's rule: its step, its direction, and how many stones it fills. */
+export interface Trail {
+  step: number;
+  back: boolean;
+  n: number;
+}
+/** Drawn after the board, labels and look, so levels 1–6 give the same boards as before. */
+export function makeTrail(level: number, rng: Rng): Trail {
+  const l = Math.floor(level),
+    n = planFor(l).side ** 2;
+  return { step: rng.pick(STEPS[l] ?? STEPS[7]), back: l >= 8 && rng.chance(0.5), n };
+}
+/** The number rank `r` stands for: k, 2k … nk counting up, or nk … k counting back. */
+export const trailValue = (t: Trail, rank: number) => t.step * (t.back ? t.n + 1 - rank : rank);
+/** The rule sign: it names the rule and where to count from, never the answer. */
+export const ruleSign = (t: Trail, next: number) => {
+  const by = `Count ${t.back ? 'back ' : ''}by ${t.step}`;
+  return next <= 1 ? `${by} · start at ${trailValue(t, 1)}` : `${by} · after ${trailValue(t, next - 1)}`;
+};
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
 /** Board indexes in the order they are found: `trailOrder(board)[r - 1]` is the stone that holds rank `r`. */
