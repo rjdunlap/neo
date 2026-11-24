@@ -1,0 +1,5 @@
+# 2026-11-24 — Duck Pond levels 8–9: dealt starting ponds and all-swim-away
+
+**Changed:** Duck Pond levels 8–9 seat their ducks in a dice face, two rows of five or (level 9) a scatter, and level 9 deals one "they all swim away" round (answer zero, pads from 0, sentence "4 − 4 = 0"). `storySeats` and `zeroRoundAt` in `logic.ts`.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/duck-pond src/content` (48 rule tests in `logic.test.ts` including the new seats, layout-kind and zero-round tests); `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=8,9` (level 8 dealt rows, level 9 dealt scatter, scatter, scatter, zero, rows; wrong pad, hint and saved score passed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=8,9 FINGER_BAND=school` (47.8 s and 62.6 s, under the 75 s limit).
+**Not run:** a portrait screenshot of a scattered level 9 round (the seats are the level 7 scatter's, covered by its upright tests); the full `npm test` (left to PR CI); build and offline (no shared files or assets changed).
