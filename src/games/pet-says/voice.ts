@@ -101,6 +101,13 @@ export const VOICE = {
   'says.walk.hen': ['A hen is sitting on her eggs. Tiptoe past her!'],
   'says.walk.pond': ['The ducks went to the pond. Waddle after them!'],
   'says.walk.gate': ['We made it back to the gate! Wave goodbye. Hooray!'],
+  'says.hand': ['Which hand? One of my mittens is blue and one is red. Wave the hand that lights up!'],
+  'says.hand.this': ['Wave this hand: the {color} one!'],
+  'says.hand.mirror': [
+    'Now left and right! Look at me like a mirror. My right hand is on your right, and my left hand is on your left.',
+  ],
+  'says.hand.wave': ['Wave your {side} hand!'],
+  'says.hand.ear': ['Touch your {side} ear!'],
   'says.pat': ['Pat {pet}! Give {pet} a pat, and see what {pet} does.'],
   'says.pat-again': ['Pat {pet}!'],
   'says.next': ['A grown-up can tap the green arrow for the next one.'],

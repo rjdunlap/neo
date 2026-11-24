@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–4 |
 | pre-K | 3–10 |
-| school | 6–11 |
+| school | 6–12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,6 +27,7 @@
 | 9 | A walk in the woods: act out four stops on a woodland, beach or farm adventure |
 | 10 | Sun or moon: listen for the sign on each of eight turns. Copy on the sun and do the opposite on the moon. |
 | 11 | Pet says, opposite: when you hear the pet’s name first, do the opposite. If you only hear the move, stay still. |
+| 12 | This hand: wave the hand that lights up (blue or red), then left and right like a mirror: wave your left hand, touch your right ear |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->

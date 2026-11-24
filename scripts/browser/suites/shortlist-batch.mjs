@@ -1041,7 +1041,21 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
-        if ([6, 7, 8, 10, 11].includes(level)) await page.setViewportSize({ width: 390, height: 844 });
+        if ([6, 7, 8, 10, 11, 12].includes(level)) await page.setViewportSize({ width: 390, height: 844 });
+        if (level === 12) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const { instruct, say } = g.ctx;
+            const litHand = g.litHand.bind(g);
+            g.handEvents = [];
+            g.litHand = (hand, on) => (g.handEvents.push(`lit:${hand}:${on}`), litHand(hand, on));
+            g.ctx.instruct = async (id, slots) => {
+              g.handEvents.push(`${id}:${slots?.side}:${slots?.color}`);
+              await instruct(id, slots);
+            };
+            g.ctx.say = (id, slots) => (g.handEvents.push(id), say(id, slots));
+          });
+        }
         if (level === 11) {
           await page.evaluate(() => {
             const g = neo.scene.game;
@@ -1148,6 +1162,30 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               'the sign and spoken rule precede the move',
             );
             if (n === 3) await screenshot('pet-says-10-portrait');
+          }
+          if (level === 12) {
+            const { turn, events } = await page.evaluate(() => {
+              const g = neo.scene.game;
+              return { turn: g.turn, events: g.handEvents.splice(0) };
+            });
+            const color = turn.hand === 'left' ? 'blue' : 'red';
+            if (!turn.named)
+              assert.deepEqual(events.slice(-3), [
+                `lit:${turn.hand}:true`,
+                `says.hand.this:${turn.hand}:${color}`,
+                `lit:${turn.hand}:false`,
+              ]);
+            else {
+              const ask = turn.moves[0] === 'ears' ? 'says.hand.ear' : 'says.hand.wave';
+              const told = n === 3 ? ['says.hand.mirror'] : [];
+              assert.deepEqual(events.slice(-(3 + told.length)), [
+                ...told,
+                `lit:${turn.hand}:false`,
+                `${ask}:${turn.hand}:${color}`,
+                `lit:${turn.hand}:false`,
+              ]);
+            }
+            if (n === 0 || n === 3) await screenshot(`pet-says-12-turn${n}-portrait`);
           }
           if (level === 11) {
             const { named, move, events, revealDue, signVisible } = await page.evaluate(() => {

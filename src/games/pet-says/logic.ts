@@ -46,7 +46,17 @@ export type Move =
   | 'wide'
   | 'hug';
 export type SaysMode =
-  'copy' | 'body' | 'pairs' | 'says' | 'says-opposite' | 'freeze' | 'opposite' | 'quiet' | 'walk' | 'pat';
+  | 'copy'
+  | 'body'
+  | 'pairs'
+  | 'says'
+  | 'says-opposite'
+  | 'freeze'
+  | 'opposite'
+  | 'quiet'
+  | 'walk'
+  | 'pat'
+  | 'hand';
 
 /**
  * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
@@ -387,7 +397,42 @@ export const PLANS: SaysPlan[] = [
     turns: 8,
     name: 'Pet says, opposite: when you hear the pet’s name first, do the opposite. If you only hear the move, stay still.',
   },
+  {
+    mode: 'hand',
+    turns: 6,
+    name: 'This hand: wave the hand that lights up (blue or red), then left and right like a mirror: wave your left hand, touch your right ear',
+  },
 ];
+
+/**
+ * This hand (level 12): the mirror convention, the island's one left and right rule (shared with Splish Splash). The pet
+ * faces her, so the mitten on the screen's right is her right hand, as in a mirror, and `HAND_MITTEN` is the one place
+ * a spoken side becomes a mitten. The two mittens are always told apart by color (blue left, red right), never by side alone.
+ */
+export type Hand = 'left' | 'right';
+export const HANDS: Hand[] = ['left', 'right'];
+export const HAND_MITTEN: Record<Hand, 'left' | 'right'> = { left: 'left', right: 'right' };
+export const HAND_COLORS = { left: 'blue', right: 'red' } as const satisfies Record<Hand, 'blue' | 'red'>;
+/** The first turns light the mitten ("Wave this hand!"); the rest only say the side, after "like a mirror" is told once. */
+export const HAND_LIT_TURNS = 3;
+/** What one hand does on a named turn. */
+export const HAND_MOVES: Move[] = ['wave', 'ears'];
+
+/** Six hands: no side three times running, both sides in the lit turns and in the named ones; named turns wave once and touch an ear at least once. */
+export function handTurns(turns: number, rng: Rng): Turn[] {
+  const bothIn = (sides: Hand[]) => HANDS.every((h) => sides.includes(h));
+  for (;;) {
+    const sides = Array.from({ length: turns }, () => rng.pick(HANDS));
+    if (sides.some((h, i) => i >= 2 && h === sides[i - 1] && h === sides[i - 2])) continue;
+    if (!bothIn(sides.slice(0, HAND_LIT_TURNS)) || !bothIn(sides.slice(HAND_LIT_TURNS))) continue;
+    const named = rng.shuffle<Move>(['wave', 'ears', rng.pick(HAND_MOVES)]);
+    return sides.map((hand, i): Turn =>
+      i < HAND_LIT_TURNS
+        ? { moves: ['wave'], hand }
+        : { moves: [named[i - HAND_LIT_TURNS] ?? 'wave'], hand, named: true },
+    );
+  }
+}
 
 export const LEVELS: BandLevels = {
   // Level 13, Pat the pet, is the easiest, so lap plays it first, then 1 and 2 (see `order`).
@@ -438,6 +483,9 @@ export interface Turn {
   segments?: Segment[];
   /** A walk: the place and spoken cue for this stop. */
   stop?: WalkStop;
+  /** This hand: which hand the turn asks for, and whether the pet only names it (left and right) instead of lighting its mitten. */
+  hand?: Hand;
+  named?: boolean;
 }
 
 export type WalkPlace = 'woods' | 'beach' | 'farm';
@@ -581,7 +629,7 @@ function trickPositions(turns: number, rng: Rng): number[] {
 }
 
 /** The levels with the held "once more" button, where a replayed turn counts one hint (decision 2): the rule levels. */
-export const ONCE_MORE_MODES: SaysMode[] = ['says', 'says-opposite', 'opposite', 'walk'];
+export const ONCE_MORE_MODES: SaysMode[] = ['says', 'says-opposite', 'opposite', 'walk', 'hand'];
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   const deck = (pool: Move[]) => {
@@ -659,6 +707,8 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         return { moves: [move], says, cue: says ? 'says' : 'plain' };
       });
     }
+    case 'hand':
+      return handTurns(plan.turns, rng);
     case 'pat':
       return rng
         .shuffle([...PAT_MOVES])
