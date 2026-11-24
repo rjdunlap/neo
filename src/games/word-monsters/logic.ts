@@ -242,6 +242,13 @@ export const ALPHABET = Object.keys(SOUNDS);
 export const TEAM_SOUNDS: Record<string, string> = { sh: 'shh', ch: 'chuh', th: 'thh', ck: 'kuh' };
 export const TEAMS = Object.keys(TEAM_SOUNDS);
 /** A monster's sound: one letter's, or a team's. */
+/**
+ * Levels 7 and 8 are told, then asked: a round's first question says the sounds as a worked example, and every later one
+ * says only the word (a wrong drop still says the sound). Returns the spoken line for the question at `index`.
+ */
+export const toldLine = (mode: 'family' | 'end', index: number) =>
+  index === 0 ? (`monster.${mode}` as const) : (`monster.${mode}.word` as const);
+
 export const soundOf = (unit: string) => SOUNDS[unit] ?? TEAM_SOUNDS[unit];
 
 /** Lowercase letters that are easy to mix up; never offered side by side. */

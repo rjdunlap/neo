@@ -35,6 +35,7 @@ import {
   unitsOf,
   type MonsterPlan,
   type Question,
+  toldLine,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 import {
@@ -484,6 +485,10 @@ class WordMonsters implements Game {
     if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
       this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(unitsOf(q).length);
+    } else if (this.plan.mode === 'family' || this.plan.mode === 'end') {
+      // Told, then asked: after the first question only the word is said, so the picture says it again, free.
+      this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
+      this.drawSlots(q.answer.length, q.answer);
     } else if (this.building) {
       this.showPicture(wordPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(q.answer.length, q.answer);
@@ -618,10 +623,14 @@ class WordMonsters implements Game {
   private ask(q: Question) {
     if (q.repair) return this.ctx.instruct('monster.repair', { word: q.answer, built: q.repair.word });
     const sound = SOUNDS[q.answer];
+    // Levels 7 and 8 are told, then asked: the sounds only in a round's first question, then just the word.
     if (this.plan.mode === 'family')
-      return this.ctx.instruct('monster.family', { word: q.answer, sound: SOUNDS[q.answer[0]] });
+      return this.ctx.instruct(toldLine('family', this.index), {
+        word: q.answer,
+        sound: SOUNDS[q.answer[0]],
+      });
     if (this.plan.mode === 'end')
-      return this.ctx.instruct('monster.end', {
+      return this.ctx.instruct(toldLine('end', this.index), {
         word: q.answer,
         first: SOUNDS[q.answer[0]],
         second: SOUNDS[q.answer[1]],
