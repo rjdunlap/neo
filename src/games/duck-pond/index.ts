@@ -25,6 +25,8 @@ import {
   hidingPuzzle,
   howManyAnswers,
   layoutFor,
+  storySeats,
+  zeroRoundAt,
   dotRows,
   padValues,
   PAD_DOT_GAP,
@@ -240,6 +242,8 @@ class DuckPond implements Game {
   private want = 0;
   private answer = 0;
   private pondStory: PondStory | null = null;
+  /** Level 9: which round is the all-swim-away story (-1: none); unset until the first add round deals it. */
+  private zeroRound: number | undefined;
   private misses = 0;
   private hints = 0;
   private wrongThisRound = 0;
@@ -782,17 +786,22 @@ class DuckPond implements Game {
       return;
     }
     // add / take away
-    const { a, b, away, answer } = story(rng, p);
+    // Level 9 may have one "they all swim away" round (never first), whose answer is zero.
+    if (this.zeroRound === undefined) this.zeroRound = zeroRoundAt(rng, p);
+    const s = story(rng, p, this.round === this.zeroRound);
+    const { a, b, away, answer } = s;
     this.answer = answer;
-    this.pondStory = { a, b, away, answer };
+    this.pondStory = s;
+    const { kind, slots } = storySeats(rng, p, s);
+    this.layoutKind = kind;
     if (away) {
-      await this.arrive(a);
+      await this.arrive(a, slots);
       await this.ctx.say('duck.away', { a, b });
       await this.swimAway(this.swimmers.slice(-b));
     } else {
-      await this.arrive(a);
+      await this.arrive(a, slots);
       await this.ctx.say('duck.more', { a, b });
-      await this.arrive(b);
+      await this.arrive(b, slots.slice(a));
     }
     await this.ctx.instruct('duck.now');
     this.showPads(this.answer);
@@ -1092,7 +1101,10 @@ class DuckPond implements Game {
         return;
       } else if (this.answer === 0) {
         // An empty pond: none is a number too.
-        await this.ctx.say('duck.none');
+        if (this.plan.mode === 'add' && this.pondStory) {
+          await this.ctx.say('duck.noneLeft');
+          await this.showSentence(this.pondStory.a, this.pondStory.b, true);
+        } else await this.ctx.say('duck.none');
         this.clearPads();
         await this.roundWon(0, false);
         return;
@@ -1277,7 +1289,10 @@ export const duckPond: GameModule = {
       return `Doubles: ${p.min} + ${p.min} to ${p.max} + ${p.max} across the bridge, then one more on a side; how many in all?`;
     if (p.mode === 'teen')
       return 'Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten?';
-    if (p.mode === 'add') return p.subtract ? 'Adding and taking away, up to 10' : 'Adding, up to 5';
+    if (p.mode === 'add')
+      return p.subtract
+        ? 'Adding and taking away, up to 10, dice, rows or scattered; once, all the ducks swim away'
+        : 'Adding, up to 5, the ducks in dice or rows';
     const exhaustive: never = p.mode;
     return exhaustive;
   },
