@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -103,6 +103,12 @@ interface Section {
   sand: boolean;
   /** Red rings: two layers (the stack is wrong) or the dark rock's contact with a layer. */
   pulse: Reason | null;
+}
+
+/** Where layer i's letter badge sits on a frame box (the geometry `drawSection` uses). */
+function badgeAt(f: Box, i: number) {
+  const lh = (f.h - 70) / 3;
+  return { x: f.x - f.w / 2 + 28, y: f.y + f.h / 2 - 10 - (i + 0.5) * lh };
 }
 
 /** A cross-section in a w × h frame centred on (0, 0). */
@@ -285,6 +291,8 @@ class Round implements Game {
   private readonly backdrop = new Graphics();
   private readonly cliff = new Graphics();
   private readonly story = new Graphics();
+  /** Each frame's layer letters, bottom to top. */
+  private readonly letters: Text[][];
   private readonly sign = label('', 19, ink, '500');
   private readonly lens = new Container();
   private readonly lensArt = new Graphics();
@@ -321,6 +329,14 @@ class Round implements Game {
     this.sign.text = 'Lower is older. Dark rock cuts what was already there.';
     this.sign.style.wordWrap = true;
     this.root.addChild(this.backdrop, this.cliff, this.story, this.sign);
+    this.letters = [this.cliff, this.story].map(() =>
+      [0, 1, 2].map(() => {
+        const t = label('', 20);
+        t.eventMode = 'none';
+        this.root.addChild(t);
+        return t;
+      }),
+    );
     this.cards = [0, 1, 2, 3].map((i) => button(this.root, () => this.tapCard(i), 22));
     this.play = button(this.root, () => void this.playStory(), 30);
     this.play.text.text = '▶ Play';
@@ -658,6 +674,18 @@ class Round implements Game {
     drawSection(this.story, l.story.w, l.story.h, this.look, this.storySection());
     if (this.built === 0) this.story.circle(0, 0, 30).fill({ color: swatch.white.fill, alpha: 0.7 });
     this.story.position.set(l.story.x, l.story.y);
+    // The letters on each frame's layer badges.
+    const frames = [
+      [l.cliff, this.sectionFor(this.s.record).layers],
+      [l.story, this.storySection().layers],
+    ] as const;
+    frames.forEach(([f, layers], k) =>
+      this.letters[k].forEach((t, i) => {
+        const pos = badgeAt(f, i);
+        t.text = layers[i] ?? '';
+        t.position.set(pos.x, pos.y);
+      }),
+    );
     this.sign.position.set(l.sign.x, l.sign.y);
     this.sign.style.fontSize = l.sign.size;
     this.sign.style.wordWrapWidth = l.sign.wrap;
