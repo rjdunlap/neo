@@ -52,7 +52,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `couchsunbeams` | 2026-11-04 · [Light Lab couch course Sunbeam Run (light-lab batch 2)](archive/VERIFICATION-2026-11-04.md#2026-11-04--light-lab-couch-course-sunbeam-run-light-lab-batch-2) | — |
 | `couchwords` | 2026-10-08 · [Word Search, a fourth grown-up-only game](archive/VERIFICATION-2026-10-07-13.md#word-search-a-fourth-grown-up-only-game-2026-10-08) | Three-grid bot course |
 | `creations` | 2026-10-09 · [Quiet music-making games](archive/VERIFICATION-2026-10-07-13.md#quiet-music-making-games-2026-10-09) | Room tune plaque and music dip |
-| `creative` | 2026-11-24 · [Rhythm Neighbors level 10, Copy or answer?](verification/2026-11-24-rhythm-neighbors-level-10-copy-or-answer.md) | `CREATIVE_ONLY=rhythm FROM_LEVEL=10` |
+| `creative` | 2026-11-24 · [Stamp Studio level 11: Stamp a duck! (PR #2080)](verification/2026-11-23-stamp-studio-level-11-stamp-a-duck.md) | `CREATIVE_ONLY=stamps STAMP_LEVELS=11` |
 | `critternot` | 2026-10-15 · [Critter Crossing visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | — |
 | `crossword` | 2026-11-09 · [Crossword keeps the clue direction](archive/VERIFICATION-2026-11-09.md#2026-11-09--crossword-keeps-the-clue-direction-pr-1455) | — |
 | `cuestudio` | 2026-11-16 · [Cue Studio level 6, Pass the cue (P4c, PR #1726)](verification/2026-11-16-cue-studio-level-6-pass-the-cue-p4c-pr-1726.md) | `CUE_LEVELS=5,6` |
@@ -75,7 +75,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `feelpoke` | 2026-11-13 · [feelings-faces level 9: a touch anywhere pokes (lap)](verification/2026-11-13-feelings-faces-level-9-a-touch-anywhere-pokes-lap.md) | — |
 | `fencethefield` | 2026-11-23 · [Fence the Field levels 3–4](verification/2026-11-23-fence-the-field-levels-3-4.md) | `FENCE_FROM=4` |
 | `festivalsignals` | 2026-11-11 · [Sorting Machine levels 8–9, Festival Signals and Fix the lantern](archive/VERIFICATION-2026-11-11.md#2026-11-11--sorting-machine-levels-89-festival-signals-and-fix-the-lantern-pr-1497) | Levels 8–9 |
-| `fingerdemo` | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | `FINGER_ONLY=bounce-back FINGER_LEVELS=12,11` |
+| `fingerdemo` | 2026-11-24 · [Stamp Studio level 11: Stamp a duck! (PR #2080)](verification/2026-11-23-stamp-studio-level-11-stamp-a-duck.md) | `FINGER_ONLY=stamp-studio FINGER_LEVELS=11` |
 | `foodweb` | 2026-10-24 · [Food Web Workshop levels 1–3 (ecosystems F2)](archive/VERIFICATION-2026-10-24.md#2026-10-24--food-web-workshop-levels-13-ecosystems-f2) | — |
 | `forecastdetective` | 2026-10-31 · [Forecast Detective levels 1–2 (weather-water slice 9)](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Levels 1–2 |
 | `fossildig` | 2026-11-12 · [U7d fix batch 25: moon-window, sense-detective and fossil-dig never hold a tap on a cut line](verification/2026-11-12-u7d-fix-batch-25-moon-window-sense-detective-and-fossil-dig.md) | — |

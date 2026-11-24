@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 7, 8, 1, 10, 2 |
-| toddler | 9, 10, 2, 3 |
+| toddler | 9, 10, 2, 11, 3 |
 | preschool | 3–5 |
 | pre-K | 4–6 |
 | school | 5–6 |
@@ -26,10 +26,11 @@
 | 8 | Leaf prints: pat the mud and the leaf leaves its shape |
 | 9 | Two feet: a duck foot and a cat paw each leave their own print |
 | 10 | Follow the sparkle: tap the glowing spot and a stamp lands there |
+| 11 | Stamp a duck!: find the animal the voice asks for |
 
 <!-- end generated -->
 
-**Starts as:** pat one huge star (eight pats finish the picture), or press one or two seeded stamp kinds onto a picture; arrow nudges after five, full paper finishes itself; from level 3 a music note plays the picture back left to right; levels 8–9 press a leaf, a duck foot or a cat paw into soft mud, each leaving its own print; level 10 follows a glowing spot, five taps, a stamp at each
+**Starts as:** pat one huge star (eight pats finish the picture), or press one or two seeded stamp kinds onto a picture; arrow nudges after five, full paper finishes itself; from level 3 a music note plays the picture back left to right; levels 8–9 press a leaf, a duck foot or a cat paw into soft mud, each leaving its own print; level 10 follows a glowing spot, five taps, a stamp at each; level 11 asks for three animal stamps in turn before free stamping
 
 **Grows into:** three seeded kinds and a starting color at level 3; choose from seven colors, arrange or bin a selected stamp, change size (small, middle, big) and orientation, tell a picture story; any creation can finish, with matching button/stamp colors and the kept picture frozen at Finish
 
@@ -43,4 +44,6 @@
 
 **Seven colors and three sizes (levels 3–6).** The colors run red, orange, yellow, green, blue, purple, pink; discs are 108 units across, in one row sideways and two rows on an upright phone (`colorSpots`). The size button cycles middle, big (1.5), small (0.7); an older saved 1.3 counts as big. Yellow takes a darker gold outline so it reads on the cream paper. Sizes are not spoken yet.
 
-**Sounds, counting and the wake-up (levels 1-7).** Each kind has its own sound (Pat the paper's stars ring too): the star a bell and the flower a marimba (each climbs five pentatonic steps per press, then starts round), the fish a splash, the cat a meow. Levels 1-3 count the stamps on the paper aloud, one to ten, each number said once a round (after an undo a new press is silent); the count uses device speech, so a quick tap after choosing a stamp can cut its name. The green arrow wakes the stamps one by one in the order they were placed, 0.3 s apart and within 2.5 s in all, each bouncing with its sound; on a crowded paper the meows and splashes sound at most one per half second, though every stamp still bounces. Then the round finishes with the sparkle.
+**Sounds, counting and the wake-up (levels 1-7, 11).** Each kind has its own sound (Pat the paper's stars ring too): the star a bell and the flower a marimba (each climbs five pentatonic steps per press, then starts round), the fish a splash, the cat a meow, the duck a quack. Levels 1-3 count the stamps on the paper aloud, one to ten, each number said once a round (after an undo a new press is silent); the count uses device speech, so a quick tap after choosing a stamp can cut its name. The green arrow wakes the stamps one by one in the order they were placed, 0.3 s apart and within 2.5 s in all, each bouncing with its sound; on a crowded paper the meows, splashes and quacks sound at most one per half second, though every stamp still bounces. Then the round finishes with the sparkle.
+
+**Level 11, Stamp a duck! (toddler; `order: [9, 10, 2, 11, 3]`, `entryLevels` 7–11).** Adds `'duck'` (`stampArt` with seamless outline and orange bill, `'A duck'`, `quack` sound) to `STAMP_KINDS` (`STICKER_KINDS` keeps the original four so saved stickers 0–99 stay pinned). Level 11 offers the three animal stamps (`cat`, `fish`, `duck`) in a seeded starting color and order (`roundPlan`); `animalAsks` picks three distinct asks starting away from the preselected kind (`asks[0] !== selected`). Each ask uses `ctx.instruct('stamp.ask', { animal })` ("Stamp a duck!"); matching advances the ask and enters free play after three (`ctx.instruct('stamp.free')`, revealing the green finish arrow). A wrong stamp still prints and sounds, triggers `sfx.boing()` and `ctx.say('stamp.wrong', { got, want })` ("That's a cat! Find the duck."), and counts via `missOnRequest` (`coach.ts`); after two wrong presses on an ask (`ASK_HINT_AFTER`), `hinted` increments hints and `choiceGlow` (`eventMode = 'none'`) pulses behind the asked stamp button until it is stamped. Pressing at the 24-stamp limit while asks remain replaces the oldest stamp so asks cannot lock up. The finished picture can be kept on the treehouse picture board.

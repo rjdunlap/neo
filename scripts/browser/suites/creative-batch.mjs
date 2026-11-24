@@ -161,6 +161,57 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await finished('stamp-studio');
       assert.deepEqual(await score('stamp-studio'), [0, 0], 'follow the sparkle counts no misses or hints');
     }
+    if ((!only || only === 'stamps') && stampAt(11)) {
+      // Level 11, Stamp a duck! (toddler): three animal asks, wrong stamp still prints and names, glow after two misses, then free.
+      await launch('stamp-studio', 11);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.asks.length !== 3 || new Set(g.asks).size !== 3)
+          throw new Error(`Expected 3 distinct asks, got ${g.asks}`);
+        if (g.asks[0] === g.plan.kinds[0]) throw new Error('First ask matched the preselected stamp');
+        if (g.finish.visible) throw new Error('Finish arrow appeared before the three asks');
+        const tapPaper = async (x, y) => {
+          const p = g.paper.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+          await kit.sleep(300);
+        };
+        // Two wrong presses with the preselected stamp print both and light the asked button glow.
+        await tapPaper(140, 140);
+        if (g.stamps.length !== 1 || g.misses !== 1 || g.choiceGlow.visible)
+          throw new Error(
+            `After 1st wrong press: stamps=${g.stamps.length} misses=${g.misses} glow=${g.choiceGlow.visible}`,
+          );
+        await tapPaper(280, 140);
+        if (g.stamps.length !== 2 || g.misses !== 2 || g.hints !== 1 || !g.choiceGlow.visible)
+          throw new Error(
+            `After 2nd wrong press: stamps=${g.stamps.length} misses=${g.misses} hints=${g.hints} glow=${g.choiceGlow.visible}`,
+          );
+        const ask0Btn = g.choices[g.plan.kinds.indexOf(g.asks[0])];
+        if (Math.hypot(g.choiceGlow.x - ask0Btn.x, g.choiceGlow.y - ask0Btn.y) > 1)
+          throw new Error('Button glow is not behind the asked stamp button');
+        // Complete all three asks cleanly, then stamp once freely.
+        for (let i = 0; i < 3; i++) {
+          const btn = g.choices[g.plan.kinds.indexOf(g.asks[i])];
+          kit.tapOn(btn);
+          await kit.sleep(420);
+          await tapPaper(140 + i * 160, 290);
+          if (g.choiceGlow.visible) throw new Error(`Glow stayed on after matching ask ${i + 1}`);
+        }
+        if (!g.finish.visible) throw new Error('Finish arrow did not appear after three asks');
+        await tapPaper(440, 150);
+      });
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(500);
+      await screenshot('stamp-studio-11-portrait');
+      await page.evaluate(() => kit.tapOn(neo.scene.game.finish));
+      await finished('stamp-studio');
+      assert.deepEqual(await score('stamp-studio'), [2, 1], 'stamp a duck records 2 misses and 1 hint');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
       // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.

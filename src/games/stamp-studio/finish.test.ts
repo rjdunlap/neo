@@ -37,6 +37,7 @@ vi.mock('../../engine/drag', () => ({
 vi.mock('../../audio/sfx', () => ({
   sfx: {
     sparkle: vi.fn(),
+    boing: vi.fn(),
     pop: vi.fn(),
     tick: vi.fn(),
     marimba: vi.fn(),
@@ -52,10 +53,12 @@ function round(level: number) {
   const finish = vi.fn<(result: RoundResult) => void>();
   const stage = new Container();
   const say = vi.fn();
+  const instruct = vi.fn();
   const ctx = {
     level,
     stage,
     say,
+    instruct,
     rng: new Rng(42),
     tw: {
       wait: () => new Promise<void>(() => {}),
@@ -80,6 +83,11 @@ function round(level: number) {
     color: Stamp['color'];
     choices: Container[];
     colors: Container[];
+    asks: Stamp['kind'][];
+    choiceGlow: Container;
+    hintKind: Stamp['kind'] | null;
+    misses: number;
+    hints: number;
   };
   game.resize({ w: 1024, h: 768 } as Parameters<typeof game.resize>[0]);
   const stamp = (x = 400, y = 300) =>
@@ -92,7 +100,7 @@ function round(level: number) {
   const wakeUp = () => {
     for (let i = 0; i < 30; i++) game.update(0.1);
   };
-  return { game, finish, say, kill: ctx.tw.kill, stamp, wake: wakeUp, cleanup };
+  return { game, finish, say, instruct, kill: ctx.tw.kill, stamp, wake: wakeUp, cleanup };
 }
 
 describe('Stamp Studio play the picture', () => {
@@ -194,7 +202,7 @@ describe('Stamp Studio choices and speech', () => {
       Array(3).fill(r.game.color),
     );
     draw.mockClear();
-    press.get(r.game.colors[r.game.color === 'blue' ? 2 : 1])!();
+    press.get(r.game.colors[r.game.color === 'orange' ? 2 : 1])!();
     expect(draw.mock.calls.filter(([, , radius]) => radius === 33).map(([, color]) => color)).toEqual(
       Array(3).fill(r.game.color),
     );
@@ -494,6 +502,103 @@ describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', (
     });
     r.game.update(1);
     expect(r.finish).toHaveBeenCalledTimes(1);
+    r.cleanup();
+  });
+});
+
+describe('Stamp a duck! (level 11)', () => {
+  it('asks for three animals in turn, allows free play after, and finishes with 0 misses and 0 hints', async () => {
+    const { sfx } = await import('../../audio/sfx');
+    vi.mocked(sfx.animal).mockClear();
+    const r = round(11);
+    r.game.start();
+    expect(r.game.asks).toHaveLength(3);
+    expect(r.game.asks[0]).not.toBe(r.game.plan.kinds[0]);
+    expect(r.instruct).toHaveBeenLastCalledWith('stamp.ask', { animal: r.game.asks[0] });
+    expect(r.game.finish.visible).toBe(false);
+    for (const [i, ask] of r.game.asks.entries()) {
+      const idx = r.game.plan.kinds.indexOf(ask);
+      press.get(r.game.choices[idx])!();
+      r.stamp(250 + i * 160, 250);
+      if (i < 2) expect(r.game.finish.visible).toBe(false);
+    }
+    expect(r.instruct).toHaveBeenLastCalledWith('stamp.free');
+    expect(r.game.finish.visible).toBe(true);
+    expect(sfx.animal).toHaveBeenCalledWith('quack');
+    // Free play after the three asks never records a miss.
+    press.get(r.game.choices[0])!();
+    r.stamp(550, 380);
+    expect(r.game.misses).toBe(0);
+    expect(r.game.hints).toBe(0);
+    press.get(r.game.finish)!();
+    r.wake();
+    await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledExactlyOnceWith({
+      misses: 0,
+      hints: 0,
+      creation: { kind: 'picture', stamps: r.game.stamps.map((s) => ({ ...s.data })) },
+    });
+    r.cleanup();
+  });
+
+  it('prints and names wrong stamps, plays boing, glows the asked button after two misses, and clears on match', async () => {
+    const { sfx } = await import('../../audio/sfx');
+    vi.mocked(sfx.boing).mockClear();
+    const r = round(11);
+    r.game.start();
+    const ask0 = r.game.asks[0]!;
+    const askIdx = r.game.plan.kinds.indexOf(ask0);
+    const wrongKind = r.game.plan.kinds[0]!;
+    expect(wrongKind).not.toBe(ask0);
+    // First wrong press: prints, boings, names it, no glow yet.
+    r.stamp(250, 250);
+    expect(r.game.stamps).toHaveLength(1);
+    expect(r.game.stamps[0].data.kind).toBe(wrongKind);
+    expect(sfx.boing).toHaveBeenCalledTimes(1);
+    expect(r.say).toHaveBeenLastCalledWith('stamp.wrong', { got: `a ${wrongKind}`, want: ask0 });
+    expect(r.game.misses).toBe(1);
+    expect(r.game.hints).toBe(0);
+    expect(r.game.choiceGlow.visible).toBe(false);
+    // Second wrong press: glows the asked button and counts one hint.
+    r.stamp(380, 250);
+    expect(r.game.stamps).toHaveLength(2);
+    expect(sfx.boing).toHaveBeenCalledTimes(2);
+    expect(r.game.misses).toBe(2);
+    expect(r.game.hints).toBe(1);
+    expect(r.game.hintKind).toBe(ask0);
+    expect(r.game.choiceGlow.visible).toBe(true);
+    expect(r.game.choiceGlow.position.x).toBe(r.game.choices[askIdx].position.x);
+    expect(r.game.choiceGlow.position.y).toBe(r.game.choices[askIdx].position.y);
+    // Matching stamp clears the glow and advances to the second ask.
+    press.get(r.game.choices[askIdx])!();
+    r.stamp(500, 250);
+    expect(r.game.hintKind).toBeNull();
+    expect(r.game.choiceGlow.visible).toBe(false);
+    expect(r.instruct).toHaveBeenLastCalledWith('stamp.ask', { animal: r.game.asks[1] });
+    // Complete remaining two asks cleanly, then finish and verify reported misses and hints.
+    for (const ask of r.game.asks.slice(1)) {
+      press.get(r.game.choices[r.game.plan.kinds.indexOf(ask)])!();
+      r.stamp(600, 320);
+    }
+    press.get(r.game.finish)!();
+    r.wake();
+    await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledWith(expect.objectContaining({ misses: 2, hints: 1 }));
+    r.cleanup();
+  });
+
+  it('never soft-locks if 24 wrong stamps fill the paper before the three asks finish', () => {
+    const r = round(11);
+    r.game.start();
+    for (let i = 0; i < LIMIT; i++) r.stamp(250 + (i % 4) * 80, 250);
+    expect(r.game.stamps).toHaveLength(LIMIT);
+    expect(r.game.finish.visible).toBe(false);
+    for (const ask of r.game.asks) {
+      press.get(r.game.choices[r.game.plan.kinds.indexOf(ask)])!();
+      r.stamp(400, 320);
+    }
+    expect(r.game.stamps).toHaveLength(LIMIT);
+    expect(r.game.finish.visible).toBe(true);
     r.cleanup();
   });
 });
