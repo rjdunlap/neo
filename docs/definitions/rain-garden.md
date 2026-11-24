@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–6 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077). Level 7 needs its [two-condition puzzle definition](../deep-dives/subjects/weather-water.md#build-slices-in-order).
+**Built:** levels 1–6 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077). Level 7's definition is in progress (claimed 2026-11-23, branch `claude/define-rain-garden-7`); it needs its [two-condition puzzle definition](../deep-dives/subjects/weather-water.md#build-slices-in-order).
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
