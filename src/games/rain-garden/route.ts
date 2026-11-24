@@ -1,8 +1,8 @@
 /**
- * Rain Garden levels 4 and 5, beds downhill: two or three beds on a slope, the rain falling on the top one and what a
+ * Rain Garden levels 4–6, beds downhill: two or three beds on a slope, the rain falling on the top one and what a
  * bed can't hold running down to the next and on to the pond. She sets each bed's ground (the tree's bed and the stone
  * path of level 5 stay put), tries it with the cloud as often as she likes, then taps the Check: every marked bed must
- * keep exactly two and the pond must get some. The rules are in logic.ts (`runRoute`, `check`, `routeHint`,
+ * keep exactly two and the pond must get some. Level 6 instead compares two rains with carried storage. The rules are in logic.ts (`runRoute`, `check`, `routeHint`,
  * `narration`); this file draws and times them.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -13,6 +13,8 @@ import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { IdleCue } from '../../ui/idle-cue';
+import { leafArt } from '../drops-journey/art';
 import type { Game, GameContext, TouchIntent } from '../types';
 import {
   arrowArt,
@@ -27,28 +29,43 @@ import {
   needSignArt,
   patchArt,
   pondArt,
+  predictionArt,
   rewindArt,
   rippleArt,
+  showerBadge,
 } from './art';
 import {
   CHECK,
   check,
+  compareWet,
   flipBed,
   makeRoute,
   narration,
   planFor,
+  predict,
   routeFresh,
   routeHint,
   routeLayout,
   routeNext,
   routeRestart,
   tryRoute,
+  wetCanFinish,
+  wetFinish,
+  wetFlip,
+  wetFresh,
+  wetHint,
+  wetNext,
+  wetRain,
+  wetRestart,
+  type Box,
   type Plan,
+  type Prediction,
   type Place,
   type RouteLayout,
   type RouteRound,
   type RouteState,
   type RouteTrial,
+  type WetState,
 } from './logic';
 
 /** Each level's authored board leads its first round of a session. */
@@ -59,6 +76,7 @@ interface Settled {
   node: Container;
   at: Place;
   index: number;
+  row: 0 | 1;
 }
 
 export class RainRoute implements Game {
@@ -73,6 +91,13 @@ export class RainRoute implements Game {
   readonly beds: Container[] = [];
   private layout: RouteLayout;
   private clock = 0;
+  private wet: WetState | null;
+  private readonly predictions: Container[] = [];
+  private showerMarkers: [Container, Container] | null = null;
+  private cloudDrops: Graphics | null = null;
+  private readonly quiet = new IdleCue(12, 12);
+  private wasCue = false;
+  private quietCues = 0;
   private readonly backdrop: Backdrop;
   private readonly boardLayer = new Container();
   private readonly patchLayer = new Container();
@@ -91,11 +116,12 @@ export class RainRoute implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    const level = this.plan.level === 5 ? 5 : 4;
+    const level = this.plan.level === 5 || this.plan.level === 6 ? this.plan.level : 4;
     const first = ctx.demo || !authoredShown.has(level);
     if (first && !ctx.demo) authoredShown.add(level);
     this.round = makeRoute(ctx.rng, first, level);
     this.s = routeFresh(this.round);
+    this.wet = level === 6 ? wetFresh(this.round) : null;
     this.backdrop = new Backdrop(
       {
         sky: [0xcfe4f5, 0xfff6e0],
@@ -110,14 +136,22 @@ export class RainRoute implements Game {
     this.layout = routeLayout(ctx.view, this.round.board, this.round.mirror)!;
     const c = this.layout.cloud;
     this.cloud = cloudArt(c.w, c.h);
-    // Level 5's shower size changes by board, so the cloud shows it before it rains.
-    if (this.round.level === 5) this.cloud.addChild(cloudDropsArt(this.round.board.units, c.h / 2 - 16));
+    // The cloud previews the size of the next shower on levels with variable rainfall.
+    if (level >= 5) {
+      this.cloudDrops = cloudDropsArt(this.round.board.units, c.h / 2 - 16);
+      this.cloud.addChild(this.cloudDrops);
+    }
+    if (this.wet) {
+      this.showerMarkers = [showerBadge(1), showerBadge(2)];
+      for (const marker of this.showerMarkers) marker.position.set(0, -20);
+      this.cloud.addChild(...this.showerMarkers);
+    }
     this.cloud.hitArea = new Rectangle(-c.w / 2, -c.h / 2, c.w, c.h);
     onTap(this.cloud, () => this.tapCloud());
     this.rewind.visible = false;
     this.rewind.position.set(0, -c.h / 2 + 10);
     this.cloud.addChild(this.rewind);
-    this.check = checkArt(CHECK);
+    this.check = this.wet ? leafArt(CHECK) : checkArt(CHECK);
     this.check.hitArea = new Rectangle(-CHECK / 2, -CHECK / 2, CHECK, CHECK);
     onTap(this.check, () => this.tapCheck());
     for (const n of [this.boardLayer, this.patchLayer, this.glow, this.dropLayer, this.signLayer])
@@ -138,12 +172,41 @@ export class RainRoute implements Game {
       this.beds.push(t);
       ctx.stage.addChild(t);
     }
-    ctx.stage.addChild(this.cloud, this.check);
+    if (this.wet) {
+      for (const prediction of ['more', 'same'] as const) {
+        const card = predictionArt(prediction === 'more');
+        card.hitArea = new Rectangle(-60, -60, 120, 120);
+        onTap(card, () => this.tapPrediction(prediction, card));
+        this.predictions.push(card);
+      }
+    }
+    ctx.stage.addChild(this.cloud, this.check, ...this.predictions);
+    this.drawWetControls();
     this.resize(ctx.view);
   }
 
   /** What a scripted play reads. */
   get state() {
+    if (this.wet) {
+      const { first, second, prediction, sockets, sequences, hints, pointing } = this.wet;
+      return {
+        level: this.round.level,
+        units: this.round.board.units,
+        surfaces: sockets.slice(),
+        first: first?.stored ?? null,
+        second: second?.stored ?? null,
+        ponds: [first?.pond ?? 0, second?.pond ?? 0],
+        prediction,
+        sequences,
+        misses: 0,
+        hints,
+        pointing,
+        leaf: this.check.visible,
+        busy: this.busy,
+        finished: this.finished,
+        drops: this.settled.length,
+      };
+    }
     const cur = this.s.current;
     return {
       level: this.round.level,
@@ -171,9 +234,15 @@ export class RainRoute implements Game {
     void this.ctx.instruct(`rain.instruct.${this.round.level}`);
   }
 
+  sayWaitingAsk() {
+    this.resetQuiet();
+    this.talk++;
+    return false;
+  }
+
   destroy() {
     this.finished = true;
-    for (const n of [this.cloud, this.check, ...this.patches]) this.ctx.tw.kill(n.scale);
+    for (const n of [this.cloud, this.check, ...this.predictions, ...this.patches]) this.ctx.tw.kill(n.scale);
     for (const n of this.signs) this.ctx.tw.kill(n);
     if (this.friend) this.ctx.tw.kill(this.friend);
     for (const n of this.flying) this.ctx.tw.kill(n);
@@ -188,11 +257,21 @@ export class RainRoute implements Game {
     return this.layout.arrows[i].x1 < b.x ? -1 : 1;
   }
 
+  private get sockets() {
+    return this.wet?.sockets ?? this.s.sockets;
+  }
+
   private drawBoard() {
     const l = this.layout;
     this.boardLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.patchLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.boardLayer.addChild(...l.arrows.map((a) => arrowArt(a)), pondArt(l.pond, l.slots));
+    const slots = l.wet ? l.wet.rows.flat() : l.slots;
+    this.boardLayer.addChild(...l.arrows.map((a) => arrowArt(a)), pondArt(l.pond, slots));
+    l.wet?.badges.forEach((b, i) => {
+      const badge = showerBadge(i === 0 ? 1 : 2);
+      badge.position.set(b.x, b.y);
+      this.boardLayer.addChild(badge);
+    });
     this.friend = friendArt(this.round.friend);
     this.friend.position.set(l.friend.x, l.friend.y);
     this.boardLayer.addChild(this.friend);
@@ -203,11 +282,12 @@ export class RainRoute implements Game {
   private patchGraphic(i: number): Graphics {
     const b = this.layout.beds[i];
     const g = patchArt(
-      this.s.sockets[i],
+      this.sockets[i],
       b.patch.w,
       b.patch.h,
       b.pockets.map((p) => ({ x: p.x - b.patch.x, y: p.y - b.patch.y, w: p.w, h: p.h })),
       this.dir(i),
+      !!(this.wet?.second ?? this.wet?.first)?.stored[i],
     );
     const fixed = this.round.board.fixed[i];
     if (fixed) g.addChild(fixedArt(fixed, b.patch.w, b.patch.h, this.dir(i)));
@@ -225,6 +305,7 @@ export class RainRoute implements Game {
 
   /** The need signs, filled from the drops on the board now. */
   private drawSigns() {
+    if (this.wet) return;
     this.signLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     const l = this.layout;
     const beds = this.round.board.marked.map((m, i) => {
@@ -244,9 +325,16 @@ export class RainRoute implements Game {
 
   private placeSettled() {
     for (const d of this.settled) {
-      const at = d.at === 'pond' ? this.layout.slots[d.index] : this.layout.beds[d.at].pockets[d.index];
+      const at =
+        d.at === 'pond'
+          ? this.pondSlot(this.layout, d.row, d.index)
+          : this.layout.beds[d.at].pockets[d.index];
       d.node.position.set(at.x, at.y);
     }
+  }
+
+  private pondSlot(layout: RouteLayout, row: 0 | 1, index: number) {
+    return (layout.wet?.rows[row] ?? layout.slots)[index];
   }
 
   private squash(n: Container) {
@@ -260,7 +348,8 @@ export class RainRoute implements Game {
   private tapCloud() {
     if (this.busy || this.finished || this.s.passed) return;
     this.squash(this.cloud);
-    void this.tryIt(true);
+    if (this.wet) void this.tryWet(this.wet);
+    else void this.tryIt(true);
   }
 
   /** Rain on the current arrangement from fresh, then (when `narrate`) say where the drops went. */
@@ -282,13 +371,89 @@ export class RainRoute implements Game {
     if (narrate) await this.narrate();
   }
 
+  private resetQuiet() {
+    this.quiet.reset();
+    this.quietCues = 0;
+    this.wasCue = false;
+  }
+
+  private drawWetControls() {
+    const s = this.wet;
+    if (!s) return;
+    const waiting = !!s.first && !s.second;
+    for (const card of this.predictions) card.visible = waiting && !this.busy;
+    this.check.visible = wetCanFinish(s);
+    this.rewind.visible = !!s.second;
+    if (this.cloudDrops) this.cloudDrops.visible = !s.second;
+    if (this.showerMarkers) {
+      this.showerMarkers[0].visible = !s.first;
+      this.showerMarkers[1].visible = waiting;
+    }
+  }
+
+  private tapPrediction(choice: Prediction, card: Container) {
+    if (this.busy || this.finished || !this.wet?.first || this.wet.second) return;
+    this.resetQuiet();
+    this.wet = predict(this.wet, choice);
+    this.placePredictions();
+    this.squash(card);
+    sfx.pluck(4, 0.25);
+  }
+
+  private async tryWet(before: WetState) {
+    this.resetQuiet();
+    this.talk++;
+    this.busy = true;
+    const next = wetRain(before, this.round);
+    if (before.second) {
+      this.wet = next;
+      await this.freshen();
+      if (this.finished) return;
+      this.idle();
+      this.drawWetControls();
+      void this.ctx.say('rain.again');
+      return;
+    }
+    this.drawWetControls();
+    const trial = (next.second ?? next.first)!;
+    await this.showRun(trial, before.first?.stored, before.first ? 1 : 0);
+    if (this.finished) return;
+    this.wet = next;
+    const resizing = this.stale;
+    this.idle();
+    if (!resizing) {
+      this.drawBoard();
+      this.placeSettled();
+    }
+    this.drawWetControls();
+
+    const lines = narration(trial, this.round.board, before.first?.stored);
+    if (next.first && next.second) {
+      const result = compareWet(next.first, next.second);
+      if (next.prediction) lines.unshift(`rain.guess.${next.prediction}`);
+      lines.push(
+        result.pond === 'more' ? 'rain.wet.more' : result.further ? 'rain.wet.further' : 'rain.wet.stone',
+      );
+      if (next.prediction)
+        lines.push(next.prediction === result.pond ? 'rain.guess.yes' : 'rain.guess.surprise');
+      if (next.sequences === 2) lines.push('rain.done');
+    } else {
+      lines.push('rain.wet.ready');
+    }
+    await this.sayLines(lines);
+  }
+
   /** Where the water went: level 4's one line per arrangement, or level 5's short clips, one per bed from the top, then the pond. */
   private async narrate(): Promise<boolean> {
     const t = this.s.current;
     if (!t) return false;
-    const token = this.talk;
     const lines =
       this.round.level === 4 ? [`rain.route.${this.s.sockets.join('-')}`] : narration(t, this.round.board);
+    return this.sayLines(lines);
+  }
+
+  private async sayLines(lines: string[]) {
+    const token = this.talk;
     for (const id of lines) {
       if (this.finished || token !== this.talk) return false;
       await this.ctx.say(id as LineId);
@@ -296,14 +461,16 @@ export class RainRoute implements Game {
     return !this.finished && token === this.talk;
   }
 
-  private async showRun(t: RouteTrial) {
-    const count = { pocket: this.s.sockets.map(() => 0), slot: 0 };
-    if (this.round.level === 5) {
+  private async showRun(t: RouteTrial, start = this.sockets.map(() => 0), row: 0 | 1 = 0) {
+    const count = { pocket: start.slice(), slot: 0 };
+    if (this.round.level >= 5) {
       // Six drops through three beds: each leaves the cloud a beat after the last, so a try stays short.
       const runs: Promise<void>[] = [];
       for (const step of t.steps) {
         runs.push(
-          this.fall(step.path, count, step.unit).then(() => (this.finished ? undefined : this.drawSigns())),
+          this.fall(step.path, count, step.unit, row).then(() =>
+            this.finished ? undefined : this.drawSigns(),
+          ),
         );
         await this.ctx.tw.wait(0.45);
         if (this.finished) return;
@@ -312,16 +479,16 @@ export class RainRoute implements Game {
       return;
     }
     for (const step of t.steps) {
-      await this.fall(step.path, count, step.unit);
+      await this.fall(step.path, count, step.unit, row);
       if (this.finished) return;
       this.drawSigns();
     }
   }
 
   /** One drop along its path: from the cloud onto the top bed, then over each bed it runs past and down its arrow, into a pocket or a pond slot. */
-  private async fall(path: Place[], count: { pocket: number[]; slot: number }, unit: number) {
+  private async fall(path: Place[], count: { pocket: number[]; slot: number }, unit: number, row: 0 | 1) {
     const l = this.layout;
-    const pace = this.round.level === 5 ? 0.7 : 1;
+    const pace = this.round.level >= 5 ? 0.7 : 1;
     const go = (to: { x?: number; y?: number }, duration: number, e: (t: number) => number) =>
       this.ctx.tw.to(node, to, { duration: duration * pace, ease: e });
     const end = path[path.length - 1];
@@ -337,7 +504,7 @@ export class RainRoute implements Game {
     this.flying.add(node);
     const done = () => {
       this.flying.delete(node);
-      this.settled.push({ node, at: end, index });
+      this.settled.push({ node, at: end, index, row });
     };
     const settle = async (bed: number) => {
       const p = l.beds[bed].pockets[index];
@@ -388,7 +555,7 @@ export class RainRoute implements Game {
       return;
     }
     lines.destroy();
-    const slot = l.slots[index];
+    const slot = this.pondSlot(l, row, index);
     await go({ x: slot.x, y: slot.y }, 0.3, ease.outQuad);
     if (this.finished) return;
     sfx.marimba(index, 0.4);
@@ -449,6 +616,13 @@ export class RainRoute implements Game {
 
   private tapBed(i: number) {
     if (this.busy || this.finished || this.s.passed) return;
+    if (this.wet) {
+      this.resetQuiet();
+      this.wet = wetFlip(this.wet, i);
+      this.drawWetControls();
+      this.showFlip(i);
+      return;
+    }
     const fixed = this.round.board.fixed[i];
     if (fixed) {
       // The tree's bed and the stone path never change: a line, never a miss or a hint.
@@ -462,14 +636,21 @@ export class RainRoute implements Game {
 
   /** Show a flipped bed: its new ground, a squash and its sound; a board with drops on it wipes to fresh. */
   private flipTo(next: RouteState, i: number) {
-    this.talk++;
     this.s = next;
-    if (next.sockets[i] === 'stone') sfx.clunk();
+    this.showFlip(i);
+  }
+
+  private showFlip(i: number) {
+    this.talk++;
+    if (this.sockets[i] === 'stone') sfx.clunk();
     else sfx.squish();
     if (this.settled.length) {
       this.busy = true;
       void this.freshen().then(() => {
-        if (!this.finished) this.idle();
+        if (!this.finished) {
+          this.idle();
+          this.drawWetControls();
+        }
       });
     } else {
       const old = this.patches[i];
@@ -484,7 +665,16 @@ export class RainRoute implements Game {
   private tapCheck() {
     if (this.busy || this.finished || this.s.passed) return;
     this.squash(this.check);
-    void this.judge();
+    if (this.wet) {
+      const next = wetFinish(this.wet);
+      if (!next.finished) return;
+      this.wet = next;
+      this.finished = true;
+      sfx.tada();
+      this.ctx.finish({ misses: 0, hints: next.hints });
+    } else {
+      void this.judge();
+    }
   }
 
   private async judge() {
@@ -541,6 +731,13 @@ export class RainRoute implements Game {
   /** Show me: the pet changes one bed toward a solution (one hint), or points at the Check when it already passes. */
   askForHint() {
     if (this.busy || this.finished || this.s.passed) return;
+    if (this.wet) {
+      this.wet = wetHint(this.wet);
+      this.resetQuiet();
+      this.talk++;
+      void this.ctx.say(this.wet.pointing === 'leaf' ? 'rain.done' : 'rain.hint.cloud');
+      return;
+    }
     const { state, hint } = routeHint(this.s, this.round);
     if (hint.kind === 'flip') {
       this.flipTo(state, hint.bed);
@@ -560,7 +757,11 @@ export class RainRoute implements Game {
         void this.ctx.tw.wait(0.2).then(go);
         return;
       }
-      this.s = routeRestart(this.s, this.round);
+      if (this.wet) {
+        this.resetQuiet();
+        this.wet = wetRestart(this.wet, this.round);
+        this.drawWetControls();
+      } else this.s = routeRestart(this.s, this.round);
       for (const d of this.settled) d.node.destroy({ children: true });
       this.settled = [];
       this.drawBoard();
@@ -592,6 +793,15 @@ export class RainRoute implements Game {
     this.cloud.position.set(l.cloud.x, l.cloud.y);
     this.check.position.set(l.check.x, l.check.y);
     this.beds.forEach((b, i) => b.position.set(l.beds[i].patch.x, l.beds[i].patch.y));
+    this.placePredictions();
+  }
+
+  private placePredictions() {
+    const selected = this.wet?.prediction;
+    this.layout.wet?.predictions.forEach((p, i) => {
+      const lifted = selected === (i === 0 ? 'more' : 'same');
+      this.predictions[i].position.set(p.x, p.y - (lifted ? 8 : 0));
+    });
   }
 
   update(dt: number) {
@@ -603,6 +813,10 @@ export class RainRoute implements Game {
       this.glow
         .roundRect(x - w / 2 - pulse, y - h / 2 - pulse, w + 2 * pulse, h + 2 * pulse, 26)
         .stroke({ width: 7, color: swatch.yellow.fill });
+    if (this.wet) {
+      this.wetCues(dt, ring);
+      return;
+    }
     // The causal glow sits behind the bed's tap target, so it never blocks a tap.
     if (this.s.glow !== null) {
       const p = this.layout.beds[this.s.glow].patch;
@@ -614,8 +828,41 @@ export class RainRoute implements Game {
     }
   }
 
+  private wetCues(dt: number, ring: (x: number, y: number, w: number, h: number) => void) {
+    const s = this.wet!;
+    const l = this.layout;
+    if (this.busy) return;
+    const picture = s.prediction && !s.second ? l.wet?.predictions[s.prediction === 'more' ? 0 : 1] : null;
+    if (picture) {
+      this.glow
+        .roundRect(picture.x - 62, picture.y - 70, 124, 124, 28)
+        .stroke({ width: 6, color: swatch.green.line });
+    }
+    this.quiet.update(dt);
+    const cue = this.quiet.progress !== null;
+    if (cue && !this.wasCue && ++this.quietCues === 2) {
+      this.talk++;
+      void this.ctx.instruct('rain.instruct.6');
+    }
+    this.wasCue = cue;
+    const target = s.pointing ?? (cue ? wetNext(s) : null);
+    const highlight: Box | null =
+      target === 'cloud' ? l.cloud : target === 'leaf' || s.sequences >= 2 ? l.check : null;
+    if (highlight) ring(highlight.x, highlight.y, highlight.w, highlight.h);
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.s.passed) return null;
+    if (this.wet) {
+      const s = this.wet;
+      const target =
+        s.first && !s.second && !s.prediction
+          ? this.predictions[0]
+          : wetNext(s) === 'leaf'
+            ? this.check
+            : this.cloud;
+      return { tap: { on: target }, pause: 0.8 };
+    }
     const n = routeNext(this.s, this.round);
     const on = n.kind === 'cloud' ? this.cloud : n.kind === 'check' ? this.check : this.beds[n.bed];
     return { tap: { on }, pause: 0.8 };

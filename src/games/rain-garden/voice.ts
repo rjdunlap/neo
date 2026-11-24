@@ -57,4 +57,21 @@ export const VOICE = {
   'rain.fixed.tree': ['The tree lives here, so this ground stays soil.'],
   'rain.fixed.path': ['This is the stone path. It stays stone.'],
   'rain.check.yes.both': ['The leaf bed and the flower bed kept two, and the pond got some. Every need met!'],
+  'rain.instruct.6': [
+    'Tap the cloud to rain on the garden. Then rain again on the wet ground, and see where the water goes.',
+  ],
+  'rain.bed.top.full': ['The top bed was already full, so the water ran past.'],
+  'rain.bed.low.full': ['The low bed was already full, so the water ran on.'],
+  'rain.wet.ready': [
+    'Time to rain on the same ground again. Will the second rain send more to the pond, or the same? Tap a picture if you like, then tap the cloud.',
+  ],
+  'rain.guess.more': ['You thought more would run to the pond.'],
+  'rain.guess.same': ['You thought it would be the same.'],
+  'rain.guess.yes': ['Just as you thought.'],
+  'rain.guess.surprise': ["A surprise! That's what experiments are for."],
+  'rain.wet.more': ['The soil was already full of water, so more ran down to the pond the second time.'],
+  'rain.wet.stone': ['Stone holds none, wet or dry, so the pond got the same both times.'],
+  'rain.wet.further': [
+    'The pond got none both times, but the second rain ran further down, because the top bed was already full.',
+  ],
 } satisfies Record<string, string[]>;

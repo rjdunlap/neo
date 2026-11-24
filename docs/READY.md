@@ -62,7 +62,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 
 
-- **`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 
 
 
@@ -83,13 +82,9 @@ One game per session; each line's placement or band was settled by its dive's *D
 
 
 
-- **`stamp-studio` Stamp a duck!** (toddler, between levels 2 and 3; new levels on an existing interaction): three animal stamps with sounds (the duck is new to the stamp kinds; the cat's meow and the fish's splash exist); the voice asks for one ("Stamp a duck!"), three asks in a round, then free; a wrong stamp still prints and is named ("That's a cat! Find the duck."), and the asked stamp's button glows after two such presses (a hint). It takes the next free level ID (11) with toddler `order [9, 10, 2, 11, 3]` and `entryLevels` unchanged. Expected files: `src/games/stamp-studio/{logic,index,voice,howto}.ts`, `logic.test.ts`, the browser case, the game page and dive. [Dive](deep-dives/stamp-studio.md#levels-below-level-1-waiting-on-the-level-order-decisions)
 
-- **`owl-walk` level 6, Color or shape** (preschool, pre-K; new interaction: typecheck, unit tests, one filtered scripted play of the first and last level with one wrong answer and one hint, one portrait screenshot, `fingerdemo` at level 6): stones are three colors by three shapes (nine kinds); a card shows only a color or only a shape, a wrong stone names the attribute that failed, two misses twinkle the right stone. Decision 7 is settled, so it can be built now. Expected files: `src/games/owl-walk/{logic,index,voice,howto}.ts`, `logic.test.ts`, the game page. [Dive](deep-dives/owl-walk.md#build-slices-in-order)
 
-- **Reconcile stale slice lines in the dives** (docs only): the 2026-11-17 refill found built slices with no built mark (`critter-crossing` 2, `bounce-back` 1 and 3–5, `bubble-pop` 1, `mossy-path` 1 and 5, `tile-pairs` 1, `rainbow-fingers` 7, `treasure-map` 1, `domino-run` 4), level numbers since taken by lap entries (`jelly-drums` 5–7, `puzzle-pals` 3–6, `stamp-studio` 10–14, `song-maker` 4–9), and "(decision N)" or "waits on the level-order decisions" labels that each dive's *Decided 2026-10-23* note already settled (about thirty dives). One session checks each against the game page's level table and corrects the slice lines, the [tracker](deep-dives/README.md#tracker) rows that still say "queued" and the [backlog](STUDY-BACKLOG.md) rows, then queues what the corrected lists show as next.
 
-- **`brain-break` the trail you made, a nudge on a wrong stone, and three pond looks** (already upright; grown-up; existing-game change: typecheck, its rule tests, one filtered `brainbreak` regression play of level 2 with one wrong stone, one upright screenshot; no `fingerdemo` since the bot does not change): a press squash on every tap, a side-to-side nudge on a wrong stone, a ribbon drawn from each lit stone to the next and replayed with pentatonic steps before the finishing line, three seeded pond looks; no rule or accounting change. Expected files: `src/games/brain-break/{index,logic,logic.test}.ts`, the game page. [Dive slice 1](deep-dives/brain-break.md#build-slices-in-order); slice 2 (levels 7–8 Count by) follows it.
 
 ### Codebase structure (2026-11-07 review)
 
@@ -101,8 +96,6 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 Left over from the [docs review](reviews/WORKFLOW-REVIEWS.md#docs-review-2026-11-18), which reorganized the session documents; each is docs only and touches a file many links point into, so it runs alone and merges quickly.
 
-- **Archive the built batch plans** (docs only: links and `git diff --check`): move `docs/GAME-BATCHES.md` (240 KB, every plan built) to `docs/archive/`, with its line in the archive index, and repoint the links into it; READY, ROADMAP and STUDY-BACKLOG then name the [batch rules](SESSION-GUIDE.md#same-game-batches) instead. A READY line that still cites a plan section as its scope keeps that link, pointed at the archived file.
-- **One coverage row per suite or area** (docs only: links and `git diff --check`): `docs/VERIFICATION.md` is 300 KB, most of it a coverage summary that gained a row per slice. Collapse it to one row per browser suite or area, each naming the latest passing entry file in `docs/verification/`, so the "never re-run a passing suite" rule can be checked by reading one short table; the per-slice detail is already in the entry files.
 
 ### UX review (2026-11-09)
 
