@@ -4,11 +4,11 @@
 
 **ID:** `brain-break` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
-**Skills:** Visual search, Number order, Adding and taking away
+**Skills:** Visual search, Number order, Adding and taking away, Counting by steps
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,8 @@
 | 4 | Find the sums that make 1 to 9, in order |
 | 5 | Find the sums that make 1 to 16, in order |
 | 6 | Find sums and take-aways that make 1 to 25, in order |
+| 7 | Count by twos, threes, fives or tens |
+| 8 | Count by harder steps, up or back |
 
 <!-- end generated -->
 

@@ -8,10 +8,15 @@ import {
   LOOKS,
   makeBoard,
   makeLabels,
+  makeTrail,
   MINUS,
   pickLook,
   planFor,
+  ruleSign,
+  showsSums,
+  STEPS,
   trailOrder,
+  trailValue,
 } from './logic';
 import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
@@ -59,9 +64,9 @@ describe('Brain Break number order', () => {
 
 describe('Brain Break sums in order (levels 4–6)', () => {
   const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
-  it('clamps the ladder to 1..6', () => {
+  it('clamps the ladder to 1..8', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(7)).toBe(planFor(6));
+    expect(planFor(9)).toBe(planFor(8));
     expect([4, 5, 6].map((l) => planFor(l).side)).toEqual([3, 4, 5]);
   });
   it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
@@ -171,5 +176,65 @@ describe('Brain Break trail and pond looks', () => {
       expect(pickLook(new Rng(seed))).toBe(pickLook(new Rng(seed)));
     }
     expect(seen.size).toBe(3);
+  });
+});
+
+describe('Brain Break count by (levels 7–8)', () => {
+  const rounds = (level: number) =>
+    Array.from({ length: 80 }, (_, seed) => {
+      const rng = new Rng(seed),
+        board = makeBoard(level, rng);
+      makeLabels(board, level, rng);
+      pickLook(rng);
+      return { board, trail: makeTrail(level, rng) };
+    });
+
+  it('keeps levels 1–6 giving the boards they gave before', () => {
+    for (let level = 1; level <= 6; level++) {
+      const a = new Rng(5),
+        b = new Rng(5);
+      expect(makeBoard(level, a)).toEqual(makeBoard(level, b));
+      expect(showsSums(level)).toBe(level >= 4);
+    }
+  });
+
+  it('level 7 counts up by k from k to 16k with a step from the pool', () => {
+    for (const { trail } of rounds(7)) {
+      expect(STEPS[7]).toContain(trail.step);
+      expect(trail.back).toBe(false);
+      const values = Array.from({ length: 16 }, (_, i) => trailValue(trail, i + 1));
+      expect(values).toEqual(Array.from({ length: 16 }, (_, i) => trail.step * (i + 1)));
+    }
+  });
+
+  it('level 8 fills k to 25k in three digits, counting back about half the time', () => {
+    let back = 0;
+    for (const { trail } of rounds(8)) {
+      expect(STEPS[8]).toContain(trail.step);
+      const values = Array.from({ length: 25 }, (_, i) => trailValue(trail, i + 1));
+      expect(Math.max(...values)).toBe(25 * trail.step);
+      expect(Math.min(...values)).toBe(trail.step);
+      expect(Math.max(...values)).toBeLessThan(1000);
+      if (trail.back) {
+        back++;
+        expect(values).toEqual([...values].sort((x, y) => y - x));
+      } else expect(values).toEqual([...values].sort((x, y) => x - y));
+    }
+    expect(back).toBeGreaterThan(15);
+    expect(back).toBeLessThan(65);
+  });
+
+  it('the sign names the rule and the last lit number, never the answer; the hint stone is the next rank', () => {
+    const [{ board, trail }] = rounds(8);
+    const t = { ...trail, back: false, step: 7 };
+    expect(ruleSign(t, 1)).toBe('Count by 7 · start at 7');
+    expect(ruleSign(t, 3)).toBe('Count by 7 · after 14');
+    expect(ruleSign({ ...t, back: true }, 1)).toBe('Count back by 7 · start at 175');
+    expect(ruleSign({ ...t, back: true }, 2)).toBe('Count back by 7 · after 175');
+    for (let next = 1; next <= 25; next++) expect(board[hintIndex(board, next)]).toBe(next);
+  });
+
+  it('is seeded', () => {
+    expect(rounds(8).map((r) => r.trail)).toEqual(rounds(8).map((r) => r.trail));
   });
 });
