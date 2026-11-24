@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 15, 1, 2, 3 |
+| lap | 15, 1, 19, 2, 3 |
 | toddler | 1, 2, 3, 16, 4, 5, 6 |
 | preschool | 4, 5, 6, 17, 7, 18, 8, 9 |
 | pre-K | 6–12 |
@@ -34,12 +34,13 @@
 | 16 | Pop one size, big or little, as asked (8 pops; toddler plays it between levels 3 and 4) |
 | 17 | Pop the bubble with the number of dots asked for, 1 to 4, no numerals (6 asks; preschool plays it between levels 6 and 7) |
 | 18 | Match dots to numerals, 1 to 4: tap one, then its partner (6 pairs; preschool plays it between levels 7 and 8) |
+| 19 | Swipe a finger across the screen to blow bubbles, then pop them, 8 pops (lap plays it after level 1) |
 
 <!-- end generated -->
 
 **Starts as:** pop anything (or tap anywhere to pop the nearest)
 
-**Grows into:** pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10; toddlers also pop the big or the little bubbles (level 16), and preschoolers pop the bubble with the asked number of dots (level 17)
+**Grows into:** blowing the bubbles first (level 19), then pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10; toddlers also pop the big or the little bubbles (level 16), and preschoolers pop the bubble with the asked number of dots (level 17)
 
 ## Design notes
 
@@ -50,5 +51,7 @@ Its how-to intro names and pictures each level (a mode card, with a ladder of th
 Level 15 opens with one large still bubble already on screen at Play (1.3 times the level's largest, right of Home, the question mark and the guide, below the top bar), so the first touch anywhere pops something. Rising bubbles are gated by the pops: one more may be on screen for each pop, up to four, so none rise on a timer into an empty screen; a rising bubble starts already in reach and swells in from half size, and an empty screen gets one at once. Every other level fills to its most as before.
 
 **Level 16, big and little** (toddler, placed after level 3 by `order`): bubbles come in two sizes (little radius 50–54, big 92–104, a ratio of at least 1.7; the little is larger than the research's first 42–48 because every bubble is drawn at least 100 units across), and the round asks for "big" or "little". A big bubble pops at a low pitch and a little one high, so the contrast is heard as well as seen. A wrong size wobbles and is named ("That one's little. Find big!") and counts a miss; two misses in a row glow the right size, which counts as a hint. **Level 17, which one has the dots?** (preschool, placed after level 6): four drifting bubbles show dice pips 1 to 4 and no numeral, and the voice asks "Pop the one with four!" Six asks, every count once before a repeat and never the same count twice running; a popped bubble is replaced by one with the same count, so one of each is always showing. A wrong bubble has its dots said aloud ("That one has three. Find four!") and two in a row glow the right one. **Level 18, dots and numbers together** (preschool, placed after level 7 by `order` `[4, 5, 6, 17, 7, 18, 8, 9]`, mode `match`): eight still drifting bubbles, a numeral bubble and a dice-pip bubble for each of 1 to 4, each pair colored differently so the match is found by number and not by color. Tap one to hold it (it glows; a held numeral is read aloud, held dots are not, so the child counts them); tapping its partner (same number, other kind) pops both with "{n} and {n}! They match!" and a new pair of that count swells in, so every count stays showing twice. Six pairs, then the rainbow bubble. Tapping another bubble of the same kind moves the hold and is not a miss; tapping the held bubble lets go. The other kind with a different number is a miss that keeps the hold and says a hint ("That one has {wrong}. Find {n}!" for dots, "That's {wrong}. Count the dots again!" for a numeral); two misses in a row glow the partner and count one hint. Idle 6 seconds while holding glows the partner without counting a hint. The ghost finger takes the dots first, then the matching numeral. Match-mode numerals omit the small lower glint so it cannot be counted as a dot. Every still mode (count, bonds, dots, match) now starts each bubble at a spot clear of the others (`clearSpot` in `logic.ts`), because two dot bubbles starting stacked read as one bigger count. Only the two slot-free clips (`bubble.match`, `bubble.mode.18`) are rendered; the slotted lines use device speech.
+
+**Level 19, blow, then pop** (lap, placed after level 1 by `order` `[15, 1, 19, 2, 3]`, plan field `blow`): the same free play, but no bubble rises by itself. A finger down on empty space blows one bubble there, and a finger dragged across it blows a trail, one every 200 units of stroke (`blowAlong`, never more than the plan's four on the screen); each blown bubble swells out of a speck, floats up and is tapped to pop it, with the usual friends and pictures riding inside, eight pops and the rainbow bubble. A whole-screen layer under the bubbles takes the blowing, so a touch on a bubble pops it and a touch beside one blows; a hand of four or more contacts blows nothing, and cancel, blur or leaving the page ends the stroke with no bubble. No touch is wrong. If no bubble has been on the screen for six seconds one rises from below, so a child who only taps is never stuck. The ghost finger swipes a trail when nothing is showing, then pops. Whether a lap child drags before she taps stays a person check, not a gate. Its three lines carry `{pet}`, so they use device speech and no clip is rendered; the next voice pass can reword them without it.
 
 **Pictures in bubbles** (free play, levels 1–3 and 15): about one bubble in seven holds one of eight code-drawn pictures, two for each scene (shore flower and shell, bath rubber duck and boat, night star and moon, sea fish and starfish). It is released and named the first time, like a friend. The sticker pool (`FRIENDS`) is unchanged.

@@ -9,6 +9,8 @@ import {
   PIP_RADIUS,
   SIZE_RATIO,
   LEVELS,
+  BLOW_GAP,
+  blowAlong,
   dicePips,
   dotAsks,
   matchFaces,
@@ -672,5 +674,62 @@ describe('pictures in the bubbles', () => {
       expect(count('friend') + count('picture')).toBeLessThan(330);
       for (const name of PICTURES[scene]) expect(riders.some((r) => r.picture === name)).toBe(true);
     }
+  });
+});
+
+describe('Blow, then pop (level 19)', () => {
+  const plan = PLANS[18];
+  const from = { x: 200, y: 600 };
+
+  it('is lap-only free play: after level 1, a bubble at least 100 across, none rising by itself', () => {
+    expect(plan).toMatchObject({ mode: 'free', blow: true });
+    expect(LEVELS.lap!.order).toEqual([15, 1, 19, 2, 3]);
+    expect(LEVELS.lap!.max).toBe(19);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(LEVELS[band]!.order ?? [], band).not.toContain(19);
+    expect(plan.radius[0] * 2).toBeGreaterThanOrEqual(100);
+    expect(plan.radius[0] * 2).toBeGreaterThan(BLOW_GAP * 0.75);
+    expect(planFor(19)).toBe(plan);
+  });
+
+  it('a touch blows one bubble where it lands and a swipe one every gap, never more than the room', () => {
+    expect(blowAlong(from, from, BLOW_GAP, plan.most).points).toEqual([from]);
+    const swipe = blowAlong(from, { x: from.x + 3 * BLOW_GAP, y: from.y }, 0, plan.most);
+    expect(swipe.points.map((p) => p.x - from.x)).toEqual([BLOW_GAP, 2 * BLOW_GAP, 3 * BLOW_GAP]);
+    const long = blowAlong(from, { x: from.x + 20 * BLOW_GAP, y: from.y }, 0, plan.most);
+    expect(long.points).toHaveLength(plan.most);
+    expect(blowAlong(from, { x: 900, y: 100 }, 0, 0).points).toEqual([]);
+  });
+
+  it('a drag of length d blows at most floor((d + carry) / gap) bubbles, and a still finger none after the first', () => {
+    const rng = new Rng(19);
+    for (let i = 0; i < 200; i++) {
+      const to = { x: from.x + rng.range(-900, 900), y: from.y + rng.range(-500, 500) };
+      const carry = rng.range(0, BLOW_GAP);
+      const d = Math.hypot(to.x - from.x, to.y - from.y);
+      const out = blowAlong(from, to, carry, plan.most);
+      expect(out.points.length).toBeLessThanOrEqual(Math.floor((d + carry) / BLOW_GAP));
+      expect(out.points.length).toBeLessThanOrEqual(plan.most);
+      expect(out.carry).toBeGreaterThanOrEqual(0);
+      expect(out.carry).toBeLessThanOrEqual(BLOW_GAP);
+      for (const pt of out.points) {
+        // On the stroke.
+        const along = Math.hypot(pt.x - from.x, pt.y - from.y);
+        expect(along).toBeLessThanOrEqual(d + 1e-6);
+      }
+    }
+    expect(blowAlong(from, from, 10, plan.most).points).toEqual([]);
+  });
+
+  it('a full screen keeps the carry, so a bubble is born the moment there is room and she is still blowing', () => {
+    const full = blowAlong(from, { x: from.x + 1000, y: from.y }, 0, 0);
+    expect(full.carry).toBe(BLOW_GAP);
+    const next = blowAlong(from, { x: from.x + 10, y: from.y }, full.carry, 1);
+    expect(next.points).toHaveLength(1);
+  });
+
+  it('the level has a how-to line and a mode card the voice script knows', () => {
+    expect(SCRIPT['bubble.blow']).toBeDefined();
+    expect(SCRIPT['bubble.mode.19']).toBeDefined();
   });
 });

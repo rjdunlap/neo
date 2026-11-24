@@ -33,8 +33,9 @@ describe('Bubble Pop mode cards', () => {
         expect(picture.other).not.toBe(picture.n);
       }
       if (picture.kind === 'palm') expect(plan.anywhere, `level ${level}`).toBe(true);
+      if (picture.kind === 'blow') expect(plan.blow, `level ${level}`).toBe(true);
       if (picture.kind === 'plain')
-        expect(plan.mode === 'free' && !plan.anywhere, `level ${level}`).toBe(true);
+        expect(plan.mode === 'free' && !plan.anywhere && !plan.blow, `level ${level}`).toBe(true);
     }
   });
 

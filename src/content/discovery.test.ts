@@ -59,7 +59,7 @@ describe('the reviewed direct-next pool', () => {
   });
   it('keeps the high-ID lap entry and the toddler range authoritative', () => {
     const bubble = gameById('bubble-pop')!;
-    expect(levelsInOrder(bubble.levels('lap'))).toEqual([15, 1, 2, 3]);
+    expect(levelsInOrder(bubble.levels('lap'))).toEqual([15, 1, 19, 2, 3]);
     expect(levelsInOrder(bubble.levels('toddler'))).toEqual([1, 2, 3, 16, 4, 5, 6]);
   });
 });

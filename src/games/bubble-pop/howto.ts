@@ -25,6 +25,11 @@ export const HOW_TO: GameHowTo = {
       to: 18,
       text: 'Each number is on two bubbles: once as a numeral and once as dots. Tap one to hold it, then tap its partner. Tap the held bubble again to let it go.',
     },
+    {
+      from: 19,
+      to: 19,
+      text: 'Swipe a finger across the empty screen to blow a trail of bubbles, or touch it to blow one. Then tap the bubbles to pop them.',
+    },
     { from: 4, to: 6, text: 'Listen for the color, then tap only the bubbles of that color.' },
     { from: 7, to: 9, text: 'Tap the numbered bubbles in order, starting at 1.' },
     {
@@ -63,9 +68,19 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'After a few pops a rainbow bubble floats up; a touch anywhere pops it and the round ends.',
     },
-    { from: 16, text: 'The round ends when the last bubble that was asked for is popped.' },
+    { from: 16, to: 18, text: 'The round ends when the last bubble that was asked for is popped.' },
+    {
+      from: 19,
+      to: 19,
+      text: 'After a few pops a rainbow bubble floats up; tap it and the round ends.',
+    },
   ],
   note: [
+    {
+      from: 19,
+      to: 19,
+      text: 'Nothing is wrong: a touch that is not on a bubble just blows one, and the screen holds only a few at a time. If none is showing for a while, one floats up on its own.',
+    },
     { to: 14, text: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.' },
     { from: 15, to: 15, text: 'No touch is wrong: a touch with no bubble on the screen does nothing.' },
     {

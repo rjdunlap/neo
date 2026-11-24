@@ -28,7 +28,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 A playtest fix goes in Next ten under the phone lines.
 
-- **`jar-clues` number cells on an upright phone** (grown-up; existing-game bug fix tier): the ten-across board's cells are 74 units, 37.6 CSS px at 390 × 844, under the comfortable 44 px; `src/games/grownup-thumbs.test.ts` names the game until it is fixed. Sweeping a row is unaffected; if a playtest note says single taps miss, make the tapped number confirm under the finger (a lifted magnifier or a press-and-slide), never a smaller board. [Game page](games/jar-clues.md#design-notes)
 
 ### Puzzle-page follow-ups
 

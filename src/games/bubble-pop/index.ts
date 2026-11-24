@@ -1,11 +1,11 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { wordKey } from '../../content/words/pt-PT';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
-import { onTap } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -17,6 +17,8 @@ import { modePicture } from './mode-art';
 import { TargetSignView } from './sign';
 import {
   LEVELS,
+  BLOW_GAP,
+  blowAlong,
   bondNumbers,
   bubbleToPop,
   choosePalette,
@@ -60,6 +62,12 @@ class BubblePop implements Game {
   private readonly layer = new Container();
   /** Pop anywhere: a whole-screen layer, last in the stage, that takes the touch instead of the bubbles. */
   private readonly catcher: Container | null = null;
+  /** Blow then pop: a whole-screen layer under the bubbles; a touch or a swipe on empty space blows bubbles there. */
+  private readonly blower: Container | null = null;
+  /** The finger that is blowing, how far it has gone since the last bubble, and where it was last. */
+  private blowing: { id: number; carry: number; at: { x: number; y: number } } | null = null;
+  /** Blow then pop: seconds with no bubble on the screen; a long wait lets one rise so a child who only taps is not stuck. */
+  private empty = 0;
   private bubbles: Bubble[] = [];
   /** Pop anywhere: the large bubble standing still when Play is pressed, until it is popped. */
   private opening: Bubble | null = null;
@@ -103,7 +111,25 @@ class BubblePop implements Game {
       this.sign.resize(ctx.view);
     }
     // The sign sits under the bubbles, so the rainbow bubble floats over it.
-    ctx.stage.addChild(this.backdrop, ...(this.sign ? [this.sign] : []), this.layer);
+    if (this.plan.blow) {
+      this.blower = new Container();
+      this.blower.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      this.blower.eventMode = 'static';
+      this.blower.on('pointerdown', this.blowStart);
+      this.blower.on('globalpointermove', this.blowMove);
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'] as const)
+        this.blower.on(up, this.blowEnd);
+      ctx.listen(window, 'pointercancel', this.blowEnd, true);
+      ctx.listen(window, 'blur', this.blowStop);
+      ctx.listen(document, 'visibilitychange', this.blowStop);
+    }
+    // The blowing layer sits under the bubbles, so a touch on a bubble pops it and a touch beside one blows.
+    ctx.stage.addChild(
+      this.backdrop,
+      ...(this.sign ? [this.sign] : []),
+      ...(this.blower ? [this.blower] : []),
+      this.layer,
+    );
     if (this.plan.anywhere) {
       this.catcher = new Container();
       this.catcher.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
@@ -118,7 +144,8 @@ class BubblePop implements Game {
 
   start() {
     const p = this.plan;
-    if (p.mode === 'free') void this.ctx.instruct(p.anywhere ? 'bubble.anywhere' : 'bubble.free');
+    if (p.mode === 'free')
+      void this.ctx.instruct(p.anywhere ? 'bubble.anywhere' : p.blow ? 'bubble.blow' : 'bubble.free');
     if (p.anywhere) this.opening = this.spawn(undefined, 0, openingBubble(p, this.view.w, this.view.h));
     if (p.mode === 'color') {
       void this.ctx.instruct('bubble.color', { color: this.target! });
@@ -158,6 +185,7 @@ class BubblePop implements Game {
     this.backdrop.resize(view);
     this.sign?.resize(view);
     if (this.catcher) this.catcher.hitArea = new Rectangle(0, 0, view.w, view.h);
+    if (this.blower) this.blower.hitArea = new Rectangle(0, 0, view.w, view.h);
     if (this.opening) {
       const o = openingBubble(this.plan, view.w, view.h);
       this.opening.position.set(o.x, o.y);
@@ -172,7 +200,15 @@ class BubblePop implements Game {
   update(dt: number) {
     this.clock += dt;
     const p = this.plan;
-    if (this.phase === 'play' && !staysPut(p.mode)) {
+    if (this.phase === 'play' && p.blow) {
+      // Nothing rises by itself while she is blowing; after a long empty wait one does, so tapping alone still plays.
+      const alive = this.bubbles.some((b) => !b.popped && !b.rainbow);
+      this.empty = alive || this.blowing ? 0 : this.empty + dt;
+      if (this.empty > 6) {
+        this.empty = 0;
+        this.spawn();
+      }
+    } else if (this.phase === 'play' && !staysPut(p.mode)) {
       this.spawnIn -= dt;
       const alive = this.bubbles.filter((b) => !b.popped).length;
       // Pop anywhere: once she has popped, a screen with nothing to pop gets a bubble at once.
@@ -228,6 +264,12 @@ class BubblePop implements Game {
       const rainbow = shown.find((b) => b.rainbow);
       return rainbow ? { tap: { on: rainbow }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
     }
+    if (this.blower && !shown.some((b) => !b.rainbow)) {
+      // Nothing to pop yet: blow a trail, as a capable child would, from low on the left across the middle.
+      const v = this.view;
+      const at = (x: number, y: number) => ({ on: this.ctx.stage, x: v.w * x, y: v.h * y });
+      return { trace: at(0.3, 0.72), via: [at(0.5, 0.62), at(0.7, 0.66)], receiver: this.blower, pause: 0.4 };
+    }
     const pick = bubbleToPop(
       this.plan.mode,
       shown,
@@ -242,6 +284,8 @@ class BubblePop implements Game {
 
   destroy() {
     this.catcher?.removeAllListeners();
+    this.blower?.removeAllListeners();
+    this.blowing = null;
     this.bubbles = [];
   }
 
@@ -254,6 +298,7 @@ class BubblePop implements Game {
     index = (number ?? 1) - 1,
     standing?: { x: number; y: number; r: number },
     face?: MatchFace,
+    blown = false,
   ) {
     const { rng } = this.ctx;
     const p = this.plan;
@@ -286,7 +331,14 @@ class BubblePop implements Game {
       rim: LOOKS[this.backdrop.scene].rim,
     });
     const at = spawnBox(v.w, v.h, r, staysPut(p.mode), p.anywhere);
-    if (standing) {
+    if (standing && blown) {
+      // Blown at the finger: it swells out of a speck and floats up from there, a little to one side.
+      b.position.set(standing.x, standing.y);
+      b.vx = rng.range(-14, 14);
+      b.vy = -p.speed * rng.range(0.8, 1.25);
+      b.scale.set(0.3);
+      void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    } else if (standing) {
       b.position.set(standing.x, standing.y);
       b.vx = b.vy = 0;
     } else if (staysPut(p.mode)) {
@@ -312,6 +364,47 @@ class BubblePop implements Game {
     this.bubbles.push(b);
     this.spawned++;
     return b;
+  }
+
+  /** Blow then pop: a finger down on empty space blows a bubble there, and dragging blows a trail. A palm on the glass blows nothing. */
+  private readonly blowStart = (e: FederatedPointerEvent) => {
+    if (this.phase !== 'play' || this.blowing || palmOnGlass()) return;
+    const at = this.layer.toLocal(e.global);
+    this.blowing = { id: e.pointerId, carry: BLOW_GAP, at };
+    this.blowTo(at, at, BLOW_GAP);
+  };
+
+  private readonly blowMove = (e: FederatedPointerEvent) => {
+    const b = this.blowing;
+    if (!b || e.pointerId !== b.id) return;
+    if (e.buttons === 0) return this.blowEnd(e);
+    if (palmOnGlass()) return this.blowStop();
+    const to = this.layer.toLocal(e.global);
+    this.blowTo(b.at, to, b.carry);
+    b.at = to;
+  };
+
+  private readonly blowEnd = (e: { pointerId?: number }) => {
+    if (this.blowing && (e.pointerId === undefined || e.pointerId === this.blowing.id)) this.blowing = null;
+  };
+
+  private readonly blowStop = () => {
+    this.blowing = null;
+  };
+
+  /** Blow the bubbles along a stroke from `from` to `to`, as many as there is room for. */
+  private blowTo(from: { x: number; y: number }, to: { x: number; y: number }, carry: number) {
+    const live = this.bubbles.filter((b) => !b.popped && !b.rainbow).length;
+    const { points, carry: rest } = blowAlong(from, to, carry, this.plan.most - live);
+    if (this.blowing) this.blowing.carry = rest;
+    const v = this.view;
+    for (const pt of points) {
+      const r = this.ctx.rng.range(...this.plan.radius);
+      // Whole on the screen, and right of Home, the question mark and the guide.
+      const x = Math.min(v.w - r, Math.max(130 + r, pt.x));
+      const y = Math.min(v.h - r, Math.max(r + 110, pt.y));
+      this.spawn(undefined, 0, { x, y, r }, undefined, true);
+    }
   }
 
   /** Floats about inside the screen, bouncing off the edges. */
@@ -777,6 +870,8 @@ export const bubblePop: GameModule = {
     const p = planFor(level);
     if (p.anywhere)
       return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;
+    if (p.blow)
+      return `Swipe a finger across the screen to blow bubbles, then pop them, ${p.goal} pops (lap plays it after level 1)`;
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
     if (p.mode === 'size')
       return `Pop one size, big or little, as asked (${p.goal} pops; toddler plays it between levels 3 and 4)`;
