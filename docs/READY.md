@@ -59,8 +59,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`peg-garden` level 9, Aim at the big flower** (preschool bridge; a missed shot is no miss; new levels on an existing interaction). [Dive](deep-dives/peg-garden.md#build-slices-in-order)
-- **`jelly-drums` resume where she was** (four- and five-note tunes; rule tests and the `originals` run), then Backwards as ID 11. [Dive](deep-dives/jelly-drums.md#build-slices-in-order)
 - **`puzzle-pals` the box lid from level 5** (typecheck, game and how-to tests, filtered plays at 5 and 7, a portrait and phone layout review), then Turn it round as ID 9. [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
 - **`critter-sort` fresh rules** (colour and ear rules; typecheck and its rule tests). [Dive](deep-dives/critter-sort.md#build-slices-in-order)
 - **`word-monsters` the rest of slice 1's guards** (level 8's decoys are still fixed at x and z, no pinned sticker test; typecheck and rule tests), then slice 3 Told, then asked. [Dive](deep-dives/word-monsters.md#build-slices-in-order)

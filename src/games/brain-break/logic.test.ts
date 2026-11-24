@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  alternatingLabels,
+  alternatingSign,
+  countsBy,
   evaluate,
   hintIndex,
   judge,
   layoutFor,
+  LEVELS,
   LOOKS,
   makeBoard,
   makeLabels,
+  makeRound,
   makeTrail,
   makeValues,
   orderSign,
@@ -18,6 +23,7 @@ import {
   planFor,
   ruleSign,
   showsSums,
+  sortsValues,
   STEPS,
   trailOrder,
   trailValue,
@@ -38,6 +44,28 @@ describe('Brain Break number order', () => {
         }
         expect(hintIndex(board, count + 1)).toBe(-1);
       }
+  });
+  it('preserves the old rounds and RNG draws at levels 1–10', () => {
+    // Fingerprints captured before Two trails: 50 seeds per level, including the next RNG draw.
+    const before = [
+      1189734624, 1519953182, 2000548581, 3651683389, 4065016903, 1822128834, 4109410013, 239030941,
+      2466038597, 5315307,
+    ];
+    for (let level = 1; level <= before.length; level++) {
+      const rounds = Array.from({ length: 50 }, (_, i) => {
+        const rng = new Rng(i + 1);
+        const { board, labels, look } = makeRound(level, rng);
+        return { board, labels, look, nextDraw: rng.next() };
+      });
+      const fingerprint = [...JSON.stringify(rounds)].reduce(
+        (hash, ch) => Math.imul(hash ^ ch.charCodeAt(0), 16777619) >>> 0,
+        2166136261,
+      );
+      expect(fingerprint, `level ${level}`).toBe(before[level - 1]);
+      expect(showsSums(level)).toBe(level >= 4 && level <= 6);
+      expect(countsBy(level)).toBe(level === 7 || level === 8);
+      expect(sortsValues(level)).toBe(level === 9 || level === 10);
+    }
   });
   it('is seeded, and produces fresh arrangements', () => {
     expect(makeBoard(3, new Rng(4))).toEqual(makeBoard(3, new Rng(4)));
@@ -68,9 +96,10 @@ describe('Brain Break number order', () => {
 
 describe('Brain Break sums in order (levels 4–6)', () => {
   const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
-  it('clamps the ladder to 1..10', () => {
+  it('clamps the ladder to 1..12', () => {
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 12 });
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(11)).toBe(planFor(10));
+    expect(planFor(13)).toBe(planFor(12));
     expect([4, 5, 6].map((l) => planFor(l).side)).toEqual([3, 4, 5]);
   });
   it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
@@ -193,15 +222,6 @@ describe('Brain Break count by (levels 7–8)', () => {
       return { board, trail: makeTrail(level, rng) };
     });
 
-  it('keeps levels 1–6 giving the boards they gave before', () => {
-    for (let level = 1; level <= 6; level++) {
-      const a = new Rng(5),
-        b = new Rng(5);
-      expect(makeBoard(level, a)).toEqual(makeBoard(level, b));
-      expect(showsSums(level)).toBe(level >= 4);
-    }
-  });
-
   it('level 7 counts up by k from k to 16k with a step from the pool', () => {
     for (const { trail } of rounds(7)) {
       expect(STEPS[7]).toContain(trail.step);
@@ -286,5 +306,62 @@ describe('Brain Break smallest first (levels 9–10)', () => {
     expect(orderSign([-5, 3, 9], 1)).toBe('Smallest first');
     expect(orderSign([-5, 3, 9], 3)).toBe('After 3');
     expect(orderSign([-5, 3, 9], 2)).toBe('After \u22125');
+  });
+});
+
+describe('Brain Break Two trails (levels 11–12)', () => {
+  const trails = [
+    { level: 11, side: 4, expected: '1 A 2 B 3 C 4 D 5 E 6 F 7 G 8 H' },
+    { level: 12, side: 5, expected: '1 L 2 K 3 J 4 I 5 H 6 G 7 F 8 E 9 D 10 C 11 B 12 A 13' },
+  ];
+
+  it.each(trails)(
+    'fills the level $level board with exactly its intended sequence',
+    ({ level, side, expected }) => {
+      expect(planFor(level).side).toBe(side);
+      expect(alternatingLabels(level)).toEqual(expected.split(' '));
+      expect(showsSums(level)).toBe(false);
+      expect(countsBy(level)).toBe(false);
+      expect(sortsValues(level)).toBe(false);
+    },
+  );
+
+  it.each(trails)(
+    'gives level $level a unique, reachable next stone at every step across seeds',
+    ({ level }) => {
+      const labels = alternatingLabels(level);
+      const layouts = new Set<string>();
+      for (let seed = 1; seed <= 100; seed++) {
+        const round = makeRound(level, new Rng(seed));
+        const { board } = round;
+        expect(makeRound(level, new Rng(seed))).toEqual(round);
+        expect(round.alternating).toEqual(labels);
+        expect(trailOrder(board).map((i) => round.labels[i])).toEqual(labels);
+        layouts.add(board.join(','));
+        for (let next = 1; next <= labels.length; next++) {
+          const hint = hintIndex(board, next);
+          expect(hint).toBeGreaterThanOrEqual(0);
+          expect(round.labels[hint]).toBe(labels[next - 1]);
+          expect(board.filter((rank) => judge(rank, next) === 'right')).toEqual([next]);
+          if (next > 1) expect(judge(board[hintIndex(board, next - 1)], next)).toBe('done');
+          if (next < labels.length) expect(judge(board[hintIndex(board, next + 1)], next)).toBe('wrong');
+        }
+        expect(hintIndex(board, labels.length + 1)).toBe(-1);
+      }
+      expect(layouts.size).toBeGreaterThan(90);
+    },
+  );
+
+  it('names the directions at the start and shows recent stones and whose turn it is', () => {
+    const forward = alternatingLabels(11);
+    expect(alternatingSign(forward, 1)).toBe('Numbers up · Letters up');
+    expect(alternatingSign(forward, 2)).toBe('1 · ?   Letters');
+    expect(alternatingSign(forward, 7)).toBe('3 · C · ?   Numbers');
+    expect(alternatingSign(forward, 16)).toBe('G · 8 · ?   Letters');
+    const back = alternatingLabels(12);
+    expect(alternatingSign(back, 1)).toBe('Numbers up · Letters back');
+    expect(alternatingSign(back, 3)).toBe('1 · L · ?   Numbers');
+    expect(alternatingSign(back, 24)).toBe('B · 12 · ?   Letters');
+    expect(alternatingSign(back, 25)).toBe('12 · A · ?   Numbers');
   });
 });

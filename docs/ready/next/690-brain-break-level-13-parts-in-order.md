@@ -1,0 +1,1 @@
+**`brain-break` level 13, Parts in order** (grownup, Lantern Lodge; new level on an existing interaction: typecheck, rule tests, one scripted play and ghost finger at 13, upright screenshot of the short fraction and decimal labels). [Dive slice 5](../../deep-dives/brain-break.md#build-slices-in-order)
