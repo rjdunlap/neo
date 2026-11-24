@@ -1,1 +1,0 @@
-**`monster-munch` level 13, Even it out** (school, top of the school order; new interaction: typecheck, rule tests, one filtered scripted play of first and last level, one wrong answer, one hint, one portrait screenshot; level 5's hand back is built). [Dive](../../deep-dives/monster-munch.md#build-slices-in-order)
