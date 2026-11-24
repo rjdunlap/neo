@@ -20,6 +20,11 @@ export const VOICE = {
   ],
 
   'game.day-by-day': ['Day by Day!'],
+  'skies.first': ['Here is a sky picture. Is it sunny, cloudy or rainy? Tap the matching weather picture.'],
+  'skies.next': ['Here is another sky picture. Tap the weather picture that matches it.'],
+  'skies.record': ['Sky {n} is {weather}.'],
+  'skies.hint': ['Look at the sky picture. This sky is {weather}. Find the matching picture.'],
+  'skies.done': ['Three little skies! We matched sunny, cloudy and rainy.'],
   'week.place': [
     'Find {day} for our pretend week. Tap a card to hear its name, then tap the arrow to place it.',
   ],
