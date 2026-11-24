@@ -4,6 +4,8 @@ export const VOICE = {
 
   'song.free': ['Tap the jellies to make a song! Listen to it go round and round.'],
   'song.wake': ['Touch anywhere! The jelly sings, and more jellies wake up.'],
+  'song.compose': ['Make your very own song! Tap the jellies, and listen to it go round.'],
+  'song.compose.ready': ['Do you like your song? Press the check to hear it once more!'],
   'song.copy': ['Tap the shadow jellies to make the song!'],
   'song.card': ['Make your song look just like the little card!'],
   'song.pattern.stairs-up': ['This one goes up like stairs. Keep the song going the same way!'],

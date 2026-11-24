@@ -14,6 +14,7 @@ import {
   songPlan,
   songLayout,
   LEVELS,
+  composeReady,
   WAKE_AT,
   WAKE_ORDER,
   wakeTouch,
@@ -24,7 +25,9 @@ import { SCRIPT } from '../../content/voice-script';
 
 describe('Song Maker songs', () => {
   it('fit the grid, use one note per beat, and never sit on a single pitch', () => {
-    for (const plan of SONG_PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'wake')) {
+    for (const plan of SONG_PLANS.filter(
+      (p) => p.mode !== 'free' && p.mode !== 'wake' && p.mode !== 'compose',
+    )) {
       expect(ROW_STEPS[plan.rows]).toHaveLength(plan.rows);
       for (let seed = 1; seed <= 300; seed++) {
         const song = makeSong(plan, new Rng(seed));
@@ -232,7 +235,7 @@ describe('Song Maker songs', () => {
           const placed = new Set(song.given.map(key));
           const mine: string[] = [];
           for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
-            if (plan.mode !== 'free' && plan.mode !== 'wake')
+            if (plan.mode !== 'free' && plan.mode !== 'wake' && plan.mode !== 'compose')
               expect(song.notes.map(key), `${plan.name}: a right note`).toContain(key(n));
             expect(placed.has(key(n)), 'not tapped twice').toBe(false);
             mine.push(key(n));
@@ -240,7 +243,9 @@ describe('Song Maker songs', () => {
             expect(mine.length).toBeLessThanOrEqual(plan.cols * plan.rows);
           }
           expect(mine.length, plan.name).toBe(
-            plan.mode === 'free' || plan.mode === 'wake' ? plan.notes : song.notes.length - song.given.length,
+            plan.mode === 'free' || plan.mode === 'wake' || plan.mode === 'compose'
+              ? plan.notes
+              : song.notes.length - song.given.length,
           );
         }
       }
@@ -263,5 +268,42 @@ describe('Song Maker songs', () => {
         expect(y0 + cell * plan.rows).toBeLessThanOrEqual(v.h - 40);
       }
     }
+  });
+
+  describe('level 9, My song', () => {
+    const plan = songPlan(9);
+
+    it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
+      expect(SONG_PLANS).toHaveLength(9);
+      expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
+      const song = makeSong(plan, new Rng(1));
+      expect(song).toEqual({ notes: [], given: [] });
+      for (const band of ['preschool', 'prek', 'school'] as const) {
+        const order = levelsInOrder(LEVELS[band]!);
+        expect(order.at(-1), band).toBe(9);
+        expect(order).not.toContain(8);
+      }
+      for (const band of ['lap', 'toddler'] as const) expect(LEVELS[band]!.max).toBeLessThanOrEqual(8);
+    });
+
+    it('wakes the check only with at least three jellies lit and a whole loop played since the last change', () => {
+      for (let lit = 0; lit <= plan.cols * plan.rows; lit++)
+        for (let beats = 0; beats <= 2 * plan.cols; beats++)
+          expect(composeReady(plan, lit, beats), `${lit} lit, ${beats} beats`).toBe(
+            lit >= 3 && beats >= plan.cols,
+          );
+    });
+
+    it('has a ghost-finger bot that lights three different spots and so reaches the check', () => {
+      const song = freeSong(plan);
+      expect(song).toHaveLength(3);
+      expect(new Set(song.map(key)).size).toBe(3);
+      expect(composeReady(plan, song.length, plan.cols)).toBe(true);
+    });
+
+    it('speaks its two lines', () => {
+      expect(SCRIPT['song.compose']).toBeDefined();
+      expect(SCRIPT['song.compose.ready']).toBeDefined();
+    });
   });
 });

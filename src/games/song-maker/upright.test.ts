@@ -28,6 +28,7 @@ describe.each(Object.entries(views))('Song Maker upright on %s', (_, v) => {
               h: bar.cell,
             });
       }
+      if (plan.mode === 'compose') targets.push({ what: 'check', ...lay.replay, w: 100, h: 100 });
       if (plan.mode === 'listen') targets.push({ what: 'replay', ...lay.replay, w: 100, h: 100 });
       expect(uprightProblems(v, targets)).toEqual([]);
       // Every beat has a block, and the frames of all blocks (with their 14-unit margin) stay inside the view, apart.
