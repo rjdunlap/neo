@@ -17,6 +17,16 @@ export const VOICE = {
     'A shape still faces the wrong way. Look at the outlines, then turn and check again.',
   ],
   'tangram.repaired': ['You repaired the {picture}! Its shapes match their outlines now.'],
+  'tangram.flip': [
+    'One slanted shape is the wrong way round! Tap it. Turn it with the round arrow or flip it with the purple arrows, then tap the green check.',
+  ],
+  'tangram.flip-hint': [
+    'This glowing shape is the wrong way. Try the flip, or a turn, to match its outline.',
+  ],
+  'tangram.flip-try': [
+    'That slanted shape still leans the wrong way. A turn cannot make a mirror, but a flip can. Try again.',
+  ],
+  'tangram.flipped': ['You fixed the {picture}! Flipping made a mirror that turning never could.'],
   'tangram.fit': ['Build a {picture}! Drag each shape onto the shadow.'],
   'tangram.turn': [
     'Build a {picture}! Choose a shape, then tap the round arrow to turn it. The yellow button helps.',
@@ -28,4 +38,5 @@ export const VOICE = {
   'tangram.triangle': ['A triangle.'],
   'tangram.rectangle': ['A rectangle.'],
   'tangram.trapezoid': ['A trapezoid.'],
+  'tangram.parallelogram': ['A parallelogram.'],
 } satisfies Record<string, string[]>;

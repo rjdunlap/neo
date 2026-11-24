@@ -15,6 +15,8 @@ export interface TownLayout {
   turn: Pt;
   help: Pt;
   check: Pt;
+  /** Level 9's flip button, under the check (a repair round has no tray to share the column with). */
+  flip: Pt;
   /** Where each tray piece rests. */
   tray: Pt[];
   /** The cream tray panel behind them. */
@@ -32,6 +34,7 @@ export function townLayout(view: { w: number; h: number; upright?: true }, piece
   const turn = { x: w - 85, y: 250 };
   const help = { x: w - 85, y: 390 };
   const check = { x: w - 85, y: 530 };
+  const flip = { x: w - 85, y: 670 };
   if (!view.upright) {
     const xs = spread(pieces, 200, w - 65, 205);
     return {
@@ -39,6 +42,7 @@ export function townLayout(view: { w: number; h: number; upright?: true }, piece
       turn,
       help,
       check,
+      flip,
       tray: xs.map((x) => ({ x, y: h - 100 })),
       panel: { x: 175, y: h - 190, w: w - 205, h: 170 },
     };
@@ -54,5 +58,5 @@ export function townLayout(view: { w: number; h: number; upright?: true }, piece
     for (const x of xs) tray.push({ x, y });
   }
   const top = bottom - (rows - 1) * rowPitch - 100;
-  return { board, turn, help, check, tray, panel: { x: 175, y: top, w: w - 205, h: h - 20 - top } };
+  return { board, turn, help, check, flip, tray, panel: { x: 175, y: top, w: w - 205, h: h - 20 - top } };
 }

@@ -1,9 +1,11 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
-export type Shape = 'square' | 'roof' | 'triangle' | 'rectangle' | 'hull';
+export type Shape = 'square' | 'roof' | 'triangle' | 'rectangle' | 'hull' | 'parallelogram';
 export interface Piece {
   shape: Shape;
   turns: number;
+  /** Mirrored left to right before it is turned; only level 9 flips a piece, so a slot never sets it. */
+  flip?: boolean;
 }
 export interface Target extends Piece {
   x: number;
@@ -15,6 +17,8 @@ export const VERTICES: Record<Shape, number[]> = {
   triangle: [-70, -70, 70, -70, -70, 70],
   rectangle: [-100, -50, 100, -50, 100, 50, -100, 50],
   hull: [-100, -45, 100, -45, 60, 45, -60, 45],
+  /** Leans like a backslash: the one shape here that a mirror changes into something no turn can make. */
+  parallelogram: [-100, -50, 40, -50, 100, 50, -40, 50],
 };
 /** Each picture is a set of slots; the bounding box of all of them stays inside PICTURE_BOX so it clears the buttons and the tray. */
 export const PICTURES = {
@@ -133,6 +137,30 @@ export const PICTURES = {
     { shape: 'triangle', x: -120, y: 15, turns: 2 },
     { shape: 'triangle', x: 120, y: 15, turns: 3 },
   ],
+  kite: [
+    { shape: 'roof', x: 0, y: -65, turns: 0 },
+    { shape: 'parallelogram', x: 0, y: 55, turns: 0 },
+  ],
+  sled: [
+    { shape: 'parallelogram', x: 0, y: -10, turns: 0 },
+    { shape: 'hull', x: 0, y: 90, turns: 0 },
+  ],
+  scarf: [
+    { shape: 'parallelogram', x: 0, y: -75, turns: 0 },
+    { shape: 'rectangle', x: 0, y: 25, turns: 0 },
+  ],
+  dock: [
+    { shape: 'square', x: 0, y: -20, turns: 0 },
+    { shape: 'parallelogram', x: 0, y: 100, turns: 0 },
+  ],
+  step: [
+    { shape: 'square', x: -100, y: 50, turns: 0 },
+    { shape: 'parallelogram', x: 80, y: 50, turns: 0 },
+  ],
+  ramp: [
+    { shape: 'triangle', x: -100, y: 60, turns: 0 },
+    { shape: 'parallelogram', x: 80, y: 60, turns: 0 },
+  ],
 } as const satisfies Record<string, readonly Target[]>;
 export type PictureId = keyof typeof PICTURES;
 /** Picture names are spoken as "Build a {picture}!", so each starts with a consonant. */
@@ -146,6 +174,8 @@ export interface Plan {
   pool: readonly PictureId[];
   alternatives?: boolean;
   repair?: boolean;
+  /** A repair round that also has a flip button: the one wrong shape is the mirrored parallelogram. */
+  flip?: boolean;
 }
 export const PLANS: readonly Plan[] = [
   {
@@ -211,6 +241,14 @@ export const PLANS: readonly Plan[] = [
     repair: true,
     name: 'Find a shape facing the wrong way, turn it, then check the repaired picture',
   },
+  {
+    pool: ['kite', 'sled', 'scarf', 'dock', 'step', 'ramp'],
+    rotate: true,
+    outlines: true,
+    repair: true,
+    flip: true,
+    name: 'Flip a leaning shape to match its outline: a flip makes a mirror that no turn can',
+  },
 ];
 export const planFor = (l: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))];
 /** The level's rules with the picture this round draws from its pool. */
@@ -235,7 +273,7 @@ export function buildFor(level: number, rng: Rng): Build {
     : { ...plan, picture, targets: PICTURES[picture] };
 }
 export function sameOrientation(shape: Shape, a: number, b: number) {
-  const period = shape === 'square' ? 1 : shape === 'rectangle' ? 2 : 4;
+  const period = shape === 'square' ? 1 : shape === 'rectangle' || shape === 'parallelogram' ? 2 : 4;
   return (((a - b) % period) + period) % period === 0;
 }
 export function makePieces(build: Pick<Build, 'targets' | 'rotate'>, rng: Rng): Piece[] {
@@ -330,25 +368,67 @@ export function makeRepair(build: Pick<Build, 'targets'>, rng: Rng): Piece[] {
   pieces[i] = { ...p, turns: (p.turns + turn) % 4 };
   return pieces;
 }
+/** What a piece looks like once mirrored (if flipped) and turned: its corners, rounded and sorted, so two looks compare by eye. */
+function look(piece: Piece): string {
+  const turns = ((piece.turns % 4) + 4) % 4,
+    cos = [1, 0, -1, 0][turns],
+    sin = [0, 1, 0, -1][turns],
+    v = VERTICES[piece.shape],
+    out: string[] = [];
+  for (let i = 0; i < v.length; i += 2) {
+    const x = piece.flip ? -v[i] : v[i];
+    out.push(`${Math.round(x * cos - v[i + 1] * sin)},${Math.round(x * sin + v[i + 1] * cos)}`);
+  }
+  return out.sort().join(' ');
+}
+/** The mirror-aware rule: the same corners in the same places, however the piece got there (turns, a flip, or both). */
+export function looksSame(a: Piece, b: Piece): boolean {
+  return a.shape === b.shape && look(a) === look(b);
+}
 export function repairMismatches(targets: readonly Target[], pieces: readonly Piece[]): number[] {
-  return targets.flatMap((t, i) =>
-    !pieces[i] || t.shape !== pieces[i].shape || !sameOrientation(t.shape, t.turns, pieces[i].turns)
-      ? [i]
-      : [],
-  );
+  return targets.flatMap((t, i) => (!pieces[i] || !looksSame(t, pieces[i]) ? [i] : []));
+}
+/** The fewest presses that make `piece` look like `target`: a flip first when a mirror is the quicker way, then turns. */
+export function fixFor(piece: Piece, target: Piece): { flip: boolean; turns: number } | undefined {
+  let best: { flip: boolean; turns: number; cost: number } | undefined;
+  for (const flip of [false, true])
+    for (let turns = 0; turns < 4; turns++) {
+      const tried = {
+          shape: piece.shape,
+          flip: flip ? !piece.flip : !!piece.flip,
+          turns: piece.turns + turns,
+        },
+        cost = turns + (flip ? 1 : 0);
+      if (looksSame(tried, target) && (!best || cost < best.cost)) best = { flip, turns, cost };
+    }
+  return best && { flip: best.flip, turns: best.turns };
 }
 export function repairAction(
   targets: readonly Target[],
   pieces: readonly Piece[],
   selected: number | null,
-): { pick: number } | { turn: true } | { check: true } {
+): { pick: number } | { turn: true } | { flip: true } | { check: true } {
   const i = repairMismatches(targets, pieces)[0];
-  return i === undefined ? { check: true } : selected !== i ? { pick: i } : { turn: true };
+  if (i === undefined) return { check: true };
+  if (selected !== i) return { pick: i };
+  return fixFor(pieces[i], targets[i])?.flip ? { flip: true } : { turn: true };
+}
+/** Exactly one parallelogram is wrong: mirrored, turned a quarter, or both. Every other shape already fits. */
+export function makeFlipRepair(build: Pick<Build, 'targets'>, rng: Rng): Piece[] {
+  const pieces: Piece[] = build.targets.map((t) => ({ shape: t.shape, turns: t.turns }));
+  const i = rng.pick(build.targets.flatMap((t, k) => (t.shape === 'parallelogram' ? [k] : [])));
+  const wrong = [0, 1, 2, 3].flatMap((turns) =>
+    [false, true]
+      .map((flip) => ({ shape: pieces[i].shape, turns, flip }))
+      .filter((p) => !looksSame(p, build.targets[i])),
+  );
+  pieces[i] = rng.pick(wrong);
+  return pieces;
 }
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: 9 },
 };
