@@ -705,7 +705,7 @@ class MarketStall implements Game {
       const teach = teachLine(this.plan, this.firstWay);
       if (teach) await this.ctx.say(teach === 'swap' ? 'shop.hint.swap' : 'shop.hint.biggest');
       const want = target(this.plan, this.order);
-      // From a 20 the hint counts up: the change smallest first, so the count passes 15 on its way to 20.
+      // From a 20 the hint counts up: the change smallest first, so from below 15 the count passes 15 on its way to 20.
       const up = hintCountsUp(this.plan)
         ? countUpHint(this.order.prices[0], paidFor(this.plan), this.plan.coins)
         : null;

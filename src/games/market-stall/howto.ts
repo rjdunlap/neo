@@ -95,7 +95,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 11,
       to: 11,
-      text: 'Tap a coin on the mat to put it back. Giving back the price itself gets a reminder that they paid 20. Two misses show the change smallest coin first and count up from the price (13, 15, 20); any coins that make the change are right, not only the fewest. Help counts once per order.',
+      text: 'Tap a coin on the mat to put it back. Giving back the price itself gets a reminder that they paid 20. Two misses show the change smallest coin first and count up from the price (from 13: 15, 20); any coins that make the change are right, not only the fewest. Help counts once per order.',
     },
   ],
   finish: [

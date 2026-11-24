@@ -803,10 +803,10 @@ describe('Market Stall', () => {
           expect(at.y + c.y).toBeGreaterThanOrEqual(at.y + at.frame.y);
           expect(c.y + c.h).toBeLessThanOrEqual(at.frame.y + at.frame.h);
         }
-        // Below the tag (at -150, 88 tall) and right edge clear of the customer's coins (radius 44 at x 150).
+        // Below the tag (at -150, 88 tall), the cells clear of the customer's coins (radius 44 at x 150).
         expect(at.y + at.frame.y).toBeGreaterThanOrEqual(-150 + TAG.h / 2);
         for (const coin of paidCoins(paid))
-          expect(at.frame.x + at.frame.w).toBeLessThanOrEqual(coin.x - COIN_R[10]);
+          for (const c of at.cells) expect(c.x + c.w).toBeLessThanOrEqual(coin.x - COIN_R[10]);
       }
       expect(paidCoins(10)).toHaveLength(1);
       expect(paidCoins(20).map((c) => c.value)).toEqual([10, 10]);

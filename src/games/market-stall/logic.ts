@@ -455,10 +455,10 @@ export function stripLayout(paid: number) {
   const top = rows > 1 ? -h - gap / 2 : -h / 2;
   const cells = Array.from({ length: paid }, (_, i) => {
     const col = i % 10;
-    return { x: -105 + col * w + (col >= 5 ? 4 : 0), y: top + Math.floor(i / 10) * (h + gap), w, h };
+    return { x: -100 + col * w + (col >= 5 ? 4 : 0), y: top + Math.floor(i / 10) * (h + gap), w, h };
   });
   const height = rows * h + (rows - 1) * gap;
-  return { y: rows > 1 ? -84 : -88, cells, frame: { x: -109, y: top - 4, w: 212, h: height + 8 } };
+  return { y: rows > 1 ? -84 : -88, cells, frame: { x: -104, y: top - 4, w: 212, h: height + 8 } };
 }
 
 /** Where the customer's coins lie on the counter beside the goods: one 10, or two 10s for a 20 (there is no 20-coin). */
@@ -466,8 +466,8 @@ export const paidCoins = (paid: number) =>
   Array.from({ length: paid / 10 }, (_, i) => ({ value: 10, x: 150 + i * 14, y: -40 + i * 10 }));
 
 /**
- * The count-up hint at level 11: the fewest coins of change, smallest first, so counting up from the price passes 15 on the
- * way to 20 (13, then a 2 to 15, then a 5 to 20). Returns the coins and the stops said after the price.
+ * The count-up hint at level 11: the fewest coins of change, smallest first, so from a price below 15 the count passes 15 on
+ * its way to 20 (13, then a 2 to 15, then a 5 to 20). Returns the coins and the stops said after the price.
  */
 export function countUpHint(
   price: number,
