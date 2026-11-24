@@ -26,4 +26,13 @@ export const VOICE = {
   'brain.order.try': ['That one is {m}. A smaller one is still unlit.'],
   'brain.order.next': ['After {p}, find the next one up.'],
   'brain.order.hint': ['The smallest one left is {v}. Its stone has a golden outline.'],
+  'brain.two.start': [
+    'Follow two trails. Tap a number, then a letter. Start with one, then A. Count up and go forwards through the letters.',
+  ],
+  'brain.two.startBack': [
+    'Follow two trails. Tap a number, then a letter. Start with one, then L. Count up and go backwards through the letters.',
+  ],
+  'brain.two.try': ['That one is {m}. It is the {trail} trail’s turn. {step}.'],
+  'brain.two.next': ['It is the {trail} trail’s turn. {step}.'],
+  'brain.two.hint': ['Find {v}. Its stone has a golden outline.'],
 } satisfies Record<string, string[]>;
