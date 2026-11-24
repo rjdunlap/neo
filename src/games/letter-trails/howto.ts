@@ -25,7 +25,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 12,
       to: 12,
-      text: 'A little u, i, e, l, k, y or j between four lines. Follow the firefly: u, i, y and j go down from the middle line, l and k from the top line, and e starts in the middle and goes across first. i and j finish with a dot, and the k and y have two lines.',
+      text: 'A little u, i, e, l, k, y or j between four lines. Follow the firefly: e starts in the middle and goes across first. i and j finish with a dot.',
     },
   ],
   finish: [
