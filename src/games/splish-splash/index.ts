@@ -28,6 +28,7 @@ import {
   countsMisses,
   ENTRY_LEVELS,
   showAlpha,
+  CLUES,
   askedPhrase,
   cleanPhrase,
   IdleNudge,
@@ -515,7 +516,8 @@ class SplishSplash implements Game {
     if (fresh) this.help.ask();
     this.showAsked();
     const [a, b] = this.asked();
-    if (!b) await this.instruct('bath.part', { part: askedPhrase([a], this.words) });
+    if (this.plan.clues) await this.instruct('bath.clue', { clue: CLUES[a].clue });
+    else if (!b) await this.instruct('bath.part', { part: askedPhrase([a], this.words) });
     else
       await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', {
         a: askedPhrase([a], this.words),
@@ -667,7 +669,13 @@ class SplishSplash implements Game {
       this.glowAsked();
     }
     const [a, b] = this.asked();
-    if (this.plan.ordered && touched === b)
+    if (this.plan.clues)
+      void this.ctx.say(phraseOf(touched, this.words).plural ? 'bath.cluenos' : 'bath.clueno', {
+        touched: phraseOf(touched, this.words).word,
+        job: CLUES[touched].job,
+        clue: CLUES[a].clue,
+      });
+    else if (this.plan.ordered && touched === b)
       void this.ctx.say('bath.first', { a: askedPhrase([a], this.words), b: askedPhrase([b], this.words) });
     else
       void this.ctx.say(phraseOf(touched, this.words).plural ? 'bath.notthose' : 'bath.notthat', {
@@ -920,6 +928,7 @@ export const splishSplash: GameModule = {
     if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of the mess off, nothing to aim';
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
     if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
+    if (p.clues) return 'Find the body part by what it does: "wash what we hear with"';
     if (p.show) return 'Wash one body part at a time, shown with a sparkle as it is named: tummy, ears, head';
     return p.shuffle
       ? `Wash ${p.parts.length} body parts in a different order each round`

@@ -11,7 +11,7 @@
 | lap | 9, 1, 2 |
 | toddler | 1, 2, 10, 3, 4 |
 | preschool | 3–7 |
-| pre-K | 5–8 |
+| pre-K | 5, 6, 11, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 8 | Two-step directions in order: "first your nose, then your ears" |
 | 9 | Pat anywhere: each touch washes a bit of the mess off, nothing to aim |
 | 10 | Wash one body part at a time, shown with a sparkle as it is named: tummy, ears, head |
+| 11 | Find the body part by what it does: "wash what we hear with" |
 
 <!-- end generated -->
 

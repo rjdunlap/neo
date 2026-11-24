@@ -137,7 +137,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Ribbon Workshop](docs/games/ribbon-workshop.md) | school–grown-up | Counting Cove | 5 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |
 | [Paint Mixer](docs/games/paint-mixer.md) | school | Counting Cove | 6 | tap a pot to pour a drop into the bucket until its colour is the sample jar's, the way a recipe scales |
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
-| [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 10 | scrub mud off the pet |
+| [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 11 | scrub mud off the pet |
 | [Feelings Faces](docs/games/feelings-faces.md) | lap–school | Cozy Village | 13 | tap bubbles or poke the pet, choose a helper, compare two friends’ reactions, use a leftover clue, or ask a friend what they want |
 | [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–pre-K | Cozy Village | 10 | tap the sky to change the weather (four weathers) |
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |

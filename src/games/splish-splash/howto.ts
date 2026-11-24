@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'The pet asks for one body part at a time and it sparkles as it is named: rub a finger over it to wash it.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'The pet says what a body part does instead of its name, like "wash what we hear with": rub a finger over the part that fits.',
+    },
     { from: 7, to: 7, text: 'Rub a finger over each of the two body parts the pet names.' },
     { from: 8, to: 8, text: 'Wash the two body parts in the order the pet says: first one, then the other.' },
   ],
@@ -35,7 +40,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 10,
+      to: 11,
       text: 'The round ends when everything asked for is clean: the shower pops the foam and the pet shakes dry.',
     },
     {
@@ -54,6 +59,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Washing the wrong part just makes the pet giggle and repeats the request. Each part is named when it is clean. The toy on the left rim squeaks and says its name; the duck repeats the request.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Washing the wrong part makes the pet giggle and say what that part is for, then repeat the clue. The duck repeats the clue.',
+    },
     { from: 9, to: 9, text: 'The pet names each part at its first pat and again when it is clean.' },
     {
       from: 10,
@@ -62,7 +72,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 1,
-      to: 10,
+      to: 11,
       text: 'Each round picks a room: the bathroom (mud), the garden (mud and grass), the beach (sand), the art room (paint in a colour that shows on the pet) or the kitchen (jam).',
     },
   ],

@@ -19,6 +19,11 @@ export interface Plan {
    * nothing counts as a miss. A wrong part still giggles and repeats the request; the sparkle is not a hint.
    */
   show?: boolean;
+  /**
+   * What do we hear with? (dive level 9, built as level 11): each part is asked for by what it does, never by its name
+   * ("Wash what we hear with!"); a wrong part names what it is for. Misses and hints count as on the naming levels.
+   */
+  clues?: boolean;
   /** How much wider than `SCRUB_R` the brush is, so a palm-sized pat clears a palm-sized disc. */
   brush?: number;
 }
@@ -35,13 +40,15 @@ export const PLANS: Plan[] = [
   { mode: 'pat', parts: ['tummy', 'head', 'cheeks'] },
   // This one! plays between levels 2 and 3: level 3's questions, each shown with a sparkle as it is named.
   { mode: 'parts', parts: ['tummy', 'ears', 'head'], show: true },
+  // What do we hear with? plays in pre-K between levels 6 and 7: every part asked by what it is for.
+  { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks', 'nose'], shuffle: true, clues: true },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 9, order: [9, 1, 2] },
   toddler: { min: 1, max: 10, order: [1, 2, 10, 3, 4] },
   preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 8 },
+  prek: { min: 5, max: 11, order: [5, 6, 11, 7, 8] },
 };
 
 /** Pats it takes to wash one patch of mud off in `pat` mode. */
@@ -162,6 +169,18 @@ export const PHRASES: Record<Part, { word: string; plural: boolean }> = {
   cheeks: { word: 'cheeks', plural: true },
   ears: { word: 'ears', plural: true },
   nose: { word: 'nose', plural: false },
+};
+
+/**
+ * What each part is for, asked as a clue ("Wash what we hear with!") and told back when a wrong part is touched ("We smell
+ * with it."). Every clue is true of exactly one part in the bath, and none says the part's own word.
+ */
+export const CLUES: Record<Part, { clue: string; job: string }> = {
+  ears: { clue: 'what we hear with', job: 'We hear with them.' },
+  nose: { clue: 'what we smell with', job: 'We smell with it.' },
+  tummy: { clue: 'where our dinner goes', job: 'Our dinner goes in it.' },
+  head: { clue: 'where a hat sits', job: 'A hat sits on it.' },
+  cheeks: { clue: 'what goes pink when we giggle', job: 'They go pink when we giggle.' },
 };
 
 /** A bather's own words for some parts (the pig's nose is its snout); every other part reads from `PHRASES`. */
