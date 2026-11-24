@@ -1,6 +1,6 @@
 # Outcrop Detective, levels 1–2 (definition)
 
-**Built:** levels 1–2 (branch `claude/outcrop-detective-1`, PR number to be added at merge); nothing in this definition is unbuilt. Deviations and decisions are under “Build batch”. Later cases (a second dark rock, an erosion surface, a fault, two hidden contacts) need their own definitions.
+**Built:** levels 1–2 (branch `claude/outcrop-detective-1`, [PR #2067](https://github.com/rjdunlap/neo/pull/2067)); nothing in this definition is unbuilt. Deviations and decisions are under “Build batch”. Later cases (a second dark rock, an erosion surface, a fault, two hidden contacts) need their own definitions.
 
 Documentation packet, 2026-11-23, branch `claude/define-outcrop-detective`, [PR #2064](https://github.com/rjdunlap/neo/pull/2064). Earth-materials slice **E6** from the [study](../deep-dives/subjects/earth-materials.md#build-slices-in-order) and its [older and parent case](../deep-dives/subjects/earth-materials.md#outcrop-detective-one-older-and-parent-case). Proposed game `outcrop-detective`; nothing is registered or implemented. **Docs only.** One build batch follows below.
 
