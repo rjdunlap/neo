@@ -21,10 +21,16 @@ export const HOW_TO: GameHowTo = {
       text: 'Three jellies side by side in order, up or down, send a rainbow sparkle across the stage.',
     },
     { from: 4, to: 9, text: 'Listen to the tune, then tap the same jellies in the same order.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Listen to the tune, then tap the same jellies backwards: the last one first, the first one last.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after a number of notes.' },
     { from: 4, to: 9, text: 'The round ends when every tune has been copied.' },
+    { from: 11, to: 11, text: 'The round ends when every tune has been played backwards.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
   ],
   note: [
@@ -35,7 +41,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
-      to: 9,
+      to: 11,
       text: 'The yellow note button above the jellies plays the tune again whenever it is her turn. It counts no miss or hint. Some tunes are bits of real songs, named aloud.',
     },
   ],
