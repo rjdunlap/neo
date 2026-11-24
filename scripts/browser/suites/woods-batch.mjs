@@ -1261,6 +1261,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       ) {
         const twoBaskets = level === 10;
         const stickerCount = await page.evaluate(() => kit.store.data.stickers.length);
+        if (level === 13) {
+          await page.setViewportSize({ width: 390, height: 625 });
+          if (only === 'shop' && fromLevel === 13)
+            await page.evaluate(() => (kit.store.data.settings.showWords = true));
+        }
         if (twoBaskets) await page.setViewportSize({ width: 390, height: 844 });
         await launch('market-stall', level);
         const plan = await page.evaluate(() => ({
@@ -1317,6 +1322,81 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.deepEqual(await score('market-stall'), [2, 1]);
           log(
             `Market Stall ${level} (purse): a coin heard, the coin-count and near cards missed, the counted hint, saved score and sticker passed`,
+          );
+          continue;
+        }
+        if (plan.mode === 'trade') {
+          const counter = 'neo.scene.game.tradeCounter';
+          const bell = 'neo.scene.game.bell';
+          const heap = () => page.evaluate(() => neo.scene.game.tradeCounter.heap);
+          const pick = (i) => tap(`${counter}.coins[${i}].node`);
+          const trade = async (indices) => {
+            for (const i of indices) await pick(i);
+            await tap(`${counter}.exchange`);
+            await page.waitForFunction(() => !neo.scene.game.tradeCounter.busy);
+            await page.waitForTimeout(120);
+          };
+          await idle(0);
+          assert.deepEqual(await heap(), Array(10).fill(1));
+          // Use a valid eight-shell order to repeat the same stuck-heap exercise on every browser run.
+          await page.evaluate(() => {
+            const orders = neo.scene.game.orders;
+            orders[1].tradeAmount = 8;
+            if (orders[2].tradeAmount === 8) orders[2].tradeAmount = 9;
+          });
+          if (only === 'shop' && fromLevel === 13)
+            assert.equal(await page.evaluate(() => neo.scene.game.view.upright), true);
+          await screenshot('market-stall-13-upright');
+          await pick(0);
+          await tap(`${counter}.exchange`);
+          assert.deepEqual(await heap(), Array(10).fill(1), 'one coin cannot trade');
+          await pick(0);
+          await tap(bell);
+          await page.waitForTimeout(300);
+          assert.deepEqual(await counts(), [0, 0]);
+          await tap(bell);
+          assert.deepEqual(await counts(), [0, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.tradeCounter.hintGroup.length > 1));
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            if (n === 1) {
+              for (let i = 0; i < 4; i++) await trade([i, i + 1]);
+              assert.deepEqual(await heap(), [2, 2, 2, 2]);
+              for (let k = 0; k < 2; k++) {
+                await tap(bell);
+                await page.waitForTimeout(300);
+              }
+              assert.ok(await page.evaluate(() => neo.scene.game.tradeCounter.undoHint));
+              assert.deepEqual(await counts(), [0, 2]);
+              await tap(`${counter}.undo`);
+              assert.deepEqual(await heap(), [2, 2, 2, 1, 1], 'Undo restores the last pair of ones in place');
+              await pick(0);
+              await page.setViewportSize({ width: 844, height: 390 });
+              await page.waitForTimeout(400);
+              assert.deepEqual(await page.evaluate(() => [...neo.scene.game.tradeCounter.picked]), [0]);
+              await page.setViewportSize({ width: 390, height: 625 });
+              await page.waitForTimeout(400);
+              await pick(0);
+            }
+            for (let i = 0; i < 7; i++) {
+              const group = await page.evaluate(async () => {
+                const { nextTrade } = await import('/src/games/market-stall/trade-logic.ts');
+                return nextTrade(neo.scene.game.tradeCounter.heap);
+              });
+              if (!group) break;
+              await trade(group);
+            }
+            await tap(bell);
+          }
+          await page.waitForFunction(() => neo.scene.game.finished);
+          await tap(`${counter}.undo`);
+          assert.ok(await page.evaluate(() => neo.scene.game.tradeCounter.busy), 'final heap stays locked');
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [0, 2]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Market Stall 13: upright heap, unscored bells, helpful groups, stuck Undo, rotation, and one sticker',
           );
           continue;
         }

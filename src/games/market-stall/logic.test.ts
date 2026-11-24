@@ -27,6 +27,7 @@ import {
   paymentFor,
   payTouch,
   PLANS,
+  LEVELS,
   sameWay,
   sum,
   target,
@@ -65,7 +66,7 @@ import {
 } from './logic';
 
 /** Every level where she pays; the purse level asks for a total instead, and the afford level asks what a purse can buy. */
-const PAYING = PLANS.filter((p) => p.mode !== 'purse' && p.mode !== 'afford');
+const PAYING = PLANS.filter((p) => p.mode !== 'purse' && p.mode !== 'afford' && p.mode !== 'trade');
 
 describe('Market Stall', () => {
   it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
@@ -222,7 +223,7 @@ describe('Market Stall', () => {
   });
 
   it('describes only real levels and includes every plan in school', () => {
-    expect(marketStall.levels('school')).toEqual({ min: 3, max: PLANS.length });
+    expect(marketStall.levels('school')).toEqual(LEVELS.school);
     expect(marketStall.describeLevel(0)).toBeUndefined();
     expect(marketStall.describeLevel(PLANS.length + 1)).toBeUndefined();
   });
@@ -344,7 +345,7 @@ describe('Market Stall', () => {
   describe('a total she can see (TotoLogic P8)', () => {
     it('stays hidden on pair, change and purse levels', () => {
       expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10, 11]);
-      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12]);
+      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12, 13]);
     });
 
     it('is the sum of the coins on the counter, and nothing while the counter is empty', () => {
@@ -716,7 +717,7 @@ describe('Market Stall', () => {
       expect(paidFor(plan)).toBe(20);
       expect(paidFor(PLANS[5])).toBe(PAID);
       expect(plan.orders).toBe(3);
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: PLANS.length });
+      expect(marketStall.levels('school')).toEqual(LEVELS.school);
       expect(marketStall.describeLevel(11)).toBe(plan.name);
       expect(hintCountsUp(plan)).toBe(true);
       expect(PLANS.filter(hintCountsUp)).toEqual([plan]);
@@ -829,7 +830,7 @@ describe('Market Stall', () => {
 
     it('is the twelfth school level: two choose orders, then two spend orders', () => {
       expect(plan.mode).toBe('afford');
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: 12 });
+      expect(LEVELS.school?.order?.at(-1)).toBe(12);
       expect(marketStall.describeLevel(12)).toMatch(/^Can I buy it\?/);
       for (const orders of rounds)
         expect(orders.map((o) => o.afford.kind)).toEqual(['choose', 'choose', 'spend', 'spend']);

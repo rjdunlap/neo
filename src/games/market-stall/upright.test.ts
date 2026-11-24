@@ -13,6 +13,7 @@ import {
   shelfX,
   stallLayout,
 } from './logic';
+import { TRADE_CELL, TRADE_MAT, tradeButtons, tradeLayout, tradeSlot } from './trade-logic';
 
 /**
  * Market Stall held upright (chunk 31, docs/definitions/phone-portrait.md): every level on the upright phone views. The
@@ -29,6 +30,18 @@ describe.each(Object.entries(views))('Market Stall upright on %s', (_, v) => {
   it.each(PLANS.map((p, i) => [i + 1, p] as const))(
     'level %i: coins, mat and bell are whole, apart and clear',
     (_l, plan) => {
+      if (plan.mode === 'trade') {
+        const { cx, cy, awningTop } = tradeLayout(v);
+        expect(awningTop).toBeGreaterThanOrEqual(210);
+        const cells = Array.from({ length: 12 }, (_, i) => {
+          const { x, y } = tradeSlot(i);
+          return square(`trade coin ${i + 1}`, { x: cx + x, y: cy + 150 + y }, TRADE_CELL);
+        });
+        const buttons = tradeButtons(v).map((p, i) => square(`trade control ${i + 1}`, p, BELL_HIT + 28));
+        expect(uprightProblems(v, [...cells, ...buttons])).toEqual([]);
+        expect(cy + 150 + TRADE_MAT.h / 2).toBeLessThanOrEqual(v.h - 425);
+        return;
+      }
       const { cx, cy, stockX } = stallLayout(v);
       // A purse level has three number cards where the coins stand, and no bell; the afford level has no foot row, and its
       // three goods on the shelf (each with its tag) are the targets, with the bell on spend orders.

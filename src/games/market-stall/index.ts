@@ -72,6 +72,8 @@ import {
   type Order,
   type ShopPlan,
 } from './logic';
+import { TradeCounter } from './trade-counter';
+import { tradeButtons, tradeLayout, TRADE_MAT } from './trade-logic';
 
 const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
   { kind: 'apple', color: 'red', name: 'apple' },
@@ -197,6 +199,7 @@ class MarketStall implements Game {
   readonly purse: { value: number; node: Container }[] = [];
   readonly bell: RoundButton;
   readonly mat = new Container();
+  readonly tradeCounter: TradeCounter | null;
   index = -1;
   /** On 'ways' levels: the first way paid for this order, or null before it. */
   firstWay: number[] | null = null;
@@ -256,8 +259,6 @@ class MarketStall implements Game {
     this.keeper = new Critter(CRITTERS[STALLS[this.stallId].keeper]);
     this.keeper.scale.set(0.5);
     ctx.track(this.keeper);
-    this.mat.eventMode = 'static';
-    onTap(this.mat, (e) => this.takeBack(e), { cooldown: 120 });
     this.bell = new RoundButton(this.bellArt(), swatch.white, 56, () => void this.pay());
     this.ghost.eventMode = 'none';
     this.slate.eventMode = 'none';
@@ -272,6 +273,15 @@ class MarketStall implements Game {
     this.slate.visible = false;
     this.mat.addChild(this.slate);
     ctx.stage.addChild(this.backdrop, this.keeper, this.stall, this.goods, this.mat, this.ghost, this.bell);
+    this.tradeCounter =
+      this.plan.mode === 'trade' ? new TradeCounter(ctx, (value) => shopCoin(value, ctx.level), this) : null;
+    if (this.tradeCounter) {
+      ctx.stage.setChildIndex(this.keeper, ctx.stage.getChildIndex(this.stall) + 1);
+      this.mat.addChild(this.tradeCounter);
+      ctx.stage.addChild(this.tradeCounter.undo, this.tradeCounter.exchange);
+    } else {
+      onTap(this.mat, (e) => this.takeBack(e), { cooldown: 120 });
+    }
     this.glow
       .roundRect(-CARD_HIT.w / 2 - 14, -CARD_HIT.h / 2 - 14, CARD_HIT.w + 28, CARD_HIT.h + 28, 26)
       .fill({ color: swatch.yellow.fill, alpha: 0.85 });
@@ -282,8 +292,8 @@ class MarketStall implements Game {
     const counting = this.plan.mode === 'purse';
     this.bell.visible = !counting;
     if (counting) this.bell.eventMode = 'none';
-    // At the afford level the purse lies on the counter and nothing is added, so there is no foot purse row either.
-    for (const value of counting || this.plan.mode === 'afford' ? [] : this.plan.coins) {
+    // Afford and trade orders also begin with their own coins on the counter.
+    for (const value of counting || this.plan.mode === 'afford' || this.tradeCounter ? [] : this.plan.coins) {
       const node = shopCoin(value, ctx.level);
       node.scale.set(1.25);
       node.hitArea = new Circle(0, 0, 46);
@@ -310,15 +320,10 @@ class MarketStall implements Game {
     void this.next();
   }
 
-  private counterY() {
-    return stallLayout(this.view).cy;
-  }
-
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const cy = this.counterY();
-    const { cx, stockX, awningTop } = stallLayout(v);
+    const { cx, cy, stockX, awningTop } = this.tradeCounter ? tradeLayout(v) : stallLayout(v);
     const s = this.stall.clear();
     const awning = swatch[STALLS[this.stallId].awning];
     // An awning with stripes, two posts and a counter.
@@ -345,15 +350,25 @@ class MarketStall implements Game {
     s.rect(cx - 340, cy + 50, 680, 200)
       .fill(wood.light)
       .stroke({ width: 5, color: wood.line });
-    this.keeper.position.set(cx + 200, cy + 20);
+    this.keeper.position.set(cx + 200, cy + (this.tradeCounter ? 45 : 20));
     this.goods.position.set(stockX, cy);
     // The mat where coins go, on the front of the stall.
-    const mw = MAT_BOX.w;
-    this.mat.position.set(cx - 50, cy + 140);
-    this.mat.hitArea = new Rectangle(-mw / 2, -80, mw, MAT_BOX.h);
-    this.drawMat(mw);
-    this.layoutMat();
-    this.bell.position.set(cx + mw / 2 + 30, cy + 140);
+    if (this.tradeCounter) {
+      this.mat.position.set(cx, cy + 150);
+      this.slate.position.set(0, -127);
+      this.drawMat(TRADE_MAT.w, TRADE_MAT.h);
+      const [undo, exchange, bell] = tradeButtons(v);
+      this.tradeCounter.undo.position.set(undo.x, undo.y);
+      this.tradeCounter.exchange.position.set(exchange.x, exchange.y);
+      this.bell.position.set(bell.x, bell.y);
+    } else {
+      const mw = MAT_BOX.w;
+      this.mat.position.set(cx - 50, cy + 140);
+      this.mat.hitArea = new Rectangle(-mw / 2, -80, mw, MAT_BOX.h);
+      this.drawMat(mw, 140);
+      this.layoutMat();
+      this.bell.position.set(cx + mw / 2 + 30, cy + 140);
+    }
     const homes = purseFor(v, this.purse.length);
     this.purse.forEach((p, i) => p.node.position.set(homes[i].x, homes[i].y));
     this.ghost.position.set(this.mat.x, this.mat.y);
@@ -370,11 +385,11 @@ class MarketStall implements Game {
 
   private matArt = new Graphics();
 
-  private drawMat(w: number) {
+  private drawMat(w: number, h: number) {
     if (!this.matArt.parent) this.mat.addChildAt(this.matArt, 0);
     this.matArt
       .clear()
-      .roundRect(-w / 2, -70, w, 140, 26)
+      .roundRect(-w / 2, -h / 2, w, h, 26)
       .fill(swatch.green.light)
       .stroke({ width: 5, color: swatch.green.line });
   }
@@ -392,6 +407,7 @@ class MarketStall implements Game {
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
+    if (this.tradeCounter) return this.tradeCounter.touch(this.bell);
     if (this.order.afford) {
       const o = this.order as AffordOrder;
       if (o.afford.kind === 'choose') return { tap: { on: this.shelf[affordHint(o)].node } };
@@ -430,6 +446,13 @@ class MarketStall implements Game {
     this.cards.splice(0).forEach((c) => c.node.destroy({ children: true }));
     if (this.index >= this.orders.length) return void this.finale();
     const o = this.order;
+    if (this.tradeCounter && o.tradeAmount !== undefined) {
+      this.shownTotal = o.tradeAmount;
+      this.slate.visible = true;
+      this.slateNumber.text = String(o.tradeAmount);
+      this.busy = false;
+      return this.tradeCounter.start(o.tradeAmount);
+    }
     if (o.purse) this.layPurse(o.purse);
     this.goods.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.names = [];
@@ -751,6 +774,15 @@ class MarketStall implements Game {
 
   private async pay() {
     if (this.busy || this.finished) return;
+    if (this.tradeCounter && this.order?.tradeAmount !== undefined) {
+      this.busy = true;
+      if (await this.tradeCounter.check(this.order.tradeAmount)) {
+        await this.next();
+      } else {
+        this.busy = false;
+      }
+      return;
+    }
     if (this.order?.afford) {
       if (this.order.afford.kind === 'spend') await this.spendPay(this.order as AffordOrder);
       return;
