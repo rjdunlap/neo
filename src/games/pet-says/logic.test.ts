@@ -76,6 +76,14 @@ import {
   WALKS,
   walkLandmark,
 } from './logic';
+import {
+  HAND_COLORS,
+  HAND_LIT_TURNS,
+  HAND_MITTEN,
+  HAND_MOVES,
+  LEVELS as SAYS_LEVELS,
+  PLANS as SAYS_PLANS,
+} from './logic';
 import { CONCEPTS } from '../opposites/logic';
 
 describe('Pet Says', () => {
@@ -149,7 +157,8 @@ describe('Pet Says', () => {
         const turns = makeTurns(plan, new Rng(seed));
         expect(turns).toHaveLength(plan.turns);
         const flat = turns.flatMap((t) => t.moves);
-        if (plan.mode !== 'freeze') flat.slice(1).forEach((m, i) => expect(m).not.toBe(flat[i]));
+        if (plan.mode !== 'freeze' && plan.mode !== 'hand')
+          flat.slice(1).forEach((m, i) => expect(m).not.toBe(flat[i]));
         if (plan.mode === 'body') {
           for (const t of turns.slice(0, -1)) expect(BODY).toContain(t.moves[0]);
           expect(turns[turns.length - 1]).toEqual({ moves: [], chant: CHANT_VERSES });
@@ -379,6 +388,7 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       'walk',
       'opposite',
       'says-opposite',
+      'hand',
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
@@ -873,7 +883,7 @@ describe('Pet says, opposite (level 11, dive slice 10)', () => {
 
   it('extends only the school window and offers counted replay', () => {
     expect(plan.mode).toBe('says-opposite');
-    expect(LEVELS.school).toEqual({ min: 6, max: 11 });
+    expect(LEVELS.school).toEqual({ min: 6, max: 12 });
     expect(LEVELS.prek).toEqual({ min: 3, max: 10 });
     expect(ONCE_MORE_MODES).toContain(plan.mode);
   });
@@ -907,5 +917,59 @@ describe('Pet says, opposite (level 11, dive slice 10)', () => {
       }
     }
     expect(counts).toEqual(new Set([2, 3]));
+  });
+});
+
+describe('This hand (level 12)', () => {
+  const plan = planFor(12);
+  it('is a school level, and the earlier levels are unchanged', () => {
+    expect(plan.mode).toBe('hand');
+    expect(SAYS_PLANS).toHaveLength(12);
+    expect(SAYS_LEVELS.school?.max).toBe(12);
+    expect(SAYS_LEVELS.prek?.max).toBe(10);
+    for (let level = 1; level <= 11; level++)
+      expect(makeTurns(planFor(level), new Rng(3)).some((t) => t.hand)).toBe(false);
+  });
+
+  it('lights the hand first, then names left and right, with both sides in each stretch', () => {
+    for (let seed = 0; seed < 300; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(makeTurns(plan, new Rng(seed))).toEqual(turns);
+      expect(turns).toHaveLength(6);
+      const sides = turns.map((t) => t.hand!);
+      expect(sides.every((h) => h === 'left' || h === 'right')).toBe(true);
+      expect(sides.some((h, i) => i >= 2 && h === sides[i - 1] && h === sides[i - 2])).toBe(false);
+      const lit = turns.slice(0, HAND_LIT_TURNS);
+      const named = turns.slice(HAND_LIT_TURNS);
+      for (const group of [lit, named])
+        expect(new Set(group.map((t) => t.hand))).toEqual(new Set(['left', 'right']));
+      for (const t of lit) {
+        expect(t.named).toBeUndefined();
+        expect(t.moves).toEqual(['wave']);
+      }
+      for (const t of named) {
+        expect(t.named).toBe(true);
+        expect(t.moves).toHaveLength(1);
+        expect(HAND_MOVES).toContain(t.moves[0]);
+      }
+      expect(named.some((t) => t.moves[0] === 'ears')).toBe(true);
+      expect(named.some((t) => t.moves[0] === 'wave')).toBe(true);
+    }
+  });
+
+  it('keeps the mirror convention: left is the screen-left mitten, right the screen-right, in two colors', () => {
+    expect(HAND_MITTEN).toEqual({ left: 'left', right: 'right' });
+    expect(HAND_COLORS.left).not.toBe(HAND_COLORS.right);
+  });
+
+  it('says every line it asks for', () => {
+    for (const id of [
+      'says.hand',
+      'says.hand.this',
+      'says.hand.mirror',
+      'says.hand.wave',
+      'says.hand.ear',
+    ] as const)
+      expect(SCRIPT[id]?.length).toBeGreaterThan(0);
   });
 });
