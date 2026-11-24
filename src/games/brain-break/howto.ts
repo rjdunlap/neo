@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Some stones are fractions and some are decimals. Find the smallest one still unlit, such as 2/3 before 0.7.',
     },
     {
+      from: 14,
+      to: 14,
+      text: 'Each stone shows a sum, a take-away or a times. Work out what each makes and find the smallest answer still unlit; a lit stone shows its answer.',
+    },
+    {
       from: 11,
       to: 12,
       text: 'The sign shows up to two lit stones and whether a number or letter comes next.',
