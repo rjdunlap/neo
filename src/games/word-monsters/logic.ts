@@ -293,7 +293,16 @@ export const WORDS = [
   ...['sun', 'cup', 'rug', 'bus'],
 ] as const;
 export type Word = (typeof WORDS)[number];
-export const END_WORDS = ['cat', 'cap', 'can'] as const;
+export const END_WORDS = ['cat', 'cap', 'can', 'hat', 'dog', 'pig', 'cup'] as const;
+
+/** Spare endings form no word with the two letters already on the board. */
+const END_DECOYS = {
+  ca: ['h', 's', 'z'],
+  ha: ['b', 'f', 'v', 'z'],
+  do: ['f', 'h', 'z'],
+  pi: ['b', 'f', 'l', 'v'],
+  cu: ['g', 'h', 'l', 'n'],
+};
 /** Every word a building level can ask for; `pictures.ts` draws each one. */
 export const PICTURE_WORDS = [
   ...new Set([...WORDS, ...END_WORDS, ...RIMES.flatMap((rime) => FAMILIES[rime])]),
@@ -486,16 +495,13 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng, childName = ''): Ques
     return out;
   }
   if (plan.mode === 'end') {
-    for (const word of END_WORDS) {
-      // The first two letters are already in the slots. Only the answer makes a real word;
-      // the spare sounds cannot create another pictured word in this slot.
-      out.push({
-        answer: word,
-        fixed: word.slice(0, 2),
-        monsters: pickLetters(rng, plan.choices, [word[2]], ['x', 'z']),
+    return rng
+      .shuffle(Object.entries(END_DECOYS))
+      .slice(0, plan.rounds)
+      .map(([fixed, decoys]) => {
+        const answer = rng.pick(END_WORDS.filter((word) => word.startsWith(fixed)));
+        return { answer, fixed, monsters: pickLetters(rng, plan.choices, [answer[2]], decoys) };
       });
-    }
-    return rng.shuffle(out);
   }
   if (plan.mode === 'last') {
     // Each word in a round ends in a different letter, so the endings vary though most words end in t, g, n or p.

@@ -237,7 +237,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | --- | --- | --- |
 | Classic offline | 2026-11-23 · [Rain Garden level 6, rain again on wet ground](verification/2026-11-23-rain-garden-level-6-rain-again-on-wet-ground.md) | Production Classic shell, with 11 new voice clips fetched offline |
 | Root offline | 2026-11-22 · [Collection book and welcome goal](verification/2026-11-22-collection-book-and-welcome-goal.md) | Production root reload and saved collection |
-| Unit and type checks | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | Typecheck and 19 focused Bounce Back rule tests |
+| Unit and type checks | 2026-11-24 · [Word Monsters level 8 and sticker guards](verification/2026-11-24-word-monsters-level-8-and-sticker-guards.md) | Typecheck and 161 focused Word Monsters, how-to and registry tests |
 | Full unit suite and production build | 2026-11-23 · [Rain Garden level 5, three beds downhill](verification/2026-11-23-rain-garden-level-5-three-beds-downhill.md) | Full units and production build |
 | Formatting and lint | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | Scoped format and lint |
 | Test infrastructure | 2026-10-24 · [Quiet automated tests](archive/VERIFICATION-2026-10-24.md#2026-10-24--quiet-automated-tests) | Quiet unit and browser fixtures |

@@ -1,0 +1,1 @@
+**`bouncy-launch` notches, rising notes, puffs and skies** (levels 1–3; typecheck, unit tests, scripted play of levels 1–3, a portrait screenshot, Cloud Hopper `course.test.ts`). [Dive](../../deep-dives/bouncy-launch.md#build-slices-in-order)
