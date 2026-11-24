@@ -25,7 +25,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `boltboards` | 2026-11-21 · [Bolt Boards lap entry](verification/2026-11-21-bolt-boards-lap-entry.md) | `BOLT_BOARDS_CASE=lap` |
 | `bondbeads` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | — |
 | `bouncylaunch` | 2026-11-13 · [Bouncy Launch level 10, Where on the line?](verification/2026-11-13-bouncy-launch-level-10-where-on-the-line.md) | `LAUNCH_LEVEL=10` |
-| `brainbreak` | 2026-11-23 · [Brain Break levels 7-8 Count by](verification/2026-11-23-brain-break-levels-7-8-count-by.md) | — |
+| `brainbreak` | 2026-11-24 · [Brain Break levels 9-10](verification/2026-11-24-brain-break-levels-9-10.md) | — |
 | `bridgestouch` | 2026-11-18 · [Island Bridges sliding seas on an upright phone](verification/2026-11-18-island-bridges-sliding-seas-on-an-upright-phone.md) | — |
 | `buddies` | 2026-11-05 · [Shape Buddies level 8 Your friend, my friend (shape-buddies batch 6)](archive/VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-8-your-friend-my-friend-shape-buddies-batch-6) | Level 8 |
 | `bunnypatches` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | `BUNNY_ONLY=upright` |
