@@ -82,6 +82,7 @@ export function patchArt(
   h: number,
   pockets: { x: number; y: number; w: number; h: number }[],
   dir: 1 | -1,
+  wet = false,
 ): Graphics {
   const g = new Graphics();
   const tilt = 22 * dir; // the low side is toward the arrow
@@ -92,7 +93,7 @@ export function patchArt(
   const top = (x: number) => t + 16 + ((x - l) / w - 0.5) * tilt;
   const s = surface === 'soil' ? SOIL : STONE;
   g.poly([l, top(l), r, top(r), r, b, l, b])
-    .fill(s.fill)
+    .fill(wet ? 0x98714e : s.fill)
     .stroke({ width: 5, color: s.line, join: 'round' });
   if (surface === 'soil') {
     for (const [fx, fy] of [
@@ -107,6 +108,10 @@ export function patchArt(
       g.ellipse(p.x, p.y, p.w / 2, p.h / 2).fill({ color: 0x8a6240, alpha: 0.45 });
       dashedEllipse(g, p.x, p.y, p.w / 2, p.h / 2, 0xfff4e3, 4);
     }
+    if (wet)
+      g.moveTo(-24, h / 2 - 22)
+        .quadraticCurveTo(0, h / 2 - 12, 24, h / 2 - 22)
+        .stroke({ width: 4, color: WATER.light, cap: 'round' });
     // Grass and two little sprouts on top.
     g.poly([l, top(l) - 14, r, top(r) - 14, r, top(r) + 4, l, top(l) + 4])
       .fill(swatch.green.fill)
@@ -156,14 +161,15 @@ export function arrowArt(a: { x1: number; y1: number; x2: number; y2: number }):
 /** The pond tray with four dashed slots. */
 export function pondArt(pond: Box, slots: Box[]): Graphics {
   const g = new Graphics();
-  g.roundRect(pond.x - pond.w / 2, pond.y - pond.h / 2, pond.w, pond.h, pond.h / 2)
+  g.roundRect(pond.x - pond.w / 2, pond.y - pond.h / 2, pond.w, pond.h, Math.min(48, pond.h / 2))
     .fill(0xbfe3ff)
     .stroke({ width: 5, color: WATER.line });
   for (const s of slots) dashedEllipse(g, s.x, s.y, s.w / 2 - 2, s.h / 2 - 6, WATER.line, 3);
-  // Lily pad.
-  g.circle(pond.x + pond.w / 2 - 22, pond.y + pond.h / 2 - 12, 16)
-    .fill(swatch.green.fill)
-    .stroke({ width: 3, color: swatch.green.line });
+  // One-row trays have room for a lily pad to the side of the slots.
+  if (slots.length <= 6)
+    g.circle(pond.x + pond.w / 2 - 22, pond.y + pond.h / 2 - 12, 16)
+      .fill(swatch.green.fill)
+      .stroke({ width: 3, color: swatch.green.line });
   return g;
 }
 
@@ -473,4 +479,44 @@ export function needSignArt(
   }
   c.addChild(extra);
   return c;
+}
+
+/** A numbered-in-pictures shower marker for the cloud and its matching pond row. */
+export function showerBadge(count: 1 | 2): Graphics {
+  const badge = new Graphics()
+    .moveTo(-16, 14)
+    .bezierCurveTo(-32, 14, -32, -8, -17, -9)
+    .bezierCurveTo(-16, -26, 11, -27, 16, -10)
+    .bezierCurveTo(32, -10, 34, 14, 18, 14)
+    .closePath()
+    .fill(0xf0faff)
+    .stroke({ width: 3, color: WATER.line });
+  for (let i = 0; i < count; i++) badge.circle((i - (count - 1) / 2) * 16, 1, 5).fill(WATER.line);
+  return badge;
+}
+
+/** Compare two toy pond rows by looking at the number of drops in each. */
+export function predictionArt(more: boolean): Container {
+  const card = new Container();
+  card.addChild(
+    new Graphics()
+      .roundRect(-56, -56, 112, 112, 24)
+      .fill(swatch.blue.light)
+      .stroke({ width: 5, color: WATER.line }),
+  );
+  for (const y of [-22, 22]) {
+    card.addChild(
+      new Graphics()
+        .roundRect(-44, y - 17, 88, 34, 16)
+        .fill(0xf0faff)
+        .stroke({ width: 3, color: WATER.line }),
+    );
+    const count = y > 0 && more ? 3 : 1;
+    for (let i = 0; i < count; i++) {
+      const drop = dropArt(22);
+      drop.position.set(-26 + i * 25, y);
+      card.addChild(drop);
+    }
+  }
+  return card;
 }

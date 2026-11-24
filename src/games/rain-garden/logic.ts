@@ -78,7 +78,7 @@ export const flip = (s: Surface): Surface => (s === 'stone' ? 'soil' : 'stone');
 // ---- levels ----
 
 export interface Plan {
-  level: 1 | 2 | 3 | 4 | 5;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
   name: string;
 }
 export const PLANS: readonly Plan[] = [
@@ -87,15 +87,16 @@ export const PLANS: readonly Plan[] = [
   { level: 3, name: 'Change it and try again: the first rain is kept on a card to compare' },
   { level: 4, name: 'Two beds downhill: change the ground so the leaf bed gets two drops and the pond some' },
   { level: 5, name: 'Three beds downhill: leave enough rain for every marked bed and some for the pond' },
+  { level: 6, name: 'Rain twice: see where the second rain goes when the ground is already wet' },
 ];
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 export function planFor(level: number): Plan {
-  return PLANS[Math.max(1, Math.min(5, Math.round(level))) - 1];
+  return PLANS[Math.max(1, Math.min(6, Math.round(level))) - 1];
 }
 
 export type Friend = 'frog' | 'duck' | 'turtle';
@@ -371,14 +372,15 @@ export interface RouteTrial {
 
 /**
  * Rain `units` drops, one at a time, on socket 0. A drop stays in a socket with room; otherwise it follows that socket's
- * `down`, until it stays or reaches the pond. Every trial starts fresh.
+ * `down`, until it stays or reaches the pond. The starting storage is empty unless supplied.
  */
 export function runRoute(
   sockets: readonly Surface[],
   route: readonly Link[] = ROUTE4,
   units = SHOWER,
+  start: readonly number[] = sockets.map(() => 0),
 ): RouteTrial {
-  const stored = sockets.map(() => 0);
+  const stored = start.slice();
   let pond = 0;
   const steps: RouteStep[] = [];
   for (let unit = 0; unit < units; unit++) {
@@ -499,7 +501,7 @@ export function stepBed(sockets: readonly Surface[], board: RouteBoard): number 
 }
 
 export interface RouteRound {
-  level: 4 | 5;
+  level: 4 | 5 | 6;
   board: RouteBoard;
   start: Surface[];
   friend: Friend;
@@ -511,7 +513,17 @@ export interface RouteRound {
  * Level 4's authored board is soil over stone with the low bed marked; level 5's is board A from soil / soil / stone.
  * A seeded round picks its variant (level 4) or board (level 5), then one of its failing arrangements.
  */
-export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 = 4): RouteRound {
+export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 | 6 = 4): RouteRound {
+  if (level === 6) {
+    if (authored) return { level, board: board6(4), start: ['soil', 'soil'], friend: 'frog', mirror: false };
+    return {
+      level,
+      board: board6(rng.chance(0.5) ? 4 : 2),
+      start: rng.pick(ARRANGEMENTS).slice(),
+      friend: rng.pick(FRIENDS),
+      mirror: false,
+    };
+  }
   if (level === 5) {
     if (authored)
       return { level: 5, board: BOARDS5[0], start: ['soil', 'soil', 'stone'], friend: 'frog', mirror: false };
@@ -665,23 +677,119 @@ export function routeNext(
   return { kind: 'check' };
 }
 
+export const board6 = (units: 2 | 4): RouteBoard => ({
+  id: `wet${units}`,
+  route: ROUTE4,
+  fixed: [null, null],
+  marked: [],
+  units,
+});
+
+const rainOnWet = (first: RouteTrial, board: RouteBoard) =>
+  runRoute(first.sockets, board.route, board.units, first.stored);
+
+export function runTwo(sockets: readonly Surface[], board: RouteBoard): [RouteTrial, RouteTrial] {
+  const first = runBoard(sockets, board);
+  return [first, rainOnWet(first, board)];
+}
+
+export function compareWet(first: RouteTrial, second: RouteTrial) {
+  const reached = (t: RouteTrial, i: number) => t.steps.some((step) => step.path.includes(i));
+  return {
+    pond: second.pond > first.pond ? ('more' as const) : ('same' as const),
+    further:
+      second.pond === first.pond && second.sockets.some((_, i) => reached(second, i) && !reached(first, i)),
+  };
+}
+
+export type Prediction = ReturnType<typeof compareWet>['pond'];
+export type WetTarget = 'cloud' | 'leaf';
+export interface WetState {
+  sockets: Surface[];
+  first: RouteTrial | null;
+  second: RouteTrial | null;
+  prediction: Prediction | null;
+  sequences: number;
+  hints: number;
+  pointing: WetTarget | null;
+  finished: boolean;
+}
+
+export function wetFresh(round: RouteRound): WetState {
+  return {
+    sockets: round.start.slice(),
+    first: null,
+    second: null,
+    prediction: null,
+    sequences: 0,
+    hints: 0,
+    pointing: null,
+    finished: false,
+  };
+}
+
+const wetReset = (s: WetState): WetState => ({
+  ...s,
+  first: null,
+  second: null,
+  prediction: null,
+  pointing: null,
+});
+
+export function wetRain(s: WetState, round: RouteRound): WetState {
+  if (s.finished) return s;
+  if (s.second) return wetReset(s);
+  if (!s.first) return { ...s, first: runBoard(s.sockets, round.board), pointing: null };
+  return { ...s, second: rainOnWet(s.first, round.board), sequences: s.sequences + 1, pointing: null };
+}
+
+export function wetFlip(s: WetState, i: number): WetState {
+  if (s.finished || !s.sockets[i]) return s;
+  return { ...wetReset(s), sockets: s.sockets.map((surface, j) => (i === j ? flip(surface) : surface)) };
+}
+
+export function predict(s: WetState, prediction: Prediction): WetState {
+  return s.finished || !s.first || s.second ? s : { ...s, prediction };
+}
+
+export function wetRestart(s: WetState, round: RouteRound): WetState {
+  return s.finished ? s : { ...wetReset(s), sockets: round.start.slice() };
+}
+
+export const wetCanFinish = (s: WetState) => s.sequences > 0;
+export const wetNext = (s: WetState): WetTarget => (s.second ? 'leaf' : 'cloud');
+
+export function wetHint(s: WetState): WetState {
+  const pointing = wetNext(s);
+  return s.finished || s.pointing === pointing ? s : { ...s, pointing, hints: s.hints + 1 };
+}
+
+export function wetFinish(s: WetState): WetState {
+  return s.finished || !wetCanFinish(s) ? s : { ...s, finished: true };
+}
+
 const POSITION = ['top', 'middle', 'low'] as const;
 
 /**
  * Level 5's narration of a settled run, as clip ids said in turn: one per socket from the top while water reaches it
  * (the first socket it never reached is named once and the rest skipped), then the pond.
  */
-export function narration(t: RouteTrial, board: RouteBoard): string[] {
+export function narration(t: RouteTrial, board: RouteBoard, start?: readonly number[]): string[] {
+  const positions = t.sockets.length === 2 ? ['top', 'low'] : POSITION;
   const out: string[] = [];
   for (let i = 0; i < t.sockets.length; i++) {
     const f = board.fixed[i];
     if (!t.steps.some((st) => st.path.includes(i))) {
-      out.push(f ? `rain.${f}.none` : `rain.bed.${POSITION[i]}.none`);
+      out.push(f ? `rain.${f}.none` : `rain.bed.${positions[i]}.none`);
       break;
     }
     if (f === 'tree') out.push('rain.tree.kept');
     else if (f === 'path') out.push('rain.path.past');
-    else out.push(`rain.bed.${POSITION[i]}.${t.sockets[i] === 'soil' ? 'kept' : 'stone'}`);
+    else {
+      const surface = t.sockets[i];
+      const result = surface === 'stone' ? 'stone' : start?.[i] === CAPACITY.soil ? 'full' : 'kept';
+      out.push(`rain.bed.${positions[i]}.${result}`);
+    }
   }
   out.push(`rain.pond.${t.pond}`);
   return out;
@@ -700,6 +808,13 @@ export interface RouteLayout {
   bedSigns: Box[];
   pondSign: Box;
   check: Box;
+  wet?: WetPictures;
+}
+
+interface WetPictures {
+  predictions: [Box, Box];
+  rows: [Box[], Box[]];
+  badges: [Box, Box];
 }
 
 export const CHECK = 120,
@@ -789,6 +904,53 @@ function threeBeds(
   };
 }
 
+/** Level 6 uses the two-bed route with a two-row tray and room for both prediction pictures. */
+export function wetLayout(view: {
+  w: number;
+  h: number;
+  upright?: true;
+}): (RouteLayout & { wet: WetPictures }) | null {
+  const { w, h, upright } = view;
+  const fw = upright ? UW : FW;
+  const fh = upright ? UH : FH;
+  if (w < fw - 1 || h < fh - 1) return null;
+  const ox = (w - fw) / 2;
+  const oy = upright ? h - fh : (h - fh) / 2;
+  const at = (x: number, y: number, width: number, height: number) => box(ox + x, oy + y, width, height);
+  // On short phones the caption bubble sits between the beds and the tray.
+  // Sideways, the top bed stays above that bubble and the low bed sits to its right.
+  const top = at(upright ? 220 : 300, upright ? 470 : 260, BED_W, BED_H);
+  const low = at(upright ? 548 : 798, upright ? 523 : 465, BED_W, BED_H);
+  const pond = at(upright ? 548 : 823, upright ? 918 : 662, 320, 148);
+  const rows = (dy: number) =>
+    [-1.5, -0.5, 0.5, 1.5].map((k) => box(pond.x + 30 + k * 58, pond.y + dy, 56, 56));
+  const picture = (x: number) => at(x, upright ? 300 : 230, 120, 120);
+  return {
+    cloud: at(upright ? 220 : 300, upright ? 300 : 110, 260, 140),
+    beds: [top, low].map((patch) => ({ patch, pockets: pocketsOf(patch.x, patch.y, patch.w, patch.h) })),
+    arrows: [
+      {
+        x1: top.x + 138,
+        y1: top.y + 5,
+        x2: low.x - (upright ? 155 : 165),
+        y2: low.y + (upright ? -15 : -82),
+      },
+      { x1: low.x + 140, y1: low.y + 59, x2: low.x + 112, y2: pond.y - 80 },
+    ],
+    pond,
+    slots: rows(-31),
+    friend: { x: pond.x + (upright ? 160 : -115), y: pond.y - (upright ? 106 : 85) },
+    bedSigns: [],
+    pondSign: box(0, 0, 0, 0),
+    check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
+    wet: {
+      predictions: upright ? [picture(470), picture(610)] : [picture(660), picture(800)],
+      rows: [rows(-31), rows(31)],
+      badges: [box(pond.x - 130, pond.y - 31, 56, 56), box(pond.x - 130, pond.y + 31, 56, 56)],
+    },
+  };
+}
+
 /**
  * The board of levels 4 and 5. Level 4 sits in the 1024×768 frame: the cloud over the top bed, the low bed one terrace
  * down and across, the pond at the bottom of the downhill side; mirroring reflects it about x = 525 so the pond stays
@@ -801,6 +963,7 @@ export function routeLayout(
   mirror = false,
 ): RouteLayout | null {
   const { w, h } = view;
+  if (!b.marked.length) return wetLayout(view);
   if (b.route.length === 3) {
     if (view.upright) {
       if (w < UW - 1 || h < UH - 1) return null;
