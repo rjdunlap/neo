@@ -180,7 +180,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 1. **Guards and tunes** (built 2026-10-15 and 2026-10-17: distinct tunes, PR #362; the rest, PR #529 on `claude/jelly-drums-guards-tunes`, see the build note in the [archive](../archive/COMPLETED-2026-10-09.md#jelly-drums-slice-1-guards-and-tunes-2026-10-17)). **Open from it:** *Oh! Susanna* is not built (no source confirmed its phrases), so levels 7–8 draw shapes only; the invitation tune waits on decision 6.
 2. **Names, twists and co-play** (built 2026-11-03, PR #1155; see the [build note](../archive/COMPLETED-2026-10-09.md#jelly-drums-slice-2-names-twists-and-co-play-2026-11-03)). **Open from it:** per-band co-play lines (fresh 9) need a shell type change, and the scale sparkle lights no bulb (garland twinkle only).
-3. **Sound sets and stages** (ready; decision 8 for the second stage). Tier: rule tests (same pitches on every set), one landscape and one portrait screenshot per stage.
+3. **Sound sets and stages** (claimed 2026-11-23 on `claude/jelly-drums-sound-sets`; decision 8 settled: bells and a soft tone, a beach and a moon stage). Tier: rule tests (same pitches on every set), one landscape and one portrait screenshot per stage.
 4. **Resume where she was** (decision 4). Tier: rule tests and the same `originals` run (the browser suite expects `[2, 1]` and changes with this rule).
 5. **Level 10, Backwards** (decision 1). Tier: new level on an existing interaction: rule tests, one browser play of level 10, `fingerdemo` at it.
 6. **Level 11, Same or different?** Same tier, plus a portrait screenshot of the two buttons.
