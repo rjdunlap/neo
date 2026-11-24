@@ -54,6 +54,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `creations` | 2026-10-09 · [Quiet music-making games](archive/VERIFICATION-2026-10-07-13.md#quiet-music-making-games-2026-10-09) | Room tune plaque and music dip |
 | `creative` | 2026-11-24 · [Tangram Town level 9: Flip it (PR #2100)](verification/2026-11-24-tangram-town-level-9-flip-it.md) | `CREATIVE_ONLY=tangram TANGRAM_TAP=skip FROM_LEVEL=8` (also `fingerdemo` at level 9); Stamp Studio level 11 (PR #2080) passed earlier with `CREATIVE_ONLY=stamps STAMP_LEVELS=11` |
 | `critternot` | 2026-10-15 · [Critter Crossing visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | — |
+| `crittersortrules` | 2026-11-24 · [Critter Sort fresh rules](verification/2026-11-24-critter-sort-fresh-rules.md) | unit tests only; no browser play |
 | `crossword` | 2026-11-09 · [Crossword keeps the clue direction](archive/VERIFICATION-2026-11-09.md#2026-11-09--crossword-keeps-the-clue-direction-pr-1455) | — |
 | `cuestudio` | 2026-11-16 · [Cue Studio level 6, Pass the cue (P4c, PR #1726)](verification/2026-11-16-cue-studio-level-6-pass-the-cue-p4c-pr-1726.md) | `CUE_LEVELS=5,6` |
 | `cutalong` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, second session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-second-session.md) | `CUT_LEVELS=11` |

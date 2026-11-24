@@ -10,7 +10,8 @@ export const KIND_WORDS: Record<string, string> = {
   bunny: 'bunny',
 };
 
-export type Rule = 'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers' | PlantRule;
+export type Rule =
+  'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers' | 'pink' | 'orange' | 'yellow' | PlantRule;
 export type PlantRule = 'round' | 'pointyleaf' | 'spotted' | 'plain';
 export type Leaves = 'round' | 'pointy';
 export type Petals = 'spotted' | 'plain';
@@ -22,6 +23,9 @@ export const RULE_WORDS: Record<Rule, string> = {
   floppy: 'with floppy ears',
   pointy: 'with pointy ears',
   whiskers: 'with whiskers',
+  pink: 'pink',
+  orange: 'orange',
+  yellow: 'yellow',
   round: 'with round leaves',
   pointyleaf: 'with pointy leaves',
   spotted: 'with spotted petals',
@@ -77,6 +81,12 @@ export function fits(c: SortCritter, rule: Rule): boolean {
       return c.kind === 'pig' || c.kind === 'cat';
     case 'whiskers':
       return c.kind === 'cat' || c.kind === 'bunny';
+    case 'pink':
+      return c.kind === 'pig';
+    case 'orange':
+      return c.kind === 'cat';
+    case 'yellow':
+      return c.kind === 'duck';
     default:
       return false;
   }
