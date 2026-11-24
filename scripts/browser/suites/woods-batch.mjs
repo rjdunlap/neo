@@ -3402,9 +3402,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'go')
-      for (const level of [1, 2, 3, 4, 5, 6, 9, 10].filter((l) => l >= fromLevel)) {
-        await launch('stop-and-go', level);
-        const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+      for (const level of [1, 2, 3, 4, 5, 6, 7, 9, 10].filter((l) => l >= fromLevel)) {
+        await launch('stop-and-go', level, 'Mia', level === 7 ? 'school' : undefined);
+        const mode = await page.evaluate(() => neo.scene.game.plan?.mode ?? 'smart');
         const lightIs = (l) =>
           page.waitForFunction((l) => neo.scene.game.light.light === l, l, { timeout: 15000 });
         await page.waitForTimeout(500);
@@ -3446,6 +3446,34 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           for (let k = 0; k < 5; k++) {
             await anywhere(k + 1);
             await page.waitForTimeout(350);
+          }
+        } else if (mode === 'smart') {
+          // Smart light (school window): three rule cards; two wrong cards leave a car waiting (two misses, then the right card
+          // glows), the same cards can be tried again, and the right card clears a crossing; three crossings finish the round.
+          const idleAgain = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished, null, {
+              timeout: 40000,
+            });
+          const cardAt = (right, k = 0) =>
+            `neo.scene.game.cards.filter((c) => (c.rule === 'plate') === ${right})[${k}]`;
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 15000 });
+          assert.equal(await page.evaluate(() => neo.scene.game.cards.length), 3, 'three rule cards');
+          await screenshot('stop-and-go-7');
+          for (const k of [0, 1]) {
+            await tap(cardAt(false, k));
+            await page.waitForTimeout(500);
+            await idleAgain();
+            assert.equal(await page.evaluate(() => neo.scene.game.misses), k + 1, 'a wrong card is one miss');
+            assert.ok(
+              await page.evaluate(() => neo.scene.game.queue.ew.length + neo.scene.game.queue.ns.length > 0),
+              'the cars are back to try again',
+            );
+          }
+          assert.deepEqual(await counts(), [2, 1], 'two misses glow the right card, one hint');
+          for (let k = 0; k < 8 && !(await page.evaluate(() => neo.scene.game.finished)); k++) {
+            await tap(cardAt(true));
+            await page.waitForTimeout(500);
+            await idleAgain();
           }
         } else if (mode === 'wait') {
           // Wait for green: a two-lamp light; going on red only rumbles and says "wait!" (never a miss, never a hint).
@@ -3589,7 +3617,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           mode === 'toy' || mode === 'lamps' || mode === 'wait' ? [0, 0] : [2, 1],
         );
         log(
-          `Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'one big lamp turned by a touch anywhere (sky, lamp, grass) and the car tooting, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
+          `Stop and Go ${level} (${mode}): ${mode === 'smart' ? 'three rule cards, two wrong cards leaving a car waiting (two misses, the right card glowing), the same cards tried again, the right card clearing three crossings, saved score and sticker passed' : mode === 'lamps' ? 'one big lamp turned by a touch anywhere (sky, lamp, grass) and the car tooting, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
         );
       }
 
