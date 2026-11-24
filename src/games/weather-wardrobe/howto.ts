@@ -26,6 +26,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.',
     },
     {
+      from: 11,
+      to: 11,
+      text: 'The weather changes. Tap only the worn clothes that do not fit the new weather to take them off (rain boots and a raincoat still fit one other weather), then tap clothes for what is missing.',
+    },
+    {
       from: 10,
       to: 10,
       text: 'Look at each friend’s weather sign. Drag each of the four things to the friend whose weather it suits.',
@@ -45,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Dress both friends in each of three rounds. Each friend receives two things.',
     },
     { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'The round ends when the pet is dressed for the new weather, keepers included.',
+    },
   ],
   note: [
     {
@@ -57,6 +67,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'A wrong friend hands the item back and names why. Two misses glow one item and its friend, counting one hint per round. Dropping elsewhere is free; tapping a friend repeats the instruction.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Taking off something that still fits is a miss: it stays on and the pet says why. Two in a row wiggles the thing that should come off, counting one hint.',
     },
     {
       from: 9,

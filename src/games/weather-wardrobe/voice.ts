@@ -29,5 +29,10 @@ export const VOICE = {
   'weather.change.remove': [
     'The weather is changing to {weather}. Tap the clothes that do not fit to take them off.',
   ],
+  'weather.keep.remove': [
+    'The weather is changing to {weather}. Some clothes still fit! Take off only what does not fit.',
+  ],
+  'weather.keep.wrong': ['{item} for {weather} days too. Keep that on!'],
+  'weather.keep.hint': ['{pet} is wearing something that does not fit. Try the one that wiggles!'],
   'weather.change.add': ['Now it is {weather}. What should {pet} wear?'],
 } satisfies Record<string, string[]>;
