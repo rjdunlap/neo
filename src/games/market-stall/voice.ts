@@ -6,17 +6,23 @@ export const VOICE = {
   'shop.change': [
     'You keep the stall! The {fruit} costs {n}, and they paid 10. Count up from {n} to 10 as you give the change, then ring the bell.',
   ],
+  'shop.change20': [
+    'You keep the stall! The {fruit} costs {n}, and they paid 20. Count up from {n} to 20 as you give the change, then ring the bell.',
+  ],
   'shop.fewest': ['The {fruit} costs {n}. Pay with as few shell coins as you can, then ring the bell!'],
   'shop.again': ['Thank you! Now buy another one, and pay a different way!'],
   'shop.short': ['Not enough yet. It costs {n}.'],
   'shop.over': ['That is too much! It costs {n}.'],
   'shop.change.short': ['They need more change. The price and the change together make 10.'],
   'shop.change.over': ['That is too much change! The price and the change together make 10.'],
+  'shop.change20.short': ['They need more change. The price and the change together make 20.'],
+  'shop.change20.over': ['That is too much change! The price and the change together make 20.'],
   'shop.sameway': ['That is the same way as before! Try different coins.'],
   'shop.fewer': [
     'That pays {n}, but can you use fewer shells? Tap a shell on the mat to put it back, then try again.',
   ],
   'shop.price': ['That is the price. They paid 10. Give back what is left after paying for the fruit.'],
+  'shop.price20': ['That is the price. They paid 20. Give back what is left after paying.'],
   'shop.oneprice': ['That pays for one thing. Add both prices to pay for both.'],
   'shop.values': [
     'Count what each shell is worth, rather than how many coins you have. A two is worth two, and a five is worth five.',
@@ -33,6 +39,7 @@ export const VOICE = {
   'shop.hint': ['Here is one way to make it.'],
   'shop.hint.biggest': ['Try the biggest coin that fits first, then fill up what is left.'],
   'shop.hint.swap': ['Try different coins: swap a big coin for smaller ones, or smaller ones for a big one.'],
+  'shop.hint.countup': ['Count up from the price to 20: {n}.'],
   'shop.purse': ['How much is in the purse? Tap a coin to hear what it is worth, then tap the number.'],
   'shop.purse.coins': ['That is how many coins. Count what each one is worth.'],
   'shop.purse.near': ['So close! Count what each shell is worth once more.'],

@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–10 |
+| school | 3–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 8 | How much is in the purse? Count what each shell is worth, then tap the number |
 | 9 | Pay 11 to 20 with a ten-shell coin and smaller ones |
 | 10 | Two baskets to twenty: add two prices past ten, then pay |
+| 11 | Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change |
 
 <!-- end generated -->
 
