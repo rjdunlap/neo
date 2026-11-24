@@ -25,7 +25,7 @@
 
 **Starts as:** toddler–school
 
-**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5)
+**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5); the same rain twice, on dry and then wet ground (level 6, [defined](../definitions/rain-garden.md#level-6-rain-again-on-wet-ground-definition))
 
 ## Design notes
 
