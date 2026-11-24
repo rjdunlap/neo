@@ -1,1 +1,0 @@
-**`splish-splash` What do we hear with?** (the plan's level 9, now ID 11, since 9 and 10 are the entries; new levels on an existing interaction). [Dive](../../deep-dives/splish-splash.md#build-slices-in-order)
