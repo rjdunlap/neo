@@ -12,7 +12,10 @@ import {
   capacityPairs,
   capacityPour,
   capacityRepour,
+  capacityTaller,
   capacityTap,
+  describeFill,
+  isTrickyLevel,
   kindFor,
   startCapacity,
 } from './logic';
@@ -135,5 +138,58 @@ describe('Which holds more', () => {
     expect(fillDump.levels('toddler').order).not.toContain(7);
     for (const line of ['guess', 'pour', 'answer', 'spill', 'room', 'repour', 'done'])
       expect(SCRIPT).toHaveProperty(`fill.capacity.${line}`);
+  });
+});
+
+describe('Tricky pairs (level 8)', () => {
+  it('seeds three distinct pairs 15–30% apart where the eye misleads at least once and never always', () => {
+    const sides = new Set<number>();
+    for (let seed = 0; seed < 200; seed++) {
+      const pairs = capacityPairs(new Rng(seed), true);
+      expect(pairs).toEqual(capacityPairs(new Rng(seed), true));
+      expect(new Set(pairs.map((p) => [p.left, p.right].sort().join('/'))).size).toBe(3);
+      let tallerHoldsLess = 0;
+      for (const p of pairs) {
+        const a = CAPACITY_VESSELS[p.left].capacity,
+          b = CAPACITY_VESSELS[p.right].capacity;
+        const ratio = Math.max(a, b) / Math.min(a, b);
+        expect(ratio).toBeGreaterThanOrEqual(1.15);
+        expect(ratio).toBeLessThanOrEqual(1.3);
+        expect(capacityHeight(p.left)).not.toBeCloseTo(capacityHeight(p.right), 0);
+        if (capacityTaller(p) !== capacityMore(p)) tallerHoldsLess++;
+        sides.add(capacityMore(p));
+      }
+      expect(tallerHoldsLess).toBeGreaterThanOrEqual(1);
+      expect(tallerHoldsLess).toBeLessThan(3);
+    }
+    expect(sides.size).toBe(2);
+  });
+  it('plays level 7 unchanged, conserves water and finishes with no miss or hint', () => {
+    expect(capacityPairs(new Rng(5))).toEqual(capacityPairs(new Rng(5), false));
+    for (let seed = 0; seed < 50; seed++) {
+      const s = startCapacity(new Rng(seed), true);
+      for (let round = 0; round < 3; round++) {
+        const p = capacityPair(s),
+          total = CAPACITY_VESSELS[p.left].capacity;
+        capacityTap(s, 0);
+        capacityPour(s, 10);
+        expect(s.jug + s.cup + s.tray).toBeCloseTo(total, 10);
+        expect(s.tray > 1e-9).toBe(total > CAPACITY_VESSELS[p.right].capacity);
+        expect(capacityEvidence(s)).toBe(true);
+        capacityTap(s, capacityMore(p));
+      }
+      expect(s.done).toBe(true);
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
+  });
+  it('opens pre-K at the pouring level, routes to the capacity game and speaks what held more', () => {
+    expect(isTrickyLevel(8)).toBe(true);
+    expect(isTrickyLevel(7)).toBe(false);
+    expect(kindFor(8)).toBe('capacity');
+    expect(fillDump.bands).toContain('prek');
+    expect(fillDump.levels('prek')).toEqual({ min: 5, max: 8, order: [5, 7, 8] });
+    expect(fillDump.levels('preschool').order).not.toContain(8);
+    expect(describeFill(8)).toMatch(/Tricky/);
+    for (const line of ['shortmore', 'tallmore']) expect(SCRIPT).toHaveProperty(`fill.tricky.${line}`);
   });
 });

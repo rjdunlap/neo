@@ -1,1 +1,0 @@
-**`fill-dump` levels 8–9** (pre-K; decisions 1–2 settled, check Counting Cove's pre-K layout; level 8 has two answers, no "holds the same"; new levels: typecheck, rule tests, one browser play of each new level and `fingerdemo` at it). [Dive](../../deep-dives/fill-dump.md#build-slices-in-order)
