@@ -1,9 +1,9 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import type { Critter } from '../../art/critter';
 import { owlArt } from '../../art/animals';
-import { ink, swatch, wood, type ColorName } from '../../art/palette';
+import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop, Sun } from '../../art/scenery';
-import { puffs, shapePath, type ShapeKind } from '../../art/shapes';
+import { puffs, shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
@@ -17,14 +17,19 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   ENTRY_LEVELS,
   LEVELS,
+  MARK,
   NEST_REACH,
   allHome,
+  cardName,
   drawCardFor,
   farthest,
+  fits,
   hop,
   hops,
+  isShapeCard,
   judgeStone,
   makePath,
+  mismatchWords,
   owlOf,
   owlToHop,
   nestPointIn,
@@ -33,41 +38,55 @@ import {
   stoneLayout,
   stoneReach,
   stoneScale,
+  type Card,
   type OwlPlan,
   type Spot,
+  type Stone,
 } from './logic';
 
-/** Each stone color also has its own shape, so the match never rests on hue alone. */
-const MARK: Partial<Record<ColorName, ShapeKind>> = {
-  red: 'heart',
-  blue: 'circle',
-  yellow: 'star',
-  green: 'triangle',
-};
 const OWL_COLORS: ColorName[] = ['purple', 'brown', 'pink'];
 const OWL_SCALE = 0.3;
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
-function stoneArt(color: ColorName): Graphics {
-  const sw = swatch[color];
+/**
+ * A stone in its color with its shape on top. On the color levels the shape is a small light mark (every color has its
+ * own); on Color or shape it is a big white mark with an ink edge, read on any color, because it matters as much.
+ */
+function stoneArt(stone: Stone, bold = false): Graphics {
+  const sw = swatch[stone.color];
   const g = new Graphics()
     .ellipse(0, 6, 44, 20)
     .fill({ color: 0x000000, alpha: 0.18 })
     .ellipse(0, 0, 44, 22)
     .fill(sw.fill)
     .stroke(line(sw.line, 4));
-  const mark = MARK[color];
-  if (mark) {
-    const m = shapePath(new Graphics(), mark, 11).fill(sw.light);
-    m.scale.set(1, 0.7);
-    g.addChild(m);
-  }
+  const m = bold
+    ? shapePath(new Graphics(), stone.shape, 16).fill(0xffffff).stroke(line(ink, 3))
+    : shapePath(new Graphics(), stone.shape, 11).fill(sw.light);
+  m.scale.set(1, bold ? 0.8 : 0.7);
+  g.addChild(m);
   return g;
 }
 
-function cardFace(color: ColorName): Container {
-  const sw = swatch[color];
+/**
+ * The turned card. On the color levels it shows the color with its shape; on Color or shape it shows only one: a plain
+ * panel of the color, or a white panel with an ink-edged white shape, so neither card carries the other attribute.
+ */
+function cardFace(card: Card, plan: OwlPlan): Container {
   const c = new Container();
+  if (plan.mode === 'either' && isShapeCard(card)) {
+    c.addChild(
+      new Graphics()
+        .roundRect(-56, -76, 112, 152, 14)
+        .fill(0xffffff)
+        .stroke(line(ink, 6))
+        .roundRect(-44, -64, 88, 128, 10)
+        .fill(cream),
+      shapePath(new Graphics(), card, 34).fill(0xffffff).stroke(line(ink, 6)),
+    );
+    return c;
+  }
+  const sw = swatch[card as ColorName];
   c.addChild(
     new Graphics()
       .roundRect(-56, -76, 112, 152, 14)
@@ -76,7 +95,7 @@ function cardFace(color: ColorName): Container {
       .roundRect(-44, -64, 88, 128, 10)
       .fill(sw.fill),
   );
-  const mark = MARK[color];
+  const mark = plan.mode === 'either' ? undefined : MARK[card as ColorName];
   if (mark) c.addChild(shapePath(new Graphics(), mark, 30).fill(sw.light).stroke(line(sw.line, 4)));
   return c;
 }
@@ -107,19 +126,18 @@ type Hit = { kind: 'stone'; i: number } | { kind: 'owl'; i: number } | { kind: '
 const OWL_REACH = 62;
 const RING_REACH = 44;
 
-/** "red heart": the color and the shape a stone carries, so a spoken miss can name what was touched. */
-const stoneName = (color: ColorName) => (MARK[color] ? `${color} ${MARK[color]}` : color);
-
 class OwlWalk implements Game {
   readonly plan: OwlPlan;
-  readonly path: ColorName[];
+  readonly path: Stone[];
   readonly owls: Owl[] = [];
   readonly stones: Graphics[] = [];
   readonly deck = new Container();
   /** Takes every touch on the path: the nearest stone, owl or the nest is what was meant. */
   readonly touch = new Container();
   /** The card turned up this turn, or null. */
-  card: ColorName | null = null;
+  card: Card | null = null;
+  /** The cards turned so far, newest last: Color or shape never deals three of one kind in a row. */
+  private readonly dealt: Card[] = [];
   /** Whose turn it is: the child's, or the pet's (from level 2). */
   turn: 'child' | 'pet' = 'child';
   /** The owl she has picked to hop on the levels that ask which one (3 and 4). */
@@ -175,8 +193,8 @@ class OwlWalk implements Game {
     this.moon.circle(0, 0, 40).fill(swatch.yellow.light).circle(16, -10, 34).fill(swatch.purple.line);
     this.dawn.alpha = 0;
     this.sun.visible = false;
-    for (const color of this.path) {
-      const stone = stoneArt(color);
+    for (const s of this.path) {
+      const stone = stoneArt(s, this.plan.mode === 'either');
       stone.scale.set(stoneScale(this.plan));
       this.stones.push(stone);
     }
@@ -352,6 +370,7 @@ class OwlWalk implements Game {
       choose: 'owl.choose',
       farthest: 'owl.farthest',
       free: 'owl.free',
+      either: 'owl.either',
     } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
@@ -361,10 +380,10 @@ class OwlWalk implements Game {
     return this.owls.map((o, i) => (o.spot < this.path.length ? i : -1)).filter((i) => i >= 0);
   }
 
-  /** The owl the child's stone tap is for: her own on the first levels, the one she picked on the others. */
+  /** The owl the child's stone tap is for: the only one on the one-owl levels, her own on level 2, the one she picked on the others. */
   private actorOwl(): number | null {
     const spots = this.owls.map((o) => o.spot);
-    if (this.plan.mode === 'one' || this.plan.mode === 'free') return 0;
+    if (this.plan.owls === 1) return 0;
     if (this.plan.mode === 'turns') return owlOf(this.path, spots, 0);
     return this.selected;
   }
@@ -385,12 +404,13 @@ class OwlWalk implements Game {
     this.clearHint();
     const spots = this.owls.map((o) => o.spot);
     const assigned = this.plan.mode === 'turns' ? owlOf(this.path, spots, who === 'child' ? 0 : 1) : null;
-    const movers = this.plan.mode === 'one' ? [0] : assigned !== null ? [assigned] : this.moving();
-    const color = drawCardFor(this.plan, this.ctx.rng, this.path, spots, movers);
+    const movers = this.plan.owls === 1 ? [0] : assigned !== null ? [assigned] : this.moving();
+    const color = drawCardFor(this.plan, this.ctx.rng, this.path, spots, movers, this.dealt);
     this.card = color;
+    this.dealt.push(color);
     if (assigned !== null) this.setRing(assigned);
     sfx.whoosh();
-    const face = cardFace(color);
+    const face = cardFace(color, this.plan);
     face.scale.set(0, 1);
     this.shown.addChild(face);
     await this.ctx.tw.to(face.scale, { x: 1 }, { duration: 0.25, ease: ease.outBack });
@@ -551,7 +571,7 @@ class OwlWalk implements Game {
     const color = this.card;
     if (!color || this.busy) return;
     const mode = this.plan.mode;
-    if (mode === 'one' || mode === 'turns') {
+    if (mode === 'one' || mode === 'turns' || mode === 'either') {
       // These levels choose the stone, not the owl: tapping an owl (what the old game taught) is never a miss; it answers and the voice says what to tap.
       this.owls[i].critter.poke();
       void this.ctx.say('owl.tap-stone', { color });
@@ -607,10 +627,12 @@ class OwlWalk implements Game {
       await this.endTurn();
       return;
     }
-    const need = stoneName(color);
-    const have = tapped === 'nest' ? 'the nest' : `a ${stoneName(this.path[tapped])}`;
+    const need = cardName(this.plan, color);
     const lines = {
-      'wrong-color': () => this.ctx.say('owl.wrong-color', { have, need }),
+      mismatch: () => {
+        const w = mismatchWords(this.plan, this.path[tapped as number], color);
+        return this.ctx.say(w.line, { have: w.have, need: w.need });
+      },
       far: () => this.ctx.say('owl.far', { need }),
       behind: () => this.ctx.say('owl.behind', { color }),
       occupied: () => this.ctx.say('owl.occupied', { color }),
@@ -619,7 +641,11 @@ class OwlWalk implements Game {
     const to = hop(this.path, spots, i, color);
     await this.miss(
       lines[verdict],
-      () => this.showHint(to >= this.path.length ? 'nest' : to),
+      () => {
+        this.showHint(to >= this.path.length ? 'nest' : to);
+        // With no fireflies to scan by on Color or shape, the hint brings them to the right stone.
+        if (this.plan.mode === 'either' && to < this.path.length) this.twinkleOn([to]);
+      },
       async () => {
         await this.ctx.say('owl.together');
         await this.move(i);
@@ -661,11 +687,19 @@ class OwlWalk implements Game {
 
   /** Matching stones ahead of the owl twinkle with fireflies when a card turns: the set to look through, never the answer. */
   private twinkle(i: number) {
-    this.clearTwinkle();
     const spots = this.owls.map((o) => o.spot);
-    const light = swatch[this.card!].light;
+    const stones: number[] = [];
     for (let s = spots[i] + 1; s < this.path.length; s++) {
-      if (this.path[s] !== this.card || spots.includes(s)) continue;
+      if (fits(this.path[s], this.card!) && !spots.includes(s)) stones.push(s);
+    }
+    this.twinkleOn(stones);
+  }
+
+  private twinkleOn(stones: readonly number[]) {
+    this.clearTwinkle();
+    const card = this.card!;
+    const light = isShapeCard(card) ? swatch.yellow.light : swatch[card].light;
+    for (const s of stones) {
       for (let k = 0; k < 5; k++) {
         const g = new Graphics()
           .circle(0, 0, 15)
@@ -694,9 +728,10 @@ class OwlWalk implements Game {
   }
 
   private squash(stone: Graphics) {
+    const s = stoneScale(this.plan);
     void this.ctx.tw
-      .to(stone.scale, { x: 1.15, y: 0.8 }, { duration: 0.07 })
-      .then(() => this.ctx.tw.to(stone.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack }));
+      .to(stone.scale, { x: s * 1.15, y: s * 0.8 }, { duration: 0.07 })
+      .then(() => this.ctx.tw.to(stone.scale, { x: s, y: s }, { duration: 0.12, ease: ease.outBack }));
   }
 
   /** Hop by hop along the stones to the landing spot (or all the way home), counting the stones aloud. */
@@ -754,7 +789,7 @@ class OwlWalk implements Game {
       )
     )
       return this.finale();
-    if (this.plan.mode === 'one' || this.plan.mode === 'free') {
+    if (this.plan.owls === 1) {
       this.busy = false;
       return;
     }
@@ -775,7 +810,8 @@ class OwlWalk implements Game {
     const to = hop(this.path, spots, best, color);
     this.owls[best].glow.visible = true;
     if (to >= this.path.length) await this.ctx.say('owl.pet-nest', { color });
-    else if (this.plan.mode === 'turns') await this.ctx.say('owl.pet-look', { need: stoneName(color) });
+    else if (this.plan.mode === 'turns')
+      await this.ctx.say('owl.pet-look', { need: cardName(this.plan, color) });
     else await this.ctx.say('owl.pet-move', { color, n: to - spots[best] });
     // The pet touches the same place she would, so she sees the action she is learning.
     const at = this.targetPoint(to >= this.path.length ? 'nest' : to);
@@ -838,7 +874,8 @@ class OwlIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
     ['red', 'blue', 'yellow'].forEach((color, i) => {
-      const s = stoneArt(color as ColorName);
+      const cName = color as ColorName;
+      const s = stoneArt({ color: cName, shape: MARK[cName]! });
       s.position.set(-90 + i * 90, -10 - i * 18);
       c.addChild(s);
     });
@@ -875,7 +912,7 @@ export const owlWalk: GameModule = {
   titleLine: 'game.owl-walk',
   region: 'rainbow-meadow',
   challenge: 'logic',
-  skills: ['colors', 'taking turns', 'shared goals', 'comparing distances'],
+  skills: ['colors', 'shapes', 'taking turns', 'shared goals', 'comparing distances'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: ENTRY_LEVELS,
