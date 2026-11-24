@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–6 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077). Level 7's definition is in progress (claimed 2026-11-23, branch `claude/define-rain-garden-7`); it needs its [two-condition puzzle definition](../deep-dives/subjects/weather-water.md#build-slices-in-order).
+**Built:** levels 1–6 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077). Level 7 is [defined](#level-7-one-garden-for-two-rains-definition) (2026-11-23, not yet built); it was the [two-condition puzzle](../deep-dives/subjects/weather-water.md#build-slices-in-order).
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
@@ -569,3 +569,196 @@ None waits on the developer. Defaults this definition sets:
 - **Two rains, then the rewind:** a third rain would show nothing new (the beds are already full after the second at most); the sequence replays from fresh.
 - **Shower size 2 or 4, shown on the cloud:** the two-drop rounds make the "ran further" and "pond got two the second time" cases, so "make everything soil" is not one answer to remember.
 - **Source:** the [USGS runoff page](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff) recorded at level 4 says earlier rain's soil moisture changes runoff; that supports the direction of the comparison line ("already full, so more ran to the pond"), not the capacities. The building session reopens it and records the check in its verification entry, as decision 2 asks.
+
+## Level 7, *one garden for two rains* (definition)
+
+Defined 2026-11-23 as the weather-and-water study's [slice 7](../deep-dives/subjects/weather-water.md#build-slices-in-order), from the [ladder's level-7 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden). Docs only: no code, voice line or art exists yet. One build session, new-level tier ([Level 7 check tier](#level-7-check-tier)): the interaction is level 5's (flip beds, rain, Check) with a second rain on the same board, and the two rain cards are new.
+
+**Fun action and purpose:** the three-bed slope of level 5, but two rain cards hang beside it: a **light shower** (four drops) and a **big storm** (six drops). Each card has its own signs: which beds must keep two, and for the storm what the pond must get. She flips beds, taps a card to see that rain fall on her garden, and checks. The Check runs **both** rains, each on dry ground, and marks each card with a tick or a cross. The learning purpose is **designing for two conditions at once**: a garden that is right for the light shower can be wrong for the storm and the other way round, and the answer is the one layout both cards accept. Revising after a cross on one card, without breaking the other, is the skill; no single rule ("make the marked beds soil") answers every board.
+
+**Overlap, rechecked:** level 6 keeps the ground wet between two showers; at level 7 **every rain starts on dry ground** and nothing carries over (the ladder's "each from a fresh state"), so the two levels stay distinct, and evaporation and drying are still not modeled (Drop's Journey). Level 5 has one rain and one set of needs; here the rain and the needs change with the card. The arrows stay fixed and she never draws a route (Water Paths and Puddle Pipes keep routing). Telling two hidden rules apart from a trace is level 8, and nothing here is hidden: both cards' needs can be read on screen at any time.
+
+### The model, level 7
+
+- **The board** is level 5's three-socket chain (`ROUTE5`) with **all three beds tappable** (stone ↔ soil, capacities 0 and 2): no tree's bed, no stone path, no mirroring. Fixed sockets are left out on purpose: with a fixed bed the two-card boards collapse to one forced answer or to nested cards (every candidate was enumerated; the [decisions](#level-7-decisions) say why).
+- **Two cards**, always the same two rains: `light` (**4** drops) and `storm` (**6**). Each card carries its needs: `marked` (one or two beds that must keep **exactly 2**, with level 5's markers: a lone marked bed carries the leaf, two carry the leaf uphill and the flower below) and a **pond rule**:
+  - `any` (the light shower always): the pond has no need; four drops cannot flood anything, and no pond sign is drawn.
+  - `reach`: the pond gets **at least 1** (level 4–5's rule, its sign as built).
+  - `hold`: the pond gets **at most 2** ("the garden holds back the storm"; its sign shows the pond's first two slots outlined and a bar across the tray after the second).
+  The storm's pond rule is `reach` on boards A–C and `hold` on D–F.
+- **Judging:** `meets(trial, card)` extends level 5's with the pond rule (`pondOk(rule, pond)`); level 4–5 boards keep `reach`, so their results do not change. `checkCards(sockets, board)` runs each card fresh with `runBoard` (the same `runRoute` from zero storage) and returns `{ light, storm }`, each `{ trial, beds: boolean[], pond: boolean }`.
+- **Solutions:** `solutions7(board)` is the **intersection**: every arrangement of the three beds that meets both cards. `nearest` and `stepBed` are level 5's over that set (fewest flips; ties go to the first in enumeration order, top socket first, stone before soil; fixed sockets do not exist, so every bed can glow).
+- **Cause:** a failed Check names the **first failing card** (light before storm) and one cause on it: `dry` (the uphill-most marked bed that did not keep two), then `pond` (the pond got none, a `reach` card), then `over` (the pond got more than two, a `hold` card). The other card's tick or cross still shows.
+- **Round state** (`TwoRainState`): `sockets`, `active: 'light' | 'storm'`, `trials: [RouteTrial | null, RouteTrial | null]` (previews since the last flip), `verdicts: [boolean | null, boolean | null]` (the last Check's ticks), `current` busy flag as level 4, `checked` (arrangement key of the last failed Check), `misses`, `hints`, `glow`, `glowShown`, `pointing`, `passed`.
+  - `pickCard(s, id)`: sets `active`; free, allowed at any time, never touches sockets, trials or counts.
+  - `previewRain(s)`: runs the active card from dry ground and stores its trial. Previews are unlimited and never carry storage from the other card or from an earlier preview.
+  - `flip(s, i)`: flips bed `i`, clears both trials and both ticks (a changed garden has no stale verdict) and keeps `active`.
+  - `check(s, round)`: runs both cards, sets `verdicts`; pass when both pass; on a miss the first failing card becomes `active` and its rain plays as the trace. Miss counting is level 4–5's: one miss per failed Check on an arrangement not already counted; checking it again counts nothing; from the second miss the glow shows `stepBed`, counting one hint the first time.
+- **Nothing carries:** no state function except `flip` changes sockets; the cards' rains never share storage; a new round, Start again and a flip all clear previews and ticks.
+
+### The six boards
+
+All six use the light shower (4) and the storm (6). Each table lists **every one of the eight arrangements**, what each bed kept in each rain, the pond, and why it fails; they are the rule tests' expected values (generated by enumerating the model, then read back by hand). Counting from the statistics below: seven or six arrangements fail on every board, and on every board **some arrangements fail only the light card and some only the storm card**, so a layout that pleases one rain is never automatically right.
+
+| Board | Light needs | Storm needs | Answers | Fails light only / storm only / both | Most flips from a failing start |
+| --- | --- | --- | --- | --- | --- |
+| **A**, *Top for the light* (authored) | top | middle, pond reach | soil / soil / stone | 2 / 3 / 2 | 3 |
+| **B**, *Skip the middle* | low | top, pond reach | soil / stone / soil | 2 / 2 / 3 | 3 |
+| **C**, *Middle then low* | middle | low, pond reach | stone / soil / soil | 2 / 3 / 2 | 3 |
+| **D**, *Hold back the storm* | top | low, pond hold | soil / stone / soil; soil / soil / soil | 1 / 2 / 3 | 2 |
+| **E**, *Middle and top* | middle | top, pond hold | soil / soil / stone; soil / soil / soil | 1 / 2 / 3 | 2 |
+| **F**, *Leaf and flower in the light* | top and middle | low, pond hold | soil / soil / soil | 2 / 1 / 4 | 3 |
+
+"Kept" lists the top, middle and low bed in that order; "ok" is a met need.
+
+**A, *Top for the light*** (authored first board; **starts soil / soil / soil**: the light shower passes, the storm's pond gets none, and flipping the low bed to stone fixes it). One answer.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | top dry | 0, 0, 0 | 6 | middle dry | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | top dry | 0, 0, 2 | 4 | middle dry | fails both |
+| stone / soil / stone | 0, 2, 0 | 2 | top dry | 0, 2, 0 | 4 | ok | fails light |
+| stone / soil / soil | 0, 2, 2 | 0 | top dry | 0, 2, 2 | 2 | ok | fails light |
+| soil / stone / stone | 2, 0, 0 | 2 | ok | 2, 0, 0 | 4 | middle dry | fails storm |
+| soil / stone / soil | 2, 0, 2 | 0 | ok | 2, 0, 2 | 2 | middle dry | fails storm |
+| **soil / soil / stone** | 2, 2, 0 | 0 | ok | 2, 2, 0 | 2 | ok | **passes** |
+| soil / soil / soil | 2, 2, 0 | 0 | ok | 2, 2, 2 | 0 | pond got none | fails storm |
+
+**B, *Skip the middle*** (light: low bed; storm: top bed and pond some). One answer.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | low dry | 0, 0, 0 | 6 | top dry | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | ok | 0, 0, 2 | 4 | top dry | fails storm |
+| stone / soil / stone | 0, 2, 0 | 2 | low dry | 0, 2, 0 | 4 | top dry | fails both |
+| stone / soil / soil | 0, 2, 2 | 0 | ok | 0, 2, 2 | 2 | top dry | fails storm |
+| soil / stone / stone | 2, 0, 0 | 2 | low dry | 2, 0, 0 | 4 | ok | fails light |
+| **soil / stone / soil** | 2, 0, 2 | 0 | ok | 2, 0, 2 | 2 | ok | **passes** |
+| soil / soil / stone | 2, 2, 0 | 0 | low dry | 2, 2, 0 | 2 | ok | fails light |
+| soil / soil / soil | 2, 2, 0 | 0 | low dry | 2, 2, 2 | 0 | pond got none | fails both |
+
+**C, *Middle then low*** (light: middle bed; storm: low bed and pond some). One answer.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | middle dry | 0, 0, 0 | 6 | low dry | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | middle dry | 0, 0, 2 | 4 | ok | fails light |
+| stone / soil / stone | 0, 2, 0 | 2 | ok | 0, 2, 0 | 4 | low dry | fails storm |
+| **stone / soil / soil** | 0, 2, 2 | 0 | ok | 0, 2, 2 | 2 | ok | **passes** |
+| soil / stone / stone | 2, 0, 0 | 2 | middle dry | 2, 0, 0 | 4 | low dry | fails both |
+| soil / stone / soil | 2, 0, 2 | 0 | middle dry | 2, 0, 2 | 2 | ok | fails light |
+| soil / soil / stone | 2, 2, 0 | 0 | ok | 2, 2, 0 | 2 | low dry | fails storm |
+| soil / soil / soil | 2, 2, 0 | 0 | ok | 2, 2, 2 | 0 | pond got none | fails storm |
+
+**D, *Hold back the storm*** (light: top bed; storm: low bed, and the pond gets **at most 2**). Two answers: the middle may be either.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | top dry | 0, 0, 0 | 6 | low dry, pond over | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | top dry | 0, 0, 2 | 4 | pond over | fails both |
+| stone / soil / stone | 0, 2, 0 | 2 | top dry | 0, 2, 0 | 4 | low dry, pond over | fails both |
+| stone / soil / soil | 0, 2, 2 | 0 | top dry | 0, 2, 2 | 2 | ok | fails light |
+| soil / stone / stone | 2, 0, 0 | 2 | ok | 2, 0, 0 | 4 | low dry, pond over | fails storm |
+| **soil / stone / soil** | 2, 0, 2 | 0 | ok | 2, 0, 2 | 2 | ok | **passes** |
+| soil / soil / stone | 2, 2, 0 | 0 | ok | 2, 2, 0 | 2 | low dry | fails storm |
+| **soil / soil / soil** | 2, 2, 0 | 0 | ok | 2, 2, 2 | 0 | ok | **passes** |
+
+**E, *Middle and top*** (light: middle bed; storm: top bed, pond at most 2). Two answers: the low bed may be either.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | middle dry | 0, 0, 0 | 6 | top dry, pond over | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | middle dry | 0, 0, 2 | 4 | top dry, pond over | fails both |
+| stone / soil / stone | 0, 2, 0 | 2 | ok | 0, 2, 0 | 4 | top dry, pond over | fails storm |
+| stone / soil / soil | 0, 2, 2 | 0 | ok | 0, 2, 2 | 2 | top dry | fails storm |
+| soil / stone / stone | 2, 0, 0 | 2 | middle dry | 2, 0, 0 | 4 | pond over | fails both |
+| soil / stone / soil | 2, 0, 2 | 0 | middle dry | 2, 0, 2 | 2 | ok | fails light |
+| **soil / soil / stone** | 2, 2, 0 | 0 | ok | 2, 2, 0 | 2 | ok | **passes** |
+| **soil / soil / soil** | 2, 2, 0 | 0 | ok | 2, 2, 2 | 0 | ok | **passes** |
+
+**F, *Leaf and flower in the light*** (light: top bed (leaf) and middle bed (flower); storm: low bed, pond at most 2). One answer, and it is every bed: this is where "more soil" is right because the storm must be held.
+
+| Top / middle / low | Light kept | Light pond | Light | Storm kept | Storm pond | Storm | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stone / stone / stone | 0, 0, 0 | 4 | top dry, middle dry | 0, 0, 0 | 6 | low dry, pond over | fails both |
+| stone / stone / soil | 0, 0, 2 | 2 | top dry, middle dry | 0, 0, 2 | 4 | pond over | fails both |
+| stone / soil / stone | 0, 2, 0 | 2 | top dry | 0, 2, 0 | 4 | low dry, pond over | fails both |
+| stone / soil / soil | 0, 2, 2 | 0 | top dry | 0, 2, 2 | 2 | ok | fails light |
+| soil / stone / stone | 2, 0, 0 | 2 | middle dry | 2, 0, 0 | 4 | low dry, pond over | fails both |
+| soil / stone / soil | 2, 0, 2 | 0 | middle dry | 2, 0, 2 | 2 | ok | fails light |
+| soil / soil / stone | 2, 2, 0 | 0 | ok | 2, 2, 0 | 2 | low dry | fails storm |
+| **soil / soil / soil** | 2, 2, 0 | 0 | ok | 2, 2, 2 | 0 | ok | **passes** |
+
+Every light-shower pond is 4, 2 or 0 and never needs a rule: the light card's pond line is `any` by design. On the light shower the third bed in a chain of soils gets nothing (soil / soil / soil keeps 2, 2, 0): the water runs out, as at level 5's board F. Seeded rounds pick a board uniformly from all six, then a starting arrangement uniformly among that board's failing ones, so the authored start (A, soil / soil / soil) is one of A's seven.
+
+### Screen and controls, level 7
+
+- **Level 5's board, unchanged:** beds 300×130, cloud 260×140 over the top bed, the pond tray (six slots), need signs 140×110 beside the beds the **active card** marks, the pond sign only when the active card has a pond rule, the Check 120×120 top-right. Changing the card redraws the signs and the cloud's dashed drops (4 or 6) in place; the beds' ground and any previews stay.
+- **Two card buttons**, 120×120 each, as new targets: the **light shower** (a small pale cloud with four dashed drops) and the **big storm** (a dark cloud with six). Under the cloud each card shows its needs as small pictures (the leaf and flower markers, and for the storm the pond rule's mark), so the card not being shown is still readable; these pictures are not targets. Touch-down squashes a card; the active one lifts and lights. After a Check each card wears a tick or a cross (24 px, not a target).
+- **Built coordinates, frame centers, measured 2026-11-23** by a scratch test applying level 5's layout-test rules at its eight views (landscape, portrait, phone, notch, and four upright), with the real level 5 layout and every mark set that appears on the boards (one or two marked beds at any sockets):
+  - Upright on a phone (768×1024 frame hung from the bottom edge): light card (470, 200), storm card (610, 200). They sit right of the cloud (which ends at x = 390) and below the Check (the view's top-right corner box), clear of every sign position and of Home's and the guide's corners.
+  - Landscape (1024×768 frame, centered): light card (620, 115), storm card (760, 115), right of the cloud, left of the Check, above the top bed's sign.
+  - Result of that run: **no overlap, nothing outside the view and both corners clear, at all eight views and every mark set.** The builder copies the numbers into `routeLayout`'s three-bed branch for the two-card boards and extends level 5's layout test to level 7 (two card targets, at least 100 each, no overlap with any target, sign or the pond; signs for every mark set), and a view that cannot hold the board returns null rather than shrink.
+- **The leaf** (120×120, where the Check sits) appears after a passing Check, as at levels 4–5.
+- **Pace:** the storm's six drops use level 5's pace (0.7, each drop leaving the cloud 0.45 s after the last); the light shower's four use level 4's. Taps during a rain are ignored; nothing is timed.
+
+### Accounting, help and finishing, level 7
+
+- **Previews, card picks, flips and Start again are free**; a card pick during a rain is ignored, not queued. No automatic stop and no timer.
+- **A failed Check counts one miss** (a gentle boing, then the card's line and the trace of the first failing card's rain with the failing sign wobbling); checking the same arrangement again counts nothing. **From the second miss** the bed to change glows (`stepBed` over the intersection), counting one hint the first time it lights, and the glow follows the arrangement after flips.
+- **Show me** (pause sheet) does the next useful step: flip `stepBed`'s bed (1 hint per request), or point at the Check once the garden passes (counting only if newly pointed, as at levels 1–5). At most **three** worked steps reach an answer (boards D and E need at most two), so assisted completion is always available; finishing with help earns the ordinary one sticker.
+- **Finish:** the leaf ends the round through `ctx.finish({ misses, hints })`, once. School's range becomes 3–7, so level 7 is its top and stepping up clamps there. A struggling round is four or more misses or two hints, as in the shell; a smooth round (at most one miss, no hints) means she managed both cards, and the grown-ups' note says that a hint-free round is not mastery of designing for conditions.
+
+### Speech, level 7 (`voice.ts`)
+
+Each rain is narrated with level 5's clip chain (one clip per bed from the top while water reaches it, then the pond clip); no new bed or pond clip is needed (`rain.pond.6` fires for the storm's all-stone case). New lines (10, rendered to clips by the build; none has a slot):
+
+- `rain.instruct.7`: "A light shower and a big storm are both coming. Change the beds so one garden works for both. Tap a card to see its rain, then tap the check."
+- `rain.card.light`: "The light shower: four drops." / `rain.card.storm`: "The big storm: six drops." (said when she picks a card, once per pick, and before a trace.)
+- After a failed Check, the boing, then a line for what failed: `rain.miss7.light` "This garden doesn't work for the light shower yet." / `rain.miss7.storm` "This garden doesn't work for the big storm yet." / `rain.miss7.both` "Neither rain works yet. Look at each card." For `both` the first failing card (light) is traced and named by its cause line.
+- The cause (of the first failing card): `rain.cause.dry` "A bed this card needs stayed dry. Look where the water stayed." / `rain.cause.pond` "The pond got none. The beds kept every drop." / `rain.cause.over` "Too much ran into the pond. The garden needs to hold back more of the storm."
+- `rain.check.yes.cards`: "Both rains work in this garden. Every need met!"
+- Reused: `rain.glow`, `rain.hint.flip`, `rain.hint.check`, `rain.done`, `rain.again`, `rain.hint.cloud`.
+
+No line says that gardens "drink", that real gardens work this way, how storms should be handled, or anything about flooding safety; "kept", "stayed dry", "held back" and "ran into the pond" stay the toy's words.
+
+### Rule tests, level 7 (`logic.test.ts`)
+
+1. **Tables:** for all six boards and all eight arrangements, `checkCards` returns the tables' kept lists, ponds and per-card results exactly; the answer sets are exactly as tabled (`solutions7`), and all six answers are valid under both cards' `meets`.
+2. **Conservation:** for every arrangement, card and step, `released = sum(stored) + pond`; each rain has its card's units steps; each unit appears once; every stored amount and pond count is even.
+3. **Both rains matter:** on every board some arrangement fails only the light card and some only the storm card; no board's answer set is empty, and the intersection is a proper subset of each card's own answer set.
+4. **Fresh every time:** a card's trial starts from zero storage whatever ran before; previews of both cards in any order give identical results to a fresh `checkCards`; `flip` clears both trials and both ticks; Start again and a new round clear previews, ticks, glow and counts as at level 5.
+5. **Pond rules:** `pondOk` is true for `any` always, for `reach` iff pond ≥ 1 and for `hold` iff pond ≤ 2; levels 4–5's boards give unchanged `meets` results.
+6. **Causes:** `dry` is the uphill-most failing marked bed on the first failing card, then `pond`, then `over`; the light card is judged first; a pass has no cause.
+7. **Accounting:** a failed Check counts one miss; the same arrangement again counts none; the glow appears from the second miss and counts one hint once; `stepBed` over the intersection always names a bed that moves toward a nearest answer; from any failing arrangement at most three flips reach an answer (two on D and E); picks, previews and flips never count.
+8. **Narration and lines:** each rain's chain ends with the pond clip matching its pond and never names a bed below the first one the water missed; every new line id exists in `voice.ts` and every clip id used exists.
+9. **Seeding:** the authored round is board A starting soil / soil / soil; seeded rounds draw a board from all six and a starting arrangement from its failing ones; every seeded round is solvable and starts failing.
+10. **Layout:** level 7 at the eight views, as measured above.
+
+### Code the builder must widen
+
+`meets` and `Verdict` assume one `board.marked` and a pond need of "at least 1": level 7 needs the per-card pond rule (`any`, `reach`, `hold`) and the `over` cause. `RouteRound.level` is `4 | 5` (and level 6 has its own state), so level 7 gets its own round and `TwoRainState` rather than level 4's Check state. `routeLayout`'s three-bed branch needs the card targets (`cards` in `RouteLayout`, null on other levels) and the level-7 layout must keep returning null instead of shrinking. `route.ts` draws one set of signs for one rain: level 7 redraws the signs, the pond sign and the cloud's drops when the active card changes, and draws card buttons with tick and cross badges. `planFor` and `LEVELS` stop at 6: `PLANS` gains "Two rains: change the beds so one garden works for both a light shower and a big storm", and `LEVELS` school becomes `{ min: 3, max: 7 }`. The browser fixture's upright switch (`FROM_LEVEL` 5 or more) already covers 7.
+
+### Ghost finger, how-to card and registration, level 7
+
+- **Ghost finger** on the authored round (A, starting soil / soil / soil): tap the **storm** card, tap the cloud (all six run through: the pond gets none), tap the **low** bed (flip to stone), tap the cloud (the pond gets two), tap the **light** card, tap the cloud (the top two beds keep two), tap the Check (both ticks), tap the leaf. `fingerdemo` at level 7 must end on the leaf.
+- **How-to card**, `{ from: 7, to: 7 }` steps: "Two rains are coming, a light shower and a big storm. Tap a card to see its rain fall on the garden and what that card needs."; "Tap a bed to change its ground. Try both rains, then tap the check: it tries both and marks each card."; "A cross on one card says which need failed. A change that fixes one rain can break the other." Finish: "Tap the leaf when both cards are ticked." Note: "A pretend model: soil holds two drops, stone none, and each rain starts on dry ground. Real rain gardens vary; this only compares two rains. The first failed check counts one miss; Show me counts as help." The builder keeps the card under the how-to test's 840-character cap, shortening the note before any step.
+- **Bands:** school 3–7 (no grown-up band: [decision](#level-7-decisions)). Tinker Lab, unchanged; no new game, so no lands change.
+- **Co-play:** one person picks a card and says what it needs; the other flips a bed; then swap and check together.
+
+### Level 7 check tier
+
+New-level tier, one build session: typecheck and the rule tests above (plus the how-to, voice and layout tests); one scripted play of the `raingarden` browser case filtered to level 7 on an upright phone (`FROM_LEVEL=7`): the authored round, one preview of each card, one wrong Check (a cross on the storm card, assert `misses` 1 and the ticks), a second wrong Check on a different arrangement (assert the glow and `hints` 1), one requested hint, then the passing Check and the leaf, asserting `misses` and `hints` as counted. One upright phone screenshot with a tick and a cross on the cards. `fingerdemo` at level 7. `npm run build` and the offline check, because voice lines and their clips are added. Levels 1–6's passing evidence is reused.
+
+Device and person checks stay parked: whether a school child reads the two rain cards and ticks as "one garden, two conditions", and whether "hold back" is clear in phone speech.
+
+### Level 7 decisions
+
+None waits on the developer. Defaults this definition sets:
+
+- **Three free beds, no fixed bed:** every free-and-fixed variation was enumerated, and with a tree's bed or a stone path the cards either force one arrangement for both rains or one card's answers contain the other's, so there is nothing to reconcile. The six boards are the ones where each card has answers the other rejects.
+- **The light shower has no pond rule:** a four-drop rain with a marked bed cannot send more than two to the pond, so a rule there would never bind; the storm carries the pond rule (`reach` or `hold`), where it does.
+- **Hold means at most two, the toy's invented bound:** it is not a design standard, a capacity of a real garden or flood-safety advice; the grown-ups' note and the unchanged "pretend model" wording say so. The [EPA green-infrastructure guide](https://www.epa.gov/green-infrastructure/types-green-infrastructure) recorded at level 4 supports only the direction (a garden holds back some runoff); the building session reopens it and records the check in its verification entry.
+- **Fresh ground every time:** the two cards never share storage, so the wet-ground comparison stays level 6's and "which rain is first" can never matter.
+- **No grown-up band yet:** the ladder's "grown-up 7–8" window waits for a grown-up band decision; level 7 joins the school window like levels 4–6.
+- **Light before storm:** when both cards fail, the light card is traced first because its need is the simpler one to read; the storm's cross still shows.
