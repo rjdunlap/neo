@@ -800,4 +800,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Workshop Detective](games/workshop-detective.md)
 
+### Outcrop Detective
+
+*school–grown-up* · [Outcrop Detective](games/outcrop-detective.md)
+
 <!-- end generated -->

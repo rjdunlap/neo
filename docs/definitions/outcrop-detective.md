@@ -1,5 +1,7 @@
 # Outcrop Detective, levels 1–2 (definition)
 
+**Built:** levels 1–2 (branch `claude/outcrop-detective-1`, [PR #2067](https://github.com/rjdunlap/neo/pull/2067)); nothing in this definition is unbuilt. Deviations and decisions are under “Build batch”. Later cases (a second dark rock, an erosion surface, a fault, two hidden contacts) need their own definitions.
+
 Documentation packet, 2026-11-23, branch `claude/define-outcrop-detective`, [PR #2064](https://github.com/rjdunlap/neo/pull/2064). Earth-materials slice **E6** from the [study](../deep-dives/subjects/earth-materials.md#build-slices-in-order) and its [older and parent case](../deep-dives/subjects/earth-materials.md#outcrop-detective-one-older-and-parent-case). Proposed game `outcrop-detective`; nothing is registered or implemented. **Docs only.** One build batch follows below.
 
 ## What you do
@@ -94,7 +96,7 @@ So the hidden contact decides between the two stories either way, and the seed d
 
 ## Build batch
 
-1. **`outcrop-detective 1`, levels 1–2.** The new game: the cliff, the story frame and Play, the ribbon, Check, for-sure, the looks and lens, the hint walk and the close.
+1. **`outcrop-detective 1`, levels 1–2.** **Built** on `claude/outcrop-detective-1`. The new game: the cliff, the story frame and Play, the ribbon, Check, for-sure, the looks and lens, the hint walk and the close.
 
    **Checks:** typecheck and unit tests, which cover:
    - the preview rule: `predict` for all 24 ribbons (stack order, cut or covers per layer), including X first and X last;
@@ -105,6 +107,15 @@ So the hidden contact decides between the two stories either way, and the seed d
    - accounting: one miss per distinct wrong ribbon per record state, re-checks free, swaps, Play, previews and incomplete actions never counted; each for-sure and look miss as listed; glow once per step;
    - the seeded draw: patterns, side, opening ribbon (always in the two-hint set) and the hidden truth vary across seeds, and both hidden truths occur;
    - voice coverage, the layout test (four landscape views and `UPRIGHT_VIEWS`, every target ≥ 100), and registry, lands and paging.
+
+   **As built, deviations from the sections above:**
+   - The bottom row shows only the current step's controls, not every control at once.
+   - The sideways layout puts the ribbon in two numbered rows of two in a right column. Both changes were forced by the caption bubble and the 768-wide upright screen.
+   - Drag-to-swap is not built: she taps a card to lift it and taps another to swap.
+
+   **As built, decisions:**
+   - At level 1 a wrong *Not enough to tell* plays the first ribbon in the fixed order, with the A, B, C stack that breaks a contact, and her ribbon stays as she left it.
+   - At level 2 a second wrong *Yes* swaps back to the first story, free.
 
    **Model wording:** the building session checks the sign, the how-to line and the grown-ups' wording against reputable sources (a geological survey, a university or museum page), lists them in the study and records the check in its verification entry. The rules stay labelled as the island's.
 

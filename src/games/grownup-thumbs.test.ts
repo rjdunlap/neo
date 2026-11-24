@@ -61,6 +61,7 @@ import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
 import { specOf as sumSpec } from './sum-crates/logic';
+import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
 import { PAD, touchFrame as wordFrame, touchSquare } from './word-search/layout';
@@ -206,6 +207,17 @@ const MEASURE: Record<string, () => Size[]> = {
       const { rows, cols } = nookPlan(level);
       return ['tile', nookLayout(v.w, v.h, rows, cols).cell - 1];
     }),
+  'outcrop-detective': () => {
+    const l = outcropLayout(v);
+    return [
+      ...l.cards.map((r): Size => ['event card', side(r)]),
+      ...l.looks.map((r): Size => ['look card', side(r)]),
+      ...l.answers.map((r): Size => ['answer', side(r)]),
+      ['button', side(l.play)],
+      ['button', side(l.check)],
+      ['button', side(l.look)],
+    ];
+  },
   'picture-logic': () =>
     pictureOrder.flatMap((level) =>
       poolFor(level).flatMap((p) => {
@@ -377,6 +389,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'logic-grid': { px: 44.7, what: 'case-file clue card', slides: 44.7 },
   'marble-jump': { px: 44.7, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
+  'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },
   'puddle-lens': { px: 55.9, what: 'stop' },
