@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { frogArt, turtleArt } from '../../art/animals';
 import { CRITTERS, Critter } from '../../art/critter';
 import { ink, swatch } from '../../art/palette';
-import type { Box, Fixed, Friend, Marker, Surface, Trial } from './logic';
+import type { Box, Fixed, Friend, Marker, PondRule, RouteBoard, Surface, Trial } from './logic';
 
 const WATER = swatch.blue;
 const STONE = { fill: 0xa8a8b4, line: 0x55556a, light: 0xc8c8d2 };
@@ -427,6 +427,7 @@ export function needSignArt(
   w: number,
   h: number,
   marker: Marker = 'leaf',
+  rule: PondRule = 'reach',
 ): Container {
   const c = new Container();
   const g = new Graphics();
@@ -437,7 +438,7 @@ export function needSignArt(
     .fill(0xfffdf4)
     .stroke({ width: 5, color: met ? swatch.green.line : swatch.brown.line });
   c.addChild(g);
-  const outlines = kind === 'bed' ? [-26, 26] : [-14];
+  const outlines = kind === 'bed' || rule === 'hold' ? [-26, 26] : [-14];
   outlines.forEach((x, i) => {
     if (i < filled) {
       const d = dropArt(40);
@@ -459,6 +460,9 @@ export function needSignArt(
   });
   const extra = new Graphics();
   if (kind === 'bed') (marker === 'flower' ? flowerMark : leafMark)(extra, 0, h / 2 - 28, 14);
+  else if (rule === 'hold')
+    // "Hold back": a bar after the second slot.
+    extra.moveTo(46, -34).lineTo(46, 14).stroke({ width: 8, color: ink, cap: 'round' });
   else
     extra
       .moveTo(18, -10)
@@ -519,4 +523,90 @@ export function predictionArt(more: boolean): Container {
     }
   }
   return card;
+}
+
+/** A tick or a cross, 24 px across: a result badge, not a target. */
+export function resultBadge(ok: boolean): Graphics {
+  const g = new Graphics();
+  const c = ok ? swatch.green : swatch.red;
+  g.circle(0, 0, 16).fill(c.fill).stroke({ width: 3, color: c.line });
+  if (ok)
+    g.moveTo(-7, 0)
+      .lineTo(-2, 6)
+      .lineTo(8, -6)
+      .stroke({ width: 4, color: 0xffffff, cap: 'round', join: 'round' });
+  else
+    g.moveTo(-6, -6)
+      .lineTo(6, 6)
+      .moveTo(6, -6)
+      .lineTo(-6, 6)
+      .stroke({ width: 4, color: 0xffffff, cap: 'round' });
+  return g;
+}
+
+/**
+ * One of level 7's two rain cards: a pale cloud with four dashed drops (the light shower) or a dark one with six (the
+ * storm), then the card's needs as small pictures (the marked beds' leaf and flower, and the pond's plus or bar) so a
+ * card that is not showing can still be read. The active card is lit; a result badge shows after a Check.
+ */
+export function rainCardArt(
+  kind: 'light' | 'storm',
+  b: RouteBoard,
+  active: boolean,
+  result: boolean | null,
+  size = 120,
+): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const s = size / 120;
+  g.roundRect(-size / 2, -size / 2, size, size, 22 * s)
+    .fill(active ? 0xfffbe6 : 0xf4f1e6)
+    .stroke({ width: active ? 7 : 4, color: active ? swatch.yellow.fill : swatch.brown.line });
+  const dark = kind === 'storm';
+  const cloud = new Graphics();
+  for (const [dx, dy, r] of [
+    [-22, -22, 16],
+    [0, -30, 20],
+    [22, -22, 16],
+  ] as const)
+    cloud.circle(dx * s, dy * s, r * s);
+  cloud.roundRect(-38 * s, -26 * s, 76 * s, 20 * s, 10 * s).fill(dark ? 0x6b7a90 : 0xe8eef6);
+  g.addChild(cloud);
+  const n = dark ? 6 : 4;
+  const drops = cloudDropsArt(n, -2 * s);
+  drops.scale.set(Math.min(1, (size - 24) / (n * 30 + 10)) * 0.9);
+  g.addChild(drops);
+  c.addChild(g);
+  // Needs: leaf, flower, then the pond mark.
+  const marks = new Graphics();
+  const items: ('leaf' | 'flower' | 'plus' | 'bar')[] = [
+    ...b.marked.map((m) => m.marker),
+    ...(b.pond === 'reach' ? (['plus'] as const) : b.pond === 'hold' ? (['bar'] as const) : []),
+  ];
+  const step = 30 * s;
+  items.forEach((m, i) => {
+    const x = (i - (items.length - 1) / 2) * step;
+    const y = 38 * s;
+    if (m === 'leaf') leafMark(marks, x, y, 11 * s);
+    else if (m === 'flower') flowerMark(marks, x, y, 11 * s);
+    else if (m === 'plus')
+      marks
+        .moveTo(x - 9 * s, y)
+        .lineTo(x + 9 * s, y)
+        .moveTo(x, y - 9 * s)
+        .lineTo(x, y + 9 * s)
+        .stroke({ width: 5, color: ink, cap: 'round' });
+    else
+      marks
+        .moveTo(x, y - 11 * s)
+        .lineTo(x, y + 11 * s)
+        .stroke({ width: 7, color: ink, cap: 'round' });
+  });
+  c.addChild(marks);
+  if (result !== null) {
+    const badge = resultBadge(result);
+    badge.position.set(size / 2 - 8, -size / 2 + 8);
+    c.addChild(badge);
+  }
+  return c;
 }
