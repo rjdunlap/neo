@@ -137,7 +137,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
-      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8]) {
+      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
         if (level === 8) {
           // Lap's first: one big piece out at a time; a touch on the background, the frame or a placed piece hops it in,
           // and the next comes out. A far let-go hops it in too. Nothing counts.
@@ -209,6 +209,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await kit.dragTo(waiting[0].node, { x: 200, y: 140 });
           await kit.sleep(600);
           if (g.misses !== 0) throw new Error('Drop off the frame counted as a miss');
+          if (g.plan.turns) {
+            const turned = waiting.filter((p) => p.turn !== 0);
+            if (turned.length !== 3)
+              throw new Error(`Puzzle 9: expected 3 turned pieces, got ${turned.length}`);
+            await kit.dragTo(turned[0].node, slotAt(turned[0].piece));
+            await kit.sleep(600);
+            if (turned[0].placed || g.misses !== 0 || g.wrong !== 0)
+              throw new Error('Puzzle 9: right place while upside down should hop back with no miss');
+          }
           const other = waiting.find((p) => p !== waiting[0]);
           if (other)
             for (let i = 0; i < 2; i++) {
@@ -232,16 +241,21 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'].includes(pos))
               throw new Error('First hint is not a corner');
           });
-        if (level === 7) {
+        if (level === 7 || level === 9) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(500);
-          await screenshot('puzzle-pals-7-portrait');
+          await screenshot(`puzzle-pals-${level}-portrait`);
           await page.setViewportSize({ width: 1024, height: 768 });
           await page.waitForTimeout(500);
         }
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (const p of g.pieces.filter((p) => !p.placed)) {
+            if (p.turn) {
+              kit.tapOn(p.node);
+              await kit.sleep(350);
+              if (p.turn !== 0) throw new Error('Puzzle 9: tap did not turn piece upright');
+            }
             await kit.dragTo(p.node, slotAt(p.piece));
             await kit.sleep(450);
             if (!p.placed) throw new Error('Piece rejected its own place');

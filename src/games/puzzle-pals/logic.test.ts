@@ -4,11 +4,14 @@ import { SCRIPT } from '../../content/voice-script';
 import { levelsInOrder } from '../../progress/difficulty';
 import {
   dealPlan,
+  dealTurns,
   dropSlot,
+  flipTurn,
   LEVELS,
   ONE_AT_A_TIME_PIECES,
   puzzlePlan,
   hintPiece,
+  judgeDrop,
   lidLayout,
   oneAtATimeLayout,
   puzzleLayout,
@@ -205,9 +208,83 @@ describe('Puzzle Pals', () => {
     expect(tapHops(puzzlePlan(1)) && tapHops(puzzlePlan(2))).toBe(true);
   });
 
-  it('shows the box lid exactly at the empty-frame levels 5-7', () => {
-    PUZZLE_PLANS.forEach((plan, i) => expect(!!plan.lid).toBe(i >= 4 && i <= 6));
+  it('shows the box lid at every empty-frame level (5-7 and 9)', () => {
+    PUZZLE_PLANS.forEach((plan) => expect(!!plan.lid).toBe(!plan.ghost));
     for (const plan of PUZZLE_PLANS.filter((p) => p.lid)) expect(plan.ghost).toBe(false);
+  });
+
+  it('level 9 (Turn it round) sits at the top of pre-K and school, turns half the pieces, and never counts a wrong turn in the right place as a miss', () => {
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9]);
+    const plan = puzzlePlan(9);
+    expect(plan.cols).toBe(3);
+    expect(plan.rows).toBe(2);
+    expect(plan.lid).toBe(true);
+    expect(plan.ghost).toBe(false);
+    expect(plan.turns).toBe(3);
+    expect(SCRIPT['puzzle.turn'][0].length).toBeGreaterThan(10);
+    expect(SCRIPT['puzzle.turnItRound'][0]).toBe('Turn it round!');
+
+    // Two turns restore a piece.
+    expect(flipTurn(0)).toBe(2);
+    expect(flipTurn(2)).toBe(0);
+    expect(flipTurn(flipTurn(0))).toBe(0);
+    expect(flipTurn(flipTurn(2))).toBe(2);
+
+    // Turned set is never empty and never all pieces, and edge clamps preserve that invariant.
+    for (let seed = 1; seed <= 50; seed++) {
+      const turns = dealTurns(6, plan.turns!, new Rng(seed));
+      const upsideDown = turns.filter((t) => t === 2).length;
+      expect(upsideDown).toBe(3);
+      expect(upsideDown).toBeGreaterThan(0);
+      expect(upsideDown).toBeLessThan(6);
+      expect(turns.every((t) => t === 0 || t === 2)).toBe(true);
+    }
+    expect(dealTurns(6, 0, new Rng(1)).every((t) => t === 0)).toBe(true);
+    expect(dealTurns(6, 99, new Rng(1)).filter((t) => t === 2)).toHaveLength(5);
+
+    // Right place + wrong turn is 'turn' (not 'wrong', so not a miss); wrong place is 'wrong'; off frame is 'off'.
+    const all = piecesFor(plan);
+    const [first, second] = all;
+    const c0 = slotCenter(plan, first);
+    const c1 = slotCenter(plan, second);
+    expect(judgeDrop(plan, c0.x, c0.y, first, 2, all)).toBe('turn');
+    expect(judgeDrop(plan, c0.x, c0.y, first, 0, all)).toBe('place');
+    expect(judgeDrop(plan, c1.x, c1.y, first, 2, all)).toBe('wrong');
+    expect(judgeDrop(plan, c1.x, c1.y, first, 0, all)).toBe('wrong');
+    expect(judgeDrop(plan, PICTURE_W * 2, PICTURE_H * 2, first, 2, all)).toBe('off');
+
+    // Ghost finger at level 9 taps any upside-down piece first, then drags it into its place.
+    for (let seed = 1; seed <= 50; seed++) {
+      const rng = new Rng(seed);
+      const shuffled = rng.shuffle(all);
+      const turns = dealTurns(shuffled.length, plan.turns!, rng);
+      const tray = shuffled.map((piece, i) => ({ piece, turn: turns[i], placed: false }));
+      let taps = 0;
+      let drags = 0;
+      for (let next = nextToPlace(tray); next; next = nextToPlace(tray)) {
+        if (next.turn !== 0) {
+          next.turn = flipTurn(next.turn);
+          taps++;
+          continue;
+        }
+        const c = slotCenter(plan, next.piece);
+        expect(
+          judgeDrop(
+            plan,
+            c.x,
+            c.y,
+            next.piece,
+            next.turn,
+            tray.filter((p) => !p.placed).map((p) => p.piece),
+          ),
+        ).toBe('place');
+        next.placed = true;
+        drags++;
+      }
+      expect(taps).toBe(3);
+      expect(drags).toBe(6);
+    }
   });
 
   it('keeps the lid in view, off the frame and the tray, at sideways and upright sizes', () => {
