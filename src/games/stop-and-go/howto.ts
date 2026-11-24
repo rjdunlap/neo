@@ -32,11 +32,17 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Cars keep arriving on both roads, each with a cloud showing its way: tap a light to let one road go at a time.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'A plate under each road feels whether a car is waiting. Tap one of the three rule cards to give the light that rule, then watch the cars use it.',
+    },
   ],
   finish: [
     { from: 9, to: 9, text: 'The round ends after eight touches.' },
     { from: 10, to: 10, text: 'The round ends after three cars have gone on green.' },
-    { from: 1, to: 8, text: 'The round ends when the cars or the pet have reached the end.' },
+    { from: 1, to: 6, text: 'The round ends when the cars or the pet have reached the end.' },
+    { from: 7, to: 7, text: 'The round ends after three crossings have been cleared.' },
   ],
   note: [
     { from: 1, to: 1, text: 'Every touch counts toward the round; there is nothing to get wrong.' },
@@ -74,6 +80,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: "Turning both roads green is the one miss: everyone waits. After two, the green light to turn red glows. If both roads stay red for a while, the busier road's light glows (not a miss).",
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A card that leaves a car waiting forever counts as a miss: a clock shows the car still waiting, the helper says why, and the same cards can be tried again. Nothing crashes. After two misses the right card glows.',
     },
   ],
 };

@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  *
  * Nothing is timed: the light keeps cycling as long as she likes, and waiting is never wrong.
  */
-export type GoMode = 'lamps' | 'wait' | 'toy' | 'send' | 'walk' | 'cross' | 'lanes' | 'busy';
+export type GoMode = 'lamps' | 'wait' | 'toy' | 'send' | 'walk' | 'cross' | 'lanes' | 'busy' | 'smart';
 
 export interface GoPlan {
   mode: GoMode;
@@ -40,6 +40,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 10, order: [1, 10, 2] },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
+  // Level 7 (Smart light) is the school window's one level: the crossing runs itself and she picks its rule.
+  school: { min: 7, max: 7 },
 };
 
 /** The two crossing levels: the preset crossing (4) and the busy one where cars arrive (6). */
@@ -61,12 +63,22 @@ export const WAIT_PLAN: GoPlan = {
   name: 'Wait for green: a red and green light changes by itself; tap the car when it is green (a tap on red is only a "wait!", never a miss)',
 };
 
+/** The school window's level (7, Smart light): three little crossings, each with a rule card to choose. */
+export const SMART_LEVEL = 7;
+export const SMART_PLAN: GoPlan = {
+  mode: 'smart',
+  goal: 3,
+  name: 'Smart light: the crossing runs itself; choose the rule card that lets every car through',
+};
+
 export const planFor = (level: number) =>
   level === LAMPS_LEVEL
     ? LAMPS_PLAN
     : level === WAIT_LEVEL
       ? WAIT_PLAN
-      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === SMART_LEVEL
+        ? SMART_PLAN
+        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export type Light = 'green' | 'yellow' | 'red';
 
@@ -135,6 +147,7 @@ export const GO_TARGET = {
   send: 'car',
   walk: 'step',
   lanes: 'car',
+  smart: 'card',
 } as const;
 
 /**
@@ -261,3 +274,94 @@ export const canArrive = (waiting: Record<Road, number>, road: Road) => waiting[
 
 /** Seconds of both-red with cars waiting before the helper points at the busier road's light. */
 export const IDLE_POINT = 6;
+
+// Smart light ----------------------------------------------------------------------------------------
+
+/**
+ * The rule cards a smart light can follow. A plate under each road tells the light whether a car waits there:
+ * `plate` is green for the road with a car (taking turns when both have one) and is the one that lets every car through;
+ * the others each leave a car waiting for good, so a wrong card shows a stuck car and never a crash.
+ */
+export type RuleCard = 'plate' | 'always-ew' | 'always-ns' | 'empty' | 'both';
+export const RIGHT_CARD: RuleCard = 'plate';
+export const WRONG_CARDS: readonly RuleCard[] = ['always-ew', 'always-ns', 'empty', 'both'];
+/** Cards offered each round: the right one and two wrong ones. */
+export const HAND_SIZE = 3;
+
+export type Waiting = Record<Road, number>;
+
+/** The road a card turns green given the cars waiting on each plate and which road went last; null means both stay red. Never both. */
+export function greenFor(card: RuleCard, waiting: Waiting, last: Road | null): Road | null {
+  const turn = (): Road =>
+    last === 'ew' ? 'ns' : last === 'ns' ? 'ew' : waiting.ns > waiting.ew ? 'ns' : 'ew';
+  const both = waiting.ew > 0 && waiting.ns > 0;
+  switch (card) {
+    case 'plate':
+      return both ? turn() : waiting.ew > 0 ? 'ew' : waiting.ns > 0 ? 'ns' : null;
+    case 'always-ew':
+      return 'ew';
+    case 'always-ns':
+      return 'ns';
+    case 'empty':
+      return both ? null : waiting.ew === 0 ? 'ew' : 'ns';
+    case 'both':
+      return both ? turn() : null;
+  }
+}
+
+/** One second of the smart light: which road is green, which road's front car passed (if any), and who is left. */
+export interface SmartStep {
+  green: Road | null;
+  passed: Road | null;
+  left: Waiting;
+}
+
+/** Longest a simulation runs: three cars on each road at one a second, with room to spare. */
+export const SMART_MAX_TICKS = 12;
+
+/**
+ * Runs a card on a starting queue: each second the light picks a road and that road's front car passes. It stops when the
+ * crossing is clear or when a second passes nobody (the rule will never change, so someone waits forever).
+ */
+export function simulate(card: RuleCard, start: Waiting): { steps: SmartStep[]; left: Waiting } {
+  const left: Waiting = { ...start };
+  const steps: SmartStep[] = [];
+  let last: Road | null = null;
+  for (let t = 0; t < SMART_MAX_TICKS && left.ew + left.ns > 0; t++) {
+    const green = greenFor(card, left, last);
+    const passed = green && left[green] > 0 ? green : null;
+    if (passed) {
+      left[passed]--;
+      last = passed;
+    }
+    steps.push({ green, passed, left: { ...left } });
+    if (!passed) break;
+  }
+  return { steps, left };
+}
+
+export const clears = (card: RuleCard, start: Waiting) => {
+  const { left } = simulate(card, start);
+  return left.ew + left.ns === 0;
+};
+
+/** One crossing's cars: one to three on each road and never the same number, so a card that waits for both plates to be full strands someone. */
+export function smartQueues(rng: { pick<T>(items: readonly T[]): T }): Waiting {
+  const ew = rng.pick([1, 2, 3]);
+  const ns = rng.pick([1, 2, 3].filter((n) => n !== ew));
+  return { ew, ns };
+}
+
+/** The cards on the table, shuffled: the right one and two different wrong ones. */
+export function smartHand(rng: { shuffle<T>(a: T[]): T[] }): RuleCard[] {
+  const wrong = rng.shuffle([...WRONG_CARDS]).slice(0, HAND_SIZE - 1);
+  return rng.shuffle([RIGHT_CARD, ...wrong]);
+}
+
+/** The line that explains why a wrong card left a car waiting. */
+export const stuckLine = (card: RuleCard) =>
+  card === 'empty'
+    ? 'go.smart.stuck.empty'
+    : card === 'both'
+      ? 'go.smart.stuck.both'
+      : 'go.smart.stuck.always';
