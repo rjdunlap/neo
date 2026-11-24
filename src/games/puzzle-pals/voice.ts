@@ -6,6 +6,10 @@ export const VOICE = {
   'puzzle.tap': ['Tap a piece, and it hops onto the picture where it matches!'],
   'puzzle.ghost': ['Drag each piece onto the picture where it matches!'],
   'puzzle.start': ['Drag the pieces into the frame to make a picture!'],
+  'puzzle.turn': [
+    'Some pieces are upside down! Tap a piece to turn it round, then drag each piece into the frame.',
+  ],
+  'puzzle.turnItRound': ['Turn it round!'],
   'puzzle.wrong': ['Hmm, that piece goes somewhere else. Look at its picture!'],
   'puzzle.hint': ['Try the glowing spot!'],
   'puzzle.hint.top-left': ['Try the glowing piece in the top left corner!'],

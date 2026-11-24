@@ -14,6 +14,8 @@ export interface PuzzlePlan {
    * background) hops it into its own place, and the next piece comes out because she touched. Nothing can be a miss.
    */
   oneAtATime?: boolean;
+  /** Level 9, Turn it round: how many pieces arrive upside down in the tray (half turns). */
+  turns?: number;
   name: string;
 }
 
@@ -53,6 +55,15 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
     preplaced: 0,
     oneAtATime: true,
     name: 'One big piece at a time: a touch anywhere hops it into a two- or three-piece picture',
+  },
+  {
+    cols: 3,
+    rows: 2,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    turns: 3,
+    name: 'Turn it round: tap an upside-down piece to turn it, then put six pieces together',
   },
 ];
 
@@ -108,6 +119,44 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
   return d <= reach ? best : null;
 }
 
+export type Turn = 0 | 2;
+
+export type DropOutcome = 'off' | 'place' | 'turn' | 'wrong';
+
+/** Flip a piece half a turn (180 degrees) and back. */
+export const flipTurn = (turn: Turn): Turn => (turn === 0 ? 2 : 0);
+
+/** Pick which pieces start upside down: never empty and never all pieces when turning is active. */
+export function dealTurns(
+  count: number,
+  turned: number,
+  rng: { shuffle<T>(items: readonly T[]): T[] },
+): Turn[] {
+  if (turned <= 0 || count < 2) return Array.from({ length: count }, () => 0);
+  const want = Math.min(count - 1, Math.max(1, turned));
+  const picked = new Set(rng.shuffle(Array.from({ length: count }, (_, i) => i)).slice(0, want));
+  return Array.from({ length: count }, (_, i) => (picked.has(i) ? 2 : 0));
+}
+
+/**
+ * Outcome of dropping a piece in picture units:
+ * off the frame is free exploration ('off'), wrong slot is a miss ('wrong'),
+ * right slot while still upside down hops back without a miss ('turn'), right slot upright places it ('place').
+ */
+export function judgeDrop(
+  plan: PuzzlePlan,
+  x: number,
+  y: number,
+  piece: Piece,
+  turn: Turn,
+  empty: Piece[],
+): DropOutcome {
+  const slot = dropSlot(plan, x, y, empty);
+  if (!slot) return 'off';
+  if (slot.col !== piece.col || slot.row !== piece.row) return 'wrong';
+  return turn === 0 ? 'place' : 'turn';
+}
+
 /** Tray rows: one row of big pieces for small puzzles, two rows of smaller ones otherwise. */
 export const trayRows = (count: number) => (count <= 4 ? 1 : 2);
 
@@ -158,13 +207,16 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
   return pieces.find((p) => !p.placed);
 }
 
-/** Level 8 is lap's first; 1 and 2 follow. Nothing is renumbered: 8 is new at the end of the ladder. */
+/**
+ * Level 8 is lap's first; 1 and 2 follow. Level 9 (Turn it round) sits at the top of pre-K and school,
+ * skipping lap's 8 via `order` so no saved level is renumbered.
+ */
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
-  prek: { min: 5, max: 7 },
-  school: { min: 6, max: 7 },
+  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
+  school: { min: 6, max: 9, order: [6, 7, 9] },
 };
 
 // Layout ---------------------------------------------------------------------------------------------------------------

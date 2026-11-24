@@ -11,8 +11,8 @@
 | lap | 8, 1, 2 |
 | toddler | 2–4 |
 | preschool | 4–6 |
-| pre-K | 5–7 |
-| school | 6–7 |
+| pre-K | 5, 6, 7, 9 |
+| school | 6, 7, 9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,14 +24,17 @@
 | 6 | Nine pieces: an empty frame and a small picture on the box lid |
 | 7 | Twelve pieces: an empty frame and a small picture on the box lid |
 | 8 | One big piece at a time: a touch anywhere hops it into a two- or three-piece picture |
+| 9 | Turn it round: tap an upside-down piece to turn it, then put six pieces together |
 
 <!-- end generated -->
 
 **Starts as:** at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture
 
-**Grows into:** two pieces with nothing in place, then three to twelve pieces, first over a faint picture, then an empty frame with marked outer edges and spoken spatial hints; visible landmarks in every piece built ([PR #292](https://github.com/rjdunlap/neo/pull/292))
+**Grows into:** two pieces with nothing in place, then three to twelve pieces, first over a faint picture, then an empty frame with marked outer edges, a box lid and spoken spatial hints, and half-turn upside-down pieces at level 9; visible landmarks in every piece built ([PR #292](https://github.com/rjdunlap/neo/pull/292))
 
 ## Design notes
+
+**Turn it round (level 9, built 2026-11-24, [PR #2113](https://github.com/rjdunlap/neo/pull/2113)).** A 3×2 puzzle with the box lid and outer rims in `prek` (`5, 6, 7, 9`) and `school` (`6, 7, 9`), placed via `order` so lap's level 8 is skipped without renumbering saved levels. Three pieces arrive upside down (`dealTurns`, never empty and never all), and every unplaced piece carries a small turn arrow badge (hidden once placed). Tapping a piece flips it half a turn (`flipTurn`), free and never a miss; dropping an upside-down piece on its own place hops it back with "Turn it round!" (`puzzle.turnItRound`), never a miss. Dropping on any wrong place is a miss; after two misses the place glows and, if the hinted piece still needs turning, its arrow pulses. `autotouch()` taps an upside-down piece first, then drags it into its place.
 
 Level **8, One big piece at a time** (built 2026-11-13, lap's first; lap order 8, 1, 2, entry level 8) sets one piece at the frame's own size beside the frame (right of it sideways, under it upright). A touch anywhere (the piece, the frame, the background, a placed piece or any let-go of a drag) hops it into its place, and the next piece of a two- or three-strip picture (the seeded RNG picks) slides in from the right edge. Nothing can be a miss or a hint. Levels 1 and 2 are toddler's from here, and their opening line says "Tap a piece, and it hops onto the picture where it matches!" (`puzzle.lap`, `puzzle.tap`) instead of "Drag".
 
