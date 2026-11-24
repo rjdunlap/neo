@@ -1,0 +1,5 @@
+# 2026-11-24 — Splish Splash level 11, What do we hear with?
+
+**Changed:** pre-K level 11 (the dive's level 9), placed between 6 and 7 (pre-K `order` [5, 6, 11, 7, 8], max 11): shuffled parts each asked by what it does (`CLUES`, plan field `clues`), a wrong part is one miss and says what it is for, two misses glow the right part (one hint); lines `bath.clue`, `bath.clueno`, `bath.cluenos`; how-to ranges; the `early` bath loop defaults to levels 1–11 and the friend and screenshot checks run at 11.
+**Ran:** typecheck; `vitest` on `src/games/splish-splash`, `src/content` and `src/progress` (pass); `BROWSER_SUITE=early EARLY_ONLY=bath BATH_FROM=11 BATH_TO=11` (a wrong part counted 1 miss and no hint, then the sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=splish-splash FINGER_LEVELS=11 FINGER_BAND=prek` (24.9 s).
+**Not run:** build, full suites, a portrait screenshot, and a person check of whether pre-K children know the clue words. Open judgment: level 11 sits between 6 and 7, though the dive called it easier than 8.

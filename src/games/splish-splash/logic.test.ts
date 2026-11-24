@@ -5,6 +5,7 @@ import { PET_COLORS } from '../../content/world';
 import { Rng } from '../../engine/random';
 import {
   allowedParts,
+  CLUES,
   askedParts,
   askedPhrase,
   cleanPhrase,
@@ -348,7 +349,9 @@ describe('Splish Splash', () => {
             .replace('{pet}', 'Pip')
             .replace('{toy}', TOYS[0])
             .replace('{messy}', ROOM_MESS.beach.messy)
-            .replace('{friend}', FRIEND.pig.name);
+            .replace('{friend}', FRIEND.pig.name)
+            .replace('{clue}', CLUES[p].clue)
+            .replace('{job}', CLUES[p].job);
           expect(filled, id).not.toMatch(/[{}]|my my/);
         }
   });
@@ -776,6 +779,53 @@ describe('Splish Splash', () => {
 
     it('the opening line names the friend and its mess', () => {
       expect(SCRIPT['bath.friend']?.every((l) => l.includes('{friend}') && l.includes('{messy}'))).toBe(true);
+    });
+  });
+  describe('What do we hear with? (level 11)', () => {
+    const plan = planFor(11);
+    const parts = Object.keys(CLUES) as (keyof typeof CLUES)[];
+
+    it('asks every part by what it is for, one at a time, and counts misses', () => {
+      expect(plan.clues).toBe(true);
+      expect(plan.mode).toBe('parts');
+      expect(plan.pairs).toBeFalsy();
+      expect(plan.show).toBeFalsy();
+      expect(countsMisses(plan)).toBe(true);
+      expect(PLANS.filter((p) => p.clues)).toEqual([plan]);
+      expect([...plan.parts].sort()).toEqual([...parts].sort());
+    });
+
+    it("no clue or job says the part's own word, and no two parts share a clue", () => {
+      for (const part of parts) {
+        const word = new RegExp(`\\b${PHRASES[part].word}\\b`, 'i');
+        expect(CLUES[part].clue, part).not.toMatch(word);
+        expect(CLUES[part].job, part).not.toMatch(word);
+      }
+      expect(new Set(parts.map((p) => CLUES[p].clue)).size).toBe(parts.length);
+    });
+
+    it('a round never repeats a clue, on any bather', () => {
+      const bathers = [...SPECIES_IDS.map((sp) => STAR[sp].parts), ...FRIENDS.map((f) => FRIEND[f].parts)];
+      for (const own of bathers) {
+        const on = planOn(plan, own);
+        expect(on.parts.length).toBeGreaterThan(0);
+        const clues = on.parts.map((p) => CLUES[p].clue);
+        expect(new Set(clues).size).toBe(clues.length);
+      }
+    });
+
+    it('sits between levels 6 and 7 for pre-K, which still reaches 8', () => {
+      expect(LEVELS.prek?.order).toEqual([5, 6, 11, 7, 8]);
+    });
+
+    it("its lines carry the clue and the touched part's job", () => {
+      expect(SCRIPT['bath.clue'].every((l: string) => l.includes('{clue}'))).toBe(true);
+      for (const key of ['bath.clueno', 'bath.cluenos'])
+        expect(
+          SCRIPT[key as 'bath.clueno'].every(
+            (l: string) => l.includes('{touched}') && l.includes('{job}') && l.includes('{clue}'),
+          ),
+        ).toBe(true);
     });
   });
 });

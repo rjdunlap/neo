@@ -65,7 +65,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `dress` | 2026-10-20 · [RW06 slice 1: the saved look and dressing](archive/VERIFICATION-2026-10-20.md#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | — |
 | `driftcards` | 2026-11-11 · [U7d fix batch 4: melt-freeze, tide-line, drift-cards and fruit-slice never hold a tap on a right answer's line](archive/VERIFICATION-2026-11-11.md#2026-11-11--u7d-fix-batch-4-melt-freeze-tide-line-drift-cards-and-fruit-slice-never-hold-a-tap-on-a-right-answers-line-pr-1534) | — |
 | `dropsjourney` | 2026-10-31 · [Drop's Journey levels 1–3 (weather-water slice 8)](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | — |
-| `early` | 2026-11-23 · [Splish Splash level 10, This one!](verification/2026-11-23-splish-splash-level-10-this-one.md) | `EARLY_ONLY=bath BATH_FROM=10 BATH_TO=10` |
+| `early` | 2026-11-24 · [Splish Splash level 11, What do we hear with?](verification/2026-11-24-splish-splash-level-11-what-do-we-hear-with.md) | `EARLY_ONLY=bath BATH_FROM=11 BATH_TO=11` |
 | `exampleexpress` | 2026-11-18 · [Example Express level 3, Choose the lesson](verification/2026-11-18-example-express-level-3-choose-the-lesson.md) | Level 3 (`EXAMPLE_ONLY=lesson`) |
 | `expansion` | 2026-11-14 · [Bug Builder level 11 Mend the wing](verification/2026-11-14-bug-builder-level-11-mend-the-wing.md) | `EXPANSION_ONLY=bug BUG_LEVELS=11` |
 | `farlights` | 2026-11-13 · [Far Lights level 9, One big light at lap](verification/2026-11-13-far-lights-level-9-one-big-light-at-lap.md) | `FAR_LEVELS=9` |
