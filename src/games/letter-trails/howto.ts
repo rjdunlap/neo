@@ -17,6 +17,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'A little letter between four lines: c, o, s, v and w start on the dashed middle line, t on the top line. Its capital is shown at the top.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'A little a, d or g between four lines: start like a little c, then draw a line down the right side. The d line starts at the top line; the g line reaches the bottom line and turns left.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
@@ -37,7 +42,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 10,
+      to: 11,
       text: 'The round ends when the little letter has been traced and its picture appears.',
     },
   ],
@@ -58,8 +63,8 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 10,
-      text: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The little letters use the same forgiving trail as the capitals.',
+      to: 11,
+      text: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The little letters use a narrower trail than the capitals, because they are smaller.',
     },
   ],
 };

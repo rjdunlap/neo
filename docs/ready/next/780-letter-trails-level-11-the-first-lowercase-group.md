@@ -1,1 +1,0 @@
-**`letter-trails` level 11, the first lowercase group** (of levels 11–14; the building session checks strokes against the Handwriting Without Tears chart). [Dive](../../deep-dives/letter-trails.md#build-slices-in-order)
