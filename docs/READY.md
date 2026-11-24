@@ -59,13 +59,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`splish-splash` What do we hear with?** (the plan's level 9, now ID 11, since 9 and 10 are the entries; new levels on an existing interaction). [Dive](deep-dives/splish-splash.md#build-slices-in-order)
-- **`weather-wardrobe` items for two weathers and level 11, Keep what still fits** (then level 12 Pack light and the school window; decisions 1–3 and 5 settled). [Dive](deep-dives/weather-wardrobe.md#build-slices-in-order)
-- **`tangram-town` level 9, Flip it** (new interaction: the parallelogram, a flip button and the mirror-aware rule, after fewer pieces). [Dive](deep-dives/tangram-town.md#build-slices-in-order)
-- **`day-by-day` level 7, Month wheel** (school; new interaction). [Dive](deep-dives/day-by-day.md#build-slices-in-order)
 - **`peg-garden` level 9, Aim at the big flower** (preschool bridge; a missed shot is no miss; new levels on an existing interaction). [Dive](deep-dives/peg-garden.md#build-slices-in-order)
-- **`stop-and-go` level 7, Smart light** (and a school window; new interaction; the robots-automation study's RA6 says build it). [Dive](deep-dives/stop-and-go.md#build-slices-in-order)
-- **`song-maker` My song** (ID 9, since 8 is the lap level; new interaction). [Dive](deep-dives/song-maker.md#build-slices-in-order)
 - **`jelly-drums` resume where she was** (four- and five-note tunes; rule tests and the `originals` run), then Backwards as ID 11. [Dive](deep-dives/jelly-drums.md#build-slices-in-order)
 - **`puzzle-pals` the box lid from level 5** (typecheck, game and how-to tests, filtered plays at 5 and 7, a portrait and phone layout review), then Turn it round as ID 9. [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
 - **`critter-sort` fresh rules** (colour and ear rules; typecheck and its rule tests). [Dive](deep-dives/critter-sort.md#build-slices-in-order)
