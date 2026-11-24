@@ -308,7 +308,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Stop and Go
 
-*lap–pre-K* · [Stop and Go](games/stop-and-go.md)
+*lap–school* · [Stop and Go](games/stop-and-go.md)
 
 ### Pet Says
 

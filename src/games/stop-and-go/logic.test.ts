@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { rangeFor } from '../../progress/difficulty';
 import {
+  clears,
+  greenFor,
+  HAND_SIZE,
+  RIGHT_CARD,
+  simulate,
+  SMART_MAX_TICKS,
+  smartHand,
+  smartQueues,
+  stuckLine,
+  WRONG_CARDS,
   arrivalOrder,
   canArrive,
   isCross,
@@ -112,6 +123,7 @@ describe('Stop and Go', () => {
       send: 'car',
       walk: 'step',
       lanes: 'car',
+      smart: 'card',
     });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
@@ -377,5 +389,73 @@ describe('Stop and Go level 10, Wait for green', () => {
     expect(rightNow('wait', 'red')).toBe(false);
     expect(rightNow('wait', 'green')).toBe(true);
     expect(GO_TARGET.wait).toBe('car');
+  });
+});
+
+describe('smart light (level 7)', () => {
+  const queues = (seed: number) => smartQueues(new Rng(seed));
+
+  it('is the school window alone, and planFor(7) is the smart plan, not the busy crossing', () => {
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 7, max: 7 });
+    expect(planFor(7).mode).toBe('smart');
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 3, max: 6 });
+  });
+
+  it('the right card clears every seeded queue and never turns both roads green', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const q = queues(seed);
+      expect(q.ew).not.toBe(q.ns);
+      expect(clears(RIGHT_CARD, q)).toBe(true);
+      for (const t of simulate(RIGHT_CARD, q).steps) expect(t.green).not.toBeNull();
+    }
+  });
+
+  it('every wrong card strands a car on every seeded queue, with a bounded run and no crash', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const q = queues(seed);
+      for (const card of WRONG_CARDS) {
+        const { steps, left } = simulate(card, q);
+        expect(left.ew + left.ns, `${card} ${JSON.stringify(q)}`).toBeGreaterThan(0);
+        expect(steps.length).toBeLessThanOrEqual(SMART_MAX_TICKS);
+        expect(['ew', 'ns', null]).toContain(steps[steps.length - 1].green);
+      }
+    }
+  });
+
+  it('every card turns at most one road green, whatever the plates', () => {
+    for (const card of [RIGHT_CARD, ...WRONG_CARDS])
+      for (let ew = 0; ew <= 3; ew++)
+        for (let ns = 0; ns <= 3; ns++)
+          for (const last of ['ew', 'ns', null] as const) {
+            const g = greenFor(card, { ew, ns }, last);
+            expect([null, 'ew', 'ns']).toContain(g);
+          }
+  });
+
+  it('a hand has the right card and two different wrong ones, and its order varies', () => {
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const hand = smartHand(new Rng(seed));
+      expect(hand).toHaveLength(HAND_SIZE);
+      expect(new Set(hand).size).toBe(HAND_SIZE);
+      expect(hand.filter((c) => c === RIGHT_CARD)).toHaveLength(1);
+      firsts.add(hand[0]);
+      for (const c of hand) if (c !== RIGHT_CARD) expect(stuckLine(c)).toMatch(/^go\.smart\.stuck\./);
+    }
+    expect(firsts.size).toBeGreaterThan(1);
+  });
+
+  it('the right card is the plate rule: the road with a car goes, and both roads take turns', () => {
+    expect(greenFor('plate', { ew: 0, ns: 2 }, null)).toBe('ns');
+    expect(greenFor('plate', { ew: 2, ns: 0 }, 'ns')).toBe('ew');
+    expect(greenFor('plate', { ew: 2, ns: 2 }, 'ew')).toBe('ns');
+    expect(greenFor('plate', { ew: 0, ns: 0 }, null)).toBeNull();
+  });
+
+  it('the earlier levels are unchanged: ordinary plans and the lap and toddler orders', () => {
+    expect(PLANS).toHaveLength(6);
+    expect(planFor(6).mode).toBe('busy');
+    expect(LEVELS.lap?.order).toEqual([9, 1]);
+    expect(LEVELS.toddler?.order).toEqual([1, 10, 2]);
   });
 });
