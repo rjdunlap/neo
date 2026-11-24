@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 10 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 12 } };
 export const PLANS = [
   { side: 3, name: 'Find 1 to 9 on nine shuffled stones' },
   { side: 4, name: 'Find 1 to 16 on sixteen shuffled stones' },
@@ -13,12 +13,14 @@ export const PLANS = [
   { side: 5, name: 'Count by harder steps, up or back' },
   { side: 4, name: 'Any sixteen numbers, smallest first' },
   { side: 5, name: 'Numbers below zero, smallest first' },
+  { side: 4, name: 'Two trails: 1, A, 2, B' },
+  { side: 5, name: 'Two trails: 1, L, 2, K' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 /** Levels 4–6 show a sum (from 6, a sum or a take-away) on each stone instead of its number. */
 export const showsSums = (level: number) => Math.floor(level) >= 4 && Math.floor(level) <= 6;
-/** From level 7 the sign names a counting rule and the stones show the numbers it makes. */
-export const countsBy = (level: number) => Math.floor(level) >= 7;
+/** At levels 7–8 the sign names a counting rule and the stones show the numbers it makes. */
+export const countsBy = (level: number) => level >= 7 && level < 9;
 /** The steps a count-by round may use: level 7 the easy ones, level 8 the harder ones. */
 export const STEPS: Record<number, readonly number[]> = { 7: [2, 3, 5, 10], 8: [4, 6, 7, 8, 9] };
 /** A count-by round's rule: its step, its direction, and how many stones it fills. */
@@ -40,8 +42,8 @@ export const ruleSign = (t: Trail, next: number) => {
   const by = `Count ${t.back ? 'back ' : ''}by ${t.step}`;
   return next <= 1 ? `${by} · start at ${trailValue(t, 1)}` : `${by} · after ${trailValue(t, next - 1)}`;
 };
-/** From level 9 the stones hold any different numbers and the order is smallest first (level 10 reaches below zero). */
-export const sortsValues = (level: number) => Math.floor(level) >= 9;
+/** At levels 9–10 the stones hold any different numbers and the order is smallest first (level 10 reaches below zero). */
+export const sortsValues = (level: number) => level >= 9 && level < 11;
 const MINUS_SIGN = '\u2212';
 /** A number as written on a stone, with a true minus sign. */
 export const writeNumber = (v: number) => (v < 0 ? `${MINUS_SIGN}${-v}` : String(v));
@@ -78,6 +80,25 @@ export function makeValues(level: number, rng: Rng): number[] {
 /** The sign for a smallest-first round: it names the rule and the last lit number, never the answer. */
 export const orderSign = (values: readonly number[], next: number) =>
   next <= 1 ? 'Smallest first' : `After ${writeNumber(values[next - 2])}`;
+export const twoTrails = (level: number) => level >= 11 && level < 13;
+export const lettersBack = (level: number) => Math.floor(level) === 12;
+
+/** What each rank stands for, alternating rising numbers with letters going up or back. */
+export function alternatingLabels(level: number): string[] {
+  const letters = lettersBack(level) ? 'LKJIHGFEDCBA' : 'ABCDEFGH';
+  return Array.from({ length: planFor(level).side ** 2 }, (_, i) => {
+    const pair = Math.floor(i / 2);
+    return i % 2 === 0 ? String(pair + 1) : letters[pair];
+  });
+}
+
+/** The sign keeps the last two stones in view and names the next trail. */
+export function alternatingSign(labels: readonly string[], next: number): string {
+  if (next === 1) return labels[1] === 'L' ? 'Numbers up · Letters back' : 'Numbers up · Letters up';
+  const recent = labels.slice(Math.max(0, next - 3), next - 1).join(' · ');
+  return `${recent} · ?   ${next % 2 === 0 ? 'Letters' : 'Numbers'}`;
+}
+
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
 /** Board indexes in the order they are found: `trailOrder(board)[r - 1]` is the stone that holds rank `r`. */
@@ -121,6 +142,23 @@ export function makeLabels(board: readonly number[], level: number, rng: Rng): s
       ? rng.shuffle(board.map((_, i) => (i < KIND_MIN ? true : i < 2 * KIND_MIN ? false : rng.chance(0.5))))
       : board.map(() => false);
   return board.map((total, i) => (takes[i] ? takeLabel(total, rng) : sumLabel(total, rng)));
+}
+
+export function makeRound(level: number, rng: Rng) {
+  const board = makeBoard(level, rng);
+  let labels = makeLabels(board, level, rng);
+  const look = pickLook(rng);
+  const countBy = countsBy(level);
+  const smallestFirst = sortsValues(level);
+  // Levels 9–10 originally rolled a count-by rule before dealing their smallest-first values.
+  const trail = countBy || smallestFirst ? makeTrail(level, rng) : null;
+  const rule = countBy ? trail : null;
+  const values = smallestFirst ? makeValues(level, rng) : null;
+  const alternating = twoTrails(level) ? alternatingLabels(level) : null;
+  if (rule) labels = board.map((rank) => String(trailValue(rule, rank)));
+  else if (values) labels = board.map((rank) => writeNumber(values[rank - 1]));
+  else if (alternating) labels = board.map((rank) => alternating[rank - 1]);
+  return { board, labels, look, rule, values, alternating };
 }
 
 /** What a stone's label makes: its number, or its sum or take-away worked out. */

@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Light every numbered stone by finding the numbers in order.',
+  goal: 'Light every stone by following the order for this board.',
   steps: [
     { to: 3, text: 'Tap the stone with the number shown above the pond.' },
     { to: 3, text: 'Find the next number on the same shuffled board. Checked stones stay where they are.' },
@@ -20,11 +20,19 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Some rounds count back, starting at the biggest number.' },
     {
       from: 9,
+      to: 10,
       text: 'The stones hold different numbers. Find the smallest one still unlit; the sign shows the last one lit.',
     },
-    { from: 10, text: 'Some numbers are below zero: −12 is smaller than −3.' },
+    { from: 10, to: 10, text: 'Some numbers are below zero: −12 is smaller than −3.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Alternate numbers and letters. Start with 1, then A, 2, B, and keep both trails going up.',
+    },
+    { from: 12, to: 12, text: 'Start with 1, then L, 2, K. Numbers go up and letters go backwards.' },
+    { from: 11, text: 'The sign shows up to two lit stones and whether a number or letter comes next.' },
     'Hint outlines the next stone; there is no time limit.',
   ],
-  finish: 'Finding the final number finishes the round, including with help.',
-  note: 'A different unfinished number counts a miss. Two consecutive misses reveal a hint. Checked stones can be touched freely. This is number-search practice, without claims about general brain training.',
+  finish: 'Finding the final stone finishes the round, including with help.',
+  note: 'A different unfinished stone counts a miss. Two consecutive misses reveal a hint. Checked stones can be touched freely. This is trail-order practice, without claims about general brain training.',
 };

@@ -3,22 +3,39 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Brain Break: real taps, stable checked stones, hints and one reward per board. */
   async function brainBreakPlay() {
-    for (const level of [1, 6, 8, 10]) {
+    const levels = process.env.BRAINBREAK_ONLY === 'two-trails' ? [12] : [1, 6, 8, 10, 12];
+    for (const level of levels) {
+      const alternating = level === 12;
+      if (alternating) await page.setViewportSize({ width: 390, height: 844 });
       await launch('brain-break', level);
       await page.waitForTimeout(350);
       const before = await page.evaluate(() => kit.store.data.stickers.length);
-      const wrong = await page.evaluate(() => neo.scene.game.board.findIndex((n) => n === 2));
+      const first = alternating ? 2 : 1;
+      if (alternating) {
+        assert.match(await page.evaluate(() => neo.scene.game.status.text), /^Numbers up · Letters back/);
+        const start = await page.evaluate(() => neo.scene.game.board.indexOf(1));
+        await tap(`neo.scene.game.stones[${start}]`);
+        await tap(`neo.scene.game.stones[${start}]`);
+        assert.equal(await page.evaluate(() => neo.scene.game.next), first, 'checked stone is free');
+      }
+      const wrong = await page.evaluate((rank) => neo.scene.game.board.indexOf(rank), first + 1);
       await tap(`neo.scene.game.stones[${wrong}]`);
-      await tap(`neo.scene.game.stones[${wrong}]`);
+      if (!alternating) await tap(`neo.scene.game.stones[${wrong}]`);
       assert.deepEqual(
         await page.evaluate(() => {
           const g = neo.scene.game;
           return [g.next, g.misses, g.hints, g.board[g.hinted]];
         }),
-        [1, 2, 1, 1],
+        alternating ? [2, 1, 0, undefined] : [1, 2, 1, 1],
       );
       await tap('neo.scene.game.hintButton');
-      assert.equal(await page.evaluate(() => neo.scene.game.hints), 2);
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          return [g.hints, g.board[g.hinted]];
+        }),
+        [alternating ? 1 : 2, first],
+      );
       if (level === 8) {
         const sign = await page.evaluate(() => neo.scene.game.status.text);
         assert.match(sign, /^Count (back )?by \d · (start at|after) \d+/, 'the sign names the rule');
@@ -34,7 +51,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'some stones are below zero, with a true minus sign',
         );
       }
-      if (level >= 6) {
+      if (level >= 6 && !alternating) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(450);
         await screenshot(
@@ -45,7 +62,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               : 'brain-break-below-zero-portrait',
         );
       }
-      for (let n = 1; n <= (level === 1 ? 9 : 25); n++) {
+      for (let n = first; n <= (level === 1 ? 9 : 25); n++) {
         const i = await page.evaluate((n) => neo.scene.game.board.indexOf(n), n);
         await tap(`neo.scene.game.stones[${i}]`);
         if (level === 6 && n === 1) {
@@ -68,6 +85,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             'every count-by label fits its stone',
           );
         }
+        if (alternating) {
+          assert.equal(
+            await page.evaluate((index) => neo.scene.game.labels[index], i),
+            n % 2 === 1 ? String((n + 1) / 2) : 'LKJIHGFEDCBA'[n / 2 - 1],
+          );
+          if (n === 3) {
+            assert.match(await page.evaluate(() => neo.scene.game.status.text), /^L · 2 · \? +Letters/);
+            await screenshot('brain-break-two-trails-portrait');
+          }
+        }
         if (n === 1) {
           await tap(`neo.scene.game.stones[${i}]`);
           assert.equal(await page.evaluate(() => neo.scene.game.next), 2, 'checked stone is free');
@@ -75,11 +102,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
       await finished('brain-break');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
-      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 2]);
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]),
+        alternating ? [1, 1] : [2, 2],
+      );
       await page.setViewportSize({ width: 1024, height: 768 });
     }
     log(
-      'brainbreak: levels 1, 6 (sums and take-aways) 8 (count by, up or back) and 10 (smallest first, below zero), wrong taps, automatic/manual hint, checked stones, portrait and one sticker passed',
+      `brainbreak: levels ${levels.join(', ')}, wrong taps, hints, checked stones, portrait and one sticker passed`,
     );
   }
 

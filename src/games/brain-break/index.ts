@@ -10,26 +10,21 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  countsBy,
+  alternatingSign,
   hintIndex,
   judge,
   layoutFor,
+  lettersBack,
   LEVELS,
   LOOKS,
-  makeBoard,
-  makeLabels,
-  makeTrail,
-  makeValues,
+  makeRound,
   orderSign,
-  pickLook,
   planFor,
   ruleSign,
   showsSums,
-  sortsValues,
   speakNumber,
   trailOrder,
   trailValue,
-  writeNumber,
   type Look,
   type Trail,
 } from './logic';
@@ -52,12 +47,13 @@ function stoneArt(text: string, color: ColorName = 'teal'): Container {
 
 class BrainBreak implements Game {
   readonly board: number[];
-  labels: string[];
-  /** The count-by rule from level 7; the board then holds ranks and the stones show what the rule makes. */
+  readonly labels: string[];
+  /** The count-by rule at levels 7–8; the board then holds ranks and the stones show what the rule makes. */
   readonly rule: Trail | null;
-  /** From level 9 the board holds ranks and each stone shows the number its rank stands for, smallest first. */
+  /** At levels 9–10 the board holds ranks and each stone shows the number its rank stands for, smallest first. */
   readonly values: number[] | null;
   readonly sums: boolean;
+  private readonly alternating: string[] | null;
   readonly stones: Container[] = [];
   private readonly texts: Text[] = [];
   readonly hintButton = new Container();
@@ -77,15 +73,14 @@ class BrainBreak implements Game {
   private readonly glow = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
-    this.board = makeBoard(ctx.level, ctx.rng);
-    this.labels = makeLabels(this.board, ctx.level, ctx.rng);
+    const round = makeRound(ctx.level, ctx.rng);
+    this.board = round.board;
+    this.labels = round.labels;
     this.sums = showsSums(ctx.level);
-    // Drawn after the board and labels, so a look never changes which board a seed gives.
-    this.look = pickLook(ctx.rng);
-    this.rule = countsBy(ctx.level) ? makeTrail(ctx.level, ctx.rng) : null;
-    if (this.rule) this.labels = this.board.map((rank) => String(trailValue(this.rule!, rank)));
-    this.values = sortsValues(ctx.level) ? makeValues(ctx.level, ctx.rng) : null;
-    if (this.values) this.labels = this.board.map((rank) => writeNumber(this.values![rank - 1]));
+    this.look = round.look;
+    this.rule = round.rule;
+    this.values = round.values;
+    this.alternating = round.alternating;
     this.order = trailOrder(this.board);
     this.background.eventMode =
       this.status.eventMode =
@@ -120,7 +115,9 @@ class BrainBreak implements Game {
   }
   start() {
     const r = this.rule;
-    if (this.values)
+    if (this.alternating)
+      void this.ctx.instruct(lettersBack(this.ctx.level) ? 'brain.two.startBack' : 'brain.two.start');
+    else if (this.values)
       void this.ctx.instruct(this.values.some((v) => v < 0) ? 'brain.order.startBelow' : 'brain.order.start');
     else if (r)
       void this.ctx.instruct(r.back ? 'brain.count.startBack' : 'brain.count.start', {
@@ -139,6 +136,7 @@ class BrainBreak implements Game {
       sfx.boing();
       this.nudge(this.stones[i]);
       if (this.consecutive === 2) this.askForHint();
+      else if (this.alternating) this.sayAlternatingTurn(this.labels[i]);
       else if (this.values)
         void this.ctx.say('brain.order.try', { m: speakNumber(this.values[this.board[i] - 1]) });
       else if (this.rule) this.sayCountTry(this.rule, this.board[i]);
@@ -156,7 +154,8 @@ class BrainBreak implements Game {
     if (this.next > this.board.length) {
       this.finished = true;
       void this.complete();
-    } else if (this.values)
+    } else if (this.alternating) this.sayAlternatingTurn();
+    else if (this.values)
       void this.ctx.say('brain.order.next', { p: speakNumber(this.values[this.next - 2]) });
     else if (this.rule) {
       const r = this.rule;
@@ -165,6 +164,16 @@ class BrainBreak implements Game {
         s: r.step,
       });
     } else void this.ctx.say('brain.next', { n: this.next });
+  }
+  private sayAlternatingTurn(wrong?: string) {
+    const letters = this.next % 2 === 0;
+    const trail = letters ? 'letter' : 'number';
+    const backwards = letters && lettersBack(this.ctx.level);
+    const previous = this.alternating?.[this.next - 3];
+    let step = backwards ? 'Start at the end of the letter trail' : `Start the ${trail} trail`;
+    if (previous) step = `Go ${backwards ? 'back' : 'on'} from ${previous}`;
+    if (wrong) void this.ctx.say('brain.two.try', { m: wrong, trail, step });
+    else void this.ctx.say('brain.two.next', { trail, step });
   }
   /** A wrong stone says what it is and how to count on from the last lit stone, never the answer. */
   private sayCountTry(r: Trail, rank: number) {
@@ -232,19 +241,24 @@ class BrainBreak implements Game {
     this.hints++;
     this.hinted = hintIndex(this.board, this.next);
     this.draw();
-    if (this.values) void this.ctx.say('brain.order.hint', { v: speakNumber(this.values[this.next - 1]) });
+    if (this.alternating) void this.ctx.say('brain.two.hint', { v: this.alternating[this.next - 1] });
+    else if (this.values)
+      void this.ctx.say('brain.order.hint', { v: speakNumber(this.values[this.next - 1]) });
     else if (this.rule) void this.ctx.say('brain.count.hint', { v: trailValue(this.rule, this.next) });
     else void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
   }
   private draw() {
-    this.status.text =
-      this.next > this.board.length
-        ? 'All stones lit!'
+    if (this.next > this.board.length) this.status.text = 'All stones lit!';
+    else {
+      const prompt = this.alternating
+        ? alternatingSign(this.alternating, this.next)
         : this.values
-          ? `${orderSign(this.values, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
+          ? orderSign(this.values, this.next)
           : this.rule
-            ? `${ruleSign(this.rule, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
-            : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
+            ? ruleSign(this.rule, this.next)
+            : `${this.sums ? 'Make' : 'Find'} ${this.next}`;
+      this.status.text = `${prompt}   ·   ${this.next - 1} / ${this.board.length}`;
+    }
     this.drawTrail(this.next - 1);
     this.marks.clear();
     this.glow.clear();
@@ -298,6 +312,7 @@ export const brainBreak: GameModule = {
     'Adding and taking away',
     'Counting by steps',
     'Comparing numbers',
+    'Alternating number and letter order',
   ],
   bands: ['grownup'],
   levels: (band) => rangeFor(LEVELS, band),
@@ -306,7 +321,7 @@ export const brainBreak: GameModule = {
   touchDemo: true,
   upright: true,
   coplayHint:
-    'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes.',
+    'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes. In Two trails, one person finds the numbers and the other finds the letters.',
   offScreen:
     'Shuffle numbered paper squares on a table and point to them in order, at your own pace; later, write sums on the squares and lay them out in order.',
   hubIcon: () => new WigglyIcon(stoneArt('1')),
