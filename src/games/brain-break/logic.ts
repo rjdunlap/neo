@@ -15,7 +15,18 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export const showsSums = (level: number) => Math.floor(level) >= 4;
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
-export type Verdict = 'right' | 'wrong' | 'done';
+/** Board indexes in the order they are found: `trailOrder(board)[r - 1]` is the stone that holds rank `r`. */
+export const trailOrder = (board: readonly number[]): number[] =>
+  board.map((_, i) => i).sort((a, b) => board[a] - board[b]);
+/** Three pond looks (sky, pond and stone colours from the palette), drawn once per round after the board so a look never changes a board. */
+export const LOOKS = {
+  day: { sky: 'blue', pond: 'teal', stone: 'teal' },
+  dusk: { sky: 'purple', pond: 'blue', stone: 'yellow' },
+  moss: { sky: 'green', pond: 'teal', stone: 'green' },
+} as const;
+export type Look = keyof typeof LOOKS;
+export const pickLook = (rng: Rng): Look => rng.pick(Object.keys(LOOKS) as Look[]);
+export type Verdict ='right' | 'wrong' | 'done';
 export const judge = (value: number, next: number): Verdict =>
   value < next ? 'done' : value === next ? 'right' : 'wrong';
 export const hintIndex = (board: readonly number[], next: number) => board.indexOf(next);
