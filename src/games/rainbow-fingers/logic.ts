@@ -1026,3 +1026,12 @@ export function foldScribbleArea(w: number, h: number) {
   const right = w / 2 - FOLD_RADIUS - BRUSH_RADIUS - 8;
   return { ...a, w: Math.max(120, right - a.x) };
 }
+
+/** Seconds stuck on a coloring page before the right pot glows on its own. */
+export const IDLE_GLOW_AFTER = 12;
+
+/**
+ * Whether a glow on the right pot counts as a hint. Only the glow that follows two misses does (decision 5, 2026-10-23); the
+ * idle glow after a quiet spell is free, so waiting never costs her.
+ */
+export const glowCounts = (why: 'idle' | 'misses'): boolean => why === 'misses';

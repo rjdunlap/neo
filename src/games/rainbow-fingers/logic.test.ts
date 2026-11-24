@@ -68,6 +68,8 @@ import {
   NEW_MIXES,
   tellsRecipe,
   whitePot,
+  glowCounts,
+  IDLE_GLOW_AFTER,
 } from './logic';
 import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
@@ -1130,5 +1132,13 @@ describe('Rainbow Fingers', () => {
         }
       }
     });
+  });
+});
+
+describe('the glow on the right pot', () => {
+  it('is free when it comes from waiting and counts only after two misses', () => {
+    expect(glowCounts('idle')).toBe(false);
+    expect(glowCounts('misses')).toBe(true);
+    expect(IDLE_GLOW_AFTER).toBe(12);
   });
 });

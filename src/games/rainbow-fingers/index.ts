@@ -78,6 +78,8 @@ import {
   wheelLayout,
   wheelNeighbors,
   type Petal,
+  glowCounts,
+  IDLE_GLOW_AFTER,
 } from './logic';
 import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { rangeFor } from '../../progress/difficulty';
@@ -969,8 +971,8 @@ class RainbowFingers implements Game {
     return pours(this.plan.mode) ? [...RECIPES[color]!] : [color];
   }
 
-  private showHint() {
-    hinted(this.tally);
+  private showHint(why: 'idle' | 'misses' = 'misses') {
+    if (glowCounts(why)) hinted(this.tally);
     this.glowing = this.rightPots();
   }
 
@@ -1166,7 +1168,7 @@ class RainbowFingers implements Game {
     if (coloring && this.picture && !this.done) {
       this.sinceAsk += dt;
       // Stuck for a while: light up the right pot.
-      if (this.sinceAsk > 12 && this.glowing.length === 0) this.showHint();
+      if (this.sinceAsk > IDLE_GLOW_AFTER && this.glowing.length === 0) this.showHint('idle');
     }
     this.drawGlow();
     if (!this.done && !this.frameButton.visible && ready) {
