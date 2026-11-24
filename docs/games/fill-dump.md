@@ -28,7 +28,7 @@
 
 **Starts as:** tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch
 
-**Grows into:** seeded fruit/basket, balls/bucket, blocks/toy box or ducks/tub at levels 1–4; tip it out twice, count identical pieces (a dot card shows the number asked for), a tip-or-fill choice between a full and an empty basket (level 6), then tip a jug to fill three cups to their lines; level 7 guesses, pours and answers which of two containers holds more over three pairs; spills can be reused
+**Grows into:** seeded fruit/basket, balls/bucket, blocks/toy box or ducks/tub at levels 1–4; tip it out twice, count identical pieces (a dot card shows the number asked for), a tip-or-fill choice between a full and an empty basket (level 6), then tip a jug to fill three cups to their lines; level 7 guesses, pours and answers which of two containers holds more over three pairs; level 8 (pre-K) repeats that with tall-thin against short-wide pairs only 15–30% apart; spills can be reused
 
 ## Design notes
 
@@ -37,3 +37,5 @@
 **Touches during the tip-out are answered (slice 7, 2026-11-24).** While the basket tips (levels 1–2), `busyTouch(busy, finished, on)` in `logic.ts` decides the reply: a touch on the basket or open grass squishes the basket with a quiet tick, and a touch on a landed fruit wiggles it. It never feeds, scoops or counts, so misses, hints and the round state are untouched, and nothing answers after the round is finished. Pair, pour and capacity levels are unchanged. Rule test: `busyTouch`; browser regression: rapid taps mid-tip in the `originals` fill case.
 
 **Level 6's pair line never holds the next pair (U7 fix batch 9, 2026-11-12).** `fill.pair.out` and `fill.pair.in` start, the fruit fade and the fresh pair is dealt at once, with input open about 0.6 s into the line. The next request waits for the line or the guide (`Game.sayWaitingAsk`); because the tip/fill request is only spoken and alternates, a touch before it is heard says the request instead of being judged. The last basket's line is heard out before `fill.pair.done`.
+
+**Level 8, Tricky pairs (PR #2120, 2026-11-24).** Reuses level 7's `CapacityGame` (free guess, pour, supported answer) with three tall-thin against short-wide pairs, capacities 15–30% apart: glass/dish, vase/platter, jar/tub, two where the taller holds less and one where it holds more, sides random. Misses and hints count as in level 7 (a wrong answer after the pour is one miss; two give the glow, one hint per pair). After each correct answer the voice names what happened (`fill.tricky.shortmore` or `fill.tricky.tallmore`). Two answers only, no "holds the same" (decision 2). It opens a pre-K window: prek range `{min 5, max 8, order [5,7,8]}`; level 8 is never in toddler or preschool.

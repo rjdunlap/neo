@@ -133,10 +133,11 @@ export class CapacityGame implements Game {
       const then = (f: () => void) => (named ? void this.ctx.say(named).then(() => !this.gone && f()) : f());
       if (event === 'next') then(() => void this.ctx.instruct('fill.capacity.guess'));
       if (event === 'done')
-        then(() =>
-          void this.ctx.say('fill.capacity.done').then(() => {
-            if (!this.gone) this.ctx.finish({ misses: this.misses, hints: this.hints });
-          }),
+        then(
+          () =>
+            void this.ctx.say('fill.capacity.done').then(() => {
+              if (!this.gone) this.ctx.finish({ misses: this.misses, hints: this.hints });
+            }),
         );
     }
     this.draw();
