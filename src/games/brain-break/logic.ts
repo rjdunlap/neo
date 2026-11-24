@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 12 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 13 } };
 export const PLANS = [
   { side: 3, name: 'Find 1 to 9 on nine shuffled stones' },
   { side: 4, name: 'Find 1 to 16 on sixteen shuffled stones' },
@@ -15,6 +15,7 @@ export const PLANS = [
   { side: 5, name: 'Numbers below zero, smallest first' },
   { side: 4, name: 'Two trails: 1, A, 2, B' },
   { side: 5, name: 'Two trails: 1, L, 2, K' },
+  { side: 3, name: 'Fractions and decimals, smallest first' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 /** Levels 4–6 show a sum (from 6, a sum or a take-away) on each stone instead of its number. */
@@ -79,7 +80,10 @@ export function makeValues(level: number, rng: Rng): number[] {
 }
 /** The sign for a smallest-first round: it names the rule and the last lit number, never the answer. */
 export const orderSign = (values: readonly number[], next: number) =>
-  next <= 1 ? 'Smallest first' : `After ${writeNumber(values[next - 2])}`;
+  orderSignOf(values.map(writeNumber), next);
+/** The same sign for stones whose labels are already written (level 13's fractions and decimals). */
+export const orderSignOf = (texts: readonly string[], next: number) =>
+  next <= 1 ? 'Smallest first' : `After ${texts[next - 2]}`;
 export const twoTrails = (level: number) => level >= 11 && level < 13;
 export const lettersBack = (level: number) => Math.floor(level) === 12;
 
@@ -97,6 +101,88 @@ export function alternatingSign(labels: readonly string[], next: number): string
   if (next === 1) return labels[1] === 'L' ? 'Numbers up · Letters back' : 'Numbers up · Letters up';
   const recent = labels.slice(Math.max(0, next - 3), next - 1).join(' · ');
   return `${recent} · ?   ${next % 2 === 0 ? 'Letters' : 'Numbers'}`;
+}
+
+/** Level 13 holds fractions and decimals between 0 and 2, smallest first. */
+export const comparesParts = (level: number) => Math.floor(level) === 13;
+/** A part as written on a stone, its value, and how it is said aloud. */
+export interface Part {
+  text: string;
+  value: number;
+  spoken: string;
+}
+const WORDS = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+];
+const DENOMINATORS: Record<number, readonly [string, string]> = {
+  2: ['half', 'halves'],
+  3: ['third', 'thirds'],
+  4: ['quarter', 'quarters'],
+  5: ['fifth', 'fifths'],
+  8: ['eighth', 'eighths'],
+  10: ['tenth', 'tenths'],
+};
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+/** How a fraction is said: "three quarters", "one half". */
+export function speakFraction(n: number, d: number): string {
+  const [one, many] = DENOMINATORS[d];
+  return n === 1 ? `one ${one}` : `${WORDS[n]} ${many}`;
+}
+/** How a decimal is said, digit by digit after the point: 1.25 is "one point two five". */
+export function speakDecimal(text: string): string {
+  const [whole, frac] = text.split('.');
+  return `${WORDS[Number(whole)]} point ${[...frac].map((c) => WORDS[Number(c)]).join(' ')}`;
+}
+/** The curated pool: proper and improper fractions over 2, 3, 4, 5, 8 and 10, and decimals to two places; every label fits four characters. */
+export const PART_POOL: readonly Part[] = (() => {
+  const out: Part[] = [];
+  for (const d of [2, 3, 4, 5, 8, 10])
+    for (let n = 1; n < 2 * d; n++) {
+      const text = `${n}/${d}`;
+      if (gcd(n, d) === 1 && text.length <= 4 && n < 20)
+        out.push({ text, value: n / d, spoken: speakFraction(n, d) });
+    }
+  for (let t = 1; t < 20; t++) {
+    const text = (t / 10).toFixed(1);
+    out.push({ text, value: t / 10, spoken: speakDecimal(text) });
+  }
+  for (const text of ['0.25', '0.75', '1.25', '1.75'])
+    out.push({ text, value: Number(text), spoken: speakDecimal(text) });
+  return out;
+})();
+export const isFraction = (p: Part) => p.text.includes('/');
+export const PART_GAP = 0.03;
+/** Nine parts at least 0.03 apart, at least three fractions and three decimals, smallest first. Drawn after the board. */
+export function makeParts(rng: Rng): Part[] {
+  for (;;) {
+    const picked: Part[] = [];
+    for (const p of rng.shuffle([...PART_POOL]))
+      if (picked.every((q) => Math.abs(q.value - p.value) >= PART_GAP - 1e-9)) picked.push(p);
+      else continue;
+    const nine = picked.slice(0, 9);
+    const fractions = nine.filter(isFraction).length;
+    if (nine.length === 9 && fractions >= 3 && 9 - fractions >= 3)
+      return nine.sort((a, b) => a.value - b.value);
+  }
 }
 
 export const makeBoard = (level: number, rng: Rng): number[] =>
@@ -155,10 +241,12 @@ export function makeRound(level: number, rng: Rng) {
   const rule = countBy ? trail : null;
   const values = smallestFirst ? makeValues(level, rng) : null;
   const alternating = twoTrails(level) ? alternatingLabels(level) : null;
+  const parts = comparesParts(level) ? makeParts(rng) : null;
   if (rule) labels = board.map((rank) => String(trailValue(rule, rank)));
   else if (values) labels = board.map((rank) => writeNumber(values[rank - 1]));
   else if (alternating) labels = board.map((rank) => alternating[rank - 1]);
-  return { board, labels, look, rule, values, alternating };
+  else if (parts) labels = board.map((rank) => parts[rank - 1].text);
+  return { board, labels, look, rule, values, alternating, parts };
 }
 
 /** What a stone's label makes: its number, or its sum or take-away worked out. */

@@ -26,6 +26,9 @@ export const VOICE = {
   'brain.order.try': ['That one is {m}. A smaller one is still unlit.'],
   'brain.order.next': ['After {p}, find the next one up.'],
   'brain.order.hint': ['The smallest one left is {v}. Its stone has a golden outline.'],
+  'brain.parts.start': [
+    'Find the numbers from the smallest to the biggest. Some are fractions and some are decimals. Start with the smallest one. Take your time.',
+  ],
   'brain.two.start': [
     'Follow two trails. Tap a number, then a letter. Start with one, then A. Count up and go forwards through the letters.',
   ],
