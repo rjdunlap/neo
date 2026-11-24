@@ -74,4 +74,16 @@ export const VOICE = {
   'rain.wet.further': [
     'The pond got none both times, but the second rain ran further down, because the top bed was already full.',
   ],
+  'rain.instruct.7': [
+    'A light shower and a big storm are both coming. Change the beds so one garden works for both. Tap a card to see its rain, then tap the check.',
+  ],
+  'rain.card.light': ['The light shower: four drops.'],
+  'rain.card.storm': ['The big storm: six drops.'],
+  'rain.miss7.light': ["This garden doesn't work for the light shower yet."],
+  'rain.miss7.storm': ["This garden doesn't work for the big storm yet."],
+  'rain.miss7.both': ['Neither rain works yet. Look at each card.'],
+  'rain.cause.dry': ['A bed this card needs stayed dry. Look where the water stayed.'],
+  'rain.cause.pond': ['The pond got none. The beds kept every drop.'],
+  'rain.cause.over': ['Too much ran into the pond. The garden needs to hold back more of the storm.'],
+  'rain.check.yes.cards': ['Both rains work in this garden. Every need met!'],
 } satisfies Record<string, string[]>;

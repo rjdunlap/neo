@@ -52,6 +52,21 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Before the second rain, she can tap a picture to guess. Every guess is welcome.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Two rains are coming, a light shower and a big storm. Tap a card to see its rain fall on the garden and what that card needs.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap a bed to change its ground. Try both rains, then tap the check: it tries both and marks each card.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A cross on one card says which need failed. A change that fixes one rain can break the other.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: "Tap the leaf when she's done; it appears after one rain." },
@@ -59,6 +74,7 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 3, text: "Tap the leaf when she's done; it appears after rain on two different grounds." },
     { from: 4, to: 5, text: 'The round ends when the check finds every need met.' },
     { from: 6, to: 6, text: "Tap the leaf when she's done. It appears after both rains." },
+    { from: 7, to: 7, text: 'The round ends when the check finds both cards met.' },
   ],
   note: [
     {
@@ -79,6 +95,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: 'There are no misses. In this model, soil holds two drops and stone holds none. Real wet ground soaks up less of the next rain, so more runs off. Real ground also drains and dries over time. Show me counts as help. Rounds without hints move her up, which means she joined in.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'A pretend model: soil holds two drops, stone none, and each rain starts on dry ground. Real rain gardens vary; this only compares two rains. The first failed check counts one miss; Show me counts as help.',
     },
   ],
 };

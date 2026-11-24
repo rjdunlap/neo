@@ -235,7 +235,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sorting Machine](docs/games/sorting-machine.md) | school–grown-up | Tinker Lab | 5 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters; at the grown-up band, build or repair a four-part festival lantern machine |
 | [Water Road](docs/games/water-road.md) | toddler–school | Tinker Lab | 5 | tap and stones lift onto a wooden frame until the keystone chimes, then pull the frame and the pet walks through, the way builders once made arches; later, set piers so water runs downhill and raise arches over a valley |
 | [Drop's Journey](docs/games/drops-journey.md) | preschool–school | Tinker Lab | 3 | tap a picture card to send a water drop between the sea, a cloud, a river, snow on the mountain top and the ground |
-| [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 6 | toddler–school |
+| [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 7 | toddler–school |
 | [Forecast Detective](docs/games/forecast-detective.md) | school | Tinker Lab | 2 | lift the flaps on a wind vane, two island postcards and a thermometer, then pick tomorrow's weather card and Check |
 | [Vine Snip](docs/games/vine-snip.md) | lap–school | Tinker Lab | 6 | tap a vine and the fruit falls or swings into a friend's mouth |
 | [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 9 | lap opens on one big light, a touch anywhere floats it close (level 9); then tap a light on a night lake and watch it glow in the window |

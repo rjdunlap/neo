@@ -30,25 +30,35 @@ import {
   patchArt,
   pondArt,
   predictionArt,
+  rainCardArt,
   rewindArt,
   rippleArt,
   showerBadge,
 } from './art';
 import {
+  CARD_IDS,
   CHECK,
   check,
+  checkTwo,
   compareWet,
   flipBed,
+  flipTwo,
   makeRoute,
   narration,
+  pickCard,
   planFor,
   predict,
+  previewRain,
   routeFresh,
   routeHint,
   routeLayout,
   routeNext,
   routeRestart,
   tryRoute,
+  twoFresh,
+  twoHint,
+  twoNext,
+  twoRestart,
   wetCanFinish,
   wetFinish,
   wetFlip,
@@ -58,13 +68,16 @@ import {
   wetRain,
   wetRestart,
   type Box,
+  type CardId,
   type Plan,
   type Prediction,
   type Place,
   type RouteLayout,
   type RouteRound,
   type RouteState,
+  type RouteBoard,
   type RouteTrial,
+  type TwoState,
   type WetState,
 } from './logic';
 
@@ -92,6 +105,11 @@ export class RainRoute implements Game {
   private layout: RouteLayout;
   private clock = 0;
   private wet: WetState | null;
+  /** Level 7's state: both rain cards on one garden. */
+  private two: TwoState | null;
+  private readonly cards: Container[] = [];
+  /** The board the layout is measured with: level 7 measures every bed's sign position. */
+  private readonly layoutBoard: RouteBoard;
   private readonly predictions: Container[] = [];
   private showerMarkers: [Container, Container] | null = null;
   private cloudDrops: Graphics | null = null;
@@ -116,12 +134,16 @@ export class RainRoute implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    const level = this.plan.level === 5 || this.plan.level === 6 ? this.plan.level : 4;
+    const level = this.plan.level >= 5 ? (this.plan.level as 5 | 6 | 7) : 4;
     const first = ctx.demo || !authoredShown.has(level);
     if (first && !ctx.demo) authoredShown.add(level);
     this.round = makeRoute(ctx.rng, first, level);
     this.s = routeFresh(this.round);
     this.wet = level === 6 ? wetFresh(this.round) : null;
+    this.two = level === 7 ? twoFresh(this.round) : null;
+    this.layoutBoard = this.two
+      ? { ...this.round.board, marked: [0, 1, 2].map((socket) => ({ socket, marker: 'leaf' as const })) }
+      : this.round.board;
     this.backdrop = new Backdrop(
       {
         sky: [0xcfe4f5, 0xfff6e0],
@@ -133,13 +155,12 @@ export class RainRoute implements Game {
       },
       ctx.view,
     );
-    this.layout = routeLayout(ctx.view, this.round.board, this.round.mirror)!;
+    this.layout = routeLayout(ctx.view, this.layoutBoard, this.round.mirror)!;
     const c = this.layout.cloud;
     this.cloud = cloudArt(c.w, c.h);
     // The cloud previews the size of the next shower on levels with variable rainfall.
     if (level >= 5) {
-      this.cloudDrops = cloudDropsArt(this.round.board.units, c.h / 2 - 16);
-      this.cloud.addChild(this.cloudDrops);
+      this.drawCloudDrops();
     }
     if (this.wet) {
       this.showerMarkers = [showerBadge(1), showerBadge(2)];
@@ -180,7 +201,16 @@ export class RainRoute implements Game {
         this.predictions.push(card);
       }
     }
-    ctx.stage.addChild(this.cloud, this.check, ...this.predictions);
+    if (this.two) {
+      for (const id of CARD_IDS) {
+        const node = new Container();
+        node.hitArea = new Rectangle(-60, -60, 120, 120);
+        onTap(node, () => this.tapCard(id, node));
+        this.cards.push(node);
+      }
+      this.drawCards();
+    }
+    ctx.stage.addChild(this.cloud, this.check, ...this.predictions, ...this.cards);
     this.drawWetControls();
     this.resize(ctx.view);
   }
@@ -207,6 +237,29 @@ export class RainRoute implements Game {
         drops: this.settled.length,
       };
     }
+    if (this.two) {
+      const t = this.two;
+      return {
+        level: this.round.level,
+        board: this.round.two!.id,
+        active: t.active,
+        marked: this.board.marked.map((m) => m.socket),
+        units: this.board.units,
+        start: this.round.start.slice(),
+        surfaces: t.sockets.slice(),
+        friend: this.round.friend,
+        previews: t.trials.map((x) => (x ? [...x.stored, x.pond] : null)),
+        ticks: t.verdicts.slice(),
+        misses: t.misses,
+        hints: t.hints,
+        glow: t.glow,
+        pointing: t.pointing ? 'check' : null,
+        passed: t.passed,
+        busy: this.busy,
+        finished: this.finished,
+        drops: this.settled.length,
+      };
+    }
     const cur = this.s.current;
     return {
       level: this.round.level,
@@ -223,7 +276,7 @@ export class RainRoute implements Game {
       hints: this.s.hints,
       glow: this.s.glow,
       pointing: this.s.pointing ? 'check' : null,
-      passed: this.s.passed,
+      passed: this.passed,
       busy: this.busy,
       finished: this.finished,
       drops: this.settled.length,
@@ -242,7 +295,8 @@ export class RainRoute implements Game {
 
   destroy() {
     this.finished = true;
-    for (const n of [this.cloud, this.check, ...this.predictions, ...this.patches]) this.ctx.tw.kill(n.scale);
+    for (const n of [this.cloud, this.check, ...this.predictions, ...this.cards, ...this.patches])
+      this.ctx.tw.kill(n.scale);
     for (const n of this.signs) this.ctx.tw.kill(n);
     if (this.friend) this.ctx.tw.kill(this.friend);
     for (const n of this.flying) this.ctx.tw.kill(n);
@@ -258,7 +312,51 @@ export class RainRoute implements Game {
   }
 
   private get sockets() {
-    return this.wet?.sockets ?? this.s.sockets;
+    return this.wet?.sockets ?? this.two?.sockets ?? this.s.sockets;
+  }
+
+  /** The board of the card now showing (level 7), else the round's board. */
+  private get board(): RouteBoard {
+    return this.two ? this.round.two![this.two.active] : this.round.board;
+  }
+
+  private get passed() {
+    return this.two ? this.two.passed : this.s.passed;
+  }
+
+  private drawCloudDrops() {
+    this.cloudDrops?.destroy();
+    this.cloudDrops = cloudDropsArt(this.board.units, this.layout.cloud.h / 2 - 16);
+    this.cloud.addChildAt(this.cloudDrops, 1);
+  }
+
+  /** Level 7's two rain cards: the active one lit, a tick or cross after a Check. */
+  private drawCards() {
+    const t = this.two;
+    if (!t) return;
+    CARD_IDS.forEach((id, i) => {
+      const node = this.cards[i];
+      node.removeChildren().forEach((c) => c.destroy({ children: true }));
+      node.addChild(rainCardArt(id, this.round.two![id], t.active === id, t.verdicts[i]));
+    });
+  }
+
+  private tapCard(id: CardId, node: Container) {
+    if (this.busy || this.finished || !this.two || this.two.passed) return;
+    this.squash(node);
+    sfx.pluck(id === 'light' ? 4 : 1, 0.25);
+    this.two = pickCard(this.two, id);
+    this.talk++;
+    this.drawCards();
+    this.drawCloudDrops();
+    // The other rain's drops would read against this card's signs, so the beds go back to fresh ground.
+    if (this.settled.length) {
+      this.busy = true;
+      void this.freshen().then(() => {
+        if (!this.finished) this.idle();
+      });
+    } else this.drawSigns();
+    void this.ctx.say(`rain.card.${id}` as LineId);
   }
 
   private drawBoard() {
@@ -292,7 +390,10 @@ export class RainRoute implements Game {
     const fixed = this.round.board.fixed[i];
     if (fixed) g.addChild(fixedArt(fixed, b.patch.w, b.patch.h, this.dir(i)));
     // A marked bed wears its sign's marker in its lower uphill corner, so a sign and its bed match without reading.
-    const mark = this.round.level === 5 ? this.round.board.marked.find((m) => m.socket === i) : undefined;
+    const mark =
+      this.round.level === 5 || this.round.level === 7
+        ? this.board.marked.find((m) => m.socket === i)
+        : undefined;
     if (mark) {
       const m = markerArt(mark.marker);
       m.position.set(-this.dir(i) * (b.patch.w / 2 - 28), b.patch.h / 2 - 24);
@@ -308,19 +409,37 @@ export class RainRoute implements Game {
     if (this.wet) return;
     this.signLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     const l = this.layout;
-    const beds = this.round.board.marked.map((m, i) => {
+    const board = this.board;
+    const beds = board.marked.map((m, i) => {
       const n = Math.min(2, this.settled.filter((d) => d.at === m.socket).length);
-      const b = l.bedSigns[i];
+      const b = l.bedSigns[this.two ? m.socket : i];
       const sign = needSignArt('bed', n, n === 2, b.w, b.h, m.marker);
       sign.position.set(b.x, b.y);
       return sign;
     });
-    const inPond = Math.min(1, this.settled.filter((d) => d.at === 'pond').length);
-    const pond = needSignArt('pond', inPond, inPond === 1, l.pondSign.w, l.pondSign.h);
-    pond.position.set(l.pondSign.x, l.pondSign.y);
+    const rule = board.pond ?? 'reach';
+    // A light shower has no pond need, so level 7 draws no pond sign for it.
+    const pond =
+      rule === 'any'
+        ? null
+        : this.pondSign(
+            rule,
+            this.settled.filter((d) => d.at === 'pond').length,
+            this.two?.trials[this.two.active === 'light' ? 0 : 1],
+          );
     /** The marked beds' signs in `board.marked` order, then the pond's. */
-    this.signs = [...beds, pond];
+    this.signs = pond ? [...beds, pond] : beds;
     this.signLayer.addChild(...this.signs);
+  }
+
+  private pondSign(rule: 'reach' | 'hold', inPond: number, settledRun?: RouteTrial | null) {
+    const l = this.layout;
+    const shown = Math.min(rule === 'hold' ? 2 : 1, inPond);
+    // "Hold back" is met only once a whole rain has settled with at most two in the pond.
+    const met = rule === 'hold' ? !!settledRun && settledRun.pond <= 2 : inPond >= 1;
+    const sign = needSignArt('pond', shown, met, l.pondSign.w, l.pondSign.h, 'leaf', rule);
+    sign.position.set(l.pondSign.x, l.pondSign.y);
+    return sign;
   }
 
   private placeSettled() {
@@ -346,9 +465,10 @@ export class RainRoute implements Game {
   // ---- rain ----
 
   private tapCloud() {
-    if (this.busy || this.finished || this.s.passed) return;
+    if (this.busy || this.finished || this.passed) return;
     this.squash(this.cloud);
     if (this.wet) void this.tryWet(this.wet);
+    else if (this.two) void this.tryTwo(true);
     else void this.tryIt(true);
   }
 
@@ -369,6 +489,26 @@ export class RainRoute implements Game {
     this.idle();
     this.drawSigns();
     if (narrate) await this.narrate();
+  }
+
+  /** Level 7: the active card's rain on the current garden from dry ground, then (when `narrate`) where it went. */
+  private async tryTwo(narrate: boolean) {
+    this.busy = true;
+    this.talk++;
+    this.two = { ...this.two!, pointing: false };
+    if (this.settled.length) {
+      await this.freshen();
+      if (this.finished) return;
+    }
+    this.drawSigns();
+    const next = previewRain(this.two, this.round);
+    const t = next.trials[next.active === 'light' ? 0 : 1]!;
+    await this.showRun(t);
+    if (this.finished) return;
+    this.two = next;
+    this.idle();
+    this.drawSigns();
+    if (narrate) await this.sayLines(narration(t, this.board));
   }
 
   private resetQuiet() {
@@ -615,11 +755,16 @@ export class RainRoute implements Game {
   // ---- ground ----
 
   private tapBed(i: number) {
-    if (this.busy || this.finished || this.s.passed) return;
+    if (this.busy || this.finished || this.passed) return;
     if (this.wet) {
       this.resetQuiet();
       this.wet = wetFlip(this.wet, i);
       this.drawWetControls();
+      this.showFlip(i);
+      return;
+    }
+    if (this.two) {
+      this.two = flipTwo(this.two, i, this.round);
       this.showFlip(i);
       return;
     }
@@ -642,6 +787,7 @@ export class RainRoute implements Game {
 
   private showFlip(i: number) {
     this.talk++;
+    this.drawCards();
     if (this.sockets[i] === 'stone') sfx.clunk();
     else sfx.squish();
     if (this.settled.length) {
@@ -663,7 +809,7 @@ export class RainRoute implements Game {
   // ---- checking ----
 
   private tapCheck() {
-    if (this.busy || this.finished || this.s.passed) return;
+    if (this.busy || this.finished || this.passed) return;
     this.squash(this.check);
     if (this.wet) {
       const next = wetFinish(this.wet);
@@ -672,6 +818,8 @@ export class RainRoute implements Game {
       this.finished = true;
       sfx.tada();
       this.ctx.finish({ misses: 0, hints: next.hints });
+    } else if (this.two) {
+      void this.judgeTwo();
     } else {
       void this.judge();
     }
@@ -712,6 +860,46 @@ export class RainRoute implements Game {
     if (this.s.glow !== null && this.s.glow !== before) await this.ctx.say('rain.glow');
   }
 
+  /** Level 7's Check: both rains from dry ground, a tick or cross on each card, the first failing card's rain as the trace. */
+  private async judgeTwo() {
+    const before = this.two!.glow;
+    const { state, verdict } = checkTwo(this.two!, this.round);
+    if (verdict.result === 'ignored') return;
+    this.two = state;
+    this.busy = true;
+    this.talk++;
+    this.drawCards();
+    if (verdict.result === 'pass') {
+      sfx.tada();
+      this.cheer();
+      await this.ctx.say('rain.check.yes.cards');
+      if (this.finished) return;
+      this.finished = true;
+      this.ctx.finish({ misses: state.misses, hints: state.hints });
+      return;
+    }
+    sfx.boing();
+    this.drawCloudDrops();
+    if (this.settled.length) {
+      await this.freshen();
+      if (this.finished) return;
+    }
+    this.drawSigns();
+    await this.showRun(state.trials[state.active === 'light' ? 0 : 1]!);
+    if (this.finished) return;
+    this.drawSigns();
+    this.wobble(verdict.need ?? this.signs.length - 1);
+    this.idle();
+    const token = ++this.talk;
+    await this.ctx.say(`rain.miss7.${verdict.both ? 'both' : verdict.card}` as LineId);
+    if (this.finished || token !== this.talk) return;
+    await this.ctx.say(`rain.cause.${verdict.cause}` as LineId);
+    if (this.finished || token !== this.talk) return;
+    if (!(await this.sayLines(narration(state.trials[state.active === 'light' ? 0 : 1]!, this.board))))
+      return;
+    if (state.glow !== null && state.glow !== before) await this.ctx.say('rain.glow');
+  }
+
   /** The unmet need's sign wobbles (an index into `signs`). */
   private wobble(i: number) {
     const sign = this.signs[i];
@@ -730,12 +918,24 @@ export class RainRoute implements Game {
 
   /** Show me: the pet changes one bed toward a solution (one hint), or points at the Check when it already passes. */
   askForHint() {
-    if (this.busy || this.finished || this.s.passed) return;
+    if (this.busy || this.finished || this.passed) return;
     if (this.wet) {
       this.wet = wetHint(this.wet);
       this.resetQuiet();
       this.talk++;
       void this.ctx.say(this.wet.pointing === 'leaf' ? 'rain.done' : 'rain.hint.cloud');
+      return;
+    }
+    if (this.two) {
+      const { state, hint } = twoHint(this.two, this.round);
+      this.two = state;
+      if (hint.kind === 'flip') {
+        this.showFlip(hint.bed);
+        void this.ctx.say('rain.hint.flip');
+      } else {
+        this.talk++;
+        void this.ctx.say('rain.hint.check');
+      }
       return;
     }
     const { state, hint } = routeHint(this.s, this.round);
@@ -761,6 +961,9 @@ export class RainRoute implements Game {
         this.resetQuiet();
         this.wet = wetRestart(this.wet, this.round);
         this.drawWetControls();
+      } else if (this.two) {
+        this.two = twoRestart(this.two, this.round);
+        this.drawCards();
       } else this.s = routeRestart(this.s, this.round);
       for (const d of this.settled) d.node.destroy({ children: true });
       this.settled = [];
@@ -782,7 +985,7 @@ export class RainRoute implements Game {
   }
 
   resize(view: View) {
-    this.layout = routeLayout(view, this.round.board, this.round.mirror) ?? this.layout;
+    this.layout = routeLayout(view, this.layoutBoard, this.round.mirror) ?? this.layout;
     const l = this.layout;
     this.backdrop.resize(view);
     if (this.busy) this.stale = true;
@@ -793,6 +996,7 @@ export class RainRoute implements Game {
     this.cloud.position.set(l.cloud.x, l.cloud.y);
     this.check.position.set(l.check.x, l.check.y);
     this.beds.forEach((b, i) => b.position.set(l.beds[i].patch.x, l.beds[i].patch.y));
+    this.layout.cards?.forEach((b, i) => this.cards[i]?.position.set(b.x, b.y));
     this.placePredictions();
   }
 
@@ -807,7 +1011,7 @@ export class RainRoute implements Game {
   update(dt: number) {
     this.clock += dt;
     this.glow.clear();
-    if (this.finished || this.s.passed) return;
+    if (this.finished || this.passed) return;
     const pulse = 6 + 4 * Math.sin(this.clock * 5);
     const ring = (x: number, y: number, w: number, h: number) =>
       this.glow
@@ -818,11 +1022,12 @@ export class RainRoute implements Game {
       return;
     }
     // The causal glow sits behind the bed's tap target, so it never blocks a tap.
-    if (this.s.glow !== null) {
-      const p = this.layout.beds[this.s.glow].patch;
+    const glow = this.two ? this.two.glow : this.s.glow;
+    if (glow !== null) {
+      const p = this.layout.beds[glow].patch;
       ring(p.x, p.y, p.w, p.h);
     }
-    if (this.s.pointing && !this.busy) {
+    if ((this.two ? this.two.pointing : this.s.pointing) && !this.busy) {
       const c = this.layout.check;
       ring(c.x, c.y, c.w, c.h);
     }
@@ -852,7 +1057,7 @@ export class RainRoute implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.s.passed) return null;
+    if (this.busy || this.finished || this.passed) return null;
     if (this.wet) {
       const s = this.wet;
       const target =
@@ -862,6 +1067,18 @@ export class RainRoute implements Game {
             ? this.check
             : this.cloud;
       return { tap: { on: target }, pause: 0.8 };
+    }
+    if (this.two) {
+      const n = twoNext(this.two, this.round);
+      const on =
+        n.kind === 'cloud'
+          ? this.cloud
+          : n.kind === 'check'
+            ? this.check
+            : n.kind === 'card'
+              ? this.cards[CARD_IDS.indexOf(n.card)]
+              : this.beds[n.bed];
+      return { tap: { on }, pause: 0.8 };
     }
     const n = routeNext(this.s, this.round);
     const on = n.kind === 'cloud' ? this.cloud : n.kind === 'check' ? this.check : this.beds[n.bed];
