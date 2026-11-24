@@ -80,6 +80,47 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         // The phone view stays for the play below; the next launch gets the old size back.
         if (was) restore.push(was);
       }
+      if (mode === 'family' || mode === 'end') {
+        // Levels 7 and 8, told then asked: the first question says the sounds, the next only the word; the picture says it again, free.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const drop = async (m) => {
+            const target = g.slotAt(g.filled);
+            await kit.dragTo(m, g.top.parent.toGlobal({ x: target.x, y: target.y + 40 }), 10);
+            await kit.sleep(500);
+          };
+          for (let q = 0; q < g.questions.length; q++) {
+            await kit.until(() => g.index === q && !g.busy, 10000);
+            const { answer } = g.question;
+            const want = g.plan.mode === 'family' ? answer[0] : answer[2];
+            const right = g.monsters.find((m) => !m.placed && m.letter === want);
+            if (q === 0) {
+              const wrong = g.monsters.find((m) => !m.placed && m.letter !== want);
+              await drop(wrong);
+              await drop(wrong);
+              if (g.misses !== 2 || g.hints !== 1) throw new Error(`Hint: ${g.misses} ${g.hints}`);
+              await kit.until(() => !g.unasked, 5000);
+              if (neo.scene.instruction?.id !== `monster.${g.plan.mode}`)
+                throw new Error(`First question said ${neo.scene.instruction?.id}`);
+            } else if (q === 1) {
+              const [misses, hints] = [g.misses, g.hints];
+              kit.tapOn(g.picture);
+              await kit.sleep(500);
+              if (neo.scene.instruction?.id !== `monster.${g.plan.mode}.word`)
+                throw new Error(`Second question said ${neo.scene.instruction?.id}`);
+              if (g.misses !== misses || g.hints !== hints) throw new Error('A picture tap counted');
+            }
+            await drop(right);
+          }
+        });
+        await screenshot(`word-monsters-${level}`);
+        await finished('word-monsters');
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          `Word Monsters ${level} (${mode}): told then asked, picture tap free, hint and saved score passed`,
+        );
+        continue;
+      }
       if (mode === 'repair') {
         await page.evaluate(async () => {
           const g = neo.scene.game;
