@@ -1,3 +1,0 @@
-**`sudoku-garden` 9 × 9 squares on an upright phone** (grown-up; existing-game bug fix tier): the 9 × 9 bed's squares are 84 units, 42.7 CSS px at 390 × 844, under the comfortable 44 px, and `src/games/grownup-thumbs.test.ts` names the game in `UNDER` until it is fixed or eased; ease it the way Jar Clues was (a lens that lifts the touched square above the thumb, or a press-and-slide), never a smaller bed; update `LENSED` and the game page. [Game page](../../games/sudoku-garden.md#design-notes)
-
-Claimed 2026-11-24 (branch `claude/sudoku-garden-lens`): lens above the thumb.
