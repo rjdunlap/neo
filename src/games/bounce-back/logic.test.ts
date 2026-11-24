@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { Container, Graphics } from 'pixi.js';
+import { bounceBack } from './index';
 import { Rng } from '../../engine/random';
 import {
   DUEL_PLAN,
@@ -236,6 +238,46 @@ describe('Bounce Back', () => {
     expect(versusMisses(true, 6)).toBe(3);
     expect(versusMisses(false, 5)).toBe(5);
     expect(landingY(300, 0, aim(1024, 768, PLANS[5]))).toBeCloseTo(300);
+  });
+
+  it('preserves saved sticker drawings for seeds 0–99 before any other RNG or art change', () => {
+    const fingerprint = (node: Container): unknown => ({
+      x: node.x,
+      y: node.y,
+      scale: [node.scale.x, node.scale.y],
+      drawing:
+        'context' in node
+          ? (node as Graphics).context.instructions.map((i) => {
+              if (i.action === 'texture') throw new Error('Bounce Back stickers stay code-drawn');
+              return {
+                action: i.action,
+                path: i.data.path.instructions,
+                style: {
+                  color: i.data.style.color,
+                  width: 'width' in i.data.style ? i.data.style.width : undefined,
+                },
+              };
+            })
+          : [],
+      children: node.children.map(fingerprint),
+    });
+    expect(
+      Array.from({ length: 100 }, (_, seed) => {
+        const art = bounceBack.sticker(seed);
+        const result = JSON.stringify(fingerprint(art));
+        art.destroy({ children: true });
+        return [...result].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      }),
+    ).toMatchSnapshot();
+  });
+
+  it('never finishes a round on one pet return: every rally-counted goal needs at least two of her own bounces', () => {
+    // The serve goes to her, so the pet can only return after she has; both paddles' hits add to one rally, so she makes ceil(goal / 2) of them.
+    const counted = PLANS.filter((p) => ['solo', 'rally', 'together', 'count', 'skip'].includes(p.mode));
+    expect(counted.length).toBeGreaterThanOrEqual(5);
+    for (const p of counted) expect(Math.ceil(p.goal / 2)).toBeGreaterThanOrEqual(2);
+    // The goal levels end on goals past the keeper, never on bounces, and the pet never finishes them either.
+    for (const p of PLANS.filter((q) => isGoalMode(q.mode))) expect(p.goal).toBeGreaterThanOrEqual(5);
   });
 
   it('lobs only on the play-together and count rallies, gently, and the child can always meet the return', () => {
