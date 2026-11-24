@@ -627,7 +627,7 @@ export const fillDump: GameModule = {
   region: 'counting-cove',
   challenge: 'numbers',
   skills: ['containment', 'counting', 'cause-effect', 'capacity'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeFill,
   music: STYLES.stickers,

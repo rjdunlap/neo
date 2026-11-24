@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/fill-dump; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `fill-dump` · **Land:** Counting Cove · **Ages:** lap–preschool · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `fill-dump` · **Land:** Counting Cove · **Ages:** lap–pre-K · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** containment, counting, cause-effect, capacity
 
@@ -11,6 +11,7 @@
 | lap | 1–2 |
 | toddler | 1, 2, 6, 3, 4 |
 | preschool | 1, 2, 6, 3, 4, 5, 7 |
+| pre-K | 5, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +22,7 @@
 | 5 | Tip the jug to fill three cups to their lines; catch and reuse spills |
 | 6 | Full and empty: 4 times, tip out the full basket or fill the empty one |
 | 7 | Guess which holds more, pour to test, then answer from the evidence: three pairs |
+| 8 | Tricky pairs: tall and thin or short and wide; guess which holds more, pour to test |
 
 <!-- end generated -->
 

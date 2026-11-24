@@ -13,7 +13,9 @@ import {
   capacityPair,
   capacityPour,
   capacityRepour,
+  capacityTaller,
   capacityTap,
+  isTrickyLevel,
   pourAmount,
   POUR_DISTANCE,
   startCapacity,
@@ -43,6 +45,7 @@ export class CapacityGame implements Game {
   private clock = 0;
   private gone = false;
   private view: View;
+  private readonly tricky: boolean;
 
   get misses() {
     return this.state.misses;
@@ -52,7 +55,8 @@ export class CapacityGame implements Game {
   }
 
   constructor(private readonly ctx: GameContext) {
-    this.state = startCapacity(ctx.rng);
+    this.tricky = isTrickyLevel(ctx.level);
+    this.state = startCapacity(ctx.rng, this.tricky);
     this.view = ctx.view;
     this.jug.addChild(this.jugArt);
     this.cup.addChild(this.cupArt);
@@ -116,6 +120,7 @@ export class CapacityGame implements Game {
   private choose(side: 0 | 1) {
     if (this.pointer !== null || this.gone || this.state.done) return;
     (side === 0 ? this.jug : this.cup).alpha = 0.65;
+    const answered = capacityPair(this.state);
     const event = capacityTap(this.state, side);
     if (event === 'wrong') {
       sfx.boing();
@@ -123,15 +128,23 @@ export class CapacityGame implements Game {
     } else {
       sfx.tick();
       if (event === 'guess') void this.ctx.instruct('fill.capacity.pour');
-      if (event === 'next') void this.ctx.instruct('fill.capacity.guess');
+      // Level 8 names what happened ("the short one held more") before the next pair or the finish.
+      const named = this.tricky && (event === 'next' || event === 'done') ? this.namedWinner(answered) : null;
+      const then = (f: () => void) => (named ? void this.ctx.say(named).then(() => !this.gone && f()) : f());
+      if (event === 'next') then(() => void this.ctx.instruct('fill.capacity.guess'));
       if (event === 'done')
-        void this.ctx.say('fill.capacity.done').then(() => {
-          if (!this.gone) this.ctx.finish({ misses: this.misses, hints: this.hints });
-        });
+        then(() =>
+          void this.ctx.say('fill.capacity.done').then(() => {
+            if (!this.gone) this.ctx.finish({ misses: this.misses, hints: this.hints });
+          }),
+        );
     }
     this.draw();
   }
 
+  private namedWinner(p: ReturnType<typeof capacityPair>) {
+    return capacityMore(p) === capacityTaller(p) ? 'fill.tricky.tallmore' : 'fill.tricky.shortmore';
+  }
   private evidenceLine() {
     return capacityMore(capacityPair(this.state)) === 0 ? 'fill.capacity.spill' : 'fill.capacity.room';
   }

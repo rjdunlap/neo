@@ -242,7 +242,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Fill and Dump
 
-*lap–preschool* · [Fill and Dump](games/fill-dump.md)
+*lap–pre-K* · [Fill and Dump](games/fill-dump.md)
 
 ### Number Trails
 
