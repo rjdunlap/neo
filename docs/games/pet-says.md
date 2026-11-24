@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–4 |
 | pre-K | 3–10 |
-| school | 6–11 |
+| school | 6–12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,13 +27,14 @@
 | 9 | A walk in the woods: act out four stops on a woodland, beach or farm adventure |
 | 10 | Sun or moon: listen for the sign on each of eight turns. Copy on the sun and do the opposite on the moon. |
 | 11 | Pet says, opposite: when you hear the pet’s name first, do the opposite. If you only hear the move, stay still. |
+| 12 | This hand: wave the hand that lights up (blue or red), then left and right like a mirror: wave your left hand, touch your right ear |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->
 
 **Starts as:** the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move)
 
-**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays), More opposites (stomp or tiptoe, fast or slow, loud or soft, wide or a hug), four-stop movement stories, Sun or moon (the rule changes during the round), and Pet says, opposite (do the opposite when the pet says its name first and stay still for a trick). A gentle arrow reminder and a held "once more" button support grown-up co-play.
+**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays), More opposites (stomp or tiptoe, fast or slow, loud or soft, wide or a hug), four-stop movement stories, Sun or moon (the rule changes during the round), Pet says, opposite (do the opposite when the pet says its name first and stay still for a trick), and This hand (wave the hand that lights up, then the left or right named "like a mirror"). A gentle arrow reminder and a held "once more" button support grown-up co-play.
 
 ## Design notes
 
@@ -52,3 +53,5 @@
 **Pet says, opposite (level 11, 2026-11-14).** The pet gives eight cues drawn from three opposite pairs. When it says its name first, players do the opposite and the first arrow tap shows the answer. On two or three spaced tricks the pet says just the move, then asks if everyone stayed still. One arrow tap advances those turns. School plays levels 6–11.
 
 **What the guide repeats (level 7, 2026-11-18).** "Music! Freeze!" (`says.music`) is still said whatever she does, and is now the instruction (`ctx.instruct`), so while the music plays the guide and caption say freeze instead of keeping "Shh, it is quiet. Dance!"; each quiet stretch still instructs `says.quiet.go`.
+
+**This hand (level 12, 2026-11-23).** School only (6-12). Six turns: three lit turns where the blue (left) or red (right) mitten glows and the pet says "Wave this hand: the red one!", then one spoken "like a mirror" line, then three named turns ("Wave your left hand!", "Touch your right ear!", one mitten only) with no ring. The mirror convention (decision 3): the pet faces her, so its screen-right mitten is her right hand; `HAND_MITTEN` in `logic.ts` is the one place a side becomes a mitten, and the mittens are always also told apart by color. No side comes up three times running, both sides appear in the lit turns and in the named ones, and named turns wave once and touch an ear at least once. Nothing is detected, so misses stay 0. The held "once more" button replays the turn, lighting the ring on a named turn, and counts one hint. Rule tests are in `logic.test.ts`; the arrow-only `autotouch()` bot is unchanged. The dive's slice 12, "Your turn!", is not built.

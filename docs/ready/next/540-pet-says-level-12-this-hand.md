@@ -1,1 +1,0 @@
-**`pet-says` level 12, This hand** (pre-K, school; new levels on an existing interaction: typecheck, rule tests, one browser play of level 12 and `fingerdemo` at it): the mirror rule settled by decision 3; ID 12 is free. [Dive](../../deep-dives/pet-says.md#build-slices-in-order)
