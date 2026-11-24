@@ -18,6 +18,8 @@ import {
   noteFor,
   THINGS,
   ROOMS,
+  YAWN,
+  yawner,
   SLOTS,
   isAnimal,
   isLight,
@@ -413,5 +415,32 @@ describe('Goodnight Room', () => {
         }
       }
     }
+  });
+});
+
+describe('the yawn nudge', () => {
+  const room: readonly Thing[] = ['teddy', 'kitten', 'clock', 'lamp'];
+  it('yawns only where any friend still awake is right, and only someone awake', () => {
+    for (const plan of PLANS) {
+      const rng = new Rng(7);
+      for (let n = 0; n < 40; n++) {
+        const asleep = new Set(room.filter(() => rng.next() < 0.5));
+        const who = yawner(plan, room, asleep, rng);
+        if (plan.mode !== 'all' && plan.mode !== 'tour') expect(who).toBeNull();
+        else if (asleep.size === room.length) expect(who).toBeNull();
+        else expect(who !== null && room.includes(who) && !asleep.has(who)).toBe(true);
+      }
+    }
+  });
+  it('turns to another friend when one is awake, and to the last one when she is the only one', () => {
+    const plan = planFor(1);
+    const rng = new Rng(3);
+    for (let n = 0; n < 30; n++) expect(yawner(plan, room, new Set(), rng, 'teddy')).not.toBe('teddy');
+    expect(yawner(plan, room, new Set(['kitten', 'clock', 'lamp']), rng, 'teddy')).toBe('teddy');
+  });
+  it('is gentle: a long quiet first, a longer one between, and a few yawns at most', () => {
+    expect(YAWN.first).toBeGreaterThanOrEqual(8);
+    expect(YAWN.every).toBeGreaterThan(YAWN.first);
+    expect(YAWN.most).toBeLessThanOrEqual(3);
   });
 });
