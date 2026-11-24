@@ -94,6 +94,7 @@ export const PLANS: SortPlan[] = [
 ];
 
 export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 6, order: [6, 1] },
   prek: { min: 1, max: 13, order: [6, 1, 12, 2, 3, 13] },
   school: { min: 2, max: 13, order: [2, 12, 3, 13, 4, 5, 7, 8, 9, 11] },
 };

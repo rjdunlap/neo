@@ -114,7 +114,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 13 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
 | [Animal Snack](docs/games/animal-snack.md) | lap–school | Barnyard | 10 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
-| [Critter Sort](docs/games/critter-sort.md) | pre-K–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
+| [Critter Sort](docs/games/critter-sort.md) | preschool–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |
 | [Bolt Boards](docs/games/bolt-boards.md) | lap–school | Barnyard | 10 | tap anywhere in the play area to turn one big bolt, drop the board and send the fruit into the basket |
@@ -187,7 +187,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Rule Machine](docs/games/rule-machine.md) | pre-K–school | Puzzle Peaks | 6 | creatures walk into a hat machine and come out wearing a hat; tap the picture of what the next one will look like |
 | [Garden Rows](docs/games/garden-rows.md) | preschool–school | Puzzle Peaks | 11 | plant a 3 by 3 flower bed so each row has one of every flower |
 | [Ferry Jam](docs/games/ferry-jam.md) | pre-K–school | Puzzle Peaks | 10 | drag boats along their lanes in a small harbor so the red ferry can reach the dock; nothing is a mistake, and undo is always there |
-| [Critter Crossing](docs/games/critter-crossing.md) | pre-K–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |
+| [Critter Crossing](docs/games/critter-crossing.md) | preschool–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |
 | [Mossy Path](docs/games/mossy-path.md) | lap–school | Puzzle Peaks | 12 | tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 and 9 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch; level 10 (school) draws the whole route as paw prints, then taps the turtle to walk it; level 11 (school) is coverage where thick tufts are crossed twice; level 12 (lap) is a straight corridor where any touch anywhere steps the turtle to the pond |
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 5 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
 | [Domino Pond](docs/games/domino-pond.md) | pre-K–grown-up | Puzzle Peaks | 3 | Turn and lay two stepping stones to match the dots on both ends. |

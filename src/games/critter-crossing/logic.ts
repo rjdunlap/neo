@@ -146,6 +146,7 @@ export const PLANS: CrossPlan[] = [
 ];
 
 export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 8, order: [1, 8, 2, 3] },
   school: { min: 2, max: 7 },
 };

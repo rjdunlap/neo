@@ -34,6 +34,7 @@ import { fits, HAVE_WORDS, type PlantRule } from '../../learning/sorting/rules';
 
 describe('Critter Sort', () => {
   it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
+    expect(critterSort.levels('preschool').order).toEqual([6, 1]);
     expect(critterSort.levels('prek').order).toEqual([6, 1, 12, 2, 3, 13]);
     expect(critterSort.levels('school').order).toEqual([2, 12, 3, 13, 4, 5, 7, 8, 9, 11]);
     expect(critterSort.entryLevels).toEqual([6]);

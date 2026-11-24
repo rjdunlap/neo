@@ -260,7 +260,10 @@ describe('game registry', () => {
     const g = gameById('critter-crossing')!;
     const prek = g.levels('prek'),
       school = g.levels('school');
-    expect(g.bands).toEqual(['prek', 'school']);
+    expect(g.bands).toEqual(['preschool', 'prek', 'school']);
+    // Preschool plays only the shown one-rule sign; a saved slashed-sign level lands back on it.
+    expect(levelsInOrder(g.levels('preschool'))).toEqual([1]);
+    expect(landing(8, g.levels('preschool'), g.entryLevels)).toBe(1);
     expect(levelsInOrder(prek)).toEqual([1, 8, 2, 3]);
     expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7]);
     expect(g.entryLevels).toEqual([8]);

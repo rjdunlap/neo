@@ -176,7 +176,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Critter Sort
 
-*pre-K–school* · [Critter Sort](games/critter-sort.md)
+*preschool–school* · [Critter Sort](games/critter-sort.md)
 
 ### Sing-Along Barn
 
@@ -480,7 +480,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Critter Crossing
 
-*pre-K–school* · [Critter Crossing](games/critter-crossing.md)
+*preschool–school* · [Critter Crossing](games/critter-crossing.md)
 
 ### Mossy Path
 
