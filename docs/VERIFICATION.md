@@ -75,7 +75,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `feelpoke` | 2026-11-13 · [feelings-faces level 9: a touch anywhere pokes (lap)](verification/2026-11-13-feelings-faces-level-9-a-touch-anywhere-pokes-lap.md) | — |
 | `fencethefield` | 2026-11-23 · [Fence the Field levels 3–4](verification/2026-11-23-fence-the-field-levels-3-4.md) | `FENCE_FROM=4` |
 | `festivalsignals` | 2026-11-11 · [Sorting Machine levels 8–9, Festival Signals and Fix the lantern](archive/VERIFICATION-2026-11-11.md#2026-11-11--sorting-machine-levels-89-festival-signals-and-fix-the-lantern-pr-1497) | Levels 8–9 |
-| `fingerdemo` | 2026-11-24 · [Stamp Studio level 11: Stamp a duck! (PR #2080)](verification/2026-11-23-stamp-studio-level-11-stamp-a-duck.md) | `FINGER_ONLY=stamp-studio FINGER_LEVELS=11` |
+| `fingerdemo` | 2026-11-24 · [Stop and Go level 7 Smart light (PR #2102)](verification/2026-11-24-stop-and-go-level-7-smart-light.md) | `FINGER_ONLY=stop-and-go FINGER_LEVELS=7` |
 | `foodweb` | 2026-10-24 · [Food Web Workshop levels 1–3 (ecosystems F2)](archive/VERIFICATION-2026-10-24.md#2026-10-24--food-web-workshop-levels-13-ecosystems-f2) | — |
 | `forecastdetective` | 2026-10-31 · [Forecast Detective levels 1–2 (weather-water slice 9)](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Levels 1–2 |
 | `fossildig` | 2026-11-12 · [U7d fix batch 25: moon-window, sense-detective and fossil-dig never hold a tap on a cut line](verification/2026-11-12-u7d-fix-batch-25-moon-window-sense-detective-and-fossil-dig.md) | — |
@@ -222,7 +222,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `welcomeways` | 2026-11-06 · [Welcome Ways levels 5–7](archive/VERIFICATION-2026-11-06.md#2026-11-06--welcome-ways-levels-57) | `WELCOME_ONLY=deep` |
 | `whoami` | 2026-11-20 · [Who Am I? level 8, the platypus](verification/2026-11-20-who-am-i-level-8-the-platypus.md) | — |
 | `woodland` | 2026-10-20 · [Mail Carrier: support truth (slice 1)](archive/VERIFICATION-2026-10-20.md#2026-10-20--mail-carrier-support-truth-slice-1) | — |
-| `woods` | 2026-11-23 · [Market Stall level 13, Trade up](verification/2026-11-23-market-stall-level-13-trade-up.md) | `WOODS_ONLY=shop FROM_LEVEL=13` |
+| `woods` | 2026-11-24 · [Stop and Go level 7 Smart light (PR #2102)](verification/2026-11-24-stop-and-go-level-7-smart-light.md) | `WOODS_ONLY=go FROM_LEVEL=7` |
 | `wordcode` | 2026-11-20 · [Word Code levels 1-3](verification/2026-11-20-word-code-levels-1-3.md) | — |
 | `wordglue` | 2026-11-23 · [Word Glue level 9: full of or without](verification/2026-11-23-word-glue-level-9-full-of-or-without.md) | `WORDGLUE_ONLY=ending`, level 9 |
 | `wordsearchtouch` | 2026-11-05 · [Word Search school opening, level 8 (word-search batch 5)](archive/VERIFICATION-2026-11-05.md#2026-11-05--word-search-school-opening-level-8-word-search-batch-5) | Level 8, portrait and landscape |
