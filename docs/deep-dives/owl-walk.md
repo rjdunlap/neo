@@ -174,7 +174,7 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 3. **Built 2026-10-13.** **Level 2: each owl has a player.** Assigned owls and the turn order with the finish rule; the pet's narrated paw touch; the spotlight. *Tier: the same filtered play at 2 and `fingerdemo` at 2.* Needs decision 3.
 4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
 5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
-6. **Level 6, Color or shape.** Decision 7 is settled, so it may be built now. *Tier: new interaction: as slice 2.*
+6. **Level 6, Color or shape.** Decision 7 is settled, so it may be built now. *Tier: new interaction: as slice 2.* *In progress on branch `agy/opus-owl-walk-6`.*
 7. **A grown-up in the second seat.** Needs decision 5.
 8. **Levels 7 and 8.** Sketches; define first after a person has played level 4.
 
