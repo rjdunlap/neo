@@ -9,6 +9,7 @@ import {
   POUR_TOLERANCE,
   recoverTray,
   startPour,
+  busyTouch,
 } from './logic';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
@@ -537,5 +538,17 @@ describe('things to put away', () => {
       }
     }
     expect(SCRIPT['fill.hintadd'].join(' ')).toContain('piece');
+  });
+});
+
+describe('busy-window acknowledgment', () => {
+  it('answers a touch while the basket tips, and only then', () => {
+    expect(busyTouch(true, false, 'basket')).toBe('squish');
+    expect(busyTouch(true, false, 'ground')).toBe('squish');
+    expect(busyTouch(true, false, 'piece')).toBe('wiggle');
+    for (const on of ['basket', 'piece', 'ground'] as const) {
+      expect(busyTouch(false, false, on)).toBeNull();
+      expect(busyTouch(true, true, on)).toBeNull();
+    }
   });
 });
