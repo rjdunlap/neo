@@ -22,6 +22,11 @@ export const HOW_TO: GameHowTo = {
       text: "Build a tower as tall as Duck's, one block taller or one shorter, as asked, then ring the bell.",
     },
     {
+      from: 3,
+      to: 4,
+      text: 'A wrong height is a miss. After two, the blocks are counted together, and a tower too tall glows its top block.',
+    },
+    {
       from: 5,
       to: 5,
       text: 'Tap the tower you think will stand. The ropes let go automatically; watch what happens.',

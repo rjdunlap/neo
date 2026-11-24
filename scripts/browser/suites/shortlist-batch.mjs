@@ -92,10 +92,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               }
             };
             if (n === 0) {
-              // One too many, then one too few: two explained misses, a counted hint.
+              // One too many, then one too few, then one too many again: three explained misses, one counted hint.
               await bin(want + 1);
               await tap('neo.scene.game.bell');
               await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                false,
+                'a first too-tall check does not glow the top block yet',
+              );
               const top = await page.evaluate(() => {
                 const h = neo.scene.game.towerHit.hitArea;
                 return [h.x + h.width / 2, h.y + 40];
@@ -113,8 +118,24 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await tap('neo.scene.game.bell');
               await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
               assert.deepEqual(await counts(), [2, 1]);
+              await bin(2);
+              await tap('neo.scene.game.bell');
+              await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
+              assert.deepEqual(await counts(), [3, 1], 'help repeats without counting another hint');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                true,
+                'too tall after two misses glows the top block',
+              );
               await screenshot(`block-tower-${level}`);
-              await bin(1);
+              const [x, y] = await at(top[0], top[1]);
+              await page.mouse.click(x, y);
+              await page.waitForTimeout(350);
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                false,
+                'taking the top off clears the glow',
+              );
             } else await bin(want);
             assert.equal(await page.evaluate(() => neo.scene.game.stack.length), want);
             await tap('neo.scene.game.bell');
@@ -410,14 +431,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.deepEqual(
           await score('block-tower'),
           mode === 'flag' || mode === 'match'
-            ? [2, 1]
+            ? [3, 1]
             : mode === 'mend' || mode === 'reach'
               ? [0, 1]
               : [0, 0],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'unscored topple and short stack explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
+          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint, top glow only after two misses', match: "compared with Duck's tower, explained misses, counted hint, top glow only after two misses", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'unscored topple and short stack explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
         );
       }
 
