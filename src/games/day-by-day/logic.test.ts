@@ -7,13 +7,17 @@ import {
   choicesFor,
   COUNT_LEVEL,
   DAYS,
+  LEVELS,
   makeCountWeek,
+  makeSkies,
   makeWeek,
   makeWeatherWeek,
   tallyWeather,
   weatherCount,
   WEATHER_COUNT_LEVEL,
   planFor,
+  recordCount,
+  SKIES_LEVEL,
   neighbor,
   relativeQuestions,
   sunnyCount,
@@ -21,6 +25,41 @@ import {
 } from './logic';
 
 describe('Day by Day', () => {
+  it('opens preschool at Three little skies: exactly three pictured skies, one of each weather, and no week', () => {
+    expect(LEVELS.preschool).toEqual({ min: SKIES_LEVEL, max: SKIES_LEVEL });
+    expect(recordCount(SKIES_LEVEL)).toBe(3);
+    for (const level of [1, 2, 3, 4, 5, 6, COUNT_LEVEL]) expect(recordCount(level)).toBe(7);
+    const plan = planFor(SKIES_LEVEL);
+    expect([plan.relatives, plan.tally]).toEqual([false, false]);
+    expect(plan.name).not.toMatch(/week|day/i);
+    const orders = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const skies = makeSkies(new Rng(seed));
+      expect(skies).toEqual(makeSkies(new Rng(seed)));
+      expect([...skies].sort()).toEqual([0, 1, 2]);
+      orders.add(skies.join());
+    }
+    expect(orders.size).toBe(6);
+  });
+
+  it('never names a weekday, a week or today in what Three little skies says', async () => {
+    const { VOICE } = await import('./voice');
+    const { HOW_TO } = await import('./howto');
+    const lines = Object.entries(VOICE)
+      .filter(([id]) => id.startsWith('skies.'))
+      .flatMap(([, text]) => text);
+    const finish = Array.isArray(HOW_TO.finish) ? HOW_TO.finish : [HOW_TO.finish];
+    const card = [...HOW_TO.steps, ...finish]
+      .map((s) => (typeof s === 'string' ? { text: s } : s))
+      .filter((s) => (s.from ?? 1) <= SKIES_LEVEL && SKIES_LEVEL <= (s.to ?? Infinity))
+      .map((s) => s.text);
+    expect(lines.length).toBeGreaterThanOrEqual(5);
+    expect(card.length).toBe(2);
+    const weekdays = new RegExp(`\\b(${DAYS.join('|')}|week|today|tomorrow|yesterday)\\b`, 'i');
+    for (const text of [...lines, ...card.filter((t) => !t.includes('no days or weeks'))])
+      expect(text).not.toMatch(weekdays);
+  });
+
   it('creates a repeatable seven-day record with all weather categories and varied weeks', () => {
     const weeks = new Set<string>();
     for (let seed = 1; seed <= 100; seed++) {
@@ -135,15 +174,19 @@ describe('Day by Day', () => {
     expect(marks).toEqual([2]);
     expect(sunnyCount([0, 2, 0, 1, 2, 0, 1])).toBe(3);
   });
-  it('keeps controls large, separate, on screen and clear of the guide in four views', () => {
-    for (const [w, h] of [
+  it('keeps controls large, separate, on screen and clear of the guide in four views, for a week and three skies', () => {
+    for (const [w, h, upright, count] of [
       [1024, 768],
       [768, 1024],
       [844, 390],
       [750, 369],
-    ]) {
-      const v = computeView(w, h);
-      const l = weekLayout(v);
+      [1024, 768, false, 3],
+      [390, 844, true, 3],
+      [844, 390, false, 3],
+    ] as const) {
+      const v = computeView(w, h, undefined, upright);
+      const l = weekLayout(v, count);
+      expect(l.records).toHaveLength(count ?? 7);
       const boxes = [
         ...l.records.map((p) => ({ ...p, w: 108, h: 112 })),
         ...l.choices.map((p) => ({ ...p, w: 170, h: 110 })),

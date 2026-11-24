@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/day-by-day; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** weekday order, yesterday and tomorrow, weather records, counting observations, comparing evidence
 
 | Band | Levels, easiest first |
 | --- | --- |
+| preschool | 9 |
 | pre-K | 1, 2, 4 |
 | school | 2, 4, 10, 3, 5, 6 |
 
@@ -19,15 +20,18 @@
 | 4 | A day beside any day |
 | 5 | Count this weather, including none |
 | 6 | Weather Window: compare two supplied weeks |
+| 9 | Three little skies: match three pictured skies |
 | 10 | Count beside the record |
 
 <!-- end generated -->
 
-**Starts as:** place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden
+**Starts as:** place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden; preschool starts at level 9, matching three pictured skies
 
-**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6
+**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6; preschool's entry, three little skies (9), then pre-K at 1
 
 ## Design notes
+
+Three little skies (level 9, preschool only, built 2026-11-23): three pictured skies (one sunny, one cloudy, one rainy, seeded order) are matched one at a time with the existing weather buttons. Records are numbered 1 to 3 with the caption "Sky N of 3"; there is no weekday, week, today, yesterday or tomorrow claim. A wrong tap gets a boing and a spoken hint naming the weather; two wrong taps on one sky glow the matching button (one hint). It finishes after three records with one sticker. Bands are preschool, pre-K and school; entryLevels are [10, 9], so pre-K starts at 1 and school at 2 when leaving 9, and no saved level is renumbered. Voice lines are `skies.*` (three clips, prefix added in `scripts/voice-clips/clips.mjs`).
 
 On an upright phone, the calendar keeps all seven day cards at full size across two rows. Weather Window uses the same two rows on each week page. The week-turn path curves around the records, and short phones place the arrow beside the area used for spoken captions.
 
