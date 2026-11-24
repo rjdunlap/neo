@@ -26,11 +26,13 @@ import {
   ITEM_WORDS,
   ITEMS,
   itemToTap,
+  packChoices,
   outfitFor,
   outfits,
   partFor,
   STICKER_ITEMS,
   STICKER_WEATHERS,
+  suits,
   wardrobeFor,
   wardrobePlan,
   WEATHERS,
@@ -176,6 +178,7 @@ class WeatherWardrobe implements Game {
   private readonly glow = new Graphics();
   private readonly forecast = new Container();
   private readonly suitcase = new Container();
+  private readonly caseSlots = new Graphics();
   private readonly packed = new Container();
   private drops: { x: number; y: number; v: number; d: number }[] = [];
   private view: View;
@@ -218,6 +221,7 @@ class WeatherWardrobe implements Game {
         .stroke(line(swatch.orange.line))
         .rect(-80, -70, 160, 10)
         .fill(swatch.orange.line),
+      this.caseSlots,
       this.packed,
     );
     this.suitcase.visible = this.plan.mode === 'trip';
@@ -257,7 +261,7 @@ class WeatherWardrobe implements Game {
       const card = this.skyCards.find((c) => c.weather === this.outfit.answer);
       return card ? { tap: { on: card.node } } : null;
     }
-    const item = itemToTap(this.outfit, new Set(this.options.filter((o) => o.used).map((o) => o.item)));
+    const item = itemToTap(this.outfit, this.packedItems());
     if (this.changePhase === 'remove') {
       const worn = this.outfit.remove?.find((i) => this.worn.has(i));
       const node = worn ? this.worn.get(worn)?.[0] : null;
@@ -387,6 +391,15 @@ class WeatherWardrobe implements Game {
       o.keep?.forEach((item) => this.put(item, () => this.removeWorn(item), true));
     }
     this.drawForecast(o);
+    this.caseSlots.clear();
+    if (o.packings) {
+      o.needed.forEach((_, i) => {
+        this.caseSlots
+          .roundRect(this.slotX(i) - 20, -60, 40, 40, 8)
+          .fill(swatch.white.fill)
+          .stroke(line(swatch.orange.line, 3));
+      });
+    }
     for (const opt of this.options) opt.node.destroy({ children: true });
     this.options.length = 0;
     o.options.forEach((item, i) => {
@@ -409,7 +422,12 @@ class WeatherWardrobe implements Game {
     if (this.plan.mode === 'change')
       this.instruct(o.keep ? 'weather.keep.remove' : 'weather.change.remove', { weather: o.weathers[1] });
     else if (this.plan.mode === 'try') this.instruct('weather.try', { weather: o.weathers[0] });
-    else if (this.plan.mode === 'trip') this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
+    else if (o.packings) {
+      const days = o.weathers[0] === 'rainy' ? 'rain' : 'snow';
+      const spaces = o.needed.length === 3 ? 'three' : 'two';
+      this.instruct(`weather.light.${days}.${spaces}`);
+    } else if (this.plan.mode === 'trip')
+      this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
     else
       this.instruct(this.plan.mode === 'pick' ? 'weather.pick' : 'weather.all', { weather: o.weathers[0] });
     this.resize(this.view);
@@ -509,7 +527,11 @@ class WeatherWardrobe implements Game {
     if (this.busy || this.done || opt.used) return;
     const o = this.outfit;
     this.idle = 0;
-    if (!o.needed.includes(opt.item)) {
+    if (!packChoices(o, this.packedItems()).includes(opt.item)) {
+      if (o.packings) {
+        this.rejectPacking(opt);
+        return;
+      }
       // Level 8 has no mistakes: anything goes on, shows what it does, and hops back.
       if (this.plan.mode !== 'try') {
         this.misses++;
@@ -533,7 +555,7 @@ class WeatherWardrobe implements Game {
     if (this.plan.mode === 'trip') this.pack(opt);
     else this.put(opt.item);
     if (this.plan.mode === 'try') this.shield = 2.2;
-    const left = o.needed.filter((i) => !this.options.find((x) => x.item === i)?.used);
+    const left = packChoices(o, this.packedItems());
     this.drawGlow();
     if (left.length) {
       void this.ctx.say('weather.yes');
@@ -546,13 +568,40 @@ class WeatherWardrobe implements Game {
     });
   }
 
-  /** Level 6's payoff: the trip happens. Each weather comes in turn and the pet puts on the things packed for it. */
+  private packedItems(): Set<Item> {
+    return new Set(this.options.filter((option) => option.used).map((option) => option.item));
+  }
+
+  private rejectPacking(opt: Option) {
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    this.ctx.tw.kill(opt.node);
+    opt.node.rotation = -0.12;
+    void this.ctx.tw.to(opt.node, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic });
+    const useful = this.outfit.weathers.some((weather) => suits(opt.item, weather));
+    const said = useful
+      ? this.ctx.say('weather.light.space')
+      : this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] });
+    if (this.wrong === 2) {
+      this.hints++;
+      const round = this.q;
+      void said.then(() => {
+        if (this.q === round && this.wrong >= 2 && !this.busy) return this.ctx.say('weather.hint');
+      });
+    }
+    this.drawGlow();
+  }
+
+  /** Replay the packed choices in forecast order. Shared clothes stay on as the weather changes. */
   private async unpack() {
-    for (const { weather, items } of tripPlays(this.outfit)) {
-      this.undress();
+    for (const { weather, items } of tripPlays(this.outfit, [...this.packedItems()])) {
+      this.undress(items);
       this.setWeather(weather);
+      if (this.outfit.packings && this.worn.has('boots')) void this.ctx.say('weather.light.boots');
       await this.ctx.tw.wait(0.6);
       for (const item of items) {
+        if (this.worn.has(item)) continue;
         this.put(item);
         await this.ctx.tw.wait(0.55);
       }
@@ -662,10 +711,13 @@ class WeatherWardrobe implements Game {
     }
   }
 
-  private undress() {
-    for (const pieces of this.worn.values()) for (const c of pieces) c.destroy({ children: true });
-    this.worn.clear();
-    this.wornCenters.clear();
+  private undress(keep: readonly Item[] = []) {
+    for (const [item, pieces] of this.worn) {
+      if (keep.includes(item)) continue;
+      for (const c of pieces) c.destroy({ children: true });
+      this.worn.delete(item);
+      this.wornCenters.delete(item);
+    }
   }
 
   /**
@@ -778,21 +830,19 @@ class WeatherWardrobe implements Game {
     return fx;
   }
 
-  /** Trips: the item hops into the suitcase and shows on its lid. */
+  private slotX(i: number) {
+    return (i - (this.outfit.needed.length - 1) / 2) * 44;
+  }
+
+  /** The flight ends in suitcase coordinates, even if the case moves during a rotation. */
   private pack(opt: Option) {
+    const i = this.packedItems().size - 1;
+    const dest = this.outfit.packings ? { x: this.slotX(i), y: -40 } : { x: -57 + i * 38, y: -150 };
     const icon = itemIcon(opt.item, 96);
-    icon.position.copyFrom(opt.node.position);
-    this.ctx.stage.addChild(icon);
-    const dest = { x: this.suitcase.x, y: this.suitcase.y - 60 };
-    void this.ctx.tw.to(icon, { x: dest.x, y: dest.y }, { duration: 0.45, ease: ease.inOutSine });
-    void this.ctx.tw.to(icon.scale, { x: 0.4, y: 0.4 }, { duration: 0.45 }).then(() => {
-      icon.destroy({ children: true });
-      sfx.clunk();
-      const n = this.packed.children.length;
-      const mini = itemIcon(opt.item, 38);
-      mini.position.set(-57 + (n % 4) * 38, -150 - Math.floor(n / 4) * 40);
-      this.packed.addChild(mini);
-    });
+    icon.position.set(opt.node.x - this.suitcase.x, opt.node.y - this.suitcase.y);
+    this.packed.addChild(icon);
+    void this.ctx.tw.to(icon.scale, { x: 0.38, y: 0.38 }, { duration: 0.45 });
+    void this.ctx.tw.to(icon, dest, { duration: 0.45, ease: ease.inOutSine }).then(() => sfx.clunk());
   }
 
   // Weather ------------------------------------------------------------------------
@@ -950,7 +1000,8 @@ class WeatherWardrobe implements Game {
     this.suitcase.position.set(v.w * 0.7, v.h - 178);
     this.forecast.position.set(v.w / 2, 90);
     this.tray.clear();
-    if (this.options.length && this.changePhase !== 'remove') {
+    if (this.plan.packLight) this.layoutLightTrip(v);
+    else if (this.options.length && this.changePhase !== 'remove') {
       this.tray.roundRect(160, v.h - 160, v.w - 190, 148, 30).fill({ color: swatch.white.fill, alpha: 0.85 });
       const xs = spread(this.options.length, 175, v.w - 40, 150);
       this.options.forEach((o, i) => {
@@ -969,6 +1020,27 @@ class WeatherWardrobe implements Game {
     this.drawGlow();
   }
 
+  private layoutLightTrip(v: View) {
+    const columns = v.upright ? 3 : 6;
+    const rows = Math.ceil(this.options.length / columns);
+    // Leave the two rows above the short-phone caption. A sideways row fits below the bubble.
+    const top = v.h - (v.upright ? 440 + rows * 150 : 165);
+    const displayY = v.upright ? top - 28 : v.h - 450;
+    this.pet.position.set(v.w * (v.upright ? 0.33 : 0.26), displayY);
+    this.suitcase.position.set(v.w * 0.7, displayY - 6);
+    const width = Math.min(columns * 150 + 24, v.w - 24);
+    this.tray
+      .roundRect((v.w - width) / 2, top, width, rows * 150, 30)
+      .fill({ color: swatch.white.fill, alpha: 0.85 });
+    for (let start = 0; start < this.options.length; start += columns) {
+      const row = this.options.slice(start, start + columns);
+      const left = (v.w - (row.length - 1) * 150) / 2;
+      row.forEach(({ node }, i) => {
+        node.position.set(left + i * 150, top + 75 + (start / columns) * 150);
+      });
+    }
+  }
+
   private drawGlow() {
     const g = this.glow.clear();
     if (this.wrong < 2 || this.done || !this.outfit) return;
@@ -981,7 +1053,8 @@ class WeatherWardrobe implements Game {
         });
       return;
     }
-    const target = this.options.find((o) => !o.used && this.outfit.needed.includes(o.item));
+    const item = itemToTap(this.outfit, this.packedItems());
+    const target = this.options.find((o) => o.item === item);
     if (target)
       g.roundRect(target.node.x - 72, target.node.y - 72, 144, 144, 26).stroke({
         width: 8,
@@ -1194,7 +1267,8 @@ export const weatherWardrobe: GameModule = {
   region: 'cozy-village',
   challenge: 'logic',
   skills: ['reasoning', 'vocabulary', 'everyday-life'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  uprightLevels: [12],
   levels: (b) => rangeFor(LEVELS, b),
   entryLevels: [8, 9],
   describeLevel: (l) => wardrobePlan(l).name,

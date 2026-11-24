@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import {
   GROUND_TOUCH,
   ITEM_NAMES,
+  LEVELS,
   MISFIT,
   SHIELD,
   ITEM_WORDS,
@@ -11,6 +12,7 @@ import {
   itemToTap,
   outfitFor,
   outfits,
+  packChoices,
   SLOTS,
   STICKER_ITEMS,
   STICKER_WEATHERS,
@@ -74,7 +76,7 @@ describe('Weather Wardrobe', () => {
 
   it('offers the right things to wear among distinct choices from other weathers', () => {
     for (const plan of WARDROBE_PLANS.filter(
-      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
     )) {
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = outfits(plan, new Rng(seed));
@@ -121,7 +123,7 @@ describe('Weather Wardrobe', () => {
         expect(new Set(slotsOf(outfit))).toEqual(new Set(slotsOf(itemsFor(w))));
       }
       for (const plan of WARDROBE_PLANS.filter(
-        (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+        (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
       )) {
         for (const o of outfits(plan, new Rng(seed))) {
           const sets =
@@ -160,7 +162,7 @@ describe('Weather Wardrobe', () => {
 
   it("gives the ghost finger's bot only things that fit the weather, each once, until the outfit is complete", () => {
     for (const plan of WARDROBE_PLANS.filter(
-      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep,
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
     )) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const o of outfits(plan, new Rng(seed))) {
@@ -288,7 +290,7 @@ describe('Weather Wardrobe', () => {
     for (const sp of SPECIES_IDS) {
       const wear = WARDROBE[sp];
       WARDROBE_PLANS.forEach((plan, i) => {
-        if (plan.mode === 'friends' || plan.keep) return; // Keep rounds have their own test. Friends use the full wardrobe, not companion anatomy.
+        if (plan.mode === 'friends' || plan.keep || plan.packLight) return; // These modes have their own tests.
         for (let seed = 1; seed <= 40; seed++) {
           const rounds = outfits(plan, new Rng(seed), wear);
           expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);
@@ -342,7 +344,7 @@ describe('Weather Wardrobe', () => {
   it('never makes the single-answer levels ambiguous: no distractor suits a round weather, sky and friends use one-weather items', () => {
     for (let seed = 1; seed <= 300; seed++) {
       for (const plan of WARDROBE_PLANS.filter(
-        (p) => !['play', 'friends', 'sky'].includes(p.mode) && !p.keep,
+        (p) => !['play', 'friends', 'sky'].includes(p.mode) && !p.keep && !p.packLight,
       ))
         for (const o of outfits(plan, new Rng(seed))) {
           const target = plan.mode === 'change' ? [o.weathers[1]] : o.weathers;
@@ -416,6 +418,88 @@ describe('Weather Wardrobe', () => {
           if (!wear.includes('boots') && !wear.includes('raincoat')) expect(o.keep, sp).toBeUndefined();
           else expect(o.keep!.length, sp).toBeGreaterThan(0);
         }
+    }
+  });
+  it('opens the school ladder with the existing trips and finishes it with Pack light', () => {
+    expect(LEVELS.school?.order).toEqual([6, 7, 11, 12]);
+    const plan = wardrobePlan(12);
+    expect(plan.mode).toBe('trip');
+    expect(plan.packLight).toBe(true);
+  });
+
+  it('level 12 accepts every bag that can dress the companion in both weathers and gives a way forward from every playable bag', () => {
+    const plan = wardrobePlan(12);
+    for (const sp of SPECIES_IDS) {
+      const wearable = WARDROBE[sp];
+      const sharesBoots = wearable.includes('boots');
+      const capacity = sharesBoots ? 3 : 2;
+      const perWeather = sharesBoots ? 2 : 1;
+      for (let seed = 1; seed <= 60; seed++) {
+        const rounds = outfits(plan, new Rng(seed), wearable);
+        expect(rounds).toEqual(outfits(plan, new Rng(seed), wearable));
+        expect(rounds).toHaveLength(2);
+        expect([...rounds[0].weathers].sort()).toEqual(['rainy', 'snowy']);
+        expect(rounds[1].weathers).toEqual([...rounds[0].weathers].reverse());
+        for (const o of rounds) {
+          const label = `${sp}, seed ${seed}, ${o.weathers.join(' then ')}`;
+          expect(new Set(o.options).size, label).toBe(o.options.length);
+          expect(
+            o.options.every((item) => wearable.includes(item)),
+            label,
+          ).toBe(true);
+          expect(
+            o.options.some((item) => o.weathers.every((w) => !suits(item, w))),
+            label,
+          ).toBe(true);
+
+          // Enumerate the shelf's subsets independently of the production solution list.
+          const bags = Array.from({ length: 2 ** o.options.length }, (_, mask) =>
+            o.options.filter((_, i) => mask & (1 << i)),
+          ).filter((items) => items.length <= capacity);
+          const solutions = bags.filter(
+            (items) =>
+              items.length === capacity &&
+              o.weathers.every(
+                (weather) =>
+                  new Set(items.filter((item) => suits(item, weather)).map((item) => SLOTS[item])).size ===
+                  perWeather,
+              ),
+          );
+          expect(solutions, label).toHaveLength(4);
+          expect(o.packings?.map((items) => [...items].sort().join(',')).sort(), label).toEqual(
+            solutions.map((items) => [...items].sort().join(',')).sort(),
+          );
+
+          for (const bag of bags) {
+            const extensions = solutions.filter((items) => bag.every((item) => items.includes(item)));
+            if (!extensions.length) continue;
+            const used = new Set(bag);
+            const options = packChoices(o, used);
+            expect([...options].sort(), label).toEqual(
+              o.options
+                .filter((item) => !used.has(item) && extensions.some((items) => items.includes(item)))
+                .sort(),
+            );
+            const hint = itemToTap(o, used);
+            if (bag.length === capacity) {
+              expect(hint, label).toBeNull();
+              const plays = tripPlays(o, bag);
+              expect(
+                plays.map(({ weather }) => weather),
+                label,
+              ).toEqual(o.weathers);
+              for (const { weather, items } of plays) {
+                expect([...items].sort(), label).toEqual(bag.filter((item) => suits(item, weather)).sort());
+                expect(items, label).toHaveLength(perWeather);
+                expect(new Set(items.map((item) => SLOTS[item])).size, label).toBe(perWeather);
+                if (sharesBoots) expect(items, label).toContain('boots');
+              }
+            } else {
+              expect(options, label).toContain(hint);
+            }
+          }
+        }
+      }
     }
   });
 });
