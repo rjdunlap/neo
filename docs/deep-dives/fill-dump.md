@@ -124,8 +124,8 @@ Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewr
 4. **Level 7, Which holds more?** (built 2026-10-21, [PR #727](https://github.com/rjdunlap/neo/pull/727), `codex/fill-dump-capacity`, worker `01a15fc7-92af-7851-a7f3-44ce46a87760`). Free prediction, pour evidence, then supported answer over three distinct obvious pairs; preschool top. Tier: new interaction: typecheck, unit tests, one scripted play of level 7 (one wrong answer, one hint), one portrait screenshot, `fingerdemo` at 7.
 5. **Things to put away** (built 2026-10-20, [PR #691](https://github.com/rjdunlap/neo/pull/691)). Tier: content: typecheck, rule tests, one screenshot per new set.
 6. **Pouring feel** (after the V3 definition). Tier: rule tests unchanged, one filtered play of level 5, `fingerdemo` at 5, landscape and portrait screenshots.
-7. **Busy-window acknowledgment** (after V2's person check). Tier: rule tests, a rapid-tap regression play.
-8. **Levels 8–9** (decisions 1–2), then the toddler pour rung (decision 3) and Two jugs (decision 4).
+7. **Busy-window acknowledgment** (V2's pilot is built, [PR #446](https://github.com/rjdunlap/neo/pull/446); its person check is parked, and [nothing waits on a parked check](../DEVICE-CHECKS.md), so this is not gated). Tier: rule tests, a rapid-tap regression play.
+8. **Levels 8–9** (decisions 1–2 settled 2026-10-23: open pre-K for them, checking Counting Cove's pre-K layout; level 8 has two answers, no "holds the same"), then the toddler pour rung (decision 3: built only if a person sees a two-year-old pull the jug without help; that child check is parked, so the rung is deferred, not queued) and Two jugs (decision 4 settled: stays here in a school window).
 
 ## What was built in this session
 

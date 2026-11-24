@@ -152,11 +152,11 @@ Each is sized for one session. The slices that add a level are built in level or
 4. **A second batch of pairs** (built 2026-10-14, [PR #317](https://github.com/rjdunlap/neo/pull/317): sponge wet/dry, plate clean/dirty, book thick/thin and ball near/far, all `from` level 3 in families wet, clean, size and position, so levels 1–2 are unchanged and levels 3–4 draw from sixteen pairs; the sticker pool is unchanged; many/few stays unbuilt, overlapping Picture Graph): each at a `from` level.
 5. **Level 7, In between** (built 2026-11-13, [PR #1629](https://github.com/rjdunlap/neo/pull/1629)): third pictures for cup, temperature, sky and height.
 6. **Level 8, Line them up** (built 2026-11-13, [PR #1632](https://github.com/rjdunlap/neo/pull/1632); pre-K only, the school window opens at slice 7).
-7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11). **Built 2026-11-13** (school window 8–9; see Slice 7 built below).
-8. **Level 10, Un- words** (decision 3; needs the device-speech check).
+7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11). **Built 2026-11-13**, [PR #1635](https://github.com/rjdunlap/neo/pull/1635) (school window 8–9; see Slice 7 built below).
+8. **Level 10, Un- words** (decision 3 settled 2026-10-23: the printed word is optional reading-lite with the voice always there; device speech for the un- words is a device check, not a blocker).
 9. **Level 11, Two answers** (ready after 8).
 10. **Doing words and sound cards** (sketch; needs a design pass).
-11. **Levels below level 1** (waits on the level-order decisions).
+11. **Levels below level 1** (the level-order question is settled by the [2026-10-23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules): each entry takes the next free stable ID, placed with `order` and `entryLevels`, no renumbering). *Any tap flips* is built as lap's level 6, *One big card* (2026-11-13, [PR #1617](https://github.com/rjdunlap/neo/pull/1617)); *One pair, again and again* is unbuilt.
 
 ### Slice 1 built (2026-10-10)
 

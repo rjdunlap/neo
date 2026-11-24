@@ -1,0 +1,1 @@
+**`opposites` level 10, Un- words** (pre-K, school; new levels on an existing interaction: typecheck, rule tests, one browser play of level 10 and `fingerdemo` at it): the printed word is optional reading-lite with the voice always there; device speech for the un- words is a device check, not a gate (decided 2026-10-23). [Dive](../../deep-dives/opposites.md#build-slices-in-order)

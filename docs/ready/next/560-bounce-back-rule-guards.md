@@ -1,0 +1,1 @@
+**`bounce-back` rule guards** (the open part of slice 1; typecheck, its rule tests, `BROWSER_SUITE=batch BATCH_ONLY=bounce`): a test that no level's goal is satisfiable in a single pet-only rally, and pinned sticker seed results; the words already landed. [Dive](../../deep-dives/bounce-back.md#build-slices-in-order)

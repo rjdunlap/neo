@@ -114,12 +114,12 @@ Speeding up until someone fails, shrinking paddles, lives, tokens, power-ups tha
 
 ## Build slices, in order
 
-1. **Truthful words and rule guards (ready; unit tests, one filtered browser play).** Per-level how-to lines and finish text (level 4's finish is stars); a `bounce.rally` line that says the number at level 2; a test that no level's goal is satisfiable in a single pet-only rally; pin the sticker seed results first. Tier: typecheck, the game's rule tests, `BROWSER_SUITE=batch BATCH_ONLY=bounce`.
-2. **A gentler miss (after decision 1 and 2).** Rally best-so-far, hint that wears off, and a second hint. Rule tests for the hint lifetime; one `fingerdemo` play at level 5.
-3. **Courts and ball voices (ready; art only).** Three courts and balls; screenshot each at portrait; sticker pins.
-4. **Pet variety.** Lob returns on 3 and 5 with a test that every return is reachable by the child's paddle.
-5. **Level 6 Bounce to a color**, then **level 7 Goal** (zones and the goal gap share one reachability test). Zones, bot, how-to, voice, rule tests; `fingerdemo` at level 6.
-6. **Below-level-1 follow-the-ball** (after the level-order decisions).
+1. **Truthful words and rule guards** *(words built 2026-10-12, [PR #211](https://github.com/rjdunlap/neo/pull/211): per-level how-to and finish lines, a rally line that says the number; the rule guards, the pet-only-rally test and the sticker seed pin, are not built)*. Per-level how-to lines and finish text (level 4's finish is stars); a `bounce.rally` line that says the number at level 2; a test that no level's goal is satisfiable in a single pet-only rally; pin the sticker seed results first. Tier: typecheck, the game's rule tests, `BROWSER_SUITE=batch BATCH_ONLY=bounce`.
+2. **A gentler miss** *(built 2026-10-12, [PR #214](https://github.com/rjdunlap/neo/pull/214), decisions 1 and 2 taken as the lean: a miss keeps the rally, a hint ends on her next bounce)*. Rally best-so-far, hint that wears off, and a second hint. Rule tests for the hint lifetime; one `fingerdemo` play at level 5.
+3. **Courts and ball voices** *(built 2026-10-12, [PR #220](https://github.com/rjdunlap/neo/pull/220): pond, beach and snow courts with their own balls)*. Three courts and balls; screenshot each at portrait; sticker pins.
+4. **Pet variety** *(built 2026-10-12, [PR #224](https://github.com/rjdunlap/neo/pull/224): `petLob` on the play-together and count rallies)*. Lob returns on 3 and 5 with a test that every return is reachable by the child's paddle.
+5. **Level 6 Bounce to a color**, then **level 7 Goal** *(both built 2026-10-12, [PR #223](https://github.com/rjdunlap/neo/pull/223), with level 8 First to 7)* (zones and the goal gap share one reachability test). Zones, bot, how-to, voice, rule tests; `fingerdemo` at level 6.
+6. **Below-level-1 follow-the-ball** (settled 2026-10-23: the next free stable level ID, currently 13, placed below level 1 with `order`; no renumbering).
 
 ## What was built in this session
 

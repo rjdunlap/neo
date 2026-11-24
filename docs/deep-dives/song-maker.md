@@ -174,12 +174,12 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
    *Tier: existing-game bug fix.* Typecheck, Song Maker's rule tests, one filtered play at levels 1 and 6, and `fingerdemo` at level 6 because tap targets changed.
 2. **Ten spoken patterns at level 6 (built).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
 3. **Authored motifs for levels 3–5 (built, [PR #723](https://github.com/rjdunlap/neo/pull/723)).** Twelve motifs per shape, authored rests and frozen level-4 Missing Melody shape. Session selection excludes the previous three motifs; demos do not consume it. *Tier: content.* Typecheck, nine rule tests and one level-4 screenshot. Bot unchanged; `fingerdemo` not rerun.
-4. **My song, level 8 (gated: D1, D2).** Adds the `BandLevels` conversion and the check button. *Tier: new interaction.*
-5. **Answer my song, level 9, the M4 build (gated: D1, D3).** *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
-6. **Finish my song, level 10 (gated: D1, D3).** *Tier: new levels on an existing interaction* (reuses slice 5).
-7. **Two to choose, level 11 (gated: D1).** *Tier: new levels.*
-8. **Bring it home, level 12 (gated: D1, D4).** *Tier: new levels.*
-9. **Change one thing, level 13 (gated: D1, D4).** *Tier: new interaction.*
+4. **My song, the next free stable level ID (currently 9; 8 is lap's *one big jelly*, [PR #1583](https://github.com/rjdunlap/neo/pull/1583), which already made the `BandLevels`/`order` conversion)** (D1 and D2 settled 2026-10-23: approved, placed by `order`; compose rounds stay 0/0). Adds the check button. *Tier: new interaction.*
+5. **Answer my song, the M4 build, the next free ID after My song (currently 10)** (D1 and D3 settled 2026-10-23: a co-made song is kept as an ordinary tune, "our song"). *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
+6. **Finish my song, the next free ID after that (currently 11)** (D1 and D3 settled). *Tier: new levels on an existing interaction* (reuses slice 5).
+7. **Two to choose, the next free ID after that (currently 12)** (D1 settled). *Tier: new levels.*
+8. **Bring it home, the next free ID after that (currently 13)** (D1 and D4 settled 2026-10-23: a failed check against the spoken rule is a miss). *Tier: new levels.*
+9. **Change one thing, the next free ID after that (currently 14)** (D1 and D4 settled). *Tier: new interaction.*
 
 Each slice updates the how-to card (`LevelLine`s), GAMES.md, the README row, voice lines and a VERIFICATION entry, as AGENTS.md requires.
 
