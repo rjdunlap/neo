@@ -32,6 +32,13 @@ import {
   BIG_LEVEL,
   BIG_PEG,
   BIG_PLAN,
+  FLOWER_LEVEL,
+  FLOWER_PLAN,
+  GOLD_GAP,
+  GOLD_PEG,
+  LEVELS,
+  goldReachable,
+  makeFlowerRound,
   aimAt,
   aimVelocity,
   BACKDROPS,
@@ -618,5 +625,78 @@ describe('Peg Garden level 7, Plant a bud', () => {
         expect(cup, `${shape} ${seed} ${ix}`).toBe(plantRun(round.spots, planted, round.dropX));
       }
     }
+  });
+});
+
+describe('Peg Garden level 9, Aim at the big flower', () => {
+  it('is the flower plan, sits between colours and numbers for the preschool and pre-K bands, and leaves the others alone', () => {
+    expect(planFor(FLOWER_LEVEL)).toBe(FLOWER_PLAN);
+    expect(planFor(8)).toBe(BIG_PLAN);
+    expect(LEVELS.preschool?.order).toEqual([2, 3, 9, 4]);
+    expect(LEVELS.prek?.order).toEqual([3, 9, 4, 5, 6, 7]);
+    expect(LEVELS.lap?.order).toEqual([8, 1]);
+  });
+
+  it('grows plain buds and one big golden bud on every shape, clear of the walls, the sand and every other bud', () => {
+    for (const shape of SHAPES)
+      for (let seed = 1; seed <= 12; seed++) {
+        const { spots, places } = makeFlowerRound(FLOWER_PLAN, new Rng(seed), shape);
+        const gold = spots.filter((s) => s.kind === 'golden');
+        expect(gold).toHaveLength(1);
+        expect(gold[0]).toBe(spots.at(-1));
+        expect(gold[0].r).toBe(GOLD_PEG);
+        expect(GOLD_PEG / BOARD.peg).toBeGreaterThan(1.5);
+        expect(spots).toHaveLength(FLOWER_PLAN.pegs + 1);
+        expect(places).toHaveLength(FLOWER_PLAN.count);
+        for (const p of places) {
+          expect(p.x - GOLD_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+          expect(BOARD.w - p.x - GOLD_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+          expect(p.y + GOLD_PEG + 2 * BOARD.ball).toBeLessThan(CUP_TOP);
+          // No plain bud grows on any of the golden places, so the golden bud never overlaps one wherever it stands.
+          for (const s of spots.slice(0, -1))
+            expect(Math.hypot(s.x - p.x, s.y - p.y)).toBeGreaterThan(GOLD_PEG + BOARD.peg);
+        }
+        places.forEach((p, i) =>
+          places
+            .slice(i + 1)
+            .forEach((q) => expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(GOLD_GAP)),
+        );
+      }
+  });
+
+  it(
+    'can hit the golden bud with some aim, with room to spare either side, at every one of its three places',
+    { timeout: 60_000 },
+    () => {
+      for (const shape of SHAPES)
+        for (let seed = 1; seed <= 6; seed++) {
+          const { spots, places } = makeFlowerRound(FLOWER_PLAN, new Rng(seed), shape);
+          places.forEach((p, i) => expect(goldReachable(spots, p), `${shape} ${seed} place ${i}`).toBe(true));
+          // The game's own stepping from the aim the ghost finger takes lands on the golden bud.
+          for (const p of places) {
+            const moved = spots.map((s, i) => (i === spots.length - 1 ? { ...s, x: p.x, y: p.y } : s));
+            const world = worldOf(moved);
+            const a = aimAt(world, moved.length - 1, 0)!;
+            expect(a).not.toBeNull();
+            const ball = { x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball };
+            const hit: number[] = [];
+            for (let t = 0; t < 12 && ball.y - ball.r < BOARD.h; t += SAMPLE)
+              hit.push(...stepBall(ball, world, SAMPLE));
+            expect(hit).toContain(moved.length - 1);
+          }
+        }
+    },
+  );
+
+  it('the same seed grows the same round, and makeBoard gives the same spots', () => {
+    const a = makeFlowerRound(FLOWER_PLAN, new Rng(9), 'diamond');
+    const b = makeFlowerRound(FLOWER_PLAN, new Rng(9), 'diamond');
+    expect(a).toEqual(b);
+    expect(makeBoard(FLOWER_PLAN, new Rng(9), 'diamond')).toEqual(a.spots);
+  });
+
+  it('opens every bud at a touch, so nothing but the golden one is asked for', () => {
+    expect(blooms('golden', 'flower', 0)).toBe(true);
+    expect(blooms('plain', 'flower', 0)).toBe(true);
   });
 });
