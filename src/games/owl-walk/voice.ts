@@ -14,6 +14,9 @@ export const VOICE = {
   'owl.free': [
     'Help the little owl walk home! Tap a stepping stone, and the owl hops there. Then tap the nest.',
   ],
+  'owl.either': [
+    'Each stone has a color and a shape, and a card shows only one! Tap the cards to turn one over.',
+  ],
   'owl.color': ['{color}!'],
   'owl.tap-stone': ['Now tap the next {color} stone ahead of the owl.'],
   'owl.pick-owl': ['Tap the owl you want to hop with the {color} card.'],
@@ -27,6 +30,8 @@ export const VOICE = {
   'owl.your-turn': ['Your turn! Tap the cards.'],
   'owl.not-farthest': ['That owl would hop {a} stones. Another owl can hop {b}!'],
   'owl.wrong-color': ['That one is {have}. We need a {need}.'],
+  'owl.not-color': ['That one is {have}. We need {need}.'],
+  'owl.not-shape': ['That is a {have}. We need a {need}.'],
   'owl.far': ['A {need}! But is there one closer? Hop to the next one.'],
   'owl.behind': ['The owl only walks forward. Look ahead for the next {color} stone!'],
   'owl.occupied': ['A friend is sitting there! Find the next free {color} stone.'],

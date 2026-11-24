@@ -1378,8 +1378,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       log('Pet Says 13 (pat): five pats (two on the meadow), no arrow, saved round and sticker passed');
     }
 
+    const owlsTo = Number(process.env.TO_LEVEL || 6);
     if (!only || only === 'owls')
-      for (let level = fromLevel; level <= 4; level++) {
+      for (let level = fromLevel; level <= Math.min(4, owlsTo); level++) {
         await launch('owl-walk', level);
         if (level === 2) await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
@@ -1424,7 +1425,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const owl = best[0];
             const worse = g.owls.findIndex((o, i) => !best.includes(i) && o.spot < g.path.length);
             const to = L.hop(g.path, spots, owl, g.card);
-            const other = g.path.findIndex((c, s) => c !== g.card && s > spots[owl] && s !== to);
+            const other = g.path.findIndex((c, s) => !L.fits(c, g.card) && s > spots[owl] && s !== to);
             return { mode, owl, worse, to, home: to >= g.path.length, other, before: spots[owl] };
           });
           const stone = plan.home ? nestTap : `neo.scene.game.stones[${plan.to}]`;
@@ -1500,7 +1501,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
-    if ((!only || only === 'owls') && fromLevel <= 5) {
+    if ((!only || only === 'owls') && fromLevel <= 5 && owlsTo >= 5) {
       // Level 5, Stepping stones (the lap band): no cards, every touch answers and nothing is a miss.
       await launch('owl-walk', 5);
       await page.setViewportSize({ width: 768, height: 1024 });
@@ -1539,6 +1540,67 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Owl Walk Home 5 (Stepping stones, lap): no deck, sky poke, a hop two ahead, ticks behind, home by the nest, upright, saved score and sticker passed',
+      );
+    }
+
+    if ((!only || only === 'owls') && fromLevel <= 6 && owlsTo >= 6) {
+      // Level 6, Color or shape (preschool, pre-K): three colors x three shapes; a card shows only one; two misses twinkle the right stone.
+      await launch('owl-walk', 6);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      const nestTap = '({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })';
+      let wrong = false;
+      for (let t = 0; t < 40 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+        await page.waitForFunction(
+          () => {
+            const g = neo.scene.game;
+            return g.finished || (!g.busy && g.turn === 'child');
+          },
+          null,
+          { timeout: 30000 },
+        );
+        if (await page.evaluate(() => neo.scene.game.finished)) break;
+        await tap('neo.scene.game.deck');
+        await page.waitForFunction(() => neo.scene.game.card && !neo.scene.game.busy, null, {
+          timeout: 20000,
+        });
+        const plan = await page.evaluate(async () => {
+          const L = await import('/src/games/owl-walk/logic.ts');
+          const g = neo.scene.game;
+          const spots = g.owls.map((o) => o.spot);
+          const to = L.hop(g.path, spots, 0, g.card);
+          const other = g.path.findIndex((c, s) => !L.fits(c, g.card) && s > spots[0] && s !== to);
+          return { to, home: to >= g.path.length, other, before: spots[0] };
+        });
+        if (!wrong && !plan.home && plan.other >= 0) {
+          wrong = true;
+          for (let k = 0; k < 2; k++) {
+            await tap(`neo.scene.game.stones[${plan.other}]`);
+            await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+          }
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.hintGlow.visible), 'hint glow on right stone');
+          assert.ok(
+            await page.evaluate(() => neo.scene.game.fireflies.length > 0),
+            'fireflies twinkle on right stone',
+          );
+          await screenshot('owl-walk-6-portrait');
+        }
+        const stone = plan.home ? nestTap : `neo.scene.game.stones[${plan.to}]`;
+        await tap(stone);
+        await page.waitForFunction((before) => neo.scene.game.owls[0].spot !== before, plan.before, {
+          timeout: 20000,
+        });
+      }
+      await finished('owl-walk');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.owls[0].spot),
+        await page.evaluate(() => neo.scene.game.path.length),
+      );
+      assert.deepEqual(await score('owl-walk'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Owl Walk Home 6 (Color or shape): cards showing color or shape, two misses twinkle the right stone, upright, saved score and sticker passed',
       );
     }
   }

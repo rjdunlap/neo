@@ -174,7 +174,7 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 3. **Built 2026-10-13.** **Level 2: each owl has a player.** Assigned owls and the turn order with the finish rule; the pet's narrated paw touch; the spotlight. *Tier: the same filtered play at 2 and `fingerdemo` at 2.* Needs decision 3.
 4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
 5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
-6. **Level 6, Color or shape.** Decision 7 is settled, so it may be built now. *Tier: new interaction: as slice 2.* *In progress on branch `agy/opus-owl-walk-6`.*
+6. **Level 6, Color or shape.** *Built 2026-11-23 ([PR #2081](https://github.com/rjdunlap/neo/pull/2081)); see [What was built: slice 6](#what-was-built-slice-6-2026-11-23).* Decision 7 applied. *Tier: new interaction: as slice 2.*
 7. **A grown-up in the second seat.** Needs decision 5.
 8. **Levels 7 and 8.** Sketches; define first after a person has played level 4.
 
@@ -209,3 +209,13 @@ Nothing: the dive session (2026-10-12) was research and ideation only. It checke
 - **Bigger stones.** `stoneLayout`, `nestPointIn`, `stoneReach` (90 at level 5, 56 elsewhere) and `stoneScale` (1.6 at level 5) moved from `index.ts` into `logic.ts`, so a rule test checks touch areas of at least 100 units, no overlap and a clear nest at six view sizes.
 - **Words and help.** `owl.free` voice line (clip rendered with Kokoro); the how-to step is `from: 5` and step 4 is now `to: 4`; `autotouch()` taps the next stone, then the nest.
 - **Not built:** Color or shape (slice 6), the grown-up seat (5), levels 7–8.
+
+## What was built: slice 6 (2026-11-23)
+
+*Branch `agy/opus-owl-walk-6`, [PR #2081](https://github.com/rjdunlap/neo/pull/2081). Decision 7 applied.*
+
+- **Level 6, Color or shape (preschool, pre-K).** One owl, 12 stones combining 3 colors (red, blue, yellow) × 3 shapes (heart, circle, star) independently (`eitherPath`), and cards showing only a color or only a shape (no twinkle on flip; `safeCards` until the last stone).
+- **Ladders.** Placed in `preschool` (`order [1, 2, 6, 3]`) and `prek` (`order [2, 3, 6, 4]`); lap and toddler unchanged.
+- **Misses, hints and help.** A wrong stone names only the failed attribute (`owl.not-color` / `owl.not-shape`); two misses glow and twinkle fireflies on the right stone; a third miss gives the pet's assisted hop. How-to step `from: 6` added (and step 5 scoped `to: 5`), `autotouch()` plays level 6, and the new voice line clip was rendered with Kokoro.
+- **Incidental ownership fix:** `squash()` in `src/games/owl-walk/index.ts` now scales relative to `stoneScale(plan)` so level 5's 1.6× stones stay 1.6× after a tap.
+- **Not built:** the grown-up seat (slice 7, decision 5), levels 7–8 (slice 8).
