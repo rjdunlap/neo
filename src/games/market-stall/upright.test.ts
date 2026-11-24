@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { AWNING, BELL_HIT, CARD_HIT, COIN_HIT, MAT_BOX, PLANS, purseFor, stallLayout } from './logic';
+import {
+  AWNING,
+  BELL_HIT,
+  CARD_HIT,
+  COIN_HIT,
+  GOOD_HIT,
+  MAT_BOX,
+  PLANS,
+  purseFor,
+  shelfX,
+  stallLayout,
+} from './logic';
 
 /**
  * Market Stall held upright (chunk 31, docs/definitions/phone-portrait.md): every level on the upright phone views. The
@@ -18,12 +29,21 @@ describe.each(Object.entries(views))('Market Stall upright on %s', (_, v) => {
   it.each(PLANS.map((p, i) => [i + 1, p] as const))(
     'level %i: coins, mat and bell are whole, apart and clear',
     (_l, plan) => {
-      const { cx, cy } = stallLayout(v);
-      // A purse level has three number cards where the coins stand, and no bell.
+      const { cx, cy, stockX } = stallLayout(v);
+      // A purse level has three number cards where the coins stand, and no bell; the afford level has no foot row, and its
+      // three goods on the shelf (each with its tag) are the targets, with the bell on spend orders.
       const t: Target[] =
         plan.mode === 'purse'
           ? purseFor(v, 3).map((p, i) => ({ what: `card ${i + 1}`, x: p.x, y: p.y, ...CARD_HIT }))
-          : purseFor(v, plan.coins.length).map((p, i) => square(`coin ${i + 1}`, p, COIN_HIT));
+          : plan.mode === 'afford'
+            ? [0, 1, 2].map((i) => ({
+                what: `good ${i + 1}`,
+                x: stockX + shelfX(i),
+                y: cy + GOOD_HIT.y,
+                w: GOOD_HIT.w,
+                h: GOOD_HIT.h,
+              }))
+            : purseFor(v, plan.coins.length).map((p, i) => square(`coin ${i + 1}`, p, COIN_HIT));
       t.push({ what: 'mat', x: cx - 50, y: cy + 140, w: MAT_BOX.w, h: MAT_BOX.h });
       if (plan.mode !== 'purse')
         t.push(square('bell', { x: cx + MAT_BOX.w / 2 + 30, y: cy + 140 }, BELL_HIT));

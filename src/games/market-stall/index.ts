@@ -61,6 +61,14 @@ import {
   sum,
   target,
   usesFewestCoins,
+  affordHint,
+  affordSlot,
+  chooseTap,
+  GOOD_HIT,
+  shelfX,
+  spendBell,
+  spendHint,
+  type AffordOrder,
   type Order,
   type ShopPlan,
 } from './logic';
@@ -218,6 +226,14 @@ class MarketStall implements Game {
   private hinted = false;
   private hintCharged = false;
   private names: string[] = [];
+  /** On the afford level: the three goods on the shelf (each with its tag, one tap target) and their pick rings. */
+  readonly shelf: { price: number; node: Container; ring: Graphics }[] = [];
+  /** On a spend order: the goods picked, by shelf index, in the order they were picked. */
+  readonly picked: number[] = [];
+  /** On a choose order: too-dear taps so far (the first is a miss, later ones the nudge). */
+  private dear = 0;
+  /** On the afford level: the glow behind the goods a hint lights. */
+  shelfGlow: Graphics | null = null;
   /** Coin values already named this game start (fresh 1). */
   private readonly named = new Set<number>();
 
@@ -266,7 +282,8 @@ class MarketStall implements Game {
     const counting = this.plan.mode === 'purse';
     this.bell.visible = !counting;
     if (counting) this.bell.eventMode = 'none';
-    for (const value of counting ? [] : this.plan.coins) {
+    // At the afford level the purse lies on the counter and nothing is added, so there is no foot purse row either.
+    for (const value of counting || this.plan.mode === 'afford' ? [] : this.plan.coins) {
       const node = shopCoin(value, ctx.level);
       node.scale.set(1.25);
       node.hitArea = new Circle(0, 0, 46);
@@ -362,10 +379,10 @@ class MarketStall implements Game {
       .stroke({ width: 5, color: swatch.green.line });
   }
 
-  /** Coins sit on the mat in rows of six. */
+  /** Coins sit on the mat in rows of six; at the afford level the purse lies in one row, 160 apart. */
   private layoutMat() {
     this.onMat.forEach((c, i) => {
-      const at = matSlot(i);
+      const at = this.plan.mode === 'afford' ? affordSlot(i, this.onMat.length) : matSlot(i);
       c.node.position.set(at.x, at.y);
     });
   }
@@ -375,6 +392,15 @@ class MarketStall implements Game {
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
+    if (this.order.afford) {
+      const o = this.order as AffordOrder;
+      if (o.afford.kind === 'choose') return { tap: { on: this.shelf[affordHint(o)].node } };
+      const pair = spendHint(o);
+      const stray = this.picked.find((i) => !pair.includes(i));
+      if (stray !== undefined) return { tap: { on: this.shelf[stray].node } };
+      const next = pair.find((i) => !this.picked.includes(i));
+      return { tap: { on: next === undefined ? this.bell : this.shelf[next].node } };
+    }
     if (this.order.purse) {
       const want = target(this.plan, this.order);
       const card = this.cards.find((c) => c.n === want);
@@ -407,6 +433,11 @@ class MarketStall implements Game {
     if (o.purse) this.layPurse(o.purse);
     this.goods.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.names = [];
+    this.shelf.length = 0;
+    this.picked.length = 0;
+    this.dear = 0;
+    this.shelfGlow = null;
+    if (o.afford) return this.startAfford(o as AffordOrder);
     o.prices.forEach((price, i) => {
       const good = this.ctx.rng.pick(STALLS[this.stallId].goods.filter((g) => !this.names.includes(g.name)));
       this.names.push(good.name);
@@ -516,6 +547,168 @@ class MarketStall implements Game {
     this.placeCards();
   }
 
+  /**
+   * An afford-level order (level 12): the purse's fewest coins lie on the counter, three goods stand on the shelf, each with
+   * its tag as one tap target, and the bell shows only on a spend order.
+   */
+  private async startAfford(o: AffordOrder) {
+    this.onMat.splice(0).forEach((c) => c.node.destroy({ children: true }));
+    for (const value of fewest(o.afford.purse, this.plan.coins)) {
+      const node = shopCoin(value, this.ctx.level);
+      node.eventMode = 'none';
+      node.scale.set(1.25);
+      this.mat.addChild(node);
+      this.onMat.push({ value, node });
+    }
+    this.layoutMat();
+    this.drawTotal();
+    const spend = o.afford.kind === 'spend';
+    this.bell.visible = spend;
+    this.bell.eventMode = spend ? 'static' : 'none';
+    this.shelfGlow = new Graphics();
+    this.shelfGlow.eventMode = 'none';
+    this.goods.addChild(this.shelfGlow);
+    o.prices.forEach((price, i) => {
+      const good = this.ctx.rng.pick(STALLS[this.stallId].goods.filter((g) => !this.names.includes(g.name)));
+      this.names.push(good.name);
+      const node = new Container();
+      node.x = shelfX(i);
+      const place = goodPlacement(good.kind, 3, i);
+      const ring = new Graphics()
+        .roundRect(-GOOD_HIT.w / 2, GOOD_HIT.y - GOOD_HIT.h / 2, GOOD_HIT.w, GOOD_HIT.h, 24)
+        .stroke({ width: 8, color: swatch.green.line });
+      ring.visible = false;
+      const art = prop(good.kind, good.color);
+      art.scale.set(place.scale);
+      art.y = place.y;
+      const tag = tagArt(price);
+      tag.y = -150;
+      node.addChild(ring, art, tag);
+      node.hitArea = new Rectangle(-GOOD_HIT.w / 2, GOOD_HIT.y - GOOD_HIT.h / 2, GOOD_HIT.w, GOOD_HIT.h);
+      onTap(node, () => void this.tapGood(i), { cooldown: 250 });
+      this.shelf.push({ price, node, ring });
+      this.goods.addChild(node);
+    });
+    this.goods.alpha = 0;
+    await this.ctx.tw.to(this.goods, { alpha: 1 }, { duration: 0.3 });
+    this.busy = false;
+    return this.ctx.instruct(spend ? 'shop.spend.ask' : 'shop.afford.ask', { n: o.afford.purse });
+  }
+
+  /** The hint's glow behind the given goods (none clears it). */
+  private lightShelf(indices: readonly number[]) {
+    const g = this.shelfGlow?.clear();
+    if (!g) return;
+    for (const i of indices)
+      g.roundRect(
+        shelfX(i) - GOOD_HIT.w / 2 - 12,
+        GOOD_HIT.y - GOOD_HIT.h / 2 - 12,
+        GOOD_HIT.w + 24,
+        GOOD_HIT.h + 24,
+        30,
+      ).fill({ color: swatch.yellow.fill, alpha: 0.85 });
+  }
+
+  /** A picked good lifts and wears a green ring. */
+  private drawPicks() {
+    this.shelf.forEach((s, i) => {
+      const on = this.picked.includes(i);
+      s.ring.visible = on;
+      s.node.y = on ? -16 : 0;
+    });
+  }
+
+  /**
+   * A tap on a good at the afford level. A choose order buys anything the purse covers (nothing is spent); the first
+   * too-dear tap is a miss, a later one the nudge that lights an affordable good (one hint). A spend order picks or puts back.
+   */
+  private async tapGood(i: number) {
+    const o = this.order as AffordOrder | undefined;
+    if (this.busy || this.finished || !o?.afford) return;
+    const n = o.afford.purse;
+    const { price, node } = this.shelf[i];
+    if (o.afford.kind === 'spend') {
+      const at = this.picked.indexOf(i);
+      if (at >= 0) (this.picked.splice(at, 1), sfx.pop(3));
+      else if (this.picked.length >= 2) {
+        // A third pick replaces nothing; it is not a miss.
+        sfx.boing();
+        void this.ctx.say('shop.spend.full');
+        return;
+      } else (this.picked.push(i), sfx.pop(6));
+      this.drawPicks();
+      return;
+    }
+    this.busy = true;
+    const result = chooseTap(o, price, this.dear);
+    if (result === 'yes' || result === 'just') {
+      this.lightShelf([]);
+      sfx.bell(7, 0.3);
+      this.hop(node);
+      this.keeper.cheer();
+      this.ctx.pet.cheer();
+      await this.ctx.say(result === 'just' ? 'shop.afford.just' : 'shop.afford.yes', { p: price, n });
+      await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
+      await this.next();
+      return;
+    }
+    this.dear++;
+    sfx.boing();
+    const tag = node.children[2];
+    void this.ctx.tw
+      .to(tag, { rotation: 0.15 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(tag, { rotation: -0.12 }, { duration: 0.1 }))
+      .then(() => this.ctx.tw.to(tag, { rotation: 0 }, { duration: 0.08 }));
+    if (result === 'miss') {
+      this.misses++;
+      await this.ctx.say('shop.afford.dear', { p: price, n });
+    } else {
+      if (!this.hinted) {
+        this.hinted = true;
+        this.hints++;
+      }
+      this.lightShelf([affordHint(o)]);
+      await this.ctx.say('shop.afford.dearAgain');
+    }
+    this.busy = false;
+  }
+
+  /**
+   * The bell on a spend order: fewer than two picked asks for two (free); the right pair spends the purse; a wrong pair is a
+   * miss and stays picked so she can swap one, and after two misses the right pair glows (one hint per order).
+   */
+  private async spendPay(o: AffordOrder) {
+    const result = spendBell(o, this.picked);
+    if (result === 'two') {
+      sfx.boing();
+      void this.ctx.say('shop.spend.two');
+      return;
+    }
+    this.busy = true;
+    const n = o.afford.purse;
+    const [a, b] = this.picked.map((i) => o.prices[i]);
+    if (result === 'yes') {
+      this.lightShelf([]);
+      for (const i of this.picked) this.hop(this.shelf[i].node);
+      await this.slideOver();
+      await this.ctx.say('shop.spend.yes', { a, b, n });
+      await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
+      await this.next();
+      return;
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    await this.ctx.say('shop.spend.wrong', { a, b, s: a + b, n });
+    if (this.wrongs >= 2 && !this.hinted) {
+      this.hinted = true;
+      this.hints++;
+      this.lightShelf(spendHint(o));
+      await this.ctx.say('shop.spend.hint', { n });
+    }
+    this.busy = false;
+  }
+
   /** The coin nearest a tap on the mat. */
   private nearest(e: FederatedPointerEvent) {
     const p = this.mat.toLocal(e.global);
@@ -531,20 +724,20 @@ class MarketStall implements Game {
   }
 
   /** A little hop for a coin that is being counted or named. */
-  private hop(node: Container) {
+  private hop(node: Container, base = 1) {
     void this.ctx.tw
-      .to(node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15, ease: ease.outQuad })
-      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outQuad }));
+      .to(node.scale, { x: base * 1.2, y: base * 1.2 }, { duration: 0.15, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(node.scale, { x: base, y: base }, { duration: 0.18, ease: ease.outQuad }));
   }
 
   /** Tap the mat: the coin nearest the finger goes back to the purse, or on a purse level says its own value (never scored). */
   private takeBack(e: FederatedPointerEvent) {
     if (this.busy || this.finished || !this.onMat.length) return;
     const best = this.nearest(e);
-    if (this.order?.purse) {
+    if (this.order?.purse || this.order?.afford) {
       const coin = this.onMat[best];
       sfx.pop(4 + coin.value);
-      this.hop(coin.node);
+      this.hop(coin.node, this.order.afford ? 1.25 : 1);
       void this.ctx.say('count', { n: coin.value });
       return;
     }
@@ -558,6 +751,10 @@ class MarketStall implements Game {
 
   private async pay() {
     if (this.busy || this.finished) return;
+    if (this.order?.afford) {
+      if (this.order.afford.kind === 'spend') await this.spendPay(this.order as AffordOrder);
+      return;
+    }
     const coins = this.onMat.map((c) => c.value);
     if (!coins.length) {
       sfx.boing();

@@ -143,7 +143,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |
 | [Mail Carrier](docs/games/mail-carrier.md) | lap–school | Cozy Village | 15 | tap any mailbox to post a letter |
 | [Teddy Doctor](docs/games/teddy-doctor.md) | lap–school | Cozy Village | 8 | touch the patient to put bandages on boo-boos |
-| [Market Stall](docs/games/market-stall.md) | preschool–school | Cozy Village | 11 | count out shell coins at fruit, flower or balloon stalls |
+| [Market Stall](docs/games/market-stall.md) | preschool–school | Cozy Village | 12 | count out shell coins at fruit, flower or balloon stalls |
 | [Clock Tower](docs/games/clock-tower.md) | pre-K–school | Cozy Village | 7 | turn the short hand to an o'clock time |
 | [Day by Day](docs/games/day-by-day.md) | preschool–school | Cozy Village | 8 | place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden; preschool starts at level 9, matching three pictured skies |
 | [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 8 | lap entry: one big lamp, a touch anywhere turns it, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
