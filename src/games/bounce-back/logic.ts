@@ -397,6 +397,56 @@ export function petLob(pick: number, mode: BounceMode): number {
   return mode === 'together' || mode === 'count' ? (pick * 2 - 1) * LOB : 0;
 }
 
+/** The levels whose rally counts toward the goal, where the pet keeps its return off a paddle she has left parked. */
+export const isAwayMode = (m: BounceMode) =>
+  m === 'rally' || m === 'together' || m === 'count' || m === 'skip';
+
+/** The table the pet's return is read on: the two paddle faces' x, the walls the ball bounces between, her paddle's length and the ball's radius. */
+export interface ReturnGeometry {
+  leftX: number;
+  rightX: number;
+  top: number;
+  bottom: number;
+  paddle: number;
+  ballR: number;
+}
+
+/** Where the pet's return arrives at her face when its paddle is held `lob` off the ball, and the ball is at `leftY` as it meets the pet. */
+export function returnArrival(leftY: number, lob: number, g: ReturnGeometry): number {
+  // Held `lob` of half the paddle above the ball, the ball strikes it at offset -lob, so it leaves at angle -lob * 0.85.
+  const angle = -lob * 0.85;
+  return fold(leftY + Math.tan(angle) * (g.rightX - g.leftX), g.top, g.bottom);
+}
+
+/**
+ * The lob for the pet's next return on a rally level. It starts from the usual gentle lob (`petLob`, or one side picked from `pick`
+ * on the levels that otherwise return straight) and, when that return would arrive on the paddle she left parked at `parkedY`, tries
+ * the other gentle lobs and keeps the first that arrives clear of it, or else the one that arrives farthest. Never beyond `LOB`, so a
+ * paddle that slides after the ball still meets it. A child who does nothing therefore never finishes a rally on the pet's returns.
+ */
+export function petLobAway(
+  pick: number,
+  mode: BounceMode,
+  parkedY: number,
+  leftY: number,
+  g: ReturnGeometry,
+): number {
+  if (!isAwayMode(mode)) return petLob(pick, mode);
+  const first = petLob(pick, mode) || (pick < 0.5 ? -LOB : LOB);
+  const clear = g.paddle / 2 + g.ballR + 12;
+  let best = first;
+  let bestGap = -Infinity;
+  for (const lob of [first, -Math.sign(first) * LOB, Math.sign(first) * LOB, 0]) {
+    const gap = Math.abs(returnArrival(leftY, lob, g) - parkedY);
+    if (gap >= clear) return lob;
+    if (gap > bestGap) {
+      best = lob;
+      bestGap = gap;
+    }
+  }
+  return best;
+}
+
 /**
  * A serve angle (from `angles`) whose ball arrives where the paddle can send it to `zone`, or null. The sequence level serves the ball
  * so the next color in the call is always one she can make, whatever order the pet called.

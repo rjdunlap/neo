@@ -12,6 +12,10 @@ import {
   serveAngleFor,
   LOB,
   petLob,
+  petLobAway,
+  isAwayMode,
+  returnArrival,
+  type ReturnGeometry,
   farWall,
   isGoalMode,
   reachableZones,
@@ -280,7 +284,7 @@ describe('Bounce Back', () => {
     for (const p of PLANS.filter((q) => isGoalMode(q.mode))) expect(p.goal).toBeGreaterThanOrEqual(5);
   });
 
-  it('lobs only on the play-together and count rallies, gently, and the child can always meet the return', () => {
+  it('lobs only on the play-together and count rallies by default, gently, and the child can always meet the return', () => {
     for (const p of PLANS) {
       for (const pick of [0, 0.25, 0.5, 0.99]) {
         const lob = petLob(pick, p.mode);
@@ -292,6 +296,49 @@ describe('Bounce Back', () => {
     const speed = PLANS[4].speed;
     const r = paddleBounce(200 + LOB * (PLANS[4].paddle / 2), 200, PLANS[4].paddle, speed, true);
     expect(Math.abs(r.vy) / Math.abs(r.vx)).toBeLessThan(0.3);
+  });
+
+  it("an idle paddle never meets the pet's return on the rally levels, and a moving paddle always can", () => {
+    // 1024 x 768 and 390 x 844 tables as the scene lays them out (box x 180..w-40, y 90..h-40, faces 46 in, ball radius 26).
+    const R = 26;
+    const tables = [
+      { w: 1024, h: 768 },
+      { w: 844, h: 390 + 300 },
+    ];
+    const away = PLANS.filter((p) => isAwayMode(p.mode));
+    expect(away.map((p) => p.mode)).toContain('rally');
+    for (const t of tables) {
+      for (const p of away) {
+        const g: ReturnGeometry = {
+          leftX: 180 + 46 + R,
+          rightX: t.w - 40 - 46 - R,
+          top: 90 + R,
+          bottom: t.h - 40 - R,
+          paddle: p.paddle,
+          ballR: R,
+        };
+        const parked = (g.top + g.bottom) / 2;
+        let met = 0;
+        let total = 0;
+        for (let leftY = g.top; leftY <= g.bottom; leftY += 10) {
+          for (const pick of [0, 0.3, 0.6, 0.99]) {
+            const lob = petLobAway(pick, p.mode, parked, leftY, g);
+            expect(Math.abs(lob)).toBeLessThanOrEqual(LOB + 1e-9);
+            total++;
+            if (Math.abs(returnArrival(leftY, lob, g) - parked) < p.paddle / 2 + R * 0.6) met++;
+          }
+        }
+        // Wide tables clear the paddle every time; a narrow one still keeps the idle paddle from meeting nearly every return.
+        expect(met / total).toBeLessThan(t.w >= 1000 ? 0.02 : 0.15);
+      }
+    }
+  });
+
+  it('keeps the usual lob when the return already misses the parked paddle, and leaves other levels straight', () => {
+    const g: ReturnGeometry = { leftX: 256, rightX: 880, top: 120, bottom: 700, paddle: 240, ballR: 30 };
+    expect(petLobAway(0.5, 'solo', 410, 410, g)).toBe(0);
+    expect(petLobAway(0.5, 'stars', 410, 410, g)).toBe(0);
+    expect(petLobAway(0.99, 'count', 700, 410, g)).toBe(petLob(0.99, 'count'));
   });
 
   it('calls the three colors once each, never the same call twice, and can always serve the next one', () => {
