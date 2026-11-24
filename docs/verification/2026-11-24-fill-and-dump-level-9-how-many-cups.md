@@ -1,0 +1,6 @@
+# 2026-11-24 — Fill and Dump level 9, How many cups? (PR #2127)
+
+**Changed:** new pre-K scene `src/games/fill-dump/cups.ts` (tub, small cup, two bowls, tally cards, "which bowl took more cups?") with rules `startCups`, `cupsTub`, `cupsBowl`, `cupsNext`, `cupsLayout` in `logic.ts`; pre-K ladder `{min 5, max 9, order [5,7,8,9]}`; how-to lines.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/fill-dump` (41 tests, including new `cups.test.ts`: seeded pairs differ with the bigger on each side, tallies match pours, only the answer judged with one hint per pair, bot finishes every seed with no miss, layout clear in four views); `BROWSER_SUITE=originals ORIGINALS_ONLY=fill FILL_LEVELS=9` on 93aab8557 (scoop and pour by taps, empty-cup reminder free, two wrong picks = 2 misses and 1 hint, portrait screenshot, bot finished two pairs, score [2,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=9` (prek, 42.0 s).
+**Failed:** whole `npm test` 19130 passed, 1 failed: `scripts/voice-clips/clips.test.mjs`, because the new unslotted lines (`fill.cups.start`, `scoopfirst`, `brim`, `ask`, `hint`, `done`) have no rendered clips; rendering needs macOS `afconvert` and the Kokoro model, unreachable from the cloud container, so it must be rendered on the developer's Mac.
+**Not run:** build (no shared files or assets changed).
