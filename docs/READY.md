@@ -59,8 +59,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`puzzle-pals` the box lid from level 5** (typecheck, game and how-to tests, filtered plays at 5 and 7, a portrait and phone layout review), then Turn it round as ID 9. [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
-- **`critter-sort` fresh rules** (colour and ear rules; typecheck and its rule tests). [Dive](deep-dives/critter-sort.md#build-slices-in-order)
 - **`word-monsters` the rest of slice 1's guards** (level 8's decoys are still fixed at x and z, no pinned sticker test; typecheck and rule tests), then slice 3 Told, then asked. [Dive](deep-dives/word-monsters.md#build-slices-in-order)
 - **`garden-grow` level 7's colours from the pool** (`makeRequests` still gives red, yellow and blue; existing-game bug fix). [Dive](deep-dives/garden-grow.md#build-slices-in-order)
 - **`fill-dump` the busy-window acknowledgment** (rule tests and a rapid-tap regression play), then pre-K 8–9. [Dive](deep-dives/fill-dump.md#build-slices-in-order)
