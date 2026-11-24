@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–12 |
+| school | 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,12 +26,13 @@
 | 10 | Two baskets to twenty: add two prices past ten, then pay |
 | 11 | Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change |
 | 12 | Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things |
+| 13 | Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins |
 
 <!-- end generated -->
 
 **Starts as:** count out shell coins at fruit, flower or balloon stalls
 
-**Grows into:** ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), and adding two prices past ten (level 10); named payment slips and one hint per order
+**Grows into:** ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), adding two prices past ten (level 10), making change from 20, deciding what a purse can buy and trading small coins for larger ones without changing their total
 
 ## Design notes
 
@@ -49,6 +50,8 @@ Level 6 counts up the change: each change coin says its value, then the shopkeep
 
 **Level 11, Change from twenty (2026-11-23).** A `change` plan like level 6 with coins 1, 2 and 5, prices 11–19 and a new optional plan field `paid` (20; `paidFor(plan)` defaults to 10 and level 6 now says `paid: 10`). The customer's 20 is drawn as two ten-shell coins (`paidCoins`), the ten strip becomes two rows of ten (`tenStrip(price, given, paid)`, `stripLayout(paid)`) and the count-up voice ends on 20. Any change that totals right is accepted, not only the fewest coins. Misses: giving back the price says `shop.price20`; too little or too much says `shop.change20.short` or `.over`; one-off and counted-coins misses are as before. After two misses the hint lays the fewest change, smallest coin first (`countUpHint`, `hintCountsUp`), and says `shop.hint.countup` ("Count up from the price to 20: 13… 15, 20"), one hint per order. The instruction is `shop.change20`. Departure from the dive row, which said two misses glow the next coin that counts up: it is built as faint hint coins in count-up order plus the spoken count-up, with no purse glow.
 
-**Level 12, Can I buy it? (2026-11-23).** An `afford` plan, coins 1, 2, 5 and 10, four orders: two choose orders, then two spend orders. Choose: tap a good the purse covers; nothing is spent. The first too-dear tap is a miss, a later one is the nudge, which lights the cheapest affordable good (one hint per order). Spend: pick two goods, a free put-back, a third pick refused free; the bell with fewer than two picked is free; a wrong pair is a miss and stays picked; two misses light the right pair (one hint per order). Departures from the definition: the purse amount is folded into `shop.afford.ask` and `shop.spend.ask` (no `shop.afford.purse`), the shelf is shifted right by `SHELF.shift` (40) so the leftmost good stays inside the awning, the mat coins are drawn at scale 1.25, and `LEVELS.school.order` waits for level 13. Rules and tests are in `logic.ts` and `logic.test.ts`; the placement is covered by `upright.test.ts`.
+**Level 12, Can I buy it? (2026-11-23).** An `afford` plan, coins 1, 2, 5 and 10, four orders: two choose orders, then two spend orders. Choose: tap a good the purse covers; nothing is spent. The first too-dear tap is a miss, a later one is the nudge, which lights the cheapest affordable good (one hint per order). Spend: pick two goods, a free put-back, a third pick refused free; the bell with fewer than two picked is free; a wrong pair is a miss and stays picked; two misses light the right pair (one hint per order). Departures from the definition: the purse amount is folded into `shop.afford.ask` and `shop.spend.ask` (no `shop.afford.purse`), the shelf is shifted right by `SHELF.shift` (40) so the leftmost good stays inside the awning, the mat coins are drawn at scale 1.25, and `LEVELS.school.order` was added with level 13 and places Trade up before Can I buy it?. Rules and tests are in `logic.ts` and `logic.test.ts`; the placement is covered by `upright.test.ts`.
+
+**Level 13, Trade up (2026-11-23).** The school ladder ends 11, 13, 12. Three orders begin with 10 ones, then two seeded heaps worth 6–12 shells with no repeat in adjacent orders. Tap coins to pick them, then tap Trade when they add up to a 2-, 5- or 10-shell coin. Undo restores the last heap in its original order. The slate keeps the starting total and the bell accepts any heap with the fewest coins. Early bells and unusable selections are free. The second early bell lights the coins for the first exchange on a shortest path or lights Undo when no exchange path reaches the fewest. Further bells can refresh the help, with one hint counted per order. The exchange rules are in `trade-logic.ts` and the heap and control handling are in `trade-counter.ts`. Coins have 100-unit cells in two rows of six on a centred mat. Undo, Trade and the bell sit 170 units apart along the foot. The short layout keeps the mat above the caption, and the awning clears Help. The four fixed feedback lines have Kokoro clips. The slotted instruction, exchange and completion lines use device speech.
 
 **Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.
