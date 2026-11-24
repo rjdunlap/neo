@@ -10,7 +10,7 @@ import { ROW_STEPS } from '../games/song-maker/logic';
  * expires or needs her to come back.
  */
 
-export const STAMP_KINDS = ['star', 'flower', 'fish', 'cat'] as const;
+export const STAMP_KINDS = ['star', 'flower', 'fish', 'cat', 'duck'] as const;
 export type StampKindId = (typeof STAMP_KINDS)[number];
 
 /** Most stamps a picture holds (Stamp Studio's own limit). */

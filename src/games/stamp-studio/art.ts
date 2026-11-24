@@ -30,6 +30,42 @@ export function stampArt(kind: StampKind, color: ColorName, radius = 48) {
     for (const x of [-0.4, 0.4]) g.circle(radius * x, -6, 5).fill(ink);
     g.poly([-5, 5, 5, 5, 0, 11]).fill(swatch.pink.line);
   }
+  if (kind === 'duck') {
+    const tail = [
+      -radius * 0.55,
+      radius * 0.05,
+      -radius * 0.9,
+      -radius * 0.16,
+      -radius * 0.72,
+      radius * 0.34,
+    ];
+    // Stroke the silhouette at double width before filling so body, tail and head share one clean outline.
+    g.poly(tail)
+      .ellipse(-radius * 0.12, radius * 0.22, radius * 0.64, radius * 0.44)
+      .circle(radius * 0.3, -radius * 0.28, radius * 0.35)
+      .stroke({ width: 8, color: s.line, join: 'round' })
+      .poly(tail)
+      .ellipse(-radius * 0.12, radius * 0.22, radius * 0.64, radius * 0.44)
+      .circle(radius * 0.3, -radius * 0.28, radius * 0.35)
+      .fill(s.fill);
+    // An orange bill, a curved wing line and an eye.
+    g.poly([
+      radius * 0.6,
+      -radius * 0.34,
+      radius * 0.96,
+      -radius * 0.26,
+      radius * 0.96,
+      -radius * 0.14,
+      radius * 0.58,
+      -radius * 0.14,
+    ])
+      .fill(swatch.orange.fill)
+      .stroke({ width: 4, color: swatch.orange.line, join: 'round' });
+    g.moveTo(-radius * 0.36, radius * 0.14)
+      .quadraticCurveTo(-radius * 0.08, radius * 0.42, radius * 0.22, radius * 0.2)
+      .stroke({ width: 3.5, color: s.line, cap: 'round' });
+    g.circle(radius * 0.4, -radius * 0.36, 4.5).fill(ink);
+  }
   return g;
 }
 

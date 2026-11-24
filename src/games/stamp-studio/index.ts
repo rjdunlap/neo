@@ -1,4 +1,5 @@
 import { rangeFor } from '../../progress/difficulty';
+import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { Circle, Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
@@ -14,6 +15,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
 import { TracePrints } from './trace';
 import {
+  animalAsks,
+  animalWord,
+  ASK_HINT_AFTER,
   COLOR_RADIUS,
   LEVELS,
   nextSize,
@@ -85,6 +89,18 @@ class StampStudio implements Game {
   /** Follow the sparkle (level 10): the round's spots in the order they glow, and the glow itself. */
   readonly spots: Pt[] = [];
   readonly glow = new Graphics();
+  /** Stamp a duck! (level 11): the three animals asked in turn, which button glows after two wrong presses, and miss/hint counts. */
+  readonly asks: StampKind[] = [];
+  askIndex = 0;
+  hintKind: StampKind | null = null;
+  readonly choiceGlow = new Graphics();
+  private readonly tally = newRequestTally();
+  get misses() {
+    return this.tally.misses;
+  }
+  get hints() {
+    return this.tally.hints;
+  }
   private glowTime = 0;
   private nudgeTime = 0;
   private selected: Mark | null = null;
@@ -122,11 +138,16 @@ class StampStudio implements Game {
       if (this.done) return;
       const p = this.paper.toLocal(e.global);
       if (this.stamps.length >= LIMIT) {
-        if (!this.fullSaid) {
-          this.fullSaid = true;
-          void ctx.say('stamp.full');
+        if (this.currentAsk() !== null) {
+          // Keep the paper within the limit without locking out remaining asks.
+          this.remove(this.stamps[0]);
+        } else {
+          if (!this.fullSaid) {
+            this.fullSaid = true;
+            void ctx.say('stamp.full');
+          }
+          return;
         }
-        return;
       }
       // `place` clamps, so a pat off the paper presses at the nearest place on it.
       const spot = this.sparkle();
@@ -139,6 +160,14 @@ class StampStudio implements Game {
     if (this.plan.pat) onTap(this.background, press, { cooldown: 0 });
     // Follow the sparkle (lap, toddler): a tap anywhere stamps too, so there is no miss.
     if (this.plan.follow) onTap(this.background, press);
+    if (this.plan.ask) this.asks.push(...animalAsks(this.plan.kinds, this.kind, ctx.rng));
+    this.choiceGlow
+      .circle(0, 0, 64)
+      .fill({ color: 0xfff3a0, alpha: 0.85 })
+      .stroke({ width: 5, color: swatch.yellow.line });
+    this.choiceGlow.eventMode = 'none';
+    this.choiceGlow.visible = false;
+    ctx.stage.addChild(this.choiceGlow);
     this.plan.kinds.forEach((kind) => {
       const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => {
         if (this.done) return;
@@ -246,10 +275,16 @@ class StampStudio implements Game {
     this.glow.visible = !!spot;
     if (spot) this.glow.position.copyFrom(sparklePixel(spot, this.width, this.height));
   }
+  /** The animal currently asked for (Stamp a duck!, level 11), or null once all asks are met. */
+  private currentAsk(): StampKind | null {
+    return this.plan.ask ? (this.asks[this.askIndex] ?? null) : null;
+  }
   private complete() {
     if (this.done || !this.stamps.length) return;
     this.done = true;
     this.glow.visible = false;
+    this.hintKind = null;
+    this.choiceGlow.visible = false;
     this.finish.rotation = 0;
     this.stopScan();
     this.play.visible = false;
@@ -297,7 +332,7 @@ class StampStudio implements Game {
     if (this.woken.length === wake.at.length && wake.time >= Math.max(wake.end, 0.9)) {
       this.wake = null;
       sfx.sparkle();
-      this.ctx.finish({ misses: 0, hints: 0, creation: wake.creation });
+      this.ctx.finish({ ...tally(this.tally), creation: wake.creation });
     }
   }
   private remove(mark: Mark | null) {
@@ -350,18 +385,41 @@ class StampStudio implements Game {
     this.stamps.push(mark);
     this.selected = mark;
     this.layoutStamp(mark);
-    this.drawSelection();
     this.sound(data.kind, ++this.presses);
     if (this.plan.count) {
       const n = countAloud(this.stamps.length, this.counted);
       if (n) void this.ctx.say('stamp.count', { n });
     }
+    this.checkAsk(data.kind);
+    this.drawSelection();
     if (
       (this.ctx.level <= 2 && this.stamps.length === LIMIT) ||
       (this.plan.pat && this.stamps.length >= this.plan.pat.count) ||
       (this.plan.follow && this.stamps.length >= this.plan.follow.count)
     )
       this.complete();
+  }
+  private checkAsk(stamped: StampKind) {
+    const ask = this.currentAsk();
+    if (!ask) return;
+    if (stamped === ask) {
+      this.askIndex++;
+      nextRequest(this.tally);
+      this.hintKind = null;
+      const next = this.currentAsk();
+      if (next) void this.ctx.instruct('stamp.ask', { animal: animalWord(next) });
+      else void this.ctx.instruct('stamp.free');
+      return;
+    }
+    sfx.boing();
+    if (missOnRequest(this.tally, ASK_HINT_AFTER)) {
+      hinted(this.tally);
+      this.hintKind = ask;
+    }
+    void this.ctx.say('stamp.wrong', {
+      got: STAMP_NAMES[stamped].toLowerCase(),
+      want: animalWord(ask),
+    });
   }
   private layoutStamp(s: Mark) {
     const p = pixel(s.data, this.width, this.height);
@@ -380,11 +438,15 @@ class StampStudio implements Game {
         .circle(this.selected.node.x, this.selected.node.y, Math.max(70, 48 * this.selected.data.size + 12))
         .stroke({ width: 5, color: swatch.yellow.line });
     // Pat the paper and Follow the sparkle: no stamp button and no arrows, so only the last press ends the picture and
-    // nothing takes a stamp away.
+    // nothing takes a stamp away. Stamp a duck!: the green arrow appears once the three asks are met.
     const bare = !!(this.plan.pat || this.plan.follow);
-    this.finish.visible = !bare && this.stamps.length > 0;
+    const asking = this.currentAsk() !== null;
+    this.finish.visible = !bare && !asking && this.stamps.length > 0;
     this.undo.visible = !bare && this.stamps.length > 0;
     this.choices.forEach((b) => (b.visible = !bare));
+    const hintIndex = this.hintKind && !this.done ? this.plan.kinds.indexOf(this.hintKind) : -1;
+    this.choiceGlow.visible = hintIndex >= 0;
+    if (hintIndex >= 0) this.choiceGlow.position.copyFrom(this.choices[hintIndex].position);
     this.drawGlow();
     this.bin.visible = this.plan.move && !!this.selected;
     this.play.visible = !!this.plan.play && this.stamps.length > 0 && !this.done;
@@ -397,7 +459,9 @@ class StampStudio implements Game {
     this.colors.forEach((b, i) => (b.alpha = STAMP_COLORS[i] === this.color ? 1 : 0.65));
   }
   start() {
-    void this.ctx.instruct(`stamp.${this.plan.prompt}`);
+    const ask = this.currentAsk();
+    if (ask) void this.ctx.instruct('stamp.ask', { animal: animalWord(ask) });
+    else void this.ctx.instruct(`stamp.${this.plan.prompt}`);
   }
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
@@ -422,10 +486,11 @@ class StampStudio implements Game {
   update(dt: number) {
     if (this.scan) this.stepScan(dt);
     if (this.wake) this.stepWake(dt);
-    if (this.glow.visible) {
+    if (this.glow.visible || this.choiceGlow.visible) {
       this.glowTime += dt;
       // Never smaller than `SPARKLE.across`.
-      this.glow.scale.set(1 + SPARKLE.pulse * Math.sin(this.glowTime * 4));
+      if (this.glow.visible) this.glow.scale.set(1 + SPARKLE.pulse * Math.sin(this.glowTime * 4));
+      if (this.choiceGlow.visible) this.choiceGlow.alpha = 0.65 + 0.35 * Math.sin(this.glowTime * 7);
     }
     if (!this.done && this.ctx.level <= 2 && this.stamps.length >= 5) {
       this.nudgeTime += dt;
@@ -464,6 +529,7 @@ class StampStudio implements Game {
       kind: this.kind,
       color: this.color,
       sparkle: at ? place(at.x, at.y, this.width, this.height) : undefined,
+      ask: this.currentAsk() ?? undefined,
     });
     switch (move.do) {
       case 'kind':
@@ -499,7 +565,7 @@ export const stampStudio: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [7, 8, 9, 10],
+  entryLevels: [7, 8, 9, 10, 11],
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,

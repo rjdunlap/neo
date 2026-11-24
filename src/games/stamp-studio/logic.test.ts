@@ -15,9 +15,13 @@ import {
   stampLayout,
   BUTTON_REACH,
   stampDemo,
+  animalAsks,
+  animalWord,
+  ASK_HINT_AFTER,
   type StampKind,
   type StampState,
 } from './logic';
+import * as artwork from './art';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
@@ -392,7 +396,7 @@ describe('Trace Prints (levels 8–9)', () => {
   const leaf = planFor(8).trace!,
     feet = planFor(9).trace!;
   it('appends two levels and leaves levels 1–7 as they were', () => {
-    expect(PLANS).toHaveLength(10);
+    expect(PLANS).toHaveLength(11);
     expect(PLANS.slice(0, 7).map((p) => [p.prompt, p.kinds, p.name, 'trace' in p])).toEqual([
       ['stars', ['star'], 'Press one kind of stamp onto a picture', false],
       ['friends', ['cat', 'fish'], 'Make a picture with two kinds of stamps', false],
@@ -422,11 +426,11 @@ describe('Trace Prints (levels 8–9)', () => {
   });
   it('puts level 8 in lap and level 9 first in toddler; a carried trace level starts another band at its easiest', () => {
     expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 10, order: [7, 8, 1, 10, 2] });
-    expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 10, order: [9, 10, 2, 3] });
+    expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 11, order: [9, 10, 2, 11, 3] });
     expect(stampStudio.levels!('preschool')).toEqual({ min: 3, max: 5 });
     expect(stampStudio.levels!('prek')).toEqual({ min: 4, max: 6 });
     expect(stampStudio.levels!('school')).toEqual({ min: 5, max: 6 });
-    expect(stampStudio.entryLevels).toEqual([7, 8, 9, 10]);
+    expect(stampStudio.entryLevels).toEqual([7, 8, 9, 10, 11]);
     for (const l of [8, 9])
       expect(landing(l, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);
     expect(landing(7, stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(9);
@@ -724,7 +728,7 @@ describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', (
 });
 
 import { SPARKLE, sparklePixel, sparkleSpots, sparkleTap } from './logic';
-import { firstLevel } from '../../progress/difficulty';
+import { firstLevel, stepLevel } from '../../progress/difficulty';
 
 describe('Follow the sparkle (level 10)', () => {
   const plan = planFor(10);
@@ -846,5 +850,100 @@ describe('Follow the sparkle (level 10)', () => {
     expect(text).toMatch(/anywhere/i);
     expect(text).toMatch(/fifth stamp/i);
     expect(text).not.toMatch(/arrow removes|green arrow|counted/i);
+  });
+});
+
+describe('Stamp a duck! (level 11)', () => {
+  const plan = planFor(11);
+
+  it('sits between levels 2 and 3 in toddler with three animal stamps and entryLevels unchanged', () => {
+    expect(plan.ask).toEqual({ count: 3 });
+    expect(plan.kinds).toEqual(['cat', 'fish', 'duck']);
+    expect([plan.color, plan.move, plan.transform, !!plan.play, !!plan.count]).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    const toddler = stampStudio.levels!('toddler').order!;
+    expect(toddler.indexOf(11)).toBe(toddler.indexOf(2) + 1);
+    expect(toddler.indexOf(11)).toBe(toddler.indexOf(3) - 1);
+    expect(stampStudio.entryLevels).toEqual([7, 8, 9, 10, 11]);
+    expect(firstLevel(stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(9);
+    expect(landing(11, stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(11);
+    expect(landing(11, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);
+    expect(stepLevel(2, 1, stampStudio.levels!('toddler'))).toBe(11);
+    expect(stepLevel(11, 1, stampStudio.levels!('toddler'))).toBe(3);
+    expect(stepLevel(3, -1, stampStudio.levels!('toddler'))).toBe(11);
+    expect(stampStudio.describeLevel(11)).toMatch(/duck/i);
+    expect(SCRIPT['stamp.ask']).toEqual(['Stamp a {animal}!']);
+    expect(SCRIPT['stamp.wrong']).toEqual(["That's {got}! Find the {want}."]);
+    expect(SCRIPT['stamp.free']).toBeTruthy();
+  });
+
+  it('gives the duck a name, quack sound, picture survival and art in every color', () => {
+    expect(STAMP_KINDS).toContain('duck');
+    expect(STAMP_NAMES.duck).toBe('A duck');
+    expect(animalWord('duck')).toBe('duck');
+    expect(STAMP_SOUNDS.duck).toEqual({ play: 'animal', animal: 'quack' });
+    expect(ASK_HINT_AFTER).toBe(2);
+    for (const color of STAMP_COLORS) {
+      const b = artwork.stampArt('duck', color, 48).getLocalBounds();
+      expect(b.width).toBeGreaterThan(50);
+      expect(b.height).toBeGreaterThan(40);
+    }
+    const pic = {
+      kind: 'picture',
+      stamps: [{ kind: 'duck', color: 'yellow', x: 0.5, y: 0.5, size: 1, turns: 0 }],
+    };
+    expect(cleanPicture(pic)).toEqual(pic);
+  });
+
+  it('always offers the three animals and asks three distinct ones, starting away from the selected one', () => {
+    const colors = new Set<ColorName>();
+    for (let seed = 0; seed < 80; seed++) {
+      const round = roundPlan(11, new Rng(seed));
+      expect([...round.plan.kinds].sort()).toEqual(['cat', 'duck', 'fish']);
+      expect(STAMP_COLORS).toContain(round.color);
+      colors.add(round.color);
+      for (const selected of round.plan.kinds) {
+        const asks = animalAsks(round.plan.kinds, selected, new Rng(seed));
+        expect(asks).toHaveLength(3);
+        expect(new Set(asks).size).toBe(3);
+        expect(asks[0]).not.toBe(selected);
+        // Each ask is satisfied by stamping that animal, so the next ask also differs from what is selected then.
+        for (let i = 1; i < asks.length; i++) expect(asks[i]).not.toBe(asks[i - 1]);
+      }
+    }
+    expect(colors.size).toBe(STAMP_COLORS.length);
+  });
+
+  it('the ghost finger picks and stamps all three asked animals cleanly, then finishes on the green arrow', () => {
+    const round = roundPlan(11, new Rng(7)).plan;
+    const asks = animalAsks(round.kinds, round.kinds[0]!, new Rng(7));
+    const st: StampState = { stamps: [], kind: round.kinds[0]!, color: 'purple', ask: asks[0] };
+    const stamped: StampKind[] = [];
+    let finished = false;
+    for (let step = 0; step < 20 && !finished; step++) {
+      const m = stampDemo(round, st);
+      if (m.do === 'kind') st.kind = m.kind;
+      else if (m.do === 'stamp') {
+        stamped.push(st.kind);
+        st.stamps.push({ x: m.x, y: m.y, size: 1, turns: 0 });
+        st.ask = stamped.length < asks.length ? asks[stamped.length] : undefined;
+      } else if (m.do === 'finish') finished = true;
+    }
+    expect(finished).toBe(true);
+    expect(stamped.slice(0, 3)).toEqual(asks);
+    expect(stamped).toHaveLength(DEMO_SPOTS.length);
+  });
+
+  it('its card names the three animals, wrong-stamp feedback and button glow', () => {
+    const card = howToFor(stampStudio, 11)!;
+    const text = [...card.steps, ...[card.finish].flat()].join(' ');
+    expect(text).toMatch(/cat.*fish.*duck/i);
+    expect(text).toMatch(/glows/i);
+    expect(text).toMatch(/three asks/i);
   });
 });

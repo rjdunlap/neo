@@ -13,7 +13,10 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   flower: 'A flower',
   fish: 'A fish',
   cat: 'A cat',
+  duck: 'A duck',
 };
+/** Plain noun for a stamp kind ("duck", "cat", "fish"), used inside spoken prompts. */
+export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].slice(2);
 
 /** Saved sticker seeds always use these original four kinds and colors, in their historical order. */
 const STICKER_KINDS = STAMP_KINDS.slice(0, 4);
@@ -36,12 +39,24 @@ export interface StampPlan {
   move: boolean;
   transform: boolean;
   prompt:
-    'pats' | 'sparkle' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story' | 'leaf' | 'feet';
+    | 'pats'
+    | 'sparkle'
+    | 'stars'
+    | 'friends'
+    | 'picture'
+    | 'sizes'
+    | 'garden'
+    | 'story'
+    | 'leaf'
+    | 'feet'
+    | 'ask';
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
   /** Follow the sparkle (level 10): a glowing spot shows where to tap; this many stamps finish the picture. */
   follow?: { count: number };
+  /** Stamp a duck! (level 11): the voice asks for this many distinct animals in turn, then free play. */
+  ask?: { count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
@@ -146,6 +161,16 @@ export const PLANS = [
     name: 'Follow the sparkle: tap the glowing spot and a stamp lands there',
     follow: { count: 5 },
   },
+  // Stamp a duck!: three animal stamps with sounds; three asks in a round, then free (between 2 and 3 for toddler).
+  {
+    kinds: ['cat', 'fish', 'duck'],
+    color: false,
+    move: false,
+    transform: false,
+    prompt: 'ask',
+    name: 'Stamp a duck!: find the animal the voice asks for',
+    ask: { count: 3 },
+  },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number): StampPlan =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -194,6 +219,7 @@ export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
   flower: { play: 'marimba', from: 3 },
   fish: { play: 'splash' },
   cat: { play: 'animal', animal: 'meow' },
+  duck: { play: 'animal', animal: 'quack' },
 };
 /** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
 export function stampStep(kind: StampKind, press: number): number | null {
@@ -312,9 +338,29 @@ export function sparkleTap(x: number, y: number, spot: Pt, width: number, height
   return Math.hypot(x - p.x, y - p.y) <= SPARKLE.radius ? p : { x, y };
 }
 
+/** Wrong presses on one ask before the asked stamp's button glows (Stamp a duck!, level 11). */
+export const ASK_HINT_AFTER = 2;
+
+/**
+ * Three distinct asks for a Stamp a duck! round, starting on a kind different from `selected` so the child must
+ * pick a new stamp right away (and every later ask differs from the stamp just placed to complete the one before).
+ */
+export function animalAsks(kinds: readonly StampKind[], selected: StampKind, rng: Rng): StampKind[] {
+  const other = kinds.filter((k) => k !== selected);
+  const first = rng.pick(other.length ? other : kinds);
+  const rest = rng.shuffle(kinds.filter((k) => k !== first));
+  return [first, ...rest];
+}
+
 /** Early rounds vary their existing tools without adding simultaneous choices. */
 export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
   const base = planFor(level);
+  if (base.ask) {
+    return {
+      plan: { ...base, kinds: rng.shuffle([...base.kinds]) },
+      color: rng.pick(STAMP_COLORS),
+    };
+  }
   if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
   return {
     plan: { ...base, kinds: rng.shuffle([...STAMP_KINDS]).slice(0, base.kinds.length) },
@@ -330,6 +376,8 @@ export interface StampState {
   color: ColorName;
   /** Follow the sparkle: where the glowing spot is now, in the sheet's own 0 to 1 coordinates. */
   sparkle?: Pt;
+  /** Stamp a duck!: the animal currently asked for, while asks remain. */
+  ask?: StampKind;
 }
 
 export type StampMove =
@@ -371,6 +419,10 @@ export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
   if (plan.follow)
     return n < plan.follow.count && st.sparkle ? { do: 'stamp', ...st.sparkle } : { do: 'finish' };
+  if (plan.ask && st.ask) {
+    if (st.kind !== st.ask) return { do: 'kind', kind: st.ask };
+    return { do: 'stamp', ...DEMO_SPOTS[n % DEMO_SPOTS.length] };
+  }
   const last = st.stamps[n - 1];
   if (plan.transform && n === 3 && last.turns === 0) return { do: 'turn' };
   if (plan.transform && n === 4 && last.size === 1) return { do: 'grow' };
@@ -571,7 +623,7 @@ export function traceDemo(
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [7, 8, 1, 10, 2] },
-  toddler: { min: 2, max: 10, order: [9, 10, 2, 3] },
+  toddler: { min: 2, max: 11, order: [9, 10, 2, 11, 3] },
   preschool: { min: 3, max: 5 },
   prek: { min: 4, max: 6 },
   school: { min: 5, max: 6 },

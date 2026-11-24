@@ -16,12 +16,23 @@ export const HOW_TO: GameHowTo = {
       text: 'A sparkle glows on the paper: tap it and a stamp lands there. A tap anywhere else stamps too, and the sparkle moves on either way.',
     },
     { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Tap the asked animal stamp (cat, fish or duck), then tap the paper.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Any other stamp still prints and is named; after two misses the asked button glows.',
+    },
     { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
     { from: 1, to: 3, text: 'Each stamp has its own sound, and the stamps are counted aloud up to ten.' },
     { from: 4, to: 6, text: 'Turn a stamp; the size button makes it big, then small, then middle again.' },
     { from: 8, to: 8, text: 'Pat the mud: the leaf presses its shape there. Pat as often as you like.' },
     { from: 9, to: 9, text: 'Tap the duck foot or the cat paw, then tap the mud to make its print.' },
     { to: 2, text: 'The back arrow removes the latest stamp.' },
+    { from: 11, to: 11, text: 'The back arrow removes the latest stamp.' },
     { from: 8, to: 9, text: 'The back arrow removes the latest print.' },
     {
       from: 3,
@@ -49,6 +60,11 @@ export const HOW_TO: GameHowTo = {
       from: 1,
       to: 2,
       text: 'Tap the green arrow to finish (it wiggles after five stamps): the stamps wake up one by one. A full paper finishes itself. After the round, the tree house button hangs it up.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'After three asks, tap the green arrow whenever you are ready to finish: the stamps wake up one by one. After the round, the tree house button hangs it up.',
     },
     {
       from: 3,
