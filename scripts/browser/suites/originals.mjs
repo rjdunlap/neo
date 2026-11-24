@@ -1266,6 +1266,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             throw new Error('Cups: the tallies match the pours');
           const more = p[0].cups > p[1].cups ? 0 : 1;
           await hit(g.bowls[1 - more]);
+          // Both tallies are counted aloud; the bowls wait for the recount to end.
+          await kit.until(() => g.pulse === null, 12000);
           await hit(g.bowls[1 - more]);
           if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped)
             throw new Error(`Cups: wrong picks ${g.state.misses} ${g.state.hints}`);
