@@ -109,8 +109,8 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `lands` | 2026-10-24 · [Location capacity: pages for a full land](archive/VERIFICATION-2026-10-24.md#2026-10-24--location-capacity-pages-for-a-full-land) | All land pages and bands. A later Cozy Village page check passed before the suite stopped at Lantern Lake ([entry](verification/2026-11-14-pet-says-level-6-opposite-day.md)). |
 | `lanterntouch` | 2026-11-04 · [Lantern Lights school opening (lantern-lights batch 4)](archive/VERIFICATION-2026-11-04.md#2026-11-04--lantern-lights-school-opening-lantern-lights-batch-4) | `LANTERN_ONLY=school` |
 | `lens` | 2026-11-17 · [Puddle Lens plays upright on a phone](verification/2026-11-17-puddle-lens-plays-upright-on-a-phone.md) | `LENS_LEVELS=upright` |
-| `letters` | 2026-11-24 · [Letter Trails level 12 Lines and hooks](verification/2026-11-24-letter-trails-level-12-lines-and-hooks.md) | — |
-| `letters10` | 2026-11-24 · [Letter Trails level 12 Lines and hooks](verification/2026-11-24-letter-trails-level-12-lines-and-hooks.md) | Level 12 e and j on a phone viewport; stroke forms unchecked against HWT |
+| `letters` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | — |
+| `letters10` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | Level 13 m and b on a phone viewport; stroke forms unchecked against HWT |
 | `liftit` | 2026-11-20 · [Lift It level 10, One big pull (toddler entry)](verification/2026-11-20-lift-it-level-10-one-big-pull-toddler-entry.md) | `FROM_LEVEL=10` |
 | `littleloom` | 2026-10-25 · [Little Loom 1–3 (VA2)](archive/VERIFICATION-2026-10-25.md#2026-10-25--little-loom-13-va2) | — |
 | `livekeys` | 2026-10-15 · [Lands stage C1b group 3, three games switch live](archive/VERIFICATION-2026-10-15.md#2026-10-15--lands-stage-c1b-group-3-three-games-switch-live) | `LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` |

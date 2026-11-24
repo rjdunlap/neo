@@ -45,9 +45,26 @@ const DOT: Stroke = [
   [0.5, 0.26],
 ];
 
+/** Where the hump of n, m, h and r springs from its stem: a little under the middle line, so the arch peaks on it. */
+const HUMP_Y = FRAME.mid + 0.1;
+/** A hump from the left at (x, HUMP_Y) up over the middle line and down the right to the base line, `w` wide (or stopping short for r). */
+const hump = (x: number, w: number, to = 360): Point[] => {
+  const pts = arc(x + w / 2, HUMP_Y, w / 2, 0.1, 180, to, 10);
+  if (to === 360) pts.push([x + w, FRAME.base]);
+  return pts;
+};
+/** A stem from `top` to `end`, then straight back up it to `back` (a retrace, as M and N have), ready for a hump or a bowl. */
+const stemAndBack = (x: number, top: number, end: number, back: number): Point[] => [
+  [x, top],
+  [x, end],
+  [x, back],
+];
+/** The bowl of p and b: a round that starts on the stem at the middle of the x-height, goes up and over clockwise and closes there. */
+const bowl = (x: number): Point[] => arc(x + 0.12, cy, 0.12, r, 180, 540, 18);
+
 /**
  * Little letters in stroke order, in the frame above. The first tranche is level 10's group (Handwriting Without
- * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; levels 13–14 add theirs. Every letter starts at the top of
+ * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; level 13 adds p r n m h b (down, back up and over); level 14 adds its own. Every letter starts at the top of
  * its first stroke: c, o and s on the middle line's curve, v and w on the middle line, t on the top line.
  */
 export const LOWER: Record<string, readonly Stroke[]> = {
@@ -176,6 +193,25 @@ export const LOWER: Record<string, readonly Stroke[]> = {
     ],
     DOT,
   ],
+  // Down the stem, back up it, then over in a hump and down the right side.
+  n: [[...stemAndBack(0.38, FRAME.mid, FRAME.base, HUMP_Y), ...hump(0.38, 0.24).slice(1)]],
+  // The tall stem from the top line, back up to where n's hump springs, then the same hump.
+  h: [[...stemAndBack(0.38, FRAME.top, FRAME.base, HUMP_Y), ...hump(0.38, 0.24).slice(1)]],
+  // Down the stem, back up, and a little hump that stops at the top (r has no right leg).
+  r: [[...stemAndBack(0.4, FRAME.mid, FRAME.base, HUMP_Y), ...hump(0.4, 0.2, 300).slice(1)]],
+  // Down the stem, back up, a hump down to the base line, back up that leg, a second hump and down.
+  m: [
+    [
+      ...stemAndBack(0.28, FRAME.mid, FRAME.base, HUMP_Y),
+      ...hump(0.28, 0.22).slice(1),
+      [0.5, HUMP_Y],
+      ...hump(0.5, 0.22).slice(1),
+    ],
+  ],
+  // A stem down past the base line to the bottom line, back up it to the middle of the x-height, then a bowl on its right.
+  p: [[...stemAndBack(0.36, FRAME.mid, FRAME.bottom, cy), ...bowl(0.36).slice(1)]],
+  // A tall stem from the top line to the base line, back up to the middle of the x-height, then a bowl on its right.
+  b: [[...stemAndBack(0.36, FRAME.top, FRAME.base, cy), ...bowl(0.36).slice(1)]],
   // The one that starts in the middle: a line across the middle of the round, then up and round anticlockwise.
   e: [[[0.5 - r * 1.05, cy], [0.5 + r * 1.05, cy], ...arc(0.5, cy, r * 1.05, r, 0, -300, 16).slice(1)]],
 };

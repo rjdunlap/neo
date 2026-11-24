@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–6 |
 | pre-K | 3–10 |
-| school | 7–12 |
+| school | 7–13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 10 | Little letters like their capitals: c, o, s, v, w, t in a four-line frame |
 | 11 | Magic c: a, d and g start with a little c, then a line |
 | 12 | Lines and hooks: u, i, e, l, k, y and j in the four-line frame |
+| 13 | Down, up and over: p, r, n, m, h and b in the four-line frame |
 
 <!-- end generated -->
 
@@ -40,3 +41,5 @@ Defines all 26 capitals as ordered strokes starting in the top quarter of the wr
 Level 11, Magic c (school 7–11; pre-K stays 3–10): a, d and g each trace a magic-c curve then a stem (a: middle line to base; d: top line to base; g: middle line to the bottom line, its tail turning left). The stems are simple forms of our own, not yet checked against the Handwriting Without Tears lowercase chart (open, as for level 10). Plans, `MAGIC_LEVEL` and `inFrame` in `logic.ts` cover levels 10 and 11, and the corridor for in-frame levels is `LITTLE_TOLERANCE` 0.06 of the box (was 0.075; twice it stays under a little o's radius), which also narrows level 10. Voice reuses `trails.little`; the how-to has its own lines.
 
 Level 12, Lines and hooks (school 7–12; pre-K stays 3–10): u i e l k y j in the same frame and corridor as levels 10–11. i and j end with a dot, k and y have two strokes, j's tail turns left, and e is the one letter that starts in the middle of its round and goes across first. The forms are simple shapes of our own, not yet checked against the Handwriting Without Tears chart.
+
+Level 13, Down, up and over (school 7–13; pre-K stays 3–10): p r n m h b in the same frame and corridor. Each is one stroke that goes down its stem, back up it and over: a hump for n, m, h and r (r stops short, with no leg) or a round bowl for p and b. h and b start at the top line, p's stem reaches the bottom line. The forms are simple shapes of our own, not yet checked against the Handwriting Without Tears chart.
