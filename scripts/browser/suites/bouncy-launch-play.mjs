@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, launch, finished, screenshot, log }) {
   async function bouncyLaunchPlay() {
     if (process.env.LAUNCH_LEVEL === '10') return lineLevel();
+    if (process.env.LAUNCH_LEVEL === 'notches') return notchLevels();
     // Level 13 (lap) on a phone: touches anywhere (the sky, a corner, the pet) bounce the pet; touches while it flies are
     // free; each landing leaves a flower that stays; five landings finish with 0 misses and 0 hints.
     await page.setViewportSize({ width: 844, height: 390 });
@@ -69,6 +70,101 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
       `Bouncy Launch 13: touches in the sky, a corner, the middle, on the pet and low right each bounced it; touches in flight free; flowers at ${out.flowerXs.join('/')}; 0/0; passed`,
+    );
+  }
+  async function notchLevels() {
+    // Levels 1 and 3 on a phone held sideways: the five taps of level 1 visit five different clouds (the seeded bag) and
+    // each ring a note; at level 3 five notch pegs sit on the spring, a pull to the star cloud's notch reaches it (so a
+    // tick has sounded for each notch passed), the landing leaves a footprint and the round finishes 0/0.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(400);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('bouncy-launch', 1, 'Mia', 'toddler');
+    await page.waitForFunction(() => neo.scene.game?.bag?.length === 5, null, { timeout: 15000 });
+    const one = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const bag = g.bag.slice();
+      const landed = [];
+      for (let n = 0; n < 5; n++) {
+        await kit.until(() => !g.flying && g.shot === n, 15000);
+        await kit.sleep(300);
+        await kit.tapOn(g.pet);
+        await kit.until(() => g.prints.length === n + 1, 15000);
+        landed.push(g.prints[n]);
+      }
+      await kit.until(() => neo.scene.finished, 20000);
+      return { bag, landed, misses: g.misses };
+    });
+    assert.deepEqual(
+      one.bag.slice().sort(),
+      [0, 1, 2, 3, 4],
+      `bag visits five clouds: ${JSON.stringify(one)}`,
+    );
+    assert.deepEqual(
+      one.landed.map((f) => Math.round(f * 5 - 0.5)),
+      one.bag,
+      'each tap lands on its cloud in the bag',
+    );
+    await finished('bouncy-launch');
+    await launch('bouncy-launch', 3, 'Mia', 'preschool');
+    await page.waitForFunction(() => neo.scene.game?.targets?.length === 3, null, { timeout: 15000 });
+    await page.waitForTimeout(1500);
+    await screenshot('bouncy-launch-3-notches-idle-phone');
+    // Hold a pull past three notches (no finger needed) and look at the pegs.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      g.grab = { id: 99, from: { x: 0, y: 0 } };
+      const r = 110;
+      g.pull(g.seat.x - (0.35 / Math.hypot(0.35, 0.94)) * r, g.seat.y + (0.94 / Math.hypot(0.35, 0.94)) * r);
+    });
+    await page.waitForTimeout(300);
+    await screenshot('bouncy-launch-3-notches-pulling-phone');
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      g.grab = null;
+      g.notchSeen = 0;
+      g.returnToSeat();
+    });
+    await page.waitForTimeout(600);
+    const three = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const res = { ticks: [], prints: [], notchesDrawn: 0 };
+      for (let n = 0; n < 3; n++) {
+        await kit.until(() => !g.flying && g.shot === n && !g.grab, 15000);
+        await kit.sleep(400);
+        const t = g.targets[n];
+        const pull = 44 + 28 * t;
+        const o = { x: g.seat.x + g.pet.touch.x * 0.5, y: g.seat.y + g.pet.touch.y * 0.5 };
+        const d = { x: -0.35, y: 0.94 };
+        const len = Math.hypot(d.x, d.y);
+        const a = g.ctx.stage.toGlobal(o);
+        const b = g.ctx.stage.toGlobal({ x: o.x + (d.x / len) * pull, y: o.y + (d.y / len) * pull });
+        if (n === 0) res.notchesDrawn = Math.round(g.notches.getLocalBounds().height);
+        const drag = kit.drag(kit.line([a.x, a.y], [b.x, b.y], 20));
+        await kit.sleep(20 * 16 + 40);
+        res.ticks.push(g.notchSeen);
+        await drag;
+        await kit.until(() => g.shot === n + 1, 15000);
+        res.prints.push(g.prints.length);
+        if (n === 0) res.shotReady = true;
+      }
+      await kit.until(() => neo.scene.finished, 20000);
+      res.misses = g.misses;
+      res.hints = g.hints;
+      return res;
+    });
+    assert.deepEqual(three.prints, [1, 2, 3], `a footprint per landing: ${JSON.stringify(three)}`);
+    assert.ok(
+      three.ticks.every((n, i) => n >= 1),
+      `a tick sounded for the notches passed: ${JSON.stringify(three)}`,
+    );
+    assert.ok(three.notchesDrawn !== 0, 'notch pegs drawn');
+    assert.deepEqual([three.misses, three.hints], [0, 0], 'pulling to the notches landed every star');
+    await finished('bouncy-launch');
+    log(
+      `Bouncy Launch 1 and 3: the five taps landed on five different clouds from the bag; at level 3 pulls to each notch ticked (${three.ticks.join('/')}), left a footprint each and finished 0/0; passed`,
     );
   }
   async function lineLevel() {
