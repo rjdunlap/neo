@@ -195,7 +195,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `swapmeet` | 2026-11-22 · [Swap Meet levels 5–6](verification/2026-11-22-swap-meet-levels-5-6.md) | `SWAPMEET_LEVELS=5,6` |
 | `swingpals` | 2026-11-22 · [Swing Pals level 10 A row of three](verification/2026-11-22-swing-pals-level-10-a-row-of-three.md) | `SWING_LEVELS=10` |
 | `talkcards` | 2026-11-18 · [Grown-ups page conversation cards](verification/2026-11-18-grown-ups-page-conversation-cards.md) | — |
-| `third` | 2026-11-13 · [Monster Munch level 9, a touch anywhere feeds at lap](verification/2026-11-13-monster-munch-level-9-a-touch-anywhere-feeds-at-lap.md) | `MUNCH_LEVELS=9` |
+| `third` | 2026-11-24 · [Monster Munch level 5 overfeed and hand back (PR #2117)](verification/2026-11-24-monster-munch-level-5-overfeed-and-hand-back.md) | Level 5 played once (headless browser); `fingerdemo` not run |
 | `thoughtbubbles` | 2026-11-23 · [Thought Bubbles level 5, Who is telling?](verification/2026-11-23-thought-bubbles-level-5-who-is-telling.md) | `THOUGHT_BUBBLES_ONLY=tell` |
 | `tideline` | 2026-11-12 · [tide-line: a touch anywhere sends the wave at lap](verification/2026-11-12-tide-line-a-touch-anywhere-sends-the-wave-at-lap.md) | Lap entry |
 | `tideline34` | 2026-11-11 · [U7d fix batch 4: melt-freeze, tide-line, drift-cards and fruit-slice never hold a tap on a right answer's line](archive/VERIFICATION-2026-11-11.md#2026-11-11--u7d-fix-batch-4-melt-freeze-tide-line-drift-cards-and-fruit-slice-never-hold-a-tap-on-a-right-answers-line-pr-1534) | Level 4 response timing |

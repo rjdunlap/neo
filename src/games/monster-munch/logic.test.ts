@@ -21,6 +21,7 @@ import {
   orderWords,
   total,
   TRAY_MAX,
+  overfed,
   wantsMore,
   type Food,
   type MunchRound,
@@ -511,5 +512,22 @@ describe('Monster Munch sharing both kinds and choosing group counts', () => {
     });
     expect(friendsReady(t)).toBe(false);
     expect(munchHint(MUNCH_PLANS[10], t)).toBe('call');
+  });
+
+  it('level 5 alone lets a monster overfeed, and the bell hands back exactly the extras', () => {
+    MUNCH_PLANS.forEach((p, i) => expect(!!p.overfeed, `level ${i + 1}`).toBe(i === 4));
+    const want = { ...noFood(), carrot: 4 };
+    expect(overfed(want, { ...noFood(), carrot: 6 })).toEqual({ ...noFood(), carrot: 2 });
+    expect(overfed(want, { ...noFood(), carrot: 3 })).toEqual(noFood());
+    // The tray always has room for the overfeed, and handing the extras back leaves a complete order.
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      for (const r of munchRounds(MUNCH_PLANS[4], new Rng(seed))) {
+        const k = r.kinds[0];
+        const full = { ...noFood(), [k]: r.tray[k] };
+        const back = overfed(r.want, full);
+        expect(back[k]).toBe(r.tray[k] - r.want[k]);
+        expect(complete(r.want, { ...full, [k]: full[k] - back[k] })).toBe(true);
+      }
+    }
   });
 });

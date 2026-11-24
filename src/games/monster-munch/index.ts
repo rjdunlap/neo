@@ -44,6 +44,8 @@ import {
   noFood,
   numberChoices,
   orderWords,
+  overfed,
+  total,
   wantsMore,
   type Food,
   type MunchQuestion,
@@ -381,6 +383,7 @@ class MonsterMunch implements Game {
     }
     if (
       (this.plan.mode === 'exact' || this.plan.mode === 'two') &&
+      !this.plan.overfeed &&
       !wantsMore(r.want, this.have(monster), snack.food)
     ) {
       this.mistake(monster, 'munch.enough', { kind: foodWord(snack.food, 2) });
@@ -501,12 +504,23 @@ class MonsterMunch implements Game {
     if (this.plan.mode === 'leftover') return void this.checkLeftover();
     const r = this.current;
     const have = this.have(this.monsters[0]);
+    const extra = overfed(r.want, have);
+    if (this.plan.overfeed && total(extra) > 0) return void this.handBack(extra);
     if (complete(r.want, have)) void this.roundWon('munch.right', { food: orderWords(r.want) });
     else
       this.mistake(null, 'munch.need', {
         have: orderWords(have),
         food: orderWords(missing(r.want, have), true),
       });
+  }
+
+  /** Level 5: more than the order is not a miss; the monster hands the extras back and she rings again. */
+  private handBack(extra: Order) {
+    const m = this.monsters[0];
+    void this.ctx.say('munch.hand-back', { food: orderWords(extra) });
+    for (const f of FOODS) this.returnFood(m, f, extra[f]);
+    sfx.pop(5);
+    this.drawGlow();
   }
 
   // Sharing -------------------------------------------------------------------
