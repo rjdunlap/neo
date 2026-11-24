@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 9 |
 | pre-K | 1, 2, 4 |
-| school | 2, 4, 10, 3, 5, 6 |
+| school | 2, 4, 10, 3, 5, 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 4 | A day beside any day |
 | 5 | Count this weather, including none |
 | 6 | Weather Window: compare two supplied weeks |
+| 7 | Month wheel: the month before and after, round the year |
 | 9 | Three little skies: match three pictured skies |
 | 10 | Count beside the record |
 
@@ -27,9 +28,11 @@
 
 **Starts as:** place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden; preschool starts at level 9, matching three pictured skies
 
-**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6; preschool's entry, three little skies (9), then pre-K at 1
+**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6; the month wheel at 7 (school); preschool's entry, three little skies (9), then pre-K at 1
 
 ## Design notes
+
+Month wheel (level 7, school only, built 2026-11-24, PR #2101): twelve month cards (100x100) sit on an ellipse ring, January at the top and clockwise, with an arrow to confirm. Three questions from `monthQuestions` in `logic.ts` use six distinct months: one across the year's turn (after December or before January), then one before and one after. A tap on a card says its name and selects it; the arrow confirms. A wrong confirm is a miss and the line names both neighbours; two wrong answers give one hint that glows the named month and the answer. No month lengths, seasons or holidays. The bot taps the answer, then the arrow. The new `month.` lines have no rendered clips yet and use device speech; the ring layout is tested at three view sizes (`month-wheel.test.ts`). School order is now [2, 4, 10, 3, 5, 6, 7].
 
 Three little skies (level 9, preschool only, built 2026-11-23): three pictured skies (one sunny, one cloudy, one rainy, seeded order) are matched one at a time with the existing weather buttons. Records are numbered 1 to 3 with the caption "Sky N of 3"; there is no weekday, week, today, yesterday or tomorrow claim. A wrong tap gets a boing and a spoken hint naming the weather; two wrong taps on one sky glow the matching button (one hint). It finishes after three records with one sticker. Bands are preschool, pre-K and school; entryLevels are [10, 9], so pre-K starts at 1 and school at 2 when leaving 9, and no saved level is renumbered. Voice lines are `skies.*` (three clips, prefix added in `scripts/voice-clips/clips.mjs`).
 

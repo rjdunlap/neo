@@ -348,7 +348,7 @@ describe('game registry', () => {
     const g = gameById('day-by-day')!;
     const school = g.levels('school'),
       prek = g.levels('prek');
-    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6]);
+    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6, 7]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
     expect(g.entryLevels).toEqual([10, 9]);
     expect(stepLevel(4, 1, school)).toBe(10);

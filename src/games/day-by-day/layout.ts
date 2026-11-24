@@ -84,3 +84,32 @@ export function windowLayout(view: View) {
     confirm: { x: arrowX, y: top + (upright ? choicesY + 141 : 658) },
   };
 }
+
+/** A month card: 100 across and high, the smallest target. */
+export const MONTH = { w: 100, h: 100 };
+
+/**
+ * The month wheel's ring, January at the top and the months running clockwise. The cards sit on an ellipse wide enough that
+ * neighbours never touch (cards are 100 across and high): a circle of 280 upright, 330 by 205 on the wide screen. The
+ * question and the arrow sit in the middle.
+ */
+export function monthLayout(view: View) {
+  const x = view.w / 2;
+  const { short, top, arrowX } = portraitPlacement(view);
+  const upright = !!view.upright;
+  const rx = upright ? 280 : 330;
+  const ry = upright ? 280 : 205;
+  const cy = top + (upright ? 640 : 480);
+  return {
+    heading: { x, y: top + 120 },
+    caption: { x: x + (upright ? 32 : 0), y: top + 176 },
+    centre: { x, y: cy - 80 },
+    note: { x, y: cy - 8 },
+    confirm: { x: short && upright ? arrowX : x, y: cy + 70 },
+    ring: { x, y: cy, rx, ry },
+    months: Array.from({ length: 12 }, (_, i) => {
+      const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+      return { x: x + Math.cos(a) * rx, y: cy + Math.sin(a) * ry };
+    }),
+  };
+}
