@@ -338,3 +338,28 @@ export function acceptsTap(
       : request[step] === thing)
   );
 }
+
+/**
+ * The yawn nudge (dive slice 10): when she has not touched anything for a while in a level where any friend still awake is
+ * the right one, one of them yawns. An invitation, never a timer or a hint: nothing ends, nothing is counted, and after
+ * `most` yawns the room waits quietly until her next touch. Seconds, read by `IdleCue`.
+ */
+export const YAWN = { first: 10, every: 15, length: 1.4, most: 2 } as const;
+
+/**
+ * Who yawns: a friend still awake, chosen with the seeded RNG and not the one who yawned last when another is awake, or
+ * null in a level that asks for someone in particular (a yawn there would point at an answer) or once everyone sleeps.
+ */
+export function yawner(
+  plan: NightPlan,
+  room: readonly Thing[],
+  asleep: ReadonlySet<Thing>,
+  rng: Rng,
+  last: Thing | null = null,
+): Thing | null {
+  if (plan.mode !== 'all' && plan.mode !== 'tour') return null;
+  const awake = room.filter((t) => !asleep.has(t));
+  if (!awake.length) return null;
+  const fresh = awake.filter((t) => t !== last);
+  return rng.pick(fresh.length ? fresh : awake);
+}
