@@ -1,1 +1,0 @@
-**`puzzle-pals` the box lid from level 5** (typecheck, game and how-to tests, filtered plays at 5 and 7, a portrait and phone layout review), then Turn it round as ID 9. [Dive](../../deep-dives/puzzle-pals.md#build-slices-in-order)

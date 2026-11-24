@@ -9,6 +9,10 @@ import {
   ONE_AT_A_TIME_PIECES,
   puzzlePlan,
   hintPiece,
+  lidLayout,
+  oneAtATimeLayout,
+  puzzleLayout,
+  UPRIGHT_TOP,
   nextToPlace,
   outerSides,
   PICTURE_H,
@@ -199,5 +203,38 @@ describe('Puzzle Pals', () => {
     expect(SCRIPT['puzzle.lap'][0]).not.toMatch(/drag/i);
     expect(SCRIPT['puzzle.tap'][0]).not.toMatch(/drag/i);
     expect(tapHops(puzzlePlan(1)) && tapHops(puzzlePlan(2))).toBe(true);
+  });
+
+  it('shows the box lid exactly at the empty-frame levels 5-7', () => {
+    PUZZLE_PLANS.forEach((plan, i) => expect(!!plan.lid).toBe(i >= 4 && i <= 6));
+    for (const plan of PUZZLE_PLANS.filter((p) => p.lid)) expect(plan.ghost).toBe(false);
+  });
+
+  it('keeps the lid in view, off the frame and the tray, at sideways and upright sizes', () => {
+    const views = [
+      { w: 1024, h: 768 },
+      { w: 1366, h: 768 },
+      { w: 1024, h: 1000 },
+      { w: 768, h: 1024 },
+      { w: 768, h: 1200 },
+      { w: 768, h: 1663 },
+    ];
+    for (const v of views)
+      for (const plan of PUZZLE_PLANS.filter((p) => p.lid)) {
+        const lid = lidLayout(v);
+        const L = puzzleLayout(v, plan, plan.cols * plan.rows, plan.cols * plan.rows);
+        const frame = { x: L.board.x - 18, w: L.board.w + 36 };
+        expect(lid.x).toBeGreaterThanOrEqual(0);
+        expect(lid.x + lid.w + 8).toBeLessThanOrEqual(v.w);
+        // Sideways it is left of the frame; upright it is above it.
+        if (v.h > v.w) expect(lid.y + lid.h + 8).toBeLessThanOrEqual(UPRIGHT_TOP - 18);
+        else {
+          expect(lid.x + lid.w + 8).toBeLessThanOrEqual(frame.x);
+          expect(lid.y + lid.h + 8).toBeLessThanOrEqual(L.panel.y);
+        }
+        expect(lid.w / lid.h).toBeCloseTo(PICTURE_W / PICTURE_H, 5);
+      }
+    // The one-at-a-time level has no lid, so its layout is untouched.
+    expect(oneAtATimeLayout({ w: 1024, h: 768 }, 3).scale).toBeGreaterThan(0);
   });
 });

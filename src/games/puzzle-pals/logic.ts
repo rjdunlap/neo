@@ -5,6 +5,8 @@ export interface PuzzlePlan {
   rows: number;
   /** A faint copy of the picture inside the frame to match against. */
   ghost: boolean;
+  /** A small copy of the finished picture beside the frame, like the lid of a puzzle box (levels 5-7). */
+  lid?: boolean;
   /** Pieces already in place when the round starts. */
   preplaced: number;
   /**
@@ -20,9 +22,30 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
   { cols: 2, rows: 1, ghost: true, preplaced: 0, name: 'Put two halves together over a faint picture' },
   { cols: 3, rows: 1, ghost: true, preplaced: 0, name: 'Three strips over a faint picture' },
   { cols: 2, rows: 2, ghost: true, preplaced: 0, name: 'Four pieces over a faint picture' },
-  { cols: 3, rows: 2, ghost: false, preplaced: 0, name: 'Six pieces with only an empty frame' },
-  { cols: 3, rows: 3, ghost: false, preplaced: 0, name: 'Nine pieces with only an empty frame' },
-  { cols: 4, rows: 3, ghost: false, preplaced: 0, name: 'Twelve pieces with only an empty frame' },
+  {
+    cols: 3,
+    rows: 2,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Six pieces: an empty frame and a small picture on the box lid',
+  },
+  {
+    cols: 3,
+    rows: 3,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Nine pieces: an empty frame and a small picture on the box lid',
+  },
+  {
+    cols: 4,
+    rows: 3,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Twelve pieces: an empty frame and a small picture on the box lid',
+  },
   {
     cols: 3,
     rows: 1,
@@ -255,4 +278,15 @@ export function oneAtATimeLayout(v: { w: number; h: number }, cols: number) {
     ? { x: x + boardW + gap + boardW / cols / 2, y: y + bh / 2 }
     : { x: x + boardW / 2, y: y + bh + gap + bh / 2 };
   return { board: { x, y, w: boardW }, scale: boardW / PICTURE_W, home };
+}
+
+/**
+ * The box lid: a small copy of the finished picture, 170 x 119. Sideways it sits in the strip left of the frame, under
+ * the corner buttons and clear of the pet's corner. Upright that strip is too narrow, so it sits top right, above the
+ * frame (the buttons are on the left), in the band the frame already leaves free.
+ */
+export function lidLayout(v: { w: number; h: number }) {
+  const w = 170;
+  const h = (w * PICTURE_H) / PICTURE_W;
+  return v.h > v.w ? { x: v.w - w - 32, y: 44, w, h } : { x: 24, y: 232, w, h };
 }

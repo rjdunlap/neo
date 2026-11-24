@@ -15,7 +15,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 5,
       to: 7,
-      text: 'The frame is empty. Thick flat sides belong along its outside edge; corners have two.',
+      text: 'The frame is empty, but the small picture on the box lid beside it shows the whole picture. Thick flat sides belong along its outside edge; corners have two.',
     },
   ],
   finish: 'The round ends when every piece is in place.',

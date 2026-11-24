@@ -28,6 +28,7 @@ import {
   tapHops,
   oneAtATimeLayout,
   puzzleLayout,
+  lidLayout,
   whereWords,
   type Piece,
   type PuzzlePlan,
@@ -58,6 +59,8 @@ class PuzzlePals implements Game {
   private readonly frame = new Graphics();
   private readonly slots = new Graphics();
   private readonly glow = new Graphics();
+  /** Levels 5-7: the box lid, a small copy of the finished picture, beside the frame. */
+  private readonly lid?: Container;
   private readonly background = new Graphics();
   private readonly textures: Texture[] = [];
   private scale = 1;
@@ -80,6 +83,13 @@ class PuzzlePals implements Game {
     }
     this.board.addChild(this.slots);
     ctx.stage.addChild(this.background, this.board);
+    if (this.plan.lid) {
+      // The same render the pieces are cut from, so the lid cannot disagree with them. It takes no touches.
+      this.lid = new Container();
+      this.lid.eventMode = 'none';
+      this.lid.addChild(new Graphics(), new Sprite(this.texture));
+      ctx.stage.addChild(this.lid);
+    }
 
     const pw = PICTURE_W / this.plan.cols;
     const ph = PICTURE_H / this.plan.rows;
@@ -305,6 +315,7 @@ class PuzzlePals implements Game {
       .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30)
       .fill(cream);
     this.drawFrame();
+    this.layoutLid(v);
     // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
     this.trayScale = L.trayScale;
     waiting.forEach((p, i) => {
@@ -327,6 +338,19 @@ class PuzzlePals implements Game {
       this.picture.root.scale.set(this.scale);
     }
     this.drawGlow();
+  }
+
+  private layoutLid(v: View) {
+    if (!this.lid) return;
+    const L = lidLayout(v);
+    const [border, picture] = this.lid.children as [Graphics, Sprite];
+    picture.scale.set(L.w / PICTURE_W);
+    this.lid.position.set(L.x, L.y);
+    border
+      .clear()
+      .roundRect(-8, -8, L.w + 16, L.h + 16, 12)
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line });
   }
 
   private drawFrame() {

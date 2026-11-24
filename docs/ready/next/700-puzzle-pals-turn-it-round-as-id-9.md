@@ -1,0 +1,1 @@
+**`puzzle-pals` Turn it round as ID 9** (pre-K and school, placed with `order`; new level on an existing interaction: typecheck, rule tests, one browser play of level 9 and `fingerdemo` at it; the box lid and fairness guard are built). [Dive](../../deep-dives/puzzle-pals.md#build-slices-in-order)
