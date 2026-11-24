@@ -34,6 +34,14 @@ export interface SortPlan {
   cast?: 'plants';
 }
 
+/** The rules of the two-hoop and harder levels: each fits two animals (or the hat), so a part rarely holds one animal. */
+export const RULES: Rule[] = ['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'];
+/**
+ * Just a few (level 6) also uses a colour only one animal wears: with three critters the sorted one and the pig
+ * with or without a hat are the pair, so the look to find is plain. Level 1 needs three or more that fit, so it keeps RULES.
+ */
+export const ENTRY_RULES: Rule[] = [...RULES, 'pink', 'orange', 'yellow'];
+
 export const PLANS: SortPlan[] = [
   {
     mode: 'one',
@@ -227,7 +235,7 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     let rules: Rule[];
     if (plan.mode === 'two') rules = [...rng.pick(SEPARATE)];
     else if (plan.mode === 'venn' || plan.mode === 'butnot') rules = [...rng.pick(OVERLAPPING)];
-    else rules = [rng.pick(['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[])];
+    else rules = [rng.pick(plan.mode === 'one' && plan.fitting ? ENTRY_RULES : RULES)];
     if (rng.chance(0.5)) rules.reverse();
     if (rules.join() === avoid) continue;
     const critters: SortCritter[] = [];
@@ -258,7 +266,7 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     // Otherwise the examples still leave at least two critters for her to carry into a hoop.
     if (plan.example && !plan.fitting && bound - examplePlaces(plan.mode).length < 2) continue;
     if (plan.mode === 'resort') {
-      const choices = (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter(
+      const choices = RULES.filter(
         (rule) =>
           critters.some((c) => fits(c, rule)) &&
           critters.some((c) => !fits(c, rule)) &&
@@ -270,9 +278,7 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     if (plan.mode === 'guess') {
       // Two other rules that would sort these critters differently, so only one rule fits.
       const others = rng.shuffle(
-        (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter(
-          (r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0])),
-        ),
+        RULES.filter((r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0]))),
       );
       if (others.length < 2) continue;
       return { rules, critters, options: rng.shuffle([rules[0], ...others.slice(0, 2)]) };

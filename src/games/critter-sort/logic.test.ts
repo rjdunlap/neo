@@ -25,12 +25,46 @@ import {
   PLANS,
   ruleToTap,
   SEPARATE,
+  ENTRY_RULES,
+  RULES,
   spotFor,
   type Place,
   makePlantRound,
   SPROUT_PLANS,
 } from './logic';
 import { fits, HAVE_WORDS, type PlantRule } from '../../learning/sorting/rules';
+
+describe('Critter Sort fresh entry rules', () => {
+  const colours = ENTRY_RULES.filter((r) => !RULES.includes(r));
+  it('each colour fits exactly one animal, with or without a hat', () => {
+    expect(colours).toEqual(['pink', 'orange', 'yellow']);
+    const kinds = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
+    for (const r of colours) {
+      const fitting = kinds.filter(
+        (k) => fits({ kind: k, hat: false }, r) && fits({ kind: k, hat: true }, r),
+      );
+      expect(fitting).toHaveLength(1);
+    }
+  });
+  it('only Just a few uses them, and every such round has two fitting critters, one in and one to carry', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      for (const level of [1, 4, 5, 6]) {
+        const plan = planFor(level);
+        const r = makeRound(plan, rng);
+        if (colours.includes(r.rules[0])) {
+          expect(level).toBe(6);
+          seen.add(r.rules[0]);
+          const fit = r.critters.filter((c) => fits(c, r.rules[0]));
+          expect(fit).toHaveLength(2);
+          expect(r.critters.some((c) => !fits(c, r.rules[0]))).toBe(true);
+        }
+      }
+    }
+    expect([...seen].sort()).toEqual(['orange', 'pink', 'yellow']);
+  });
+});
 
 describe('Critter Sort', () => {
   it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
