@@ -124,7 +124,7 @@ None needed. Level 1 (nine stones, target named) is already a gentle entry, and 
 
 1. **The trail you made, a nudge on a wrong stone, and three pond looks** (levels 1–6; **built**, PR #2083). The press squash, wrong-stone nudge, ribbon between consecutive lit stones, its replay with pentatonic steps before `brain.done`, and three seeded looks. Timers and tweens are scene-owned and guarded in `destroy`. Checks: existing-game change: typecheck, the rule tests (the look is seeded; the ribbon visits the stones in rank order), one filtered `brainbreak` regression play of level 2 with one wrong stone, one upright screenshot. `fingerdemo` is not needed because the bot does not change.
 2. **Levels 7–8, Count by** (**built**, PR #2091). The rank model (`makeBoard` returns ranks; a per-level trail supplies labels and spoken forms), the rule sign, levels 7 and 8, `LEVELS.grownup.max` 8. Checks: new levels on an existing interaction: typecheck, the rule tests with levels 1–6 unchanged for the same seeds, one browser play of 8 with one wrong stone and the outline, `fingerdemo` at 8, one upright screenshot.
-3. **Levels 9–10, Smallest first and Below zero.** After slice 2. Same tier, played at 10.
+3. **Levels 9–10, Smallest first and Below zero** (claimed by `claude/brain-break-smallest-first`). After slice 2. Same tier, played at 10.
 4. **Levels 11–12, Two trails.** After slice 2. Same tier, played at 12; the co-play line gains the two roles.
 5. **Level 13, Parts in order.** After slice 3. Same tier, played at 13, with the upright screenshot checking the four-character labels; takes decision 3's default.
 6. **Level 14, Work them out, smallest first.** After slice 3. Same tier, played at 14.
