@@ -290,6 +290,7 @@ export const SUITES = [
   'seesawentry',
   'seesawmeasure',
   'wardrobe6',
+  'wardrobe12',
   'conductor',
   'expansion',
   'third',
@@ -501,6 +502,7 @@ export const ALL_SUITES = [
   'seesawentry',
   'seesawmeasure',
   'wardrobe6',
+  'wardrobe12',
   'conductor',
   'expansion',
   'third',
@@ -722,6 +724,7 @@ export function createChecks(fixture) {
     'wardrobe9',
     'wardrobe10',
     'wardrobe6',
+    'wardrobe12',
     'stickerBook',
     'expansion',
     'third',
@@ -1100,6 +1103,7 @@ export async function runSuite(suite, fixture) {
     wardrobe9,
     wardrobe10,
     wardrobe6,
+    wardrobe12,
     stickerBook,
     expansion,
     third,
@@ -1352,6 +1356,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'seesawentry') await seesawEntry();
   if (suite === 'all' || suite === 'wardrobe10') await wardrobe10();
   if (suite === 'all' || suite === 'wardrobe6') await wardrobe6();
+  if (suite === 'all' || suite === 'wardrobe12') await wardrobe12();
   if (suite === 'all' || suite === 'conductor') await conductor();
   if (suite === 'all' || suite === 'expansion') await expansion();
   if (suite === 'all' || suite === 'third') await third();

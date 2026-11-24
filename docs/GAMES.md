@@ -280,7 +280,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Weather Wardrobe
 
-*lap–pre-K* · [Weather Wardrobe](games/weather-wardrobe.md)
+*lap–school* · [Weather Wardrobe](games/weather-wardrobe.md)
 
 ### Scoop Shop
 
