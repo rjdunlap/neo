@@ -125,7 +125,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`stop-and-go` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`stop-and-go` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **built**, [PR #751](https://github.com/rjdunlap/neo/pull/751). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
@@ -133,9 +133,9 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 4. **Level 5 *Whose light?* and the pre-K window** (new level; **built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4 (**built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
 6. Toddler level 10 *Wait for green* (**built**, [PR #1923](https://github.com/rjdunlap/neo/pull/1923)): order `[1, 10, 2]`, `entryLevels: [9, 10]`, mode `wait`; red is a nudge (decision 3, settled 2026-10-23). Checks: new-levels tier (typecheck, rule tests, one play of 10).
-7. *(Decision 2)* Level 7 *Smart light* and a school window.
-8. *(Decision 1)* Level 8 *Walk signal* after the safety review.
-9. *(Decision 4)* Companion driver; vehicle collection with the rework's unlocks.
+7. *(Decision 2 settled 2026-10-23: it waited on the `robots-automation` study, whose answer is to build it, as [RA6](subjects/robots-automation.md); level 7 is still free)* Level 7 *Smart light* and a school window. Not built.
+8. *(Deferred by the 2026-10-23 decision 1: not drafted or built for now, since street-crossing advice is practical safety instruction)* Level 8 *Walk signal* after the safety review.
+9. *(Decision 4 settled 2026-10-23: the companion drives first once its rework art settles; vehicles join with the rework's unlocks)* Companion driver; vehicle collection with the rework's unlocks.
 
 ## What was built in this session
 

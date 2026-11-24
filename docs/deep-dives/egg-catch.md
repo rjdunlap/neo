@@ -120,7 +120,7 @@ Not developer decisions but gates: slice 8 waits on V2's person check.
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`egg-catch` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`egg-catch` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `describeLevel`, the how-to card (bounding level-7 lines to `to: 7` where needed), voice lines, the README row, [GAMES.md](../GAMES.md), the `eggs` case in `scripts/browser-check.mjs` and the `fingerdemo` levels.
 

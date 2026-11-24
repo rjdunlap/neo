@@ -222,19 +222,19 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
     const bathSpecies = process.env.BATH_SPECIES;
     if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
-    // BATH_FROM and BATH_TO play only those levels (default 1-10; 10 is This one!). BATH_FRIEND=pig|duck|dog|cow|bear|bunny|cat puts that friend in the tub on each naming level (3-8).
+    // BATH_FROM and BATH_TO play only those levels (default 1-11; 10 is This one!, 11 What do we hear with?). BATH_FRIEND=pig|duck|dog|cow|bear|bunny|cat puts that friend in the tub on each naming level (3-8 and 11).
     const bathFriend = process.env.BATH_FRIEND;
     // The dev server's hook puts that friend in the tub on every naming level (each of the seven is only about 1 round in 28).
     if (bathFriend) await page.evaluate((f) => (window.bathFriend = f), bathFriend);
     for (
       let level = Number(process.env.BATH_FROM ?? 1);
-      level <= Number(process.env.BATH_TO ?? 10) && (!only || only === 'bath');
+      level <= Number(process.env.BATH_TO ?? 11) && (!only || only === 'bath');
       level++
     ) {
       await launch('splish-splash', level);
       // Without BATH_FRIEND, a friend that took the tub is relaunched away, so BATH_SPECIES checks that species' own parts.
       const wanted = bathFriend ?? null;
-      for (let tries = 0; level >= 3 && level <= 8; tries++) {
+      for (let tries = 0; (level >= 3 && level <= 8) || level === 11; tries++) {
         if (await page.evaluate((f) => neo.scene.game.friend === f, wanted)) break;
         if (tries >= 40) throw new Error(`No ${wanted ?? 'pet'} in the tub at level ${level}`);
         await launch('splish-splash', level);
@@ -309,7 +309,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         return !!wrongPart;
       }, level);
-      if ([1, 6, 8, 9, 10].includes(level))
+      if ([1, 6, 8, 9, 10, 11].includes(level))
         await screenshot(`splish-splash-${level}${bathFriend ? `-${bathFriend}` : ''}`);
       await finished('splish-splash');
       const r = await page.evaluate(() => {

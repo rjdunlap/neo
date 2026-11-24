@@ -128,17 +128,17 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`monster-munch` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`monster-munch` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
-1. **Built.** **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
-2. **Built.** **Foods, monsters and places** (content in existing levels): the `FOODS` pool, two kinds per round at 6, monster variants, three backdrops, the sticker pool; rule tests that every food reads in `orderWords` and the tray fits. Checks: typecheck, rule tests, one browser play of level 6 and `fingerdemo` at 6.
-3. **Built.** **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
-4. **Built.** **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
+1. **Built 2026-10-21, [PR #705](https://github.com/rjdunlap/neo/pull/705).** **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
+2. **Built 2026-10-24, [PR #924](https://github.com/rjdunlap/neo/pull/924).** **Foods, monsters and places** (content in existing levels): the `FOODS` pool, two kinds per round at 6, monster variants, three backdrops, the sticker pool; rule tests that every food reads in `orderWords` and the tray fits. Checks: typecheck, rule tests, one browser play of level 6 and `fingerdemo` at 6.
+3. **Built 2026-10-23, [PR #857](https://github.com/rjdunlap/neo/pull/857).** **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
+4. **Built 2026-10-23, [PR #857](https://github.com/rjdunlap/neo/pull/857).** **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
 5. **Built with slice 6 in [PR #989](https://github.com/rjdunlap/neo/pull/989).** **School 12 *Share two kinds*** (new level on 7's interaction): school order gains 12 between 7 and 8. Checks: typecheck, rule tests, play of 12, `fingerdemo` at 12.
 6. **Built with slice 5 in [PR #989](https://github.com/rjdunlap/neo/pull/989).** **School 11 *How many friends?*** (new interaction: the cave door, quotitive sharing with a visible leftover): school order ends at 11. Checks: new-interaction tier (scripted play at 11 and 8, one wrong bell, one hint, one portrait screenshot).
-7. *(Decision 2)* Overfeed and hand back at 5.
-8. *(Decision 1)* Level 13 *Even it out*.
-9. *(Decision 3)* Companion at the table; collectible monster looks with the rework's unlocks.
+7. *(Decision 2 settled 2026-10-23: level 5 only; extras handed back are not misses)* Overfeed and hand back at 5. Unbuilt: level 5 still refuses a food past the order as a miss.
+8. *(Decision 1 settled 2026-10-23: school, at the top of the school order)* Level 13 *Even it out*.
+9. *(Decision 3 settled 2026-10-23: after the rework's companion art, looks under RW05+'s unlock rules)* Companion at the table; collectible monster looks with the rework's unlocks.
 
 ## What was built in this session
 

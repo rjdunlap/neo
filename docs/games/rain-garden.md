@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–6 |
+| school | 3–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,12 +21,13 @@
 | 4 | Two beds downhill: change the ground so the leaf bed gets two drops and the pond some |
 | 5 | Three beds downhill: leave enough rain for every marked bed and some for the pond |
 | 6 | Rain twice: see where the second rain goes when the ground is already wet |
+| 7 | Two rains: change the beds so one garden works for both a light shower and a big storm |
 
 <!-- end generated -->
 
 **Starts as:** toddler–school
 
-**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5); the same rain twice, on dry and then wet ground (level 6)
+**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5); the same rain twice, on dry and then wet ground (level 6); one garden for both a light shower and a big storm, each rain on dry ground (level 7)
 
 ## Design notes
 
@@ -45,3 +46,7 @@ Deviations from the definition: one generic hint line per action kind (`rain.hin
 *Level 6 · rain again on wet ground (school; [definition](../definitions/rain-garden.md#level-6-rain-again-on-wet-ground-definition)).* Tap the same cloud twice. Water from the first rain stays in the beds, and the pond keeps one row per rain so the amounts are visible together. The first round starts with two soil beds and four drops. Later boards seed two or four drops, both bed surfaces and the pond friend. Between rains, either pictured prediction lifts and lights when tapped. A surprise counts as an experiment. Flipping a bed, tapping the rewind cloud or using Start again clears both showers and the prediction. After any complete pair of rains, the leaf stays available for the rest of the round. Show me points at the next cloud or leaf, counting one hint when it newly points. The leaf saves zero misses and awards the usual sticker with or without help.
 
 The beds and runoff tray sit above and below the caption bubble on short upright phones. Sideways, the low bed sits to the right of the bubble. Twelve-second idle cues point at the cloud or leaf, and the second cue repeats the instruction without scoring help. Tapping the guide cuts off a prior narration chain so the repeated instruction can be heard. Co-play: one person picks a prediction picture and says why, then the other taps the cloud. Swap after the two rains.
+
+*Level 7 · one garden for two rains (school; [definition](../definitions/rain-garden.md#level-7-one-garden-for-two-rains-definition)).* Two rain cards hang beside the three-bed slope of level 5: a light shower (four drops) and a big storm (six drops), each with its own signs (which beds keep two, and what the pond must get). Tapping a card previews that rain on her garden; the Check runs both rains, each on dry ground, and marks each card with a tick or a cross. A failed Check counts one miss (checking the same arrangement again counts nothing); from the second miss the bed to change glows, counting one hint the first time it lights. Show me flips the next useful bed or points at the Check. Previews, card picks, flips and Start again are free.
+
+Where it departs from the definition: a passing Check ends the round directly after the pet's line, as levels 4 and 5 do, so there is no separate leaf button and the ghost finger ends on the Check. Picking the other card clears any settled drops from the board (the beds' ground stays) so one rain's drops are never read against the other card's signs; the definition had previews staying. The hold-sign's tick shows only once a whole rain has settled with at most two drops in the pond. Layout is measured with all three sockets marked (a sign position per bed), the card boxes at the definition's coordinates, and unit-tested at the eight views.

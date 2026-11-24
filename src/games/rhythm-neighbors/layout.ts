@@ -22,6 +22,9 @@ export const BIRD_LIFT = 30;
 /** The tree's tap box in its own units, left, top, width and height (the scene's hit area). */
 export const TREE_BOX = { x: -215, y: -360, w: 430, h: 640 };
 
+/** Level 10's two answer tiles are squares this wide (the tap target). */
+export const TILE_SIZE = 120;
+
 export interface Layout {
   upright: boolean;
   /** The bird's (or the tree's) standing point, and the tree's scale. */
@@ -34,6 +37,8 @@ export interface Layout {
   replay: Pt;
   help: Pt;
   submit: Pt;
+  /** Level 10's two tiles: the frog copied the bird, or the frog answered. */
+  tiles: { copy: Pt; answer: Pt };
   /** The pond's ellipse. */
   pond: { x: number; y: number; rx: number; ry: number };
 }
@@ -60,6 +65,7 @@ export function neighborsLayout(
       replay: { x: 220, y: 65 },
       help: { x: 360, y: 65 },
       submit: { x: v.w - 80, y: 65 },
+      tiles: { copy: { x: cx - 130, y: v.h - 350 }, answer: { x: cx + 130, y: v.h - 350 } },
       pond: pond(v.h - 160),
     };
   }
@@ -81,6 +87,7 @@ export function neighborsLayout(
     replay: { x: 250, y: v.h - 95 },
     help: { x: 400, y: v.h - 95 },
     submit: { x: v.w - 110, y: v.h - 95 },
+    tiles: { copy: { x: cx - 100, y: scoreY + 17 }, answer: { x: cx + 100, y: scoreY + 17 } },
     pond: pond(frogY + 20),
   };
 }

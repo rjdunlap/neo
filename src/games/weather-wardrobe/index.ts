@@ -382,7 +382,10 @@ class WeatherWardrobe implements Game {
     }
     this.blank = false;
     this.setWeather(o.weathers[0]);
-    if (this.plan.mode === 'change') o.remove?.forEach((item) => this.put(item, () => this.removeWorn(item)));
+    if (this.plan.mode === 'change') {
+      o.remove?.forEach((item) => this.put(item, () => this.removeWorn(item)));
+      o.keep?.forEach((item) => this.put(item, () => this.removeWorn(item), true));
+    }
     this.drawForecast(o);
     for (const opt of this.options) opt.node.destroy({ children: true });
     this.options.length = 0;
@@ -403,7 +406,8 @@ class WeatherWardrobe implements Game {
       this.ctx.stage.addChild(node);
     });
     this.ctx.stage.addChild(this.glow);
-    if (this.plan.mode === 'change') this.instruct('weather.change.remove', { weather: o.weathers[1] });
+    if (this.plan.mode === 'change')
+      this.instruct(o.keep ? 'weather.keep.remove' : 'weather.change.remove', { weather: o.weathers[1] });
     else if (this.plan.mode === 'try') this.instruct('weather.try', { weather: o.weathers[0] });
     else if (this.plan.mode === 'trip') this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
     else
@@ -579,15 +583,16 @@ class WeatherWardrobe implements Game {
   }
 
   /** Dresses the pet in one item, with a little pop; `touched` makes the worn item answer a touch. */
-  private put(item: Item, touched?: (e: FederatedPointerEvent) => void) {
+  private put(item: Item, touched?: (e: FederatedPointerEvent) => void, tight = false) {
     const pieces = this.hang(item);
     // Each piece answers (both boots), at least 104 units across on screen whatever its own size; the first one's middle is the bot's target.
     if (touched)
       pieces.forEach((c, i) => {
-        const least = 104 / (c.scale.x * this.pet.scale.x);
+        // A keeper answers only where it is drawn: it is never the target, and a wide area would steal taps from what must come off.
+        const least = tight ? 0 : 104 / (c.scale.x * this.pet.scale.x);
         const b = c.getLocalBounds();
-        const width = Math.max(least, b.width + 48),
-          height = Math.max(least, b.height + 48);
+        const width = Math.max(least, b.width + (tight ? 0 : 48)),
+          height = Math.max(least, b.height + (tight ? 0 : 48));
         const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
         if (i === 0) this.wornCenters.set(item, center);
         c.hitArea = new Rectangle(center.x - width / 2, center.y - height / 2, width, height);
@@ -605,8 +610,12 @@ class WeatherWardrobe implements Game {
   }
 
   private removeWorn(item: Item) {
-    if (this.changePhase !== 'remove' || this.busy || this.done || !this.outfit.remove?.includes(item))
+    if (this.changePhase !== 'remove' || this.busy || this.done) return;
+    if (this.outfit.keep?.includes(item)) {
+      this.keepMiss(item);
       return;
+    }
+    if (!this.outfit.remove?.includes(item)) return;
     const worn = this.worn.get(item);
     if (!worn) return;
     this.worn.delete(item);
@@ -616,12 +625,40 @@ class WeatherWardrobe implements Game {
     sfx.pop(6);
     if (this.outfit.remove?.every((i) => !this.worn.has(i))) {
       this.changePhase = 'add';
+      this.wrong = 0;
       this.setWeather(this.outfit.weathers[1]);
       this.options.forEach((o) => {
         o.node.visible = true;
       });
       this.resize(this.view);
       this.instruct('weather.change.add', { weather: this.outfit.weathers[1] });
+    }
+  }
+
+  /** Level 11: she took off something that still fits the new weather. A miss; it stays on, wiggles, and the spoken reason says why. */
+  private keepMiss(item: Item) {
+    const w = this.outfit.weathers[1];
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    this.wiggle(item, 1.25);
+    const said = this.ctx.say('weather.keep.wrong', { item: ITEM_WORDS[item], weather: w });
+    if (this.wrong === 2) {
+      // Two in a row: one hint, and the thing that has to come off wiggles.
+      this.hints++;
+      void said.then(() => this.ctx.say('weather.keep.hint'));
+      const next = this.outfit.remove?.find((i) => this.worn.has(i));
+      if (next) this.wiggle(next, 1.4);
+    }
+  }
+
+  private wiggle(item: Item, k: number) {
+    for (const p of this.worn.get(item) ?? []) {
+      const base = p.scale.x;
+      this.ctx.tw.kill(p.scale);
+      void this.ctx.tw
+        .to(p.scale, { x: base * k, y: base * k }, { duration: 0.14 })
+        .then(() => this.ctx.tw.to(p.scale, { x: base, y: base }, { duration: 0.45, ease: ease.outElastic }));
     }
   }
 

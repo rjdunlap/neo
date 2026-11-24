@@ -181,13 +181,13 @@ Each is sized for one session. Slices that add a level are built in level order 
 1. **Guards and tunes** (built 2026-10-15 and 2026-10-17: distinct tunes, PR #362; the rest, PR #529 on `claude/jelly-drums-guards-tunes`, see the build note in the [archive](../archive/COMPLETED-2026-10-09.md#jelly-drums-slice-1-guards-and-tunes-2026-10-17)). **Open from it:** *Oh! Susanna* is not built (no source confirmed its phrases), so levels 7–8 draw shapes only; the invitation tune waits on decision 6.
 2. **Names, twists and co-play** (built 2026-11-03, PR #1155; see the [build note](../archive/COMPLETED-2026-10-09.md#jelly-drums-slice-2-names-twists-and-co-play-2026-11-03)). **Open from it:** per-band co-play lines (fresh 9) need a shell type change, and the scale sparkle lights no bulb (garland twinkle only).
 3. **Sound sets and stages** (built 2026-11-23, PR #2078; decision 8 settled: bells and a soft tone, a beach and a moon stage). Tier: rule tests (same pitches on every set), one landscape and one portrait screenshot per stage.
-4. **Resume where she was** (decision 4). Tier: rule tests and the same `originals` run (the browser suite expects `[2, 1]` and changes with this rule).
-5. **Level 10, Backwards** (decision 1). Tier: new level on an existing interaction: rule tests, one browser play of level 10, `fingerdemo` at it.
-6. **Level 11, Same or different?** Same tier, plus a portrait screenshot of the two buttons.
-7. **Level 12, Lowest to highest.** Same tier; the drag needs the abandon-cards check (a drag outliving the scene) and a ghost-finger drag demo.
-8. **Journal entries** (decision 7). Tier: the journal tests, typecheck, one scripted round that finds each entry.
-9. **The between entries** (they wait on the level-order decisions; Which jelly sang? first, then Follow the glow, Echo jellies, One big jelly, Finish the song, and Lowest to highest with sizes).
-10. **The couch entry** (decision 5; waits on a `grownup` window or a couch-side plan table). Tier: `BROWSER_SUITE=couchgames` filtered to Jelly Drums. Not until slices 1–5 are in.
+4. **Resume where she was** (decision 4 settled 2026-10-23: resume her place on four- and five-note tunes). Tier: rule tests and the same `originals` run (the browser suite expects `[2, 1]` and changes with this rule).
+5. **Backwards, the next free stable level ID (currently 11; 10 is lap's *One big jelly*)** (decision 1 settled 2026-10-23: build it in pre-K and school, placed with `order`). Tier: new level on an existing interaction: rule tests, one browser play of the new level, `fingerdemo` at it.
+6. **Same or different?, the next free ID after Backwards (currently 12).** Same tier, plus a portrait screenshot of the two buttons.
+7. **Lowest to highest, the next free ID after that (currently 13).** Same tier; the drag needs the abandon-cards check (a drag outliving the scene) and a ghost-finger drag demo.
+8. **Journal entries** (decision 7 settled 2026-10-23: two, low and high, and a scale). Tier: the journal tests, typecheck, one scripted round that finds each entry.
+9. **The between entries** (the level-order question is settled by the [2026-10-23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules): each entry takes the next free stable ID, placed with `order` and `entryLevels`, no renumbering; Which jelly sang? first, then Follow the glow, Echo jellies, Finish the song, and Lowest to highest with sizes; *One big jelly* is built as lap's level 10, 2026-10-13, [PR #280](https://github.com/rjdunlap/neo/pull/280)).
+10. **The couch entry** (decision 5 settled 2026-10-23: the memory duel uses a `grownup` window for its longer tunes). Tier: `BROWSER_SUITE=couchgames` filtered to Jelly Drums. Not until slices 1–5 are in.
 11. **Sketches:** start higher, a held note, two at once, which jelly changed, a friend who learns your tune, the picnic's invitation tune when the story layer carries a tune.
 
 ## What was built in this session

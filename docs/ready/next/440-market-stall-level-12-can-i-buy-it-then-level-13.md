@@ -1,1 +1,0 @@
-**`market-stall` level 12, Can I buy it?, then level 13, Trade up** (school; after levels 8–11; two sessions, 12 then 13; tier in the [definition](../../definitions/market-stall-12-13.md#build-and-check-tier)). [Dive](../../deep-dives/market-stall.md#build-slices-in-order) Level 12 built 2026-11-23; level 13 (*Trade up*) remains.

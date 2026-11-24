@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { Container, Graphics } from 'pixi.js';
+import { bounceBack } from './index';
 import { Rng } from '../../engine/random';
 import {
   DUEL_PLAN,
@@ -10,6 +12,10 @@ import {
   serveAngleFor,
   LOB,
   petLob,
+  petLobAway,
+  isAwayMode,
+  returnArrival,
+  type ReturnGeometry,
   farWall,
   isGoalMode,
   reachableZones,
@@ -238,7 +244,47 @@ describe('Bounce Back', () => {
     expect(landingY(300, 0, aim(1024, 768, PLANS[5]))).toBeCloseTo(300);
   });
 
-  it('lobs only on the play-together and count rallies, gently, and the child can always meet the return', () => {
+  it('preserves saved sticker drawings for seeds 0–99 before any other RNG or art change', () => {
+    const fingerprint = (node: Container): unknown => ({
+      x: node.x,
+      y: node.y,
+      scale: [node.scale.x, node.scale.y],
+      drawing:
+        'context' in node
+          ? (node as Graphics).context.instructions.map((i) => {
+              if (i.action === 'texture') throw new Error('Bounce Back stickers stay code-drawn');
+              return {
+                action: i.action,
+                path: i.data.path.instructions,
+                style: {
+                  color: i.data.style.color,
+                  width: 'width' in i.data.style ? i.data.style.width : undefined,
+                },
+              };
+            })
+          : [],
+      children: node.children.map(fingerprint),
+    });
+    expect(
+      Array.from({ length: 100 }, (_, seed) => {
+        const art = bounceBack.sticker(seed);
+        const result = JSON.stringify(fingerprint(art));
+        art.destroy({ children: true });
+        return [...result].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      }),
+    ).toMatchSnapshot();
+  });
+
+  it('never finishes a round on one pet return: every rally-counted goal needs at least two of her own bounces', () => {
+    // The serve goes to her, so the pet can only return after she has; both paddles' hits add to one rally, so she makes ceil(goal / 2) of them.
+    const counted = PLANS.filter((p) => ['solo', 'rally', 'together', 'count', 'skip'].includes(p.mode));
+    expect(counted.length).toBeGreaterThanOrEqual(5);
+    for (const p of counted) expect(Math.ceil(p.goal / 2)).toBeGreaterThanOrEqual(2);
+    // The goal levels end on goals past the keeper, never on bounces, and the pet never finishes them either.
+    for (const p of PLANS.filter((q) => isGoalMode(q.mode))) expect(p.goal).toBeGreaterThanOrEqual(5);
+  });
+
+  it('lobs only on the play-together and count rallies by default, gently, and the child can always meet the return', () => {
     for (const p of PLANS) {
       for (const pick of [0, 0.25, 0.5, 0.99]) {
         const lob = petLob(pick, p.mode);
@@ -250,6 +296,49 @@ describe('Bounce Back', () => {
     const speed = PLANS[4].speed;
     const r = paddleBounce(200 + LOB * (PLANS[4].paddle / 2), 200, PLANS[4].paddle, speed, true);
     expect(Math.abs(r.vy) / Math.abs(r.vx)).toBeLessThan(0.3);
+  });
+
+  it("an idle paddle never meets the pet's return on the rally levels, and a moving paddle always can", () => {
+    // 1024 x 768 and 390 x 844 tables as the scene lays them out (box x 180..w-40, y 90..h-40, faces 46 in, ball radius 26).
+    const R = 26;
+    const tables = [
+      { w: 1024, h: 768 },
+      { w: 844, h: 390 + 300 },
+    ];
+    const away = PLANS.filter((p) => isAwayMode(p.mode));
+    expect(away.map((p) => p.mode)).toContain('rally');
+    for (const t of tables) {
+      for (const p of away) {
+        const g: ReturnGeometry = {
+          leftX: 180 + 46 + R,
+          rightX: t.w - 40 - 46 - R,
+          top: 90 + R,
+          bottom: t.h - 40 - R,
+          paddle: p.paddle,
+          ballR: R,
+        };
+        const parked = (g.top + g.bottom) / 2;
+        let met = 0;
+        let total = 0;
+        for (let leftY = g.top; leftY <= g.bottom; leftY += 10) {
+          for (const pick of [0, 0.3, 0.6, 0.99]) {
+            const lob = petLobAway(pick, p.mode, parked, leftY, g);
+            expect(Math.abs(lob)).toBeLessThanOrEqual(LOB + 1e-9);
+            total++;
+            if (Math.abs(returnArrival(leftY, lob, g) - parked) < p.paddle / 2 + R * 0.6) met++;
+          }
+        }
+        // Wide tables clear the paddle every time; a narrow one still keeps the idle paddle from meeting nearly every return.
+        expect(met / total).toBeLessThan(t.w >= 1000 ? 0.02 : 0.15);
+      }
+    }
+  });
+
+  it('keeps the usual lob when the return already misses the parked paddle, and leaves other levels straight', () => {
+    const g: ReturnGeometry = { leftX: 256, rightX: 880, top: 120, bottom: 700, paddle: 240, ballR: 30 };
+    expect(petLobAway(0.5, 'solo', 410, 410, g)).toBe(0);
+    expect(petLobAway(0.5, 'stars', 410, 410, g)).toBe(0);
+    expect(petLobAway(0.99, 'count', 700, 410, g)).toBe(petLob(0.99, 'count'));
   });
 
   it('calls the three colors once each, never the same call twice, and can always serve the next one', () => {

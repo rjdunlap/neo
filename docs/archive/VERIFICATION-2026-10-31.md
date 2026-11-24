@@ -2,13 +2,13 @@
 
 ## 2026-10-31 — Water Road 4–5 definition (AM3, docs only)
 
-- [PR #1035](https://github.com/rjdunlap/neo/pull/1035), branch `claude/define-water-road-4-5`: [definition](../definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley) (level 4 Downhill all the way, level 5 Over the valley; pre-K range 2–4, school 3–5), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#water-road-2-downhill-all-the-way-and-over-the-valley); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
+- [PR #1035](https://github.com/rjdunlap/neo/pull/1035), branch `claude/define-water-road-4-5`: [definition](../definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley) (level 4 Downhill all the way, level 5 Over the valley; pre-K range 2–4, school 3–5), a batch plan in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#water-road-2-downhill-all-the-way-and-over-the-valley); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the aqueduct lines; the build runs the new-interaction tier.
 
 ## 2026-10-31 — Spinner Fair 1–5 definition (CS1, docs only)
 
-- [PR #1036](https://github.com/rjdunlap/neo/pull/1036), branch `claude/define-spinner-fair`: [definition](../definitions/spinner-fair.md) (levels 1–5 of a new game; preschool 1–2, pre-K 2–3, school 3–5; Counting Cove becoming 14 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#spinner-fair-1-spin-see-and-pick), READY, backlog, roadmap and study updated.
+- [PR #1036](https://github.com/rjdunlap/neo/pull/1036), branch `claude/define-spinner-fair`: [definition](../definitions/spinner-fair.md) (levels 1–5 of a new game; preschool 1–2, pre-K 2–3, school 3–5; Counting Cove becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#spinner-fair-1-spin-see-and-pick), READY, backlog, roadmap and study updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (spinner tapping, "still the better chance", sure/maybe/no way faces, wedge grab size, critter speech) stay open at the build.
 
@@ -21,13 +21,13 @@
 
 ## 2026-10-31 — Rule Machine 1–4 definition (AB1, docs only)
 
-- [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](../definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
+- [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](../definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (pre-K reading of the three pictures, whether the free first guess feels like a game, five cars and a table on an iPad portrait, "twice as many" as rows of counters, device speech for "take one away") stay open at the build.
 
 ## 2026-10-31 — Tide Line 1–4 definition (oceans study slice 1, docs only)
 
-- [PR #1042](https://github.com/rjdunlap/neo/pull/1042), branch `claude/define-tide-line`: [definition](../definitions/tide-line.md) (levels 1–4 of a new game; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4; Bubble Beach becoming 13 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#tide-line-1-come-in-go-out-and-stop-at-the-line), READY, backlog, roadmap, ideas, study and packet updated; S1 source check done in the definition.
+- [PR #1042](https://github.com/rjdunlap/neo/pull/1042), branch `claude/define-tide-line`: [definition](../definitions/tide-line.md) (levels 1–4 of a new game; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4; Bubble Beach becoming 13 games), two batch plans in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#tide-line-1-come-in-go-out-and-stop-at-the-line), READY, backlog, roadmap, ideas, study and packet updated; S1 source check done in the definition.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (a lap child pulling the wave, a toddler placing a pail, the seaweed line in sunlight, pre-K telling the in-between picture from high and low, device speech for "anemone") stay open at the build.
 
@@ -56,13 +56,13 @@
 
 ## 2026-10-31 — Patchwork Conservatory definition (genetics G7, docs only)
 
-- [PR #1046](https://github.com/rjdunlap/neo/pull/1046), branch `claude/define-patchwork-conservatory`: [definition](../definitions/patchwork-conservatory.md) (Sprout Shuffle levels 7–8, two-locus guarantee brief), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#sprout-shuffle-1-which-pairs-always-make-spotted) (Hidden Sprouts level 4 and Patchwork 7–8).
+- [PR #1046](https://github.com/rjdunlap/neo/pull/1046), branch `claude/define-patchwork-conservatory`: [definition](../definitions/patchwork-conservatory.md) (Sprout Shuffle levels 7–8, two-locus guarantee brief), two batch plans in [GAME-BATCHES](GAME-BATCHES-2026-11-23.md#sprout-shuffle-1-which-pairs-always-make-spotted) (Hidden Sprouts level 4 and Patchwork 7–8).
 - Ran: `node scripts/check-links.mjs` and `git diff --check`; source check against OpenStax Biology 2e 12.3 (opened 2026-10-31).
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-levels tier for level 4, new-interaction tier for 7–8, after level 6); the device and person checks listed in the definition (tile marks by ear and eye, "always" across two lenses, the trap as discovery).
 
 ## 2026-10-31 — Second Chance Shed 5–6 definition (nature-sustainability N3, docs only)
 
-- [PR #1047](https://github.com/rjdunlap/neo/pull/1047), branch `claude/define-second-chance-shed-5-6`: [definition](../definitions/second-chance-shed-5-6.md) (a friend's request, whole-plan check with the cart bell, the greedy-fails case at level 6), batch plan [second-chance-shed 2](../GAME-BATCHES.md#second-chance-shed-2-someone-needs-it); Beach Day Pack-up weighed and kept as a proposed picnic set for levels 2–4.
+- [PR #1047](https://github.com/rjdunlap/neo/pull/1047), branch `claude/define-second-chance-shed-5-6`: [definition](../definitions/second-chance-shed-5-6.md) (a friend's request, whole-plan check with the cart bell, the greedy-fails case at level 6), batch plan [second-chance-shed 2](GAME-BATCHES-2026-11-23.md#second-chance-shed-2-someone-needs-it); Beach Day Pack-up weighed and kept as a proposed picnic set for levels 2–4.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier) with its source check of the item fits; the person and device checks listed in the definition's check tier.
 
@@ -75,19 +75,19 @@
 
 ## 2026-10-31 — Drop's Journey 1–3 definition (weather-water slice 8, docs only)
 
-- [PR #1048](https://github.com/rjdunlap/neo/pull/1048), branch `claude/define-drops-journey`: [definition](../definitions/drops-journey.md) (a new game, levels 1–3; preschool 1, pre-K 1–2, school 2–3; Tinker Lab, fallback Bubble Beach; five places, lawful moves by driver, one uphill can't-go card at level 3), batch plan [drops-journey 1](../GAME-BATCHES.md#drops-journey-1-where-can-the-drop-go-send-it-to-the-snow-and-can-it-go-there), READY, backlog, study, packet, ideas and oceans study updated; Drift Cards now eligible.
+- [PR #1048](https://github.com/rjdunlap/neo/pull/1048), branch `claude/define-drops-journey`: [definition](../definitions/drops-journey.md) (a new game, levels 1–3; preschool 1, pre-K 1–2, school 2–3; Tinker Lab, fallback Bubble Beach; five places, lawful moves by driver, one uphill can't-go card at level 3), batch plan [drops-journey 1](GAME-BATCHES-2026-11-23.md#drops-journey-1-where-can-the-drop-go-send-it-to-the-snow-and-can-it-go-there), READY, backlog, study, packet, ideas and oceans study updated; Drift Cards now eligible.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier) with its S1 source check of every speech line; device and person checks in the definition's check tier (a four-year-old following the dotted drop, iPad speech for "vapour", a school-age child explaining why a can't-go card is wrong).
 
 ## 2026-10-31 — Forecast Detective 1–2 definition (weather-water slice 9, docs only)
 
-- [PR #1049](https://github.com/rjdunlap/neo/pull/1049), branch `claude/define-forecast-detective`: [definition](../definitions/forecast-detective.md) (a new game, levels 1–2; school 1–2; Tinker Lab, fallback Cozy Village; a pretend valley's wind rule, possible weathers after every clue, *Can't tell yet*), batch plan [forecast-detective 1](../GAME-BATCHES.md#forecast-detective-1-which-way-is-the-wind-and-a-postcard-didnt-come), READY, backlog, study, packet and ideas updated.
+- [PR #1049](https://github.com/rjdunlap/neo/pull/1049), branch `claude/define-forecast-detective`: [definition](../definitions/forecast-detective.md) (a new game, levels 1–2; school 1–2; Tinker Lab, fallback Cozy Village; a pretend valley's wind rule, possible weathers after every clue, *Can't tell yet*), batch plan [forecast-detective 1](GAME-BATCHES-2026-11-23.md#forecast-detective-1-which-way-is-the-wind-and-a-postcard-didnt-come), READY, backlog, study, packet and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources opened and listed in the definition: NOAA JetStream air masses and weather models, NSIDC snow.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier) with its S1 source check of every speech line; person and device checks in the definition's check tier (a school-age child opening clues on purpose, whether *Can't tell yet* feels like a win, iPad speech for "Lighthouse Isle", tween and parent appeal).
 
 ## 2026-10-31 — Drift Cards 1–3 definition (oceans slice 6, docs only)
 
-- [PR #1050](https://github.com/rjdunlap/neo/pull/1050), branch `claude/define-drift-cards`: [definition](../definitions/drift-cards.md) (a new game, levels 1–3; school 1–3; Bubble Beach, fallback Tinker Lab; a pretend current map, predict the landing, choose the boat, find the fogged current from returned cards; wooden cards not bottles, 1992 spill counts unused), batch plans [drift-cards 1](../GAME-BATCHES.md#drift-cards-1-where-will-it-wash-up-and-send-it-to-a-friend) and [2](../GAME-BATCHES.md#drift-cards-2-find-the-hidden-current), READY, backlog, study, packet and ideas updated.
+- [PR #1050](https://github.com/rjdunlap/neo/pull/1050), branch `claude/define-drift-cards`: [definition](../definitions/drift-cards.md) (a new game, levels 1–3; school 1–3; Bubble Beach, fallback Tinker Lab; a pretend current map, predict the landing, choose the boat, find the fogged current from returned cards; wooden cards not bottles, 1992 spill counts unused), batch plans [drift-cards 1](GAME-BATCHES-2026-11-23.md#drift-cards-1-where-will-it-wash-up-and-send-it-to-a-friend) and [2](GAME-BATCHES-2026-11-23.md#drift-cards-2-find-the-hidden-current), READY, backlog, study, packet and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources opened and listed in the definition, including NatureBridge's 2015 Elwha drift-card study.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-game then new-interaction tier) with their S1 source check of every speech line; person and device checks in the definition's check tier (reading arrows cell by cell, the two-cell trace, level 3 as detective work, iPad speech for "South-west").
 
@@ -99,7 +99,7 @@
 
 ## 2026-10-31 — Not Always 1–3 definition (philosophy-reasoning PR1, docs only)
 
-- [PR #1052](https://github.com/rjdunlap/neo/pull/1052), branch `claude/define-not-always`: [definition](../definitions/not-always.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks; claims about picture cards on screen, tap the breaker, *Every one!* stamp, mended claim), batch plan [not-always 1](../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better), READY, backlog, study, packet and ideas updated.
+- [PR #1052](https://github.com/rjdunlap/neo/pull/1052), branch `claude/define-not-always`: [definition](../definitions/not-always.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks; claims about picture cards on screen, tap the breaker, *Every one!* stamp, mended claim), batch plan [not-always 1](GAME-BATCHES-2026-11-23.md#not-always-1-not-all-of-them-every-one-and-say-it-better), READY, backlog, study, packet and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (breaker from the claim versus the odd one out, sign pictograms without words, wing clarity on an iPad).
 
@@ -136,19 +136,19 @@
 
 ## 2026-10-31 — Notice Board 1–3 definition (media-literacy ML1, docs only)
 
-- [PR #1061](https://github.com/rjdunlap/neo/pull/1061), branch `claude/define-notice-board`: [definition](../definitions/notice-board.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab; match the stamp to the maker, tap the friend who saw it, to tell or to sell), batch plan [notice-board 1](../GAME-BATCHES.md#notice-board-1-who-made-it-who-saw-it-to-tell-or-to-sell), READY, backlog, study and packet updated.
+- [PR #1061](https://github.com/rjdunlap/neo/pull/1061), branch `claude/define-notice-board`: [definition](../definitions/notice-board.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab; match the stamp to the maker, tap the friend who saw it, to tell or to sell), batch plan [notice-board 1](GAME-BATCHES-2026-11-23.md#notice-board-1-who-made-it-who-saw-it-to-tell-or-to-sell), READY, backlog, study and packet updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (witness from the memory picture versus the friend nearest the poster, basket by price versus maker's words, badge and place pictures at bubble size on an iPad).
 
 ## 2026-10-31 — Shell Rows 1–3 definition (strategy-games SG1, docs only)
 
-- [PR #1062](https://github.com/rjdunlap/neo/pull/1062), branch `claude/define-shell-rows`: [definition](../definitions/shell-rows.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Puzzle Peaks, paging; finish the row, stop the row, win first, with a show-me-why replay), batch plan [shell-rows 1](../GAME-BATCHES.md#shell-rows-1-finish-the-row-stop-the-row-win-first), READY, backlog, study and packet updated.
+- [PR #1062](https://github.com/rjdunlap/neo/pull/1062), branch `claude/define-shell-rows`: [definition](../definitions/shell-rows.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Puzzle Peaks, paging; finish the row, stop the row, win first, with a show-me-why replay), batch plan [shell-rows 1](GAME-BATCHES-2026-11-23.md#shell-rows-1-finish-the-row-stop-the-row-win-first), READY, backlog, study and packet updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`; a throwaway enumeration script counted the pool classes (39, 69 and 81 for levels 1–3).
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the study's person checks (does a five-year-old look at the pet's pebbles at level 2, does the replay read as a lesson, device speech for "three in a row").
 
 ## 2026-10-31 — Orchard Rows 4–6 definition (number-structure NS1, docs only)
 
-- [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](../definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](../GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
+- [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](../definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](GAME-BATCHES-2026-11-23.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the study's four person checks (leftover saplings used or arrows pressed at random, "every way" as collection or test, "one long row" without the word *prime*, deal lines in device speech), opened at the build.
 
@@ -160,7 +160,7 @@
 
 ## 2026-10-31 — Thought Bubbles 1–3 definition (literature-meaning LM1, docs only)
 
-- [PR #1065](https://github.com/rjdunlap/neo/pull/1065), branch `claude/define-thought-bubbles`: [definition](../definitions/thought-bubbles.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, paging; what she wants, where he will look, how we know), batch plan [thought-bubbles 1](../GAME-BATCHES.md#thought-bubbles-1-what-does-she-want-where-will-he-look-how-do-we-know), READY, backlog, study, packet and roadmap updated.
+- [PR #1065](https://github.com/rjdunlap/neo/pull/1065), branch `claude/define-thought-bubbles`: [definition](../definitions/thought-bubbles.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, paging; what she wants, where he will look, how we know), batch plan [thought-bubbles 1](GAME-BATCHES-2026-11-23.md#thought-bubbles-1-what-does-she-want-where-will-he-look-how-do-we-know), READY, backlog, study, packet and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the four person and device checks in the definition (the bubble read as "what he thinks", the window story fair after the away story, *show me how you know* as treasure or test, the reach at iPad size).
 
@@ -186,55 +186,55 @@
 
 ## 2026-10-31 — Maker Lane 1–3 definition (food-fiber-systems FS1, docs only)
 
-- [PR #1068](https://github.com/rjdunlap/neo/pull/1068), branch `claude/define-maker-lane`: [definition](../definitions/maker-lane.md) (a new game, levels 1–3; toddler 1, preschool 1–2, pre-K 2–3, school 2–3; Cozy Village, fallback Painted Canyon; who can use it now, where did it begin), batch plan [maker-lane 1](../GAME-BATCHES.md#maker-lane-1-along-the-lane-who-can-use-it-now-where-did-it-begin), READY, backlog, study, packet, tracker and roadmap updated.
+- [PR #1068](https://github.com/rjdunlap/neo/pull/1068), branch `claude/define-maker-lane`: [definition](../definitions/maker-lane.md) (a new game, levels 1–3; toddler 1, preschool 1–2, pre-K 2–3, school 2–3; Cozy Village, fallback Painted Canyon; who can use it now, where did it begin), batch plan [maker-lane 1](GAME-BATCHES-2026-11-23.md#maker-lane-1-along-the-lane-who-can-use-it-now-where-did-it-begin), READY, backlog, study, packet, tracker and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the person, device and review checks in the definition (a four-year-old's sheep-for-the-sock pick and whether the replay changes the next one, the thought bubble versus trying every stall, the grown-ups' label card, the named agricultural-literacy or textile review).
 
 ## 2026-10-31 — Lemonade Stand deep dive (docs only)
 
-- [PR #1070](https://github.com/rjdunlap/neo/pull/1070), branch `claude/dive-lemonade-stand`: [dive](../deep-dives/lemonade-stand.md) (levels 5 *Two lemon boats*, 6 *Best buy*, 7 *A typical sunny day*; a pre-K opening and a journal chart as decisions), batch plan [lemonade-stand 1](../GAME-BATCHES.md#lemonade-stand-1-two-lemon-boats), READY, backlog, tracker, ideas, two subject studies and waiting-on-developer updated.
+- [PR #1070](https://github.com/rjdunlap/neo/pull/1070), branch `claude/dive-lemonade-stand`: [dive](../deep-dives/lemonade-stand.md) (levels 5 *Two lemon boats*, 6 *Best buy*, 7 *A typical sunny day*; a pre-K opening and a journal chart as decisions), batch plan [lemonade-stand 1](GAME-BATCHES-2026-11-23.md#lemonade-stand-1-two-lemon-boats), READY, backlog, tracker, ideas, two subject studies and waiting-on-developer updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the existing Lemonade Stand device checks and the dive's person checks (whether "for 2 lemons" reads as cheaper per cup, whether levelling towers feels fair).
 
 ## 2026-10-31 — Pixel Pictures deep dive (docs only)
 
-- [PR #1071](https://github.com/rjdunlap/neo/pull/1071), branch `claude/dive-pixel-pictures`: [dive](../deep-dives/pixel-pictures.md). Found levels 2 and 6 repeat exactly (the pool equals the pictures shown) and level 6 has no colour-logic solvability check, so its hint and bot walk reading order. Four slices queued ([batches](../GAME-BATCHES.md#pixel-pictures-1-fresh-pictures-and-colour-logic): fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
+- [PR #1071](https://github.com/rjdunlap/neo/pull/1071), branch `claude/dive-pixel-pictures`: [dive](../deep-dives/pixel-pictures.md). Found levels 2 and 6 repeat exactly (the pool equals the pictures shown) and level 6 has no colour-logic solvability check, so its hint and bot walk reading order. Four slices queued ([batches](GAME-BATCHES-2026-11-23.md#pixel-pictures-1-fresh-pictures-and-colour-logic): fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds; the dive's person checks (second mirror line read as a rule, sixteen squares for a four-square model, colour pick before tapping at three or four).
 
 ## 2026-10-31 — Garden Rows deep dive (docs only)
 
-- [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](../deep-dives/garden-rows.md). Three slices queued ([batches](../GAME-BATCHES.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
+- [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](../deep-dives/garden-rows.md). Three slices queued ([batches](GAME-BATCHES-2026-11-23.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## 2026-10-31 — Ferry Jam deep dive (docs only)
 
-- [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](../deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](../GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
+- [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](../deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](GAME-BATCHES-2026-11-23.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
 
 ## 2026-10-31 — Caravan Days levels 6–7 definition (china-india-silk-road CS4, docs only)
 
-- [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](../definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](../GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
+- [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](../definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](GAME-BATCHES-2026-11-23.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the build and its device checks.
 
 ## 2026-10-31 — Habitat Helpers deep dive (docs only)
 
-- [PR #1075](https://github.com/rjdunlap/neo/pull/1075), branch `claude/dive-habitat-helpers`: [dive](../deep-dives/habitat-helpers.md). Three slices queued ([batches](../GAME-BATCHES.md#habitat-helpers-1-equivalent-pieces-and-pooled-gardens): equivalent pieces and pooled gardens, level 7 Something changed (the ecosystems study's F3), levels 8–9 the rocky shore); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the oceans and ecosystems studies updated.
+- [PR #1075](https://github.com/rjdunlap/neo/pull/1075), branch `claude/dive-habitat-helpers`: [dive](../deep-dives/habitat-helpers.md). Three slices queued ([batches](GAME-BATCHES-2026-11-23.md#habitat-helpers-1-equivalent-pieces-and-pooled-gardens): equivalent pieces and pooled gardens, level 7 Something changed (the ecosystems study's F3), levels 8–9 the rocky shore); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the oceans and ecosystems studies updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## 2026-10-31 — Inchworm Measure deep dive (docs only)
 
-- [PR #1076](https://github.com/rjdunlap/neo/pull/1076), branch `claude/dive-inchworm`: [dive](../deep-dives/inchworm.md). Three slices queued ([batches](../GAME-BATCHES.md#inchworm-1-fresh-things-and-the-broken-ruler): fresh things and the broken ruler, level 9 one worm hop by hop, level 10 longer than the ruler); the centimetre ruler and the preschool opening are filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the measurement and ancient-Mediterranean studies updated.
+- [PR #1076](https://github.com/rjdunlap/neo/pull/1076), branch `claude/dive-inchworm`: [dive](../deep-dives/inchworm.md). Three slices queued ([batches](GAME-BATCHES-2026-11-23.md#inchworm-1-fresh-things-and-the-broken-ruler): fresh things and the broken ruler, level 9 one worm hop by hop, level 10 longer than the ruler); the centimetre ruler and the preschool opening are filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the measurement and ancient-Mediterranean studies updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## 2026-10-31 — Island Bridges deep dive (docs only)
 
-- [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](../deep-dives/island-bridges.md). Four slices queued ([batches](../GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
+- [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](../deep-dives/island-bridges.md). Four slices queued ([batches](GAME-BATCHES-2026-11-23.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
 
@@ -247,25 +247,25 @@
 
 ## 2026-10-31 — Lantern Lights deep dive (docs only)
 
-- [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](../deep-dives/lantern-lights.md). Three slices queued ([batches](../GAME-BATCHES.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
+- [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](../deep-dives/lantern-lights.md). Three slices queued ([batches](GAME-BATCHES-2026-11-23.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## 2026-10-31 — Lasso Loops deep dive (docs only)
 
-- [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](../deep-dives/lasso-loops.md). One slice queued ([batch](../GAME-BATCHES.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
+- [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](../deep-dives/lasso-loops.md). One slice queued ([batch](GAME-BATCHES-2026-11-23.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
 - Ran: a one-off probe that a hint loop can enclose the answer over 500 seeds per level (no failure); `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
 
 ## 2026-10-31 — Light Lab deep dive (docs only)
 
-- [PR #1081](https://github.com/rjdunlap/neo/pull/1081), branch `claude/dive-light-lab`: [dive](../deep-dives/light-lab.md). Four slices queued ([batches](../GAME-BATCHES.md#light-lab-1-fair-starts-nearest-hints-and-a-sun-on-either-side): fair starts, nearest hints and a sun on either side; couch course Sunbeam Run; levels 8–9 *Place a mirror* and *Two to place*; level 10 *Where's the mirror?*); two definitions queued; tracker, READY, backlog and ideas updated.
+- [PR #1081](https://github.com/rjdunlap/neo/pull/1081), branch `claude/dive-light-lab`: [dive](../deep-dives/light-lab.md). Four slices queued ([batches](GAME-BATCHES-2026-11-23.md#light-lab-1-fair-starts-nearest-hints-and-a-sun-on-either-side): fair starts, nearest hints and a sun on either side; couch course Sunbeam Run; levels 8–9 *Place a mirror* and *Two to place*; level 10 *Where's the mirror?*); two definitions queued; tracker, READY, backlog and ideas updated.
 - Ran: a throwaway probe of the generator (400 seeds a level, not committed) that found starts often nearly solved at levels 4–7 and the hint following the built path rather than the nearest solution in 2–3% of boards at levels 6–7; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
 
 ## 2026-10-31 — Peekaround Island deep dive (docs only)
 
-- [PR #1082](https://github.com/rjdunlap/neo/pull/1082), branch `claude/dive-peekaround-island`: [dive](../deep-dives/peekaround-island.md). Four slices queued ([batches](../GAME-BATCHES.md#peekaround-island-1-truthful-support-and-real-choices): truthful support and real choices; level 5 *Who will be in front?*; level 6 *Who can't see it?*; level 7 *What does the duck see?*); *From the sky* queued as a definition; tracker, READY, backlog, ideas and subject back-pointers updated; three decisions in WAITING-ON-DEVELOPER.
+- [PR #1082](https://github.com/rjdunlap/neo/pull/1082), branch `claude/dive-peekaround-island`: [dive](../deep-dives/peekaround-island.md). Four slices queued ([batches](GAME-BATCHES-2026-11-23.md#peekaround-island-1-truthful-support-and-real-choices): truthful support and real choices; level 5 *Who will be in front?*; level 6 *Who can't see it?*; level 7 *What does the duck see?*); *From the sky* queued as a definition; tracker, READY, backlog, ideas and subject back-pointers updated; three decisions in WAITING-ON-DEVELOPER.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
 

@@ -93,8 +93,8 @@ Examples the rule tests pin, from the built one-colour 4 by 4 pictures (`PICTURE
 
 ## Slices and check tier
 
-1. **H7, level 11 *Ones and zeros*** ([batch pixel-pictures 5](../GAME-BATCHES.md#pixel-pictures-5-ones-and-zeros); new interaction on an existing game). Files: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `bits.ts` (the `BitsRound` mode), `voice.ts`, `howto.ts`, `docs/games/pixel-pictures.md`. Checks: typecheck; unit tests (the rule tests above with the registry, lands and how-to tests); one filtered scripted play of level 11 to its sticker with one failed check and the glow (the `woods` suite's Pixel Pictures cases); one upright screenshot at 390 × 844; `fingerdemo` at 11; `npm run build`, since voice, how-to and the level table change.
-2. **Level 12 *A whole picture*** ([batch pixel-pictures 6](../GAME-BATCHES.md#pixel-pictures-6-a-whole-picture), after 5; new levels on the interaction batch 5 builds): typecheck, the rule tests, one browser play of level 12 with an empty row and a kept picture, `fingerdemo` at 12.
+1. **H7, level 11 *Ones and zeros*** ([batch pixel-pictures 5](../archive/GAME-BATCHES-2026-11-23.md#pixel-pictures-5-ones-and-zeros); new interaction on an existing game). Files: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `bits.ts` (the `BitsRound` mode), `voice.ts`, `howto.ts`, `docs/games/pixel-pictures.md`. Checks: typecheck; unit tests (the rule tests above with the registry, lands and how-to tests); one filtered scripted play of level 11 to its sticker with one failed check and the glow (the `woods` suite's Pixel Pictures cases); one upright screenshot at 390 × 844; `fingerdemo` at 11; `npm run build`, since voice, how-to and the level table change.
+2. **Level 12 *A whole picture*** ([batch pixel-pictures 6](../archive/GAME-BATCHES-2026-11-23.md#pixel-pictures-6-a-whole-picture), after 5; new levels on the interaction batch 5 builds): typecheck, the rule tests, one browser play of level 12 with an empty row and a kept picture, `fingerdemo` at 12.
 
 Not run in this definition: everything but `node scripts/check-links.mjs` and `git diff --check`.
 

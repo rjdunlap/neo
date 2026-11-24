@@ -1,19 +1,28 @@
 import { describe, expect, it } from 'vitest';
+import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import {
   allHome,
+  cardName,
+  cardsFor,
   drawCard,
   drawCardFor,
+  EITHER_LEVEL,
+  EITHER_SHAPES,
   farthest,
+  fits,
   hop,
   hops,
+  isShapeCard,
   judgeStone,
-  makePath,
-  owlOf,
-  owlToHop,
   LEVELS,
+  makePath,
+  MARK,
+  mismatchWords,
   NEST_REACH,
   nestPointIn,
+  owlOf,
+  owlToHop,
   PLANS,
   planFor,
   STEPPING_LEVEL,
@@ -21,8 +30,13 @@ import {
   stepTo,
   stoneLayout,
   stoneReach,
+  type Card,
   type Spot,
+  type Stone,
 } from './logic';
+
+const colorPath = (colors: readonly ColorName[]): Stone[] =>
+  colors.map((color) => ({ color, shape: MARK[color]! }));
 
 describe('Owl Walk Home', () => {
   it('lays a path where every color keeps coming back and never repeats side by side', () => {
@@ -30,16 +44,16 @@ describe('Owl Walk Home', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const path = makePath(plan, new Rng(seed));
         expect(path).toHaveLength(plan.stones);
-        path.slice(1).forEach((c, i) => expect(c).not.toBe(path[i]));
+        path.slice(1).forEach((s, i) => expect(s.color).not.toBe(path[i].color));
         // The stepping stones have no cards, so their colors are only decoration.
         if (plan.mode !== 'free')
           for (const c of STONE_COLORS.slice(0, plan.colors))
-            expect(path.filter((p) => p === c).length).toBeGreaterThanOrEqual(2);
+            expect(path.filter((p) => p.color === c).length).toBeGreaterThanOrEqual(2);
       }
   });
 
   it('hops to the next free stone of the color, skipping owls, or flies home', () => {
-    const path = ['red', 'blue', 'red', 'green', 'blue'] as const;
+    const path = colorPath(['red', 'blue', 'red', 'green', 'blue']);
     expect(hop(path, [-1], 0, 'red')).toBe(0);
     expect(hop(path, [0], 0, 'red')).toBe(2);
     // The next red stone has an owl on it, and there's no red after that: home.
@@ -93,14 +107,14 @@ describe('Owl Walk Home', () => {
   });
 
   it('judges a tap on a stone: the next free one of the color is right, and every other tap says why not', () => {
-    const path = ['red', 'blue', 'red', 'green', 'red', 'blue'] as const;
+    const path = colorPath(['red', 'blue', 'red', 'green', 'red', 'blue']);
     // The owl stands on stone 0; another owl sits on stone 2.
     const spots = [0, 2];
     expect(judgeStone(path, spots, 0, 'red', 4)).toBe('next');
     expect(judgeStone(path, spots, 0, 'red', 2)).toBe('occupied');
     expect(judgeStone(path, spots, 0, 'blue', 1)).toBe('next');
     expect(judgeStone(path, spots, 0, 'blue', 5)).toBe('far');
-    expect(judgeStone(path, spots, 0, 'green', 1)).toBe('wrong-color');
+    expect(judgeStone(path, spots, 0, 'green', 1)).toBe('mismatch');
     expect(judgeStone(path, [4, 0], 0, 'red', 0)).toBe('behind');
     expect(judgeStone(path, [4, 0], 0, 'red', 4)).toBe('behind');
     // The nest is right only when no free stone of the color is left ahead.
@@ -117,13 +131,13 @@ describe('Owl Walk Home', () => {
         const spots: Spot[] = Array.from({ length: plan.owls }, () => rng.int(-1, path.length - 1));
         // No two owls on one stone.
         if (new Set(spots.filter((s) => s >= 0)).size !== spots.filter((s) => s >= 0).length) continue;
-        for (const color of STONE_COLORS.slice(0, plan.colors))
+        for (const card of cardsFor(plan))
           for (let i = 0; i < plan.owls; i++) {
-            const to = hop(path, spots, i, color);
+            const to = hop(path, spots, i, card);
             const right: Array<number | 'nest'> = [];
             for (let t = 0; t < path.length; t++)
-              if (judgeStone(path, spots, i, color, t) === 'next') right.push(t);
-            if (judgeStone(path, spots, i, color, 'nest') === 'nest') right.push('nest');
+              if (judgeStone(path, spots, i, card, t) === 'next') right.push(t);
+            if (judgeStone(path, spots, i, card, 'nest') === 'nest') right.push('nest');
             expect(right).toEqual([to >= path.length ? 'nest' : to]);
           }
       }
@@ -135,17 +149,17 @@ describe('Owl Walk Home', () => {
         const rng = new Rng(seed);
         const path = makePath(plan, rng);
         const spots: Spot[] = Array(plan.owls).fill(-1);
+        const dealt: Card[] = [];
         let player: 0 | 1 = 0;
         let turns = 0;
         while (!allHome(path, spots)) {
-          const i = plan.mode === 'one' ? 0 : owlOf(path, spots, player);
-          const card = drawCardFor(plan, rng, path, spots, [i]);
+          const i = plan.owls === 1 ? 0 : owlOf(path, spots, player);
+          const card = drawCardFor(plan, rng, path, spots, [i], dealt);
+          dealt.push(card);
           const to = hop(path, spots, i, card);
-          // Only an owl on a stone with no color left ahead may draw a card that flies it home.
+          // Only an owl on a stone with no card left ahead may draw a card that flies it home.
           if (to >= path.length)
-            expect(
-              STONE_COLORS.slice(0, plan.colors).every((c) => hop(path, spots, i, c) >= path.length),
-            ).toBe(true);
+            expect(cardsFor(plan).every((c) => hop(path, spots, i, c) >= path.length)).toBe(true);
           spots[i] = to;
           player = player === 0 ? 1 : 0;
           expect(++turns).toBeLessThan(plan.stones * plan.owls + 2);
@@ -226,6 +240,83 @@ describe('Owl Walk Home', () => {
           expect(p.y + reach).toBeLessThanOrEqual(h);
         }
       }
+    });
+  });
+
+  describe('Color or shape (level 6)', () => {
+    const plan = planFor(EITHER_LEVEL);
+
+    it('sits in the preschool and pre-K ladders with three colors and three independent shapes', () => {
+      expect(plan.mode).toBe('either');
+      expect(plan.owls).toBe(1);
+      expect(plan.colors).toBe(3);
+      expect(plan.twinkle).toBe(false);
+      expect(plan.safeCards).toBe(true);
+      expect(LEVELS.preschool?.order).toEqual([1, 2, 6, 3]);
+      expect(LEVELS.prek?.order).toEqual([2, 3, 6, 4]);
+    });
+
+    it('shows all nine color-by-shape kinds, each color and shape at least twice, with no shared neighbor attribute', () => {
+      const colors = STONE_COLORS.slice(0, plan.colors);
+      const shapes = EITHER_SHAPES.slice(0, plan.colors);
+      for (let seed = 1; seed <= 200; seed++) {
+        const path = makePath(plan, new Rng(seed));
+        expect(path).toHaveLength(plan.stones);
+        // Every color and every shape appears at least twice.
+        for (const c of colors) expect(path.filter((s) => s.color === c).length).toBeGreaterThanOrEqual(2);
+        for (const sh of shapes) expect(path.filter((s) => s.shape === sh).length).toBeGreaterThanOrEqual(2);
+        // Shape is independent of color: all nine combinations appear.
+        const kinds = new Set(path.map((s) => `${s.color}:${s.shape}`));
+        expect(kinds.size).toBe(9);
+        // Neighbors share neither color nor shape.
+        for (let i = 1; i < path.length; i++) {
+          expect(path[i].color).not.toBe(path[i - 1].color);
+          expect(path[i].shape).not.toBe(path[i - 1].shape);
+        }
+      }
+    });
+
+    it('matches by color on color cards and by shape on shape cards, and never deals three of one kind in a row', () => {
+      expect(fits({ color: 'red', shape: 'star' }, 'red')).toBe(true);
+      expect(fits({ color: 'red', shape: 'star' }, 'star')).toBe(true);
+      expect(fits({ color: 'red', shape: 'star' }, 'blue')).toBe(false);
+      expect(fits({ color: 'red', shape: 'star' }, 'heart')).toBe(false);
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        const path = makePath(plan, rng);
+        const spots: Spot[] = [-1];
+        const dealt: Card[] = [];
+        while (!allHome(path, spots)) {
+          const card = drawCardFor(plan, rng, path, spots, [0], dealt);
+          if (dealt.length >= 2) {
+            const options = cardsFor(plan).filter((c) => hop(path, spots, 0, c) < path.length);
+            const hasBoth = options.some(isShapeCard) && options.some((c) => !isShapeCard(c));
+            const lastTwoSame = isShapeCard(dealt[dealt.length - 1]) === isShapeCard(dealt[dealt.length - 2]);
+            if (hasBoth && lastTwoSame)
+              expect(isShapeCard(card)).not.toBe(isShapeCard(dealt[dealt.length - 1]));
+          }
+          dealt.push(card);
+          spots[0] = hop(path, spots, 0, card);
+        }
+      }
+    });
+
+    it('names the attribute that failed on a mismatch, never the other attribute', () => {
+      const stone: Stone = { color: 'blue', shape: 'star' };
+      expect(mismatchWords(plan, stone, 'heart')).toEqual({
+        line: 'owl.not-shape',
+        have: 'star',
+        need: 'heart',
+      });
+      expect(mismatchWords(plan, stone, 'red')).toEqual({ line: 'owl.not-color', have: 'blue', need: 'red' });
+      expect(cardName(plan, 'heart')).toBe('heart');
+      expect(cardName(plan, 'red')).toBe('red stone');
+      // On earlier color levels, the whole stone is still named.
+      expect(mismatchWords(planFor(1), stone, 'red')).toEqual({
+        line: 'owl.wrong-color',
+        have: 'a blue star',
+        need: 'red heart',
+      });
     });
   });
 });

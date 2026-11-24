@@ -195,7 +195,7 @@ The one game card gets exact `LevelLine`s scoped to **7**, **8**, **9**, preserv
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`scoop-shop` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`scoop-shop` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Built 2026-10-20 (`claude/scoop-shop-support-truth`, PR #664).** **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
 2. **Built 2026-10-21 (`claude/scoop-shop-pools`, PR #729).** **Pools: customers, cone kinds, window scenes, flavour thank-yous and the serve tune** (content tier): eight customers, three cone kinds, three scenes, `scoop.yum` flavour variants (decision 3's lean), the sticker pool, the tune in `serve()`. Checks: typecheck, rule tests, one browser play of level 5 and `fingerdemo` at 5.
@@ -205,7 +205,7 @@ The one game card gets exact `LevelLine`s scoped to **7**, **8**, **9**, preserv
 6. **Built in batch 2, PR #811.** **Level 13 *Three pink and two blue*** (new level, `makeOrders` only): pre-K `[3, 4, 12, 13, 5, 6]`, school `[5, 12, 13, 6]`. Checks: typecheck, rule tests, one play of 13, `fingerdemo` at 13.
 7. **Built 2026-11-03 (EF1b first batch, [PR #1176](https://github.com/rjdunlap/neo/pull/1176)).** *(Approved 2026-10-23)* **Levels 8 *Change of mind* and 9 *Top first*** (new levels on 6's interaction): school order `[5, 12, 13, 6, 8, 9]`. Checks: typecheck, rule tests (one change, no palindrome), one play of 9, `fingerdemo` at 8 and 9.
 8. **Built 2026-11-03 (EF1b second batch, [PR #1194](https://github.com/rjdunlap/neo/pull/1194)).** *(Approved 2026-10-23; defined EF1)* **Level 7 *Two cones*** (new interaction: a second open cone on slice 4's customer tap): school order `[5, 12, 13, 6, 7, 8, 9]`. Checks: new-interaction tier (scripted play at 7, a wrong scoop, a peek, one portrait screenshot, `fingerdemo` at 7).
-9. *(Decision 2)* Creature customers, the cone that comes home, the flavour shelf: with the rework's home, not here.
+9. *(Decision 2 settled 2026-10-23: a pet-integration slice once the creature home exists, not of this game)* Creature customers, the cone that comes home, the flavour shelf: with the rework's home, not here.
 
 ## What was built in this session
 

@@ -746,13 +746,21 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
       }
     if (!only || only === 'rhythm')
-      for (let level = fromLevel; level <= 9; level++) {
+      for (let level = fromLevel; level <= 10; level++) {
         await launch('rhythm-neighbors', level);
-        if (level === 6 || level === 7 || level === 9) {
+        if (level === 6 || level === 7 || level === 9 || level === 10) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
         }
         await screenshot(`rhythm-neighbors-${level}`);
+        if (level === 10) {
+          // The two tiles, once the bird and the frog have played.
+          await page.evaluate(async () => {
+            if (!(await kit.until(() => neo.scene.game.tiles.copy.visible, 12000)))
+              throw new Error('No tiles');
+          });
+          await screenshot('rhythm-neighbors-10-tiles');
+        }
         await page.evaluate(async () => {
           const g = neo.scene.game;
           const ready = async () => {
@@ -828,6 +836,30 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (g.misses !== 0 || g.hints !== 0) throw new Error(`Knock a call ${g.misses}/${g.hints}`);
             return;
           }
+          if (g.plan.pairs) {
+            // Level 10: the tiles wait until the pair has played; a tap on the frog croaks and counts nothing; two wrong tiles
+            // are two misses and one hint (the right tile glows); then four right choices end the round.
+            const shown = () => kit.until(() => g.tiles.copy.visible || g.done, 12000);
+            const right = () => (g.phrases[g.phrase].echo ? g.tiles.copy : g.tiles.answer);
+            const wrong = () => (g.phrases[g.phrase].echo ? g.tiles.answer : g.tiles.copy);
+            if (!(await shown())) throw new Error('Tiles never appeared');
+            kit.tapOn(g.frogs[0]);
+            await kit.sleep(150);
+            if (g.phrase !== 0 || g.misses !== 0) throw new Error('A frog tap was judged');
+            for (let k = 0; k < 2; k++) {
+              kit.tapOn(wrong());
+              await kit.sleep(200);
+              if (!(await shown())) throw new Error('Tiles did not come back after a wrong one');
+            }
+            if (g.misses !== 2 || g.hints !== 1) throw new Error(`Pairs hint ${g.misses}/${g.hints}`);
+            while (!g.done) {
+              if (!(await shown())) throw new Error('Tiles never appeared');
+              if (g.done) break;
+              kit.tapOn(right());
+              await kit.sleep(300);
+            }
+            return;
+          }
           if (g.plan.turn) {
             // Level 8: a tap during the call croaks but is not counted; then one tap on the glowing frog answers, three times.
             kit.tapOn(g.frogs[0]);
@@ -881,7 +913,10 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           }
         });
         await finished('rhythm-neighbors');
-        assert.deepEqual(await score('rhythm-neighbors'), level <= 2 || level >= 7 ? [0, 0] : [2, 1]);
+        assert.deepEqual(
+          await score('rhythm-neighbors'),
+          level <= 2 || (level >= 7 && level <= 9) ? [0, 0] : [2, 1],
+        );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`,

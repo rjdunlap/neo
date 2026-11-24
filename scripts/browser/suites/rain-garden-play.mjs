@@ -236,8 +236,89 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
     }
 
+    // Level 7 on an upright phone: the authored round (board A, soil / soil / soil), a preview of each card, two wrong
+    // Checks on different gardens (a cross on the storm, then on the light card; the glow and its hint), one requested
+    // hint, then the passing Check.
+    if (from === 7) {
+      await page.setViewportSize({ width: 390, height: 625 });
+      await launch('rain-garden', 7, 'Mia', 'school');
+      assert.equal(await page.evaluate(() => neo.view.upright), true, 'an upright view');
+      await settle();
+      const tapOn = (target) =>
+        page.evaluate((target) => kit.tapOn(Function(`return neo.scene.game.${target}`)()), target);
+      s = await state();
+      assert.deepEqual(
+        [s.level, s.board, s.active, s.units, s.marked, s.surfaces, s.previews, s.ticks],
+        [7, 'A', 'light', 4, [0], ['soil', 'soil', 'soil'], [null, null], [null, null]],
+      );
+      await tapOn('cloud');
+      await settle();
+      s = await state();
+      assert.deepEqual(s.previews, [[2, 2, 0, 0], null], 'the light shower: top and middle keep two');
+      await tapOn('cards[1]');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.active, s.units, s.marked, s.drops],
+        ['storm', 6, [1], 0],
+        'the storm card, fresh beds',
+      );
+      await tapOn('cloud');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        s.previews,
+        [
+          [2, 2, 0, 0],
+          [2, 2, 2, 0],
+        ],
+        'the storm: every bed full, the pond gets none',
+      );
+      assert.equal(s.misses, 0, 'cards and previews are free');
+      await tapOn('check');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.passed, s.active, s.ticks],
+        [1, 0, false, 'storm', [true, false]],
+        'a cross on the storm card',
+      );
+      await tapOn('beds[0]');
+      await settle();
+      assert.deepEqual((await state()).ticks, [null, null], 'a flip clears the ticks');
+      await tapOn('check');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.surfaces, s.misses, s.hints, s.ticks, s.active],
+        [['stone', 'soil', 'soil'], 2, 1, [false, true], 'light'],
+        'a second wrong Check on a different garden: the light card fails, the glow counts one hint',
+      );
+      assert.equal(s.glow, 0, 'the glow marks the top bed');
+      await screenshot('rain-garden-7-upright-tick-and-cross');
+      await page.keyboard.press('Escape');
+      await page.getByRole('button', { name: 'Show me', exact: true }).click();
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.surfaces, s.hints],
+        [['soil', 'soil', 'soil'], 2],
+        'Show me flips the top bed back',
+      );
+      await tapOn('beds[2]');
+      await settle();
+      assert.deepEqual((await state()).surfaces, ['soil', 'soil', 'stone']);
+      await tapOn('check');
+      await finished('rain-garden');
+      assert.deepEqual(await score(), [2, 2], 'level 7 saved 2 misses, 2 hints');
+      log(
+        'Rain Garden 7: upright phone, board A, a preview of each card, two wrong Checks (a cross on the storm, then on the light card, glow = 1 hint), one Show me, Check passes 2/2; passed',
+      );
+      return;
+    }
+
     // Keep the previous FROM_LEVEL=5 replay scoped to level 5.
-    if (from === 5 || from > 6) return;
+    if (from === 5 || from > 7) return;
     await page.setViewportSize({ width: 390, height: 625 });
     await page.evaluate(() => {
       kit.store.data.settings.showWords = true;

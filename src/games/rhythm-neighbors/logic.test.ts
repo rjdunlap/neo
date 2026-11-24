@@ -1,6 +1,17 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { accepts, makePhrases, nextNote, planFor, schedule, type Phrase } from './logic';
+import {
+  LEVELS,
+  PAIR_ROUNDS,
+  accepts,
+  makePairs,
+  makePhrases,
+  nextNote,
+  planFor,
+  schedule,
+  shapeOf,
+  type Phrase,
+} from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 it('uses distinct calls and replies, all playable on offered instruments', () => {
   for (let l = 1; l <= 6; l++)
@@ -62,9 +73,9 @@ import { CALLS, FREE_TAPS, LEVEL_IDS, PAUSE_SECONDS, PLANS, REPLIES, finaleEvent
 import { judgeEcho } from '../sound-garden/logic';
 const key = (g: readonly string[]) => g.join('');
 it('keys its plans by level ID', () => {
-  expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   for (const l of LEVEL_IDS) expect(planFor(l)).toBe(PLANS[l]);
-  expect(planFor(10)).toBe(PLANS[9]);
+  expect(planFor(11)).toBe(PLANS[10]);
   expect(planFor(0)).toBe(PLANS[1]);
 });
 it('draws from twelve different reply shapes and calls of two or three knocks', () => {
@@ -258,4 +269,34 @@ it('level 9: the ghost finger gives one call of three or four knocks with short 
   }
   expect(callPhrase([0]).gaps).toEqual(['S']);
   expect(callPhrase([0]).voices).toEqual([0, 0]);
+});
+
+it('level 10 makes four exchanges, two copies and two answers, with the tile rule matching judgeEcho', () => {
+  for (let seed = 1; seed <= 200; seed++) {
+    const pairs = makePairs(new Rng(seed));
+    expect(pairs).toHaveLength(PAIR_ROUNDS);
+    expect(pairs.filter((p) => p.echo)).toHaveLength(2);
+    expect(new Set(pairs.map((p) => p.call.join(''))).size).toBe(PAIR_ROUNDS);
+    for (const p of pairs) {
+      expect(p.call.length).toBeGreaterThanOrEqual(2);
+      expect(p.call.length).toBeLessThanOrEqual(3);
+      expect(p.voices.length).toBe(p.gaps.length + 1);
+      expect(p.gaps.length).toBe(p.call.length);
+      const heard = schedule(p.gaps);
+      if (p.echo) {
+        expect(p.gaps).toEqual(p.call);
+        expect(judgeEcho(p.call, heard)).toBe(true);
+      } else {
+        expect(shapeOf(p.gaps)).not.toBe(shapeOf(p.call));
+        expect(judgeEcho(p.call, heard)).toBe(false);
+      }
+    }
+  }
+});
+it('level 10 is reached from 6 for pre-K and school, and the same pairs come from the same seed', () => {
+  expect(planFor(10).pairs).toBe(true);
+  expect(LEVELS.prek?.order).toEqual([4, 5, 6, 10]);
+  expect(LEVELS.school?.order).toEqual([5, 6, 10]);
+  expect(makePhrases(10, new Rng(7))).toEqual(makePhrases(10, new Rng(7)));
+  expect(makePhrases(6, new Rng(7)).length).toBe(3);
 });

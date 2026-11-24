@@ -78,7 +78,7 @@ export const flip = (s: Surface): Surface => (s === 'stone' ? 'soil' : 'stone');
 // ---- levels ----
 
 export interface Plan {
-  level: 1 | 2 | 3 | 4 | 5 | 6;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   name: string;
 }
 export const PLANS: readonly Plan[] = [
@@ -88,15 +88,19 @@ export const PLANS: readonly Plan[] = [
   { level: 4, name: 'Two beds downhill: change the ground so the leaf bed gets two drops and the pond some' },
   { level: 5, name: 'Three beds downhill: leave enough rain for every marked bed and some for the pond' },
   { level: 6, name: 'Rain twice: see where the second rain goes when the ground is already wet' },
+  {
+    level: 7,
+    name: 'Two rains: change the beds so one garden works for both a light shower and a big storm',
+  },
 ];
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 export function planFor(level: number): Plan {
-  return PLANS[Math.max(1, Math.min(6, Math.round(level))) - 1];
+  return PLANS[Math.max(1, Math.min(7, Math.round(level))) - 1];
 }
 
 export type Friend = 'frog' | 'duck' | 'turtle';
@@ -419,7 +423,15 @@ export interface RouteBoard {
   /** The marked beds, uphill first; each must keep exactly two. */
   marked: readonly { socket: number; marker: Marker }[];
   units: number;
+  /** Level 7's per-card pond rule; absent means level 4–5's `reach`. */
+  pond?: PondRule;
 }
+
+/** What the pond must get: nothing in particular, at least one drop, or at most two ("held back"). */
+export type PondRule = 'any' | 'reach' | 'hold';
+export const HOLD_MAX = 2;
+export const pondOk = (rule: PondRule, pond: number) =>
+  rule === 'any' || (rule === 'reach' ? pond >= 1 : pond <= HOLD_MAX);
 
 /** Level 4's board: two beds, one marked with the leaf, four drops. */
 export const board4 = (bed: 0 | 1): RouteBoard => ({
@@ -456,9 +468,12 @@ export const BOARDS5: readonly RouteBoard[] = [
 export const runBoard = (sockets: readonly Surface[], board: RouteBoard) =>
   runRoute(sockets, board.route, board.units);
 
-/** Each marked bed must keep exactly two (in `board.marked` order); the pond must get at least one. */
+/** Each marked bed must keep exactly two (in `board.marked` order); the pond must meet the board's rule (at least one by default). */
 export function meets(t: RouteTrial, board: RouteBoard): { beds: boolean[]; pond: boolean } {
-  return { beds: board.marked.map((m) => t.stored[m.socket] === 2), pond: t.pond >= 1 };
+  return {
+    beds: board.marked.map((m) => t.stored[m.socket] === 2),
+    pond: pondOk(board.pond ?? 'reach', t.pond),
+  };
 }
 const passes = (sockets: readonly Surface[], board: RouteBoard) => {
   const m = meets(runBoard(sockets, board), board);
@@ -487,9 +502,11 @@ const distance = (a: readonly Surface[], b: readonly Surface[]) => a.filter((s, 
 
 /** The solution that differs from `sockets` in the fewest beds; ties go to the first in enumeration order. */
 export function nearest(sockets: readonly Surface[], board: RouteBoard): Surface[] {
+  return nearestIn(sockets, solutions(board));
+}
+export function nearestIn(sockets: readonly Surface[], sols: readonly Surface[][]): Surface[] {
   let best: Surface[] | null = null;
-  for (const sol of solutions(board))
-    if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
+  for (const sol of sols) if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
   return best!;
 }
 
@@ -501,8 +518,10 @@ export function stepBed(sockets: readonly Surface[], board: RouteBoard): number 
 }
 
 export interface RouteRound {
-  level: 4 | 5 | 6;
+  level: 4 | 5 | 6 | 7;
+  /** Level 7: the light card's board (both cards are in `two`). */
   board: RouteBoard;
+  two?: TwoBoard;
   start: Surface[];
   friend: Friend;
   /** Level 4: the cloud and the top bed on the right, the arrows running left. Never at level 5. */
@@ -513,7 +532,13 @@ export interface RouteRound {
  * Level 4's authored board is soil over stone with the low bed marked; level 5's is board A from soil / soil / stone.
  * A seeded round picks its variant (level 4) or board (level 5), then one of its failing arrangements.
  */
-export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 | 6 = 4): RouteRound {
+export function makeRoute(rng: Rng, authored: boolean, level: 4 | 5 | 6 | 7 = 4): RouteRound {
+  if (level === 7) {
+    if (authored) return twoRound(BOARDS7[0], ['soil', 'soil', 'soil'], 'frog');
+    const two = rng.pick(BOARDS7);
+    const failing = arrangements(two.light).filter((a) => !passes7(a, two));
+    return twoRound(two, rng.pick(failing).slice(), rng.pick(FRIENDS));
+  }
   if (level === 6) {
     if (authored) return { level, board: board6(4), start: ['soil', 'soil'], friend: 'frog', mirror: false };
     return {
@@ -795,6 +820,222 @@ export function narration(t: RouteTrial, board: RouteBoard, start?: readonly num
   return out;
 }
 
+// ---- level 7: one garden for two rains ----
+
+export type CardId = 'light' | 'storm';
+export const CARD_IDS: readonly CardId[] = ['light', 'storm'];
+export const LIGHT_UNITS = 4;
+export const STORM_UNITS = 6;
+
+/** Level 7's board: the same three free beds under two rain cards, each with its own needs. */
+export interface TwoBoard {
+  id: string;
+  title: string;
+  light: RouteBoard;
+  storm: RouteBoard;
+}
+export const cardOf = (b: TwoBoard, id: CardId): RouteBoard => b[id];
+
+const card = (marked: number[], units: number, pond: PondRule): RouteBoard => ({
+  id: '',
+  route: ROUTE5,
+  fixed: [null, null, null],
+  marked: marked.map((socket, i) => ({ socket, marker: i === 0 ? 'leaf' : 'flower' })),
+  units,
+  pond,
+});
+const two = (id: string, title: string, light: number[], storm: number[], rule: PondRule): TwoBoard => ({
+  id,
+  title,
+  light: { ...card(light, LIGHT_UNITS, 'any'), id: `${id}-light` },
+  storm: { ...card(storm, STORM_UNITS, rule), id: `${id}-storm` },
+});
+
+/** The six boards (docs/definitions/rain-garden.md#the-six-boards-1); A is the authored first board. */
+export const BOARDS7: readonly TwoBoard[] = [
+  two('A', 'Top for the light', [0], [1], 'reach'),
+  two('B', 'Skip the middle', [2], [0], 'reach'),
+  two('C', 'Middle then low', [1], [2], 'reach'),
+  two('D', 'Hold back the storm', [0], [2], 'hold'),
+  two('E', 'Middle and top', [1], [0], 'hold'),
+  two('F', 'Leaf and flower in the light', [0, 1], [2], 'hold'),
+];
+
+export interface CardResult {
+  trial: RouteTrial;
+  beds: boolean[];
+  pond: boolean;
+  ok: boolean;
+}
+/** Run both rains, each from dry ground. */
+export function checkCards(sockets: readonly Surface[], b: TwoBoard): Record<CardId, CardResult> {
+  const one = (c: RouteBoard): CardResult => {
+    const trial = runBoard(sockets, c);
+    const m = meets(trial, c);
+    return { trial, ...m, ok: m.beds.every(Boolean) && m.pond };
+  };
+  return { light: one(b.light), storm: one(b.storm) };
+}
+const passes7 = (sockets: readonly Surface[], b: TwoBoard) => {
+  const r = checkCards(sockets, b);
+  return r.light.ok && r.storm.ok;
+};
+/** Every arrangement that meets both cards. */
+export const solutions7 = (b: TwoBoard): Surface[][] => arrangements(b.light).filter((a) => passes7(a, b));
+export const nearest7 = (sockets: readonly Surface[], b: TwoBoard) => nearestIn(sockets, solutions7(b));
+/** The bed a worked step flips and the glow marks; null when the garden already passes. */
+export function stepBed7(sockets: readonly Surface[], b: TwoBoard): number | null {
+  const goal = nearest7(sockets, b);
+  const i = sockets.findIndex((s, k) => s !== goal[k]);
+  return i < 0 ? null : i;
+}
+
+export type Cause7 = 'dry' | 'pond' | 'over';
+export interface Verdict7 {
+  result: 'pass' | 'miss' | 'again' | 'ignored';
+  /** The first failing card (light before storm), its cause, and the dry marked bed's index in its `marked`. */
+  card: CardId | null;
+  cause: Cause7 | null;
+  need: number | null;
+  /** Both cards failed. */
+  both: boolean;
+}
+export function causeOf(r: CardResult, c: RouteBoard): { cause: Cause7; need: number | null } | null {
+  const dry = r.beds.indexOf(false);
+  if (dry >= 0) return { cause: 'dry', need: dry };
+  if (!r.pond) return { cause: c.pond === 'hold' ? 'over' : 'pond', need: null };
+  return null;
+}
+
+export function twoRound(b: TwoBoard, start: Surface[], friend: Friend): RouteRound {
+  return { level: 7, board: b.light, two: b, start, friend, mirror: false };
+}
+
+export interface TwoState {
+  sockets: Surface[];
+  active: CardId;
+  /** Previews of [light, storm] since the last flip. */
+  trials: [RouteTrial | null, RouteTrial | null];
+  /** The last Check's ticks for [light, storm]. */
+  verdicts: [boolean | null, boolean | null];
+  checked: string | null;
+  misses: number;
+  hints: number;
+  glow: number | null;
+  glowShown: boolean;
+  pointing: boolean;
+  passed: boolean;
+}
+const idx = (c: CardId) => (c === 'light' ? 0 : 1);
+
+export function twoFresh(round: RouteRound): TwoState {
+  return {
+    sockets: round.start.slice(),
+    active: 'light',
+    trials: [null, null],
+    verdicts: [null, null],
+    checked: null,
+    misses: 0,
+    hints: 0,
+    glow: null,
+    glowShown: false,
+    pointing: false,
+    passed: false,
+  };
+}
+/** Pick which card's rain and needs are shown: free, never touches the beds, previews or counts. */
+export const pickCard = (s: TwoState, id: CardId): TwoState => ({ ...s, active: id });
+/** The cloud: a free preview of the active card's rain from dry ground. */
+export function previewRain(s: TwoState, round: RouteRound): TwoState {
+  const trials = s.trials.slice() as TwoState['trials'];
+  trials[idx(s.active)] = runBoard(s.sockets, cardOf(round.two!, s.active));
+  return { ...s, trials, pointing: false };
+}
+/** A changed garden has no stale preview or verdict. */
+export function flipTwo(s: TwoState, i: number, round: RouteRound): TwoState {
+  const sockets = s.sockets.slice();
+  sockets[i] = flip(sockets[i]);
+  return {
+    ...s,
+    sockets,
+    trials: [null, null],
+    verdicts: [null, null],
+    pointing: false,
+    glow: s.glowShown ? stepBed7(sockets, round.two!) : null,
+  };
+}
+/**
+ * The Check runs both rains from dry ground and ticks or crosses each card. A pass needs both. A miss counts one
+ * unless the arrangement was already judged; from the second miss the glow marks the bed to change (one hint).
+ * The first failing card becomes the active one so its rain plays as the trace.
+ */
+export function checkTwo(s: TwoState, round: RouteRound): { state: TwoState; verdict: Verdict7 } {
+  const none: Verdict7 = { result: 'ignored', card: null, cause: null, need: null, both: false };
+  if (s.passed) return { state: s, verdict: none };
+  const b = round.two!;
+  const r = checkCards(s.sockets, b);
+  const verdicts: TwoState['verdicts'] = [r.light.ok, r.storm.ok];
+  const trials: TwoState['trials'] = [r.light.trial, r.storm.trial];
+  if (r.light.ok && r.storm.ok)
+    return {
+      state: { ...s, verdicts, trials, passed: true, glow: null, pointing: false },
+      verdict: { ...none, result: 'pass' },
+    };
+  const card: CardId = r.light.ok ? 'storm' : 'light';
+  const why = causeOf(r[card], cardOf(b, card))!;
+  const found = { card, cause: why.cause, need: why.need, both: !r.light.ok && !r.storm.ok };
+  const k = arrangementKey(s.sockets);
+  if (k === s.checked)
+    return { state: { ...s, verdicts, trials, active: card }, verdict: { result: 'again', ...found } };
+  const misses = s.misses + 1;
+  let { hints, glow, glowShown } = s;
+  if (misses >= 2) {
+    glow = stepBed7(s.sockets, b);
+    if (!glowShown) {
+      hints++;
+      glowShown = true;
+    }
+  }
+  return {
+    state: { ...s, verdicts, trials, active: card, checked: k, misses, hints, glow, glowShown },
+    verdict: { result: 'miss', ...found },
+  };
+}
+/** Show me: flip one bed toward the nearest answer (one hint), or point at the Check once the garden passes. */
+export function twoHint(s: TwoState, round: RouteRound): { state: TwoState; hint: RouteHint } {
+  if (s.passed) return { state: s, hint: { kind: 'check' } };
+  const i = stepBed7(s.sockets, round.two!);
+  if (i === null)
+    return {
+      state: { ...s, pointing: true, hints: s.pointing ? s.hints : s.hints + 1 },
+      hint: { kind: 'check' },
+    };
+  return { state: flipTwo({ ...s, hints: s.hints + 1 }, i, round), hint: { kind: 'flip', bed: i } };
+}
+/** Start again: the starting garden from fresh. Misses and hints already made keep counting. */
+export function twoRestart(s: TwoState, round: RouteRound): TwoState {
+  const sockets = round.start.slice();
+  return {
+    ...s,
+    sockets,
+    trials: [null, null],
+    verdicts: [null, null],
+    pointing: false,
+    glow: s.glowShown ? stepBed7(sockets, round.two!) : null,
+  };
+}
+export type TwoNext =
+  { kind: 'cloud' } | { kind: 'card'; card: CardId } | { kind: 'bed'; bed: number } | { kind: 'check' };
+/** The ghost finger: see the storm on the start, change what differs from the answer, see both rains, then check. */
+export function twoNext(s: TwoState, round: RouteRound): TwoNext {
+  const i = stepBed7(s.sockets, round.two!);
+  const moved = arrangementKey(s.sockets) !== arrangementKey(round.start);
+  if (i !== null && (s.trials.some(Boolean) || moved)) return { kind: 'bed', bed: i };
+  for (const c of ['storm', 'light'] as const)
+    if (!s.trials[idx(c)]) return s.active === c ? { kind: 'cloud' } : { kind: 'card', card: c };
+  return { kind: 'check' };
+}
+
 export interface RouteLayout {
   cloud: Box;
   /** Each bed from the top, with its two pockets. */
@@ -809,6 +1050,8 @@ export interface RouteLayout {
   pondSign: Box;
   check: Box;
   wet?: WetPictures;
+  /** Level 7's two rain cards, [light, storm]; absent on other boards. */
+  cards?: [Box, Box];
 }
 
 interface WetPictures {
@@ -817,6 +1060,7 @@ interface WetPictures {
   badges: [Box, Box];
 }
 
+export const CARD = 120;
 export const CHECK = 120,
   BED_W = 300,
   BED_H = 150,
@@ -904,6 +1148,18 @@ function threeBeds(
   };
 }
 
+/** Level 7's two rain cards sit right of the cloud, below or left of the Check (frame centers measured in the definition). */
+function withCards(
+  b: RouteBoard,
+  ox: number,
+  oy: number,
+  at: [[number, number], [number, number]],
+  l: RouteLayout,
+): RouteLayout {
+  if (b.pond === undefined) return l;
+  return { ...l, cards: at.map(([x, y]) => box(ox + x, oy + y, CARD, CARD)) as [Box, Box] };
+}
+
 /** Level 6 uses the two-bed route with a two-row tray and room for both prediction pictures. */
 export function wetLayout(view: {
   w: number;
@@ -967,47 +1223,65 @@ export function routeLayout(
   if (b.route.length === 3) {
     if (view.upright) {
       if (w < UW - 1 || h < UH - 1) return null;
-      return threeBeds(
+      return withCards(
+        b,
         (w - UW) / 2,
         h - UH,
-        w,
-        [260, 200],
         [
-          [260, 350],
-          [548, 505],
-          [260, 660],
+          [470, 200],
+          [610, 200],
         ],
-        [548, 862],
-        [
-          [568, 350],
-          [220, 505],
-          [568, 660],
-        ],
-        [262, 862],
-        1,
-        b,
+        threeBeds(
+          (w - UW) / 2,
+          h - UH,
+          w,
+          [260, 200],
+          [
+            [260, 350],
+            [548, 505],
+            [260, 660],
+          ],
+          [548, 862],
+          [
+            [568, 350],
+            [220, 505],
+            [568, 660],
+          ],
+          [262, 862],
+          1,
+          b,
+        ),
       );
     }
     if (w < FW - 1 || h < FH - 1) return null;
-    return threeBeds(
+    return withCards(
+      b,
       (w - FW) / 2,
       (h - FH) / 2,
-      w,
-      [270, 115],
       [
-        [270, 260],
-        [530, 405],
-        [790, 550],
+        [620, 115],
+        [760, 115],
       ],
-      [770, 700],
-      [
-        [570, 250],
-        [840, 390],
-        [500, 560],
-      ],
-      [470, 700],
-      1,
-      b,
+      threeBeds(
+        (w - FW) / 2,
+        (h - FH) / 2,
+        w,
+        [270, 115],
+        [
+          [270, 260],
+          [530, 405],
+          [790, 550],
+        ],
+        [770, 700],
+        [
+          [570, 250],
+          [840, 390],
+          [500, 560],
+        ],
+        [470, 700],
+        1,
+        b,
+      ),
     );
   }
   const bed = b.marked[0].socket;

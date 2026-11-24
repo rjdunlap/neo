@@ -44,7 +44,7 @@ Scheduled runs and sessions a person starts both pick from [READY.md](READY.md),
 
 **How to pick a slice (routines and people alike):**
 
-Implementation queue items are [same-game batches](GAME-BATCHES.md), normally 2–4 related original level/content subtasks in one session/PR (developer direction, 2026-10-21). Original slice numbers describe substeps, not mandatory separate chats; one declared batch occupies one dispatch slot. Keep research/definition slots and existing gates.
+Implementation queue items are [same-game batches](SESSION-GUIDE.md#same-game-batches), normally 2–4 related original level/content subtasks in one session/PR (developer direction, 2026-10-21). Original slice numbers describe substeps, not mandatory separate chats; one declared batch occupies one dispatch slot. Keep research/definition slots and existing gates.
 
 1. If you own an unfinished slice, finish it first.
 2. Otherwise take the **first line of [READY.md's Next ten](READY.md#next-ten) that no open PR, branch or worktree claims** (`scripts/overlap.sh <game-id> <path>…`). Read that game's dive section, or the work item's packet, before claiming; the dive is the authority on scope and gates.
@@ -135,7 +135,7 @@ The [first](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2
 | **Number Nook** | The grown-up ladder reaches level 7, The fifteen, with a 4×4 board and a hint that can finish it after a long detour. The school opening and couch course await decisions. | [Build slices](deep-dives/number-nook.md#build-slices-in-order) |
 | **Shape Sorter** | Attribute sorts built through pre-K 14; only developer-dependent school/creature alternatives remain | [Deep dive](deep-dives/shape-sorter.md#decisions-for-the-developer) |
 | **Memory Match's equivalent representations** | Levels 13–14 are separate decision-dependent slices; level-10 and younger-band decisions stay open | [Build slices](deep-dives/memory-match.md#build-slices-in-order) |
-| **Owl Walk Home** | Stepping stones and the lap band built 2026-11-23; Color or shape is next (decision 7 settled), then the grown-up seat (decision 5) | [Build slices](deep-dives/owl-walk.md#build-slices-in-order) |
+| **Owl Walk Home** | Stepping stones (level 5, lap) and Color or shape (level 6, preschool/pre-K) built 2026-11-23; next is the grown-up seat (decision 5 settled), then defining levels 7–8 | [Build slices](deep-dives/owl-walk.md#build-slices-in-order) |
 | **Bouncy Launch** | Near or Far (8), Between two flights (9) and Where on the line? (10) are built; next lap's pull level and Pick a spring (both decision-gated), with notches and rising landing notes still waiting on the device listen | [Build slices](deep-dives/bouncy-launch.md#build-slices-in-order) |
 | **Clock Tower's elapsed time** | Appended levels 8–11, their order and a preschool opening are decision-dependent | [Build slices](deep-dives/clock-tower.md#build-slices-in-order) |
 | **Day by Day** | Preschool entry (level 9) is built; months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |

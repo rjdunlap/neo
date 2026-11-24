@@ -50,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Tap what your purse can buy. Then pick two things that use the whole purse and ring the bell.',
     },
+    {
+      from: 13,
+      to: 13,
+      text: 'Tap coins that make a bigger coin, then Trade. Undo takes a trade back. Ring the bell when the coins are as few as can be.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -107,6 +112,11 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Nothing is spent when she chooses: the question is only whether the purse covers the price. The first too-dear tap is a miss; a second lights something she can buy. Tap a picked thing to put it back. A wrong pair at the bell is a miss and stays picked to swap; two misses light the pair. Help counts once per order.',
     },
+    {
+      from: 13,
+      to: 13,
+      text: 'Trade keeps the same shell total. The second early bell lights a helpful group or Undo. Help counts once per heap.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
@@ -117,5 +127,6 @@ export const HOW_TO: GameHowTo = {
     { from: 10, to: 10, text: 'The round ends when three pairs of goods have been paid for.' },
     { from: 11, to: 11, text: 'The round ends when the right change has been given three times.' },
     { from: 12, to: 12, text: 'The round ends after two choices and two purses spent on two things.' },
+    { from: 13, to: 13, text: 'The round ends after the bell confirms three heaps with the fewest coins.' },
   ],
 };

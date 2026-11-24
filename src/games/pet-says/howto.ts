@@ -56,6 +56,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Listen for the pet’s name first. If you hear “Pip says: reach up high,” crouch down low. If you only hear “reach up high,” stay still.',
     },
     {
+      from: 12,
+      to: 12,
+      text: 'One mitten lights up, blue or red. Wave the same hand yourself. Then the pet only says left or right, like a mirror: its right hand is on your right. A grown-up can hold the orange button to light the hand again.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
@@ -67,7 +72,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 8,
-      to: 11,
+      to: 12,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
     },
     {

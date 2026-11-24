@@ -20,6 +20,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { WalkScenery, WALK_BACKDROPS } from './walk-art';
 import {
   LEVELS,
+  HAND_COLORS,
+  HAND_MITTEN,
+  type Hand,
   danceSeconds,
   saysFrame,
   type SaysFrame,
@@ -62,13 +65,22 @@ import {
 /** The pip's mittens at rest, for the hub icon and the stickers, which keep the original drawing. */
 const PIP_REST = { left: { x: -128, y: -95 }, right: { x: 128, y: -95 } };
 
-const mitten = (sw: { fill: number; line: number }) =>
-  new Graphics()
+const drawMitten = (g: Graphics, sw: { fill: number; line: number }) =>
+  g
     .circle(0, 0, 27)
     .fill(sw.fill)
     .stroke({ width: 6, color: sw.line })
     .circle(-9, -10, 7)
     .fill({ color: 0xffffff, alpha: 0.35 });
+const mitten = (sw: { fill: number; line: number }) => drawMitten(new Graphics(), sw);
+
+/** This hand's glow: a ring round a mitten, shown on the one hand the turn asks for. */
+const glowRing = () => {
+  const g = new Graphics().circle(0, 0, 44).stroke({ width: 9, color: swatch.yellow.light, alpha: 0.95 });
+  g.circle(0, 0, 54).stroke({ width: 5, color: 0xffffff, alpha: 0.6 });
+  g.visible = false;
+  return g;
+};
 
 /** The big pet with two mitten hands riding on its body, so they hop and squash with it. */
 class Mover<P extends Container & { attach(child: Container): void }> extends Container {
@@ -133,6 +145,9 @@ class PetSays implements Game {
   readonly next = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 62, () => void this.advance());
   /** The rule levels' held "once more" button (decision 2): it replays the turn, and a turn replayed with it counts one hint. */
   readonly onceMore: HoldButton | null;
+  /** This hand: the ring that lights the hand a turn asks for. */
+  private readonly glows: Partial<Record<Hand, Graphics>> = {};
+  private mirrorTold = false;
   /** Opposite day: the sun or the moon, at the top of the scene. */
   readonly sign = new Graphics();
   /** Holds the sign at its size above the pet; the sign inside it flips. */
@@ -198,6 +213,15 @@ class PetSays implements Game {
     this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
     // The mittens stay the pip's size however large the friend stands.
     for (const m of [this.mover.left, this.mover.right]) m.scale.set(1 / this.grow);
+    if (this.plan.mode === 'hand') {
+      // Blue on the left, red on the right: the hands are told apart by color, never by side alone.
+      for (const side of ['left', 'right'] as const) {
+        const m = this.mover[HAND_MITTEN[side]];
+        m.clear();
+        drawMitten(m, swatch[HAND_COLORS[side]]);
+        m.addChild((this.glows[side] = glowRing()));
+      }
+    }
     ctx.track(star);
     star.hitArea = star.touchArea(40);
     // A pat brings the next move, so a pat just after a move ends must not be swallowed.
@@ -477,6 +501,7 @@ class PetSays implements Game {
       quiet: 'says.quiet',
       walk: 'says.walk.intro',
       pat: 'says.pat',
+      hand: 'says.hand',
     };
     if (this.plan.mode === 'pat') {
       // The pet waits to be patted; the first move comes with her first touch.
@@ -649,6 +674,24 @@ class PetSays implements Game {
         this.revealDue = sign === 'moon';
         break;
       }
+      case 'hand': {
+        const hand = turn.hand!;
+        // Left and right are said only after "like a mirror"; a replay with the held button lights the hand again, as help.
+        if (turn.named && !this.mirrorTold) {
+          this.mirrorTold = true;
+          await this.ctx.say('says.hand.mirror');
+        }
+        const lit = !turn.named || this.replayed.has(this.index);
+        await this.litHand(hand, lit);
+        const color = HAND_COLORS[hand];
+        await this.ctx.instruct(
+          turn.named ? (first === 'ears' ? 'says.hand.ear' : 'says.hand.wave') : 'says.hand.this',
+          { side: hand, color },
+        );
+        await this.perform(first, undefined, hand);
+        await this.litHand(hand, false);
+        break;
+      }
       case 'pat':
         void this.ctx.say(MOVE_CUES[first].line);
         await this.perform(first);
@@ -734,6 +777,17 @@ class PetSays implements Game {
 
   // The moves ---------------------------------------------------------------------------------------
 
+  /** Lights (or dims) the ring round one hand's mitten, with a small pulse. */
+  private async litHand(hand: Hand, on: boolean) {
+    const ring = this.glows[hand];
+    if (!ring) return;
+    ring.visible = on;
+    if (!on) return;
+    sfx.sparkle();
+    ring.scale.set(0.7);
+    await this.ctx.tw.to(ring.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+  }
+
   private hands(l: { x: number; y: number }, r: { x: number; y: number }, duration = 0.18) {
     return Promise.all([
       this.ctx.tw.to(this.mover.left, l, { duration, ease: ease.inOutSine }),
@@ -757,7 +811,7 @@ class PetSays implements Game {
   }
 
   /** The pet does a move. With a count (level 3) it does exactly that many beats and counts each one aloud. */
-  async perform(move: Move, count?: number) {
+  async perform(move: Move, count?: number, hand?: Hand) {
     const tw = this.ctx.tw;
     const pet = this.mover.pet;
     const f = this.frame;
@@ -776,6 +830,17 @@ class PetSays implements Game {
         }
         break;
       case 'wave':
+        if (hand === 'left') {
+          // The other mitten, mirrored: it waves out from the pet's screen-left.
+          const w = { x: f.rest.left.x - (f.wave.x - f.rest.right.x), y: f.wave.y };
+          await this.hands(w, f.rest.right);
+          for (let k = 0; k < 3; k++) {
+            sfx.chirp(10 + k);
+            await tw.to(left, { x: w.x - 30 }, { duration: 0.15 });
+            await tw.to(left, { x: w.x + 20 }, { duration: 0.15 });
+          }
+          break;
+        }
         await this.hands(f.rest.left, f.wave);
         for (let k = 0; k < 3; k++) {
           sfx.chirp(10 + k);
@@ -992,7 +1057,12 @@ class PetSays implements Game {
         }
         break;
       case 'ears':
-        await this.hands(f.targets.ears.left, f.targets.ears.right, 0.25);
+        // One ear on This hand's turns: the other mitten stays at rest.
+        await this.hands(
+          hand === 'right' ? f.rest.left : f.targets.ears.left,
+          hand === 'left' ? f.rest.right : f.targets.ears.right,
+          0.25,
+        );
         sfx.squeak(8);
         await tw.wait(0.8);
         break;
@@ -1138,7 +1208,8 @@ export const petSays: GameModule = {
   coplayHint: 'Stand up and copy the pet with {name}, then tap the green arrow for the next move.',
   // Lap opens on level 13, where her touch anywhere is the pat and there is no arrow; levels 1 and 2 keep the grown-up's arrow.
   coplayHintLap: "Copy the pet's moves with {name}. When a green arrow shows, you tap it for the next move.",
-  offScreen: 'Play Simon Says with family names: "Mama says touch your toes!" Freeze dance to any song.',
+  offScreen:
+    'Put a sticker or ribbon on one of her hands to match a mitten. Play Simon Says with family names: "Mama says touch your toes!" Freeze dance to any song.',
   hubIcon: () => new SaysIcon(),
   touchDemo: true,
   sticker,

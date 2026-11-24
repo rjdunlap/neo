@@ -132,7 +132,7 @@ Each has a default the build uses:
 
 ## Build slices, in order
 
-**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`size-parade` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`size-parade` batch plans](../archive/GAME-BATCHES-2026-11-23.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Support truth (built 2026-10-21)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 7 in portrait, `fingerdemo` at 7): comparative words at two, every touch answered (ground tap, right friend on the wrong spot), pitch inverted (big is low), the portrait spacing fix with its test, the pinned-steps test, the how-to card's wording checked. IDs and windows unchanged. Run `npm run build` if `sfx.ts` changes.
 2. **(Built 2026-10-26.) The parade happens, eight friends, seeded ground** (fresh content: typecheck, rule tests for the dealt-size draws, one play of 2 and 8, one portrait screenshot): strut after a pick, the march with the size scale after a line, five new friends, flag and bunting by seed, the sticker's friend, varied dealt sizes at 1–4.
@@ -145,7 +145,7 @@ Each has a default the build uses:
 9. **(Built 2026-11-01, PR #1083.) Level 13 *Hidden heights*** (new interaction tier: typecheck, units including the sort proof, one scripted play of 13 with one early gate press, one portrait screenshot, `fingerdemo` at 13): the pair test, fence and boots, the gate, the stateful bot, school `order [7, 8, 12, 13, 15]`. Decision 3's default. Built as a bubble sort with a shrinking bound for the bot (the dive said shaker sort; same n(n-1)/2 bound).
 10. **(Built 2026-11-02, PR #1118.) Level 14 *The measuring ribbon*** (new interaction tier: typecheck, units, one scripted play of 14 with one prediction and one wrong tap after measuring, one portrait screenshot, `fingerdemo` at 14): the ribbon drag, bank and stump, school `order [7, 8, 12, 13, 14, 15]`.
 
-Slices 1–8 need no decision (their defaults are recorded above); 9 and 10 are ready on their defaults too but come last because each is a new interaction with its own bot. Casting her creatures (decision 4) waits for RW05 and is not a slice here.
+All ten slices are built, on the defaults the 2026-10-23 decision kept. Casting her creatures (decision 4) waits for RW05 and is not a slice here.
 
 ## What was built in this session
 

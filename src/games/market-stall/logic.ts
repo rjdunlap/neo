@@ -11,7 +11,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * then give the change from a 20, counting up from the price, and at the top say whether a purse can buy each of three things
  * and spend a whole purse on two of them.
  */
-export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford';
+export type ShopMode =
+  'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford' | 'trade';
 
 export interface ShopPlan {
   mode: ShopMode;
@@ -24,6 +25,8 @@ export interface ShopPlan {
   paid?: number;
   name: string;
 }
+
+export const TRADE_COINS = [1, 2, 5, 10];
 
 export const PLANS: ShopPlan[] = [
   { mode: 'count', coins: [1], price: [1, 4], orders: 4, name: 'Count out 1 to 4 shell coins for the price' },
@@ -99,12 +102,19 @@ export const PLANS: ShopPlan[] = [
     orders: 4,
     name: 'Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things',
   },
+  {
+    mode: 'trade',
+    coins: TRADE_COINS,
+    price: [6, 12],
+    orders: 3,
+    name: 'Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: PLANS.length },
+  school: { min: 3, max: PLANS.length, order: [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -123,6 +133,8 @@ export interface Order {
   prices: number[];
   /** On 'purse' levels: the coins lying on the counter, largest first. */
   purse?: number[];
+  /** On the trade level: the unchanged value of the heap. */
+  tradeAmount?: number;
   /** On 'afford' levels: whether she chooses one thing the purse can buy or spends it all on two, and the purse's total. */
   afford?: { kind: 'choose' | 'spend'; purse: number };
 }
@@ -132,14 +144,22 @@ export type AffordOrder = Order & { afford: { kind: 'choose' | 'spend'; purse: n
 
 /** The amount to put on the counter (the price, both prices, or the change from what was paid), or what the purse holds. */
 export function target(plan: ShopPlan, o: Order): number {
+  if (o.tradeAmount !== undefined) return o.tradeAmount;
   if (o.purse) return sum(o.purse);
   if (o.afford) return o.afford.purse;
   const total = o.prices.reduce((a, b) => a + b, 0);
   return plan.mode === 'change' ? paidFor(plan) - total : total;
 }
 
+export function makeTradeOrders(rng: Rng): number[] {
+  const amounts = [6, 7, 8, 9, 10, 11, 12];
+  const second = rng.pick(amounts.filter((amount) => amount !== 10));
+  return [10, second, rng.pick(amounts.filter((amount) => amount !== second))];
+}
+
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
   if (plan.mode === 'afford') return makeAffordOrders(plan, rng);
+  if (plan.mode === 'trade') return makeTradeOrders(rng).map((tradeAmount) => ({ prices: [], tradeAmount }));
   const out: Order[] = [];
   if (plan.mode === 'purse') {
     while (out.length < plan.orders) {

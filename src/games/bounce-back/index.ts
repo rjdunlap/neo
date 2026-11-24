@@ -21,6 +21,8 @@ import {
   makeSequence,
   serveAngleFor,
   petLob,
+  petLobAway,
+  isAwayMode,
   afterHit,
   afterMiss,
   courtFor,
@@ -486,6 +488,32 @@ class BounceBack implements Game {
     if (this.star.visible) this.star.rotation = 0.2 * Math.sin(this.clock * 3);
   }
 
+  /** The pet's next return is held off the paddle she has just left, so a paddle nobody moves does not meet it. */
+  private nextLob() {
+    const pick = this.ctx.rng.next();
+    if (!isAwayMode(this.plan.mode)) return petLob(pick, this.plan.mode);
+    const b = this.box;
+    const f = this.faces();
+    const leftX = f.left + BALL_R;
+    const leftY = predictY(
+      this.ball.x,
+      this.ball.y,
+      this.ball.vx,
+      this.ball.vy,
+      leftX,
+      b.y0 + BALL_R,
+      b.y1 - BALL_R,
+    );
+    return petLobAway(pick, this.plan.mode, this.paddles.right, leftY, {
+      leftX,
+      rightX: f.right - BALL_R,
+      top: b.y0 + BALL_R,
+      bottom: b.y1 - BALL_R,
+      paddle: this.paddleLength(),
+      ballR: BALL_R,
+    });
+  }
+
   private petPlays() {
     if (this.versus) return false;
     return this.plan.mode !== 'together' || this.leftIdle > PET_STEPS_IN;
@@ -611,7 +639,7 @@ class BounceBack implements Game {
     if (side === 'right' && !isZoneMode(this.plan.mode))
       ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
     this.volley++;
-    if (side === 'right') this.lob = petLob(this.ctx.rng.next(), this.plan.mode);
+    if (side === 'right') this.lob = this.nextLob();
     if (this.plan.mode === 'stars' || isZoneMode(this.plan.mode) || isGoalMode(this.plan.mode) || this.versus)
       return;
     void this.ctx.say('count', { n: countFor(this.plan, this.rally) });

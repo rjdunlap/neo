@@ -69,6 +69,24 @@ import {
   tryRoute,
   type RouteRound,
   type RouteState,
+  BOARDS7,
+  CARD,
+  checkCards,
+  checkTwo,
+  flipTwo,
+  nearest7,
+  pickCard,
+  pondOk,
+  previewRain,
+  solutions7,
+  stepBed7,
+  twoFresh,
+  twoHint,
+  twoNext,
+  twoRestart,
+  twoRound,
+  type TwoBoard,
+  type TwoState,
 } from './logic';
 import { VOICE } from './voice';
 
@@ -303,15 +321,15 @@ describe('rounds and levels', () => {
   });
 
   it('LEVELS and planFor', () => {
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(planFor(0).level).toBe(1);
     expect(planFor(2.4).level).toBe(2);
-    expect(planFor(99).level).toBe(6);
+    expect(planFor(99).level).toBe(7);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 6 },
+      school: { min: 3, max: 7 },
     });
     for (const r of Object.values(LEVELS))
       for (let l = r!.min; l <= r!.max; l++) expect(planFor(l).level).toBe(l);
@@ -1351,5 +1369,362 @@ describe('level 6 layout', () => {
   it('returns null when the board cannot keep its targets full size', () => {
     expect(wetLayout({ w: 600, h: 400 })).toBeNull();
     expect(wetLayout({ w: 700, h: 1000, upright: true })).toBeNull();
+  });
+});
+
+const board7 = (id: string) => BOARDS7.find((b) => b.id === id)!;
+/** Per board, the result of each of the eight arrangements (stone first, top socket first): b both fail, l only light, s only storm, p pass. */
+const RESULTS7: Record<string, string> = {
+  A: 'bbllssps',
+  B: 'bsbslplb',
+  C: 'blspblss',
+  D: 'bbblspsp',
+  E: 'bbssblpp',
+  F: 'bbblblsp',
+};
+const ANSWERS7: Record<string, string[]> = {
+  A: ['soil/soil/stone'],
+  B: ['soil/stone/soil'],
+  C: ['stone/soil/soil'],
+  D: ['soil/stone/soil', 'soil/soil/soil'],
+  E: ['soil/soil/stone', 'soil/soil/soil'],
+  F: ['soil/soil/soil'],
+};
+const ALL7 = arrangements(BOARDS7[0].light);
+const round7 = (id: string, start: Surface[]) => twoRound(board7(id), start, 'frog');
+const resultOf = (id: string, a: Surface[]) => {
+  const r = checkCards(a, board7(id));
+  return r.light.ok && r.storm.ok ? 'p' : r.light.ok ? 's' : r.storm.ok ? 'l' : 'b';
+};
+
+describe('level 7 two rain cards', () => {
+  it('the school window runs 3 to 7 and the plan is named', () => {
+    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+    expect(planFor(7).level).toBe(7);
+    expect(PLANS).toHaveLength(7);
+  });
+
+  for (const b of BOARDS7) {
+    it(`board ${b.id}: every arrangement's result and the answers match the tables`, () => {
+      expect(ALL7.map((a) => resultOf(b.id, a)).join('')).toBe(RESULTS7[b.id]);
+      expect(solutions7(b).map(arrangementKey)).toEqual(ANSWERS7[b.id]);
+    });
+    it(`board ${b.id}: both rains matter`, () => {
+      const r = RESULTS7[b.id];
+      expect(r).toContain('l');
+      expect(r).toContain('s');
+      expect(r).not.toMatch(/^b+$/);
+      // The shared answers are a proper subset of each card's own answers.
+      for (const card of [b.light, b.storm]) {
+        const own = solutions(card).map(arrangementKey);
+        expect(own.length).toBeGreaterThan(solutions7(b).length);
+        for (const a of solutions7(b)) expect(own).toContain(arrangementKey(a));
+      }
+    });
+    it(`board ${b.id}: conserves drops and keeps even amounts`, () => {
+      for (const a of ALL7) {
+        const r = checkCards(a, b);
+        for (const [c, res] of [
+          [b.light, r.light],
+          [b.storm, r.storm],
+        ] as const) {
+          const t = res.trial;
+          expect(t.steps).toHaveLength(c.units);
+          expect(t.stored.reduce((x, y) => x + y, 0) + t.pond).toBe(c.units);
+          for (const v of [...t.stored, t.pond]) expect(v % 2).toBe(0);
+        }
+      }
+    });
+    it(`board ${b.id}: from any failing start at most three flips reach an answer`, () => {
+      for (const a of ALL7) {
+        if (resultOf(b.id, a) === 'p') continue;
+        let cur = a.slice();
+        let n = 0;
+        for (let i = stepBed7(cur, b); i !== null; i = stepBed7(cur, b), n++)
+          cur = cur.map((x, k) => (k === i ? flip(x) : x));
+        expect(resultOf(b.id, cur)).toBe('p');
+        expect(n).toBeLessThanOrEqual(b.id === 'D' || b.id === 'E' ? 2 : 3);
+        expect(n).toBe(distance(a, nearest7(a, b)));
+      }
+    });
+  }
+
+  it('table values: board A, the authored start and its answer', () => {
+    const a = board7('A');
+    const r = checkCards(['soil', 'soil', 'soil'], a);
+    expect([r.light.trial.stored, r.light.trial.pond]).toEqual([[2, 2, 0], 0]);
+    expect([r.storm.trial.stored, r.storm.trial.pond]).toEqual([[2, 2, 2], 0]);
+    const w = checkCards(['soil', 'soil', 'stone'], a);
+    expect([w.storm.trial.stored, w.storm.trial.pond]).toEqual([[2, 2, 0], 2]);
+    const f = checkCards(['stone', 'stone', 'stone'], board7('F'));
+    expect(f.storm.trial.pond).toBe(6);
+    expect(f.storm.pond).toBe(false);
+  });
+
+  it('pond rules', () => {
+    for (const n of [0, 1, 2, 3, 4, 6]) {
+      expect(pondOk('any', n)).toBe(true);
+      expect(pondOk('reach', n)).toBe(n >= 1);
+      expect(pondOk('hold', n)).toBe(n <= 2);
+    }
+    // Levels 4 and 5 keep their pond rule.
+    for (const b of [board4(0), board4(1), ...BOARDS5]) expect(b.pond).toBeUndefined();
+    expect(meets(runBoard(['soil', 'soil'], board4(1)), board4(1)).pond).toBe(false);
+  });
+
+  it('every card has its rain: four and six drops, the light shower never has a pond rule', () => {
+    for (const b of BOARDS7) {
+      expect([b.light.units, b.storm.units]).toEqual([4, 6]);
+      expect(b.light.pond).toBe('any');
+      expect(b.storm.pond === 'reach' || b.storm.pond === 'hold').toBe(true);
+    }
+  });
+
+  describe('state', () => {
+    const start = (id: string, a: Surface[]) => {
+      const round = round7(id, a);
+      return { round, s: twoFresh(round) };
+    };
+
+    it('each rain starts fresh whatever ran before', () => {
+      const { round, s } = start('A', ['soil', 'soil', 'soil']);
+      const first = checkCards(s.sockets, round.two!);
+      let t: TwoState = previewRain(pickCard(previewRain(s, round), 'storm'), round);
+      t = previewRain(pickCard(t, 'light'), round);
+      t = previewRain(pickCard(t, 'storm'), round);
+      expect(t.trials[0]).toEqual(first.light.trial);
+      expect(t.trials[1]).toEqual(first.storm.trial);
+    });
+
+    it('picks and previews are free and never touch the beds; a flip clears previews and ticks', () => {
+      const { round, s } = start('A', ['soil', 'soil', 'soil']);
+      let t = previewRain(pickCard(s, 'storm'), round);
+      expect(t.sockets).toEqual(s.sockets);
+      expect([t.misses, t.hints]).toEqual([0, 0]);
+      const c = checkTwo(t, round).state;
+      expect(c.verdicts).not.toEqual([null, null]);
+      t = flipTwo(c, 2, round);
+      expect(t.trials).toEqual([null, null]);
+      expect(t.verdicts).toEqual([null, null]);
+      expect(t.active).toBe(c.active);
+      expect(t.sockets[2]).toBe('stone');
+    });
+
+    it('a failed Check counts one miss, the same garden again counts none, the glow comes from the second miss', () => {
+      const { round, s } = start('A', ['soil', 'soil', 'soil']);
+      const one = checkTwo(s, round);
+      expect(one.verdict).toMatchObject({ result: 'miss', card: 'storm', cause: 'pond', both: false });
+      expect([one.state.misses, one.state.hints, one.state.glow]).toEqual([1, 0, null]);
+      expect(one.state.active).toBe('storm');
+      const again = checkTwo(one.state, round);
+      expect(again.verdict.result).toBe('again');
+      expect(again.state.misses).toBe(1);
+      const other = flipTwo(one.state, 0, round); // stone / soil / soil: fails light
+      const two = checkTwo(other, round);
+      expect(two.state.misses).toBe(2);
+      expect([two.state.hints, two.state.glowShown]).toEqual([1, true]);
+      expect(two.state.glow).toBe(stepBed7(two.state.sockets, round.two!));
+      const three = checkTwo(flipTwo(two.state, 1, round), round);
+      expect(three.state.misses).toBe(3);
+      expect(three.state.hints).toBe(1);
+    });
+
+    it('causes: light is judged first, then dry (uphill-most), pond, over', () => {
+      const dry = checkTwo(
+        start('A', ['stone', 'stone', 'stone']).s,
+        round7('A', ['stone', 'stone', 'stone']),
+      );
+      expect(dry.verdict).toMatchObject({ card: 'light', cause: 'dry', need: 0, both: true });
+      const f = round7('F', ['stone', 'stone', 'stone']);
+      expect(checkTwo(twoFresh(f), f).verdict).toMatchObject({
+        card: 'light',
+        cause: 'dry',
+        need: 0,
+        both: true,
+      });
+      const f2 = round7('F', ['soil', 'soil', 'stone']);
+      expect(checkTwo(twoFresh(f2), f2).verdict).toMatchObject({
+        card: 'storm',
+        cause: 'dry',
+        need: 0,
+        both: false,
+      });
+      const d = round7('D', ['soil', 'soil', 'stone']);
+      expect(checkTwo(twoFresh(d), d).verdict.cause).toBe('dry');
+      const d2 = round7('D', ['soil', 'stone', 'stone']);
+      expect(checkTwo(twoFresh(d2), d2).verdict).toMatchObject({ card: 'storm', cause: 'dry' });
+      // Pond got none (reach) and over (hold) on boards where the beds are all met.
+      const bPond = round7('B', ['soil', 'soil', 'soil']);
+      expect(checkTwo(twoFresh(bPond), bPond).verdict).toMatchObject({ card: 'light', cause: 'dry' });
+      const aPond = round7('A', ['soil', 'soil', 'soil']);
+      expect(checkTwo(twoFresh(aPond), aPond).verdict.cause).toBe('pond');
+      const over = round7('D', ['stone', 'soil', 'soil']);
+      expect(checkTwo(twoFresh(over), over).verdict).toMatchObject({ card: 'light', cause: 'dry' });
+      const dOver = round7('D', ['soil', 'stone', 'stone']);
+      expect(checkCards(dOver.start, dOver.two!).storm.trial.pond).toBe(4);
+      const hold = checkCards(['soil', 'stone', 'stone'], board7('D'));
+      expect(hold.light.ok).toBe(true);
+      expect(hold.storm.pond).toBe(false);
+      const ok = checkTwo(
+        twoFresh(round7('A', ['soil', 'soil', 'stone'])),
+        round7('A', ['soil', 'soil', 'stone']),
+      );
+      expect(ok.verdict).toMatchObject({ result: 'pass', cause: null });
+      expect(ok.state.verdicts).toEqual([true, true]);
+    });
+
+    it('an over-the-pond storm is named over', () => {
+      // Board E: the storm needs the top bed and at most two in the pond; stone / soil / stone sends four.
+      const e = round7('E', ['stone', 'soil', 'stone']);
+      const r = checkCards(e.start, e.two!);
+      expect([r.light.ok, r.storm.beds, r.storm.pond]).toEqual([true, [false], false]);
+      const f = round7('F', ['stone', 'soil', 'soil']);
+      expect(checkCards(f.start, f.two!).storm.ok).toBe(true);
+    });
+
+    it('Show me flips toward an answer, then points at the Check; three worked steps always finish', () => {
+      for (const b of BOARDS7)
+        for (const a of ALL7) {
+          const round = twoRound(b, a.slice(), 'frog');
+          let s = twoFresh(round);
+          let steps = 0;
+          while (!checkTwo(s, round).state.passed && steps < 5) {
+            const h = twoHint(s, round);
+            s = h.state;
+            steps++;
+            if (h.hint.kind === 'check') break;
+          }
+          const done = checkTwo(s, round);
+          expect(done.state.passed).toBe(true);
+          expect(s.hints).toBeLessThanOrEqual(4);
+        }
+    });
+
+    it('Start again returns to the starting garden and clears previews; counts keep', () => {
+      const { round, s } = start('A', ['soil', 'soil', 'soil']);
+      const m = checkTwo(s, round).state;
+      const f = previewRain(flipTwo(m, 2, round), round);
+      const r = twoRestart(f, round);
+      expect(r.sockets).toEqual(['soil', 'soil', 'soil']);
+      expect([r.trials, r.verdicts, r.misses]).toEqual([[null, null], [null, null], 1]);
+    });
+
+    it('the ghost finger finishes every seeded round with the card, bed and check steps', () => {
+      for (const seed of SEEDS) {
+        const round = makeRoute(new Rng(seed), false, 7);
+        let s = twoFresh(round);
+        for (let i = 0; i < 20 && !s.passed; i++) {
+          const n = twoNext(s, round);
+          if (n.kind === 'cloud') s = previewRain(s, round);
+          else if (n.kind === 'card') s = pickCard(s, n.card);
+          else if (n.kind === 'bed') s = flipTwo(s, n.bed, round);
+          else s = checkTwo(s, round).state;
+        }
+        expect(s.passed, `seed ${seed}`).toBe(true);
+        expect(s.misses).toBe(0);
+      }
+    });
+  });
+
+  describe('seeding', () => {
+    it('the authored round is board A from soil / soil / soil', () => {
+      const r = makeRoute(new Rng(1), true, 7);
+      expect([r.level, r.two!.id, r.start]).toEqual([7, 'A', ['soil', 'soil', 'soil']]);
+      expect(resultOf('A', r.start)).toBe('s');
+    });
+    it('seeded rounds cover all six boards, start failing and are solvable', () => {
+      const seen = new Set<string>();
+      for (const seed of SEEDS) {
+        const r = makeRoute(new Rng(seed), false, 7);
+        seen.add(r.two!.id);
+        expect(resultOf(r.two!.id, r.start)).not.toBe('p');
+        expect(solutions7(r.two!).length).toBeGreaterThan(0);
+      }
+      expect([...seen].sort()).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
+    });
+  });
+
+  describe('narration and lines', () => {
+    it('each rain ends on the pond clip that matches it and every line exists', () => {
+      for (const b of BOARDS7)
+        for (const a of ALL7) {
+          const r = checkCards(a, b);
+          for (const res of [r.light, r.storm]) {
+            const lines = narration(res.trial, res === r.light ? b.light : b.storm);
+            expect(lines[lines.length - 1]).toBe(`rain.pond.${res.trial.pond}`);
+            for (const id of lines) expect(id in VOICE, id).toBe(true);
+          }
+        }
+      for (const id of [
+        'rain.instruct.7',
+        'rain.card.light',
+        'rain.card.storm',
+        'rain.miss7.light',
+        'rain.miss7.storm',
+        'rain.miss7.both',
+        'rain.cause.dry',
+        'rain.cause.pond',
+        'rain.cause.over',
+        'rain.check.yes.cards',
+      ])
+        expect(id in VOICE, id).toBe(true);
+    });
+  });
+
+  describe('layout', () => {
+    const VIEWS = {
+      landscape: computeView(1024, 768),
+      portrait: computeView(768, 1024),
+      phone: computeView(844, 390),
+      notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+      upright: computeView(390, 844, undefined, true),
+      uprightTall: computeView(390, 900, undefined, true),
+      uprightPad: computeView(768, 1024, undefined, true),
+      uprightWide: computeView(430, 700, undefined, true),
+    };
+    const overlap = (a: Box, b: Box) =>
+      Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
+    const inside = (b: Box, v: { w: number; h: number }) =>
+      b.x - b.w / 2 >= 0 && b.y - b.h / 2 >= 0 && b.x + b.w / 2 <= v.w && b.y + b.h / 2 <= v.h;
+    const corner = (b: Box, x0: number, y0: number, x1: number, y1: number) =>
+      b.x - b.w / 2 < x1 && b.x + b.w / 2 > x0 && b.y - b.h / 2 < y1 && b.y + b.h / 2 > y0;
+    // Every mark set that appears: the layout is measured with all three sockets marked, so a sign exists per bed.
+    const all = (b: TwoBoard) => ({
+      ...b.light,
+      marked: [0, 1, 2].map((socket) => ({ socket, marker: 'leaf' as const })),
+    });
+    for (const [name, v] of Object.entries(VIEWS))
+      it(`${name}: two cards, three signs and the board clear of each other`, () => {
+        const l = routeLayout(v, all(BOARDS7[0]))!;
+        expect(l).not.toBeNull();
+        expect(l.cards).toHaveLength(2);
+        const targets = [l.cloud, ...l.beds.map((x) => x.patch), l.check, ...l.cards!];
+        const clear = (x: Box) => {
+          expect(corner(x, 0, 0, 120, 215)).toBe(false);
+          expect(corner(x, 0, v.h - (v.upright ? 205 : 170), 170, v.h)).toBe(false);
+          expect(inside(x, v)).toBe(true);
+        };
+        for (const t of targets) {
+          expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+          clear(t);
+        }
+        for (let i = 0; i < targets.length; i++)
+          for (let k = i + 1; k < targets.length; k++)
+            expect(overlap(targets[i], targets[k]), `targets ${i}/${k}`).toBe(false);
+        expect(l.cards![0].w).toBe(CARD);
+        expect(l.bedSigns).toHaveLength(3);
+        const signs = [...l.bedSigns, l.pondSign];
+        for (const s of signs) {
+          clear(s);
+          for (const t of targets) expect(overlap(s, t), 'sign over a target').toBe(false);
+          expect(overlap(s, l.pond)).toBe(false);
+        }
+        for (let i = 0; i < signs.length; i++)
+          for (let k = i + 1; k < signs.length; k++) expect(overlap(signs[i], signs[k])).toBe(false);
+      });
+    it('other boards carry no cards, and a view that cannot hold the board returns null', () => {
+      expect(routeLayout(VIEWS.landscape, BOARDS5[0])!.cards).toBeUndefined();
+      expect(routeLayout({ w: 600, h: 400 }, all(BOARDS7[0]))).toBeNull();
+    });
   });
 });
