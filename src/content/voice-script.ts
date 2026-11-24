@@ -100,6 +100,7 @@ import { VOICE as numberNookVoice } from '../games/number-nook/voice.ts';
 import { VOICE as numberTrailsVoice } from '../games/number-trails/voice.ts';
 import { VOICE as oppositesVoice } from '../games/opposites/voice.ts';
 import { VOICE as orchardRowsVoice } from '../games/orchard-rows/voice.ts';
+import { VOICE as outcropDetectiveVoice } from '../games/outcrop-detective/voice.ts';
 import { VOICE as owlWalkVoice } from '../games/owl-walk/voice.ts';
 import { VOICE as paintMixerVoice } from '../games/paint-mixer/voice.ts';
 import { VOICE as patternTrainVoice } from '../games/pattern-train/voice.ts';
@@ -747,6 +748,7 @@ export const SCRIPT = {
   ...numberTrailsVoice,
   ...oppositesVoice,
   ...orchardRowsVoice,
+  ...outcropDetectiveVoice,
   ...owlWalkVoice,
   ...paintMixerVoice,
   ...patternTrainVoice,
