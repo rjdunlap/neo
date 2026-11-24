@@ -35,7 +35,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `clap` | 2026-10-15 · [Clap the Syllables solo wait ring](archive/VERIFICATION-2026-10-15.md#2026-10-15--clap-the-syllables-solo-wait-ring) | Level 2 solo wait ring |
 | `comeback` | 2026-11-19 · [Species Comeback sliding family tree](verification/2026-11-19-species-comeback-sliding-family-tree.md) | `COMEBACK_PHONE=1` |
 | `conductor` | 2026-11-20 · [Little Conductor upright on phones](verification/2026-11-20-little-conductor-upright-on-phones.md) | Levels 1–3 with `CONDUCTOR_UPRIGHT=1` |
-| `congatouch` | 2026-11-10 · [Pond Conga, swipe anywhere (phone note, PR #1463)](archive/VERIFICATION-2026-11-10.md#2026-11-10--pond-conga-swipe-anywhere-phone-note-pr-1463) | Swipe regression, level 8 |
+| `congatouch` | 2026-11-24 · [Pond Conga, the pond turns to fill an upright phone](verification/2026-11-24-pond-conga-the-pond-turns-to-fill-an-upright-phone.md) | Level 1 and level 6 targets passed with the turned pond; level 6's sideways swiped run bumps in a slow container, on `main` too |
 | `couch` | 2026-10-12 · [Bounce Back couch face-off](archive/VERIFICATION-2026-10-07-13.md#2026-10-12--bounce-back-couch-face-off) | Full trip and face-off on a frozen snapshot |
 | `couchbeds` | 2026-10-24 · [Grown-up puzzle misses: Sudoku Garden, Island Bridges, Picture Logic](archive/VERIFICATION-2026-10-24.md#2026-10-24--grown-up-puzzle-misses-sudoku-garden-island-bridges-picture-logic) | Wrong-digit regression |
 | `couchbridges` | 2026-10-24 · [Grown-up puzzle misses: Sudoku Garden, Island Bridges, Picture Logic](archive/VERIFICATION-2026-10-24.md#2026-10-24--grown-up-puzzle-misses-sudoku-garden-island-bridges-picture-logic) | — |
