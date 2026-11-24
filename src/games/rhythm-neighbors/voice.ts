@@ -8,6 +8,11 @@ export const VOICE = {
   'neighbors.take': ['The woodpecker knocks, then it is your turn! Tap the glowing frog to answer.'],
   'neighbors.call': ['You be the woodpecker! Knock on the tree, then stop and listen. The frog answers you.'],
   'neighbors.call-again': ['Knock another call!'],
+  'neighbors.which': [
+    'The woodpecker knocked and the frog answered. Did the frog copy the woodpecker? Tap the two frogs if it did, or the frog with its own bubble if it answered with something different.',
+  ],
+  'neighbors.choose': ['Did the frog copy the woodpecker, or answer with something different?'],
+  'neighbors.listen-again': ['Let us listen to them again.'],
   'neighbors.my-turn': ['Your turn! Tap the glowing frog.'],
   'neighbors.turns': [
     'The bird calls, then the frogs answer. Listen, then play the frog pictures from left to right. Tap the green arrow when ready.',

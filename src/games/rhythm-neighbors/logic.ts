@@ -6,6 +6,8 @@ export interface Phrase {
   call: Gap[];
   gaps: Gap[];
   voices: number[];
+  /** Level 10: the frog's reply was the bird's own rhythm (a copy) rather than an answer of its own. */
+  echo?: boolean;
 }
 /**
  * `knock`: a free level on a big tree where every knock gets one frog answer; `turn`: the bird calls, then one glowing frog
@@ -19,6 +21,7 @@ export interface NeighborPlan {
   knock?: boolean;
   turn?: boolean;
   call?: boolean;
+  pairs?: boolean;
 }
 export const PLANS: Record<number, NeighborPlan> = {
   1: { free: true, voices: 1, timing: false, name: 'Tap a woodpecker and hear a frog answer' },
@@ -58,14 +61,21 @@ export const PLANS: Record<number, NeighborPlan> = {
     call: true,
     name: 'Knock a call on the big tree and the frog answers it, turned around',
   },
+  10: {
+    free: false,
+    voices: 1,
+    timing: false,
+    pairs: true,
+    name: 'Copy or answer? Hear the bird and a frog, then say if the frog copied the bird',
+  },
 };
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 7, order: [7, 1, 2] },
   toddler: { min: 2, max: 9, order: [2, 8, 9, 3] },
   preschool: { min: 3, max: 9, order: [9, 3, 4] },
-  prek: { min: 4, max: 6 },
-  school: { min: 5, max: 6 },
+  prek: { min: 4, max: 10, order: [4, 5, 6, 10] },
+  school: { min: 5, max: 10, order: [5, 6, 10] },
 };
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 export const planFor = (l: number) =>
@@ -147,6 +157,37 @@ export const BOT_CALLS: number[][] = [
 export const REPLIES: Gap[][] = [...RHYTHMS, ['L', 'L'], ['S', 'L', 'L'], ['L', 'S', 'L'], ['S', 'L', 'S']];
 /** The woodpecker's calls: two or three knocks. */
 export const CALLS: Gap[][] = [['S'], ['L'], ['S', 'S'], ['S', 'L'], ['L', 'S'], ['L', 'L']];
+/** Level 10: exchanges that finish the round, half of them copies. */
+export const PAIR_ROUNDS = 4;
+/** Level 10: the bird's calls, two or three gaps long (three or four knocks). */
+export const PAIR_CALLS: Gap[][] = REPLIES.filter((r) => r.length >= 2 && r.length <= 3);
+/**
+ * A rhythm's shape: its gaps, except that an all-short or all-long run is one steady shape (long-long is short-short at a
+ * slower tempo, which `judgeEcho` also counts as the same).
+ */
+export const shapeOf = (g: Gap[]) => (new Set(g).size === 1 ? `steady${g.length}` : g.join(''));
+/**
+ * Level 10: four exchanges, two copies and two answers in a seeded order. A copy replies with the
+ * call's own gaps; an answer has the call's number of notes and a different shape (never the same rhythm only slower or faster).
+ * A call is not repeated within a round.
+ */
+export function makePairs(rng: Rng): Phrase[] {
+  const echoes = rng.shuffle([true, true, false, false]);
+  const calls = rng.shuffle([...PAIR_CALLS]);
+  return echoes.map((echo, i) => {
+    const call = calls[i % calls.length];
+    const gaps = echo
+      ? [...call]
+      : [
+          ...pick(
+            rng,
+            PAIR_CALLS.filter((c) => c.length === call.length && shapeOf(c) !== shapeOf(call)),
+          ),
+        ];
+    return { call: [...call], gaps, voices: gaps.map(() => 0).concat(0), echo };
+  });
+}
+
 /** Free play finishes by itself after this many frog taps. */
 export const FREE_TAPS = 8;
 /** Seconds without a touch before the idle invitation at the free levels (a frog wiggles; at level 7 the tree knocks). */
@@ -164,7 +205,8 @@ const pick = <T>(rng: Rng, items: T[]) => items[rng.int(0, items.length - 1)];
  */
 export function makePhrases(level: number, rng: Rng): Phrase[] {
   const p = planFor(level);
-  if (p.knock || p.call) return []; // Level 9's phrases are her calls, added as she knocks them.
+  if (p.knock || p.call) return [];
+  if (p.pairs) return makePairs(rng); // Level 9's phrases are her calls, added as she knocks them.
   // Level 8: three different calls of two or three knocks, each answered by one frog tap (a reply of a single note, so no gaps).
   if (p.turn)
     return rng

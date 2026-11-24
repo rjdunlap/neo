@@ -23,6 +23,7 @@ import {
   KNOCKS,
   KNOCK_ANSWER,
   KNOCK_FINALE,
+  PAIR_ROUNDS,
   PAUSE_SECONDS,
   accepts,
   answerDelay,
@@ -36,7 +37,7 @@ import {
   planFor,
   schedule,
 } from './logic';
-import { BIG_FROG, neighborsLayout, type Layout } from './layout';
+import { BIG_FROG, TILE_SIZE, neighborsLayout, type Layout } from './layout';
 
 function frog(which: number, r = 65) {
   const s = which ? swatch.teal : swatch.green,
@@ -78,6 +79,44 @@ function tree() {
   c.addChild(g, b);
   return c;
 }
+/** Level 10's answer tiles: two frogs of one colour side by side say "copy"; a frog with a bubble of its own says "answer". */
+function tileArt(copy: boolean) {
+  const c = new Container(),
+    h = TILE_SIZE / 2;
+  c.addChild(
+    new Graphics()
+      .roundRect(-h, -h, TILE_SIZE, TILE_SIZE, 24)
+      .fill(cream)
+      .stroke({ width: 6, color: swatch.yellow.line }),
+  );
+  if (copy) {
+    for (const x of [-26, 26]) {
+      const f = frog(0, 24);
+      f.position.set(x, 4);
+      c.addChild(f);
+    }
+    c.addChild(
+      new Graphics()
+        .roundRect(-12, 36, 24, 6, 3)
+        .fill(swatch.green.line)
+        .roundRect(-12, 46, 24, 6, 3)
+        .fill(swatch.green.line),
+    );
+  } else {
+    const f = frog(1, 30);
+    f.position.set(-6, 22);
+    const bubble = new Graphics()
+      .ellipse(14, -26, 34, 24)
+      .fill(swatch.white.fill)
+      .stroke({ width: 4, color: swatch.teal.line })
+      .poly([-4, -8, 8, 2, -10, 6])
+      .fill(swatch.white.fill);
+    const note = musicNote(new Graphics(), 26, swatch.teal.line);
+    note.position.set(14, -26);
+    c.addChild(f, bubble, note);
+  }
+  return c;
+}
 /** The journal picture: the woodpecker and the frog that answers it. */
 export function neighborsJournalPicture() {
   const c = new Container(),
@@ -115,6 +154,8 @@ class RhythmNeighbors implements Game {
   readonly submit: RoundButton;
   readonly replay: RoundButton;
   readonly help: RoundButton;
+  /** Level 10: the two tiles, copy and answer, shown once the pair has played. */
+  readonly tiles: { copy: Container; answer: Container } | null;
   private readonly bg = new Graphics();
   private readonly score = new Container();
   private readonly glow = new Graphics();
@@ -208,6 +249,13 @@ class RhythmNeighbors implements Game {
       this.drawScore();
     });
     ctx.stage.addChild(this.submit, this.replay, this.help);
+    this.tiles = this.plan.pairs ? { copy: tileArt(true), answer: tileArt(false) } : null;
+    if (this.tiles)
+      for (const [which, node] of Object.entries(this.tiles)) {
+        node.visible = false;
+        onTap(node, () => this.choose(which === 'copy'), { radius: TILE_SIZE / 2 });
+        ctx.stage.addChild(node);
+      }
   }
   sound(voice: number) {
     if (voice < 0) {
@@ -262,6 +310,7 @@ class RhythmNeighbors implements Game {
     this.taps.length = 0;
     this.busy = true;
     this.waiting = false;
+    this.showTiles(false);
     const p = this.phrases[this.phrase];
     const call = schedule(p.call, this.clock + 0.3);
     this.events = call.map((at) => ({ at, voice: -1, note: -1 }));
@@ -280,7 +329,7 @@ class RhythmNeighbors implements Game {
     this.touched();
     this.sound(voice);
     if (this.done) return; // Joining the ending song: heard, never judged.
-    if (this.tree) return; // The frog's own tap croaks; only knocks on the tree count.
+    if (this.tree || this.plan.pairs) return; // The frog's own tap croaks; only knocks on the tree (or the tiles at level 10) count.
     if (this.plan.turn) {
       if (this.busy || !this.waiting) return; // A tap during the call croaks and is not counted.
       this.waiting = false;
@@ -322,7 +371,7 @@ class RhythmNeighbors implements Game {
     this.drawScore();
   }
   private check() {
-    if (this.busy || this.done || this.plan.turn || this.tree) return;
+    if (this.busy || this.done || this.plan.turn || this.tree || this.plan.pairs) return;
     if (this.plan.free) {
       if (this.plays > 0) this.finish();
       return;
@@ -352,10 +401,42 @@ class RhythmNeighbors implements Game {
     this.drawScore();
     this.demonstrate();
   }
+  /** Level 10: she says the frog copied the bird (`copy`) or answered with something different. */
+  private choose(copy: boolean) {
+    if (this.busy || this.done || !this.tiles?.copy.visible) return;
+    this.touched();
+    if (copy !== !!this.phrases[this.phrase].echo) {
+      this.misses++;
+      this.wrong++;
+      sfx.boing();
+      void this.ctx.say('neighbors.listen-again');
+      if (this.wrong === 2 && !this.guided) {
+        this.guided = true;
+        this.hints++;
+      }
+      this.demonstrate();
+      return;
+    }
+    sfx.sparkle();
+    this.phrase++;
+    this.wrong = 0;
+    this.guided = false;
+    if (this.phrase === PAIR_ROUNDS) this.finish();
+    else {
+      this.showTiles(false);
+      void this.ctx.tw.wait(0.8).then(() => this.demonstrate());
+    }
+  }
+  private showTiles(on: boolean) {
+    if (!this.tiles) return;
+    this.tiles.copy.visible = this.tiles.answer.visible = on;
+    this.drawScore();
+  }
   private finish() {
     if (this.done) return;
     this.done = true;
     this.finale = true;
+    this.showTiles(false);
     this.glow.clear();
     this.drawScore();
     void this.ctx.say('neighbors.duet');
@@ -383,6 +464,17 @@ class RhythmNeighbors implements Game {
       const f = this.frogs[0];
       if (this.waiting && !this.done)
         this.glow.circle(f.x, f.y, 106).stroke({ width: 9, color: swatch.yellow.line });
+      return;
+    }
+    if (this.plan.pairs) {
+      // Level 10: after two wrong choices the right tile glows (a hint, counted once).
+      const t = this.tiles?.copy.visible && this.guided && !this.done ? this.phrases[this.phrase] : null;
+      if (t) {
+        const at = this.lay.tiles[t.echo ? 'copy' : 'answer'];
+        this.glow
+          .roundRect(at.x - 70, at.y - 70, 140, 140, 28)
+          .stroke({ width: 9, color: swatch.yellow.line });
+      }
       return;
     }
     if (this.plan.free || this.done || this.tree) return;
@@ -420,7 +512,7 @@ class RhythmNeighbors implements Game {
   autoplay(_dt: number): CouchControls {
     const out = idle();
     out.players[0].active = true;
-    if (this.done || this.tree) return out;
+    if (this.done || this.tree || this.plan.pairs) return out;
     if (this.busy) {
       this.botPlan = [];
       this.botSubmitAt = 0;
@@ -454,6 +546,10 @@ class RhythmNeighbors implements Game {
         ? { tap: { on: this.bird }, pause: rests[this.callTimes.length] ?? 0.5 }
         : null;
     }
+    if (this.plan.pairs)
+      return this.tiles?.copy.visible
+        ? { tap: { on: this.phrases[this.phrase].echo ? this.tiles.copy : this.tiles.answer }, pause: 0.6 }
+        : null;
     if (this.plan.turn) return this.waiting ? { tap: { on: this.frogs[0] }, pause: 0.4 } : null;
     if (this.plan.free) {
       if (this.plays < this.frogs.length) return { tap: { on: this.frogs[this.plays] }, pause: 0.4 };
@@ -474,9 +570,11 @@ class RhythmNeighbors implements Game {
             ? 'neighbors.take'
             : this.plan.free
               ? 'neighbors.free'
-              : this.plan.timing
-                ? 'neighbors.rhythm'
-                : 'neighbors.turns',
+              : this.plan.pairs
+                ? 'neighbors.which'
+                : this.plan.timing
+                  ? 'neighbors.rhythm'
+                  : 'neighbors.turns',
     );
     if (!this.plan.free && !this.tree) this.demonstrate();
   }
@@ -499,10 +597,15 @@ class RhythmNeighbors implements Game {
       this.frogs[0].scale.set(BIG_FROG);
     }
     this.submit.position.set(l.submit.x, l.submit.y);
-    this.submit.visible = !this.tree && !this.plan.turn && (!this.plan.free || this.plays > 0);
+    this.submit.visible =
+      !this.tree && !this.plan.turn && !this.plan.pairs && (!this.plan.free || this.plays > 0);
+    if (this.tiles) {
+      this.tiles.copy.position.set(l.tiles.copy.x, l.tiles.copy.y);
+      this.tiles.answer.position.set(l.tiles.answer.x, l.tiles.answer.y);
+    }
     this.replay.position.set(l.replay.x, l.replay.y);
     this.help.position.set(l.help.x, l.help.y);
-    this.help.visible = !this.plan.free && !this.plan.turn && !this.tree;
+    this.help.visible = !this.plan.free && !this.plan.turn && !this.tree && !this.plan.pairs;
     this.replay.visible = !this.tree;
     this.drawScore();
   }
@@ -565,10 +668,17 @@ class RhythmNeighbors implements Game {
         this.lastTouch = this.clock;
         this.wiggled = false;
       }
+      this.showTiles(true);
       this.drawScore();
       if (!this.plan.free)
         void this.ctx.say(
-          this.plan.turn ? 'neighbors.my-turn' : this.guided ? 'neighbors.help' : 'neighbors.your-turn',
+          this.plan.pairs
+            ? 'neighbors.choose'
+            : this.plan.turn
+              ? 'neighbors.my-turn'
+              : this.guided
+                ? 'neighbors.help'
+                : 'neighbors.your-turn',
         );
     }
   }

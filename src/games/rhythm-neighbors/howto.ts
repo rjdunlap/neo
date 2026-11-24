@@ -17,6 +17,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Knock on the big tree, then stop. The frog answers your knocks with the gaps turned around.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'The woodpecker knocks and a frog answers. Tap the two matching frogs if the frog copied the knocks, or the frog with its own bubble if it answered with a different rhythm.',
+    },
+    {
       from: 3,
       to: 3,
       text: 'Tap the woodpecker to hear its call, then answer with two or three frog notes.',
@@ -59,6 +64,11 @@ export const HOW_TO: GameHowTo = {
       text: 'After three calls, the tree knocks the last call again, the frog answers once more and the round ends.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'After four exchanges, the bird and the frog sing a short song together and the round ends.',
+    },
+    {
       from: 3,
       to: 6,
       text: 'After three replies, the bird and the frogs sing a short song together; tap a frog to join in, then the round ends.',
@@ -83,6 +93,11 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 8,
       text: 'A tap during the call just croaks. After three answers the song plays; there are no mistakes. A grown-up can tap the frog for a little one.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'Two of the four exchanges are copies and two are different answers. A wrong tap replays the pair, and after two wrong taps the right tile glows. The replay button plays the pair again.',
     },
     {
       from: 5,
