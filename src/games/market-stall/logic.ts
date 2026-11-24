@@ -8,14 +8,15 @@ import type { BandLevels } from '../../progress/difficulty';
  * then ring the bell. Later: add two prices, pay the same price a second, different way, and
  * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, count a purse of
  * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin,
- * and at the top give the change from a 20, counting up from the price.
+ * then give the change from a 20, counting up from the price, and at the top say whether a purse can buy each of three things
+ * and spend a whole purse on two of them.
  */
-export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse';
+export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford';
 
 export interface ShopPlan {
   mode: ShopMode;
   coins: number[];
-  /** Price range for one item (on 'purse' levels, the range of the purse's total). */
+  /** Price range for one item (on 'purse' and 'afford' levels, the range of the purse's total). */
   price: [number, number];
   orders: number;
   pairRules?: { minTotal: number; distinctPrices: boolean };
@@ -90,6 +91,14 @@ export const PLANS: ShopPlan[] = [
     orders: 3,
     name: 'Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change',
   },
+  {
+    // Level 12, Can I buy it? (dive slice 10, docs/definitions/market-stall-12-13.md): a purse of 6 to 14 on the counter.
+    mode: 'afford',
+    coins: [1, 2, 5, 10],
+    price: [6, 14],
+    orders: 4,
+    name: 'Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -114,16 +123,23 @@ export interface Order {
   prices: number[];
   /** On 'purse' levels: the coins lying on the counter, largest first. */
   purse?: number[];
+  /** On 'afford' levels: whether she chooses one thing the purse can buy or spends it all on two, and the purse's total. */
+  afford?: { kind: 'choose' | 'spend'; purse: number };
 }
+
+/** An order at the afford level: three prices on the shelf and a purse. */
+export type AffordOrder = Order & { afford: { kind: 'choose' | 'spend'; purse: number } };
 
 /** The amount to put on the counter (the price, both prices, or the change from what was paid), or what the purse holds. */
 export function target(plan: ShopPlan, o: Order): number {
   if (o.purse) return sum(o.purse);
+  if (o.afford) return o.afford.purse;
   const total = o.prices.reduce((a, b) => a + b, 0);
   return plan.mode === 'change' ? paidFor(plan) - total : total;
 }
 
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
+  if (plan.mode === 'afford') return makeAffordOrders(plan, rng);
   const out: Order[] = [];
   if (plan.mode === 'purse') {
     while (out.length < plan.orders) {
@@ -486,3 +502,95 @@ export const hintCountsUp = (plan: ShopPlan) => plan.mode === 'change' && paidFo
 /** What is said when change lands: the coin's own value first, then the count up ("2. 7… 8, 9"). */
 export const countUpSaid = (price: number, before: number, value: number) =>
   `${value}. ${countUpText(countUpWords(price, before, value), price)}`;
+
+/**
+ * Level 12, Can I buy it?: two choose orders, then two spend orders, each with its own purse of 6 to 14 (never the same twice
+ * running) and three distinct prices. A choose shelf has a price the purse covers and one it does not, all within 5 of the
+ * purse; exactly one of the two choose shelves has a price equal to its purse ("just enough"). A spend shelf's prices are 2
+ * to purse − 2 with exactly one pair making the purse (with three distinct prices a second pair cannot also make it).
+ */
+export function makeAffordOrders(plan: ShopPlan, rng: Rng): AffordOrder[] {
+  const out: AffordOrder[] = [];
+  const justAt = rng.int(0, 1);
+  let last = 0;
+  (['choose', 'choose', 'spend', 'spend'] as const).forEach((kind, i) => {
+    let purse = last;
+    while (purse === last) purse = rng.int(plan.price[0], plan.price[1]);
+    last = purse;
+    const prices = kind === 'choose' ? chooseShelf(purse, i === justAt, rng) : spendShelf(purse, rng);
+    out.push({ prices, afford: { kind, purse } });
+  });
+  return out;
+}
+
+function chooseShelf(purse: number, just: boolean, rng: Rng): number[] {
+  const window: number[] = [];
+  for (let p = Math.max(1, purse - 5); p <= purse + 5; p++) if (p !== purse) window.push(p);
+  for (;;) {
+    const picked = rng.shuffle(window).slice(0, just ? 2 : 3);
+    const shelf = just ? [purse, ...picked] : picked;
+    if (shelf.some((p) => p <= purse) && shelf.some((p) => p > purse)) return rng.shuffle(shelf);
+  }
+}
+
+function spendShelf(purse: number, rng: Rng): number[] {
+  for (;;) {
+    const a = rng.int(2, purse - 2);
+    const b = purse - a;
+    const c = rng.int(2, purse - 2);
+    if (a !== b && c !== a && c !== b) return rng.shuffle([a, b, c]);
+  }
+}
+
+/** Whether the purse covers a price. */
+export const canBuy = (order: AffordOrder, price: number) => price <= order.afford.purse;
+
+/**
+ * A tap on a good on a choose order: an affordable one is bought ('yes', or 'just' when it costs the whole purse); the first
+ * too-dear tap of the order is a miss, and every later one is the nudge, which lights an affordable good and is never a miss.
+ */
+export function chooseTap(
+  order: AffordOrder,
+  price: number,
+  dearBefore: number,
+): 'yes' | 'just' | 'miss' | 'nudge' {
+  if (price === order.afford.purse) return 'just';
+  if (canBuy(order, price)) return 'yes';
+  return dearBefore ? 'nudge' : 'miss';
+}
+
+/** The good the choose nudge lights: the cheapest one the purse can buy. */
+export function affordHint(order: AffordOrder): number {
+  let best = -1;
+  order.prices.forEach((p, i) => {
+    if (canBuy(order, p) && (best < 0 || p < order.prices[best])) best = i;
+  });
+  return best;
+}
+
+/** Whether two picked goods (by shelf index) spend the whole purse. */
+export const spendsAll = (order: AffordOrder, picked: readonly number[]) =>
+  picked.length === 2 &&
+  picked[0] !== picked[1] &&
+  order.prices[picked[0]] + order.prices[picked[1]] === order.afford.purse;
+
+/** The one pair of goods (by shelf index) that spends the whole purse, for the spend hint and the bot. */
+export function spendHint(order: AffordOrder): [number, number] {
+  for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) if (spendsAll(order, [i, j])) return [i, j];
+  throw new Error('a spend shelf always has a pair');
+}
+
+/**
+ * The bell on a spend order: fewer than two picked asks for two (free); the right pair buys them; a wrong pair is a miss.
+ */
+export const spendBell = (order: AffordOrder, picked: readonly number[]): 'two' | 'yes' | 'miss' =>
+  picked.length < 2 ? 'two' : spendsAll(order, picked) ? 'yes' : 'miss';
+
+/** The afford level's three goods on the shelf: 150 apart, nudged right of the other levels so the left one stays under the awning. */
+export const SHELF = { step: 150, shift: 40 };
+/** One good and its tag as a single tap target, in the goods' own units (centred `y` below the counter top). */
+export const GOOD_HIT = { w: 120, h: 240, y: -80 };
+export const shelfX = (i: number) => (i - 1) * SHELF.step + SHELF.shift;
+
+/** Where the purse's coins lie on the mat at the afford level, in the mat's units: one row, 160 apart, centred. */
+export const affordSlot = (i: number, n: number) => ({ x: (i - (n - 1) / 2) * 160, y: 0 });

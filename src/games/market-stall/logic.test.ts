@@ -52,10 +52,20 @@ import {
   TAG,
   tagMarks,
   purseFor,
+  affordHint,
+  affordSlot,
+  canBuy,
+  chooseTap,
+  GOOD_HIT,
+  shelfX,
+  spendBell,
+  spendHint,
+  spendsAll,
+  type AffordOrder,
 } from './logic';
 
-/** Every level where she pays; the purse level asks for a total instead. */
-const PAYING = PLANS.filter((p) => p.mode !== 'purse');
+/** Every level where she pays; the purse level asks for a total instead, and the afford level asks what a purse can buy. */
+const PAYING = PLANS.filter((p) => p.mode !== 'purse' && p.mode !== 'afford');
 
 describe('Market Stall', () => {
   it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
@@ -334,7 +344,7 @@ describe('Market Stall', () => {
   describe('a total she can see (TotoLogic P8)', () => {
     it('stays hidden on pair, change and purse levels', () => {
       expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10, 11]);
-      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9]);
+      expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12]);
     });
 
     it('is the sum of the coins on the counter, and nothing while the counter is empty', () => {
@@ -706,7 +716,7 @@ describe('Market Stall', () => {
       expect(paidFor(plan)).toBe(20);
       expect(paidFor(PLANS[5])).toBe(PAID);
       expect(plan.orders).toBe(3);
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: 11 });
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: PLANS.length });
       expect(marketStall.describeLevel(11)).toBe(plan.name);
       expect(hintCountsUp(plan)).toBe(true);
       expect(PLANS.filter(hintCountsUp)).toEqual([plan]);
@@ -810,6 +820,117 @@ describe('Market Stall', () => {
       }
       expect(paidCoins(10)).toHaveLength(1);
       expect(paidCoins(20).map((c) => c.value)).toEqual([10, 10]);
+    });
+  });
+
+  describe('level 12, Can I buy it?', () => {
+    const plan = PLANS[11];
+    const rounds = Array.from({ length: 400 }, (_, i) => makeOrders(plan, new Rng(i + 1)) as AffordOrder[]);
+
+    it('is the twelfth school level: two choose orders, then two spend orders', () => {
+      expect(plan.mode).toBe('afford');
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: 12 });
+      expect(marketStall.describeLevel(12)).toMatch(/^Can I buy it\?/);
+      for (const orders of rounds)
+        expect(orders.map((o) => o.afford.kind)).toEqual(['choose', 'choose', 'spend', 'spend']);
+    });
+
+    it('draws purses of 6 to 14, never the same twice running, each three coins or fewer', () => {
+      for (const orders of rounds)
+        orders.forEach((o, i) => {
+          expect(o.afford.purse).toBeGreaterThanOrEqual(6);
+          expect(o.afford.purse).toBeLessThanOrEqual(14);
+          expect(target(plan, o)).toBe(o.afford.purse);
+          if (i) expect(o.afford.purse).not.toBe(orders[i - 1].afford.purse);
+        });
+      for (let n = 6; n <= 14; n++) expect(fewest(n, plan.coins).length).toBeLessThanOrEqual(3);
+    });
+
+    it('gives every choose shelf three distinct prices near the purse, one it covers and one it does not, and one "just enough" a round', () => {
+      for (const orders of rounds) {
+        const choose = orders.filter((o) => o.afford.kind === 'choose');
+        for (const o of choose) {
+          const n = o.afford.purse;
+          expect(new Set(o.prices).size).toBe(3);
+          for (const p of o.prices)
+            (expect(p).toBeGreaterThanOrEqual(Math.max(1, n - 5)), expect(p).toBeLessThanOrEqual(n + 5));
+          expect(o.prices.some((p) => canBuy(o, p))).toBe(true);
+          expect(o.prices.some((p) => !canBuy(o, p))).toBe(true);
+          expect(canBuy(o, o.prices[affordHint(o)])).toBe(true);
+          expect(o.prices[affordHint(o)]).toBe(Math.min(...o.prices));
+        }
+        const just = choose.filter((o) => o.prices.includes(o.afford.purse));
+        expect(just).toHaveLength(1);
+        expect(canBuy(just[0], just[0].afford.purse)).toBe(true);
+        expect(chooseTap(just[0], just[0].afford.purse, 0)).toBe('just');
+      }
+    });
+
+    it('counts at most one miss in a choose order: the first too-dear tap, then the nudge', () => {
+      for (const orders of rounds.slice(0, 50))
+        for (const o of orders.filter((x) => x.afford.kind === 'choose')) {
+          const dear = o.prices.find((p) => !canBuy(o, p))!;
+          const taps = [dear, dear, dear].map((p, i) => chooseTap(o, p, i));
+          expect(taps).toEqual(['miss', 'nudge', 'nudge']);
+          for (const p of o.prices.filter((q) => q < o.afford.purse)) expect(chooseTap(o, p, 1)).toBe('yes');
+        }
+    });
+
+    it('gives every spend shelf exactly one pair that spends the purse, and no price equal to it', () => {
+      for (const orders of rounds)
+        for (const o of orders.filter((x) => x.afford.kind === 'spend')) {
+          const n = o.afford.purse;
+          expect(new Set(o.prices).size).toBe(3);
+          for (const p of o.prices)
+            (expect(p).toBeGreaterThanOrEqual(2), expect(p).toBeLessThanOrEqual(n - 2));
+          const pairs = [
+            [0, 1],
+            [0, 2],
+            [1, 2],
+          ].filter((pair) => spendsAll(o, pair));
+          expect(pairs).toHaveLength(1);
+          const [i, j] = spendHint(o);
+          expect(pairs[0]).toEqual([i, j]);
+          expect(spendsAll(o, [j, i])).toBe(true);
+          expect(spendBell(o, [i, j])).toBe('yes');
+          expect(spendBell(o, [i])).toBe('two');
+          expect(spendBell(o, [])).toBe('two');
+          const other = [0, 1, 2].find((k) => k !== i && k !== j)!;
+          expect(spendBell(o, [i, other])).toBe('miss');
+          expect(spendBell(o, [other, j])).toBe('miss');
+        }
+    });
+
+    it('lays the shelf and the purse as whole, separate targets: goods 120 wide and 30 apart, under the awning, clear of the keeper and mat', () => {
+      for (const [w, h] of [
+        [1024, 768],
+        [1366, 768],
+        [768, 1024],
+        [844, 390],
+      ]) {
+        const v = computeView(w, h);
+        const { cx, stockX } = stallLayout(v);
+        const boxes = [0, 1, 2].map((i) => ({
+          x0: stockX + shelfX(i) - GOOD_HIT.w / 2,
+          x1: stockX + shelfX(i) + GOOD_HIT.w / 2,
+        }));
+        expect(boxes[1].x0 - boxes[0].x1).toBe(30);
+        expect(boxes[0].x0).toBeGreaterThanOrEqual(cx - 340); // inside the awning
+        expect(boxes[2].x1).toBeLessThanOrEqual(cx + 120); // clear of the keeper at cx + 200
+        expect(GOOD_HIT.h).toBeGreaterThanOrEqual(150);
+        // The good's box stays above the mat's box (its top 60 below the counter).
+        expect(GOOD_HIT.y + GOOD_HIT.h / 2).toBeLessThanOrEqual(140 - 80);
+        // It covers the tag (centred 150 above the counter) and the good.
+        expect(GOOD_HIT.y - GOOD_HIT.h / 2).toBeLessThanOrEqual(-150 - TAG.h / 2);
+      }
+      // Purse coins 160 apart: each coin's 115 box whole on the 500-wide mat and clear of the slate.
+      for (let n = 1; n <= 3; n++)
+        for (let i = 0; i < n; i++) {
+          const at = affordSlot(i, n);
+          expect(Math.abs(at.x) + 115 / 2).toBeLessThanOrEqual(250);
+          if (i) expect(at.x - affordSlot(i - 1, n).x).toBe(160);
+          expect(at.y - COIN_R[10] * 1.25).toBeGreaterThan(TOTAL_SLATE.y + TOTAL_SLATE.h / 2);
+        }
     });
   });
 });

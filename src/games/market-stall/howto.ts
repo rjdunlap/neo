@@ -45,6 +45,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'The customer pays 20 for a price from 11 to 19: tap coins onto the counter to give the change, then ring the bell. Each coin says its value, then the shopkeeper counts up from the price, and the two strips under the tag fill to 20.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Tap what your purse can buy. Then pick two things that use the whole purse and ring the bell.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -97,6 +102,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Tap a coin on the mat to put it back. Giving back the price itself gets a reminder that they paid 20. Two misses show the change smallest coin first and count up from the price (from 13: 15, 20); any coins that make the change are right, not only the fewest. Help counts once per order.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Nothing is spent when she chooses: the question is only whether the purse covers the price. The first too-dear tap is a miss; a second lights something she can buy. Tap a picked thing to put it back. A wrong pair at the bell is a miss and stays picked to swap; two misses light the pair. Help counts once per order.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
@@ -106,5 +116,6 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 9, text: 'The round ends when four prices have been paid.' },
     { from: 10, to: 10, text: 'The round ends when three pairs of goods have been paid for.' },
     { from: 11, to: 11, text: 'The round ends when the right change has been given three times.' },
+    { from: 12, to: 12, text: 'The round ends after two choices and two purses spent on two things.' },
   ],
 };
