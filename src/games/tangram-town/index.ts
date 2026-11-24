@@ -9,12 +9,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, checkIcon } from '../../ui/icons';
+import { againIcon, checkIcon, flipIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import { townLayout } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  makeFlipRepair,
   makeRepair,
   repairAction,
   repairMismatches,
@@ -46,6 +47,7 @@ const SHAPE_LINES = {
   triangle: 'tangram.triangle',
   rectangle: 'tangram.rectangle',
   hull: 'tangram.trapezoid',
+  parallelogram: 'tangram.parallelogram',
 } as const satisfies Record<Shape, LineId>;
 /**
  * Through this level a tray piece can also be placed by two taps: tap it (it is held, breathing, in the tray), then tap its
@@ -311,6 +313,7 @@ class TangramRepair implements Game {
   readonly turn: RoundButton;
   readonly help: RoundButton;
   readonly check: RoundButton;
+  readonly flip: RoundButton | null = null;
   private readonly bg = new Graphics();
   private readonly glow = new Graphics();
   private readonly ring = new Graphics();
@@ -323,7 +326,7 @@ class TangramRepair implements Game {
   private clock = 0;
   constructor(private readonly ctx: GameContext) {
     this.plan = buildFor(ctx.level, ctx.rng);
-    this.pieces = makeRepair(this.plan, ctx.rng);
+    this.pieces = (this.plan.flip ? makeFlipRepair : makeRepair)(this.plan, ctx.rng);
     ctx.stage.addChild(this.bg, this.board);
     this.glow.eventMode = this.ring.eventMode = 'none';
     const colors: ColorName[] = ['pink', 'teal', 'yellow', 'purple'];
@@ -336,12 +339,12 @@ class TangramRepair implements Game {
       this.board.addChild(outline);
       const n = new Container(),
         a = shape(t.shape, colors[i]);
-      a.rotation = (this.pieces[i].turns * Math.PI) / 2;
       n.position.set(t.x, t.y);
       n.addChild(a);
       this.board.addChild(n);
       this.nodes.push(n);
       this.arts.push(a);
+      this.pose(i);
       onTap(
         n,
         () => {
@@ -358,10 +361,19 @@ class TangramRepair implements Game {
       if (this.done || this.selected === null) return;
       const i = this.selected;
       this.pieces[i].turns = (this.pieces[i].turns + 1) % 4;
-      this.arts[i].rotation = (this.pieces[i].turns * Math.PI) / 2;
+      this.pose(i);
       sfx.tick();
       this.draw();
     });
+    if (this.plan.flip)
+      this.flip = new RoundButton(flipIcon(), swatch.purple, 50, () => {
+        if (this.done || this.selected === null) return;
+        const i = this.selected;
+        this.pieces[i].flip = !this.pieces[i].flip;
+        this.pose(i);
+        sfx.tick();
+        this.draw();
+      });
     const hand = new Graphics()
       .circle(0, 0, 20)
       .fill(swatch.yellow.fill)
@@ -377,7 +389,7 @@ class TangramRepair implements Game {
       }
       this.support();
       this.selected = i;
-      void ctx.say('tangram.repair-hint');
+      void ctx.say(this.plan.flip ? 'tangram.flip-hint' : 'tangram.repair-hint');
       this.draw();
     });
     this.check = new RoundButton(checkIcon(), swatch.green, 50, () => {
@@ -386,17 +398,23 @@ class TangramRepair implements Game {
         this.misses++;
         this.wrong++;
         sfx.boing();
-        void ctx.say('tangram.repair-try');
+        void ctx.say(this.plan.flip ? 'tangram.flip-try' : 'tangram.repair-try');
         if (this.wrong >= 2) this.support();
         this.draw();
         return;
       }
       this.done = true;
       sfx.bell(7, 0.4);
-      void ctx.say('tangram.repaired', { picture: this.plan.picture });
+      void ctx.say(this.plan.flip ? 'tangram.flipped' : 'tangram.repaired', { picture: this.plan.picture });
       void ctx.tw.wait(1.2).then(() => ctx.finish({ misses: this.misses, hints: this.hints }));
     });
     ctx.stage.addChild(this.turn, this.help, this.check);
+    if (this.flip) ctx.stage.addChild(this.flip);
+  }
+  /** Mirror first, then turn: the same order the rule reads a piece in. */
+  private pose(i: number) {
+    this.arts[i].scale.x = this.pieces[i].flip ? -1 : 1;
+    this.arts[i].rotation = (this.pieces[i].turns * Math.PI) / 2;
   }
   private support() {
     if (!this.assisted) {
@@ -418,7 +436,7 @@ class TangramRepair implements Game {
     }
   }
   start() {
-    void this.ctx.instruct('tangram.repair');
+    void this.ctx.instruct(this.plan.flip ? 'tangram.flip' : 'tangram.repair');
   }
   resize(v: View) {
     this.bg.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
@@ -427,6 +445,7 @@ class TangramRepair implements Game {
     this.turn.position.set(l.turn.x, l.turn.y);
     this.help.position.set(l.help.x, l.help.y);
     this.check.position.set(l.check.x, l.check.y);
+    this.flip?.position.set(l.flip.x, l.flip.y);
     this.draw();
   }
   update(dt: number) {
@@ -440,7 +459,9 @@ class TangramRepair implements Game {
       ? { tap: { on: this.nodes[a.pick] } }
       : 'turn' in a
         ? { tap: { on: this.turn } }
-        : { tap: { on: this.check } };
+        : 'flip' in a && this.flip
+          ? { tap: { on: this.flip } }
+          : { tap: { on: this.check } };
   }
   destroy() {}
 }

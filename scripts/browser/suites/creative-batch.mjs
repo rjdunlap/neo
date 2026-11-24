@@ -1057,8 +1057,49 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
     if ((!only || only === 'tangram') && tangramTap !== 'only')
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
         await launch('tangram-town', level);
+        if (level === 9) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await tap('neo.scene.game.check');
+          await page.waitForTimeout(500);
+          await tap('neo.scene.game.check');
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1]);
+          await screenshot('tangram-town-9-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game,
+              L = await import('/src/games/tangram-town/logic.ts');
+            const i = L.repairMismatches(g.plan.targets, g.pieces)[0];
+            if (g.plan.targets[i].shape !== 'parallelogram')
+              throw new Error('The wrong shape is the leaning one');
+            kit.tapOn(g.nodes[i]);
+            await kit.sleep(180);
+            // A flip and a flip back are free and leave the piece as it was.
+            const flip = g.pieces[i].flip;
+            for (let k = 0; k < 2; k++) {
+              kit.tapOn(g.flip);
+              await kit.sleep(450);
+            }
+            if (!!g.pieces[i].flip !== !!flip || g.misses !== 2 || g.hints !== 1)
+              throw new Error('Free flip revision');
+            for (let k = 0; k < 12 && !g.done; k++) {
+              const a = L.repairAction(g.plan.targets, g.pieces, g.selected === null ? null : g.selected);
+              kit.tapOn(
+                'pick' in a ? g.nodes[a.pick] : 'turn' in a ? g.turn : 'flip' in a ? g.flip : g.check,
+              );
+              await kit.sleep(450);
+            }
+            if (!g.done) throw new Error('Flip repair did not finish');
+          });
+          await finished('tangram-town');
+          assert.deepEqual(await score('tangram-town'), [2, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Tangram Town 9: one wrong leaning shape, free flip and back, check, saved round/sticker and portrait passed',
+          );
+          continue;
+        }
         if (level === 8) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
