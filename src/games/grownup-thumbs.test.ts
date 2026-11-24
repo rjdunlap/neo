@@ -413,8 +413,8 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed or eased. */
 const UNDER = ['jar-clues', 'sudoku-garden'];
-/** Under the line but eased: a lens lifts the touched number above the thumb (Jar Clues, 2026-11-24), so READY no longer queues a fix for it. */
-const LENSED = ['jar-clues'];
+/** Under the line but eased: a lens lifts the touched number above the thumb (Jar Clues and Sudoku Garden, 2026-11-24), so READY no longer queues a fix for it. */
+const LENSED = ['jar-clues', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);
@@ -443,6 +443,6 @@ describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
     for (const t of Object.values(THUMBS))
       expect(Math.min(t.px, t.slides ?? t.px)).toBeGreaterThanOrEqual(thumbPx(64));
     expect(Object.keys(THUMBS).filter((id) => THUMBS[id].px < COMFORT - 0.5)).toEqual(UNDER);
-    expect(UNDER.filter((id) => !LENSED.includes(id))).toEqual(['sudoku-garden']);
+    expect(UNDER.filter((id) => !LENSED.includes(id))).toEqual([]);
   });
 });

@@ -190,7 +190,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `stickers` | 2026-10-05 · [Deeper ladders for Rainbow Fingers and Splish Splash (same day, later)](archive/VERIFICATION-2026-10-05-06.md#deeper-ladders-for-rainbow-fingers-and-splish-splash-same-day-later) | Sticker book regression |
 | `storytheater` | 2026-10-13 · [Story Theater first slice](archive/VERIFICATION-2026-10-07-13.md#2026-10-13--story-theater-first-slice) | School levels 12–13 |
 | `storyweaver` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | Filtered story play, repeat instruction |
-| `sudokutouch` | 2026-11-05 · [Sudoku Garden level 9 Patchwork beds (sudoku-garden batch 4)](archive/VERIFICATION-2026-11-05.md#2026-11-05--sudoku-garden-level-9-patchwork-beds-sudoku-garden-batch-4) | — |
+| `sudokutouch` | 2026-11-24 · [Sudoku Garden lens above the thumb (PR #2134)](verification/2026-11-24-sudoku-garden-lens-above-the-thumb.md) | — |
 | `sumcrates` | 2026-11-20 · [Sum Crates levels 1-3](verification/2026-11-20-sum-crates-levels-1-3.md) | — |
 | `swapmeet` | 2026-11-22 · [Swap Meet levels 5–6](verification/2026-11-22-swap-meet-levels-5-6.md) | `SWAPMEET_LEVELS=5,6` |
 | `swingpals` | 2026-11-22 · [Swing Pals level 10 A row of three](verification/2026-11-22-swing-pals-level-10-a-row-of-three.md) | `SWING_LEVELS=10` |
