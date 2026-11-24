@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 193 games; the 167 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 153 games, and "grown-up" (13 and up) is played by 35 games: the 26 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 193 games; the 167 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 154 games, and "grown-up" (13 and up) is played by 35 games: the 26 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -139,7 +139,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
 | [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 11 | scrub mud off the pet |
 | [Feelings Faces](docs/games/feelings-faces.md) | lap–school | Cozy Village | 13 | tap bubbles or poke the pet, choose a helper, compare two friends’ reactions, use a leftover clue, or ask a friend what they want |
-| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–pre-K | Cozy Village | 11 | tap the sky to change the weather (four weathers) |
+| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–school | Cozy Village | 12 | tap the sky to change the weather (four weathers) |
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |
 | [Mail Carrier](docs/games/mail-carrier.md) | lap–school | Cozy Village | 15 | tap any mailbox to post a letter |
 | [Teddy Doctor](docs/games/teddy-doctor.md) | lap–school | Cozy Village | 8 | touch the patient to put bandages on boo-boos |

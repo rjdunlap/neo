@@ -212,6 +212,8 @@ export interface WardrobePlan {
   name: string;
   /** Change mode only: some worn clothes still fit the new weather, and only the rest come off. */
   keep?: boolean;
+  /** A small case with shared clothes and multiple valid packings. */
+  packLight?: boolean;
 }
 
 export const WARDROBE_PLANS: WardrobePlan[] = [
@@ -263,6 +265,14 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
     keep: true,
     name: 'The weather changes: keep what still fits, take off the rest, then add what is missing',
   },
+  {
+    mode: 'trip',
+    choices: 6,
+    need: 3,
+    rounds: 2,
+    packLight: true,
+    name: 'Pack light: fit clothes for both rain and snow in one small case',
+  },
 ];
 
 export const wardrobePlan = (level: number) =>
@@ -273,6 +283,8 @@ export interface Outfit {
   /** What to put on (or pack). */
   needed: Item[];
   options: Item[];
+  /** Pack light: all complete choices, with `needed` holding one example for replay. */
+  packings?: Item[][];
   /** In weather-change rounds, these are the worn clothes to remove before dressing for the new weather. */
   remove?: Item[];
   /** Level 11: worn clothes that suit both weathers and stay on; taking one off is a miss. */
@@ -284,8 +296,30 @@ export interface Outfit {
 }
 
 /** What a trip unpacks, weather by weather in forecast order: each weather's packed things, then the next weather's. */
-export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] =>
-  o.weathers.map((weather) => ({ weather, items: o.needed.filter((i) => ITEMS[i] === weather) }));
+export const tripPlays = (
+  o: Outfit,
+  packed: readonly Item[] = o.needed,
+): { weather: Weather; items: Item[] }[] =>
+  o.weathers.map((weather) => ({
+    weather,
+    items: packed.filter((i) => (o.packings ? suits(i, weather) : ITEMS[i] === weather)),
+  }));
+
+function lightTrip(weathers: Weather[], rng: Rng, wearable: readonly Item[], choices: number): Outfit {
+  const rain = rng.shuffle(wearable.filter((i) => suits(i, 'rainy') && !suits(i, 'snowy'))).slice(0, 2);
+  const snow = rng.shuffle(wearable.filter((i) => suits(i, 'snowy') && !suits(i, 'rainy'))).slice(0, 2);
+  const shared = wearable.filter((i) => suits(i, 'rainy') && suits(i, 'snowy'));
+  const useful = [...rain, ...snow, ...shared];
+  const decoys = rng.shuffle(wearable.filter((i) => !weathers.some((w) => suits(i, w))));
+  // The glider has no feet, so its case has two places for one useful item per stop.
+  const packings = rain.flatMap((wet) => snow.map((cold) => [...shared, wet, cold]));
+  return {
+    weathers,
+    needed: packings[0],
+    packings,
+    options: rng.shuffle([...useful, ...decoys.slice(0, choices - useful.length)]),
+  };
+}
 
 /** The weather changes that keep something on, with the item that stays: boots from rain into snow and back, a raincoat between rain and wind. */
 const KEEP_CHANGES: { from: Weather; to: Weather; keep: Item }[] = [
@@ -328,6 +362,10 @@ function keepRound(
  * every slot it has, and the choices run short rather than offer what it cannot put on.
  */
 export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] = ALL_ITEMS): Outfit[] {
+  if (plan.packLight) {
+    const first = rng.shuffle<Weather>(['rainy', 'snowy']);
+    return [first, [...first].reverse()].map((weathers) => lightTrip(weathers, rng, wearable, plan.choices));
+  }
   const out: Outfit[] = [];
   let order: Weather[] = [];
   let pool: typeof KEEP_CHANGES = [];
@@ -408,9 +446,16 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
   return out;
 }
 
-/** The first thing to wear (or pack) that she has not chosen yet, or null once she has them all. Always a right one. */
+/** Available items that leave a complete outfit or packing within reach. */
+export function packChoices(outfit: Outfit, used: ReadonlySet<Item>): Item[] {
+  const possible = outfit.packings?.filter((packing) => [...used].every((item) => packing.includes(item)));
+  const remaining = possible ? [...new Set(possible.flat())] : outfit.needed;
+  return remaining.filter((item) => !used.has(item));
+}
+
+/** The first thing to wear or pack that still leads to completion. */
 export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null =>
-  outfit.needed.find((i) => !used.has(i)) ?? null;
+  packChoices(outfit, used)[0] ?? null;
 
 /** The one friend whose sign fits this item, or null for something outside this round. */
 export const friendFor = (outfit: Outfit, item: Item): number | null => {
@@ -424,4 +469,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
   preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
   prek: { min: 4, max: 11, order: [4, 5, 10, 6, 7, 11] },
+  school: { min: 6, max: 12, order: [6, 7, 11, 12] },
 };
