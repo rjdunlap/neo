@@ -17,9 +17,9 @@ export interface DuckPlan {
   stop?: boolean;
   /** add: mix in "some swim away". */
   subtract?: boolean;
-  /** howmany: the layouts a round's ducks are dealt in (none: the fixed `SLOTS` in order). */
+  /** howmany and add: the layouts a round's ducks are dealt in (none: the fixed `SLOTS` in order). */
   layouts?: Layout[];
-  /** howmany: one round in the level may start with an empty pond (never the first), and the pads run from 0. */
+  /** howmany: one round in the level may start with an empty pond (never the first), and the pads run from 0. add: one round may be "they all swim away". */
   zero?: boolean;
   /** Answer pads carry their dots, grouped in fives, under the numeral. */
   padDots?: boolean;
@@ -50,8 +50,17 @@ export const PLANS: DuckPlan[] = [
     zero: true,
     padDots: true,
   },
-  { mode: 'add', rounds: 5, min: 1, max: 5 },
-  { mode: 'add', rounds: 5, min: 1, max: 10, subtract: true },
+  { mode: 'add', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'] },
+  // One round in the level may be "they all swim away" (zero), never first; the pads then run from 0.
+  {
+    mode: 'add',
+    rounds: 5,
+    min: 1,
+    max: 10,
+    subtract: true,
+    layouts: ['dice', 'rows', 'scatter'],
+    zero: true,
+  },
   // Early school: some ducks swim in; how many more fill the pond to ten?
   { mode: 'ten', rounds: 5, min: 3, max: 9 },
   // School: the total is known, but some ducks are hidden beneath a bridge.
@@ -215,7 +224,11 @@ export interface PondStory {
   answer: number;
 }
 
-export function story(rng: Rng, plan: DuckPlan): PondStory {
+export function story(rng: Rng, plan: DuckPlan, allSwimAway = false): PondStory {
+  if (allSwimAway) {
+    const a = rng.int(2, Math.min(plan.max, 7));
+    return { a, b: a, away: true, answer: 0 };
+  }
   const away = !!plan.subtract && rng.chance(0.5);
   if (away) {
     const a = rng.int(2, Math.min(plan.max, 7));
@@ -225,6 +238,22 @@ export function story(rng: Rng, plan: DuckPlan): PondStory {
   const a = rng.int(1, plan.max - 1);
   const b = rng.int(1, Math.min(plan.max - a, 4));
   return { a, b, away, answer: a + b };
+}
+
+/**
+ * Where a story's ducks sit. A taking-away story deals its layout for the `a` ducks that start (dice included); an adding
+ * story deals one for all `a + b` that will be swimming, without dice (a dice face half filled is not a face), so the `a`
+ * come first and the `b` more take the seats that follow. In counting order.
+ */
+export function storySeats(rng: Rng, plan: DuckPlan, s: PondStory): PondLayout {
+  if (s.away) return layoutFor(rng, plan, s.a);
+  const kinds = (plan.layouts ?? []).filter((k) => k !== 'dice');
+  return layoutFor(rng, { ...plan, layouts: kinds }, s.a + s.b);
+}
+
+/** Which round (never the first) of a level with `zero` is the empty pond or the all-swim-away story; -1 for none. */
+export function zeroRoundAt(rng: Rng, plan: DuckPlan): number {
+  return plan.zero && rng.chance(0.6) ? rng.int(1, plan.rounds - 1) : -1;
 }
 
 /**
@@ -273,7 +302,7 @@ export const numberSentence = (a: number, b: number, away = false) =>
 
 /** Levels 6–7: how many ducks each round shows. Never the same twice running; at most one empty pond, never first. */
 export function howManyAnswers(rng: Rng, plan: DuckPlan): number[] {
-  const zeroAt = plan.zero && rng.chance(0.6) ? rng.int(1, plan.rounds - 1) : -1;
+  const zeroAt = zeroRoundAt(rng, plan);
   const out: number[] = [];
   while (out.length < plan.rounds) {
     if (out.length === zeroAt) {

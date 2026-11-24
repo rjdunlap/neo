@@ -1,0 +1,1 @@
+**`word-monsters` Told, then asked** (school levels 7–8, including the pet reading the built word back. Rule tests, one play at each level and `fingerdemo` at level 8.) [Dive](../../deep-dives/word-monsters.md#build-slices-in-order)

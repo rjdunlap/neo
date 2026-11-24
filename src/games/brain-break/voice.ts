@@ -26,6 +26,15 @@ export const VOICE = {
   'brain.order.try': ['That one is {m}. A smaller one is still unlit.'],
   'brain.order.next': ['After {p}, find the next one up.'],
   'brain.order.hint': ['The smallest one left is {v}. Its stone has a golden outline.'],
+  'brain.parts.start': [
+    'Find the numbers from the smallest to the biggest. Some are fractions and some are decimals. Start with the smallest one. Take your time.',
+  ],
+  'brain.work.start': [
+    'Work out what each stone makes. Find the one that makes the smallest number first. Take your time.',
+  ],
+  'brain.work.try': ['That one makes {m}. A smaller one is still unlit.'],
+  'brain.work.next': ['That made {p}. Now find the next one up.'],
+  'brain.work.hint': ['The smallest one left makes {v}. Its stone has a golden outline.'],
   'brain.two.start': [
     'Follow two trails. Tap a number, then a letter. Start with one, then A. Count up and go forwards through the letters.',
   ],

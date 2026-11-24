@@ -19,8 +19,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
-      to: 5,
+      to: 4,
       text: 'Feed the monster the number of foods asked for (cookies, apples, carrots, berries or crackers); it counts each one aloud. Ring the bell when done.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'Feed the monster the number on the sign (no dots); it counts each one aloud. Ring the bell when done. If it has more than it asked for, the extras come back with no penalty, and the bell is rung again.',
     },
     {
       from: 6,
@@ -47,6 +52,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Share the food fairly; some may be left over. Ring the bell, then tap how many each monster got and how many are left over.',
     },
+    {
+      from: 13,
+      to: 13,
+      text: 'Some monsters start with more food than others. Tap a monster to take one out onto the tray, drag it to a monster with fewer, and ring the bell when everyone has the same. Then tap how many each monster has.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the monster has the right amount.' },
@@ -61,5 +71,6 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'The round ends when the sharing is fair and the counting questions are answered.',
     },
+    { from: 13, to: 13, text: 'The round ends when every monster has the same and the count is answered.' },
   ],
 };

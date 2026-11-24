@@ -4,7 +4,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   async function traceRound(level, name, wrong = false, want = '') {
     // Levels 7, 9 and 10 play on a phone held upright, so the word picture, the fading guides and the little letters in
     // their frame are checked where the playtests happen.
-    const phone = level === 7 || level === 9 || level === 10;
+    const phone = level === 7 || level === 9 || level === 10 || level === 11;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
     try {
@@ -45,7 +45,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       );
     }
     if (level === 9) await threeTries();
-    if (level === 10) await littleLetter();
+    if (level === 10 || level === 11) await littleLetter(level === 10 ? 'cosvwt' : 'adg');
     await page.evaluate(async () => {
       const g = neo.scene.game;
       let steps = 0;
@@ -138,7 +138,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   }
 
   /** Level 10: a little letter in the four-line frame with its capital beside it, the frame inside the view. */
-  async function littleLetter() {
+  async function littleLetter(group) {
     const shown = await page.evaluate(() => {
       const g = neo.scene.game;
       const b = g.frame.getBounds();
@@ -150,7 +150,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         inside: b.x >= 0 && b.x + b.width <= w,
       };
     });
-    assert.ok('cosvwt'.includes(shown.letter), `a little letter of the first group (${shown.letter})`);
+    assert.ok(group.includes(shown.letter), `a little letter of the level's group (${shown.letter})`);
     assert.equal(
       shown.heading,
       `${shown.letter.toUpperCase()}  ${shown.letter}`,
@@ -159,7 +159,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.ok(shown.drawn, 'the four-line frame is drawn');
     assert.ok(shown.inside, 'the frame stays inside the view');
     await page.waitForTimeout(300);
-    await screenshot(`letter-trails-10-${shown.letter}`);
+    await screenshot(`letter-trails-${group === 'adg' ? 11 : 10}-${shown.letter}`);
   }
 
   return { traceRound };

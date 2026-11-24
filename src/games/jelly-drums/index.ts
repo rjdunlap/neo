@@ -16,6 +16,7 @@ import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
 import { jellyLayout, type Layout } from './layout';
 import {
+  answerOf,
   LEVELS,
   awakeJellies,
   drawTune,
@@ -24,10 +25,13 @@ import {
   JellyNamer,
   jellyToTap,
   nearestAwake,
+  placeAfterMiss,
   planFor,
+  RESUME_FROM_LENGTH,
   ScaleWatch,
   SET_STEPS,
   soundSetFor,
+  tuneLength,
   STAGE_OF,
   type SoundSet,
   type JellyPhase,
@@ -64,13 +68,20 @@ class JellyDrums implements Game {
   private phase: JellyPhase = 'play';
   private lit = 0;
   private notes = 0;
+  /** The tune that plays (and, on a backwards level, the reverse of what she taps). */
   private tune: number[] = [];
+  /** The jellies she taps, in order: the tune, or on a backwards level the tune last note first. */
+  private answer: number[] = [];
   private at = 0;
   private tunesDone = 0;
   /** The tunes already played this round, so none comes round twice. */
   private played: Tune[] = [];
   /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
   private readonly again: RoundButton;
+  /** Four- and five-note tunes: dots for the notes she has right so far (her place after a miss). */
+  private readonly ticks = new Graphics();
+  /** Backwards level: a rewind arrow beside the listen-again button. */
+  private readonly rewind = new Graphics();
   /** Free play: a quiet jelly wiggles after a while without a touch. */
   private readonly nudge = new IdleNudge();
   /** Free play: the voice names a jelly now and then. */
@@ -117,7 +128,12 @@ class JellyDrums implements Game {
       ...this.jellies,
       ...this.fans,
       this.again,
+      this.ticks,
+      this.rewind,
     );
+    this.ticks.eventMode = 'none';
+    this.rewind.eventMode = 'none';
+    this.rewind.visible = !!this.plan.reverse && !ctx.couch;
     if (this.plan.mode === 'wake') {
       this.jellies.forEach((j) => (j.eventMode = 'none'));
       onTap(
@@ -139,7 +155,9 @@ class JellyDrums implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free');
+    void this.ctx.instruct(
+      this.plan.reverse ? 'jelly.echo.back' : this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free',
+    );
     if (this.plan.mode === 'echo') void this.ctx.tw.wait(2).then(() => this.nextTune());
   }
 
@@ -167,6 +185,9 @@ class JellyDrums implements Game {
 
     this.jellies.forEach((j, i) => j.position.set(l.jellies[i].x, l.jellies[i].y));
     this.again.position.set(l.again.x, l.again.y);
+    this.ticks.position.set(l.again.x, l.again.y - 85);
+    this.rewind.position.set(l.again.x - 150, l.again.y);
+    this.drawRewind();
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
@@ -193,7 +214,7 @@ class JellyDrums implements Game {
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
   autotouch(): TouchIntent | null {
-    const i = jellyToTap(this.plan.mode, this.phase, this.tune, this.at, this.notes);
+    const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes);
     // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
     if (i === null) return null;
     const tap = { on: this.jellies[i], y: this.jellies[i].belly };
@@ -218,10 +239,11 @@ class JellyDrums implements Game {
       return;
     }
     if (this.phase !== 'turn') return; // while the jellies sing, taps just make music
-    if (i === this.tune[this.at]) {
+    if (i === this.answer[this.at]) {
       this.at++;
-      if (this.at >= this.tune.length) void this.copied();
-      else if (this.wrongThisTune >= 2) this.jellies[this.tune[this.at]].glow(1.2);
+      this.drawTicks();
+      if (this.at >= this.answer.length) void this.copied();
+      else if (this.wrongThisTune >= 2) this.jellies[this.answer[this.at]].glow(1.2);
     } else {
       void this.oops();
     }
@@ -354,13 +376,20 @@ class JellyDrums implements Game {
     this.phase = 'listen';
     this.at = 0;
     this.wrongThisTune = 0;
-    const tune = drawTune(this.ctx.rng, this.plan.length, this.played);
+    const tune = drawTune(
+      this.ctx.rng,
+      tuneLength(this.plan, this.tunesDone),
+      this.played,
+      this.plan.reverse,
+    );
     this.played.push(tune);
     this.tune = tune.notes;
+    this.answer = answerOf(this.plan, tune.notes);
+    this.drawTicks();
     if (tune.title) await this.ctx.say(tune.title);
     await this.playTune(false);
     this.phase = 'turn';
-    void this.ctx.instruct('jelly.turn');
+    void this.ctx.instruct(this.plan.reverse ? 'jelly.back' : 'jelly.turn');
   }
 
   private async playTune(slow: boolean) {
@@ -374,16 +403,52 @@ class JellyDrums implements Game {
     }
   }
 
+  /** Backwards level, after a miss: the answer itself, last note first, slowly with each jelly glowing as it sings. */
+  private async playBack() {
+    await this.ctx.tw.wait(0.4);
+    for (const i of this.answer) {
+      this.jellies[i].glow(0.8);
+      this.sing(i);
+      await this.ctx.tw.wait(0.85);
+    }
+  }
+
+  /** A big arrow pointing back, so "backwards" is something she can see beside the listen-again button. */
+  private drawRewind() {
+    this.rewind
+      .clear()
+      .poly([-60, 0, -10, -42, -10, -18, 60, -18, 60, 18, -10, 18, -10, 42])
+      .fill(swatch.purple.fill)
+      .stroke({ width: 6, color: swatch.purple.line, join: 'round' });
+  }
+
   /** The listen-again button: the whole tune again from the top, slowly once she has needed help. Nothing is counted. */
   private async listenAgain() {
     if (this.phase !== 'turn') return;
     this.phase = 'listen';
-    this.at = 0;
+    this.at = placeAfterMiss(this.tune.length, this.at);
+    this.drawTicks();
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
     this.phase = 'turn';
-    void this.ctx.instruct('jelly.turn');
-    if (help) this.jellies[this.tune[0]].glow(1.5);
+    void this.ctx.instruct(this.plan.reverse ? 'jelly.back' : 'jelly.turn');
+    if (help) this.jellies[this.answer[this.at]].glow(1.5);
+  }
+
+  /** Long tunes keep her place after a miss, so a row of dots ticks off the notes she has right (all empty on a restart). */
+  private drawTicks() {
+    const n = this.tune.length;
+    this.ticks.clear();
+    if (this.plan.mode !== 'echo' || this.ctx.couch || n < RESUME_FROM_LENGTH) return;
+    const gap = 44;
+    for (let k = 0; k < n; k++) {
+      const x = (k - (n - 1) / 2) * gap;
+      const done = k < this.at;
+      this.ticks
+        .circle(x, 0, 15)
+        .fill(done ? swatch.green.fill : 0xffffff)
+        .stroke({ width: 4, color: swatch.green.line });
+    }
   }
 
   private async copied() {
@@ -406,13 +471,15 @@ class JellyDrums implements Game {
     if (this.wrongThisTune === 2) this.hints++;
     await this.ctx.tw.wait(0.5);
     await this.ctx.say('jelly.oops');
-    this.at = 0;
+    this.at = placeAfterMiss(this.tune.length, this.at);
+    this.drawTicks();
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
+    if (this.plan.reverse) await this.playBack();
     this.phase = 'turn';
-    void this.ctx.instruct('jelly.turn');
+    void this.ctx.instruct(this.plan.reverse ? 'jelly.back' : 'jelly.turn');
     // After two tries, light the way: the next jelly to tap glows.
-    if (help) this.jellies[this.tune[0]].glow(1.5);
+    if (help) this.jellies[this.answer[this.at]].glow(1.5);
   }
 
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
@@ -502,6 +569,8 @@ export const jellyDrums: GameModule = {
   entryLevels: [10],
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.reverse)
+      return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },

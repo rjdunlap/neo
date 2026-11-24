@@ -15,8 +15,10 @@ import { SCENES, type SceneDef } from './scenes';
 import {
   LEVELS,
   dealPlan,
-  dropSlot,
+  dealTurns,
+  flipTurn,
   hintPiece,
+  judgeDrop,
   nextToPlace,
   outerSides,
   PICTURE_H,
@@ -28,14 +30,52 @@ import {
   tapHops,
   oneAtATimeLayout,
   puzzleLayout,
+  lidLayout,
   whereWords,
   type Piece,
   type PuzzlePlan,
+  type Turn,
 } from './logic';
+
+/** Small circular turn arrow shown on pieces in turn levels. */
+function drawTurnBadge(): Container {
+  const badge = new Container();
+  badge.eventMode = 'none';
+  const glow = new Graphics().circle(0, 0, 26).stroke({ width: 5, color: swatch.yellow.line });
+  glow.visible = false;
+  const disc = new Graphics().circle(0, 0, 22).fill(cream).stroke({ width: 3.5, color: swatch.blue.line });
+  const r = 11;
+  const start = -Math.PI * 0.65;
+  const end = Math.PI * 0.85;
+  const ex = Math.cos(end) * r;
+  const ey = Math.sin(end) * r;
+  const tx = -Math.sin(end);
+  const ty = Math.cos(end);
+  const nx = Math.cos(end);
+  const ny = Math.sin(end);
+  const arrow = new Graphics()
+    .arc(0, 0, r, start, end)
+    .stroke({ width: 4, color: swatch.blue.line, cap: 'round' })
+    .poly([
+      ex + tx * 6.5,
+      ey + ty * 6.5,
+      ex - tx * 3 + nx * 6,
+      ey - ty * 3 + ny * 6,
+      ex - tx * 3 - nx * 6,
+      ey - ty * 3 - ny * 6,
+    ])
+    .fill(swatch.blue.line);
+  badge.addChild(glow, disc, arrow);
+  return badge;
+}
 
 interface PieceView {
   piece: Piece;
   node: Container;
+  body: Container;
+  badge?: Container;
+  turn: Turn;
+  targetRotation: number;
   drag: DragHandle;
   placed: boolean;
   /** One at a time (level 8): still to come out (hidden past the right edge), sliding out now, or waiting to be touched. */
@@ -58,6 +98,8 @@ class PuzzlePals implements Game {
   private readonly frame = new Graphics();
   private readonly slots = new Graphics();
   private readonly glow = new Graphics();
+  /** Levels 5-7: the box lid, a small copy of the finished picture, beside the frame. */
+  private readonly lid?: Container;
   private readonly background = new Graphics();
   private readonly textures: Texture[] = [];
   private scale = 1;
@@ -80,12 +122,24 @@ class PuzzlePals implements Game {
     }
     this.board.addChild(this.slots);
     ctx.stage.addChild(this.background, this.board);
+    if (this.plan.lid) {
+      // The same render the pieces are cut from, so the lid cannot disagree with them. It takes no touches.
+      this.lid = new Container();
+      this.lid.eventMode = 'none';
+      this.lid.addChild(new Graphics(), new Sprite(this.texture));
+      ctx.stage.addChild(this.lid);
+    }
 
     const pw = PICTURE_W / this.plan.cols;
     const ph = PICTURE_H / this.plan.rows;
     const all = piecesFor(this.plan);
     const order = [...all.slice(0, this.plan.preplaced), ...ctx.rng.shuffle(all.slice(this.plan.preplaced))];
-    for (const piece of order) {
+    const turns = this.plan.turns
+      ? dealTurns(order.length, this.plan.turns, ctx.rng)
+      : order.map((): Turn => 0);
+    for (let idx = 0; idx < order.length; idx++) {
+      const piece = order[idx];
+      const turn = turns[idx];
       const texture = new Texture({
         source: this.texture.source,
         frame: new Rectangle(piece.col * pw, piece.row * ph, pw, ph),
@@ -93,9 +147,8 @@ class PuzzlePals implements Game {
       this.textures.push(texture);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      const node = new Container();
-      node.addChild(
-        new Graphics().roundRect(-pw / 2 + 4, -ph / 2 + 8, pw, ph, 8).fill({ color: wood.line, alpha: 0.25 }),
+      const body = new Container();
+      body.addChild(
         sprite,
         new Graphics().roundRect(-pw / 2, -ph / 2, pw, ph, 6).stroke({ width: 4, color: swatch.white.fill }),
       );
@@ -110,11 +163,34 @@ class PuzzlePals implements Game {
         if (sides.right) rim.moveTo(x, -y).lineTo(x, y);
         rim.stroke({ width: 8, color: wood.line });
         rim.eventMode = 'none';
-        node.addChild(rim);
+        body.addChild(rim);
+      }
+      const targetRotation = (turn * Math.PI) / 2;
+      body.rotation = targetRotation;
+      const node = new Container();
+      node.addChild(
+        new Graphics().roundRect(-pw / 2 + 4, -ph / 2 + 8, pw, ph, 8).fill({ color: wood.line, alpha: 0.25 }),
+        body,
+      );
+      let badge: Container | undefined;
+      if (this.plan.turns) {
+        badge = drawTurnBadge();
+        badge.position.set(pw / 2 - 28, ph / 2 - 28);
+        node.addChild(badge);
       }
       node.hitArea = new Rectangle(-pw / 2 - 10, -ph / 2 - 10, pw + 20, ph + 20);
       const out = !this.plan.oneAtATime || !this.pieces.length ? 'waiting' : 'later';
-      const view: PieceView = { piece, node, placed: false, out, drag: null as unknown as DragHandle };
+      const view: PieceView = {
+        piece,
+        node,
+        body,
+        badge,
+        turn,
+        targetRotation,
+        placed: false,
+        out,
+        drag: null as unknown as DragHandle,
+      };
       // One at a time, only the first piece is out; the others wait out of sight to come out one by one.
       node.visible = out !== 'later';
       view.drag = draggable(node, ctx.tw, {
@@ -143,13 +219,35 @@ class PuzzlePals implements Game {
       ? 'puzzle.lap'
       : tapHops(this.plan)
         ? 'puzzle.tap'
-        : this.plan.ghost
-          ? 'puzzle.ghost'
-          : 'puzzle.start';
+        : this.plan.turns
+          ? 'puzzle.turn'
+          : this.plan.ghost
+            ? 'puzzle.ghost'
+            : 'puzzle.start';
     void this.ctx.instruct(line);
   }
 
   // Placing pieces -------------------------------------------------------------
+
+  private turnPiece(view: PieceView) {
+    view.turn = flipTurn(view.turn);
+    view.targetRotation += Math.PI;
+    const target = view.targetRotation;
+    sfx.tick();
+    this.ctx.tw.kill(view.body);
+    void this.ctx.tw.to(view.body, { rotation: target }, { duration: 0.22, ease: ease.outBack }).then(() => {
+      if (!view.body.destroyed && view.targetRotation === target) {
+        view.targetRotation = (view.turn * Math.PI) / 2;
+        view.body.rotation = view.targetRotation;
+      }
+    });
+    this.resetTrayScale(view);
+  }
+
+  private resetTrayScale(view: PieceView) {
+    this.ctx.tw.kill(view.node.scale);
+    void this.ctx.tw.to(view.node.scale, { x: this.trayScale, y: this.trayScale }, { duration: 0.15 });
+  }
 
   private drop(view: PieceView, x: number, y: number): boolean {
     if (this.done) return false;
@@ -163,13 +261,35 @@ class PuzzlePals implements Game {
       this.settle(view, true);
       return true;
     }
+    // Turn it round: tapping a piece in the tray turns it half a turn, free and never a miss.
+    if (this.plan.turns && view.drag.tapped) {
+      this.turnPiece(view);
+      return false;
+    }
     const empty = this.pieces.filter((p) => !p.placed).map((p) => p.piece);
-    const slot = dropSlot(this.plan, (x - this.board.x) / this.scale, (y - this.board.y) / this.scale, empty);
+    const outcome = judgeDrop(
+      this.plan,
+      (x - this.board.x) / this.scale,
+      (y - this.board.y) / this.scale,
+      view.piece,
+      view.turn,
+      empty,
+    );
     // Off the frame is just exploring: the piece floats back without a word.
-    if (!slot) return false;
-    if (slot.col === view.piece.col && slot.row === view.piece.row) {
+    if (outcome === 'off') {
+      this.resetTrayScale(view);
+      return false;
+    }
+    if (outcome === 'place') {
       this.settle(view, true);
       return true;
+    }
+    // Right place, still upside down: hops back with "Turn it round!", never a miss.
+    if (outcome === 'turn') {
+      sfx.pop(4);
+      void this.ctx.say('puzzle.turnItRound');
+      this.resetTrayScale(view);
+      return false;
     }
     this.misses++;
     this.wrong++;
@@ -186,6 +306,7 @@ class PuzzlePals implements Game {
       }
     } else void this.ctx.say('puzzle.wrong');
     this.drawGlow();
+    this.resetTrayScale(view);
     return false;
   }
 
@@ -228,6 +349,11 @@ class PuzzlePals implements Game {
   private settle(view: PieceView, animate: boolean) {
     view.placed = true;
     view.drag.enabled = false;
+    if (view.badge) view.badge.visible = false;
+    view.turn = 0;
+    view.targetRotation = 0;
+    this.ctx.tw.kill(view.body);
+    view.body.rotation = 0;
     if (this.plan.oneAtATime) {
       // A placed piece lets touches through to the frame beneath, so a touch on it hops the next one in.
       view.node.eventMode = 'none';
@@ -305,6 +431,7 @@ class PuzzlePals implements Game {
       .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30)
       .fill(cream);
     this.drawFrame();
+    this.layoutLid(v);
     // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
     this.trayScale = L.trayScale;
     waiting.forEach((p, i) => {
@@ -327,6 +454,19 @@ class PuzzlePals implements Game {
       this.picture.root.scale.set(this.scale);
     }
     this.drawGlow();
+  }
+
+  private layoutLid(v: View) {
+    if (!this.lid) return;
+    const L = lidLayout(v);
+    const [border, picture] = this.lid.children as [Graphics, Sprite];
+    picture.scale.set(L.w / PICTURE_W);
+    this.lid.position.set(L.x, L.y);
+    border
+      .clear()
+      .roundRect(-8, -8, L.w + 16, L.h + 16, 12)
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line });
   }
 
   private drawFrame() {
@@ -403,9 +543,15 @@ class PuzzlePals implements Game {
   update(dt: number) {
     this.clock += dt;
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
+    for (const p of this.pieces) {
+      if (!p.badge) continue;
+      const pulse = !this.done && this.wrong >= 2 && this.hinted === p && p.turn !== 0;
+      p.badge.children[0].visible = pulse;
+      p.badge.scale.set(pulse ? 1.15 + 0.2 * Math.sin(this.clock * 6) : 1);
+    }
   }
 
-  /** The ghost finger on the how-to card: carry the next piece from the tray to its own place in the frame. */
+  /** The ghost finger on the how-to card: tap a turned piece to flip it upright, then carry it to its place in the frame. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.plan.oneAtATime) {
@@ -415,6 +561,7 @@ class PuzzlePals implements Game {
     }
     const next = nextToPlace(this.pieces);
     if (!next || next.drag.dragging) return null;
+    if (next.turn !== 0) return { tap: { on: next.node } };
     const c = slotCenter(this.plan, next.piece);
     return { drag: { on: next.node }, to: { on: this.board, x: c.x, y: c.y } };
   }

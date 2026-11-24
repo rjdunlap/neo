@@ -5,6 +5,8 @@ export interface PuzzlePlan {
   rows: number;
   /** A faint copy of the picture inside the frame to match against. */
   ghost: boolean;
+  /** A small copy of the finished picture beside the frame, like the lid of a puzzle box (levels 5-7). */
+  lid?: boolean;
   /** Pieces already in place when the round starts. */
   preplaced: number;
   /**
@@ -12,6 +14,8 @@ export interface PuzzlePlan {
    * background) hops it into its own place, and the next piece comes out because she touched. Nothing can be a miss.
    */
   oneAtATime?: boolean;
+  /** Level 9, Turn it round: how many pieces arrive upside down in the tray (half turns). */
+  turns?: number;
   name: string;
 }
 
@@ -20,9 +24,30 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
   { cols: 2, rows: 1, ghost: true, preplaced: 0, name: 'Put two halves together over a faint picture' },
   { cols: 3, rows: 1, ghost: true, preplaced: 0, name: 'Three strips over a faint picture' },
   { cols: 2, rows: 2, ghost: true, preplaced: 0, name: 'Four pieces over a faint picture' },
-  { cols: 3, rows: 2, ghost: false, preplaced: 0, name: 'Six pieces with only an empty frame' },
-  { cols: 3, rows: 3, ghost: false, preplaced: 0, name: 'Nine pieces with only an empty frame' },
-  { cols: 4, rows: 3, ghost: false, preplaced: 0, name: 'Twelve pieces with only an empty frame' },
+  {
+    cols: 3,
+    rows: 2,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Six pieces: an empty frame and a small picture on the box lid',
+  },
+  {
+    cols: 3,
+    rows: 3,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Nine pieces: an empty frame and a small picture on the box lid',
+  },
+  {
+    cols: 4,
+    rows: 3,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    name: 'Twelve pieces: an empty frame and a small picture on the box lid',
+  },
   {
     cols: 3,
     rows: 1,
@@ -30,6 +55,15 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
     preplaced: 0,
     oneAtATime: true,
     name: 'One big piece at a time: a touch anywhere hops it into a two- or three-piece picture',
+  },
+  {
+    cols: 3,
+    rows: 2,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    turns: 3,
+    name: 'Turn it round: tap an upside-down piece to turn it, then put six pieces together',
   },
 ];
 
@@ -85,6 +119,44 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
   return d <= reach ? best : null;
 }
 
+export type Turn = 0 | 2;
+
+export type DropOutcome = 'off' | 'place' | 'turn' | 'wrong';
+
+/** Flip a piece half a turn (180 degrees) and back. */
+export const flipTurn = (turn: Turn): Turn => (turn === 0 ? 2 : 0);
+
+/** Pick which pieces start upside down: never empty and never all pieces when turning is active. */
+export function dealTurns(
+  count: number,
+  turned: number,
+  rng: { shuffle<T>(items: readonly T[]): T[] },
+): Turn[] {
+  if (turned <= 0 || count < 2) return Array.from({ length: count }, () => 0);
+  const want = Math.min(count - 1, Math.max(1, turned));
+  const picked = new Set(rng.shuffle(Array.from({ length: count }, (_, i) => i)).slice(0, want));
+  return Array.from({ length: count }, (_, i) => (picked.has(i) ? 2 : 0));
+}
+
+/**
+ * Outcome of dropping a piece in picture units:
+ * off the frame is free exploration ('off'), wrong slot is a miss ('wrong'),
+ * right slot while still upside down hops back without a miss ('turn'), right slot upright places it ('place').
+ */
+export function judgeDrop(
+  plan: PuzzlePlan,
+  x: number,
+  y: number,
+  piece: Piece,
+  turn: Turn,
+  empty: Piece[],
+): DropOutcome {
+  const slot = dropSlot(plan, x, y, empty);
+  if (!slot) return 'off';
+  if (slot.col !== piece.col || slot.row !== piece.row) return 'wrong';
+  return turn === 0 ? 'place' : 'turn';
+}
+
 /** Tray rows: one row of big pieces for small puzzles, two rows of smaller ones otherwise. */
 export const trayRows = (count: number) => (count <= 4 ? 1 : 2);
 
@@ -135,13 +207,16 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
   return pieces.find((p) => !p.placed);
 }
 
-/** Level 8 is lap's first; 1 and 2 follow. Nothing is renumbered: 8 is new at the end of the ladder. */
+/**
+ * Level 8 is lap's first; 1 and 2 follow. Level 9 (Turn it round) sits at the top of pre-K and school,
+ * skipping lap's 8 via `order` so no saved level is renumbered.
+ */
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
-  prek: { min: 5, max: 7 },
-  school: { min: 6, max: 7 },
+  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
+  school: { min: 6, max: 9, order: [6, 7, 9] },
 };
 
 // Layout ---------------------------------------------------------------------------------------------------------------
@@ -255,4 +330,15 @@ export function oneAtATimeLayout(v: { w: number; h: number }, cols: number) {
     ? { x: x + boardW + gap + boardW / cols / 2, y: y + bh / 2 }
     : { x: x + boardW / 2, y: y + bh + gap + bh / 2 };
   return { board: { x, y, w: boardW }, scale: boardW / PICTURE_W, home };
+}
+
+/**
+ * The box lid: a small copy of the finished picture, 170 x 119. Sideways it sits in the strip left of the frame, under
+ * the corner buttons and clear of the pet's corner. Upright that strip is too narrow, so it sits top right, above the
+ * frame (the buttons are on the left), in the band the frame already leaves free.
+ */
+export function lidLayout(v: { w: number; h: number }) {
+  const w = 170;
+  const h = (w * PICTURE_H) / PICTURE_W;
+  return v.h > v.w ? { x: v.w - w - 32, y: 44, w, h } : { x: 24, y: 232, w, h };
 }

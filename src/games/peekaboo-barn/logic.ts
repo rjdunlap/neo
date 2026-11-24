@@ -207,6 +207,16 @@ export function pickFeeling(rng: Rng, plan: PeekPlan, last: Feeling | null): Fee
   return rng.pick(FEELINGS.filter((f) => f !== last));
 }
 
+/**
+ * Free play only (levels 1, 2 and 16, where nothing is asked, so nothing can be missed): the one reveal of a round, counted
+ * from 0, where {pet} is the surprise friend. Never the first, so the animals are met first, and never the last, so the
+ * round's final reveal is an animal as before; a round of fewer than three reveals has none (null).
+ */
+export function petReveal(rng: Rng, plan: PeekPlan): number | null {
+  if (plan.mode !== 'free' || plan.goal < 3) return null;
+  return rng.int(1, plan.goal - 2);
+}
+
 /** Free play: someone new sneaks in, never the same as anyone already out. */
 export const newcomer = (rng: Rng, taken: readonly Animal[], pool: readonly Animal[]): Animal =>
   rng.pick(pool.filter((a) => !taken.includes(a)));

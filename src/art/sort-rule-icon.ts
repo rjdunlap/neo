@@ -18,8 +18,11 @@ export function ruleIcon(rule: Rule): Graphics {
         .fill(swatch.red.fill);
       break;
     case 'brown':
-    case 'white': {
-      const sw = rule === 'brown' ? swatch.brown : swatch.white;
+    case 'white':
+    case 'pink':
+    case 'orange':
+    case 'yellow': {
+      const sw = swatch[rule];
       g.moveTo(-30, 0)
         .bezierCurveTo(-34, -30, 20, -34, 30, -10)
         .bezierCurveTo(40, 20, -10, 34, -24, 22)

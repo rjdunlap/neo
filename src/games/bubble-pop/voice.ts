@@ -4,6 +4,11 @@ export const VOICE = {
 
   'bubble.free': ['Pop the bubbles!', 'Bubbles! Pop pop pop!'],
   'bubble.anywhere': ['Tap anywhere to pop the bubbles!', 'Pop pop pop! Tap anywhere!'],
+  // Level 19's lines carry {pet}, so they stay on device speech until the voice pass renders clips for new lines.
+  'bubble.blow': [
+    'Swipe your finger to blow bubbles for {pet}! Then pop them!',
+    'Blow some bubbles with {pet}! Swipe, then pop!',
+  ],
   'bubble.color': ['Pop the {color} bubbles!'],
   'bubble.wrong': ["That one's {wrong}. Find {color}!"],
   'bubble.count': ['Pop the numbers in order. Find one!'],
@@ -33,6 +38,7 @@ export const VOICE = {
   'bubble.notmade': ['{a} and {b} make {total}. We need {n}.'],
   // The mode picture on the how-to card, tapped by a grown-up.
   'bubble.mode.15': ['Pop anywhere! Pat the screen and the nearest bubble pops.'],
+  'bubble.mode.19': ['Blow, then pop! Swipe to blow bubbles for {pet}, then pop them.'],
   'bubble.mode.1': ['Pop the bubbles! Tap any bubble.'],
   'bubble.mode.2': ['More bubbles to pop!'],
   'bubble.mode.3': ['Lots of bubbles, a little faster!'],

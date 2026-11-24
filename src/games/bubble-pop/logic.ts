@@ -87,6 +87,11 @@ export interface BubblePlan {
   steps?: number[];
   /** Free mode: a tap anywhere on the screen pops the nearest bubble that is showing (`nearestShown`); no bubble is aimed at. */
   anywhere?: boolean;
+  /**
+   * Free mode, blow then pop: no bubble rises by itself. A touch on empty space blows one there and a finger dragged
+   * across it blows a trail (`blowAlong`); each blown bubble then floats up and is tapped to pop it.
+   */
+  blow?: boolean;
   /** Size mode: the radius ranges of the two sizes; the round asks for one of them. */
   sizes?: Record<BubbleSize, [number, number]>;
   /** Dots and match modes: the largest dot count a bubble carries (one bubble, or in match one pair, of each count from 1 is always showing). */
@@ -130,14 +135,17 @@ export const PLANS: BubblePlan[] = [
   // Preschool, between levels 7 and 8: a numeral and a dot bubble for each of 1 to 4, all drifting; tap one, then its
   // partner (the same number the other way). After level 7, where the numerals first appear with dots beneath them.
   { mode: 'match', goal: 6, speed: 28, most: 8, colors: 0, radius: [60, 68], dotsTo: 4 },
+  // Lap, after level 1: she blows the bubbles herself (a touch or a dragged finger on empty space) and then pops them.
+  // Few and slow, and big enough that a swipe leaves room between them (`BLOW_GAP`).
+  { mode: 'free', goal: 8, speed: 40, most: 4, colors: 0, radius: [78, 98], blow: true },
 ];
 
 /** The two sizes must be told apart at a glance: the smallest big bubble is at least this many times the largest little one. */
 export const SIZE_RATIO = 1.7;
 
 export const LEVELS: BandLevels = {
-  // Level 15 is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
-  lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
+  // Level 15 is the easiest, so lap plays it first, then 1, then 19 (the same popping with blowing added), then 2, 3 (see `order`).
+  lap: { min: 1, max: 19, order: [15, 1, 19, 2, 3] },
   // Level 16 (big and little) sits where color sits: after free popping, before two colors.
   toddler: { min: 1, max: 16, order: [1, 2, 3, 16, 4, 5, 6] },
   // Level 17 (which one has the dots) comes before the numerals at 7; level 18 (dots and numbers together) after 7,
@@ -269,6 +277,34 @@ export interface Reachable extends BubbleFace {
   x: number;
   y: number;
   r: number;
+}
+
+/** Blow mode: along a finger's stroke, one bubble is born this many units after the last (a bubble is at least 156 across, so a trail barely overlaps). */
+export const BLOW_GAP = 200;
+
+/**
+ * Blow mode: where a finger's stroke from `from` to `to` blows bubbles, given `carry`, how far it has travelled since the
+ * last one. A bubble is born every `BLOW_GAP` along the stroke, never more than `room` of them (the plan's most, less those on the
+ * screen), and none when the finger does not move after a bubble is born. `carry` is capped at the gap while the screen is
+ * full, so the next bubble is born as soon as there is room and she is still blowing.
+ */
+export function blowAlong(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  carry: number,
+  room: number,
+  gap = BLOW_GAP,
+): { points: { x: number; y: number }[]; carry: number } {
+  const len = Math.hypot(to.x - from.x, to.y - from.y);
+  const points: { x: number; y: number }[] = [];
+  let at = Math.max(0, gap - carry);
+  while (at <= len && points.length < room) {
+    const t = len === 0 ? 0 : at / len;
+    points.push({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
+    at += gap;
+  }
+  const rest = carry + len - points.length * gap;
+  return { points, carry: points.length < room ? rest : Math.min(gap, rest) };
 }
 
 /**
@@ -517,6 +553,8 @@ export function signFor(plan: BubblePlan, level: number, run: readonly number[])
 /** What a mode's little picture on the how-to card shows: fixed example numbers, never a round's draw. */
 export type ModePicture =
   | { kind: 'palm' }
+  /** A trail of bubbles growing along a swiped line, the finger at its start. */
+  | { kind: 'blow' }
   | { kind: 'plain'; bubbles: number }
   | { kind: 'colors'; colors: number }
   /** Numbered bubbles in a row, then `… upTo` when the run goes on past them. */
@@ -573,6 +611,7 @@ export const MODE_CARDS: Record<number, BubbleModeCard> = {
   16: { name: 'Big and little', line: 'bubble.mode.16', picture: { kind: 'sizes' } },
   17: { name: 'Which has the dots?', line: 'bubble.mode.17', picture: { kind: 'pips', counts: [4, 2, 3] } },
   18: { name: 'Dots and numbers', line: 'bubble.mode.18', picture: { kind: 'match', n: 3, other: 2 } },
+  19: { name: 'Blow, then pop', line: 'bubble.mode.19', picture: { kind: 'blow' } },
 };
 
 /** The card for a level, clamped like `planFor`. */

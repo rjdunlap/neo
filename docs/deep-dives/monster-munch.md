@@ -136,8 +136,8 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 4. **Built 2026-10-23, [PR #857](https://github.com/rjdunlap/neo/pull/857).** **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
 5. **Built with slice 6 in [PR #989](https://github.com/rjdunlap/neo/pull/989).** **School 12 *Share two kinds*** (new level on 7's interaction): school order gains 12 between 7 and 8. Checks: typecheck, rule tests, play of 12, `fingerdemo` at 12.
 6. **Built with slice 5 in [PR #989](https://github.com/rjdunlap/neo/pull/989).** **School 11 *How many friends?*** (new interaction: the cave door, quotitive sharing with a visible leftover): school order ends at 11. Checks: new-interaction tier (scripted play at 11 and 8, one wrong bell, one hint, one portrait screenshot).
-7. *(Decision 2 settled 2026-10-23: level 5 only; extras handed back are not misses)* Overfeed and hand back at 5. Unbuilt: level 5 still refuses a food past the order as a miss.
-8. *(Decision 1 settled 2026-10-23: school, at the top of the school order)* Level 13 *Even it out*.
+7. *(Decision 2 settled 2026-10-23: level 5 only; extras handed back are not misses)* Overfeed and hand back at 5. **Built 2026-11-24, [PR #2117](https://github.com/rjdunlap/neo/pull/2117).** Level 5 (`overfeed: true`) accepts a food past the order; at the bell `overfed()` returns the extras with `munch.hand-back`, not a miss, and she rings again. Levels 4 and 6 still refuse as a miss.
+8. *(Decision 1 settled 2026-10-23: school, at the top of the school order)* Level 13 *Even it out*. **Built 2026-11-24, [PR #2121](https://github.com/rjdunlap/neo/pull/2121).** School order ends `[6, 7, 12, 8, 11, 13]`; uneven start, take-out taps, drag between monsters, the bell, then the pad (see the game's page for what counts as a miss).
 9. *(Decision 3 settled 2026-10-23: after the rework's companion art, looks under RW05+'s unlock rules)* Companion at the table; collectible monster looks with the rework's unlocks.
 
 ## What was built in this session

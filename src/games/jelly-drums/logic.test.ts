@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 import {
+  answerOf,
+  LEVELS,
+  tuneLength,
+  twistsOf,
   FAN_EVERY,
   fanAnswering,
   isScale,
@@ -16,6 +21,7 @@ import {
   STAGE_OF,
 } from './logic';
 import { STAGES } from './stages';
+import { placeAfterMiss, planFor as planOf, tunesOf as tunesAt } from './logic';
 import { stepHz } from '../../audio/notes';
 import {
   awakeJellies,
@@ -35,7 +41,7 @@ import {
   type Tune,
 } from './logic';
 
-const echoPlans = () => PLANS.filter((p) => p.mode === 'echo');
+const echoPlans = () => PLANS.filter((p) => p.mode === 'echo' && !p.reverse);
 const round = (seed: number, length: number, goal: number) => {
   const rng = new Rng(seed);
   const played: Tune[] = [];
@@ -97,7 +103,7 @@ describe('Jelly Drums', () => {
   });
 
   it('grows from free play to longer tunes', () => {
-    const echo = PLANS.filter((p) => p.mode === 'echo');
+    const echo = PLANS.filter((p) => p.mode === 'echo' && !p.reverse);
     expect(PLANS.slice(0, 3).every((p) => p.mode === 'free')).toBe(true);
     for (let i = 1; i < echo.length; i++) expect(echo[i].length).toBeGreaterThanOrEqual(echo[i - 1].length);
     expect(echo[0].length).toBe(2);
@@ -164,7 +170,7 @@ describe('Jelly Drums', () => {
     });
 
     it('waits through the first pause and the tune, then copies it note for note, with no wrong tap', () => {
-      for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
+      for (const plan of PLANS.filter((p) => p.mode === 'echo' && !p.reverse)) {
         const tune = drawTune(new Rng(7), plan.length).notes;
         for (const phase of ['play', 'listen', 'done'] as const)
           expect(jellyToTap('echo', phase, tune, 0, 0)).toBeNull();
@@ -319,6 +325,83 @@ describe('Jelly Drums sound sets and stages', () => {
       expect(contrast(look.string, look.sky[0])).toBeGreaterThan(3);
       // An unlit bulb shows by its fill or its rim (Music Mountain's pale bulbs show by their fill).
       expect(Math.max(...look.bulbOff.map((c) => contrast(c, look.sky[0])))).toBeGreaterThan(1.5);
+    }
+  });
+});
+
+describe('Jelly Drums resume where she was', () => {
+  it('keeps her place on four- and five-note tunes, and restarts shorter ones', () => {
+    for (const length of [4, 5])
+      for (let at = 0; at < length; at++) expect(placeAfterMiss(length, at)).toBe(at);
+    for (const length of [2, 3])
+      for (let at = 0; at < length; at++) expect(placeAfterMiss(length, at)).toBe(0);
+  });
+
+  it('leaves the notes still to play equal to the tune from her place, at every echo level and place', () => {
+    for (let level = 1; level <= 11; level++) {
+      const plan = planOf(level);
+      if (plan.mode !== 'echo' || plan.reverse) continue;
+      for (const tune of tunesAt(plan.length)) {
+        for (let at = 0; at < tune.notes.length; at++) {
+          const place = placeAfterMiss(tune.notes.length, at);
+          expect(tune.notes.slice(place)).toEqual(plan.length >= 4 ? tune.notes.slice(at) : tune.notes);
+        }
+      }
+    }
+  });
+});
+
+describe('Jelly Drums Backwards (level 11)', () => {
+  const plan = PLANS[10];
+  const lengths = Array.from({ length: plan.goal }, (_, n) => tuneLength(plan, n));
+  const roundOf = (seed: number) => {
+    const rng = new Rng(seed);
+    const played: Tune[] = [];
+    for (const length of lengths) played.push(drawTune(rng, length, played, true));
+    return played;
+  };
+
+  it('is the next free level: four tunes of three notes, then one of four, in pre-K and school only', () => {
+    expect(plan.reverse).toBe(true);
+    expect(lengths).toEqual([3, 3, 3, 3, 4]);
+    expect(rangeFor(LEVELS, 'prek').order).toContain(11);
+    expect(rangeFor(LEVELS, 'school').order).toContain(11);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(11);
+    // Lap's own wake level stays out of the older bands.
+    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).not.toContain(10);
+    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).not.toContain(10);
+  });
+
+  it('asks for the tune reversed, and the ghost finger taps exactly that', () => {
+    const tune = [0, 2, 3];
+    expect(answerOf(plan, tune)).toEqual([3, 2, 0]);
+    expect(answerOf({}, tune)).toEqual(tune);
+    const copy: number[] = [];
+    for (let at = 0; at < tune.length; at++)
+      copy.push(jellyToTap('echo', 'turn', answerOf(plan, tune), at, 0)!);
+    expect(copy).toEqual([3, 2, 0]);
+    expect(jellyToTap('echo', 'listen', answerOf(plan, tune), 0, 0)).toBeNull();
+  });
+
+  it('never draws a tune that reads the same backwards, never repeats one, and always has an order to reverse', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = roundOf(seed);
+      round.forEach((t, n) => {
+        expect(t.notes, `seed ${seed} tune ${n}`).toHaveLength(lengths[n]);
+        expect(t.notes).not.toEqual([...t.notes].reverse());
+        for (let k = 1; k < t.notes.length; k++) expect(t.notes[k]).not.toBe(t.notes[k - 1]);
+      });
+      expect(new Set(round.map((t) => t.notes.join())).size).toBe(round.length);
+    }
+  });
+
+  it('is a different tune from its answer at every length, and the pool is big enough for the round', () => {
+    for (const length of [3, 4]) {
+      const pool = [...tunesOf(length), ...twistsOf(length)].filter(
+        (t) => t.notes.join() !== [...t.notes].reverse().join(),
+      );
+      expect(pool.length).toBeGreaterThanOrEqual(plan.goal);
     }
   });
 });

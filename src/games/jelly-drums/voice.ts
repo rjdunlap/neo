@@ -3,6 +3,8 @@ export const VOICE = {
   'game.jelly-drums': ['Jelly drums!'],
   'jelly.free': ['Tap the jellies to make music!'],
   'jelly.echo': ['Listen to the jellies, then play the same tune!'],
+  'jelly.echo.back': ['Listen to the jellies, then play the tune backwards!'],
+  'jelly.back': ['Now play it backwards: the last jelly first!'],
   'jelly.song.hot-cross-buns': ['This one is Hot Cross Buns!'],
   'jelly.song.mary': ['This one is Mary Had a Little Lamb!'],
   'jelly.song.jingle-bells': ['This one is from Jingle Bells!'],

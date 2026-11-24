@@ -1,1 +1,0 @@
-**`weather-wardrobe` level 12 Pack light and the school window** (new levels on an existing interaction; after two-weather items and level 11, built: the `ALSO` table is in `logic.ts`; decisions 1–3 and 5 settled). [Dive](../../deep-dives/weather-wardrobe.md#build-slices-in-order)

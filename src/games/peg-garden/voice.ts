@@ -14,5 +14,8 @@ export const VOICE = {
   'peg.plant': ['Plant a bud so the pearl rolls into the cup! Drag a seed onto a ring, then tap the pearl.'],
   'peg.plantLook': ['See where it rolls? Plant a bud to push it to the cup!'],
   'peg.plantMissed': ['Not in the cup yet. Move a bud and try again!'],
+  'peg.flower': ['Aim at the big golden flower! Drag to aim, follow the dots, then let go.'],
+  'peg.flowerNext': ['Now the golden flower is over here!'],
+  'peg.flowerMissed': ['Not quite! Follow the dots and aim again.'],
   'peg.done': ['What a beautiful garden!'],
 } satisfies Record<string, string[]>;

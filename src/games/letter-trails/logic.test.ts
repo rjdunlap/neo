@@ -31,6 +31,8 @@ import {
   trailWord,
   THREE_LEVEL,
   LITTLE_LEVEL,
+  MAGIC_LEVEL,
+  LITTLE_TOLERANCE,
   inFrame,
 } from './logic';
 import { PICTURE_WORDS } from '../word-monsters/logic';
@@ -63,7 +65,7 @@ describe('Letter Trails plans', () => {
     expect(trailWord(8, 'Mia', new Rng(2))).toBe('MIA');
     expect(trailWord(100, 'Mia', new Rng(2))).toHaveLength(1);
     for (let level = 1; level <= PLANS.length; level++)
-      expect(trailTolerance(level)).toBe(level <= 2 ? 0.095 : 0.075);
+      expect(trailTolerance(level)).toBe(inFrame(level) ? LITTLE_TOLERANCE : level <= 2 ? 0.095 : 0.075);
   });
   it('accepts a retraced upright at the exact corridor boundary after transform round-off', () => {
     expect(offTrail([0.15000000000000008, 1], [0.15, 0.85], 0.075)).toBe(false);
@@ -243,7 +245,7 @@ describe('Level 10, little letters in a four-line frame', () => {
   const eps = 1e-9;
 
   it("draws one of the programme's first group, c o s v w t, each with its capital's picture", () => {
-    expect(Object.keys(LOWER).sort().join('')).toBe([...group].sort().join(''));
+    expect(Object.keys(LOWER).sort().join('')).toBe([...group, ...'adg'].sort().join(''));
     const seen = new Set<string>();
     for (let seed = 0; seed < 300; seed++) {
       const word = trailWord(LITTLE_LEVEL, 'Ana', new Rng(seed));
@@ -257,7 +259,6 @@ describe('Level 10, little letters in a four-line frame', () => {
     expect(inFrame(LITTLE_LEVEL)).toBe(true);
     for (let level = 1; level < LITTLE_LEVEL; level++) expect(inFrame(level)).toBe(false);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
-    expect(LEVELS.school!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(LITTLE_LEVEL)).toEqual(['solid']);
     expect(severalLetters(LITTLE_LEVEL)).toBe(false);
   });
@@ -310,10 +311,11 @@ describe('Level 10, little letters in a four-line frame', () => {
     expect(s.at(-1)![1]).toBeGreaterThan(s[0][1]);
   });
 
-  it('accepts each stroke in order at the capitals’ corridor, and the bot route completes it', () => {
+  it('accepts each stroke in order at the little letters’ corridor, and the bot route completes it', () => {
     const tol = trailTolerance(LITTLE_LEVEL);
-    expect(tol).toBe(0.075);
-    for (const l of group)
+    expect(tol).toBe(LITTLE_TOLERANCE);
+    expect(trailTolerance(6)).toBe(0.075);
+    for (const l of group + 'adg')
       for (const stroke of strokesOf(l)) {
         const points = sampleStroke(stroke);
         for (let i = 1; i < points.length; i++)
@@ -345,5 +347,71 @@ describe('Level 10, little letters in a four-line frame', () => {
 
   it('leaves the capitals alone: they keep their own strokes', () => {
     for (const l of Object.keys(LETTERS)) expect(strokesOf(l)).toBe(LETTERS[l]);
+  });
+});
+
+describe('Level 11, Magic c: a, d and g', () => {
+  const eps = 1e-9;
+  const stemOf = (l: string) => strokesOf(l)[1];
+
+  it('draws a, d or g, each with its capital’s picture, in the frame, for school', () => {
+    expect(MAGIC_LEVEL).toBe(11);
+    expect(inFrame(MAGIC_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBe(MAGIC_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(MAGIC_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(MAGIC_LEVEL)).toBe(false);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const word = trailWord(MAGIC_LEVEL, 'Ana', new Rng(seed));
+      expect('adg').toContain(word);
+      expect(WORDS[word.toUpperCase()]).toBeTruthy();
+      seen.add(word);
+    }
+    expect(seen.size).toBe(3);
+    // b and d are taught apart, and g and q too: neither b nor q is in this level's pool.
+    expect(PLANS[MAGIC_LEVEL - 1].letters).not.toMatch(/[bq]/);
+  });
+
+  it('starts each letter on the c-curve, the same way a c starts, then adds one line', () => {
+    const c = sampleStroke(strokesOf('c')[0]);
+    for (const l of 'adg') {
+      expect(strokesOf(l)).toHaveLength(2);
+      const curve = sampleStroke(strokesOf(l)[0]);
+      expect(curve[0][1]).toBeGreaterThanOrEqual(FRAME.mid);
+      expect(curve[0][1] - FRAME.mid).toBeLessThanOrEqual((FRAME.base - FRAME.mid) * 0.25);
+      expect(curve[1][0]).toBeLessThan(curve[0][0]); // heading left over the top, anticlockwise
+      expect(Math.abs(curve[0][0] - c[0][0])).toBeLessThan(0.05);
+    }
+  });
+
+  it('puts each line against the curve: a short, d to the top line, g to the bottom line, turning left', () => {
+    const edge = Math.max(...sampleStroke(strokesOf('a')[0]).map((p) => p[0]));
+    for (const l of 'adg') expect(stemOf(l)[0][0]).toBeCloseTo(edge, 2);
+    const ys = (l: string) => sampleStroke(stemOf(l)).map((p) => p[1]);
+    expect(Math.min(...ys('a'))).toBeCloseTo(FRAME.mid, 2);
+    expect(Math.max(...ys('a'))).toBeCloseTo(FRAME.base, 2);
+    expect(Math.min(...ys('d'))).toBeCloseTo(FRAME.top, 2);
+    expect(Math.max(...ys('d'))).toBeCloseTo(FRAME.base, 2);
+    expect(Math.min(...ys('g'))).toBeCloseTo(FRAME.mid, 2);
+    expect(Math.max(...ys('g'))).toBeCloseTo(FRAME.bottom, 2);
+    const g = stemOf('g');
+    expect(g.at(-1)![0]).toBeLessThan(g[0][0] - 0.05);
+    for (const l of 'adg')
+      for (const stroke of strokesOf(l))
+        for (const [x, y] of sampleStroke(stroke)) {
+          expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+          expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+          expect(y).toBeGreaterThanOrEqual(FRAME.top - eps);
+          expect(y).toBeLessThanOrEqual(FRAME.bottom + eps);
+        }
+  });
+
+  it('keeps a wander from the middle of the curve a wander at the little corridor', () => {
+    const tol = trailTolerance(MAGIC_LEVEL);
+    const centre: [number, number] = [0.5, (FRAME.mid + FRAME.base) / 2];
+    const curve = sampleStroke(strokesOf('a')[0]);
+    const nearest = Math.min(...curve.map((p) => Math.hypot(p[0] - centre[0], p[1] - centre[1])));
+    expect(tol * 2).toBeLessThan(nearest);
   });
 });
