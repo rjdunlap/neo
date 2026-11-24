@@ -20,7 +20,7 @@ Ranges: lap 1–2, toddler 1–4, preschool 1–5 (no `order`). `create` sends `
 
 **Known gaps** (written down, not fixed; this session changes no code):
 
-- **Taps during the tip are silent.** `touchBasket` returns before `squish()` while `busy`, so for about 1.5 s of the tip-out animation a touch gets no response. This is the problem [V2](../definitions/visual-identity.md#v2--animal-snack-an-answer-to-every-touch) solved in Animal Snack; its rule says to apply the lesson to one other tap game only after a person has played that pilot.
+- **Taps during the tip were silent** (closed 2026-11-24, slice 7 below). `touchBasket` returns before `squish()` while `busy`, so for about 1.5 s of the tip-out animation a touch gets no response. This is the problem [V2](../definitions/visual-identity.md#v2--animal-snack-an-answer-to-every-touch) solved in Animal Snack; its rule says to apply the lesson to one other tap game only after a person has played that pilot.
 - **Open grass now scoops or tips** (closed 2026-10-20, [PR #666](https://github.com/rjdunlap/neo/pull/666)). In levels 1–2 it scoops the outside fruit nearest the touch or tips a full basket. Lap entries elsewhere (Bubble Pop's anywhere entry, Splish Splash's *Pat the bubbles*) answer every touch.
 - **The count was spoken only** (closed 2026-10-20 by the count sign, [PR #626](https://github.com/rjdunlap/neo/pull/626)): levels 3–4 now show a card of dots for the asked number, filled as fruit goes in, with extras hanging below it.
 - **Pouring is nearly silent and flat.** One tick when the jug is grabbed; no sound while water moves, no ripple, the cup's water is a flat rectangle, and the stream is a fixed-width line. The line is purple with a triangle marker, but the spoken instruction names only the color.
@@ -72,7 +72,7 @@ Person checks already open: pouring on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS
 2. **Lap reach and an invitation** (levels 1–2): a tap on open ground is `{ on: 'basket', pick: nearest-to-touch }` when the basket is not full and a tip when it is; after six idle seconds the next thing wiggles (the basket or the nearest fruit). The wiggle is an invitation, never a hint: `hints` stays 0. Levels 3–5 ignore ground taps as now. Rule test: random taps including ground taps finish levels 1–2 with no miss and no hint.
 3. **Things to put away** (levels 1–4; built 2026-10-20, [PR #691](https://github.com/rjdunlap/neo/pull/691)): three code-drawn sets beside fruit (balls/bucket, blocks/toy box, ducks/tub), seeded per round, with noun-neutral or per-set voice lines. Rule test: every set has its voice lines and at least four distinct pieces for the tip-out levels; counting levels use one kind.
 4. **Pouring feel** (level 5): the V3 example above. Gated on the chunk-21 V3 definition.
-5. **Busy-window acknowledgment** (levels 1–4): gated on V2's person check.
+5. **Busy-window acknowledgment** (levels 1–2, where the basket tips out; built 2026-11-24, slice 7 below).
 
 ### New levels on top
 
@@ -124,7 +124,7 @@ Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewr
 4. **Level 7, Which holds more?** (built 2026-10-21, [PR #727](https://github.com/rjdunlap/neo/pull/727), `codex/fill-dump-capacity`, worker `01a15fc7-92af-7851-a7f3-44ce46a87760`). Free prediction, pour evidence, then supported answer over three distinct obvious pairs; preschool top. Tier: new interaction: typecheck, unit tests, one scripted play of level 7 (one wrong answer, one hint), one portrait screenshot, `fingerdemo` at 7.
 5. **Things to put away** (built 2026-10-20, [PR #691](https://github.com/rjdunlap/neo/pull/691)). Tier: content: typecheck, rule tests, one screenshot per new set.
 6. **Pouring feel** (after the V3 definition). Tier: rule tests unchanged, one filtered play of level 5, `fingerdemo` at 5, landscape and portrait screenshots.
-7. **Busy-window acknowledgment** (V2's pilot is built, [PR #446](https://github.com/rjdunlap/neo/pull/446); its person check is parked, and [nothing waits on a parked check](../DEVICE-CHECKS.md), so this is not gated). Tier: rule tests, a rapid-tap regression play.
+7. **Busy-window acknowledgment** (built 2026-11-24, [PR #2116](https://github.com/rjdunlap/neo/pull/2116); V2's pilot is built, [PR #446](https://github.com/rjdunlap/neo/pull/446); its person check is parked, and [nothing waits on a parked check](../DEVICE-CHECKS.md), so this is not gated). Tier: rule tests, a rapid-tap regression play.
 8. **Levels 8–9** (decisions 1–2 settled 2026-10-23: open pre-K for them, checking Counting Cove's pre-K layout; level 8 has two answers, no "holds the same"), then the toddler pour rung (decision 3: built only if a person sees a two-year-old pull the jug without help; that child check is parked, so the rung is deferred, not queued) and Two jugs (decision 4 settled: stays here in a school window).
 
 ## What was built in this session
