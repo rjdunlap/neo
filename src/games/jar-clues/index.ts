@@ -49,6 +49,8 @@ const line = (id: string) => id as LineId;
 /** `guess`: plant the first guess; `clues`: cross off; `last`: choose a card; `reveal`: the jar pours and is counted. */
 type Phase = 'guess' | 'clues' | 'last' | 'reveal' | 'done';
 
+/** The smallest the list of earlier clues is drawn, as a share of the note's size (about 11 CSS px on an upright phone). */
+const NOTE_MIN_SCALE = 0.9;
 const NOTE_GUESS = 'About how many? Tap your first guess on the board, then press First clue.';
 const NOTE_CLUE =
   'Cross off every number the clue rules out (tap, or sweep along a row), then press Next clue.';
@@ -513,13 +515,22 @@ class JarClues implements Game {
 
   // ---- drawing ----
 
-  /** What the note says: its words, or the phase's default (the earlier clues, one per line, once there are any). */
-  private noteNow() {
+  /**
+   * What the note says: its words, or the phase's default (the earlier clues, one per line, once there are any). `drop`
+   * leaves out that many of the oldest earlier clues behind a "…" line, when the whole list would not fit at a readable size.
+   */
+  private noteNow(drop = 0) {
     if (this.noteText !== null) return this.noteText;
     if (this.phase === 'guess') return NOTE_GUESS;
     const earlier = this.board.clues.slice(0, this.shown - 1);
     if (!earlier.length) return NOTE_CLUE;
-    return earlier.map((c, i) => `${i + 1}. ${c.words}.`).join('\n');
+    const lines = earlier.map((c, i) => `${i + 1}. ${c.words}.`);
+    return drop > 0 ? ['…', ...lines.slice(drop)].join('\n') : lines.join('\n');
+  }
+
+  /** How many earlier clues the note lists, when it lists them (0 when it says something else). */
+  private earlierListed() {
+    return this.noteText === null && this.phase !== 'guess' ? Math.max(0, this.shown - 1) : 0;
   }
 
   private nextLabel() {
@@ -583,6 +594,13 @@ class JarClues implements Game {
       .stroke({ width: 3, color: wood.light });
     this.note.text = this.noteNow();
     wrap(this.note, nb);
+    // The earlier clues never shrink below easy reading: the oldest give way to "…" instead (the board still shows what
+    // they crossed off, and the clue card's own clue is never dropped).
+    const listed = this.earlierListed();
+    for (let drop = 1; this.note.scale.x < NOTE_MIN_SCALE && drop < listed; drop++) {
+      this.note.text = this.noteNow(drop);
+      wrap(this.note, nb);
+    }
 
     // The board: its cells and numbers; crossed numbers carry a cross and fade.
     const b = this.boardArt.clear();
