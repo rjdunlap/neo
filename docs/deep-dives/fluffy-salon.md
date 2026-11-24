@@ -145,7 +145,7 @@ Each has a default below; the build proceeds on it.
 8. **Level 11 *Two colors*** (built with 9, [PR #1009](https://github.com/rjdunlap/neo/pull/1009); new levels tier): pre-K `order [3, 4, 5, 9, 10, 11]`.
 9. **Level 12 *Changed my mind*** (built with 8, [PR #1009](https://github.com/rjdunlap/neo/pull/1009); new levels tier): pre-K `order [3, 4, 5, 9, 10, 11, 12]`.
 
-Gated: the style coming home (decision 2, after RW05/RW06), accessories (decision 3, after RW02's slots), 13 *Six beads long* and a school window (decision 4), owned creatures in the chair (decision 5, after RW05 casting).
+Gated: the style coming home (decision 2, after RW05/RW06/RW07), accessories (decision 3, after RW02's slots), owned creatures in the chair (decision 5, after RW05 casting). Not planned: 13 *Six beads long* and a school window (decision 4 settled 2026-10-23: no school window; 12 stays pre-K's top).
 
 ## What was built in this session
 

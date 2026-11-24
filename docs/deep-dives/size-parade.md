@@ -145,7 +145,7 @@ Each has a default the build uses:
 9. **(Built 2026-11-01, PR #1083.) Level 13 *Hidden heights*** (new interaction tier: typecheck, units including the sort proof, one scripted play of 13 with one early gate press, one portrait screenshot, `fingerdemo` at 13): the pair test, fence and boots, the gate, the stateful bot, school `order [7, 8, 12, 13, 15]`. Decision 3's default. Built as a bubble sort with a shrinking bound for the bot (the dive said shaker sort; same n(n-1)/2 bound).
 10. **(Built 2026-11-02, PR #1118.) Level 14 *The measuring ribbon*** (new interaction tier: typecheck, units, one scripted play of 14 with one prediction and one wrong tap after measuring, one portrait screenshot, `fingerdemo` at 14): the ribbon drag, bank and stump, school `order [7, 8, 12, 13, 14, 15]`.
 
-Slices 1–8 need no decision (their defaults are recorded above); 9 and 10 are ready on their defaults too but come last because each is a new interaction with its own bot. Casting her creatures (decision 4) waits for RW05 and is not a slice here.
+All ten slices are built, on the defaults the 2026-10-23 decision kept. Casting her creatures (decision 4) waits for RW05 and is not a slice here.
 
 ## What was built in this session
 

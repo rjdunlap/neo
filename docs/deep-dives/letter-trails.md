@@ -200,8 +200,8 @@ Each is sized for one session. A slice that adds a level is built in level order
 8. **Levels 11–14**, one group per slice, each with its stroke tables (b/d and g/q kept apart).
 9. **Level 15, Big and little**, then **16, Little words** (needs slice 2's table).
 10. **Level 17, My name.**
-11. **Level 18, Words that matter** (decision 6; shell and save tier: typecheck, unit tests, build, the `grownups` suite).
-12. **Shape Trails** (waits on the level-order decisions and a person check with a toddler).
+11. **Level 18, Words that matter** (decision 6 settled by the developer 2026-10-23: about ten words of up to eight letters, entered on the grown-ups' page, kept on this device only; shell and save tier: typecheck, unit tests, build, the `grownups` suite).
+12. **Shape Trails** (the level-order question is settled by the [2026-10-23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules): each entry takes the next free stable ID, placed with `order` and `entryLevels`, no renumbering; decision 7 settled 2026-10-23 that toddler comes in through Shape Trails, and its toddler person check is parked, so [it is not a gate](../DEVICE-CHECKS.md)).
 13. **Cursive** (a sketch; define after 17).
 
 ## What was built in this session

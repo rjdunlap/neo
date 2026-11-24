@@ -155,7 +155,7 @@ Each has a default the build uses; none blocks slices 1–7.
 7. **Level 13 *Corners or curves*** (built 2026-10-22 with slice 8, [PR #842](https://github.com/rjdunlap/neo/pull/842)): six pieces, both classes each round, heart excluded; pre-K order ends 12, 13. [Build note](../archive/COMPLETED-2026-10-09.md#shape-sorter-batch-3-corners-curves-and-corner-counts-2026-10-22).
 8. **Level 14 *Count the corners*** (built 2026-10-22 with slice 7, [PR #842](https://github.com/rjdunlap/neo/pull/842)): seven pieces, shared 0/3/4/5/6 targets, at least two distinct four-corner kinds; sequential dot glow. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; school default remains none. Combined typecheck/rules, filtered plays and both demos, portrait and build; device/child checks open.
 
-Gated: a school window (decision 1); the creature box (decision 4, and the rework's casting).
+Not built: a school window (deferred by the 2026-10-23 decision 1: no school band, 14 is pre-K's top); the creature box (decision 4 settled 2026-10-23: the wooden box stays until a creature-casting slice proposes otherwise).
 
 ## What was built in this session
 

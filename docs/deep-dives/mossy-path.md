@@ -106,12 +106,12 @@ All three are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slice
 
 ## Build slices, in order
 
-1. **More mazes, coverage plans and looks** (fresh content, ready). Tier: typecheck and the game's rule tests (every new maze through the existing property tests; the coverage solvability and two-route tests), then one filtered `mossypath` play at level 6 with one portrait screenshot in the autumn look; no `fingerdemo` (bot unchanged); no build unless `palette.ts` changes.
+1. **More mazes, coverage plans and looks** (**built 2026-11-07**, [PR #1376](https://github.com/rjdunlap/neo/pull/1376), see below). Tier: typecheck and the game's rule tests (every new maze through the existing property tests; the coverage solvability and two-route tests), then one filtered `mossypath` play at level 6 with one portrait screenshot in the autumn look; no `fingerdemo` (bot unchanged); no build unless `palette.ts` changes.
 2. **Level 8 *A little patch*** (**built 2026-11-09**, see below). Tier: new level on the existing tap interaction: typecheck, rule tests (plus registry, lands and how-to tests for the new `order`s), one browser play of level 8 with one free far tap and one counted visited tap, `fingerdemo` at 8; build (voice-free, but how-to and registry change).
 3. **Level 9 *Two snacks*** (**built 2026-11-10**, see below; after slice 1 so the berry art is drawn once). Tier: new level on the existing maze interaction: typecheck, rule tests, one browser play of level 9 eating the farther berry first, `fingerdemo` at 9; build (voice lines).
 4. **Level 10 *Plan, then go*** (**built 2026-11-10**, see below). Tier: new interaction: typecheck, unit tests, one scripted play (a short plan, a Go, a plan into a wrong branch, a Hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
-5. **Level 11 *Thick moss*** (claimed 2026-11-10, branch `claude/mossy-path-thick-moss`). Tier: new level on the existing tap interaction with a solver rewrite: typecheck, rule tests (solvability, the time bound, hint progress, and levels 1–3 and 8 unchanged under the new solver), one browser play of level 11, `fingerdemo` at 11; build.
-6. **Lap entry** (level 12 *Turtle walk*; **built 2026-11-20**), **toddler 4–5** (decided: stays at 4) and the **journal** (decided: nothing filed).
+5. **Level 11 *Thick moss*** (**built 2026-11-10**, [PR #1481](https://github.com/rjdunlap/neo/pull/1481), see below). Tier: new level on the existing tap interaction with a solver rewrite: typecheck, rule tests (solvability, the time bound, hint progress, and levels 1–3 and 8 unchanged under the new solver), one browser play of level 11, `fingerdemo` at 11; build.
+6. **Lap entry** (level 12 *Turtle walk*; **built 2026-11-20**, [PR #1926](https://github.com/rjdunlap/neo/pull/1926)), **toddler 4–5** (decided: stays at 4) and the **journal** (decided: nothing filed).
 
 ## What was built in this session
 
