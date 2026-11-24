@@ -1162,7 +1162,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7').split(',').map(Number);
+    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
     for (const level of !only || only === 'fill' ? fillLevels : []) {
       if (level === 4) await portrait(true);
       await launch('fill-dump', level);
@@ -1292,6 +1292,56 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         assert.deepEqual(await score('fill-dump'), [2, 1]);
         log(
           'Fill and Dump 7: free prediction/partial pour/re-pour, conserved spill, two wrong answers, one evidence hint, portrait and three pairs passed',
+        );
+        continue;
+      }
+      if (level === 8) {
+        // Tricky pairs: a free guess, a full pour, two wrong answers (one hint), a re-pour, then three pairs by the bot.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const hit = async (on, y = 0) => {
+            kit.tapOn(on, 0, y);
+            await kit.sleep(300);
+          };
+          const pourAll = async () => {
+            const a = g.jug.toGlobal({ x: 0, y: -60 });
+            const b = g.jug.toGlobal({ x: g.state.jug * 240 + 1, y: -60 });
+            await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+            await kit.sleep(150);
+          };
+          if (!g.tricky) throw new Error('Level 8 is the tricky pairs');
+          await hit(g.jug, -60); // Any guess is free.
+          if (g.state.misses || g.state.phase !== 'pour') throw new Error('Tricky guess must be free');
+          await pourAll();
+          await hit(g.tick);
+          if (g.state.phase !== 'answer') throw new Error('A full pour is the evidence');
+          const wrong = g.autotouch().tap.on === g.jug ? g.cup : g.jug;
+          await hit(wrong, -60);
+          await hit(wrong, -60);
+          if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped)
+            throw new Error('Tricky supported answer accounting');
+        });
+        await portrait(true);
+        await screenshot('fill-dump-8-portrait');
+        await portrait(false);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let guard = 0; guard < 20 && !g.state.done; guard++) {
+            const intent = g.autotouch();
+            if (intent?.tap) kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+            else if (intent?.drag) {
+              const a = intent.drag.on.toGlobal({ x: intent.drag.x || 0, y: intent.drag.y || 0 });
+              const b = intent.to.on.toGlobal({ x: intent.to.x || 0, y: intent.to.y || 0 });
+              await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+            }
+            await kit.sleep(300);
+          }
+          if (!g.state.done || g.state.round !== 3) throw new Error('Tricky three-pair completion');
+        });
+        await finished('fill-dump');
+        assert.deepEqual(await score('fill-dump'), [2, 1]);
+        log(
+          'Fill and Dump 8: free guess, full pour, two wrong answers, one hint, portrait and three tricky pairs passed',
         );
         continue;
       }

@@ -29,15 +29,15 @@ export const HOW_TO: GameHowTo = {
       text: 'One basket is full of fruit, one is empty. Listen: tip out the full one, or fill the empty one.',
     },
     { from: 6, to: 6, text: 'Tap the basket the voice names. Every time, a new pair is set out.' },
-    { from: 7, to: 7, text: 'Tap either container to guess which holds more. Every guess is welcome.' },
+    { from: 7, to: 8, text: 'Tap either container to guess which holds more. Every guess is welcome.' },
     {
       from: 7,
-      to: 7,
+      to: 8,
       text: 'Pull the full left container right to pour all its water into the right one. Tap the green check when the left one is empty.',
     },
     {
       from: 7,
-      to: 7,
+      to: 8,
       text: 'Look for overflow in the tray or room left in the right container. Tap the one that holds more. Tap the tray to return all water and pour again.',
     },
   ],
@@ -52,6 +52,11 @@ export const HOW_TO: GameHowTo = {
     { from: 5, to: 5, text: 'Fill three cups to their lines and check each one to finish the round.' },
     { from: 6, to: 6, text: 'The round ends after four requests, taking turns between tipping and filling.' },
     { from: 7, to: 7, text: 'Explore and answer three different capacity pairs to finish.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Explore and answer three tall-and-short pairs to finish.',
+    },
   ],
   note: [
     {
@@ -79,7 +84,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 7,
-      to: 7,
+      to: 8,
       text: 'Guesses, partial pours, spills and re-pours are free. Only choosing the smaller after pouring counts a miss. After two, the spill or empty space glows once per pair. Make your own guess aloud together, then test it.',
     },
   ],
