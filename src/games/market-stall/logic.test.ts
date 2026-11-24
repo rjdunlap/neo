@@ -276,6 +276,7 @@ describe('Market Stall', () => {
       for (const c of [1, 2, 5]) expect(coinToName(level, c, none)).toBeNull();
     expect(coinToName(9, 10, none)).toBe('ten');
     expect(coinToName(9, 10, new Set([10]))).toBeNull();
+    expect(coinToName(10, 10, none)).toBeNull();
     expect(coinToName(PLANS.length + 1, 10, none)).toBeNull();
   });
   it('draws one pip per shell of value, five to a row, inside the coin and clear of its rim dots', () => {
@@ -326,8 +327,8 @@ describe('Market Stall', () => {
   });
 
   describe('a total she can see (TotoLogic P8)', () => {
-    it('is shown on every level but the two where the total is the puzzle', () => {
-      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => p.mode)).toEqual(['pair', 'change', 'purse']);
+    it('stays hidden on pair, change and purse levels', () => {
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10]);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9]);
     });
 
@@ -509,10 +510,9 @@ describe('Market Stall', () => {
   describe('level 9, The ten-shell shell', () => {
     const plan = PLANS[8];
 
-    it('is the last school level: a mix level with a ten-shell coin in the purse and prices 11 to 20', () => {
+    it('is a mix level with a ten-shell coin in the purse and prices 11 to 20', () => {
       expect(plan.mode).toBe('mix');
       expect(plan.coins).toEqual([1, 2, 5, 10]);
-      expect(marketStall.levels('school')).toEqual({ min: 3, max: 9 });
       expect(marketStall.describeLevel(9)).toBe(plan.name);
       expect(showsTotal(plan)).toBe(true);
       expect(teachLine(plan, null)).toBe('biggest');
@@ -622,6 +622,68 @@ describe('Market Stall', () => {
       expect(purseFor(v, 3).map((p) => p.x)).toEqual([372, 542, 712]);
       const four = purseFor(v, 4);
       four.forEach((p, i) => i && expect(p.x - four[i - 1].x).toBeGreaterThanOrEqual(115));
+    });
+  });
+
+  describe('level 10, Two baskets to twenty', () => {
+    const plan = PLANS[9];
+
+    it('adds three paired orders with a ten-shell coin to the school ladder', () => {
+      expect(plan.mode).toBe('pair');
+      expect(plan.coins).toEqual([1, 2, 5, 10]);
+      expect(plan.orders).toBe(3);
+      expect(marketStall.levels('school')).toEqual({ min: 3, max: 10 });
+      expect(marketStall.describeLevel(10)).toBe(plan.name);
+    });
+
+    it('seeds two distinct prices per order and reaches every sum from 11 to 19 without adjacent repeats', () => {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const orders = makeOrders(plan, new Rng(seed));
+        expect(orders).toEqual(makeOrders(plan, new Rng(seed)));
+        let previous = 0;
+        for (const order of orders) {
+          expect(order.prices).toHaveLength(2);
+          const [first, second] = order.prices;
+          for (const price of order.prices) {
+            expect(price).toBeGreaterThanOrEqual(4);
+            expect(price).toBeLessThanOrEqual(10);
+          }
+          expect(first).not.toBe(second);
+          const total = target(plan, order);
+          expect(total).toBe(first + second);
+          expect(total).toBeGreaterThanOrEqual(11);
+          expect(total).toBeLessThanOrEqual(19);
+          expect(total).not.toBe(previous);
+          seen.add(total);
+          previous = total;
+        }
+      }
+      expect([...seen].sort((a, b) => a - b)).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19]);
+    });
+
+    it('suggests a short exact payment and accepts a payment without the ten', () => {
+      for (let total = 11; total <= 19; total++) {
+        const first = Math.min(total - 4, 10);
+        const order = { prices: [first, total - first] };
+        const pay = paymentFor(plan, order, null);
+        expect(pay[0]).toBe(10);
+        expect(pay.length).toBeLessThanOrEqual(12);
+        expect(missKind(plan, order, pay)).toBeNull();
+        expect(missKind(plan, order, [5, 5, ...pay.slice(1)])).toBeNull();
+        for (const single of order.prices) {
+          expect(missKind(plan, order, fewest(single, plan.coins))).toBe('one-price');
+        }
+      }
+    });
+
+    it('keeps the one-off, counted-coins and amount feedback for other payments', () => {
+      const order = { prices: [4, 7] };
+      expect(missKind(plan, order, [10])).toBe('one-more');
+      expect(missKind(plan, order, [10, 2])).toBe('one-less');
+      expect(missKind(plan, order, [2, ...Array(10).fill(1)])).toBe('counted-coins');
+      expect(missKind(plan, order, [5])).toBe('short');
+      expect(missKind(plan, order, [10, 5])).toBe('over');
     });
   });
 });

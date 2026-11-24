@@ -17,6 +17,7 @@ export interface ShopPlan {
   /** Price range for one item (on 'purse' levels, the range of the purse's total). */
   price: [number, number];
   orders: number;
+  pairRules?: { minTotal: number; distinctPrices: boolean };
   name: string;
 }
 
@@ -28,6 +29,7 @@ export const PLANS: ShopPlan[] = [
     mode: 'pair',
     coins: [1, 2, 5],
     price: [1, 5],
+    pairRules: { minTotal: 3, distinctPrices: false },
     orders: 3,
     name: 'Two things to buy: add the prices, then pay',
   },
@@ -67,6 +69,14 @@ export const PLANS: ShopPlan[] = [
     orders: 4,
     name: 'Pay 11 to 20 with a ten-shell coin and smaller ones',
   },
+  {
+    mode: 'pair',
+    coins: [1, 2, 5, 10],
+    price: [4, 10],
+    pairRules: { minTotal: 11, distinctPrices: true },
+    orders: 3,
+    name: 'Two baskets to twenty: add two prices past ten, then pay',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -80,7 +90,7 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 /** What a customer hands over on change levels. */
 export const PAID = 10;
 
-/** The most any order asks for: a ten-shell coin and up to ten more (level 9). */
+/** The most any order asks for: a ten-shell coin and up to ten more (levels 9 and 10). */
 export const TARGET_MAX = 20;
 
 export interface Order {
@@ -111,8 +121,10 @@ export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
     const o: Order = { prices: plan.mode === 'pair' ? [one(), one()] : [one()] };
     const t = target(plan, o);
     if (t < 1 || t > TARGET_MAX) continue;
-    // Pairs add up to something worth adding (at least 3), and amounts never repeat back to back.
-    if (plan.mode === 'pair' && t < 3) continue;
+    if (plan.pairRules) {
+      const { minTotal, distinctPrices } = plan.pairRules;
+      if (t < minTotal || (distinctPrices && o.prices[0] === o.prices[1])) continue;
+    }
     if (out.length && target(plan, out.at(-1)!) === t) continue;
     out.push(o);
   }
