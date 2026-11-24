@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { evaluate, hintIndex, judge, layoutFor, makeBoard, makeLabels, MINUS, planFor } from './logic';
+import {
+  evaluate,
+  hintIndex,
+  judge,
+  layoutFor,
+  LOOKS,
+  makeBoard,
+  makeLabels,
+  MINUS,
+  pickLook,
+  planFor,
+  trailOrder,
+} from './logic';
 import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
 describe('Brain Break number order', () => {
@@ -132,5 +144,32 @@ describe('Brain Break on a phone held upright (chunk 31)', () => {
         ];
         expect(uprightProblems(v, targets), `${name} side ${side}`).toEqual([]);
       }
+  });
+});
+
+describe('Brain Break trail and pond looks', () => {
+  it('walks the stones in rank order, touching every stone once', () => {
+    for (let level = 1; level <= 6; level++)
+      for (let seed = 1; seed <= 50; seed++) {
+        const board = makeBoard(level, new Rng(seed)),
+          order = trailOrder(board);
+        expect(order.map((i) => board[i])).toEqual(board.map((_, i) => i + 1));
+        expect(new Set(order).size).toBe(board.length);
+        expect(order[0]).toBe(hintIndex(board, 1));
+      }
+  });
+  it('has three looks, all of which come up, and a look is drawn after the board so boards do not change', () => {
+    expect(Object.keys(LOOKS)).toHaveLength(3);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const rng = new Rng(seed),
+        board = makeBoard(2, rng);
+      makeLabels(board, 2, rng);
+      seen.add(pickLook(rng));
+      const again = new Rng(seed);
+      expect(makeBoard(2, again)).toEqual(board);
+      expect(pickLook(new Rng(seed))).toBe(pickLook(new Rng(seed)));
+    }
+    expect(seen.size).toBe(3);
   });
 });
