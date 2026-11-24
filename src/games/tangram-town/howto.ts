@@ -14,15 +14,20 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 7, text: 'To turn a shape, choose it and tap the round arrow; the yellow button helps.' },
     {
       from: 8,
-      to: 8,
+      to: 9,
       text: 'Find a shape facing the wrong way. Tap it, then use the round arrow to turn it in place.',
     },
     {
-      from: 8,
-      to: 8,
-      text: 'Turns are free experiments; four turns put a shape back. The yellow button shows a mismatch.',
+      from: 9,
+      to: 9,
+      text: 'The slanted shape can be mirrored: the purple arrows flip it, and no turn can do the same.',
     },
-    { from: 8, to: 8, text: 'Tap the green check when every shape matches its outline.' },
+    {
+      from: 8,
+      to: 9,
+      text: 'Turns and flips are free experiments. The yellow button shows a mismatch.',
+    },
+    { from: 8, to: 9, text: 'Tap the green check when every shape matches its outline.' },
     {
       from: 6,
       to: 7,
@@ -31,7 +36,7 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { to: 7, text: 'The round ends when the shapes fill the picture.' },
-    { from: 8, to: 8, text: 'A correct green check ends the repaired picture.' },
+    { from: 8, to: 9, text: 'A correct green check ends the repaired picture.' },
   ],
   note: 'For toddler, preschool and pre-K play, each piece says its shape name the first time you pick it up.',
 };

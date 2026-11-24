@@ -43,7 +43,12 @@ describe.each(Object.entries(views))('Tangram Town upright on %s', (_, v) => {
       const l = townLayout(v, b.targets.length);
       expect(l.tray).toHaveLength(b.targets.length);
       const t: Target[] = l.tray.map((p, i) => square(`piece ${i + 1}`, p, PIECE_HIT * 2));
-      const buttons = [l.help, ...(b.rotate ? [l.turn] : []), ...(b.repair ? [l.check] : [])];
+      const buttons = [
+        l.help,
+        ...(b.rotate ? [l.turn] : []),
+        ...(b.repair ? [l.check] : []),
+        ...(b.flip ? [l.flip] : []),
+      ];
       buttons.forEach((p, i) => t.push(square(`button ${i + 1}`, p, BUTTON_R * 2)));
       expect(uprightProblems(v, t)).toEqual([]);
     },

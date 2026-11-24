@@ -1,6 +1,9 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  fixFor,
+  looksSame,
+  makeFlipRepair,
   makeRepair,
   repairAction,
   repairMismatches,
@@ -140,7 +143,7 @@ it('level pools match the level: fewer pieces low down, a complementary pair at 
   }
   for (const b of builds(5)) expect(b.targets.length).toBe(4);
   for (const b of builds(6)) expect(b.targets.length).toBeGreaterThanOrEqual(3);
-  expect(PLANS.map((p) => p.outlines)).toEqual([true, true, true, true, true, false, false, true]);
+  expect(PLANS.map((p) => p.outlines)).toEqual([true, true, true, true, true, false, false, true, true]);
 });
 it('a piece dropped on any slot goes to a slot of its own shape and turn, so every slot can be filled in any order', () => {
   for (const id of PICTURE_IDS) {
@@ -298,4 +301,52 @@ it('the two-piece broom joins its handle to its brush and belongs only to the ea
   expect(PLANS.flatMap((p, i) => (p.pool.includes('broom') ? [i + 1] : []))).toEqual([1, 2, 3]);
   // Every seeded tray, its useful hint and real quarter-turn bot path are
   // exercised above for every pool entry; low levels require zero turns.
+});
+
+it('a flip makes a mirror that no turn can, and only the parallelogram needs one', () => {
+  const lean = { shape: 'parallelogram', turns: 0 } as const;
+  const mirrored = { ...lean, flip: true };
+  for (let k = 0; k < 4; k++) expect(looksSame({ ...lean, turns: k }, mirrored)).toBe(false);
+  expect(looksSame({ ...mirrored, flip: false }, lean)).toBe(true);
+  expect(looksSame({ ...mirrored, turns: 2 }, { ...mirrored })).toBe(true);
+  // A symmetric shape looks the same flipped; a flipped roof still points up.
+  expect(looksSame({ shape: 'roof', turns: 0, flip: true }, { shape: 'roof', turns: 0 })).toBe(true);
+  expect(looksSame({ shape: 'square', turns: 1, flip: true }, { shape: 'square', turns: 0 })).toBe(true);
+  expect(looksSame({ shape: 'roof', turns: 0 }, { shape: 'hull', turns: 0 })).toBe(false);
+});
+it('level 9 rounds have one wrong parallelogram, always fixable, and the bot flips only when a flip is needed', () => {
+  const plan = PLANS[8];
+  expect(plan.flip && plan.repair && plan.rotate).toBe(true);
+  const seen = new Set<string>();
+  for (const id of plan.pool) {
+    const targets = PICTURES[id] as readonly Target[];
+    expect(targets.filter((t) => t.shape === 'parallelogram')).toHaveLength(1);
+    for (let seed = 1; seed <= 60; seed++) {
+      const pieces = makeFlipRepair({ targets }, new Rng(seed)),
+        first = repairMismatches(targets, pieces);
+      expect(first).toHaveLength(1);
+      expect(targets[first[0]].shape).toBe('parallelogram');
+      seen.add(`${pieces[first[0]].flip ? 'flip' : 'plain'}${pieces[first[0]].turns % 2}`);
+      let selected: number | null = null,
+        flips = 0;
+      for (let k = 0; k < 10; k++) {
+        const a = repairAction(targets, pieces, selected);
+        if ('check' in a) break;
+        if ('pick' in a) selected = a.pick;
+        else if ('flip' in a) {
+          flips++;
+          pieces[selected!].flip = !pieces[selected!].flip;
+        } else pieces[selected!].turns = (pieces[selected!].turns + 1) % 4;
+      }
+      expect(repairMismatches(targets, pieces)).toEqual([]);
+      expect(repairAction(targets, pieces, selected)).toEqual({ check: true });
+      expect(flips).toBeLessThanOrEqual(1);
+    }
+  }
+  // Mirrored (either parity) and plainly turned a quarter all occur, so both buttons are needed across rounds.
+  expect([...seen].sort()).toEqual(['flip0', 'flip1', 'plain1']);
+  expect(fixFor({ shape: 'parallelogram', turns: 1 }, { shape: 'parallelogram', turns: 0 })).toEqual({
+    flip: false,
+    turns: 1,
+  });
 });

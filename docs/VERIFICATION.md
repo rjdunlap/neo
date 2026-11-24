@@ -52,7 +52,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `couchsunbeams` | 2026-11-04 · [Light Lab couch course Sunbeam Run (light-lab batch 2)](archive/VERIFICATION-2026-11-04.md#2026-11-04--light-lab-couch-course-sunbeam-run-light-lab-batch-2) | — |
 | `couchwords` | 2026-10-08 · [Word Search, a fourth grown-up-only game](archive/VERIFICATION-2026-10-07-13.md#word-search-a-fourth-grown-up-only-game-2026-10-08) | Three-grid bot course |
 | `creations` | 2026-10-09 · [Quiet music-making games](archive/VERIFICATION-2026-10-07-13.md#quiet-music-making-games-2026-10-09) | Room tune plaque and music dip |
-| `creative` | 2026-11-24 · [Stamp Studio level 11: Stamp a duck! (PR #2080)](verification/2026-11-23-stamp-studio-level-11-stamp-a-duck.md) | `CREATIVE_ONLY=stamps STAMP_LEVELS=11` |
+| `creative` | 2026-11-24 · [Tangram Town level 9: Flip it (PR #2100)](verification/2026-11-24-tangram-town-level-9-flip-it.md) | `CREATIVE_ONLY=tangram TANGRAM_TAP=skip FROM_LEVEL=8` (also `fingerdemo` at level 9); Stamp Studio level 11 (PR #2080) passed earlier with `CREATIVE_ONLY=stamps STAMP_LEVELS=11` |
 | `critternot` | 2026-10-15 · [Critter Crossing visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | — |
 | `crossword` | 2026-11-09 · [Crossword keeps the clue direction](archive/VERIFICATION-2026-11-09.md#2026-11-09--crossword-keeps-the-clue-direction-pr-1455) | — |
 | `cuestudio` | 2026-11-16 · [Cue Studio level 6, Pass the cue (P4c, PR #1726)](verification/2026-11-16-cue-studio-level-6-pass-the-cue-p4c-pr-1726.md) | `CUE_LEVELS=5,6` |
