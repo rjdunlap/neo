@@ -224,7 +224,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `welcomeways` | 2026-11-06 · [Welcome Ways levels 5–7](archive/VERIFICATION-2026-11-06.md#2026-11-06--welcome-ways-levels-57) | `WELCOME_ONLY=deep` |
 | `whoami` | 2026-11-20 · [Who Am I? level 8, the platypus](verification/2026-11-20-who-am-i-level-8-the-platypus.md) | — |
 | `woodland` | 2026-10-20 · [Mail Carrier: support truth (slice 1)](archive/VERIFICATION-2026-10-20.md#2026-10-20--mail-carrier-support-truth-slice-1) | — |
-| `woods` | 2026-11-24 · [Stop and Go level 7 Smart light (PR #2102)](verification/2026-11-24-stop-and-go-level-7-smart-light.md) | `WOODS_ONLY=go FROM_LEVEL=7` |
+| `woods` | 2026-11-24 · [Garden Grow level 7 colours from the pool](verification/2026-11-24-garden-grow-level-7-colours-from-the-pool.md) | `WOODS_ONLY=grow FROM_LEVEL=7`; earlier: Stop and Go level 7, `WOODS_ONLY=go FROM_LEVEL=7` (PR #2102) |
 | `wordcode` | 2026-11-20 · [Word Code levels 1-3](verification/2026-11-20-word-code-levels-1-3.md) | — |
 | `wordglue` | 2026-11-23 · [Word Glue level 9: full of or without](verification/2026-11-23-word-glue-level-9-full-of-or-without.md) | `WORDGLUE_ONLY=ending`, level 9 |
 | `wordsearchtouch` | 2026-11-05 · [Word Search school opening, level 8 (word-search batch 5)](archive/VERIFICATION-2026-11-05.md#2026-11-05--word-search-school-opening-level-8-word-search-batch-5) | Level 8, portrait and landscape |
