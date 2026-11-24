@@ -133,7 +133,7 @@ Each has a default below; the build proceeds on it.
 8. **Level 12 *Big and little*** (built; [PR #736](https://github.com/rjdunlap/neo/pull/736); new levels tier plus inspected portrait): three big and three little pigs, size-specific gates/signs/speech/hints, 0.32/0.22 scales retained during movement and support, centred 170-unit hit diameters; pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`.
 9. **Two shepherds** (built; [PR #737](https://github.com/rjdunlap/neo/pull/737); existing-game interaction tier): every finger on the grass shoos at levels 2–12 (`fleeFrom` caps pushes at one finger's top speed; follow mode follows the nearest finger), palm rejection kept (at most three fingers), one ring per finger, a lost touch dropped; the co-play line is a role.
 
-Gated: 13 *Two things at once* and a school window (decision 1).
+Not built: 13 *Two things at once* and a school window (deferred by the 2026-10-23 decision 1: no school band, 12 stays pre-K's top).
 
 ## What was built in this session
 

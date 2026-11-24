@@ -133,9 +133,9 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 4. **Level 5 *Whose light?* and the pre-K window** (new level; **built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4 (**built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
 6. Toddler level 10 *Wait for green* (**built**, [PR #1923](https://github.com/rjdunlap/neo/pull/1923)): order `[1, 10, 2]`, `entryLevels: [9, 10]`, mode `wait`; red is a nudge (decision 3, settled 2026-10-23). Checks: new-levels tier (typecheck, rule tests, one play of 10).
-7. *(Decision 2)* Level 7 *Smart light* and a school window.
-8. *(Decision 1)* Level 8 *Walk signal* after the safety review.
-9. *(Decision 4)* Companion driver; vehicle collection with the rework's unlocks.
+7. *(Decision 2 settled 2026-10-23: it waited on the `robots-automation` study, whose answer is to build it, as [RA6](subjects/robots-automation.md); level 7 is still free)* Level 7 *Smart light* and a school window. Not built.
+8. *(Deferred by the 2026-10-23 decision 1: not drafted or built for now, since street-crossing advice is practical safety instruction)* Level 8 *Walk signal* after the safety review.
+9. *(Decision 4 settled 2026-10-23: the companion drives first once its rework art settles; vehicles join with the rework's unlocks)* Companion driver; vehicle collection with the rework's unlocks.
 
 ## What was built in this session
 
