@@ -227,6 +227,50 @@ export function revealsPullRule(
 /** Where pad `i` (0-based) sits, as a fraction along the landing strip. */
 export const padAt = (i: number) => (i + 0.5) / PADS;
 
+/** The pull that lands on cloud `i` (0-based): the five notches on the spring (44, 72, 100, 128 and 156 units). */
+export const notchPull = (i: number) => pullFor(padAt(i));
+
+/**
+ * How many notches a pull has reached: 0 below the first, 5 at the last. Notch `i` counts as crossed once the pull
+ * reaches the pull that lands on cloud `i`, so a tick sounds exactly where the pet would land on that cloud.
+ */
+export function notchesReached(pull: number): number {
+  let n = 0;
+  for (let i = 0; i < PADS; i++) if (pull >= notchPull(i) - 0.5) n = i + 1;
+  return n;
+}
+
+/** The cloud (0-based) a landing at fraction `f` is nearest, so every landing, on a cloud or the grass, has a note. */
+export const nearestPad = (f: number) => Math.max(0, Math.min(PADS - 1, Math.round(f * PADS - 0.5)));
+
+/** The pentatonic step of cloud `i` (and of its notch): five rising steps from C5, so a bigger pull is a higher note. */
+export const NOTE_BASE = 5;
+export const notchStep = (i: number) => NOTE_BASE + i;
+
+/**
+ * Level 1's cloud bag: the five taps visit the five clouds once each, in a seeded order, so a round plays the scale
+ * in some order. Tap number `i` in a round of more taps than clouds starts a fresh bag.
+ */
+export function cloudBag(rng: Rng, taps = PADS): number[] {
+  const out: number[] = [];
+  while (out.length < taps) {
+    let bag = rng.shuffle(Array.from({ length: PADS }, (_, i) => i));
+    // A fresh bag never opens with the cloud the last one ended on.
+    if (out.length && bag[0] === out[out.length - 1]) bag = [...bag.slice(1), bag[0]];
+    out.push(...bag);
+  }
+  return out.slice(0, taps);
+}
+
+/** Four skies for plain island rounds; a round draws one from its seed. Same hills, same rules, a different mood. */
+export const SKIES: readonly { sky: [number, number]; hills: [number, number] }[] = [
+  { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86] },
+  { sky: [0xffc9a8, 0xfff1d6], hills: [0xcfeab0, 0xa6d98a] },
+  { sky: [0xb9b2f0, 0xf1e8ff], hills: [0xc4e8b8, 0x9ad6a0] },
+  { sky: [0x7fe0d4, 0xe6fbf4], hills: [0xd4eeb0, 0xa8dc84] },
+];
+export const skyIndex = (rng: Rng) => rng.int(0, SKIES.length - 1);
+
 /** Which pad a landing at fraction `f` touches, or -1 for the grass between. Pads are generous. */
 export function padHit(f: number, width = 0.85): number {
   const i = Math.round(f * PADS - 0.5);

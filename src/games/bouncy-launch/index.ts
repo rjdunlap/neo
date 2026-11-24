@@ -37,7 +37,14 @@ import {
   judge,
   MEADOW_LEVEL,
   meadowLandings,
+  nearestPad,
   nearestTick,
+  notchesReached,
+  notchPull,
+  notchStep,
+  cloudBag,
+  SKIES,
+  skyIndex,
   tickAt,
   TICKS,
   judgeFriend,
@@ -150,6 +157,16 @@ class BouncyLaunch implements Game {
   private readonly flag = new Graphics();
   private readonly flagNumbers = new Container();
   private readonly lastArc = new Graphics();
+  /** The five notches on the spring: arcs that brighten as the pull passes each. */
+  private readonly notches = new Graphics();
+  private notchKey = '';
+  /** How many notches the pull in hand has reached, so a tick sounds only as one is first crossed. */
+  private notchSeen = 0;
+  /** Footprint puffs on the grass where each landing came down (fractions along the strip). */
+  private readonly footprints = new Graphics();
+  private prints: number[] = [];
+  /** Level 1: the five taps visit the five clouds once each, in a seeded order. */
+  private bag: number[] = [];
   private readonly compareRing = new Graphics();
   private lastFlight: number | undefined;
   private arcAge = 0;
@@ -357,11 +374,13 @@ class BouncyLaunch implements Game {
         this.targets = [];
         this.landings = meadowLandings(ctx.rng, this.plan.shots);
       } else this.targets = targets(this.plan, ctx.rng);
+      if (this.plan.mode === 'tap') this.bag = cloudBag(ctx.rng, this.plan.shots);
     }
+    const skies = this.course ? SKIES[0] : SKIES[skyIndex(ctx.rng)];
     this.backdrop = new Backdrop(
       {
-        sky: [0x8fd3f7, 0xe9f7ff],
-        hills: [0xc8ecb0, 0x9edb86],
+        sky: skies.sky,
+        hills: skies.hills,
         horizon: 0.78,
         clouds: 4,
         sun: true,
@@ -393,6 +412,8 @@ class BouncyLaunch implements Game {
     this.flag.eventMode =
       this.flagNumbers.eventMode =
       this.lastArc.eventMode =
+      this.notches.eventMode =
+      this.footprints.eventMode =
       this.compareRing.eventMode =
       this.meadow.eventMode =
       this.lineArt.eventMode =
@@ -402,6 +423,7 @@ class BouncyLaunch implements Game {
       this.backdrop,
       ...this.planetBackdrops,
       this.meadow,
+      this.footprints,
       this.lineArt,
       this.lineNumbers,
       this.planetArt,
@@ -455,9 +477,11 @@ class BouncyLaunch implements Game {
       ctx.track(this.friend);
       ctx.stage.addChild(this.friend, this.snack);
     }
-    ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
+    ctx.stage.addChild(this.star, this.spring, this.notches, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
-      onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
+      onTap(this.pet, () => void this.launch(padAt(this.bag[this.shot] ?? this.ctx.rng.int(0, PADS - 1))), {
+        cooldown: 500,
+      });
     } else if (this.plan.mode === 'meadow') {
       // A touch anywhere, the pet included, bounces it; the round button keeps the instruction above the screen layer.
       ctx.stage.addChildAt(this.meadowInput, ctx.stage.getChildIndex(this.replay));
@@ -478,6 +502,7 @@ class BouncyLaunch implements Game {
         this.askNow();
         this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global) };
         this.rawPull = 0;
+        this.notchSeen = 0;
         this.wobble = 0.35;
         this.pet.rotation = 0.07;
         sfx.squeak(6);
@@ -656,6 +681,8 @@ class BouncyLaunch implements Game {
     this.placeFriend();
     this.drawHistory();
     this.drawFlag();
+    this.notchKey = '';
+    this.drawFootprints();
     if (this.plan.mode === 'planet') this.drawPlanet(v);
   }
 
@@ -709,6 +736,7 @@ class BouncyLaunch implements Game {
     this.clock += dt;
     this.arcAge += dt;
     this.lastArc.alpha = Math.max(0, 1 - this.arcAge / 16);
+    this.drawNotches();
     if (!this.flying && this.wobble > 0) {
       this.wobble = Math.max(0, this.wobble - dt);
       this.pet.rotation = (0.09 * Math.sin(this.clock * 35) * this.wobble) / 0.35;
@@ -863,7 +891,60 @@ class BouncyLaunch implements Game {
       dy *= MAX_PULL / d;
     }
     this.pet.position.set(this.seat.x + dx, this.seat.y + dy);
+    this.tickNotches();
     this.drawPreview();
+  }
+
+  /** The notches and footprints belong to plain island pulls, not to couch play or the Cloud Hopper course. */
+  private get notched() {
+    const m = this.plan.mode;
+    return (
+      !this.course &&
+      !this.ctx.couch &&
+      (m === 'free' || m === 'star' || m === 'number' || m === 'compare' || m === 'friend' || m === 'nearfar')
+    );
+  }
+
+  /** A quiet tick, one pentatonic step higher for each notch the pull first reaches. */
+  private tickNotches() {
+    if (!this.notched) return;
+    const n = notchesReached(this.pullNow());
+    for (let i = this.notchSeen; i < n; i++) sfx.pluck(notchStep(i), 0.12);
+    this.notchSeen = n;
+  }
+
+  /** The five notches: faint white arcs on the grass side of the spring that turn yellow as the pull passes them. */
+  private drawNotches() {
+    const reached = this.grab ? notchesReached(this.pullNow()) : 0;
+    const key = `${this.notched}|${reached}|${this.seat.x}|${this.seat.y}|${this.flying}|${this.finished}`;
+    if (key === this.notchKey) return;
+    this.notchKey = key;
+    const g = this.notches.clear();
+    if (!this.notched || this.flying || this.finished) return;
+    // Five arcs around the seat in the back-and-down quarter, one per notch, so a pull in any direction crosses them.
+    for (let i = 0; i < PADS; i++) {
+      const on = i < reached;
+      g.arc(this.seat.x, this.seat.y, notchPull(i), Math.PI * 0.5, Math.PI).stroke({
+        width: on ? 9 : 6,
+        color: on ? swatch.yellow.fill : 0xffffff,
+        alpha: on ? 1 : 0.75,
+        cap: 'round',
+      });
+    }
+  }
+
+  /** A soft footprint on the grass for each landing so far, so a round ends with the pulls she made. */
+  private drawFootprints() {
+    const g = this.footprints.clear();
+    if (!this.notched && this.plan.mode !== 'predict') return;
+    if (this.course || this.ctx.couch || this.plan.mode === 'friend') return;
+    for (const f of this.prints) {
+      const x = this.landX(f);
+      g.ellipse(x, this.strip.y + 18, 38, 11)
+        .fill({ color: 0xffffff, alpha: 0.75 })
+        .stroke({ width: 4, color: 0xbfe0f4 });
+      g.ellipse(x - 8, this.strip.y + 15, 14, 4).fill({ color: 0xffffff, alpha: 0.9 });
+    }
   }
 
   private pullNow() {
@@ -1114,6 +1195,10 @@ class BouncyLaunch implements Game {
     const planet =
       this.plan.mode === 'planet' && this.planetPhase !== 'home' ? this.pairs[this.shot].planet : undefined;
     sfx.pop(planet === 'light' ? 5 : planet === 'heavy' ? 3 : 4);
+    // The landing rings the note of the cloud it is nearest, the same step as that cloud's notch.
+    if (!this.course && !planet && this.plan.mode !== 'meadow') sfx.marimba(notchStep(nearestPad(f)), 0.28);
+    this.prints.push(f);
+    this.drawFootprints();
     this.ctx.particles.burst(this.pet.x, this.pet.y, {
       colors: [0xffffff, 0xd6eefa],
       count: 14,
