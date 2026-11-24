@@ -16,6 +16,9 @@ export const VOICE = {
     'Make a picture of two friends on an adventure. Your story can be anything! Finish with the green arrow.',
   ],
   'stamp.kind': ['{kind}! Tap the paper to stamp it.'],
+  'stamp.ask': ['Stamp a {animal}!'],
+  'stamp.wrong': ["That's {got}! Find the {want}."],
+  'stamp.free': ['You stamped them all! Now make any picture you like, then tap the green arrow.'],
   'stamp.full': [
     'Your paper has lots of stamps! Undo a stamp with the back arrow, or finish with the green arrow.',
   ],
