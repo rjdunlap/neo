@@ -16,6 +16,7 @@ import {
   STAGE_OF,
 } from './logic';
 import { STAGES } from './stages';
+import { placeAfterMiss, planFor as planOf, tunesOf as tunesAt } from './logic';
 import { stepHz } from '../../audio/notes';
 import {
   awakeJellies,
@@ -319,6 +320,28 @@ describe('Jelly Drums sound sets and stages', () => {
       expect(contrast(look.string, look.sky[0])).toBeGreaterThan(3);
       // An unlit bulb shows by its fill or its rim (Music Mountain's pale bulbs show by their fill).
       expect(Math.max(...look.bulbOff.map((c) => contrast(c, look.sky[0])))).toBeGreaterThan(1.5);
+    }
+  });
+});
+
+describe('Jelly Drums resume where she was', () => {
+  it('keeps her place on four- and five-note tunes, and restarts shorter ones', () => {
+    for (const length of [4, 5])
+      for (let at = 0; at < length; at++) expect(placeAfterMiss(length, at)).toBe(at);
+    for (const length of [2, 3])
+      for (let at = 0; at < length; at++) expect(placeAfterMiss(length, at)).toBe(0);
+  });
+
+  it('leaves the notes still to play equal to the tune from her place, at every echo level and place', () => {
+    for (let level = 1; level <= 10; level++) {
+      const plan = planOf(level);
+      if (plan.mode !== 'echo') continue;
+      for (const tune of tunesAt(plan.length)) {
+        for (let at = 0; at < tune.notes.length; at++) {
+          const place = placeAfterMiss(tune.notes.length, at);
+          expect(tune.notes.slice(place)).toEqual(plan.length >= 4 ? tune.notes.slice(at) : tune.notes);
+        }
+      }
     }
   });
 });

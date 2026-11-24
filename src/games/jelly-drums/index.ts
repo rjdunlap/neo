@@ -24,7 +24,9 @@ import {
   JellyNamer,
   jellyToTap,
   nearestAwake,
+  placeAfterMiss,
   planFor,
+  RESUME_FROM_LENGTH,
   ScaleWatch,
   SET_STEPS,
   soundSetFor,
@@ -71,6 +73,8 @@ class JellyDrums implements Game {
   private played: Tune[] = [];
   /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
   private readonly again: RoundButton;
+  /** Four- and five-note tunes: dots for the notes she has right so far (her place after a miss). */
+  private readonly ticks = new Graphics();
   /** Free play: a quiet jelly wiggles after a while without a touch. */
   private readonly nudge = new IdleNudge();
   /** Free play: the voice names a jelly now and then. */
@@ -117,7 +121,9 @@ class JellyDrums implements Game {
       ...this.jellies,
       ...this.fans,
       this.again,
+      this.ticks,
     );
+    this.ticks.eventMode = 'none';
     if (this.plan.mode === 'wake') {
       this.jellies.forEach((j) => (j.eventMode = 'none'));
       onTap(
@@ -167,6 +173,7 @@ class JellyDrums implements Game {
 
     this.jellies.forEach((j, i) => j.position.set(l.jellies[i].x, l.jellies[i].y));
     this.again.position.set(l.again.x, l.again.y);
+    this.ticks.position.set(l.again.x, l.again.y - 85);
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
@@ -220,6 +227,7 @@ class JellyDrums implements Game {
     if (this.phase !== 'turn') return; // while the jellies sing, taps just make music
     if (i === this.tune[this.at]) {
       this.at++;
+      this.drawTicks();
       if (this.at >= this.tune.length) void this.copied();
       else if (this.wrongThisTune >= 2) this.jellies[this.tune[this.at]].glow(1.2);
     } else {
@@ -357,6 +365,7 @@ class JellyDrums implements Game {
     const tune = drawTune(this.ctx.rng, this.plan.length, this.played);
     this.played.push(tune);
     this.tune = tune.notes;
+    this.drawTicks();
     if (tune.title) await this.ctx.say(tune.title);
     await this.playTune(false);
     this.phase = 'turn';
@@ -378,12 +387,29 @@ class JellyDrums implements Game {
   private async listenAgain() {
     if (this.phase !== 'turn') return;
     this.phase = 'listen';
-    this.at = 0;
+    this.at = placeAfterMiss(this.tune.length, this.at);
+    this.drawTicks();
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
     this.phase = 'turn';
     void this.ctx.instruct('jelly.turn');
-    if (help) this.jellies[this.tune[0]].glow(1.5);
+    if (help) this.jellies[this.tune[this.at]].glow(1.5);
+  }
+
+  /** Long tunes keep her place after a miss, so a row of dots ticks off the notes she has right (all empty on a restart). */
+  private drawTicks() {
+    const n = this.tune.length;
+    this.ticks.clear();
+    if (this.plan.mode !== 'echo' || this.ctx.couch || n < RESUME_FROM_LENGTH) return;
+    const gap = 44;
+    for (let k = 0; k < n; k++) {
+      const x = (k - (n - 1) / 2) * gap;
+      const done = k < this.at;
+      this.ticks
+        .circle(x, 0, 15)
+        .fill(done ? swatch.green.fill : 0xffffff)
+        .stroke({ width: 4, color: swatch.green.line });
+    }
   }
 
   private async copied() {
@@ -406,13 +432,14 @@ class JellyDrums implements Game {
     if (this.wrongThisTune === 2) this.hints++;
     await this.ctx.tw.wait(0.5);
     await this.ctx.say('jelly.oops');
-    this.at = 0;
+    this.at = placeAfterMiss(this.tune.length, this.at);
+    this.drawTicks();
     const help = this.wrongThisTune >= 2;
     await this.playTune(help);
     this.phase = 'turn';
     void this.ctx.instruct('jelly.turn');
     // After two tries, light the way: the next jelly to tap glows.
-    if (help) this.jellies[this.tune[0]].glow(1.5);
+    if (help) this.jellies[this.tune[this.at]].glow(1.5);
   }
 
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
