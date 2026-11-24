@@ -99,12 +99,17 @@ class JarClues implements Game {
   /** The note's words; null shows the default for the phase (what to do, or the earlier clues). */
   private noteText: string | null = null;
   private stroke: Stroke | null = null;
+  /** The finger on the board and the number under it: the lens lifts that number clear of the thumb. */
+  private touch: { id: number; n: number } | null = null;
   private readonly backdrop: Backdrop;
   private readonly chrome = new Graphics();
   private readonly jarArt = new Graphics();
   private readonly boardArt = new Graphics();
   private readonly marksArt = new Graphics();
   private readonly glow = new Graphics();
+  private readonly lens = new Container();
+  private readonly lensArt = new Graphics();
+  private readonly lensNum: Text = label('', 40);
   private readonly texts = new Container();
   private readonly numbers: Text[] = [];
   private readonly note: Text = label('', 24);
@@ -134,6 +139,10 @@ class JarClues implements Game {
     this.L = layout(ctx.view);
     for (const g of [this.chrome, this.jarArt, this.boardArt, this.marksArt, this.glow]) g.eventMode = 'none';
     this.texts.eventMode = 'none';
+    this.lens.eventMode = 'none';
+    this.lens.visible = false;
+    this.lensNum.eventMode = 'none';
+    this.lens.addChild(this.lensArt, this.lensNum);
     for (const t of [this.note, this.clueText]) {
       t.eventMode = 'none';
       t.style.wordWrap = true;
@@ -150,7 +159,15 @@ class JarClues implements Game {
     this.pad.on('pointerup', this.onUp);
     this.pad.on('pointerupoutside', this.onUp);
     // Pixi does not pass the DOM's pointercancel on: a stroke a system gesture swallows ends here.
-    ctx.listen(window, 'pointercancel', () => (this.stroke = null), { capture: true });
+    ctx.listen(
+      window,
+      'pointercancel',
+      () => {
+        this.stroke = null;
+        this.lift(null);
+      },
+      { capture: true },
+    );
     onTap(this.clueCard, () => this.rehear());
     onTap(this.help, () => this.askForHint());
     onTap(this.next, () => this.pressNext());
@@ -167,6 +184,7 @@ class JarClues implements Game {
       this.note,
       this.clueText,
       this.pad,
+      this.lens,
       this.clueCard,
       this.help,
       this.next,
@@ -204,6 +222,7 @@ class JarClues implements Game {
   destroy() {
     this.finished = true;
     this.stroke = null;
+    this.lift(null);
     this.gen++;
   }
 
@@ -220,16 +239,24 @@ class JarClues implements Game {
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     const n = numberAt(this.L, p.x, p.y);
     if (n === null) return;
-    if (this.phase === 'guess') return this.plant(n);
-    if (this.phase !== 'clues') return;
-    const crossed = !this.marks[n - 1];
-    this.stroke = { id: e.pointerId, crossed, last: { x: p.x, y: p.y } };
-    this.mark(n, crossed);
+    this.touch = { id: e.pointerId, n };
+    if (this.phase === 'guess') this.plant(n);
+    else if (this.phase === 'clues') {
+      const crossed = !this.marks[n - 1];
+      this.stroke = { id: e.pointerId, crossed, last: { x: p.x, y: p.y } };
+      this.mark(n, crossed);
+    }
+    this.lift(this.touch);
   };
 
   private onMove = (e: FederatedPointerEvent) => {
+    if (this.touch && e.pointerId === this.touch.id) {
+      const q = this.pad.toLocal(e.global);
+      const m = Number.isFinite(q.x) && Number.isFinite(q.y) ? numberAt(this.L, q.x, q.y) : null;
+      if (m !== null) this.touch.n = m;
+    }
     const s = this.stroke;
-    if (!s || e.pointerId !== s.id || this.phase !== 'clues') return;
+    if (!s || e.pointerId !== s.id || this.phase !== 'clues') return this.lift(this.touch);
     const p = this.pad.toLocal(e.global);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     // Every number the finger passes takes the stroke's state, even when a quick sweep skips a frame.
@@ -242,11 +269,43 @@ class JarClues implements Game {
       if (n !== null) this.mark(n, s.crossed);
     }
     s.last = { x: p.x, y: p.y };
+    this.lift(this.touch);
   };
 
   private onUp = (e: FederatedPointerEvent) => {
     if (this.stroke && e.pointerId === this.stroke.id) this.stroke = null;
+    if (this.touch && e.pointerId === this.touch.id) this.lift(null);
   };
+
+  /**
+   * The lens: a number is 37 CSS px wide on an upright phone, so while a finger is down its number shows large above the thumb, ringed red
+   * and struck through when it is crossed off. It follows the finger and goes when the finger lifts.
+   */
+  private lift(t: { n: number } | null) {
+    if (!t) this.touch = null;
+    const n = t?.n;
+    this.lens.visible = n !== undefined && !this.finished;
+    if (n === undefined || !this.lens.visible) return;
+    const cell = this.L.board.cell;
+    const b = cellBox(this.L, n);
+    const r = Math.round(cell * 0.95);
+    const x = Math.min(this.ctx.view.w - r - 8, Math.max(r + 8, b.x));
+    const y = Math.max(r + 8, b.y - cell * 2.1);
+    const crossed = this.phase === 'clues' && this.marks[n - 1];
+    const g = this.lensArt.clear();
+    g.circle(x, y, r)
+      .fill({ color: cream })
+      .stroke({ width: 6, color: crossed ? swatch.red.line : wood.light });
+    const num = this.lensNum;
+    num.text = String(n);
+    num.style.fontSize = Math.round(r * 1.1);
+    num.style.fill = crossed ? swatch.red.line : ink;
+    num.position.set(x, y);
+    if (crossed)
+      g.moveTo(x - r * 0.55, y + r * 0.55)
+        .lineTo(x + r * 0.55, y - r * 0.55)
+        .stroke({ width: 8, color: swatch.red.line, cap: 'round' });
+  }
 
   private plant(n: number) {
     sfx.pop(4);
@@ -615,6 +674,7 @@ class JarClues implements Game {
     hit(this.next, L.next);
     for (const t of this.numbers) t.style.fontSize = Math.round(L.board.cell * 0.42);
     this.stroke = null;
+    this.lift(null);
     this.draw();
   }
 
