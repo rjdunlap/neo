@@ -152,7 +152,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-    for (let level = 1; level <= 10 && (!only || only === 'jelly'); level++) {
+    for (let level = 1; level <= 11 && (!only || only === 'jelly'); level++) {
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -185,13 +185,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               throw new Error(`Jelly listen-again counted: ${g.misses} ${g.hints}`);
             for (let k = 0; k < 2; k++) {
               await turn();
-              await hit((g.tune[0] + 1) % 5);
+              await hit((g.answer[0] + 1) % 5);
             }
             await turn();
-            if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.tune[0]].glowLeft <= 0)
+            if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.answer[0]].glowLeft <= 0)
               throw new Error(`Jelly hint: ${g.misses} ${g.hints}`);
           }
-          const tune = [...g.tune];
+          const tune = [...g.answer];
           for (const i of tune) await hit(i);
           await kit.until(() => g.phase !== 'turn', 3000);
         }
@@ -1574,7 +1574,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 10,
+      'jelly-drums': 11,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,
