@@ -230,6 +230,59 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         );
         continue;
       }
+      if (level === 9) {
+        // Three little skies: three pictured skies, one of each weather, matched with the weather buttons; no days.
+        // The upright phone layout is checked by BROWSER_SUITE=uprightgames (a touch phone context).
+        await wait();
+        const start = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            phase: g.phase,
+            total: g.total,
+            skies: [...g.week].sort().join(),
+            shown: g.records.filter((r) => r.visible).length,
+            heading: g.heading.text,
+            confirm: g.confirm.visible,
+          };
+        });
+        assert.deepEqual(start, {
+          phase: 'weather',
+          total: 3,
+          skies: '0,1,2',
+          shown: 3,
+          heading: 'Three little skies',
+          confirm: false,
+        });
+        await screenshot('day-by-day-9-skies');
+        for (let attempt = 0; attempt < 2; attempt++) {
+          await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node');
+          await wait();
+        }
+        assert.deepEqual(
+          await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]),
+          [2, 1, true],
+        );
+        for (let guard = 0; guard < 6 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+          await tap('neo.scene.game.choices.find(p => p.n === neo.scene.game.answer).node');
+          await page.waitForTimeout(170);
+          await wait();
+        }
+        await finished('day-by-day');
+        assert.equal(await page.evaluate(() => neo.scene.game.recorded), 3);
+        const texts = await page.evaluate(() => [neo.scene.game.caption.text, neo.scene.game.heading.text]);
+        assert.ok(!texts.some((t) => /day|week/i.test(t)), `no day or week words: ${texts}`);
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('day-by-day').history.at(-1);
+            return [r.level, r.misses, r.hints];
+          }),
+          [9, 2, 1],
+        );
+        log(
+          'Day by Day 9: three pictured skies, two misses and one hint glow, three records, no day names, sticker saved',
+        );
+        continue;
+      }
       // Naming a wrong card is exploration; only the placing arrow commits an answer.
       await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node');
       await wait();

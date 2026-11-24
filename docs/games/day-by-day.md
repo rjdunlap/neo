@@ -2,12 +2,13 @@
 
 <!-- generated: from src/games/day-by-day; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** weekday order, yesterday and tomorrow, weather records, counting observations, comparing evidence
 
 | Band | Levels, easiest first |
 | --- | --- |
+| preschool | 9 |
 | pre-K | 1, 2, 4 |
 | school | 2, 4, 10, 3, 5, 6 |
 
@@ -19,6 +20,7 @@
 | 4 | A day beside any day |
 | 5 | Count this weather, including none |
 | 6 | Weather Window: compare two supplied weeks |
+| 9 | Three little skies: match three pictured skies |
 | 10 | Count beside the record |
 
 <!-- end generated -->

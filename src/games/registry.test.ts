@@ -341,13 +341,13 @@ describe('game registry', () => {
     }
   });
 
-  it('places Day by Day’s supplied-record bridge before 3, preserving IDs and birthday/pin landing', () => {
+  it('places Day by Day’s supplied-record bridge before 3 and its preschool skies apart, preserving IDs and birthday/pin landing', () => {
     const g = gameById('day-by-day')!;
     const school = g.levels('school'),
       prek = g.levels('prek');
     expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
-    expect(g.entryLevels).toEqual([10]);
+    expect(g.entryLevels).toEqual([10, 9]);
     expect(stepLevel(4, 1, school)).toBe(10);
     expect(stepLevel(10, 1, school)).toBe(3);
     expect(stepLevel(3, -1, school)).toBe(10);
@@ -359,6 +359,13 @@ describe('game registry', () => {
       expect(nextLevel(landing(level, school, g.entryLevels), [], school)).toBe(level);
     expect(landing(10, prek, g.entryLevels)).toBe(1);
     expect(landing(4, school, g.entryLevels)).toBe(4); // birthday from pre-K
+    // Three little skies (9) is preschool's only level; leaving it, pre-K starts at 1 and school at 2.
+    const preschool = g.levels('preschool');
+    expect(levelsInOrder(preschool)).toEqual([9]);
+    expect(nextLevel(landing(9, preschool, g.entryLevels), [], preschool)).toBe(9);
+    expect(landing(9, prek, g.entryLevels)).toBe(1);
+    expect(landing(9, school, g.entryLevels)).toBe(2);
+    expect(landing(10, preschool, g.entryLevels)).toBe(9);
   });
 
   it('places Rhythm Neighbors 7 first for lap, 8 and 9 between 2 and 3 for toddlers and 9 first for preschool without moving saved levels', () => {

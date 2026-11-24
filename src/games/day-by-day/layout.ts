@@ -14,7 +14,8 @@ function row(count: number, x: number, y: number, step: number) {
 }
 
 /** Keep the calendar in reading order, with two full-size rows on a phone. */
-function recordPositions(x: number, y: number, upright?: true) {
+function recordPositions(x: number, y: number, upright?: true, count = 7) {
+  if (count < 7) return row(count, x, y, 118);
   return upright ? [...row(4, x, y, 118), ...row(3, x, y + 140, 118)] : row(7, x, y, 118);
 }
 
@@ -47,14 +48,15 @@ function portraitPlacement(view: View) {
   return { short, top, arrowX };
 }
 
-export function weekLayout(view: View) {
+/** `count` is the round's records: seven for a pretend week, three for Three little skies (one row everywhere). */
+export function weekLayout(view: View, count = 7) {
   const { w, h, upright } = view;
   const x = w / 2;
   const { short, top, arrowX } = portraitPlacement(view);
   return {
     heading: { x, y: top + 120 },
     caption: { x: x + (upright ? 32 : 0), y: top + 176 },
-    records: recordPositions(x, top + 280, upright),
+    records: recordPositions(x, top + 280, upright, count),
     sky: { x, y: top + (upright ? 555 : 378) },
     note: { x, y: top + (upright ? 628 : 570) },
     choices: row(3, x, top + (upright ? 710 : 470), 190),

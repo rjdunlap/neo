@@ -126,6 +126,7 @@ export const PREFIXES = [
   'cut',
   'window',
   'week',
+  'skies',
   'domino-pond',
   'domino-run',
   'drift',

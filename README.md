@@ -145,7 +145,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Teddy Doctor](docs/games/teddy-doctor.md) | lap–school | Cozy Village | 8 | touch the patient to put bandages on boo-boos |
 | [Market Stall](docs/games/market-stall.md) | preschool–school | Cozy Village | 10 | count out shell coins at fruit, flower or balloon stalls |
 | [Clock Tower](docs/games/clock-tower.md) | pre-K–school | Cozy Village | 7 | turn the short hand to an o'clock time |
-| [Day by Day](docs/games/day-by-day.md) | pre-K–school | Cozy Village | 7 | place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden |
+| [Day by Day](docs/games/day-by-day.md) | preschool–school | Cozy Village | 8 | place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden |
 | [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 8 | lap entry: one big lamp, a touch anywhere turns it, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–school | Cozy Village | 12 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 7 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |

@@ -304,7 +304,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Day by Day
 
-*pre-K–school* · [Day by Day](games/day-by-day.md)
+*preschool–school* · [Day by Day](games/day-by-day.md)
 
 ### Stop and Go
 

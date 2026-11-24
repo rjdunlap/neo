@@ -13,6 +13,7 @@ export const PLANS = [
 ] as const;
 
 export const LEVELS: BandLevels = {
+  preschool: { min: 9, max: 9 },
   prek: { min: 1, max: 4, order: [1, 2, 4] },
   school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] },
 };
@@ -32,8 +33,25 @@ export function makeWeatherWeek(rng: Rng, weather: number): number[] {
   return rng.shuffle(Array.from({ length: 7 }, (_, i) => (i < count ? weather : rng.pick(others))));
 }
 const COUNT_PLAN = { name: 'Count beside the record', relatives: false, tally: true } as const;
+/** Preschool's entry: three pictured skies matched with the weather buttons. No weekdays, and not a week. */
+export const SKIES_LEVEL = 9;
+const SKIES_PLAN = {
+  name: 'Three little skies: match three pictured skies',
+  relatives: false,
+  tally: false,
+} as const;
 export const planFor = (level: number) =>
-  level === COUNT_LEVEL ? COUNT_PLAN : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+  level === COUNT_LEVEL
+    ? COUNT_PLAN
+    : level === SKIES_LEVEL
+      ? SKIES_PLAN
+      : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+/** How many observations a round records: three little skies, otherwise a pretend week of seven. */
+export const recordCount = (level: number) => (level === SKIES_LEVEL ? 3 : 7);
+/** One sunny, one cloudy and one rainy sky in a seeded order, so every round shows all three categories. */
+export function makeSkies(rng: Rng): number[] {
+  return rng.shuffle([0, 1, 2]);
+}
 /** Supplied bridge evidence: three suns among both other skies, varied by the round seed. */
 export function makeCountWeek(rng: Rng): readonly number[] {
   return Object.freeze(rng.shuffle([0, 0, 0, 1, 1, 2, 2]));

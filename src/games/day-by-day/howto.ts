@@ -10,6 +10,11 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 5, text: 'Look at the sky picture, then tap the matching weather button to record that day.' },
     {
+      from: 9,
+      to: 9,
+      text: 'Look at each of three sky pictures, then tap the matching sunny, cloudy or rainy button to record it.',
+    },
+    {
       from: 2,
       to: 3,
       text: 'After Sunday, choose tomorrow and yesterday for the days spoken. Tap the arrow to confirm. The week repeats from Sunday to Monday.',
@@ -51,6 +56,11 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
+    {
+      from: 9,
+      to: 9,
+      text: 'The round ends after the three sky pictures are matched. Two wrong taps glow the matching button. There are no days or weeks to name.',
+    },
     { to: 1, text: 'The round ends after all seven days and their weather are recorded.' },
     { from: 2, to: 2, text: 'Record the week and answer two yesterday/tomorrow questions to finish.' },
     {
