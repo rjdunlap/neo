@@ -283,6 +283,20 @@ export function groundTap(
 }
 
 /**
+ * How the tip-out levels answer a touch while the basket is tipping (the busy window): a touch never feeds, scoops or counts,
+ * but it is never silent. The basket (or open grass) squishes, a fruit that has landed wiggles; once the round is over the
+ * celebration owns the screen. Null means the ordinary handler runs.
+ */
+export function busyTouch(
+  busy: boolean,
+  finished: boolean,
+  on: 'basket' | 'piece' | 'ground',
+): 'squish' | 'wiggle' | null {
+  if (!busy || finished) return null;
+  return on === 'piece' ? 'wiggle' : 'squish';
+}
+
+/**
  * What a capable child touches next, for the ghost finger on the how-to card: tip a full basket, scoop up the pieces on
  * the ground, or in a counting level put in the number and then tap the check. Null once the round is done.
  */

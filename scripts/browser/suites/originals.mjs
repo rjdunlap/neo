@@ -1145,6 +1145,30 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       if (level === 4) await portrait(true);
       await launch('fill-dump', level);
       await page.waitForTimeout(400);
+      if (level <= 2) {
+        // Busy window: touches while the basket tips are answered (squish, wiggle) and never counted.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          if (g.state.target !== null || g.busy) throw new Error('Level 1-2 starts as a tip-out');
+          kit.tapOn(g.basket.front);
+          await kit.sleep(500);
+          if (!g.busy) throw new Error('A full basket tips');
+          const before = JSON.stringify(g.state);
+          kit.tapOn(g.basket.front);
+          await kit.sleep(100);
+          if (!(g.basket.pop > 0)) throw new Error('A touch on the tipping basket squishes it');
+          const landed = g.pieces.find((p) => p.view.eventMode === 'static');
+          if (landed) {
+            kit.tapOn(landed.view);
+            await kit.sleep(100);
+            if (!g.wiggles.has(landed.i)) throw new Error('A landed fruit wiggles when touched');
+          }
+          if (JSON.stringify(g.state) !== before) throw new Error('A busy touch must not change the round');
+          while (g.busy) await kit.sleep(100);
+          await kit.sleep(500);
+          if (g.wiggles.size) throw new Error('Wiggles settle');
+        });
+      }
       if (level === 5) {
         await page.evaluate(async () => {
           const g = neo.scene.game;
