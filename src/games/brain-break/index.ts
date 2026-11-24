@@ -19,12 +19,17 @@ import {
   makeBoard,
   makeLabels,
   makeTrail,
+  makeValues,
+  orderSign,
   pickLook,
   planFor,
   ruleSign,
   showsSums,
+  sortsValues,
+  speakNumber,
   trailOrder,
   trailValue,
+  writeNumber,
   type Look,
   type Trail,
 } from './logic';
@@ -50,6 +55,8 @@ class BrainBreak implements Game {
   labels: string[];
   /** The count-by rule from level 7; the board then holds ranks and the stones show what the rule makes. */
   readonly rule: Trail | null;
+  /** From level 9 the board holds ranks and each stone shows the number its rank stands for, smallest first. */
+  readonly values: number[] | null;
   readonly sums: boolean;
   readonly stones: Container[] = [];
   private readonly texts: Text[] = [];
@@ -77,6 +84,8 @@ class BrainBreak implements Game {
     this.look = pickLook(ctx.rng);
     this.rule = countsBy(ctx.level) ? makeTrail(ctx.level, ctx.rng) : null;
     if (this.rule) this.labels = this.board.map((rank) => String(trailValue(this.rule!, rank)));
+    this.values = sortsValues(ctx.level) ? makeValues(ctx.level, ctx.rng) : null;
+    if (this.values) this.labels = this.board.map((rank) => writeNumber(this.values![rank - 1]));
     this.order = trailOrder(this.board);
     this.background.eventMode =
       this.status.eventMode =
@@ -111,7 +120,9 @@ class BrainBreak implements Game {
   }
   start() {
     const r = this.rule;
-    if (r)
+    if (this.values)
+      void this.ctx.instruct(this.values.some((v) => v < 0) ? 'brain.order.startBelow' : 'brain.order.start');
+    else if (r)
       void this.ctx.instruct(r.back ? 'brain.count.startBack' : 'brain.count.start', {
         s: r.step,
         v: trailValue(r, 1),
@@ -128,6 +139,8 @@ class BrainBreak implements Game {
       sfx.boing();
       this.nudge(this.stones[i]);
       if (this.consecutive === 2) this.askForHint();
+      else if (this.values)
+        void this.ctx.say('brain.order.try', { m: speakNumber(this.values[this.board[i] - 1]) });
       else if (this.rule) this.sayCountTry(this.rule, this.board[i]);
       else if (this.sums) void this.ctx.say('brain.sums.try', { m: this.board[i], n: this.next });
       else void this.ctx.say('brain.try', { n: this.next });
@@ -143,7 +156,9 @@ class BrainBreak implements Game {
     if (this.next > this.board.length) {
       this.finished = true;
       void this.complete();
-    } else if (this.rule) {
+    } else if (this.values)
+      void this.ctx.say('brain.order.next', { p: speakNumber(this.values[this.next - 2]) });
+    else if (this.rule) {
       const r = this.rule;
       void this.ctx.say(r.back ? 'brain.count.nextBack' : 'brain.count.next', {
         p: trailValue(r, this.next - 1),
@@ -217,16 +232,19 @@ class BrainBreak implements Game {
     this.hints++;
     this.hinted = hintIndex(this.board, this.next);
     this.draw();
-    if (this.rule) void this.ctx.say('brain.count.hint', { v: trailValue(this.rule, this.next) });
+    if (this.values) void this.ctx.say('brain.order.hint', { v: speakNumber(this.values[this.next - 1]) });
+    else if (this.rule) void this.ctx.say('brain.count.hint', { v: trailValue(this.rule, this.next) });
     else void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
   }
   private draw() {
     this.status.text =
       this.next > this.board.length
         ? 'All stones lit!'
-        : this.rule
-          ? `${ruleSign(this.rule, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
-          : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
+        : this.values
+          ? `${orderSign(this.values, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
+          : this.rule
+            ? `${ruleSign(this.rule, this.next)}   ·   ${this.next - 1} / ${this.board.length}`
+            : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
     this.drawTrail(this.next - 1);
     this.marks.clear();
     this.glow.clear();
@@ -274,7 +292,13 @@ export const brainBreak: GameModule = {
   titleLine: 'game.brain-break',
   region: 'puzzle-peaks',
   challenge: 'noticing',
-  skills: ['Visual search', 'Number order', 'Adding and taking away', 'Counting by steps'],
+  skills: [
+    'Visual search',
+    'Number order',
+    'Adding and taking away',
+    'Counting by steps',
+    'Comparing numbers',
+  ],
   bands: ['grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

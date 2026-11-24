@@ -9,6 +9,10 @@ import {
   makeBoard,
   makeLabels,
   makeTrail,
+  makeValues,
+  orderSign,
+  speakNumber,
+  writeNumber,
   MINUS,
   pickLook,
   planFor,
@@ -64,9 +68,9 @@ describe('Brain Break number order', () => {
 
 describe('Brain Break sums in order (levels 4–6)', () => {
   const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
-  it('clamps the ladder to 1..8', () => {
+  it('clamps the ladder to 1..10', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(9)).toBe(planFor(8));
+    expect(planFor(11)).toBe(planFor(10));
     expect([4, 5, 6].map((l) => planFor(l).side)).toEqual([3, 4, 5]);
   });
   it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
@@ -236,5 +240,51 @@ describe('Brain Break count by (levels 7–8)', () => {
 
   it('is seeded', () => {
     expect(rounds(8).map((r) => r.trail)).toEqual(rounds(8).map((r) => r.trail));
+  });
+});
+
+describe('Brain Break smallest first (levels 9–10)', () => {
+  const swapped = (values: number[]) =>
+    values.some(
+      (v) => v >= 10 && values.includes((v % 10) * 10 + Math.floor(v / 10)) && v % 10 !== Math.floor(v / 10),
+    );
+  it('level 9 holds sixteen different numbers from 1 to 99 with a swapped-digit pair, smallest first', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const values = makeValues(9, new Rng(seed));
+      expect(values).toHaveLength(16);
+      expect(new Set(values).size).toBe(16);
+      expect(values.every((v) => v >= 1 && v <= 99)).toBe(true);
+      expect(values).toEqual([...values].sort((a, b) => a - b));
+      expect(swapped(values)).toBe(true);
+    }
+  });
+  it('level 10 holds twenty-five different numbers from -20 to 20, eight each side of zero, with n and -n', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const values = makeValues(10, new Rng(seed));
+      expect(values).toHaveLength(25);
+      expect(new Set(values).size).toBe(25);
+      expect(values.every((v) => v >= -20 && v <= 20)).toBe(true);
+      expect(values.filter((v) => v < 0).length).toBeGreaterThanOrEqual(8);
+      expect(values.filter((v) => v > 0).length).toBeGreaterThanOrEqual(8);
+      expect(values.some((v) => v > 0 && values.includes(-v))).toBe(true);
+    }
+  });
+  it('is seeded, and the board still tells the hint stone for the smallest unlit number', () => {
+    expect(makeValues(10, new Rng(4))).toEqual(makeValues(10, new Rng(4)));
+    const rng = new Rng(7),
+      board = makeBoard(10, rng),
+      values = makeValues(10, rng);
+    for (let next = 1; next <= 25; next++) {
+      const lit = board.map((rank) => (rank >= next ? values[rank - 1] : Infinity));
+      expect(values[board[hintIndex(board, next)] - 1]).toBe(Math.min(...lit));
+    }
+  });
+  it('writes a true minus sign, speaks it aloud, and the sign never names the answer', () => {
+    expect(writeNumber(-12)).toBe('\u221212');
+    expect(speakNumber(-12)).toBe('minus 12');
+    expect(speakNumber(37)).toBe('37');
+    expect(orderSign([-5, 3, 9], 1)).toBe('Smallest first');
+    expect(orderSign([-5, 3, 9], 3)).toBe('After 3');
+    expect(orderSign([-5, 3, 9], 2)).toBe('After \u22125');
   });
 });

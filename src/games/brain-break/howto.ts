@@ -14,9 +14,15 @@ export const HOW_TO: GameHowTo = {
     { from: 6, to: 6, text: 'Some stones take away, such as 12 − 3.' },
     {
       from: 7,
+      to: 8,
       text: 'The sign says how to count and which number comes before. Work out the next number, then find its stone.',
     },
-    { from: 8, text: 'Some rounds count back, starting at the biggest number.' },
+    { from: 8, to: 8, text: 'Some rounds count back, starting at the biggest number.' },
+    {
+      from: 9,
+      text: 'The stones hold different numbers. Find the smallest one still unlit; the sign shows the last one lit.',
+    },
+    { from: 10, text: 'Some numbers are below zero: −12 is smaller than −3.' },
     'Hint outlines the next stone; there is no time limit.',
   ],
   finish: 'Finding the final number finishes the round, including with help.',
