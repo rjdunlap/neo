@@ -4,6 +4,7 @@ import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import { duckPond } from './index';
 import {
   BIG_DUCK_SPOT,
+  inScatterArea,
   FRIEND_SLOTS,
   LEVELS,
   planFor,
@@ -18,6 +19,8 @@ import {
   PLANS,
   SLOTS,
   story,
+  storySeats,
+  zeroRoundAt,
 } from './logic';
 import {
   tenStarts,
@@ -706,5 +709,73 @@ describe('Duck Pond real stopping (levels 4–5, slice 3)', () => {
         }
       }
     }
+  });
+});
+
+describe('Duck Pond starting ponds and the all-swim-away story (levels 8–9)', () => {
+  const adding = PLANS[7];
+  const taking = PLANS[8];
+
+  it('deals every story seats in a layout: distinct, inside the pond, a duck apart, the starters first', () => {
+    for (const plan of [adding, taking]) {
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        const s = story(rng, plan);
+        const { kind, slots } = storySeats(rng, plan, s);
+        expect(kind).not.toBe('none');
+        expect(slots).toHaveLength(s.away ? s.a : s.a + s.b);
+        // Adding stories never use a dice face, which the b more ducks would leave half filled.
+        if (!s.away) expect(kind).not.toBe('dice');
+        for (const [i, p] of slots.entries()) {
+          expect(slots.findIndex((q) => q[0] === p[0] && q[1] === p[1])).toBe(i);
+          for (const q of slots.slice(i + 1))
+            expect(Math.hypot(p[0] - q[0], p[1] - q[1])).toBeGreaterThanOrEqual(100);
+        }
+        if (kind === 'scatter') for (const p of slots) expect(inScatterArea(p)).toBe(true);
+      }
+    }
+  });
+
+  it('shows level 8 only as dice or rows and level 9 in all three', () => {
+    const kinds = (plan: (typeof PLANS)[number]) => {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        seen.add(storySeats(rng, plan, { a: 3, b: 0, away: true, answer: 3 }).kind);
+      }
+      return [...seen].sort();
+    };
+    expect(kinds(adding)).toEqual(['dice', 'rows']);
+    expect(kinds(taking)).toEqual(['dice', 'rows', 'scatter']);
+  });
+
+  it('level 9 deals at most one all-swim-away round per level, never first; level 8 never', () => {
+    let zeros = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const at = zeroRoundAt(new Rng(seed), taking);
+      expect(at).not.toBe(0);
+      if (at >= 0) zeros++;
+      expect(zeroRoundAt(new Rng(seed), adding)).toBe(-1);
+    }
+    expect(zeros).toBeGreaterThan(120);
+  });
+
+  it('an all-swim-away story starts with 2–7 ducks, all leave, and the answer is zero', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const s = story(new Rng(seed), taking, true);
+      expect(s.away).toBe(true);
+      expect(s.a).toBeGreaterThanOrEqual(2);
+      expect(s.a).toBeLessThanOrEqual(7);
+      expect(s.b).toBe(s.a);
+      expect(s.answer).toBe(0);
+      expect(numberSentence(s.a, s.b, true)).toBe(`${s.a} − ${s.a} = 0`);
+      const pads = padValues(new Rng(seed), 0, 0);
+      expect(pads).toContain(0);
+      expect(new Set(pads).size).toBe(3);
+    }
+  });
+
+  it('a capable child touches the 0 pad for an all-swim-away story', () => {
+    expect(duckMove(taking, 0, 0, 0, [2, 0, 1], 0)).toEqual({ pad: 1 });
   });
 });
