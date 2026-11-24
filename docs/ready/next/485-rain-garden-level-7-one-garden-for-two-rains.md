@@ -1,1 +1,2 @@
 **`rain-garden` level 7, one garden for two rains** (school; new level on an existing interaction: typecheck, rule tests, one browser play of level 7 and `fingerdemo` at it, per the definition's check tier): build the packet as defined, one garden that works for both disclosed rain cards, each starting fresh. [Definition](../../definitions/rain-garden.md#level-7-one-garden-for-two-rains-definition)
+ **Claimed (claude/rain-garden-7, draft PR): `rain-garden` level 7; expected files `src/games/rain-garden/*`, `src/audio/clips`, its game page, definition, verification entry.**
