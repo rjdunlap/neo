@@ -50,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Count the sunny records and choose the total. Tap records to mark or unmark them as you count.',
     },
     {
+      from: 7,
+      to: 7,
+      text: 'Twelve months sit in a ring. A month is named; tap the month just after or just before it to hear it, then tap the arrow.',
+    },
+    {
       from: 5,
       to: 5,
       text: 'Count the named, pictured weather. Tap records to mark or unmark them. Choose zero when none match.',
@@ -77,6 +82,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'Choose the correct sunny-day total once to finish. The outlines are free starting support; marks need not match the suns.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Answer three month questions to finish: one across the turn of the year, then one before and one after. Two wrong answers glow the named month and the right one.',
     },
     {
       from: 4,

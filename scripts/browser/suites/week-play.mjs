@@ -182,6 +182,48 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         );
         continue;
       }
+      if (level === 7) {
+        const q0 = await page.evaluate(() => neo.scene.game.questions.map((q) => ({ ...q })));
+        assert.equal(q0.length, 3);
+        assert.equal(await page.evaluate(() => neo.scene.game.cards.length), 12);
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(300);
+        await screenshot('day-by-day-7-months-portrait');
+        // Hearing a month is free and holds no input; the arrow with nothing chosen does nothing.
+        await tap('neo.scene.game.confirm');
+        await tap('neo.scene.game.cards[(neo.scene.game.current.answer + 5) % 12]');
+        assert.equal(await page.evaluate(() => neo.scene.game.busy), false);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+        // Two wrong months confirmed: two misses and one hint that glows the named month and the answer.
+        for (let i = 0; i < 2; i++) {
+          await tap('neo.scene.game.cards[(neo.scene.game.current.answer + 5) % 12]');
+          await tap('neo.scene.game.confirm');
+          await wait();
+        }
+        assert.deepEqual(
+          await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]),
+          [2, 1, true],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        for (let guard = 0; guard < 24; guard++) {
+          if (await page.evaluate(() => neo.scene.finished)) break;
+          await gesture();
+          await page.waitForTimeout(180);
+          await wait();
+        }
+        await finished('day-by-day');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('day-by-day').history.at(-1);
+            return [r.level, r.misses, r.hints];
+          }),
+          [7, 2, 1],
+        );
+        log(
+          'Day by Day 7: month ring, free naming, two wrong confirms and one hint, three questions to a finish, portrait passed',
+        );
+        continue;
+      }
       if (level === 10) {
         const before = await page.evaluate(() => ({
           week: [...neo.scene.game.week],

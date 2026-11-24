@@ -19,6 +19,23 @@ export const VOICE = {
     'We used the records to compare two pretend weeks. These records tell us about these weeks. They do not tell us what the weather will do next.',
   ],
 
+  'month.after': [
+    'The months go round and round the year, and January comes right after December. Which month comes after {month}? Tap a month to hear it, then tap the arrow.',
+  ],
+  'month.before': [
+    'The months go round and round the year. Which month comes before {month}? Tap a month to hear it, then tap the arrow.',
+  ],
+  'month.name': ['{month}.'],
+  'month.counter': [
+    'Not that one. The month before {month} is {before}, and the month after {month} is {after}.',
+  ],
+  'month.hint.after': ['Look at the glowing months. After {month} comes {answer}. Tap it, then the arrow.'],
+  'month.hint.before': ['Look at the glowing months. Before {month} comes {answer}. Tap it, then the arrow.'],
+  'month.yes.after': ['After {month} comes {answer}!'],
+  'month.yes.before': ['Before {month} comes {answer}!'],
+  'month.yes.wrap': ['After {month} comes {answer}. The year goes round to the start again!'],
+  'month.yes.wrapback': ['Before {month} comes {answer}. The year goes back round to the end!'],
+  'month.done': ['We turned the month wheel! The months go round and round.'],
   'game.day-by-day': ['Day by Day!'],
   'skies.first': ['Here is a sky picture. Is it sunny, cloudy or rainy? Tap the matching weather picture.'],
   'skies.next': ['Here is another sky picture. Tap the weather picture that matches it.'],

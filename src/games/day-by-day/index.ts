@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, grass, ink, swatch, wood } from '../../art/palette';
 import { weatherArt } from './art';
+import { MonthWheel } from './month-wheel';
 import { WeatherWindow } from './weather-window';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -16,6 +17,7 @@ import {
   LEVELS,
   ANCHOR_LEVEL,
   COUNT_LEVEL,
+  MONTH_LEVEL,
   choicesFor,
   DAYS,
   makeCountWeek,
@@ -727,5 +729,10 @@ export const dayByDay: GameModule = {
     return new WigglyIcon(art);
   },
   sticker: weekArt,
-  create: (ctx) => (ctx.level === 6 ? new WeatherWindow(ctx) : new DayByDay(ctx)),
+  create: (ctx) =>
+    ctx.level === 6
+      ? new WeatherWindow(ctx)
+      : ctx.level === MONTH_LEVEL
+        ? new MonthWheel(ctx)
+        : new DayByDay(ctx),
 };

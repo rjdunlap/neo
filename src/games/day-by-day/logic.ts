@@ -10,12 +10,13 @@ export const PLANS = [
   { name: 'A day beside any day', relatives: true, tally: false },
   { name: 'Count this weather, including none', relatives: true, tally: true },
   { name: 'Weather Window: compare two supplied weeks', relatives: false, tally: false },
+  { name: 'Month wheel: the month before and after, round the year', relatives: false, tally: false },
 ] as const;
 
 export const LEVELS: BandLevels = {
   preschool: { min: 9, max: 9 },
   prek: { min: 1, max: 4, order: [1, 2, 4] },
-  school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] },
+  school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6, 7] },
 };
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
@@ -135,3 +136,54 @@ export function makeWindow(rng: Rng): WindowRound {
     ]),
   });
 }
+
+/** The month wheel: twelve names in a ring, January after December. No month lengths, dates or holidays. */
+export const MONTH_LEVEL = 7;
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const;
+export const monthNeighbor = (month: number, direction: -1 | 1) => (month + direction + 12) % 12;
+export interface MonthQuestion {
+  anchor: number;
+  direction: -1 | 1;
+  answer: number;
+}
+const question = (anchor: number, direction: -1 | 1): MonthQuestion => ({
+  anchor,
+  direction,
+  answer: monthNeighbor(anchor, direction),
+});
+/**
+ * Three questions: one across the turn of the year (after December or before January), then one month before and one
+ * after, each from a month in the middle of the year. The six months involved are all different, so no name answers
+ * twice and no answer is another question's anchor.
+ */
+export function monthQuestions(rng: Rng): MonthQuestion[] {
+  const wrap = rng.chance(0.5) ? question(11, 1) : question(0, -1);
+  for (;;) {
+    const back = question(rng.int(2, 10), -1);
+    const forward = question(rng.int(1, 9), 1);
+    const used = new Set([
+      wrap.anchor,
+      wrap.answer,
+      back.anchor,
+      back.answer,
+      forward.anchor,
+      forward.answer,
+    ]);
+    if (used.size === 6) return [wrap, ...rng.shuffle([back, forward])];
+  }
+}
+/** The month wheel's choices are the whole ring; it never hides a month. */
+export const monthCards = () => MONTHS.map((_, i) => i);
