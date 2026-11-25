@@ -158,7 +158,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Caravan Days](docs/games/caravan-days.md) | toddler–school | Cozy Village | 7 | tap the camel so it kneels, load it, and walk it to the water, the way caravans once did |
 | [Keep House](docs/games/keep-house.md) | toddler–school | Cozy Village | 6 | tap a castle door to see who lives and works inside, and put the household where its work is, the way a castle was a home and a workplace |
 | [Notice Board](docs/games/notice-board.md) | pre-K–school | Cozy Village | 5 | island friends pin made-up picture posters to a village board; tap who made it, who saw it, or whether it tells or sells |
-| [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
+| [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 5 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 12 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
 | [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 12 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
