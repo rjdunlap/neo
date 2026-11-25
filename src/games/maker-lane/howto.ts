@@ -15,16 +15,29 @@ export const HOW_TO: GameHowTo = {
       to: 3,
       text: 'Look at the finished thing and tap where it began; a wrong start walks the lane and makes something else.',
     },
+    {
+      from: 4,
+      to: 4,
+      text: 'Make the scarf in the picture: dye at the fleece, the yarn or the scarf; stripes need coloured yarn before the loom.',
+    },
+    { from: 5, to: 5, text: 'A log and old paper both become boxes; old paper skips the chipper.' },
   ],
   finish: [
     { from: 1, to: 2, text: 'The round ends when both bundles are finished; one sticker.' },
     { from: 3, to: 3, text: 'The round ends after three finished things; one sticker.' },
+    { from: 4, to: 4, text: 'The round ends after two scarves; one sticker.' },
+    { from: 5, to: 5, text: 'The round ends after two boxes; one sticker.' },
   ],
   note: [
     {
       from: 2,
       to: 3,
       text: 'The makers are simplified: one maker may stand for several real jobs. A maker who cannot use it yet, or a wrong beginning, is a miss; after two on one bundle or thing the answer glows (one hint). Rounds without hints move her up, which means she matched makers and beginnings with the lines read aloud, not that she would trace a real sock or box on her own.',
+    },
+    {
+      from: 4,
+      to: 5,
+      text: 'The makers are simplified: real dyeing and recycling take more steps than the makers show. A maker who cannot use the bundle yet is a miss; after two on one bundle the answer glows (one hint). More than one route works here. Rounds without hints move her up, which means she followed the lines read aloud, not that she could plan a dyed garment or make a box on her own.',
     },
     {
       text: 'The makers are simplified: one maker may stand for several real jobs. There are no misses here: the next maker always waves.',
