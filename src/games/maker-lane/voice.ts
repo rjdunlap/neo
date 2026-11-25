@@ -5,6 +5,8 @@ export const VOICE = {
   'makerlane.instruct.1': ['Tap the maker who is waving, and watch it change!'],
   'makerlane.instruct.2': ['Who can use it now? Bring it to the maker who can.'],
   'makerlane.instruct.3': ['Where did it begin? Tap where it came from.'],
+  'makerlane.instruct.4': ['Make the {what} in the picture. Where will you dye it?'],
+  'makerlane.instruct.5': ['Two ways to a box! Help the {first} and the {second} both become boxes.'],
   // REVIEW (agricultural literacy / textiles): the makers' work, one line per step.
   'makerlane.make.wool.1': ['A haircut for the sheep! Lumpy fleece.'],
   'makerlane.make.wool.2': ['Wash, wash. Clean fleece!'],
@@ -31,6 +33,17 @@ export const VOICE = {
   'makerlane.notyet.wheat.4': ['Not yet. I need flour first.'],
   'makerlane.notyet.tree.3': ['Not yet. I need wood chips first.'],
   'makerlane.notyet.tree.4': ['Not yet. I need pulp first.'],
+  // REVIEW (agricultural literacy / textiles): levels 4 and 5, where a path can branch. Each carries a slot, so it stays
+  // on device speech until the clips are rendered (a slotted variant has no clip).
+  'makerlane.make.dye': ['Dip, dip. Now the {thing} is coloured!'],
+  'makerlane.make.stripes': ['Weave, weave. Two colours make a striped {thing}!'],
+  'makerlane.weaver.wait': ['One colour here. Bring me the {other} one!'],
+  'makerlane.notyet.stripes': ['For stripes, I need {kind} yarn. Dye it before I weave!'],
+  'makerlane.dyed.route': ['You dyed the {at}. Dyeing {others} works too!'],
+  'makerlane.stripes.before': ['Stripes need {kind} yarn before the loom.'],
+  'makerlane.make.oldpaper': ['Mash, mash. {what} makes pulp too!'],
+  'makerlane.notyet.oldpaper': ["No chipping needed. It's already {what}!"],
+  'makerlane.twoways': ['Two boxes, two ways: one from a {first}, one from {second}.'],
   'makerlane.notme': ["Not me. Look, it's their turn!"],
   'makerlane.forpet': ['For you!'],
   'makerlane.hint': ['Look at the shining one.'],
