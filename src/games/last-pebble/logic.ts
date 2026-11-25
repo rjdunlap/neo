@@ -11,8 +11,8 @@ export const GAP_Y_UPRIGHT = 44;
 export const GAP_Y_LANDSCAPE = 36;
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 4 },
-  grownup: { min: 1, max: 4 },
+  school: { min: 1, max: 5 },
+  grownup: { min: 1, max: 5 },
 };
 
 export const describeLevel = (level: number): string => {
@@ -23,6 +23,8 @@ export const describeLevel = (level: number): string => {
       return 'Across the stream: work backwards from the far bank to hit every stepping stone (about 10 and up)';
     case 3:
       return 'Who goes first? choose to start or let the pet start, then reach the far bank (about 10 and up)';
+    case 5:
+      return 'Last stone loses: do not be the one to land on the whirlpool (about 10 and up)';
     default:
       return 'Bigger steps: lay up to 3 or 4 stones at a time, and choose who goes first (about 10 and up)';
   }
@@ -48,6 +50,8 @@ export interface CrossingSpec {
   readonly maxTake: number;
   /** She picks who lays the first stone before play (levels 3–4). */
   readonly choose: boolean;
+  /** Misère (level 5): laying a stone on spot `target` loses, so the winning count aims at `target - 1`. */
+  readonly misere?: boolean;
 }
 
 export interface CrossingState {
@@ -85,6 +89,14 @@ export interface Level1Reply {
   readonly move: Move;
   readonly voice: `lp.${Level1ReplyKind}`;
   readonly highlightSpot: number;
+}
+
+/**
+ * The spot the winning count aims at. Landing on `target` loses in misère, so whoever lands on `target - 1` wins
+ * (the other player is left only the whirlpool); every winning-set call takes this value, not `target`.
+ */
+export function effectiveTarget(target: number, misere = false): number {
+  return misere ? target - 1 : target;
 }
 
 /** Ascending stepping stones `s` (`1 <= s <= target`) with `(target - s) % (maxTake + 1) === 0`. */
@@ -240,6 +252,25 @@ export function makeRound(level: number, rng: Rng): Round {
       level: 3,
       seed,
       crossings: lengths.map((target) => ({ target, startPos: 0, maxTake: MAX_TAKE, choose: true })),
+    };
+  }
+  if (level === 5) {
+    // Take 2 then take 3 (the reversal is the new idea). One crossing is won by going second, the other by going
+    // first, in seeded order, so both answers appear.
+    const pools: Record<number, { first: number[]; second: number[] }> = {
+      2: { first: [8, 11], second: [7, 10] },
+      3: { first: [10, 12], second: [9, 13] },
+    };
+    const secondFirst = rng.pick([true, false]);
+    const a = rng.pick(secondFirst ? pools[2].second : pools[2].first);
+    const b = rng.pick(secondFirst ? pools[3].first : pools[3].second);
+    return {
+      level: 5,
+      seed,
+      crossings: [
+        { target: a, startPos: 0, maxTake: 2, choose: true, misere: true },
+        { target: b, startPos: 0, maxTake: 3, choose: true, misere: true },
+      ],
     };
   }
   // Level 4: one crossing of each take, at least one multiple of `m + 1` and at least one not.
