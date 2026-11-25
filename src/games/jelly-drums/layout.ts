@@ -12,6 +12,10 @@ export interface Pt {
 
 /** Half-widths of the five jellies, biggest (lowest note) first; a jelly is 1.55 times as tall as it is wide-half. */
 export const HALF_WIDTHS = [82, 75, 68, 61, 54];
+/** Level 13: all four active jellies stand at the same middle size, so pitch is heard, not seen. */
+export const ORDER_HW = HALF_WIDTHS[2];
+/** Level 13: each line-up slot's radius (120 sideways, 102 upright — over 100 units). */
+export const ORDER_SLOT_RADIUS = 60;
 /** A jelly's tap area reaches this far past its sides, and above its top, in its own units. */
 export const HIT_PAD = 18;
 /** The listen-again button's radius. */
@@ -29,6 +33,10 @@ export interface Layout {
   scale: number;
   /** Each jelly's standing point, biggest first. */
   jellies: Pt[];
+  /** Level 13: the four equal-sized waiting jellies, the four line-up slots (lowest at left), and the sleeping fifth jelly. */
+  orderRow: Pt[];
+  orderSlots: Pt[];
+  sleeper: Pt;
   /** The stage's plank: its left edge, width, and the top of the plank (the jellies stand a little below it). */
   stage: { x: number; w: number; top: number; skirt: number };
   again: Pt;
@@ -51,6 +59,15 @@ export function jellyHit(l: Layout, i: number) {
   return { x: p.x, y: p.y + (-hw * 1.55 - 30) * l.scale + h / 2, w, h };
 }
 
+/** A Level 13 equal-sized waiting jelly's tap area as a box in view units, by its centre. */
+export function orderJellyHit(l: Layout, i: number) {
+  const hw = ORDER_HW;
+  const p = l.orderRow[i];
+  const w = (hw * 2 + HIT_PAD * 2) * l.scale;
+  const h = (hw * 1.55 + 50) * l.scale;
+  return { x: p.x, y: p.y + (-hw * 1.55 - 30) * l.scale + h / 2, w, h };
+}
+
 export function jellyLayout(v: { w: number; h: number; upright?: true }): Layout {
   const cx = v.w / 2;
   if (!v.upright) {
@@ -59,6 +76,9 @@ export function jellyLayout(v: { w: number; h: number; upright?: true }): Layout
       upright: false,
       scale: 1,
       jellies: HALF_WIDTHS.map((_, i) => ({ x: cx + (i - 2) * 178, y: top + 10 })),
+      orderRow: [0, 1, 2, 3].map((k) => ({ x: cx + (k - 1.5) * 180, y: top + 10 })),
+      orderSlots: [0, 1, 2, 3].map((k) => ({ x: cx + (k - 1.5) * 180, y: top - 230 })),
+      sleeper: { x: cx + 410, y: top + 10 },
       stage: { x: cx - 470, w: 940, top, skirt: v.h * 0.12 },
       again: { x: cx, y: top - 250 },
       choices: [
@@ -91,6 +111,9 @@ export function jellyLayout(v: { w: number; h: number; upright?: true }): Layout
     upright: true,
     scale: s,
     jellies,
+    orderRow: [0, 1, 2, 3].map((k) => ({ x: cx + (k - 1.5) * 160, y: top + 20 })),
+    orderSlots: [0, 1, 2, 3].map((k) => ({ x: cx + (k - 1.5) * 160, y: top - 200 })),
+    sleeper: { x: cx + 250, y: v.h - 190 },
     stage: { x: cx - 370, w: 740, top, skirt: 110 },
     again: { x: cx, y: v.h - 200 },
     choices: [

@@ -1,0 +1,1 @@
+**`song-maker` Answer my song, level 10** (D1 and D3 settled 2026-10-23: a co-made song is kept as an ordinary tune; new interaction with portrait screenshot of the 8×4 board). [Dive](../../deep-dives/song-maker.md#build-slices-in-order)

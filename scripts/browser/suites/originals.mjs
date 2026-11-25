@@ -151,8 +151,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-    for (let level = 1; level <= 12 && (!only || only === 'jelly'); level++) {
+    // Jelly Drums: free play notes, copying tunes, Same or different?, and Lowest to highest.
+    for (let level = 1; level <= 13 && (!only || only === 'jelly'); level++) {
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -174,6 +174,38 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return;
         }
         const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
+        if (g.plan.mode === 'order') {
+          const dragToSlot = async (itemIndex, slotIndex) => {
+            const item = g.orderJellies[itemIndex];
+            const slot = g.lay.orderSlots[slotIndex];
+            const to = g.ctx.stage.toGlobal({ x: slot.x, y: slot.y + 40 });
+            await kit.dragTo(item.jelly, to, 12);
+          };
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            const lineup = g.lineups[t];
+            if (t === 0) {
+              // Tapping a jelly to listen is free: no miss, no hint.
+              kit.tapOn(g.orderJellies[0].jelly, 0, -45);
+              await kit.sleep(200);
+              if (g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Jelly order listen tap counted: ${g.misses} ${g.hints}`);
+              const wrongIdx = lineup.byPitch[1];
+              for (let k = 0; k < 2; k++) {
+                await dragToSlot(wrongIdx, 0);
+                await kit.sleep(550);
+              }
+              if (g.misses !== 2 || g.hints !== 1 || g.orderJellies[lineup.byPitch[0]].jelly.glowLeft <= 0)
+                throw new Error(`Jelly order hint: ${g.misses} ${g.hints}`);
+            }
+            for (let step = 0; step < g.plan.length - 1; step++) {
+              await dragToSlot(lineup.byPitch[step], step);
+              await kit.sleep(280);
+            }
+            await kit.until(() => g.tunesDone > t || g.phase === 'done', 10000);
+          }
+          return;
+        }
         if (g.plan.mode === 'compare') {
           // Same or different?: listen-again is free, two wrong buttons are two misses and one hint (the right one rings), then every pair right.
           const right = () => (g.pair.same ? 'same' : 'different');
@@ -1773,7 +1805,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 12,
+      'jelly-drums': 13,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

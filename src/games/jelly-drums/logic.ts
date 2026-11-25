@@ -1,3 +1,5 @@
+import type { ColorName } from '../../art/palette';
+import { PITCH_COLORS } from '../../audio/notes';
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -6,10 +8,10 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake' | 'compare';
-  /** Notes to play (free, wake), tunes to copy (echo) or pairs of tunes to judge (compare). */
+  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order';
+  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare) or line-ups (order). */
   goal: number;
-  /** Tune length (echo). */
+  /** Tune length (echo, compare) or jellies per line-up (order). */
   length: number;
   /** Free play's twist: at level 2 the fans answer, at level 3 a scale sparkles. Neither is a goal. */
   twist?: 'fans' | 'scale';
@@ -35,6 +37,8 @@ export const PLANS: JellyPlan[] = [
   { mode: 'echo', goal: 5, length: 3, reverse: true, lastLength: 4 },
   // Level 12, "Same or different?": five pairs of three-note tunes; she says whether the two are the same song.
   { mode: 'compare', goal: 5, length: 3 },
+  // Level 13, "Lowest to highest": three line-ups of four equal-sized jellies in shuffled colors; drag them in pitch order.
+  { mode: 'order', goal: 3, length: 4 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -42,9 +46,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 4, max: 7 },
-  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11) follows level 9 and Same or different? (12) follows that (see `order`).
-  prek: { min: 5, max: 12, order: [5, 6, 7, 8, 9, 11, 12] },
-  school: { min: 8, max: 12, order: [8, 9, 11, 12] },
+  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11), Same or different? (12), Lowest to highest (13).
+  prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
+  school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
 
 /** The order the jellies wake in on the wake level: the big low one, the little high one, then the rest one by one. */
@@ -318,6 +322,8 @@ export function jellyToTap(
   }
   // A pair round answers with a button, not a jelly: see `verdictToTap`.
   if (mode === 'compare') return null;
+  // An order round drags jellies onto slots: see `orderToDrag`.
+  if (mode === 'order') return null;
   if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
   return phase === 'turn' ? (tune[at] ?? null) : null;
 }
@@ -325,6 +331,70 @@ export function jellyToTap(
 /** The button a capable child taps once both songs have played, or null while she should wait. */
 export const verdictToTap = (phase: JellyPhase, pair: Pick<TunePair, 'same'> | null): Verdict | null =>
   phase === 'turn' && pair ? verdictOf(pair) : null;
+
+/** One jelly in a Lowest-to-highest line-up: its pitch is distinct and its color is shuffled independently. */
+export interface OrderJelly {
+  pitch: number;
+  color: ColorName;
+}
+
+/** One line-up of equal-sized jellies: four active jellies in standing order, one sleeping color, and their pitch order. */
+export interface OrderLineup {
+  jellies: OrderJelly[];
+  sleeper: ColorName;
+  /** Indexes into `jellies`, sorted from lowest pitch to highest pitch. */
+  byPitch: number[];
+}
+
+/** Once three of four jellies are placed, only one remains, so a line-up finishes in three choices. */
+export const orderChoicesNeeded = (length: number): number => Math.max(0, length - 1);
+
+/**
+ * One shuffled line-up of `length` distinct pitches (from the five jellies), each wearing an independently shuffled color
+ * so neither position nor color predicts pitch. Never starts already sorted lowest-to-highest.
+ */
+export function drawLineup(rng: Rng, length = 4): OrderLineup {
+  let pitches = rng.shuffle([0, 1, 2, 3, 4]).slice(0, length);
+  while (pitches.every((p, k) => k === 0 || p > pitches[k - 1])) {
+    pitches = rng.shuffle(pitches);
+  }
+  let colors = rng.shuffle([...PITCH_COLORS]);
+  while (pitches.every((p, k) => colors[k] === PITCH_COLORS[p])) {
+    colors = rng.shuffle(colors);
+  }
+  const jellies = pitches.map((pitch, k) => ({ pitch, color: colors[k] }));
+  const byPitch = jellies.map((_, k) => k).sort((a, b) => jellies[a].pitch - jellies[b].pitch);
+  return { jellies, sleeper: colors[length], byPitch };
+}
+
+/** A round's `goal` distinct line-ups, each shuffled cleanly. */
+export function drawLineups(rng: Rng, goal: number, length = 4): OrderLineup[] {
+  const out: OrderLineup[] = [];
+  const seen = new Set<string>();
+  while (out.length < goal) {
+    const l = drawLineup(rng, length);
+    const key = l.jellies.map((j) => `${j.pitch}:${j.color}`).join(',');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(l);
+  }
+  return out;
+}
+
+/** Spoken direction after dropping `pickedPitch` when `targetPitch` was needed, or null when they match. */
+export const orderDirection = (pickedPitch: number, targetPitch: number): 'lower' | 'higher' | null =>
+  pickedPitch === targetPitch ? null : targetPitch < pickedPitch ? 'lower' : 'higher';
+
+/** The jelly index (in `lineup.jellies`) a capable child drags to the lit slot next, or null when waiting or done. */
+export function orderToDrag(
+  phase: JellyPhase,
+  lineup: OrderLineup | null,
+  placedCount: number,
+  length = 4,
+): number | null {
+  if (phase !== 'turn' || !lineup || placedCount >= orderChoicesNeeded(length)) return null;
+  return lineup.byPitch[placedCount] ?? null;
+}
 
 /**
  * The instrument a round plays on (dive slice 3, decision 8): the marimba on Music Mountain by day, bells on the moon
