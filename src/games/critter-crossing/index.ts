@@ -11,7 +11,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import { hatArt } from '../../art/props';
+import { hatArt, scarfArt } from '../../art/props';
 import { KIND_WORDS } from '../../learning/sorting/rules';
 import { ruleIcon } from '../../art/sort-rule-icon';
 import type { Rule, SortCritter } from '../../learning/sorting/rules';
@@ -320,6 +320,7 @@ class CritterCrossing implements Game {
       const node = new Critter(CRITTERS[c.kind]);
       node.scale.set(SCALE);
       if (c.hat) node.attach(hatArt());
+      if (c.scarf) node.attach(scarfArt());
       node.hitArea = new Circle(0, -120, 170);
       this.ctx.track(node);
       this.ctx.stage.addChild(node);
@@ -424,6 +425,7 @@ class CritterCrossing implements Game {
         const k = new Critter(CRITTERS[s.c.kind]);
         k.alive = false;
         if (s.c.hat) k.attach(hatArt());
+        if (s.c.scarf) k.attach(scarfArt());
         k.scale.set(SHELF_SCALE);
         k.position.set(-w + 62 + SHELF_GAP / 2 + i * SHELF_GAP, y);
         this.shelf.addChild(k);

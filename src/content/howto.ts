@@ -71,6 +71,7 @@ import { HOW_TO as keepHouseHowTo } from '../games/keep-house/howto.ts';
 import { HOW_TO as keyItOutHowTo } from '../games/key-it-out/howto.ts';
 import { HOW_TO as lanternLightsHowTo } from '../games/lantern-lights/howto.ts';
 import { HOW_TO as lassoLoopsHowTo } from '../games/lasso-loops/howto.ts';
+import { HOW_TO as lastPebbleHowTo } from '../games/last-pebble/howto.ts';
 import { HOW_TO as lemonadeStandHowTo } from '../games/lemonade-stand/howto.ts';
 import { HOW_TO as letterTrailsHowTo } from '../games/letter-trails/howto.ts';
 import { HOW_TO as liftItHowTo } from '../games/lift-it/howto.ts';
@@ -281,6 +282,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'key-it-out': keyItOutHowTo,
   'lantern-lights': lanternLightsHowTo,
   'lasso-loops': lassoLoopsHowTo,
+  'last-pebble': lastPebbleHowTo,
   'lemonade-stand': lemonadeStandHowTo,
   'letter-trails': letterTrailsHowTo,
   'lift-it': liftItHowTo,

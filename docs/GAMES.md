@@ -110,7 +110,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Loom
 
-*toddler–pre-K* · [Little Loom](games/little-loom.md)
+*toddler–school* · [Little Loom](games/little-loom.md)
 
 ### Movie Night
 
@@ -489,6 +489,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Shell Rows
 
 *pre-K–school* · [Shell Rows](games/shell-rows.md)
+
+### Last Pebble
+
+*school–grown-up* · [Last Pebble](games/last-pebble.md)
 
 ### Domino Pond
 

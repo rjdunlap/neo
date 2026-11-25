@@ -17,6 +17,14 @@ export function ruleIcon(rule: Rule): Graphics {
         .rect(-24, 6, 48, 8)
         .fill(swatch.red.fill);
       break;
+    case 'scarf':
+      g.ellipse(0, 4, 38, 14)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 4, color: swatch.blue.line })
+        .roundRect(8, 8, 22, 36, 6)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 4, color: swatch.blue.line });
+      break;
     case 'brown':
     case 'white':
     case 'pink':

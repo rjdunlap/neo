@@ -704,6 +704,17 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               .then(() => screenshot(`duck-pond-${level}-scatter-portrait`))
               .catch(() => log('Duck Pond 7: no scattered round was dealt this run'))
           : null;
+      // Level 7: one portrait screenshot of the first mixed pond (ducks and frogs), once its pads are out.
+      const mixedShot =
+        level === 7
+          ? page
+              .waitForFunction(() => neo.scene.game.mixed && neo.scene.game.pads.length === 3, null, {
+                timeout: 90000,
+              })
+              .then(() => page.waitForTimeout(800))
+              .then(() => screenshot(`duck-pond-${level}-mixed-portrait`))
+              .catch(() => log('Duck Pond 7: no mixed round was dealt this run'))
+          : null;
       // Level 5: one portrait screenshot of the check and the bank while the one-too-many pond is counted.
       const stopShot =
         level === 5
@@ -858,8 +869,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           }
           if (g.plan.layouts) {
             // Levels 6–7: the pond holds exactly the answer (an empty pond is 0), the pads may start at 0 and carry dots.
-            if (g.swimmers.length !== g.answer)
+            // A mixed round (ducks and frogs) shows both kinds and the answer is the count of the asked kind.
+            const asked = g.mixed
+              ? g.swimmers.filter((d) => d.kind === g.mixed.ask).length
+              : g.swimmers.length;
+            if (asked !== g.answer || (g.mixed && !g.swimmers.some((d) => d.kind !== g.mixed.ask)))
               throw new Error(`Pond shows ${g.swimmers.length}, answer ${g.answer}`);
+            if (g.mixed) (window.__duckLayouts ??= []).push(`mixed-${g.mixed.ask}`);
             if (!g.plan.layouts.includes(g.layoutKind) && !(g.answer === 0 && g.layoutKind === 'none'))
               throw new Error(`Layout ${g.layoutKind} not in level ${level}`);
             (window.__duckLayouts ??= []).push(g.answer === 0 ? 'zero' : g.layoutKind);
@@ -917,6 +933,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       });
       if (revealShot) await revealShot;
       if (scatterShot) await scatterShot;
+      if (mixedShot) await mixedShot;
       if (stopShot) await stopShot;
       const layoutsSeen = await page.evaluate(() => window.__duckLayouts);
       if (layoutsSeen.length) log(`Duck Pond ${level} layouts dealt: ${layoutsSeen.join(', ')}`);

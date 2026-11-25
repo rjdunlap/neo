@@ -27,6 +27,7 @@ import {
   SEPARATE,
   ENTRY_RULES,
   RULES,
+  rulesFor,
   spotFor,
   type Place,
   makePlantRound,
@@ -136,7 +137,7 @@ describe('Critter Sort', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters).toHaveLength(plan.critters);
-        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
+        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size).toBe(plan.critters);
         const places = new Set(
           r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not')),
         );
@@ -563,5 +564,42 @@ describe('Critter Sort', () => {
     expect(fits(c, 'spotted')).toBe(false);
     expect(fits({ kind: 'cow', hat: true }, 'round')).toBe(false);
     expect(fits(c, 'hat')).toBe(false);
+  });
+});
+
+describe('Critter Sort scarf', () => {
+  const scarfLevels = PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => p.scarf);
+
+  it('is the third look on the newcomer, new-sign and this-but-not-that levels only', () => {
+    expect(scarfLevels.map((s) => s.level)).toEqual([7, 8, 9]);
+    expect(fits({ kind: 'cow', hat: false, scarf: true }, 'scarf')).toBe(true);
+    expect(fits({ kind: 'cow', hat: true }, 'scarf')).toBe(false);
+    expect(rulesFor(PLANS[0])).toEqual(RULES);
+  });
+
+  it('old levels never deal a scarf', () => {
+    for (const plan of PLANS) {
+      if (plan.scarf) continue;
+      for (let seed = 1; seed <= 20; seed++)
+        expect(makeRound(plan, new Rng(seed)).critters.some((c) => c.scarf !== undefined)).toBe(false);
+    }
+  });
+
+  it('scarf rounds keep every place in play filled and use the scarf as a rule sometimes', () => {
+    let sawScarfRule = false;
+    for (const { p } of scarfLevels) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const round = makeRound(p, new Rng(seed));
+        if (round.rules.includes('scarf')) sawScarfRule = true;
+        const keys = round.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`);
+        expect(new Set(keys).size).toBe(keys.length);
+        const not = p.mode === 'butnot' ? 'butnot' : false;
+        const places = new Set(round.critters.map((c) => placeOf(c, round.rules, not)));
+        expect(places.has('out')).toBe(true);
+        expect(places.has('left')).toBe(true);
+        if (p.mode === 'venn') expect(places.has('both')).toBe(true);
+      }
+    }
+    expect(sawScarfRule).toBe(true);
   });
 });

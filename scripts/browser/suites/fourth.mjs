@@ -137,7 +137,121 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
-      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+      ]) {
+        if (level === 11) {
+          // Mend the picture: two pieces swapped in a finished 3x3; a swap that does not mend both goes back as a miss,
+          // two misses glow the odd pair, tapping the odd pair mends it.
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await launch('puzzle-pals', 11, 'Mia', 'school');
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-11-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const home = (p) => p.piece.row * 3 + p.piece.col;
+            const odd = () => g.pieces.filter((p) => p.at !== home(p));
+            if (g.pieces.length !== 9 || odd().length !== 2)
+              throw new Error('Puzzle 11: nine pieces, two odd');
+            const b = g.pieces[0].node.getBounds();
+            if (b.width < 100 || b.height < 100)
+              throw new Error(`Puzzle 11: pieces are big (${b.width}x${b.height})`);
+            const right = g.pieces.filter((p) => p.at === home(p));
+            const [o1, o2] = odd();
+            // A piece picked and picked again is put down, free.
+            kit.tapOn(right[0].node, 0, 0);
+            await kit.sleep(200);
+            kit.tapOn(right[0].node, 0, 0);
+            await kit.sleep(200);
+            // An odd piece swapped with a right one goes back and is a miss.
+            for (let i = 0; i < 2; i++) {
+              kit.tapOn(o1.node, 0, 0);
+              await kit.sleep(200);
+              kit.tapOn(right[i].node, 0, 0);
+              await kit.sleep(900);
+            }
+            if (g.misses !== 2 || g.hints !== 1 || odd().length !== 2)
+              throw new Error(`Puzzle 11: two bad swaps (${g.misses}, ${g.hints}, ${odd().length})`);
+            if (!o1.mark.visible || !o2.mark.visible) throw new Error('Puzzle 11: the odd pair glows');
+          });
+          await screenshot('puzzle-pals-11-hint');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(500);
+          await screenshot('puzzle-pals-11-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const home = (p) => p.piece.row * 3 + p.piece.col;
+            const [o1, o2] = g.pieces.filter((p) => p.at !== home(p));
+            kit.tapOn(o1.node, 0, 0);
+            await kit.sleep(200);
+            kit.tapOn(o2.node, 0, 0);
+            await kit.sleep(900);
+          });
+          await page.waitForTimeout(1500);
+          await finished('puzzle-pals');
+          const r11 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r11, [2, 1], 'puzzle 11 score');
+          log(
+            'Puzzle Pals 11: bad swaps go back as misses, two glow the odd pair, mending the pair finishes, sticker passed',
+          );
+          continue;
+        }
+        if (level === 10) {
+          // Two pictures, one tray: a piece dropped on the other picture is a miss, two misses glow its own place.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('puzzle-pals', 10);
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-10-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            window.twinSlot = (p, board = p.board) => {
+              const b = g.boards[board];
+              return {
+                x: b.x + (600 / g.plan.cols) * (p.piece.col + 0.5) * g.scale,
+                y: b.y + (420 / g.plan.rows) * (p.piece.row + 0.5) * g.scale + 40,
+              };
+            };
+            if (g.pieces.length !== 8 || g.boards.length !== 2)
+              throw new Error('Puzzle 10: eight pieces, two pictures');
+            const [p] = g.pieces.filter((q) => !q.placed);
+            await kit.dragTo(p.node, { x: 20, y: 40 });
+            await kit.sleep(500);
+            if (g.misses !== 0) throw new Error('Puzzle 10: off both frames is free');
+            for (let i = 0; i < 2; i++) {
+              await kit.dragTo(p.node, twinSlot(p, 1 - p.board));
+              await kit.sleep(600);
+            }
+            if (g.misses !== 2 || g.hints !== 1 || g.hinted !== p)
+              throw new Error(`Puzzle 10: two other-picture drops (${g.misses}, ${g.hints})`);
+          });
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(500);
+          await screenshot('puzzle-pals-10-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(500);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            for (const p of g.pieces.filter((q) => !q.placed)) {
+              await kit.dragTo(p.node, twinSlot(p));
+              await kit.sleep(450);
+              if (!p.placed) throw new Error('Puzzle 10: piece rejected its own place');
+            }
+          });
+          await page.waitForTimeout(1200);
+          await finished('puzzle-pals');
+          const r10 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r10, [2, 1], 'puzzle 10 score');
+          log(
+            'Puzzle Pals 10: off-frame is free, the other picture is a miss, a hint, both pictures alive, sticker passed',
+          );
+          continue;
+        }
         if (level === 8) {
           // Lap's first: one big piece out at a time; a touch on the background, the frame or a placed piece hops it in,
           // and the next comes out. A far let-go hops it in too. Nothing counts.
@@ -182,7 +296,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await screenshot('puzzle-pals-8-lap-start-landscape');
           await page.evaluate(async () => {
             const g = neo.scene.game;
-            kit.tapOn(g.board, 0, 0);
+            kit.tapOn(g.board.node, 0, 0);
             await kit.sleep(900);
             if (g.pieces.filter((p) => p.placed).length !== 1)
               throw new Error('Puzzle 8: a frame touch hops it in');
@@ -198,8 +312,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           window.slotAt = (p) => {
             const g = neo.scene.game;
             return {
-              x: g.board.x + (600 / g.plan.cols) * (p.col + 0.5) * g.scale,
-              y: g.board.y + (420 / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
+              x: g.board.x + (g.box.w / g.plan.cols) * (p.col + 0.5) * g.scale,
+              y: g.board.y + (g.box.h / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
             };
           };
         });
@@ -211,8 +325,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.misses !== 0) throw new Error('Drop off the frame counted as a miss');
           if (g.plan.turns) {
             const turned = waiting.filter((p) => p.turn !== 0);
-            if (turned.length !== 3)
-              throw new Error(`Puzzle 9: expected 3 turned pieces, got ${turned.length}`);
+            const want = g.plan.turns;
+            if (turned.length !== want)
+              throw new Error(
+                `Puzzle ${g.plan.quarter ? 12 : 9}: expected ${want} turned pieces, got ${turned.length}`,
+              );
             await kit.dragTo(turned[0].node, slotAt(turned[0].piece));
             await kit.sleep(600);
             if (turned[0].placed || g.misses !== 0 || g.wrong !== 0)
@@ -233,7 +350,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               g.plan,
               g.pieces.filter((p) => p.placed).map((p) => p.piece),
             );
-            if (JSON.stringify(g.hinted?.piece) !== JSON.stringify(expected))
+            if (g.hinted?.piece.col !== expected.col || g.hinted.piece.row !== expected.row)
               throw new Error('Hint does not choose the next useful piece');
             if (g.hints !== 1 || g.glow.eventMode !== 'none')
               throw new Error('Hint accounting or touch clearance is wrong');
@@ -241,7 +358,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'].includes(pos))
               throw new Error('First hint is not a corner');
           });
-        if (level === 7 || level === 9) {
+        if (level === 7 || level === 9 || level === 12) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(500);
           await screenshot(`puzzle-pals-${level}-portrait`);
@@ -251,11 +368,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (const p of g.pieces.filter((p) => !p.placed)) {
-            if (p.turn) {
+            // Level 9 takes one tap to turn a piece round; level 12 takes up to three quarter turns, each a clockwise tap.
+            for (let taps = 0; p.turn && taps < 4; taps++) {
               kit.tapOn(p.node);
               await kit.sleep(350);
-              if (p.turn !== 0) throw new Error('Puzzle 9: tap did not turn piece upright');
             }
+            if (p.turn !== 0) throw new Error('Puzzle turn: taps did not bring the piece upright');
             await kit.dragTo(p.node, slotAt(p.piece));
             await kit.sleep(450);
             if (!p.placed) throw new Error('Piece rejected its own place');
@@ -263,6 +381,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         });
         await page.waitForTimeout(900);
         if (level === 4) await screenshot('puzzle-pals-alive');
+        if (level === 12) await screenshot('puzzle-pals-12-alive');
         await finished('puzzle-pals');
         const r = await page.evaluate(() => {
           const r = kit.store.stats('puzzle-pals').history.at(-1);
@@ -279,7 +398,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (process.env.WARDROBE_SPECIES && (!only || only === 'weather'))
       await useCompanion(process.env.WARDROBE_SPECIES);
     if (!only || only === 'weather')
-      for (const level of [1, 2, 3, 4, 5, 6, 8]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 8, 13]) {
         await launch('weather-wardrobe', level);
         await page.waitForTimeout(700);
         await page.evaluate(async () => {
@@ -314,7 +433,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.mode === 'try' ? g.hints !== 0 || g.misses !== 0 : g.hints !== 1)
             throw new Error('Wardrobe hint/miss accounting wrong');
         });
-        if ([1, 4, 6, 8].includes(level)) await screenshot(`weather-wardrobe-${level}`);
+        if ([1, 4, 6, 8, 13].includes(level)) await screenshot(`weather-wardrobe-${level}`);
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (let step = 0; !g.done && step < 30; step++) {

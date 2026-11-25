@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sand-table; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sand-table` · **Land:** Rainbow Meadow · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sand-table` · **Land:** Rainbow Meadow · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, spatial, materials, making
 

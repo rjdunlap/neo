@@ -1,1 +1,0 @@
-**`duck-pond` mixed ponds and scenes** (slice 5: ducks and frogs share the pond with the shared `frogArt`, an evening and a frog-pond scene; rule tests, Frog Hop rule tests and one play, `BROWSER_SUITE=smoke` filtered to both games, `fingerdemo` at 6). [Dive](../../deep-dives/duck-pond.md#build-slices-in-order)

@@ -37,6 +37,7 @@ import { createSuite as createThoughtBubbles } from './suites/thought-bubbles-pl
 import { createSuite as createNoticeBoard } from './suites/notice-board-play.mjs';
 import { createSuite as createMakerLane } from './suites/maker-lane-play.mjs';
 import { createSuite as createShellRows } from './suites/shell-rows-play.mjs';
+import { createSuite as createLastPebble } from './suites/last-pebble-play.mjs';
 import { createSuite as createDominoPond } from './suites/domino-pond-play.mjs';
 import { createSuite as createTideTables } from './suites/tide-tables-play.mjs';
 import { createSuite as createTruthBridge } from './suites/truth-bridge-play.mjs';
@@ -375,6 +376,7 @@ export const SUITES = [
   'noticeboard',
   'makerlane',
   'shellrows',
+  'lastpebble',
   'tideline',
   'tideline34',
   'tideline5',
@@ -573,6 +575,7 @@ export const ALL_SUITES = [
   'noticeboard',
   'makerlane',
   'shellrows',
+  'lastpebble',
   'tideline',
   'tideline34',
   'tideline5',
@@ -964,6 +967,7 @@ export function createChecks(fixture) {
   install(createNoticeBoard(shared));
   install(createMakerLane(shared));
   install(createShellRows(shared));
+  install(createLastPebble(shared));
   install(createDominoPond(shared));
   install(createTideLine(shared));
   install(createTideTables(shared));
@@ -1224,6 +1228,7 @@ export async function runSuite(suite, fixture) {
     thoughtBubblesPlay,
     noticeBoardPlay,
     shellRowsPlay,
+    lastPebblePlay,
     dominoPondPlay,
     tideLinePlay,
     tideLine34Play,
@@ -1350,6 +1355,10 @@ export async function runSuite(suite, fixture) {
     await traceRound(10, '', true, 't');
     await traceRound(11, '', false, 'a');
     await traceRound(11, '', true, 'g');
+    await traceRound(12, '', false, 'e');
+    await traceRound(12, '', true, 'j');
+    await traceRound(13, '', false, 'm');
+    await traceRound(13, '', true, 'b');
   }
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();
@@ -1446,6 +1455,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'noticeboard') await noticeBoardPlay();
   if (suite === 'all' || suite === 'makerlane') await makerLanePlay();
   if (suite === 'all' || suite === 'shellrows') await shellRowsPlay();
+  if (suite === 'all' || suite === 'lastpebble') await lastPebblePlay();
   if (suite === 'all' || suite === 'dominopond') await dominoPondPlay();
   if (suite === 'all' || suite === 'tideline') await tideLinePlay();
   if (suite === 'all' || suite === 'tideline34') await tideLine34Play();

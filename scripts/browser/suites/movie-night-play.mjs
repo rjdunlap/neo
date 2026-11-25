@@ -177,6 +177,99 @@ export function createSuite({
     await tap('premiereButton');
     await finished('movie-night');
     assert.deepEqual(await history(), [0, 2]);
+    // Levels 4 and 5: picture cards, scarce, with Premiere only when every slot is full.
+    const card = async (id, slot, drag = true) => {
+      await page.evaluate(
+        async ({ id, slot, drag }) => {
+          const g = neo.scene.game;
+          if (drag) await kit.dragTo(g.trays.get(id), g.slots[slot].getGlobalPosition());
+          else kit.tapOn(g.trays.get(id));
+        },
+        { id, slot, drag },
+      );
+      if (!drag) {
+        await page.waitForTimeout(180);
+        await page.evaluate((slot) => kit.tapOn(neo.scene.game.slots[slot]), slot);
+      }
+      await page.waitForTimeout(400);
+    };
+    await launch('movie-night', 4);
+    await settle();
+    await tap('premiereButton');
+    assert.equal((await state()).failures, 0, 'Premiere waits for a full strip');
+    await card('G0', 0);
+    await card('G3', 1, false);
+    await card('G2', 2);
+    assert.deepEqual((await state()).strip, ['G0', 'G3', 'G2']);
+    await page.evaluate(async () => {
+      // Hold a card: the preview shows while the finger is down.
+      const g = neo.scene.game;
+      kit.tapOn(g.trays.get('G1'));
+    });
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => neo.scene.game.preview.visible), true);
+    await tap('premiereButton');
+    await settle();
+    await tap('premiereButton');
+    await settle();
+    assert.deepEqual([(await state()).misses, (await state()).hints, (await state()).failures], [1, 1, 2]);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await settle();
+    assert.deepEqual((await state()).strip, ['G0', 'G1', 'G2']);
+    assert.equal((await state()).hints, 2);
+    await tap('premiereButton');
+    await settle();
+    assert.equal((await state()).qualified, true);
+    await tap('premiereButton');
+    await finished('movie-night');
+    assert.deepEqual(await history(), [1, 2]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('movie-night', 5);
+    await settle();
+    await card('B4', 0);
+    await card('B3', 1);
+    await card('B2', 2);
+    await card('B0', 3);
+    await screenshot('movie-night-5-portrait');
+    // Touching a card in the tray plays its shot silently on the little screen.
+    await page.evaluate(() => kit.tapOn(neo.scene.game.trays.get('B1')));
+    await page.waitForTimeout(1100);
+    assert.equal(await page.evaluate(() => neo.scene.game.preview.visible), true);
+    await screenshot('movie-night-5-preview-portrait');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.background));
+    await tap('premiereButton');
+    await settle();
+    assert.equal((await state()).failures, 1);
+    // Swap two cards by dragging one slot onto another; Undo restores.
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.dragTo(g.slots[0], g.slots[3].getGlobalPosition());
+    });
+    await page.waitForTimeout(500);
+    assert.deepEqual((await state()).strip, ['B0', 'B3', 'B2', 'B4']);
+    await tap('undoButton');
+    assert.deepEqual((await state()).strip, ['B4', 'B3', 'B2', 'B0']);
+    // Help repairs one step per hint and never judges.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await settle();
+    assert.equal((await state()).hints, 1);
+    const accepted = () =>
+      page.evaluate(async () => {
+        const { cutAccepted } = await import('/src/games/movie-night/cut.ts');
+        return cutAccepted(5, neo.scene.game.round.strip);
+      });
+    while (!(await accepted())) {
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+    }
+    const helped = (await state()).hints;
+    assert.ok(helped >= 1 && helped <= 4);
+    await tap('premiereButton');
+    await settle();
+    assert.equal((await state()).qualified, true);
+    await tap('premiereButton');
+    await finished('movie-night');
+    assert.deepEqual(await history(), [0, helped]);
     await page.setViewportSize({ width: 1024, height: 768 });
     // Actual catalog launch/return checks are scoped to the newly registered title.
     await page.evaluate(() => {

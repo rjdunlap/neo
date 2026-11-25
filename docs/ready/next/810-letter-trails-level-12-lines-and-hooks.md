@@ -1,1 +1,0 @@
-**`letter-trails` level 12, Lines and hooks** (school; u i e l k y j, one slice; new levels on an existing interaction: typecheck, rule tests, one browser play of level 12 and `fingerdemo` at it; same frame and `LITTLE_TOLERANCE` corridor as levels 10–11; e and d are the two that do not start at the top). [Dive](../../deep-dives/letter-trails.md#build-slices-in-order)

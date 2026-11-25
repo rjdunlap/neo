@@ -31,7 +31,7 @@
 
 **Starts as:** drag critters into a hoop: "wearing a hat"
 
-**Grows into:** a few-critter entry with one already sorted, a worked example at the first levels, two hoops, overlapping hoops where the middle is both, a leaf mat for neither, guess the rule, a hoop for "not", then place one newcomer in an already sorted diagram, re-sort the same six under a new sign, then sort by “this but not that”, count each sorted part and choose which has more, and sort little plants grown from one big plant's seeds by its leaf or petal marks
+**Grows into:** a few-critter entry with one already sorted, a worked example at the first levels, two hoops, overlapping hoops where the middle is both, a leaf mat for neither, guess the rule, a hoop for "not", then place one newcomer in an already sorted diagram, re-sort the same six under a new sign, then sort by “this but not that” (levels 7–9 also deal some critters in a blue scarf, and "wearing a scarf" joins their rules; earlier levels never do), count each sorted part and choose which has more, and sort little plants grown from one big plant's seeds by its leaf or petal marks
 
 ## Design notes
 

@@ -18,7 +18,7 @@ import {
   limitOf,
   rowOf,
   routinePress,
-  ROUTINE_PLANS,
+  nextRoutinePlan,
   runRoutine,
   selectSlot,
   startEditor,
@@ -67,7 +67,7 @@ export class RoutineRound implements Game {
   hints = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = ROUTINE_PLANS[ctx.rng.int(0, ROUTINE_PLANS.length - 1)];
+    this.plan = nextRoutinePlan((count) => ctx.rng.int(0, count - 1));
     this.editor = startEditor(this.plan);
     this.play = new RoundButton(playIcon(), swatch.green, 50, () => void this.run());
     this.undo = new RoundButton(undoIcon(), swatch.white, 50, () => this.undoEdit());

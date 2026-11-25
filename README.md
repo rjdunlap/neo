@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (20), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (24, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (24, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 193 games; the 167 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 154 games, and "grown-up" (13 and up) is played by 35 games: the 26 grown-up puzzles and 9 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 156 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -98,8 +98,8 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Little Conductor](docs/games/little-conductor.md) | toddler–pre-K | Music Mountain | 3 | tap a turtle or a rabbit pad and three friends on a bandstand play the same little tune slow or quick |
 | [Puppet Stage](docs/games/puppet-stage.md) | lap–school | Music Mountain | 6 | touch the stage floor and a stick puppet pops up there, says hello in its own voice and follows her finger; tap it and it talks or sings "la" (nothing counted; Bow after three pops or thirty seconds, and at lap the show bows by itself after six) |
 | [Hat Band](docs/games/hat-band.md) | preschool–grown-up | Music Mountain | 4 | put a drum hat or a tune hat on a friend and the friend starts playing that part, over and over; at level 4 (school and grown-up) three friends with a drum, a tune and a low hat arrange a three-part song |
-| [Little Loom](docs/games/little-loom.md) | toddler–pre-K | Painted Canyon | 3 | send yarn over and under threads to make an eight-row scarf |
-| [Movie Night](docs/games/movie-night.md) | preschool–school | Painted Canyon | 3 | put synthesized sounds on fixed filmed pictures, preview freely and premiere to three friends |
+| [Little Loom](docs/games/little-loom.md) | toddler–school | Painted Canyon | 5 | send yarn over and under threads to make an eight-row scarf |
+| [Movie Night](docs/games/movie-night.md) | preschool–school | Painted Canyon | 5 | put synthesized sounds on fixed filmed pictures, preview freely and premiere to three friends |
 | [Rainbow Fingers](docs/games/rainbow-fingers.md) | lap–school | Painted Canyon | 12 | rainbow or color-pot finger painting (any touch counts: pat, hold or drag; a pat splats a flower; an idle nudge) |
 | [Fluffy Salon](docs/games/fluffy-salon.md) | lap–pre-K | Painted Canyon | 12 | pat the fluff to grow it, then grow and color fur, then freely snip and curl; a seeded friend in the chair at levels 3–5 |
 | [Stamp Studio](docs/games/stamp-studio.md) | lap–school | Painted Canyon | 11 | pat one huge star (eight pats finish the picture), or press one or two seeded stamp kinds onto a picture; arrow nudges after five, full paper finishes itself; from level 3 a music note plays the picture back left to right; levels 8–9 press a leaf, a duck foot or a cat paw into soft mud, each leaving its own print; level 10 follows a glowing spot, five taps, a stamp at each; level 11 asks for three animal stamps in turn before free stamping |
@@ -139,7 +139,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 11 | tap a spinner and a critter's block drops onto its bar |
 | [Splish Splash](docs/games/splish-splash.md) | lap–pre-K | Cozy Village | 11 | scrub mud off the pet |
 | [Feelings Faces](docs/games/feelings-faces.md) | lap–school | Cozy Village | 13 | tap bubbles or poke the pet, choose a helper, compare two friends’ reactions, use a leftover clue, or ask a friend what they want |
-| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–school | Cozy Village | 12 | tap the sky to change the weather (four weathers) |
+| [Weather Wardrobe](docs/games/weather-wardrobe.md) | lap–school | Cozy Village | 13 | tap the sky to change the weather (four weathers) |
 | [Scoop Shop](docs/games/scoop-shop.md) | lap–school | Cozy Village | 13 | one tap serves one scoop at lap entry 10, then pile scoops for a customer |
 | [Mail Carrier](docs/games/mail-carrier.md) | lap–school | Cozy Village | 15 | tap any mailbox to post a letter |
 | [Teddy Doctor](docs/games/teddy-doctor.md) | lap–school | Cozy Village | 8 | touch the patient to put bandages on boo-boos |
@@ -158,7 +158,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Caravan Days](docs/games/caravan-days.md) | toddler–school | Cozy Village | 7 | tap the camel so it kneels, load it, and walk it to the water, the way caravans once did |
 | [Keep House](docs/games/keep-house.md) | toddler–school | Cozy Village | 6 | tap a castle door to see who lives and works inside, and put the household where its work is, the way a castle was a home and a workplace |
 | [Notice Board](docs/games/notice-board.md) | pre-K–school | Cozy Village | 5 | island friends pin made-up picture posters to a village board; tap who made it, who saw it, or whether it tells or sells |
-| [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
+| [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 5 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 12 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
 | [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 12 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
@@ -178,7 +178,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 16 | AB patterns |
 | [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
-| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 9 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
+| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 12 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |
 | [Peekaround Island](docs/games/peekaround-island.md) | toddler–school | Puzzle Peaks | 8 | turn a little island to find who is hiding behind the tree |
 | [Penguin Slide](docs/games/penguin-slide.md) | preschool–school | Puzzle Peaks | 13 | tap the ice: the penguin slides until something stops it |
@@ -190,17 +190,18 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Critter Crossing](docs/games/critter-crossing.md) | preschool–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |
 | [Mossy Path](docs/games/mossy-path.md) | lap–school | Puzzle Peaks | 12 | tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 and 9 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch; level 10 (school) draws the whole route as paw prints, then taps the turtle to walk it; level 11 (school) is coverage where thick tufts are crossed twice; level 12 (lap) is a straight corridor where any touch anywhere steps the turtle to the pond |
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 5 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
+| [Last Pebble](docs/games/last-pebble.md) | school–grown-up | Puzzle Peaks | 2 | she and the pet take turns laying one or two stones forward along a stream of numbered stepping-stone spots (`1..T`); whoever lands on the far-bank stone `T` finishes the crossing. |
 | [Domino Pond](docs/games/domino-pond.md) | pre-K–grown-up | Puzzle Peaks | 3 | Turn and lay two stepping stones to match the dots on both ends. |
 | [Bunny Patches](docs/games/bunny-patches.md) | pre-K–grown-up | Puzzle Peaks | 3 | a 4×4 meadow of coloured patches with one bunny already sitting: she taps squares to put one bunny in every row, column and patch, and the shaded reach of each bunny shows what it rules out. |
 | [Campsite](docs/games/campsite.md) | school | Puzzle Peaks | 1 | one authored 4×4 camp with three trees: she pitches a tent beside each tree so every row and column matches its count sign and no two tents touch, even at a corner, then taps Check camp. The counts and the corner rule rule squares out until each tree has one place left. |
 | [Silly Scene](docs/games/silly-scene.md) | preschool–school | Puzzle Peaks | 3 | Tap the fish in the tree to hear why it belongs in the pond and watch it splash back into the water. |
-| [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 11 | follow a firefly along capital strokes |
+| [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 13 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 15 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 15 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
-| [Opposites](docs/games/opposites.md) | lap–school | Story Grove | 9 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
+| [Opposites](docs/games/opposites.md) | lap–school | Story Grove | 11 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
 | [Clap the Syllables](docs/games/clap-syllables.md) | preschool–school | Story Grove | 8 | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands; preschool starts with two short words (level 9), then levels 1–2 |
 | [Read & Do](docs/games/read-do.md) | pre-K–school | Story Grove | 9 | read a color word (five colours) and choose a hat; tap words or the speaker for free spoken support |
 | [Owl Walk Home](docs/games/owl-walk.md) | lap–pre-K | Story Grove | 6 | lap: tap a fat stone ahead and the owl hops there, then the nest to fly home, with no cards; toddler and up: turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left |
@@ -539,6 +540,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `noticeboard` | Notice Board levels 1–3: pre-K level 1 with two wrong badges and the glow, then the maker (2 misses/1 hint); portrait level 2 with a heard-it friend, then the witness through a stretched and a true poster (1/0); level 3 with a free friend tap, a wrong basket, then the right one (1/0) | Ghost finger: `FINGER_ONLY=notice-board FINGER_LEVELS=2,3` |
 | `makerlane` | Maker Lane levels 1–3: toddler level 1 with a free tap on a maker who is not waving, then the waving makers to the pet (0/0); portrait preschool level 2 with two refused makers on the first bundle (bubbles, then the glow), then the right makers (2/1); pre-K level 3 with a sheep for the sock (the replay, a dimmed card, the scarf beside the sock), then the cotton plant (1/0) | Ghost finger: `FINGER_ONLY=maker-lane FINGER_LEVELS=2,3` |
 | `shellrows` | Shell Rows levels 1 and 3: pre-K level 1 with a full square (free), two wrong squares answered by the pet taking the gap and the rewind, the glow (2 misses/1 hint), then the right squares; portrait school level 3 with the block answered by the pet taking her three (1/0), screenshot mid-replay | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=shell-rows FINGER_LEVELS=1,3` |
+| `lastpebble` | Last Pebble levels 1–2 on an upright phone (`390 × 844` with captions): level 1 free laid-spot tap, two wrong moves with show-me-why rewind and glow (2 misses/1 hint), three crossings to sticker; level 2 pet win with turning-point rewind, `Show me` rewind from a losing spot, portrait shot, finish (1/1) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=last-pebble FINGER_LEVELS=1,2` |
 | `driftcards` | Drift Cards levels 1–3 by touch: level 1 a free first guess wrong, then two counted wrong beaches and the glow (2 misses/1 hint); level 2 a wrong boat (to the penguin and back), then a right boat with a portrait shot mid-drift (1/0); level 3 patch B (a miss), B again (free), C (second miss and glow), A and the replay (2/1) | Ghost finger: `FINGER_ONLY=drift-cards FINGER_LEVELS=1,2,3` |
 | `forecastdetective` | Forecast Detective levels 1–2 by touch: level 1 a free not-yet Check and a free repeat, snowy ruled out by the warm thermometer, sunny ruled out by a postcard, the glow with crossed cards, then rainy to the reveal (2 misses/1 hint); level 2 in portrait, the missing flap stays shut, an overclaimed sunny, then Can't tell yet (1/0) | Ghost finger: `FINGER_ONLY=forecast-detective FINGER_LEVELS=1,2` |
 | `dropsjourney` | Drop's Journey levels 1–3 by touch: level 1 three stops with a tap mid-move ignored (0/0); level 2 in portrait, sea to cloud to snow with the vapour screenshot (0/0); level 3 two can't-go cards, the glow, a requested hint and four moves (2 misses/1 hint) | Ghost finger: `FINGER_ONLY=drops-journey FINGER_LEVELS=1,3` |

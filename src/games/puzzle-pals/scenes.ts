@@ -203,13 +203,15 @@ export function cellFeatures(
   rows: number,
   width: number,
   height: number,
+  /** Where the grid starts in the picture, for a plan that shows only a crop of it. */
+  origin: { x: number; y: number } = { x: 0, y: 0 },
 ): string[][] {
   const out: string[][] = [];
   const cw = width / cols;
   const ch = height / rows;
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const box = { x: col * cw, y: row * ch, w: cw, h: ch };
+      const box = { x: origin.x + col * cw, y: origin.y + row * ch, w: cw, h: ch };
       out.push(
         features
           .filter(
@@ -226,4 +228,16 @@ export function cellFeatures(
     }
   }
   return out;
+}
+
+/**
+ * Two different scenes for the two-picture level: a different friend, a different sky and a different ground, so every
+ * piece shows which picture it is from by its colours and not only by its friend.
+ */
+export function dealScenePair(rng: { pick<T>(items: readonly T[]): T }): [SceneDef, SceneDef] {
+  const a = rng.pick(SCENES);
+  const b = rng.pick(
+    SCENES.filter((s) => s.id !== a.id && s.animal !== a.animal && s.sky !== a.sky && s.ground !== a.ground),
+  );
+  return [a, b];
 }

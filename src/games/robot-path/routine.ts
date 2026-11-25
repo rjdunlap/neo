@@ -70,6 +70,20 @@ export const ROUTINE_PLANS: RoutinePlan[] = [
   ),
 ];
 
+let routineRoundsThisVisit = 0;
+
+/** Level 15 opens on the first board (the one that teaches the call); later rounds in the same visit are a seeded pick. */
+export function nextRoutinePlan(pick: (count: number) => number): RoutinePlan {
+  const i = routineRoundsThisVisit === 0 ? 0 : pick(ROUTINE_PLANS.length);
+  routineRoundsThisVisit += 1;
+  return ROUTINE_PLANS[i];
+}
+
+/** Playing any other level ends the visit, so coming back to level 15 opens on the first board again. */
+export function endRoutineVisit(): void {
+  routineRoundsThisVisit = 0;
+}
+
 /** An editor state: both rows and the selected slot. Copied for Undo. */
 export interface Editor {
   main: Tile[];

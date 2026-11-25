@@ -28,9 +28,13 @@ export const HOW_TO: GameHowTo = {
     {
       from: 7,
       to: 7,
-      text: 'Change the first sound to make the next word in the family, like hat, cat, bat.',
+      text: 'Change the first sound to make the next word in the family, like hat, cat, bat. The first word tells you the sound; after that, listen for the word, or tap the picture to hear it again.',
     },
-    { from: 8, to: 8, text: 'Keep the first two sounds. Change the last sound to make the pictured word.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Keep the first two sounds. Change the last sound to make the pictured word. The first word tells you the sounds; after that, tap the picture to hear the word again.',
+    },
     {
       from: 10,
       to: 10,

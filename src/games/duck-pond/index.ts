@@ -1,7 +1,8 @@
 import { Container, Graphics, Circle, Rectangle, type FederatedPointerEvent } from 'pixi.js';
+import { frogArt } from '../../art/animals';
 import { IllustratedDuck } from '../../art/friends/duck';
 import { RAINBOW, swatch, wood } from '../../art/palette';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -23,7 +24,12 @@ import {
   bankSize,
   duckMove,
   hidingPuzzle,
-  howManyAnswers,
+  howManyRounds,
+  mixedKinds,
+  mixedTotal,
+  type HowManyRound,
+  type Kind,
+  type MixedRound,
   layoutFor,
   storySeats,
   zeroRoundAt,
@@ -75,11 +81,23 @@ const LILY = { fill: 0x7cc463, line: 0x4a9a35 };
 /** Level 13's one big duck, well over twice the size of a friend (half of any duck is under its ripple). */
 const BIG_DUCK = 2.4;
 
+/** A round of play has one backdrop: the sunny pond, a golden evening, or a frog pond of deeper greens. Level and sticker are unaffected. */
+const SCENES: Pick<BackdropStyle, 'sky' | 'hills'>[] = [
+  { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86] },
+  { sky: [0xf7a58f, 0xffe9c2], hills: [0xb7d98f, 0x8cc470] },
+  { sky: [0x9ad8d0, 0xe3f7e8], hills: [0x9fd88c, 0x6fc272] },
+];
+
+const kindWord = (k: Kind) => (k === 'frog' ? 'frogs' : 'ducks');
+
 const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 
 /** A duck that waits on the bank, hops along an arc, and bobs on the water up to its middle. */
 class Duck extends Container {
   readonly critter = new IllustratedDuck();
+  /** Mixed ponds (levels 6–7): a frog on a lily pad takes this seat; the duck's own art stays hidden. */
+  readonly frog?: Container;
+  private frogLift = 0;
   swimming = false;
   pondOffset: [number, number] | null = null;
   /** Sitting this one out (for example once enough ducks are in). */
@@ -104,12 +122,36 @@ class Duck extends Container {
     done: () => void;
   } | null = null;
 
-  constructor() {
+  constructor(readonly kind: Kind = 'duck') {
     super();
     this.critter.scale.set(0.36);
     this.ripple.visible = false;
     this.addChild(this.glowRing, this.critter, this.ripple);
     this.hitArea = new Circle(0, -46, 72);
+    if (kind === 'frog') {
+      this.critter.visible = false;
+      const pad = new Graphics()
+        .ellipse(0, -2, 62, 22)
+        .fill(LILY.fill)
+        .stroke({ width: 4, color: LILY.line });
+      const frog = frogArt();
+      frog.scale.set(0.9);
+      frog.y = -4;
+      this.frog = frog;
+      this.addChild(pad, frog);
+    }
+  }
+
+  /** The bob while she counts: a duck's hop, or a frog's lift off its lily pad. */
+  bob(h = 0.5) {
+    if (this.frog) this.frogLift = 1;
+    else this.critter.hop(h);
+  }
+
+  /** The happy wiggle when a round is won. */
+  cheer() {
+    if (this.frog) this.frogLift = 1;
+    else this.critter.cheer();
   }
 
   /** Still on its way along an arc (a tap then waits: a second hop would drop the first one's landing). */
@@ -148,6 +190,10 @@ class Duck extends Container {
   update(dt: number) {
     this.clock += dt;
     this.critter.update(dt);
+    if (this.frog) {
+      this.frogLift = Math.max(0, this.frogLift - dt * 2.5);
+      this.frog.y = -4 - 30 * Math.sin(this.frogLift * Math.PI);
+    }
     if (this.arc) {
       const a = this.arc;
       a.t = Math.min(1, a.t + dt / a.dur);
@@ -248,7 +294,9 @@ class DuckPond implements Game {
   private hints = 0;
   private wrongThisRound = 0;
   /** Levels 6–7: how many ducks each round shows (zero is an empty pond). */
-  private answers: number[] = [];
+  private rounds: HowManyRound[] = [];
+  /** Levels 6–7: this round's pond holds frogs too, and she counts one kind. */
+  private mixed: MixedRound | null = null;
   /** The layout this round's ducks were dealt (read by the browser check). */
   layoutKind = 'none';
   /** Make-ten levels: how many ducks each round starts with. */
@@ -278,14 +326,7 @@ class DuckPond implements Game {
     this.view = ctx.view;
     this.backdrop = ctx.track(
       new Backdrop(
-        {
-          sky: [0x8fd3f7, 0xe9f7ff],
-          hills: [0xc8ecb0, 0x9edb86],
-          horizon: 0.42,
-          clouds: 3,
-          sun: true,
-          seed: 33,
-        },
+        { ...SCENES[ctx.rng.int(0, SCENES.length - 1)], horizon: 0.42, clouds: 3, sun: true, seed: 33 },
         ctx.view,
       ),
     );
@@ -529,12 +570,13 @@ class DuckPond implements Game {
     slots?: readonly [number, number][],
     seating?: Pick<Seating, 'scale' | 'pondRx' | 'pondRy'>,
     fromRight = false,
+    kinds?: readonly Kind[],
   ) {
     if (seating && this.sizePond(seating)) {
       this.resize(this.view);
     }
     for (let i = 0; i < n; i++) {
-      const d = new Duck();
+      const d = new Duck(kinds?.[i]);
       d.scale.set(seating?.scale ?? 1);
       d.position.set(fromRight ? this.view.w + 80 : -80, enterY(this.view));
       this.ducks.addChild(d);
@@ -642,17 +684,21 @@ class DuckPond implements Game {
     this.swimmers.forEach(
       (d, i) =>
         void this.tw.wait(i * 0.12).then(() => {
-          d.critter.cheer();
-          if (i < 4) sfx.animal('quack');
+          d.cheer();
+          if (i < 4) {
+            if (d.kind === 'frog') sfx.croak();
+            else sfx.animal('quack');
+          }
         }),
     );
   }
 
   /** Each swimming duck bobs in turn while the voice counts. */
   private async countAloud() {
-    for (let i = 0; i < this.swimmers.length; i++) {
-      const d = this.swimmers[i];
-      d.critter.hop(0.5);
+    // A mixed pond: only the kind she was asked about is counted, in the pond's own order.
+    const counted = this.mixed ? this.swimmers.filter((d) => d.kind === this.mixed!.ask) : this.swimmers;
+    for (let i = 0; i < counted.length; i++) {
+      counted[i].bob();
       sfx.bell(5 + (i % 5), 0.15);
       await this.ctx.say('count', { n: i + 1 });
     }
@@ -707,17 +753,22 @@ class DuckPond implements Game {
     if (p.mode === 'howmany') {
       if (p.layouts) {
         // Levels 6–7: a dice face, two rows of five or a scatter, and sometimes an empty pond (never first).
-        if (!this.answers.length) this.answers = howManyAnswers(rng, p);
-        this.answer = this.answers.shift()!;
-        const { kind, slots } = layoutFor(rng, p, this.answer);
+        if (!this.rounds.length) this.rounds = howManyRounds(rng, p);
+        const next = this.rounds.shift()!;
+        this.answer = next.answer;
+        this.mixed = next.mixed ?? null;
+        const total = next.mixed ? mixedTotal(next.mixed) : next.answer;
+        const { kind, slots } = layoutFor(rng, p, total);
         this.layoutKind = kind;
-        if (this.answer) await this.arrive(this.answer, slots);
+        if (next.mixed) await this.arrive(total, slots, undefined, false, mixedKinds(rng, next.mixed));
+        else if (this.answer) await this.arrive(this.answer, slots);
         else await this.tw.wait(0.8);
       } else {
         this.answer = rng.int(p.min, p.max);
         await this.arrive(this.answer);
       }
-      await this.ctx.instruct('duck.howmany');
+      if (this.mixed) await this.ctx.instruct('duck.howmanyKind', { kind: kindWord(this.mixed.ask) });
+      else await this.ctx.instruct('duck.howmany');
       this.showPads(this.answer);
       this.busy = false;
       return;
@@ -974,10 +1025,11 @@ class DuckPond implements Game {
   }
 
   private async roundWon(n: number, announce = true) {
+    const line = this.mixed?.ask === 'frog' ? 'duck.totalFrogs' : 'duck.total';
     this.quackChorus();
     this.ctx.pet.cheer();
     sfx.sparkle();
-    if (announce) await this.ctx.say('duck.total', { n });
+    if (announce) await this.ctx.say(line, { n });
     else await this.tw.wait(1.2);
     await this.tw.wait(0.4);
     this.clearBank();
@@ -1164,7 +1216,8 @@ class DuckPond implements Game {
     } else if (this.swimmers.length === 0) {
       await this.ctx.say('duck.noneHere');
     } else {
-      await this.ctx.say('duck.countus');
+      if (this.mixed) await this.ctx.say('duck.countKind', { kind: kindWord(this.mixed.ask) });
+      else await this.ctx.say('duck.countus');
       await this.countAloud();
     }
     // The right pad glows from the second miss on a question, and that question counts one hint, however many more misses.
@@ -1280,7 +1333,7 @@ export const duckPond: GameModule = {
       return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}${p.stop ? ', then tap the check' : ''}`;
     if (p.mode === 'howmany')
       return p.zero
-        ? `How many ducks? 0 to ${p.max}, ${p.layouts?.includes('scatter') ? 'dice, rows or scattered' : 'dice or rows'}, dotted pads`
+        ? `How many ducks? 0 to ${p.max}, ${p.layouts?.includes('scatter') ? 'dice, rows or scattered' : 'dice or rows'}, dotted pads; some ponds share the water with frogs and ask for just one kind`
         : `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
     if (p.mode === 'hide') return 'Part and whole: how many ducks hide under the bridge?';

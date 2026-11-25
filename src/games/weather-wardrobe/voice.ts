@@ -18,6 +18,10 @@ export const VOICE = {
   'weather.try': ['It is {weather} today! Try something on {pet}!'],
   'weather.pick': ['It is {weather} today! What should {pet} wear?'],
   'weather.all': ['It is {weather} today! Find everything {pet} needs.'],
+  'weather.temp': [
+    'It is {weather} today, and look at the thermometer: it is {temp}! Find one thing for the sky and one thing for the {temp} day.',
+  ],
+  'weather.temp.wrong': ['{item} for {temp} days. Look at the thermometer. Try another!'],
   'weather.trip': ['We are going on a trip! First it will be {a}, then {b}. Pack what we need for both!'],
   'weather.light.rain.three': [
     'Rain first, then snow. Pack two things for each sky. The case has just three spaces!',
