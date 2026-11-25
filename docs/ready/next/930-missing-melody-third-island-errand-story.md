@@ -1,2 +1,0 @@
-**`missing-melody` third Island Errand story** (preschool; shell, save and navigation tier: typecheck, unit tests, build, filtered story flow from Bumpy Hills, `world`, offline check and a portrait screenshot): Wren's morning song in Bumpy Hills with `stories.melody` migration and three preschool game rounds (`song-maker` 4, `jelly-drums` 3, `sing-along-barn` 2). [Definition](../../definitions/missing-melody.md)
- **Claimed:** branch `claude/missing-melody` (draft PR; one slice, built in steps: data and save, routes, scene, entries, checks).

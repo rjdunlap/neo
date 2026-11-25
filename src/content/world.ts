@@ -60,8 +60,11 @@ export type PicnicStep = (typeof PICNIC_STEPS)[number];
 /** The Woodland Picnic's three requests (Hazel's, in Wonder Woods), saved by these IDs; any order. */
 export const WOODLAND_STEPS = ['invitations', 'baskets', 'beat'] as const;
 export type WoodlandStep = (typeof WOODLAND_STEPS)[number];
-/** The island's stories, as saved under `stories`: the Windy Picnic and the Woodland Picnic. */
-export const STORY_STEPS = { picnic: PICNIC_STEPS, woodland: WOODLAND_STEPS } as const;
+/** The Missing Melody's three requests (Wren's, on Bumpy Hills), saved by these IDs; any order. */
+export const MELODY_STEPS = ['notes', 'highlow', 'friends'] as const;
+export type MelodyStep = (typeof MELODY_STEPS)[number];
+/** The island's stories, as saved under `stories`: the Windy Picnic, the Woodland Picnic and the Missing Melody. */
+export const STORY_STEPS = { picnic: PICNIC_STEPS, woodland: WOODLAND_STEPS, melody: MELODY_STEPS } as const;
 export type StoryId = keyof typeof STORY_STEPS;
 export type StoryStep<S extends StoryId = StoryId> = (typeof STORY_STEPS)[S][number];
 

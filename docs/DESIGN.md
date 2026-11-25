@@ -150,7 +150,7 @@ The first Island Errands story, built as the roadmap's small pilot. Its rules li
 - **The journal** (top right) shows the three requests with a check and a picture of what each changed; tapping a picture replays its request or recap, and a green arrow goes straight to the next request. After the ending it shows the photo and offers to tell the story again, which clears the steps and keeps the photo. The grown-up zone summarizes the story's progress.
 - **What it does not do.** The picnic shows a fixed picture of each step (four plates, three friends, Juniper's tune), not what the child made: the round result carries only misses and hints. Nothing expires, nothing is lost, and the story never awards stickers of its own.
 
-A round can also be played as a step of a story: `go.game(id, band, { story?, step, level })` plays the story's level for the child's band (no `story` means the Windy Picnic; `StoryRound` in `src/app/App.ts` is a union of the two stories' steps), and `go.picnic(step)` or `go.woodland(from?)` comes back to show what changed. In a story round the shell records the round and awards its sticker as usual, but leaves the game's adaptive level where it was, marks the step done (idempotently), and sends home and the celebration's basket button back to the picnic. When a scene is destroyed, its tweens and the promises from `ctx.say`/`ctx.instruct` stop resolving, so a game waiting on a line or an animation can't carry on after the child has left.
+A round can also be played as a step of a story: `go.game(id, band, { story?, step, level })` plays the story's level for the child's band (no `story` means the Windy Picnic; `StoryRound` in `src/app/App.ts` is a union of the three stories' steps), and `go.picnic(step)`, `go.woodland(from?)` or `go.melody(from?)` comes back to show what changed. In a story round the shell records the round and awards its sticker as usual, but leaves the game's adaptive level where it was, marks the step done (idempotently), and sends home and the celebration's basket button back to the picnic. When a scene is destroyed, its tweens and the promises from `ctx.say`/`ctx.instruct` stop resolving, so a game waiting on a line or an animation can't carry on after the child has left.
 
 ### The Woodland Picnic
 
@@ -160,6 +160,16 @@ The second Island Errand, for the `school` band only, from Wonder Woods. Rules l
 - **Three jobs, any order,** from Hazel the squirrel postkeeper: invitations (Mail Carrier 6), baskets (Seesaw Balance 7) and the beat (Beat Builder 3, on its `PicnicStage`). Each finished round changes the clearing (flags and lit stepping stones, two baskets on a pole, a drum and bell on a stump).
 - **The ending.** With all three done, a bear, a bunny and a duck walk in along the stones and a stated eight-step beat (`PICNIC_BEAT`, drum and pentatonic bells) plays twice; Hazel's photo is kept once (`endStory('woodland')`). A photo button then opens it large with a green "tell it again", which clears the steps and keeps the photo.
 - **What it does not do.** No typed story result, no Robot Path, no younger version, no stickers of its own; the Windy Picnic is unchanged.
+
+### The Missing Melody
+
+The third Island Errand, for the `preschool` band only, from Bumpy Hills. Rules live in `src/content/melody.ts`, art in `src/art/melody.ts`, the scene in `src/app/scenes/MelodyScene.ts`. It adds data to the Woodland Picnic's story-ID contract and no second generalization: `MELODY_STEPS` in `world.ts`, `stories.melody` in the save (repaired by the same `story()` rule), `store.melody`, `go.melody(from?)` and the `{ story: 'melody' }` arm of `StoryRound`.
+
+- **Entry.** The first stop on Bumpy Hills' path in `PlaceScene` (a `StorySpot` with `story: 'melody'`), a "Missing Melody" card on `SubjectPlaceScene`'s top-level page, and a `melody` book in the library (`libraryBooks('preschool')` only). Home returns to Bumpy Hills.
+- **Three jobs, any order,** from Wren: notes (Song Maker 4), highlow (Sound Garden 2) and friends (Sing-Along Barn 3); a test reads each game's own `preschool` range. Each finished round changes the hilltop (five note-flowers on the vine, Wren on the top branch with Frog on the stone, a bear and a bunny).
+- **The ending.** The five flowers light in turn on the stated `MORNING_SONG` (pentatonic steps 5 to 9), the sun rises and the morning song card is kept once (`endStory('melody')`); the card button opens it large with a green "tell it again".
+- **Voice.** Every new line carries `{name}`, so none needs a rendered clip and all stay on device speech until a clip pass renders fixed wording.
+- **What it does not do.** No typed story result: the song and the two friends are the story's, not hers; no younger or older version; no stickers of its own.
 
 ### Proposed: story results
 

@@ -747,6 +747,7 @@ export class GameScene extends Scene {
         this.origin && 'book' in this.origin ? this.origin : undefined,
       );
     else if (this.story?.story === 'woodland') this.app.go.woodland(this.story.step);
+    else if (this.story?.story === 'melody') this.app.go.melody(this.story.step);
     else if (this.story) this.app.go.picnic(this.story.step);
     else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
   }

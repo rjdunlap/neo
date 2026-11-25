@@ -8,6 +8,7 @@ import { HatchScene } from './scenes/HatchScene';
 import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
 import { WoodlandScene } from './scenes/WoodlandScene';
+import { MelodyScene } from './scenes/MelodyScene';
 import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
 import { PlaceScene } from './scenes/PlaceScene';
 import { ChooserScene } from './scenes/ChooserScene';
@@ -49,6 +50,7 @@ export function createRoutes(app: App): Routes {
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     woodland: (from) => void app.show(new WoodlandScene(app, from)),
+    melody: (from) => void app.show(new MelodyScene(app, from)),
     // Welcome a New Friend lives at the root only (src/rework.ts); the island has no project page.
     project: () => void app.show(new MapScene(app)),
     stickers: () => void app.show(new StickerBookScene(app)),
