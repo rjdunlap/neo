@@ -190,7 +190,7 @@ class MakerLane implements Game {
     this.showBeginning(b.chain, this.level === 2);
     b.stalls.forEach((m, i) => this.dressStall(i, m, this.friends[i]));
     this.setBundle(this.play.form);
-    this.moveBundleTo(0, false);
+    void this.moveBundleTo(0, false);
     if (this.drag) this.drag.enabled = true;
   }
 
@@ -460,7 +460,7 @@ class MakerLane implements Game {
     }
     this.lastOrder = it.order;
     this.setBundle(b.form, this.lookFor(b.form, b.colour));
-    this.moveBundleTo(0, false);
+    void this.moveBundleTo(0, false);
     if (this.drag) this.drag.enabled = true;
     this.orderHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     const o = it.order;
