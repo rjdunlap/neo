@@ -22,7 +22,12 @@ import {
   newScore,
   PACES,
   PAD,
+  planFor,
   select,
+  STEADY_BPM,
+  STRENGTH_GAIN,
+  STRENGTH_OF,
+  tempoOf,
   signBot,
   submit,
   type BeatEvent,
@@ -378,5 +383,78 @@ describe('Little Conductor level 3 requests', () => {
       }
       expect(r).toMatchObject({ done: true, misses: 0, hints: 0 });
     }
+  });
+});
+
+describe('Little Conductor level 4, soft or loud', () => {
+  /** Plays a phrase at level 4 with one pad and returns its events. */
+  const phrase = (pace: PaceId, motif = hop) => {
+    let s = select(newScore(), pace);
+    const events: BeatEvent[] = [];
+    // A fixed frame length, so both pads see exactly the same clock.
+    for (let i = 0; i < 2000 && events.length < BEATS; i++) {
+      const r = advance(s, 1 / 60, motif, 'strength');
+      s = r.score;
+      events.push(...r.events);
+    }
+    return { score: s, events };
+  };
+
+  it('is a level of its own, for preschool and pre-K only', () => {
+    expect(planFor(4).mode).toBe('strength');
+    expect(planFor(4).name).toMatch(/small drum and a big drum/);
+  });
+
+  it.each(MOTIFS.map((m) => m.id))(
+    '%s: pitch, order, bass, drum and timing are identical on both pads; only the gain differs',
+    (id) => {
+      const motif = MOTIFS.find((m) => m.id === id)!;
+      const gentle = phrase('turtle', motif).events;
+      const strong = phrase('rabbit', motif).events;
+      expect(gentle).toHaveLength(BEATS);
+      const strip = (e: BeatEvent) => ({ ...e, pace: undefined, gain: undefined });
+      expect(gentle.map(strip)).toEqual(strong.map(strip));
+      for (const e of gentle) expect(e.bpm).toBe(STEADY_BPM);
+      for (const e of gentle) expect(e.gain).toBe(STRENGTH_GAIN.gentle);
+      for (const e of strong) expect(e.gain).toBe(STRENGTH_GAIN.strong);
+    },
+  );
+
+  it('keeps one steady pace for every pad, and never plays louder than the other levels', () => {
+    expect(tempoOf('turtle', 'strength')).toBe(tempoOf('rabbit', 'strength'));
+    expect(STRENGTH_OF).toEqual({ turtle: 'gentle', rabbit: 'strong' });
+    expect(STRENGTH_GAIN.gentle).toBeGreaterThan(0.2);
+    expect(STRENGTH_GAIN.gentle).toBeLessThan(STRENGTH_GAIN.strong);
+    expect(STRENGTH_GAIN.strong).toBeLessThanOrEqual(1);
+    // The other levels' events keep their own paces and full gain.
+    const e = advance(select(newScore(), 'turtle'), 0, hop).events[0];
+    expect([e.bpm, e.gain]).toEqual([PACES.turtle, 1]);
+  });
+
+  it('the gate follows the latest change: both heard whole, then the chosen one whole since she chose it', () => {
+    let s = phrase('turtle').score;
+    expect(canFinish(s, 4)).toBe(false);
+    expect(earlyDone(s, 4)).toBe('hear-other');
+    let r: { score: Score; events: BeatEvent[] } = { score: select(s, 'rabbit'), events: [] };
+    for (let i = 0; i < 2000 && !canFinish(r.score, 4); i++) r = advance(r.score, 1 / 60, hop, 'strength');
+    s = r.score;
+    expect(canFinish(s, 4)).toBe(true);
+    // A change closes the gate at once, and it opens again only after a whole phrase of the new strength.
+    s = select(s, 'turtle');
+    expect(canFinish(s, 4)).toBe(false);
+    for (let i = 0; i < 2000 && !canFinish(s, 4); i++) s = advance(s, 1 / 60, hop, 'strength').score;
+    expect(s.pace).toBe('turtle');
+    expect(s.heard.turtle).toBeGreaterThanOrEqual(BEATS);
+  });
+
+  it('the ghost finger hears both drums and then finishes', () => {
+    let s = newScore();
+    for (let guard = 0; guard < 5000; guard++) {
+      const m = botMove(s, 4);
+      if (m === 'done') break;
+      if (m) s = select(s, m);
+      s = advance(s, 1 / 20, hop, 'strength').score;
+    }
+    expect(canFinish(s, 4)).toBe(true);
   });
 });

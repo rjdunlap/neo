@@ -8,6 +8,9 @@ export const VOICE = {
   'little-conductor.instruct-both': [
     'Hear it slow and hear it fast, then pick the one you like and tap the green check.',
   ],
+  'little-conductor.instruct-strength': [
+    'Hear the small drum and the big drum, {name}, then pick the one you like and tap the green check.',
+  ],
   'little-conductor.hear-whole': [
     'Listen to the whole tune, then tap the check.',
     'Hear the whole tune first, then tap the check.',
