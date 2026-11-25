@@ -64,6 +64,7 @@ function dotsArt(same: boolean): Graphics {
     g.circle(-22, 0, 20).fill(0xffffff).stroke({ width: 5, color: swatch.orange.line });
     g.roundRect(8, -11, 22, 22, 4).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line });
   }
+  g.scale.set(1.35);
   return g;
 }
 
