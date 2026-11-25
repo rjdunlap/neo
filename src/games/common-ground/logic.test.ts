@@ -7,10 +7,18 @@ import {
   FIXTURES,
   beside,
   check,
+  check2,
   colOf,
   emptyRoom,
   fixtureRow,
   hintAction,
+  hintAction2,
+  previewSide,
+  pushUndo,
+  sideOf,
+  undo,
+  describeLevel,
+  type Side,
   neighbours,
   pickVisit,
   place,
@@ -150,8 +158,131 @@ describe('Common Ground rules', () => {
   it('is a school-only level', () => {
     for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'] as Band[]) {
       const range = game.levels(band);
-      if (band === 'school') expect(range).toEqual({ min: 1, max: 1 });
+      if (band === 'school') expect(range).toEqual({ min: 1, max: 2 });
       else expect(game.bands).not.toContain(band);
+    }
+  });
+
+  it('names both levels', () => {
+    expect(describeLevel(1)).toMatch(/place for you/);
+    expect(describeLevel(2)).toMatch(/request changed/);
+  });
+});
+
+/** Every arrangement that keeps both level-1 requests, with the side its basket is on. */
+const previews = (fixture: Fixture) =>
+  arrangements()
+    .filter((r) => check(r, fixture) === 'ok')
+    .map((room) => ({ room, side: previewSide(room, fixture) as Side }));
+
+describe('Common Ground level 2: a request changed', () => {
+  it('gives sideOf the four sides for all 14 ordered neighbouring pairs and null otherwise', () => {
+    let sides = 0;
+    for (let a = 0; a < CELLS; a++)
+      for (let b = 0; b < CELLS; b++) {
+        const side = sideOf(a, b);
+        if (beside(a, b)) {
+          sides++;
+          expect(['left', 'right', 'above', 'below']).toContain(side);
+        } else expect(side).toBeNull();
+      }
+    expect(sides).toBe(14);
+    expect([sideOf(0, 1), sideOf(1, 0), sideOf(0, 3), sideOf(3, 0)]).toEqual([
+      'right',
+      'left',
+      'below',
+      'above',
+    ]);
+    expect(sideOf(0, 4)).toBeNull();
+    expect(sideOf(-1, 0)).toBeNull();
+  });
+
+  it('accepts exactly 25, 25 and 20 arrangements for a window preview on the right, left and below (the door mirrors)', () => {
+    const all = arrangements();
+    const accepted = (fixture: Fixture, side: Side) =>
+      all.filter((r) => check2(r, fixture, side) === 'ok').length;
+    expect(['right', 'left', 'below'].map((s) => accepted('window', s as Side))).toEqual([25, 25, 20]);
+    expect(['right', 'left', 'above'].map((s) => accepted('door', s as Side))).toEqual([25, 25, 20]);
+    // The reasons: cushion first, then basket, then same.
+    for (const fixture of FIXTURES)
+      for (const side of ['left', 'right', 'above', 'below'] as Side[])
+        for (const room of all) {
+          const v = check2(room, fixture, side);
+          const c = at(room, 'cushion'),
+            b = at(room, 'basket');
+          const inRow = rowOf(c) === fixtureRow(fixture);
+          expect(v).toBe(
+            !inRow ? 'cushion' : !beside(c, b) ? 'basket' : sideOf(c, b) === side ? 'same' : 'ok',
+          );
+        }
+    expect(check2(emptyRoom(), 'window', 'right')).toBe('unplaced');
+  });
+
+  it('never accepts the preview itself and is always solvable in at most two moves, whatever the plant does', () => {
+    for (const fixture of FIXTURES)
+      for (const { room, side } of previews(fixture)) {
+        expect(check2(room, fixture, side)).toBe('same');
+        const fixed = hintAction2(room, fixture, side)!;
+        let next = place(room, fixed.piece, fixed.cell);
+        let moves = 1;
+        while (check2(next, fixture, side) !== 'ok') {
+          const m = hintAction2(next, fixture, side)!;
+          next = place(next, m.piece, m.cell);
+          expect(++moves).toBeLessThanOrEqual(2);
+        }
+        // Some accepted arrangement exists for the same cushion cell or another in the row.
+        expect(arrangements().some((r) => check2(r, fixture, side) === 'ok')).toBe(true);
+      }
+  });
+
+  it('lets neither the plant nor anything else outside the two pieces change a verdict', () => {
+    for (const fixture of FIXTURES)
+      for (const side of ['left', 'right', 'above', 'below'] as Side[])
+        for (const room of arrangements()) {
+          const without = room.map((p) => (p === 'plant' ? null : p)) as Room;
+          expect(check2(room, fixture, side)).toBe(check2(without, fixture, side));
+        }
+  });
+
+  it('hints with a legal move that reaches ok in at most three moves from any state, never moving a kept piece', () => {
+    const starts: Room[] = [emptyRoom(), ...arrangements()];
+    for (const piece of ['cushion', 'basket'] as Piece[])
+      for (const room of arrangements()) starts.push(room.map((p) => (p === piece ? null : p)) as Room);
+    for (const fixture of FIXTURES)
+      for (const side of ['left', 'right', 'above', 'below'] as Side[])
+        for (const start of starts) {
+          let room = start;
+          let moves = 0;
+          for (;;) {
+            const move = hintAction2(room, fixture, side);
+            if (!move) break;
+            expect(move.cell).toBeGreaterThanOrEqual(0);
+            expect(move.cell).toBeLessThan(CELLS);
+            const c = at(room, 'cushion');
+            if (move.piece === 'cushion') expect(c < 0 || rowOf(c) !== fixtureRow(fixture)).toBe(true);
+            else expect(c >= 0 && rowOf(c) === fixtureRow(fixture)).toBe(true);
+            room = place(room, move.piece, move.cell);
+            expect(++moves).toBeLessThanOrEqual(3);
+          }
+          expect(check2(room, fixture, side)).toBe('ok');
+        }
+  });
+
+  it('undo restores the previewed room exactly when the stack is emptied, and is a no-op at the bottom', () => {
+    const rng = new Rng(7);
+    for (const { room: start } of previews('window')) {
+      let room: Room = start;
+      let stack: readonly Room[] = [];
+      const pieces: Piece[] = ['cushion', 'basket', 'plant'];
+      const n = rng.int(0, 6);
+      for (let i = 0; i < n; i++) {
+        stack = pushUndo(stack, room);
+        room = place(room, pieces[rng.int(0, 2)], rng.int(0, CELLS - 1));
+      }
+      for (let i = 0; i < n; i++) ({ room, stack } = undo(room, stack));
+      expect(room).toEqual(start);
+      expect(stack).toHaveLength(0);
+      expect(undo(room, stack)).toEqual({ room: start, stack: [] });
     }
   });
 });

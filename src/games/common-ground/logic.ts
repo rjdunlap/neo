@@ -2,13 +2,15 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
- * Common Ground, level 1: a friend states two requests and she arranges a 2 × 3 room to keep both
+ * Common Ground, levels 1–2: a friend states two requests and she arranges a 2 × 3 room to keep both
  * (docs/definitions/common-ground.md). Everything is integers on cells numbered row-major `0 1 2 / 3 4 5`.
  */
-export const LEVELS: BandLevels = { school: { min: 1, max: 1 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
 
-export const describeLevel = (_level: number) =>
-  'A place for you: arrange two things so a friend’s two requests are kept';
+export const describeLevel = (level: number) =>
+  level >= 2
+    ? 'A request changed: the friend asks for the basket on a different side, so revise the room'
+    : 'A place for you: arrange two things so a friend’s two requests are kept';
 
 export const COLS = 3;
 export const ROWS = 2;
@@ -115,4 +117,63 @@ export function pickVisit(rng: Rng, previous?: Fixture): Visit {
       : 'window'
     : FIXTURES[rng.int(0, FIXTURES.length - 1)];
   return { fixture, friend: FRIENDS[rng.int(0, FRIENDS.length - 1)], tint: rng.int(0, TINTS - 1) };
+}
+
+// ---- Level 2, a request changed (docs/definitions/common-ground-2.md) ----
+
+/** The direction of the basket from the cushion. */
+export type Side = 'left' | 'right' | 'above' | 'below';
+
+/** Which side of the cushion the basket is on; null when the two cells are not beside each other. */
+export function sideOf(cushion: number, basket: number): Side | null {
+  if (cushion < 0 || basket < 0 || !beside(cushion, basket)) return null;
+  if (rowOf(cushion) === rowOf(basket)) return colOf(basket) > colOf(cushion) ? 'right' : 'left';
+  return rowOf(basket) > rowOf(cushion) ? 'below' : 'above';
+}
+
+/** The previewed side of a room that keeps both level-1 requests, or null. */
+export function previewSide(room: Room, fixture: Fixture): Side | null {
+  if (check(room, fixture) !== 'ok') return null;
+  return sideOf(cellOf(room, 'cushion'), cellOf(room, 'basket'));
+}
+
+/** `same` is the basket beside the cushion but still on the previewed side. Reasons come cushion, basket, then same. */
+export type Verdict2 = 'unplaced' | 'ok' | 'cushion' | 'basket' | 'same';
+
+export function check2(room: Room, fixture: Fixture, previewed: Side): Verdict2 {
+  const c = cellOf(room, 'cushion'),
+    b = cellOf(room, 'basket');
+  if (c < 0 || b < 0) return 'unplaced';
+  const k = requestsKept(room, fixture);
+  if (!k.cushion) return 'cushion';
+  if (!k.basket) return 'basket';
+  return sideOf(c, b) === previewed ? 'same' : 'ok';
+}
+
+/**
+ * One legal move toward `ok` after the change: the cushion goes along its column into the fixture's row; otherwise the basket
+ * goes on the first cell beside the cushion, in reading order, whose side is not the previewed one (an empty cell before one
+ * holding the plant). Null once the room is `ok`.
+ */
+export function hintAction2(room: Room, fixture: Fixture, previewed: Side): Move | null {
+  if (check2(room, fixture, previewed) === 'ok') return null;
+  const row = fixtureRow(fixture);
+  const c = cellOf(room, 'cushion');
+  if (c < 0) return { piece: 'cushion', cell: row * COLS + 1 };
+  if (rowOf(c) !== row) return { piece: 'cushion', cell: row * COLS + colOf(c) };
+  const around = neighbours(c).filter((i) => sideOf(c, i) !== previewed);
+  const cell = around.find((i) => room[i] === null) ?? around.find((i) => room[i] === 'plant') ?? around[0];
+  return { piece: 'basket', cell };
+}
+
+/** Rooms before each move since the change, newest last. A drawing aid; nothing is judged by it. */
+export type UndoStack = readonly Room[];
+
+/** Record `room` before a move. */
+export const pushUndo = (stack: UndoStack, room: Room): UndoStack => [...stack, room];
+
+/** Step back one move; at the bottom the room is the previewed arrangement and the stack stays empty. */
+export function undo(room: Room, stack: UndoStack): { room: Room; stack: UndoStack } {
+  if (!stack.length) return { room, stack };
+  return { room: stack[stack.length - 1], stack: stack.slice(0, -1) };
 }

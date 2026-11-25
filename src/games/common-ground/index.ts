@@ -10,23 +10,41 @@ import { hinted, missEvery, newTally, tally } from '../../progress/coach';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fixtureArt, floorArt, friendArt, pieceArt, requestArt, roomSticker, tickArt } from './art';
+import {
+  changedRequestArt,
+  fixtureArt,
+  floorArt,
+  friendArt,
+  ghostArt,
+  pieceArt,
+  requestArt,
+  roomSticker,
+  tickArt,
+  undoArt,
+} from './art';
 import { cellAt, roomLayout } from './layout';
 import {
   LEVELS,
   PIECES,
   check,
+  check2,
   describeLevel,
   emptyRoom,
   hintAction,
+  hintAction2,
   lift,
   pickVisit,
   place,
+  previewSide,
+  pushUndo,
   requestsKept,
+  undo,
   type Fixture,
   type Move,
   type Piece,
   type Room,
+  type Side,
+  type UndoStack,
 } from './logic';
 
 /** The fixture of the last visit, so the next one is the other (each comes once before it repeats). */
@@ -45,6 +63,15 @@ class Round implements Game {
   private readonly bubbles: Container[] = [];
   private readonly ticks: Container[] = [];
   private readonly go: RoundButton;
+  /** Level 2: the friend's request changes after a first Visit (docs/definitions/common-ground-2.md). */
+  private readonly revises: boolean;
+  private phase: 1 | 2 = 1;
+  private previewed: Side | null = null;
+  private previewCushion = 0;
+  private stack: UndoStack = [];
+  private readonly ghost = new Container();
+  private previewBasket = 0;
+  private readonly undoBtn: RoundButton;
   private hint: Move | null = null;
   private busy = false;
   private done = false;
@@ -57,6 +84,7 @@ class Round implements Game {
     lastFixture = this.visit.fixture;
     this.layout = roomLayout(ctx.view);
     const l = this.layout;
+    this.revises = ctx.level >= 2;
     this.floor = floorArt(l.floor.cell);
     this.fixtureNode = fixtureArt(
       this.visit.fixture,
@@ -68,13 +96,17 @@ class Round implements Game {
     for (const d of [this.bg, this.glow]) d.eventMode = 'none';
     this.floor.eventMode = 'none';
     this.fixtureNode.eventMode = 'none';
-    ctx.stage.addChild(this.bg, this.floor, this.fixtureNode, this.glow);
+    this.ghost.eventMode = 'none';
+    this.ghost.visible = false;
+    ctx.stage.addChild(this.bg, this.floor, this.fixtureNode, this.ghost, this.glow);
     this.go = new RoundButton(this.goArt(), swatch.green, 56, () => this.visitNow()).named('Visit');
-    for (const kind of ['cushion', 'basket'] as const) {
+    this.undoBtn = new RoundButton(undoArt(), swatch.orange, 56, () => this.undoMove()).named('Undo');
+    this.undoBtn.visible = false;
+    for (const [i, kind] of (['cushion', 'basket'] as const).entries()) {
       const b = requestArt(kind, this.visit.fixture, 330, 120, this.visit.tint);
       b.eventMode = 'static';
       b.cursor = 'pointer';
-      b.on('pointerdown', () => void this.askAgain());
+      b.on('pointerdown', () => void (i === 1 && this.phase === 2 ? this.askChange() : this.askAgain()));
       const tick = tickArt();
       tick.visible = false;
       tick.eventMode = 'none';
@@ -94,7 +126,7 @@ class Round implements Game {
       this.pieces.push(entry);
       ctx.own(() => entry.drag.destroy());
     }
-    ctx.stage.addChild(this.friend, ...this.bubbles, ...this.ticks, this.go);
+    ctx.stage.addChild(this.friend, ...this.bubbles, ...this.ticks, this.go, this.undoBtn);
     this.resize(ctx.view);
   }
 
@@ -115,10 +147,29 @@ class Round implements Game {
     await this.ctx.say('common-ground.request', { fixture: this.visit.fixture });
   }
 
+  private async askChange() {
+    if (this.done) return;
+    await this.ctx.say('common-ground.change', { name: this.ctx.childName });
+  }
+
+  /** Every move after the change goes through here so Undo can step back through it. */
+  private apply(piece: Piece, cell: number) {
+    if (this.phase === 2) this.stack = pushUndo(this.stack, this.room);
+    this.room = cell < 0 ? lift(this.room, piece) : place(this.room, piece, cell);
+  }
+
+  private undoMove() {
+    if (this.phase !== 2 || this.done || this.busy || !this.stack.length) return;
+    ({ room: this.room, stack: this.stack } = undo(this.room, this.stack));
+    this.hint = null;
+    sfx.tick();
+    this.sync();
+  }
+
   private drop(piece: Piece, x: number, y: number): boolean {
     if (this.done || this.busy) return false;
     const cell = cellAt(this.layout, x, y);
-    this.room = cell < 0 ? lift(this.room, piece) : place(this.room, piece, cell);
+    this.apply(piece, cell);
     this.hint = null;
     sfx.bell(3 + (cell < 0 ? 0 : cell), 0.25);
     this.sync();
@@ -140,8 +191,11 @@ class Round implements Game {
     const k = requestsKept(this.room, this.visit.fixture);
     const placed = this.room.includes('cushion') && this.room.includes('basket');
     this.ticks[0].visible = k.cushion;
-    this.ticks[1].visible = k.basket;
+    this.ticks[1].visible = this.previewed
+      ? check2(this.room, this.visit.fixture, this.previewed) === 'ok'
+      : k.basket;
     this.go.alpha = placed ? 1 : 0.4;
+    this.undoBtn.alpha = this.stack.length ? 1 : 0.4;
     this.drawGlow();
   }
 
@@ -159,17 +213,20 @@ class Round implements Game {
 
   private visitNow() {
     if (this.done || this.busy) return;
-    const verdict = check(this.room, this.visit.fixture);
+    const verdict =
+      this.phase === 2 && this.previewed
+        ? check2(this.room, this.visit.fixture, this.previewed)
+        : check(this.room, this.visit.fixture);
     if (verdict === 'unplaced') {
       sfx.boing();
       return;
     }
     if (verdict === 'ok') {
-      void this.welcome();
+      void (this.revises && this.phase === 1 ? this.change() : this.welcome());
       return;
     }
     // One miss, naming the one unmet request it can (the cushion first); the unmet bubble pulses.
-    const which = verdict === 'basket' ? 'basket' : 'cushion';
+    const which = verdict === 'basket' || verdict === 'same' ? (verdict as 'basket' | 'same') : 'cushion';
     sfx.boing();
     const due = missEvery(this.t);
     const bubble = this.bubbles[which === 'cushion' ? 0 : 1];
@@ -188,12 +245,12 @@ class Round implements Game {
   /** Light the move `hintAction` names (a hint); the third in a round is carried out by the pet, so a round can always finish. */
   private giveHint() {
     if (this.done || this.busy) return;
-    const move = hintAction(this.room, this.visit.fixture);
+    const move = this.nextMove();
     if (!move) return;
     hinted(this.t);
     void this.ctx.say('common-ground.hint', { name: this.ctx.childName });
     if (this.t.hints >= 3) {
-      this.room = place(this.room, move.piece, move.cell);
+      this.apply(move.piece, move.cell);
       this.hint = null;
       sfx.bell(5, 0.3);
       this.sync();
@@ -201,6 +258,46 @@ class Round implements Game {
     }
     this.hint = move;
     this.drawGlow();
+  }
+
+  /** The one legal move toward the room the friend asks for now. */
+  private nextMove(): Move | null {
+    return this.phase === 2 && this.previewed
+      ? hintAction2(this.room, this.visit.fixture, this.previewed)
+      : hintAction(this.room, this.visit.fixture);
+  }
+
+  /**
+   * Level 2: the first Visit was right, the friend starts to sit, then asks for the basket on a different side. The old place
+   * stays as a dashed outline; she repairs the room and presses Visit again.
+   */
+  private async change() {
+    this.busy = true;
+    this.hint = null;
+    this.drawGlow();
+    const side = previewSide(this.room, this.visit.fixture);
+    if (!side) {
+      this.busy = false;
+      return;
+    }
+    this.previewCushion = this.room.indexOf('cushion');
+    const l = this.layout;
+    const c = l.cells[this.previewCushion];
+    sfx.bell(7, 0.3);
+    await this.ctx.tw.to(this.friend, { x: c.x - 40, y: c.y + 52 }, { duration: 0.9, ease: ease.inOutSine });
+    if (!this.ctx.alive) return;
+    this.previewed = side;
+    this.phase = 2;
+    this.stack = [];
+    this.previewBasket = this.room.indexOf('basket');
+    this.ghost.addChild(ghostArt(l.piece + 24));
+    this.ghost.visible = true;
+    this.bubbles[1].removeChildren().forEach((n) => n.destroy({ children: true }));
+    this.bubbles[1].addChild(changedRequestArt(side, 330, 120, this.visit.tint));
+    this.undoBtn.visible = true;
+    this.busy = false;
+    this.resize(this.ctx.view);
+    await this.ctx.instruct('common-ground.change', { name: this.ctx.childName });
   }
 
   /** The pause sheet's Help. */
@@ -218,7 +315,9 @@ class Round implements Game {
     await this.ctx.tw.to(this.friend, { x: c.x, y: c.y + 36 }, { duration: 1.1, ease: ease.inOutSine });
     if (!this.ctx.alive) return;
     this.done = true;
-    await this.ctx.say('common-ground.ok', { name: this.ctx.childName });
+    await this.ctx.say(this.phase === 2 ? 'common-ground.better' : 'common-ground.ok', {
+      name: this.ctx.childName,
+    });
     if (!this.ctx.alive) return;
     await this.ctx.say(this.room.includes('plant') ? 'common-ground.plant' : 'common-ground.noplant', {
       name: this.ctx.childName,
@@ -248,10 +347,16 @@ class Round implements Game {
       this.ticks[i].position.set(b.x + b.w / 2 - 22, b.y - b.h / 2 + 12);
     });
     this.go.position.set(l.visit.x, l.visit.y);
+    this.undoBtn.position.set(l.undo.x, l.undo.y);
+    this.ghost.position.set(l.cells[this.previewBasket].x, l.cells[this.previewBasket].y);
     if (this.done || this.busy) {
       const c = l.cells[this.room.indexOf('cushion')];
       this.ctx.tw.kill(this.friend);
       this.friend.position.set(c.x, c.y + 36);
+    } else if (this.phase === 2) {
+      const c = l.cells[this.previewCushion];
+      this.ctx.tw.kill(this.friend);
+      this.friend.position.set(c.x - 40, c.y + 52);
     } else this.friend.position.set(l.friendStart.x, l.friendStart.y);
     this.sync();
   }
@@ -261,7 +366,7 @@ class Round implements Game {
     if (this.done || this.busy || !this.ctx.alive) return null;
     if (this.pieces.some((p) => p.drag.dragging || p.drag.held)) return null;
     const l = this.layout;
-    const move = hintAction(this.room, this.visit.fixture);
+    const move = this.nextMove();
     if (move) {
       const p = this.pieces.find((x) => x.piece === move.piece)!;
       return {
@@ -270,7 +375,7 @@ class Round implements Game {
       };
     }
     this.demoPlant ??= this.ctx.rng.chance(0.5);
-    if (this.demoPlant && !this.room.includes('plant')) {
+    if (this.phase === 1 && this.demoPlant && !this.room.includes('plant')) {
       const free = this.room.findIndex((p) => p === null);
       const p = this.pieces.find((x) => x.piece === 'plant')!;
       return { drag: { on: p.node }, to: { on: this.ctx.stage, x: l.cells[free].x, y: l.cells[free].y } };

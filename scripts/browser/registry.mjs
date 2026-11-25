@@ -777,6 +777,7 @@ export function createChecks(fixture) {
     'howToLevelPick',
     'readyForAdventurePlay',
     'commonGroundPlay',
+    'commonGroundChangePlay',
     'adventureWalkPlay',
     'sandTablePlay',
     'senseDetectivePlay',
@@ -1163,6 +1164,7 @@ export async function runSuite(suite, fixture) {
     howToLevelPick,
     readyForAdventurePlay,
     commonGroundPlay,
+    commonGroundChangePlay,
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
@@ -1525,7 +1527,10 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();
   if (suite === 'all' || suite === 'readyadventure') await readyForAdventurePlay();
-  if (suite === 'all' || suite === 'commonground') await commonGroundPlay();
+  if (suite === 'all' || suite === 'commonground') {
+    await commonGroundPlay();
+    await commonGroundChangePlay();
+  }
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'lands') await landsTour();
