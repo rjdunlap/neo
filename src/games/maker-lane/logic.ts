@@ -637,6 +637,8 @@ export type BranchOutcome =
       from: Form;
       to: Form;
       colour: Colour | null;
+      /** The form the dyer worked on, for naming the route (null if the dyer has not worked on this bundle). */
+      dyedAt: Form | null;
       holds: boolean;
       finished: boolean;
       orderDone: boolean;
@@ -798,6 +800,7 @@ export class BranchPlay {
         break;
     }
     const colour = this.colour;
+    const dyedAt = this.dyedAt;
     const to = this.form;
     this.bubbles.clear();
     this.glowing = false;
@@ -807,7 +810,7 @@ export class BranchPlay {
       this.next();
       this.held = heldNext;
     }
-    return { kind: 'made', job, from, to, colour, holds, finished, orderDone, done: this.done };
+    return { kind: 'made', job, from, to, colour, dyedAt, holds, finished, orderDone, done: this.done };
   }
 
   /** Show me: the same glow as two misses, counted once per bundle. False when nothing changed. */

@@ -9,7 +9,7 @@ import { henArt, sheepArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
 import { treeArt } from '../../art/picnic';
 import { cream, ink, swatch, wood } from '../../art/palette';
-import type { Card, Form, Tool } from './logic';
+import type { Card, Colour, Form, Tool } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 const WOOL = { fill: 0xfaf6ea, line: 0xb9b2a0, dirty: 0xd8ccb0 };
@@ -131,8 +131,14 @@ function loaf(g: Graphics) {
   g.roundRect(30, -12, 18, 40, 6).fill(0xfbe7c6).stroke(line(0x8f5420, 3));
 }
 
-function fleece(g: Graphics, clean: boolean) {
-  const fill = clean ? WOOL.fill : WOOL.dirty;
+/** Levels 4–5: how a wool form looks. `colour` null is undyed; a second colour makes a striped scarf. Omitted: the default art. */
+export interface Look {
+  colour: Colour | null;
+  second?: Colour;
+}
+
+function fleece(g: Graphics, clean: boolean, dye?: Colour) {
+  const fill = dye ? swatch[dye].light : clean ? WOOL.fill : WOOL.dirty;
   puffs(
     g,
     [
@@ -143,7 +149,7 @@ function fleece(g: Graphics, clean: boolean) {
       [14, 20, 18],
     ],
     fill,
-    WOOL.line,
+    dye ? swatch[dye].line : WOOL.line,
   );
   if (!clean)
     for (const [x, y] of [
@@ -167,10 +173,21 @@ function yarn(g: Graphics, color: number, edge: number) {
   g.moveTo(26, 24).quadraticCurveTo(44, 40, 30, 46).stroke(line(edge, 3));
 }
 
-function scarf(g: Graphics) {
-  const s = swatch.red;
+function scarf(g: Graphics, look?: Look) {
+  const s = look
+    ? look.colour
+      ? swatch[look.colour]
+      : { fill: WOOL.fill, line: WOOL.line, light: 0xffffff }
+    : swatch.red;
   g.roundRect(-40, -34, 80, 26, 12).fill(s.fill).stroke(line(s.line, 4));
   g.roundRect(10, -16, 24, 56, 10).fill(s.fill).stroke(line(s.line, 4));
+  if (look?.second) {
+    // Stripes: the second colour across the scarf and down its tail.
+    const t = swatch[look.second];
+    for (const x of [-26, -2]) g.roundRect(x, -34, 12, 26, 4).fill(t.fill);
+    g.roundRect(10, 8, 24, 14, 4).fill(t.fill);
+    g.roundRect(-40, -34, 80, 26, 12).stroke(line(s.line, 4));
+  }
   // Chunky knit and a fringe.
   for (let k = 0; k < 5; k++)
     g.moveTo(-32 + k * 14, -28)
@@ -254,6 +271,19 @@ function log(g: Graphics) {
       .stroke(line(wood.line, 2));
 }
 
+/** A stack of old newspapers and a flattened box. */
+function oldPaper(g: Graphics) {
+  g.roundRect(-38, 6, 76, 14, 3).fill(0xcfc9c0).stroke(line(0x6f6a62, 3));
+  g.roundRect(-34, -8, 72, 14, 3).fill(0xe8e4dc).stroke(line(0x6f6a62, 3));
+  g.roundRect(-40, -22, 76, 14, 3).fill(CARD_BROWN.fill).stroke(line(CARD_BROWN.line, 3));
+  for (const y of [-2, 12])
+    for (let x = -24; x <= 20; x += 14)
+      g.moveTo(x, y)
+        .lineTo(x + 8, y)
+        .stroke(line(0x6f6a62, 2));
+  g.roundRect(-34, 22, 70, 12, 3).fill(0xf4f1ea).stroke(line(0x6f6a62, 3));
+}
+
 function chips(g: Graphics) {
   for (let k = 0; k < 14; k++) {
     const x = -34 + (k % 5) * 17 + (k % 2) * 4,
@@ -303,8 +333,8 @@ function treePicture(g: Graphics) {
   );
 }
 
-/** One of the twenty forms, in a `size` box. */
-export function formArt(form: Form, size = 130): Container {
+/** One of the twenty forms (or old paper), in a `size` box; a `look` colours the wool forms (levels 4–5). */
+export function formArt(form: Form, size = 130, look?: Look): Container {
   if (form === 'sheep') {
     const c = new Container();
     const s = sheepArt('white', 92);
@@ -319,11 +349,15 @@ export function formArt(form: Form, size = 130): Container {
       case 'fleece':
         return fleece(g, false);
       case 'cleanFleece':
-        return fleece(g, true);
+        return fleece(g, true, look?.colour ?? undefined);
       case 'yarn':
-        return yarn(g, WOOL.fill, WOOL.line);
+        return look?.colour
+          ? yarn(g, swatch[look.colour].fill, swatch[look.colour].line)
+          : yarn(g, WOOL.fill, WOOL.line);
       case 'scarf':
-        return scarf(g);
+        return scarf(g, look);
+      case 'oldPaper':
+        return oldPaper(g);
       case 'cottonPlant':
         return cottonPlant(g);
       case 'bolls':
@@ -479,6 +513,19 @@ export function toolArt(tool: Tool, size = 90): Container {
         g.ellipse(0, -20, 40, 10).fill(0xe8dcc4).stroke(line(0x6f6a62, 3));
         g.moveTo(10, -16).lineTo(30, -50).stroke(line(wood.line, 6));
         return;
+      case 'dyePots':
+        for (const [x, c] of [
+          [-26, swatch.red],
+          [0, swatch.blue],
+          [26, swatch.yellow],
+        ] as const) {
+          g.poly([x - 14, -6, x + 14, -6, x + 11, 34, x - 11, 34])
+            .fill(0xb9b2a8)
+            .stroke(line(0x6f6a62, 3));
+          g.ellipse(x, -6, 14, 6).fill(c.fill).stroke(line(0x6f6a62, 2.5));
+        }
+        g.moveTo(8, -10).lineTo(34, -46).stroke(line(wood.line, 5));
+        return;
       case 'press':
         g.rect(-40, 26, 80, 14).fill(wood.fill).stroke(line(wood.line, 3));
         g.rect(-40, -44, 8, 70).fill(wood.fill).stroke(line(wood.line, 3));
@@ -577,7 +624,7 @@ export function cardArt(w: number): Graphics {
 }
 
 /** A thought bubble `w` by `h` with its tail down-left, its top-left at (0, 0), holding the form the maker needs. */
-export function bubbleArt(form: Form, w: number, h: number): Container {
+export function bubbleArt(form: Form, w: number, h: number, look?: Look): Container {
   const c = new Container();
   const g = new Graphics();
   g.ellipse(w / 2, h / 2, w / 2, h / 2)
@@ -590,7 +637,7 @@ export function bubbleArt(form: Form, w: number, h: number): Container {
     .fill(0xffffff)
     .stroke(line(ink, 2));
   c.addChild(g);
-  const f = formArt(form, Math.min(w, h) * 0.78);
+  const f = formArt(form, Math.min(w, h) * 0.78, look);
   f.position.set(w / 2, h / 2);
   c.addChild(f);
   c.eventMode = 'none';
@@ -628,5 +675,21 @@ export function stickerArt(order: readonly Form[]): Container {
     p.position.set(-126 + k * 84, 0);
     c.addChild(p);
   });
+  return c;
+}
+
+/** Level 4's order picture: the wanted scarf in a speech bubble, `size` wide and high, its top-left at (0, 0). */
+export function orderArt(colours: readonly Colour[], size: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(0, 0, size, size, 22).fill(0xffffff).stroke(line(ink, 3));
+  g.poly([size * 0.14, size - 2, size * 0.04, size + 16, size * 0.3, size - 2])
+    .fill(0xffffff)
+    .stroke(line(ink, 3));
+  c.addChild(g);
+  const f = formArt('scarf', size * 0.78, { colour: colours[0], second: colours[1] });
+  f.position.set(size / 2, size / 2);
+  c.addChild(f);
+  c.eventMode = 'none';
   return c;
 }

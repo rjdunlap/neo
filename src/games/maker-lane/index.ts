@@ -14,22 +14,34 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   beginningArt,
   bubbleArt,
+  orderArt,
   cardArt,
   formArt,
   giftArt,
   iconArt,
   saplingArt,
+  type Look,
   stallArt,
   stickerArt,
   toolArt,
 } from './art';
 import {
+  AUTHORED,
+  BranchPlay,
+  branchRoundFor,
   BUBBLE_H,
   BUBBLE_W,
   cardChain,
   cardResult,
   clampLevel,
   FORMS,
+  isBranchLevel,
+  isLaneLevel,
+  ORDER,
+  stallCount,
+  type BranchOutcome,
+  type Colour,
+  type Stall,
   LEVEL_NAMES,
   LEVELS,
   makerLaneLayout,
@@ -42,7 +54,6 @@ import {
   type Card,
   type Chain,
   type Form,
-  type Maker,
   type MakerLaneLayout,
   type Outcome,
   type Rect,
@@ -63,12 +74,15 @@ interface StallNode {
   bubble: Container | null;
   /** The work a maker hung on their stall after their step. */
   hung: Container | null;
-  maker: Maker | null;
+  maker: Stall | null;
 }
 
 class MakerLane implements Game {
+  /** Levels 1–3. At levels 4–5 this is an unused placeholder: `bp` plays them, and every method checks `bp` first. */
   readonly play: Play;
-  readonly level: 1 | 2 | 3;
+  /** Levels 4–5: the branching rules. */
+  private readonly bp: BranchPlay | null;
+  readonly level: 1 | 2 | 3 | 4 | 5;
   readonly hintLabel = 'Show me';
   askForHint?: () => void;
   /** While a maker works or a replay runs: touches wait, never counted. */
@@ -90,6 +104,10 @@ class MakerLane implements Game {
   readonly frame = new Container();
   readonly cards: Container[] = [];
   private readonly resultHolder = new Container();
+  /** Level 4: the wanted scarf's picture. */
+  private readonly orderHolder = new Container();
+  /** The stalls the friends were dealt for, so a striped order's second bundle keeps the same lane. */
+  private friendsFor: readonly Stall[] | null = null;
   private friends: CritterName[] = [];
   /** The spot the bundle waits at: 0 the beginning, k + 1 in front of stall k. */
   private spot = 0;
@@ -99,26 +117,30 @@ class MakerLane implements Game {
     this.level = clampLevel(ctx.level);
     const authored = !!ctx.demo || !authoredShown.has(this.level);
     authoredShown.add(this.level);
-    this.play = new Play(roundFor(this.level, ctx.rng, authored));
+    this.bp = isBranchLevel(this.level)
+      ? new BranchPlay(branchRoundFor(this.level as 4 | 5, ctx.rng, authored))
+      : null;
+    this.play = new Play(this.bp ? AUTHORED[2] : roundFor(this.level, ctx.rng, authored));
     this.glow.eventMode = 'none';
-    if (this.level >= 2) this.askForHint = () => this.hint();
+    this.orderHolder.eventMode = 'none';
+    if (this.level >= 2 && this.level !== 3) this.askForHint = () => this.hint();
 
-    ctx.stage.addChild(this.bg, this.beginHolder);
-    const n = this.level === 2 ? 3 : 4;
+    ctx.stage.addChild(this.bg, this.beginHolder, this.orderHolder);
+    const n = stallCount(this.level);
     for (let i = 0; i < n; i++) {
       const node = new Container();
       const art = new Container();
       node.addChild(art);
       ctx.stage.addChild(node);
-      if (this.level < 3) {
+      if (isLaneLevel(this.level)) {
         node.eventMode = 'static';
         onTap(node, () => this.tapStall(i), { cooldown: 250 });
       }
       this.stalls.push({ node, art, critter: null, tool: null, bubble: null, hung: null, maker: null });
     }
-    this.bundle.eventMode = this.level < 3 ? 'static' : 'none';
+    this.bundle.eventMode = isLaneLevel(this.level) ? 'static' : 'none';
     ctx.stage.addChild(this.resultHolder, this.bundle);
-    if (this.level < 3) {
+    if (isLaneLevel(this.level)) {
       this.drag = draggable(this.bundle, ctx.tw, {
         onPick: () => sfx.tick(),
         onDrop: (x, y) => {
@@ -161,6 +183,7 @@ class MakerLane implements Game {
   // Setting up a bundle or a question -----------------------------------------------------------------------------
 
   private setUp() {
+    if (this.bp) return this.setUpBranch();
     if (this.level === 3) return this.setUpQuestion();
     const b = this.play.bundle!;
     this.friends = this.ctx.rng.shuffle([...MAKER_FRIENDS]).slice(0, b.stalls.length);
@@ -208,7 +231,7 @@ class MakerLane implements Game {
     this.beginHolder.addChild(pic);
   }
 
-  private dressStall(i: number, maker: Maker | null, friend: CritterName | null) {
+  private dressStall(i: number, maker: Stall | null, friend: CritterName | null) {
     const s = this.stalls[i];
     const L = this.layout();
     const r = L.stalls[i];
@@ -244,12 +267,12 @@ class MakerLane implements Game {
     s.node.hitArea = new Rectangle(0, 0, r.w, r.h + PATH_H * 0.5);
   }
 
-  private setBundle(form: Form | 'milk' | 'egg' | null) {
+  private setBundle(form: Form | 'milk' | 'egg' | null, look?: Look) {
     this.bundleArt?.destroy({ children: true });
     this.bundleArt = null;
     if (!form) return;
     const size = this.layout().bundle;
-    const a = form === 'milk' || form === 'egg' ? giftArt(form, size) : formArt(form, size);
+    const a = form === 'milk' || form === 'egg' ? giftArt(form, size) : formArt(form, size, look);
     this.bundle.addChild(a);
     this.bundleArt = a;
     this.bundle.hitArea = new Rectangle(-size / 2, -size / 2, size, size);
@@ -280,7 +303,7 @@ class MakerLane implements Game {
   }
 
   /** A tap or a drop on stall `i`: the outcome now, with its feedback following. */
-  private act(i: number): Outcome {
+  private act(i: number): { kind: string } {
     const s = this.stalls[i];
     // Touch-down: the maker leans forward and their tool twitches.
     s.critter?.hop(0.3);
@@ -288,6 +311,7 @@ class MakerLane implements Game {
       s.tool.rotation = 0.15;
       void this.ctx.tw.to(s.tool, { rotation: 0 }, { duration: 0.3 });
     }
+    if (this.bp) return this.actBranch(i);
     const out = this.play.send(i);
     if (out.kind === 'made') void this.work(i, out);
     else if (out.kind === 'miss') void this.refuse(i, out);
@@ -361,13 +385,13 @@ class MakerLane implements Game {
     if (this.drag) this.drag.enabled = true;
   }
 
-  private hang(i: number, form: Form) {
+  private hang(i: number, form: Form, look?: Look) {
     const s = this.stalls[i];
     const L = this.layout();
     const r = L.stalls[i];
     s.node.alpha = 0.6;
     if (s.critter) void this.ctx.tw.to(s.critter, { x: r.w * 0.82 }, { duration: 0.3 });
-    const h = formArt(form, r.w * 0.36);
+    const h = formArt(form, r.w * 0.36, look);
     h.position.set(r.w * 0.24, r.h * 0.42);
     s.art.addChild(h);
     s.hung = h;
@@ -403,6 +427,215 @@ class MakerLane implements Game {
     await this.ctx.say('makerlane.forpet');
     if (!this.alive) return;
     this.setBundle(null);
+  }
+
+  // Levels 4 and 5: a path can branch -----------------------------------------------------------------------------
+
+  /** How a wool form looks at level 4: its colour, and the two colours of a finished striped scarf. */
+  private lookFor(form: Form, colour: Colour | null): Look | undefined {
+    if (this.level !== 4) return undefined;
+    // Only a finished striped scarf is a scarf in a striped order.
+    if (form === 'scarf' && this.lastOrder?.kind === 'stripes')
+      return { colour: this.lastOrder.colours[0], second: this.lastOrder.colours[1] };
+    return { colour };
+  }
+  private lastOrder: BranchPlay['item']['order'] = null;
+
+  private setUpBranch() {
+    const b = this.bp!;
+    const it = b.item;
+    if (this.friendsFor !== it.stalls) {
+      this.friends = this.ctx.rng.shuffle([...MAKER_FRIENDS]).slice(0, it.stalls.length);
+      this.friendsFor = it.stalls;
+    }
+    this.showBeginningBranch();
+    it.stalls.forEach((m, i) => this.dressStall(i, m, this.friends[i]));
+    // The weaver keeps the first striped yarn on the loom while the second bundle makes its way.
+    if (b.held) {
+      const w = it.stalls.findIndex((s) => s.job === 'weaver');
+      const r = this.layout().stalls[w];
+      const h = formArt('yarn', r.w * 0.34, { colour: b.held });
+      h.position.set(r.w * 0.24, r.h * 0.42);
+      this.stalls[w].art.addChild(h);
+    }
+    this.lastOrder = it.order;
+    this.setBundle(b.form, this.lookFor(b.form, b.colour));
+    this.moveBundleTo(0, false);
+    if (this.drag) this.drag.enabled = true;
+    this.orderHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const o = it.order;
+    if (o) this.orderHolder.addChild(orderArt(o.kind === 'plain' ? [o.colour] : [...o.colours], ORDER));
+    const L = this.layout();
+    if (L.order) this.orderHolder.position.set(L.order.x, L.order.y);
+  }
+
+  /** The beginning spot: the sheep after its haircut (level 4), or the tree and the bin of old paper (level 5). */
+  private showBeginningBranch() {
+    const b = this.bp!;
+    this.beginHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const r = this.layout().begin;
+    this.beginHolder.addChild(
+      new Graphics()
+        .roundRect(r.x, r.y + r.h * 0.45, r.w, r.h * 0.55, 18)
+        .fill(swatch.green.light)
+        .stroke({ width: 4, color: swatch.green.line }),
+    );
+    if (this.level === 4) {
+      // The harvest and the wash played by themselves: the sheep is lighter.
+      const pic = formArt('sheep', r.w * 0.85);
+      pic.alpha = 0.55;
+      pic.position.set(r.x + r.w / 2, r.y + r.h * 0.55);
+      this.beginHolder.addChild(pic);
+      return;
+    }
+    const items = b.round.items;
+    // The tree's woodcut plays by itself once the log has started its walk, leaving a sapling.
+    const cut = items.slice(0, b.index + 1).some((it) => it.start === 'log');
+    const tree = cut ? saplingArt() : formArt('tree', r.w * 0.62);
+    if (cut) tree.scale.set(0.8);
+    tree.position.set(r.x + r.w * 0.3, cut ? r.y + r.h * 0.95 : r.y + r.h * 0.52);
+    const paperLeft = !items.slice(0, b.index).some((it) => it.start === 'oldPaper');
+    const paper = formArt('oldPaper', r.w * 0.55);
+    paper.alpha = paperLeft ? 1 : 0.4;
+    paper.position.set(r.x + r.w * 0.72, r.y + r.h * 0.82);
+    this.beginHolder.addChild(tree, paper);
+  }
+
+  private actBranch(i: number): { kind: string } {
+    const out = this.bp!.send(i);
+    const s = this.stalls[i];
+    if (out.kind === 'made') void this.workBranch(i, out);
+    else if (out.kind === 'miss') void this.refuseBranch(i, out);
+    else {
+      sfx.tick();
+      if (out.why === 'bubble' && s.bubble) void this.wiggle(s.bubble);
+    }
+    return out;
+  }
+
+  private async workBranch(i: number, out: Extract<BranchOutcome, { kind: 'made' }>) {
+    this.busy = true;
+    if (this.drag) this.drag.enabled = false;
+    const s = this.stalls[i];
+    // The order this bundle belonged to (the item has moved on when the bundle finished).
+    const order = this.lastOrder;
+    await this.moveBundleTo(i + 1);
+    if (!this.alive) return;
+    s.critter?.cheer();
+    if (s.tool) void this.swing(s.tool);
+    sfx.marimba(5 + (i % 3) + 2);
+    const p = this.spotAt(i + 1);
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 8,
+      speed: [60, 160],
+      gravity: 0,
+      life: [0.3, 0.6],
+    });
+    for (const st of this.stalls)
+      if (st.bubble) {
+        st.bubble.destroy({ children: true });
+        st.bubble = null;
+      }
+    const look = this.lookFor(out.to, out.colour);
+    if (out.holds) {
+      // The weaver takes the yarn and keeps it on the loom; the second bundle comes to the start.
+      this.setBundle(null);
+      await this.ctx.say('makerlane.weaver.wait');
+      if (!this.alive) return;
+      this.setUp();
+      sfx.pop(7);
+      this.release();
+      return;
+    }
+    this.setBundle(out.to, look);
+    this.bundle.scale.set(0.6);
+    void this.ctx.tw.to(this.bundle.scale, { x: 1, y: 1 }, { duration: 0.3 });
+    const line = this.ctx.say(this.makeLine(out, order) as LineId);
+    if (!out.finished) {
+      // As at level 2, a step's line never holds the lane: the maker hangs their work and the bundle goes on.
+      this.hang(i, out.to, look);
+      this.release();
+      if (this.drag) this.drag.enabled = true;
+      const n = ++this.stepLine;
+      void line.then(() => {
+        if (this.stepLine === n) this.stepLine = 0;
+      });
+      return;
+    }
+    await line;
+    if (!this.alive) return;
+    this.hang(i, out.to, look);
+    await this.toPet();
+    if (!this.alive) return;
+    // The pet names the route she took and that another works too, or what stripes need.
+    const after = this.afterLine(out, order);
+    if (after) {
+      await this.ctx.say(after as LineId);
+      if (!this.alive) return;
+    }
+    if (out.done) return void this.finale();
+    this.setUp();
+    sfx.pop(7);
+    this.release();
+    if (this.drag) this.drag.enabled = true;
+  }
+
+  /** What the maker says as they work. */
+  private makeLine(
+    out: Extract<BranchOutcome, { kind: 'made' }>,
+    order: BranchPlay['item']['order'],
+  ): string {
+    switch (out.job) {
+      case 'dyer':
+        return 'makerlane.make.dye';
+      case 'spinner':
+        return 'makerlane.make.wool.3';
+      case 'weaver':
+        return order?.kind === 'stripes' ? 'makerlane.make.stripes' : 'makerlane.make.wool.4';
+      case 'chipper':
+        return 'makerlane.make.tree.2';
+      case 'pulper':
+        return out.from === 'oldPaper' ? 'makerlane.make.oldpaper' : 'makerlane.make.tree.3';
+      default:
+        return 'makerlane.make.tree.4';
+    }
+  }
+
+  /** After a finished scarf: the route named (plain) or what stripes need; after the last box, the two ways. */
+  private afterLine(
+    out: Extract<BranchOutcome, { kind: 'made' }>,
+    order: BranchPlay['item']['order'],
+  ): string | null {
+    if (this.level === 5) return out.done ? 'makerlane.twoways' : null;
+    if (!out.orderDone) return null;
+    if (order?.kind === 'stripes') return 'makerlane.stripes.before';
+    const at = out.dyedAt;
+    return at === 'cleanFleece'
+      ? 'makerlane.dyed.fleece'
+      : at === 'yarn'
+        ? 'makerlane.dyed.yarn'
+        : 'makerlane.dyed.scarf';
+  }
+
+  private async refuseBranch(i: number, out: Extract<BranchOutcome, { kind: 'miss' }>) {
+    const s = this.stalls[i];
+    sfx.boing();
+    if (s.critter) void this.shake(s.critter);
+    const r = this.layout().stalls[i];
+    const need = out.need;
+    const look: Look | undefined = need.form === 'yarn' ? { colour: need.colour } : undefined;
+    const b = bubbleArt(need.form, BUBBLE_W, BUBBLE_H, look);
+    b.position.set((r.w - BUBBLE_W) / 2 + 14, -BUBBLE_H * 0.55);
+    s.node.addChild(b);
+    s.bubble = b;
+    b.scale.set(0.4);
+    void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25 });
+    const index = this.bp!.index;
+    await this.ctx.say(`makerlane.${need.line}` as LineId);
+    if (this.alive && out.glow && this.bp!.glowing && this.bp!.index === index)
+      void this.ctx.say('makerlane.hint');
   }
 
   // Level 3: where did it begin? ----------------------------------------------------------------------------------
@@ -552,12 +785,21 @@ class MakerLane implements Game {
 
   /** Show me (levels 2 and 3): the same glow as two misses, counted once per bundle or question. */
   private hint() {
-    if (this.busy || this.finished || this.play.done) return;
+    if (this.busy || this.finished) return;
+    if (this.bp) {
+      if (!this.bp.done && this.bp.requestHint()) void this.ctx.say('makerlane.hint');
+      return;
+    }
+    if (this.play.done) return;
     if (this.play.requestHint()) void this.ctx.say('makerlane.hint');
   }
 
   /** What glows: the waving maker at level 1 always, the right maker or card at 2–3 after two misses or Show me. */
   private glowRect(): Rect | null {
+    if (this.bp) {
+      const g = this.busy || this.finished || !this.bp.glowing ? null : this.bp.glowFor();
+      return g === null ? null : this.layout().stalls[g];
+    }
     if (this.busy || this.finished || this.play.done) return null;
     if (this.level > 1 && !this.play.glowing) return null;
     const t = this.play.target();
@@ -573,6 +815,10 @@ class MakerLane implements Game {
   }
 
   targetNode(): Container | null {
+    if (this.bp) {
+      const g = this.bp.glowFor();
+      return g === null ? null : this.stalls[g].node;
+    }
     const t = this.play.target();
     if (!t) return null;
     return t.kind === 'card' ? this.cards[t.i] : this.stalls[t.i].node;
@@ -618,7 +864,8 @@ class MakerLane implements Game {
     });
     await this.ctx.say('makerlane.done');
     if (!this.alive) return;
-    this.ctx.finish({ misses: this.play.misses, hints: this.play.hints });
+    const p = this.bp ?? this.play;
+    this.ctx.finish({ misses: p.misses, hints: p.hints });
   }
 
   resize(v: View) {
@@ -651,7 +898,10 @@ class MakerLane implements Game {
   private place() {
     const L = this.layout();
     this.stalls.forEach((s, i) => s.node.position.set(L.stalls[i].x, L.stalls[i].y));
-    if (this.beginArgs) this.showBeginning(...this.beginArgs);
+    if (this.bp) {
+      this.showBeginningBranch();
+      if (L.order) this.orderHolder.position.set(L.order.x, L.order.y);
+    } else if (this.beginArgs) this.showBeginning(...this.beginArgs);
     if (L.frame) {
       this.frame.position.set(L.frame.x, L.frame.y);
       this.cards.forEach((c, i) =>
@@ -660,7 +910,7 @@ class MakerLane implements Game {
       for (const c of this.resultHolder.children)
         c.position.set(L.frame.x - c.width / 2 - 24, L.frame.y + L.frame.h / 2);
     }
-    if (!this.busy && !this.play.done) {
+    if (!this.busy && !(this.bp ?? this.play).done) {
       const p = this.spotAt(this.spot);
       this.bundle.position.set(p.x, p.y);
       if (this.drag) this.drag.home = { x: p.x, y: p.y };
@@ -699,6 +949,10 @@ class MakerLane implements Game {
     if (this.busy || this.finished || this.stepLine) return null;
     const n = this.targetNode();
     if (!n) return null;
+    if (this.bp) {
+      const r = this.layout().stalls[this.bp.glowFor()!];
+      return { drag: { on: this.bundle }, to: { on: n, x: r.w / 2, y: r.h * 0.6 }, pause: 1.2 };
+    }
     if (this.level === 2) {
       const t = this.play.target()!;
       const r = this.layout().stalls[t.i];
@@ -737,7 +991,8 @@ export const makerLane: GameModule = {
   touchDemo: true,
   coplayHint:
     'Be the maker and the carrier: one of you moves the bundle, the other says what the maker will do to it. Swap at the next stall.',
-  offScreen: 'Pick up a sock, a box or some bread together and ask: what did it look like before?',
+  offScreen:
+    'Pick up a sock, a box or some bread together and ask: what did it look like before? Look at a striped sock or towel: was the yarn coloured before it was made?',
   hubIcon: () => new WigglyIcon(iconArt()),
   sticker: (seed) => stickerPicture(seed),
   create: (ctx) => new MakerLane(ctx),

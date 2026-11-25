@@ -11,13 +11,15 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 2–3 |
+| school | 2–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Along the lane |
 | 2 | Who can use it now? |
 | 3 | Where did it begin? |
+| 4 | Stripes or plain |
+| 5 | Two ways to a box |
 
 <!-- end generated -->
 
