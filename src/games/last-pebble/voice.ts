@@ -44,4 +44,21 @@ export const VOICE = {
   'lp.why.second.4': [
     'This stream counts in {step} to the bank. The start is a stepping stone, so let me go first.',
   ],
+  'lp.intro.5': ['A whirlpool waits at the far end. Whoever lays a stone on it falls in! Lay up to {most}.'],
+  'lp.instruct.5': [
+    'Do not land on the whirlpool. Choose who goes first, then aim for the stone just before it.',
+  ],
+  'lp.why5.first': [
+    'Count back in {step} from the stone before the whirlpool. The start is not one of them, so go first.',
+  ],
+  'lp.why5.second': [
+    'Count back in {step} from the stone before the whirlpool. The start is one of them, so let me go first.',
+  ],
+  'lp.hint-safe': ['Land on this stone, just before the whirlpool!'],
+  'lp.hint-forced': ['Only the whirlpool is left here. Let us step back to where it turned.'],
+  'lp.splash': ['Splash! The whirlpool took me. You win!'],
+  'lp.whirlpool-why': [
+    'I took the stone just before the whirlpool, so you are left with the whirlpool. Count back in {step} from that stone. Let us step back.',
+  ],
+  'lp.whirlpool-fell': ['The whirlpool took that stone! Let us step back and try again.'],
 };

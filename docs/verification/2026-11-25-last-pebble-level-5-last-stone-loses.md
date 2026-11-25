@@ -1,0 +1,5 @@
+# 2026-11-25 — Last Pebble level 5, Last stone loses (PR #2161)
+
+**Changed:** `last-pebble` level 5 (*Last stone loses*, misère): the whirlpool far spot, `effectiveTarget` (`T - 1`) for every winning calculation, a two-crossing round (take 2 then 3, one answer each way), the whirlpool-loss and pet-splash flows, eight voice lines, how-to card, rule tests and a level 5 case in the browser suite.
+**Ran:** `npm run typecheck`, `npm run lint`, `npm run format:check`; `npx vitest run src/games/last-pebble src/content` (419 passed, including a direct misère solve against `effectiveTarget` for `T` 6–14 and takes 2–3, pet never stepping onto the whirlpool unless forced, and a turning point or wrong pick on every lost line); `BROWSER_SUITE=lastpebble` on a `390 × 844` phone (level 5: wrong pick, whirlpool loss, step back to the choice, best play to a finish; portrait screenshot read); `BROWSER_SUITE=fingerdemo FINGER_ONLY=last-pebble FINGER_LEVELS=5` (finished in 15.2 s).
+**Not run:** full `npm test` (left to PR CI), `npm run build`, a real phone, Kokoro voice clips (device speech is the fallback).

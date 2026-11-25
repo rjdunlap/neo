@@ -28,6 +28,7 @@ import {
   bestMove,
   choiceLayout,
   describeLevel,
+  effectiveTarget,
   hintSpot,
   isSteppingStone,
   level1Reply,
@@ -50,6 +51,8 @@ const WHY = {
   first: { 2: 'lp.why.first.2', 3: 'lp.why.first.3', 4: 'lp.why.first.4' },
   second: { 2: 'lp.why.second.2', 3: 'lp.why.second.3', 4: 'lp.why.second.4' },
 } as const;
+
+const WHY_MISERE = { first: 'lp.why5.first', second: 'lp.why5.second' } as const;
 
 const STEP_WORDS: Record<number, string> = { 3: 'threes', 4: 'fours', 5: 'fives' };
 const MOST_WORDS = ['none', 'one', 'two', 'three', 'four', 'five'];
@@ -91,6 +94,33 @@ class LastPebble implements Game {
 
   private get spec() {
     return this.round.crossings[this.crossingIndex];
+  }
+
+  /** Misère crossing (level 5): landing on the far spot, the whirlpool, loses. */
+  private get misere(): boolean {
+    return this.spec.misere === true;
+  }
+
+  /** The spot every winning-move calculation aims at (`target - 1` in misère). */
+  private get win(): number {
+    return effectiveTarget(this.crossing.target, this.misere);
+  }
+
+  /** The voice line for pointing at `spot`. */
+  private hintLine(spot: number): 'lp.hint-safe' | 'lp.hint-step' | 'lp.hint-reach' {
+    if (this.misere) return spot === this.win ? 'lp.hint-safe' : 'lp.hint-step';
+    return spot === this.crossing.target ? 'lp.hint-reach' : 'lp.hint-step';
+  }
+
+  /** The stream bed: lantern on the far bank, or on the safe stone before the whirlpool. */
+  private bed(lit = this.crossing.pos >= this.win) {
+    return streamBed(this.L, this.crossing.target, lit, this.misere ? this.win : undefined);
+  }
+
+  /** The line that opens the round. */
+  private get introLine(): 'lp.intro' | 'lp.intro.3' | 'lp.intro.4' | 'lp.intro.5' {
+    if (!this.spec.choose) return 'lp.intro';
+    return this.round.level === 3 ? 'lp.intro.3' : this.round.level === 5 ? 'lp.intro.5' : 'lp.intro.4';
   }
 
   /** The most stones one turn may lay, as a word for the voice lines. */
@@ -144,7 +174,7 @@ class LastPebble implements Game {
 
   /** Exposed for scripted browser play assertions. */
   get state() {
-    const best = bestMove(this.crossing.pos, this.crossing.target, this.take);
+    const best = bestMove(this.crossing.pos, this.win, this.take);
     return {
       level: this.round.level,
       crossingIndex: this.crossingIndex,
@@ -159,20 +189,17 @@ class LastPebble implements Game {
       bestSpot: best === null ? null : this.crossing.pos + best,
       take: this.take,
       choice: this.choice,
-      bestChoice: this.spec.choose ? bestChoice(this.crossing.target, this.take) : null,
+      misere: this.misere,
+      bestChoice: this.spec.choose ? bestChoice(this.win, this.take) : null,
       glowChoice: this.glowChoice,
       finished: this.finished,
     };
   }
 
   start() {
-    void this.ctx
-      .say(this.spec.choose ? (this.round.level === 3 ? 'lp.intro.3' : 'lp.intro.4') : 'lp.intro', {
-        most: this.most,
-      })
-      .then(() => {
-        if (!this.finished) void this.instruct();
-      });
+    void this.ctx.say(this.introLine, { most: this.most }).then(() => {
+      if (!this.finished) void this.instruct();
+    });
   }
 
   destroy() {
@@ -190,18 +217,17 @@ class LastPebble implements Game {
 
   private instruct() {
     if (this.spec.choose)
-      return this.ctx.instruct(this.round.level === 3 ? 'lp.instruct.3' : 'lp.instruct.4', {
-        most: this.most,
-      });
+      return this.ctx.instruct(
+        this.round.level === 3 ? 'lp.instruct.3' : this.round.level === 5 ? 'lp.instruct.5' : 'lp.instruct.4',
+        { most: this.most },
+      );
     return this.ctx.instruct(this.round.level === 1 ? 'lp.instruct.1' : 'lp.instruct.2');
   }
 
   private rebuildBoard() {
     this.L = streamLayout(this.ctx.view, this.crossing.target);
     this.bedLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.bedLayer.addChild(
-      streamBed(this.L, this.crossing.target, this.crossing.pos === this.crossing.target),
-    );
+    this.bedLayer.addChild(this.bed());
 
     for (const s of this.spots) {
       this.ctx.tw.kill(s);
@@ -213,7 +239,7 @@ class LastPebble implements Game {
     for (let i = 0; i < this.crossing.target; i++) {
       const spotNum = i + 1;
       const box = this.L.spots[i];
-      const node = spotBase(spotNum, spotNum === this.crossing.target, this.L.spotSize);
+      const node = spotBase(spotNum, spotNum === this.crossing.target, this.L.spotSize, this.misere);
       node.position.set(box.x, box.y);
       node.hitArea = new Rectangle(-box.w / 2, -box.h / 2, box.w, box.h);
       onTap(node, () => this.tapSpot(spotNum));
@@ -234,7 +260,12 @@ class LastPebble implements Game {
       if (!owner) return null;
       const spotNum = idx + 1;
       const box = this.L.spots[idx];
-      const stone = stonePiece(owner, spotNum, this.L.spotSize, spotNum === this.crossing.target);
+      const stone = stonePiece(
+        owner,
+        spotNum,
+        this.L.spotSize,
+        spotNum === this.crossing.target && !this.misere,
+      );
       stone.position.set(box.x, box.y);
       this.stoneLayer.addChild(stone);
       return stone;
@@ -257,7 +288,7 @@ class LastPebble implements Game {
 
     for (let s = from + 1; s <= state.pos; s++) {
       const box = this.L.spots[s - 1];
-      const stone = stonePiece(player, s, this.L.spotSize, s === this.crossing.target);
+      const stone = stonePiece(player, s, this.L.spotSize, s === this.crossing.target && !this.misere);
       stone.position.set(box.x, box.y);
       stone.scale.set(1.22);
       stone.alpha = 0.7;
@@ -313,7 +344,7 @@ class LastPebble implements Game {
       }
       hinted(this.tally);
       this.tally.helped = true;
-      this.glowChoice = bestChoice(this.crossing.target, this.take);
+      this.glowChoice = bestChoice(this.win, this.take);
       void this.ctx.say('lp.hint-choice');
       return;
     }
@@ -326,10 +357,10 @@ class LastPebble implements Game {
     hinted(this.tally);
     this.tally.helped = true;
 
-    const targetSpot = hintSpot(this.crossing.pos, this.crossing.target, this.take);
+    const targetSpot = hintSpot(this.crossing.pos, this.win, this.take);
     if (targetSpot !== null) {
       this.glowSpot = targetSpot;
-      void this.ctx.say(targetSpot === this.crossing.target ? 'lp.hint-reach' : 'lp.hint-step');
+      void this.ctx.say(this.hintLine(targetSpot));
       return;
     }
 
@@ -382,9 +413,9 @@ class LastPebble implements Game {
 
       if (showGlow) {
         hinted(this.tally);
-        this.glowSpot = hintSpot(this.crossing.pos, this.crossing.target, this.take);
+        this.glowSpot = hintSpot(this.crossing.pos, this.win, this.take);
         if (this.glowSpot !== null) {
-          await this.ctx.say(this.glowSpot === this.crossing.target ? 'lp.hint-reach' : 'lp.hint-step');
+          await this.ctx.say(this.hintLine(this.glowSpot));
         }
       }
       return;
@@ -410,7 +441,7 @@ class LastPebble implements Game {
     await this.ctx.tw.wait(this.reduce ? 0.2 : 0.45);
     if (g !== this.gen) return;
 
-    const replyDelta = petMove(this.crossing.pos, this.crossing.target, this.round.seed);
+    const replyDelta = petMove(this.crossing.pos, this.win, this.round.seed);
     await this.layStones('pet', replyDelta);
     if (g !== this.gen) return;
 
@@ -429,20 +460,40 @@ class LastPebble implements Game {
     if (g !== this.gen) return;
 
     if (this.crossing.pos === this.crossing.target) {
-      await this.finishCrossing(g);
+      // Misère: laying a stone on the whirlpool is falling in.
+      if (this.misere) await this.whirlpoolLoss(g, 'lp.whirlpool-fell');
+      else await this.finishCrossing(g);
       return;
     }
 
-    if (isSteppingStone(this.crossing.pos, this.crossing.target, this.take)) {
+    if (isSteppingStone(this.crossing.pos, this.win, this.take)) {
       sfx.bell(4, 0.2);
     }
 
     await this.ctx.tw.wait(this.reduce ? 0.2 : 0.5);
     if (g !== this.gen) return;
 
-    const replyDelta = petMove(this.crossing.pos, this.crossing.target, this.round.seed, this.take);
+    const replyDelta = petMove(this.crossing.pos, this.win, this.round.seed, this.take);
     await this.layStones('pet', replyDelta);
     if (g !== this.gen) return;
+
+    if (this.misere && this.crossing.pos === this.crossing.target) {
+      // The pet was left only the whirlpool.
+      this.phase = 'between';
+      this.highlightRing = { spot: this.crossing.target, color: swatch.blue.fill };
+      sfx.whoosh();
+      await this.ctx.say('lp.splash');
+      if (g !== this.gen) return;
+      this.highlightRing = null;
+      await this.finishCrossing(g);
+      return;
+    }
+
+    if (this.misere && this.crossing.pos === this.win) {
+      // She is left only the whirlpool: the crossing is lost here, so step back now.
+      await this.whirlpoolLoss(g, 'lp.whirlpool-why');
+      return;
+    }
 
     if (this.crossing.pos === this.crossing.target) {
       this.phase = 'replay';
@@ -451,7 +502,7 @@ class LastPebble implements Game {
       const showGlow = missEvery(this.tally);
       await Promise.all([this.ctx.say('lp.got-bank'), this.ctx.tw.wait(this.reduce ? 0.35 : 0.7)]);
       if (g !== this.gen) return;
-      if (this.spec.choose && !turningPoint(this.moves, this.crossing.target, this.take)) {
+      if (this.spec.choose && !turningPoint(this.moves, this.win, this.take)) {
         await this.rewindToChoice(g, showGlow);
       } else {
         await this.rewindToTurningPoint(g, showGlow, true);
@@ -462,10 +513,28 @@ class LastPebble implements Game {
     this.phase = 'turn';
   }
 
+  /** Misère loss (the pet took the safe stone, or she laid on the whirlpool): say why, count a miss, step back. */
+  private async whirlpoolLoss(g: number, line: 'lp.whirlpool-why' | 'lp.whirlpool-fell') {
+    this.phase = 'replay';
+    this.highlightRing = { spot: this.crossing.target, color: swatch.purple.fill };
+    sfx.boing();
+    const showGlow = missEvery(this.tally);
+    await Promise.all([
+      this.ctx.say(line, { step: STEP_WORDS[this.take + 1] ?? 'threes' }),
+      this.ctx.tw.wait(this.reduce ? 0.35 : 0.7),
+    ]);
+    if (g !== this.gen) return;
+    if (this.spec.choose && !turningPoint(this.moves, this.win, this.take)) {
+      await this.rewindToChoice(g, showGlow);
+    } else {
+      await this.rewindToTurningPoint(g, showGlow, true);
+    }
+  }
+
   private async rewindToTurningPoint(g: number, showGlow: boolean, alreadySaidReason = false) {
     this.phase = 'replay';
-    const tp = turningPoint(this.moves, this.crossing.target, this.take);
-    const tpIdx = turningPointIndex(this.moves, this.crossing.target, this.take);
+    const tp = turningPoint(this.moves, this.win, this.take);
+    const tpIdx = turningPointIndex(this.moves, this.win, this.take);
     const backTo = tp ? tp.from : 0;
 
     if (!alreadySaidReason) {
@@ -474,7 +543,7 @@ class LastPebble implements Game {
         await this.rewindToChoice(g, true, false);
         return;
       }
-      await this.ctx.say('lp.hint-rewind');
+      await this.ctx.say(this.misere ? 'lp.hint-forced' : 'lp.hint-rewind');
       if (g !== this.gen) return;
     }
 
@@ -497,9 +566,9 @@ class LastPebble implements Game {
       } else {
         hinted(this.tally);
       }
-      this.glowSpot = hintSpot(this.crossing.pos, this.crossing.target, this.take);
+      this.glowSpot = hintSpot(this.crossing.pos, this.win, this.take);
       if (alreadySaidReason && this.glowSpot !== null) {
-        await this.ctx.say(this.glowSpot === this.crossing.target ? 'lp.hint-reach' : 'lp.hint-step');
+        await this.ctx.say(this.hintLine(this.glowSpot));
       }
     }
   }
@@ -567,7 +636,7 @@ class LastPebble implements Game {
     if (pick === 'second') {
       await this.ctx.tw.wait(this.reduce ? 0.15 : 0.35);
       if (g !== this.gen) return;
-      const first = petMove(0, this.crossing.target, this.round.seed, this.take);
+      const first = petMove(0, this.win, this.round.seed, this.take);
       await this.layStones('pet', first);
       if (g !== this.gen) return;
     }
@@ -577,15 +646,18 @@ class LastPebble implements Game {
   /** Her pick was the mistake: light the stepping stones once, explain, clear the stream and ask again. */
   private async rewindToChoice(g: number, showGlow: boolean, countHint = true) {
     this.phase = 'replay';
-    const right = bestChoice(this.crossing.target, this.take);
-    this.rings = stoneSpots(this.crossing.target, this.take).map((spot) => ({
+    const right = bestChoice(this.win, this.take);
+    this.rings = stoneSpots(this.win, this.take).map((spot) => ({
       spot,
       color: swatch.yellow.fill,
     }));
     await Promise.all([
-      this.ctx.say(WHY[right][this.take === 4 ? 4 : this.take === 3 ? 3 : 2], {
-        step: STEP_WORDS[this.take + 1] ?? 'threes',
-      }),
+      this.ctx.say(
+        this.misere ? WHY_MISERE[right] : WHY[right][this.take === 4 ? 4 : this.take === 3 ? 3 : 2],
+        {
+          step: STEP_WORDS[this.take + 1] ?? 'threes',
+        },
+      ),
       this.ctx.tw.wait(this.reduce ? 0.5 : 1.2),
     ]);
     if (g !== this.gen) return;
@@ -621,7 +693,7 @@ class LastPebble implements Game {
   private async finishCrossing(g: number) {
     this.phase = 'between';
     this.bedLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.bedLayer.addChild(streamBed(this.L, this.crossing.target, true));
+    this.bedLayer.addChild(this.bed(true));
     const lastBox = this.L.spots[this.crossing.target - 1];
     this.ctx.particles.burst(lastBox.x, lastBox.y, {
       kind: 'star',
@@ -674,9 +746,7 @@ class LastPebble implements Game {
     if (this.phase === 'choose') this.buildChoice();
     this.buildTake();
     this.bedLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.bedLayer.addChild(
-      streamBed(this.L, this.crossing.target, this.crossing.pos === this.crossing.target),
-    );
+    this.bedLayer.addChild(this.bed());
 
     this.spots.forEach((node, idx) => {
       const box = this.L.spots[idx];
@@ -742,12 +812,12 @@ class LastPebble implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.phase === 'choose') {
-      const right = bestChoice(this.crossing.target, this.take);
+      const right = bestChoice(this.win, this.take);
       const hit = this.choiceNodes.find((c) => c.pick === right);
       return hit ? { tap: { on: hit.node } } : null;
     }
     if (this.phase !== 'turn') return null;
-    const d = bestMove(this.crossing.pos, this.crossing.target, this.take);
+    const d = bestMove(this.crossing.pos, this.win, this.take);
     if (d === null) return null;
     const node = this.spots[this.crossing.pos + d - 1];
     return node ? { tap: { on: node } } : null;

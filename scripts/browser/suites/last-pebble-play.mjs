@@ -208,8 +208,33 @@ export function createSuite({ page, ready, launch, finished, screenshot, log }) 
     assert.equal(await stickers(), before + 4);
     assert.deepEqual(await lastHistory(), { misses: 0, hints: 1, level: 4 });
 
+    // Level 5 (school): misère. A wrong pick leaves her the whirlpool and steps back to the choice; then best play wins.
+    await launch('last-pebble', 5, 'Mia', 'school');
+    await page.waitForFunction(() => neo.view.upright);
+    await settle();
+    s = await state();
+    assert.equal(s.level, 5);
+    assert.equal(s.crossingsTotal, 2);
+    assert.equal(s.misere, true);
+    assert.equal(s.take, 2);
+    await choose(s.bestChoice === 'first' ? 'second' : 'first');
+    for (let step = 0; step < 14; step++) {
+      await settle();
+      s = await state();
+      if (s.phase === 'choose') break;
+      await tapSpot(Math.min(s.target - 2, s.pos + 1));
+    }
+    s = await state();
+    assert.equal(s.phase, 'choose', 'being left the whirlpool returns to the choice screen');
+    assert.deepEqual([s.misses, s.pos], [1, 0]);
+    await screenshot('last-pebble-level5-choice');
+    await playOut();
+    await finished('last-pebble');
+    assert.equal(await stickers(), before + 5);
+    assert.deepEqual(await lastHistory(), { misses: 1, hints: 0, level: 5 });
+
     log(
-      'Last Pebble: levels 3–4 (wrong pick rewinds to the choice, glow, Show me on the choice screen, 2 more stickers) passed',
+      'Last Pebble: levels 3–5 (wrong pick rewinds to the choice, glow, Show me on the choice screen, the whirlpool, 3 more stickers) passed',
     );
     log(
       'Last Pebble: upright levels 1–2 (show-me-why rewinds, Show me rewind, portrait shot, 2 stickers) passed',

@@ -4,6 +4,7 @@ import { hinted, missEvery, missOnRequest, newRequestTally, nextRequest, tally }
 import {
   LEVELS,
   applyMove,
+  effectiveTarget,
   bestChoice,
   bestMove,
   choiceLayout,
@@ -183,11 +184,11 @@ describe('Last Pebble Nim model', () => {
 });
 
 describe('Last Pebble rounds, replies and coach accounting', () => {
-  it('supports school and grownup levels 1..4 with distinct descriptions', () => {
-    expect(LEVELS).toEqual({ school: { min: 1, max: 4 }, grownup: { min: 1, max: 4 } });
-    const all = [1, 2, 3, 4].map(describeLevel);
+  it('supports school and grownup levels 1..5 with distinct descriptions', () => {
+    expect(LEVELS).toEqual({ school: { min: 1, max: 5 }, grownup: { min: 1, max: 5 } });
+    const all = [1, 2, 3, 4, 5].map(describeLevel);
     for (const d of all) expect(d).toContain('about 10 and up');
-    expect(new Set(all).size).toBe(4);
+    expect(new Set(all).size).toBe(5);
   });
 
   it('generates level 1 crossings (rem = 2, 4, 5) and level 2 streams (T in {7, 8, 10, 11})', () => {
@@ -379,5 +380,99 @@ describe('Last Pebble levels 3–4: who goes first, bigger steps', () => {
       expect(c.h).toBeGreaterThanOrEqual(160);
     }
     expect(a.x + a.w / 2).toBeLessThan(b.x - b.w / 2);
+  });
+});
+
+describe('Last Pebble level 5: last stone loses (misère)', () => {
+  /** True iff the player to move from `pos` wins when laying a stone on `target` LOSES (solved directly). */
+  const misereMover = (pos: number, target: number, m: number): boolean => {
+    for (let d = 1; d <= m && pos + d <= target; d++) {
+      if (pos + d === target) continue; // laying on the whirlpool loses at once
+      if (!misereMover(pos + d, target, m)) return true;
+    }
+    // Only the whirlpool is left: the mover falls in and loses.
+    return false;
+  };
+
+  it('effectiveTarget (T - 1) reproduces the direct misère solve for T 6..14, m 2..3', () => {
+    expect(effectiveTarget(9)).toBe(9);
+    expect(effectiveTarget(9, true)).toBe(8);
+    for (const m of [2, 3]) {
+      for (let target = 6; target <= 14; target++) {
+        const eff = effectiveTarget(target, true);
+        for (let pos = 0; pos < target; pos++) {
+          expect(!isSteppingStone(pos, eff, m), `T=${target} m=${m} pos=${pos}`).toBe(
+            misereMover(pos, target, m),
+          );
+        }
+        expect(bestChoice(eff, m) === 'first', `T=${target} m=${m}`).toBe(misereMover(0, target, m));
+      }
+    }
+  });
+
+  it('the pet never walks onto the whirlpool unless it is forced, and is forced after her safe stone', () => {
+    for (const m of [2, 3]) {
+      for (let target = 7; target <= 13; target++) {
+        const eff = effectiveTarget(target, true);
+        for (let pos = 0; pos < eff; pos++) expect(pos + petMove(pos, eff, 5, m)).toBeLessThan(target);
+        expect(eff + petMove(eff, eff, 5, m)).toBe(target);
+      }
+    }
+  });
+
+  it('rounds are take 2 then take 3, both answers appear, and play always ends with the pet on the whirlpool when she plays the hints', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const r = makeRound(5, new Rng(seed));
+      expect(r.crossings.map((c) => c.maxTake)).toEqual([2, 3]);
+      expect(r.crossings.every((c) => c.misere && c.choose && c.startPos === 0)).toBe(true);
+      const answers = r.crossings.map((c) => bestChoice(effectiveTarget(c.target, true), c.maxTake));
+      expect(new Set(answers)).toEqual(new Set(['first', 'second']));
+      for (const c of r.crossings) {
+        expect(c.target).toBeGreaterThanOrEqual(7);
+        expect(c.target).toBeLessThanOrEqual(13);
+        const eff = effectiveTarget(c.target, true);
+        let pos = 0;
+        let herTurn = bestChoice(eff, c.maxTake) === 'first';
+        while (pos < c.target) {
+          if (herTurn) {
+            const hint = hintSpot(pos, eff, c.maxTake);
+            // From a lost position she may play any safe move; the pet then returns to a stone.
+            pos = hint ?? pos + 1;
+          } else {
+            pos += petMove(pos, eff, r.seed, c.maxTake);
+          }
+          if (pos < c.target) herTurn = !herTurn;
+        }
+        expect(herTurn, `T=${c.target} m=${c.maxTake}`).toBe(false); // the pet laid the stone on the whirlpool
+      }
+    }
+  });
+
+  it('a pet that reaches the safe stone leaves a turning point or a wrong pick', () => {
+    for (const m of [2, 3]) {
+      for (let target = 7; target <= 13; target++) {
+        const eff = effectiveTarget(target, true);
+        for (const pick of ['first', 'second'] as const) {
+          const right = bestChoice(eff, m) === pick;
+          const walk = (pos: number, moves: MoveRecord[], herTurn: boolean): void => {
+            if (herTurn) {
+              for (const d of legalMoves(pos, eff, m)) {
+                walk(pos + d, [...moves, { player: 'her', from: pos, to: pos + d }], false);
+              }
+              return;
+            }
+            const d = petMove(pos, eff, 3, m);
+            const next = [...moves, { player: 'pet' as const, from: pos, to: pos + d }];
+            if (pos + d === eff) {
+              if (right) expect(turningPoint(next, eff, m), `T=${target} m=${m}`).not.toBeNull();
+              else expect(turningPoint(next, eff, m)).toBeNull();
+              return;
+            }
+            walk(pos + d, next, true);
+          };
+          walk(0, [], pick === 'first');
+        }
+      }
+    }
   });
 });
