@@ -103,3 +103,143 @@ describe('island loom holding rules', () => {
     expect(r.begin()).toBe('ignored');
   });
 });
+
+import { SAMPLES, samplesFor, sampleRows, pedalTable, PEDALS5, LIGHT, DARK, YARN4 } from './logic';
+const str = (rows: number[][]) => rows.map((r) => r.map((c) => (c === LIGHT ? 'L' : 'D')).join(''));
+describe('levels 4–5 samples', () => {
+  it('reproduce the authored cloth rows', () => {
+    const rep = (a: string[]) => [...a, ...a];
+    expect(str(sampleRows(SAMPLES[0]))).toEqual(rep(['LLDLLL', 'LLLDLL', 'LDDDLD', 'DLDDDL']));
+    expect(str(sampleRows(SAMPLES[1]))).toEqual(rep(['LLLLLL', 'LDLDLD', 'LDLDLD', 'DDDDDD']));
+    expect(str(sampleRows(SAMPLES[2]))).toEqual(rep(['LLLDLL', 'LLDLLL', 'DLDDDL', 'LDDDLD']));
+    expect(str(sampleRows(SAMPLES[3]))).toEqual([
+      'DLLDLL',
+      'LDLLDL',
+      'LLDLLD',
+      'DLLDLL',
+      'LDLLDL',
+      'LLDLLD',
+      'DLLDLL',
+      'LDLLDL',
+    ]);
+    expect(str(sampleRows(SAMPLES[5]))).toEqual([
+      'DLLDLL',
+      'LDLLDL',
+      'LLDLLD',
+      'LDLLDL',
+      'DLLDLL',
+      'LDLLDL',
+      'LLDLLD',
+      'LDLLDL',
+    ]);
+  });
+  it('each sample has exactly one accepted plan under the island rule', () => {
+    for (const s of SAMPLES) {
+      const t = pedalTable(s.level),
+        want = sampleRows(s),
+        yarns = s.level === 4 ? [LIGHT, DARK] : [LIGHT];
+      let count = 0;
+      const go = (hist: boolean[][], i: number) => {
+        if (i === 8) {
+          count++;
+          return;
+        }
+        for (let p = 0; p < t.length; p++)
+          if (!rejection(hist, t[p]))
+            for (const y of yarns)
+              if (drawdown(s.warp, y, t[p]).every((c, k) => c === want[i][k]))
+                go([...hist, [...t[p]]], i + 1);
+      };
+      go([], 0);
+      expect(count, s.id).toBe(1);
+    }
+  });
+  it('no weft column equals a level 4 sample weft (not a color-sequence copy)', () => {
+    for (const s of samplesFor(4)) {
+      const rows = sampleRows(s);
+      for (let c = 0; c < 6; c++) expect(rows.map((r) => r[c])).not.toEqual(s.weft);
+    }
+  });
+  it('level 5 pedals each leave a thread down and lift every third thread', () => {
+    for (const p of PEDALS5) {
+      expect(p.filter(Boolean)).toHaveLength(2);
+      expect(p[0] === p[3] && p[1] === p[4] && p[2] === p[5]).toBe(true);
+    }
+  });
+  it('yarn pair keeps light and dark apart', () => {
+    expect(YARN4).toEqual([LIGHT, DARK]);
+  });
+});
+describe('levels 4–5 rounds', () => {
+  const play = (r: Round, pedal: number, yarn?: number) => {
+    r.select(pedal);
+    if (yarn !== undefined) r.choose(yarn);
+    r.begin();
+    return r.settle();
+  };
+  const clean = (r: Round) => {
+    const s = r.sample!;
+    for (let i = 0; i < 8; i++)
+      expect(play(r, s.pedals[i], r.level === 4 ? YARN4.indexOf(s.weft[i] as 0 | 3) : undefined)).toBe(
+        'commit',
+      );
+  };
+  it('every sample finishes clean with a 48-cell creation and no misses', () => {
+    for (let lv = 4; lv <= 5; lv++)
+      for (let i = 0; i < samplesFor(lv).length; i++) {
+        const r = new Round(lv, i);
+        clean(r);
+        expect(r.finished).toBe(true);
+        expect(r.misses + r.hints).toBe(0);
+        expect(r.creation()?.cells).toEqual(sampleRows(r.sample!).flat());
+      }
+  });
+  it('a woven wrong row stays, costs one miss, and Undo restores pedal, yarn and is free', () => {
+    const r = new Round(4, 0);
+    expect(play(r, 1, 1)).toBe('differs');
+    expect(r.rows).toBe(1);
+    expect(r.misses).toBe(1);
+    expect(r.firstDiff).toBe(0);
+    expect(r.undo()).toBe(true);
+    expect([r.rows, r.selected, r.yarn, r.misses, r.hints]).toEqual([0, 1, 1, 1, 0]);
+    expect(r.undo()).toBe(false);
+  });
+  it('two slips at one row index earn exactly one hint; a repeated pedal glows the other', () => {
+    const r = new Round(4, 0);
+    play(r, 0, 0);
+    expect(play(r, 0, 0)).toBe('slip');
+    expect(r.hints).toBe(0);
+    expect(play(r, 0, 0)).toBe('slip');
+    expect([r.misses, r.hints, r.glow]).toEqual([2, 1, 'pedal']);
+    expect(play(r, 0, 0)).toBe('slip');
+    expect([r.misses, r.hints]).toEqual([3, 1]);
+    r.help();
+    expect(r.hints).toBe(1);
+    expect(play(r, 1, 0)).toBe('commit');
+    expect(r.glow).toBeNull();
+  });
+  it('help over a standing mismatch pulses Undo and counts no hint', () => {
+    const r = new Round(4, 0);
+    play(r, 1, 1);
+    r.help();
+    expect([r.glow, r.hints]).toEqual(['undo', 0]);
+  });
+  it('the float rule slips P1 P2 P1 P2 at level 5 and the row is not woven', () => {
+    const r = new Round(5, 0);
+    for (const p of [0, 1, 0]) expect(play(r, p)).not.toBe('slip');
+    expect(play(r, 1)).toBe('slip');
+    expect(r.rows).toBe(3);
+  });
+  it('eight rows over a mismatch do not finish; undo and repair finishes', () => {
+    const r = new Round(5, 0);
+    play(r, 2);
+    for (let i = 1; i < 8; i++) play(r, r.sample!.pedals[i]);
+    expect(r.full).toBe(true);
+    expect(r.finished).toBe(false);
+    expect(r.creation()).toBeNull();
+    expect(r.firstDiff).toBe(0);
+    while (r.rows) r.undo();
+    clean(r);
+    expect(r.finished).toBe(true);
+  });
+});

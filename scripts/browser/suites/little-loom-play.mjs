@@ -143,6 +143,55 @@ export function createSuite({
     }
     await finished('little-loom');
     assert.deepEqual([(await state()).misses, (await state()).hints], [2, 1]);
+    // Levels 5 and 4: weave to match a sample, with a wrong row, Undo, a hint and a clean finish.
+    const plan = () =>
+      page.evaluate(() => {
+        const r = neo.scene.game.round;
+        return { pedals: r.sample.pedals, weft: r.sample.weft, rows: r.rows };
+      });
+    const pedalPads = (level) => (level === 5 ? 'pedals5' : 'pedals');
+    const play = async (level, pedal, pot) => {
+      await tap(pedalPads(level), pedal);
+      if (pot !== undefined) await tap('pots4', pot);
+      await send();
+    };
+    const potOf = (weft) => (weft === 3 ? 0 : 1);
+    await launch('little-loom', 5);
+    let p5 = await plan();
+    const wrong5 = (p5.pedals[0] + 1) % 3;
+    await play(5, wrong5);
+    assert.deepEqual([(await state()).rows, (await state()).misses, (await state()).hints], [1, 1, 0]);
+    await tap('undoPad');
+    assert.deepEqual([(await state()).rows, (await state()).misses], [0, 1]);
+    await play(5, wrong5);
+    await tap('undoPad');
+    assert.deepEqual([(await state()).rows, (await state()).misses, (await state()).hints], [0, 2, 1]);
+    await play(5, p5.pedals[0]);
+    await play(5, p5.pedals[0]);
+    assert.deepEqual([(await state()).rows, (await state()).misses, (await state()).hints], [1, 3, 1]);
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(500);
+    await screenshot('little-loom-5-portrait');
+    for (let i = 1; i < 8; i++) await play(5, p5.pedals[i]);
+    await finished('little-loom');
+    assert.deepEqual([(await state()).misses, (await state()).hints], [3, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await launch('little-loom', 4);
+    const p4 = await plan();
+    await tap(pedalPads(4), p4.pedals[0]);
+    await tap('pots4', 1 - potOf(p4.weft[0]));
+    await send();
+    assert.deepEqual([(await state()).rows, (await state()).misses], [1, 1]);
+    await tap('undoPad');
+    assert.deepEqual(
+      [(await state()).rows, (await state()).selected, (await state()).misses],
+      [0, p4.pedals[0], 1],
+    );
+    await tap('pots4', potOf(p4.weft[0]));
+    await send();
+    for (let i = 1; i < 8; i++) await play(4, p4.pedals[i], potOf(p4.weft[i]));
+    await finished('little-loom');
+    assert.deepEqual([(await state()).misses, (await state()).hints], [1, 0]);
     // Destroying a thrown transaction cannot finish or keep a partial scarf.
     await launch('little-loom', 1);
     await page.evaluate(() => {

@@ -110,7 +110,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Loom
 
-*toddler–pre-K* · [Little Loom](games/little-loom.md)
+*toddler–school* · [Little Loom](games/little-loom.md)
 
 ### Movie Night
 
