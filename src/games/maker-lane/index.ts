@@ -10,6 +10,7 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
+import type { LineVars } from '../../audio/voice';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   beginningArt,
@@ -168,7 +169,10 @@ class MakerLane implements Game {
   }
 
   async start() {
-    await this.ctx.instruct(`makerlane.instruct.${this.level}` as LineId);
+    await this.ctx.instruct(
+      `makerlane.instruct.${this.level}` as LineId,
+      this.level === 5 ? { first: 'tree', second: 'old paper' } : { what: 'scarf' },
+    );
     if (!this.alive) return;
     if (this.level === 2) await this.ctx.say(this.harvestLine());
     else if (this.level === 3) await this.ctx.say(`makerlane.this.${this.play.question!.thing}` as LineId);
@@ -542,7 +546,7 @@ class MakerLane implements Game {
     if (out.holds) {
       // The weaver takes the yarn and keeps it on the loom; the second bundle comes to the start.
       this.setBundle(null);
-      await this.ctx.say('makerlane.weaver.wait');
+      await this.ctx.say('makerlane.weaver.wait', { other: 'other' });
       if (!this.alive) return;
       this.setUp();
       sfx.pop(7);
@@ -552,7 +556,8 @@ class MakerLane implements Game {
     this.setBundle(out.to, look);
     this.bundle.scale.set(0.6);
     void this.ctx.tw.to(this.bundle.scale, { x: 1, y: 1 }, { duration: 0.3 });
-    const line = this.ctx.say(this.makeLine(out, order) as LineId);
+    const [lineId, lineVars] = this.makeLine(out, order);
+    const line = this.ctx.say(lineId, lineVars);
     if (!out.finished) {
       // As at level 2, a step's line never holds the lane: the maker hangs their work and the bundle goes on.
       this.hang(i, out.to, look);
@@ -572,7 +577,7 @@ class MakerLane implements Game {
     // The pet names the route she took and that another works too, or what stripes need.
     const after = this.afterLine(out, order);
     if (after) {
-      await this.ctx.say(after as LineId);
+      await this.ctx.say(after[0], after[1]);
       if (!this.alive) return;
     }
     if (out.done) return void this.finale();
@@ -582,24 +587,28 @@ class MakerLane implements Game {
     if (this.drag) this.drag.enabled = true;
   }
 
-  /** What the maker says as they work. */
+  /** What the maker says as they work. Every new line carries a slot, so it stays on device speech (no clip to render). */
   private makeLine(
     out: Extract<BranchOutcome, { kind: 'made' }>,
     order: BranchPlay['item']['order'],
-  ): string {
+  ): [LineId, LineVars?] {
     switch (out.job) {
       case 'dyer':
-        return 'makerlane.make.dye';
+        return ['makerlane.make.dye', { thing: out.from === 'cleanFleece' ? 'fleece' : out.from }];
       case 'spinner':
-        return 'makerlane.make.wool.3';
+        return ['makerlane.make.wool.3'];
       case 'weaver':
-        return order?.kind === 'stripes' ? 'makerlane.make.stripes' : 'makerlane.make.wool.4';
+        return order?.kind === 'stripes'
+          ? ['makerlane.make.stripes', { thing: 'scarf' }]
+          : ['makerlane.make.wool.4'];
       case 'chipper':
-        return 'makerlane.make.tree.2';
+        return ['makerlane.make.tree.2'];
       case 'pulper':
-        return out.from === 'oldPaper' ? 'makerlane.make.oldpaper' : 'makerlane.make.tree.3';
+        return out.from === 'oldPaper'
+          ? ['makerlane.make.oldpaper', { what: 'Old paper' }]
+          : ['makerlane.make.tree.3'];
       default:
-        return 'makerlane.make.tree.4';
+        return ['makerlane.make.tree.4'];
     }
   }
 
@@ -607,16 +616,20 @@ class MakerLane implements Game {
   private afterLine(
     out: Extract<BranchOutcome, { kind: 'made' }>,
     order: BranchPlay['item']['order'],
-  ): string | null {
-    if (this.level === 5) return out.done ? 'makerlane.twoways' : null;
+  ): [LineId, LineVars] | null {
+    if (this.level === 5)
+      return out.done ? ['makerlane.twoways', { first: 'tree', second: 'old paper' }] : null;
     if (!out.orderDone) return null;
-    if (order?.kind === 'stripes') return 'makerlane.stripes.before';
-    const at = out.dyedAt;
-    return at === 'cleanFleece'
-      ? 'makerlane.dyed.fleece'
-      : at === 'yarn'
-        ? 'makerlane.dyed.yarn'
-        : 'makerlane.dyed.scarf';
+    if (order?.kind === 'stripes') return ['makerlane.stripes.before', { kind: 'coloured' }];
+    const route = {
+      cleanFleece: { at: 'fleece first', others: 'the yarn or the scarf' },
+      yarn: { at: 'yarn first', others: 'the fleece or the scarf' },
+      scarf: { at: 'scarf last', others: 'the fleece or the yarn' },
+    } as const;
+    return [
+      'makerlane.dyed.route',
+      route[out.dyedAt === 'cleanFleece' || out.dyedAt === 'yarn' ? out.dyedAt : 'scarf'],
+    ];
   }
 
   private async refuseBranch(i: number, out: Extract<BranchOutcome, { kind: 'miss' }>) {
@@ -633,7 +646,10 @@ class MakerLane implements Game {
     b.scale.set(0.4);
     void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25 });
     const index = this.bp!.index;
-    await this.ctx.say(`makerlane.${need.line}` as LineId);
+    await this.ctx.say(
+      `makerlane.${need.line}` as LineId,
+      need.line === 'notyet.stripes' ? { kind: 'coloured' } : { what: 'paper' },
+    );
     if (this.alive && out.glow && this.bp!.glowing && this.bp!.index === index)
       void this.ctx.say('makerlane.hint');
   }
