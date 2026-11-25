@@ -85,7 +85,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `friends` | 2026-10-20 · [RW06 slice 1: the saved look and dressing](archive/VERIFICATION-2026-10-20.md#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | — |
 | `fruitslice` | 2026-11-11 · [U7d fix batch 4: melt-freeze, tide-line, drift-cards and fruit-slice never hold a tap on a right answer's line](archive/VERIFICATION-2026-11-11.md#2026-11-11--u7d-fix-batch-4-melt-freeze-tide-line-drift-cards-and-fruit-slice-never-hold-a-tap-on-a-right-answers-line-pr-1534) | `FRUIT_LEVELS=7` |
 | `fruitsums` | 2026-11-12 · [U7d fix batch 8: frog-hop, fruit-sums and number-trails never hold a tap on a right answer's line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-8-frog-hop-fruit-sums-and-number-trails-never-hold-a-tap-on-a-right-answers-line-pr-1548) | Levels 1 and 5, passed on reruns |
-| `gadgetbench` | 2026-11-06 · [Gadget Bench levels 5–6, Little Gate and New Box](archive/VERIFICATION-2026-11-06.md#2026-11-06--gadget-bench-levels-56-little-gate-and-new-box-pr-1336) | `BENCH_LEVELS=5,6` |
+| `gadgetbench` | 2026-11-25 · [Gadget Bench level 7, Two Friends One Box](verification/2026-11-25-gadget-bench-level-7-two-friends-one-box.md) | `BENCH_LEVELS=7` (levels 1–6: 2026-11-06 and earlier) |
 | `gardenrows` | 2026-11-22 · [Garden Rows level 11 bee sightlines](verification/2026-11-22-garden-rows-level-11-bee-sightlines.md) | `GARDEN_ROWS_ONLY=bee` |
 | `gears` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, third session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-third-session.md) | — |
 | `gemswap` | 2026-11-18 · [Gem Swap levels 1-2 open to school](verification/2026-11-18-gem-swap-levels-1-2-open-to-school.md) | — |

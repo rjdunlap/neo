@@ -365,6 +365,65 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         "Gadget Bench 6: the pet's cart, the new box, the glow stones at the front as a miss, then on top, rounds 2–3, passed",
       );
     }
+    if (wants(7)) {
+      // Level 7: one box, two friends. Heavy parts stop at the rope bridge (a free Try), a lighter cart passes and rides off,
+      // the same box comes back for the strong friend; light parts stop at the big load, a failing Give is a miss, Show a hint
+      // is one hint, then a strong cart passes. Rounds 2–3 are given straight, both turns each.
+      await launch('gadget-bench', 7);
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        s.path,
+        ['smooth', 'bump', 'rain', 'light'],
+        'the authored first turn is the light cart',
+      );
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.parts.map((p) => p.id)),
+        ['rollers', 'wheels', 'umbrella', 'lid', 'lantern'],
+        'the box holds five parts',
+      );
+      await dragPart('wheels', 'under');
+      await dragPart('lid', 'top');
+      await tapOn('neo.scene.game.tryButton');
+      await settle();
+      assert.equal((await state()).strip.at(-1), 'light', 'heavy parts stop at the rope bridge');
+      assert.deepEqual(await tally(), [0, 0], 'a failing Try is free');
+      await screenshot('gadget-bench-7-landscape');
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(800);
+      await screenshot('gadget-bench-7-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await dragPart('rollers', 'under');
+      await tapOn('neo.scene.game.giveButton');
+      await settle();
+      s = await state();
+      assert.equal(s.round, 0, 'the second friend comes to the same round');
+      assert.deepEqual(s.path, ['smooth', 'bump', 'rain', 'strong'], 'the second turn is the strong cart');
+      assert.deepEqual(s.gadget, {}, 'the bench is empty and the parts are back in the box');
+      assert.deepEqual(await tally(), [0, 0], 'the first turn counted nothing');
+      await dragPart('rollers', 'under');
+      await dragPart('umbrella', 'top');
+      await tapOn('neo.scene.game.giveButton');
+      await settle();
+      assert.equal((await state()).strip.at(-1), 'strong', 'light parts stop at the big load');
+      assert.deepEqual(await tally(), [1, 0], 'a failing Give is one miss');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+      assert.deepEqual(await tally(), [1, 1], 'Show a hint counts one hint');
+      await buildAndGive();
+      assert.equal((await state()).round, 1, 'the strong Give ends the round');
+      for (let r = 1; r < 3; r++) {
+        await buildAndGive();
+        await buildAndGive();
+      }
+      await finished('gadget-bench');
+      assert.deepEqual(await score(), [1, 1], 'level 7 saves one miss and one hint');
+      log(
+        'Gadget Bench 7: heavy parts stop at the bridge, light cart given, same box for the strong friend, a miss and a hint, rounds 2–3, portrait, passed',
+      );
+    }
   }
+  return { gadgetBenchPlay };
   return { gadgetBenchPlay };
 }

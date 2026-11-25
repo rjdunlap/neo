@@ -22,7 +22,12 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: "Watch the pet's cart work, then build one from the new box of parts that does the same jobs.",
     },
-    { from: 2, to: 6, text: 'Tap the hand to give it when it gets all the way along.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Build a cart for the first friend, Try it and Give it, then build for the next friend from the same box.',
+    },
+    { from: 2, to: 7, text: 'Tap the hand to give it when it gets all the way along.' },
   ],
   finish: 'The neighbor loves the gadget, and two more friends make one too.',
   note: [
@@ -45,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 6,
       text: 'The gate is a limit on the whole cart: every part must fit under it, even one doing nothing. In the new box, a part that does the same job may sit somewhere new. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Light parts have one dot; strong parts have two. One friend needs a light cart and the next needs a strong one, so no single cart works for both. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint.',
     },
   ],
 };
