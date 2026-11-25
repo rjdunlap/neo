@@ -254,6 +254,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       });
       await screenshot(`jelly-drums-${level}`);
       await finished('jelly-drums');
+      if (level <= 3) {
+        // Free play taps all five jellies in order, so the biggest and littlest both sang.
+        const found = await page.evaluate(() => kit.store.data.journal.found);
+        assert.ok(found.includes('jelly-drums:low-high'), `jelly ${level} files low and high`);
+      }
       assert.deepEqual(
         await score('jelly-drums'),
         mode === 'free' || mode === 'wake' ? [0, 0] : [2, 1],

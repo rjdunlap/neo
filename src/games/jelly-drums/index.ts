@@ -13,6 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { entryId } from '../../content/journal';
 import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
 import { CHOICE_RADIUS, HIT_PAD, jellyLayout, ORDER_HW, ORDER_SLOT_RADIUS, type Layout } from './layout';
@@ -35,6 +36,7 @@ import {
   RESUME_FROM_LENGTH,
   sameFlags,
   ScaleWatch,
+  JournalWatch,
   SET_STEPS,
   soundSetFor,
   tuneLength,
@@ -139,6 +141,8 @@ class JellyDrums implements Game {
   private readonly namer = new JellyNamer();
   /** Level 3: three neighbours in a row sparkle. */
   private readonly scale = new ScaleWatch();
+  /** What this round showed for the journal: low and high. */
+  private readonly journal = new JournalWatch();
   private lastJelly = 2;
   private wrongThisTune = 0;
   private misses = 0;
@@ -357,6 +361,7 @@ class JellyDrums implements Game {
     this.nudge.touched();
     this.lastJelly = i;
     this.sing(i);
+    this.journal.tap(i);
     if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
     if (this.plan.mode !== 'echo') {
       const woke =
@@ -946,7 +951,12 @@ class JellyDrums implements Game {
     sfx.tada();
     await this.ctx.tw.wait(1.6);
     if (this.dead) return;
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    const found = this.journal.keys().map((k) => entryId('jelly-drums', k));
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      ...(found.length ? { discoveries: found } : {}),
+    });
   }
 }
 

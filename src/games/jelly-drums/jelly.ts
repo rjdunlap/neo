@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { cheek, ink, swatch, type ColorName } from '../../art/palette';
-import { domePath } from '../../art/shapes';
+import { PITCH_COLORS } from '../../audio/notes';
+import { domePath, musicNote } from '../../art/shapes';
 
 const MOUTH = 0x7a2e3e;
 
@@ -102,4 +103,26 @@ export class Jelly extends Container {
     for (const s of [-1, 1])
       f.ellipse(s * hw * 0.55, -h * 0.34, hw * 0.12, h * 0.05).fill({ color: cheek, alpha: 0.55 });
   }
+}
+
+/** The five jellies' sizes, biggest and lowest first: the same shapes the game stands on its stage. */
+const jellySize = (i: number) => {
+  const hw = 82 - i * 7;
+  return { hw, h: hw * 1.55 };
+};
+
+/** The journal card for "big jellies sing low, little jellies sing high": the biggest and the littlest jelly side by side, a low and a high note over them. */
+export function jellyJournalPicture(): Container {
+  const c = new Container();
+  [0, 4].forEach((i, n) => {
+    const { hw, h } = jellySize(i);
+    const j = new Jelly(PITCH_COLORS[i], hw, h);
+    j.position.set((n - 0.5) * 230, 0);
+    c.addChild(j);
+    // The note's height says how high the jelly sings: the littlest jelly's note sits highest.
+    const note = musicNote(new Graphics(), 56, swatch[PITCH_COLORS[i]].line);
+    note.position.set(j.x, -h - 40 - i * 18);
+    c.addChild(note);
+  });
+  return c;
 }

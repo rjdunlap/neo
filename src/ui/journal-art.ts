@@ -19,6 +19,7 @@ import { farJournalPicture } from '../games/far-lights/art';
 import { chainJournalPicture } from '../games/chain-reaction';
 import { diceJournalPicture } from '../games/spinner-fair/art';
 import { swingJournalPicture } from '../games/swing-pals';
+import { jellyJournalPicture } from '../games/jelly-drums/jelly';
 import { paintJournalPicture } from '../games/paint-mixer/art';
 import type { ShelfColour } from '../games/paint-mixer/logic';
 import type { KitchenDiscovery } from '../games/pet-kitchen/logic';
@@ -61,6 +62,8 @@ export function entryPicture(entry: JournalEntry): Container {
       return diceJournalPicture();
     case 'swing-pals':
       return swingJournalPicture();
+    case 'jelly-drums':
+      return jellyJournalPicture();
   }
 }
 
