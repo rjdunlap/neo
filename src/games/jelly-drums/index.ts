@@ -242,7 +242,7 @@ class JellyDrums implements Game {
     if (this.plan.mode === 'which') {
       this.phase = 'listen';
       this.applyWhichAwake(whichAwake(0), false);
-      void this.ctx.instruct('jelly.which');
+      void this.ctx.instruct('jelly.which', { name: this.ctx.childName });
       void this.ctx.tw.wait(1.8).then(() => this.nextWhich());
       return;
     }
@@ -595,7 +595,7 @@ class JellyDrums implements Game {
       await this.playWhichNote(this.wrongThisTune >= 1);
       if (this.dead) return;
       this.phase = 'turn';
-      void this.ctx.instruct('jelly.which.ask');
+      void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
       return;
     }
     this.at = placeAfterMiss(this.tune.length, this.at);
@@ -756,7 +756,7 @@ class JellyDrums implements Game {
     await this.playWhichNote(false);
     if (this.dead) return;
     this.phase = 'turn';
-    void this.ctx.instruct('jelly.which.ask');
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
   }
 
   private async playWhichNote(help: boolean) {
@@ -794,7 +794,7 @@ class JellyDrums implements Game {
     await this.playWhichNote(true);
     if (this.dead) return;
     this.phase = 'turn';
-    void this.ctx.instruct('jelly.which.ask');
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
   }
 
   // ----- Lowest-to-highest mode (level 13) -----
