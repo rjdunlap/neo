@@ -203,13 +203,15 @@ export function cellFeatures(
   rows: number,
   width: number,
   height: number,
+  /** Where the grid starts in the picture, for a plan that shows only a crop of it. */
+  origin: { x: number; y: number } = { x: 0, y: 0 },
 ): string[][] {
   const out: string[][] = [];
   const cw = width / cols;
   const ch = height / rows;
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const box = { x: col * cw, y: row * ch, w: cw, h: ch };
+      const box = { x: origin.x + col * cw, y: origin.y + row * ch, w: cw, h: ch };
       out.push(
         features
           .filter(

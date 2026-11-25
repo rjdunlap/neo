@@ -138,7 +138,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
       for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
       ]) {
         if (level === 11) {
           // Mend the picture: two pieces swapped in a finished 3x3; a swap that does not mend both goes back as a miss,
@@ -312,8 +312,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           window.slotAt = (p) => {
             const g = neo.scene.game;
             return {
-              x: g.board.x + (600 / g.plan.cols) * (p.col + 0.5) * g.scale,
-              y: g.board.y + (420 / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
+              x: g.board.x + (g.box.w / g.plan.cols) * (p.col + 0.5) * g.scale,
+              y: g.board.y + (g.box.h / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
             };
           };
         });
@@ -325,8 +325,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.misses !== 0) throw new Error('Drop off the frame counted as a miss');
           if (g.plan.turns) {
             const turned = waiting.filter((p) => p.turn !== 0);
-            if (turned.length !== 3)
-              throw new Error(`Puzzle 9: expected 3 turned pieces, got ${turned.length}`);
+            const want = g.plan.turns;
+            if (turned.length !== want)
+              throw new Error(
+                `Puzzle ${g.plan.quarter ? 12 : 9}: expected ${want} turned pieces, got ${turned.length}`,
+              );
             await kit.dragTo(turned[0].node, slotAt(turned[0].piece));
             await kit.sleep(600);
             if (turned[0].placed || g.misses !== 0 || g.wrong !== 0)
@@ -355,7 +358,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'].includes(pos))
               throw new Error('First hint is not a corner');
           });
-        if (level === 7 || level === 9) {
+        if (level === 7 || level === 9 || level === 12) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(500);
           await screenshot(`puzzle-pals-${level}-portrait`);
@@ -365,11 +368,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (const p of g.pieces.filter((p) => !p.placed)) {
-            if (p.turn) {
+            // Level 9 takes one tap to turn a piece round; level 12 takes up to three quarter turns, each a clockwise tap.
+            for (let taps = 0; p.turn && taps < 4; taps++) {
               kit.tapOn(p.node);
               await kit.sleep(350);
-              if (p.turn !== 0) throw new Error('Puzzle 9: tap did not turn piece upright');
             }
+            if (p.turn !== 0) throw new Error('Puzzle turn: taps did not bring the piece upright');
             await kit.dragTo(p.node, slotAt(p.piece));
             await kit.sleep(450);
             if (!p.placed) throw new Error('Piece rejected its own place');
@@ -377,6 +381,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         });
         await page.waitForTimeout(900);
         if (level === 4) await screenshot('puzzle-pals-alive');
+        if (level === 12) await screenshot('puzzle-pals-12-alive');
         await finished('puzzle-pals');
         const r = await page.evaluate(() => {
           const r = kit.store.stats('puzzle-pals').history.at(-1);
