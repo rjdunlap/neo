@@ -58,7 +58,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`puzzle-pals` level 10, Two pictures, one tray** (pre-K, school; new interaction; after Turn it round, built). [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
 
 
 
