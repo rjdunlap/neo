@@ -151,8 +151,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, and Which jelly sang?.
-    for (let level = 1; level <= 14 && (!only || only === 'jelly'); level++) {
+    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, and Follow the glow.
+    const jellyLevels =
+      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 15 }, (_, i) => i + 1);
+    for (const level of jellyLevels) {
+      if (only && only !== 'jelly') break;
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -174,6 +177,25 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return;
         }
         const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
+        if (g.plan.mode === 'follow') {
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            for (let k = 0; k < g.plan.length; k++) {
+              await turn();
+              if (t === 0 && k === 0) {
+                // A different jelly is only music: no miss, no hint.
+                await hit(g.tune[0] === 4 ? 3 : 4);
+                if (g.misses !== 0 || g.hints !== 0 || g.at !== 0)
+                  throw new Error(`Jelly follow wrong jelly counted: ${g.misses} ${g.hints} ${g.at}`);
+              }
+              await hit(g.tune[g.at]);
+            }
+            await kit.until(() => g.phase === 'turn' || g.phase === 'done', 6000);
+          }
+          if (g.misses !== 0 || g.hints !== 0)
+            throw new Error(`Jelly follow counted: ${g.misses} ${g.hints}`);
+          return;
+        }
         if (g.plan.mode === 'which') {
           for (let t = 0; t < g.plan.goal; t++) {
             await turn();
@@ -286,7 +308,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       }
       assert.deepEqual(
         await score('jelly-drums'),
-        mode === 'free' || mode === 'wake' ? [0, 0] : [2, 1],
+        mode === 'free' || mode === 'wake' || mode === 'follow' ? [0, 0] : [2, 1],
         `jelly ${level} score`,
       );
       log(
@@ -1835,7 +1857,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 14,
+      'jelly-drums': 15,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

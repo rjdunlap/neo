@@ -41,6 +41,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'Listen to the hidden note, then tap the jelly that sang it. Two jellies start awake, then three, then all five.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'One jelly glows at a time. Tap it and the next one glows, so the song plays as she taps, until the song is done.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after a number of notes.' },
@@ -49,6 +54,7 @@ export const HOW_TO: GameHowTo = {
     { from: 12, to: 12, text: 'The round ends when every pair of songs has been judged.' },
     { from: 13, to: 13, text: 'The round ends after three line-ups from lowest to highest.' },
     { from: 14, to: 14, text: 'The round ends after six mystery notes.' },
+    { from: 15, to: 15, text: 'The round ends after four short songs, the first one Hot Cross Buns.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
   ],
   note: [
@@ -76,6 +82,11 @@ export const HOW_TO: GameHowTo = {
       from: 14,
       to: 14,
       text: 'The yellow note button above the jellies plays the sound again whenever it is her turn. A wrong jelly sings its own note and the right one wiggles; after two misses the right jelly glows.',
+    },
+    {
+      from: 15,
+      to: 15,
+      text: 'Nothing here is a wrong answer: a different jelly just sings its own note. If she waits, the glowing jelly wiggles.',
     },
   ],
 };

@@ -5,6 +5,7 @@ import { SCRIPT } from '../../content/voice-script';
 import {
   answerOf,
   drawLineup,
+  drawFollow,
   drawLineups,
   drawPair,
   drawWhich,
@@ -629,18 +630,19 @@ describe('Jelly Drums Which jelly sang? (level 14)', () => {
   it('is level 14, placed between 3 and 4 for toddler and preschool with entryLevels protecting older bands', () => {
     expect(plan.mode).toBe('which');
     expect([plan.goal, plan.length]).toEqual([6, 1]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 14]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 15, 14]);
     expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 7]);
     for (const band of ['lap', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(14);
 
-    const entries = [10, 14];
+    const entries = [10, 14, 15];
     expect(landing(14, rangeFor(LEVELS, 'toddler'), entries)).toBe(14);
     expect(landing(14, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
     expect(landing(14, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
     expect(landing(14, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
     expect(landing(14, rangeFor(LEVELS, 'school'), entries)).toBe(8);
-    expect(stepLevel(3, 1, rangeFor(LEVELS, 'toddler'))).toBe(14);
+    expect(stepLevel(3, 1, rangeFor(LEVELS, 'toddler'))).toBe(15);
+    expect(stepLevel(15, 1, rangeFor(LEVELS, 'toddler'))).toBe(14);
     expect(stepLevel(14, 1, rangeFor(LEVELS, 'preschool'))).toBe(4);
   });
 
@@ -685,5 +687,52 @@ describe('Jelly Drums Which jelly sang? (level 14)', () => {
     for (const id of ['jelly.which', 'jelly.which.ask'] as const) {
       expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('Jelly Drums Follow the glow (level 15)', () => {
+  const plan = PLANS[14];
+
+  it('is level 15, a toddler level between 3 and Which jelly sang?, and older bands land on their own start', () => {
+    expect(plan.mode).toBe('follow');
+    expect([plan.goal, plan.length]).toEqual([4, 3]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 15, 14]);
+    for (const band of ['lap', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(15);
+    const entries = [10, 14, 15];
+    expect(landing(15, rangeFor(LEVELS, 'toddler'), entries)).toBe(15);
+    expect(landing(15, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(15, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
+    expect(landing(15, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
+    expect(landing(15, rangeFor(LEVELS, 'school'), entries)).toBe(8);
+  });
+
+  it('opens with Hot Cross Buns, then fresh three-note shapes: no repeat, never the shape just played', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const played: Tune[] = [];
+      for (let n = 0; n < plan.goal; n++) {
+        const t = drawFollow(rng, plan, played);
+        expect(t.notes).toHaveLength(plan.length);
+        for (const note of t.notes) (expect(note).toBeGreaterThanOrEqual(0), expect(note).toBeLessThan(5));
+        if (n === 0) {
+          expect(t.kind).toBe('hot-cross-buns');
+          expect(t.notes).toEqual([2, 1, 0]);
+          expect(t.title).toBe('jelly.song.hot-cross-buns');
+        } else {
+          expect(t.title).toBeUndefined();
+          expect(t.kind).not.toBe(played[n - 1].kind === 'hot-cross-buns' ? 'none' : played[n - 1].kind);
+        }
+        expect(played.some((p) => p.notes.join() === t.notes.join())).toBe(false);
+        played.push(t);
+      }
+    }
+  });
+
+  it('ghost finger taps the lit jelly on her turn and waits otherwise; the voice line exists', () => {
+    expect(jellyToTap('follow', 'listen', [2, 1, 0], 0, 0)).toBeNull();
+    expect(jellyToTap('follow', 'turn', [2, 1, 0], 0, 0)).toBe(2);
+    expect(jellyToTap('follow', 'turn', [2, 1, 0], 2, 0)).toBe(0);
+    expect(SCRIPT['jelly.follow']?.length).toBeGreaterThan(0);
   });
 });
