@@ -12,7 +12,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 9,
+      to: 9,
       text: 'Tap jellies on any beats to make her own song; the loop plays round and round and she can change it any time. Once three or more are lit and the loop has played a full round since her last change, the check button wakes.',
+    },
+    {
+      from: 10,
+      text: 'The pet sings a four-note question on the first four beats, then she answers with one jelly on each of the last four beats. A tap in a beat moves its jelly, and a tap on the lit one puts it out; any answer is welcome, an echo included. Once all four are filled and the loop has played all eight beats since her last change, the check button wakes.',
     },
     { from: 3, to: 4, text: 'Copy the song by tapping jellies on its shadow notes.' },
     { from: 5, to: 5, text: 'Copy the song on the little card.' },
@@ -35,7 +40,12 @@ export const HOW_TO: GameHowTo = {
   ],
   note: [
     {
+      from: 10,
+      text: "Every complete answer is welcome and nothing is counted. The whole eight-beat song, the pet's question and her answer, can hang in the pet's room from the little tree house button as one song.",
+    },
+    {
       from: 9,
+      to: 9,
       text: "Any song is welcome and nothing is counted or wrong. The check button plays her song once more, then it hangs in the pet's room from the little tree house button.",
     },
     {
