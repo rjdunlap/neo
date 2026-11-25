@@ -23,6 +23,7 @@ import { HOW_TO as circuitGardenHowTo } from '../games/circuit-garden/howto.ts';
 import { HOW_TO as clapSyllablesHowTo } from '../games/clap-syllables/howto.ts';
 import { HOW_TO as clockTowerHowTo } from '../games/clock-tower/howto.ts';
 import { HOW_TO as colorGardenHowTo } from '../games/color-garden/howto.ts';
+import { HOW_TO as commonGroundHowTo } from '../games/common-ground/howto.ts';
 import { HOW_TO as critterCrossingHowTo } from '../games/critter-crossing/howto.ts';
 import { HOW_TO as critterSortHowTo } from '../games/critter-sort/howto.ts';
 import { HOW_TO as crosswordHowTo } from '../games/crossword/howto.ts';
@@ -234,6 +235,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'clap-syllables': clapSyllablesHowTo,
   'clock-tower': clockTowerHowTo,
   'color-garden': colorGardenHowTo,
+  'common-ground': commonGroundHowTo,
   'critter-crossing': critterCrossingHowTo,
   'critter-sort': critterSortHowTo,
   'crossword': crosswordHowTo,

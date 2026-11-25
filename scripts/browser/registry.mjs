@@ -212,6 +212,7 @@ import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
 import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
 import { createSuite as createCampsite } from './suites/campsite-play.mjs';
 import { createSuite as create137 } from './suites/sum-crates-play.mjs';
+import { createSuite as createCommonGround } from './suites/common-ground-play.mjs';
 
 export const SUITES = [
   'relaywoods',
@@ -423,6 +424,7 @@ export const SUITES = [
   'sandtable',
   'adventurewalk',
   'readyadventure',
+  'commonground',
   'fingerdemo',
   'room',
   'lands',
@@ -623,6 +625,7 @@ export const ALL_SUITES = [
   'sandtable',
   'adventurewalk',
   'readyadventure',
+  'commonground',
   'fingerdemo',
   'room',
   'lands',
@@ -772,6 +775,7 @@ export function createChecks(fixture) {
     'howToIntro',
     'howToLevelPick',
     'readyForAdventurePlay',
+    'commonGroundPlay',
     'adventureWalkPlay',
     'sandTablePlay',
     'senseDetectivePlay',
@@ -1015,6 +1019,7 @@ export function createChecks(fixture) {
   install(createGroveCutLines(shared));
   install(createGroveCutLines20(shared));
   install(createGroveCutLines22(shared));
+  install(createCommonGround(shared));
   return checks;
 }
 
@@ -1154,6 +1159,7 @@ export async function runSuite(suite, fixture) {
     howToIntro,
     howToLevelPick,
     readyForAdventurePlay,
+    commonGroundPlay,
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
@@ -1514,6 +1520,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();
   if (suite === 'all' || suite === 'readyadventure') await readyForAdventurePlay();
+  if (suite === 'all' || suite === 'commonground') await commonGroundPlay();
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'lands') await landsTour();

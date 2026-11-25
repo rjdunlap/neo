@@ -595,6 +595,7 @@ describe('game registry', () => {
       'circuit-garden',
       'clap-syllables',
       'clock-tower',
+      'common-ground',
       'critter-crossing',
       'critter-sort',
       'crossword',

@@ -1,0 +1,5 @@
+# 2026-11-25 — Common Ground level 1, A Place for You (PR #2178)
+
+**Changed:** new game `common-ground` (school, Story Grove): rules in `logic.ts`, layout, art, voice, how-to card, ghost finger, the `commonground` browser suite, the upright-ready list in the registry test, README and GAMES entries.
+**Ran:** `npm run typecheck`; `npm run format:check`; `npm run lint`; `npx vitest run src/games/common-ground src/content src/games/registry` (rule tests over all 150 arrangements per fixture, hint reaches `ok` in at most three moves, layout on four views, barrels, game docs, lands, how-to, registry); `BROWSER_SUITE=commonground` in portrait (misplaced cushion, one miss, Help, plant, friend sits, saved score 1 miss 1 hint) with one portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=common-ground FINGER_LEVELS=1` (finished in 10.3 s). Dev server on port 5437 with speech off.
+**Not run:** `npm run build`, the full `npm test` (left to PR CI), `world`, offline. Voice clips are not rendered (device speech until a Better voice pass). A real phone and a child's reaction are parked, not claimed.
