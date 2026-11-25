@@ -1,1 +1,0 @@
-**Define Last Pebble levels 3–4 (strategy games SG3b)** (docs only, links and diff; levels 1–2 built; claimed on `claude/define-last-pebble-3-4`): freeze choosing first or second player, variable `maxTake`, and misère (*last stone loses*), then enqueue the build. [Definition](../../definitions/last-pebble.md#build-batch-last-pebble-1-levels-12)
