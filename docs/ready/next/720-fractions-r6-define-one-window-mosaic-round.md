@@ -1,0 +1,1 @@
+**`fractions` R6: define one Window Mosaic round** (docs only; study follow-up definition): 4x4 window with eight colored cells in two different shapes; prove equal area without equating perimeter or pane count; confirm existing-game ownership before choosing a registration. [Study](../../deep-dives/subjects/fractions.md#build-slices-in-order)

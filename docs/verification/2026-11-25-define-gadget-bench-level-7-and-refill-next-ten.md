@@ -1,0 +1,5 @@
+# 2026-11-25 — Define Gadget Bench level 7 and refill Next ten (PR #2166)
+
+**Changed:** Defined `gadget-bench` level 7 *Two Friends, One Box* in `docs/definitions/gadget-bench.md` (two sequential builds on one path and five-part tray with disjoint `light` (`cartWeight <= 3`) and `strong` (`cartStrength >= 4`) passing sets, voice lines, how-to card, rule/upright checks and open decision 7); updated `docs/deep-dives/subjects/inventions.md`, `docs/deep-dives/subjects/RECOMMENDATIONS.md` and `docs/STUDY-BACKLOG.md`; refilled `docs/ready/next/` from 3 to 10 items (`gadget-bench` level 7 build, three study follow-up definitions, `missing-melody`, `never-swallow-a-tap` U7d batch 2 and `todays-six` D10 slice 3).
+**Ran:** `node scripts/check-links.mjs` (`links ok`) and `git diff --check` (clean) in the `agy/docs-gadget-bench-7` worktree (`docs-only` tier).
+**Not run:** TypeScript, Vitest, Vite build and browser suites (not run for a docs-only slice per the verification budget); CI on GitHub runs format, lint, `npm test` and `npm run build` on the PR.
