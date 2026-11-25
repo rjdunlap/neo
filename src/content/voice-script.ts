@@ -70,6 +70,7 @@ import { VOICE as keepHouseVoice } from '../games/keep-house/voice.ts';
 import { VOICE as keyItOutVoice } from '../games/key-it-out/voice.ts';
 import { VOICE as lanternLightsVoice } from '../games/lantern-lights/voice.ts';
 import { VOICE as lassoLoopsVoice } from '../games/lasso-loops/voice.ts';
+import { VOICE as lastPebbleVoice } from '../games/last-pebble/voice.ts';
 import { VOICE as lemonadeStandVoice } from '../games/lemonade-stand/voice.ts';
 import { VOICE as letterTrailsVoice } from '../games/letter-trails/voice.ts';
 import { VOICE as liftItVoice } from '../games/lift-it/voice.ts';
@@ -718,6 +719,7 @@ export const SCRIPT = {
   ...keyItOutVoice,
   ...lanternLightsVoice,
   ...lassoLoopsVoice,
+  ...lastPebbleVoice,
   ...lemonadeStandVoice,
   ...letterTrailsVoice,
   ...liftItVoice,

@@ -50,7 +50,8 @@ import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
 import { layout as jarLayout } from './jar-clues/layout';
-import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
+import { layout as keyLayout, END as KEY_END } from './key-it-out/layout';
+import { SPOT_SIZE as LAST_PEBBLE_SPOT } from './last-pebble/logic';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
@@ -179,6 +180,7 @@ const MEASURE: Record<string, () => Size[]> = {
     ]),
     ['button', 100],
   ],
+  'last-pebble': () => [['stepping spot', LAST_PEBBLE_SPOT]],
   'log-roll': () =>
     // The log rolls by the direction buttons; the stones are not tapped.
     FLOORS.flat().flatMap((floor) => {
@@ -385,6 +387,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
+  'last-pebble': { px: 65, what: 'stepping spot' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 44.7, what: 'case-file clue card', slides: 44.7 },
   'marble-jump': { px: 44.7, what: 'hole' },

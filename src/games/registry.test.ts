@@ -632,6 +632,7 @@ describe('game registry', () => {
       'key-it-out',
       'lantern-lights',
       'lasso-loops',
+      'last-pebble',
       'lemonade-stand',
       'lift-it',
       'light-lab',
