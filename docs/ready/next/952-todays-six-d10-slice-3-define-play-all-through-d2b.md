@@ -1,0 +1,1 @@
+**`todays-six` D10 slice 3: define Play all through D2b's mix planner** (docs only; D2b is built): define the daily six Play all handoff, keeping existing accounting, band resolution and safe exit. [Definition](../../definitions/todays-six.md)
