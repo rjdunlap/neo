@@ -73,6 +73,10 @@ export class MosaicRound implements Game {
   /** The pane glowing as help (tag 1) or the choice (tag 2). */
   private hinted: number | null = null;
   private clock = 0;
+  /** Every line carries her name, which keeps these lines on device speech (no rendered clip). */
+  private get vars() {
+    return { name: this.ctx.childName };
+  }
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -107,7 +111,7 @@ export class MosaicRound implements Game {
   start() {
     this.resize(this.ctx.view);
     this.busy = false;
-    void this.ctx.instruct('pixel.mosaic.color');
+    void this.ctx.instruct('pixel.mosaic.color', this.vars);
   }
 
   resize(v: View) {
@@ -200,15 +204,15 @@ export class MosaicRound implements Game {
     if (this.busy || this.finished || this.tag !== 1) return;
     const verdict = mosaicCheck(this.mask, this.model);
     if (verdict === 'right') return void this.pick();
-    if (verdict === 'empty') return void this.ctx.say('pixel.mosaic.fewer');
+    if (verdict === 'empty') return void this.ctx.say('pixel.mosaic.fewer', this.vars);
     if (verdict === 'same') {
       sfx.tick();
-      return void this.ctx.say('pixel.mosaic.same');
+      return void this.ctx.say('pixel.mosaic.same', this.vars);
     }
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    void this.ctx.say(verdict === 'fewer' ? 'pixel.mosaic.fewer' : 'pixel.mosaic.more');
+    void this.ctx.say(verdict === 'fewer' ? 'pixel.mosaic.fewer' : 'pixel.mosaic.more', this.vars);
     if (this.wrongs >= 2 && this.hinted === null) {
       this.hints++;
       this.hinted = mosaicHint(this.mask, this.model);
@@ -223,7 +227,7 @@ export class MosaicRound implements Game {
     sfx.bell(5, 0.25);
     this.ctx.pet.cheer();
     this.draw();
-    void this.ctx.instruct('pixel.mosaic.pick');
+    void this.ctx.instruct('pixel.mosaic.pick', this.vars);
   }
 
   private choose(i: number) {
@@ -232,11 +236,11 @@ export class MosaicRound implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    void this.ctx.say('pixel.mosaic.wrong');
+    void this.ctx.say('pixel.mosaic.wrong', this.vars);
     if (this.wrongs >= 2 && this.hinted === null) {
       this.hints++;
       this.hinted = this.round.right;
-      void this.ctx.say('pixel.mosaic.hint');
+      void this.ctx.say('pixel.mosaic.hint', this.vars);
     }
   }
 
@@ -268,7 +272,7 @@ export class MosaicRound implements Game {
         });
     }
     sfx.bell(3, 0.2);
-    void this.ctx.say('pixel.mosaic.proof');
+    void this.ctx.say('pixel.mosaic.proof', this.vars);
     const n = Math.min(from.length, to.length, paneCount(this.model));
     for (let k = 0; k < n; k++) {
       const chip = new Graphics()
@@ -289,7 +293,7 @@ export class MosaicRound implements Game {
       });
     }
     await this.ctx.tw.wait(0.4);
-    await this.ctx.say('pixel.mosaic.done');
+    await this.ctx.say('pixel.mosaic.done', this.vars);
     this.finale();
   }
 
