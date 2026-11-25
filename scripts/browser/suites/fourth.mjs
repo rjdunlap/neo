@@ -279,7 +279,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (process.env.WARDROBE_SPECIES && (!only || only === 'weather'))
       await useCompanion(process.env.WARDROBE_SPECIES);
     if (!only || only === 'weather')
-      for (const level of [1, 2, 3, 4, 5, 6, 8]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 8, 13]) {
         await launch('weather-wardrobe', level);
         await page.waitForTimeout(700);
         await page.evaluate(async () => {
@@ -314,7 +314,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.mode === 'try' ? g.hints !== 0 || g.misses !== 0 : g.hints !== 1)
             throw new Error('Wardrobe hint/miss accounting wrong');
         });
-        if ([1, 4, 6, 8].includes(level)) await screenshot(`weather-wardrobe-${level}`);
+        if ([1, 4, 6, 8, 13].includes(level)) await screenshot(`weather-wardrobe-${level}`);
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (let step = 0; !g.done && step < 30; step++) {

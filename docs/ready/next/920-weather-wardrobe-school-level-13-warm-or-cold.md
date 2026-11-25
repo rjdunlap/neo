@@ -1,1 +1,0 @@
-**`weather-wardrobe` school level 13, Warm or cold?** (decision 3 settled, after the school window and Pack light): add a picture thermometer beside the sky so temperature and weather both inform the outfit. [Dive](../../deep-dives/weather-wardrobe.md#build-slices-in-order)

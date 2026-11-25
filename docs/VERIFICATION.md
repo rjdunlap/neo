@@ -214,7 +214,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `villagevote` | 2026-11-22 · [Village Vote level 6 Chip in](verification/2026-11-22-village-vote-level-6-chip-in.md) | `VILLAGE_VOTE_ONLY=funding` |
 | `vinesnip` | 2026-11-22 · [Vine Snip level 6, Where will it land?](verification/2026-11-22-vine-snip-level-6-where-will-it-land.md) | `VINE_LEVELS=6` |
 | `wardrobe10` | 2026-10-26 · [Weather Wardrobe two friends level 10](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-two-friends-level-10) | Levels 1 and 10 |
-| `wardrobe12` | 2026-11-24 · [Weather Wardrobe level 12 Pack light (PR #2111)](verification/2026-11-24-weather-wardrobe-level-12-pack-light.md) | School level 12, 390×625 touch, captions, rotation and alternate packing |
+| `wardrobe12` | 2026-11-24 · [Weather Wardrobe level 13 Warm or cold (PR #2147)](verification/2026-11-24-weather-wardrobe-level-13-warm-or-cold.md) | School levels 12 and 13, 390×625 touch, captions, rotation, alternate packing and the thermometer round |
 | `wardrobe6` | 2026-11-24 · [Weather Wardrobe level 12 Pack light (PR #2111)](verification/2026-11-24-weather-wardrobe-level-12-pack-light.md) | Level 6 trip and unpack regression |
 | `wardrobe7` | 2026-11-24 · [Weather Wardrobe two-weather items and level 11 (PR #2098)](verification/2026-11-24-weather-wardrobe-two-weather-items-and-level-11.md) | Levels 7 and 11 at 768x1024 portrait; glider and river species last checked 2026-10-23 |
 | `wardrobe9` | 2026-10-26 · [Weather Wardrobe: wind (slice 7)](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-wind-slice-7) | — |
