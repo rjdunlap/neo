@@ -24,6 +24,7 @@ import {
   drawLineups,
   drawPair,
   drawTune,
+  drawFollow,
   drawWhich,
   fanAnswering,
   IdleNudge,
@@ -246,6 +247,12 @@ class JellyDrums implements Game {
       void this.ctx.tw.wait(1.8).then(() => this.nextWhich());
       return;
     }
+    if (this.plan.mode === 'follow') {
+      this.phase = 'listen';
+      void this.ctx.instruct('jelly.follow', { name: this.ctx.childName });
+      void this.ctx.tw.wait(1.8).then(() => this.nextFollow());
+      return;
+    }
     if (this.plan.mode === 'order') {
       this.lineups = drawLineups(this.ctx.rng, this.plan.goal, this.plan.length);
       this.setupLineup(0);
@@ -329,6 +336,12 @@ class JellyDrums implements Game {
       this.twinkle = Math.max(0, this.twinkle - dt);
       this.garland.alpha = 0.75 + 0.25 * Math.cos(this.twinkle * 24);
     }
+    if (this.plan.mode === 'follow' && this.phase === 'turn') {
+      // The lit jelly stays lit, and wiggles if she waits. Nothing is counted.
+      const lit = this.jellies[this.tune[this.at]];
+      lit.glow(0.15);
+      if (this.nudge.tick(dt)) lit.wiggle(0.8);
+    }
     if (this.plan.mode === 'free' && this.phase === 'play' && this.nudge.tick(dt)) {
       const j = this.jellies[this.lastJelly];
       j.hit(0.5);
@@ -374,6 +387,14 @@ class JellyDrums implements Game {
     this.sing(i);
     this.journal.tap(i);
     if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
+    if (this.plan.mode === 'follow') {
+      // The lit jelly is the answer, and a different jelly is only music: nothing counts a miss.
+      if (this.phase !== 'turn' || i !== this.tune[this.at]) return;
+      this.at++;
+      if (this.at >= this.tune.length) void this.copied();
+      else this.jellies[this.tune[this.at]].glow(0.5);
+      return;
+    }
     if (this.plan.mode === 'which') {
       if (this.phase !== 'turn' || this.whichTarget === null) return;
       if (i === this.whichTarget) {
@@ -638,6 +659,7 @@ class JellyDrums implements Game {
     if (this.tunesDone >= this.plan.goal) void this.finale();
     else if (this.plan.mode === 'compare') void this.nextPair();
     else if (this.plan.mode === 'which') void this.nextWhich();
+    else if (this.plan.mode === 'follow') void this.nextFollow();
     else void this.nextTune();
   }
 
@@ -726,6 +748,23 @@ class JellyDrums implements Game {
         .circle(b.x, b.y, CHOICE_RADIUS + 12)
         .stroke({ width: 9, color: 0xffd23f });
     }
+  }
+
+  // ----- Follow-the-glow mode (level 15) -----
+
+  private async nextFollow() {
+    if (this.dead) return;
+    this.phase = 'listen';
+    this.at = 0;
+    const tune = drawFollow(this.ctx.rng, this.plan, this.played);
+    this.played.push(tune);
+    this.tune = tune.notes;
+    this.answer = tune.notes;
+    this.nudge.touched();
+    if (tune.title) await this.ctx.say(tune.title);
+    if (this.dead) return;
+    this.phase = 'turn';
+    this.jellies[this.tune[0]].glow(0.5);
   }
 
   // ----- Which-jelly-sang mode (level 14) -----
@@ -1119,13 +1158,14 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [10, 14],
+  entryLevels: [10, 14, 15],
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
     if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
     if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
+    if (p.mode === 'follow') return `Tap each jelly as it glows to play ${p.goal} short songs`;
     if (p.mode === 'which') return `Listen to one note and tap which jelly sang, ${p.goal} sounds`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;

@@ -31,6 +31,8 @@ export const VOICE = {
   // Level 14: slotted lines stay on device speech until a clip pass renders fixed wording.
   'jelly.which': ['Listen to the sound, {name}, then tap which jelly sang!'],
   'jelly.which.ask': ['Which one was that, {name}?'],
+  // Level 15: slotted, so it stays on device speech and needs no rendered clip.
+  'jelly.follow': ['Tap each jelly as it glows, {name}!'],
   'jelly.oops': ['Hmm, listen again!'],
   'jelly.nice': ['Beautiful!', 'You got it!', 'Lovely music!'],
 } satisfies Record<string, string[]>;

@@ -8,8 +8,8 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which';
-  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) or mystery notes (which). */
+  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which' | 'follow';
+  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) mystery notes (which) or songs to follow (follow). */
   goal: number;
   /** Tune length (echo, compare), jellies per line-up (order) or 1 for a single note (which). */
   length: number;
@@ -41,15 +41,17 @@ export const PLANS: JellyPlan[] = [
   { mode: 'order', goal: 3, length: 4 },
   // Level 14, "Which jelly sang?": listen to one note by ear; two jellies awake (biggest & littlest), then three, then five.
   { mode: 'which', goal: 6, length: 1 },
+  // Level 15, "Follow the glow": the lit jelly is the answer; four three-note songs, Hot Cross Buns first. Nothing is a miss.
+  { mode: 'follow', goal: 4, length: 3 },
 ];
 
 export const LEVELS: BandLevels = {
   // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
-  // Level 14 (Which jelly sang?) sits between 3 and 4: top of toddler, and first in preschool before copying tunes.
-  toddler: { min: 1, max: 14, order: [1, 2, 3, 14] },
+  // Levels 15 (Follow the glow) and 14 (Which jelly sang?) sit between 3 and 4: the top of toddler, 14 first in preschool.
+  toddler: { min: 1, max: 15, order: [1, 2, 3, 15, 14] },
   preschool: { min: 4, max: 14, order: [14, 4, 5, 6, 7] },
-  // Level 10 (one big jelly) is lap's, and 14 (Which jelly sang?) is toddler/preschool's: older bands skip both.
+  // Level 10 (one big jelly) is lap's, 14 (Which jelly sang?) is toddler/preschool's and 15 (Follow the glow) is toddler's: older bands skip them.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
@@ -368,6 +370,23 @@ export function jellyToTap(
  */
 export const whichAwake = (step: number): number[] =>
   step < 2 ? [0, 4] : step < 4 ? [0, 2, 4] : [0, 1, 2, 3, 4];
+
+/**
+ * Level 15 ("Follow the glow"): the round's `n`th song. The first is always Hot Cross Buns (spoken title and all); the
+ * rest are shapes of the same length, never a tune already played and never the shape just played.
+ */
+export function drawFollow(rng: Rng, plan: Pick<JellyPlan, 'length'>, played: readonly Tune[]): Tune {
+  if (played.length === 0) {
+    const song = SONGS.find((s) => s.notes.length === plan.length);
+    if (song) return { notes: [...song.notes], kind: song.id, title: song.title };
+  }
+  const shapes = tunesOf(plan.length).filter((t) => !t.title);
+  const fresh = shapes.filter((t) => !played.some((p) => same(p.notes, t.notes)));
+  const last = played.at(-1)?.kind;
+  const kinds = [...new Set(fresh.map((t) => t.kind))];
+  const kind = rng.pick(kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds);
+  return rng.pick(fresh.filter((t) => t.kind === kind));
+}
 
 /** Pick one awake jelly to sing by ear, avoiding the same jelly twice in a row while more than one is awake. */
 export function drawWhich(rng: Rng, awake: readonly number[], last: number | null = null): number {

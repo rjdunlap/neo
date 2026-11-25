@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 10, 1, 2, 3 |
-| toddler | 1, 2, 3, 14 |
+| toddler | 1, 2, 3, 15, 14 |
 | preschool | 14, 4, 5, 6, 7 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
 | school | 8, 9, 11, 12, 13 |
@@ -30,12 +30,13 @@
 | 12 | Are two 3-note songs the same or different? 5 pairs |
 | 13 | Line up 4 jellies from lowest to highest, 3 line-ups |
 | 14 | Listen to one note and tap which jelly sang, 6 sounds |
+| 15 | Tap each jelly as it glows to play 4 short songs |
 
 <!-- end generated -->
 
 **Starts as:** free play on five notes (lap starts with one big jelly that wakes its friends)
 
-**Grows into:** copy a tune of 2 to 5 notes, play a tune backwards, say whether two songs are the same or different, then line up equal-sized jellies from lowest to highest by ear alone
+**Grows into:** tap the jellies as they glow to play a song, listen and tap which jelly sang, copy a tune of 2 to 5 notes, play a tune backwards, say whether two songs are the same or different, then line up equal-sized jellies from lowest to highest by ear alone
 
 ## Design notes
 
@@ -56,3 +57,5 @@ Free play on five notes, then copying tunes of two to five notes. In the echo le
 **Journal entries (2026-11-25, [PR #2165](https://github.com/rjdunlap/neo/pull/2165); the scale entry 2026-11-25, PR #2184).** A finished round files `jelly-drums:low-high` once she has tapped both the biggest (red) and the littlest (blue) jelly in it, and `jelly-drums:scale` once level 3's three-neighbours rainbow sparkle has played in it; `JournalWatch` in `logic.ts` keeps both (`tap` for the ends, `sparkled` from `freeTwists` for the scale) and `ctx.finish` passes them as `discoveries`, so a round that showed neither files nothing. Low and high speaks the existing `jelly.lowhigh` line (its clip is already rendered); the scale speaks `jelly.scale`, which carries her name (`{name}`), so it stays on device speech and no clip had to be rendered (the journal card now shows the same filled wording through `voice.line`). Each card draws the game's own jellies (`jellyJournalPicture(key)` in `jelly.ts`): the biggest and littlest side by side, or three neighbours with notes climbing like stairs.
 
 **Which jelly sang? (level 14, 2026-11-25, [PR #2172](https://github.com/rjdunlap/neo/pull/2172)).** Placed between levels 3 and 4 (`toddler` order `[1, 2, 3, 14]`, `preschool` order `[14, 4, 5, 6, 7]`, and `entryLevels: [10, 14]` so `lap`, `prek`, and `school` still start at their own easiest level on aging up or pinning). The plan is `{mode:'which', goal:6, length:1}`: `whichAwake` wakes `[0, 4]` (biggest and littlest) for the first two sounds, `[0, 2, 4]` for the next two (all early pairs at least two steps apart), and all five jellies for the last two. `drawWhich` picks an awake jelly without repeating back-to-back. The mystery note plays by ear with a neutral overhead sparkle burst (`playWhichNote`) so the singing jelly does not animate or glow prematurely. Tapping a wrong jelly sings its own note, replays the mystery sound and wiggles (`Jelly.wiggle`) the right jelly; a second miss on the same sound counts a hint and also glows the right jelly. The listen-again button replays the sound free, and `autotouch` reads `jellyToTap(..., whichTarget)`. The slotted voice lines (`jelly.which`, `jelly.which.ask`) carry `{name}` so they stay on device speech until a clip pass renders fixed wording. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=14`.
+
+**Follow the glow (level 15, 2026-11-25, [PR #2188](https://github.com/rjdunlap/neo/pull/2188)).** Toddler only, placed between levels 3 and 14 (`toddler` order `[1, 2, 3, 15, 14]`, `entryLevels: [10, 14, 15]`, so every other band still starts at its own easiest level). The plan is `{mode:'follow', goal:4, length:3}`: four three-note songs, the first always *Hot Cross Buns* (its title spoken first), then fresh shapes from `drawFollow` (never a repeat, never the shape just played). One jelly glows at a time and stays lit; tapping it sings its note and lights the next, so the song plays as she taps. The lit jelly is the answer, so nothing counts a miss or a hint: a different jelly is only music, and if she waits (`IdleNudge`, 8 seconds) the lit jelly wiggles. There is no listen-again button. `jellyToTap` reads the lit jelly for the ghost finger. The slotted line `jelly.follow` carries her name, so it stays on device speech and no clip had to be rendered. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly JELLY_LEVELS=15` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=15`.
