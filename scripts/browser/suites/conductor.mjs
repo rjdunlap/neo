@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, conductorSign }) {
   /**
-   * Little Conductor levels 1–2 and 4 (soft or loud, the level 2 flow on a small and a big drum): an early Done, a change inside a beat, the heard gate, the bow and one sticker; level 2 in portrait.
+   * Little Conductor levels 1–2, 4 (soft or loud, the level 2 flow on a small and a big drum) and 5 (two dials: pace and strength, two of four ways heard): an early Done, a change inside a beat, the heard gate, the bow and one sticker; level 2 in portrait.
    * Level 3 (portrait): Check with no pick, a wrong Check, a requested hint, both halves matched. `CONDUCTOR_LEVELS=3` picks levels.
    */
   async function conductor() {
-    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3,4').split(',').map(Number)) {
+    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3,4,5').split(',').map(Number)) {
       if (level >= 2) await page.setViewportSize({ width: 768, height: 1024 });
       if (level === 3) {
         await conductorSign();
@@ -15,6 +15,60 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await launch('little-conductor', level);
       await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
       const before = await page.evaluate(() => kit.store.data.stickers.length);
+      if (level === 5) {
+        // Level 5, two dials: an early Done, one way heard whole is not enough, a strength change waits for the beat, the second way opens the gate.
+        const dials = () =>
+          page.evaluate(() => {
+            const g = neo.scene.game;
+            const s = g.score;
+            return {
+              pace: s.pace,
+              strength: s.strength,
+              pending: s.pendingStrength,
+              performing: g.performing,
+              alpha: g.done.alpha,
+            };
+          });
+        const wholeAt = (pace, strength) =>
+          page.waitForFunction(
+            ({ pace, strength }) => {
+              const s = neo.scene.game.score;
+              return (
+                s.pace === pace &&
+                s.strength === strength &&
+                !s.pending &&
+                !s.pendingStrength &&
+                s.comboHeard[`${pace}-${strength}`] >= 4
+              );
+            },
+            { pace, strength },
+            { timeout: 20000 },
+          );
+        await tap('neo.scene.game.done');
+        assert.equal((await dials()).performing, false);
+        await tap('neo.scene.game.pads.rabbit');
+        await wholeAt('rabbit', 'strong');
+        assert.ok((await dials()).alpha < 1, 'level 5 waits for a second way');
+        await tap('neo.scene.game.strengthPads.gentle');
+        const waiting = await dials();
+        assert.equal(waiting.pending, 'gentle');
+        assert.equal(waiting.strength, 'strong');
+        await wholeAt('rabbit', 'gentle');
+        assert.equal((await dials()).alpha, 1);
+        await screenshot('little-conductor-5-portrait');
+        await tap('neo.scene.game.done');
+        assert.equal((await dials()).performing, true);
+        await finished('little-conductor');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('little-conductor').history.at(-1);
+            return [r.level, r.misses, r.hints, kit.store.data.stickers.length];
+          }),
+          [5, 0, 0, before + 1],
+        );
+        log('Little Conductor 5: two dials, two ways heard, the gate, the bow and one sticker passed');
+        continue;
+      }
       const state = () =>
         page.evaluate(() => {
           const g = neo.scene.game;

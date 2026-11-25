@@ -13,6 +13,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap the small drum for soft and the big drum for loud; hear the tune both ways, then pick the one to finish with and tap the green check.',
     },
     {
+      from: 5,
+      to: 5,
+      text: 'Pick slow or fast with the turtle and rabbit, and soft or loud with the small and big drums; hear at least two of the four ways, then tap the green check to finish with the one you are playing.',
+    },
+    {
       from: 3,
       to: 3,
       text: "Look at the listener's sign, tap the pad it shows to hear that half, then tap the green check; once for each half of the tune.",
@@ -24,6 +29,11 @@ export const HOW_TO: GameHowTo = {
       from: 4,
       to: 4,
       text: 'The band plays your tune once more, as softly or loudly as you chose, and takes a bow.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'The band plays your tune once more, at the pace and strength you chose, and takes a bow.',
     },
     { from: 3, to: 3, text: 'Both halves match the signs and the band takes a bow.' },
   ],
@@ -40,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       from: 4,
       to: 4,
       text: 'Only how strongly the band plays changes: the notes and the pace stay the same, and soft is not better than loud. Nothing is ever louder than the device volume allows.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'Both dials change on the next beat, and the notes never change. Nothing is a miss: no way is better, and the tune must be heard whole in the way you finish with.',
     },
     {
       from: 3,

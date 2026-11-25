@@ -3,9 +3,14 @@ import { PENTATONIC } from '../../audio/notes';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
+  LEVELS,
   advance,
   BEATS,
   botMove,
+  COMBO_IDS,
+  comboOf,
+  DIAL_PAD,
+  dialsBot,
   canFinish,
   check,
   choose,
@@ -24,6 +29,8 @@ import {
   PAD,
   planFor,
   select,
+  selectStrength,
+  STRENGTH_IDS,
   STEADY_BPM,
   STRENGTH_GAIN,
   STRENGTH_OF,
@@ -32,6 +39,7 @@ import {
   submit,
   type BeatEvent,
   type PaceId,
+  type StrengthId,
   type Requests,
   type Round,
   type Score,
@@ -457,4 +465,165 @@ describe('Little Conductor level 4, soft or loud', () => {
     }
     expect(canFinish(s, 4)).toBe(true);
   });
+});
+
+describe('Little Conductor level 5, two ways at once', () => {
+  /** Runs the clock in fixed frames until `stop` says so, returning the score and every event. */
+  const run = (start: Score, stop: (s: Score) => boolean, motif = hop) => {
+    let s = start;
+    const events: BeatEvent[] = [];
+    for (let i = 0; i < 5000 && !stop(s); i++) {
+      const r = advance(s, 1 / 60, motif, 'dials');
+      s = r.score;
+      events.push(...r.events);
+    }
+    return { score: s, events };
+  };
+  const wholeAt = (s: Score) => s.pace !== null && s.comboHeard[comboOf(s.pace, s.strength)] >= BEATS;
+
+  it('is a level of its own, for preschool, pre-K and school', () => {
+    expect(planFor(5).mode).toBe('dials');
+    expect(LEVELS.preschool?.max).toBe(5);
+    expect(LEVELS.prek?.max).toBe(5);
+    expect(LEVELS.school).toEqual({ min: 5, max: 5 });
+    expect(LEVELS.toddler?.max).toBe(2);
+  });
+
+  it.each(MOTIFS.map((m) => m.id))(
+    '%s: all four ways play the same notes in the same order; only the pace and the gain differ',
+    (id) => {
+      const motif = MOTIFS.find((m) => m.id === id)!;
+      const strip = (e: BeatEvent) => ({
+        ...e,
+        pace: undefined,
+        gain: undefined,
+        bpm: undefined,
+        at: undefined,
+      });
+      const ways = COMBO_IDS.map((combo) => {
+        const [pace, strength] = combo.split('-') as [PaceId, StrengthId];
+        const start = selectStrength(select(newScore(), pace), strength);
+        return run(start, (s) => s.played >= BEATS, motif).events.slice(0, BEATS);
+      });
+      for (const w of ways) expect(w.map(strip)).toEqual(ways[0].map(strip));
+      // The pace and the strength each do their own job.
+      expect(ways.map((w) => [w[0].bpm, w[0].gain])).toEqual([
+        [PACES.turtle, STRENGTH_GAIN.gentle],
+        [PACES.turtle, STRENGTH_GAIN.strong],
+        [PACES.rabbit, STRENGTH_GAIN.gentle],
+        [PACES.rabbit, STRENGTH_GAIN.strong],
+      ]);
+      for (const w of ways) for (const e of w) expect(e.gain).toBeLessThanOrEqual(1);
+    },
+  );
+
+  it('a first tap on the strength dial starts the band on the turtle, and a repeat tap calls off a change', () => {
+    const started = selectStrength(newScore(), 'gentle');
+    expect([started.pace, started.strength]).toEqual(['turtle', 'gentle']);
+    const waiting = selectStrength(started, 'strong');
+    expect(waiting.pendingStrength).toBe('strong');
+    expect(selectStrength(waiting, 'gentle').pendingStrength).toBeNull();
+    // Nothing changes until the next beat, and the two dials wait separately.
+    const both = select(waiting, 'rabbit');
+    expect([both.pending, both.pendingStrength]).toEqual(['rabbit', 'strong']);
+    const r = advance(both, 0, hop, 'dials');
+    expect(r.events).toHaveLength(1);
+    expect([r.score.pace, r.score.strength, r.score.pending, r.score.pendingStrength]).toEqual([
+      'rabbit',
+      'strong',
+      null,
+      null,
+    ]);
+  });
+
+  it('the gate follows the latest change of either dial, and needs two ways heard whole', () => {
+    let s = run(select(newScore(), 'turtle'), wholeAt).score;
+    expect(canFinish(s, 5)).toBe(false);
+    expect(earlyDone(s, 5)).toBe('hear-other');
+    // Changing the strength closes the gate at once, and it opens after a whole phrase of the new way.
+    s = selectStrength(s, 'gentle');
+    expect(canFinish(s, 5)).toBe(false);
+    s = run(s, (x) => canFinish(x, 5)).score;
+    expect(canFinish(s, 5)).toBe(true);
+    expect([s.pace, s.strength]).toEqual(['turtle', 'gentle']);
+    // So does changing the pace: the way she is in starts again from nothing.
+    s = select(s, 'rabbit');
+    expect(canFinish(s, 5)).toBe(false);
+    s = advance(s, 1.1, hop, 'dials').score;
+    expect(s.comboHeard[comboOf('rabbit', 'gentle')]).toBeLessThan(BEATS);
+    expect(s.comboHeard[comboOf('rabbit', 'gentle')]).toBeGreaterThan(0);
+    expect(canFinish(s, 5)).toBe(false);
+    s = run(s, (x) => canFinish(x, 5)).score;
+    expect(canFinish(s, 5)).toBe(true);
+    // Not every way has to be heard: three of four never were.
+    expect(COMBO_IDS.filter((c) => s.comboEver[c])).toHaveLength(3);
+    expect(COMBO_IDS.filter((c) => !s.comboEver[c])).toEqual(['rabbit-strong']);
+  });
+
+  it('one way heard whole, however long it plays, never opens the gate', () => {
+    const s = run(select(newScore(), 'rabbit'), () => false, hop).score;
+    expect(s.played).toBeGreaterThan(100);
+    expect(canFinish(s, 5)).toBe(false);
+  });
+
+  it('the ghost finger hears two ways and then finishes', () => {
+    let s = newScore();
+    let moves = 0;
+    for (let guard = 0; guard < 5000; guard++) {
+      const m = dialsBot(s, 5);
+      if (m === 'done') break;
+      if (m) {
+        moves++;
+        s = m.dial === 'pace' ? select(s, m.id) : selectStrength(s, m.id);
+      }
+      s = advance(s, 1 / 20, hop, 'dials').score;
+    }
+    expect(canFinish(s, 5)).toBe(true);
+    expect(moves).toBe(2);
+  });
+
+  const UPRIGHT_VIEWS: [number, number, boolean][] = [
+    [1024, 768, false],
+    [768, 1024, false],
+    [1366, 768, false],
+    [1194, 834, false],
+    [390, 844, true],
+    [390, 900, true],
+    [768, 1024, true],
+    [430, 700, true],
+  ];
+  const overlap = (
+    a: { x: number; y: number; w: number; h: number },
+    b: { x: number; y: number; w: number; h: number },
+  ) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  it.each(UPRIGHT_VIEWS)(
+    'lays the four pads, hearing mark and buttons out large, apart, on screen and clear of the pet at %i×%i (upright %s)',
+    (pw, ph, upright) => {
+      const view = computeView(pw, ph, undefined, upright);
+      const l = conductorLayout(view, 5);
+      const disc = (d: { x: number; y: number; r: number }) => ({
+        x: d.x - d.r,
+        y: d.y - d.r,
+        w: 2 * d.r,
+        h: 2 * d.r,
+      });
+      const pads = [l.pads.turtle, l.pads.rabbit, l.strengths!.gentle, l.strengths!.strong];
+      const targets = [...pads, disc(l.listen), disc(l.done)];
+      const all = [...targets, ...l.cells!];
+      expect(l.cells).toHaveLength(COMBO_IDS.length);
+      expect(STRENGTH_IDS).toHaveLength(2);
+      for (const t of targets) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+      for (const p of pads) expect(p.w).toBe(DIAL_PAD);
+      for (const t of all) {
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        expect(t.y + t.h).toBeLessThanOrEqual(view.h);
+        expect(overlap(t, { x: 0, y: view.h - 220, w: 220, h: 220 })).toBe(false);
+        expect(overlap(t, l.stand)).toBe(false);
+      }
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j])).toBe(false);
+    },
+  );
 });

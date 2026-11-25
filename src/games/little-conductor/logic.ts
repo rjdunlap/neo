@@ -25,6 +25,19 @@ export const STRENGTH_GAIN: Record<StrengthId, number> = { gentle: 0.45, strong:
 /** Level 4 holds one steady pace (between the two paces), so only the strength differs between the pads. */
 export const STEADY_BPM = 75;
 
+/** Level 5's two dials at once: four ways to play the one tune, a pace and a strength. */
+export const STRENGTH_IDS: readonly StrengthId[] = ['gentle', 'strong'];
+export type ComboId = `${PaceId}-${StrengthId}`;
+export const COMBO_IDS: readonly ComboId[] = [
+  'turtle-gentle',
+  'turtle-strong',
+  'rabbit-gentle',
+  'rabbit-strong',
+];
+export const comboOf = (pace: PaceId, strength: StrengthId): ComboId => `${pace}-${strength}`;
+/** Level 5 asks her to hear at least this many of the four ways whole before she picks one to finish with. */
+export const COMPARE_AT_LEAST = 2;
+
 export interface Motif {
   id: 'hop' | 'slide' | 'wave' | 'skip' | 'rock' | 'sway';
   /** One note a beat, as notes of the major pentatonic (semitones above C), all inside one octave. */
@@ -51,7 +64,7 @@ export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(se
 export interface Plan {
   level: number;
   name: string;
-  mode: 'lead' | 'both' | 'sign' | 'strength';
+  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials';
 }
 const PLANS: Plan[] = [
   {
@@ -74,13 +87,19 @@ const PLANS: Plan[] = [
     name: 'Soft or loud: hear the same tune on a small drum and a big drum, then finish with the one she likes',
     mode: 'strength',
   },
+  {
+    level: 5,
+    name: 'Two ways at once: slow or fast, soft or loud; hear the four ways and finish with the one she likes',
+    mode: 'dials',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 4 },
-  prek: { min: 2, max: 4 },
+  preschool: { min: 1, max: 5 },
+  prek: { min: 2, max: 5 },
+  school: { min: 5, max: 5 },
 };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -116,6 +135,14 @@ export interface Score {
   heard: Record<PaceId, number>;
   /** Whether each pace has ever been heard for a whole phrase. */
   heardEver: Record<PaceId, boolean>;
+  /** Level 5's strength dial: strong until she picks gentle, as every other level plays. */
+  strength: StrengthId;
+  /** A strength change waiting for the next beat (level 5). */
+  pendingStrength: StrengthId | null;
+  /** Level 5: beats sounded in each of the four ways since either dial last changed into it. */
+  comboHeard: Record<ComboId, number>;
+  /** Level 5: whether each of the four ways has ever been heard for a whole phrase. */
+  comboEver: Record<ComboId, boolean>;
 }
 
 export interface BeatEvent {
@@ -136,6 +163,10 @@ export interface BeatEvent {
   gain: number;
 }
 
+function zeroCombos<T>(value: T): Record<ComboId, T> {
+  return { 'turtle-gentle': value, 'turtle-strong': value, 'rabbit-gentle': value, 'rabbit-strong': value };
+}
+
 export const newScore = (): Score => ({
   pace: null,
   pending: null,
@@ -144,6 +175,10 @@ export const newScore = (): Score => ({
   phraseStart: 0,
   heard: { turtle: 0, rabbit: 0 },
   heardEver: { turtle: false, rabbit: false },
+  strength: 'strong',
+  pendingStrength: null,
+  comboHeard: zeroCombos(0),
+  comboEver: zeroCombos(false),
 });
 
 /**
@@ -154,6 +189,17 @@ export function select(score: Score, pace: PaceId): Score {
   if (score.pace === null) return { ...score, pace, pending: null, heard: { ...score.heard, [pace]: 0 } };
   if (pace === score.pace) return { ...score, pending: null };
   return { ...score, pending: pace };
+}
+
+/**
+ * A strength-dial tap at level 5, the mirror of `select`. The first tap on either dial starts the band: from here the
+ * pace dial starts on the turtle, so the first sound is the way she asked for on the dial she touched.
+ */
+export function selectStrength(score: Score, strength: StrengthId): Score {
+  if (score.pace === null)
+    return { ...score, pace: 'turtle', strength, pending: null, pendingStrength: null };
+  if (strength === score.strength) return { ...score, pendingStrength: null };
+  return { ...score, pendingStrength: strength };
 }
 
 /** Listen again: the tune starts again from its first note on the next beat. What she has heard still counts. */
@@ -175,7 +221,13 @@ export function advance(
   mode: Plan['mode'] = 'lead',
 ): { score: Score; events: BeatEvent[] } {
   if (score.pace === null) return { score, events: [] };
-  const s: Score = { ...score, heard: { ...score.heard }, heardEver: { ...score.heardEver } };
+  const s: Score = {
+    ...score,
+    heard: { ...score.heard },
+    heardEver: { ...score.heardEver },
+    comboHeard: { ...score.comboHeard },
+    comboEver: { ...score.comboEver },
+  };
   const events: BeatEvent[] = [];
   let left = Math.max(0, dt);
   let at = 0;
@@ -190,11 +242,21 @@ export function advance(
     left -= Math.max(0, toNext);
     at += Math.max(0, toNext);
     s.beat = s.played;
+    let moved = false;
     if (s.pending) {
       s.pace = s.pending;
       s.pending = null;
       s.heard[s.pace] = 0;
+      moved = true;
     }
+    if (s.pendingStrength) {
+      moved = moved || s.pendingStrength !== s.strength;
+      s.strength = s.pendingStrength;
+      s.pendingStrength = null;
+    }
+    const combo = comboOf(s.pace!, s.strength);
+    // Level 5's gate follows the latest change of either dial: the way she is in starts counting from nothing.
+    if (moved) s.comboHeard[combo] = 0;
     const pace = s.pace!;
     const step = (((s.played - s.phraseStart) % BEATS) + BEATS) % BEATS;
     events.push({
@@ -206,9 +268,16 @@ export function advance(
       drum: motif.drum.includes(step),
       at,
       bpm,
-      gain: mode === 'strength' ? STRENGTH_GAIN[STRENGTH_OF[pace]] : 1,
+      gain:
+        mode === 'strength'
+          ? STRENGTH_GAIN[STRENGTH_OF[pace]]
+          : mode === 'dials'
+            ? STRENGTH_GAIN[s.strength]
+            : 1,
     });
     s.heard[pace]++;
+    s.comboHeard[combo]++;
+    if (s.comboHeard[combo] >= BEATS) s.comboEver[combo] = true;
     if (s.heard[pace] >= BEATS) s.heardEver[pace] = true;
     s.played++;
   }
@@ -224,7 +293,15 @@ export const marksLit = (score: Score, pace: PaceId): number =>
  * point, and the one she finishes with heard whole since she chose it. A change still waiting closes the gate at once.
  */
 export function canFinish(score: Score, level: number): boolean {
-  if (score.pace === null || score.pending) return false;
+  if (score.pace === null || score.pending || score.pendingStrength) return false;
+  if (planFor(level).mode === 'dials') {
+    // Level 5: the way she finishes with, heard whole since the latest change of either dial, and at least two ways compared.
+    const here = comboOf(score.pace, score.strength);
+    return (
+      score.comboHeard[here] >= BEATS &&
+      COMBO_IDS.filter((c) => score.comboEver[c]).length >= COMPARE_AT_LEAST
+    );
+  }
   const whole = score.heard[score.pace] >= BEATS;
   if (planFor(level).mode === 'lead') return whole;
   // Levels 2 and 4: both pads heard whole, and the one she finishes with heard whole since she chose it.
@@ -233,6 +310,10 @@ export function canFinish(score: Score, level: number): boolean {
 
 /** What Done says while it is still dim: hear the whole tune, or hear the other way too. */
 export function earlyDone(score: Score, level: number): 'hear-whole' | 'hear-other' {
+  if (planFor(level).mode === 'dials') {
+    if (!score.pace) return 'hear-whole';
+    return score.comboHeard[comboOf(score.pace, score.strength)] >= BEATS ? 'hear-other' : 'hear-whole';
+  }
   if (!['both', 'strength'].includes(planFor(level).mode) || !score.pace) return 'hear-whole';
   const other: PaceId = score.pace === 'turtle' ? 'rabbit' : 'turtle';
   return score.heardEver[score.pace] && !score.heardEver[other] ? 'hear-other' : 'hear-whole';
@@ -244,6 +325,18 @@ export function botMove(score: Score, level: number): PaceId | 'done' | null {
   if (score.pending) return null;
   if (score.pace === 'turtle' && score.heardEver.turtle && !score.heardEver.rabbit) return 'rabbit';
   return canFinish(score, level) ? 'done' : null;
+}
+
+/** The ghost finger at level 5: the pace dial first, then the strength dial once the first way was heard whole, then Done. */
+export function dialsBot(
+  score: Score,
+  level: number,
+): { dial: 'pace'; id: PaceId } | { dial: 'strength'; id: StrengthId } | 'done' | null {
+  if (score.pace === null) return { dial: 'pace', id: 'turtle' };
+  if (score.pending || score.pendingStrength) return null;
+  if (canFinish(score, level)) return 'done';
+  if (score.comboHeard[comboOf(score.pace, score.strength)] < BEATS) return null;
+  return { dial: 'strength', id: score.strength === 'strong' ? 'gentle' : 'strong' };
 }
 
 /** Level 3: which half of the tune the sign is on, the pad she has picked for it, and what the Checks have counted. */
@@ -327,6 +420,10 @@ export interface ConductorLayout {
   /** Where each friend's feet stand. */
   friends: { x: number; y: number }[];
   pads: Record<PaceId, Rect>;
+  /** Level 5: the strength dial, a second pair of pads beside the pace pair. */
+  strengths?: Record<StrengthId, Rect>;
+  /** Level 5: the four-cell hearing mark, one cell for each way to play, in `COMBO_IDS` order. */
+  cells?: Rect[];
   listen: Disc;
   done: Disc;
   /** Level 3: the listener's sign, and where the listener stands under it. */
@@ -363,12 +460,14 @@ export function conductorLayout(
     : portrait
       ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - PAD / 2)
       : stand.y + stand.h + 50;
+  const dialed = planFor(level).mode === 'dials';
   const padsCx = portrait ? view.w / 2 : Math.min(view.w / 2, view.w - 2 * BUTTON - 60 - PAD - PAD_GAP / 2);
   const pads = {
     turtle: { x: padsCx - PAD_GAP / 2 - PAD, y: padY, w: PAD, h: PAD },
     rabbit: { x: padsCx + PAD_GAP / 2, y: padY, w: PAD, h: PAD },
   };
   const bx = view.w - BUTTON - 40;
+  if (dialed) return dialsLayout(view, stand, friends, bx, portrait);
   const listen: Disc = portrait
     ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON }
     : { x: bx, y: padY + BUTTON - 10, r: BUTTON };
@@ -389,5 +488,65 @@ export function conductorLayout(
     done,
     sign,
     listener: { x: sign.x + SIGN / 2, y: sign.y + SIGN + 130 },
+  };
+}
+
+/** Level 5 pads are drawn at 130 units: four of them, two for the pace and two for the strength. */
+export const DIAL_PAD = 130;
+const DIAL_GAP = 20;
+const DIAL_GROUP_GAP = 40;
+export const CELL_W = 110;
+export const CELL_H = 76;
+const CELL_GAP = 10;
+
+/** Level 5: one row of four pads (pace pair, then strength pair) with the four-cell hearing mark under it. */
+function dialsLayout(
+  view: { w: number; h: number; upright?: boolean },
+  stand: Rect,
+  friends: { x: number; y: number }[],
+  bx: number,
+  portrait: boolean,
+): ConductorLayout {
+  const rowW = 4 * DIAL_PAD + 2 * DIAL_GAP + DIAL_GROUP_GAP;
+  // The row sits left of the Listen and Done buttons: those stand at the right edge in landscape and, in portrait, below the row.
+  // Landscape, the row also stays right of the pet's corner (220 wide) and left of the buttons.
+  const rowCx = portrait
+    ? view.w / 2
+    : Math.min(Math.max(view.w / 2, 232 + rowW / 2), bx - BUTTON - 20 - rowW / 2);
+  const x0 = rowCx - rowW / 2;
+  const padY = view.upright
+    ? Math.max(stand.y + stand.h + 90, view.h - 270 - CELL_H - 20 - DIAL_PAD)
+    : portrait
+      ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - DIAL_PAD / 2)
+      : stand.y + stand.h + 50;
+  const at = (i: number): Rect => ({
+    x: x0 + i * (DIAL_PAD + DIAL_GAP) + (i >= 2 ? DIAL_GROUP_GAP - DIAL_GAP : 0),
+    y: padY,
+    w: DIAL_PAD,
+    h: DIAL_PAD,
+  });
+  const cellsW = 4 * CELL_W + 3 * CELL_GAP;
+  // Upright and portrait the buttons are below the row at the right, so the hearing mark stays clear of them.
+  const cellsCx = portrait ? Math.min(view.w / 2, (30 + bx - BUTTON - 20) / 2) : rowCx;
+  const cells = COMBO_IDS.map((_, i): Rect => ({
+    x: cellsCx - cellsW / 2 + i * (CELL_W + CELL_GAP),
+    y: padY + DIAL_PAD + 20,
+    w: CELL_W,
+    h: CELL_H,
+  }));
+  const listen: Disc = portrait
+    ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON }
+    : { x: bx, y: padY + BUTTON - 10, r: BUTTON };
+  const done: Disc = portrait
+    ? { x: bx, y: view.h - BUTTON - 50, r: BUTTON }
+    : { x: bx, y: padY + BUTTON - 10 + 150, r: BUTTON };
+  return {
+    stand,
+    friends,
+    pads: { turtle: at(0), rabbit: at(1) },
+    strengths: { gentle: at(2), strong: at(3) },
+    cells,
+    listen,
+    done,
   };
 }

@@ -96,7 +96,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Conductor
 
-*toddler–pre-K* · [Little Conductor](games/little-conductor.md)
+*toddler–school* · [Little Conductor](games/little-conductor.md)
 
 ### Puppet Stage
 
