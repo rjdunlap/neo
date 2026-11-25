@@ -22,4 +22,5 @@ export const VOICE = {
   'puzzle.hint.right': ['Try the glowing piece on the right!'],
   'puzzle.hint.middle': ['Try the glowing piece in the middle!'],
   'puzzle.done': ['You made {what}!'],
+  'puzzle.doneTwin': ['You made {a} and {b}!'],
 } satisfies Record<string, string[]>;

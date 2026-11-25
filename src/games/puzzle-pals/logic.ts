@@ -16,6 +16,8 @@ export interface PuzzlePlan {
   oneAtATime?: boolean;
   /** Level 9, Turn it round: how many pieces arrive upside down in the tray (half turns). */
   turns?: number;
+  /** Level 10, Two pictures, one tray: two boards side by side, each with its own faint picture, and one mixed tray. */
+  twin?: boolean;
   name: string;
 }
 
@@ -65,7 +67,18 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
     turns: 3,
     name: 'Turn it round: tap an upside-down piece to turn it, then put six pieces together',
   },
+  {
+    cols: 2,
+    rows: 2,
+    ghost: true,
+    preplaced: 0,
+    twin: true,
+    name: 'Two pictures, one tray: sort eight pieces onto two faint pictures',
+  },
 ];
+
+/** How many pictures a plan builds at once. */
+export const boardCount = (plan: Pick<PuzzlePlan, 'twin'>) => (plan.twin ? 2 : 1);
 
 /** How many strips the one-at-a-time picture is cut into; each round picks one. */
 export const ONE_AT_A_TIME_PIECES = [2, 3] as const;
@@ -109,14 +122,59 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
   const margin = 40;
   const overFrame = x > -margin && x < PICTURE_W + margin && y > -margin && y < PICTURE_H + margin;
   const reach = plan.cols * plan.rows <= 2 ? (overFrame ? Infinity : 0) : Math.min(pw, ph) * 0.6;
-  let best: Piece | null = null;
-  let d = Infinity;
+  const near = nearestSlot(plan, x, y, empty);
+  return near && near.d <= reach ? near.piece : null;
+}
+
+/** The empty place whose middle is closest to a point in picture units, and how far away it is. */
+export function nearestSlot<P extends Piece>(
+  plan: PuzzlePlan,
+  x: number,
+  y: number,
+  empty: readonly P[],
+): { piece: P; d: number } | null {
+  let best: { piece: P; d: number } | null = null;
   for (const p of empty) {
     const c = slotCenter(plan, p);
-    const dd = Math.hypot(x - c.x, y - c.y);
-    if (dd < d) [best, d] = [p, dd];
+    const d = Math.hypot(x - c.x, y - c.y);
+    if (!best || d < best.d) best = { piece: p, d };
   }
-  return d <= reach ? best : null;
+  return best;
+}
+
+/** A piece of a two-picture puzzle: which board it belongs to as well as its place on it. */
+export interface BoardPiece extends Piece {
+  board: number;
+}
+
+export type TwinOutcome = 'off' | 'place' | 'wrong' | 'otherPicture';
+
+/**
+ * Level 10: a drop in each board's own picture units (`locals`, one per board). The nearest empty place on either
+ * board is where it landed. Off both boards is free exploration; the right board and place is a 'place'; the right
+ * board and another place is 'wrong'; the other board's place is 'otherPicture', which is a miss with its own words.
+ */
+export function judgeTwinDrop(
+  plan: PuzzlePlan,
+  locals: readonly { x: number; y: number }[],
+  piece: BoardPiece,
+  empty: readonly BoardPiece[],
+): TwinOutcome {
+  let best: { piece: BoardPiece; d: number } | null = null;
+  locals.forEach((l, board) => {
+    const near = nearestSlot(
+      plan,
+      l.x,
+      l.y,
+      empty.filter((e) => e.board === board),
+    );
+    if (near && (!best || near.d < best.d)) best = near;
+  });
+  const reach = Math.min(PICTURE_W / plan.cols, PICTURE_H / plan.rows) * 0.6;
+  const hit = best as { piece: BoardPiece; d: number } | null;
+  if (!hit || hit.d > reach) return 'off';
+  if (hit.piece.board !== piece.board) return 'otherPicture';
+  return hit.piece.col === piece.col && hit.piece.row === piece.row ? 'place' : 'wrong';
 }
 
 export type Turn = 0 | 2;
@@ -208,15 +266,15 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
 }
 
 /**
- * Level 8 is lap's first; 1 and 2 follow. Level 9 (Turn it round) sits at the top of pre-K and school,
- * skipping lap's 8 via `order` so no saved level is renumbered.
+ * Level 8 is lap's first; 1 and 2 follow. Levels 9 (Turn it round) and 10 (Two pictures) sit at the top of pre-K and
+ * school, skipping lap's 8 via `order` so no saved level is renumbered.
  */
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
-  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
-  school: { min: 6, max: 9, order: [6, 7, 9] },
+  prek: { min: 5, max: 10, order: [5, 6, 7, 9, 10] },
+  school: { min: 6, max: 10, order: [6, 7, 9, 10] },
 };
 
 // Layout ---------------------------------------------------------------------------------------------------------------
@@ -224,6 +282,8 @@ export const LEVELS: BandLevels = {
 export interface PuzzleLayout {
   /** The frame's picture area: its top-left corner and width (its height follows the picture's shape). */
   board: { x: number; y: number; w: number };
+  /** Two-picture levels: every board, left to right (the first is `board`). */
+  boards?: { x: number; y: number; w: number }[];
   /** Board units per picture unit, and the smaller scale of a piece waiting in the tray. */
   scale: number;
   trayScale: number;
@@ -341,4 +401,79 @@ export function lidLayout(v: { w: number; h: number }) {
   const w = 170;
   const h = (w * PICTURE_H) / PICTURE_W;
   return v.h > v.w ? { x: v.w - w - 32, y: 44, w, h } : { x: 24, y: 232, w, h };
+}
+
+/**
+ * Two pictures, one tray (level 10): two frames side by side and the tray of eight pieces under them. Sideways the
+ * frames share the width right of the pet's strip; upright they share the full width under the corner buttons and the
+ * tray fills the height below, in as many rows as keeps its pieces biggest.
+ */
+export function twinLayout(
+  v: { w: number; h: number },
+  plan: Pick<PuzzlePlan, 'cols' | 'rows'>,
+  total: number,
+  waiting: number,
+): PuzzleLayout {
+  const pw = PICTURE_W / plan.cols;
+  const ph = PICTURE_H / plan.rows;
+  const aspect = PICTURE_H / PICTURE_W;
+  const gap = 44;
+  if (v.h > v.w) {
+    const left = 170,
+      right = v.w - 30;
+    const boardW = Math.min(420, (v.w - 60 - gap) / 2);
+    const scale = boardW / PICTURE_W;
+    const y0 = UPRIGHT_TOP + boardW * aspect + 60;
+    const H = v.h - 30 - y0;
+    let best = { s: 0, perRow: total };
+    const tgap = 16;
+    for (let perRow = total; perRow >= 1; perRow--) {
+      const rows = Math.ceil(total / perRow);
+      const s = Math.min(scale * 1.3, ((right - left) / perRow - tgap) / pw, (H / rows - tgap) / ph);
+      if (s > best.s + 1e-9) best = { s, perRow };
+    }
+    const { s, perRow } = best;
+    const rows = Math.ceil(total / perRow);
+    const stepY = ph * s + tgap;
+    const blockTop = y0 + (H - rows * stepY) / 2;
+    const homes = Array.from({ length: waiting }, (_, i) => {
+      const row = Math.floor(i / perRow);
+      const inRow = Math.min(perRow, waiting - row * perRow);
+      return {
+        x: spread(inRow, left, right, pw * s + tgap + 24)[i % perRow],
+        y: blockTop + stepY * (row + 0.5),
+      };
+    });
+    const x0 = (v.w - (2 * boardW + gap)) / 2;
+    const boards = [0, 1].map((i) => ({ x: x0 + i * (boardW + gap), y: UPRIGHT_TOP, w: boardW }));
+    return {
+      board: boards[0],
+      boards,
+      scale,
+      trayScale: s,
+      homes,
+      panel: { x: left - 10, y: y0 - 10, w: right - left + 20, h: H + 20 },
+    };
+  }
+  const trayH = 240;
+  const top = 112;
+  const availW = v.w - 180 - 40;
+  const boardW = Math.min(640, (availW - gap) / 2, ((v.h - top - trayH - 24) * PICTURE_W) / PICTURE_H);
+  const scale = boardW / PICTURE_W;
+  const perRow = Math.ceil(waiting / 2);
+  const homes = Array.from({ length: waiting }, (_, i) => {
+    const row = Math.floor(i / perRow);
+    const inRow = Math.min(perRow, waiting - row * perRow);
+    return { x: spread(inRow, 180, v.w - 40, 145)[i % perRow], y: v.h - trayH + 60 + row * 112 };
+  });
+  const x0 = 180 + (availW - (2 * boardW + gap)) / 2;
+  const boards = [0, 1].map((i) => ({ x: x0 + i * (boardW + gap), y: top, w: boardW }));
+  return {
+    board: boards[0],
+    boards,
+    scale,
+    trayScale: Math.min(scale, 100 / ph, 130 / pw),
+    homes,
+    panel: { x: 160, y: v.h - trayH - 6, w: v.w - 185, h: trayH - 8 },
+  };
 }
