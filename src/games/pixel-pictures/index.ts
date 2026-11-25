@@ -15,6 +15,7 @@ import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BitsRound } from './bits';
+import { MosaicRound } from './mosaic';
 import {
   LEVELS,
   canFinish,
@@ -60,6 +61,7 @@ const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
   free: 'pixel.notthere',
   bitsRow: 'pixel.bits.differ.fill',
   bitsPicture: 'pixel.bits.differ.fill',
+  mosaic: 'pixel.mosaic.more',
 };
 
 class PixelPictures implements Game {
@@ -572,10 +574,14 @@ export const pixelPictures: GameModule = {
   music: STYLES.paint,
   upright: true,
   coplayHint:
-    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
+    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Window Mosaic, one of you colors panes while the other says whether the amount is still the same. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => (planFor(ctx.level).mode.startsWith('bits') ? new BitsRound(ctx) : new PixelPictures(ctx)),
+  create: (ctx) => {
+    const mode = planFor(ctx.level).mode;
+    if (mode.startsWith('bits')) return new BitsRound(ctx);
+    return mode === 'mosaic' ? new MosaicRound(ctx) : new PixelPictures(ctx);
+  },
 };

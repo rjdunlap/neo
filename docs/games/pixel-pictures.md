@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1, 9, 2 |
 | pre-K | 1, 9, 2, 3, 10 |
-| school | 3, 4, 5, 6, 7, 8, 11, 12, 10 |
+| school | 3, 4, 5, 6, 7, 8, 11, 12, 13, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,12 +26,13 @@
 | 10 | My own picture: color any squares, then tap Done |
 | 11 | Ones and zeros: flip four cards to write one row of squares |
 | 12 | Ones and zeros, a whole picture: write each row with four cards |
+| 13 | Same amount, new shape: color a second window so half of it is colored |
 
 <!-- end generated -->
 
 **Starts as:** copy a small picture square by square
 
-**Grows into:** two colors (a small 4×4 one for the youngest), finishing a mirror half, picture-logic puzzles with row and column numbers and two-color clues, copying a quarter across two mirror lines, copying at double size, a free "My own picture" on a blank 5×5, writing a row of squares from four ones-and-zeros cards, then a whole 4×4 picture one row at a time; keep the last finished design in the treehouse
+**Grows into:** two colors (a small 4×4 one for the youngest), finishing a mirror half, picture-logic puzzles with row and column numbers and two-color clues, copying a quarter across two mirror lines, copying at double size, a free "My own picture" on a blank 5×5, writing a row of squares from four ones-and-zeros cards, then a whole 4×4 picture one row at a time, then Window Mosaic (color a second window so the same amount is colored in a shape that looks different, then pick the window that matches); keep the last finished design in the treehouse
 
 ## Design notes
 
