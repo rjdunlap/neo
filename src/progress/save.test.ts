@@ -603,6 +603,21 @@ describe('migrate', () => {
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
+  it('keeps a picture made on the Sea scene through a backup and restore', () => {
+    const save = defaults();
+    const seaStamp = { kind: 'crab' as const, color: 'red' as const, x: 0.3, y: 0.6, size: 1, turns: 0 };
+    save.creations.picture = {
+      current: { kind: 'picture', scene: 'sea', stamps: [seaStamp] },
+      previous: { kind: 'picture', stamps: [seaStamp] },
+    };
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    expect(back).toEqual(save);
+    // A damaged scene is dropped while the picture stays.
+    const odd = JSON.parse(JSON.stringify(save));
+    odd.creations.picture.current.scene = 'volcano';
+    expect(migrate(odd).creations.picture.current).toEqual({ kind: 'picture', stamps: [seaStamp] });
+  });
+
   it('keeps a bounded finger painting through a backup and restore', () => {
     const save = defaults();
     save.creations.picture.current = {
