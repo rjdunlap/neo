@@ -318,6 +318,10 @@ export class Store {
     return this.data.stories.woodland;
   }
 
+  get melody(): StoryProgress<'melody'> {
+    return this.data.stories.melody;
+  }
+
   /** Marks a story's request done (the Windy Picnic's unless another story is named). Doing it again changes nothing; returns whether it was new. */
   completeStep(step: StoryStep, story: StoryId = 'picnic'): boolean {
     const p: StoryProgress = this.data.stories[story];

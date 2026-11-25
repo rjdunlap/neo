@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { picnicLandmark } from '../../art/picnic';
 import { woodlandLandmark } from '../../art/woodland';
+import { melodyLandmark } from '../../art/melody';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -23,19 +24,21 @@ const ART: Record<LibraryBook, () => Container> = {
   journal: journalIcon,
   windy: picnicLandmark,
   woodland: woodlandLandmark,
+  melody: melodyLandmark,
   collection: collectionBookIcon,
 };
 const LINES: Record<LibraryBook, LineId> = {
   journal: 'library.journal',
   windy: 'map.picnic',
   woodland: 'woodland.spot',
+  melody: 'melody.spot',
   collection: 'library.book',
 };
 
 /**
  * The library at the root (RW08 slice 2, docs/rework/RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home),
- * opened from the books in creature play: 150-unit cards for her discovery journal, the Windy Picnic and (at school) the
- * Woodland Picnic, laid out as Explore's pages are. Each story keeps its own save and steps; the journal and the stories
+ * opened from the books in creature play: 150-unit cards for her discovery journal, the Windy Picnic and (by age) the
+ * Woodland Picnic or the Missing Melody, laid out as Explore's pages are. Each story keeps its own save and steps; the journal and the stories
  * come back here. Back returns to creature play, Home goes Home. Looking changes nothing.
  */
 export class LibraryScene extends Scene {
@@ -105,6 +108,8 @@ export class LibraryScene extends Scene {
         return this.app.go.picnic();
       case 'woodland':
         return this.app.go.woodland();
+      case 'melody':
+        return this.app.go.melody();
       case 'collection':
         return this.app.go.book();
     }

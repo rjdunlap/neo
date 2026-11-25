@@ -713,6 +713,28 @@ describe('stories', () => {
   });
 });
 
+describe('the Missing Melody', () => {
+  it('completes each step once, ends only with all three and keeps its card through a retelling', async () => {
+    const store = make();
+    await store.load();
+    expect(store.completeStep('highlow', 'melody')).toBe(true);
+    expect(store.completeStep('highlow', 'melody')).toBe(false);
+    // Another story's step never lands in the melody, and the melody leaves the others alone.
+    expect(store.completeStep('beat', 'melody')).toBe(false);
+    expect(store.completeStep('notes', 'woodland')).toBe(false);
+    store.endStory('melody');
+    expect(store.melody.ended).toBe(false);
+    store.completeStep('friends', 'melody');
+    store.completeStep('notes', 'melody');
+    expect(store.melody.steps).toEqual(['notes', 'highlow', 'friends']);
+    store.endStory('melody');
+    expect(store.melody).toEqual({ steps: ['notes', 'highlow', 'friends'], ended: true, keepsake: true });
+    expect(store.woodland.steps).toEqual([]);
+    store.retellStory('melody');
+    expect(store.melody).toEqual({ steps: [], ended: false, keepsake: true });
+  });
+});
+
 describe('her friends (RW05)', () => {
   it('meets a friend once per token and writes at once, without waiting for the batch', async () => {
     const store = make();

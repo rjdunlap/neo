@@ -157,6 +157,7 @@ import { createSuite as create82 } from './suites/woods-batch.mjs';
 import { createSuite as create83 } from './suites/shortlist-batch.mjs';
 import { createSuite as create84 } from './suites/picnic-story.mjs';
 import { createSuite as create85 } from './suites/woodland-story.mjs';
+import { createSuite as createMelody } from './suites/melody-story.mjs';
 import { createSuite as create86 } from './suites/couch-play.mjs';
 import { createSuite as create87 } from './suites/couch-beds.mjs';
 import { createSuite as create88 } from './suites/couch-lanterns.mjs';
@@ -310,6 +311,7 @@ export const SUITES = [
   'shortlist',
   'picnic',
   'woodland',
+  'melody',
   'couch',
   'couchcourse',
   'couchnames',
@@ -519,6 +521,7 @@ export const ALL_SUITES = [
   'shortlist',
   'picnic',
   'woodland',
+  'melody',
   'couch',
   'couchcourse',
   'couchnames',
@@ -746,6 +749,7 @@ export function createChecks(fixture) {
     'shortlistBatch',
     'picnicStory',
     'woodlandStory',
+    'melodyStory',
     'couchPlay',
     'couchBeds',
     'couchLanterns',
@@ -890,6 +894,7 @@ export function createChecks(fixture) {
   install(create83(shared));
   install(create84(shared));
   install(create85(shared));
+  install(createMelody(shared));
   install(create86(shared));
   install(create87(shared));
   install(create88(shared));
@@ -1126,6 +1131,7 @@ export async function runSuite(suite, fixture) {
     shortlistBatch,
     picnicStory,
     woodlandStory,
+    melodyStory,
     couchPlay,
     couchBeds,
     couchLanterns,
@@ -1386,6 +1392,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'shortlist') await shortlistBatch();
   if (suite === 'all' || suite === 'picnic') await picnicStory();
   if (suite === 'all' || suite === 'woodland') await woodlandStory();
+  if (suite === 'all' || suite === 'melody') await melodyStory();
   if (suite === 'all' || suite === 'couch') await couchPlay();
   if (suite === 'all' || suite === 'couchcourse') await couchCourse();
   if (suite === 'all' || suite === 'couchnames') await couchNames();

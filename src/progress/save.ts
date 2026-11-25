@@ -128,7 +128,11 @@ export interface SaveData {
   };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
-  stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
+  stories: {
+    picnic: StoryProgress<'picnic'>;
+    woodland: StoryProgress<'woodland'>;
+    melody: StoryProgress<'melody'>;
+  };
   /** The root's projects (RW07): Welcome a New Friend, its steps and what she made for it. Never the treehouse's slots. */
   projects: { welcome: WelcomeProject };
   book: { goal: GoalId | null };
@@ -173,6 +177,7 @@ export function defaults(): SaveData {
     stories: {
       picnic: { steps: [], ended: false, keepsake: false },
       woodland: { steps: [], ended: false, keepsake: false },
+      melody: { steps: [], ended: false, keepsake: false },
     },
     projects: { welcome: emptyWelcome() },
     book: { goal: null },
@@ -205,7 +210,7 @@ function placement(raw: unknown): StickerPlacement | undefined {
   return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
 }
 
-/** A story's saved telling, keeping only its own step IDs, in story order. An older save has no woodland telling: it starts empty. */
+/** A story's saved telling, keeping only its own step IDs, in story order. An older save has no woodland or melody telling: it starts empty. */
 function story<S extends StoryId>(id: S, raw: unknown): StoryProgress<S> {
   const r = isObj(raw) ? raw : {};
   const all: readonly StoryStep<S>[] = STORY_STEPS[id];
@@ -375,7 +380,11 @@ export function migrate(raw: unknown): SaveData {
     },
     games,
     stickers,
-    stories: { picnic: story('picnic', stories.picnic), woodland: story('woodland', stories.woodland) },
+    stories: {
+      picnic: story('picnic', stories.picnic),
+      woodland: story('woodland', stories.woodland),
+      melody: story('melody', stories.melody),
+    },
     projects: { welcome: cleanWelcome(isObj(raw.projects) ? raw.projects.welcome : undefined) },
     book: { goal: isObj(raw.book) && isGoalId(raw.book.goal) ? raw.book.goal : null },
     room: room(raw.room),
