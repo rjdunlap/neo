@@ -1,1 +1,0 @@
-**`letter-trails` level 14, fourth group of little letters** (school, dive slice 8d; new level on an existing interaction: typecheck, rule tests, registry/how-to tests, one filtered scripted play of level 14, `fingerdemo` at 14). [Dive](../../deep-dives/letter-trails.md#build-slices-in-order)
