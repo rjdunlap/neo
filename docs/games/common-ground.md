@@ -8,17 +8,18 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1 |
+| school | 1–2 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | A place for you: arrange two things so a friend’s two requests are kept |
+| 2 | A request changed: the friend asks for the basket on a different side, so revise the room |
 
 <!-- end generated -->
 
 **Starts as:** a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise.
 
-**Grows into:** one school level for now. The [definition](../definitions/common-ground.md#the-level) names the later rungs, each its own definition: a request changed after the preview, then two residents with compatible requests and different preferences.
+**Grows into:** level 2, built: after the first Visit the friend asks for the basket on a different side ([definition](../definitions/common-ground-2.md)); a dashed outline marks the old place, Undo steps back, and misses and hints count across both Visits. The [level ladder](../definitions/common-ground.md#the-level) names the later rung, its own definition: two residents with compatible requests and different preferences.
 
 ## Design notes
 

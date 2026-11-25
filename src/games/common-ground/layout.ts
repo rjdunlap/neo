@@ -43,8 +43,9 @@ export function roomLayout(v: View) {
     ? [0, 1, 2].map((i) => ({ x: v.w / 2 - 190 + i * 190 + 40, y: v.h - 200 }))
     : [0, 1, 2].map((i) => ({ x: v.w - 190, y: 240 + i * 150 }));
   const visit = upright ? { x: v.w - 110, y: v.h - 90 } : { x: v.w - 190, y: v.h - 100 };
+  const undo = { x: visit.x - 150, y: visit.y };
   const friendStart = { x: floor.left - 62, y: top + floorH * 0.82 };
-  return { upright, floor, cells, bubbles, fixture, piece, tray, visit, friendStart };
+  return { upright, floor, cells, bubbles, fixture, piece, tray, visit, undo, friendStart };
 }
 
 /** The cell whose centre is nearest `(x, y)`, or -1 when the point is more than half a cell outside the floor. */

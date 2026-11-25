@@ -10,5 +10,8 @@ export const VOICE = {
   'common-ground.ok': ['Just right. Thank you, {name}!'],
   'common-ground.plant': ['A plant! That is a nice extra.'],
   'common-ground.noplant': ['Cozy, just like I asked, {name}.'],
+  'common-ground.change': ['Oh, {name}, could my basket be on a different side of the cushion?'],
+  'common-ground.miss.same': ['My basket is still on the same side, {name}.'],
+  'common-ground.better': ['That is a better side. Thank you, {name}!'],
   'common-ground.finish': ['You listened and made a place for your friend, {name}.'],
 };

@@ -12,6 +12,7 @@ import {
   type Friend,
   type Piece,
   type Room,
+  type Side,
 } from './logic';
 
 /** The cushion colours a seed picks from. */
@@ -213,6 +214,84 @@ export function requestArt(
     root.addChild(b, a, c);
   }
   return root;
+}
+
+/** The offset of the previewed side from the cushion, in units of `d`. */
+const SIDE_OFFSET: Record<Side, [number, number]> = {
+  left: [-1, 0],
+  right: [1, 0],
+  above: [0, -1],
+  below: [0, 1],
+};
+
+/**
+ * The changed request's bubble, `w` × `h` centred on (0, 0): the cushion with the basket's old side crossed out in a soft
+ * colour, then an arrow to the basket, which may go on any other side.
+ */
+export function changedRequestArt(previewed: Side, w: number, h: number, tint: number): Container {
+  const root = new Container();
+  root.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 30)
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.teal.line }),
+  );
+  const s = h * 0.5;
+  const cushion = cushionArt(s, tint);
+  cushion.x = -w * 0.2;
+  const [dx, dy] = SIDE_OFFSET[previewed];
+  const old = basketArt(s * 0.7);
+  old.alpha = 0.45;
+  old.position.set(cushion.x + dx * s * 0.95, dy * s * 0.72);
+  const cross = new Graphics();
+  const r = s * 0.3;
+  cross
+    .moveTo(-r, -r)
+    .lineTo(r, r)
+    .moveTo(r, -r)
+    .lineTo(-r, r)
+    .stroke({ width: 8, color: swatch.red.line, cap: 'round' });
+  cross.position.set(old.x, old.y);
+  const a = arrow(w * 0.16);
+  a.x = w * 0.08;
+  const b = basketArt(s * 1.1);
+  b.x = w * 0.3;
+  root.addChild(cushion, old, cross, a, b);
+  return root;
+}
+
+/** A dashed rounded outline `size` units square, centred on (0, 0): the ghost of the basket's old place. Drawing only. */
+export function ghostArt(size: number): Graphics {
+  const g = new Graphics();
+  const h = size / 2,
+    dash = 14,
+    gap = 10;
+  const edge = (x0: number, y0: number, x1: number, y1: number) => {
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    for (let t = 0; t < len; t += dash + gap) {
+      const t1 = Math.min(len, t + dash);
+      g.moveTo(x0 + ((x1 - x0) * t) / len, y0 + ((y1 - y0) * t) / len).lineTo(
+        x0 + ((x1 - x0) * t1) / len,
+        y0 + ((y1 - y0) * t1) / len,
+      );
+    }
+  };
+  edge(-h, -h, h, -h);
+  edge(h, -h, h, h);
+  edge(h, h, -h, h);
+  edge(-h, h, -h, -h);
+  g.stroke({ width: 5, color: swatch.red.line, cap: 'round' });
+  return g;
+}
+
+/** A curved back arrow for the Undo button, about 56 units across. */
+export function undoArt(): Container {
+  const g = new Graphics()
+    .arc(4, 4, 20, Math.PI * 1.1, Math.PI * 2.3)
+    .stroke({ width: 8, color: 0xffffff, cap: 'round' })
+    .poly([-26, -8, -6, -26, -2, 0])
+    .fill(0xffffff);
+  return new Container().addChild(g);
 }
 
 /** The cell grid, `cell` units each, centred on (0, 0), with the fixture on its wall and a doormat at the bottom. */

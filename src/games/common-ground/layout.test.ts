@@ -15,7 +15,7 @@ describe('Common Ground layout', () => {
       const l = roomLayout(v);
       expect(l.floor.cell).toBeGreaterThanOrEqual(100);
       expect(l.floor.cell).toBeLessThanOrEqual(160);
-      const targets = [...l.tray, l.visit];
+      const targets = [...l.tray, l.visit, l.undo];
       for (const t of targets) {
         expect(t.x - 55).toBeGreaterThanOrEqual(0);
         expect(t.x + 55).toBeLessThanOrEqual(v.w);
