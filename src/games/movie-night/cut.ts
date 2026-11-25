@@ -1,3 +1,4 @@
+import type { LineVars } from '../../audio/voice';
 /**
  * Movie Night levels 4–5 (docs/definitions/movie-night.md#movie-night-45-mm3): choose which filmed pictures go in a short
  * show, and in what order, so the audience learns what they asked about. Cards are scarce: each sits in the tray or in
@@ -47,6 +48,8 @@ export type CutLine =
   | 'mn.boxRequest'
   | 'mn.kiteRequest';
 export interface Requirement {
+  /** The slot values the line is spoken with (every level 4–5 line carries one, so it stays on device speech). */
+  vars: LineVars;
   /** The card the reaction points at; its picture is shown in the request. */
   point: string;
   line: CutLine;
@@ -69,7 +72,11 @@ export interface CutPlan {
   friend: 'frog' | 'bear';
   instruction: 'mn.instruction4' | 'mn.instruction5';
   success: 'mn.success4' | 'mn.success5';
+  /** Slot values for the instruction and the success line. */
+  instructionVars: LineVars;
+  successVars: LineVars;
 }
+const HERO: LineVars = { hero: 'Bunny' };
 const PLAN_4: CutPlan = {
   level: 4,
   cards: GARDEN,
@@ -77,12 +84,15 @@ const PLAN_4: CutPlan = {
   friend: 'frog',
   instruction: 'mn.instruction4',
   success: 'mn.success4',
+  instructionVars: { friend: 'Frog', hero: 'Bunny' },
+  successVars: { friend: 'Frog' },
   requirements: [
-    { point: 'G1', line: 'mn.findRequest', met: (s, c) => known(s, c, 'event:finds') },
-    { point: 'G2', line: 'mn.smileRequest', met: (s, c) => known(s, c, 'event:smiles') },
+    { point: 'G1', line: 'mn.findRequest', vars: HERO, met: (s, c) => known(s, c, 'event:finds') },
+    { point: 'G2', line: 'mn.smileRequest', vars: HERO, met: (s, c) => known(s, c, 'event:smiles') },
     {
       point: 'G2',
       line: 'mn.smileAfterRequest',
+      vars: HERO,
       met: (s, c) => first(s, c, 'event:finds') < first(s, c, 'event:smiles'),
     },
   ],
@@ -94,16 +104,25 @@ const PLAN_5: CutPlan = {
   friend: 'bear',
   instruction: 'mn.instruction5',
   success: 'mn.success5',
+  instructionVars: { thing: 'box' },
+  successVars: { friend: 'Bear' },
   requirements: [
-    { point: 'B2', line: 'mn.openRequest', met: (s, c) => known(s, c, 'event:opens') },
+    {
+      point: 'B2',
+      line: 'mn.openRequest',
+      vars: { thing: 'box' },
+      met: (s, c) => known(s, c, 'event:opens'),
+    },
     {
       point: 'B0',
       line: 'mn.boxRequest',
+      vars: { thing: 'box' },
       met: (s, c) => first(s, c, 'thing:box') < first(s, c, 'event:opens'),
     },
     {
       point: 'B3',
       line: 'mn.kiteRequest',
+      vars: { thing: 'kite' },
       // The opening shot itself shows the kite; the surprise is spoiled only by a kite shot before it.
       met: (s, c) => {
         const opens = first(s, c, 'event:opens');

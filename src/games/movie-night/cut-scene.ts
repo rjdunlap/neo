@@ -4,7 +4,6 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
@@ -236,7 +235,7 @@ export class ShotShow implements Game {
 
   start() {
     this.refreshEnabled();
-    void this.ctx.instruct(this.plan.instruction).then(() => {
+    void this.ctx.instruct(this.plan.instruction, this.plan.instructionVars).then(() => {
       if (!this.destroyed) this.refreshEnabled();
     });
   }
@@ -554,10 +553,10 @@ export class ShotShow implements Game {
       this.reaction = result.request;
       this.pointedGlow = result.request?.point ?? null;
       this.draw();
-      if (result.ok) void this.ctx.say(this.plan.success);
+      if (result.ok) void this.ctx.say(this.plan.success, this.plan.successVars);
       else {
         if (this.round.failures >= 2) sfx.boing();
-        void this.ctx.say(result.request!.line as LineId);
+        void this.ctx.say(result.request!.line, result.request!.vars);
       }
     }
   }
