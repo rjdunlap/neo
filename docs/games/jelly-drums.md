@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 10, 1, 2, 3 |
-| toddler | 1–3 |
-| preschool | 4–7 |
+| toddler | 1, 2, 3, 14 |
+| preschool | 14, 4, 5, 6, 7 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
 | school | 8, 9, 11, 12, 13 |
 
@@ -29,6 +29,7 @@
 | 11 | Copy a 3-note tune backwards, 5 tunes (the last is 4 notes) |
 | 12 | Are two 3-note songs the same or different? 5 pairs |
 | 13 | Line up 4 jellies from lowest to highest, 3 line-ups |
+| 14 | Listen to one note and tap which jelly sang, 6 sounds |
 
 <!-- end generated -->
 
@@ -53,3 +54,5 @@ Free play on five notes, then copying tunes of two to five notes. In the echo le
 **Lowest to highest (level 13).** Pre-K and school, last in the order after Same or different? (`[… 9, 11, 12, 13]`). The plan is `{mode:'order', goal:3, length:4}`: three line-ups of four equal-sized jellies (`ORDER_HW = 68`) in shuffled colors and positions, while the fifth jelly sleeps to the side. `drawLineups` picks four distinct pitches and independently shuffles all five `PITCH_COLORS` (guarding against starting already sorted ascending or with every jelly wearing its pitch's default color). She taps any jelly freely to hear its voice (never a miss) and drags the lowest remaining jelly onto the lit slot on the shelf above. A wrong drop on the lit slot slides the jelly back and speaks a direction (`orderDirection` through `'jelly.order.dir'`); two misses on one slot count a hint and glow the right jelly. Dropping onto an unlit slot ticks and pulses the lit slot without a miss. Once three jellies are placed, the fourth hops into the last slot (`orderChoicesNeeded(4) === 3`) and all four sing in ascending order before the next line-up. Placed jellies remain tappable to listen. The slotted voice lines (`jelly.order`, `jelly.order.next`, `jelly.order.dir`) stay on device speech until a clip pass renders fixed wording. The ghost finger uses `orderToDrag` to drag each lowest remaining jelly to the lit slot. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=13`, `abandon-cards.mjs`.
 
 **Journal entries (2026-11-25, [PR #2165](https://github.com/rjdunlap/neo/pull/2165)).** A finished round files `jelly-drums:low-high` once she has tapped both the biggest (red) and the littlest (blue) jelly in it; `JournalWatch` in `logic.ts` keeps it and `ctx.finish` passes it as `discoveries`, so a round that did not show it files nothing. It speaks the existing `jelly.lowhigh` line (its clip is already rendered) and the card draws the game's own jellies (`jellyJournalPicture` in `jelly.ts`). The scale entry (level 3's sparkle) is not built: its journal line needs a rendered voice clip.
+
+**Which jelly sang? (level 14, 2026-11-25, [PR #2172](https://github.com/rjdunlap/neo/pull/2172)).** Placed between levels 3 and 4 (`toddler` order `[1, 2, 3, 14]`, `preschool` order `[14, 4, 5, 6, 7]`, and `entryLevels: [10, 14]` so `lap`, `prek`, and `school` still start at their own easiest level on aging up or pinning). The plan is `{mode:'which', goal:6, length:1}`: `whichAwake` wakes `[0, 4]` (biggest and littlest) for the first two sounds, `[0, 2, 4]` for the next two (all early pairs at least two steps apart), and all five jellies for the last two. `drawWhich` picks an awake jelly without repeating back-to-back. The mystery note plays by ear with a neutral overhead sparkle burst (`playWhichNote`) so the singing jelly does not animate or glow prematurely. Tapping a wrong jelly sings its own note, replays the mystery sound and wiggles (`Jelly.wiggle`) the right jelly; a second miss on the same sound counts a hint and also glows the right jelly. The listen-again button replays the sound free, and `autotouch` reads `jellyToTap(..., whichTarget)`. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=14`.

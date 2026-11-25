@@ -26,6 +26,8 @@ export const VOICE = {
   'jelly.name.blue': ['Blue! The littlest jelly sings the highest.'],
   'jelly.lowhigh': ['Big jellies sing low. Little jellies sing high.'],
   'jelly.turn': ['Your turn!'],
+  'jelly.which': ['Listen to the sound, then tap which jelly sang!'],
+  'jelly.which.ask': ['Which one was that?'],
   'jelly.oops': ['Hmm, listen again!'],
   'jelly.nice': ['Beautiful!', 'You got it!', 'Lovely music!'],
 } satisfies Record<string, string[]>;

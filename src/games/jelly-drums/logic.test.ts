@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { levelsInOrder, rangeFor } from '../../progress/difficulty';
+import { landing, levelsInOrder, rangeFor, stepLevel } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 import {
   answerOf,
   drawLineup,
   drawLineups,
   drawPair,
+  drawWhich,
   LEVELS,
   minStepAt,
   orderChoicesNeeded,
@@ -31,6 +32,7 @@ import {
   SOUND_SETS,
   soundSetFor,
   STAGE_OF,
+  whichAwake,
 } from './logic';
 import { PITCH_COLORS } from '../../audio/notes';
 import { STAGES } from './stages';
@@ -594,6 +596,71 @@ describe('Jelly Drums Lowest to highest (level 13)', () => {
 
   it('every voice line level 13 speaks exists', () => {
     for (const id of ['jelly.order', 'jelly.order.next', 'jelly.order.dir'] as const) {
+      expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Jelly Drums Which jelly sang? (level 14)', () => {
+  const plan = PLANS[13];
+
+  it('is level 14, placed between 3 and 4 for toddler and preschool with entryLevels protecting older bands', () => {
+    expect(plan.mode).toBe('which');
+    expect([plan.goal, plan.length]).toEqual([6, 1]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 14]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 7]);
+    for (const band of ['lap', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(14);
+
+    const entries = [10, 14];
+    expect(landing(14, rangeFor(LEVELS, 'toddler'), entries)).toBe(14);
+    expect(landing(14, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
+    expect(landing(14, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(14, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
+    expect(landing(14, rangeFor(LEVELS, 'school'), entries)).toBe(8);
+    expect(stepLevel(3, 1, rangeFor(LEVELS, 'toddler'))).toBe(14);
+    expect(stepLevel(14, 1, rangeFor(LEVELS, 'preschool'))).toBe(4);
+  });
+
+  it('wakes two jellies then three then five, keeping early awake jellies at least two steps apart', () => {
+    expect(whichAwake(0)).toEqual([0, 4]);
+    expect(whichAwake(2)).toEqual([0, 2, 4]);
+    expect(whichAwake(4)).toEqual([0, 1, 2, 3, 4]);
+    for (let step = 0; step < 4; step++) {
+      const awake = whichAwake(step);
+      for (let a = 0; a < awake.length; a++) {
+        for (let b = a + 1; b < awake.length; b++) {
+          expect(Math.abs(awake[a] - awake[b]), `step ${step}`).toBeGreaterThanOrEqual(2);
+        }
+      }
+    }
+  });
+
+  it('always sounds an awake jelly, never repeats back-to-back, and reaches every awake jelly', () => {
+    const seenByStage = [new Set<number>(), new Set<number>(), new Set<number>()];
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      let last: number | null = null;
+      for (let step = 0; step < plan.goal; step++) {
+        const awake = whichAwake(step);
+        const picked = drawWhich(rng, awake, last);
+        expect(awake, `seed ${seed} step ${step}`).toContain(picked);
+        if (last !== null) expect(picked).not.toBe(last);
+        seenByStage[Math.floor(step / 2)].add(picked);
+        last = picked;
+      }
+    }
+    expect([...seenByStage[0]].sort()).toEqual([0, 4]);
+    expect([...seenByStage[1]].sort()).toEqual([0, 2, 4]);
+    expect([...seenByStage[2]].sort()).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('ghost finger waits during listen and taps the sounded jelly on her turn, and voice lines exist', () => {
+    expect(jellyToTap('which', 'listen', [], 0, 0, 4)).toBeNull();
+    expect(jellyToTap('which', 'play', [], 0, 0, 4)).toBeNull();
+    expect(jellyToTap('which', 'done', [], 0, 0, 4)).toBeNull();
+    expect(jellyToTap('which', 'turn', [], 0, 0, 4)).toBe(4);
+    for (const id of ['jelly.which', 'jelly.which.ask'] as const) {
       expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
     }
   });

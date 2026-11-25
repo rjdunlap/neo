@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'All four jellies are the same size, so listen first: tap any jelly to hear its voice. Then drag the lowest one to the lit spot, then the next lowest.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Listen to the hidden note, then tap the jelly that sang it. Two jellies start awake, then three, then all five.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after a number of notes.' },
@@ -43,6 +48,7 @@ export const HOW_TO: GameHowTo = {
     { from: 11, to: 11, text: 'The round ends when every tune has been played backwards.' },
     { from: 12, to: 12, text: 'The round ends when every pair of songs has been judged.' },
     { from: 13, to: 13, text: 'The round ends after three line-ups from lowest to highest.' },
+    { from: 14, to: 14, text: 'The round ends after six mystery notes.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
   ],
   note: [
@@ -65,6 +71,11 @@ export const HOW_TO: GameHowTo = {
       from: 13,
       to: 13,
       text: 'Tapping a jelly to listen never counts a miss. Dropping a wrong jelly onto the lit spot slides it back and names the direction to listen; after two misses the right jelly glows.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'The yellow note button above the jellies plays the sound again whenever it is her turn. A wrong jelly sings its own note and the right one wiggles; after two misses the right jelly glows.',
     },
   ],
 };

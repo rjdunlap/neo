@@ -8,10 +8,10 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order';
-  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare) or line-ups (order). */
+  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which';
+  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) or mystery notes (which). */
   goal: number;
-  /** Tune length (echo, compare) or jellies per line-up (order). */
+  /** Tune length (echo, compare), jellies per line-up (order) or 1 for a single note (which). */
   length: number;
   /** Free play's twist: at level 2 the fans answer, at level 3 a scale sparkles. Neither is a goal. */
   twist?: 'fans' | 'scale';
@@ -39,14 +39,17 @@ export const PLANS: JellyPlan[] = [
   { mode: 'compare', goal: 5, length: 3 },
   // Level 13, "Lowest to highest": three line-ups of four equal-sized jellies in shuffled colors; drag them in pitch order.
   { mode: 'order', goal: 3, length: 4 },
+  // Level 14, "Which jelly sang?": listen to one note by ear; two jellies awake (biggest & littlest), then three, then five.
+  { mode: 'which', goal: 6, length: 1 },
 ];
 
 export const LEVELS: BandLevels = {
   // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 4, max: 7 },
-  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11), Same or different? (12), Lowest to highest (13).
+  // Level 14 (Which jelly sang?) sits between 3 and 4: top of toddler, and first in preschool before copying tunes.
+  toddler: { min: 1, max: 14, order: [1, 2, 3, 14] },
+  preschool: { min: 4, max: 14, order: [14, 4, 5, 6, 7] },
+  // Level 10 (one big jelly) is lap's, and 14 (Which jelly sang?) is toddler/preschool's: older bands skip both.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
@@ -333,17 +336,32 @@ export function jellyToTap(
   tune: readonly number[],
   at: number,
   notes: number,
+  whichTarget: number | null = null,
 ): number | null {
   if (mode === 'wake') {
     const awake = awakeJellies(notes);
     return phase === 'play' ? awake[notes % awake.length] : null;
   }
+  if (mode === 'which') return phase === 'turn' ? whichTarget : null;
   // A pair round answers with a button, not a jelly: see `verdictToTap`.
   if (mode === 'compare') return null;
   // An order round drags jellies onto slots: see `orderToDrag`.
   if (mode === 'order') return null;
   if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
   return phase === 'turn' ? (tune[at] ?? null) : null;
+}
+
+/**
+ * Level 14 ("Which jelly sang?"): jellies awake at step `step` (0-based). Starts with the biggest and littlest
+ * (two jellies, four steps apart), then adds the middle jelly (every pair at least two steps apart), then all five.
+ */
+export const whichAwake = (step: number): number[] =>
+  step < 2 ? [0, 4] : step < 4 ? [0, 2, 4] : [0, 1, 2, 3, 4];
+
+/** Pick one awake jelly to sing by ear, avoiding the same jelly twice in a row while more than one is awake. */
+export function drawWhich(rng: Rng, awake: readonly number[], last: number | null = null): number {
+  const choices = awake.length > 1 && last !== null ? awake.filter((j) => j !== last) : awake;
+  return rng.pick(choices);
 }
 
 /** The button a capable child taps once both songs have played, or null while she should wait. */

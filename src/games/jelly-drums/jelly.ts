@@ -15,6 +15,7 @@ export class Jelly extends Container {
   private squashV = 0;
   private singing = 0;
   private glowLeft = 0;
+  private wiggleLeft = 0;
   private clock = Math.random() * 3;
   private wasSinging = true;
 
@@ -55,6 +56,11 @@ export class Jelly extends Container {
     this.glowLeft = Math.max(this.glowLeft, seconds);
   }
 
+  /** Gentle side-to-side wobble without lighting a hint halo. */
+  wiggle(seconds = 0.75) {
+    this.wiggleLeft = Math.max(this.wiggleLeft, seconds);
+  }
+
   /** `beat` is 0..1 through the music's current beat, so idle jellies bob in time. */
   update(dt: number, beat: number) {
     this.clock += dt;
@@ -62,6 +68,9 @@ export class Jelly extends Container {
     this.squash += this.squashV * dt;
     const bob = 0.035 * Math.pow(1 - beat, 3);
     this.body.scale.set(1 + this.squash * 0.8 + bob * 0.5, 1 - this.squash - bob);
+    this.wiggleLeft = Math.max(0, this.wiggleLeft - dt);
+    this.body.rotation =
+      this.wiggleLeft > 0 ? 0.14 * Math.sin(this.clock * 22) * Math.min(1, this.wiggleLeft * 3) : 0;
 
     this.singing = Math.max(0, this.singing - dt);
     if (this.singing > 0 !== this.wasSinging) this.drawFace();
