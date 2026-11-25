@@ -392,6 +392,7 @@ class LittleConductor implements Game {
           : this.plan.mode === 'strength'
             ? 'little-conductor.instruct-strength'
             : 'little-conductor.instruct-sign',
+      { name: this.ctx.childName },
     );
     if (this.finished) return;
     this.ready = true;
