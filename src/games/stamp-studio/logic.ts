@@ -21,11 +21,16 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   starfish: 'A starfish',
   shell: 'A shell',
   boat: 'A boat',
+  cow: 'A cow',
+  pig: 'A pig',
+  hen: 'A hen',
+  barn: 'A barn',
 };
 
 /**
  * A stamp set: six stamps that belong together and the scene they stand on. Sets are all open from the start, nothing
- * unlocks. The four original stamps join their sets as those sets are built (dive slice 6 onward); only Sea exists yet.
+ * unlocks. The four original stamps join their sets as those sets are built; Sea and Farm exist now, with Plain
+ * holding the classic stamps until Garden and Space join.
  */
 export interface StampSet {
   name: string;
@@ -38,11 +43,32 @@ export const SETS = {
     kinds: ['fish', 'whale', 'crab', 'starfish', 'shell', 'boat'],
     scene: 'sea',
   },
+  farm: {
+    name: 'Farm',
+    kinds: ['cat', 'cow', 'pig', 'duck', 'hen', 'barn'],
+    scene: 'farm',
+  },
 } as const satisfies Record<string, StampSet>;
 export type SetId = keyof typeof SETS;
+export type SetChoice = 'plain' | SetId;
+/** The sets a level 4–6 player can switch between from the sets button. */
+export const SET_CHOICES: readonly SetChoice[] = ['plain', 'sea', 'farm'];
+/** The classic four stamps shown on plain paper at levels 4–6 before switching sets. */
+export const CLASSIC_KINDS: readonly StampKind[] = ['star', 'flower', 'fish', 'cat'];
+/** What a choice in the sets row shows: its label, stamp palette, and optional backdrop. */
+export function setChoiceInfo(choice: SetChoice): {
+  name: string;
+  kinds: readonly StampKind[];
+  scene?: SceneId;
+} {
+  if (choice === 'plain') return { name: 'Plain', kinds: CLASSIC_KINDS };
+  const s = SETS[choice];
+  return { name: s.name, kinds: s.kinds, scene: s.scene };
+}
 /** The backdrop each scene paints behind the stamps: where its horizon sits on the paper (0 top to 1 bottom). */
 export const SCENES = {
   sea: { name: 'The sea', horizon: 0.82 },
+  farm: { name: 'The farm', horizon: 0.42 },
 } as const satisfies Record<SceneId, { name: string; horizon: number }>;
 /** The stamps from before sets existed, which levels 1–3 still draw from on plain paper. */
 export const PLAIN_KINDS: readonly StampKind[] = STAMP_KINDS.slice(0, 5);
@@ -92,6 +118,8 @@ export interface StampPlan {
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
   count?: boolean;
+  /** Levels 4–6: a sets button lets her switch stamp sets and scenes freely (dive slice 6). */
+  sets?: boolean;
   /** Trace Prints (levels 8–9): the paper is mud, and each maker presses its own shape; `count` prints finish the round. */
   trace?: { makers: readonly TraceMakerId[]; count: number; tilt: boolean };
 }
@@ -133,6 +161,7 @@ export const PLANS = [
     transform: true,
     prompt: 'sizes',
     play: true,
+    sets: true,
     name: 'Turn stamps and make them big or small',
   },
   {
@@ -142,6 +171,7 @@ export const PLANS = [
     transform: true,
     prompt: 'garden',
     play: true,
+    sets: true,
     name: 'Make an imaginary garden, then tell its story',
   },
   {
@@ -151,6 +181,7 @@ export const PLANS = [
     transform: true,
     prompt: 'story',
     play: true,
+    sets: true,
     name: 'Make two friends on an adventure; every story is welcome',
   },
   // Easiest of all: placed first for lap by `order`, so it has the highest ID.
@@ -256,6 +287,10 @@ export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
   starfish: { play: 'bell', from: 5 },
   shell: { play: 'marimba', from: 6 },
   boat: { play: 'marimba', from: 2 },
+  cow: { play: 'animal', animal: 'moo' },
+  pig: { play: 'animal', animal: 'oink' },
+  hen: { play: 'animal', animal: 'cluck' },
+  barn: { play: 'marimba', from: 1 },
 };
 /** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
 export function stampStep(kind: StampKind, press: number): number | null {
@@ -398,14 +433,14 @@ export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: Co
     };
   }
   if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
-  // Levels 1–3 draw from one seeded set, so a round is either the Sea (its stamps on its backdrop) or the older stamps on
-  // plain paper; Follow the sparkle (level 10) keeps the older stamps. Dive slice 6 widens this once the sets button exists.
-  const sea = level <= 3 && rng.next() < 0.5;
-  const pool = sea ? SETS.sea.kinds : PLAIN_KINDS;
+  // Levels 1–3 draw from one seeded set: Plain (older stamps), Sea or Farm; Follow the sparkle (level 10) keeps Plain.
+  const picked = level <= 3 ? rng.pick(SET_CHOICES) : 'plain';
+  const pool = picked === 'plain' ? PLAIN_KINDS : SETS[picked].kinds;
+  const scene = picked === 'plain' ? undefined : SETS[picked].scene;
   return {
     plan: { ...base, kinds: rng.shuffle([...pool]).slice(0, base.kinds.length) },
     color: rng.pick(STAMP_COLORS),
-    ...(sea ? { scene: SETS.sea.scene } : {}),
+    ...(scene ? { scene } : {}),
   };
 }
 
@@ -672,9 +707,18 @@ export const LEVELS: BandLevels = {
 
 /** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */
 export const BUTTON_REACH = 62;
+/** A set-row button's radius and touch reach (116 across >= 100). */
+export const SET_RADIUS = 44;
+export const SET_REACH = SET_RADIUS + 14;
 /** A color disc's radius; its touch radius is 14 more, so each disc is a target 108 units across. */
 export const COLOR_RADIUS = 40;
 export const COLOR_REACH = COLOR_RADIUS + 14;
+
+/** Stamp choice button radius: 48 up to four stamps; 40 sideways or 36 upright for a six-stamp set (still >= 100 across). */
+export function choiceButtonRadius(choices: number, upright?: true) {
+  if (choices <= 4) return 48;
+  return upright ? 36 : COLOR_RADIUS;
+}
 
 /**
  * Where the seven color discs sit along the top, between Home and "?" (their column ends at x 115) and the green arrow
@@ -698,27 +742,50 @@ export function colorSpots(w: number) {
 }
 
 /**
- * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Play, the pet)
+ * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Sets, Play, the pet)
  * and the right one (Finish, Bin, Turn, Grow, Undo), the colours above it and the stamps below. On the narrow upright area
- * (chunk 31) the paper runs from the left edge below Home and "?", Play and Undo join the right column, and the stamps
+ * (chunk 31) the paper runs from the left edge below Home and "?", Play, Sets and Undo join the right column, and the stamps
  * take the whole bottom row right of the guide; the colours start 45 further left, clear of Finish.
  */
 export function stampLayout(
   v: { w: number; h: number; upright?: true },
   choices: number,
   transform: boolean,
+  setsCount = SET_CHOICES.length,
 ) {
   const tall = v.upright === true;
   const paper = tall
     ? { x: 20, y: 230, w: v.w - 190, h: v.h - 230 - 180 }
     : { x: 180, y: 135, w: v.w - 350, h: v.h - 290 };
   const col = v.w - 77;
+  const choiceRadius = choiceButtonRadius(choices, v.upright);
+  const choiceReach = choiceRadius + 14;
+  const choiceXs =
+    tall && choices > 4
+      ? (() => {
+          const left = 165 + choiceReach;
+          const right = v.w - choiceReach;
+          const step = (right - left) / Math.max(1, choices - 1);
+          return Array.from({ length: choices }, (_, i) => left + i * step);
+        })()
+      : tall
+        ? spread(choices, 165, v.w - 20, 135)
+        : spread(choices, 185, v.w - 180, 135);
+  const sets = tall ? { x: col, y: 340 } : { x: 88, y: 274 };
+  const setStep = SET_REACH * 2 + 4;
+  const setRow = tall
+    ? Array.from({ length: setsCount }, (_, i) => {
+        const cols = Math.min(3, setsCount);
+        const colIdx = i % cols;
+        const rowIdx = Math.floor(i / cols);
+        const right = col - BUTTON_REACH - 8 - SET_REACH;
+        return { x: right - (cols - 1 - colIdx) * setStep, y: sets.y + rowIdx * setStep };
+      })
+    : Array.from({ length: setsCount }, (_, i) => ({ x: 225 + i * setStep, y: sets.y }));
   return {
     paper,
-    choices: (tall ? spread(choices, 165, v.w - 20, 135) : spread(choices, 185, v.w - 180, 135)).map((x) => ({
-      x,
-      y: v.h - 77,
-    })),
+    choiceRadius,
+    choices: choiceXs.map((x) => ({ x, y: v.h - 77 })),
     colors: colorSpots(v.w),
     finish: { x: col, y: 65 },
     undo: { x: col, y: tall ? v.h - 237 : v.h - 77 },
@@ -727,5 +794,7 @@ export function stampLayout(
     grow: { x: col, y: v.h / 2 + 130 },
     // Sideways: left of the paper, between the hold-to-open help (y 160) and the pet.
     play: tall ? { x: col, y: 200 } : { x: 88, y: v.h / 2 + 20 },
+    sets,
+    setRow,
   };
 }

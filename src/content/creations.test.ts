@@ -324,4 +324,17 @@ describe('a picture made on a scene', () => {
     const c = cleanPicture({ ...sea, stamps: [...sea.stamps, { ...sea.stamps[0], kind: 'dragon' }] });
     expect(c && 'stamps' in c ? c.stamps : []).toHaveLength(1);
   });
+  it('keeps a picture made on the Farm scene with mixed Farm stamps', () => {
+    const farm = {
+      kind: 'picture',
+      scene: 'farm',
+      stamps: [
+        { kind: 'cow', color: 'brown', x: 0.3, y: 0.7, size: 1, turns: 0 },
+        { kind: 'pig', color: 'pink', x: 0.5, y: 0.7, size: 1, turns: 0 },
+        { kind: 'hen', color: 'orange', x: 0.7, y: 0.6, size: 1, turns: 0 },
+        { kind: 'barn', color: 'red', x: 0.2, y: 0.4, size: 1.5, turns: 0 },
+      ],
+    } as const;
+    expect(cleanPicture(JSON.parse(JSON.stringify(farm)))).toEqual(farm);
+  });
 });
