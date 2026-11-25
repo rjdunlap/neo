@@ -460,13 +460,6 @@ export class ShotShow implements Game {
       a.position.set(x - 310 + i * 62, y + 45);
       if (a instanceof Critter) a.setMood(this.round.qualified ? 'happy' : 'calm');
     });
-    // The asking friend points at the pictured facts.
-    this.request.addChild(
-      new Graphics()
-        .moveTo(x - 190 + (this.plan.friend === 'bear' ? 62 : 0), y + 10)
-        .lineTo(x - 150, y + 5)
-        .stroke({ color: wood.line, width: 5 }),
-    );
   }
   private drawScreen() {
     const run = this.run;
