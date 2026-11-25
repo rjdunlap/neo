@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (20), **Tinker Lab** (29) and **Lantern Lake** (24, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (21), **Tinker Lab** (29) and **Lantern Lake** (24, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 158 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 195 games; the 169 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 159 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -215,6 +215,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 6 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |
 | [Thought Bubbles](docs/games/thought-bubbles.md) | pre-K–school | Story Grove | 5 | a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble |
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
+| [Common Ground](docs/games/common-ground.md) | school | Story Grove | 1 | a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise. |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 15 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |
 | [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 12 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
@@ -480,6 +481,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `sandtable` | Sand Table by touch: level 1 pour, scoop and flag; level 3 in portrait with a spill into the pail and back, an empty-bucket pour, a requested hint and Show, saved score 0/0 | |
 | `adventurewalk` | Adventure Walk by touch: level 1 with three free choices; level 3 in portrait with a wrong way (one miss), a badge replay, a requested hint, then the calls followed, saved score 1/1; level 4 in portrait on the hook map (Show a hint on the walk out does nothing, a wrong tile is a miss, a requested hint lights the next landmark, a passed tile counts nothing, home, saved score 1 miss 1 hint); level 5 in portrait (a look, a wrong trail turned back for 1 miss, a badge replay, the called trail, the different way home, saved score 1 miss 1 hint) | `FINGER_ONLY=adventure-walk FINGER_LEVELS=1,3,4,5` for the demonstration |
 | `readyadventure` | Ready for Adventure by touch: level 1 packing the requested prop and the parade; level 3 in portrait with an early pack (one miss), a requested hint and its assisted tap, the rest by drags, saved score 1/1 | `FINGER_ONLY=ready-for-adventure FINGER_LEVELS=1,3` for the demonstration |
+| `commonground` | Common Ground by touch, in portrait: a cushion off its wall (free placing), a Visit that is one miss, Help and its glowing move, a plant, the friend sits, saved score 1/1 | `FINGER_ONLY=common-ground FINGER_LEVELS=1` for the demonstration |
 | `foodweb` | Food Web Workshop levels 1–3: an extra arrow then Show our web (one miss, spoken fault line), Undo, a matching web; level 2 turned by drag in portrait (targets of 100 units or more); level 3 with one requested hint; one sticker per round | Demo: `FINGER_ONLY=food-web-workshop` |
 | `meadow` | Meadow Pens by touch: level 1 empty ring (free), a short pen (one miss), a requested hint counted once and the supported finish; level 2 a wrong card filling the field row by row; level 3 a straight-six wrong fence (one miss), a requested hint and a portrait screenshot; levels 4–5 free counts, wrong answers, automatic/manual capped help, restart, rotation, supported five-question finishes and portrait layouts; largest L6 and one-cell L3 counts | `MEADOW_LEVELS=4,5` for the extension; `FINGER_ONLY=meadow-pens FINGER_LEVELS=4,5` for the demo |
 | `sensedetective` | Sense Detective by touch (`SENSE_LEVEL=5` runs only level 5: both fit, *Can't tell yet*, an eye miss, the ear reveal, the rattle parcel in portrait): level 1 with a not-yet tick, a wrong tick, then found; level 2 in portrait with a look, a not-yet, a listen, a wrong tick and a requested hint, saved score | |

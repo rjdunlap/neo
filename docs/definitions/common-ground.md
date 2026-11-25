@@ -1,6 +1,6 @@
 # Common Ground, level 1: A Place for You (definition)
 
-**Status:** defined 2026-11-25, docs only; nothing is built. Build it as a **new game** `common-ground` with one school level; read [The model](#the-model-logicts) and [Registration](#registration-and-files). Every [open decision](#open-decisions) has a default the build uses.
+**Status:** level 1 built 2026-11-25 as the new game `common-ground` (school, Story Grove), with every [open decision](#open-decisions) at its default. The seed varies the fixture, friend and cushion colour only; the rug-and-toy-box pair was left out so the spoken words match the drawing. The text below is the definition as written.
 
 Defined as slice **4** of the [social-emotional study](../deep-dives/subjects/social-emotional.md#build-slices-in-order), from its [A Place for You](../deep-dives/subjects/social-emotional.md#a-place-for-you-common-grounds-younger-entry) section and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations). The [October 23 record](../archive/DECISIONS-2026-10-23.md#standing-rules) settled that Common Ground sits at school top and `grownup` on existing bands, with no new band, and that fictional screen rounds go ahead after the building session's source check. The older two-person negotiation case in the study stays a later level of this game; it is not defined here and nothing below depends on it.
 
