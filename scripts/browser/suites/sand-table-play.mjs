@@ -23,6 +23,29 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
+    // `SAND_TABLE_PHONE=1` (batch `sand-table upright`): level 3 on a phone held upright, so the upright layout is the one
+    // played rather than the turn prompt: pour into the middle bay, scoop it back, tap the flag.
+    if (process.env.SAND_TABLE_PHONE === '1') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(400);
+      await launch('sand-table', 3, 'Mia', 'school');
+      await page.waitForTimeout(600);
+      assert.equal(
+        await page.evaluate(() => neo.view.upright === true && neo.turning === false),
+        true,
+        'level 3 plays upright, no turn prompt',
+      );
+      await tap('bayNodes', 1);
+      assert.ok((await st()).sum > 0, 'a pour landed on the tray');
+      await tap('paddleNodes', 1);
+      await screenshot('sand-table-3-upright');
+      await tap('flagNode');
+      await finished('sand-table');
+      assert.deepEqual(await score(), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Sand Table 3 upright phone (390 × 844): pour, scoop, flag, saved 0/0; passed');
+      return;
+    }
     await launch('sand-table', 1, 'Mia', 'toddler');
     await page.waitForTimeout(800);
     assert.equal((await st()).flag, false);
