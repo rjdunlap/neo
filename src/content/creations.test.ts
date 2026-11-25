@@ -337,4 +337,23 @@ describe('a picture made on a scene', () => {
     } as const;
     expect(cleanPicture(JSON.parse(JSON.stringify(farm)))).toEqual(farm);
   });
+  it('keeps a picture made on the Garden or Space scene and drops an unknown one', () => {
+    for (const [scene, kind] of [
+      ['garden', 'butterfly'],
+      ['space', 'rocket'],
+    ] as const) {
+      const pic = {
+        kind: 'picture',
+        scene,
+        stamps: [{ kind, color: 'blue', x: 0.4, y: 0.5, size: 1, turns: 0 }],
+      } as const;
+      expect(cleanPicture(JSON.parse(JSON.stringify(pic)))).toEqual(pic);
+    }
+    const odd = cleanPicture({
+      kind: 'picture',
+      scene: 'moonbase',
+      stamps: [{ kind: 'ufo', color: 'blue', x: 0.4, y: 0.5, size: 1, turns: 0 }],
+    });
+    expect(odd && 'scene' in odd ? odd.scene : undefined).toBeUndefined();
+  });
 });
