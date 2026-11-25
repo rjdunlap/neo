@@ -113,6 +113,8 @@ const MOOD_SKY: Record<Mood, BackdropStyle> = {
 const ART = 1.1;
 /** Level 7: a cut board's halves reach the bowl (about 0.7 s) before the next board replaces it. */
 const LINE_BEAT = 0.7;
+/** Level 9 empties the bowl for the next board: the last halves land first. */
+const COVER_BEAT = 0.8;
 /** Seconds between the columns' first tosses, so fruit arrive one after another. */
 const STAGGER = 1.3;
 const TRAIL_LIFE = 0.3;
@@ -1318,7 +1320,7 @@ class FruitSlice implements Game {
     await this.ctx.instruct(this.instructLine() as LineId, this.instructVars());
   }
 
-  /** Level 7: the line cut exactly N; the next board comes in. */
+  /** Levels 7 and 9: the board is finished; the next board comes in. */
   private async boardDone() {
     this.busy = true;
     sfx.sparkle();
@@ -1326,21 +1328,21 @@ class FruitSlice implements Game {
     const yes = this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', {
       n: this.board!.n,
     });
-    if (this.plan.mode === 'line' && this.index + 1 < this.boards.length) {
-      // Level 7 (U7 R4): the line never holds the next board. The halves land, the next board arrives and can be
-      // cut while "Yes! One line through …" plays, and the instruction follows it.
-      await this.ctx.tw.wait(LINE_BEAT);
+    if (this.index + 1 < this.boards.length) {
+      // Levels 7 and 9 (U7 R4, U7d batch 2): the line never holds the next board. The halves land (level 9 gives them
+      // a little longer, as it empties the bowl), the next board arrives and can be cut while the line plays, and the
+      // instruction follows it.
+      await this.ctx.tw.wait(this.plan.mode === 'cover' ? COVER_BEAT : LINE_BEAT);
       if (this.finished) return;
       this.index++;
       return void this.begin(yes);
     }
-    // The last board's line is heard out, because the closing line would cut it; level 9's praise holds (batch 2).
+    // The last board's line is heard out, because the closing line would cut it.
     await yes;
-    // Level 9 empties the bowl for the next board: let the last halves land first.
-    if (this.plan.mode === 'cover') await this.ctx.tw.wait(0.8);
+    // Level 9 empties the bowl at the end too: let the last halves land first.
+    if (this.plan.mode === 'cover') await this.ctx.tw.wait(COVER_BEAT);
     this.index++;
-    if (this.index >= this.boards.length) return void this.finale();
-    await this.begin();
+    return void this.finale();
   }
 
   /** Levels 1–4: the bowl is full. */
