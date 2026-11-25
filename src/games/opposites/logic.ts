@@ -6,9 +6,9 @@ import type { BandLevels } from '../../progress/difficulty';
  * tap the picture and it flips to its opposite while the word is spoken. Then find the one named,
  * then find the opposite of a picture among others, then match the opposite pairs, then spot the one pair among five,
  * then find the one in between two ends (empty, half full, full), then line the three up from one end to the other,
- * then find the opposite of a word heard with its picture hidden.
+ * then find the opposite of a word heard with its picture hidden, then find the un- word (zipped, unzipped).
  */
-export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order';
+export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order' | 'un';
 
 export interface OppPlan {
   level: number;
@@ -72,14 +72,26 @@ export const WORD_PLAN: OppPlan = {
   name: 'Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three',
 };
 
+/**
+ * Level 10, school's new top: a picture pair of one word and its un- word (zipped, unzipped), and she taps the un- one. The
+ * word is heard, and shown in print with its "un" in a bubble of its own (reading-lite: the voice and pictures answer it).
+ */
+export const UN_LEVEL = 10;
+export const UN_PLAN: OppPlan = {
+  level: UN_LEVEL,
+  mode: 'un',
+  rounds: 4,
+  name: 'Un- words: two pictures, like zipped and unzipped; hear (and see) the un- word and tap it',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   // Level 6 is lap's opening, so pre-K steps from 5 straight to 7, then 8.
   prek: { min: 3, max: ORDER_LEVEL, order: [3, 4, 5, BETWEEN_LEVEL, ORDER_LEVEL] },
-  // School opens at Line them up, shared with pre-K's top, then hears the word alone.
-  school: { min: ORDER_LEVEL, max: WORD_LEVEL },
+  // School opens at Line them up, shared with pre-K's top, then hears the word alone, then un- words.
+  school: { min: ORDER_LEVEL, max: UN_LEVEL },
 };
 
 export const planFor = (level: number) =>
@@ -91,7 +103,9 @@ export const planFor = (level: number) =>
         ? ORDER_PLAN
         : level === WORD_LEVEL
           ? WORD_PLAN
-          : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+          : level === UN_LEVEL
+            ? UN_PLAN
+            : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
@@ -111,10 +125,25 @@ export const CONCEPTS = {
   plate: { words: ['clean', 'dirty'], family: 'clean', from: 3 },
   book: { words: ['thick', 'thin'], family: 'size', from: 3 },
   ball: { words: ['near', 'far'], family: 'position', from: 3 },
+  // Level 10's un- words: each side 1 is "un" + side 0, and only words a picture can show being undone. Their own family
+  // and level, so no earlier level's pool changes. Happy/unhappy is left out: "happy" already belongs to the mood pair.
+  zip: { words: ['zipped', 'unzipped'], family: 'un', from: UN_LEVEL },
+  tie: { words: ['tied', 'untied'], family: 'un', from: UN_LEVEL },
+  lock: { words: ['locked', 'unlocked'], family: 'un', from: UN_LEVEL },
+  wrap: { words: ['wrapped', 'unwrapped'], family: 'un', from: UN_LEVEL },
+  button: { words: ['buttoned', 'unbuttoned'], family: 'un', from: UN_LEVEL },
+  fold: { words: ['folded', 'unfolded'], family: 'un', from: UN_LEVEL },
 } as const;
 
 export type Concept = keyof typeof CONCEPTS;
 export const CONCEPT_IDS = Object.keys(CONCEPTS) as Concept[];
+/** Level 10's pairs: a word and its un- word. */
+export const UN_CONCEPTS = CONCEPT_IDS.filter((c) => CONCEPTS[c].family === 'un');
+/** The printed un- word split at its prefix ("un", "zipped"), for the separate "un" bubble. */
+export const unParts = (c: Concept): [string, string] => {
+  const un = CONCEPTS[c].words[1];
+  return [un.slice(0, 2), un.slice(2)];
+};
 
 /**
  * The gradable words and the word for their middle: only these have an in between. Never open/closed, on/off or
@@ -180,7 +209,7 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
   // The big card keeps lap's original eight pairs.
   const graded = plan.mode === 'between' || plan.mode === 'order';
-  const pool = graded ? GRADABLE : poolFor(plan.big ? 1 : plan.level);
+  const pool = graded ? GRADABLE : plan.mode === 'un' ? UN_CONCEPTS : poolFor(plan.big ? 1 : plan.level);
   const order = rng.shuffle([...pool]);
   // Level 8: the end named first alternates round by round, so both directions come up equally (2 and 2 in four rounds).
   const parity = plan.mode === 'order' ? rng.int(0, 1) : 0;
@@ -214,6 +243,9 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
       out.push({ ask: card(concept, from), cards });
     } else if (plan.mode === 'find')
       out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });
+    else if (plan.mode === 'un')
+      // Level 10: the word and its un- word side by side; the un- one is always asked.
+      out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, 1) });
     else if (plan.mode === 'opposite') {
       // The opposite, plus two pictures from other concepts.
       const others = differentFamilies(pool, rng, 2, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
@@ -242,7 +274,7 @@ export const opposites = (a: Card, b: Card) =>
 
 /**
  * Which card a capable child taps next, by its place in the round's cards, or null when the round is waiting. Switch: the
- * one card. Find: the card named. Opposite: the card that is the opposite of the one shown. Pairs: the first card not yet
+ * one card. Find and un: the card named. Opposite: the card that is the opposite of the one shown. Pairs: the first card not yet
  * matched and then its opposite (`picked` is the one already chosen). Between: the middle. Order: the next one along the
  * line from the end named first (`done` marks the ones already lined up). Always a right one.
  */
@@ -260,6 +292,7 @@ export function cardToTap(
     case 'switch':
       return 0;
     case 'find':
+    case 'un':
       return find((c) => word(c) === word(round.ask!));
     case 'opposite':
       return find((c) => opposites(c, round.ask!));
