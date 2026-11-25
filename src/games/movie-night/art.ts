@@ -80,7 +80,7 @@ export function glyph(pad: Pad, size = 28): Graphics {
   }
   return g;
 }
-function actor(kind: 'duck' | 'bunny' | 'bear', x: number, y: number, scale = 0.6) {
+export function actor(kind: 'duck' | 'bunny' | 'bear', x: number, y: number, scale = 0.6) {
   const c = new Critter(CRITTERS[kind]);
   c.alive = false;
   const bounds = c.getLocalBounds();

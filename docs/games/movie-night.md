@@ -4,19 +4,21 @@
 
 **ID:** `movie-night` · **Land:** Painted Canyon · **Ages:** preschool–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
-**Skills:** combining pictures and sound, matching sound to a pictured event, revision
+**Skills:** combining pictures and sound, matching sound to a pictured event, choosing what a show includes and puts first, revision
 
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1 |
 | pre-K | 1–3 |
-| school | 2–3 |
+| school | 2–5 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Sound for the show: any sound on any picture |
 | 2 | Right on time: splash on Duck’s landing |
 | 3 | Two moments: knock on the door tap, hello on the wave |
+| 4 | Pick the shots: show the find, then the smile |
+| 5 | Keep the surprise: the box before it opens |
 
 <!-- end generated -->
 

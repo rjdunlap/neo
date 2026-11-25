@@ -73,7 +73,7 @@ describe('Movie Night levels 4–5: the authored footage and the exact accepted 
       expect(ok.length).toBeGreaterThan(1);
       expect(ok.map(ids)).toContain(inTime[level]);
       const timeSet = new Set(inTime[level].split(' '));
-      expect(ok.some((s) => s.some((c) => !timeSet.has(c)))).toBe(true);
+      expect(ok.some((s) => s.some((c) => c !== null && !timeSet.has(c)))).toBe(true);
     }
   });
 

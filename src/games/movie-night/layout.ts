@@ -57,3 +57,52 @@ export function layout(v: { w: number; h: number; upright?: true }, count: numbe
     tall,
   };
 }
+
+/**
+ * Levels 4–5 (docs/definitions/movie-night.md#movie-night-45-mm3): three or four slots and four or five picture cards
+ * instead of sound pads. Held upright it is `layout` with a five-card tray (120 wide, 16 between, so 664 of the 768).
+ * Holding a card shows its one-second preview, so a preview box is always clear of the strip, the tray and the buttons:
+ * upright it is the little screen's own place; sideways and on an upright tablet it is a smaller box beside the request,
+ * or between the strip and the tray. Playback still uses the large `screen`, with the strip and the tray hidden.
+ */
+export function cutLayout(v: { w: number; h: number; upright?: true }, slotCount: number, cardCount: number) {
+  const base = layout(v, slotCount);
+  const dx = (v.w - 1024) / 2,
+    tall = v.h > v.w;
+  const box = (x: number, y: number, w: number, h: number): Box => ({ x: x + dx, y, w, h });
+  const step = cardCount > 4 ? 136 : 170;
+  if (v.upright) {
+    const left = v.w / 2 - ((cardCount - 1) * step) / 2;
+    return {
+      ...base,
+      tray: Array.from({ length: cardCount }, (_, i) => ({ ...base.tray[0], x: left + i * step })),
+      preview: base.screen,
+    };
+  }
+  if (tall) {
+    // An upright tablet: the 1024-wide plan, the strip in two columns, the preview between it and the tray.
+    return {
+      ...base,
+      slots: Array.from({ length: slotCount }, (_, i) =>
+        box(i % 2 ? 700 : 360, 340 + Math.floor(i / 2) * 190, 240, 140),
+      ),
+      tray: Array.from({ length: cardCount }, (_, i) =>
+        box(512 - ((cardCount - 1) * step) / 2 + i * step, 1000, 120, 110),
+      ),
+      controls: Array.from({ length: 4 }, (_, i) => box(300 + i * 180, 1160, 120, 100)),
+      preview: box(530, 800, 440, 249),
+    };
+  }
+  return {
+    ...base,
+    slots: Array.from({ length: slotCount }, (_, i) =>
+      box((1024 - (slotCount - 1) * 200) / 2 + i * 200, 270, 160, 120),
+    ),
+    tray: Array.from({ length: cardCount }, (_, i) =>
+      box(512 - ((cardCount - 1) * step) / 2 + i * step, 460, 120, 110),
+    ),
+    controls: Array.from({ length: 4 }, (_, i) => box(300 + i * 180, 650, 120, 100)),
+    request: box(470, 100, 740, 80),
+    preview: box(880, 100, 224, 127),
+  };
+}
