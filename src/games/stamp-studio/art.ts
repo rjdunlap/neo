@@ -548,6 +548,289 @@ export function stampArt(kind: StampKind, color: ColorName, radius = 48) {
       .stroke({ width: 4, color: s.line });
     for (const x of [-0.56, 0, 0.56]) g.circle(radius * x, radius * 0.22, 5.5).fill(0xffffff);
   }
+  if (kind === 'apple') {
+    g.moveTo(0, -radius * 0.5)
+      .quadraticCurveTo(radius * 0.06, -radius * 0.8, radius * 0.2, -radius * 0.94)
+      .stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
+    g.ellipse(radius * 0.32, -radius * 0.74, radius * 0.26, radius * 0.13)
+      .fill(swatch.green.fill)
+      .stroke({ width: 3.5, color: swatch.green.line });
+    g.circle(-radius * 0.34, radius * 0.06, radius * 0.5)
+      .circle(radius * 0.34, radius * 0.06, radius * 0.5)
+      .circle(0, radius * 0.3, radius * 0.5)
+      .stroke({ width: 8, color: s.line });
+    g.circle(-radius * 0.34, radius * 0.06, radius * 0.5)
+      .circle(radius * 0.34, radius * 0.06, radius * 0.5)
+      .circle(0, radius * 0.3, radius * 0.5)
+      .fill(s.fill);
+    g.ellipse(-radius * 0.4, -radius * 0.02, radius * 0.1, radius * 0.18).fill({
+      color: 0xffffff,
+      alpha: 0.45,
+    });
+  }
+  if (kind === 'cupcake') {
+    // A cherry on three scoops of frosting, over a ridged wrapper.
+    g.poly([
+      -radius * 0.62,
+      radius * 0.1,
+      radius * 0.62,
+      radius * 0.1,
+      radius * 0.44,
+      radius * 0.92,
+      -radius * 0.44,
+      radius * 0.92,
+    ])
+      .fill(swatch.brown.light)
+      .stroke({ width: 4, color: swatch.brown.line, join: 'round' });
+    for (const x of [-0.24, 0, 0.24])
+      g.moveTo(radius * x, radius * 0.16)
+        .lineTo(radius * x * 0.8, radius * 0.86)
+        .stroke({ width: 2.5, color: swatch.brown.line, alpha: 0.7 });
+    for (const [cx, cy, r] of [
+      [-0.34, -0.02, 0.36],
+      [0.34, -0.02, 0.36],
+      [0, -0.3, 0.4],
+    ] as const)
+      g.circle(radius * cx, radius * cy, radius * r).stroke({ width: 8, color: s.line });
+    for (const [cx, cy, r] of [
+      [-0.34, -0.02, 0.36],
+      [0.34, -0.02, 0.36],
+      [0, -0.3, 0.4],
+    ] as const)
+      g.circle(radius * cx, radius * cy, radius * r).fill(s.fill);
+    g.circle(0, -radius * 0.78, radius * 0.16)
+      .fill(swatch.red.fill)
+      .stroke({ width: 3.5, color: swatch.red.line });
+  }
+  if (kind === 'basket') {
+    g.moveTo(-radius * 0.66, radius * 0.06)
+      .bezierCurveTo(
+        -radius * 0.66,
+        -radius * 1.05,
+        radius * 0.66,
+        -radius * 1.05,
+        radius * 0.66,
+        radius * 0.06,
+      )
+      .stroke({ width: 7, color: swatch.brown.line, cap: 'round' });
+    g.poly([
+      -radius * 0.9,
+      radius * 0.06,
+      radius * 0.9,
+      radius * 0.06,
+      radius * 0.66,
+      radius * 0.9,
+      -radius * 0.66,
+      radius * 0.9,
+    ])
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    for (const y of [0.34, 0.62])
+      g.moveTo(-radius * (0.86 - y * 0.36), radius * y)
+        .lineTo(radius * (0.86 - y * 0.36), radius * y)
+        .stroke({ width: 3, color: s.line, alpha: 0.8 });
+    for (const x of [-0.4, 0, 0.4])
+      g.moveTo(radius * x, radius * 0.1)
+        .lineTo(radius * x * 0.8, radius * 0.86)
+        .stroke({ width: 3, color: s.line, alpha: 0.8 });
+  }
+  if (kind === 'kite') {
+    // A tail of little bows runs down and to the left from the bottom corner.
+    g.moveTo(0, radius * 0.6)
+      .bezierCurveTo(-radius * 0.3, radius * 0.8, radius * 0.2, radius * 0.9, -radius * 0.34, radius * 1.02)
+      .stroke({ width: 3.5, color: ink, cap: 'round' });
+    for (const [bx, by] of [
+      [-0.1, 0.78],
+      [-0.06, 0.94],
+    ] as const)
+      g.poly([
+        radius * bx,
+        radius * by,
+        radius * (bx - 0.14),
+        radius * (by - 0.08),
+        radius * (bx - 0.14),
+        radius * (by + 0.08),
+      ])
+        .fill(swatch.red.fill)
+        .stroke({ width: 2.5, color: swatch.red.line, join: 'round' });
+    g.poly([0, -radius, radius * 0.8, -radius * 0.1, 0, radius * 0.6, -radius * 0.8, -radius * 0.1])
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    g.moveTo(0, -radius)
+      .lineTo(0, radius * 0.6)
+      .moveTo(-radius * 0.8, -radius * 0.1)
+      .lineTo(radius * 0.8, -radius * 0.1)
+      .stroke({ width: 3, color: s.line, alpha: 0.85 });
+  }
+  if (kind === 'balloon') {
+    g.moveTo(0, radius * 0.66)
+      .bezierCurveTo(-radius * 0.2, radius * 0.8, radius * 0.2, radius * 0.9, 0, radius)
+      .stroke({ width: 3.5, color: ink, cap: 'round' });
+    g.poly([0, radius * 0.5, -radius * 0.12, radius * 0.68, radius * 0.12, radius * 0.68])
+      .fill(s.fill)
+      .stroke({ width: 3.5, color: s.line, join: 'round' });
+    g.ellipse(0, -radius * 0.18, radius * 0.74, radius * 0.74)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line });
+    g.ellipse(-radius * 0.26, -radius * 0.44, radius * 0.1, radius * 0.2).fill({
+      color: 0xffffff,
+      alpha: 0.5,
+    });
+  }
+  if (kind === 'ant') {
+    // Three body parts and six legs, seen from the side, with two feelers.
+    for (const [lx, ex] of [
+      [-0.44, -0.74],
+      [0, 0],
+      [0.4, 0.74],
+    ] as const) {
+      g.moveTo(radius * lx, radius * 0.1)
+        .lineTo(radius * ex, radius * 0.76)
+        .stroke({ width: 3.5, color: ink, cap: 'round' });
+    }
+    g.moveTo(radius * 0.74, -radius * 0.18)
+      .lineTo(radius * 0.96, -radius * 0.64)
+      .moveTo(radius * 0.86, -radius * 0.1)
+      .lineTo(radius * 1.04, -radius * 0.4)
+      .stroke({ width: 3.5, color: ink, cap: 'round' });
+    g.ellipse(-radius * 0.58, 0, radius * 0.42, radius * 0.34)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line });
+    g.circle(0, 0, radius * 0.26)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line });
+    g.circle(radius * 0.52, -radius * 0.08, radius * 0.3)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line });
+    g.circle(radius * 0.6, -radius * 0.12, 4).fill(ink);
+  }
+  if (kind === 'house') {
+    g.rect(-radius * 0.7, -radius * 0.1, radius * 1.4, radius * 0.96)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    g.poly([-radius * 0.88, -radius * 0.08, 0, -radius * 0.86, radius * 0.88, -radius * 0.08])
+      .fill(swatch.red.fill)
+      .stroke({ width: 4, color: swatch.red.line, join: 'round' });
+    g.roundRect(-radius * 0.18, radius * 0.3, radius * 0.36, radius * 0.56, 4)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 3.5, color: swatch.brown.line });
+    for (const sx of [-1, 1])
+      g.rect(sx * radius * 0.46 - radius * 0.1, radius * 0.1, radius * 0.2, radius * 0.2)
+        .fill(swatch.blue.light)
+        .stroke({ width: 3, color: swatch.blue.line });
+  }
+  if (kind === 'car') {
+    g.roundRect(-radius * 0.5, -radius * 0.5, radius, radius * 0.6, 12)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    g.roundRect(-radius * 0.98, -radius * 0.04, radius * 1.96, radius * 0.6, 10)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    for (const sx of [-1, 1])
+      g.roundRect(sx * radius * 0.26 - radius * 0.2, -radius * 0.4, radius * 0.4, radius * 0.34, 5)
+        .fill(swatch.blue.light)
+        .stroke({ width: 3, color: swatch.blue.line });
+    for (const sx of [-1, 1]) {
+      g.circle(sx * radius * 0.5, radius * 0.58, radius * 0.24)
+        .fill(ink)
+        .stroke({ width: 3, color: ink });
+      g.circle(sx * radius * 0.5, radius * 0.58, radius * 0.09).fill(0xffffff);
+    }
+  }
+  if (kind === 'bus') {
+    g.roundRect(-radius, -radius * 0.5, radius * 2, radius * 1.1, 12)
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    for (const x of [-0.72, -0.28, 0.16])
+      g.roundRect(radius * x, -radius * 0.34, radius * 0.36, radius * 0.34, 4)
+        .fill(swatch.blue.light)
+        .stroke({ width: 3, color: swatch.blue.line });
+    g.roundRect(radius * 0.58, -radius * 0.34, radius * 0.3, radius * 0.7, 4)
+      .fill(swatch.blue.light)
+      .stroke({ width: 3, color: swatch.blue.line });
+    g.moveTo(-radius, radius * 0.22)
+      .lineTo(radius * 0.54, radius * 0.22)
+      .stroke({ width: 3, color: s.line, alpha: 0.7 });
+    for (const sx of [-1, 1]) {
+      g.circle(sx * radius * 0.52, radius * 0.62, radius * 0.22).fill(ink);
+      g.circle(sx * radius * 0.52, radius * 0.62, radius * 0.08).fill(0xffffff);
+    }
+  }
+  if (kind === 'bike') {
+    for (const sx of [-1, 1]) {
+      g.circle(sx * radius * 0.56, radius * 0.3, radius * 0.4).stroke({ width: 5, color: ink });
+      g.circle(sx * radius * 0.56, radius * 0.3, radius * 0.06).fill(ink);
+    }
+    // Frame: the seat post, the top bar and the fork, all in the stamp's own color.
+    g.poly([
+      -radius * 0.56,
+      radius * 0.3,
+      -radius * 0.14,
+      -radius * 0.3,
+      radius * 0.38,
+      -radius * 0.3,
+      radius * 0.56,
+      radius * 0.3,
+    ]).stroke({ width: 7, color: s.line, join: 'round', cap: 'round' });
+    g.poly([
+      -radius * 0.56,
+      radius * 0.3,
+      -radius * 0.14,
+      -radius * 0.3,
+      radius * 0.38,
+      -radius * 0.3,
+      radius * 0.56,
+      radius * 0.3,
+    ]).stroke({ width: 4, color: s.fill, join: 'round', cap: 'round' });
+    g.moveTo(-radius * 0.56, radius * 0.3)
+      .lineTo(radius * 0.1, radius * 0.3)
+      .lineTo(radius * 0.38, -radius * 0.3)
+      .stroke({ width: 4, color: s.fill, join: 'round', cap: 'round' });
+    g.moveTo(radius * 0.38, -radius * 0.3)
+      .lineTo(radius * 0.3, -radius * 0.62)
+      .lineTo(radius * 0.62, -radius * 0.62)
+      .stroke({ width: 5, color: ink, join: 'round', cap: 'round' });
+    g.moveTo(-radius * 0.34, -radius * 0.42)
+      .lineTo(-radius * 0.02, -radius * 0.42)
+      .stroke({ width: 7, color: ink, cap: 'round' });
+  }
+  if (kind === 'lamp') {
+    g.circle(0, -radius * 0.52, radius * 0.76).fill({ color: swatch.yellow.light, alpha: 0.5 });
+    g.roundRect(-radius * 0.1, -radius * 0.2, radius * 0.2, radius * 1.1, 4)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 3.5, color: swatch.brown.line });
+    g.roundRect(-radius * 0.34, radius * 0.78, radius * 0.68, radius * 0.16, 5)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 3.5, color: swatch.brown.line });
+    g.poly([
+      -radius * 0.32,
+      -radius * 0.28,
+      radius * 0.32,
+      -radius * 0.28,
+      radius * 0.26,
+      -radius * 0.78,
+      -radius * 0.26,
+      -radius * 0.78,
+    ])
+      .fill(s.fill)
+      .stroke({ width: 4, color: s.line, join: 'round' });
+    g.poly([-radius * 0.34, -radius * 0.78, 0, -radius * 1.02, radius * 0.34, -radius * 0.78])
+      .fill(s.line)
+      .stroke({ width: 3, color: s.line, join: 'round' });
+    g.circle(0, -radius * 0.52, radius * 0.1).fill({ color: 0xffffff, alpha: 0.8 });
+  }
+  if (kind === 'cloud') {
+    const puffs = [
+      [-radius * 0.48, radius * 0.18, radius * 0.38],
+      [-radius * 0.1, -radius * 0.2, radius * 0.5],
+      [radius * 0.42, -radius * 0.02, radius * 0.4],
+      [radius * 0.52, radius * 0.3, radius * 0.28],
+      [-radius * 0.02, radius * 0.3, radius * 0.4],
+    ] as const;
+    for (const [cx, cy, r] of puffs) g.circle(cx, cy, r).stroke({ width: 8, color: s.line });
+    for (const [cx, cy, r] of puffs) g.circle(cx, cy, r).fill(s.fill);
+    g.circle(-radius * 0.26, -radius * 0.36, radius * 0.12).fill({ color: 0xffffff, alpha: 0.45 });
+  }
   return g;
 }
 
@@ -647,6 +930,54 @@ export function sceneArt(id: SceneId, w: number, h: number) {
       g.circle(w * sx, h * sy, r).fill({ color: 0xffffff, alpha: 0.75 });
     // A soft curve of ground along the bottom.
     g.ellipse(w / 2, h + h * 0.04, w * 0.7, h - y + h * 0.04).fill(0x4a4f8a);
+  }
+  if (id === 'picnic') {
+    const y = h * SCENES.picnic.horizon;
+    g.rect(0, 0, w, y).fill(swatch.blue.light);
+    g.circle(w * 0.14, h * 0.14, Math.min(w, h) * 0.07).fill(swatch.yellow.light);
+    g.rect(0, y, w, h - y).fill(swatch.green.light);
+    g.moveTo(0, y).lineTo(w, y).stroke({ width: 3, color: swatch.green.line, alpha: 0.5 });
+    // A red-and-white checked cloth laid out on the grass, a little in from every side.
+    const [cx0, cy0, cw, ch] = [w * 0.1, y + (h - y) * 0.16, w * 0.8, (h - y) * 0.72];
+    g.roundRect(cx0, cy0, cw, ch, 8).fill(0xffffff);
+    const cell = Math.max(28, Math.round(cw / 12));
+    for (let i = 0; i * cell < cw; i++)
+      for (let j = 0; j * cell < ch; j++)
+        if ((i + j) % 2 === 0)
+          g.rect(
+            cx0 + i * cell,
+            cy0 + j * cell,
+            Math.min(cell, cw - i * cell),
+            Math.min(cell, ch - j * cell),
+          ).fill({
+            color: swatch.red.light,
+            alpha: 0.75,
+          });
+    g.roundRect(cx0, cy0, cw, ch, 8).stroke({ width: 3, color: swatch.red.line, alpha: 0.4 });
+  }
+  if (id === 'town') {
+    const y = h * SCENES.town.horizon;
+    g.rect(0, 0, w, y).fill(swatch.blue.light);
+    // A skyline of pale blocks standing on the pavement, each with a few windows.
+    const blocks = Math.max(5, Math.round(w / 110));
+    const bw = w / blocks;
+    for (let i = 0; i < blocks; i++) {
+      const bh = h * (0.16 + ((i * 7) % 5) * 0.045);
+      g.rect(i * bw + 4, y - bh, bw - 8, bh)
+        .fill(i % 2 ? swatch.orange.light : swatch.purple.light)
+        .stroke({ width: 2.5, color: swatch.white.line, alpha: 0.45 });
+      for (let k = 0; k < 2; k++)
+        for (let r = 0; r * 38 + 22 < bh - 10; r++)
+          g.rect(i * bw + bw * (0.24 + k * 0.32), y - bh + 14 + r * 38, bw * 0.16, 20).fill({
+            color: swatch.yellow.light,
+            alpha: 0.9,
+          });
+    }
+    // Pavement strip, then the road with a dashed middle line.
+    g.rect(0, y, w, h * 0.06).fill(swatch.white.light);
+    g.rect(0, y + h * 0.06, w, h - y - h * 0.06).fill(0xb4b4c4);
+    const ry = y + h * 0.06 + (h - y - h * 0.06) / 2;
+    for (let x = 12; x < w; x += 70) g.rect(x, ry - 3, 38, 6).fill({ color: 0xffffff, alpha: 0.85 });
   }
   g.eventMode = 'none';
   return g;

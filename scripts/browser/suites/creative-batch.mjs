@@ -480,10 +480,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (g.stamps.length !== 3) throw new Error('Mixed set picture did not keep earlier stamp');
           });
           await screenshot('stamp-studio-4-farm');
-          // Garden (index 3) then Space (index 4): their stamps join the same picture, the backdrop follows the last set.
+          // Garden, Space, Picnic then Town (indexes 3-6): their stamps join the same picture, the backdrop follows the last set.
           for (const [setIndex, stampIndex, name] of [
             [3, 1, 'garden'],
             [4, 1, 'space'],
+            [5, 0, 'picnic'],
+            [6, 3, 'town'],
           ]) {
             await page.evaluate(
               async ([si, ci, nx]) => {
@@ -494,7 +496,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
                 await kit.sleep(450);
                 kit.tapOn(g.choices[ci]);
                 await kit.sleep(450);
-                const p = g.paper.toGlobal({ x: 440 + nx * 120, y: 200 });
+                const p = g.paper.toGlobal({ x: 420 + nx * 70, y: 200 });
                 kit.tap(p.x, p.y);
                 await kit.sleep(200);
               },
@@ -522,11 +524,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await page.waitForTimeout(800);
           await tap('neo.scene.after.keep');
           const saved = await page.evaluate(() => kit.store.data.creations.picture.current);
-          assert.equal(saved.scene, 'space', 'kept picture remembers the last set chosen (Space)');
+          assert.equal(saved.scene, 'town', 'kept picture remembers the last set chosen (Town)');
           assert.deepEqual(
             saved.stamps.map((s) => s.kind),
-            ['star', 'cow', 'barn', 'butterfly', 'moon'],
-            'kept picture preserves mixed stamps from Plain, Farm, Garden and Space',
+            ['star', 'cow', 'barn', 'butterfly', 'moon', 'apple', 'bike'],
+            'kept picture preserves mixed stamps from Plain, Farm, Garden, Space, Picnic and Town',
           );
         }
         await page.setViewportSize({ width: 1024, height: 768 });

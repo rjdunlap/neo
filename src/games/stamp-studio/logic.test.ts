@@ -607,7 +607,7 @@ describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
       expect(spots).toHaveLength(7);
       for (const transform of [false, true])
         for (const n of [1, 2, 3, 4, 6]) {
-          const l = stampLayout(v, n, transform, 6);
+          const l = stampLayout(v, n, transform, 7);
           const box = (what: string, p: { x: number; y: number }, r: number) => ({
             what,
             x0: p.x - r,
@@ -998,10 +998,10 @@ describe('Stamp a duck! (level 11)', () => {
     it('keeps the four sticker kinds first, so saved sticker art never changes', () => {
       expect(STAMP_KINDS.slice(0, 5)).toEqual(['star', 'flower', 'fish', 'cat', 'duck']);
     });
-    it('seeds levels 1–3 on Sea, Farm, Garden or Space (never plain paper), and every set stamp turns up', () => {
+    it('seeds levels 1–3 on one of the six sets (never plain paper), and every set stamp turns up', () => {
       const seen = new Map<string, Set<StampKind>>(SEEDED_SETS.map((id) => [id, new Set()]));
       const rounds = new Map<string, number>();
-      for (let seed = 0; seed < 240; seed++) {
+      for (let seed = 0; seed < 360; seed++) {
         for (const level of [1, 2, 3]) {
           const r = roundPlan(level, new Rng(seed));
           const id = SEEDED_SETS.find((s) => SETS[s].scene === r.scene);
@@ -1078,7 +1078,7 @@ describe('Stamp a duck! (level 11)', () => {
     it('offers the sets button at levels 4–6 only, and every set choice has distinct stamps', () => {
       expect([1, 2, 3, 7, 8, 9, 10, 11].some((l) => planFor(l).sets)).toBe(false);
       expect([4, 5, 6].every((l) => planFor(l).sets)).toBe(true);
-      expect(SET_CHOICES).toEqual(['plain', 'sea', 'farm', 'garden', 'space']);
+      expect(SET_CHOICES).toEqual(['plain', 'sea', 'farm', 'garden', 'space', 'picnic', 'town']);
       for (const choice of SET_CHOICES) {
         const info = setChoiceInfo(choice);
         expect(info.name.length).toBeGreaterThan(0);
@@ -1122,6 +1122,56 @@ describe('Stamp a duck! (level 11)', () => {
     });
     it('paints the garden and space backdrops without swallowing taps', () => {
       for (const id of ['garden', 'space'] as const) {
+        expect(SCENES[id].horizon).toBeGreaterThan(0.25);
+        expect(SCENES[id].horizon).toBeLessThan(1);
+        const g = artwork.sceneArt(id, 600, 400);
+        expect(g.eventMode).toBe('none');
+        const b = g.getLocalBounds();
+        expect(b.width).toBeGreaterThanOrEqual(600);
+        expect(b.height).toBeGreaterThanOrEqual(400);
+      }
+    });
+  });
+
+  describe('the Picnic and Town sets (dive slice 8)', () => {
+    const newKinds = [...SETS.picnic.kinds, ...SETS.town.kinds];
+    it('names six distinct stamps per set, all new, each with a backdrop', () => {
+      expect(SETS.picnic.kinds).toEqual(['apple', 'cupcake', 'basket', 'kite', 'balloon', 'ant']);
+      expect(SETS.town.kinds).toEqual(['house', 'car', 'bus', 'bike', 'lamp', 'cloud']);
+      expect(new Set(newKinds).size).toBe(12);
+      expect(SEEDED_SETS).toContain('picnic');
+      expect(SEEDED_SETS).toContain('town');
+    });
+    it('says "an" for the apple and the ant and still reads the word back', () => {
+      expect(STAMP_NAMES.apple).toBe('An apple');
+      expect(STAMP_NAMES.ant).toBe('An ant');
+      expect(animalWord('apple')).toBe('apple');
+      expect(animalWord('ant')).toBe('ant');
+      expect(animalWord('duck')).toBe('duck');
+    });
+    it('names, sounds and draws every new stamp so it reads at the board scale', () => {
+      for (const kind of newKinds) {
+        expect(STAMP_KINDS).toContain(kind);
+        expect(STAMP_NAMES[kind]).toMatch(/^An? \w+$/);
+        const sound = STAMP_SOUNDS[kind];
+        if ('from' in sound)
+          for (let press = 1; press <= 10; press++) {
+            const step = stampStep(kind, press)!;
+            expect(Number.isInteger(step)).toBe(true);
+            expect(step).toBeGreaterThanOrEqual(0);
+            expect(step).toBeLessThanOrEqual(11);
+          }
+        for (const color of STAMP_COLORS) {
+          const b = artwork.stampArt(kind, color, 48).getLocalBounds();
+          expect(b.width * 0.46, `${kind} ${color}`).toBeGreaterThan(30);
+          expect(b.height * 0.46, `${kind} ${color}`).toBeGreaterThan(20);
+          expect(b.width).toBeLessThan(48 * 2.6);
+          expect(b.height).toBeLessThan(48 * 2.6);
+        }
+      }
+    });
+    it('paints the picnic and town backdrops without swallowing taps', () => {
+      for (const id of ['picnic', 'town'] as const) {
         expect(SCENES[id].horizon).toBeGreaterThan(0.25);
         expect(SCENES[id].horizon).toBeLessThan(1);
         const g = artwork.sceneArt(id, 600, 400);
