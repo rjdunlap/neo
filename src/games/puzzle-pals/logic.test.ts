@@ -325,8 +325,8 @@ describe('Puzzle Pals', () => {
     expect(plan.twin).toBe(true);
     expect(boardCount(plan)).toBe(2);
     expect(boardCount(puzzlePlan(9))).toBe(1);
-    expect(levelsInOrder(LEVELS.prek)).toEqual([5, 6, 7, 9, 10]);
-    expect(levelsInOrder(LEVELS.school)).toEqual([6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
     expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
     for (let seed = 1; seed <= 200; seed++) {
       const [a, b] = dealScenePair(new Rng(seed));
