@@ -156,7 +156,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `pyramid` | 2026-11-13 · [pyramid-solitaire levels 9–10: lesson deals](verification/2026-11-13-pyramid-solitaire-levels-9-10-lesson-deals.md) | `PYRAMID_LEVELS=9,10` |
 | `raingarden` | 2026-11-23 · [Rain Garden level 7, one garden for two rains](verification/2026-11-23-rain-garden-level-7-one-garden-for-two-rains.md) | `FROM_LEVEL=7` |
 | `readdo` | 2026-11-05 · [Read & Do levels 8–9 Mend the sign (read-do batch 4)](archive/VERIFICATION-2026-11-05.md#2026-11-05--read--do-levels-89-mend-the-sign-read-do-batch-4) | `READ_LEVELS=8,9` |
-| `readyadventure` | 2026-10-23 · [Ready for Adventure levels 1–3 (new game, RA2)](archive/VERIFICATION-2026-10-23.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2) | Levels 1 and 3 |
+| `readyadventure` | 2026-10-23 · [Ready for Adventure levels 1–3 (new game, RA2)](archive/VERIFICATION-2026-10-23.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2) | Levels 1 and 3; 2026-11-25 · [level 4 (PR #2177)](verification/2026-11-25-ready-for-adventure-level-4-the-request-changed.md) |
 | `recipeworkshop` | 2026-10-22 · [Recipe Workshop levels 1–3 (cooking C2–C4, new game)](archive/VERIFICATION-2026-10-22.md#2026-10-22--recipe-workshop-levels-13-cooking-c2c4-new-game) | — |
 | `relaywoods` | 2026-10-26 · [Relay Woods 1–4 (NC2)](archive/VERIFICATION-2026-10-26.md#2026-10-26--relay-woods-14-nc2) | — |
 | `ribbon` | 2026-11-17 · [Ribbon Workshop plays upright on a phone](verification/2026-11-17-ribbon-workshop-plays-upright-on-a-phone.md) | `RIBBON_LEVELS=upright` |

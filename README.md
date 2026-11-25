@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 157 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 158 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -120,7 +120,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Bolt Boards](docs/games/bolt-boards.md) | lap–school | Barnyard | 10 | tap anywhere in the play area to turn one big bolt, drop the board and send the fruit into the basket |
 | [Look It Up](docs/games/look-it-up.md) | toddler–school | Barnyard | 6 | touch a picture label to hear it, or tap an animal's face on the guide's tabs and give it the food its page shows |
 | [Adventure Walk](docs/games/adventure-walk.md) | toddler–school | Barnyard | 5 | tap one of two glowing ways (over or under, through, across, around) past each landmark on the companion's walk to a friend's picnic, then follow the friend's call |
-| [Ready for Adventure](docs/games/ready-for-adventure.md) | toddler–pre-K | Barnyard | 3 | get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade |
+| [Ready for Adventure](docs/games/ready-for-adventure.md) | toddler–school | Barnyard | 4 | get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade |
 | [Who Am I?](docs/games/who-am-i.md) | pre-K–school | Barnyard | 8 | a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out |
 | [Timeline Trail](docs/games/timeline-trail.md) | preschool–school | Barnyard | 7 | hang pictures of one island place on the pet's clothesline between a long-ago post and a now post, then watch the place grow as a flipbook |
 | [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 15 | count along as illustrated ducks hop in |
