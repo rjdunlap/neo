@@ -15,7 +15,6 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   fish: 'A fish',
   cat: 'A cat',
   duck: 'A duck',
-  // Every name takes "A", so `animalWord` can drop two letters; a later "An apple" or "An ant" needs that revisited.
   whale: 'A whale',
   crab: 'A crab',
   starfish: 'A starfish',
@@ -35,6 +34,18 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   planet: 'A planet',
   comet: 'A comet',
   ufo: 'A UFO',
+  apple: 'An apple',
+  cupcake: 'A cupcake',
+  basket: 'A basket',
+  kite: 'A kite',
+  balloon: 'A balloon',
+  ant: 'An ant',
+  house: 'A house',
+  car: 'A car',
+  bus: 'A bus',
+  bike: 'A bike',
+  lamp: 'A lamp',
+  cloud: 'A cloud',
 };
 
 /**
@@ -68,11 +79,29 @@ export const SETS = {
     kinds: ['star', 'moon', 'rocket', 'planet', 'comet', 'ufo'],
     scene: 'space',
   },
+  picnic: {
+    name: 'Picnic',
+    kinds: ['apple', 'cupcake', 'basket', 'kite', 'balloon', 'ant'],
+    scene: 'picnic',
+  },
+  town: {
+    name: 'Town',
+    kinds: ['house', 'car', 'bus', 'bike', 'lamp', 'cloud'],
+    scene: 'town',
+  },
 } as const satisfies Record<string, StampSet>;
 export type SetId = keyof typeof SETS;
 export type SetChoice = 'plain' | SetId;
 /** The sets a level 4–6 player can switch between from the sets button. */
-export const SET_CHOICES: readonly SetChoice[] = ['plain', 'sea', 'farm', 'garden', 'space'];
+export const SET_CHOICES: readonly SetChoice[] = [
+  'plain',
+  'sea',
+  'farm',
+  'garden',
+  'space',
+  'picnic',
+  'town',
+];
 /** The classic four stamps shown on plain paper at levels 4–6 before switching sets. */
 export const CLASSIC_KINDS: readonly StampKind[] = ['star', 'flower', 'fish', 'cat'];
 /** What a choice in the sets row shows: its label, stamp palette, and optional backdrop. */
@@ -91,13 +120,15 @@ export const SCENES = {
   farm: { name: 'The farm', horizon: 0.42 },
   garden: { name: 'The garden', horizon: 0.5 },
   space: { name: 'Space', horizon: 0.88 },
+  picnic: { name: 'The picnic', horizon: 0.4 },
+  town: { name: 'The town', horizon: 0.62 },
 } as const satisfies Record<SceneId, { name: string; horizon: number }>;
 /** The sets a seeded round at levels 1–3 draws from: every set has its backdrop, so Plain gives way there. */
-export const SEEDED_SETS: readonly SetId[] = ['sea', 'farm', 'garden', 'space'];
+export const SEEDED_SETS: readonly SetId[] = ['sea', 'farm', 'garden', 'space', 'picnic', 'town'];
 /** The stamps from before sets existed, which Follow the sparkle (level 10) still draws from on plain paper. */
 export const PLAIN_KINDS: readonly StampKind[] = STAMP_KINDS.slice(0, 5);
 /** Plain noun for a stamp kind ("duck", "cat", "fish"), used inside spoken prompts. */
-export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].slice(2);
+export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].replace(/^An? /, '');
 
 /** Saved sticker seeds always use these original four kinds and colors, in their historical order. */
 const STICKER_KINDS = STAMP_KINDS.slice(0, 4);
@@ -325,6 +356,18 @@ export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
   planet: { play: 'bell', from: 1 },
   comet: { play: 'bell', from: 6 },
   ufo: { play: 'bell', from: 0 },
+  apple: { play: 'marimba', from: 3 },
+  cupcake: { play: 'bell', from: 5 },
+  basket: { play: 'marimba', from: 1 },
+  kite: { play: 'bell', from: 2 },
+  balloon: { play: 'bell', from: 7 },
+  ant: { play: 'marimba', from: 6 },
+  house: { play: 'marimba', from: 0 },
+  car: { play: 'marimba', from: 4 },
+  bus: { play: 'marimba', from: 2 },
+  bike: { play: 'bell', from: 3 },
+  lamp: { play: 'bell', from: 4 },
+  cloud: { play: 'bell', from: 1 },
 };
 /** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
 export function stampStep(kind: StampKind, press: number): number | null {
@@ -467,7 +510,7 @@ export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: Co
     };
   }
   if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
-  // Levels 1–3 draw from one seeded set (Sea, Farm, Garden or Space); Follow the sparkle (level 10) keeps Plain.
+  // Levels 1–3 draw from one seeded set (Sea, Farm, Garden, Space, Picnic or Town); Follow the sparkle (level 10) keeps Plain.
   const picked = level <= 3 ? rng.pick(SEEDED_SETS) : undefined;
   const pool = picked ? SETS[picked].kinds : PLAIN_KINDS;
   const scene = picked ? SETS[picked].scene : undefined;
@@ -815,7 +858,11 @@ export function stampLayout(
         const right = col - BUTTON_REACH - 8 - SET_REACH;
         return { x: right - (cols - 1 - colIdx) * setStep, y: sets.y + rowIdx * setStep };
       })
-    : Array.from({ length: setsCount }, (_, i) => ({ x: 225 + i * setStep, y: sets.y }));
+    : Array.from({ length: setsCount }, (_, i) => {
+        // One row while it clears the right-hand buttons; a long row wraps onto a second one below.
+        const perRow = Math.max(1, Math.floor((col - BUTTON_REACH - SET_REACH - 225) / setStep) + 1);
+        return { x: 225 + (i % perRow) * setStep, y: sets.y + Math.floor(i / perRow) * setStep };
+      });
   return {
     paper,
     choiceRadius,

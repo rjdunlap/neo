@@ -337,10 +337,12 @@ describe('a picture made on a scene', () => {
     } as const;
     expect(cleanPicture(JSON.parse(JSON.stringify(farm)))).toEqual(farm);
   });
-  it('keeps a picture made on the Garden or Space scene and drops an unknown one', () => {
+  it('keeps a picture made on the Garden, Space, Picnic or Town scene and drops an unknown one', () => {
     for (const [scene, kind] of [
       ['garden', 'butterfly'],
       ['space', 'rocket'],
+      ['picnic', 'apple'],
+      ['town', 'bus'],
     ] as const) {
       const pic = {
         kind: 'picture',

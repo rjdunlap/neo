@@ -36,11 +36,23 @@ export const STAMP_KINDS = [
   'planet',
   'comet',
   'ufo',
+  'apple',
+  'cupcake',
+  'basket',
+  'kite',
+  'balloon',
+  'ant',
+  'house',
+  'car',
+  'bus',
+  'bike',
+  'lamp',
+  'cloud',
 ] as const;
 export type StampKindId = (typeof STAMP_KINDS)[number];
 
 /** The backdrops a kept picture can remember (Stamp Studio's scenes); a picture without one is on plain paper. */
-export const SCENE_IDS = ['sea', 'farm', 'garden', 'space'] as const;
+export const SCENE_IDS = ['sea', 'farm', 'garden', 'space', 'picnic', 'town'] as const;
 export type SceneId = (typeof SCENE_IDS)[number];
 
 /** Most stamps a picture holds (Stamp Studio's own limit). */
