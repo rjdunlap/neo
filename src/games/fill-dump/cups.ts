@@ -24,6 +24,9 @@ import {
 const stroke = (color = ink, width = 6) => ({ color, width, join: 'round' as const, cap: 'round' as const });
 
 /** The scoop's moves: dip into the tub, or carry a cupful over a bowl and tip it. Seconds each. */
+/** The nouns slotted into the level's lines; a slotted line is spoken by device speech, so no clip must be rendered. */
+const WORDS = { cup: 'cup', cups: 'cups', bowl: 'bowl' };
+
 const SCOOP_S = 0.45;
 const POUR_S = 0.6;
 /** How fast the water shown in a bowl catches up with the cupfuls poured, in cups per second. */
@@ -115,7 +118,7 @@ export class CupsGame implements Game {
   }
 
   start() {
-    void this.ctx.instruct('fill.cups.start');
+    void this.ctx.instruct('fill.cups.start', WORDS);
   }
 
   resize(v: View) {
@@ -198,18 +201,18 @@ export class CupsGame implements Game {
     switch (ev.kind) {
       case 'empty':
         sfx.tick();
-        void this.ctx.say('fill.cups.scoopfirst');
+        void this.ctx.say('fill.cups.scoopfirst', WORDS);
         return;
       case 'brim':
         sfx.tick();
-        void this.ctx.say('fill.cups.brim');
+        void this.ctx.say('fill.cups.brim', WORDS);
         return;
       case 'pour':
         this.move = { kind: 'pour', side, t: 0 };
         sfx.marimba(1 + ev.n, 0.4);
         void this.ctx.say('fill.count', { n: ev.n }).then(() => {
           if (this.gone) return;
-          if (ev.ask) void this.ctx.instruct('fill.cups.ask');
+          if (ev.ask) void this.ctx.instruct('fill.cups.ask', WORDS);
           else if (ev.full) void this.ctx.say('fill.cups.full', { n: ev.n });
         });
         return;
@@ -235,7 +238,7 @@ export class CupsGame implements Game {
     await this.ctx.say('fill.cups.that', { n: p[1].cups });
     if (this.gone) return;
     this.pulse = null;
-    if (hint) void this.ctx.say('fill.cups.hint');
+    if (hint) void this.ctx.say('fill.cups.hint', WORDS);
   }
 
   private answered(side: 0 | 1, more: number, fewer: number, done: boolean) {
@@ -256,13 +259,13 @@ export class CupsGame implements Game {
     void this.ctx.say('fill.cups.right', { n: more, m: fewer }).then(async () => {
       if (this.gone) return;
       if (done) {
-        await this.ctx.say('fill.cups.done');
+        await this.ctx.say('fill.cups.done', WORDS);
         if (!this.gone) this.ctx.finish({ misses: this.misses, hints: this.hints });
         return;
       }
       this.held = null;
       this.shown = [0, 0];
-      void this.ctx.instruct('fill.cups.start');
+      void this.ctx.instruct('fill.cups.start', WORDS);
     });
   }
 
