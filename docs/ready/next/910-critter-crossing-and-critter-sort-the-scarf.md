@@ -1,1 +1,0 @@
-**`critter-crossing` and `critter-sort` the scarf** (the shared third critter feature; both games' rule tests plus the fairness test across the larger pool). [Dive](../../deep-dives/critter-crossing.md#build-slices-in-order)
