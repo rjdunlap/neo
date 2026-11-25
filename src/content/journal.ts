@@ -404,6 +404,18 @@ export const JOURNAL: readonly JournalEntry[] = [
       found: 'the biggest jelly sang low and the littlest jelly sang high',
     },
   },
+  // Jelly Drums level 3: the rainbow sparkle after three neighbouring jellies in a row (JournalWatch.sparkled).
+  {
+    id: entryId('jelly-drums', 'scale'),
+    game: 'jelly-drums',
+    key: 'scale',
+    name: 'Notes make a scale',
+    line: 'jelly.scale',
+    source: {
+      find: 'tap three jellies side by side, in a row',
+      found: 'three jellies in a row sang a scale and the rainbow sparkled',
+    },
+  },
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

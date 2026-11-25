@@ -63,7 +63,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'swing-pals':
       return swingJournalPicture();
     case 'jelly-drums':
-      return jellyJournalPicture();
+      return jellyJournalPicture(entry.key);
   }
 }
 

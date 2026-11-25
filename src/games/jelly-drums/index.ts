@@ -412,7 +412,10 @@ class JellyDrums implements Game {
     // No name over a fan's answer or the finale.
     const line = this.namer.tap(i, f !== null || this.notes >= this.plan.goal);
     if (line) void this.ctx.say(line);
-    if (this.plan.twist === 'scale' && this.scale.tap(i)) this.sparkle();
+    if (this.plan.twist === 'scale' && this.scale.tap(i)) {
+      this.sparkle();
+      this.journal.sparkled();
+    }
   }
 
   /** A fan sings back in its own voice, with a note in the color of the jelly she just played. */

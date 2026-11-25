@@ -3,7 +3,6 @@ import { ink, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { JOURNAL, sourceText, type JournalEntry } from '../../content/journal';
-import { SCRIPT } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -208,7 +207,7 @@ export class JournalScene extends Scene {
       .fill({ color: 0xffffff, alpha: 0.96 })
       .stroke({ width: 5, color: swatch.teal.line });
     strip.eventMode = 'none';
-    const said = found ? SCRIPT[entry.line][0] : 'Not found yet.';
+    const said = found ? voice.line(entry.line) : 'Not found yet.';
     const text = new Text({
       text: said,
       style: {
