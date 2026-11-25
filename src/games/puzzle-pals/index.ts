@@ -286,19 +286,19 @@ class PuzzlePals implements Game {
   }
 
   start() {
-    const line = this.plan.mend
-      ? 'puzzle.mend'
-      : this.plan.twin
-        ? 'puzzle.ghost'
-        : this.plan.oneAtATime
-          ? 'puzzle.lap'
-          : tapHops(this.plan)
-            ? 'puzzle.tap'
-            : this.plan.turns
-              ? 'puzzle.turn'
-              : this.plan.ghost
-                ? 'puzzle.ghost'
-                : 'puzzle.start';
+    // Mend the picture has no line of its own yet (a new line needs a rendered clip), so the how-to card carries it.
+    if (this.plan.mend) return;
+    const line = this.plan.twin
+      ? 'puzzle.ghost'
+      : this.plan.oneAtATime
+        ? 'puzzle.lap'
+        : tapHops(this.plan)
+          ? 'puzzle.tap'
+          : this.plan.turns
+            ? 'puzzle.turn'
+            : this.plan.ghost
+              ? 'puzzle.ghost'
+              : 'puzzle.start';
     void this.ctx.instruct(line);
   }
 
@@ -526,8 +526,8 @@ class PuzzlePals implements Game {
     if (this.wrong === 2) {
       this.hints++;
       this.mendHint = true;
-      void this.ctx.say('puzzle.mendHint');
-    } else void this.ctx.say('puzzle.mendWrong');
+      void this.ctx.say('puzzle.hint');
+    } else void this.ctx.say('puzzle.wrong');
   }
 
   /** Puts a piece in its place. */
