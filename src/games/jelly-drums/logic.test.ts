@@ -24,6 +24,8 @@ import {
   JellyNamer,
   NAME_EVERY,
   ScaleWatch,
+  JournalWatch,
+  LOW_HIGH,
   planFor,
   SET_STEPS,
   SOUND_SETS,
@@ -273,6 +275,18 @@ describe('Jelly Drums', () => {
       const namer = new JellyNamer();
       const lines = Array.from({ length: 40 }, (_, n) => namer.tap(n % JELLIES));
       expect(lines.filter((l) => l === 'jelly.lowhigh')).toHaveLength(1);
+    });
+
+    it('files low and high only after the biggest and the littlest jelly are both tapped', () => {
+      const w = new JournalWatch();
+      expect(w.keys()).toEqual([]);
+      for (const i of [0, 1, 2, 3]) w.tap(i);
+      expect(w.keys()).toEqual([]);
+      w.tap(JELLIES - 1);
+      expect(w.keys()).toEqual([LOW_HIGH]);
+      const ghost = new JournalWatch();
+      for (const i of FREE_SONG) ghost.tap(i);
+      expect(ghost.keys()).toEqual([LOW_HIGH]);
     });
 
     it('never speaks on a quiet tap, though the tap still counts', () => {

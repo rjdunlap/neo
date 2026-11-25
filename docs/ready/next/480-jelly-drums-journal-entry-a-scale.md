@@ -1,0 +1,1 @@
+**`jelly-drums` journal entry, a scale** (low and high is built; `jelly-drums:scale` files when level 3's three-neighbours sparkle plays, via `JournalWatch`; its journal line needs a rendered voice clip, so run `scripts/voice-clips/render.mjs` for the one new line; journal tests, typecheck, `ORIGINALS_ONLY=jelly`). [Dive](../../deep-dives/jelly-drums.md#build-slices-in-order)

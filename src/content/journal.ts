@@ -31,7 +31,8 @@ export type JournalGame =
   | 'far-lights'
   | 'chain-reaction'
   | 'spinner-fair'
-  | 'swing-pals';
+  | 'swing-pals'
+  | 'jelly-drums';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -389,6 +390,18 @@ export const JOURNAL: readonly JournalEntry[] = [
     source: {
       find: 'swing a friend on a short rope beside a friend on a long rope',
       found: 'the friend on the long rope swung slower and came back after the short rope',
+    },
+  },
+  // Jelly Drums: the biggest and the littlest jelly both tapped in one round (JournalWatch in the game's rules).
+  {
+    id: entryId('jelly-drums', 'low-high'),
+    game: 'jelly-drums',
+    key: 'low-high',
+    name: 'Big low, little high',
+    line: 'jelly.lowhigh',
+    source: {
+      find: 'tap the biggest jelly and the littlest jelly',
+      found: 'the biggest jelly sang low and the littlest jelly sang high',
     },
   },
 ];

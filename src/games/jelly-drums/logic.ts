@@ -285,6 +285,24 @@ export class JellyNamer {
   }
 }
 
+/** The journal key (`jelly-drums:low-high`). Never rename it. */
+export const LOW_HIGH = 'low-high';
+
+/**
+ * What a round has shown for the journal. "Big jellies sing low, little jellies sing high" is filed once she has
+ * tapped both the biggest and the littlest jelly in the round; a round that did not show it files nothing.
+ */
+export class JournalWatch {
+  private readonly tapped = new Set<number>();
+  tap(i: number) {
+    this.tapped.add(i);
+  }
+  /** The journal keys this round showed. */
+  keys(): string[] {
+    return this.tapped.has(0) && this.tapped.has(JELLIES - 1) ? [LOW_HIGH] : [];
+  }
+}
+
 /** Each jelly's color and size, biggest and lowest first. */
 export const JELLY_NAMES: readonly LineId[] = [
   'jelly.name.red',
