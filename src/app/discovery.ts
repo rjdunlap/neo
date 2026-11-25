@@ -1,6 +1,6 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
-import { MIX_IDS, startMix, step, type MixEvent, type MixState } from '../content/mix';
+import { MIX_IDS, startMix, step, type DailyStop, type MixEvent, type MixState } from '../content/mix';
 
 export type DiscoveryToken = { owner: object; epoch: number };
 
@@ -44,13 +44,30 @@ export interface MixRound {
   /** What the stop card says before the stop's title: a hop over the stop before it (D3). */
   lead?: 'mix.skip';
 }
-interface MixSession {
+export interface MixSession {
   owner: object;
   id: number;
   place: Band;
   state: MixState;
   /** The stops, frozen when it started. */ readonly ids: readonly string[];
+  /** Today's six (D10 slice 3): each stop's band and preset level. A place session has none. */
+  readonly stops?: readonly DailyStop[];
+  /** The day those stops were dealt for: a later day ends the session. */
+  readonly day?: string;
 }
+/** Opens stop `p` exactly as its own entry would: a daily stop as its card does, a place stop on its home spot (D2b). */
+export function launchStop(go: Pick<Routes, 'game'>, s: Readonly<MixSession>, p: number, profileBand: Band) {
+  const stop = s.stops?.[p];
+  if (stop) go.game(stop.id, stop.band, undefined, false, { daily: true }, stop.level);
+  else go.game(s.ids[p], profileBand, undefined, false, { place: s.place });
+}
+
+/** Where a mix's Home, Back and ending go: Today's six for a daily session, else its home spot. */
+export function leaveMix(go: Pick<Routes, 'daily' | 'place'>, s: Readonly<MixSession>) {
+  if (s.stops) go.daily();
+  else go.place(s.place);
+}
+
 interface HeldLineup {
   owner: object;
   place: Band;
@@ -72,6 +89,14 @@ export class MixMemory {
     this.pending = undefined;
     const frozen = Object.freeze([...ids]);
     this.session = { owner, id: ++this.serial, place, state: startMix(frozen), ids: frozen };
+    return this.session.id;
+  }
+  /** Play all on Today's six: the page's six frozen with their bands and levels; played ones start played. */
+  startDaily(owner: object, stops: readonly DailyStop[], state: MixState, place: Band, day: string): number {
+    this.pending = undefined;
+    const frozen = Object.freeze(stops.map((s) => Object.freeze({ ...s })));
+    const ids = Object.freeze(frozen.map((s) => s.id));
+    this.session = { owner, id: ++this.serial, place, state, ids, stops: frozen, day };
     return this.session.id;
   }
   /** Ends the live session; the held lineup stays for the next one. */
@@ -101,7 +126,7 @@ export class MixMemory {
   /** The state of a live session for this save, at the place it started from. */
   at(owner: object, place: Band): MixState | undefined {
     const s = this.live(owner);
-    return s?.place === place ? s.state : undefined;
+    return s?.place === place && !s.stops ? s.state : undefined;
   }
   apply(owner: object, event: MixEvent): MixState | undefined {
     const s = this.own(owner);

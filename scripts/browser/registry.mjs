@@ -206,6 +206,7 @@ import { createSuite as create130 } from './suites/discovery-direct-next.mjs';
 import { createSuite as create131 } from './suites/discovery-my-mix.mjs';
 import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
+import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as create135 } from './suites/down-we-go-play.mjs';
 import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
@@ -805,6 +806,7 @@ export function createChecks(fixture) {
     'discoveryDirectNext',
     'discoveryMyMix',
     'discoveryMix',
+    'discoveryDailyMix',
   ])
     shared[name] = (...args) => checks[name](...args);
   install(create0(shared));
@@ -947,6 +949,7 @@ export function createChecks(fixture) {
   install(create131(shared));
   install(create132(shared));
   install(create133(shared));
+  install(createDailyMix(shared));
   install(create134(shared));
   install(create135(shared));
   install(create136(shared));
@@ -1028,7 +1031,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'clap' && process.env.CLAP_LEVELS !== undefined)
     selectValue(process.env.CLAP_LEVELS, ['6', '8', '9'], 'CLAP_LEVELS');
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined)
-    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix'], 'DISCOVERY_ONLY');
+    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix', 'daily'], 'DISCOVERY_ONLY');
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
   const {
@@ -1205,6 +1208,7 @@ export async function runSuite(suite, fixture) {
     discoveryDirectNext,
     discoveryMyMix,
     discoveryMix,
+    discoveryDailyMix,
     storyWeaverPlay,
     meltFreezePlay,
     moonWindowPlay,
@@ -1295,7 +1299,8 @@ export async function runSuite(suite, fixture) {
   }
   if (suite === 'discovery')
     await (
-      { mix: discoveryMix, 'my-mix': discoveryMyMix }[process.env.DISCOVERY_ONLY] ?? discoveryDirectNext
+      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix }[process.env.DISCOVERY_ONLY] ??
+      discoveryDirectNext
     )();
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
