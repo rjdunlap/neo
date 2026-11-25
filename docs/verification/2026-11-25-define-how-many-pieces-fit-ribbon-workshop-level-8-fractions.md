@@ -1,0 +1,5 @@
+# 2026-11-25 — Define How Many Pieces Fit? (Ribbon Workshop level 8, fractions R7) and refill Next ten (PR #2189)
+
+**Changed:** Defined fractions study slice R7 (*How Many Pieces Fit?*) as `ribbon-workshop` level 8 in [docs/definitions/how-many-pieces-fit.md](../definitions/how-many-pieces-fit.md); updated the docs map ([README](../README.md)), [fractions study](../deep-dives/subjects/fractions.md), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md), [STUDY-BACKLOG](../STUDY-BACKLOG.md) and [ROADMAP](../ROADMAP.md); queued the level-8 build and refilled `docs/ready/next/` to ten routine-eligible items (four build slices plus three study follow-up definitions alongside the existing three lines, after checking each candidate against `origin/main` code, level tables and `scripts/overlap.sh`).
+**Ran:** `node scripts/check-links.mjs`, `node scripts/ready.mjs`, `git diff --check`.
+**Not run:** Typecheck, unit tests, build, browser and offline checks (docs-only change; CI runs format, lint, `npm test` and `npm run build` on PR merge).
