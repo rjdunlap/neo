@@ -157,7 +157,7 @@ A part lifts and sways the moment a finger lands on it (touch-down feedback), th
 2. **Build levels 1–3** with rule tests (passing designs, socket-only distractors, useful hints). New game tier: one scripted play and one portrait screenshot. **Built 2026-10-27** (PR #1012; levels 1–3, `src/games/gadget-bench/`, Painted Canyon).
 3. **Add level 4**, the multi-condition path, failure points and the same-condition hint rule. **Defined 2026-11-06** as *Fix-It Day* ([definition](../../definitions/gadget-bench.md#level-4-fix-it-day-definition)); built 2026-11-06 (PR #1330).
 4. **Add levels 5–6:** the constraint and the new-kit transfer round, with their enumeration tests. **Defined 2026-11-06** as *Little Gate* and *New Box* ([definition](../../definitions/gadget-bench.md#levels-56-little-gate-and-new-box-definition)); built 2026-11-06 (PR #1336).
-5. **Add level 7**, two neighbors and trade-offs.
+5. **Add level 7**, two neighbors and trade-offs (**claimed** on `agy/docs-gadget-bench-7` for definition + Next ten queue refill).
 6. **Define and build Workshop Cases** after the registration decision.
 7. **Write the two page cards** after a named review.
 8. **Better and Better**, only after a reviewer, as one definition with Timeline Trail's real-object rung.
