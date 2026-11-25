@@ -246,6 +246,23 @@ export function prop(kind: PropKind, color: ColorName): Container {
 }
 
 /** A black top hat with a red band, in a critter's body coordinates (it sits on the head); Critter Sort's, shared. */
+/** A scarf wound round the neck with one end hanging down; it rides on the critter's body like the hat. */
+export function scarfArt(): Graphics {
+  return new Graphics()
+    .ellipse(0, -84, 92, 22)
+    .fill(swatch.blue.fill)
+    .stroke({ width: 5, color: swatch.blue.line })
+    .rect(-44, -90, 14, 14)
+    .rect(-8, -92, 14, 14)
+    .rect(28, -90, 14, 14)
+    .fill(swatch.white.light)
+    .roundRect(30, -78, 30, 78, 8)
+    .fill(swatch.blue.fill)
+    .stroke({ width: 5, color: swatch.blue.line })
+    .rect(30, -26, 30, 10)
+    .fill(swatch.white.light);
+}
+
 export function hatArt(): Graphics {
   return new Graphics()
     .ellipse(0, -232, 74, 16)

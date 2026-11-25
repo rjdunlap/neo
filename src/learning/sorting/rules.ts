@@ -11,13 +11,24 @@ export const KIND_WORDS: Record<string, string> = {
 };
 
 export type Rule =
-  'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers' | 'pink' | 'orange' | 'yellow' | PlantRule;
+  | 'hat'
+  | 'scarf'
+  | 'brown'
+  | 'white'
+  | 'floppy'
+  | 'pointy'
+  | 'whiskers'
+  | 'pink'
+  | 'orange'
+  | 'yellow'
+  | PlantRule;
 export type PlantRule = 'round' | 'pointyleaf' | 'spotted' | 'plain';
 export type Leaves = 'round' | 'pointy';
 export type Petals = 'spotted' | 'plain';
 
 export const RULE_WORDS: Record<Rule, string> = {
   hat: 'wearing a hat',
+  scarf: 'wearing a scarf',
   brown: 'brown',
   white: 'white',
   floppy: 'with floppy ears',
@@ -52,6 +63,8 @@ export interface SortSprout {
 export interface SortCritter {
   kind: CritterName;
   hat: boolean;
+  /** A third look, drawn only on the later levels of Critter Crossing and Critter Sort; absent means no scarf. */
+  scarf?: boolean;
   /** Set on the little plants of levels 12-13 (`kind` is then unused). */
   plant?: SortSprout;
 }
@@ -71,6 +84,8 @@ export function fits(c: SortCritter, rule: Rule): boolean {
   switch (rule) {
     case 'hat':
       return c.hat;
+    case 'scarf':
+      return !!c.scarf;
     case 'brown':
       return c.kind === 'bear' || c.kind === 'dog';
     case 'white':
