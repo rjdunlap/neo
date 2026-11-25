@@ -2,7 +2,7 @@
 export const VOICE = {
   'game.chain-reaction': ['Chain reaction!'],
   'chain.start': [
-    'Drag every loose ramp into a round spot. Then tap the green arrow and watch the marble. Can you ring the bell?',
+    'Drag every loose ramp into a round spot. Then tap the green arrow and watch the {cargo}. Can you get the {cargo} to the {goal}?',
   ],
   'chain.chime-start': [
     'Build the machine so the marble touches the little chime, then rings the big bell. Drag the ramps, then tap the green arrow!',
@@ -10,17 +10,17 @@ export const VOICE = {
   'chain.parts': ['Every loose ramp needs a round spot before the marble can go.'],
   'chain.hint': ['Try the glowing ramp in the glowing spot.'],
   'chain.run-now': ['That machine can work! Tap the green arrow to try it.'],
-  'chain.left': ['The marble finished left of the bell. Move one ramp and try again!'],
-  'chain.right': ['The marble finished right of the bell. Move one ramp and try again!'],
+  'chain.left': ['The {cargo} finished left of the {goal}. Move one ramp and try again!'],
+  'chain.right': ['The {cargo} finished right of the {goal}. Move one ramp and try again!'],
   'chain.missed-chime': [
     'The marble reached the bottom, but it missed the little chime. Move one ramp and try again!',
   ],
-  'chain.rang': ['Ding! The whole machine worked!'],
+  'chain.rang': ['Hooray! The whole machine worked!'],
   'chain.done': ['What a marvelous machine!'],
   'chain.turn-start': [
-    'Tap a coloured ramp to turn it. Then tap the green arrow and see if the marble rings the bell!',
+    'Tap a coloured ramp to turn it. Then tap the green arrow and see if the {cargo} reaches the {goal}!',
   ],
-  'chain.turn-hint': ['Turn this glowing ramp. Follow its groove to see where the marble will go.'],
+  'chain.turn-hint': ['Turn this glowing ramp. Follow its groove to see where the {cargo} will go.'],
   'chain.predict-start': [
     'This machine is all built. Which bell will the marble ring? Tap that bell, then tap the green arrow and watch!',
   ],
@@ -46,13 +46,13 @@ export const VOICE = {
   ],
   'chain.two-rang': ['Ding, ding! Each marble rang its own bell!'],
   'chain.spring-start': [
-    'This machine has a green spring! When the marble lands on it, it bounces over the next row. Drag the ramps so the marble lands on the spring, then tap the green arrow!',
+    'This machine has a green spring! When the {cargo} lands on it, it bounces over the next row. Drag the ramps so the {cargo} lands on the spring, then tap the green arrow!',
   ],
   'chain.spring-hint': [
-    'Try the glowing ramp in the glowing spot. It sends the marble onto the spring, and the spring bounces it over a row.',
+    'Try the glowing ramp in the glowing spot. It sends the {cargo} onto the spring, and the spring bounces it over a row.',
   ],
   'chain.spring-hint-bell': [
-    'Try the glowing ramp in the glowing spot. After the spring, it sends the marble on to the bell.',
+    'Try the glowing ramp in the glowing spot. After the spring, it sends the {cargo} on to the {goal}.',
   ],
   'chain.gate-start': [
     'The little chime opens the yellow gate! Drag the ramps so the marble touches the chime first, then the gate ramp sends it on to the big bell. Tap the green arrow to try!',
