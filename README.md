@@ -90,7 +90,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 4 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
-| [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 11 | free play on five notes (lap starts with one big jelly that wakes its friends) |
+| [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 12 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 9 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |
 | [Rhythm Neighbors](docs/games/rhythm-neighbors.md) | lap–school | Music Mountain | 10 | tap a bird and a frog chorus; knock the tree and a frog answers (lap); knock your own call and the frog answers it with the gaps flipped (toddler, preschool); hear a bird and a frog, then say whether the frog copied or answered (pre-K, school) |
@@ -130,7 +130,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 13 | hop to a number on the lily pads |
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 9 | draw a loop around fireflies: they fly into a jar |
-| [Fill and Dump](docs/games/fill-dump.md) | lap–pre-K | Counting Cove | 8 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
+| [Fill and Dump](docs/games/fill-dump.md) | lap–pre-K | Counting Cove | 9 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
 | [Number Trails](docs/games/number-trails.md) | preschool–school | Counting Cove | 7 | follow a firefly along a numeral, starting at the green ring and arrow (at preschool, *First numbers*: just 1, 2, 3 or 7), then watch that many things pop up and count them |
 | [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
 | [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
@@ -178,7 +178,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 16 | AB patterns |
 | [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
-| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 10 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
+| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 12 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |
 | [Peekaround Island](docs/games/peekaround-island.md) | toddler–school | Puzzle Peaks | 8 | turn a little island to find who is hiding behind the tree |
 | [Penguin Slide](docs/games/penguin-slide.md) | preschool–school | Puzzle Peaks | 13 | tap the ice: the penguin slides until something stops it |

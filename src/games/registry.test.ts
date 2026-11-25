@@ -684,6 +684,7 @@ describe('game registry', () => {
       'river-tablets',
       'robot-path',
       'rule-machine',
+      'sand-table',
       'scoop-shop',
       'second-chance-shed',
       'secret-code',

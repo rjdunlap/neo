@@ -18,7 +18,23 @@ export interface PuzzlePlan {
   turns?: number;
   /** Level 10, Two pictures, one tray: two boards side by side, each with its own faint picture, and one mixed tray. */
   twin?: boolean;
+  /** Level 11, Mend the picture: the finished picture is already in the frame with two pieces swapped; she swaps them back. */
+  mend?: boolean;
+  /** Level 12, Quarter turns: a tap turns a piece a quarter turn (clockwise), so a piece can be on its side or upside down. */
+  quarter?: boolean;
+  /**
+   * The part of the picture the frame shows, in picture units (the whole picture when absent). Level 12 cuts a 560 x 420
+   * square-celled crop from the middle, so a quarter turn leaves a piece the same shape.
+   */
+  crop?: PictureBox;
   name: string;
+}
+
+export interface PictureBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export const PUZZLE_PLANS: PuzzlePlan[] = [
@@ -75,6 +91,25 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
     twin: true,
     name: 'Two pictures, one tray: sort eight pieces onto two faint pictures',
   },
+  {
+    cols: 3,
+    rows: 3,
+    ghost: false,
+    preplaced: 0,
+    mend: true,
+    name: 'Mend the picture: two pieces have swapped places, so tap one and then the other to swap them back',
+  },
+  {
+    cols: 4,
+    rows: 3,
+    ghost: false,
+    lid: true,
+    preplaced: 0,
+    turns: 5,
+    quarter: true,
+    crop: { x: 20, y: 0, w: 560, h: 420 },
+    name: 'Quarter turns: twelve square pieces, five of them on their side or upside down, so tap to turn each the right way up',
+  },
 ];
 
 /** How many pictures a plan builds at once. */
@@ -96,6 +131,10 @@ export const puzzlePlan = (level: number) =>
 export const PICTURE_W = 600;
 export const PICTURE_H = 420;
 
+/** The part of the picture a plan's frame shows: its crop, or the whole picture. */
+export const pictureBox = (plan: { crop?: PictureBox }): PictureBox =>
+  plan.crop ?? { x: 0, y: 0, w: PICTURE_W, h: PICTURE_H };
+
 export interface Piece {
   col: number;
   row: number;
@@ -108,8 +147,9 @@ export function piecesFor(plan: PuzzlePlan): Piece[] {
 }
 
 /** The middle of a piece's place, in picture units. */
-export function slotCenter(plan: PuzzlePlan, p: Piece) {
-  return { x: (PICTURE_W / plan.cols) * (p.col + 0.5), y: (PICTURE_H / plan.rows) * (p.row + 0.5) };
+export function slotCenter(plan: Pick<PuzzlePlan, 'cols' | 'rows' | 'crop'>, p: Piece) {
+  const box = pictureBox(plan);
+  return { x: (box.w / plan.cols) * (p.col + 0.5), y: (box.h / plan.rows) * (p.row + 0.5) };
 }
 
 /**
@@ -117,10 +157,11 @@ export function slotCenter(plan: PuzzlePlan, p: Piece) {
  * Small boards (few pieces) are more forgiving: anywhere over the frame counts.
  */
 export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[]): Piece | null {
-  const pw = PICTURE_W / plan.cols;
-  const ph = PICTURE_H / plan.rows;
+  const box = pictureBox(plan);
+  const pw = box.w / plan.cols;
+  const ph = box.h / plan.rows;
   const margin = 40;
-  const overFrame = x > -margin && x < PICTURE_W + margin && y > -margin && y < PICTURE_H + margin;
+  const overFrame = x > -margin && x < box.w + margin && y > -margin && y < box.h + margin;
   const reach = plan.cols * plan.rows <= 2 ? (overFrame ? Infinity : 0) : Math.min(pw, ph) * 0.6;
   const near = nearestSlot(plan, x, y, empty);
   return near && near.d <= reach ? near.piece : null;
@@ -128,7 +169,7 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
 
 /** The empty place whose middle is closest to a point in picture units, and how far away it is. */
 export function nearestSlot<P extends Piece>(
-  plan: PuzzlePlan,
+  plan: Pick<PuzzlePlan, 'cols' | 'rows' | 'crop'>,
   x: number,
   y: number,
   empty: readonly P[],
@@ -177,23 +218,62 @@ export function judgeTwinDrop(
   return hit.piece.col === piece.col && hit.piece.row === piece.row ? 'place' : 'wrong';
 }
 
-export type Turn = 0 | 2;
+/**
+ * Level 11: which two pieces (indexes into `piecesFor`) start in each other's places. The two never hold the same
+ * things (`sameLook` says so for a cell, from `cellFeatures`), so the odd places can be found by looking. With no look
+ * given every pair is allowed. Never the same piece twice.
+ */
+export function dealMend(
+  count: number,
+  rng: { shuffle<T>(items: readonly T[]): T[] },
+  sameLook: (a: number, b: number) => boolean = () => false,
+): [number, number] {
+  const order = rng.shuffle(Array.from({ length: count }, (_, i) => i));
+  for (const a of order) for (const b of order) if (a < b && !sameLook(a, b)) return [a, b];
+  return [order[0], order[1]];
+}
+
+/**
+ * The outcome of swapping two pieces in a mend round, given where each sits now (`at`) and where it belongs (`home`):
+ * 'mended' when both end up home, 'back' when the swap fixes nothing it should and goes back as a miss.
+ */
+export function judgeSwap(
+  a: { at: number; home: number },
+  b: { at: number; home: number },
+): 'mended' | 'back' {
+  return a.home === b.at && b.home === a.at ? 'mended' : 'back';
+}
+
+/** Quarter turns clockwise from upright: 0 upright, 1 on its side, 2 upside down, 3 on its other side. */
+export type Turn = 0 | 1 | 2 | 3;
 
 export type DropOutcome = 'off' | 'place' | 'turn' | 'wrong';
 
 /** Flip a piece half a turn (180 degrees) and back. */
-export const flipTurn = (turn: Turn): Turn => (turn === 0 ? 2 : 0);
+export const flipTurn = (turn: Turn): Turn => ((turn + 2) % 4) as Turn;
 
-/** Pick which pieces start upside down: never empty and never all pieces when turning is active. */
+/** Level 12: a tap turns a piece a quarter turn clockwise, so four taps bring it back. */
+export const quarterTurn = (turn: Turn): Turn => ((turn + 1) % 4) as Turn;
+
+/** How many taps bring a piece upright: the only way is clockwise, so a piece a quarter past upright takes three taps and one three quarters past takes one. */
+export const tapsToUpright = (turn: Turn): number => (4 - turn) % 4;
+
+/**
+ * Pick which pieces start turned: never empty and never all pieces when turning is active. Half turns (level 9) arrive
+ * upside down; quarter turns (level 12) arrive on a side or upside down, each way dealt by the seeded RNG.
+ */
 export function dealTurns(
   count: number,
   turned: number,
   rng: { shuffle<T>(items: readonly T[]): T[] },
+  quarter = false,
 ): Turn[] {
   if (turned <= 0 || count < 2) return Array.from({ length: count }, () => 0);
   const want = Math.min(count - 1, Math.max(1, turned));
-  const picked = new Set(rng.shuffle(Array.from({ length: count }, (_, i) => i)).slice(0, want));
-  return Array.from({ length: count }, (_, i) => (picked.has(i) ? 2 : 0));
+  const picked = rng.shuffle(Array.from({ length: count }, (_, i) => i)).slice(0, want);
+  const out: Turn[] = Array.from({ length: count }, () => 0);
+  for (const i of picked) out[i] = quarter ? rng.shuffle<Turn>([1, 2, 3])[0] : 2;
+  return out;
 }
 
 /**
@@ -266,7 +346,7 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
 }
 
 /**
- * Level 8 is lap's first; 1 and 2 follow. Levels 9 (Turn it round) and 10 (Two pictures) sit at the top of pre-K and
+ * Level 8 is lap's first; 1 and 2 follow. Levels 9 (Turn it round), 10 (Two pictures) and, school only, 11 (Mend the picture) and 12 (Quarter turns) sit at the top of pre-K and
  * school, skipping lap's 8 via `order` so no saved level is renumbered.
  */
 export const LEVELS: BandLevels = {
@@ -274,7 +354,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
   prek: { min: 5, max: 10, order: [5, 6, 7, 9, 10] },
-  school: { min: 6, max: 10, order: [6, 7, 9, 10] },
+  school: { min: 6, max: 12, order: [6, 7, 9, 10, 11, 12] },
 };
 
 // Layout ---------------------------------------------------------------------------------------------------------------
@@ -304,19 +384,20 @@ export const UPRIGHT_TOP = 236;
  */
 export function puzzleLayout(
   v: { w: number; h: number },
-  plan: Pick<PuzzlePlan, 'cols' | 'rows'>,
+  plan: Pick<PuzzlePlan, 'cols' | 'rows' | 'crop'>,
   total: number,
   waiting: number,
 ): PuzzleLayout {
-  const pw = PICTURE_W / plan.cols;
-  const ph = PICTURE_H / plan.rows;
-  const aspect = PICTURE_H / PICTURE_W;
+  const box = pictureBox(plan);
+  const pw = box.w / plan.cols;
+  const ph = box.h / plan.rows;
+  const aspect = box.h / box.w;
   if (v.h > v.w) {
     const gap = 16;
     const left = 170,
       right = v.w - 30;
     const boardW = Math.min(640, v.w - 80, (v.h - UPRIGHT_TOP - 60 - 400) / aspect);
-    const scale = boardW / PICTURE_W;
+    const scale = boardW / box.w;
     const y0 = UPRIGHT_TOP + boardW * aspect + 60;
     const H = v.h - 30 - y0;
     // As many rows as the whole puzzle needs, so the pieces left do not jump about as the tray empties.
@@ -349,8 +430,8 @@ export function puzzleLayout(
   const rows = trayRows(total);
   const trayH = rows === 1 ? 210 : 240;
   const top = 112;
-  const boardW = Math.min(640, v.w - 300, ((v.h - top - trayH - 24) * PICTURE_W) / PICTURE_H);
-  const scale = boardW / PICTURE_W;
+  const boardW = Math.min(640, v.w - 300, ((v.h - top - trayH - 24) * box.w) / box.h);
+  const scale = boardW / box.w;
   // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
   const maxH = rows === 1 ? 170 : 100;
   const maxW = rows === 1 ? 240 : 130;
@@ -397,9 +478,10 @@ export function oneAtATimeLayout(v: { w: number; h: number }, cols: number) {
  * the corner buttons and clear of the pet's corner. Upright that strip is too narrow, so it sits top right, above the
  * frame (the buttons are on the left), in the band the frame already leaves free.
  */
-export function lidLayout(v: { w: number; h: number }) {
+export function lidLayout(v: { w: number; h: number }, plan: { crop?: PictureBox } = {}) {
   const w = 170;
-  const h = (w * PICTURE_H) / PICTURE_W;
+  const box = pictureBox(plan);
+  const h = (w * box.h) / box.w;
   return v.h > v.w ? { x: v.w - w - 32, y: 44, w, h } : { x: 24, y: 232, w, h };
 }
 
@@ -475,5 +557,33 @@ export function twinLayout(
     trayScale: Math.min(scale, 100 / ph, 130 / pw),
     homes,
     panel: { x: 160, y: v.h - trayH - 6, w: v.w - 185, h: trayH - 8 },
+  };
+}
+
+/**
+ * Mend the picture (level 11): the whole picture is in the frame and there is no tray, so the frame can be big. Sideways
+ * it sits right of the pet's strip under the corner buttons; upright it spans the width under the buttons and is
+ * centred in the height that is left, clear of the pet's corner.
+ */
+export function mendLayout(v: { w: number; h: number }) {
+  const aspect = PICTURE_H / PICTURE_W;
+  if (v.h > v.w) {
+    const boardW = Math.min(v.w - 80, 700);
+    const free = v.h - UPRIGHT_TOP - 40;
+    return {
+      x: (v.w - boardW) / 2,
+      y: UPRIGHT_TOP + Math.max(0, (free - boardW * aspect) / 2),
+      w: boardW,
+      scale: boardW / PICTURE_W,
+    };
+  }
+  const top = 112;
+  const left = 180;
+  const boardW = Math.min(760, v.w - left - 40, ((v.h - top - 40) * PICTURE_W) / PICTURE_H);
+  return {
+    x: left + (v.w - left - 40 - boardW) / 2,
+    y: top + Math.max(0, (v.h - top - 40 - boardW * aspect) / 2),
+    w: boardW,
+    scale: boardW / PICTURE_W,
   };
 }

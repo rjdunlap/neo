@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import { pointInSlideWindow, slideCentering } from '../../engine/slide';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
@@ -925,10 +926,7 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
  * is in the middle of its window, or as near as the sea's edges allow.
  */
 export function slideToShow(win: SeaWindow, x: number, y: number): { x: number; y: number } {
-  return {
-    x: Math.min(win.maxX, Math.max(0, x + SEA_EDGE - win.w / 2)),
-    y: Math.min(win.maxY, Math.max(0, y + SEA_EDGE - win.h / 2)),
-  };
+  return slideCentering(win, x, y, SEA_EDGE);
 }
 
 /** Is the point `x`, `y` of the sea inside its window, at least `margin` from every edge, when the sea has slid by `slid`? */
@@ -939,7 +937,5 @@ export function inWindow(
   y: number,
   margin: number,
 ): boolean {
-  const px = x + SEA_EDGE - slid.x,
-    py = y + SEA_EDGE - slid.y;
-  return px >= margin && px <= win.w - margin && py >= margin && py <= win.h - margin;
+  return pointInSlideWindow(win, slid, x, y, SEA_EDGE, margin);
 }

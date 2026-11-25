@@ -17,6 +17,7 @@ import {
   makeRound,
   marksLit,
   MOTIFS,
+  noteStep,
   newRequests,
   newScore,
   PACES,
@@ -45,7 +46,7 @@ function play(score: Score, n: number, dt = 1 / 60): { score: Score; events: Bea
 }
 
 describe('Little Conductor motifs', () => {
-  it('has three distinct four-beat tunes on the pentatonic, bass on 1 and 3 and the drum on every beat', () => {
+  it('has six distinct four-beat tunes on the pentatonic, bass on 1 and 3 and the drum on every beat', () => {
     for (const m of MOTIFS) {
       expect(m.melody).toHaveLength(BEATS);
       for (const n of m.melody) expect(PENTATONIC).toContain(n);
@@ -53,7 +54,9 @@ describe('Little Conductor motifs', () => {
       expect(m.bass).toEqual([0, 2]);
       expect(m.drum).toEqual([0, 1, 2, 3]);
     }
-    expect(new Set(MOTIFS.map((m) => m.melody.join())).size).toBe(3);
+    expect(MOTIFS).toHaveLength(6);
+    expect(new Set(MOTIFS.map((m) => m.melody.join())).size).toBe(6);
+    expect(new Set(MOTIFS.map((m) => m.id)).size).toBe(6);
   });
 });
 
@@ -66,24 +69,30 @@ describe('Little Conductor score clock', () => {
     expect(r.events.map((e) => [e.index, e.step, e.pace])).toEqual([[0, 0, 'rabbit']]);
   });
 
-  it('plays the same notes in the same order at either pace; only the timing differs by 90/60', () => {
-    const at = (pace: PaceId) => {
-      let s = advance(select(newScore(), pace), 0, hop).score;
-      const r = advance(s, (60 / PACES[pace]) * 3 + 1e-6, hop);
-      s = r.score;
-      return r.events;
-    };
-    const slow = at('turtle'),
-      fast = at('rabbit');
-    expect(slow.map((e) => [e.step, e.melody, e.bass, e.drum])).toEqual(
-      fast.map((e) => [e.step, e.melody, e.bass, e.drum]),
-    );
-    slow.forEach((e, i) => expect(e.at).toBeCloseTo((fast[i].at * 90) / 60, 6));
-  });
+  it.each(MOTIFS.map((m) => m.id))(
+    '%s plays the same notes in the same order at either pace; only the timing differs by 90/60',
+    (id) => {
+      const motif = MOTIFS.find((m) => m.id === id)!;
+      const at = (pace: PaceId) => {
+        let s = advance(select(newScore(), pace), 0, motif).score;
+        const r = advance(s, (60 / PACES[pace]) * 3 + 1e-6, motif);
+        s = r.score;
+        return r.events;
+      };
+      const slow = at('turtle'),
+        fast = at('rabbit');
+      expect(slow.map((e) => [e.step, e.melody, e.bass, e.drum])).toEqual(
+        fast.map((e) => [e.step, e.melody, e.bass, e.drum]),
+      );
+      expect(slow.map((e) => e.melody)).toEqual(slow.map((e) => noteStep(motif.melody[e.step])));
+      slow.forEach((e, i) => expect(e.at).toBeCloseTo((fast[i].at * 90) / 60, 6));
+    },
+  );
 
   it('never skips or repeats a beat, over 500 seeded runs of random taps and frame lengths', () => {
     for (let seed = 1; seed <= 500; seed++) {
       const rng = new Rng(seed);
+      const motif = MOTIFS[seed % MOTIFS.length];
       let s = select(newScore(), rng.pick(['turtle', 'rabbit'] as const));
       const events: BeatEvent[] = [];
       let lastPlayed = s.played;
@@ -91,7 +100,7 @@ describe('Little Conductor score clock', () => {
         if (rng.chance(0.1)) s = select(s, rng.pick(['turtle', 'rabbit'] as const));
         const dt = rng.chance(0.05) ? rng.range(0.5, 3.5) : rng.range(0.001, 0.05);
         const before = s;
-        const r = advance(s, dt, hop);
+        const r = advance(s, dt, motif);
         // A waiting change lands on the next beat, never before it.
         if (before.pending && r.events.length === 0) expect(r.score.pace).toBe(before.pace);
         if (before.pending && r.events.length > 0) expect(r.events[0].pace).toBe(before.pending);
@@ -190,7 +199,7 @@ describe('Little Conductor rounds and the bot', () => {
       expect(r.listener).not.toBe('bear');
       expect(makeRound(new Rng(seed))).toEqual(r);
     }
-    expect(seen.size).toBe(3);
+    expect(seen.size).toBe(MOTIFS.length);
   });
 
   it('the bot plays turtle, then rabbit, then Done, and always reaches the gate', () => {
@@ -307,7 +316,7 @@ describe('Little Conductor level 3 requests', () => {
       expect(makeRound(new Rng(seed)).requests).toEqual(r.requests);
     }
     expect(orders.size).toBe(2);
-    expect(motifs.size).toBe(3);
+    expect(motifs.size).toBe(MOTIFS.length);
   });
 
   it('check is the truth table: right on the two matching cells, wrong on the other two', () => {
