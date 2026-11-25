@@ -51,6 +51,9 @@ const WHY = {
   second: { 2: 'lp.why.second.2', 3: 'lp.why.second.3', 4: 'lp.why.second.4' },
 } as const;
 
+const STEP_WORDS: Record<number, string> = { 3: 'threes', 4: 'fours', 5: 'fives' };
+const MOST_WORDS = ['none', 'one', 'two', 'three', 'four', 'five'];
+
 type Phase = 'choose' | 'turn' | 'replay' | 'pet' | 'between' | 'done';
 
 /** Last Pebble: lay one or two stones across the stream to land on the far bank. */
@@ -88,6 +91,11 @@ class LastPebble implements Game {
 
   private get spec() {
     return this.round.crossings[this.crossingIndex];
+  }
+
+  /** The most stones one turn may lay, as a word for the voice lines. */
+  private get most(): string {
+    return MOST_WORDS[this.take] ?? String(this.take);
   }
 
   /** Most stones one turn may lay on this crossing. */
@@ -159,7 +167,9 @@ class LastPebble implements Game {
 
   start() {
     void this.ctx
-      .say(this.spec.choose ? (this.round.level === 3 ? 'lp.intro.3' : 'lp.intro.4') : 'lp.intro')
+      .say(this.spec.choose ? (this.round.level === 3 ? 'lp.intro.3' : 'lp.intro.4') : 'lp.intro', {
+        most: this.most,
+      })
       .then(() => {
         if (!this.finished) void this.instruct();
       });
@@ -180,7 +190,9 @@ class LastPebble implements Game {
 
   private instruct() {
     if (this.spec.choose)
-      return this.ctx.instruct(this.round.level === 3 ? 'lp.instruct.3' : 'lp.instruct.4');
+      return this.ctx.instruct(this.round.level === 3 ? 'lp.instruct.3' : 'lp.instruct.4', {
+        most: this.most,
+      });
     return this.ctx.instruct(this.round.level === 1 ? 'lp.instruct.1' : 'lp.instruct.2');
   }
 
@@ -277,7 +289,7 @@ class LastPebble implements Game {
       sfx.tick();
       if (!this.saidAhead) {
         this.saidAhead = true;
-        void this.ctx.say(this.take > 2 ? 'lp.pick-ahead.many' : 'lp.pick-ahead');
+        void this.ctx.say(this.take > 2 ? 'lp.pick-ahead.many' : 'lp.pick-ahead', { most: this.most });
       }
       return;
     }
@@ -550,7 +562,7 @@ class LastPebble implements Game {
     for (const c of this.choiceLayer.removeChildren()) c.destroy({ children: true });
     this.choiceNodes = [];
     this.spotLayer.alpha = 1;
-    await this.ctx.say(pick === 'first' ? 'lp.go-first' : 'lp.pet-first');
+    await this.ctx.say(pick === 'first' ? 'lp.go-first' : 'lp.pet-first', { most: this.most });
     if (g !== this.gen) return;
     if (pick === 'second') {
       await this.ctx.tw.wait(this.reduce ? 0.15 : 0.35);
@@ -571,7 +583,9 @@ class LastPebble implements Game {
       color: swatch.yellow.fill,
     }));
     await Promise.all([
-      this.ctx.say(WHY[right][this.take === 4 ? 4 : this.take === 3 ? 3 : 2]),
+      this.ctx.say(WHY[right][this.take === 4 ? 4 : this.take === 3 ? 3 : 2], {
+        step: STEP_WORDS[this.take + 1] ?? 'threes',
+      }),
       this.ctx.tw.wait(this.reduce ? 0.5 : 1.2),
     ]);
     if (g !== this.gen) return;
