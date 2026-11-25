@@ -1,1 +1,0 @@
-**`routines-self-care` RA4: define `ready-for-adventure` level 4** (docs only; study follow-up definition): a changed parade request with unpacking and revision, preserving saved IDs and checking school window fit. [Study](../../deep-dives/subjects/routines-self-care.md#build-slices-in-order)
