@@ -113,7 +113,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `letters` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | — |
 | `letters10` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | Level 13 m and b on a phone viewport; stroke forms unchecked against HWT |
 | `liftit` | 2026-11-20 · [Lift It level 10, One big pull (toddler entry)](verification/2026-11-20-lift-it-level-10-one-big-pull-toddler-entry.md) | `FROM_LEVEL=10` |
-| `littleloom` | 2026-10-25 · [Little Loom 1–3 (VA2)](archive/VERIFICATION-2026-10-25.md#2026-10-25--little-loom-13-va2) | — |
+| `littleloom` | 2026-11-24 · [Little Loom levels 4–5 (PR #2146)](verification/2026-11-24-little-loom-levels-4-5.md) | Levels 4–5: wrong row, Undo, hint, float slip, portrait |
 | `livekeys` | 2026-10-15 · [Lands stage C1b group 3, three games switch live](archive/VERIFICATION-2026-10-15.md#2026-10-15--lands-stage-c1b-group-3-three-games-switch-live) | `LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` |
 | `logicgrid` | 2026-11-20 · [Mystery Grid level 8 thumb-size upright layout](verification/2026-11-20-mystery-grid-level-8-thumb-size-upright-layout.md) | `LOGICGRID_FROM=8 LOGICGRID_PHONE=1` |
 | `logroll` | 2026-11-08 · [Log Roll soft moss and the stone bridge](archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429) | `LOG_ROLL_LEVELS=6,7` |

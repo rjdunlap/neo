@@ -202,3 +202,7 @@ New lines for `voice.ts`, drafts to be reworded as spoken: `loom.checks` “Make
 ### Build gates for VA5
 
 Build tier: new levels on an existing interaction, with the new school band range, so typecheck, `npm run format:check`, rule tests (re-derive the six one-plan counts and the Pattern Train assertion, row judging by index, the miss and hint accounting, Undo restoring pedal, yarn and direction, finish only when all eight match, every authored sample passes the island rule), the layout test (`layout.test.ts`) at every phone view and orientation for both levels, registry, lands and how-to tests (the school band now lists Little Loom; the land page must still fit one screen), one filtered browser play of level 5 and level 4 with a wrong row, Undo, two misses to one hint and a clean finish, one portrait screenshot at level 5 and `fingerdemo` at 4 and 5. Not run for this definition: any code, browser, layout or contrast measurement. Still open and parked: real speech, whether the sample reads at 35-unit cells on a phone, and any child or co-player observation; lap and levels 6–7 (lift cards, color order) stay unclaimed.
+
+### VA5 build claim
+
+Branch `claude/little-loom-4-5` (Claude routine A, 2026-11-24) claims the whole levels 4–5 build: `src/games/little-loom/` (logic, layout, index, voice, howto, tests), the school and prek ranges, `docs/games/little-loom.md`, a browser play case, READY and verification closeout. No save, creation or palette change.
