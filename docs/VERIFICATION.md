@@ -128,7 +128,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `memorydesk` | 2026-11-11 · [Memory Desk levels 2–3 Open or shut and Fix the desk (H8, batch memory-desk 2, PR #1510)](archive/VERIFICATION-2026-11-11.md#2026-11-11--memory-desk-levels-23-open-or-shut-and-fix-the-desk-h8-batch-memory-desk-2-pr-1510) | — |
 | `moonwindow` | 2026-11-13 · [Moon Window level 4, Big window at lap](verification/2026-11-13-moon-window-level-4-big-window-at-lap.md) | — |
 | `mossypath` | 2026-11-20 · [Mossy Path level 12 Turtle walk](verification/2026-11-20-mossy-path-level-12-turtle-walk.md) | `MOSSY_ONLY=walk` |
-| `movienight` | 2026-10-25 · [Movie Night 1–3 (MM2)](archive/VERIFICATION-2026-10-25.md#2026-10-25--movie-night-13-mm2) | — |
+| `movienight` | 2026-11-24 · [Movie Night levels 4–5 (MM4)](verification/2026-11-24-movie-night-levels-4-5-mm4-pr-2144.md) | — |
 | `next` | 2026-11-14 · [Bumper Garden level 11 Make five](verification/2026-11-14-bumper-garden-level-11-make-five.md) | `NEXT_ONLY=bumper BUMPER_LEVELS=11` |
 | `notalways` | 2026-11-22 · [Not Always levels 4–6](verification/2026-11-22-not-always-levels-4-6.md) | `NOTALWAYS_LEVELS=4-6` |
 | `noticeboard` | 2026-11-22 · [Notice Board levels 4–5, What did it leave out and Who's behind it](verification/2026-11-22-notice-board-levels-4-5-what-did-it-leave-out-and-who-s.md) | `NOTICE_LEVELS=4,5` |

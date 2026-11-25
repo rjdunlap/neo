@@ -58,7 +58,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`robot-path` level 15 starts on the first board** (it is a seeded pick today; existing-game bug fix). [Dive](deep-dives/robot-path.md#build-slices-in-order)
 - **`critter-crossing` and `critter-sort` the scarf** (the shared third critter feature; both games' rule tests plus the fairness test across the larger pool). [Dive](deep-dives/critter-crossing.md#build-slices-in-order)
 - **`weather-wardrobe` school level 13, Warm or cold?** (decision 3 settled, after the school window and Pack light): add a picture thermometer beside the sky so temperature and weather both inform the outfit. [Dive](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`puzzle-pals` level 10, Two pictures, one tray** (pre-K, school; new interaction; after Turn it round, built). [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
