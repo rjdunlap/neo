@@ -1,11 +1,12 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
-import { RAINBOW, swatch, wood } from '../../art/palette';
+import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
-import { musicNote } from '../../art/shapes';
+import { domePath, musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
 import { PITCH_COLORS, pitchColor } from '../../audio/notes';
 import { sfx, type AnimalSound } from '../../audio/sfx';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { RoundButton } from '../../ui/buttons';
@@ -14,11 +15,12 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
-import { CHOICE_RADIUS, jellyLayout, type Layout } from './layout';
+import { CHOICE_RADIUS, HIT_PAD, jellyLayout, ORDER_HW, ORDER_SLOT_RADIUS, type Layout } from './layout';
 import {
   answerOf,
   LEVELS,
   awakeJellies,
+  drawLineups,
   drawPair,
   drawTune,
   fanAnswering,
@@ -26,6 +28,8 @@ import {
   JellyNamer,
   jellyToTap,
   nearestAwake,
+  orderDirection,
+  orderToDrag,
   placeAfterMiss,
   planFor,
   RESUME_FROM_LENGTH,
@@ -37,6 +41,7 @@ import {
   verdictOf,
   verdictToTap,
   STAGE_OF,
+  type OrderLineup,
   type SoundSet,
   type JellyPhase,
   type JellyPlan,
@@ -53,6 +58,15 @@ const BULBS = 8;
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
 /** Each fan's own voice when it answers on level 2. */
 const FAN_VOICES: AnimalSound[] = ['quack', 'hop', 'meow', 'oink'];
+
+interface OrderItem {
+  jelly: Jelly;
+  pitch: number;
+  drag: DragHandle;
+  placed: boolean;
+  slot: number;
+  rowIndex: number;
+}
 
 /** The picture on an answer button: two matching dots for "same", two unlike ones (a big round one and a small square one) for "different". */
 function dotsArt(same: boolean): Graphics {
@@ -105,6 +119,16 @@ class JellyDrums implements Game {
   /** Level 12: which pairs of the round are the same, and the pair now playing. */
   private flags: boolean[] = [];
   private pair: TunePair | null = null;
+  /** Level 13 ("Lowest to highest"): the shelf of four slots, the lit target pad, the sleeping fifth jelly and active row. */
+  private readonly orderShelf = new Graphics();
+  private readonly orderSlots = new Graphics();
+  private readonly sleeperG = new Graphics();
+  private readonly orderLayer = new Container();
+  private lineups: OrderLineup[] = [];
+  private orderJellies: OrderItem[] = [];
+  private placedCount = 0;
+  private slotPulse = 0;
+  private dead = false;
   /** Four- and five-note tunes: dots for the notes she has right so far (her place after a miss). */
   private readonly ticks = new Graphics();
   /** Backwards level: a rewind arrow beside the listen-again button. */
@@ -154,13 +178,26 @@ class JellyDrums implements Game {
       ),
     };
     for (const b of Object.values(this.choices)) b.visible = this.plan.mode === 'compare';
+    const orderMode = this.plan.mode === 'order';
+    this.orderShelf.eventMode = 'none';
+    this.orderSlots.eventMode = 'none';
+    this.sleeperG.eventMode = 'none';
+    this.orderShelf.visible = orderMode;
+    this.orderSlots.visible = orderMode;
+    this.sleeperG.visible = orderMode;
+    this.orderLayer.visible = orderMode;
+    if (orderMode) this.jellies.forEach((j) => (j.visible = false));
     ctx.stage.addChild(
       this.sky,
       this.skyThings,
       this.mountains,
       this.garland,
+      this.orderShelf,
+      this.orderSlots,
       this.stageG,
       ...this.jellies,
+      this.sleeperG,
+      this.orderLayer,
       ...this.fans,
       this.again,
       this.choices.same,
@@ -194,6 +231,12 @@ class JellyDrums implements Game {
   }
 
   start() {
+    if (this.plan.mode === 'order') {
+      this.lineups = drawLineups(this.ctx.rng, this.plan.goal, this.plan.length);
+      this.setupLineup(0);
+      void this.ctx.instruct('jelly.order', { name: this.ctx.childName });
+      return;
+    }
     if (this.plan.mode === 'compare') {
       this.flags = sameFlags(this.ctx.rng, this.plan.goal);
       void this.ctx.instruct('jelly.compare', { a: 1, b: 2 });
@@ -235,6 +278,18 @@ class JellyDrums implements Game {
     this.ticks.position.set(l.again.x, l.again.y - 85);
     this.rewind.position.set(l.again.x - 150, l.again.y);
     this.drawRewind();
+    if (this.plan.mode === 'order') {
+      this.drawOrderShelf();
+      this.drawOrderSlots();
+      this.sleeperG.position.set(l.sleeper.x, l.sleeper.y);
+      this.sleeperG.scale.set(l.scale);
+      for (const item of this.orderJellies) {
+        item.jelly.scale.set(l.scale);
+        const dest = item.placed ? l.orderSlots[item.slot] : l.orderRow[item.rowIndex];
+        item.drag.home = { ...dest };
+        if (!item.drag.dragging) item.jelly.position.set(dest.x, dest.y);
+      }
+    }
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
@@ -244,11 +299,17 @@ class JellyDrums implements Game {
   }
 
   update(dt: number) {
+    if (this.dead) return;
     this.clock += dt;
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
+    for (const item of this.orderJellies) item.jelly.update(dt, beat);
     this.again.alpha = this.phase === 'turn' ? 1 : 0.5;
     for (const b of Object.values(this.choices)) b.alpha = this.phase === 'turn' ? 1 : 0.5;
+    if (this.slotPulse > 0) {
+      this.slotPulse = Math.max(0, this.slotPulse - dt);
+      this.drawOrderSlots();
+    }
     if (this.twinkle > 0) {
       this.twinkle = Math.max(0, this.twinkle - dt);
       this.garland.alpha = 0.75 + 0.25 * Math.cos(this.twinkle * 24);
@@ -262,6 +323,19 @@ class JellyDrums implements Game {
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
   autotouch(): TouchIntent | null {
+    if (this.plan.mode === 'order') {
+      const lineup = this.lineups[this.tunesDone] ?? null;
+      const idx = orderToDrag(this.phase, lineup, this.placedCount, this.plan.length);
+      if (idx === null) return null;
+      const item = this.orderJellies[idx];
+      const slot = this.lay.orderSlots[this.placedCount];
+      if (!item || item.placed || item.drag.dragging || !slot) return null;
+      return {
+        drag: { on: item.jelly, y: item.jelly.belly },
+        to: { on: this.ctx.stage, x: slot.x, y: slot.y },
+        pause: 0.25,
+      };
+    }
     if (this.plan.mode === 'compare') {
       const v = verdictToTap(this.phase, this.pair);
       return v ? { tap: { on: this.choices[v] }, pause: 0.4 } : null;
@@ -273,7 +347,10 @@ class JellyDrums implements Game {
     return this.plan.mode === 'wake' ? { tap, receiver: this.anywhere, pause: 0.15 } : { tap, pause: 0.15 };
   }
 
-  destroy() {}
+  destroy() {
+    this.dead = true;
+    this.clearLineup();
+  }
 
   private tapJelly(i: number) {
     if (this.phase === 'done') return;
@@ -370,9 +447,12 @@ class JellyDrums implements Game {
   }
 
   private sing(i: number, power = 1) {
-    const j = this.jellies[i];
+    this.singPitch(i, this.jellies[i], power);
+  }
+
+  private singPitch(pitch: number, j: Jelly, power = 1) {
     j.hit(power);
-    this.note(SET_STEPS[this.sounds][i]);
+    this.note(SET_STEPS[this.sounds][pitch]);
     this.ctx.particles.burst(j.x + (Math.random() - 0.5) * 30, j.y - j.height * 0.9, {
       kind: 'note',
       colors: [swatch[j.color].line],
@@ -611,16 +691,245 @@ class JellyDrums implements Game {
     }
   }
 
+  // ----- Lowest-to-highest mode (level 13) -----
+
+  private clearLineup() {
+    for (const item of this.orderJellies) {
+      item.drag.destroy();
+      item.jelly.destroy({ children: true });
+    }
+    this.orderJellies = [];
+  }
+
+  private setupLineup(index: number) {
+    this.clearLineup();
+    this.placedCount = 0;
+    this.wrongThisTune = 0;
+    const lineup = this.lineups[index];
+    this.orderJellies = lineup.jellies.map((entry, rowIndex) => {
+      const jelly = new Jelly(entry.color, ORDER_HW, ORDER_HW * 1.55);
+      const pos = this.lay.orderRow[rowIndex];
+      jelly.position.set(pos.x, pos.y);
+      jelly.scale.set(this.lay.scale);
+      jelly.hitArea = new Rectangle(
+        -ORDER_HW - HIT_PAD,
+        -ORDER_HW * 1.55 - 30,
+        ORDER_HW * 2 + HIT_PAD * 2,
+        ORDER_HW * 1.55 + 50,
+      );
+      this.orderLayer.addChild(jelly);
+      const item: OrderItem = {
+        jelly,
+        pitch: entry.pitch,
+        drag: null!,
+        placed: false,
+        slot: -1,
+        rowIndex,
+      };
+      item.drag = draggable(jelly, this.ctx.tw, {
+        onPick: () => {
+          if (this.dead || this.phase !== 'turn') return;
+          this.singPitch(item.pitch, item.jelly);
+        },
+        onDrop: (x, y) => this.dropOrder(item, x, y),
+      });
+      return item;
+    });
+    this.phase = 'turn';
+    this.drawOrderShelf();
+    this.drawOrderSlots();
+    this.drawSleeper(lineup.sleeper);
+  }
+
+  private drawOrderShelf() {
+    const slots = this.lay.orderSlots;
+    if (this.plan.mode !== 'order' || !slots.length) return;
+    const s = this.lay.scale;
+    const left = slots[0].x - (ORDER_HW + 24) * s;
+    const right = slots[slots.length - 1].x + (ORDER_HW + 24) * s;
+    const y = slots[0].y;
+    this.orderShelf
+      .clear()
+      .roundRect(left, y - 8 * s, right - left, 24 * s, 12 * s)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+  }
+
+  private drawOrderSlots() {
+    const g = this.orderSlots.clear();
+    if (this.plan.mode !== 'order') return;
+    const s = this.lay.scale;
+    const r = ORDER_SLOT_RADIUS * s;
+    this.lay.orderSlots.forEach((p, k) => {
+      const lit = k === this.placedCount && this.phase === 'turn';
+      const filled = k < this.placedCount;
+      const cy = p.y - 40 * s;
+      if (lit) {
+        const ringR = r + (this.slotPulse > 0 ? 14 : 8);
+        g.circle(p.x, cy, ringR).fill({ color: 0xffd23f, alpha: 0.25 });
+      }
+      g.circle(p.x, cy, r)
+        .fill({ color: filled ? 0xfff8e6 : 0xffffff, alpha: lit ? 0.55 : filled ? 0.25 : 0.2 })
+        .stroke({
+          width: lit ? 6 : 4,
+          color: lit ? 0xffd23f : filled ? swatch.green.line : wood.line,
+        });
+    });
+  }
+
+  private drawSleeper(color: ColorName) {
+    const g = this.sleeperG.clear();
+    if (this.plan.mode !== 'order') return;
+    const hw = 52;
+    const h = 68;
+    const sw = swatch[color];
+    g.position.set(this.lay.sleeper.x, this.lay.sleeper.y);
+    g.scale.set(this.lay.scale);
+    domePath(g, hw, h)
+      .fill({ color: sw.fill, alpha: 0.85 })
+      .stroke({ width: 5, color: sw.line, join: 'round' });
+    // Closed sleepy eyes and soft cheeks.
+    for (const side of [-1, 1]) {
+      const ex = side * hw * 0.3;
+      const ey = -h * 0.45;
+      g.moveTo(ex - 9, ey)
+        .quadraticCurveTo(ex, ey + 7, ex + 9, ey)
+        .stroke({ width: 4, color: ink, cap: 'round' });
+      g.ellipse(side * hw * 0.52, -h * 0.3, hw * 0.12, h * 0.06).fill({ color: cheek, alpha: 0.45 });
+    }
+    // Little "z"s floating above the sleeping jelly.
+    for (const [zx, zy, sz] of [
+      [18, -h - 14, 10],
+      [34, -h - 32, 13],
+    ]) {
+      g.moveTo(zx, zy)
+        .lineTo(zx + sz, zy)
+        .lineTo(zx, zy + sz)
+        .lineTo(zx + sz, zy + sz)
+        .stroke({ width: 3, color: sw.line, cap: 'round', join: 'round' });
+    }
+  }
+
+  private slotAt(x: number, y: number): number | null {
+    const s = this.lay.scale;
+    let best: number | null = null;
+    let bestD = Infinity;
+    for (let k = 0; k < this.lay.orderSlots.length; k++) {
+      const p = this.lay.orderSlots[k];
+      if (Math.abs(x - p.x) > 90 * s || y < p.y - 115 * s || y > p.y + 95 * s) continue;
+      const d = Math.hypot(x - p.x, y - p.y);
+      if (d < bestD) {
+        bestD = d;
+        best = k;
+      }
+    }
+    return best;
+  }
+
+  private lockOrderJelly(item: OrderItem, slot: number, duration: number) {
+    item.placed = true;
+    item.slot = slot;
+    item.drag.destroy();
+    onTap(
+      item.jelly,
+      () => {
+        if (!this.dead && this.phase !== 'done') this.singPitch(item.pitch, item.jelly);
+      },
+      { cooldown: 90 },
+    );
+    const dest = this.lay.orderSlots[slot];
+    item.drag.home = { ...dest };
+    void this.ctx.tw.to(item.jelly, { x: dest.x, y: dest.y }, { duration });
+  }
+
+  private dropOrder(item: OrderItem, x: number, y: number): boolean {
+    if (this.dead || this.phase !== 'turn' || item.placed || item.drag.tapped) return false;
+    const hitSlot = this.slotAt(x, y);
+    if (hitSlot === null) return false;
+    if (hitSlot !== this.placedCount) {
+      sfx.tick();
+      this.slotPulse = 0.6;
+      this.drawOrderSlots();
+      return false;
+    }
+    const lineup = this.lineups[this.tunesDone];
+    const targetIndex = lineup.byPitch[this.placedCount];
+    const targetPitch = lineup.jellies[targetIndex].pitch;
+    if (item.pitch !== targetPitch) {
+      this.misses++;
+      this.wrongThisTune++;
+      if (this.wrongThisTune === 2) this.hints++;
+      const dir = orderDirection(item.pitch, targetPitch);
+      if (dir) void this.ctx.say('jelly.order.dir', { dir });
+      if (this.wrongThisTune >= 2) this.orderJellies[targetIndex].jelly.glow(1.5);
+      return false;
+    }
+    this.lockOrderJelly(item, this.placedCount, 0.16);
+    this.placedCount++;
+    this.wrongThisTune = 0;
+    this.drawOrderSlots();
+    if (this.placedCount >= this.plan.length - 1) void this.finishLineup();
+    else void this.ctx.instruct('jelly.order.next', { spot: this.placedCount + 1 });
+    return true;
+  }
+
+  private async finishLineup() {
+    this.phase = 'listen';
+    const lastSlot = this.plan.length - 1;
+    const last = this.orderJellies.find((o) => !o.placed);
+    if (last) this.lockOrderJelly(last, lastSlot, 0.28);
+    this.placedCount = this.plan.length;
+    this.drawOrderSlots();
+    await this.ctx.tw.wait(0.35);
+    if (this.dead) return;
+    const inOrder = [...this.orderJellies].sort((a, b) => a.slot - b.slot);
+    for (const o of inOrder) {
+      o.jelly.glow(0.45);
+      this.singPitch(o.pitch, o.jelly);
+      await this.ctx.tw.wait(0.32);
+      if (this.dead) return;
+    }
+    this.tunesDone++;
+    this.setLit(Math.round((this.tunesDone / this.plan.goal) * BULBS));
+    this.fans.forEach((f) => f.cheer());
+    this.ctx.pet.cheer();
+    sfx.sparkle();
+    void this.ctx.say('jelly.nice');
+    await this.ctx.tw.wait(1.3);
+    if (this.dead) return;
+    if (this.tunesDone >= this.plan.goal) void this.finale();
+    else {
+      this.setupLineup(this.tunesDone);
+      void this.ctx.instruct('jelly.order', { name: this.ctx.childName });
+    }
+  }
+
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
   private async finale() {
     this.phase = 'done';
+    this.drawOrderSlots();
     await this.ctx.tw.wait(0.4);
-    for (let i = 0; i < this.jellies.length; i++) {
-      this.sing(i);
-      await this.ctx.tw.wait(0.14);
+    if (this.dead) return;
+    if (this.plan.mode === 'order') {
+      const inOrder = [...this.orderJellies].sort((a, b) => a.slot - b.slot);
+      for (const o of inOrder) {
+        this.singPitch(o.pitch, o.jelly);
+        await this.ctx.tw.wait(0.14);
+        if (this.dead) return;
+      }
+      await this.ctx.tw.wait(0.2);
+      if (this.dead) return;
+      for (const o of inOrder) o.jelly.hit(1.4);
+    } else {
+      for (let i = 0; i < this.jellies.length; i++) {
+        this.sing(i);
+        await this.ctx.tw.wait(0.14);
+        if (this.dead) return;
+      }
+      await this.ctx.tw.wait(0.2);
+      if (this.dead) return;
+      this.jellies.forEach((j) => j.hit(1.4));
     }
-    await this.ctx.tw.wait(0.2);
-    this.jellies.forEach((j) => j.hit(1.4));
     // Two thirds of a full note: the marimba keeps its old chord gain of 0.3.
     [0, 2, 3, 5].forEach((s) => this.note(s, 2 / 3));
     this.fans.forEach((f) => f.cheer());
@@ -636,6 +945,7 @@ class JellyDrums implements Game {
     });
     sfx.tada();
     await this.ctx.tw.wait(1.6);
+    if (this.dead) return;
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 }
@@ -701,6 +1011,7 @@ export const jellyDrums: GameModule = {
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
     if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
+    if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },

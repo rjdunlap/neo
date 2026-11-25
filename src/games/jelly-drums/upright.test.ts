@@ -3,7 +3,15 @@ import { computeView, NO_INSETS, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { AGAIN_RADIUS, CHOICE_RADIUS, HALF_WIDTHS, jellyHit, jellyLayout } from './layout';
+import {
+  AGAIN_RADIUS,
+  CHOICE_RADIUS,
+  HALF_WIDTHS,
+  jellyHit,
+  jellyLayout,
+  ORDER_SLOT_RADIUS,
+  orderJellyHit,
+} from './layout';
 import { LEVELS, planFor } from './logic';
 
 /**
@@ -21,9 +29,21 @@ const jellyTargets = (v: View): Target[] => {
   return HALF_WIDTHS.map((_, i) => ({ what: `jelly ${i + 1}`, ...jellyHit(l, i) }));
 };
 
-it('covers levels 1 to 12: free play, tunes, the wake level and the pair level', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(new Set(['free', 'echo', 'wake', 'compare']));
+const orderTargets = (v: View): Target[] => {
+  const l = jellyLayout(v);
+  return [
+    ...[0, 1, 2, 3].map((i) => ({ what: `order jelly ${i + 1}`, ...orderJellyHit(l, i) })),
+    ...l.orderSlots.map((p, i) =>
+      square(`slot ${i + 1}`, { x: p.x, y: p.y - 40 * l.scale }, ORDER_SLOT_RADIUS * 2 * l.scale),
+    ),
+  ];
+};
+
+it('covers levels 1 to 13: free play, tunes, the wake level, the pair level and Lowest to highest', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(
+    new Set(['free', 'echo', 'wake', 'compare', 'order']),
+  );
 });
 
 describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
@@ -33,7 +53,7 @@ describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
     'level %i: every touch target is whole, apart, in view and clear of Home and the guide',
     (level) => {
       const mode = planFor(level).mode;
-      const targets: Target[] = mode === 'wake' ? [] : jellyTargets(v);
+      const targets: Target[] = mode === 'wake' ? [] : mode === 'order' ? orderTargets(v) : jellyTargets(v);
       if (mode === 'echo' || mode === 'compare')
         targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
       if (mode === 'compare') {
