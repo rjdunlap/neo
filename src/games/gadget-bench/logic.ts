@@ -24,7 +24,7 @@ export type PartId =
   | 'raft'
   | 'glowstones';
 /** `gate` is level 5's limit, always the last tile: no part fixes it, and it stops any cart holding a tall part. */
-export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark' | 'gate';
+export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark' | 'gate' | 'light' | 'strong';
 /** A gadget: each socket empty or holding one part. */
 export type Gadget = Partial<Record<Socket, PartId>>;
 
@@ -41,20 +41,45 @@ export interface PartSpec {
   name: string;
   /** Too tall for level 5's little gate. */
   tall: boolean;
+  /** Level 7's load: a light part is 1, a strong part 2; the flag adds weight and no strength. */
+  weight: 1 | 2;
+  strength: 0 | 1 | 2;
 }
 
 export const PARTS: Record<PartId, PartSpec> = {
-  wheels: { socket: 'under', fixes: ['bump'], name: 'the big wheels', tall: true },
-  float: { socket: 'under', fixes: ['puddle'], name: 'the float', tall: false },
-  umbrella: { socket: 'top', fixes: ['rain'], name: 'the umbrella', tall: true },
-  lantern: { socket: 'front', fixes: ['dark'], name: 'the lantern', tall: false },
-  flag: { socket: null, fixes: [], name: 'the flag', tall: true },
-  paddles: { socket: 'under', fixes: ['bump', 'puddle'], name: 'the paddle wheels', tall: true },
-  rollers: { socket: 'under', fixes: ['bump'], name: 'the roller belt', tall: false },
-  lid: { socket: 'top', fixes: ['rain'], name: 'the lid', tall: false },
-  raft: { socket: 'under', fixes: ['puddle'], name: 'the raft', tall: false },
-  glowstones: { socket: 'top', fixes: ['dark'], name: 'the glow stones', tall: false },
+  wheels: { socket: 'under', fixes: ['bump'], name: 'the big wheels', tall: true, weight: 2, strength: 2 },
+  float: { socket: 'under', fixes: ['puddle'], name: 'the float', tall: false, weight: 1, strength: 1 },
+  umbrella: { socket: 'top', fixes: ['rain'], name: 'the umbrella', tall: true, weight: 1, strength: 1 },
+  lantern: { socket: 'front', fixes: ['dark'], name: 'the lantern', tall: false, weight: 2, strength: 2 },
+  flag: { socket: null, fixes: [], name: 'the flag', tall: true, weight: 1, strength: 0 },
+  paddles: {
+    socket: 'under',
+    fixes: ['bump', 'puddle'],
+    name: 'the paddle wheels',
+    tall: true,
+    weight: 2,
+    strength: 2,
+  },
+  rollers: { socket: 'under', fixes: ['bump'], name: 'the roller belt', tall: false, weight: 1, strength: 1 },
+  lid: { socket: 'top', fixes: ['rain'], name: 'the lid', tall: false, weight: 2, strength: 2 },
+  raft: { socket: 'under', fixes: ['puddle'], name: 'the raft', tall: false, weight: 2, strength: 2 },
+  glowstones: {
+    socket: 'top',
+    fixes: ['dark'],
+    name: 'the glow stones',
+    tall: false,
+    weight: 1,
+    strength: 1,
+  },
 };
+
+/** Level 7's limits: the rope bridge holds a cart of weight 3 or less; the big load needs strength 4 or more. */
+export const LIGHT_MAX = 3;
+export const STRONG_MIN = 4;
+export const cartWeight = (g: Gadget): number =>
+  SOCKETS.reduce((n, s) => n + (g[s] ? PARTS[g[s]!].weight : 0), 0);
+export const cartStrength = (g: Gadget): number =>
+  SOCKETS.reduce((n, s) => n + (g[s] ? PARTS[g[s]!].strength : 0), 0);
 
 /** Level 5's low twins of the tall single-job parts. */
 export const LOW_TWIN: Partial<Record<PartId, PartId>> = { wheels: 'rollers', umbrella: 'lid' };
@@ -105,6 +130,19 @@ export function responsible(c: Condition, kit?: readonly PartId[]): { part: Part
  */
 export function runPath(g: Gadget, path: readonly Condition[], kit?: readonly PartId[]): RunResult {
   for (const c of path) {
+    if (c === 'light') {
+      // Level 7's rope bridge: too much weight stops the cart, and the first heavy part is the one to swap.
+      if (cartWeight(g) <= LIGHT_MAX) continue;
+      const s = SOCKETS.find((x) => g[x] && PARTS[g[x]!].weight === 2) ?? SOCKETS.find((x) => g[x])!;
+      return { ok: false, at: c, socket: s, part: g[s]! };
+    }
+    if (c === 'strong') {
+      // The big load: too little strength stops the cart, and the first light part (or empty socket) is the one to swap.
+      if (cartStrength(g) >= STRONG_MIN) continue;
+      const s =
+        SOCKETS.find((x) => g[x] && PARTS[g[x]!].weight === 1) ?? SOCKETS.find((x) => !g[x]) ?? SOCKETS[0];
+      return { ok: false, at: c, socket: s, part: g[s] ?? 'wheels' };
+    }
     if (c === 'gate') {
       const s = SOCKETS.find((x) => g[x] && PARTS[g[x]!].tall);
       if (s) return { ok: false, at: c, socket: s, part: g[s]! };
@@ -112,7 +150,9 @@ export function runPath(g: Gadget, path: readonly Condition[], kit?: readonly Pa
     }
     const n = responsible(c, kit);
     if (!n) continue;
-    if (!handles(g[n.socket], n.socket, c)) return { ok: false, at: c, socket: n.socket, part: n.part };
+    // Level 7's box has two parts for a condition, in different sockets (the glow stones and the lantern both light the dark).
+    if (!SOCKETS.some((s) => handles(g[s], s, c)))
+      return { ok: false, at: c, socket: n.socket, part: n.part };
   }
   return { ok: true };
 }
@@ -195,13 +235,26 @@ export interface Round {
   yesterday?: { path: Condition[]; gadget: Gadget };
   /** Level 6: the shown cart's parts went home, and the tray is a box of new parts whose own sockets decide the run. */
   kit?: true;
+  /** Level 7: the second friend, who comes to the same bench, path and five-part box once the first has her cart. */
+  second?: { neighbor: Neighbor; path: Condition[] };
+}
+
+/** Level 7's trade-off: the path ends at a rope bridge (`light`) or a big load (`strong`). */
+export const isTrade = (path: readonly Condition[]): boolean =>
+  path.includes('light') || path.includes('strong');
+
+/** The round as turn `turn` plays it: level 7's second turn swaps in the second friend and path; everything else is the round. */
+export function turnRound(round: Round, turn: 0 | 1): Round {
+  if (turn === 0 || !round.second) return round;
+  const { second: _second, ...rest } = round;
+  return { ...rest, neighbor: round.second.neighbor, path: round.second.path };
 }
 
 /** The kit the round's run reads (level 6's tray), or none: the old one-socket rule. */
 export const kitOf = (round: Round): readonly PartId[] | undefined => (round.kit ? round.tray : undefined);
 /** Levels 4–6: help follows a target passing design rather than the first unmet condition's single-job part. */
 export const followsTarget = (round: Round): boolean =>
-  !!round.yesterday || !!round.kit || round.path.includes('gate');
+  !!round.yesterday || !!round.kit || round.path.includes('gate') || isTrade(round.path);
 
 export interface Brief {
   level: number;
@@ -235,15 +288,20 @@ export const PLANS: Record<number, Plan> = {
     name: 'New Box',
     describe: "New Box: the same job as the pet's cart, from a box of parts it never used",
   },
+  7: {
+    name: 'Two Friends, One Box',
+    describe:
+      'Two Friends, One Box: build a light cart for one friend, then a strong cart for the next from the same box',
+  },
 };
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
-export const TOP_LEVEL = 6;
+export const TOP_LEVEL = 7;
 export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(TOP_LEVEL, level))];
 
 const LEVEL1_CONDITIONS: readonly Condition[] = ['rain', 'dark', 'bump', 'puddle'];
@@ -287,6 +345,19 @@ export const LEVEL6_PAIRS: readonly (readonly [Condition, Condition][])[] = [
   ],
   [['bump', 'rain']],
 ];
+
+/**
+ * Level 7's condition pairs and their five-part boxes: a light twin and a strong twin for each condition, and a spare.
+ * Every part weighs what it can carry, so no cart is both light enough for the bridge and strong enough for the load.
+ */
+export const LEVEL7_PAIRS: readonly { conditions: [Condition, Condition]; tray: readonly PartId[] }[] = [
+  { conditions: ['bump', 'rain'], tray: ['rollers', 'wheels', 'umbrella', 'lid', 'lantern'] },
+  { conditions: ['puddle', 'rain'], tray: ['float', 'raft', 'umbrella', 'lid', 'lantern'] },
+  { conditions: ['bump', 'dark'], tray: ['rollers', 'wheels', 'glowstones', 'lantern', 'lid'] },
+  { conditions: ['puddle', 'dark'], tray: ['float', 'raft', 'glowstones', 'lantern', 'lid'] },
+];
+const LIGHT_FRIENDS: readonly Neighbor[] = [NEIGHBORS[0], NEIGHBORS[2]];
+const STRONG_FRIENDS: readonly Neighbor[] = [NEIGHBORS[3], NEIGHBORS[1]];
 
 /** Level 4: the condition on today's path that yesterday's did not have (the sparkled tile). */
 export function newCondition(round: Round): Condition | null {
@@ -413,6 +484,24 @@ export function briefFor(level: number, rng: Rng): Brief {
         kit: true,
       });
     });
+  } else if (l === 7) {
+    const later = rng.shuffle(LEVEL7_PAIRS.slice(1)).slice(0, 2);
+    [LEVEL7_PAIRS[0], ...later].forEach((pair, i) => {
+      const first = i === 0;
+      const conds = first ? [...pair.conditions] : rng.shuffle([...pair.conditions]);
+      const light = first ? LIGHT_FRIENDS[0] : rng.pick(LIGHT_FRIENDS);
+      const strong = first ? STRONG_FRIENDS[0] : rng.pick(STRONG_FRIENDS);
+      const lightFirst = first || rng.chance(0.5);
+      const lightPath: Condition[] = ['smooth', ...conds, 'light'];
+      const strongPath: Condition[] = ['smooth', ...conds, 'strong'];
+      rounds.push({
+        neighbor: lightFirst ? light : strong,
+        path: lightFirst ? lightPath : strongPath,
+        open: [...SOCKETS],
+        tray: first ? [...pair.tray] : rng.shuffle([...pair.tray]),
+        second: { neighbor: lightFirst ? strong : light, path: lightFirst ? strongPath : lightPath },
+      });
+    });
   } else {
     const order = [LEVEL3_PAIRS[0], ...rng.shuffle(LEVEL3_PAIRS.slice(1))].slice(0, 3);
     order.forEach((pair, i) => {
@@ -478,6 +567,15 @@ export function helpSteps(gadget: Gadget, round: Round): number {
 export function helpFor(gadget: Gadget, path: readonly Condition[], round?: Round): Help {
   const r = runPath(gadget, path, round && kitOf(round));
   if (r.ok) return { kind: 'done' };
+  if (round && isTrade(path)) {
+    // Level 7: two parts can fix a condition, so help moves one socket at a time toward the nearest passing design.
+    const d = targetDesign(gadget, round);
+    const s = d ? SOCKETS.find((x) => d[x] !== gadget[x]) : undefined;
+    if (d && s) {
+      if (!d[s]) return { kind: 'out', part: gadget[s]!, socket: s, at: r.at };
+      return { kind: 'install', part: d[s]!, socket: s, replaces: gadget[s] ?? null, at: r.at };
+    }
+  }
   const d = round && followsTarget(round) ? targetDesign(gadget, round) : null;
   if (d && !d[r.socket] && gadget[r.socket])
     return { kind: 'out', part: gadget[r.socket]!, socket: r.socket, at: r.at };
@@ -523,6 +621,11 @@ export class Tally {
     this.failedTries = [];
     this.stops.clear();
     this.conflictSaid = false;
+  }
+
+  /** Level 7: the second friend's turn clears the turn's glow and memory; misses and hints carry on. */
+  nextTurn() {
+    this.nextRound();
   }
 
   /** A failing Give. Returns what the shell does now: light the glow, install the part (a supported finish), or nothing more. */
@@ -709,10 +812,20 @@ export function benchLayout(level: number, tiles: number, trayCount: number, v: 
     giveButton = button(v.w - M - BUTTON_R, cy);
     tryButton = button(giveButton.x - 24 - BUTTON_R, cy);
   }
-  const trayW = trayCount * PART + Math.max(0, trayCount - 1) * gap;
+  let slot = PART;
+  let trayGap = gap;
   let trayY = bottomY;
   let trayLeft = PET_CORNER.w + M;
   let trayRight = tryButton ? tryButton.x - M : v.w - M;
+  if (wide && trayCount > 4) {
+    // Level 7's five-part box: landscape squeezes the slots and the gaps (never under 100) rather than shrink anything else.
+    trayLeft = PET_CORNER.w + 6;
+    trayRight = tryButton!.x - 8;
+    trayGap = 8;
+    slot = Math.min(PART, Math.floor((trayRight - trayLeft - (trayCount - 1) * trayGap) / trayCount));
+    if (slot < 100) return null;
+  }
+  const trayW = trayCount * slot + Math.max(0, trayCount - 1) * trayGap;
   if (!wide && trayCount > 0 && trayRight - trayLeft < trayW) {
     // Portrait: the tray takes its own row above the buttons, clear of the guide.
     trayY = v.h - PET_CORNER.h - M - PART;
@@ -721,7 +834,8 @@ export function benchLayout(level: number, tiles: number, trayCount: number, v: 
     if (tryButton && trayY + PART + M > tryButton.y) trayY = tryButton.y - M - PART;
   }
   const trayX = trayLeft + (trayRight - trayLeft - trayW) / 2;
-  for (let i = 0; i < trayCount; i++) tray.push({ x: trayX + i * (PART + gap), y: trayY, w: PART, h: PART });
+  for (let i = 0; i < trayCount; i++)
+    tray.push({ x: trayX + i * (slot + trayGap), y: trayY, w: slot, h: slot });
   const stripY = trayCount > 0 ? trayY - 12 - STRIP : bottomY - 12 - STRIP;
   const strip: Rect = {
     x: Math.max(PET_CORNER.w + M, v.w / 2 - 3 * (STRIP + 8)),

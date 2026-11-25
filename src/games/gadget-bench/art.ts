@@ -6,6 +6,7 @@ import { starPoints } from '../../art/shapes';
 import { checkIcon, crossIcon } from '../../ui/icons';
 import {
   need,
+  PARTS,
   socketAt,
   SOCKET,
   SOCKETS,
@@ -291,8 +292,20 @@ export function partArt(id: PartId, size = 100): Graphics {
 }
 
 /** A part sitting in its socket on a board: parts drawn a little smaller than the socket. */
-export function partInSocket(id: PartId): Graphics {
-  return partArt(id, SOCKET * 0.86);
+export function partInSocket(id: PartId, pips = false): Graphics {
+  const g = partArt(id, SOCKET * 0.86);
+  if (pips) addPips(g, PARTS[id].weight, SOCKET * 0.86);
+  return g;
+}
+
+/** Level 7's load marks: one dot for a light part, two for a strong one, in a small pill at the part's top right. */
+function addPips(g: Graphics, n: number, size: number) {
+  const x = size * 0.3;
+  const y = -size * 0.38;
+  g.roundRect(x - 20, y - 11, 40, 22, 11)
+    .fill(0xffffff)
+    .stroke(line(wood.line, 2.5));
+  for (let i = 0; i < n; i++) g.circle(x + (n === 1 ? 0 : i === 0 ? -7 : 7), y, 5).fill(wood.line);
 }
 
 // ——— Path tiles ———
@@ -356,6 +369,25 @@ export function conditionTile(c: Condition, size = 96, shaking = false): Graphic
       .arc(0, 4 * s, 20 * s, Math.PI, 0)
       .lineTo(20 * s, 20 * s)
       .stroke(line(wood.line, 6 * s));
+  } else if (c === 'light' || c === 'strong') {
+    // A narrow rope bridge marked with three dots, or a stacked-crate ramp marked with four.
+    const dots = c === 'light' ? 3 : 4;
+    if (c === 'light') {
+      g.moveTo(-36 * s, 12 * s)
+        .quadraticCurveTo(0, 26 * s, 36 * s, 12 * s)
+        .stroke(line(wood.line, 5 * s));
+      for (const x of [-26, -13, 0, 13, 26]) g.rect((x - 4) * s, 14 * s, 8 * s, 5 * s).fill(wood.fill);
+    } else {
+      for (const [x, y, w] of [
+        [-20, 8, 36],
+        [-8, -8, 28],
+        [10, 8, 28],
+      ])
+        g.roundRect(x * s, y * s, w * s, 16 * s, 3 * s)
+          .fill(wood.fill)
+          .stroke(line(wood.line, 3 * s));
+    }
+    for (let i = 0; i < dots; i++) g.circle((-(dots - 1) * 7 + i * 14) * s, -28 * s, 4.5 * s).fill(wood.line);
   } else if (c === 'dark') {
     g.moveTo(10 * s, -30 * s)
       .arc(4 * s, -18 * s, 14 * s, -1.2, 1.9)

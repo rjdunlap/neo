@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1 |
 | pre-K | 1–3 |
-| school | 2–6 |
+| school | 2–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 4 | Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs |
 | 5 | Little Gate: build for the path, and the whole cart must fit under the low garden gate |
 | 6 | New Box: the same job as the pet's cart, from a box of parts it never used |
+| 7 | Two Friends, One Box: build a light cart for one friend, then a strong cart for the next from the same box |
 
 <!-- end generated -->
 
@@ -29,7 +30,7 @@
 
 ## Design notes
 
-*Levels 1–6 · [definition](../definitions/gadget-bench.md) · inventions slices I2 and levels 5–6.* A neighbor's cart must get through a pictured path of conditions (smooth, bump, puddle, rain, dark). Five invented parts each work in one socket only: big wheels under (bumps), a float under (puddle), an umbrella on top (rain), a lantern at the front (dark) and a decoy flag that does nothing. Neighbors are Bunny (apples), Duck (a bag), Cat (fish) and Bear (honey); the definition's hedgehog and mouse stand in as bunny and cat because the island has no hedgehog or mouse critter. Preschool plays level 1, pre-K levels 1–3, school levels 2–6.
+*Levels 1–7 · [definition](../definitions/gadget-bench.md) · inventions slices I2 and levels 5–6.* A neighbor's cart must get through a pictured path of conditions (smooth, bump, puddle, rain, dark). Five invented parts each work in one socket only: big wheels under (bumps), a float under (puddle), an umbrella on top (rain), a lantern at the front (dark) and a decoy flag that does nothing. Neighbors are Bunny (apples), Duck (a bag), Cat (fish) and Bear (honey); the definition's hedgehog and mouse stand in as bunny and cat because the island has no hedgehog or mouse critter. Preschool plays level 1, pre-K levels 1–3, school levels 2–6.
 
 **1 Which one works?** (preschool, pre-K): two finished gadgets differ in one part. Tap a gadget to Try it (free, any number of times); tap the hand under one to Give it. **2 Change one part** (pre-K, school): the pet builds the first friend's cart as a demonstration (nothing counts); a second friend needs something else, so she swaps or adds one part, Tries and Gives. **3 Build it** (pre-K, school): two open sockets, four tray parts (the two right ones, a decoy whose socket is closed, and the flag) and a path of two conditions; a part works only in its right socket.
 
@@ -37,6 +38,8 @@
 
 **5 Little Gate** (school): the neighbor lives behind a low garden arch at the end of the path. She builds as at level 3 and Tries; the familiar cart crosses every condition, then a tall part (the big wheels or the umbrella, or even the flag on top) stops at the arch. A low part does the same job (a roller belt under for bumps and rain gear that sits flat) and rolls under. Every round holds four tray parts. Taking the tall part out is the fix, and a part that does nothing still counts if it is tall. The glow for a tall part doing nothing speaks the existing gate line. **6 New Box** (school): the pet's finished cart works for one neighbor, its parts ride home with that neighbor, and a second neighbor needs the same path from a new box whose parts it never used (glow stones for the dark, a roller belt). Glow stones at the front fail the Give (one miss) and work on top; she meets the need again with different parts. Help names the socket and installs the part as at level 3.
 
+**7 Two Friends, One Box** (school, PR number in the verification entry): one five-part box serves two friends in turn on the same path. Every part has a weight and the same strength (the roller belt, float, umbrella and glow stones are light, 1; the big wheels, raft, lid and lantern are strong, 2), shown as one or two dots on the part. The first friend (Bunny, then Cat) ends at a rope bridge that holds a total weight of 3 or less; the second (Bear, then Duck) ends at a big load that needs a total strength of 4 or more. Two parts can fix a condition (the glow stones or the lantern for the dark), so matching a part to its weather decides nothing and no cart works for both friends. When the first friend has her cart the bench empties, the five parts come home and the second friend arrives with the same box. Misses and hints carry across both turns; each round is two Gives. Round 1 is authored (bump, rain; rollers, wheels, umbrella, lid, lantern) and rounds 2–3 draw two of the other three pairs. Help follows the nearest passing design one socket at a time, and landscape squeezes the five-part tray (slots of at least 100). The how-to card's demonstration plays only round 1.
+
 **Misses and help.** Try is always free and a failing Try never counts. A failing Give is one miss. After two misses, or two failing Trys at the same condition with that socket unchanged, the responsible socket glows (at level 1, the passing gadget); that is one hint, once per round. Show a hint installs the needed part (one hint each, up to the round's unmet conditions); after the glow one more miss installs the part, a supported finish with one hint. A passing Give ends the round: the neighbor hops, and two more friends roll in with copies. A version strip shows each Try and Give as a small picture. Three rounds a level, one sticker a level. The pause sheet offers Start again and Show a hint. The how-to card has a ghost finger at levels 1–3. Painted Canyon (now 11 games). Co-play: one of you is the neighbor who says what the cart must get through, the other builds it, then swap; off-screen: find something with wheels at home and ask what the wheels are for. No level 7, Workshop Cases or kept gadgets.
 
-**Plays upright on a phone (upright batch 11 onward, 2026-11-18).** `benchLayout` was already pure; held upright the boards (and level 1's Give hands) now sit low in the spare room (bias 0.85) above the path row, where a tall phone had left the pair floating mid-screen with the lower 40% empty. Sideways and an upright tablet keep the centred layout. `upright.test.ts` checks levels 1–6 (and a six-level five-tray case) on five upright views.
+**Plays upright on a phone (upright batch 11 onward, 2026-11-18).** `benchLayout` was already pure; held upright the boards (and level 1's Give hands) now sit low in the spare room (bias 0.85) above the path row, where a tall phone had left the pair floating mid-screen with the lower 40% empty. Sideways and an upright tablet keep the centred layout. `upright.test.ts` checks levels 1–7 (and a six-level five-tray case) on five upright views.
