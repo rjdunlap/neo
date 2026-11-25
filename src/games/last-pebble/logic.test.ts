@@ -4,7 +4,12 @@ import { hinted, missEvery, missOnRequest, newRequestTally, nextRequest, tally }
 import {
   LEVELS,
   applyMove,
+  bestChoice,
   bestMove,
+  choiceLayout,
+  goFirstWins,
+  stoneSpots,
+  streamLayout,
   describeLevel,
   hintSpot,
   isSteppingStone,
@@ -178,11 +183,11 @@ describe('Last Pebble Nim model', () => {
 });
 
 describe('Last Pebble rounds, replies and coach accounting', () => {
-  it('supports school and grownup levels 1..2 with distinct descriptions', () => {
-    expect(LEVELS).toEqual({ school: { min: 1, max: 2 }, grownup: { min: 1, max: 2 } });
-    expect(describeLevel(1)).toContain('about 10 and up');
-    expect(describeLevel(2)).toContain('about 10 and up');
-    expect(describeLevel(1)).not.toBe(describeLevel(2));
+  it('supports school and grownup levels 1..4 with distinct descriptions', () => {
+    expect(LEVELS).toEqual({ school: { min: 1, max: 4 }, grownup: { min: 1, max: 4 } });
+    const all = [1, 2, 3, 4].map(describeLevel);
+    for (const d of all) expect(d).toContain('about 10 and up');
+    expect(new Set(all).size).toBe(4);
   });
 
   it('generates level 1 crossings (rem = 2, 4, 5) and level 2 streams (T in {7, 8, 10, 11})', () => {
@@ -243,5 +248,136 @@ describe('Last Pebble rounds, replies and coach accounting', () => {
     expect(missEvery(t2)).toBe(true);
     hinted(t2);
     expect(tally(t2)).toEqual({ misses: 4, hints: 2 });
+  });
+});
+
+/** Exhaustive solve: does the player to move at `pos` win (reaching `target` wins) with takes `1..m`? */
+function mover(pos: number, target: number, m: number, memo = new Map<number, boolean>()): boolean {
+  if (pos >= target) return false; // the previous player already reached it
+  const hit = memo.get(pos);
+  if (hit !== undefined) return hit;
+  let win = false;
+  for (let d = 1; d <= m && pos + d <= target && !win; d++) {
+    if (pos + d === target || !mover(pos + d, target, m, memo)) win = true;
+  }
+  memo.set(pos, win);
+  return win;
+}
+
+describe('Last Pebble levels 3–4: who goes first, bigger steps', () => {
+  it('goFirstWins and bestChoice agree with an exhaustive solve for T 6..16, m 2..4', () => {
+    for (let m = 2; m <= 4; m++) {
+      for (let target = 6; target <= 16; target++) {
+        expect(goFirstWins(target, m), `T=${target} m=${m}`).toBe(mover(0, target, m));
+        expect(bestChoice(target, m)).toBe(target % (m + 1) === 0 ? 'second' : 'first');
+        expect(stoneSpots(target, m).every((s) => (target - s) % (m + 1) === 0)).toBe(true);
+      }
+    }
+  });
+
+  it('bestMove and petMove are optimal for takes 3 and 4', () => {
+    for (const m of [3, 4]) {
+      for (let target = 9; target <= 16; target++) {
+        for (let pos = 0; pos < target; pos++) {
+          const best = bestMove(pos, target, m);
+          const pet = petMove(pos, target, 7, m);
+          expect(pet).toBeGreaterThanOrEqual(1);
+          expect(pet).toBeLessThanOrEqual(m);
+          expect(pos + pet).toBeLessThanOrEqual(target);
+          if (best !== null) {
+            expect(pet).toBe(best);
+            expect(mover(pos + best, target, m)).toBe(false);
+          } else if (pos + 1 <= target) {
+            expect(mover(pos, target, m)).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('rounds show both answers and stay inside the pools', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const r3 = makeRound(3, new Rng(seed));
+      expect(r3.crossings).toHaveLength(3);
+      expect(r3.crossings.every((c) => c.choose && c.maxTake === 2 && c.startPos === 0)).toBe(true);
+      expect(r3.crossings.map((c) => c.target % 3).sort()).toEqual([0, 1, 2]);
+      expect(new Set(r3.crossings.map((c) => c.target)).size).toBe(3);
+
+      const r4 = makeRound(4, new Rng(seed));
+      expect(r4.crossings).toHaveLength(2);
+      expect(r4.crossings.map((c) => c.maxTake).sort()).toEqual([3, 4]);
+      const answers = r4.crossings.map((c) => bestChoice(c.target, c.maxTake));
+      expect(new Set(answers)).toEqual(new Set(['first', 'second']));
+      for (const c of r4.crossings) {
+        expect(c.target).toBeGreaterThanOrEqual(9);
+        expect(c.target).toBeLessThanOrEqual(16);
+      }
+    }
+  });
+
+  it('every line where the pet reaches T has a turning point or a wrong pick', () => {
+    for (const m of [2, 3, 4]) {
+      for (let target = 6; target <= 16; target++) {
+        for (const pick of ['first', 'second'] as const) {
+          const right = bestChoice(target, m) === pick;
+          const walk = (pos: number, moves: MoveRecord[], herTurn: boolean): void => {
+            if (pos >= target) return;
+            if (herTurn) {
+              for (const d of legalMoves(pos, target, m)) {
+                if (pos + d === target) continue;
+                walk(pos + d, [...moves, { player: 'her', from: pos, to: pos + d }], false);
+              }
+              return;
+            }
+            const d = petMove(pos, target, 3, m);
+            const next = [...moves, { player: 'pet' as const, from: pos, to: pos + d }];
+            if (pos + d === target) {
+              if (right) expect(turningPoint(next, target, m), `T=${target} m=${m}`).not.toBeNull();
+              else expect(turningPoint(next, target, m)).toBeNull();
+              return;
+            }
+            walk(pos + d, next, true);
+          };
+          walk(0, [], pick === 'first');
+        }
+      }
+    }
+  });
+
+  it('a hint walk from the choice screen, always taking the best choice and move, wins', () => {
+    for (const m of [2, 3, 4]) {
+      for (let target = 6; target <= 16; target++) {
+        let pos = 0;
+        let herTurn = bestChoice(target, m) === 'first';
+        for (let guard = 0; guard < 40 && pos < target; guard++) {
+          if (herTurn) {
+            const d = bestMove(pos, target, m);
+            pos += d ?? legalMoves(pos, target, m)[0];
+            if (pos === target) {
+              expect(herTurn).toBe(true);
+              break;
+            }
+          } else {
+            pos += petMove(pos, target, 5, m);
+            expect(pos).toBeLessThan(target);
+          }
+          herTurn = !herTurn;
+        }
+        expect(pos).toBe(target);
+        expect(herTurn).toBe(true);
+      }
+    }
+  });
+
+  it('lays out four rows for T up to 16 and keeps the choice buttons at least 200 x 160', () => {
+    const l = streamLayout({ w: 768, h: 1662, upright: true }, 16);
+    expect(l.spots).toHaveLength(16);
+    expect(l.board.h).toBe(4 * 128 + 3 * 44);
+    const [a, b] = choiceLayout(l);
+    for (const c of [a, b]) {
+      expect(c.w).toBeGreaterThanOrEqual(200);
+      expect(c.h).toBeGreaterThanOrEqual(160);
+    }
+    expect(a.x + a.w / 2).toBeLessThan(b.x - b.w / 2);
   });
 });
