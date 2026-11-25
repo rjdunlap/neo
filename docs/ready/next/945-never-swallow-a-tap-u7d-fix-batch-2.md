@@ -1,0 +1,1 @@
+**`never-swallow-a-tap` U7d fix batch 2** (`domino-run` and `fruit-slice` level 9; existing-game bug fix tier per game): stop holding input on the between-boards praise lines so the next board opens promptly. [Definition](../../definitions/never-swallow-a-tap-lines.md)
