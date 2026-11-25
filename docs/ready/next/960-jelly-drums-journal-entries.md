@@ -1,1 +1,0 @@
-**`jelly-drums` journal entries** (decision 7 settled 2026-10-23: two entries, low and high and a scale; journal tests, typecheck, one scripted round that finds each entry). [Dive](../../deep-dives/jelly-drums.md#build-slices-in-order)

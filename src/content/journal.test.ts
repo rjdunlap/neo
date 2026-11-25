@@ -73,8 +73,9 @@ describe('the entries', () => {
     expect(entriesOf('chain-reaction').map((e) => e.key)).toEqual(['spring-skip']);
     expect(entriesOf('spinner-fair').map((e) => e.key)).toEqual(['two-dice']);
     expect(entriesOf('swing-pals').map((e) => e.key)).toEqual(['longer-slower']);
+    expect(entriesOf('jelly-drums').map((e) => e.key)).toEqual(['low-high', 'scale']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1 + 1,
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1 + 1 + 2,
     );
   });
 
@@ -190,6 +191,16 @@ describe('the entries', () => {
           expect(said, e.id).toContain('longer rope swings slower');
           expect(said, e.id).toContain('short rope comes back first');
           break;
+        case 'jelly-drums':
+          // Matches JELLY_NAMES and isScale() in the game's rules: red is biggest and lowest, blue littlest and highest.
+          if (e.key === 'low-high') {
+            expect(said, e.id).toContain('biggest jelly sings low');
+            expect(said, e.id).toContain('littlest jelly sings high');
+          } else {
+            expect(said, e.id).toContain('three jellies in a row');
+            expect(said, e.id).toContain('up or down a step');
+          }
+          break;
       }
     }
   });
@@ -263,6 +274,11 @@ describe('the entries', () => {
       } else if (e.game === 'swing-pals') {
         expect(find).toContain('short rope');
         expect(found).toContain('long rope swung slower');
+      } else if (e.game === 'jelly-drums') {
+        expect(find).toContain(
+          e.key === 'low-high' ? 'biggest jelly and the littlest jelly' : 'three jellies',
+        );
+        expect(found).toContain(e.key === 'low-high' ? 'sang low' : 'sang a scale');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

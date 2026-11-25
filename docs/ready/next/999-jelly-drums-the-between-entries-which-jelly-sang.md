@@ -1,0 +1,1 @@
+**`jelly-drums` the between entries, Which jelly sang? first** (the next free stable level ID, placed with `order` and `entryLevels`, no renumbering; new levels on an existing interaction: typecheck, rule tests, one browser play of the new level and `fingerdemo` at it). [Dive](../../deep-dives/jelly-drums.md#build-slices-in-order)
