@@ -1,1 +1,2 @@
 **`ready-for-adventure` level 4, The request changed** (school, step-down level 3; new interactions on an existing game: typecheck, rule tests, one filtered scripted play of level 4 with a bad Check, a hint and its assisted tap, the change and the parade, one portrait screenshot and `fingerdemo` at it). [Definition](../../definitions/ready-for-adventure-4.md)
+ **Claimed** (branch `claude/ready-adventure-4`, 2026-11-25).
