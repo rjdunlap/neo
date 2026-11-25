@@ -73,6 +73,7 @@ Brain Age's daily training offers a handful of short exercises (calculation, mem
 
 - A **Play all** button hands the six, at their preset levels, to the [Little surprises](little-surprises.md) mix planner (D2b): the preview sheet, Next stop, Skip, pause and ending rules apply unchanged. The planner's level rule gains one named input, a per-item preset level, used only by the daily; D2b's own mixes keep `store.levelFor`.
 - The ending returns to the six page with its ticks.
+- Defined for the build in [Play all through the mix planner](#play-all-through-the-mix-planner-slice-3-defined-2026-11-25).
 
 ### R7. Voice
 
@@ -93,7 +94,44 @@ In `src/content/daily.test.ts`, pure, over the real registry:
 
 1. **Home entry and preset levels for every band** (status built, [PR #1174](https://github.com/rjdunlap/neo/pull/1174); `goodnight-room` is the one `daily: false` game, and only a round opened from the card with a start level records with `adapt` off, so a discovery opened from the six still adapts): the Home button, Back to Home, the origin's return, preset levels from the band's ladder with pins, the dot row on the card, recording with `adapt` off, the eligibility rule and `daily: false`, the grown-ups' page line, tests above except the kinds. Files: `src/content/daily.ts`, `src/content/daily.test.ts`, `src/app/scenes/DailyScene.ts`, `src/app/scenes/HomeScene.ts`, `src/creatures/home-layout.ts`, `src/app/scenes/GameScene.ts` (the `adapt` flag from the origin), `src/games/types.ts`, `src/games/registry.test.ts`, `src/content/voice-script.ts`, `src/parent/panel.ts`.
 2. **Kinds of challenge** (status built, [PR #1175](https://github.com/rjdunlap/neo/pull/1175); `challenge` on all 163 touch games, kind-first pick with a land preference, the pet in the card page's guide corner and a small all-six flourish; `garden-rows` is a Latin-square bed, so it is `logic`, not `numbers`): the `challenge` field on every touch game (one classification pass, a table in the PR description), the registry test, the kind-first pick and its tests, and the all-six flourish. Files: every `src/games/*/index.ts`, `src/games/types.ts`, `src/content/daily.ts`, `daily.test.ts`, `DailyScene.ts`.
-3. **Play all six** (status being defined, claimed 2026-11-25; D2b is built): the Play all button through the mix planner, its ending back to the six, and the planner's preset-level input with its event tests.
+3. **Play all six** (status defined 2026-11-25, [section](#play-all-through-the-mix-planner-slice-3-defined-2026-11-25); D2b is built): the Play all button through the mix planner, its ending back to the six, and the planner's per-stop preset level and band with their tests.
+
+## Play all through the mix planner (slice 3, defined 2026-11-25)
+
+The source audit used `origin/main` at `83b1af720` (`src/content/mix.ts`, `src/app/discovery.ts`, `src/app/scenes/DailyScene.ts`, `GameScene.ts`). Today Play all is a button that opens the first of the six not yet played, and each daily round's result offers a next-of-six tile (`nextOfSix`); there is no preview, no Skip and no ending. The planner does not yet serve it: `MIX_BANDS` is lap and toddler, a lineup is one to `MIX_MAX` (5) ids from her home spot's pool, and every stop launches at `store.levelFor`. This slice makes one planner serve both, and replaces Play all's chain of result tiles with it.
+
+### What changes
+
+- **A stop carries its own launch.** A session holds frozen stops `{ id, band?, level? }` and a `source`: `place` (D2a/D5a, unchanged: no band or level, launched with `go.game(id, profileBand, undefined, false, { place })`) or `daily` (launched exactly as a card is: `go.game(id, pick.band, undefined, false, { daily: true }, pick.level)`). `startMix` and `step` stay about item states only; the stops live beside them in `MixSession`. The session's `place` for a daily session is the root, not a home spot.
+- **The six come from the page's picks.** Play all freezes the six as `todaysSix` returned them when the page opened (so a midnight crossing never swaps them), with each pick's `band` (`playBand`) and preset level. Pins were applied when the six were dealt and stay as dealt; pinning mid-session changes nothing until the page is opened again.
+- **No band gate, no five-stop cap.** The daily source is not limited by `MIX_BANDS` or `MIX_MAX`; it holds `DAILY_COUNT` stops and is open to every band, phone and island. `mixGames`, `mixStop`, `mixPool`, `lineup` and `repairLineup` keep their lap and toddler rules for the `place` source, with tests unchanged.
+- **Ticked games start played.** Items whose game has a finished round today (`playedOn`) start `played` and are drawn ticked, so Play all plays what is left, as the button does now. When all six are ticked, all six start `upcoming` again: Play all is then an explicit second pass, and its rounds are ordinary rounds with an ordinary sticker each.
+- **Accounting is unchanged.** A stop launched with a preset level is a daily round: it records through the shell with `adapt` off, one sticker per completed round, no neglect when skipped. The mix adds no field, history, stat or sticker. The existing `dailyRound` next-of-six tile is not drawn inside a mix (`mixRound` already suppresses it); a card tapped from the page, outside a session, keeps it.
+
+### Screens
+
+- **Entry.** The existing Play all button (island page and phone root) opens the preview sheet instead of the first game. Nothing is saved.
+- **Preview sheet.** Six stop tiles in card order, each the game's hub icon and level dots, with ticks, Play and Skip as in D2a. Portrait uses two rows of three, landscape one row; every tile and the Play and Skip buttons are at least 100 logical units after scaling and clear of the pet and corner buttons at the phone's upright size and the island's portrait and landscape.
+- **Stop result.** Next stop and Skip take D2b's rectangles; a grown-up's playtest pencil keeps its place and the three do not overlap. The result's Home returns to the preview (D3's `mixReturn`, with how-to cards on, the next stop's own card).
+- **Ending.** "That was today's six!" (`daily.end`, with a quiet line `daily.end.quiet` when every stop was skipped) and one Done button. Done ends the session and opens the six page with its ticks; the all-six flourish (`daily.done`) plays only when every card is ticked, so a skipped game never counts. There is no Again mix: the cards stay playable.
+- **Leaving.** The page's Back, a profile switch, reset, restore, undo, reload and a day change end the session as D2a does, with the same epoch rule: a late finish, tap or speech continuation does nothing. A launch revalidation failure (game gone, band changed, preset level no longer in the ladder) marks that stop `unavailable` and offers the next one; it never launches another game behind the picture.
+
+### What the rule tests assert
+
+In `src/content/mix.test.ts` and `daily.test.ts`, pure, over the real registry:
+
+- A daily session at every band holds six stops with a band and a level that is in `levels(band)` and not an entry level; the stops are the page's six, in card order, with no substitute.
+- `step` is unchanged for the daily source: an item leaves `upcoming` once, a played item is never skipped, a stale round token is ignored.
+- Items with a round finished today start `played`; with all six played, all start `upcoming`.
+- The `place` source still returns null outside lap and toddler and for a place that is not the profile's own; a daily source is never refused for its band.
+- The launch arguments for a daily stop equal a card's (`{ daily: true }`, the pick's band and level), and a place stop's equal D2b's.
+- Layout: the preview tiles and buttons are at least 100 units at each tested view and do not overlap the pet or corner buttons.
+
+### Check tier and files
+
+Shell and navigation tier: typecheck, unit tests and build; `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` once (the place mix must still pass), plus one filtered daily flow at the phone's upright size (Play all, a finished round, Next stop, a Skip, the ending, the six page with its ticks) and a portrait screenshot of the preview; `BROWSER_SUITE=world` because the daily route changes. No offline run: no save, asset or cache change. Expected files: `src/content/mix.ts`, `daily.ts` and their tests; `src/app/discovery.ts` (stops and source on `MixSession`); `src/app/scenes/DailyScene.ts`, `GameScene.ts` and the preview sheet (`src/ui/mix.ts`); `voice-script.ts` for `daily.end` and `daily.end.quiet`; the daily and mix browser scripts; this definition and DESIGN.md only for the shipped contract.
+
+Parked, not asked of anyone: how a child or a grown-up on a real phone reads Skip and the ending.
 
 ## Check tier
 
