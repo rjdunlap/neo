@@ -106,6 +106,11 @@ class LastPebble implements Game {
     return effectiveTarget(this.crossing.target, this.misere);
   }
 
+  /** Words slotted into the lines, so each stays a device-speech line and needs no rendered clip. */
+  private get slots() {
+    return { most: this.most, step: STEP_WORDS[this.take + 1] ?? 'threes' };
+  }
+
   /** The voice line for pointing at `spot`. */
   private hintLine(spot: number): 'lp.hint-safe' | 'lp.hint-step' | 'lp.hint-reach' {
     if (this.misere) return spot === this.win ? 'lp.hint-safe' : 'lp.hint-step';
@@ -360,7 +365,7 @@ class LastPebble implements Game {
     const targetSpot = hintSpot(this.crossing.pos, this.win, this.take);
     if (targetSpot !== null) {
       this.glowSpot = targetSpot;
-      void this.ctx.say(this.hintLine(targetSpot));
+      void this.ctx.say(this.hintLine(targetSpot), this.slots);
       return;
     }
 
@@ -415,7 +420,7 @@ class LastPebble implements Game {
         hinted(this.tally);
         this.glowSpot = hintSpot(this.crossing.pos, this.win, this.take);
         if (this.glowSpot !== null) {
-          await this.ctx.say(this.hintLine(this.glowSpot));
+          await this.ctx.say(this.hintLine(this.glowSpot), this.slots);
         }
       }
       return;
@@ -482,7 +487,7 @@ class LastPebble implements Game {
       this.phase = 'between';
       this.highlightRing = { spot: this.crossing.target, color: swatch.blue.fill };
       sfx.whoosh();
-      await this.ctx.say('lp.splash');
+      await this.ctx.say('lp.splash', this.slots);
       if (g !== this.gen) return;
       this.highlightRing = null;
       await this.finishCrossing(g);
@@ -519,10 +524,7 @@ class LastPebble implements Game {
     this.highlightRing = { spot: this.crossing.target, color: swatch.purple.fill };
     sfx.boing();
     const showGlow = missEvery(this.tally);
-    await Promise.all([
-      this.ctx.say(line, { step: STEP_WORDS[this.take + 1] ?? 'threes' }),
-      this.ctx.tw.wait(this.reduce ? 0.35 : 0.7),
-    ]);
+    await Promise.all([this.ctx.say(line, this.slots), this.ctx.tw.wait(this.reduce ? 0.35 : 0.7)]);
     if (g !== this.gen) return;
     if (this.spec.choose && !turningPoint(this.moves, this.win, this.take)) {
       await this.rewindToChoice(g, showGlow);
@@ -543,7 +545,7 @@ class LastPebble implements Game {
         await this.rewindToChoice(g, true, false);
         return;
       }
-      await this.ctx.say(this.misere ? 'lp.hint-forced' : 'lp.hint-rewind');
+      await this.ctx.say(this.misere ? 'lp.hint-forced' : 'lp.hint-rewind', this.slots);
       if (g !== this.gen) return;
     }
 
@@ -568,7 +570,7 @@ class LastPebble implements Game {
       }
       this.glowSpot = hintSpot(this.crossing.pos, this.win, this.take);
       if (alreadySaidReason && this.glowSpot !== null) {
-        await this.ctx.say(this.hintLine(this.glowSpot));
+        await this.ctx.say(this.hintLine(this.glowSpot), this.slots);
       }
     }
   }
