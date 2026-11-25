@@ -28,7 +28,8 @@ describe.each(Object.entries(views))('Song Maker upright on %s', (_, v) => {
               h: bar.cell,
             });
       }
-      if (plan.mode === 'compose') targets.push({ what: 'check', ...lay.replay, w: 100, h: 100 });
+      if (plan.mode === 'compose' || plan.mode === 'answer')
+        targets.push({ what: 'check', ...lay.replay, w: 100, h: 100 });
       if (plan.mode === 'listen') targets.push({ what: 'replay', ...lay.replay, w: 100, h: 100 });
       expect(uprightProblems(v, targets)).toEqual([]);
       // Every beat has a block, and the frames of all blocks (with their 14-unit margin) stay inside the view, apart.
@@ -52,7 +53,7 @@ describe.each(Object.entries(views))('Song Maker upright on %s', (_, v) => {
         expect(cardBottom).toBeLessThan(frames[0].y0);
         expect(lay.card.x - (34 * plan.cols) / 2 - 16).toBeGreaterThanOrEqual(115);
       }
-      if (plan.mode === 'pattern') expect(lay.bars[0].cell).toBe(GIVEN_CELL);
+      if (plan.mode === 'pattern' || plan.mode === 'answer') expect(lay.bars[0].cell).toBe(GIVEN_CELL);
     });
   });
 
