@@ -1,0 +1,1 @@
+**`common-ground` level 2 definition: a request changed after the preview** (define: docs only; the friend asks for the basket on the other side, the arrangement is revised, with undo and an explanation, per the [Common Ground definition](../../definitions/common-ground.md#the-level))
