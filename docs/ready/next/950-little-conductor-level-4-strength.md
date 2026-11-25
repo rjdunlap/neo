@@ -1,0 +1,1 @@
+**`little-conductor` level 4, strength** (preschool, pre-K; new interaction: typecheck, unit tests, one filtered scripted play at level 4, a portrait screenshot, and `npm run build` only if shared files change): strength as a gain table, the pictured pair, the heard gate over the latest change. [Dive](../../deep-dives/little-conductor.md#build-slices-in-order)

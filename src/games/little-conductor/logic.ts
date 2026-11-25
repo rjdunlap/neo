@@ -17,7 +17,7 @@ export const PACES: Record<PaceId, number> = { turtle: 60, rabbit: 90 };
 export const BEATS = 4;
 
 export interface Motif {
-  id: 'hop' | 'slide' | 'wave';
+  id: 'hop' | 'slide' | 'wave' | 'skip' | 'rock' | 'sway';
   /** One note a beat, as notes of the major pentatonic (semitones above C), all inside one octave. */
   melody: readonly number[];
   /** The beats (0-based) the pluck plays the root on. */
@@ -30,6 +30,10 @@ export const MOTIFS: readonly Motif[] = [
   { id: 'hop', melody: [4, 7, 9, 7], bass: [0, 2], drum: [0, 1, 2, 3] },
   { id: 'slide', melody: [9, 7, 4, 2], bass: [0, 2], drum: [0, 1, 2, 3] },
   { id: 'wave', melody: [2, 7, 2, 9], bass: [0, 2], drum: [0, 1, 2, 3] },
+  // The second family: the same shape (one note a beat, bass on 1 and 3, drum on every beat), so every level can draw from six.
+  { id: 'skip', melody: [0, 4, 0, 7], bass: [0, 2], drum: [0, 1, 2, 3] },
+  { id: 'rock', melody: [7, 4, 7, 2], bass: [0, 2], drum: [0, 1, 2, 3] },
+  { id: 'sway', melody: [4, 2, 4, 9], bass: [0, 2], drum: [0, 1, 2, 3] },
 ];
 
 /** A pentatonic note (semitones above C) as a scale step in the octave above middle C, for `sfx`. */
