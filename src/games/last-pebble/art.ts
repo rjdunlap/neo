@@ -54,7 +54,13 @@ export function farLantern(lit = false): Container {
 }
 
 /** Draws the stream ribbon, S-path stepping-stone path, and bank shores behind the spots. */
-export function streamBed(L: StreamLayout, target: number, litFarBank = false): Container {
+export function streamBed(
+  L: StreamLayout,
+  target: number,
+  litFarBank = false,
+  /** Spot that carries the lantern (the safe stone before the whirlpool at level 5); the far bank by default. */
+  lanternSpot = target,
+): Container {
   const c = new Container();
   const { board, spots } = L;
   const g = new Graphics();
@@ -95,7 +101,7 @@ export function streamBed(L: StreamLayout, target: number, litFarBank = false): 
   c.addChild(g);
 
   // Far-bank lantern beside spot T
-  const last = spots[target - 1];
+  const last = spots[lanternSpot - 1];
   const lantern = farLantern(litFarBank);
   lantern.position.set(last.x + L.spotSize * 0.46, last.y - L.spotSize * 0.36);
   c.addChild(lantern);
@@ -105,7 +111,7 @@ export function streamBed(L: StreamLayout, target: number, litFarBank = false): 
 }
 
 /** Base stepping-stone spot ring (`1..T`), centered on (0, 0). */
-export function spotBase(spot: number, isFarBank: boolean, size: number): Container {
+export function spotBase(spot: number, isFarBank: boolean, size: number, whirlpool = false): Container {
   const c = new Container();
   const r = size * 0.43;
   const g = new Graphics();
@@ -122,7 +128,15 @@ export function spotBase(spot: number, isFarBank: boolean, size: number): Contai
     .stroke({ width: isFarBank ? 5 : 4, color: isFarBank ? swatch.orange.line : WATER_EDGE });
   g.circle(0, 0, r - 8).stroke({ width: 2, color: isFarBank ? swatch.yellow.fill : WATER_FOAM });
 
-  const num = label(String(spot), 32, isFarBank ? swatch.orange.line : ink);
+  if (isFarBank && whirlpool) {
+    // The whirlpool: a swirl in place of the bank, ringed so it reads as no-landing.
+    g.circle(0, 0, r).fill(swatch.blue.light).stroke({ width: 5, color: swatch.blue.line });
+    for (const k of [0.7, 0.46, 0.24]) {
+      g.arc(0, 0, r * k, k * 2, k * 2 + Math.PI * 1.5).stroke({ width: 4, color: swatch.blue.fill });
+    }
+    g.circle(0, 0, r + 1).stroke({ width: 3, color: swatch.red.fill, alpha: 0.8 });
+  }
+  const num = label(String(spot), 32, isFarBank && !whirlpool ? swatch.orange.line : ink);
   c.addChild(g, num);
   return c;
 }
