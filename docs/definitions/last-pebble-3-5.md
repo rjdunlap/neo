@@ -79,3 +79,5 @@ Multi-pile Nim, a variable *start* stone count she sets, scores or ratings, time
 ## Build status
 
 Batch `last-pebble 2` (levels 3–4) **built 2026-11-24** ([PR #2152](https://github.com/rjdunlap/neo/pull/2152), [game page](../games/last-pebble.md)). Two small departures: the take is a row of stones beside the stream for the whole crossing (not only on the choice screen), and the `lp3.*`/`lp4.*` voice keys are `lp.intro.3`, `lp.instruct.3`, `lp.why.<first|second>.<take>` and similar. Batch `last-pebble 3` (level 5) is still to build.
+
+Claimed 2026-11-25: batch `last-pebble 3` (level 5) is being built on `claude/last-pebble-5` (expected files `src/games/last-pebble/*`, this page, the game page).
