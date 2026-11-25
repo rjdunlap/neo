@@ -159,7 +159,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `relaywoods` | 2026-10-26 · [Relay Woods 1–4 (NC2)](archive/VERIFICATION-2026-10-26.md#2026-10-26--relay-woods-14-nc2) | — |
 | `ribbon` | 2026-11-17 · [Ribbon Workshop plays upright on a phone](verification/2026-11-17-ribbon-workshop-plays-upright-on-a-phone.md) | `RIBBON_LEVELS=upright` |
 | `rivertablets` | 2026-10-31 · [River Tablets level 6 (ancient river civilizations AR3, second part)](archive/VERIFICATION-2026-10-31.md#2026-10-31--river-tablets-level-6-ancient-river-civilizations-ar3-second-part) | Level 6 |
-| `robot` | 2026-11-20 · [Robot Path level 15 A routine](verification/2026-11-20-robot-path-level-15-a-routine.md) | `FROM_LEVEL=15 TO_LEVEL=15` |
+| `robot` | 2026-11-24 · [Robot Path level 15 opens on the first board](verification/2026-11-24-robot-path-level-15-opens-on-the-first-board.md) | `FROM_LEVEL=15 TO_LEVEL=15` |
 | `room` | 2026-10-07 · [The discovery journal, and a fix to Animal Snack's first level (2026-10-07; merged to `main` in `af3f430`)](archive/VERIFICATION-2026-10-07-13.md#the-discovery-journal-and-a-fix-to-animal-snacks-first-level-2026-10-07-merged-to-main-in-af3f430) | Treehouse and journal |
 | `rulemachine` | 2026-11-18 · [The pre-K-and-school games' questions on ctx.instruct, second session](verification/2026-11-18-the-pre-k-and-school-games-questions-on-ctx-instruct-second.md) | `RM_LEVELS=2,3,5` |
 | `sandtable` | 2026-11-13 · [Sand Table level 1, a touch anywhere pours at lap](verification/2026-11-13-sand-table-level-1-a-touch-anywhere-pours-at-lap.md) | — |
