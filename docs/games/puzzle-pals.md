@@ -12,7 +12,7 @@
 | toddler | 2–4 |
 | preschool | 4–6 |
 | pre-K | 5, 6, 7, 9, 10 |
-| school | 6, 7, 9, 10 |
+| school | 6, 7, 9, 10, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 8 | One big piece at a time: a touch anywhere hops it into a two- or three-piece picture |
 | 9 | Turn it round: tap an upside-down piece to turn it, then put six pieces together |
 | 10 | Two pictures, one tray: sort eight pieces onto two faint pictures |
+| 11 | Mend the picture: two pieces have swapped places, so tap one and then the other to swap them back |
 
 <!-- end generated -->
 
@@ -34,6 +35,8 @@
 **Grows into:** two pieces with nothing in place, then three to twelve pieces, first over a faint picture, then an empty frame with marked outer edges, a box lid and spoken spatial hints, and half-turn upside-down pieces at level 9; two faint pictures sorted from one mixed tray of eight pieces at level 10; visible landmarks in every piece built ([PR #292](https://github.com/rjdunlap/neo/pull/292))
 
 ## Design notes
+
+**Mend the picture (level 11, built 2026-11-24, [PR #2153](https://github.com/rjdunlap/neo/pull/2153)).** A finished 3×3 picture sits in the frame with two pieces in each other's places, in `school` only (`6, 7, 9, 10, 11` via `order`). No lid, rims or tray: the pieces themselves are the clue. `dealMend` picks the two from pieces whose visible features differ (`cellFeatures`), so they can be found by looking. She taps one piece (a yellow ring shows it is picked; tapping it again puts it down, free) and then another. `judgeSwap` mends only when the two end up home; any other swap glides across and straight back with a boing, one miss ("That one fits right here. Look for the pieces that do not match!"), and the second miss glows the two odd pieces ("Look at the glowing pieces. They are mixed up!"). Pieces take taps only (`drag.enabled` is off), and a touch area is exactly the piece. `mendLayout` makes the frame as big as the view allows, sideways and upright. When the pair is home the picture comes alive as at every level. `autotouch()` taps the two odd pieces in turn. The three new lines have no rendered clips yet, so they use device speech.
 
 **Two pictures, one tray (level 10, built 2026-11-24, [PR #2150](https://github.com/rjdunlap/neo/pull/2150)).** Two 2×2 faint pictures side by side and eight pieces mixed in one tray, in `prek` (`5, 6, 7, 9, 10`) and `school` (`6, 7, 9, 10`) via `order`. `dealScenePair` picks two scenes with different friend, sky and ground, so every piece shows its picture by colour as well as by friend (a test runs 200 seeds). The round holds a `BoardView` per picture (scene, texture, frame, ghost); each piece knows its board. `judgeTwinDrop` takes the nearest empty place on either board: its own place is placed, another place on its own board is a miss ("Hmm, that piece goes somewhere else…"), and a place on the other picture is a miss too (`otherPicture`), spoken with the same "Hmm, that piece goes somewhere else. Look at its picture!"; off both frames is free. After two misses the piece she is holding glows with its own place on its own picture ("Try the glowing spot!"). The level opens with the faint-picture line (`puzzle.ghost`). Both friends come alive when all eight are in ("You made {a} and {b}!"). `twinLayout` puts the frames side by side (sideways and upright) over the tray; tray pieces keep the 100-unit hit rule. The box lid is not shown (the faint pictures are the guide). Not built: dedicated words for the other-picture miss and a per-scene-name line (new slot-free lines need rendered clips, which this run did not render), a per-picture finish before the second.
 

@@ -21,6 +21,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Two faint pictures wait side by side and eight pieces are mixed in one tray. Drag each piece onto the picture it belongs to, using its colors.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'A finished picture has two pieces mixed up. Tap one of them, then the other, and they swap places.',
+    },
     { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
     { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
     {
@@ -47,7 +52,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
+      to: 10,
       text: 'A piece dropped on the other picture is a miss. After two wrong places, the piece she is holding glows, and so does its own place on its own picture.',
+    },
+    {
+      from: 11,
+      text: 'A swap that does not put both pieces right goes straight back, as a miss with no loss. After two misses the two mixed-up pieces glow.',
     },
   ],
 };

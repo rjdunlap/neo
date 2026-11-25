@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { dealScenePair, SCENES } from './scenes';
+import { pictureScene } from './art';
+import { cellFeatures, dealScenePair, SCENES } from './scenes';
 import { levelsInOrder } from '../../progress/difficulty';
 import {
   boardCount,
+  dealMend,
   dealPlan,
+  judgeSwap,
+  mendLayout,
   dealTurns,
   dropSlot,
   flipTurn,
@@ -213,14 +217,14 @@ describe('Puzzle Pals', () => {
     expect(tapHops(puzzlePlan(1)) && tapHops(puzzlePlan(2))).toBe(true);
   });
 
-  it('shows the box lid at every empty-frame level (5-7 and 9)', () => {
-    PUZZLE_PLANS.forEach((plan) => expect(!!plan.lid).toBe(!plan.ghost));
+  it('shows the box lid at every empty-frame level (5-7 and 9) but not Mend the picture, where it would give the answer away', () => {
+    PUZZLE_PLANS.forEach((plan) => expect(!!plan.lid).toBe(!plan.ghost && !plan.mend));
     for (const plan of PUZZLE_PLANS.filter((p) => p.lid)) expect(plan.ghost).toBe(false);
   });
 
   it('level 9 (Turn it round) sits at the top of pre-K and school, turns half the pieces, and never counts a wrong turn in the right place as a miss', () => {
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
     const plan = puzzlePlan(9);
     expect(plan.cols).toBe(3);
     expect(plan.rows).toBe(2);
@@ -326,7 +330,7 @@ describe('Puzzle Pals', () => {
     expect(boardCount(plan)).toBe(2);
     expect(boardCount(puzzlePlan(9))).toBe(1);
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
     expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
     for (let seed = 1; seed <= 200; seed++) {
       const [a, b] = dealScenePair(new Rng(seed));
@@ -416,6 +420,70 @@ describe('Puzzle Pals', () => {
         expect(h.y - ph / 2).toBeGreaterThanOrEqual(L.panel.y);
         expect(h.y + ph / 2).toBeLessThanOrEqual(L.panel.y + L.panel.h);
       }
+    }
+  });
+  it('level 11 (Mend the picture) tops school only, a 3x3 with the whole picture placed and no lid or tray', () => {
+    const plan = puzzlePlan(11);
+    expect(plan).toMatchObject({ cols: 3, rows: 3, mend: true, ghost: false, preplaced: 0 });
+    expect(plan.lid).toBeUndefined();
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
+  });
+
+  it('level 11 swaps two pieces that never look alike, in every scene and for many seeds', () => {
+    const plan = puzzlePlan(11);
+    for (const scene of SCENES) {
+      for (let seed = 1; seed <= 25; seed++) {
+        const { root, features } = pictureScene(scene, seed * 37);
+        const cells = cellFeatures(features, plan.cols, plan.rows, PICTURE_W, PICTURE_H);
+        root.destroy({ children: true });
+        const [a, b] = dealMend(9, new Rng(seed), (x, y) => cells[x].join() === cells[y].join());
+        expect(a, `${scene.id} ${seed}`).not.toBe(b);
+        expect(cells[a].join(), `${scene.id} ${seed}`).not.toBe(cells[b].join());
+        expect(cells[a].length).toBeGreaterThan(0);
+        expect(cells[b].length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('level 11 deals every pair over many seeds and the same pair for the same seed', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const [a, b] = dealMend(9, new Rng(seed));
+      expect(a).toBeLessThan(b);
+      seen.add(`${a}-${b}`);
+    }
+    expect(seen.size).toBeGreaterThan(20);
+    expect(dealMend(9, new Rng(7))).toEqual(dealMend(9, new Rng(7)));
+  });
+
+  it('level 11 mends only when both odd pieces swap; any other swap goes back', () => {
+    // Pieces 2 and 6 sit in each other's places; 0 and 1 are home.
+    const odd2 = { at: 6, home: 2 };
+    const odd6 = { at: 2, home: 6 };
+    const home0 = { at: 0, home: 0 };
+    expect(judgeSwap(odd2, odd6)).toBe('mended');
+    expect(judgeSwap(odd2, home0)).toBe('back');
+    expect(judgeSwap(home0, odd6)).toBe('back');
+    expect(judgeSwap(home0, { at: 1, home: 1 })).toBe('back');
+  });
+
+  it('level 11 keeps its frame on screen and clear of the pet, sideways and upright', () => {
+    for (const v of [
+      { w: 1024, h: 768 },
+      { w: 1366, h: 1024 },
+      { w: 768, h: 1024 },
+      { w: 768, h: 1366 },
+    ]) {
+      const L = mendLayout(v);
+      const h = (L.w * PICTURE_H) / PICTURE_W;
+      expect(L.x).toBeGreaterThanOrEqual(v.w > v.h ? 180 : 0);
+      expect(L.x + L.w).toBeLessThanOrEqual(v.w);
+      expect(L.y + h).toBeLessThanOrEqual(v.h);
+      expect(L.y).toBeGreaterThanOrEqual(v.w > v.h ? 112 : UPRIGHT_TOP);
+      // Each of the nine pieces is a comfortable touch target.
+      expect((PICTURE_H / 3) * L.scale).toBeGreaterThanOrEqual(100);
     }
   });
 });

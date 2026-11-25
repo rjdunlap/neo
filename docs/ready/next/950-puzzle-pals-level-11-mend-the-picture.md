@@ -1,1 +1,0 @@
-**`puzzle-pals` level 11, Mend the picture** (school; new interaction: a finished 3×3 picture with two pieces swapped, tap one then the other to swap them back; typecheck, rule tests that the two swapped pieces are never look-alikes, one filtered scripted play and `fingerdemo` at level 11; no box lid). [Dive](../../deep-dives/puzzle-pals.md#build-slices-in-order)

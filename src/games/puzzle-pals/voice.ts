@@ -9,6 +9,9 @@ export const VOICE = {
   'puzzle.turn': [
     'Some pieces are upside down! Tap a piece to turn it round, then drag each piece into the frame.',
   ],
+  'puzzle.mend': ['Two pieces are mixed up! Tap one, then tap the other to swap them.'],
+  'puzzle.mendWrong': ['That one fits right here. Look for the pieces that do not match!'],
+  'puzzle.mendHint': ['Look at the glowing pieces. They are mixed up!'],
   'puzzle.turnItRound': ['Turn it round!'],
   'puzzle.wrong': ['Hmm, that piece goes somewhere else. Look at its picture!'],
   'puzzle.hint': ['Try the glowing spot!'],
