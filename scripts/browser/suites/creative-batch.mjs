@@ -447,6 +447,66 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await finished('stamp-studio');
           assert.deepEqual(await score('stamp-studio'), [0, 0]);
         }
+        if (level === 4) {
+          // Sets button & Farm set (dive slice 6): switch sets, mix stamps, keep last backdrop, verify landscape & portrait.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('stamp-studio', 4);
+          await page.evaluate(() => {
+            if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+          });
+          await page.waitForTimeout(500);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const p0 = g.paper.toGlobal({ x: 180, y: 180 });
+            kit.tap(p0.x, p0.y);
+            await kit.sleep(200);
+            if (!g.setsButton.visible || g.setsOpen) throw new Error('Sets button missing or open early');
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            if (!g.setsOpen || !g.setButtons[2].visible) throw new Error('Sets row did not open');
+            kit.tapOn(g.setButtons[2]); // Farm
+            await kit.sleep(450);
+            if (g.setsOpen || g.choices.length !== 6) throw new Error('Farm set did not apply');
+            kit.tapOn(g.choices[1]); // Cow
+            await kit.sleep(450);
+            const p1 = g.paper.toGlobal({ x: 360, y: 260 });
+            kit.tap(p1.x, p1.y);
+            await kit.sleep(200);
+            kit.tapOn(g.choices[5]); // Barn
+            await kit.sleep(450);
+            const p2 = g.paper.toGlobal({ x: 240, y: 160 });
+            kit.tap(p2.x, p2.y);
+            await kit.sleep(200);
+            if (g.stamps.length !== 3) throw new Error('Mixed set picture did not keep earlier stamp');
+          });
+          await screenshot('stamp-studio-4-farm');
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            if (!g.setsOpen) throw new Error('Sets row did not open in portrait');
+          });
+          await screenshot('stamp-studio-4-farm-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            kit.tapOn(g.finish);
+          });
+          await finished('stamp-studio');
+          await page.waitForFunction(() => !!neo.scene.after?.keep, null, { timeout: 25000 });
+          await page.waitForTimeout(800);
+          await tap('neo.scene.after.keep');
+          const saved = await page.evaluate(() => kit.store.data.creations.picture.current);
+          assert.equal(saved.scene, 'farm', 'kept picture remembers the Farm backdrop');
+          assert.deepEqual(
+            saved.stamps.map((s) => s.kind),
+            ['star', 'cow', 'barn'],
+            'kept picture preserves mixed stamps from Plain and Farm',
+          );
+        }
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`,

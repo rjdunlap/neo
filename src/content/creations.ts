@@ -22,11 +22,15 @@ export const STAMP_KINDS = [
   'starfish',
   'shell',
   'boat',
+  'cow',
+  'pig',
+  'hen',
+  'barn',
 ] as const;
 export type StampKindId = (typeof STAMP_KINDS)[number];
 
 /** The backdrops a kept picture can remember (Stamp Studio's scenes); a picture without one is on plain paper. */
-export const SCENE_IDS = ['sea'] as const;
+export const SCENE_IDS = ['sea', 'farm'] as const;
 export type SceneId = (typeof SCENE_IDS)[number];
 
 /** Most stamps a picture holds (Stamp Studio's own limit). */

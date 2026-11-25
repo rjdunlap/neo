@@ -26,7 +26,7 @@ import { cream, swatch, type ColorName } from '../../art/palette';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
 import { Rng } from '../../engine/random';
-import { roundPlan, PLAIN_KINDS, SCENES, SETS } from './logic';
+import { roundPlan, PLAIN_KINDS, SCENES, SETS, SET_CHOICES, SET_REACH, setChoiceInfo } from './logic';
 import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
@@ -266,12 +266,12 @@ describe('Stamp Studio saved choices', () => {
 });
 
 describe('seeded early stamp choices', () => {
-  it('offers one/two/three distinct existing kinds deterministically, with every kind/color represented across 50 seeds', () => {
+  it('offers one/two/three distinct existing kinds deterministically, with every kind/color represented across 200 seeds', () => {
     for (const level of [1, 2, 3]) {
       const kinds = new Set<StampKind>(),
         colors = new Set<ColorName>(),
         rounds = new Set<string>();
-      for (let seed = 0; seed < 50; seed++) {
+      for (let seed = 0; seed < 200; seed++) {
         const round = roundPlan(level, new Rng(seed));
         expect(round).toEqual(roundPlan(level, new Rng(seed)));
         expect(round.plan.kinds).toHaveLength(level);
@@ -606,8 +606,8 @@ describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
       const spots = colorSpots(v.w);
       expect(spots).toHaveLength(7);
       for (const transform of [false, true])
-        for (let n = 1; n <= 4; n++) {
-          const l = stampLayout(v, n, transform);
+        for (const n of [1, 2, 3, 4, 6]) {
+          const l = stampLayout(v, n, transform, 6);
           const box = (what: string, p: { x: number; y: number }, r: number) => ({
             what,
             x0: p.x - r,
@@ -615,6 +615,9 @@ describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
             x1: p.x + r,
             y1: p.y + r,
           });
+          const choiceReach = l.choiceRadius + 14;
+          expect(2 * choiceReach).toBeGreaterThanOrEqual(100);
+          expect(2 * SET_REACH).toBeGreaterThanOrEqual(100);
           const boxes = [
             {
               what: 'paper',
@@ -626,22 +629,42 @@ describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
             // Home and "?" in the top-left column.
             { what: 'Home and help', x0: 0, y0: 0, x1: 115, y1: 210 },
             ...l.colors.map((p, i) => box(`color ${STAMP_COLORS[i]}`, p, COLOR_REACH)),
-            ...l.choices.map((p) => box('stamp', p, BUTTON_REACH)),
-            ...[l.finish, l.undo, l.play, l.bin, ...(transform ? [l.turn, l.grow] : [])].map((p) =>
+            ...l.choices.map((p) => box('stamp', p, choiceReach)),
+            ...[l.finish, l.undo, l.play, l.sets, l.bin, ...(transform ? [l.turn, l.grow] : [])].map((p) =>
               box('button', p, BUTTON_REACH),
             ),
           ];
           expect(2 * COLOR_REACH).toBeGreaterThanOrEqual(100);
           for (const [i, a] of boxes.entries()) {
-            if (a.what.startsWith('color')) {
+            if (a.what.startsWith('color') || a.what === 'stamp') {
               expect(a.x0).toBeGreaterThanOrEqual(0);
               expect(a.x1).toBeLessThanOrEqual(v.w);
               expect(a.y0).toBeGreaterThanOrEqual(0);
+              expect(a.y1).toBeLessThanOrEqual(v.h);
             }
             for (const b of boxes.slice(i + 1)) {
               const hit =
                 a.x0 < b.x1 - 1e-6 && b.x0 < a.x1 - 1e-6 && a.y0 < b.y1 - 1e-6 && b.y0 < a.y1 - 1e-6;
               expect(hit, `${a.what} overlaps ${b.what}`).toBe(false);
+            }
+          }
+          // When the sets row opens (tested up to all 6 future sets), its buttons never touch controls or leave the screen.
+          const uiBoxes = boxes.filter((b) => b.what !== 'paper');
+          const setBoxes = l.setRow.map((p, i) => box(`set ${i}`, p, SET_REACH));
+          for (const [i, s] of setBoxes.entries()) {
+            expect(s.x0).toBeGreaterThanOrEqual(0);
+            expect(s.x1).toBeLessThanOrEqual(v.w);
+            expect(s.y0).toBeGreaterThanOrEqual(0);
+            expect(s.y1).toBeLessThanOrEqual(v.h);
+            for (const u of uiBoxes) {
+              const hit =
+                s.x0 < u.x1 - 1e-6 && u.x0 < s.x1 - 1e-6 && s.y0 < u.y1 - 1e-6 && u.y0 < s.y1 - 1e-6;
+              expect(hit, `${s.what} overlaps ${u.what}`).toBe(false);
+            }
+            for (const s2 of setBoxes.slice(i + 1)) {
+              const hit =
+                s.x0 < s2.x1 - 1e-6 && s2.x0 < s.x1 - 1e-6 && s.y0 < s2.y1 - 1e-6 && s2.y0 < s.y1 - 1e-6;
+              expect(hit, `${s.what} overlaps ${s2.what}`).toBe(false);
             }
           }
         }
@@ -975,32 +998,40 @@ describe('Stamp a duck! (level 11)', () => {
     it('keeps the four sticker kinds first, so saved sticker art never changes', () => {
       expect(STAMP_KINDS.slice(0, 5)).toEqual(['star', 'flower', 'fish', 'cat', 'duck']);
     });
-    it('seeds levels 1–3 on the Sea or on plain paper, and only a Sea round has a scene', () => {
+    it('seeds levels 1–3 on Sea, Farm, or plain paper, and every set stamp turns up', () => {
       let seaRounds = 0;
+      let farmRounds = 0;
       let plainRounds = 0;
       for (let seed = 0; seed < 120; seed++) {
         for (const level of [1, 2, 3]) {
           const r = roundPlan(level, new Rng(seed));
-          if (r.scene) {
+          if (r.scene === 'sea') {
             seaRounds++;
-            expect(r.scene).toBe('sea');
             for (const k of r.plan.kinds) expect(sea).toContain(k);
+          } else if (r.scene === 'farm') {
+            farmRounds++;
+            for (const k of r.plan.kinds) expect(SETS.farm.kinds).toContain(k);
           } else {
             plainRounds++;
+            expect(r.scene).toBeUndefined();
             for (const k of r.plan.kinds) expect(PLAIN_KINDS).toContain(k);
           }
           expect(new Set(r.plan.kinds).size).toBe(r.plan.kinds.length);
         }
       }
-      expect(seaRounds).toBeGreaterThan(60);
-      expect(plainRounds).toBeGreaterThan(60);
-      // Every Sea stamp turns up over many rounds.
-      const seen = new Set<StampKind>();
+      expect(seaRounds).toBeGreaterThan(40);
+      expect(farmRounds).toBeGreaterThan(40);
+      expect(plainRounds).toBeGreaterThan(40);
+      // Every Sea and Farm stamp turns up over many rounds.
+      const seenSea = new Set<StampKind>();
+      const seenFarm = new Set<StampKind>();
       for (let seed = 0; seed < 200; seed++) {
         const r = roundPlan(3, new Rng(seed));
-        if (r.scene) r.plan.kinds.forEach((k) => seen.add(k));
+        if (r.scene === 'sea') r.plan.kinds.forEach((k) => seenSea.add(k));
+        if (r.scene === 'farm') r.plan.kinds.forEach((k) => seenFarm.add(k));
       }
-      expect([...seen].sort()).toEqual([...sea].sort());
+      expect([...seenSea].sort()).toEqual([...sea].sort());
+      expect([...seenFarm].sort()).toEqual([...SETS.farm.kinds].sort());
     });
     it('leaves levels 4 and up, and Stamp a duck!, on plain paper', () => {
       for (const level of [4, 5, 6, 7, 11]) expect(roundPlan(level, new Rng(3)).scene).toBeUndefined();
@@ -1014,6 +1045,62 @@ describe('Stamp a duck! (level 11)', () => {
       const b = g.getLocalBounds();
       expect(b.width).toBeGreaterThanOrEqual(600);
       expect(b.height).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('the Farm set and the sets button (dive slice 6)', () => {
+    const farm = SETS.farm.kinds;
+    it('has six distinct stamps that are all saved kinds, named, sounded and drawn at the board scale', () => {
+      expect(farm).toEqual(['cat', 'cow', 'pig', 'duck', 'hen', 'barn']);
+      expect(new Set(farm).size).toBe(6);
+      for (const kind of farm) {
+        expect(STAMP_KINDS).toContain(kind);
+        expect(STAMP_NAMES[kind]).toMatch(/^A \w+$/);
+        const sound = STAMP_SOUNDS[kind];
+        if ('from' in sound)
+          for (let press = 1; press <= 10; press++) {
+            const step = stampStep(kind, press);
+            expect(step).toBeGreaterThanOrEqual(0);
+            expect(Number.isInteger(step)).toBe(true);
+            expect(step).toBeLessThanOrEqual(11);
+          }
+        for (const color of STAMP_COLORS) {
+          const b = artwork.stampArt(kind, color, 48).getLocalBounds();
+          // Read at the board's 0.46 scale it still spans at least 30 units, and stays inside the stamp's reach.
+          expect(b.width * 0.46, `${kind} ${color}`).toBeGreaterThan(30);
+          expect(b.height * 0.46, `${kind} ${color}`).toBeGreaterThan(20);
+          expect(b.width).toBeLessThan(48 * 2.6);
+          expect(b.height).toBeLessThan(48 * 2.6);
+        }
+      }
+      expect(STAMP_SOUNDS.cow).toEqual({ play: 'animal', animal: 'moo' });
+      expect(STAMP_SOUNDS.pig).toEqual({ play: 'animal', animal: 'oink' });
+      expect(STAMP_SOUNDS.hen).toEqual({ play: 'animal', animal: 'cluck' });
+      expect(STAMP_SOUNDS.barn).toMatchObject({ play: 'marimba' });
+    });
+
+    it('paints the farm backdrop (field, sky and pond) without swallowing taps', () => {
+      expect(SCENES.farm.horizon).toBeGreaterThan(0.25);
+      expect(SCENES.farm.horizon).toBeLessThan(0.6);
+      const g = artwork.sceneArt('farm', 600, 400);
+      expect(g.eventMode).toBe('none');
+      const b = g.getLocalBounds();
+      expect(b.width).toBeGreaterThanOrEqual(600);
+      expect(b.height).toBeGreaterThanOrEqual(400);
+    });
+
+    it('offers the sets button at levels 4–6 only, and every set choice has distinct stamps', () => {
+      expect([1, 2, 3, 7, 8, 9, 10, 11].some((l) => planFor(l).sets)).toBe(false);
+      expect([4, 5, 6].every((l) => planFor(l).sets)).toBe(true);
+      expect(SET_CHOICES).toEqual(['plain', 'sea', 'farm']);
+      for (const choice of SET_CHOICES) {
+        const info = setChoiceInfo(choice);
+        expect(info.name.length).toBeGreaterThan(0);
+        expect(new Set(info.kinds).size).toBe(info.kinds.length);
+        for (const k of info.kinds) expect(STAMP_KINDS).toContain(k);
+      }
+      const card = howToFor(stampStudio, 4)!;
+      expect(card.steps.join(' ')).toMatch(/set/i);
     });
   });
 });
