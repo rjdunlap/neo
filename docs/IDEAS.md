@@ -113,6 +113,8 @@ JumpStart 1st Grade put activities in recognizable school spaces with a recurrin
 
 The same references show patterns that conflict with this project's rules:
 
+The [progression loop](definitions/progression-loop.md) (2026-11-25) does borrow Neopets' earn, spend and collect loop for grown-ups and, later, school age; the patterns below stay out of it too.
+
 - **Care that decays.** Neopets pets grow hungry while their owners are away, and early Club Penguin puffles could run away if neglected. The treehouse must never punish a break.
 - **Memberships and manipulative scarcity.** Webkinz, Moshi Monsters and many pet apps gate rooms, items or play behind memberships, codes or limited-time events. Keep stickers predictable; never sell access, expire an offer or make a break cost progress. A bounded offline Harbor currency may support saving, spending and child-chosen older-band unlocks, with the existing trail kept open and a grown-up open-all switch.
 - **Daily obligations.** Neopets' dailies and similar streaks turn play into a chore. A voluntary bank certificate may mature automatically in real time because waiting and interest are its lesson; it must never require a daily claim or penalize absence.
