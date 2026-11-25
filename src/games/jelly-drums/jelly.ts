@@ -121,7 +121,8 @@ const jellySize = (i: number) => {
 };
 
 /** The journal card for "big jellies sing low, little jellies sing high": the biggest and the littlest jelly side by side, a low and a high note over them. */
-export function jellyJournalPicture(): Container {
+export function jellyJournalPicture(key = 'low-high'): Container {
+  if (key === 'scale') return jellyScalePicture();
   const c = new Container();
   [0, 4].forEach((i, n) => {
     const { hw, h } = jellySize(i);
@@ -131,6 +132,22 @@ export function jellyJournalPicture(): Container {
     // The note's height says how high the jelly sings: the littlest jelly's note sits highest.
     const note = musicNote(new Graphics(), 56, swatch[PITCH_COLORS[i]].line);
     note.position.set(j.x, -h - 40 - i * 18);
+    c.addChild(note);
+  });
+  return c;
+}
+
+/** The journal card for "a scale": three neighbouring jellies in a row, each note a step higher than the one before. */
+function jellyScalePicture(): Container {
+  const c = new Container();
+  [1, 2, 3].forEach((i, n) => {
+    const { hw, h } = jellySize(i);
+    const j = new Jelly(PITCH_COLORS[i], hw, h);
+    j.position.set((n - 1) * 190, 0);
+    c.addChild(j);
+    // Notes climb like stairs, left to right.
+    const note = musicNote(new Graphics(), 52, swatch[PITCH_COLORS[i]].line);
+    note.position.set(j.x, -h - 36 - n * 34);
     c.addChild(note);
   });
   return c;

@@ -26,6 +26,7 @@ import {
   NAME_EVERY,
   ScaleWatch,
   JournalWatch,
+  SCALE,
   LOW_HIGH,
   planFor,
   SET_STEPS,
@@ -289,6 +290,27 @@ describe('Jelly Drums', () => {
       const ghost = new JournalWatch();
       for (const i of FREE_SONG) ghost.tap(i);
       expect(ghost.keys()).toEqual([LOW_HIGH]);
+    });
+
+    it('files a scale only once the sparkle has played, and both entries can be found in one round', () => {
+      const w = new JournalWatch();
+      for (const i of [0, 2, 1, 4]) w.tap(i);
+      expect(w.keys()).toEqual([LOW_HIGH]);
+      w.sparkled();
+      expect(w.keys()).toEqual([LOW_HIGH, SCALE]);
+      const only = new JournalWatch();
+      only.tap(1);
+      only.tap(2);
+      only.tap(3);
+      only.sparkled();
+      expect(only.keys()).toEqual([SCALE]);
+    });
+
+    it('sparkles on the scales the journal entry is about', () => {
+      const s = new ScaleWatch();
+      expect([0, 1, 2].map((i) => s.tap(i))).toEqual([false, false, true]);
+      const ghost = new ScaleWatch();
+      expect(FREE_SONG.some((i) => ghost.tap(i))).toBe(true);
     });
 
     it('never speaks on a quiet tap, though the tap still counts', () => {

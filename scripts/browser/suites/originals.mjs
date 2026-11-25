@@ -281,6 +281,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         // Free play taps all five jellies in order, so the biggest and littlest both sang.
         const found = await page.evaluate(() => kit.store.data.journal.found);
         assert.ok(found.includes('jelly-drums:low-high'), `jelly ${level} files low and high`);
+        // Only level 3's sparkle (three neighbours in a row) files the scale entry.
+        assert.equal(found.includes('jelly-drums:scale'), level === 3, `jelly ${level} scale entry`);
       }
       assert.deepEqual(
         await score('jelly-drums'),
