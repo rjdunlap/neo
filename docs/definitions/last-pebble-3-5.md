@@ -75,3 +75,7 @@ Multi-pile Nim, a variable *start* stone count she sets, scores or ratings, time
 - **NRICH, *Got It*, teachers' notes** (opened in the [study](../deep-dives/subjects/strategy-games.md#anchors-opened-at-their-source)): go-first-or-second question and changing the target and the take; the multiple-of-`k + 1` rule is standard Nim arithmetic.
 - **Misère reduction** (`T - 1` as the effective target) is proved above in one line and exhaustively tested in the build batch; no external source is needed.
 - Choice screen, whirlpool and level split are original island design.
+
+## Build claim
+
+2026-11-24: `claude/last-pebble-3-4` is building batch `last-pebble 2` (levels 3–4); expected files `src/games/last-pebble/*`, `scripts/browser/suites/` (last-pebble play), `docs/games/last-pebble.md`.
