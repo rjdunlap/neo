@@ -286,7 +286,7 @@ class Round implements Game {
 export const game: GameModule = {
   id: 'common-ground',
   name: 'Common Ground',
-  titleLine: 'game.common-ground',
+  titleLine: 'common-ground.title',
   region: 'story-grove',
   challenge: 'space',
   skills: ['listening', 'perspective-taking', 'spatial reasoning'],
