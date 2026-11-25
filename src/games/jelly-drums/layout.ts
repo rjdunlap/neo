@@ -16,6 +16,10 @@ export const HALF_WIDTHS = [82, 75, 68, 61, 54];
 export const HIT_PAD = 18;
 /** The listen-again button's radius. */
 export const AGAIN_RADIUS = 56;
+/** Level 12's two answer buttons ("same" and "different") are this big, and sit this far either side of the listen-again button. */
+export const CHOICE_RADIUS = 60;
+export const CHOICE_APART_SIDEWAYS = 230;
+export const CHOICE_APART_UPRIGHT = 170;
 /** Held upright, the jellies are drawn at this scale of their sideways size. */
 export const UPRIGHT_SCALE = 0.85;
 
@@ -28,6 +32,8 @@ export interface Layout {
   /** The stage's plank: its left edge, width, and the top of the plank (the jellies stand a little below it). */
   stage: { x: number; w: number; top: number; skirt: number };
   again: Pt;
+  /** Level 12: the "same" button (left) and the "different" button (right), level with the listen-again button. */
+  choices: [Pt, Pt];
   garland: { x0: number; x1: number; y: number; sag: number };
   /** Where the fans stand: their feet. */
   fans: Pt[];
@@ -55,6 +61,10 @@ export function jellyLayout(v: { w: number; h: number; upright?: true }): Layout
       jellies: HALF_WIDTHS.map((_, i) => ({ x: cx + (i - 2) * 178, y: top + 10 })),
       stage: { x: cx - 470, w: 940, top, skirt: v.h * 0.12 },
       again: { x: cx, y: top - 250 },
+      choices: [
+        { x: cx - CHOICE_APART_SIDEWAYS, y: top - 250 },
+        { x: cx + CHOICE_APART_SIDEWAYS, y: top - 250 },
+      ],
       garland: { x0: cx - 400, x1: cx + 400, y: 70, sag: 80 },
       fans: [0, 1, 2, 3].map((i) => ({ x: cx + (i - 1.5) * 150, y: v.h - 6 })),
       peaks: [
@@ -83,6 +93,10 @@ export function jellyLayout(v: { w: number; h: number; upright?: true }): Layout
     jellies,
     stage: { x: cx - 370, w: 740, top, skirt: 110 },
     again: { x: cx, y: v.h - 200 },
+    choices: [
+      { x: cx - CHOICE_APART_UPRIGHT, y: v.h - 200 },
+      { x: cx + CHOICE_APART_UPRIGHT, y: v.h - 200 },
+    ],
     garland: { x0: cx - 250, x1: cx + 250, y: 150, sag: 70 },
     // Right of the guide in the bottom-left corner.
     fans: [0, 1, 2, 3].map((i) => ({ x: 235 + i * 145, y: v.h - 6 })),

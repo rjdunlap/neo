@@ -14,11 +14,12 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
-import { jellyLayout, type Layout } from './layout';
+import { CHOICE_RADIUS, jellyLayout, type Layout } from './layout';
 import {
   answerOf,
   LEVELS,
   awakeJellies,
+  drawPair,
   drawTune,
   fanAnswering,
   IdleNudge,
@@ -28,15 +29,20 @@ import {
   placeAfterMiss,
   planFor,
   RESUME_FROM_LENGTH,
+  sameFlags,
   ScaleWatch,
   SET_STEPS,
   soundSetFor,
   tuneLength,
+  verdictOf,
+  verdictToTap,
   STAGE_OF,
   type SoundSet,
   type JellyPhase,
   type JellyPlan,
   type Tune,
+  type TunePair,
+  type Verdict,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -47,6 +53,20 @@ const BULBS = 8;
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
 /** Each fan's own voice when it answers on level 2. */
 const FAN_VOICES: AnimalSound[] = ['quack', 'hop', 'meow', 'oink'];
+
+/** The picture on an answer button: two matching dots for "same", two unlike ones (a big round one and a small square one) for "different". */
+function dotsArt(same: boolean): Graphics {
+  const g = new Graphics();
+  if (same) {
+    g.circle(-22, 0, 17).fill(0xffffff).stroke({ width: 5, color: swatch.green.line });
+    g.circle(22, 0, 17).fill(0xffffff).stroke({ width: 5, color: swatch.green.line });
+  } else {
+    g.circle(-22, 0, 20).fill(0xffffff).stroke({ width: 5, color: swatch.orange.line });
+    g.roundRect(8, -11, 22, 22, 4).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line });
+  }
+  g.scale.set(1.35);
+  return g;
+}
 
 class JellyDrums implements Game {
   private readonly plan: JellyPlan;
@@ -78,6 +98,13 @@ class JellyDrums implements Game {
   private played: Tune[] = [];
   /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
   private readonly again: RoundButton;
+  /** Level 12: the two answer buttons, "same" (two matching dots) and "different" (two unlike dots). */
+  private readonly choices: Record<Verdict, RoundButton>;
+  /** Level 12: a ring on the right button after two misses on one pair. */
+  private readonly ring = new Graphics();
+  /** Level 12: which pairs of the round are the same, and the pair now playing. */
+  private flags: boolean[] = [];
+  private pair: TunePair | null = null;
   /** Four- and five-note tunes: dots for the notes she has right so far (her place after a miss). */
   private readonly ticks = new Graphics();
   /** Backwards level: a rewind arrow beside the listen-again button. */
@@ -118,7 +145,15 @@ class JellyDrums implements Game {
       return c;
     });
     this.again = new RoundButton(replayArt(), swatch.yellow, 56, () => void this.listenAgain());
-    this.again.visible = this.plan.mode === 'echo' && !ctx.couch;
+    const tunes = this.plan.mode === 'echo' || this.plan.mode === 'compare';
+    this.again.visible = tunes && !ctx.couch;
+    this.choices = {
+      same: new RoundButton(dotsArt(true), swatch.green, CHOICE_RADIUS, () => this.answerPair('same')),
+      different: new RoundButton(dotsArt(false), swatch.orange, CHOICE_RADIUS, () =>
+        this.answerPair('different'),
+      ),
+    };
+    for (const b of Object.values(this.choices)) b.visible = this.plan.mode === 'compare';
     ctx.stage.addChild(
       this.sky,
       this.skyThings,
@@ -128,10 +163,14 @@ class JellyDrums implements Game {
       ...this.jellies,
       ...this.fans,
       this.again,
+      this.choices.same,
+      this.choices.different,
+      this.ring,
       this.ticks,
       this.rewind,
     );
     this.ticks.eventMode = 'none';
+    this.ring.eventMode = 'none';
     this.rewind.eventMode = 'none';
     this.rewind.visible = !!this.plan.reverse && !ctx.couch;
     if (this.plan.mode === 'wake') {
@@ -155,6 +194,12 @@ class JellyDrums implements Game {
   }
 
   start() {
+    if (this.plan.mode === 'compare') {
+      this.flags = sameFlags(this.ctx.rng, this.plan.goal);
+      void this.ctx.instruct('jelly.compare', { a: 1, b: 2 });
+      void this.ctx.tw.wait(2).then(() => this.nextPair());
+      return;
+    }
     void this.ctx.instruct(
       this.plan.reverse ? 'jelly.echo.back' : this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free',
     );
@@ -185,6 +230,8 @@ class JellyDrums implements Game {
 
     this.jellies.forEach((j, i) => j.position.set(l.jellies[i].x, l.jellies[i].y));
     this.again.position.set(l.again.x, l.again.y);
+    this.choices.same.position.set(l.choices[0].x, l.choices[0].y);
+    this.choices.different.position.set(l.choices[1].x, l.choices[1].y);
     this.ticks.position.set(l.again.x, l.again.y - 85);
     this.rewind.position.set(l.again.x - 150, l.again.y);
     this.drawRewind();
@@ -201,6 +248,7 @@ class JellyDrums implements Game {
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
     this.again.alpha = this.phase === 'turn' ? 1 : 0.5;
+    for (const b of Object.values(this.choices)) b.alpha = this.phase === 'turn' ? 1 : 0.5;
     if (this.twinkle > 0) {
       this.twinkle = Math.max(0, this.twinkle - dt);
       this.garland.alpha = 0.75 + 0.25 * Math.cos(this.twinkle * 24);
@@ -214,6 +262,10 @@ class JellyDrums implements Game {
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
   autotouch(): TouchIntent | null {
+    if (this.plan.mode === 'compare') {
+      const v = verdictToTap(this.phase, this.pair);
+      return v ? { tap: { on: this.choices[v] }, pause: 0.4 } : null;
+    }
     const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes);
     // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
     if (i === null) return null;
@@ -228,6 +280,7 @@ class JellyDrums implements Game {
     this.nudge.touched();
     this.lastJelly = i;
     this.sing(i);
+    if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
     if (this.plan.mode !== 'echo') {
       const woke =
         this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
@@ -426,6 +479,12 @@ class JellyDrums implements Game {
   private async listenAgain() {
     if (this.phase !== 'turn') return;
     this.phase = 'listen';
+    if (this.plan.mode === 'compare') {
+      await this.playPair(false, false);
+      this.phase = 'turn';
+      void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+      return;
+    }
     this.at = placeAfterMiss(this.tune.length, this.at);
     this.drawTicks();
     const help = this.wrongThisTune >= 2;
@@ -461,6 +520,7 @@ class JellyDrums implements Game {
     void this.ctx.say('jelly.nice');
     await this.ctx.tw.wait(1.6);
     if (this.tunesDone >= this.plan.goal) void this.finale();
+    else if (this.plan.mode === 'compare') void this.nextPair();
     else void this.nextTune();
   }
 
@@ -480,6 +540,75 @@ class JellyDrums implements Game {
     void this.ctx.instruct(this.plan.reverse ? 'jelly.back' : 'jelly.turn');
     // After two tries, light the way: the next jelly to tap glows.
     if (help) this.jellies[this.answer[this.at]].glow(1.5);
+  }
+
+  // ----- Same-or-different mode (level 12) -----
+
+  private async nextPair() {
+    this.phase = 'listen';
+    this.wrongThisTune = 0;
+    this.ring.clear();
+    const pair = drawPair(
+      this.ctx.rng,
+      this.plan.length,
+      this.flags[this.tunesDone],
+      this.tunesDone,
+      this.played,
+    );
+    this.played.push(pair.base);
+    this.pair = pair;
+    await this.playPair(false, false);
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+  }
+
+  /** Both songs, one after the other, each named; `show` makes the changed jelly glow hard in each (after a miss). */
+  private async playPair(slow: boolean, show: boolean) {
+    const pair = this.pair!;
+    for (const [n, notes] of [pair.first, pair.second].entries()) {
+      await this.ctx.say('jelly.song.n', { n: n + 1 });
+      await this.ctx.tw.wait(0.3);
+      for (const [k, i] of notes.entries()) {
+        this.jellies[i].glow(show && k === pair.changed ? 1.6 : slow ? 0.8 : 0.5);
+        this.sing(i);
+        await this.ctx.tw.wait(slow ? 0.85 : 0.6);
+      }
+      await this.ctx.tw.wait(0.5);
+    }
+  }
+
+  /** A tap on "same" or "different". */
+  private answerPair(v: Verdict) {
+    if (this.phase !== 'turn' || !this.pair) return;
+    if (v === verdictOf(this.pair)) void this.judged();
+    else void this.oopsPair();
+  }
+
+  private async judged() {
+    this.phase = 'listen';
+    this.ring.clear();
+    await this.copied();
+  }
+
+  private async oopsPair() {
+    const pair = this.pair!;
+    this.phase = 'listen';
+    this.misses++;
+    this.wrongThisTune++;
+    if (this.wrongThisTune === 2) this.hints++;
+    await this.ctx.tw.wait(0.5);
+    await this.ctx.say('jelly.oops');
+    await this.playPair(true, true);
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+    // After two tries, light the way: a ring on the right button.
+    if (this.wrongThisTune >= 2) {
+      const b = this.choices[verdictOf(pair)];
+      this.ring
+        .clear()
+        .circle(b.x, b.y, CHOICE_RADIUS + 12)
+        .stroke({ width: 9, color: 0xffd23f });
+    }
   }
 
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
@@ -571,6 +700,7 @@ export const jellyDrums: GameModule = {
     const p = planFor(level);
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
+    if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
