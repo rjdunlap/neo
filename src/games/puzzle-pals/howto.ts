@@ -47,7 +47,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      text: 'A piece dropped on the other picture is a miss with its own words. After two wrong places, the piece she is holding glows, and so does its own place on its own picture.',
+      text: 'A piece dropped on the other picture is a miss. After two wrong places, the piece she is holding glows, and so does its own place on its own picture.',
     },
   ],
 };

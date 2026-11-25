@@ -245,7 +245,7 @@ class PuzzlePals implements Game {
 
   start() {
     const line = this.plan.twin
-      ? 'puzzle.twin'
+      ? 'puzzle.ghost'
       : this.plan.oneAtATime
         ? 'puzzle.lap'
         : tapHops(this.plan)
@@ -365,8 +365,8 @@ class PuzzlePals implements Game {
       // The hint is the piece she is holding: its own place on its own picture glows.
       this.hinted = view;
       this.hints++;
-      void this.ctx.say('puzzle.hint.piece');
-    } else void this.ctx.say(outcome === 'otherPicture' ? 'puzzle.otherPicture' : 'puzzle.wrong');
+      void this.ctx.say('puzzle.hint');
+    } else void this.ctx.say('puzzle.wrong');
     this.drawGlow();
     this.resetTrayScale(view);
     return false;
