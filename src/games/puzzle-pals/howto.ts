@@ -26,6 +26,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'A finished picture has two pieces mixed up. Tap one of them, then the other, and they swap places.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Twelve square pieces and the box lid show the picture. Some pieces are on their side or upside down: each tap turns a piece a quarter turn, so up to three taps set it right. Then drag it to where it belongs.',
+    },
     { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
     { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
     {
@@ -57,7 +62,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'A swap that does not put both pieces right goes straight back, as a miss with no loss. After two misses the two mixed-up pieces glow.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'Turning is free, and dropping a turned piece in its right place hops it back without a miss. After two wrong places, a piece and its place glow (its arrow pulses if it still needs turning), and the pet names where it goes.',
     },
   ],
 };

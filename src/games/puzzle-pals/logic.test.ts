@@ -13,6 +13,9 @@ import {
   dealTurns,
   dropSlot,
   flipTurn,
+  quarterTurn,
+  tapsToUpright,
+  pictureBox,
   LEVELS,
   ONE_AT_A_TIME_PIECES,
   puzzlePlan,
@@ -224,7 +227,7 @@ describe('Puzzle Pals', () => {
 
   it('level 9 (Turn it round) sits at the top of pre-K and school, turns half the pieces, and never counts a wrong turn in the right place as a miss', () => {
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11, 12]);
     const plan = puzzlePlan(9);
     expect(plan.cols).toBe(3);
     expect(plan.rows).toBe(2);
@@ -330,7 +333,7 @@ describe('Puzzle Pals', () => {
     expect(boardCount(plan)).toBe(2);
     expect(boardCount(puzzlePlan(9))).toBe(1);
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11, 12]);
     expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
     for (let seed = 1; seed <= 200; seed++) {
       const [a, b] = dealScenePair(new Rng(seed));
@@ -426,7 +429,7 @@ describe('Puzzle Pals', () => {
     const plan = puzzlePlan(11);
     expect(plan).toMatchObject({ cols: 3, rows: 3, mend: true, ghost: false, preplaced: 0 });
     expect(plan.lid).toBeUndefined();
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11, 12]);
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
     expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
   });
@@ -484,6 +487,127 @@ describe('Puzzle Pals', () => {
       expect(L.y).toBeGreaterThanOrEqual(v.w > v.h ? 112 : UPRIGHT_TOP);
       // Each of the nine pieces is a comfortable touch target.
       expect((PICTURE_H / 3) * L.scale).toBeGreaterThanOrEqual(100);
+    }
+  });
+
+  it('level 12 (Quarter turns) tops school only: a 4x3 of square 140-unit cells cut from the middle of the picture, with the lid', () => {
+    const plan = puzzlePlan(12);
+    expect(plan).toMatchObject({ cols: 4, rows: 3, lid: true, ghost: false, quarter: true, turns: 5 });
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 11, 12]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
+    const box = pictureBox(plan);
+    expect(box).toEqual({ x: 20, y: 0, w: 560, h: 420 });
+    expect(box.w / plan.cols).toBe(140);
+    expect(box.h / plan.rows).toBe(140);
+    // The crop sits inside the picture, centred.
+    expect(box.x).toBe((PICTURE_W - box.w) / 2);
+    expect(pictureBox(puzzlePlan(7))).toEqual({ x: 0, y: 0, w: PICTURE_W, h: PICTURE_H });
+    // Cell centres are in crop units.
+    expect(slotCenter(plan, { col: 3, row: 2 })).toEqual({ x: 490, y: 350 });
+  });
+
+  it('level 12 turns a quarter at a time: four taps restore a piece, and the shortest way round is clockwise', () => {
+    for (const t of [0, 1, 2, 3] as const) {
+      let turn = t;
+      for (let i = 0; i < 4; i++) turn = quarterTurn(turn);
+      expect(turn).toBe(t);
+      let n = 0;
+      let cur = t;
+      while (cur !== 0) {
+        cur = quarterTurn(cur);
+        n++;
+      }
+      expect(n).toBe(tapsToUpright(t));
+    }
+    expect(tapsToUpright(0)).toBe(0);
+    expect(tapsToUpright(1)).toBe(3);
+    expect(tapsToUpright(2)).toBe(2);
+    expect(tapsToUpright(3)).toBe(1);
+  });
+
+  it('level 12 deals five of twelve pieces on a side or upside down, never none or all, in every way', () => {
+    const plan = puzzlePlan(12);
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const turns = dealTurns(12, plan.turns!, new Rng(seed), true);
+      const turned = turns.filter((t) => t !== 0);
+      expect(turned).toHaveLength(5);
+      for (const t of turned) seen.add(t);
+      expect(dealTurns(12, plan.turns!, new Rng(seed), true)).toEqual(turns);
+    }
+    expect([...seen].sort()).toEqual([1, 2, 3]);
+  });
+
+  it('level 12 places a piece only upright in its own place; a turned one in the right place hops back, not a miss', () => {
+    const plan = puzzlePlan(12);
+    const all = piecesFor(plan);
+    const first = all[5];
+    const c = slotCenter(plan, first);
+    expect(judgeDrop(plan, c.x, c.y, first, 0, all)).toBe('place');
+    for (const t of [1, 2, 3] as const) expect(judgeDrop(plan, c.x, c.y, first, t, all)).toBe('turn');
+    const other = slotCenter(plan, all[6]);
+    expect(judgeDrop(plan, other.x, other.y, first, 0, all)).toBe('wrong');
+    expect(judgeDrop(plan, 900, 900, first, 0, all)).toBe('off');
+  });
+
+  it('level 12 has a bot that taps each turned piece the shortest way round, then carries it home', () => {
+    const plan = puzzlePlan(12);
+    const all = piecesFor(plan);
+    for (let seed = 1; seed <= 50; seed++) {
+      const rng = new Rng(seed);
+      const shuffled = rng.shuffle(all);
+      const turns = dealTurns(shuffled.length, plan.turns!, rng, true);
+      const tray = shuffled.map((piece, i) => ({ piece, turn: turns[i], placed: false }));
+      const expected = turns.reduce<number>((n, t) => n + tapsToUpright(t), 0);
+      let taps = 0;
+      let drags = 0;
+      for (let next = nextToPlace(tray); next; next = nextToPlace(tray)) {
+        if (next.turn !== 0) {
+          next.turn = quarterTurn(next.turn);
+          taps++;
+          continue;
+        }
+        const c = slotCenter(plan, next.piece);
+        expect(
+          judgeDrop(
+            plan,
+            c.x,
+            c.y,
+            next.piece,
+            next.turn,
+            tray.filter((p) => !p.placed).map((p) => p.piece),
+          ),
+        ).toBe('place');
+        next.placed = true;
+        drags++;
+      }
+      expect(taps).toBe(expected);
+      expect(drags).toBe(12);
+    }
+  });
+
+  it('level 12 keeps its frame, lid and 100-unit pieces on screen at phone and iPad sizes', () => {
+    const plan = puzzlePlan(12);
+    const box = pictureBox(plan);
+    for (const v of [
+      { w: 1024, h: 768 },
+      { w: 1366, h: 1024 },
+      { w: 768, h: 1024 },
+      { w: 390, h: 844 },
+      { w: 768, h: 1366 },
+    ]) {
+      const L = puzzleLayout(v, plan, 12, 12);
+      const h = (L.board.w * box.h) / box.w;
+      expect(L.board.x, `${v.w}x${v.h}`).toBeGreaterThanOrEqual(0);
+      expect(L.board.x + L.board.w).toBeLessThanOrEqual(v.w);
+      expect(L.board.y + h).toBeLessThanOrEqual(L.panel.y);
+      // The picture is square-celled, so a turned piece takes the same room.
+      expect(L.trayScale * (box.w / plan.cols)).toBeCloseTo(L.trayScale * (box.h / plan.rows), 5);
+      if (v.w >= 768) expect(L.trayScale * 140, `${v.w}x${v.h}`).toBeGreaterThanOrEqual(99.9);
+      const lid = lidLayout(v, plan);
+      expect(lid.w / lid.h).toBeCloseTo(box.w / box.h, 5);
+      expect(lid.x).toBeGreaterThanOrEqual(0);
+      expect(lid.x + lid.w).toBeLessThanOrEqual(v.w);
     }
   });
 });
