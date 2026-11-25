@@ -1,0 +1,1 @@
+**Define Little Loom levels 4–5 (visual art VA4)** (docs only, links and diff; checks, then *Diagonal*, three pedals in order making a twill line): freeze the drawdown, the accepted pedal orders, the miss and Undo row, the hints and the school window, then enqueue the build at the new-levels tier. [Study](../../deep-dives/subjects/visual-art.md#build-slices-in-order)
