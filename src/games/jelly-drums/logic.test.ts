@@ -26,7 +26,6 @@ import {
   ScaleWatch,
   JournalWatch,
   LOW_HIGH,
-  SCALE,
   planFor,
   SET_STEPS,
   SOUND_SETS,
@@ -278,28 +277,16 @@ describe('Jelly Drums', () => {
       expect(lines.filter((l) => l === 'jelly.lowhigh')).toHaveLength(1);
     });
 
-    it('files low and high only after the biggest and the littlest jelly are both tapped, and a scale only after its sparkle', () => {
+    it('files low and high only after the biggest and the littlest jelly are both tapped', () => {
       const w = new JournalWatch();
       expect(w.keys()).toEqual([]);
       for (const i of [0, 1, 2, 3]) w.tap(i);
       expect(w.keys()).toEqual([]);
       w.tap(JELLIES - 1);
       expect(w.keys()).toEqual([LOW_HIGH]);
-      w.sawScale();
-      expect(w.keys()).toEqual([LOW_HIGH, SCALE]);
-      const s = new JournalWatch();
-      s.sawScale();
-      expect(s.keys()).toEqual([SCALE]);
-    });
-
-    it("files a scale on the ghost finger's free song and low and high on the whole row", () => {
-      const w = new JournalWatch();
-      const watch = new ScaleWatch();
-      for (const i of FREE_SONG) {
-        w.tap(i);
-        if (watch.tap(i)) w.sawScale();
-      }
-      expect(w.keys()).toEqual([LOW_HIGH, SCALE]);
+      const ghost = new JournalWatch();
+      for (const i of FREE_SONG) ghost.tap(i);
+      expect(ghost.keys()).toEqual([LOW_HIGH]);
     });
 
     it('never speaks on a quiet tap, though the tap still counts', () => {

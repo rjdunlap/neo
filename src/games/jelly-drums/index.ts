@@ -141,7 +141,7 @@ class JellyDrums implements Game {
   private readonly namer = new JellyNamer();
   /** Level 3: three neighbours in a row sparkle. */
   private readonly scale = new ScaleWatch();
-  /** What this round showed for the journal: low and high, a scale. */
+  /** What this round showed for the journal: low and high. */
   private readonly journal = new JournalWatch();
   private lastJelly = 2;
   private wrongThisTune = 0;
@@ -429,7 +429,6 @@ class JellyDrums implements Game {
       });
     });
     this.twinkle = 0.8;
-    this.journal.sawScale();
     sfx.sparkle();
   }
 

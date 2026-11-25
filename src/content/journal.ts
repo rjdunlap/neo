@@ -398,22 +398,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     game: 'jelly-drums',
     key: 'low-high',
     name: 'Big low, little high',
-    line: 'journal.jelly.low-high',
+    line: 'jelly.lowhigh',
     source: {
       find: 'tap the biggest jelly and the littlest jelly',
       found: 'the biggest jelly sang low and the littlest jelly sang high',
-    },
-  },
-  // Jelly Drums, level 3: three neighbouring jellies tapped in a row make the rainbow sparkle.
-  {
-    id: entryId('jelly-drums', 'scale'),
-    game: 'jelly-drums',
-    key: 'scale',
-    name: 'A scale',
-    line: 'journal.jelly.scale',
-    source: {
-      find: 'tap three jellies next to each other, in a row',
-      found: 'three jellies next to each other sang a scale and the rainbow sparkled',
     },
   },
 ];

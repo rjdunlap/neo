@@ -518,8 +518,6 @@ export const SHARED = {
   'journal.chain.spring': ['The spring bounces the marble over one row, so the ramp under the spring is skipped.'],
   'journal.spinner-fair.two-dice': ['Seven can be made six ways, more than any other sum.'],
   'journal.swing.slower': ['A longer rope swings slower. The friend on the short rope comes back first.'],
-  'journal.jelly.low-high': ['The biggest jelly sings low. The littlest jelly sings high.'],
-  'journal.jelly.scale': ['Three jellies in a row, one after the next, make a scale. Each note goes up or down a step.'],
   'journal.launch.pull': ['A bigger pull stretches the spring more and sends the pet farther.'],
   'journal.habitat.bunny': ['A bunny needs food to eat, water to drink, and shelter where it can hide and rest.'],
   'journal.habitat.duck': ['A duck needs food to eat, water to drink, and shelter where it can hide and rest.'],

@@ -111,20 +111,15 @@ const jellySize = (i: number) => {
   return { hw, h: hw * 1.55 };
 };
 
-/**
- * The journal card for a Jelly Drums entry, drawn from the game's own jellies. "low-high": the biggest and the littlest
- * jelly side by side with a low and a high note. "scale": all five in a row with a rising step of notes over them.
- */
-export function jellyJournalPicture(key: string): Container {
+/** The journal card for "big jellies sing low, little jellies sing high": the biggest and the littlest jelly side by side, a low and a high note over them. */
+export function jellyJournalPicture(): Container {
   const c = new Container();
-  const row = key === 'scale' ? [0, 1, 2, 3, 4] : [0, 4];
-  const gap = key === 'scale' ? 150 : 230;
-  row.forEach((i, n) => {
+  [0, 4].forEach((i, n) => {
     const { hw, h } = jellySize(i);
     const j = new Jelly(PITCH_COLORS[i], hw, h);
-    j.position.set((n - (row.length - 1) / 2) * gap, 0);
+    j.position.set((n - 0.5) * 230, 0);
     c.addChild(j);
-    // The note's height says how high it sings: the littlest jelly's note sits highest.
+    // The note's height says how high the jelly sings: the littlest jelly's note sits highest.
     const note = musicNote(new Graphics(), 56, swatch[PITCH_COLORS[i]].line);
     note.position.set(j.x, -h - 40 - i * 18);
     c.addChild(note);
