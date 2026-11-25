@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
+import { dealScenePair, SCENES } from './scenes';
 import { levelsInOrder } from '../../progress/difficulty';
 import {
+  boardCount,
   dealPlan,
   dealTurns,
   dropSlot,
@@ -12,7 +14,10 @@ import {
   puzzlePlan,
   hintPiece,
   judgeDrop,
+  judgeTwinDrop,
   lidLayout,
+  type BoardPiece,
+  twinLayout,
   oneAtATimeLayout,
   puzzleLayout,
   UPRIGHT_TOP,
@@ -214,8 +219,8 @@ describe('Puzzle Pals', () => {
   });
 
   it('level 9 (Turn it round) sits at the top of pre-K and school, turns half the pieces, and never counts a wrong turn in the right place as a miss', () => {
-    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
     const plan = puzzlePlan(9);
     expect(plan.cols).toBe(3);
     expect(plan.rows).toBe(2);
@@ -313,5 +318,104 @@ describe('Puzzle Pals', () => {
       }
     // The one-at-a-time level has no lid, so its layout is untouched.
     expect(oneAtATimeLayout({ w: 1024, h: 768 }, 3).scale).toBeGreaterThan(0);
+  });
+
+  it('level 10 sorts eight pieces onto two pictures that differ in friend, sky and ground', () => {
+    const plan = puzzlePlan(10);
+    expect(plan.twin).toBe(true);
+    expect(boardCount(plan)).toBe(2);
+    expect(boardCount(puzzlePlan(9))).toBe(1);
+    expect(levelsInOrder(LEVELS.prek)).toEqual([5, 6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.school)).toEqual([6, 7, 9, 10]);
+    expect(levelsInOrder(LEVELS.lap)).toEqual([8, 1, 2]);
+    for (let seed = 1; seed <= 200; seed++) {
+      const [a, b] = dealScenePair(new Rng(seed));
+      expect(SCENES).toContain(a);
+      expect(SCENES).toContain(b);
+      expect(b.animal).not.toBe(a.animal);
+      expect(b.sky).not.toBe(a.sky);
+      expect(b.ground).not.toBe(a.ground);
+    }
+  });
+
+  it('level 10 judges a drop against both boards: own place, own wrong place, other picture, off', () => {
+    const plan = puzzlePlan(10);
+    const cells = piecesFor(plan);
+    const empty: BoardPiece[] = [0, 1].flatMap((board) => cells.map((c) => ({ ...c, board })));
+    // Each board's own picture units: a drop over board 0's place is far off board 1's frame, and the reverse.
+    const over = (board: number, c: { col: number; row: number }) => {
+      const at = slotCenter(plan, c);
+      return [0, 1].map((b) => (b === board ? at : { x: at.x - 1000 * (b - board), y: at.y }));
+    };
+    for (const board of [0, 1])
+      for (const piece of cells) {
+        const mine: BoardPiece = { ...piece, board };
+        for (const target of cells) {
+          const want = target.col === piece.col && target.row === piece.row ? 'place' : 'wrong';
+          expect(judgeTwinDrop(plan, over(board, target), mine, empty)).toBe(want);
+          expect(judgeTwinDrop(plan, over(1 - board, target), mine, empty)).toBe('otherPicture');
+        }
+      }
+    const far = [
+      { x: -900, y: -900 },
+      { x: 2000, y: 2000 },
+    ];
+    expect(judgeTwinDrop(plan, far, { ...cells[0], board: 0 }, empty)).toBe('off');
+    // A finished board takes no more drops: only the other board's places remain to land on.
+    const left = empty.filter((e) => e.board === 1);
+    expect(judgeTwinDrop(plan, over(0, cells[0]), { ...cells[0], board: 1 }, left)).toBe('off');
+  });
+
+  it('level 10 ghost finger places all eight pieces without a miss, and the tray is the union of both boards', () => {
+    const plan = puzzlePlan(10);
+    for (let seed = 1; seed <= 50; seed++) {
+      const rng = new Rng(seed);
+      const all: BoardPiece[] = [0, 1].flatMap((board) => piecesFor(plan).map((c) => ({ ...c, board })));
+      const tray = rng.shuffle(all).map((piece) => ({ piece, placed: false }));
+      expect(tray).toHaveLength(8);
+      expect(new Set(tray.map((t) => `${t.piece.board}/${t.piece.col}/${t.piece.row}`)).size).toBe(8);
+      for (let next = nextToPlace(tray); next; next = nextToPlace(tray)) {
+        const at = slotCenter(plan, next.piece);
+        const locals = [0, 1].map((b) => (b === next.piece.board ? at : { x: at.x - 1000, y: at.y }));
+        expect(
+          judgeTwinDrop(
+            plan,
+            locals,
+            next.piece,
+            tray.filter((t) => !t.placed).map((t) => t.piece),
+          ),
+        ).toBe('place');
+        next.placed = true;
+      }
+    }
+  });
+
+  it('level 10 lays out two frames and eight pieces without overlap at sideways and upright sizes', () => {
+    const plan = puzzlePlan(10);
+    const views = [
+      { w: 1024, h: 768 },
+      { w: 1366, h: 768 },
+      { w: 768, h: 1024 },
+      { w: 768, h: 1663 },
+      { w: 600, h: 1300 },
+    ];
+    for (const v of views) {
+      const L = twinLayout(v, plan, 8, 8);
+      const [a, b] = L.boards!;
+      expect(a.w).toBeGreaterThan(0);
+      expect(a.x + a.w + 18).toBeLessThan(b.x - 18);
+      expect(b.x + b.w + 18).toBeLessThanOrEqual(v.w);
+      expect(a.x - 18).toBeGreaterThanOrEqual(v.w > v.h ? 160 : 0);
+      const boardBottom = a.y + (a.w * PICTURE_H) / PICTURE_W + 18;
+      expect(boardBottom).toBeLessThan(L.panel.y);
+      expect(L.homes).toHaveLength(8);
+      // Pieces stay on the panel and keep the 100-unit touch rule (hit area pads 10 on every side).
+      const ph = (PICTURE_H / plan.rows) * L.trayScale;
+      expect(ph + 20).toBeGreaterThanOrEqual(100);
+      for (const h of L.homes) {
+        expect(h.y - ph / 2).toBeGreaterThanOrEqual(L.panel.y);
+        expect(h.y + ph / 2).toBeLessThanOrEqual(L.panel.y + L.panel.h);
+      }
+    }
   });
 });

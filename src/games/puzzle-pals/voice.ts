@@ -9,9 +9,12 @@ export const VOICE = {
   'puzzle.turn': [
     'Some pieces are upside down! Tap a piece to turn it round, then drag each piece into the frame.',
   ],
+  'puzzle.twin': ['Two pictures are mixed up! Drag each piece onto the picture it belongs to.'],
+  'puzzle.otherPicture': ['That piece is from the other picture! Look at its colors.'],
   'puzzle.turnItRound': ['Turn it round!'],
   'puzzle.wrong': ['Hmm, that piece goes somewhere else. Look at its picture!'],
   'puzzle.hint': ['Try the glowing spot!'],
+  'puzzle.hint.piece': ['This piece goes on the glowing spot!'],
   'puzzle.hint.top-left': ['Try the glowing piece in the top left corner!'],
   'puzzle.hint.top-right': ['Try the glowing piece in the top right corner!'],
   'puzzle.hint.bottom-left': ['Try the glowing piece in the bottom left corner!'],
@@ -22,4 +25,5 @@ export const VOICE = {
   'puzzle.hint.right': ['Try the glowing piece on the right!'],
   'puzzle.hint.middle': ['Try the glowing piece in the middle!'],
   'puzzle.done': ['You made {what}!'],
+  'puzzle.doneTwin': ['You made {a} and {b}!'],
 } satisfies Record<string, string[]>;

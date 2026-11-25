@@ -11,7 +11,7 @@ import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
-import { SCENES, type SceneDef } from './scenes';
+import { dealScenePair, SCENES, type SceneDef } from './scenes';
 import {
   LEVELS,
   dealPlan,
@@ -19,6 +19,7 @@ import {
   flipTurn,
   hintPiece,
   judgeDrop,
+  judgeTwinDrop,
   nextToPlace,
   outerSides,
   PICTURE_H,
@@ -31,7 +32,9 @@ import {
   oneAtATimeLayout,
   puzzleLayout,
   lidLayout,
+  twinLayout,
   whereWords,
+  type BoardPiece,
   type Piece,
   type PuzzlePlan,
   type Turn,
@@ -69,8 +72,23 @@ function drawTurnBadge(): Container {
   return badge;
 }
 
+/** One picture being put together: its scene, the picture drawn once, and its frame on the stage. */
+interface BoardView {
+  scene: SceneDef;
+  picture: { root: Container; friend: Critter };
+  texture: RenderTexture;
+  node: Container;
+  frame: Graphics;
+  slots: Graphics;
+  /** Where the frame is and how big a picture unit is on screen (set by `resize`). */
+  x: number;
+  y: number;
+}
+
 interface PieceView {
   piece: Piece;
+  /** Which board the piece belongs to (0 unless the level has two pictures). */
+  board: number;
   node: Container;
   body: Container;
   badge?: Container;
@@ -84,24 +102,25 @@ interface PieceView {
 
 class PuzzlePals implements Game {
   readonly plan: PuzzlePlan;
-  readonly scene: SceneDef;
+  readonly boards: BoardView[] = [];
   readonly pieces: PieceView[] = [];
   wrong = 0;
   misses = 0;
   hints = 0;
   done = false;
 
-  /** The picture drawn once; pieces show parts of it. */
-  private readonly texture: RenderTexture;
-  private readonly picture: { root: Container; friend: Critter };
-  private readonly board = new Container();
-  private readonly frame = new Graphics();
-  private readonly slots = new Graphics();
   private readonly glow = new Graphics();
   /** Levels 5-7: the box lid, a small copy of the finished picture, beside the frame. */
   private readonly lid?: Container;
   private readonly background = new Graphics();
   private readonly textures: Texture[] = [];
+  /** The scene of the first board: a single-picture level's only one. */
+  get scene(): SceneDef {
+    return this.boards[0].scene;
+  }
+  private get board(): BoardView {
+    return this.boards[0];
+  }
   private scale = 1;
   private trayScale = 0.5;
   private clock = 0;
@@ -109,30 +128,39 @@ class PuzzlePals implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = dealPlan(ctx.level, ctx.rng);
-    this.scene = ctx.rng.pick(SCENES);
-    this.picture = pictureScene(this.scene, ctx.rng.int(1, 1_000_000));
-    this.texture = RenderTexture.create({ width: PICTURE_W, height: PICTURE_H, resolution: 2 });
-    ctx.renderer.render({ container: this.picture.root, target: this.texture });
-
-    this.board.addChild(this.frame);
-    if (this.plan.ghost) {
-      const ghost = new Sprite(this.texture);
-      ghost.alpha = 0.28;
-      this.board.addChild(ghost);
+    const scenes = this.plan.twin ? dealScenePair(ctx.rng) : [ctx.rng.pick(SCENES)];
+    ctx.stage.addChild(this.background);
+    for (const scene of scenes) {
+      // The picture is drawn once into a texture; pieces, ghost and lid all show parts of that one render.
+      const picture = pictureScene(scene, ctx.rng.int(1, 1_000_000));
+      const texture = RenderTexture.create({ width: PICTURE_W, height: PICTURE_H, resolution: 2 });
+      ctx.renderer.render({ container: picture.root, target: texture });
+      const node = new Container();
+      const frame = new Graphics();
+      const slots = new Graphics();
+      node.addChild(frame);
+      if (this.plan.ghost) {
+        const ghost = new Sprite(texture);
+        ghost.alpha = 0.28;
+        node.addChild(ghost);
+      }
+      node.addChild(slots);
+      ctx.stage.addChild(node);
+      this.boards.push({ scene, picture, texture, node, frame, slots, x: 0, y: 0 });
     }
-    this.board.addChild(this.slots);
-    ctx.stage.addChild(this.background, this.board);
     if (this.plan.lid) {
       // The same render the pieces are cut from, so the lid cannot disagree with them. It takes no touches.
       this.lid = new Container();
       this.lid.eventMode = 'none';
-      this.lid.addChild(new Graphics(), new Sprite(this.texture));
+      this.lid.addChild(new Graphics(), new Sprite(this.boards[0].texture));
       ctx.stage.addChild(this.lid);
     }
 
     const pw = PICTURE_W / this.plan.cols;
     const ph = PICTURE_H / this.plan.rows;
-    const all = piecesFor(this.plan);
+    const all: BoardPiece[] = this.boards.flatMap((_, board) =>
+      piecesFor(this.plan).map((p) => ({ ...p, board })),
+    );
     const order = [...all.slice(0, this.plan.preplaced), ...ctx.rng.shuffle(all.slice(this.plan.preplaced))];
     const turns = this.plan.turns
       ? dealTurns(order.length, this.plan.turns, ctx.rng)
@@ -141,7 +169,7 @@ class PuzzlePals implements Game {
       const piece = order[idx];
       const turn = turns[idx];
       const texture = new Texture({
-        source: this.texture.source,
+        source: this.boards[piece.board].texture.source,
         frame: new Rectangle(piece.col * pw, piece.row * ph, pw, ph),
       });
       this.textures.push(texture);
@@ -182,6 +210,7 @@ class PuzzlePals implements Game {
       const out = !this.plan.oneAtATime || !this.pieces.length ? 'waiting' : 'later';
       const view: PieceView = {
         piece,
+        board: piece.board,
         node,
         body,
         badge,
@@ -211,19 +240,21 @@ class PuzzlePals implements Game {
     this.glow.eventMode = 'none';
     // One at a time, a touch on the background or the frame hops the waiting piece home, as a touch on the piece does.
     if (this.plan.oneAtATime)
-      for (const ground of [this.background, this.board]) onTap(ground, () => this.lapTouch());
+      for (const ground of [this.background, this.board.node]) onTap(ground, () => this.lapTouch());
   }
 
   start() {
-    const line = this.plan.oneAtATime
-      ? 'puzzle.lap'
-      : tapHops(this.plan)
-        ? 'puzzle.tap'
-        : this.plan.turns
-          ? 'puzzle.turn'
-          : this.plan.ghost
-            ? 'puzzle.ghost'
-            : 'puzzle.start';
+    const line = this.plan.twin
+      ? 'puzzle.twin'
+      : this.plan.oneAtATime
+        ? 'puzzle.lap'
+        : tapHops(this.plan)
+          ? 'puzzle.tap'
+          : this.plan.turns
+            ? 'puzzle.turn'
+            : this.plan.ghost
+              ? 'puzzle.ghost'
+              : 'puzzle.start';
     void this.ctx.instruct(line);
   }
 
@@ -266,6 +297,7 @@ class PuzzlePals implements Game {
       this.turnPiece(view);
       return false;
     }
+    if (this.plan.twin) return this.dropTwin(view, x, y);
     const empty = this.pieces.filter((p) => !p.placed).map((p) => p.piece);
     const outcome = judgeDrop(
       this.plan,
@@ -305,6 +337,36 @@ class PuzzlePals implements Game {
         void this.ctx.say(`puzzle.hint.${whereWords(this.plan, this.hinted.piece)}`);
       }
     } else void this.ctx.say('puzzle.wrong');
+    this.drawGlow();
+    this.resetTrayScale(view);
+    return false;
+  }
+
+  /** Two pictures, one tray: a drop is judged against both frames; the other picture's place is a miss with its own words. */
+  private dropTwin(view: PieceView, x: number, y: number): boolean {
+    const outcome = judgeTwinDrop(
+      this.plan,
+      this.boards.map((b) => ({ x: (x - b.x) / this.scale, y: (y - b.y) / this.scale })),
+      { ...view.piece, board: view.board },
+      this.pieces.filter((p) => !p.placed).map((p) => ({ ...p.piece, board: p.board })),
+    );
+    if (outcome === 'off') {
+      this.resetTrayScale(view);
+      return false;
+    }
+    if (outcome === 'place') {
+      this.settle(view, true);
+      return true;
+    }
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    if (this.wrong === 2) {
+      // The hint is the piece she is holding: its own place on its own picture glows.
+      this.hinted = view;
+      this.hints++;
+      void this.ctx.say('puzzle.hint.piece');
+    } else void this.ctx.say(outcome === 'otherPicture' ? 'puzzle.otherPicture' : 'puzzle.wrong');
     this.drawGlow();
     this.resetTrayScale(view);
     return false;
@@ -360,9 +422,10 @@ class PuzzlePals implements Game {
       void this.comeOut();
     }
     const c = slotCenter(this.plan, view.piece);
-    const x = this.board.x + c.x * this.scale;
-    const y = this.board.y + c.y * this.scale;
-    this.ctx.stage.addChildAt(view.node, this.ctx.stage.getChildIndex(this.board) + 1);
+    const home = this.boards[view.board];
+    const x = home.x + c.x * this.scale;
+    const y = home.y + c.y * this.scale;
+    this.ctx.stage.addChildAt(view.node, this.ctx.stage.getChildIndex(home.node) + 1);
     if (!animate) {
       view.node.position.set(x, y);
       view.node.scale.set(this.scale);
@@ -390,24 +453,30 @@ class PuzzlePals implements Game {
   private async complete() {
     this.done = true;
     await this.ctx.tw.wait(0.5);
-    const { root, friend } = this.picture;
-    root.position.copyFrom(this.board.position);
-    root.scale.set(this.scale);
-    this.ctx.stage.addChild(root);
     for (const p of this.pieces) p.node.visible = false;
-    friend.alive = true;
-    this.ctx.track(friend);
-    friend.cheer();
-    sfx.animal(this.scene.sound);
-    this.ctx.particles.burst(this.board.x + (PICTURE_W * this.scale) / 2, this.board.y + 60, {
-      kind: 'confetti',
-      colors: RAINBOW.map((c) => swatch[c].fill),
-      count: 40,
-      speed: [200, 450],
-      gravity: 300,
-    });
+    for (const [i, b] of this.boards.entries()) {
+      const { root, friend } = b.picture;
+      root.position.copyFrom(b.node.position);
+      root.scale.set(this.scale);
+      this.ctx.stage.addChild(root);
+      friend.alive = true;
+      this.ctx.track(friend);
+      friend.cheer();
+      void this.ctx.tw.wait(0.45 * i).then(() => {
+        if (!root.destroyed) sfx.animal(b.scene.sound);
+      });
+      this.ctx.particles.burst(b.x + (PICTURE_W * this.scale) / 2, b.y + 60, {
+        kind: 'confetti',
+        colors: RAINBOW.map((c) => swatch[c].fill),
+        count: 40,
+        speed: [200, 450],
+        gravity: 300,
+      });
+    }
     this.ctx.pet.cheer();
-    await this.ctx.say('puzzle.done', { what: this.scene.what });
+    if (this.boards.length > 1)
+      await this.ctx.say('puzzle.doneTwin', { a: this.boards[0].scene.what, b: this.boards[1].scene.what });
+    else await this.ctx.say('puzzle.done', { what: this.scene.what });
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
@@ -420,17 +489,16 @@ class PuzzlePals implements Game {
       return;
     }
     const waiting = this.pieces.filter((p) => !p.placed);
-    const L = puzzleLayout(v, this.plan, this.pieces.length, waiting.length);
+    const L = (this.plan.twin ? twinLayout : puzzleLayout)(v, this.plan, this.pieces.length, waiting.length);
     this.scale = L.scale;
-    this.board.position.set(L.board.x, L.board.y);
-    this.board.scale.set(this.scale);
+    this.boards.forEach((b, i) => this.placeBoard(b, (L.boards ?? [L.board])[i]));
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
       .fill(swatch.teal.light)
       .roundRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30)
       .fill(cream);
-    this.drawFrame();
+    this.boards.forEach((b) => this.drawFrame(b));
     this.layoutLid(v);
     // Waiting pieces shrink to fit the tray; lifted and placed ones are full size.
     this.trayScale = L.trayScale;
@@ -446,14 +514,29 @@ class PuzzlePals implements Game {
     });
     for (const p of this.pieces.filter((p) => p.placed)) {
       const c = slotCenter(this.plan, p.piece);
-      p.node.position.set(this.board.x + c.x * this.scale, this.board.y + c.y * this.scale);
+      const b = this.boards[p.board];
+      p.node.position.set(b.x + c.x * this.scale, b.y + c.y * this.scale);
       p.node.scale.set(this.scale);
     }
-    if (this.done) {
-      this.picture.root.position.copyFrom(this.board.position);
-      this.picture.root.scale.set(this.scale);
-    }
+    this.fitPictures();
     this.drawGlow();
+  }
+
+  /** Puts a frame at a layout's spot, a picture unit being `this.scale` on screen. */
+  private placeBoard(b: BoardView, at: { x: number; y: number }) {
+    b.x = at.x;
+    b.y = at.y;
+    b.node.position.set(at.x, at.y);
+    b.node.scale.set(this.scale);
+  }
+
+  /** Once finished, each live picture sits on its frame. */
+  private fitPictures() {
+    if (!this.done) return;
+    for (const b of this.boards) {
+      b.picture.root.position.copyFrom(b.node.position);
+      b.picture.root.scale.set(this.scale);
+    }
   }
 
   private layoutLid(v: View) {
@@ -469,15 +552,15 @@ class PuzzlePals implements Game {
       .stroke({ width: 4, color: wood.line });
   }
 
-  private drawFrame() {
-    const f = this.frame.clear();
+  private drawFrame(b: BoardView) {
+    const f = b.frame.clear();
     f.roundRect(-18, -18, PICTURE_W + 36, PICTURE_H + 36, 22)
       .fill(wood.fill)
       .stroke({ width: 6, color: wood.line });
     f.rect(0, 0, PICTURE_W, PICTURE_H).fill(cream);
     const pw = PICTURE_W / this.plan.cols;
     const ph = PICTURE_H / this.plan.rows;
-    const s = this.slots.clear();
+    const s = b.slots.clear();
     for (let c = 1; c < this.plan.cols; c++) s.moveTo(c * pw, 0).lineTo(c * pw, PICTURE_H);
     for (let r = 1; r < this.plan.rows; r++) s.moveTo(0, r * ph).lineTo(PICTURE_W, r * ph);
     s.stroke({ width: 3, color: wood.fill, alpha: 0.6 });
@@ -490,10 +573,9 @@ class PuzzlePals implements Game {
   private layoutOneAtATime(v: View) {
     const L = oneAtATimeLayout(v, this.plan.cols);
     this.scale = this.trayScale = L.scale;
-    this.board.position.set(L.board.x, L.board.y);
-    this.board.scale.set(this.scale);
+    this.placeBoard(this.board, L.board);
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
-    this.drawFrame();
+    this.drawFrame(this.board);
     const home = this.lapHome(v);
     for (const p of this.pieces) {
       if (p.placed) {
@@ -511,10 +593,7 @@ class PuzzlePals implements Game {
       this.ctx.tw.kill(p.node.scale);
       p.node.scale.set(this.trayScale);
     }
-    if (this.done) {
-      this.picture.root.position.copyFrom(this.board.position);
-      this.picture.root.scale.set(this.scale);
-    }
+    this.fitPictures();
   }
 
   private drawGlow() {
@@ -525,13 +604,11 @@ class PuzzlePals implements Game {
     const pw = (PICTURE_W / this.plan.cols) * this.scale;
     const ph = (PICTURE_H / this.plan.rows) * this.scale;
     const c = slotCenter(this.plan, next.piece);
-    g.roundRect(
-      this.board.x + c.x * this.scale - pw / 2,
-      this.board.y + c.y * this.scale - ph / 2,
-      pw,
-      ph,
-      10,
-    ).stroke({ width: 7, color: swatch.yellow.line });
+    const home = this.boards[next.board];
+    g.roundRect(home.x + c.x * this.scale - pw / 2, home.y + c.y * this.scale - ph / 2, pw, ph, 10).stroke({
+      width: 7,
+      color: swatch.yellow.line,
+    });
     const tw = (PICTURE_W / this.plan.cols) * this.trayScale;
     const th = (PICTURE_H / this.plan.rows) * this.trayScale;
     g.roundRect(next.drag.home.x - tw / 2 - 8, next.drag.home.y - th / 2 - 8, tw + 16, th + 16, 12).stroke({
@@ -563,14 +640,16 @@ class PuzzlePals implements Game {
     if (!next || next.drag.dragging) return null;
     if (next.turn !== 0) return { tap: { on: next.node } };
     const c = slotCenter(this.plan, next.piece);
-    return { drag: { on: next.node }, to: { on: this.board, x: c.x, y: c.y } };
+    return { drag: { on: next.node }, to: { on: this.boards[next.board].node, x: c.x, y: c.y } };
   }
 
   destroy() {
     // The live picture only joins the stage when finished; otherwise it is ours to clean up.
-    if (!this.picture.root.parent) this.picture.root.destroy({ children: true });
+    for (const b of this.boards) {
+      if (!b.picture.root.parent) b.picture.root.destroy({ children: true });
+      b.texture.destroy(true);
+    }
     for (const t of this.textures) t.destroy();
-    this.texture.destroy(true);
   }
 }
 
