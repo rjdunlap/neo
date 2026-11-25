@@ -137,7 +137,62 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
-      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+      ]) {
+        if (level === 10) {
+          // Two pictures, one tray: a piece dropped on the other picture is a miss, two misses glow its own place.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('puzzle-pals', 10);
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-10-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            window.twinSlot = (p, board = p.board) => {
+              const b = g.boards[board];
+              return {
+                x: b.x + (600 / g.plan.cols) * (p.piece.col + 0.5) * g.scale,
+                y: b.y + (420 / g.plan.rows) * (p.piece.row + 0.5) * g.scale + 40,
+              };
+            };
+            if (g.pieces.length !== 8 || g.boards.length !== 2)
+              throw new Error('Puzzle 10: eight pieces, two pictures');
+            const [p] = g.pieces.filter((q) => !q.placed);
+            await kit.dragTo(p.node, { x: 20, y: 40 });
+            await kit.sleep(500);
+            if (g.misses !== 0) throw new Error('Puzzle 10: off both frames is free');
+            for (let i = 0; i < 2; i++) {
+              await kit.dragTo(p.node, twinSlot(p, 1 - p.board));
+              await kit.sleep(600);
+            }
+            if (g.misses !== 2 || g.hints !== 1 || g.hinted !== p)
+              throw new Error(`Puzzle 10: two other-picture drops (${g.misses}, ${g.hints})`);
+          });
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(500);
+          await screenshot('puzzle-pals-10-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(500);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            for (const p of g.pieces.filter((q) => !q.placed)) {
+              await kit.dragTo(p.node, twinSlot(p));
+              await kit.sleep(450);
+              if (!p.placed) throw new Error('Puzzle 10: piece rejected its own place');
+            }
+          });
+          await page.waitForTimeout(1200);
+          await finished('puzzle-pals');
+          const r10 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r10, [2, 1], 'puzzle 10 score');
+          log(
+            'Puzzle Pals 10: off-frame is free, the other picture is a miss, a hint, both pictures alive, sticker passed',
+          );
+          continue;
+        }
         if (level === 8) {
           // Lap's first: one big piece out at a time; a touch on the background, the frame or a placed piece hops it in,
           // and the next comes out. A far let-go hops it in too. Nothing counts.
@@ -182,7 +237,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await screenshot('puzzle-pals-8-lap-start-landscape');
           await page.evaluate(async () => {
             const g = neo.scene.game;
-            kit.tapOn(g.board, 0, 0);
+            kit.tapOn(g.board.node, 0, 0);
             await kit.sleep(900);
             if (g.pieces.filter((p) => p.placed).length !== 1)
               throw new Error('Puzzle 8: a frame touch hops it in');
@@ -233,7 +288,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               g.plan,
               g.pieces.filter((p) => p.placed).map((p) => p.piece),
             );
-            if (JSON.stringify(g.hinted?.piece) !== JSON.stringify(expected))
+            if (g.hinted?.piece.col !== expected.col || g.hinted.piece.row !== expected.row)
               throw new Error('Hint does not choose the next useful piece');
             if (g.hints !== 1 || g.glow.eventMode !== 'none')
               throw new Error('Hint accounting or touch clearance is wrong');

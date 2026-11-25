@@ -227,3 +227,15 @@ export function cellFeatures(
   }
   return out;
 }
+
+/**
+ * Two different scenes for the two-picture level: a different friend, a different sky and a different ground, so every
+ * piece shows which picture it is from by its colours and not only by its friend.
+ */
+export function dealScenePair(rng: { pick<T>(items: readonly T[]): T }): [SceneDef, SceneDef] {
+  const a = rng.pick(SCENES);
+  const b = rng.pick(
+    SCENES.filter((s) => s.id !== a.id && s.animal !== a.animal && s.sky !== a.sky && s.ground !== a.ground),
+  );
+  return [a, b];
+}
