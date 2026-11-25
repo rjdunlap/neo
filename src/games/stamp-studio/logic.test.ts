@@ -26,7 +26,7 @@ import { cream, swatch, type ColorName } from '../../art/palette';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
 import { Rng } from '../../engine/random';
-import { roundPlan, PLAIN_KINDS, SCENES, SETS, SET_CHOICES, SET_REACH, setChoiceInfo } from './logic';
+import { roundPlan, SCENES, SEEDED_SETS, SETS, SET_CHOICES, SET_REACH, setChoiceInfo } from './logic';
 import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
@@ -998,40 +998,26 @@ describe('Stamp a duck! (level 11)', () => {
     it('keeps the four sticker kinds first, so saved sticker art never changes', () => {
       expect(STAMP_KINDS.slice(0, 5)).toEqual(['star', 'flower', 'fish', 'cat', 'duck']);
     });
-    it('seeds levels 1–3 on Sea, Farm, or plain paper, and every set stamp turns up', () => {
-      let seaRounds = 0;
-      let farmRounds = 0;
-      let plainRounds = 0;
-      for (let seed = 0; seed < 120; seed++) {
+    it('seeds levels 1–3 on Sea, Farm, Garden or Space (never plain paper), and every set stamp turns up', () => {
+      const seen = new Map<string, Set<StampKind>>(SEEDED_SETS.map((id) => [id, new Set()]));
+      const rounds = new Map<string, number>();
+      for (let seed = 0; seed < 240; seed++) {
         for (const level of [1, 2, 3]) {
           const r = roundPlan(level, new Rng(seed));
-          if (r.scene === 'sea') {
-            seaRounds++;
-            for (const k of r.plan.kinds) expect(sea).toContain(k);
-          } else if (r.scene === 'farm') {
-            farmRounds++;
-            for (const k of r.plan.kinds) expect(SETS.farm.kinds).toContain(k);
-          } else {
-            plainRounds++;
-            expect(r.scene).toBeUndefined();
-            for (const k of r.plan.kinds) expect(PLAIN_KINDS).toContain(k);
+          const id = SEEDED_SETS.find((s) => SETS[s].scene === r.scene);
+          expect(id, `seed ${seed} level ${level}`).toBeDefined();
+          rounds.set(id!, (rounds.get(id!) ?? 0) + 1);
+          for (const k of r.plan.kinds) {
+            expect(SETS[id!].kinds).toContain(k);
+            seen.get(id!)!.add(k);
           }
           expect(new Set(r.plan.kinds).size).toBe(r.plan.kinds.length);
         }
       }
-      expect(seaRounds).toBeGreaterThan(40);
-      expect(farmRounds).toBeGreaterThan(40);
-      expect(plainRounds).toBeGreaterThan(40);
-      // Every Sea and Farm stamp turns up over many rounds.
-      const seenSea = new Set<StampKind>();
-      const seenFarm = new Set<StampKind>();
-      for (let seed = 0; seed < 200; seed++) {
-        const r = roundPlan(3, new Rng(seed));
-        if (r.scene === 'sea') r.plan.kinds.forEach((k) => seenSea.add(k));
-        if (r.scene === 'farm') r.plan.kinds.forEach((k) => seenFarm.add(k));
+      for (const id of SEEDED_SETS) {
+        expect(rounds.get(id), id).toBeGreaterThan(80);
+        expect([...seen.get(id)!].sort(), id).toEqual([...SETS[id].kinds].sort());
       }
-      expect([...seenSea].sort()).toEqual([...sea].sort());
-      expect([...seenFarm].sort()).toEqual([...SETS.farm.kinds].sort());
     });
     it('leaves levels 4 and up, and Stamp a duck!, on plain paper', () => {
       for (const level of [4, 5, 6, 7, 11]) expect(roundPlan(level, new Rng(3)).scene).toBeUndefined();
@@ -1092,7 +1078,7 @@ describe('Stamp a duck! (level 11)', () => {
     it('offers the sets button at levels 4–6 only, and every set choice has distinct stamps', () => {
       expect([1, 2, 3, 7, 8, 9, 10, 11].some((l) => planFor(l).sets)).toBe(false);
       expect([4, 5, 6].every((l) => planFor(l).sets)).toBe(true);
-      expect(SET_CHOICES).toEqual(['plain', 'sea', 'farm']);
+      expect(SET_CHOICES).toEqual(['plain', 'sea', 'farm', 'garden', 'space']);
       for (const choice of SET_CHOICES) {
         const info = setChoiceInfo(choice);
         expect(info.name.length).toBeGreaterThan(0);
@@ -1101,6 +1087,49 @@ describe('Stamp a duck! (level 11)', () => {
       }
       const card = howToFor(stampStudio, 4)!;
       expect(card.steps.join(' ')).toMatch(/set/i);
+    });
+  });
+
+  describe('the Garden and Space sets (dive slice 7)', () => {
+    const newKinds = [...SETS.garden.kinds, ...SETS.space.kinds];
+    it('keeps the classic four in a set each, so Plain has nothing the sets lack', () => {
+      expect(SETS.garden.kinds).toEqual(['flower', 'butterfly', 'ladybug', 'snail', 'sunflower', 'tree']);
+      expect(SETS.space.kinds).toEqual(['star', 'moon', 'rocket', 'planet', 'comet', 'ufo']);
+      for (const kind of ['star', 'flower', 'fish', 'cat'] as const)
+        expect(SEEDED_SETS.some((id) => (SETS[id].kinds as readonly StampKind[]).includes(kind))).toBe(true);
+      for (const id of ['garden', 'space'] as const) expect(new Set(SETS[id].kinds).size).toBe(6);
+    });
+    it('names, sounds and draws every new stamp so it reads at the board scale', () => {
+      for (const kind of newKinds) {
+        expect(STAMP_KINDS).toContain(kind);
+        expect(STAMP_NAMES[kind]).toMatch(/^A \w+$/);
+        const sound = STAMP_SOUNDS[kind];
+        if ('from' in sound)
+          for (let press = 1; press <= 10; press++) {
+            const step = stampStep(kind, press)!;
+            expect(Number.isInteger(step)).toBe(true);
+            expect(step).toBeGreaterThanOrEqual(0);
+            expect(step).toBeLessThanOrEqual(11);
+          }
+        for (const color of STAMP_COLORS) {
+          const b = artwork.stampArt(kind, color, 48).getLocalBounds();
+          expect(b.width * 0.46, `${kind} ${color}`).toBeGreaterThan(30);
+          expect(b.height * 0.46, `${kind} ${color}`).toBeGreaterThan(20);
+          expect(b.width).toBeLessThan(48 * 2.6);
+          expect(b.height).toBeLessThan(48 * 2.6);
+        }
+      }
+    });
+    it('paints the garden and space backdrops without swallowing taps', () => {
+      for (const id of ['garden', 'space'] as const) {
+        expect(SCENES[id].horizon).toBeGreaterThan(0.25);
+        expect(SCENES[id].horizon).toBeLessThan(1);
+        const g = artwork.sceneArt(id, 600, 400);
+        expect(g.eventMode).toBe('none');
+        const b = g.getLocalBounds();
+        expect(b.width).toBeGreaterThanOrEqual(600);
+        expect(b.height).toBeGreaterThanOrEqual(400);
+      }
     });
   });
 });

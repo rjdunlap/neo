@@ -26,11 +26,21 @@ export const STAMP_KINDS = [
   'pig',
   'hen',
   'barn',
+  'butterfly',
+  'ladybug',
+  'snail',
+  'sunflower',
+  'tree',
+  'moon',
+  'rocket',
+  'planet',
+  'comet',
+  'ufo',
 ] as const;
 export type StampKindId = (typeof STAMP_KINDS)[number];
 
 /** The backdrops a kept picture can remember (Stamp Studio's scenes); a picture without one is on plain paper. */
-export const SCENE_IDS = ['sea', 'farm'] as const;
+export const SCENE_IDS = ['sea', 'farm', 'garden', 'space'] as const;
 export type SceneId = (typeof SCENE_IDS)[number];
 
 /** Most stamps a picture holds (Stamp Studio's own limit). */
