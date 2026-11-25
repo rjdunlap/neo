@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 155 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 194 games; the 168 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 156 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -98,7 +98,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Little Conductor](docs/games/little-conductor.md) | toddler–pre-K | Music Mountain | 3 | tap a turtle or a rabbit pad and three friends on a bandstand play the same little tune slow or quick |
 | [Puppet Stage](docs/games/puppet-stage.md) | lap–school | Music Mountain | 6 | touch the stage floor and a stick puppet pops up there, says hello in its own voice and follows her finger; tap it and it talks or sings "la" (nothing counted; Bow after three pops or thirty seconds, and at lap the show bows by itself after six) |
 | [Hat Band](docs/games/hat-band.md) | preschool–grown-up | Music Mountain | 4 | put a drum hat or a tune hat on a friend and the friend starts playing that part, over and over; at level 4 (school and grown-up) three friends with a drum, a tune and a low hat arrange a three-part song |
-| [Little Loom](docs/games/little-loom.md) | toddler–pre-K | Painted Canyon | 3 | send yarn over and under threads to make an eight-row scarf |
+| [Little Loom](docs/games/little-loom.md) | toddler–school | Painted Canyon | 5 | send yarn over and under threads to make an eight-row scarf |
 | [Movie Night](docs/games/movie-night.md) | preschool–school | Painted Canyon | 5 | put synthesized sounds on fixed filmed pictures, preview freely and premiere to three friends |
 | [Rainbow Fingers](docs/games/rainbow-fingers.md) | lap–school | Painted Canyon | 12 | rainbow or color-pot finger painting (any touch counts: pat, hold or drag; a pat splats a flower; an idle nudge) |
 | [Fluffy Salon](docs/games/fluffy-salon.md) | lap–pre-K | Painted Canyon | 12 | pat the fluff to grow it, then grow and color fur, then freely snip and curl; a seeded friend in the chair at levels 3–5 |
