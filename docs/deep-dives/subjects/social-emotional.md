@@ -158,7 +158,7 @@ Use **established commercial examples** and **focused educational references** a
 
 ### A Place for You: Common Ground's younger entry
 
-*Claimed 2026-11-25 (`claude/define-place-for-you`, docs only): defining it as Common Ground level 1 in `docs/definitions/common-ground.md`.*
+**Defined 2026-11-25** as level 1 of a new school-only game `common-ground`: [definition](../../definitions/common-ground.md). It does not define the older negotiation case or levels 2–3.
 
 **Recommended next definition after Playdate Workshop 1–3:** a complete **school-first** recipient-design round; consider a pre-K opening only after the pictured requests and layout work. This is a proposed mode of Common Ground, not a second room-design registration or an approved younger band window. It can be defined independently of the older negotiation case above.
 
