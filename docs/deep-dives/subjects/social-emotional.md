@@ -158,6 +158,8 @@ Use **established commercial examples** and **focused educational references** a
 
 ### A Place for You: Common Ground's younger entry
 
+*Claimed 2026-11-25 (`claude/define-place-for-you`, docs only): defining it as Common Ground level 1 in `docs/definitions/common-ground.md`.*
+
 **Recommended next definition after Playdate Workshop 1–3:** a complete **school-first** recipient-design round; consider a pre-K opening only after the pictured requests and layout work. This is a proposed mode of Common Ground, not a second room-design registration or an approved younger band window. It can be defined independently of the older negotiation case above.
 
 One friend asks for **a cushion by the pictured window and a book basket beside the cushion**. On a 2×3 floor, the top row is by the window; “beside” means orthogonally adjacent, shown by an example. Place the cushion and basket in separate cells, add an optional plant anywhere unoccupied, then press Visit. Many arrangements satisfy the same two requests; the friend sits and uses the actual placed basket. No personal taste is a hidden answer. A moved cushion can make the basket request unmet; undo/revision remains free. An incomplete Visit highlights the stated unmet request without erasing the arrangement, and an assisted layout remains available.
