@@ -1,6 +1,6 @@
 # Pixel Pictures, Window Mosaic: level 13 (definition)
 
-**Status:** defined 2026-11-25, not built. Build it as one new level of `pixel-pictures`; read [The level](#the-level) and [Registration](#registration-and-files).
+**Status:** defined 2026-11-25; claimed 2026-11-25 by `claude/pixel-pictures-window-mosaic` (building level 13). Build it as one new level of `pixel-pictures`; read [The level](#the-level) and [Registration](#registration-and-files).
 
 Defined as slice **R6** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations). It is **one level of an existing game, not a new game**: the study said to merge Window Mosaic into an existing art or fitting game "if fractions do not change the action", and here they change what the tap means, not the tap. Every [open decision](#open-decisions) has a default the build uses.
 
