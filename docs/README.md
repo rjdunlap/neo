@@ -42,6 +42,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
 | [Tide Tables](definitions/tide-tables.md) | Assign three jobs to a fictional harbor day using tide heights and job order, with multiple working schedules; grown-up, Lantern Lake |
