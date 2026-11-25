@@ -239,7 +239,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | Root offline | 2026-11-22 · [Collection book and welcome goal](verification/2026-11-22-collection-book-and-welcome-goal.md) | Production root reload and saved collection |
 | Unit and type checks | 2026-11-24 · [Word Monsters level 8 and sticker guards](verification/2026-11-24-word-monsters-level-8-and-sticker-guards.md) | Typecheck and 161 focused Word Monsters, how-to and registry tests |
 | Unit and type checks | 2026-11-24 · [Word Monsters Told, then asked](verification/2026-11-24-word-monsters-told-then-asked.md) | Typecheck, 110 focused tests, batch play and `fingerdemo` at levels 7 and 8 |
-| Full unit suite and production build | 2026-11-23 · [Rain Garden level 5, three beds downhill](verification/2026-11-23-rain-garden-level-5-three-beds-downhill.md) | Full units and production build |
+| Full unit suite and production build | 2026-11-25 · [Progression loop slice 2: shells for grown-ups](verification/2026-11-25-progression-loop-slice-2-shells-for-grown-ups.md) | Full units (19,148 passed) and production build |
 | Formatting and lint | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | Scoped format and lint |
 | Test infrastructure | 2026-10-24 · [Quiet automated tests](archive/VERIFICATION-2026-10-24.md#2026-10-24--quiet-automated-tests) | Quiet unit and browser fixtures |
 | New-game scaffold tooling | 2026-11-20 · [Scaffold starts a grown-up game upright](verification/2026-11-20-scaffold-starts-a-grown-up-game-upright.md) | Grown-up upright scaffold and focused tests |

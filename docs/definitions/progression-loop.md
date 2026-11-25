@@ -48,6 +48,8 @@ Grown-ups come first because they play now, on phones, through [Today's six](tod
 
 ### Slice 2: shells for grown-ups
 
+**Built 2026-11-25** ([PR #2143](https://github.com/rjdunlap/neo/pull/2143)), as written below; the tag sits on a cream pill under the sticker so it reads over a place's picture.
+
 - **Save.** `SaveData.shells: { balance: number; day: string; earned: Record<string, number> }`: the balance, and how many shells each game has earned on `day` (a `dayKey`). Repaired on load: the balance a whole number from 0 to 999 999, `day` a `YYYY-MM-DD` string or empty, `earned` only known-shaped ids (at most 60 entries, each a whole number up to the cap). An older save starts at 0. It rides in backups and the undo snapshot with the rest of the save.
 - **Earning.** A finished round on a `grownup` profile earns **5 shells**, up to **15 per game per local day** (three rounds). Any band other than `grownup` earns nothing and shows nothing. Story and project rounds earn as ordinary rounds; a round counts once (`finish` already runs once).
 - **Pure rules.** `src/content/shells.ts`: `earnShells(save, gameId, band, day) → { shells, earned }`, the constants and `cleanShells`, unit-tested: the cap, a new day, other bands, a damaged save.
