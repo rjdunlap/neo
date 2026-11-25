@@ -10,8 +10,8 @@
 | --- | --- |
 | toddler | 1–2 |
 | preschool | 1–5 |
-| pre-K | 2–5 |
-| school | 5 |
+| pre-K | 2–6 |
+| school | 5–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 3 | Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check |
 | 4 | Soft or loud: hear the same tune on a small drum and a big drum, then finish with the one she likes |
 | 5 | Two ways at once: slow or fast, soft or loud; hear the four ways and finish with the one she likes |
+| 6 | Invite a friend: three friends play one tune, and she asks each one in or out on the beat |
 
 <!-- end generated -->
 
@@ -36,5 +37,7 @@ Upright on a phone (levels 1–3): `conductorLayout` hangs the pads up from the 
 Level 4, soft or loud (preschool and pre-K, built 2026-11-25): the same two pad slots hold a small drum (soft) and a big drum (loud), and both play at one steady 75 beats a minute, so only how strongly the band plays differs. `STRENGTH_GAIN` (gentle 0.45, strong 1, the gain every other level already plays at, so never louder than the device volume allows) multiplies every voice; `advance(…, 'strength')` stamps each beat with its `bpm` and `gain`, and a rule test proves pitch, order, bass, drum and timing are identical on both pads. The heard gate is level 2's (both heard whole, then the chosen one whole since she chose it), never a miss or a hint, and the friends sway in small or big bounces. No save change.
 
 Level 5, two ways at once (preschool, pre-K and school, built 2026-11-25): two dials at once, the turtle and rabbit for pace and a small and a big drum for strength, as four pads in one row (130 units each) with a four-cell hearing mark under them, one cell for each of the four ways, each showing its animal and drum, a check once heard whole and four dots on the way playing now. Either dial changes on the next beat, and the two can wait together; the first tap on the strength dial starts the band on the turtle. `advance(…, 'dials')` stamps each beat with the pace's bpm and `STRENGTH_GAIN` for the strength, and a rule test proves all four ways play the same notes in the same order for all six tunes. The heard gate follows the latest change of either dial: the way she is in must be heard whole since the last change, and at least two ways (`COMPARE_AT_LEAST`) must have been heard whole, so there is always something to compare; hearing all four is never required, and nothing is a miss or a hint. This is the first level for the school band, which now lists the game with a one-level range. Ghost finger: the rabbit, then the soft drum, then Done.
+
+Level 6, invite a friend (pre-K and school, built 2026-11-25): the three friends each play one part of the one accompaniment, the left friend the tune on the marimba, the middle one the plucked bass and the right one the drum, at one steady 75 beats a minute. A spotlight 160 units wide under each friend asks them in or out: the first tap starts the band with that friend at once, and every later tap (an invitation or a goodbye) waits for the next beat with the same clock ring as the pace pads, so each friend joins or leaves on a whole beat and never plays half a note; tapping again before the beat calls the change off. The clock never stops, even with nobody in, so the tune never skips or repeats and an empty stage just waits quietly (its first spotlight pulses every six idle seconds, an invitation and not a hint). A rule test proves every cue lands on a whole beat, that the notes and their order are the same whoever is in, and that each friend voices only their own part. Nothing is a miss or a hint. The heard gate is level 2's idea for groups: somebody is playing, that group has been heard whole since it last changed, and at least two different groups (`STAGES_AT_LEAST`) have been heard whole; an empty stage never finishes. Friends who are in sway and show a check and four beat dots; the others stand still. At Done the band plays the tune once more with claps and bows. Ghost finger: the tune friend, then the bass friend, then Done. The friends stand 190 apart over the spotlights, and the layout test covers the four landscape and four upright views. No save change. Not checked on a device: whether a young child hears "who is playing" as the part each friend takes.
 
 A researched ladder for what comes after level 4 (two dials, cues, request levels) and the upright layout that comes first is in the [deep dive](../deep-dives/little-conductor.md).

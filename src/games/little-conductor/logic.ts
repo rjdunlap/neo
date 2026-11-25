@@ -38,6 +38,17 @@ export const comboOf = (pace: PaceId, strength: StrengthId): ComboId => `${pace}
 /** Level 5 asks her to hear at least this many of the four ways whole before she picks one to finish with. */
 export const COMPARE_AT_LEAST = 2;
 
+/** Level 6's three friends, left to right: each plays one part of the one accompaniment (tune, bass, drum). */
+export type PartId = 'tune' | 'bass' | 'beat';
+export const PART_IDS: readonly PartId[] = ['tune', 'bass', 'beat'];
+export type Cast = Record<PartId, boolean>;
+export const emptyCast = (): Cast => ({ tune: false, bass: false, beat: false });
+/** A stage as a key (`101` is the tune and the beat in, the bass out), for the stages heard whole. */
+export const castKey = (c: Cast): string => PART_IDS.map((p) => (c[p] ? '1' : '0')).join('');
+export const castSize = (c: Cast): number => PART_IDS.filter((p) => c[p]).length;
+/** Level 6 asks her to hear at least this many different stages whole before she finishes, so there is always something to compare. */
+export const STAGES_AT_LEAST = 2;
+
 export interface Motif {
   id: 'hop' | 'slide' | 'wave' | 'skip' | 'rock' | 'sway';
   /** One note a beat, as notes of the major pentatonic (semitones above C), all inside one octave. */
@@ -64,7 +75,7 @@ export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(se
 export interface Plan {
   level: number;
   name: string;
-  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials';
+  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials' | 'friends';
 }
 const PLANS: Plan[] = [
   {
@@ -92,14 +103,19 @@ const PLANS: Plan[] = [
     name: 'Two ways at once: slow or fast, soft or loud; hear the four ways and finish with the one she likes',
     mode: 'dials',
   },
+  {
+    level: 6,
+    name: 'Invite a friend: three friends play one tune, and she asks each one in or out on the beat',
+    mode: 'friends',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 5 },
-  prek: { min: 2, max: 5 },
-  school: { min: 5, max: 5 },
+  prek: { min: 2, max: 6 },
+  school: { min: 5, max: 6 },
 };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -143,6 +159,14 @@ export interface Score {
   comboHeard: Record<ComboId, number>;
   /** Level 5: whether each of the four ways has ever been heard for a whole phrase. */
   comboEver: Record<ComboId, boolean>;
+  /** Level 6: who is playing now. */
+  cast: Cast;
+  /** Level 6: an invitation or a goodbye waiting for the next beat, for each friend (null: nothing waiting). */
+  pendingCast: Record<PartId, boolean | null>;
+  /** Level 6: beats sounded with this stage since it last changed. */
+  castHeard: number;
+  /** Level 6: the stages (as `castKey`s, never the empty one) heard for a whole phrase. */
+  castEver: Record<string, boolean>;
 }
 
 export interface BeatEvent {
@@ -161,6 +185,8 @@ export interface BeatEvent {
   bpm: number;
   /** A multiplier on every voice: 1 except level 4's gentle pad. */
   gain: number;
+  /** Whether the tune friend is in: always true except at level 6, where an empty stage still counts its beats, silently. */
+  lead: boolean;
 }
 
 function zeroCombos<T>(value: T): Record<ComboId, T> {
@@ -179,6 +205,10 @@ export const newScore = (): Score => ({
   pendingStrength: null,
   comboHeard: zeroCombos(0),
   comboEver: zeroCombos(false),
+  cast: emptyCast(),
+  pendingCast: { tune: null, bass: null, beat: null },
+  castHeard: 0,
+  castEver: {},
 });
 
 /**
@@ -202,13 +232,32 @@ export function selectStrength(score: Score, strength: StrengthId): Score {
   return { ...score, pendingStrength: strength };
 }
 
+/**
+ * A tap on a friend at level 6. The very first tap starts the band with that friend at once (the clock then never stops,
+ * even with nobody in, so the tune never skips or repeats); after that an invitation or a goodbye waits for the next beat,
+ * and tapping again before it lands calls it off.
+ */
+export function toggleFriend(score: Score, part: PartId): Score {
+  if (score.pace === null)
+    return { ...score, pace: 'turtle', cast: { ...score.cast, [part]: true }, castHeard: 0 };
+  const waiting = score.pendingCast[part];
+  const target = waiting === null ? !score.cast[part] : !waiting;
+  return {
+    ...score,
+    pendingCast: { ...score.pendingCast, [part]: target === score.cast[part] ? null : target },
+  };
+}
+
+/** Whether any friend's change is waiting for the next beat. */
+export const castPending = (score: Score): boolean => PART_IDS.some((p) => score.pendingCast[p] !== null);
+
 /** Listen again: the tune starts again from its first note on the next beat. What she has heard still counts. */
 export const listenAgain = (score: Score): Score =>
   score.pace === null ? score : { ...score, phraseStart: score.played };
 
 /** Beats per minute at a pad: its pace, except at level 4 where both pads keep the one steady pace. */
 export const tempoOf = (pace: PaceId, mode: Plan['mode']): number =>
-  mode === 'strength' ? STEADY_BPM : PACES[pace];
+  mode === 'strength' || mode === 'friends' ? STEADY_BPM : PACES[pace];
 
 /**
  * Moves the clock on by `dt` seconds and returns every whole beat it crossed, each exactly once and in tune order.
@@ -227,6 +276,9 @@ export function advance(
     heardEver: { ...score.heardEver },
     comboHeard: { ...score.comboHeard },
     comboEver: { ...score.comboEver },
+    cast: { ...score.cast },
+    pendingCast: { ...score.pendingCast },
+    castEver: { ...score.castEver },
   };
   const events: BeatEvent[] = [];
   let left = Math.max(0, dt);
@@ -254,6 +306,15 @@ export function advance(
       s.strength = s.pendingStrength;
       s.pendingStrength = null;
     }
+    // Level 6's invitations and goodbyes all land here, on a whole beat, so no friend ever plays half a note.
+    if (castPending(s)) {
+      for (const part of PART_IDS) {
+        const next = s.pendingCast[part];
+        if (next !== null) s.cast[part] = next;
+        s.pendingCast[part] = null;
+      }
+      s.castHeard = 0;
+    }
     const combo = comboOf(s.pace!, s.strength);
     // Level 5's gate follows the latest change of either dial: the way she is in starts counting from nothing.
     if (moved) s.comboHeard[combo] = 0;
@@ -264,8 +325,9 @@ export function advance(
       step,
       pace,
       melody: noteStep(motif.melody[step]),
-      bass: motif.bass.includes(step),
-      drum: motif.drum.includes(step),
+      bass: motif.bass.includes(step) && (mode !== 'friends' || s.cast.bass),
+      drum: motif.drum.includes(step) && (mode !== 'friends' || s.cast.beat),
+      lead: mode !== 'friends' || s.cast.tune,
       at,
       bpm,
       gain:
@@ -277,6 +339,8 @@ export function advance(
     });
     s.heard[pace]++;
     s.comboHeard[combo]++;
+    s.castHeard++;
+    if (s.castHeard >= BEATS && castSize(s.cast) > 0) s.castEver[castKey(s.cast)] = true;
     if (s.comboHeard[combo] >= BEATS) s.comboEver[combo] = true;
     if (s.heard[pace] >= BEATS) s.heardEver[pace] = true;
     s.played++;
@@ -293,7 +357,15 @@ export const marksLit = (score: Score, pace: PaceId): number =>
  * point, and the one she finishes with heard whole since she chose it. A change still waiting closes the gate at once.
  */
 export function canFinish(score: Score, level: number): boolean {
-  if (score.pace === null || score.pending || score.pendingStrength) return false;
+  if (score.pace === null || score.pending || score.pendingStrength || castPending(score)) return false;
+  if (planFor(level).mode === 'friends') {
+    // Level 6: somebody is playing, that stage heard whole since it last changed, and at least two stages compared.
+    return (
+      castSize(score.cast) > 0 &&
+      score.castHeard >= BEATS &&
+      Object.keys(score.castEver).length >= STAGES_AT_LEAST
+    );
+  }
   if (planFor(level).mode === 'dials') {
     // Level 5: the way she finishes with, heard whole since the latest change of either dial, and at least two ways compared.
     const here = comboOf(score.pace, score.strength);
@@ -310,6 +382,10 @@ export function canFinish(score: Score, level: number): boolean {
 
 /** What Done says while it is still dim: hear the whole tune, or hear the other way too. */
 export function earlyDone(score: Score, level: number): 'hear-whole' | 'hear-other' {
+  if (planFor(level).mode === 'friends') {
+    if (castSize(score.cast) === 0) return 'hear-whole';
+    return score.castHeard >= BEATS ? 'hear-other' : 'hear-whole';
+  }
   if (planFor(level).mode === 'dials') {
     if (!score.pace) return 'hear-whole';
     return score.comboHeard[comboOf(score.pace, score.strength)] >= BEATS ? 'hear-other' : 'hear-whole';
@@ -325,6 +401,16 @@ export function botMove(score: Score, level: number): PaceId | 'done' | null {
   if (score.pending) return null;
   if (score.pace === 'turtle' && score.heardEver.turtle && !score.heardEver.rabbit) return 'rabbit';
   return canFinish(score, level) ? 'done' : null;
+}
+
+/** The ghost finger at level 6: invite the tune friend, hear the stage whole, invite the next friend, hear that whole, then Done. */
+export function friendsBot(score: Score, level: number): { friend: PartId } | 'done' | null {
+  if (score.pace === null) return { friend: 'tune' };
+  if (castPending(score)) return null;
+  if (canFinish(score, level)) return 'done';
+  if (score.castHeard < BEATS) return null;
+  const next = PART_IDS.find((p) => !score.cast[p]);
+  return { friend: next ?? 'beat' };
 }
 
 /** The ghost finger at level 5: the pace dial first, then the strength dial once the first way was heard whole, then Done. */
@@ -424,6 +510,8 @@ export interface ConductorLayout {
   strengths?: Record<StrengthId, Rect>;
   /** Level 5: the four-cell hearing mark, one cell for each way to play, in `COMBO_IDS` order. */
   cells?: Rect[];
+  /** Level 6: the spotlight under each friend, in `PART_IDS` order; tapping one asks that friend in or out. */
+  spots?: Rect[];
   listen: Disc;
   done: Disc;
   /** Level 3: the listener's sign, and where the listener stands under it. */
@@ -435,6 +523,8 @@ export const PAD = 180;
 const PAD_GAP = 60;
 const BUTTON = 60;
 export const SIGN = 200;
+/** Level 6's spotlights, one under each friend. */
+export const SPOT = 160;
 /** Level 3 keeps a column at the right of a landscape screen for the listener and the sign. */
 const SIGN_COLUMN = 250;
 
@@ -451,7 +541,9 @@ export function conductorLayout(
   const standW = Math.min(view.w - column - (column ? (view.upright ? 40 : 80) : 200), portrait ? 760 : 820);
   const standH = portrait ? Math.min(380, view.h * 0.3) : Math.min(340, view.h * 0.44);
   const stand: Rect = { x: cx - standW / 2, y: portrait ? 110 : 70, w: standW, h: standH };
-  const spacing = column && portrait ? 140 : portrait ? 200 : 230;
+  // Level 6's friends stand 190 apart, one spotlight (160 wide, 30 between) under each.
+  const spotted = planFor(level).mode === 'friends';
+  const spacing = spotted ? SPOT + 30 : column && portrait ? 140 : portrait ? 200 : 230;
   const feet = stand.y + stand.h - 40;
   const friends = [-1, 0, 1].map((i) => ({ x: cx + i * spacing, y: feet }));
   // Upright, the pads hang up from the bottom edge, above the pet's corner and their marks, so a tall phone leaves sky between.
@@ -474,7 +566,14 @@ export function conductorLayout(
   const done: Disc = portrait
     ? { x: bx, y: view.h - BUTTON - 50, r: BUTTON }
     : { x: bx, y: padY + PAD + 30, r: BUTTON };
-  if (!signed) return { stand, friends, pads, listen, done };
+  // Level 6: a spotlight under each friend; upright they sit midway between the bandstand and the buttons, clear of both.
+  const spotY = view.upright
+    ? Math.max(stand.y + stand.h + 60, (stand.y + stand.h + listen.y - listen.r) / 2 - SPOT / 2)
+    : padY;
+  const spots = spotted
+    ? friends.map((f): Rect => ({ x: f.x - SPOT / 2, y: spotY, w: SPOT, h: SPOT }))
+    : undefined;
+  if (!signed) return { stand, friends, pads, listen, done, spots };
   // Landscape and upright: the sign at the top of the right-hand column. Portrait: below the bandstand, right of the pads.
   const sign: Rect =
     portrait && !view.upright

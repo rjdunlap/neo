@@ -26,6 +26,13 @@ import {
   comboOf,
   DIAL_PAD,
   dialsBot,
+  castPending,
+  castSize,
+  friendsBot,
+  PART_IDS,
+  SPOT,
+  toggleFriend,
+  type PartId,
   canFinish,
   choose,
   conductorLayout,
@@ -270,6 +277,89 @@ class Pad extends Container {
   }
 }
 
+/** What each friend's spotlight shows and says at level 6: the instrument they hold and the part it plays. */
+const SPOT_VOICE: Record<PartId, { voice: Voice; word: string }> = {
+  tune: { voice: 'marimba', word: 'tune' },
+  bass: { voice: 'pluck', word: 'bass' },
+  beat: { voice: 'drum', word: 'beat' },
+};
+
+/**
+ * Level 6's spotlight under a friend: tap it to ask that friend in or out. It shows the friend's instrument and part,
+ * a thick frame and a check while they are in, the clock ring while the change waits for the beat, and four dots for the beats heard.
+ */
+class Spot extends Container {
+  readonly glow = new Graphics();
+  readonly frame = new Graphics();
+  readonly ring = new Graphics();
+  readonly marks = new Graphics();
+  readonly picture: Container;
+  readonly lift = new Container();
+  constructor(
+    readonly part: PartId,
+    onPress: () => void,
+  ) {
+    super();
+    this.glow
+      .roundRect(-SPOT / 2 - 16, -SPOT / 2 - 16, SPOT + 32, SPOT + 32, 38)
+      .fill({ color: 0xfff3a0, alpha: 0.9 });
+    this.glow.visible = false;
+    this.picture = new Container();
+    const held = prop(SPOT_VOICE[part].voice);
+    held.scale.set(0.8);
+    held.y = -6;
+    this.picture.addChild(held);
+    const word = label(SPOT_VOICE[part].word, 24, ink, '500');
+    word.y = SPOT / 2 - 24;
+    this.lift.addChild(this.frame, this.picture, word, this.ring);
+    this.addChild(this.glow, this.lift, this.marks);
+    onTap(this, onPress, { cooldown: 150 });
+    this.hitArea = new Rectangle(-SPOT / 2, -SPOT / 2, SPOT, SPOT);
+  }
+
+  /** `playing`: the friend is in now. `waiting`: a change is queued, with `waitLeft` of a beat to go. */
+  draw(playing: boolean, waiting: boolean, waitLeft: number, lit: number) {
+    const sw = swatch.green;
+    this.frame
+      .clear()
+      .roundRect(-SPOT / 2, -SPOT / 2, SPOT, SPOT, 32)
+      .fill(playing ? sw.light : 0xffffff)
+      .stroke({ width: playing ? 12 : 5, color: playing ? ink : sw.line });
+    this.lift.alpha = playing || waiting ? 1 : 0.82;
+    this.ring.clear();
+    const cx = SPOT / 2 - 28;
+    const cy = -SPOT / 2 + 28;
+    if (waiting) {
+      const a0 = -Math.PI / 2;
+      this.ring
+        .moveTo(cx + 20 * Math.cos(a0), cy + 20 * Math.sin(a0))
+        .arc(cx, cy, 20, a0, a0 + Math.PI * 2 * Math.max(0.02, waitLeft))
+        .stroke({ width: 7, color: ink, cap: 'round' });
+      this.ring
+        .circle(cx, cy, 9)
+        .fill(0xffffff)
+        .stroke({ width: 3, color: ink })
+        .moveTo(cx, cy)
+        .lineTo(cx, cy - 6)
+        .stroke({ width: 2, color: ink });
+    } else if (playing) {
+      this.ring
+        .moveTo(cx - 14, cy)
+        .lineTo(cx - 4, cy + 11)
+        .lineTo(cx + 14, cy - 12)
+        .stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
+    }
+    this.marks.clear();
+    for (let i = 0; i < BEATS; i++) {
+      const on = playing && i < lit;
+      this.marks
+        .circle(-54 + i * 36, SPOT / 2 + 32, on ? 13 : 11)
+        .fill(on ? sw.fill : 0xffffff)
+        .stroke({ width: on ? 4 : 3, color: on ? ink : 0xb9c6d1 });
+    }
+  }
+}
+
 /** Level 5's four-cell hearing mark: a cell for each way to play, named by its animal and drum. */
 class HearingMarks extends Container {
   private readonly cells: Graphics[] = [];
@@ -377,6 +467,8 @@ class LittleConductor implements Game {
   /** Level 5's strength pads, drawn beside the pace pads. */
   readonly strengthPads?: Record<StrengthId, Pad>;
   private readonly hearing?: HearingMarks;
+  /** Level 6's spotlights, one under each friend, in `PART_IDS` order. */
+  readonly spots?: Spot[];
   /** Level 5 draws its four pads at 150 units; the others at the full 180. */
   private readonly padScale: number;
   readonly listen: RoundButton;
@@ -442,6 +534,10 @@ class LittleConductor implements Game {
         pad.scale.set(this.padScale);
       }
     }
+    if (this.plan.mode === 'friends') {
+      this.spots = PART_IDS.map((part) => new Spot(part, () => this.tapSpot(part)));
+      for (const pad of Object.values(this.pads)) pad.visible = false;
+    }
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 60, () =>
       this.tapListen(),
     );
@@ -455,6 +551,7 @@ class LittleConductor implements Game {
       this.listen,
       this.done,
     );
+    if (this.spots) ctx.stage.addChild(...this.spots);
     if (this.strengthPads && this.hearing)
       ctx.stage.addChild(this.strengthPads.gentle, this.strengthPads.strong, this.hearing);
     if (this.plan.mode === 'sign') {
@@ -487,7 +584,9 @@ class LittleConductor implements Game {
             ? 'little-conductor.instruct-strength'
             : this.plan.mode === 'dials'
               ? 'little-conductor.instruct-dials'
-              : 'little-conductor.instruct-sign',
+              : this.plan.mode === 'friends'
+                ? 'little-conductor.instruct-friends'
+                : 'little-conductor.instruct-sign',
       { name: this.ctx.childName },
     );
     if (this.finished) return;
@@ -535,6 +634,8 @@ class LittleConductor implements Game {
         this.strengthPads[id].position.set(r.x + r.w / 2, r.y + r.h / 2);
       }
     if (l.cells) this.hearing?.place(l.cells);
+    if (this.spots && l.spots)
+      this.spots.forEach((sp, i) => sp.position.set(l.spots![i].x + SPOT / 2, l.spots![i].y + SPOT / 2));
     this.listen.position.set(l.listen.x, l.listen.y);
     this.done.position.set(l.done.x, l.done.y);
     if (this.sign && l.sign && l.listener) {
@@ -555,20 +656,21 @@ class LittleConductor implements Game {
       for (const e of r.events) this.voice(e);
     }
     // Not at level 3: a turtle pulse there would point at an answer the sign may not ask for.
-    if (this.ready && !this.sign && this.score.pace === null && !this.invited) {
+    const waitingForPlayer = this.spots
+      ? castSize(this.score.cast) === 0 && !castPending(this.score) && !this.performing
+      : this.score.pace === null && !this.invited;
+    if (this.ready && !this.sign && waitingForPlayer) {
       this.idle += step;
       // An invitation, never a hint: the turtle pad pulses once after six quiet seconds.
       if (this.idle > 6) {
-        this.invited = true;
+        // An empty stage is invited again and again; the other levels invite only once.
+        if (this.spots) this.idle = 0;
+        else this.invited = true;
+        const target = this.spots?.[0] ?? this.pads.turtle;
+        const base = this.spots ? 1 : this.padScale;
         void this.ctx.tw
-          .to(
-            this.pads.turtle.scale,
-            { x: 1.08 * this.padScale, y: 1.08 * this.padScale },
-            { duration: 0.25 },
-          )
-          .then(() =>
-            this.ctx.tw.to(this.pads.turtle.scale, { x: this.padScale, y: this.padScale }, { duration: 0.3 }),
-          );
+          .to(target.scale, { x: 1.08 * base, y: 1.08 * base }, { duration: 0.25 })
+          .then(() => this.ctx.tw.to(target.scale, { x: base, y: base }, { duration: 0.3 }));
       }
     }
     if (this.blink > 0) this.blink = Math.max(0, this.blink - step);
@@ -590,7 +692,12 @@ class LittleConductor implements Game {
         p.y = base.y;
         return;
       }
-      if (this.plan.mode === 'dials') {
+      if (this.spots) {
+        // Level 6: only the friends who are in sway, to the one steady pace; the others stand still.
+        const here = this.score.cast[PART_IDS[i]];
+        p.critter.rotation = here ? Math.sin(Math.PI * t) * 0.06 : 0;
+        p.y = base.y - (here ? 10 * bounce : 0);
+      } else if (this.plan.mode === 'dials') {
         // Both dials at once: the pace sets how long the sway is and the strength how big it is.
         const k = this.score.strength === 'strong' ? 1 : 0.4;
         const slow = pace === 'turtle';
@@ -613,8 +720,10 @@ class LittleConductor implements Game {
 
   private voice(e: BeatEvent) {
     const g = (this.talking > 0 ? 0.5 : 1) * e.gain;
-    sfx.marimba(e.melody, 0.45 * g);
-    this.players[0].glow = 1;
+    if (e.lead) {
+      sfx.marimba(e.melody, 0.45 * g);
+      this.players[0].glow = 1;
+    }
     if (e.bass) {
       sfx.pluck(e.step === 0 ? 0 : 3, 0.3 * g);
       this.players[1].glow = 1;
@@ -662,6 +771,15 @@ class LittleConductor implements Game {
         );
       }
       this.done.alpha = this.requests.choice && !this.busy && !this.answering ? 1 : 0.4;
+      return;
+    }
+    if (this.spots) {
+      this.spots.forEach((sp, i) => {
+        const part = PART_IDS[i];
+        const waiting = s.pendingCast[part] !== null;
+        sp.draw(s.cast[part], waiting, waiting ? Math.max(0, s.played - s.beat) : 0, s.castHeard);
+      });
+      this.done.alpha = canFinish(s, this.ctx.level) || this.performing ? 1 : 0.4;
       return;
     }
     if (this.strengthPads && this.hearing) {
@@ -730,8 +848,15 @@ class LittleConductor implements Game {
     this.score = selectStrength(this.score, strength);
   }
 
+  /** Level 6: a tap on a friend's spotlight asks them in or out, on the next beat (the first tap starts the band at once). */
+  tapSpot(part: PartId) {
+    if (!this.ready || this.performing || this.finished) return;
+    this.pressed(this.spots![PART_IDS.indexOf(part)]);
+    this.score = toggleFriend(this.score, part);
+  }
+
   /** Touch-down feedback and the end of the invitation: the pad lifts and glows and its picture hops. */
-  private pressed(pad: Pad) {
+  private pressed(pad: Pad | Spot) {
     pad.glow.visible = true;
     void this.ctx.tw
       .to(pad.lift, { y: -10 }, { duration: 0.08 })
@@ -863,7 +988,13 @@ class LittleConductor implements Game {
     if (!canFinish(this.score, this.ctx.level)) {
       // Never counted: the dots still to hear blink and the pet says what Done is waiting for.
       this.blink = 1.2;
-      void this.speak(`little-conductor.${earlyDone(this.score, this.ctx.level)}` as const);
+      const why = earlyDone(this.score, this.ctx.level);
+      void this.speak(
+        (this.spots && why === 'hear-other'
+          ? 'little-conductor.hear-other-friends'
+          : `little-conductor.${why}`) as LineId,
+        { name: this.ctx.childName },
+      );
       return;
     }
     this.performing = true;
@@ -907,6 +1038,12 @@ class LittleConductor implements Game {
       const move = signBot(this.round, this.requests);
       if (!move) return null;
       return { tap: { on: move === 'check' ? this.done : this.pads[move] } };
+    }
+    if (this.spots) {
+      const move = friendsBot(this.score, this.ctx.level);
+      if (!move) return null;
+      if (move === 'done') return { tap: { on: this.done } };
+      return { tap: { on: this.spots[PART_IDS.indexOf(move.friend)] } };
     }
     if (this.strengthPads) {
       const dial = dialsBot(this.score, this.ctx.level);
