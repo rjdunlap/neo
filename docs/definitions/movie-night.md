@@ -99,6 +99,62 @@ Opened primary [NCAS Media Arts at a Glance](https://www.nationalartsstandards.o
 
 Current Painted Canyon audit passes with nine games, all bands, both catalog sides/pages/arrows, full-size targets and safe views. Existing canyon scenery/resident layout sweep and actual classic-land/age-home/root-Places launch/return pass. Input uses shared taps/drags with owned cancellation guards; playback uses the scene update clock, shell Help and one Bow finish. No new save format, stored creation, shared sound helper, imported media or navigation contract. Self-reviewed rules, footage/bounds, event conventions, shell/layout/cleanup and the complete diff; no fresh-context subagent review, per this worker’s explicit no-subagents instruction. Visual review corrected Bunny’s frame bounds and made the landing splash visible. [Implementation proof and limitations](../archive/VERIFICATION-2026-10-25.md#2026-10-25--movie-night-13-mm2); actual speech/effect distinction, touch comfort and child/coplayer observation remain open.
 
-## MM3 definition claim (2026-11-24)
+## Movie Night 4–5 (MM3)
 
-Branch `claude/define-movie-night-mm3`. Claims the docs-only definition of levels 4–5 (shot choice and keeping a surprise) in this file: the shot-fact model, briefs, enumerated accepted strips, the Story Steps overlap test, then the MM4 build line. Expected files: this file, `docs/deep-dives/subjects/making-media.md`, `docs/ready/next/`. No code, assets or saves.
+Defined 2026-11-24 from the [making-media study](../deep-dives/subjects/making-media.md#a-first-games-ladder-movie-night) levels 4–5 and the decisions above, branch `claude/define-movie-night-mm3`. **Definition only; nothing playable, registered or saved by this packet.** MM4 is the separate build with the gates below. Where this section is more specific than the study's table it wins: the study's `feeling` fact becomes a pictured action (`event:smiles`), so no feeling is inferred or judged (decision 7), and level 5 gains one distractor shot so it is not a retelling in order.
+
+Fun action: choose which filmed pictures go in a short show, and in what order, so a friend in the audience learns what they asked about. Learning purpose: a show tells an audience only what its pictures show, so what you include, leave out and put first decides what they know and when. No chronology puzzle, inferred feeling, taste or film-literacy attainment is scored. Same ID `movie-night`, same land and art subject; ranges become preschool 1–1, prek 1–3, school 2–5, defaults at the range minimum (so school opens at level 2 as today; levels 4–5 are reached by two smooth rounds). No new save field, creation storage, recorded audio, camera or microphone; the build draws the new footage with `Graphics` in the existing art style, with today's cast (Bunny, Bear, Duck).
+
+### Shots, facts and the tray
+
+The model is the study's, narrowed: a shot is a fixed authored picture of about two seconds, centered and large, with a finite list of facts (`who`, `where`, `thing`, `event`); facts are never read from pixels. Levels 4–5 shots are silent footage: each plays with a small pulse of its event glyph at its cue (0.8 s) and a soft tick at each shot change, so muted play shows everything. The audience's cheers, the pad-free reactions and spoken lines are the only sounds. All shots below are proposed footage for MM4 to draw; the picture must show the fact (the hat visible, the kite visible), checked in the visual review.
+
+| Card | Visible action | Facts |
+| --- | --- | --- |
+| Garden G0 | Bunny looks around the garden | `who:bunny`, `where:garden`, `event:looks` |
+| G1 | Bunny lifts a leaf and finds a hat | `who:bunny`, `where:garden`, `thing:hat`, `event:finds` |
+| G2 | Bunny smiles, holding the hat | `who:bunny`, `thing:hat`, `event:smiles` |
+| G3 | A cloud drifts over the garden | `where:garden`, `event:cloud-passes` |
+| Box B0 | A box arrives on Bear's doorstep | `who:bear`, `where:door`, `thing:box`, `event:arrives` |
+| B1 | Bunny pats the closed box | `who:bunny`, `where:door`, `thing:box`, `event:pats` |
+| B2 | Bunny opens the box and a kite pops up | `who:bunny`, `where:door`, `thing:box`, `thing:kite`, `event:opens` |
+| B3 | Bunny holds the kite up | `who:bunny`, `thing:kite`, `event:holds-kite` |
+| B4 | A butterfly flutters past the door | `where:door`, `event:flutters` |
+
+Level 4 uses G0–G3 (four cards, three slots); level 5 uses B0–B4 (five cards, four slots). Cards are scarce, unlike MM2's reusable pads: a card sits in the tray or in exactly one slot. Slots are numbered by pictured dots and read left to right, then down. Seeded RNG may vary only audience seating and harmless scenery, never card order in the tray, facts or accepted sets; the tray order is fixed as listed.
+
+### Briefs and exact acceptance
+
+A pictured request from the audience friend (the frog at level 4, the bear at level 5, matching MM2's request style; no reading) shows the facts as glyphs in order. The strip state is a tuple of card IDs or `empty`, one per slot, a card used at most once; a new round starts all empty. **Premiere is available only when every slot is full; Watch is free for any nonempty strip.** Requirements are checked in the listed order and the first unmet one is asked about.
+
+| Level / title | Requirements, in order | Accepted full strips |
+| --- | --- | --- |
+| 4 Pick the shots | R1 `event:finds` is known by the end; R2 `event:smiles` is known by the end; R3 the smile shot comes after the find shot | **6 of 24:** G0 G1 G2 · G1 G0 G2 · G1 G2 G0 · G1 G2 G3 · G1 G3 G2 · G3 G1 G2 |
+| 5 Keep the surprise | R1 `event:opens` is known; R2 a shot showing `thing:box` comes before the opening shot; R3 no shot showing `thing:kite` comes before the opening shot | **30 of 120:** every four-card strip that contains B2, has B0 or B1 earlier than B2, and has B3 (if present) later than B2. By the omitted card: omit B4 6, omit B3 16, omit B0 4, omit B1 4 |
+
+The counts and the level 4 list were enumerated by script when this packet was written; MM4's tests re-enumerate them. The third card in level 4 and the extra card in level 5 are free: the cloud and the butterfly are never wrong, and a strip may omit B3 and still pass, because the surprise needs the kite known, not shown twice. Both orders of the two setup shots are accepted wherever the rule allows (B0 and B1 before B2, in either order, and either one alone before B2).
+
+**Story Steps overlap test (decided here).** Story Steps asks for one telling of a story in its order. Movie Night passes only if (a) every accepted set holds more than one strip, (b) at least one accepted strip differs from the shots in footage time order by shot set (a cloud or butterfly in, a card out) and not only by order, and (c) the rejected strips fail because the audience would not learn the asked fact, learn it too early or never, not because "the story is in the wrong order". MM4 tests assert (a) and (b) on the enumerated lists. The strip in time order (G0 G1 G2, or B0 B1 B2 B3) is accepted but is not the only answer. Photo Safari overlap: no card asks her to find a named animal in a scene; the choice is of footage, never of a target.
+
+### Reactions, accounting and support
+
+Reactions for an unmet Premiere, first unmet requirement only, and the card pointed at is the named one:
+
+- Level 4: R1 missing: “Show us Bunny finding the hat” (point G1). R2 missing: “Show us Bunny smiling” (point G2). R3 unmet: “Show Bunny smiling after the hat is found” (point the smile card, in its slot).
+- Level 5: R1 missing: “Show us the box opening” (point B2). R2 unmet: “Show us the box before it opens” (point B0, the box arriving). R3 unmet: “Keep the kite a surprise until the box opens” (point the early kite card, B3, in its slot).
+
+Never claim the audience saw a shot that is not in the strip. Success: a warm cheer and “Now we know! Thank you.” (level 4) or “What a surprise!” (level 5); no score, rating or meter.
+
+Accounting is MM2's, unchanged: Watch, auditions, edits, Undo and Return never miss; the first unmet Premiere costs 0 misses and 0 hints, the second +1 miss and one automatic hint glowing the pointed-at card and the slot its repair would use, each further one +1 miss and no further hint charge; the counter never resets and only a completed, judged Premiere counts. Edits invalidate a prior successful Premiere; Bow alone calls `ctx.finish({ misses, hints })`, once.
+
+**Help (“Show me”) and the repair rule.** Levels 4–5 have no free first round, so Help is in both. Help counts one hint per useful repairing action. The repair is a pure function: take the accepted full strip nearest to the current state (the number of slots whose card differs, an empty slot counting as different; ties go to the first strip in the lists above), and set the first differing slot to that strip's card, taking the card from wherever it is (its old slot becomes empty). This lowers the distance by exactly one each time, preserves her other choices where the target allows, and reaches an accepted strip in at most four repairs; it then auditions that shot and never judges or finishes. Help on an accepted full strip repeats “Show your friends,” with no hint. Tests assert the distance strictly drops, that every accepted strip has distance 0, and that a repair never removes a card that the chosen target also holds in that slot.
+
+### Touch, orientation and checks
+
+Use shared `onTap` and `drag`: drag a card tray → slot, slot → slot (swapping with an occupant), or slot → tray; or tap a card then a slot, tap a filled slot to select it, with a pictured Return and Undo as in MM2. Touch-down lifts the card and plays its shot's one-second preview loop silently on the little screen so a card is never chosen blind. No-op or cancelled input makes no history; invalid or outside drops restore the prior state; palm rejection and cancellation as in MM2. Playback freezes editing; Stop and resize cancel without judging, as above.
+
+Every active target (cards, slots, the four round buttons Watch, Premiere/Bow, Undo, Return) is at least 100×100 logical units after scaling with 16 units between controls, never shrunk. The new tiers need more on screen than MM2 (five tray cards and four slots), so MM4 must extend `layout.ts` and pass `upright.test.ts` at every phone view at levels 4 and 5, sideways, and upright tablet; if five cards and four slots cannot fit with the request, the little screen, the guide clearance and the buttons, put the tray in two rows and shorten the little screen, and checkpoint for a placement decision rather than shrink a target. Not verified here: no layout was tried for this definition.
+
+Draft voice for MM4's `voice.ts`: instruction4 “Pick three pictures for the show. Show Frog how Bunny found the hat, then smile.” (to be reworded as spoken, no reading needed); instruction5 “Keep the surprise. Show the box before it opens.” Reactions as above, plus “Pick a picture,” “Show our friends,” “Put it back,” “Undo” and “Show me.” Future level-scoped how-to goal, “Pick pictures so your friends learn what they asked.” Level 4: pick three cards, Watch, Premiere, Bow; level 5: four cards, the box before it opens. Future `autotouch()` through public input with the ghost finger: level 4 drag G0, G1, G2 in turn into slots 1–3 → Premiere → Bow; level 5 drag B0, B1, B2, B3 in turn into slots 1–4 → Premiere → Bow; separate regression paths for a wrong Premiere twice (hint glow), Help repairs, Undo, Stop and swap.
+
+MM4 build tier: new interaction (the fact model and cards), so typecheck, unit tests (re-enumerate 24/6 and 120/30, first-unmet targets, repair distance, accounting 0/1/2 and 0/1/1, the overlap assertions, cancel/finish guards), one filtered scripted play of levels 4 and 5 covering a wrong Premiere (twice for the hint), Help to completion and a clean ghost finger, one portrait phone screenshot at level 5, and `npm run build` because shared content changes. Person and device gates stay open and parked: real speech, whether the soft ticks and silent footage read clearly, and any child or co-player observation. No film-comprehension, transfer or age claim is made; the study's evidence gap stands.
