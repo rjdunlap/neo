@@ -4,9 +4,14 @@ import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 import {
   answerOf,
+  drawLineup,
+  drawLineups,
   drawPair,
   LEVELS,
   minStepAt,
+  orderChoicesNeeded,
+  orderDirection,
+  orderToDrag,
   sameFlags,
   verdictOf,
   verdictToTap,
@@ -25,6 +30,7 @@ import {
   soundSetFor,
   STAGE_OF,
 } from './logic';
+import { PITCH_COLORS } from '../../audio/notes';
 import { STAGES } from './stages';
 import { placeAfterMiss, planFor as planOf, tunesOf as tunesAt } from './logic';
 import { stepHz } from '../../audio/notes';
@@ -427,8 +433,8 @@ describe('Jelly Drums Same or different? (level 12)', () => {
   it('is the next free level: five pairs of three-note songs, in pre-K and school after Backwards only', () => {
     expect(plan.mode).toBe('compare');
     expect([plan.goal, plan.length]).toEqual([5, 3]);
-    expect(rangeFor(LEVELS, 'prek').order?.slice(-2)).toEqual([11, 12]);
-    expect(rangeFor(LEVELS, 'school').order?.slice(-2)).toEqual([11, 12]);
+    expect(rangeFor(LEVELS, 'prek').order?.slice(-3, -1)).toEqual([11, 12]);
+    expect(rangeFor(LEVELS, 'school').order?.slice(-3, -1)).toEqual([11, 12]);
     for (const band of ['lap', 'toddler', 'preschool'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(12);
   });
@@ -493,6 +499,88 @@ describe('Jelly Drums Same or different? (level 12)', () => {
   it('every voice line the level speaks exists, and its slots are filled', () => {
     for (const id of ['jelly.compare', 'jelly.song.n', 'jelly.compare.ask'] as const) {
       expect(SCRIPT[id], id).toBeTruthy();
+    }
+  });
+});
+
+describe('Jelly Drums Lowest to highest (level 13)', () => {
+  const plan = PLANS[12];
+
+  it('is level 13 (three line-ups of four), in pre-K and school after Same or different? only', () => {
+    expect(plan.mode).toBe('order');
+    expect([plan.goal, plan.length]).toEqual([3, 4]);
+    expect(rangeFor(LEVELS, 'prek').order?.slice(-3)).toEqual([11, 12, 13]);
+    expect(rangeFor(LEVELS, 'school').order?.slice(-3)).toEqual([11, 12, 13]);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(13);
+  });
+
+  it('for any shuffle, the pitch order is unique, all five colors appear with one sleeping, and it never starts sorted', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = drawLineups(new Rng(seed), plan.goal, plan.length);
+      expect(round).toHaveLength(plan.goal);
+      for (const l of round) {
+        const pitches = l.jellies.map((j) => j.pitch);
+        expect(new Set(pitches).size).toBe(plan.length);
+        for (const p of pitches) {
+          expect(p).toBeGreaterThanOrEqual(0);
+          expect(p).toBeLessThan(JELLIES);
+        }
+        // Never already sorted lowest-to-highest.
+        expect(pitches.every((p, k) => k === 0 || p > pitches[k - 1])).toBe(false);
+        // Active colors + sleeper are all 5 distinct colors.
+        const colors = l.jellies.map((j) => j.color);
+        expect([...new Set([...colors, l.sleeper])].sort()).toEqual([...PITCH_COLORS].sort());
+        // Sorted indices strictly increase in pitch.
+        const sortedPitches = l.byPitch.map((i) => l.jellies[i].pitch);
+        for (let k = 1; k < sortedPitches.length; k++)
+          expect(sortedPitches[k]).toBeGreaterThan(sortedPitches[k - 1]);
+      }
+    }
+  });
+
+  it('colors and positions never predict pitch across a round', () => {
+    const posRanks = Array.from({ length: 4 }, () => new Set<number>());
+    const colorRanks = new Map<string, Set<number>>();
+    for (const c of PITCH_COLORS) colorRanks.set(c, new Set<number>());
+
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = drawLineups(new Rng(seed), plan.goal, plan.length);
+      for (const l of round) {
+        // Not all jellies wear their default pitch color.
+        expect(l.jellies.every((j) => j.color === PITCH_COLORS[j.pitch])).toBe(false);
+        l.byPitch.forEach((pos, rank) => {
+          posRanks[pos].add(rank);
+          colorRanks.get(l.jellies[pos].color)!.add(rank);
+        });
+      }
+    }
+    for (let pos = 0; pos < 4; pos++) expect(posRanks[pos].size).toBe(4);
+    for (const c of PITCH_COLORS) expect(colorRanks.get(c)!.size).toBe(4);
+  });
+
+  it('always gives a direction on a wrong choice and finishes a four-jelly line-up in three choices', () => {
+    expect(orderChoicesNeeded(4)).toBe(3);
+    const l = drawLineup(new Rng(17), 4);
+    for (let step = 0; step < 3; step++) {
+      const rightIdx = orderToDrag('turn', l, step, 4)!;
+      expect(rightIdx).toBe(l.byPitch[step]);
+      const rightPitch = l.jellies[rightIdx].pitch;
+      expect(orderDirection(rightPitch, rightPitch)).toBeNull();
+      for (let idx = 0; idx < 4; idx++) {
+        if (idx === rightIdx) continue;
+        expect(orderDirection(l.jellies[idx].pitch, rightPitch)).toMatch(/^(lower|higher)$/);
+      }
+    }
+    // After 3 choices, only 1 jelly remains so the bot stops and the line-up finishes.
+    expect(orderToDrag('turn', l, 3, 4)).toBeNull();
+    expect(orderToDrag('listen', l, 0, 4)).toBeNull();
+    expect(jellyToTap('order', 'turn', [], 0, 0)).toBeNull();
+  });
+
+  it('every voice line level 13 speaks exists', () => {
+    for (const id of ['jelly.order', 'jelly.order.next', 'jelly.order.dir'] as const) {
+      expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
     }
   });
 });
