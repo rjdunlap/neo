@@ -2,15 +2,16 @@
 
 <!-- generated: from src/games/little-conductor; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `little-conductor` · **Land:** Music Mountain · **Ages:** toddler–pre-K · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `little-conductor` · **Land:** Music Mountain · **Ages:** toddler–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** listening, tempo, cause and effect, following a picture
 
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1–2 |
-| preschool | 1–4 |
-| pre-K | 2–4 |
+| preschool | 1–5 |
+| pre-K | 2–5 |
+| school | 5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +19,7 @@
 | 2 | Two ways to play: hear the tune slow and fast, then finish with the one she likes |
 | 3 | Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check |
 | 4 | Soft or loud: hear the same tune on a small drum and a big drum, then finish with the one she likes |
+| 5 | Two ways at once: slow or fast, soft or loud; hear the four ways and finish with the one she likes |
 
 <!-- end generated -->
 
@@ -32,5 +34,7 @@
 Upright on a phone (levels 1–3): `conductorLayout` hangs the pads up from the bottom edge above the pet corner and marks; level 3's sign sits in a right-hand column beside a narrower bandstand (friends spacing 140) since 768 wide has no room under it. No rule or accounting change; the layout test covers four upright views, and `CONDUCTOR_UPRIGHT=1 BROWSER_SUITE=conductor` plays level 3 at 390 × 844.
 
 Level 4, soft or loud (preschool and pre-K, built 2026-11-25): the same two pad slots hold a small drum (soft) and a big drum (loud), and both play at one steady 75 beats a minute, so only how strongly the band plays differs. `STRENGTH_GAIN` (gentle 0.45, strong 1, the gain every other level already plays at, so never louder than the device volume allows) multiplies every voice; `advance(…, 'strength')` stamps each beat with its `bpm` and `gain`, and a rule test proves pitch, order, bass, drum and timing are identical on both pads. The heard gate is level 2's (both heard whole, then the chosen one whole since she chose it), never a miss or a hint, and the friends sway in small or big bounces. No save change.
+
+Level 5, two ways at once (preschool, pre-K and school, built 2026-11-25): two dials at once, the turtle and rabbit for pace and a small and a big drum for strength, as four pads in one row (130 units each) with a four-cell hearing mark under them, one cell for each of the four ways, each showing its animal and drum, a check once heard whole and four dots on the way playing now. Either dial changes on the next beat, and the two can wait together; the first tap on the strength dial starts the band on the turtle. `advance(…, 'dials')` stamps each beat with the pace's bpm and `STRENGTH_GAIN` for the strength, and a rule test proves all four ways play the same notes in the same order for all six tunes. The heard gate follows the latest change of either dial: the way she is in must be heard whole since the last change, and at least two ways (`COMPARE_AT_LEAST`) must have been heard whole, so there is always something to compare; hearing all four is never required, and nothing is a miss or a hint. This is the first level for the school band, which now lists the game with a one-level range. Ghost finger: the rabbit, then the soft drum, then Done.
 
 A researched ladder for what comes after level 4 (two dials, cues, request levels) and the upright layout that comes first is in the [deep dive](../deep-dives/little-conductor.md).

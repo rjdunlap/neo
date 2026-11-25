@@ -20,6 +20,12 @@ import {
   advance,
   BEATS,
   botMove,
+  CELL_H,
+  CELL_W,
+  COMBO_IDS,
+  comboOf,
+  DIAL_PAD,
+  dialsBot,
   canFinish,
   choose,
   conductorLayout,
@@ -32,10 +38,12 @@ import {
   newRequests,
   newScore,
   PACE_IDS,
+  STRENGTH_IDS,
   STRENGTH_OF,
   PAD,
   planFor,
   select,
+  selectStrength,
   SIGN,
   signBot,
   submit,
@@ -43,6 +51,7 @@ import {
   type ConductorLayout,
   type PaceId,
   type Plan,
+  type StrengthId,
   type Requests,
   type Round,
   type Score,
@@ -88,8 +97,10 @@ function paceArt(pace: PaceId): Container {
 
 /** Level 4's pictures: the same drum, small for gentle and big for strong, so the size says the strength. */
 function drumArt(pace: PaceId): Container {
+  return drumPicture(STRENGTH_OF[pace] === 'strong');
+}
+function drumPicture(big: boolean): Container {
   const c = new Container();
-  const big = STRENGTH_OF[pace] === 'strong';
   const g = prop('drum');
   g.scale.set(big ? 1.5 : 0.75);
   g.y = big ? -22 : 4;
@@ -166,12 +177,18 @@ class Pad extends Container {
   readonly marks = new Graphics();
   readonly picture: Container;
   readonly lift = new Container();
+  /** Level 5's strength pads: the pad's slot (`pace`) says which drum, and its colours and word follow the strength. */
+  readonly strength: boolean;
+  /** The four beat marks under the pad; level 5 turns them off. */
+  marksOn = true;
   constructor(
     readonly pace: PaceId,
     mode: Plan['mode'],
     onPress: () => void,
+    strength = false,
   ) {
     super();
+    this.strength = strength;
     this.glow
       .roundRect(-PAD / 2 - 18, -PAD / 2 - 18, PAD + 36, PAD + 36, 40)
       .fill({ color: 0xfff3a0, alpha: 0.9 });
@@ -180,8 +197,8 @@ class Pad extends Container {
       .roundRect(-PAD / 2 - 22, -PAD / 2 - 22, PAD + 44, PAD + 44, 44)
       .fill({ color: 0xffe066, alpha: 0.95 });
     this.hintGlow.visible = false;
-    this.picture = padArt(pace, mode);
-    const word = label(padWord(pace, mode), 24, ink, '500');
+    this.picture = strength ? drumArt(pace) : padArt(pace, mode);
+    const word = label(strength ? padWord(pace, 'strength') : padWord(pace, mode), 24, ink, '500');
     word.y = PAD / 2 - 24;
     this.lift.addChild(this.frame, this.picture, word, this.ring);
     this.addChild(this.hintGlow, this.glow, this.lift, this.marks);
@@ -198,7 +215,13 @@ class Pad extends Container {
     heardEver: boolean,
     showEver: boolean,
   ) {
-    const sw = this.pace === 'turtle' ? swatch.green : swatch.orange;
+    const sw = this.strength
+      ? this.pace === 'turtle'
+        ? swatch.blue
+        : swatch.red
+      : this.pace === 'turtle'
+        ? swatch.green
+        : swatch.orange;
     // The playing pad has a thick dark frame and the other dims, so the difference never rests on colour alone.
     this.frame
       .clear()
@@ -223,7 +246,8 @@ class Pad extends Container {
         .stroke({ width: 2, color: ink });
     }
     this.marks.clear();
-    for (let i = 0; i < BEATS; i++) {
+    // Level 5 shows its hearing in the four-cell mark instead, one cell for each way to play.
+    for (let i = 0; i < (this.marksOn ? BEATS : 0); i++) {
       const on = i < lit;
       const x = -54 + i * 36;
       if (on)
@@ -243,6 +267,57 @@ class Pad extends Container {
         .lineTo(PAD / 2 + 20, PAD / 2 + 40)
         .lineTo(PAD / 2 + 38, PAD / 2 + 16)
         .stroke({ width: 7, color: swatch.green.line, cap: 'round', join: 'round' });
+  }
+}
+
+/** Level 5's four-cell hearing mark: a cell for each way to play, named by its animal and drum. */
+class HearingMarks extends Container {
+  private readonly cells: Graphics[] = [];
+  constructor() {
+    super();
+    this.eventMode = 'none';
+    for (const combo of COMBO_IDS) {
+      const [pace, strength] = combo.split('-') as [PaceId, StrengthId];
+      const cell = new Container();
+      const frame = new Graphics();
+      const animal = paceArt(pace);
+      animal.scale.set(0.3);
+      animal.position.set(-24, 2);
+      const drum = drumPicture(strength === 'strong');
+      drum.scale.set(0.42);
+      drum.position.set(26, 4);
+      cell.addChild(frame, animal, drum);
+      this.cells.push(frame);
+      this.addChild(cell);
+    }
+  }
+
+  /** Puts each cell where the layout says (its centre). */
+  place(rects: { x: number; y: number; w: number; h: number }[]) {
+    rects.forEach((r, i) => this.children[i].position.set(r.x + r.w / 2, r.y + r.h / 2));
+  }
+
+  /** A check on each way heard whole; a thick frame and four dots on the way playing now. */
+  draw(s: Score) {
+    COMBO_IDS.forEach((combo, i) => {
+      const g = this.cells[i];
+      const current = s.pace !== null && comboOf(s.pace, s.strength) === combo;
+      const ever = s.comboEver[combo];
+      g.clear()
+        .roundRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 16)
+        .fill(ever ? swatch.green.light : 0xffffff)
+        .stroke({ width: current ? 8 : 3, color: current ? ink : 0xb9c6d1 });
+      if (ever)
+        g.moveTo(CELL_W / 2 - 30, -CELL_H / 2 + 14)
+          .lineTo(CELL_W / 2 - 22, -CELL_H / 2 + 22)
+          .lineTo(CELL_W / 2 - 8, -CELL_H / 2 + 6)
+          .stroke({ width: 5, color: swatch.green.line, cap: 'round', join: 'round' });
+      if (current)
+        for (let b = 0; b < BEATS; b++)
+          g.circle(-27 + b * 18, CELL_H / 2 - 14, 5.5)
+            .fill(b < s.comboHeard[combo] ? swatch.green.fill : 0xffffff)
+            .stroke({ width: 2, color: ink });
+    });
   }
 }
 
@@ -299,6 +374,11 @@ class LittleConductor implements Game {
   performing = false;
   finished = false;
   readonly pads: Record<PaceId, Pad>;
+  /** Level 5's strength pads, drawn beside the pace pads. */
+  readonly strengthPads?: Record<StrengthId, Pad>;
+  private readonly hearing?: HearingMarks;
+  /** Level 5 draws its four pads at 150 units; the others at the full 180. */
+  private readonly padScale: number;
   readonly listen: RoundButton;
   readonly done: RoundButton;
   readonly players: Player[];
@@ -350,6 +430,18 @@ class LittleConductor implements Game {
       turtle: new Pad('turtle', this.plan.mode, () => this.tapPad('turtle')),
       rabbit: new Pad('rabbit', this.plan.mode, () => this.tapPad('rabbit')),
     };
+    this.padScale = this.plan.mode === 'dials' ? DIAL_PAD / PAD : 1;
+    if (this.plan.mode === 'dials') {
+      this.strengthPads = {
+        gentle: new Pad('turtle', this.plan.mode, () => this.tapStrength('gentle'), true),
+        strong: new Pad('rabbit', this.plan.mode, () => this.tapStrength('strong'), true),
+      };
+      this.hearing = new HearingMarks();
+      for (const pad of [...Object.values(this.pads), ...Object.values(this.strengthPads)]) {
+        pad.marksOn = false;
+        pad.scale.set(this.padScale);
+      }
+    }
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 60, () =>
       this.tapListen(),
     );
@@ -363,6 +455,8 @@ class LittleConductor implements Game {
       this.listen,
       this.done,
     );
+    if (this.strengthPads && this.hearing)
+      ctx.stage.addChild(this.strengthPads.gentle, this.strengthPads.strong, this.hearing);
     if (this.plan.mode === 'sign') {
       this.listener = new Critter(CRITTERS[this.round.listener]);
       this.listener.scale.set(0.5);
@@ -391,7 +485,9 @@ class LittleConductor implements Game {
           ? 'little-conductor.instruct-both'
           : this.plan.mode === 'strength'
             ? 'little-conductor.instruct-strength'
-            : 'little-conductor.instruct-sign',
+            : this.plan.mode === 'dials'
+              ? 'little-conductor.instruct-dials'
+              : 'little-conductor.instruct-sign',
       { name: this.ctx.childName },
     );
     if (this.finished) return;
@@ -433,6 +529,12 @@ class LittleConductor implements Game {
       const r = l.pads[pace];
       this.pads[pace].position.set(r.x + r.w / 2, r.y + r.h / 2);
     }
+    if (this.strengthPads && l.strengths)
+      for (const id of STRENGTH_IDS) {
+        const r = l.strengths[id];
+        this.strengthPads[id].position.set(r.x + r.w / 2, r.y + r.h / 2);
+      }
+    if (l.cells) this.hearing?.place(l.cells);
     this.listen.position.set(l.listen.x, l.listen.y);
     this.done.position.set(l.done.x, l.done.y);
     if (this.sign && l.sign && l.listener) {
@@ -459,8 +561,14 @@ class LittleConductor implements Game {
       if (this.idle > 6) {
         this.invited = true;
         void this.ctx.tw
-          .to(this.pads.turtle.scale, { x: 1.08, y: 1.08 }, { duration: 0.25 })
-          .then(() => this.ctx.tw.to(this.pads.turtle.scale, { x: 1, y: 1 }, { duration: 0.3 }));
+          .to(
+            this.pads.turtle.scale,
+            { x: 1.08 * this.padScale, y: 1.08 * this.padScale },
+            { duration: 0.25 },
+          )
+          .then(() =>
+            this.ctx.tw.to(this.pads.turtle.scale, { x: this.padScale, y: this.padScale }, { duration: 0.3 }),
+          );
       }
     }
     if (this.blink > 0) this.blink = Math.max(0, this.blink - step);
@@ -482,7 +590,13 @@ class LittleConductor implements Game {
         p.y = base.y;
         return;
       }
-      if (this.plan.mode === 'strength') {
+      if (this.plan.mode === 'dials') {
+        // Both dials at once: the pace sets how long the sway is and the strength how big it is.
+        const k = this.score.strength === 'strong' ? 1 : 0.4;
+        const slow = pace === 'turtle';
+        p.critter.rotation = Math.sin(Math.PI * t) * (slow ? 0.1 : 0.05) * k;
+        p.y = base.y - (slow ? 6 : 16) * k * bounce;
+      } else if (this.plan.mode === 'strength') {
         // One steady pace: only the size of the sway says how strongly they play.
         const strong = STRENGTH_OF[pace] === 'strong';
         p.critter.rotation = Math.sin(Math.PI * t) * (strong ? 0.08 : 0.03);
@@ -550,6 +664,37 @@ class LittleConductor implements Game {
       this.done.alpha = this.requests.choice && !this.busy && !this.answering ? 1 : 0.4;
       return;
     }
+    if (this.strengthPads && this.hearing) {
+      for (const pace of PACE_IDS) {
+        const pad = this.pads[pace];
+        const pending = s.pending === pace;
+        pad.draw(
+          s.pace === pace,
+          pending,
+          pending ? Math.max(0, s.played - s.beat) : 0,
+          0,
+          false,
+          false,
+          false,
+        );
+      }
+      for (const id of STRENGTH_IDS) {
+        const pad = this.strengthPads[id];
+        const pending = s.pendingStrength === id;
+        pad.draw(
+          s.pace !== null && s.strength === id,
+          pending,
+          pending ? Math.max(0, s.played - s.beat) : 0,
+          0,
+          false,
+          false,
+          false,
+        );
+      }
+      this.hearing.draw(s);
+      this.done.alpha = canFinish(s, this.ctx.level) || this.performing ? 1 : 0.4;
+      return;
+    }
     for (const pace of PACE_IDS) {
       const pad = this.pads[pace];
       const pending = s.pending === pace;
@@ -568,8 +713,25 @@ class LittleConductor implements Game {
 
   tapPad(pace: PaceId) {
     if (!this.ready || this.performing || this.finished || this.answering) return;
-    const pad = this.pads[pace];
-    // Touch-down feedback: the pad lifts and glows and its animal hops.
+    this.pressed(this.pads[pace]);
+    if (this.sign) {
+      // Level 3: the tap is her pick, and the band auditions the phrase at that pace once. Never counted.
+      this.requests = choose(this.requests, pace);
+      this.play(pace, false);
+      return;
+    }
+    this.score = select(this.score, pace);
+  }
+
+  /** Level 5: a tap on the strength dial. */
+  tapStrength(strength: StrengthId) {
+    if (!this.ready || this.performing || this.finished) return;
+    this.pressed(this.strengthPads![strength]);
+    this.score = selectStrength(this.score, strength);
+  }
+
+  /** Touch-down feedback and the end of the invitation: the pad lifts and glows and its picture hops. */
+  private pressed(pad: Pad) {
     pad.glow.visible = true;
     void this.ctx.tw
       .to(pad.lift, { y: -10 }, { duration: 0.08 })
@@ -583,13 +745,6 @@ class LittleConductor implements Game {
     sfx.tick();
     this.idle = 0;
     this.invited = true;
-    if (this.sign) {
-      // Level 3: the tap is her pick, and the band auditions the phrase at that pace once. Never counted.
-      this.requests = choose(this.requests, pace);
-      this.play(pace, false);
-      return;
-    }
-    this.score = select(this.score, pace);
   }
 
   tapListen() {
@@ -753,6 +908,12 @@ class LittleConductor implements Game {
       if (!move) return null;
       return { tap: { on: move === 'check' ? this.done : this.pads[move] } };
     }
+    if (this.strengthPads) {
+      const dial = dialsBot(this.score, this.ctx.level);
+      if (!dial) return null;
+      if (dial === 'done') return { tap: { on: this.done } };
+      return { tap: { on: dial.dial === 'pace' ? this.pads[dial.id] : this.strengthPads[dial.id] } };
+    }
     const move = botMove(this.score, this.ctx.level);
     if (!move) return null;
     if (move === 'done') return { tap: { on: this.done } };
@@ -825,7 +986,7 @@ export const littleConductor: GameModule = {
   upright: true,
   challenge: 'music',
   skills: ['listening', 'tempo', 'cause and effect', 'following a picture'],
-  bands: ['toddler', 'preschool', 'prek'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   // The band is the music; the island's loop stays silent so it never competes.
