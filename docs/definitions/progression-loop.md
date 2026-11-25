@@ -42,7 +42,7 @@ Grown-ups come first because they play now, on phones, through [Today's six](tod
 1. **Rules** (this file and the rule wording). Docs only.
 2. **Shells for grown-ups.** Defined below.
 3. **Stamps**: named goals for the grown-up games on the phone, each paying a one-time shell bonus.
-4. **The shop**: colours and wearables for the player's own friend, with the friend shown on the phone's six page.
+4. **The shop**: colours and wearables for the player's own friend, shown on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
 5. **Share line** on Today's six: a copyable line of the day's six results.
 6. **Lantern Lodge** after the visual identity is chosen; then the `school` band.
 
