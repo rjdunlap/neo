@@ -3,7 +3,7 @@ import { computeView, NO_INSETS, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { AGAIN_RADIUS, HALF_WIDTHS, jellyHit, jellyLayout } from './layout';
+import { AGAIN_RADIUS, CHOICE_RADIUS, HALF_WIDTHS, jellyHit, jellyLayout } from './layout';
 import { LEVELS, planFor } from './logic';
 
 /**
@@ -21,9 +21,9 @@ const jellyTargets = (v: View): Target[] => {
   return HALF_WIDTHS.map((_, i) => ({ what: `jelly ${i + 1}`, ...jellyHit(l, i) }));
 };
 
-it('covers levels 1 to 11: free play, tunes and the wake level', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(new Set(['free', 'echo', 'wake']));
+it('covers levels 1 to 12: free play, tunes, the wake level and the pair level', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(new Set(['free', 'echo', 'wake', 'compare']));
 });
 
 describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
@@ -34,13 +34,25 @@ describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
     (level) => {
       const mode = planFor(level).mode;
       const targets: Target[] = mode === 'wake' ? [] : jellyTargets(v);
-      if (mode === 'echo') targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
+      if (mode === 'echo' || mode === 'compare')
+        targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
+      if (mode === 'compare') {
+        targets.push(
+          square('same', l.choices[0], CHOICE_RADIUS * 2),
+          square('different', l.choices[1], CHOICE_RADIUS * 2),
+        );
+      }
       expect(uprightProblems(v, targets), `level ${level}`).toEqual([]);
     },
   );
 
   it('everything she touches is in the lower half, the jellies above the button', () => {
-    const t = [...jellyTargets(v), square('listen again', l.again, AGAIN_RADIUS * 2)];
+    const t = [
+      ...jellyTargets(v),
+      square('listen again', l.again, AGAIN_RADIUS * 2),
+      square('same', l.choices[0], CHOICE_RADIUS * 2),
+      square('different', l.choices[1], CHOICE_RADIUS * 2),
+    ];
     for (const x of t) expect(x.y, x.what).toBeGreaterThan(v.h / 2);
     expect(v.h - l.again.y).toBeLessThanOrEqual(220);
     for (const x of jellyTargets(v)) expect(x.y + x.h / 2, x.what).toBeLessThan(l.again.y - AGAIN_RADIUS);

@@ -11,8 +11,8 @@
 | lap | 10, 1, 2, 3 |
 | toddler | 1–3 |
 | preschool | 4–7 |
-| pre-K | 5, 6, 7, 8, 9, 11 |
-| school | 8, 9, 11 |
+| pre-K | 5, 6, 7, 8, 9, 11, 12 |
+| school | 8, 9, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,12 +27,13 @@
 | 9 | Copy a 5-note tune, 5 tunes |
 | 10 | One big jelly, then friends wake, any touch sings, 24 notes |
 | 11 | Copy a 3-note tune backwards, 5 tunes (the last is 4 notes) |
+| 12 | Are two 3-note songs the same or different? 5 pairs |
 
 <!-- end generated -->
 
 **Starts as:** free play on five notes (lap starts with one big jelly that wakes its friends)
 
-**Grows into:** copy a tune of 2 to 5 notes, then play a tune backwards
+**Grows into:** copy a tune of 2 to 5 notes, play a tune backwards, then say whether two songs are the same or different
 
 ## Design notes
 
@@ -41,6 +42,8 @@ Its jellies and hub stand read their colours from `pitchColor` in `src/audio/not
 Free play on five notes, then copying tunes of two to five notes. In the echo levels a yellow listen-again button (a music note, above the stage) replays the whole tune from the first note whenever it is her turn (slowly, with the first jelly glowing, once she has needed help); it counts no miss or hint, and is hidden in couch play. On four- and five-note tunes a wrong jelly counts one miss, replays the tune and lets her carry on from her place (`placeAfterMiss`, `RESUME_FROM_LENGTH = 4` in `logic.ts`) rather than from the first note; a row of dots above the jellies ticks the notes she has right, listen again keeps her place, and the help glow goes to the jelly she should tap next. Two- and three-note tunes still restart. Level 10, *One big jelly* (lap only, placed first with `order`), is the easiest way in: one enormous red low jelly stands alone and a touch anywhere on the stage sings the nearest awake one; the little blue high jelly wakes after 6 touches, then the others at 10, 14 and 18, and 24 touches finish, with no miss and no hint. The island's background loop is silenced here (the jellies still bob to its quiet clock), so nothing competes with the notes she plays. In the echo levels (4–9 and 11) a round never plays the same tune twice, and tunes have shapes: a staircase up or down, a hop or a wiggle, and (levels 5–6 Hot Cross Buns; level 9 also Mary Had a Little Lamb and Jingle Bells) songs whose title is spoken first; it never draws the kind it just played. In free play (levels 1–3) after 8 seconds without a touch the last-touched jelly wiggles and glows; nothing is counted. Free play also names a jelly now and then ("Red! Big and low.": at most one in eight taps, never the same jelly twice running, never over a fan's answer or the finale) and, once a round, after she has played both the biggest and the littlest, says "Big jellies sing low. Little jellies sing high." At level 2 every fourth note a front-row fan (duck, bunny, cat, pig in turn) hops and answers in its own voice with a note in the jelly's color; at level 3 three neighbouring jellies in order, up or down, send a rainbow star burst across the jellies and twinkle the garland (a run counts once). None of this counts a miss, and level 1 stays plain.
 
 **Backwards (level 11).** Pre-K 5–9 and 11 and school 8, 9 and 11 (placed with `order`). The plan is `{mode:'echo', goal:5, length:3, reverse:true, lastLength:4}`: four three-note tunes, then one of four, each played back last note first. `answerOf` gives the notes she must tap (the tune reversed), `tuneLength` the round's length and `twistsOf` the level's twist flags in `logic.ts`; a tune that reads the same backwards is never drawn. A purple rewind arrow sits beside the yellow listen-again button; the lines are `jelly.echo.back` (instruction) and `jelly.back`. A wrong jelly counts one miss: the tune replays, then plays the answer backwards slowly with each jelly glowing; two misses glow the next jelly to tap. Three-note tunes restart after a miss and the four-note one keeps her place (the resume rule above). Browser check: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly`, `fingerdemo` with `FINGER_LEVELS=11`.
+
+**Same or different? (level 12).** Pre-K and school, last in the order after Backwards (`[… 9, 11, 12]`). The plan is `{mode:'compare', goal:5, length:3}`: five pairs of three-note songs. The voice names each ("Song 1!", then "Song 2!") while its jellies light and sing, then asks "Is song 2 the same as song 1?"; she taps one of two big picture buttons (60-unit radius, level with the listen-again button): two matching dots for same, a round and a square dot for different. `sameFlags` makes two or three of the five pairs the same, shuffled; `drawPair` makes a different pair by changing exactly one note to a jelly at least two steps away in the first two pairs and at least one step later (`minStepAt`), played changed-tune-first or second at random, and never reuses a base tune in a round. A wrong button is a miss: both songs replay slowly and the changed jelly glows hard in each; the second miss on a pair also counts a hint and rings the right button. The listen-again button replays both songs free. A tap on a jelly while listening is only music. The ghost finger uses `verdictToTap`. The new voice lines (`jelly.compare`, `jelly.song.n`, `jelly.compare.ask`) carry `{a}`, `{b}` or `{n}` slots, so they stay on device speech and need no rendered clip; fixed-wording clips are a later voice pass.
 
 **What the guide repeats.** In the copy-the-tune levels "Listen!" is an instruction (`ctx.instruct`) while the jellies play, and "Your turn!" is said again as an instruction after Listen again and after a wrong note's replay, so the guide and caption no longer keep "Your turn!" while the tune plays. Song titles, names and replies stay `say`.
 

@@ -5,6 +5,10 @@ export const VOICE = {
   'jelly.echo': ['Listen to the jellies, then play the same tune!'],
   'jelly.echo.back': ['Listen to the jellies, then play the tune backwards!'],
   'jelly.back': ['Now play it backwards: the last jelly first!'],
+  // Level 12 pairs: the slotted lines stay on device speech until a clip pass renders fixed wording.
+  'jelly.compare': ['Listen to song {a} and song {b}!'],
+  'jelly.song.n': ['Song {n}!'],
+  'jelly.compare.ask': ['Is song {b} the same as song {a}?'],
   'jelly.song.hot-cross-buns': ['This one is Hot Cross Buns!'],
   'jelly.song.mary': ['This one is Mary Had a Little Lamb!'],
   'jelly.song.jingle-bells': ['This one is from Jingle Bells!'],

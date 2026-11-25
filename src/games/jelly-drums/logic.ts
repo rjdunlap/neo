@@ -6,8 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake';
-  /** Notes to play (free, wake) or tunes to copy (echo). */
+  mode: 'free' | 'echo' | 'wake' | 'compare';
+  /** Notes to play (free, wake), tunes to copy (echo) or pairs of tunes to judge (compare). */
   goal: number;
   /** Tune length (echo). */
   length: number;
@@ -33,6 +33,8 @@ export const PLANS: JellyPlan[] = [
   { mode: 'wake', goal: 24, length: 0 },
   // Level 11, "Backwards": four tunes of three notes, then one of four, each played back last note first.
   { mode: 'echo', goal: 5, length: 3, reverse: true, lastLength: 4 },
+  // Level 12, "Same or different?": five pairs of three-note tunes; she says whether the two are the same song.
+  { mode: 'compare', goal: 5, length: 3 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -40,9 +42,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 4, max: 7 },
-  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11) follows level 9 (see `order`).
-  prek: { min: 5, max: 11, order: [5, 6, 7, 8, 9, 11] },
-  school: { min: 8, max: 11, order: [8, 9, 11] },
+  // Level 10 (one big jelly) is lap's, so the older bands skip it: Backwards (11) follows level 9 and Same or different? (12) follows that (see `order`).
+  prek: { min: 5, max: 12, order: [5, 6, 7, 8, 9, 11, 12] },
+  school: { min: 8, max: 12, order: [8, 9, 11, 12] },
 };
 
 /** The order the jellies wake in on the wake level: the big low one, the little high one, then the rest one by one. */
@@ -146,6 +148,59 @@ export function drawTune(rng: Rng, length: number, played: readonly Tune[] = [],
   const choices = kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds;
   const kind = rng.pick(choices);
   return rng.pick(fresh.filter((t) => t.kind === kind));
+}
+
+/** Level 12's answer: the two songs are the same, or one jelly differs. */
+export type Verdict = 'same' | 'different';
+
+/** One round of "Same or different?": the two tunes in the order they play, and where they differ (-1 when they do not). */
+export interface TunePair {
+  first: number[];
+  second: number[];
+  same: boolean;
+  /** The position in each tune where the notes differ, or -1 for a same pair. */
+  changed: number;
+  /** The tune the pair was made from, for the round's no-repeat list. */
+  base: Tune;
+}
+
+export const verdictOf = (pair: Pick<TunePair, 'same'>): Verdict => (pair.same ? 'same' : 'different');
+
+/** Which of the round's `goal` pairs are the same: half of them (3 of 5 or 2 of 5, either at random), in a shuffled order. */
+export function sameFlags(rng: Rng, goal: number): boolean[] {
+  const nSame = Math.floor(goal / 2) + (rng.chance(0.5) ? 1 : 0);
+  return rng.shuffle([
+    ...Array.from({ length: nSame }, () => true),
+    ...Array.from({ length: goal - nSame }, () => false),
+  ]);
+}
+
+/** How many steps along the jellies a different pair must change by: wide in the first two pairs, one step later on. */
+export const minStepAt = (n: number): number => (n < 2 ? 2 : 1);
+
+/**
+ * The `n`th pair of a round. A same pair plays one tune twice. A different pair changes exactly one note of a tune to
+ * another jelly at least `minStepAt(n)` steps away, and it may play the changed tune first or second. The base tune is
+ * never one of `played`, so no pair comes round twice.
+ */
+export function drawPair(
+  rng: Rng,
+  length: number,
+  same: boolean,
+  n: number,
+  played: readonly Tune[],
+): TunePair {
+  const base = drawTune(rng, length, played);
+  if (same) return { first: [...base.notes], second: [...base.notes], same, changed: -1, base };
+  const changed = rng.int(0, length - 1);
+  const was = base.notes[changed];
+  const to = rng.pick(
+    Array.from({ length: JELLIES }, (_, j) => j).filter((j) => Math.abs(j - was) >= minStepAt(n)),
+  );
+  const other = base.notes.map((note, k) => (k === changed ? to : note));
+  return rng.chance(0.5)
+    ? { first: [...base.notes], second: other, same, changed, base }
+    : { first: other, second: [...base.notes], same, changed, base };
 }
 
 /** Tunes of this many notes or more keep her place after a miss; shorter ones restart, since a restart there is short. */
@@ -261,9 +316,15 @@ export function jellyToTap(
     const awake = awakeJellies(notes);
     return phase === 'play' ? awake[notes % awake.length] : null;
   }
+  // A pair round answers with a button, not a jelly: see `verdictToTap`.
+  if (mode === 'compare') return null;
   if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
   return phase === 'turn' ? (tune[at] ?? null) : null;
 }
+
+/** The button a capable child taps once both songs have played, or null while she should wait. */
+export const verdictToTap = (phase: JellyPhase, pair: Pick<TunePair, 'same'> | null): Verdict | null =>
+  phase === 'turn' && pair ? verdictOf(pair) : null;
 
 /**
  * The instrument a round plays on (dive slice 3, decision 8): the marimba on Music Mountain by day, bells on the moon
