@@ -1,1 +1,0 @@
-**`fill-dump` level 9, How many cups?** (pre-K; new interaction tier: a cup scoops from a tub into two bowls, each cupful counted aloud with a tally, then "which bowl took more cups?"; typecheck, unit tests, one filtered scripted play with one wrong answer and one hint, one portrait screenshot, `fingerdemo` at 9). [Dive](../../deep-dives/fill-dump.md#build-slices-in-order)
