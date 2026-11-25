@@ -15,7 +15,7 @@ export const VOICE = {
   'chain.missed-chime': [
     'The marble reached the bottom, but it missed the little chime. Move one ramp and try again!',
   ],
-  'chain.rang': ['Hooray! The whole machine worked!'],
+  'chain.rang': ['Hooray! The whole machine worked, and the {cargo} got there!'],
   'chain.done': ['What a marvelous machine!'],
   'chain.turn-start': [
     'Tap a coloured ramp to turn it. Then tap the green arrow and see if the {cargo} reaches the {goal}!',
