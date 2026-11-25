@@ -1,0 +1,1 @@
+**`pixel-pictures` level 13, Window Mosaic** (school, placed with `order` after 12; new interaction: typecheck, rule tests, one filtered scripted play of level 13 with a wrong count, a hint and a wrong window, one portrait screenshot, `fingerdemo` at level 13). [Definition](../../definitions/window-mosaic.md)
