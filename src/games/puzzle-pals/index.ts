@@ -11,14 +11,16 @@ import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
-import { dealScenePair, SCENES, type SceneDef } from './scenes';
+import { cellFeatures, dealScenePair, SCENES, type Feature, type SceneDef } from './scenes';
 import {
   LEVELS,
+  dealMend,
   dealPlan,
   dealTurns,
   flipTurn,
   hintPiece,
   judgeDrop,
+  judgeSwap,
   judgeTwinDrop,
   nextToPlace,
   outerSides,
@@ -32,6 +34,7 @@ import {
   oneAtATimeLayout,
   puzzleLayout,
   lidLayout,
+  mendLayout,
   twinLayout,
   whereWords,
   type BoardPiece,
@@ -92,6 +95,9 @@ interface PieceView {
   node: Container;
   body: Container;
   badge?: Container;
+  /** Mend the picture: the place it sits in now (row * cols + col) and a ring for 'picked' and 'look here'. */
+  at: number;
+  mark?: Graphics;
   turn: Turn;
   targetRotation: number;
   drag: DragHandle;
@@ -125,14 +131,20 @@ class PuzzlePals implements Game {
   private trayScale = 0.5;
   private clock = 0;
   private hinted?: PieceView;
+  /** Mend the picture: the piece she has tapped and is about to swap, and whether a swap is gliding. */
+  private picked?: PieceView;
+  private swapping = false;
+  private mendHint = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = dealPlan(ctx.level, ctx.rng);
     const scenes = this.plan.twin ? dealScenePair(ctx.rng) : [ctx.rng.pick(SCENES)];
     ctx.stage.addChild(this.background);
+    let mendFeatures: Feature[] = [];
     for (const scene of scenes) {
       // The picture is drawn once into a texture; pieces, ghost and lid all show parts of that one render.
       const picture = pictureScene(scene, ctx.rng.int(1, 1_000_000));
+      mendFeatures = picture.features;
       const texture = RenderTexture.create({ width: PICTURE_W, height: PICTURE_H, resolution: 2 });
       ctx.renderer.render({ container: picture.root, target: texture });
       const node = new Container();
@@ -161,7 +173,16 @@ class PuzzlePals implements Game {
     const all: BoardPiece[] = this.boards.flatMap((_, board) =>
       piecesFor(this.plan).map((p) => ({ ...p, board })),
     );
-    const order = [...all.slice(0, this.plan.preplaced), ...ctx.rng.shuffle(all.slice(this.plan.preplaced))];
+    const order = this.plan.mend
+      ? all
+      : [...all.slice(0, this.plan.preplaced), ...ctx.rng.shuffle(all.slice(this.plan.preplaced))];
+    // Mend the picture: two pieces whose looks differ start in each other's places.
+    const cells = this.plan.mend
+      ? cellFeatures(mendFeatures, this.plan.cols, this.plan.rows, PICTURE_W, PICTURE_H)
+      : [];
+    const swapped = this.plan.mend
+      ? dealMend(order.length, ctx.rng, (a, b) => cells[a].join() === cells[b].join())
+      : undefined;
     const turns = this.plan.turns
       ? dealTurns(order.length, this.plan.turns, ctx.rng)
       : order.map((): Turn => 0);
@@ -180,7 +201,7 @@ class PuzzlePals implements Game {
         sprite,
         new Graphics().roundRect(-pw / 2, -ph / 2, pw, ph, 6).stroke({ width: 4, color: swatch.white.fill }),
       );
-      if (!this.plan.ghost) {
+      if (!this.plan.ghost && !this.plan.mend) {
         const sides = outerSides(this.plan, piece);
         const rim = new Graphics();
         const x = pw / 2 - 4;
@@ -206,7 +227,18 @@ class PuzzlePals implements Game {
         badge.position.set(pw / 2 - 28, ph / 2 - 28);
         node.addChild(badge);
       }
-      node.hitArea = new Rectangle(-pw / 2 - 10, -ph / 2 - 10, pw + 20, ph + 20);
+      // A mend piece sits flush against its neighbours, so its touch area is exactly its own.
+      const slop = this.plan.mend ? 0 : 10;
+      node.hitArea = new Rectangle(-pw / 2 - slop, -ph / 2 - slop, pw + 2 * slop, ph + 2 * slop);
+      let mark: Graphics | undefined;
+      if (this.plan.mend) {
+        mark = new Graphics()
+          .roundRect(-pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 8)
+          .stroke({ width: 8, color: swatch.yellow.line });
+        mark.visible = false;
+        mark.eventMode = 'none';
+        node.addChild(mark);
+      }
       const out = !this.plan.oneAtATime || !this.pieces.length ? 'waiting' : 'later';
       const view: PieceView = {
         piece,
@@ -214,6 +246,8 @@ class PuzzlePals implements Game {
         node,
         body,
         badge,
+        at: idx,
+        mark,
         turn,
         targetRotation,
         placed: false,
@@ -232,6 +266,14 @@ class PuzzlePals implements Game {
         onDrop: (x, y) => this.drop(view, x, y),
       });
       ctx.own(() => view.drag.destroy());
+      if (swapped) {
+        // The two odd pieces sit in each other's places; every other piece is home. Touches are taps, not carries.
+        if (idx === swapped[0]) view.at = swapped[1];
+        else if (idx === swapped[1]) view.at = swapped[0];
+        view.drag.enabled = false;
+        view.placed = true;
+        onTap(node, () => this.mendTap(view));
+      }
       this.pieces.push(view);
       ctx.stage.addChild(node);
     }
@@ -244,6 +286,8 @@ class PuzzlePals implements Game {
   }
 
   start() {
+    // Mend the picture has no line of its own yet (a new line needs a rendered clip), so the how-to card carries it.
+    if (this.plan.mend) return;
     const line = this.plan.twin
       ? 'puzzle.ghost'
       : this.plan.oneAtATime
@@ -407,6 +451,85 @@ class PuzzlePals implements Game {
     sfx.tick();
   }
 
+  // Mend the picture -------------------------------------------------------------
+
+  private mendSlot(at: number) {
+    const c = slotCenter(this.plan, { col: at % this.plan.cols, row: Math.floor(at / this.plan.cols) });
+    const b = this.board;
+    return { x: b.x + c.x * this.scale, y: b.y + c.y * this.scale };
+  }
+
+  private homeOf(view: PieceView) {
+    return view.piece.row * this.plan.cols + view.piece.col;
+  }
+
+  /** The pieces that are not where they belong (two at the start, none once mended). */
+  private oddPieces() {
+    return this.pieces.filter((p) => p.at !== this.homeOf(p));
+  }
+
+  /** Tap one piece, then another, and they swap; a swap that does not mend both goes back with a soft boing. */
+  private mendTap(view: PieceView) {
+    if (this.done || this.swapping) return;
+    if (!this.picked) {
+      this.picked = view;
+      sfx.tick();
+      return;
+    }
+    if (this.picked === view) {
+      this.picked = undefined;
+      sfx.tick();
+      return;
+    }
+    const a = this.picked;
+    this.picked = undefined;
+    void this.swapPieces(a, view);
+  }
+
+  private async swapPieces(a: PieceView, b: PieceView) {
+    this.swapping = true;
+    const outcome = judgeSwap({ at: a.at, home: this.homeOf(a) }, { at: b.at, home: this.homeOf(b) });
+    const from = [this.mendSlot(a.at), this.mendSlot(b.at)];
+    const glide = async (pa: { x: number; y: number }, pb: { x: number; y: number }) => {
+      await Promise.all([
+        this.ctx.tw.to(a.node, pa, { duration: 0.22, ease: ease.outQuad }),
+        this.ctx.tw.to(b.node, pb, { duration: 0.22, ease: ease.outQuad }),
+      ]);
+    };
+    this.ctx.stage.addChild(a.node, b.node);
+    this.ctx.stage.addChild(this.glow);
+    await glide(from[1], from[0]);
+    if (a.node.destroyed || b.node.destroyed) return;
+    if (outcome === 'mended') {
+      [a.at, b.at] = [b.at, a.at];
+      this.mendHint = false;
+      sfx.clunk();
+      for (const p of [a, b])
+        this.ctx.particles.burst(p.node.x, p.node.y, {
+          kind: 'star',
+          colors: [swatch.yellow.fill],
+          count: 8,
+          speed: [80, 200],
+        });
+      this.swapping = false;
+      if (this.oddPieces().length === 0) void this.complete();
+      return;
+    }
+    // Not both right: they go straight back, which is a miss but never a loss.
+    sfx.boing();
+    await this.ctx.tw.wait(0.12);
+    await glide(from[0], from[1]);
+    if (a.node.destroyed || b.node.destroyed) return;
+    this.misses++;
+    this.wrong++;
+    this.swapping = false;
+    if (this.wrong === 2) {
+      this.hints++;
+      this.mendHint = true;
+      void this.ctx.say('puzzle.hint');
+    } else void this.ctx.say('puzzle.wrong');
+  }
+
   /** Puts a piece in its place. */
   private settle(view: PieceView, animate: boolean) {
     view.placed = true;
@@ -488,6 +611,10 @@ class PuzzlePals implements Game {
       this.layoutOneAtATime(v);
       return;
     }
+    if (this.plan.mend) {
+      this.layoutMend(v);
+      return;
+    }
     const waiting = this.pieces.filter((p) => !p.placed);
     const L = (this.plan.twin ? twinLayout : puzzleLayout)(v, this.plan, this.pieces.length, waiting.length);
     this.scale = L.scale;
@@ -520,6 +647,22 @@ class PuzzlePals implements Game {
     }
     this.fitPictures();
     this.drawGlow();
+  }
+
+  /** Mend the picture: the whole picture sits in the frame, big, with no tray. */
+  private layoutMend(v: View) {
+    const L = mendLayout(v);
+    this.scale = this.trayScale = L.scale;
+    this.placeBoard(this.board, L);
+    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
+    this.drawFrame(this.board);
+    for (const p of this.pieces) {
+      this.ctx.tw.kill(p.node);
+      const { x, y } = this.mendSlot(p.at);
+      p.node.position.set(x, y);
+      p.node.scale.set(this.scale);
+    }
+    this.fitPictures();
   }
 
   /** Puts a frame at a layout's spot, a picture unit being `this.scale` on screen. */
@@ -620,6 +763,14 @@ class PuzzlePals implements Game {
   update(dt: number) {
     this.clock += dt;
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
+    if (this.plan.mend) {
+      const odd = this.mendHint && !this.done ? this.oddPieces() : [];
+      for (const p of this.pieces) {
+        if (!p.mark) continue;
+        p.mark.visible = !this.done && (this.picked === p || odd.includes(p));
+        p.mark.alpha = this.picked === p ? 1 : 0.6 + 0.4 * Math.sin(this.clock * 4);
+      }
+    }
     for (const p of this.pieces) {
       if (!p.badge) continue;
       const pulse = !this.done && this.wrong >= 2 && this.hinted === p && p.turn !== 0;
@@ -635,6 +786,13 @@ class PuzzlePals implements Game {
       // One at a time the card shows a tap: the piece hops in by itself.
       const waiting = this.pieces.find((p) => !p.placed && p.out === 'waiting' && !p.drag.dragging);
       return waiting ? { tap: { on: waiting.node } } : null;
+    }
+    if (this.plan.mend) {
+      // Tap one odd piece, then the other: the pair swaps back.
+      const odd = this.oddPieces();
+      if (this.swapping || odd.length < 2) return null;
+      const first = this.picked ? odd.find((p) => p !== this.picked) : odd[0];
+      return first ? { tap: { on: first.node } } : null;
     }
     const next = nextToPlace(this.pieces);
     if (!next || next.drag.dragging) return null;

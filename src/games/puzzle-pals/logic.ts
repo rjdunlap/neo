@@ -18,6 +18,8 @@ export interface PuzzlePlan {
   turns?: number;
   /** Level 10, Two pictures, one tray: two boards side by side, each with its own faint picture, and one mixed tray. */
   twin?: boolean;
+  /** Level 11, Mend the picture: the finished picture is already in the frame with two pieces swapped; she swaps them back. */
+  mend?: boolean;
   name: string;
 }
 
@@ -74,6 +76,14 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
     preplaced: 0,
     twin: true,
     name: 'Two pictures, one tray: sort eight pieces onto two faint pictures',
+  },
+  {
+    cols: 3,
+    rows: 3,
+    ghost: false,
+    preplaced: 0,
+    mend: true,
+    name: 'Mend the picture: two pieces have swapped places, so tap one and then the other to swap them back',
   },
 ];
 
@@ -177,6 +187,32 @@ export function judgeTwinDrop(
   return hit.piece.col === piece.col && hit.piece.row === piece.row ? 'place' : 'wrong';
 }
 
+/**
+ * Level 11: which two pieces (indexes into `piecesFor`) start in each other's places. The two never hold the same
+ * things (`sameLook` says so for a cell, from `cellFeatures`), so the odd places can be found by looking. With no look
+ * given every pair is allowed. Never the same piece twice.
+ */
+export function dealMend(
+  count: number,
+  rng: { shuffle<T>(items: readonly T[]): T[] },
+  sameLook: (a: number, b: number) => boolean = () => false,
+): [number, number] {
+  const order = rng.shuffle(Array.from({ length: count }, (_, i) => i));
+  for (const a of order) for (const b of order) if (a < b && !sameLook(a, b)) return [a, b];
+  return [order[0], order[1]];
+}
+
+/**
+ * The outcome of swapping two pieces in a mend round, given where each sits now (`at`) and where it belongs (`home`):
+ * 'mended' when both end up home, 'back' when the swap fixes nothing it should and goes back as a miss.
+ */
+export function judgeSwap(
+  a: { at: number; home: number },
+  b: { at: number; home: number },
+): 'mended' | 'back' {
+  return a.home === b.at && b.home === a.at ? 'mended' : 'back';
+}
+
 export type Turn = 0 | 2;
 
 export type DropOutcome = 'off' | 'place' | 'turn' | 'wrong';
@@ -266,7 +302,7 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
 }
 
 /**
- * Level 8 is lap's first; 1 and 2 follow. Levels 9 (Turn it round) and 10 (Two pictures) sit at the top of pre-K and
+ * Level 8 is lap's first; 1 and 2 follow. Levels 9 (Turn it round), 10 (Two pictures) and, school only, 11 (Mend the picture) sit at the top of pre-K and
  * school, skipping lap's 8 via `order` so no saved level is renumbered.
  */
 export const LEVELS: BandLevels = {
@@ -274,7 +310,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
   prek: { min: 5, max: 10, order: [5, 6, 7, 9, 10] },
-  school: { min: 6, max: 10, order: [6, 7, 9, 10] },
+  school: { min: 6, max: 11, order: [6, 7, 9, 10, 11] },
 };
 
 // Layout ---------------------------------------------------------------------------------------------------------------
@@ -475,5 +511,33 @@ export function twinLayout(
     trayScale: Math.min(scale, 100 / ph, 130 / pw),
     homes,
     panel: { x: 160, y: v.h - trayH - 6, w: v.w - 185, h: trayH - 8 },
+  };
+}
+
+/**
+ * Mend the picture (level 11): the whole picture is in the frame and there is no tray, so the frame can be big. Sideways
+ * it sits right of the pet's strip under the corner buttons; upright it spans the width under the buttons and is
+ * centred in the height that is left, clear of the pet's corner.
+ */
+export function mendLayout(v: { w: number; h: number }) {
+  const aspect = PICTURE_H / PICTURE_W;
+  if (v.h > v.w) {
+    const boardW = Math.min(v.w - 80, 700);
+    const free = v.h - UPRIGHT_TOP - 40;
+    return {
+      x: (v.w - boardW) / 2,
+      y: UPRIGHT_TOP + Math.max(0, (free - boardW * aspect) / 2),
+      w: boardW,
+      scale: boardW / PICTURE_W,
+    };
+  }
+  const top = 112;
+  const left = 180;
+  const boardW = Math.min(760, v.w - left - 40, ((v.h - top - 40) * PICTURE_W) / PICTURE_H);
+  return {
+    x: left + (v.w - left - 40 - boardW) / 2,
+    y: top + Math.max(0, (v.h - top - 40 - boardW * aspect) / 2),
+    w: boardW,
+    scale: boardW / PICTURE_W,
   };
 }
