@@ -26,6 +26,9 @@ export const VOICE = {
   'jelly.name.blue': ['Blue! The littlest jelly sings the highest.'],
   'jelly.lowhigh': ['Big jellies sing low. Little jellies sing high.'],
   'jelly.turn': ['Your turn!'],
+  // Level 14: slotted lines stay on device speech until a clip pass renders fixed wording.
+  'jelly.which': ['Listen to the sound, {name}, then tap which jelly sang!'],
+  'jelly.which.ask': ['Which one was that, {name}?'],
   'jelly.oops': ['Hmm, listen again!'],
   'jelly.nice': ['Beautiful!', 'You got it!', 'Lovely music!'],
 } satisfies Record<string, string[]>;

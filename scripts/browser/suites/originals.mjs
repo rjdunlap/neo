@@ -151,8 +151,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, copying tunes, Same or different?, and Lowest to highest.
-    for (let level = 1; level <= 13 && (!only || only === 'jelly'); level++) {
+    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, and Which jelly sang?.
+    for (let level = 1; level <= 14 && (!only || only === 'jelly'); level++) {
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -174,6 +174,29 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return;
         }
         const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
+        if (g.plan.mode === 'which') {
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            if (t === 0) {
+              kit.tapOn(g.again);
+              await kit.until(() => g.phase === 'listen', 2000);
+              await turn();
+              if (g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Jelly which listen-again counted: ${g.misses} ${g.hints}`);
+              const wrong = g.whichTarget === 0 ? 4 : 0;
+              for (let k = 0; k < 2; k++) {
+                await turn();
+                await hit(wrong);
+              }
+              await turn();
+              if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.whichTarget].glowLeft <= 0)
+                throw new Error(`Jelly which hint: ${g.misses} ${g.hints}`);
+            }
+            await hit(g.whichTarget);
+            await kit.until(() => g.phase !== 'turn', 3000);
+          }
+          return;
+        }
         if (g.plan.mode === 'order') {
           const dragToSlot = async (itemIndex, slotIndex) => {
             const item = g.orderJellies[itemIndex];
@@ -1810,7 +1833,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 13,
+      'jelly-drums': 14,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

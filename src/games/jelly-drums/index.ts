@@ -24,6 +24,7 @@ import {
   drawLineups,
   drawPair,
   drawTune,
+  drawWhich,
   fanAnswering,
   IdleNudge,
   JellyNamer,
@@ -42,6 +43,7 @@ import {
   tuneLength,
   verdictOf,
   verdictToTap,
+  whichAwake,
   STAGE_OF,
   type OrderLineup,
   type SoundSet,
@@ -121,6 +123,8 @@ class JellyDrums implements Game {
   /** Level 12: which pairs of the round are the same, and the pair now playing. */
   private flags: boolean[] = [];
   private pair: TunePair | null = null;
+  /** Level 14 ("Which jelly sang?"): the jelly that sang the mystery note. */
+  private whichTarget: number | null = null;
   /** Level 13 ("Lowest to highest"): the shelf of four slots, the lit target pad, the sleeping fifth jelly and active row. */
   private readonly orderShelf = new Graphics();
   private readonly orderSlots = new Graphics();
@@ -173,7 +177,7 @@ class JellyDrums implements Game {
       return c;
     });
     this.again = new RoundButton(replayArt(), swatch.yellow, 56, () => void this.listenAgain());
-    const tunes = this.plan.mode === 'echo' || this.plan.mode === 'compare';
+    const tunes = this.plan.mode === 'echo' || this.plan.mode === 'compare' || this.plan.mode === 'which';
     this.again.visible = tunes && !ctx.couch;
     this.choices = {
       same: new RoundButton(dotsArt(true), swatch.green, CHOICE_RADIUS, () => this.answerPair('same')),
@@ -235,6 +239,13 @@ class JellyDrums implements Game {
   }
 
   start() {
+    if (this.plan.mode === 'which') {
+      this.phase = 'listen';
+      this.applyWhichAwake(whichAwake(0), false);
+      void this.ctx.instruct('jelly.which', { name: this.ctx.childName });
+      void this.ctx.tw.wait(1.8).then(() => this.nextWhich());
+      return;
+    }
     if (this.plan.mode === 'order') {
       this.lineups = drawLineups(this.ctx.rng, this.plan.goal, this.plan.length);
       this.setupLineup(0);
@@ -344,7 +355,7 @@ class JellyDrums implements Game {
       const v = verdictToTap(this.phase, this.pair);
       return v ? { tap: { on: this.choices[v] }, pause: 0.4 } : null;
     }
-    const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes);
+    const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes, this.whichTarget);
     // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
     if (i === null) return null;
     const tap = { on: this.jellies[i], y: this.jellies[i].belly };
@@ -363,6 +374,16 @@ class JellyDrums implements Game {
     this.sing(i);
     this.journal.tap(i);
     if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
+    if (this.plan.mode === 'which') {
+      if (this.phase !== 'turn' || this.whichTarget === null) return;
+      if (i === this.whichTarget) {
+        this.jellies[i].glow(0.8);
+        void this.copied();
+      } else {
+        void this.oopsWhich();
+      }
+      return;
+    }
     if (this.plan.mode !== 'echo') {
       const woke =
         this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
@@ -570,6 +591,13 @@ class JellyDrums implements Game {
       void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
       return;
     }
+    if (this.plan.mode === 'which') {
+      await this.playWhichNote(this.wrongThisTune >= 1);
+      if (this.dead) return;
+      this.phase = 'turn';
+      void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
+      return;
+    }
     this.at = placeAfterMiss(this.tune.length, this.at);
     this.drawTicks();
     const help = this.wrongThisTune >= 2;
@@ -606,6 +634,7 @@ class JellyDrums implements Game {
     await this.ctx.tw.wait(1.6);
     if (this.tunesDone >= this.plan.goal) void this.finale();
     else if (this.plan.mode === 'compare') void this.nextPair();
+    else if (this.plan.mode === 'which') void this.nextWhich();
     else void this.nextTune();
   }
 
@@ -694,6 +723,78 @@ class JellyDrums implements Game {
         .circle(b.x, b.y, CHOICE_RADIUS + 12)
         .stroke({ width: 9, color: 0xffd23f });
     }
+  }
+
+  // ----- Which-jelly-sang mode (level 14) -----
+
+  private applyWhichAwake(awake: readonly number[], sparkleNew: boolean) {
+    const woke: number[] = [];
+    this.jellies.forEach((j, i) => {
+      const on = awake.includes(i);
+      if (on && !j.visible) woke.push(i);
+      j.visible = on;
+      j.eventMode = on ? 'static' : 'none';
+    });
+    if (sparkleNew && woke.length) {
+      sfx.sparkle();
+      for (const i of woke) this.jellies[i].glow(1);
+    }
+  }
+
+  private async nextWhich() {
+    if (this.dead) return;
+    this.phase = 'listen';
+    this.wrongThisTune = 0;
+    const prevAwake = this.jellies.filter((j) => j.visible).length;
+    const awake = whichAwake(this.tunesDone);
+    if (awake.length > prevAwake) {
+      this.applyWhichAwake(awake, true);
+      await this.ctx.tw.wait(0.6);
+      if (this.dead) return;
+    }
+    this.whichTarget = drawWhich(this.ctx.rng, awake, this.whichTarget);
+    await this.playWhichNote(false);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
+  }
+
+  private async playWhichNote(help: boolean) {
+    if (this.dead || this.whichTarget === null) return;
+    await this.ctx.tw.wait(0.3);
+    if (this.dead || this.whichTarget === null) return;
+    this.note(SET_STEPS[this.sounds][this.whichTarget]);
+    // Neutral cue above the center of the stage so she hears a jelly sang without pointing to which one.
+    this.ctx.particles.burst(this.view.w / 2, this.lay.garland.y + 75, {
+      kind: 'note',
+      colors: [0xffffff, 0xffd23f],
+      count: 2,
+      speed: [70, 120],
+      spread: 0.9,
+      gravity: -35,
+      size: [0.85, 1.1],
+      life: [0.9, 1.2],
+      spin: 1,
+    });
+    this.fans.forEach((f) => f.hop(0.35));
+    if (help) this.jellies[this.whichTarget].wiggle(0.8);
+    if (this.wrongThisTune >= 2) this.jellies[this.whichTarget].glow(1.5);
+    await this.ctx.tw.wait(0.65);
+  }
+
+  private async oopsWhich() {
+    this.phase = 'listen';
+    this.misses++;
+    this.wrongThisTune++;
+    if (this.wrongThisTune === 2) this.hints++;
+    await this.ctx.tw.wait(0.45);
+    if (this.dead) return;
+    await this.ctx.say('jelly.oops');
+    if (this.dead) return;
+    await this.playWhichNote(true);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
   }
 
   // ----- Lowest-to-highest mode (level 13) -----
@@ -1015,13 +1116,14 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [10],
+  entryLevels: [10, 14],
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
     if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
     if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
+    if (p.mode === 'which') return `Listen to one note and tap which jelly sang, ${p.goal} sounds`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },

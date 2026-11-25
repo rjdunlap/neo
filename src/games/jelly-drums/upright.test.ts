@@ -39,10 +39,10 @@ const orderTargets = (v: View): Target[] => {
   ];
 };
 
-it('covers levels 1 to 13: free play, tunes, the wake level, the pair level and Lowest to highest', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+it('covers levels 1 to 14: free play, tunes, the wake level, the pair level, Lowest to highest and Which jelly sang?', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
   expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(
-    new Set(['free', 'echo', 'wake', 'compare', 'order']),
+    new Set(['free', 'echo', 'wake', 'compare', 'order', 'which']),
   );
 });
 
@@ -54,7 +54,7 @@ describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
     (level) => {
       const mode = planFor(level).mode;
       const targets: Target[] = mode === 'wake' ? [] : mode === 'order' ? orderTargets(v) : jellyTargets(v);
-      if (mode === 'echo' || mode === 'compare')
+      if (mode === 'echo' || mode === 'compare' || mode === 'which')
         targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
       if (mode === 'compare') {
         targets.push(
