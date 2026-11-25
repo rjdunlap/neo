@@ -39,7 +39,13 @@ export const isCutLevel = (level: number) => Math.floor(level) >= 4;
 
 /** A strip is one card id (or null) per slot, a card used at most once. */
 export type CutStrip = (string | null)[];
-export type CutLine = 'mn.findRequest' | 'mn.smileRequest' | 'mn.smileAfterRequest' | 'mn.openRequest' | 'mn.boxRequest' | 'mn.kiteRequest';
+export type CutLine =
+  | 'mn.findRequest'
+  | 'mn.smileRequest'
+  | 'mn.smileAfterRequest'
+  | 'mn.openRequest'
+  | 'mn.boxRequest'
+  | 'mn.kiteRequest';
 export interface Requirement {
   /** The card the reaction points at; its picture is shown in the request. */
   point: string;
@@ -49,7 +55,8 @@ export interface Requirement {
 /** Positions of the cards in a strip that show `fact`. */
 const showing = (strip: CutStrip, cards: readonly Card[], fact: string) =>
   strip.flatMap((id, i) => (id && cards.find((c) => c.id === id)!.facts.includes(fact) ? [i] : []));
-const known = (strip: CutStrip, cards: readonly Card[], fact: string) => showing(strip, cards, fact).length > 0;
+const known = (strip: CutStrip, cards: readonly Card[], fact: string) =>
+  showing(strip, cards, fact).length > 0;
 /** The first position showing `fact`, or Infinity. */
 const first = (strip: CutStrip, cards: readonly Card[], fact: string) =>
   Math.min(Infinity, ...showing(strip, cards, fact));

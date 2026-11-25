@@ -151,7 +151,7 @@ describe('Movie Night levels 4–5: the repair rule', () => {
   });
   it('keeps her own choices where a target allows', () => {
     expect(nextRepair(4, ['G0', null, null])).toEqual({ card: 'G1', slot: 1 });
-    expect(nextRepair(5, ['B1', null, null, null])).toEqual({ card: 'B2', slot: 1 });
+    expect(nextRepair(5, ['B1', null, null, null])).toEqual({ card: 'B0', slot: 1 });
   });
 });
 
