@@ -39,5 +39,16 @@ export const VOICE = {
   'pixel.bits.emptyrow': ['Four zeros make an empty row.'],
   'pixel.bits.same': ['Sixteen ones and zeros, and the same picture.'],
   'pixel.bits.done': ['Four cards, one row. Any row can be written that way!'],
+  'pixel.mosaic.color': [
+    'Color this window so the same amount is colored. Make the shape different! Then tap the green check.',
+  ],
+  'pixel.mosaic.fewer': ['A little more to color.'],
+  'pixel.mosaic.more': ['That is too much. Take some away.'],
+  'pixel.mosaic.same': ['That is the same shape, turned around. Try a shape that looks different.'],
+  'pixel.mosaic.pick': ['Which window has the same amount colored?'],
+  'pixel.mosaic.wrong': ['Not that one. Look at how much is colored, not where.'],
+  'pixel.mosaic.hint': ['Try the glowing window.'],
+  'pixel.mosaic.proof': ['Every colored pane has a partner. Nothing is left over!'],
+  'pixel.mosaic.done': ['Different shapes, the same amount. Half the window is colored.'],
   'pixel.mine': ['What a picture! You made that.', 'Look what you made!'],
 } satisfies Record<string, string[]>;
