@@ -38,6 +38,7 @@ import {
 } from './logic';
 import { robotLayout, type RobotLayout } from './layout';
 import { arrow } from './art';
+import { endRoutineVisit } from './routine';
 import { RoutineRound } from './routine-scene';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
@@ -571,5 +572,9 @@ export const robotPath: GameModule = {
   touchDemo: true,
   upright: true,
   sticker: () => robotArt(150),
-  create: (ctx) => (ctx.level === 15 ? new RoutineRound(ctx) : new RobotPath(ctx)),
+  create: (ctx) => {
+    if (ctx.level === 15) return new RoutineRound(ctx);
+    endRoutineVisit();
+    return new RobotPath(ctx);
+  },
 };
