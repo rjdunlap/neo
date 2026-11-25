@@ -16,6 +16,15 @@ export const PACE_IDS: readonly PaceId[] = ['turtle', 'rabbit'];
 export const PACES: Record<PaceId, number> = { turtle: 60, rabbit: 90 };
 export const BEATS = 4;
 
+/** Level 4's two ways to play the same tune: how strongly, never how fast or which notes. */
+export type StrengthId = 'gentle' | 'strong';
+/** Level 4's pads sit in the same two slots as the paces: the first (small drum) is gentle, the second (big drum) strong. */
+export const STRENGTH_OF: Record<PaceId, StrengthId> = { turtle: 'gentle', rabbit: 'strong' };
+/** The gain table: a multiplier on every voice's own gain. Strong is the level the other levels already play at, so nothing is ever louder than the device volume allows. */
+export const STRENGTH_GAIN: Record<StrengthId, number> = { gentle: 0.45, strong: 1 };
+/** Level 4 holds one steady pace (between the two paces), so only the strength differs between the pads. */
+export const STEADY_BPM = 75;
+
 export interface Motif {
   id: 'hop' | 'slide' | 'wave' | 'skip' | 'rock' | 'sway';
   /** One note a beat, as notes of the major pentatonic (semitones above C), all inside one octave. */
@@ -42,7 +51,7 @@ export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(se
 export interface Plan {
   level: number;
   name: string;
-  mode: 'lead' | 'both' | 'sign';
+  mode: 'lead' | 'both' | 'sign' | 'strength';
 }
 const PLANS: Plan[] = [
   {
@@ -60,13 +69,18 @@ const PLANS: Plan[] = [
     name: "Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check",
     mode: 'sign',
   },
+  {
+    level: 4,
+    name: 'Soft or loud: hear the same tune on a small drum and a big drum, then finish with the one she likes',
+    mode: 'strength',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 3 },
+  preschool: { min: 1, max: 4 },
+  prek: { min: 2, max: 4 },
 };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -116,6 +130,10 @@ export interface BeatEvent {
   drum: boolean;
   /** The clock time, in seconds since the call began, that the beat landed at. */
   at: number;
+  /** The beats per minute this beat ran at: the pace's, or level 4's one steady pace. */
+  bpm: number;
+  /** A multiplier on every voice: 1 except level 4's gentle pad. */
+  gain: number;
 }
 
 export const newScore = (): Score => ({
@@ -142,18 +160,28 @@ export function select(score: Score, pace: PaceId): Score {
 export const listenAgain = (score: Score): Score =>
   score.pace === null ? score : { ...score, phraseStart: score.played };
 
+/** Beats per minute at a pad: its pace, except at level 4 where both pads keep the one steady pace. */
+export const tempoOf = (pace: PaceId, mode: Plan['mode']): number =>
+  mode === 'strength' ? STEADY_BPM : PACES[pace];
+
 /**
  * Moves the clock on by `dt` seconds and returns every whole beat it crossed, each exactly once and in tune order.
  * A waiting change takes effect at the first beat it reaches; the time after it runs at the new pace.
  */
-export function advance(score: Score, dt: number, motif: Motif): { score: Score; events: BeatEvent[] } {
+export function advance(
+  score: Score,
+  dt: number,
+  motif: Motif,
+  mode: Plan['mode'] = 'lead',
+): { score: Score; events: BeatEvent[] } {
   if (score.pace === null) return { score, events: [] };
   const s: Score = { ...score, heard: { ...score.heard }, heardEver: { ...score.heardEver } };
   const events: BeatEvent[] = [];
   let left = Math.max(0, dt);
   let at = 0;
   for (;;) {
-    const perBeat = 60 / PACES[s.pace!];
+    const bpm = tempoOf(s.pace!, mode);
+    const perBeat = 60 / bpm;
     const toNext = (s.played - s.beat) * perBeat;
     if (toNext > left + 1e-9) {
       s.beat += left / perBeat;
@@ -177,6 +205,8 @@ export function advance(score: Score, dt: number, motif: Motif): { score: Score;
       bass: motif.bass.includes(step),
       drum: motif.drum.includes(step),
       at,
+      bpm,
+      gain: mode === 'strength' ? STRENGTH_GAIN[STRENGTH_OF[pace]] : 1,
     });
     s.heard[pace]++;
     if (s.heard[pace] >= BEATS) s.heardEver[pace] = true;
@@ -197,12 +227,13 @@ export function canFinish(score: Score, level: number): boolean {
   if (score.pace === null || score.pending) return false;
   const whole = score.heard[score.pace] >= BEATS;
   if (planFor(level).mode === 'lead') return whole;
+  // Levels 2 and 4: both pads heard whole, and the one she finishes with heard whole since she chose it.
   return whole && score.heardEver.turtle && score.heardEver.rabbit;
 }
 
 /** What Done says while it is still dim: hear the whole tune, or hear the other way too. */
 export function earlyDone(score: Score, level: number): 'hear-whole' | 'hear-other' {
-  if (planFor(level).mode !== 'both' || !score.pace) return 'hear-whole';
+  if (!['both', 'strength'].includes(planFor(level).mode) || !score.pace) return 'hear-whole';
   const other: PaceId = score.pace === 'turtle' ? 'rabbit' : 'turtle';
   return score.heardEver[score.pace] && !score.heardEver[other] ? 'hear-other' : 'hear-whole';
 }

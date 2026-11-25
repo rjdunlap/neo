@@ -16,6 +16,32 @@ export function createSuite({ page, ready, launch, finished, screenshot, log }) 
     await page.touchscreen.tap(x, y);
     await page.waitForTimeout(160);
   };
+  const choose = async (pick) => {
+    const { x, y } = await page.evaluate((who) => {
+      const c = neo.scene.game.choiceNodes.find((n) => n.pick === who);
+      const p = c.node.getGlobalPosition();
+      return { x: p.x, y: p.y };
+    }, pick);
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(160);
+  };
+  const settle = async () => {
+    await until(() => neo.scene.finished || ['turn', 'choose'].includes(neo.scene.game.state.phase));
+    await page.waitForTimeout(200);
+  };
+  /** Plays on with the best choice and best moves until the round finishes. */
+  const playOut = async () => {
+    for (let step = 0; step < 60; step++) {
+      await settle();
+      const s = await state();
+      if (s.finished) return;
+      if (s.phase === 'choose') await choose(s.bestChoice);
+      else {
+        assert.ok(s.bestSpot !== null, 'optimal play keeps a winning stone');
+        await tapSpot(s.bestSpot);
+      }
+    }
+  };
   const stickers = () =>
     page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'last-pebble').length);
   const lastHistory = () =>
@@ -129,6 +155,62 @@ export function createSuite({ page, ready, launch, finished, screenshot, log }) 
     assert.equal(await stickers(), before + 2);
     assert.deepEqual(await lastHistory(), { misses: 1, hints: 1, level: 2 });
 
+    // Level 3 (school): a wrong pick steps back to the choice screen; a second one lights the right button.
+    await launch('last-pebble', 3, 'Mia', 'school');
+    await page.waitForFunction(() => neo.view.upright);
+    await settle();
+    s = await state();
+    assert.equal(s.level, 3);
+    assert.equal(s.crossingsTotal, 3);
+    assert.equal(s.phase, 'choose');
+    assert.equal(s.choice, null);
+    const wrongPick = s.bestChoice === 'first' ? 'second' : 'first';
+    for (const round of [1, 2]) {
+      await choose(wrongPick);
+      assert.equal((await state()).choice, wrongPick);
+      for (let step = 0; step < 14; step++) {
+        await settle();
+        s = await state();
+        if (s.phase === 'choose') break;
+        await tapSpot(Math.min(s.target - 1, s.pos + 1));
+      }
+      s = await state();
+      assert.equal(s.phase, 'choose', 'a pet win from a wrong pick returns to the choice screen');
+      assert.deepEqual([s.misses, s.pos], [round, 0]);
+      assert.equal(s.glowChoice, round === 2 ? s.bestChoice : null);
+      assert.equal(s.hints, round === 2 ? 1 : 0);
+    }
+    await screenshot('last-pebble-level3-choice');
+    await playOut();
+    await finished('last-pebble');
+    assert.equal(await stickers(), before + 3);
+    assert.deepEqual(await lastHistory(), { misses: 2, hints: 1, level: 3 });
+
+    // Level 4 (grownup): Show me on the choice screen, a second tap plays it; bigger takes, four-row board.
+    await launch('last-pebble', 4, 'Mia', 'grownup');
+    await page.waitForFunction(() => neo.view.upright);
+    await settle();
+    s = await state();
+    assert.equal(s.level, 4);
+    assert.equal(s.crossingsTotal, 2);
+    assert.ok(s.take === 3 || s.take === 4);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    s = await state();
+    assert.deepEqual([s.hints, s.glowChoice], [1, s.bestChoice]);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await settle();
+    s = await state();
+    assert.equal(s.hints, 1, 'a second Show me tap plays the glowing pick with no extra hint');
+    assert.equal(s.choice, s.bestChoice);
+    await screenshot('last-pebble-level4-play');
+    await playOut();
+    await finished('last-pebble');
+    assert.equal(await stickers(), before + 4);
+    assert.deepEqual(await lastHistory(), { misses: 0, hints: 1, level: 4 });
+
+    log(
+      'Last Pebble: levels 3–4 (wrong pick rewinds to the choice, glow, Show me on the choice screen, 2 more stickers) passed',
+    );
     log(
       'Last Pebble: upright levels 1–2 (show-me-why rewinds, Show me rewind, portrait shot, 2 stickers) passed',
     );

@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, conductorSign }) {
   /**
-   * Little Conductor levels 1–2: an early Done, a change inside a beat, the heard gate, the bow and one sticker; level 2 in portrait.
+   * Little Conductor levels 1–2 and 4 (soft or loud, the level 2 flow on a small and a big drum): an early Done, a change inside a beat, the heard gate, the bow and one sticker; level 2 in portrait.
    * Level 3 (portrait): Check with no pick, a wrong Check, a requested hint, both halves matched. `CONDUCTOR_LEVELS=3` picks levels.
    */
   async function conductor() {
-    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3').split(',').map(Number)) {
+    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3,4').split(',').map(Number)) {
       if (level >= 2) await page.setViewportSize({ width: 768, height: 1024 });
       if (level === 3) {
         await conductorSign();
@@ -55,13 +55,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.equal(s.performing, false);
       assert.ok(s.blink > 0);
       await heardAt('turtle', 4);
-      if (level === 2) {
-        assert.ok((await state()).alpha < 1, 'level 2 waits for the other way too');
+      if (level === 2 || level === 4) {
+        assert.ok((await state()).alpha < 1, `level ${level} waits for the other way too`);
         await tap('neo.scene.game.pads.rabbit');
         await heardAt('rabbit', 4);
         s = await state();
         assert.deepEqual(s.ever, { turtle: true, rabbit: true });
-        await screenshot('little-conductor-2-portrait');
+        await screenshot(`little-conductor-${level}-portrait`);
       }
       assert.equal((await state()).alpha, 1);
       await tap('neo.scene.game.done');

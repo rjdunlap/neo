@@ -11,14 +11,26 @@ export const GAP_Y_UPRIGHT = 44;
 export const GAP_Y_LANDSCAPE = 36;
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 2 },
-  grownup: { min: 1, max: 2 },
+  school: { min: 1, max: 4 },
+  grownup: { min: 1, max: 4 },
 };
 
-export const describeLevel = (level: number): string =>
-  level === 1
-    ? 'Near the far bank: lay 1 or 2 stones to land on the far bank or three back (about 10 and up)'
-    : 'Across the stream: work backwards from the far bank to hit every stepping stone (about 10 and up)';
+export const describeLevel = (level: number): string => {
+  switch (level) {
+    case 1:
+      return 'Near the far bank: lay 1 or 2 stones to land on the far bank or three back (about 10 and up)';
+    case 2:
+      return 'Across the stream: work backwards from the far bank to hit every stepping stone (about 10 and up)';
+    case 3:
+      return 'Who goes first? choose to start or let the pet start, then reach the far bank (about 10 and up)';
+    default:
+      return 'Bigger steps: lay up to 3 or 4 stones at a time, and choose who goes first (about 10 and up)';
+  }
+};
+
+/** Stones that may be laid in one turn; `1..maxTake`, never above `4`. */
+export type Move = 1 | 2 | 3 | 4;
+export type Seat = 'first' | 'second';
 
 export type Player = 'her' | 'pet';
 export type Stone = Player | null;
@@ -32,6 +44,10 @@ export interface MoveRecord {
 export interface CrossingSpec {
   readonly target: number;
   readonly startPos: number;
+  /** Most stones one turn may lay (`2` at levels 1–3). */
+  readonly maxTake: number;
+  /** She picks who lays the first stone before play (levels 3–4). */
+  readonly choose: boolean;
 }
 
 export interface CrossingState {
@@ -66,7 +82,7 @@ export interface StreamLayout {
 export type Level1ReplyKind = 'could-reach' | 'leave-three' | 'took-stone';
 
 export interface Level1Reply {
-  readonly move: 1 | 2;
+  readonly move: Move;
   readonly voice: `lp.${Level1ReplyKind}`;
   readonly highlightSpot: number;
 }
@@ -87,16 +103,16 @@ export function isSteppingStone(pos: number, target: number, maxTake = MAX_TAKE)
 }
 
 /** Unique winning move (`1 | 2`) from `pos` toward `target`, or `null` if `pos >= target` or already a stepping stone. */
-export function bestMove(pos: number, target: number, maxTake = MAX_TAKE): 1 | 2 | null {
+export function bestMove(pos: number, target: number, maxTake = MAX_TAKE): Move | null {
   if (pos >= target || isSteppingStone(pos, target, maxTake)) return null;
-  return ((target - pos) % (maxTake + 1)) as 1 | 2;
+  return ((target - pos) % (maxTake + 1)) as Move;
 }
 
 /** Legal forward stone counts from `pos` toward `target`. */
-export function legalMoves(pos: number, target: number, maxTake = MAX_TAKE): (1 | 2)[] {
+export function legalMoves(pos: number, target: number, maxTake = MAX_TAKE): Move[] {
   if (pos >= target) return [];
-  const out: (1 | 2)[] = [];
-  for (let d = 1; d <= maxTake && pos + d <= target; d++) out.push(d as 1 | 2);
+  const out: Move[] = [];
+  for (let d = 1; d <= maxTake && pos + d <= target; d++) out.push(d as Move);
   return out;
 }
 
@@ -104,7 +120,7 @@ export function legalMoves(pos: number, target: number, maxTake = MAX_TAKE): (1 
  * The pet's reply from `pos`: plays `bestMove` whenever `pos` is not a stepping stone, and picks deterministically
  * from `legalMoves` via a hash of `(pos, target, seed)` on stepping stones so both `+1` and `+2` appear across rounds.
  */
-export function petMove(pos: number, target: number, seed: number, maxTake = MAX_TAKE): 1 | 2 {
+export function petMove(pos: number, target: number, seed: number, maxTake = MAX_TAKE): Move {
   const best = bestMove(pos, target, maxTake);
   if (best !== null) return best;
   const legal = legalMoves(pos, target, maxTake);
@@ -151,6 +167,24 @@ export function turningPointIndex(moves: readonly MoveRecord[], target: number, 
   return -1;
 }
 
+/**
+ * True iff the player who lays the first stone wins against best play: position `0` is not a stepping stone,
+ * that is `target` is not a multiple of `maxTake + 1`.
+ */
+export function goFirstWins(target: number, maxTake = MAX_TAKE): boolean {
+  return !isSteppingStone(0, target, maxTake);
+}
+
+/** The winning pick before a crossing: go first when `0` is not a stepping stone, otherwise let the pet go first. */
+export function bestChoice(target: number, maxTake = MAX_TAKE): Seat {
+  return goFirstWins(target, maxTake) ? 'first' : 'second';
+}
+
+/** Spots lit once to show the stepping stones of a crossing (`target`, `target - (maxTake + 1)`, … down to `1`). */
+export function stoneSpots(target: number, maxTake = MAX_TAKE): number[] {
+  return steppingStones(target, maxTake);
+}
+
 /** Initial state for a crossing: `1..startPos` filled alternating `'her'`/`'pet'` ending on `'pet'` so she moves next. */
 export function makeCrossing(target: number, startPos: number): CrossingState {
   const stones: Stone[] = Array.from({ length: target }, (_, i) =>
@@ -159,11 +193,11 @@ export function makeCrossing(target: number, startPos: number): CrossingState {
   return { target, pos: startPos, stones };
 }
 
-/** Applies a legal move of `delta` (`1 | 2`) by `player` and returns the next state and its move record. */
+/** Applies a legal move of `delta` by `player` and returns the next state and its move record. */
 export function applyMove(
   state: CrossingState,
   player: Player,
-  delta: 1 | 2,
+  delta: Move,
 ): { state: CrossingState; record: MoveRecord } {
   const to = Math.min(state.target, state.pos + delta);
   const stones = state.stones.slice();
@@ -185,17 +219,42 @@ export function makeRound(level: number, rng: Rng): Round {
       level: 1,
       seed,
       crossings: [
-        { target: t1, startPos: t1 - 2 },
-        { target: t2, startPos: t2 - 4 },
-        { target: t3, startPos: t3 - 5 },
+        { target: t1, startPos: t1 - 2, maxTake: MAX_TAKE, choose: false },
+        { target: t2, startPos: t2 - 4, maxTake: MAX_TAKE, choose: false },
+        { target: t3, startPos: t3 - 5, maxTake: MAX_TAKE, choose: false },
       ],
     };
   }
-  const target = rng.pick([7, 8, 10, 11]);
+  if (level === 2) {
+    const target = rng.pick([7, 8, 10, 11]);
+    return {
+      level: 2,
+      seed,
+      crossings: [{ target, startPos: 0, maxTake: MAX_TAKE, choose: false }],
+    };
+  }
+  if (level === 3) {
+    // One stream per remainder mod 3 (both answers always appear), in seeded order.
+    const lengths = rng.shuffle([rng.pick([6, 9, 12]), rng.pick([7, 10]), rng.pick([8, 11])]);
+    return {
+      level: 3,
+      seed,
+      crossings: lengths.map((target) => ({ target, startPos: 0, maxTake: MAX_TAKE, choose: true })),
+    };
+  }
+  // Level 4: one crossing of each take, at least one multiple of `m + 1` and at least one not.
+  const pools: Record<number, number[]> = { 3: [9, 10, 11, 12, 13], 4: [10, 12, 13, 14, 15, 16] };
+  const mixed = rng.pick([0, 1]);
+  const pick = (m: number, wantMultiple: boolean) => {
+    const pool = pools[m].filter((t) => (t % (m + 1) === 0) === wantMultiple);
+    return rng.pick(pool);
+  };
+  const a = { target: pick(3, mixed === 0), maxTake: 3 };
+  const b = { target: pick(4, mixed !== 0), maxTake: 4 };
   return {
-    level: 2,
+    level: 4,
     seed,
-    crossings: [{ target, startPos: 0 }],
+    crossings: rng.shuffle([a, b]).map((c) => ({ ...c, startPos: 0, choose: true })),
   };
 }
 
@@ -212,8 +271,8 @@ export function level1Reply(posAfterHerMove: number, target: number): Level1Repl
 }
 
 /** What spot `Show me` points to from `pos`, or `null` if `pos` is a losing position (level 2 rewinds first). */
-export function hintSpot(pos: number, target: number): number | null {
-  const d = bestMove(pos, target);
+export function hintSpot(pos: number, target: number, maxTake = MAX_TAKE): number | null {
+  const d = bestMove(pos, target, maxTake);
   return d === null ? null : pos + d;
 }
 
@@ -263,4 +322,27 @@ export function streamLayout(view: Pick<View, 'w' | 'h' | 'upright'>, target: nu
     farBank: { x: last.x, y: last.y },
     spotSize: SPOT_SIZE,
   };
+}
+
+export const CHOICE_W = 240;
+export const CHOICE_H = 180;
+export const CHOICE_GAP = 40;
+
+export interface ChoiceBox {
+  readonly pick: Seat;
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+/** The two choice buttons (`I go first`, `Pet goes first`), side by side over the middle of the board. */
+export function choiceLayout(L: Pick<StreamLayout, 'board'>): ChoiceBox[] {
+  const cx = L.board.x + L.board.w / 2;
+  const cy = L.board.y + L.board.h / 2;
+  const off = (CHOICE_W + CHOICE_GAP) / 2;
+  return [
+    { pick: 'first', x: cx - off, y: cy, w: CHOICE_W, h: CHOICE_H },
+    { pick: 'second', x: cx + off, y: cy, w: CHOICE_W, h: CHOICE_H },
+  ];
 }

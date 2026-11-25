@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { captionPlace } from '../../ui/caption-layout';
 import { square, thumbPx, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
-import { SPOT_SIZE, streamLayout } from './logic';
+import { CHOICE_H, CHOICE_W, SPOT_SIZE, choiceLayout, streamLayout } from './logic';
 
 const short = computeView(375, 601, NO_INSETS, true);
 const shortPhone = captionPlace(computeView(390, 625, NO_INSETS, true), true).game;
@@ -22,7 +22,7 @@ const views = {
 };
 
 describe.each(Object.entries(views))('Last Pebble layout on %s', (name, v) => {
-  it.each([6, 7, 8, 9, 10, 11])(
+  it.each([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])(
     'places %i stepping spots >= 128 units, apart, in view, clear of Home and guide',
     (target) => {
       const l = streamLayout(v, target);
@@ -30,6 +30,15 @@ describe.each(Object.entries(views))('Last Pebble layout on %s', (name, v) => {
       expect(uprightProblems(v, targets, 128), `${name} T=${target}`).toEqual([]);
     },
   );
+});
+
+describe.each(Object.entries(views))('Last Pebble choice buttons on %s', (name, v) => {
+  it.each([6, 9, 12, 16])('keeps both buttons in view and clear of Home and guide at T=%i', (target) => {
+    const boxes = choiceLayout(streamLayout(v, target)).map((b) => ({ what: `choose ${b.pick}`, ...b }));
+    expect(uprightProblems(v, boxes, 160), `${name} T=${target}`).toEqual([]);
+    expect(CHOICE_W).toBeGreaterThanOrEqual(200);
+    expect(CHOICE_H).toBeGreaterThanOrEqual(160);
+  });
 });
 
 describe('Last Pebble target sizes', () => {

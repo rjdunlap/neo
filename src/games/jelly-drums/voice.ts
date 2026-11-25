@@ -10,7 +10,9 @@ export const VOICE = {
   'jelly.song.n': ['Song {n}!'],
   'jelly.compare.ask': ['Is song {b} the same as song {a}?'],
   // Level 13: slotted lines stay on device speech until a clip pass renders fixed wording.
-  'jelly.order': ['Who has the lowest voice, {name}? Tap to listen, then drag the lowest jelly to the lit spot!'],
+  'jelly.order': [
+    'Who has the lowest voice, {name}? Tap to listen, then drag the lowest jelly to the lit spot!',
+  ],
   'jelly.order.next': ['Who is next for spot {spot}?'],
   'jelly.order.dir': ['Try a {dir} one!'],
   'jelly.song.hot-cross-buns': ['This one is Hot Cross Buns!'],

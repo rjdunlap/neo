@@ -1,1 +1,0 @@
-**`last-pebble` levels 3–4, Who goes first? and Bigger steps** (school, grown-up; new interaction, choice screen and four-row board; batch `last-pebble 2`: typecheck, rule tests, one filtered upright play with a wrong choice, `fingerdemo` at levels 3–4, one portrait screenshot). [Definition](../../definitions/last-pebble-3-5.md#build-batches-and-checks)
