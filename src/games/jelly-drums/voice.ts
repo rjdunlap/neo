@@ -25,6 +25,8 @@ export const VOICE = {
   'jelly.name.green': ['Green! Little and high.'],
   'jelly.name.blue': ['Blue! The littlest jelly sings the highest.'],
   'jelly.lowhigh': ['Big jellies sing low. Little jellies sing high.'],
+  // Slotted, so it stays on device speech and needs no rendered clip.
+  'jelly.scale': ['Jellies side by side make a scale, {name}. The notes climb like stairs, up or down.'],
   'jelly.turn': ['Your turn!'],
   // Level 14: slotted lines stay on device speech until a clip pass renders fixed wording.
   'jelly.which': ['Listen to the sound, {name}, then tap which jelly sang!'],

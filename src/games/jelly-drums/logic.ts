@@ -290,19 +290,30 @@ export class JellyNamer {
 
 /** The journal key (`jelly-drums:low-high`). Never rename it. */
 export const LOW_HIGH = 'low-high';
+/** The journal key (`jelly-drums:scale`). Never rename it. */
+export const SCALE = 'scale';
 
 /**
  * What a round has shown for the journal. "Big jellies sing low, little jellies sing high" is filed once she has
- * tapped both the biggest and the littlest jelly in the round; a round that did not show it files nothing.
+ * tapped both the biggest and the littlest jelly in the round. "A scale" is filed when level 3's three-neighbours
+ * sparkle has played (`sparkled`). A round that showed neither files nothing.
  */
 export class JournalWatch {
   private readonly tapped = new Set<number>();
+  private scale = false;
   tap(i: number) {
     this.tapped.add(i);
   }
+  /** Level 3's scale sparkle played: she climbed or came down three neighbouring jellies. */
+  sparkled() {
+    this.scale = true;
+  }
   /** The journal keys this round showed. */
   keys(): string[] {
-    return this.tapped.has(0) && this.tapped.has(JELLIES - 1) ? [LOW_HIGH] : [];
+    const keys: string[] = [];
+    if (this.tapped.has(0) && this.tapped.has(JELLIES - 1)) keys.push(LOW_HIGH);
+    if (this.scale) keys.push(SCALE);
+    return keys;
   }
 }
 
