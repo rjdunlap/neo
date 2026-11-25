@@ -51,7 +51,17 @@ export const HOW_TO: GameHowTo = {
       to: 16,
       text: 'Build the same pattern with the animals. Fill each glowing car so cars that match on top match below, and cars that differ on top differ below. Any animals that do this are right.',
     },
+    {
+      from: 17,
+      to: 17,
+      text: 'Make your own pattern: tap one to three pieces to choose what repeats, tap a chosen car to take it back, then press the green arrow. The train runs the pattern round three times and says it. Nothing is wrong.',
+    },
   ],
-  finish:
-    'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
+  finish: [
+    {
+      to: 16,
+      text: 'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
+    },
+    { from: 17, to: 17, text: 'The round ends when the train has run her pattern round three times.' },
+  ],
 };

@@ -3,9 +3,35 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function patterns() {
     const levels =
-      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 16 }, (_, i) => i + 1);
+      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 17 }, (_, i) => i + 1);
     for (const level of levels) {
       await launch('pattern-train', level);
+      if (level === 17) {
+        // Make your own: choose circle, circle, square (and take one back out, then choose it again), press Go.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          kit.tapOn(g.tray[0]);
+          await kit.sleep(300);
+          kit.tapOn(g.tray[2]);
+          await kit.sleep(300);
+          kit.tapOn(g.unitCars[1]);
+          await kit.sleep(300);
+          for (const p of [0, 1]) {
+            kit.tapOn(g.tray[p]);
+            await kit.sleep(300);
+          }
+          kit.tapOn(g.tray[2]); // a full unit only sounds
+          await kit.sleep(300);
+        });
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.unit), [0, 0, 1], 'pattern 17 unit');
+        await page.evaluate(() => kit.tapOn(neo.scene.game.go));
+        await finished('pattern-train');
+        assert.equal(await page.evaluate(() => neo.scene.game.trainCars.length), 9, 'pattern 17 train');
+        assert.equal(await page.evaluate(() => neo.scene.game.misses ?? 0), 0, 'pattern 17 no misses');
+        await screenshot('pattern-train-17');
+        log('Pattern Train level 17: chose a unit, took one back, ran it three times, no miss');
+        continue;
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game;
         if (g.plan.match === 'row') {

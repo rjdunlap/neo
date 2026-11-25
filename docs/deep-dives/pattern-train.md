@@ -145,7 +145,7 @@ Each is one session. Slices 1–6 are built (2026-10-11; [slice 1 build note](..
 4. **Built (2026-10-11), without boats, sizes, turns or acting kinds.** **The hint that reads the train,** a car-kind pool (animals from `CRITTERS`, fruit, flowers), the sounds on tap, and the kind-distinctness test. Tier: rules plus one screenshot of the new art.
 5. **Built (2026-10-11).** **Levels 13 and 14, odd car out and fix the train,** with the bot (`autotouch()` taps the car, then the choice) and the how-to's scoped lines. Tier: *new levels*: rule tests, one browser play of each, `fingerdemo`.
 6. **Built (2026-10-11).** **Levels 15 and 16, same pattern in new pieces and build the same,** with the model-and-rows layout. Tier: the same, plus a portrait screenshot.
-7. **Level 17, make your own,** with the toddler two-choice opening from level 1 (`bands` gets `toddler`; remove the dead lap entry). Tier: rules, one scripted play, one portrait screenshot, a person check for the toddler window.
+7. **Built 2026-11-25 (level 17 only, PR #2187; the toddler two-choice opening and the dead lap entry are left for a person check).** **Level 17, make your own,** with the toddler two-choice opening from level 1 (`bands` gets `toddler`; remove the dead lap entry). Tier: rules, one scripted play, one portrait screenshot, a person check for the toddler window.
 8. **Levels 18–20, stairs, up and down, start anywhere,** with the counter-stack car. Tier: *new levels*.
 9. **Sizes, turns and acting kinds,** then **level 21** (define first), then the level-0 and −1 sketches once the level-order decisions are made.
 

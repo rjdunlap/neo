@@ -1,9 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
-import { Critter, CRITTERS, type CritterName } from '../../art/critter';
-import { prop } from '../../art/props';
 import { shapePath } from '../../art/shapes';
-import type { AnimalSound } from '../../audio/sfx';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
@@ -12,15 +9,15 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
-import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
+import { replayArt, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { PatternMake } from './make';
 import { PatternMatch } from './match';
+import { pieceArt, VOICE } from './pieces';
 import {
   LEVELS,
   ANIMAL_TRIOS,
   buildTrain,
-  FLOWERS,
-  FRUITS,
   patternPlan,
   patternSaid,
   pieceColor,
@@ -48,45 +45,6 @@ function trainSymbol(
   }
   if (kind === 'pair') return label('?', 40, swatch.purple.line);
   return pieceArt(kind, family, value, size);
-}
-
-/** Each animal's own voice, for the car that is tapped. */
-const VOICE: Partial<Record<CritterName, AnimalSound>> = {
-  cow: 'moo',
-  duck: 'quack',
-  pig: 'oink',
-  cat: 'meow',
-  dog: 'woof',
-  bear: 'growl',
-  bunny: 'hop',
-};
-
-/** One of a round's three pieces, made of the round's family of things (see `SHAPE_FAMILIES` and `ANIMAL_TRIOS`). */
-function pieceArt(
-  kind: PatternPlan['kind'],
-  family: number | undefined,
-  value: number,
-  size: number,
-): Container {
-  if (kind === 'shape' && family === 1) {
-    const [fruit, color] = FRUITS[value % 3];
-    const c = prop(fruit, color);
-    c.scale.set(size / 48);
-    return c;
-  }
-  if (kind === 'shape' && family === 2) {
-    const c = prop('flower', FLOWERS[value % 3]);
-    c.scale.set(size / 48);
-    return c;
-  }
-  if (kind === 'animal' && family !== undefined) {
-    const c = new Critter(CRITTERS[ANIMAL_TRIOS[family][value % 3]]);
-    c.alive = false;
-    c.scale.set(size / 150);
-    c.y = size * 0.8;
-    return c;
-  }
-  return symbol(kind as 'shape' | 'animal' | 'bell', value, size);
 }
 
 /** `buildTrain`, with `shown` always set: what the cars show is the train unless a car shows a wrong piece. */
@@ -561,10 +519,13 @@ export const patternTrain: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly,
-  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16],
+  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
   offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()),
   touchDemo: true,
   sticker: () => trainArt(),
-  create: (ctx) => (patternPlan(ctx.level).match ? new PatternMatch(ctx) : new PatternTrain(ctx)),
+  create: (ctx) => {
+    const plan = patternPlan(ctx.level);
+    return plan.make ? new PatternMake(ctx) : plan.match ? new PatternMatch(ctx) : new PatternTrain(ctx);
+  },
 };

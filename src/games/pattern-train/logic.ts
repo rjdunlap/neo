@@ -21,6 +21,8 @@ export interface PatternPlan {
   match?: 'row' | 'build';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
+  /** Level 17, "Make your own": she picks a unit of one to three pieces and the train runs it round (`makeTrain`); nothing is wrong. */
+  make?: boolean;
   name: string;
 }
 
@@ -46,6 +48,8 @@ export const PATTERN_PLANS: PatternPlan[] = [
     name: 'Find the row with the same pattern in new pieces',
   },
   { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
+  // Her own unit, so `pattern` is empty: the unit is whatever she makes.
+  { pattern: [], kind: 'shape', make: true, name: 'Make your own pattern and watch it go round' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -377,3 +381,27 @@ export function buildMatch(rng: Rng): MatchRound {
     trio: rng.int(0, ANIMAL_TRIOS.length - 1),
   };
 }
+
+/** Level 17: a unit is one to three of the round's three pieces, in the order she chose them. */
+export const MAKE_UNIT_MAX = 3;
+/** Level 17: the train runs her unit round this many times (at most nine cars, what a row holds). */
+export const MAKE_REPEATS = 3;
+
+/** The unit after she taps `piece` in the tray: it joins the end, unless the unit is already full (then nothing changes). */
+export const addToUnit = (unit: readonly number[], piece: number): number[] =>
+  unit.length < MAKE_UNIT_MAX && piece >= 0 && piece < CHOICES ? [...unit, piece] : [...unit];
+
+/** The unit after she taps the car at `at` in it: that car comes out and the rest close up. */
+export const removeFromUnit = (unit: readonly number[], at: number): number[] =>
+  unit.filter((_, i) => i !== at);
+
+/** Go works for any unit of one to three pieces; an empty unit has nothing to run. */
+export const canGo = (unit: readonly number[]): boolean => unit.length >= 1 && unit.length <= MAKE_UNIT_MAX;
+
+/** The cars of the train that runs her unit round `MAKE_REPEATS` times. */
+export const makeTrain = (unit: readonly number[]): number[] =>
+  Array.from({ length: unit.length * MAKE_REPEATS }, (_, i) => unit[i % unit.length]);
+
+/** What the pet says once the train has run: her unit by name, then "again!" (a slotted line, so it stays on device speech). */
+export const madeList = (family: number, unit: readonly number[]): string =>
+  unit.map((p) => pieceName('shape', family, p)).join(', ');
