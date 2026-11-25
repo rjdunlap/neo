@@ -1,1 +1,0 @@
-**`social-emotional`: define A Place for You within Common Ground** (docs only; study follow-up definition): define the next social-emotional round inside Common Ground; practical mental-health and conflict advice stays deferred. [Study](../../deep-dives/subjects/social-emotional.md#build-slices-in-order)

@@ -1,0 +1,1 @@
+**`common-ground` level 1, A Place for You** (school; new game: typecheck, unit tests, one filtered scripted play with a missed Visit then a hint then a kept arrangement, one portrait screenshot, `fingerdemo` at level 1, build because lands and registry change). [Definition](../../definitions/common-ground.md)
