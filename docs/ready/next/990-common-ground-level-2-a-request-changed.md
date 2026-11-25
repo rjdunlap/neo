@@ -1,0 +1,1 @@
+**`common-ground` level 2: a request changed** (school, step-up level 1; new interaction on an existing game: typecheck, rule tests, one filtered scripted play of level 2 with a Visit on the old side, a hint and its assisted drag, a revision with Undo, one portrait screenshot and `fingerdemo` at it). [Definition](../../definitions/common-ground-2.md)
