@@ -200,7 +200,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Ready for Adventure
 
-*toddler–pre-K* · [Ready for Adventure](games/ready-for-adventure.md)
+*toddler–school* · [Ready for Adventure](games/ready-for-adventure.md)
 
 ### Who Am I?
 

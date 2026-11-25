@@ -2,6 +2,8 @@
 
 Defined 2026-11-25 as RA4, [slice 5](../deep-dives/subjects/routines-self-care.md#build-slices-in-order) of the routines-and-self-care study, from the [level 4 row](../deep-dives/subjects/routines-self-care.md#first-games-proposed-ladder) and the school row of its age table. Docs only: no code, ID, voice line, art or save field exists yet. Levels 1–3 are built and unchanged ([definition](ready-for-adventure.md), [page](../games/ready-for-adventure.md)); level 5, *One workbench*, is a separate later packet. Every prop is still imaginary parade gear: no washing, dressing, food, toilet or sleep step is drawn or spoken, so the practical-care reviewer does not gate this.
 
+**Built 2026-11-25 (PR #2177):** `revise.ts`, `revise-scene.ts`, `parade.ts`; the seeded rounds draw from the same change kinds, and the authored flag + drum then flag + bell round (`firstRound`) is kept for tests, not forced on a first play.
+
 **Fun action and purpose:** the card shows what the parade needs and she packs it, then taps **Check**. The companion cheers, and then the parade changes: a new card slides in. Now the bag must be repaired, not rebuilt: take out what is no longer wanted, put in what is new, tap Check again, and the revised parade plays. The learning purpose is **compare a plan with the plan's new goal and repair only the difference** (Head Start P-PMP 4 and 5: flexible, revisable plans), which the first three levels never ask because their request never changes and packed is final.
 
 ## Identity and school window

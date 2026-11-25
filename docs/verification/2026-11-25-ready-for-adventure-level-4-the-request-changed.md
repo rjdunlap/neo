@@ -1,0 +1,5 @@
+# 2026-11-25 — Ready for Adventure level 4, The request changed (PR #2177)
+
+**Changed:** school level 4 of `ready-for-adventure` (rules and layout in `revise.ts`, scene in `revise-scene.ts`, shared parade moved to `parade.ts` and now used by levels 1–4), `school` band, voice lines, how-to card, game page, and a level 4 step in the `readyadventure` browser suite.
+**Ran:** `npm run typecheck`; lint and Prettier on the game folder; `npx vitest run src/games/ready-for-adventure src/content` (11 new rule tests: rounds, any bag reaches any request, Check, phases, accounting, hints, layout at four views); `BROWSER_SUITE=readyadventure` (levels 1, 3 and a portrait level 4 play: empty Check free, two bad Checks give a glow and one hint, tap takes the lit prop out, the card changes with the bag untouched, repair, parade, saved score 2 misses and 1 hint, one portrait screenshot); `BROWSER_SUITE=fingerdemo` at level 4 (the ghost finger finished in 22 s).
+**Not run:** `npm run build`, the offline check and the full `npm test` (left to pull request CI; no shared engine, save or navigation code changed); no real phone or child check (parked).
