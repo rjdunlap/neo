@@ -993,6 +993,7 @@ class LittleConductor implements Game {
         (this.spots && why === 'hear-other'
           ? 'little-conductor.hear-other-friends'
           : `little-conductor.${why}`) as LineId,
+        { name: this.ctx.childName },
       );
       return;
     }

@@ -18,7 +18,7 @@ export const VOICE = {
     'Tap a friend to ask them to play, {name}. Tap again to ask them to stop. Try different friends, then tap the green check.',
   ],
   'little-conductor.hear-other-friends': [
-    'Now try a different group of friends. Tap a friend to ask them in or out!',
+    'Now try a different group of friends, {name}. Tap a friend to ask them in or out!',
   ],
   'little-conductor.hear-whole': [
     'Listen to the whole tune, then tap the check.',
