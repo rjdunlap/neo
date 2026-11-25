@@ -1,12 +1,13 @@
 import { spread } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
-import { STAMP_KINDS, type StampKindId } from '../../content/creations';
+import { STAMP_KINDS, type SceneId, type StampKindId } from '../../content/creations';
 import { Rng } from '../../engine/random';
 import { stepFromUnit } from '../../audio/notes';
 import type { AnimalSound } from '../../audio/sfx';
 import { leafOutline } from '../fossil-dig/logic';
 export { STAMP_KINDS };
+export type { SceneId };
 export type StampKind = StampKindId;
 export const STAMP_NAMES: Record<StampKind, string> = {
   star: 'A star',
@@ -14,7 +15,37 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   fish: 'A fish',
   cat: 'A cat',
   duck: 'A duck',
+  // Every name takes "A", so `animalWord` can drop two letters; a later "An apple" or "An ant" needs that revisited.
+  whale: 'A whale',
+  crab: 'A crab',
+  starfish: 'A starfish',
+  shell: 'A shell',
+  boat: 'A boat',
 };
+
+/**
+ * A stamp set: six stamps that belong together and the scene they stand on. Sets are all open from the start, nothing
+ * unlocks. The four original stamps join their sets as those sets are built (dive slice 6 onward); only Sea exists yet.
+ */
+export interface StampSet {
+  name: string;
+  kinds: readonly StampKind[];
+  scene: SceneId;
+}
+export const SETS = {
+  sea: {
+    name: 'Sea',
+    kinds: ['fish', 'whale', 'crab', 'starfish', 'shell', 'boat'],
+    scene: 'sea',
+  },
+} as const satisfies Record<string, StampSet>;
+export type SetId = keyof typeof SETS;
+/** The backdrop each scene paints behind the stamps: where its horizon sits on the paper (0 top to 1 bottom). */
+export const SCENES = {
+  sea: { name: 'The sea', horizon: 0.82 },
+} as const satisfies Record<SceneId, { name: string; horizon: number }>;
+/** The stamps from before sets existed, which levels 1–3 still draw from on plain paper. */
+export const PLAIN_KINDS: readonly StampKind[] = STAMP_KINDS.slice(0, 5);
 /** Plain noun for a stamp kind ("duck", "cat", "fish"), used inside spoken prompts. */
 export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].slice(2);
 
@@ -220,6 +251,11 @@ export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
   fish: { play: 'splash' },
   cat: { play: 'animal', animal: 'meow' },
   duck: { play: 'animal', animal: 'quack' },
+  whale: { play: 'splash' },
+  crab: { play: 'splash' },
+  starfish: { play: 'bell', from: 5 },
+  shell: { play: 'marimba', from: 6 },
+  boat: { play: 'marimba', from: 2 },
 };
 /** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
 export function stampStep(kind: StampKind, press: number): number | null {
@@ -353,7 +389,7 @@ export function animalAsks(kinds: readonly StampKind[], selected: StampKind, rng
 }
 
 /** Early rounds vary their existing tools without adding simultaneous choices. */
-export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
+export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName; scene?: SceneId } {
   const base = planFor(level);
   if (base.ask) {
     return {
@@ -362,9 +398,14 @@ export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: Co
     };
   }
   if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
+  // Levels 1–3 draw from one seeded set, so a round is either the Sea (its stamps on its backdrop) or the older stamps on
+  // plain paper; Follow the sparkle (level 10) keeps the older stamps. Dive slice 6 widens this once the sets button exists.
+  const sea = level <= 3 && rng.next() < 0.5;
+  const pool = sea ? SETS.sea.kinds : PLAIN_KINDS;
   return {
-    plan: { ...base, kinds: rng.shuffle([...STAMP_KINDS]).slice(0, base.kinds.length) },
+    plan: { ...base, kinds: rng.shuffle([...pool]).slice(0, base.kinds.length) },
     color: rng.pick(STAMP_COLORS),
+    ...(sea ? { scene: SETS.sea.scene } : {}),
   };
 }
 

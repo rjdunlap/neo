@@ -301,3 +301,27 @@ describe('what a tune sounds like', () => {
     expect(high[0]).toBeGreaterThan(low[0]);
   });
 });
+
+describe('a picture made on a scene', () => {
+  const sea = {
+    kind: 'picture',
+    scene: 'sea',
+    stamps: [{ kind: 'whale', color: 'blue', x: 0.4, y: 0.5, size: 1, turns: 0 }],
+  } as const;
+  it('keeps its scene and its Sea stamps, and an older picture has none', () => {
+    expect(cleanPicture(JSON.parse(JSON.stringify(sea)))).toEqual(sea);
+    const old = cleanPicture(picture(0.3));
+    expect(old && 'scene' in old).toBe(false);
+  });
+  it('drops a damaged or unknown scene but keeps the picture', () => {
+    for (const scene of ['moon', 7, null, {}, ['sea']]) {
+      const c = cleanPicture({ ...sea, scene });
+      expect(c).toEqual({ kind: 'picture', stamps: sea.stamps });
+      expect(c && 'scene' in c).toBe(false);
+    }
+  });
+  it('drops a stamp of a kind it does not know, as an older build would', () => {
+    const c = cleanPicture({ ...sea, stamps: [...sea.stamps, { ...sea.stamps[0], kind: 'dragon' }] });
+    expect(c && 'stamps' in c ? c.stamps : []).toHaveLength(1);
+  });
+});

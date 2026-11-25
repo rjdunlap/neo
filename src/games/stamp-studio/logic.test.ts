@@ -26,7 +26,7 @@ import { cream, swatch, type ColorName } from '../../art/palette';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
 import { Rng } from '../../engine/random';
-import { roundPlan } from './logic';
+import { roundPlan, PLAIN_KINDS, SCENES, SETS } from './logic';
 import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
@@ -945,5 +945,75 @@ describe('Stamp a duck! (level 11)', () => {
     expect(text).toMatch(/cat.*fish.*duck/i);
     expect(text).toMatch(/glows/i);
     expect(text).toMatch(/three asks/i);
+  });
+
+  describe('the Sea set and scenes (dive slice 5)', () => {
+    const sea = SETS.sea.kinds;
+    it('has six distinct stamps that are all saved kinds, named, sounded and drawn at the board scale', () => {
+      expect(new Set(sea).size).toBe(6);
+      for (const kind of sea) {
+        expect(STAMP_KINDS).toContain(kind);
+        expect(STAMP_NAMES[kind]).toMatch(/^A \w+$/);
+        const sound = STAMP_SOUNDS[kind];
+        if ('from' in sound)
+          for (let press = 1; press <= 10; press++) {
+            const step = stampStep(kind, press);
+            expect(step).toBeGreaterThanOrEqual(0);
+            expect(Number.isInteger(step)).toBe(true);
+            expect(step).toBeLessThanOrEqual(11);
+          }
+        for (const color of STAMP_COLORS) {
+          const b = artwork.stampArt(kind, color, 48).getLocalBounds();
+          // Read at the board's 0.46 scale it still spans at least 30 units, and stays inside the stamp's reach.
+          expect(b.width * 0.46, `${kind} ${color}`).toBeGreaterThan(30);
+          expect(b.height * 0.46, `${kind} ${color}`).toBeGreaterThan(20);
+          expect(b.width).toBeLessThan(48 * 2.6);
+          expect(b.height).toBeLessThan(48 * 2.6);
+        }
+      }
+    });
+    it('keeps the four sticker kinds first, so saved sticker art never changes', () => {
+      expect(STAMP_KINDS.slice(0, 5)).toEqual(['star', 'flower', 'fish', 'cat', 'duck']);
+    });
+    it('seeds levels 1–3 on the Sea or on plain paper, and only a Sea round has a scene', () => {
+      let seaRounds = 0;
+      let plainRounds = 0;
+      for (let seed = 0; seed < 120; seed++) {
+        for (const level of [1, 2, 3]) {
+          const r = roundPlan(level, new Rng(seed));
+          if (r.scene) {
+            seaRounds++;
+            expect(r.scene).toBe('sea');
+            for (const k of r.plan.kinds) expect(sea).toContain(k);
+          } else {
+            plainRounds++;
+            for (const k of r.plan.kinds) expect(PLAIN_KINDS).toContain(k);
+          }
+          expect(new Set(r.plan.kinds).size).toBe(r.plan.kinds.length);
+        }
+      }
+      expect(seaRounds).toBeGreaterThan(60);
+      expect(plainRounds).toBeGreaterThan(60);
+      // Every Sea stamp turns up over many rounds.
+      const seen = new Set<StampKind>();
+      for (let seed = 0; seed < 200; seed++) {
+        const r = roundPlan(3, new Rng(seed));
+        if (r.scene) r.plan.kinds.forEach((k) => seen.add(k));
+      }
+      expect([...seen].sort()).toEqual([...sea].sort());
+    });
+    it('leaves levels 4 and up, and Stamp a duck!, on plain paper', () => {
+      for (const level of [4, 5, 6, 7, 11]) expect(roundPlan(level, new Rng(3)).scene).toBeUndefined();
+      expect(roundPlan(10, new Rng(3)).scene).toBeUndefined();
+    });
+    it('paints the sea backdrop that does not swallow taps and that every stamp color reads on', () => {
+      expect(SCENES.sea.horizon).toBeGreaterThan(0.5);
+      expect(SCENES.sea.horizon).toBeLessThan(1);
+      const g = artwork.sceneArt('sea', 600, 400);
+      expect(g.eventMode).toBe('none');
+      const b = g.getLocalBounds();
+      expect(b.width).toBeGreaterThanOrEqual(600);
+      expect(b.height).toBeGreaterThanOrEqual(400);
+    });
   });
 });

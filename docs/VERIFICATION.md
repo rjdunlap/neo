@@ -52,7 +52,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `couchsolo` | 2026-10-08 · [Pond Conga, a sixth grown-up-only game and the first relaxing arcade game](archive/VERIFICATION-2026-10-07-13.md#pond-conga-a-sixth-grown-up-only-game-and-the-first-relaxing-arcade-game-2026-10-08) | Solo entry through the chooser |
 | `couchsunbeams` | 2026-11-04 · [Light Lab couch course Sunbeam Run (light-lab batch 2)](archive/VERIFICATION-2026-11-04.md#2026-11-04--light-lab-couch-course-sunbeam-run-light-lab-batch-2) | — |
 | `couchwords` | 2026-10-08 · [Word Search, a fourth grown-up-only game](archive/VERIFICATION-2026-10-07-13.md#word-search-a-fourth-grown-up-only-game-2026-10-08) | Three-grid bot course |
-| `creations` | 2026-10-09 · [Quiet music-making games](archive/VERIFICATION-2026-10-07-13.md#quiet-music-making-games-2026-10-09) | Room tune plaque and music dip |
+| `creations` | 2026-11-25 · [Stamp Studio scenes and the Sea set (PR #2181)](verification/2026-11-25-stamp-studio-scenes-and-the-sea-set.md) | A kept Sea picture and the stamped-picture flow; `fingerdemo` at stamp-studio levels 1–3 |
 | `creative` | 2026-11-24 · [Tangram Town level 9: Flip it (PR #2100)](verification/2026-11-24-tangram-town-level-9-flip-it.md) | `CREATIVE_ONLY=tangram TANGRAM_TAP=skip FROM_LEVEL=8` (also `fingerdemo` at level 9); Stamp Studio level 11 (PR #2080) passed earlier with `CREATIVE_ONLY=stamps STAMP_LEVELS=11` |
 | `critternot` | 2026-10-15 · [Critter Crossing visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | — |
 | `crittersortrules` | 2026-11-24 · [Critter Sort fresh rules](verification/2026-11-24-critter-sort-fresh-rules.md) | unit tests only; no browser play |

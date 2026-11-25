@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, turnIcon, undoIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { stampArt } from './art';
+import { sceneArt, stampArt } from './art';
 import { TracePrints } from './trace';
 import {
   animalAsks,
@@ -31,6 +31,7 @@ import {
   roundPlan,
   STAMP_COLORS,
   STAMP_NAMES,
+  type SceneId,
   STAMP_SOUNDS,
   countAloud,
   stampStep,
@@ -61,6 +62,10 @@ class StampStudio implements Game {
   readonly paper = new Container();
   private readonly background = new Graphics();
   private readonly sheet = new Graphics();
+  /** The scene's backdrop (Sea rounds), under the stamps and inside the paper's edge; empty on plain paper. */
+  private readonly backdrop = new Container();
+  private readonly backdropMask = new Graphics();
+  private readonly scene: SceneId | undefined;
   private readonly selection = new Graphics();
   readonly finish: RoundButton;
   readonly undo: RoundButton;
@@ -80,7 +85,7 @@ class StampStudio implements Game {
     sounds: boolean[];
     time: number;
     marks: Mark[];
-    creation: { kind: 'picture'; stamps: Stamp[] };
+    creation: { kind: 'picture'; stamps: Stamp[]; scene?: SceneId };
   } | null = null;
   /** Presses this round, which climb a pitched stamp's sound; and the numbers already counted aloud. */
   private presses = 0;
@@ -115,8 +120,11 @@ class StampStudio implements Game {
     const round = roundPlan(ctx.level, ctx.rng);
     this.plan = round.plan;
     this.color = round.color;
+    this.scene = round.scene;
     this.kind = this.plan.kinds[0];
-    this.paper.addChild(this.sheet, this.glow, this.selection, this.bar);
+    this.backdrop.eventMode = 'none';
+    this.backdrop.mask = this.backdropMask;
+    this.paper.addChild(this.sheet, this.backdrop, this.backdropMask, this.glow, this.selection, this.bar);
     if (this.plan.follow) {
       this.spots.push(...sparkleSpots(ctx.rng));
       const gold = swatch.yellow;
@@ -298,7 +306,11 @@ class StampStudio implements Game {
       s.node.scale.set(1);
       this.layoutStamp(s);
     });
-    const creation = { kind: 'picture' as const, stamps: this.stamps.map((s) => ({ ...s.data })) };
+    const creation = {
+      kind: 'picture' as const,
+      stamps: this.stamps.map((s) => ({ ...s.data })),
+      ...(this.scene ? { scene: this.scene } : {}),
+    };
     void this.ctx.say('stamp.done');
     // The wake-up: each stamp bounces with its own sound, in the order it was placed, then the round ends (`update`).
     this.woken = [];
@@ -475,6 +487,12 @@ class StampStudio implements Game {
       .fill(cream)
       .stroke({ width: 7, color: swatch.brown.line });
     this.sheet.hitArea = new Rectangle(0, 0, this.width, this.height);
+    this.backdrop.removeChildren().forEach((c) => c.destroy());
+    this.backdropMask
+      .clear()
+      .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
+      .fill(0xffffff);
+    if (this.scene) this.backdrop.addChild(sceneArt(this.scene, this.width, this.height));
     this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
     this.colors.forEach((b, i) => b.position.set(l.colors[i].x, l.colors[i].y));
     for (const k of ['finish', 'undo', 'bin', 'turn', 'grow', 'play'] as const)

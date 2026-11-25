@@ -245,8 +245,9 @@ export async function classicOffline(browser) {
     assert.deepEqual(save.world, { band: 'toddler' });
     await page.waitForTimeout(1700);
     await page.screenshot({ path: 'test-results/offline/reward.png' });
-    // The seeded save predates island stories: loading it added the Windy and Woodland Picnics, untold.
+    // The seeded save predates island stories: loading it added the Windy and Woodland Picnics and the Missing Melody, untold.
     assert.deepEqual(save.stories, {
+      melody: { steps: [], ended: false, keepsake: false },
       picnic: { steps: [], ended: false, keepsake: false },
       woodland: { steps: [], ended: false, keepsake: false },
     });

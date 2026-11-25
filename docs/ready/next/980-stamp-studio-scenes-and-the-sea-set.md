@@ -1,1 +1,0 @@
-**`stamp-studio` scenes and the Sea set** (SETS and SCENES, optional scene on kept pictures with repair, migration and backup tests; shell, engine and save tier with creations, fingerdemo and offline check). [Dive](../../deep-dives/stamp-studio.md#build-slices-in-order)
