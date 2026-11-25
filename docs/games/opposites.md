@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3, 4, 5, 7, 8 |
-| school | 8–10 |
+| school | 8–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,12 +26,13 @@
 | 8 | Line them up: the same three shuffled; tap them in order from empty to full, then the other way |
 | 9 | Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three |
 | 10 | Un- words: two pictures, like zipped and unzipped; hear (and see) the un- word and tap it |
+| 11 | Two answers: some words have two opposites (light: heavy and dark); find both |
 
 <!-- end generated -->
 
 **Starts as:** lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed)
 
-**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5); tap the one in between three pictures in true order (pre-K level 7); line three pictures up in order (pre-K level 8); hear a word and find its opposite with the picture hidden behind a speaker (school level 9); hear an un- word (unzipped, untied) and tap its picture beside the word it undoes, with the word in print and its "un" in a bubble of its own (school level 10)
+**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5); tap the one in between three pictures in true order (pre-K level 7); line three pictures up in order (pre-K level 8); hear a word and find its opposite with the picture hidden behind a speaker (school level 9); hear an un- word (unzipped, untied) and tap its picture beside the word it undoes, with the word in print and its "un" in a bubble of its own (school level 10); hear a word with two meanings (light, short, old) and tap both pictures that are its opposite, a picture of the word itself being no miss (school level 11)
 
 ## Design notes
 
@@ -48,3 +49,5 @@
 **Level 9, Only the word (2026-11-13).** Opens the school window (school 8–9; pre-K stays 3–8). The pet says "{word}! Find the opposite of {word}!" and the ask is a big speaker button with no picture; tapping it says the word again and is never a miss. Three cards: the opposite plus two from other families, drawn from all sixteen pairs. The first miss turns the speaker round to the asked word's own picture, with a small speaker left in its corner (still tappable); the opposite glows after two misses. Four rounds.
 
 **Level 10, Un- words (2026-11-24).** School's new top (school 8–10). Six word pairs where un- undoes the word, drawn as the same thing done and undone: zipped/unzipped (a pencil bag), tied/untied (a shoe), locked/unlocked (a padlock), wrapped/unwrapped (a present, then a plain box with the torn paper), buttoned/unbuttoned (a coat), folded/unfolded (a striped towel). They are concepts with family `un` and `from: 10`, so no earlier level's pool changes; happy/unhappy is left out because "happy" already belongs to the mood pair. Each of four rounds shows a word's two pictures and always asks for the un- one: "Zipped. Which one is unzipped?" (`opp.un`). The ask bubble prints the un- word with its "un" in a purple bubble of its own beside a small speaker; reading is optional, and a tap on the bubble says the word again and is never a miss. The other picture is a miss ("That one is zipped. Unzipped is the other way."); after two misses the un- one glows (one hint). A right tap says "Unzipped! Un turns zipped the other way." The two cards draw up to 1.3x (about 220 units), and on an upright phone up to 1.9x with the printed word at 1.5x. Device speech for the un- words was not checked; the voice lines are templates with no Kokoro clips rendered.
+
+**Level 11, Two answers (2026-11-25, PR #2151).** School's new top (school 8–11). Three words with two opposites each (light: heavy and dark; short: tall and long; old: new and young), one word per round, four cards: both opposites, one picture of the word itself (feather or lamp, pencil or short flower, worn boot or old tree; never a miss, "That one is light too") and one unrelated picture (a miss; the second miss glows an opposite not yet found). The word is printed beside a speaker and a tap replays it. Two by two on an upright phone. Pictures are code-drawn and plain; device speech is unchecked.

@@ -4780,7 +4780,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     if (!only || only === 'opp')
       // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up, 9 school's Only
       // the word, 10 Un- words.
-      for (const level of [1, 2, 3, 4, 5, 7, 8, 9, 10].filter((l) => l >= fromLevel)) {
+      for (const level of [1, 2, 3, 4, 5, 7, 8, 9, 10, 11].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {
@@ -4824,6 +4824,36 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 await screenshot('opposites-8-line');
               }
             }
+            continue;
+          }
+          if (mode === 'two') {
+            // Two answers: both opposites are taps; the word's own picture is no miss, the unrelated one is.
+            const sort = await page.evaluate(() => {
+              const cs = neo.scene.game.round.cards;
+              const at = (f) => cs.map((c, i) => i).filter((i) => f(cs[i]));
+              return {
+                rights: at((c) => c.two?.kind === 'right'),
+                same: at((c) => c.two?.kind === 'same')[0],
+                loose: at((c) => !c.two)[0],
+              };
+            });
+            if (n === 0) {
+              // The first round on a phone held upright (two by two), the ask replayed, then a same-word tap that is no miss.
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(600);
+              await tap('neo.scene.game.shown');
+              await card(sort.same);
+              assert.deepEqual(await counts(), [0, 0]);
+              await screenshot('opposites-11-same-phone');
+              await card(sort.loose);
+              await card(sort.loose);
+              assert.deepEqual(await counts(), [2, 1]);
+              await screenshot('opposites-11-hint-phone');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(400);
+            }
+            await card(sort.rights[0]);
+            await card(sort.rights[1]);
             continue;
           }
           const { right, others, pairs } = await page.evaluate(async () => {

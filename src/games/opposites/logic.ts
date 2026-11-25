@@ -6,9 +6,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * tap the picture and it flips to its opposite while the word is spoken. Then find the one named,
  * then find the opposite of a picture among others, then match the opposite pairs, then spot the one pair among five,
  * then find the one in between two ends (empty, half full, full), then line the three up from one end to the other,
- * then find the opposite of a word heard with its picture hidden, then find the un- word (zipped, unzipped).
+ * then find the opposite of a word heard with its picture hidden, then find the un- word (zipped, unzipped), then find
+ * the two pictures that are both the opposite of a word with two meanings (light: heavy and dark).
  */
-export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order' | 'un';
+export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order' | 'un' | 'two';
 
 export interface OppPlan {
   level: number;
@@ -84,14 +85,26 @@ export const UN_PLAN: OppPlan = {
   name: 'Un- words: two pictures, like zipped and unzipped; hear (and see) the un- word and tap it',
 };
 
+/**
+ * Level 11, school's new top: a word with two meanings has two opposites (light: heavy and dark), and she taps both. The four
+ * cards are the two opposites, one more picture of the asked word itself (a feather, a lamp), and one unrelated picture.
+ */
+export const TWO_LEVEL = 11;
+export const TWO_PLAN: OppPlan = {
+  level: TWO_LEVEL,
+  mode: 'two',
+  rounds: 3,
+  name: 'Two answers: some words have two opposites (light: heavy and dark); find both',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   // Level 6 is lap's opening, so pre-K steps from 5 straight to 7, then 8.
   prek: { min: 3, max: ORDER_LEVEL, order: [3, 4, 5, BETWEEN_LEVEL, ORDER_LEVEL] },
-  // School opens at Line them up, shared with pre-K's top, then hears the word alone, then un- words.
-  school: { min: ORDER_LEVEL, max: UN_LEVEL },
+  // School opens at Line them up, shared with pre-K's top, then hears the word alone, then un- words, then two answers.
+  school: { min: ORDER_LEVEL, max: TWO_LEVEL },
 };
 
 export const planFor = (level: number) =>
@@ -105,7 +118,9 @@ export const planFor = (level: number) =>
           ? WORD_PLAN
           : level === UN_LEVEL
             ? UN_PLAN
-            : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+            : level === TWO_LEVEL
+              ? TWO_PLAN
+              : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
@@ -157,7 +172,23 @@ export const GRADABLE = Object.keys(MIDDLES) as Gradable[];
 export const SUBJECTS = { size: ['bear', 'duck', 'bunny'], mood: ['cat', 'dog', 'pig'] } as const;
 export type Subject = (typeof SUBJECTS)[keyof typeof SUBJECTS][number];
 
+/**
+ * Level 11's authored words, each with two opposites (`right`) and two pictures that are the asked word itself (`same`: a
+ * feather and a lamp are light too, so tapping one is never a miss). The same words are never in an earlier pool.
+ */
+export const TWO = {
+  light: { right: ['heavy', 'dark'], same: ['feather', 'lamp'] },
+  short: { right: ['tall', 'long'], same: ['pencil', 'flower'] },
+  old: { right: ['new', 'young'], same: ['boot', 'tree'] },
+} as const;
+export type TwoWord = keyof typeof TWO;
+export const TWO_WORDS = Object.keys(TWO) as TwoWord[];
+/** Pictures for level 11's one unrelated card: other families than any of the three words, so it fits neither sense. */
+export const TWO_DECOYS = ['temp', 'sponge', 'plate', 'speed'] as const satisfies readonly Concept[];
+
 export interface Card {
+  /** Level 11's cards name their own meaning in `two`; `concept` is then only a placeholder. */
+  two?: { w: TwoWord; kind: 'ask' | 'right' | 'same'; i: 0 | 1 };
   concept: Concept;
   side: 0 | 1;
   who?: Subject;
@@ -166,7 +197,13 @@ export interface Card {
 }
 
 export const word = (c: Card): string =>
-  c.mid ? MIDDLES[c.concept as Gradable] : CONCEPTS[c.concept].words[c.side];
+  c.two
+    ? c.two.kind === 'ask'
+      ? c.two.w
+      : TWO[c.two.w][c.two.kind === 'right' ? 'right' : 'same'][c.two.i]
+    : c.mid
+      ? MIDDLES[c.concept as Gradable]
+      : CONCEPTS[c.concept].words[c.side];
 
 /** A card's place on its word's line, counted from the end named first (`from`): 0, 1 for the middle, 2. */
 export const degree = (c: Card, from: 0 | 1) => (c.mid ? 1 : c.side === from ? 0 : 2);
@@ -207,6 +244,26 @@ function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, ex
 
 export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
+  if (plan.mode === 'two') {
+    // Each authored word once, in a seeded order; the picture of the word itself and the unrelated one are seeded too.
+    for (const w of rng.shuffle([...TWO_WORDS]).slice(0, plan.rounds)) {
+      const two = (kind: 'ask' | 'right' | 'same', i: 0 | 1): Card => ({
+        concept: 'size',
+        side: 0,
+        two: { w, kind, i },
+      });
+      out.push({
+        ask: two('ask', 0),
+        cards: rng.shuffle([
+          two('right', 0),
+          two('right', 1),
+          two('same', rng.int(0, 1) as 0 | 1),
+          { concept: rng.pick([...TWO_DECOYS]), side: rng.int(0, 1) as 0 | 1 },
+        ]),
+      });
+    }
+    return out;
+  }
   // The big card keeps lap's original eight pairs.
   const graded = plan.mode === 'between' || plan.mode === 'order';
   const pool = graded ? GRADABLE : plan.mode === 'un' ? UN_CONCEPTS : poolFor(plan.big ? 1 : plan.level);
@@ -270,7 +327,7 @@ export const inTurn = (round: OppRound, card: Card, placed: number) =>
   degree(card, round.ask!.side) === placed;
 
 export const opposites = (a: Card, b: Card) =>
-  !a.mid && !b.mid && a.concept === b.concept && a.side !== b.side;
+  !a.two && !b.two && !a.mid && !b.mid && a.concept === b.concept && a.side !== b.side;
 
 /**
  * Which card a capable child taps next, by its place in the round's cards, or null when the round is waiting. Switch: the
@@ -296,6 +353,8 @@ export function cardToTap(
       return find((c) => word(c) === word(round.ask!));
     case 'opposite':
       return find((c) => opposites(c, round.ask!));
+    case 'two':
+      return find((c) => c.two?.kind === 'right');
     case 'between':
       return find((c) => !!c.mid);
     case 'order': {
