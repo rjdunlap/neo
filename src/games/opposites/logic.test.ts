@@ -29,6 +29,11 @@ import {
   UN_CONCEPTS,
   UN_LEVEL,
   UN_PLAN,
+  TWO,
+  TWO_DECOYS,
+  TWO_LEVEL,
+  TWO_PLAN,
+  TWO_WORDS,
   unParts,
   word,
 } from './logic';
@@ -314,7 +319,7 @@ describe('Opposites', () => {
   it('level 10, Un- words: school steps 9 to 10; every pair is a word and un + that word, the un- one asked, and the bot taps it', () => {
     expect(planFor(UN_LEVEL)).toBe(UN_PLAN);
     expect(UN_PLAN).toMatchObject({ level: 10, mode: 'un', rounds: 4 });
-    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL, UN_LEVEL]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL, UN_LEVEL, TWO_LEVEL]);
     expect(stepLevel(WORD_LEVEL, 1, LEVELS.school!)).toBe(UN_LEVEL);
     expect(firstLevel(LEVELS.school!, [BIG_LEVEL])).toBe(ORDER_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
@@ -351,5 +356,49 @@ describe('Opposites', () => {
     }
     // Every un- word comes up across seeds.
     expect([...asked].sort()).toEqual([...UN_CONCEPTS].sort());
+  });
+
+  it('level 11, Two answers: school steps 10 to 11; each word once with exactly two opposites, one picture of itself, one unrelated; the bot taps both', () => {
+    expect(planFor(TWO_LEVEL)).toBe(TWO_PLAN);
+    expect(TWO_PLAN).toMatchObject({ level: 11, mode: 'two', rounds: 3 });
+    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL, UN_LEVEL, TWO_LEVEL]);
+    expect(stepLevel(UN_LEVEL, 1, LEVELS.school!)).toBe(TWO_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(TWO_LEVEL);
+    expect(TWO_WORDS.sort()).toEqual(['light', 'old', 'short']);
+    // The three words, their opposites and the pictures of the word itself stay as authored, with unique spoken words.
+    const spoken = TWO_WORDS.flatMap((w) => [w, ...TWO[w].right, ...TWO[w].same]);
+    expect(new Set(spoken).size).toBe(spoken.length);
+    // No unrelated picture can be read as one of the words: none shares a family with the pairs level 11's words overlap.
+    for (const d of TWO_DECOYS)
+      expect(['size', 'container', 'sky', 'lamp', 'position']).not.toContain(CONCEPTS[d].family);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 25; seed++) {
+      const rounds = makeRounds(TWO_PLAN, new Rng(seed));
+      expect(rounds).toEqual(makeRounds(TWO_PLAN, new Rng(seed)));
+      expect(rounds).toHaveLength(3);
+      expect(new Set(rounds.map((r) => r.ask!.two!.w)).size).toBe(3);
+      for (const r of rounds) {
+        const w = r.ask!.two!.w;
+        expect(r.cards).toHaveLength(4);
+        const right = r.cards.filter((c) => c.two?.kind === 'right');
+        expect(right.map((c) => word(c)).sort()).toEqual([...TWO[w].right].sort());
+        expect(r.cards.filter((c) => c.two?.kind === 'same')).toHaveLength(1);
+        const loose = r.cards.filter((c) => !c.two);
+        expect(loose).toHaveLength(1);
+        expect(TWO_DECOYS).toContain(loose[0].concept);
+        // The bot taps one opposite, then the other, never the picture of the word itself.
+        const done = r.cards.map(() => false);
+        for (let n = 0; n < 2; n++) {
+          const i = cardToTap(TWO_PLAN, r, done, null)!;
+          expect(r.cards[i].two?.kind).toBe('right');
+          done[i] = true;
+        }
+        expect(cardToTap(TWO_PLAN, r, done, null)).toBeNull();
+        seen.add(word(r.cards.find((c) => c.two?.kind === 'same')!));
+      }
+    }
+    // Both pictures of each word itself come up across seeds.
+    expect([...seen].sort()).toEqual(TWO_WORDS.flatMap((w) => [...TWO[w].same]).sort());
   });
 });
