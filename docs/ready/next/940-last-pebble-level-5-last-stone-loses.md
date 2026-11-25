@@ -1,0 +1,1 @@
+**`last-pebble` level 5, Last stone loses** (school, grown-up; misère; batch `last-pebble 3`, after levels 3–4 merge: typecheck, rule tests with the misère solve, one filtered play of level 5 and `fingerdemo`). [Definition](../../definitions/last-pebble-3-5.md#level-5-last-stone-loses-misère)

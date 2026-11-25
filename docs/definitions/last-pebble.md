@@ -113,7 +113,7 @@ One build batch implements `last-pebble` (levels 1–2) using `npm run new-game`
 - One filtered scripted browser play (`BROWSER_SUITE=lastpebble` or equivalent) on an upright phone viewport (`390 × 625` / `390 × 844` with captions): Level 1 (one wrong move to verify *show me why* + rewind, second miss for glow, finish 3 crossings to sticker) and Level 2 (miss a stepping stone -> pet wins -> rewind to turning point, then `Show me` / stepping stones to reach `T` and finish); one upright portrait screenshot mid-crossing; `fingerdemo` at levels 1 and 2; `npm run build` (registry, lands, voice, how-to change).
 
 **Follow-up work (not in this batch):**
-- **SG3b · Define Last Pebble levels 3–4:** choose first or second player (NRICH's *"When is it better to go first and when is it better to let the computer go first?"*), variable `maxTake` (`1..3` or `1..4`), and misère (*last stone loses*), queued after levels 1–2.
+- **SG3b · Levels 3–5, [defined 2026-11-24](last-pebble-3-5.md):** choose first or second player (NRICH's *"When is it better to go first and when is it better to let the computer go first?"*), variable `maxTake` (`1..3` or `1..4`), and misère (*last stone loses*), in two build batches.
 
 ## Source check
 
