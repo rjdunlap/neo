@@ -1,0 +1,1 @@
+**`little-conductor` level 5, two ways, one tune** (preschool, pre-K, school; new levels tier: typecheck, rule tests, one filtered scripted play of level 5 and a portrait screenshot): pace and strength as two dials, four combinations, the heard gate following the latest change of either dial, a four-cell hearing mark. [Dive](../../deep-dives/little-conductor.md#new-levels-on-top)

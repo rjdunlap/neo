@@ -32,7 +32,7 @@ import {
   newRequests,
   newScore,
   PACE_IDS,
-  PACES,
+  STRENGTH_OF,
   PAD,
   planFor,
   select,
@@ -85,6 +85,23 @@ function paceArt(pace: PaceId): Container {
   c.addChild(g);
   return c;
 }
+
+/** Level 4's pictures: the same drum, small for gentle and big for strong, so the size says the strength. */
+function drumArt(pace: PaceId): Container {
+  const c = new Container();
+  const big = STRENGTH_OF[pace] === 'strong';
+  const g = prop('drum');
+  g.scale.set(big ? 1.5 : 0.75);
+  g.y = big ? -22 : 4;
+  c.addChild(g);
+  return c;
+}
+
+/** A pad's picture and word: the turtle or rabbit with the paces, a small or big drum at level 4. */
+const padArt = (pace: PaceId, mode: Plan['mode']): Container =>
+  mode === 'strength' ? drumArt(pace) : paceArt(pace);
+const padWord = (pace: PaceId, mode: Plan['mode']): string =>
+  mode === 'strength' ? (pace === 'turtle' ? 'soft' : 'loud') : pace === 'turtle' ? 'slow' : 'fast';
 
 type Voice = 'marimba' | 'pluck' | 'drum';
 const VOICES: Voice[] = ['marimba', 'pluck', 'drum'];
@@ -151,6 +168,7 @@ class Pad extends Container {
   readonly lift = new Container();
   constructor(
     readonly pace: PaceId,
+    mode: Plan['mode'],
     onPress: () => void,
   ) {
     super();
@@ -162,8 +180,8 @@ class Pad extends Container {
       .roundRect(-PAD / 2 - 22, -PAD / 2 - 22, PAD + 44, PAD + 44, 44)
       .fill({ color: 0xffe066, alpha: 0.95 });
     this.hintGlow.visible = false;
-    this.picture = paceArt(pace);
-    const word = label(pace === 'turtle' ? 'slow' : 'fast', 24, ink, '500');
+    this.picture = padArt(pace, mode);
+    const word = label(padWord(pace, mode), 24, ink, '500');
     word.y = PAD / 2 - 24;
     this.lift.addChild(this.frame, this.picture, word, this.ring);
     this.addChild(this.hintGlow, this.glow, this.lift, this.marks);
@@ -329,8 +347,8 @@ class LittleConductor implements Game {
     this.band.eventMode = 'none';
     this.stand.eventMode = 'none';
     this.pads = {
-      turtle: new Pad('turtle', () => this.tapPad('turtle')),
-      rabbit: new Pad('rabbit', () => this.tapPad('rabbit')),
+      turtle: new Pad('turtle', this.plan.mode, () => this.tapPad('turtle')),
+      rabbit: new Pad('rabbit', this.plan.mode, () => this.tapPad('rabbit')),
     };
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 60, () =>
       this.tapListen(),
@@ -371,7 +389,9 @@ class LittleConductor implements Game {
         ? 'little-conductor.instruct-tap'
         : this.plan.mode === 'both'
           ? 'little-conductor.instruct-both'
-          : 'little-conductor.instruct-sign',
+          : this.plan.mode === 'strength'
+            ? 'little-conductor.instruct-strength'
+            : 'little-conductor.instruct-sign',
     );
     if (this.finished) return;
     this.ready = true;
@@ -427,7 +447,7 @@ class LittleConductor implements Game {
     // After the encore's last beat the clock stops, so no fifth note sounds while the band bows.
     const holding = this.plan.mode === 'sign' && this.budget <= 0;
     if (this.ready && !this.stopped && !holding && !(this.performing && this.encore >= BEATS)) {
-      const r = advance(this.score, step, this.round.motif);
+      const r = advance(this.score, step, this.round.motif, this.plan.mode);
       this.score = r.score;
       for (const e of r.events) this.voice(e);
     }
@@ -461,7 +481,12 @@ class LittleConductor implements Game {
         p.y = base.y;
         return;
       }
-      if (pace === 'turtle') {
+      if (this.plan.mode === 'strength') {
+        // One steady pace: only the size of the sway says how strongly they play.
+        const strong = STRENGTH_OF[pace] === 'strong';
+        p.critter.rotation = Math.sin(Math.PI * t) * (strong ? 0.08 : 0.03);
+        p.y = base.y - (strong ? 16 : 4) * bounce;
+      } else if (pace === 'turtle') {
         p.critter.rotation = Math.sin(Math.PI * t) * 0.1;
         p.y = base.y - 4 * bounce;
       } else {
@@ -472,7 +497,7 @@ class LittleConductor implements Game {
   }
 
   private voice(e: BeatEvent) {
-    const g = this.talking > 0 ? 0.5 : 1;
+    const g = (this.talking > 0 ? 0.5 : 1) * e.gain;
     sfx.marimba(e.melody, 0.45 * g);
     this.players[0].glow = 1;
     if (e.bass) {
@@ -492,7 +517,7 @@ class LittleConductor implements Game {
       }
       if (--this.budget <= 0) {
         const token = this.playToken;
-        void this.ctx.tw.wait(60 / PACES[e.pace]).then(() => {
+        void this.ctx.tw.wait(60 / e.bpm).then(() => {
           if (token === this.playToken) this.phraseEnded();
         });
       }
@@ -501,7 +526,7 @@ class LittleConductor implements Game {
     if (this.performing) {
       sfx.clap();
       this.encore++;
-      if (this.encore >= BEATS) void this.bow(60 / PACES[e.pace]);
+      if (this.encore >= BEATS) void this.bow(60 / e.bpm);
     }
   }
 
@@ -534,7 +559,7 @@ class LittleConductor implements Game {
         marksLit(s, pace),
         this.blink > 0 && Math.floor(this.blink * 5) % 2 === 0,
         s.heardEver[pace],
-        this.plan.mode === 'both',
+        this.plan.mode === 'both' || this.plan.mode === 'strength',
       );
     }
     this.done.alpha = canFinish(s, this.ctx.level) || this.performing ? 1 : 0.4;

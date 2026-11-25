@@ -115,7 +115,7 @@ None blocks the first two slices. Defaults are what a build uses.
 
 1. **Built: upright layout for levels 1–3** (new-levels tier, typecheck, `layout` test over the four views, one portrait scripted play at level 3 with one wrong Check and one hint, a portrait screenshot, and `fingerdemo` for the changed layout): set `upright`, add a test that every target is at least 100 units, inside the view and clear of the pet's corner, and the sign clears the pads.
 2. **Built: a second motif family** (rule tests only): three more tunes, the same pace-independence and event tests over all six.
-3. **Level 4, strength** (new-interaction tier: typecheck, unit tests, one filtered scripted play at level 4, a portrait screenshot, and `npm run build` only if shared files change): strength as a gain table, the pictured pair, the heard gate over the latest change.
+3. **Built: level 4, strength** (new-interaction tier: typecheck, unit tests, one filtered scripted play at level 4, a portrait screenshot, and `npm run build` only if shared files change): strength as a gain table, the pictured pair, the heard gate over the latest change.
 4. **Level 5, two dials** (new levels tier).
 5. **Level 6, invite a friend** (new-interaction tier; the largest slice, since cues need boundary-safe state).
 6. **Levels 7–8, one change and revise** (new-interaction tier, after the request model from level 3 is shared).
