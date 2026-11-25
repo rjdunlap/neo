@@ -1,0 +1,1 @@
+**Define `sink-float` level 8, Garden Raft** (engineering-design study slice 3; docs only: define the float/balance load model and level 8 in `docs/definitions/`, update study/backlog/READY, queue its build). [Study](../../deep-dives/subjects/engineering-design.md#build-slices-in-order)

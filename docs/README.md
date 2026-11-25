@@ -42,6 +42,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [How Many Pieces Fit?](definitions/how-many-pieces-fit.md) | Fractions R7, Ribbon Workshop level 8: measure a ¾ ribbon with ½-spool pieces (snipping one in half) and answer 1½ pieces; school and grownup |
 | [Ready for Adventure 4](definitions/ready-for-adventure-4.md) | Routines RA4, Ready for Adventure level 4: the parade request changes, so repair the bag and Check again; school |
 | [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
 | [Common Ground, level 1: A Place for You](definitions/common-ground.md) | Social-emotional slice 4: place a cushion by a window and a basket beside it for a visiting friend, then press Visit; a new school-only game |

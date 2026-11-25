@@ -1,0 +1,1 @@
+**`song-maker` level 11, Finish my song** (school, dive slice 6; new level on an existing interaction: typecheck, rule tests, one filtered play of level 11, `fingerdemo` at 11). [Dive](../../deep-dives/song-maker.md#build-slices-in-order)
