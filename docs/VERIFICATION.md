@@ -120,7 +120,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `logroll` | 2026-11-08 · [Log Roll soft moss and the stone bridge](archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429) | `LOG_ROLL_LEVELS=6,7` |
 | `lookitup` | 2026-11-23 · [Look It Up level 6, Two pages together](verification/2026-11-23-look-it-up-level-6-two-pages-together.md) | `LOOKITUP_FROM=4` |
 | `lostlayers` | 2026-11-17 · [The school games' questions on ctx.instruct, second session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-second-session.md) | — |
-| `machines` | 2026-11-14 · [Chain Reaction level 11 The chime opens the gate](verification/2026-11-14-chain-reaction-level-11-the-chime-opens-the-gate.md) | `CHAIN_LEVELS=11` |
+| `machines` | 2026-11-25 · [Chain Reaction cargo and goal skins](verification/2026-11-25-chain-reaction-cargo-and-goal-skins.md) | `CHAIN_LEVELS=11` |
 | `makerlane` | 2026-11-24 · [Maker Lane levels 4–5 (PR #2140)](verification/2026-11-24-maker-lane-levels-4-5.md) | — |
 | `marblejump` | 2026-11-09 · [Marble Jump slice 4: level 9 A bigger triangle](archive/VERIFICATION-2026-11-09.md#2026-11-09--marble-jump-slice-4-level-9-a-bigger-triangle-pr-1428) | Level 9 upright and sideways. A later [touch probe](verification/2026-11-19-marble-jump-phone-touch-targets.md) covered levels 1 and 9. |
 | `meadow` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | Level 2, repeat instruction |
