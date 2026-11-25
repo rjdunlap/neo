@@ -12,6 +12,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { FONT, label } from '../../ui/text';
 import { LETTERS } from '../pixel-pictures/logic';
 import { WigglyIcon } from '../shared';
+import { clampSlide } from '../../engine/slide';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePictures, isPictureCourse } from './course';
 import {
@@ -293,8 +294,7 @@ class PictureLogic implements Game {
     const f = touchFrame(v.w, v.h, this.n, rowDepth, colDepth, !!this.puzzle.colors, v.upright);
     this.frame = f;
     this.cell = f.cell;
-    this.scrollX = Math.min(f.maxX, Math.max(0, this.scrollX));
-    this.scrollY = Math.min(f.maxY, Math.max(0, this.scrollY));
+    ({ x: this.scrollX, y: this.scrollY } = clampSlide(this.scrollX, this.scrollY, f.maxX, f.maxY));
     const { paper, grid } = f;
     this.paper
       .clear()
@@ -375,8 +375,7 @@ class PictureLogic implements Game {
   setScroll(x: number, y: number) {
     const f = this.frame;
     if (!f) return;
-    this.scrollX = Math.min(f.maxX, Math.max(0, x));
-    this.scrollY = Math.min(f.maxY, Math.max(0, y));
+    ({ x: this.scrollX, y: this.scrollY } = clampSlide(x, y, f.maxX, f.maxY));
     this.layoutBoard();
     this.edgesDirty = true;
   }
@@ -1264,11 +1263,12 @@ class PictureLogic implements Game {
         z = this.centerOf(run[run.length - 1]),
         g = f.grid;
       const fits = z.x - a.x + this.cell <= g.w - PAD * 2;
-      const nx = Math.min(
+      const { x: nx, y: ny } = clampSlide(
+        fits ? (a.x + z.x) / 2 + PAD / 2 - g.w / 2 : a.x + PAD / 2 - g.w * 0.12,
+        a.y + PAD / 2 - g.h / 2,
         f.maxX,
-        Math.max(0, fits ? (a.x + z.x) / 2 + PAD / 2 - g.w / 2 : a.x + PAD / 2 - g.w * 0.12),
+        f.maxY,
       );
-      const ny = Math.min(f.maxY, Math.max(0, a.y + PAD / 2 - g.h / 2));
       const dx = nx - this.scrollX,
         dy = ny - this.scrollY,
         cx = g.x + g.w / 2,

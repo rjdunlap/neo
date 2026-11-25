@@ -26,7 +26,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `bondbeads` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | — |
 | `bouncylaunch` | 2026-11-24 · [Bouncy Launch notches, notes, footprints, skies and cloud bag (PR #2124)](verification/2026-11-24-bouncy-launch-notches-notes-footprints-skies-and-cloud-bag.md) | `LAUNCH_LEVEL=notches` (levels 1, 3), level 13 case; level 10 last played 2026-11-13 |
 | `brainbreak` | 2026-11-24 · [Brain Break level 14, Work them out (PR #2115)](verification/2026-11-24-brain-break-level-14-work-them-out.md) | Level 14 at 390×844 plus `fingerdemo` at level 14; level 13 `BRAINBREAK_ONLY=parts` ([entry](verification/2026-11-24-brain-break-level-13-parts-in-order.md)); level 12 `BRAINBREAK_ONLY=two-trails` ([entry](verification/2026-11-24-brain-break-levels-11-12-two-trails.md)) |
-| `bridgestouch` | 2026-11-18 · [Island Bridges sliding seas on an upright phone](verification/2026-11-18-island-bridges-sliding-seas-on-an-upright-phone.md) | — |
+| `bridgestouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | — |
 | `buddies` | 2026-11-05 · [Shape Buddies level 8 Your friend, my friend (shape-buddies batch 6)](archive/VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-8-your-friend-my-friend-shape-buddies-batch-6) | Level 8 |
 | `bunnypatches` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | `BUNNY_ONLY=upright` |
 | `campsite` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | — |
@@ -145,7 +145,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `phone` | 2026-11-17 · [Beside a sound, and no room to spare](verification/2026-11-17-beside-a-sound-and-no-room-to-spare.md) | `PHONE_ONLY=gem-swap,pattern-train` |
 | `phonefit` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md) | First visit and Today's six, passed after the Lift It icon fix |
 | `picnic` | 2026-10-21 · [RW07 slice 1: Welcome a New Friend (record, page, Continue, pretty and yummy)](archive/VERIFICATION-2026-10-21.md#2026-10-21--rw07-slice-1-welcome-a-new-friend-record-page-continue-pretty-and-yummy) | — |
-| `picturetouch` | 2026-11-04 · [Picture Logic level 6 Two colours (picture-logic batch 3)](archive/VERIFICATION-2026-11-04.md#2026-11-04--picture-logic-level-6-two-colours-picture-logic-batch-3) | `PICTURE_LEVELS=6` |
+| `picturetouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | `PICTURE_LEVELS=6` |
 | `pilematch` | 2026-11-09 · [Pile Match slice 4, level 10 Look closely](archive/VERIFICATION-2026-11-09.md#2026-11-09--pile-match-slice-4-level-10-look-closely-pr-1444) | Level 10 upright |
 | `playdateworkshop` | 2026-11-06 · [Playdate Workshop levels 1–3 (new game, social-emotional slice 2)](archive/VERIFICATION-2026-11-06.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | — |
 | `profiles` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md) | — |
@@ -229,7 +229,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `woods` | 2026-11-25 · [Opposites level 11, Two answers (PR #2151)](verification/2026-11-25-opposites-level-11-two-answers.md) | `WOODS_ONLY=opp FROM_LEVEL=9`; 2026-11-24 · [Opposites level 10, Un- words](verification/2026-11-24-opposites-level-10-un-words.md) | `WOODS_ONLY=opp FROM_LEVEL=9`; earlier: Garden Grow level 7, `WOODS_ONLY=grow FROM_LEVEL=7` |
 | `wordcode` | 2026-11-20 · [Word Code levels 1-3](verification/2026-11-20-word-code-levels-1-3.md) | — |
 | `wordglue` | 2026-11-23 · [Word Glue level 9: full of or without](verification/2026-11-23-word-glue-level-9-full-of-or-without.md) | `WORDGLUE_ONLY=ending`, level 9 |
-| `wordsearchtouch` | 2026-11-05 · [Word Search school opening, level 8 (word-search batch 5)](archive/VERIFICATION-2026-11-05.md#2026-11-05--word-search-school-opening-level-8-word-search-batch-5) | Level 8, portrait and landscape |
+| `wordsearchtouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | Level 8, portrait and landscape |
 | `workshopdetective` | 2026-11-23 · [Workshop Detective level 1](verification/2026-11-23-workshop-detective-level-1.md) | — |
 | `world` | 2026-11-22 · [Paint Mixer 4: her mixed colours join the pet's palette](verification/2026-11-22-paint-mixer-4-her-mixed-colours-join-the-pet-s-palette.md) | — |
 
