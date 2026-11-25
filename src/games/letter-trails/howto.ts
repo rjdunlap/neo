@@ -35,7 +35,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 14,
       to: 14,
-      text: 'The last four little letters between four lines: f hooks over the top and down, then a bar across; q is a round with a line down whose tail turns right; x is two slides that cross; z goes across, slides down and goes across.',
+      text: 'A little f, q, x or z between four lines. f hooks over and down, then a bar; q ends with a tail that turns right; x is two slides; z zigzags.',
     },
   ],
   finish: [
