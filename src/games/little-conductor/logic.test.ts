@@ -7,6 +7,13 @@ import {
   advance,
   BEATS,
   botMove,
+  castKey,
+  castPending,
+  friendsBot,
+  PART_IDS,
+  SPOT,
+  STAGES_AT_LEAST,
+  toggleFriend,
   COMBO_IDS,
   comboOf,
   DIAL_PAD,
@@ -38,6 +45,7 @@ import {
   signBot,
   submit,
   type BeatEvent,
+  type PartId,
   type PaceId,
   type StrengthId,
   type Requests,
@@ -484,8 +492,8 @@ describe('Little Conductor level 5, two ways at once', () => {
   it('is a level of its own, for preschool, pre-K and school', () => {
     expect(planFor(5).mode).toBe('dials');
     expect(LEVELS.preschool?.max).toBe(5);
-    expect(LEVELS.prek?.max).toBe(5);
-    expect(LEVELS.school).toEqual({ min: 5, max: 5 });
+    expect(LEVELS.prek?.max).toBe(6);
+    expect(LEVELS.school).toEqual({ min: 5, max: 6 });
     expect(LEVELS.toddler?.max).toBe(2);
   });
 
@@ -624,6 +632,177 @@ describe('Little Conductor level 5, two ways at once', () => {
       }
       for (let i = 0; i < all.length; i++)
         for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j])).toBe(false);
+    },
+  );
+});
+
+describe('Little Conductor level 6, invite a friend', () => {
+  const motif = MOTIFS[0];
+  const run = (score: ReturnType<typeof newScore>, secs: number) => advance(score, secs, motif, 'friends');
+  const beat = 60 / STEADY_BPM;
+
+  it('is a pre-K and school level that holds one steady pace', () => {
+    expect(planFor(6).mode).toBe('friends');
+    expect(LEVELS.prek?.max).toBe(6);
+    expect(LEVELS.school?.max).toBe(6);
+    expect(LEVELS.preschool?.max).toBe(5);
+    expect(tempoOf('turtle', 'friends')).toBe(STEADY_BPM);
+    expect(tempoOf('rabbit', 'friends')).toBe(STEADY_BPM);
+  });
+
+  it('stands silent until the first tap, which brings that friend in at once', () => {
+    expect(run(newScore(), 5).events).toEqual([]);
+    const s = toggleFriend(newScore(), 'bass');
+    expect(s.cast).toEqual({ tune: false, bass: true, beat: false });
+    expect(castPending(s)).toBe(false);
+    expect(run(s, beat * 0.01).events).toHaveLength(1);
+  });
+
+  it('lands every invitation and goodbye on a whole beat, never mid-note', () => {
+    let s = toggleFriend(newScore(), 'tune');
+    s = run(s, beat * 1.4).score;
+    s = toggleFriend(s, 'beat');
+    expect(s.cast.beat).toBe(false);
+    expect(castPending(s)).toBe(true);
+    const before = run(s, 0.001);
+    expect(before.events).toHaveLength(0);
+    expect(before.score.cast.beat).toBe(false);
+    const after = run(s, beat);
+    const landed = after.events.find((e) => e.drum);
+    expect(landed).toBeDefined();
+    // The friend plays from the beat the change reached: the whole step, never a part of one.
+    expect(Number.isInteger(landed!.index)).toBe(true);
+    expect(after.score.cast.beat).toBe(true);
+    expect(castPending(after.score)).toBe(false);
+  });
+
+  it('calls a waiting change off when the friend is tapped again', () => {
+    let s = run(toggleFriend(newScore(), 'tune'), beat * 1.2).score;
+    s = toggleFriend(s, 'bass');
+    expect(s.pendingCast.bass).toBe(true);
+    s = toggleFriend(s, 'bass');
+    expect(s.pendingCast.bass).toBeNull();
+    expect(castPending(s)).toBe(false);
+  });
+
+  it('keeps the tune whole: the same notes in order whoever is in, never skipped or repeated', () => {
+    let s = toggleFriend(newScore(), 'tune');
+    const all: BeatEvent[] = [];
+    const taps: PartId[] = ['bass', 'beat', 'tune', 'bass', 'beat', 'tune'];
+    for (let i = 0; i < 24; i++) {
+      if (i % 4 === 1) s = toggleFriend(s, taps[Math.floor(i / 4)]);
+      const r = run(s, beat);
+      s = r.score;
+      all.push(...r.events);
+    }
+    all.forEach((e, i) => {
+      expect(e.index).toBe(i);
+      expect(e.step).toBe(i % BEATS);
+      expect(e.melody).toBe(noteStep(motif.melody[i % BEATS]));
+      expect(e.bpm).toBe(STEADY_BPM);
+      expect(e.gain).toBe(1);
+    });
+  });
+
+  it('plays only the parts of the friends who are in, and an empty stage counts its beats silently', () => {
+    for (const part of PART_IDS) {
+      const s = toggleFriend(newScore(), part);
+      const { events } = run(s, beat * 3.5);
+      expect(events).toHaveLength(4);
+      for (const e of events) {
+        expect(e.lead).toBe(part === 'tune');
+        expect(e.bass && part !== 'bass').toBe(false);
+        expect(e.drum && part !== 'beat').toBe(false);
+      }
+      expect(events.some((e) => (part === 'bass' ? e.bass : part === 'beat' ? e.drum : e.lead))).toBe(true);
+    }
+    // Nobody in: a friend leaves and the clock runs on, silent.
+    let s = run(toggleFriend(newScore(), 'tune'), beat * 1.2).score;
+    s = toggleFriend(s, 'tune');
+    const quiet = run(s, beat * 3);
+    expect(quiet.events.length).toBeGreaterThanOrEqual(2);
+    const silent = quiet.events.filter((e) => !e.lead && !e.bass && !e.drum);
+    expect(silent.length).toBeGreaterThan(0);
+    expect(new Set(quiet.events.map((e) => e.index)).size).toBe(quiet.events.length);
+  });
+
+  it('keeps Done dim until a stage was heard whole and at least two stages were compared, and an empty stage never finishes', () => {
+    let s = toggleFriend(newScore(), 'tune');
+    expect(canFinish(s, 6)).toBe(false);
+    s = run(s, beat * 2.5).score;
+    expect(canFinish(s, 6)).toBe(false);
+    expect(earlyDone(s, 6)).toBe('hear-whole');
+    s = run(s, beat).score;
+    expect(canFinish(s, 6)).toBe(false);
+    expect(earlyDone(s, 6)).toBe('hear-other');
+    s = toggleFriend(s, 'bass');
+    expect(canFinish(s, 6)).toBe(false);
+    s = run(s, beat * 6).score;
+    expect(Object.keys(s.castEver).length).toBeGreaterThanOrEqual(STAGES_AT_LEAST);
+    expect(canFinish(s, 6)).toBe(true);
+    // A change waiting closes the gate; an empty stage cannot finish.
+    expect(canFinish(toggleFriend(s, 'beat'), 6)).toBe(false);
+    let e = toggleFriend(toggleFriend(s, 'tune'), 'bass');
+    e = run(e, beat * 6).score;
+    expect(e.cast).toEqual({ tune: false, bass: false, beat: false });
+    expect(canFinish(e, 6)).toBe(false);
+    expect(castKey(e.cast)).toBe('000');
+    expect(e.castEver['000']).toBeUndefined();
+  });
+
+  it('never counts a miss: the ghost finger invites two friends and then taps Done', () => {
+    let s = newScore();
+    let taps = 0;
+    for (let i = 0; i < 80; i++) {
+      const m = friendsBot(s, 6);
+      if (m === 'done') break;
+      if (m) {
+        s = toggleFriend(s, m.friend);
+        taps++;
+      }
+      s = run(s, beat / 2).score;
+    }
+    expect(canFinish(s, 6)).toBe(true);
+    expect(taps).toBe(2);
+  });
+
+  it.each([
+    [1024, 768, false],
+    [768, 1024, false],
+    [1366, 768, false],
+    [1194, 834, false],
+    [390, 844, true],
+    [390, 900, true],
+    [768, 1024, true],
+    [430, 700, true],
+  ] as [number, number, boolean][])(
+    'lays three large spotlights under the friends, clear of the buttons and the pet at %i×%i (upright %s)',
+    (pw, ph, upright) => {
+      const view = computeView(pw, ph, undefined, upright);
+      const l = conductorLayout(view, 6);
+      const box = (d: { x: number; y: number; r: number }) => ({
+        x: d.x - d.r,
+        y: d.y - d.r,
+        w: 2 * d.r,
+        h: 2 * d.r,
+      });
+      const spots = l.spots!;
+      expect(spots).toHaveLength(3);
+      const all = [...spots, box(l.listen), box(l.done)];
+      const hits = (a: (typeof all)[0], b: (typeof all)[0]) =>
+        a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+      for (const t of all) {
+        expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        expect(t.y + t.h).toBeLessThanOrEqual(view.h);
+        expect(hits(t, { x: 0, y: view.h - 220, w: 220, h: 220 })).toBe(false);
+        expect(hits(t, l.stand)).toBe(false);
+      }
+      for (const sp of spots) expect(sp.w).toBe(SPOT);
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++) expect(hits(all[i], all[j])).toBe(false);
     },
   );
 });

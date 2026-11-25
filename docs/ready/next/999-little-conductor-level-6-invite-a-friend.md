@@ -1,1 +1,0 @@
-**`little-conductor` level 6, invite a friend** (pre-K, school; new interaction: typecheck, rule tests, one filtered scripted play of level 6 and a portrait screenshot; three friends, one accompaniment, tap a friend to ask them in or out, every cue landing on a whole beat). [Dive](../../deep-dives/little-conductor.md#new-levels-on-top)
