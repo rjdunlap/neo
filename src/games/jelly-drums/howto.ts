@@ -26,11 +26,17 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Listen to the tune, then tap the same jellies backwards: the last one first, the first one last.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Two short songs play, one after the other. Tap the two matching dots if they are the same song, or the two unlike dots if one jelly is different.',
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after a number of notes.' },
     { from: 4, to: 9, text: 'The round ends when every tune has been copied.' },
     { from: 11, to: 11, text: 'The round ends when every tune has been played backwards.' },
+    { from: 12, to: 12, text: 'The round ends when every pair of songs has been judged.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
   ],
   note: [
@@ -41,8 +47,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
-      to: 11,
+      to: 12,
       text: 'The yellow note button above the jellies plays the tune again whenever it is her turn. It counts no miss or hint. Some tunes are bits of real songs, named aloud.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'About half the pairs are the same. A wrong answer replays both songs slowly with the changed jelly glowing, and after two wrong answers the right button glows too. It is a guess she can make by listening, so the hint comes after two misses.',
     },
   ],
 };

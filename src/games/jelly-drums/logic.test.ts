@@ -4,7 +4,12 @@ import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 import {
   answerOf,
+  drawPair,
   LEVELS,
+  minStepAt,
+  sameFlags,
+  verdictOf,
+  verdictToTap,
   tuneLength,
   twistsOf,
   FAN_EVERY,
@@ -402,6 +407,92 @@ describe('Jelly Drums Backwards (level 11)', () => {
         (t) => t.notes.join() !== [...t.notes].reverse().join(),
       );
       expect(pool.length).toBeGreaterThanOrEqual(plan.goal);
+    }
+  });
+});
+
+describe('Jelly Drums Same or different? (level 12)', () => {
+  const plan = PLANS[11];
+  const roundOf = (seed: number) => {
+    const rng = new Rng(seed);
+    const flags = sameFlags(rng, plan.goal);
+    const played: Tune[] = [];
+    return flags.map((same, n) => {
+      const pair = drawPair(rng, plan.length, same, n, played);
+      played.push(pair.base);
+      return pair;
+    });
+  };
+
+  it('is the next free level: five pairs of three-note songs, in pre-K and school after Backwards only', () => {
+    expect(plan.mode).toBe('compare');
+    expect([plan.goal, plan.length]).toEqual([5, 3]);
+    expect(rangeFor(LEVELS, 'prek').order?.slice(-2)).toEqual([11, 12]);
+    expect(rangeFor(LEVELS, 'school').order?.slice(-2)).toEqual([11, 12]);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(12);
+  });
+
+  it('makes half the pairs the same (three of five or two of five), over many seeds, in a shuffled order', () => {
+    const counts = new Set<number>();
+    const firsts = new Set<boolean>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const flags = sameFlags(new Rng(seed), 5);
+      counts.add(flags.filter(Boolean).length);
+      firsts.add(flags[0]);
+    }
+    expect([...counts].sort()).toEqual([2, 3]);
+    expect(firsts.size).toBe(2);
+  });
+
+  it('a same pair is one tune twice; a different pair differs in exactly one position, wide early and one step or more later', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      roundOf(seed).forEach((pair, n) => {
+        expect(pair.first.length).toBe(3);
+        expect(pair.second.length).toBe(3);
+        const diff = pair.first.flatMap((a, k) => (a === pair.second[k] ? [] : [k]));
+        if (pair.same) {
+          expect(diff).toEqual([]);
+          expect(pair.changed).toBe(-1);
+        } else {
+          expect(diff).toEqual([pair.changed]);
+          const gap = Math.abs(pair.first[pair.changed] - pair.second[pair.changed]);
+          expect(gap).toBeGreaterThanOrEqual(minStepAt(n));
+        }
+        for (const note of [...pair.first, ...pair.second]) expect(note).toBeGreaterThanOrEqual(0);
+        for (const note of [...pair.first, ...pair.second]) expect(note).toBeLessThan(5);
+      });
+    }
+    expect(minStepAt(0)).toBe(2);
+    expect(minStepAt(1)).toBe(2);
+    expect(minStepAt(2)).toBe(1);
+  });
+
+  it('never repeats a pair in a round, and a different pair can come either way round', () => {
+    const changedSecond = new Set<boolean>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = roundOf(seed);
+      const keys = round.map((p) => `${p.first.join()}|${p.second.join()}`);
+      expect(new Set(keys).size, `seed ${seed}`).toBe(keys.length);
+      const bases = round.map((p) => p.base.notes.join());
+      expect(new Set(bases).size).toBe(bases.length);
+      for (const p of round) if (!p.same) changedSecond.add(p.base.notes.join() === p.first.join());
+    }
+    expect(changedSecond.size).toBe(2);
+  });
+
+  it('the answer is its button, the ghost finger waits for her turn, and a jelly is never the answer', () => {
+    const pair = roundOf(7)[0];
+    expect(verdictOf(pair)).toBe(pair.same ? 'same' : 'different');
+    expect(verdictToTap('listen', pair)).toBeNull();
+    expect(verdictToTap('turn', null)).toBeNull();
+    expect(verdictToTap('turn', pair)).toBe(verdictOf(pair));
+    expect(jellyToTap('compare', 'turn', pair.first, 0, 0)).toBeNull();
+  });
+
+  it('every voice line the level speaks exists, and its slots are filled', () => {
+    for (const id of ['jelly.compare', 'jelly.song.n', 'jelly.compare.ask'] as const) {
+      expect(SCRIPT[id], id).toBeTruthy();
     }
   });
 });
