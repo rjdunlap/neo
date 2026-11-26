@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: "Make the ribbon each gift's tag asks for: the right length from halves and quarters, the right name for the spool you choose at Whole Switch, or at Ribbon Cases two ribbons from one tray, mended when the order changes.",
+  goal: "Make the ribbon each gift's tag asks for: the right length from halves and quarters, the right name for the spool you choose at Whole Switch, at Ribbon Cases two ribbons from one tray, mended when the order changes, or at How Many Pieces Fit? a three-quarter ribbon measured with half-spool pieces and the count of pieces that fit.",
   steps: [
     { from: 1, to: 3, text: 'Tap a piece and it joins the ribbon.' },
     { from: 7, to: 7, text: "Tap a gift, then tap pieces: each one joins that gift's ribbon." },
@@ -15,12 +15,17 @@ export const HOW_TO: GameHowTo = {
     { from: 2, to: 3, text: 'Tap the scissors, then a half, to snip it into two quarters.' },
     { from: 6, to: 6, text: 'Tap a spool to make it the whole.' },
     { from: 6, to: 6, text: 'Tap a name card: a quarter, a half or three quarters.' },
+    { from: 8, to: 8, text: 'Tap a half-spool piece to lay it along the ribbon.' },
+    { from: 8, to: 8, text: 'Use the scissors to snip a piece in half.' },
+    { from: 8, to: 8, text: 'Tap the bow when the ribbon is filled.' },
+    { from: 8, to: 8, text: 'Then pick how many half-spool pieces fit.' },
     { from: 1, to: 6, text: 'Tap the bow to check.' },
     { from: 7, to: 7, text: 'Tap the bow to check both ribbons.' },
     { from: 6, to: 6, text: 'Then give the same ribbon its other name by changing the spool.' },
     { from: 7, to: 7, text: 'When the order changes, move a piece from one gift to the other.' },
   ],
   finish: [
+    { from: 8, to: 8, text: 'Two steps, one sticker.' },
     { from: 7, to: 7, text: 'Two orders, one sticker.' },
     { from: 6, to: 6, text: 'Two names, one sticker.' },
     { from: 1, to: 3, text: 'Two gifts, one sticker.' },
@@ -30,6 +35,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'There is more than one right way to share the pieces. Three quarters and three quarters is the same amount of ribbon as one whole and a half.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Count how many measuring pieces fit: one whole piece and half of another piece is one and a half pieces, not one and a quarter.',
     },
     {
       from: 6,

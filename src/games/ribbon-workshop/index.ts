@@ -14,10 +14,12 @@ import { frameFor, toReal, type Frame } from './frame';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bowIcon, dashed, giftBox, ribbon, scissorsIcon, spoolBar } from './art';
 import { RibbonCases } from './cases';
+import { HowManyFit } from './fit';
 import { WholeSwitch } from './switch';
 import {
   LEVELS,
   CASES_LEVEL,
+  FIT_LEVEL,
   SWITCH_LEVEL,
   AMOUNTS,
   CAPACITY,
@@ -517,6 +519,8 @@ export const ribbonWorkshop: GameModule = {
   bands: ['school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => {
+    if (l === FIT_LEVEL)
+      return 'How Many Pieces Fit?: measure a three-quarter ribbon with half-spool pieces, then count one and a half pieces';
     if (l === CASES_LEVEL)
       return 'Ribbon Cases: two gifts share one tray; make three quarters twice, then repair it when the order changes to a whole and a half';
     if (l === SWITCH_LEVEL)
@@ -530,11 +534,11 @@ export const ribbonWorkshop: GameModule = {
   },
   music: STYLES.paint,
   touchDemo: true,
-  // All three scenes lay out upright through frame.ts's scaled world (src/games/upright-catch-up.test.ts).
+  // All four scenes lay out upright through frame.ts's scaled world (src/games/upright-catch-up.test.ts).
   upright: true,
   coplayHint: 'Ask {name} for a length, like "make me three quarters", and watch which pieces make it.',
   offScreen:
-    'Fold a paper strip in half and in half again, cut the pieces, and lay them against a whole strip. For Whole Switch, lay one strip on a strip twice as long, then on one four times as long, and say its name each time. For Ribbon Cases, cut a strip into a half and four quarters, make two three-quarter ribbons, then turn them into a whole and a half without adding any paper.',
+    'Fold a paper strip in half and in half again, cut the pieces, and lay them against a whole strip. For Whole Switch, lay one strip on a strip twice as long, then on one four times as long, and say its name each time. For Ribbon Cases, cut a strip into a half and four quarters, make two three-quarter ribbons, then turn them into a whole and a half without adding any paper. For How Many Pieces Fit?, cut a three-quarter paper strip and measure it with half-strips to see one and a half half-strips fit.',
   hubIcon: () => {
     const c = new Container(),
       g = new Graphics();
@@ -552,9 +556,11 @@ export const ribbonWorkshop: GameModule = {
     return c;
   },
   create: (ctx) =>
-    ctx.level === CASES_LEVEL
-      ? new RibbonCases(ctx)
-      : ctx.level === SWITCH_LEVEL
-        ? new WholeSwitch(ctx)
-        : new RibbonWorkshop(ctx),
+    ctx.level === FIT_LEVEL
+      ? new HowManyFit(ctx)
+      : ctx.level === CASES_LEVEL
+        ? new RibbonCases(ctx)
+        : ctx.level === SWITCH_LEVEL
+          ? new WholeSwitch(ctx)
+          : new RibbonWorkshop(ctx),
 };
