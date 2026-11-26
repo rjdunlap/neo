@@ -29,6 +29,12 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Tap under the raft to put floats in. Tap Launch to see if it crosses.' },
     { from: 8, to: 8, text: 'If it sits low or tips, move or add a float and launch again.' },
     {
+      from: 11,
+      to: 11,
+      text: 'Pick the boat you think carries more. Tap the bowl to load it one marble at a time.',
+    },
+    { from: 11, to: 11, text: 'If water comes over, pick a wider boat.' },
+    {
       from: 12,
       text: 'Touch anywhere: the big thing over the water drops in. A touch on the water splashes.',
     },
@@ -37,6 +43,7 @@ export const HOW_TO: GameHowTo = {
     { to: 6, text: 'The round ends when every thing has been dropped (or sorted).' },
     { from: 7, to: 7, text: 'The round ends when the clay has floated as a boat twice, once for each lump.' },
     { from: 8, to: 8, text: 'The round ends when three rafts have crossed.' },
+    { from: 11, to: 11, text: 'The round ends when three piles have been carried.' },
     { from: 9, to: 9, text: 'The round ends when three pairs (wood, stone and a ball) have both gone in.' },
     { from: 10, to: 10, text: 'The round ends when she has found the salty tank four times.' },
     {
@@ -77,6 +84,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'A guess is never wrong, so a round has no misses or hints. Whatever the guess, the pet says the stuff\'s rule ("Big or small, wood floats"): size does not decide it. Nothing new goes in the journal.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'A spill is never a miss; after two the narrowest boat that carries the pile glows (one hint). Each part of the boat holds up two marbles. Real boats also gain room from tall walls and deep hulls, and these never tip. At home, float a foil tray in a tub and add pennies, then try a wider tray. Nothing goes in the journal.',
     },
     {
       from: 10,

@@ -1,6 +1,6 @@
 # Build a Boat (How much can it carry?): a Sink or Float level (definition)
 
-Defined 2026-11-25 as the reserved row 11 of the [Sink or Float deep dive](../deep-dives/sink-float.md#new-levels-on-top), after [Garden Raft](garden-raft.md) (level 8, built), whose load model it reuses. Status: defined, not built. *How much can it carry?* is **level 11** of Sink or Float (`src/games/sink-float/`), not a new game. The tank, the water, the splash and the marble stay the same. What is new is a **measured** question: does a wider boat carry more, and how many marbles does a boat hold before water comes over the side?
+Defined 2026-11-25 as the reserved row 11 of the [Sink or Float deep dive](../deep-dives/sink-float.md#new-levels-on-top), after [Garden Raft](garden-raft.md) (level 8, built), whose load model it reuses. Status: built 2026-11-26 ([PR #2209](https://github.com/rjdunlap/neo/pull/2209)); the boat cell is drawn at most 96 units wide and shrinks only as far as the three-boat row needs beside the pet (88 at 1024 wide). *How much can it carry?* is **level 11** of Sink or Float (`src/games/sink-float/`), not a new game. The tank, the water, the splash and the marble stay the same. What is new is a **measured** question: does a wider boat carry more, and how many marbles does a boat hold before water comes over the side?
 
 **Fun action and purpose:** two foil boats cut from one sheet sit in the tank, one wide and one narrow. She guesses which carries more, then loads each one marble at a time and watches it sit lower and lower until water spills in. Then she picks, from three boats, one that can carry a pile of marbles. The learning goal is that a boat's size decides its load (capacity grows with width), and that a prediction is something to test by counting. Anchors:
 - NGSS K-2-ETS1-3, comparing two tests of an object to see which works better.
@@ -78,7 +78,7 @@ The logical width is never below 1024. Landscape is about 1024×768 and portrait
 
 ## What the build adds
 
-- Voice lines in `src/content/voice-script.ts`, all slot-free so a later clip render covers them: `sink.boat-ask` (instructed), `sink.boat-count`, `sink.boat-right`, `sink.boat-wide`, `sink.boat-over`, `sink.boat-hint` and `sink.boat-next` ("Now a pile of marbles!").
+- Voice lines in `src/content/voice-script.ts`, each carrying the `{name}` slot (built so, because CI requires a rendered clip for every slot-free line): `sink.boat-ask` (instructed), `sink.boat-count`, `sink.boat-right`, `sink.boat-wide`, `sink.boat-over`, `sink.boat-hint` and `sink.boat-next` ("Now a pile of marbles!").
 - `describeLevel(11)` comes from the plan name.
 - Sink or Float's how-to card gets lines scoped `{ from: 11, to: 11 }`:
   - steps: "Pick the boat you think carries more. Tap the bowl to load it one marble at a time." and "If water comes over, pick a wider boat."

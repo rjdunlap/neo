@@ -12,7 +12,7 @@
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 4, 5, 9, 6 |
-| school | 5, 6, 9, 7, 8, 10 |
+| school | 5, 6, 9, 7, 8, 11, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 8 | Garden Raft: put floats under the pots so the raft crosses the pond |
 | 9 | Big and small: watch the big one, guess the small one of the same stuff, then test it |
 | 10 | Salty or fresh: compare two tanks, then test to find the salty one |
+| 11 | How much can it carry? Load the boats and pick one for the pile |
 | 12 | One big thing over the water: touch anywhere to drop it in |
 
 <!-- end generated -->
@@ -47,6 +48,8 @@ Things arc into a water tank; floaters bob and sinkers drift down trailing bubbl
 **Level 9, Big and small** (pre-K and school; pre-K plays 4, 5, 9, 6 and school 5, 6, 9, 7 through `order`; level 8, Garden Raft, sits between 7 and 10 through `order` too, and `SINK_PLANS` is a table keyed by level ID). Three pairs of one stuff at two sizes in seeded order: a log and a twig (wood floats), a rock and a pebble (stone sinks), a big and a little ball (a ball full of air floats). The pair sits on the right shelf, big above small. The big one goes in alone ("Watch the big log!"), then she taps float or sink for the small one; it is tested, then "You guessed it" or "Surprise", then always the material line ("Big or small, wood floats"). Only the pair under test is in the tank; the last pair fades out. Guesses are never misses, so misses and hints are always 0, and nothing is filed in the journal. The twig and pebble have their own art (`smallArt`); the little ball is the ball at a smaller scale (sizes 1.3/0.75, ball 1.4/0.6, at least 1.6 times apart). Couch control and the bot work through the guess buttons.
 
 **Level 10, Salty or fresh** (school only; order 5, 6, 9, 7, 10; code in `salt.ts`, model in `logic.ts`: `SALT_DEPTHS`, `floatsIn`, `saltRoundFor`). Two tanks, one with a salt shaker beside it that she shakes in. Part 1 is unscored: the same duck goes in both and sits higher in the salty one (its dashed plain-water mark rides above the surface there), then an egg sinks in the plain tank and floats in the salty one. Part 2 asks four scored questions, "which tank has the salt?", with the egg and the duck; a wrong tank plays its evidence line ("Salt water holds things up higher"), counts one miss per look (further wrong taps while the line plays count nothing), and two misses glow the right tank for a hint if the same question is still open. Taps before the eggs settle are ignored; a light water wash tints what sits under the surface. Touch and `control()` (two-tank ring). The how-to note carries the model; the off-screen raw-egg safety sentence was left out (the card is at its 840-character limit) and waits on the dive's band-keyed `offScreenFor` work. Fifteen `sink.salt-*` voice lines.
+
+**Level 11, How much can it carry?** (school only; order 5, 6, 9, 7, 8, 11, 10; code in `boat.ts`, model in `logic.ts`: `holdsLoad` (shared with the raft), `hullVerdict`, `BOAT_ROUNDS`, `boatRoundFor`, `boatAccepted`; [definition](../definitions/build-a-boat.md), built 2026-11-26). Foil boats of different widths sit in the tank, each cell holding up two marbles. Round 1 (wide and narrow) asks which carries more (an unscored guess), then she taps the bowl to drop marbles one at a time into each boat in turn: it sits one step lower per marble until the marble after the last seat sends water over the rim, the marbles hop back, and the count shows as dots. Rounds 2 and 3 give a pile of four and of seven: she picks one of three boats, then loads it; a boat that cannot carry it spills with the explaining line and she picks again, with no limit. A spill is never a miss (misses stay 0); two spills in a round glow the narrowest boat that carries the pile (one hint, at most one per round). Three piles carried finish the level. A boat's tap target is as wide as its cells (up to 96 units a cell), never under 200 wide, and the cell width shrinks only as far as needed to fit the three-boat row beside the pet. Controller ring over the boats and the bowl by `control()`; boats are kept out of `THINGS`. Nothing goes in the journal.
 
 **Level 12, One big thing** (lap entry level; lap plays 12, 1, 2 through `order` and `entryLevels: [12]`; ID 11 stays reserved; mode `hold`, `HOLD_LEVEL`). One big thing (scale 2.6) waits over a lowered tank, swaying, and never drops by itself. A full-screen catcher (`onTap`, touch-down) drops it at once with a whoosh wherever she touches; it falls straight in and shrinks. The next of five familiar things (always some floaters and some sinkers) grows in only when the dropped one meets the water, so nothing waits on her. A touch on the water splashes under the finger; a touch off the water while nothing is held, or after the round, gets a pop and bubbles. Nothing is counted (misses and hints 0); discoveries are filed as in levels 1–2. Voice line `sink.hold`; the how-to card has lines from level 12.
 

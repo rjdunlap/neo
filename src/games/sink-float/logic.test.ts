@@ -9,7 +9,13 @@ import {
   CLAY_SHAPES,
   floats,
   floatsIn,
+  BOAT_ROUNDS,
+  boatAccepted,
+  boatRoundFor,
   HOLD_LEVEL,
+  holdsLoad,
+  hullCapacity,
+  hullVerdict,
   RAFT_HOLD,
   RAFT_ROUNDS,
   RAFT_SLOTS,
@@ -35,7 +41,8 @@ import {
 } from './logic';
 
 const THING_PLANS = Object.values(SINK_PLANS).filter(
-  (p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt' && p.mode !== 'raft',
+  (p) =>
+    p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt' && p.mode !== 'raft' && p.mode !== 'boat',
 );
 
 describe('Sink or Float', () => {
@@ -115,15 +122,15 @@ describe('Sink or Float', () => {
     }
   });
 
-  it('keys the plans by level ID: 7 is the shape experiment, 8 is Garden Raft, 9 is Big and small, and 11 stays reserved', () => {
-    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
+  it('keys the plans by level ID: 7 is the shape experiment, 8 is Garden Raft, 9 is Big and small, and 11 is Build a Boat', () => {
+    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     expect(sinkPlan(7).mode).toBe('shape');
     expect(sinkPlan(9).mode).toBe('pair');
     expect(sinkPlan(10).mode).toBe('salt');
     for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair|salt|raft/);
     // An unbuilt or out-of-range ID falls to the nearest built one below it.
     expect(sinkPlan(8).mode).toBe('raft');
-    expect(sinkPlan(11)).toBe(sinkPlan(10));
+    expect(sinkPlan(11).mode).toBe('boat');
     expect(sinkPlan(99)).toBe(sinkPlan(12));
     expect(sinkPlan(0)).toBe(sinkPlan(1));
   });
@@ -155,7 +162,7 @@ describe('Sink or Float', () => {
 
   it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and Garden Raft between 7 and 10, never at younger bands', () => {
     expect(levelsInOrder(rangeFor(SINK_LEVELS, 'prek'))).toEqual([4, 5, 9, 6]);
-    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 8, 10]);
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 8, 11, 10]);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(10);
     for (const band of ['lap', 'toddler', 'preschool'] as const)
@@ -163,7 +170,7 @@ describe('Sink or Float', () => {
     for (const band of Object.keys(SINK_LEVELS) as (keyof typeof SINK_LEVELS)[]) {
       const order = levelsInOrder(rangeFor(SINK_LEVELS, band));
       if (band !== 'school') expect(order, band).not.toContain(8);
-      expect(order, band).not.toContain(11);
+      if (band !== 'school') expect(order, band).not.toContain(11);
       for (const id of order) expect(SINK_IDS, band).toContain(id);
     }
   });
@@ -384,6 +391,98 @@ describe('Sink or Float', () => {
         'sink.raft-tip-left',
         'sink.raft-tip-right',
         'sink.raft-next',
+      ] as const)
+        expect(SCRIPT[id as LineId], id).toBeDefined();
+    });
+  });
+
+  describe('Build a Boat (level 11)', () => {
+    const plan = sinkPlan(11);
+
+    it('shares the raft low rule: raftVerdict is low exactly when holdsLoad is false', () => {
+      for (let floats = 0; floats <= 6; floats++)
+        for (let stones = 1; stones <= 12; stones++) {
+          const pots = Array.from({ length: stones }, () => ({ slot: 2, stones: 1 as const }));
+          const slots = new Set(Array.from({ length: floats }, (_, i) => i));
+          expect(raftVerdict(pots, slots).kind === 'low', `${floats} floats, ${stones} stones`).toBe(
+            !holdsLoad(floats, stones),
+          );
+        }
+    });
+
+    it('has a verdict that is monotonic in marbles and cells, with freeboard capacity minus marbles', () => {
+      for (const cells of [1, 2, 3, 4]) {
+        expect(hullCapacity(cells)).toBe(cells * RAFT_HOLD);
+        let spilled = false;
+        for (let m = 0; m <= 12; m++) {
+          const v = hullVerdict(cells, m);
+          if (spilled) expect(v.kind).toBe('over');
+          if (v.kind === 'over') spilled = true;
+          else expect(v.freeboard).toBe(hullCapacity(cells) - m);
+        }
+        expect(hullVerdict(cells, hullCapacity(cells))).toEqual({ kind: 'ok', freeboard: 0 });
+        expect(hullVerdict(cells, hullCapacity(cells) + 1).kind).toBe('over');
+      }
+      for (let m = 0; m <= 12; m++)
+        for (const cells of [1, 2, 3])
+          if (hullVerdict(cells, m).kind === 'ok') expect(hullVerdict(cells + 1, m).kind).toBe('ok');
+    });
+
+    it('has the three rounds the definition names, with the right capacities', () => {
+      expect(BOAT_ROUNDS.map((r) => r.boats.map(hullCapacity))).toEqual([
+        [8, 4],
+        [2, 4, 6],
+        [4, 6, 8],
+      ]);
+      expect(BOAT_ROUNDS.map((r) => r.pile)).toEqual([null, 4, 7]);
+      const carriers = (i: number) => BOAT_ROUNDS[i].boats.filter((c) => holdsLoad(c, BOAT_ROUNDS[i].pile!));
+      expect(carriers(1)).toHaveLength(2);
+      expect(carriers(2)).toHaveLength(1);
+      // The middle boat of round 3 holds six: one short of seven.
+      expect(hullCapacity(3)).toBe(6);
+    });
+
+    it('mirrors a round by the seed without changing which boat carries what', () => {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 30; seed++) {
+        const rounds = boatRoundFor(plan, new Rng(seed));
+        expect(rounds).toHaveLength(3);
+        rounds.forEach((r, i) => {
+          expect([...r.boats].sort(), `seed ${seed} round ${i}`).toEqual([...BOAT_ROUNDS[i].boats].sort());
+          expect(r.pile).toBe(BOAT_ROUNDS[i].pile);
+          const best = boatAccepted(r);
+          if (r.pile === null) expect(best).toBeNull();
+          else {
+            expect(holdsLoad(r.boats[best!], r.pile)).toBe(true);
+            // The hint's boat is the narrowest that carries the pile.
+            expect(r.boats[best!]).toBe(Math.min(...r.boats.filter((c) => holdsLoad(c, r.pile!))));
+          }
+        });
+        seen.add(rounds[1].boats.join());
+      }
+      expect(seen.size).toBe(2);
+    });
+
+    it('is level 11 at school only, between Garden Raft and Salty or fresh', () => {
+      expect(plan.mode).toBe('boat');
+      expect(plan.count).toBe(3);
+      expect(sinkPlan(12).mode).toBe('hold');
+      expect(sinkPlan(10).mode).toBe('salt');
+      expect(SINK_LEVELS.school!.order).toEqual([5, 6, 9, 7, 8, 11, 10]);
+      for (const id of SINK_LEVELS.school!.order!) expect(SINK_IDS).toContain(id);
+    });
+
+    it('keeps boats out of THINGS and has every boat line in the voice script', () => {
+      expect(ALL_THINGS).toHaveLength(14);
+      for (const id of [
+        'sink.boat-ask',
+        'sink.boat-load',
+        'sink.boat-count',
+        'sink.boat-right',
+        'sink.boat-wide',
+        'sink.boat-next',
+        'sink.boat-over',
+        'sink.boat-hint',
       ] as const)
         expect(SCRIPT[id as LineId], id).toBeDefined();
     });

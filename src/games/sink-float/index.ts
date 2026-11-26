@@ -13,6 +13,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
 import { rangeFor } from '../../progress/difficulty';
+import { BoatLoad } from './boat';
 import { GardenRaft } from './raft';
 import { SaltTanks } from './salt';
 import {
@@ -1018,6 +1019,7 @@ export const sinkFloat: GameModule = {
   create: (ctx) => {
     const mode = sinkPlan(ctx.level).mode;
     if (mode === 'raft') return new GardenRaft(ctx);
+    if (mode === 'boat') return new BoatLoad(ctx);
     return mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx);
   },
 };
