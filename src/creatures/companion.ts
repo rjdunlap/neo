@@ -22,6 +22,7 @@ import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustra
 import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
 import { formFits, wearForm } from '../art/creatures/forms';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
+import { paperArt } from '../art/creatures/paper';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
 import {
   fileOf,
@@ -40,12 +41,6 @@ import { store } from '../progress/store';
 import type { FormId } from './forms';
 import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
-
-/**
- * A preview of the paper look's pets (docs/ART-STYLE.md): `?paperpets` in the address draws every pet with its code-drawn
- * rig, which the paper pass turns into paper. Those rigs have no wearables, colours or blossoms yet, so it is a preview only.
- */
-const PAPER_PETS = typeof location !== 'undefined' && new URLSearchParams(location.search).has('paperpets');
 
 /**
  * RW05 slice 1 (docs/rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices): the friend who travels
@@ -92,7 +87,7 @@ export async function loadCollectionArt(): Promise<void> {
     ),
     ...SPECIES_IDS.map(async (s) => {
       try {
-        loaded.sets[s] = await loadArt(s);
+        loaded.sets[s] = paperArt(s) ?? (await loadArt(s));
       } catch (e) {
         console.warn(`Could not load the ${s} art`, e);
       }
@@ -334,7 +329,7 @@ export class Companion extends Container implements CompanionRig {
       look: { color: PetColor; worn?: readonly WearableId[]; form?: FormId | null };
       id?: string | null;
     },
-    art: ArtSet | undefined = PAPER_PETS ? undefined : loaded.sets[who.species],
+    art: ArtSet | undefined = loaded.sets[who.species],
     leaveOff: readonly WearSlot[] = [],
   ) {
     super();

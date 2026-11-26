@@ -6,7 +6,9 @@ import { paperCircle, paperEllipse, paperGround, paperLine, paperRect, paperShap
 import { SHAPES, MORE_SHAPES } from '../art/shapes';
 import type { View } from '../engine/view';
 import { label } from '../ui/text';
-import { makeCreature, SPECIES } from '../art/creatures';
+import { Sprite } from 'pixi.js';
+import { PAPER_ART } from '../art/creatures/paper';
+import { EXPRESSIONS } from '../art/creatures/illustrated';
 
 /**
  * The paper cut-out style's swatch book (docs/ART-STYLE.md), at `/?paper` on the dev server only: every named shape
@@ -101,13 +103,20 @@ export class PaperLab extends Scene {
       });
     this.content.addChild(pond);
 
-    // The code-drawn pets, which the paper pass turns into paper.
-    SPECIES.forEach((id, i) => {
-      const pet = makeCreature(id);
-      pet.scale.set(0.55);
-      pet.position.set(view.w * (0.62 + i * 0.13), 330);
-      this.content.addChild(pet);
-    });
+    // The paper creatures, every expression (?lab=species picks one).
+    const want = new URLSearchParams(location.search).get('lab') ?? 'sprout';
+    const draw = PAPER_ART[want as keyof typeof PAPER_ART];
+    if (draw) {
+      const set = draw();
+      EXPRESSIONS.forEach((ex, i) => {
+        const s = new Sprite(set[ex]);
+        s.anchor.set(0.5, 1);
+        const k = Math.min(160 / s.texture.width, 150 / s.texture.height);
+        s.scale.set(k);
+        s.position.set(view.w * 0.58 + (i % 3) * 170, 210 + Math.floor(i / 3) * 160);
+        this.content.addChild(s);
+      });
+    }
 
     // Chrome: two buttons and a card.
     const ui = new Graphics();
