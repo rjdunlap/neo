@@ -20,6 +20,7 @@ import {
 } from '../art/creatures/illustrated';
 import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustrated';
 import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
+import { formFits, wearForm } from '../art/creatures/forms';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
 import {
@@ -36,6 +37,7 @@ import { sfx } from '../audio/sfx';
 import { MIXED_COLORS, type PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
 import { store } from '../progress/store';
+import type { FormId } from './forms';
 import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 
@@ -314,11 +316,18 @@ export class Companion extends Container implements CompanionRig {
   private readonly parts = new Map<PartName, Container[]>();
 
   private shown: WearableId[] = [];
+  /** What is actually on the rig (a misfit, a leave-off slot, a failed texture or a blossom's head slot are listed but not drawn). */
+  private readonly drawn = new Set<WearableId>();
+  private shownForm: FormId | null = null;
   /** Slots this companion never draws, though they stay listed in `worn` (the guide's `held`). */
   private readonly leaveOff: readonly WearSlot[];
 
   constructor(
-    who: { species: SpeciesId; look: { color: PetColor; worn?: readonly WearableId[] }; id?: string | null },
+    who: {
+      species: SpeciesId;
+      look: { color: PetColor; worn?: readonly WearableId[]; form?: FormId | null };
+      id?: string | null;
+    },
     art: ArtSet | undefined = loaded.sets[who.species],
     leaveOff: readonly WearSlot[] = [],
   ) {
@@ -336,7 +345,7 @@ export class Companion extends Container implements CompanionRig {
     this.touch = { x: t.x * fit.scale, y: t.y * fit.scale - fit.lift, r: t.r * fit.scale };
     this.body.addChild(this.rig);
     this.addChild(this.body);
-    this.dress(who.look.worn ?? []);
+    this.dress(who.look.worn ?? [], who.look.form ?? null);
   }
 
   /** What it has on, as saved (RW06), in the order put on. A misfit for its species is listed but not drawn. */
@@ -344,26 +353,45 @@ export class Companion extends Container implements CompanionRig {
     return this.shown;
   }
 
+  /** The blossom it shows (RW11), as saved, or null for its original look. */
+  get form(): FormId | null {
+    return this.shownForm;
+  }
+
   /**
-   * Changes what it wears to `worn`: what is no longer listed comes off first, then what is new goes on. The Graphics
-   * fallback rig wears nothing (`wearItem` dresses illustrated rigs only), nor does an item whose texture failed.
+   * Changes what it wears to `worn` and the blossom it shows to `form` (kept as it is when omitted): what is no longer
+   * wanted comes off first, then what is new goes on. A blossom takes the head slot, so a hat in `worn` is kept but not
+   * drawn while a blossom is. The Graphics fallback rig wears nothing (`wearItem` dresses illustrated rigs only), nor does
+   * an item whose texture failed.
    */
-  dress(worn: readonly WearableId[]) {
+  dress(worn: readonly WearableId[], form: FormId | null = this.shownForm) {
     const next = [...worn];
     if (this.rig instanceof IllustratedCreature) {
       const table = WEAR[this.species];
-      for (const w of this.shown) if (!next.includes(w)) wearItem(this.rig, table, w, null);
+      const blossom = form !== null && formFits(this.species, form);
+      const wanted = (w: WearableId) =>
+        next.includes(w) &&
+        !!loaded.items[fileOf(w)] &&
+        !this.leaveOff.includes(SLOT[w]) &&
+        !(blossom && SLOT[w] === 'head');
+      for (const w of [...this.drawn]) {
+        if (wanted(w)) continue;
+        wearItem(this.rig, table, w, null);
+        this.drawn.delete(w);
+      }
       for (const w of next) {
         const t = loaded.items[fileOf(w)];
-        if (!this.shown.includes(w) && t && !this.leaveOff.includes(SLOT[w])) wearItem(this.rig, table, w, t);
+        if (t && wanted(w) && !this.drawn.has(w) && wearItem(this.rig, table, w, t)) this.drawn.add(w);
       }
+      if (form !== this.shownForm) wearForm(this.rig, this.species, blossom ? form : null);
     }
     this.shown = next;
+    this.shownForm = form;
   }
 
-  /** Puts one item on (taking off whatever shares its slot) or takes it off. */
+  /** Puts one item on (taking off whatever shares its slot, and the blossom for a hat) or takes it off. */
   wear(item: WearableId, on: boolean) {
-    this.dress(changeWorn(this.shown, item, on));
+    this.dress(changeWorn(this.shown, item, on), on && SLOT[item] === 'head' ? null : this.shownForm);
   }
 
   /** A body-centred hit circle, `grow` units larger than the body. */

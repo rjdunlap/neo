@@ -18,6 +18,7 @@ import { isSpecies, MAX_CREATURES, SPECIES, type SpeciesId } from '../creatures/
 import { isGoalId, type GoalId } from '../content/goals';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
+import { cleanForms, cleanLookForm, type FormId } from '../creatures/forms';
 
 import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
@@ -87,8 +88,8 @@ export interface Individual {
   id: string;
   species: SpeciesId;
   name: string;
-  /** Its colour, and what it wears (RW06): wearable ids, one per slot, in the order put on (`cleanWorn`). */
-  look: { color: PetColor; worn: WearableId[] };
+  /** Its colour, and what it wears (RW06): wearable ids, one per slot, in the order put on (`cleanWorn`), and the form it shows (RW11), which takes the head slot. */
+  look: { color: PetColor; worn: WearableId[]; form: FormId | null };
   metAt: string;
 }
 
@@ -96,6 +97,8 @@ export interface Individual {
 export interface CreaturesSave {
   owned: Individual[];
   companion: string | null;
+  /** The forms the profile has grown (RW11): kept like a furnishing, shown by whichever friend she chooses. */
+  forms: FormId[];
 }
 
 export { MAX_CREATURES } from '../creatures/species';
@@ -159,7 +162,7 @@ export function defaults(): SaveData {
   return {
     version: 3,
     profile: { name: '', band: 'lap' },
-    creatures: { owned: [], companion: null },
+    creatures: { owned: [], companion: null, forms: [] },
     world: { band: null },
     settings: {
       placeLayout: 'path',
@@ -250,6 +253,7 @@ function room(raw: unknown): RoomSave {
  */
 export function cleanCreatures(raw: unknown): CreaturesSave {
   const r = isObj(raw) ? raw : {};
+  const forms = cleanForms(r.forms);
   const owned: Individual[] = [];
   for (const c of Array.isArray(r.owned) ? r.owned.filter(isObj) : []) {
     if (owned.length >= MAX_CREATURES) break;
@@ -266,12 +270,16 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
       id: c.id,
       species: c.species,
       name: str(c.name, '').trim().slice(0, 40) || sp.names[0],
-      look: { color: isPetColor(look.color) ? look.color : sp.color, worn: cleanWorn(look.worn) },
+      look: {
+        color: isPetColor(look.color) ? look.color : sp.color,
+        worn: cleanWorn(look.worn),
+        form: cleanLookForm(look.form, c.species, forms),
+      },
       metAt: str(c.metAt, '').slice(0, 60),
     });
   }
   const companion = owned.find((o) => o.id === r.companion)?.id ?? owned[0]?.id ?? null;
-  return { owned, companion };
+  return { owned, companion, forms };
 }
 
 /**
@@ -297,7 +305,7 @@ export function meetIn(
     id,
     species,
     name: name.trim().slice(0, 40) || sp.names[0],
-    look: { color: isPetColor(color) ? color : sp.color, worn: [] },
+    look: { color: isPetColor(color) ? color : sp.color, worn: [], form: null },
     metAt: token,
   };
   c.owned.push(met);

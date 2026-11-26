@@ -115,6 +115,54 @@ describe('the companion (RW05)', () => {
     useItems({});
   });
 
+  it('shows a blossom as a form: in the guide’s corner with every other item, taking the head slot (RW11)', () => {
+    useItems(items);
+    const pip = bounds(new Critter(CRITTERS.pip), GUIDE_SCALE);
+    const bare = new Companion({ species: 'sprout', look: { color: 'teal' } }, art, GUIDE_LEAVES_OFF);
+    const tips = bounds(bare, GUIDE_SCALE).minY;
+    const rest = outfits('sprout')[0];
+    for (const form of ['sprout:sun', 'sprout:moon'] as const) {
+      const c = new Companion(
+        { species: 'sprout', look: { color: 'teal', worn: ['crown', ...rest], form } },
+        art,
+        GUIDE_LEAVES_OFF,
+      );
+      const b = bounds(c, GUIDE_SCALE);
+      expect(c.form, form).toBe(form);
+      // The crown stays in the save's list but is not drawn: one drawn node fewer than a crown and no blossom would give.
+      expect(c.worn).toEqual(['crown', ...rest]);
+      expect(74 + b.minX, form).toBeGreaterThan(0);
+      expect(b.maxX, form).toBeLessThan(pip.maxX + 40);
+      expect(b.minY, form).toBeGreaterThan(pip.minY - 30);
+      // The blossom stays inside the leaf-tip height to within a few guide units (the stand-in art has no real leaves).
+      expect(b.minY, form).toBeGreaterThanOrEqual(tips - 8);
+    }
+    useItems({});
+  });
+
+  it('puts a blossom on and off live; a hat and a blossom take turns, and her colour does not touch it (RW11)', () => {
+    useItems(items);
+    const parts = (c: Companion) =>
+      (c.rig as IllustratedCreature).children.reduce((n, ch) => n + ch.children.length, 0);
+    const bare = parts(new Companion({ species: 'sprout', look: { color: 'teal' } }, art));
+    const c = new Companion({ species: 'sprout', look: { color: 'teal', worn: ['sunhat'] } }, art);
+    expect(parts(c)).toBe(bare + 1);
+    c.dress(c.worn, 'sprout:sun');
+    expect(parts(c)).toBe(bare + 1); // the blossom, not the hat
+    c.dress(c.worn, 'sprout:moon');
+    expect(parts(c)).toBe(bare + 1);
+    c.wear('crown', true); // a head item takes the blossom off
+    expect(c.form).toBeNull();
+    expect(c.worn).toEqual(['crown']);
+    expect(parts(c)).toBe(bare + 1);
+    c.dress([], null);
+    expect(parts(c)).toBe(bare);
+    // A river has no blossom: asked for one it draws nothing.
+    const river = new Companion({ species: 'river', look: { color: 'orange', form: 'sprout:sun' } }, art);
+    expect(parts(river)).toBe(parts(new Companion({ species: 'river', look: { color: 'orange' } }, art)));
+    useItems({});
+  });
+
   it('dresses and undresses live, a new item in a slot taking the old one off', () => {
     useItems(items);
     const c = new Companion({ species: 'sprout', look: { color: 'teal', worn: ['crown', 'boots'] } }, art);

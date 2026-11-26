@@ -102,7 +102,7 @@ describe('migrate', () => {
     expect(save.profile).toEqual(legacy.profile);
     expect(save.games).toEqual(legacy.games);
     expect(save.stickers).toEqual(legacy.stickers);
-    expect(save.creatures).toEqual({ owned: [], companion: null });
+    expect(save.creatures).toEqual({ owned: [], companion: null, forms: [] });
     expect(save.world).toEqual({ band: null });
   });
 
@@ -123,7 +123,7 @@ describe('migrate', () => {
     const save = migrate(old);
     expect(save.version).toBe(3);
     expect(save.stickers).toEqual(old.stickers);
-    expect(save.creatures).toEqual({ owned: [], companion: null });
+    expect(save.creatures).toEqual({ owned: [], companion: null, forms: [] });
     expect('pet' in save).toBe(false);
   });
 
@@ -131,7 +131,7 @@ describe('migrate', () => {
     id,
     species: 'sprout',
     name: 'Mochi',
-    look: { color: 'pink', worn: [] as string[] },
+    look: { color: 'pink', worn: [] as string[], form: null },
     metAt: 'start',
     ...extra,
   });
@@ -143,11 +143,12 @@ describe('migrate', () => {
         friend('riv1', {
           species: 'river',
           name: 'Pebble',
-          look: { color: 'blue', worn: ['crown', 'scarf'] },
+          look: { color: 'blue', worn: ['crown', 'scarf'], form: null },
           metAt: 'dev:river',
         }),
       ],
       companion: 'riv1',
+      forms: ['sprout:moon'],
     };
     expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
   });
@@ -181,12 +182,37 @@ describe('migrate', () => {
       id: 'abcd',
       species: 'sprout',
       name: 'Pip',
-      look: { color: 'teal', worn: [] },
+      look: { color: 'teal', worn: [], form: null },
       metAt: '',
     });
     expect(b.name).toHaveLength(40);
     expect(b.look.color).toBe('purple');
     expect(b.metAt).toHaveLength(60);
+  });
+
+  it('repairs the forms a profile has grown and the one a friend shows (RW11)', () => {
+    expect(
+      cleanCreatures({ forms: ['sprout:moon', 'sprout:moon', 'tree:oak', 7, 'sprout:sun'] }).forms,
+    ).toEqual(['sprout:moon', 'sprout:sun']);
+    expect(cleanCreatures({ forms: 'sprout:sun' }).forms).toEqual([]);
+    const many = Array.from({ length: 30 }, () => 'sprout:sun');
+    expect(cleanCreatures({ forms: many }).forms).toEqual(['sprout:sun']);
+    const shown = (form: unknown, species = 'sprout', forms: unknown = ['sprout:sun']) =>
+      cleanCreatures({ forms, owned: [friend('abcd', { species, look: { color: 'pink', worn: [], form } })] })
+        .owned[0].look.form;
+    expect(shown('sprout:sun')).toBe('sprout:sun');
+    expect(shown('sprout:moon')).toBeNull(); // not grown
+    expect(shown('sprout:sun', 'glider')).toBeNull(); // another species' form
+    expect(shown('sprout:sun', 'sprout', [])).toBeNull();
+    expect(shown('daisy')).toBeNull();
+    expect(shown(undefined)).toBeNull();
+    // A save holding both a form and a hat keeps both: the form is drawn, the hat is not.
+    const both = cleanCreatures({
+      forms: ['sprout:sun'],
+      owned: [friend('abcd', { look: { color: 'pink', worn: ['crown'], form: 'sprout:sun' } })],
+    }).owned[0].look;
+    expect(both.worn).toEqual(['crown']);
+    expect(both.form).toBe('sprout:sun');
   });
 
   it('repairs what a friend wears: unknown ids, repeats, two in a slot, seven at most, misfits kept (RW06)', () => {
@@ -243,7 +269,7 @@ describe('migrate', () => {
       'abcd',
     );
     expect(cleanCreatures({ owned: [], companion: 'abcd' }).companion).toBeNull();
-    expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null });
+    expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null, forms: [] });
   });
 
   it('meets a friend once per token, making the first one the companion', () => {
@@ -255,7 +281,7 @@ describe('migrate', () => {
       id: 'id0aa',
       species: 'sprout',
       name: 'Mochi',
-      look: { color: 'pink', worn: [] },
+      look: { color: 'pink', worn: [], form: null },
       metAt: 'start',
     });
     expect(c.companion).toBe('id0aa');
