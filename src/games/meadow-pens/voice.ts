@@ -1,3 +1,79 @@
+import { LOFT, MISSING, baleCount, lengthOf } from './factor-logic';
+
+const WORDS = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty',
+  'twenty-one',
+  'twenty-two',
+  'twenty-three',
+  'twenty-four',
+];
+const word = (n: number) => WORDS[n];
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+/** "Three, six, nine, twelve" for the running counts of a strip `step` rows tall up to `to`. */
+const running = (step: number, to: number) =>
+  Array.from({ length: to / step }, (_, i) => (i === 0 ? cap(word(step)) : word(step * (i + 1)))).join(', ');
+const rowsWord = (n: number) => `${cap(word(n))} rows`;
+
+/** Levels 6 and 7: one exact line per authored case, quantities as words (the speech clips are built from these). */
+const FACTOR_LINES = Object.fromEntries([
+  ...MISSING.flatMap((c) => {
+    const len = lengthOf(c);
+    return [
+      [
+        `meadow.ask6.${c.id}`,
+        [
+          `There are ${word(c.total)} squares of grass in ${word(c.rows)} rows. How many squares long is the strip?`,
+        ],
+      ],
+      [
+        `meadow.try6.${c.id}.short`,
+        [
+          `${rowsWord(c.rows)}, ${word(len - 1)} columns: ${word(c.rows * (len - 1))} squares. We need ${word(c.total)}.`,
+        ],
+      ],
+      [
+        `meadow.try6.${c.id}.many`,
+        [`${cap(word(len))} columns make ${word(c.total)}. That card is too many.`],
+      ],
+      [`meadow.lift6.${c.id}`, [`${running(c.rows, c.total)}. ${cap(word(len))} columns.`]],
+    ];
+  }),
+  ...LOFT.flatMap((c) => [
+    [
+      `meadow.ask7.${c.id}`,
+      [
+        `Each tray holds ${word(baleCount(c))} bales. The loft is ${word(c.layers)} trays tall. How many bales fill it?`,
+      ],
+    ],
+    [
+      `meadow.stack7.${c.id}`,
+      [
+        `${Array.from({ length: c.layers }, (_, i) => cap(word(baleCount(c) * (i + 1)))).join('. ')} bales altogether.`,
+      ],
+    ],
+  ]),
+]) as Record<string, string[]>;
+
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.meadow-pens': ['Meadow pens!'],
@@ -16,6 +92,15 @@ export const VOICE = {
   'meadow.instruct.5': [
     'The bent field has two parts. Count the squares in both parts, then choose a card for all the grass.',
   ],
+  'meadow.instruct.6': [
+    'The grass is under the blanket. Count the rows, then choose how many squares long it is.',
+  ],
+  'meadow.instruct.7': [
+    'Fill the loft. One tray holds the bales on the floor. Count the trays, then choose how many bales fill it.',
+  ],
+  'meadow.blanket6': ['The rest of the grass is under here.'],
+  'meadow.bales7': ['{n} bales on one tray.'],
+  ...FACTOR_LINES,
   'meadow.ask4.grass': ['Which pen has more squares of grass?'],
   'meadow.ask4.fence': ['Which pen needs more fence pieces?'],
   'meadow.ask5': ['How many squares of grass cover the whole field?'],

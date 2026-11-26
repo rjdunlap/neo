@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–5 |
+| school | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,12 +17,14 @@
 | 3 | Same grass, new fence: six squares whose fence uses every piece on the stack (10, 12 or 14) |
 | 4 | More grass, or more fence? Compare two pens, including equal counts |
 | 5 | Two parts: count all the grass in a bent field made of two rectangles |
+| 6 | How long is the side? Find a strip of grass's hidden length from its area and its rows |
+| 7 | Fill the loft: find the bales in a hay loft from one tray and the layers |
 
 <!-- end generated -->
 
 **Starts as:** a friend asks for a pen: paint squares of grass on a meadow grid and the fence builds itself around the biggest connected group (other squares are flowers, a ring of grass round a hole is a pond), then ring the bell to check
 
-**Grows into:** level 1 asks for 3 to 8 squares of grass; level 2 fills each field row by row and she picks the total from three cards (rows times columns, the fence count, or rows plus columns); level 3 gives a stack of 10, 12 or 14 fence pieces and asks for six squares of grass using every piece; level 4 compares two pens for more grass or more fence, including the same; level 5 counts an L-shaped field in two rectangular parts; a wrong ring is one gentle miss (the squares or the fence pieces are counted aloud), an empty ring is free, and two misses or Show a hint glow a pen that works; levels 4–5 have five questions, free count replays and one hint per question, after which any answer card supports completion
+**Grows into:** level 1 asks for 3 to 8 squares of grass; level 2 fills each field row by row and she picks the total from three cards (rows times columns, the fence count, or rows plus columns); level 3 gives a stack of 10, 12 or 14 fence pieces and asks for six squares of grass using every piece; level 4 compares two pens for more grass or more fence, including the same; level 5 counts an L-shaped field in two rectangular parts; level 6 hides most of a strip of grass under a blanket and asks how many squares long it is from the total and the rows (a wrong card lifts the blanket column by column, adding the rows each time); level 7 asks how many bales fill a hay loft from one tray and its layers (a wrong card stacks the trays, the count rising by the whole floor each time); a wrong ring is one gentle miss (the squares or the fence pieces are counted aloud), an empty ring is free, and two misses or Show a hint glow a pen that works; levels 4–7 have five questions, free count replays and one hint per question, after which any answer card supports completion
 
 ## Design notes
 
@@ -35,3 +37,7 @@
 **A right card or pen never holds the next question (U7 fix batch 16, 2026-11-12).** `meadow.in` or `field-in` starts and, after a short look, the next friend or question opens with input open; its ask waits for the line and is said at her first touch or by the guide. A tapped part's name and count at levels 4–5 play with input open, and a tap on the other part, a card or help takes over. The last question's line is still heard out.
 
 **What the guide repeats.** Each friend's request, the field question and levels 4–5's question (`meadow.ask*`, `meadow.field-ask`) are instructions (`ctx.instruct`), so the guide repeats them and the caption keeps them. At level 4 the question is the only place "grass" or "fence" is said, so a reader with the sound off still sees which is asked after the line ends.
+
+## Levels 6–7 build notes (2026-11-26)
+
+Built in `factor.ts` (`FactorMeadow`) with its rules in `factor-logic.ts`; levels 1–5 are untouched. The strip and loft use the model grid, the level-2 card lane and the gate, so layout is the existing `meadowLayout`. In portrait the model transposes, so level 6's strip stands up and its "rows" read as columns; this follows the definition ("portrait transposes it") and is a point for the phone playtest, not a settled design. The how-to scopes touching the blanket, the tray and the layer marks as free counts. After a wrong card the blanket (or the stack) goes back, so the next try has to count again; a correct card leaves the answer showing while the friend says thanks.

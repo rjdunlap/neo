@@ -124,7 +124,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `machines` | 2026-11-25 · [Chain Reaction cargo and goal skins](verification/2026-11-25-chain-reaction-cargo-and-goal-skins.md) | `CHAIN_LEVELS=11` |
 | `makerlane` | 2026-11-24 · [Maker Lane levels 4–5 (PR #2140)](verification/2026-11-24-maker-lane-levels-4-5.md) | — |
 | `marblejump` | 2026-11-09 · [Marble Jump slice 4: level 9 A bigger triangle](archive/VERIFICATION-2026-11-09.md#2026-11-09--marble-jump-slice-4-level-9-a-bigger-triangle-pr-1428) | Level 9 upright and sideways. A later [touch probe](verification/2026-11-19-marble-jump-phone-touch-targets.md) covered levels 1 and 9. |
-| `meadow` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | Level 2, repeat instruction |
+| `meadow` | 2026-11-26 · [Meadow Pens levels 6-7 (PR #2233)](verification/2026-11-26-meadow-pens-levels-6-7.md) | Levels 6–7; earlier: level 2, repeat instruction ([2026-11-17](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md)) |
 | `measuringpost` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | Filtered measuring play, repeat instruction |
 | `melody` | 2026-11-25 · [Missing Melody story (PR #2175)](verification/2026-11-25-missing-melody-story.md) | — |
 | `meltfreeze` | 2026-11-18 · [Melt and Freeze level 7, Can it go back?](verification/2026-11-18-melt-and-freeze-level-7-can-it-go-back.md) | `MELT_SORT=1` |
