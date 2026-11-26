@@ -10,8 +10,8 @@
 | --- | --- |
 | lap | 8, 1, 2 |
 | toddler | 2–4 |
-| preschool | 4, 5, 6, 9 |
-| pre-K | 5, 6, 7, 9 |
+| preschool | 4, 11, 5, 6, 9 |
+| pre-K | 5, 11, 6, 7, 9 |
 | school | 6, 7, 9, 10 |
 
 | Level | Plays like |
@@ -26,12 +26,13 @@
 | 8 | One big jelly on a 4-beat loop; any touch lights the nearest, and more jellies wake |
 | 9 | Make your own song on a 6-beat loop, then press the check to hear it once more |
 | 10 | Answer the pet's 4-note question with a note on each of the next four beats |
+| 11 | Finish the pet's song: it sings two beats, and she adds a jelly on each of the last two |
 
 <!-- end generated -->
 
 **Starts as:** at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat
 
-**Grows into:** copy authored songs with rests by shadows or a card, continue a pattern, find a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school)
+**Grows into:** copy authored songs with rests by shadows or a card, continue a pattern, find a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school) or finish its two-beat start (level 11, preschool and pre-K)
 
 ## Design notes
 

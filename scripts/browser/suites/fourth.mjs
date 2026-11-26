@@ -7,7 +7,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'song8', 'song9', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        ['song', 'song8', 'song9', 'song11', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -132,6 +132,44 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(r, [0, 0], 'song 9 score');
       log(
         'Song Maker 9: any jellies, the check wakes after three and a full loop, a change puts it back to sleep, sticker passed',
+      );
+    }
+
+    // Song Maker 11, Finish my song: the pet's two beats are given, a tap in a beat moves its jelly, the check wakes once both
+    // beats hold one and the four-beat loop has played since the last change, and a press finishes with 0/0.
+    if (!only || only === 'song' || only === 'song11') {
+      await launch('song-maker', 11, 'Mia', 'preschool');
+      await page.waitForTimeout(600);
+      const r11 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const bead = (col, row) => g.beads.find((b) => b.note.col === col && b.note.row === row);
+        const givenLit = g.beads.filter((b) => b.given).length;
+        kit.tapOn(bead(0, 0));
+        const openingUntouched = g.beads.filter((b) => b.given).length === givenLit;
+        kit.tapOn(bead(2, 0));
+        kit.tapOn(bead(2, 2));
+        const moved = bead(2, 2).lit && !bead(2, 0).lit;
+        kit.tapOn(bead(3, 1));
+        const justLit = !g.checkAwake;
+        const woke = await kit.until(() => g.checkAwake, 9000);
+        const size = g.check.radius * 2;
+        kit.tapOn(g.check);
+        return { givenLit, openingUntouched, moved, justLit, woke, size, misses: g.misses };
+      });
+      assert.ok(
+        r11.givenLit === 2 && r11.openingUntouched && r11.moved && r11.justLit && r11.woke,
+        `song 11 check ${JSON.stringify(r11)}`,
+      );
+      assert.ok(r11.size >= 100, 'song 11 check is a whole target');
+      await screenshot('song-maker-11');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const r = kit.store.stats('song-maker').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'song 11 score');
+      log(
+        'Song Maker 11: the pet gives two beats, a tap moves a jelly, the check wakes after both, sticker passed',
       );
     }
 

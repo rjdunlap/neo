@@ -13,7 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  ANSWER_FROM,
+  answerFrom,
   LEVELS,
   answerReady,
   answerTap,
@@ -183,14 +183,14 @@ class SongMaker implements Game {
           bead.lit = bead.given = true;
           this.placed.add(key(note));
         }
-        if (this.plan.mode === 'answer' && col < ANSWER_FROM) {
+        if (this.plan.mode === 'answer' && col < answerFrom(this.plan)) {
           bead.eventMode = 'none';
           bead.mute = !bead.given;
         }
         if (this.plan.mode === 'wake') {
           bead.eventMode = 'none';
           bead.sleepy = true;
-        } else if (!(this.plan.mode === 'answer' && col < ANSWER_FROM))
+        } else if (!(this.plan.mode === 'answer' && col < answerFrom(this.plan)))
           onTap(bead, () => this.tap(bead), { cooldown: 150 });
         this.beads.push(bead);
         ctx.stage.addChild(bead);
@@ -226,7 +226,7 @@ class SongMaker implements Game {
         void this.ctx.instruct('song.compose');
         break;
       case 'answer':
-        void this.ctx.instruct('song.answer');
+        void this.ctx.instruct(this.plan.cols === 4 ? 'song.finish' : 'song.answer');
         break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
@@ -297,15 +297,17 @@ class SongMaker implements Game {
 
   /** Answer my song: her lit jellies, one at most in each of the four answer beats. */
   private answered() {
-    return this.beads.filter((b) => b.lit && !b.given && b.note.col >= ANSWER_FROM).length;
+    return this.beads.filter((b) => b.lit && !b.given && b.note.col >= answerFrom(this.plan)).length;
   }
 
   /** Answer my song: a beat holds one jelly, so a tap there moves it, and a tap on the lit one puts it out. Nothing is ever wrong. */
   private answerTap(bead: Bead) {
-    const mine = this.beads.filter((b) => b.lit && !b.given && b.note.col >= ANSWER_FROM).map((b) => b.note);
+    const mine = this.beads
+      .filter((b) => b.lit && !b.given && b.note.col >= answerFrom(this.plan))
+      .map((b) => b.note);
     const next = new Set(answerTap(mine, bead.note).map(key));
     for (const b of this.beads) {
-      if (b.given || b.note.col < ANSWER_FROM) continue;
+      if (b.given || b.note.col < answerFrom(this.plan)) continue;
       const lit = next.has(key(b.note));
       if (lit === b.lit) continue;
       b.lit = lit;
@@ -544,7 +546,7 @@ class SongMaker implements Game {
     // Answer my song: the pet's question beats sit on a pale tint, and her answer beats on the cream.
     if (p.mode === 'answer')
       for (const bar of lay.bars) {
-        const n = Math.min(bar.from + bar.cols, ANSWER_FROM) - bar.from;
+        const n = Math.min(bar.from + bar.cols, answerFrom(this.plan)) - bar.from;
         if (n > 0)
           b.rect(bar.x0, bar.y0, bar.cell * n, bar.cell * p.rows).fill({
             color: swatch.purple.fill,
@@ -561,7 +563,7 @@ class SongMaker implements Game {
       bead.visible = (bar.tappable || bead.given) && !bead.mute;
       if (p.mode !== 'wake')
         bead.eventMode =
-          bar.tappable && !(p.mode === 'answer' && bead.note.col < ANSWER_FROM) ? 'static' : 'none';
+          bar.tappable && !(p.mode === 'answer' && bead.note.col < answerFrom(this.plan)) ? 'static' : 'none';
       bead.draw(bar.cell);
     }
     this.view = v;

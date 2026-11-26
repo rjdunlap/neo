@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ANSWER_FROM,
+  answerFrom,
+  OPENINGS,
   QUESTIONS,
   answerReady,
   answerTap,
@@ -283,7 +284,7 @@ describe('Song Maker songs', () => {
     const plan = songPlan(9);
 
     it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
-      expect(SONG_PLANS).toHaveLength(10);
+      expect(SONG_PLANS).toHaveLength(11);
       expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
       const song = makeSong(plan, new Rng(1));
       expect(song).toEqual({ notes: [], given: [] });
@@ -314,6 +315,67 @@ describe('Song Maker songs', () => {
     it('speaks its two lines', () => {
       expect(SCRIPT['song.compose']).toBeDefined();
       expect(SCRIPT['song.compose.ready']).toBeDefined();
+    });
+  });
+
+  describe('level 11, Finish my song', () => {
+    const plan = songPlan(11);
+
+    it('is a 4×3 board for preschool and pre-K, with the pet singing beats 1-2', () => {
+      expect(plan).toMatchObject({ mode: 'answer', cols: 4, rows: 3, notes: 2 });
+      expect(answerFrom(plan)).toBe(2);
+      for (const band of ['preschool', 'prek'] as const) expect(levelsInOrder(LEVELS[band]!)).toContain(11);
+      for (const band of ['lap', 'toddler', 'school'] as const)
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(11);
+      for (let seed = 1; seed <= 100; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        expect(song.notes).toEqual([]);
+        expect(song.given.map((n) => n.col)).toEqual([0, 1]);
+        expect(song.given[0].row).not.toBe(song.given[1].row);
+        for (const n of song.given) expect(n.row >= 0 && n.row < plan.rows).toBe(true);
+      }
+    });
+
+    it('draws from six distinct openings and skips the last three asked', () => {
+      expect(new Set(OPENINGS.map((o) => o.join())).size).toBe(OPENINGS.length);
+      const recent: string[] = [];
+      const seen = new Set<string>();
+      for (let i = 0; i < 60; i++) {
+        const song = makeSong(plan, new Rng(i + 1), recent);
+        expect(recent.slice(-3)).not.toContain(song.motif);
+        recent.push(song.motif!);
+        seen.add(song.motif!);
+      }
+      expect(seen.size).toBe(OPENINGS.length);
+    });
+
+    it('finishes under any taps: all nine endings are reachable, one jelly a beat', () => {
+      for (let a = 0; a < 9; a++) {
+        let l: { col: number; row: number }[] = [];
+        l = answerTap(l, { col: 2, row: a % 3 });
+        l = answerTap(l, { col: 3, row: Math.floor(a / 3) });
+        expect(l).toHaveLength(2);
+        expect(answerReady(plan, l.length, plan.cols)).toBe(true);
+      }
+      expect(answerReady(plan, 1, 99)).toBe(false);
+      expect(answerReady(plan, 2, plan.cols - 1)).toBe(false);
+    });
+
+    it('has a bot that fills beats 3-4 once, never touching the opening', () => {
+      const song = makeSong(plan, new Rng(3));
+      const placed = new Set(song.given.map(key));
+      const mine: string[] = [];
+      for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
+        expect(n.col).toBeGreaterThanOrEqual(2);
+        expect(n.row).toBeLessThan(plan.rows);
+        mine.push(key(n));
+        placed.add(key(n));
+      }
+      expect(mine).toHaveLength(2);
+    });
+
+    it('speaks its instruction', () => {
+      expect(SCRIPT['song.finish']).toBeDefined();
     });
   });
 
@@ -371,7 +433,7 @@ describe('Song Maker songs', () => {
       const placed = new Set(song.given.map(key));
       const mine: string[] = [];
       for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
-        expect(n.col).toBeGreaterThanOrEqual(ANSWER_FROM);
+        expect(n.col).toBeGreaterThanOrEqual(answerFrom(plan));
         mine.push(key(n));
         placed.add(key(n));
       }

@@ -56,10 +56,28 @@ export const SONG_PLANS: SongPlan[] = [
     notes: 4,
     name: "Answer the pet's 4-note question with a note on each of the next four beats",
   },
+  // Level 11, Finish my song: the pet sings beats 1-2 of a 4-beat song and she fills beats 3-4, one jelly each.
+  {
+    mode: 'answer',
+    cols: 4,
+    rows: 3,
+    notes: 2,
+    name: "Finish the pet's song: it sings two beats, and she adds a jelly on each of the last two",
+  },
 ];
 
-/** Answer my song: the first beat (column) of her answer; beats before it are the pet's question. */
-export const ANSWER_FROM = 4;
+/** Answer my song and Finish my song: the first beat (column) of her part; the beats before it are the pet's, given. */
+export const answerFrom = (plan: SongPlan) => plan.cols - plan.notes;
+
+/** Finish my song's openings: two beats on a 3-row board, every ordered pair of different rows (row 0 is the top). */
+export const OPENINGS: readonly (readonly number[])[] = [
+  [2, 1],
+  [1, 0],
+  [2, 0],
+  [0, 1],
+  [1, 2],
+  [0, 2],
+];
 
 /**
  * The pet's questions: four beats, one row each (row 0 is the top, highest), eight authored. Each uses at least two
@@ -162,11 +180,10 @@ export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = [
   if (plan.mode === 'free' || plan.mode === 'wake' || plan.mode === 'compose')
     return { notes: [], given: [] };
   if (plan.mode === 'answer') {
-    const choices = QUESTIONS.map((_, i) => `q:${i}`).filter(
-      (id) => !recent.slice(-MOTIF_WINDOW).includes(id),
-    );
+    const pool = plan.cols === 4 ? OPENINGS : QUESTIONS;
+    const choices = pool.map((_, i) => `q:${i}`).filter((id) => !recent.slice(-MOTIF_WINDOW).includes(id));
     const id = rng.pick(choices);
-    const given = QUESTIONS[Number(id.slice(2))].map((row, col) => ({ col, row }));
+    const given = pool[Number(id.slice(2))].map((row, col) => ({ col, row }));
     return { notes: [], given, motif: id };
   }
   if (plan.mode === 'pattern') {
@@ -220,14 +237,14 @@ export function freeSong(plan: SongPlan): Note[] {
 export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string>): Note | null {
   // Wake: the next spot in the order it wakes; the ghost finger only ever lights, so each one is awake by its turn.
   if (plan.mode === 'wake') return awakeSpots(placed.size).find((n) => !placed.has(key(n))) ?? null;
-  if (plan.mode === 'answer') return answerBot(song).find((n) => !placed.has(key(n))) ?? null;
+  if (plan.mode === 'answer') return answerBot(plan, song).find((n) => !placed.has(key(n))) ?? null;
   const notes = plan.mode === 'free' || plan.mode === 'compose' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
 }
 
 /** Answer my song: the ghost finger's answer, one jelly a beat, a step off each beat of the question so it is a reply, not an echo. */
-export const answerBot = (song: Song): Note[] =>
-  song.given.map((n, i) => ({ col: ANSWER_FROM + i, row: (n.row + 1) % 4 }));
+export const answerBot = (plan: SongPlan, song: Song): Note[] =>
+  song.given.map((n, i) => ({ col: answerFrom(plan) + i, row: (n.row + 1) % plan.rows }));
 
 /** Answer my song: the check is awake once every answer beat holds a jelly and all eight beats have played since her last change. */
 export const answerReady = (plan: SongPlan, answered: number, beatsSinceChange: number) =>
@@ -376,8 +393,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   // Level 9 (My song, compose) comes last in each window: it has no wrong answer, so it follows the copy levels.
-  preschool: { min: 4, max: 9, order: [4, 5, 6, 9] },
-  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
+  // Level 11 (Finish my song) gives the pet's start and asks two jellies, so it follows the first copy level in each window.
+  preschool: { min: 4, max: 11, order: [4, 11, 5, 6, 9] },
+  prek: { min: 5, max: 11, order: [5, 11, 6, 7, 9] },
   // Level 10 (Answer my song) is school only until a person check says pre-K can hold the 8-beat board.
   school: { min: 6, max: 10, order: [6, 7, 9, 10] },
 };
