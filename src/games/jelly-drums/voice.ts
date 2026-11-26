@@ -13,6 +13,9 @@ export const VOICE = {
   'jelly.order': [
     'Who has the lowest voice, {name}? Tap to listen, then drag the lowest jelly to the lit spot!',
   ],
+  'jelly.order.sized': [
+    'Big jellies sing low, {name}! Tap to listen, then drag the lowest jelly to the lit spot!',
+  ],
   'jelly.order.next': ['Who is next for spot {spot}?'],
   'jelly.order.dir': ['Try a {dir} one!'],
   'jelly.song.hot-cross-buns': ['This one is Hot Cross Buns!'],

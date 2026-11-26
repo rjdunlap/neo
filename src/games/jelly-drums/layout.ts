@@ -59,10 +59,29 @@ export function jellyHit(l: Layout, i: number) {
   return { x: p.x, y: p.y + (-hw * 1.55 - 30) * l.scale + h / 2, w, h };
 }
 
-/** A Level 13 equal-sized waiting jelly's tap area as a box in view units, by its centre. */
-export function orderJellyHit(l: Layout, i: number) {
-  const hw = ORDER_HW;
-  const p = l.orderRow[i];
+/** A line-up jelly's half-width: level 13's one middle size, or on level 18 its own, so size order is pitch order. */
+export const orderHalfWidth = (pitch: number, sized: boolean): number =>
+  sized ? HALF_WIDTHS[pitch] : ORDER_HW;
+
+/**
+ * Where the waiting jellies of one line-up stand. Equal-sized ones keep `l.orderRow`; sized ones (level 18) stand side by
+ * side by their own tap areas, centred, so no two share a touch.
+ */
+export function orderRowFor(l: Layout, pitches: readonly number[], sized: boolean): Pt[] {
+  if (!sized) return l.orderRow;
+  const wide = pitches.map((p) => (orderHalfWidth(p, true) * 2 + HIT_PAD * 2) * l.scale);
+  const total = wide.reduce((a, b) => a + b, 0);
+  const cx = (l.orderRow[0].x + l.orderRow[l.orderRow.length - 1].x) / 2;
+  let x = cx - total / 2;
+  return wide.map((w) => {
+    const p = { x: x + w / 2, y: l.orderRow[0].y };
+    x += w;
+    return p;
+  });
+}
+
+/** A waiting line-up jelly's tap area as a box in view units, by its centre (level 13 equal-sized unless `hw` and `p` are given). */
+export function orderJellyHit(l: Layout, i: number, hw = ORDER_HW, p: Pt = l.orderRow[i]) {
   const w = (hw * 2 + HIT_PAD * 2) * l.scale;
   const h = (hw * 1.55 + 50) * l.scale;
   return { x: p.x, y: p.y + (-hw * 1.55 - 30) * l.scale + h / 2, w, h };

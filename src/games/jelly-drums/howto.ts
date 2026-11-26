@@ -42,6 +42,11 @@ export const HOW_TO: GameHowTo = {
       text: 'All four jellies are the same size, so listen first: tap any jelly to hear its voice. Then drag the lowest one to the lit spot, then the next lowest.',
     },
     {
+      from: 18,
+      to: 18,
+      text: 'The jellies are different sizes now, and the biggest one sings the lowest. Drag the lowest one to the lit spot, then the next lowest. Tap a jelly to hear it first.',
+    },
+    {
       from: 14,
       to: 14,
       text: 'Listen to the hidden note, then tap the jelly that sang it. Two jellies start awake, then three, then all five.',
@@ -63,6 +68,7 @@ export const HOW_TO: GameHowTo = {
     { from: 11, to: 11, text: 'The round ends when every tune has been played backwards.' },
     { from: 12, to: 12, text: 'The round ends when every pair of songs has been judged.' },
     { from: 13, to: 13, text: 'The round ends after three line-ups from lowest to highest.' },
+    { from: 18, to: 18, text: 'The round ends after three line-ups from lowest to highest.' },
     { from: 14, to: 14, text: 'The round ends after six mystery notes.' },
     { from: 15, to: 15, text: 'The round ends after four short songs, the first one Hot Cross Buns.' },
     { from: 16, to: 16, text: 'The round ends after three songs: Hot Cross Buns, then two more.' },
@@ -89,6 +95,11 @@ export const HOW_TO: GameHowTo = {
       from: 13,
       to: 13,
       text: 'Tapping a jelly to listen never counts a miss. Dropping a wrong jelly onto the lit spot slides it back and names the direction to listen; after two misses the right jelly glows.',
+    },
+    {
+      from: 18,
+      to: 18,
+      text: 'Tapping a jelly to listen never counts a miss. Dropping a wrong jelly onto the lit spot slides it back and names the direction to listen; after two misses the right jelly glows. Size and sound always agree, so looking and listening both lead to the right jelly.',
     },
     {
       from: 14,

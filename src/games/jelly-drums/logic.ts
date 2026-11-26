@@ -19,6 +19,8 @@ export interface JellyPlan {
   reverse?: boolean;
   /** Backwards: the last tune of the round is this long (the earlier ones are `length`). */
   lastLength?: number;
+  /** Level 18, "Lowest to highest, with sizes": the line-up's jellies are drawn at their own size, so the biggest is the lowest. */
+  sized?: boolean;
 }
 
 export const PLANS: JellyPlan[] = [
@@ -47,6 +49,8 @@ export const PLANS: JellyPlan[] = [
   { mode: 'finish', goal: 3, length: 2 },
   // Level 17, "Echo jellies": lap's first level; a jelly sings when touched and answers itself with the same note and a ripple. Eight touches.
   { mode: 'answer', goal: 8, length: 0 },
+  // Level 18, "Lowest to highest, with sizes": level 13's line-ups with the size cue on, so the biggest jelly is the lowest of those left.
+  { mode: 'order', goal: 3, length: 4, sized: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -54,9 +58,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 17, order: [17, 10, 1, 2, 3] },
   // Levels 15 (Follow the glow) and 14 (Which jelly sang?) sit between 3 and 4: the top of toddler, 14 first in preschool.
   toddler: { min: 1, max: 15, order: [1, 2, 3, 15, 14] },
-  // Level 16 (Finish the song) sits between 6 and 7 for preschool.
-  preschool: { min: 4, max: 16, order: [14, 4, 5, 6, 16, 7] },
-  // Levels 10 (one big jelly) and 17 (Echo jellies) are lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them.
+  // Level 16 (Finish the song) sits between 6 and 7 for preschool; level 18 (Lowest to highest, with sizes) follows 7.
+  preschool: { min: 4, max: 18, order: [14, 4, 5, 6, 16, 7, 18] },
+  // Levels 10 (one big jelly) and 17 (Echo jellies) are lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them. Level 18 is preschool's only.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
