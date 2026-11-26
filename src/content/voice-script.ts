@@ -87,6 +87,7 @@ import { VOICE as lostLayersVoice } from '../games/lost-layers/voice.ts';
 import { VOICE as mailCarrierVoice } from '../games/mail-carrier/voice.ts';
 import { VOICE as makerLaneVoice } from '../games/maker-lane/voice.ts';
 import { VOICE as marbleJumpVoice } from '../games/marble-jump/voice.ts';
+import { VOICE as marketDaysVoice } from '../games/market-days/voice.ts';
 import { VOICE as marketStallVoice } from '../games/market-stall/voice.ts';
 import { VOICE as meadowPensVoice } from '../games/meadow-pens/voice.ts';
 import { VOICE as measuringPostVoice } from '../games/measuring-post/voice.ts';
@@ -768,6 +769,7 @@ export const SCRIPT = {
   ...mailCarrierVoice,
   ...makerLaneVoice,
   ...marbleJumpVoice,
+  ...marketDaysVoice,
   ...marketStallVoice,
   ...meadowPensVoice,
   ...measuringPostVoice,

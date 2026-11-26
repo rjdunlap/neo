@@ -648,6 +648,7 @@ describe('game registry', () => {
       'mail-carrier',
       'maker-lane',
       'marble-jump',
+      'market-days',
       'market-stall',
       'meadow-pens',
       'measuring-post',
