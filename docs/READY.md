@@ -58,7 +58,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`little-conductor` levels 7–8, *One change and revise*** (new-interaction tier, after level 3's request model is shared). [Dive](deep-dives/little-conductor.md#build-slices-in-order)
+(Refilled into Next ten 2026-11-26.)
 
 
 
@@ -120,9 +120,7 @@ From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
-
-- **Define `social-emotional` slice 3: *Two Viewpoints* (within Story Theater)** (docs only; one harmless mishap and two stated accounts with multiple supported endings, preserving 12–13 and pins; links and `git diff --check`). [Study](deep-dives/subjects/social-emotional.md#build-slices-in-order)
+Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate (refilled into Next ten 2026-11-26).
 
 
 ### Subject research (docs only)
