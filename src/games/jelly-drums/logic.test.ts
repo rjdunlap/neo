@@ -5,7 +5,12 @@ import { SCRIPT } from '../../content/voice-script';
 import {
   answerOf,
   drawLineup,
+  drawFinish,
   drawFollow,
+  endingOf,
+  FINISH_SONGS,
+  givenOf,
+  type FinishSong,
   drawLineups,
   drawPair,
   drawWhich,
@@ -631,11 +636,11 @@ describe('Jelly Drums Which jelly sang? (level 14)', () => {
     expect(plan.mode).toBe('which');
     expect([plan.goal, plan.length]).toEqual([6, 1]);
     expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 15, 14]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 7]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7]);
     for (const band of ['lap', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(14);
 
-    const entries = [10, 14, 15];
+    const entries = [10, 14, 15, 16];
     expect(landing(14, rangeFor(LEVELS, 'toddler'), entries)).toBe(14);
     expect(landing(14, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
     expect(landing(14, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
@@ -699,7 +704,7 @@ describe('Jelly Drums Follow the glow (level 15)', () => {
     expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 15, 14]);
     for (const band of ['lap', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(15);
-    const entries = [10, 14, 15];
+    const entries = [10, 14, 15, 16];
     expect(landing(15, rangeFor(LEVELS, 'toddler'), entries)).toBe(15);
     expect(landing(15, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
     expect(landing(15, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
@@ -734,5 +739,63 @@ describe('Jelly Drums Follow the glow (level 15)', () => {
     expect(jellyToTap('follow', 'turn', [2, 1, 0], 0, 0)).toBe(2);
     expect(jellyToTap('follow', 'turn', [2, 1, 0], 2, 0)).toBe(0);
     expect(SCRIPT['jelly.follow']?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Jelly Drums Finish the song (level 16)', () => {
+  const plan = PLANS[15];
+
+  it('is level 16, placed between 6 and 7 for preschool, and other bands land on their own start', () => {
+    expect(plan.mode).toBe('finish');
+    expect(plan.goal).toBe(3);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7]);
+    for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(16);
+    const entries = [10, 14, 15, 16];
+    expect(landing(16, rangeFor(LEVELS, 'preschool'), entries)).toBe(16);
+    expect(landing(16, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(16, rangeFor(LEVELS, 'toddler'), entries)).toBe(1);
+    expect(landing(16, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
+    expect(landing(16, rangeFor(LEVELS, 'school'), entries)).toBe(8);
+    expect(stepLevel(6, 1, rangeFor(LEVELS, 'preschool'))).toBe(16);
+    expect(stepLevel(16, 1, rangeFor(LEVELS, 'preschool'))).toBe(7);
+  });
+
+  it('every song hides one or two notes, always plays at least three, and ends on a jelly she can reach', () => {
+    for (const song of FINISH_SONGS) {
+      expect(song.tail).toBeGreaterThanOrEqual(1);
+      expect(song.tail).toBeLessThanOrEqual(plan.length);
+      expect(givenOf(song).length).toBeGreaterThanOrEqual(3);
+      expect([...givenOf(song), ...endingOf(song)]).toEqual(song.notes);
+      for (const n of song.notes) (expect(n).toBeGreaterThanOrEqual(0), expect(n).toBeLessThan(5));
+      expect(SCRIPT[song.title]?.length).toBeGreaterThan(0);
+    }
+    expect(FINISH_SONGS.length).toBeGreaterThanOrEqual(plan.goal);
+  });
+
+  it('opens with Hot Cross Buns hiding one note, then two songs not yet played', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const played: FinishSong[] = [];
+      for (let n = 0; n < plan.goal; n++) {
+        const s = drawFinish(rng, played);
+        if (n === 0) {
+          expect(s.id).toBe('hot-cross-buns');
+          expect(s.tail).toBe(1);
+          expect(endingOf(s)).toEqual([0]);
+        }
+        expect(played.some((p) => p.id === s.id)).toBe(false);
+        played.push(s);
+      }
+    }
+  });
+
+  it('ghost finger waits through the songs, then taps the ending in order; the voice lines exist', () => {
+    const ending = endingOf(FINISH_SONGS[1]);
+    expect(jellyToTap('finish', 'listen', ending, 0, 0)).toBeNull();
+    expect(jellyToTap('finish', 'turn', ending, 0, 0)).toBe(ending[0]);
+    expect(jellyToTap('finish', 'turn', ending, 1, 0)).toBe(ending[1]);
+    expect(SCRIPT['jelly.finish']?.length).toBeGreaterThan(0);
+    expect(SCRIPT['jelly.finish.ask']?.length).toBeGreaterThan(0);
   });
 });

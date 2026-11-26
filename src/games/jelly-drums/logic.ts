@@ -8,10 +8,10 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which' | 'follow';
-  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) mystery notes (which) or songs to follow (follow). */
+  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which' | 'follow' | 'finish';
+  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) mystery notes (which), songs to follow (follow) or songs to finish (finish). */
   goal: number;
-  /** Tune length (echo, compare), jellies per line-up (order) or 1 for a single note (which). */
+  /** Tune length (echo, compare), jellies per line-up (order), 1 for a single note (which) or the most notes of a song she finishes (finish). */
   length: number;
   /** Free play's twist: at level 2 the fans answer, at level 3 a scale sparkles. Neither is a goal. */
   twist?: 'fans' | 'scale';
@@ -43,6 +43,8 @@ export const PLANS: JellyPlan[] = [
   { mode: 'which', goal: 6, length: 1 },
   // Level 15, "Follow the glow": the lit jelly is the answer; four three-note songs, Hot Cross Buns first. Nothing is a miss.
   { mode: 'follow', goal: 4, length: 3 },
+  // Level 16, "Finish the song": three known songs play through, play again without their last one or two notes, and she taps the ending.
+  { mode: 'finish', goal: 3, length: 2 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -50,8 +52,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
   // Levels 15 (Follow the glow) and 14 (Which jelly sang?) sit between 3 and 4: the top of toddler, 14 first in preschool.
   toddler: { min: 1, max: 15, order: [1, 2, 3, 15, 14] },
-  preschool: { min: 4, max: 14, order: [14, 4, 5, 6, 7] },
-  // Level 10 (one big jelly) is lap's, 14 (Which jelly sang?) is toddler/preschool's and 15 (Follow the glow) is toddler's: older bands skip them.
+  // Level 16 (Finish the song) sits between 6 and 7 for preschool.
+  preschool: { min: 4, max: 16, order: [14, 4, 5, 6, 16, 7] },
+  // Level 10 (one big jelly) is lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
@@ -356,6 +359,7 @@ export function jellyToTap(
     return phase === 'play' ? awake[notes % awake.length] : null;
   }
   if (mode === 'which') return phase === 'turn' ? whichTarget : null;
+  // Finish the song: `tune` is the ending she taps.
   // A pair round answers with a button, not a jelly: see `verdictToTap`.
   if (mode === 'compare') return null;
   // An order round drags jellies onto slots: see `orderToDrag`.
@@ -386,6 +390,37 @@ export function drawFollow(rng: Rng, plan: Pick<JellyPlan, 'length'>, played: re
   const kinds = [...new Set(fresh.map((t) => t.kind))];
   const kind = rng.pick(kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds);
   return rng.pick(fresh.filter((t) => t.kind === kind));
+}
+
+/** A song she finishes: the whole phrase, and how many of its last notes are hidden the second time (one or two). */
+export interface FinishSong {
+  id: SongId;
+  title: LineId;
+  notes: number[];
+  tail: number;
+}
+
+/**
+ * Level 16's songs on the five jellies (C D E G A = 0 1 2 3 4), traditional phrases in C major: Hot Cross Buns
+ * "hot cross buns, hot cross buns" is E D C E D C; Mary Had a Little Lamb is E D C D E E E; Jingle Bells' chorus
+ * "jingle all the way" is E G C D E. At least three notes always play, and the hidden ending is one or two notes.
+ */
+export const FINISH_SONGS: readonly FinishSong[] = [
+  { id: 'hot-cross-buns', title: 'jelly.song.hot-cross-buns', notes: [2, 1, 0, 2, 1, 0], tail: 1 },
+  { id: 'mary', title: 'jelly.song.mary', notes: [2, 1, 0, 1, 2, 2, 2], tail: 2 },
+  { id: 'jingle-bells', title: 'jelly.song.jingle-bells', notes: [2, 3, 0, 1, 2], tail: 2 },
+];
+
+/** The notes that play the second time, and the ending she taps. */
+export const givenOf = (s: Pick<FinishSong, 'notes' | 'tail'>): number[] =>
+  s.notes.slice(0, s.notes.length - s.tail);
+export const endingOf = (s: Pick<FinishSong, 'notes' | 'tail'>): number[] =>
+  s.notes.slice(s.notes.length - s.tail);
+
+/** The round's `n`th song: Hot Cross Buns (one hidden note) first, then a song not yet played, in a seeded order. */
+export function drawFinish(rng: Rng, played: readonly FinishSong[]): FinishSong {
+  if (played.length === 0) return FINISH_SONGS[0];
+  return rng.pick(FINISH_SONGS.filter((s) => !played.some((p) => p.id === s.id)));
 }
 
 /** Pick one awake jelly to sing by ear, avoiding the same jelly twice in a row while more than one is awake. */

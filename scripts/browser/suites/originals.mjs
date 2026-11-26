@@ -151,9 +151,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, and Follow the glow.
+    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, Follow the glow, and Finish the song (which takes the copy-the-tune bot's path on the ending).
     const jellyLevels =
-      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 15 }, (_, i) => i + 1);
+      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 16 }, (_, i) => i + 1);
     for (const level of jellyLevels) {
       if (only && only !== 'jelly') break;
       await launch('jelly-drums', level);
@@ -1857,7 +1857,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 15,
+      'jelly-drums': 16,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

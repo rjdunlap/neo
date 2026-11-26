@@ -10,7 +10,7 @@
 | --- | --- |
 | lap | 10, 1, 2, 3 |
 | toddler | 1, 2, 3, 15, 14 |
-| preschool | 14, 4, 5, 6, 7 |
+| preschool | 14, 4, 5, 6, 16, 7 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
 | school | 8, 9, 11, 12, 13 |
 
@@ -31,6 +31,7 @@
 | 13 | Line up 4 jellies from lowest to highest, 3 line-ups |
 | 14 | Listen to one note and tap which jelly sang, 6 sounds |
 | 15 | Tap each jelly as it glows to play 4 short songs |
+| 16 | Hear a known song, then tap its last one or two notes to finish it, 3 songs |
 
 <!-- end generated -->
 
@@ -59,3 +60,5 @@ Free play on five notes, then copying tunes of two to five notes. In the echo le
 **Which jelly sang? (level 14, 2026-11-25, [PR #2172](https://github.com/rjdunlap/neo/pull/2172)).** Placed between levels 3 and 4 (`toddler` order `[1, 2, 3, 14]`, `preschool` order `[14, 4, 5, 6, 7]`, and `entryLevels: [10, 14]` so `lap`, `prek`, and `school` still start at their own easiest level on aging up or pinning). The plan is `{mode:'which', goal:6, length:1}`: `whichAwake` wakes `[0, 4]` (biggest and littlest) for the first two sounds, `[0, 2, 4]` for the next two (all early pairs at least two steps apart), and all five jellies for the last two. `drawWhich` picks an awake jelly without repeating back-to-back. The mystery note plays by ear with a neutral overhead sparkle burst (`playWhichNote`) so the singing jelly does not animate or glow prematurely. Tapping a wrong jelly sings its own note, replays the mystery sound and wiggles (`Jelly.wiggle`) the right jelly; a second miss on the same sound counts a hint and also glows the right jelly. The listen-again button replays the sound free, and `autotouch` reads `jellyToTap(..., whichTarget)`. The slotted voice lines (`jelly.which`, `jelly.which.ask`) carry `{name}` so they stay on device speech until a clip pass renders fixed wording. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=14`.
 
 **Follow the glow (level 15, 2026-11-25, [PR #2188](https://github.com/rjdunlap/neo/pull/2188)).** Toddler only, placed between levels 3 and 14 (`toddler` order `[1, 2, 3, 15, 14]`, `entryLevels: [10, 14, 15]`, so every other band still starts at its own easiest level). The plan is `{mode:'follow', goal:4, length:3}`: four three-note songs, the first always *Hot Cross Buns* (its title spoken first), then fresh shapes from `drawFollow` (never a repeat, never the shape just played). One jelly glows at a time and stays lit; tapping it sings its note and lights the next, so the song plays as she taps. The lit jelly is the answer, so nothing counts a miss or a hint: a different jelly is only music, and if she waits (`IdleNudge`, 8 seconds) the lit jelly wiggles. There is no listen-again button. `jellyToTap` reads the lit jelly for the ghost finger. The slotted line `jelly.follow` carries her name, so it stays on device speech and no clip had to be rendered. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly JELLY_LEVELS=15` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=15`.
+
+**Finish the song (level 16, 2026-11-25, [PR #2201](https://github.com/rjdunlap/neo/pull/2201)).** Preschool only, placed between levels 6 and 7 (`preschool` order `[14, 4, 5, 6, 16, 7]`, `entryLevels: [10, 14, 15, 16]`, so every other band still starts at its own easiest level). The plan is `{mode:'finish', goal:3, length:2}`: three songs from `FINISH_SONGS`, the first always *Hot Cross Buns* (six notes, the last one hidden), then *Mary Had a Little Lamb* and *Jingle Bells* in a seeded order (the last two notes hidden); at least three notes are always given. Each song's title is spoken, the whole song plays, then it plays again without its ending and the guide asks how it ends. She taps the hidden jellies in order. A wrong jelly is a miss: the whole song replays slowly with its ending glowing, two misses count a hint and light the first ending jelly before the replay and again at her turn. The yellow note button plays the song again for free. Instructions are slotted (`jelly.finish`, `jelly.finish.ask`), so they use device speech and need no rendered clip.
