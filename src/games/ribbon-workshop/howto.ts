@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: "Make the ribbon each gift's tag asks for: the right length from halves and quarters, the right name for the spool you choose at Whole Switch, at Ribbon Cases two ribbons from one tray, mended when the order changes, or at How Many Pieces Fit? a three-quarter ribbon measured with half-spool pieces and the count of pieces that fit.",
+  goal: "Make the ribbon each gift's tag asks for: a length from halves and quarters, a name for a spool at Whole Switch, two ribbons at Ribbon Cases, or the count of half-spool pieces that fit at How Many Pieces Fit?.",
   steps: [
     { from: 1, to: 3, text: 'Tap a piece and it joins the ribbon.' },
     { from: 7, to: 7, text: "Tap a gift, then tap pieces: each one joins that gift's ribbon." },
