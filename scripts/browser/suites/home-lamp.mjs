@@ -50,6 +50,17 @@ export async function homeLamp({ page, errors, log, ready, scene, pickFirst, tap
   await tap('neo.scene.toy.ball');
   await page.waitForFunction(() => neo.scene.toy.fetches >= 1, null, { timeout: 15000 });
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0, 'the lamp awards nothing');
+  // Leaving mid-action: tap the lamp and go Home at once, while her friend walks and the dimming runs. Coming back, it is day.
+  await tap('neo.scene.lamp.node');
+  await tap('neo.scene.home');
+  await scene('HomeScene');
+  await tap('neo.scene.play');
+  await scene('PlayScene');
+  await page.waitForTimeout(500);
+  const back = await state();
+  assert.equal(back.evening, false, 'the room is day again on coming back');
+  assert.equal(back.dim, 0, 'no dimming is left over');
+  assert.equal(back.glow, 0, 'no glow is left over');
   assert.deepEqual(errors, [], 'no page errors');
   log('PASS: the lamp turns the room to evening and back; the moon blossom glows');
 }
