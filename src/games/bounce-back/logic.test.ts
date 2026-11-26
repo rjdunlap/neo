@@ -36,6 +36,9 @@ import {
   paddleTarget,
   PLANS,
   PAT_LEVEL,
+  FOLLOW_LEVEL,
+  FOLLOW_TOUCH_R,
+  isLapMode,
   LEVELS,
   planFor,
   countsMiss,
@@ -390,43 +393,56 @@ describe('Bounce Back', () => {
   it('plays the lap level first, a stable ID above the ladder, where a ball past the paddle is never a miss', () => {
     const plan = planFor(PAT_LEVEL);
     expect(plan.mode).toBe('pat');
-    expect(PLANS.length).toBe(PAT_LEVEL);
-    expect(LEVELS.lap?.order).toEqual([PAT_LEVEL, 1]);
+    expect(PLANS.length).toBe(FOLLOW_LEVEL);
+    expect(LEVELS.lap?.order).toEqual([FOLLOW_LEVEL, PAT_LEVEL, 1]);
     // Only lap lists it; the other bands' ladders are unchanged.
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(LEVELS[band]?.max).toBeLessThan(PAT_LEVEL);
+    expect(planFor(FOLLOW_LEVEL).mode).toBe('follow');
+    expect(countsMiss('follow')).toBe(false);
     expect(countsMiss('pat')).toBe(false);
-    for (const p of PLANS.filter((x) => x.mode !== 'pat')) expect(countsMiss(p.mode)).toBe(true);
+    for (const p of PLANS.filter((x) => !isLapMode(x.mode))) expect(countsMiss(p.mode)).toBe(true);
     // The slowest ball and the biggest paddle in the game.
-    for (const p of PLANS) {
+    for (const p of PLANS.filter((x) => !isLapMode(x.mode))) {
       expect(plan.speed).toBeLessThanOrEqual(p.speed);
       expect(plan.paddle).toBeGreaterThanOrEqual(p.paddle);
     }
   });
 
   it('brings the lap paddle to the ball untouched, from a serve on any screen, and a touch only hurries it', () => {
-    const plan = planFor(PAT_LEVEL);
-    // Once on the ball's line, the drifting paddle outruns the ball's sideways speed at the steepest bounce, so it stays there.
-    expect(patPaddleSpeed(false)).toBeGreaterThan(plan.speed * Math.sin(0.85));
-    expect(patPaddleSpeed(true)).toBeGreaterThan(patPaddleSpeed(false));
-    // A serve leaves the middle at up to 0.4 rad with the paddle in the middle (phones too, both ways up).
-    for (const [w, h] of [...VIEWS, [760, 1650], [1650, 760]] as [number, number][]) {
-      const g = aim(w, h, plan);
-      const midX = (180 + w - 40) / 2;
-      const midY = (90 + h - 40) / 2;
-      for (let a = -0.4; a <= 0.4001; a += 0.05) {
-        const arrive = predictY(
-          midX,
-          midY,
-          Math.cos(a) * plan.speed,
-          Math.sin(a) * plan.speed,
-          g.faceX,
-          g.top,
-          g.bottom,
-        );
-        const paddleAt = Math.max(g.low, Math.min(g.high, midY));
-        expect(patDriftReaches(Math.abs(arrive - paddleAt), g.faceX - midX, plan)).toBe(true);
+    const checkDrift = (plan: ReturnType<typeof planFor>) => {
+      // Once on the ball's line, the drifting paddle outruns the ball's sideways speed at the steepest bounce, so it stays there.
+      expect(patPaddleSpeed(false)).toBeGreaterThan(plan.speed * Math.sin(0.85));
+      expect(patPaddleSpeed(true)).toBeGreaterThan(patPaddleSpeed(false));
+      // A serve leaves the middle at up to 0.4 rad with the paddle in the middle (phones too, both ways up).
+      for (const [w, h] of [...VIEWS, [760, 1650], [1650, 760]] as [number, number][]) {
+        const g = aim(w, h, plan);
+        const midX = (180 + w - 40) / 2;
+        const midY = (90 + h - 40) / 2;
+        for (let a = -0.4; a <= 0.4001; a += 0.05) {
+          const arrive = predictY(
+            midX,
+            midY,
+            Math.cos(a) * plan.speed,
+            Math.sin(a) * plan.speed,
+            g.faceX,
+            g.top,
+            g.bottom,
+          );
+          const paddleAt = Math.max(g.low, Math.min(g.high, midY));
+          expect(patDriftReaches(Math.abs(arrive - paddleAt), g.faceX - midX, plan)).toBe(true);
+        }
       }
+    };
+    for (const level of [PAT_LEVEL, FOLLOW_LEVEL]) checkDrift(planFor(level));
+  });
+
+  it('makes the watch level the slowest, gentlest ball with the biggest paddle, and a touch on the ball a big target', () => {
+    const plan = planFor(FOLLOW_LEVEL);
+    for (const p of PLANS.filter((x) => x !== plan)) {
+      expect(plan.speed).toBeLessThanOrEqual(p.speed);
+      expect(plan.paddle).toBeGreaterThanOrEqual(p.paddle);
     }
+    expect(FOLLOW_TOUCH_R).toBeGreaterThanOrEqual(100);
   });
 });

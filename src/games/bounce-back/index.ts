@@ -34,6 +34,9 @@ import {
   paddleTarget,
   planFor,
   countsMiss,
+  isLapMode,
+  FOLLOW_LEVEL,
+  FOLLOW_TOUCH_R,
   PAT_LEVEL,
   patPaddleSpeed,
   predictY,
@@ -137,6 +140,8 @@ class BounceBack implements Game {
   leftIdle = 99;
   /** Whether the child is touching their paddle right now. */
   childTouch = false;
+  /** When the pet last cheered a touch on the ball (watch level), in seconds of the round's clock. */
+  private lastCheer = -9;
   /** On the lap level, whether the ghost finger has already tapped for this ball's approach. */
   private demoTapped = false;
 
@@ -221,7 +226,7 @@ class BounceBack implements Game {
     const b = this.box;
     if (this.finished || this.ball.vx <= 0) return null;
     // The lap level: one tap anywhere on the table, once the ball is on its way, and the paddle hurries to it.
-    if (this.plan.mode === 'pat') {
+    if (isLapMode(this.plan.mode)) {
       if (this.demoTapped || this.ball.x < (b.x0 + b.x1) / 2 - 80) return null;
       this.demoTapped = true;
       return {
@@ -340,9 +345,10 @@ class BounceBack implements Game {
       if (palmOnGlass()) return;
       const p = ctx.stage.toLocal(e.global);
       // The lap level: a touch anywhere is hers, and it rings where the finger is.
-      if (this.plan.mode === 'pat') {
+      if (isLapMode(this.plan.mode)) {
         this.fingers.set(e.pointerId, 'right');
         this.patFeedback(p.x, p.y);
+        if (this.plan.mode === 'follow') this.cheerIfOnBall(p.x, p.y);
         return;
       }
       const side = p.x < (this.box.x0 + this.box.x1) / 2 ? 'left' : 'right';
@@ -375,12 +381,30 @@ class BounceBack implements Game {
     });
   }
 
+  /** The watch level: a touch on the ball itself makes the pet cheer (and a ring of sparkles on the ball), at most once a second. */
+  private cheerIfOnBall(x: number, y: number) {
+    if (this.clock - this.lastCheer < 1 || Math.hypot(x - this.ball.x, y - this.ball.y) > FOLLOW_TOUCH_R)
+      return;
+    this.lastCheer = this.clock;
+    sfx.sparkle();
+    this.ctx.particles.burst(this.ball.x, this.ball.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+    void this.ctx.say('bounce.cheer');
+  }
+
   private paddleLength() {
     return this.plan.paddle;
   }
 
   start() {
     const line = {
+      follow: 'bounce.follow',
       pat: 'bounce.pat',
       solo: 'bounce.solo',
       rally: 'bounce.rally',
@@ -426,7 +450,7 @@ class BounceBack implements Game {
 
   private point(e: FederatedPointerEvent) {
     const side = this.fingers.get(e.pointerId);
-    if (!side || this.plan.mode === 'pat') return;
+    if (!side || isLapMode(this.plan.mode)) return;
     const p = this.ctx.stage.toLocal(e.global);
     this.targets[side] = p.y;
     if (side === 'left') this.leftIdle = 0;
@@ -552,7 +576,7 @@ class BounceBack implements Game {
       );
     }
     // The lap level: her paddle always goes to the ball (where it will arrive, or along with it on its way to the pet); a touch hurries it.
-    if (this.plan.mode === 'pat')
+    if (isLapMode(this.plan.mode))
       this.targets.right =
         this.ball.vx > 0
           ? predictY(
@@ -567,7 +591,7 @@ class BounceBack implements Game {
           : this.ball.y;
     for (const side of ['left', 'right'] as const) {
       const max =
-        side === 'right' && this.plan.mode === 'pat'
+        side === 'right' && isLapMode(this.plan.mode)
           ? patPaddleSpeed(this.childTouch)
           : side === 'left' && this.petPlays()
             ? isGoalMode(this.plan.mode)
@@ -991,7 +1015,7 @@ export const bounceBack: GameModule = {
   skills: ['tracking', 'hand-eye', 'turn-taking', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [PAT_LEVEL],
+  entryLevels: [FOLLOW_LEVEL, PAT_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Take the pink paddle on the left and play with {name}! Count the bounces out loud.',
