@@ -8,6 +8,10 @@ import {
   BLEND_GROUPS,
   BLEND_LEVEL,
   BLEND_PLAN,
+  MAGIC_LEVEL,
+  MAGIC_NEW_WORDS,
+  MAGIC_PAIRS,
+  MAGIC_PLAN,
   STRETCHY,
   BIG_PLAN,
   LAST_LEVEL,
@@ -78,6 +82,7 @@ describe('Word Monsters', () => {
       REPAIR_LEVEL,
       FOUR_LEVEL,
       TEAM_LEVEL,
+      MAGIC_LEVEL,
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(SCRIPT['monster.big']).toBeDefined();
@@ -459,6 +464,53 @@ describe('Word Monsters', () => {
     }
     // Every group word turns up as an answer at some seed.
     expect(seen.size).toBeGreaterThan(Object.values(BLEND_GROUPS).flat().length / 2);
+  });
+
+  it('level 17 builds a word, then the quiet e on its end makes a second pictured word', () => {
+    expect(planFor(MAGIC_LEVEL)).toBe(MAGIC_PLAN);
+    expect(MAGIC_PLAN).toMatchObject({ mode: 'magic', rounds: 3, choices: 3 });
+    expect(stepLevel(TEAM_LEVEL, 1, LEVELS.school!)).toBe(MAGIC_LEVEL);
+    expect(LEVELS.school!.max).toBe(MAGIC_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(MAGIC_LEVEL);
+    for (const id of ['monster.magic', 'monster.magic.not', 'monster.magic.long'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+    // Each pair is one drawing and its e-twin, and every picture it needs is drawn.
+    for (const pair of MAGIC_PAIRS) {
+      expect(pair.answer, pair.base).toBe(`${pair.base}e`);
+      for (const w of [pair.base, pair.answer] as const) {
+        const p = wordPicture(w);
+        expect(p.getBounds().width, w).toBeGreaterThan(120);
+        p.destroy({ children: true });
+      }
+    }
+    for (const w of MAGIC_NEW_WORDS) expect(PICTURE_WORDS as readonly string[]).not.toContain(w);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const questions = makeQuestions(MAGIC_PLAN, new Rng(seed));
+      expect(questions).toHaveLength(3);
+      expect(new Set(questions.map((q) => q.answer)).size).toBe(3);
+      for (const q of questions) {
+        seen.add(q.answer);
+        const units = unitsOf(q);
+        // Three boxes are already built; the fourth wants the e, and only the e fits it.
+        expect(q.fixed, q.answer).toBe(q.answer.slice(0, -1));
+        expect(units).toHaveLength(4);
+        expect(q.monsters).toHaveLength(3);
+        expect(q.monsters.filter((l) => l === 'e')).toHaveLength(1);
+        expect(new Set(q.monsters).size).toBe(3);
+        const fit = q.monsters.filter((l) => fits(units, 3, l));
+        expect(fit, q.answer).toEqual(['e']);
+        // A spare never makes the long-vowel word, and the base word has no e of its own to confuse the rule.
+        expect(q.fixed).not.toContain('e');
+        for (const l of q.monsters) expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
+      }
+    }
+    expect(seen.size).toBe(MAGIC_PAIRS.length);
+    // The ghost finger drags the e to the open box.
+    const q = makeQuestions(MAGIC_PLAN, new Rng(5))[0];
+    const crowd = q.monsters.map((letter) => ({ letter, placed: false }));
+    expect(nextMonster(MAGIC_PLAN, q, crowd, 3, 0)?.letter).toBe('e');
   });
 
   it('level 13 builds words where one monster wears a two-letter team and fills one box', () => {

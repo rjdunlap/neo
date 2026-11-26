@@ -44,8 +44,8 @@ const levels = [
 ].sort((a, b) => a - b);
 const building = ['build', 'spell', 'slow', 'team', 'repair', 'family', 'end'];
 
-it('covers levels 1 to 16', () => {
-  expect(levels).toEqual(Array.from({ length: 16 }, (_, i) => i + 1));
+it('covers levels 1 to 17', () => {
+  expect(levels).toEqual(Array.from({ length: 17 }, (_, i) => i + 1));
 });
 
 describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
