@@ -330,3 +330,56 @@ export function waterlineMark(g: Graphics, x: number, y: number, w: number): Gra
   for (let dx = -w / 2; dx < w / 2; dx += 14) g.moveTo(x + dx, y).lineTo(x + Math.min(dx + 8, w / 2), y);
   return g.stroke({ width: 3, color: swatch.blue.line, cap: 'round' });
 }
+
+/** Garden Raft: a pot of herbs (or a pumpkin) with its weight as stones in a small basket, about 100 wide, base at y = 0. */
+export function potArt(stones: 1 | 2 | 3, pumpkin = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (pumpkin) {
+    g.ellipse(0, -34, 44, 34).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+    g.ellipse(-16, -34, 12, 30).stroke(line(swatch.orange.line, 3));
+    g.ellipse(16, -34, 12, 30).stroke(line(swatch.orange.line, 3));
+    g.roundRect(-5, -76, 10, 16, 4).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+  } else {
+    g.poly([-26, -44, 26, -44, 20, 0, -20, 0]).fill(swatch.orange.light).stroke(line(swatch.orange.line));
+    g.roundRect(-30, -54, 60, 14, 6).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+    for (const [x, h] of [
+      [-14, 16],
+      [0, 22],
+      [14, 16],
+    ])
+      g.ellipse(x, -54 - h, 8, h)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 3));
+  }
+  c.addChild(g);
+  // The weight: one to three stones in a basket in front.
+  const basket = new Graphics();
+  basket.roundRect(-30, -18, 60, 18, 6).fill(wood.light).stroke(line(wood.line, 3));
+  for (let i = 0; i < stones; i++)
+    basket
+      .circle((i - (stones - 1) / 2) * 17, -23, 9)
+      .fill(swatch.white.light)
+      .stroke(line(swatch.white.line, 3));
+  c.addChild(basket);
+  return c;
+}
+
+/** Garden Raft: a float barrel, about 90 wide and 70 tall, centered on (0, 0). */
+export function barrelArt(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-44, -34, 88, 68, 24).fill(swatch.red.fill).stroke(line(swatch.red.line));
+  g.rect(-44, -12, 88, 24).fill(swatch.white.fill);
+  g.roundRect(-44, -34, 88, 68, 24).stroke(line(swatch.red.line));
+  return g;
+}
+
+/** Garden Raft: a small plumb bob on a string, hanging down from (0, 0) by `drop`, for where the weight is. */
+export function plumbArt(drop = 54): Graphics {
+  const g = new Graphics();
+  g.moveTo(0, 0).lineTo(0, drop).stroke(line(ink, 3));
+  g.poly([0, drop + 24, -10, drop, 10, drop])
+    .fill(swatch.purple.fill)
+    .stroke(line(swatch.purple.line, 3));
+  return g;
+}

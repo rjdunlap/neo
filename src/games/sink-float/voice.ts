@@ -39,4 +39,11 @@ export const VOICE = {
   'sink.salt-wrong-duck': ['Salt water holds things up higher. This duck sits lower.'],
   'sink.salt-hint-egg': ['Look for the egg that floats.'],
   'sink.salt-hint-duck': ['Look for the duck that sits higher.'],
+  'sink.raft-ask': ['Put floats under the raft, {name}, then tap Launch!'],
+  'sink.raft-hint': ['Try a float here, {name}.'],
+  'sink.raft-ok': ['It crossed, {name}! The floats hold it up and the weight is balanced.'],
+  'sink.raft-low': ['The raft sits too low, {name}. Each float holds up two stones. Try more floats.'],
+  'sink.raft-tip-left': ['It tipped to the left, {name}! The heavy side needs a float under it.'],
+  'sink.raft-tip-right': ['It tipped to the right, {name}! The heavy side needs a float under it.'],
+  'sink.raft-next': ['Here comes a new pumpkin, {name}!'],
 } satisfies Record<string, string[]>;
