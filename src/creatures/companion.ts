@@ -22,7 +22,7 @@ import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustra
 import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
 import { formFits, wearForm } from '../art/creatures/forms';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
-import { paperArt } from '../art/creatures/paper';
+import { PAPER_CREATURES, paperArt } from '../art/creatures/paper';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
 import {
   fileOf,
@@ -79,7 +79,10 @@ const EGG_FILE: Record<EggStage, string> = {
 
 /** Loads every species' rig art, the portraits, the card paper, the sprout's egg and the wearables. Never throws: what fails falls back (an item that failed is not drawn). */
 export async function loadCollectionArt(): Promise<void> {
-  const pictures = [...SPECIES_IDS.map((s) => `${s}-portrait`), 'card-paper', ...Object.values(EGG_FILE)];
+  // The paper look draws the egg, the cards and their portraits in code (`paperEgg`, `makePortrait`'s frozen rig).
+  const pictures = PAPER_CREATURES
+    ? []
+    : [...SPECIES_IDS.map((s) => `${s}-portrait`), 'card-paper', ...Object.values(EGG_FILE)];
   await Promise.all([
     loadWearables().then(
       (items) => void (loaded.items = items),
@@ -661,7 +664,7 @@ function silhouetteOf(node: Container) {
  */
 export function makeEgg(stage: EggStage): Container {
   const t = loaded.pictures.get(EGG_FILE[stage]);
-  if (!t) return drawEgg(new Graphics(), stage === 'whole' ? 0 : 4);
+  if (!t) return paperEgg(stage);
   const egg = new Sprite(t);
   egg.anchor.set(0.5, 1);
   egg.scale.set(EGG.scale);
@@ -682,6 +685,66 @@ export const EGG = {
   origins: { whole: [189, 107], crack: [189, 107], open: [189, 26] } as Record<EggStage, [number, number]>,
   files: EGG_FILE,
 };
+
+const EGG_SHELL = 0xfdf3dc;
+const EGG_SPOT = 0x5ccbbf;
+const EGG_CRACK = 0x3d7f78;
+
+/** A point on the egg's edge, `a` from the top round clockwise: 100 wide at the waist, narrower on top, 130 tall. */
+const eggAt = (a: number): [number, number] => [
+  100 * Math.sin(a) * (1 - 0.1 * Math.cos(a)),
+  -130 * Math.cos(a) + 4,
+];
+
+/** The crack across the shell at y = -20, a zigzag from x0 to x1. */
+function zigzag(x0: number, x1: number): number[] {
+  const out: number[] = [];
+  const n = 8;
+  for (let i = 0; i <= n; i++) out.push(x0 + ((x1 - x0) * i) / n, -20 + (i % 2 ? 14 : -10));
+  return out;
+}
+
+/**
+ * The sprout's egg in paper (docs/ART-STYLE.md), for every stage, in the old drawn egg's box (200 × 260, bottom at
+ * 134): a cream shell with teal spots, cracked across the middle, and opened with the cap lifted and tipped.
+ */
+export function paperEgg(stage: EggStage): Container {
+  const c = new Container();
+  const shell = (from: number, to: number, cut: boolean, spots: [number, number, number][]) => {
+    const g = new Graphics();
+    const pts: number[] = [];
+    for (let k = 0; k <= 40; k++) pts.push(...eggAt(from + ((to - from) * k) / 40));
+    // The edge runs round from one end of the crack to the other, so the zigzag closes it back to the start.
+    if (cut) pts.push(...zigzag(pts[pts.length - 2], pts[0]));
+    g.poly(pts).fill(EGG_SHELL);
+    for (const [x, y, r] of spots) g.circle(x, y, r).fill(EGG_SPOT);
+    return g;
+  };
+  if (stage !== 'open') {
+    const g = shell(0, Math.PI * 2, false, [
+      [-34, -72, 26],
+      [44, -16, 32],
+      [-46, 42, 30],
+      [30, 86, 24],
+    ]);
+    if (stage === 'crack')
+      g.poly(zigzag(-94, 94), false).stroke({ width: 7, color: EGG_CRACK, join: 'round', cap: 'round' });
+    c.addChild(g);
+    return c;
+  }
+  const a0 = Math.acos(24 / 130);
+  const bottom = shell(a0, Math.PI * 2 - a0, true, [
+    [-46, 42, 30],
+    [30, 86, 24],
+    [52, 14, 18],
+  ]);
+  const cap = shell(-a0, a0, true, [[-30, -76, 24]]);
+  cap.pivot.set(60, -20);
+  cap.position.set(66, -58);
+  cap.rotation = 0.36;
+  c.addChild(bottom, cap);
+  return c;
+}
 
 /** The drawn egg: the fallback when the art did not load. */
 export function drawEgg(g: Graphics, cracks = 0): Graphics {

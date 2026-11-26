@@ -9,6 +9,7 @@ import { label } from '../ui/text';
 import { Sprite } from 'pixi.js';
 import { PAPER_ART } from '../art/creatures/paper';
 import { EXPRESSIONS } from '../art/creatures/illustrated';
+import { EGG_STAGES, paperEgg } from '../creatures/companion';
 
 /**
  * The paper cut-out style's swatch book (docs/ART-STYLE.md), at `/?paper` on the dev server only: every named shape
@@ -117,6 +118,15 @@ export class PaperLab extends Scene {
         this.content.addChild(s);
       });
     }
+
+    // The egg at each stage (?lab=egg).
+    if (want === 'egg')
+      EGG_STAGES.forEach((stage, i) => {
+        const e = paperEgg(stage);
+        e.scale.set(0.5);
+        e.position.set(view.w * 0.6 + i * 150, 330);
+        this.content.addChild(e);
+      });
 
     // Chrome: two buttons and a card.
     const ui = new Graphics();
