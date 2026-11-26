@@ -8,7 +8,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * view slides to fit. At the top of school the pads sit at quarters of a whole (Fraction Landings): hops of a quarter,
  * a half or a whole, then two hop sizes that reach the same lily. Last, count up to take away: `13 − 9` as the hops from 9 to
  * the flag on 13. Then over ten, your way: `8 + 5` with no cards, where a stop on 10 is hers to choose. Last, hop by tens:
- * the pads count 0, 10, 20 … 100 and `30 + 20` is two hops of ten.
+ * the pads count 0, 10, 20 … 100 and `30 + 20` is two hops of ten. At the top, Big hops and little hops: no pads at all, two
+ * lilies that hop ten and one, from a number to a flag.
  */
 export type HopMode =
   | 'find'
@@ -23,7 +24,8 @@ export type HopMode =
   | 'frac-match'
   | 'count-up'
   | 'your-way'
-  | 'tens';
+  | 'tens'
+  | 'hops';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -114,6 +116,12 @@ export const PLANS: HopPlan[] = [
     questions: 5,
     name: 'Hop by tens: pads 0, 10, 20 … 100, start at 10 to 70 and hop 1 to 4 tens on or back',
   },
+  {
+    mode: 'hops',
+    top: 100,
+    questions: 4,
+    name: 'Big hops and little hops: tens and ones from one number to another, on a line with no pads',
+  },
 ];
 
 /** The number a pad shows and the frog says: its place on the line times the plan's stride. */
@@ -151,6 +159,9 @@ export interface HopQuestion {
   /** Fraction Match: the second hop size, and the card that answers it (`answer2 × jump2 = target`). */
   jump2?: number;
   answer2?: number;
+  /** Big hops and little hops: the fewest-hops route, `bigs` hops of ten and `smalls` of one (`hops = 10 bigs + smalls`). */
+  bigs?: number;
+  smalls?: number;
 }
 
 /** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
@@ -270,6 +281,7 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (plan.mode === 'count-up') return countUpQuestions(plan, rng);
   if (plan.mode === 'your-way') return yourWayQuestions(plan, rng);
   if (plan.mode === 'tens') return tensQuestions(plan, rng);
+  if (plan.mode === 'hops') return hopsQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -410,6 +422,112 @@ function tensQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   }
 }
 
+/** The open line's first question: the frog on 47, a flag on 72 (two big hops and five little ones). */
+export const HOPS_FIRST = { start: 47, hops: 25 };
+
+/**
+ * Big hops and little hops (dive slice 10): start 12–58 and hops 11–45, neither a multiple of ten, so the fewest-hops route
+ * needs both sizes; the flag is at most 100. The first question is authored (47 to 72), the rest seeded with distinct
+ * distances, never the previous question's tens, and at least one whose ones pass the next ten (47 + 18 crosses 50 and 60).
+ */
+function hopsQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const make = (start: number, hops: number): HopQuestion => ({
+    start,
+    target: start + hops,
+    hops,
+    lo: openLine({ start, target: start + hops }).lo,
+    bigs: Math.floor(hops / 10),
+    smalls: hops % 10,
+  });
+  for (;;) {
+    const out = [make(HOPS_FIRST.start, HOPS_FIRST.hops)];
+    while (out.length < plan.questions) {
+      const start = rng.int(12, 58);
+      const hops = rng.int(11, 45);
+      if (start % 10 === 0 || hops % 10 === 0 || start + hops > plan.top) continue;
+      const prev = out[out.length - 1];
+      if (out.some((q) => q.hops === hops) || make(start, hops).bigs === prev.bigs) continue;
+      out.push(make(start, hops));
+    }
+    // At least one question whose ones carry past the next ten.
+    if (out.some((q) => (q.start % 10) + q.smalls! > 10)) return out;
+  }
+}
+
+/** The landing after an ordered route of hops (`10` a big hop, `1` a little one). */
+export const routeLanding = (start: number, route: readonly number[]) =>
+  route.reduce((at, hop) => at + hop, start);
+
+/** How many hops in the route land above the flag. */
+export function overshoots(start: number, target: number, route: readonly number[]): number {
+  let at = start;
+  let over = 0;
+  for (const hop of route) {
+    at += hop;
+    if (at > target) over++;
+  }
+  return over;
+}
+
+/** The fewest-hops route for a distance: all the tens, then the ones. */
+export const shortestRoute = (hops: number) => ({ bigs: Math.floor(hops / 10), smalls: hops % 10 });
+
+/** "Two big hops and five little hops" (one is "one big hop"; none leaves that size out), for the closing line. */
+export function routeWords(bigs: number, smalls: number): string {
+  const part = (n: number, size: string) => `${NUMBER_WORDS_100[n] ?? n} ${size} hop${n === 1 ? '' : 's'}`;
+  const parts = [bigs > 0 ? part(bigs, 'big') : '', smalls > 0 ? part(smalls, 'little') : ''].filter(Boolean);
+  const text = parts.join(' and ');
+  return text[0].toUpperCase() + text.slice(1);
+}
+const NUMBER_WORDS_100 = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+];
+
+/** Units a number takes on the open line when the board is wide enough, and a lily's frog never leaves the window. */
+export const OPEN_UNIT = 12;
+
+/**
+ * The window of the open line for a question: from the ten at or below the start to ten above the flag's ten, and a ten
+ * more, so a hop past the flag still lands on the line. At most 70 numbers; `scale` shrinks it to fit `width` units.
+ */
+export function openLine(q: Pick<HopQuestion, 'start' | 'target'>, width = OPEN_UNIT * 70) {
+  const lo = Math.floor(q.start / 10) * 10;
+  const hi = Math.min(110, (Math.floor(q.target / 10) + 2) * 10);
+  return { lo, hi, scale: Math.min(OPEN_UNIT, width / (hi - lo)) };
+}
+
+/** Where the open line's pieces sit in a view: the line's span and height, then the two lilies and back. */
+export function hopsLayout(view: { w: number; h: number; upright?: true }, corner = 200) {
+  const upright = !!view.upright && view.h > view.w * 1.1;
+  const left = corner + 16;
+  const right = view.w - 24;
+  const y = view.h - (upright ? 90 : 100);
+  const gap = 24;
+  // Big 140, small 140, back 110, in one row right of the guide's corner.
+  const row = 140 + gap + 140 + gap + 110;
+  const x0 = (left + right) / 2 - row / 2;
+  const big = { x: x0 + 70, y, w: 140, h: 140 };
+  const small = { x: big.x + 70 + gap + 70, y, w: 140, h: 140 };
+  const back = { x: small.x + 70 + gap + 55, y, w: 110, h: 110 };
+  return {
+    line: { x0: 40, x1: view.w - 40, y: view.h * (upright ? 0.4 : 0.44) },
+    big,
+    small,
+    back,
+    sign: { x: view.w / 2, y: upright ? 150 : 110 },
+  };
+}
+
 /** Distinguish a direction mistake from counting the starting pad as a hop. */
 export type HopMiss = 'correct' | 'forward' | 'backward' | 'one-more' | 'one-less' | 'count';
 export function missKind(start: number, answer: number, chosen: number, card: boolean): HopMiss {
@@ -489,7 +607,7 @@ export function dotLayout(n: number): { x: number; y: number }[] {
  * Never on 0, the dot levels or the fraction line, where a pad is a quarter tick.
  */
 export const flowerOn = (mode: HopMode, n: number) =>
-  !showsDots(mode) && !isFrac(mode) && n > 0 && n % 5 === 0;
+  !showsDots(mode) && !isFrac(mode) && mode !== 'hops' && n > 0 && n % 5 === 0;
 
 /**
  * Scenes (dive slice 6): each round draws one place for the line. The lily pond, stepping stones in a brook, a flower path

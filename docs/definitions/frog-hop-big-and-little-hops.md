@@ -1,6 +1,6 @@
 # Frog Hop, level 14 *Big hops and little hops* (definition)
 
-*Game `frog-hop` · level 14 · school · defined 2026-11-26 on `claude/define-frog-hop-big-little` · [deep dive](../deep-dives/frog-hop.md#build-slices-in-order) slice 10 (the row 12 of its [new levels table](../deep-dives/frog-hop.md#new-levels-on-top), which was numbered before levels 12 and 13 took their IDs). Docs only; the build is the line in Next ten (claimed 2026-11-26, `claude/frog-hop-big-little`).*
+*Game `frog-hop` · level 14 · school · defined 2026-11-26 on `claude/define-frog-hop-big-little` · [deep dive](../deep-dives/frog-hop.md#build-slices-in-order) slice 10 (the row 12 of its [new levels table](../deep-dives/frog-hop.md#new-levels-on-top), which was numbered before levels 12 and 13 took their IDs). Docs only; the build is the line in Next ten (built 2026-11-26).*
 
 **Fun action and purpose.** The frog is on 47 and a flag stands on 72. Two lily buttons wait at the bottom: a big lily that hops ten and a small lily that hops one. She taps hops until the frog stands on the flag, hearing each landing ("57, 67, 68…"). The learning goal is **how many tens and how many ones make a difference** (1.NBT.C.4 and 2.NBT.B.5: adding within 100 by jumping tens and then ones, the empty-number-line method). Every route that lands exactly is welcome (two big hops and five little ones, or twenty-five little ones); the shortest route is the one the hint shows.
 

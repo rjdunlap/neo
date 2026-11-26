@@ -926,9 +926,73 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 14, Big hops and little hops: an open line, a big lily (+10), a small lily (+1) and back.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [14]).includes(14)) {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('frog-hop', 14);
+      await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
+      await page.waitForTimeout(100);
+      const idle = () =>
+        page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      const tap = async (lily) => {
+        await page.evaluate((l) => kit.tapOn(neo.scene.game[l]), lily);
+        await page.waitForTimeout(150);
+        await idle();
+      };
+      const state = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return { index: g.index, at: g.index >= 0 && g.q ? g.at : null, route: [...g.route] };
+        });
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const q = neo.scene.game.q;
+          return [q.start, q.target];
+        }),
+        [47, 72],
+      );
+      // Two big hops, then one more big hop overshoots to 77: one miss, Back glows, back takes it away.
+      await tap('big');
+      await tap('big');
+      await tap('big');
+      assert.deepEqual(await counts(), [1, 0], 'an overshoot is one miss');
+      assert.equal(await page.evaluate(() => neo.scene.game.glowing === neo.scene.game.back), true);
+      await tap('back');
+      assert.equal((await state()).at, 67, 'back takes the last hop away');
+      assert.deepEqual(await counts(), [1, 0], 'back is free');
+      await screenshot('frog-hop-14-portrait');
+      // The pause sheet's hint: the shortest route is shown from here (one big hop short of 72 is not needed: 67 + 5).
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      await idle();
+      assert.deepEqual(await counts(), [1, 1], 'a shown hint is one hint');
+      // Five little hops land on the flag; the next question opens.
+      for (let i = 0; i < 5; i++) await tap('small');
+      assert.equal((await state()).index, 1, 'landing on the flag opens the next question');
+      // Answer the rest straight through, by the fewest-hops route.
+      for (let guard = 0; guard < 40; guard++) {
+        const lily = await page.evaluate(() => {
+          const g = neo.scene.game;
+          if (g.finished || !g.q) return null;
+          const left = g.q.target - g.at;
+          return left >= 10 ? 'big' : 'small';
+        });
+        if (!lily) break;
+        await tap(lily);
+        if (await page.evaluate(() => neo.scene.game.finished)) break;
+      }
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [1, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 14: big and small lilies, an overshoot, back, a hint, the fewest-hops route, saved score and sticker passed',
+      );
+    }
     if (!only || only === 'hop')
-      for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 14 - fromLevel) }, (_, i) => fromLevel + i)) {
+      for (const level of (
+        process.env.HOP_LEVELS?.split(',').map(Number) ||
+        Array.from({ length: Math.max(0, 14 - fromLevel) }, (_, i) => fromLevel + i)
+      ).filter((n) => n < 14)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
