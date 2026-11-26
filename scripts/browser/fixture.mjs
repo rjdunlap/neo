@@ -18,6 +18,7 @@ export async function createFixture(browser, suite) {
     suite === 'lastpebble' ||
     suite === 'keyitout' ||
     suite === 'jarclues' ||
+    suite === 'countballots' ||
     suite === 'harbororders' ||
     suite === 'workshopdetective' ||
     suite === 'outcropdetective' ||

@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (21), **Tinker Lab** (29) and **Lantern Lake** (25, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (21), **Tinker Lab** (29) and **Lantern Lake** (26, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 196 games; the 169 child games are listed below and the 27 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 161 games, and "grown-up" (13 and up) is played by 37 games: the 27 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 197 games; the 169 child games are listed below and the 28 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 162 games, and "grown-up" (13 and up) is played by 38 games: the 28 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -285,7 +285,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 27 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 25 in Lantern Lake. All play by touch on the island; 19 are touch-only, and 8 also play with a controller on the couch.
+These 28 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 26 in Lantern Lake. All play by touch on the island; 20 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -322,6 +322,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Workshop Detective](docs/games/workshop-detective.md) | Lantern Lake | 1 | mark two notes about a made-up bench lamp against two records, then try the lever setting that tells them apart. |
 | [Outcrop Detective](docs/games/outcrop-detective.md) | Lantern Lake | 2 | swap four rock-event cards until the story builds the same made-up cliff, then say whether the rocks tell that order for sure. |
 | [Market Days](docs/games/market-days.md) | Lantern Lake | 3 | Eight towns each hold one market a week; she gives each town a market day (a banner with a colour and a shape) so that towns joined by a dotted path, a day's walk apart, never share a day. Level 1 sets three towns that all need different days and she finishes the other five; level 2 starts from nothing. |
+| [Count the Ballots](docs/games/count-the-ballots.md) | Lantern Lake | 2 | nine villagers have each ranked three fairground rides on a ballot. She taps a ballot, then the pile of the ride it likes best (level 1, *Count first choices*). No pile reaches five, so the smallest pile is out and its ballots come back to the hand, each now marking its next choice still standing; she moves them, and the ride with five is built. The learning is a counting procedure with a rule that can change the answer. |
 
 <!-- end generated -->
 
@@ -539,6 +540,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `harbororders` | Harbor Orders levels 1–2 on Lantern Lake, with captions at 390×625, a free short check, one counted spare-morning send, Help, rotation and one sticker per order. | `BROWSER_SUITE=harbororders`; demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=harbor-orders FINGER_LEVELS=2` |
 | `keyitout` | Key It Out levels 1, 2 and 4 via Lantern Lake at 390×625 with captions: at level 1 a key question read and a branch followed (free), then six sketches named in two stampings (0 misses, 0 hints) and the capture strip of the twelve part values and four hidden forms; at level 2 the page filled with no right name (one miss, the note giving the fault), a name lifted and put back (same page, free), Help twice (one hint), rotation to sideways keeping the page, chosen sketch and hint, one sticker per round and return to the same land page; at level 4 the Table page (a cell spoken, a name given and lifted), a full wrong page whose fault is a note the table disagrees with (one miss, the Table page opened at the row), an unused name swapped onto the full page (not judged), Help, the page finished. | Ghost finger: `FINGER_ONLY=key-it-out FINGER_LEVELS=4 FINGER_BAND=grownup` |
 | `jarclues` | Jar Clues levels 1–2 via Lantern Lake at 390×625 with captions: a capture strip of the jar at counts nine apart; at level 1 First clue waiting for a guess, the guess moved (free), every clue swept right (0 misses, 0 hints); at level 2 Next clue with a ruled-out number standing (one miss, the note naming the lowest wrong number), pressed again unchanged (free), Help (one hint) followed, rotation to sideways keeping the board, a screenshot at the last clue, a card that is not the count chosen (no miss), one sticker per round and return to the same land page. | Ghost finger: `FINGER_ONLY=jar-clues FINGER_LEVELS=2 FINGER_BAND=grownup` |
+| `countballots` | Count the Ballots levels 1–2 by real taps at 390×625 with captions: at level 1 a wrong pile (one miss, the ballot stays), Help (one hint, the right pile glows), the same ballot's Help again (free), every ballot sorted, the smallest pile's ballots back in the hand and sorted again, one sticker and a portrait screenshot; at level 2 the same, then a wrong first-count tap (one miss, one hint, the biggest pile glows) and the right one, a second sticker. | Ghost finger: `FINGER_ONLY=count-the-ballots FINGER_LEVELS=2 FINGER_BAND=grownup` |
 | `shadowplay` | Shadow Play levels 1–2 via Lantern Lake at 390×625 with captions: both level 1 boards by drag and by tap, a wrong Light counted once and lit again free, Help counted once, rotation, one sticker per round and return to the same land page. | Ghost finger: `FINGER_ONLY=shadow-play FINGER_LEVELS=2 FINGER_BAND=grownup` |
 | `tideline34` | Tide Line levels 3–4 by touch: level 3 an early wave not counted, a dry round 1, then round 2 with the pail between the lines floated and fetched while the flag and towel stay dry, saved 1 miss/0 hints; level 4 in portrait two wrong cards then the glow, two strips, saved 2 misses/1 hint | Ghost finger: `FINGER_ONLY=tide-line FINGER_LEVELS=3,4` |
 | `rulemachine` | Rule Machine levels 1–5 (`RM_LEVELS=3,4` picks levels; default all five): level 1 at pre-K with a free wrong first picture, two counted wrongs and the glow (2 misses/1 hint); portrait level 2 with one wrong pad after two rows (1/0); level 3 landscape with a wrong card then the right one (1/0); portrait level 4 with early and still-open card taps uncounted, a ruled-out card (1 miss) and Peek (1 hint); portrait level 5 with two wrong cars on the first wanted car (glow, 1 hint) then four right cars (2/1) | Ghost finger: `FINGER_ONLY=rule-machine FINGER_LEVELS=2,3,4,5` |

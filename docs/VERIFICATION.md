@@ -103,6 +103,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `howtolevel` | 2026-10-16 · [Bubble Pop mode gallery](archive/VERIFICATION-2026-10-15.md#2026-10-16--bubble-pop-mode-gallery) | Bubble Pop mode gallery |
 | `island` | 2026-10-08 · [How-to card every time, with a bot demonstration](archive/VERIFICATION-2026-10-07-13.md#how-to-card-every-time-with-a-bot-demonstration-2026-10-08) | Island shelf and how-to entry |
 | `jarclues` | 2026-11-24 · [Jar Clues lens above the thumb](verification/2026-11-24-jar-clues-lens-above-the-thumb.md) | — |
+| `countballots` | 2026-11-26 · [Count the Ballots levels 1-2](verification/2026-11-26-count-the-ballots-levels-1-2.md) | — |
 | `jarsort` | 2026-11-09 · [Jar Sort slices 4–5: levels 11 and 12](archive/VERIFICATION-2026-11-09.md#2026-11-09--jar-sort-slices-45-levels-11-and-12-pr-1433) | `JAR_SORT_LEVELS=11,12` |
 | `journal` | 2026-10-09 · [More discovery-journal sources](archive/VERIFICATION-2026-10-07-13.md#more-discovery-journal-sources-2026-10-09) | Five sources, reload and portrait |
 | `keephouse` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, fourth session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-fourth-session.md) | — |
