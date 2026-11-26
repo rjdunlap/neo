@@ -19,17 +19,18 @@ import {
   turfCell,
 } from './art';
 import {
+  askVars,
+  cap,
   columnCells,
   correctCard,
   factorTasks,
+  running,
+  word,
   type FactorTask,
   type LoftTask,
   type MissingTask,
 } from './factor-logic';
 import { cellRect, centre, CELLS, GAP, meadowLayout, PenTally, type Cell, type MeadowLayout } from './logic';
-
-type Line = Parameters<GameContext['say']>[0];
-const line = (id: string) => id as Line;
 
 /**
  * Levels 6 and 7: a hidden number found by multiplying. Level 6 lifts a blanket column by column over a strip of
@@ -128,7 +129,9 @@ export class FactorMeadow implements Game {
     void this.intro();
   }
   private async intro() {
-    await this.ctx.instruct(this.ctx.level === 7 ? 'meadow.instruct.7' : 'meadow.instruct.6');
+    await (this.ctx.level === 7
+      ? this.ctx.instruct('meadow.instruct.7', { unit: 'trays' })
+      : this.ctx.instruct('meadow.instruct.6', { unit: 'rows' }));
     if (!this.alive) return;
     await this.ask();
     if (this.alive) this.busy = false;
@@ -151,7 +154,7 @@ export class FactorMeadow implements Game {
   }
   private ask() {
     const t = this.task;
-    return this.ctx.instruct(line(t.kind === 'missing' ? `meadow.ask6.${t.id}` : `meadow.ask7.${t.id}`));
+    return this.ctx.instruct(t.kind === 'missing' ? 'meadow.ask6' : 'meadow.ask7', askVars(t));
   }
   private askAfter(prev: Promise<unknown>) {
     this.unasked = () => this.ask();
@@ -336,7 +339,7 @@ export class FactorMeadow implements Game {
   private async touchBlanket() {
     this.takeOver();
     sfx.pop(5);
-    await this.ctx.say('meadow.blanket6');
+    await this.ctx.say('meadow.blanket6', { thing: 'grass' });
   }
   private async countTray() {
     this.takeOver();
@@ -395,20 +398,29 @@ export class FactorMeadow implements Game {
   private async explainMissing(card: number, token: number) {
     const t = this.task as MissingTask;
     const len = t.length;
+    const vars = { rows: cap(word(t.rows)), total: word(t.total), cols: cap(word(len)) };
+    const lift = () =>
+      this.ctx.say('meadow.lift6', {
+        run: running(t.rows, t.total),
+        cols: cap(word(len)),
+      });
     if (card < len) {
       if (!(await this.liftTo(card, token))) return;
-      await this.ctx.say(line(`meadow.try6.${t.id}.short`));
+      await this.ctx.say('meadow.try6.short', {
+        ...vars,
+        cols: word(card),
+        sum: word(t.rows * card),
+      });
       if (!this.valid(token)) return;
-      await this.liftTo(len, token);
-      if (!this.valid(token)) return;
+      if (!(await this.liftTo(len, token))) return;
       this.counts = [];
-      await this.ctx.say(line(`meadow.lift6.${t.id}`));
+      await lift();
     } else if (card > len) {
       if (!(await this.liftTo(len, token))) return;
-      await this.ctx.say(line(`meadow.try6.${t.id}.many`));
+      await this.ctx.say('meadow.try6.many', vars);
     } else {
       if (!(await this.liftTo(len, token))) return;
-      await this.ctx.say(line(`meadow.lift6.${t.id}`));
+      await lift();
     }
   }
   /** Level 7: stack the trays one at a time; the count goes up by the whole floor each time. */
@@ -423,7 +435,7 @@ export class FactorMeadow implements Game {
       await this.ctx.tw.wait(0.45);
       if (!this.valid(token)) return;
     }
-    await this.ctx.say(line(`meadow.stack7.${t.id}`));
+    await this.ctx.say('meadow.stack7', { run: running(t.floor.length, t.floor.length * t.layers, true) });
   }
   private async explanation(card: number) {
     const token = this.epoch;

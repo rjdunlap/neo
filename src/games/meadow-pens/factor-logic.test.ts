@@ -12,6 +12,9 @@ import {
   lengthOf,
   MISSING,
   missingCards,
+  askVars,
+  running,
+  word,
 } from './factor-logic';
 import { cellAt, cellRect, centre, CELLS, COLS, meadowLayout, ROWS, targets, xOf, yOf } from './logic';
 
@@ -119,112 +122,20 @@ describe('five-question rounds', () => {
   });
 });
 
-describe('spoken lines', () => {
-  it('has one exact line for every case', () => {
+describe('spoken quantities', () => {
+  it('say counts as words, the running counts step by the rows or the floor, and every case has them', () => {
     const v = VOICE as Record<string, string[]>;
-    expect(v['meadow.ask6.M3'][0]).toBe(
-      'There are twelve squares of grass in three rows. How many squares long is the strip?',
-    );
-    expect(v['meadow.try6.M3.short'][0]).toBe('Three rows, three columns: nine squares. We need twelve.');
-    expect(v['meadow.try6.M3.many'][0]).toBe('Four columns make twelve. That card is too many.');
-    expect(v['meadow.lift6.M3'][0]).toBe('Three, six, nine, twelve. Four columns.');
-    expect(v['meadow.ask7.V1'][0]).toBe(
-      'Each tray holds six bales. The loft is three trays tall. How many bales fill it?',
-    );
-    expect(v['meadow.stack7.V1'][0]).toBe('Six. Twelve. Eighteen bales altogether.');
-    expect(v['meadow.stack7.V6'][0]).toBe('Six. Twelve. Eighteen. Twenty-four bales altogether.');
-    for (const c of MISSING)
-      for (const k of ['ask6', 'try6.short', 'try6.many', 'lift6'] as const) {
-        const id = k.startsWith('try6') ? `meadow.try6.${c.id}.${k.split('.')[1]}` : `meadow.${k}.${c.id}`;
-        expect(v[id], id).toBeDefined();
-      }
-    for (const c of LOFT) {
-      expect(c.w * c.h).toBeGreaterThan(0);
-      expect(c.w).toBeLessThanOrEqual(COLS - 2);
-      expect(c.h).toBeLessThanOrEqual(ROWS);
-      expect(c.layers).toBeLessThanOrEqual(ROWS);
-      const cards = loftCards(c);
-      expect(new Set(cards).size).toBe(3);
-      expect(cards.filter((n) => n === loftTotal(c))).toHaveLength(1);
-      expect(cards[1]).toBe(c.w * c.h);
-      expect(cards[2]).toBe(c.w * c.h + c.layers);
+    for (const id of ['ask6', 'try6.short', 'try6.many', 'lift6', 'ask7', 'stack7'])
+      expect(v[`meadow.${id}`], id).toHaveLength(1);
+    expect(running(3, 12)).toBe('Three, six, nine, twelve');
+    expect(running(6, 24, true)).toBe('Six. Twelve. Eighteen. Twenty-four');
+    expect(askVars(factorTasks(6, new Rng(1))[0])).toEqual({ total: 'twelve', rows: 'three' });
+    expect(askVars(factorTasks(7, new Rng(1))[0])).toEqual({ bales: 'six', layers: 'three' });
+    for (const c of MISSING) {
+      expect(word(c.total)).toBeTruthy();
+      expect(running(c.rows, c.total).split(', ')).toHaveLength(lengthOf(c));
     }
-    expect(LOFT.map(loftTotal)).toEqual([18, 12, 12, 16, 16, 24, 24]);
-  });
-});
-
-describe('five-question rounds', () => {
-  for (const level of [6, 7] as const)
-    it(`level ${level}: authored first case, four different others, seeded and stable`, () => {
-      for (let seed = 1; seed <= 60; seed++)
-        for (const authored of [true, false]) {
-          const tasks = factorTasks(level, new Rng(seed), authored);
-          expect(tasks).toHaveLength(5);
-          expect(tasks[0].id).toBe(level === 6 ? 'M3' : 'V1');
-          expect(new Set(tasks.map((t) => t.id)).size).toBe(5);
-          expect(tasks[0].mirror).toBe(false);
-          for (const t of tasks) {
-            expect(t.cards).toHaveLength(3);
-            expect(new Set(t.cards).size).toBe(3);
-            expect(t.cards.filter((n) => n === correctCard(t))).toHaveLength(1);
-          }
-          expect(factorTasks(level, new Rng(seed), authored)).toEqual(tasks);
-        }
-    });
-  it('the authored first question keeps its card order: 4, 9, 3 and 18, 6, 9', () => {
-    expect(factorTasks(6, new Rng(5), true)[0].cards).toEqual([4, 9, 3]);
-    expect(factorTasks(7, new Rng(5), true)[0].cards).toEqual([18, 6, 9]);
-  });
-  it('cells: level 6 grass is one column, the blanket is always five columns, mirrored or not', () => {
-    for (let seed = 1; seed <= 40; seed++)
-      for (const t of factorTasks(6, new Rng(seed))) {
-        if (t.kind !== 'missing') throw new Error('level 6');
-        expect(t.grass).toHaveLength(t.rows);
-        expect(t.blanket).toHaveLength(t.rows * 5);
-        expect(new Set([...t.grass, ...t.blanket]).size).toBe(t.rows * COLS);
-        const first = new Set(columnCells(t, 0));
-        expect([...first].sort()).toEqual([...t.grass].sort());
-        // the strip to its answer length is exactly rows x length cells
-        const strip = Array.from({ length: t.length }, (_, x) => columnCells(t, x)).flat();
-        expect(strip).toHaveLength(t.total);
-        expect(strip.every((c) => c < CELLS)).toBe(true);
-      }
-  });
-  it('cells: level 7 floor is the case floor and the gauge column never meets it', () => {
-    for (let seed = 1; seed <= 40; seed++)
-      for (const t of factorTasks(7, new Rng(seed))) {
-        if (t.kind !== 'loft') throw new Error('level 7');
-        expect(t.floor).toHaveLength(t.w * t.h);
-        expect(t.gauge).toHaveLength(t.layers);
-        expect(t.gauge.some((c) => t.floor.includes(c))).toBe(false);
-        const xs = new Set(t.gauge.map(xOf));
-        expect(xs.size).toBe(1);
-        expect(new Set(t.gauge.map(yOf)).size).toBe(t.layers);
-      }
-  });
-});
-
-describe('spoken lines', () => {
-  it('has one exact line for every case', () => {
-    const v = VOICE as Record<string, string[]>;
-    expect(v['meadow.ask6.M3'][0]).toBe(
-      'There are twelve squares of grass in three rows. How many squares long is the strip?',
-    );
-    expect(v['meadow.try6.M3.short'][0]).toBe('Three rows, three columns: nine squares. We need twelve.');
-    expect(v['meadow.try6.M3.many'][0]).toBe('Four columns make twelve. That card is too many.');
-    expect(v['meadow.lift6.M3'][0]).toBe('Three, six, nine, twelve. Four columns.');
-    expect(v['meadow.ask7.V1'][0]).toBe(
-      'Each tray holds six bales. The loft is three trays tall. How many bales fill it?',
-    );
-    expect(v['meadow.stack7.V1'][0]).toBe('Six. Twelve. Eighteen bales altogether.');
-    expect(v['meadow.stack7.V6'][0]).toBe('Six. Twelve. Eighteen. Twenty-four bales altogether.');
-    for (const c of MISSING)
-      for (const k of ['ask6', 'lift6', 'try6.' + c.id + '.short', 'try6.' + c.id + '.many'])
-        expect(Object.keys(v).some((id) => id.startsWith('meadow.' + k.split('.')[0]))).toBe(true);
-    for (const c of LOFT) {
-      expect(v[`meadow.ask7.${c.id}`]).toBeDefined();
-      expect(v[`meadow.stack7.${c.id}`]).toBeDefined();
-    }
+    for (const c of LOFT) expect(word(loftTotal(c))).toBeTruthy();
     for (const lines of Object.values(v)) for (const l of lines) expect(l).not.toMatch(/undefined|NaN/);
   });
 });

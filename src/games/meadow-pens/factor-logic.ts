@@ -121,3 +121,47 @@ export function factorTasks(level: 6 | 7, rng: Rng, authored = true): FactorTask
     return loftTask(c, !first && rng.chance(0.5), ordered);
   });
 }
+
+// ----- spoken quantities -----
+
+const WORDS = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty',
+  'twenty-one',
+  'twenty-two',
+  'twenty-three',
+  'twenty-four',
+];
+/** A count as a word, so the speech says "twelve" and never reads a digit. */
+export const word = (n: number) => WORDS[n];
+export const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+/** "Three, six, nine, twelve" (one sentence) or, with `sentences`, "Six. Twelve. Eighteen": the running counts of `step` up to `to`. */
+export const running = (step: number, to: number, sentences = false) =>
+  Array.from({ length: to / step }, (_, i) => {
+    const w = word(step * (i + 1));
+    return sentences || i === 0 ? cap(w) : w;
+  }).join(sentences ? '. ' : ', ');
+/** The variables of a level-6 or level-7 spoken line for a task. */
+export const askVars = (t: FactorTask): Record<string, string> =>
+  t.kind === 'missing'
+    ? { total: word(t.total), rows: word(t.rows) }
+    : { bales: word(t.floor.length), layers: word(t.layers) };

@@ -66,10 +66,7 @@ describe.each([6, 7] as const)('Meadow Pens level %i play', (level) => {
   it('asks its exact question, and free touches count nothing', async () => {
     const { g, said, tap, settle } = make(level);
     await settle();
-    expect(said.slice(0, 2)).toEqual([
-      `meadow.instruct.${level}`,
-      `meadow.ask${level}.${level === 6 ? 'M3' : 'V1'}`,
-    ]);
+    expect(said.slice(0, 2)).toEqual([`meadow.instruct.${level}`, `meadow.ask${level}`]);
     for (const t of g.targetsOf) {
       tap(t);
       await settle();
