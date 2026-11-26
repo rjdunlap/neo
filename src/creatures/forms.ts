@@ -13,6 +13,16 @@ export const MAX_FORMS = 8;
 export const isForm = (v: unknown): v is FormId =>
   typeof v === 'string' && (FORMS as readonly string[]).includes(v);
 
+/**
+ * The Garden Grow flower kind each blossom is drawn from (a plain string, so this file stays Pixi-free; a test holds it equal
+ * to the blossom's picture in `src/art/creatures/forms.ts`). A round reports the kind that bloomed, and the shell grows the form.
+ */
+export const FORM_FLOWER: Record<FormId, string> = { 'sprout:sun': 'sunflower', 'sprout:moon': 'tulip' };
+
+/** The form a bloomed flower kind grows, or null for a kind that is no blossom. */
+export const formForFlower = (kind: unknown): FormId | null =>
+  FORMS.find((f) => FORM_FLOWER[f] === kind) ?? null;
+
 /** The species a form belongs to. */
 export const formSpecies = (id: FormId): SpeciesId => id.split(':')[0] as SpeciesId;
 

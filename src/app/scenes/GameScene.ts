@@ -1,6 +1,7 @@
 import { PT_PT, type WordKey } from '../../content/words/pt-PT';
 import { Lifetime } from '../../engine/lifetime';
 import { Circle, Container, Graphics, Point, Text } from 'pixi.js';
+import { FORM_FLOWER, formForFlower, type FormId } from '../../creatures/forms';
 import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
@@ -50,6 +51,7 @@ import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
+import { formPill } from '../../ui/form-art';
 import { discoveryPill } from '../../ui/journal-art';
 import {
   againIcon,
@@ -113,6 +115,8 @@ export class GameScene extends Scene {
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
   private discovered: JournalEntry[] = [];
+  /** A blossom this round grew for the first time (RW11 slice 2): the result shows it opening. */
+  private grewForm: FormId | null = null;
   private readonly discoveryToken = discoveryMemory.token(store.data);
   private discovery: {
     id: string;
@@ -203,11 +207,18 @@ export class GameScene extends Scene {
     if (this.app.creatureWorld) this.home.means('back');
   }
 
+  /** A round opened from a blossom goal in the book: it plays that goal's level whatever her band's range is. */
+  private bookForm() {
+    return !!this.origin && 'book' in this.origin && !!this.origin.form && this.startLevel !== undefined;
+  }
+
   init() {
     const band = this.band;
     const range = this.mod.levels(band);
     this.level =
       this.story?.level ??
+      // A blossom goal's path is one built level (Garden Grow's rain-and-bloom level 2), below the preschool and pre-K ranges.
+      (this.bookForm() ? this.startLevel : undefined) ??
       (this.startLevel === undefined
         ? store.levelFor(this.mod.id, range, this.mod.entryLevels)
         : stepLevel(this.startLevel, 0, range));
@@ -276,7 +287,10 @@ export class GameScene extends Scene {
       },
       level: this.level,
       band,
-      request: this.origin && 'book' in this.origin ? this.origin.recipe : undefined,
+      request:
+        this.origin && 'book' in this.origin
+          ? (this.origin.recipe ?? (this.origin.form && FORM_FLOWER[this.origin.form]))
+          : undefined,
       rng: new Rng(),
       tw: this.tw,
       particles: this.particles,
@@ -768,6 +782,10 @@ export class GameScene extends Scene {
       .map((id) => entryById(id))
       .filter((e): e is JournalEntry => !!e);
     this.closeHelp();
+    // A form goal's round grows the blossom from what bloomed, help included; a replay of a grown one grows nothing twice.
+    const asked = this.origin && 'book' in this.origin ? this.origin.form : undefined;
+    if (asked && formForFlower(result.grew) === asked && store.growForm(asked, `garden:${result.grew}`))
+      this.grewForm = asked;
     const band = this.band;
     store.recordRound(
       this.mod.id,
@@ -896,6 +914,28 @@ export class GameScene extends Scene {
       await this.tw.wait(1.8);
     }
 
+    // A blossom opening on her friend: the flower she grew, with her sprout's name and a sparkle.
+    if (this.grewForm) {
+      const pill = (this.resultPill = formPill(this.grewForm));
+      pill.position.set(this.view.w / 2, this.view.h * 0.555);
+      pill.scale.set(0);
+      layer.addChild(pill);
+      void this.tw.to(pill.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
+      sfx.sparkle();
+      confetti.burst(pill.x, pill.y, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, 0xffffff],
+        count: 14,
+        speed: [160, 320],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
+      void voice.say('form.grown', {
+        pet: store.data.creatures.owned.find((w) => w.species === 'sprout')?.name ?? '',
+      });
+      await this.tw.wait(1.8);
+    }
+
     // "Again" plays the level she just finished (a story round plays its own), so it means what it looks like; the map applies the step up or down.
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () =>
       this.navigateResult(() => {
@@ -911,7 +951,8 @@ export class GameScene extends Scene {
       }),
     );
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
-    const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
+    const upTo =
+      this.story || this.bookForm() ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
     const next =
       upTo === null
         ? null

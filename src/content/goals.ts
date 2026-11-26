@@ -1,3 +1,4 @@
+import { FORMS, FORM_FLOWER, formSpecies, type FormId } from '../creatures/forms';
 import { MAX_CREATURES } from '../creatures/species';
 import type { Band } from '../progress/bands';
 import type { SaveData } from '../progress/save';
@@ -46,8 +47,36 @@ export const COLOUR_GOALS: readonly ColourGoal[] = MIXED_COLORS.map((colour) => 
   path: { game: 'paint-mixer', level: 5, recipe: colour },
 }));
 
-export type Goal = typeof WELCOME_GOAL | ColourGoal;
-export const GOALS: readonly Goal[] = [WELCOME_GOAL, ...COLOUR_GOALS];
+/** The bands whose book shows a form goal: Garden Grow's rain-and-bloom level 2 is the path (preschool and pre-K, RW11). */
+const FORM_BANDS: readonly Band[] = ['preschool', 'prek'];
+
+export interface FormGoal {
+  id: `form:${FormId}`;
+  kind: 'form';
+  form: FormId;
+  reachable(save: GoalSave, band: Band): boolean;
+  done(save: GoalSave): boolean;
+  path: { game: 'garden-grow'; level: 2; flower: string };
+}
+
+/**
+ * One goal per blossom (RW11 slice 2): reachable at preschool and pre-K for a profile with a sprout and without the form,
+ * done (derived, never stored) once `creatures.forms` holds it. Both blossoms stay offered until each is grown.
+ */
+export const FORM_GOALS: readonly FormGoal[] = FORMS.map((form) => ({
+  id: `form:${form}` as const,
+  kind: 'form',
+  form,
+  reachable: (save, band) =>
+    FORM_BANDS.includes(band) &&
+    !save.creatures.forms.includes(form) &&
+    save.creatures.owned.some((who) => who.species === formSpecies(form)),
+  done: (save) => save.creatures.forms.includes(form),
+  path: { game: 'garden-grow', level: 2, flower: FORM_FLOWER[form] },
+}));
+
+export type Goal = typeof WELCOME_GOAL | ColourGoal | FormGoal;
+export const GOALS: readonly Goal[] = [WELCOME_GOAL, ...COLOUR_GOALS, ...FORM_GOALS];
 export type GoalId = Goal['id'];
 
 export const isGoalId = (value: unknown): value is GoalId => GOALS.some((goal) => goal.id === value);

@@ -23,6 +23,7 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
+import type { FormId } from '../creatures/forms';
 import type { MelodyStep, MixedColor, PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
@@ -52,9 +53,10 @@ export type StoryRound =
  * The collection book; `recipe` is a colour goal's (RW10 slice 2), handed to the round as `ctx.request`, and `things`
  * marks Dress opened from a colour on the Things page, whose Back returns to that page.
  */
-export type BookOrigin = { book: true; recipe?: MixedColor; things?: true };
+export type BookOrigin = { book: true; recipe?: MixedColor; form?: FormId; things?: true };
 /** Where the book opens: a friend's page, the goal just joined, a colour goal's page, or the Things page. */
-export type BookAt = { friend: string } | { joined: true } | { colour: MixedColor } | { things: true };
+export type BookAt =
+  { friend: string } | { joined: true } | { colour: MixedColor } | { form: FormId } | { things: true };
 
 export type Origin =
   | { land: LandId; page?: number }

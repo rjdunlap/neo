@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BANDS } from '../progress/bands';
 import { defaults, MAX_CREATURES, meetIn, migrate } from '../progress/save';
-import { COLOUR_GOALS, GOALS, isGoalId, WELCOME_GOAL } from './goals';
+import { COLOUR_GOALS, FORM_GOALS, GOALS, isGoalId, WELCOME_GOAL } from './goals';
 import { RECIPES } from '../games/paint-mixer/logic';
 import { MIXED_COLORS } from './world';
 import { beginWelcome, showsContinue, WELCOME_MET_AT } from './welcome';
@@ -64,6 +64,29 @@ describe('the welcome goal', () => {
     // A chosen colour goal survives repair, at any band.
     expect(migrate({ profile: { band: 'prek' }, book: { goal: 'colour:lilac' } }).book.goal).toBe(
       'colour:lilac',
+    );
+  });
+
+  it('has one form goal per blossom, at preschool and pre-K, for a profile with a sprout, until it is grown', () => {
+    expect(FORM_GOALS.map((goal) => goal.id)).toEqual(['form:sprout:sun', 'form:sprout:moon']);
+    expect(FORM_GOALS.map((goal) => goal.path)).toEqual([
+      { game: 'garden-grow', level: 2, flower: 'sunflower' },
+      { game: 'garden-grow', level: 2, flower: 'tulip' },
+    ]);
+    const save = defaults();
+    for (const goal of FORM_GOALS) expect(isGoalId(goal.id)).toBe(true);
+    // No sprout yet: nothing to grow a blossom on.
+    for (const { id } of BANDS) for (const goal of FORM_GOALS) expect(goal.reachable(save, id)).toBe(false);
+    meetIn(save.creatures, 'sprout', 'Pip', 'teal', 'test:sprout', () => 'sprt');
+    for (const { id } of BANDS)
+      for (const goal of FORM_GOALS)
+        expect(goal.reachable(save, id), id).toBe(id === 'preschool' || id === 'prek');
+    // Growing one leaves the other offered, and the grown one is done and no longer offered.
+    save.creatures.forms.push('sprout:sun');
+    expect(FORM_GOALS.map((goal) => goal.done(save))).toEqual([true, false]);
+    expect(FORM_GOALS.map((goal) => goal.reachable(save, 'prek'))).toEqual([false, true]);
+    expect(migrate({ profile: { band: 'prek' }, book: { goal: 'form:sprout:moon' } }).book.goal).toBe(
+      'form:sprout:moon',
     );
   });
 
