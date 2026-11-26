@@ -269,9 +269,82 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }),
       [7, 2, 1],
     );
+    // Level 8, How Many Pieces Fit?: an empty check, two pieces that run long, a return and a snip, tag 1; then an empty answer, the tempting 1¼ (the unit mistake: a miss, the glow and its one hint), and 1½.
+    await launch('ribbon-workshop', 8);
+    const fit = await page.evaluate(async () => {
+      const g = neo.scene.game,
+        out = [];
+      const until = async (fn) => {
+        for (let i = 0; i < 80 && !fn(); i++) await kit.sleep(100);
+      };
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tag]);
+      kit.tapOn(g.trayCards.get(0));
+      await kit.sleep(300);
+      kit.tapOn(g.trayCards.get(1));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.state.bench.map((p) => p.size).join('')]);
+      kit.tapOn(g.benchPieces.get(1));
+      await kit.sleep(300);
+      kit.tapOn(g.scissors);
+      await kit.sleep(300);
+      kit.tapOn(g.trayCards.get(1));
+      await kit.sleep(300);
+      const bit = g.state.tray.find((p) => p.size === 1);
+      kit.tapOn(g.trayCards.get(bit.id));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await until(() => g.bench.tag === 2 && !g.busy);
+      await kit.sleep(500);
+      out.push([g.bench.tag, g.misses, g.answerCards.size, g.scissors.visible]);
+      kit.tapOn(g.bow);
+      await kit.sleep(400);
+      out.push([g.misses, g.hints]);
+      kit.tapOn(g.answerCards.get('1_1/4'));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tally.glow]);
+      kit.tapOn(g.answerCards.get('2'));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+      await kit.sleep(500);
+      out.push([g.misses, g.hints, g.bench.tally.glow]);
+      return out;
+    });
+    assert.deepEqual(
+      fit,
+      [
+        [0, 0, 1],
+        [1, '22'],
+        [2, 1, 4, false],
+        [1, 0],
+        [2, 0, false],
+        [3, 1, true],
+      ],
+      'How Many Pieces Fit? tag 1: empty free, a long miss, a return and a snip; tag 2: an empty answer free, then the unit-mistake miss, a second miss, and the glow with its one hint',
+    );
+    await screenshot('ribbon-workshop-8-portrait');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      kit.tapOn(g.answerCards.get('1_1/2'));
+      await kit.sleep(300);
+      kit.tapOn(g.bow);
+    });
+    await finished('ribbon-workshop');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('ribbon-workshop').history.at(-1);
+        return [r.level, r.misses, r.hints];
+      }),
+      [8, 3, 1],
+    );
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
-      'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), level 7 Ribbon Cases (refused place, misses, glow, the changed order repaired), portrait passed',
+      'Ribbon Workshop: level 1 glow and both gifts, level 3 snip gift, level 6 Whole Switch (misses, glow, same, undo, both tags), level 7 Ribbon Cases (refused place, misses, glow, the changed order repaired), level 8 How Many Pieces Fit? (long miss, snip, unit-mistake miss, glow), portrait passed',
     );
   }
 
@@ -298,6 +371,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           ...(g.trayCards?.values() ?? []),
           ...(g.spoolCards?.values() ?? []),
           ...(g.nameCards?.values() ?? []),
+          ...(g.answerCards?.values() ?? []),
         ];
         const corners = [
           { x0: 0, y0: 0, x1: 115, y1: 210 },
@@ -318,7 +392,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         return [...new Set(out)];
       });
-    for (const level of [1, 6, 7]) {
+    for (const level of [1, 6, 7, 8]) {
       await launch('ribbon-workshop', level);
       await page.waitForFunction(() => neo.view.upright === true && !!neo.scene.game, null, {
         timeout: 8000,
@@ -334,7 +408,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
     log(
-      'Ribbon Workshop upright on a 390 × 844 phone: levels 1, 6 and 7 lay out with no turn prompt, every card and button inside the view and off the corners; the ghost finger finishes each',
+      'Ribbon Workshop upright on a 390 × 844 phone: levels 1, 6, 7 and 8 lay out with no turn prompt, every card and button inside the view and off the corners; the ghost finger finishes each',
     );
   }
 
