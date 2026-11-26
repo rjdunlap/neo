@@ -677,7 +677,7 @@ class WordMonsters implements Game {
       case 'team':
         return this.ctx.instruct('monster.team', { word: q.answer });
       case 'blend':
-        return this.ctx.instruct('monster.blendit');
+        return this.ctx.instruct('monster.blendit', { count: 'three' });
       default:
         return this.ctx.instruct('monster.build', { word: q.answer, sounds: sounded(q.answer) });
     }
