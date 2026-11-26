@@ -7,7 +7,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'song8', 'song9', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        ['song', 'song8', 'song9', 'song11', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -132,6 +132,69 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(r, [0, 0], 'song 9 score');
       log(
         'Song Maker 9: any jellies, the check wakes after three and a full loop, a change puts it back to sleep, sticker passed',
+      );
+    }
+
+    // Song Maker 11, Finish my song: beats 1-2 given, beats 3-4 move-per-beat, check wakes after a full 4-beat loop, 0/0 and tune kept.
+    if (!only || only === 'song' || only === 'song11') {
+      await launch('song-maker', 11, 'Mia', 'preschool');
+      await page.waitForTimeout(600);
+      const r11 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const given = g.beads.filter((b) => b.given);
+        const givenFixed =
+          given.length === 2 &&
+          given.every((b) => b.note.col < 2 && b.eventMode === 'none') &&
+          g.beads.filter((b) => b.note.col < 2 && !b.given).every((b) => b.mute && !b.visible);
+        const col2 = g.beads.filter((b) => b.note.col === 2);
+        const col3 = g.beads.filter((b) => b.note.col === 3);
+        const asleep0 = !g.checkAwake && g.check.eventMode === 'none';
+        kit.tapOn(col2[0]);
+        await kit.sleep(200);
+        kit.tapOn(col2[1]);
+        await kit.sleep(200);
+        const movedInBeat = col2.filter((b) => b.lit).length === 1 && col2[1].lit;
+        kit.tapOn(col3[2]);
+        const justLit = !g.checkAwake;
+        const woke = await kit.until(() => g.checkAwake, 6000);
+        kit.tapOn(col3[2]);
+        const backToSleep = !g.checkAwake;
+        await kit.sleep(250);
+        kit.tapOn(col3[0]);
+        const wokeAgain = await kit.until(() => g.checkAwake, 6000);
+        const size = g.check.radius * 2;
+        kit.tapOn(g.check);
+        return {
+          givenFixed,
+          movedInBeat,
+          asleep0,
+          justLit,
+          woke,
+          backToSleep,
+          wokeAgain,
+          size,
+          misses: g.misses,
+        };
+      });
+      assert.ok(
+        r11.givenFixed &&
+          r11.movedInBeat &&
+          r11.asleep0 &&
+          r11.justLit &&
+          r11.woke &&
+          r11.backToSleep &&
+          r11.wokeAgain,
+        `song 11 check ${JSON.stringify(r11)}`,
+      );
+      assert.ok(r11.size >= 100, 'song 11 check is a whole target');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'song 11 score');
+      log(
+        'Song Maker 11: opening given, move-per-beat ending, check wakes after 4-beat loop, sticker passed',
       );
     }
 
