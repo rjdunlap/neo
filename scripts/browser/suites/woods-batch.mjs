@@ -4865,8 +4865,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     if (!only || only === 'opp')
       // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up, 9 school's Only
-      // the word, 10 Un- words.
-      for (const level of [1, 2, 3, 4, 5, 7, 8, 9, 10, 11].filter((l) => l >= fromLevel)) {
+      // the word, 10 Un- words, 11 Two answers, 12 One pair (lap; nothing to get wrong).
+      for (const level of [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {

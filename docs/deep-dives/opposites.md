@@ -156,7 +156,7 @@ Each is sized for one session. The slices that add a level are built in level or
 8. **Level 10, Un- words** (decision 3 settled 2026-10-23: the printed word is optional reading-lite with the voice always there; device speech for the un- words is a device check, not a blocker). **Built 2026-11-24** (see Slice 8 built below).
 9. **Level 11, Two answers.** **Built 2026-11-25**, [PR #2151](https://github.com/rjdunlap/neo/pull/2151) (see Slice 9 built below).
 10. **Doing words and sound cards** (sketch; needs a design pass).
-11. **Levels below level 1** (the level-order question is settled by the [2026-10-23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules): each entry takes the next free stable ID, placed with `order` and `entryLevels`, no renumbering). *Any tap flips* is built as lap's level 6, *One big card* (2026-11-13, [PR #1617](https://github.com/rjdunlap/neo/pull/1617)); *One pair, again and again* is unbuilt.
+11. **Levels below level 1** (the level-order question is settled by the [2026-10-23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules): each entry takes the next free stable ID, placed with `order` and `entryLevels`, no renumbering). *Any tap flips* is built as lap's level 6, *One big card* (2026-11-13, [PR #1617](https://github.com/rjdunlap/neo/pull/1617)); *One pair, again and again* is built as lap's level 12 (2026-11-26, [PR #2238](https://github.com/rjdunlap/neo/pull/2238); one pair of big/small or hot/cold, the same friend, four flips).
 
 ### Slice 1 built (2026-10-10)
 

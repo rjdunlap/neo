@@ -20,6 +20,8 @@ export interface OppPlan {
   big?: boolean;
   /** Level 9: the asked word is only heard; its picture hides behind a speaker until the first miss reveals it. */
   hidden?: boolean;
+  /** Level 12: one pair only (big and small, or hot and cold), the same animal, the side alternating flip after flip. */
+  one?: boolean;
 }
 
 export const PLANS: OppPlan[] = [
@@ -97,8 +99,21 @@ export const TWO_PLAN: OppPlan = {
   name: 'Two answers: some words have two opposites (light: heavy and dark); find both',
 };
 
+/**
+ * Level 12, lap's gentlest opening (after the ladder, so no saved level moves): four flips of one pair, the same animal each
+ * time, so a one-year-old hears "big… small… big… small". Nothing can be wrong.
+ */
+export const ONE_PAIR_LEVEL = 12;
+export const ONE_PAIR_PLAN: OppPlan = {
+  level: ONE_PAIR_LEVEL,
+  mode: 'switch',
+  one: true,
+  rounds: 4,
+  name: 'One pair, again and again: four flips of big and small (or hot and cold), the same friend each time',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
+  lap: { min: 1, max: ONE_PAIR_LEVEL, order: [ONE_PAIR_LEVEL, BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   // Level 6 is lap's opening, so pre-K steps from 5 straight to 7, then 8.
@@ -108,19 +123,21 @@ export const LEVELS: BandLevels = {
 };
 
 export const planFor = (level: number) =>
-  level === BIG_LEVEL
-    ? BIG_PLAN
-    : level === BETWEEN_LEVEL
-      ? BETWEEN_PLAN
-      : level === ORDER_LEVEL
-        ? ORDER_PLAN
-        : level === WORD_LEVEL
-          ? WORD_PLAN
-          : level === UN_LEVEL
-            ? UN_PLAN
-            : level === TWO_LEVEL
-              ? TWO_PLAN
-              : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === ONE_PAIR_LEVEL
+    ? ONE_PAIR_PLAN
+    : level === BIG_LEVEL
+      ? BIG_PLAN
+      : level === BETWEEN_LEVEL
+        ? BETWEEN_PLAN
+        : level === ORDER_LEVEL
+          ? ORDER_PLAN
+          : level === WORD_LEVEL
+            ? WORD_PLAN
+            : level === UN_LEVEL
+              ? UN_PLAN
+              : level === TWO_LEVEL
+                ? TWO_PLAN
+                : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
@@ -186,6 +203,9 @@ export const TWO_WORDS = Object.keys(TWO) as TwoWord[];
 /** Pictures for level 11's one unrelated card: other families than any of the three words, so it fits neither sense. */
 export const TWO_DECOYS = ['temp', 'sponge', 'plate', 'speed'] as const satisfies readonly Concept[];
 
+/** Level 12's two pairs, picked one per round set: both are shown by a picture that acts or changes plainly. */
+export const ONE_PAIR_CONCEPTS = ['size', 'temp'] as const satisfies readonly Concept[];
+
 export interface Card {
   /** Level 11's cards name their own meaning in `two`; `concept` is then only a placeholder. */
   two?: { w: TwoWord; kind: 'ask' | 'right' | 'same'; i: 0 | 1 };
@@ -244,6 +264,15 @@ function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, ex
 
 export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
+  if (plan.one) {
+    // One pair for the whole level, the same animal throughout; the shown side alternates, so the words alternate too.
+    const concept = rng.pick([...ONE_PAIR_CONCEPTS]);
+    const who = concept === 'size' ? rng.pick([...SUBJECTS.size]) : undefined;
+    const start = rng.int(0, 1);
+    for (let i = 0; i < plan.rounds; i++)
+      out.push({ cards: [{ concept, side: ((start + i) % 2) as 0 | 1, ...(who ? { who } : {}) }] });
+    return out;
+  }
   if (plan.mode === 'two') {
     // Each authored word once, in a seeded order; the picture of the word itself and the unrelated one are seeded too.
     for (const w of rng.shuffle([...TWO_WORDS]).slice(0, plan.rounds)) {

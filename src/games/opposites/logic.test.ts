@@ -12,6 +12,8 @@ import {
   MIDDLES,
   degree,
   BIG_LEVEL,
+  ONE_PAIR_LEVEL,
+  ONE_PAIR_PLAN,
   BIG_PLAN,
   LEVELS,
   planFor,
@@ -42,7 +44,7 @@ describe('Opposites', () => {
   it('level 6 opens lap with one big card: each of the eight lap pairs once, one card per touch', () => {
     expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
     expect(BIG_PLAN).toMatchObject({ level: 6, mode: 'switch', big: true, rounds: 8 });
-    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([ONE_PAIR_LEVEL, BIG_LEVEL, 1]);
     expect(stepLevel(BIG_LEVEL, 1, LEVELS.lap!)).toBe(1);
     // A saved 6 carried into toddler starts toddler at its own level 1; no other band reaches 6.
     expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
@@ -61,6 +63,32 @@ describe('Opposites', () => {
       }
       expect(rounds.map((r) => r.cards[0].concept).sort()).toEqual([...poolFor(1)].sort());
     }
+  });
+
+  it('level 12 opens lap below level 6: four flips of one pair, the same friend, sides alternating', () => {
+    expect(planFor(ONE_PAIR_LEVEL)).toBe(ONE_PAIR_PLAN);
+    expect(levelsInOrder(LEVELS.lap!)[0]).toBe(ONE_PAIR_LEVEL);
+    expect(stepLevel(ONE_PAIR_LEVEL, 1, LEVELS.lap!)).toBe(BIG_LEVEL);
+    expect(landing(ONE_PAIR_LEVEL, LEVELS.toddler!, [BIG_LEVEL, ONE_PAIR_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(ONE_PAIR_LEVEL);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rounds = makeRounds(ONE_PAIR_PLAN, new Rng(seed));
+      expect(rounds).toHaveLength(4);
+      const cards = rounds.map((r) => r.cards[0]);
+      expect(new Set(cards.map((c) => c.concept)).size).toBe(1);
+      expect(new Set(cards.map((c) => c.who)).size).toBe(1);
+      expect(['size', 'temp']).toContain(cards[0].concept);
+      cards.forEach((c, i) => i && expect(c.side).not.toBe(cards[i - 1].side));
+      for (const r of rounds) {
+        expect(r.cards).toHaveLength(1);
+        expect(r.ask).toBeUndefined();
+        expect(cardToTap(ONE_PAIR_PLAN, r, [false], null)).toBe(0);
+      }
+      seen.add(`${cards[0].concept}${cards[0].side}${cards[0].who ?? ''}`);
+    }
+    expect(seen.size).toBeGreaterThan(4);
   });
 
   it('keeps spoken words unique and the lap pool at its original eight pairs', () => {
