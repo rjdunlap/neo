@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   ANSWER_FROM,
+  OPENINGS,
   QUESTIONS,
+  answerFrom,
   answerReady,
   answerTap,
   awakeSpots,
@@ -24,7 +26,7 @@ import {
   wakeTouch,
   type Note,
 } from './logic';
-import { levelsInOrder } from '../../progress/difficulty';
+import { landing, levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 
 describe('Song Maker songs', () => {
@@ -283,14 +285,14 @@ describe('Song Maker songs', () => {
     const plan = songPlan(9);
 
     it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
-      expect(SONG_PLANS).toHaveLength(10);
+      expect(SONG_PLANS).toHaveLength(11);
       expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
       const song = makeSong(plan, new Rng(1));
       expect(song).toEqual({ notes: [], given: [] });
+      expect(levelsInOrder(LEVELS.preschool!)).toEqual([4, 11, 5, 6, 9]);
+      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 7, 9]);
       for (const band of ['preschool', 'prek'] as const) {
-        const order = levelsInOrder(LEVELS[band]!);
-        expect(order.at(-1), band).toBe(9);
-        expect(order).not.toContain(8);
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(8);
       }
       expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
       for (const band of ['lap', 'toddler'] as const) expect(LEVELS[band]!.max).toBeLessThanOrEqual(8);
@@ -391,6 +393,102 @@ describe('Song Maker songs', () => {
     it('speaks its two lines', () => {
       expect(SCRIPT['song.answer']).toBeDefined();
       expect(SCRIPT['song.answer.ready']).toBeDefined();
+    });
+  });
+
+  describe('level 11, Finish my song', () => {
+    const plan = songPlan(11);
+
+    it('is a 4×3 board for preschool and pre-K only, placed after the first copy level, with landing into school at 6', () => {
+      expect(plan).toMatchObject({ mode: 'answer', cols: 4, rows: 3, notes: 2 });
+      expect(answerFrom(plan)).toBe(2);
+      expect(levelsInOrder(LEVELS.preschool!)).toEqual([4, 11, 5, 6, 9]);
+      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 7, 9]);
+      for (const band of ['lap', 'toddler', 'school'] as const)
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(11);
+      expect(landing(11, rangeFor(LEVELS, 'school'), [8, 11])).toBe(6);
+      for (let seed = 1; seed <= 100; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        expect(song.notes).toEqual([]);
+        expect(song.given.map((n) => n.col)).toEqual([0, 1]);
+        for (const n of song.given) expect(n.row >= 0 && n.row < plan.rows).toBe(true);
+      }
+    });
+
+    it('draws distinct two-note openings from the 3-row motif pool and skips the last three', () => {
+      const fromPool = new Set(
+        MOTIFS[3].map((beats) =>
+          beats
+            .filter((r) => r !== null)
+            .slice(0, 2)
+            .join(','),
+        ),
+      );
+      expect(OPENINGS.length).toBe(fromPool.size);
+      expect(new Set(OPENINGS.map((o) => o.join(','))).size).toBe(OPENINGS.length);
+      for (const o of OPENINGS) {
+        expect(o).toHaveLength(2);
+        expect(fromPool.has(o.join(','))).toBe(true);
+        for (const row of o) expect(row >= 0 && row < plan.rows).toBe(true);
+      }
+      const recent: string[] = [];
+      for (let i = 0; i < 40; i++) {
+        const song = makeSong(plan, new Rng(i + 1), recent);
+        expect(recent.slice(-MOTIF_WINDOW)).not.toContain(song.motif);
+        recent.push(song.motif!);
+      }
+    });
+
+    it('keeps one jelly a beat under any taps, and all nine endings wake the check', () => {
+      let lit: Note[] = [];
+      const rng = new Rng(11);
+      for (let i = 0; i < 200; i++) {
+        lit = answerTap(lit, { col: rng.int(2, 3), row: rng.int(0, 2) });
+        expect(new Set(lit.map((n) => n.col)).size).toBe(lit.length);
+      }
+      for (let r2 = 0; r2 < 3; r2++) {
+        for (let r3 = 0; r3 < 3; r3++) {
+          let l: Note[] = [];
+          l = answerTap(l, { col: 2, row: r2 });
+          l = answerTap(l, { col: 3, row: r3 });
+          expect(l).toHaveLength(2);
+          expect(answerReady(plan, l.length, plan.cols)).toBe(true);
+        }
+      }
+      expect(answerReady(plan, 1, 99)).toBe(false);
+      expect(answerReady(plan, 2, plan.cols - 1)).toBe(false);
+    });
+
+    it('has a bot that fills beats 3-4 within the 3 rows and never touches beats 1-2', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        const placed = new Set(song.given.map(key));
+        const mine: Note[] = [];
+        for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
+          expect(n.col).toBeGreaterThanOrEqual(2);
+          expect(n.col).toBeLessThan(4);
+          expect(n.row).toBeGreaterThanOrEqual(0);
+          expect(n.row).toBeLessThan(3);
+          mine.push(n);
+          placed.add(key(n));
+        }
+        expect(mine).toHaveLength(2);
+      }
+    });
+
+    it('places the check in the right margin in landscape, clear of the 4×3 board', () => {
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 1660, h: 768 },
+      ]) {
+        const lay = songLayout(plan, v);
+        expect(lay.x0 + lay.cell * plan.cols + 14).toBeLessThanOrEqual(lay.replay.x - 50);
+      }
+    });
+
+    it('speaks its two lines', () => {
+      expect(SCRIPT['song.finish']).toBeDefined();
+      expect(SCRIPT['song.finish.ready']).toBeDefined();
     });
   });
 });

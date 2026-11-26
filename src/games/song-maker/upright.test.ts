@@ -53,7 +53,9 @@ describe.each(Object.entries(views))('Song Maker upright on %s', (_, v) => {
         expect(cardBottom).toBeLessThan(frames[0].y0);
         expect(lay.card.x - (34 * plan.cols) / 2 - 16).toBeGreaterThanOrEqual(115);
       }
-      if (plan.mode === 'pattern' || plan.mode === 'answer') expect(lay.bars[0].cell).toBe(GIVEN_CELL);
+      if (plan.mode === 'pattern' || (plan.mode === 'answer' && plan.cols > 4))
+        expect(lay.bars[0].cell).toBe(GIVEN_CELL);
+      if (plan.mode === 'answer' && plan.cols === 4) expect(lay.bars).toHaveLength(1);
     });
   });
 
