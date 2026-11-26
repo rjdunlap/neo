@@ -428,9 +428,8 @@ export class HopsLine implements Game {
   private async demonstrate() {
     this.busy = true;
     const q = this.q;
-    this.hints += hintCharge(2, !!this.glowing && this.glowing !== this.back, this.helped);
+    this.hints += hintCharge(2, false, this.helped);
     this.helped = true;
-    const kept = [...this.route];
     // Past the flag, back up to the start first (her hops are past use); otherwise start from where she stands.
     if (this.at > q.target) {
       this.route = [];
@@ -454,7 +453,6 @@ export class HopsLine implements Game {
       }
     await this.ctx.tw.wait(0.3);
     await this.leapTo(from, SMALL);
-    this.route = this.at > q.target ? [] : kept.slice(0, kept.length);
     this.redrawArcs();
     this.glowing = from + 10 <= q.target ? this.big : this.small;
     this.busy = false;

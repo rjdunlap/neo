@@ -969,6 +969,28 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       // Five little hops land on the flag; the next question opens.
       for (let i = 0; i < 5; i++) await tap('small');
       assert.equal((await state()).index, 1, 'landing on the flag opens the next question');
+      // Question 2: two overshoots show the fewest-hops route from the start and leave her at the start with no hops standing.
+      const before = await counts();
+      const second = await page.evaluate(() => {
+        const q = neo.scene.game.q;
+        return { start: q.start, bigs: q.bigs };
+      });
+      for (let i = 0; i < second.bigs; i++) await tap('big');
+      await tap('big');
+      await tap('back');
+      await tap('big');
+      await page.waitForTimeout(300);
+      await idle();
+      assert.deepEqual(
+        await counts(),
+        [before[0] + 2, before[1] + 1],
+        'two overshoots: two misses and one hint',
+      );
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.route.length, neo.scene.game.at]),
+        [0, second.start],
+        'the demonstration leaves her at the start with an empty route',
+      );
       // Answer the rest straight through, by the fewest-hops route.
       for (let guard = 0; guard < 40; guard++) {
         const lily = await page.evaluate(() => {
@@ -982,7 +1004,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         if (await page.evaluate(() => neo.scene.game.finished)) break;
       }
       await finished('frog-hop');
-      assert.deepEqual(await score('frog-hop'), [1, 1]);
+      assert.deepEqual(await score('frog-hop'), [3, 2]);
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Frog Hop 14: big and small lilies, an overshoot, back, a hint, the fewest-hops route, saved score and sticker passed',
