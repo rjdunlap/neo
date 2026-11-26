@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (21), **Tinker Lab** (29) and **Lantern Lake** (24, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (21), **Tinker Lab** (29) and **Lantern Lake** (25, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 195 games; the 169 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 160 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 196 games; the 169 child games are listed below and the 27 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 161 games, and "grown-up" (13 and up) is played by 37 games: the 27 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -285,7 +285,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 26 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 24 in Lantern Lake. All play by touch on the island; 18 are touch-only, and 8 also play with a controller on the couch.
+These 27 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 25 in Lantern Lake. All play by touch on the island; 19 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -321,6 +321,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Harbor Orders](docs/games/harbor-orders.md) | Lantern Lake | 4 | Give two workshops a few mornings to make crates and boats for a waiting order. |
 | [Workshop Detective](docs/games/workshop-detective.md) | Lantern Lake | 1 | mark two notes about a made-up bench lamp against two records, then try the lever setting that tells them apart. |
 | [Outcrop Detective](docs/games/outcrop-detective.md) | Lantern Lake | 2 | swap four rock-event cards until the story builds the same made-up cliff, then say whether the rocks tell that order for sure. |
+| [Count the Ballots](docs/games/count-the-ballots.md) | Lantern Lake | 2 | TODO: the first fun action and learning purpose. |
 
 <!-- end generated -->
 

@@ -13,7 +13,14 @@ export const MAJORITY = Math.floor(VOTERS / 2) + 1;
 export const CANDIDATES = 3;
 
 /** The six rides the seed draws three from. */
-export const RIDES = ['wheel', 'carousel', 'boat swing', 'bumper cars', 'slide tower', 'balloon ride'] as const;
+export const RIDES = [
+  'wheel',
+  'carousel',
+  'boat swing',
+  'bumper cars',
+  'slide tower',
+  'balloon ride',
+] as const;
 
 /** A ballot: the three candidates, best first. */
 export type Ballot = readonly [number, number, number];
@@ -30,10 +37,12 @@ export const PERMS: readonly Ballot[] = [
 export type Deal = readonly number[];
 
 /** A ballot's pick among the candidates still in: its highest-ranked one not out. */
-export const choiceOf = (b: Ballot, out: readonly number[] = []): number => b.find((c) => !out.includes(c)) as number;
+export const choiceOf = (b: Ballot, out: readonly number[] = []): number =>
+  b.find((c) => !out.includes(c)) as number;
 
 /** The ballots a deal holds, in ranking order. */
-export const ballotsOf = (deal: Deal): Ballot[] => deal.flatMap((n, i) => Array.from({ length: n }, () => PERMS[i]));
+export const ballotsOf = (deal: Deal): Ballot[] =>
+  deal.flatMap((n, i) => Array.from({ length: n }, () => PERMS[i]));
 
 /** First-choice counts of the candidates still in (a candidate that is out holds none). */
 export function count(deal: Deal, out: readonly number[] = []): number[] {
@@ -115,7 +124,16 @@ export function makeRound(level: number, rng: Rng): Round {
   const rides = rng.shuffle(RIDES.map((_, i) => i)).slice(0, CANDIDATES) as [number, number, number];
   const hand = rng.shuffle(ballotsOf(deal));
   const r = runoff(deal);
-  return { level: lv, rides, hand, out: r.out, plurality: plurality(deal), winner: r.winner, first: r.first, second: r.second };
+  return {
+    level: lv,
+    rides,
+    hand,
+    out: r.out,
+    plurality: plurality(deal),
+    winner: r.winner,
+    first: r.first,
+    second: r.second,
+  };
 }
 
 /** The pile a ballot belongs in: its first choice before the run-off, its next choice still in after it. */
