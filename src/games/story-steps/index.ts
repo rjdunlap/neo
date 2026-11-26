@@ -12,7 +12,8 @@ import { RepairStory } from './repair';
 import { UntangleStory } from './untangle';
 import { PredictStory } from './predict';
 import { TheaterStoryGame } from './theater';
-import { THEATER_PLANS } from './theater-logic';
+import { THEATER_PLANS, VIEWPOINTS_NAME } from './theater-logic';
+import { ViewpointsGame } from './viewpoints';
 import { PREDICTION_PLAN } from './predictions';
 import { LEVELS, UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
 import { storyCard, storySticker } from './art';
@@ -223,15 +224,17 @@ export const storySteps: GameModule = {
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) =>
-    l >= 12
-      ? THEATER_PLANS[l >= 13 ? 1 : 0].name
-      : l >= 11
-        ? PREDICTION_PLAN.name
-        : l === 10
-          ? UNTANGLE_PLAN.name
-          : l === 9
-            ? REPAIR_PLAN.name
-            : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
+    l >= 14
+      ? VIEWPOINTS_NAME
+      : l >= 12
+        ? THEATER_PLANS[l >= 13 ? 1 : 0].name
+        : l >= 11
+          ? PREDICTION_PLAN.name
+          : l === 10
+            ? UNTANGLE_PLAN.name
+            : l === 9
+              ? REPAIR_PLAN.name
+              : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint,
   touchDemo: true,
   upright: true,
@@ -244,13 +247,15 @@ export const storySteps: GameModule = {
   hubIcon: () => new WigglyIcon(storySticker()),
   sticker: () => storySticker(),
   create: (ctx) =>
-    ctx.level >= 12
-      ? new TheaterStoryGame(ctx)
-      : ctx.level >= 11
-        ? new PredictStory(ctx)
-        : ctx.level === 10
-          ? new UntangleStory(ctx)
-          : ctx.level === 9
-            ? new RepairStory(ctx)
-            : new StorySteps(ctx),
+    ctx.level >= 14
+      ? new ViewpointsGame(ctx)
+      : ctx.level >= 12
+        ? new TheaterStoryGame(ctx)
+        : ctx.level >= 11
+          ? new PredictStory(ctx)
+          : ctx.level === 10
+            ? new UntangleStory(ctx)
+            : ctx.level === 9
+              ? new RepairStory(ctx)
+              : new StorySteps(ctx),
 };

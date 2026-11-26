@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { howToFor } from '../../content/howto';
+import { Rng } from '../../engine/random';
 import { storySteps } from './index';
 import {
   canFinish,
+  canFinishViewpoints,
+  canWatchViewpoints,
+  evaluateViewpoints,
+  nextViewpointsAction,
+  viewpointsRound,
+  VIEWPOINTS_ENDINGS,
+  watchConsequence,
+  type ViewpointsEnding,
   causalChanges,
   completeStory,
   editStory,
@@ -119,7 +128,7 @@ describe('Story Theater', () => {
       }
   });
   it('appends creative levels only to school and scopes the how-to to its actual actions', () => {
-    expect(storySteps.levels('school')).toEqual({ min: 6, max: 13 });
+    expect(storySteps.levels('school')).toEqual({ min: 6, max: 14 });
     for (const level of [12, 13]) {
       expect(storySteps.describeLevel(level)).toContain('Story Theater');
       const card = howToFor(storySteps, level)!;
@@ -128,5 +137,105 @@ describe('Story Theater', () => {
       expect(card.finish).toContain('bow');
     }
     expect(howToFor(storySteps, 11)!.steps.join(' ')).not.toContain('picnic');
+  });
+});
+
+describe('Story Theater level 14: Two Viewpoints', () => {
+  const none = { music: false, quiet: false };
+  const both = { music: true, quiet: true };
+  it('has four endings, exactly two of which keep both wishes', () => {
+    expect(new Set(VIEWPOINTS_ENDINGS).size).toBe(4);
+    expect(VIEWPOINTS_ENDINGS.filter((e) => evaluateViewpoints(e) === 'ok').sort()).toEqual([
+      'soft-spot',
+      'two-spots',
+    ]);
+    expect(evaluateViewpoints('stay-loud')).toBe('unmet-quiet');
+    expect(evaluateViewpoints('turn-off')).toBe('unmet-music');
+  });
+  it('seeds both role assignments with two distinct friends and keeps every ending', () => {
+    const music = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const r = viewpointsRound(new Rng(seed));
+      music.add(r.musicFriend);
+      expect(r.musicFriend).not.toBe(r.quietFriend);
+      expect([...r.order].sort()).toEqual([...VIEWPOINTS_ENDINGS].sort());
+    }
+    expect([...music].sort()).toEqual(['bear', 'bunny']);
+  });
+  it('needs both accounts, a choice and a watched working ending to bow', () => {
+    expect(canWatchViewpoints(none, 'two-spots')).toBe(false);
+    expect(canWatchViewpoints({ music: true, quiet: false }, 'two-spots')).toBe(false);
+    expect(canWatchViewpoints(both, null)).toBe(false);
+    expect(canWatchViewpoints(both, 'stay-loud')).toBe(true);
+    expect(canFinishViewpoints(both, 'two-spots', [])).toBe(false);
+    expect(canFinishViewpoints(both, 'stay-loud', ['stay-loud'])).toBe(false);
+    expect(canFinishViewpoints(none, 'two-spots', ['two-spots'])).toBe(false);
+    expect(canFinishViewpoints(both, 'soft-spot', ['stay-loud', 'soft-spot'])).toBe(true);
+    expect(canFinishViewpoints(both, 'two-spots', ['soft-spot'])).toBe(false);
+  });
+  it('makes a first one-sided look free and a repeated one a miss', () => {
+    for (const e of ['stay-loud', 'turn-off'] as const) {
+      expect(watchConsequence(e, [])).toMatchObject({ accepted: false, miss: false });
+      expect(watchConsequence(e, [e])).toMatchObject({ accepted: false, miss: true });
+      expect(watchConsequence(e, ['two-spots']).miss).toBe(false);
+    }
+    for (const e of ['two-spots', 'soft-spot'] as const)
+      expect(watchConsequence(e, [e])).toEqual({ verdict: 'ok', accepted: true, miss: false });
+  });
+  it('helps in order, never overwrites a working choice, and finishes within five steps', () => {
+    expect(nextViewpointsAction(none, null, [])).toEqual({ kind: 'hear', role: 'music' });
+    expect(nextViewpointsAction({ music: true, quiet: false }, null, [])).toEqual({
+      kind: 'hear',
+      role: 'quiet',
+    });
+    expect(nextViewpointsAction(both, null, [])).toEqual({ kind: 'choose', ending: 'two-spots' });
+    expect(nextViewpointsAction(both, 'turn-off', [])).toEqual({ kind: 'choose', ending: 'two-spots' });
+    expect(nextViewpointsAction(both, 'soft-spot', [])).toEqual({ kind: 'show' });
+    expect(nextViewpointsAction(both, 'soft-spot', ['soft-spot'])).toEqual({ kind: 'finish' });
+    let heard = { ...none };
+    let draft: ViewpointsEnding | null = null;
+    const watched: ViewpointsEnding[] = [];
+    let steps = 0;
+    for (; steps < 8; steps++) {
+      const a = nextViewpointsAction(heard, draft, watched);
+      if (a.kind === 'finish') break;
+      if (a.kind === 'hear') heard = { ...heard, [a.role]: true };
+      else if (a.kind === 'choose') draft = a.ending;
+      else watched.push(draft!);
+    }
+    expect(steps).toBeLessThanOrEqual(5);
+    expect(canFinishViewpoints(heard, draft, watched)).toBe(true);
+  });
+  it('adds level 14 to school only, with its own how-to card and every spoken line', () => {
+    expect(storySteps.levels('school')).toEqual({ min: 6, max: 14 });
+    expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 2 });
+    expect(storySteps.levels('preschool')).toEqual({ min: 2, max: 5 });
+    expect(storySteps.levels('prek')).toEqual({ min: 4, max: 8 });
+    expect(storySteps.describeLevel(14)).toContain('Two Viewpoints');
+    const card = howToFor(storySteps, 14)!;
+    expect(card.steps.join(' ')).toContain('hear what each one says');
+    expect(card.steps.join(' ')).not.toMatch(/drag|weather/i);
+    expect(card.finish).toContain('bow');
+    expect(howToFor(storySteps, 13)!.steps.join(' ')).not.toContain('hear what each');
+    for (const id of [
+      'viewpoints.start',
+      'viewpoints.account.music',
+      'viewpoints.account.quiet',
+      'viewpoints.hearfirst',
+      'viewpoints.pickfirst',
+      ...VIEWPOINTS_ENDINGS.flatMap((e) => [`viewpoints.pick.${e}`, `viewpoints.end.${e}`]),
+      'viewpoints.scene.mishap',
+      'viewpoints.scene.both',
+      'viewpoints.miss',
+      'viewpoints.ready',
+      'viewpoints.help.hear',
+      'viewpoints.help.choose',
+      'viewpoints.help.show',
+      'viewpoints.help.bow',
+      'viewpoints.bowfirst',
+      'viewpoints.undo',
+      'viewpoints.done',
+    ])
+      expect(SCRIPT[id as keyof typeof SCRIPT]?.length, id).toBeGreaterThan(0);
   });
 });
