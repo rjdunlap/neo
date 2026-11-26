@@ -507,7 +507,6 @@ class PegGarden implements Game {
     this.touch.removeAllListeners();
     for (const q of this.seeds) q.drag.destroy();
     this.dropButton.removeAllListeners();
-    this.sea.texture.destroy(true);
   }
 
   /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */

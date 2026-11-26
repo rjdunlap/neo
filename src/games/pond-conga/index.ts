@@ -44,11 +44,17 @@ import {
 } from './logic';
 import { pondTouchLayout, type Slot } from './layout';
 
-const WATER = 0xa9e0f2;
+const WATER = 0x5fb3d9;
 const WATER_LINE = 0x4f9fbf;
-const RIPPLE = 0xd2f1fb;
-const PAD = 0x6cbd54;
-const PAD_LINE = 0x3f8a36;
+const RIPPLE = 0xb6e3f3;
+const PAD = 0x3fa05a;
+const PAD_LINE = 0x2c7a43;
+/** The lily pad's veins, lighter than the pad (the paper look draws them as plain hairlines). */
+const PAD_VEIN = 0x7ccb7a;
+/** The grassy bank around the water. */
+const BANK = 0x7dbe5a;
+/** The pool of shade under a pile of food, so a small warm pickup stands out on the water (the art test's corn fix). */
+const FOOD_SHADE = 0x2e6f99;
 const OATS = 0xf2e2bf;
 const OATS_LINE = 0xb89a62;
 const REED = 0x5c9a3c;
@@ -131,6 +137,7 @@ function foodArt(kind: Food, size: number): Container {
   const c = new Container();
   const g = new Graphics(),
     s = size;
+  g.ellipse(0, 0.12 * s, 0.42 * s, 0.22 * s).fill({ color: FOOD_SHADE, alpha: 0.35 });
   if (kind === 'peas') {
     for (const [x, y] of [
       [-0.15, 0.1],
@@ -149,7 +156,7 @@ function foodArt(kind: Food, size: number): Container {
       [-0.14, 0.13],
       [0.14, 0.13],
     ]) {
-      g.roundRect((x - 0.12) * s, (y - 0.11) * s, 0.24 * s, 0.22 * s, 0.08 * s)
+      g.roundRect((x - 0.14) * s, (y - 0.13) * s, 0.28 * s, 0.26 * s, 0.09 * s)
         .fill(swatch.yellow.fill)
         .stroke({ width: 3, color: swatch.yellow.line });
       g.ellipse((x - 0.04) * s, (y - 0.04) * s, 0.05 * s, 0.03 * s).fill({ color: 0xffffff, alpha: 0.6 });
@@ -220,7 +227,7 @@ function padArt(size: number, turn: number, flower: boolean): Container {
     .stroke({ width: 4, color: PAD_LINE });
   g.moveTo(0, 0)
     .lineTo(Math.cos(turn + Math.PI) * r * 0.6, Math.sin(turn + Math.PI) * r * 0.6)
-    .stroke({ width: 2, color: PAD_LINE, alpha: 0.6 });
+    .stroke({ width: 3, color: PAD_VEIN, cap: 'round' });
   if (flower) {
     for (let k = 0; k < 5; k++)
       g.circle(Math.cos(k * 1.2566) * size * 0.1, Math.sin(k * 1.2566) * size * 0.1, size * 0.07).fill(
@@ -443,11 +450,8 @@ class PondConga implements Game {
     this.buttonText.removeChildren().forEach((c) => c.destroy());
     this.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
-      const sw = s.kind === 'hint' ? swatch.blue : swatch.teal;
-      g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
-        .fill(sw.light)
-        .stroke({ width: 3, color: sw.line });
+      // The art test's two paper buttons: a warm yellow Hint and a sky-blue Start over.
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(s.kind === 'hint' ? 0xffc43d : 0x8ecae6);
       const t = label(s.kind === 'hint' ? 'Hint ◇' : 'Start over ↺', 24, ink);
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 + down);
@@ -467,6 +471,8 @@ class PondConga implements Game {
       h = p.rows * cell;
     this.water
       .clear()
+      .roundRect(-24, -24, w + 48, h + 48, 32)
+      .fill(BANK)
       .roundRect(-14, -14, w + 28, h + 28, 26)
       .fill(WATER)
       .stroke({ width: 6, color: WATER_LINE });

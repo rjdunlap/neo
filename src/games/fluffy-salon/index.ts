@@ -543,7 +543,6 @@ class FluffySalon implements Game {
   destroy() {
     this.cancel();
     this.touch.removeAllListeners();
-    this.wall.texture.destroy(true);
   }
 
   private setHair(start: { length: number; curl: number; color: ColorName }) {

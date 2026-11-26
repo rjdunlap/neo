@@ -227,7 +227,7 @@ export class FinaleStage extends Container implements Updatable {
     if (this.dead) return;
     this.dead = true;
     this.tw.clear();
-    this.sky.texture.destroy(true);
+    // The sky texture is shared (gradientTexture caches each pair), so it stays.
     super.destroy({ children: true });
   }
 }
