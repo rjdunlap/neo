@@ -22,11 +22,12 @@ export const PLANS = [
   { letters: 'adg', name: 'Magic c: a, d and g start with a little c, then a line' },
   { letters: 'uielkyj', name: 'Lines and hooks: u, i, e, l, k, y and j in the four-line frame' },
   { letters: 'prnmhb', name: 'Down, up and over: p, r, n, m, h and b in the four-line frame' },
+  { letters: 'fqxz', name: 'The last four: f, q, x and z in the four-line frame' },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
   prek: { min: 3, max: 10 },
-  school: { min: 7, max: 13 },
+  school: { min: 7, max: 14 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
@@ -46,10 +47,13 @@ export const HOOKS_LEVEL = 12;
 /** Level 13 traces one of p r n m h b: down a stem, back up it, then over in a hump or a bowl. */
 export const OVER_LEVEL = 13;
 
+/** Level 14 traces one of f q x z: a hooked stem and bar, a stem with a tail turning right, a cross, a zigzag. */
+export const LAST_LEVEL = 14;
+
 /** Whether the round's letters are little letters, traced in the frame. */
 export const inFrame = (level: number): boolean => {
   const l = trailLevel(level);
-  return l === LITTLE_LEVEL || l === MAGIC_LEVEL || l === HOOKS_LEVEL || l === OVER_LEVEL;
+  return l === LITTLE_LEVEL || l === MAGIC_LEVEL || l === HOOKS_LEVEL || l === OVER_LEVEL || l === LAST_LEVEL;
 };
 
 /** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */

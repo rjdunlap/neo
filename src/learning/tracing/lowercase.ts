@@ -64,7 +64,7 @@ const bowl = (x: number): Point[] => arc(x + 0.12, cy, 0.12, r, 180, 540, 18);
 
 /**
  * Little letters in stroke order, in the frame above. The first tranche is level 10's group (Handwriting Without
- * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; level 13 adds p r n m h b (down, back up and over); level 14 adds its own. Every letter starts at the top of
+ * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; level 13 adds p r n m h b (down, back up and over); level 14 adds f q x z (the last four). Every letter starts at the top of
  * its first stroke: c, o and s on the middle line's curve, v and w on the middle line, t on the top line.
  */
 export const LOWER: Record<string, readonly Stroke[]> = {
@@ -212,6 +212,43 @@ export const LOWER: Record<string, readonly Stroke[]> = {
   p: [[...stemAndBack(0.36, FRAME.mid, FRAME.bottom, cy), ...bowl(0.36).slice(1)]],
   // A tall stem from the top line to the base line, back up to the middle of the x-height, then a bowl on its right.
   b: [[...stemAndBack(0.36, FRAME.top, FRAME.base, cy), ...bowl(0.36).slice(1)]],
+  // A hook over the top that comes down into a tall stem to the base line, then a short bar across the middle line.
+  f: [
+    [...arc(0.56, FRAME.top + 0.11, 0.11, 0.11, -20, -180, 8), [0.45, FRAME.base]],
+    [
+      [0.33, FRAME.mid],
+      [0.59, FRAME.mid],
+    ],
+  ],
+  // The magic c, then a line down past the base line to the bottom line, its tail turning right (a g's turns left).
+  q: [
+    magicC(),
+    [
+      [STEM_X, FRAME.mid],
+      [STEM_X, FRAME.bottom - 0.1],
+      ...arc(STEM_X + 0.1, FRAME.bottom - 0.1, 0.1, 0.1, 180, 90, 6).slice(1),
+    ],
+  ],
+  // Two slides that cross: down to the right, then down to the left, each from the middle line to the base line.
+  x: [
+    [
+      [0.38, FRAME.mid],
+      [0.62, FRAME.base],
+    ],
+    [
+      [0.62, FRAME.mid],
+      [0.38, FRAME.base],
+    ],
+  ],
+  // Across the middle line, slide down to the left, then across the base line: one stroke.
+  z: [
+    [
+      [0.38, FRAME.mid],
+      [0.62, FRAME.mid],
+      [0.38, FRAME.base],
+      [0.62, FRAME.base],
+    ],
+  ],
   // The one that starts in the middle: a line across the middle of the round, then up and round anticlockwise.
   e: [[[0.5 - r * 1.05, cy], [0.5 + r * 1.05, cy], ...arc(0.5, cy, r * 1.05, r, 0, -300, 16).slice(1)]],
 };
