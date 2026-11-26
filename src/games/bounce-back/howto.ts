@@ -44,7 +44,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 12,
+      to: 12,
       text: 'Touch anywhere on the table: the huge paddle goes to the ball by itself, and a touch hurries it there.',
+    },
+    {
+      from: 13,
+      text: 'Just watch the slow ball roll back and forth: the paddle goes to it by itself. Touch the ball and the pet cheers.',
     },
   ],
   finish: [

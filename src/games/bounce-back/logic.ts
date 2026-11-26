@@ -5,6 +5,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * There's no score: bounces are counted together toward a goal.
  */
 export type BounceMode =
+  | 'follow'
   | 'pat'
   | 'solo'
   | 'rally'
@@ -90,13 +91,26 @@ export const PLANS: BouncePlan[] = [
     paddle: 340,
     name: 'Touch anywhere and the huge paddle goes to the ball',
   },
+  {
+    mode: 'follow',
+    goal: 3,
+    speed: 140,
+    paddle: 360,
+    name: 'Watch the ball roll back and forth, and touch it to make the pet cheer',
+  },
 ];
 
 /** The lap entry level: a stable ID above the ladder that the lap band plays first (`order`), so no saved level is renumbered. */
 export const PAT_LEVEL = 12;
 
+/** How near the ball (logical units) a touch counts as touching it on the watch level: a big, forgiving target. */
+export const FOLLOW_TOUCH_R = 130;
+
+/** The lap watch-and-touch level, played before the pat level: the ball rolls by itself and she only has to look and touch it. */
+export const FOLLOW_LEVEL = 13;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: PAT_LEVEL, order: [PAT_LEVEL, 1] },
+  lap: { min: 1, max: FOLLOW_LEVEL, order: [FOLLOW_LEVEL, PAT_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
@@ -141,10 +155,13 @@ export const zoneOf = (y: number, top: number, bottom: number): number =>
   Math.max(0, Math.min(ZONES.length - 1, Math.floor(((y - top) / (bottom - top)) * ZONES.length)));
 
 /**
- * Whether a ball past her paddle counts as a miss (with a boing, a "Whoops!" and the hint's count). On the lap level it never does:
+ * Whether a ball past her paddle counts as a miss (with a boing, a "Whoops!" and the hint's count). On the lap levels it never does:
  * the ball just comes back, so a lap player cannot be wrong.
  */
-export const countsMiss = (m: BounceMode) => m !== 'pat';
+export const countsMiss = (m: BounceMode) => !isLapMode(m);
+
+/** The two lap levels, where her paddle goes to the ball on its own and nothing is ever a miss. */
+export const isLapMode = (m: BounceMode) => m === 'pat' || m === 'follow';
 
 /** Her paddle's top speed toward the ball on the lap level: it always drifts to help, and a touch anywhere hurries it there. */
 export const patPaddleSpeed = (touching: boolean) => (touching ? 1400 : 260);

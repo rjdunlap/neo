@@ -1,6 +1,8 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.bounce-back': ['Bounce back!'],
+  'bounce.follow': ['Watch the ball go! Touch it, and {pet} will cheer!'],
+  'bounce.cheer': ['Yay!', 'You got it!'],
   'bounce.pat': ['Touch anywhere, and your paddle bounces the ball to {pet}!'],
   'bounce.solo': ['Slide your paddle and bounce the ball back to {pet}!'],
   'bounce.rally': ['Keep it bouncing with {pet}! Let us bounce it {n} times.'],
