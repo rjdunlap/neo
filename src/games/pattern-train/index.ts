@@ -214,7 +214,11 @@ class PatternTrain implements Game {
                   : this.plan.odd === 'swap'
                     ? 'pattern.swap'
                     : 'pattern.start',
-      this.hidden !== undefined ? { n: this.hidden } : undefined,
+      this.hidden !== undefined
+        ? { n: this.hidden }
+        : this.plan.stairs
+          ? { name: this.ctx.childName }
+          : undefined,
     );
     if (this.plan.kind === 'bell') void this.ctx.tw.wait(1.5).then(() => this.playPattern());
   }

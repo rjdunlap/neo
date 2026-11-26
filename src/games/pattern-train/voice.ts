@@ -11,7 +11,7 @@ export const VOICE = {
   'pattern.colorRight': ['The color is right! Now look at the shape.'],
   'pattern.shapeRight': ['The shape is right! Now look at the color.'],
   'pattern.number': ['Count the numbered cars. What number belongs in the glowing car?'],
-  'pattern.stairs': ['Each car has one more counter. How many counters go in the glowing car?'],
+  'pattern.stairs': ['Each car has one more counter, {name}. How many counters go in the glowing car?'],
   'pattern.sound': [
     'Listen to the bells on the train. Which bell comes next? Tap a bell to listen, then tap the arrow.',
   ],

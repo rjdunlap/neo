@@ -541,6 +541,6 @@ describe('Pattern Train Stairs (level 18)', () => {
     expect(said.vars.list).toBe(sequence.join(', '));
     expect(SCRIPT['pattern.whyStack'][0]).toContain('{list}');
     expect(SCRIPT['pattern.count'][0]).toContain('{n}');
-    expect(SCRIPT['pattern.stairs']).toBeDefined();
+    expect(SCRIPT['pattern.stairs'][0]).toContain('{name}');
   });
 });
