@@ -42,6 +42,12 @@ import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 
 /**
+ * A preview of the paper look's pets (docs/ART-STYLE.md): `?paperpets` in the address draws every pet with its code-drawn
+ * rig, which the paper pass turns into paper. Those rigs have no wearables, colours or blossoms yet, so it is a preview only.
+ */
+const PAPER_PETS = typeof location !== 'undefined' && new URLSearchParams(location.search).has('paperpets');
+
+/**
  * RW05 slice 1 (docs/rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices): the friend who travels
  * with her, drawn by its species' illustrated rig (RW02b, `src/art/creatures/<species>-illustrated.ts`). The shell, the
  * guide and the island build it with `makeCompanion()`. Slice 2 gives it the surface the large-pet games need
@@ -328,7 +334,7 @@ export class Companion extends Container implements CompanionRig {
       look: { color: PetColor; worn?: readonly WearableId[]; form?: FormId | null };
       id?: string | null;
     },
-    art: ArtSet | undefined = loaded.sets[who.species],
+    art: ArtSet | undefined = PAPER_PETS ? undefined : loaded.sets[who.species],
     leaveOff: readonly WearSlot[] = [],
   ) {
     super();
