@@ -10,6 +10,14 @@ import {
   floats,
   floatsIn,
   HOLD_LEVEL,
+  RAFT_HOLD,
+  RAFT_ROUNDS,
+  RAFT_SLOTS,
+  raftAccepted,
+  raftFix,
+  raftLoad,
+  raftRoundFor,
+  raftVerdict,
   SALT_DEPTHS,
   saltRoundFor,
   PAIRS,
@@ -27,7 +35,7 @@ import {
 } from './logic';
 
 const THING_PLANS = Object.values(SINK_PLANS).filter(
-  (p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt',
+  (p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt' && p.mode !== 'raft',
 );
 
 describe('Sink or Float', () => {
@@ -107,14 +115,14 @@ describe('Sink or Float', () => {
     }
   });
 
-  it('keys the plans by level ID: 7 is the shape experiment, 8 stays reserved for Garden Raft, 9 is Big and small', () => {
-    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9, 10, 12]);
+  it('keys the plans by level ID: 7 is the shape experiment, 8 is Garden Raft, 9 is Big and small, and 11 stays reserved', () => {
+    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
     expect(sinkPlan(7).mode).toBe('shape');
     expect(sinkPlan(9).mode).toBe('pair');
     expect(sinkPlan(10).mode).toBe('salt');
-    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair|salt/);
+    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair|salt|raft/);
     // An unbuilt or out-of-range ID falls to the nearest built one below it.
-    expect(sinkPlan(8)).toBe(sinkPlan(7));
+    expect(sinkPlan(8).mode).toBe('raft');
     expect(sinkPlan(11)).toBe(sinkPlan(10));
     expect(sinkPlan(99)).toBe(sinkPlan(12));
     expect(sinkPlan(0)).toBe(sinkPlan(1));
@@ -145,16 +153,17 @@ describe('Sink or Float', () => {
     }
   });
 
-  it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and never plays the reserved 8', () => {
+  it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and Garden Raft between 7 and 10, never at younger bands', () => {
     expect(levelsInOrder(rangeFor(SINK_LEVELS, 'prek'))).toEqual([4, 5, 9, 6]);
-    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 10]);
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 8, 10]);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(10);
     for (const band of ['lap', 'toddler', 'preschool'] as const)
       expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(9);
     for (const band of Object.keys(SINK_LEVELS) as (keyof typeof SINK_LEVELS)[]) {
       const order = levelsInOrder(rangeFor(SINK_LEVELS, band));
-      expect(order, band).not.toContain(8);
+      if (band !== 'school') expect(order, band).not.toContain(8);
+      expect(order, band).not.toContain(11);
       for (const id of order) expect(SINK_IDS, band).toContain(id);
     }
   });
@@ -259,5 +268,124 @@ describe('Sink or Float', () => {
       'hint-duck',
     ];
     for (const id of ids) expect(SCRIPT[`sink.salt-${id}` as LineId], id).toBeDefined();
+  });
+
+  describe('Garden Raft (level 8)', () => {
+    const slots = (...n: number[]) => new Set(n);
+    const subsets = (max: number) => {
+      const out: number[][] = [];
+      for (let mask = 0; mask < 1 << RAFT_SLOTS; mask++) {
+        const s = Array.from({ length: RAFT_SLOTS }, (_, i) => i).filter((i) => mask & (1 << i));
+        if (s.length <= max) out.push(s);
+      }
+      return out;
+    };
+
+    it('checks what the floats hold before the balance, so one fault is reported at a time', () => {
+      const herbs = RAFT_ROUNDS[0].pots;
+      expect(raftVerdict(herbs, slots(1)).kind).toBe('low');
+      expect(raftVerdict(herbs, slots(0, 1)).kind).toBe('tip');
+      expect(raftVerdict(herbs, slots(0, 5)).kind).toBe('ok');
+      expect(RAFT_HOLD).toBe(2);
+    });
+
+    it('tips toward the heavy side, on the outer float edge as well, and a lone float always tips', () => {
+      const tubs = RAFT_ROUNDS[0].pots;
+      expect(raftVerdict(tubs, slots(0, 1))).toEqual({ kind: 'tip', side: 'right' });
+      expect(raftVerdict(tubs, slots(4, 5))).toEqual({ kind: 'tip', side: 'left' });
+      // The balance point is 2.5: exactly on a float's slot falls, strictly between stands.
+      expect(
+        raftVerdict(
+          [
+            { slot: 1, stones: 1 },
+            { slot: 3, stones: 1 },
+          ],
+          slots(1, 5),
+        ).kind,
+      ).toBe('ok');
+      expect(
+        raftVerdict(
+          [
+            { slot: 1, stones: 1 },
+            { slot: 3, stones: 1 },
+          ],
+          slots(2, 5),
+        ).kind,
+      ).toBe('tip');
+      expect(raftVerdict([{ slot: 2, stones: 2 }], slots(2)).kind).toBe('tip');
+    });
+
+    it('gives the mirror of any float set the mirrored verdict', () => {
+      const flip = (n: number) => RAFT_SLOTS - 1 - n;
+      const side = { left: 'right', right: 'left' } as const;
+      for (const r of RAFT_ROUNDS) {
+        const mirrored = r.pots.map((p) => ({ ...p, slot: flip(p.slot) }));
+        for (const f of subsets(RAFT_SLOTS)) {
+          const a = raftVerdict(r.pots, new Set(f));
+          const b = raftVerdict(mirrored, new Set(f.map(flip)));
+          expect(b.kind).toBe(a.kind);
+          if (a.kind === 'tip' && b.kind === 'tip') expect(b.side).toBe(side[a.side]);
+        }
+      }
+    });
+
+    it('has the counted accepted designs and smallest sizes for the three pallets, never with the floats all at one end', () => {
+      const counts = RAFT_ROUNDS.map((r) => raftAccepted(r.pots, r.floats));
+      expect(counts.map((c) => c.length)).toEqual([42, 29, 29]);
+      expect(counts.map((c) => Math.min(...c.map((d) => d.length)))).toEqual([2, 3, 3]);
+      expect(raftVerdict(RAFT_ROUNDS[0].pots, slots(0, 1)).kind).toBe('tip');
+      expect(raftVerdict(RAFT_ROUNDS[1].pots, slots(0, 1, 2)).kind).toBe('tip');
+      expect(raftVerdict(RAFT_ROUNDS[2].pots, slots(...RAFT_ROUNDS[2].start)).kind).toBe('low');
+    });
+
+    it('starts round 3 level for the herbs alone and low once the pumpkin arrives', () => {
+      const r = RAFT_ROUNDS[2];
+      expect(r.late).not.toBeNull();
+      expect(raftVerdict(raftLoad(r, false), new Set(r.start)).kind).toBe('ok');
+      expect(raftVerdict(raftLoad(r, true), new Set(r.start)).kind).toBe('low');
+      expect(raftLoad(RAFT_ROUNDS[0], false)).toBe(RAFT_ROUNDS[0].pots);
+    });
+
+    it('fixes every placement that fails with a design in the tray, and leaves a crossing raft alone', () => {
+      for (const r of RAFT_ROUNDS) {
+        for (const placed of subsets(r.floats)) {
+          const fix = raftFix(r.pots, placed, r.floats);
+          expect(raftVerdict(r.pots, new Set(fix.target)).kind).toBe('ok');
+          expect(fix.target.length).toBeLessThanOrEqual(r.floats);
+          if (raftVerdict(r.pots, new Set(placed)).kind === 'ok') {
+            expect(fix).toEqual({ target: placed, add: [], remove: [] });
+          } else expect(fix.add.length + fix.remove.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('mirrors rounds by the seed, in both directions, with the same verdicts and a late pot that is one of the pots', () => {
+      const sides = new Set<number>();
+      for (let seed = 1; seed <= 40; seed++) {
+        const rounds = raftRoundFor(sinkPlan(8), new Rng(seed));
+        expect(rounds).toHaveLength(3);
+        for (const [i, r] of rounds.entries()) {
+          const base = RAFT_ROUNDS[i];
+          expect(raftAccepted(r.pots, r.floats).length).toBe(raftAccepted(base.pots, base.floats).length);
+          if (r.late) expect(r.pots).toContainEqual(r.late);
+          expect(raftVerdict(raftLoad(r, false), new Set(r.start)).kind).toBe(i === 2 ? 'ok' : 'low');
+        }
+        sides.add(rounds[2].start[0]);
+      }
+      expect(sides).toEqual(new Set([0, 5]));
+    });
+
+    it('has every raft line in the voice script', () => {
+      for (const id of [
+        'sink.raft-ask',
+        'sink.raft-hint',
+        'sink.raft-ok',
+        'sink.raft-low',
+        'sink.raft-tip-left',
+        'sink.raft-tip-right',
+        'sink.raft-next',
+      ] as const)
+        expect(SCRIPT[id as LineId], id).toBeDefined();
+    });
   });
 });

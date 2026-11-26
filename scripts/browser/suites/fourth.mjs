@@ -7,7 +7,19 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'song8', 'song9', 'song11', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        [
+          'song',
+          'song8',
+          'song9',
+          'song11',
+          'puzzle',
+          'weather',
+          'sink',
+          'sink7',
+          'sink-fresh',
+          'sink8',
+          'sink10',
+        ],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -672,6 +684,102 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         );
         log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
       }
+
+    // Sink or Float 8, Garden Raft (FOURTH_ONLY=sink8 alone): round 1 with two floats at one end twice (it tips: no miss, then
+    // the glow and one hint), the fix, round 2, and round 3's revision of the raft that already crossed, ending at the sticker.
+    // Portrait with a tipped raft, then landscape; the controller ring through direct control() calls on round 3.
+    if (only === 'sink8') {
+      await launch('sink-float', 8);
+      await page.waitForTimeout(700);
+      const slotTap = (i) =>
+        page.evaluate(async (i) => {
+          const g = neo.scene.game;
+          const a = g.areas[i].hitArea;
+          const p = g.areas[i].toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 });
+          kit.tap(p.x, p.y);
+          await kit.sleep(250);
+        }, i);
+      const ready = () =>
+        page.waitForFunction(() => !neo.scene.game.busy && !neo.scene.game.finished, null, {
+          timeout: 60000,
+        });
+      const launchTap = () =>
+        page.evaluate(async () => {
+          kit.tapOn(neo.scene.game.launchButton);
+          await kit.sleep(300);
+        });
+      await ready();
+      const g1 = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return { start: g.rounds[0].pots.map((p) => p.slot), right: g.rounds[0].pots[0].slot <= 2 };
+      });
+      // The two floats go under the pots' lighter end: the whole row tips.
+      const heavy = g1.start.includes(1) ? [0, 1] : [4, 5];
+      for (const i of heavy) await slotTap(i);
+      await launchTap();
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(900);
+      await screenshot('sink-float-8-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await screenshot('sink-float-8-landscape');
+      await ready();
+      let st = await page.evaluate(() => ({ h: neo.scene.game.hints, m: neo.scene.game.misses }));
+      assert.deepEqual(st, { h: 0, m: 0 }, 'one failed launch is neither a miss nor a hint');
+      await launchTap();
+      await ready();
+      st = await page.evaluate(() => ({
+        h: neo.scene.game.hints,
+        m: neo.scene.game.misses,
+        glow: neo.scene.game.glowSlot,
+      }));
+      assert.equal(st.h, 1, 'two launches that tip the same way bring one hint');
+      assert.notEqual(st.glow, null, 'the hint glows a slot');
+      assert.equal(st.m, 0, 'a failed launch is never a miss');
+      // Rounds 1 to 3 by the bot's design (raftFix), pressing each stop through the controller ring in round 3.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { idle } = await import('/src/engine/controller.ts');
+        const press = (f) => {
+          const c = idle();
+          f(c.players[0]);
+          g.control(c, 0.016);
+        };
+        for (let guard = 0; guard < 400 && !g.finished; guard++) {
+          if (g.busy) {
+            await kit.sleep(150);
+            continue;
+          }
+          const t = g.autotouch();
+          if (!t) {
+            await kit.sleep(100);
+            continue;
+          }
+          if (g.round === 2 && g.arrived) {
+            // The controller ring: walk to the wanted stop and press it.
+            const want = t.tap.on === g.launchButton ? 6 : g.areas.indexOf(t.tap.on);
+            while (g.pick !== want) press((p) => (p.direction = want > g.pick ? 0 : 2));
+            press((p) => (p.action = true));
+          } else if (t.tap.on === g.launchButton) kit.tapOn(t.tap.on);
+          else {
+            const a = t.tap.on.hitArea;
+            const p = t.tap.on.toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 });
+            kit.tap(p.x, p.y);
+          }
+          await kit.sleep(400);
+        }
+      });
+      await finished('sink-float');
+      const score = await page.evaluate(() => {
+        const r = kit.store.stats('sink-float').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(score, [0, 1], 'sink 8 score');
+      log(
+        'Sink or Float 8: a tipped raft twice, the glow, the fix, three pallets with a revision and the ring, to the sticker passed',
+      );
+      return;
+    }
 
     // Sink or Float 10, Salty or fresh (FOURTH_ONLY=sink10 alone): part 1 watched, then a tank tap before the eggs settle is
     // ignored, two wrong tanks on the first egg question bring the glow (one hint), the other questions answered right, the
