@@ -95,4 +95,4 @@ export function drawSprout(x: Ctx, ex: Expression) {
   mouth(x, { x: A.mouth.x, y: A.mouth.y + 2 }, ex, 17);
 }
 
-export const sproutPaperArt = () => paperArtSet(A.width, A.height, drawSprout);
+export default () => paperArtSet(A.width, A.height, drawSprout);
