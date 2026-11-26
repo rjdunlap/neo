@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–6 |
+| school | 3–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 4 | A ten is a different mark: press big marks for tens and small marks for ones (two carts of 12–29) |
 | 5 | Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29) |
 | 6 | Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29) |
+| 7 | Say it with pictures: pick picture-signs whose names sound like the words (two sentences) |
 
 <!-- end generated -->
 

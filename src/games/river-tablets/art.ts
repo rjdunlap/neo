@@ -1,9 +1,9 @@
-/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers; for level 6 the pair of tablets, "this one", neither and can't tell. */
+/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers; for level 6 the pair of tablets, "this one", neither and can't tell; for level 7 the picture-signs, the tablet's cells, Read and the sentence bar. */
 import { Container, Graphics, Text } from 'pixi.js';
 import { sheepArt } from '../../art/animals';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import { CELL, type Kind } from './logic';
+import { CELL, type Kind, type SignId } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const CLAY = { fill: 0xd9a36e, line: 0x9c6b3c, dark: 0xb9834f, light: 0xf0cfa4 };
@@ -682,4 +682,272 @@ export function cantTellArt(size: number, glow = false): Container {
   c.addChild(g);
   c.eventMode = 'none';
   return c;
+}
+
+// ——— Level 7: picture-signs ———
+
+const BROWN = 0x8a5a35;
+const LEAF = 0x6fae5a;
+const BLUE = 0x4fa3c7;
+
+/** One picture-sign's drawing, centred on (0, 0) within `s` × `s`; plain shapes in clay-friendly colours. */
+function signPicture(id: SignId, s: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const k = s / 100;
+  const L = (w = 4) => line(ink, w * k);
+  switch (id) {
+    case 'eye':
+      g.ellipse(0, 0, 44 * k, 28 * k)
+        .fill(0xffffff)
+        .stroke(L());
+      g.circle(0, 0, 17 * k)
+        .fill(swatch.blue.fill)
+        .stroke(L(3));
+      g.circle(0, 0, 7 * k).fill(ink);
+      break;
+    case 'sea':
+      for (const y of [-22, 0, 22])
+        g.moveTo(-42 * k, y * k)
+          .quadraticCurveTo(-21 * k, (y - 16) * k, 0, y * k)
+          .quadraticCurveTo(21 * k, (y + 16) * k, 42 * k, y * k)
+          .stroke(line(BLUE, 8 * k));
+      break;
+    case 'deer':
+      for (const d of [-1, 1]) {
+        g.moveTo(d * 14 * k, -14 * k)
+          .lineTo(d * 30 * k, -42 * k)
+          .stroke(L(5));
+        g.moveTo(d * 24 * k, -30 * k)
+          .lineTo(d * 40 * k, -30 * k)
+          .stroke(L(5));
+        g.ellipse(d * 30 * k, -4 * k, 12 * k, 7 * k)
+          .fill(BROWN)
+          .stroke(L(3));
+      }
+      g.ellipse(0, 8 * k, 24 * k, 30 * k)
+        .fill(0xc08a55)
+        .stroke(L());
+      g.circle(-9 * k, 2 * k, 3.5 * k).fill(ink);
+      g.circle(9 * k, 2 * k, 3.5 * k).fill(ink);
+      g.ellipse(0, 22 * k, 7 * k, 5 * k).fill(ink);
+      break;
+    case 'sun':
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4;
+        g.moveTo(Math.cos(a) * 28 * k, Math.sin(a) * 28 * k)
+          .lineTo(Math.cos(a) * 44 * k, Math.sin(a) * 44 * k)
+          .stroke(line(swatch.orange.fill, 7 * k));
+      }
+      g.circle(0, 0, 25 * k)
+        .fill(swatch.yellow.fill)
+        .stroke(L());
+      break;
+    case 'wood':
+      g.roundRect(-40 * k, -22 * k, 74 * k, 44 * k, 8 * k)
+        .fill(0xc08a55)
+        .stroke(L());
+      g.ellipse(34 * k, 0, 12 * k, 22 * k)
+        .fill(0xe3b886)
+        .stroke(L());
+      g.ellipse(34 * k, 0, 5 * k, 10 * k).stroke(L(3));
+      break;
+    case 'knot':
+      g.ellipse(-12 * k, 0, 26 * k, 17 * k).stroke(line(BROWN, 9 * k));
+      g.ellipse(12 * k, 0, 26 * k, 17 * k).stroke(line(BROWN, 9 * k));
+      g.moveTo(-40 * k, 18 * k)
+        .lineTo(-52 * k, 36 * k)
+        .stroke(line(BROWN, 7 * k));
+      g.moveTo(40 * k, 18 * k)
+        .lineTo(52 * k, 36 * k)
+        .stroke(line(BROWN, 7 * k));
+      break;
+    case 'bee':
+      g.ellipse(-12 * k, -20 * k, 14 * k, 20 * k)
+        .fill({ color: 0xffffff, alpha: 0.9 })
+        .stroke(L(3));
+      g.ellipse(12 * k, -20 * k, 14 * k, 20 * k)
+        .fill({ color: 0xffffff, alpha: 0.9 })
+        .stroke(L(3));
+      g.ellipse(0, 10 * k, 32 * k, 24 * k)
+        .fill(swatch.yellow.fill)
+        .stroke(L());
+      for (const x of [-10, 6])
+        g.moveTo(x * k, -10 * k)
+          .lineTo(x * k, 30 * k)
+          .stroke(L(6));
+      break;
+    case 'pear':
+      g.circle(0, 16 * k, 28 * k)
+        .fill(0xb7d86a)
+        .stroke(L());
+      g.circle(0, -14 * k, 17 * k)
+        .fill(0xb7d86a)
+        .stroke(L());
+      g.moveTo(0, -30 * k)
+        .lineTo(6 * k, -44 * k)
+        .stroke(line(BROWN, 5 * k));
+      break;
+    case 'flower':
+      g.moveTo(0, 8 * k)
+        .lineTo(0, 44 * k)
+        .stroke(line(LEAF, 7 * k));
+      for (let i = 0; i < 5; i++) {
+        const a = (i * 2 * Math.PI) / 5;
+        g.circle(Math.cos(a) * 20 * k, -8 * k + Math.sin(a) * 20 * k, 13 * k)
+          .fill(swatch.pink.fill)
+          .stroke(L(3));
+      }
+      g.circle(0, -8 * k, 11 * k)
+        .fill(swatch.yellow.fill)
+        .stroke(L(3));
+      break;
+    case 'jar':
+      c.addChild(goodArt('jar', s));
+      return c;
+    case 'sheep':
+      c.addChild(goodArt('sheep', s));
+      return c;
+    case 'crate': {
+      const cr = crateArt(s * 0.9, s * 0.62);
+      cr.position.set(0, s * 0.22);
+      c.addChild(cr);
+      return c;
+    }
+    case 'leaf':
+      g.ellipse(0, 0, 22 * k, 40 * k)
+        .fill(LEAF)
+        .stroke(L());
+      g.moveTo(0, -34 * k)
+        .lineTo(0, 44 * k)
+        .stroke(L(3));
+      break;
+    case 'moon':
+      g.circle(0, 0, 36 * k)
+        .fill(swatch.yellow.fill)
+        .stroke(L());
+      g.circle(16 * k, -8 * k, 30 * k).fill(CLAY.light);
+      break;
+    case 'cup':
+      g.moveTo(-26 * k, -28 * k)
+        .lineTo(26 * k, -28 * k)
+        .lineTo(18 * k, 30 * k)
+        .lineTo(-18 * k, 30 * k)
+        .closePath();
+      g.fill(swatch.blue.light).stroke(L());
+      g.arc(30 * k, -6 * k, 14 * k, -Math.PI / 2, Math.PI / 2).stroke(L(6));
+      break;
+    case 'boot':
+      g.moveTo(-18 * k, -40 * k)
+        .lineTo(12 * k, -40 * k)
+        .lineTo(12 * k, 8 * k)
+        .lineTo(40 * k, 18 * k);
+      g.lineTo(40 * k, 36 * k)
+        .lineTo(-18 * k, 36 * k)
+        .closePath()
+        .fill(BROWN)
+        .stroke(L());
+      break;
+    case 'drum':
+      g.rect(-34 * k, -12 * k, 68 * k, 44 * k)
+        .fill(swatch.red.fill)
+        .stroke(L());
+      g.ellipse(0, -12 * k, 34 * k, 12 * k)
+        .fill(0xf0cfa4)
+        .stroke(L());
+      g.moveTo(-14 * k, -42 * k)
+        .lineTo(8 * k, -14 * k)
+        .stroke(line(BROWN, 5 * k));
+      g.moveTo(16 * k, -42 * k)
+        .lineTo(0, -14 * k)
+        .stroke(line(BROWN, 5 * k));
+      break;
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** A tray sign `size` square centred on (0, 0): the picture on a clay tile. */
+export function rebusSignArt(id: SignId, size: number, glow = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (glow)
+    g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({
+      color: swatch.yellow.fill,
+      alpha: 0.6,
+    });
+  g.roundRect(-size / 2, -size / 2, size, size, 18)
+    .fill(CLAY.light)
+    .stroke(line(CLAY.line, 4));
+  c.addChild(g, signPicture(id, size * 0.72));
+  c.eventMode = 'none';
+  return c;
+}
+
+/** One cell of the tablet `size` square centred on (0, 0): empty clay, or a pressed picture-sign. */
+export function rebusCellArt(size: number, id: SignId | null, glow = false): Container {
+  const c = cellArt(size, false, glow);
+  if (id) c.addChild(signPicture(id, size * 0.7));
+  c.eventMode = 'none';
+  return c;
+}
+
+/** Read: the tablet with sound coming off it, `w` × `h` centred on (0, 0). */
+export function readArt(w: number, h: number, glow = false): Container {
+  const c = new Container();
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 34)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
+  c.addChild(finish({ w, h, corner: 28 }, swatch.green));
+  const g = new Graphics();
+  g.roundRect(-40, -22, 44, 44, 8).fill(CLAY.fill).stroke(line(CLAY.line, 4));
+  g.moveTo(-28, -8).lineTo(-8, -8).moveTo(-28, 6).lineTo(-8, 6).stroke(line(CLAY.line, 4));
+  for (const r of [12, 24]) g.arc(14, 0, r, -0.9, 0.9).stroke(line(0xffffff, 5));
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** The sentence bar `w` × `h` at (0, 0): a clay band with a speaker; tapping it says the sentence again. */
+export function sentenceBarArt(w: number, h: number): Graphics {
+  const g = new Graphics();
+  g.roundRect(0, 6, w, h - 6, 30).fill(CLAY.dark);
+  g.roundRect(0, 0, w, h - 6, 30)
+    .fill(CLAY.fill)
+    .stroke(line(CLAY.line, 6));
+  const cx = w / 2;
+  const cy = (h - 6) / 2;
+  g.poly([
+    cx - 34,
+    cy - 12,
+    cx - 18,
+    cy - 12,
+    cx + 2,
+    cy - 30,
+    cx + 2,
+    cy + 30,
+    cx - 18,
+    cy + 12,
+    cx - 34,
+    cy + 12,
+  ]).fill(CLAY.light);
+  g.poly([
+    cx - 34,
+    cy - 12,
+    cx - 18,
+    cy - 12,
+    cx + 2,
+    cy - 30,
+    cx + 2,
+    cy + 30,
+    cx - 18,
+    cy + 12,
+    cx - 34,
+    cy + 12,
+  ]).stroke(line(CLAY.line, 4));
+  for (const r of [16, 30]) g.arc(cx + 4, cy, r, -0.8, 0.8).stroke(line(CLAY.line, 5));
+  return g;
 }
