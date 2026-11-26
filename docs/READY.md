@@ -122,7 +122,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
 
-- **Define `ancient-river-civilizations` AR5: *Two Tablets*** (docs only; crib model, uniqueness solver, hint rule, grown-up registration or level 9, couch note; links and `git diff --check`). [Study](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
 - **Define `social-emotional` slice 3: *Two Viewpoints* (within Story Theater)** (docs only; one harmless mishap and two stated accounts with multiple supported endings, preserving 12–13 and pins; links and `git diff --check`). [Study](deep-dives/subjects/social-emotional.md#build-slices-in-order)
 
 

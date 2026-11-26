@@ -8,6 +8,9 @@ import {
   BLEND_GROUPS,
   BLEND_LEVEL,
   BLEND_PLAN,
+  LADDER_CHAINS,
+  LADDER_LEVEL,
+  LADDER_PLAN,
   MAGIC_LEVEL,
   MAGIC_NEW_WORDS,
   MAGIC_PAIRS,
@@ -83,6 +86,7 @@ describe('Word Monsters', () => {
       FOUR_LEVEL,
       TEAM_LEVEL,
       MAGIC_LEVEL,
+      LADDER_LEVEL,
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(SCRIPT['monster.big']).toBeDefined();
@@ -470,7 +474,7 @@ describe('Word Monsters', () => {
     expect(planFor(MAGIC_LEVEL)).toBe(MAGIC_PLAN);
     expect(MAGIC_PLAN).toMatchObject({ mode: 'magic', rounds: 3, choices: 3 });
     expect(stepLevel(TEAM_LEVEL, 1, LEVELS.school!)).toBe(MAGIC_LEVEL);
-    expect(LEVELS.school!.max).toBe(MAGIC_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(MAGIC_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(MAGIC_LEVEL);
     for (const id of ['monster.magic', 'monster.magic.not', 'monster.magic.long'])
@@ -511,6 +515,72 @@ describe('Word Monsters', () => {
     const q = makeQuestions(MAGIC_PLAN, new Rng(5))[0];
     const crowd = q.monsters.map((letter) => ({ letter, placed: false }));
     expect(nextMonster(MAGIC_PLAN, q, crowd, 3, 0)?.letter).toBe('e');
+  });
+
+  it('level 18 builds a four-rung word ladder over pictured words, visiting first, middle and last slots', () => {
+    expect(planFor(LADDER_LEVEL)).toBe(LADDER_PLAN);
+    expect(LADDER_PLAN).toMatchObject({ mode: 'ladder', rounds: 4, choices: 3 });
+    expect(stepLevel(MAGIC_LEVEL, 1, LEVELS.school!)).toBe(LADDER_LEVEL);
+    expect(LEVELS.school!.max).toBe(LADDER_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(LADDER_LEVEL);
+    for (const id of ['monster.ladder.start', 'monster.ladder', 'monster.ladder.replace'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+    for (const chain of LADDER_CHAINS) {
+      expect(chain).toHaveLength(5);
+      expect(new Set(chain).size).toBe(5);
+      expect(chain[0]).not.toBe(chain[chain.length - 1]);
+      const slots = new Set<number>();
+      for (let i = 0; i < chain.length - 1; i++) {
+        const diffs = [0, 1, 2].filter((k) => chain[i][k] !== chain[i + 1][k]);
+        expect(diffs, `${chain[i]} -> ${chain[i + 1]}`).toHaveLength(1);
+        slots.add(diffs[0]);
+      }
+      expect(slots).toEqual(new Set([0, 1, 2]));
+      for (const w of chain) {
+        expect(PICTURE_WORDS).toContain(w);
+        const p = wordPicture(w);
+        expect(p.getBounds().width, w).toBeGreaterThan(120);
+        p.destroy({ children: true });
+      }
+    }
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = makeQuestions(LADDER_PLAN, new Rng(seed));
+      expect(qs).toHaveLength(LADDER_PLAN.rounds);
+      const words = [qs[0].ladder!.from, ...qs.map((q) => q.answer)];
+      expect(new Set(words).size).toBe(5);
+      expect(words[0]).not.toBe(words[words.length - 1]);
+      seen.add(words.join('-'));
+      for (const [i, q] of qs.entries()) {
+        const ladder = q.ladder!;
+        expect(ladder.from).toBe(words[i]);
+        const diffs = [0, 1, 2].filter((k) => ladder.from[k] !== q.answer[k]);
+        expect(diffs).toEqual([ladder.slot]);
+        const want = q.answer[ladder.slot];
+        expect(q.monsters).toHaveLength(LADDER_PLAN.choices);
+        expect(new Set(q.monsters).size).toBe(LADDER_PLAN.choices);
+        expect(q.monsters).toContain(want);
+        expect(q.monsters).not.toContain(ladder.from[ladder.slot]);
+        for (const [j, m] of q.monsters.entries()) {
+          expect(SCRIPT[`sound.${m}` as keyof typeof SCRIPT], m).toBeDefined();
+          for (const other of q.monsters.slice(j + 1)) {
+            expect(lookalike(m, other), `${m}/${other}`).toBe(false);
+            expect(soundTwin(m, other), `${m}/${other}`).toBe(false);
+          }
+          if (m !== want) {
+            expect(q.answer).not.toContain(m);
+            for (const o of ladder.from) {
+              expect(lookalike(m, o), `${ladder.from} ${m}/${o}`).toBe(false);
+              expect(soundTwin(m, o), `${ladder.from} ${m}/${o}`).toBe(false);
+            }
+          }
+        }
+        const crowd = q.monsters.map((letter) => ({ letter, placed: false }));
+        expect(nextMonster(LADDER_PLAN, q, crowd, ladder.slot, 0)?.letter).toBe(want);
+      }
+    }
+    expect(seen.size).toBe(LADDER_CHAINS.length);
   });
 
   it('level 13 builds words where one monster wears a two-letter team and fills one box', () => {

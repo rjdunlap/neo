@@ -51,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       text: 'A word is built. Drag the quiet e to the empty box at the end and the vowel says its name. Another letter makes a different word.',
     },
     {
+      from: 18,
+      to: 18,
+      text: 'A word stands in the boxes. Tap the box that changes to lift its letter out, then drag the new letter in to make the next word on the ladder.',
+    },
+    {
       from: 11,
       to: 11,
       text: 'Only the word is said. Say it slowly together, then build it in the boxes; one letter is a spare. Tap the boxes to hear the sounds, or the picture to hear the word.',

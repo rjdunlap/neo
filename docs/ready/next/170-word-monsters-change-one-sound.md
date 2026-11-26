@@ -1,1 +1,0 @@
-**`word-monsters` Change one sound** (school, after the magic e; new interaction on an existing game: a word ladder in `logic.ts`, tap-to-lift a box, unit tests, one filtered play with one wrong drop and one hint, one portrait screenshot, `npm run game-docs`; takes the next free stable level ID). [Dive](../../deep-dives/word-monsters.md#build-slices-in-order)

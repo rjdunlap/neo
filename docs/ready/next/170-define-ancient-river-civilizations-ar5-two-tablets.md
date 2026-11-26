@@ -1,0 +1,1 @@
+**Define `ancient-river-civilizations` AR5: *Two Tablets*** (docs only; crib model, uniqueness solver, hint rule, grown-up registration or level 9, couch note; links and `git diff --check`). [Study](../../deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)

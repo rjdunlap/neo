@@ -189,6 +189,9 @@ class WordMonsters implements Game {
   private slowSaying = false;
   private readonly readWord: RoundButton | null = null;
   private checkedCorrectLetter = false;
+  /** Level 18: the standing monster currently lifted out of its box, and the slot it came from. */
+  private liftedMonster: Monster | null = null;
+  private liftedFromSlot = -1;
   /** Level 16: the three picture cards, and whether the monsters are saying their sounds (a card tapped then only wiggles). */
   private cards: BlendCard[] = [];
   private blending = false;
@@ -201,7 +204,7 @@ class WordMonsters implements Game {
       {
         sky: [0xc9b8f0, 0xf3ecff],
         hills: [0xc8ecb0, 0xa6de8e],
-        horizon: this.plan.mode === 'repair' ? 0.49 : 0.66,
+        horizon: this.plan.mode === 'repair' || this.plan.mode === 'ladder' ? 0.49 : 0.66,
         clouds: 3,
         seed: 26,
       },
@@ -256,6 +259,7 @@ class WordMonsters implements Game {
       this.plan.mode === 'slow' ||
       this.plan.mode === 'team' ||
       this.plan.mode === 'repair' ||
+      this.plan.mode === 'ladder' ||
       this.plan.mode === 'magic' ||
       this.plan.mode === 'family' ||
       this.plan.mode === 'end'
@@ -322,7 +326,9 @@ class WordMonsters implements Game {
     for (const m of this.monsters) if (m.placed) m.position.copyFrom(this.slotAt(m.slot));
     const spots3 = this.cards.length ? cardSpots(v, this.plan) : [];
     this.cards.forEach((c, i) => c.box.position.copyFrom(spots3[i]));
-    const loose = this.monsters.filter((m) => !m.placed);
+    const loose = this.monsters
+      .filter((m) => !m.placed)
+      .sort((a, b) => (a === this.liftedMonster ? 1 : b === this.liftedMonster ? -1 : 0));
     const spots = looseSpots(v, this.plan, loose.length, this.slotCount);
     loose.forEach((m, i) => {
       m.position.copyFrom(spots[i]);
@@ -501,7 +507,7 @@ class WordMonsters implements Game {
     if (!q) return void this.end();
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
-    if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
+    if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair || q.ladder) {
       this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(unitsOf(q).length);
     } else if (this.plan.mode === 'magic') {
@@ -533,6 +539,12 @@ class WordMonsters implements Game {
       }
       this.placeFixed(q.repair.word, 0);
       if (this.readWord) this.readWord.visible = true;
+    } else if (q.ladder) {
+      this.liftedMonster = null;
+      this.liftedFromSlot = -1;
+      this.filled = q.ladder.slot;
+      this.setCandidatesEnabled(false);
+      this.placeFixed(q.ladder.from, 0);
     } else if (q.fixed) {
       this.placeFixed(q.fixed, this.plan.mode === 'end' || this.plan.mode === 'magic' ? 0 : 1);
     }
@@ -587,16 +599,23 @@ class WordMonsters implements Game {
     return this.askNow();
   }
 
-  /** Family, ending and repair questions all start with monsters already in slots. */
+  /** Family, ending, repair and ladder questions all start with monsters already in slots. */
   private placeFixed(letters: string, offset: number) {
     letters.split('').forEach((letter, i) => {
       const m = new Monster(letter, false, FURS[(i + 3) % FURS.length]);
       m.placed = true;
       m.slot = i + offset;
       m.position.copyFrom(this.slotAt(m.slot));
-      if (this.question?.repair) {
+      if (this.question?.repair || this.question?.ladder) {
+        if (this.question.ladder) {
+          m.drag = draggable(m, this.ctx.tw, {
+            onPick: () => this.pick(m),
+            onDrop: (x, y) => this.drop(m, x, y),
+          });
+          m.drag.enabled = false;
+        }
         m.hitArea = new Rectangle(-FIXED_HIT.w / 2, -FIXED_HIT.h / 2, FIXED_HIT.w, FIXED_HIT.h);
-        onTap(m, () => this.tapFixed(m), { cooldown: 400 });
+        onTap(m, () => (this.question?.ladder ? this.tapLadder(m) : this.tapFixed(m)), { cooldown: 400 });
       }
       this.ctx.track(m);
       this.crowd.addChild(m);
@@ -606,8 +625,58 @@ class WordMonsters implements Game {
 
   private wrongMonster() {
     const q = this.question;
-    if (!q?.repair) return undefined;
-    return this.monsters.find((m) => m.placed && !fits(q.answer, m.slot, m.letter));
+    if (q?.repair) return this.monsters.find((m) => m.placed && !fits(q.answer, m.slot, m.letter));
+    if (q?.ladder) return this.monsters.find((m) => m.placed && m.slot === q.ladder!.slot);
+    return undefined;
+  }
+
+  private setCandidatesEnabled(enabled: boolean) {
+    for (const m of this.monsters) {
+      if (m.placed || m === this.liftedMonster) continue;
+      if (m.drag) m.drag.enabled = enabled;
+      m.alpha = enabled ? 1 : 0.65;
+    }
+  }
+
+  private returnLifted(dim: boolean) {
+    const m = this.liftedMonster;
+    const slot = this.liftedFromSlot;
+    if (!m || slot < 0) return;
+    this.liftedMonster = null;
+    this.liftedFromSlot = -1;
+    m.placed = true;
+    m.slot = slot;
+    m.cursor = 'pointer';
+    m.hitArea = new Rectangle(-FIXED_HIT.w / 2, -FIXED_HIT.h / 2, FIXED_HIT.w, FIXED_HIT.h);
+    if (m.drag) m.drag.enabled = false;
+    const at = this.slotAt(slot);
+    void this.ctx.tw.to(m, { x: at.x, y: at.y }, { duration: 0.2, ease: ease.outBack });
+    if (dim) this.setCandidatesEnabled(false);
+  }
+
+  private tapLadder(m: Monster) {
+    const q = this.question;
+    if (!q?.ladder || this.busy || this.finished || !m.placed) return;
+    m.speak();
+    sfx.pop(4);
+    if (this.liftedMonster) this.returnLifted(false);
+    this.liftedMonster = m;
+    this.liftedFromSlot = m.slot;
+    m.placed = false;
+    m.slot = -1;
+    m.glow.visible = false;
+    m.cursor = 'grab';
+    m.hitArea = new Circle(0, 0, HIT_R);
+    const spot = looseSpots(this.view, this.plan, 4, this.slotCount)[3];
+    if (m.drag) m.drag.home = { x: spot.x, y: spot.y };
+    this.setCandidatesEnabled(true);
+    void this.ctx.tw.to(m, { x: spot.x, y: spot.y }, { duration: 0.18, ease: ease.outBack }).then(() => {
+      if (!this.destroyed && this.liftedMonster === m && m.drag) m.drag.enabled = true;
+    });
+    if (this.liftedFromSlot === q.ladder.slot) {
+      this.wrongs = 0;
+      void this.ctx.instruct('monster.ladder.replace', { word: q.answer });
+    }
   }
 
   private tapFixed(m: Monster) {
@@ -651,6 +720,10 @@ class WordMonsters implements Game {
 
   private ask(q: Question) {
     if (q.repair) return this.ctx.instruct('monster.repair', { word: q.answer, built: q.repair.word });
+    if (q.ladder)
+      return this.index === 0
+        ? this.ctx.instruct('monster.ladder.start', { from: q.ladder.from, word: q.answer })
+        : this.ctx.instruct('monster.ladder', { word: q.answer });
     const sound = SOUNDS[q.answer];
     // Levels 7 and 8 are told, then asked: the sounds only in a round's first question, then just the word.
     if (this.plan.mode === 'family')
@@ -758,11 +831,20 @@ class WordMonsters implements Game {
   private hint() {
     const q = this.question;
     if (!q) return;
+    if (q.ladder && this.liftedFromSlot !== q.ladder.slot) {
+      const target = this.monsters.find((x) => x.placed && x.slot === q.ladder!.slot);
+      if (target && !target.glow.visible) {
+        target.glow.visible = true;
+        hinted(this);
+      }
+      this.wrongs = 0;
+      return;
+    }
     const want = this.building ? unitsOf(q)[this.filled] : q.answer;
     const right = this.monsters.find((x) => !x.placed && x.letter === want);
     if (right && !right.glow.visible) {
       right.glow.visible = true;
-      this.hints++;
+      hinted(this);
     }
     this.wrongs = 0;
   }
@@ -963,6 +1045,7 @@ class WordMonsters implements Game {
   private drop(m: Monster, x: number, y: number): boolean {
     const q = this.question;
     if (!q || this.busy) return false;
+    if (q.ladder) return this.dropLadder(m, x, y, q);
     // The crowd layer sits on the stage untransformed, so (x, y) are stage units.
     const slot = this.slotAt(this.filled);
     // Generous: anywhere over the slot row counts as trying the next slot.
@@ -1000,6 +1083,49 @@ class WordMonsters implements Game {
     // In a word family the ending is already there, so the first sound finishes the word.
     this.filled = q.fixed || q.repair ? units.length : this.filled + 1;
     if (this.filled >= units.length) void this.wordDone(q);
+    return true;
+  }
+
+  private dropLadder(m: Monster, x: number, y: number, q: Question): boolean {
+    const ladder = q.ladder;
+    if (!ladder || this.liftedFromSlot < 0) return false;
+    const open = this.slotAt(this.liftedFromSlot);
+    if (Math.abs(y - open.y) > DROP_REACH || Math.abs(x - open.x) > 75) return false;
+    if (m === this.liftedMonster) {
+      this.returnLifted(true);
+      sfx.squish();
+      return true;
+    }
+    if (this.liftedFromSlot !== ladder.slot || m.letter !== q.answer[ladder.slot]) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: soundOf(m.letter) });
+      if (this.wrongs >= HINT_AFTER) this.hint();
+      return false;
+    }
+    const old = this.liftedMonster;
+    this.liftedMonster = null;
+    this.liftedFromSlot = -1;
+    if (old) {
+      this.monsters = this.monsters.filter((other) => other !== old);
+      old.drag?.destroy();
+      old.eventMode = 'none';
+      void this.ctx.tw.to(old.scale, { x: 0, y: 0 }, { duration: 0.2 }).then(() => {
+        this.ctx.untrack(old);
+        old.destroy({ children: true });
+      });
+    }
+    m.placed = true;
+    m.slot = ladder.slot;
+    m.glow.visible = false;
+    if (m.drag) m.drag.enabled = false;
+    void this.ctx.tw.to(m, { x: open.x, y: open.y }, { duration: 0.25, ease: ease.outBack });
+    this.ctx.tw.kill(m.scale);
+    m.scale.set(1);
+    sfx.squish();
+    this.filled = unitsOf(q).length;
+    void this.wordDone(q);
     return true;
   }
 
