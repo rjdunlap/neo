@@ -22,11 +22,14 @@ A small warm pickup on a busy or similar ground (Pond Conga's food) gets a soft 
 - **Animated drawings stay flat.** A `Graphics` the game redraws three times within 30 frames is left flat until it settles, so a glow, trail or meter costs nothing extra per frame.
 - **Keeping something flat:** `keepFlat(node)` (a drawing or a whole subtree), for a piece that must keep a crisp exact edge (a measured ruler, a traced letter, a graph).
 - **Drawing paper on purpose:** `src/art/paper.ts` has `paperCircle`, `paperEllipse`, `paperRect`, `paperPoly`, `paperShape` (the named shapes), `paperLine` (a hairline with a small shadow) and `paperGround`. What they draw is marked so the pass does not redo it. The shared button and card `finish()` uses them.
-- **The swatch book:** `/?paper` on the dev server shows every named shape in the learning colours, a pond strip and the chrome.
+- **The swatch book:** `/?paper` on the dev server shows every named shape in the learning colours, a pond strip and the chrome, plus one creature's six moods (`&lab=<species>`, or `&lab=egg` for the egg's three stages).
+- **Creatures** are drawn in code too, as paper cut-outs on a canvas (`src/art/creatures/paper/`). Each species is one file named after it whose default export draws its six moods (base, blink, happy, surprised, sleepy, sad) with the helpers in `canvas.ts`. The drawing lays every part on the points of the species' painted-art table (`SPROUT_ART`, `CAST_ART` and the rest), at the same size, so the rigs bend, blink, recolour and dress them exactly as before. A species with no file keeps its painted set; `?paintedpets` brings every painted set back to compare.
+- **The egg and the collection cards** are drawn in code in the paper look (`paperEgg` in `src/creatures/companion.ts`; a card shows the paper creature, still, on a paper card), so the painted portraits, card paper and egg pictures are not loaded.
+- **Home and places:** home's backdrop is code-drawn (`src/art/home/paper-home.ts`, in the painted picture's 1536 × 1024 frame). The painted place pictures are switched off (`PAINTED_LOCATIONS` in `src/art/locations/index.ts`), so every place shows its code-drawn scenery, which the pass turns to paper.
 
 ## Rules
 
 - Keep the colours a child learns by name (`swatch.red`, `swatch.blue` and the rest) true to their names.
 - No new motion or flashing comes with the style.
 - Phone frame rate matters most: paper is built once per drawing, never per frame.
-- Generated images (the creature cast, land backdrops) do not take the pass: they are being redrawn as paper, code-drawn by default (the developer can switch to images generated on their machine).
+- Images do not take the pass. Everything a child sees is drawn in code; the generated creature, portrait, egg and place pictures stay in the repository only for `?paintedpets` and as a fallback. The developer can switch to paper-styled images generated on their machine later.
