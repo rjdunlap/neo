@@ -1020,16 +1020,16 @@ describe('How Many Pieces Fit? (level 8)', () => {
       'pick',
       'done',
     ];
-    for (const id of ids) expect(SCRIPT[`ribbon.fit.${id}` as keyof typeof SCRIPT], id).toBeTruthy();
+    for (const id of ids) expect(SCRIPT[`ribbonfit.${id}` as keyof typeof SCRIPT], id).toBeTruthy();
     for (const id of ids) {
-      const text = SCRIPT[`ribbon.fit.${id}` as keyof typeof SCRIPT].join(' ');
+      const text = SCRIPT[`ribbonfit.${id}` as keyof typeof SCRIPT].join(' ');
       // Never the leftover quarter of the spool as a quotient of a quarter.
       expect(text, id).not.toMatch(/quarter of (a|the) piece/i);
     }
-    const wrongUnit = SCRIPT['ribbon.fit.wrongUnit' as keyof typeof SCRIPT].join(' ');
+    const wrongUnit = SCRIPT['ribbonfit.wrongUnit' as keyof typeof SCRIPT].join(' ');
     expect(wrongUnit).toMatch(/quarter of the whole spool/);
     expect(wrongUnit).toMatch(/half of a half-spool piece/);
-    expect(SCRIPT['ribbon.fit.done' as keyof typeof SCRIPT].join(' ')).toMatch(
+    expect(SCRIPT['ribbonfit.done' as keyof typeof SCRIPT].join(' ')).toMatch(
       /one and a half half-spool pieces/i,
     );
   });

@@ -148,7 +148,7 @@ export class HowManyFit implements Game {
   }
 
   private ask() {
-    void this.ctx.instruct(this.bench.tag === 1 ? 'ribbon.fit.ask' : 'ribbon.fit.ask2');
+    void this.ctx.instruct(this.bench.tag === 1 ? 'ribbonfit.ask' : 'ribbonfit.ask2');
   }
 
   /** Turn the scissors off; true when they were on, so the touch that did it does nothing else. */
@@ -187,7 +187,7 @@ export class HowManyFit implements Game {
       this.colors.set(first, color);
       this.colors.set(first + 1, color);
       sfx.snip();
-      void this.ctx.say('ribbon.fit.snip');
+      void this.ctx.say('ribbonfit.snip');
       this.draw();
       return;
     }
@@ -203,7 +203,7 @@ export class HowManyFit implements Game {
       return;
     }
     sfx.pop(total(this.state.bench) + 2);
-    void this.ctx.say(p.size === HALF ? 'ribbon.fit.piece' : 'ribbon.fit.halfPiece');
+    void this.ctx.say(p.size === HALF ? 'ribbonfit.piece' : 'ribbonfit.halfPiece');
     this.draw(p.id);
   }
 
@@ -212,7 +212,7 @@ export class HowManyFit implements Game {
     if (this.bench.tag === 2) {
       // The accepted bench stays; a tap repeats the unit labels.
       sfx.tick();
-      void this.ctx.say(p.size === HALF ? 'ribbon.fit.piece' : 'ribbon.fit.halfPiece');
+      void this.ctx.say(p.size === HALF ? 'ribbonfit.piece' : 'ribbonfit.halfPiece');
       return;
     }
     this.bench.act({ kind: 'return', id: p.id });
@@ -235,7 +235,7 @@ export class HowManyFit implements Game {
       before = this.state,
       v = this.bench.check();
     if (v === 'empty') {
-      void this.ctx.say(tag === 1 ? 'ribbon.empty' : 'ribbon.fit.pick');
+      void this.ctx.say(tag === 1 ? 'ribbon.empty' : 'ribbonfit.pick');
       return;
     }
     if (v === 'right') {
@@ -251,12 +251,12 @@ export class HowManyFit implements Game {
       glow
         ? 'ribbon.hint'
         : v === 'short'
-          ? 'ribbon.fit.short'
+          ? 'ribbonfit.short'
           : v === 'long'
-            ? 'ribbon.fit.long'
+            ? 'ribbonfit.long'
             : v === 'wrong_unit'
-              ? 'ribbon.fit.wrongUnit'
-              : 'ribbon.fit.wrong',
+              ? 'ribbonfit.wrongUnit'
+              : 'ribbonfit.wrong',
     );
     this.draw();
   }
@@ -273,7 +273,7 @@ export class HowManyFit implements Game {
     });
     [0, 2, 4].forEach((step, i) => void this.ctx.tw.wait(i * 0.12).then(() => sfx.bell(step, 0.25)));
     void this.ctx
-      .say(allHalves ? 'ribbon.fit.made.halves' : 'ribbon.fit.made')
+      .say(allHalves ? 'ribbonfit.made.halves' : 'ribbonfit.made')
       .then(() => this.ctx.tw.wait(0.3))
       .then(() => {
         this.busy = false;
@@ -293,7 +293,7 @@ export class HowManyFit implements Game {
     });
     [0, 2, 4, 5, 7].forEach((step, i) => void this.ctx.tw.wait(i * 0.12).then(() => sfx.bell(step, 0.25)));
     void this.ctx
-      .say('ribbon.fit.done')
+      .say('ribbonfit.done')
       .then(() => this.ctx.tw.wait(0.4))
       .then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
   }
