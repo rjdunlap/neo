@@ -285,12 +285,12 @@ describe('Song Maker songs', () => {
     const plan = songPlan(9);
 
     it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
-      expect(SONG_PLANS).toHaveLength(11);
+      expect(SONG_PLANS).toHaveLength(12);
       expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
       const song = makeSong(plan, new Rng(1));
       expect(song).toEqual({ notes: [], given: [] });
       expect(levelsInOrder(LEVELS.preschool!)).toEqual([4, 11, 5, 6, 9]);
-      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 7, 9]);
+      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 12, 7, 9]);
       for (const band of ['preschool', 'prek'] as const) {
         expect(levelsInOrder(LEVELS[band]!)).not.toContain(8);
       }
@@ -403,7 +403,7 @@ describe('Song Maker songs', () => {
       expect(plan).toMatchObject({ mode: 'answer', cols: 4, rows: 3, notes: 2 });
       expect(answerFrom(plan)).toBe(2);
       expect(levelsInOrder(LEVELS.preschool!)).toEqual([4, 11, 5, 6, 9]);
-      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 7, 9]);
+      expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 11, 6, 12, 7, 9]);
       for (const band of ['lap', 'toddler', 'school'] as const)
         expect(levelsInOrder(LEVELS[band]!)).not.toContain(11);
       expect(landing(11, rangeFor(LEVELS, 'school'), [8, 11])).toBe(6);
@@ -489,6 +489,64 @@ describe('Song Maker songs', () => {
     it('speaks its two lines', () => {
       expect(SCRIPT['song.finish']).toBeDefined();
       expect(SCRIPT['song.finish.ready']).toBeDefined();
+    });
+  });
+
+  describe('level 12, Two to choose', () => {
+    const plan = songPlan(12);
+
+    it('is a 4×3 listen level with two choices per beat in pre-K right before level 7, landing into school at 6', () => {
+      expect(plan).toMatchObject({ mode: 'listen', cols: 4, rows: 3, notes: 4, choices: 2 });
+      const prek = levelsInOrder(LEVELS.prek!);
+      expect(prek[prek.indexOf(7) - 1]).toBe(12);
+      for (const band of ['lap', 'toddler', 'preschool', 'school'] as const)
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(12);
+      expect(landing(12, rangeFor(LEVELS, 'school'), [8, 11, 12])).toBe(6);
+      expect(SCRIPT['song.listenTwo']?.length).toBeGreaterThan(0);
+    });
+
+    it('gives every beat two candidates in distinct rows, one of them right, with varying candidate rows', () => {
+      const candidateRows = new Set<number>();
+      let higherDistractors = 0;
+      let lowerDistractors = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        const cands = song.candidates ?? [];
+        expect(cands).toHaveLength(plan.cols * 2);
+        for (let col = 0; col < plan.cols; col++) {
+          const beat = cands.filter((c) => c.col === col);
+          expect(beat).toHaveLength(2);
+          expect(beat[0].row).not.toBe(beat[1].row);
+          const right = song.notes.find((n) => n.col === col)!;
+          expect(beat.map((b) => b.row)).toContain(right.row);
+          const other = beat.find((b) => b.row !== right.row)!;
+          if (other.row < right.row) higherDistractors++;
+          else lowerDistractors++;
+          for (const b of beat) {
+            expect(b.row >= 0 && b.row < plan.rows).toBe(true);
+            candidateRows.add(b.row);
+          }
+        }
+      }
+      expect(candidateRows.size).toBe(plan.rows);
+      expect(higherDistractors).toBeGreaterThan(0);
+      expect(lowerDistractors).toBeGreaterThan(0);
+    });
+
+    it('has a bot that taps only right candidate notes across all four beats', () => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        const candKeys = new Set((song.candidates ?? []).map(key));
+        const placed = new Set<string>();
+        const mine: Note[] = [];
+        for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
+          expect(candKeys.has(key(n))).toBe(true);
+          expect(song.notes.map(key)).toContain(key(n));
+          mine.push(n);
+          placed.add(key(n));
+        }
+        expect(mine).toHaveLength(4);
+      }
     });
   });
 });

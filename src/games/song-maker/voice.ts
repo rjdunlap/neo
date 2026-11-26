@@ -27,6 +27,7 @@ export const VOICE = {
     'This one steps up, steps back, then steps up higher. Keep the song going the same way!',
   ],
   'song.listen': ['Listen to the tune. Then find each note, one beat at a time.'],
+  'song.listenTwo': ['Listen to the tune. Then pick which of the two shadows matches each note!'],
   'song.again': ['Listen again. Is it higher or lower?'],
   'song.wrong': ['Hmm, not that one. Try another jelly!'],
   'song.hint': ['Try the glowing jelly!'],

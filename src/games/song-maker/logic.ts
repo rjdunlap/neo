@@ -9,6 +9,8 @@ export interface SongPlan {
   rows: number;
   /** ghost and card: how many notes the song has. Free play: taps before the round ends. Wake: lights before it ends. Compose: jellies lit before the check can wake. */
   notes: number;
+  /** listen: how many shadow choices each beat offers (default: none, all rows open). */
+  choices?: number;
   name: string;
 }
 
@@ -63,6 +65,15 @@ export const SONG_PLANS: SongPlan[] = [
     rows: 3,
     notes: 2,
     name: "Finish the pet's 2-note song with a note on each of the last two beats",
+  },
+  // Level 12, Two to choose: level 7's heard tune on 4x3, with two shadow choices on each beat (pre-K entry before 7).
+  {
+    mode: 'listen',
+    cols: 4,
+    rows: 3,
+    notes: 4,
+    choices: 2,
+    name: 'Listen, then pick each note of a 4-note tune from two shadows',
   },
 ];
 
@@ -174,6 +185,8 @@ export interface Song {
   notes: Note[];
   /** Notes already placed for her (the first bar of a pattern). */
   given: Note[];
+  /** Candidate shadows for a listen level with choices (including each beat's right note). */
+  candidates?: Note[];
   /** The pattern level's shape, named aloud before play. */
   pattern?: PatternId;
 }
@@ -222,7 +235,18 @@ export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = [
       .slice(0, count)
       .sort((a, b) => a - b);
     const notes = cols.map((col) => ({ col, row: rng.int(0, plan.rows - 1) }));
-    if (new Set(notes.map((n) => n.row)).size > 1) return { notes, given: [] };
+    if (new Set(notes.map((n) => n.row)).size > 1) {
+      if (!plan.choices) return { notes, given: [] };
+      const candidates = notes.flatMap((n) => {
+        const others = rng.shuffle(
+          Array.from({ length: plan.rows }, (_, row) => row).filter((row) => row !== n.row),
+        );
+        return [n, ...others.slice(0, plan.choices! - 1).map((row) => ({ col: n.col, row }))].sort(
+          (a, b) => a.row - b.row,
+        );
+      });
+      return { notes, given: [], candidates };
+    }
   }
 }
 
@@ -409,7 +433,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   // Level 11 (Finish my song) opens guided composing after the first copy level in preschool and pre-K; level 9 (My song) comes last.
   preschool: { min: 4, max: 11, order: [4, 11, 5, 6, 9] },
-  prek: { min: 5, max: 11, order: [5, 11, 6, 7, 9] },
+  // Level 12 (Two to choose) gives pre-K an easier ear entry right before level 7.
+  prek: { min: 5, max: 12, order: [5, 11, 6, 12, 7, 9] },
   // Level 10 (Answer my song) is school only until a person check says pre-K can hold the 8-beat board.
   school: { min: 6, max: 10, order: [6, 7, 9, 10] },
 };
