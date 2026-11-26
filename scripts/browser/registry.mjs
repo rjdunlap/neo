@@ -48,6 +48,7 @@ import { createSuite as createFenceTheField } from './suites/fence-the-field-pla
 import { createSuite as createHarborOrders } from './suites/harbor-orders-play.mjs';
 import { createSuite as createKeyItOut } from './suites/key-it-out-play.mjs';
 import { createSuite as createJarClues } from './suites/jar-clues-play.mjs';
+import { createSuite as createCountTheBallots } from './suites/count-the-ballots-play.mjs';
 import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
 import { createSuite as createDriftCards } from './suites/drift-cards-play.mjs';
 import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs';
@@ -395,6 +396,7 @@ export const SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'countballots',
   'harbororders',
   'driftcards',
   'blocktopple',
@@ -597,6 +599,7 @@ export const ALL_SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'countballots',
   'harbororders',
   'driftcards',
   'blocktopple',
@@ -996,6 +999,7 @@ export function createChecks(fixture) {
   install(createFenceTheField(shared));
   install(createKeyItOut(shared));
   install(createJarClues(shared));
+  install(createCountTheBallots(shared));
   install(createHarborOrders(shared));
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
@@ -1266,6 +1270,7 @@ export async function runSuite(suite, fixture) {
     fenceTheFieldPlay,
     keyItOutPlay,
     jarCluesPlay,
+    countTheBallotsPlay,
     harborOrdersPlay,
     driftCardsPlay,
     gardenRowsPlay,
@@ -1498,6 +1503,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'fencethefield') await fenceTheFieldPlay();
   if (suite === 'all' || suite === 'keyitout') await keyItOutPlay();
   if (suite === 'all' || suite === 'jarclues') await jarCluesPlay();
+  if (suite === 'all' || suite === 'countballots') await countTheBallotsPlay();
   if (suite === 'all' || suite === 'harbororders') await harborOrdersPlay();
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();

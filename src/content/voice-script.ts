@@ -23,6 +23,7 @@ import { VOICE as clapSyllablesVoice } from '../games/clap-syllables/voice.ts';
 import { VOICE as clockTowerVoice } from '../games/clock-tower/voice.ts';
 import { VOICE as colorGardenVoice } from '../games/color-garden/voice.ts';
 import { VOICE as commonGroundVoice } from '../games/common-ground/voice.ts';
+import { VOICE as countTheBallotsVoice } from '../games/count-the-ballots/voice.ts';
 import { VOICE as critterCrossingVoice } from '../games/critter-crossing/voice.ts';
 import { VOICE as critterSortVoice } from '../games/critter-sort/voice.ts';
 import { VOICE as crosswordVoice } from '../games/crossword/voice.ts';
@@ -704,6 +705,7 @@ export const SCRIPT = {
   ...clockTowerVoice,
   ...colorGardenVoice,
   ...commonGroundVoice,
+  ...countTheBallotsVoice,
   ...critterCrossingVoice,
   ...critterSortVoice,
   ...crosswordVoice,

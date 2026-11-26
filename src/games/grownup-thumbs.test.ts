@@ -62,6 +62,7 @@ import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
 import { specOf as sumSpec } from './sum-crates/logic';
+import { layout as ballotsLayout } from './count-the-ballots/layout';
 import { marketLayout } from './market-days/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
@@ -205,6 +206,14 @@ const MEASURE: Record<string, () => Size[]> = {
     ['hole', MARBLE_HOLE_SIZE],
     ['button', MARBLE_BUTTON_H],
   ],
+  'count-the-ballots': () => {
+    const l = ballotsLayout(v);
+    return [
+      ['ballot card', Math.min(l.card.w, l.card.h)],
+      ['pile', Math.min(l.tray.w, l.tray.h)],
+      ['button', Math.min(l.help.w, l.help.h)],
+    ];
+  },
   'market-days': () => {
     const l = marketLayout(v, 4);
     return [
@@ -401,6 +410,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'logic-grid': { px: 44.7, what: 'case-file clue card', slides: 44.7 },
   'marble-jump': { px: 44.7, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
+  'count-the-ballots': { px: 50.8, what: 'button' },
   'market-days': { px: 50.8, what: 'banner' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },

@@ -433,6 +433,7 @@ export const LANDS: readonly Land[] = [
       'workshop-detective',
       'outcrop-detective',
       'market-days',
+      'count-the-ballots',
     ],
   },
 ];
