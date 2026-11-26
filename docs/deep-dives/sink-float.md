@@ -111,7 +111,7 @@ None new. Garden Raft keeps level ID 8 as decided 2026-10-23; this dive builds l
 3. **Define Sink or Float 10 *Salty or fresh*** (**defined 2026-11-05**, [definition](../definitions/salty-or-fresh.md)): the stated model and its how-to note, the two-tank portrait layout, the egg, part 2's accounting and hint, the check tier.
 3a. **Level 10 *Salty or fresh*** (**built 2026-11-05**, branch `claude/sink-float-salty-or-fresh`, PR #1285; batch sink-float 3, after batch 2; new-interaction tier: typecheck, unit tests including the registry, lands, how-to and voice tests, one play of school level 10 through part 1, two wrong tanks on one egg question, the duck question, to the sticker, one portrait and one landscape screenshot, `fingerdemo` at 10, one direct `control()` call for the two-tank ring, one build; no `couchgames`).
 4. **Define Sink or Float 11 *How much can it carry?*** (**defined 2026-11-25**, [definition](../definitions/build-a-boat.md), docs only): one load and waterline model shared with level 8 through an extracted `holdsLoad`.
-4b. **Level 11 *How much can it carry?*** (new-interaction tier, after Garden Raft which is built; see the definition's check tier).
+4b. **Level 11 *How much can it carry?*** (claimed 2026-11-25; PR in flight) (new-interaction tier, after Garden Raft which is built; see the definition's check tier).
 4a. **Level 12 *One big thing*** (**built 2026-11-12**, branch `claude/sink-float-lap`, PR #1572; new-level tier, lap entry level from the toy-test lap audit).
 5. **Define Garden Raft** (level 8; **defined 2026-11-25**, [definition](../definitions/garden-raft.md)); **built 2026-11-25**, branch `claude/sink-float-8`, PR #2204 (new-interaction tier).
 
