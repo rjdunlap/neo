@@ -119,7 +119,7 @@ Speeding up until someone fails, shrinking paddles, lives, tokens, power-ups tha
 3. **Courts and ball voices** *(built 2026-10-12, [PR #220](https://github.com/rjdunlap/neo/pull/220): pond, beach and snow courts with their own balls)*. Three courts and balls; screenshot each at portrait; sticker pins.
 4. **Pet variety** *(built 2026-10-12, [PR #224](https://github.com/rjdunlap/neo/pull/224): `petLob` on the play-together and count rallies)*. Lob returns on 3 and 5 with a test that every return is reachable by the child's paddle.
 5. **Level 6 Bounce to a color**, then **level 7 Goal** *(both built 2026-10-12, [PR #223](https://github.com/rjdunlap/neo/pull/223), with level 8 First to 7)* (zones and the goal gap share one reachability test). Zones, bot, how-to, voice, rule tests; `fingerdemo` at level 6.
-6. **Below-level-1 follow-the-ball** (settled 2026-10-23: the next free stable level ID, currently 13, placed below level 1 with `order`; no renumbering).
+6. **Below-level-1 follow-the-ball** (settled 2026-10-23: the next free stable level ID, currently 13, placed below level 1 with `order`; no renumbering); build claimed 2026-11-26 on `claude/bounce-back-follow-ball`).
 
 ## What was built in this session
 
