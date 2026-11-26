@@ -686,6 +686,11 @@ export function cantTellArt(size: number, glow = false): Container {
 
 // ——— Level 7: picture-signs ———
 
+/** An arc that starts where it says, not drawn on from the last point. */
+function arcAt(g: Graphics, x: number, y: number, r: number, a0: number, a1: number): Graphics {
+  return g.moveTo(x + r * Math.cos(a0), y + r * Math.sin(a0)).arc(x, y, r, a0, a1);
+}
+
 const BROWN = 0x8a5a35;
 const LEAF = 0x6fae5a;
 const BLUE = 0x4fa3c7;
@@ -835,7 +840,7 @@ function signPicture(id: SignId, s: number): Container {
         .lineTo(-18 * k, 30 * k)
         .closePath();
       g.fill(swatch.blue.light).stroke(L());
-      g.arc(30 * k, -6 * k, 14 * k, -Math.PI / 2, Math.PI / 2).stroke(L(6));
+      arcAt(g, 30 * k, -6 * k, 14 * k, -Math.PI / 2, Math.PI / 2).stroke(L(6));
       break;
     case 'boot':
       g.moveTo(-18 * k, -40 * k)
@@ -905,7 +910,7 @@ export function readArt(w: number, h: number, glow = false): Container {
   const g = new Graphics();
   g.roundRect(-40, -22, 44, 44, 8).fill(CLAY.fill).stroke(line(CLAY.line, 4));
   g.moveTo(-28, -8).lineTo(-8, -8).moveTo(-28, 6).lineTo(-8, 6).stroke(line(CLAY.line, 4));
-  for (const r of [12, 24]) g.arc(14, 0, r, -0.9, 0.9).stroke(line(0xffffff, 5));
+  for (const r of [12, 24]) arcAt(g, 14, 0, r, -0.9, 0.9).stroke(line(0xffffff, 5));
   c.addChild(g);
   c.eventMode = 'none';
   return c;
@@ -948,6 +953,6 @@ export function sentenceBarArt(w: number, h: number): Graphics {
     cx - 34,
     cy + 12,
   ]).stroke(line(CLAY.line, 4));
-  for (const r of [16, 30]) g.arc(cx + 4, cy, r, -0.8, 0.8).stroke(line(CLAY.line, 5));
+  for (const r of [16, 30]) arcAt(g, cx + 4, cy, r, -0.8, 0.8).stroke(line(CLAY.line, 5));
   return g;
 }

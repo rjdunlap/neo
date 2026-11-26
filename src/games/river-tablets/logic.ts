@@ -1143,9 +1143,12 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   if (plan.id === 'rebus') {
     // The tablet with its three cells, the six signs in two rows of three, then Read (beside the signs when wide, below when upright).
     const cellsW = SLOTS * REBUS_CELL + (SLOTS - 1) * GAP;
+    // A tall non-upright view has room to spare: the group sits a third of the way down rather than at the top.
+    const groupH = REBUS_CELL + 40 + GAP + 6 + 2 * REBUS_SIGN + GAP + (wide ? 0 : GAP + READ.h) + GAP + 110;
+    const spare = wide || v.upright ? 0 : Math.max(0, free.h - groupH - 6) / 3;
     const tablet: Rect = {
       x: Math.round(cx - cellsW / 2 - 20),
-      y: free.y + 6,
+      y: free.y + 6 + Math.round(spare),
       w: cellsW + 40,
       h: REBUS_CELL + 40,
     };
