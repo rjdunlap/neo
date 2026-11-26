@@ -14,6 +14,7 @@ import {
   matches,
   packetsFor,
   planFor,
+  requestedKind,
   PLANS,
   requestKey,
   total,
@@ -21,6 +22,13 @@ import {
   type BigState,
   type Request,
 } from './logic';
+
+describe('a book request (RW11 slice 2)', () => {
+  it('names a flower kind only for a real kind', () => {
+    for (const kind of KINDS) expect(requestedKind(kind)).toBe(kind);
+    for (const bad of [undefined, '', 'red', 'peach', 3, null]) expect(requestedKind(bad)).toBeNull();
+  });
+});
 
 describe('Garden Grow', () => {
   it('asks for things that fit the beds, offers the packets needed, and never repeats a request back to back', () => {

@@ -3,8 +3,9 @@ import { cream, swatch, wood } from '../../art/palette';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import type { ColourGoal, Goal, WELCOME_GOAL } from '../../content/goals';
+import type { ColourGoal, FormGoal, Goal, WELCOME_GOAL } from '../../content/goals';
 import type { LineId } from '../../content/voice-script';
+import { formPacket } from '../../ui/form-art';
 import { welcomeFriend } from '../../content/welcome';
 import type { MixedColor } from '../../content/world';
 import { BOOK_ARROW_RADIUS, BOOK_HEADING, bookLayout, bookPages, dotStep } from '../../creatures/book-layout';
@@ -20,7 +21,7 @@ import { store } from '../../progress/store';
 import { HoldButton, RoundButton, spring, squash } from '../../ui/buttons';
 import { arrowIcon, basketIcon, houseIcon } from '../../ui/icons';
 import { label, namePill } from '../../ui/text';
-import type { App, BookAt } from '../App';
+import type { App, BookAt, BookOrigin } from '../App';
 import { WayOut } from '../leave';
 import { Scene } from '../Scene';
 
@@ -97,7 +98,9 @@ export class BookScene extends Scene {
         ? p.kind === 'friends' && p.friends.some((f) => f.id === at.friend)
         : 'colour' in at
           ? p.kind === 'goals' && p.goal.kind === 'colour' && p.goal.colour === at.colour
-          : p.kind === 'things',
+          : 'form' in at
+            ? p.kind === 'goals' && p.goal.kind === 'form' && p.goal.form === at.form
+            : p.kind === 'things',
     );
     if (page >= 0) this.page = page;
   }
@@ -152,6 +155,7 @@ export class BookScene extends Scene {
     this.speechRequest++;
     const page = this.pages[this.page];
     if (page.kind === 'goals' && page.goal.kind === 'colour') void this.sayColour(page.goal);
+    else if (page.kind === 'goals' && page.goal.kind === 'form') void this.sayForm(page.goal);
     else
       void voice.say(
         page.kind === 'friends' && page.species
@@ -185,6 +189,7 @@ export class BookScene extends Scene {
     this.heading.addChild(title);
     if (page.kind === 'goals') {
       if (page.goal.kind === 'colour') this.buildColourGoal(page.goal);
+      else if (page.goal.kind === 'form') this.buildFormGoal(page.goal);
       else this.buildGoal(page.goal);
     }
     if (page.kind === 'friends') {
@@ -306,10 +311,17 @@ export class BookScene extends Scene {
     );
     this.star = this.starButton(goal);
     this.spread.addChild(this.goalArt, this.star);
-    const mixer = gameById(goal.path.game);
-    if (done || !mixer) return;
-    const { level, recipe } = goal.path;
-    const icon = this.track(mixer.hubIcon());
+    if (!done) this.gamePath(goal.path.game, goal.path.level, { book: true, recipe: goal.path.recipe });
+  }
+
+  /**
+   * A goal's path button: the game's hub icon on a round button that launches it at the goal's level with the book as its
+   * origin (so the round's request rides in `origin`).
+   */
+  private gamePath(game: string, level: number, origin: BookOrigin) {
+    const mod = gameById(game);
+    if (!mod) return;
+    const icon = this.track(mod.hubIcon());
     this.pathIcon = icon;
     // A hub icon is drawn for a land's large card: here it is the picture on a 100-unit round button.
     const art = new Container();
@@ -319,10 +331,29 @@ export class BookScene extends Scene {
     art.pivot.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     this.path = new RoundButton(art, swatch.white, CORNER_RADIUS, () =>
       this.leave(this.path!, () =>
-        this.app.go.game(mixer.id, store.data.profile.band, undefined, false, { book: true, recipe }, level),
+        this.app.go.game(mod.id, store.data.profile.band, undefined, false, origin, level),
       ),
     );
     this.spread.addChild(this.path);
+  }
+
+  /** A blossom goal (RW11 slice 2): a seed packet with the blossom pictured and a path into Garden Grow level 2. */
+  private buildFormGoal(goal: FormGoal) {
+    this.goalArt = this.card(
+      formPacket(goal.form),
+      goal.form.endsWith('sun') ? 'Sun blossom' : 'Moon blossom',
+      () => void this.sayForm(goal),
+    );
+    this.star = this.starButton(goal);
+    this.spread.addChild(this.goalArt, this.star);
+    this.gamePath(goal.path.game, goal.path.level, { book: true, form: goal.form });
+  }
+
+  private async sayForm(goal: FormGoal) {
+    const request = ++this.speechRequest;
+    await voice.say(goal.form === 'sprout:sun' ? 'form.sun' : 'form.moon');
+    if (this.app.scene === this && request === this.speechRequest && !this.out.leaving)
+      void voice.say('form.pick');
   }
 
   private async sayColour(goal: ColourGoal) {

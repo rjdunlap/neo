@@ -98,7 +98,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `harbororders` | 2026-11-23 · [Harbor Orders levels 3–4](verification/2026-11-23-harbor-orders-levels-3-4.md) | — |
 | `hatband` | 2026-11-11 · [Pok Pok P3a, the tap-then-place engine path, Hat Band moved onto it](archive/VERIFICATION-2026-11-11.md#2026-11-11--pok-pok-p3a-the-tap-then-place-engine-path-hat-band-moved-onto-it) | `HAT_LEVELS=1,3` |
 | `helperhouse` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, fourth session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-fourth-session.md) | — |
-| `home` | 2026-11-22 · [RW10 slice 2: the colour goal and the Dress colour row](verification/2026-11-22-rw10-slice-2-the-colour-goal-and-the-dress-colour-row.md) | `HOME_ONLY=colour` |
+| `home` | 2026-11-26 · [RW11 slice 2: blossom goal and Garden Grow level 2 (PR #2223)](verification/2026-11-26-rw11-slice-2-blossom-goal-and-garden-grow-level-2.md) | `HOME_ONLY=form` (earlier: `colour`, 2026-11-22) |
 | `howto` | 2026-11-10 · [U3, round Back and help](archive/VERIFICATION-2026-11-10.md#2026-11-10--u3-round-back-and-help-pr-1462) | Bubble Pop intro and round help; separate level-picker check stopped at the Quick Tricks fixture |
 | `howtolevel` | 2026-10-16 · [Bubble Pop mode gallery](archive/VERIFICATION-2026-10-15.md#2026-10-16--bubble-pop-mode-gallery) | Bubble Pop mode gallery |
 | `island` | 2026-10-08 · [How-to card every time, with a bot demonstration](archive/VERIFICATION-2026-10-07-13.md#how-to-card-every-time-with-a-bot-demonstration-2026-10-08) | Island shelf and how-to entry |

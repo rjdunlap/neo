@@ -27,6 +27,7 @@ import {
   matches,
   packetsFor,
   planFor,
+  requestedKind,
   ROW_LEN,
   total,
   type BigState,
@@ -175,6 +176,10 @@ class GardenGrow implements Game {
   private readonly bigBlooms: Bloom[] = [];
   private bigKind: FlowerKind | null = null;
   private bigScale = 2.2;
+  /** The book's request (RW11 slice 2): the first seed she plants at level 2 grows this kind, and its bloom ends the round. */
+  private readonly requested: FlowerKind | null;
+  private requestedPlanted = false;
+  private grew: FlowerKind | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -183,6 +188,7 @@ class GardenGrow implements Game {
     this.grid = GRID_MODES.includes(this.plan.mode);
     this.choosing = CHOOSE_MODES.includes(this.plan.mode);
     this.requests = makeRequests(this.plan, ctx.rng);
+    this.requested = this.plan.mode === 'water' ? requestedKind(ctx.request) : null;
     this.backdrop = new Backdrop(
       {
         sky: [0x8fd3f7, 0xe9f7ff],
@@ -470,10 +476,19 @@ class GardenGrow implements Game {
     this.resize(this.view);
   }
 
+  /** Free planting picks a kind per bed; the book's request takes the first seed of the round. */
+  private nextFreeKind(): FlowerKind {
+    if (this.requested && !this.requestedPlanted) {
+      this.requestedPlanted = true;
+      return this.requested;
+    }
+    return this.ctx.rng.pick(KINDS);
+  }
+
   private plantIn(bed: Bed, color: ColorName) {
     bed.seed = color;
     // A request's flowers are all of its kind; free planting picks one per bed.
-    bed.kind = this.requests[this.index]?.kind ?? this.ctx.rng.pick(KINDS);
+    bed.kind = this.requests[this.index]?.kind ?? this.nextFreeKind();
     // A seed with a little marker stick in its color, so you can see what was planted.
     const s = new Container();
     s.addChild(
@@ -744,6 +759,12 @@ class GardenGrow implements Game {
     if (mode === 'water') {
       this.busy = true;
       await Promise.all(seeded.map((b) => this.growBed(b)));
+      if (this.requested && seeded.some((b) => b.kind === this.requested)) {
+        // The flower she asked the book for has bloomed: the round is done, whatever else is in the beds.
+        this.grew = this.requested;
+        await this.ctx.tw.wait(0.4);
+        return void this.finale();
+      }
       this.busy = false;
       return void this.checkFull();
     }
@@ -853,7 +874,7 @@ class GardenGrow implements Game {
         void this.ctx.tw.to(b.bloom.head.scale, { x: 1.25, y: 1.25 }, { duration: 0.3, ease: ease.outBack });
     await this.ctx.say('grow.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, ...(this.grew ? { grew: this.grew } : {}) });
   }
 }
 

@@ -54,6 +54,10 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export type FlowerKind = 'blossom' | 'daisy' | 'tulip' | 'sunflower' | 'bell';
 export const KINDS: FlowerKind[] = ['blossom', 'daisy', 'tulip', 'sunflower', 'bell'];
 
+/** The flower kind a book request names (RW11 slice 2), or null for no request or one that is no kind. */
+export const requestedKind = (request: unknown): FlowerKind | null =>
+  KINDS.find((k) => k === request) ?? null;
+
 /** Level 8: five touches grow one flower (seed in, sprout, leaves, bud, open), and three flowers end the round. */
 export const BIG_STAGES = 5;
 export const BIG_FLOWERS = 3;

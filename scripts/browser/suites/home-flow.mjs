@@ -2,6 +2,7 @@ import { selectValue } from '../selection.mjs';
 import assert from 'node:assert/strict';
 import { homeBook } from './home-book.mjs';
 import { homeColour } from './home-colour.mjs';
+import { homeForm } from './home-form.mjs';
 import { homeTunes } from './home-tunes.mjs';
 
 export function createSuite({
@@ -37,6 +38,7 @@ export function createSuite({
           'tunes',
           'book',
           'colour',
+          'form',
         ],
         'HOME_ONLY',
       );
@@ -44,6 +46,8 @@ export function createSuite({
       return homeBook({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
     if (process.env.HOME_ONLY === 'colour')
       return homeColour({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
+    if (process.env.HOME_ONLY === 'form')
+      return homeForm({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
     if (process.env.HOME_ONLY === 'arcade') return homeArcade();
     if (process.env.HOME_ONLY === 'tunes')
       return homeTunes({ page, errors, log, ready, scene, pickFirst, tap, screenshot });
