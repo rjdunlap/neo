@@ -453,6 +453,8 @@ export const SHARED = {
   'nav.home': ['Home!'],
   'nav.back': ['Back!'],
   'play.ball': ['Throw the ball for {pet}! Tap the ball.'],
+  'play.lamp': ['Good morning!', 'The sun is back!', 'A new day!'],
+  'play.evening': ['Good night, sun!', 'Evening time!', 'Hello, moon!'],
   'play.fetch': ['Got it!', '{pet} found the ball!', 'Again, again!', 'Fetch!'],
   'species.sprout': ['A sprout!'],
   'species.river': ['A river!'],
