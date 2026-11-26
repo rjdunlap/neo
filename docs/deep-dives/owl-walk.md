@@ -175,7 +175,7 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
 5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
 6. **Level 6, Color or shape.** *Built 2026-11-23 ([PR #2081](https://github.com/rjdunlap/neo/pull/2081)); see [What was built: slice 6](#what-was-built-slice-6-2026-11-23).* Decision 7 applied. *Tier: new interaction: as slice 2.*
-7. **A grown-up in the second seat.** Needs decision 5.
+7. **A grown-up in the second seat.** Needs decision 5. *Claimed 2026-11-26 (`claude/owl-walk-grownup-seat`, `src/games/owl-walk/index.ts`, `logic.ts`, `howto.ts`, tests, docs): while the pet's turn is open, a person tapping the right stone or the nest takes that hop; uncredited, never a miss.*
 8. **Levels 7 and 8.** Sketches; define first after a person has played level 4.
 
 Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the `fingerdemo` bot, and records a short VERIFICATION entry.
