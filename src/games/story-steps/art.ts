@@ -280,6 +280,69 @@ export function storyPicture(card: StoryCard): Container {
       }
       break;
     }
+    case 'laundry': {
+      // The picnic blanket: a jam spot, a tub of suds, hung on a line by two pegs, then dry and folded on a basket.
+      const check = (x: number, y: number, w: number, h: number) => {
+        g.roundRect(x, y, w, h, 6).fill(swatch.pink.light).stroke(stroke(swatch.pink.line));
+        for (let i = 1; i < 4; i++) g.moveTo(x + (w * i) / 4, y + 3).lineTo(x + (w * i) / 4, y + h - 3);
+        g.stroke({ width: 3, color: swatch.pink.line });
+      };
+      if (stage === 0) {
+        check(-66, -38, 132, 88);
+        g.ellipse(14, 4, 20, 16).circle(32, -6, 7).fill(swatch.red.fill).stroke(stroke(swatch.red.line));
+        g.circle(-6, -2, 4).fill(swatch.red.light);
+      } else if (stage === 1) {
+        g.ellipse(0, 40, 66, 18).fill(wood.light).stroke(stroke(wood.line));
+        g.roundRect(-66, 4, 132, 38, 10).fill(swatch.blue.fill).stroke(stroke(swatch.blue.line));
+        g.ellipse(0, 4, 66, 16).fill(swatch.blue.light).stroke(stroke(swatch.blue.line));
+        g.roundRect(-34, -6, 68, 18, 8).fill(swatch.pink.light).stroke(stroke(swatch.pink.line));
+        for (const [x, y, r] of [
+          [-46, -6, 15],
+          [-22, -22, 14],
+          [4, -26, 17],
+          [32, -20, 14],
+          [50, -4, 13],
+          [-8, -8, 10],
+        ])
+          g.circle(x, y, r).fill(swatch.white.fill).stroke(stroke(swatch.blue.line));
+        g.ellipse(2, -2, 18, 12).fill(swatch.orange.light).stroke(stroke(swatch.orange.line));
+        for (const x of [-4, 6, 16]) g.moveTo(x, -10).lineTo(x + 2, 4);
+        g.stroke({ width: 3, color: swatch.orange.line, cap: 'round' });
+      } else if (stage === 2) {
+        g.moveTo(-76, -64).lineTo(76, -64).stroke({ width: 5, color: wood.line, cap: 'round' });
+        g.roundRect(-58, -62, 116, 84, 4).fill(swatch.pink.light).stroke(stroke(swatch.pink.line));
+        for (const x of [-29, 0, 29]) g.moveTo(x, -58).lineTo(x, 18);
+        g.stroke({ width: 3, color: swatch.pink.line });
+        for (const x of [-46, 46])
+          g.roundRect(x - 6, -76, 12, 26, 3)
+            .fill(wood.fill)
+            .stroke(stroke(wood.line));
+        for (const [x, y] of [
+          [-36, 30],
+          [8, 36],
+          [40, 28],
+        ]) {
+          g.poly([x, y, x - 6, y + 13, x + 6, y + 13]).fill(swatch.blue.fill);
+          g.circle(x, y + 15, 6).fill(swatch.blue.fill);
+        }
+      } else {
+        g.roundRect(-52, 8, 104, 52, 8).fill(wood.fill).stroke(stroke(wood.line));
+        for (const x of [-26, 0, 26]) g.moveTo(x, 14).lineTo(x, 54);
+        g.stroke({ width: 3, color: wood.line });
+        g.moveTo(-44, 8).quadraticCurveTo(0, -38, 44, 8).stroke({ width: 6, color: wood.line, cap: 'round' });
+        check(-62, -18, 124, 34);
+        for (const [x, y, r] of [
+          [-60, -44, 12],
+          [58, -40, 11],
+          [-66, 36, 9],
+          [66, 30, 10],
+        ]) {
+          sparkle(g, x, y, r);
+          g.fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+        }
+      }
+      break;
+    }
     case 'rain': {
       g.roundRect(-72, 50, 144, 20, 8).fill(swatch.green.fill).stroke(stroke(swatch.green.line));
       if (stage === 0) {
