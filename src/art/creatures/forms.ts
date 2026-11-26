@@ -61,3 +61,6 @@ export function wearForm(c: IllustratedCreature, species: SpeciesId, id: FormId 
 }
 
 export const wearingForm = (c: IllustratedCreature): boolean => shown.has(c);
+
+/** The blossom node a creature shows, so creature play's lamp can open and close it (null with no blossom drawn). */
+export const blossomOf = (c: IllustratedCreature): Container | null => shown.get(c) ?? null;
