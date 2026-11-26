@@ -23,6 +23,7 @@ import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated
 import { formFits, wearForm } from '../art/creatures/forms';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
 import { PAPER_CREATURES, paperArt } from '../art/creatures/paper';
+import { paperCircle, paperLine, paperPoly } from '../art/paper';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
 import {
   fileOf,
@@ -716,8 +717,11 @@ export function paperEgg(stage: EggStage): Container {
     for (let k = 0; k <= 40; k++) pts.push(...eggAt(from + ((to - from) * k) / 40));
     // The edge runs round from one end of the crack to the other, so the zigzag closes it back to the start.
     if (cut) pts.push(...zigzag(pts[pts.length - 2], pts[0]));
-    g.poly(pts).fill(EGG_SHELL);
-    for (const [x, y, r] of spots) g.circle(x, y, r).fill(EGG_SPOT);
+    // A gentle wobble: the egg is big on the hatch screen, and a lumpy egg looks squashed.
+    paperPoly(g, pts, EGG_SHELL, { amp: 1.4, seed: `egg${from}`, line: 0xb9a888 });
+    spots.forEach(([x, y, r], i) =>
+      paperCircle(g, x, y, r, EGG_SPOT, { noShadow: true, amp: 1.2, seed: `spot${i}` }),
+    );
     return g;
   };
   if (stage !== 'open') {
@@ -727,8 +731,16 @@ export function paperEgg(stage: EggStage): Container {
       [-46, 42, 30],
       [30, 86, 24],
     ]);
-    if (stage === 'crack')
-      g.poly(zigzag(-94, 94), false).stroke({ width: 7, color: EGG_CRACK, join: 'round', cap: 'round' });
+    if (stage === 'crack') {
+      const z = zigzag(-94, 94);
+      paperLine(
+        g,
+        z.flatMap((v, i) => (i % 2 ? [] : [[v, z[i + 1]] as [number, number]])),
+        EGG_CRACK,
+        7,
+        { noShadow: true },
+      );
+    }
     c.addChild(g);
     return c;
   }
