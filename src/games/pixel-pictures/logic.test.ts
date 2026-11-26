@@ -14,6 +14,19 @@ import {
   encodeRow,
   firstDiffer,
   LEVELS,
+  MOSAIC_AMOUNT,
+  MOSAIC_MODELS,
+  MOSAIC_PANES,
+  MOSAIC_SETS,
+  makeMosaicRound,
+  maskOf,
+  mosaicCanonical,
+  mosaicCheck,
+  mosaicEdge,
+  mosaicGroups,
+  mosaicHint,
+  mosaicSymmetries,
+  paneCount,
   makeBitRows,
   blank,
   canFinish,
@@ -363,7 +376,11 @@ describe('Pixel Pictures', () => {
     expect(picturesFor(plan).map((p) => p.name)).toContain('a ladybird');
     // Level 1 stays one color on the same grid.
     for (const p of picturesFor(planFor(1))) expect(colorsOf(p), p.name).toHaveLength(1);
-    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 11, 12, 10] };
+    const orders = {
+      preschool: [1, 9, 2],
+      prek: [1, 9, 2, 3, 10],
+      school: [3, 4, 5, 6, 7, 8, 11, 12, 13, 10],
+    };
     for (const [band, order] of Object.entries(orders) as [keyof typeof orders, number[]][]) {
       const range = pixelPictures.levels(band);
       expect(levelsInOrder(range), band).toEqual(order);
@@ -409,7 +426,8 @@ describe('Pixel Pictures', () => {
     expect(stepLevel(10, 1, pixelPictures.levels('school'))).toBe(10);
     expect(stepLevel(8, 1, pixelPictures.levels('school'))).toBe(11);
     expect(stepLevel(11, 1, pixelPictures.levels('school'))).toBe(12);
-    expect(stepLevel(12, 1, pixelPictures.levels('school'))).toBe(10);
+    expect(stepLevel(12, 1, pixelPictures.levels('school'))).toBe(13);
+    expect(stepLevel(13, 1, pixelPictures.levels('school'))).toBe(10);
   });
 
   it('the ghost finger draws the heart on level 10, clearing stray squares, then presses Done', () => {
@@ -568,7 +586,7 @@ describe('Pixel Pictures level 11, ones and zeros', () => {
   it('levels 11 and 12 join school after 8 and before the free level; the other levels and bands are as they were', async () => {
     const { pixelPictures } = await import('./index');
     const { landing, levelsInOrder } = await import('../../progress/difficulty');
-    expect(levelsInOrder(pixelPictures.levels('school'))).toEqual([3, 4, 5, 6, 7, 8, 11, 12, 10]);
+    expect(levelsInOrder(pixelPictures.levels('school'))).toEqual([3, 4, 5, 6, 7, 8, 11, 12, 13, 10]);
     expect(LEVELS.preschool).toEqual({ min: 1, max: 9, order: [1, 9, 2] });
     expect(LEVELS.prek).toEqual({ min: 1, max: 10, order: [1, 9, 2, 3, 10] });
     expect(planFor(11)).toMatchObject({ mode: 'bitsRow', size: 4, colors: 1, pictures: 3 });
@@ -720,3 +738,101 @@ describe('Pixel Pictures level 11, ones and zeros', () => {
 });
 
 const LETTERS_USED = { r: 1, g: 1, y: 1, b: 1, u: 1 };
+
+describe('level 13, Window Mosaic: the same amount in a different shape', () => {
+  const models = MOSAIC_MODELS.map((m) => m.mask);
+
+  it('has four models of eight panes with the stated groups and edge lengths', () => {
+    expect(MOSAIC_MODELS.map((m) => paneCount(m.mask))).toEqual([8, 8, 8, 8]);
+    expect(MOSAIC_MODELS.map((m) => [m.name, mosaicGroups(m.mask), mosaicEdge(m.mask)])).toEqual([
+      ['left half', 1, 12],
+      ['two bars', 2, 20],
+      ['two corners', 2, 16],
+      ['checkerboard', 8, 32],
+    ]);
+    expect(MOSAIC_AMOUNT).toBe(8);
+  });
+
+  it('treats a mask and its eight symmetries as one shape, and the two checkerboards as one', () => {
+    for (const mask of [...models, 0b1011_0110_0001_0101, 0xffff, 0]) {
+      const syms = mosaicSymmetries(mask);
+      expect(syms).toHaveLength(8);
+      for (const s of syms) expect(mosaicCanonical(s)).toBe(mosaicCanonical(mask));
+    }
+    const other = maskOf(['.X.X', 'X.X.', '.X.X', 'X.X.']);
+    expect(mosaicCanonical(other)).toBe(mosaicCanonical(models[3]));
+  });
+
+  it('judges every one of the 65 536 windows against each model by count, then by shape', () => {
+    for (const model of models) {
+      for (let mask = 0; mask < 1 << MOSAIC_PANES; mask++) {
+        const n = paneCount(mask);
+        const v = mosaicCheck(mask, model);
+        if (n === 0) expect(v).toBe('empty');
+        else if (n < 8) expect(v).toBe('fewer');
+        else if (n > 8) expect(v).toBe('more');
+        else expect(v).toBe(mosaicCanonical(mask) === mosaicCanonical(model) ? 'same' : 'right');
+      }
+    }
+  });
+
+  it('authors each choice set so neither the group count nor the edge length gives the answer away', () => {
+    expect(MOSAIC_SETS).toHaveLength(models.length);
+    MOSAIC_SETS.forEach((sets, m) => {
+      const model = models[m];
+      expect(sets.length).toBeGreaterThanOrEqual(3);
+      for (const set of sets) {
+        expect([paneCount(set.right), paneCount(set.fewer), paneCount(set.more)]).toEqual([8, 6, 10]);
+        expect(mosaicGroups(set.right)).not.toBe(mosaicGroups(model));
+        expect(mosaicEdge(set.right)).not.toBe(mosaicEdge(model));
+        const wrong = [set.fewer, set.more];
+        expect(wrong.some((w) => mosaicEdge(w) === mosaicEdge(model))).toBe(true);
+        // No window of six or ten panes has eight separate groups, so the checkerboard's count cannot be matched.
+        if (m !== 3) expect(wrong.some((w) => mosaicGroups(w) === mosaicGroups(model))).toBe(true);
+      }
+    });
+  });
+
+  it('deals the model never twice in a row, the right window on every side, and a color from the swatches', () => {
+    const rng = new Rng(7);
+    let previous: number | undefined;
+    const sides = new Set<number>();
+    const seenModels = new Set<number>();
+    for (let i = 0; i < 80; i++) {
+      const round = makeMosaicRound(rng, previous);
+      expect(round.model).not.toBe(previous);
+      expect(round.windows).toHaveLength(3);
+      expect(paneCount(round.windows[round.right])).toBe(8);
+      expect(round.windows.map(paneCount).sort((a, b) => a - b)).toEqual([6, 8, 10]);
+      previous = round.model;
+      sides.add(round.right);
+      seenModels.add(round.model);
+    }
+    expect([...sides].sort()).toEqual([0, 1, 2]);
+    expect(seenModels.size).toBe(4);
+  });
+
+  it('gives a hint from every state that is a legal pane and reaches a right window in at most eight steps', () => {
+    for (const model of models) {
+      for (let mask = 0; mask < 1 << MOSAIC_PANES; mask += 7) {
+        let state = mask;
+        let steps = 0;
+        while (mosaicCheck(state, model) !== 'right') {
+          const pane = mosaicHint(state, model);
+          expect(pane).toBeGreaterThanOrEqual(0);
+          expect(pane).toBeLessThan(MOSAIC_PANES);
+          state ^= 1 << pane;
+          expect(++steps).toBeLessThanOrEqual(8);
+        }
+      }
+    }
+  });
+
+  it('puts level 13 in the school order after 12 and before the free level, in no other band', async () => {
+    const { levelsInOrder } = await import('../../progress/difficulty');
+    expect(levelsInOrder(LEVELS.school!)).toEqual([3, 4, 5, 6, 7, 8, 11, 12, 13, 10]);
+    expect(levelsInOrder(LEVELS.prek!)).not.toContain(13);
+    expect(levelsInOrder(LEVELS.preschool!)).not.toContain(13);
+    expect(planFor(13)).toMatchObject({ mode: 'mosaic', size: 4, colors: 1, pictures: 1 });
+  });
+});

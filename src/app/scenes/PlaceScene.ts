@@ -9,6 +9,8 @@ import { voice } from '../../audio/voice';
 import { placeFor, type Place } from '../../content/places';
 import { WOODLAND_BAND } from '../../content/woodland';
 import { woodlandLandmark } from '../../art/woodland';
+import { MELODY_BAND } from '../../content/melody';
+import { melodyLandmark } from '../../art/melody';
 import { checkBadge } from '../../art/picnic';
 import { shelfFor } from '../../content/shelf';
 import { visibleGames } from '../../content/lands';
@@ -73,25 +75,26 @@ function mixSpot(mods: readonly GameModule[] | null): MixSpot | null {
   return { mix: true, node };
 }
 
-/** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods. */
+/** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods, the Missing Melody on Bumpy Hills. */
 export interface StorySpot {
-  story: 'woodland';
+  story: 'woodland' | 'melody';
   node: Container;
 }
 
-/** The story spot for a place, if it has one: only Wonder Woods, so younger children keep the Windy Picnic and see nothing new. */
+/** The story spot for a place, if it has one: only Wonder Woods and Bumpy Hills, so other ages keep the Windy Picnic and see nothing new. */
 function storySpot(band: Band): StorySpot | null {
-  if (band !== WOODLAND_BAND) return null;
+  const story = band === WOODLAND_BAND ? 'woodland' : band === MELODY_BAND ? 'melody' : null;
+  if (!story) return null;
   const node = new Container();
-  const art = woodlandLandmark();
-  const name = label('Woodland Picnic', 22);
+  const art = story === 'melody' ? melodyLandmark() : woodlandLandmark();
+  const name = label(story === 'melody' ? 'Missing Melody' : 'Woodland Picnic', 22);
   name.position.set(0, 52);
   node.addChild(
     new Graphics().ellipse(0, 26, 100, 22).fill({ color: swatch.green.line, alpha: 0.18 }),
     art,
     name,
   );
-  if (store.woodland.keepsake) {
+  if (store[story].keepsake) {
     const done = checkBadge(20);
     done.position.set(76, -50);
     node.addChild(done);
@@ -99,7 +102,7 @@ function storySpot(band: Band): StorySpot | null {
   node.eventMode = 'static';
   node.cursor = 'pointer';
   node.hitArea = new Rectangle(-100, -110, 200, 185);
-  return { story: 'woodland', node };
+  return { story, node };
 }
 
 class Flower extends Container {
@@ -145,7 +148,7 @@ class Flower extends Container {
 export class PlaceScene extends Scene {
   readonly place: Place;
   readonly landmarks: Landmark[] = [];
-  /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic), or null. */
+  /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic, Bumpy Hills' Missing Melody), or null. */
   readonly story: StorySpot | null;
   /** Little surprises, first along the path at lap and toddler, or null. */
   readonly mixSpot: MixSpot | null;
@@ -458,11 +461,11 @@ export class PlaceScene extends Scene {
     this.leaving = true;
     lastScroll.set(this.band, this.scroll);
     this.pip.cheer();
-    void voice.say('woodland.spot');
+    void voice.say(spot.story === 'melody' ? 'melody.spot' : 'woodland.spot');
     sfx.whoosh();
     void this.tw
       .to(spot.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 })
-      .then(() => this.app.go.woodland());
+      .then(() => (spot.story === 'melody' ? this.app.go.melody() : this.app.go.woodland()));
   }
 
   private leave(go: () => void) {

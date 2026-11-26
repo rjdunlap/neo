@@ -64,7 +64,7 @@ describe('Critter Crossing', () => {
       for (let seed = 1; seed <= 80; seed++) {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters, plan.name).toHaveLength(plan.critters);
-        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
+        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size).toBe(plan.critters);
         const yes = r.critters.filter((c) => passes(c, r.gate)).length;
         expect(yes, `${plan.name} #${seed}`).toBeGreaterThan(0);
         expect(yes, `${plan.name} #${seed}`).toBeLessThan(plan.critters);
@@ -333,5 +333,52 @@ describe('Critter Crossing', () => {
       }
       expect(sawDecisiveEarly).toBe(true);
     });
+  });
+});
+
+describe('Critter Crossing scarf', () => {
+  const scarfLevels = PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => p.scarf);
+
+  it('is the third look on the later hidden levels only, and the scarf rule fits only a scarf', () => {
+    expect(scarfLevels.map((s) => s.level)).toEqual([5, 6, 7]);
+    expect(fits({ kind: 'cow', hat: false, scarf: true }, 'scarf')).toBe(true);
+    expect(fits({ kind: 'cow', hat: true }, 'scarf')).toBe(false);
+    expect(gateWords({ kind: 'and', rules: ['hat', 'scarf'] })).toBe('wearing a hat and wearing a scarf');
+  });
+
+  it('old levels never deal a scarf, so they deal as they did before', () => {
+    for (const [i, plan] of PLANS.entries()) {
+      if (plan.scarf) continue;
+      for (let seed = 1; seed <= 20; seed++) {
+        const round = makeRound(plan, new Rng(seed));
+        expect(
+          round.critters.some((c) => c.scarf !== undefined),
+          `level ${i + 1}`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it('scarf rounds stay fair across the larger pool: some cross, some wait, and trying everyone leaves one picture', () => {
+    let sawScarfRule = false;
+    for (const { p } of scarfLevels) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const round = makeRound(p, new Rng(seed));
+        const yes = round.critters.filter((c) => passes(c, round.gate)).length;
+        expect(yes).toBeGreaterThan(0);
+        expect(yes).toBeLessThan(round.critters.length);
+        const keys = round.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`);
+        expect(new Set(keys).size).toBe(keys.length);
+        if (round.options.length && !round.tried) {
+          const evidence = round.critters.map((c) => ({ c, passed: passes(c, round.gate) }));
+          const left = consistent(round.options, evidence);
+          expect(left).toHaveLength(1);
+          expect(sameGate(left[0], round.gate)).toBe(true);
+        }
+        const text = gateKey(round.gate);
+        if (text.includes('scarf')) sawScarfRule = true;
+      }
+    }
+    expect(sawScarfRule).toBe(true);
   });
 });

@@ -2,7 +2,7 @@ import { KIND_WORDS } from '../../learning/sorting/rules';
 import { ruleIcon } from '../../art/sort-rule-icon';
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { hatArt } from '../../art/props';
+import { hatArt, scarfArt } from '../../art/props';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -333,6 +333,7 @@ class CritterSort implements Game {
       else {
         node.scale.set(CRITTER_SCALE);
         if (c.hat) (node as Critter).attach(hatArt());
+        if (c.scarf) (node as Critter).attach(scarfArt());
         node.hitArea = new Circle(0, CRITTER_HIT.y / CRITTER_SCALE, CRITTER_HIT.radius / CRITTER_SCALE);
       }
       this.ctx.track(node);

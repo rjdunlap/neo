@@ -1,7 +1,7 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
-export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake' | 'compose';
+export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake' | 'compose' | 'answer';
 
 export interface SongPlan {
   mode: SongMode;
@@ -48,6 +48,43 @@ export const SONG_PLANS: SongPlan[] = [
     notes: 3,
     name: 'Make your own song on a 6-beat loop, then press the check to hear it once more',
   },
+  // Level 10, Answer my song: the pet's 4-note question fills beats 1-4; she answers with one jelly on each of beats 5-8.
+  {
+    mode: 'answer',
+    cols: 8,
+    rows: 4,
+    notes: 4,
+    name: "Answer the pet's 4-note question with a note on each of the next four beats",
+  },
+  // Level 11, Finish my song: the pet's 2-note opening from the motif pool fills beats 1-2; she finishes with one jelly on each of beats 3-4.
+  {
+    mode: 'answer',
+    cols: 4,
+    rows: 3,
+    notes: 2,
+    name: "Finish the pet's 2-note song with a note on each of the last two beats",
+  },
+];
+
+/** Answer my song: the first beat (column) of her answer; beats before it are the pet's question. */
+export const ANSWER_FROM = 4;
+
+/** The first beat (column) she fills in an answer/finish level; beats before it are the pet's given opening. */
+export const answerFrom = (plan: SongPlan) => plan.cols - plan.notes;
+
+/**
+ * The pet's questions: four beats, one row each (row 0 is the top, highest), eight authored. Each uses at least two
+ * different rows, and they start and end in different places so no two questions sound alike.
+ */
+export const QUESTIONS: readonly (readonly number[])[] = [
+  [3, 2, 1, 2],
+  [3, 3, 2, 1],
+  [2, 1, 0, 1],
+  [3, 1, 2, 3],
+  [0, 1, 2, 2],
+  [2, 2, 1, 0],
+  [3, 2, 3, 1],
+  [1, 2, 3, 2],
 ];
 
 export const songPlan = (level: number) =>
@@ -120,6 +157,16 @@ export const MOTIFS = {
 /** Previous three authored rounds are excluded; no save field or cross-profile history. */
 export const MOTIF_WINDOW = 3;
 
+/** Finish my song: unique two-note openings drawn from the 3-row motif pool (first two sung notes, on beats 1–2). */
+export const OPENINGS: readonly (readonly [number, number])[] = Array.from(
+  new Map(
+    MOTIFS[3].map((beats) => {
+      const pair = beats.filter((r) => r !== null).slice(0, 2) as [number, number];
+      return [pair.join(','), pair] as const;
+    }),
+  ).values(),
+);
+
 export interface Song {
   /** Authored content identity (shape plus pool index), for the short repeat window. */
   motif?: string;
@@ -135,6 +182,22 @@ export interface Song {
 export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = []): Song {
   if (plan.mode === 'free' || plan.mode === 'wake' || plan.mode === 'compose')
     return { notes: [], given: [] };
+  if (plan.mode === 'answer') {
+    if (plan.cols === 4) {
+      const choices = OPENINGS.map((_, i) => `o:${i}`).filter(
+        (id) => !recent.slice(-MOTIF_WINDOW).includes(id),
+      );
+      const id = rng.pick(choices);
+      const given = OPENINGS[Number(id.slice(2))].map((row, col) => ({ col, row }));
+      return { notes: [], given, motif: id };
+    }
+    const choices = QUESTIONS.map((_, i) => `q:${i}`).filter(
+      (id) => !recent.slice(-MOTIF_WINDOW).includes(id),
+    );
+    const id = rng.pick(choices);
+    const given = QUESTIONS[Number(id.slice(2))].map((row, col) => ({ col, row }));
+    return { notes: [], given, motif: id };
+  }
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
     const notes = Array.from({ length: plan.cols }, (_, col) => ({ col, row: p.rows[col % p.rows.length] }));
@@ -186,8 +249,23 @@ export function freeSong(plan: SongPlan): Note[] {
 export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string>): Note | null {
   // Wake: the next spot in the order it wakes; the ghost finger only ever lights, so each one is awake by its turn.
   if (plan.mode === 'wake') return awakeSpots(placed.size).find((n) => !placed.has(key(n))) ?? null;
+  if (plan.mode === 'answer') return answerBot(song, plan).find((n) => !placed.has(key(n))) ?? null;
   const notes = plan.mode === 'free' || plan.mode === 'compose' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
+}
+
+/** Answer/Finish my song: the ghost finger's reply, one jelly a beat, a step off each given note (wrapping within `plan.rows`) so it is a reply, not an echo. */
+export const answerBot = (song: Song, plan: SongPlan = songPlan(10)): Note[] =>
+  song.given.map((n, i) => ({ col: answerFrom(plan) + i, row: (n.row + 1) % plan.rows }));
+
+/** Answer my song: the check is awake once every answer beat holds a jelly and all eight beats have played since her last change. */
+export const answerReady = (plan: SongPlan, answered: number, beatsSinceChange: number) =>
+  answered >= plan.notes && beatsSinceChange >= plan.cols;
+
+/** Answer my song: the jelly a tap at `note` leaves lit in its beat. A beat holds one, so a tap moves it, and a tap on the lit one puts it out. */
+export function answerTap(lit: readonly Note[], note: Note): Note[] {
+  const rest = lit.filter((n) => n.col !== note.col);
+  return lit.some((n) => n.col === note.col && n.row === note.row) ? rest : [...rest, note];
 }
 
 /**
@@ -270,7 +348,7 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
   if (v.upright) {
     const card = { x: v.w / 2, y: 130 };
     const replay = { x: v.w - 80, y: 130 };
-    if (plan.mode === 'pattern') {
+    if (plan.mode === 'pattern' || (plan.mode === 'answer' && plan.cols > 4)) {
       const half = plan.cols / 2;
       const top = 40 + GIVEN_CELL * plan.rows + 40;
       const cell = Math.min(180, (v.w - 48) / half, (v.h - 170 - 14 - top) / plan.rows);
@@ -304,10 +382,14 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
       replay,
     };
   }
+  const bottomCheck = plan.mode === 'answer' && plan.cols > 6;
+  const sideCheck =
+    plan.mode === 'listen' || plan.mode === 'compose' || (plan.mode === 'answer' && !bottomCheck);
   const left = plan.mode === 'card' ? v.w * 0.36 : 175;
-  const right = v.w - (plan.mode === 'listen' || plan.mode === 'compose' ? 130 : 40);
+  const right = v.w - (sideCheck ? 130 : 40);
   const top = 130;
-  const bottom = v.h - 40;
+  // The 8-beat answer board keeps the narrow margin, so its check sits in the row under the board instead.
+  const bottom = v.h - (bottomCheck ? 130 : 40);
   const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
   const x0 = left + (right - left - cell * plan.cols) / 2;
   const y0 = top + (bottom - top - cell * plan.rows) / 2;
@@ -317,7 +399,7 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
     y0,
     bars: [{ from: 0, cols: plan.cols, x0, y0, cell, tappable: true }],
     card: { x: v.w * 0.18, y: v.h * 0.4 },
-    replay: { x: v.w - 70, y: v.h / 2 },
+    replay: { x: v.w - 70, y: bottomCheck ? v.h - 62 : v.h / 2 },
   };
 }
 
@@ -325,8 +407,9 @@ export const LEVELS: BandLevels = {
   // Level 8 (one big jelly that answers anywhere) is the easiest, so lap plays it first, then 1 and 2.
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
-  // Level 9 (My song, compose) comes last in each window: it has no wrong answer, so it follows the copy levels.
-  preschool: { min: 4, max: 9, order: [4, 5, 6, 9] },
-  prek: { min: 5, max: 9, order: [5, 6, 7, 9] },
-  school: { min: 6, max: 9, order: [6, 7, 9] },
+  // Level 11 (Finish my song) opens guided composing after the first copy level in preschool and pre-K; level 9 (My song) comes last.
+  preschool: { min: 4, max: 11, order: [4, 11, 5, 6, 9] },
+  prek: { min: 5, max: 11, order: [5, 11, 6, 7, 9] },
+  // Level 10 (Answer my song) is school only until a person check says pre-K can hold the 8-beat board.
+  school: { min: 6, max: 10, order: [6, 7, 9, 10] },
 };

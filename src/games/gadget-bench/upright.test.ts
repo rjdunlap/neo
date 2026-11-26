@@ -18,6 +18,7 @@ const cases: [number, number, number][] = [
   [5, 4, 4],
   [6, 3, 4],
   [6, 4, 5],
+  [7, 4, 5],
 ];
 
 const at = (what: string, r: Rect): Target => ({ what, x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h });

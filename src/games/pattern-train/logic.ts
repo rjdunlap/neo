@@ -8,7 +8,7 @@ import type { BandLevels } from '../../progress/difficulty';
 export interface PatternPlan {
   /** The repeating unit, as symbol slots (0, 1, 2). */
   pattern: number[];
-  kind: 'shape' | 'animal' | 'bell' | 'pair' | 'number';
+  kind: 'shape' | 'animal' | 'bell' | 'pair' | 'number' | 'stack';
   /** The empty car is in the first repeat (a missing middle) rather than at the end. */
   missing?: boolean;
   /** Two empty cars at the end. */
@@ -21,8 +21,22 @@ export interface PatternPlan {
   match?: 'row' | 'build';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
+  /** Level 20, "Start anywhere": a numbered train that may start at any number, not only a multiple of the step, with a gap after the first car. */
+  startAnywhere?: boolean;
+  /** Level 17, "Make your own": she picks a unit of one to three pieces and the train runs it round (`makeTrain`); nothing is wrong. */
+  make?: boolean;
+  /** Level 18, "Stairs": cars hold 1, 2, 3, 4 counters and the empty car holds one more; the pieces are counts (1–9), not pieces 0–2. */
+  stairs?: boolean;
+  /** Level 19, "Up and down": the steps a stair train may take (positive up, negative down), so stacks may go down and by two. */
+  stackSteps?: readonly number[];
   name: string;
 }
+
+/** Level 20's steps: the amounts the numbered cars count by when the first car is any number. */
+const START_STEPS = [2, 3, 4, 5, 10] as const;
+
+/** Level 19's steps: one or two, up or down. */
+const STACK_STEPS = [-2, -1, 1, 2] as const;
 
 export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1], kind: 'shape', name: 'AB: alternate two shapes' },
@@ -46,6 +60,23 @@ export const PATTERN_PLANS: PatternPlan[] = [
     name: 'Find the row with the same pattern in new pieces',
   },
   { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
+  // Her own unit, so `pattern` is empty: the unit is whatever she makes.
+  { pattern: [], kind: 'shape', make: true, name: 'Make your own pattern and watch it go round' },
+  { pattern: [], kind: 'stack', stairs: true, name: 'Stairs: stacks that grow by one' },
+  {
+    pattern: [],
+    kind: 'stack',
+    stairs: true,
+    stackSteps: STACK_STEPS,
+    name: 'Up and down: stacks that step by one or two',
+  },
+  {
+    pattern: [],
+    kind: 'number',
+    numberSteps: START_STEPS,
+    startAnywhere: true,
+    name: 'Start anywhere: numbered cars that do not start at the step',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -98,7 +129,14 @@ export function pieceName(kind: PatternPlan['kind'], family: number | undefined,
 
 /** The spoken reason after the answer that ends a round (TotoLogic P7): a line id and its slots. */
 export interface PatternSaid {
-  key: 'pattern.why' | 'pattern.whyBells' | 'pattern.whyNumber' | 'pattern.whyPair' | 'pattern.oddWhy';
+  key:
+    | 'pattern.why'
+    | 'pattern.whyBells'
+    | 'pattern.whyStack'
+    | 'pattern.whyStep'
+    | 'pattern.whyNumber'
+    | 'pattern.whyPair'
+    | 'pattern.oddWhy';
   vars: Record<string, string | number>;
 }
 
@@ -113,6 +151,11 @@ export function patternSaid(
   train: { sequence: readonly number[]; targets: readonly number[]; family?: number; look?: PairLook },
 ): PatternSaid {
   const { sequence } = train;
+  if (plan.kind === 'stack') {
+    if (!plan.stackSteps) return { key: 'pattern.whyStack', vars: { list: sequence.join(', ') } };
+    const step = sequence[1] - sequence[0];
+    return { key: 'pattern.whyStep', vars: { how: stepWords(step), list: sequence.join(', ') } };
+  }
   if (plan.kind === 'number') {
     return {
       key: 'pattern.whyNumber',
@@ -149,6 +192,92 @@ export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
 /** The tunnel arch she taps to hear the count again: a target like any car, so never under 100 units either way. */
 export const TUNNEL_SIZE = { w: 100, h: 140 } as const;
 
+/** Level 18: four cars show 1 more counter each, and the fifth is the empty car. */
+export const STAIR_CARS = 5;
+/** Level 19's most counters in a stack: the five-frame's two full rows. */
+export const STACK_TOP = 10;
+
+/** A stack step said aloud: "one more", "two fewer". */
+export function stepWords(step: number): string {
+  return `${Math.abs(step) === 1 ? 'one' : 'two'} ${step > 0 ? 'more' : 'fewer'}`;
+}
+
+/** The most counters a stack holds: the five-frame is two rows of five, the answer's "one too many" included. */
+export const STACK_MAX = 9;
+/** A stair train may start at 1 to 4, so the answer is 5 to 8 and its "too many" neighbour is at most 9. */
+export const STAIR_START = { min: 1, max: 4 } as const;
+
+/**
+ * A stair train: four cars of start, start + 1, …, then the empty car with one more. The three stacks on offer are the
+ * answer, the same as the last car (no growth) and one too many, in a shuffled order, so the answer is as often in the
+ * middle as at either end and is found by seeing the stack grow.
+ */
+function stairsTrain(
+  rng: Rng,
+  steps?: readonly number[],
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  if (steps) return stepStairs(steps, rng);
+  const start = rng.int(STAIR_START.min, STAIR_START.max);
+  const sequence = Array.from({ length: STAIR_CARS }, (_, i) => start + i);
+  const answer = sequence[STAIR_CARS - 1];
+  return {
+    sequence,
+    targets: [STAIR_CARS - 1],
+    choices: [rng.shuffle([answer - 1, answer, answer + 1])],
+  };
+}
+
+/**
+ * An up-and-down stair train: four cars that step by one or two, up or down, all stacks 1 to 10, then the empty car.
+ * The stacks on offer are the answer, "the step the other way" (the car before the last) and one off the answer, in a
+ * shuffled order, so the step is found by seeing it, not by where the answer sits.
+ */
+function stepStairs(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const step = rng.pick(steps);
+  const run = (STAIR_CARS - 1) * Math.abs(step);
+  // The whole train, answer included, stays within 1 to STACK_TOP.
+  const low = step > 0 ? 1 : 1 + run;
+  const high = step > 0 ? STACK_TOP - run : STACK_TOP;
+  const start = rng.int(low, high);
+  const sequence = Array.from({ length: STAIR_CARS }, (_, i) => start + i * step);
+  const answer = sequence[STAIR_CARS - 1];
+  const otherWay = sequence[STAIR_CARS - 3];
+  const near = [answer - 1, answer + 1].filter((n) => n >= 1 && n <= STACK_TOP && n !== otherWay);
+  return {
+    sequence,
+    targets: [STAIR_CARS - 1],
+    choices: [rng.shuffle([answer, otherWay, rng.pick(near)])],
+  };
+}
+
+/**
+ * Level 20: a numbered train whose first car is any number from 1 up that is not a multiple of the step (13, 15, 17, 19
+ * by twos), so the step is found from the gaps between cars, not from where they start. The empty car is any car after
+ * the first. The wrong numbers are the previous car, the previous car plus one (the common error), the answer one too big or too small, and the car after (skipping one), two
+ * of them drawn at random, so the answer is sometimes the smallest and sometimes the largest.
+ */
+function startAnywhereTrain(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const step = rng.pick(steps);
+  const last = NUMBER_TOP - step * (START_CARS - 1);
+  const starts = Array.from({ length: last }, (_, i) => i + 1).filter((n) => n % step !== 0);
+  const start = rng.pick(starts);
+  const sequence = Array.from({ length: START_CARS }, (_, i) => start + step * i);
+  const target = rng.int(1, START_CARS - 1);
+  const answer = sequence[target];
+  const before = sequence[target - 1];
+  const near = [
+    ...new Set([before, before + 1, before + step + 1, before + step - 1, before + 2 * step]),
+  ].filter((n) => n > 0 && n <= NUMBER_TOP && n !== answer);
+  const wrong = rng.shuffle(near).slice(0, CHOICES - 1);
+  return { sequence, targets: [target], choices: [rng.shuffle([answer, ...wrong])] };
+}
+
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
 /** A color-and-shape train's cars: two full repeats of four and the car to fill. */
@@ -170,6 +299,8 @@ export interface PairLook {
 export const NUMBER_TOP = 100;
 /** A numbered train's length. */
 export const NUMBER_CARS = 7;
+/** Level 20's train is one car shorter, so the numbers stay large on a phone. */
+export const START_CARS = 6;
 
 /**
  * A numbered train: it starts at a multiple of the step that is not the step itself (12, 14, 16… by twos), the empty car
@@ -179,7 +310,9 @@ export const NUMBER_CARS = 7;
 function numberTrain(
   steps: readonly number[],
   rng: Rng,
+  anywhere = false,
 ): { sequence: number[]; targets: number[]; choices: number[][] } {
+  if (anywhere) return startAnywhereTrain(steps, rng);
   const step = rng.pick(steps);
   const highest = Math.floor((NUMBER_TOP - step * (NUMBER_CARS - 1)) / step);
   const start = step * rng.int(2, highest);
@@ -246,7 +379,8 @@ export function buildTrain(
   family?: number;
   shown?: number[];
 } {
-  if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
+  if (plan.numberSteps) return numberTrain(plan.numberSteps, rng, plan.startAnywhere);
+  if (plan.stairs) return stairsTrain(rng, plan.stackSteps);
   if (plan.kind === 'pair') return pairTrain(rng);
   const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
   // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.
@@ -377,3 +511,27 @@ export function buildMatch(rng: Rng): MatchRound {
     trio: rng.int(0, ANIMAL_TRIOS.length - 1),
   };
 }
+
+/** Level 17: a unit is one to three of the round's three pieces, in the order she chose them. */
+export const MAKE_UNIT_MAX = 3;
+/** Level 17: the train runs her unit round this many times (at most nine cars, what a row holds). */
+export const MAKE_REPEATS = 3;
+
+/** The unit after she taps `piece` in the tray: it joins the end, unless the unit is already full (then nothing changes). */
+export const addToUnit = (unit: readonly number[], piece: number): number[] =>
+  unit.length < MAKE_UNIT_MAX && piece >= 0 && piece < CHOICES ? [...unit, piece] : [...unit];
+
+/** The unit after she taps the car at `at` in it: that car comes out and the rest close up. */
+export const removeFromUnit = (unit: readonly number[], at: number): number[] =>
+  unit.filter((_, i) => i !== at);
+
+/** Go works for any unit of one to three pieces; an empty unit has nothing to run. */
+export const canGo = (unit: readonly number[]): boolean => unit.length >= 1 && unit.length <= MAKE_UNIT_MAX;
+
+/** The cars of the train that runs her unit round `MAKE_REPEATS` times. */
+export const makeTrain = (unit: readonly number[]): number[] =>
+  Array.from({ length: unit.length * MAKE_REPEATS }, (_, i) => unit[i % unit.length]);
+
+/** What the pet says once the train has run: her unit by name, then "again!" (a slotted line, so it stays on device speech). */
+export const madeList = (family: number, unit: readonly number[]): string =>
+  unit.map((p) => pieceName('shape', family, p)).join(', ');

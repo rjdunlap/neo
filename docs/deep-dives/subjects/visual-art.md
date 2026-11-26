@@ -162,7 +162,7 @@ Little Loom levels1–3 built in VA2; [build note](../../archive/COMPLETED-2026-
 Each is one session. Definitions are docs only; builds follow the AGENTS verification tier for a new game or new levels.
 
 3. **VA3 · Picture Talk card** (plain HTML on the grown-ups' page; light copy review). Can run beside VA1–VA2.
-4. **VA4 · Define and build Little Loom 4–5** (checks, diagonal): new-levels tier.
+4. **VA4 · Define and build Little Loom 4–5** (checks, diagonal): defined 2026-11-24 ([packet](../../definitions/little-loom.md#little-loom-45-va4)); VA5 builds it at the new-levels tier.
 5. **VA5 · Define Little Loom 6–7** (lift cards, color-and-weave), with the Picture Bytes overlap test restated, then **VA6** build.
 6. **VA7 · Define Gallery Walk** from the notebook seed (genre rooms, evidence taps, technique sort with subject and technique crossed, choose for the show), after decision 6 and a four-picture art sample.
 7. **VA8 · Rework hook**: a kept cloth as a creature wearable or home textile, defined only after RW05 and RW10 have shipped.

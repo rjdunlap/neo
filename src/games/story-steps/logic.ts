@@ -73,6 +73,15 @@ export const STORIES = {
       'The dog is clean and fluffy!',
     ],
   },
+  laundry: {
+    name: 'Wash the picnic blanket',
+    steps: [
+      'The picnic blanket has a jam spot.',
+      'We scrub the blanket in the tub.',
+      'We hang the wet blanket on the line.',
+      'The blanket is dry and ready for a picnic!',
+    ],
+  },
   rain: {
     name: 'A rainy day',
     steps: [
@@ -109,6 +118,7 @@ export const STORY_FAMILY: Record<StoryId, 'stack' | 'seed' | 'metamorph' | 'was
     apple: 'seed',
     butterfly: 'metamorph',
     dog: 'wash',
+    laundry: 'wash',
     rain: 'weather',
     bedtime: 'bedtime',
   };
@@ -207,7 +217,7 @@ export const STORY_PLANS = [
     fixed: 'none',
     distractors: 0,
     mixed: false,
-    stories: ['flower', 'butterfly', 'apple', 'dog'],
+    stories: ['flower', 'butterfly', 'apple', 'dog', 'laundry'],
     name: 'Put three pictures of a changing story in order',
   },
   {
@@ -330,9 +340,16 @@ export const UNTANGLE_PLAN = {
   kind: 'untangle',
   name: 'Untangle two three-picture stories into their own rows',
 } as const;
-/** Stage 1 adds a lookalike not covered by the endpoint families: two soap baths. */
+/** Stage 1 lookalikes the families do not cover: a story with suds in a tub, and a bubble bath. */
+export const LOOKALIKE_PAIRS: readonly (readonly [StoryId, StoryId])[] = [
+  ['dog', 'bedtime'],
+  ['laundry', 'bedtime'],
+];
 export function canPairStories(a: StoryId, b: StoryId): boolean {
-  return STORY_FAMILY[a] !== STORY_FAMILY[b] && !([a, b].includes('dog') && [a, b].includes('bedtime'));
+  return (
+    STORY_FAMILY[a] !== STORY_FAMILY[b] &&
+    !LOOKALIKE_PAIRS.some(([x, y]) => (a === x && b === y) || (a === y && b === x))
+  );
 }
 export function untanglePuzzle(rng: Rng) {
   const first = rng.pick(STORY_IDS);

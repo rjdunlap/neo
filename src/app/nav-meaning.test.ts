@@ -45,6 +45,7 @@ const ROUTES = [
   'project',
   'picnic',
   'woodland',
+  'melody',
   'stickers',
   'game',
   'start',

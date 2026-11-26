@@ -2,27 +2,29 @@
 
 <!-- generated: from src/games/ready-for-adventure; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `ready-for-adventure` · **Land:** Barnyard · **Ages:** toddler–pre-K · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `ready-for-adventure` · **Land:** Barnyard · **Ages:** toddler–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** planning, sequencing, prerequisites, everyday-life
+**Skills:** planning, sequencing, prerequisites, everyday-life, revision
 
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
+| school | 3–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Pack the prop the card shows |
 | 2 | Get one prop ready, then pack it |
 | 3 | Get two props ready and packed, in any order |
+| 4 | Pack, then repair the bag when the request changes |
 
 <!-- end generated -->
 
 **Starts as:** get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade
 
-**Grows into:** level 1 packs the prop the card shows; level 2 makes a bare prop ready first; level 3 does two such jobs in any order; a bare or wrong prop in the bag is a miss, two on one job light its next step and count a hint; tapping works as well as dragging
+**Grows into:** level 1 packs the prop the card shows; level 2 makes a bare prop ready first; level 3 does two such jobs in any order; level 4 (school) packs for the card, taps Check, and then the card changes and the bag is repaired (take out what is not wanted, put in what is new) before a second Check; packing and unpacking are free, a Check that finds a difference is a miss; a bare or wrong prop in the bag is a miss, two on one job light its next step and count a hint; tapping works as well as dragging
 
 ## Design notes
 

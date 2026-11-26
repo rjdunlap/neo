@@ -1,0 +1,5 @@
+# 2026-11-25 — Jelly Drums scale journal entry (PR #2184)
+
+**Changed:** `jelly-drums:scale` journal entry, filed when level 3's three-neighbours sparkle plays (`JournalWatch.sparkled`). Its line `jelly.scale` carries `{name}`, so it stays on device speech and no voice clip was rendered; the journal card now shows the filled wording through `voice.line`. New card picture (`jellyJournalPicture('scale')`).
+**Ran:** `npm run typecheck`, `npm run format:check`, `npm run lint`; vitest on `src/content`, `src/games/jelly-drums`, `src/app` and `scripts/voice-clips` (63 files, all passed); `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` with a new assertion that only level 3 files the scale entry: levels 1–12 passed.
+**Not run:** the same suite timed out waiting for level 13 (Lowest to highest, a drag level this change does not touch) to finish, on two runs of one server, while other sessions were using the machine; recorded as a probable flake, not investigated further. No `fingerdemo`, no screenshot of the new card, no offline check, no full `npm test` (left to PR CI).

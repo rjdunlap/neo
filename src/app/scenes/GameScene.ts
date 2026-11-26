@@ -19,8 +19,15 @@ import { Demo } from '../../couch/demo';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
-import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
-import { mixReturn, mixStop, nextUp } from '../../content/mix';
+import {
+  discoveryMemory,
+  launchDiscovery,
+  launchStop,
+  leaveMix,
+  mixMemory,
+  type MixRound,
+} from '../discovery';
+import { dailyStop, mixReturn, mixStop, nextUp } from '../../content/mix';
 import { titleOf } from '../mix';
 import { dayKey, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
 import { todaysSix } from '../daily-six';
@@ -724,7 +731,7 @@ export class GameScene extends Scene {
     if (!session) return this.leaveSaying(this.backLine(), () => this.goHome());
     this.leaveSaying(this.backLine(), () => {
       mixMemory.end(); // before the route: the home spot would otherwise hold the live mix
-      this.app.go.place(session.place);
+      leaveMix(this.app.go, session.live);
     });
   }
 
@@ -736,8 +743,8 @@ export class GameScene extends Scene {
     const session = this.mixSession();
     if (session) {
       const r = mixReturn(session.state, store.data.settings.howToCards);
-      if (r.kind === 'stop' && session.mods) this.openStop(session.place, r.p);
-      else this.app.go.place(session.place);
+      if (r.kind === 'stop' && session.mods) this.openStop(r.p);
+      else leaveMix(this.app.go, session.live);
       return;
     }
     // A project round names its step only once finished, so the page speaks a done line only for a finished round.
@@ -747,6 +754,7 @@ export class GameScene extends Scene {
         this.origin && 'book' in this.origin ? this.origin : undefined,
       );
     else if (this.story?.story === 'woodland') this.app.go.woodland(this.story.step);
+    else if (this.story?.story === 'melody') this.app.go.melody(this.story.step);
     else if (this.story) this.app.go.picnic(this.story.step);
     else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
   }
@@ -1208,13 +1216,17 @@ export class GameScene extends Scene {
     if (!this.mixRound || !this.inMix()) return undefined;
     const session = mixMemory.live(store.data)!;
     const mods = session.ids.map((id) => GAMES.find((m) => m.id === id)).filter((m): m is GameModule => !!m);
-    return { place: session.place, state: session.state, mods, ids: session.ids };
+    return { place: session.place, state: session.state, mods, ids: session.ids, live: session };
   }
 
   /** Stop `p`, checked on its own at the press: playable at her band on her home spot, or null. */
   private mixStopAt(p: number): GameModule | null {
     const session = this.mixSession();
-    return session ? mixStop(store.data.profile.band, session.place, GAMES, session.ids[p]) : null;
+    if (!session) return null;
+    const band = store.data.profile.band;
+    return session.live.stops
+      ? dailyStop(band, GAMES, session.live.stops[p])
+      : mixStop(band, session.place, GAMES, session.ids[p]);
   }
 
   /** Again and Next level replay the same stop: a new round there, and the stops to come stay as they were. */
@@ -1297,14 +1309,14 @@ export class GameScene extends Scene {
     if (!session || !this.canDiscover()) return;
     const next = nextUp(session.state);
     if (next === null) {
-      this.navigateResult(() => this.app.go.place(session.place));
+      this.navigateResult(() => leaveMix(this.app.go, session.live));
       return;
     }
-    this.launchMixStop(session.place, next);
+    this.launchMixStop(next);
   }
 
   /** Checked again at the press: never a different game behind its picture. */
-  private launchMixStop(place: Band, p: number) {
+  private launchMixStop(p: number) {
     const session = this.mixSession();
     const mod = this.mixStopAt(p);
     if (!session || !mod) {
@@ -1313,15 +1325,17 @@ export class GameScene extends Scene {
       void this.queueMix('mix.changed');
       return;
     }
-    this.navigateResult(() => this.openStop(place, p));
+    this.navigateResult(() => this.openStop(p));
   }
 
   /** A new round at stop `p`, opened on its card (with cards on): already checked, and inside a latched navigation. */
-  private openStop(place: Band, p: number, lead?: MixRound['lead']) {
+  private openStop(p: number, lead?: MixRound['lead']) {
+    const session = this.mixSession();
     const mod = this.mixStopAt(p);
-    if (!mod) return this.app.go.place(place);
+    if (!session) return this.app.go.place(store.data.profile.band);
+    if (!mod) return leaveMix(this.app.go, session.live);
     mixMemory.launch(store.data, p, lead);
-    this.app.go.game(mod.id, store.data.profile.band, undefined, false, { place });
+    launchStop(this.app.go, session.live, p, store.data.profile.band);
   }
 
   /** The stop row for this card: only on the intro of a live mix stop, and only while the input in use is touch. */
@@ -1368,8 +1382,8 @@ export class GameScene extends Scene {
     const after = mixMemory.apply(store.data, { type: 'skip', p })!;
     const r = mixReturn(after, true);
     this.navigateResult(() => {
-      if (r.kind === 'stop' && session.mods) this.openStop(session.place, r.p, 'mix.skip');
-      else this.app.go.place(session.place); // the home spot opens the ending and says it
+      if (r.kind === 'stop' && session.mods) this.openStop(r.p, 'mix.skip');
+      else leaveMix(this.app.go, session.live); // the home spot or the six page opens the ending and says it
     });
   }
 
@@ -1388,8 +1402,8 @@ export class GameScene extends Scene {
     if (!session || this.finished) return;
     mixMemory.apply(store.data, { type: 'skip', p: this.mixRound!.p });
     const next = nextUp(mixMemory.live(store.data)!.state);
-    if (next === null || !session.mods) this.navigateResult(() => this.app.go.place(session.place));
-    else this.launchMixStop(session.place, next);
+    if (next === null || !session.mods) this.navigateResult(() => leaveMix(this.app.go, session.live));
+    else this.launchMixStop(next);
   }
 
   /** Flat cream where the result has no place behind it; softer over a place, so the place shows through. */

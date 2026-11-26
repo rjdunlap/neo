@@ -1,0 +1,5 @@
+# 2026-11-25 — Stamp Studio scenes and the Sea set (PR #2181)
+
+**Changed:** `STAMP_KINDS` gains five Sea stamps (appended), `SETS` and `SCENES`, an optional `scene` on a kept stamped picture (repaired on load, carried by backup), a backdrop under the stamps on the paper and on the treehouse picture board, and levels 1–3 seeding a round onto plain paper or the Sea. Also fixed the stale story list in `scripts/offline/classic.mjs` (it did not expect the Missing Melody).
+**Ran:** typecheck, format, lint, `npm run build`; vitest on `src/games/stamp-studio`, `src/content`, `src/progress/save.test.ts`, `src/ui` (new tests: Sea stamps named, sounded, drawn at the 0.46 board scale; seeded rounds; scene kept, dropped when damaged, carried through backup); `BROWSER_SUITE=creations` passed; `fingerdemo` with `FINGER_ONLY=stamp-studio FINGER_LEVELS=1,2,3` passed; one 390×844 Sea round screenshot (shell stamp on pale water, sand strip); production offline check passed on a preview.
+**Not run:** the full `npm test` (left to PR CI); landscape screenshot; real phone, as parked.

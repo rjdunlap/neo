@@ -37,6 +37,7 @@ import { createSuite as createThoughtBubbles } from './suites/thought-bubbles-pl
 import { createSuite as createNoticeBoard } from './suites/notice-board-play.mjs';
 import { createSuite as createMakerLane } from './suites/maker-lane-play.mjs';
 import { createSuite as createShellRows } from './suites/shell-rows-play.mjs';
+import { createSuite as createLastPebble } from './suites/last-pebble-play.mjs';
 import { createSuite as createDominoPond } from './suites/domino-pond-play.mjs';
 import { createSuite as createTideTables } from './suites/tide-tables-play.mjs';
 import { createSuite as createTruthBridge } from './suites/truth-bridge-play.mjs';
@@ -156,6 +157,7 @@ import { createSuite as create82 } from './suites/woods-batch.mjs';
 import { createSuite as create83 } from './suites/shortlist-batch.mjs';
 import { createSuite as create84 } from './suites/picnic-story.mjs';
 import { createSuite as create85 } from './suites/woodland-story.mjs';
+import { createSuite as createMelody } from './suites/melody-story.mjs';
 import { createSuite as create86 } from './suites/couch-play.mjs';
 import { createSuite as create87 } from './suites/couch-beds.mjs';
 import { createSuite as create88 } from './suites/couch-lanterns.mjs';
@@ -204,12 +206,14 @@ import { createSuite as create130 } from './suites/discovery-direct-next.mjs';
 import { createSuite as create131 } from './suites/discovery-my-mix.mjs';
 import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
+import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as create135 } from './suites/down-we-go-play.mjs';
 import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
 import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
 import { createSuite as createCampsite } from './suites/campsite-play.mjs';
 import { createSuite as create137 } from './suites/sum-crates-play.mjs';
+import { createSuite as createCommonGround } from './suites/common-ground-play.mjs';
 
 export const SUITES = [
   'relaywoods',
@@ -309,6 +313,7 @@ export const SUITES = [
   'shortlist',
   'picnic',
   'woodland',
+  'melody',
   'couch',
   'couchcourse',
   'couchnames',
@@ -375,6 +380,7 @@ export const SUITES = [
   'noticeboard',
   'makerlane',
   'shellrows',
+  'lastpebble',
   'tideline',
   'tideline34',
   'tideline5',
@@ -419,6 +425,7 @@ export const SUITES = [
   'sandtable',
   'adventurewalk',
   'readyadventure',
+  'commonground',
   'fingerdemo',
   'room',
   'lands',
@@ -517,6 +524,7 @@ export const ALL_SUITES = [
   'shortlist',
   'picnic',
   'woodland',
+  'melody',
   'couch',
   'couchcourse',
   'couchnames',
@@ -573,6 +581,7 @@ export const ALL_SUITES = [
   'noticeboard',
   'makerlane',
   'shellrows',
+  'lastpebble',
   'tideline',
   'tideline34',
   'tideline5',
@@ -617,6 +626,7 @@ export const ALL_SUITES = [
   'sandtable',
   'adventurewalk',
   'readyadventure',
+  'commonground',
   'fingerdemo',
   'room',
   'lands',
@@ -743,6 +753,7 @@ export function createChecks(fixture) {
     'shortlistBatch',
     'picnicStory',
     'woodlandStory',
+    'melodyStory',
     'couchPlay',
     'couchBeds',
     'couchLanterns',
@@ -765,6 +776,8 @@ export function createChecks(fixture) {
     'howToIntro',
     'howToLevelPick',
     'readyForAdventurePlay',
+    'commonGroundPlay',
+    'commonGroundChangePlay',
     'adventureWalkPlay',
     'sandTablePlay',
     'senseDetectivePlay',
@@ -794,6 +807,7 @@ export function createChecks(fixture) {
     'discoveryDirectNext',
     'discoveryMyMix',
     'discoveryMix',
+    'discoveryDailyMix',
   ])
     shared[name] = (...args) => checks[name](...args);
   install(create0(shared));
@@ -887,6 +901,7 @@ export function createChecks(fixture) {
   install(create83(shared));
   install(create84(shared));
   install(create85(shared));
+  install(createMelody(shared));
   install(create86(shared));
   install(create87(shared));
   install(create88(shared));
@@ -935,6 +950,7 @@ export function createChecks(fixture) {
   install(create131(shared));
   install(create132(shared));
   install(create133(shared));
+  install(createDailyMix(shared));
   install(create134(shared));
   install(create135(shared));
   install(create136(shared));
@@ -964,6 +980,7 @@ export function createChecks(fixture) {
   install(createNoticeBoard(shared));
   install(createMakerLane(shared));
   install(createShellRows(shared));
+  install(createLastPebble(shared));
   install(createDominoPond(shared));
   install(createTideLine(shared));
   install(createTideTables(shared));
@@ -1006,6 +1023,7 @@ export function createChecks(fixture) {
   install(createGroveCutLines(shared));
   install(createGroveCutLines20(shared));
   install(createGroveCutLines22(shared));
+  install(createCommonGround(shared));
   return checks;
 }
 
@@ -1014,7 +1032,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'clap' && process.env.CLAP_LEVELS !== undefined)
     selectValue(process.env.CLAP_LEVELS, ['6', '8', '9'], 'CLAP_LEVELS');
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined)
-    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix'], 'DISCOVERY_ONLY');
+    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix', 'daily'], 'DISCOVERY_ONLY');
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
   const {
@@ -1122,6 +1140,7 @@ export async function runSuite(suite, fixture) {
     shortlistBatch,
     picnicStory,
     woodlandStory,
+    melodyStory,
     couchPlay,
     couchBeds,
     couchLanterns,
@@ -1144,6 +1163,8 @@ export async function runSuite(suite, fixture) {
     howToIntro,
     howToLevelPick,
     readyForAdventurePlay,
+    commonGroundPlay,
+    commonGroundChangePlay,
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
@@ -1189,6 +1210,7 @@ export async function runSuite(suite, fixture) {
     discoveryDirectNext,
     discoveryMyMix,
     discoveryMix,
+    discoveryDailyMix,
     storyWeaverPlay,
     meltFreezePlay,
     moonWindowPlay,
@@ -1224,6 +1246,7 @@ export async function runSuite(suite, fixture) {
     thoughtBubblesPlay,
     noticeBoardPlay,
     shellRowsPlay,
+    lastPebblePlay,
     dominoPondPlay,
     tideLinePlay,
     tideLine34Play,
@@ -1278,7 +1301,8 @@ export async function runSuite(suite, fixture) {
   }
   if (suite === 'discovery')
     await (
-      { mix: discoveryMix, 'my-mix': discoveryMyMix }[process.env.DISCOVERY_ONLY] ?? discoveryDirectNext
+      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix }[process.env.DISCOVERY_ONLY] ??
+      discoveryDirectNext
     )();
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
@@ -1350,6 +1374,12 @@ export async function runSuite(suite, fixture) {
     await traceRound(10, '', true, 't');
     await traceRound(11, '', false, 'a');
     await traceRound(11, '', true, 'g');
+    await traceRound(12, '', false, 'e');
+    await traceRound(12, '', true, 'j');
+    await traceRound(13, '', false, 'm');
+    await traceRound(13, '', true, 'b');
+    await traceRound(14, '', false, 'q');
+    await traceRound(14, '', true, 'z');
   }
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();
@@ -1377,6 +1407,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'shortlist') await shortlistBatch();
   if (suite === 'all' || suite === 'picnic') await picnicStory();
   if (suite === 'all' || suite === 'woodland') await woodlandStory();
+  if (suite === 'all' || suite === 'melody') await melodyStory();
   if (suite === 'all' || suite === 'couch') await couchPlay();
   if (suite === 'all' || suite === 'couchcourse') await couchCourse();
   if (suite === 'all' || suite === 'couchnames') await couchNames();
@@ -1446,6 +1477,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'noticeboard') await noticeBoardPlay();
   if (suite === 'all' || suite === 'makerlane') await makerLanePlay();
   if (suite === 'all' || suite === 'shellrows') await shellRowsPlay();
+  if (suite === 'all' || suite === 'lastpebble') await lastPebblePlay();
   if (suite === 'all' || suite === 'dominopond') await dominoPondPlay();
   if (suite === 'all' || suite === 'tideline') await tideLinePlay();
   if (suite === 'all' || suite === 'tideline34') await tideLine34Play();
@@ -1497,6 +1529,10 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();
   if (suite === 'all' || suite === 'readyadventure') await readyForAdventurePlay();
+  if (suite === 'all' || suite === 'commonground') {
+    await commonGroundPlay();
+    await commonGroundChangePlay();
+  }
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'lands') await landsTour();

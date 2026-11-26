@@ -22,6 +22,21 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'A little a, d or g between four lines: start like a little c, then draw a line down the right side. The d line starts at the top line; the g line reaches the bottom line and turns left.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'A little u, i, e, l, k, y or j between four lines. Follow the firefly: e starts in the middle and goes across first. i and j finish with a dot.',
+    },
+    {
+      from: 13,
+      to: 13,
+      text: 'A little p, r, n, m, h or b between four lines: down the line, back up it, then over in a hump (n, m, h, r) or a round bowl (p, b). h and b start at the top line.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'A little f, q, x or z between four lines. f hooks over and down, then a bar; q ends with a tail that turns right; x is two slides; z zigzags.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
@@ -42,7 +57,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 11,
+      to: 14,
       text: 'The round ends when the little letter has been traced and its picture appears.',
     },
   ],
@@ -63,7 +78,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 11,
+      to: 14,
       text: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The little letters use a narrower trail than the capitals, because they are smaller.',
     },
   ],

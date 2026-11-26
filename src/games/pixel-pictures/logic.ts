@@ -23,7 +23,9 @@ export type PixelMode =
   /** Level 11, ones and zeros: four cards write one row of squares (`bits.ts` plays it). */
   | 'bitsRow'
   /** Level 12, ones and zeros: the same four cards write a 4 by 4 picture one row at a time, top to bottom. */
-  | 'bitsPicture';
+  | 'bitsPicture'
+  /** Level 13, Window Mosaic: color a second window so the same amount is colored, then pick the matching window (`mosaic.ts`). */
+  | 'mosaic';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -107,6 +109,13 @@ export const PLANS: PixelPlan[] = [
     pictures: 2,
     name: 'Ones and zeros, a whole picture: write each row with four cards',
   },
+  {
+    mode: 'mosaic',
+    size: 4,
+    colors: 1,
+    pictures: 1,
+    name: 'Same amount, new shape: color a second window so half of it is colored',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -115,7 +124,8 @@ export const LEVELS: BandLevels = {
   prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
   // Levels 11 and 12 (ones and zeros) sit after 8, away from 4–6, so digits as a key and digits as counts are never
   // neighbours.
-  school: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 11, 12, 10] },
+  // Level 13 (Window Mosaic, the same amount in a new shape) follows the ones-and-zeros pictures; 10 stays last as the free level.
+  school: { min: 3, max: 13, order: [3, 4, 5, 6, 7, 8, 11, 12, 13, 10] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -834,4 +844,203 @@ export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayo
     shelf: { x: asideX, y: 20 + asideH + 24 + asideH / 2, w: ASIDE_W, h: asideH },
     ...(picture ? boardAt(x0, top, cell) : {}),
   };
+}
+
+// ---- Level 13, Window Mosaic: the same amount colored in a different shape (docs/definitions/window-mosaic.md) ----
+
+export const MOSAIC_SIZE = 4;
+export const MOSAIC_PANES = 16;
+/** Half of the window. */
+export const MOSAIC_AMOUNT = 8;
+
+/** A window is a 16-bit mask, row-major from the top left; `X` colors a pane. */
+export const maskOf = (rows: readonly string[]): number =>
+  rows.reduce(
+    (m, row, r) => row.split('').reduce((n, c, x) => (c === 'X' ? n | (1 << (r * MOSAIC_SIZE + x)) : n), m),
+    0,
+  );
+
+export const rowsOfMask = (mask: number): string[] =>
+  Array.from({ length: MOSAIC_SIZE }, (_, r) =>
+    Array.from({ length: MOSAIC_SIZE }, (_, x) => (mask & (1 << (r * MOSAIC_SIZE + x)) ? 'X' : '.')).join(''),
+  );
+
+export const hasPane = (mask: number, pane: number) => (mask & (1 << pane)) !== 0;
+
+export const paneCount = (mask: number) => {
+  let n = 0;
+  for (let m = mask & 0xffff; m; m &= m - 1) n++;
+  return n;
+};
+
+const NEIGHBOURS = (pane: number): number[] => {
+  const r = Math.floor(pane / MOSAIC_SIZE);
+  const x = pane % MOSAIC_SIZE;
+  const out: number[] = [];
+  if (r > 0) out.push(pane - MOSAIC_SIZE);
+  if (r < MOSAIC_SIZE - 1) out.push(pane + MOSAIC_SIZE);
+  if (x > 0) out.push(pane - 1);
+  if (x < MOSAIC_SIZE - 1) out.push(pane + 1);
+  return out;
+};
+
+/** Separate colored groups: panes joined along a side, not along a corner. */
+export function mosaicGroups(mask: number): number {
+  const seen = new Set<number>();
+  let groups = 0;
+  for (let pane = 0; pane < MOSAIC_PANES; pane++) {
+    if (!hasPane(mask, pane) || seen.has(pane)) continue;
+    groups++;
+    const stack = [pane];
+    while (stack.length) {
+      const q = stack.pop()!;
+      if (seen.has(q)) continue;
+      seen.add(q);
+      for (const n of NEIGHBOURS(q)) if (hasPane(mask, n) && !seen.has(n)) stack.push(n);
+    }
+  }
+  return groups;
+}
+
+/** Edge length around the colored panes: every pane side next to an uncolored pane or the window frame. */
+export function mosaicEdge(mask: number): number {
+  let edge = 0;
+  for (let pane = 0; pane < MOSAIC_PANES; pane++)
+    if (hasPane(mask, pane)) edge += 4 - NEIGHBOURS(pane).filter((n) => hasPane(mask, n)).length;
+  return edge;
+}
+
+/** The mask turned a quarter turn clockwise. */
+const turnMask = (mask: number): number => {
+  let out = 0;
+  for (let r = 0; r < MOSAIC_SIZE; r++)
+    for (let x = 0; x < MOSAIC_SIZE; x++)
+      if (hasPane(mask, r * MOSAIC_SIZE + x)) out |= 1 << (x * MOSAIC_SIZE + (MOSAIC_SIZE - 1 - r));
+  return out;
+};
+
+const flipMask = (mask: number): number => {
+  let out = 0;
+  for (let r = 0; r < MOSAIC_SIZE; r++)
+    for (let x = 0; x < MOSAIC_SIZE; x++)
+      if (hasPane(mask, r * MOSAIC_SIZE + x)) out |= 1 << (r * MOSAIC_SIZE + (MOSAIC_SIZE - 1 - x));
+  return out;
+};
+
+/** The eight turned and flipped copies of a window (the mask itself included). */
+export function mosaicSymmetries(mask: number): number[] {
+  const out: number[] = [];
+  for (const start of [mask, flipMask(mask)]) {
+    let m = start;
+    for (let i = 0; i < 4; i++) {
+      out.push(m);
+      m = turnMask(m);
+    }
+  }
+  return out;
+}
+
+/** The smallest of the eight symmetric copies: two windows are the same shape when this is equal. */
+export const mosaicCanonical = (mask: number): number => Math.min(...mosaicSymmetries(mask));
+
+export interface MosaicModel {
+  name: string;
+  mask: number;
+}
+
+/** The four frozen models: eight colored panes each, one shape of half a window. */
+export const MOSAIC_MODELS: readonly MosaicModel[] = [
+  { name: 'left half', mask: maskOf(['XX..', 'XX..', 'XX..', 'XX..']) },
+  { name: 'two bars', mask: maskOf(['XXXX', '....', '....', 'XXXX']) },
+  { name: 'two corners', mask: maskOf(['XX..', 'XX..', '..XX', '..XX']) },
+  { name: 'checkerboard', mask: maskOf(['X.X.', '.X.X', 'X.X.', '.X.X']) },
+];
+
+export type MosaicVerdict = 'empty' | 'fewer' | 'more' | 'same' | 'right';
+
+/** Tag 1: count the colored panes; exactly half in a shape that is not the model's turned or flipped is right. */
+export function mosaicCheck(mask: number, model: number): MosaicVerdict {
+  const n = paneCount(mask);
+  if (n === 0) return 'empty';
+  if (n < MOSAIC_AMOUNT) return 'fewer';
+  if (n > MOSAIC_AMOUNT) return 'more';
+  return mosaicCanonical(mask) === mosaicCanonical(model) ? 'same' : 'right';
+}
+
+/** A tag 2 choice: the right window (eight panes) and the two with six and ten, authored per model. */
+export interface MosaicSet {
+  right: number;
+  fewer: number;
+  more: number;
+}
+
+const set = (right: string[], fewer: string[], more: string[]): MosaicSet => ({
+  right: maskOf(right),
+  fewer: maskOf(fewer),
+  more: maskOf(more),
+});
+
+/**
+ * Authored per model (same order as `MOSAIC_MODELS`). The right window never has the model's group count or edge length;
+ * a wrong window has the model's edge length, and one has its group count wherever six or ten panes can (no window of six
+ * or ten panes has eight separate groups), so neither can be used as the test. The tests re-derive every rule.
+ */
+export const MOSAIC_SETS: readonly (readonly MosaicSet[])[] = [
+  [
+    set(['..XX', '..XX', 'XX..', 'XX..'], ['XXXX', '.XX.', '....', '....'], ['XXXX', 'XXXX', 'X..X', '....']),
+    set(['XXXX', '....', 'XXXX', '....'], ['XXX.', 'XX..', 'X...', '....'], ['XXXX', 'XXXX', '.XX.', '....']),
+    set(['.X.X', 'X.X.', '.X.X', 'X.X.'], ['.XX.', 'XXXX', '....', '....'], ['XXXX', 'XXX.', 'XX..', 'X...']),
+  ],
+  [
+    set(['XX..', 'XX..', 'XX..', 'XX..'], ['.XX.', 'X..X', '.XX.', '....'], ['.XXX', 'X.XX', 'XX..', 'XX..']),
+    set(['XXX.', 'X.X.', 'XXX.', '....'], ['XXXX', '....', 'X..X', '....'], ['X.XX', '.XXX', 'XX..', 'XX..']),
+    set(['XXXX', '.XX.', '.XX.', '....'], ['X..X', 'X..X', '.XX.', '....'], ['X.XX', '..XX', 'XXX.', 'XX..']),
+  ],
+  [
+    set(['XX..', 'XX..', 'XX..', 'XX..'], ['.XX.', 'X.X.', 'XX..', '....'], ['XXXX', 'XXXX', 'X..X', '....']),
+    set(['XXXX', '.XX.', '.XX.', '....'], ['X.X.', '.XX.', 'XX..', '....'], ['.XXX', '.XXX', '.XXX', 'X...']),
+    set(['.X.X', 'X.X.', '.X.X', 'X.X.'], ['XXX.', 'X...', 'X.X.', '....'], ['XXXX', 'XXX.', 'XX..', 'X...']),
+  ],
+  [
+    set(['XX..', 'XX..', 'XX..', 'XX..'], ['XXXX', '.XX.', '....', '....'], ['X.XX', '.X.X', 'X.X.', 'XX.X']),
+    set(['XX..', 'XX..', '..XX', '..XX'], ['.XX.', '.XX.', 'X..X', '....'], ['XX.X', 'X.X.', '.X.X', 'X.XX']),
+    set(['XXXX', '....', '....', 'XXXX'], ['X..X', '.XX.', '.XX.', '....'], ['X.XX', '.X.X', 'X.X.', 'XX.X']),
+  ],
+];
+
+export interface MosaicRound {
+  /** Index into `MOSAIC_MODELS`. */
+  model: number;
+  /** Three windows to choose from, left to right (or top to bottom). */
+  windows: number[];
+  /** Index into `windows` of the one with eight panes. */
+  right: number;
+  /** The window and pane color, from the swatches. */
+  color: ColorName;
+}
+
+export const MOSAIC_COLORS: readonly ColorName[] = ['blue', 'green', 'orange', 'purple'];
+
+/** One round: the seed picks the model (never the previous round's), the choice order and the color, never the counts. */
+export function makeMosaicRound(rng: Rng, previous?: number): MosaicRound {
+  const models = MOSAIC_MODELS.map((_, i) => i).filter((i) => i !== previous);
+  const model = rng.pick(models);
+  const picked = rng.pick(MOSAIC_SETS[model]);
+  const windows = rng.shuffle([picked.right, picked.fewer, picked.more]);
+  return { model, windows, right: windows.indexOf(picked.right), color: rng.pick(MOSAIC_COLORS) };
+}
+
+/** One step of help while she colors: the pane to tap next, and whether it is colored (to clear) or not (to add). */
+export function mosaicHint(mask: number, model: number): number {
+  const n = paneCount(mask);
+  const want = mosaicCanonical(model);
+  const panes = Array.from({ length: MOSAIC_PANES }, (_, i) => i);
+  // Adding the last pane (or clearing down to eight) must not land on the model's own shape.
+  const lands = (pane: number) => {
+    const after = mask ^ (1 << pane);
+    return paneCount(after) !== MOSAIC_AMOUNT || mosaicCanonical(after) !== want;
+  };
+  const wanted = (pane: number) => (n < MOSAIC_AMOUNT ? !hasPane(mask, pane) : hasPane(mask, pane));
+  const options = panes.filter(wanted);
+  return options.find(lands) ?? options[0];
 }

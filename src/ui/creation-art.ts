@@ -6,7 +6,7 @@ import { music } from '../audio/music';
 import { pitchColor } from '../audio/notes';
 import { sfx } from '../audio/sfx';
 import { tuneBeats, type PictureCreation, type TuneCreation } from '../content/creations';
-import { stampArt } from '../games/stamp-studio/art';
+import { sceneArt, stampArt } from '../games/stamp-studio/art';
 
 /** The picture board on the treehouse wall, in logical units. */
 export const BOARD = { w: 260, h: 200 };
@@ -49,6 +49,14 @@ export function pictureBoard(picture: PictureCreation | null): Container {
     return c;
   }
   if ('stamps' in picture) {
+    if (picture.scene) {
+      // The scene she made it on, inside the board's cream paper and clipped to it.
+      const scene = sceneArt(picture.scene, paperW, paperH);
+      scene.position.set(-paperW / 2, -paperH / 2);
+      const clip = new Graphics().roundRect(-paperW / 2, -paperH / 2, paperW, paperH, 10).fill(0xffffff);
+      scene.mask = clip;
+      c.addChild(scene, clip);
+    }
     for (const s of picture.stamps) {
       const art = stampArt(s.kind, s.color, 48);
       art.scale.set(0.46 * s.size);

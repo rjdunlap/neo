@@ -3,7 +3,17 @@ import { computeView, NO_INSETS, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { AGAIN_RADIUS, HALF_WIDTHS, jellyHit, jellyLayout } from './layout';
+import {
+  AGAIN_RADIUS,
+  CHOICE_RADIUS,
+  HALF_WIDTHS,
+  jellyHit,
+  jellyLayout,
+  ORDER_SLOT_RADIUS,
+  orderHalfWidth,
+  orderJellyHit,
+  orderRowFor,
+} from './layout';
 import { LEVELS, planFor } from './logic';
 
 /**
@@ -21,9 +31,28 @@ const jellyTargets = (v: View): Target[] => {
   return HALF_WIDTHS.map((_, i) => ({ what: `jelly ${i + 1}`, ...jellyHit(l, i) }));
 };
 
-it('covers levels 1 to 11: free play, tunes and the wake level', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(new Set(['free', 'echo', 'wake']));
+/** Level 18 stands the four widest jellies (pitches 0 to 3), shuffled, at their own sizes: the tightest row it can draw. */
+const SIZED_PITCHES = [2, 0, 3, 1];
+
+const orderTargets = (v: View, sized = false): Target[] => {
+  const l = jellyLayout(v);
+  const row = orderRowFor(l, SIZED_PITCHES, sized);
+  return [
+    ...SIZED_PITCHES.map((pitch, i) => ({
+      what: `order jelly ${i + 1}`,
+      ...orderJellyHit(l, i, orderHalfWidth(pitch, sized), row[i]),
+    })),
+    ...l.orderSlots.map((p, i) =>
+      square(`slot ${i + 1}`, { x: p.x, y: p.y - 40 * l.scale }, ORDER_SLOT_RADIUS * 2 * l.scale),
+    ),
+  ];
+};
+
+it('covers levels 1 to 18: free play, tunes, the wake level, the pair level, Lowest to highest (and with sizes), Which jelly sang?, Follow the glow, Finish the song and Echo jellies', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+  expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(
+    new Set(['free', 'echo', 'wake', 'compare', 'order', 'which', 'follow', 'finish', 'answer']),
+  );
 });
 
 describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
@@ -33,14 +62,27 @@ describe.each(Object.entries(views))('Jelly Drums upright on %s', (_, v) => {
     'level %i: every touch target is whole, apart, in view and clear of Home and the guide',
     (level) => {
       const mode = planFor(level).mode;
-      const targets: Target[] = mode === 'wake' ? [] : jellyTargets(v);
-      if (mode === 'echo') targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
+      const targets: Target[] =
+        mode === 'wake' ? [] : mode === 'order' ? orderTargets(v, !!planFor(level).sized) : jellyTargets(v);
+      if (mode === 'echo' || mode === 'compare' || mode === 'which' || mode === 'finish')
+        targets.push(square('listen again', l.again, AGAIN_RADIUS * 2));
+      if (mode === 'compare') {
+        targets.push(
+          square('same', l.choices[0], CHOICE_RADIUS * 2),
+          square('different', l.choices[1], CHOICE_RADIUS * 2),
+        );
+      }
       expect(uprightProblems(v, targets), `level ${level}`).toEqual([]);
     },
   );
 
   it('everything she touches is in the lower half, the jellies above the button', () => {
-    const t = [...jellyTargets(v), square('listen again', l.again, AGAIN_RADIUS * 2)];
+    const t = [
+      ...jellyTargets(v),
+      square('listen again', l.again, AGAIN_RADIUS * 2),
+      square('same', l.choices[0], CHOICE_RADIUS * 2),
+      square('different', l.choices[1], CHOICE_RADIUS * 2),
+    ];
     for (const x of t) expect(x.y, x.what).toBeGreaterThan(v.h / 2);
     expect(v.h - l.again.y).toBeLessThanOrEqual(220);
     for (const x of jellyTargets(v)) expect(x.y + x.h / 2, x.what).toBeLessThan(l.again.y - AGAIN_RADIUS);

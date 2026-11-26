@@ -39,9 +39,32 @@ const STEM_X = 0.5 + r * 1.05;
 /** The magic c of a, d and g: start at the middle line's right, round the top and down the left, and back up to where a c would close. */
 const magicC = (): Point[] => arc(0.5, cy, r * 1.05, r, -45, -360, 16);
 
+/** The dot over an i or a j: a short dab above the stem, between the top line and the middle line. */
+const DOT: Stroke = [
+  [0.5, 0.19],
+  [0.5, 0.26],
+];
+
+/** Where the hump of n, m, h and r springs from its stem: a little under the middle line, so the arch peaks on it. */
+const HUMP_Y = FRAME.mid + 0.1;
+/** A hump from the left at (x, HUMP_Y) up over the middle line and down the right to the base line, `w` wide (or stopping short for r). */
+const hump = (x: number, w: number, to = 360): Point[] => {
+  const pts = arc(x + w / 2, HUMP_Y, w / 2, 0.1, 180, to, 10);
+  if (to === 360) pts.push([x + w, FRAME.base]);
+  return pts;
+};
+/** A stem from `top` to `end`, then straight back up it to `back` (a retrace, as M and N have), ready for a hump or a bowl. */
+const stemAndBack = (x: number, top: number, end: number, back: number): Point[] => [
+  [x, top],
+  [x, end],
+  [x, back],
+];
+/** The bowl of p and b: a round that starts on the stem at the middle of the x-height, goes up and over clockwise and closes there. */
+const bowl = (x: number): Point[] => arc(x + 0.12, cy, 0.12, r, 180, 540, 18);
+
 /**
  * Little letters in stroke order, in the frame above. The first tranche is level 10's group (Handwriting Without
- * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); levels 12–14 add theirs. Every letter starts at the top of
+ * Tears' first lowercase group: c o s v w t); level 11 adds a d g (the magic c, then a stem); level 12 adds u i e l k y j; level 13 adds p r n m h b (down, back up and over); level 14 adds f q x z (the last four). Every letter starts at the top of
  * its first stroke: c, o and s on the middle line's curve, v and w on the middle line, t on the top line.
  */
 export const LOWER: Record<string, readonly Stroke[]> = {
@@ -110,6 +133,124 @@ export const LOWER: Record<string, readonly Stroke[]> = {
       ...arc(STEM_X - 0.1, FRAME.bottom - 0.1, 0.1, 0.1, 0, 90, 6).slice(1),
     ],
   ],
+  // Down the left, round the bottom and up the right, then a short line down the right side again.
+  u: [
+    [
+      [0.38, FRAME.mid],
+      [0.38, FRAME.base - 0.1],
+      ...arc(0.5, FRAME.base - 0.1, 0.12, 0.1, 180, 0, 10).slice(1),
+      [0.62, FRAME.mid],
+    ],
+    [
+      [0.62, FRAME.mid],
+      [0.62, FRAME.base],
+    ],
+  ],
+  // A short line down from the middle line to the base line, then a dot above it.
+  i: [
+    [
+      [0.5, FRAME.mid],
+      [0.5, FRAME.base],
+    ],
+    DOT,
+  ],
+  // A tall line down from the top line to the base line.
+  l: [
+    [
+      [0.5, FRAME.top],
+      [0.5, FRAME.base],
+    ],
+  ],
+  // A tall line, then a little line in and a little line out: one stroke from the middle line, in to the tall line and out.
+  k: [
+    [
+      [0.38, FRAME.top],
+      [0.38, FRAME.base],
+    ],
+    [
+      [0.64, FRAME.mid],
+      [0.38, FRAME.mid + XH * 0.62],
+      [0.66, FRAME.base],
+    ],
+  ],
+  // Slide down to the base line, then a long slide down from the other side, past the base line to the bottom line.
+  y: [
+    [
+      [0.37, FRAME.mid],
+      [0.5, FRAME.base],
+    ],
+    [
+      [0.63, FRAME.mid],
+      [0.37, FRAME.bottom],
+    ],
+  ],
+  // A line down past the base line, its tail turning left, then a dot above it.
+  j: [
+    [
+      [0.5, FRAME.mid],
+      [0.5, FRAME.bottom - 0.1],
+      ...arc(0.4, FRAME.bottom - 0.1, 0.1, 0.1, 0, 90, 6).slice(1),
+    ],
+    DOT,
+  ],
+  // Down the stem, back up it, then over in a hump and down the right side.
+  n: [[...stemAndBack(0.38, FRAME.mid, FRAME.base, HUMP_Y), ...hump(0.38, 0.24).slice(1)]],
+  // The tall stem from the top line, back up to where n's hump springs, then the same hump.
+  h: [[...stemAndBack(0.38, FRAME.top, FRAME.base, HUMP_Y), ...hump(0.38, 0.24).slice(1)]],
+  // Down the stem, back up, and a little hump that stops at the top (r has no right leg).
+  r: [[...stemAndBack(0.4, FRAME.mid, FRAME.base, HUMP_Y), ...hump(0.4, 0.2, 300).slice(1)]],
+  // Down the stem, back up, a hump down to the base line, back up that leg, a second hump and down.
+  m: [
+    [
+      ...stemAndBack(0.28, FRAME.mid, FRAME.base, HUMP_Y),
+      ...hump(0.28, 0.22).slice(1),
+      [0.5, HUMP_Y],
+      ...hump(0.5, 0.22).slice(1),
+    ],
+  ],
+  // A stem down past the base line to the bottom line, back up it to the middle of the x-height, then a bowl on its right.
+  p: [[...stemAndBack(0.36, FRAME.mid, FRAME.bottom, cy), ...bowl(0.36).slice(1)]],
+  // A tall stem from the top line to the base line, back up to the middle of the x-height, then a bowl on its right.
+  b: [[...stemAndBack(0.36, FRAME.top, FRAME.base, cy), ...bowl(0.36).slice(1)]],
+  // A hook over the top that comes down into a tall stem to the base line, then a short bar across the middle line.
+  f: [
+    [...arc(0.56, FRAME.top + 0.11, 0.11, 0.11, -20, -180, 8), [0.45, FRAME.base]],
+    [
+      [0.33, FRAME.mid],
+      [0.59, FRAME.mid],
+    ],
+  ],
+  // The magic c, then a line down past the base line to the bottom line, its tail turning right (a g's turns left).
+  q: [
+    magicC(),
+    [
+      [STEM_X, FRAME.mid],
+      [STEM_X, FRAME.bottom - 0.1],
+      ...arc(STEM_X + 0.1, FRAME.bottom - 0.1, 0.1, 0.1, 180, 90, 6).slice(1),
+    ],
+  ],
+  // Two slides that cross: down to the right, then down to the left, each from the middle line to the base line.
+  x: [
+    [
+      [0.38, FRAME.mid],
+      [0.62, FRAME.base],
+    ],
+    [
+      [0.62, FRAME.mid],
+      [0.38, FRAME.base],
+    ],
+  ],
+  // Across the middle line, slide down to the left, then across the base line: one stroke.
+  z: [
+    [
+      [0.38, FRAME.mid],
+      [0.62, FRAME.mid],
+      [0.38, FRAME.base],
+      [0.62, FRAME.base],
+    ],
+  ],
+  // The one that starts in the middle: a line across the middle of the round, then up and round anticlockwise.
+  e: [[[0.5 - r * 1.05, cy], [0.5 + r * 1.05, cy], ...arc(0.5, cy, r * 1.05, r, 0, -300, 16).slice(1)]],
 };
 
 /** Whether a letter is a little letter traced in the frame. */

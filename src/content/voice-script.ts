@@ -22,6 +22,7 @@ import { VOICE as circuitGardenVoice } from '../games/circuit-garden/voice.ts';
 import { VOICE as clapSyllablesVoice } from '../games/clap-syllables/voice.ts';
 import { VOICE as clockTowerVoice } from '../games/clock-tower/voice.ts';
 import { VOICE as colorGardenVoice } from '../games/color-garden/voice.ts';
+import { VOICE as commonGroundVoice } from '../games/common-ground/voice.ts';
 import { VOICE as critterCrossingVoice } from '../games/critter-crossing/voice.ts';
 import { VOICE as critterSortVoice } from '../games/critter-sort/voice.ts';
 import { VOICE as crosswordVoice } from '../games/crossword/voice.ts';
@@ -70,6 +71,7 @@ import { VOICE as keepHouseVoice } from '../games/keep-house/voice.ts';
 import { VOICE as keyItOutVoice } from '../games/key-it-out/voice.ts';
 import { VOICE as lanternLightsVoice } from '../games/lantern-lights/voice.ts';
 import { VOICE as lassoLoopsVoice } from '../games/lasso-loops/voice.ts';
+import { VOICE as lastPebbleVoice } from '../games/last-pebble/voice.ts';
 import { VOICE as lemonadeStandVoice } from '../games/lemonade-stand/voice.ts';
 import { VOICE as letterTrailsVoice } from '../games/letter-trails/voice.ts';
 import { VOICE as liftItVoice } from '../games/lift-it/voice.ts';
@@ -431,6 +433,8 @@ export const SHARED = {
   'explore.mine': ['Back to your games!'],
   'daily.go': ['Today’s six!'],
   'daily.open': ["Today's six games! Tap one to play."],
+  'daily.end': ["That was today's six, {name}!"],
+  'daily.end.quiet': ['We can play these another time, {name}.'],
   'daily.done': ['You played all six today! Play one again, or tap the tiles for every game.'],
   // The Arcade's lines stay on device speech until a clip render takes the `arcade` prefix (scripts/voice-clips/clips.mjs).
   'arcade.open': ['The arcade! Watch a game play, then tap it to play.'],
@@ -594,6 +598,25 @@ export const SHARED = {
   'woodland.thanks': ['Thank you for helping with my picnic!', 'What a happy picnic in the woods!', 'Thank you, friend!'],
   'woodland.photo': ['Our woodland picnic photo. Tap the round arrow to tell the story again.'],
   'woodland.again': ['Let us get ready for another picnic! Three jobs again.'],
+  // The Missing Melody (Wren's story on Bumpy Hills). Each line carries {name} so it stays on device speech until a clip pass renders it.
+  'melody.spot': ['The Missing Melody! Wren needs your help, {name}.'],
+  'melody.hello': ["Hello, {name}! I'm Wren. My morning song has gone quiet, and I need three jobs done. Tap a card to help!"],
+  'melody.back': ['Welcome back to the hilltop, {name}! Tap a card to help Wren find her song.'],
+  'melody.next': ['Tap the glowing card for the next job, {name}.'],
+  'melody.notes': ['My song has gone faint, {name}. Can you tap its notes back in?'],
+  'melody.notes-done': ['The notes are back, {name}! Look, they bloom along the vine, low to high.'],
+  'melody.notes-recap': ['You tapped the notes back in, {name}, so they bloom along the vine.'],
+  'melody.highlow': ['Some of my notes are high like me, and some are low like Frog, {name}. Which is which?'],
+  'melody.highlow-done': ['High and low, {name}! I am on the top branch and Frog is on the stone below.'],
+  'melody.highlow-recap': ['You heard high and low, {name}. Wren sings up high and Frog sings down low.'],
+  'melody.friends': ['A song is better together, {name}. Who will sing with us?'],
+  'melody.friends-done': ['Two friends came to sing, {name}! One on each side of the vine.'],
+  'melody.friends-recap': ['You chose friends to sing with us, {name}. They are waiting on the hill.'],
+  'melody.ready': ['Everything is ready, {name}. Listen, here is my morning song!'],
+  'melody.keepsake': ['The sun is up! I made you a morning song card to keep, {name}. It is pinned on the tree!'],
+  'melody.thanks': ['Thank you for finding my song, {name}!', 'What a happy morning, {name}!', 'Thank you, {name}!'],
+  'melody.card': ['Our morning song card, {name}. Tap the round arrow to sing it all again.'],
+  'melody.again': ['Let us look for the song again, {name}! Three jobs again.'],
   'neighbors.rhythm': ['Listen to the bird and the frog reply. Now play the frog part, with short and long gaps. Tap the green arrow when ready.'],
   'game.stickers': ['Your stickers!'],
   'map.steps': ['Start where the pet is. Go {dirs}. Where do you end up? Tap that square!'],
@@ -670,6 +693,7 @@ export const SCRIPT = {
   ...clapSyllablesVoice,
   ...clockTowerVoice,
   ...colorGardenVoice,
+  ...commonGroundVoice,
   ...critterCrossingVoice,
   ...critterSortVoice,
   ...crosswordVoice,
@@ -718,6 +742,7 @@ export const SCRIPT = {
   ...keyItOutVoice,
   ...lanternLightsVoice,
   ...lassoLoopsVoice,
+  ...lastPebbleVoice,
   ...lemonadeStandVoice,
   ...letterTrailsVoice,
   ...liftItVoice,

@@ -26,6 +26,14 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Then a tank gets salt in secret: tap the egg or duck to test, and tap the tank that has the salt.',
     },
+    { from: 8, to: 8, text: 'Tap under the raft to put floats in. Tap Launch to see if it crosses.' },
+    { from: 8, to: 8, text: 'If it sits low or tips, move or add a float and launch again.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Pick the boat you think carries more. Tap the bowl to load it one marble at a time.',
+    },
+    { from: 11, to: 11, text: 'If water comes over, pick a wider boat.' },
     {
       from: 12,
       text: 'Touch anywhere: the big thing over the water drops in. A touch on the water splashes.',
@@ -34,6 +42,8 @@ export const HOW_TO: GameHowTo = {
   finish: [
     { to: 6, text: 'The round ends when every thing has been dropped (or sorted).' },
     { from: 7, to: 7, text: 'The round ends when the clay has floated as a boat twice, once for each lump.' },
+    { from: 8, to: 8, text: 'The round ends when three rafts have crossed.' },
+    { from: 11, to: 11, text: 'The round ends when three piles have been carried.' },
     { from: 9, to: 9, text: 'The round ends when three pairs (wood, stone and a ball) have both gone in.' },
     { from: 10, to: 10, text: 'The round ends when she has found the salty tank four times.' },
     {
@@ -66,9 +76,19 @@ export const HOW_TO: GameHowTo = {
       text: 'Each thing she watches go into the water is added to her discovery journal in the treehouse.',
     },
     {
+      from: 8,
+      to: 8,
+      text: 'A failed launch is never a miss; after two for the same reason the best slot glows (one hint). Each float holds up two stones, and the raft tips if the weight is not between the outer floats. This is simpler than a real raft: floats are one size and pots never slide. At home, a foil tray and a few pennies or a plastic tub with coins on one side shows the same two ideas. Nothing new goes in the journal.',
+    },
+    {
       from: 9,
       to: 9,
       text: 'A guess is never wrong, so a round has no misses or hints. Whatever the guess, the pet says the stuff\'s rule ("Big or small, wood floats"): size does not decide it. Nothing new goes in the journal.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'A spill is never a miss; after two the narrowest boat that carries the pile glows (one hint). Each part of the boat holds up two marbles. Real boats also gain room from tall walls and deep hulls, and these never tip. At home, float a foil tray in a tub and add pennies, then try a wider tray. Nothing goes in the journal.',
     },
     {
       from: 10,

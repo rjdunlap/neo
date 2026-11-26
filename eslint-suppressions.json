@@ -19,11 +19,6 @@
       "count": 1
     }
   },
-  "src/games/maker-lane/index.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    }
-  },
   "src/games/monster-munch/index.ts": {
     "@typescript-eslint/no-floating-promises": {
       "count": 8

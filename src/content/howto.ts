@@ -23,6 +23,7 @@ import { HOW_TO as circuitGardenHowTo } from '../games/circuit-garden/howto.ts';
 import { HOW_TO as clapSyllablesHowTo } from '../games/clap-syllables/howto.ts';
 import { HOW_TO as clockTowerHowTo } from '../games/clock-tower/howto.ts';
 import { HOW_TO as colorGardenHowTo } from '../games/color-garden/howto.ts';
+import { HOW_TO as commonGroundHowTo } from '../games/common-ground/howto.ts';
 import { HOW_TO as critterCrossingHowTo } from '../games/critter-crossing/howto.ts';
 import { HOW_TO as critterSortHowTo } from '../games/critter-sort/howto.ts';
 import { HOW_TO as crosswordHowTo } from '../games/crossword/howto.ts';
@@ -71,6 +72,7 @@ import { HOW_TO as keepHouseHowTo } from '../games/keep-house/howto.ts';
 import { HOW_TO as keyItOutHowTo } from '../games/key-it-out/howto.ts';
 import { HOW_TO as lanternLightsHowTo } from '../games/lantern-lights/howto.ts';
 import { HOW_TO as lassoLoopsHowTo } from '../games/lasso-loops/howto.ts';
+import { HOW_TO as lastPebbleHowTo } from '../games/last-pebble/howto.ts';
 import { HOW_TO as lemonadeStandHowTo } from '../games/lemonade-stand/howto.ts';
 import { HOW_TO as letterTrailsHowTo } from '../games/letter-trails/howto.ts';
 import { HOW_TO as liftItHowTo } from '../games/lift-it/howto.ts';
@@ -233,6 +235,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'clap-syllables': clapSyllablesHowTo,
   'clock-tower': clockTowerHowTo,
   'color-garden': colorGardenHowTo,
+  'common-ground': commonGroundHowTo,
   'critter-crossing': critterCrossingHowTo,
   'critter-sort': critterSortHowTo,
   'crossword': crosswordHowTo,
@@ -281,6 +284,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'key-it-out': keyItOutHowTo,
   'lantern-lights': lanternLightsHowTo,
   'lasso-loops': lassoLoopsHowTo,
+  'last-pebble': lastPebbleHowTo,
   'lemonade-stand': lemonadeStandHowTo,
   'letter-trails': letterTrailsHowTo,
   'lift-it': liftItHowTo,

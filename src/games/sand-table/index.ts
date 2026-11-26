@@ -964,6 +964,7 @@ export const sandTable: GameModule = {
   offScreen:
     'A tray of dry sand, rice or oats and a scoop: pour a heap, scoop some away, and watch the sides slide.',
   hubIcon: () => new SandIcon(),
+  upright: true,
   touchDemo: true,
   sticker,
   create: (ctx) => new SandTable(ctx),

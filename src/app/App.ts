@@ -23,7 +23,7 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
-import type { MixedColor, PicnicStep, WoodlandStep } from '../content/world';
+import type { MelodyStep, MixedColor, PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
@@ -41,6 +41,7 @@ import { markTiming } from '../engine/timing';
 export type StoryRound =
   | { story?: 'picnic'; step: PicnicStep; level: number }
   | { story: 'woodland'; step: WoodlandStep; level: number }
+  | { story: 'melody'; step: MelodyStep; level: number }
   | { project: 'welcome'; step: WelcomeStep; level: number };
 
 /**
@@ -111,6 +112,8 @@ export interface Routes {
   picnic(from?: PicnicStep): void;
   /** The Woodland Picnic, Hazel's story in Wonder Woods. `from` is the request whose round just finished. */
   woodland(from?: WoodlandStep): void;
+  /** The Missing Melody, Wren's story on Bumpy Hills. `from` is the request whose round just finished. */
+  melody(from?: MelodyStep): void;
   /** Welcome a New Friend's page (RW07, the root only; classic sends it to the map). `from` is the step whose round just finished. */
   project(from?: WelcomeStep, origin?: BookOrigin): void;
   stickers(): void;

@@ -174,7 +174,7 @@ Device and person checks stay open: whether a two-year-old drags or taps, whethe
 
 ## What comes next
 
-**RA4** (the study's slice 5): define level 4, *The request changed* (Check, unpacking, a revised parade), after this scene exists; then level 5, *One workbench*. Both are the school window.
+**RA4** (the study's slice 5): level 4, *The request changed* (Check, unpacking, a revised parade), is defined in [ready-for-adventure-4.md](ready-for-adventure-4.md) (2026-11-25); then level 5, *One workbench*, still to define. Both are the school window.
 
 ## Open decisions
 

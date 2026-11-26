@@ -51,7 +51,34 @@ export const HOW_TO: GameHowTo = {
       to: 16,
       text: 'Build the same pattern with the animals. Fill each glowing car so cars that match on top match below, and cars that differ on top differ below. Any animals that do this are right.',
     },
+    {
+      from: 17,
+      to: 17,
+      text: 'Make your own pattern: tap one to three pieces to choose what repeats, tap a chosen car to take it back, then press the green arrow. The train runs the pattern round three times and says it. Nothing is wrong.',
+    },
+    {
+      from: 18,
+      to: 18,
+      text: 'Each car holds one more counter than the one before. Look at how the stacks grow, then tap the stack that belongs in the glowing car. Tapping a car says how many it holds.',
+    },
+    {
+      from: 19,
+      to: 19,
+      text: 'The stacks can go up or down, by one or by two. Look at how they change, then tap the stack that belongs in the glowing car. Tapping a car says how many it holds.',
+    },
+    {
+      from: 20,
+      to: 20,
+      text: 'The numbers do not start at the step: look at how far it is from one car to the next, then tap the number for the glowing car. It can be anywhere after the first car.',
+    },
   ],
-  finish:
-    'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
+  finish: [
+    {
+      to: 16,
+      text: 'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
+    },
+    { from: 17, to: 17, text: 'The round ends when the train has run her pattern round three times.' },
+    { from: 18, to: 19, text: 'The round ends when the stack that comes next is chosen.' },
+    { from: 20, to: 20, text: 'The round ends when the number for the glowing car is chosen.' },
+  ],
 };

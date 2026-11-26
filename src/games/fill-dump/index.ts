@@ -1,4 +1,5 @@
 import { CapacityGame } from './compare';
+import { CupsGame } from './cups';
 import { PairGame } from './pair';
 import { PourGame } from './pour';
 import { Circle, Container, Graphics, Sprite } from 'pixi.js';
@@ -645,12 +646,14 @@ export const fillDump: GameModule = {
   sticker,
   create: (ctx) => {
     const kind = kindFor(ctx.level);
-    return kind === 'capacity'
-      ? new CapacityGame(ctx)
-      : kind === 'pour'
-        ? new PourGame(ctx)
-        : kind === 'pair'
-          ? new PairGame(ctx)
-          : new FillDump(ctx);
+    return kind === 'cups'
+      ? new CupsGame(ctx)
+      : kind === 'capacity'
+        ? new CapacityGame(ctx)
+        : kind === 'pour'
+          ? new PourGame(ctx)
+          : kind === 'pair'
+            ? new PairGame(ctx)
+            : new FillDump(ctx);
   },
 };

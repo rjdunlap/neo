@@ -66,3 +66,56 @@ it('Painted Canyon capacity retains all bands, both sides/pages in every support
       }
   }
 });
+
+it('levels 4–5: every control is at least 100 square, separated by 16, clear of the guide strip, the loom and the sample', () => {
+  for (const [w, h] of [
+    [1024, 768],
+    [768, 1024],
+    [1180, 820],
+    [820, 1180],
+    [844, 390],
+    [390, 844],
+    [1366, 1024],
+  ]) {
+    const v = computeView(w, h),
+      l = layout(v);
+    const loom = {
+      x: l.loom.x - 30,
+      y: l.loom.y - 35,
+      w: 6 * l.loom.cell + 60,
+      h: 8 * l.loom.cell + 65,
+    };
+    const sample = { x: l.sample.x, y: l.sample.y, w: 6 * l.sample.cell, h: 8 * l.sample.cell };
+    const rect = (b: { x: number; y: number; w: number; h: number }) => ({
+      l: b.x - b.w / 2,
+      r: b.x + b.w / 2,
+      t: b.y - b.h / 2,
+      b: b.y + b.h / 2,
+    });
+    const gap = (a: ReturnType<typeof rect>, b: ReturnType<typeof rect>) =>
+      Math.max(b.l - a.r, a.l - b.r, b.t - a.b, a.t - b.b);
+    const plain = (b: { x: number; y: number; w: number; h: number }) =>
+      rect({ ...b, x: b.x + b.w / 2, y: b.y + b.h / 2 });
+    for (const set of [
+      [l.shuttle45, l.undo, ...l.pots4, ...l.pedals4],
+      [l.shuttle45, l.undo, ...l.pedals5],
+    ]) {
+      for (const b of set) {
+        const r = rect(b);
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(r.l).toBeGreaterThan(260);
+        expect(r.r).toBeLessThanOrEqual(v.w);
+        expect(r.t).toBeGreaterThan(130);
+        expect(r.b).toBeLessThanOrEqual(v.h - 60);
+        expect(gap(r, plain(loom))).toBeGreaterThanOrEqual(16);
+        expect(gap(r, plain(sample))).toBeGreaterThanOrEqual(16);
+      }
+      set.forEach((a, i) =>
+        set.slice(i + 1).forEach((b) => expect(gap(rect(a), rect(b))).toBeGreaterThanOrEqual(16)),
+      );
+    }
+    expect(l.pedals5[1].x - l.pedals5[0].x - 140).toBeGreaterThanOrEqual(100);
+    expect(l.pedals4[1].x - l.pedals4[0].x - 140).toBeGreaterThanOrEqual(100);
+  }
+});

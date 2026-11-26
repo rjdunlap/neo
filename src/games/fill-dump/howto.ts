@@ -40,6 +40,12 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Look for overflow in the tray or room left in the right container. Tap the one that holds more. Tap the tray to return all water and pour again.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Tap the tub to fill the little cup, then tap a bowl to pour it in. Each cupful is counted aloud and adds a tally mark under the bowl.',
+    },
+    { from: 9, to: 9, text: 'When both bowls are full, tap the bowl that took more cups.' },
   ],
   finish: [
     { to: 1, text: 'The round ends when all the pieces are back in the container.' },
@@ -57,6 +63,7 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Explore and answer three tall-and-short pairs to finish.',
     },
+    { from: 9, to: 9, text: 'Fill and compare two pairs of bowls to finish.' },
   ],
   note: [
     {
@@ -86,6 +93,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 8,
       text: 'Guesses, partial pours, spills and re-pours are free. Only choosing the smaller after pouring counts a miss. After two, the spill or empty space glows once per pair. Make your own guess aloud together, then test it.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Filling is never wrong. Tapping the bowl that took fewer cups is a gentle miss: both tallies are counted aloud again. After two, the bowl that took more glows, once per pair. Count the cups aloud together as they pour.',
     },
   ],
 };

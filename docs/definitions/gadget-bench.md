@@ -2,7 +2,7 @@
 
 Defined 2026-10-23 as slice 1 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/inventions.md#first-games-proposed-ladder-gadget-bench) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#inventions-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
-**Status: built 2026-10-27 (PR #1012), levels 1–3; the neighbors are Bunny, Duck, Cat and Bear, with the hedgehog and mouse standing in as bunny and cat because the island has no hedgehog or mouse critter.** Defined and buildable as follows. Levels 1–3 use five invented parts with fixed, stated properties and say nothing about real inventions, inventors, dates or tools, so no reviewer gates them (the study's reviewer gates are for real inventions, Workshop Cases' registration and the page cards). The only default the developer may want to change is the home land ([decision 1](#open-decisions)): the study's Tinker Lab is **full** since Sense Detective registered, so this packet defaults to **Treehouse**, measured below. Level 4 is [defined below](#level-4-fix-it-day-definition) and built; levels 5–6 are [defined below](#levels-56-little-gate-and-new-box-definition) and built; level 7 and Workshop Cases are later definitions.
+**Status: built 2026-10-27 (PR #1012), levels 1–3; the neighbors are Bunny, Duck, Cat and Bear, with the hedgehog and mouse standing in as bunny and cat because the island has no hedgehog or mouse critter.** Defined and buildable as follows. Levels 1–3 use five invented parts with fixed, stated properties and say nothing about real inventions, inventors, dates or tools, so no reviewer gates them (the study's reviewer gates are for real inventions, Workshop Cases' registration and the page cards). The only default the developer may want to change is the home land ([decision 1](#open-decisions)): the study's Tinker Lab is **full** since Sense Detective registered, so this packet defaults to **Treehouse**, measured below. Level 4 is [defined below](#level-4-fix-it-day-definition) and built; levels 5–6 are [defined below](#levels-56-little-gate-and-new-box-definition) and built; level 7 is [defined below](#level-7-two-friends-one-box-definition) (to build level 7, read that section); Workshop Cases is a later definition.
 
 **Fun action and purpose:** a wooden cart stands on a workbench with a few big sockets. A neighbor holds up a picture of what it needs ("my apples must not get wet"). She picks, or drags, parts into the sockets, taps **Try** and watches the cart roll along a little path, stopping at the first thing it cannot handle; then she **gives** it to the neighbor. The learning purpose is the study's engineering-design core for the youngest audiences: **a gadget is made to meet someone's need** (K-2-ETS1-1), **a part's shape and place decide what it does** (K-2-ETS1-2), and **trying two designs shows which works** (K-2-ETS1-3). Order follows Beck et al. (2014): look at a finished gadget, change one that is shown, only then choose parts and places for oneself.
 
@@ -333,6 +333,109 @@ One same-game batch, `gadget-bench` levels 5–6, in one session; if the allowan
 
 `npm run build` only if the build touches shared engine or art files beyond the game's folder, `voice-script.ts` and `howto.ts`. Device and person checks stay open: whether a six-year-old sees the tall part as the reason at the arch rather than hearing it, whether level 6 is transfer or guessing for her, and how the iPad says "glow stones" and "roller belt".
 
+## Level 7, Two Friends, One Box (definition)
+
+**Built 2026-11-25** (`claude/gadget-bench-two-friends`): as defined; one change: in landscape the five-part tray squeezes its slots and gaps (slots of at least 100 units) because five 110-unit slots do not fit beside Try and Give, and the how-to card's demonstration plays only round 1 so it finishes inside its clock.
+
+Defined 2026-11-25 as slice 5 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order) against the code built through level 6 (`src/games/gadget-bench/`, PR #1336). Uses the existing ten invented toy parts (`PARTS` in `src/games/gadget-bench/logic.ts`) and names no real device, invention or date, so no reviewer gates it. Note on cast: the study names Mouse and Bear; because the island has no mouse critter, **Bunny** stands in for Mouse as in levels 1–6 (with **Cat** as the second light-load friend and **Duck** as the second heavy-load friend across rounds 2–3).
+
+**Fun action and purpose:** two friends share the same path and the same five-part box of parts, one after the other on the workbench. First a light-load friend (authored round 1: Bunny with apples) needs a cart that crosses the path and a narrow rope bridge (`light`) — light enough to pull. Once Bunny rides off with her cart, a heavy-load friend (authored round 1: Bear with honey) arrives for the **same** two path conditions, now ending at a stacked crate ramp (`strong`), with the **same five parts back in the tray** — strong enough to carry a big load. What keeps the cart light enough for Bunny fails Bear's heavy load, and what makes it strong enough for Bear is too heavy for Bunny. The purpose: **comparing design solutions against competing criteria and trade-offs — no single design is best at everything** (3-5-ETS1-2), and **several valid designs are accepted for each friend**.
+
+### Identity and overlap (level 7)
+
+- **Levels 1–6** build one cart for one neighbor (with a single gate limit at level 5). Level 7 pairs **two turns on the same path and tray** whose secondary criteria are mathematically disjoint (`passingDesigns` for `light` and `strong` share zero members).
+- **Habitat Helpers overlap test:** every path condition on level 7 has **two** solving parts in the tray (`rollers` or `wheels` for `bump`, `float` or `raft` for `puddle`, `umbrella` or `lid` for `rain`, `glowstones` or `lantern` for `dark`). Matching a weather icon to "a part that fixes it" cannot decide the build; the player has to balance light weight against carrying strength.
+- **Level 4 (`Fix-It Day`)** keeps `paddles` on the reuse shelf; level 7 never has a `bump + puddle` socket conflict and never deals `paddles`.
+
+### The model, extended (`logic.ts`) (level 7)
+
+- **Weight and strength on `PartSpec`:** add `weight: 1 | 2` and `strength: 0 | 1 | 2` to every entry in `PARTS` (no new `PartId` is added, and nothing enters `PART_IDS`):
+  - **Light parts (`weight: 1, strength: 1`):** `rollers`, `float`, `umbrella`, `glowstones`.
+  - **Strong / heavy parts (`weight: 2, strength: 2`):** `wheels`, `raft`, `lid`, `lantern`, `paddles`.
+  - **Decoy (`flag`):** `weight: 1, strength: 0` (adds weight without adding carrying strength; not dealt in level 7's five-part trays).
+  - Helpers: `cartWeight(g: Gadget): number` (sum of `PARTS[p].weight` across occupied sockets) and `cartStrength(g: Gadget): number` (sum of `PARTS[p].strength` across occupied sockets).
+- **Two new end-of-path `Condition` values:** `'light'` (passes iff `cartWeight(g) <= 3`) and `'strong'` (passes iff `cartStrength(g) >= 4`). Just like `'gate'`, they appear only as the last tile of a level 7 path; levels 1–6 never contain `'light'` or `'strong'`.
+- **`runPath` for multiple fixers and trade-off tiles:**
+  - For path conditions `'bump' | 'puddle' | 'rain' | 'dark'`: when `kit` (level 6) is absent, a condition `c` is handled iff **any** socket `s` in `SOCKETS` holds a part `p` with `PARTS[p].socket === s && PARTS[p].fixes.includes(c)` (so at level 7 both `glowstones` on `top` and `lantern` at `front` handle `'dark'`). When `c` is unmet and no `kit` is passed, `runPath` keeps returning `need(c)`'s `{ socket, part }` as today, so levels 1–6 return the exact kept table on every assembly.
+  - When `c === 'light'`: if `cartWeight(g) > 3`, fail at `'light'` with `socket`: the first socket in `SOCKETS` holding a heavy part (`weight === 2`), `part`: that part.
+  - When `c === 'strong'`: if `cartStrength(g) < 4`, fail at `'strong'` with `socket`: the first socket in `SOCKETS` holding a light part (`weight === 1`) or, if none, the first empty socket, and `part`: the target strong part (fallback `'wheels'`).
+- **Level 7 pairs and five-part trays (`LEVEL7_PAIRS`):** four condition pairs (no `bump + puddle`, no `rain + dark`), each with its five-part tray containing the light and strong twin for each condition plus a strong spare (`lantern` or `lid`):
+
+| Pair | Conditions | Tray (5 parts) | Light (`weight <= 3`) passes | Strong (`strength >= 4`) passes |
+| --- | --- | --- | --- | --- |
+| 1 (authored round 1) | `bump`, `rain` | `rollers`, `wheels`, `umbrella`, `lid`, `lantern` | 3 (`rollers+umbrella`, `wheels+umbrella`, `rollers+lid`) | 5 (`wheels+lid`, plus any valid combo with `lantern`) |
+| 2 | `puddle`, `rain` | `float`, `raft`, `umbrella`, `lid`, `lantern` | 3 | 5 |
+| 3 | `bump`, `dark` | `rollers`, `wheels`, `glowstones`, `lantern`, `lid` | 3 (`rollers+glowstones`, `wheels+glowstones`, `rollers+lantern`) | 5 (`wheels+lantern`, plus combos with `glowstones`/`lid`) |
+| 4 | `puddle`, `dark` | `float`, `raft`, `glowstones`, `lantern`, `lid` | 3 | 5 |
+
+- **Why no design works for both:** for every part in a level 7 tray, `weight === strength` (`1 === 1` or `2 === 2`), so `cartWeight(g) <= 3` and `cartStrength(g) >= 4` are mathematically disjoint across every possible assembly.
+- **Rounds and two-turn structure (`Round` extension):**
+  - `briefFor(7, rng)` returns `3` rounds, matching levels 1–6.
+  - Add `second?: { neighbor: Neighbor; path: Condition[] }` to `Round` (the first turn uses `round.neighbor` and `round.path`, and the second turn uses `round.second.neighbor` and `round.second.path` with the same `open: [...SOCKETS]` and the same `tray` of five parts).
+  - **Round 1 (authored):** Turn 1 = `Bunny` (`apples`), `path: ['smooth', 'bump', 'rain', 'light']`; Turn 2 = `Bear` (`honey`), `path: ['smooth', 'bump', 'rain', 'strong']`; `tray: ['rollers', 'wheels', 'umbrella', 'lid', 'lantern']`.
+  - **Rounds 2–3 (seeded):** pick two distinct pairs from `LEVEL7_PAIRS.slice(1)`, shuffle each pair's two weather conditions and tray order, pick a distinct light friend (`Bunny` or `Cat`) and strong friend (`Bear` or `Duck`), and seed whether `'light'` or `'strong'` goes first (`rng.chance(0.5)`).
+
+### Accounting, help and finishing (level 7)
+
+- Same accounting as levels 3–6: Try is always free; a failing Give is 1 miss; two misses in a turn or two failing Trys at the same condition with that socket unchanged light the glow (`1` hint); Show a hint installs/swaps one part toward `targetDesign(gadget, activeTurnRound)` (counted up to `startUnmet` times per turn, then words only); after the glow, one more miss installs a part (`1` hint, supported finish).
+- **Choice between valid designs counts nothing:** any of the `3` passing `light` designs or `5` passing `strong` designs passes with `0` misses and `0` hints.
+- **`followsTarget(round)`** returns `true` when `round.path.includes('light') || round.path.includes('strong')`, so `helpFor` and `helpSteps` target `targetDesign(gadget, activeTurnRound)` (picking the passing design for the active friend that keeps the most of her placed parts, breaking ties by fewest differing sockets).
+- **Turn transition (`Tally.nextTurn()`):** when Turn 1's Give succeeds, the first neighbor rides off with her finished cart (`bench.give.ok`), her cart is added to the version strip, `Tally.nextTurn()` clears turn-local `glowing`, `counted`, `roundMisses` and `lastFail` while preserving accumulated `misses` and `hints`, the workbench resets empty (`gadget = {}`), all five parts return to their tray slots, the 4th path tile switches to the second trade-off (`'strong'` or `'light'`), and the second neighbor arrives (`bench.next.strong` / `bench.next.light`). When Turn 2's Give succeeds, two more friends roll in (`bench.spread`) and the round ends. Three rounds finish via `ctx.finish({ misses, hints })` and award one sticker.
+
+### Screen, art and controls (level 7)
+
+- **Layout:** `benchLayout(7, 4, 5, view)` keeps `4` path tiles and `5` tray parts, the same geometry as `[6, 4, 5]` which already passes `upright.test.ts` on all five upright views.
+- **Visual weight/strength cues (level 7 only):**
+  - On level 7, `partInSocket` / tray part art draws a small corner badge showing **1 dot** (light, `weight: 1`) or **2 dots** (strong, `weight: 2`) in `src/art/palette.ts`; levels 1–6 draw parts unchanged without pips.
+  - The request card draws a small light-feather (`1` dot) or stacked-crate (`2` dots) badge beside the neighbor's cargo.
+  - The 4th path tile draws `'light'` as a narrow rope bridge with a `3`-dot limit mark, and `'strong'` as a heavy honey-crate ramp with a `4`-dot strength mark.
+- **Version strip:** `strip` reserves width for `6` entries (`6 * (STRIP + 8)`), enough for tries and both accepted carts in a round (evict oldest if > 6 tries in one round).
+
+### Speech (`voice.ts` and `voice-script.ts`) (level 7)
+
+New lines:
+- `bench.instruct.light`: `"{neighbor} wants a light cart to pull. Build one from the box!"`
+- `bench.instruct.strong`: `"{neighbor} has a big load to carry. Build a strong cart from the box!"`
+- `bench.next.light`: `"Now {neighbor} wants a light cart from the same box!"`
+- `bench.next.strong`: `"Now {neighbor} needs a strong cart from the same box!"`
+- `bench.fail.light`: `"Too heavy for {neighbor}'s bridge! Try lighter parts."`
+- `bench.fail.strong`: `"Not strong enough for {neighbor}'s big load! Use stronger parts."`
+
+Existing `glow`, `hint.part`, `installed`, `hint.out`, `give.*`, `ok`, `spread` and `done` reuse the existing `PARTS` names.
+
+### Rule tests (`logic.test.ts`), layout (`upright.test.ts`) and ghost finger (level 7)
+
+- **Kept model:** for every assembly of the level 1–6 parts on every level 1–6 path, `runPath` and `helpFor` return the exact same answers as before.
+- **Level 7 (500 seeds):**
+  - `briefFor(7, rng).rounds` has length `3`, every round has `second` defined, round 1 matches the authored table (`Bunny` `light` then `Bear` `strong`, `bump + rain`, `['rollers', 'wheels', 'umbrella', 'lid', 'lantern']`), and rounds 2–3 use distinct pairs from `LEVEL7_PAIRS.slice(1)`.
+  - Every `light` turn has `>= 3` passing designs (`cartWeight(g) <= 3`) and every `strong` turn has `>= 5` passing designs (`cartStrength(g) >= 4`).
+  - **Disjointness ("no design is best at both"):** across all 500 seeds and all rounds, `passingDesigns(turn1)` and `passingDesigns(turn2)` have **zero** designs in common.
+  - **Help:** from every assembly of each turn's tray, repeating `helpFor` then `applyHelp` reaches a passing design for that turn within `3` steps.
+  - **Tally:** `nextTurn()` resets `glowing`, `roundMisses`, `counted` and `lastFail` while preserving `misses` and `hints`.
+- **Ghost finger (`nextMove`):** starting from `{}` on Turn 1 and `{}` on Turn 2 across 200 seeded briefs, `nextMove` completes both turns to passing `giveCart` moves with `0` misses and `0` hints.
+- **Upright layout:** `upright.test.ts` adds `[7, 4, 5]` to `cases` and verifies all five upright views pass (`PART >= 100`, `BUTTON_R * 2 >= 100`, no overlap, clear of `HOME_CORNER` and `PET_CORNER`).
+
+### Registration, ladder and how-to card (level 7)
+
+- **Bands:** `LEVELS.school` becomes `{ min: 2, max: 7 }`; `TOP_LEVEL = 7`. Pre-K stays `{ 1, 3 }`, preschool `{ 1, 1 }`.
+- **Plan:** `PLANS[7] = { name: 'Two Friends, One Box', describe: 'Two Friends, One Box: build a light cart for one friend, then a strong cart for the next from the same box' }`.
+- **How-to card** (`src/games/gadget-bench/howto.ts`):
+  - New step `{ from: 7, to: 7 }`: `"Build a cart for the first friend, Try it and Give it, then build for the next friend from the same box."`
+  - Keep `{ from: 2, to: 6 }` for the single-friend Give step (or widen to `{ from: 2, to: 7 }`).
+  - New note `{ from: 7, to: 7 }`: `"Light parts have one dot; strong parts have two. One friend needs a light cart and the next needs a strong one, so no single cart works for both. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint."`
+- **Co-play and off-screen:** unchanged. No new page card.
+
+### Build slice and check tier (level 7)
+
+One build slice, `gadget-bench` level 7, in one session (new-interaction tier, because it adds the `'light'` / `'strong'` path tiles, weight/strength pips and two-turn round transition):
+- `npm run typecheck`;
+- `npx vitest run src/games/gadget-bench src/games/registry src/content/howto`;
+- one filtered scripted browser play of level 7 (round 1 Turn 1 failing Try with heavy parts -> light cart passing Give -> Turn 2 failing Try with light parts -> one failing Give for a miss -> Show a hint -> strong cart passing Give -> finish);
+- `fingerdemo` at level 7;
+- one portrait screenshot of level 7.
+
+`npm run build` only if the build touches shared engine or art files beyond `src/games/gadget-bench/`, `src/content/voice-script.ts` and `src/content/howto.ts`.
+
 ## Open decisions
 
 1. **Home land (default Treehouse).** Tinker Lab is full at pre-K and school; Treehouse has room. The developer may redirect (Barnyard or Cozy Village fit one or two more); the build can start on the default.
@@ -341,3 +444,4 @@ One same-game batch, `gadget-bench` levels 5–6, in one session; if the allowan
 4. **Part names and the decoy.** Default: five invented toy parts including a decoy flag. A part-table wording review is optional here (none names a real device) but welcome before the lantern is paired with a real candle or lamp in a later transfer level.
 5. **Level 4's band and the conflict line** (defaults: level 4 is school only, the top of `school`; the conflict line is uncounted). Pre-K could reach level 4 later if a person sees pre-K players read two stops; that is a device observation, not a build blocker.
 6. **Levels 5–6's choices** (defaults: the gate is a **low arch** that rules out tall parts, because the side-view cart shows height and not width; level 6's glow stones work from `top`, so one new part's place differs from the old part's; both levels are school only, at the top of `school`). The developer may prefer the study's narrow gate (a front-view gate tile), or a level 6 where every new part sits where its old twin did; either is a change to this packet, not a build blocker.
+7. **Level 7's two-turn pace and weight/strength thresholds** (defaults: 3 rounds × 2 turns per round sharing one path and one five-part tray; `cartWeight <= 3` vs `cartStrength >= 4`; 1-dot vs 2-dot pips visible at level 7 only). If 3 × 2 builds feels long in phone playtesting, dropping to 2 rounds is a constant in `briefFor` and not a build blocker.

@@ -306,6 +306,7 @@ describe('migrate', () => {
     expect(migrate({}).stories).toEqual({
       picnic: { steps: [], ended: false, keepsake: false },
       woodland: { steps: [], ended: false, keepsake: false },
+      melody: { steps: [], ended: false, keepsake: false },
     });
     // Unknown and repeated steps drop out and the rest keep story order; an ending needs every step.
     const odd = migrate({
@@ -343,12 +344,32 @@ describe('migrate', () => {
     ).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
   });
 
+  it('gives an older save an untold Missing Melody and drops steps that belong to another story', () => {
+    const old = migrate({
+      version: 5,
+      stories: { woodland: { steps: ['beat'], ended: false, keepsake: true } },
+    });
+    expect(old.stories.melody).toEqual({ steps: [], ended: false, keepsake: false });
+    expect(old.stories.woodland).toEqual({ steps: ['beat'], ended: false, keepsake: true });
+    const mixed = migrate({
+      stories: {
+        melody: { steps: ['friends', 'beat', 'notes', 'wren', 'notes'], ended: true, keepsake: false },
+      },
+    });
+    expect(mixed.stories.melody).toEqual({ steps: ['notes', 'friends'], ended: false, keepsake: false });
+    expect(
+      migrate({ stories: { melody: { steps: ['friends', 'highlow', 'notes'], ended: true } } }).stories
+        .melody,
+    ).toEqual({ steps: ['notes', 'highlow', 'friends'], ended: true, keepsake: true });
+  });
+
   it('keeps picnic progress through a backup and restore, with older progress untouched', () => {
     const save = defaults();
     save.games['pet-kitchen'] = { plays: 2, level: 3, pinned: null, history: [] };
     save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
     save.stories.picnic = { steps: ['sandwiches'], ended: false, keepsake: true };
     save.stories.woodland = { steps: ['baskets'], ended: false, keepsake: true };
+    save.stories.melody = { steps: ['highlow'], ended: false, keepsake: true };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
@@ -580,6 +601,21 @@ describe('migrate', () => {
       },
     };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('keeps a picture made on the Sea scene through a backup and restore', () => {
+    const save = defaults();
+    const seaStamp = { kind: 'crab' as const, color: 'red' as const, x: 0.3, y: 0.6, size: 1, turns: 0 };
+    save.creations.picture = {
+      current: { kind: 'picture', scene: 'sea', stamps: [seaStamp] },
+      previous: { kind: 'picture', stamps: [seaStamp] },
+    };
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    expect(back).toEqual(save);
+    // A damaged scene is dropped while the picture stays.
+    const odd = JSON.parse(JSON.stringify(save));
+    odd.creations.picture.current.scene = 'volcano';
+    expect(migrate(odd).creations.picture.current).toEqual({ kind: 'picture', stamps: [seaStamp] });
   });
 
   it('keeps a bounded finger painting through a backup and restore', () => {

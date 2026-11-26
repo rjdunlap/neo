@@ -300,6 +300,7 @@ export const LANDS: readonly Land[] = [
       'critter-crossing',
       'mossy-path',
       'shell-rows',
+      'last-pebble',
       'domino-pond',
       'bunny-patches',
       'campsite',
@@ -341,6 +342,7 @@ export const LANDS: readonly Land[] = [
       'not-always',
       'thought-bubbles',
       'playdate-workshop',
+      'common-ground',
     ],
   },
   {

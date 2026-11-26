@@ -200,6 +200,18 @@ const SHIELDS: Record<Weather, Item[]> = {
 export const shieldFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS): Item =>
   SHIELDS[w].find((i) => wearable.includes(i))!;
 
+/** Level 13's second axis, as pictures only (decided 2026-10-23): a cold day wants one warm thing, a hot day sandals. */
+export type Temp = 'cold' | 'hot';
+/** Warm things for a cold day, whatever the sky; each has one home weather (snowy), so no weather item is ever one. */
+export const COLD_ITEMS: readonly Item[] = ['scarf', 'mittens', 'beanie', 'earmuffs', 'puffycoat'];
+/** Cool things for a hot day. */
+export const HOT_ITEMS: readonly Item[] = ['sandals'];
+/** Which temperature an item answers, or null for one that is not about temperature. */
+export const tempOf = (i: Item): Temp | null =>
+  COLD_ITEMS.includes(i) ? 'cold' : HOT_ITEMS.includes(i) ? 'hot' : null;
+/** The skies level 13 uses: snow is already a cold day, so the temperature axis needs the other three. */
+const THERMO_SKIES: readonly Weather[] = ['sunny', 'rainy', 'windy'];
+
 export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try' | 'sky' | 'friends';
 
 export interface WardrobePlan {
@@ -214,6 +226,8 @@ export interface WardrobePlan {
   keep?: boolean;
   /** A small case with shared clothes and multiple valid packings. */
   packLight?: boolean;
+  /** Level 13: a picture thermometer beside the sky; the outfit needs one thing for the weather and one for the temperature. */
+  thermo?: boolean;
 }
 
 export const WARDROBE_PLANS: WardrobePlan[] = [
@@ -273,6 +287,14 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
     packLight: true,
     name: 'Pack light: fit clothes for both rain and snow in one small case',
   },
+  {
+    mode: 'all',
+    choices: 5,
+    need: 2,
+    rounds: 3,
+    thermo: true,
+    name: 'Warm or cold? Read the thermometer too: one thing for the sky and one for the temperature',
+  },
 ];
 
 export const wardrobePlan = (level: number) =>
@@ -287,6 +309,8 @@ export interface Outfit {
   packings?: Item[][];
   /** In weather-change rounds, these are the worn clothes to remove before dressing for the new weather. */
   remove?: Item[];
+  /** Level 13: what the thermometer shows. */
+  temp?: Temp;
   /** Level 11: worn clothes that suit both weathers and stay on; taking one off is a miss. */
   keep?: Item[];
   /** Which sky: what the pet already wears, the skies on offer, and the one it suits. */
@@ -357,6 +381,50 @@ function keepRound(
 }
 
 /**
+ * One level-13 round: a sky and a temperature, and two things to find, one for each. The sky's thing is never a feet
+ * item on a hot day (sandals are the answer there), and every other offered item suits neither the sky nor the
+ * temperature, so exactly those two are right. Null when this pet has no pair that works.
+ */
+function thermoRound(
+  w: Weather,
+  temp: Temp,
+  rng: Rng,
+  wearable: readonly Item[],
+  choices: number,
+): Outfit | null {
+  const answers = temp === 'cold' ? COLD_ITEMS : HOT_ITEMS;
+  for (const sky of rng.shuffle(itemsFor(w, wearable).filter((i) => !tempOf(i)))) {
+    const warm = rng.shuffle(wearable.filter((i) => answers.includes(i) && SLOTS[i] !== SLOTS[sky]));
+    if (!warm.length) continue;
+    const needed = [sky, warm[0]];
+    // Everything else offered is a wrong answer for both axes: a thing for another sky, or for the other temperature.
+    const others = rng.shuffle(wearable.filter((i) => !suits(i, w) && !answers.includes(i)));
+    return {
+      weathers: [w],
+      temp,
+      needed,
+      options: rng.shuffle([...needed, ...others.slice(0, choices - needed.length)]),
+    };
+  }
+  return null;
+}
+
+/** Level 13's rounds: three different skies, cold and hot mixed (a pet with no sandals gets cold days only). */
+function thermoRounds(plan: WardrobePlan, rng: Rng, wearable: readonly Item[]): Outfit[] {
+  const hot = wearable.some((i) => HOT_ITEMS.includes(i));
+  const temps: Temp[] = hot
+    ? rng.shuffle<Temp>(['cold', 'hot', rng.pick<Temp>(['cold', 'hot'])])
+    : ['cold', 'cold', 'cold'];
+  const skies = rng.shuffle([...THERMO_SKIES]);
+  const out: Outfit[] = [];
+  for (let r = 0; r < plan.rounds; r++) {
+    const round = thermoRound(skies[r % skies.length], temps[r], rng, wearable, plan.choices);
+    if (round) out.push(round);
+  }
+  return out;
+}
+
+/**
  * One round's weather and choices. Weathers change from round to round. Everything is drawn from `wearable`, what this
  * pet can wear, so a species with fewer parts finds fewer things (every weather keeps at least one): "everything" is
  * every slot it has, and the choices run short rather than offer what it cannot put on.
@@ -366,6 +434,7 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
     const first = rng.shuffle<Weather>(['rainy', 'snowy']);
     return [first, [...first].reverse()].map((weathers) => lightTrip(weathers, rng, wearable, plan.choices));
   }
+  if (plan.thermo) return thermoRounds(plan, rng, wearable);
   const out: Outfit[] = [];
   let order: Weather[] = [];
   let pool: typeof KEEP_CHANGES = [];
@@ -469,5 +538,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
   preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
   prek: { min: 4, max: 11, order: [4, 5, 10, 6, 7, 11] },
-  school: { min: 6, max: 12, order: [6, 7, 11, 12] },
+  school: { min: 6, max: 13, order: [6, 7, 11, 12, 13] },
 };

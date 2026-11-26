@@ -36,6 +36,7 @@ import {
   type Ramp,
   type Trace,
 } from './logic';
+import { rampStep, SKINS, skinFor, skinnable, skinVars, type Skin } from './skins';
 import { BUTTON_HIT_R, chainLayout, COL_GAP, PART_HIT_R } from './layout';
 
 const PART_R = 52;
@@ -140,6 +141,55 @@ function bellArt(small = false, marble?: { fill: number; line: number; light: nu
   return c;
 }
 
+/** A squirrel's bowl for the acorn: a round wooden bowl with a few acorn caps already in it. */
+function bowlArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(-44, -6)
+    .quadraticCurveTo(-40, 34, 0, 34)
+    .quadraticCurveTo(40, 34, 44, -6)
+    .closePath()
+    .fill(wood.fill)
+    .stroke({ width: 6, color: wood.line, join: 'round' });
+  g.ellipse(0, -6, 44, 11).fill(swatch.orange.light).stroke({ width: 5, color: wood.line });
+  g.circle(-14, -9, 7).fill(swatch.orange.fill);
+  g.circle(10, -8, 7).fill(swatch.orange.fill);
+  c.addChild(g);
+  return c;
+}
+
+/** A small pond for the duckling: blue water with a lily pad and a ripple. */
+function pondArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.ellipse(0, 12, 58, 26).fill(swatch.blue.fill).stroke({ width: 6, color: swatch.blue.line });
+  g.ellipse(0, 12, 34, 12).stroke({ width: 4, color: swatch.blue.light, alpha: 0.9 });
+  g.ellipse(22, 8, 14, 7).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+  c.addChild(g);
+  return c;
+}
+
+/** The goal a machine shows for its skin; the marble keeps the bell. */
+function goalArt(skin: Skin): Container {
+  return skin.id === 'acorn' ? bowlArt() : skin.id === 'duckling' ? pondArt() : bellArt();
+}
+
+/** What rides the machine, drawn at the origin (the marble stays the red ball). */
+function drawCargo(g: Graphics, skin: Skin) {
+  g.clear();
+  if (skin.id === 'acorn') {
+    g.ellipse(0, 4, 15, 18).fill(swatch.orange.fill).stroke({ width: 5, color: swatch.orange.line });
+    g.roundRect(-17, -16, 34, 13, 6).fill(wood.fill).stroke({ width: 4, color: wood.line });
+  } else if (skin.id === 'duckling') {
+    g.circle(0, 5, 17).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line });
+    g.circle(8, -12, 11).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+    g.ellipse(21, -10, 8, 4).fill(swatch.orange.fill);
+    g.circle(11, -15, 2.5).fill(ink);
+  } else {
+    g.circle(0, 0, 19).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
+  }
+}
+
 function roundButton(fill: number, line: number, picture: (g: Graphics) => void): Container {
   const c = new Container();
   const g = new Graphics()
@@ -212,10 +262,14 @@ class ChainReaction implements Game {
   private top = 120;
   private gap = 92;
   private left = 180;
+  /** The picture and words this machine wears; only plain machines leave the marble and the bell. */
+  private skin: Skin = SKINS[0];
+  private readonly skinOffset: number;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.boards = makeBoards(this.plan, ctx.rng);
+    this.skinOffset = ctx.rng.int(0, SKINS.length - 1);
     this.panel.eventMode =
       this.tracks.eventMode =
       this.sockets.eventMode =
@@ -327,6 +381,15 @@ class ChainReaction implements Game {
     return { x: this.colX(c.col), y: this.rowY(c.row) };
   }
 
+  /** Spoken lines carry the machine's cargo and goal words, so an acorn is never called a marble. */
+  private say(id: LineId) {
+    return this.ctx.say(id, skinVars(this.skin));
+  }
+
+  private instruct(id: LineId) {
+    return this.ctx.instruct(id, skinVars(this.skin));
+  }
+
   private async next() {
     this.busy = true;
     this.index++;
@@ -337,6 +400,8 @@ class ChainReaction implements Game {
     this.trail.clear();
     if (this.index >= this.boards.length) return void this.finale();
     this.machine = this.boards[this.index];
+    this.skin = skinnable(this.plan) ? skinFor(this.skinOffset, this.index) : SKINS[0];
+    drawCargo(this.marble, this.skin);
     this.placement = Array(this.machine.loose.length).fill(null);
     for (const p of this.parts) p.handle.destroy();
     this.parts.splice(0).forEach((p) => p.node.destroy({ children: true }));
@@ -361,7 +426,7 @@ class ChainReaction implements Game {
     this.busy = false;
     this.drawGlow();
     if (this.index === 0)
-      await this.ctx.instruct(
+      await this.instruct(
         this.plan.turn
           ? 'chain.turn-start'
           : this.plan.predict
@@ -541,7 +606,10 @@ class ChainReaction implements Game {
       }
       this.targetBell = this.bellNodes.find((b) => b.col === this.machine.target)!.node;
     } else {
-      this.targetBell = bellArt(false, this.machine.blue ? swatch.red : undefined);
+      this.targetBell =
+        this.skin.id === 'marble'
+          ? bellArt(false, this.machine.blue ? swatch.red : undefined)
+          : goalArt(this.skin);
       this.targetBell.position.set(this.colX(this.machine.target), bottom - 32);
       this.goal.addChild(this.targetBell);
     }
@@ -635,24 +703,24 @@ class ChainReaction implements Game {
       this.followHint = true;
       this.drawGlow();
       sfx.sparkle();
-      return void this.ctx.say('chain.predict-hint');
+      return void this.say('chain.predict-hint');
     }
     if (this.plan.turn) {
       const piece = turnHint(this.machine, this.flipped);
-      if (piece === null) return void this.ctx.say('chain.run-now');
+      if (piece === null) return void this.say('chain.run-now');
       this.turnGlow = piece;
       this.hints++;
       this.drawGlow();
       sfx.sparkle();
-      return void this.ctx.say('chain.turn-hint');
+      return void this.say('chain.turn-hint');
     }
     const hint = hintFor(this.machine, this.placement);
-    if (!hint) return void this.ctx.say('chain.run-now');
+    if (!hint) return void this.say('chain.run-now');
     this.hinted = hint;
     this.hints++;
     this.drawGlow();
     sfx.sparkle();
-    void this.ctx.say(
+    void this.say(
       this.hintsSpring()
         ? 'chain.spring-hint'
         : this.machine.spring
@@ -670,7 +738,7 @@ class ChainReaction implements Game {
     if (this.plan.predict) return void this.runPrediction();
     if (this.placement.some((socket) => socket === null)) {
       sfx.boing();
-      return void this.ctx.say('chain.parts');
+      return void this.say('chain.parts');
     }
     this.busy = true;
     this.hinted = null;
@@ -689,7 +757,7 @@ class ChainReaction implements Game {
     this.drawTrail(results);
     sfx.boing();
     const [result, blue] = results;
-    await this.ctx.say(
+    await this.say(
       blue
         ? result.success
           ? 'chain.two-blue'
@@ -724,7 +792,7 @@ class ChainReaction implements Game {
   private async runPrediction() {
     if (this.picked === null) {
       sfx.pop(2);
-      return void this.ctx.say('chain.predict-first');
+      return void this.say('chain.predict-first');
     }
     this.busy = true;
     this.followHint = false;
@@ -739,7 +807,7 @@ class ChainReaction implements Game {
       await this.ctx.tw
         .to(this.targetBell.scale, { x: 1.15, y: 1.15 }, { duration: 0.12, ease: ease.outBack })
         .then(() => this.ctx.tw.to(this.targetBell!.scale, { x: 1, y: 1 }, { duration: 0.15 }));
-    await this.ctx.say('chain.predict-other');
+    await this.say('chain.predict-other');
     await this.ctx.tw.wait(0.8);
     await this.ctx.tw.to(this.diagram, { alpha: 0 }, { duration: 0.3 });
     await this.next();
@@ -775,6 +843,7 @@ class ChainReaction implements Game {
       this.top - 18,
     );
     sfx.whoosh();
+    let ramps = 0;
     for (const step of result.steps) {
       await this.ctx.tw.to(
         marble,
@@ -798,7 +867,7 @@ class ChainReaction implements Game {
       }
       if (step.spring) await this.bounce(marble, step.col, step.row);
       if (step.ramp) {
-        sfx.marimba(step.ramp === 'left' ? 4 : 8, 0.22);
+        sfx.marimba(rampStep(step.ramp, ramps++), 0.22);
         const next = step.col + (step.ramp === 'left' ? -1 : 1);
         await this.ctx.tw.to(
           marble,
@@ -924,7 +993,7 @@ class ChainReaction implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say(line);
+    await this.say(line);
     await this.ctx.tw.to(this.diagram, { alpha: 0 }, { duration: 0.3 });
     await this.next();
   }
@@ -934,7 +1003,7 @@ class ChainReaction implements Game {
     this.settled = true;
     this.finished = true;
     sfx.tada();
-    await this.ctx.say('chain.done');
+    await this.say('chain.done');
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({
       misses: this.misses,

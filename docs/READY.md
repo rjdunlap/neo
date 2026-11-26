@@ -58,10 +58,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`robot-path` level 15 starts on the first board** (it is a seeded pick today; existing-game bug fix). [Dive](deep-dives/robot-path.md#build-slices-in-order)
-- **`critter-crossing` and `critter-sort` the scarf** (the shared third critter feature; both games' rule tests plus the fairness test across the larger pool). [Dive](deep-dives/critter-crossing.md#build-slices-in-order)
-- **`weather-wardrobe` school level 13, Warm or cold?** (decision 3 settled, after the school window and Pack light): add a picture thermometer beside the sky so temperature and weather both inform the outfit. [Dive](deep-dives/weather-wardrobe.md#build-slices-in-order)
-- **`puzzle-pals` level 10, Two pictures, one tray** (pre-K, school; new interaction; after Turn it round, built). [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
 
 
 
@@ -132,7 +128,6 @@ Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains. Every game has a dive or a study row (Pyramid Solitaire's dive, 2026-11-11, was the last of the tracker's waves), but a game built from a definition can still have no plan for its next levels; those found 2026-11-17 are below; Brain Break's dive is done (2026-11-18, [dive](deep-dives/brain-break.md)):
 
 
-- **A shared sliding-board helper** (restructuring, typecheck and unit tests plus one filtered play per game it moves; the [thumb-fix line](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18) left it): Word Search (`layout.ts`), Island Bridges (`touchLayout`, `slideToShow`, `inWindow` in `logic.ts`) and Logic Grid / Picture Logic each carry their own window, clamp, drag threshold and edge-arrow code; move what is common into one engine helper (check the [reuse map](DESIGN.md#reuse-map) first) and keep every game's layout test passing, without changing any size.
 
 ## Blocked work (not routine picks)
 

@@ -1,5 +1,6 @@
 import type { GameModule } from '../games/types';
 import { playBand, type Band } from '../progress/bands';
+import { levelsInOrder } from '../progress/difficulty';
 import { DISCOVERY_IDS } from './discovery';
 
 /**
@@ -108,6 +109,54 @@ export type MixEvent =
   | { type: 'finish'; round: number; seed: number }
   | { type: 'skip'; p: number }
   | { type: 'unavailable'; p: number };
+
+/**
+ * One stop of today's six (D10 slice 3): the game with the band and preset level its card shows, frozen when the page
+ * opened, so a mix launches exactly what the card would.
+ */
+export interface DailyStop {
+  readonly id: string;
+  readonly band: Band;
+  readonly level: number;
+}
+
+export const dailyStops = (
+  picks: readonly { mod: { id: string }; band: Band; level: number }[],
+): DailyStop[] => picks.map((p) => ({ id: p.mod.id, band: p.band, level: p.level }));
+
+/**
+ * A daily stop checked at its launch, by any band: the game is still there, plays by touch, is not opted out of the six,
+ * still plays at the stop's band for her band, and the preset level is still on its ladder. Else null: never another game.
+ */
+export function dailyStop<T extends Candidate & Pick<GameModule, 'levels' | 'daily'>>(
+  profileBand: Band,
+  catalog: readonly T[],
+  stop: DailyStop | undefined,
+): T | null {
+  const mod = stop && catalog.find((m) => m.id === stop.id);
+  if (!stop || !mod || mod.daily === false || !(mod.inputs ?? ['touch']).includes('touch')) return null;
+  if (playBand(mod.bands, profileBand) !== stop.band) return null;
+  return levelsInOrder(mod.levels(stop.band)).includes(stop.level) ? mod : null;
+}
+
+/**
+ * The daily session's start: a stop whose game has a finished round today starts played, so Play all plays what is left.
+ * With every stop played, all start upcoming again: an explicit second pass of ordinary rounds.
+ */
+export function startDaily(stops: readonly DailyStop[], played: (id: string) => boolean): MixState {
+  const done = stops.map((s) => played(s.id));
+  const again = done.every(Boolean);
+  return {
+    items: done.map((d) => (d && !again ? { state: 'played' as const } : { state: 'upcoming' as const })),
+    at: null,
+    round: 0,
+  };
+}
+
+/** The ending's line for today's six: after any play, or the quiet one when every stop was hopped over. */
+export function dailyEndingLine(s: MixState): 'daily.end' | 'daily.end.quiet' {
+  return s.items.some((it) => it.state === 'played') ? 'daily.end' : 'daily.end.quiet';
+}
 
 /** One upcoming item per lineup entry. */
 export function startMix(ids: readonly string[] = MIX_IDS): MixState {

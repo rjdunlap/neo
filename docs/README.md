@@ -42,6 +42,12 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Laundry Day](definitions/laundry-day.md) | Daily life long ago H7, Story Steps' eleventh story: scrub, hang and dry a picnic blanket in order; a fictional chore, no real history |
+| [How Many Pieces Fit?](definitions/how-many-pieces-fit.md) | Fractions R7, Ribbon Workshop level 8: measure a ¾ ribbon with ½-spool pieces (snipping one in half) and answer 1½ pieces; school and grownup |
+| [Ready for Adventure 4](definitions/ready-for-adventure-4.md) | Routines RA4, Ready for Adventure level 4: the parade request changes, so repair the bag and Check again; school |
+| [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
+| [Common Ground, level 1: A Place for You](definitions/common-ground.md) | Social-emotional slice 4: place a cushion by a window and a basket beside it for a visiting friend, then press Visit; a new school-only game |
+| [Common Ground, level 2: A request changed](definitions/common-ground-2.md) | Level 2 of `common-ground`: after the preview the friend asks for the basket on a different side, so the room is revised with undo; school only |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
 | [Tide Tables](definitions/tide-tables.md) | Assign three jobs to a fictional harbor day using tide heights and job order, with multiple working schedules; grown-up, Lantern Lake |
@@ -53,6 +59,8 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Outcrop Detective](definitions/outcrop-detective.md) | Earth materials E6, levels 1–2: reorder four event cards to build a cliff's story, then say whether the rocks tell the order for sure and choose the look that decides; school and grownup, Lantern Lake |
 | [Shadow Play](definitions/shadow-play.md) | Slide three flat cut-outs between a lamp and a screen (later turn them and swap rails) until the shadow fills a skyline outline; levels 1–4, both batches built; grown-up, Lantern Lake |
 | [Fence the Field](definitions/fence-the-field.md) | Dots and boxes on a small field against the pet: claim a safe rail, then runs and the leave-two answer; levels 1–4, both batches built; grown-up, Lantern Lake |
+| [Last Pebble 3–5](definitions/last-pebble-3-5.md) | Strategy-games SG3b: choose who goes first, bigger steps (take 3 or 4) and misère (last stone loses); two build batches |
+| [Last Pebble](definitions/last-pebble.md) | Strategy-games SG3, levels 1–2: lay one or two stones across a stream in turn to reach the far bank, finding stepping stones back from the end; school (about 10 and up) and grown-up, Puzzle Peaks |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
@@ -71,6 +79,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Look It Up levels 4–6](definitions/look-it-up-4-6.md) | Contents page (find an animal's page from a contents list), Picture or words? (the picture shows the baby, only the printed caption gives its name tag) and Two pages together (read one page, find another that says the same); school, in two batches |
 | [Lasso Loops level 7](definitions/lasso-loops-too-few-too-many.md) | Too few, too many: loop one jar of ten, then tap away the guess cards that cannot be right (too few or too many) before the tens round checks the one that stays; school top, a new level on an existing interaction |
 | [Shell Rows levels 4–5](definitions/shell-rows-4-5.md) | Two ways to win (set a shell that makes two rows at once) and Play it out (a whole gentle match where a tie is a good ending), with the grown-up seat as a second batch; school |
+| [Maker Lane levels 4–5](definitions/maker-lane-4-5.md) | Stripes or plain (dye at the fleece, the yarn or the scarf; stripes need coloured yarn before the loom) and Two ways to a box (a log and old paper both become boxes); school, Cozy Village |
 | [Draw the Pattern level 12](definitions/draw-the-pattern-your-pattern.md) | Your pattern: draw a hill or a dip in each empty place of a strip, with no wrong choice, then the pet says her pattern back and carries it to the end of the strip; pre-K and school |
 | [Silly Scene](definitions/silly-scene.md) | Puzzle-pages PP7, levels 1–3: tap what could not happen in a familiar picture and hear why; preschool 1, pre-K 1–2, school 2–3, Puzzle Peaks |
 | [Vine Snip level 6](definitions/vine-snip-where-will-it-land.md) | Where will it land?: predict where one orange lands when released through the same point heading right, then left, then watch both and replay free; school, a prediction interaction |

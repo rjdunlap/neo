@@ -96,7 +96,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Conductor
 
-*toddler–pre-K* · [Little Conductor](games/little-conductor.md)
+*toddler–school* · [Little Conductor](games/little-conductor.md)
 
 ### Puppet Stage
 
@@ -110,7 +110,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Loom
 
-*toddler–pre-K* · [Little Loom](games/little-loom.md)
+*toddler–school* · [Little Loom](games/little-loom.md)
 
 ### Movie Night
 
@@ -200,7 +200,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Ready for Adventure
 
-*toddler–pre-K* · [Ready for Adventure](games/ready-for-adventure.md)
+*toddler–school* · [Ready for Adventure](games/ready-for-adventure.md)
 
 ### Who Am I?
 
@@ -490,6 +490,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–school* · [Shell Rows](games/shell-rows.md)
 
+### Last Pebble
+
+*school–grown-up* · [Last Pebble](games/last-pebble.md)
+
 ### Domino Pond
 
 *pre-K–grown-up* · [Domino Pond](games/domino-pond.md)
@@ -587,6 +591,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Playdate Workshop
 
 *preschool–pre-K* · [Playdate Workshop](games/playdate-workshop.md)
+
+### Common Ground
+
+*school* · [Common Ground](games/common-ground.md)
 
 ## Tinker Lab
 

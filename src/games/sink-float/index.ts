@@ -13,6 +13,8 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
 import { rangeFor } from '../../progress/difficulty';
+import { BoatLoad } from './boat';
+import { GardenRaft } from './raft';
 import { SaltTanks } from './salt';
 import {
   ALL_SHAPES,
@@ -1014,5 +1016,10 @@ export const sinkFloat: GameModule = {
   hubIcon: () => new WigglyIcon(tankArt()),
   touchDemo: true,
   sticker: (seed) => tankArt(seed),
-  create: (ctx) => (sinkPlan(ctx.level).mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx)),
+  create: (ctx) => {
+    const mode = sinkPlan(ctx.level).mode;
+    if (mode === 'raft') return new GardenRaft(ctx);
+    if (mode === 'boat') return new BoatLoad(ctx);
+    return mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx);
+  },
 };

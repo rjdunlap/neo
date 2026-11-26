@@ -27,6 +27,19 @@ import {
   SWITCH_RIBBON,
   SWITCH_WHOLES,
   SwitchBench,
+  FIT_CAPACITY,
+  FIT_CHOICES,
+  FIT_ORDER,
+  FitBench,
+  fitApply,
+  fitCountHint,
+  fitHint,
+  fitJudgeCount,
+  fitJudgeMeasure,
+  fitRound,
+  fitSolve,
+  fitStart,
+  type FitChoice,
   CASES_CHANGES,
   CASES_FIRST,
   CASES_STOCK,
@@ -479,12 +492,13 @@ describe('Whole Switch (level 6)', () => {
   });
 
   it('is the top of the school order, leaves saved levels 1–3 alone, and has every line it speaks', () => {
-    expect(LEVEL_IDS).toEqual([1, 2, 3, 6, 7]);
-    expect(LEVELS.school).toEqual({ min: 1, max: 7, order: [1, 2, 3, 6, 7] });
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 6, 7, 8]);
+    expect(LEVELS.school).toEqual({ min: 1, max: 8, order: [1, 2, 3, 6, 7, 8] });
     const range = LEVELS.school!;
     // A saved or pinned level is clamped by a step of nothing: 1–3 and 6 stay, and a reserved 4 or 5 lands on a listed ID.
     for (const l of LEVEL_IDS) expect(stepLevel(l, 0, range)).toBe(l);
     expect(stepLevel(6, 1, range)).toBe(7);
+    expect(stepLevel(7, 1, range)).toBe(8);
     expect(stepLevel(4, 0, range)).toBe(3);
     expect(stepLevel(5, 0, range)).toBe(6);
     expect(stepLevel(3, 1, range)).toBe(6);
@@ -802,12 +816,13 @@ describe('Ribbon Cases (level 7)', () => {
   });
 
   it('is the top of both ladders, leaves saved levels alone, and has every line it speaks', () => {
-    expect(LEVELS.school!.order).toEqual([1, 2, 3, 6, 7]);
-    expect(LEVELS.grownup).toEqual({ min: 6, max: 7, order: [6, 7] });
-    for (const l of [1, 2, 3, 6]) expect(stepLevel(l, 0, LEVELS.school!)).toBe(l);
+    expect(LEVELS.school!.order).toEqual([1, 2, 3, 6, 7, 8]);
+    expect(LEVELS.grownup).toEqual({ min: 6, max: 8, order: [6, 7, 8] });
+    for (const l of [1, 2, 3, 6, 7]) expect(stepLevel(l, 0, LEVELS.school!)).toBe(l);
     expect(stepLevel(6, 1, LEVELS.grownup!)).toBe(7);
-    expect(stepLevel(7, 1, LEVELS.grownup!)).toBe(7);
-    expect(stepLevel(7, -1, LEVELS.grownup!)).toBe(6);
+    expect(stepLevel(7, 1, LEVELS.grownup!)).toBe(8);
+    expect(stepLevel(8, 1, LEVELS.grownup!)).toBe(8);
+    expect(stepLevel(8, -1, LEVELS.grownup!)).toBe(7);
     for (const id of [
       'ask',
       'rail.top',
@@ -826,5 +841,196 @@ describe('Ribbon Cases (level 7)', () => {
     // No line says a right sharing is the only one.
     for (const [id, lines] of Object.entries(SCRIPT))
       if (id.startsWith('ribbon.cases.')) expect(lines.join(' '), id).not.toMatch(/\bonly\b/i);
+  });
+});
+
+describe('How Many Pieces Fit? (level 8)', () => {
+  const act = (s: ReturnType<typeof fitStart>, ...as: Parameters<typeof fitApply>[1][]) => {
+    let cur = s;
+    for (const a of as) cur = fitApply(cur, a)!;
+    return cur;
+  };
+  const sizes = (ps: readonly { size: number }[]) => ps.map((p) => p.size);
+
+  it('starts with two half-spool pieces and conserves four ticks through any action', () => {
+    const rng = new Rng(7);
+    for (let run = 0; run < 200; run++) {
+      let s = fitStart();
+      for (let i = 0; i < 12; i++) {
+        const pool = [
+          ...s.tray.map((p) => ({ kind: 'place' as const, id: p.id })),
+          ...s.tray.map((p) => ({ kind: 'snip' as const, id: p.id })),
+          ...s.bench.map((p) => ({ kind: 'return' as const, id: p.id })),
+        ];
+        const n = fitApply(s, pool[rng.int(0, pool.length - 1)]);
+        if (n) s = n;
+        expect(total(s.tray) + total(s.bench)).toBe(4);
+        expect(total(s.bench)).toBeLessThanOrEqual(FIT_CAPACITY);
+        const ids = [...s.tray, ...s.bench].map((p) => p.id);
+        expect(new Set(ids).size).toBe(ids.length);
+      }
+    }
+  });
+
+  it('judges tag 1 by the bench total, in any arrangement', () => {
+    expect(fitJudgeMeasure(fitStart())).toBe('empty');
+    expect(fitJudgeMeasure(act(fitStart(), { kind: 'place', id: 0 }))).toBe('short');
+    expect(fitJudgeMeasure(act(fitStart(), { kind: 'place', id: 0 }, { kind: 'place', id: 1 }))).toBe('long');
+    const snipped = act(fitStart(), { kind: 'snip', id: 1 });
+    // Tray is [piece 0, bit 2, bit 3].
+    for (const order of [
+      [0, 2],
+      [2, 0],
+    ]) {
+      const s = act(snipped, ...order.map((id) => ({ kind: 'place' as const, id })));
+      expect(total(s.bench)).toBe(FIT_ORDER);
+      expect(fitJudgeMeasure(s)).toBe('right');
+    }
+    const thirds = act(
+      fitStart(),
+      { kind: 'snip', id: 0 },
+      { kind: 'snip', id: 1 },
+      ...[2, 3, 4].map((id) => ({ kind: 'place' as const, id })),
+    );
+    expect(sizes(thirds.bench)).toEqual([1, 1, 1]);
+    expect(fitJudgeMeasure(thirds)).toBe('right');
+  });
+
+  it('refuses a place past one spool and a snip of a bit or of a placed piece', () => {
+    const full = act(fitStart(), { kind: 'place', id: 0 }, { kind: 'place', id: 1 });
+    expect(total(full.bench)).toBe(4);
+    const one = act(fitStart(), { kind: 'snip', id: 0 }, { kind: 'place', id: 1 }, { kind: 'place', id: 2 });
+    expect(fitApply(one, { kind: 'place', id: 3 })).not.toBeNull();
+    expect(fitApply(one, { kind: 'snip', id: 1 })).toBeNull();
+    expect(fitApply(act(fitStart(), { kind: 'snip', id: 0 }), { kind: 'snip', id: 2 })).toBeNull();
+  });
+
+  it('judges tag 2: 1½ is right, 1¼ is the unit mistake, 1 and 2 are wrong', () => {
+    expect(fitJudgeCount(null)).toBe('empty');
+    expect(fitJudgeCount('1_1/4')).toBe('wrong_unit');
+    expect(fitJudgeCount('1')).toBe('wrong');
+    expect(fitJudgeCount('2')).toBe('wrong');
+    expect(fitJudgeCount('1_1/2')).toBe('right');
+  });
+
+  it('has a hint that leads to a right bench in at most five steps from every reachable state', () => {
+    const key = (s: ReturnType<typeof fitStart>) => `${sizes(s.tray)}|${sizes(s.bench)}`;
+    const seen = new Map([[key(fitStart()), fitStart()]]);
+    const queue = [fitStart()];
+    while (queue.length) {
+      const s = queue.pop()!;
+      for (const kind of ['place', 'snip'] as const)
+        for (const p of s.tray) {
+          const n = fitApply(s, { kind, id: p.id });
+          if (n && !seen.has(key(n))) (seen.set(key(n), n), queue.push(n));
+        }
+      for (const p of s.bench) {
+        const n = fitApply(s, { kind: 'return', id: p.id });
+        if (n && !seen.has(key(n))) (seen.set(key(n), n), queue.push(n));
+      }
+    }
+    expect(seen.size).toBeGreaterThan(10);
+    for (const start of seen.values()) {
+      let s = start;
+      let steps = 0;
+      for (;;) {
+        const h = fitHint(s)!;
+        expect(h).not.toBeNull();
+        if (h.kind === 'check') break;
+        s = fitApply(s, h as Parameters<typeof fitApply>[1])!;
+        expect(s).not.toBeNull();
+        steps++;
+        expect(steps).toBeLessThanOrEqual(5);
+      }
+      expect(fitJudgeMeasure(s)).toBe('right');
+    }
+    expect(fitSolve(fitStart())).toHaveLength(3);
+    expect(fitCountHint(null)).toEqual({ kind: 'choose', choice: '1_1/2' });
+    expect(fitCountHint('1')).toEqual({ kind: 'choose', choice: '1_1/2' });
+    expect(fitCountHint('1_1/2')).toEqual({ kind: 'check' });
+  });
+
+  it('plays a round: undo restores exact state, tag 2 undo stays out of tag 1, misses and hints count', () => {
+    const b = new FitBench(fitRound(new Rng(3)));
+    expect(b.check()).toBe('empty');
+    const start = b.state;
+    b.act({ kind: 'place', id: 0 });
+    b.act({ kind: 'place', id: 1 });
+    expect(b.check()).toBe('long');
+    expect(b.tally.misses).toBe(1);
+    b.undo();
+    b.undo();
+    expect(b.state).toEqual(start);
+    expect(b.canUndo).toBe(false);
+    b.act({ kind: 'place', id: 0 });
+    b.act({ kind: 'place', id: 1 });
+    b.act({ kind: 'return', id: 1 });
+    b.act({ kind: 'snip', id: 1 });
+    b.act({ kind: 'place', id: 2 });
+    // Tag 1 is right; a second wrong check on tag 2 brings the glow and one hint.
+    expect(b.check()).toBe('right');
+    expect(b.tag).toBe(2);
+    expect(b.canUndo).toBe(false);
+    expect(b.act({ kind: 'return', id: 0 })).toBe(false);
+    expect(b.check()).toBe('empty');
+    b.choose('1_1/4');
+    expect(b.check()).toBe('wrong_unit');
+    b.choose('2');
+    expect(b.check()).toBe('wrong');
+    expect(b.tally.glow).toBe(true);
+    b.undo();
+    expect(b.choice).toBe('1_1/4');
+    b.undo();
+    expect(b.choice).toBeNull();
+    expect(b.undo()).toBe(false);
+    b.choose('1_1/2');
+    expect(b.check()).toBe('right');
+    expect(b.done).toBe(true);
+    expect(b.misses).toBe(3);
+    expect(b.hints).toBe(1);
+  });
+
+  it('seeds only the card order and colour, never the quantities, across rounds 0–199', () => {
+    const orders = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const r = fitRound(new Rng(seed));
+      expect([...r.cards].sort()).toEqual([...FIT_CHOICES].sort() as FitChoice[]);
+      orders.add(r.cards.join());
+    }
+    expect(orders.size).toBeGreaterThan(5);
+    expect(fitStart()).toEqual(fitStart());
+  });
+
+  it('is at the top of both ladders, leaves levels 1–3, 6 and 7 as they were, and every line it speaks keeps its units', () => {
+    expect(LEVELS.school!.order).toEqual([1, 2, 3, 6, 7, 8]);
+    expect(LEVELS.grownup!.order).toEqual([6, 7, 8]);
+    for (const l of [1, 2, 3, 6, 7]) expect(stepLevel(l, 0, LEVELS.school!)).toBe(l);
+    const ids = [
+      'ask',
+      'ask2',
+      'piece',
+      'halfPiece',
+      'snip',
+      'short',
+      'long',
+      'made',
+      'made.halves',
+      'wrongUnit',
+      'wrong',
+      'pick',
+      'done',
+    ];
+    for (const id of ids) expect(SCRIPT[`ribbonfit.${id}` as keyof typeof SCRIPT], id).toBeTruthy();
+    for (const id of ids) {
+      const text = SCRIPT[`ribbonfit.${id}` as keyof typeof SCRIPT].join(' ');
+      // Never the leftover quarter of the spool as a quotient of a quarter.
+      expect(text, id).not.toMatch(/quarter of (a|the) piece/i);
+    }
+    const wrongUnit = SCRIPT['ribbonfit.wrongUnit' as keyof typeof SCRIPT].join(' ');
+    expect(wrongUnit).toMatch(/quarter of the whole spool/);
+    expect(wrongUnit).toMatch(/half of a half-spool piece/);
+    expect(SCRIPT['ribbonfit.done' as keyof typeof SCRIPT].join(' ')).toMatch(
+      /one and a half half-spool pieces/i,
+    );
   });
 });
