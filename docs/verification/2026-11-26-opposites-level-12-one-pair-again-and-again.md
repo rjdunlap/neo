@@ -1,0 +1,5 @@
+# 2026-11-26 — Opposites level 12, One pair again and again (PR #2238)
+
+**Changed:** `opposites` level 12, *One pair, again and again*: lap's gentlest opening (lap order 12, 6, 1; `entryLevels` now 6 and 12). A `switch` plan with `one: true`: four rounds of a single card, one pair (big and small, or hot and cold) per play, one animal throughout, the shown side alternating so the words alternate. Nothing can be wrong. New how-to step and finish line; the `woods` opposites case now plays level 12.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/opposites src/content src/progress` (new level-12 rule test: one concept, one animal, alternating sides, bot taps the card, lap order and landing, no other band reaches it; how-to and game-docs tests); `node scripts/content-barrels.mjs`; `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=12` on a silent dev server (passed).
+**Not run:** `fingerdemo` at level 12 (the bot is the same one-card switch tap as level 1), a portrait screenshot, the full `npm test`, build, offline, and any device or child check (parked). No new voice lines, so no clips were rendered.

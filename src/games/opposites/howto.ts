@@ -9,6 +9,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap a picture to flip it to its opposite. Big and small friends step, fast and slow friends move, and the balloon rises or sinks.',
     },
     {
+      from: 12,
+      to: 12,
+      text: 'One pair, four flips: the same friend turns big, small, big, small (or hot and cold). Tap it each time and say the word together; nothing can go wrong.',
+    },
+    {
       from: 6,
       to: 6,
       text: 'One big picture. Touch anywhere: it flips to its opposite and the word is said, then it joins the row along the bottom and the next picture comes. Say each word together.',
@@ -45,6 +50,7 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { to: 1, text: 'Flip eight pictures to finish the round.' },
+    { from: 12, to: 12, text: 'Four flips of the one pair finish the round.' },
     { from: 6, to: 6, text: 'Eight pictures in the row finish the round.' },
     { from: 2, to: 2, text: 'Find five named pictures to finish the round.' },
     { from: 3, to: 3, text: 'Find four opposites to finish the round.' },
