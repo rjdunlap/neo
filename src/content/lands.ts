@@ -432,6 +432,7 @@ export const LANDS: readonly Land[] = [
       'harbor-orders',
       'workshop-detective',
       'outcrop-detective',
+      'market-days',
     ],
   },
 ];
