@@ -25,8 +25,13 @@ export interface PatternPlan {
   make?: boolean;
   /** Level 18, "Stairs": cars hold 1, 2, 3, 4 counters and the empty car holds one more; the pieces are counts (1–9), not pieces 0–2. */
   stairs?: boolean;
+  /** Level 19, "Up and down": the steps a stair train may take (positive up, negative down), so stacks may go down and by two. */
+  stackSteps?: readonly number[];
   name: string;
 }
+
+/** Level 19's steps: one or two, up or down. */
+const STACK_STEPS = [-2, -1, 1, 2] as const;
 
 export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1], kind: 'shape', name: 'AB: alternate two shapes' },
@@ -53,6 +58,13 @@ export const PATTERN_PLANS: PatternPlan[] = [
   // Her own unit, so `pattern` is empty: the unit is whatever she makes.
   { pattern: [], kind: 'shape', make: true, name: 'Make your own pattern and watch it go round' },
   { pattern: [], kind: 'stack', stairs: true, name: 'Stairs: stacks that grow by one' },
+  {
+    pattern: [],
+    kind: 'stack',
+    stairs: true,
+    stackSteps: STACK_STEPS,
+    name: 'Up and down: stacks that step by one or two',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -109,6 +121,7 @@ export interface PatternSaid {
     | 'pattern.why'
     | 'pattern.whyBells'
     | 'pattern.whyStack'
+    | 'pattern.whyStep'
     | 'pattern.whyNumber'
     | 'pattern.whyPair'
     | 'pattern.oddWhy';
@@ -126,7 +139,11 @@ export function patternSaid(
   train: { sequence: readonly number[]; targets: readonly number[]; family?: number; look?: PairLook },
 ): PatternSaid {
   const { sequence } = train;
-  if (plan.kind === 'stack') return { key: 'pattern.whyStack', vars: { list: sequence.join(', ') } };
+  if (plan.kind === 'stack') {
+    if (!plan.stackSteps) return { key: 'pattern.whyStack', vars: { list: sequence.join(', ') } };
+    const step = sequence[1] - sequence[0];
+    return { key: 'pattern.whyStep', vars: { how: stepWords(step), list: sequence.join(', ') } };
+  }
   if (plan.kind === 'number') {
     return {
       key: 'pattern.whyNumber',
@@ -165,6 +182,14 @@ export const TUNNEL_SIZE = { w: 100, h: 140 } as const;
 
 /** Level 18: four cars show 1 more counter each, and the fifth is the empty car. */
 export const STAIR_CARS = 5;
+/** Level 19's most counters in a stack: the five-frame's two full rows. */
+export const STACK_TOP = 10;
+
+/** A stack step said aloud: "one more", "two fewer". */
+export function stepWords(step: number): string {
+  return `${Math.abs(step) === 1 ? 'one' : 'two'} ${step > 0 ? 'more' : 'fewer'}`;
+}
+
 /** The most counters a stack holds: the five-frame is two rows of five, the answer's "one too many" included. */
 export const STACK_MAX = 9;
 /** A stair train may start at 1 to 4, so the answer is 5 to 8 and its "too many" neighbour is at most 9. */
@@ -175,7 +200,11 @@ export const STAIR_START = { min: 1, max: 4 } as const;
  * answer, the same as the last car (no growth) and one too many, in a shuffled order, so the answer is as often in the
  * middle as at either end and is found by seeing the stack grow.
  */
-function stairsTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+function stairsTrain(
+  rng: Rng,
+  steps?: readonly number[],
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  if (steps) return stepStairs(steps, rng);
   const start = rng.int(STAIR_START.min, STAIR_START.max);
   const sequence = Array.from({ length: STAIR_CARS }, (_, i) => start + i);
   const answer = sequence[STAIR_CARS - 1];
@@ -183,6 +212,32 @@ function stairsTrain(rng: Rng): { sequence: number[]; targets: number[]; choices
     sequence,
     targets: [STAIR_CARS - 1],
     choices: [rng.shuffle([answer - 1, answer, answer + 1])],
+  };
+}
+
+/**
+ * An up-and-down stair train: four cars that step by one or two, up or down, all stacks 1 to 10, then the empty car.
+ * The stacks on offer are the answer, "the step the other way" (the car before the last) and one off the answer, in a
+ * shuffled order, so the step is found by seeing it, not by where the answer sits.
+ */
+function stepStairs(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const step = rng.pick(steps);
+  const run = (STAIR_CARS - 1) * Math.abs(step);
+  // The whole train, answer included, stays within 1 to STACK_TOP.
+  const low = step > 0 ? 1 : 1 + run;
+  const high = step > 0 ? STACK_TOP - run : STACK_TOP;
+  const start = rng.int(low, high);
+  const sequence = Array.from({ length: STAIR_CARS }, (_, i) => start + i * step);
+  const answer = sequence[STAIR_CARS - 1];
+  const otherWay = sequence[STAIR_CARS - 3];
+  const near = [answer - 1, answer + 1].filter((n) => n >= 1 && n <= STACK_TOP && n !== otherWay);
+  return {
+    sequence,
+    targets: [STAIR_CARS - 1],
+    choices: [rng.shuffle([answer, otherWay, rng.pick(near)])],
   };
 }
 
@@ -284,7 +339,7 @@ export function buildTrain(
   shown?: number[];
 } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
-  if (plan.stairs) return stairsTrain(rng);
+  if (plan.stairs) return stairsTrain(rng, plan.stackSteps);
   if (plan.kind === 'pair') return pairTrain(rng);
   const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
   // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.

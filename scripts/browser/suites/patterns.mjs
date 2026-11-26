@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function patterns() {
     const levels =
-      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 18 }, (_, i) => i + 1);
+      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 19 }, (_, i) => i + 1);
     for (const level of levels) {
       await launch('pattern-train', level);
       if (level === 17) {
@@ -76,6 +76,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `pattern ${level} hint`);
       if (level === 12) await screenshot('pattern-train');
       if (level === 18) await screenshot('pattern-train-18');
+      if (level === 19) await screenshot('pattern-train-19');
       await page.evaluate(async () => {
         const g = neo.scene.game;
         // What the answer that ends the round says (TotoLogic P7), recorded for the check below.
@@ -111,7 +112,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       await finished('pattern-train');
       const said = await page.evaluate(() => window.__said);
       const why = said.find((s) => /^pattern\.(why|oddWhy)/.test(s.id));
-      if (level < 15 || level === 18) {
+      if (level < 15 || level === 18 || level === 19) {
         assert.ok(why, `pattern ${level} says why: ${JSON.stringify(said)}`);
         assert.ok(
           Object.values(why.vars).every((v) => v !== '' && !/undefined|NaN/.test(String(v))),
