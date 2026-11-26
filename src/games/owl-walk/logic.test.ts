@@ -33,6 +33,7 @@ import {
   type Card,
   type Spot,
   type Stone,
+  seatStep,
 } from './logic';
 
 const colorPath = (colors: readonly ColorName[]): Stone[] =>
@@ -318,5 +319,22 @@ describe('Owl Walk Home', () => {
         need: 'red heart',
       });
     });
+  });
+});
+
+describe("a grown-up in the pet's seat", () => {
+  it('takes the hop on the right stone or the nest', () => {
+    expect(seatStep('next', 1)).toBe('hop');
+    expect(seatStep('nest', 1)).toBe('hop');
+  });
+
+  it('answers a wrong tap gently: a reason, then a glow, then the hop made together', () => {
+    const wrong = ['mismatch', 'far', 'behind', 'occupied', 'early-nest'] as const;
+    for (const v of wrong) {
+      expect(seatStep(v, 1)).toBe('say');
+      expect(seatStep(v, 2)).toBe('hint');
+      expect(seatStep(v, 3)).toBe('together');
+      expect(seatStep(v, 9)).toBe('together');
+    }
   });
 });

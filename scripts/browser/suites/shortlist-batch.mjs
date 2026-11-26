@@ -1448,7 +1448,54 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.equal(await page.evaluate(() => neo.scene.game.owls[0].spot), -1);
         const nestTap = '({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })';
         let wrong = false;
+        // A grown-up in the pet's seat (levels 2 to 4): it starts off; with it on, the pet's turn waits for their stone.
+        const seatOn = level === 2;
+        if (level === 1)
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.seat.parent === null),
+            true,
+            'no seat button on level 1',
+          );
         for (let t = 0; t < 60 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+          if (seatOn && t === 1) {
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.partner),
+              false,
+              'solo play is the default',
+            );
+            await tap('neo.scene.game.seat');
+            assert.equal(await page.evaluate(() => neo.scene.game.partner), true);
+            await page.waitForFunction(() => neo.scene.game.partnerWait, null, { timeout: 40000 });
+            const w = await page.evaluate(async () => {
+              const L = await import('/src/games/owl-walk/logic.ts');
+              const g = neo.scene.game;
+              const spots = g.owls.map((o) => o.spot);
+              const { best, color } = g.partnerWait;
+              const to = L.hop(g.path, spots, best, color);
+              const other = g.path.findIndex((c, i) => !L.fits(c, color) && i > spots[best]);
+              return { best, to, other, spot: spots[best], n: g.path.length };
+            });
+            const before = await counts();
+            if (w.other >= 0) {
+              await tap(`neo.scene.game.stones[${w.other}]`);
+              await page.waitForTimeout(400);
+              assert.deepEqual(await counts(), before, 'a grown-up’s wrong tap is never her miss');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.partnerWait !== null),
+                true,
+                'the pet still waits',
+              );
+            }
+            await tap(w.to >= w.n ? nestTap : `neo.scene.game.stones[${w.to}]`);
+            await page.waitForFunction(
+              (b) => neo.scene.game.owls[b].spot > -1 || neo.scene.game.finished,
+              w.best,
+              { timeout: 20000 },
+            );
+            assert.deepEqual(await counts(), before, 'a grown-up’s hop is never her miss or hint');
+            await screenshot('owl-walk-2-seat');
+            await tap('neo.scene.game.seat');
+          }
           await page.waitForFunction(
             () => {
               const g = neo.scene.game;

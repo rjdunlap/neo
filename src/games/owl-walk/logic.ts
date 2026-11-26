@@ -263,6 +263,17 @@ export function judgeStone(
 }
 
 /**
+ * What a grown-up's tap does on the pet's turn, when they hold the pet's seat (levels 2 to 4): the right stone or the nest
+ * takes the hop; a wrong one is a spoken reason, a glow on the second and the hop made together on the third. Never counted:
+ * `wrongs` is the grown-up's own tally, kept apart from hers, so her round and her level stay her own (the seat contract).
+ */
+export type SeatStep = 'hop' | 'say' | 'hint' | 'together';
+export function seatStep(verdict: StoneVerdict, wrongs: number): SeatStep {
+  if (verdict === 'next' || verdict === 'nest') return 'hop';
+  return wrongs <= 1 ? 'say' : wrongs === 2 ? 'hint' : 'together';
+}
+
+/**
  * The card's words in a spoken line ("a {need}!"): "red heart" on the color levels, where every color has its shape;
  * on Color or shape only what the card shows, "heart" or "red stone".
  */
