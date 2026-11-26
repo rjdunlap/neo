@@ -4,10 +4,14 @@ import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
+import { isParentPanelOpen } from '../../parent/panel';
 import { hinted, newTally, tally } from '../../progress/coach';
 import { rangeFor } from '../../progress/difficulty';
+import { RoundButton } from '../../ui/buttons';
+import { againIcon, undoIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -15,9 +19,11 @@ import { ballotBox, ride, rideColor, slip } from './art';
 import { layout, type Layout } from './layout';
 import {
   LEVELS,
+  LastMove,
   MAJORITY,
   VOTERS,
   describeLevel,
+  gridStep,
   makeRound,
   movers,
   pileFor,
@@ -45,6 +51,13 @@ class CountTheBallots implements Game {
   /** Piles' numbers are shown once they have been counted aloud. */
   private counted: (number | null)[] = [null, null, null];
   private glow: number | null = null;
+  /** The pile a 1–3 key picked, waiting for Enter. */
+  private pilePick: number | null = null;
+  /** The ballot a finger is carrying right now, so a redraw leaves it under the finger. */
+  private carrying: number | null = null;
+  private pickedWas = false;
+  private readonly last = new LastMove();
+  private readonly drags: DragHandle[] = [];
   private gen = 0;
   private clock = 0;
   private L: Layout;
@@ -57,6 +70,8 @@ class CountTheBallots implements Game {
   private readonly trayNum: Text[] = [];
   private readonly trayOut: Text[] = [];
   readonly help = new Container();
+  readonly undoBtn: RoundButton;
+  readonly restartBtn: RoundButton;
   private readonly helpArt = new Graphics();
   private readonly glowArt = new Graphics();
 
@@ -100,7 +115,18 @@ class CountTheBallots implements Game {
         return t;
       });
       k.addChild(art, ...nums);
-      onTap(k, () => this.tapCard(i));
+      this.drags.push(
+        draggable(k, ctx.tw, {
+          lift: 0,
+          onPick: () => {
+            this.pickedWas = this.selected === i;
+            this.carrying = i;
+            this.selected = i;
+            this.glow = null;
+          },
+          onDrop: (x, y) => this.dropCard(i, x, y),
+        }),
+      );
       this.cards.push(k);
       this.cardArt.push(art);
       this.cardNums.push(nums);
@@ -112,7 +138,10 @@ class CountTheBallots implements Game {
     helpText.eventMode = 'none';
     this.help.addChild(this.helpArt, helpText);
     onTap(this.help, () => this.askForHint());
-    ctx.stage.addChild(this.glowArt, this.help);
+    this.undoBtn = new RoundButton(undoIcon(), swatch.white, 50, () => this.undo());
+    this.restartBtn = new RoundButton(againIcon(), swatch.white, 50, () => this.restart());
+    ctx.stage.addChild(this.glowArt, this.help, this.undoBtn, this.restartBtn);
+    if (!ctx.demo) ctx.listen(window, 'keydown', this.onKey);
     this.resize(ctx.view);
   }
 
@@ -147,20 +176,89 @@ class CountTheBallots implements Game {
   }
 
   destroy() {
+    for (const d of this.drags) d.destroy();
     this.finished = true;
     this.gen++;
   }
 
   // ---- play ----
 
-  private tapCard(i: number) {
-    if (this.finished || (this.stage !== 'sort' && this.stage !== 'runoff') || this.placed[i] !== null)
-      return;
-    this.selected = this.selected === i ? null : i;
+  /** A ballot let go at (x, y): a still tap lifts or lowers it; a drop on a pile is the same as tapping that pile. */
+  private dropCard(i: number, x: number, y: number): boolean {
+    this.carrying = null;
+    if (this.drags[i].tapped) {
+      this.selected = this.pickedWas ? null : i;
+      sfx.tick();
+      this.draw();
+      return false;
+    }
+    const c = this.pileAt(x, y);
+    this.draw();
+    if (c < 0 || this.finished || (this.stage !== 'sort' && this.stage !== 'runoff')) return false;
+    if (c !== this.target(i)) return (void this.wrong(i), false);
+    this.place(i, c);
+    return true;
+  }
+
+  private pileAt(x: number, y: number): number {
+    const { w, h } = this.L.tray;
+    return this.L.piles.findIndex((p) => Math.abs(x - p.x) <= w / 2 && Math.abs(y - p.y) <= h / 2);
+  }
+
+  /** The one-step Undo: the last ballot moved comes back to the hand. Never a miss, never a hint. */
+  undo() {
+    if (this.finished || (this.stage !== 'sort' && this.stage !== 'runoff')) return;
+    const i = this.last.undo(this.placed);
+    if (i === null) return;
+    this.selected = i;
     this.glow = null;
-    sfx.tick();
+    this.pilePick = null;
     this.draw();
   }
+
+  /** Starts the same deal over, from the first count. Misses and hints already earned stay as they are. */
+  restart() {
+    if (this.finished) return;
+    this.gen++;
+    this.stage = 'sort';
+    this.placed = Array.from({ length: VOTERS }, () => null);
+    this.selected = this.glow = this.pilePick = null;
+    this.counted = [null, null, null];
+    this.outShown = false;
+    this.last.clear();
+    this.draw();
+  }
+
+  /** Arrow keys walk the hand, 1 to 3 pick a pile, Enter or Space moves the ballot there, Backspace undoes. */
+  private onKey = (e: KeyboardEvent) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || this.finished || isParentPanelOpen()) return;
+    if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]'))
+      return;
+    const sorting = this.stage === 'sort' || this.stage === 'runoff';
+    const arrow = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].indexOf(e.key);
+    const digit = Number(e.key);
+    if (arrow >= 0 && sorting) {
+      e.preventDefault();
+      this.selected = gridStep(this.placed, this.selected, arrow);
+      this.glow = null;
+      sfx.tick();
+      this.draw();
+    } else if (digit >= 1 && digit <= 3 && (sorting || this.stage === 'question')) {
+      e.preventDefault();
+      this.pilePick = digit - 1;
+      sfx.tick();
+      this.draw();
+    } else if ((e.key === 'Enter' || e.key === ' ') && this.pilePick !== null) {
+      e.preventDefault();
+      const c = this.pilePick;
+      this.pilePick = null;
+      this.tapPile(c);
+      this.draw();
+    } else if (e.key === 'Backspace' && sorting) {
+      e.preventDefault();
+      this.undo();
+    }
+  };
 
   private tapPile(c: number) {
     if (this.finished) return;
@@ -178,6 +276,8 @@ class CountTheBallots implements Game {
 
   private place(i: number, c: number) {
     this.placed[i] = c;
+    this.last.record(i);
+    this.pilePick = null;
     this.selected = null;
     this.glow = null;
     sfx.pluck(i % 5, 0.3);
@@ -257,6 +357,8 @@ class CountTheBallots implements Game {
     this.stage = 'counting';
     this.selected = null;
     this.glow = null;
+    this.pilePick = null;
+    this.last.clear();
     await this.ctx.tw.wait(0.4);
     if (g !== this.gen) return;
     if (!second) {
@@ -366,7 +468,8 @@ class CountTheBallots implements Game {
       k.visible = true;
       const s = L.slots[i];
       const lifted = this.selected === i;
-      k.position.set(s.x, s.y - (lifted ? 8 : 0));
+      if (this.carrying !== i) k.position.set(s.x, s.y);
+      this.drags[i].enabled = this.placed[i] === null && (this.stage === 'sort' || this.stage === 'runoff');
       if (this.placed[i] !== null || this.stage === 'done' || this.stage === 'question') {
         // Its place in the hand: an empty outline.
         g.roundRect(-cw / 2, -ch / 2, cw, ch, 12).stroke({ width: 3, color: wood.line, alpha: 0.35 });
@@ -431,6 +534,8 @@ class CountTheBallots implements Game {
       this.trayNum[c].position.set(tw * 0.25, -th / 2 + 56);
       this.trayOut[c].text = out ? 'Out' : '';
       this.trayOut[c].position.set(tw * 0.25, -th / 2 + 56);
+      if (this.pilePick === c)
+        g.roundRect(-tw / 2 - 10, -th / 2 - 10, tw + 20, th + 20, 24).stroke({ width: 6, color: ink });
       this.trays[c].alpha = 1;
     }
   }
@@ -441,6 +546,7 @@ class CountTheBallots implements Game {
     this.backdrop.resize(view);
     L.slots.forEach((s, i) => {
       this.cards[i].position.set(s.x, s.y);
+      this.drags[i].home = { x: s.x, y: s.y };
       this.cards[i].hitArea = new Rectangle(-L.card.w / 2, -L.card.h / 2, L.card.w, L.card.h);
     });
     L.piles.forEach((p, c) => {
@@ -449,6 +555,8 @@ class CountTheBallots implements Game {
     });
     this.help.position.set(L.help.x, L.help.y);
     this.help.hitArea = new Rectangle(-L.help.w / 2, -L.help.h / 2, L.help.w, L.help.h);
+    this.undoBtn.position.set(L.undo.x, L.undo.y);
+    this.restartBtn.position.set(L.restart.x, L.restart.y);
     this.helpArt
       .clear()
       .roundRect(-L.help.w / 2, -L.help.h / 2, L.help.w, L.help.h, 22)

@@ -19,11 +19,13 @@ const targets = (v: (typeof views)[keyof typeof views]): Target[] => {
     ...l.slots.map((s, i) => ({ what: `card ${i}`, x: s.x, y: s.y, w: l.card.w, h: l.card.h })),
     ...l.piles.map((p, i) => ({ what: `pile ${i}`, x: p.x, y: p.y, w: l.tray.w, h: l.tray.h })),
     { what: 'Help', x: l.help.x, y: l.help.y, w: l.help.w, h: l.help.h },
+    { what: 'Undo', x: l.undo.x, y: l.undo.y, w: l.undo.w, h: l.undo.h },
+    { what: 'Restart', x: l.restart.x, y: l.restart.y, w: l.restart.w, h: l.restart.h },
   ];
 };
 
 describe.each(Object.entries(views))('Count the Ballots on %s', (_name, v) => {
-  it('lays out nine cards, three piles and Help: at least 100 units, apart, in view, clear of Home and the guide', () => {
+  it('lays out nine cards, three piles, Help, Undo and Restart: at least 100 units, apart, in view, clear of Home and the guide', () => {
     expect(uprightProblems(v, targets(v), 100), `${Math.round(v.w)} x ${Math.round(v.h)}`).toEqual([]);
   });
 });
