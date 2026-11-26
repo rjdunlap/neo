@@ -1,1 +1,0 @@
-**Define `rain-garden` level 8, Evidence and hypothesis** (weather-water study slice 7; docs only: write the level-8 definition in `docs/definitions/rain-garden.md`, update study/backlog/READY, queue its build). [Study](../../deep-dives/subjects/weather-water.md#build-slices-in-order)
