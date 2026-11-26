@@ -30,6 +30,14 @@ import {
   stepTo,
   stoneLayout,
   stoneReach,
+  assignTotal,
+  bestPairs,
+  pairAssignments,
+  pairCards,
+  PAIRS_LEVEL,
+  previewFor,
+  walkers,
+  worstPair,
   type Card,
   type Spot,
   type Stone,
@@ -254,7 +262,7 @@ describe('Owl Walk Home', () => {
       expect(plan.twinkle).toBe(false);
       expect(plan.safeCards).toBe(true);
       expect(LEVELS.preschool?.order).toEqual([1, 2, 6, 3]);
-      expect(LEVELS.prek?.order).toEqual([2, 3, 6, 4]);
+      expect(LEVELS.prek?.order).toEqual([2, 3, 6, 4, 7]);
     });
 
     it('shows all nine color-by-shape kinds, each color and shape at least twice, with no shared neighbor attribute', () => {
@@ -336,5 +344,83 @@ describe("a grown-up in the pet's seat", () => {
       expect(seatStep(v, 3)).toBe('together');
       expect(seatStep(v, 9)).toBe('together');
     }
+  });
+});
+
+describe('Our two cards (level 7)', () => {
+  const plan = planFor(7);
+  /** A few boards: a start with every owl in the woods, then some walked-on spots, one owl home. */
+  const boards = (seed: number) => {
+    const rng = new Rng(seed);
+    const path = makePath(plan, rng);
+    const spots: Spot[] = [-1, rng.int(-1, 9), rng.chance(0.2) ? path.length : rng.int(-1, 12)];
+    return { path, spots, rng };
+  };
+
+  it('tops pre-K and joins school after level 4, with level 4 unchanged', () => {
+    expect(plan.mode).toBe('pairs');
+    expect(plan.owls).toBe(3);
+    expect(LEVELS.prek).toEqual({ min: 2, max: PAIRS_LEVEL, order: [2, 3, EITHER_LEVEL, 4, PAIRS_LEVEL] });
+    expect(LEVELS.school).toEqual({ min: 4, max: PAIRS_LEVEL, order: [4, PAIRS_LEVEL] });
+    expect(LEVELS.preschool?.max).toBe(EITHER_LEVEL);
+  });
+
+  it('bestPairs equals a brute-force search over every ordered assignment, and no other assignment ties it', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const { path, spots, rng } = boards(seed);
+      const cards = pairCards(plan, rng, path, spots);
+      if (!cards) continue;
+      const all = pairAssignments(path, spots);
+      const totals = all.map((p) => assignTotal(path, spots, cards, p));
+      const max = Math.max(...totals);
+      const best = bestPairs(path, spots, cards);
+      expect(best.length).toBeGreaterThan(0);
+      for (const b of best) expect(assignTotal(path, spots, cards, b)).toBe(max);
+      all.forEach((p, k) => {
+        if (totals[k] < max) expect(best.some((b) => b[0] === p[0] && b[1] === p[1])).toBe(false);
+      });
+    }
+  });
+
+  it('draws two distinct cards with a real choice, deterministically, and none when fewer than two owls walk', () => {
+    let spread = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const { path, spots, rng } = boards(seed);
+      const again = boards(seed);
+      const cards = pairCards(plan, rng, path, spots);
+      expect(pairCards(plan, again.rng, again.path, again.spots)).toEqual(cards);
+      if (!cards) {
+        expect(walkers(path, spots).length).toBeLessThan(2);
+        continue;
+      }
+      expect(cards[0]).not.toBe(cards[1]);
+      const gap =
+        assignTotal(path, spots, cards, bestPairs(path, spots, cards)[0]) - worstPair(path, spots, cards);
+      if (gap >= 2) spread++;
+    }
+    expect(spread).toBeGreaterThan(150);
+    const { path } = boards(3);
+    expect(pairCards(plan, new Rng(3), path, [path.length, path.length, 4])).toBeNull();
+  });
+
+  it('previews exactly where hop() lands, and one card alone sums to its own hops() entry', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const { path, spots, rng } = boards(seed);
+      const card = drawCard(plan, rng);
+      hops(path, spots, card).forEach((n, i) => {
+        if (spots[i] >= path.length) return;
+        const p = previewFor(path, spots, card, i);
+        expect(p.to).toBe(hop(path, spots, i, card));
+        expect(p.count).toBe(n);
+      });
+    }
+  });
+
+  it('lets the second hop see where the first owl landed, so a shared stone is skipped', () => {
+    const path = colorPath(['red', 'blue', 'red', 'blue', 'red', 'blue']);
+    // Owls 0 and 1 are both in the woods; red then red sends them to stones 0 and 2.
+    expect(assignTotal(path, [-1, -1, 5], ['red', 'red'], [0, 1])).toBe(1 + 3);
+    // Card 0 first: owl 1 goes to red stone 0 first, then owl 0 takes the next red stone, 2.
+    expect(assignTotal(path, [-1, -1, 5], ['red', 'red'], [1, 0])).toBe(1 + 3);
   });
 });

@@ -11,9 +11,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * all of us: level 2 gives each owl its own player (the pet plays the other), level 3 shares the owls and asks which
  * one to hop, and level 4 asks which owl a card would carry the farthest, so everyone gets home sooner. Level 5 is a
  * free lap toy with no cards, and level 6 (Color or shape) gives every stone a color and a shape apart from it, and
- * each card shows only one of the two.
+ * each card shows only one of the two. Level 7 (Our two cards) turns two cards at once and asks which card goes to which
+ * owl, so that together the two hops cover the most stones.
  */
-export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest' | 'free' | 'either';
+export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest' | 'free' | 'either' | 'pairs';
 
 export interface OwlPlan {
   mode: OwlMode;
@@ -82,6 +83,15 @@ export const PLANS: OwlPlan[] = [
     safeCards: true,
     name: 'Color or shape: each stone has both, and a card shows only one; tap the next stone that has it',
   },
+  {
+    mode: 'pairs',
+    owls: 3,
+    colors: 4,
+    stones: 16,
+    twinkle: false,
+    safeCards: false,
+    name: 'Our two cards: give each card to a different owl so that together we hop the most stones',
+  },
 ];
 
 /** Level 5, the free lap toy: appended above the ladder and played first by the youngest (an easy entry). */
@@ -90,11 +100,15 @@ export const ENTRY_LEVELS = [STEPPING_LEVEL] as const;
 /** Level 6, Color or shape: placed after the two first card levels for preschool and pre-K. */
 export const EITHER_LEVEL = 6;
 
+/** Level 7, Our two cards: the top of pre-K and the first level of the school window beyond level 4. */
+export const PAIRS_LEVEL = 7;
+
 export const LEVELS: BandLevels = {
   lap: { min: STEPPING_LEVEL, max: STEPPING_LEVEL },
   toddler: { min: 1, max: STEPPING_LEVEL, order: [STEPPING_LEVEL, 1, 2] },
   preschool: { min: 1, max: EITHER_LEVEL, order: [1, 2, EITHER_LEVEL, 3] },
-  prek: { min: 2, max: EITHER_LEVEL, order: [2, 3, EITHER_LEVEL, 4] },
+  prek: { min: 2, max: PAIRS_LEVEL, order: [2, 3, EITHER_LEVEL, 4, PAIRS_LEVEL] },
+  school: { min: 4, max: PAIRS_LEVEL, order: [4, PAIRS_LEVEL] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -336,3 +350,88 @@ export function stoneLayout(n: number, w: number, h: number): { x: number; y: nu
 /** The middle of the nest basket in a `w` by `h` view (what a tap there means). */
 export const nestPointIn = (w: number, h: number) => ({ x: w - 120, y: h - 440 });
 export const NEST_REACH = 95;
+
+// Our two cards (level 7) ------------------------------------------------------------------------
+
+/** Two cards given to two different owls: `owls[k]` takes `cards[k]`, and card 0's owl hops first. */
+export type PairPlan = readonly [number, number];
+
+/** The owls still walking. */
+export const walkers = (path: readonly Stone[], spots: readonly Spot[]): number[] =>
+  spots.map((s, i) => (s < path.length ? i : -1)).filter((i) => i >= 0);
+
+/**
+ * Stones forward together when `owls[0]` hops with `cards[0]` and then `owls[1]` with `cards[1]`, the second landing as the
+ * first has left things (an owl that flies home counts the stones to the nest, as `hops` does).
+ */
+export function assignTotal(
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  cards: readonly [Card, Card],
+  owls: PairPlan,
+): number {
+  const first = hop(path, spots, owls[0], cards[0]);
+  const after = spots.map((s, i) => (i === owls[0] ? first : s));
+  const second = hop(path, after, owls[1], cards[1]);
+  return first - spots[owls[0]] + (second - spots[owls[1]]);
+}
+
+/** Every way to give two cards to two different walking owls. */
+export function pairAssignments(path: readonly Stone[], spots: readonly Spot[]): PairPlan[] {
+  const w = walkers(path, spots);
+  return w.flatMap((a) => w.filter((b) => b !== a).map((b): PairPlan => [a, b]));
+}
+
+/** The assignments that reach the greatest total: every one is accepted, so ties never ask for a guess. */
+export function bestPairs(
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  cards: readonly [Card, Card],
+): PairPlan[] {
+  const all = pairAssignments(path, spots);
+  const totals = all.map((p) => assignTotal(path, spots, cards, p));
+  const best = Math.max(...totals);
+  return all.filter((_, k) => totals[k] === best);
+}
+
+/** The least total any assignment reaches. */
+export function worstPair(
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  cards: readonly [Card, Card],
+): number {
+  return Math.min(...pairAssignments(path, spots).map((p) => assignTotal(path, spots, cards, p)));
+}
+
+/**
+ * Two distinct cards whose best total beats the worst by at least 2, so the choice matters. After ten redraws it takes any
+ * distinct pair (a board with two walkers can have no such pair). Null with fewer than two walkers. Seeded.
+ */
+export function pairCards(
+  plan: OwlPlan,
+  rng: Rng,
+  path: readonly Stone[],
+  spots: readonly Spot[],
+): [Card, Card] | null {
+  if (walkers(path, spots).length < 2) return null;
+  const deck = cardsFor(plan);
+  let pair: [Card, Card] = [deck[0], deck[1]];
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const [a, b] = rng.shuffle([...deck]);
+    pair = [a, b];
+    const best = assignTotal(path, spots, pair, bestPairs(path, spots, pair)[0]);
+    if (best - worstPair(path, spots, pair) >= 2) return pair;
+  }
+  return pair;
+}
+
+/** Where an owl would land with a card, and how many stones that is: what a preview shows (equal to `hop`). */
+export function previewFor(
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  card: Card,
+  owl: number,
+): { to: Spot; count: number } {
+  const to = hop(path, spots, owl, card);
+  return { to, count: to - spots[owl] };
+}
