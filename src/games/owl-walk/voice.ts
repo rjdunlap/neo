@@ -17,6 +17,15 @@ export const VOICE = {
   'owl.either': [
     'Each stone has a color and a shape, and a card shows only one! Tap the cards to turn one over.',
   ],
+  'owl.pairs': [
+    'Two cards! Give each card to a different owl, {pet}, so that together we hop the most stones. Then tap the green go.',
+  ],
+  'owl.pair-give': ['Tap a card, then tap the owl that should take it, {pet}.'],
+  'owl.pair-pick': ['Tap a card first, {pet}.'],
+  'owl.pair-place': ['Give each card to an owl first, {pet}.'],
+  'owl.pair-last': ['One owl is left, {pet}, with the {color} card. Tap go!'],
+  'owl.pair-total': ['That is {n} together. Another way gets {m}. Try again!'],
+  'owl.pair-first': ['You got {n}. The best way got {m}. Now watch!'],
   'owl.color': ['{color}!'],
   'owl.tap-stone': ['Now tap the next {color} stone ahead of the owl.'],
   'owl.pick-owl': ['Tap the owl you want to hop with the {color} card.'],

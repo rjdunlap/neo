@@ -21,7 +21,10 @@ import {
   MARK,
   NEST_REACH,
   allHome,
+  assignTotal,
+  bestPairs,
   cardName,
+  drawCard,
   drawCardFor,
   farthest,
   fits,
@@ -34,12 +37,15 @@ import {
   owlOf,
   owlToHop,
   nestPointIn,
+  pairCards,
   planFor,
   seatStep,
   stepTo,
   stoneLayout,
   stoneReach,
   stoneScale,
+  walkers,
+  type PairPlan,
   type StoneVerdict,
   type Card,
   type OwlPlan,
@@ -127,6 +133,11 @@ type Hit = { kind: 'stone'; i: number } | { kind: 'owl'; i: number } | { kind: '
 
 /** How far from a stone's, an owl's or the nest's middle a touch still means it: stones are 78 units apart at the most crowded level, so the nearest wins. */
 const OWL_REACH = 62;
+
+/** Level 7's first pair of a play session is only a look: it hops whatever she placed and charges nothing (Light Lab 7's rule). */
+let pairsSeen = false;
+/** For tests and a fresh play session. */
+export const resetPairsSeen = () => (pairsSeen = false);
 const RING_REACH = 44;
 
 class OwlWalk implements Game {
@@ -181,6 +192,16 @@ class OwlWalk implements Game {
   /** Set while the pet's turn waits for the grown-up's stone: the owl they hop and their own wrong taps (never hers). */
   private partnerWait: { best: number; color: Card; resolve: (hopped: boolean) => void } | null = null;
   private partnerWrongs = 0;
+  /** Level 7: the two cards on the table, the owl each is given to (null while unplaced) and the card she has picked up. */
+  private pair: { cards: Card[]; to: (number | null)[]; sel: number | null } | null = null;
+  private readonly pairRow = new Container();
+  private readonly minis = new Container();
+  private readonly go = new Container();
+  private readonly goArt = new Graphics();
+  private total: ReturnType<typeof label> | null = null;
+  private faces: Container[] = [];
+  private hintPlan: PairPlan | null = null;
+  private scoredPair = true;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -233,12 +254,21 @@ class OwlWalk implements Game {
     onTap(this.seat, () => this.toggleSeat(), { cooldown: 300 });
     this.deck.hitArea = new Circle(0, 0, 90);
     // The stepping stones have no cards: the deck is not there to tap.
-    this.deck.visible = this.plan.mode !== 'free';
+    this.deck.visible = this.plan.mode !== 'free' && this.plan.mode !== 'pairs';
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
-    if (this.plan.owls > 1) this.drawSeat();
+    if (this.plan.owls > 1 && this.plan.mode !== 'pairs') this.drawSeat();
+    if (this.plan.mode === 'pairs') this.buildGo();
     this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.hintGlow.visible = false;
-    for (const quiet of [this.previews, this.trail, this.dawn, this.hintGlow, this.flies, this.fx])
+    for (const quiet of [
+      this.previews,
+      this.trail,
+      this.dawn,
+      this.hintGlow,
+      this.flies,
+      this.fx,
+      this.minis,
+    ])
       quiet.eventMode = 'none';
     this.touch.eventMode = 'static';
     this.touch.cursor = 'pointer';
@@ -258,9 +288,12 @@ class OwlWalk implements Game {
       this.touch,
       this.deck,
       this.shown,
+      this.pairRow,
+      this.minis,
+      this.go,
       this.fx,
     );
-    if (this.plan.owls > 1) ctx.stage.addChild(this.seat);
+    if (this.plan.owls > 1 && this.plan.mode !== 'pairs') ctx.stage.addChild(this.seat);
     for (let i = 0; i < this.plan.owls; i++) {
       const critter = ctx.track(owlArt(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
@@ -277,6 +310,22 @@ class OwlWalk implements Game {
       this.owls.push({ critter, spot: -1, glow, ring });
       this.layer.addChild(critter);
     }
+  }
+
+  /** Level 7's go lily: a green lily with a check, dim until every card is given to an owl. */
+  private buildGo() {
+    this.goArt
+      .circle(0, 0, 72)
+      .fill(swatch.green.fill)
+      .stroke(line(swatch.green.line, 6))
+      .moveTo(-30, 2)
+      .lineTo(-8, 26)
+      .lineTo(32, -24)
+      .stroke({ width: 14, color: 0xffffff, cap: 'round', join: 'round' });
+    this.go.addChild(this.goArt);
+    this.go.hitArea = new Circle(0, 0, 76);
+    this.go.alpha = 0.4;
+    onTap(this.go, () => void this.tapGo(), { cooldown: 400 });
   }
 
   /** The seat button: one figure, "just us" (the pet plays its owl), or two, a grown-up plays it. Chosen, never guessed: the device cannot tell fingers apart. */
@@ -334,6 +383,8 @@ class OwlWalk implements Game {
 
   resize(v: View) {
     this.view = v;
+    this.pairRow.position.set(v.w * 0.3, 125);
+    this.go.position.set(v.w * 0.3 + 380, 135);
     this.backdrop.resize(v);
     this.moon.position.set(v.w * 0.75, 120);
     this.sun.position.set(v.w * 0.75, v.h * 0.42);
@@ -358,11 +409,16 @@ class OwlWalk implements Game {
     this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
     if (this.hintAt !== null) this.hintGlow.position.copyFrom(this.targetPoint(this.hintAt));
     this.drawPreviews();
+    this.drawMinis();
   }
 
   update(dt: number) {
-    if (!this.fireflies.length) return;
     this.clock += dt;
+    if (this.plan.mode === 'pairs' && this.go.alpha === 1) {
+      const k = 1 + 0.06 * Math.sin(this.clock * 5);
+      this.go.scale.set(k);
+    }
+    if (!this.fireflies.length) return;
     for (const f of this.fireflies) {
       const p = this.stoneAt(f.stone);
       const a = this.clock * 1.4 + f.phase;
@@ -381,6 +437,7 @@ class OwlWalk implements Game {
         ? { tap: { on: this.nest, x: 0, y: -120 }, receiver: this.touch }
         : { tap: { on: this.stones[next] }, receiver: this.touch };
     }
+    if (this.plan.mode === 'pairs') return this.pairTouch();
     if (!this.card) return { tap: { on: this.deck } };
     const spots = this.owls.map((o) => o.spot);
     const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest';
@@ -409,9 +466,11 @@ class OwlWalk implements Game {
       farthest: 'owl.farthest',
       free: 'owl.free',
       either: 'owl.either',
+      pairs: 'owl.pairs',
     } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
+    if (this.plan.mode === 'pairs') await this.dealPair();
   }
 
   private moving() {
@@ -434,7 +493,14 @@ class OwlWalk implements Game {
   // A turn: flip a card, pick the owl, tap its stone --------------------------------------------
 
   private async flip(who: 'child' | 'pet') {
-    if (this.finished || this.card || this.turn !== who || (who === 'child' && this.busy)) return;
+    if (
+      this.plan.mode === 'pairs' ||
+      this.finished ||
+      this.card ||
+      this.turn !== who ||
+      (who === 'child' && this.busy)
+    )
+      return;
     this.busy = true;
     this.wrongs = 0;
     this.hinted = false;
@@ -571,6 +637,11 @@ class OwlWalk implements Game {
         : this.targetPoint(hit.kind === 'stone' ? hit.i : 'nest');
     this.ripple(at.x, at.y);
     if (hit.kind === 'stone') this.squash(this.stones[hit.i]);
+    if (this.plan.mode === 'pairs') {
+      if (hit.kind === 'owl') void this.giveOwl(hit.i);
+      else sfx.tick();
+      return;
+    }
     if (!this.card) {
       if (hit.kind === 'owl') this.owls[hit.i].critter.poke();
       void this.ctx.say('owl.flip-first');
@@ -763,6 +834,7 @@ class OwlWalk implements Game {
 
   private clearHint() {
     this.hintAt = null;
+    this.hintPlan = null;
     this.hintGlow.visible = false;
     for (const o of this.owls) o.glow.visible = false;
   }
@@ -846,7 +918,17 @@ class OwlWalk implements Game {
       await this.ctx.tw.to(
         owl.critter,
         { x: p.x, y: p.y },
-        { duration: s === to && to >= this.path.length ? 0.6 : counted ? 0.28 : 0.24, ease: ease.inOutSine },
+        {
+          duration:
+            s === to && to >= this.path.length
+              ? 0.6
+              : counted
+                ? this.plan.mode === 'pairs'
+                  ? 0.2
+                  : 0.28
+                : 0.24,
+          ease: ease.inOutSine,
+        },
       );
     }
     owl.spot = to;
@@ -931,6 +1013,7 @@ class OwlWalk implements Game {
   /** On the farthest level, each owl shows where this card would take it, and how many stones that is. */
   private drawPreviews() {
     this.previews.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'pairs') return this.pairPreviews();
     if (this.plan.mode !== 'farthest' || !this.card) return;
     const spots = this.owls.map((o) => o.spot);
     const h = hops(this.path, spots, this.card);
@@ -948,6 +1031,246 @@ class OwlWalk implements Game {
       ring.position.set(p.x, p.y - 70);
       this.previews.addChild(ring);
     });
+  }
+
+  // Our two cards (level 7) ----------------------------------------------------------------------
+
+  /** A number ring over the stone an owl would land on, in the owl's color: the preview of the hop it was given. */
+  private ringAt(owl: number, to: Spot, count: number) {
+    const p = this.spotAt(to, owl);
+    const ring = new Graphics()
+      .circle(0, -28, 30)
+      .fill({ color: swatch[OWL_COLORS[owl]].light, alpha: 0.85 })
+      .stroke(line(swatch[OWL_COLORS[owl]].line, 4));
+    const n = label(String(count), 26, ink);
+    n.y = -28;
+    ring.addChild(n);
+    ring.position.set(p.x, p.y - 70);
+    this.previews.addChild(ring);
+  }
+
+  /** Each card given to an owl shows where it takes that owl, the first card's hop first, so the second preview already knows. */
+  private pairPreviews() {
+    const pair = this.pair;
+    if (!pair) return;
+    const cur = this.owls.map((o) => o.spot);
+    pair.cards.forEach((card, k) => {
+      const owl = pair.to[k];
+      if (owl === null) return;
+      const to = hop(this.path, cur, owl, card);
+      this.ringAt(owl, to, to - cur[owl]);
+      cur[owl] = to;
+    });
+  }
+
+  /** The small copy of each given card beside its owl; the glowing hint shows the best way as ghosts. */
+  private drawMinis() {
+    this.minis.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const pair = this.pair;
+    if (!pair) return;
+    const put = (card: Card, owl: number, alpha: number) => {
+      const mini = cardFace(card, this.plan);
+      mini.scale.set(0.34);
+      mini.alpha = alpha;
+      const o = this.owls[owl].critter;
+      mini.position.set(o.x + 52, o.y - 34);
+      this.minis.addChild(mini);
+    };
+    pair.cards.forEach((card, k) => {
+      const owl = pair.to[k];
+      if (owl !== null) put(card, owl, 1);
+    });
+    if (this.hintPlan) pair.cards.forEach((card, k) => put(card, this.hintPlan![k], 0.55));
+  }
+
+  private pairComplete() {
+    return !!this.pair && this.pair.to.every((o) => o !== null);
+  }
+
+  /** Cards, minis, previews, the total and the go lily, as the cards are given out. */
+  private redrawPair() {
+    const pair = this.pair;
+    this.faces.forEach((f, k) => {
+      const placed = pair?.to[k] != null;
+      f.y = pair?.sel === k ? -22 : 0;
+      f.alpha = placed ? 0.6 : 1;
+    });
+    this.drawPreviews();
+    this.drawMinis();
+    const done = this.pairComplete();
+    this.go.alpha = done ? 1 : 0.4;
+    if (!done) this.go.scale.set(1);
+    if (this.total) {
+      this.total.text = done ? `${this.pairTotal()} together` : '';
+    }
+    this.setRing(pair?.sel != null && pair.to[pair.sel] != null ? pair.to[pair.sel] : null);
+  }
+
+  private pairTotal() {
+    const pair = this.pair!;
+    const spots = this.owls.map((o) => o.spot);
+    if (pair.cards.length === 1)
+      return hop(this.path, spots, pair.to[0]!, pair.cards[0]) - spots[pair.to[0]!];
+    return assignTotal(this.path, spots, [pair.cards[0], pair.cards[1]], [pair.to[0]!, pair.to[1]!]);
+  }
+
+  /** Two new cards turn (one, with a single owl left, given to it already). */
+  private async dealPair() {
+    if (this.finished) return;
+    this.busy = true;
+    this.wrongs = 0;
+    this.hinted = false;
+    this.clearHint();
+    const spots = this.owls.map((o) => o.spot);
+    const walking = walkers(this.path, spots);
+    const cards: Card[] = pairCards(this.plan, this.ctx.rng, this.path, spots) ?? [
+      drawCard(this.plan, this.ctx.rng),
+    ];
+    this.pair = { cards, to: walking.length === 1 ? [walking[0]] : cards.map(() => null), sel: null };
+    this.scoredPair = pairsSeen || cards.length === 1;
+    this.pairRow.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.faces = cards.map((card, k) => {
+      const face = new Container();
+      const art = cardFace(card, this.plan);
+      art.scale.set(1.1);
+      face.addChild(art);
+      face.hitArea = new Rectangle(-62, -84, 124, 168);
+      face.x = k * 150;
+      onTap(face, () => this.pickCard(k), { cooldown: 200 });
+      this.pairRow.addChild(face);
+      return face;
+    });
+    this.total = label('', 34, ink);
+    this.total.position.set(((cards.length - 1) * 150) / 2, 125);
+    this.pairRow.addChild(this.total);
+    this.redrawPair();
+    sfx.whoosh();
+    for (const f of this.faces) {
+      f.scale.set(0, 1);
+      await this.ctx.tw.to(f.scale, { x: 1 }, { duration: 0.15, ease: ease.outBack });
+    }
+    sfx.pop(7);
+    this.busy = false;
+    if (cards.length === 1) void this.ctx.say('owl.pair-last', { color: cards[0] });
+    else {
+      await this.ctx.say('owl.color', { color: cards[0] });
+      await this.ctx.say('owl.color', { color: cards[1] });
+      if (this.pair?.cards === cards && !this.told) {
+        this.told = true;
+        await this.ctx.instruct('owl.pair-give');
+      }
+    }
+  }
+
+  private pickCard(k: number) {
+    const pair = this.pair;
+    if (!pair || this.busy || this.finished || pair.cards.length === 1) return;
+    pair.sel = pair.sel === k ? null : k;
+    sfx.pop(5);
+    this.redrawPair();
+  }
+
+  /** A tap on an owl: with a card picked up it is given to the owl (swapping with a card already there); with none, an owl holding a card picks it up. */
+  private async giveOwl(owl: number) {
+    const pair = this.pair;
+    if (!pair || this.busy || pair.cards.length === 1) return;
+    this.owls[owl].critter.poke();
+    const held = pair.to.indexOf(owl);
+    if (pair.sel === null) {
+      if (held >= 0) pair.sel = held;
+      else void this.ctx.say('owl.pair-pick');
+    } else {
+      const k = pair.sel;
+      const other = 1 - k;
+      if (pair.to[other] === owl) pair.to[other] = pair.to[k];
+      pair.to[k] = owl;
+      pair.sel = null;
+      sfx.pop(6);
+    }
+    this.redrawPair();
+  }
+
+  /** Go: the first pair of a session only hops what she placed; after that only the most stones hops, and anything less is a gentle miss. */
+  private async tapGo() {
+    const pair = this.pair;
+    if (!pair || this.busy || this.finished) return;
+    if (!this.pairComplete()) {
+      sfx.tick();
+      void this.ctx.say('owl.pair-place');
+      return;
+    }
+    const spots = this.owls.map((o) => o.spot);
+    const plan = pair.to as number[];
+    if (pair.cards.length === 1) return this.hopPair(plan);
+    const cards: [Card, Card] = [pair.cards[0], pair.cards[1]];
+    const total = this.pairTotal();
+    const best = bestPairs(this.path, spots, cards)[0];
+    const top = assignTotal(this.path, spots, cards, best);
+    if (total === top) return this.hopPair(plan);
+    if (!this.scoredPair) {
+      pairsSeen = true;
+      this.busy = true;
+      await this.ctx.say('owl.pair-first', { n: total, m: top });
+      return this.hopPair(plan);
+    }
+    await this.miss(
+      () => this.ctx.say('owl.pair-total', { n: total, m: top }),
+      () => {
+        this.hintPlan = best;
+        for (const b of best) this.owls[b].glow.visible = true;
+        this.drawMinis();
+      },
+      async () => {
+        await this.ctx.say('owl.together');
+        pair.to = [...best];
+        pair.sel = null;
+        this.redrawPair();
+        await this.hopPair(best);
+      },
+    );
+  }
+
+  /** The two owls hop one after the other, the first card's first; then the next pair turns, or everyone is home. */
+  private async hopPair(plan: readonly number[]) {
+    const pair = this.pair;
+    if (!pair) return;
+    pairsSeen = true;
+    this.busy = true;
+    this.pair = null;
+    this.clearHint();
+    this.minis.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.go.alpha = 0.4;
+    this.go.scale.set(1);
+    for (const f of this.faces) void this.ctx.tw.to(f, { alpha: 0 }, { duration: 0.3 });
+    if (this.total) this.total.text = '';
+    for (let k = 0; k < plan.length; k++) {
+      const owl = plan[k];
+      const spots = this.owls.map((o) => o.spot);
+      await this.move(owl, hop(this.path, spots, owl, pair.cards[k]));
+    }
+    if (
+      allHome(
+        this.path,
+        this.owls.map((o) => o.spot),
+      )
+    )
+      return this.finale();
+    await this.dealPair();
+  }
+
+  /** The ghost finger: the best way, a card at a time (pick the card, tap its owl), then go. */
+  private pairTouch(): TouchIntent | null {
+    const pair = this.pair;
+    if (!pair) return null;
+    if (this.pairComplete()) return { tap: { on: this.go } };
+    const spots = this.owls.map((o) => o.spot);
+    const best = bestPairs(this.path, spots, [pair.cards[0], pair.cards[1]])[0];
+    for (let k = 0; k < 2; k++) {
+      if (pair.to[k] === best[k]) continue;
+      if (pair.sel !== k) return { tap: { on: this.faces[k] }, pause: 0.15 };
+      return { tap: { on: this.owls[best[k]].critter, x: 0, y: -125 }, receiver: this.touch, pause: 0.15 };
+    }
+    return null;
   }
 
   private async finale() {
@@ -1011,8 +1334,8 @@ export const owlWalk: GameModule = {
   titleLine: 'game.owl-walk',
   region: 'rainbow-meadow',
   challenge: 'logic',
-  skills: ['colors', 'shapes', 'taking turns', 'shared goals', 'comparing distances'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  skills: ['colors', 'shapes', 'taking turns', 'shared goals', 'comparing distances', 'adding'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,

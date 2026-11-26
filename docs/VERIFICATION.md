@@ -176,7 +176,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `shedpicnic` | 2026-11-09 · [Second Chance Shed Picnic Loop 7–8 built, nature-sustainability N4](archive/VERIFICATION-2026-11-09.md#2026-11-09--second-chance-shed-picnic-loop-78-built-nature-sustainability-n4-pr-1445) | — |
 | `shedplan` | 2026-10-31 · [Second Chance Shed levels 5–6 (nature-sustainability N3)](archive/VERIFICATION-2026-10-31.md#2026-10-31--second-chance-shed-levels-56-nature-sustainability-n3) | Levels 5–6 |
 | `shellrows` | 2026-11-23 · [Shell Rows level 5 grown-up seat](verification/2026-11-23-shell-rows-level-5-grown-up-seat.md) | `SHELL_LEVELS=seat` |
-| `shortlist` | 2026-11-26 · [Owl Walk Home grown-up seat](verification/2026-11-26-owl-walk-home-grown-up-seat.md) | `SHORTLIST_ONLY=owls FROM_LEVEL=1 TO_LEVEL=4` |
+| `shortlist` | 2026-11-26 · [Owl Walk Home level 7](verification/2026-11-26-owl-walk-home-level-7-our-two-cards.md) | `SHORTLIST_ONLY=owls FROM_LEVEL=7` (levels 1–4 · [seat](verification/2026-11-26-owl-walk-home-grown-up-seat.md)) |
 | `sillyscene` | 2026-11-21 · [Silly Scene levels 1–3](verification/2026-11-21-silly-scene-levels-1-3.md) | — |
 | `singalong` | 2026-11-14 · [Sing-Along Barn Itsy Bitsy's second line](verification/2026-11-14-sing-along-barn-itsy-bitsy-s-second-line.md) | `SING_ONLY=itsy` |
 | `smoke` | 2026-11-14 · [Frog Hop scenes: brook, flower path, evening](verification/2026-11-14-frog-hop-scenes-brook-flower-path-evening.md) | `SMOKE_ONLY=frog-hop` |

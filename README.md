@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 195 games; the 169 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 159 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 195 games; the 169 child games are listed below and the 26 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 160 games, and "grown-up" (13 and up) is played by 36 games: the 26 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -204,7 +204,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Opposites](docs/games/opposites.md) | lap–school | Story Grove | 11 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
 | [Clap the Syllables](docs/games/clap-syllables.md) | preschool–school | Story Grove | 8 | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands; preschool starts with two short words (level 9), then levels 1–2 |
 | [Read & Do](docs/games/read-do.md) | pre-K–school | Story Grove | 9 | read a color word (five colours) and choose a hat; tap words or the speaker for free spoken support |
-| [Owl Walk Home](docs/games/owl-walk.md) | lap–pre-K | Story Grove | 6 | lap: tap a fat stone ahead and the owl hops there, then the nest to fly home, with no cards; toddler and up: turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left |
+| [Owl Walk Home](docs/games/owl-walk.md) | lap–school | Story Grove | 7 | lap: tap a fat stone ahead and the owl hops there, then the nest to fly home, with no cards; toddler and up: turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left |
 | [Attic Finds](docs/games/attic-finds.md) | lap–school | Story Grove | 9 | tap an invented attic thing (a bird box, a fish churn) to open its parts in a magnifier, turn it over, crank it and pick the picture of what it did |
 | [Trackway Tales](docs/games/trackway-tales.md) | school | Story Grove | 3 | tap a movement card's round Play to watch an invented gray mud walker replay it on a clear practice strip (drag the strip to scrub), tap the card onto the study board and Check: its prints slide onto the dried-mud strip and light green column by column until a mismatch flashes orange |
 | [Pond Typing](docs/games/pond-typing.md) | school | Story Grove | 6 | a keyboard-only couch game (a real or laptop keyboard): press the key on the bubble that waits |
