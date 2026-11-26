@@ -11,17 +11,17 @@ export const HOW_TO: GameHowTo = {
     {
       from: 2,
       to: 2,
-      text: 'Flip a color card, then tap the next stone of that color for your owl, the purple one. Take turns with the pet, who plays the brown owl. The matching stones twinkle.',
+      text: 'Flip a color card, then tap the next stone of that color for your owl, the purple one. Take turns with the pet, who plays the brown owl. The matching stones twinkle. A grown-up can tap the round seat button to play the pet’s owl: the pet then waits for their stone.',
     },
     {
       from: 3,
       to: 3,
-      text: 'Flip a color card, tap the owl you choose, then tap the next stone of that color ahead of it. When no stone of that color is left, tap the nest. Take turns with the pet.',
+      text: 'Flip a color card, tap the owl you choose, then tap the next stone of that color ahead of it. When no stone of that color is left, tap the nest. Take turns with the pet. A grown-up can tap the round seat button to play the pet’s owl: the pet then waits for their stone.',
     },
     {
       from: 4,
       to: 4,
-      text: 'Flip a color card, tap the owl that hops the farthest with it (the rings show how far), then tap its stone, or the nest when no stone of that color is left.',
+      text: 'Flip a color card, tap the owl that hops the farthest with it (the rings show how far), then tap its stone, or the nest when no stone of that color is left. A grown-up can tap the round seat button to play the pet’s owl: the pet then waits for their stone.',
     },
     {
       from: 5,

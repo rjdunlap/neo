@@ -27,6 +27,8 @@ export const VOICE = {
   'owl.pet-look': ['{need}! The next one is right there.'],
   'owl.pet-nest': ['No {color} stones are left, so my owl flies home!'],
   'owl.pet-move': ['{color}! I will hop this owl. It goes {n}.'],
+  'owl.grownup-seat': ['A grown-up plays for {pet} now.'],
+  'owl.grownup': ['Tap the stone for {pet}’s owl.'],
   'owl.your-turn': ['Your turn! Tap the cards.'],
   'owl.not-farthest': ['That owl would hop {a} stones. Another owl can hop {b}!'],
   'owl.wrong-color': ['That one is {have}. We need a {need}.'],

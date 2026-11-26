@@ -3,6 +3,7 @@ import type { Critter } from '../../art/critter';
 import { owlArt } from '../../art/animals';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop, Sun } from '../../art/scenery';
+import { oneArt, twoArt } from '../../art/seats';
 import { puffs, shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -34,10 +35,12 @@ import {
   owlToHop,
   nestPointIn,
   planFor,
+  seatStep,
   stepTo,
   stoneLayout,
   stoneReach,
   stoneScale,
+  type StoneVerdict,
   type Card,
   type OwlPlan,
   type Spot,
@@ -172,6 +175,12 @@ class OwlWalk implements Game {
   private clock = 0;
   private fireflies: { g: Graphics; stone: number; phase: number; reach: number }[] = [];
   private hintAt: number | 'nest' | null = null;
+  /** The seat button (levels 2 to 4): a grown-up has the pet's turns. Off by default, so solo play is the pet's. */
+  private readonly seat = new Container();
+  private partner = false;
+  /** Set while the pet's turn waits for the grown-up's stone: the owl they hop and their own wrong taps (never hers). */
+  private partnerWait: { best: number; color: Card; resolve: (hopped: boolean) => void } | null = null;
+  private partnerWrongs = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -221,10 +230,12 @@ class OwlWalk implements Game {
     const back2 = cardBack();
     back2.position.set(6, 6);
     this.deck.addChildAt(back2, 0);
+    onTap(this.seat, () => this.toggleSeat(), { cooldown: 300 });
     this.deck.hitArea = new Circle(0, 0, 90);
     // The stepping stones have no cards: the deck is not there to tap.
     this.deck.visible = this.plan.mode !== 'free';
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
+    if (this.plan.owls > 1) this.drawSeat();
     this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.hintGlow.visible = false;
     for (const quiet of [this.previews, this.trail, this.dawn, this.hintGlow, this.flies, this.fx])
@@ -249,6 +260,7 @@ class OwlWalk implements Game {
       this.shown,
       this.fx,
     );
+    if (this.plan.owls > 1) ctx.stage.addChild(this.seat);
     for (let i = 0; i < this.plan.owls; i++) {
       const critter = ctx.track(owlArt(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
@@ -265,6 +277,31 @@ class OwlWalk implements Game {
       this.owls.push({ critter, spot: -1, glow, ring });
       this.layer.addChild(critter);
     }
+  }
+
+  /** The seat button: one figure, "just us" (the pet plays its owl), or two, a grown-up plays it. Chosen, never guessed: the device cannot tell fingers apart. */
+  private drawSeat() {
+    this.seat.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const back = new Graphics()
+      .circle(0, 0, 58)
+      .fill(this.partner ? swatch.green.light : cream)
+      .stroke(line(this.partner ? swatch.green.line : swatch.blue.line, 6));
+    const art = this.partner ? twoArt() : oneArt();
+    art.scale.set(1.1);
+    art.y = -4;
+    this.seat.addChild(back, art);
+    this.seat.hitArea = new Circle(0, 0, 62);
+  }
+
+  private toggleSeat() {
+    if (this.finished) return;
+    this.partner = !this.partner;
+    sfx.pop(this.partner ? 7 : 5);
+    this.drawSeat();
+    // A grown-up who hands the seat back while the pet waits for them: the pet plays on.
+    if (!this.partner) this.partnerWait?.resolve(false);
+    this.partnerWait = null;
+    if (this.partner) void this.ctx.say('owl.grownup-seat');
   }
 
   /** Two rows: right to left along the bottom, a turn, then left to right up to the nest (`stoneLayout`). */
@@ -316,6 +353,7 @@ class OwlWalk implements Game {
       if (!this.ctx.tw.busy(o.critter)) o.critter.position.copyFrom(this.spotAt(o.spot, i));
     });
     this.deck.position.set(v.w * 0.36, 125);
+    this.seat.position.set(Math.max(80, v.w * 0.36 - 190), 125);
     this.shown.position.set(v.w * 0.36 + 150, 125);
     this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
     if (this.hintAt !== null) this.hintGlow.position.copyFrom(this.targetPoint(this.hintAt));
@@ -520,6 +558,8 @@ class OwlWalk implements Game {
       this.ripple(p.x, p.y);
       return;
     }
+    if (this.partnerWait && !this.finished)
+      return this.partnerTap(this.nearest(this.touch.toLocal(e.global)));
     if (this.busy || this.finished || this.turn !== 'child') return;
     const hit = this.nearest(this.touch.toLocal(e.global));
     if (this.plan.mode === 'free') return this.step(hit);
@@ -627,20 +667,9 @@ class OwlWalk implements Game {
       await this.endTurn();
       return;
     }
-    const need = cardName(this.plan, color);
-    const lines = {
-      mismatch: () => {
-        const w = mismatchWords(this.plan, this.path[tapped as number], color);
-        return this.ctx.say(w.line, { have: w.have, need: w.need });
-      },
-      far: () => this.ctx.say('owl.far', { need }),
-      behind: () => this.ctx.say('owl.behind', { color }),
-      occupied: () => this.ctx.say('owl.occupied', { color }),
-      'early-nest': () => this.ctx.say('owl.early-nest', { color }),
-    } as const;
     const to = hop(this.path, spots, i, color);
     await this.miss(
-      lines[verdict],
+      () => this.wrongLine(verdict, tapped, color),
       () => {
         this.showHint(to >= this.path.length ? 'nest' : to);
         // With no fireflies to scan by on Color or shape, the hint brings them to the right stone.
@@ -652,6 +681,59 @@ class OwlWalk implements Game {
         await this.endTurn();
       },
     );
+  }
+
+  /** The spoken reason a stone was not the one: the other color or shape named, a closer stone, the owl only walks forward, a friend there, or one still ahead of the nest. */
+  private wrongLine(verdict: Exclude<StoneVerdict, 'next' | 'nest'>, tapped: number | 'nest', color: Card) {
+    const need = cardName(this.plan, color);
+    if (verdict === 'mismatch') {
+      const w = mismatchWords(this.plan, this.path[tapped as number], color);
+      return this.ctx.say(w.line, { have: w.have, need: w.need });
+    }
+    if (verdict === 'far') return this.ctx.say('owl.far', { need });
+    const id = { behind: 'owl.behind', occupied: 'owl.occupied', 'early-nest': 'owl.early-nest' } as const;
+    return this.ctx.say(id[verdict], { color });
+  }
+
+  /**
+   * A grown-up's tap while the pet's turn waits for them. The right stone takes the hop for the pet's owl; a wrong one is
+   * the same gentle answer her own taps get, but nothing is added to her misses or hints (`seatStep`).
+   */
+  private partnerTap(hit: Hit | null) {
+    const wait = this.partnerWait;
+    if (!wait || !hit) return;
+    if (hit.kind === 'owl') {
+      this.owls[hit.i].critter.poke();
+      return;
+    }
+    const tapped = hit.kind === 'stone' ? hit.i : 'nest';
+    const at = this.targetPoint(tapped);
+    this.ripple(at.x, at.y);
+    if (hit.kind === 'stone') this.squash(this.stones[hit.i]);
+    const spots = this.owls.map((o) => o.spot);
+    const verdict = judgeStone(this.path, spots, wait.best, wait.color, tapped);
+    const step = seatStep(verdict, this.partnerWrongs + 1);
+    if (step === 'hop') {
+      this.finishPartner(true);
+      return;
+    }
+    this.partnerWrongs++;
+    sfx.boing();
+    const say = this.wrongLine(verdict as Exclude<StoneVerdict, 'next' | 'nest'>, tapped, wait.color);
+    const to = hop(this.path, spots, wait.best, wait.color);
+    if (step === 'hint') void say.then(() => this.showHint(to >= this.path.length ? 'nest' : to));
+    else if (step === 'together')
+      void say.then(async () => {
+        await this.ctx.say('owl.together');
+        this.finishPartner(true);
+      });
+  }
+
+  private finishPartner(hopped: boolean) {
+    const wait = this.partnerWait;
+    this.partnerWait = null;
+    this.clearHint();
+    wait?.resolve(hopped);
   }
 
   /** A gentle miss: a boing and a spoken reason; after two, the answer glows (one hint a turn); a third has the pet hop it. */
@@ -809,6 +891,10 @@ class OwlWalk implements Game {
     const best = this.plan.mode === 'turns' ? owlOf(this.path, spots, 1) : owlToHop(this.path, spots, color)!;
     const to = hop(this.path, spots, best, color);
     this.owls[best].glow.visible = true;
+    if (this.partner && (await this.partnerHops(best, color))) {
+      await this.move(best);
+      return this.afterPetHop();
+    }
     if (to >= this.path.length) await this.ctx.say('owl.pet-nest', { color });
     else if (this.plan.mode === 'turns')
       await this.ctx.say('owl.pet-look', { need: cardName(this.plan, color) });
@@ -817,6 +903,19 @@ class OwlWalk implements Game {
     const at = this.targetPoint(to >= this.path.length ? 'nest' : to);
     this.ripple(at.x, at.y);
     await this.move(best);
+    return this.afterPetHop();
+  }
+
+  /** The pet's turn waits for a grown-up's stone (seat button on); true when they hopped it, false when they gave the seat back. */
+  private partnerHops(best: number, color: Card): Promise<boolean> {
+    this.partnerWrongs = 0;
+    void this.ctx.say('owl.grownup');
+    return new Promise((resolve) => {
+      this.partnerWait = { best, color, resolve };
+    });
+  }
+
+  private async afterPetHop() {
     if (
       allHome(
         this.path,
