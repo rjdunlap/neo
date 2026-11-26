@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot }) {
-  /** Market Days by touch: level 1 with a banner placed beside a town of the same banner (the one miss), Undo, two Hint requests (glow, then place), then the ghost finger's taps to a finish and a portrait screenshot; level 3 with Why? (uncounted) and the finish on three banners. */
+  /** Market Days by touch and keys (arrow, 2, Enter on level 1): level 1 with a banner placed beside a town of the same banner (the one miss), Undo, two Hint requests (glow, then place), then the ghost finger's taps to a finish and a portrait screenshot; level 3 with Why? (uncounted) and the finish on three banners. */
   async function marketDaysPlay() {
     const tapOn = (path) =>
       page.evaluate((path) => kit.tapOn(path.split('.').reduce((o, k) => o[k], neo.scene.game)), path);
@@ -26,6 +26,25 @@ export function createSuite({ page, launch, finished, screenshot }) {
       kit.store.data.settings.howToCards = false;
     });
     await launch('market-days', 1, 'Mia', 'grownup');
+    await page.waitForTimeout(400);
+    // Keys: the first arrow shows the ring, 2 picks the second banner, Enter sets it on the ringed town (then Enter clears it again).
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('2');
+    const ringed = await page.evaluate(() => neo.scene.game.focus);
+    await page.keyboard.press('Enter');
+    const keyed = await page.evaluate(() => neo.scene.game.assign[neo.scene.game.focus]);
+    assert.ok(
+      ringed !== null && keyed === 1,
+      `keys set banner 2 on the ringed town (ring ${ringed}, banner ${keyed})`,
+    );
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(150);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.assign[neo.scene.game.focus]),
+      -1,
+      'Enter again clears it',
+    );
+    await launch('market-days', 1, 'Mia', 'grownup'); // a fresh round: the keyed banner may itself have clashed
     await page.waitForTimeout(400);
     // A miss: a banner on a town beside a town that already holds it.
     const clash = await page.evaluate(async () => {
