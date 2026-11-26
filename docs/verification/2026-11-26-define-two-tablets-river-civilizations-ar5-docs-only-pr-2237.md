@@ -1,0 +1,3 @@
+**Changed:** new definition `docs/definitions/two-tablets.md` (crib model, bijection solver, two levels, reading check, hint rule that first removes an inconsistent candidate, registration in Lantern Lake as a separate grown-up puzzle, couch note); the river-civilizations study's AR5 row; READY (the define line removed, the build line added to Next ten); docs map.
+**Ran:** a throwaway Node enumeration of all 40,320 sign-to-sound bijections for the `quay` case (level 1 leaves 1 key, level 2 leaves 2; each unseen group has exactly one consistent candidate, only in the first key), `node scripts/check-links.mjs`, `git diff --check`.
+**Not run:** code checks and browser plays (nothing built; the packet is a definition).
