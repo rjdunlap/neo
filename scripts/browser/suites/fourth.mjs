@@ -19,6 +19,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           'sink-fresh',
           'sink8',
           'sink10',
+          'sink11',
         ],
         'FOURTH_ONLY',
       );
@@ -777,6 +778,116 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(score, [0, 1], 'sink 8 score');
       log(
         'Sink or Float 8: a tipped raft twice, the glow, the fix, three pallets with a revision and the ring, to the sticker passed',
+      );
+      return;
+    }
+
+    // Sink or Float 11, How much can it carry? (FOURTH_ONLY=sink11 alone): round 1 guesses the narrow boat (unscored), loads the
+    // wide boat to the rim for a portrait and landscape screenshot, then each boat spills on the marble after its last seat;
+    // round 2 picks the one-cell boat twice (two spills: the glow, one hint) then the glowing two-cell boat; round 3 by the bot,
+    // ending at the sticker. The ring is walked by direct control() calls on round 3.
+    if (only === 'sink11') {
+      await launch('sink-float', 11);
+      await page.waitForTimeout(700);
+      const idleTap = (cells) =>
+        page.evaluate(async (cells) => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && (g.phase === 'guess' || g.phase === 'pick'), 30000);
+          kit.tapOn(g.boats[g.rounds[g.round].boats.indexOf(cells)]);
+          await kit.sleep(300);
+        }, cells);
+      const dropMarbles = (n) =>
+        page.evaluate(async (n) => {
+          const g = neo.scene.game;
+          for (let i = 0; i < n; i++) {
+            await kit.until(() => !g.busy && g.phase === 'load', 30000);
+            kit.tapOn(g.bowl);
+            await kit.sleep(150);
+          }
+        }, n);
+      await idleTap(2);
+      await dropMarbles(4);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => !g.busy, 30000);
+        if (g.loaded[g.target] !== 4) throw new Error(`narrow boat holds ${g.loaded[g.target]}`);
+      });
+      await dropMarbles(1);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(
+          () => !g.busy && g.phase === 'load' && g.target !== -1 && g.loaded[g.target] === 0,
+          30000,
+        );
+        if (g.held.filter((h) => h !== null).join() !== '4') throw new Error(`held ${g.held}`);
+      });
+      await dropMarbles(8);
+      await page.evaluate(async () => kit.until(() => !neo.scene.game.busy, 30000));
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(700);
+      await screenshot('sink-float-11-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await screenshot('sink-float-11-landscape');
+      await dropMarbles(1);
+      // Round 2: two spills in a row, then the glow.
+      await idleTap(1);
+      await dropMarbles(3);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.round === 1 && g.spills === 1 && g.phase === 'pick' && !g.busy, 30000);
+      });
+      await idleTap(1);
+      await dropMarbles(3);
+      const st = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.round === 1 && g.spills === 2 && g.phase === 'pick' && !g.busy, 30000);
+        return {
+          hints: g.hints,
+          misses: g.misses,
+          glow: g.glowBoat,
+          glowCells: g.rounds[1].boats[g.glowBoat],
+        };
+      });
+      assert.equal(st.hints, 1, 'two spills bring one hint');
+      assert.equal(st.misses, 0, 'a spill is never a miss');
+      assert.equal(st.glowCells, 2, 'the glow marks the narrowest boat that carries four');
+      await idleTap(2);
+      // Rounds 2 and 3 by the bot; the controller ring on round 3.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { idle } = await import('/src/engine/controller.ts');
+        const press = (f) => {
+          const c = idle();
+          f(c.players[0]);
+          g.control(c, 0.016);
+        };
+        for (let guard = 0; guard < 400 && !g.finished; guard++) {
+          if (g.busy) {
+            await kit.sleep(150);
+            continue;
+          }
+          const t = g.autotouch();
+          if (!t) {
+            await kit.sleep(100);
+            continue;
+          }
+          if (g.round === 2) {
+            const want = t.tap.on === g.bowl ? g.boats.length : g.boats.indexOf(t.tap.on);
+            while (g.pick !== want) press((p) => (p.direction = want > g.pick ? 0 : 2));
+            press((p) => (p.action = true));
+          } else kit.tapOn(t.tap.on);
+          await kit.sleep(300);
+        }
+      });
+      await finished('sink-float');
+      const score = await page.evaluate(() => {
+        const r = kit.store.stats('sink-float').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(score, [0, 1], 'sink 11 score');
+      log(
+        'Sink or Float 11: two boats measured, two spills, the glow, a carried pile and the ring, to the sticker passed',
       );
       return;
     }

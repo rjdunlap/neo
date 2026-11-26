@@ -46,4 +46,14 @@ export const VOICE = {
   'sink.raft-tip-left': ['It tipped to the left, {name}! The heavy side needs a float under it.'],
   'sink.raft-tip-right': ['It tipped to the right, {name}! The heavy side needs a float under it.'],
   'sink.raft-next': ['Here comes a new pumpkin, {name}!'],
+  'sink.boat-ask': ['Two boats from one sheet, {name}. Which one carries more marbles?'],
+  'sink.boat-load': ['Tap the bowl to load it, {name}, one marble at a time.'],
+  'sink.boat-count': ['Look how many marbles it held, {name}!'],
+  'sink.boat-right': ['You guessed it, {name}! A wider boat carries more.'],
+  'sink.boat-wide': ['A wider boat pushes aside more water, {name}, so it holds more.'],
+  'sink.boat-next': ['Now a pile of marbles, {name}! Pick a boat to carry it.'],
+  'sink.boat-over': [
+    'The water came over, {name}! Each part of the boat holds up two marbles. Try a wider boat.',
+  ],
+  'sink.boat-hint': ['Try this one, {name}.'],
 } satisfies Record<string, string[]>;

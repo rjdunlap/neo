@@ -383,3 +383,54 @@ export function plumbArt(drop = 54): Graphics {
     .stroke(line(swatch.purple.line, 3));
   return g;
 }
+
+/** Build a Boat: a foil tray `cells` cells wide and `wall` tall, its base at y = 0 and centered on x = 0, with a seam per cell. */
+export function boatArt(cells: number, cellW: number, wall: number): Container {
+  const c = new Container();
+  const w = cells * cellW;
+  const g = new Graphics();
+  g.poly([-w / 2, -wall, w / 2, -wall, w / 2 - 16, 0, -w / 2 + 16, 0])
+    .fill(swatch.white.light)
+    .stroke(line(swatch.white.line));
+  g.moveTo(-w / 2 + 6, -wall + 10)
+    .lineTo(w / 2 - 6, -wall + 10)
+    .stroke(line(swatch.blue.light, 4));
+  for (let i = 1; i < cells; i++)
+    g.moveTo(-w / 2 + i * cellW, -wall + 4)
+      .lineTo(-w / 2 + i * cellW + (i * cellW > w / 2 ? -4 : 4), -4)
+      .stroke(line(swatch.white.line, 2));
+  c.addChild(g);
+  return c;
+}
+
+/** The marbles drawn as a row of dots (two rows past eight), centered on x and with its first row at y. */
+export function marbleDots(g: Graphics, x: number, y: number, n: number): Graphics {
+  const perRow = 8;
+  for (let i = 0; i < n; i++) {
+    const row = Math.floor(i / perRow);
+    const inRow = Math.min(perRow, n - row * perRow);
+    const col = i % perRow;
+    g.circle(x + (col - (inRow - 1) / 2) * 24, y - row * 24, 10)
+      .fill(swatch.purple.fill)
+      .stroke(line(swatch.purple.line, 2));
+  }
+  return g;
+}
+
+/** Build a Boat: the bowl on the near bank, about 170 by 150, holding up to six marbles (what is left of the pile). */
+export function marbleBowlArt(count: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-85, -75, 170, 150, 30).fill({ color: swatch.white.fill, alpha: 0.6 });
+  g.ellipse(0, 20, 64, 46).fill(wood.fill).stroke(line(wood.line));
+  for (let i = 0; i < Math.min(count, 6); i++) {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    g.circle(-34 + col * 34, -2 + row * 26 - 6, 14)
+      .fill(swatch.white.fill)
+      .stroke(line(swatch.purple.line, 3));
+    g.circle(-34 + col * 34 + 2, -2 + row * 26 - 4 - 6, 6).fill(swatch.purple.fill);
+  }
+  c.addChild(g);
+  return c;
+}
