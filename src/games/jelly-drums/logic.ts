@@ -8,8 +8,8 @@ import type { BandLevels } from '../../progress/difficulty';
 export const JELLIES = 5;
 
 export interface JellyPlan {
-  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which' | 'follow' | 'finish';
-  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) mystery notes (which), songs to follow (follow) or songs to finish (finish). */
+  mode: 'free' | 'echo' | 'wake' | 'compare' | 'order' | 'which' | 'follow' | 'finish' | 'answer';
+  /** Notes to play (free, wake), tunes to copy (echo), pairs of tunes (compare), line-ups (order) mystery notes (which), songs to follow (follow) songs to finish (finish) or touches an answered jelly sings for (answer). */
   goal: number;
   /** Tune length (echo, compare), jellies per line-up (order), 1 for a single note (which) or the most notes of a song she finishes (finish). */
   length: number;
@@ -45,16 +45,18 @@ export const PLANS: JellyPlan[] = [
   { mode: 'follow', goal: 4, length: 3 },
   // Level 16, "Finish the song": three known songs play through, play again without their last one or two notes, and she taps the ending.
   { mode: 'finish', goal: 3, length: 2 },
+  // Level 17, "Echo jellies": lap's first level; a jelly sings when touched and answers itself with the same note and a ripple. Eight touches.
+  { mode: 'answer', goal: 8, length: 0 },
 ];
 
 export const LEVELS: BandLevels = {
-  // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
-  lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
+  // Level 17 (Echo jellies) is the easiest, so lap plays it first, then level 10 (one big jelly), then 1, 2, 3 (see `order`).
+  lap: { min: 1, max: 17, order: [17, 10, 1, 2, 3] },
   // Levels 15 (Follow the glow) and 14 (Which jelly sang?) sit between 3 and 4: the top of toddler, 14 first in preschool.
   toddler: { min: 1, max: 15, order: [1, 2, 3, 15, 14] },
   // Level 16 (Finish the song) sits between 6 and 7 for preschool.
   preschool: { min: 4, max: 16, order: [14, 4, 5, 6, 16, 7] },
-  // Level 10 (one big jelly) is lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them.
+  // Levels 10 (one big jelly) and 17 (Echo jellies) are lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
 };
@@ -227,16 +229,26 @@ export const placeAfterMiss = (length: number, at: number): number => (length >=
 /** Seconds without a touch in free play before a jelly wiggles to invite her back. */
 export const NUDGE_AFTER = 8;
 
-/** Free play's idle clock: any touch resets it, and it nudges once every `NUDGE_AFTER` quiet seconds. It never counts anything. */
+/** Level 17 (Echo jellies): a quiet jelly wiggles after this many seconds, sooner than free play's, for the smallest players. */
+export const ECHO_NUDGE_AFTER = 6;
+
+/** Level 17: how long after a touch the jelly answers with the same note; always within 0.6 seconds, so the answer feels like the touch's. */
+export const ECHO_DELAY = 0.45;
+
+/** Level 17: the jelly that answers a touch on jelly `i` (the same one, as an echo comes from where the sound was made) and when. */
+export const echoOf = (i: number): { jelly: number; after: number } => ({ jelly: i, after: ECHO_DELAY });
+
+/** Free play's idle clock: any touch resets it, and it nudges once every `after` quiet seconds. It never counts anything. */
 export class IdleNudge {
   private idle = 0;
+  constructor(private readonly after = NUDGE_AFTER) {}
   touched() {
     this.idle = 0;
   }
   /** True when a nudge is due this frame. */
   tick(dt: number): boolean {
     this.idle += dt;
-    if (this.idle < NUDGE_AFTER) return false;
+    if (this.idle < this.after) return false;
     this.idle = 0;
     return true;
   }
@@ -364,7 +376,7 @@ export function jellyToTap(
   if (mode === 'compare') return null;
   // An order round drags jellies onto slots: see `orderToDrag`.
   if (mode === 'order') return null;
-  if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
+  if (mode === 'free' || mode === 'answer') return phase === 'play' ? freeNote(notes) : null;
   return phase === 'turn' ? (tune[at] ?? null) : null;
 }
 
