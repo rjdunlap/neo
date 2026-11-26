@@ -134,6 +134,8 @@ export interface PlayLayout {
   books: Spot;
   /** Welcome a New Friend's basket bed (RW07 slice 3): between the tune plaque and the basket, clear of the ball's floor. */
   bed: Spot;
+  /** The sun-and-moon lamp (RW11 slice 3), a second toy on the floor beside the ball, clear of the ball's floor. */
+  lamp: Spot;
   floor: Floor;
 }
 
@@ -141,6 +143,9 @@ export interface PlayLayout {
  * The newcomer's basket bed in creature play (RW07 slice 3): her project picture on the upper part (a tap says whose bed
  * it is), and the newcomer curled in the basket below it (a tap wakes it). Each part is at least 100 units tall.
  */
+/** The lamp's width in units (RW11 slice 3). */
+export const LAMP_W = 120;
+
 export const BED = { w: 180, h: 220, picture: 105 };
 
 export function playLayout(v: { w: number; h: number }): PlayLayout {
@@ -155,9 +160,15 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const top = BACK.y + BACK.r + 130;
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
+  // The lamp stands left of the basket, on the right of the grass, and the ball's floor ends before it. The upright
+  // area has no room for that, so there it stands above the guide's corner, clear of the floor.
+  const lamp =
+    v.w < NARROW
+      ? { x: GUIDE_CORNER.w / 2 + 40, y: v.h - 340 }
+      : { x: basket.x - BASKET.w / 2 - LAMP_W / 2 - 20, y: v.h - 110 };
   const floor = {
     x0: GUIDE_CORNER.w + BALL_RADIUS,
-    x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30,
+    x1: v.w < NARROW ? basket.x - BASKET.w / 2 - BALL_RADIUS - 30 : lamp.x - LAMP_W / 2 - BALL_RADIUS - 20,
     y0: Math.max(backdrop.floorTop + 40, v.h - 220),
     y1: v.h - BALL_RADIUS - 20,
   };
@@ -175,6 +186,7 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
     basket,
     books,
     bed,
+    lamp,
     floor,
   };
 }

@@ -9,6 +9,7 @@ import {
   ACTION_RADIUS,
   BALL_RADIUS,
   BASKET,
+  LAMP_W,
   BED,
   CORNER_RADIUS,
   ENDING_PICTURE,
@@ -270,6 +271,7 @@ describe('the creature play layout', () => {
         rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'),
         rect(l.basket, BASKET.w, BASKET.h, 'basket'),
         rect(l.books, BASKET.w, BASKET.h, 'books'),
+        rect(l.lamp, LAMP_W, LAMP_W, 'lamp'),
         ...bedParts(l.bed),
       ];
       check(v, [...buttons, body(l.stage), disc(l.ball, BALL_RADIUS, 'ball')], [floorBox(l.floor)], where);

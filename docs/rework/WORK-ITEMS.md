@@ -232,7 +232,7 @@ RW09 is now defined ([packet](LEARNING-RECAP.md)); RW10–RW12 remain on the [st
 
 **Outcome:** one familiar creature gains a meaningful new appearance/action through an authored experience.
 
-**First slice:** define one branching form choice and one interactive use in an existing project or home toy; prove body/wearable compatibility before implementation. **Defined 2026-11-26** ([packet](FORMS-AND-TALENTS.md)): the sprout's sun and moon blossoms, grown from a Garden Grow flower she plants, and the sun-and-moon lamp in creature play; three build slices are in Next ten.
+**First slice:** define one branching form choice and one interactive use in an existing project or home toy; prove body/wearable compatibility before implementation. **Defined 2026-11-26** ([packet](FORMS-AND-TALENTS.md)): the sprout's sun and moon blossoms, grown from a Garden Grow flower she plants, and the sun-and-moon lamp in creature play; three build slices: the form in the model and Dress, the book goal, and the lamp, all built 2026-11-26.
 
 **Acceptance:**
 - Growth follows a clear play experience; original appearance stays selectable and individual identity persists within the current model.

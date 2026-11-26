@@ -1,1 +1,0 @@
-**RW11 slice 3, *The sun-and-moon lamp in creature play*** (after RW11 slice 1; a second toy and five answers by companion and form: typecheck, unit tests, one filtered creature-play check with a moon-blossom sprout). [Definition](../../rework/FORMS-AND-TALENTS.md), [slice 3](../../rework/FORMS-AND-TALENTS.md#build-slices-in-order)
