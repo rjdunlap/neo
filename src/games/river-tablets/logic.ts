@@ -5,7 +5,8 @@
  * crates and baskets with a big mark for ten and small marks for ones; level 5 checks a cart against a tablet written at the
  * farm: short, right or extra, and by how many; level 6 sets two tablets that disagree against one cart: which one
  * matches, neither, or can't tell when the cart is gone; level 7 writes a spoken sentence with picture-signs whose names
- * sound like its words (the rebus), then reads the tablet back. Definitions: docs/definitions/river-tablets.md,
+ * sound like its words (the rebus), then reads the tablet back; level 8 meets two words that sound alike and adds a silent
+ * meaning-sign (a determinative) so the reader knows which one is meant. Definitions: docs/definitions/river-tablets.md,
  * docs/definitions/river-tablets-7-8.md.
  */
 import type { ColorName } from '../../art/palette';
@@ -13,7 +14,8 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree' | 'rebus';
+export type PlanId =
+  'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree' | 'rebus' | 'determinative';
 export type Kind = 'sheep' | 'jar';
 export const KINDS: readonly Kind[] = ['sheep', 'jar'];
 
@@ -55,12 +57,17 @@ export const PLANS: readonly Plan[] = [
     id: 'rebus',
     name: 'Say it with pictures: pick picture-signs whose names sound like the words (two sentences)',
   },
+  {
+    level: 8,
+    id: 'determinative',
+    name: 'Which one do I mean? add a silent meaning-sign so look-alike sounds read right (two sentences)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 8 },
 };
 export const MAX_LEVEL = PLANS.length;
 
@@ -168,7 +175,9 @@ export type SignId =
   | 'moon'
   | 'cup'
   | 'boot'
-  | 'drum';
+  | 'drum'
+  | 'ant'
+  | 'fir';
 export const SOUND_SIGNS: readonly SignId[] = [
   'eye',
   'sea',
@@ -260,8 +269,94 @@ export function sentenceFor(id: SentenceId): Sentence {
   return SENTENCES.find((x) => x.id === id)!;
 }
 
+// Level 8: one sound-sign, two meanings, and the silent meaning-sign that tells them apart.
+
+/** The four silent meaning-signs (determinatives): they have no sound of their own. */
+export type DetId = 'person' | 'sky' | 'plant' | 'animal';
+export const DET_SIGNS: readonly DetId[] = ['person', 'sky', 'plant', 'animal'];
+/** The sound-signs level 8 puts beside a meaning-sign; each is one word that two spellings share. */
+export const DET_SOUNDS: readonly SignId[] = ['sun', 'deer', 'ant', 'fir'];
+
+export type DetPairId = 'sun-son' | 'deer-dear' | 'ant-aunt' | 'fir-fur';
+export interface DetMeaning {
+  /** What the pet says (the spoken line `rt.rebus.sentence` carries this text). */
+  text: string;
+  /** The meaning-sign that makes the sentence read right. */
+  answer: DetId;
+}
+export interface DetPair {
+  id: DetPairId;
+  /** The sound-sign both meanings share. */
+  sound: SignId;
+  meanings: [DetMeaning, DetMeaning];
+}
+
+/** Four pairs of words that sound alike; in each, the two meanings need different silent signs. */
+export const DET_PAIRS: readonly DetPair[] = [
+  {
+    id: 'sun-son',
+    sound: 'sun',
+    meanings: [
+      { text: 'The warm sun shines in the sky.', answer: 'sky' },
+      { text: 'My son carries a basket.', answer: 'person' },
+    ],
+  },
+  {
+    id: 'deer-dear',
+    sound: 'deer',
+    meanings: [
+      { text: 'A deer stands by the reeds.', answer: 'animal' },
+      { text: 'My dear friend came to visit.', answer: 'person' },
+    ],
+  },
+  {
+    id: 'ant-aunt',
+    sound: 'ant',
+    meanings: [
+      { text: 'A tiny ant crawls on the clay.', answer: 'animal' },
+      { text: 'My aunt baked bread today.', answer: 'person' },
+    ],
+  },
+  {
+    id: 'fir-fur',
+    sound: 'fir',
+    meanings: [
+      { text: 'A tall fir grows by the path.', answer: 'plant' },
+      { text: "The cat's soft fur is warm.", answer: 'animal' },
+    ],
+  },
+];
+
+/** One sentence to write: its sound-sign, the words said, and the one right meaning-sign. */
+export interface DetCase {
+  pair: DetPairId;
+  /** Which of the pair's two meanings (0 or 1) this sentence is. */
+  meaning: 0 | 1;
+  sound: SignId;
+  text: string;
+  answer: DetId;
+}
+
+export interface DeterminativeBrief {
+  level: 8;
+  id: 'determinative';
+  /** The two meanings of one pair, in seeded order. */
+  cases: [DetCase, DetCase];
+}
+
+export function detPairFor(id: DetPairId): DetPair {
+  return DET_PAIRS.find((x) => x.id === id)!;
+}
+
 export type Brief =
-  TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief | DisagreeBrief | RebusBrief;
+  | TokensBrief
+  | EnvelopeBrief
+  | RowsBrief
+  | TensBrief
+  | CheckBrief
+  | DisagreeBrief
+  | RebusBrief
+  | DeterminativeBrief;
 
 /** How many times the kind changes along a delivery; a mixed delivery changes at least twice. */
 export function kindChanges(goods: readonly Kind[]): number {
@@ -382,6 +477,18 @@ export function briefFor(level: number, rng: Rng): Brief {
       tray: rng.shuffle([...x.solution, ...rng.shuffle([...x.distractors]).slice(0, 3)]),
     });
     return { level: 7, id: 'rebus', cases: [make(a), make(b)] };
+  }
+  if (plan.id === 'determinative') {
+    const pair = rng.pick([...DET_PAIRS]);
+    const order: [0 | 1, 0 | 1] = rng.chance(0.5) ? [0, 1] : [1, 0];
+    const make = (m: 0 | 1): DetCase => ({
+      pair: pair.id,
+      meaning: m,
+      sound: pair.sound,
+      text: pair.meanings[m].text,
+      answer: pair.meanings[m].answer,
+    });
+    return { level: 8, id: 'determinative', cases: [make(order[0]), make(order[1])] };
   }
   if (plan.id === 'tokens') {
     const sheep = rng.int(3, 5);
@@ -906,6 +1013,48 @@ export function rebusTally(cases: readonly RebusState[]): RoundTally {
   return { misses: cases.reduce((n, t) => n + t.misses, 0), hints: cases.filter((t) => t.hinted).length };
 }
 
+// ——— Level 8: which one do I mean? ———
+
+export interface DetState extends DetCase {
+  misses: number;
+  hinted: boolean;
+  /** The right meaning-sign glows (after the second wrong pick, or asked for). */
+  glowing: boolean;
+  /** The meaning-sign now stamped beside the sound-sign, once she has chosen right. */
+  stamped: DetId | null;
+  done: boolean;
+}
+
+export function startDeterminative(c: DetCase): DetState {
+  return { ...c, misses: 0, hinted: false, glowing: false, stamped: null, done: false };
+}
+
+export type DetResult = 'none' | 'right' | 'wrong';
+
+/** A meaning-sign is the commit: the right one stamps and finishes the sentence; any other is one miss, the glow after the second. */
+export function pickDeterminative(s: DetState, pick: DetId): { state: DetState; result: DetResult } {
+  if (s.done) return { state: s, result: 'none' };
+  if (pick === s.answer) return { state: { ...s, stamped: pick, done: true }, result: 'right' };
+  const misses = s.misses + 1;
+  const glowing = s.glowing || misses >= 2;
+  return { state: { ...s, misses, glowing, hinted: s.hinted || glowing }, result: 'wrong' };
+}
+
+/** Asked-for help: the same glow, one hint per sentence. */
+export function askDeterminative(s: DetState): DetState {
+  if (s.done) return s;
+  return { ...s, glowing: true, hinted: true };
+}
+
+/** The meaning-sign the glow points at: always the answer. */
+export function determinativeHint(s: DetState): DetId {
+  return s.answer;
+}
+
+export function determinativeTally(cases: readonly DetState[]): RoundTally {
+  return { misses: cases.reduce((n, t) => n + t.misses, 0), hints: cases.filter((t) => t.hinted).length };
+}
+
 // ——— The lineup: goods under marks ———
 
 export interface Lineup {
@@ -1014,6 +1163,9 @@ export const BAR_H = 120;
 export const REBUS_CELL = 110;
 export const REBUS_SIGN = 110;
 export const READ = { w: 140, h: 110 };
+/** Level 8: the sound-sign and meaning-sign cells on the tablet, and a meaning-sign button. */
+export const DET_CELL = 120;
+export const DET_PICK = 110;
 const M = 20;
 const GAP = 16;
 
@@ -1050,6 +1202,10 @@ export interface TabletLayout {
   /** Level 7: the three tablet cells, the six tray signs (two rows of three); Read is `handIn`. */
   slots?: Rect[];
   signs?: Rect[];
+  /** Level 8: the sound-sign (tap to hear it), the cell its meaning-sign is stamped in, and the four meaning-sign buttons. */
+  soundCell?: Rect;
+  detCell?: Rect;
+  dets?: Rect[];
   /** Where the record lines up against the things (visual, never a target). */
   lineup: Rect;
   /** Every tap target. */
@@ -1130,7 +1286,7 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     x: left,
     y: M,
     w: v.w - left - M,
-    h: plan.id === 'rebus' ? BAR_H : yardLevel ? YARD_H : 200,
+    h: plan.id === 'rebus' || plan.id === 'determinative' ? BAR_H : yardLevel ? YARD_H : 200,
   };
   const free: Rect = {
     x: PET_CORNER.w + M,
@@ -1179,6 +1335,32 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
       h: 110,
     };
     l = { lane, tablet, slots, signs, handIn, lineup, inputs: [...slots, ...signs, handIn] };
+  } else if (plan.id === 'determinative') {
+    // The tablet holds the sound-sign and the empty (then stamped) meaning cell; the four meaning-signs sit below in a row, or two by two when the width is short.
+    const tabletW = 2 * DET_CELL + GAP + 40;
+    const rowW = 4 * DET_PICK + 3 * GAP;
+    const cols = free.w >= rowW ? 4 : 2;
+    const rows = 4 / cols;
+    const groupH = DET_CELL + 40 + GAP + 6 + rows * DET_PICK + (rows - 1) * GAP + GAP + 110;
+    const spare = wide || v.upright ? 0 : Math.max(0, free.h - groupH - 6) / 3;
+    const tablet: Rect = {
+      x: Math.round(cx - tabletW / 2),
+      y: free.y + 6 + Math.round(spare),
+      w: tabletW,
+      h: DET_CELL + 40,
+    };
+    const soundCell: Rect = { x: tablet.x + 20, y: tablet.y + 20, w: DET_CELL, h: DET_CELL };
+    const detCell: Rect = { x: soundCell.x + DET_CELL + GAP, y: tablet.y + 20, w: DET_CELL, h: DET_CELL };
+    const sx = Math.round(cx - (cols * DET_PICK + (cols - 1) * GAP) / 2);
+    const sy = tablet.y + tablet.h + GAP + 6;
+    const dets = Array.from({ length: 4 }, (_, i) => ({
+      x: sx + (i % cols) * (DET_PICK + GAP),
+      y: sy + Math.floor(i / cols) * (DET_PICK + GAP),
+      w: DET_PICK,
+      h: DET_PICK,
+    }));
+    const lineup: Rect = { x: free.x, y: sy + rows * DET_PICK + (rows - 1) * GAP + GAP, w: free.w, h: 110 };
+    l = { lane, tablet, soundCell, detCell, dets, lineup, inputs: [soundCell, ...dets] };
   } else if (plan.id === 'tokens') {
     const jar: Rect = { x: cx - JAR.w / 2, y: free.y + 40, w: JAR.w, h: JAR.h };
     const lineup: Rect = { x: lane.x, y: jar.y + jar.h + GAP, w: lane.w, h: 120 };

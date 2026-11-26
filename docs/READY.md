@@ -58,7 +58,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`opposites` level 12, *One pair, again and again*** (below-level-1 lap entry, settled 2026-10-23; new level tier, `npm run game-docs`). [Dive](deep-dives/opposites.md#build-slices-in-order)
 - **`little-conductor` levels 7–8, *One change and revise*** (new-interaction tier, after level 3's request model is shared). [Dive](deep-dives/little-conductor.md#build-slices-in-order)
 
 

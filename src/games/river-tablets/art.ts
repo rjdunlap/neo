@@ -3,7 +3,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { sheepArt } from '../../art/animals';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import { CELL, type Kind, type SignId } from './logic';
+import { CELL, type DetId, type Kind, type SignId } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const CLAY = { fill: 0xd9a36e, line: 0x9c6b3c, dark: 0xb9834f, light: 0xf0cfa4 };
@@ -807,6 +807,39 @@ function signPicture(id: SignId, s: number): Container {
         .fill(swatch.yellow.fill)
         .stroke(L(3));
       break;
+    case 'ant':
+      for (const x of [-26, 0, 26])
+        g.ellipse(x * k, 8 * k, 13 * k, 11 * k)
+          .fill(0x6b4a3a)
+          .stroke(L(3));
+      for (const x of [-18, 0, 18]) {
+        g.moveTo(x * k, 10 * k)
+          .lineTo((x - 8) * k, 34 * k)
+          .stroke(L(4));
+        g.moveTo(x * k, 10 * k)
+          .lineTo((x + 8) * k, 34 * k)
+          .stroke(L(4));
+      }
+      g.moveTo(-34 * k, 0)
+        .lineTo(-44 * k, -22 * k)
+        .stroke(L(4));
+      g.moveTo(-30 * k, -2 * k)
+        .lineTo(-30 * k, -26 * k)
+        .stroke(L(4));
+      break;
+    case 'fir':
+      g.rect(-6 * k, 26 * k, 12 * k, 18 * k)
+        .fill(BROWN)
+        .stroke(L(3));
+      for (const [y, w] of [
+        [-8, 38],
+        [-24, 30],
+        [-40, 20],
+      ] as const)
+        g.poly([-w * k, (y + 34) * k, 0, (y - 12) * k, w * k, (y + 34) * k])
+          .fill(0x4f8f4a)
+          .stroke(L(3));
+      break;
     case 'jar':
       c.addChild(goodArt('jar', s));
       return c;
@@ -955,4 +988,115 @@ export function sentenceBarArt(w: number, h: number): Graphics {
   ]).stroke(line(CLAY.line, 4));
   for (const r of [16, 30]) arcAt(g, cx + 4, cy, r, -0.8, 0.8).stroke(line(CLAY.line, 5));
   return g;
+}
+
+// ——— Level 8: silent meaning-signs ———
+
+/** One meaning-sign's drawing, centred on (0, 0) within `s` × `s`: a person, the sky, a plant, an animal's paw. */
+function detPicture(id: DetId, s: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const k = s / 100;
+  const L = (w = 4) => line(ink, w * k);
+  switch (id) {
+    case 'person':
+      g.circle(0, -18 * k, 17 * k)
+        .fill(0xf0cfa4)
+        .stroke(L());
+      g.moveTo(-34 * k, 40 * k)
+        .quadraticCurveTo(-34 * k, 8 * k, 0, 8 * k)
+        .quadraticCurveTo(34 * k, 8 * k, 34 * k, 40 * k)
+        .closePath()
+        .fill(swatch.orange.fill)
+        .stroke(L());
+      break;
+    case 'sky':
+      arcAt(g, 0, 28 * k, 44 * k, Math.PI, 2 * Math.PI).stroke(line(BLUE, 8 * k));
+      g.circle(-6 * k, -2 * k, 12 * k)
+        .fill(swatch.yellow.fill)
+        .stroke(L(3));
+      g.circle(-1 * k, -6 * k, 11 * k).fill(CLAY.light);
+      for (const [x, y] of [
+        [22, -16],
+        [30, 4],
+        [10, 14],
+      ] as const)
+        g.circle(x * k, y * k, 4 * k).fill(swatch.yellow.fill);
+      break;
+    case 'plant':
+      g.moveTo(0, 44 * k)
+        .lineTo(0, -6 * k)
+        .stroke(line(LEAF, 7 * k));
+      for (const d of [-1, 1])
+        g.ellipse(d * 18 * k, -16 * k, 18 * k, 10 * k)
+          .fill(LEAF)
+          .stroke(L(3));
+      g.ellipse(0, -34 * k, 9 * k, 14 * k)
+        .fill(LEAF)
+        .stroke(L(3));
+      break;
+    case 'animal':
+      g.ellipse(0, 14 * k, 24 * k, 20 * k)
+        .fill(BROWN)
+        .stroke(L());
+      for (const [x, y] of [
+        [-28, -12],
+        [-10, -28],
+        [10, -28],
+        [28, -12],
+      ] as const)
+        g.ellipse(x * k, y * k, 9 * k, 12 * k)
+          .fill(BROWN)
+          .stroke(L(3));
+      break;
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** A meaning-sign button `size` square centred on (0, 0): a blue-grey tile (the sound-signs are clay) with a mute mark. */
+export function detSignArt(id: DetId, size: number, glow = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (glow)
+    g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({
+      color: swatch.yellow.fill,
+      alpha: 0.6,
+    });
+  g.roundRect(-size / 2, -size / 2, size, size, 18)
+    .fill(swatch.blue.light)
+    .stroke(line(swatch.blue.fill, 5));
+  c.addChild(g, detPicture(id, size * 0.68));
+  c.eventMode = 'none';
+  return c;
+}
+
+/**
+ * The meaning cell of the tablet `size` square centred on (0, 0): a dashed empty place with a question mark, or the
+ * silent sign stamped into the clay.
+ */
+export function detCellArt(size: number, id: DetId | null, glow = false): Container {
+  const c = cellArt(size, false, glow);
+  if (id) {
+    c.addChild(detPicture(id, size * 0.7));
+  } else {
+    const g = new Graphics();
+    const k = size / 100;
+    const half = size / 2 - 10;
+    const dash = 14;
+    for (let t = -half; t < half; t += 2 * dash) {
+      const e = Math.min(t + dash, half);
+      g.moveTo(t, -half).lineTo(e, -half).moveTo(t, half).lineTo(e, half);
+      g.moveTo(-half, t).lineTo(-half, e).moveTo(half, t).lineTo(half, e);
+    }
+    g.stroke(line(CLAY.line, 3));
+    arcAt(g, 0, -10 * k, 14 * k, Math.PI, 2.6 * Math.PI).stroke(line(CLAY.line, 7 * k));
+    g.moveTo(0, 6 * k)
+      .lineTo(0, 12 * k)
+      .stroke(line(CLAY.line, 7 * k));
+    g.circle(0, 26 * k, 4.5 * k).fill(CLAY.line);
+    c.addChild(g);
+  }
+  c.eventMode = 'none';
+  return c;
 }

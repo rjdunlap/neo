@@ -28,7 +28,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     if (fromLevel <= 3) await riverTablets13({ score, tally, settle, tapOn });
     if (fromLevel <= 5) await riverTablets45({ score, tally, settle, tapOn });
     if (fromLevel <= 6) await riverTablets6({ score, tally, settle, tapOn });
-    await riverTablets7({ score, tally, settle, tapOn });
+    if (fromLevel <= 7) await riverTablets7({ score, tally, settle, tapOn });
+    await riverTablets8({ score, tally, settle, tapOn });
   }
 
   async function riverTablets13({ score, tally, settle, tapOn }) {
@@ -406,6 +407,51 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     assert.deepEqual(await score(), [1, 1], 'level 7 saved 1 miss, 1 hint');
     log(
       'River Tablets 7: Read on an empty tablet and placing signs free, a wrong Read (one miss), Help (one hint) and the hint walk through both sentences (1/1), portrait screenshot, passed',
+    );
+  }
+  // Level 8: the sound-sign tapped (free), a wrong meaning-sign on the first sentence (one miss), Help (one hint) and the glowing
+  // right sign; the second sentence is answered right. Portrait screenshot after the miss.
+  async function riverTablets8({ score, tally, settle, tapOn }) {
+    await launch('river-tablets', 8);
+    await settle();
+    const first = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return { answer: g.detNow.answer, text: g.detNow.text };
+    });
+    const signs = ['person', 'sky', 'plant', 'animal'];
+    await tapOn('neo.scene.game.soundNode');
+    await settle();
+    assert.deepEqual(await tally(), [0, 0], 'the sound-sign is free');
+    const wrong = signs.findIndex((d) => d !== first.answer);
+    await tapOn(`neo.scene.game.detNodes[${wrong}]`);
+    await settle();
+    assert.deepEqual(await tally(), [1, 0], 'a wrong meaning-sign is one miss');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('river-tablets-8-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [1, 1], 'Help is one hint');
+    await tapOn(`neo.scene.game.detNodes[${signs.indexOf(first.answer)}]`);
+    await settle();
+    await page.waitForFunction(
+      () => neo.scene.game.detNow.text !== undefined && neo.scene.game.cartIndex === 1,
+      null,
+      {
+        timeout: 30000,
+      },
+    );
+    await settle();
+    const second = await page.evaluate(() => neo.scene.game.detNow.answer);
+    assert.notEqual(second, first.answer, 'the twin meaning needs a different sign');
+    await tapOn(`neo.scene.game.detNodes[${signs.indexOf(second)}]`);
+    await settle();
+    await finished('river-tablets');
+    assert.deepEqual(await score(), [1, 1], 'level 8 saved 1 miss, 1 hint');
+    log(
+      'River Tablets 8: the sound-sign free, a wrong meaning-sign (one miss), Help (one hint) and the right sign on both sentences (1/1), portrait screenshot, passed',
     );
   }
   return { riverTabletsPlay };

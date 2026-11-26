@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–7 |
+| school | 3–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,12 +21,13 @@
 | 5 | Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29) |
 | 6 | Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29) |
 | 7 | Say it with pictures: pick picture-signs whose names sound like the words (two sentences) |
+| 8 | Which one do I mean? add a silent meaning-sign so look-alike sounds read right (two sentences) |
 
 <!-- end generated -->
 
 **Starts as:** press a clay record of real things and line it up against them one to one, the way people by the big rivers once did
 
-**Grows into:** levels 1–3: a token in the jar for each sheep as it walks into the pen, then tip the jar to see them line up (nothing counted); tokens sealed in a clay ball with an 8-cell face, one pressed mark each, then Crack to line them up (peek inside is free; a mismatch is a miss, and the second miss on an envelope glows the fix, one hint); a cart brings sheep and jars one at a time and each mark goes in its own row, read back at the end (a wrong row is a miss, and the second wrong press moves the mark, one hint); school levels 4–5: press a big ten mark and small one marks onto a strip for crates and loose baskets of grain and hand the tablet in (an equal longer reading is accepted and shown the shorter way), then say whether a cart is short, right or extra against a farm tablet and by how many; school level 6: a farm tablet and a storehouse tablet disagree about one cart, so pick the one the cart matches, neither, or can't tell (right only for an empty cart; a wrong pick is a miss with a spoken reason, and after the second miss the cart lines up under each tablet in turn, one hint); school level 7: write a spoken sentence with picture-signs whose names sound like its words (*I see a deer* is eye, sea, deer), then press Read (a wrong Read is a miss and the pet says the pictures it heard; after the second miss the next step glows, one hint). One spoken history line at levels 2–3, another at level 4, another at level 7, and on the card. Nothing is kept. Story Grove
+**Grows into:** levels 1–3: a token in the jar for each sheep as it walks into the pen, then tip the jar to see them line up (nothing counted); tokens sealed in a clay ball with an 8-cell face, one pressed mark each, then Crack to line them up (peek inside is free; a mismatch is a miss, and the second miss on an envelope glows the fix, one hint); a cart brings sheep and jars one at a time and each mark goes in its own row, read back at the end (a wrong row is a miss, and the second wrong press moves the mark, one hint); school levels 4–5: press a big ten mark and small one marks onto a strip for crates and loose baskets of grain and hand the tablet in (an equal longer reading is accepted and shown the shorter way), then say whether a cart is short, right or extra against a farm tablet and by how many; school level 6: a farm tablet and a storehouse tablet disagree about one cart, so pick the one the cart matches, neither, or can't tell (right only for an empty cart; a wrong pick is a miss with a spoken reason, and after the second miss the cart lines up under each tablet in turn, one hint); school level 7: write a spoken sentence with picture-signs whose names sound like its words (*I see a deer* is eye, sea, deer), then press Read (a wrong Read is a miss and the pet says the pictures it heard; after the second miss the next step glows, one hint); school level 8: two words that sound alike (*sun* and *son*, *deer* and *dear*, *ant* and *aunt*, *fir* and *fur*) share one sound-sign, and for each sentence she taps the silent meaning-sign (person, sky, plant or animal) that shows which word is meant, the way scribes added determinatives (a wrong sign is a miss and the pet names it; after the second miss the right sign glows, one hint). One spoken history line at levels 2–3, another at level 4, others at levels 7 and 8, and on the card. Nothing is kept. Story Grove
 
 ## Design notes
 
