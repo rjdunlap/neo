@@ -1,1 +1,0 @@
-**Define `daily-life-long-ago` H7, household story or toy comparison** (docs only: define one Story Steps household sequence or reviewed toy comparison mode, update study/backlog/READY, queue its build). [Study](../../deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
