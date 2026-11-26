@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { landing, levelsInOrder, rangeFor, stepLevel } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
+import { HIT_PAD, jellyLayout, orderHalfWidth, orderRowFor } from './layout';
+import { jellyDrums } from './index';
 import {
   answerOf,
   drawLineup,
@@ -639,7 +641,7 @@ describe('Jelly Drums Which jelly sang? (level 14)', () => {
     expect(plan.mode).toBe('which');
     expect([plan.goal, plan.length]).toEqual([6, 1]);
     expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).toEqual([1, 2, 3, 15, 14]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7, 18]);
     for (const band of ['lap', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(14);
 
@@ -751,7 +753,7 @@ describe('Jelly Drums Finish the song (level 16)', () => {
   it('is level 16, placed between 6 and 7 for preschool, and other bands land on their own start', () => {
     expect(plan.mode).toBe('finish');
     expect(plan.goal).toBe(3);
-    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([14, 4, 5, 6, 16, 7, 18]);
     for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(16);
     const entries = [10, 14, 15, 16];
@@ -810,7 +812,7 @@ describe('Echo jellies (level 17)', () => {
     expect(levelsInOrder(rangeFor(LEVELS, 'lap'))).toEqual([17, 10, 1, 2, 3]);
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(17);
-    expect(PLANS).toHaveLength(17);
+    expect(PLANS.length).toBeGreaterThanOrEqual(17);
     expect(plan).toEqual({ mode: 'answer', goal: 8, length: 0 });
   });
 
@@ -848,5 +850,54 @@ describe('Echo jellies (level 17)', () => {
 
   it('has a spoken instruction', () => {
     expect(SCRIPT['jelly.answer']?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Jelly Drums Lowest to highest, with sizes (level 18)', () => {
+  const plan = PLANS[17];
+
+  it('is level 18 (level 13 with sizes), last in preschool after level 7 and in no other band', () => {
+    expect(plan).toEqual({ mode: 'order', goal: 3, length: 4, sized: true });
+    expect(rangeFor(LEVELS, 'preschool').order).toEqual([14, 4, 5, 6, 16, 7, 18]);
+    for (const band of ['lap', 'toddler', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(18);
+  });
+
+  it('draws the same shuffled line-ups as level 13, so every rule of level 13 holds', () => {
+    expect(drawLineups(new Rng(5), plan.goal, plan.length)).toEqual(drawLineups(new Rng(5), 3, 4));
+  });
+
+  it('size order equals pitch order: the biggest jelly is the lowest, every shuffle', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const l of drawLineups(new Rng(seed), plan.goal, plan.length)) {
+        const widths = l.byPitch.map((i) => orderHalfWidth(l.jellies[i].pitch, true));
+        for (let k = 1; k < widths.length; k++) expect(widths[k]).toBeLessThan(widths[k - 1]);
+      }
+    }
+    // Level 13 keeps one size for all.
+    expect(new Set([0, 1, 2, 3, 4].map((p) => orderHalfWidth(p, false))).size).toBe(1);
+  });
+
+  it('the row of sized jellies keeps each tap area apart and centred, in any order', () => {
+    const l = jellyLayout({ w: 1024, h: 768 });
+    for (const pitches of [
+      [0, 1, 2, 3],
+      [3, 2, 1, 0],
+      [2, 0, 3, 1],
+      [4, 0, 3, 1],
+    ]) {
+      const row = orderRowFor(l, pitches, true);
+      const wide = pitches.map((p) => orderHalfWidth(p, true) * 2 + HIT_PAD * 2);
+      for (let k = 1; k < row.length; k++)
+        expect(row[k].x - row[k - 1].x).toBeCloseTo((wide[k] + wide[k - 1]) / 2);
+      expect((row[0].x + row[3].x + (wide[3] - wide[0]) / 2) / 2).toBeCloseTo(
+        l.orderRow[1].x + (l.orderRow[2].x - l.orderRow[1].x) / 2,
+      );
+    }
+  });
+
+  it('is described by what she does, and its card and line exist', () => {
+    expect(jellyDrums.describeLevel(18)).toMatch(/different sizes/);
+    expect(SCRIPT['jelly.order.sized']).toBeTruthy();
   });
 });

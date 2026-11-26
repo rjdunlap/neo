@@ -10,7 +10,7 @@
 | --- | --- |
 | lap | 17, 10, 1, 2, 3 |
 | toddler | 1, 2, 3, 15, 14 |
-| preschool | 14, 4, 5, 6, 16, 7 |
+| preschool | 14, 4, 5, 6, 16, 7, 18 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
 | school | 8, 9, 11, 12, 13 |
 
@@ -33,6 +33,7 @@
 | 15 | Tap each jelly as it glows to play 4 short songs |
 | 16 | Hear a known song, then tap its last one or two notes to finish it, 3 songs |
 | 17 | Every touch gets an echo, 8 touches |
+| 18 | Line up 4 jellies of different sizes from lowest to highest, 3 line-ups |
 
 <!-- end generated -->
 
@@ -55,6 +56,8 @@ Free play on five notes, then copying tunes of two to five notes. In the echo le
 **Sound sets and stages.** A round's instrument comes from its seed (`soundSetFor(rng)` in `logic.ts`): the marimba on Music Mountain by day (the look it always had), bells on a moon stage at night (dark sky, stars, crescent moon, pale garland string), or a soft held hum (`sfx.hum`, `hum` in `src/audio/instruments.ts`) on a beach bandstand (sea, low dunes, sun). All three play the same five pentatonic steps (`SET_STEPS`), so a tune is the same tune on any set. Stage looks and drawing are in `stages.ts` (`STAGES`, `drawBackdrop`, `crescent`). The hub icon and sticker stay on Music Mountain. Whether the bells and hum sound good on a phone speaker is for a phone playtest to tell us. Browser check: `BROWSER_SUITE=originals ORIGINALS_ONLY=jellysets`.
 
 **Lowest to highest (level 13).** Pre-K and school, last in the order after Same or different? (`[… 9, 11, 12, 13]`). The plan is `{mode:'order', goal:3, length:4}`: three line-ups of four equal-sized jellies (`ORDER_HW = 68`) in shuffled colors and positions, while the fifth jelly sleeps to the side. `drawLineups` picks four distinct pitches and independently shuffles all five `PITCH_COLORS` (guarding against starting already sorted ascending or with every jelly wearing its pitch's default color). She taps any jelly freely to hear its voice (never a miss) and drags the lowest remaining jelly onto the lit slot on the shelf above. A wrong drop on the lit slot slides the jelly back and speaks a direction (`orderDirection` through `'jelly.order.dir'`); two misses on one slot count a hint and glow the right jelly. Dropping onto an unlit slot ticks and pulses the lit slot without a miss. Once three jellies are placed, the fourth hops into the last slot (`orderChoicesNeeded(4) === 3`) and all four sing in ascending order before the next line-up. Placed jellies remain tappable to listen. The slotted voice lines (`jelly.order`, `jelly.order.next`, `jelly.order.dir`) stay on device speech until a clip pass renders fixed wording. The ghost finger uses `orderToDrag` to drag each lowest remaining jelly to the lit slot. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=13`, `abandon-cards.mjs`.
+
+**Lowest to highest, with sizes (level 18).** Preschool only, last in the order after level 7 (`[14, 4, 5, 6, 16, 7, 18]`). The plan is level 13's (`{mode:'order', goal:3, length:4}`) with `sized: true`: the same shuffled line-ups, but each jelly is drawn at its own pitch's size (`HALF_WIDTHS`, the biggest the lowest), so size and sound agree and the colors stay shuffled. The waiting jellies stand side by side by their own tap areas (`orderRowFor` in `layout.ts`, `orderHalfWidth` for each size). Same drag, same direction hint and same hint rule as level 13; the instruction is `jelly.order.sized` (slotted, device speech). Rule tests: size order equals pitch order, and the row keeps tap areas apart. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly JELLY_LEVELS=18`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=18`.
 
 **Journal entries (2026-11-25, [PR #2165](https://github.com/rjdunlap/neo/pull/2165); the scale entry 2026-11-25, PR #2184).** A finished round files `jelly-drums:low-high` once she has tapped both the biggest (red) and the littlest (blue) jelly in it, and `jelly-drums:scale` once level 3's three-neighbours rainbow sparkle has played in it; `JournalWatch` in `logic.ts` keeps both (`tap` for the ends, `sparkled` from `freeTwists` for the scale) and `ctx.finish` passes them as `discoveries`, so a round that showed neither files nothing. Low and high speaks the existing `jelly.lowhigh` line (its clip is already rendered); the scale speaks `jelly.scale`, which carries her name (`{name}`), so it stays on device speech and no clip had to be rendered (the journal card now shows the same filled wording through `voice.line`). Each card draws the game's own jellies (`jellyJournalPicture(key)` in `jelly.ts`): the biggest and littlest side by side, or three neighbours with notes climbing like stairs.
 

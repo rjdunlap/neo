@@ -16,7 +16,17 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { entryId } from '../../content/journal';
 import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
-import { CHOICE_RADIUS, HIT_PAD, jellyLayout, ORDER_HW, ORDER_SLOT_RADIUS, type Layout } from './layout';
+import {
+  CHOICE_RADIUS,
+  HIT_PAD,
+  jellyLayout,
+  ORDER_HW,
+  ORDER_SLOT_RADIUS,
+  orderHalfWidth,
+  orderRowFor,
+  type Layout,
+  type Pt,
+} from './layout';
 import {
   answerOf,
   LEVELS,
@@ -281,7 +291,7 @@ class JellyDrums implements Game {
     if (this.plan.mode === 'order') {
       this.lineups = drawLineups(this.ctx.rng, this.plan.goal, this.plan.length);
       this.setupLineup(0);
-      void this.ctx.instruct('jelly.order', { name: this.ctx.childName });
+      void this.ctx.instruct(this.orderLine(), { name: this.ctx.childName });
       return;
     }
     if (this.plan.mode === 'compare') {
@@ -339,7 +349,7 @@ class JellyDrums implements Game {
       this.sleeperG.scale.set(l.scale);
       for (const item of this.orderJellies) {
         item.jelly.scale.set(l.scale);
-        const dest = item.placed ? l.orderSlots[item.slot] : l.orderRow[item.rowIndex];
+        const dest = item.placed ? l.orderSlots[item.slot] : this.rowOf(this.tunesDone)[item.rowIndex];
         item.drag.home = { ...dest };
         if (!item.drag.dragging) item.jelly.position.set(dest.x, dest.y);
       }
@@ -1006,17 +1016,14 @@ class JellyDrums implements Game {
     this.placedCount = 0;
     this.wrongThisTune = 0;
     const lineup = this.lineups[index];
+    const row = this.rowOf(index);
     this.orderJellies = lineup.jellies.map((entry, rowIndex) => {
-      const jelly = new Jelly(entry.color, ORDER_HW, ORDER_HW * 1.55);
-      const pos = this.lay.orderRow[rowIndex];
+      const hw = orderHalfWidth(entry.pitch, !!this.plan.sized);
+      const jelly = new Jelly(entry.color, hw, hw * 1.55);
+      const pos = row[rowIndex];
       jelly.position.set(pos.x, pos.y);
       jelly.scale.set(this.lay.scale);
-      jelly.hitArea = new Rectangle(
-        -ORDER_HW - HIT_PAD,
-        -ORDER_HW * 1.55 - 30,
-        ORDER_HW * 2 + HIT_PAD * 2,
-        ORDER_HW * 1.55 + 50,
-      );
+      jelly.hitArea = new Rectangle(-hw - HIT_PAD, -hw * 1.55 - 30, hw * 2 + HIT_PAD * 2, hw * 1.55 + 50);
       this.orderLayer.addChild(jelly);
       const item: OrderItem = {
         jelly,
@@ -1039,6 +1046,17 @@ class JellyDrums implements Game {
     this.drawOrderShelf();
     this.drawOrderSlots();
     this.drawSleeper(lineup.sleeper);
+  }
+
+  /** Where line-up `index`'s waiting jellies stand (level 18's differ with their sizes). */
+  private rowOf(index: number): Pt[] {
+    const lineup = this.lineups[index];
+    return orderRowFor(this.lay, lineup ? lineup.jellies.map((j) => j.pitch) : [], !!this.plan.sized);
+  }
+
+  /** The spoken instruction for a line-up: level 18 also points at the sizes. */
+  private orderLine(): 'jelly.order' | 'jelly.order.sized' {
+    return this.plan.sized ? 'jelly.order.sized' : 'jelly.order';
   }
 
   private drawOrderShelf() {
@@ -1200,7 +1218,7 @@ class JellyDrums implements Game {
     if (this.tunesDone >= this.plan.goal) void this.finale();
     else {
       this.setupLineup(this.tunesDone);
-      void this.ctx.instruct('jelly.order', { name: this.ctx.childName });
+      void this.ctx.instruct(this.orderLine(), { name: this.ctx.childName });
     }
   }
 
@@ -1316,6 +1334,8 @@ export const jellyDrums: GameModule = {
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
     if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
+    if (p.mode === 'order' && p.sized)
+      return `Line up ${p.length} jellies of different sizes from lowest to highest, ${p.goal} line-ups`;
     if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
     if (p.mode === 'finish')
       return `Hear a known song, then tap its last one or two notes to finish it, ${p.goal} songs`;

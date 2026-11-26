@@ -153,7 +153,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, Follow the glow, Echo jellies, and Finish the song (which takes the copy-the-tune bot's path on the ending).
     const jellyLevels =
-      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 17 }, (_, i) => i + 1);
+      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 18 }, (_, i) => i + 1);
     for (const level of jellyLevels) {
       if (only && only !== 'jelly') break;
       await launch('jelly-drums', level);
