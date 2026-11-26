@@ -14,6 +14,9 @@ import {
   drawLineups,
   drawPair,
   drawWhich,
+  ECHO_DELAY,
+  ECHO_NUDGE_AFTER,
+  echoOf,
   LEVELS,
   minStepAt,
   orderChoicesNeeded,
@@ -643,7 +646,7 @@ describe('Jelly Drums Which jelly sang? (level 14)', () => {
     const entries = [10, 14, 15, 16];
     expect(landing(14, rangeFor(LEVELS, 'toddler'), entries)).toBe(14);
     expect(landing(14, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
-    expect(landing(14, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(14, rangeFor(LEVELS, 'lap'), entries)).toBe(17);
     expect(landing(14, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
     expect(landing(14, rangeFor(LEVELS, 'school'), entries)).toBe(8);
     expect(stepLevel(3, 1, rangeFor(LEVELS, 'toddler'))).toBe(15);
@@ -706,7 +709,7 @@ describe('Jelly Drums Follow the glow (level 15)', () => {
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(15);
     const entries = [10, 14, 15, 16];
     expect(landing(15, rangeFor(LEVELS, 'toddler'), entries)).toBe(15);
-    expect(landing(15, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(15, rangeFor(LEVELS, 'lap'), entries)).toBe(17);
     expect(landing(15, rangeFor(LEVELS, 'preschool'), entries)).toBe(14);
     expect(landing(15, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
     expect(landing(15, rangeFor(LEVELS, 'school'), entries)).toBe(8);
@@ -753,7 +756,7 @@ describe('Jelly Drums Finish the song (level 16)', () => {
       expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(16);
     const entries = [10, 14, 15, 16];
     expect(landing(16, rangeFor(LEVELS, 'preschool'), entries)).toBe(16);
-    expect(landing(16, rangeFor(LEVELS, 'lap'), entries)).toBe(10);
+    expect(landing(16, rangeFor(LEVELS, 'lap'), entries)).toBe(17);
     expect(landing(16, rangeFor(LEVELS, 'toddler'), entries)).toBe(1);
     expect(landing(16, rangeFor(LEVELS, 'prek'), entries)).toBe(5);
     expect(landing(16, rangeFor(LEVELS, 'school'), entries)).toBe(8);
@@ -797,5 +800,53 @@ describe('Jelly Drums Finish the song (level 16)', () => {
     expect(jellyToTap('finish', 'turn', ending, 1, 0)).toBe(ending[1]);
     expect(SCRIPT['jelly.finish']?.length).toBeGreaterThan(0);
     expect(SCRIPT['jelly.finish.ask']?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Echo jellies (level 17)', () => {
+  const plan = planFor(17);
+
+  it("is lap's first level and no other band's", () => {
+    expect(levelsInOrder(rangeFor(LEVELS, 'lap'))).toEqual([17, 10, 1, 2, 3]);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(17);
+    expect(PLANS).toHaveLength(17);
+    expect(plan).toEqual({ mode: 'answer', goal: 8, length: 0 });
+  });
+
+  it('answers every touch within 0.6 s with the same jelly', () => {
+    for (let i = 0; i < 5; i++) {
+      const echo = echoOf(i);
+      expect(echo.jelly).toBe(i);
+      expect(echo.after).toBe(ECHO_DELAY);
+    }
+    expect(ECHO_DELAY).toBeLessThanOrEqual(0.6);
+    expect(ECHO_DELAY).toBeGreaterThan(0);
+  });
+
+  it('ends in at most eight touches, which a ghost finger playing the scale reaches without a miss', () => {
+    let notes = 0;
+    while (notes < plan.goal) {
+      const i = jellyToTap('answer', 'play', [], 0, notes);
+      expect(i).not.toBeNull();
+      notes++;
+    }
+    expect(notes).toBe(8);
+    expect(jellyToTap('answer', 'done', [], 0, notes)).toBeNull();
+  });
+
+  it('wiggles a jelly after six quiet seconds, sooner than free play, and a touch resets it', () => {
+    expect(ECHO_NUDGE_AFTER).toBe(6);
+    expect(ECHO_NUDGE_AFTER).toBeLessThan(NUDGE_AFTER);
+    const nudge = new IdleNudge(ECHO_NUDGE_AFTER);
+    expect(nudge.tick(5.9)).toBe(false);
+    nudge.touched();
+    expect(nudge.tick(5.9)).toBe(false);
+    expect(nudge.tick(0.2)).toBe(true);
+    expect(new IdleNudge().tick(6.5)).toBe(false);
+  });
+
+  it('has a spoken instruction', () => {
+    expect(SCRIPT['jelly.answer']?.length).toBeGreaterThan(0);
   });
 });

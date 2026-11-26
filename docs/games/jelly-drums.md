@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 10, 1, 2, 3 |
+| lap | 17, 10, 1, 2, 3 |
 | toddler | 1, 2, 3, 15, 14 |
 | preschool | 14, 4, 5, 6, 16, 7 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
@@ -32,6 +32,7 @@
 | 14 | Listen to one note and tap which jelly sang, 6 sounds |
 | 15 | Tap each jelly as it glows to play 4 short songs |
 | 16 | Hear a known song, then tap its last one or two notes to finish it, 3 songs |
+| 17 | Every touch gets an echo, 8 touches |
 
 <!-- end generated -->
 
@@ -62,3 +63,5 @@ Free play on five notes, then copying tunes of two to five notes. In the echo le
 **Follow the glow (level 15, 2026-11-25, [PR #2188](https://github.com/rjdunlap/neo/pull/2188)).** Toddler only, placed between levels 3 and 14 (`toddler` order `[1, 2, 3, 15, 14]`, `entryLevels: [10, 14, 15]`, so every other band still starts at its own easiest level). The plan is `{mode:'follow', goal:4, length:3}`: four three-note songs, the first always *Hot Cross Buns* (its title spoken first), then fresh shapes from `drawFollow` (never a repeat, never the shape just played). One jelly glows at a time and stays lit; tapping it sings its note and lights the next, so the song plays as she taps. The lit jelly is the answer, so nothing counts a miss or a hint: a different jelly is only music, and if she waits (`IdleNudge`, 8 seconds) the lit jelly wiggles. There is no listen-again button. `jellyToTap` reads the lit jelly for the ghost finger. The slotted line `jelly.follow` carries her name, so it stays on device speech and no clip had to be rendered. Browser checks: `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly JELLY_LEVELS=15` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=15`.
 
 **Finish the song (level 16, 2026-11-25, [PR #2201](https://github.com/rjdunlap/neo/pull/2201)).** Preschool only, placed between levels 6 and 7 (`preschool` order `[14, 4, 5, 6, 16, 7]`, `entryLevels: [10, 14, 15, 16]`, so every other band still starts at its own easiest level). The plan is `{mode:'finish', goal:3, length:2}`: three songs from `FINISH_SONGS`, the first always *Hot Cross Buns* (six notes, the last one hidden), then *Mary Had a Little Lamb* and *Jingle Bells* in a seeded order (the last two notes hidden); at least three notes are always given. Each song's title is spoken, the whole song plays, then it plays again without its ending and the guide asks how it ends. She taps the hidden jellies in order. A wrong jelly is a miss: the whole song replays slowly with its ending glowing, two misses count a hint and light the first ending jelly before the replay and again at her turn. The yellow note button plays the song again for free. Instructions are slotted (`jelly.finish`, `jelly.finish.ask`), so they use device speech and need no rendered clip.
+
+**Echo jellies (level 17, 2026-11-26).** Lap's first level (`lap` order `[17, 10, 1, 2, 3]`, `entryLevels: [17, 10, 14, 15, 16]`; no other band plays it, and a saved level or pin of 17 lands other bands on their own start). The plan is `{mode:'answer', goal:8, length:0}`. A touched jelly sings, and `ECHO_DELAY` (0.45 s, never over 0.6) later the **same** jelly sings the same note again, softer, with a widening ripple, a glow, the front-row animals hopping and the pet cheering (`echoOf` in `logic.ts`; the dive's "another jelly or the same" is settled as the same jelly, since an echo comes from where the sound was made). Nothing is a miss or a hint: every touch counts toward eight and the eighth finishes. After `ECHO_NUDGE_AFTER` (6 s) without a touch the last jelly wiggles, sooner than free play's 8 s. The instruction `jelly.answer` is slotted, so it uses device speech and needs no rendered clip. The ghost finger plays the scale as in free play. Whether she waits for the answer before touching again is a person check, parked with the other child checks.

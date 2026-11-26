@@ -31,6 +31,8 @@ import {
   type FinishSong,
   drawWhich,
   fanAnswering,
+  ECHO_NUDGE_AFTER,
+  echoOf,
   IdleNudge,
   JellyNamer,
   jellyToTap,
@@ -148,7 +150,10 @@ class JellyDrums implements Game {
   /** Backwards level: a rewind arrow beside the listen-again button. */
   private readonly rewind = new Graphics();
   /** Free play: a quiet jelly wiggles after a while without a touch. */
-  private readonly nudge = new IdleNudge();
+  private readonly nudge: IdleNudge;
+  /** Level 17 (Echo jellies): the ripples spreading from answered jellies, each at its centre with its age in seconds. */
+  private readonly ripples: { x: number; y: number; age: number }[] = [];
+  private readonly rippleG = new Graphics();
   /** Free play: the voice names a jelly now and then. */
   private readonly namer = new JellyNamer();
   /** Level 3: three neighbours in a row sparkle. */
@@ -165,6 +170,7 @@ class JellyDrums implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.nudge = new IdleNudge(this.plan.mode === 'answer' ? ECHO_NUDGE_AFTER : undefined);
     this.sounds = soundSetFor(ctx.rng);
     this.look = STAGES[STAGE_OF[this.sounds]];
     this.sky = new Sprite(gradientTexture(...this.look.sky));
@@ -222,11 +228,13 @@ class JellyDrums implements Game {
       this.again,
       this.choices.same,
       this.choices.different,
+      this.rippleG,
       this.ring,
       this.ticks,
       this.rewind,
     );
     this.ticks.eventMode = 'none';
+    this.rippleG.eventMode = 'none';
     this.ring.eventMode = 'none';
     this.rewind.eventMode = 'none';
     this.rewind.visible = !!this.plan.reverse && !ctx.couch;
@@ -283,7 +291,14 @@ class JellyDrums implements Game {
       return;
     }
     void this.ctx.instruct(
-      this.plan.reverse ? 'jelly.echo.back' : this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free',
+      this.plan.reverse
+        ? 'jelly.echo.back'
+        : this.plan.mode === 'echo'
+          ? 'jelly.echo'
+          : this.plan.mode === 'answer'
+            ? 'jelly.answer'
+            : 'jelly.free',
+      { name: this.ctx.childName },
     );
     if (this.plan.mode === 'echo') void this.ctx.tw.wait(2).then(() => this.nextTune());
   }
@@ -359,6 +374,11 @@ class JellyDrums implements Game {
       lit.glow(0.15);
       if (this.nudge.tick(dt)) lit.wiggle(0.8);
     }
+    if (this.ripples.length) this.drawRipples(dt);
+    if (this.plan.mode === 'answer' && this.phase === 'play' && this.nudge.tick(dt)) {
+      // Six quiet seconds: the last jelly wiggles to invite her back. Nothing is counted.
+      this.jellies[this.lastJelly].wiggle(0.8);
+    }
     if (this.plan.mode === 'free' && this.phase === 'play' && this.nudge.tick(dt)) {
       const j = this.jellies[this.lastJelly];
       j.hit(0.5);
@@ -403,6 +423,7 @@ class JellyDrums implements Game {
     this.lastJelly = i;
     this.sing(i);
     this.journal.tap(i);
+    if (this.plan.mode === 'answer') void this.answerTouch(i);
     if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
     if (this.plan.mode === 'follow') {
       // The lit jelly is the answer, and a different jelly is only music: nothing counts a miss.
@@ -850,6 +871,37 @@ class JellyDrums implements Game {
     if (help) this.jellies[this.answer[0]].glow(1.5);
   }
 
+  // ----- Echo-jellies mode (level 17) -----
+
+  /** The jelly answers its own touch a moment later, softer, with the same note and a ripple, and the crowd claps. No miss, no hint. */
+  private async answerTouch(i: number) {
+    const { jelly, after } = echoOf(i);
+    await this.ctx.tw.wait(after);
+    if (this.dead) return;
+    const j = this.jellies[jelly];
+    this.sing(jelly, 0.6);
+    j.glow(0.5);
+    this.ripples.push({ x: j.x, y: j.y - j.height * 0.5, age: 0 });
+    this.fans.forEach((f) => f.hop(0.6));
+    this.ctx.pet.cheer();
+  }
+
+  /** Draws and ages the answer ripples: rings that widen and fade over about a second. */
+  private drawRipples(dt: number) {
+    this.rippleG.clear();
+    for (let k = this.ripples.length - 1; k >= 0; k--) {
+      const r = this.ripples[k];
+      r.age += dt;
+      if (r.age >= 1) {
+        this.ripples.splice(k, 1);
+        continue;
+      }
+      this.rippleG
+        .circle(r.x, r.y, 40 + r.age * 100)
+        .stroke({ width: 8, color: swatch.purple.line, alpha: 1 - r.age });
+    }
+  }
+
   // ----- Follow-the-glow mode (level 15) -----
 
   private async nextFollow() {
@@ -1258,7 +1310,7 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [10, 14, 15, 16],
+  entryLevels: [17, 10, 14, 15, 16],
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.reverse)
@@ -1267,6 +1319,7 @@ export const jellyDrums: GameModule = {
     if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
     if (p.mode === 'finish')
       return `Hear a known song, then tap its last one or two notes to finish it, ${p.goal} songs`;
+    if (p.mode === 'answer') return `Every touch gets an echo, ${p.goal} touches`;
     if (p.mode === 'follow') return `Tap each jelly as it glows to play ${p.goal} short songs`;
     if (p.mode === 'which') return `Listen to one note and tap which jelly sang, ${p.goal} sounds`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;

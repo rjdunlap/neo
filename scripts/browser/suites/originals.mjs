@@ -151,9 +151,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, Follow the glow, and Finish the song (which takes the copy-the-tune bot's path on the ending).
+    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, Follow the glow, Echo jellies, and Finish the song (which takes the copy-the-tune bot's path on the ending).
     const jellyLevels =
-      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 16 }, (_, i) => i + 1);
+      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 17 }, (_, i) => i + 1);
     for (const level of jellyLevels) {
       if (only && only !== 'jelly') break;
       await launch('jelly-drums', level);
@@ -167,6 +167,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         };
         if (g.plan.mode === 'free') {
           for (let n = 0; n < g.plan.goal; n++) await hit(n % 5);
+          return;
+        }
+        if (g.plan.mode === 'answer') {
+          // Echo jellies: a touch is answered by the same jelly with a ripple, and eight touches finish.
+          await hit(2);
+          await kit.sleep(700);
+          if (!g.ripples.length) throw new Error('Echo jellies: no ripple after a touch');
+          for (let n = 1; n < g.plan.goal; n++) await hit(n % 5);
+          if (g.misses !== 0 || g.hints !== 0) throw new Error(`Echo jellies counted ${g.misses} ${g.hints}`);
           return;
         }
         if (g.plan.mode === 'wake') {
@@ -308,7 +317,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       }
       assert.deepEqual(
         await score('jelly-drums'),
-        mode === 'free' || mode === 'wake' || mode === 'follow' ? [0, 0] : [2, 1],
+        mode === 'free' || mode === 'wake' || mode === 'follow' || mode === 'answer' ? [0, 0] : [2, 1],
         `jelly ${level} score`,
       );
       log(

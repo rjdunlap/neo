@@ -39,10 +39,10 @@ const orderTargets = (v: View): Target[] => {
   ];
 };
 
-it('covers levels 1 to 16: free play, tunes, the wake level, the pair level, Lowest to highest, Which jelly sang?, Follow the glow and Finish the song', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+it('covers levels 1 to 17: free play, tunes, the wake level, the pair level, Lowest to highest, Which jelly sang?, Follow the glow, Finish the song and Echo jellies', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
   expect(new Set(levels.map((l) => planFor(l).mode))).toEqual(
-    new Set(['free', 'echo', 'wake', 'compare', 'order', 'which', 'follow', 'finish']),
+    new Set(['free', 'echo', 'wake', 'compare', 'order', 'which', 'follow', 'finish', 'answer']),
   );
 });
 
