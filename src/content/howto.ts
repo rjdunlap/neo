@@ -87,6 +87,7 @@ import { HOW_TO as lostLayersHowTo } from '../games/lost-layers/howto.ts';
 import { HOW_TO as mailCarrierHowTo } from '../games/mail-carrier/howto.ts';
 import { HOW_TO as makerLaneHowTo } from '../games/maker-lane/howto.ts';
 import { HOW_TO as marbleJumpHowTo } from '../games/marble-jump/howto.ts';
+import { HOW_TO as marketDaysHowTo } from '../games/market-days/howto.ts';
 import { HOW_TO as marketStallHowTo } from '../games/market-stall/howto.ts';
 import { HOW_TO as meadowPensHowTo } from '../games/meadow-pens/howto.ts';
 import { HOW_TO as measuringPostHowTo } from '../games/measuring-post/howto.ts';
@@ -299,6 +300,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'mail-carrier': mailCarrierHowTo,
   'maker-lane': makerLaneHowTo,
   'marble-jump': marbleJumpHowTo,
+  'market-days': marketDaysHowTo,
   'market-stall': marketStallHowTo,
   'meadow-pens': meadowPensHowTo,
   'measuring-post': measuringPostHowTo,
