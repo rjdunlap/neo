@@ -1,0 +1,1 @@
+**`bounce-back` level 13, *Follow the ball*** (lap below-level-1 entry, settled 2026-10-23; new level on an existing interaction: typecheck, rule tests, one filtered lap play, one portrait screenshot, `fingerdemo` at 13, `npm run game-docs`). [Dive](../../deep-dives/bounce-back.md#build-slices-in-order)

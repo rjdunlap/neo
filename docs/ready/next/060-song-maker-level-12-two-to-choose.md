@@ -1,0 +1,1 @@
+**`song-maker` level 12, *Two to choose*** (settled D1 2026-10-23; new levels on an existing interaction: typecheck, rule tests, one filtered play at level 12, one portrait screenshot, `fingerdemo` at 12, `npm run game-docs`). [Dive](../../deep-dives/song-maker.md#build-slices-in-order)

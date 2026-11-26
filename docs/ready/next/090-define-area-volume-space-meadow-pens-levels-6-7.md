@@ -1,0 +1,1 @@
+**Define `area-volume-space` Meadow Pens levels 6–7** (docs only; hay-loft model and placement under the school-top/grownup rule; links and `git diff --check`). [Study](../../deep-dives/subjects/area-volume-space.md#build-slices-in-order)

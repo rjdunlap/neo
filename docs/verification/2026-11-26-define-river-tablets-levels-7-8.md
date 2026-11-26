@@ -1,0 +1,5 @@
+# 2026-11-26 — Define River Tablets levels 7-8 (PR #2216)
+
+- **What changed (docs only):** Defined `river-tablets` levels 7 (*Say it with pictures*, rebus picture-signs read for their sounds across 6 authored sentences) and 8 (*Which one do I mean?*, 4 mute determinatives separating 4 contrasting homophone pairs) as slice AR4 in [River Tablets 7–8](../definitions/river-tablets-7-8.md); updated [River Tablets 1–6](../definitions/river-tablets.md), the [docs map](../README.md), the [ancient river civilizations study](../deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations), [STUDY-BACKLOG](../STUDY-BACKLOG.md), and [ROADMAP](../ROADMAP.md); queued batch `river-tablets 4` (level 7) and refilled [READY](../READY.md) Next ten (8 new routine-eligible items across verified unbuilt builds, 3 study follow-up definitions, and RW11).
+- **Checks run:** `node scripts/check-links.mjs` and `git diff --check` (passed after final edit).
+- **Not run (docs-only tier):** `npm run typecheck`, `npm test`, `npm run build`, browser suites, offline check.

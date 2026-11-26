@@ -1,0 +1,1 @@
+**Define `community-civics` CC3: *Count the Ballots* 1–2** (docs only; deal generator and plurality-versus-run-off assertion; links and `git diff --check`). [Study](../../deep-dives/subjects/community-civics.md#build-slices-in-order)
