@@ -44,6 +44,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
 | [River Tablets 7–8](definitions/river-tablets-7-8.md) | Ancient river civilizations AR4, River Tablets levels 7–8: Say it with pictures (rebus sound-signs) and Which one do I mean? (mute determinatives); school |
 | [Laundry Day](definitions/laundry-day.md) | Daily life long ago H7, Story Steps' eleventh story: scrub, hang and dry a picnic blanket in order; a fictional chore, no real history |
+| [Market Days](definitions/market-days.md) | Medieval life ML4, a map-colouring puzzle for Lantern Lake: give eight towns market days so towns a day apart differ, with the fewest days; grown-up, school levels 1–2 |
 | [How Many Pieces Fit?](definitions/how-many-pieces-fit.md) | Fractions R7, Ribbon Workshop level 8: measure a ¾ ribbon with ½-spool pieces (snipping one in half) and answer 1½ pieces; school and grownup |
 | [Ready for Adventure 4](definitions/ready-for-adventure-4.md) | Routines RA4, Ready for Adventure level 4: the parade request changes, so repair the bag and Check again; school |
 | [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
