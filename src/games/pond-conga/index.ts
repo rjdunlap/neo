@@ -385,8 +385,10 @@ class PondConga implements Game {
       24,
       Math.min(80, Math.floor((v.w - 60) / this.pond.cols), Math.floor((v.h - 312) / this.pond.rows)),
     );
+    this.board.rotation = 0;
     this.board.position.set((v.w - this.pond.cols * this.cell) / 2, 138);
     this.top.position.set(v.w / 2, 96);
+    this.note.style.wordWrap = false;
     this.note.position.set(v.w / 2, v.h - 130);
     this.layout();
   }
@@ -395,23 +397,33 @@ class PondConga implements Game {
    * Touch layout: the pond under the tally with Hint and Start over beneath it, and a line of help under those. The pond is one
    * target for a swipe, so its cells may be under 64 units; the two buttons are always at least 64 across and tall. The home and
    * help buttons sit in the top-left corner, so the pond keeps to the right of them (a crumb must never hide behind one), or on a
-   * tall view goes below them.
+   * tall view goes below them. On a tall view a wide pond may be drawn a quarter turn clockwise (`fit.turned`): the board and
+   * the swipe layer turn together, so the swipe layer's own coordinates stay the pond's and a swipe down the screen is a step
+   * down the pond as she sees it.
    */
   private resizeTouch(v: View) {
     const p = this.pond,
       fit = pondTouchLayout(p.cols, p.rows, v.w, v.h, this.school);
     this.cell = fit.cell;
-    this.board.position.set(fit.x, fit.y);
+    // Turned clockwise, the pond's top-left corner is the drawn pond's top-right one.
+    this.board.rotation = fit.turned ? Math.PI / 2 : 0;
+    this.board.position.set(fit.turned ? fit.x + p.rows * fit.cell : fit.x, fit.y);
     this.top.position.set(v.w / 2, 96);
     this.slots = fit.slots;
-    this.note.position.set(v.w / 2, fit.noteY);
+    this.note.style.wordWrap = true;
+    this.note.style.wordWrapWidth = fit.noteW;
+    this.note.position.set(fit.noteX, fit.noteY);
     const area = fit.swipe;
     this.tapLayer.position.copyFrom(this.board.position);
-    this.tapLayer
-      .clear()
-      .rect(area.x - fit.x, area.y - fit.y, area.w, area.h)
-      .fill({ color: 0xffffff, alpha: 0.001 });
-    this.tapLayer.hitArea = new Rectangle(area.x - fit.x, area.y - fit.y, area.w, area.h);
+    this.tapLayer.rotation = this.board.rotation;
+    // The whole view, in the swipe layer's (the pond's) coordinates.
+    const ox = this.board.x,
+      oy = this.board.y;
+    const hit = fit.turned
+      ? new Rectangle(area.y - oy, ox - area.x - area.w, area.h, area.w)
+      : new Rectangle(area.x - ox, area.y - oy, area.w, area.h);
+    this.tapLayer.clear().rect(hit.x, hit.y, hit.width, hit.height).fill({ color: 0xffffff, alpha: 0.001 });
+    this.tapLayer.hitArea = hit;
     for (const node of this.touchLayer.removeChildren()) node.destroy();
     this.slotNodes = this.slots.map((slot, k) => {
       const node = new Container();
