@@ -821,8 +821,8 @@ const disagreeCases = (): DisagreeCase[] => {
 
 describe('level 6 briefs', () => {
   const briefs = SEEDS.map((s) => briefFor(6, new Rng(s)) as DisagreeBrief);
-  it('is the top level', () => {
-    expect(MAX_LEVEL).toBe(6);
+  it('stays below level 7, the last', () => {
+    expect(MAX_LEVEL).toBe(7);
   });
   it('sets tablets of 12-29 that differ by 1-3', () => {
     for (const b of briefs) {

@@ -4,7 +4,8 @@
  * level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's crates and
  * baskets with big marks for tens and small marks for ones; level 5 checks a cart against the farm's tablet: short, right or
  * extra, and by how many; level 6 sets the farm's and the storehouse's tablets against one cart: this one, neither, or can't
- * tell when the baskets are gone. Rules: ./logic.ts; definition:
+ * tell when the baskets are gone; level 7 writes a spoken sentence with picture-signs whose names sound like its words, then
+ * presses Read. Rules: ./logic.ts; definition:
  * docs/definitions/river-tablets.md.
  */
 import { Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
@@ -24,6 +25,7 @@ import type { LineId } from '../../content/voice-script';
 import {
   ballArt,
   basketArt,
+  CLAY,
   cantTellArt,
   cartArt,
   cellArt,
@@ -38,8 +40,12 @@ import {
   pairTabletArt,
   penArt,
   pickArt,
+  readArt,
+  rebusCellArt,
+  rebusSignArt,
   riverArt,
   rowArt,
+  sentenceBarArt,
   signArt,
   stampArt,
   stickerArt,
@@ -58,7 +64,14 @@ import {
   arrive,
   askCheck,
   askDisagree,
+  askRebus,
   disagreeTally,
+  liftSlot,
+  placeSign,
+  readRebus,
+  rebusHint,
+  rebusTally,
+  startRebus,
   pickAnswer,
   startDisagree,
   askEnvelope,
@@ -85,6 +98,7 @@ import {
   pressRow,
   readBack,
   readyToTip,
+  sentenceFor,
   ROW_CELLS,
   SCATTER_COLS,
   SCATTER_ROWS,
@@ -115,6 +129,8 @@ import {
   type Kind,
   type Mark,
   type PenState,
+  type RebusState,
+  type SignId,
   type Pt,
   type Reading,
   type Rect,
@@ -127,6 +143,26 @@ import {
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 const word = (n: number) => WORDS[Math.min(n, WORDS.length - 1)];
 /** The jar glows when a sheep has waited this long for its token. */
+/** What the pet calls each picture-sign (bounded spoken words, never free text). */
+const SIGN_NAMES: Record<SignId, string> = {
+  eye: 'Eye',
+  sea: 'Sea',
+  deer: 'Deer',
+  sun: 'Sun',
+  wood: 'Wood',
+  knot: 'Knot',
+  bee: 'Bee',
+  pear: 'Pear',
+  flower: 'Flower',
+  jar: 'Jar',
+  sheep: 'Sheep',
+  crate: 'Crate',
+  leaf: 'Leaf',
+  moon: 'Moon',
+  cup: 'Cup',
+  boot: 'Boot',
+  drum: 'Drum',
+};
 const IDLE_GLOW = 8;
 const PEEK_SECONDS = 2;
 
@@ -143,6 +179,8 @@ class RiverTablets implements Game {
   /** Level 6: one state per case (two tablets against one cart); `cartIndex` is the case in the yard. */
   cases: DisagreeState[] = [];
   cartIndex = 0;
+  /** Level 7: one state per sentence (`cartIndex` is the one on the tablet). */
+  rebuses: RebusState[] = [];
   /** Level 6: which tablet the help lineup is playing against now (its tablet glows), or null. */
   linedAgainst: 0 | 1 | null = null;
   /** Level 4: the pet has counted the yard for this cart (the ghost finger asks once). */
@@ -193,6 +231,11 @@ class RiverTablets implements Game {
   neitherNode: Container | null = null;
   cantTellNode: Container | null = null;
   numberNodes: Container[] = [];
+  /** Level 7: the sentence bar, the tablet's three cells, the tray's six signs (tray order) and Read. */
+  barNode: Container | null = null;
+  slotNodes: Container[] = [];
+  trayNodes: Container[] = [];
+  readNode: Container | null = null;
   crateNodes: Container[] = [];
   private basketNodes: Container[] = [];
   private openCrate = -1;
@@ -221,6 +264,7 @@ class RiverTablets implements Game {
     if (this.brief.id === 'tens') this.tens = this.brief.carts.map((c) => startTens(10 * c.crates + c.loose));
     if (this.brief.id === 'check') this.checks = this.brief.deliveries.map((d) => startCheck(d));
     if (this.brief.id === 'disagree') this.cases = this.brief.cases.map((c) => startDisagree(c));
+    if (this.brief.id === 'rebus') this.rebuses = this.brief.cases.map((c) => startRebus(c));
   }
 
   get level() {
@@ -242,6 +286,7 @@ class RiverTablets implements Game {
     if (this.brief.id === 'tens') return tensTally(this.tens);
     if (this.brief.id === 'check') return checkTally(this.checks);
     if (this.brief.id === 'disagree') return disagreeTally(this.cases);
+    if (this.brief.id === 'rebus') return rebusTally(this.rebuses);
     return { misses: 0, hints: 0 };
   }
 
@@ -252,6 +297,13 @@ class RiverTablets implements Game {
       void this.ctx.instruct('rt.instruct.6').then(() => {
         if (this.alive && !this.finished && this.pairCase.cart === null)
           void this.ctx.say('rt.disagree.gone');
+      });
+      return;
+    }
+    if (this.brief.id === 'rebus') {
+      // One line at a time: the instruction, then the first sentence.
+      void this.ctx.instruct('rt.instruct.7').then(() => {
+        if (this.alive && !this.finished) void this.sayRebusSentence();
       });
       return;
     }
@@ -292,6 +344,9 @@ class RiverTablets implements Game {
     this.stampNodes = [];
     this.verdictNodes = [];
     this.numberNodes = [];
+    this.barNode = this.readNode = null;
+    this.slotNodes = [];
+    this.trayNodes = [];
     this.pairNodes = [];
     this.pickNodes = [];
     this.neitherNode = this.cantTellNode = null;
@@ -326,6 +381,11 @@ class RiverTablets implements Game {
       // A rebuild keeps the help on screen: both lineups held (a cart), or the empty cart's glow (gone).
       const c = this.pairCase;
       if (c.lined && c.cart !== null && !c.done) this.drawPairLineups(true);
+      return;
+    }
+    if (this.brief.id === 'rebus') {
+      this.buildRebus(l);
+      this.board.addChild(this.lineupLayer, this.glow);
       return;
     }
     const river = riverArt(l.lane.w, l.lane.h * 0.5);
@@ -997,6 +1057,187 @@ class RiverTablets implements Game {
     this.build();
     void this.ctx.say('rt.next-tablet');
     void this.arrival();
+  }
+
+  // ——— Level 7: say it with pictures ———
+
+  get rebusNow(): RebusState {
+    return this.rebuses[this.cartIndex];
+  }
+
+  private buildRebus(l: TabletLayout) {
+    const bar = new Container();
+    bar.position.set(l.lane.x, l.lane.y);
+    bar.addChild(sentenceBarArt(l.lane.w, l.lane.h));
+    bar.hitArea = new Rectangle(0, 0, l.lane.w, l.lane.h);
+    onTap(bar, () => void this.sayRebusSentence(), { cooldown: 300 });
+    this.board.addChild(bar);
+    this.barNode = bar;
+    const t = l.tablet!;
+    const face = new Graphics();
+    face.roundRect(t.x, t.y + 8, t.w, t.h, 30).fill(CLAY.dark);
+    face.roundRect(t.x, t.y, t.w, t.h, 30).fill(CLAY.fill).stroke({ width: 6, color: CLAY.line });
+    face.eventMode = 'none';
+    this.board.addChild(face);
+    this.slotNodes = l.slots!.map((r, i) => this.rebusNode(r, () => this.tapSlot(i)));
+    this.trayNodes = l.signs!.map((r, i) => this.rebusNode(r, () => this.tapSign(i)));
+    const rd = l.handIn!;
+    const read = new Container();
+    read.position.copyFrom(centre(rd));
+    read.addChild(readArt(rd.w, rd.h));
+    read.hitArea = new Rectangle(-rd.w / 2 - 6, -rd.h / 2 - 6, rd.w + 12, rd.h + 12);
+    onTap(read, () => void this.readRebusTablet(), { cooldown: 300 });
+    this.board.addChild(read);
+    this.readNode = read;
+    this.redrawRebus();
+  }
+
+  /** A centred tap target for one cell or sign. */
+  private rebusNode(r: Rect, on: () => void): Container {
+    const node = new Container();
+    node.position.copyFrom(centre(r));
+    node.hitArea = new Rectangle(-r.w / 2 - 4, -r.h / 2 - 4, r.w + 8, r.h + 8);
+    onTap(node, on, { cooldown: 150 });
+    this.board.addChild(node);
+    return node;
+  }
+
+  /** The cells show what is on the tablet; a placed sign leaves its tray place empty. */
+  private redrawRebus() {
+    const l = this.layoutNow;
+    if (!l?.slots) return;
+    const s = this.rebusNow;
+    s.slots.forEach((id, i) => {
+      const node = this.slotNodes[i];
+      if (!node) return;
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      node.addChild(rebusCellArt(l.slots![i].w, id));
+    });
+    s.tray.forEach((id, i) => {
+      const node = this.trayNodes[i];
+      if (!node) return;
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      if (!s.slots.includes(id)) node.addChild(rebusSignArt(id, l.signs![i].w));
+    });
+  }
+
+  private async sayRebusSentence() {
+    if (this.finished) return;
+    await this.ctx.say('rt.rebus.sentence', { sentence: sentenceFor(this.rebusNow.id).text });
+  }
+
+  private pulse(node: Container | null | undefined) {
+    if (!node) return;
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+  }
+
+  /** A tray sign goes in the leftmost empty cell and says its name; a full tablet only wobbles. Never counted. */
+  private tapSign(i: number) {
+    if (this.finished || this.busy || this.brief.id !== 'rebus') return;
+    const s = this.rebusNow;
+    const id = s.tray[i];
+    if (s.slots.includes(id)) return;
+    const r = placeSign(s, id);
+    if (r.result === 'none') return;
+    if (r.result === 'full') {
+      this.pulse(this.trayNodes[i]);
+      sfx.clunk();
+      void this.ctx.say('rt.rebus.full');
+      return;
+    }
+    this.rebuses[this.cartIndex] = r.state;
+    const at = r.state.slots.indexOf(id);
+    sfx.pop(at + 3);
+    this.redrawRebus();
+    this.pulse(this.slotNodes[at]);
+    void this.ctx.say('rt.rebus.sign', { sign: SIGN_NAMES[id] });
+  }
+
+  /** Tapping a filled cell lifts its sign back to the tray, free. */
+  private tapSlot(i: number) {
+    if (this.finished || this.busy || this.brief.id !== 'rebus') return;
+    const s = this.rebusNow;
+    if (s.slots[i] === null) return;
+    this.rebuses[this.cartIndex] = liftSlot(s, i);
+    sfx.pop(2);
+    this.redrawRebus();
+  }
+
+  /** Read is the commit: three right signs finish the sentence; a wrong reading is one miss and the pet says the pictures it heard. */
+  private async readRebusTablet() {
+    if (this.finished || this.busy || this.brief.id !== 'rebus') return;
+    this.pulse(this.readNode);
+    const before = this.rebusNow;
+    const r = readRebus(before);
+    if (r.result === 'none') return;
+    if (r.result === 'fill') {
+      sfx.clunk();
+      void this.ctx.say('rt.rebus.fill-first');
+      return;
+    }
+    this.rebuses[this.cartIndex] = r.state;
+    const epoch = this.epoch;
+    this.busy = true;
+    sfx.clunk();
+    if (r.result === 'right') {
+      sfx.sparkle();
+      await this.ctx.say('rt.rebus.sentence', { sentence: sentenceFor(r.state.id).text });
+      if (!this.live(epoch)) return;
+      await this.ctx.say('rt.rebus.right');
+      if (!this.live(epoch)) return;
+      void this.nextRebus();
+      return;
+    }
+    sfx.boing();
+    for (const id of r.state.slots) {
+      if (id) await this.ctx.say('rt.rebus.sign', { sign: SIGN_NAMES[id] });
+      if (!this.live(epoch)) return;
+    }
+    await this.ctx.say('rt.rebus.wrong');
+    if (!this.live(epoch)) return;
+    if (r.state.glowing && !before.glowing) await this.sayRebusHelp();
+    if (!this.live(epoch)) return;
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  /** What the glow is pointing at, in words. */
+  private async sayRebusHelp() {
+    const h = rebusHint(this.rebusNow);
+    await this.ctx.say(
+      h.action === 'lift'
+        ? 'rt.rebus.help.lift'
+        : h.action === 'place'
+          ? 'rt.rebus.help.place'
+          : 'rt.rebus.help.read',
+    );
+  }
+
+  /** The next sentence, or the round is done. */
+  private async nextRebus() {
+    if (this.cartIndex + 1 >= this.rebuses.length) {
+      this.celebrate();
+      return;
+    }
+    this.cartIndex++;
+    this.busy = false;
+    this.build();
+    sfx.ratchet(3);
+    await this.ctx.say('rt.history.rebus');
+    if (!this.alive || this.finished) return;
+    await this.sayRebusSentence();
+  }
+
+  /** The rect the glow points at now: the cell to lift, the tray sign to place, or Read. */
+  private rebusGlowRect(): Rect | null {
+    const l = this.layoutNow;
+    const s = this.rebuses[this.cartIndex];
+    if (!l?.slots || !s || s.done || !s.glowing) return null;
+    const h = rebusHint(s);
+    if (h.action === 'lift') return l.slots[h.slot];
+    if (h.action === 'place') return l.signs![s.tray.indexOf(h.sign as SignId)];
+    return l.handIn!;
   }
 
   // ——— Levels 4–5: the yard and the tablet ———
@@ -1735,6 +1976,12 @@ class RiverTablets implements Game {
       });
       return;
     }
+    if (this.brief.id === 'rebus') {
+      if (this.rebusNow.done) return;
+      this.rebuses[this.cartIndex] = askRebus(this.rebusNow);
+      void this.sayRebusHelp();
+      return;
+    }
     this.tablets[this.tabletIndex] = askTablet(this.tablet);
     this.redrawRows();
     const good = waiting(this.tablet);
@@ -1795,6 +2042,11 @@ class RiverTablets implements Game {
           .roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 28)
           .stroke({ width: 8, color: swatch.yellow.fill });
     }
+    const glowRect = this.brief.id === 'rebus' && !this.busy ? this.rebusGlowRect() : null;
+    if (glowRect)
+      this.glow
+        .roundRect(glowRect.x - 10 * r, glowRect.y - 10 * r, glowRect.w + 20 * r, glowRect.h + 20 * r, 28)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     const glowRow = this.brief.id === 'rows' ? this.glowRow() : null;
     if (glowRow && !this.busy) {
       const i = KINDS.indexOf(glowRow);
@@ -1859,6 +2111,18 @@ class RiverTablets implements Game {
               ? this.neitherNode
               : this.cantTellNode;
       return node ? { tap: { on: node }, pause: 1.2 } : null;
+    }
+    if (this.brief.id === 'rebus') {
+      const s = this.rebusNow;
+      if (s.done) return null;
+      const h = rebusHint(s);
+      const node =
+        h.action === 'lift'
+          ? this.slotNodes[h.slot]
+          : h.action === 'place'
+            ? this.trayNodes[s.tray.indexOf(h.sign)]
+            : this.readNode;
+      return node ? { tap: { on: node }, pause: 0.8 } : null;
     }
     const good = waiting(this.tablet);
     if (good === null) return null;
