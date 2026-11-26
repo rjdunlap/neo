@@ -34,7 +34,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-      if (mode === 'last' || mode === 'slow' || mode === 'repair' || mode === 'team') {
+      if (mode === 'last' || mode === 'slow' || mode === 'repair' || mode === 'team' || mode === 'magic') {
         // Played on a phone held upright, the focus of current playtests.
         const was = page.viewportSize();
         await page.setViewportSize({ width: 390, height: 844 });
@@ -172,6 +172,48 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         for (const size of restore.splice(0)) await page.setViewportSize(size);
         log(
           'Word Monsters 16: monsters say the sounds, free replay, two wrong cards and the glow, saved score passed',
+        );
+        continue;
+      }
+      if (mode === 'magic') {
+        // Level 17, The magic e, on a phone held upright: a word stands in three boxes, the fourth waits. Two spare letters
+        // (each says it spells another word; two misses glow the e, one hint) and the quiet e, which changes the picture.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const aim = () => {
+            const slot = g.slotAt(g.filled);
+            return g.top.parent.toGlobal({ x: slot.x, y: slot.y + 40 });
+          };
+          for (let i = 0; i < g.questions.length; i++) {
+            await kit.until(() => g.index === i && !g.busy, 15000);
+            const q = g.question;
+            if (g.filled !== 3 || g.monsters.filter((m) => m.placed && m.slot < 3).length !== 3)
+              throw new Error('Three letters should stand built in the first three boxes');
+            const right = g.monsters.find((m) => !m.placed && m.letter === 'e');
+            if (i === 0) {
+              const spares = g.monsters.filter((m) => !m.placed && m !== right);
+              await kit.dragTo(spares[0], aim(), 10);
+              await kit.sleep(450);
+              await kit.dragTo(spares[1], aim(), 10);
+              await kit.sleep(450);
+              if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible)
+                throw new Error(`Two spares: ${g.misses} ${g.hints} glow ${right.glow.visible}`);
+            }
+            await kit.dragTo(right, aim(), 10);
+            if (!right.placed) throw new Error(`The e did not fit ${q.answer}`);
+            await kit.sleep(400);
+          }
+        });
+        await screenshot(`word-monsters-${level}`);
+        await finished('word-monsters');
+        const magicScore = await page.evaluate(() => {
+          const r = kit.store.stats('word-monsters').history.at(-1);
+          return [r.misses, r.hints];
+        });
+        assert.deepEqual(magicScore, [2, 1]);
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          'Word Monsters 17: three built letters, two wrong spares and the glow, the e fits, saved score passed',
         );
         continue;
       }

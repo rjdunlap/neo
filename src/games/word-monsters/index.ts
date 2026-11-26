@@ -256,6 +256,7 @@ class WordMonsters implements Game {
       this.plan.mode === 'slow' ||
       this.plan.mode === 'team' ||
       this.plan.mode === 'repair' ||
+      this.plan.mode === 'magic' ||
       this.plan.mode === 'family' ||
       this.plan.mode === 'end'
     );
@@ -503,6 +504,10 @@ class WordMonsters implements Game {
     if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
       this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
       this.drawSlots(unitsOf(q).length);
+    } else if (this.plan.mode === 'magic') {
+      // Level 17: the built word's picture, four boxes (the last one waits for the quiet e).
+      this.showPicture(this.sayingPicture(q.fixed as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
+      this.drawSlots(unitsOf(q).length);
     } else if (this.plan.mode === 'family' || this.plan.mode === 'end') {
       // Told, then asked: after the first question only the word is said, so the picture says it again, free.
       this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
@@ -529,9 +534,10 @@ class WordMonsters implements Game {
       this.placeFixed(q.repair.word, 0);
       if (this.readWord) this.readWord.visible = true;
     } else if (q.fixed) {
-      this.placeFixed(q.fixed, this.plan.mode === 'end' ? 0 : 1);
+      this.placeFixed(q.fixed, this.plan.mode === 'end' || this.plan.mode === 'magic' ? 0 : 1);
     }
     if (this.plan.mode === 'end') this.filled = 2;
+    if (this.plan.mode === 'magic') this.filled = (q.fixed ?? '').length;
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     if (this.plan.mode === 'blend') {
@@ -678,6 +684,8 @@ class WordMonsters implements Game {
         return this.ctx.instruct('monster.team', { word: q.answer });
       case 'blend':
         return this.ctx.instruct('monster.blendit', { count: 'three' });
+      case 'magic':
+        return this.ctx.instruct('monster.magic', { base: q.fixed ?? '', word: q.answer });
       default:
         return this.ctx.instruct('monster.build', { word: q.answer, sounds: sounded(q.answer) });
     }
@@ -971,6 +979,9 @@ class WordMonsters implements Game {
       if (this.plan.mode === 'team' && want.length > 1 && want.includes(m.letter))
         void this.ctx.say('monster.team.half', { sound: SOUNDS[m.letter], team: soundOf(want) });
       // Levels 11 and 13 never say the sound the box wants: the monster says who it is, as a tap does on the finding levels.
+      // Level 17: the spare spells another word; the quiet e is the one that changes this one.
+      else if (this.plan.mode === 'magic')
+        void this.ctx.say('monster.magic.not', { built: `${q.fixed}${m.letter}` });
       else if (this.plan.mode === 'slow' || this.plan.mode === 'team')
         void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: soundOf(m.letter) });
       else void this.ctx.say('monster.next', { sound: SOUNDS[want] });
@@ -994,13 +1005,16 @@ class WordMonsters implements Game {
 
   private async wordDone(q: Question) {
     this.busy = true;
-    // Box by box, so a team says its one sound.
-    const placed = this.monsters.filter((m) => m.placed).sort((a, b) => a.slot - b.slot);
-    for (const m of placed) {
-      m.speak();
-      await this.ctx.say(soundLine(m.letter));
+    if (this.plan.mode === 'magic') await this.magicSpeak(q);
+    else {
+      // Box by box, so a team says its one sound.
+      const placed = this.monsters.filter((m) => m.placed).sort((a, b) => a.slot - b.slot);
+      for (const m of placed) {
+        m.speak();
+        await this.ctx.say(soundLine(m.letter));
+      }
+      await this.ctx.say('monster.blend', { word: q.answer });
     }
-    await this.ctx.say('monster.blend', { word: q.answer });
     // The word comes alive.
     const p = this.picture;
     if (p) {
@@ -1023,6 +1037,18 @@ class WordMonsters implements Game {
     });
     await this.ctx.tw.wait(0.6);
     await this.next();
+  }
+
+  /** Level 17: the e is silent, so the word is said whole: the built word, the picture changing, the vowel's name, the new word. */
+  private async magicSpeak(q: Question) {
+    await this.ctx.say('monster.blend', { word: q.fixed ?? '' });
+    if (this.destroyed || this.question !== q) return;
+    sfx.tada();
+    this.showPicture(this.sayingPicture(q.answer as WordPicture), BUILD_PICTURE.scale, BUILD_PICTURE.y);
+    const vowel = this.monsters.find((m) => m.placed && 'aiou'.includes(m.letter));
+    vowel?.speak();
+    await this.ctx.say('monster.magic.long', { vowel: q.vowel ?? '' });
+    await this.ctx.say('monster.blend', { word: q.answer });
   }
 
   private async end() {
