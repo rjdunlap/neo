@@ -12,6 +12,7 @@ export const VOICE = {
   'pattern.shapeRight': ['The shape is right! Now look at the color.'],
   'pattern.number': ['Count the numbered cars. What number belongs in the glowing car?'],
   'pattern.stairs': ['Each car has one more counter, {name}. How many counters go in the glowing car?'],
+  'pattern.steps': ['Look at the stacks, {name}. How many counters go in the glowing car?'],
   'pattern.sound': [
     'Listen to the bells on the train. Which bell comes next? Tap a bell to listen, then tap the arrow.',
   ],
@@ -40,6 +41,7 @@ export const VOICE = {
   // Slotted lines stay on device speech until a clip pass renders fixed wording.
   'pattern.count': ['{n}'],
   'pattern.whyStack': ['Yes! One more each time: {list}!'],
+  'pattern.whyStep': ['Yes! {how} each time: {list}!'],
   'pattern.whyNumber': ['Yes! They count by {step}: {list}!'],
   'pattern.whyPair': ['Yes! The colors go {colors}, and the shapes go {shapes}!'],
   'pattern.oddWhy': ['The {piece} did not belong! Now it goes {list}, over and over.'],

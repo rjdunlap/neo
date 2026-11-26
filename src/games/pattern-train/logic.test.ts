@@ -13,6 +13,8 @@ import {
   removeFromUnit,
   ODD_CARS,
   STACK_MAX,
+  STACK_TOP,
+  stepWords,
   STAIR_CARS,
   STAIR_START,
   ANIMAL_TRIOS,
@@ -497,11 +499,10 @@ describe('Pattern Train Stairs (level 18)', () => {
   const plan = patternPlan(18);
   const rounds = Array.from({ length: 300 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
 
-  it('is the school level after 17, and the ladder ends there', () => {
+  it('is the school level after 17, and still only grows by one', () => {
     expect(plan.stairs).toBe(true);
     expect(plan.kind).toBe('stack');
-    expect(PATTERN_PLANS).toHaveLength(18);
-    expect(LEVELS.school).toEqual({ min: 8, max: 18 });
+    expect(plan.stackSteps).toBeUndefined();
   });
 
   it('grows strictly by one and the empty car is the last, one more than the car before', () => {
@@ -542,5 +543,70 @@ describe('Pattern Train Stairs (level 18)', () => {
     expect(SCRIPT['pattern.whyStack'][0]).toContain('{list}');
     expect(SCRIPT['pattern.count'][0]).toContain('{n}');
     expect(SCRIPT['pattern.stairs'][0]).toContain('{name}');
+  });
+});
+
+describe('Pattern Train Up and down (level 19)', () => {
+  const plan = patternPlan(19);
+  const rounds = Array.from({ length: 400 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
+  const stepOf = (seq: readonly number[]) => seq[1] - seq[0];
+
+  it('is the school level after 18, and the ladder ends there', () => {
+    expect(plan.kind).toBe('stack');
+    expect(plan.stackSteps).toEqual([-2, -1, 1, 2]);
+    expect(PATTERN_PLANS).toHaveLength(19);
+    expect(LEVELS.school).toEqual({ min: 8, max: 19 });
+  });
+
+  it('steps exactly by one or two, up or down, all four kinds, every stack 1 to 10', () => {
+    const kinds = new Set<number>();
+    for (const { sequence, targets } of rounds) {
+      expect(sequence).toHaveLength(STAIR_CARS);
+      expect(targets).toEqual([STAIR_CARS - 1]);
+      const step = stepOf(sequence);
+      kinds.add(step);
+      expect([-2, -1, 1, 2]).toContain(step);
+      sequence.forEach((n, i) => expect(n).toBe(sequence[0] + i * step));
+      expect(Math.min(...sequence)).toBeGreaterThanOrEqual(1);
+      expect(Math.max(...sequence)).toBeLessThanOrEqual(STACK_TOP);
+    }
+    expect([...kinds].sort((a, b) => a - b)).toEqual([-2, -1, 1, 2]);
+  });
+
+  it('offers the answer, the step the other way and one off, all different and in range', () => {
+    for (const { sequence, choices } of rounds) {
+      const answer = sequence[STAIR_CARS - 1];
+      const [c] = choices;
+      expect(new Set(c).size).toBe(3);
+      expect(c).toContain(answer);
+      expect(c).toContain(sequence[STAIR_CARS - 3]);
+      expect(c.filter((n) => Math.abs(n - answer) === 1)).toHaveLength(1);
+      for (const n of c) {
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(STACK_TOP);
+      }
+    }
+  });
+
+  it('puts the answer first, middle and last about equally often, and wantedChoice finds it', () => {
+    const at = [0, 0, 0];
+    for (const { sequence, targets, choices } of rounds) {
+      const want = wantedChoice(sequence, targets, choices, 0);
+      expect(choices[0][want]).toBe(sequence[targets[0]]);
+      at[want]++;
+    }
+    for (const n of at) expect(n).toBeGreaterThan(80);
+  });
+
+  it('says the step back, up or down, and its lines have their slots', () => {
+    expect(stepWords(1)).toBe('one more');
+    expect(stepWords(-2)).toBe('two fewer');
+    const { sequence, targets } = rounds.find((r) => stepOf(r.sequence) === -2)!;
+    const said = patternSaid(plan, { sequence, targets });
+    expect(said.key).toBe('pattern.whyStep');
+    expect(said.vars.how).toBe('two fewer');
+    expect(said.vars.list).toBe(sequence.join(', '));
+    expect(SCRIPT['pattern.whyStep'][0]).toContain('{how}');
+    expect(SCRIPT['pattern.steps'][0]).toContain('{name}');
   });
 });
