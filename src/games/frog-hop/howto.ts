@@ -50,9 +50,14 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 13,
+      to: 13,
       text: 'The lily pads count by tens, 0 to 100. Start at the number shown and hop on or back the tens asked for: tap the lily pad where the frog lands.',
     },
+    {
+      from: 14,
+      text: 'Tap the big lily to hop ten and the little lily to hop one. Land the frog on the flag.',
+    },
   ],
-  finish: 'Answer five questions to bring the frog home.',
+  finish: 'Answer the questions to bring the frog home.',
   note: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
 };

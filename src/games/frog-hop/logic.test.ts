@@ -6,6 +6,13 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
+  hopsLayout,
+  openLine,
+  overshoots,
+  routeLanding,
+  routeWords,
+  shortestRoute,
+  LEVELS,
   hopLayout,
   UPRIGHT_PAD_ROW,
   sceneFor,
@@ -48,7 +55,7 @@ import {
 
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'hops')) {
       for (let seed = 1; seed <= 300; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.questions);
@@ -115,7 +122,7 @@ describe('Frog Hop', () => {
   });
 
   it('always has an answer on the screen for the ghost finger to tap, and it is the right one', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'hops')) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const slot = answerSlot(plan.mode, q, q.lo);
@@ -360,7 +367,7 @@ describe('Frog Hop, Fraction Landings', () => {
         const flowers = Array.from({ length: plan.top + 1 }, (_, n) => n).filter((n) =>
           flowerOn(plan.mode, n),
         );
-        if (i < 2 || isFrac(plan.mode)) expect(flowers).toEqual([]);
+        if (i < 2 || isFrac(plan.mode) || plan.mode === 'hops') expect(flowers).toEqual([]);
         else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
       });
     });
@@ -513,8 +520,7 @@ describe('Frog Hop, Hop by tens (level 13)', () => {
 
   it('is the next free school level, appended without reordering, and says its landings', () => {
     expect(PLANS.indexOf(plan) + 1).toBe(13);
-    expect(PLANS.length).toBe(13);
-    expect(frogHop.levels('school').max).toBe(13);
+    expect(PLANS.length).toBeGreaterThanOrEqual(13);
     expect(frogHop.describeLevel(13)).toBe(plan.name);
     expect(saysNumbers('tens')).toBe(true);
     expect(countsHops('tens') || splitsAtTen('tens') || isFrac('tens')).toBe(false);
@@ -690,5 +696,95 @@ describe('Scenes (slice 6)', () => {
     const v = UPRIGHT_VIEWS[0];
     for (const plan of PLANS)
       expect(hopLayout(v, plan.mode, GUIDE_CORNER.w).sign.y, plan.mode).toBeGreaterThanOrEqual(130);
+  });
+});
+
+describe('Big hops and little hops (level 14)', () => {
+  const plan = PLANS[13];
+  const questions = (seed: number) => makeQuestions(plan, new Rng(seed));
+
+  it('is the next ladder level and the top of school', () => {
+    expect(plan.mode).toBe('hops');
+    expect(LEVELS.school?.max).toBe(14);
+  });
+
+  it('asks tens and ones: neither start nor distance is a multiple of ten, the flag is on the line', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = questions(seed);
+      expect(qs).toHaveLength(4);
+      for (const q of qs) {
+        expect(q.start).toBeGreaterThanOrEqual(12);
+        expect(q.start).toBeLessThanOrEqual(58);
+        expect(q.start % 10).not.toBe(0);
+        expect(q.hops).toBeGreaterThanOrEqual(11);
+        expect(q.hops).toBeLessThanOrEqual(45);
+        expect(q.hops % 10).not.toBe(0);
+        expect(q.target).toBe(q.start + q.hops);
+        expect(q.target).toBeLessThanOrEqual(100);
+        expect(q.bigs! * 10 + q.smalls!).toBe(q.hops);
+        expect(q.bigs).toBeGreaterThanOrEqual(1);
+        expect(q.smalls).toBeGreaterThanOrEqual(1);
+      }
+      expect(new Set(qs.map((q) => q.hops)).size).toBe(4);
+      qs.slice(1).forEach((q, i) => expect(q.bigs).not.toBe(qs[i].bigs));
+      expect(qs.some((q) => (q.start % 10) + q.smalls! > 10)).toBe(true);
+    }
+  });
+
+  it('opens on 47 to 72, two big hops and five little ones', () => {
+    const q = questions(7)[0];
+    expect([q.start, q.target, q.bigs, q.smalls]).toEqual([47, 72, 2, 5]);
+  });
+
+  it('lands the same in any order, and an extra big hop overshoots once', () => {
+    const q = questions(3)[0];
+    const route = [...Array(q.bigs!).fill(10), ...Array(q.smalls!).fill(1)];
+    const shuffled = [...route].reverse();
+    expect(routeLanding(q.start, route)).toBe(q.target);
+    expect(routeLanding(q.start, shuffled)).toBe(q.target);
+    expect(overshoots(q.start, q.target, route)).toBe(0);
+    expect(overshoots(q.start, q.target, shuffled)).toBe(0);
+    expect(overshoots(q.start, q.target, [...route, 10])).toBe(1);
+    expect(shortestRoute(q.hops)).toEqual({ bigs: q.bigs, smalls: q.smalls });
+  });
+
+  it('names the route in words', () => {
+    expect(routeWords(2, 5)).toBe('Two big hops and five little hops');
+    expect(routeWords(1, 1)).toBe('One big hop and one little hop');
+  });
+
+  it('shows a window with the start, the flag and the ten above it, at most 70 numbers', () => {
+    for (let seed = 1; seed <= 300; seed++)
+      for (const q of questions(seed)) {
+        const { lo, hi, scale } = openLine(q);
+        expect(lo).toBeLessThanOrEqual(q.start);
+        expect(hi).toBeGreaterThanOrEqual(Math.min(100, (Math.floor(q.target / 10) + 1) * 10));
+        expect(hi - lo).toBeLessThanOrEqual(70);
+        expect(scale).toBeGreaterThan(0);
+        expect(scale * (hi - lo)).toBeLessThanOrEqual(12 * 70);
+      }
+  });
+
+  it('keeps the big, small and back lilies at least 100 units, apart, clear of the guide, inside every view', () => {
+    const views = [
+      { w: 1280, h: 720 },
+      { w: 1024, h: 768 },
+      { w: 768, h: 1024, upright: true as const },
+      { w: 768, h: 1400, upright: true as const },
+    ];
+    for (const v of views) {
+      const l = hopsLayout(v, 200);
+      const boxes = [l.big, l.small, l.back];
+      for (const b of boxes) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(b.x - b.w / 2).toBeGreaterThanOrEqual(200);
+        expect(b.x + b.w / 2).toBeLessThanOrEqual(v.w);
+        expect(b.y + b.h / 2).toBeLessThanOrEqual(v.h);
+      }
+      for (let i = 1; i < boxes.length; i++)
+        expect(boxes[i].x - boxes[i].w / 2).toBeGreaterThanOrEqual(boxes[i - 1].x + boxes[i - 1].w / 2);
+      expect(l.line.y).toBeLessThan(l.big.y - 70);
+    }
   });
 });

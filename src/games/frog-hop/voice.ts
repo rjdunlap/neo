@@ -56,5 +56,11 @@ export const VOICE = {
   'hop.tens.back': ['Start at {n}. Hop back {k} tens. Where will the frog land?'],
   'hop.tens.one': ['Start at {n}. Hop one ten. Where will the frog land?'],
   'hop.tens.oneback': ['Start at {n}. Hop back one ten. Where will the frog land?'],
+  'hop.hops': ['Get the frog to {n}. Big hops are ten, little hops are one.'],
+  'hop.hops.oops': ['Oops, {n}!'],
+  'hop.hops.over': ['Too far for {pet}. Tap back.'],
+  'hop.hops.nudge': ['Big hops are quicker for {pet}.'],
+  'hop.hops.hint': ['Try {route}.'],
+  'hop.hops.yay': ['{route}: {n} and {k} more is {m}!'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;
