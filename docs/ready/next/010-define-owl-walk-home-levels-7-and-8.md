@@ -1,1 +1,0 @@
-**Define Owl Walk Home levels 7 and 8** (school window; *docs only*; the dive's sketches, [dive](../../deep-dives/owl-walk.md#proposed-ladder); a person has not yet played level 4, which decision 8 made a check, not a gate)
