@@ -175,7 +175,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Meadow Pens](docs/games/meadow-pens.md) | school | Rainbow Meadow | 5 | a friend asks for a pen: paint squares of grass on a meadow grid and the fence builds itself around the biggest connected group (other squares are flowers, a ring of grass round a hole is a pond), then ring the bell to check |
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
 | [Seed Travelers](docs/games/seed-travelers.md) | toddler–pre-K | Rainbow Meadow | 3 | toddler–pre-K |
-| [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 17 | AB patterns |
+| [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 18 | AB patterns |
 | [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
 | [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 12 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |

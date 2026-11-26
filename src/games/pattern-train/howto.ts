@@ -56,6 +56,11 @@ export const HOW_TO: GameHowTo = {
       to: 17,
       text: 'Make your own pattern: tap one to three pieces to choose what repeats, tap a chosen car to take it back, then press the green arrow. The train runs the pattern round three times and says it. Nothing is wrong.',
     },
+    {
+      from: 18,
+      to: 18,
+      text: 'Each car holds one more counter than the one before. Look at how the stacks grow, then tap the stack that belongs in the glowing car. Tapping a car says how many it holds.',
+    },
   ],
   finish: [
     {
@@ -63,5 +68,6 @@ export const HOW_TO: GameHowTo = {
       text: 'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
     },
     { from: 17, to: 17, text: 'The round ends when the train has run her pattern round three times.' },
+    { from: 18, to: 18, text: 'The round ends when the stack that comes next is chosen.' },
   ],
 };
