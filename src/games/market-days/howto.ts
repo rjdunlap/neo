@@ -15,5 +15,5 @@ export const HOW_TO: GameHowTo = {
       from: 3,
     },
   ],
-  note: 'Two joined towns with the same day wobble and a hint appears after two tries. Hint and Undo are always there, and a clash is never lost: tap a town to clear it.',
+  note: 'Two joined towns with the same day wobble and a hint appears after two tries. Hint and Undo are always there, and a clash is never lost: tap a town to clear it. With a keyboard, arrow keys move a ring over the towns, 1 to 4 pick a banner and Enter sets the day. Long ago, towns that held fairs and markets often fixed the days so that nearby towns did not clash.',
 };

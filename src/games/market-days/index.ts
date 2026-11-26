@@ -4,6 +4,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
+import { isParentPanelOpen } from '../../parent/panel';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
@@ -24,6 +25,7 @@ import {
   neighbourPairs,
   solve,
   tooManyDays,
+  townToward,
   triangles,
   type HintKind,
   type MarketRound,
@@ -58,6 +60,8 @@ class MarketDays implements Game {
   private assign: number[];
   private readonly history: number[][] = [];
   private selected = 0;
+  /** The town the key ring is on; null until a key is pressed, so touch play shows no ring. */
+  private focus: number | null = null;
   private misses = 0;
   private hints = 0;
   private wrongs = 0;
@@ -125,6 +129,7 @@ class MarketDays implements Game {
 
   start() {
     this.busy = false;
+    if (!this.ctx.demo) this.ctx.listen(window, 'keydown', this.onKey);
     this.resize(this.view);
     void this.ctx.instruct('market-days.start');
   }
@@ -206,11 +211,38 @@ class MarketDays implements Game {
       const p = townSpot(L, map.towns[t]);
       glow.circle(p.x, p.y, L.town / 2 + 12 + pulse).stroke({ width: 8, color: swatch.yellow.line });
     }
+    if (this.focus !== null && !this.finished) {
+      const p = townSpot(L, map.towns[this.focus]);
+      glow.circle(p.x, p.y, L.town / 2 + 8).stroke({ width: 7, color: ink });
+    }
     if (this.wrongs >= 2 && !this.finished) {
       const p = L.buttons[0];
       glow.circle(p.x, p.y, L.button / 2 + 10 + pulse).stroke({ width: 7, color: swatch.yellow.line });
     }
   }
+
+  /** Arrow keys move a ring over the towns, 1 to 4 pick a banner, Enter or Space gives the ringed town the picked day. */
+  private onKey = (e: KeyboardEvent) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || this.busy || this.finished || isParentPanelOpen())
+      return;
+    if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]'))
+      return;
+    const arrow = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].indexOf(e.key);
+    const digit = Number(e.key);
+    if (arrow >= 0) {
+      e.preventDefault();
+      // The first arrow only shows the ring, on the first town she can still change.
+      if (this.focus === null) this.focus = Math.max(0, this.round.start.indexOf(EMPTY));
+      else this.focus = townToward(this.round.map, this.focus, arrow) ?? this.focus;
+      sfx.tick();
+    } else if (digit >= 1 && digit <= this.round.plan.offered) {
+      e.preventDefault();
+      this.select(digit - 1);
+    } else if ((e.key === 'Enter' || e.key === ' ') && this.focus !== null) {
+      e.preventDefault();
+      this.tapTown(this.focus);
+    }
+  };
 
   private select(b: number) {
     if (this.busy || this.finished) return;

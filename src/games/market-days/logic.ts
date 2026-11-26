@@ -234,3 +234,30 @@ export function hintFor(map: MarketMap, plan: MarketPlan, assign: Assignment): H
   const town = tri.find((t) => assign[t] === EMPTY) ?? tri[0];
   return { kind: 'triangle', town, banner: ext[0][town], triangle: tri };
 }
+
+/**
+ * The town a key press moves the ring to: the nearest town lying in that direction (0 right, 1 down, 2 left, 3 up, as the
+ * pad reports it), preferring one straight along the line over one off to the side. Null when nothing lies that way.
+ */
+export function townToward(map: MarketMap, from: number, dir: number): number | null {
+  const [dx, dy] = [
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [0, -1],
+  ][dir] ?? [0, 0];
+  const here = map.towns[from];
+  let best: number | null = null;
+  let bestCost = Infinity;
+  map.towns.forEach((t, i) => {
+    const along = (t.x - here.x) * dx + (t.y - here.y) * dy;
+    if (i === from || along <= 0) return;
+    const side = Math.abs((t.x - here.x) * dy - (t.y - here.y) * dx);
+    const cost = along + 2 * side;
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = i;
+    }
+  });
+  return best;
+}

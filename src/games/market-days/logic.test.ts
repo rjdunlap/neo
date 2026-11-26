@@ -18,6 +18,7 @@ import {
   neighbourPairs,
   planFor,
   solve,
+  townToward,
   tooManyDays,
   triangles,
 } from './logic';
@@ -221,5 +222,39 @@ describe('the hint', () => {
     stuck[5] = 2;
     expect(hintFor(FAIR, plan2, stuck)).toEqual({ kind: 'stuck', town: 4 });
     expect(hintFor(FAIR, plan2, solve(FAIR, 3, blank(), 1)[0])).toBeNull();
+  });
+});
+
+describe('townToward (the key ring)', () => {
+  it('reaches every town of every mirrored map from the first, by arrows alone', () => {
+    for (const [fx, fy] of [
+      [false, false],
+      [true, false],
+      [false, true],
+      [true, true],
+    ] as const) {
+      const map = mirror(FAIR, fx, fy);
+      const seen = new Set([0]);
+      const queue = [0];
+      while (queue.length) {
+        const at = queue.pop()!;
+        for (const dir of [0, 1, 2, 3]) {
+          const next = townToward(map, at, dir);
+          if (next !== null && !seen.has(next)) {
+            seen.add(next);
+            queue.push(next);
+          }
+        }
+      }
+      expect(seen.size).toBe(map.towns.length);
+    }
+  });
+  it('moves toward the key pressed and stops at an edge', () => {
+    const map = FAIR;
+    const left = map.towns.reduce((a, t, i) => (t.x < map.towns[a].x ? i : a), 0);
+    expect(townToward(map, left, 2)).toBeNull();
+    const right = townToward(map, left, 0);
+    expect(right).not.toBeNull();
+    expect(map.towns[right!].x).toBeGreaterThan(map.towns[left].x);
   });
 });
