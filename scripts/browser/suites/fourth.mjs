@@ -12,6 +12,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           'song8',
           'song9',
           'song11',
+          'song12',
           'puzzle',
           'weather',
           'sink',
@@ -208,6 +209,53 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(r, [0, 0], 'song 11 score');
       log(
         'Song Maker 11: opening given, move-per-beat ending, check wakes after 4-beat loop, sticker passed',
+      );
+    }
+
+    // Song Maker 12, Two to choose: heard 4-note tune on 4x3 with two shadows per beat; wrong shadow gives boing + right note + glow after two.
+    if (!only || only === 'song' || only === 'song12') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('song-maker', 12, 'Mia', 'prek');
+      await page.waitForTimeout(600);
+      await screenshot('song-maker-12-portrait');
+      const r12 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!(await kit.until(() => !g.listening, 15000))) throw new Error('Tune never finished');
+        const isNote = (b) => g.song.notes.some((n) => n.col === b.note.col && n.row === b.note.row);
+        const ghostsPerBeat = [0, 1, 2, 3].map(
+          (col) => g.beads.filter((b) => b.note.col === col && b.ghost).length,
+        );
+        const nonChoiceLocked = g.beads.filter((b) => !b.ghost).every((b) => b.eventMode === 'none');
+        const wrong0 = g.beads.find((b) => b.note.col === 0 && b.ghost && !isNote(b));
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(wrong0);
+          await kit.sleep(250);
+        }
+        const hintAfterTwo = g.misses === 2 && g.hints === 1;
+        const right0 = g.beads.find((b) => b.note.col === 0 && isNote(b));
+        kit.tapOn(right0);
+        await kit.sleep(250);
+        const clearedOtherShadow = !wrong0.ghost && wrong0.eventMode === 'none';
+        for (const n of [...g.remaining]) {
+          kit.tapOn(g.beads.find((b) => b.note.col === n.col && b.note.row === n.row));
+          await kit.sleep(250);
+        }
+        return { ghostsPerBeat, nonChoiceLocked, hintAfterTwo, clearedOtherShadow };
+      });
+      assert.deepEqual(r12.ghostsPerBeat, [2, 2, 2, 2], 'two shadows per beat');
+      assert.ok(r12.nonChoiceLocked, 'non-candidate seeds locked');
+      assert.ok(r12.hintAfterTwo, 'two wrong shadow taps trigger hint');
+      assert.ok(r12.clearedOtherShadow, 'solving a beat clears its other shadow');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 12 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        'Song Maker 12: two shadows per beat, wrong shadow hint, solved beat clears other shadow, sticker passed',
       );
     }
 

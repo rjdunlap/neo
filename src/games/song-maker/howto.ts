@@ -22,6 +22,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'The pet sings two notes from a tune on the first two beats, then she finishes the song with one jelly on each of the last two beats. A tap in a beat moves its jelly, and a tap on the lit one puts it out; any ending is welcome. Once both are filled and the loop has played all four beats since her last change, the check button wakes.',
     },
     { from: 3, to: 4, text: 'Copy the song by tapping jellies on its shadow notes.' },
@@ -32,11 +33,17 @@ export const HOW_TO: GameHowTo = {
       text: 'Continue the song pattern (the pet names its shape first: stairs, hops, zigzags, arches, valleys, leaps and more).',
     },
     { from: 7, to: 7, text: 'Listen, then find each note of the tune by ear.' },
+    {
+      from: 12,
+      to: 12,
+      text: 'Listen, then pick each note of the tune from the two shadow jellies on each beat.',
+    },
   ],
   finish: [
-    { from: 9, text: 'The round ends after she presses the check and hears her song once more.' },
+    { from: 9, to: 11, text: 'The round ends after she presses the check and hears her song once more.' },
     { to: 2, text: 'The round ends after the song has played a few rounds.' },
     { from: 3, to: 7, text: 'The round ends when the song matches.' },
+    { from: 12, to: 12, text: 'The round ends when all four notes of the song match.' },
     {
       from: 8,
       to: 8,
@@ -51,6 +58,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: "Every ending is welcome and nothing is counted. The whole four-beat song, the pet's start and her ending, can hang in the pet's room from the little tree house button as one song.",
     },
     {
@@ -64,6 +72,7 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 3, to: 5, text: 'The short tune includes a quiet beat: leave that beat empty.' },
     { from: 3, to: 7, text: "A copied song is not hers, so it is not offered for the pet's room." },
+    { from: 12, to: 12, text: "A copied song is not hers, so it is not offered for the pet's room." },
     {
       from: 8,
       to: 8,

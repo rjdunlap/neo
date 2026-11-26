@@ -177,7 +177,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 4. **My song (built; level 9, preschool 4, 5, 6, 9, pre-K 5, 6, 7, 9, school 6, 7, 9: level 8 is not in those windows), the next free stable level ID (was 9; 8 is lap's *one big jelly*, [PR #1583](https://github.com/rjdunlap/neo/pull/1583), which already made the `BandLevels`/`order` conversion)** (D1 and D2 settled 2026-10-23: approved, placed by `order`; compose rounds stay 0/0). Adds the check button. *Tier: new interaction.*
 5. **Answer my song, the M4 build, the next free ID after My song (currently 10)** (built, school only, [PR #2164](https://github.com/rjdunlap/neo/pull/2164); the performing critter and the pet singing the answer half are not built) (D1 and D3 settled 2026-10-23: a co-made song is kept as an ordinary tune, "our song"). *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
 6. **Finish my song, the next free ID after that (currently 11)** (built, preschool and pre-K, [PR #2195](https://github.com/rjdunlap/neo/pull/2195); D1 and D3 settled). *Tier: new levels on an existing interaction* (reuses slice 5).
-7. **Two to choose, the next free ID after that (currently 12)** (D1 settled; build claimed 2026-11-26 on `agy/song-maker-12-two-to-choose`). *Tier: new levels.*
+7. **Two to choose, the next free ID after that (currently 12)** (built, pre-K right before 7, [PR #2222](https://github.com/rjdunlap/neo/pull/2222); D1 settled). *Tier: new levels.*
 8. **Bring it home, the next free ID after that (currently 13)** (D1 and D4 settled 2026-10-23: a failed check against the spoken rule is a miss). *Tier: new levels.*
 9. **Change one thing, the next free ID after that (currently 14)** (D1 and D4 settled). *Tier: new interaction.*
 

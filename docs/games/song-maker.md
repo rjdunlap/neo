@@ -11,7 +11,7 @@
 | lap | 8, 1, 2 |
 | toddler | 2–4 |
 | preschool | 4, 11, 5, 6, 9 |
-| pre-K | 5, 11, 6, 7, 9 |
+| pre-K | 5, 11, 6, 12, 7, 9 |
 | school | 6, 7, 9, 10 |
 
 | Level | Plays like |
@@ -27,12 +27,13 @@
 | 9 | Make your own song on a 6-beat loop, then press the check to hear it once more |
 | 10 | Answer the pet's 4-note question with a note on each of the next four beats |
 | 11 | Finish the pet's 2-note song with a note on each of the last two beats |
+| 12 | Listen, then pick each note of a 4-note tune from two shadows |
 
 <!-- end generated -->
 
 **Starts as:** at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat
 
-**Grows into:** copy authored songs with rests by shadows or a card, finish a two-note song start (level 11, preschool and pre-K), continue a pattern, find a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school)
+**Grows into:** copy authored songs with rests by shadows or a card, finish a two-note song start (level 11, preschool and pre-K), continue a pattern, pick each heard note from two shadows (level 12, pre-K) before finding a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school)
 
 ## Design notes
 
@@ -47,3 +48,5 @@ Level 9, "My song" (`mode: 'compose'`), is an open 6-beat, 4-row loop with no ta
 Level 10, Answer my song (school only for now; a person check decides pre-K): an 8×4 board whose first four beats are the pet's authored question (eight of them, the last three skipped), drawn as given white-ringed jellies on a tint. She puts one jelly on each of beats 5–8; a tap in a beat moves its jelly and a tap on the lit one puts it out, so no answer is wrong, an echo included. The check wakes once all four are filled and the loop has played all eight beats since her last change, then plays the song once more and finishes with no misses; the whole eight-beat song is offered as an ordinary kept tune. Upright, the question is a small given bar above her four beats (as at level 6). Not built: the performing critter beside the check and the pet singing the answer half, which the definition sketches; the loop itself plays both halves.
 
 Level 11, Finish my song (preschool and pre-K, placed right after the first copy level in each window and listed in `entryLevels` so aging into school lands at school's first level): a 4×3 board whose first two beats are a two-note opening drawn from the 3-row motif pool (seven distinct openings, the last three skipped), drawn as given white-ringed jellies on a tint. She puts one jelly on each of beats 3–4 using the same move-per-beat interaction as level 10, the check wakes once both are filled and all four beats have played since her last change, and the whole four-beat song is offered as a kept tune (`song.finish`, `song.finish.ready`). Upright, all four beats fit on one full-width board.
+
+Level 12, Two to choose (pre-K only, placed right before level 7 and listed in `entryLevels` so aging into school lands at level 6): level 7's 4×3 heard tune with the replay button, except each beat shows two shadow candidates (the right note and one random other row, `choices: 2`) while the third seed is quiet (`eventMode = 'none'`). Tapping the wrong shadow plays a boing and then the column's right note (`song.again`), glowing the earliest unsolved note after two misses (`song.hint`); solving a beat clears its other shadow and leaves the lit jelly tappable to sing (`song.listenTwo`). Copied tunes are not offered for the pet's room.
