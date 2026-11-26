@@ -31,14 +31,17 @@ import {
   hop,
   hops,
   isShapeCard,
+  judgeCheck,
   judgeStone,
   makePath,
   mismatchWords,
+  nextProposalBest,
   owlOf,
   owlToHop,
   nestPointIn,
   pairCards,
   planFor,
+  proposalFor,
   seatStep,
   stepTo,
   stoneLayout,
@@ -198,6 +201,14 @@ class OwlWalk implements Game {
   private readonly minis = new Container();
   private readonly go = new Container();
   private readonly goArt = new Graphics();
+  /** Level 8: the owl the pet proposes for this card (null when none is waiting), the bubble that shows it and this round's kinds of proposal. */
+  private proposal: number | null = null;
+  private readonly bubble = new Container();
+  private readonly proposals: boolean[] = [];
+  /** The seat button belongs to levels 2 to 4: the pair and check levels have no pet turn to hand over. */
+  private get seated() {
+    return this.plan.owls > 1 && this.plan.mode !== 'pairs' && this.plan.mode !== 'check';
+  }
   private total: ReturnType<typeof label> | null = null;
   private faces: Container[] = [];
   private hintPlan: PairPlan | null = null;
@@ -256,12 +267,13 @@ class OwlWalk implements Game {
     // The stepping stones have no cards: the deck is not there to tap.
     this.deck.visible = this.plan.mode !== 'free' && this.plan.mode !== 'pairs';
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
-    if (this.plan.owls > 1 && this.plan.mode !== 'pairs') this.drawSeat();
-    if (this.plan.mode === 'pairs') this.buildGo();
+    if (this.seated) this.drawSeat();
+    if (this.plan.mode === 'pairs' || this.plan.mode === 'check') this.buildGo();
     this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.hintGlow.visible = false;
     for (const quiet of [
       this.previews,
+      this.bubble,
       this.trail,
       this.dawn,
       this.hintGlow,
@@ -290,10 +302,11 @@ class OwlWalk implements Game {
       this.shown,
       this.pairRow,
       this.minis,
+      this.bubble,
       this.go,
       this.fx,
     );
-    if (this.plan.owls > 1 && this.plan.mode !== 'pairs') ctx.stage.addChild(this.seat);
+    if (this.seated) ctx.stage.addChild(this.seat);
     for (let i = 0; i < this.plan.owls; i++) {
       const critter = ctx.track(owlArt(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
@@ -324,8 +337,9 @@ class OwlWalk implements Game {
       .stroke({ width: 14, color: 0xffffff, cap: 'round', join: 'round' });
     this.go.addChild(this.goArt);
     this.go.hitArea = new Circle(0, 0, 76);
-    this.go.alpha = 0.4;
-    onTap(this.go, () => void this.tapGo(), { cooldown: 400 });
+    this.go.alpha = this.plan.mode === 'check' ? 1 : 0.4;
+    this.go.visible = this.plan.mode !== 'check';
+    onTap(this.go, () => void (this.plan.mode === 'check' ? this.agree() : this.tapGo()), { cooldown: 400 });
   }
 
   /** The seat button: one figure, "just us" (the pet plays its owl), or two, a grown-up plays it. Chosen, never guessed: the device cannot tell fingers apart. */
@@ -410,11 +424,16 @@ class OwlWalk implements Game {
     if (this.hintAt !== null) this.hintGlow.position.copyFrom(this.targetPoint(this.hintAt));
     this.drawPreviews();
     this.drawMinis();
+    this.placeBubble();
   }
 
   update(dt: number) {
     this.clock += dt;
-    if (this.plan.mode === 'pairs' && this.go.alpha === 1) {
+    if (
+      (this.plan.mode === 'pairs' || this.plan.mode === 'check') &&
+      this.go.alpha === 1 &&
+      this.go.visible
+    ) {
       const k = 1 + 0.06 * Math.sin(this.clock * 5);
       this.go.scale.set(k);
     }
@@ -440,7 +459,14 @@ class OwlWalk implements Game {
     if (this.plan.mode === 'pairs') return this.pairTouch();
     if (!this.card) return { tap: { on: this.deck } };
     const spots = this.owls.map((o) => o.spot);
-    const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest';
+    // Checking the helper: agree when the proposal hops the farthest, else tap an owl that does.
+    if (
+      this.proposal !== null &&
+      this.selected === null &&
+      farthest(this.path, spots, this.card).includes(this.proposal)
+    )
+      return { tap: { on: this.go }, pause: 0.2 };
+    const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest' || this.plan.mode === 'check';
     if (asks && this.selected === null && this.moving().length > 1) {
       const i = owlToHop(this.path, spots, this.card);
       // The owl's tap area is centered a little above its feet.
@@ -467,6 +493,7 @@ class OwlWalk implements Game {
       free: 'owl.free',
       either: 'owl.either',
       pairs: 'owl.pairs',
+      check: 'owl.check',
     } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
@@ -505,6 +532,7 @@ class OwlWalk implements Game {
     this.wrongs = 0;
     this.hinted = false;
     this.selected = null;
+    this.clearProposal();
     this.clearHint();
     const spots = this.owls.map((o) => o.spot);
     const assigned = this.plan.mode === 'turns' ? owlOf(this.path, spots, who === 'child' ? 0 : 1) : null;
@@ -532,11 +560,19 @@ class OwlWalk implements Game {
     if (this.plan.twinkle) this.twinkle(movers[0]);
     this.busy = false;
     // One owl left walking: there is nothing to pick.
-    if ((this.plan.mode === 'choose' || this.plan.mode === 'farthest') && movers.length === 1)
+    if (
+      (this.plan.mode === 'choose' || this.plan.mode === 'farthest' || this.plan.mode === 'check') &&
+      movers.length === 1
+    )
       this.select(movers[0], false);
     // What to do with the card waits for its colour, is dropped at her first tap, or is said by the guide.
+    if (this.plan.mode === 'check' && movers.length > 1) this.propose(color);
     this.unasked = async () => {
       const i = this.actorOwl();
+      if (this.proposal !== null) {
+        await this.ctx.instruct('owl.propose', this.proposalWords(color, this.proposal));
+        return;
+      }
       if (i === null) {
         if (!this.told) {
           this.told = true;
@@ -603,7 +639,7 @@ class OwlWalk implements Game {
         consider({ kind: 'owl', i }, { x: o.critter.x, y: o.critter.y - 38 }, OWL_REACH);
     });
     // On the farthest level the numbered rings are the most eye-catching thing on the path: touching one means its owl.
-    if (this.plan.mode === 'farthest' && this.card) {
+    if ((this.plan.mode === 'farthest' || this.plan.mode === 'check') && this.card) {
       const spots = this.owls.map((o) => o.spot);
       this.owls.forEach((o, i) => {
         if (o.spot >= this.path.length) return;
@@ -689,6 +725,7 @@ class OwlWalk implements Game {
       return;
     }
     const spots = this.owls.map((o) => o.spot);
+    if (mode === 'check' && this.proposal !== null) return this.checkOwl(i, color);
     if (mode === 'farthest' && !farthest(this.path, spots, color).includes(i)) {
       // Comparing hops is the decision here: a shorter hop is a gentle miss with the numbers said aloud.
       const h = hops(this.path, spots, color);
@@ -708,6 +745,95 @@ class OwlWalk implements Game {
       return;
     }
     this.select(i, true);
+  }
+
+  // Check the helper (level 8) -----------------------------------------------------------------
+
+  /** The pet's proposal for this card: a best owl about half the time, and a shorter-hopping one the rest, shown in a bubble and a check. */
+  private propose(card: Card) {
+    const spots = this.owls.map((o) => o.spot);
+    const wantBest = nextProposalBest(this.ctx.rng, this.proposals);
+    const owl = proposalFor(this.ctx.rng, this.path, spots, card, wantBest);
+    if (owl === null) return;
+    this.proposals.push(farthest(this.path, spots, card).includes(owl));
+    this.proposal = owl;
+    this.go.visible = true;
+    this.go.alpha = 1;
+    const face = cardFace(card, this.plan);
+    face.scale.set(0.42);
+    this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const back = new Graphics()
+      .roundRect(-48, -62, 96, 124, 20)
+      .fill({ color: 0xffffff, alpha: 0.95 })
+      .stroke(line(ink, 4))
+      .poly([-12, 60, 12, 60, 0, 84])
+      .fill({ color: 0xffffff, alpha: 0.95 });
+    face.y = -4;
+    this.bubble.addChild(back, face);
+    this.placeBubble();
+    this.owls[owl].critter.hop(0.5);
+  }
+
+  private placeBubble() {
+    if (this.proposal === null) return;
+    const o = this.owls[this.proposal].critter;
+    this.bubble.position.set(o.x, o.y - 190);
+  }
+
+  private clearProposal() {
+    this.proposal = null;
+    this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.go.visible = this.plan.mode !== 'check';
+  }
+
+  private proposalWords(card: Card, owl: number) {
+    return { card: cardName(this.plan, card), owl: OWL_COLORS[owl] };
+  }
+
+  /** She tapped the green check: she agrees with the proposed owl. */
+  private async agree() {
+    if (this.busy || this.finished || this.turn !== 'child' || this.proposal === null || !this.card) return;
+    this.unasked = null;
+    this.askGen++;
+    await this.checkOwl(this.proposal, this.card);
+  }
+
+  /** Her answer to the proposal, judged by how far the owl hops (`judgeCheck`); a wrong one says what the helper learned. */
+  private async checkOwl(i: number, card: Card) {
+    const proposed = this.proposal!;
+    const spots = this.owls.map((o) => o.spot);
+    const { right, result } = judgeCheck(this.path, spots, card, proposed, i);
+    const h = hops(this.path, spots, card);
+    const best = farthest(this.path, spots, card);
+    if (right) {
+      this.clearProposal();
+      this.select(i, result !== 'corrected');
+      // Her stone tap never waits for the praise: the instruction follows only if she has not already moved on.
+      if (result === 'corrected')
+        void this.ctx.say('owl.check-good', { a: h[proposed], b: h[i] }).then(() => {
+          if (this.selected === i && this.card === card && !this.busy) void this.announce(i);
+        });
+      return;
+    }
+    this.owls[i].critter.poke();
+    const line = () =>
+      result === 'trusted-wrong'
+        ? this.ctx.say('owl.check-trusted', { owl: OWL_COLORS[i], a: h[i], b: h[best[0]] })
+        : result === 'spoiled'
+          ? this.ctx.say('owl.check-spoiled', { owl: OWL_COLORS[proposed], a: h[proposed], b: h[i] })
+          : this.ctx.say('owl.not-farthest', { a: h[i], b: h[best[0]] });
+    await this.miss(
+      line,
+      () => {
+        for (const b of best) this.owls[b].glow.visible = true;
+      },
+      async () => {
+        await this.ctx.say('owl.together');
+        this.busy = false;
+        this.clearProposal();
+        this.select(best[0], true);
+      },
+    );
   }
 
   private select(i: number, announce: boolean) {
@@ -902,6 +1028,7 @@ class OwlWalk implements Game {
     const owl = this.owls[i];
     this.clearHint();
     this.clearTwinkle();
+    this.clearProposal();
     this.setRing(null);
     this.previews.removeChildren().forEach((c) => c.destroy({ children: true }));
     const stops: Spot[] = [];
@@ -1014,7 +1141,7 @@ class OwlWalk implements Game {
   private drawPreviews() {
     this.previews.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.plan.mode === 'pairs') return this.pairPreviews();
-    if (this.plan.mode !== 'farthest' || !this.card) return;
+    if ((this.plan.mode !== 'farthest' && this.plan.mode !== 'check') || !this.card) return;
     const spots = this.owls.map((o) => o.spot);
     const h = hops(this.path, spots, this.card);
     this.owls.forEach((o, i) => {

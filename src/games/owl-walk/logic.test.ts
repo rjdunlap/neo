@@ -14,11 +14,15 @@ import {
   hop,
   hops,
   isShapeCard,
+  judgeCheck,
   judgeStone,
   LEVELS,
   makePath,
   MARK,
   mismatchWords,
+  nextProposalBest,
+  proposalFor,
+  CHECK_LEVEL,
   NEST_REACH,
   nestPointIn,
   owlOf,
@@ -361,7 +365,7 @@ describe('Our two cards (level 7)', () => {
     expect(plan.mode).toBe('pairs');
     expect(plan.owls).toBe(3);
     expect(LEVELS.prek).toEqual({ min: 2, max: PAIRS_LEVEL, order: [2, 3, EITHER_LEVEL, 4, PAIRS_LEVEL] });
-    expect(LEVELS.school).toEqual({ min: 4, max: PAIRS_LEVEL, order: [4, PAIRS_LEVEL] });
+    expect(LEVELS.school).toEqual({ min: 4, max: CHECK_LEVEL, order: [4, PAIRS_LEVEL, CHECK_LEVEL] });
     expect(LEVELS.preschool?.max).toBe(EITHER_LEVEL);
   });
 
@@ -422,5 +426,95 @@ describe('Our two cards (level 7)', () => {
     expect(assignTotal(path, [-1, -1, 5], ['red', 'red'], [0, 1])).toBe(1 + 3);
     // Card 0 first: owl 1 goes to red stone 0 first, then owl 0 takes the next red stone, 2.
     expect(assignTotal(path, [-1, -1, 5], ['red', 'red'], [1, 0])).toBe(1 + 3);
+  });
+});
+
+describe('Check the helper (level 8)', () => {
+  const plan = planFor(8);
+  const boards = (seed: number) => {
+    const rng = new Rng(seed);
+    const path = makePath(plan, rng);
+    const spots: Spot[] = [-1, rng.int(-1, 9), rng.chance(0.2) ? path.length : rng.int(-1, 12)];
+    return { path, spots, rng };
+  };
+
+  it('is school only, the top of its window, on level 4’s board', () => {
+    expect(plan.mode).toBe('check');
+    expect(CHECK_LEVEL).toBe(8);
+    expect([plan.owls, plan.colors, plan.stones]).toEqual([3, 4, 16]);
+    expect(LEVELS.school?.max).toBe(8);
+    expect(LEVELS.prek?.max).toBe(PAIRS_LEVEL);
+  });
+
+  it('proposes a farthest owl when asked for the best, and a shorter one otherwise, and says so when none is shorter', () => {
+    let worseSeen = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const { path, spots, rng } = boards(seed);
+      const card = drawCard(plan, rng);
+      const best = farthest(path, spots, card);
+      if (!best.length) {
+        expect(proposalFor(rng, path, spots, card, true)).toBeNull();
+        continue;
+      }
+      expect(best).toContain(proposalFor(rng, path, spots, card, true));
+      const worse = proposalFor(rng, path, spots, card, false)!;
+      const walking = walkers(path, spots);
+      if (walking.every((i) => best.includes(i))) expect(best).toContain(worse);
+      else {
+        worseSeen++;
+        expect(best).not.toContain(worse);
+        expect(walking).toContain(worse);
+      }
+    }
+    expect(worseSeen).toBeGreaterThan(50);
+  });
+
+  it('is deterministic for a seed', () => {
+    const a = boards(7);
+    const b = boards(7);
+    expect(proposalFor(a.rng, a.path, a.spots, 'red', false)).toBe(
+      proposalFor(b.rng, b.path, b.spots, 'red', false),
+    );
+  });
+
+  it('never makes three of one kind in a row, so a round holds both', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const kinds: boolean[] = [];
+      for (let k = 0; k < 12; k++) kinds.push(nextProposalBest(rng, kinds));
+      for (let k = 2; k < kinds.length; k++)
+        expect(kinds[k] === kinds[k - 1] && kinds[k] === kinds[k - 2]).toBe(false);
+      expect(kinds).toContain(true);
+      expect(kinds).toContain(false);
+    }
+  });
+
+  it('judges the final owl by how far it hops: any best owl is right, and the words say what she did', () => {
+    const path = colorPath(['red', 'blue', 'red', 'green', 'red', 'blue']);
+    // Owl 0 at -1 hops 1 to the red stone 0; owl 1 at 1 hops 1 to... red at 2; owl 2 at 3 hops 1 to red 4. All tie, so use blue.
+    const spots = [-1, 0, 3];
+    const best = farthest(path, spots, 'blue');
+    const h = hops(path, spots, 'blue');
+    const worse = [0, 1, 2].filter((i) => !best.includes(i) && h[i] > 0)[0];
+    expect(worse).toBeDefined();
+    const good = best[0];
+    expect(judgeCheck(path, spots, 'blue', good, good)).toEqual({ right: true, result: 'agreed' });
+    expect(judgeCheck(path, spots, 'blue', worse, good)).toEqual({ right: true, result: 'corrected' });
+    expect(judgeCheck(path, spots, 'blue', worse, worse)).toEqual({ right: false, result: 'trusted-wrong' });
+    expect(judgeCheck(path, spots, 'blue', good, worse)).toEqual({ right: false, result: 'spoiled' });
+    const other = [0, 1, 2].find((i) => i !== worse && !best.includes(i) && h[i] > 0);
+    if (other !== undefined)
+      expect(judgeCheck(path, spots, 'blue', worse, other)).toEqual({ right: false, result: 'other-wrong' });
+  });
+
+  it('an owl is a miss exactly when it is outside farthest, over many boards', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const { path, spots, rng } = boards(seed);
+      const card = drawCard(plan, rng);
+      const best = farthest(path, spots, card);
+      for (const proposed of walkers(path, spots))
+        for (const chosen of walkers(path, spots))
+          expect(judgeCheck(path, spots, card, proposed, chosen).right).toBe(best.includes(chosen));
+    }
   });
 });

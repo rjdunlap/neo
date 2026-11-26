@@ -1,1 +1,0 @@
-**`owl-walk` level 8, Check the helper** (school; after `owl-walk` level 7 lands; new interaction on an existing game: typecheck, rule tests, one filtered scripted play of level 8 with a wrong agree and a hint, one portrait screenshot, `fingerdemo` at 8). [Definition](../../definitions/owl-walk-levels-7-8.md#level-8-check-the-helper)
