@@ -81,4 +81,11 @@ export const VOICE = {
   'rt.rebus.help.read': ['Now press Read, {pet}!'],
   'rt.rebus.sentence': ['Listen: {sentence}'],
   'rt.rebus.sign': ['{sign}.'],
+  'rt.instruct.8': ['Tap the silent sign that shows which one the sentence means, {pet}.'],
+  'rt.history.det': [
+    'Long ago, {pet}, scribes added silent signs so readers could tell look-alike sounds apart.',
+  ],
+  'rt.det.right': ['The {sign} sign is silent, {pet}. It tells the reader which one you mean!'],
+  'rt.det.wrong': ['That is the {sign} sign, {pet}. Listen again and pick the one that fits.'],
+  'rt.det.help': ['The glowing sign shows which one the sentence means, {pet}.'],
 } satisfies Record<string, string[]>;

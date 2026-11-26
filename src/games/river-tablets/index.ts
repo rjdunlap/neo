@@ -41,6 +41,8 @@ import {
   penArt,
   pickArt,
   readArt,
+  detCellArt,
+  detSignArt,
   rebusCellArt,
   rebusSignArt,
   riverArt,
@@ -64,7 +66,13 @@ import {
   arrive,
   askCheck,
   askDisagree,
+  askDeterminative,
   askRebus,
+  determinativeHint,
+  determinativeTally,
+  pickDeterminative,
+  startDeterminative,
+  DET_SIGNS,
   disagreeTally,
   liftSlot,
   placeSign,
@@ -129,6 +137,8 @@ import {
   type Kind,
   type Mark,
   type PenState,
+  type DetId,
+  type DetState,
   type RebusState,
   type SignId,
   type Pt,
@@ -162,7 +172,10 @@ const SIGN_NAMES: Record<SignId, string> = {
   cup: 'Cup',
   boot: 'Boot',
   drum: 'Drum',
+  ant: 'Ant',
+  fir: 'Fir',
 };
+const DET_NAMES: Record<DetId, string> = { person: 'person', sky: 'sky', plant: 'plant', animal: 'animal' };
 const IDLE_GLOW = 8;
 const PEEK_SECONDS = 2;
 
@@ -181,6 +194,8 @@ class RiverTablets implements Game {
   cartIndex = 0;
   /** Level 7: one state per sentence (`cartIndex` is the one on the tablet). */
   rebuses: RebusState[] = [];
+  /** Level 8: one state per sentence (`cartIndex` is the one on the tablet). */
+  dets: DetState[] = [];
   /** Level 6: which tablet the help lineup is playing against now (its tablet glows), or null. */
   linedAgainst: 0 | 1 | null = null;
   /** Level 4: the pet has counted the yard for this cart (the ghost finger asks once). */
@@ -236,6 +251,10 @@ class RiverTablets implements Game {
   slotNodes: Container[] = [];
   trayNodes: Container[] = [];
   readNode: Container | null = null;
+  /** Level 8: the sound-sign cell, the meaning cell and the four meaning-sign buttons. */
+  soundNode: Container | null = null;
+  detCellNode: Container | null = null;
+  detNodes: Container[] = [];
   crateNodes: Container[] = [];
   private basketNodes: Container[] = [];
   private openCrate = -1;
@@ -265,6 +284,7 @@ class RiverTablets implements Game {
     if (this.brief.id === 'check') this.checks = this.brief.deliveries.map((d) => startCheck(d));
     if (this.brief.id === 'disagree') this.cases = this.brief.cases.map((c) => startDisagree(c));
     if (this.brief.id === 'rebus') this.rebuses = this.brief.cases.map((c) => startRebus(c));
+    if (this.brief.id === 'determinative') this.dets = this.brief.cases.map((c) => startDeterminative(c));
   }
 
   get level() {
@@ -287,6 +307,7 @@ class RiverTablets implements Game {
     if (this.brief.id === 'check') return checkTally(this.checks);
     if (this.brief.id === 'disagree') return disagreeTally(this.cases);
     if (this.brief.id === 'rebus') return rebusTally(this.rebuses);
+    if (this.brief.id === 'determinative') return determinativeTally(this.dets);
     return { misses: 0, hints: 0 };
   }
 
@@ -304,6 +325,12 @@ class RiverTablets implements Game {
       // One line at a time: the instruction, then the first sentence.
       void this.ctx.instruct('rt.instruct.7').then(() => {
         if (this.alive && !this.finished) void this.sayRebusSentence();
+      });
+      return;
+    }
+    if (this.brief.id === 'determinative') {
+      void this.ctx.instruct('rt.instruct.8').then(() => {
+        if (this.alive && !this.finished) void this.sayDetSentence();
       });
       return;
     }
@@ -385,6 +412,11 @@ class RiverTablets implements Game {
     }
     if (this.brief.id === 'rebus') {
       this.buildRebus(l);
+      this.board.addChild(this.lineupLayer, this.glow);
+      return;
+    }
+    if (this.brief.id === 'determinative') {
+      this.buildDet(l);
       this.board.addChild(this.lineupLayer, this.glow);
       return;
     }
@@ -1240,6 +1272,121 @@ class RiverTablets implements Game {
     return l.handIn!;
   }
 
+  // ——— Level 8: which one do I mean? ———
+
+  get detNow(): DetState {
+    return this.dets[this.cartIndex];
+  }
+
+  private buildDet(l: TabletLayout) {
+    const bar = new Container();
+    bar.position.set(l.lane.x, l.lane.y);
+    bar.addChild(sentenceBarArt(l.lane.w, l.lane.h));
+    bar.hitArea = new Rectangle(0, 0, l.lane.w, l.lane.h);
+    onTap(bar, () => void this.sayDetSentence(), { cooldown: 300 });
+    this.board.addChild(bar);
+    this.barNode = bar;
+    const t = l.tablet!;
+    const face = new Graphics();
+    face.roundRect(t.x, t.y + 8, t.w, t.h, 30).fill(CLAY.dark);
+    face.roundRect(t.x, t.y, t.w, t.h, 30).fill(CLAY.fill).stroke({ width: 6, color: CLAY.line });
+    face.eventMode = 'none';
+    this.board.addChild(face);
+    this.soundNode = this.rebusNode(l.soundCell!, () => this.tapDetSound());
+    this.detCellNode = new Container();
+    this.detCellNode.position.copyFrom(centre(l.detCell!));
+    this.detCellNode.eventMode = 'none';
+    this.board.addChild(this.detCellNode);
+    this.detNodes = l.dets!.map((r, i) => this.rebusNode(r, () => void this.tapDet(i)));
+    this.redrawDet();
+  }
+
+  private redrawDet() {
+    const l = this.layoutNow;
+    if (!l?.dets) return;
+    const s = this.detNow;
+    const clear = (n: Container | null) => {
+      if (n) for (const ch of n.removeChildren()) ch.destroy({ children: true });
+    };
+    clear(this.soundNode);
+    this.soundNode?.addChild(rebusCellArt(l.soundCell!.w, s.sound));
+    clear(this.detCellNode);
+    this.detCellNode?.addChild(detCellArt(l.detCell!.w, s.stamped));
+    DET_SIGNS.forEach((id, i) => {
+      const node = this.detNodes[i];
+      if (!node) return;
+      clear(node);
+      node.addChild(detSignArt(id, l.dets![i].w));
+    });
+  }
+
+  private async sayDetSentence() {
+    if (this.finished) return;
+    await this.ctx.say('rt.rebus.sentence', { sentence: this.detNow.text });
+  }
+
+  /** Tapping the sound-sign says its name: free, as often as she likes. */
+  private tapDetSound() {
+    if (this.finished || this.busy || this.brief.id !== 'determinative') return;
+    this.pulse(this.soundNode);
+    sfx.pop(3);
+    void this.ctx.say('rt.rebus.sign', { sign: SIGN_NAMES[this.detNow.sound] });
+  }
+
+  /** A meaning-sign is the commit: the right one is stamped beside the sound-sign; a wrong one is one miss. */
+  private async tapDet(i: number) {
+    if (this.finished || this.busy || this.brief.id !== 'determinative') return;
+    const pick = DET_SIGNS[i];
+    const r = pickDeterminative(this.detNow, pick);
+    if (r.result === 'none') return;
+    this.pulse(this.detNodes[i]);
+    const before = this.detNow;
+    this.dets[this.cartIndex] = r.state;
+    const epoch = this.epoch;
+    this.busy = true;
+    if (r.result === 'right') {
+      sfx.sparkle();
+      this.redrawDet();
+      this.pulse(this.detCellNode);
+      await this.ctx.say('rt.det.right', { sign: DET_NAMES[pick] });
+      if (!this.live(epoch)) return;
+      void this.nextDet();
+      return;
+    }
+    sfx.boing();
+    await this.ctx.say('rt.det.wrong', { sign: DET_NAMES[pick] });
+    if (!this.live(epoch)) return;
+    await this.sayDetSentence();
+    if (!this.live(epoch)) return;
+    if (r.state.glowing && !before.glowing) await this.ctx.say('rt.det.help');
+    if (!this.live(epoch)) return;
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  /** The next sentence, or the round is done. */
+  private async nextDet() {
+    if (this.cartIndex + 1 >= this.dets.length) {
+      this.celebrate();
+      return;
+    }
+    this.cartIndex++;
+    this.busy = false;
+    this.build();
+    sfx.ratchet(3);
+    await this.ctx.say('rt.history.det');
+    if (!this.alive || this.finished) return;
+    await this.sayDetSentence();
+  }
+
+  /** The glow points at the right meaning-sign. */
+  private detGlowRect(): Rect | null {
+    const l = this.layoutNow;
+    const s = this.dets[this.cartIndex];
+    if (!l?.dets || !s || s.done || !s.glowing) return null;
+    return l.dets[DET_SIGNS.indexOf(determinativeHint(s))];
+  }
+
   // ——— Levels 4–5: the yard and the tablet ———
 
   get tensNow(): TensState {
@@ -1982,6 +2129,12 @@ class RiverTablets implements Game {
       void this.sayRebusHelp();
       return;
     }
+    if (this.brief.id === 'determinative') {
+      if (this.detNow.done) return;
+      this.dets[this.cartIndex] = askDeterminative(this.detNow);
+      void this.ctx.say('rt.det.help');
+      return;
+    }
     this.tablets[this.tabletIndex] = askTablet(this.tablet);
     this.redrawRows();
     const good = waiting(this.tablet);
@@ -2046,6 +2199,11 @@ class RiverTablets implements Game {
     if (glowRect)
       this.glow
         .roundRect(glowRect.x - 10 * r, glowRect.y - 10 * r, glowRect.w + 20 * r, glowRect.h + 20 * r, 28)
+        .stroke({ width: 8, color: swatch.yellow.fill });
+    const detGlow = this.brief.id === 'determinative' && !this.busy ? this.detGlowRect() : null;
+    if (detGlow)
+      this.glow
+        .roundRect(detGlow.x - 10 * r, detGlow.y - 10 * r, detGlow.w + 20 * r, detGlow.h + 20 * r, 28)
         .stroke({ width: 8, color: swatch.yellow.fill });
     const glowRow = this.brief.id === 'rows' ? this.glowRow() : null;
     if (glowRow && !this.busy) {
@@ -2122,6 +2280,12 @@ class RiverTablets implements Game {
           : h.action === 'place'
             ? this.trayNodes[s.tray.indexOf(h.sign)]
             : this.readNode;
+      return node ? { tap: { on: node }, pause: 0.8 } : null;
+    }
+    if (this.brief.id === 'determinative') {
+      const s = this.detNow;
+      if (s.done) return null;
+      const node = this.detNodes[DET_SIGNS.indexOf(determinativeHint(s))];
       return node ? { tap: { on: node }, pause: 0.8 } : null;
     }
     const good = waiting(this.tablet);

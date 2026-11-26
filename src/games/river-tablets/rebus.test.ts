@@ -31,9 +31,9 @@ const SEEDS = Array.from({ length: 300 }, (_, i) => i);
 const briefs = SEEDS.map((s) => briefFor(7, new Rng(s)) as RebusBrief);
 
 describe('level 7 plan', () => {
-  it('is the rebus, and school plays it with level 7 as the top', () => {
+  it('is the rebus, and school plays it on the way to level 8', () => {
     expect(planFor(7).id).toBe('rebus');
-    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
     expect(LEVELS.preschool?.max).toBe(2);
     expect(LEVELS.prek?.max).toBe(3);
   });
