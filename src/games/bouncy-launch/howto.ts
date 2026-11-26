@@ -20,7 +20,12 @@ export const HOW_TO: GameHowTo = {
       text: 'First tap Soft, Medium or Stiff to predict which spring goes farthest with the same pull, and watch all three fly. Then for each star, pick a spring and pull the pet back to land on the star.',
     },
     { to: 1, text: 'Tap the pet and watch the pet bounce.' },
-    { from: 2, to: 5, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
+    {
+      from: 2,
+      to: 2,
+      text: 'Pull the pet back and let go. A bigger pull goes farther, and every pull is right. Little ones can drag and watch the pet fly.',
+    },
+    { from: 3, to: 5, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
     { from: 3, to: 3, text: 'Aim for the cloud with the star.' },
     { from: 4, to: 4, text: 'Aim for the numbered cloud that was asked for.' },
     {
@@ -120,7 +125,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 8,
       to: 8,
-      text: 'Any landing on the star cloud counts. A landing short or long is a spoken try again; after two, the flight path and a ring show how far back to pull. A short or wrong-way pull gets a nudge that is not a miss. After two clearly different pulls, the bigger-pull observation is added to her discovery journal.',
+      text: 'Any landing on the star cloud counts. A landing short or long is a spoken try again; after two, the flight path and a ring show how far back to pull. After four misses on one cloud the spring leans toward the right pull, which counts as one more hint. A short or wrong-way pull gets a nudge that is not a miss. After two clearly different pulls, the bigger-pull observation is added to her discovery journal.',
     },
   ],
 };

@@ -61,6 +61,10 @@ import {
   reach,
   revealsPullRule,
   targets,
+  MAGNET_AFTER,
+  MAGNET_RANGE,
+  magnetPull,
+  notchPull,
 } from './logic';
 import { CLOUDS } from './course';
 
@@ -384,7 +388,7 @@ describe('Planet Hop, level 12', () => {
 describe('level 13, the flower meadow (lap)', () => {
   it('opens lap before level 1; no other band reaches it; the other levels keep their plans', () => {
     expect(planFor(MEADOW_LEVEL)).toBe(MEADOW_PLAN);
-    expect(levelsInOrder(LEVELS.lap!)).toEqual([MEADOW_LEVEL, 1]);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([MEADOW_LEVEL, 1, 2]);
     expect(firstLevel(LEVELS.lap!)).toBe(MEADOW_LEVEL);
     expect(stepLevel(MEADOW_LEVEL, 1, LEVELS.lap!)).toBe(1);
     expect(stepLevel(MEADOW_LEVEL, -1, LEVELS.lap!)).toBe(MEADOW_LEVEL);
@@ -558,5 +562,21 @@ describe('level 11, Pick a spring', () => {
       'launch.spring-too-soft',
     ])
       expect(SCRIPT[id as keyof typeof SCRIPT]).toBeDefined();
+  });
+});
+
+describe('the magnet (slice 8)', () => {
+  it('snaps a near pull onto the right notch and leaves a far one alone', () => {
+    for (let i = 0; i < PADS; i++) {
+      const t = notchPull(i);
+      expect(magnetPull(t + MAGNET_RANGE, t)).toBe(t);
+      expect(magnetPull(t - MAGNET_RANGE, t)).toBe(t);
+      expect(padHit(reach(magnetPull(t + 9, t)))).toBe(i);
+      expect(magnetPull(t + MAGNET_RANGE + 1, t)).toBe(t + MAGNET_RANGE + 1);
+    }
+  });
+  it('is a hint after four misses, later than the preview, and reaches a cloud inside its range', () => {
+    expect(MAGNET_AFTER).toBe(4);
+    expect(MAGNET_RANGE).toBeLessThan(notchPull(1) - notchPull(0));
   });
 });
