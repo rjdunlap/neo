@@ -54,6 +54,8 @@ import {
   TICKS,
   judgeFriend,
   MAX_PULL,
+  MAGNET_AFTER,
+  magnetPull,
   MIN_PULL,
   nextAsk,
   padAt,
@@ -1127,9 +1129,24 @@ class BouncyLaunch implements Game {
       dx *= MAX_PULL / d;
       dy *= MAX_PULL / d;
     }
+    const magnet = this.magnetTarget();
+    if (magnet !== undefined && d > 0) {
+      const held = magnetPull(Math.min(d, MAX_PULL), magnet);
+      dx *= held / Math.min(d, MAX_PULL);
+      dy *= held / Math.min(d, MAX_PULL);
+    }
     this.pet.position.set(this.seat.x + dx, this.seat.y + dy);
     this.tickNotches();
     this.drawPreview();
+  }
+
+  /** After four misses on one star, number or near/far shot, the pull that lands on its cloud, which the spring then leans toward. */
+  private magnetTarget(): number | undefined {
+    const m = this.plan.mode;
+    if (!this.notched || this.wrongs < MAGNET_AFTER) return undefined;
+    if (m !== 'star' && m !== 'number' && m !== 'nearfar') return undefined;
+    const t = this.targets[this.shot];
+    return t === undefined ? undefined : pullFor(cloudAt(this.plan, t));
   }
 
   /** The notches and footprints belong to plain island pulls, not to couch play or the Cloud Hopper course. */
@@ -1570,6 +1587,12 @@ class BouncyLaunch implements Game {
         this.assisted = true;
         this.report();
         if (this.plan.mode === 'spring') this.drawSpringButtons();
+      }
+      // The magnet is a second, counted help: the spring leans toward the right notch (a motor aid, not an answer).
+      if (this.wrongs === MAGNET_AFTER && this.magnetTarget() !== undefined) {
+        this.hints++;
+        this.assisted = true;
+        this.report();
       }
     }
     this.drawHistory();

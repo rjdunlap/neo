@@ -5,6 +5,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     if (process.env.LAUNCH_LEVEL === '10') return lineLevel();
     if (process.env.LAUNCH_LEVEL === '11') return springLevel();
     if (process.env.LAUNCH_LEVEL === 'notches') return notchLevels();
+    if (process.env.LAUNCH_LEVEL === 'magnet') return magnetLevels();
     // Level 13 (lap) on a phone: touches anywhere (the sky, a corner, the pet) bounce the pet; touches while it flies are
     // free; each landing leaves a flower that stays; five landings finish with 0 misses and 0 hints.
     await page.setViewportSize({ width: 844, height: 390 });
@@ -166,6 +167,79 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await finished('bouncy-launch');
     log(
       `Bouncy Launch 1 and 3: the five taps landed on five different clouds from the bag; at level 3 pulls to each notch ticked (${three.ticks.join('/')}), left a footprint each and finished 0/0; passed`,
+    );
+  }
+  async function magnetLevels() {
+    // Lap plays level 2 (a pull, every pull right, 0 misses), and at level 3 four misses on one star turn the magnet on
+    // (a second counted hint): a pull a few units off the right notch then snaps onto it and lands on the star.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(400);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('bouncy-launch', 2, 'Mia', 'lap');
+    await page.waitForFunction(() => neo.scene.game?.plan?.mode === 'free', null, { timeout: 15000 });
+    const two = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.sleep(500);
+      g.grab = { id: 7, from: { x: 0, y: 0 } };
+      g.pull(g.seat.x - 40, g.seat.y + 80);
+      const ok = g.letGo();
+      g.grab = null;
+      await kit.until(() => g.shot === 1, 15000);
+      return { ok, misses: g.misses, hints: g.hints };
+    });
+    assert.deepEqual(two, { ok: true, misses: 0, hints: 0 }, `lap level 2 pull: ${JSON.stringify(two)}`);
+    await launch('bouncy-launch', 3, 'Mia', 'preschool');
+    await page.waitForFunction(() => neo.scene.game?.targets?.length === 3, null, { timeout: 15000 });
+    await page.waitForTimeout(1200);
+    const three = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const at = (t) => 44 + 28 * t;
+      const t0 = g.targets[0];
+      const wrong = at((t0 + 2) % 5);
+      const res = { magnetBefore: g.magnetTarget(), hintsByMiss: [] };
+      for (let n = 0; n < 4; n++) {
+        await kit.until(() => !g.flying && !g.grab, 15000);
+        await kit.sleep(300);
+        g.grab = { id: 8, from: { x: 0, y: 0 } };
+        g.pull(g.seat.x - 0.35 * wrong, g.seat.y + 0.94 * wrong);
+        g.letGo();
+        g.grab = null;
+        await kit.until(() => g.flying === false && g.misses === n + 1, 15000);
+        await kit.sleep(300);
+        res.hintsByMiss.push(g.hints);
+      }
+      res.magnetAfter = g.magnetTarget();
+      await kit.until(() => !g.flying && !g.grab, 15000);
+      const off = at(t0) + 9;
+      g.grab = { id: 9, from: { x: 0, y: 0 } };
+      g.pull(g.seat.x - 0.35 * off, g.seat.y + 0.94 * off);
+      res.heldAt = Math.round(g.pullNow() * 10) / 10;
+      res.wanted = Math.round(at(t0) * 10) / 10;
+      g.letGo();
+      g.grab = null;
+      await kit.until(() => g.shot === 1, 15000);
+      res.misses = g.misses;
+      res.hints = g.hints;
+      return res;
+    });
+    assert.equal(three.magnetBefore, undefined, 'no magnet before four misses');
+    assert.deepEqual(
+      three.hintsByMiss,
+      [0, 1, 1, 2],
+      `preview hint at two misses, magnet hint at four: ${JSON.stringify(three)}`,
+    );
+    assert.equal(
+      three.heldAt,
+      three.wanted,
+      `the magnet snapped a pull 9 units off onto the notch: ${JSON.stringify(three)}`,
+    );
+    assert.deepEqual([three.misses, three.hints], [4, 2], 'the snapped pull landed: no fifth miss');
+    await page.waitForTimeout(600);
+    await screenshot('bouncy-launch-3-magnet-phone');
+    log(
+      'Bouncy Launch lap level 2 pulled with 0 misses; level 3 magnet snapped after four misses and counted a second hint; passed',
     );
   }
   async function lineLevel() {

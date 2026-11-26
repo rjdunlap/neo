@@ -57,8 +57,8 @@ export const SPRING_PLAN: LaunchPlan = {
 };
 
 export const LEVELS: BandLevels = {
-  // Lap opens on the flower meadow, then the tap-the-spring level; no other band lists 13.
-  lap: { min: 1, max: MEADOW_LEVEL, order: [MEADOW_LEVEL, 1] },
+  // Lap opens on the flower meadow, then the tap-the-spring level, then the pull (every pull is right); no other band lists 13.
+  lap: { min: 1, max: MEADOW_LEVEL, order: [MEADOW_LEVEL, 1, 2] },
   // Level 8, Near or far, is an easy entry: two big clouds before the star level's single small one.
   toddler: { min: 1, max: 8, order: [1, 2, 8, 3] },
   preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
@@ -258,6 +258,16 @@ export function reach(pull: number, gravity = 1, spring = 1): number {
 /** The pull needed to land at fraction `f` (the inverse of `reach`). */
 export function pullFor(f: number): number {
   return MIN_PULL + Math.max(0, Math.min(1, f)) * (MAX_PULL - MIN_PULL);
+}
+
+/** Misses on one shot before the pull is helped by a magnet toward the right notch (counted as one hint, after the preview's two). */
+export const MAGNET_AFTER = 4;
+/** How close a pull must be to the right notch, in pull units, for the magnet to take hold. */
+export const MAGNET_RANGE = 14;
+
+/** The pull a magnet leaves her: snapped onto the target's notch when within range, otherwise untouched. */
+export function magnetPull(pull: number, target: number, range = MAGNET_RANGE): number {
+  return Math.abs(pull - target) <= range ? target : pull;
 }
 
 /** Two plainly different pulls reveal the game's stated rule: the bigger pull lands farther away. */

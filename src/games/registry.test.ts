@@ -139,7 +139,7 @@ describe('game registry', () => {
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
     expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1] });
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1, 2] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
     for (const level of [4, 5, 7, 6, 9, 10, 12, 11])

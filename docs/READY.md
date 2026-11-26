@@ -58,7 +58,6 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`river-tablets` level 8, *Which one do I mean?*** (school, batch `river-tablets 5`, after `river-tablets 4` lands; new interaction on an existing game: typecheck, rule tests, one filtered `rivertablets` play of level 8 with one wrong determinative and one hint, one portrait screenshot, `fingerdemo` at 8, `npm run build`, `npm run game-docs`). [Definition](definitions/river-tablets-7-8.md#level-8-which-one-do-i-mean-determinative)
 - **`opposites` level 12, *One pair, again and again*** (below-level-1 lap entry, settled 2026-10-23; new level tier, `npm run game-docs`). [Dive](deep-dives/opposites.md#build-slices-in-order)
 - **`little-conductor` levels 7–8, *One change and revise*** (new-interaction tier, after level 3's request model is shared). [Dive](deep-dives/little-conductor.md#build-slices-in-order)
 
