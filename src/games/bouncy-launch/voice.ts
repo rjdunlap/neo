@@ -26,6 +26,16 @@ export const VOICE = {
   'launch.planet-heavy': ['Same pull on the heavy planet! Will {pet} land past the flag, or before it?'],
   'launch.planet-why-light': ['A light planet pulls less, so the same pull floats farther.'],
   'launch.planet-why-heavy': ['A heavy planet pulls more, so the same pull lands sooner.'],
+  'launch.spring-predict': [
+    'Same pull on every spring! Which spring sends {pet} farthest? Tap one, then watch!',
+  ],
+  'launch.spring-why-right': [
+    'You got it! The stiff spring pushes harder, so the same pull sends {pet} farthest!',
+  ],
+  'launch.spring-why': ['Look! The stiff spring pushes harder, so the same pull sends {pet} farthest!'],
+  'launch.spring-pick': ['Land on the star! Pick a spring, then pull {pet} back!'],
+  'launch.spring-first': ['Pick a spring first, then pull {pet} back!'],
+  'launch.spring-too-soft': ['That spring cannot reach that far for {pet}! Try a stiffer spring.'],
   'launch.feed': ['Bring {friend} a snack!'],
   'launch.fed': ['Yum! Thank you!', '{friend} loves it!'],
   'launch.lets-see': ["Let's see!"],

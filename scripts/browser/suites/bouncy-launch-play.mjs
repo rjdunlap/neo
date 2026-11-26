@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, launch, finished, screenshot, log }) {
   async function bouncyLaunchPlay() {
     if (process.env.LAUNCH_LEVEL === '10') return lineLevel();
+    if (process.env.LAUNCH_LEVEL === '11') return springLevel();
     if (process.env.LAUNCH_LEVEL === 'notches') return notchLevels();
     // Level 13 (lap) on a phone: touches anywhere (the sky, a corner, the pet) bounce the pet; touches while it flies are
     // free; each landing leaves a flower that stays; five landings finish with 0 misses and 0 hints.
@@ -222,6 +223,121 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
       `Bouncy Launch 10: targets ${out.targets.map((t) => t + 1).join('/')}, picks ${out.picks.map((t) => t + 1).join('/')} (far off, above the line, exact); gap bars marked; 0/0; passed`,
+    );
+  }
+  async function springLevel() {
+    // Level 11 (school): round 1 predicts a spring (wrong prediction unscored) and watches all 3 fly; round 2 picks a
+    // spring then pulls for 3 stars, with two misses turning on the spring-button hint (no pull arc), plus portrait check.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(300);
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('bouncy-launch', 11, 'Mia', 'school');
+    await page.waitForFunction(() => neo.scene.game?.springButtons?.length === 3, null, { timeout: 15000 });
+    await page.waitForTimeout(400);
+    await screenshot('bouncy-launch-11-predict-portrait');
+    const buttonBoxes = await page.evaluate(() =>
+      neo.scene.game.springButtons.map((b) => {
+        const r = b.getBounds();
+        return {
+          w: Math.round(r.width / neo.view.scale),
+          h: Math.round(r.height / neo.view.scale),
+        };
+      }),
+    );
+    for (const box of buttonBoxes) {
+      assert.ok(box.w >= 100 && box.h >= 100, `spring button >= 100 units: ${JSON.stringify(box)}`);
+    }
+    // Round 1: tap Soft (not the farthest) and wait for all 3 flights to finish and round 2 (shot 1) to start.
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.tapOn(g.springButtons[0]);
+      await kit.until(() => g.shot === 1 && !g.flying && g.springPhase === 'pick', 25000);
+    });
+    const round1Stats = await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
+    assert.deepEqual(round1Stats, [0, 0], 'wrong prediction in round 1 is unscored');
+
+    // Shot 1: try pulling without picking a spring (no miss), then miss twice so the spring hint glows (without pull arc).
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.tapOn(g.pet);
+      await kit.sleep(250);
+    });
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.misses),
+      0,
+      'pulling before picking a spring is not a miss',
+    );
+    // Miss twice on shot 1 (too long on cloud 1, too short on clouds 2..5) so the spring hint glows (without pull arc).
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const nearZero = g.targets[0] === 0;
+      await kit.tapOn(g.springButtons[nearZero ? 2 : 0]);
+      await kit.sleep(200);
+      const pull = nearZero ? 170 : 35;
+      for (let m = 0; m < 2; m++) {
+        await kit.until(() => !g.flying && !g.grab, 15000);
+        const o = { x: g.seat.x + g.pet.touch.x * 0.5, y: g.seat.y + g.pet.touch.y * 0.5 };
+        const d = { x: -0.35, y: 0.94 };
+        const len = Math.hypot(d.x, d.y);
+        const a = g.ctx.stage.toGlobal(o);
+        const b = g.ctx.stage.toGlobal({ x: o.x + (d.x / len) * pull, y: o.y + (d.y / len) * pull });
+        await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 12));
+        await kit.until(() => !g.flying && g.misses === m + 1, 15000);
+      }
+    });
+    await screenshot('bouncy-launch-11-hint-portrait');
+    const hintState = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return {
+        misses: g.misses,
+        hints: g.hints,
+        hinting: g.hinting,
+        previewW: Math.round(g.preview.getLocalBounds().width),
+      };
+    });
+    assert.equal(hintState.misses, 2, 'two misses counted');
+    assert.equal(hintState.hints, 1, 'one hint counted after two misses');
+    assert.equal(hintState.hinting, true, 'spring hint active');
+    assert.equal(hintState.previewW, 0, 'level 11 glows the spring button, not the pull arc');
+
+    // Now finish shots 1..3 using the ideal spring and exact pull for each star.
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { idealSpringFor, padAt, pullForSpring, SPRING_KINDS } =
+        await import('/src/games/bouncy-launch/logic.ts');
+      while (g.shot < g.plan.shots) {
+        await kit.until(() => !g.flying && !g.grab && g.shot >= 1 && g.shot < g.plan.shots, 15000);
+        await kit.sleep(300);
+        const target = g.targets[g.shot - 1];
+        const spring = idealSpringFor(target);
+        const idx = SPRING_KINDS.indexOf(spring);
+        if (g.selectedSpring !== spring) {
+          await kit.tapOn(g.springButtons[idx]);
+          await kit.sleep(250);
+        }
+        const pull = pullForSpring(padAt(target), spring);
+        const o = { x: g.seat.x + g.pet.touch.x * 0.5, y: g.seat.y + g.pet.touch.y * 0.5 };
+        const d = { x: -0.35, y: 0.94 };
+        const len = Math.hypot(d.x, d.y);
+        const a = g.ctx.stage.toGlobal(o);
+        const b = g.ctx.stage.toGlobal({ x: o.x + (d.x / len) * pull, y: o.y + (d.y / len) * pull });
+        const curShot = g.shot;
+        await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 18));
+        await kit.until(() => g.shot === curShot + 1 || neo.scene.finished, 15000);
+      }
+      await kit.until(() => neo.scene.finished, 20000);
+    });
+    await finished('bouncy-launch');
+    const saved = await page.evaluate(() => {
+      const r = kit.store.stats('bouncy-launch').history.at(-1);
+      return [r.level, r.misses, r.hints];
+    });
+    assert.deepEqual(saved, [11, 2, 1], 'level 11 saved 2 misses, 1 hint');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      `Bouncy Launch 11: round 1 unscored predict + 3 flights, round 2 two misses -> spring hint, 3 stars; 2/1; passed`,
     );
   }
   return { bouncyLaunchPlay };

@@ -18,7 +18,8 @@ export type LaunchMode =
   | 'between'
   | 'nearfar'
   | 'meadow'
-  | 'line';
+  | 'line'
+  | 'spring';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -38,13 +39,21 @@ export const PLANS: LaunchPlan[] = [
 
 /**
  * Level 13, Flower meadow (lap's opening): a touch anywhere bounces the pet, and each landing leaves a flower, so the
- * meadow fills because she touched. 13 was the next clear ID (11 is still unused and falls back to level 1).
+ * meadow fills because she touched. 13 was the next clear ID.
  */
 export const MEADOW_LEVEL = 13;
 export const MEADOW_PLAN: LaunchPlan = {
   mode: 'meadow',
   shots: 5,
   name: 'Touch anywhere: the pet bounces, and each landing leaves a flower',
+};
+
+/** Level 11, Pick a spring: predict which spring flies farthest, then pick a spring and pull to land on the star. */
+export const SPRING_LEVEL = 11;
+export const SPRING_PLAN: LaunchPlan = {
+  mode: 'spring',
+  shots: 4,
+  name: 'Three springs (soft, medium, stiff): predict which goes farthest, then pick one to land on the star',
 };
 
 export const LEVELS: BandLevels = {
@@ -55,8 +64,8 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
   // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
   prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
-  // Level 9, Between two flights, follows the single shown pull of level 6; level 10 puts a shown pull on a number line.
-  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12] },
+  // Level 9, Between two flights, follows level 6; level 10 uses a 1-10 line; level 11 (Pick a spring) finishes school.
+  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12, SPRING_LEVEL] },
 };
 
 /** Level 7, Feed the friend: the next free ID after the six first levels. */
@@ -100,10 +109,47 @@ const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([
   [NEAR_FAR_LEVEL, NEAR_FAR_PLAN],
   [BETWEEN_LEVEL, BETWEEN_PLAN],
   [LINE_LEVEL, LINE_PLAN],
+  [SPRING_LEVEL, SPRING_PLAN],
   [PLANET_LEVEL, PLANET_PLAN],
   [MEADOW_LEVEL, MEADOW_PLAN],
 ]);
 export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[0];
+
+/** Three spring stiffnesses for level 11 (Pick a spring). Stiffest at full pull reaches cloud 5 (0.9). */
+export type SpringKind = 'soft' | 'medium' | 'stiff';
+export const SPRING_KINDS: readonly SpringKind[] = ['soft', 'medium', 'stiff'];
+export const SPRING_FACTORS: Record<SpringKind, number> = {
+  soft: 0.55,
+  medium: 0.75,
+  stiff: 0.9,
+};
+export const springFactor = (kind: SpringKind) => SPRING_FACTORS[kind];
+
+/** Can `kind` reach cloud `target` (0-based) with a pull inside the leash? */
+export function canSpringReach(kind: SpringKind, target: number, width = 0.85): boolean {
+  const maxReach = reach(MAX_PULL, 1, springFactor(kind));
+  return maxReach >= padAt(target) - width / PADS / 2;
+}
+
+/**
+ * The spring that gives comfortable pull control for cloud `target` (0-based):
+ * soft for near clouds (0–2), medium for cloud 3, stiff for cloud 4.
+ */
+export function idealSpringFor(target: number): SpringKind {
+  if (target >= 4) return 'stiff';
+  if (target === 3) return 'medium';
+  return 'soft';
+}
+
+/** The pull needed to land at fraction `f` on `kind` (clamped to MAX_PULL if unreachable). */
+export function pullForSpring(f: number, kind: SpringKind): number {
+  return pullFor(f / springFactor(kind));
+}
+
+/** Three distinct star clouds for level 11 round 2: one needing stiff (4), one needing medium/stiff (3), and one near (0..2). */
+export function springTargets(rng: Rng): number[] {
+  return rng.shuffle([4, 3, rng.pick([0, 1, 2])]);
+}
 
 export const LIGHT = 0.5;
 export const HEAVY = 2;
@@ -203,10 +249,10 @@ export const MIN_PULL = 30;
 export const MAX_PULL = 170;
 
 /** How far a pull sends the pet, as a fraction 0..1 of the way from the nearest landing to the farthest. */
-export function reach(pull: number, gravity = 1): number {
+export function reach(pull: number, gravity = 1, spring = 1): number {
   const t = (Math.min(MAX_PULL, Math.max(MIN_PULL, pull)) - MIN_PULL) / (MAX_PULL - MIN_PULL);
-  // Linear distance: equal extra pulls travel equal extra distances.
-  return t / gravity;
+  // Linear distance: equal extra pulls travel equal extra distances, scaled by spring stiffness and gravity.
+  return (t * spring) / gravity;
 }
 
 /** The pull needed to land at fraction `f` (the inverse of `reach`). */
@@ -275,7 +321,7 @@ export const skyIndex = (rng: Rng) => rng.int(0, SKIES.length - 1);
 export function padHit(f: number, width = 0.85): number {
   const i = Math.round(f * PADS - 0.5);
   if (i < 0 || i >= PADS) return -1;
-  return Math.abs(f - padAt(i)) <= width / PADS / 2 ? i : -1;
+  return Math.abs(f - padAt(i)) <= width / PADS / 2 ? i || 0 : -1;
 }
 
 /**
@@ -297,6 +343,7 @@ export const cloudAt = (plan: LaunchPlan, i: number) =>
 /** The pads to aim for, one per shot, never the same twice running (at Near or far, the two clouds take turns from a seeded start). */
 export function targets(plan: LaunchPlan, rng: Rng): number[] {
   if (plan.mode === 'line') return lineTargets(rng, plan.shots);
+  if (plan.mode === 'spring') return springTargets(rng);
   if (plan.mode === 'nearfar') {
     const first = rng.int(0, 1);
     return Array.from({ length: plan.shots }, (_, i) => (first + i) % 2);
@@ -381,6 +428,7 @@ export function pullToTake(
   targets: readonly number[],
   last?: number,
   spots: readonly number[] = [],
+  spring?: SpringKind,
 ): number {
   switch (plan.mode) {
     case 'tap':
@@ -393,6 +441,13 @@ export function pullToTake(
     case 'number':
     case 'nearfar':
       return pullFor(cloudAt(plan, targets[shot]));
+    case 'spring': {
+      // Shot 0 is the shown full-pull spring comparison; shots 1..3 aim for targets[shot - 1].
+      if (shot === 0) return MAX_PULL;
+      const t = targets[shot - 1];
+      if (t === undefined) return 0;
+      return pullForSpring(padAt(t), spring ?? idealSpringFor(t));
+    }
     case 'compare': {
       if (last === undefined) return pullFor(0.5);
       return pullFor(nextAsk(last) === 'farther' ? last + 0.3 : last - 0.3);
