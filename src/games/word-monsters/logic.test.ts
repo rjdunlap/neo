@@ -5,6 +5,10 @@ import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   ALPHABET,
   BIG_LEVEL,
+  BLEND_GROUPS,
+  BLEND_LEVEL,
+  BLEND_PLAN,
+  STRETCHY,
   BIG_PLAN,
   LAST_LEVEL,
   LAST_PLAN,
@@ -69,6 +73,7 @@ describe('Word Monsters', () => {
       7,
       8,
       LAST_LEVEL,
+      BLEND_LEVEL,
       SLOW_LEVEL,
       REPAIR_LEVEL,
       FOUR_LEVEL,
@@ -259,7 +264,7 @@ describe('Word Monsters', () => {
   it('level 11 builds a pictured word from the word alone: one box per sound, a spare unlike every needed letter', () => {
     expect(planFor(SLOW_LEVEL)).toBe(SLOW_PLAN);
     expect(SLOW_PLAN).toMatchObject({ mode: 'slow', rounds: 3, choices: 4 });
-    expect(stepLevel(LAST_LEVEL, 1, LEVELS.school!)).toBe(SLOW_LEVEL);
+    expect(stepLevel(BLEND_LEVEL, 1, LEVELS.school!)).toBe(SLOW_LEVEL);
     // The ask names the word and never its sounds.
     expect(SCRIPT['monster.slow']).toBeDefined();
     for (const line of SCRIPT['monster.slow']) expect(line).not.toContain('{sounds}');
@@ -412,6 +417,48 @@ describe('Word Monsters', () => {
       }
     }
     expect(seen).toEqual(new Set(FOUR_WORDS));
+  });
+
+  it('level 16 plays three blends, each a word whose monsters say its sounds and two more words that start alike', () => {
+    expect(planFor(BLEND_LEVEL)).toBe(BLEND_PLAN);
+    expect(BLEND_PLAN).toMatchObject({ mode: 'blend', rounds: 3, choices: 3 });
+    // It follows last sounds and comes before building from the word alone.
+    expect(stepLevel(LAST_LEVEL, 1, LEVELS.school!)).toBe(BLEND_LEVEL);
+    expect(stepLevel(BLEND_LEVEL, 1, LEVELS.school!)).toBe(SLOW_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BLEND_LEVEL);
+    for (const id of ['monster.blendit', 'monster.blendit.not'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+    // The ask never names the word: she has to blend it.
+    for (const line of SCRIPT['monster.blendit']) expect(line).not.toContain('{word}');
+    expect(Object.keys(BLEND_GROUPS).some((l) => STRETCHY.includes(l))).toBe(true);
+    for (const group of Object.values(BLEND_GROUPS)) expect(group.length).toBeGreaterThanOrEqual(3);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const questions = makeQuestions(BLEND_PLAN, new Rng(seed));
+      expect(questions).toHaveLength(3);
+      // A different first letter each time, and the first is one she can hold on to (mmm, rrr).
+      const firsts = questions.map((q) => q.answer[0]);
+      expect(new Set(firsts).size).toBe(3);
+      expect(STRETCHY).toContain(firsts[0]);
+      for (const q of questions) {
+        seen.add(q.answer);
+        expect(q.word).toBe(q.answer);
+        expect(q.monsters).toEqual([...q.answer]);
+        expect(q.cards).toHaveLength(3);
+        // Exactly one card is the word the sounds make; the others start with the same letter and all differ.
+        expect(q.cards!.filter((w) => w === q.answer)).toHaveLength(1);
+        expect(new Set(q.cards).size).toBe(3);
+        for (const card of q.cards!) {
+          expect(card[0], q.answer).toBe(q.answer[0]);
+          expect(SLOW_WORDS).toContain(card);
+          // Every card has a picture and every sound of it has a line.
+          for (const l of card) expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
+        }
+      }
+    }
+    // Every group word turns up as an answer at some seed.
+    expect(seen.size).toBeGreaterThan(Object.values(BLEND_GROUPS).flat().length / 2);
   });
 
   it('level 13 builds words where one monster wears a two-letter team and fills one box', () => {

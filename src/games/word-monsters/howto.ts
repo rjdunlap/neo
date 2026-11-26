@@ -41,6 +41,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Listen to the pictured word, then tap the monster that says its last sound. Tap the picture to hear the word again.',
     },
     {
+      from: 16,
+      to: 16,
+      text: 'The monsters light up one by one and say their sounds. Listen, run the sounds together and tap the picture of the word they make. Tap a monster to hear the sounds again.',
+    },
+    {
       from: 11,
       to: 11,
       text: 'Only the word is said. Say it slowly together, then build it in the boxes; one letter is a spare. Tap the boxes to hear the sounds, or the picture to hear the word.',

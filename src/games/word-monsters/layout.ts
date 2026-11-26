@@ -126,3 +126,9 @@ export const FIXED_HIT = { w: 148, h: 164 } as const;
 export const SLOT_ROW_HIT = { pad: 80, h: 160 } as const;
 /** A drop this far above or below the boxes' middle still tries the next box. */
 export const DROP_REACH = 140;
+
+/** Level 16: a picture card is this big a square (a tap anywhere on it counts) and its picture is drawn this scale. */
+export const CARD = { size: 176, scale: 0.55 } as const;
+
+/** Level 16: where its three picture cards stand, in the loose monsters' places (a row; lifted clear of the guide upright). */
+export const cardSpots = (v: V, plan: Plan): Spot[] => looseSpots(v, plan, plan.choices);

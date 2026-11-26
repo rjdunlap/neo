@@ -29,6 +29,11 @@ export const VOICE = {
   ],
   'monster.team.half': ['That is just {sound}. Two letters make {team}.'],
   'monster.blend': ['{word}!'],
+  'monster.blendit': [
+    'Listen to the monsters. Which picture do they make?',
+    'Hear the sounds. Which picture is it?',
+  ],
+  'monster.blendit.not': ['{word} is {sounds}. Listen again!'],
   'monster.iam': ["I'm {letter}! I say {sound}."],
   'monster.iam.name': ["I'm {letter}!"],
   'monster.next': ['Next sound: {sound}.'],
