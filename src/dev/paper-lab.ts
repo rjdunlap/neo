@@ -10,6 +10,8 @@ import { Sprite } from 'pixi.js';
 import { PAPER_ART } from '../art/creatures/paper';
 import { EXPRESSIONS } from '../art/creatures/illustrated';
 import { EGG_STAGES, paperEgg } from '../creatures/companion';
+import { paperItems } from '../art/creatures/paper-items';
+import { ITEM_ART, WEARABLES } from '../art/creatures/wearables';
 
 /**
  * The paper cut-out style's swatch book (docs/ART-STYLE.md), at `/?paper` on the dev server only: every named shape
@@ -30,6 +32,8 @@ export class PaperLab extends Scene {
     const g = this.g.clear();
     paperGround(g, 0, 0, view.w, view.h);
     for (const c of [...this.content.children]) if (c !== g) c.destroy();
+    const want = new URLSearchParams(location.search).get('lab') ?? 'sprout';
+    if (want === 'items') return this.items(view);
     const colors: ColorName[] = [
       'red',
       'orange',
@@ -105,7 +109,6 @@ export class PaperLab extends Scene {
     this.content.addChild(pond);
 
     // The paper creatures, every expression (?lab=species picks one).
-    const want = new URLSearchParams(location.search).get('lab') ?? 'sprout';
     const draw = PAPER_ART[want as keyof typeof PAPER_ART];
     if (draw) {
       const set = draw();
@@ -145,6 +148,25 @@ export class PaperLab extends Scene {
       t.position.set(x, y);
       this.content.addChild(t);
     }
+  }
+
+  /** The nine wearables in a grid (?lab=items), each with a red dot on its anchor (the point the wear tables place). */
+  private items(view: View) {
+    const items = paperItems();
+    const cw = Math.min(view.w / 3, 280),
+      ch = (view.h - 20) / 3;
+    WEARABLES.forEach((id, i) => {
+      const a = ITEM_ART[id];
+      const s = new Sprite(items[a.file]);
+      s.anchor.set(a.anchor.x / a.width, a.anchor.y / a.height);
+      const k = Math.min((cw * 0.8) / a.width, (ch * 0.85) / a.height);
+      s.scale.set(k);
+      const cx = (view.w - cw * 3) / 2 + cw * ((i % 3) + 0.5),
+        cy = 10 + ch * (Math.floor(i / 3) + 0.5);
+      s.position.set(cx - (a.width / 2 - a.anchor.x) * k, cy - (a.height / 2 - a.anchor.y) * k);
+      const dot = new Graphics().circle(s.position.x, s.position.y, 3).fill(0xff0044);
+      this.content.addChild(s, dot);
+    });
   }
 }
 
