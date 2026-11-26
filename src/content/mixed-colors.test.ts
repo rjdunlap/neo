@@ -54,7 +54,14 @@ describe('the paint shelf as pet colours (paint-mixer 4)', () => {
     for (const c of MIXED_COLORS) expect(one(c)).toBe(c);
     expect(one('mauve')).toBe(SPECIES.sprout.color);
     expect(one(42)).toBe(SPECIES.sprout.color);
-    const met = meetIn({ owned: [], companion: null }, 'sprout', 'Pip', 'peach', 'start', () => 'pip1');
+    const met = meetIn(
+      { owned: [], companion: null, forms: [] },
+      'sprout',
+      'Pip',
+      'peach',
+      'start',
+      () => 'pip1',
+    );
     expect(met?.look.color).toBe('peach');
   });
 

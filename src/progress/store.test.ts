@@ -837,7 +837,7 @@ describe('her friends (RW05)', () => {
     const other = make();
     await other.load();
     other.reset();
-    other.data.creatures = { owned: [], companion: null };
+    other.data.creatures = { owned: [], companion: null, forms: [] };
     other.beginWelcome('prek', 'pretty');
     for (const step of ['pretty', 'yummy', 'song'] as const) other.completeWelcomeStep(step, null, ANY_ROUND);
     expect(other.adoptWelcome('Rex')?.name).toBe('Pebble');
@@ -960,6 +960,41 @@ describe('her friends (RW05)', () => {
     await store.restoreAll(text);
     await store.switchTo(a);
     expect(store.companion?.look.worn).toEqual(['sunhat']);
+  });
+});
+
+describe('forms (RW11)', () => {
+  it('grows a form once, shows it only where it belongs, and shares the head slot both ways', async () => {
+    const store = make();
+    await store.load();
+    const pip = store.meet('sprout', 'Pip', 'teal', 'start')!;
+    const wisp = store.meet('glider', 'Wisp', 'purple', 'dev:glider')!;
+    // Not grown yet: nothing to show.
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(false);
+    expect(store.growForm('sprout:sun', 'garden:sunflower')).toBe(true);
+    expect(store.growForm('sprout:sun', 'garden:sunflower')).toBe(false);
+    expect(store.growForm('sprout:nope' as never)).toBe(false);
+    expect(store.data.creatures.forms).toEqual(['sprout:sun']);
+    store.wear(pip.id, 'crown', true);
+    store.wear(pip.id, 'scarf', true);
+    expect(store.setForm('nobody', 'sprout:sun')).toBe(false);
+    expect(store.setForm(wisp.id, 'sprout:sun')).toBe(false); // another species' form
+    expect(store.setForm(pip.id, 'sprout:moon')).toBe(false); // not grown
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(true);
+    expect(store.companion?.look.form).toBe('sprout:sun');
+    expect(store.companion?.look.worn).toEqual(['scarf']); // the crown came off, the scarf stayed
+    store.wear(pip.id, 'beanie', true);
+    expect(store.companion?.look.form).toBeNull(); // a hat takes the blossom off
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(true);
+    store.wear(pip.id, 'mittens', true); // a non-head item leaves it
+    expect(store.companion?.look.form).toBe('sprout:sun');
+    expect(store.setForm(pip.id, null)).toBe(true);
+    expect(store.companion?.look.form).toBeNull();
+    // A reset keeps creatures, and so the forms.
+    store.setForm(pip.id, 'sprout:sun');
+    store.reset();
+    expect(store.data.creatures.forms).toEqual(['sprout:sun']);
+    expect(store.companion?.look.form).toBe('sprout:sun');
   });
 });
 

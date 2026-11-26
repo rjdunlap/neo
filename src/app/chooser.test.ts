@@ -185,9 +185,16 @@ describe('the profile nobody has used', () => {
     const hatched = defaults();
     hatched.creatures = {
       owned: [
-        { id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: 'start' },
+        {
+          id: 'abcd',
+          species: 'sprout',
+          name: 'Pip',
+          look: { color: 'teal', worn: [], form: null },
+          metAt: 'start',
+        },
       ],
       companion: 'abcd',
+      forms: [],
     };
     expect(isBlankProfile(hatched, entry)).toBe(false);
     const stickered = defaults();
@@ -275,9 +282,16 @@ describe('the name on a card', () => {
     expect(cardName(save)).toBe('Pip');
     save.creatures = {
       owned: [
-        { id: 'abcd', species: 'river', name: 'Clover', look: { color: 'teal', worn: [] }, metAt: 'start' },
+        {
+          id: 'abcd',
+          species: 'river',
+          name: 'Clover',
+          look: { color: 'teal', worn: [], form: null },
+          metAt: 'start',
+        },
       ],
       companion: 'abcd',
+      forms: [],
     };
     expect(cardName(save)).toBe('Clover');
     save.profile.name = '  Mia ';

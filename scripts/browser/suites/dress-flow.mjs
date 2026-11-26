@@ -22,6 +22,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
           },
         ],
         companion: 'pip0',
+        forms: [],
       };
       kit.store.data.settings.howToCards = false;
       kit.store.save();
@@ -62,6 +63,42 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await screenshot('dress-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
+    // RW11 slice 1: once the profile has grown the sprout's blossoms, Dress offers the original look and each blossom.
+    await tap('neo.scene.back');
+    await scene('FriendsScene');
+    await page.evaluate(() => kit.growForm());
+    await tap('neo.scene.dress');
+    await scene('DressScene');
+    assert.equal(
+      await page.evaluate(() => neo.scene.cards.children.length),
+      10,
+      'the original look, two blossoms and seven items',
+    );
+    const form = (id) => `neo.scene.cards.children.find((c) => c.form === ${id})`;
+    await tap(form("'sprout:moon'"));
+    await page.waitForTimeout(500);
+    assert.deepEqual(
+      await page.evaluate(() => ({
+        form: kit.store.companion.look.form,
+        worn: kit.store.companion.look.worn,
+        shown: neo.scene.friend.form,
+      })),
+      { form: 'sprout:moon', worn: ['scarf'], shown: 'sprout:moon' },
+      'a blossom takes the sun hat off and keeps the scarf',
+    );
+    await screenshot('dress-blossom-landscape');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    await screenshot('dress-blossom-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    await tap(card('sunhat'));
+    await page.waitForTimeout(400);
+    assert.deepEqual(
+      await page.evaluate(() => ({ form: kit.store.companion.look.form, worn: neo.scene.friend.worn })),
+      { form: null, worn: ['scarf', 'sunhat'] },
+      'a hat takes the blossom off',
+    );
     // Back to Friends with Clover still on the stage; then Pebble: her own six items, and her look untouched.
     await tap('neo.scene.back');
     await scene('FriendsScene');
