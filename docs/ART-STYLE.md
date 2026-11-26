@@ -6,7 +6,7 @@ The developer chose this look on 2026-11-26 after an art test of twelve styles, 
 
 Every filled shape, in this order:
 
-1. **Torn edge.** The outline is pushed in and out along its edge by two sine waves (9 and 17 per loop, measured by distance along the edge), seeded by the shape so it stays still. About 4.4 logical units on a big piece, less on smaller ones, so a circle still reads as a circle. Points are joined by quadratic curves through midpoints, so the edge is soft.
+1. **Torn edge.** The outline is pushed in and out along its edge by two sine waves (9 and 17 per loop, measured by distance along the edge), seeded by the shape so it stays still. About 4.4 logical units on a big piece, less on smaller ones (so a circle still reads as a circle) and on thin ones (so a bar to measure keeps its length). Points are joined by quadratic curves through midpoints, so the edge is soft.
 2. **Shadow.** Two offset copies in warm brown (`0x2d1e14`) at low alpha, as if the paper sits above what is under it. Never black, and never a live blur filter.
 3. **Flat fill** in the swatch colour. No gradients: a sky or wall is one flat sheet (`gradientTexture` now returns that).
 4. **Paper fibre** over the fill at 0.28 alpha (a 192-pixel tile of short light and brown strokes), and over the ground at 0.35.
@@ -18,7 +18,7 @@ A small warm pickup on a busy or similar ground (Pond Conga's food) gets a soft 
 
 ## How it is drawn
 
-- **The paper pass** (`src/art/paperize.ts`) does most of the work. Once per frame, before drawing, it walks the stage for `Graphics` it has not seen and rewrites their instructions into paper: solid fills become paper pieces, and a stroke that outlined the same path is replaced by the crayon outline. So every game takes the look without being redrawn. It leaves flat: fills under 0.55 alpha (glows, shades, highlights), details under 13 units (eyes, pips, dots), textured or gradient fills, shapes with holes, open strokes, and rectangles at least 700 × 560 (backdrops, which get fibre only). Overlapping pieces in one fill (clouds, bushes) are outlined from underneath so no inner lines show.
+- **The paper pass** (`src/art/paperize.ts`) does most of the work. Once per frame, before drawing, it walks the stage for `Graphics` it has not seen and rewrites their instructions into paper: solid fills become paper pieces, and a stroke that outlined the same path is replaced by the crayon outline. So every game takes the look without being redrawn. It leaves flat: fills under 0.65 alpha (glows, shades, highlights), details under 13 units (eyes, pips, dots), textured or gradient fills, shapes with holes, open strokes, and rectangles at least 700 × 560 (backdrops, which get fibre only). Overlapping pieces in one fill (clouds, bushes) are outlined from underneath so no inner lines show.
 - **Animated drawings stay flat.** A `Graphics` the game redraws three times within 30 frames is left flat until it settles, so a glow, trail or meter costs nothing extra per frame.
 - **Keeping something flat:** `keepFlat(node)` (a drawing or a whole subtree), for a piece that must keep a crisp exact edge (a measured ruler, a traced letter, a graph).
 - **Drawing paper on purpose:** `src/art/paper.ts` has `paperCircle`, `paperEllipse`, `paperRect`, `paperPoly`, `paperShape` (the named shapes), `paperLine` (a hairline with a small shadow) and `paperGround`. What they draw is marked so the pass does not redo it. The shared button and card `finish()` uses them.

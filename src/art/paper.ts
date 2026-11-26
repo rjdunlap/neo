@@ -173,6 +173,13 @@ export function fibrePattern(): FillPattern | null {
   return fibre;
 }
 
+/** The shorter side of the outline's box: a thin piece barely wobbles, so a bar's length still reads true. */
+function thinness(pts: Pt[]): number {
+  const xs = pts.map((p) => p[0]),
+    ys = pts.map((p) => p[1]);
+  return Math.min(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+}
+
 function extent(pts: Pt[]): number {
   let x0 = Infinity,
     y0 = Infinity,
@@ -217,7 +224,9 @@ function drawPaper(g: Graphics, outline: Pt[], color: PaperColor, o: PaperOption
             `${outline.length}:${outline[0][0].toFixed(1)},${outline[0][1].toFixed(1)}:${outline[outline.length >> 1][0].toFixed(1)}`,
         );
   // The art test's 2.2 px edge, eased off on smaller pieces so a circle still reads as a circle.
-  const amp = o.amp ?? Math.min(2.2 * U, Math.max(0.4 * U, extent(outline) * 0.028));
+  const amp =
+    o.amp ??
+    Math.min(2.2 * U, Math.max(0.4 * U, extent(outline) * 0.028)) * Math.min(1, thinness(outline) / 60);
   const pts = wobble(outline, amp, seed);
   if (!o.noShadow) paperShadow(g, pts, small, alpha);
   trace(g, pts).fill({ color: fill, alpha });

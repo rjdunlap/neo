@@ -35,7 +35,7 @@ import { crayon, ellipsePoints, fibrePattern, papered, roundRectPoints, U, wobbl
 /** Shapes smaller than this across (logical units) are details and stay flat. */
 const DETAIL = 13;
 /** Below this fill alpha a shape is a glow, shadow or highlight and stays flat. */
-const SOLID = 0.55;
+const SOLID = 0.65;
 /** A rectangle at least this big is a backdrop: fibre only, no edge or outline. */
 const BACKDROP_W = 700;
 const BACKDROP_H = 560;
@@ -242,7 +242,9 @@ export function paperizeContext(ctx: GraphicsContext): boolean {
     }
     const big = Math.max(all.w, all.h);
     const small = big < 40;
-    const amp = Math.min(2.2 * U, Math.max(0.4 * U, big * 0.028));
+    // A thin piece (a bar, a strip to measure) barely wobbles, so its length still reads true.
+    const thin = Math.min(...pieces.map((p) => Math.min(bounds([p.pts]).w, bounds([p.pts]).h)));
+    const amp = Math.min(2.2 * U, Math.max(0.4 * U, big * 0.028)) * Math.min(1, thin / 60);
     const wob = pieces.map((p) => wobble(p.pts, p.backdrop ? 0 : amp, hash(p.pts)));
     const line = crayon(color!);
     const lineW = (small ? 1.5 : 2.6) * U;
