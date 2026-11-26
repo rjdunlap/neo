@@ -1,6 +1,6 @@
 # Ribbon Workshop, How Many Pieces Fit?: level 8 (definition)
 
-**Status:** defined 2026-11-25 as slice **R7** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order); docs only — build queued in [READY](../READY.md). Every [open decision](#open-decisions) has a default the build uses.
+**Status:** defined 2026-11-25 as slice **R7** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order); **Built:** 2026-11-25 ([PR #2193](https://github.com/rjdunlap/neo/pull/2193), [verification](../verification/2026-11-25-ribbon-workshop-level-8-how-many-pieces-fit.md)): as defined, with one added line `ribbon.fit.pick` ("Pick an answer card first.") for an empty Check on tag 2, the voice IDs spelled `ribbonfit.*` instead of `ribbon.fit.*` (the `ribbon` prefix is one the voice-clip test requires a rendered clip for, and the build run does not render clips, so the lines use device speech until a Better voice pass renders them under the `ribbon` prefix), and the tied gift standing past the spool's end rather than at the order's end so it never covers the unit labels. Every [open decision](#open-decisions) has a default the build uses.
 
 Defined from the [fractions study's candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit), [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) and [anchors](../deep-dives/subjects/fractions.md#anchors-and-evidence-limits). It is one new level of the existing game `ribbon-workshop`, not a new game.
 
