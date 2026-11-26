@@ -1,0 +1,1 @@
+**`story-steps` level 14, *Story Theater: Two Viewpoints*** (existing game, school 6–14: [definition](../../definitions/two-viewpoints.md), preserving 1–13 and pins; `npm run typecheck`, `story-steps` rule/upright tests, one filtered `story` play at level 14, one portrait screenshot, `fingerdemo` at level 14, `node scripts/content-barrels.mjs`, `npm run game-docs`).
