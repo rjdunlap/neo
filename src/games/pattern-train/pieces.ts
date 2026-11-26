@@ -52,3 +52,19 @@ export function trainCar(art: Container): Container {
   car.addChild(new Graphics().circle(-27, 65, 12).circle(27, 65, 12).fill(swatch.brown.line));
   return car;
 }
+
+/** The counters of a stack as a five-frame: two rows of five empty rings, the first `n` of them filled (row one first), so a stack is seen, not only counted. */
+export function stackArt(n: number, size: number): Container {
+  const c = new Container();
+  const gap = size * 0.54,
+    r = size * 0.21;
+  for (let i = 0; i < 10; i++) {
+    const x = ((i % 5) - 2) * gap,
+      y = (Math.floor(i / 5) - 0.5) * gap;
+    const dot = new Graphics().circle(x, y, r);
+    if (i < n) dot.fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+    else dot.stroke({ width: 2, color: swatch.orange.light });
+    c.addChild(dot);
+  }
+  return c;
+}

@@ -8,7 +8,7 @@ import type { BandLevels } from '../../progress/difficulty';
 export interface PatternPlan {
   /** The repeating unit, as symbol slots (0, 1, 2). */
   pattern: number[];
-  kind: 'shape' | 'animal' | 'bell' | 'pair' | 'number';
+  kind: 'shape' | 'animal' | 'bell' | 'pair' | 'number' | 'stack';
   /** The empty car is in the first repeat (a missing middle) rather than at the end. */
   missing?: boolean;
   /** Two empty cars at the end. */
@@ -23,6 +23,8 @@ export interface PatternPlan {
   numberSteps?: readonly number[];
   /** Level 17, "Make your own": she picks a unit of one to three pieces and the train runs it round (`makeTrain`); nothing is wrong. */
   make?: boolean;
+  /** Level 18, "Stairs": cars hold 1, 2, 3, 4 counters and the empty car holds one more; the pieces are counts (1–9), not pieces 0–2. */
+  stairs?: boolean;
   name: string;
 }
 
@@ -50,6 +52,7 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
   // Her own unit, so `pattern` is empty: the unit is whatever she makes.
   { pattern: [], kind: 'shape', make: true, name: 'Make your own pattern and watch it go round' },
+  { pattern: [], kind: 'stack', stairs: true, name: 'Stairs: stacks that grow by one' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -102,7 +105,13 @@ export function pieceName(kind: PatternPlan['kind'], family: number | undefined,
 
 /** The spoken reason after the answer that ends a round (TotoLogic P7): a line id and its slots. */
 export interface PatternSaid {
-  key: 'pattern.why' | 'pattern.whyBells' | 'pattern.whyNumber' | 'pattern.whyPair' | 'pattern.oddWhy';
+  key:
+    | 'pattern.why'
+    | 'pattern.whyBells'
+    | 'pattern.whyStack'
+    | 'pattern.whyNumber'
+    | 'pattern.whyPair'
+    | 'pattern.oddWhy';
   vars: Record<string, string | number>;
 }
 
@@ -117,6 +126,7 @@ export function patternSaid(
   train: { sequence: readonly number[]; targets: readonly number[]; family?: number; look?: PairLook },
 ): PatternSaid {
   const { sequence } = train;
+  if (plan.kind === 'stack') return { key: 'pattern.whyStack', vars: { list: sequence.join(', ') } };
   if (plan.kind === 'number') {
     return {
       key: 'pattern.whyNumber',
@@ -152,6 +162,29 @@ export function patternSaid(
 export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
 /** The tunnel arch she taps to hear the count again: a target like any car, so never under 100 units either way. */
 export const TUNNEL_SIZE = { w: 100, h: 140 } as const;
+
+/** Level 18: four cars show 1 more counter each, and the fifth is the empty car. */
+export const STAIR_CARS = 5;
+/** The most counters a stack holds: the five-frame is two rows of five, the answer's "one too many" included. */
+export const STACK_MAX = 9;
+/** A stair train may start at 1 to 4, so the answer is 5 to 8 and its "too many" neighbour is at most 9. */
+export const STAIR_START = { min: 1, max: 4 } as const;
+
+/**
+ * A stair train: four cars of start, start + 1, …, then the empty car with one more. The three stacks on offer are the
+ * answer, the same as the last car (no growth) and one too many, in a shuffled order, so the answer is as often in the
+ * middle as at either end and is found by seeing the stack grow.
+ */
+function stairsTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const start = rng.int(STAIR_START.min, STAIR_START.max);
+  const sequence = Array.from({ length: STAIR_CARS }, (_, i) => start + i);
+  const answer = sequence[STAIR_CARS - 1];
+  return {
+    sequence,
+    targets: [STAIR_CARS - 1],
+    choices: [rng.shuffle([answer - 1, answer, answer + 1])],
+  };
+}
 
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
@@ -251,6 +284,7 @@ export function buildTrain(
   shown?: number[];
 } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
+  if (plan.stairs) return stairsTrain(rng);
   if (plan.kind === 'pair') return pairTrain(rng);
   const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
   // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.

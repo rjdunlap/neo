@@ -12,6 +12,9 @@ import {
   patternPlan,
   removeFromUnit,
   ODD_CARS,
+  STACK_MAX,
+  STAIR_CARS,
+  STAIR_START,
   ANIMAL_TRIOS,
   SHAPE_FAMILIES,
   buildTrain,
@@ -31,8 +34,8 @@ import {
 } from './logic';
 import { SCRIPT } from '../../content/voice-script';
 
-/** The plans that are a train to finish, mend or match: level 17 makes its own unit, so it has no train to build. */
-const TRAIN_PLANS = PATTERN_PLANS.filter((p) => !p.make);
+/** The plans that are a train to finish, mend or match: level 17 makes its own unit, so it has no train to build, and level 18's stacks have their own tests. */
+const TRAIN_PLANS = PATTERN_PLANS.filter((p) => !p.make && !p.stairs);
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -442,10 +445,10 @@ describe('Pattern Train Make your own (level 17)', () => {
   }
 
   it('is the school level after 16, a plan of its own with no train to build', () => {
-    expect(PATTERN_PLANS).toHaveLength(17);
+    expect(PATTERN_PLANS.slice(0, 17)).toHaveLength(17);
     expect(patternPlan(17).make).toBe(true);
     expect(PATTERN_PLANS.filter((p) => p.make)).toHaveLength(1);
-    expect(LEVELS.school).toEqual({ min: 8, max: 17 });
+    expect(LEVELS.school?.min).toBe(8);
     expect(LEVELS.prek?.max).toBe(9);
     expect(LEVELS.preschool?.max).toBe(6);
   });
@@ -487,5 +490,57 @@ describe('Pattern Train Make your own (level 17)', () => {
     }
     expect(SCRIPT['pattern.made'][0]).toContain('{list}');
     expect(SCRIPT['pattern.make'][0]).toContain('{name}');
+  });
+});
+
+describe('Pattern Train Stairs (level 18)', () => {
+  const plan = patternPlan(18);
+  const rounds = Array.from({ length: 300 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
+
+  it('is the school level after 17, and the ladder ends there', () => {
+    expect(plan.stairs).toBe(true);
+    expect(plan.kind).toBe('stack');
+    expect(PATTERN_PLANS).toHaveLength(18);
+    expect(LEVELS.school).toEqual({ min: 8, max: 18 });
+  });
+
+  it('grows strictly by one and the empty car is the last, one more than the car before', () => {
+    for (const { sequence, targets } of rounds) {
+      expect(sequence).toHaveLength(STAIR_CARS);
+      expect(targets).toEqual([STAIR_CARS - 1]);
+      sequence.forEach((n, i) => expect(n).toBe(sequence[0] + i));
+      expect(sequence[0]).toBeGreaterThanOrEqual(STAIR_START.min);
+      expect(sequence[0]).toBeLessThanOrEqual(STAIR_START.max);
+    }
+  });
+
+  it('offers the answer, no growth and one too many, never more than nine counters', () => {
+    for (const { sequence, choices } of rounds) {
+      const answer = sequence[STAIR_CARS - 1];
+      expect([...choices[0]].sort((a, b) => a - b)).toEqual([answer - 1, answer, answer + 1]);
+      expect(choices[0]).toContain(sequence[STAIR_CARS - 2]);
+      expect(Math.max(...choices[0], ...sequence)).toBeLessThanOrEqual(STACK_MAX);
+      expect(Math.min(...choices[0])).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('puts the answer first, middle and last about equally often, and wantedChoice finds it', () => {
+    const at = [0, 0, 0];
+    for (const { sequence, targets, choices } of rounds) {
+      const want = wantedChoice(sequence, targets, choices, 0);
+      expect(choices[0][want]).toBe(sequence[targets[0]]);
+      at[want]++;
+    }
+    for (const n of at) expect(n).toBeGreaterThan(60);
+  });
+
+  it('says the rule back with the counts, and its lines have their slots', () => {
+    const { sequence, targets } = rounds[0];
+    const said = patternSaid(plan, { sequence, targets });
+    expect(said.key).toBe('pattern.whyStack');
+    expect(said.vars.list).toBe(sequence.join(', '));
+    expect(SCRIPT['pattern.whyStack'][0]).toContain('{list}');
+    expect(SCRIPT['pattern.count'][0]).toContain('{n}');
+    expect(SCRIPT['pattern.stairs'][0]).toContain('{name}');
   });
 });
