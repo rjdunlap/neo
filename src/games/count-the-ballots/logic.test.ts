@@ -4,6 +4,7 @@ import {
   ALL_DEALS,
   CANDIDATES,
   LEVEL_DEALS,
+  LastMove,
   MAJORITY,
   PERMS,
   VOTERS,
@@ -12,6 +13,7 @@ import {
   clean,
   count,
   countBallots,
+  gridStep,
   makeRound,
   movers,
   pileFor,
@@ -150,5 +152,50 @@ describe('Count the Ballots rounds', () => {
 
   it('counts a hand the same way as a deal', () => {
     for (const d of clear) expect(countBallots(ballotsOf(d), [])).toEqual(count(d));
+  });
+});
+
+describe('the one-step Undo', () => {
+  it('takes only the last ballot back, once, and forgets it after a count', () => {
+    const placed: (number | null)[] = [null, null, null, null];
+    const last = new LastMove();
+    expect(last.undo(placed)).toBeNull();
+    placed[1] = 2;
+    last.record(1);
+    placed[3] = 0;
+    last.record(3);
+    expect(last.undo(placed)).toBe(3);
+    expect(placed).toEqual([null, 2, null, null]);
+    expect(last.undo(placed), 'one step only').toBeNull();
+    expect(placed[1]).toBe(2);
+    last.record(1);
+    last.clear();
+    expect(last.undo(placed), 'a count clears it').toBeNull();
+    expect(placed[1]).toBe(2);
+  });
+});
+
+describe('arrow keys over the hand', () => {
+  const free = Array.from({ length: VOTERS }, () => null);
+  it('first lands on the first ballot in the hand, then walks the grid and stops at the edges', () => {
+    expect(gridStep(free, null, 0)).toBe(0);
+    expect(gridStep(free, 0, 0)).toBe(1);
+    expect(gridStep(free, 1, 1)).toBe(4);
+    expect(gridStep(free, 4, 2)).toBe(3);
+    expect(gridStep(free, 3, 3)).toBe(0);
+    expect(gridStep(free, 0, 3), 'up from the top row stays').toBe(0);
+    expect(gridStep(free, 2, 0), 'right from the last column stays').toBe(2);
+  });
+  it('skips ballots already in a pile and returns null when the hand is empty', () => {
+    const placed: (number | null)[] = free.map((_, i) => (i === 1 ? 0 : null));
+    expect(gridStep(placed, 0, 0)).toBe(2);
+    expect(gridStep(placed, null, 2)).toBe(0);
+    expect(
+      gridStep(
+        placed.map(() => 1),
+        null,
+        0,
+      ),
+    ).toBeNull();
   });
 });

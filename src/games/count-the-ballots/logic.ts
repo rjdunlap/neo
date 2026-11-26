@@ -154,4 +154,49 @@ export function describeLevel(level: number): string {
     : 'Sort nine ballots by first choice, then move the smallest pile on to its next choice';
 }
 
+/**
+ * The one-step Undo: remembers the ballot moved last, within one sort. A count (the first or the run-off) clears it, so
+ * Undo never reaches back across a count; undoing is never a miss and never a hint.
+ */
+export class LastMove {
+  private at: number | null = null;
+  record(i: number) {
+    this.at = i;
+  }
+  clear() {
+    this.at = null;
+  }
+  /** Takes the last ballot back out of its pile (in `placed`) and returns it, or null when there is nothing to undo. */
+  undo(placed: (number | null)[]): number | null {
+    const i = this.at;
+    this.at = null;
+    if (i === null || placed[i] === null) return null;
+    placed[i] = null;
+    return i;
+  }
+}
+
+/** Arrow keys over the hand: 0 right, 1 down, 2 left, 3 up. The first arrow lands on the first ballot still in the hand. */
+export function gridStep(
+  placed: readonly (number | null)[],
+  from: number | null,
+  dir: number,
+): number | null {
+  const free = (i: number) => placed[i] === null;
+  if (from === null || !free(from)) {
+    const first = placed.findIndex((p) => p === null);
+    return first < 0 ? null : first;
+  }
+  const dx = [1, 0, -1, 0][dir],
+    dy = [0, 1, 0, -1][dir];
+  let x = from % 3,
+    y = Math.floor(from / 3);
+  for (;;) {
+    x += dx;
+    y += dy;
+    if (x < 0 || x > 2 || y < 0 || y * 3 + x >= placed.length) return from;
+    if (free(y * 3 + x)) return y * 3 + x;
+  }
+}
+
 export { countBallots };

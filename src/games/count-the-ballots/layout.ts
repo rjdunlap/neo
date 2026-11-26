@@ -19,6 +19,9 @@ export interface Layout {
   tray: { w: number; h: number };
   piles: { x: number; y: number }[];
   help: Box;
+  /** Undo and Restart: round buttons in a row with Help. */
+  undo: Box;
+  restart: Box;
 }
 
 const CARD_W = 190;
@@ -43,13 +46,16 @@ export function layout(view: Pick<View, 'w' | 'h' | 'upright'>): Layout {
     const pw = Math.min(230, Math.floor((w - 40 - 2 * pg) / 3));
     const ph = 250;
     const py = top + 3 * ch + 2 * g + 40 + ph / 2;
+    const help = { x: w - 70, y: py + ph / 2 + 80, w: 120, h: 100 };
     return {
       card: { w: cw, h: ch },
       across: true,
       slots,
       tray: { w: pw, h: ph },
       piles: [0, 1, 2].map((c) => ({ x: w / 2 + (c - 1) * (pw + pg), y: py })),
-      help: { x: w - 90, y: py + ph / 2 + 80, w: 120, h: 100 },
+      help,
+      undo: { x: help.x - 115, y: help.y, w: 100, h: 100 },
+      restart: { x: help.x - 225, y: help.y, w: 100, h: 100 },
     };
   }
   const g = 10;
@@ -64,13 +70,16 @@ export function layout(view: Pick<View, 'w' | 'h' | 'upright'>): Layout {
   const pw = Math.min(150, Math.floor((w - 20 - px - 2 * pg) / 3));
   const ph = Math.min(380, h - 230);
   const py = 60 + ph / 2;
+  const help = { x: px + (3 * pw + 2 * pg) / 2, y: py + ph / 2 + 70, w: 120, h: 100 };
   return {
     card: { w: cw, h: ch },
     across: false,
     slots,
     tray: { w: pw, h: ph },
     piles: [0, 1, 2].map((c) => ({ x: px + pw / 2 + c * (pw + pg), y: py })),
-    help: { x: px + (3 * pw + 2 * pg) / 2, y: py + ph / 2 + 70, w: 120, h: 100 },
+    help,
+    undo: { x: help.x - 130, y: help.y, w: 100, h: 100 },
+    restart: { x: help.x + 130, y: help.y, w: 100, h: 100 },
   };
 }
 
