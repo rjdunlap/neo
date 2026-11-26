@@ -66,6 +66,11 @@ export const HOW_TO: GameHowTo = {
       to: 19,
       text: 'The stacks can go up or down, by one or by two. Look at how they change, then tap the stack that belongs in the glowing car. Tapping a car says how many it holds.',
     },
+    {
+      from: 20,
+      to: 20,
+      text: 'The numbers do not start at the step: look at how far it is from one car to the next, then tap the number for the glowing car. It can be anywhere after the first car.',
+    },
   ],
   finish: [
     {
@@ -74,5 +79,6 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 17, to: 17, text: 'The round ends when the train has run her pattern round three times.' },
     { from: 18, to: 19, text: 'The round ends when the stack that comes next is chosen.' },
+    { from: 20, to: 20, text: 'The round ends when the number for the glowing car is chosen.' },
   ],
 };
