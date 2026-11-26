@@ -6,6 +6,7 @@ import { paperCircle, paperEllipse, paperGround, paperLine, paperRect, paperShap
 import { SHAPES, MORE_SHAPES } from '../art/shapes';
 import type { View } from '../engine/view';
 import { label } from '../ui/text';
+import { makeCreature, SPECIES } from '../art/creatures';
 
 /**
  * The paper cut-out style's swatch book (docs/ART-STYLE.md), at `/?paper` on the dev server only: every named shape
@@ -99,6 +100,14 @@ export class PaperLab extends Scene {
         small: true,
       });
     this.content.addChild(pond);
+
+    // The code-drawn pets, which the paper pass turns into paper.
+    SPECIES.forEach((id, i) => {
+      const pet = makeCreature(id);
+      pet.scale.set(0.55);
+      pet.position.set(view.w * (0.62 + i * 0.13), 330);
+      this.content.addChild(pet);
+    });
 
     // Chrome: two buttons and a card.
     const ui = new Graphics();
