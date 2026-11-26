@@ -21,6 +21,8 @@ export interface PatternPlan {
   match?: 'row' | 'build';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
+  /** Level 20, "Start anywhere": a numbered train that may start at any number, not only a multiple of the step, with a gap after the first car. */
+  startAnywhere?: boolean;
   /** Level 17, "Make your own": she picks a unit of one to three pieces and the train runs it round (`makeTrain`); nothing is wrong. */
   make?: boolean;
   /** Level 18, "Stairs": cars hold 1, 2, 3, 4 counters and the empty car holds one more; the pieces are counts (1–9), not pieces 0–2. */
@@ -29,6 +31,9 @@ export interface PatternPlan {
   stackSteps?: readonly number[];
   name: string;
 }
+
+/** Level 20's steps: the amounts the numbered cars count by when the first car is any number. */
+const START_STEPS = [2, 3, 4, 5, 10] as const;
 
 /** Level 19's steps: one or two, up or down. */
 const STACK_STEPS = [-2, -1, 1, 2] as const;
@@ -64,6 +69,13 @@ export const PATTERN_PLANS: PatternPlan[] = [
     stairs: true,
     stackSteps: STACK_STEPS,
     name: 'Up and down: stacks that step by one or two',
+  },
+  {
+    pattern: [],
+    kind: 'number',
+    numberSteps: START_STEPS,
+    startAnywhere: true,
+    name: 'Start anywhere: numbered cars that do not start at the step',
   },
 ];
 
@@ -241,6 +253,31 @@ function stepStairs(
   };
 }
 
+/**
+ * Level 20: a numbered train whose first car is any number from 1 up that is not a multiple of the step (13, 15, 17, 19
+ * by twos), so the step is found from the gaps between cars, not from where they start. The empty car is any car after
+ * the first. The wrong numbers are the previous car, the previous car plus one (the common error), the answer one too big or too small, and the car after (skipping one), two
+ * of them drawn at random, so the answer is sometimes the smallest and sometimes the largest.
+ */
+function startAnywhereTrain(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const step = rng.pick(steps);
+  const last = NUMBER_TOP - step * (START_CARS - 1);
+  const starts = Array.from({ length: last }, (_, i) => i + 1).filter((n) => n % step !== 0);
+  const start = rng.pick(starts);
+  const sequence = Array.from({ length: START_CARS }, (_, i) => start + step * i);
+  const target = rng.int(1, START_CARS - 1);
+  const answer = sequence[target];
+  const before = sequence[target - 1];
+  const near = [
+    ...new Set([before, before + 1, before + step + 1, before + step - 1, before + 2 * step]),
+  ].filter((n) => n > 0 && n <= NUMBER_TOP && n !== answer);
+  const wrong = rng.shuffle(near).slice(0, CHOICES - 1);
+  return { sequence, targets: [target], choices: [rng.shuffle([answer, ...wrong])] };
+}
+
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
 /** A color-and-shape train's cars: two full repeats of four and the car to fill. */
@@ -262,6 +299,8 @@ export interface PairLook {
 export const NUMBER_TOP = 100;
 /** A numbered train's length. */
 export const NUMBER_CARS = 7;
+/** Level 20's train is one car shorter, so the numbers stay large on a phone. */
+export const START_CARS = 6;
 
 /**
  * A numbered train: it starts at a multiple of the step that is not the step itself (12, 14, 16… by twos), the empty car
@@ -271,7 +310,9 @@ export const NUMBER_CARS = 7;
 function numberTrain(
   steps: readonly number[],
   rng: Rng,
+  anywhere = false,
 ): { sequence: number[]; targets: number[]; choices: number[][] } {
+  if (anywhere) return startAnywhereTrain(steps, rng);
   const step = rng.pick(steps);
   const highest = Math.floor((NUMBER_TOP - step * (NUMBER_CARS - 1)) / step);
   const start = step * rng.int(2, highest);
@@ -338,7 +379,7 @@ export function buildTrain(
   family?: number;
   shown?: number[];
 } {
-  if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
+  if (plan.numberSteps) return numberTrain(plan.numberSteps, rng, plan.startAnywhere);
   if (plan.stairs) return stairsTrain(rng, plan.stackSteps);
   if (plan.kind === 'pair') return pairTrain(rng);
   const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);

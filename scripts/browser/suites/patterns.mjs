@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function patterns() {
     const levels =
-      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 19 }, (_, i) => i + 1);
+      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 20 }, (_, i) => i + 1);
     for (const level of levels) {
       await launch('pattern-train', level);
       if (level === 17) {
@@ -77,6 +77,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       if (level === 12) await screenshot('pattern-train');
       if (level === 18) await screenshot('pattern-train-18');
       if (level === 19) await screenshot('pattern-train-19');
+      if (level === 20) await screenshot('pattern-train-20');
       await page.evaluate(async () => {
         const g = neo.scene.game;
         // What the answer that ends the round says (TotoLogic P7), recorded for the check below.

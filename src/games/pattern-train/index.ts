@@ -533,7 +533,7 @@ export const patternTrain: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly,
-  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()),
   touchDemo: true,

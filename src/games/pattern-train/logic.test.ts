@@ -22,6 +22,7 @@ import {
   buildTrain,
   CHOICES,
   NUMBER_CARS,
+  START_CARS,
   NUMBER_TOP,
   PAIR_CARS,
   PAIR_CHOICES,
@@ -91,8 +92,8 @@ describe('Pattern Train', () => {
       for (let seed = 1; seed <= 100; seed++) {
         const { sequence, targets } = buildTrain(plan, new Rng(seed));
         if (plan.numberSteps) {
-          expect(sequence).toHaveLength(NUMBER_CARS);
-          expect(targets[0]).toBeGreaterThanOrEqual(2);
+          expect(sequence).toHaveLength(plan.startAnywhere ? START_CARS : NUMBER_CARS);
+          expect(targets[0]).toBeGreaterThanOrEqual(plan.startAnywhere ? 1 : 2);
           continue;
         }
         if (plan.kind === 'pair' || plan.odd) continue;
@@ -554,8 +555,8 @@ describe('Pattern Train Up and down (level 19)', () => {
   it('is the school level after 18, and the ladder ends there', () => {
     expect(plan.kind).toBe('stack');
     expect(plan.stackSteps).toEqual([-2, -1, 1, 2]);
-    expect(PATTERN_PLANS).toHaveLength(19);
-    expect(LEVELS.school).toEqual({ min: 8, max: 19 });
+    expect(PATTERN_PLANS.length).toBeGreaterThanOrEqual(19);
+    expect(LEVELS.school?.min).toBe(8);
   });
 
   it('steps exactly by one or two, up or down, all four kinds, every stack 1 to 10', () => {
@@ -608,5 +609,73 @@ describe('Pattern Train Up and down (level 19)', () => {
     expect(said.vars.list).toBe(sequence.join(', '));
     expect(SCRIPT['pattern.whyStep'][0]).toContain('{how}');
     expect(SCRIPT['pattern.steps'][0]).toContain('{name}');
+  });
+});
+
+describe('Pattern Train Start anywhere (level 20)', () => {
+  const plan = patternPlan(20);
+  const rounds = Array.from({ length: 400 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
+
+  it('is the last school level, a numbered train that is not the level 12 one', () => {
+    expect(plan.startAnywhere).toBe(true);
+    expect(plan.kind).toBe('number');
+    expect(PATTERN_PLANS).toHaveLength(20);
+    expect(LEVELS.school).toEqual({ min: 8, max: 20 });
+    expect(patternPlan(12).startAnywhere).toBeUndefined();
+  });
+
+  it('counts exactly by its step from a first car that is not a multiple, within 1 to 100', () => {
+    const steps = new Set<number>();
+    for (const { sequence, choices } of rounds) {
+      expect(sequence).toHaveLength(START_CARS);
+      const step = sequence[1] - sequence[0];
+      steps.add(step);
+      expect(plan.numberSteps).toContain(step);
+      sequence.forEach((n, i) => expect(n).toBe(sequence[0] + i * step));
+      expect(sequence[0] % step).not.toBe(0);
+      expect(sequence[0]).toBeGreaterThanOrEqual(1);
+      expect(Math.max(...sequence, ...choices[0])).toBeLessThanOrEqual(NUMBER_TOP);
+      expect(Math.min(...choices[0])).toBeGreaterThanOrEqual(1);
+    }
+    expect([...steps].sort((a, b) => a - b)).toEqual([2, 3, 4, 5, 10]);
+  });
+
+  it('leaves any car but the first empty, and offers one answer among distinct near misses', () => {
+    const places = new Set<number>();
+    let smallest = 0;
+    let largest = 0;
+    for (const { sequence, targets, choices } of rounds) {
+      const t = targets[0];
+      places.add(t);
+      expect(targets).toHaveLength(1);
+      expect(t).toBeGreaterThanOrEqual(1);
+      const answer = sequence[t];
+      const [c] = choices;
+      expect(c).toHaveLength(CHOICES);
+      expect(new Set(c).size).toBe(CHOICES);
+      expect(c.filter((n) => n === answer)).toHaveLength(1);
+      // Every wrong choice is the car before, or within a step and one of the answer: a plausible slip.
+      const step = sequence[1] - sequence[0];
+      for (const n of c.filter((v) => v !== answer)) {
+        expect(Math.abs(n - answer) <= step + 1).toBe(true);
+      }
+      if (answer === Math.min(...c)) smallest++;
+      if (answer === Math.max(...c)) largest++;
+    }
+    expect([...places].sort()).toEqual([1, 2, 3, 4, 5]);
+    expect(smallest).toBeGreaterThan(40);
+    expect(largest).toBeGreaterThan(40);
+    expect(smallest + largest).toBeLessThan(rounds.length);
+  });
+
+  it('is found by counting: wantedChoice finds the answer and the "say why" line has its slots', () => {
+    for (const { sequence, targets, choices } of rounds.slice(0, 100)) {
+      const want = wantedChoice(sequence, targets, choices, 0);
+      expect(choices[0][want]).toBe(sequence[targets[0]]);
+    }
+    const { sequence, targets } = rounds[0];
+    const said = patternSaid(plan, { sequence, targets });
+    expect(said.key).toBe('pattern.whyNumber');
+    expect(said.vars.step).toBe(sequence[1] - sequence[0]);
   });
 });
