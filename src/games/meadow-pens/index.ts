@@ -13,6 +13,7 @@ import { store } from '../../progress/store';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { FactorMeadow } from './factor';
 import { FixedMeadow } from './fixed';
 import {
   bellArt,
@@ -869,8 +870,9 @@ export const meadowPens: GameModule = {
     'Cover a placemat with sticky notes and count them, then count the edges. Make an L with two blocks of notes and count both parts.',
   hubIcon: () => new MeadowIcon(),
   sticker,
-  create: (ctx) =>
-    ctx.level >= 4
-      ? new FixedMeadow(ctx, !store.stats('meadow-pens').history.some((r) => r.level === ctx.level))
-      : new MeadowPens(ctx),
+  create: (ctx) => {
+    const first = !store.stats('meadow-pens').history.some((r) => r.level === ctx.level);
+    if (ctx.level >= 6) return new FactorMeadow(ctx, first);
+    return ctx.level >= 4 ? new FixedMeadow(ctx, first) : new MeadowPens(ctx);
+  },
 };

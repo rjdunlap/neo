@@ -246,3 +246,74 @@ export function penArt(cells: readonly [number, number][], size = 46): Container
   c.addChild(f);
   return c;
 }
+
+const HAY = { fill: 0xf6d36b, line: 0xb8862b, straw: 0xd9a93e };
+
+/** A bale of hay: a golden square with two bands and a few straws. */
+export function baleCell(g: Graphics, r: Rect) {
+  g.roundRect(r.x, r.y, r.w, r.h, 12).fill(HAY.fill).stroke({ width: 3, color: HAY.line });
+  for (const f of [0.33, 0.67])
+    g.moveTo(r.x + r.w * f, r.y + 6)
+      .lineTo(r.x + r.w * f, r.y + r.h - 6)
+      .stroke({ width: 4, color: HAY.line });
+  for (let i = 0; i < 3; i++) {
+    const x = r.x + 16 + i * 28;
+    g.moveTo(x, r.y + 26)
+      .lineTo(x + 12, r.y + 20)
+      .moveTo(x + 4, r.y + r.h - 24)
+      .lineTo(x + 16, r.y + r.h - 30)
+      .stroke({ width: 3, color: HAY.straw, cap: 'round' });
+  }
+}
+
+/** The blanket over a grass square: a pink patch, joined to its neighbours by growing a little into the gap. */
+export function blanketCell(g: Graphics, r: Rect, gap: number) {
+  const e = gap / 2;
+  g.roundRect(r.x - e, r.y - e, r.w + gap, r.h + gap, 12)
+    .fill(swatch.pink.fill)
+    .stroke({ width: 3, color: swatch.pink.line });
+  g.moveTo(r.x + 22, r.y + r.h - 22)
+    .lineTo(r.x + r.w - 22, r.y + 22)
+    .stroke({ width: 5, color: 0xffffff, cap: 'round', alpha: 0.7 });
+}
+
+/** The hay loft's layer mark: a wooden rung, lit when she touches it. */
+export function rungCell(g: Graphics, r: Rect, lit: boolean) {
+  g.roundRect(r.x + 8, r.y + r.h / 2 - 14, r.w - 16, 28, 10)
+    .fill(lit ? swatch.yellow.fill : wood.fill)
+    .stroke({ width: 4, color: wood.line });
+  for (const x of [r.x + 8, r.x + r.w - 8])
+    g.moveTo(x, r.y + 4)
+      .lineTo(x, r.y + r.h - 4)
+      .stroke({ width: 6, color: wood.line });
+}
+
+/** A request picture of `n` small squares in rows of `perRow`, dotted: the heap (grass) or one tray (hay). */
+export function heapPicture(n: number, perRow: number, hay: boolean, marks = 0): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const size = 22;
+  const pitch = size + 5;
+  const rows = Math.ceil(n / perRow);
+  const cols = Math.min(n, perRow);
+  const w = cols * pitch - 5;
+  const h = rows * pitch - 5;
+  const x0 = hay && marks ? -w / 2 - 30 : -w / 2;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + (i % perRow) * pitch;
+    const y = -h / 2 + Math.floor(i / perRow) * pitch;
+    g.roundRect(x, y, size, size, 5)
+      .fill(hay ? HAY.fill : TURF.fill)
+      .stroke({ width: 2, color: hay ? HAY.line : TURF.line });
+    g.circle(x + size / 2, y + size / 2, 3).fill(ink);
+  }
+  for (let i = 0; i < marks; i++) {
+    const y = -h / 2 + i * 22;
+    g.moveTo(x0 + w + 22, y + 8)
+      .lineTo(x0 + w + 52, y + 8)
+      .stroke({ width: 5, color: wood.line, cap: 'round' });
+  }
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}

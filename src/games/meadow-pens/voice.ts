@@ -16,6 +16,22 @@ export const VOICE = {
   'meadow.instruct.5': [
     'The bent field has two parts. Count the squares in both parts, then choose a card for all the grass.',
   ],
+  'meadow.instruct.6': [
+    'The grass is under the blanket. Count the {unit}, then choose how many squares long it is.',
+  ],
+  'meadow.instruct.7': [
+    'Fill the loft. One tray holds the bales on the floor. Count the {unit}, then choose how many bales fill it.',
+  ],
+  'meadow.blanket6': ['The rest of the {thing} is under here.'],
+  'meadow.bales7': ['{n} bales on one tray.'],
+  // Levels 6 and 7 fill the quantities in as words. A slot keeps a line on device speech, so no clip has to be
+  // rendered with a feature slice (the Better voice item renders them); the three instruction lines take {unit} and {thing}.
+  'meadow.ask6': ['There are {total} squares of grass in {rows} rows. How many squares long is the strip?'],
+  'meadow.try6.short': ['{rows} rows, {cols} columns: {sum} squares. We need {total}.'],
+  'meadow.try6.many': ['{cols} columns make {total}. That card is too many.'],
+  'meadow.lift6': ['{run}. {cols} columns.'],
+  'meadow.ask7': ['Each tray holds {bales} bales. The loft is {layers} trays tall. How many bales fill it?'],
+  'meadow.stack7': ['{run} bales altogether.'],
   'meadow.ask4.grass': ['Which pen has more squares of grass?'],
   'meadow.ask4.fence': ['Which pen needs more fence pieces?'],
   'meadow.ask5': ['How many squares of grass cover the whole field?'],
