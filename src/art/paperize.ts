@@ -255,10 +255,9 @@ export function paperizeContext(ctx: GraphicsContext): boolean {
       pieces.some((p, i) => pieces.some((q, j) => j > i && overlap(bounds([p.pts]), bounds([q.pts]))));
 
     const [ox, oy] = small ? [0.5 * U, 1.2 * U] : [1 * U, 3 * U];
-    for (const pts of wob) trace(scratch, pts, ox * 0.6, oy * 0.6);
-    scratch.fill({ color: SHADOW, alpha: 0.16 * alpha });
-    for (const pts of wob) trace(scratch, pts, ox * 1.2, oy * 1.2);
-    scratch.fill({ color: SHADOW, alpha: 0.12 * alpha });
+    // One shadow sheet, not two stacked: a whole layer less for a phone to paint under every piece.
+    for (const pts of wob) trace(scratch, pts, ox, oy);
+    scratch.fill({ color: SHADOW, alpha: 0.21 * alpha });
     if (union) {
       for (const pts of wob) trace(scratch, pts);
       scratch.stroke({ width: lineW * 2, color: line, alpha: 0.9 * alpha, join: 'round' });
@@ -284,7 +283,34 @@ export function paperizeContext(ctx: GraphicsContext): boolean {
   return true;
 }
 
+/** `?nopaper` in the address leaves every drawing flat and live, to compare the frame rate on a phone. */
+export const PAPER_ON =
+  typeof location === 'undefined' || !new URLSearchParams(location.search).has('nopaper');
+
+/**
+ * Turns a still drawing (and everything under it) into paper now and keeps it as one cached picture at the screen's
+ * sharpness, so a phone paints a single layer for it each frame instead of every piece's shadow, fill, fibre and
+ * outline. Call it again after redrawing (a resize); a node that changes every frame must not be baked.
+ */
+export function bakePaper(node: Container, view: { scale: number }) {
+  if (!PAPER_ON || typeof window === 'undefined') return;
+  const walk = (n: Container) => {
+    if (flat.has(n)) return;
+    if (n instanceof Graphics) paperizeContext(n.context);
+    for (const k of n.children) walk(k as Container);
+  };
+  walk(node);
+  const resolution = Math.min(window.devicePixelRatio || 1, 2) * view.scale;
+  node.cacheAsTexture(false);
+  node.cacheAsTexture({ resolution: Math.min(2, Math.max(0.5, resolution)), antialias: true });
+}
+
 let pass = 0;
+
+/** Dev only: how often and how long the pass rewrote drawings (`window.__paperStats`), to tune it for phones. */
+const stats = { rewrites: 0, ms: 0, passMs: 0, passes: 0 };
+if (import.meta.env.DEV && typeof window !== 'undefined')
+  (window as unknown as { __paperStats: typeof stats }).__paperStats = stats;
 
 function track(ctx: GraphicsContext): Seen {
   const known = seen.get(ctx);
@@ -306,6 +332,7 @@ function track(ctx: GraphicsContext): Seen {
 /** Walks a subtree and turns every flat drawing it has not seen (or that was redrawn) into paper. */
 export function paperPass(root: Container) {
   pass++;
+  const t0 = import.meta.env.DEV ? performance.now() : 0;
   const walk = (node: Container) => {
     if (flat.has(node) || !node.visible) return;
     if (node instanceof Graphics) {
@@ -316,7 +343,7 @@ export function paperPass(root: Container) {
         s.stale = false;
         s.writing = true;
         try {
-          paperizeContext(ctx);
+          if (paperizeContext(ctx) && import.meta.env.DEV) stats.rewrites++;
         } finally {
           s.writing = false;
         }
@@ -325,4 +352,8 @@ export function paperPass(root: Container) {
     for (const child of node.children) walk(child as Container);
   };
   walk(root);
+  if (import.meta.env.DEV) {
+    stats.passes++;
+    stats.passMs += performance.now() - t0;
+  }
 }

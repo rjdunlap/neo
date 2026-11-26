@@ -2,13 +2,14 @@ import {
   Application,
   Container,
   Graphics,
+  GraphicsContextSystem,
   Rectangle,
   Sprite,
   TilingSprite,
   type Renderer,
   type Texture,
 } from 'pixi.js';
-import { paperPass } from '../art/paperize';
+import { PAPER_ON, paperPass } from '../art/paperize';
 import { fibreTexture, PAPER_BG } from '../art/paper';
 import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
@@ -188,6 +189,9 @@ export class App {
   }
 
   async init(host: HTMLElement) {
+    // Paper outlines are traced as many short curves (docs/ART-STYLE.md), so each needs few segments: fewer triangles
+    // for a phone to draw, with no visible change.
+    (GraphicsContextSystem.defaultOptions as { bezierSmoothness: number }).bezierSmoothness = 0.2;
     await this.pixi.init({
       resizeTo: window,
       background: PAPER_BG,
@@ -222,7 +226,8 @@ export class App {
     window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
     // The paper look (docs/ART-STYLE.md): new or redrawn flat shapes become paper cut-outs before the frame is drawn.
-    this.pixi.ticker.add(() => paperPass(this.pixi.stage));
+    // `?nopaper` leaves every drawing flat, to compare the frame rate on a phone.
+    if (PAPER_ON) this.pixi.ticker.add(() => paperPass(this.pixi.stage));
   }
 
   /**

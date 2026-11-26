@@ -197,8 +197,8 @@ function extent(pts: Pt[]): number {
 /** The shadow under a piece: two offset copies at low alpha read as a soft blur without a filter. */
 export function paperShadow(g: Graphics, pts: Pt[], small: boolean, alpha = 1): Graphics {
   const [ox, oy] = small ? [0.5 * U, 1.2 * U] : [1 * U, 3 * U];
-  trace(g, pts, ox * 0.6, oy * 0.6).fill({ color: SHADOW, alpha: 0.16 * alpha });
-  return trace(g, pts, ox * 1.2, oy * 1.2).fill({ color: SHADOW, alpha: 0.12 * alpha });
+  // One shadow sheet, not two stacked: a whole layer less for a phone to paint under every piece.
+  return trace(g, pts, ox, oy).fill({ color: SHADOW, alpha: 0.21 * alpha });
 }
 
 /**

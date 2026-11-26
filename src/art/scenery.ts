@@ -3,6 +3,7 @@ import { Rng } from '../engine/random';
 import type { View } from '../engine/view';
 import { cheek, ink, swatch, toward } from './palette';
 import { drawFibre } from './paper';
+import { bakePaper } from './paperize';
 
 export interface BackdropStyle {
   /** Sky gradient, top to horizon. */
@@ -185,6 +186,7 @@ export class Backdrop extends Container {
         .closePath()
         .fill(color);
     });
+    bakePaper(this.hills, view);
   }
 
   update(dt: number) {
