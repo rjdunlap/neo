@@ -15,7 +15,6 @@ export const HOW_TO: GameHowTo = {
       text: 'Do the same, then count only the first choices and tap the ride that wins. Is it the same ride?',
     },
   ],
-  finish:
-    'The round ends when one ride has five ballots and the last question is answered; one sticker.',
+  finish: 'The round ends when one ride has five ballots and the last question is answered; one sticker.',
   note: 'A ballot in the wrong pile goes back with a spoken hint; after two misses on one ballot the right pile glows (one hint), and Help glows it at any time. The words never say one way of counting is fairer.',
 };

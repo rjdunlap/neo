@@ -3,7 +3,7 @@
  * device speech and no clip has to be rendered. The voice says what each counting rule found and never calls one fairer.
  */
 export const VOICE = {
-  'game.count-the-ballots': ['Count the Ballots'],
+  'ballots.title': ['Count the Ballots'],
   'ballots.instruct.1': [
     'Nine villagers ranked the rides. Put each ballot in the pile of the ride it likes best. If no pile has five, the smallest pile is out.',
   ],

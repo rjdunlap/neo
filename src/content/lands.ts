@@ -431,7 +431,9 @@ export const LANDS: readonly Land[] = [
       'jar-clues',
       'harbor-orders',
       'workshop-detective',
-      'outcrop-detective', 'count-the-ballots'],
+      'outcrop-detective',
+      'count-the-ballots',
+    ],
   },
 ];
 

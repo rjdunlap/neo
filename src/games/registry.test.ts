@@ -597,7 +597,7 @@ describe('game registry', () => {
       'clap-syllables',
       'clock-tower',
       'common-ground',
-    'count-the-ballots',
+      'count-the-ballots',
       'critter-crossing',
       'critter-sort',
       'crossword',

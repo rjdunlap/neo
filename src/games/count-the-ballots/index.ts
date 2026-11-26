@@ -349,7 +349,8 @@ class CountTheBallots implements Game {
   // ---- drawing ----
 
   private slipsIn(c: number): number {
-    if (this.round.level === 2 && (this.stage === 'question' || this.stage === 'done')) return this.round.first[c];
+    if (this.round.level === 2 && (this.stage === 'question' || this.stage === 'done'))
+      return this.round.first[c];
     return this.placed.filter((p) => p === c).length;
   }
 
@@ -404,15 +405,17 @@ class CountTheBallots implements Game {
       g.roundRect(-tw / 2, -th / 2, tw, th, 18)
         .fill({ color: cream, alpha: out ? 0.55 : 0.95 })
         .stroke({ width: 6, color: col.line, alpha: out ? 0.5 : 1 });
-      ride(g, r.rides[c], 0, -th / 2 + tw * 0.36, Math.min(tw * 0.3, 44));
+      const rad = Math.min(tw * 0.22, 40);
+      ride(g, r.rides[c], -tw * 0.22, -th / 2 + 56, rad);
       const n = out ? 0 : this.slipsIn(c);
       const sw = Math.min(46, (tw - 30) / 3 - 6),
-        sh = sw * 1.25;
+        sh = sw * 0.9,
+        pitch = Math.min(sh + 6, (th - 112 - 12) / 3);
       for (let k = 0; k < n; k++)
         slip(
           g,
           ((k % 3) - 1) * (sw + 6),
-          -th / 2 + tw * 0.75 + Math.floor(k / 3) * (sh + 6),
+          -th / 2 + 112 + Math.floor(k / 3) * pitch + sh / 2,
           sw,
           sh,
           col.light,
@@ -425,9 +428,9 @@ class CountTheBallots implements Game {
         });
       const shown = this.counted[c];
       this.trayNum[c].text = shown === null || out ? '' : String(shown);
-      this.trayNum[c].position.set(0, th / 2 - 30);
+      this.trayNum[c].position.set(tw * 0.25, -th / 2 + 56);
       this.trayOut[c].text = out ? 'Out' : '';
-      this.trayOut[c].position.set(0, th / 2 - 30);
+      this.trayOut[c].position.set(tw * 0.25, -th / 2 + 56);
       this.trays[c].alpha = 1;
     }
   }
@@ -506,7 +509,7 @@ function sticker(seed: number): Container {
 export const game: GameModule = {
   id: 'count-the-ballots',
   name: 'Count the Ballots',
-  titleLine: 'game.count-the-ballots',
+  titleLine: 'ballots.title',
   region: 'cozy-village',
   challenge: 'logic',
   skills: ['counting', 'comparing', 'rules and fairness'],
