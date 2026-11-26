@@ -182,7 +182,7 @@ Each has a default the build uses; only the card-table review gates the merge.
 
 ## Levels 4–5 definition (2026-10-25, slice 3)
 
-**Built 2026-10-25 ([PR #972](https://github.com/rjdunlap/neo/pull/972)); original definition:** worker `01a171d7-c22d-7e23-97e3-744d68311bf1`, `codex/meadow-pens-4-5-definition`, [PR #957](https://github.com/rjdunlap/neo/pull/957). This packet extends the built school-only game in place. Levels 1–3 and their saved numbers/pins stay unchanged; the build extends school to `{ min: 1, max: 5 }`. No new band, registration, land, save field, journal claim or reward. Levels 6–7 and the study's decisions 4–5 remain outside this packet. Earlier sections describe the original 1–3 packet; this section governs only 4–5.
+**Built 2026-10-25 ([PR #972](https://github.com/rjdunlap/neo/pull/972)); original definition:** worker `01a171d7-c22d-7e23-97e3-744d68311bf1`, `codex/meadow-pens-4-5-definition`, [PR #957](https://github.com/rjdunlap/neo/pull/957). This packet extends the built school-only game in place. Levels 1–3 and their saved numbers/pins stay unchanged; the build extends school to `{ min: 1, max: 5 }`. No new band, registration, land, save field, journal claim or reward. Levels 6–7 are defined separately [below](#levels-67-definition-2026-11-26-slice-4). Earlier sections describe the original 1–3 packet; this section governs only 4–5.
 
 **Fun action:** help friends choose between two finished pens, then count the grass in a bent field by watching its two rectangular parts fill. A correct choice opens the gate for a visiting friend. Learning purpose: compare covered squares separately from boundary edges, including equal counts; then compose an L's area from two non-overlapping rectangles (the study's CCSS 3.MD.D.8 and 3.MD.C.7.d anchors). No written formula, equation, side-length arithmetic or new terminology in child play. These are fixed fields, not paint requests: painting/erasing and the submit bell are absent at 4–5. Counting exploration stays free.
 
@@ -276,3 +276,78 @@ Extend `meadowLayout(view, level)` and its actual safe-view geometry tests to le
 3. `fingerdemo` at 4 and 5; meaningful counts and both C1 questions must be demonstrated. Build if shared how-to/voice/catalog files change, as expected. Browser work stays within AGENTS' budget; record any unrun cases. No offline suite unless implementation changes persistence/assets/navigation.
 
 **Person/device gates stay open:** real iPad speech for the new comparisons, same choice, part/whole counts and hint action; comfortable full-size targets and distinguishable badges/textures in both orientations; whether a child understands grass versus fence and two-part counting, with co-play as needed. Chrome and this definition cannot establish those. The existing pre-K/person, terminology/device, levels 6–7 placement and hay-loft decisions remain intact. Co-play can alternate who counts grass and fence; off-screen, arrange two patches of sticky notes with the same number, compare their outside edges, then cover an L placemat in two blocks and count all notes. No new practical animal-care instructions or obligation for a visiting friend.
+
+## Levels 6–7 definition (2026-11-26, slice 4)
+
+**Defined docs only; not built.** This packet extends the built school-only game in place, as levels 4–5 did. Levels 1–5 and their saved numbers and pins stay unchanged; the build extends school to `{ min: 1, max: 7 }`. No new band, registration, land, save field, journal claim or reward, and nothing for the grown-up band. **Decisions 4 and 5 of the [study](../deep-dives/subjects/area-volume-space.md#decisions-for-the-developer) are taken at their stated leans, as defaults a later decision can change:** the hay loft is level 7 of this game (same meadow, one new picture, not a packing game), and levels 6–7 are the *top* of the school range, reached only after smooth rounds at 5 by the usual step-up rule; nothing gates, expires or rotates them. The multiplicative rungs use the same fixed fields, cards and gate as levels 4–5; there is no paint request, painting or submit bell.
+
+**Fun action:** a friend's strip of grass has a blanket over most of it, and a friend's loft is waiting for bales; she works out the hidden number, watches the blanket lift or the trays stack, and the gate opens. **Learning purpose:** level 6 finds a missing side from the area and the other side (CCSS 4.MD.A.3, no equation: "twelve squares in three rows, how many squares long?"); level 7 finds a volume as the floor's count times the layers (5.MD.C.5.a), by repeated layers and never by an oblique count. No written formula, equation or new terminology ("squares of grass", "bales", "layers"; "area" and "volume" stay unspoken until the decided device speech check). Counting replays stay free.
+
+### Level 6 — How long is the side?
+
+A fenced strip **h rows tall** on the 6 × 4 model grid (portrait transposes it). Its first column is drawn as grass; the other columns are always covered by the same **blanket**, drawn five columns wide whatever the answer, so the visible width never reveals it. The request pictures the whole grass as a heap of dotted squares, spoken as the total. She chooses among three number cards for how many squares long the strip is. Touching the heap replays the total (free); touching the blanket gives a soft puff and "The rest of the grass is under here" (free, never reveals).
+
+| Case | Total squares A | Rows h | Right card L | Subtraction card A − h | One-off card L − 1 |
+| --- | --- | --- | --- | --- | --- |
+| M1 | 6 | 2 | 3 | 4 | 2 |
+| M2 | 8 | 2 | 4 | 6 | 3 |
+| M3 | 12 | 3 | 4 | 9 | 3 |
+| M4 | 10 | 2 | 5 | 8 | 4 |
+| M5 | 12 | 2 | 6 | 10 | 5 |
+| M6 | 15 | 3 | 5 | 12 | 4 |
+| M7 | 20 | 4 | 5 | 16 | 4 |
+| M8 | 18 | 3 | 6 | 15 | 5 |
+| M9 | 24 | 4 | 6 | 20 | 5 |
+
+Every case has `A = h × L` with `h` in 2–4 and `L` in 3–6, fits the grid in both orientations, and has three distinct positive cards with exactly one correct. The subtraction card represents taking away instead of sharing into rows; the one-off card is a count that is one column short. Neither is a diagnosis of a child's thinking; the table is the only authored set. **A round is five questions:** M3 first (authored), then four different cases chosen without replacement from the other eight, seeded for order, card order and a mirror of the strip; never reseeded on a retry, replay, hint or resize. Authored cards for M3 are 4, 9, 3 before seeded shuffling in later questions.
+
+A wrong card is one miss. The explanation paints the **chosen** number of columns under the blanket, each column ticking `h` squares onto a running count, **stopping at the first column that reaches or passes the total** (so a large card such as 9 never needs more than the grid's six columns): "Three rows, three columns: nine squares. We need twelve." For a card that passes the total: "Four columns make twelve. That card is too many." It then lifts the blanket one column at a time to the right answer: "Three, six, nine, twelve. Four columns." Portrait follows the drawn rows. The heap's total is the target the running count compares against; the explanation never writes a division or multiplication sign.
+
+### Level 7 — Fill the loft
+
+A front **cutaway of the barn's hay loft**: a plain wooden box with a ladder-gauge on its side marked with `k` rungs ("k layers tall"), and beside it the **floor**, a top-down pen of `f` cells, each a bale. One **tray** is that floor drawn as a flat sheet of bales; the loft is filled by stacking `k` identical trays, drawn as a pile of sheets whose edges show the layers, never as an oblique 3-D block. The request pictures one tray with its dots and the gauge's marks. She chooses among three number cards for how many bales fill the loft. Touching the tray counts its bales (free); touching a gauge rung lights that layer (free).
+
+| Case | Floor (model w × h) | Bales f | Layers k | Right card f × k | Floor-only card | Added-sides card f + k |
+| --- | --- | --- | --- | --- | --- | --- |
+| V1 | 2 × 3 | 6 | 3 | 18 | 6 | 9 |
+| V2 | 2 × 2 | 4 | 3 | 12 | 4 | 7 |
+| V3 | 3 × 2 | 6 | 2 | 12 | 6 | 8 |
+| V4 | 2 × 4 | 8 | 2 | 16 | 8 | 10 |
+| V5 | 2 × 2 | 4 | 4 | 16 | 4 | 8 |
+| V6 | 2 × 3 | 6 | 4 | 24 | 6 | 10 |
+| V7 | 4 × 2 | 8 | 3 | 24 | 8 | 11 |
+
+Floors fit the 6 × 4 grid in both orientations; every row has three distinct positive cards and exactly one correct. The floor-only card is a count of one layer; the added-sides card is the study's documented mistake. V1 is the study's authored "pen of 2 × 3, three layers tall" opening. **A round is five questions:** V1 first, then four different cases chosen without replacement from V2–V7, seeded for order, card order and a mirror of the floor. A wrong card is one miss: the trays stack one at a time and the count goes up by the floor each time ("Six. Twelve. Eighteen bales altogether."); each added tray is counted as the whole floor, never square by square except by a free tap on the tray. The final stack stays visible while the friend thanks her.
+
+### Accounting, help and completion at 6–7
+
+These are the rules of levels 4–5 applied unchanged, restated so the build reads one list: one accepted gesture on a wrong card is one miss, locked through its feedback; empty-meadow taps, free counts, replays, pause, resize and cancelled gestures count nothing. After **two misses on the current question** the correct card glows and counts **one hint**, and Show a hint starts the same support and counts one hint if none was counted for the question; once support is active a touch on any card completes through the correct card with the explanation and no further miss. Start again replays the current question, preserving round misses, the counted hint, support state, seed and index. Five questions finish through `ctx.finish({ misses, hints })` once, after a short skippable friends-and-gate ending: exactly one sticker, even with help, and no independent-mastery claim.
+
+### Speech, how-to and demonstration
+
+IDs are proposals for `voice-script.ts` at the build; instructions use `ctx.instruct`, feedback and counts `ctx.say`; requests stay pictured.
+
+| Line family | Wording |
+| --- | --- |
+| `meadow.instruct.6` | "The grass is under the blanket. Count the rows, then choose how many squares long it is." |
+| `meadow.ask6` | "There are twelve squares of grass in three rows. How many squares long is the strip?" (one exact line per table case, quantities as words) |
+| `meadow.blanket6` | "The rest of the grass is under here." |
+| `meadow.try6.*` | "Three rows, three columns: nine squares. We need twelve." and the lift line "Three, six, nine, twelve. Four columns." (finite table combinations only, including the "too many" line for the subtraction card) |
+| `meadow.instruct.7` | "Fill the loft. One tray holds the bales on the floor. Count the trays, then choose how many bales fill it." |
+| `meadow.ask7` | "Each tray holds six bales. The loft is three trays tall. How many bales fill it?" (one line per case) |
+| `meadow.stack7.*` | "Six. Twelve. Eighteen bales altogether." (one exact line per case; singular grammar not needed, every count is at least four) |
+| `meadow.hint.6` / `.7` | "Watch the count. The glowing card works. Touch a card and I will help." |
+
+**How-to:** scope the paint/lift step to levels 1–3 and the card steps to the level that uses them. For 6: "Count the rows. Choose how long the strip is." For 7: "Count the bales on one tray. Choose how many fill the loft." Finish at 6 and 7: "After five questions, it's done." Each notes that only wrong cards miss, replays are free, and two misses or Show a hint glow a correct card. The grown-up description names finding a missing side from covered squares, and finding a volume by filling layers, with no learning-benefit claim.
+
+**Ghost finger:** retain `touchDemo: true`. Level 6's authored opening touches the heap to hear the total, touches the blanket, taps the right card, and solves the other four from `A / h`. Level 7's touches the tray, a gauge rung, taps 18, and solves the rest from `f × k`. Never hardcode display positions or card indices.
+
+### Layout and implementation gates
+
+Reuse the one 6 × 4 board (4 × 6 portrait) with cells at least 100 logical units, and the level-2 card lane with cards at least 130 × 130 and 30 apart. Level 6's blanket spans the same five columns for every case; level 7 draws the tray on the board and the gauge beside it, with no overlap of cards, bubble, pet, Home or the stack. Extend `meadowLayout(view, level)` and its safe-view geometry tests to 6 and 7 for the longest ask line, the tallest stack (24 bales over four layers) and the blanket; null is a build failure to resolve, never a smaller target. A paper arrangement is not verified capacity: check real portrait and landscape rendering, how-to fit and the return route from Rainbow Meadow. Land paging, pins, launch band and return origin must be preserved.
+
+**Review gate:** as at 4–5, the developer's [2026-10-23 decision](#open-decisions) replaces a named-educator gate with a **building-session source check against established curricula**. Before the build merges, record a primary-source check of both tables, distractor rationale and spoken explanations against CCSS 4.MD.A.3 (a missing side from an area) and 5.MD.C.5.a (volume as layers of unit cubes), and correct any table that fails; the check appoints no reviewer.
+
+**Required build proof** (one same-game batch for 6–7): typecheck and focused rule tests that enumerate every case in both tables (`A = h × L`, three distinct cards, exactly one answer, the one-off and subtraction rules, the floor and layer products, transpose and mirror invariants, every seeded five-question schedule is distinct and starts with its authored case, help caps, restart after help, finish-once, resize and destroyed callbacks); one filtered browser play per new interaction (authored opening and the largest case, one wrong card, a two-miss hint and a requested hint, the five-question finish), one portrait screenshot of each; `fingerdemo` at 6 and 7; `npm run game-docs`; build only if shared how-to, voice or catalog files change, as expected. No offline suite unless persistence, assets or navigation change.
+
+**Person and device gates stay open:** real device speech for the new lines; comfortable targets and an unambiguous blanket and tray in both orientations; whether a child follows the hidden-number and layers pictures, with co-play. Chrome and this definition cannot establish those. Co-play can alternate who counts the rows and who counts the layers; off-screen, cover a placemat with sticky notes in three rows and hide the last columns under a cloth, then stack identical notes trays-high and count the pile.
