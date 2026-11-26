@@ -27,7 +27,7 @@ export const VOICE = {
   'owl.pair-total': ['That is {n} together. Another way gets {m}. Try again!'],
   'owl.pair-first': ['You got {n}. The best way got {m}. Now watch!'],
   'owl.check': [
-    'Turn over a card. I will say which owl I want to hop. Check my move: tap the green check if it hops the farthest, or tap the owl that does!',
+    'Turn over a card, {pet}. I will say which owl I want to hop. Check my move: tap the green check if it hops the farthest, or tap the owl that does!',
   ],
   'owl.propose': ['I will hop {card} with the {owl} owl. Check my move!'],
   'owl.check-agree': ['Yes, the {owl} owl hops {n}. We agree!'],
