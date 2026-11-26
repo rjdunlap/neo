@@ -49,6 +49,7 @@ import {
   type Surface,
   type Trial,
 } from './logic';
+import { RainMystery } from './mystery-scene';
 import { RainRoute } from './route';
 
 /** Each level's authored first round leads its first round of a session. */
@@ -633,6 +634,9 @@ export const rainGarden: GameModule = {
     'Next time it rains, look out the window together: where does the water go on the path, and where on the grass?',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
-  create: (ctx) => (planFor(ctx.level).level >= 4 ? new RainRoute(ctx) : new RainGarden(ctx)),
+  create: (ctx) => {
+    const level = planFor(ctx.level).level;
+    return level >= 8 ? new RainMystery(ctx) : level >= 4 ? new RainRoute(ctx) : new RainGarden(ctx);
+  },
   touchDemo: true,
 };

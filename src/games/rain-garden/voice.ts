@@ -86,4 +86,24 @@ export const VOICE = {
   'rain.cause.pond': ['The pond got none. The beds kept every drop.'],
   'rain.cause.over': ['Too much ran into the pond. The garden needs to hold back more of the storm.'],
   'rain.check.yes.cards': ['Both rains work in this garden. Every need met!'],
+  // Level 8, the mystery patch. Spelled `rainmyst.*`, not `rain.*`: the `rain` prefix needs a rendered clip for every
+  // line and a feature run does not render clips, so these use device speech until a Better voice pass.
+  'rainmyst.instruct': [
+    'This patch is hiding how it works. Pick some rain, tap the cloud, then tap the idea that fits the water you saw.',
+  ],
+  'rainmyst.reset': ['Empties between rains: the patch is emptied before each new rain.'],
+  'rainmyst.keep': ['Stays full: water left in the patch is still there for the next rain.'],
+  'rainmyst.small': ['A small rain: two drops.'],
+  'rainmyst.big': ['A big rain: four drops.'],
+  'rainmyst.pick': ['Pick a rain first, then tap the cloud.'],
+  'rainmyst.mark': ['Which idea fits? Tap its card.'],
+  'rainmyst.both.ok': ['Right, both ideas still fit this water. What test could tell them apart?'],
+  'rainmyst.over': ['Both ideas still fit this water. One more test could tell them apart.'],
+  'rainmyst.under': [
+    "One of those ideas doesn't fit the water you saw. Compare the second row with the first.",
+  ],
+  'rainmyst.wrong': ["That idea doesn't fit this water. Look at the pond rows again."],
+  'rainmyst.reveal.reset': ['It empties between rains: the second rain acted just like the first.'],
+  'rainmyst.reveal.keep': ['It stays full: the second rain found a full patch, so more ran to the pond.'],
+  'rainmyst.hint.test': ['Try two rains in a row, then tap the cloud.'],
 } satisfies Record<string, string[]>;

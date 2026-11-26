@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–7 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077, level 7 PR #2090); level 8 (evidence and hypothesis) is not defined yet, see the [build slices](../deep-dives/subjects/weather-water.md#build-slices-in-order). Level 7 departs from [its section](#level-7-one-garden-for-two-rains-definition) as the [game page](../games/rain-garden.md) records: no separate leaf button, a card pick clears settled drops, the hold-sign tick waits for a settled rain.
+**Built:** levels 1–8 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077, level 7 PR #2090, level 8 PR #2199). Level 7 departs from [its section](#level-7-one-garden-for-two-rains-definition) as the [game page](../games/rain-garden.md) records: no separate leaf button, a card pick clears settled drops, the hold-sign tick waits for a settled rain.
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
@@ -764,6 +764,8 @@ None waits on the developer. Defaults this definition sets:
 - **Light before storm:** when both cards fail, the light card is traced first because its need is the simpler one to read; the storm's cross still shows.
 
 ## Level 8, *the mystery patch* (definition)
+
+**Built 2026-11-25 (PR #2199)** as defined, with the departures the [game page](../games/rain-garden.md) records (the new voice lines are spelled `rainmyst.*` so no rendered clips are required).
 
 Defined 2026-11-25 as the weather-and-water study's [slice 7](../deep-dives/subjects/weather-water.md#build-slices-in-order), second half, from the [ladder's level-8 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and its accounting paragraph. One build session, new-interaction tier ([Level 8 check tier](#level-8-check-tier)): choosing a test, reading a trace and a "both still fit" answer are new, the cloud, soil and pond are the earlier levels'.
 

@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–7 |
+| school | 3–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,12 +22,13 @@
 | 5 | Three beds downhill: leave enough rain for every marked bed and some for the pond |
 | 6 | Rain twice: see where the second rain goes when the ground is already wet |
 | 7 | Two rains: change the beds so one garden works for both a light shower and a big storm |
+| 8 | A hidden patch: pick a test and decide which idea the water fits, or that both still do |
 
 <!-- end generated -->
 
 **Starts as:** toddler–school
 
-**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5); the same rain twice, on dry and then wet ground (level 6); one garden for both a light shower and a big storm, each rain on dry ground (level 7)
+**Grows into:** tap a cloud over a little garden and watch the four drops soak into the ground or roll down into a pond; change the ground and rain again to compare; two beds downhill with a Check (level 4); three beds sharing a budget of drops, on six authored boards (level 5); the same rain twice, on dry and then wet ground (level 6); one garden for both a light shower and a big storm, each rain on dry ground (level 7); a covered patch that either empties between rains or stays full, found out by choosing a test of one or two rains (level 8)
 
 ## Design notes
 
@@ -50,3 +51,7 @@ The beds and runoff tray sit above and below the caption bubble on short upright
 *Level 7 · one garden for two rains (school; [definition](../definitions/rain-garden.md#level-7-one-garden-for-two-rains-definition)).* Two rain cards hang beside the three-bed slope of level 5: a light shower (four drops) and a big storm (six drops), each with its own signs (which beds keep two, and what the pond must get). Tapping a card previews that rain on her garden; the Check runs both rains, each on dry ground, and marks each card with a tick or a cross. A failed Check counts one miss (checking the same arrangement again counts nothing); from the second miss the bed to change glows, counting one hint the first time it lights. Show me flips the next useful bed or points at the Check. Previews, card picks, flips and Start again are free.
 
 Where it departs from the definition: a passing Check ends the round directly after the pet's line, as levels 4 and 5 do, so there is no separate leaf button and the ghost finger ends on the Check. Picking the other card clears any settled drops from the board (the beds' ground stays) so one rain's drops are never read against the other card's signs; the definition had previews staying. The hold-sign's tick shows only once a whole rain has settled with at most two drops in the pond. Layout is measured with all three sockets marked (a sign position per bed), the card boxes at the definition's coordinates, and unit-tested at the eight views.
+
+*Level 8 · the mystery patch (school; [definition](../definitions/rain-garden.md#level-8-the-mystery-patch-definition)).* A covered patch sits under the cloud and follows one of two pretend rules, shown as two idea cards: **empties between rains** or **stays full**. She builds a test from two slots (empty, a small rain of two drops, a big rain of four), taps the cloud and watches only the pond, which shows each rain's row with a badge for its size. She then lights every card that still fits the water she saw and taps the check. One rain looks the same under both rules, so lighting both cards is a right answer to it (no miss, but no leaf); only a second rain in a row separates the rules, and naming the one that fits lifts the cover, shows how full the patch ended and brings the leaf. A failed check counts one miss (the same cards on the same run again count nothing) and says why: both still fit, one idea does not fit, or the card does not fit. From the second miss each card shows the two small rows its rule would have left in the pond (rings for empties, squares for stays full), counting one hint the first time. Show me runs the whole deciding test (two big rains) as one hint, then lights the right cards, then points at the check and the leaf. Slot taps, runs, card toggles (even before any rain) and Start again are free. Rule code is in `mystery.ts` (`runPlan`, `fits`, `judge`, `mysteryHint`), its scene in `mystery-scene.ts`.
+
+Where it departs from the definition: the new voice lines are spelled `rainmyst.*` instead of `rain.*` (the `rain` prefix needs a rendered clip for every line and a feature run does not render clips, so they use device speech until a Better voice pass); the pause sheet's Show me uses the definition's four worked steps but the check step is a point, not a tap; after the cover lifts she can still change the test, and the lifted patch then shows the latest run.
