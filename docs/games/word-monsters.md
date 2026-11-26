@@ -12,7 +12,7 @@
 | toddler | 1, 15, 2 |
 | preschool | 15, 2, 3, 4, 5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10, 11, 12, 14, 13 |
+| school | 5, 6, 7, 8, 10, 16, 11, 12, 14, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -31,6 +31,7 @@
 | 13 | Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box |
 | 14 | Four sounds: say a pictured word slowly and build it in four boxes, with a spare letter |
 | 15 | My letter: find the first letter of her name among three monsters, asked by its letter name |
+| 16 | Blend it: the monsters say their sounds one by one; tap the picture of the word they make |
 
 <!-- end generated -->
 
@@ -53,6 +54,8 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 **Level 12, Fix the pet’s word.** The pet spells a different word that shares two letters with the pictured word, such as *pin* for *pen*. Tap the speaker to hear the pet’s spelling or the picture to hear its intended word. Tap out the wrong letter and drag the replacement into the empty box. The first check of a correct letter is free. After two misses the letter to lift glows. Each round visits the first, middle and last position in shuffled order.
 
 **Level 13, Two letters, one sound.** A wide team monster wearing two letters (sh, ch, th or ck) fills one sound box. Only the word is said ("Make fish! Two letters can make one sound."); tap the picture to hear it again (free) or the boxes to hear the sounds box by box (one hint per word). A wrong drop says who the monster is; dropping one letter of the wanted team says "That is just sss. Two letters make shh."; two misses glow the next monster. Nine words: fish, dish, ship, chick, duck, sock, rock, bath, moth, three per round with three different teams. A spare monster is half the time one letter of a team (never both, and never c or k beside ck) and otherwise an unrelated letter that is no lookalike or sound twin. Team words never appear at levels 10 and 11. Known gap: a ck monster dropped in chick's ch box gets the generic "I'm CK" line.
+
+**Level 16, Blend it (school, 2026-11-26, PR #2225).** Three monsters stand in the boxes' row, wearing the letters of a pictured word (m, a, p), and three picture cards wait below (mop, mat, map), all starting with the same letter. The monsters light in turn and say their sounds, never the word. She taps the picture they make, then the word is said and the next one comes. Tap a monster to hear the sounds again (free); a card tapped while the sounds are still playing only wiggles. A wrong card says its own word and sounds ("mat is mmm, aah, tuh. Listen again!") and the monsters' sounds run again; two wrong cards glow the right one (one hint). Three words a round with different first letters, the first one she can stretch (m, n, s, f, l or r), drawn from the pictured 3-letter words with no repeated letter or mirror pair, grouped by first letter, where a group needs at least three words (`BLEND_GROUPS`). It sits after level 10 in school's order, and it makes no phonics claim until the iPad voice's sounds are checked. The ghost finger taps the right card.
 
 **Level 15, My letter (toddler and preschool's entry, 2026-11-23, PR #2070).** Three monsters, one wearing the first letter of her name (`myLetter(ctx.childName)`, from the shared `latinLetters` in `src/learning/words/name-letters.ts`); Pip's p when the name has no Latin letter or is the couch stand-in "friend". Asked and answered by letter name only ("Where is D? D starts your name!"), with no sound line, so it makes no phonics claim. Four questions; spares are never in her name and never lowercase or capital lookalikes of her letter or each other, and her letter never stands in the same spot twice running. A wrong tap makes that monster say only who it is ("I'm B!"); boing except at toddler. Misses are wrong taps; a hint is the glow on her letter after two. ID 15 is placed by order, not by number: toddler order [1, 15, 2], preschool [15, 2, 3, 4, 5], `entryLevels` [9, 15].
 

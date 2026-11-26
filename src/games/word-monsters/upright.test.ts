@@ -7,6 +7,7 @@ import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-
 import {
   BODY_R,
   BUILD_PICTURE,
+  CARD,
   DROP_REACH,
   FIXED_HIT,
   HIT_R,
@@ -20,6 +21,7 @@ import {
   SLOT_SIZE,
   TEAM_HIT_RX,
   bigSpot,
+  cardSpots,
   looseSpots,
   shelfScale,
   shelfSpot,
@@ -42,8 +44,8 @@ const levels = [
 ].sort((a, b) => a - b);
 const building = ['build', 'spell', 'slow', 'team', 'repair', 'family', 'end'];
 
-it('covers levels 1 to 15', () => {
-  expect(levels).toEqual(Array.from({ length: 15 }, (_, i) => i + 1));
+it('covers levels 1 to 16', () => {
+  expect(levels).toEqual(Array.from({ length: 16 }, (_, i) => i + 1));
 });
 
 describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
@@ -72,13 +74,33 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
           const top = topSpot(v, plan);
           const spots = looseSpots(v, plan, q.monsters.length, count);
           expect(spots).toHaveLength(q.monsters.length);
+          const where = `level ${level}, ${q.answer}`;
+          if (plan.mode === 'blend') {
+            // Three picture cards stand where loose monsters do; the word's own monsters stand in the boxes' row above
+            // them and any touch on them only says the sounds again, so they need no room of their own.
+            const cards = cardSpots(v, plan);
+            expect(cards, where).toHaveLength(3);
+            expect(q.cards, where).toHaveLength(3);
+            const targets = cards.map((s, i) => square(`card ${i + 1}`, s, CARD.size + 16));
+            expect(uprightProblems(v, targets), where).toEqual([]);
+            for (const [i, s] of cards.entries()) {
+              expect(s.y + CARD.size / 2 + 8, where).toBeLessThanOrEqual(v.h - 170);
+              expect(s.y, where).toBeGreaterThan(v.h / 2);
+              for (let j = 0; j < count; j++) {
+                const slot = slotSpot(v, plan, j, count);
+                expect(slot.y + HIT_R, `${where}, monster ${j + 1} over card ${i + 1}`).toBeLessThan(
+                  s.y - CARD.size / 2,
+                );
+              }
+            }
+            continue;
+          }
           const targets: Target[] = q.monsters.map((letter, i) => ({
             what: `monster ${letter}`,
             ...spots[i],
             w: letter.length > 1 ? 2 * TEAM_HIT_RX : 2 * HIT_R,
             h: 2 * HIT_R,
           }));
-          const where = `level ${level}, ${q.answer}`;
           if (building.includes(plan.mode)) {
             const slots = Array.from({ length: count }, (_, i) => slotSpot(v, plan, i, count));
             expect(slots[0].y).toBeCloseTo(top.y + SLOT_DY);

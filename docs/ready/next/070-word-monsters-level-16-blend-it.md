@@ -1,1 +1,0 @@
-**`word-monsters` level 16, *Blend it*** (school, after slices 2 and 3; new interaction on an existing game: cards, unit tests, one filtered play with one wrong card and one hint, one portrait screenshot, `npm run game-docs`). [Dive](../../deep-dives/word-monsters.md#build-slices-in-order)
