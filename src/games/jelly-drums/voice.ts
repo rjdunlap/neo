@@ -36,6 +36,8 @@ export const VOICE = {
   // Level 16: slotted, so these stay on device speech and need no rendered clip.
   'jelly.finish': ['Listen to the song, {name}, then tap the jellies that finish it!'],
   'jelly.finish.ask': ['How does it end, {name}?'],
+  // Level 17: slotted, so it stays on device speech and needs no rendered clip.
+  'jelly.answer': ['Touch a jelly, {name}, and listen. It sings back!'],
   'jelly.oops': ['Hmm, listen again!'],
   'jelly.nice': ['Beautiful!', 'You got it!', 'Lovely music!'],
 } satisfies Record<string, string[]>;

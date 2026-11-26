@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Tap the jelly drums to make music, then copy tunes.',
   steps: [
     {
+      from: 17,
+      to: 17,
+      text: 'Touch a jelly and it sings. Just after the same jelly answers with the same note and a ripple, and the animals clap.',
+    },
+    {
       from: 10,
       to: 10,
       text: 'Touch anywhere on the stage and the big jelly sings. Every few touches another jelly wakes up and joins in.',
@@ -61,6 +66,7 @@ export const HOW_TO: GameHowTo = {
     { from: 14, to: 14, text: 'The round ends after six mystery notes.' },
     { from: 15, to: 15, text: 'The round ends after four short songs, the first one Hot Cross Buns.' },
     { from: 16, to: 16, text: 'The round ends after three songs: Hot Cross Buns, then two more.' },
+    { from: 17, to: 17, text: 'The round ends after eight touches.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
   ],
   note: [
@@ -98,6 +104,11 @@ export const HOW_TO: GameHowTo = {
       from: 16,
       to: 16,
       text: 'The yellow note button plays the song again. A wrong jelly replays the whole song with its ending glowing; after two misses the first jelly of the ending glows too.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'Nothing is a wrong answer and no hint is needed. If nobody touches for six seconds, a jelly wiggles to invite another touch.',
     },
   ],
 };
