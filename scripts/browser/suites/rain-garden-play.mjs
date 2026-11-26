@@ -317,6 +317,78 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       return;
     }
 
+    // Level 8 on an upright phone: the authored round (keep, a big rain). A one-rain test with one card lit is `over`,
+    // the other card another miss (ghost rows, one hint), both cards a supported "both still fit" (no miss, no leaf),
+    // then a two-rain test, an `under` Check, the correct card, the lifted cover and the leaf.
+    if (from === 8) {
+      await page.setViewportSize({ width: 390, height: 625 });
+      await launch('rain-garden', 8, 'Mia', 'school');
+      assert.equal(await page.evaluate(() => neo.view.upright), true, 'an upright view');
+      await settle();
+      const tapOn = (target) =>
+        page.evaluate((target) => kit.tapOn(Function(`return neo.scene.game.${target}`)()), target);
+      s = await state();
+      assert.deepEqual(
+        [s.level, s.truth, s.plan, s.ponds, s.revealed, s.check, s.leaf],
+        [8, 'keep', [4], null, false, false, false],
+      );
+      await tapOn('cards[0]');
+      assert.deepEqual((await state()).marks, ['reset'], 'a card can be lit before any test');
+      await tapOn('cloud');
+      await settle();
+      s = await state();
+      assert.deepEqual([s.ponds, s.runs, s.misses, s.check], [[2], 1, 0, true], 'one big rain, free');
+      await tapOn('checkBtn');
+      await settle();
+      s = await state();
+      assert.deepEqual([s.misses, s.hints, s.ghosts], [1, 0, false], 'over: both fit one rain');
+      await tapOn('cards[0]');
+      await tapOn('cards[1]');
+      await tapOn('checkBtn');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.misses, s.hints, s.ghosts],
+        [2, 1, true],
+        'a second miss shows the ghost rows, one hint',
+      );
+      await tapOn('cards[0]');
+      await tapOn('checkBtn');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.marks, s.misses, s.supported, s.revealed, s.leaf],
+        [['reset', 'keep'], 2, true, false, false],
+        'both fit: right, no miss, no leaf',
+      );
+      await tapOn('slots[1]');
+      await tapOn('cloud');
+      await settle();
+      s = await state();
+      assert.deepEqual([s.plan, s.ponds, s.evidencePlan, s.ghosts], [[4, 2], [2, 2], [4, 2], false]);
+      await tapOn('checkBtn');
+      await settle();
+      s = await state();
+      assert.deepEqual([s.misses, s.revealed], [3, false], 'under: both lit but only one fits two rains');
+      await tapOn('cards[0]');
+      await tapOn('checkBtn');
+      await settle();
+      s = await state();
+      assert.deepEqual(
+        [s.revealed, s.leaf, s.check],
+        [true, true, false],
+        'the cover lifts and the leaf comes',
+      );
+      await screenshot('rain-garden-8-upright-cover-lifted');
+      await tapOn('leaf');
+      await finished('rain-garden');
+      assert.deepEqual(await score(), [3, 1], 'level 8 saved 3 misses, 1 hint');
+      log(
+        'Rain Garden 8: upright phone, a prediction before any rain, over (1 miss), second miss with ghost rows (1 hint), supported both-fit Check with no miss and no leaf, a two-rain test, under (3rd miss), the right card, cover lifted and the leaf 3/1; passed',
+      );
+      return;
+    }
+
     // Keep the previous FROM_LEVEL=5 replay scoped to level 5.
     if (from === 5 || from > 7) return;
     await page.setViewportSize({ width: 390, height: 625 });

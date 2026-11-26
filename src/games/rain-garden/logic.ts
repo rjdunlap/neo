@@ -78,7 +78,7 @@ export const flip = (s: Surface): Surface => (s === 'stone' ? 'soil' : 'stone');
 // ---- levels ----
 
 export interface Plan {
-  level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   name: string;
 }
 export const PLANS: readonly Plan[] = [
@@ -92,15 +92,19 @@ export const PLANS: readonly Plan[] = [
     level: 7,
     name: 'Two rains: change the beds so one garden works for both a light shower and a big storm',
   },
+  {
+    level: 8,
+    name: 'A hidden patch: pick a test and decide which idea the water fits, or that both still do',
+  },
 ];
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 8 },
 };
 export function planFor(level: number): Plan {
-  return PLANS[Math.max(1, Math.min(7, Math.round(level))) - 1];
+  return PLANS[Math.max(1, Math.min(8, Math.round(level))) - 1];
 }
 
 export type Friend = 'frog' | 'duck' | 'turtle';

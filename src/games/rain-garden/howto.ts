@@ -67,6 +67,17 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'A cross on one card says which need failed. A change that fixes one rain can break the other.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'Tap a slot to pick a small or big rain, then tap the cloud. The patch is covered, so watch the pond.',
+    },
+    { from: 8, to: 8, text: 'Light every idea card that still fits the water you saw, then tap the check.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'One rain can look the same either way. Two rains in a row can tell the ideas apart.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: "Tap the leaf when she's done; it appears after one rain." },
@@ -75,6 +86,7 @@ export const HOW_TO: GameHowTo = {
     { from: 4, to: 5, text: 'The round ends when the check finds every need met.' },
     { from: 6, to: 6, text: "Tap the leaf when she's done. It appears after both rains." },
     { from: 7, to: 7, text: 'The round ends when the check finds both cards met.' },
+    { from: 8, to: 8, text: 'Tap the leaf when the cover lifts.' },
   ],
   note: [
     {
@@ -100,6 +112,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'A pretend model: soil holds two drops, stone none, and each rain starts on dry ground. Real rain gardens vary; this only compares two rains. The first failed check counts one miss; Show me counts as help.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'A pretend model: soil holds two drops, and the hidden rule is empties between rains or stays full. The check looks at the water in the pond now. Real ground drains slowly and dries over time. A wrong check counts one miss and Show me counts as help.',
     },
   ],
 };
