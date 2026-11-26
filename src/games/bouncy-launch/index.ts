@@ -33,6 +33,11 @@ import {
   planetSide,
   planetBotLanding,
   type PlanetPair,
+  SPRING_KINDS,
+  canSpringReach,
+  idealSpringFor,
+  springFactor,
+  type SpringKind,
   friendSpots,
   judge,
   MEADOW_LEVEL,
@@ -69,6 +74,14 @@ const FRIEND_SCALE = 0.42;
 /** Couch play: how far the spring squashes straight down at full power, in logical units. */
 const SQUASH = 90;
 const SPRING = { fill: 0xc9d3dc, line: 0x8c9aa8 };
+const SPRING_STYLE: Record<
+  SpringKind,
+  { label: string; coils: number; wire: number; fill: number; line: number }
+> = {
+  soft: { label: 'Soft', coils: 9, wire: 6, fill: swatch.blue.fill, line: swatch.blue.line },
+  medium: { label: 'Medium', coils: 7, wire: 9, fill: swatch.green.fill, line: swatch.green.line },
+  stiff: { label: 'Stiff', coils: 5, wire: 13, fill: swatch.red.fill, line: swatch.red.line },
+};
 
 /** A soft landing cloud resting on the grass. */
 function padArt(w: number): Graphics {
@@ -113,6 +126,16 @@ class BouncyLaunch implements Game {
   private readonly planetInput = new Container();
   private readonly planetArt = new Graphics();
   private readonly planetBackdrops: Backdrop[] = [];
+  /** Pick a spring (level 11): predict farthest in round 1, then pick a spring and pull in round 2. */
+  springPhase: 'predict' | 'demo' | 'pick' | 'pull' = 'predict';
+  selectedSpring: SpringKind | null = null;
+  springPrediction: SpringKind | undefined;
+  private springDemoIndex = 0;
+  private readonly springDemoMarkers: { kind: SpringKind; f: number }[] = [];
+  private readonly springMarkersArt = new Graphics();
+  private readonly springMarkerLabels = new Container();
+  readonly springButtons: Container[] = [];
+  private readonly springBar = new Container();
   readonly pet: CompanionRig;
   readonly pads: Container[] = [];
   shot = 0;
@@ -230,8 +253,8 @@ class BouncyLaunch implements Game {
   /** The "watch me" demo: hold toward the next cloud's power, then press the launch button. */
   autoplay(dt: number): CouchControls {
     const out = idle();
-    // Level 10's pulls are shown ones: the demo waits on the ghost finger's tap, not a key.
-    if (this.plan.mode === 'line') return out;
+    // Shown-pull and spring-choice levels wait on the ghost finger's tap, not a key.
+    if (this.plan.mode === 'line' || this.plan.mode === 'spring') return out;
     this.botWait -= dt;
     const target = this.targets[this.shot];
     if (this.flying || this.finished || this.grab || this.unasked || this.botWait > 0 || target === undefined)
@@ -272,7 +295,22 @@ class BouncyLaunch implements Game {
       const target = this.targets[this.shot];
       return target === undefined ? null : { tap: { on: this.pads[target] } };
     }
-    const pull = pullToTake(this.plan, this.shot, this.targets, this.last, this.spots);
+    if (this.plan.mode === 'spring') {
+      if (this.springPhase === 'demo') return null;
+      if (this.springPhase === 'predict') return { tap: { on: this.springButtons[2] } };
+      const target = this.targets[this.shot - 1];
+      if (target === undefined) return null;
+      if (!this.selectedSpring || !canSpringReach(this.selectedSpring, target))
+        return { tap: { on: this.springButtons[SPRING_KINDS.indexOf(idealSpringFor(target))] } };
+    }
+    const pull = pullToTake(
+      this.plan,
+      this.shot,
+      this.targets,
+      this.last,
+      this.spots,
+      this.selectedSpring ?? undefined,
+    );
     // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
     const from = {
       x: this.seat.x + this.pet.touch.x * PET_SCALE,
@@ -288,8 +326,14 @@ class BouncyLaunch implements Game {
   }
 
   control(input: CouchControls, dt: number) {
-    // Shown pulls only: a key never squashes the spring away from the pull on screen.
-    if (this.plan.mode === 'planet' || this.plan.mode === 'between' || this.plan.mode === 'line') return;
+    // Shown pulls and spring-choice levels: a key never squashes the spring away from the pull on screen.
+    if (
+      this.plan.mode === 'planet' ||
+      this.plan.mode === 'between' ||
+      this.plan.mode === 'line' ||
+      this.plan.mode === 'spring'
+    )
+      return;
     if (this.flying || this.finished || this.grab) return;
     // The flower meadow has no spring to squash: a press is a touch.
     if (this.plan.mode === 'meadow') {
@@ -418,6 +462,8 @@ class BouncyLaunch implements Game {
       this.meadow.eventMode =
       this.lineArt.eventMode =
       this.lineNumbers.eventMode =
+      this.springMarkersArt.eventMode =
+      this.springMarkerLabels.eventMode =
         'none';
     ctx.stage.addChild(
       this.backdrop,
@@ -430,9 +476,12 @@ class BouncyLaunch implements Game {
       this.lastArc,
       this.flag,
       this.flagNumbers,
+      this.springMarkersArt,
+      this.springMarkerLabels,
       this.compareRing,
       this.predictionRing,
       this.pullArrow,
+      this.springBar,
     );
     this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
@@ -478,6 +527,33 @@ class BouncyLaunch implements Game {
       ctx.stage.addChild(this.friend, this.snack);
     }
     ctx.stage.addChild(this.star, this.spring, this.notches, this.preview, this.replay, this.pet);
+    if (this.plan.mode === 'spring') {
+      for (const kind of SPRING_KINDS) {
+        const s = SPRING_STYLE[kind];
+        const btn = new Container();
+        btn.hitArea = new Rectangle(-70, -56, 140, 112);
+        const card = new Graphics();
+        const icon = new Graphics();
+        icon.moveTo(0, 18);
+        for (let i = 1; i <= s.coils; i++) {
+          const t = i / s.coils;
+          icon.lineTo(i % 2 ? -18 : 18, 18 - t * 44);
+        }
+        icon
+          .lineTo(0, -26)
+          .stroke({ width: s.wire * 0.7, color: s.line, join: 'round', cap: 'round' })
+          .roundRect(-24, -34, 48, 10, 4)
+          .fill(s.fill)
+          .stroke({ width: 3, color: s.line });
+        const txt = label(s.label, 22, ink);
+        txt.anchor.set(0.5);
+        txt.position.set(0, 36);
+        btn.addChild(card, icon, txt);
+        onTap(btn, () => void this.tapSpring(kind), { cooldown: 350 });
+        this.springButtons.push(btn);
+        this.springBar.addChild(btn);
+      }
+    }
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(padAt(this.bag[this.shot] ?? this.ctx.rng.int(0, PADS - 1))), {
         cooldown: 500,
@@ -498,6 +574,16 @@ class BouncyLaunch implements Game {
       this.pet.eventMode = 'static';
       this.pet.on('pointerdown', (e: FederatedPointerEvent) => {
         if (this.flying || this.finished || this.grab || palmOnGlass()) return;
+        if (this.plan.mode === 'spring') {
+          if (this.springPhase === 'predict' || this.springPhase === 'demo') return;
+          if (!this.selectedSpring) {
+            this.wobble = 0.35;
+            this.pet.rotation = 0.07;
+            sfx.squeak(6);
+            void this.ctx.say('launch.spring-first');
+            return;
+          }
+        }
         // A pull before she has heard where this shot should land: she hears it now, and the pull goes on.
         this.askNow();
         this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global) };
@@ -670,7 +756,8 @@ class BouncyLaunch implements Game {
         this.plan.mode === 'predict' ||
         this.plan.mode === 'planet' ||
         this.plan.mode === 'between' ||
-        this.plan.mode === 'line'
+        this.plan.mode === 'line' ||
+        (this.plan.mode === 'spring' && (this.springPhase === 'predict' || this.springPhase === 'demo'))
       )
         this.showPredictionPull();
       else this.pet.position.set(this.seat.x, this.restingY());
@@ -684,6 +771,14 @@ class BouncyLaunch implements Game {
     this.notchKey = '';
     this.drawFootprints();
     if (this.plan.mode === 'planet') this.drawPlanet(v);
+    if (this.plan.mode === 'spring') {
+      const y = Math.max(175, this.seat.y - 310);
+      const spacing = 156;
+      const startX = v.w / 2 - spacing;
+      this.springButtons.forEach((btn, i) => btn.position.set(startX + i * spacing, y));
+      this.drawSpringButtons();
+      this.drawSpringMarkers();
+    }
   }
 
   private placeFriend() {
@@ -786,7 +881,12 @@ class BouncyLaunch implements Game {
   }
 
   private placeStar() {
-    const t = this.targets[this.shot];
+    const t =
+      this.plan.mode === 'spring'
+        ? this.shot > 0
+          ? this.targets[this.shot - 1]
+          : undefined
+        : this.targets[this.shot];
     if (t === undefined) return;
     this.star.position.set(this.landX(cloudAt(this.plan, t)), this.strip.y - 110);
   }
@@ -875,8 +975,145 @@ class BouncyLaunch implements Game {
         return this.instruct('launch.line', undefined, said);
       case 'between':
         return this.betweenRound();
+      case 'spring':
+        return this.springShot(said);
       case 'friend':
         return this.instruct('launch.feed', { friend: this.friendName }, said);
+    }
+  }
+
+  /** Level 11: round 1 predicts the farthest spring at full pull; shots 1..3 pick a spring and pull for the star. */
+  private async springShot(said?: Promise<unknown>) {
+    if (this.shot === 0) {
+      this.springPhase = 'predict';
+      this.selectedSpring = null;
+      this.springPrediction = undefined;
+      this.springDemoMarkers.length = 0;
+      this.star.visible = false;
+      this.showPredictionPull();
+      this.drawSpring();
+      this.drawSpringButtons();
+      this.drawSpringMarkers();
+      return this.instruct('launch.spring-predict');
+    }
+    this.springPhase = 'pick';
+    this.selectedSpring = null;
+    this.star.visible = true;
+    this.placeStar();
+    this.pet.position.set(this.seat.x, this.restingY());
+    this.drawSpring();
+    this.drawSpringButtons();
+    this.drawSpringMarkers();
+    return this.instruct('launch.spring-pick', undefined, said);
+  }
+
+  private async tapSpring(kind: SpringKind) {
+    if (
+      this.plan.mode !== 'spring' ||
+      this.flying ||
+      this.finished ||
+      this.grab ||
+      this.springPhase === 'demo'
+    )
+      return;
+    if (this.springPhase === 'predict') {
+      this.dropAsk();
+      this.springPrediction = kind;
+      this.springPhase = 'demo';
+      this.springDemoIndex = 0;
+      this.springDemoMarkers.length = 0;
+      this.drawSpringButtons();
+      sfx.pop(5);
+      await this.ctx.say('launch.lets-see');
+      if (this.finished) return;
+      const first = SPRING_KINDS[0];
+      this.selectedSpring = first;
+      this.showPredictionPull();
+      this.drawSpring();
+      void this.launch(reach(MAX_PULL, 1, springFactor(first)));
+      return;
+    }
+    this.askNow();
+    this.selectedSpring = kind;
+    this.springPhase = 'pull';
+    sfx.pop(5);
+    this.drawSpring();
+    this.drawSpringButtons();
+  }
+
+  private async springDemoLanded(f: number) {
+    const kind = SPRING_KINDS[this.springDemoIndex];
+    this.springDemoMarkers.push({ kind, f });
+    this.drawSpringMarkers();
+    await this.ctx.tw.to(
+      this.pet,
+      { x: this.seat.x, y: this.seat.y },
+      { duration: 0.55, ease: ease.outBack },
+    );
+    this.springDemoIndex++;
+    if (this.finished) return;
+    if (this.springDemoIndex < SPRING_KINDS.length) {
+      this.flying = false;
+      const nextKind = SPRING_KINDS[this.springDemoIndex];
+      this.selectedSpring = nextKind;
+      this.showPredictionPull();
+      this.drawSpring();
+      this.drawSpringButtons();
+      await this.ctx.tw.wait(0.35);
+      if (!this.finished && !this.flying) void this.launch(reach(MAX_PULL, 1, springFactor(nextKind)));
+      return;
+    }
+    await this.ctx.say(this.springPrediction === 'stiff' ? 'launch.spring-why-right' : 'launch.spring-why');
+    this.flying = false;
+    this.shot = 1;
+    this.springDemoMarkers.length = 0;
+    this.lastFlight = undefined;
+    this.drawHistory();
+    if (!this.finished) await this.askShot();
+  }
+
+  /** Draw the three spring selector cards, highlighting the chosen spring or (after two misses) glowing the right one. */
+  private drawSpringButtons() {
+    if (this.plan.mode !== 'spring') return;
+    const target = this.shot > 0 ? this.targets[this.shot - 1] : undefined;
+    const hintKind = this.hinting && target !== undefined ? idealSpringFor(target) : undefined;
+    this.springButtons.forEach((btn, i) => {
+      const kind = SPRING_KINDS[i];
+      const s = SPRING_STYLE[kind];
+      const card = btn.getChildAt(0) as Graphics;
+      const active =
+        this.springPhase === 'predict' || this.springPhase === 'demo'
+          ? this.springPrediction === kind
+          : this.selectedSpring === kind;
+      const hinted = hintKind === kind;
+      card.clear().roundRect(-70, -56, 140, 112, 18).fill(0xffffff);
+      if (active) card.roundRect(-70, -56, 140, 112, 18).fill({ color: s.fill, alpha: 0.22 });
+      card
+        .roundRect(-70, -56, 140, 112, 18)
+        .stroke({ width: active ? 7 : 4, color: active ? s.line : 0xc5d6e6 });
+      if (hinted)
+        card.roundRect(-76, -62, 152, 124, 22).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.95 });
+    });
+  }
+
+  /** Round 1 comparison flags on the grass showing where Soft, Medium and Stiff landed for the same pull. */
+  private drawSpringMarkers() {
+    const g = this.springMarkersArt.clear();
+    this.springMarkerLabels.removeChildren().forEach((c) => c.destroy());
+    if (this.plan.mode !== 'spring') return;
+    for (const { kind, f } of this.springDemoMarkers) {
+      const s = SPRING_STYLE[kind];
+      const x = this.landX(f);
+      const y = this.strip.y + 10;
+      g.moveTo(x, y)
+        .lineTo(x, y - 92)
+        .stroke({ width: 6, color: wood.line, cap: 'round' });
+      g.poly([x, y - 92, x + 64, y - 76, x, y - 60])
+        .fill(s.fill)
+        .stroke({ width: 4, color: s.line, join: 'round' });
+      const tag = label(s.label, 16, ink);
+      tag.position.set(x + 8, y - 84);
+      this.springMarkerLabels.addChild(tag);
     }
   }
 
@@ -956,13 +1193,15 @@ class BouncyLaunch implements Game {
     const target = this.targets[this.shot];
     const between = this.betweens[this.shot];
     const base =
-      this.plan.mode === 'planet'
-        ? this.pairs[this.shot]?.base
-        : this.plan.mode === 'between'
-          ? between && padAt([between.low, between.high, between.mid][this.betweenStep])
-          : target === undefined
-            ? undefined
-            : cloudAt(this.plan, target);
+      this.plan.mode === 'spring'
+        ? 1
+        : this.plan.mode === 'planet'
+          ? this.pairs[this.shot]?.base
+          : this.plan.mode === 'between'
+            ? between && padAt([between.low, between.high, between.mid][this.betweenStep])
+            : target === undefined
+              ? undefined
+              : cloudAt(this.plan, target);
     if (base === undefined) return;
     const pull = pullFor(base);
     const d = { x: -0.35, y: 0.94 };
@@ -1070,14 +1309,16 @@ class BouncyLaunch implements Game {
     this.preview.clear();
     const p = this.pullNow();
     if (p < MIN_PULL || this.flying || this.finished) return false;
-    void this.launch(reach(p));
+    const factor = this.plan.mode === 'spring' && this.selectedSpring ? springFactor(this.selectedSpring) : 1;
+    void this.launch(reach(p, 1, factor));
     return true;
   }
 
   /** While pulling: where this pull would land (always on easy levels, after a hint on target levels). */
   private drawPreview() {
     const g = this.preview.clear();
-    if (!this.hinting) return;
+    // Level 11 hints by glowing the right spring button rather than revealing the pull distance.
+    if (!this.hinting || this.plan.mode === 'spring') return;
     const f = this.stick ? this.controllerPower : reach(this.pullNow());
     const x1 = this.landX(f);
     const pts = this.arc(f);
@@ -1132,7 +1373,18 @@ class BouncyLaunch implements Game {
     g.roundRect(base.x - 70, base.y - 22, 140, 30, 12)
       .fill(wood.fill)
       .stroke({ width: 5, color: wood.line });
-    const coils = 7;
+    if (this.plan.mode === 'spring' && !this.selectedSpring && this.springPhase !== 'predict') {
+      g.roundRect(top.x - 60, top.y - 2, 120, 22, 10)
+        .fill(0xffffff)
+        .stroke({ width: 4, color: SPRING.line });
+      return;
+    }
+    const style =
+      this.plan.mode === 'spring' && this.selectedSpring ? SPRING_STYLE[this.selectedSpring] : null;
+    const coils = style?.coils ?? 7;
+    const wire = style?.wire ?? 10;
+    const coilColor = style?.line ?? SPRING.line;
+    const cap = style ? { fill: style.fill, line: style.line } : swatch.red;
     g.moveTo(base.x, base.y - 20);
     for (let i = 1; i <= coils; i++) {
       const t = i / coils;
@@ -1141,10 +1393,10 @@ class BouncyLaunch implements Game {
       g.lineTo(x, y);
     }
     g.lineTo(top.x, top.y + 10);
-    g.stroke({ width: 10, color: SPRING.line, join: 'round', cap: 'round' });
+    g.stroke({ width: wire, color: coilColor, join: 'round', cap: 'round' });
     g.roundRect(top.x - 60, top.y - 2, 120, 22, 10)
-      .fill(swatch.red.fill)
-      .stroke({ width: 5, color: swatch.red.line });
+      .fill(cap.fill)
+      .stroke({ width: 5, color: cap.line });
   }
 
   /** Wheee: up, over and down onto the grass or a cloud. */
@@ -1159,6 +1411,7 @@ class BouncyLaunch implements Game {
       this.plan.mode !== 'planet' &&
       this.plan.mode !== 'between' &&
       this.plan.mode !== 'line' &&
+      this.plan.mode !== 'spring' &&
       !this.stick
     )
       this.observedPulls.push(f);
@@ -1214,14 +1467,22 @@ class BouncyLaunch implements Game {
 
   private async landed(f: number) {
     if (this.plan.mode === 'planet') return this.planetLanded();
+    if (this.plan.mode === 'spring' && this.springPhase === 'demo') return this.springDemoLanded(f);
     if (this.plan.mode === 'between' && this.betweenStep < 2) return this.betweenWatched();
     const tw = this.ctx.tw;
+    const shotTarget =
+      this.plan.mode === 'spring' ? (this.targets[this.shot - 1] ?? 0) : (this.targets[this.shot] ?? 0);
     const verdict =
       this.plan.mode === 'friend'
         ? judgeFriend(f, this.spots[this.shot])
-        : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
-    if (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar')
-      this.off += Math.abs(f - cloudAt(this.plan, this.targets[this.shot]));
+        : judge(this.plan, f, shotTarget, this.ask, this.last, this.course?.padWidth);
+    if (
+      this.plan.mode === 'star' ||
+      this.plan.mode === 'number' ||
+      this.plan.mode === 'nearfar' ||
+      this.plan.mode === 'spring'
+    )
+      this.off += Math.abs(f - cloudAt(this.plan, shotTarget));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
     const predicted =
       this.plan.mode === 'predict' || this.plan.mode === 'between'
@@ -1277,6 +1538,10 @@ class BouncyLaunch implements Game {
       this.last = f;
       if (this.plan.mode === 'meadow') this.plantFlower(f);
       if (this.plan.mode === 'predict') this.predictionFlights.push(this.targets[this.shot]);
+      if (this.plan.mode === 'spring') {
+        this.selectedSpring = null;
+        this.lastFlight = undefined;
+      }
       this.drawFlag();
       this.shot++;
       this.prediction = undefined;
@@ -1289,12 +1554,22 @@ class BouncyLaunch implements Game {
     } else {
       this.misses++;
       this.wrongs++;
-      if (!this.course) await this.ctx.say(verdict === 'short' ? 'launch.short' : 'launch.long');
+      if (
+        this.plan.mode === 'spring' &&
+        verdict === 'short' &&
+        this.selectedSpring &&
+        !canSpringReach(this.selectedSpring, shotTarget)
+      ) {
+        await this.ctx.say('launch.spring-too-soft');
+      } else if (!this.course) {
+        await this.ctx.say(verdict === 'short' ? 'launch.short' : 'launch.long');
+      }
       if (this.wrongs >= 2 && !this.hinting) {
         this.hinting = true;
         this.hints++;
         this.assisted = true;
         this.report();
+        if (this.plan.mode === 'spring') this.drawSpringButtons();
       }
     }
     this.drawHistory();

@@ -218,7 +218,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Common Ground](docs/games/common-ground.md) | school | Story Grove | 2 | a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise. |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 15 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |
-| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 12 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
+| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 13 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
 | [Seesaw Balance](docs/games/seesaw-balance.md) | lap–school | Tinker Lab | 17 | touch the empty end to lift a little friend; tap who is heavier or lighter |
 | [Light Lab](docs/games/light-lab.md) | pre-K–school | Tinker Lab | 12 | tap mirrors to turn a sunbeam onto a sleeping flower |
 | [Ramp Race](docs/games/ramp-race.md) | pre-K–school | Tinker Lab | 7 | tap the ramp to make it taller and roll a toy car |

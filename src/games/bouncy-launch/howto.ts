@@ -14,6 +14,11 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Watch the home flight leave a numbered flag. With the same shown pull on the planet, tap before or past the flag, then watch the result.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'First tap Soft, Medium or Stiff to predict which spring goes farthest with the same pull, and watch all three fly. Then for each star, pick a spring and pull the pet back to land on the star.',
+    },
     { to: 1, text: 'Tap the pet and watch the pet bounce.' },
     { from: 2, to: 5, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
     { from: 3, to: 3, text: 'Aim for the cloud with the star.' },
@@ -52,6 +57,11 @@ export const HOW_TO: GameHowTo = {
   finish: [
     { from: 13, to: 13, text: 'The round ends after five landings: five flowers in the meadow.' },
     { from: 12, to: 12, text: 'The round ends after three home-and-planet pairs.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'The round ends after watching all three springs fly and landing on three star clouds.',
+    },
     { to: 2, text: 'The round ends after its launches.' },
     { from: 3, to: 5, text: 'The round ends when the pet lands where it was asked to.' },
     { from: 6, to: 6, text: 'The round ends after each shown pull has flown.' },
@@ -74,6 +84,11 @@ export const HOW_TO: GameHowTo = {
       from: 12,
       to: 12,
       text: 'Toy model: light planets pull half as much as the island, heavy ones twice as much. These are not real planet ratios. Predictions never count as misses; Show a hint rings the correct side and counts as requested help.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'The first prediction is never a miss. In the star rounds, landing off the star counts a miss, and after two tries the right spring glows instead of showing the pull.',
     },
     {
       from: 2,
