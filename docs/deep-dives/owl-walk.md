@@ -176,7 +176,7 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
 6. **Level 6, Color or shape.** *Built 2026-11-23 ([PR #2081](https://github.com/rjdunlap/neo/pull/2081)); see [What was built: slice 6](#what-was-built-slice-6-2026-11-23).* Decision 7 applied. *Tier: new interaction: as slice 2.*
 7. **A grown-up in the second seat.** *Built 2026-11-26 ([PR #2213](https://github.com/rjdunlap/neo/pull/2213)); see [What was built: slice 7](#what-was-built-slice-7-2026-11-26).* Decision 5 applied, with a chosen seat button rather than a tap on the corner pet (the shell owns that tap).
-8. **Levels 7 and 8.** **Defined 2026-11-26** ([definition](../definitions/owl-walk-levels-7-8.md), docs only); **level 7 built 2026-11-26**, level 8 is a line in Next ten. The pre-K play of level 4 is a person check, not a gate.
+8. **Levels 7 and 8.** **Defined 2026-11-26** ([definition](../definitions/owl-walk-levels-7-8.md), docs only); **levels 7 and 8 built 2026-11-26**. The pre-K play of level 4 is a person check, not a gate.
 
 Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the `fingerdemo` bot, and records a short VERIFICATION entry.
 

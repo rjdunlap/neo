@@ -12,9 +12,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * one to hop, and level 4 asks which owl a card would carry the farthest, so everyone gets home sooner. Level 5 is a
  * free lap toy with no cards, and level 6 (Color or shape) gives every stone a color and a shape apart from it, and
  * each card shows only one of the two. Level 7 (Our two cards) turns two cards at once and asks which card goes to which
- * owl, so that together the two hops cover the most stones.
+ * owl, so that together the two hops cover the most stones. Level 8 (Check the helper) has the pet propose an owl for the
+ * card and asks her to check it: agree if it hops the farthest, or tap the owl that does.
  */
-export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest' | 'free' | 'either' | 'pairs';
+export type OwlMode = 'one' | 'turns' | 'choose' | 'farthest' | 'free' | 'either' | 'pairs' | 'check';
 
 export interface OwlPlan {
   mode: OwlMode;
@@ -92,6 +93,15 @@ export const PLANS: OwlPlan[] = [
     safeCards: false,
     name: 'Our two cards: give each card to a different owl so that together we hop the most stones',
   },
+  {
+    mode: 'check',
+    owls: 3,
+    colors: 4,
+    stones: 16,
+    twinkle: false,
+    safeCards: false,
+    name: 'Check the helper: the pet says a move; tap the check if it hops the farthest, or the owl that does',
+  },
 ];
 
 /** Level 5, the free lap toy: appended above the ladder and played first by the youngest (an easy entry). */
@@ -103,12 +113,15 @@ export const EITHER_LEVEL = 6;
 /** Level 7, Our two cards: the top of pre-K and the first level of the school window beyond level 4. */
 export const PAIRS_LEVEL = 7;
 
+/** Level 8, Check the helper: school only, the top of its window. */
+export const CHECK_LEVEL = 8;
+
 export const LEVELS: BandLevels = {
   lap: { min: STEPPING_LEVEL, max: STEPPING_LEVEL },
   toddler: { min: 1, max: STEPPING_LEVEL, order: [STEPPING_LEVEL, 1, 2] },
   preschool: { min: 1, max: EITHER_LEVEL, order: [1, 2, EITHER_LEVEL, 3] },
   prek: { min: 2, max: PAIRS_LEVEL, order: [2, 3, EITHER_LEVEL, 4, PAIRS_LEVEL] },
-  school: { min: 4, max: PAIRS_LEVEL, order: [4, PAIRS_LEVEL] },
+  school: { min: 4, max: CHECK_LEVEL, order: [4, PAIRS_LEVEL, CHECK_LEVEL] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -434,4 +447,55 @@ export function previewFor(
 ): { to: Spot; count: number } {
   const to = hop(path, spots, owl, card);
   return { to, count: to - spots[owl] };
+}
+
+// Check the helper (level 8) ---------------------------------------------------------------------
+
+/**
+ * The owl the pet proposes for a card: one that hops the farthest when `wantBest`, else a walking owl that does not. A board
+ * where every walking owl ties has no worse owl, so the pet then proposes the best (the plan pins this). Null when all are home.
+ */
+export function proposalFor(
+  rng: Rng,
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  card: Card,
+  wantBest: boolean,
+): number | null {
+  const best = farthest(path, spots, card);
+  if (!best.length) return null;
+  const worse = walkers(path, spots).filter((i) => !best.includes(i));
+  return rng.pick(wantBest || !worse.length ? best : worse);
+}
+
+/**
+ * Whether the pet's next proposal is a best one: a coin toss, except that after two of one kind (`history`, newest last, this
+ * round's proposals) the other kind comes, so a round holds both and never four of a kind in a row.
+ */
+export function nextProposalBest(rng: Rng, history: readonly boolean[]): boolean {
+  const [a, b] = history.slice(-2);
+  if (a !== undefined && a === b) return !b;
+  return rng.chance(0.5);
+}
+
+/** What her check of the proposal was: how it should be answered, and whether it counts as a miss. */
+export type CheckResult = 'agreed' | 'corrected' | 'trusted-wrong' | 'spoiled' | 'other-wrong';
+
+/**
+ * Judges her final owl against the pet's proposal. Any owl in `farthest` is right (ties accept any): agreeing with a best
+ * proposal, or choosing another best owl, is `agreed`; choosing a best owl over a worse proposal is `corrected` (never a
+ * miss). Agreeing with a worse proposal is `trusted-wrong`, changing a best proposal to a worse owl is `spoiled`, and
+ * changing a worse proposal to another worse owl is `other-wrong`.
+ */
+export function judgeCheck(
+  path: readonly Stone[],
+  spots: readonly Spot[],
+  card: Card,
+  proposed: number,
+  chosen: number,
+): { right: boolean; result: CheckResult } {
+  const best = farthest(path, spots, card);
+  if (best.includes(chosen)) return { right: true, result: best.includes(proposed) ? 'agreed' : 'corrected' };
+  if (chosen === proposed) return { right: false, result: 'trusted-wrong' };
+  return { right: false, result: best.includes(proposed) ? 'spoiled' : 'other-wrong' };
 }

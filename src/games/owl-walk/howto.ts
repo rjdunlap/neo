@@ -35,7 +35,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 7,
+      to: 7,
       text: 'Two cards turn at once. Tap a card, then tap the owl that should take it, and the same for the other card, so that together the two owls hop the most stones. The rings show each hop and the total shows the sum. Tap the green go. A better way gets a gentle hint.',
+    },
+    {
+      from: 8,
+      text: 'Flip a color card. The pet says which owl it wants to hop with it. Check the move against the rings: tap the green check if that owl hops the farthest, or tap an owl that hops farther. Then tap its stone, or the nest. The pet is learning too, and half the time it picks a shorter hop.',
     },
   ],
   finish: 'The round ends when the owls are home.',
