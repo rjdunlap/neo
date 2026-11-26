@@ -2103,6 +2103,63 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       );
     }
 
+    // Bounce Back 13 (lap, watch the ball): the paddle meets the slow ball untouched, a touch on the ball makes the pet cheer, a touch
+    // far from it does not, and nothing is ever a miss. BOUNCE_FROM=12 plays this too.
+    if (!only || only === 'bounce') {
+      await launch('bounce-back', 13);
+      await page.waitForTimeout(600);
+      const watch = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.plan.mode !== 'follow') throw new Error(`Bounce Back 13 is ${g.plan.mode}`);
+        const canvas = document.querySelector('canvas');
+        const touch = (type, x, y, id) =>
+          canvas.dispatchEvent(
+            new PointerEvent(type, {
+              clientX: x,
+              clientY: y,
+              pointerId: id,
+              pointerType: 'touch',
+              isPrimary: true,
+              bubbles: true,
+              cancelable: true,
+              buttons: type === 'pointerup' ? 0 : 1,
+            }),
+          );
+        const b = g.box;
+        const wait = async (ok, ms) => {
+          const t0 = performance.now();
+          while (!ok() && performance.now() - t0 < ms) await kit.sleep(30);
+          return ok();
+        };
+        // Wait until the ball is rolling, then a touch far from it (no cheer) and one on it (a cheer).
+        await wait(() => g.ball.vx !== 0, 8000);
+        const far = g.touch.parent.toGlobal({
+          x: g.ball.x < (b.x0 + b.x1) / 2 ? b.x1 - 40 : b.x0 + 40,
+          y: b.y0 + 40,
+        });
+        const farId = 41;
+        touch('pointerdown', far.x, far.y, farId);
+        touch('pointerup', far.x, far.y, farId);
+        const cheeredFar = g.lastCheer >= 0;
+        const on = g.touch.parent.toGlobal({ x: g.ball.x, y: g.ball.y });
+        touch('pointerdown', on.x, on.y, 42);
+        touch('pointerup', on.x, on.y, 42);
+        const cheeredOn = g.lastCheer >= 0;
+        // Untouched afterwards: the paddle meets the ball and the round finishes by itself.
+        await wait(() => g.finished, 40000);
+        return { cheeredFar, cheeredOn, finished: g.finished, misses: g.misses, hints: g.hints };
+      });
+      if (watch.cheeredFar) throw new Error('Bounce Back 13: a touch far from the ball made the pet cheer');
+      if (!watch.cheeredOn) throw new Error('Bounce Back 13: a touch on the ball did not make the pet cheer');
+      if (!watch.finished || watch.misses || watch.hints)
+        throw new Error(`Bounce Back 13: ${JSON.stringify(watch)}`);
+      await screenshot('bounce-back-13');
+      await finished('bounce-back');
+      log(
+        'Bounce Back 13 (follow): a touch on the ball cheered, a far touch did not, the paddle met it untouched, no misses',
+      );
+    }
+
     // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
     // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
     // Level 12 (One big dot, lap): touches on the empty meadow pop the nearest dot and each pop brings one more.

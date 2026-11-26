@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 12, 1 |
+| lap | 13, 12, 1 |
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
@@ -28,10 +28,11 @@
 | 10 | Count a rally by twos to 20 |
 | 11 | Count a rally by fives to 50 |
 | 12 | Touch anywhere and the huge paddle goes to the ball |
+| 13 | Watch the ball roll back and forth, and touch it to make the pet cheer |
 
 <!-- end generated -->
 
-**Starts as:** touch anywhere and a huge paddle goes to a slow ball (lap, level 12), then bounce a slow ball back to the pet with a huge paddle
+**Starts as:** watch a slow ball roll back and forth and touch it to make the pet cheer (lap, level 13), then touch anywhere and a huge paddle goes to a slow ball (lap, level 12), then bounce a slow ball back to the pet with a huge paddle
 
 **Grows into:** steering the paddle yourself, then keep a rally going, play with a grown-up on the other paddle, aim through stars, count to ten, bounce to the color the pet calls, then score goals past a keeper (first to 5, then 7), then send it to three colors in order, then count a rally by twos and fives
 
@@ -40,3 +41,5 @@
 *After Pong and air hockey.* A slow, giggly ball between two big paddles: bounces are counted together toward a goal. A grown-up takes the left paddle on the play-together level, and the pet steps in when no second finger is there. A miss keeps the rally, and a hint (a slower ball and a ring) ends on her next bounce. Later levels aim through stars, count a rally of ten, and (level 6, pre-K and school) bounce the ball to the color the pet calls: the pet only calls a zone her paddle can reach, another color is a free try with its name said, and two tries without success show where to hold the paddle. School levels 7 and 8 score goals past the pet: a slow keeper (it can cover only part of the table while the ball crosses, so a good shot always gets by) and pips for each side; first to 5, then first to 7 with the ball speeding up through a rally. Level 9 has the pet call the three colors in an order, shown as dots on top, and she sends the ball to each in turn (a wrong color is a free try at the same one). Levels 10 and 11 count a rally of ten bounces by twos (to 20) and by fives (to 50), the pet and the number on the table saying each one. A win and a loss both finish with a sticker; a win counts a miss for every two goals against and a loss counts them all, so adaptation reads the margin. On the rally, play-together, count and skip levels the pet lobs a little, holding its paddle off the ball (within 0.3 of half the paddle) so its return arrives clear of a paddle she left parked: an idle paddle no longer finishes a round (`petLobAway`, `returnArrival`). Solo, stars, colors, goal, versus and the lap pat level are unchanged. Each round is on a pond, beach or snow court with its own ball. On the couch, a face-off trip's Bounce Back stop is a real face-off: goals at both ends, first to five, the ball served to whoever let it by and speeding through a rally.
 
 **Lap level 12 (touch anywhere).** Lap plays it first, then level 1. One huge paddle (340) and a slow ball (180) with a goal of 3, the pet's bounces counting. The paddle always drifts to the ball (260 units a second, faster than the ball's steepest sideways speed, so an untouched paddle meets it), and a touch anywhere on the table, even the left half, is hers and hurries it (1400 a second) with a pentatonic pop pitched by the finger's height and a sparkle at the finger. A ball that gets past just comes back: no boing, no "Whoops!", no miss and no hint (`countsMiss`). The ghost finger taps once per approach. A cancelled finger is now let go.
+
+**Lap level 13 (follow the ball).** Lap plays it first, then 12, then 1 (`order`, no renumbering). The slowest ball (140) and the biggest paddle (360), goal 3 with the pet's bounces counting; the paddle goes to the ball on its own exactly as on level 12 (same drift and reachability rule, `isLapMode`), so she only has to watch and no ball is ever a miss. A touch anywhere still rings and sparkles; a touch within 130 units of the ball (`FOLLOW_TOUCH_R`) also makes the pet cheer ("Yay!") with a star burst, at most once a second. The round finishes by itself at three bounces, so a child who never touches still completes it. The ghost finger on the how-to card is level 12's tap. Rule tests: lap order and no-miss, the drift reaches the ball from a serve on every view size for both lap levels, and the watch level is the slowest ball with the largest paddle.
