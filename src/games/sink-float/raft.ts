@@ -123,7 +123,7 @@ export class GardenRaft implements Game {
 
   private instruct(line: LineId) {
     this.lastLine = line;
-    void this.ctx.instruct(line);
+    void this.ctx.instruct(line, { name: this.ctx.childName });
   }
 
   // Rounds ------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ export class GardenRaft implements Game {
       await tw.wait(0.4);
       await this.glideAcross();
       if (this.finished) return;
-      await this.ctx.say('sink.raft-next');
+      await this.ctx.say('sink.raft-next', { name: this.ctx.childName });
       this.arrived = true;
       const late = this.current.late;
       const node = this.addPot(late);
@@ -295,7 +295,7 @@ export class GardenRaft implements Game {
   private async crossed() {
     const tw = this.ctx.tw;
     sfx.sparkle();
-    const say = this.ctx.say('sink.raft-ok');
+    const say = this.ctx.say('sink.raft-ok', { name: this.ctx.childName });
     await this.glideAcross();
     if (this.finished) return;
     this.ctx.pet.cheer();
@@ -337,7 +337,7 @@ export class GardenRaft implements Game {
       spread: 1.6,
       size: [0.3, 0.5],
     });
-    const say = this.ctx.say('sink.raft-low');
+    const say = this.ctx.say('sink.raft-low', { name: this.ctx.childName });
     await tw.to(this.pose, { sink: 46 }, { duration: 0.5, ease: ease.inOutSine });
     await tw.to(this.pose, { sink: 0 }, { duration: 0.6, ease: ease.outBack });
     await say;
@@ -348,7 +348,9 @@ export class GardenRaft implements Game {
     const tw = this.ctx.tw;
     const dir = side === 'left' ? -1 : 1;
     sfx.boing();
-    const say = this.ctx.say(side === 'left' ? 'sink.raft-tip-left' : 'sink.raft-tip-right');
+    const say = this.ctx.say(side === 'left' ? 'sink.raft-tip-left' : 'sink.raft-tip-right', {
+      name: this.ctx.childName,
+    });
     await tw.to(this.pose, { tilt: 0.22 * dir }, { duration: 0.6, ease: ease.inQuad });
     sfx.splash();
     const pots = [...this.potNodes.values()];
@@ -378,14 +380,14 @@ export class GardenRaft implements Game {
     }
     this.glowSlot = slot;
     this.drawAll();
-    void this.ctx.say('sink.raft-hint');
+    void this.ctx.say('sink.raft-hint', { name: this.ctx.childName });
   }
 
   /** The pause sheet's Show a hint: the glow once she can build, otherwise the current instruction again, uncounted. */
   private requestHint() {
     if (this.finished) return;
     if (!this.busy) this.showHint();
-    else void this.ctx.instruct(this.lastLine);
+    else void this.ctx.instruct(this.lastLine, { name: this.ctx.childName });
   }
 
   private async end() {
