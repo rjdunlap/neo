@@ -20,6 +20,7 @@ export type MonsterMode =
   | 'slow'
   | 'repair'
   | 'team'
+  | 'blend'
   | 'mine';
 
 export interface MonsterPlan {
@@ -152,6 +153,19 @@ export const MINE_PLAN: MonsterPlan = {
   name: 'My letter: find the first letter of her name among three monsters, asked by its letter name',
 };
 
+/**
+ * Level 16, Blend it: the word's monsters light in turn and say their sounds, never the word, and she taps the one of
+ * three pictures they make. It sits after level 10 in school's order, since hearing sounds run together is the step
+ * before building a word from them.
+ */
+export const BLEND_LEVEL = 16;
+export const BLEND_PLAN: MonsterPlan = {
+  mode: 'blend',
+  rounds: 3,
+  choices: 3,
+  name: 'Blend it: the monsters say their sounds one by one; tap the picture of the word they make',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: MINE_LEVEL, order: [1, MINE_LEVEL, 2] },
@@ -160,8 +174,8 @@ export const LEVELS: BandLevels = {
   // 9 is lap's big monster, so the school order skips it.
   school: {
     min: 5,
-    max: FOUR_LEVEL,
-    order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL, FOUR_LEVEL, TEAM_LEVEL],
+    max: BLEND_LEVEL,
+    order: [5, 6, 7, 8, LAST_LEVEL, BLEND_LEVEL, SLOW_LEVEL, REPAIR_LEVEL, FOUR_LEVEL, TEAM_LEVEL],
   },
 };
 
@@ -188,17 +202,19 @@ export const planFor = (level: number) =>
     ? BIG_PLAN
     : level === LAST_LEVEL
       ? LAST_PLAN
-      : level === SLOW_LEVEL
-        ? SLOW_PLAN
-        : level === REPAIR_LEVEL
-          ? REPAIR_PLAN
-          : level === TEAM_LEVEL
-            ? TEAM_PLAN
-            : level === FOUR_LEVEL
-              ? FOUR_PLAN
-              : level === MINE_LEVEL
-                ? MINE_PLAN
-                : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === BLEND_LEVEL
+        ? BLEND_PLAN
+        : level === SLOW_LEVEL
+          ? SLOW_PLAN
+          : level === REPAIR_LEVEL
+            ? REPAIR_PLAN
+            : level === TEAM_LEVEL
+              ? TEAM_PLAN
+              : level === FOUR_LEVEL
+                ? FOUR_PLAN
+                : level === MINE_LEVEL
+                  ? MINE_PLAN
+                  : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -386,6 +402,8 @@ export interface Question {
   word?: PictureWord;
   /** Level 12: the pet's word and the slot that needs replacing. */
   repair?: { word: PictureWord; slot: number };
+  /** Level 16: the three pictured words she chooses from, in screen order; one is `answer`, and all start alike. */
+  cards?: PictureWord[];
   /** Level 13: the word's sounds, one per box, where a two-letter team is one unit (fish: f, i, sh). */
   units?: string[];
 }
@@ -454,6 +472,40 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
     out.push(l);
   }
   return rng.shuffle(out);
+}
+
+/** Sounds she can hold on to ("mmm", "rrr"): a blend that starts with one is a continuous hum, so it comes first. */
+export const STRETCHY = 'mnsflr';
+
+/**
+ * Level 16's words by their first letter, for the letters that start at least three of them: the three cards of a
+ * question all start alike, so only the later sounds tell them apart.
+ */
+export const BLEND_GROUPS: Record<string, PictureWord[]> = (() => {
+  const groups: Record<string, PictureWord[]> = {};
+  for (const word of SLOW_WORDS) (groups[word[0]] ??= []).push(word);
+  for (const letter of Object.keys(groups)) if (groups[letter].length < 3) delete groups[letter];
+  return groups;
+})();
+
+/**
+ * Level 16: each question is one word from a group (a different first letter every time, the first from a stretchable
+ * one) and two others that start the same. `monsters` are the word's letters in order, the row that lights up.
+ */
+function blendQuestions(plan: MonsterPlan, rng: Rng): Question[] {
+  const letters = Object.keys(BLEND_GROUPS);
+  const stretchy = letters.filter((l) => STRETCHY.includes(l));
+  const first = rng.pick(stretchy);
+  const rest = rng.shuffle(letters.filter((l) => l !== first)).slice(0, plan.rounds - 1);
+  return [first, ...rest].map((letter) => {
+    const [answer, ...others] = rng.shuffle([...BLEND_GROUPS[letter]]);
+    return {
+      answer,
+      word: answer,
+      monsters: answer.split(''),
+      cards: rng.shuffle([answer, others[0], others[1]]),
+    };
+  });
 }
 
 /** A round's questions; level 15 reads her name (`ctx.childName`), every other level ignores it. */
@@ -529,6 +581,7 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng, childName = ''): Ques
     }
     return out;
   }
+  if (plan.mode === 'blend') return blendQuestions(plan, rng);
   if (plan.mode === 'slow') {
     // The spare comes from the plain-sound pool and never sounds like or looks like a needed letter.
     for (const word of rng.shuffle([...(plan.words ?? SLOW_WORDS)]).slice(0, plan.rounds)) {

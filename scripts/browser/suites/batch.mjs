@@ -121,6 +121,60 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         );
         continue;
       }
+      if (mode === 'blend') {
+        // Level 16, Blend it, on a phone held upright: the word's monsters say their sounds, she taps the picture. A tap on
+        // a monster replays the sounds (free); two wrong cards (each says its own sounds, the sounds run again) glow the
+        // right one (one hint); the right card goes on to the next word.
+        const was = page.viewportSize();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        if (was) restore.push(was);
+        await page.evaluate(() => kit.until(() => neo.scene.game.index === 0 && !neo.scene.game.busy, 10000));
+        await page.waitForTimeout(500);
+        await screenshot(`word-monsters-${level}-portrait`);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const settle = async () => {
+            await kit.sleep(400);
+            await kit.until(() => !g.blending && !g.busy, 20000);
+          };
+          for (let i = 0; i < g.questions.length; i++) {
+            await kit.until(() => g.index === i && !g.busy && !g.blending, 20000);
+            const q = g.question;
+            const right = g.cards.find((c) => c.word === q.answer);
+            const wrongs = g.cards.filter((c) => c.word !== q.answer);
+            if (g.cards.length !== 3 || !right)
+              throw new Error('Expected three cards, one of them the answer');
+            if (g.monsters.map((m) => m.letter).join('') !== q.answer)
+              throw new Error('The monsters should spell the word');
+            if (i === 0) {
+              kit.tapOn(g.monsters[0]);
+              await settle();
+              if (g.misses || g.hints) throw new Error('Replaying the sounds is free');
+              kit.tapOn(wrongs[0].box);
+              await settle();
+              if (g.misses !== 1 || g.hints !== 0) throw new Error(`One wrong card: ${g.misses} ${g.hints}`);
+              kit.tapOn(wrongs[1].box);
+              await settle();
+              if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible)
+                throw new Error(`Two wrong cards: ${g.misses} ${g.hints} glow ${right.glow.visible}`);
+            }
+            kit.tapOn(right.box);
+            await kit.sleep(300);
+          }
+        });
+        await finished('word-monsters');
+        const blendScore = await page.evaluate(() => {
+          const r = kit.store.stats('word-monsters').history.at(-1);
+          return [r.misses, r.hints];
+        });
+        assert.deepEqual(blendScore, [2, 1]);
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          'Word Monsters 16: monsters say the sounds, free replay, two wrong cards and the glow, saved score passed',
+        );
+        continue;
+      }
       if (mode === 'repair') {
         await page.evaluate(async () => {
           const g = neo.scene.game;

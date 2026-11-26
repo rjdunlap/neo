@@ -243,6 +243,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | Root offline | 2026-11-22 · [Collection book and welcome goal](verification/2026-11-22-collection-book-and-welcome-goal.md) | Production root reload and saved collection |
 | Unit and type checks | 2026-11-24 · [Word Monsters level 8 and sticker guards](verification/2026-11-24-word-monsters-level-8-and-sticker-guards.md) | Typecheck and 161 focused Word Monsters, how-to and registry tests |
 | Unit and type checks | 2026-11-24 · [Word Monsters Told, then asked](verification/2026-11-24-word-monsters-told-then-asked.md) | Typecheck, 110 focused tests, batch play and `fingerdemo` at levels 7 and 8 |
+| Unit and type checks | 2026-11-26 · [Word Monsters level 16 Blend it](verification/2026-11-26-word-monsters-level-16-blend-it.md) | Typecheck, focused tests, batch play and `fingerdemo` at level 16 |
 | Full unit suite and production build | 2026-11-23 · [Rain Garden level 5, three beds downhill](verification/2026-11-23-rain-garden-level-5-three-beds-downhill.md) | Full units and production build |
 | Formatting and lint | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | Scoped format and lint |
 | Test infrastructure | 2026-10-24 · [Quiet automated tests](archive/VERIFICATION-2026-10-24.md#2026-10-24--quiet-automated-tests) | Quiet unit and browser fixtures |
