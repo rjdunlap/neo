@@ -4,14 +4,16 @@
  * cracks it open; level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's
  * crates and baskets with a big mark for ten and small marks for ones; level 5 checks a cart against a tablet written at the
  * farm: short, right or extra, and by how many; level 6 sets two tablets that disagree against one cart: which one
- * matches, neither, or can't tell when the cart is gone. Definition: docs/definitions/river-tablets.md.
+ * matches, neither, or can't tell when the cart is gone; level 7 writes a spoken sentence with picture-signs whose names
+ * sound like its words (the rebus), then reads the tablet back. Definitions: docs/definitions/river-tablets.md,
+ * docs/definitions/river-tablets-7-8.md.
  */
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree';
+export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree' | 'rebus';
 export type Kind = 'sheep' | 'jar';
 export const KINDS: readonly Kind[] = ['sheep', 'jar'];
 
@@ -48,12 +50,17 @@ export const PLANS: readonly Plan[] = [
     id: 'disagree',
     name: 'Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29)',
   },
+  {
+    level: 7,
+    id: 'rebus',
+    name: 'Say it with pictures: pick picture-signs whose names sound like the words (two sentences)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 export const MAX_LEVEL = PLANS.length;
 
@@ -141,7 +148,120 @@ export interface DisagreeBrief {
   cases: [DisagreeCase, DisagreeCase];
 }
 
-export type Brief = TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief | DisagreeBrief;
+// Level 7: picture-signs and the sentences written with them (below the other briefs, above `Brief`).
+
+/** The picture-signs: nine whose names sound like a word of a sentence, and eight plain things that match none. */
+export type SignId =
+  | 'eye'
+  | 'sea'
+  | 'deer'
+  | 'sun'
+  | 'wood'
+  | 'knot'
+  | 'bee'
+  | 'pear'
+  | 'flower'
+  | 'jar'
+  | 'sheep'
+  | 'crate'
+  | 'leaf'
+  | 'moon'
+  | 'cup'
+  | 'boot'
+  | 'drum';
+export const SOUND_SIGNS: readonly SignId[] = [
+  'eye',
+  'sea',
+  'deer',
+  'sun',
+  'wood',
+  'knot',
+  'bee',
+  'pear',
+  'flower',
+];
+export const THING_SIGNS: readonly SignId[] = [
+  'jar',
+  'sheep',
+  'crate',
+  'leaf',
+  'moon',
+  'cup',
+  'boot',
+  'drum',
+];
+export const SIGNS: readonly SignId[] = [...SOUND_SIGNS, ...THING_SIGNS];
+
+export type SentenceId = 'see-deer' | 'dear-son' | 'would-not' | 'see-pair' | 'would-be' | 'flour-not-wood';
+export interface Sentence {
+  id: SentenceId;
+  /** What the pet says (the spoken line `rt.rebus.sentence.<id>` is this text). */
+  text: string;
+  /** The three signs, in the order the words are said. */
+  solution: [SignId, SignId, SignId];
+  /** Plain things to pick three tray distractors from: none sounds like a word of the sentence. */
+  distractors: readonly SignId[];
+}
+
+export const SENTENCES: readonly Sentence[] = [
+  {
+    id: 'see-deer',
+    text: 'I see a deer.',
+    solution: ['eye', 'sea', 'deer'],
+    distractors: ['jar', 'leaf', 'moon', 'drum'],
+  },
+  {
+    id: 'dear-son',
+    text: 'See my dear son.',
+    solution: ['sea', 'deer', 'sun'],
+    distractors: ['jar', 'cup', 'boot', 'leaf'],
+  },
+  {
+    id: 'would-not',
+    text: 'I would not!',
+    solution: ['eye', 'wood', 'knot'],
+    distractors: ['sheep', 'crate', 'moon', 'cup'],
+  },
+  {
+    id: 'see-pair',
+    text: 'I see a pair!',
+    solution: ['eye', 'sea', 'pear'],
+    distractors: ['jar', 'drum', 'boot', 'leaf'],
+  },
+  {
+    id: 'would-be',
+    text: 'Oh, I would be!',
+    solution: ['eye', 'wood', 'bee'],
+    distractors: ['crate', 'moon', 'cup', 'sheep'],
+  },
+  {
+    id: 'flour-not-wood',
+    text: 'Flour, not wood!',
+    solution: ['flower', 'knot', 'wood'],
+    distractors: ['jar', 'drum', 'moon', 'boot'],
+  },
+];
+
+/** One sentence to write: its three signs and the six in the tray (the three and three plain things), shuffled. */
+export interface RebusCase {
+  id: SentenceId;
+  solution: [SignId, SignId, SignId];
+  tray: SignId[];
+}
+
+export interface RebusBrief {
+  level: 7;
+  id: 'rebus';
+  /** Two different sentences, seeded. */
+  cases: [RebusCase, RebusCase];
+}
+
+export function sentenceFor(id: SentenceId): Sentence {
+  return SENTENCES.find((x) => x.id === id)!;
+}
+
+export type Brief =
+  TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief | DisagreeBrief | RebusBrief;
 
 /** How many times the kind changes along a delivery; a mixed delivery changes at least twice. */
 export function kindChanges(goods: readonly Kind[]): number {
@@ -253,6 +373,15 @@ export function briefFor(level: number, rng: Rng): Brief {
       other = { kind: 'neither', farm: f2, store: s2, cart: rng.pick(fits) };
     }
     return { level: 6, id: 'disagree', cases: rng.chance(0.5) ? [one, other] : [other, one] };
+  }
+  if (plan.id === 'rebus') {
+    const [a, b] = rng.shuffle([...SENTENCES]).slice(0, 2);
+    const make = (x: Sentence): RebusCase => ({
+      id: x.id,
+      solution: [...x.solution],
+      tray: rng.shuffle([...x.solution, ...rng.shuffle([...x.distractors]).slice(0, 3)]),
+    });
+    return { level: 7, id: 'rebus', cases: [make(a), make(b)] };
   }
   if (plan.id === 'tokens') {
     const sheep = rng.int(3, 5);
@@ -690,6 +819,93 @@ export function disagreeTally(cases: readonly DisagreeState[]): RoundTally {
   return { misses: cases.reduce((n, t) => n + t.misses, 0), hints: cases.filter((t) => t.hinted).length };
 }
 
+// ——— Level 7: say it with pictures ———
+
+export const SLOTS = 3;
+
+export interface RebusState extends RebusCase {
+  /** What is on the tablet, cell by cell; a placed sign is off the tray. */
+  slots: (SignId | null)[];
+  misses: number;
+  hinted: boolean;
+  /** The next step glows (after the second wrong Read, or asked for). */
+  glowing: boolean;
+  done: boolean;
+}
+
+export function startRebus(c: RebusCase): RebusState {
+  return {
+    ...c,
+    slots: Array.from({ length: SLOTS }, () => null),
+    misses: 0,
+    hinted: false,
+    glowing: false,
+    done: false,
+  };
+}
+
+/** The signs still in the tray, in tray order. */
+export const trayLeft = (s: RebusState): SignId[] => s.tray.filter((t) => !s.slots.includes(t));
+
+/** A tapped sign goes in the leftmost empty cell; a full tablet just wobbles. Never a miss. */
+export function placeSign(
+  s: RebusState,
+  sign: SignId,
+): { state: RebusState; result: 'placed' | 'full' | 'none' } {
+  if (s.done || !s.tray.includes(sign) || s.slots.includes(sign)) return { state: s, result: 'none' };
+  const at = s.slots.indexOf(null);
+  if (at < 0) return { state: s, result: 'full' };
+  const slots = s.slots.slice();
+  slots[at] = sign;
+  return { state: { ...s, slots }, result: 'placed' };
+}
+
+/** A tapped cell lifts its sign back to the tray: free, as often as she likes. */
+export function liftSlot(s: RebusState, i: number): RebusState {
+  if (s.done || s.slots[i] == null) return s;
+  const slots = s.slots.slice();
+  slots[i] = null;
+  return { ...s, slots };
+}
+
+export type ReadResult = 'none' | 'fill' | 'right' | 'wrong';
+
+/** Read is the commit: short of three signs it only wobbles; the exact signs finish the sentence; anything else is one miss, the help after the second. */
+export function readRebus(s: RebusState): { state: RebusState; result: ReadResult } {
+  if (s.done) return { state: s, result: 'none' };
+  if (s.slots.some((x) => x === null)) return { state: s, result: 'fill' };
+  if (s.slots.every((x, i) => x === s.solution[i])) return { state: { ...s, done: true }, result: 'right' };
+  const misses = s.misses + 1;
+  const glowing = s.glowing || misses >= 2;
+  return { state: { ...s, misses, glowing, hinted: s.hinted || glowing }, result: 'wrong' };
+}
+
+/** Asked-for help: the same glow, one hint per sentence. */
+export function askRebus(s: RebusState): RebusState {
+  if (s.done) return s;
+  return { ...s, glowing: true, hinted: true };
+}
+
+export type RebusHint =
+  { action: 'lift'; slot: number } | { action: 'place'; sign: SignId } | { action: 'read' };
+
+/**
+ * The next step toward the sentence: the leftmost cell that is not yet right is lifted if it holds a sign, or filled with
+ * its sign (lifting that sign first if it sits further along); when all three are right, Read.
+ */
+export function rebusHint(s: RebusState): RebusHint {
+  const i = s.slots.findIndex((x, k) => x !== s.solution[k]);
+  if (i < 0) return { action: 'read' };
+  if (s.slots[i] !== null) return { action: 'lift', slot: i };
+  const want = s.solution[i];
+  const j = s.slots.indexOf(want);
+  return j >= 0 ? { action: 'lift', slot: j } : { action: 'place', sign: want };
+}
+
+export function rebusTally(cases: readonly RebusState[]): RoundTally {
+  return { misses: cases.reduce((n, t) => n + t.misses, 0), hints: cases.filter((t) => t.hinted).length };
+}
+
 // ——— The lineup: goods under marks ———
 
 export interface Lineup {
@@ -793,6 +1009,11 @@ export const NUMBER = 110;
 export const PAIR_TABLET = { w: 300, h: 260 };
 export const PICK = 110;
 export const ANSWER = 120;
+/** Level 7: the replay bar's height, a tablet cell and tray sign, and Read. */
+export const BAR_H = 120;
+export const REBUS_CELL = 110;
+export const REBUS_SIGN = 110;
+export const READ = { w: 140, h: 110 };
 const M = 20;
 const GAP = 16;
 
@@ -826,6 +1047,9 @@ export interface TabletLayout {
   neither?: Rect;
   cantTell?: Rect;
   lineups?: Rect[];
+  /** Level 7: the three tablet cells, the six tray signs (two rows of three); Read is `handIn`. */
+  slots?: Rect[];
+  signs?: Rect[];
   /** Where the record lines up against the things (visual, never a target). */
   lineup: Rect;
   /** Every tap target. */
@@ -902,7 +1126,12 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   const plan = planFor(level);
   const left = HOME_CORNER.w + M;
   const yardLevel = plan.id === 'tens' || plan.id === 'check' || plan.id === 'disagree';
-  const lane: Rect = { x: left, y: M, w: v.w - left - M, h: yardLevel ? YARD_H : 200 };
+  const lane: Rect = {
+    x: left,
+    y: M,
+    w: v.w - left - M,
+    h: plan.id === 'rebus' ? BAR_H : yardLevel ? YARD_H : 200,
+  };
   const free: Rect = {
     x: PET_CORNER.w + M,
     y: lane.y + lane.h + M,
@@ -911,7 +1140,46 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   };
   const cx = free.x + free.w / 2;
   let l: TabletLayout;
-  if (plan.id === 'tokens') {
+  if (plan.id === 'rebus') {
+    // The tablet with its three cells, the six signs in two rows of three, then Read (beside the signs when wide, below when upright).
+    const cellsW = SLOTS * REBUS_CELL + (SLOTS - 1) * GAP;
+    // A tall non-upright view has room to spare: the group sits a third of the way down rather than at the top.
+    const groupH = REBUS_CELL + 40 + GAP + 6 + 2 * REBUS_SIGN + GAP + (wide ? 0 : GAP + READ.h) + GAP + 110;
+    const spare = wide || v.upright ? 0 : Math.max(0, free.h - groupH - 6) / 3;
+    const tablet: Rect = {
+      x: Math.round(cx - cellsW / 2 - 20),
+      y: free.y + 6 + Math.round(spare),
+      w: cellsW + 40,
+      h: REBUS_CELL + 40,
+    };
+    const slots = Array.from({ length: SLOTS }, (_, i) => ({
+      x: tablet.x + 20 + i * (REBUS_CELL + GAP),
+      y: tablet.y + 20,
+      w: REBUS_CELL,
+      h: REBUS_CELL,
+    }));
+    const signsW = 3 * REBUS_SIGN + 2 * GAP;
+    const rowW = wide ? signsW + GAP + READ.w : signsW;
+    const sx = Math.round(cx - rowW / 2);
+    const sy = tablet.y + tablet.h + GAP + 6;
+    const signs = Array.from({ length: 6 }, (_, i) => ({
+      x: sx + (i % 3) * (REBUS_SIGN + GAP),
+      y: sy + Math.floor(i / 3) * (REBUS_SIGN + GAP),
+      w: REBUS_SIGN,
+      h: REBUS_SIGN,
+    }));
+    const traysH = 2 * REBUS_SIGN + GAP;
+    const handIn: Rect = wide
+      ? { x: sx + signsW + GAP, y: sy + (traysH - READ.h) / 2, w: READ.w, h: READ.h }
+      : { x: Math.round(cx - READ.w / 2), y: sy + traysH + GAP, w: READ.w, h: READ.h };
+    const lineup: Rect = {
+      x: free.x,
+      y: (wide ? sy + traysH : handIn.y + handIn.h) + GAP,
+      w: free.w,
+      h: 110,
+    };
+    l = { lane, tablet, slots, signs, handIn, lineup, inputs: [...slots, ...signs, handIn] };
+  } else if (plan.id === 'tokens') {
     const jar: Rect = { x: cx - JAR.w / 2, y: free.y + 40, w: JAR.w, h: JAR.h };
     const lineup: Rect = { x: lane.x, y: jar.y + jar.h + GAP, w: lane.w, h: 120 };
     l = { lane, jar, lineup, inputs: [jar] };

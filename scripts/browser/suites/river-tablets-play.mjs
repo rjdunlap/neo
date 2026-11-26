@@ -27,7 +27,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const fromLevel = Number(process.env.FROM_LEVEL || 1);
     if (fromLevel <= 3) await riverTablets13({ score, tally, settle, tapOn });
     if (fromLevel <= 5) await riverTablets45({ score, tally, settle, tapOn });
-    await riverTablets6({ score, tally, settle, tapOn });
+    if (fromLevel <= 6) await riverTablets6({ score, tally, settle, tapOn });
+    await riverTablets7({ score, tally, settle, tapOn });
   }
 
   async function riverTablets13({ score, tally, settle, tapOn }) {
@@ -353,6 +354,58 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     assert.deepEqual(await score(), [1, 0], 'level 6 saved 1 miss, 0 hints');
     log(
       "River Tablets 6: a tablet read for free, can't tell on a present cart (one miss), the match, can't tell on the empty cart (1/0), portrait screenshot, passed",
+    );
+  }
+  // Level 7: the first sentence's signs in the wrong order, then Read (one miss), then Help (one hint) and the glowing steps to
+  // the right reading; the second sentence follows the hint walk. Portrait screenshot after the miss.
+  async function riverTablets7({ score, tally, settle, tapOn }) {
+    const logic = '/src/games/river-tablets/logic.ts';
+    await launch('river-tablets', 7);
+    await settle();
+    const first = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return { solution: [...g.rebusNow.solution], tray: [...g.rebusNow.tray] };
+    });
+    assert.equal(first.tray.length, 6, 'six signs in the tray');
+    await tapOn('neo.scene.game.readNode');
+    assert.deepEqual(await tally(), [0, 0], 'Read with an empty tablet is free');
+    const at = (id) => first.tray.indexOf(id);
+    for (const id of [first.solution[1], first.solution[0], first.solution[2]])
+      await tapOn(`neo.scene.game.trayNodes[${at(id)}]`);
+    assert.deepEqual(await tally(), [0, 0], 'placing signs is free');
+    await tapOn('neo.scene.game.slotNodes[2]');
+    await tapOn(`neo.scene.game.trayNodes[${at(first.solution[2])}]`);
+    await tapOn('neo.scene.game.readNode');
+    await settle();
+    assert.deepEqual(await tally(), [1, 0], 'a wrong Read is one miss');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('river-tablets-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [1, 1], 'Help is one hint');
+    for (let guard = 0; guard < 30; guard++) {
+      const step = await page.evaluate(async (logic) => {
+        const { rebusHint } = await import(logic);
+        const g = neo.scene.game;
+        if (neo.scene.finished || g.rebusNow.done) return null;
+        const h = rebusHint(g.rebusNow);
+        return h.action === 'lift'
+          ? `neo.scene.game.slotNodes[${h.slot}]`
+          : h.action === 'place'
+            ? `neo.scene.game.trayNodes[${g.rebusNow.tray.indexOf(h.sign)}]`
+            : 'neo.scene.game.readNode';
+      }, logic);
+      if (!step) break;
+      await tapOn(step);
+      await settle();
+    }
+    await finished('river-tablets');
+    assert.deepEqual(await score(), [1, 1], 'level 7 saved 1 miss, 1 hint');
+    log(
+      'River Tablets 7: Read on an empty tablet and placing signs free, a wrong Read (one miss), Help (one hint) and the hint walk through both sentences (1/1), portrait screenshot, passed',
     );
   }
   return { riverTabletsPlay };

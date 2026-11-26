@@ -68,4 +68,17 @@ export const VOICE = {
   'rt.disagree.gone': ['The baskets were already shared out before anyone counted them.'],
   'rt.disagree.cant-tell': ["We can't tell. Both tablets could be wrong, and the baskets are gone."],
   'rt.disagree.help': ['Nothing to count. Can we tell?'],
+  'rt.instruct.7': ['Pick three picture-signs that sound like the words, {pet}, then press Read.'],
+  'rt.history.rebus': [
+    'Long ago, {pet}, scribes used pictures of things for their sounds to write words that were not things.',
+  ],
+  'rt.rebus.full': ['The tablet is full, {pet}. Tap a picture on it to take it off.'],
+  'rt.rebus.fill-first': ['Put three picture-signs on the tablet first, {pet}.'],
+  'rt.rebus.right': ['The tablet reads just right, {pet}!'],
+  'rt.rebus.wrong': ['That does not sound like the sentence, {pet}. Listen again and swap a picture.'],
+  'rt.rebus.help.lift': ['That picture is in the wrong place, {pet}. Tap it to take it off.'],
+  'rt.rebus.help.place': ['The glowing picture sounds like the next word, {pet}.'],
+  'rt.rebus.help.read': ['Now press Read, {pet}!'],
+  'rt.rebus.sentence': ['Listen: {sentence}'],
+  'rt.rebus.sign': ['{sign}.'],
 } satisfies Record<string, string[]>;
