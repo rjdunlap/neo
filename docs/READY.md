@@ -58,6 +58,11 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
+- **`river-tablets` level 8, *Which one do I mean?*** (school, batch `river-tablets 5`, after `river-tablets 4` lands; new interaction on an existing game: typecheck, rule tests, one filtered `rivertablets` play of level 8 with one wrong determinative and one hint, one portrait screenshot, `fingerdemo` at 8, `npm run build`, `npm run game-docs`). [Definition](definitions/river-tablets-7-8.md#level-8-which-one-do-i-mean-determinative)
+- **`bouncy-launch` slice 8, lap opens level 2 and magnet hint** (existing-game tier: typecheck, rule tests, filtered lap play). [Dive](deep-dives/bouncy-launch.md#build-slices-in-order)
+- **`opposites` level 12, *One pair, again and again*** (below-level-1 lap entry, settled 2026-10-23; new level tier, `npm run game-docs`). [Dive](deep-dives/opposites.md#build-slices-in-order)
+- **`little-conductor` levels 7–8, *One change and revise*** (new-interaction tier, after level 3's request model is shared). [Dive](deep-dives/little-conductor.md#build-slices-in-order)
+
 
 
 
@@ -119,6 +124,9 @@ From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
 Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
+
+- **Define `ancient-river-civilizations` AR5: *Two Tablets*** (docs only; crib model, uniqueness solver, hint rule, grown-up registration or level 9, couch note; links and `git diff --check`). [Study](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
+- **Define `social-emotional` slice 3: *Two Viewpoints* (within Story Theater)** (docs only; one harmless mishap and two stated accounts with multiple supported endings, preserving 12–13 and pins; links and `git diff --check`). [Study](deep-dives/subjects/social-emotional.md#build-slices-in-order)
 
 
 ### Subject research (docs only)

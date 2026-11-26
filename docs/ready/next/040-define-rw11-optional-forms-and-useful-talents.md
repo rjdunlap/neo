@@ -1,0 +1,1 @@
+**Define RW11, *Optional forms and useful talents*** (docs only; unblocked after RW02 and RW10 slices 1–2: one branching form choice and one interactive use in an existing project or home toy, body/wearable compatibility check; links and `git diff --check`). [Work item](../../rework/WORK-ITEMS.md#rw11-optional-forms-and-useful-talents)

@@ -1,0 +1,1 @@
+**Define `medieval-life` ML4: *Market Days*** (docs only; map model, day walk graph, unique-minimal-colouring solver, hint rule, grown-up registration or level 7, couch note; links and `git diff --check`). [Study](../../deep-dives/subjects/medieval-life.md#build-slices-in-order)
