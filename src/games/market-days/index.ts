@@ -384,7 +384,7 @@ const picture = () => {
 export const game: GameModule = {
   id: 'market-days',
   name: 'Market Days',
-  titleLine: 'game.market-days',
+  titleLine: 'market-days.title',
   region: 'tinker-lab',
   challenge: 'logic',
   skills: ['constraint reasoning', 'planning'],

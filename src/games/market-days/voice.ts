@@ -1,5 +1,5 @@
 export const VOICE = {
-  'game.market-days': ['Market Days'],
+  'market-days.title': ['Market Days'],
   'market-days.start': ['Give each town a market day. Towns joined by a path need different days.'],
   'market-days.clash': ['Those two are a day apart.'],
   'market-days.hint': ['These all need different days.'],

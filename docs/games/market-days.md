@@ -29,4 +29,5 @@
 - A miss is a placement that clashes with a joined town; the clash wobbles red and stays so she can see why. Two misses glow the Hint button. Hint glows a forced town (or a town of a triangle), and a second Hint on the same town places its banner. Why?, Undo and Restart are free.
 - A fourth banner in a finished level 3 round is neither a miss nor a finish: "Can you do it with fewer days?"
 - Not built from the definition yet: arrow keys and 1 to 4 keys, a drag from a banner to a town, and the ghost finger's deliberate conflict (its taps go straight to the finish). The one historical line for the grown-up card is not written: the source check against the medieval-life study is still to do, so nothing historical is on screen.
+- The title line is `market-days.title`, not `game.market-days`, so no rendered clip is needed (the title speaks by device speech until a voice pass renders it; a `game.*` line needs a Kokoro clip).
 - Upright-ready: towns and banners are at least 100 units; `upright.test.ts` records the layout at every phone view.
