@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1, 2, 3, 6, 7 |
-| grown-up | 6, 7 |
+| school | 1, 2, 3, 6, 7, 8 |
+| grown-up | 6, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 3 | Three quarters: ¾ as ½ + ¼, then from two halves with a snip |
 | 6 | Whole Switch: one ribbon is a half of the short spool and a quarter of the long one; choose the whole, then name the part |
 | 7 | Ribbon Cases: two gifts share one tray; make three quarters twice, then repair it when the order changes to a whole and a half |
+| 8 | How Many Pieces Fit?: measure a three-quarter ribbon with half-spool pieces, then count one and a half pieces |
 
 <!-- end generated -->
 
@@ -26,6 +27,8 @@
 **Grows into:** two gifts a round; the scissors snip a half into two quarters from level 2; every combination that makes the length is accepted, and a too-long or too-short check shows the gap or overhang
 
 ## Design notes
+
+Level 8 *How Many Pieces Fit?* ([definition](../definitions/how-many-pieces-fit.md), its own scene in `fit.ts`; school and `grownup`): a ¾-spool order lies on the bench under the 1-whole spool, and the tray holds two ½-spool pieces. Tag 1 accepts any bench that adds to three ticks: one piece and a snipped half of the other (or three halves of pieces). A second whole piece hangs past the order and misses as `long`; the scissors snip a tray piece into two bits, each half of a piece. Tag 2 keeps the bench with unit brackets (`1 piece`, `½ piece`) and asks how many pieces fit with four answer cards in a seeded order: `1½` is right, `1¼` plays the unit-comparison pulse (two bits make one piece, so the leftover quarter of the spool is half of a piece), `1` and `2` are plain misses. Misses and the glow count per tag; one sticker, also with help. The model is `FitBench` in `logic.ts`.
 
 Level 6 *Whole Switch* ([definition](../definitions/whole-switch.md), its own scene in `switch.ts`): one 6-tick ribbon never changes. She taps a spool card (the short 12-tick or the long 24-tick) to make it the whole, taps a name card (¼, ½, ¾) and taps the bow. Tag 1 accepts either true statement (a half of the short spool, a quarter of the long one); tag 2 accepts only the other; repeating tag 1's statement on tag 2 is "same" and free. A wrong check is one miss, puts the name card back and plays a measure (a ghost of the ribbon steps along the whole, 2 or 4 steps, a mark and note each; any tap skips it). The second miss on a tag glows one hint, which points at the spool the chosen name is already true for, else the first accepted spool. An empty check or a tap on the ribbon counts nothing; undo steps back through every change. Touch only.
 
