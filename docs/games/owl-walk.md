@@ -2,16 +2,17 @@
 
 <!-- generated: from src/games/owl-walk; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `owl-walk` · **Land:** Story Grove · **Ages:** lap–pre-K · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `owl-walk` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** colors, shapes, taking turns, shared goals, comparing distances
+**Skills:** colors, shapes, taking turns, shared goals, comparing distances, adding
 
 | Band | Levels, easiest first |
 | --- | --- |
 | lap | 5 |
 | toddler | 5, 1, 2 |
 | preschool | 1, 2, 6, 3 |
-| pre-K | 2, 3, 6, 4 |
+| pre-K | 2, 3, 6, 4, 7 |
+| school | 4, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,15 +22,18 @@
 | 4 | Which owl hops the farthest with this card? Plan to get everyone home sooner |
 | 5 | Stepping stones: no cards; tap any stone ahead and the owl hops there, singing, then home to the nest |
 | 6 | Color or shape: each stone has both, and a card shows only one; tap the next stone that has it |
+| 7 | Our two cards: give each card to a different owl so that together we hop the most stones |
 
 <!-- end generated -->
 
 **Starts as:** lap: tap a fat stone ahead and the owl hops there, then the nest to fly home, with no cards; toddler and up: turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left
 
-**Grows into:** stepping stones with no cards (lap, and the first level a toddler meets), then one owl, an owl each with the pet, Color or shape (stones carry color and shape apart while cards show only one), then three shared owls (choose an owl, then its stone), then choose the owl a card carries farthest
+**Grows into:** stepping stones with no cards (lap, and the first level a toddler meets), then one owl, an owl each with the pet, Color or shape (stones carry color and shape apart while cards show only one), then three shared owls (choose an owl, then its stone), then choose the owl a card carries farthest Then **Our two cards** (level 7, pre-K top and school): two cards turn at once, she gives each card to a different owl (the rings show each hop, a total shows the sum), and taps go; only the most stones together hops.
 
 ## Design notes
 
 *After Hoot Owl Hoot! and First Orchard, without the losing clock.* The goal is choosing the move that helps all of us: matching a card to a stone is the way in. Turn over a color card, then **tap the next stone of that color** ahead of the owl; it hops there, counted aloud, skipping a stone another owl stands on. When no stone of that color is left ahead, the owl flies home: tap the nest. On levels 1–5, stones and cards carry a fixed shape per color (heart, circle, star, triangle). Levels 1–2 draw only colors that have a stone ahead for the owl whose turn it is (so flying home arrives later), and the matching stones ahead twinkle with fireflies when a card turns (the set to look through, never the answer). Level 5, *Stepping stones*, is the lap opening and a free toy: one owl, five large stones (touch areas of 90 units, drawn at 1.6 times) in three colors that are only decoration, a nest and no cards. A tap on a stone ahead hops the owl there with a marimba note per stone (not counted aloud) and the nest flies it home; its own stone, a stone behind, the owl or empty ground is a soft tick and an owl poke, never a miss, so the round always ends with 0 misses, 0 hints and its sticker (`stepTo` in `logic.ts`). Toddlers start there (`order [5, 1, 2]`). Level 1 is one owl. Level 2 gives each owl its own player: purple is hers and brown is the pet's, each turn spotlighting its owl, the pet saying what it looked for and touching the same place she would; when one owl is home the other is shared and turns keep alternating. Level 6, *Color or shape* (placed in `preschool` as `order [1, 2, 6, 3]` and `prek` as `order [2, 3, 6, 4]`), separates the two attributes: one owl, 12 stones combining 3 colors (red, blue, yellow) × 3 shapes (heart, circle, star) independently, and each card shows only a color or only a shape (no twinkle on flip; safe cards until the last stone). A wrong stone on level 6 names only the failed attribute (`owl.not-color` / `owl.not-shape`), two misses glow and twinkle fireflies on the right stone, and a third miss gives the pet's assisted hop. Level 3 shares three owls: tap the owl to hop (a free choice, never a miss, and it can be changed), then its stone; no twinkle, and a card may have no stone ahead (the voice says so and the nest is the answer). The top level (level 4) shows how far each owl would hop with the card and asks for the farthest owl; a shorter hop is a gentle miss with both numbers said, two light the best owl, then she taps its stone. A wrong tap is a gentle boing and a spoken reason (the other color or shape named, "a red heart, but is there one closer?", the owl only walks forward, a friend is sitting there, or a stone is still ahead before the nest); two misses glow the right stone (one hint a turn), and a third has the pet hop it with her. A touch resolves to the nearest stone, owl or the nest (a stone with an owl on it means the owl; on level 4 a numbered ring means its owl) and answers at touch-down with a ring and a squash. Tapping an owl on levels 1–2 and 6, what the old game taught, is a reminder to tap the stone and never a miss. Everyone wins together, and the sun only rises when every owl is home. A random-play simulation shows every game ends; rule tests check the stone verdicts against the hop rule, the first levels' cards and the one-each turn order. **A grown-up in the pet's seat (levels 2–4, 2026-11-26).** A round seat button beside the cards (one figure: the pet plays; two: a grown-up does) is chosen, never guessed, because the device cannot tell fingers apart. With it on, the pet turns its card and says it, glows its owl and waits: the right stone or the nest takes the hop; a wrong stone is the same spoken reason as her own, a glow on the second and the hop made together on the third (`seatStep` in `logic.ts`). None of it is counted: her misses, hints and level stay her own (the seat contract, anonymous and uncredited), and turning the button off while the pet waits lets the pet play on. Off by default, so solo play is unchanged; levels 1, 5 and 6 have no seat button. Not yet built, from its [deep dive](../deep-dives/owl-walk.md): Our two cards, Check the helper.
 
 **A card's colour never holds her tap (U7 fix batch 21, 2026-11-12).** Her flipped card's colour starts as it turns and the stones open at once; what to do with the card waits for the colour, is said by the guide, or is dropped at her first tap (the card face shows the colour). The pet's turn is unchanged.
+
+**Our two cards (level 7, built 2026-11-26).** Two cards turn at once (no deck to tap). She taps a card, then an owl; a small copy sits by the owl, a ring over its landing stone shows the count, the second card's ring already knowing where the first owl lands, and once both are placed a total reads "N together" and a green go lily lights. Tapping an owl that holds the other card swaps; tapping a placed owl picks its card up again. Go hops card 0's owl then card 1's, counted aloud (`assignTotal`), only when the total equals the best (`bestPairs`; every tie is accepted). A worse pair does not hop: the pet says both totals (a miss); a second miss glows the best owls and shows ghost cards beside them (one hint); a third has the pet place and hop the best (assisted). The **first pair of a play session is unscored** (module-level `pairsSeen`, as Light Lab 7): it hops whatever she placed, the pet says both totals, nothing is charged. With one owl left a single card is given to it and go hops it, never scored. No pet turns and no grown-up seat on this level. Accepted deviations from the definition: the guide says "another way gets {m}" without naming owls, and the preview is a number ring (no dashed arc). The ghost finger demonstration runs ~68 s of 75 (3-owl rounds take six or seven pairs), so a longer board could exceed it. Level 8 is the next Next ten line.

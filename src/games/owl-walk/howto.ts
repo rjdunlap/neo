@@ -30,7 +30,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 6,
+      to: 6,
       text: 'Flip a card showing only a color or only a shape, then tap the next stone ahead of the owl that has it. When none is left, tap the nest.',
+    },
+    {
+      from: 7,
+      text: 'Two cards turn at once. Tap a card, then tap the owl that should take it, and the same for the other card, so that together the two owls hop the most stones. The rings show each hop and the total shows the sum. Tap the green go. A better way gets a gentle hint.',
     },
   ],
   finish: 'The round ends when the owls are home.',

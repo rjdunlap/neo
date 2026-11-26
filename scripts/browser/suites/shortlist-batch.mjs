@@ -1437,7 +1437,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       log('Pet Says 13 (pat): five pats (two on the meadow), no arrow, saved round and sticker passed');
     }
 
-    const owlsTo = Number(process.env.TO_LEVEL || 6);
+    const owlsTo = Number(process.env.TO_LEVEL || 7);
     if (!only || only === 'owls')
       for (let level = fromLevel; level <= Math.min(4, owlsTo); level++) {
         await launch('owl-walk', level);
@@ -1707,6 +1707,82 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Owl Walk Home 6 (Color or shape): cards showing color or shape, two misses twinkle the right stone, upright, saved score and sticker passed',
+      );
+    }
+
+    if ((!only || only === 'owls') && fromLevel <= 7 && owlsTo >= 7) {
+      // Level 7, Our two cards (pre-K top, school): give each card to an owl, then go. The session's first pair is unscored.
+      await launch('owl-walk', 7);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.evaluate(async () => (await import('/src/games/owl-walk/index.ts')).resetPairsSeen());
+      await page.waitForFunction(() => neo.scene.game.pair && !neo.scene.game.busy, null, { timeout: 40000 });
+      const plan = (worst) =>
+        page.evaluate(async (worst) => {
+          const L = await import('/src/games/owl-walk/logic.ts');
+          const g = neo.scene.game;
+          const spots = g.owls.map((o) => o.spot);
+          const cards = g.pair.cards;
+          if (cards.length < 2) return { to: [g.pair.to[0]], single: true };
+          const all = L.pairAssignments(g.path, spots);
+          const totals = all.map((p) => L.assignTotal(g.path, spots, cards, p));
+          const max = Math.max(...totals);
+          const k = worst ? totals.indexOf(Math.min(...totals)) : totals.indexOf(max);
+          return { to: all[k], gap: max - Math.min(...totals), single: false };
+        }, worst);
+      const give = async (to) => {
+        for (let k = 0; k < 2; k++) {
+          await tap(`neo.scene.game.faces[${k}]`);
+          await tap(`neo.scene.game.owls[${to[k]}].critter`);
+        }
+      };
+      let pairs = 0;
+      for (let t = 0; t < 12 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+        await page.waitForFunction(() => neo.scene.game.pair && !neo.scene.game.busy, null, {
+          timeout: 40000,
+        });
+        const best = await plan(false);
+        if (best.single) {
+          await tap('neo.scene.game.go');
+        } else if (pairs === 0) {
+          // The first look is unscored: the worst way hops, nothing is charged.
+          const worst = await plan(true);
+          await give(worst.to);
+          assert.equal(await page.evaluate(() => neo.scene.game.pairComplete()), true);
+          await tap('neo.scene.game.go');
+        } else if (pairs === 1 && best.gap > 0) {
+          // A better way exists: going with a worse one is a gentle miss with both totals said; the second brings the glow.
+          await give((await plan(true)).to);
+          for (let k = 0; k < 2; k++) {
+            await page.waitForTimeout(500);
+            await tap('neo.scene.game.go');
+            await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+          }
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.hintPlan !== null));
+          await screenshot('owl-walk-7-hint');
+          await give(best.to);
+          await tap('neo.scene.game.go');
+        } else {
+          await give(best.to);
+          if (pairs === 2) await screenshot('owl-walk-7');
+          await tap('neo.scene.game.go');
+        }
+        pairs++;
+        await page.waitForFunction(
+          (n) =>
+            neo.scene.game.finished ||
+            (neo.scene.game.pair && !neo.scene.game.busy && neo.scene.game.index > n),
+          0,
+          { timeout: 40000 },
+        );
+      }
+      await finished('owl-walk');
+      assert.ok(
+        await page.evaluate(() => neo.scene.game.owls.every((o) => o.spot >= neo.scene.game.path.length)),
+      );
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        `Owl Walk Home 7 (Our two cards): ${pairs} pairs given, first unscored, a worse way explained with a glow, everyone home`,
       );
     }
   }

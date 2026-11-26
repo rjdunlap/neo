@@ -1,1 +1,0 @@
-**`owl-walk` level 7, Our two cards** (pre-K top, school; new interaction on an existing game: typecheck, rule tests, one filtered scripted play of level 7 with a not-best pair and a hint, one portrait screenshot, `fingerdemo` at 7; the lands test because `bands` gains `school`). [Definition](../../definitions/owl-walk-levels-7-8.md#level-7-our-two-cards)
