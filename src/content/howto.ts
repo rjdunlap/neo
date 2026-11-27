@@ -467,3 +467,32 @@ export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel' |
 export function shouldExplain(opts: { enabled: boolean; id: string; story: boolean; again: boolean }): boolean {
   return opts.enabled && !opts.story && !opts.again && opts.id in HOW_TO;
 }
+
+/** What the person plays with, for the short reminder's key: a finger or a mouse. The controller route has no short card. */
+export type IntroInput = 'touch' | 'mouse';
+
+/** A round's introduction, by what the card taught: the game, the band it plays at, the level on the card, and the input in use (D4b). */
+export function introKey(k: { id: string; band: string; level: number; input: IntroInput }): string {
+  return `${k.id}|${k.band}|${k.level}|${k.input}`;
+}
+
+export interface BriefIntroCase {
+  cards: boolean;
+  /** `settings.briefIntros`. */
+  brief: boolean;
+  /** `shouldExplain` for this open (not a story, not Again, a game with a card). */
+  explained: boolean;
+  mix: boolean;
+  daily: boolean;
+  /** Null on the controller route, which keeps the full card. */
+  input: IntroInput | null;
+  /** This exact key's card had Play pressed on it earlier this visit. */
+  introduced: boolean;
+}
+
+/** The short reminder (D4b, `docs/definitions/brief-intro.md`) replaces the full card only for an exact mode and input already introduced. */
+export function briefIntro(c: BriefIntroCase): boolean {
+  return (
+    c.cards && c.brief && c.explained && !c.mix && !c.daily && c.input !== null && c.introduced
+  );
+}

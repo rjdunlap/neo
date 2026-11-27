@@ -1,1 +1,0 @@
-**D4b build, the short reminder** (shell and intro tier; independent of D4a's build): build the [definition](../../definitions/brief-intro.md): `settings.briefIntros` (default off, grown-ups page), `introKey` and `briefIntro` in `src/content/howto.ts`, `introMemory` in `src/app/discovery.ts`, and the short form of `HowToPanel` with Show me, with one filtered play.

@@ -14,7 +14,7 @@ import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
 import { briefResult } from '../../content/brief-result';
-import { howToFor, shouldExplain } from '../../content/howto';
+import { briefIntro, howToFor, introKey, shouldExplain, type IntroInput } from '../../content/howto';
 import { islandDemo } from '../../content/demos';
 import { COUCH_INFO, type CouchInfo } from '../../couch/catalog';
 import { Demo } from '../../couch/demo';
@@ -23,6 +23,7 @@ import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
 import {
   discoveryMemory,
+  introMemory,
   launchDiscovery,
   launchStop,
   leaveMix,
@@ -39,7 +40,7 @@ import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
 import { cancelHeld } from '../../engine/drag';
-import { onTap } from '../../engine/input';
+import { onTap, pointerKind } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { DAILY_NEXT, RESULT_NAME_W, dailySpots, resultSpots } from '../result-layout';
@@ -121,6 +122,10 @@ export class GameScene extends Scene {
   /** Rounds of this game finished before the one now settled (the short result is never a first round's). */
   private earlierRounds = 0;
   private readonly discoveryToken = discoveryMemory.token(store.data);
+  private readonly introToken = introMemory.token(store.data);
+  /** The short reminder (D4b) is the card now open, and the input it opened for; Show me, or a different input, swaps in the full card. */
+  private briefOpen: IntroInput | null = null;
+  private showFullIntro: (() => void) | null = null;
   private discovery: {
     id: string;
     tile: DiscoveryTile;
@@ -258,16 +263,29 @@ export class GameScene extends Scene {
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
 
     // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
-    const card = shouldExplain({
+    const explained = shouldExplain({
       enabled: store.data.settings.howToCards,
       id: this.mod.id,
       story: !!this.story,
       again: this.again,
-    })
-      ? howToFor(this.mod, this.level)
-      : null;
-    if (card) this.openIntro(card);
-    else this.build();
+    });
+    const card = explained ? howToFor(this.mod, this.level) : null;
+    if (card) {
+      // Only an exact game, band, level and input that she pressed Play on this visit gets the short reminder (D4b).
+      const input = this.introInput();
+      const introduced =
+        input !== null && introMemory.has(this.introToken, store.data, this.introKeyFor(input));
+      const brief = briefIntro({
+        cards: store.data.settings.howToCards,
+        brief: store.data.settings.briefIntros,
+        explained,
+        mix: !!this.mixRound,
+        daily: !!this.origin && 'daily' in this.origin,
+        input,
+        introduced,
+      });
+      this.openIntro(card, brief ? input : null);
+    } else this.build();
   }
 
   /** The game for this round, drawn onto the stage; nothing in it starts until `begin`. */
@@ -422,6 +440,8 @@ export class GameScene extends Scene {
       this.syncDiscovery();
       this.syncMix();
     }
+    // A short reminder was made for one input: a different one gets the full card with its demonstration.
+    if (this.briefOpen && this.introInput() !== this.briefOpen) this.showFullIntro?.();
     // A stop card's row is for touch: a key or pad takes it off, and a touch puts it back.
     if (
       this.helpCard &&
@@ -593,9 +613,9 @@ export class GameScene extends Scene {
   }
 
   /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
-  private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
+  private openIntro(info: NonNullable<ReturnType<typeof howToFor>>, briefFor: IntroInput | null = null) {
     const mod = this.mod;
-    const demo = this.demoAt(this.level);
+    const demo = briefFor ? undefined : this.demoAt(this.level);
     // Held arrows choose the level the round is built at. They stay within her band's levels, like the grown-up zone's picker.
     const range = mod.levels(this.band);
     // The ladder marks what her progress suggests and a grown-up's pin; neither follows the arrows. A celebration's next level is not a suggestion.
@@ -609,7 +629,7 @@ export class GameScene extends Scene {
       voice.stop();
       void voice.say(mod.titleLine);
     };
-    const card = new HowToPanel(info, () => undefined, {
+    const intro: HowToIntro = {
       icon: () => mod.hubIcon(),
       play: () => this.playFromIntro(),
       back: () => this.backFromIntro(),
@@ -620,8 +640,23 @@ export class GameScene extends Scene {
       demo,
       pick,
       levelCard: mod.levelCard,
-      stops: this.stopRowFor(),
-    });
+      stops: briefFor ? undefined : this.stopRowFor(),
+      brief: !!briefFor,
+      showMe: () => this.showFullIntro?.(),
+    };
+    const card = new HowToPanel(info, () => undefined, intro);
+    if (briefFor) {
+      this.briefOpen = briefFor;
+      this.showFullIntro = () => {
+        if (!this.briefOpen || this.game || this.gone || this.helpCard !== card) return;
+        this.briefOpen = null;
+        this.showFullIntro = null;
+        intro.brief = false;
+        const shown = this.demoAt(this.level);
+        if (shown) audio.hush(true);
+        card.show(info, shown);
+      };
+    }
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
@@ -656,6 +691,15 @@ export class GameScene extends Scene {
     this.app.applyView();
   }
 
+  /** `touch` or `mouse` for the short reminder's key; the controller route has none (D4b). */
+  private introInput(): IntroInput | null {
+    return this.inputInUse.kind === 'controller' ? null : pointerKind();
+  }
+
+  private introKeyFor(input: IntroInput): string {
+    return introKey({ id: this.mod.id, band: this.band, level: this.level, input });
+  }
+
   private setOrientation() {
     // The dev-only sweep can inspect layouts before an upright rollout.
     this.upright = this.uprightArea =
@@ -668,6 +712,12 @@ export class GameScene extends Scene {
   private playFromIntro() {
     if (this.game || !this.liveResult() || this.navigating) return;
     voice.stop();
+    // Play on a full card is what introduces the mode; Play on the short reminder, a finished round and Again are not new.
+    const input = this.introInput();
+    if (this.helpCard && !this.briefOpen && input)
+      introMemory.introduced(this.introToken, store.data, this.introKeyFor(input));
+    this.briefOpen = null;
+    this.showFullIntro = null;
     this.closeHelp();
     this.build().resize(this.place.game);
     this.begin();

@@ -125,6 +125,8 @@ export interface SaveData {
     howToCards: boolean;
     /** "Short results" (D4a): a shorter result after a round in the pilot games. Off unless a grown-up turns it on. */
     briefResults: boolean;
+    /** "Short reminders" (D4b): a shorter how-to card for a game, level and input she has just been shown this visit. Off unless a grown-up turns it on. */
+    briefIntros: boolean;
     speech: boolean;
     /** "Show the words": a `school` player sees the guide's question written out, for a phone on silent (a `grownup` always does). */
     showWords: boolean;
@@ -174,6 +176,7 @@ export function defaults(): SaveData {
       coplayHints: true,
       howToCards: true,
       briefResults: false,
+      briefIntros: false,
       showWords: false,
       speech: true,
       language2: 'none',
@@ -385,6 +388,7 @@ export function migrate(raw: unknown): SaveData {
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
       briefResults: bool(settings.briefResults, d.settings.briefResults),
+      briefIntros: bool(settings.briefIntros, d.settings.briefIntros),
       speech: bool(settings.speech, d.settings.speech),
       showWords: bool(settings.showWords, d.settings.showWords),
       // Exactly one of the two values; `pt`, `pt-BR` or anything else is off, never a guessed variety.

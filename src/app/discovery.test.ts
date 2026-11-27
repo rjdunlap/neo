@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DiscoveryMemory, launchDiscovery } from './discovery';
+import { DiscoveryMemory, INTRO_LIMIT, IntroMemory, launchDiscovery } from './discovery';
 import { goToOrigin } from './origin';
 import type { Origin } from './App';
 
@@ -56,4 +56,35 @@ describe('direct next visit and launch', () => {
       else expect(fallback).toHaveBeenCalled();
     },
   );
+});
+
+describe('introduction memory (D4b)', () => {
+  it('remembers a key for its save only, and forgets on clear or a replaced save', () => {
+    const memory = new IntroMemory();
+    const a = {};
+    const b = {};
+    const t = memory.token(a);
+    expect(memory.has(t, a, 'k')).toBe(false);
+    memory.introduced(t, a, 'k');
+    expect(memory.has(t, a, 'k')).toBe(true);
+    expect(memory.has(t, b, 'k')).toBe(false);
+    const other = memory.token(b);
+    expect(memory.has(t, a, 'k')).toBe(false);
+    memory.introduced(t, a, 'stale');
+    expect(memory.has(other, b, 'stale')).toBe(false);
+    memory.introduced(other, b, 'k');
+    memory.clear();
+    expect(memory.has(other, b, 'k')).toBe(false);
+  });
+
+  it('keeps at most the limit, oldest first out', () => {
+    const memory = new IntroMemory();
+    const a = {};
+    const t = memory.token(a);
+    for (let i = 0; i < INTRO_LIMIT + 5; i++) memory.introduced(t, a, `k${i}`);
+    expect(memory.has(t, a, 'k0')).toBe(false);
+    expect(memory.has(t, a, 'k4')).toBe(false);
+    expect(memory.has(t, a, 'k5')).toBe(true);
+    expect(memory.has(t, a, `k${INTRO_LIMIT + 4}`)).toBe(true);
+  });
 });
