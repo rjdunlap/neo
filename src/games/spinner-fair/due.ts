@@ -120,7 +120,7 @@ export class DueGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 97,
       },
       ctx.view,
@@ -571,7 +571,7 @@ export class DueGame implements Game {
     this.panel
       .clear()
       .roundRect(left - 12, top - RIBBON_TOP, L.ribbon.w + 24, RIBBON_TOP + L.ribbon.h + 10, 20)
-      .fill({ color: 0xffffff, alpha: 0.75 });
+      .fill(cream);
   }
 
   update(dt: number) {

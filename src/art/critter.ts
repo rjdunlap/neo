@@ -488,15 +488,19 @@ export class Critter extends Container {
     const s = this.spec;
     const sw = this.sw;
     if (s.spots) {
-      this.body.addChild(bodyPath(new Graphics()).fill(sw.fill));
+      // The same gentle paper body as everyone else, with the patches printed flat on it (clipped to the body), so the
+      // cow is not the one lumpy critter.
+      this.body.addChild(paperPoints(new Graphics(), bodyPoints(), sw.fill, { amp: BODY_AMP, seed: 1 }));
       const mask = bodyPath(new Graphics()).fill(0xffffff);
-      const spots = new Graphics()
-        .ellipse(-86, -172, 44, 32)
-        .ellipse(112, -65, 36, 50)
-        .ellipse(62, -214, 20, 14)
-        .fill(0x3d3d4d);
+      const spots = new Graphics();
+      for (const [x, y, rx, ry] of [
+        [-86, -172, 44, 32],
+        [112, -65, 36, 50],
+        [62, -214, 20, 14],
+      ])
+        paperPoints(spots, ellipsePoints(x, y, rx, ry), 0x3d3d4d, { flat: true });
       spots.mask = mask;
-      this.body.addChild(mask, spots, bodyPath(new Graphics()).stroke(stroke(sw.line)));
+      this.body.addChild(mask, spots);
       this.body.addChild(
         new Graphics()
           .moveTo(-18, -244)

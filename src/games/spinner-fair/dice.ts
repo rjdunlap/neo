@@ -519,9 +519,7 @@ export class DiceGame implements Game {
       plates.push(barsBox(L.ways), { x: L.grid.x + side / 2, y: L.grid.y + side / 2, w: side, h: side });
     }
     for (const p of plates)
-      this.panel
-        .roundRect(p.x - p.w / 2 - 8, p.y - p.h / 2 - 6, p.w + 16, p.h + 10, 16)
-        .fill({ color: 0xffffff, alpha: 0.75 });
+      this.panel.roundRect(p.x - p.w / 2 - 8, p.y - p.h / 2 - 6, p.w + 16, p.h + 10, 16).fill(cream);
   }
 
   update(dt: number) {
