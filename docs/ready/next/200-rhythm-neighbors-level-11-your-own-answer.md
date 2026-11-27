@@ -1,1 +1,0 @@
-**`rhythm-neighbors`, level 11 *Your own answer*** (new-interaction tier): school only, school `order` [5, 6, 10, 11, 12]; the echo detector, the un-counted nudge, the sample answer, how-to, voice, a bot that reverses the call, per [dive slice 6](../../deep-dives/rhythm-neighbors.md#build-slices-in-order); `fingerdemo` at 11.
