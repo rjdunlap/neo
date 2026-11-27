@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
+import { cutCloud, drop, sunRays } from '../../art/scenery';
 import type { Answer, ClueId, Layout, Side, Sky, Temp, Weather } from './logic';
 
 const SEA = swatch.blue,
@@ -7,40 +8,18 @@ const SEA = swatch.blue,
 const STONE = 0xc9bfb3,
   STONE_LINE = 0x8a7b6c;
 
-/** A sun disc with rays. */
+/** A paper sun: the sky's snipped rays round a disc of radius `r`. */
 function sun(g: Graphics, x: number, y: number, r: number) {
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    g.moveTo(x + Math.cos(a) * r * 1.25, y + Math.sin(a) * r * 1.25)
-      .lineTo(x + Math.cos(a) * r * 1.6, y + Math.sin(a) * r * 1.6)
-      .stroke({ width: Math.max(3, r * 0.16), color: swatch.orange.fill, cap: 'round' });
-  }
+  sunRays(g, x, y, r / 54);
   g.circle(x, y, r)
     .fill(swatch.yellow.fill)
-    .stroke({ width: Math.max(2, r * 0.1), color: swatch.orange.line });
+    .stroke({ width: Math.max(2, r * 0.1), color: swatch.yellow.line });
 }
 
-/** Cloud puffs; `dark` for a rain or snow cloud. */
+/** The sky's cut-paper cloud, about 1.5 `s` across; `dark` for a rain or snow cloud. */
 function cloud(g: Graphics, x: number, y: number, s: number, dark = false) {
-  const fill = dark ? 0xc9d2e0 : 0xffffff,
-    line = dark ? 0x7f8aa0 : 0xa9b7c9;
-  for (const [dx, dy, r] of [
-    [-0.5, 0.1, 0.32],
-    [-0.12, -0.18, 0.42],
-    [0.36, -0.02, 0.36],
-    [0.1, 0.16, 0.34],
-  ] as const) {
-    g.circle(x + dx * s, y + dy * s, r * s)
-      .fill(fill)
-      .stroke({ width: Math.max(2, s * 0.04), color: line });
-  }
-  for (const [dx, dy, r] of [
-    [-0.5, 0.1, 0.32],
-    [-0.12, -0.18, 0.42],
-    [0.36, -0.02, 0.36],
-    [0.1, 0.16, 0.34],
-  ] as const)
-    g.circle(x + dx * s, y + dy * s, r * s - 2).fill(fill);
+  const k = (s * 1.5) / 192;
+  cutCloud(g, x, y + 12 * k, k, dark ? 0xc9d2e0 : 0xffffff, dark ? 0x95a2b8 : 0xc9dcea);
 }
 
 /** A six-point flake. */
@@ -68,10 +47,13 @@ export function weatherArt(w: Weather | Sky, s: number): Graphics {
       ])
         flake(g, dx * s, dy * s, s * 0.08);
     else
-      for (const dx of [-0.24, -0.04, 0.16, 0.32])
-        g.moveTo(dx * s, s * 0.16)
-          .lineTo(dx * s - s * 0.06, s * 0.36)
-          .stroke({ width: Math.max(3, s * 0.05), color: SEA.fill, cap: 'round' });
+      for (const [dx, dy] of [
+        [-0.26, 0.24],
+        [-0.04, 0.34],
+        [0.18, 0.24],
+        [0.36, 0.34],
+      ])
+        drop(g, dx * s, dy * s, s * 0.16, SEA.fill);
   }
   return g;
 }
