@@ -42,5 +42,17 @@ export const VOICE = {
   'little-conductor.match': ['Just like the sign!', 'That matches!'],
   'little-conductor.hint-turtle': ['Try the glowing turtle. Slow and steady.'],
   'little-conductor.hint-rabbit': ['Try the glowing rabbit. Quick and light.'],
+  'little-conductor.instruct-change': [
+    'The listener has a sign with two ways to play, {name}. Set slow or fast and soft or loud to match it, then tap the green check.',
+  ],
+  'little-conductor.ask-turtle-gentle': ['The sign says slow and soft, {name}.'],
+  'little-conductor.ask-turtle-strong': ['The sign says slow and loud, {name}.'],
+  'little-conductor.ask-rabbit-gentle': ['The sign says fast and soft, {name}.'],
+  'little-conductor.ask-rabbit-strong': ['The sign says fast and loud, {name}.'],
+  'little-conductor.pick-both': ['Pick slow or fast, and soft or loud, first, {name}.'],
+  'little-conductor.wrong-gentle': ['Look at the drum on the sign, {name}. Small and soft!'],
+  'little-conductor.wrong-strong': ['Look at the drum on the sign, {name}. Big and loud!'],
+  'little-conductor.hint-gentle': ['Try the glowing small drum, {name}. Soft!'],
+  'little-conductor.hint-strong': ['Try the glowing big drum, {name}. Loud!'],
   'little-conductor.bow': ['What a band! They take a bow for you.', 'Lovely music! The band takes a bow.'],
 } satisfies Record<string, string[]>;

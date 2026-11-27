@@ -51,6 +51,18 @@ import {
   type Requests,
   type Round,
   type Score,
+  ASKS,
+  changeBot,
+  changedDial,
+  glowAsk,
+  hintChange,
+  makeAsks,
+  newChanges,
+  setDial,
+  submitChange,
+  wrongDials,
+  type Ask,
+  type Changes,
 } from './logic';
 
 const hop = MOTIFS[0];
@@ -493,7 +505,7 @@ describe('Little Conductor level 5, two ways at once', () => {
     expect(planFor(5).mode).toBe('dials');
     expect(LEVELS.preschool?.max).toBe(5);
     expect(LEVELS.prek?.max).toBe(6);
-    expect(LEVELS.school).toEqual({ min: 5, max: 6 });
+    expect(LEVELS.school).toEqual({ min: 5, max: 7 });
     expect(LEVELS.toddler?.max).toBe(2);
   });
 
@@ -644,7 +656,7 @@ describe('Little Conductor level 6, invite a friend', () => {
   it('is a pre-K and school level that holds one steady pace', () => {
     expect(planFor(6).mode).toBe('friends');
     expect(LEVELS.prek?.max).toBe(6);
-    expect(LEVELS.school?.max).toBe(6);
+    expect(LEVELS.school?.max).toBe(7);
     expect(LEVELS.preschool?.max).toBe(5);
     expect(tempoOf('turtle', 'friends')).toBe(STEADY_BPM);
     expect(tempoOf('rabbit', 'friends')).toBe(STEADY_BPM);
@@ -803,6 +815,155 @@ describe('Little Conductor level 6, invite a friend', () => {
       for (const sp of spots) expect(sp.w).toBe(SPOT);
       for (let i = 0; i < all.length; i++)
         for (let j = i + 1; j < all.length; j++) expect(hits(all[i], all[j])).toBe(false);
+    },
+  );
+});
+
+describe('Little Conductor level 7, one change', () => {
+  const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
+  const asksOf = (seed: number) => makeAsks(new Rng(seed));
+  const ids = (a: Ask) => `${a.pace}-${a.strength}`;
+  const set = (c: Changes, a: Ask): Changes => setDial(setDial(c, 'pace', a.pace), 'strength', a.strength);
+
+  it('asks for two ways that differ in exactly one property, over every seed', () => {
+    const changed = new Set<string>();
+    for (const seed of seeds) {
+      const asks = asksOf(seed);
+      const same = (asks[0].pace === asks[1].pace ? 1 : 0) + (asks[0].strength === asks[1].strength ? 1 : 0);
+      expect(same).toBe(1);
+      changed.add(changedDial(asks));
+    }
+    expect([...changed].sort()).toEqual(['pace', 'strength']);
+  });
+
+  it('can start from every way to play and is satisfiable by one pad pair', () => {
+    const firsts = new Set(seeds.map((seed) => ids(asksOf(seed)[0])));
+    expect(firsts.size).toBe(ASKS.length);
+    for (const ask of ASKS) expect(wrongDials(ask, set(newChanges(), ask))).toEqual([]);
+  });
+
+  it('is a truth table: a Check is right exactly when both dials match, and names only a wrong property', () => {
+    const asks = asksOf(3);
+    const ask = asks[0];
+    const other = (a: Ask): Ask => ({
+      pace: a.pace === 'turtle' ? 'rabbit' : 'turtle',
+      strength: a.strength === 'gentle' ? 'strong' : 'gentle',
+    });
+    const o = other(ask);
+    expect(submitChange(newChanges(), asks).result).toBe('pick-first');
+    expect(submitChange(setDial(newChanges(), 'pace', ask.pace), asks).result).toBe('pick-first');
+    const paceWrong = submitChange(set(newChanges(), { ...ask, pace: o.pace }), asks);
+    expect([paceWrong.result, paceWrong.wrong, paceWrong.state.misses]).toEqual(['wrong', 'pace', 1]);
+    const strengthWrong = submitChange(set(newChanges(), { ...ask, strength: o.strength }), asks);
+    expect([strengthWrong.result, strengthWrong.wrong]).toEqual(['wrong', 'strength']);
+    // Both wrong: the pace is named first, and the pick stays so she can compare it with the sign.
+    const both = submitChange(set(newChanges(), o), asks);
+    expect([both.wrong, both.state.pace, both.state.strength]).toEqual(['pace', o.pace, o.strength]);
+    expect(submitChange(set(newChanges(), ask), asks).result).toBe('match');
+  });
+
+  it('turns to the second half, clearing the dials, and finishes after the second match', () => {
+    const asks = asksOf(5);
+    const first = submitChange(set(newChanges(), asks[0]), asks);
+    expect([first.result, first.state.phrase, first.state.pace, first.state.strength]).toEqual([
+      'match',
+      1,
+      null,
+      null,
+    ]);
+    const last = submitChange(set(first.state, asks[1]), asks);
+    expect([last.result, last.state.done, last.state.misses, last.state.hints]).toEqual([
+      'finished',
+      true,
+      0,
+      0,
+    ]);
+    expect(submitChange(last.state, asks).result).toBe('finished');
+  });
+
+  it('lights one hint on the first wrong dial after two wrong Checks, and counts it once per half', () => {
+    const asks = asksOf(7);
+    const ask = asks[0];
+    const wrongStrength = set(newChanges(), {
+      ...ask,
+      strength: ask.strength === 'gentle' ? 'strong' : 'gentle',
+    });
+    const one = submitChange(wrongStrength, asks);
+    expect(one.glow).toBe(false);
+    const two = submitChange(one.state, asks);
+    expect([two.glow, two.state.hints, two.state.misses]).toEqual([true, 1, 2]);
+    expect(glowAsk(ask, two.state)).toEqual({ dial: 'strength', id: ask.strength });
+    const three = submitChange(two.state, asks);
+    expect([three.glow, three.state.hints]).toEqual([false, 1]);
+    expect(hintChange(three.state).counted).toBe(false);
+    // The pause sheet's hint before any pick glows the pace pad, and the half's counted hint is spent.
+    const early = hintChange(newChanges());
+    expect([early.counted, early.state.hints]).toEqual([true, 1]);
+    expect(glowAsk(ask, newChanges())).toEqual({ dial: 'pace', id: ask.pace });
+  });
+
+  it('is finished by the ghost finger over every seed, with no misses or hints', () => {
+    for (const seed of seeds) {
+      const asks = asksOf(seed);
+      let c = newChanges();
+      for (let guard = 0; guard < 20 && !c.done; guard++) {
+        const move = changeBot(asks, c);
+        if (move === null) break;
+        if (move === 'check') c = submitChange(c, asks).state;
+        else c = setDial(c, move.dial, move.id);
+      }
+      expect([c.done, c.misses, c.hints]).toEqual([true, 0, 0]);
+    }
+  });
+
+  it('is a school-only level, and the plan names it', () => {
+    expect(LEVELS.school?.max).toBe(7);
+    expect(LEVELS.prek?.max).toBe(6);
+    expect(planFor(7).mode).toBe('change');
+  });
+
+  const VIEWS7: [number, number, boolean][] = [
+    [1024, 768, false],
+    [768, 1024, false],
+    [1366, 768, false],
+    [1194, 834, false],
+    [390, 844, true],
+    [390, 900, true],
+    [768, 1024, true],
+    [430, 700, true],
+  ];
+  const overlap = (
+    a: { x: number; y: number; w: number; h: number },
+    b: { x: number; y: number; w: number; h: number },
+  ) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  it.each(VIEWS7)(
+    'lays the four pads, sign, listener and buttons out large and clear at %i×%i (upright %s)',
+    (pw, ph, upright) => {
+      const view = computeView(pw, ph, undefined, upright);
+      const l = conductorLayout(view, 7);
+      const disc = (d: { x: number; y: number; r: number }) => ({
+        x: d.x - d.r,
+        y: d.y - d.r,
+        w: 2 * d.r,
+        h: 2 * d.r,
+      });
+      const pads = [l.pads.turtle, l.pads.rabbit, l.strengths!.gentle, l.strengths!.strong];
+      const targets = [...pads, disc(l.listen), disc(l.done)];
+      expect(l.cells).toBeUndefined();
+      for (const t of targets) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+      const sign = l.sign!;
+      const all = [...targets, sign];
+      for (const t of all) {
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        expect(t.y + t.h).toBeLessThanOrEqual(view.h);
+        expect(overlap(t, { x: 0, y: view.h - 220, w: 220, h: 220 })).toBe(false);
+        expect(overlap(t, l.stand)).toBe(false);
+      }
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j])).toBe(false);
+      expect(l.listener!.y).toBeLessThan(l.listen.y - l.listen.r);
     },
   );
 });

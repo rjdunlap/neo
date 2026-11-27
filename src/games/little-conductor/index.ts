@@ -54,7 +54,16 @@ import {
   SIGN,
   signBot,
   submit,
+  changeBot,
+  glowAsk,
+  hintChange,
+  makeAsks,
+  newChanges,
+  setDial,
+  submitChange,
+  type Ask,
   type BeatEvent,
+  type Changes,
   type ConductorLayout,
   type PaceId,
   type Plan,
@@ -442,6 +451,30 @@ class Sign extends Container {
     this.word.y = SIGN / 2 - 28;
     this.addChild(this.picture, this.word);
   }
+
+  /** Level 7: both properties of a way to play on one card, the pace's animal beside the drum, with the two words. */
+  showAsk(ask: Ask) {
+    this.picture?.destroy({ children: true });
+    this.word?.destroy();
+    const pic = new Container();
+    const animal = paceArt(ask.pace);
+    animal.scale.set(0.55);
+    animal.x = -50;
+    const drum = drumPicture(ask.strength === 'strong');
+    drum.scale.set(0.7);
+    drum.x = 52;
+    pic.addChild(animal, drum);
+    pic.y = -14;
+    this.picture = pic;
+    this.word = label(
+      `${ask.pace === 'turtle' ? 'slow' : 'fast'}, ${ask.strength === 'gentle' ? 'soft' : 'loud'}`,
+      26,
+      ink,
+      '600',
+    );
+    this.word.y = SIGN / 2 - 28;
+    this.addChild(this.picture, this.word);
+  }
 }
 
 function checkArt(): Graphics {
@@ -451,6 +484,9 @@ function checkArt(): Graphics {
     .lineTo(24, -18)
     .stroke({ width: 11, color: 0xffffff, cap: 'round', join: 'round' });
 }
+
+/** The pet's line for a way to play, one for each of the four. */
+const askLine = (ask: Ask) => `little-conductor.ask-${ask.pace}-${ask.strength}` as const;
 
 class LittleConductor implements Game {
   readonly plan: Plan;
@@ -495,6 +531,10 @@ class LittleConductor implements Game {
   private budget = 0;
   private playToken = 0;
   private hintPad: PaceId | null = null;
+  /** Level 7: the two asks, what she has set for this half, and the strength pad the hint lights. */
+  readonly asks?: [Ask, Ask];
+  changes: Changes = newChanges();
+  private hintStrength: StrengthId | null = null;
   private readonly sign?: Sign;
   private readonly listener?: Critter;
   readonly hintLabel?: string;
@@ -522,13 +562,13 @@ class LittleConductor implements Game {
       turtle: new Pad('turtle', this.plan.mode, () => this.tapPad('turtle')),
       rabbit: new Pad('rabbit', this.plan.mode, () => this.tapPad('rabbit')),
     };
-    this.padScale = this.plan.mode === 'dials' ? DIAL_PAD / PAD : 1;
-    if (this.plan.mode === 'dials') {
+    this.padScale = this.plan.mode === 'dials' || this.plan.mode === 'change' ? DIAL_PAD / PAD : 1;
+    if (this.plan.mode === 'dials' || this.plan.mode === 'change') {
       this.strengthPads = {
         gentle: new Pad('turtle', this.plan.mode, () => this.tapStrength('gentle'), true),
         strong: new Pad('rabbit', this.plan.mode, () => this.tapStrength('strong'), true),
       };
-      this.hearing = new HearingMarks();
+      if (this.plan.mode === 'dials') this.hearing = new HearingMarks();
       for (const pad of [...Object.values(this.pads), ...Object.values(this.strengthPads)]) {
         pad.marksOn = false;
         pad.scale.set(this.padScale);
@@ -552,15 +592,17 @@ class LittleConductor implements Game {
       this.done,
     );
     if (this.spots) ctx.stage.addChild(...this.spots);
-    if (this.strengthPads && this.hearing)
-      ctx.stage.addChild(this.strengthPads.gentle, this.strengthPads.strong, this.hearing);
-    if (this.plan.mode === 'sign') {
+    if (this.strengthPads) ctx.stage.addChild(this.strengthPads.gentle, this.strengthPads.strong);
+    if (this.hearing) ctx.stage.addChild(this.hearing);
+    if (this.plan.mode === 'change') this.asks = makeAsks(ctx.rng);
+    if (this.plan.mode === 'sign' || this.plan.mode === 'change') {
       this.listener = new Critter(CRITTERS[this.round.listener]);
       this.listener.scale.set(0.5);
       this.listener.eventMode = 'none';
       ctx.track(this.listener);
       this.sign = new Sign();
-      this.sign.show(this.round.requests[0]);
+      if (this.asks) this.sign.showAsk(this.asks[0]);
+      else this.sign.show(this.round.requests[0]);
       ctx.stage.addChild(this.listener, this.sign);
       this.hintLabel = 'Show a hint';
       this.askForHint = () => this.showHint();
@@ -586,12 +628,15 @@ class LittleConductor implements Game {
               ? 'little-conductor.instruct-dials'
               : this.plan.mode === 'friends'
                 ? 'little-conductor.instruct-friends'
-                : 'little-conductor.instruct-sign',
+                : this.plan.mode === 'change'
+                  ? 'little-conductor.instruct-change'
+                  : 'little-conductor.instruct-sign',
       { name: this.ctx.childName },
     );
     if (this.finished) return;
     this.ready = true;
-    if (this.sign) void this.speak(`little-conductor.request-${this.round.requests[0]}` as const);
+    if (this.asks) void this.speak(askLine(this.asks[0]), { name: this.ctx.childName });
+    else if (this.sign) void this.speak(`little-conductor.request-${this.round.requests[0]}` as const);
   }
 
   /** Feedback during play lowers the band to half while the pet talks; the clock keeps going. */
@@ -649,7 +694,7 @@ class LittleConductor implements Game {
     // A frame after the app was in the background can be long; never let it fire a burst of notes.
     const step = Math.min(dt, 0.1);
     // After the encore's last beat the clock stops, so no fifth note sounds while the band bows.
-    const holding = this.plan.mode === 'sign' && this.budget <= 0;
+    const holding = !!this.sign && this.budget <= 0;
     if (this.ready && !this.stopped && !holding && !(this.performing && this.encore >= BEATS)) {
       const r = advance(this.score, step, this.round.motif, this.plan.mode);
       this.score = r.score;
@@ -697,7 +742,7 @@ class LittleConductor implements Game {
         const here = this.score.cast[PART_IDS[i]];
         p.critter.rotation = here ? Math.sin(Math.PI * t) * 0.06 : 0;
         p.y = base.y - (here ? 10 * bounce : 0);
-      } else if (this.plan.mode === 'dials') {
+      } else if (this.plan.mode === 'dials' || this.plan.mode === 'change') {
         // Both dials at once: the pace sets how long the sway is and the strength how big it is.
         const k = this.score.strength === 'strong' ? 1 : 0.4;
         const slow = pace === 'turtle';
@@ -756,6 +801,21 @@ class LittleConductor implements Game {
 
   private draw() {
     const s = this.score;
+    if (this.asks && this.strengthPads) {
+      for (const pace of PACE_IDS) {
+        const pad = this.pads[pace];
+        pad.hintGlow.visible = this.hintPad === pace;
+        pad.draw(this.changes.pace === pace, false, 0, 0, false, false, false);
+      }
+      for (const id of STRENGTH_IDS) {
+        const pad = this.strengthPads[id];
+        pad.hintGlow.visible = this.hintStrength === id;
+        pad.draw(this.changes.strength === id, false, 0, 0, false, false, false);
+      }
+      const set = this.changes.pace !== null && this.changes.strength !== null;
+      this.done.alpha = set && !this.busy && !this.answering ? 1 : 0.4;
+      return;
+    }
     if (this.sign) {
       for (const pace of PACE_IDS) {
         const pad = this.pads[pace];
@@ -832,6 +892,11 @@ class LittleConductor implements Game {
   tapPad(pace: PaceId) {
     if (!this.ready || this.performing || this.finished || this.answering) return;
     this.pressed(this.pads[pace]);
+    if (this.asks) {
+      this.changes = setDial(this.changes, 'pace', pace);
+      this.audition();
+      return;
+    }
     if (this.sign) {
       // Level 3: the tap is her pick, and the band auditions the phrase at that pace once. Never counted.
       this.requests = choose(this.requests, pace);
@@ -843,8 +908,13 @@ class LittleConductor implements Game {
 
   /** Level 5: a tap on the strength dial. */
   tapStrength(strength: StrengthId) {
-    if (!this.ready || this.performing || this.finished) return;
+    if (!this.ready || this.performing || this.finished || this.answering) return;
     this.pressed(this.strengthPads![strength]);
+    if (this.asks) {
+      this.changes = setDial(this.changes, 'strength', strength);
+      this.audition();
+      return;
+    }
     this.score = selectStrength(this.score, strength);
   }
 
@@ -874,6 +944,11 @@ class LittleConductor implements Game {
 
   tapListen() {
     if (!this.ready || this.performing || this.finished || this.answering) return;
+    if (this.asks) {
+      if (this.changes.pace || this.changes.strength) this.audition();
+      else this.wigglePads();
+      return;
+    }
     if (this.sign) {
       if (this.requests.choice) this.play(this.requests.choice, false);
       else this.wigglePads();
@@ -883,12 +958,17 @@ class LittleConductor implements Game {
   }
 
   /** Level 3: the band plays the current phrase once from its first note, then holds. */
-  private play(pace: PaceId, answer: boolean) {
+  private play(pace: PaceId, answer: boolean, strength: StrengthId = 'strong') {
     this.playToken++;
     this.answering = answer;
     this.playing = true;
-    this.score = select(newScore(), pace);
+    this.score = { ...select(newScore(), pace), strength };
     this.budget = BEATS;
+  }
+
+  /** Level 7: the band plays the half in the way she has set, a dial not yet set sounding at the turtle or the strong drum. */
+  private audition(answer = false) {
+    this.play(this.changes.pace ?? 'turtle', answer, this.changes.strength ?? 'strong');
   }
 
   /** Level 3: stop a phrase where it is, so the band holds while the pet talks about a Check. */
@@ -902,15 +982,25 @@ class LittleConductor implements Game {
     this.playing = false;
     if (!this.answering || this.stopped) return;
     this.answering = false;
-    if (this.requests.done) {
+    if (this.asks ? this.changes.done : this.requests.done) {
       void this.bow(0);
       return;
     }
     // The sign turns to the second half's request.
     this.hintPad = null;
+    this.hintStrength = null;
     this.score = newScore();
-    const next = this.round.requests[this.requests.phrase];
     const sign = this.sign!;
+    if (this.asks) {
+      const ask = this.asks[this.changes.phrase];
+      void this.ctx.tw.to(sign.scale, { x: 0 }, { duration: 0.15 }).then(() => {
+        sign.showAsk(ask);
+        return this.ctx.tw.to(sign.scale, { x: 1 }, { duration: 0.15 });
+      });
+      void this.speak(askLine(ask), { name: this.ctx.childName });
+      return;
+    }
+    const next = this.round.requests[this.requests.phrase];
     void this.ctx.tw.to(sign.scale, { x: 0 }, { duration: 0.15 }).then(() => {
       sign.show(next);
       return this.ctx.tw.to(sign.scale, { x: 1 }, { duration: 0.15 });
@@ -919,8 +1009,8 @@ class LittleConductor implements Game {
   }
 
   private wigglePads() {
-    for (const pace of PACE_IDS) {
-      const p = this.pads[pace];
+    const pads = [...Object.values(this.pads), ...(this.asks ? Object.values(this.strengthPads!) : [])];
+    for (const p of pads) {
       void this.ctx.tw
         .to(p, { rotation: 0.08 }, { duration: 0.08 })
         .then(() => this.ctx.tw.to(p, { rotation: -0.08 }, { duration: 0.12 }))
@@ -963,6 +1053,59 @@ class LittleConductor implements Game {
     this.play(picked!, true);
   }
 
+  /** Level 7's Check: both dials set, then each wrong property is named, never the whole way. */
+  private async checkChange() {
+    if (this.busy || this.answering) return;
+    const asks = this.asks!;
+    const ask = asks[this.changes.phrase];
+    const picked = this.changes;
+    const { state, result, glow, wrong } = submitChange(this.changes, asks);
+    this.changes = state;
+    this.misses = state.misses;
+    this.hints = state.hints;
+    if (result === 'pick-first') {
+      this.wigglePads();
+      void this.speak('little-conductor.pick-both', { name: this.ctx.childName });
+      return;
+    }
+    this.hold();
+    if (result === 'wrong') {
+      sfx.boing();
+      const sign = this.sign!;
+      void this.ctx.tw
+        .to(sign, { y: sign.y - 24 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(sign, { y: sign.y + 24 }, { duration: 0.2 }));
+      this.busy = true;
+      try {
+        await this.speak(
+          wrong === 'strength'
+            ? (`little-conductor.wrong-${ask.strength}` as const)
+            : (`little-conductor.wrong-${ask.pace}` as const),
+          { name: this.ctx.childName },
+        );
+      } finally {
+        this.busy = false;
+      }
+      if (glow && !this.finished) this.giveChangeHint(ask, state);
+      return;
+    }
+    void this.speak('little-conductor.match');
+    this.play(picked.pace!, true, picked.strength!);
+  }
+
+  /** Level 7's hint: the first wrong dial's right pad glows and the band previews that dial's way once. */
+  private giveChangeHint(ask: Ask, c: Changes) {
+    const g = glowAsk(ask, c);
+    this.hintPad = g.dial === 'pace' ? (g.id as PaceId) : null;
+    this.hintStrength = g.dial === 'strength' ? (g.id as StrengthId) : null;
+    void this.speak(`little-conductor.hint-${g.id}` as LineId, { name: this.ctx.childName });
+    this.play(
+      g.dial === 'pace' ? (g.id as PaceId) : (c.pace ?? 'turtle'),
+      false,
+      g.dial === 'strength' ? (g.id as StrengthId) : (c.strength ?? 'strong'),
+    );
+  }
+
   /** The requested pad glows and the band previews that pace once. */
   private giveHint(want: PaceId) {
     this.hintPad = want;
@@ -972,6 +1115,14 @@ class LittleConductor implements Game {
 
   /** The pause sheet's Show a hint: counted once per half, the words and glow again if asked twice. */
   private showHint() {
+    if (this.asks) {
+      if (!this.ready || this.finished || this.answering || this.changes.done) return;
+      const h = hintChange(this.changes);
+      this.changes = h.state;
+      this.hints = h.state.hints;
+      this.giveChangeHint(this.asks[h.state.phrase], h.state);
+      return;
+    }
     if (!this.ready || this.finished || this.answering || this.requests.done) return;
     const h = hint(this.requests);
     this.requests = h.state;
@@ -982,7 +1133,7 @@ class LittleConductor implements Game {
   tapDone() {
     if (!this.ready || this.performing || this.finished) return;
     if (this.sign) {
-      void this.checkSign();
+      void (this.asks ? this.checkChange() : this.checkSign());
       return;
     }
     if (!canFinish(this.score, this.ctx.level)) {
@@ -1035,6 +1186,17 @@ class LittleConductor implements Game {
     if (this.sign) {
       // Read the sign, tap that pad, let its audition finish, then Check.
       if (this.playing || this.busy || this.answering) return null;
+      if (this.asks) {
+        const step = changeBot(this.asks, this.changes);
+        if (!step) return null;
+        if (step === 'check') return { tap: { on: this.done } };
+        return {
+          tap: {
+            on:
+              step.dial === 'pace' ? this.pads[step.id as PaceId] : this.strengthPads![step.id as StrengthId],
+          },
+        };
+      }
       const move = signBot(this.round, this.requests);
       if (!move) return null;
       return { tap: { on: move === 'check' ? this.done : this.pads[move] } };

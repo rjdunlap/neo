@@ -109,7 +109,7 @@ Default windows: toddler 1–2, preschool 1–3, pre-K 2–3; no school window u
 - **Couch:** none. A pace pad on a controller is not a face-off.
 - **Rework couplings:** none required and nothing saved. The three band friends are a natural place for **her creatures as the cast** ([PET-INTEGRATION](../rework/PET-INTEGRATION.md)), and a performance at a chosen pace is a natural thing a round makes to bring home; both are the rework's to define (RW05/RW06), and a kept performance would need its own bounded schema, never a possession that wears out or waits.
 
-## Level 7, One change (definition, 2026-11-26)
+## Level 7, One change (definition and built, 2026-11-26)
 
 Level 3's sign with level 5's four pads. The listener's sign shows a **way to play** for each half of the tune: a pace picture and a drum picture together (turtle or rabbit, small or big drum, with the words "slow or fast" and "soft or loud"). The second half's way always differs from the first in **exactly one property**, so a round holds one change, and the seed picks which property changes and in which direction. She sets both dials for each half (the four pads in a row from level 5, no hearing mark), then taps Check.
 

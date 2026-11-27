@@ -23,6 +23,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap a friend to ask them to play; tap again to ask them to stop. The change comes on the next beat. Hear at least two different groups of friends play the whole tune, then tap the green check to finish with the group you are playing.',
     },
     {
+      from: 7,
+      to: 7,
+      text: "Look at the listener's sign: it shows a turtle or rabbit and a small or big drum. Tap the pace and the drum to match it, hear that half, then tap the green check; once for each half. The second half changes one thing.",
+    },
+    {
       from: 3,
       to: 3,
       text: "Look at the listener's sign, tap the pad it shows to hear that half, then tap the green check; once for each half of the tune.",
@@ -46,6 +51,7 @@ export const HOW_TO: GameHowTo = {
       text: 'The band plays your tune once more with the friends you chose, and takes a bow.',
     },
     { from: 3, to: 3, text: 'Both halves match the signs and the band takes a bow.' },
+    { from: 7, to: 7, text: 'Both halves match the signs, the band plays them and takes a bow.' },
   ],
   note: [
     {
