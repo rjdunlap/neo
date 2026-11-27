@@ -1,0 +1,7 @@
+# 2026-11-27 — Wave Ribbon levels 1-2 (PR #2284)
+
+**Changed:** the new game `wave-ribbon` (levels 1–2, Tinker Lab, school, upright-ready, ghost finger): closed-form pulse rules in `logic.ts`, `layout.ts`, `art.ts`, `index.ts`, voice and how-to, the `waveribbon` browser suite, the game page, and a READY line for level 3 (E7b).
+
+**Ran:** `npm run typecheck`, `format:check`, `lint`; `npx vitest run src/games/wave-ribbon src/content` (rules: finite deterministic samples, flat before and after, the bead peaks at frame 6 and never drifts sideways, the crest reaches the flag at frame 10 for every height, three distinct cards, Done and Check gates, help identities counted once, a capable player finishes both levels with no misses; layout: targets 100 units and clear of Home and the guide at the upright phone views and sideways); `BROWSER_SUITE=waveribbon` (level 1: an early Done nudges, Send runs to the flag, Done 0/0; level 2 in portrait: an early Check is free, a wrong picture is one miss and counts once for the same choice, Help is one hint, the right picture then Done 1/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=wave-ribbon` (levels 1 and 2 finish with no wrong move); landscape and portrait screenshots read by eye. `node scripts/check-links.mjs`, `git diff --check`.
+
+**Not run:** the full `npm test` (PR CI), `npm run build`, offline, and any real phone, finger or child check ([parked](../DEVICE-CHECKS.md)). The spoken lines use device speech; no clips were rendered. Level 3 and the grown-up band are not built.
