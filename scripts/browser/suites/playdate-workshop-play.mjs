@@ -157,8 +157,34 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await tap('neo.scene.game.finishButton');
     await finished('playdate-workshop');
     assert.deepEqual(await score(), [0, 2], 'level 5 saves no misses and two hints');
+    // Level 6, ask first: Make it before Ask only nudges; Ask (free) speaks the request; the pet's three decisions are three hints.
+    await launch('playdate-workshop', 6);
+    await settle();
+    await tap('neo.scene.game.cardNodes.get("side")');
+    await tap('neo.scene.game.makeButton');
+    s = await state();
+    assert.equal(s.phase, 'plan', 'Make it before Ask stays on the cards');
+    assert.equal(s.hints, 0, 'the nudge is free');
+    assert.equal(await page.evaluate(() => neo.scene.game.asked), false);
+    await tap('neo.scene.game.askButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.asked), true, 'Ask reveals the request');
+    assert.equal((await state()).hints, 0, 'tapping Ask is free');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('playdate-workshop-6-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(500);
+    await tap('neo.scene.game.petButton');
+    await tap('neo.scene.game.petButton');
+    await page.waitForFunction(() => neo.scene.game.done, null, { timeout: 30000 });
+    await settle();
+    s = await state();
+    assert.equal(s.hints, 2, 'a round already asked: plan and make are one hint each');
+    await tap('neo.scene.game.finishButton');
+    await finished('playdate-workshop');
+    assert.deepEqual(await score(), [0, 2], 'level 6 saves no misses and two hints');
     log(
-      'Playdate Workshop 1, 3, 4 and 5: a refused tap, the lightbulb, two unmet previews, Help me make it, portrait, passed',
+      'Playdate Workshop 1, 3, 4, 5 and 6: a refused tap, the lightbulb, two unmet previews, Help me make it, portrait, passed',
     );
   }
   return { playdateWorkshopPlay };

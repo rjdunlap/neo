@@ -10,6 +10,13 @@ export const VOICE = {
   'playdate.instruct.3': ['Listen to both friends. Pick a plan that works for both, then make it.'],
   'playdate.instruct.4': ['Oh, {name}, the paint spilled. Pick a way to fix the banner, then fix it.'],
   'playdate.instruct.5': ['The friends will make a banner, {name}. Listen: someone may have a new idea.'],
+  'playdate.instruct.6': [
+    "{name}, one friend hasn't said yet what they would like. Tap Ask to find out, then pick a plan.",
+  ],
+  'playdate.request.help': ["I'd like to help with the banner too, {name}."],
+  'playdate.ask.nudge': ['{name}, tap Ask to hear what your friend wants.'],
+  'playdate.hint.ask': ['Tap Ask, {name}.'],
+  'playdate.pet.ask': ['{pet} asks.'],
   'playdate.request.spill': ["The paint spilled, {name}! I'd like four stars."],
   'playdate.request.keep': ["I'd like to keep the stars we made, {name}."],
   'playdate.request.new': ['{name}, I have a new idea. Could the last two be flowers?'],
