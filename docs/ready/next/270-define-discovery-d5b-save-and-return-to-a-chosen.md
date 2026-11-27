@@ -1,0 +1,1 @@
+**Define Discovery D5b, save and return to a chosen mix** (docs only): per-profile saving of a bounded D5a lineup and incomplete itinerary, versioned states, repair and backup under [D5b](../../ROADMAP.md#discovery-actions).
