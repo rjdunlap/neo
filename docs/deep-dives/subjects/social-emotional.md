@@ -170,7 +170,7 @@ The definition must freeze: all legal placements and whether the optional plant 
 
 ### Dream Cards: turn the existing seed into a definition
 
-**Defined 2026-11-27** as level 1 of a new school-only game `dream-cards`: [definition](../../definitions/dream-cards.md) (level 1 built 2026-11-26, [PR #2259](https://github.com/rjdunlap/neo/pull/2259)).
+**Defined 2026-11-27** as level 1 of a new school-only game `dream-cards`: [definition](../../definitions/dream-cards.md) (level 1 built 2026-11-26, [PR #2259](https://github.com/rjdunlap/neo/pull/2259)); level 2, *Two clues for one picture*, defined 2026-11-27 in [its own definition](../../definitions/dream-cards-two-clues.md).
 
 **School–parent first; pre-K considered separately.** Three original code-drawn dream pictures, three pictured/spoken clue tokens and one reveal are enough for a first round. One person chooses a picture and a clue; the other points to the picture it suggests. Reveal the chosen picture and compare associations, then Finish or swap roles. Any clue-picture combination is allowed; interpretation is not counted as a wrong answer. No score or timer, no speech recognition, typing or private personal response required. A pictured privacy cover needs to keep the giver's choice hidden on one device until the listener's turn; define it explicitly, and allow skipping/revealing without guessing.
 
