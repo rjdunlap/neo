@@ -19,15 +19,30 @@ import {
   pictureCard,
   pictureSticker,
   ring,
+  partButton,
   seatIcon,
+  stampCard,
   swapIcon,
   tickIcon,
 } from './art';
-import { dreamLayout } from './layout';
+import { buildLayout, dreamLayout } from './layout';
 import {
   CLUES,
   LEVELS,
+  LIGHT,
   PICTURES,
+  THING,
+  WHERE,
+  STAMP_CARD,
+  dealMade,
+  hintAction3,
+  petClue3,
+  petPoint3,
+  petStamp,
+  revealKind3,
+  stampFits,
+  stampName,
+  type Stamp,
   dealRound,
   describeLevel,
   fits,
@@ -80,6 +95,11 @@ const REVEAL2 = {
     'new-view': 'dream-cards.reveal2-new-pair',
   },
 } as const;
+const REVEAL3 = {
+  same: 'dream-cards.reveal3-same',
+  'both-fit': 'dream-cards.reveal3-both',
+  'new-view': 'dream-cards.reveal3-new',
+} as const;
 const CARD = 200;
 const TOKEN = 130;
 const GIVER_COLOR = swatch.orange.line;
@@ -94,6 +114,10 @@ interface CardNode {
   listenerRing: Graphics;
   chips: Container;
 }
+interface PartNode {
+  root: Container;
+  sel: Graphics;
+}
 interface TokenNode {
   root: Container;
   clue: ClueId;
@@ -103,7 +127,7 @@ interface TokenNode {
 
 class Round implements Game {
   private readonly root = new Container();
-  private readonly deal: Deal;
+  private deal: Deal;
   private readonly t = newTally();
   private readonly cards: CardNode[] = [];
   private readonly tokens: TokenNode[] = [];
@@ -117,6 +141,14 @@ class Round implements Game {
   private readonly keepBtn: RoundButton;
   /** Level 2: a second clue and a second look. */
   private readonly twoClues: boolean;
+  /** Level 3: she builds a stamp first (docs/definitions/dream-cards-own-picture.md). */
+  private readonly level3: boolean;
+  private stamp: Stamp | null = null;
+  private readonly parts: (number | null)[] = [null, null, null];
+  private readonly buildRoot = new Container();
+  private readonly partNodes: PartNode[][] = [];
+  private preview: Container | null = null;
+  private readonly doneBtn: RoundButton;
   private readonly seed: number;
   private two = false;
   private turn: 1 | 2 = 1;
@@ -131,19 +163,31 @@ class Round implements Game {
   private pet2: ClueId | null = null;
   private clock = 0;
   private layout: ReturnType<typeof dreamLayout>;
+  private view: View;
 
   constructor(private readonly ctx: GameContext) {
-    this.twoClues = ctx.level >= 2;
-    this.deal = dealRound(ctx.rng);
+    this.level3 = ctx.level >= 3;
+    this.twoClues = ctx.level === 2;
+    this.deal = this.level3 ? { pictures: [0, 1, 2], clues: [0, 1, 2] } : dealRound(ctx.rng);
     this.seed = ctx.rng.int(0, 999);
-    this.state = { phase: 'choose', deal: this.deal, giverPick: null, clue: null, clue2: null, first: null };
+    this.state = {
+      phase: this.level3 ? 'build' : 'choose',
+      deal: this.deal,
+      giverPick: null,
+      clue: null,
+      clue2: null,
+      first: null,
+    };
     this.layout = dreamLayout(ctx.view);
+    this.view = ctx.view;
     const bg = new Graphics();
     bg.eventMode = 'none';
     this.root.addChild(bg);
     this.root.name = 'dream-bg';
-    this.deal.pictures.forEach((picture, i) => this.addCard(picture, i));
-    this.deal.clues.forEach((clue, i) => this.addToken(clue, i));
+    if (!this.level3) {
+      this.deal.pictures.forEach((picture, i) => this.addCard(picture, i));
+      this.deal.clues.forEach((clue, i) => this.addToken(clue, i));
+    }
     this.cover.visible = false;
     this.seatButtons = [false, true].map((two) => {
       const b = new RoundButton(seatIcon(two), two ? swatch.orange : swatch.blue, 80, () =>
@@ -158,7 +202,18 @@ class Round implements Game {
     this.finishBtn = new RoundButton(tickIcon(), swatch.green, 56, () => void this.finish()).named('Finish');
     this.swapBtn = new RoundButton(swapIcon(), swatch.purple, 56, () => void this.swap()).named('Swap');
     this.keepBtn = new RoundButton(tickIcon(), swatch.blue, 56, () => this.keepIt()).named('Keep it');
-    for (const b of [this.tickBtn, this.eyeBtn, this.passBtn, this.finishBtn, this.swapBtn, this.keepBtn])
+    this.doneBtn = new RoundButton(tickIcon(), swatch.green, 56, () => this.doneBuild()).named('Done');
+    this.buildRoot.visible = false;
+    this.buildPartRows();
+    for (const b of [
+      this.doneBtn,
+      this.tickBtn,
+      this.eyeBtn,
+      this.passBtn,
+      this.finishBtn,
+      this.swapBtn,
+      this.keepBtn,
+    ])
       b.visible = false;
     this.root.addChild(...this.cards.map((c) => c.root), ...this.tokens.map((k) => k.root), this.cover);
     this.root.addChild(
@@ -169,6 +224,8 @@ class Round implements Game {
       this.finishBtn,
       this.swapBtn,
       this.keepBtn,
+      this.buildRoot,
+      this.doneBtn,
     );
     for (const c of this.cards) c.root.visible = false;
     for (const k of this.tokens) k.root.visible = false;
@@ -179,7 +236,9 @@ class Round implements Game {
   private addCard(picture: PictureId, i: number) {
     const root = new Container();
     root.name = `card-${i}`;
-    root.addChild(pictureCard(picture, CARD));
+    root.addChild(
+      picture === STAMP_CARD && this.stamp ? stampCard(this.stamp, CARD) : pictureCard(picture, CARD),
+    );
     const sel = ring(CARD, swatch.purple.line);
     const glow = ring(CARD, swatch.yellow.fill, 8);
     const giverRing = ring(CARD, GIVER_COLOR, 10);
@@ -215,9 +274,11 @@ class Round implements Game {
   // ---- the roles -------------------------------------------------------------------------------------------------
 
   private giverRole(): Role {
+    if (this.level3) return this.turn === 1 ? 'me' : this.two ? 'friend' : 'pet';
     return this.turn === 1 ? (this.two ? 'friend' : 'pet') : 'me';
   }
   private listenerRole(): Role {
+    if (this.level3) return this.turn === 1 ? (this.two ? 'friend' : 'pet') : 'me';
     return this.turn === 1 ? 'me' : this.two ? 'friend' : 'pet';
   }
   private get humanGiver() {
@@ -225,6 +286,95 @@ class Round implements Game {
   }
   private get humanListener() {
     return this.listenerRole() !== 'pet';
+  }
+
+  private nameOf(card: PictureId) {
+    return card === STAMP_CARD && this.stamp ? stampName(this.stamp) : PICTURES[card];
+  }
+
+  /** Level 3: the three cards and clue tokens are made fresh each turn, once the stamp and its deal are known. */
+  private makeBoard() {
+    for (const n of [...this.cards, ...this.tokens]) n.root.destroy({ children: true });
+    this.cards.length = 0;
+    this.tokens.length = 0;
+    this.deal.pictures.forEach((picture, i) => this.addCard(picture, i));
+    this.deal.clues.forEach((clue, i) => this.addToken(clue, i));
+    for (const n of [...this.cards, ...this.tokens]) this.root.addChildAt(n.root, 1);
+  }
+
+  // ---- level 3: the build screen ----------------------------------------------------------------------------------
+
+  private buildPartRows() {
+    for (let slot = 0; slot < 3; slot++) {
+      const row: PartNode[] = [];
+      for (let part = 0; part < 3; part++) {
+        const root = new Container();
+        root.name = `part-${slot}-${part}`;
+        root.addChild(partButton(slot, part, 124));
+        const sel = new Graphics()
+          .roundRect(-70, -70, 140, 140, 30)
+          .stroke({ width: 9, color: swatch.purple.line });
+        sel.visible = false;
+        sel.eventMode = 'none';
+        root.addChild(sel);
+        root.hitArea = new Rectangle(-62, -62, 124, 124);
+        onTap(root, () => this.tapPart(slot, part), { cooldown: 200 });
+        this.buildRoot.addChild(root);
+        row.push({ root, sel });
+      }
+      this.partNodes.push(row);
+    }
+  }
+
+  private startBuild() {
+    this.parts.fill(null);
+    this.stamp = null;
+    for (const row of this.partNodes) for (const n of row) n.sel.visible = false;
+    this.drawPreview();
+    this.buildRoot.visible = true;
+    this.doneBtn.visible = false;
+    for (const c of this.cards) c.root.visible = false;
+    for (const k of this.tokens) k.root.visible = false;
+    this.state = { phase: 'build', deal: this.deal, giverPick: null, clue: null };
+    this.place();
+    this.busy = false;
+    void this.ctx.instruct('dream-cards.ask-build', { name: this.ctx.childName });
+  }
+
+  private drawPreview() {
+    this.preview?.destroy({ children: true });
+    const l = buildLayout(this.view);
+    this.preview = stampCard([0, 0, 0], l.preview, this.parts);
+    this.preview.position.set(l.cx, l.previewY);
+    this.preview.eventMode = 'none';
+    this.buildRoot.addChild(this.preview);
+  }
+
+  private tapPart(slot: number, part: number) {
+    if (this.busy || this.done || this.state.phase !== 'build') return;
+    this.parts[slot] = part;
+    this.partNodes[slot].forEach((n, j) => (n.sel.visible = j === part));
+    this.drawPreview();
+    this.doneBtn.visible = this.parts.every((p) => p !== null);
+    sfx.bell(2 + slot * 2 + part, 0.25);
+    void this.ctx.say('dream-cards.part', { a: [WHERE, THING, LIGHT][slot][part] });
+  }
+
+  /** The stamp is made: deal the three cards and the clue tokens around it. */
+  private async doneBuild() {
+    if (this.busy || this.state.phase !== 'build' || this.parts.some((p) => p === null)) return;
+    this.busy = true;
+    this.stamp = [this.parts[0] as number, this.parts[1] as number, this.parts[2] as number];
+    this.deal = dealMade(this.stamp, this.seed + this.turn * 3);
+    this.buildRoot.visible = false;
+    this.doneBtn.visible = false;
+    this.makeBoard();
+    this.state = { phase: 'choose', deal: this.deal, giverPick: STAMP_CARD, clue: null, stamp: this.stamp };
+    this.place();
+    this.cards[this.deal.pictures.indexOf(STAMP_CARD)].sel.visible = true;
+    sfx.bell(6, 0.3);
+    this.busy = false;
+    await this.ctx.instruct('dream-cards.build-done', { name: this.ctx.childName });
   }
 
   // ---- the round -------------------------------------------------------------------------------------------------
@@ -256,14 +406,45 @@ class Round implements Game {
     }
     for (const b of [this.tickBtn, this.eyeBtn, this.passBtn, this.finishBtn, this.swapBtn, this.keepBtn])
       b.visible = false;
+    this.doneBtn.visible = this.buildRoot.visible = false;
     this.selCard = this.selToken = null;
     this.covered = false;
     this.cover.visible = false;
     this.place();
   }
 
+  /** Level 3: she (or a friend) builds a stamp, or the pet builds one from a seeded recipe and gives a clue about it. */
+  private async beginTurn3() {
+    if (this.humanGiver) {
+      this.startBuild();
+      return;
+    }
+    this.busy = true;
+    this.stamp = petStamp(this.seed + this.turn);
+    this.deal = dealMade(this.stamp, this.seed + this.turn * 3);
+    this.makeBoard();
+    const clue = petClue3(this.stamp, this.deal, this.seed + this.turn);
+    this.state = { phase: 'cover', deal: this.deal, giverPick: STAMP_CARD, clue, stamp: this.stamp };
+    this.place();
+    await this.ctx.say('dream-cards.pet-builds', { name: this.ctx.childName });
+    if (!this.ctx.alive) return;
+    await this.ctx.say('dream-cards.pet-clue', { clue: CLUES[clue], name: this.ctx.childName });
+    if (!this.ctx.alive) return;
+    await this.fall();
+    if (!this.ctx.alive) return;
+    await this.ctx.tw.wait(1.2);
+    if (this.ctx.alive) await this.rise();
+    if (this.ctx.alive) await this.toPoint();
+  }
+
   private async beginTurn() {
     this.resetBoard();
+    if (this.level3) {
+      this.state = { phase: 'build', deal: this.deal, giverPick: null, clue: null };
+      this.pet2 = null;
+      await this.beginTurn3();
+      return;
+    }
     this.state = { phase: 'choose', deal: this.deal, giverPick: null, clue: null, clue2: null, first: null };
     this.pet2 = null;
     if (this.humanGiver) {
@@ -290,12 +471,18 @@ class Round implements Game {
 
   /** The giver confirms a picture and a clue; the blanket falls over the cards. */
   private async confirmGive() {
-    if (this.selCard === null || this.selToken === null || this.busy) return;
+    if ((this.selCard === null && !this.level3) || this.selToken === null || this.busy) return;
     this.busy = true;
-    const picture = this.cards[this.selCard].picture;
+    const picture = this.selCard === null ? STAMP_CARD : this.cards[this.selCard].picture;
     const clue = this.tokens[this.selToken].clue;
-    this.state = { phase: 'cover', deal: this.deal, giverPick: picture, clue };
-    this.cards[this.selCard].sel.visible = false;
+    this.state = {
+      phase: 'cover',
+      deal: this.deal,
+      giverPick: picture,
+      clue,
+      stamp: this.stamp ?? undefined,
+    };
+    for (const c of this.cards) c.sel.visible = false;
     this.tokens[this.selToken].sel.visible = false;
     for (const k of this.tokens) k.glow.visible = false;
     for (const c of this.cards) c.glow.visible = false;
@@ -348,10 +535,13 @@ class Round implements Game {
     }
     // The pet points to one of the dealt pictures the clue fits.
     this.busy = true;
-    const pick = petPoint(this.deal, this.state.clue as ClueId, this.seed + this.turn * 7);
+    const pick =
+      this.level3 && this.stamp
+        ? petPoint3(this.stamp, this.deal, this.state.clue as ClueId, this.seed + this.turn * 7)
+        : petPoint(this.deal, this.state.clue as ClueId, this.seed + this.turn * 7);
     const i = this.deal.pictures.indexOf(pick);
     this.cards[i].listenerRing.visible = true;
-    await this.ctx.say('dream-cards.pet-points', { clue, b: PICTURES[pick], name: this.ctx.childName });
+    await this.ctx.say('dream-cards.pet-points', { clue, b: this.nameOf(pick), name: this.ctx.childName });
     if (!this.ctx.alive) return;
     if (this.twoClues) await this.toSecond(pick);
     else await this.reveal(pick);
@@ -459,7 +649,7 @@ class Round implements Game {
     const giver = avatar(this.giverRole() === 'pet' ? 'pet' : 'person', GIVER_COLOR);
     giver.position.set(-30, 128);
     card.chips.addChild(giver);
-    const vars = { a: PICTURES[giverPick], clue: CLUES[clue], name: this.ctx.childName } as Record<
+    const vars = { a: this.nameOf(giverPick), clue: CLUES[clue], name: this.ctx.childName } as Record<
       string,
       string
     >;
@@ -478,12 +668,20 @@ class Round implements Game {
       const listener = avatar(this.listenerRole() === 'pet' ? 'pet' : 'person', LISTENER_COLOR);
       listener.position.set(30, 128);
       lc.chips.addChild(listener);
-      vars.b = PICTURES[listenerPick];
+      vars.b = this.nameOf(listenerPick);
       const voice = this.two ? 'pair' : this.giverRole() === 'pet' ? 'pet' : 'me';
       if (clue2 !== null) {
         vars.clue2 = CLUES[clue2];
         await this.ctx.say(REVEAL2[voice][finalKind(giverPick, clue, clue2, listenerPick)], vars);
-      } else await this.ctx.say(REVEAL[voice][revealKind(giverPick, clue, listenerPick)], vars);
+      } else if (this.level3 && this.stamp && voice === 'me') {
+        await this.ctx.say(REVEAL3[revealKind3(this.stamp, giverPick, clue, listenerPick)], vars);
+      } else {
+        const kind =
+          this.level3 && this.stamp
+            ? revealKind3(this.stamp, giverPick, clue, listenerPick)
+            : revealKind(giverPick, clue, listenerPick);
+        await this.ctx.say(REVEAL[voice][kind], vars);
+      }
     } else {
       await this.ctx.say('dream-cards.show-me', vars);
     }
@@ -515,15 +713,19 @@ class Round implements Game {
   private tapCard(i: number) {
     if (this.busy || this.covered || this.done) return;
     const phase = this.state.phase;
-    const mayGive = phase === 'choose' && this.humanGiver;
+    const mayGive = phase === 'choose' && this.humanGiver && !this.level3;
     const mayPoint = (phase === 'point' || phase === 'again') && this.humanListener;
+    if (this.level3 && phase === 'choose') {
+      void this.ctx.say('dream-cards.word', { a: this.nameOf(this.cards[i].picture) });
+      return;
+    }
     if (!mayGive && !mayPoint) return;
     this.cards.forEach((c, j) => ((c.sel.visible = j === i), (c.glow.visible = false)));
     this.selCard = i;
     if (mayPoint)
       this.tickBtn.alpha = phase === 'again' && this.cards[i].picture === this.state.first ? 0.4 : 1;
     sfx.bell(2 + i, 0.25);
-    void this.ctx.say('dream-cards.word', { a: PICTURES[this.cards[i].picture] });
+    void this.ctx.say('dream-cards.word', { a: this.nameOf(this.cards[i].picture) });
   }
 
   private tapToken(i: number) {
@@ -549,7 +751,7 @@ class Round implements Game {
       return;
     }
     if (this.state.phase !== 'choose' || !this.humanGiver) return;
-    if (this.selToken === i && this.selCard !== null) {
+    if (this.selToken === i && (this.selCard !== null || this.level3)) {
       void this.confirmGive();
       return;
     }
@@ -565,6 +767,24 @@ class Round implements Game {
   askForHint() {
     if (this.busy || this.done || this.covered) return;
     const name = this.ctx.childName;
+    if (this.level3) {
+      const h = hintAction3(this.state);
+      if (!h) return;
+      hinted(this.t);
+      if (h.kind === 'slots') void this.ctx.say('dream-cards.hint-build', { name });
+      else if (h.kind === 'clue' && this.humanGiver) {
+        this.tokens.forEach((k) => (k.glow.visible = k.clue === h.clue));
+        void this.ctx.say('dream-cards.hint-clue', { clue: CLUES[h.clue], name });
+      } else if (h.kind === 'picture' && this.humanListener) {
+        this.cards.forEach((c) => (c.glow.visible = c.picture === h.picture));
+        void this.ctx.say('dream-cards.hint-point', {
+          a: this.nameOf(h.picture),
+          clue: CLUES[this.state.clue as ClueId],
+          name,
+        });
+      }
+      return;
+    }
     if (this.state.phase === 'choose' && this.humanGiver) {
       const pick = this.selCard === null ? null : this.cards[this.selCard].picture;
       const h = hintAction({ ...this.state, giverPick: pick });
@@ -641,10 +861,20 @@ class Round implements Game {
       b.position.set(l.buttons[0].x, l.buttons[0].y);
     for (const b of [this.eyeBtn, this.swapBtn]) b.position.set(l.buttons[1].x, l.buttons[1].y);
     this.keepBtn.position.set(l.buttons[2].x, l.buttons[2].y);
+    this.doneBtn.position.set(l.buttons[0].x, l.buttons[0].y);
+    const b = buildLayout(this.view);
+    this.partNodes.forEach((row, r) =>
+      row.forEach((n, c) => {
+        n.root.position.set(b.rows[r][c].x, b.rows[r][c].y);
+        n.root.scale.set(b.button / 124);
+      }),
+    );
+    if (this.preview) this.preview.position.set(b.cx, b.previewY);
   }
 
   resize(v: View) {
     this.layout = dreamLayout(v);
+    this.view = v;
     const bg = this.root.getChildAt(0) as Graphics;
     bg.clear().rect(0, 0, v.w, v.h).fill(swatch.purple.light);
     this.place();
@@ -655,6 +885,7 @@ class Round implements Game {
     if (this.busy || this.done || !this.ctx.alive) return null;
     if (!this.seated) return { tap: { on: this.seatButtons[0] } };
     const phase = this.state.phase;
+    if (this.level3) return this.autotouch3(phase);
     if (phase === 'choose' && this.humanGiver) {
       if (this.selCard === null) return { tap: { on: this.cards[0].root } };
       const best = this.tokens.findIndex((k) => fits(this.cards[this.selCard as number].picture, k.clue));
@@ -680,6 +911,32 @@ class Round implements Game {
       return k ? { tap: { on: k.root } } : null;
     }
     if (phase === 'again' && this.humanListener) return { tap: { on: this.keepBtn } };
+    if (phase === 'cover' && this.passBtn.visible) return { tap: { on: this.passBtn } };
+    if (phase === 'reveal') return { tap: { on: this.finishBtn } };
+    return null;
+  }
+
+  /** Level 3: tap the first part in each row, Done, a clue twice, then point or finish. */
+  private autotouch3(phase: State['phase']): TouchIntent | null {
+    if (phase === 'build' && this.humanGiver) {
+      const slot = this.parts.findIndex((p) => p === null);
+      if (slot >= 0) return { tap: { on: this.partNodes[slot][0].root } };
+      return { tap: { on: this.doneBtn } };
+    }
+    if (phase === 'choose' && this.humanGiver && this.stamp) {
+      const stamp = this.stamp;
+      const k = this.tokens.find((t) => stampFits(stamp, t.clue)) ?? this.tokens[0];
+      return { tap: { on: k.root } };
+    }
+    if (phase === 'point' && this.humanListener) {
+      if (this.selCard === null) {
+        const h = hintAction3(this.state);
+        const target =
+          h?.kind === 'picture' ? this.cards.find((c) => c.picture === h.picture) : this.cards[0];
+        return { tap: { on: (target ?? this.cards[0]).root } };
+      }
+      return { tap: { on: this.tickBtn } };
+    }
     if (phase === 'cover' && this.passBtn.visible) return { tap: { on: this.passBtn } };
     if (phase === 'reveal') return { tap: { on: this.finishBtn } };
     return null;

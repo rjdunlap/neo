@@ -72,6 +72,60 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
     );
   }
 
+  /**
+   * Level 3: she builds a stamp (Help names the slots first), Done deals three cards and three clues, she gives a clue the
+   * stamp may not invite, the pet points and the stamp turns over; Swap: the pet builds, gives a clue, she points; finish.
+   */
+  async function levelThree() {
+    const waitPhase = (name) =>
+      page.waitForFunction((n) => neo.scene.game.state.phase === n && !neo.scene.game.busy, name, {
+        timeout: 20000,
+      });
+    const tap = (expr) =>
+      page.evaluate((e) => kit.tapOn(new Function('g', `return ${e}`)(neo.scene.game)), expr);
+    await launch('dream-cards', 3);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(800);
+    await tap('g.seatButtons[0]');
+    await waitPhase('build');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    for (const [slot, part] of [
+      [0, 2],
+      [1, 2],
+      [2, 1],
+    ])
+      await tap(`g.partNodes[${slot}][${part}].root`);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.doneBtn.visible),
+      true,
+      'Done shows when all three are chosen',
+    );
+    await screenshot('dream-cards-build-portrait');
+    await tap('g.doneBtn');
+    await waitPhase('choose');
+    // Any clue, even one the stamp does not invite.
+    await tap('g.tokens[0].root');
+    await page.waitForTimeout(300);
+    await tap('g.tokens[0].root');
+    await waitPhase('reveal');
+    await tap('g.swapBtn');
+    await waitPhase('point');
+    await tap('g.cards[0].root');
+    await tap('g.tickBtn');
+    await waitPhase('reveal');
+    await tap('g.finishBtn');
+    await finished('dream-cards');
+    const score = await page.evaluate(() => {
+      const r = kit.store.stats('dream-cards').history.at(-1);
+      return [r.misses, r.hints];
+    });
+    assert.deepEqual(score, [0, 1], 'level 3: no misses and one hint are saved');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Dream Cards 3: build a stamp, Done, give a clue, pet points, Swap, point to the pet stamp, finish passed',
+    );
+  }
+
   async function dreamCardsPlay() {
     const waitPhase = (name) =>
       page.waitForFunction((n) => neo.scene.game.state.phase === n && !neo.scene.game.busy, name, {
@@ -116,6 +170,7 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
     assert.deepEqual(score, [0, 1], 'no misses and one hint are saved');
     await page.setViewportSize({ width: 1024, height: 768 });
     await levelTwo();
+    await levelThree();
     log(
       'Dream Cards 1: portrait, pet gives, Help, point, reveal, Swap, give a clue, pet points, finish passed',
     );

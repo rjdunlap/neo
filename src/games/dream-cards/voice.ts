@@ -51,6 +51,16 @@ export const VOICE = {
   'dream-cards.reveal2-new-pair': [
     'One of you saw the {a}, one saw the {b}. That is a new way to see {clue} and {clue2}.',
   ],
+  // Level 3: she builds a dream picture, then gives its clue.
+  'dream-cards.ask-build': ['{name}, pick a place, a thing and a light for your dream.'],
+  'dream-cards.part': ['{a}'],
+  'dream-cards.build-done': ['What a dream, {name}! Pick a clue for it.'],
+  'dream-cards.hint-build': ['Pick one of each, {name}: a place, a thing and a light.'],
+  'dream-cards.hint-clue': ['Your dream can be {clue}, {name}.'],
+  'dream-cards.pet-builds': ['I made a dream, {name}.'],
+  'dream-cards.reveal3-same': ['We both saw your dream, {name}!'],
+  'dream-cards.reveal3-both': ['I saw the {b}. You made the {a}. Both can be {clue}.'],
+  'dream-cards.reveal3-new': ['I saw the {b}. You made the {a}. That is a new way to see {clue}.'],
   'dream-cards.show-me': ['Here it is, {name}. It was the {a}.'],
   'dream-cards.hint-point': ['The {a} can be {clue}. So can another one.'],
   'dream-cards.hint-give': ['The {a} can be {clue}, {name}.'],
