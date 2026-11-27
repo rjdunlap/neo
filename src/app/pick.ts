@@ -11,6 +11,7 @@ import {
   pickShown,
   sameScope,
   scopeKey,
+  shuffleLineup,
   scopePool,
   scopesFor,
   type PickScope,
@@ -28,7 +29,7 @@ import { RoundButton } from '../ui/buttons';
 import { PickSheet, type PickChip } from '../ui/pick-sheet';
 import type { App } from './App';
 import { launchDiscovery, pickMemory } from './discovery';
-import { titleOf } from './mix';
+import { titleOf, type MixHost } from './mix';
 
 /** The Pick spot's picture: a fan of three cards, no text needed. */
 export function pickIcon(): Container {
@@ -82,6 +83,8 @@ export class PickHost {
     private readonly view: () => View,
     /** Her scene's own leave, so the home spot's music, scroll and cheer behave as they do for a game. */
     private readonly leave: (go: () => void) => void,
+    /** The home spot's mix (D7b): present only where Little surprises is, so Shuffle appears only there. */
+    private readonly mix: MixHost | null = null,
   ) {
     this.button = new RoundButton(pickIcon(), swatch.white, 50, () => this.open());
     this.button.visible = this.sources().length > 0;
@@ -101,6 +104,22 @@ export class PickHost {
 
   get covering(): boolean {
     return !!this.sheet;
+  }
+
+  /** The held scope's games the mix table may hold; Shuffle shows only when there is at least one and no mix is live. */
+  private shufflePool(): string[] {
+    return this.mix?.mods && !this.mix.live
+      ? this.mix.shufflePool(scopePool(this.held(), this.source()))
+      : [];
+  }
+
+  /** D7b: fills the held mix lineup from the scope and opens the table; nothing is saved and nothing starts. */
+  shuffle() {
+    const ids = shuffleLineup(this.shufflePool(), new Rng(), pickMemory.last(store.data));
+    if (!ids.length || !this.mix || this.launching) return;
+    this.close();
+    voice.stop();
+    if (this.mix.shuffleInto(ids)) void voice.say('pick.shuffle');
   }
 
   private chips(): PickChip[] {
@@ -130,6 +149,7 @@ export class PickHost {
     this.sheet = new PickSheet({
       choose: (key) => this.choose(key),
       onePick: () => this.onePick(),
+      shuffle: () => this.shuffle(),
       another: () => this.another(),
       again: () => this.again(),
       play: () => this.play(),
@@ -150,7 +170,13 @@ export class PickHost {
 
   private chooser() {
     this.pick = null;
-    this.sheet?.showChooser(this.chips(), scopeKey(this.held()), this.page, this.view());
+    this.sheet?.showChooser(
+      this.chips(),
+      scopeKey(this.held()),
+      this.page,
+      this.view(),
+      this.shufflePool().length > 0,
+    );
   }
 
   private choose(key: string) {
@@ -218,7 +244,14 @@ export class PickHost {
   resize(v: View) {
     if (!this.sheet) return;
     if (this.pick) this.show(false, false);
-    else this.sheet.showChooser(this.chips(), scopeKey(this.held()), this.page, v);
+    else
+      this.sheet.showChooser(
+        this.chips(),
+        scopeKey(this.held()),
+        this.page,
+        v,
+        this.shufflePool().length > 0,
+      );
   }
 
   update(dt: number) {

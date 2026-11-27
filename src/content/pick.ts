@@ -98,6 +98,17 @@ export function shuffledOrder(pool: readonly string[], rng: Rng, avoid?: string)
   return order;
 }
 
+/** How many stops a Shuffle fills: the same length as Little surprises (D7b). */
+export const SHUFFLE_STOPS = 3;
+
+/**
+ * The lineup a Shuffle holds (D7b): the first `SHUFFLE_STOPS` of one uniform order of the pool, so no game repeats and a
+ * pool of one or two gives a one- or two-stop lineup. With two or more games it never opens on `avoid`.
+ */
+export function shuffleLineup(pool: readonly string[], rng: Rng, avoid?: string): string[] {
+  return shuffledOrder(pool, rng, avoid).slice(0, SHUFFLE_STOPS);
+}
+
 /** One held pick: the scope, its shuffled order and where she is in it. `at === order.length` is the end of the order. */
 export interface PickState {
   scope: PickScope;

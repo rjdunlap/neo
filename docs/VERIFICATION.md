@@ -65,7 +65,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `crossword` | 2026-11-09 · [Crossword keeps the clue direction](archive/VERIFICATION-2026-11-09.md#2026-11-09--crossword-keeps-the-clue-direction-pr-1455) | — |
 | `cuestudio` | 2026-11-16 · [Cue Studio level 6, Pass the cue (P4c, PR #1726)](verification/2026-11-16-cue-studio-level-6-pass-the-cue-p4c-pr-1726.md) | `CUE_LEVELS=5,6` |
 | `cutalong` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, second session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-second-session.md) | `CUT_LEVELS=11` |
-| `discovery` | 2026-11-27 · [Pick for me D7a](verification/2026-11-27-pick-for-me-d7a-one-pick-with-scopes.md) | `DISCOVERY_ONLY=pick` passed; `mix` and `daily` passed 2026-11-25; `my-mix` passed 2026-10-21 |
+| `discovery` | 2026-11-27 · [Pick for me D7b](verification/2026-11-27-pick-for-me-d7b-shuffle-into-the-mix.md) | `DISCOVERY_ONLY=pick` passed (with Shuffle); `mix` and `daily` passed 2026-11-25; `my-mix` passed 2026-10-21 |
 | `dominopond` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | — |
 | `dominorun` | 2026-11-25 · [U7d fix batch 2, first part: domino-run and fruit-slice never hold the next board on a praise line](verification/2026-11-25-u7d-fix-batch-2-first-part-domino-run-and-fruit-slice-never.md) | Level 11, portrait |
 | `downwego` | 2026-11-20 · [Down We Go levels 3-4](verification/2026-11-20-down-we-go-levels-3-4.md) | — |
