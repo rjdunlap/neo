@@ -37,6 +37,7 @@ describe('migrate', () => {
       sessionMinutes: 0,
       coplayHints: true,
       howToCards: true,
+      briefResults: false,
       speech: true,
       showWords: false,
       language2: 'none',
@@ -545,6 +546,16 @@ describe('migrate', () => {
     const kept = migrate({ explained: ['duck-pond'], settings: { howToCards: false } });
     expect('explained' in kept).toBe(false);
     expect(kept.settings.howToCards).toBe(false);
+  });
+
+  it('starts with short results off, repairs the switch and keeps it through a backup', () => {
+    expect(defaults().settings.briefResults).toBe(false);
+    expect(migrate({ settings: { volume: 0.5 } }).settings.briefResults).toBe(false);
+    expect(migrate({ settings: { briefResults: 'yes' } }).settings.briefResults).toBe(false);
+    expect(migrate({ settings: { briefResults: true } }).settings.briefResults).toBe(true);
+    const save = defaults();
+    save.settings.briefResults = true;
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
   it('starts with spoken lines on, and repairs the switch', () => {

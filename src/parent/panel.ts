@@ -138,6 +138,10 @@ export function openParentPanel(
         <input id="p-howto" type="checkbox" />
       </div>
       <div class="parent__row">
+        <label for="p-brief">Show a shorter result after a round (Bubble Pop and Jar Sort)</label>
+        <input id="p-brief" type="checkbox" />
+      </div>
+      <div class="parent__row">
         <label for="p-words">Show the words (ages 6 and up)</label>
         <input id="p-words" type="checkbox" />
       </div>
@@ -218,6 +222,7 @@ ${
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
+  const brief = $<HTMLInputElement>('#p-brief');
   const words = $<HTMLInputElement>('#p-words');
   const layout = root.querySelector<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
@@ -272,6 +277,7 @@ ${
     if (layout) layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
+    brief.checked = d.settings.briefResults;
     words.checked = d.settings.showWords;
     volume.value = String(d.settings.volume);
     speechBox.checked = d.settings.speech;
@@ -394,6 +400,10 @@ ${
   });
   howto.addEventListener('change', () => {
     store.data.settings.howToCards = howto.checked;
+    store.save();
+  });
+  brief.addEventListener('change', () => {
+    store.data.settings.briefResults = brief.checked;
     store.save();
   });
   words.addEventListener('change', () => {
