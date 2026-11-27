@@ -100,6 +100,8 @@ Effort: S = one small content/definition slice; M = a new complete interaction; 
 | Animal Charades · P–G | One person interprets a pictured clue and another guesses; communication, perspective and flexible representation | One clue, unlimited guesses, reveal and voluntary role swap form a complete round. Acting, describing or pointing can contribute. Later combine an animal with an action, or discuss multiple reasonable guesses | New family activity; first define private clue presentation on one device and a solo pet demonstration. No camera, microphone, automated body verdict, elimination or pressure to perform. Family placement/seat credit remains undecided; physical prompts need review |
 | Mirror Partners · T–G | Take turns leading and copying; attention, agency and shared invention | One lead, one response, then swap; replay/finish remain explicit and unjudged. Later change one component or explore an opposite | Pet Says extension, not another game. Reconcile with its existing leader-swap, opposite and This hand plans. A mirror/left-right convention must be explicit; no pose accuracy checking |
 
+**Animal Charades definition claimed 2026-11-27** (docs only, `docs/definitions/animal-charades.md`).
+
 These are design recommendations with proposed age ranges, not established developmental outcomes. No new clinical or motor-learning claim is made. Rhythm Detective and Playground Designer are not selected priorities in this follow-up.
 
 ## A first game's ladder: Dance Workshop
