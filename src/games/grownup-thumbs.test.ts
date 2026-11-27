@@ -63,6 +63,7 @@ import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
 import { specOf as sumSpec } from './sum-crates/logic';
 import { layout as ballotsLayout } from './count-the-ballots/layout';
+import { roomLayout as commonGroundLayout } from './common-ground/layout';
 import { marketLayout } from './market-days/layout';
 import { tabletsLayout } from './two-tablets/layout';
 import { outcropLayout } from './outcrop-detective/layout';
@@ -221,6 +222,16 @@ const MEASURE: Record<string, () => Size[]> = {
       ['banner', l.banner],
       ['button', l.button],
       ['town', l.town],
+    ];
+  },
+  'common-ground': () => {
+    // Level 3, the grown-up band's only level: the 3 × 2 floor cells, the 110-unit pieces, the request cards and the round buttons.
+    const l = commonGroundLayout(v, 140);
+    return [
+      ['floor cell', l.floor.cell],
+      ['piece', 110],
+      ['request card', Math.min(l.bubbles[0].w, l.bubbles[0].h)],
+      ['button', 112],
     ];
   },
   'two-tablets': () => {
@@ -421,6 +432,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'count-the-ballots': { px: 50.8, what: 'button' },
   'market-days': { px: 50.8, what: 'banner' },
   'two-tablets': { px: 50.8, what: 'sign' },
+  'common-ground': { px: 55.9, what: 'piece' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },

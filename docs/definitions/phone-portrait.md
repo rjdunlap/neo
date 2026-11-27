@@ -142,6 +142,7 @@ The upright `grownup` games below are measured from its own layout function at t
 | `block-garden` | 45.7 | bed square, 90 units | The 8 × 8 beds of levels 7, 8 and 12, a drop place for a dragged piece rather than a tap. Fixed 2026-11-18 (was 72 units, 36.6), on an upright phone only; sideways and on the iPad the square stays 72. 6 × 6 beds are still 100 units (50.8). |
 | `brain-break` | 50.8 | stone | |
 | `bunny-patches` | 50.8 | button | Level 3 meadow controls. |
+| `common-ground` | 55.9 | piece, 110 units | Level 3 easel and drum (floor cells 160, request cards 140, buttons 112 units). |
 | `crossword` | 44.7 | square and key, 88 units | |
 | `domino-pond` | 50.8 | tray and buttons, 100 units | Board cells are 108 units (54.8). |
 | `gem-swap` | 44.7 | button, 88 units high | Gems are 49.8 at the largest tray. |
