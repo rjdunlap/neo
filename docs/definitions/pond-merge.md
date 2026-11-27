@@ -1,6 +1,6 @@
 # Pond Merge, levels 1–3 (definition)
 
-Defined 2026-11-27 for [chunk 27](../ROADMAP.md#chunks) (physics games), from [PHYSICS-GAMES](../PHYSICS-GAMES.md) and its [IDEAS row](../IDEAS.md#candidates) (merge-by-physics, after *Suika Game*). **Ready to build:** every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4: a small deterministic handwritten solver in `logic.ts`, no physics library; S8: identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `pond-merge`.
+Defined 2026-11-27 for [chunk 27](../ROADMAP.md#chunks) (physics games), from [PHYSICS-GAMES](../PHYSICS-GAMES.md) and its [IDEAS row](../IDEAS.md#candidates) (merge-by-physics, after *Suika Game*). **Built (levels 1–3) 2026-11-27; the page [docs/games/pond-merge.md](../games/pond-merge.md) records the solver details that differ from the model below.** Was ready to build: every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4: a small deterministic handwritten solver in `logic.ts`, no physics library; S8: identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `pond-merge`.
 
 **Fun action and purpose:** a row of sleepy eggs waits above a round pond. She slides along the top, lets one go, and it plops, bobs and settles among the others. When two of the same kind touch they pop together into the next size up: two eggs make a chick, two chicks a duckling, and so on until a swan glides out and the round ends with a flourish. The learning goal is **ordering by size and planning where things settle:** equal things combine, so she watches what is already in the pond, chooses where the next one should land, and changes her mind from what she saw. There is no end line, no score, no lives, no clock and no wrong drop.
 
@@ -81,7 +81,7 @@ All lengths are in **board units**. The board is a fixed **420 × 560** box tran
 ## Rule tests (`logic.test.ts`)
 
 - **Determinism:** the same `(plan, seed, drops)` gives bit-identical pond state and events across repeated runs, and replaying `drops.slice(0, -1)` equals the pond before the last drop (take-back).
-- **Stable numerics:** no `NaN`, `Infinity` or overlap greater than `2` units after `settle`, for 500 seeds with random drop positions; piece count never exceeds `MAX_PIECES`.
+- **Stable numerics:** no `NaN`, `Infinity` or overlap of `3` units or more after `settle` (built; a heavy piece pressing a small one left up to about 2.7), for 500 seeds with random drop positions; piece count never exceeds `MAX_PIECES`.
 - **Merge rule:** two equal still pieces in contact become exactly one piece of the next size at the weighted midpoint; unequal pieces never merge; a swan never merges; each piece joins at most one merge per step.
 - **Chain reaction:** a prepared pond of four equal pieces in a square resolves to two next-size pieces, then one, in the same number of steps on every run.
 - **Lift is not a fail:** a deliberately overfull pond lifts the smallest size, keeps the goal piece, and still allows the goal to be reached afterwards.

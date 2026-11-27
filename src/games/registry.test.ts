@@ -675,6 +675,7 @@ describe('game registry', () => {
       'pile-match',
       'pixel-pictures',
       'pond-conga',
+      'pond-merge',
       'puddle-lens',
       'puppet-stage',
       'puzzle-pals',
