@@ -343,6 +343,7 @@ export const LANDS: readonly Land[] = [
       'thought-bubbles',
       'playdate-workshop',
       'common-ground',
+      'dream-cards',
     ],
   },
   {
