@@ -53,6 +53,7 @@ import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
 import { createSuite as createDriftCards } from './suites/drift-cards-play.mjs';
 import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs';
 import { createSuite as createDrawARamp } from './suites/draw-a-ramp-play.mjs';
+import { createSuite as createPondMerge } from './suites/pond-merge-play.mjs';
 import { createSuite as createCouchSunbeams } from './suites/couch-sunbeams.mjs';
 import { createSuite as createCouchCodeDoors } from './suites/couch-codedoors.mjs';
 import { createSuite as createCouchRobotPath } from './suites/couch-robotpath.mjs';
@@ -413,6 +414,7 @@ export const SUITES = [
   'driftcards',
   'blocktopple',
   'drawaramp',
+  'pondmerge',
   'gardenrows',
   'dropsjourney',
   'forecastdetective',
@@ -624,6 +626,7 @@ export const ALL_SUITES = [
   'driftcards',
   'blocktopple',
   'drawaramp',
+  'pondmerge',
   'gardenrows',
   'dropsjourney',
   'forecastdetective',
@@ -1040,6 +1043,7 @@ export function createChecks(fixture) {
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
   install(createDrawARamp(shared));
+  install(createPondMerge(shared));
   install(createCouchSunbeams(shared));
   install(createCouchCodeDoors(shared));
   install(createCouchRobotPath(shared));
@@ -1340,6 +1344,7 @@ export async function runSuite(suite, fixture) {
     seedTravelersPlay,
     blockTopplePlay,
     drawARampPlay,
+    pondMergePlay,
     couchSunbeams,
     couchCodeDoors,
     couchRobotPath,
@@ -1571,6 +1576,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();
   if (suite === 'all' || suite === 'drawaramp') await drawARampPlay();
+  if (suite === 'all' || suite === 'pondmerge') await pondMergePlay();
   if (suite === 'all' || suite === 'gardenrows') await gardenRowsPlay();
   if (suite === 'all' || suite === 'dropsjourney') await dropsJourneyPlay();
   if (suite === 'all' || suite === 'raingarden') await rainGardenPlay();

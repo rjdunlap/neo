@@ -734,6 +734,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Wave Ribbon](games/wave-ribbon.md)
 
+### Pond Merge
+
+*pre-K–school* · [Pond Merge](games/pond-merge.md)
+
 ## Lantern Lake
 
 ### Snowball Merge

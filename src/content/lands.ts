@@ -394,6 +394,7 @@ export const LANDS: readonly Land[] = [
       'memory-desk',
       'draw-a-ramp',
       'wave-ribbon',
+      'pond-merge',
     ],
   },
   {

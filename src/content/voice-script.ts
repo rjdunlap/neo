@@ -125,6 +125,7 @@ import { VOICE as pileMatchVoice } from '../games/pile-match/voice.ts';
 import { VOICE as pixelPicturesVoice } from '../games/pixel-pictures/voice.ts';
 import { VOICE as playdateWorkshopVoice } from '../games/playdate-workshop/voice.ts';
 import { VOICE as pondCongaVoice } from '../games/pond-conga/voice.ts';
+import { VOICE as pondMergeVoice } from '../games/pond-merge/voice.ts';
 import { VOICE as pondTypingVoice } from '../games/pond-typing/voice.ts';
 import { VOICE as puddleGobbleVoice } from '../games/puddle-gobble/voice.ts';
 import { VOICE as puddleLensVoice } from '../games/puddle-lens/voice.ts';
@@ -820,6 +821,7 @@ export const SCRIPT = {
   ...pixelPicturesVoice,
   ...playdateWorkshopVoice,
   ...pondCongaVoice,
+  ...pondMergeVoice,
   ...pondTypingVoice,
   ...puddleGobbleVoice,
   ...puddleLensVoice,

@@ -126,6 +126,7 @@ import { HOW_TO as pileMatchHowTo } from '../games/pile-match/howto.ts';
 import { HOW_TO as pixelPicturesHowTo } from '../games/pixel-pictures/howto.ts';
 import { HOW_TO as playdateWorkshopHowTo } from '../games/playdate-workshop/howto.ts';
 import { HOW_TO as pondCongaHowTo } from '../games/pond-conga/howto.ts';
+import { HOW_TO as pondMergeHowTo } from '../games/pond-merge/howto.ts';
 import { HOW_TO as pondTypingHowTo } from '../games/pond-typing/howto.ts';
 import { HOW_TO as puddleGobbleHowTo } from '../games/puddle-gobble/howto.ts';
 import { HOW_TO as puddleLensHowTo } from '../games/puddle-lens/howto.ts';
@@ -346,6 +347,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pixel-pictures': pixelPicturesHowTo,
   'playdate-workshop': playdateWorkshopHowTo,
   'pond-conga': pondCongaHowTo,
+  'pond-merge': pondMergeHowTo,
   'pond-typing': pondTypingHowTo,
   'puddle-gobble': puddleGobbleHowTo,
   'puddle-lens': puddleLensHowTo,
