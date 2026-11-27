@@ -17,6 +17,7 @@ import {
   puzzleOf,
   solve,
   spareCells,
+  startState,
   TOY_SIZE,
   turn,
   turnToy,
@@ -52,7 +53,8 @@ describe('Toy Drawer rules', () => {
       const spare = spareCells(puzzleOf(c, plan.canTurn));
       if (level === 1) expect(spare).toBeGreaterThanOrEqual(4);
       if (level === 2) expect(spare >= 1 && spare <= 3).toBe(true);
-      if (level === 3) expect(spare).toBeGreaterThanOrEqual(0);
+      if (level >= 3) expect(spare).toBeGreaterThanOrEqual(0);
+      if (level === 4) expect(spare >= 1 && spare <= 3).toBe(true);
     }
   });
 
@@ -60,6 +62,7 @@ describe('Toy Drawer rules', () => {
     for (const { level, c, plan } of allCases) {
       const p = puzzleOf(c, plan.canTurn);
       const unturned = solve(p, emptyState(p), false);
+      if (level === 4) continue;
       if (level < 3) expect(unturned, `${c.toys}`).not.toBeNull();
       else {
         expect(unturned, `${c.toys}`).toBeNull();
@@ -206,6 +209,67 @@ describe('Toy Drawer rules', () => {
     }
     expect(LEVELS.preschool).toEqual({ min: 1, max: 2 });
     expect(LEVELS.prek).toEqual({ min: 1, max: 3 });
-    expect(LEVELS.school).toEqual({ min: 2, max: 3 });
+    expect(LEVELS.school).toEqual({ min: 2, max: 4 });
+  });
+
+  describe('level 4, make room for one more', () => {
+    const cases = PLANS[3].cases;
+    const puzzles = cases.map((c) => puzzleOf(c, PLANS[3].canTurn));
+
+    it('opens with a legal arrangement of all but one toy, turning on', () => {
+      for (const p of puzzles) {
+        expect(p.canTurn).toBe(true);
+        const s = startState(p);
+        const ids = Object.keys(p.start!);
+        expect(ids).toHaveLength(p.toys.length - 1);
+        // Legal: each toy fits with the others already down.
+        for (const id of ids) expect(legal(p, s, id, 0, s.at[id]!), id).toBe(true);
+        expect(p.toys.filter((t) => !s.at[t.id])).toHaveLength(1);
+        expect(complete(p, s)).toBe(false);
+      }
+    });
+
+    it('leaves the newcomer no legal place, turned or not, though a full packing exists', () => {
+      for (const p of puzzles) {
+        const s = startState(p);
+        const newcomer = p.toys.find((t) => !s.at[t.id])!;
+        for (let turns = 0; turns < 4; turns++)
+          for (let r = 0; r < p.rows; r++)
+            for (let k = 0; k < p.cols; k++)
+              expect(legal(p, s, newcomer.id, turns, [r, k]), `${newcomer.id}`).toBe(false);
+        expect(solve(p, emptyState(p))).not.toBeNull();
+      }
+    });
+
+    it('can be finished by moving one toy: the hint is a take-out and the rest stay put', () => {
+      for (const p of puzzles) {
+        const s = startState(p);
+        const h = nextHint(p, s);
+        expect(h?.kind).toBe('take-out');
+        const after = copyState(s);
+        after.at[(h as { toy: string }).toy] = undefined;
+        const full = solve(p, after)!;
+        expect(complete(p, full)).toBe(true);
+        for (const t of p.toys) if (after.at[t.id]) expect(full.at[t.id]).toEqual(after.at[t.id]);
+      }
+    });
+
+    it('Start over returns to the starting arrangement, not an empty drawer', () => {
+      for (const p of puzzles) {
+        const s = startState(p);
+        expect(Object.values(s.at).filter(Boolean)).toHaveLength(p.toys.length - 1);
+        expect(startState(p)).toEqual(s);
+      }
+      const level1 = makePuzzle(1, new Rng(1));
+      expect(Object.values(startState(level1).at).filter(Boolean)).toHaveLength(0);
+    });
+
+    it('is a school level only, and its case list is used by a seeded round', () => {
+      expect(LEVELS.preschool!.max).toBeLessThan(4);
+      expect(LEVELS.prek!.max).toBeLessThan(4);
+      const p = makePuzzle(4, new Rng(9));
+      expect(p.start).toBeDefined();
+      expect(planFor(4)).toBe(PLANS[3]);
+    });
   });
 });

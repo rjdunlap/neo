@@ -17,13 +17,13 @@ import {
   complete,
   copyState,
   describeLevel,
-  emptyState,
   LEVELS,
   makePuzzle,
   nearestAnchor,
   nextHint,
   sizeAt,
   solve,
+  startState,
   turnToy,
   type Cell,
   type Hint,
@@ -74,7 +74,7 @@ class ToyDrawer implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.puzzle = makePuzzle(ctx.level, ctx.rng);
-    this.state = emptyState(this.puzzle);
+    this.state = startState(this.puzzle);
     this.layout = drawerLayout(ctx.view, this.puzzle.rows, this.puzzle.cols);
     this.drawer = drawerArt(this.puzzle.rows, this.puzzle.cols, CELL);
     ctx.stage.addChild(this.bg, this.tray, this.drawer);
@@ -381,7 +381,7 @@ class ToyDrawer implements Game {
   private startOver() {
     if (this.done) return;
     this.commit(copyState(this.state));
-    this.restoreState(emptyState(this.puzzle));
+    this.restoreState(startState(this.puzzle));
   }
 
   private restoreState(s: State) {
@@ -444,7 +444,9 @@ class ToyDrawer implements Game {
   // ---- shell ----
 
   start() {
-    void this.ctx.instruct(this.puzzle.canTurn ? 'toy-drawer.turn' : 'toy-drawer.fit');
+    void this.ctx.instruct(
+      this.puzzle.start ? 'toy-drawer.make-room' : this.puzzle.canTurn ? 'toy-drawer.turn' : 'toy-drawer.fit',
+    );
   }
 
   resize(v: View) {
@@ -481,6 +483,16 @@ class ToyDrawer implements Game {
     if (complete(this.puzzle, this.state)) return { tap: { on: this.close } };
     const sol = solve(this.puzzle, this.state);
     if (!sol) return null;
+    // Level 4: a toy already in the drawer that the finished packing moves comes out to the tray first.
+    const stuck = this.pieces.find((q) => {
+      const a = this.state.at[q.id];
+      const b = sol.at[q.id];
+      return a && b && (a[0] !== b[0] || a[1] !== b[1] || (this.state.turns[q.id] ?? 0) !== sol.turns[q.id]);
+    });
+    if (stuck) {
+      const t = this.layout.tray;
+      return { drag: { on: stuck.node }, to: { on: this.tray, x: t.x + t.w / 2, y: t.y + t.h / 2 } };
+    }
     const p = this.pieces.find((q) => !this.placed(q));
     if (!p) return null;
     const want = sol.turns[p.id] ?? 0;

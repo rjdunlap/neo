@@ -10,19 +10,20 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–3 |
-| school | 2–3 |
+| school | 2–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | A roomy 4 × 3 drawer, three toys: put each one somewhere it fits |
 | 2 | A snug drawer, four or five toys: moving one makes room for another |
 | 3 | The Turn button: a toy has to be turned to fit |
+| 4 | Toys already in the drawer, one waiting: take one out and move it to make room |
 
 <!-- end generated -->
 
 **Starts as:** a pretend toy drawer is open and a tray of toys waits beside it (a long train, a big bear, a little ball): she drags each toy in, moves them around to make room, and taps the green check to close the drawer, learning that things of different sizes share a limited space.
 
-**Grows into:** levels 1–3: a roomy 4 × 3 drawer with three toys and spare cells; a snug drawer (4 × 3 or 5 × 3) with four or five toys where the first toy placed can block a later one; then the Turn button, where at least one toy cannot fit unturned in any packing. Level 4 (a fourth toy arrives with no place until another is moved) and later irregular shapes are in the [definition](../definitions/toy-drawer.md).
+**Grows into:** levels 1–3: a roomy 4 × 3 drawer with three toys and spare cells; a snug drawer (4 × 3 or 5 × 3) with four or five toys where the first toy placed can block a later one; then the Turn button, where at least one toy cannot fit unturned in any packing. Level 4, school only: three toys are already in a 4 × 3 or 4 × 4 drawer and the fourth waits in the tray with no place (turned or not), so she takes one out, moves it and fits the newcomer; the hand names the toy to take out, and Start over returns to the opening arrangement (nothing is ever counted as a miss). Later irregular shapes are in the [definition](../definitions/toy-drawer.md).
 
 ## Design notes
 

@@ -32,6 +32,8 @@ export interface Puzzle {
   toys: Toy[];
   /** Whether the Turn button exists (level 3 up). */
   canTurn: boolean;
+  /** Toys already in the drawer, unturned, when the round opens (level 4); Start over returns here. */
+  start?: Record<string, Cell>;
 }
 
 /** Where each toy is: quarter-turns clockwise (0–3) and, once in the drawer, its top-left cell. */
@@ -88,6 +90,13 @@ export const emptyState = (puzzle: Puzzle): State => ({
   turns: Object.fromEntries(puzzle.toys.map((t) => [t.id, 0])),
   at: {},
 });
+
+/** The round's opening arrangement: an empty drawer, or the toys the case already put in (level 4). */
+export function startState(puzzle: Puzzle): State {
+  const s = emptyState(puzzle);
+  for (const [id, anchor] of Object.entries(puzzle.start ?? {})) s.at[id] = anchor;
+  return s;
+}
 
 export const copyState = (s: State): State => ({ turns: { ...s.turns }, at: { ...s.at } });
 
@@ -285,6 +294,8 @@ export interface Case {
   rows: number;
   cols: number;
   toys: ToyKind[];
+  /** Level 4: where some toys already sit (by toy id, unturned); the toy left over arrives in the tray with no place. */
+  start?: Record<string, Cell>;
 }
 
 export interface LevelPlan {
@@ -326,12 +337,49 @@ export const PLANS: LevelPlan[] = [
       { rows: 3, cols: 4, toys: ['train', 'ladder', 'ladder'] },
     ],
   },
+  {
+    name: 'Make room for one more: a newcomer has no place yet',
+    canTurn: true,
+    cases: [
+      // The tray's toy is the one not named in `start`.
+      {
+        rows: 3,
+        cols: 4,
+        toys: ['train', 'car', 'book', 'blocks'],
+        start: { train: [0, 0], car: [1, 0], book: [1, 2] },
+      },
+      {
+        rows: 3,
+        cols: 4,
+        toys: ['car', 'book', 'ladder', 'bear'],
+        start: { car: [0, 0], book: [1, 0], ladder: [0, 2] },
+      },
+      {
+        rows: 3,
+        cols: 4,
+        toys: ['book', 'book', 'bear', 'ladder'],
+        start: { book: [0, 0], book2: [0, 2], bear: [1, 0] },
+      },
+      {
+        rows: 4,
+        cols: 4,
+        toys: ['train', 'blocks', 'bear', 'train'],
+        start: { train: [0, 0], train2: [1, 0], blocks: [2, 1] },
+      },
+      {
+        rows: 4,
+        cols: 4,
+        toys: ['bear', 'bear', 'train', 'train'],
+        start: { bear: [1, 0], bear2: [2, 2], train: [0, 0] },
+      },
+    ],
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 4 },
 };
 
 export const planFor = (level: number): LevelPlan => PLANS[Math.min(Math.max(level, 1), PLANS.length) - 1];
@@ -340,6 +388,7 @@ const DESCRIPTIONS = [
   'A roomy 4 × 3 drawer, three toys: put each one somewhere it fits',
   'A snug drawer, four or five toys: moving one makes room for another',
   'The Turn button: a toy has to be turned to fit',
+  'Toys already in the drawer, one waiting: take one out and move it to make room',
 ];
 export const describeLevel = (level: number): string =>
   DESCRIPTIONS[Math.min(Math.max(level, 1), DESCRIPTIONS.length) - 1];
@@ -356,5 +405,5 @@ export function puzzleOf(c: Case, canTurn: boolean): Puzzle {
     seen[kind] = (seen[kind] ?? 0) + 1;
     return { id: seen[kind] > 1 ? `${kind}${seen[kind]}` : kind, kind } as Toy;
   });
-  return { rows: c.rows, cols: c.cols, toys, canTurn };
+  return { rows: c.rows, cols: c.cols, toys, canTurn, ...(c.start ? { start: c.start } : {}) };
 }

@@ -92,6 +92,44 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await finished('toy-drawer');
     assert.deepEqual(await score(), [0, 0], 'level 3: no misses, no hints');
 
+    // Level 4: three toys already in the drawer, the fourth has no place; one hint names a toy to take out; Start over restores the opening arrangement.
+    await launch('toy-drawer', 4, 'Mia', 'school');
+    await settle();
+    s = await state();
+    const opening = Object.keys(s.at).filter((k) => s.at[k]).length;
+    assert.equal(opening, 3, 'three toys start in the drawer');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.hint));
+    await settle();
+    assert.ok(await page.evaluate(() => !!neo.scene.game.pulse), 'the hand names a placed toy to take out');
+    assert.ok((await state()).hinted, 'asking counts as one hint');
+    // Take one toy out, then Start over: the opening arrangement comes back.
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const id = g.pulse;
+      const p = g.pieces.find((q) => q.id === id).node.getGlobalPosition();
+      const t = g.layout.tray;
+      const k = neo.view.scale;
+      const to = g.tray.getGlobalPosition();
+      await kit.drag(
+        kit.line([p.x, p.y], [to.x + (t.x + t.w / 2) * k, to.y + (t.y + t.h / 2) * k + 40 * k], 12),
+      );
+    });
+    await settle();
+    assert.ok(Object.values((await state()).at).filter(Boolean).length <= 2, 'a toy came out');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.again));
+    await settle();
+    assert.equal(
+      Object.values((await state()).at).filter(Boolean).length,
+      3,
+      'Start over restores the opening three',
+    );
+    guard = 0;
+    while (!(await state()).done && guard++ < 30) {
+      if (!(await act())) break;
+    }
+    await finished('toy-drawer');
+    assert.deepEqual(await score(), [0, 1], 'level 4: no misses, one hint');
+
     // The same level held upright.
     await launch('toy-drawer', 3, 'Mia', 'prek');
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -99,7 +137,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await screenshot('toy-drawer-3-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
-      'Toy Drawer 1 and 3: a drop on nothing floats home, one hand hint, Close drawer early nudges, the drawer packed by real drags and taps (level 1 0/1, level 3 turned a toy 0/0), a portrait screenshot, passed',
+      'Toy Drawer 1, 3 and 4: a drop on nothing floats home, one hand hint, Close drawer early nudges, the drawer packed by real drags and taps (level 1 0/1, level 3 turned a toy 0/0, level 4 hint, take-out, Start over to the opening three, 0/1), a portrait screenshot, passed',
     );
   }
   return { toyDrawerPlay };
