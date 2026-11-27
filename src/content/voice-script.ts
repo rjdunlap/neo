@@ -193,6 +193,7 @@ import { VOICE as twoTabletsVoice } from '../games/two-tablets/voice.ts';
 import { VOICE as villageVoteVoice } from '../games/village-vote/voice.ts';
 import { VOICE as vineSnipVoice } from '../games/vine-snip/voice.ts';
 import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
+import { VOICE as waveRibbonVoice } from '../games/wave-ribbon/voice.ts';
 import { VOICE as weatherWardrobeVoice } from '../games/weather-wardrobe/voice.ts';
 import { VOICE as welcomeWaysVoice } from '../games/welcome-ways/voice.ts';
 import { VOICE as whoAmIVoice } from '../games/who-am-i/voice.ts';
@@ -886,6 +887,7 @@ export const SCRIPT = {
   ...villageVoteVoice,
   ...vineSnipVoice,
   ...waterRoadVoice,
+  ...waveRibbonVoice,
   ...weatherWardrobeVoice,
   ...welcomeWaysVoice,
   ...whoAmIVoice,

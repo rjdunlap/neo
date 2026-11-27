@@ -194,6 +194,7 @@ import { HOW_TO as twoTabletsHowTo } from '../games/two-tablets/howto.ts';
 import { HOW_TO as villageVoteHowTo } from '../games/village-vote/howto.ts';
 import { HOW_TO as vineSnipHowTo } from '../games/vine-snip/howto.ts';
 import { HOW_TO as waterRoadHowTo } from '../games/water-road/howto.ts';
+import { HOW_TO as waveRibbonHowTo } from '../games/wave-ribbon/howto.ts';
 import { HOW_TO as weatherWardrobeHowTo } from '../games/weather-wardrobe/howto.ts';
 import { HOW_TO as welcomeWaysHowTo } from '../games/welcome-ways/howto.ts';
 import { HOW_TO as whoAmIHowTo } from '../games/who-am-i/howto.ts';
@@ -413,6 +414,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'village-vote': villageVoteHowTo,
   'vine-snip': vineSnipHowTo,
   'water-road': waterRoadHowTo,
+  'wave-ribbon': waveRibbonHowTo,
   'weather-wardrobe': weatherWardrobeHowTo,
   'welcome-ways': welcomeWaysHowTo,
   'who-am-i': whoAmIHowTo,

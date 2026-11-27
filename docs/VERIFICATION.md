@@ -219,6 +219,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `timelinetrailproof` | 2026-11-16 · [Timeline Trail level 7 Show me why](verification/2026-11-16-timeline-trail-level-7-show-me-why.md) | — |
 | `tinkercutlines` | 2026-11-12 · [U7d fix batch 25: moon-window, sense-detective and fossil-dig never hold a tap on a cut line](verification/2026-11-12-u7d-fix-batch-25-moon-window-sense-detective-and-fossil-dig.md) | — |
 | `toydrawer` | 2026-11-27 · [Toy Drawer levels 1-3 (PR #2280)](verification/2026-11-27-toy-drawer-levels-1-3-pr-2280.md) | levels 1 and 3 |
+| `waveribbon` | 2026-11-27 · [Wave Ribbon levels 1-2 (PR #2284)](verification/2026-11-27-wave-ribbon-levels-1-2.md) | levels 1 and 2 |
 | `trackwaytales` | 2026-10-21 · [Trackway Tales levels 1–3](archive/VERIFICATION-2026-10-21.md#2026-10-21--trackway-tales-levels-13) | Levels 1–3 |
 | `truthbridge` | 2026-11-23 · [Truth Bridge levels 3–4](verification/2026-11-23-truth-bridge-levels-3-4.md) | `TRUTH_BRIDGE_BATCH=2` |
 | `uprightgames` | 2026-11-20 · [Word Code levels 1-3](verification/2026-11-20-word-code-levels-1-3.md) | `PHONE_ONLY=word-code` |
