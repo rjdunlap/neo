@@ -4,6 +4,7 @@ import { makeHost, PageArrow, Signpost } from '../../art/lands';
 import { ink, swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { Backdrop, type BackdropStyle } from '../../art/scenery';
+import { bakePaper } from '../../art/paperize';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -348,7 +349,10 @@ export class LandScene extends Scene {
     this.heading.position.set(Math.min(Math.max(v.w / 2, left + half), right - half), 65);
     this.pip.position.set(92, v.h - 12);
     if (!layout) return;
-    if (this.scenery && this.drawScenery) this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
+    if (this.scenery && this.drawScenery) {
+      this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
+      bakePaper(this.scenery, v);
+    }
     this.scale0 = layout.box.w / BOX.w;
     for (const mark of [...this.mine, ...this.older]) mark.node.visible = false;
     this.showing.forEach((mark, i) => {

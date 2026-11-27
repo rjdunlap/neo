@@ -66,6 +66,10 @@ async function boot() {
     app.go = island;
     // RW02b step 3: the second-wave six, on the dev server only, so their sprites stay out of the build.
     await (await import('./dev/cast-preview')).showCast(app);
+  } else if (import.meta.env.DEV && query.has('paper')) {
+    app.go = island;
+    // The paper cut-out style's swatch book (docs/ART-STYLE.md), on the dev server only.
+    await (await import('./dev/paper-lab')).showPaperLab(app);
   } else if (query.has('preview')) {
     // RW02b's preview, for comparing the rigs on the iPad until RW08; its meadow button opens Rainbow Meadow, whose Home comes back here.
     const [sprout, river, glider, items] = await Promise.all([

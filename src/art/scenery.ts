@@ -1,7 +1,9 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { Rng } from '../engine/random';
 import type { View } from '../engine/view';
-import { cheek, ink, swatch } from './palette';
+import { cheek, ink, swatch, toward } from './palette';
+import { drawFibre } from './paper';
+import { bakePaper } from './paperize';
 
 export interface BackdropStyle {
   /** Sky gradient, top to horizon. */
@@ -15,18 +17,28 @@ export interface BackdropStyle {
   seed?: number;
 }
 
-/** A vertical gradient as a tiny canvas texture, stretched to fill. */
+const skies = new Map<string, Texture>();
+
+/**
+ * A sky or wall to stretch over a view. In the paper look (docs/ART-STYLE.md) there are no gradients: it is one flat
+ * sheet in the colour between `top` and `bottom` (a touch nearer the top), with the paper fibre over it. Drawn once per
+ * pair at the design area's size, so stretching it to a view barely changes the fibre.
+ */
 export function gradientTexture(top: number, bottom: number): Texture {
+  const key = `${top}:${bottom}`;
+  const known = skies.get(key);
+  if (known) return known;
   const c = document.createElement('canvas');
-  c.width = 2;
-  c.height = 256;
+  c.width = 1024;
+  c.height = 768;
   const ctx = c.getContext('2d')!;
-  const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, cssColor(top));
-  g.addColorStop(1, cssColor(bottom));
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 2, 256);
-  return Texture.from(c);
+  ctx.fillStyle = cssColor(toward(top, bottom, 0.4));
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.globalAlpha = 0.35;
+  if (typeof ctx.quadraticCurveTo === 'function') drawFibre(ctx, 1024, 768);
+  const t = Texture.from(c);
+  skies.set(key, t);
+  return t;
 }
 
 const cssColor = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
@@ -174,6 +186,7 @@ export class Backdrop extends Container {
         .closePath()
         .fill(color);
     });
+    bakePaper(this.hills, view);
   }
 
   update(dt: number) {

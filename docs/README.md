@@ -33,6 +33,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [README.md](../README.md) (repository root) | Setup, the game inventory and count, the browser suites and their filters |
 | [DESIGN.md](DESIGN.md) | Architecture and systems; before changing an area, its [integration contract](DESIGN.md#integration-contracts); before writing a helper, the [reuse map](DESIGN.md#reuse-map); before pointer or texture code, the [pitfalls](DESIGN.md#input-and-rendering-pitfalls) |
 | [GAMES.md](GAMES.md), [`games/`](games/) | The index and one page per game: what it does at each level, and its design notes |
+| [ART-STYLE.md](ART-STYLE.md) | The paper cut-out look (chosen 2026-11-26): the recipe, the shared paper helper and the automatic paper pass, and how a game keeps a drawing flat |
 | [COUCH-PLAY.md](COUCH-PLAY.md) | The player guide for couch play |
 | [VERIFICATION.md](VERIFICATION.md), [`verification/`](verification/) | The coverage summary per suite or area, and one dated entry file per set of checks |
 
