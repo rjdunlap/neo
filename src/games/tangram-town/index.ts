@@ -1,6 +1,7 @@
 import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
+import { ellipsePoints, paperLine, paperRect, U } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
@@ -33,6 +34,12 @@ import {
   type Piece,
   type Shape,
 } from './logic';
+
+/** The ring round the picked piece or slot: a soft crayon-blue paper line, a little thicker than a vector hairline. */
+function selectRing(g: Graphics, x: number, y: number, r: number) {
+  const pts = ellipsePoints(x, y, r, r);
+  paperLine(g, [...pts, pts[0], pts[1]], swatch.blue.line, 7);
+}
 
 function shape(shape: Shape, color: ColorName, outline = true) {
   return new Graphics()
@@ -230,7 +237,7 @@ class TangramTown implements Game {
     this.paletteGlow.clear();
     if (this.selected && !this.selected.placed) {
       const c = this.selected;
-      this.paletteGlow.circle(c.drag.home.x, c.drag.home.y, 88).stroke({ width: 5, color: swatch.blue.line });
+      selectRing(this.paletteGlow, c.drag.home.x, c.drag.home.y, 88);
       if (this.assisted) {
         const i = hintFor(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
         if (i >= 0) {
@@ -248,12 +255,10 @@ class TangramTown implements Game {
   }
   resize(v: View) {
     const l = townLayout(v, this.pieces.length);
-    this.bg
-      .clear()
-      .rect(0, 0, v.w, v.h)
-      .fill(swatch.blue.light)
-      .roundRect(l.panel.x, l.panel.y, l.panel.w, l.panel.h, 25)
-      .fill(cream);
+    this.bg.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
+    // The tray is a paper tray with a gentle edge and its own crayon outline (as one wide sheet the paper pass would
+    // leave it flat, with no edge).
+    paperRect(this.bg, l.panel.x, l.panel.y, l.panel.w, l.panel.h, 25, cream, { amp: 0.7 * U, seed: 6 });
     this.board.position.set(l.board.x, l.board.y);
     this.turn.position.set(l.turn.x, l.turn.y);
     this.turn.visible = this.plan.rotate;
@@ -427,7 +432,7 @@ class TangramRepair implements Game {
     this.glow.clear();
     if (this.selected !== null) {
       const t = this.plan.targets[this.selected];
-      this.ring.circle(t.x, t.y, 85).stroke({ width: 5, color: swatch.blue.line });
+      selectRing(this.ring, t.x, t.y, 85);
     }
     const i = repairMismatches(this.plan.targets, this.pieces)[0];
     if (this.assisted && i !== undefined) {

@@ -142,7 +142,8 @@ class SortingMachine implements Game {
         hills: [0xa9e0d6, 0xc5e7a8],
         horizon: 0.5,
         clouds: 2,
-        sun: true,
+        // No sun: the cards and the machine fill the whole top of the sky, so it only ever showed its rays.
+        sun: false,
         seed: 191,
       },
       ctx.view,

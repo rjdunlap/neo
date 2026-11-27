@@ -509,18 +509,21 @@ class SpinnerFair implements Game {
     if (!this.columns.length) return;
     const left = l.columns[0].x - COL_W / 2 - 14,
       right = l.columns[l.columns.length - 1].x + COL_W / 2 + 14;
-    this.barsPanel
-      .roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + l.face + 24, 20)
-      .fill({ color: 0xffffff, alpha: 0.75 });
+    this.barsPanel.roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + l.face + 24, 20).fill(cream);
     this.barsPanel
       .moveTo(left + 10, l.base)
       .lineTo(right - 10, l.base)
-      .stroke({ width: 4, color: ink, alpha: 0.5 });
+      .stroke({ width: 4, color: ink, alpha: 0.7 });
   }
 
   resize(view: View) {
     const l = (this.layoutNow = layout(view, Math.max(1, this.phase === 'pick' ? 3 : this.kinds.length)));
     this.backdrop.resize(view);
+    // The sun sits in the open sky at top right, clear of the wheel (left) and the chart.
+    if (!l.portrait) {
+      this.backdrop.sun?.position.set(view.w - 140, 82);
+      this.backdrop.sun?.scale.set(0.8);
+    }
     if (this.phase === 'pick') this.spinners.forEach((s, i) => s.node.position.set(l.pair[i].x, l.pair[i].y));
     else {
       this.main.node.position.set(l.spinner.x, l.spinner.y);

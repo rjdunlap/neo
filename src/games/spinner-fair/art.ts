@@ -1,5 +1,6 @@
 /** Spinner Fair's spinners and bars, code-drawn from the palette. Colour is never the only cue: every section and bar carries its critter. */
 import { Container, Graphics } from 'pixi.js';
+import { densify, paperCircle, paperPoints } from '../../art/paper';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { label } from '../../ui/text';
@@ -49,6 +50,25 @@ export interface SpinnerOptions {
   lines?: boolean;
 }
 
+/**
+ * The wheel's white rim, as paper with a barely-there wobble so the wedges always sit inside it. The wedges are
+ * paper with no wobble at all: their edges must meet each other and the rim exactly.
+ */
+function rim(g: Graphics, r: number) {
+  paperCircle(g, 0, 0, r + 8, 0xffffff, { amp: 0.8, seed: 7 });
+}
+
+function wedge(g: Graphics, r: number, a0: number, a1: number, c: { fill: number; line: number }) {
+  const n = Math.max(2, Math.ceil((a1 - a0) / (Math.PI / 45)));
+  const pts: [number, number][] = [[0, 0]];
+  for (let i = 0; i <= n; i++) {
+    const a = a0 + ((a1 - a0) * i) / n;
+    pts.push([Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  // Close points everywhere, so the paper edge's soft corners stay tight at the hub and the rim.
+  paperPoints(g, densify(pts, 6), c.fill, { amp: 0, noShadow: true, small: false });
+}
+
 /** A spinner of radius `r` on a stand, with the fixed pointer at the top; one section per critter, its face at the middle. */
 export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): SpinnerArt {
   const node = new Container();
@@ -65,9 +85,7 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
   }
   const wheel = new Container();
   const g = new Graphics();
-  g.circle(0, 0, r + 8)
-    .fill(0xffffff)
-    .stroke({ width: 6, color: ink });
+  rim(g, r);
   if (opts.bare) {
     wheel.addChild(g);
     const pointer = new Graphics();
@@ -87,8 +105,8 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
       a1 = rad((s.start + s.count) * deg);
     const c = sw(s.kind);
     // A whole wheel of one critter (level 4's sure spinner) is a plain disc, with no seam from the hub.
-    if (s.count === w.length) g.circle(0, 0, r).fill(c.fill).stroke({ width: 4, color: c.line });
-    else g.moveTo(0, 0).arc(0, 0, r, a0, a1).closePath().fill(c.fill).stroke({ width: 4, color: c.line });
+    if (s.count === w.length) paperCircle(g, 0, 0, r, c, { amp: 0, noShadow: true });
+    else wedge(g, r, a0, a1, c);
   }
   if (opts.lines)
     for (let i = 0; i < w.length; i++)
@@ -697,16 +715,10 @@ export function numSpinner(w: NumWheel, r: number): SpinnerArt {
   const node = new Container();
   const wheel = new Container();
   const g = new Graphics();
-  g.circle(0, 0, r + 8)
-    .fill(0xffffff)
-    .stroke({ width: 6, color: ink });
+  rim(g, r);
   w.forEach((n, i) => {
     const c = numColor(n);
-    g.moveTo(0, 0)
-      .arc(0, 0, r, rad(i * WEDGE_DEG), rad((i + 1) * WEDGE_DEG))
-      .closePath()
-      .fill(c.fill)
-      .stroke({ width: 4, color: c.line });
+    wedge(g, r, rad(i * WEDGE_DEG), rad((i + 1) * WEDGE_DEG), c);
   });
   wheel.addChild(g);
   w.forEach((n, i) => {

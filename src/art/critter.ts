@@ -1,6 +1,7 @@
 import { Container, Graphics, Point } from 'pixi.js';
 import { gaze } from '../engine/input';
 import { cheek, ink, swatch, type ColorName, type Swatch } from './palette';
+import { densify, ellipsePoints, paperPoints, U } from './paper';
 import { bodyPath } from './shapes';
 
 export type Ears = 'round' | 'pointy' | 'floppy' | 'long' | 'big' | 'none';
@@ -98,6 +99,56 @@ const HOOF = { fill: 0x8c7b6b, line: 0x5e5248 };
 const MANE = { fill: 0x5a3420, line: 0x3a2014 };
 const BEAK = swatch.yellow;
 const TAIL = 0xf7a8b8;
+
+type Pt = [number, number];
+
+/** The body outline (`bodyPath` at its default size) as points, for drawing it as paper on purpose. */
+function bodyPoints(): Pt[] {
+  const segs: Pt[][] = [
+    [
+      [0, -250],
+      [100, -250],
+      [130, -160],
+      [130, -100],
+    ],
+    [
+      [130, -100],
+      [130, -30],
+      [80, 0],
+      [0, 0],
+    ],
+    [
+      [0, 0],
+      [-80, 0],
+      [-130, -30],
+      [-130, -100],
+    ],
+    [
+      [-130, -100],
+      [-130, -160],
+      [-100, -250],
+      [0, -250],
+    ],
+  ];
+  const out: Pt[] = [];
+  for (const [p0, p1, p2, p3] of segs)
+    for (let k = 0; k < 16; k++) {
+      const t = k / 16,
+        u = 1 - t;
+      out.push([
+        u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+        u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+      ]);
+    }
+  return out;
+}
+
+/**
+ * The paper pass's default torn edge (4.4 units) makes a big soft body look lumpy and nicks the tips of small pointed
+ * ears, so the body and pointy ears are drawn as paper here with a gentler edge.
+ */
+const BODY_AMP = 0.7 * U;
+const EAR_AMP = 0.4 * U;
 
 const stroke = (color: number, width = 6) => ({
   width,
@@ -382,13 +433,20 @@ export class Critter extends Container {
             .stroke(stroke(ear.line));
           back.circle(side * 72, -222, 16).fill({ color: cheek, alpha: 0.7 });
           break;
-        case 'pointy':
-          back
-            .poly([side * 30, -236, side * 88, -292, side * 112, -196])
-            .fill(ear.fill)
-            .stroke(stroke(ear.line));
-          back.poly([side * 52, -232, side * 86, -268, side * 98, -214]).fill({ color: cheek, alpha: 0.7 });
+        case 'pointy': {
+          const tri = (flat: number[]): Pt[] =>
+            densify(
+              [0, 2, 4].map((i) => [side * flat[i], flat[i + 1]] as Pt),
+              6 * U,
+            );
+          paperPoints(back, tri([30, -236, 88, -292, 112, -196]), ear.fill, {
+            amp: EAR_AMP,
+            seed: side,
+          });
+          // The inner ear lies flat inside the ear: no edge, shadow or outline of its own.
+          paperPoints(back, tri([52, -232, 86, -268, 98, -214]), cheek, { flat: true, alpha: 0.7 });
           break;
+        }
         case 'floppy': {
           const g = new Graphics()
             .ellipse(0, 0, 42, 19)
@@ -448,9 +506,12 @@ export class Critter extends Container {
           .fill(0x3d3d4d),
       );
     } else {
-      this.body.addChild(bodyPath(new Graphics()).fill(sw.fill).stroke(stroke(sw.line)));
+      this.body.addChild(paperPoints(new Graphics(), bodyPoints(), sw.fill, { amp: BODY_AMP, seed: 1 }));
     }
-    if (s.belly) this.body.addChild(new Graphics().ellipse(0, -65, 80, 54).fill(sw.light));
+    if (s.belly)
+      this.body.addChild(
+        paperPoints(new Graphics(), ellipsePoints(0, -65, 80, 54), sw.light, { amp: BODY_AMP, seed: 2 }),
+      );
     if (s.wool) {
       const curl = new Graphics();
       for (const [x, y, r] of [

@@ -7,7 +7,7 @@ import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { eggArt, shakerArt, thingArt, waterlineMark } from './art';
+import { drawTank, eggArt, shakerArt, thingArt, waterlineMark } from './art';
 import {
   SALT_DEPTHS,
   saltRoundFor,
@@ -484,23 +484,8 @@ export class SaltTanks implements Game {
     const back = this.tankBack.clear();
     const front = this.tankFront.clear();
     for (const [i, t] of this.tanks.entries()) {
-      back
-        .roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24)
-        .fill({ color: swatch.white.fill, alpha: 0.5 })
-        .rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6)
-        .fill({ color: swatch.blue.fill, alpha: 0.35 });
       // A light wash in front, so whatever sits under the surface reads as under water and the floaters' heights compare.
-      front
-        .rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6)
-        .fill({ color: swatch.blue.fill, alpha: 0.18 });
-      front.moveTo(t.l + 6, t.surface);
-      for (let x = t.l + 6; x <= t.r - 6; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
-      front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
-      front
-        .roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24)
-        .stroke({ width: 8, color: swatch.white.fill })
-        .roundRect(t.l + 18, t.top + 20, 14, 120, 7)
-        .fill({ color: swatch.white.fill, alpha: 0.6 });
+      drawTank(back, front, t, true);
       this.areas[i].hitArea = new Rectangle(t.l, t.top, t.r - t.l, t.bottom - t.top);
     }
     const trayX = l + span / 2;
