@@ -86,5 +86,67 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
   }
 
-  return { conductorSign };
+  async function conductorChange() {
+    // Level 7: the sign shows two ways to play and the second differs in one property; Check names the wrong one.
+    const held = process.env.CONDUCTOR_UPRIGHT === '1';
+    if (held) await page.setViewportSize({ width: 390, height: 844 });
+    await launch('little-conductor', 7);
+    await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const st = () => page.evaluate(() => ({ ...neo.scene.game.changes, asks: neo.scene.game.asks }));
+    const settled = () =>
+      page.waitForFunction(
+        () => {
+          const g = neo.scene.game;
+          return !g.playing && !g['busy'] && !g['answering'];
+        },
+        null,
+        { timeout: 15000 },
+      );
+    const { asks } = await st();
+    const setWay = async (ask) => {
+      await tap(`neo.scene.game.pads.${ask.pace}`);
+      await settled();
+      await tap(`neo.scene.game.strengthPads.${ask.strength}`);
+      await settled();
+    };
+    // Check with nothing picked: nothing is counted.
+    await tap('neo.scene.game.done');
+    let r = await st();
+    assert.equal(r.misses, 0);
+    assert.equal(r.pace, null);
+    // The right pace but the other strength: one miss that stays picked.
+    const wrongStrength = asks[0].strength === 'gentle' ? 'strong' : 'gentle';
+    await setWay({ pace: asks[0].pace, strength: wrongStrength });
+    await tap('neo.scene.game.done');
+    r = await st();
+    assert.equal(r.misses, 1);
+    assert.equal(r.strength, wrongStrength);
+    await settled();
+    // A requested hint: counted once for this half.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.equal((await st()).hints, 1);
+    await settled();
+    await screenshot(held ? 'little-conductor-7-upright' : 'little-conductor-7-portrait');
+    await setWay(asks[0]);
+    await tap('neo.scene.game.done');
+    await page.waitForFunction(() => neo.scene.game.changes.phrase === 1, null, { timeout: 15000 });
+    await settled();
+    await setWay(asks[1]);
+    await tap('neo.scene.game.done');
+    await finished('little-conductor');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('little-conductor').history.at(-1);
+        return [r.level, r.misses, r.hints, kit.store.data.stickers.length];
+      }),
+      [7, 1, 1, before + 1],
+    );
+    log(
+      'Little Conductor 7: Check with nothing set, a wrong strength, a hint, both halves matched and one sticker passed',
+    );
+  }
+
+  return { conductorSign, conductorChange };
 }

@@ -75,7 +75,7 @@ export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(se
 export interface Plan {
   level: number;
   name: string;
-  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials' | 'friends';
+  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials' | 'friends' | 'change';
 }
 const PLANS: Plan[] = [
   {
@@ -108,6 +108,11 @@ const PLANS: Plan[] = [
     name: 'Invite a friend: three friends play one tune, and she asks each one in or out on the beat',
     mode: 'friends',
   },
+  {
+    level: 7,
+    name: 'One change: the sign shows a way to play for each half of the tune, and the second half changes one thing; she sets slow or fast and soft or loud for each half and taps Check',
+    mode: 'change',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
@@ -115,7 +120,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 5 },
   prek: { min: 2, max: 6 },
-  school: { min: 5, max: 6 },
+  school: { min: 5, max: 7 },
 };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -333,7 +338,7 @@ export function advance(
       gain:
         mode === 'strength'
           ? STRENGTH_GAIN[STRENGTH_OF[pace]]
-          : mode === 'dials'
+          : mode === 'dials' || mode === 'change'
             ? STRENGTH_GAIN[s.strength]
             : 1,
     });
@@ -490,6 +495,122 @@ export function submit(r: Requests, round: Round): { state: Requests; result: Ch
 export const signBot = (round: Round, r: Requests): PaceId | 'check' | null =>
   r.done ? null : r.choice === round.requests[r.phrase] ? 'check' : round.requests[r.phrase];
 
+/** Level 7: a way to play, the pace and the strength together, as the sign shows it. */
+export interface Ask {
+  pace: PaceId;
+  strength: StrengthId;
+}
+export const ASKS: readonly Ask[] = PACE_IDS.flatMap((pace) =>
+  STRENGTH_IDS.map((strength) => ({ pace, strength })),
+);
+export type Dial = 'pace' | 'strength';
+
+/**
+ * Level 7's two asks, one for each half: the second differs from the first in exactly one property, the seed picking
+ * the first way, which property changes and so the direction (a pace or a strength can only change to its other).
+ */
+export function makeAsks(rng: Rng): [Ask, Ask] {
+  const first = rng.pick(ASKS);
+  const dial: Dial = rng.chance(0.5) ? 'pace' : 'strength';
+  const second: Ask =
+    dial === 'pace'
+      ? { ...first, pace: first.pace === 'turtle' ? 'rabbit' : 'turtle' }
+      : { ...first, strength: first.strength === 'gentle' ? 'strong' : 'gentle' };
+  return [first, second];
+}
+
+/** The property that changes between the two halves. */
+export const changedDial = (asks: [Ask, Ask]): Dial => (asks[0].pace !== asks[1].pace ? 'pace' : 'strength');
+
+/** Level 7's state: the half the sign is on, the two dials she has set for it, and what the Checks have counted. */
+export interface Changes {
+  phrase: 0 | 1;
+  pace: PaceId | null;
+  strength: StrengthId | null;
+  /** Wrong Checks on this half. */
+  missed: number;
+  /** Whether this half's hint has been counted (at most one per half). */
+  hinted: boolean;
+  misses: number;
+  hints: number;
+  done: boolean;
+}
+
+export const newChanges = (): Changes => ({
+  phrase: 0,
+  pace: null,
+  strength: null,
+  missed: 0,
+  hinted: false,
+  misses: 0,
+  hints: 0,
+  done: false,
+});
+
+/** A dial tap: her pick for this half (it auditions). Never counted. */
+export const setDial = (c: Changes, dial: Dial, value: PaceId | StrengthId): Changes =>
+  c.done ? c : dial === 'pace' ? { ...c, pace: value as PaceId } : { ...c, strength: value as StrengthId };
+
+/** Which properties of a pick are wrong for an ask: a pure comparison, no timing. A dial still unset is wrong. */
+export const wrongDials = (ask: Ask, c: Changes): Dial[] => [
+  ...(c.pace === ask.pace ? [] : (['pace'] as Dial[])),
+  ...(c.strength === ask.strength ? [] : (['strength'] as Dial[])),
+];
+
+/** The pad that glows after two wrong Checks: the right pad of the first wrong dial (pace first). */
+export function glowAsk(ask: Ask, c: Changes): { dial: Dial; id: PaceId | StrengthId } {
+  return wrongDials(ask, c)[0] === 'strength'
+    ? { dial: 'strength', id: ask.strength }
+    : { dial: 'pace', id: ask.pace };
+}
+
+/** Hint for this half, counted once however it was asked. */
+export function hintChange(c: Changes): { state: Changes; counted: boolean } {
+  if (c.done || c.hinted) return { state: c, counted: false };
+  return { state: { ...c, hinted: true, hints: c.hints + 1 }, counted: true };
+}
+
+export type ChangeResult = 'pick-first' | 'wrong' | 'match' | 'finished';
+
+/**
+ * Check at level 7. Both dials must be picked (nothing is counted otherwise). A wrong Check names the first wrong
+ * property, and the second wrong Check on a half lights the hint; a right one turns the sign or finishes.
+ */
+export function submitChange(
+  c: Changes,
+  asks: [Ask, Ask],
+): { state: Changes; result: ChangeResult; glow: boolean; wrong: Dial | null } {
+  if (c.done) return { state: c, result: 'finished', glow: false, wrong: null };
+  if (c.pace === null || c.strength === null)
+    return { state: c, result: 'pick-first', glow: false, wrong: null };
+  const wrong = wrongDials(asks[c.phrase], c);
+  if (wrong.length > 0) {
+    let state: Changes = { ...c, missed: c.missed + 1, misses: c.misses + 1 };
+    let glow = false;
+    if (state.missed >= 2 && !state.hinted) ({ state, counted: glow } = hintChange(state));
+    return { state, result: 'wrong', glow, wrong: wrong[0] };
+  }
+  if (c.phrase === 1) return { state: { ...c, done: true }, result: 'finished', glow: false, wrong: null };
+  return {
+    state: { ...c, phrase: 1, pace: null, strength: null, missed: 0, hinted: false },
+    result: 'match',
+    glow: false,
+    wrong: null,
+  };
+}
+
+/** The ghost finger at level 7: set each wrong dial to what the sign shows, then Check. */
+export function changeBot(
+  asks: [Ask, Ask],
+  c: Changes,
+): { dial: Dial; id: PaceId | StrengthId } | 'check' | null {
+  if (c.done) return null;
+  const ask = asks[c.phrase];
+  if (c.pace !== ask.pace) return { dial: 'pace', id: ask.pace };
+  if (c.strength !== ask.strength) return { dial: 'strength', id: ask.strength };
+  return 'check';
+}
+
 export interface Rect {
   x: number;
   y: number;
@@ -534,7 +655,9 @@ export function conductorLayout(
   level: number,
 ): ConductorLayout {
   const portrait = view.h > view.w;
-  const signed = planFor(level).mode === 'sign';
+  const mode = planFor(level).mode;
+  const changing = mode === 'change';
+  const signed = mode === 'sign' || changing;
   // Level 3 keeps the sign's column beside the bandstand in landscape and upright (768 wide has no room under it).
   const column = signed && (!portrait || view.upright) ? SIGN_COLUMN : 0;
   const cx = (view.w - column) / 2;
@@ -552,14 +675,29 @@ export function conductorLayout(
     : portrait
       ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - PAD / 2)
       : stand.y + stand.h + 50;
-  const dialed = planFor(level).mode === 'dials';
+  const dialed = mode === 'dials' || changing;
   const padsCx = portrait ? view.w / 2 : Math.min(view.w / 2, view.w - 2 * BUTTON - 60 - PAD - PAD_GAP / 2);
   const pads = {
     turtle: { x: padsCx - PAD_GAP / 2 - PAD, y: padY, w: PAD, h: PAD },
     rabbit: { x: padsCx + PAD_GAP / 2, y: padY, w: PAD, h: PAD },
   };
   const bx = view.w - BUTTON - 40;
-  if (dialed) return dialsLayout(view, stand, friends, bx, portrait);
+  if (dialed) {
+    const row = dialsLayout(view, stand, friends, bx, portrait, !changing);
+    if (!changing) return row;
+    // Level 7: the sign and its listener beside the row, as at level 3 (landscape and upright), or under it in portrait.
+    const rowBottom = row.pads.turtle.y + DIAL_PAD;
+    const sign: Rect =
+      portrait && !view.upright
+        ? { x: 30, y: rowBottom + 40, w: SIGN, h: SIGN }
+        : { x: view.w - SIGN - 25, y: stand.y, w: SIGN, h: SIGN };
+    // Under the row the listener stands beside the sign (below it would reach the pet's corner).
+    const listener =
+      portrait && !view.upright
+        ? { x: sign.x + SIGN + 110, y: sign.y + SIGN - 40 }
+        : { x: sign.x + SIGN / 2, y: sign.y + SIGN + 130 };
+    return { ...row, sign, listener };
+  }
   const listen: Disc = portrait
     ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON }
     : { x: bx, y: padY + BUTTON - 10, r: BUTTON };
@@ -605,6 +743,7 @@ function dialsLayout(
   friends: { x: number; y: number }[],
   bx: number,
   portrait: boolean,
+  withCells = true,
 ): ConductorLayout {
   const rowW = 4 * DIAL_PAD + 2 * DIAL_GAP + DIAL_GROUP_GAP;
   // The row sits left of the Listen and Done buttons: those stand at the right edge in landscape and, in portrait, below the row.
@@ -613,6 +752,7 @@ function dialsLayout(
     ? view.w / 2
     : Math.min(Math.max(view.w / 2, 232 + rowW / 2), bx - BUTTON - 20 - rowW / 2);
   const x0 = rowCx - rowW / 2;
+  // Level 7 has no hearing mark but keeps its room, so the row stays clear of the buttons below it.
   const padY = view.upright
     ? Math.max(stand.y + stand.h + 90, view.h - 270 - CELL_H - 20 - DIAL_PAD)
     : portrait
@@ -644,7 +784,7 @@ function dialsLayout(
     friends,
     pads: { turtle: at(0), rabbit: at(1) },
     strengths: { gentle: at(2), strong: at(3) },
-    cells,
+    cells: withCells ? cells : undefined,
     listen,
     done,
   };
