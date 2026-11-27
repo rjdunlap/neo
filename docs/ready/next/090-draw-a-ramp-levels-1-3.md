@@ -1,1 +1,0 @@
-**`draw-a-ramp`, levels 1–3** (new-game tier): deterministic circle-vs-capsule solver in `logic.ts`, `upright: true`, `touchDemo`, free experiments (`misses = 0`), two-miss/bulb ghost ramp (`hints`), Tinker Lab, per [definition](../../definitions/draw-a-ramp.md).

@@ -722,6 +722,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Memory Desk](games/memory-desk.md)
 
+### Draw a Ramp
+
+*preschool–school* · [Draw a Ramp](games/draw-a-ramp.md)
+
 ## Lantern Lake
 
 ### Snowball Merge
