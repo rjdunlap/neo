@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  LEVELS,
+  bothFit,
+  describeLevel,
+  finalKind,
+  fittingTriples,
+  hintAction2,
+  petLook,
+  petPick2,
+  secondKind,
   CLUES,
   FITS,
   PICTURES,
@@ -109,5 +118,105 @@ describe('the privacy rule', () => {
       );
     }
     expect(visible({ ...base, phase: 'reveal' }).revealed).toBe(d.pictures[1]);
+  });
+});
+
+describe('level 2: two clues for one picture', () => {
+  const pairs = (n: number) => {
+    const out: [number, number][] = [];
+    for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) out.push([a, b]);
+    return out;
+  };
+
+  it('is the school ladder 1 to 2 with its own level name', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 2 });
+    expect(describeLevel(2)).toBe('Two clues: say more, then look again');
+  });
+
+  it('has one dealt picture fitting both clues in 68 of the 84 clue pairs, two in 16, none in 0', () => {
+    const counts = [0, 0, 0, 0];
+    for (const d of VALID_DEALS)
+      for (const [i, j] of pairs(3)) counts[bothFit(d, d.clues[i], d.clues[j]).length]++;
+    expect(counts).toEqual([0, 68, 16, 0]);
+  });
+
+  it('has 1, 10 and 4 of the 15 pool clue pairs fit none, one and two pictures', () => {
+    const all = [0, 1, 2, 3, 4, 5];
+    const counts = [0, 0, 0, 0];
+    for (const [a, b] of pairs(6)) counts[all.filter((p) => fits(p, a) && fits(p, b)).length]++;
+    expect(counts.slice(0, 3)).toEqual([1, 10, 4]);
+  });
+
+  it('gives every deal at least 6 fitting triples (14 with 6, 12 with 8, 2 with 10; 200 in all)', () => {
+    const n = VALID_DEALS.map((d) => fittingTriples(d).length);
+    expect(Math.min(...n)).toBeGreaterThanOrEqual(6);
+    expect([6, 8, 10].map((k) => n.filter((x) => x === k).length)).toEqual([14, 12, 2]);
+    expect(n.reduce((a, b) => a + b, 0)).toBe(200);
+    for (const d of VALID_DEALS)
+      for (const t of fittingTriples(d)) {
+        expect(fits(t.picture, t.clue) && fits(t.picture, t.clue2)).toBe(true);
+        expect(t.clue2).not.toBe(t.clue);
+      }
+  });
+
+  it('has the pet pick a fitting triple, deterministic by seed and rotating across seeds', () => {
+    const pictures = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const d = dealRound(new Rng(seed));
+      const t = petPick2(d, seed);
+      expect(fittingTriples(d)).toContainEqual(t);
+      expect(petPick2(d, seed)).toEqual(t);
+      pictures.add(t.picture);
+      const first = d.pictures[seed % 3];
+      const look = petLook(d, t.clue, t.clue2, first, seed);
+      expect(d.pictures).toContain(look);
+      const options = bothFit(d, t.clue, t.clue2);
+      if (options.length) expect(options.includes(look)).toBe(true);
+    }
+    expect(pictures.size).toBeGreaterThan(3);
+  });
+
+  it('has finalKind total, same exactly for the giver’s picture, and secondKind kept exactly when the points match', () => {
+    for (const d of VALID_DEALS)
+      for (const g of d.pictures)
+        for (const c1 of d.clues)
+          for (const c2 of d.clues)
+            for (const f of d.pictures) {
+              if (c1 === c2) continue;
+              expect(finalKind(g, c1, c2, f) === 'same').toBe(g === f);
+              expect(secondKind(g, f) === 'kept').toBe(g === f);
+            }
+  });
+
+  it('has Help in the second look name the two clues and read nothing about the giver’s pick', () => {
+    for (const d of VALID_DEALS) {
+      const base = {
+        phase: 'again',
+        deal: d,
+        clue: d.clues[0],
+        clue2: d.clues[1],
+        first: d.pictures[0],
+      } as const;
+      const hints = d.pictures.map((g) => hintAction2({ ...base, giverPick: g }));
+      for (const h of hints) expect(h).toEqual({ kind: 'clues', clues: [d.clues[0], d.clues[1]] });
+    }
+  });
+
+  it('has the giver’s second-turn hint offer a further clue the picked picture fits, never the first clue', () => {
+    for (const d of VALID_DEALS)
+      for (const g of d.pictures) {
+        const h = hintAction2({
+          phase: 'second',
+          deal: d,
+          giverPick: g,
+          clue: d.clues[0],
+          clue2: null,
+          first: g,
+        });
+        if (h?.kind === 'clue') {
+          expect(fits(g, h.clue)).toBe(true);
+          expect(h.clue).not.toBe(d.clues[0]);
+        }
+      }
   });
 });

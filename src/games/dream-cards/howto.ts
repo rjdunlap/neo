@@ -5,7 +5,14 @@ export const HOW_TO: GameHowTo = {
   steps: [
     'Choose to play with the pet or with a friend next to you.',
     'When it is your turn to give: tap a dream picture, then tap a clue, then tap the same clue again to give it. The cloud hides your picture.',
-    'When it is your turn to point: tap the picture the clue makes you think of, then press the tick. Show me turns the picture over without pointing.',
+    {
+      to: 1,
+      text: 'When it is your turn to point: tap the picture the clue makes you think of, then press the tick. Show me turns the picture over without pointing.',
+    },
+    {
+      from: 2,
+      text: 'When it is your turn to point: tap a picture and press the tick. A second clue comes for the same picture. Press Keep it, or tap another picture and press This one.',
+    },
     'The picture turns over and you look at it together. Swap gives you the next turn.',
   ],
   finish: 'Press the tick to finish. A round gives one sticker.',
