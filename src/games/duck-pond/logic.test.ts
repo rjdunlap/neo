@@ -64,7 +64,16 @@ import {
   freeSlot,
   signSpot,
   stopVerdict,
+  everyMove,
+  everySeats,
+  everyTotals,
+  everyWay,
+  firstFreeSeat,
+  keepVerdict,
+  nextHintMove,
+  roundDone,
 } from './logic';
+import { VOICE } from './voice';
 import { computeView } from '../../engine/view';
 
 describe('Duck Pond', () => {
@@ -552,15 +561,14 @@ describe('Duck Pond level 15, Ten and some more (slice 8)', () => {
   const plan = planFor(15);
 
   it('is appended as level 15, so levels 1–14 keep their plans, with pads reaching 19', () => {
-    expect(PLANS).toHaveLength(15);
+    expect(PLANS.length).toBeGreaterThanOrEqual(15);
     expect(planFor(14).mode).toBe('double');
     expect(plan).toMatchObject({ mode: 'teen', min: 1, max: 9, padMax: 19 });
     expect(plan.split).toBeFalsy();
   });
 
-  it('tops the school window after Doubles; no other band reaches it, and saved school levels stay put', () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9, 10, 11, 14, 15]);
-    expect(LEVELS.school!.max).toBe(15);
+  it('sits in the school window after Doubles; no other band reaches it, and saved school levels stay put', () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9, 10, 11, 14, 15, 16]);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(15);
     for (const l of [8, 9, 10, 11, 14]) expect(landing(l, LEVELS.school!, duckPond.entryLevels)).toBe(l);
@@ -826,5 +834,139 @@ describe('mixed ponds (levels 6-7)', () => {
       if (level === 6 || level === 7) continue;
       expect(planFor(level).mixed).toBeUndefined();
     }
+  });
+});
+
+describe('Duck Pond level 16, Every way (slice 9)', () => {
+  const plan = planFor(16);
+  const totals = everyTotals(plan);
+
+  it('is appended as level 16 with totals 3 to 6, and tops the school window', () => {
+    expect(PLANS).toHaveLength(16);
+    expect(plan).toMatchObject({ mode: 'every', rounds: 4, min: 3, max: 6, split: true });
+    expect(totals).toEqual([3, 4, 5, 6]);
+    expect(LEVELS.school!.max).toBe(16);
+    expect(levelsInOrder(LEVELS.school!).at(-1)).toBe(16);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(16);
+    expect(duckPond.describeLevel!(16)).toMatch(/Every way/);
+  });
+
+  it('has exactly total − 1 ordered ways, none with an empty side, and 3 and 2 differs from 2 and 3', () => {
+    for (const total of totals) {
+      const ways = everyWay(total);
+      expect(ways).toHaveLength(total - 1);
+      for (const w of ways) {
+        expect(w.left).toBeGreaterThanOrEqual(1);
+        expect(w.right).toBeGreaterThanOrEqual(1);
+        expect(w.left + w.right).toBe(total);
+      }
+      expect(new Set(ways.map((w) => w.right)).size).toBe(total - 1);
+    }
+    expect(everyWay(5)).toContainEqual({ left: 3, right: 2 });
+    expect(everyWay(5)).toContainEqual({ left: 2, right: 3 });
+  });
+
+  it('names the four verdicts of a keep', () => {
+    const found = new Set([2]);
+    expect(keepVerdict(5, 0, found)).toBe('none');
+    expect(keepVerdict(5, 5, found)).toBe('none');
+    expect(keepVerdict(5, 2, found)).toBe('again');
+    expect(keepVerdict(5, 3, found)).toBe('swap');
+    expect(keepVerdict(5, 1, found)).toBe('new');
+    expect(keepVerdict(6, 3, new Set([3]))).toBe('again');
+  });
+
+  it('ends the round exactly when every way is found', () => {
+    for (const total of totals) {
+      const found = new Set<number>();
+      for (let r = 1; r < total; r++) {
+        expect(roundDone(total, found)).toBe(false);
+        found.add(r);
+      }
+      expect(roundDone(total, found)).toBe(true);
+    }
+  });
+
+  it('hints a possible move that strictly nears an unfound split, for every state', () => {
+    for (const total of totals) {
+      const ways = Array.from({ length: total - 1 }, (_, i) => i + 1);
+      for (let mask = 0; mask < 2 ** ways.length - 1; mask++) {
+        const found = new Set(ways.filter((_, i) => mask & (1 << i)));
+        const todo = ways.filter((r) => !found.has(r));
+        for (let right = 0; right <= total; right++) {
+          const move = nextHintMove(total, right, found);
+          if (todo.includes(right)) {
+            expect(move).toBeNull();
+            expect(everyMove(total, right, found)).toBe('check');
+            continue;
+          }
+          expect(move).not.toBeNull();
+          // The move is possible: a duck is on the side it names.
+          if (move === 'left') expect(total - right).toBeGreaterThan(0);
+          else expect(right).toBeGreaterThan(0);
+          const next = right + (move === 'left' ? 1 : -1);
+          const dist = (r: number) => Math.min(...todo.map((t) => Math.abs(t - r)));
+          expect(dist(next)).toBeLessThan(dist(right));
+        }
+      }
+      expect(nextHintMove(total, 1, new Set(ways))).toBeNull();
+    }
+  });
+
+  it('a capable child finishes every total in exactly total − 1 keeps, wherever the ducks start', () => {
+    for (const total of totals) {
+      for (const start of [0, total]) {
+        let right = start;
+        const found = new Set<number>();
+        let keeps = 0;
+        for (let guard = 0; guard < 100 && !roundDone(total, found); guard++) {
+          const move = everyMove(total, right, found);
+          if (move === 'check') {
+            expect(keepVerdict(total, right, found)).not.toBe('again');
+            found.add(right);
+            keeps++;
+          } else right += move === 'left' ? 1 : -1;
+        }
+        expect(roundDone(total, found)).toBe(true);
+        expect(keeps).toBe(total - 1);
+      }
+    }
+  });
+
+  it('seats every duck of either side apart, on the water, clear of the bridge, and fills the nearest free seat first', () => {
+    for (const total of totals) {
+      const seats = everySeats(total);
+      expect(seats.left).toHaveLength(total);
+      expect(seats.right).toHaveLength(total);
+      const all = [...seats.left, ...seats.right];
+      for (const [i, [x, y]] of all.entries()) {
+        expect(Math.abs(x)).toBeGreaterThanOrEqual(SPLIT_BRIDGE_HALF + DUCK_GAP / 2 - 1e-6);
+        expect((x / POND_RX) ** 2 + (y / POND_RY) ** 2).toBeLessThan(1);
+        for (const [x2, y2] of all.slice(i + 1))
+          expect(Math.hypot(x - x2, y - y2)).toBeGreaterThanOrEqual(2 * seats.hitR * seats.scale - 1e-6);
+      }
+      // Tap areas on screen are never smaller than 100 across at full size, 100 at the six's 0.9.
+      expect(2 * seats.hitR * seats.scale).toBeGreaterThanOrEqual(100 - 1e-6);
+      // Mirror images: equal sides look equal.
+      seats.left.forEach(([x, y], i) => expect(seats.right[i]).toEqual([-x, y]));
+    }
+    expect(firstFreeSeat([])).toBe(0);
+    expect(firstFreeSeat([0, 2])).toBe(1);
+    expect(firstFreeSeat([0, 1, 2])).toBe(3);
+  });
+
+  it('has a voice line for each new moment', () => {
+    for (const id of [
+      'duck.every',
+      'duck.everyFind',
+      'duck.way',
+      'duck.wayAgain',
+      'duck.waySwap',
+      'duck.wayFirst',
+      'duck.wayHint',
+      'duck.wayAll',
+    ])
+      expect(Object.keys(VOICE)).toContain(id);
   });
 });

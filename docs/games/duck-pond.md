@@ -12,7 +12,7 @@
 | toddler | 12, 1, 2, 3, 4, 5 |
 | preschool | 3–7 |
 | pre-K | 5–9 |
-| school | 8, 9, 10, 11, 14, 15 |
+| school | 8, 9, 10, 11, 14, 15, 16 |
 
 | Level | Plays like |
 | --- | --- |
@@ -31,6 +31,7 @@
 | 13 | One big duck: a touch anywhere brings a friend, up to five |
 | 14 | Doubles: 1 + 1 to 5 + 5 across the bridge, then one more on a side; how many in all? |
 | 15 | Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten? |
+| 16 | Every way: send ducks across the bridge and find every way to share 3 to 6 ducks |
 
 <!-- end generated -->
 
@@ -52,4 +53,6 @@ Level 14, **Doubles**, appended after the lap openings (ids 12 and 13), so the s
 
 Level 13, **Friends**, is lap's first level (order `[13, 12, 1, 2]`; `entryLevels` `[12, 13]`). One big duck (2.4 times the size) is on the pond from the start and a layer over the whole screen takes every touch: the big duck quacks and cheers and a friend swims in from alternating sides, with the count spoken and shown on the sign with dots, up to five. Nothing holds the first touch (the instruction line is not awaited, and a touch during a swim-in brings the next); after the fifth a touch only quacks with a splash. After four quiet seconds the big duck hops, counting nothing. The round ends with a quack chorus, "Five friends…" and confetti, and no miss or hint can be reached. The ghost finger touches the water away from the duck. New lines `duck.friends` and `duck.friendsAll` have rendered clips. A touch in the bottom-left of the screen lands on the shell's pet corner, so the browser suite's touch spots avoid it.
 
-Level 15, **Ten and some more**, is the last school level. A full ten pops onto the left ten-frame at once with one splash, then 1 to 9 ducks swim into a second ten-frame on the pond (ducks at 0.68). Rounds alternate: how many in all (pads 11 to 19), then the sign shows the total and she finds how many are on that side (pads 1 to 9); the ones never repeat twice running. A wrong pad counts on from ten ("Start at ten and count on!") or bobs the ten and counts just the ones; the glow comes from the second miss, one hint per question. A right answer writes "10 + 4 = 14" and the pet reads it. The finale narrows the pond back to five full-size ducks.
+Level 15, **Ten and some more**, is the school level after Doubles. A full ten pops onto the left ten-frame at once with one splash, then 1 to 9 ducks swim into a second ten-frame on the pond (ducks at 0.68). Rounds alternate: how many in all (pads 11 to 19), then the sign shows the total and she finds how many are on that side (pads 1 to 9); the ones never repeat twice running. A wrong pad counts on from ten ("Start at ten and count on!") or bobs the ten and counts just the ones; the glow comes from the second miss, one hint per question. A right answer writes "10 + 4 = 14" and the pet reads it. The finale narrows the pond back to five full-size ducks.
+
+Level 16, **Every way**, tops the school window (order `[8, 9, 10, 11, 14, 15, 16]`; `rounds` counts totals: 3, 4, 5, 6 ducks, fourteen ways in all). All the ducks start on one side of the footbridge (the left in the first round, either side after). Tapping a duck sends it across to the nearest free seat; tapping it again brings it back; every tap is allowed. The sign reads the live split ("3 and 2"), and the green check keeps the split: a new one slides a card into a row of faint outlines (one fewer than the total, never counted aloud), a repeat pulses its card ("We found that one!"), a swapped one ("2 and 3" after "3 and 2") is a new card and the pet says the same ducks swapped sides, and a pond with a side empty is not a split yet (the check is dim and the pet asks her to send some across, once). The second repeat in a row glows one duck toward the nearest unfound split and counts the round's one hint; there are no misses. The round ends when every outline is filled. The ducks are 0.9 size at six so six fit a side; the card row is as wide as 120 per card allows, narrowing upright. Rules in `logic.ts` (`everyWay`, `keepVerdict`, `nextHintMove`, `everyMove`, `everySeats`), the card row in `every.ts`; the how-to card's demonstration shows the first two totals.
