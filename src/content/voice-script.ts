@@ -249,6 +249,7 @@ export const SHARED = {
   'couch.course.sunbeams': ['Five boards, every flower awake!'],
   'couch.course.codedoors': ['Five doors, every code cracked!'],
   'couch.course.robotpath': ['Five mazes, every star reached!'],
+  'couch.course.cardtables': ['All {count} tables, every pair found!'],
   'couch.course.best': ['A new best! Look at that sliding!'],
   'couch.keepsake': ['A keepsake for your first trip: Lantern Night!'],
   // Couch play: what each game asks of the players, one variant so the caption matches the speech.

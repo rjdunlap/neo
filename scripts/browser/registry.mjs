@@ -55,6 +55,7 @@ import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs
 import { createSuite as createCouchSunbeams } from './suites/couch-sunbeams.mjs';
 import { createSuite as createCouchCodeDoors } from './suites/couch-codedoors.mjs';
 import { createSuite as createCouchRobotPath } from './suites/couch-robotpath.mjs';
+import { createSuite as createCouchCardTables } from './suites/couch-cardtables.mjs';
 import { createSuite as createGardenRows } from './suites/garden-rows-play.mjs';
 import { createSuite as createDropsJourney } from './suites/drops-journey-play.mjs';
 import { createSuite as createRainGarden } from './suites/rain-garden-play.mjs';
@@ -337,6 +338,7 @@ export const SUITES = [
   'couchsunbeams',
   'couchcodedoors',
   'couchrobotpath',
+  'couchcardtables',
   'couchgames',
   'grownups',
   'athome',
@@ -554,6 +556,7 @@ export const ALL_SUITES = [
   'couchsunbeams',
   'couchcodedoors',
   'couchrobotpath',
+  'couchcardtables',
   'couchgames',
   'grownups',
   'howto',
@@ -785,6 +788,7 @@ export function createChecks(fixture) {
     'couchConga',
     'couchBridges',
     'couchRobotPath',
+    'couchCardTables',
     'couchGames',
     'couchGuide',
     'couchCourse',
@@ -1026,6 +1030,7 @@ export function createChecks(fixture) {
   install(createCouchSunbeams(shared));
   install(createCouchCodeDoors(shared));
   install(createCouchRobotPath(shared));
+  install(createCouchCardTables(shared));
   install(createGardenRows(shared));
   install(createDropsJourney(shared));
   install(createRainGarden(shared));
@@ -1315,6 +1320,7 @@ export async function runSuite(suite, fixture) {
     couchSunbeams,
     couchCodeDoors,
     couchRobotPath,
+    couchCardTables,
   } = createChecks({ ...fixture, recordCheck: (name) => completed.push(name) });
 
   if (suite === 'all' || suite === 'world') {
@@ -1466,6 +1472,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'couchsunbeams') await couchSunbeams();
   if (suite === 'all' || suite === 'couchcodedoors') await couchCodeDoors();
   if (suite === 'all' || suite === 'couchrobotpath') await couchRobotPath();
+  if (suite === 'all' || suite === 'couchcardtables') await couchCardTables();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'all' || suite === 'grownups') await grownUps();
   if (suite === 'all' || suite === 'grownups' || suite === 'athome') await atHome();
