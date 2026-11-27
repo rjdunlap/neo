@@ -1,8 +1,20 @@
-/** Wave Ribbon's code-drawn pieces: little pulse pictures for the buttons, the trace cards, and the sticker and hub icon. */
+/** Wave Ribbon's code-drawn pieces: pulse pictures, lane toggles, trace & hypothesis cards, sticker and hub icon. */
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { stickerize } from '../../art/sticker';
-import { AMPLITUDES, STEP_COUNT, markerTrace, type CardId, type Preset } from './logic';
+import { finish } from '../../ui/buttons';
+import {
+  AMPLITUDES,
+  ARRIVAL_STEP,
+  PEAK_STEP,
+  STEP_COUNT,
+  markerTrace,
+  type CardId,
+  type ClaimId,
+  type Preset,
+  type PulseSize,
+  type RibbonColor,
+} from './logic';
 
 /** A little hump of the pulse, as tall as the preset's height, drawn white for a coloured button. Centred on (0, 0). */
 export function pulseIcon(preset: Preset): Graphics {
@@ -77,6 +89,90 @@ export function cardArt(id: CardId, w: number, h: number, selected: boolean): Co
       .stroke({ width: 5, color: swatch.red.line, cap: 'round' });
   }
   c.addChild(g);
+  return c;
+}
+
+/** A Lane A / Lane B toggle button: paper pill in its lane's colour, top-or-bottom lane icon, and its pulse size. */
+export function laneToggleArt(
+  lane: 'A' | 'B',
+  size: PulseSize,
+  color: RibbonColor,
+  w: number,
+  h: number,
+): Container {
+  const c = new Container();
+  c.addChild(finish({ w, h, corner: 28 }, swatch[color]));
+  const g = new Graphics();
+  const yTop = -12,
+    yBot = 12;
+  const topActive = lane === 'A';
+  g.moveTo(-58, yTop)
+    .lineTo(-22, yTop)
+    .stroke({ width: topActive ? 8 : 4, color: 0xffffff, alpha: topActive ? 1 : 0.4, cap: 'round' });
+  g.moveTo(-58, yBot)
+    .lineTo(-22, yBot)
+    .stroke({ width: topActive ? 4 : 8, color: 0xffffff, alpha: topActive ? 0.4 : 1, cap: 'round' });
+  g.circle(-40, topActive ? yTop : yBot, 7).fill(0xffffff);
+  c.addChild(g);
+  const pulse = pulseIcon(size);
+  pulse.x = 22;
+  c.addChild(pulse);
+  return c;
+}
+
+/** Draws a tiny red arrival flag stamped at `(x, y)` on a hypothesis card's mini-ruler. */
+function miniFlag(g: Graphics, x: number, y: number) {
+  g.moveTo(x, y + 6)
+    .lineTo(x, y - 22)
+    .stroke({ width: 4, color: swatch.red.line, cap: 'round' });
+  g.poly([x, y - 22, x + 16, y - 16, x, y - 9]).fill(swatch.red.fill);
+}
+
+/**
+ * A level-3 hypothesis card comparing Small (top track) vs Tall (bottom track) against the 0..12 time ruler:
+ * `same-time` stamps both flags at step 10 (`ARRIVAL_STEP`); `tall-sooner` stamps Tall early at step 6 (`PEAK_STEP`).
+ */
+export function claimCardArt(id: ClaimId, w: number, h: number, selected: boolean): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(cream)
+    .stroke({ width: selected ? 8 : 4, color: selected ? swatch.blue.line : swatch.brown.light });
+  const left = -w / 2 + 64,
+    width = w - 88,
+    yTop = -14,
+    yBot = 30;
+  const smallMark = left + (width * ARRIVAL_STEP) / STEP_COUNT;
+  const tallMark = left + (width * (id === 'same-time' ? ARRIVAL_STEP : PEAK_STEP)) / STEP_COUNT;
+
+  if (id === 'same-time') {
+    for (let y = yTop - 20; y < yBot + 8; y += 10) g.moveTo(smallMark, y).lineTo(smallMark, y + 5);
+    g.stroke({ width: 4, color: swatch.blue.light, cap: 'round' });
+  }
+  for (const y of [yTop, yBot]) {
+    g.moveTo(left, y)
+      .lineTo(left + width, y)
+      .stroke({ width: 3, color: swatch.brown.light, cap: 'round' });
+    for (let k = 0; k <= STEP_COUNT; k += 2) {
+      const x = left + (width * k) / STEP_COUNT;
+      g.moveTo(x, y - 5)
+        .lineTo(x, y + 5)
+        .stroke({ width: 2, color: swatch.brown.light, cap: 'round' });
+    }
+  }
+  miniFlag(g, smallMark, yTop);
+  miniFlag(g, tallMark, yBot);
+  c.addChild(g);
+
+  const smallPic = pulseIcon('small');
+  smallPic.tint = swatch.teal.line;
+  smallPic.scale.set(0.46);
+  smallPic.position.set(-w / 2 + 34, yTop - 6);
+  const tallPic = pulseIcon('tall');
+  tallPic.tint = swatch.purple.line;
+  tallPic.scale.set(0.46);
+  tallPic.position.set(-w / 2 + 34, yBot - 6);
+  c.addChild(smallPic, tallPic);
   return c;
 }
 

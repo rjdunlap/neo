@@ -1,1 +1,0 @@
-**`wave-ribbon`, level 3 and the grown-up band (E7b)** (new levels on an existing interaction): the two-lane A/B bench with the Same mark and Tall sooner hypothesis cards, per [definition](../../definitions/wave-ribbon.md); `bands: ['school', 'grownup']`, `grownup: { min: 3, max: 3 }`; after levels 1–2 (E7). *Claimed: branch `agy/wave-ribbon-3`, draft PR in flight.*
