@@ -148,5 +148,58 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
   }
 
-  return { conductorSign, conductorChange };
+  async function conductorRevise() {
+    // Level 8: hear two prepared versions, revise a property, test Undo restores original, hear revision, finish.
+    const held = process.env.CONDUCTOR_UPRIGHT === '1';
+    if (held) await page.setViewportSize({ width: 390, height: 844 });
+    await launch('little-conductor', 8);
+    await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const st = () => page.evaluate(() => neo.scene.game.revise);
+    const settled = () =>
+      page.waitForFunction(
+        () => {
+          const g = neo.scene.game;
+          return !g.playing && !g['busy'] && !g['answering'];
+        },
+        null,
+        { timeout: 15000 },
+      );
+    // Early Done before hearing both prepared versions stays open and counts nothing.
+    await tap('neo.scene.game.done');
+    assert.deepEqual((await st()).heardVersions, [false, false]);
+    // Hear Version 1 whole, then Version 2 whole.
+    await tap('neo.scene.game.versionButtons[0]');
+    await page.waitForFunction(() => neo.scene.game.revise.heardVersions[0], null, { timeout: 15000 });
+    await settled();
+    await tap('neo.scene.game.versionButtons[1]');
+    await page.waitForFunction(() => neo.scene.game.revise.heardVersions[1], null, { timeout: 15000 });
+    await settled();
+    // Change pace away from Version 2's original, then tap Undo and verify it restores the original.
+    const v2 = (await st()).versions[1];
+    const otherPace = v2.pace === 'turtle' ? 'rabbit' : 'turtle';
+    await tap(`neo.scene.game.pads.${otherPace}`);
+    await settled();
+    assert.equal((await st()).current.pace, otherPace);
+    await tap('neo.scene.game.undoButton');
+    await settled();
+    assert.deepEqual((await st()).current, v2);
+    // Revise again, hear the whole revision, take screenshot, and tap Done.
+    await tap(`neo.scene.game.pads.${otherPace}`);
+    await page.waitForFunction(() => neo.scene.game.revise.heardRevision, null, { timeout: 15000 });
+    await settled();
+    await screenshot(held ? 'little-conductor-8-upright' : 'little-conductor-8-portrait');
+    await tap('neo.scene.game.done');
+    await finished('little-conductor');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('little-conductor').history.at(-1);
+        return [r.level, r.misses, r.hints, kit.store.data.stickers.length];
+      }),
+      [8, 0, 0, before + 1],
+    );
+    log('Little Conductor 8: both prepared versions, Undo, revised phrase heard and one sticker passed');
+  }
+
+  return { conductorSign, conductorChange, conductorRevise };
 }

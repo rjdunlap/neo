@@ -61,6 +61,19 @@ import {
   setDial,
   submitChange,
   wrongDials,
+  canFinishRevise,
+  earlyReviseDone,
+  finishRevise,
+  isRevised,
+  markReviseHeard,
+  newRevise,
+  REV_H,
+  REV_W,
+  reviseBot,
+  reviseProperty,
+  selectVersion,
+  setReviseDial,
+  undoRevision,
   type Ask,
   type Changes,
 } from './logic';
@@ -505,7 +518,7 @@ describe('Little Conductor level 5, two ways at once', () => {
     expect(planFor(5).mode).toBe('dials');
     expect(LEVELS.preschool?.max).toBe(5);
     expect(LEVELS.prek?.max).toBe(6);
-    expect(LEVELS.school).toEqual({ min: 5, max: 7 });
+    expect(LEVELS.school).toEqual({ min: 5, max: 8 });
     expect(LEVELS.toddler?.max).toBe(2);
   });
 
@@ -656,7 +669,7 @@ describe('Little Conductor level 6, invite a friend', () => {
   it('is a pre-K and school level that holds one steady pace', () => {
     expect(planFor(6).mode).toBe('friends');
     expect(LEVELS.prek?.max).toBe(6);
-    expect(LEVELS.school?.max).toBe(7);
+    expect(LEVELS.school?.max).toBe(8);
     expect(LEVELS.preschool?.max).toBe(5);
     expect(tempoOf('turtle', 'friends')).toBe(STEADY_BPM);
     expect(tempoOf('rabbit', 'friends')).toBe(STEADY_BPM);
@@ -917,7 +930,7 @@ describe('Little Conductor level 7, one change', () => {
   });
 
   it('is a school-only level, and the plan names it', () => {
-    expect(LEVELS.school?.max).toBe(7);
+    expect(LEVELS.school?.max).toBe(8);
     expect(LEVELS.prek?.max).toBe(6);
     expect(planFor(7).mode).toBe('change');
   });
@@ -953,6 +966,161 @@ describe('Little Conductor level 7, one change', () => {
       for (const t of targets) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
       const sign = l.sign!;
       const all = [...targets, sign];
+      for (const t of all) {
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        expect(t.y + t.h).toBeLessThanOrEqual(view.h);
+        expect(overlap(t, { x: 0, y: view.h - 220, w: 220, h: 220 })).toBe(false);
+        expect(overlap(t, l.stand)).toBe(false);
+      }
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j])).toBe(false);
+      expect(l.listener!.y).toBeLessThan(l.listen.y - l.listen.r);
+    },
+  );
+});
+
+describe('Little Conductor level 8, revise for a listener', () => {
+  const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
+
+  it('prepares two distinct versions, and every chosen revision differs from the original in that property', () => {
+    for (const seed of seeds) {
+      const r0 = newRevise(new Rng(seed));
+      expect(r0.versions[0]).not.toEqual(r0.versions[1]);
+      for (const idx of [0, 1] as const) {
+        const base = selectVersion(r0, idx);
+        const orig = base.versions[idx];
+        expect(isRevised(base)).toBe(false);
+        const revPace = reviseProperty(base, 'pace');
+        expect(revPace.current.pace).not.toBe(orig.pace);
+        expect(revPace.current.strength).toBe(orig.strength);
+        expect(isRevised(revPace)).toBe(true);
+        const revStrength = reviseProperty(base, 'strength');
+        expect(revStrength.current.strength).not.toBe(orig.strength);
+        expect(revStrength.current.pace).toBe(orig.pace);
+        expect(isRevised(revStrength)).toBe(true);
+      }
+    }
+  });
+
+  it('undo restores the active original and closes the revision gate', () => {
+    let r = newRevise(new Rng(11));
+    r = markReviseHeard(r);
+    r = markReviseHeard(selectVersion(r, 1));
+    expect(r.heardVersions).toEqual([true, true]);
+    const orig = r.versions[1];
+    r = reviseProperty(r, 'pace');
+    r = reviseProperty(r, 'strength');
+    r = markReviseHeard(r);
+    expect(isRevised(r)).toBe(true);
+    expect(canFinishRevise(r)).toBe(true);
+    r = undoRevision(r);
+    expect(r.current).toEqual(orig);
+    expect(isRevised(r)).toBe(false);
+    expect(r.heardRevision).toBe(false);
+    expect(canFinishRevise(r)).toBe(false);
+    expect(earlyReviseDone(r)).toBe('pick-revision');
+  });
+
+  it('requires both prepared versions, a deliberate change, and hearing the revision whole before Done opens', () => {
+    let r = newRevise(new Rng(4));
+    expect(canFinishRevise(r)).toBe(false);
+    expect(earlyReviseDone(r)).toBe('hear-versions');
+    r = markReviseHeard(r);
+    expect(earlyReviseDone(r)).toBe('hear-versions');
+    // Revising before hearing version 2 still keeps Done gated on hearing both versions.
+    r = reviseProperty(r, 'pace');
+    r = markReviseHeard(r);
+    expect(canFinishRevise(r)).toBe(false);
+    expect(earlyReviseDone(r)).toBe('hear-versions');
+    // Hearing version 2 clears the revision, then changing & hearing the revision opens Done.
+    r = markReviseHeard(selectVersion(r, 1));
+    expect(earlyReviseDone(r)).toBe('pick-revision');
+    r = setReviseDial(r, 'strength', r.versions[1].strength === 'gentle' ? 'strong' : 'gentle');
+    expect(earlyReviseDone(r)).toBe('hear-revision');
+    expect(canFinishRevise(r)).toBe(false);
+    r = markReviseHeard(r);
+    expect(earlyReviseDone(r)).toBeNull();
+    expect(canFinishRevise(r)).toBe(true);
+    expect(finishRevise(r).done).toBe(true);
+  });
+
+  it('voices both pace and strength in revise mode', () => {
+    const gentle = advance(
+      { ...select(newScore(), 'turtle'), strength: 'gentle' },
+      1.1,
+      MOTIFS[0],
+      'revise',
+    ).events;
+    const strong = advance(
+      { ...select(newScore(), 'rabbit'), strength: 'strong' },
+      1.1,
+      MOTIFS[0],
+      'revise',
+    ).events;
+    expect(gentle[0].bpm).toBe(PACES.turtle);
+    expect(gentle[0].gain).toBe(STRENGTH_GAIN.gentle);
+    expect(strong[0].bpm).toBe(PACES.rabbit);
+    expect(strong[0].gain).toBe(STRENGTH_GAIN.strong);
+  });
+
+  it('is finished by the ghost finger over every seed after hearing both versions and the revision', () => {
+    for (const seed of seeds) {
+      let r = newRevise(new Rng(seed));
+      for (let guard = 0; guard < 10 && !r.done; guard++) {
+        const move = reviseBot(r);
+        if (move === null) break;
+        if (move === 'done') r = finishRevise(r);
+        else if (move === 'listen') r = markReviseHeard(r);
+        else if (move.kind === 'version') r = markReviseHeard(selectVersion(r, move.index));
+        else r = markReviseHeard(setReviseDial(r, move.dial, move.id));
+      }
+      expect(r.done).toBe(true);
+      expect(r.heardVersions).toEqual([true, true]);
+      expect(isRevised(r)).toBe(true);
+      expect(r.heardRevision).toBe(true);
+    }
+  });
+
+  it('is a school-only level at 8 and the plan names it', () => {
+    expect(LEVELS.school).toEqual({ min: 5, max: 8 });
+    expect(LEVELS.prek?.max).toBe(6);
+    expect(planFor(8).mode).toBe('revise');
+  });
+
+  const VIEWS8: [number, number, boolean][] = [
+    [1024, 768, false],
+    [768, 1024, false],
+    [1366, 768, false],
+    [1194, 834, false],
+    [390, 844, true],
+    [390, 900, true],
+    [768, 1024, true],
+    [430, 700, true],
+  ];
+  const overlap = (
+    a: { x: number; y: number; w: number; h: number },
+    b: { x: number; y: number; w: number; h: number },
+  ) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  it.each(VIEWS8)(
+    'lays the four pads, version buttons, undo, sign, listener and buttons out large and clear at %i×%i (upright %s)',
+    (pw, ph, upright) => {
+      const view = computeView(pw, ph, undefined, upright);
+      const l = conductorLayout(view, 8);
+      const disc = (d: { x: number; y: number; r: number }) => ({
+        x: d.x - d.r,
+        y: d.y - d.r,
+        w: 2 * d.r,
+        h: 2 * d.r,
+      });
+      const pads = [l.pads.turtle, l.pads.rabbit, l.strengths!.gentle, l.strengths!.strong];
+      const rev = [...l.versions!, l.undo!];
+      for (const b of rev) expect([b.w, b.h]).toEqual([REV_W, REV_H]);
+      const targets = [...pads, ...rev, disc(l.listen), disc(l.done)];
+      expect(l.cells).toBeUndefined();
+      for (const t of targets) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+      const all = [...targets, l.sign!];
       for (const t of all) {
         expect(t.x).toBeGreaterThanOrEqual(0);
         expect(t.y).toBeGreaterThanOrEqual(0);

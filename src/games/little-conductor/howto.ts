@@ -28,6 +28,11 @@ export const HOW_TO: GameHowTo = {
       text: "Look at the listener's sign: it shows a turtle or rabbit and a small or big drum. Tap the pace and the drum to match it, hear that half, then tap the green check; once for each half. The second half changes one thing.",
     },
     {
+      from: 8,
+      to: 8,
+      text: 'Tap 1 and 2 to hear both prepared versions, then change a pace or drum pad to revise the one you picked. Hear the whole revision (Undo returns to the original), then tap the green check.',
+    },
+    {
       from: 3,
       to: 3,
       text: "Look at the listener's sign, tap the pad it shows to hear that half, then tap the green check; once for each half of the tune.",
@@ -52,6 +57,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 3, to: 3, text: 'Both halves match the signs and the band takes a bow.' },
     { from: 7, to: 7, text: 'Both halves match the signs, the band plays them and takes a bow.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Both versions were heard, your revision plays once more and the band takes a bow.',
+    },
   ],
   note: [
     {
@@ -81,6 +91,11 @@ export const HOW_TO: GameHowTo = {
       from: 3,
       to: 3,
       text: 'A check that does not match the sign counts as a miss; after two on one half the right pad glows, which counts as a hint. The sign is a picture to follow, not a sound to judge.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'There is no score, miss or hint: any deliberate change from the version she started from works once heard whole, and she can tell someone nearby what she changed and why.',
     },
   ],
 };
