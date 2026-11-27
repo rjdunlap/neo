@@ -1,0 +1,1 @@
+**`memory-match`, couch par course (fewest flips)** (Rule tests; `couchcourse` while courses live on the couch): add frozen card boards, par count, course playback, `COURSE_IDS` entry and browser suite per [ROADMAP](../../ROADMAP.md#grown-up-play-the-couch-route-for-one) (Chunk 8).

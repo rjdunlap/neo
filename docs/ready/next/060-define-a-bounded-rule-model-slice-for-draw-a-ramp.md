@@ -1,0 +1,1 @@
+**Define a bounded rule-model slice for Draw a Ramp or Pond Merge** (docs only): deterministic handwritten solver, no physics library, per [ROADMAP](../../ROADMAP.md#chunks) (Chunk 27) and [PHYSICS-GAMES](../../PHYSICS-GAMES.md).
