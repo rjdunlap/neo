@@ -1,1 +1,0 @@
-**Define `genetics` G8: *Growing Conditions* (within Garden Grow)** (docs only; one controlled-comparison packet, Garden Grow overlap, named content check and rule tests; links and `git diff --check`). [Study](../../deep-dives/subjects/genetics.md#build-slices-in-order)
