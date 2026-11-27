@@ -341,7 +341,7 @@ export class ConditionsGarden implements Game {
     this.layout();
     this.step = this.compare ? 'pick' : 'fair';
     this.busy = false;
-    if (this.compare) return this.ctx.instruct('grow.cond.look');
+    if (this.compare) return this.ctx.instruct('grow.cond.look', { n: 'two' });
     return this.ctx.instruct('grow.fair.ask', { what: WORD[r.ask!] });
   }
 
@@ -488,9 +488,9 @@ export class ConditionsGarden implements Game {
         this.found = true;
         this.setStep('grow');
         sfx.sparkle();
-        return void this.ctx.say('grow.cond.grow');
+        return void this.ctx.say('grow.cond.grow', { what: WORD[c] });
       }
-      return this.miss(() => this.ctx.say('grow.cond.same'));
+      return this.miss(() => this.ctx.say('grow.cond.same', { what: WORD[c] }));
     }
     // Level 13: only the second bed's cards flip, before the round and after it (free exploration).
     if (plot !== 1 || (this.step !== 'fair' && this.step !== 'free')) return;
@@ -513,7 +513,7 @@ export class ConditionsGarden implements Game {
   private async tapToken() {
     if (this.busy || this.finished) return;
     if (this.compare) {
-      if (this.step === 'pick') return void this.ctx.say('grow.cond.look');
+      if (this.step === 'pick') return void this.ctx.say('grow.cond.look', { n: 'two' });
       return this.growBoth();
     }
     if (this.step === 'free') return this.growBoth();
@@ -565,10 +565,10 @@ export class ConditionsGarden implements Game {
     this.grown = true;
     if (this.compare && this.step === 'grow') {
       this.setStep('which');
-      await this.ctx.say('grow.cond.which');
+      await this.ctx.say('grow.cond.which', { n: 'two' });
     } else if (!this.compare && this.step === 'free') {
       const d = differing(this.plots[0].setup, this.plots[1].setup);
-      if (d.length === 2) await this.ctx.say('grow.fair.both');
+      if (d.length === 2) await this.ctx.say('grow.fair.both', { n: 'Two' });
       else if (d.length === 1) await this.ctx.say('grow.fair.result', this.resultVars(d[0]));
     }
     this.busy = false;

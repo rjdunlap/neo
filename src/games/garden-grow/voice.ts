@@ -26,10 +26,10 @@ export const VOICE = {
   'grow.yay': ['Look how it grew!', 'Beautiful flowers!', 'Hooray, they bloomed!'],
   'grow.done': ['What a beautiful garden!'],
   'grow.full': ['Every bed has a seed! Tap the cloud to make it rain, or tap a seed to take it out.'],
-  'grow.cond.look': ['Same seeds. Look at the cards. What is different?'],
-  'grow.cond.same': ['Those two are the same. Look again.'],
-  'grow.cond.grow': ['Now tap the sun and cloud to grow both beds.'],
-  'grow.cond.which': ['Which bed grew taller? Tap it.'],
+  'grow.cond.look': ['Same seeds in {n} beds. Look at the cards. What is different?'],
+  'grow.cond.same': ['Those two {what} cards are the same. Look again.'],
+  'grow.cond.grow': ['The {what} cards are different. Now tap the sun and cloud to grow both beds.'],
+  'grow.cond.which': ['Which of the {n} beds grew taller? Tap it.'],
   'grow.cond.count': ['Count the steps: this one is {a} and that one is {b}.'],
   'grow.cond.result': ['The bed with {what} grew taller. Same seeds, one difference.'],
   'grow.fair.ask': [
@@ -43,5 +43,5 @@ export const VOICE = {
     'You changed two things. Then we could not tell which one did it. Put the {other} back to match.',
   ],
   'grow.fair.result': ['Only the {cond} was different. The bed with {what} grew taller.'],
-  'grow.fair.both': ['Two things changed, so we cannot tell which one did it.'],
+  'grow.fair.both': ['{n} things changed, so we cannot tell which one did it.'],
 } satisfies Record<string, string[]>;
