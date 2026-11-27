@@ -1,1 +1,0 @@
-**Build `duck-pond` level 16, *Every way*** (new-interaction tier: typecheck, the unit tests in the [definition](../../definitions/duck-pond-every-way.md#rule-tests), **one** filtered scripted play, one portrait screenshot, `fingerdemo` at 16, build since voice and how-to change). [Dive](../../deep-dives/duck-pond.md#build-slices-in-order)

@@ -47,6 +47,13 @@ import {
   splitSeats,
   frameSeats,
   teenRounds,
+  everyMove,
+  everySeats,
+  everyTotals,
+  firstFreeSeat,
+  keepVerdict,
+  nextHintMove,
+  roundDone,
   teenAnswer,
   teenPadRange,
   type TeenRound,
@@ -71,6 +78,7 @@ import {
   SPLIT_BRIDGE_HALF,
   type Seating,
 } from './logic';
+import { CardRow } from './every';
 import { rangeFor } from '../../progress/difficulty';
 import { HINT_AFTER } from '../../progress/coach';
 
@@ -307,6 +315,19 @@ class DuckPond implements Game {
   /** Level 15: the level's rounds still to come, and this round (a full ten and some more). */
   private teens: TeenRound[] = [];
   teen: TeenRound | null = null;
+  /** Level 16: this round's total, the right counts kept so far, who sits where, and how the round is going. */
+  private every: {
+    total: number;
+    found: Set<number>;
+    seats: ReturnType<typeof everySeats>;
+    left: (Duck | null)[];
+    right: (Duck | null)[];
+    /** Keeps of splits already found, in a row; the second glows a duck. */
+    again: number;
+    hinted: boolean;
+    saidFirst: boolean;
+  } | null = null;
+  private readonly cardRow: CardRow;
   private busy = true;
   private finished = false;
   /** Level 13: the one big duck, and the layer over the whole screen whose touch brings her a friend. */
@@ -341,8 +362,22 @@ class DuckPond implements Game {
     this.sign.visible = false;
     // Ducks lower on the screen (nearer to us) draw in front.
     this.ducks.sortableChildren = true;
-    ctx.stage.addChild(this.backdrop, this.pond, this.sign, this.bridge, this.ducks, this.padLayer);
-    if (this.plan.stop) {
+    this.cardRow = new CardRow(ctx.tw);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.pond,
+      this.sign,
+      this.bridge,
+      this.ducks,
+      this.padLayer,
+      this.cardRow,
+    );
+    if (this.plan.mode === 'every') {
+      // Level 16: the check keeps the split on the pond (lit only while both sides hold a duck).
+      this.check = new RoundButton(checkIcon(), swatch.green, CHECK_R, () => void this.keepSplit());
+      this.check.visible = false;
+      ctx.stage.addChild(this.check);
+    } else if (this.plan.stop) {
       this.check = new RoundButton(checkIcon(), swatch.green, CHECK_R, () => void this.pressCheck());
       this.check.visible = this.checkRing.visible = false;
       ctx.stage.addChild(this.checkRing, this.check);
@@ -436,6 +471,7 @@ class DuckPond implements Game {
     this.checkRing.position.set(ck.x, ck.y);
     this.layoutBank();
     this.layoutPads();
+    this.cardRow.layout(v);
     this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
     if (this.bigDuck) {
       this.bigDuck.position.set(x + BIG_DUCK_SPOT[0], y + BIG_DUCK_SPOT[1]);
@@ -476,6 +512,7 @@ class DuckPond implements Game {
       this.pads.map((p) => p.value),
       this.answer,
     );
+    if (this.plan.mode === 'every') return this.everyIntent();
     if (move === null) return null;
     if (move === 'check') return this.check ? { tap: { on: this.check } } : null;
     // Level 13: the finger touches the water or the grass well away from the big duck, to show that anywhere will do.
@@ -802,6 +839,10 @@ class DuckPond implements Game {
       this.busy = false;
       return;
     }
+    if (p.mode === 'every') {
+      await this.startEvery();
+      return;
+    }
     if (p.mode === 'teen') {
       // A full ten arrives at once, then the ones swim into the second frame; in turn, ask the whole or the ones.
       if (!this.teens.length) this.teens = teenRounds(rng, p);
@@ -1034,9 +1075,12 @@ class DuckPond implements Game {
     await this.tw.wait(0.4);
     this.clearBank();
     this.hideSign();
+    this.cardRow.reset(0);
     await this.swimAway();
     this.round++;
-    if (this.round >= this.plan.rounds) void this.finale();
+    // The how-to card's demonstration shows the first two totals of level 16, so it ends inside its time.
+    const rounds = this.plan.mode === 'every' && this.ctx.demo ? 2 : this.plan.rounds;
+    if (this.round >= rounds) void this.finale();
     else void this.nextRound();
   }
 
@@ -1226,6 +1270,170 @@ class DuckPond implements Game {
     this.busy = false;
   }
 
+  // ----- level 16: every way -----
+
+  /** The ducks, all on one side to start (the left in the first round, either in the rest), then the sign, the empty row and the pet's line. */
+  private async startEvery() {
+    const total = everyTotals(this.plan)[this.round];
+    const startRight = this.round > 0 && this.ctx.rng.chance(0.5);
+    const seats = everySeats(total);
+    const side = startRight ? seats.right : seats.left;
+    const e = {
+      total,
+      found: new Set<number>(),
+      seats,
+      left: Array.from({ length: total }, (): Duck | null => null),
+      right: Array.from({ length: total }, (): Duck | null => null),
+      again: 0,
+      hinted: false,
+      saidFirst: false,
+    };
+    this.every = e;
+    this.cardRow.reset(total - 1);
+    this.check!.visible = false;
+    await this.arrive(total, side, { scale: seats.scale, pondRx: POND_RX }, startRight);
+    this.swimmers.forEach((d, i) => {
+      (startRight ? e.right : e.left)[i] = d;
+      d.hitArea = new Circle(0, -46, seats.hitR);
+      onTap(d, () => void this.crossBridge(d), { cooldown: 300 });
+    });
+    this.showWays();
+    this.check!.visible = true;
+    this.check!.scale.set(0);
+    void this.tw.to(this.check!.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+    this.refreshCheck();
+    await this.ctx.instruct('duck.every', { n: total });
+    if (this.round === 0) await this.ctx.say('duck.everyFind');
+    this.busy = false;
+  }
+
+  private everyCounts() {
+    const e = this.every!;
+    const right = e.right.filter(Boolean).length;
+    return { left: e.total - right, right };
+  }
+
+  /** The sign reads the live split as numerals, "3 and 2". */
+  private showWays() {
+    const { left, right } = this.everyCounts();
+    this.sign.visible = true;
+    this.sign.scale.set(1);
+    this.signText.style.fontSize = 40;
+    this.signText.y = 0;
+    this.signText.text = `${left} and ${right}`;
+    this.signDots.clear();
+  }
+
+  /** The check is lit while both sides hold a duck. */
+  private refreshCheck() {
+    const { left, right } = this.everyCounts();
+    if (this.check) this.check.alpha = left > 0 && right > 0 ? 1 : 0.45;
+  }
+
+  private clearEveryGlow() {
+    for (const d of this.swimmers) d.glow(false);
+  }
+
+  /** A tapped duck hops across the bridge to the nearest free seat on the other side. Every tap is allowed: it is how she tries splits. */
+  private async crossBridge(d: Duck) {
+    const e = this.every;
+    if (!e || this.busy || this.finished || d.hopping) return;
+    const from = e.left.includes(d) ? e.left : e.right.includes(d) ? e.right : null;
+    if (!from) return;
+    const toRight = from === e.left;
+    const to = toRight ? e.right : e.left;
+    from[from.indexOf(d)] = null;
+    const seat = firstFreeSeat(to.flatMap((x, i) => (x ? [i] : [])));
+    to[seat] = d;
+    const spot = (toRight ? e.seats.right : e.seats.left)[seat];
+    d.pondOffset = spot;
+    d.glow(false);
+    this.showWays();
+    this.refreshCheck();
+    sfx.animal('quack');
+    const c = this.pondCenter();
+    await d.hopTo(c.x + spot[0], c.y + spot[1], 0.5, 90);
+    if (d.destroyed) return;
+    // A resize during the hop moved the pond: land where the seat is now.
+    const now = this.pondCenter();
+    d.position.set(now.x + spot[0], now.y + spot[1]);
+    d.zIndex = d.y;
+    sfx.splash();
+  }
+
+  /** The check: keep this split. A new one makes a card; one already found pulses its card; an empty side is not a split yet. */
+  private async keepSplit() {
+    const e = this.every;
+    if (!e || this.busy || this.finished || !this.check?.visible) return;
+    this.busy = true;
+    while (this.swimmers.some((d) => d.hopping)) await this.tw.wait(0.1);
+    const { left, right } = this.everyCounts();
+    const verdict = keepVerdict(e.total, right, e.found);
+    if (verdict === 'none') {
+      if (!e.saidFirst) {
+        e.saidFirst = true;
+        await this.ctx.say('duck.wayFirst');
+      }
+      this.busy = false;
+      return;
+    }
+    if (verdict === 'again') {
+      this.cardRow.pulse([right]);
+      sfx.pop();
+      e.again++;
+      // The second repeat in a row glows the duck to move next; that is the round's one hint.
+      if (e.again >= 2) {
+        const move = nextHintMove(e.total, right, e.found);
+        const side = move === 'left' ? e.left : e.right;
+        const duck = [...side].reverse().find((d) => d && !d.hopping);
+        if (duck) {
+          this.clearEveryGlow();
+          duck.glow(true);
+          if (!e.hinted) {
+            e.hinted = true;
+            this.hints++;
+          }
+        }
+      }
+      await this.ctx.say('duck.wayAgain');
+      if (e.again >= 2) await this.ctx.say('duck.wayHint');
+      this.busy = false;
+      return;
+    }
+    e.again = 0;
+    this.clearEveryGlow();
+    e.found.add(right);
+    sfx.sparkle();
+    sfx.bell(4 + (e.found.size % 6), 0.2);
+    this.cardRow.add(left, right);
+    for (const d of this.swimmers) d.critter.hop(0.4);
+    await this.ctx.say('duck.way', { a: left, b: right });
+    if (verdict === 'swap') {
+      this.cardRow.pulse([right, e.total - right]);
+      await this.ctx.say('duck.waySwap');
+    }
+    if (roundDone(e.total, e.found)) {
+      await this.ctx.say('duck.wayAll', { n: e.total, ways: e.total - 1 });
+      this.every = null;
+      this.check.visible = false;
+      await this.roundWon(e.total, false);
+      return;
+    }
+    this.busy = false;
+  }
+
+  /** The ghost finger: keep the split on the pond when it is a new one, else tap a duck on the side the hint names. */
+  private everyIntent(): TouchIntent | null {
+    const e = this.every;
+    if (!e || !this.check?.visible) return null;
+    const move = everyMove(e.total, this.everyCounts().right, e.found);
+    if (move === null) return null;
+    if (move === 'check') return { tap: { on: this.check } };
+    const side = move === 'left' ? e.left : e.right;
+    const duck = side.find((d) => d && !d.hopping);
+    return duck ? { tap: { on: duck, y: -46 } } : null;
+  }
+
   private async finale() {
     this.finished = true;
     // On the split pond the five finale ducks sit either side of the footbridge, never on it.
@@ -1341,6 +1549,8 @@ export const duckPond: GameModule = {
       return `Doubles: ${p.min} + ${p.min} to ${p.max} + ${p.max} across the bridge, then one more on a side; how many in all?`;
     if (p.mode === 'teen')
       return 'Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten?';
+    if (p.mode === 'every')
+      return `Every way: send ducks across the bridge and find every way to share ${p.min} to ${p.max} ducks`;
     if (p.mode === 'add')
       return p.subtract
         ? 'Adding and taking away, up to 10, dice, rows or scattered; once, all the ducks swim away'
