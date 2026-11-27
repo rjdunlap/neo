@@ -72,7 +72,7 @@ Boundaries: an acknowledged touch does not queue a feeding, does not count a mis
 
 ## V3 · Fill and Dump: the pour answers in water
 
-*Defined 2026-11-27 · docs only.* One pilot, in one scene: level 5 (*tip the jug to fill three cups to their lines*, `PourGame` in `src/games/fill-dump/pour.ts`). Level 9's bowls (`cups.ts`) and levels 7–8 (`compare.ts`) draw the same flat stream; they follow only after a person has played the pilot (the review's rule), and a shared helper is extracted only when a second scene needs it.
+*Defined 2026-11-27 · docs only; level 5 pilot built 2026-11-27 ([#2274](https://github.com/rjdunlap/neo/pull/2274)): `pourLanding`, `streamWidth` and `sfx.trickle`, with the stream, ripple, droplets and surface strips drawn from `update(dt)` in `pour.ts`.* One pilot, in one scene: level 5 (*tip the jug to fill three cups to their lines*, `PourGame` in `src/games/fill-dump/pour.ts`). Level 9's bowls (`cups.ts`) and levels 7–8 (`compare.ts`) draw the same flat stream; they follow only after a person has played the pilot (the review's rule), and a shared helper is extracted only when a second scene needs it.
 
 ### The flat spots today
 
