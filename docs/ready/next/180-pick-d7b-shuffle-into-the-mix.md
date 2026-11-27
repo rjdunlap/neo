@@ -1,0 +1,1 @@
+**`pick` D7b, Shuffle into the mix** (shell and navigation tier): slice 2 of the [definition](../../definitions/pick-for-me.md), after D7a: fill the held D5a lineup from the scope at lap and toddler and open the table.
