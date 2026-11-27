@@ -1,1 +1,0 @@
-**Define `weather-water` slice 7: *Rain Garden* level 7's two-condition puzzle** (docs only; freeze the two-condition board, valid solutions, misses/hints and upright layout in `docs/definitions/rain-garden.md`; links and `git diff --check`). [Study](../../deep-dives/subjects/weather-water.md#build-slices-in-order)
