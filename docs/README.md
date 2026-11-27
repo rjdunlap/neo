@@ -52,6 +52,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
 | [Common Ground, level 1: A Place for You](definitions/common-ground.md) | Social-emotional slice 4: place a cushion by a window and a basket beside it for a visiting friend, then press Visit; a new school-only game |
 | [Common Ground, level 2: A request changed](definitions/common-ground-2.md) | Level 2 of `common-ground`: after the preview the friend asks for the basket on a different side, so the room is revised with undo; school only |
+| [Common Ground, level 3: Two residents](definitions/common-ground-3.md) | Social-emotional slice 4: place a drawing and a drum on the 2×3 floor so both friends' needs are kept, then choose among plans that serve different wishes; school and grown-up |
 | [Two Viewpoints](definitions/two-viewpoints.md) | Social-emotional slice 3, Story Steps level 14: Bunny and Bear hear unexpected picnic music, state differing wishes, and she enacts a Story Theater ending that keeps both; school only |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
