@@ -1,1 +1,0 @@
-**`pick` D7a, One pick with scopes** (shell and navigation tier): build slice 1 of the [definition](../../definitions/pick-for-me.md): `src/content/pick.ts` (scope pools, eligibility, seeded without-replacement order, Another), `pickMemory`, the Pick spot and chooser sheet, D3 preview and Play; tests as the definition lists.

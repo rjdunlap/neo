@@ -8,6 +8,8 @@
 
 **Rework fit:** a navigation slice in the current home spots; it creates no collection, unlock, currency, streak or obligation, so it does not conflict with RW05–RW12. RW08 moves the entry with the home spot.
 
+**Built (D7a, 2026-11-27, [PR #2285](https://github.com/rjdunlap/neo/pull/2285)).** As built, three things differ from the sketch below. The entry is a round Pick button beside the book on both home-spot layouts (not a pictured spot on the path or a shelf card, which would have changed the path and card counts those layouts' tests rely on). The pick card on the sheet shows the game's picture and name with Play, Another and Back; it does not show this level's goal, because reading the level would create a stats entry, so the game's own how-to card after Play is the introduction, exactly as for D1b's tile. `pickMemory` holds the chosen scope and the last game opened from a pick, not the shuffled order: Pick builds a new order each time the sheet opens a pick. Scope names are on the chips as text, with no spoken line per scope. D7b is unchanged.
+
 ## What is chosen from: the four scopes
 
 A **scope** is a named pool of game IDs, computed fresh each time from data that already exists. Every scope is then filtered by the one **eligibility rule**: the game is registered, touch-playable, supports her band and plays at it (`mixPlayable(mod, band)`), and it is not a story or couch route. Nothing is ever picked that this rule rejects, and no scope falls back to another scope.

@@ -213,6 +213,7 @@ import { createSuite as create131 } from './suites/discovery-my-mix.mjs';
 import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
 import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
+import { createSuite as createDiscoveryPick } from './suites/discovery-pick.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as createMarketDays } from './suites/market-days-play.mjs';
 import { createSuite as createTwoTablets } from './suites/two-tablets-play.mjs';
@@ -847,6 +848,7 @@ export function createChecks(fixture) {
     'discoveryMyMix',
     'discoveryMix',
     'discoveryDailyMix',
+    'discoveryPick',
   ])
     shared[name] = (...args) => checks[name](...args);
   install(create0(shared));
@@ -990,6 +992,7 @@ export function createChecks(fixture) {
   install(create132(shared));
   install(create133(shared));
   install(createDailyMix(shared));
+  install(createDiscoveryPick(shared));
   install(create134(shared));
   install(createMarketDays(shared));
   install(createTwoTablets(shared));
@@ -1081,7 +1084,11 @@ export async function runSuite(suite, fixture) {
   if (suite === 'clap' && process.env.CLAP_LEVELS !== undefined)
     selectValue(process.env.CLAP_LEVELS, ['6', '8', '9'], 'CLAP_LEVELS');
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined)
-    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix', 'daily'], 'DISCOVERY_ONLY');
+    selectValue(
+      process.env.DISCOVERY_ONLY,
+      ['direct-next', 'mix', 'my-mix', 'daily', 'pick'],
+      'DISCOVERY_ONLY',
+    );
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
   const {
@@ -1267,6 +1274,7 @@ export async function runSuite(suite, fixture) {
     discoveryMyMix,
     discoveryMix,
     discoveryDailyMix,
+    discoveryPick,
     storyWeaverPlay,
     meltFreezePlay,
     moonWindowPlay,
@@ -1363,8 +1371,9 @@ export async function runSuite(suite, fixture) {
   }
   if (suite === 'discovery')
     await (
-      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix }[process.env.DISCOVERY_ONLY] ??
-      discoveryDirectNext
+      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix, pick: discoveryPick }[
+        process.env.DISCOVERY_ONLY
+      ] ?? discoveryDirectNext
     )();
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
