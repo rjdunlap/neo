@@ -48,7 +48,7 @@ import {
   type Why,
 } from './logic';
 
-const LEVELS = [1, 2, 3, 4, 5];
+const LEVELS = [1, 2, 3, 4, 5, 6];
 const OWNS: Friend[] = ['A', 'B'];
 const SEEDS = Array.from({ length: 40 }, (_, i) => i * 7919 + 1);
 
@@ -410,7 +410,7 @@ describe('variations', () => {
         }
       }
     }
-    expect(LEVEL_COUNT).toBe(5);
+    expect(LEVEL_COUNT).toBe(6);
   });
 
   it('variationFor: first is index 0, seeded stays within the list and is deterministic', () => {
@@ -592,5 +592,79 @@ describe('levels 4 and 5', () => {
     for (const d of ['plan', 'revise', 'make', 'make', 'revise'] as const) t.help(d);
     expect(t.hints).toBe(3);
     expect(t.misses).toBe(0);
+  });
+});
+
+describe('level 6, ask first', () => {
+  it('both answers: the speaking friend is unchanged, and the asked friend decides which cards work', () => {
+    for (const v of VARIATIONS[6]) {
+      const spec = specFor(6, v.own, v.answer);
+      expect(spec.unspoken).toBe(v.own);
+      expect(spec.requests[other(v.own)]).toBe('bannerOr');
+      const ok = acceptedPlans(spec, v.own).sort();
+      if (v.answer === 'help') {
+        expect(spec.requests[v.own]).toBe('help');
+        expect(ok).toEqual(['bannerThenPage', 'justBanner', 'pageThenBanner']);
+        expect(previewOf(planFor('side', spec.cells, v.own), spec).ok).toBe(false);
+      } else {
+        expect(spec.requests[v.own]).toBe('own');
+        expect(ok).toEqual(['bannerThenPage', 'pageThenBanner', 'side']);
+        expect(previewOf(planFor('justBanner', spec.cells, v.own), spec).ok).toBe(false);
+      }
+    }
+  });
+
+  it('both answers appear among the authored rounds, for each friend asked at least once', () => {
+    const vs = VARIATIONS[6];
+    expect(vs.some((v) => v.answer === 'own')).toBe(true);
+    expect(vs.some((v) => v.answer === 'help')).toBe(true);
+    expect(new Set(vs.map((v) => v.own)).size).toBe(2);
+  });
+
+  it('every accepted card finishes with both requests met, whichever answer', () => {
+    for (const answer of ['own', 'help'] as const)
+      for (const own of OWNS) {
+        const spec = specFor(6, own, answer);
+        for (const id of acceptedPlans(spec, own)) {
+          const plan = planFor(id, spec.cells, own);
+          for (const tr of plan.traces)
+            for (const f of FRIENDS)
+              expect(check(replay(tr), spec.requests[f], f, spec.cells), `${answer} ${own} ${id}`).toBe(true);
+        }
+      }
+  });
+
+  it('the first hint is Ask until it is asked, then an accepted card; Ask counts one hint', () => {
+    const spec = specFor(6, 'B', 'help');
+    expect(hintFor(spec, 'B', 'plan', null, null, [], 1, [], false)).toEqual({ ask: 'B' });
+    const h = hintFor(spec, 'B', 'plan', null, null, [], 1, [], true);
+    expect(h && 'card' in h && h.card).toBe('bannerThenPage');
+    expect(decisionNow(6, 'plan', [], 1, false)).toBe('ask');
+    expect(decisionNow(6, 'plan', [], 1, true)).toBe('plan');
+    const t = new Tally();
+    for (const d of ['ask', 'ask', 'plan', 'make', 'make'] as const) t.help(d);
+    expect(t.hints).toBe(3);
+    expect(t.misses).toBe(0);
+  });
+
+  it('other levels have no unspoken friend and always ask for nothing', () => {
+    for (const level of [1, 2, 3, 4, 5]) expect(specFor(level, 'B').unspoken).toBeUndefined();
+    const spec = specFor(3, 'B');
+    const h = hintFor(spec, 'B', 'plan', null, null, [], 1, [], false);
+    expect(h && 'card' in h).toBe(true);
+  });
+
+  it('the Ask button sits clear of the bubbles, cards and corners for either friend, at every view', () => {
+    for (const v of [computeView(1024, 768), computeView(768, 1024), computeView(844, 390)])
+      for (const unspoken of OWNS) {
+        const l = workshopLayout(v, { level: 6, phase: 'plan', cards: 4, unspoken })!;
+        expect(l.ask).not.toBeNull();
+        expect(l.ask!.w).toBeGreaterThanOrEqual(BUTTON.w);
+        expect(l.ask!.h).toBeGreaterThanOrEqual(BUTTON.h);
+        expect(insideView(l.ask!, v)).toBe(true);
+        for (const r of [l.bubbles.A, l.bubbles.B, ...l.cards, ...l.buttons, ...corners(v)])
+          expect(overlaps(l.ask!, r)).toBe(false);
+      }
+    expect(workshopLayout(computeView(1024, 768), { level: 6, phase: 'plan', cards: 4 })!.ask).toBeNull();
   });
 });

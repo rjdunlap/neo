@@ -1,0 +1,5 @@
+# 2026-11-27 — Playdate Workshop level 6 (PR #2288)
+
+**Changed:** Playdate Workshop gains school level 6, Ask first: an unspoken friend's request shows `?` until she taps the new Ask button, the answer (keep their own page, or help with the banner) decides which cards work, Make it before Ask only nudges, and the band becomes school 3–6. New Ask decision for hints, art, voice lines and the how-to card.
+**Ran:** `npm run typecheck`; `src/games/playdate-workshop`, `src/content` unit tests (new level 6 rule, hint, accounting and Ask-button layout tests at three views; the generated docs were stale until `npm run game-docs`); extended `BROWSER_SUITE=playdateworkshop` (level 6: Make it before Ask stays on the cards, Ask is free, a portrait screenshot, the pet's two hints); `BROWSER_SUITE=fingerdemo` for `playdate-workshop` level 6 (ghost finger finishes). Format and lint run in CI.
+**Not run:** full `npm test` before pushing (left to PR CI); build; offline; a phone-width screenshot of level 6.

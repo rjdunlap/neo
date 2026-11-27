@@ -48,6 +48,8 @@ import {
   watchIcon,
   bellArt,
   puddleArt,
+  askIcon,
+  questionArt,
 } from './art';
 import {
   LEVELS,
@@ -97,6 +99,7 @@ const REQUEST_LINE = {
   keepMade: 'playdate.request.keep',
   flowers: 'playdate.request.new',
   keepOurs: 'playdate.request.keepOwn',
+  help: 'playdate.request.help',
 } as const;
 const INSTRUCT: Record<number, LineId> = {
   1: 'playdate.instruct.1',
@@ -104,6 +107,7 @@ const INSTRUCT: Record<number, LineId> = {
   3: 'playdate.instruct.3',
   4: 'playdate.instruct.4',
   5: 'playdate.instruct.5',
+  6: 'playdate.instruct.6',
 };
 /** Seconds between the pet's steps, and between steps of Watch again. */
 const PET_STEP = 0.7;
@@ -128,6 +132,10 @@ class PlaydateWorkshop implements Game {
   readonly cards2: PlanId[];
   /** Level 5: 1 until the friends' request changes, then 2. */
   stage: 1 | 2 = 1;
+  /** Level 6: the unspoken friend has been asked (always true at other levels). */
+  asked: boolean;
+  /** Level 6: the Ask button glows (a nudge or the lightbulb). */
+  hintAsk = false;
   /** Level 5: the first two stars' trace, kept under the revised plan. */
   base: Action[] = [];
   phase: Phase;
@@ -180,12 +188,14 @@ class PlaydateWorkshop implements Game {
   finishButton: RoundButton | null = null;
   againButton: RoundButton | null = null;
   otherButton: RoundButton | null = null;
+  askButton: RoundButton | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     const first = !!ctx.demo || ctx.rng.next() < 0.34;
     this.variation = variationFor(ctx.level, ctx.rng, first);
-    this.spec = specFor(ctx.level, this.variation.own);
+    this.spec = specFor(ctx.level, this.variation.own, this.variation.answer);
+    this.asked = !this.spec.unspoken;
     this.cards = cardOrder(this.spec, ctx.rng, first);
     this.cards2 = this.spec.plans2
       ? cardOrder({ ...this.spec, plans: this.spec.plans2 }, ctx.rng, first)
@@ -233,6 +243,10 @@ class PlaydateWorkshop implements Game {
   get bannerTarget(): number {
     return this.level === 4 ? (this.variation.smudge ?? 2) : this.table.marks.banner.length;
   }
+  /** Level 6: this friend's request has not been asked for yet. */
+  hidden(f: Friend): boolean {
+    return !this.asked && this.spec.unspoken === f;
+  }
   /** The table on screen: the live trace's, or Watch again's frame. */
   get table(): Table {
     return this.shown ?? replay(this.trace);
@@ -274,7 +288,12 @@ class PlaydateWorkshop implements Game {
 
   private layoutFor(): WorkshopLayout | null {
     if (this.phase === 'plan')
-      return workshopLayout(this.view, { level: this.level, phase: 'plan', cards: this.cardList.length });
+      return workshopLayout(this.view, {
+        level: this.level,
+        phase: 'plan',
+        cards: this.cardList.length,
+        unspoken: this.spec.unspoken,
+      });
     return workshopLayout(this.view, {
       level: this.level,
       phase: 'make',
@@ -303,6 +322,7 @@ class PlaydateWorkshop implements Game {
       this.finishButton =
       this.againButton =
       this.otherButton =
+      this.askButton =
         null;
     this.companion.removeFromParent();
     this.glow.removeFromParent();
@@ -336,6 +356,7 @@ class PlaydateWorkshop implements Game {
         bubble,
         () => {
           critter.hop(0.6);
+          if (this.hidden(f)) return this.nudgeAsk();
           void this.ctx.say(REQUEST_LINE[this.requests[f]]);
         },
         { cooldown: 400 },
@@ -359,6 +380,7 @@ class PlaydateWorkshop implements Game {
       this.makeButton = this.button(makeIcon(), swatch.green, mk, () => this.makeIt());
       this.bulbButton = this.button(bulbIcon(), swatch.yellow, bu, () => this.askForHint());
       this.petButton = this.button(pawIcon(), swatch.pink, pe, () => this.petHelp());
+      if (l.ask) this.askButton = this.button(askIcon(), swatch.orange, l.ask, () => this.ask());
     } else {
       if (l.chosen && this.plan) {
         const r = l.chosen;
@@ -490,7 +512,10 @@ class PlaydateWorkshop implements Game {
             ? 'met'
             : 'none'
           : this.bubbleState[f];
-      bubble.addChild(bubbleArt(f, r.w, r.h, state), requestPicture(this.requests[f], f, v, r.w, r.h));
+      bubble.addChild(
+        bubbleArt(f, r.w, r.h, state),
+        this.hidden(f) ? questionArt(r.h * 0.7) : requestPicture(this.requests[f], f, v, r.w, r.h),
+      );
       if (this.stage === 2 && this.requests[f] === 'flowers') {
         const bell = bellArt(46);
         bell.position.set(-r.w / 2 + 26, -r.h / 2 + 22);
@@ -641,6 +666,16 @@ class PlaydateWorkshop implements Game {
     }
     const p = previewOf(this.planOf(this.selected), this.spec, this.requests);
     this.previewed = this.selected;
+    const unknown = this.spec.unspoken;
+    if (unknown && !this.asked) {
+      // The unspoken friend shows `?`: only the friend who has spoken ticks or outlines, and nothing counts.
+      this.bubbleState = { A: 'none', B: 'none' };
+      this.bubbleState[unknown === 'A' ? 'B' : 'A'] = p.met[unknown === 'A' ? 'B' : 'A'] ? 'met' : 'unmet';
+      sfx.tick();
+      this.nudgeAsk();
+      this.refresh();
+      return null;
+    }
     this.bubbleState = { A: p.met.A ? 'met' : 'unmet', B: p.met.B ? 'met' : 'unmet' };
     for (const f of FRIENDS) this.critters[f === 'A' ? 0 : 1]?.hop(p.met[f] ? 0.8 : 0.3);
     if (p.ok) {
@@ -660,6 +695,10 @@ class PlaydateWorkshop implements Game {
     if (this.busy || this.finished || this.phase !== 'plan') return;
     if (!this.selected) {
       this.nudgeCards();
+      return;
+    }
+    if (!this.asked) {
+      this.nudgeAsk();
       return;
     }
     if (!previewOf(this.planOf(this.selected), this.spec, this.requests).ok) {
@@ -693,6 +732,26 @@ class PlaydateWorkshop implements Game {
     this.hintAction = null;
     this.petPicked = false;
     this.build();
+  }
+
+  /** Level 6: Ask is where to go next; it glows and the pet says so. Free. */
+  private nudgeAsk() {
+    this.hintAsk = true;
+    void this.ctx.say('playdate.ask.nudge');
+  }
+
+  /** Ask: the unspoken friend says their request aloud. Free, and again as often as she likes. */
+  ask() {
+    if (this.busy || this.finished || this.phase !== 'plan' || !this.spec.unspoken) return;
+    const f = this.spec.unspoken;
+    this.asked = true;
+    this.hintAsk = false;
+    this.bubbleState = { A: 'none', B: 'none' };
+    this.previewed = null;
+    this.critters[f === 'A' ? 0 : 1]?.hop(0.7);
+    sfx.marimba(2, 0.3);
+    void this.ctx.say(REQUEST_LINE[this.requests[f]]);
+    this.refresh();
   }
 
   private nudgeCards() {
@@ -908,10 +967,14 @@ class PlaydateWorkshop implements Game {
       this.trace,
       this.stage,
       this.base,
+      this.asked,
     );
     if (!h) return;
-    this.tally.help(decisionNow(this.level, this.phase, this.trace, this.stage));
-    if ('card' in h) {
+    this.tally.help(decisionNow(this.level, this.phase, this.trace, this.stage, this.asked));
+    if ('ask' in h) {
+      this.hintAsk = true;
+      void this.ctx.say('playdate.hint.ask');
+    } else if ('card' in h) {
       this.hintCard = h.card;
       this.selected = h.card;
       this.refresh();
@@ -935,6 +998,12 @@ class PlaydateWorkshop implements Game {
     if (this.busy || this.finished || this.done) return;
     this.companion.hop(0.8);
     if (this.phase === 'plan') {
+      if (!this.asked) {
+        this.tally.help('ask');
+        this.ask();
+        void this.ctx.say('playdate.pet.ask');
+        return;
+      }
       if (this.petPicked && this.selected) {
         this.enterMake(this.selected);
         void this.petMakes();
@@ -1087,6 +1156,8 @@ class PlaydateWorkshop implements Game {
       const r = this.layoutNow.bubbles[this.glowRequest];
       ring(this.bubbleNodes[this.glowRequest], r.w, r.h);
     }
+    if (this.phase === 'plan' && this.hintAsk && this.layoutNow.ask)
+      ring(this.askButton, this.layoutNow.ask.w, this.layoutNow.ask.h);
     if (this.phase === 'plan' && this.hintCard) {
       const r = this.layoutNow.cards[0];
       ring(this.cardNodes.get(this.hintCard), r.w, r.h);
@@ -1121,6 +1192,8 @@ class PlaydateWorkshop implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.phase === 'plan') {
+      if (!this.asked) return this.askButton ? { tap: { on: this.askButton }, pause: 1.2 } : null;
+      const own6 = this.level === 6 && this.variation.answer === 'own';
       const want: PlanId =
         this.level === 2
           ? 'turns'
@@ -1134,14 +1207,16 @@ class PlaydateWorkshop implements Game {
                 : this.previewed === 'keepGoing'
                   ? 'flowersStamp'
                   : 'keepGoing'
-              : this.previewed === 'justBanner' || this.previewed === 'side'
-                ? 'side'
-                : 'justBanner';
+              : this.level === 6 && !own6
+                ? 'justBanner'
+                : this.previewed === 'justBanner' || this.previewed === 'side'
+                  ? 'side'
+                  : 'justBanner';
       if (this.selected !== want) {
         const c = this.cardNodes.get(want);
         return c ? { tap: { on: c } } : null;
       }
-      if ((this.level === 3 && want === 'justBanner') || want === 'fresh' || want === 'keepGoing')
+      if (((this.level === 3 || own6) && want === 'justBanner') || want === 'fresh' || want === 'keepGoing')
         return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.6 } : null;
       if (this.level === 2 && this.previewed !== 'turns')
         return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.2 } : null;
