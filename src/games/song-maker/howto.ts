@@ -28,7 +28,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 13,
       to: 13,
-      text: "As level 10, but the pet's question starts on the bottom (home) jelly and ends away from it, and the spoken rule is to end her answer on the home jelly. Beats five to seven are free; beat eight must be home. Once all four are filled and the loop has played all eight beats since her last change, the check button wakes.",
+      text: 'The pet sings a four-note question that starts on the bottom (home) jelly, and she answers on the last four beats, ending on the home jelly. A tap in a beat moves its jelly. When all four are filled and the loop has played all eight beats, the check wakes.',
     },
     { from: 3, to: 4, text: 'Copy the song by tapping jellies on its shadow notes.' },
     { from: 5, to: 5, text: 'Copy the song on the little card.' },
@@ -69,7 +69,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 13,
       to: 13,
-      text: "A check with her last jelly somewhere else is a miss: the pet sings her answer, then the same answer ending home, and asks whether she hears how it sounds finished. The check sleeps until she changes something, and after two misses the home jelly glows. Labeled as this game's rule, not a law of music. A finished song can hang in the pet's room from the little tree house button.",
+      text: "A check with her last jelly elsewhere is a miss: the pet plays her answer, then the same answer ending home. The check wakes again after a change, and after two misses the home jelly glows. This is the game's rule, not a law of music.",
     },
     {
       from: 11,
