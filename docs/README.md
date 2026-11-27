@@ -43,6 +43,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md); RW11 packet: [forms and talents](rework/FORMS-AND-TALENTS.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Draw a Ramp](definitions/draw-a-ramp.md) | Physics chunk 27, levels 1–3: draw ramps so a marble rolls and banks to the star balloon; deterministic circle-vs-capsule solver in `logic.ts`, `upright: true`, free experiments, Tinker Lab |
 | [River Tablets 7–8](definitions/river-tablets-7-8.md) | Ancient river civilizations AR4, River Tablets levels 7–8: Say it with pictures (rebus sound-signs) and Which one do I mean? (mute determinatives); school |
 | [Under the Soil](definitions/under-the-soil.md) | Life-science step 5, Garden Grow levels 14–15: lift a window to see roots below the shoot, a leaf window in three steps, then two matched beds read above and below (reuses the Growing Conditions table); toddler–pre-K 14, school 15 |
 | [Growing Conditions](definitions/growing-conditions.md) | Genetics G8, Garden Grow levels 12–13: two beds from the same seeds, name the one difference and run a one-change fair test (toy sun/shade and water table); pre-K 12, school 12–13 |

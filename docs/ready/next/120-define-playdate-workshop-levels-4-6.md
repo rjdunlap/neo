@@ -1,0 +1,1 @@
+**Define Playdate Workshop levels 4–6** (docs only): social-emotional study follow-up on `playdate-workshop` per [definition](../../definitions/playdate-workshop.md) and [study packet](../../deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations).

@@ -1,0 +1,1 @@
+**Define D7, Pick for me and filtered shuffle** (docs only): chosen scopes (favorites, recent completions, land or action category), One pick / Another, and finite previewable shuffle under [D7](../../ROADMAP.md#discovery-actions).

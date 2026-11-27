@@ -1,0 +1,1 @@
+**Define Wave Ribbon (energy-waves E6)** (docs only): finite pulse propagation and amplitude/wavelength comparisons per [study packet](../../deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
