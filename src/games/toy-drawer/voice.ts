@@ -1,6 +1,6 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
-  'game.toy-drawer': ['Toy drawer!'],
+  'game.toy-drawer': ['Toy drawer, {name}!'],
   'toy-drawer.fit': [
     'Put every toy in the drawer! Drag a toy in. There is more than one right way. You can move them around.',
   ],
