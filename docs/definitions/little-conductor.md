@@ -120,6 +120,18 @@ Level 3's sign with level 5's four pads. The listener's sign shows a **way to pl
 - **Rule tests:** for every first way there are exactly two second ways that differ in one property; every ask is satisfiable by one pad pair; the Check names only a property that is wrong; two misses glow the first wrong dial's right pad; the helped path finishes; the bot always finishes with `signBot`-style reading of the sign.
 - **Layout:** the dials row of level 5 (130-unit pads, four in a row) with the sign column of level 3; every target at least 100 units, inside the view, clear of the pet's corner and the sign clear of the pads, at the four views and upright.
 
+## Level 8, Revise for a listener (definition, 2026-11-26)
+
+Reuses level 7's listener sign and four dial pads (`turtle`, `rabbit`, `gentle`, `strong`), plus two prepared version buttons (`1` and `2`) and an `Undo` button. The round prepares two ways to play (`makeAsks(rng)`, differing in one property) as Version 1 and Version 2.
+
+- **Flow:** She hears both prepared versions (tapping `1` and `2` loads each version onto the sign and dials and plays its four-beat phrase), chooses what to change on the dials for the active version, hears the revised phrase whole, and taps the green check (`Done`).
+- **What she decides:** Which prepared version to start from and which property (or properties) to revise to make a deliberate audible change.
+- **Revision and Undo:** Choosing a revision always differs from that version's original in the chosen property; `Undo` restores the active version's original pace and strength and clears the heard-revision flag so the gate follows the restored state.
+- **Mistakes, accounting:** No app score, no misses, no hints (`misses: 0, hints: 0`). The gate is hearing both prepared versions whole, having an active revision that differs from the selected original, and hearing that revision whole; finishing invites an optional spoken explanation to a person nearby.
+- **Bands and ID:** `school` window becomes `5–8` (level 8 is `school` only; level 8 follows level 7's stable ID).
+- **Rule tests:** `makeRevise` starts from two distinct prepared versions; revising a chosen property always differs from the original in that property; `undoRevision` restores the original and closes the gate; `canFinishRevise` stays false until both prepared versions are heard, a revision differs from the original, and the revision is heard whole; `reviseBot` always finishes with `misses: 0, hints: 0`.
+- **Layout:** Level 7's four dials, sign, listener, Listen and Done, plus the two version buttons (`1`, `2`) and `Undo` (`130 × 100` each) clear of all other targets, inside the view and clear of the pet's corner at the four views and upright.
+
 ## Check tier
 
 New-game tier at build time, in two sessions. **M2 (levels 1–2):** typecheck and unit tests (the rule properties above plus registry, lands and how-to tests). One scripted play through a new `browser-check.mjs` case (its README row is part of the build), filtered to level 1 and level 2, with one early Done, at least one pace change inside a beat and Done at the gate; one portrait screenshot at level 2 with both pads' marks visible. `fingerdemo` at levels 1 and 2. `npm run build`, because the registry, lands, voice and how-to files change. Wrong-answer and hint paths do not exist at 1–2, so the scripted play does not claim them. **M3 (level 3):** new-interaction tier: typecheck, the level-3 rule tests, one filtered play at level 3 with one wrong Check and one requested hint, `fingerdemo` at level 3, one portrait screenshot with the sign.
