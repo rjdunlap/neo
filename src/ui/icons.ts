@@ -265,6 +265,23 @@ export function flipIcon(color = ink): Graphics {
     .stroke({ width: 4, color, cap: 'round' });
 }
 
+/** Two crossing arrows: shuffle (a mix of games in a new order). */
+export function shuffleIcon(color = 0xffffff): Graphics {
+  return new Graphics()
+    .moveTo(-26, -14)
+    .lineTo(-8, -14)
+    .lineTo(8, 14)
+    .lineTo(26, 14)
+    .moveTo(-26, 14)
+    .lineTo(-8, 14)
+    .lineTo(8, -14)
+    .lineTo(26, -14)
+    .stroke(line(6, color))
+    .poly([26, -24, 38, -14, 26, -4])
+    .poly([26, 4, 38, 14, 26, 24])
+    .fill(color);
+}
+
 /** A tick for "done" and "yes". */
 export function checkIcon(color = 0xffffff): Graphics {
   return new Graphics()

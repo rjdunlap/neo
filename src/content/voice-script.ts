@@ -218,6 +218,7 @@ export const SHARED = {
   'discovery.empty': ['You can play again, or go home.'],
   'pick.offer': ['Pick one for me?'],
   'pick.another': ['Another one. {title}.'],
+  'pick.shuffle': ['A mix just for you!'],
   'pick.all': ['That was all of them.'],
   'mix.offer': ['Little surprises! Games in a row.'],
   'mix.stop': ['{title}.'],

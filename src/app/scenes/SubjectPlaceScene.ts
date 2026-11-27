@@ -131,6 +131,7 @@ export class SubjectPlaceScene extends Scene {
       this.ui,
       () => this.view,
       (go) => this.leave(go),
+      this.mix,
     );
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter((s) => this.games.some((g) => g.region === s.id));

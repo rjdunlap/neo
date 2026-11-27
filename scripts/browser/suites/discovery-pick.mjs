@@ -38,6 +38,28 @@ export function createSuite({ page, errors, log, scene, screenshot }) {
       assert.ok(keys.includes('everything'), `${band}: Anything chip`);
       await screenshot(`pick-chooser-${band}-upright`);
 
+      // D7b: Shuffle shows only where Little surprises is (toddler here); it holds a lineup of up to three games from the
+      // scope and shows it on the mix table, with nothing started and nothing saved.
+      const canShuffle = await page.evaluate(() => neo.scene.picker.sheet.shuffleButton.visible);
+      assert.equal(canShuffle, band === 'toddler', `${band}: Shuffle only on the mix home spots`);
+      if (canShuffle) {
+        await tapNode('picker.sheet.shuffleButton');
+        await page.waitForFunction(() => !!neo.scene.mix.table && !neo.scene.picker.sheet);
+        const lineup = await page.evaluate(() => [...neo.scene.mix.table.lineup]);
+        assert.ok(lineup.length >= 1 && lineup.length <= 3, `${band}: shuffled lineup of ${lineup.length}`);
+        assert.equal(new Set(lineup).size, lineup.length, `${band}: no repeat in a shuffle`);
+        assert.equal(await page.evaluate(() => neo.scene.mix.live), false, `${band}: nothing started`);
+        await screenshot(`pick-shuffle-table-${band}-upright`);
+        assert.equal(
+          await page.evaluate(() => JSON.stringify(kit.store.data)),
+          saved,
+          `${band}: shuffle saved nothing`,
+        );
+        await page.evaluate(() => neo.scene.mix.closeTable());
+        await tapNode('picker.button');
+        await page.waitForFunction(() => !!neo.scene.picker.sheet);
+      }
+
       // One pick shows a game; Another walks the whole order once with no repeat, then the end line, then Again.
       await tapNode('picker.sheet.pickButton');
       const seen = [await shown()];

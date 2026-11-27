@@ -10,6 +10,8 @@
 
 **Built (D7a, 2026-11-27, [PR #2285](https://github.com/rjdunlap/neo/pull/2285)).** As built, three things differ from the sketch below. The entry is a round Pick button beside the book on both home-spot layouts (not a pictured spot on the path or a shelf card, which would have changed the path and card counts those layouts' tests rely on). The pick card on the sheet shows the game's picture and name with Play, Another and Back; it does not show this level's goal, because reading the level would create a stats entry, so the game's own how-to card after Play is the introduction, exactly as for D1b's tile. `pickMemory` holds the chosen scope and the last game opened from a pick, not the shuffled order: Pick builds a new order each time the sheet opens a pick. Scope names are on the chips as text, with no spoken line per scope. D7b is unchanged.
 
+**Built (D7b, 2026-11-27, [PR #2289](https://github.com/rjdunlap/neo/pull/2289)).** Shuffle sits beside One pick at lap and toddler. As built, the lineup is drawn from the scope's games that the home spot's mix table may hold (the table repairs any lineup against that pool), and Shuffle is hidden when none qualify. One new line, `pick.shuffle`, is spoken as the table opens.
+
 ## What is chosen from: the four scopes
 
 A **scope** is a named pool of game IDs, computed fresh each time from data that already exists. Every scope is then filtered by the one **eligibility rule**: the game is registered, touch-playable, supports her band and plays at it (`mixPlayable(mod, band)`), and it is not a story or couch route. Nothing is ever picked that this rule rejects, and no scope falls back to another scope.
