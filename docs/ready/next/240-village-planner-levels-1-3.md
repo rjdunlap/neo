@@ -1,0 +1,1 @@
+**`village-planner`, levels 1–3** (new-game tier): two destinations, one cart and one bench, per [definition](../../definitions/village-planner.md); Lantern Lake (after `two-tablets`), school 1–2 and grownup 1–3, `upright: true`. [Routine study slice 4](../../deep-dives/subjects/routines-self-care.md#build-slices-in-order).

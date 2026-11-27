@@ -60,7 +60,7 @@ From the 2026-11-23 reconciliation of the dives' slice lists (each checked again
 
 (Refilled into Next ten 2026-11-26.)
 
-Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs:
+Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27):
 
 - **`rhythm-neighbors`, level 12 *Longer calls*** (new-levels tier): four-note shapes and three- or four-knock calls, school top 12, how-to; after level 11. [Dive slice 7](deep-dives/rhythm-neighbors.md#build-slices-in-order).
 - **`clock-tower`, level 9 *Half an hour from now*** (new-levels tier): destination setting with quarter snaps and an arc explanation; after level 8. [Dive slice 5](deep-dives/clock-tower.md#build-slices-in-order).
@@ -68,7 +68,6 @@ Refilled 2026-11-27 from the dives' slice lists, each checked against the game's
 - **`clock-tower`, level 11 *Fit a visit*** (new-interaction tier): availability and duration data, choose/set stages, bot; after level 10. [Dive slice 7](deep-dives/clock-tower.md#build-slices-in-order).
 - **`song-maker`, *Change one thing* (next free ID, currently 14)** (new-interaction tier): after *Bring it home*. [Dive slice 9](deep-dives/song-maker.md#build-slices-in-order).
 - **`letter-trails`, level 16 *Little words*, then 17 *My name*** (new-levels tier, one per session): after level 15. [Dive slices 9–10](deep-dives/letter-trails.md#build-slices-in-order).
-- **`day-by-day`, level 8 *Daylight records*** (new-levels tier if the input is unchanged): a fictional site with relative bars, no hour arithmetic or season claims (decision 3 settled 2026-10-23). [Dive slice 8](deep-dives/day-by-day.md#build-slices-in-order).
 
 
 
