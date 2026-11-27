@@ -45,7 +45,8 @@ export interface CritterSpec {
   form?: Form;
 }
 
-export type Form = 'bear' | 'cat' | 'bunny' | 'chick' | 'cow' | 'pig';
+export type Form =
+  'bear' | 'cat' | 'bunny' | 'chick' | 'cow' | 'pig' | 'dog' | 'sheep' | 'horse' | 'hen' | 'mouse' | 'pip';
 
 /** Body colours the palette's names lack; `color` names each one's family. */
 const CHESTNUT: Swatch = { fill: 0xb8774a, line: 0x7d4a2a, light: 0xe8c3a3 };
@@ -55,7 +56,7 @@ const TAN_MUZZLE = { fill: 0xecd2b8, line: 0x9c6b4a, dark: 0x6e4224 };
 const FLEECE: Swatch = { fill: 0xfffaf0, line: 0x9c9484, light: 0xffffff };
 
 export const CRITTERS = {
-  pip: { color: 'teal', ears: 'round', sprout: true, belly: true },
+  pip: { color: 'teal', ears: 'round', sprout: true, belly: true, form: 'pip' },
   cow: {
     color: 'white',
     ears: 'floppy',
@@ -77,7 +78,15 @@ export const CRITTERS = {
     form: 'cat',
   },
   bear: { color: 'brown', ears: 'round', snout: 'nose', noseColor: ink, belly: true, form: 'bear' },
-  dog: { color: 'brown', ears: 'floppy', earColor: 'orange', snout: 'nose', noseColor: ink, belly: true },
+  dog: {
+    color: 'brown',
+    ears: 'floppy',
+    earColor: 'orange',
+    snout: 'nose',
+    noseColor: ink,
+    belly: true,
+    form: 'dog',
+  },
   bunny: { color: 'white', ears: 'long', snout: 'nose', noseColor: 0xff8fa3, whiskers: true, form: 'bunny' },
   sheep: {
     color: 'white',
@@ -87,6 +96,7 @@ export const CRITTERS = {
     noseColor: ink,
     wool: true,
     feet: 'hoof',
+    form: 'sheep',
   },
   horse: {
     color: 'brown',
@@ -96,8 +106,17 @@ export const CRITTERS = {
     muzzleShade: TAN_MUZZLE,
     mane: true,
     feet: 'hoof',
+    form: 'horse',
   },
-  hen: { color: 'orange', shade: RUSSET, snout: 'beak', comb: true, wings: true, feet: 'yellow' },
+  hen: {
+    color: 'orange',
+    shade: RUSSET,
+    snout: 'beak',
+    comb: true,
+    wings: true,
+    feet: 'yellow',
+    form: 'hen',
+  },
   mouse: {
     color: 'white',
     shade: MOUSE_GREY,
@@ -107,6 +126,7 @@ export const CRITTERS = {
     whiskers: true,
     tail: true,
     belly: true,
+    form: 'mouse',
   },
 } satisfies Record<string, CritterSpec>;
 
@@ -197,6 +217,30 @@ const PIECES: Record<Form, [number, number, number, number][]> = {
   ],
   // One round pudding, wider than tall.
   pig: [[0, -120, 140, 120]],
+  // A broad head over a sitting body, a little longer than the bear's.
+  dog: [
+    [0, -52, 106, 56],
+    [0, -156, 124, 94],
+  ],
+  // A big round fleece (the wool puffs ring it); the face is its own darker piece on top.
+  sheep: [[0, -116, 128, 116]],
+  // A long, narrow head on a deep chest.
+  horse: [
+    [0, -46, 108, 50],
+    [0, -150, 104, 104],
+  ],
+  // A taller, narrower egg than the chick's.
+  hen: [[0, -130, 118, 130]],
+  // A round head with room for big ears, on a small pear body.
+  mouse: [
+    [0, -50, 92, 52],
+    [0, -152, 110, 94],
+  ],
+  // The pet: a round head on a soft round body.
+  pip: [
+    [0, -56, 110, 58],
+    [0, -160, 120, 92],
+  ],
 };
 
 /** A darker or lighter step of a colour, for markings cut from a neighbouring sheet. */
@@ -608,6 +652,39 @@ export class Critter extends Container {
         .bezierCurveTo(160, -80, 168, -40, 148, -36)
         .bezierCurveTo(132, -34, 134, -58, 152, -56)
         .stroke(stroke(shade(sw.fill, 0.2), 7));
+    } else if (form === 'dog') {
+      // A short tail up off the right hip, wagging-shaped.
+      back
+        .moveTo(84, -40)
+        .quadraticCurveTo(140, -50, 150, -110)
+        .quadraticCurveTo(160, -112, 160, -100)
+        .quadraticCurveTo(150, -36, 90, -22)
+        .closePath()
+        .fill(shade(sw.fill, 0.08));
+    } else if (form === 'hen') {
+      // Tail feathers fanned up behind the right side, a darker russet.
+      for (const [a, len] of [
+        [-1.25, 96],
+        [-0.95, 104],
+        [-0.65, 92],
+      ]) {
+        const tip: Pt = [80 + Math.cos(a) * len, -110 + Math.sin(a) * len];
+        back
+          .moveTo(70, -96)
+          .quadraticCurveTo(tip[0] - 26, tip[1] + 10, tip[0], tip[1])
+          .quadraticCurveTo(tip[0] + 4, tip[1] + 36, 96, -70)
+          .closePath()
+          .fill(shade(sw.fill, 0.2));
+      }
+    } else if (form === 'horse') {
+      // A swishing tail of three dark locks off the right hip.
+      for (const dx of [0, 12, 24])
+        back
+          .moveTo(90, -60)
+          .bezierCurveTo(140 + dx, -60, 150 + dx, -20, 136 + dx, 6)
+          .quadraticCurveTo(128 + dx, -24, 96, -40)
+          .closePath()
+          .fill(MANE.fill);
     }
   }
 
@@ -649,6 +726,28 @@ export class Critter extends Container {
         g.moveTo(x - 12, y)
           .quadraticCurveTo(x, y + 12, x + 12, y)
           .stroke(stroke(line, 3));
+    } else if (form === 'dog') {
+      // A darker patch round one eye.
+      paperPoints(g, ellipsePoints(-44, -146, 36, 32), shade(sw.fill, 0.18), { amp: 0.5 * U, seed: 5 });
+      paperPoints(g, ellipsePoints(0, -98, 40, 28), sw.light, { amp: 0.5 * U, seed: 6 });
+    } else if (form === 'sheep') {
+      // The face: a smooth, darker oval laid over the fleece.
+      paperPoints(g, ellipsePoints(0, -132, 76, 92), 0xd9c8b4, { amp: 0.5 * U, seed: 7 });
+    } else if (form === 'hen') {
+      // Feather scallops down the breast.
+      const line = shade(sw.fill, 0.25);
+      for (const [x, y] of [
+        [-30, -54],
+        [0, -46],
+        [30, -54],
+        [-15, -26],
+        [15, -26],
+      ])
+        g.moveTo(x - 12, y)
+          .quadraticCurveTo(x, y + 12, x + 12, y)
+          .stroke(stroke(line, 3));
+    } else if (form === 'mouse') {
+      paperPoints(g, ellipsePoints(0, -100, 36, 24), sw.light, { amp: 0.5 * U, seed: 8 });
     }
     this.body.addChild(g);
   }
