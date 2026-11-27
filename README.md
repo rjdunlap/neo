@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 198 games; the 169 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 162 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 198 games; the 169 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 163 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -163,7 +163,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 12 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
 | [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 12 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 9 | fit two big shapes into a house, tree or boat |
-| [Garden Grow](docs/games/garden-grow.md) | lap–pre-K | Rainbow Meadow | 11 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
+| [Garden Grow](docs/games/garden-grow.md) | lap–school | Rainbow Meadow | 13 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |
 | [Habitat Helpers](docs/games/habitat-helpers.md) | preschool–school | Rainbow Meadow | 9 | place Bunny's food, water and shelter, then open the garden gate |
 | [Jar Sort](docs/games/jar-sort.md) | preschool–school | Rainbow Meadow | 12 | tap a jar to lift its top fruit, tap another to drop it; two kinds in three jars, lit jars show where it fits |

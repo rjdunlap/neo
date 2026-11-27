@@ -378,7 +378,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Garden Grow
 
-*lap–pre-K* · [Garden Grow](games/garden-grow.md)
+*lap–school* · [Garden Grow](games/garden-grow.md)
 
 ### Treasure Map
 

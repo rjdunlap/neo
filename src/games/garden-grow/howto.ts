@@ -50,8 +50,30 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'The sign shows how many flowers go in each row. Plant that many in the top row and that many in the bottom row, in any beds, then tap the cloud; tap a seed to take it out.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Two beds grow from the same seeds. Tap the pair of cards that is different, tap the sun and cloud to grow both beds, then tap the bed that grew taller; count the steps on the rulers.',
+    },
+    {
+      from: 13,
+      to: 13,
+      text: 'A question asks about sun or water. Tap a card on the second bed (the right-hand one) to flip it so that only that one thing is different from the first bed, then tap the sun and cloud; tap Undo to start the second bed again.',
+    },
+  ],
+  note: [
+    {
+      from: 12,
+      text: 'Real plants vary. This is a toy garden: it shows what changing one thing does, not how every plant grows. Ask: "Which bed would you put the plant in? What would you change next?" After the round you can flip any card and grow again to see what changes; that is never a mistake.',
+    },
   ],
   finish: [
+    {
+      from: 12,
+      to: 12,
+      text: 'The round ends when three pairs of beds have grown and the taller bed was found.',
+    },
+    { from: 13, to: 13, text: 'The round ends when two questions have each been answered with a fair test.' },
     { to: 7, text: 'The round ends when the garden has grown as asked.' },
     { from: 9, to: 11, text: 'The round ends when three gardens have grown as the signs ask.' },
     { from: 8, to: 8, text: 'The round ends when three flowers are in the vase.' },

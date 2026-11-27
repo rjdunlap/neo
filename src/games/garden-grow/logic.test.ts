@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { rangeFor } from '../../progress/difficulty';
 import {
   judgeGrid,
   BEDS,
@@ -7,7 +8,19 @@ import {
   BIG_STAGES,
   bigFinished,
   bigTouch,
+  CONDITIONS,
+  differing,
+  fairAnswer,
+  fairHint,
+  flipped,
+  growthHeight,
+  judgeFair,
   KINDS,
+  LEVELS,
+  makeCompare,
+  makeFair,
+  type Condition,
+  type Setup,
   gardenTouch,
   makeRequests,
   SEEDS,
@@ -32,7 +45,7 @@ describe('a book request (RW11 slice 2)', () => {
 
 describe('Garden Grow', () => {
   it('asks for things that fit the beds, offers the packets needed, and never repeats a request back to back', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'big')) {
+    for (const plan of PLANS.filter((p) => !['big', 'compare', 'fair'].includes(p.mode))) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const rs = makeRequests(plan, rng);
@@ -166,7 +179,7 @@ describe('Garden Grow', () => {
   });
 
   it('maps every level of every band to its own plan, level 8 being the big bed', () => {
-    expect(PLANS.map((p) => p.mode)).toHaveLength(11);
+    expect(PLANS.map((p) => p.mode)).toHaveLength(13);
     expect(planFor(8).mode).toBe('big');
     for (const l of [1, 2, 3, 4, 5, 6, 7]) expect(planFor(l).mode).not.toBe('big');
     expect(makeRequests(planFor(8), new Rng(1))).toHaveLength(0);
@@ -297,5 +310,88 @@ describe('Garden Grow', () => {
     expect(planFor(9).mode).toBe('rows');
     expect(planFor(10).mode).toBe('columns');
     expect(planFor(11).mode).toBe('equal');
+  });
+});
+
+describe('Growing Conditions (levels 12–13)', () => {
+  const setups: Setup[] = [
+    { light: 'shade', water: 'less' },
+    { light: 'shade', water: 'more' },
+    { light: 'sun', water: 'less' },
+    { light: 'sun', water: 'more' },
+  ];
+
+  it('is the reviewed table: heights 2, 3, 4, 5', () => {
+    expect(setups.map(growthHeight)).toEqual([2, 3, 4, 5]);
+  });
+
+  it('one change has one effect, whatever the other condition holds', () => {
+    for (const a of setups) {
+      for (const c of CONDITIONS) {
+        const b = flipped(a, c);
+        expect(differing(a, b)).toEqual([c]);
+        const gain = c === 'light' ? 2 : 1;
+        const up = a[c] === (c === 'light' ? 'sun' : 'more');
+        expect(growthHeight(b) - growthHeight(a)).toBe(up ? -gain : gain);
+      }
+    }
+    for (const a of setups)
+      for (const b of setups) expect(differing(a, b).length).toBe(a === b ? 0 : differing(a, b).length);
+  });
+
+  it('level 12 rounds differ in exactly one card, the taller side follows the cards, and a round never repeats the last', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const rng = new Rng(seed);
+      let last: ReturnType<typeof makeCompare> | undefined;
+      for (let i = 0; i < 3; i++) {
+        const r = makeCompare(rng, last && { changed: last.changed, taller: last.taller }, last?.kind);
+        expect(differing(r.a, r.b)).toEqual([r.changed]);
+        const ha = growthHeight(r.a);
+        const hb = growthHeight(r.b);
+        expect(ha).not.toBe(hb);
+        expect(r.taller).toBe(ha > hb ? 'a' : 'b');
+        if (last) {
+          expect(r.changed === last.changed && r.taller === last.taller).toBe(false);
+          expect(r.kind).not.toBe(last.kind);
+        }
+        last = r;
+      }
+    }
+  });
+
+  it('level 13 has exactly one fair answer among the four settings of B', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const f = makeFair(new Rng(seed));
+      const verdicts = setups.map((b) => judgeFair(f.a, b, f.ask)).sort();
+      expect(verdicts).toEqual(['fair', 'none', 'other', 'two']);
+      expect(judgeFair(f.a, fairAnswer(f.a, f.ask), f.ask)).toBe('fair');
+      const second = makeFair(new Rng(seed), f.ask, f.kind);
+      expect(second.ask).not.toBe(f.ask);
+      expect(second.kind).not.toBe(f.kind);
+    }
+  });
+
+  it('the hinted card leads to the fair answer', () => {
+    for (const a of setups) {
+      for (const ask of CONDITIONS) {
+        for (const b of setups) {
+          let cur = b;
+          for (let step = 0; step < 3; step++) {
+            const h: Condition | null = fairHint(a, cur, ask);
+            if (!h) break;
+            cur = flipped(cur, h);
+          }
+          expect(judgeFair(a, cur, ask)).toBe('fair');
+        }
+      }
+    }
+  });
+
+  it('has the ladder windows: pre-K reads a comparison, school plays both', () => {
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 6, max: 12, order: [6, 7, 9, 10, 11, 12] });
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 12, max: 13 });
+    expect(planFor(12).mode).toBe('compare');
+    expect(planFor(13).mode).toBe('fair');
+    expect(makeRequests(planFor(12), new Rng(1))).toEqual([]);
   });
 });
