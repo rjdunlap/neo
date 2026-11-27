@@ -60,15 +60,16 @@ Because the differing condition and taller side are always readable from the two
 2. Bed A is set (seeded). Bed B starts as an exact copy of A's cards. She changes B's cards by tapping a card to flip it (sun/shade; a lot/a little).
 3. **Grow** is the same token. The game checks the setup first:
    - Exactly the asked condition differs, the other is the same: both beds grow and the result line is spoken ("Only the sun was different, so the sun made this one taller.").
-   - **The asked condition is the same in both beds** (whatever the other card shows): one miss, no growth: "Nothing is different yet. Change the sun." (`grow.fair.none`).
+   - **Nothing is different** (B is still a copy of A): one miss, no growth: "Nothing is different yet. Change the sun." (`grow.fair.none`).
+   - **Only the other condition differs:** one miss, no growth: "You changed the water. The question is about sun. Change the sun instead." (`grow.fair.other`).
    - **The other condition also differs (two changes):** one miss, no growth: "You changed two things. Then we could not tell which one did it. Put the water back to match." (`grow.fair.two`), with an undo that returns B to a copy of A (free).
 4. After a fair growth she may **flip any card and grow again** as free exploration (never judged, no miss, the round already counted). That is where "what if I change the water?" and "what if both change?" live; with both changed the line says "Two things changed, so we cannot tell which one did it".
 
-Hints: the second miss on a round glows the card that should be flipped (none) or the card that should be flipped back (two changes); one hint is counted, as in the other Garden Grow levels.
+Hints: the second miss on a round glows the asked card to flip (nothing different), the card to flip back (the other condition) or the changed other card (two changes); one hint is counted, as in the other Garden Grow levels.
 
 ## Accounting, help and finishing
 
-- **Misses:** a wrong "what is different" tap, a wrong "which grew taller" tap, and an unfair or empty setup at 13. Free: guessing first, undoing, flipping a card, replaying the growth, and every post-fair exploration.
+- **Misses:** a wrong "what is different" tap, a wrong "which grew taller" tap, and an empty, wrong-condition or two-change setup at 13. Free: guessing first, undoing, flipping a card, replaying the growth, and every post-fair exploration.
 - **Hints:** the second miss at one step glows the right card or bed, counted once per step as today. A supported completion (the hinted answer taken) still finishes and still earns the sticker, and is not recorded as independent success.
 - **Finishing:** `ctx.finish({ misses, hints })` after the last round; no stickers, saves or celebration from the game. No timer, no losing, no withered plant.
 - **Adaptation:** the shared ladder in `src/progress/difficulty.ts` applies unchanged. Smooth (at most one miss, no hint) steps 12 to 13 in school; pre-K ends at 12.
@@ -77,7 +78,7 @@ Hints: the second miss on a round glows the card that should be flipped (none) o
 
 - `type Light = 'sun' | 'shade'`, `type Water = 'more' | 'less'`, `interface Setup { light: Light; water: Water }`, `growthHeight(s: Setup): number` as above, and `differing(a: Setup, b: Setup): ('light' | 'water')[]`.
 - `makeCompare(rng, avoid?): { kind; color; a: Setup; b: Setup; changed: 'light' | 'water' }` for level 12: A is seeded, B differs in exactly one condition, the taller side varies, and `avoid` stops a repeat of the last round's condition and side.
-- `makeFair(rng, avoid?): { kind; color; a: Setup; ask: 'light' | 'water' }` for level 13. `judgeFair(a, b, ask): 'fair' | 'none' | 'two'` is the only rule. `fairAnswer(a, ask)` returns the single valid B.
+- `makeFair(rng, avoid?): { kind; color; a: Setup; ask: 'light' | 'water' }` for level 13. `judgeFair(a, b, ask): 'fair' | 'none' | 'other' | 'two'` is the only rule. `fairAnswer(a, ask)` returns the single valid B.
 - `GARDEN_MODES` gains `'compare'` and `'fair'`; `PLANS` gains two entries (indexes 11 and 12) with `requests` 3 and 2. `planFor` clamps as today, so nothing in 1–11 moves.
 
 ## Rule tests (`logic.test.ts`)
@@ -85,7 +86,7 @@ Hints: the second miss on a round glows the card that should be flipped (none) o
 1. **The table is the table.** All four settings give the heights 2, 3, 4, 5 and each setting is healthy (no field names a condition's harm).
 2. **One change, one effect.** Over all 16 ordered setup pairs, `differing` is exact, and flipping exactly one condition always changes `growthHeight` by the same signed amount (sun +2, water +1), the same whichever value the other condition holds. That is the guarantee of a fair test.
 3. **Level 12 rounds are readable.** For seeds 0–199, exactly one condition differs, the taller side is derived from the cards, and `avoid` changes the differing condition or the side between rounds.
-4. **Level 13 has exactly one fair answer.** For every `makeFair` (seeds 0–199) and all four possible B setups, `judgeFair` returns `fair` for exactly one (only the asked condition flipped), `two` for exactly one (both flipped) and `none` for the other two (the asked condition unchanged), and `fairAnswer` is the `fair` one.
+4. **Level 13 has exactly one fair answer.** For every `makeFair` (seeds 0–199) and all four possible B setups, `judgeFair` returns each of its four outcomes exactly once across the four B setups (`none` for B equal to A, `fair` for only the asked condition flipped, `other` for only the other flipped, `two` for both flipped), and `fairAnswer` is the `fair` one.
 5. **Hints lead somewhere.** The hinted card at 13 is the card whose flip moves B toward `fairAnswer`.
 6. **Ladder.** `rangeFor` for `prek` and `school` includes 12 and 13 as specified; every earlier ID keeps its earlier relative order; levels 1–11's plans and tests are unchanged.
 
@@ -107,8 +108,8 @@ Voice IDs in `voice.ts` under `grow.cond.*` and `grow.fair.*`, plain words (*sam
 
 Each has a default the build uses; none waits on the developer.
 
-1. **Under the Soil ordering.** The dive's 2026-10-23 decision defined Under the Soil first and had it absorb Growing Conditions "where they share the cutaway". This packet needs no cutaway, so it is defined first. Default: build this comparison now; Under the Soil later adds a roots-and-shoots view that reuses `growthHeight` and the cards, and its definition must cite this packet. Alternative: wait and define one combined packet.
-2. **Content review.** Default: the game states only the toy table's one-variable comparison, with "in this toy garden" in the note, and no mechanism, requirement or harm, so it is **not gated** on a named reviewer. The developer can read the voice lines in the PR. Alternative: hold the merge for a botany or nature-education read of the card art and the sun, shade, water words.
+1. **Under the Soil ordering.** The dive's [2026-10-23 decision](../deep-dives/garden-grow.md#decisions-for-the-developer) (not superseded by the 2026-11-17 record) defines Under the Soil first, absorbing Growing Conditions where they share the cutaway. Default: keep that order. This packet is the comparison half (the table, cards and fair test); **Under the Soil's definition must cite it, add the roots-and-shoots cutaway and reuse `growthHeight` rather than a second table**, and this packet is built only after that definition exists. Alternative: build this first and let Under the Soil follow.
+2. **Content check.** Per the genetics study's [2026-10-23 decision](../deep-dives/subjects/genetics.md#decisions-for-the-developer) (1), no outside reviewer: the **building session checks the toy table and wording against reputable sources** (museums, universities, government science agencies, established curricula), lists them in the game's page and records the check in its VERIFICATION entry. The life-science study's "light and water controls only after a reviewed model" is met by that check, done before the build ships.
 3. **Windows.** Default: pre-K reads a comparison (12 only), school gets 12–13. Alternatives: a preschool window for 12's "which grew taller" half, or school-only both levels.
 4. **Conditions.** Default: light and water only, two settings each. Out of scope on purpose: temperature, soil type and fertilizer (soil is never called food), real species, flower counts and anything that suggests a plant can be harmed by a choice.
 5. **Later, not here:** *Paper Sprouts* (G8's other half, a plain-HTML conversation card); a school 3×4 grid and the root cutaway (Under the Soil); *Leaf Litter Window* (ecosystems F5); a repeated-trials "chance of variation" mode.
