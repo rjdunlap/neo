@@ -830,9 +830,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
       }
     if (!only || only === 'rhythm')
-      for (let level = fromLevel; level <= 10; level++) {
+      for (let level = fromLevel; level <= 11; level++) {
         await launch('rhythm-neighbors', level);
-        if (level === 6 || level === 7 || level === 9 || level === 10) {
+        if (level === 6 || level === 7 || level === 9 || level === 10 || level === 11) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
         }
@@ -968,6 +968,45 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!g.done || !g.finale) throw new Error('Rhythm free play did not end after eight taps');
             return;
           }
+          if (g.plan.own) {
+            // Level 11: one note is nudged and kept, the call's own rhythm is an echo and asked again, a help sample is not a
+            // hint, and her own rhythm is sung back; three answers finish with no miss and no hint.
+            const { GAP_SECONDS } = await import('/src/games/rhythm-neighbors/logic.ts');
+            await ready();
+            kit.tapOn(g.frogs[0]);
+            await kit.sleep(200);
+            kit.tapOn(g.submit);
+            await kit.sleep(300);
+            if (g.taps.length !== 1 || g.phrase !== 0 || g.busy) throw new Error('Level 11 one-note nudge');
+            g.taps.length = 0;
+            const call = g.phrases[0].call;
+            for (let i = 0; i <= call.length; i++) {
+              kit.tapOn(g.frogs[0]);
+              await kit.sleep(i < call.length ? 1000 * GAP_SECONDS[call[i]] : 200);
+            }
+            kit.tapOn(g.submit);
+            await kit.sleep(200);
+            if (g.phrase !== 0 || g.taps.length !== 0 || !g.busy)
+              throw new Error('Level 11 echo not asked again');
+            await ready();
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (!g.busy || g.hints !== 0) throw new Error('Level 11 sample');
+            await ready();
+            while (!g.done) {
+              await ready();
+              if (g.done) break;
+              const p = g.phrases[g.phrase];
+              for (let i = 0; i < p.voices.length; i++) {
+                kit.tapOn(g.frogs[p.voices[i]]);
+                await kit.sleep(i < p.gaps.length ? 1000 * GAP_SECONDS[p.gaps[i]] : 450);
+              }
+              kit.tapOn(g.submit);
+              await kit.sleep(300);
+              if (!g.busy && !g.done) throw new Error('Level 11 answer not sung back');
+            }
+            return;
+          }
           await ready();
           if (g.plan.timing) {
             // A thinking pause in the middle of a reply empties it with no miss.
@@ -999,7 +1038,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await finished('rhythm-neighbors');
         assert.deepEqual(
           await score('rhythm-neighbors'),
-          level <= 2 || (level >= 7 && level <= 9) ? [0, 0] : [2, 1],
+          level <= 2 || (level >= 7 && level <= 9) || level === 11 ? [0, 0] : [2, 1],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
