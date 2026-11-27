@@ -1,1 +1,0 @@
-**`two-tablets` levels 1–2, *Find the missing sound, Two unknown signs*** (new game: [definition](../../definitions/two-tablets.md), lands test first, typecheck, unit tests with the exhaustive 40,320-bijection counts, one filtered scripted play of levels 1 and 2 with one wrong reading and one hint, one portrait screenshot, `fingerdemo` at level 2, `npm run game-docs`).

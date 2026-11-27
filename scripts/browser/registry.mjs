@@ -210,6 +210,7 @@ import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
 import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as createMarketDays } from './suites/market-days-play.mjs';
+import { createSuite as createTwoTablets } from './suites/two-tablets-play.mjs';
 import { createSuite as create135 } from './suites/down-we-go-play.mjs';
 import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
 import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
@@ -246,6 +247,7 @@ export const SUITES = [
   'pantry',
   'wordcode',
   'marketdays',
+  'twotablets',
   'downwego',
   'bunnypatches',
   'campsite',
@@ -464,6 +466,7 @@ export const ALL_SUITES = [
   'pantry',
   'wordcode',
   'marketdays',
+  'twotablets',
   'downwego',
   'bunnypatches',
   'campsite',
@@ -676,6 +679,7 @@ export function createChecks(fixture) {
     'picnicPantryPlay',
     'wordCodePlay',
     'marketDaysPlay',
+    'twoTabletsPlay',
     'downWeGoPlay',
     'bunnyPatchesPlay',
     'campsitePlay',
@@ -960,6 +964,7 @@ export function createChecks(fixture) {
   install(createDailyMix(shared));
   install(create134(shared));
   install(createMarketDays(shared));
+  install(createTwoTablets(shared));
   install(create135(shared));
   install(create136(shared));
   install(createCampsite(shared));
@@ -1066,6 +1071,7 @@ export async function runSuite(suite, fixture) {
     picnicPantryPlay,
     wordCodePlay,
     marketDaysPlay,
+    twoTabletsPlay,
     downWeGoPlay,
     bunnyPatchesPlay,
     campsitePlay,
@@ -1332,6 +1338,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'pantry') await picnicPantryPlay();
   if (suite === 'all' || suite === 'wordcode') await wordCodePlay();
   if (suite === 'all' || suite === 'marketdays') await marketDaysPlay();
+  if (suite === 'all' || suite === 'twotablets') await twoTabletsPlay();
   if (suite === 'all' || suite === 'downwego') await downWeGoPlay();
   if (suite === 'all' || suite === 'bunnypatches') await bunnyPatchesPlay();
   if (suite === 'all' || suite === 'campsite') await campsitePlay();
