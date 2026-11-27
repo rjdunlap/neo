@@ -7,10 +7,24 @@ import type { BandLevels } from '../../progress/difficulty';
  * sings when tapped. Lap levels are pure cause and effect. Later levels plant the color asked for,
  * count flowers, mix colors, find one more than a picture, and build a two-by-three array. The lap entry (level 8)
  * is one big bed where any touch moves the flower on one stage. Pre-K then chooses a packet and plants it by position:
- * rows of colors (9), columns of colors (10) and the same number in every row (11).
+ * rows of colors (9), columns of colors (10) and the same number in every row (11). Levels 12–13 grow two beds from the same
+ * packet in a toy garden: she reads which one thing differs and which bed grew taller (12), then sets the second bed so only
+ * the asked thing differs (13, a fair test).
  */
 export type GardenMode =
-  'plant' | 'water' | 'color' | 'count' | 'mix' | 'more' | 'array' | 'big' | 'rows' | 'columns' | 'equal';
+  | 'plant'
+  | 'water'
+  | 'color'
+  | 'count'
+  | 'mix'
+  | 'more'
+  | 'array'
+  | 'big'
+  | 'rows'
+  | 'columns'
+  | 'equal'
+  | 'compare'
+  | 'fair';
 
 export interface GardenPlan {
   mode: GardenMode;
@@ -31,13 +45,24 @@ export const PLANS: GardenPlan[] = [
   { mode: 'rows', requests: 3, name: 'Rows of colors: choose a packet and plant each row its color' },
   { mode: 'columns', requests: 3, name: 'Columns of colors: plant each column its color' },
   { mode: 'equal', requests: 3, name: 'Same in every row: plant the same number in each row, in any beds' },
+  {
+    mode: 'compare',
+    requests: 3,
+    name: 'Same seeds, one difference: name what differs, then which bed grew taller',
+  },
+  {
+    mode: 'fair',
+    requests: 2,
+    name: 'You change one thing: set the second bed so only the asked thing differs',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 6, max: 11, order: [6, 7, 9, 10, 11] },
+  prek: { min: 6, max: 12, order: [6, 7, 9, 10, 11, 12] },
+  school: { min: 12, max: 13 },
 };
 
 /** Levels 2–3 beds are a 2×3 grid: beds 0–2 are the top row, 3–5 the bottom, and a column is a bed's index mod 3. */
@@ -112,6 +137,8 @@ export function kindsFor(n: number, rng: Rng): FlowerKind[] {
 
 export function makeRequests(plan: GardenPlan, rng: Rng): Request[] {
   const out: Request[] = [];
+  // The conditions levels (12–13) make their own rounds with `makeCompare` and `makeFair`.
+  if (plan.mode === 'compare' || plan.mode === 'fair') return out;
   const key = requestKey;
   const kinds = kindsFor(plan.requests, rng);
   while (out.length < plan.requests) {
@@ -257,3 +284,115 @@ export function gardenTouch(
   for (const [color, n] of want) if (planted.filter((c) => c === color).length < n) return { packet: color };
   return 'rain';
 }
+
+// ---- Levels 12–13: growing conditions (a toy garden; see docs/definitions/growing-conditions.md) ----
+
+export type Light = 'sun' | 'shade';
+export type Water = 'more' | 'less';
+export type Condition = 'light' | 'water';
+export const CONDITIONS: Condition[] = ['light', 'water'];
+/** One bed's two cards. */
+export interface Setup {
+  light: Light;
+  water: Water;
+}
+
+/** The ruler has five marks. Every plant is healthy and in flower; the shorter ones are only smaller. */
+export const RULER = 5;
+/** Ruler steps for a bed: shade and little water 2, shade and a lot 3, sun and little 4, sun and a lot 5. */
+export const growthHeight = (s: Setup) => 2 + (s.light === 'sun' ? 2 : 0) + (s.water === 'more' ? 1 : 0);
+
+/** The conditions on which two setups differ. */
+export const differing = (a: Setup, b: Setup): Condition[] => CONDITIONS.filter((c) => a[c] !== b[c]);
+
+/** The same setup with one condition flipped. */
+export function flipped(s: Setup, c: Condition): Setup {
+  return c === 'light'
+    ? { ...s, light: s.light === 'sun' ? 'shade' : 'sun' }
+    : { ...s, water: s.water === 'more' ? 'less' : 'more' };
+}
+
+const HIGH: Setup = { light: 'sun', water: 'more' };
+const higher = (s: Setup, c: Condition): Setup => ({ ...s, [c]: HIGH[c] });
+const lower = (s: Setup, c: Condition): Setup => flipped(higher(s, c), c);
+
+export interface CompareRound {
+  kind: FlowerKind;
+  color: ColorName;
+  a: Setup;
+  b: Setup;
+  /** The one condition that differs. */
+  changed: Condition;
+  /** The bed that grew taller. */
+  taller: 'a' | 'b';
+}
+
+/** What a level 12 round must not repeat from the one before: the condition that differed and the side that grew taller. */
+export interface CompareAvoid {
+  changed: Condition;
+  taller: 'a' | 'b';
+}
+
+/** Level 12: two beds that differ in exactly one condition; which one differs and which side is taller are seeded. */
+export function makeCompare(rng: Rng, avoid?: CompareAvoid, lastKind?: FlowerKind): CompareRound {
+  for (;;) {
+    const changed = rng.pick(CONDITIONS);
+    const taller = rng.pick<'a' | 'b'>(['a', 'b']);
+    if (avoid && avoid.changed === changed && avoid.taller === taller) continue;
+    const base: Setup = {
+      light: rng.pick<Light>(['sun', 'shade']),
+      water: rng.pick<Water>(['more', 'less']),
+    };
+    const hi = higher(base, changed);
+    const lo = lower(base, changed);
+    return {
+      kind: rng.pick(KINDS.filter((k) => k !== lastKind)),
+      color: rng.pick(SEEDS),
+      a: taller === 'a' ? hi : lo,
+      b: taller === 'a' ? lo : hi,
+      changed,
+      taller,
+    };
+  }
+}
+
+export interface FairRound {
+  kind: FlowerKind;
+  color: ColorName;
+  /** The fixed bed. */
+  a: Setup;
+  /** The condition the question asks about. */
+  ask: Condition;
+}
+
+/** Level 13: a fixed bed A and a question; the next question asks about the other condition. */
+export function makeFair(rng: Rng, avoid?: Condition, lastKind?: FlowerKind): FairRound {
+  const ask = avoid ? CONDITIONS.find((c) => c !== avoid)! : rng.pick(CONDITIONS);
+  return {
+    kind: rng.pick(KINDS.filter((k) => k !== lastKind)),
+    color: rng.pick(SEEDS),
+    a: { light: rng.pick<Light>(['sun', 'shade']), water: rng.pick<Water>(['more', 'less']) },
+    ask,
+  };
+}
+
+/** How bed B's cards compare with A for the asked question: the one setup that works is 'fair'. */
+export type FairVerdict = 'fair' | 'none' | 'other' | 'two';
+export function judgeFair(a: Setup, b: Setup, ask: Condition): FairVerdict {
+  const d = differing(a, b);
+  if (!d.length) return 'none';
+  if (d.length > 1) return 'two';
+  return d[0] === ask ? 'fair' : 'other';
+}
+/** The one B that makes a fair test of the asked condition. */
+export const fairAnswer = (a: Setup, ask: Condition): Setup => flipped(a, ask);
+
+/** The B card to flip to move toward a fair test, or null when it already is one: the asked card, or back the other one. */
+export function fairHint(a: Setup, b: Setup, ask: Condition): Condition | null {
+  const v = judgeFair(a, b, ask);
+  if (v === 'fair') return null;
+  return v === 'none' ? ask : CONDITIONS.find((c) => c !== ask)!;
+}
+
+/** What the result line says changed and which way: "more sun", "more water". */
+export const moreOf = (c: Condition) => (c === 'light' ? 'more sun' : 'more water');

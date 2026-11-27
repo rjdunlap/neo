@@ -1880,6 +1880,78 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Garden Grow 12–13 (growing conditions): read a comparison with misses and a hint, then set a fair test.
+    if (!only || only === 'grow')
+      for (const level of [12, 13]) {
+        if (level < fromLevel) continue;
+        // Levels 12–13 are upright-ready: play them on an upright phone (the harness makes the context a touch phone when FROM_LEVEL is 12 or more).
+        if (fromLevel >= 12) await page.setViewportSize({ width: 390, height: 844 });
+        await launch('garden-grow', level, 'Mia', 'school');
+        const settle = async () => {
+          await page.waitForTimeout(250);
+          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+            timeout: 30000,
+          });
+        };
+        const game = 'neo.scene.game';
+        const rounds = level === 12 ? 3 : 2;
+        for (let n = 0; n < rounds; n++) {
+          await settle();
+          await page.waitForTimeout(250);
+          if (n === 0 && level === 12) await screenshot('garden-grow-12');
+          if (level === 12) {
+            const changed = await page.evaluate(() => neo.scene.game.cur.compare.changed);
+            const same = changed === 'light' ? 'water' : 'light';
+            if (n === 0) {
+              // Two wrong pairs: two gentle misses, then the right pair glows (one hint).
+              await tap(`${game}.plots[0].cards.${same}`);
+              await settle();
+              await tap(`${game}.plots[1].cards.${same}`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+            }
+            await tap(`${game}.plots[1].cards.${changed}`);
+            await settle();
+            await tap(`${game}.token`);
+            await settle();
+            const taller = await page.evaluate(() => neo.scene.game.cur.compare.taller);
+            if (n === 0) await screenshot('garden-grow-12-grown');
+            if (n === 0) {
+              await tap(`${game}.plots[${taller === 'a' ? 1 : 0}].bed`);
+              await settle();
+            }
+            await tap(`${game}.plots[${taller === 'a' ? 0 : 1}].bed`);
+          } else {
+            const ask = await page.evaluate(() => neo.scene.game.cur.ask);
+            const other = ask === 'light' ? 'water' : 'light';
+            if (n === 0) {
+              // Nothing different, then only the other card, each a miss; the second lights the card to flip (one hint).
+              await tap(`${game}.token`);
+              await settle();
+              await tap(`${game}.plots[1].cards.${other}`);
+              await tap(`${game}.token`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+              await screenshot('garden-grow-13');
+              await tap(`${game}.undo`);
+            }
+            await tap(`${game}.plots[1].cards.${ask}`);
+            await tap(`${game}.token`);
+            await settle();
+            // Free after a fair test: change the other card too, grow again, no miss.
+            await tap(`${game}.plots[1].cards.${other}`);
+            await tap(`${game}.token`);
+            await settle();
+            await tap(`${game}.next`);
+          }
+        }
+        await finished('garden-grow');
+        assert.deepEqual(await score('garden-grow'), level === 12 ? [3, 1] : [2, 1]);
+        log(
+          `Garden Grow ${level} (${level === 12 ? 'compare' : 'fair'}): wrong taps, the glowing hint, ${level === 12 ? 'reading the taller bed' : 'the fair test and free exploration'}, saved score and sticker passed`,
+        );
+      }
+
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
