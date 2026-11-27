@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { swatch } from '../../art/palette';
 import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
-import { CLUES, PICTURES, type ClueId, type PictureId } from './logic';
+import { CLUES, LIGHT, PICTURES, THING, WHERE, type ClueId, type PictureId, type Stamp } from './logic';
 
 /** Original dream pictures, drawn on a 200 × 200 square centred on (0, 0), then scaled to `size`. */
 const SCENES: ((g: Graphics, bg: number) => void)[] = [
@@ -249,4 +249,120 @@ export function seatIcon(two: boolean) {
 }
 
 /** The sticker: the picture that was chosen, pinned to the pool index so a sticker keeps its picture. */
+// ---- level 3: the stamp's parts ----------------------------------------------------------------------------------
+
+/** Where: the ground and sky of the stamp, drawn on a 200 × 200 square centred on (0, 0). */
+const WHERE_ART: ((g: Graphics) => void)[] = [
+  // sky: a deep blue sky with two clouds
+  (g) => {
+    g.roundRect(-100, -100, 200, 200, 26).fill(swatch.blue.fill);
+    for (const [x, y] of [
+      [-52, -40],
+      [46, 14],
+    ] as [number, number][]) {
+      g.ellipse(x, y, 34, 14).fill(0xffffff);
+      g.ellipse(x + 18, y - 8, 20, 12).fill(0xffffff);
+    }
+  },
+  // meadow: pale sky over a green hill
+  (g) => {
+    g.roundRect(-100, -100, 200, 200, 26).fill(swatch.blue.light);
+    g.moveTo(-94, 94).quadraticCurveTo(0, 20, 94, 94).closePath().fill(swatch.green.fill);
+  },
+  // pond: teal sky over a pond
+  (g) => {
+    g.roundRect(-100, -100, 200, 200, 26).fill(swatch.teal.light);
+    g.ellipse(0, 70, 92, 30).fill(swatch.blue.fill).stroke({ width: 4, color: swatch.blue.line });
+    g.ellipse(-26, 66, 22, 6).fill(0xffffff);
+  },
+];
+
+/** Thing: the middle of the stamp. */
+const THING_ART: ((g: Graphics) => void)[] = [
+  // swing: a frame with a hanging seat
+  (g) => {
+    g.moveTo(-50, 70)
+      .lineTo(-30, -50)
+      .lineTo(30, -50)
+      .lineTo(50, 70)
+      .stroke({ width: 7, color: swatch.brown.line });
+    for (const x of [-18, 18]) g.moveTo(x, -50).lineTo(x, 36).stroke({ width: 4, color: swatch.brown.line });
+    g.roundRect(-30, 34, 60, 14, 6).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
+  },
+  // house: a small house with a roof and a door
+  (g) => {
+    g.rect(-40, 4, 80, 60).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.orange.line });
+    g.poly([-52, 6, 0, -42, 52, 6]).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
+    g.roundRect(-11, 30, 22, 34, 8).fill(swatch.brown.fill);
+    g.rect(14, 18, 16, 14).fill(swatch.blue.light);
+  },
+  // boat: a hull and a sail
+  (g) => {
+    g.poly([-56, 30, 56, 30, 38, 62, -38, 62])
+      .fill(swatch.brown.fill)
+      .stroke({ width: 5, color: swatch.brown.line });
+    g.rect(-3, -48, 6, 78).fill(swatch.brown.line);
+    g.poly([6, -44, 6, 22, 46, 22]).fill(0xffffff).stroke({ width: 4, color: swatch.orange.line });
+  },
+];
+
+/** Light: a small glow in the upper corner of the stamp. */
+const LIGHT_ART: ((g: Graphics) => void)[] = [
+  // moon: a crescent
+  (g) => {
+    g.circle(-58, -62, 24).fill(swatch.yellow.fill);
+    g.circle(-48, -68, 20).fill(swatch.yellow.light).alpha = 1;
+  },
+  // lantern: a lamp with a glow
+  (g) => {
+    g.circle(-58, -58, 30).fill(swatch.yellow.light);
+    g.roundRect(-70, -72, 24, 30, 8).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.orange.line });
+  },
+  // star: a five-point star
+  (g) => {
+    g.star(-58, -62, 5, 26, 12).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+  },
+];
+
+/** The stamp as a card of `size` units, centred on (0, 0); every slot drawn from the shared palette. */
+export function stampCard(stamp: Stamp, size: number, parts: readonly (number | null)[] = stamp): Container {
+  const c = new Container();
+  const art = new Container();
+  const back = new Graphics();
+  if (parts[0] === null) back.roundRect(-100, -100, 200, 200, 26).fill(swatch.white.light);
+  else WHERE_ART[parts[0]](back);
+  back.roundRect(-100, -100, 200, 200, 26).stroke({ width: 6, color: swatch.yellow.line });
+  art.addChild(back);
+  if (parts[1] !== null) {
+    const g = new Graphics();
+    THING_ART[parts[1]](g);
+    art.addChild(g);
+  }
+  if (parts[2] !== null) {
+    const g = new Graphics();
+    LIGHT_ART[parts[2]](g);
+    art.addChild(g);
+  }
+  art.scale.set(size / 200);
+  c.addChild(art);
+  return c;
+}
+
+/** One selectable part on a button of `size` units: just that part, on a plain card, and its name. */
+export function partButton(slot: number, part: number, size: number): Container {
+  const c = new Container();
+  const parts: (number | null)[] = [null, null, null];
+  parts[slot] = part;
+  c.addChild(stampCard([0, 0, 0], size, parts));
+  const name = [WHERE, THING, LIGHT][slot][part];
+  const word = label(name, Math.round(size * 0.16), ink);
+  word.y = size * 0.5 - size * 0.12;
+  if (word.width > size * 0.86) word.scale.set((size * 0.86) / word.width);
+  const plate = new Graphics()
+    .roundRect(-size * 0.4, word.y - size * 0.11, size * 0.8, size * 0.22, 8)
+    .fill({ color: 0xffffff, alpha: 0.85 });
+  c.addChild(plate, word);
+  return c;
+}
+
 export const pictureSticker = (seed: number) => pictureCard(Math.abs(Math.trunc(seed)) % PICTURES.length, 96);

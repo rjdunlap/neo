@@ -27,3 +27,21 @@ export function dreamLayout(v: View) {
   const seats = [-1, 1].map((i) => ({ x: cx + i * 150, y: cardY }));
   return { upright, card, token, cx, cards, tokens, buttons, radius, seats, cardY, tokenY };
 }
+
+/**
+ * Level 3's build screen: the stamp preview on top and three rows of three part buttons below (where, thing, light),
+ * every button at least 100 units, with the Done button at the bottom right and the pet's corner clear.
+ */
+export function buildLayout(v: View) {
+  const upright = v.h > v.w;
+  const gap = 14;
+  const button = Math.max(100, Math.min(upright ? 160 : 124, (v.w - 80 - 2 * gap) / 3));
+  const preview = upright ? 220 : 190;
+  const previewY = upright ? 90 + preview / 2 : 70 + preview / 2;
+  const rowsTop = previewY + preview / 2 + 24 + button / 2;
+  const rowGap = upright ? 18 : 10;
+  const rows = [0, 1, 2].map((r) =>
+    [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * (button + gap), y: rowsTop + r * (button + rowGap) })),
+  );
+  return { upright, button, preview, previewY, rows, cx: v.w / 2 };
+}

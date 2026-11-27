@@ -1,5 +1,5 @@
 import type { BandLevels } from '../../progress/difficulty';
-import type { Rng } from '../../engine/random';
+import { Rng } from '../../engine/random';
 
 /**
  * Dream Cards, level 1 (docs/definitions/dream-cards.md): three dream pictures and three pictured clues. One of two
@@ -7,9 +7,13 @@ import type { Rng } from '../../engine/random';
  * the picked picture turns over. Nothing about the choice is wrong, so the round never counts a miss: the fit table only
  * guides what the pet says and which deals are dealt.
  */
-export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 export const describeLevel = (level: number) =>
-  level >= 2 ? 'Two clues: say more, then look again' : 'Dream clues: give one clue and read another’s';
+  level >= 3
+    ? 'My dream: build a picture, then give its clue'
+    : level >= 2
+      ? 'Two clues: say more, then look again'
+      : 'Dream clues: give one clue and read another’s';
 
 export const PICTURES = [
   'moon swing',
@@ -108,7 +112,7 @@ export function revealKind(giverPick: PictureId, clue: ClueId, listenerPick: Pic
  * Level 2 (docs/definitions/dream-cards-two-clues.md) adds a second clue after her first point: `second` is the giver
  * choosing it, `again` is her second look (keep her point or move it).
  */
-export type Phase = 'choose' | 'cover' | 'point' | 'second' | 'again' | 'reveal';
+export type Phase = 'build' | 'choose' | 'cover' | 'point' | 'second' | 'again' | 'reveal';
 export interface State {
   phase: Phase;
   deal: Deal;
@@ -118,6 +122,8 @@ export interface State {
   /** Level 2 only: the second clue, and the picture she first pointed to. */
   clue2?: ClueId | null;
   first?: PictureId | null;
+  /** Level 3 only: the built stamp, kept only in state. */
+  stamp?: Stamp;
 }
 
 /** What a renderer may read in a phase: the giver's pick appears only once the picture has turned over. */
@@ -203,6 +209,138 @@ export function hintAction2(s: State): Hint2 | null {
   if (s.phase === 'second' && s.giverPick !== null) {
     const c = s.deal.clues.find((x) => x !== s.clue && fits(s.giverPick as PictureId, x));
     return c === undefined ? null : { kind: 'clue', clue: c };
+  }
+  return null;
+}
+
+// ---- level 3: make your own dream picture ------------------------------------------------------------------------
+
+export const WHERE = ['sky', 'meadow', 'pond'] as const;
+export const THING = ['swing', 'house', 'boat'] as const;
+export const LIGHT = ['moon', 'lantern', 'star'] as const;
+/** The stamp's three parts, one per slot: where, thing, light (each an index 0 to 2). */
+export type Stamp = readonly [number, number, number];
+/** The card id the made stamp takes in a deal; ids 0 to 5 are the pool's pictures. */
+export const STAMP_CARD = 6;
+
+/** What each part invites (indices into CLUES), two clues each: every clue is invited by exactly three of the nine parts. */
+export const PART_CLUES: readonly (readonly (readonly [ClueId, ClueId])[])[] = [
+  [
+    [1, 3], // sky: high up, floating
+    [0, 2], // meadow: quiet, cozy
+    [4, 5], // pond: glowing, tiny
+  ],
+  [
+    [1, 0], // swing: high up, quiet
+    [2, 5], // house: cozy, tiny
+    [3, 4], // boat: floating, glowing
+  ],
+  [
+    [0, 4], // moon: quiet, glowing
+    [2, 3], // lantern: cozy, floating
+    [1, 5], // star: high up, tiny
+  ],
+];
+
+export const STAMPS: readonly Stamp[] = (() => {
+  const out: Stamp[] = [];
+  for (let w = 0; w < 3; w++) for (let t = 0; t < 3; t++) for (let l = 0; l < 3; l++) out.push([w, t, l]);
+  return out;
+})();
+
+/** Spoken name of a stamp, from its parts: "sky lantern boat". */
+export const stampName = (s: Stamp) => `${WHERE[s[0]]} ${LIGHT[s[2]]} ${THING[s[1]]}`;
+
+/** True when any of the stamp's three parts invites the clue: a suggestion of what to say, never a scoring key. */
+export const stampFits = (s: Stamp, clue: ClueId) =>
+  s.some((part, slot) => PART_CLUES[slot][part].includes(clue));
+
+/** A card in a made deal: the stamp (STAMP_CARD) fits through its parts, a pool picture through FITS. */
+export const fits3 = (s: Stamp, card: PictureId, clue: ClueId) =>
+  card === STAMP_CARD ? stampFits(s, clue) : fits(card, clue);
+
+/** Valid when every dealt clue fits two cards, the stamp fits a dealt clue, and each decoy fits a dealt clue. */
+export function validMade(s: Stamp, d: Deal): boolean {
+  const clueOk = d.clues.every((c) => d.pictures.filter((p) => fits3(s, p, c)).length >= 2);
+  const picOk = d.pictures.every((p) => d.clues.some((c) => fits3(s, p, c)));
+  return clueOk && picOk;
+}
+
+/** Every valid made deal for a stamp (sorted sets, in a fixed order): the stamp, two of the six pictures, three clues. */
+export function madeDeals(s: Stamp): Deal[] {
+  const out: Deal[] = [];
+  for (let a = 0; a < 6; a++)
+    for (let b = a + 1; b < 6; b++)
+      for (const clues of triples()) {
+        const d: Deal = { pictures: [a, b, STAMP_CARD], clues };
+        if (validMade(s, d)) out.push(d);
+      }
+  return out;
+}
+
+const madeCache = new Map<number, Deal[]>();
+const stampKey = (s: Stamp) => s[0] * 9 + s[1] * 3 + s[2];
+const madeFor = (s: Stamp) => {
+  const k = stampKey(s);
+  let m = madeCache.get(k);
+  if (!m) madeCache.set(k, (m = madeDeals(s)));
+  return m;
+};
+
+/** A seeded valid made deal with the three cards and the three clues in a seeded left-to-right order. */
+export function dealMade(s: Stamp, seed: number): Deal {
+  const rng = new Rng(seed);
+  const base = rng.pick(madeFor(s));
+  const [p0, p1, p2] = rng.shuffle([...base.pictures]);
+  const [c0, c1, c2] = rng.shuffle([...base.clues]);
+  return { pictures: [p0, p1, p2], clues: [c0, c1, c2] };
+}
+
+/** The pet as listener at level 3: a dealt card the clue fits, rotating with the seed. */
+export function petPoint3(s: Stamp, deal: Deal, clue: ClueId, seed: number): PictureId {
+  const options = deal.pictures.filter((p) => fits3(s, p, clue));
+  return options[Math.abs(Math.trunc(seed)) % options.length];
+}
+
+/** The pet as builder at level 3: a seeded recipe, never a hidden right answer. */
+export const petStamp = (seed: number): Stamp => STAMPS[(Math.abs(Math.trunc(seed)) * 11) % STAMPS.length];
+
+/** The pet's clue for its own stamp: a dealt clue the stamp fits, rotating with the seed. */
+export function petClue3(s: Stamp, deal: Deal, seed: number): ClueId {
+  const options = deal.clues.filter((c) => stampFits(s, c));
+  return options[Math.abs(Math.trunc(seed)) % options.length];
+}
+
+/** What is said at the level 3 reveal, never a verdict. */
+export function revealKind3(
+  s: Stamp,
+  giverPick: PictureId,
+  clue: ClueId,
+  listenerPick: PictureId,
+): RevealKind {
+  if (giverPick === listenerPick) return 'same';
+  return fits3(s, giverPick, clue) && fits3(s, listenerPick, clue) ? 'both-fit' : 'new-view';
+}
+
+export type Hint3 =
+  { kind: 'slots' } | { kind: 'clue'; clue: ClueId } | { kind: 'picture'; picture: PictureId };
+
+/**
+ * Level 3 Help moves attention, never the answer: while building it names the three slots; once the clues are dealt it
+ * glows one token the stamp fits; when she points to the pet's stamp it glows a card that fits the clue and is not the
+ * stamp. It never reads which card is hers.
+ */
+export function hintAction3(s: State): Hint3 | null {
+  const stamp = s.stamp;
+  if (s.phase === 'build') return { kind: 'slots' };
+  if (!stamp) return null;
+  if (s.phase === 'choose') {
+    const c = s.deal.clues.find((x) => stampFits(stamp, x));
+    return c === undefined ? null : { kind: 'clue', clue: c };
+  }
+  if (s.phase === 'point' && s.clue !== null) {
+    const p = s.deal.pictures.find((x) => x !== s.giverPick && fits3(stamp, x, s.clue as ClueId));
+    return p === undefined ? null : { kind: 'picture', picture: p };
   }
   return null;
 }

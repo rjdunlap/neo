@@ -8,18 +8,19 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–2 |
+| school | 1–3 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Dream clues: give one clue and read another’s |
 | 2 | Two clues: say more, then look again |
+| 3 | My dream: build a picture, then give its clue |
 
 <!-- end generated -->
 
 **Starts as:** the pet (or a second person on the same device) gives one pictured clue (*quiet*, *high up*, *cozy*, *floating*, *glowing* or *tiny*) about one of three dream pictures, hidden under a cloud. She points to the picture the clue makes her think of, the chosen picture turns over, and they look at both picks together. Swap lets her give a clue and the pet or friend point. The purpose is that one clue can mean different things to different people and a clue is a way of sharing what you see; nothing is wrong, nothing is scored.
 
-**Grows into:** levels 1 and 2, school band. Level 2 ([definition](../definitions/dream-cards-two-clues.md)) adds a second clue for the same picture and a second look where she keeps her point or moves it. Level 3, *Make your own dream picture* ([definition](../definitions/dream-cards-own-picture.md)), has her build a stamp from three parts and give its clue. A couch mode is another later level in the [level 1 definition](../definitions/dream-cards.md#the-level). Pre-K waits for a phone to show the cloud and clues read for a younger child.
+**Grows into:** levels 1 to 3, school band. Level 2 ([definition](../definitions/dream-cards-two-clues.md)) adds a second clue for the same picture and a second look where she keeps her point or moves it. Level 3, *Make your own dream picture* ([definition](../definitions/dream-cards-own-picture.md), built 2026-11-27), has her build a stamp from a place, a thing and a light (27 stamps) and give a clue about it; the pet or a friend points among her stamp and two pool pictures, and Swap lets the pet build a stamp for her to read. The stamp is never saved. A couch mode is another later level in the [level 1 definition](../definitions/dream-cards.md#the-level). Pre-K waits for a phone to show the cloud and clues read for a younger child.
 
 ## Design notes
 
@@ -28,4 +29,5 @@
 - No misses: `ctx.finish({ misses: 0, hints })`. Help glows a fitting picture (listener, never the hidden one) or a fitting clue (giver) and counts one hint. *Show me* reveals without pointing.
 - Every voice line carries a slot, so all stay on device speech. The reveal has pet, she-gave and two-person wordings.
 - Seat chooser: *Me and the pet* or *Two of us*; a second person gets no credit or seat record.
-- Not built: levels 2 and 3, pre-K, a couch mode, the unit test that runs `autotouch()` over 50 seeds (the filtered browser play and `fingerdemo` cover it once).
+- Level 3 (`logic.ts`, `art.ts`, `layout.ts` `buildLayout`): nine parts with two clues each, `stampFits` is the union (24 stamps invite four clues, 3 invite all six), 1,464 valid made deals with 41 to 134 per stamp, card id 6 is the stamp, `petStamp` is a seeded recipe, `hintAction3` names the slots, then a fitting clue, then a fitting card that is not the pet's stamp. The sticker is still chosen by the shell's seed from the six pool pictures (the definition's pointed-card rule is not built).
+- Not built: pre-K, a couch mode, the unit test that runs `autotouch()` over 50 seeds (the filtered browser play and `fingerdemo` cover it once).

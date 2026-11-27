@@ -25,7 +25,23 @@ import {
   visible,
   type Deal,
   type State,
+  PART_CLUES,
+  STAMPS,
+  STAMP_CARD,
+  dealMade,
+  fits3,
+  hintAction3,
+  madeDeals,
+  petClue3,
+  petPoint3,
+  petStamp,
+  revealKind3,
+  stampFits,
+  stampName,
+  validMade,
 } from './logic';
+
+const MADE_TOTAL = 1464;
 
 describe('the fit table', () => {
   it('has every picture fit exactly 3 clues and every clue exactly 3 pictures, with distinct names', () => {
@@ -128,8 +144,8 @@ describe('level 2: two clues for one picture', () => {
     return out;
   };
 
-  it('is the school ladder 1 to 2 with its own level name', () => {
-    expect(LEVELS.school).toEqual({ min: 1, max: 2 });
+  it('has level 2 named, inside the ladder', () => {
+    expect(LEVELS.school?.min).toBe(1);
     expect(describeLevel(2)).toBe('Two clues: say more, then look again');
   });
 
@@ -218,5 +234,99 @@ describe('level 2: two clues for one picture', () => {
           expect(h.clue).not.toBe(d.clues[0]);
         }
       }
+  });
+});
+
+describe('level 3: make your own dream picture', () => {
+  it('is the school ladder 1 to 3 with its own level name', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 3 });
+    expect(describeLevel(3)).toBe('My dream: build a picture, then give its clue');
+  });
+
+  it('has nine parts of two distinct clues each, every clue invited by exactly three parts', () => {
+    const count = [0, 0, 0, 0, 0, 0];
+    for (const slot of PART_CLUES)
+      for (const [a, b] of slot) {
+        expect(a).not.toBe(b);
+        count[a]++;
+        count[b]++;
+      }
+    expect(count).toEqual([3, 3, 3, 3, 3, 3]);
+    expect(STAMPS).toHaveLength(27);
+    expect(new Set(STAMPS.map(stampName)).size).toBe(27);
+  });
+
+  it('has 24 stamps inviting four clues and 3 inviting all six, none fewer than four', () => {
+    const sizes = STAMPS.map((s) => CLUES.filter((_, c) => stampFits(s, c)).length);
+    expect(sizes.filter((n) => n === 4)).toHaveLength(24);
+    expect(sizes.filter((n) => n === 6)).toHaveLength(3);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(4);
+  });
+
+  it('has valid made deals for every stamp, each satisfying the three clauses', () => {
+    let total = 0;
+    for (const s of STAMPS) {
+      const m = madeDeals(s);
+      total += m.length;
+      expect(m.length).toBeGreaterThan(0);
+      for (const d of m) {
+        expect(validMade(s, d)).toBe(true);
+        expect(d.pictures).toContain(STAMP_CARD);
+        expect(d.clues.some((c) => stampFits(s, c))).toBe(true);
+      }
+    }
+    expect(total).toBe(MADE_TOTAL);
+  });
+
+  it('deals a valid, distinct made deal for every stamp over 200 seeds, and the pet point rotates', () => {
+    for (const s of STAMPS) {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const d = dealMade(s, seed);
+        expect(validMade(s, d)).toBe(true);
+        expect(new Set(d.pictures).size).toBe(3);
+        expect(new Set(d.clues).size).toBe(3);
+        for (const c of d.clues) {
+          const p = petPoint3(s, d, c, seed);
+          expect(d.pictures).toContain(p);
+          expect(fits3(s, p, c)).toBe(true);
+          seen.add(p);
+        }
+        expect(stampFits(s, petClue3(s, d, seed))).toBe(true);
+      }
+      expect(seen.has(STAMP_CARD)).toBe(true);
+      expect(seen.size).toBeGreaterThan(2);
+    }
+  });
+
+  it('never errors in revealKind3 and says "same" exactly when the picks match', () => {
+    const s = STAMPS[13];
+    const d = dealMade(s, 5);
+    for (const g of d.pictures)
+      for (const c of d.clues)
+        for (const l of d.pictures) expect(revealKind3(s, g, c, l) === 'same').toBe(g === l);
+  });
+
+  it('hints name the slots, then a fitting clue, never the stamp card', () => {
+    const s = STAMPS[4];
+    const d = dealMade(s, 3);
+    expect(hintAction3({ phase: 'build', deal: d, giverPick: null, clue: null })).toEqual({ kind: 'slots' });
+    const hc = hintAction3({ phase: 'choose', deal: d, giverPick: null, clue: null, stamp: s });
+    expect(hc?.kind).toBe('clue');
+    if (hc?.kind === 'clue') expect(stampFits(s, hc.clue)).toBe(true);
+    for (const c of d.clues) {
+      const hp = hintAction3({ phase: 'point', deal: d, giverPick: STAMP_CARD, clue: c, stamp: s });
+      if (hp?.kind === 'picture') {
+        expect(hp.picture).not.toBe(STAMP_CARD);
+        expect(fits3(s, hp.picture, c)).toBe(true);
+      }
+    }
+  });
+
+  it('has a pet stamp recipe that varies and is deterministic', () => {
+    const names = new Set<string>();
+    for (let i = 0; i < 60; i++) names.add(stampName(petStamp(i)));
+    expect(names.size).toBeGreaterThan(20);
+    expect(petStamp(7)).toEqual(petStamp(7));
   });
 });
