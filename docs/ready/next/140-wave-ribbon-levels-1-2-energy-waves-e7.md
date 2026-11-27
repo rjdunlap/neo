@@ -1,0 +1,1 @@
+**Wave Ribbon, levels 1–2 (energy-waves E7)** (new-game tier): new game in Tinker Lab (`school`) from [definition](../../definitions/wave-ribbon.md): closed-form pulse in `logic.ts`, Watch the pulse (1) and Tall and small (2) with Replay/Step, free runs, trace Check, Help, `upright: true`, voice/how-to/bot.

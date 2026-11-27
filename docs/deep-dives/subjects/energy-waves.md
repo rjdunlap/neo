@@ -152,13 +152,15 @@ Each row is one future session; definitions first, complete builds after. Depend
 | **E3 — build repair, 3** | Two-gap repair with undo, free audition, Check, a useful hint and supported completion | E2; new-interaction tier, focused scripted wrong Check/help/finish, portrait; build if shared files change |
 | **E4 — define the older lantern workshop, 4–6** | Four-state brief and accepted graphs, series/parallel contrast, disclosed mystery pair, useful tests, counterexamples/help and older placement | E1; docs links/diff. Can define before E2, but construction builds depend on it |
 | **E5 — build one workshop round** | A complete level-5 either-switch design case, with both valid spatial routings accepted and all four states tested | E2 plus E4 and resolved older registration (repair E3 can proceed independently); new-interaction tier. Contrast/mystery rounds 4/6 each follow separately; never silently renumber |
-| **E6 — define Wave Ribbon** | Free pulse, marker comparison and one older amplitude/speed investigation; freeze analytic model, visual time mapping, tests, help, layouts and finite ending | Independent docs packet after E1; links/diff, educator model review recommended |
-| **E7 — build Wave Ribbon's first pulse/comparison** | A new complete investigation through Send, replay/step and Done, with supported actual input demo | E6 and registration/placement resolution; new-game tier, focused first/top play and portrait, build for shared registration/content |
+| **E6 — define Wave Ribbon** | **Defined 2026-11-27** ([definition](../../definitions/wave-ribbon.md), PR #2277): levels 1–3, analytic model, `waveLayout`, trace/hypothesis cards, help, rule tests and E7/E7b split | Independent docs packet after E1; links/diff |
+| **E7 — build Wave Ribbon's first pulse/comparison** | A new complete investigation (levels 1–2) through Send, replay/step, trace Check and Done, with supported actual input demo | [E6 definition](../../definitions/wave-ribbon.md); new-game tier, focused first/top play and portrait, build for shared registration/content |
 | **E8 — define one material-test round** | One virtual magnet packet with explicit samples, observable pickup, free predictions, evidence and supported finish; decide its observation/fishing owner | Independent later definition; docs tier first. Light Lab comparison/splitter and Sound Workshop follow their own separate packets/tiers. Real practical cards keep named-review dependency |
 
 No full release, couch course or offline suite is justified by this research. Any future implementation uses the repository's actual change tier and must record tests not run rather than expand its checking budget.
 
 ## What was built
+
+E6 is documentation only: [Wave Ribbon 1–3](../../definitions/wave-ribbon.md) defined 2026-11-27 (PR #2277); E7 (levels 1–2) queued in READY Next ten. No Wave Ribbon code, registry entry or test exists yet.
 
 E1 is documentation only: [Circuit Garden 1–3](../../definitions/circuit-garden.md) defined in #846; [completed-work note](../../archive/COMPLETED-2026-10-09.md#circuit-garden-13-definition-energy-waves-e1-2026-10-22). No game/model, practical card or older workshop implemented.
 
