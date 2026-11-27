@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from
 import { fishArt, penguinArt, turtleArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood, type Swatch } from '../../art/palette';
+import { paperRect, U } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -291,9 +292,11 @@ class SeaLift implements Game {
 
     const s = this.shaft.clear(),
       top = L.stopY(TOP) - L.pitch * 0.9;
-    s.rect(L.shaftX - 46, top, 92, bottom - top)
-      .fill({ color: 0xffffff, alpha: 0.28 })
-      .stroke({ width: 5, color: swatch.teal.line });
+    // A pale see-through shaft framed by two paper rails and a cap (paper strips, not a hard vector outline).
+    s.rect(L.shaftX - 46, top, 92, bottom - top).fill({ color: 0xffffff, alpha: 0.28 });
+    for (const x of [L.shaftX - 52, L.shaftX + 40])
+      paperRect(s, x, top, 12, bottom - top, 6, swatch.teal.fill, { amp: 0.5 * U, seed: x });
+    paperRect(s, L.shaftX - 60, top - 8, 120, 16, 8, swatch.teal.fill, { amp: 0.5 * U, seed: 5 });
     for (const stop of STOPS) {
       const y = L.stopY(stop) + 12,
         b = L.landings.get(stop)!;

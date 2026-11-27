@@ -9,6 +9,8 @@ import { voice } from '../../audio/voice';
 import { placeFor, type Place } from '../../content/places';
 import { WOODLAND_BAND } from '../../content/woodland';
 import { woodlandLandmark } from '../../art/woodland';
+import { MELODY_BAND } from '../../content/melody';
+import { melodyLandmark } from '../../art/melody';
 import { checkBadge } from '../../art/picnic';
 import { shelfFor } from '../../content/shelf';
 import { visibleGames } from '../../content/lands';
@@ -28,6 +30,7 @@ import type { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { MixHost } from '../mix';
+import { PickHost } from '../pick';
 import { mixSpotArt } from '../../ui/mix';
 import { Scene } from '../Scene';
 
@@ -73,25 +76,26 @@ function mixSpot(mods: readonly GameModule[] | null): MixSpot | null {
   return { mix: true, node };
 }
 
-/** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods. */
+/** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods, the Missing Melody on Bumpy Hills. */
 export interface StorySpot {
-  story: 'woodland';
+  story: 'woodland' | 'melody';
   node: Container;
 }
 
-/** The story spot for a place, if it has one: only Wonder Woods, so younger children keep the Windy Picnic and see nothing new. */
+/** The story spot for a place, if it has one: only Wonder Woods and Bumpy Hills, so other ages keep the Windy Picnic and see nothing new. */
 function storySpot(band: Band): StorySpot | null {
-  if (band !== WOODLAND_BAND) return null;
+  const story = band === WOODLAND_BAND ? 'woodland' : band === MELODY_BAND ? 'melody' : null;
+  if (!story) return null;
   const node = new Container();
-  const art = woodlandLandmark();
-  const name = label('Woodland Picnic', 22);
+  const art = story === 'melody' ? melodyLandmark() : woodlandLandmark();
+  const name = label(story === 'melody' ? 'Missing Melody' : 'Woodland Picnic', 22);
   name.position.set(0, 52);
   node.addChild(
     new Graphics().ellipse(0, 26, 100, 22).fill({ color: swatch.green.line, alpha: 0.18 }),
     art,
     name,
   );
-  if (store.woodland.keepsake) {
+  if (store[story].keepsake) {
     const done = checkBadge(20);
     done.position.set(76, -50);
     node.addChild(done);
@@ -99,7 +103,7 @@ function storySpot(band: Band): StorySpot | null {
   node.eventMode = 'static';
   node.cursor = 'pointer';
   node.hitArea = new Rectangle(-100, -110, 200, 185);
-  return { story: 'woodland', node };
+  return { story, node };
 }
 
 class Flower extends Container {
@@ -145,11 +149,13 @@ class Flower extends Container {
 export class PlaceScene extends Scene {
   readonly place: Place;
   readonly landmarks: Landmark[] = [];
-  /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic), or null. */
+  /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic, Bumpy Hills' Missing Melody), or null. */
   readonly story: StorySpot | null;
   /** Little surprises, first along the path at lap and toddler, or null. */
   readonly mixSpot: MixSpot | null;
   readonly mix: MixHost;
+  /** Pick for me (D7a): the button beside the book and its sheet. */
+  readonly picker: PickHost;
   /** The twinkles on games not yet played, by game ID. */
   readonly sparkles = new Map<string, Sparkle>();
   scroll = 0;
@@ -201,6 +207,14 @@ export class PlaceScene extends Scene {
       gamesFor(band).map((g) => g.id),
     );
     this.mixSpot = mixSpot(this.mix.mods);
+    this.picker = new PickHost(
+      app,
+      band,
+      this.ui,
+      () => this.view,
+      (go) => this.leave(go),
+      this.mix,
+    );
   }
 
   override holdsMix(): boolean {
@@ -251,7 +265,15 @@ export class PlaceScene extends Scene {
       this.shelf = this.track(new Shelf(hearted, (item) => this.launch(item)));
       this.ui.addChild(this.shelf);
     }
-    this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.previous, this.next);
+    this.ui.addChild(
+      this.track(this.pip),
+      this.home,
+      this.book,
+      this.picker.button,
+      this.heading,
+      this.previous,
+      this.next,
+    );
     if (this.backdrop.sun)
       onTap(
         this.backdrop.sun,
@@ -323,12 +345,14 @@ export class PlaceScene extends Scene {
     this.pip.position.set(92, v.h - 12);
     this.home.position.set(65, 65);
     this.book.position.set(v.w - 65, 65);
+    this.picker.button.position.set(v.w - 185, 65);
     this.heading.position.set(v.w / 2, 65);
     // Up in the sky, clear of the games.
     this.previous.position.set(60, ground - 145);
     this.next.position.set(v.w - 60, ground - 145);
     this.applyScroll();
     this.mix.resize(v);
+    this.picker.resize(v);
   }
 
   enter() {
@@ -356,7 +380,7 @@ export class PlaceScene extends Scene {
   }
 
   private down(e: FederatedPointerEvent) {
-    if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
+    if (this.leaving || this.touch || this.mix.covering || this.picker.covering || palmOnGlass()) return;
     const x = this.content.toLocal(e.global).x;
     const target = this.find(e.target);
     this.touch = {
@@ -458,11 +482,11 @@ export class PlaceScene extends Scene {
     this.leaving = true;
     lastScroll.set(this.band, this.scroll);
     this.pip.cheer();
-    void voice.say('woodland.spot');
+    void voice.say(spot.story === 'melody' ? 'melody.spot' : 'woodland.spot');
     sfx.whoosh();
     void this.tw
       .to(spot.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 })
-      .then(() => this.app.go.woodland());
+      .then(() => (spot.story === 'melody' ? this.app.go.melody() : this.app.go.woodland()));
   }
 
   private leave(go: () => void) {
@@ -505,6 +529,7 @@ export class PlaceScene extends Scene {
   update(dt: number) {
     super.update(dt);
     this.mix.update(dt);
+    this.picker.update(dt);
     if (!this.touch && Math.abs(this.velocity) > 5) {
       this.scroll = Math.max(0, Math.min(this.maxScroll, this.scroll + this.velocity * dt));
       this.velocity *= Math.exp(-4 * dt);

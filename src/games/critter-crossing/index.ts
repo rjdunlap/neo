@@ -11,7 +11,7 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import { hatArt } from '../../art/props';
+import { hatArt, scarfArt } from '../../art/props';
 import { KIND_WORDS } from '../../learning/sorting/rules';
 import { ruleIcon } from '../../art/sort-rule-icon';
 import type { Rule, SortCritter } from '../../learning/sorting/rules';
@@ -65,6 +65,9 @@ export function gateIcon(g: Gate, size = 1): Container {
   }
   return c;
 }
+
+/** The gate sign's card. */
+const SIGN_CARD = 0xeedcbd;
 
 const cardWidth = (g: Gate) => (g.kind === 'and' || g.kind === 'or' ? 200 : 150);
 
@@ -320,6 +323,7 @@ class CritterCrossing implements Game {
       const node = new Critter(CRITTERS[c.kind]);
       node.scale.set(SCALE);
       if (c.hat) node.attach(hatArt());
+      if (c.scarf) node.attach(scarfArt());
       node.hitArea = new Circle(0, -120, 170);
       this.ctx.track(node);
       this.ctx.stage.addChild(node);
@@ -337,9 +341,11 @@ class CritterCrossing implements Game {
     const card = new Container();
     const w = this.hidden ? 130 : cardWidth(this.round.gate) - 20;
     card.addChild(
+      // A soft tan card, not white: the rule pictures' pale heads (pointy ears, floppy ears, whiskers) and a white
+      // critter's blob would vanish into a white card.
       new Graphics()
         .roundRect(-w / 2, -64, w, 128, 24)
-        .fill(0xffffff)
+        .fill(SIGN_CARD)
         .stroke({ width: 7, color: wood.line }),
     );
     card.addChild(this.hidden ? label('?', 76, ink) : gateIcon(this.round.gate));
@@ -424,6 +430,7 @@ class CritterCrossing implements Game {
         const k = new Critter(CRITTERS[s.c.kind]);
         k.alive = false;
         if (s.c.hat) k.attach(hatArt());
+        if (s.c.scarf) k.attach(scarfArt());
         k.scale.set(SHELF_SCALE);
         k.position.set(-w + 62 + SHELF_GAP / 2 + i * SHELF_GAP, y);
         this.shelf.addChild(k);

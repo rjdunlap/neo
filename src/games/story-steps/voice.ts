@@ -70,6 +70,52 @@ export const VOICE = {
     'We kept the rain and changed what our friend brought. With the blanket our friend goes inside. The umbrella keeps the rain off for a picnic outside. Tap the green check when you are ready to take a bow.',
   ],
   'theater.done': ['A bow for the storyteller!'],
+  'viewpoints.start': [
+    'Bunny and Bear set out a picnic, then unexpected music starts! Tap both friends to hear what each one says, then choose an ending.',
+  ],
+  'viewpoints.account.music': ['{friend} says: I love this lively music! It makes me want to dance.'],
+  'viewpoints.account.quiet': [
+    '{friend} says: The music is too loud for my ears. I want a quiet spot for my snack.',
+  ],
+  'viewpoints.hearfirst': ['Tap both friends first so we hear what each one asks for!'],
+  'viewpoints.pickfirst': ['Choose an ending card below, then tap the stage to watch.'],
+  'viewpoints.pick.stay-loud': ['Stay right by the horn.'],
+  'viewpoints.pick.turn-off': ['Turn the music off.'],
+  'viewpoints.pick.two-spots': ['Try two spots across the meadow.'],
+  'viewpoints.pick.soft-spot': ['Move to the shady hill where it sounds soft.'],
+  'viewpoints.scene.mishap': [
+    'Bunny and Bear spread the picnic blanket, when a little horn begins to play lively music!',
+  ],
+  'viewpoints.scene.both': [
+    '{musicFriend} loves the lively beat, while {quietFriend} asks for a quiet spot.',
+  ],
+  'viewpoints.end.stay-loud': [
+    'They stay beside the horn. {musicFriend} dances, while {quietFriend} covers their ears: it is still too loud for a quiet snack!',
+  ],
+  'viewpoints.end.turn-off': [
+    'They put the horn away. {quietFriend} has a quiet snack, while {musicFriend} sighs: now there is no music to dance to!',
+  ],
+  'viewpoints.end.two-spots': [
+    '{musicFriend} dances by the blanket while {quietFriend} enjoys a quiet snack by the shady tree, and both friends wave!',
+  ],
+  'viewpoints.end.soft-spot': [
+    'They move up to the shady hill. The music sounds soft for {quietFriend} and lively enough for {musicFriend} to tap a toe!',
+  ],
+  'viewpoints.miss': [
+    'Remember what {unmetFriend} asked for. Let us pick an ending that works for both friends.',
+  ],
+  'viewpoints.ready': [
+    'Both friends got what they asked for! Tap the green check to take a bow, or watch the other ending to compare.',
+  ],
+  'viewpoints.help.hear': ['Tap the glowing friend to hear what they say.'],
+  'viewpoints.help.choose': ['Try this glowing ending so both friends get what they asked for.'],
+  'viewpoints.help.show': ['Tap the glowing stage to watch your ending.'],
+  'viewpoints.help.bow': ['Tap the glowing green check to take a bow!'],
+  'viewpoints.bowfirst': [
+    'Hear both friends and watch an ending that keeps both wishes before taking a bow.',
+  ],
+  'viewpoints.undo': ['Your last choice is back.'],
+  'viewpoints.done': ['You listened to both viewpoints! A bow for the storyteller!'],
   'story.predict.start': [
     'Look at the three pictures. What will happen next? Drag an ending into the glowing space. Tap a picture to hear it, or the music button to hear the clues again.',
   ],

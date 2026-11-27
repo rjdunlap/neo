@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pictureScene } from './art';
-import { PICTURE_H, PICTURE_W, PUZZLE_PLANS } from './logic';
+import { PICTURE_H, PICTURE_W, PUZZLE_PLANS, pictureBox, type PuzzlePlan } from './logic';
 import { cellFeatures, SCENES, STICKER_SCENES, stickerScene } from './scenes';
 
 /** `SCENES` indexes picked by `new Rng(seed).pick` for seeds 1 to 200, recorded before scenes became data. */
@@ -10,10 +10,15 @@ const PINNED =
 const SEEDS = Array.from({ length: 25 }, (_, i) => i * 37 + 1);
 
 /** The pieces of a grid that hold the same things as another piece, or hold only a sliver of anything. */
-function unfairCells(sceneId: string, seed: number, cols: number, rows: number): string[] {
+function unfairCells(
+  sceneId: string,
+  seed: number,
+  plan: Pick<PuzzlePlan, 'cols' | 'rows' | 'crop'>,
+): string[] {
   const scene = SCENES.find((s) => s.id === sceneId)!;
   const { root, features } = pictureScene(scene, seed);
-  const cells = cellFeatures(features, cols, rows, PICTURE_W, PICTURE_H);
+  const box = pictureBox(plan);
+  const cells = cellFeatures(features, plan.cols, plan.rows, box.w, box.h, box);
   root.destroy({ children: true });
   const out: string[] = [];
   cells.forEach((names, i) => {
@@ -59,7 +64,7 @@ describe('Puzzle Pals scenes', () => {
       for (const plan of PUZZLE_PLANS) {
         for (const seed of SEEDS) {
           expect(
-            unfairCells(scene.id, seed, plan.cols, plan.rows),
+            unfairCells(scene.id, seed, plan),
             `${scene.id} ${plan.cols}x${plan.rows} seed ${seed}`,
           ).toEqual([]);
         }

@@ -1,0 +1,5 @@
+# 2026-11-26 — Count the Ballots levels 1-2 (PR #2236)
+
+**Changed:** new game `count-the-ballots` (Lantern Lake; school and grown-up levels 1–2): rules and exhaustive deal tests in `logic.ts`, layout, art, voice and how-to card, a ghost-finger bot, and the `countballots` browser suite.
+**Ran:** `npm run typecheck`; `npm run format:check`; `npm run lint`; `npx vitest run src/games/count-the-ballots src/content src/games/registry` (the 2,002 deals, the 360 clean deals split 240 and 120, a brute-force run-off, the upright layout at seven views with every target at 100 units or more, one-land and howto tests); `BROWSER_SUITE=countballots` (level 1: one wrong pile, Help once, the sort, the run-off and one sticker; level 2: the same plus a wrong then right first-count tap) with a short-phone screenshot of the run-off; `FINGER_ONLY=count-the-ballots FINGER_LEVELS=1,2 FINGER_BAND=grownup` `fingerdemo`.
+**Not run:** the full `npm test` suite (left to PR CI), `npm run build`, offline, a real phone or a listen to the voice (device speech only; no clips rendered, so the title line is `ballots.title`, outside the clip prefixes, until a Better voice batch renders it).

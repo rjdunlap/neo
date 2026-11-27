@@ -1,6 +1,7 @@
 /** Caravan Days' code-drawn pieces: the camel that kneels, bales, landmark oases, the home tent, the city gate, suns, the waterskin, flags, Go, icon and sticker. */
 import { Container, Graphics, Text } from 'pixi.js';
 import { cream, ink, shadow, swatch, type ColorName } from '../../art/palette';
+import { darken } from '../../art/paper';
 import { finish } from '../../ui/buttons';
 import { SKIN, type Good, type Landmark } from './logic';
 
@@ -8,7 +9,7 @@ const line = (color: number, width = 5) => ({ width, color, join: 'round' as con
 export const SAND = { fill: 0xf2d9a4, line: 0xc99d58, dark: 0xd9b472 };
 export const CAMEL_COLORS = { fill: 0xd9a66b, line: 0x8f6134, dark: 0xb9834f, light: 0xeec48c };
 const WATER = { fill: 0x8fd0ea, line: 0x4fa3c7 };
-const PALM = { trunk: 0xa0683a, leaf: 0x5fae4e };
+const PALM = { trunk: 0xa0683a, ring: 0x74471f, leaf: 0x6cba52, back: 0x3f8f45, date: 0xb4532a };
 const ROCK = { fill: 0xd2694d, line: 0x9c3f2b };
 const TILE = { fill: 0x5aa6d8, line: 0x2f6f9e, light: 0x9fd3f2 };
 const FLAG = { fill: 0xf26d6d, line: 0xb03a3a };
@@ -25,9 +26,42 @@ function label(text: string, size = 30, fill: number = ink): Text {
 
 // ——— The camel ———
 
+type P = [number, number];
+const flatPts = (pts: P[]) => pts.flat();
+
+/** A closed shape through `pts`, smoothed with curves through the midpoints (a cut-paper silhouette). */
+function smooth(g: Graphics, pts: P[]): Graphics {
+  const n = pts.length;
+  const mid = (a: P, b: P): P => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const start = mid(pts[n - 1], pts[0]);
+  g.moveTo(start[0], start[1]);
+  for (let i = 0; i < n; i++) {
+    const m = mid(pts[i], pts[(i + 1) % n]);
+    g.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]);
+  }
+  return g.closePath();
+}
+
+/** A shaggy tuft: a fan of points along a base line, for the camel's forelock, throat and tail tip. */
+function tuft(g: Graphics, x: number, y: number, w: number, h: number, tips: number, lean = 0): Graphics {
+  const pts: P[] = [[x - w / 2, y]];
+  for (let i = 0; i < tips; i++) {
+    const t = (i + 0.5) / tips;
+    pts.push([x - w / 2 + w * t + lean, y - h * (0.75 + 0.25 * Math.sin(i * 2.3 + 1))]);
+    if (i < tips - 1) pts.push([x - w / 2 + (w * (i + 1)) / tips, y - h * 0.35]);
+  }
+  pts.push([x + w / 2, y]);
+  return g.poly(flatPts(pts), true);
+}
+
+const BLANKET = { fill: 0xb5563c, stripe: 0xf1e2bd, tassel: 0xe8b04a };
+const TUFT = 0xa8763f;
+
 /**
- * A tan camel with two humps, a long neck that dips to drink, a sleepy eye with long lashes, and legs that fold under it
- * when it kneels. Origin at the ground under its chest, facing right; `scale` sets its size (1 is 260 × 200 standing).
+ * A tan camel cut from paper: a lumpy two-hump back with a woven blanket over the saddle, a long bowed neck that dips
+ * to drink, a droopy-lipped head with a heavy sleepy lid and long lashes, shaggy tufts, knobbly knees and wide flat
+ * feet that fold under it when it kneels. Origin at the ground under its chest, facing right; `scale` sets its size
+ * (1 is about 260 × 200 standing).
  */
 export class Camel extends Container {
   private readonly legs: Graphics[] = [];
@@ -50,58 +84,214 @@ export class Camel extends Container {
     const ground = new Graphics().ellipse(0, 6, 110, 18).fill({ color: shadow, alpha: 0.16 });
     this.addChild(ground);
     for (let i = 0; i < 4; i++) {
+      // The two far legs are a shade darker, so the near pair reads in front.
+      const far = i % 2 === 0;
+      const tone = far ? CAMEL_COLORS.dark : CAMEL_COLORS.fill;
       const leg = new Graphics();
-      leg.roundRect(-13, 0, 26, 78, 10).fill(CAMEL_COLORS.dark).stroke(line(CAMEL_COLORS.line, 4));
-      leg.roundRect(-16, 64, 32, 18, 8).fill(CAMEL_COLORS.line);
+      smooth(leg, [
+        [-16, -24],
+        [15, -24],
+        [12, 24],
+        [12, 36],
+        [9, 50],
+        [8, 64],
+        [-7, 64],
+        [-9, 50],
+        [-13, 36],
+        [-12, 24],
+      ]).fill(tone);
+      // A knobbly knee and a wide, split foot pad.
+      leg.ellipse(0, 43, 7, 5).fill(darken(tone, 0.16));
+      smooth(leg, [
+        [-12, 82],
+        [-12, 70],
+        [-6, 63],
+        [7, 63],
+        [14, 70],
+        [16, 82],
+      ]).fill(darken(tone, 0.28));
+      leg
+        .moveTo(2, 72)
+        .lineTo(2, 81)
+        .stroke(line(darken(tone, 0.5), 2));
       this.legs.push(leg);
       this.addChild(leg);
     }
-    const torso = new Graphics();
-    torso.roundRect(-96, -70, 192, 84, 40).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 5));
-    torso.ellipse(-44, -82, 42, 36).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 5));
-    torso.ellipse(30, -84, 42, 38).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 5));
-    torso.roundRect(-96, -70, 192, 84, 40).fill(CAMEL_COLORS.fill);
-    torso.ellipse(-44, -78, 36, 26).fill(CAMEL_COLORS.light);
-    torso.ellipse(30, -80, 36, 28).fill(CAMEL_COLORS.light);
-    const tail = new Graphics()
-      .moveTo(-96, -50)
-      .quadraticCurveTo(-120, -40, -118, -12)
-      .stroke(line(CAMEL_COLORS.line, 6));
-    tail.circle(-118, -10, 9).fill(CAMEL_COLORS.line);
-    this.body.addChild(torso, tail);
-    // The neck rises from the chest and carries the head; it pivots at the chest.
+    // The neck sits behind the chest, so its base tucks under the body; it pivots at the chest.
     const neck = new Graphics();
-    neck.moveTo(0, 0).quadraticCurveTo(26, -60, 28, -110).stroke(line(CAMEL_COLORS.fill, 34));
+    smooth(neck, [
+      [-26, 12],
+      [-22, -20],
+      [-10, -58],
+      [2, -96],
+      [16, -122],
+      [36, -118],
+      [40, -96],
+      [44, -62],
+      [40, -28],
+      [28, 14],
+    ]).fill(CAMEL_COLORS.fill);
+    // A shaggy throat beard down the front of the neck.
     neck
-      .moveTo(0, 0)
-      .quadraticCurveTo(26, -60, 28, -110)
-      .stroke({ width: 44, color: CAMEL_COLORS.line, cap: 'round', join: 'round', alpha: 0 });
+      .poly(
+        flatPts([
+          [36, -96],
+          [50, -88],
+          [42, -80],
+          [54, -70],
+          [44, -64],
+          [54, -52],
+          [42, -46],
+          [44, -30],
+          [36, -40],
+        ]),
+        true,
+      )
+      .fill(TUFT);
     const head = new Graphics();
-    head.roundRect(10, -140, 72, 44, 20).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 5));
-    head.ellipse(40, -112, 32, 20).fill(CAMEL_COLORS.light);
-    head.circle(26, -148, 9).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 4));
-    head.circle(42, -150, 9).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 4));
-    head.circle(50, -126, 7).fill(ink);
+    // Ears first, so the skull overlaps their roots.
+    smooth(head, [
+      [14, -138],
+      [6, -156],
+      [20, -150],
+      [28, -138],
+    ]).fill(CAMEL_COLORS.dark);
+    smooth(head, [
+      [10, -118],
+      [14, -140],
+      [32, -152],
+      [56, -148],
+      [74, -134],
+      [92, -122],
+      [100, -110],
+      [96, -98],
+      [86, -96],
+      [80, -100],
+      [74, -92],
+      [58, -90],
+      [36, -94],
+      [18, -100],
+    ]).fill(CAMEL_COLORS.fill);
+    // The lighter muzzle and droopy lip.
+    smooth(head, [
+      [62, -120],
+      [86, -122],
+      [99, -110],
+      [95, -99],
+      [86, -97],
+      [80, -101],
+      [72, -94],
+      [58, -98],
+    ]).fill(CAMEL_COLORS.light);
+    tuft(head, 34, -146, 30, 16, 4, 3).fill(TUFT);
+    // The sleepy eye: a dark almond, a heavy lid over its top half and three long lashes.
+    head.ellipse(52, -124, 8, 7).fill(0x3a2a22);
+    head.circle(55, -126, 2.4).fill(0xffffff);
+    head.moveTo(43, -126).quadraticCurveTo(52, -133, 61, -125).lineTo(43, -126).fill(CAMEL_COLORS.dark);
+    head.moveTo(44, -125).quadraticCurveTo(52, -131, 60, -125).stroke(line(0x3a2a22, 2.5));
     head
-      .moveTo(44, -134)
-      .lineTo(40, -140)
-      .moveTo(52, -135)
-      .lineTo(52, -142)
-      .moveTo(58, -132)
-      .lineTo(63, -138)
-      .stroke(line(ink, 3));
-    head.ellipse(76, -112, 7, 5).fill(CAMEL_COLORS.line);
-    head.moveTo(60, -104).quadraticCurveTo(70, -98, 80, -104).stroke(line(CAMEL_COLORS.line, 3));
-    this.bells.circle(14, -72, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
-    this.bells.circle(26, -60, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+      .moveTo(47, -126)
+      .quadraticCurveTo(46, -121, 43, -118)
+      .moveTo(52, -125)
+      .quadraticCurveTo(52, -120, 50, -116)
+      .moveTo(57, -125)
+      .quadraticCurveTo(58, -120, 57, -116)
+      .stroke(line(0x3a2a22, 2));
+    // A slit nostril and a contented mouth.
+    head.moveTo(88, -116).quadraticCurveTo(93, -114, 94, -109).stroke(line(CAMEL_COLORS.line, 3));
+    head.moveTo(70, -100).quadraticCurveTo(78, -96, 84, -100).stroke(line(CAMEL_COLORS.line, 2.5));
+    // A rope collar with two brass bells.
+    this.bells.moveTo(4, -56).quadraticCurveTo(24, -48, 44, -60).stroke(line(BLANKET.fill, 4));
+    this.bells.circle(18, -42, 9).fill(swatch.yellow.fill);
+    this.bells.circle(34, -46, 8).fill(swatch.yellow.fill);
+    this.bells
+      .moveTo(14, -40)
+      .lineTo(22, -40)
+      .moveTo(30, -44)
+      .lineTo(38, -44)
+      .stroke(line(swatch.yellow.line, 2));
     this.neck.addChild(neck, head, this.bells);
     this.neck.position.set(84, -40);
     this.body.addChild(this.neck);
+
+    const torso = new Graphics();
+    // One silhouette: rump, a taller back hump, the dip of the saddle, a rounder front hump, withers, chest and belly.
+    smooth(torso, [
+      [-70, 6],
+      [-92, -6],
+      [-102, -30],
+      [-98, -58],
+      [-86, -82],
+      [-78, -106],
+      [-62, -124],
+      [-42, -126],
+      [-26, -114],
+      [-17, -96],
+      [-8, -86],
+      [2, -102],
+      [16, -122],
+      [36, -128],
+      [54, -118],
+      [64, -98],
+      [78, -80],
+      [94, -64],
+      [102, -44],
+      [96, -20],
+      [82, -2],
+      [50, 6],
+      [10, 8],
+      [-30, 6],
+    ]).fill(CAMEL_COLORS.fill);
+    tuft(torso, -52, -114, 26, 11, 3, -3).fill(TUFT);
+    tuft(torso, 28, -120, 26, 11, 3, -3).fill(TUFT);
+    // The woven blanket over the saddle: cream with a red-brown stripe, a fringed hem and tassels.
+    const blanket = new Graphics();
+    smooth(blanket, [
+      [-36, -86],
+      [-12, -74],
+      [14, -86],
+      [26, -66],
+      [24, -36],
+      [-4, -32],
+      [-38, -36],
+      [-42, -66],
+    ]).fill(BLANKET.fill);
+    blanket
+      .moveTo(-41, -62)
+      .quadraticCurveTo(-8, -57, 25, -62)
+      .lineTo(25, -50)
+      .quadraticCurveTo(-8, -45, -40, -50)
+      .closePath()
+      .fill(BLANKET.stripe);
+    // A zigzag woven along the stripe, and a fringe of tassels under the hem.
+    blanket.moveTo(-34, -56);
+    for (let x = -34, up = true; x <= 20; x += 6, up = !up) blanket.lineTo(x, up ? -58 : -52);
+    blanket.stroke(line(BLANKET.fill, 2.5));
+    for (const x of [-32, -18, -4, 10, 22]) {
+      const y = x === -4 ? -33 : -36;
+      blanket
+        .moveTo(x, y)
+        .lineTo(x, y + 9)
+        .stroke(line(BLANKET.tassel, 2.5));
+      blanket.circle(x, y + 12, 4).fill(BLANKET.tassel);
+    }
+    const tail = new Graphics();
+    smooth(tail, [
+      [-96, -54],
+      [-112, -44],
+      [-118, -18],
+      [-112, -18],
+      [-106, -42],
+      [-94, -46],
+    ]).fill(CAMEL_COLORS.dark);
+    tuft(tail, -115, -4, 16, -18, 3).fill(TUFT);
+    this.body.addChild(tail, torso, blanket);
     this.load.position.set(-8, -118);
     this.body.addChild(this.load);
     this.addChild(this.body);
     // Every drawn part lets a touch fall through; only a bale on the back (a child of `load`) takes one.
-    for (const part of [ground, ...this.legs, torso, tail, neck, head, this.bells]) part.eventMode = 'none';
+    for (const part of [ground, ...this.legs, torso, blanket, tail, neck, head, this.bells])
+      part.eventMode = 'none';
     for (const group of [this.body, this.neck, this.load]) group.eventMode = 'passive';
     this.pose();
   }
@@ -149,6 +339,49 @@ export function baleArt(color: ColorName, size = 110): Graphics {
 
 // ——— Places ———
 
+/**
+ * One palm frond: a curved, drooping leaf from `at` with its lower edge cut into leaflets (notches), so it reads as
+ * snipped paper rather than a stroke. `i` only varies the notch rhythm between fronds.
+ */
+function frond(g: Graphics, at: P, angle: number, len: number, droop: number, color: number, i: number) {
+  const dx = Math.cos(angle),
+    dy = Math.sin(angle);
+  const end: P = [at[0] + dx * len, at[1] + dy * len + len * droop];
+  const ctl: P = [at[0] + dx * len * 0.55, at[1] + dy * len * 0.55 - len * 0.18];
+  const along = (t: number): [P, P] => {
+    const u = 1 - t;
+    const p: P = [
+      u * u * at[0] + 2 * u * t * ctl[0] + t * t * end[0],
+      u * u * at[1] + 2 * u * t * ctl[1] + t * t * end[1],
+    ];
+    const tx = 2 * u * (ctl[0] - at[0]) + 2 * t * (end[0] - ctl[0]);
+    const ty = 2 * u * (ctl[1] - at[1]) + 2 * t * (end[1] - ctl[1]);
+    const m = Math.hypot(tx, ty) || 1;
+    return [p, [-ty / m, tx / m]];
+  };
+  const width = len * 0.2;
+  const steps = 9;
+  const upper: P[] = [];
+  const lower: P[] = [];
+  for (let k = 0; k <= steps; k++) {
+    const t = k / steps;
+    const [p, n] = along(t);
+    const w = width * Math.pow(Math.sin(Math.PI * Math.min(0.97, t * 0.92 + 0.06)), 0.7);
+    // The side away from the sky is the notched one.
+    const side = n[1] > 0 ? 1 : -1;
+    upper.push([p[0] - n[0] * side * w * 0.55, p[1] - n[1] * side * w * 0.55]);
+    const deep = (k + i) % 2 === 0 ? 1.15 : 0.45;
+    lower.push([p[0] + n[0] * side * w * deep, p[1] + n[1] * side * w * deep]);
+  }
+  g.poly([...upper, ...lower.reverse()].flat(), true).fill(color);
+  const [m0] = along(0.05);
+  const [m1] = along(0.5);
+  const [m2] = along(0.92);
+  g.moveTo(m0[0], m0[1])
+    .quadraticCurveTo(m1[0], m1[1], m2[0], m2[1])
+    .stroke(line(darken(color, 0.3), 2));
+}
+
 /** A pool of water with its landmark above: a palm, a red rock or a little spring. */
 export function oasisArt(landmark: Landmark, size = 120, glow = false): Container {
   const c = new Container();
@@ -162,18 +395,48 @@ export function oasisArt(landmark: Landmark, size = 120, glow = false): Containe
   c.addChild(g);
   const mark = new Graphics();
   if (landmark === 'palm') {
-    mark
-      .moveTo(r * 0.25, r * 0.2)
-      .quadraticCurveTo(r * 0.3, -r * 0.4, r * 0.1, -r * 0.9)
-      .stroke(line(PALM.trunk, 10));
-    for (const a of [-1.1, -0.6, -0.1, 0.4, 0.9]) {
-      const x = r * 0.1 + Math.cos(a - 1.2) * r * 0.55;
-      const y = -r * 0.9 + Math.sin(a - 1.2) * r * 0.45 + r * 0.15;
+    // A date palm: a leaning ringed trunk, a hanging bunch of dates, and fronds cut with notched edges in two greens.
+    const crown: P = [r * 0.02, -r * 0.92];
+    smooth(mark, [
+      [r * 0.1, r * 0.24],
+      [r * 0.26, -r * 0.2],
+      [r * 0.16, -r * 0.62],
+      [crown[0] + r * 0.08, crown[1]],
+      [crown[0] - r * 0.07, crown[1] + r * 0.02],
+      [r * 0.03, -r * 0.6],
+      [r * 0.12, -r * 0.2],
+      [-r * 0.06, r * 0.26],
+    ]).fill(PALM.trunk);
+    for (let i = 1; i <= 5; i++) {
+      const t = i / 6;
+      const x = r * (0.03 + 0.17 * Math.sin(t * Math.PI * 0.9)) + (crown[0] - r * 0.0) * t;
+      const y = r * 0.22 + (crown[1] - r * 0.22) * t;
+      const w = r * (0.12 - 0.05 * t);
       mark
-        .moveTo(r * 0.1, -r * 0.9)
-        .quadraticCurveTo((r * 0.1 + x) / 2, y - r * 0.25, x, y)
-        .stroke(line(PALM.leaf, 9));
+        .moveTo(x - w, y - 3)
+        .quadraticCurveTo(x, y + 3, x + w, y - 3)
+        .stroke(line(PALM.ring, 2.5));
     }
+    const fronds: [number, number, number][] = [
+      // angle (0 is right, up is negative), length, droop
+      [-2.5, 0.78, 0.5],
+      [-0.55, 0.8, 0.5],
+      [-1.95, 0.7, 0.35],
+      [-1.15, 0.62, 0.25],
+      [-2.95, 0.66, 0.65],
+      [-0.05, 0.7, 0.7],
+    ];
+    fronds.forEach(([a, len, droop], i) =>
+      frond(mark, crown, a, len * r * 1.25, droop, i < 3 ? PALM.back : PALM.leaf, i),
+    );
+    for (const [x, y] of [
+      [-0.06, -0.8],
+      [0.04, -0.76],
+      [0.12, -0.8],
+      [0.0, -0.69],
+      [0.09, -0.68],
+    ])
+      mark.circle(crown[0] + x * r, y * r, r * 0.065).fill(PALM.date);
   } else if (landmark === 'rock') {
     mark
       .moveTo(-r * 0.55, r * 0.05)
@@ -575,6 +838,7 @@ export function loadArt(
 
 const SNOW = { fill: 0xffffff, line: 0x9aa7b4, peak: 0x9c8f87, peakLine: 0x6e625b };
 const GREEN = { fill: 0x9fd77f, line: 0x5fae4e };
+const TREE = { trunk: 0x8a5a33, back: 0x3f8f45, leaf: 0x5fae4e, light: 0x7cc35e };
 const STONE = { fill: 0xc9c3bb, line: 0x7d756c };
 
 /** Grey peaks with snowy tops, behind the pass road (scenery). */
@@ -738,13 +1002,56 @@ export function wellArt(size = 80, ghost = false): Graphics {
 export function treeArt(size = 70): Graphics {
   const g = new Graphics();
   const s = size / 2;
-  g.rect(-s * 0.1, -s * 0.2, s * 0.2, s * 0.7).fill(PALM.trunk);
-  g.circle(0, -s * 0.5, s * 0.5)
-    .circle(-s * 0.35, -s * 0.3, s * 0.35)
-    .circle(s * 0.35, -s * 0.3, s * 0.35)
-    .fill(PALM.leaf)
-    .stroke(line(0x3f7f33, 3));
+  // A forked trunk with a root flare, then a cloud of leaves cut as three lumpy pieces: a dark one behind, two lighter
+  // ones in front, so the crown has depth like layered paper.
+  smooth(g, [
+    [-s * 0.3, s * 0.52],
+    [-s * 0.1, s * 0.36],
+    [-s * 0.1, -s * 0.05],
+    [-s * 0.42, -s * 0.42],
+    [-s * 0.3, -s * 0.48],
+    [-s * 0.02, -s * 0.2],
+    [s * 0.2, -s * 0.55],
+    [s * 0.32, -s * 0.48],
+    [s * 0.1, -s * 0.08],
+    [s * 0.12, s * 0.36],
+    [s * 0.34, s * 0.52],
+  ]).fill(TREE.trunk);
+  lumpy(g, 0, -s * 0.66, s * 0.62, s * 0.42, 7, 0.4).fill(TREE.back);
+  lumpy(g, -s * 0.34, -s * 0.44, s * 0.4, s * 0.3, 5, 1.3).fill(TREE.leaf);
+  lumpy(g, s * 0.3, -s * 0.5, s * 0.42, s * 0.32, 6, 2.2).fill(TREE.light);
+  // A few leaf curls in each front piece, as if snipped and folded.
+  for (const [x, y] of [
+    [-s * 0.42, -s * 0.46],
+    [-s * 0.24, -s * 0.36],
+    [s * 0.22, -s * 0.56],
+    [s * 0.4, -s * 0.42],
+    [0, -s * 0.86],
+  ])
+    g.moveTo(x - 4, y + 2)
+      .quadraticCurveTo(x, y - 4, x + 4, y + 2)
+      .stroke(line(darken(TREE.leaf, 0.35), 2));
   return g;
+}
+
+/** A lumpy leaf-cloud piece: an ellipse with `bumps` rounded scallops round its edge, turned by `phase`. */
+function lumpy(
+  g: Graphics,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  bumps: number,
+  phase: number,
+): Graphics {
+  const pts: P[] = [];
+  const n = bumps * 4;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + phase;
+    const k = 1 + 0.13 * Math.cos(a * bumps - phase) + 0.05 * Math.sin(a * 3 + phase * 2);
+    pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+  }
+  return smooth(g, pts);
 }
 
 /** The day stick: a sun over four hoofprints, a day's walk. */

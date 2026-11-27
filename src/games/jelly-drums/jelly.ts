@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { cheek, ink, swatch, type ColorName } from '../../art/palette';
-import { domePath } from '../../art/shapes';
+import { PITCH_COLORS } from '../../audio/notes';
+import { domePath, musicNote } from '../../art/shapes';
 
 const MOUTH = 0x7a2e3e;
 
@@ -14,6 +15,7 @@ export class Jelly extends Container {
   private squashV = 0;
   private singing = 0;
   private glowLeft = 0;
+  private wiggleLeft = 0;
   private clock = Math.random() * 3;
   private wasSinging = true;
 
@@ -54,6 +56,11 @@ export class Jelly extends Container {
     this.glowLeft = Math.max(this.glowLeft, seconds);
   }
 
+  /** Gentle side-to-side wobble without lighting a hint halo. */
+  wiggle(seconds = 0.75) {
+    this.wiggleLeft = Math.max(this.wiggleLeft, seconds);
+  }
+
   /** `beat` is 0..1 through the music's current beat, so idle jellies bob in time. */
   update(dt: number, beat: number) {
     this.clock += dt;
@@ -61,6 +68,9 @@ export class Jelly extends Container {
     this.squash += this.squashV * dt;
     const bob = 0.035 * Math.pow(1 - beat, 3);
     this.body.scale.set(1 + this.squash * 0.8 + bob * 0.5, 1 - this.squash - bob);
+    this.wiggleLeft = Math.max(0, this.wiggleLeft - dt);
+    this.body.rotation =
+      this.wiggleLeft > 0 ? 0.14 * Math.sin(this.clock * 22) * Math.min(1, this.wiggleLeft * 3) : 0;
 
     this.singing = Math.max(0, this.singing - dt);
     if (this.singing > 0 !== this.wasSinging) this.drawFace();
@@ -102,4 +112,43 @@ export class Jelly extends Container {
     for (const s of [-1, 1])
       f.ellipse(s * hw * 0.55, -h * 0.34, hw * 0.12, h * 0.05).fill({ color: cheek, alpha: 0.55 });
   }
+}
+
+/** The five jellies' sizes, biggest and lowest first: the same shapes the game stands on its stage. */
+const jellySize = (i: number) => {
+  const hw = 82 - i * 7;
+  return { hw, h: hw * 1.55 };
+};
+
+/** The journal card for "big jellies sing low, little jellies sing high": the biggest and the littlest jelly side by side, a low and a high note over them. */
+export function jellyJournalPicture(key = 'low-high'): Container {
+  if (key === 'scale') return jellyScalePicture();
+  const c = new Container();
+  [0, 4].forEach((i, n) => {
+    const { hw, h } = jellySize(i);
+    const j = new Jelly(PITCH_COLORS[i], hw, h);
+    j.position.set((n - 0.5) * 230, 0);
+    c.addChild(j);
+    // The note's height says how high the jelly sings: the littlest jelly's note sits highest.
+    const note = musicNote(new Graphics(), 56, swatch[PITCH_COLORS[i]].line);
+    note.position.set(j.x, -h - 40 - i * 18);
+    c.addChild(note);
+  });
+  return c;
+}
+
+/** The journal card for "a scale": three neighbouring jellies in a row, each note a step higher than the one before. */
+function jellyScalePicture(): Container {
+  const c = new Container();
+  [1, 2, 3].forEach((i, n) => {
+    const { hw, h } = jellySize(i);
+    const j = new Jelly(PITCH_COLORS[i], hw, h);
+    j.position.set((n - 1) * 190, 0);
+    c.addChild(j);
+    // Notes climb like stairs, left to right.
+    const note = musicNote(new Graphics(), 52, swatch[PITCH_COLORS[i]].line);
+    note.position.set(j.x, -h - 36 - n * 34);
+    c.addChild(note);
+  });
+  return c;
 }

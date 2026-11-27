@@ -39,12 +39,16 @@ Grown-ups come first because they play now, on phones, through [Today's six](tod
 
 ## Slices
 
-1. **Rules** (this file and the rule wording). Docs only.
-2. **Shells for grown-ups.** Defined below.
-3. **Stamps**: named goals for the grown-up games on the phone, each paying a one-time shell bonus.
-4. **The shop**: colours and wearables for the player's own friend, shown on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
-5. **Share line** on Today's six: a copyable line of the day's six results.
-6. **Lantern Lodge** after the visual identity is chosen; then the `school` band.
+The developer, 2026-11-27: "option D, can have features from the other options as well integrated". So the loop takes in the proposal's other three options: A's named goals become stamps and Lantern Lake's lanterns, C's calendar, seasons and share line join Today's six, and B's lodge is the big thing to spend on.
+
+1. **Rules** (this file and the rule wording). Docs only. Built.
+2. **Shells for grown-ups.** Defined below. Built.
+3. **Stamps** (from option A): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
+4. **The friend's page and shop**: colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
+5. **Today's six extras** (from option C): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
+6. **Seasons** (from option C): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
+7. **Lantern Lodge** (from option B): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
+8. **A daily gift** for grown-ups (never stacking or shown as missed), then the `school` band with the prices grown-up play has set.
 
 ### Slice 2: shells for grown-ups
 

@@ -1,5 +1,7 @@
 # Little Conductor, levels 1–3 (definition)
 
+**Level 4 (strength) built 2026-11-25:** the dive's table is the definition ([deep dive](../deep-dives/little-conductor.md#new-levels-on-top)); both pads keep one steady 75 beats a minute, gain 0.45 against 1.
+
 **Levels 1–3 built (1–2 on 2026-10-20, M2; 3 on 2026-10-21, M3).** Build-time decisions: bands are toddler 1–2, preschool 1–3, pre-K 2–3 (level 3 widened them); Music Mountain holds 6 games after this one, not 7; the "within one octave" motifs hold as pentatonic semitones (all three span under 12) played in the octave above middle C; the bot shows the pace change at level 1 too (turtle, rabbit, Done); a waiting change closes the heard gate at once; tapping the playing pad calls off a waiting change. M3 decisions: the idle turtle-pad pulse is off at level 3 (it would point at an answer the sign may not ask for), and `restart()` (Start again) is not implemented because `pauseLabels` shows no restart label on a child band, so it is not surfaced.
 
 Defined 2026-10-18 as slice **M1** of the [music and instruments study](../deep-dives/subjects/music-instruments.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/music-instruments.md#first-games-proposed-ladder-little-conductor) (plans 1–3 only; 4–8 are later packets, one property at a time), its [candidates table](../deep-dives/subjects/music-instruments.md#candidates-and-overlap-decisions), the [IDEAS row](../IDEAS.md#candidates) and the WAITING [Music row](../archive/DECISIONS-2026-10-23.md#decisions). Docs only when defined (levels 1–2 now exist; level 3 does not). **Ready to build:** every open call below has a default the build can use. M2 builds levels 1–2 (tap pads, hearing marks, Done); M3 builds level 3 (the two pictured requests and Check).
@@ -106,6 +108,29 @@ Default windows: toddler 1–2, preschool 1–3, pre-K 2–3; no school window u
 - **Co-play:** one person is the conductor and the other says "slow" or "fast" to ask for a change, then swap; at level 3 the grown-up can be the listener and read the sign aloud. **Off-screen** (a concept only; the study's *Our Little Band* card keeps its named-review requirement before anything printed): with a willing grown-up, hum any family song, one person signals "turtle" or "rabbit" with a hand, the other hums at that pace, then swap; listening and declining a turn are fine.
 - **Couch:** none. A pace pad on a controller is not a face-off.
 - **Rework couplings:** none required and nothing saved. The three band friends are a natural place for **her creatures as the cast** ([PET-INTEGRATION](../rework/PET-INTEGRATION.md)), and a performance at a chosen pace is a natural thing a round makes to bring home; both are the rework's to define (RW05/RW06), and a kept performance would need its own bounded schema, never a possession that wears out or waits.
+
+## Level 7, One change (definition and built, 2026-11-26)
+
+Level 3's sign with level 5's four pads. The listener's sign shows a **way to play** for each half of the tune: a pace picture and a drum picture together (turtle or rabbit, small or big drum, with the words "slow or fast" and "soft or loud"). The second half's way always differs from the first in **exactly one property**, so a round holds one change, and the seed picks which property changes and in which direction. She sets both dials for each half (the four pads in a row from level 5, no hearing mark), then taps Check.
+
+- **What she decides:** what each half asks for, and so which one dial to turn between the halves (the sign shows both cards in turn; she is never asked to name the property).
+- **Check:** both dials must be picked first (otherwise "pick the pads first", nothing counted). Right on both properties: the half plays in that way while the listener nods, then the sign turns (or the band bows). A wrong Check is a miss and **names only the property that is wrong**: the pace line when the pace is wrong, the strength line when only the strength is wrong, the pace line first if both. The pick stays so she can compare it with the sign. Two wrong Checks on a half light that half's hint: the first wrong dial's right pad glows and the band previews it. The hint counts once per half, also from the pause sheet's Show a hint.
+- **Mistakes, accounting:** misses are wrong Checks, hints are lit hints, as at level 3; helped completion still finishes and gives the sticker.
+- **Bands and ID:** school window 5–7 (level 7 is school only; level 7 is the next free stable ID, level 8 follows).
+- **Rule tests:** for every first way there are exactly two second ways that differ in one property; every ask is satisfiable by one pad pair; the Check names only a property that is wrong; two misses glow the first wrong dial's right pad; the helped path finishes; the bot always finishes with `signBot`-style reading of the sign.
+- **Layout:** the dials row of level 5 (130-unit pads, four in a row) with the sign column of level 3; every target at least 100 units, inside the view, clear of the pet's corner and the sign clear of the pads, at the four views and upright.
+
+## Level 8, Revise for a listener (definition and built, 2026-11-26)
+
+Reuses level 7's listener sign and four dial pads (`turtle`, `rabbit`, `gentle`, `strong`), plus two prepared version buttons (`1` and `2`) and an `Undo` button. The round prepares two ways to play (`makeAsks(rng)`, differing in one property) as Version 1 and Version 2.
+
+- **Flow:** She hears both prepared versions (tapping `1` and `2` loads each version onto the sign and dials and plays its four-beat phrase), chooses what to change on the dials for the active version, hears the revised phrase whole, and taps the green check (`Done`).
+- **What she decides:** Which prepared version to start from and which property (or properties) to revise to make a deliberate audible change.
+- **Revision and Undo:** Choosing a revision always differs from that version's original in the chosen property; `Undo` restores the active version's original pace and strength and clears the heard-revision flag so the gate follows the restored state.
+- **Mistakes, accounting:** No app score, no misses, no hints (`misses: 0, hints: 0`). The gate is hearing both prepared versions whole, having an active revision that differs from the selected original, and hearing that revision whole; finishing invites an optional spoken explanation to a person nearby.
+- **Bands and ID:** `school` window becomes `5–8` (level 8 is `school` only; level 8 follows level 7's stable ID).
+- **Rule tests:** `makeRevise` starts from two distinct prepared versions; revising a chosen property always differs from the original in that property; `undoRevision` restores the original and closes the gate; `canFinishRevise` stays false until both prepared versions are heard, a revision differs from the original, and the revision is heard whole; `reviseBot` always finishes with `misses: 0, hints: 0`.
+- **Layout:** Level 7's four dials, sign, listener, Listen and Done, plus the two version buttons (`1`, `2`) and `Undo` (`130 × 100` each) clear of all other targets, inside the view and clear of the pet's corner at the four views and upright.
 
 ## Check tier
 

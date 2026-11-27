@@ -83,6 +83,14 @@ const kit = {
       if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
     store.save();
   },
+  /**
+   * RW11 slice 1's development seed: the profile grows the sprout's blossoms (both by default), so Dress shows its Form cards
+   * before the Garden Grow goal exists. Reopen Dress to see them; `store.setForm(id, 'sprout:sun')` puts one on.
+   */
+  growForm(...ids: ('sprout:sun' | 'sprout:moon')[]) {
+    for (const id of ids.length ? ids : (['sprout:sun', 'sprout:moon'] as const))
+      store.growForm(id, `dev:${id}`);
+  },
   async until(test: () => boolean, ms = 12000) {
     const t0 = performance.now();
     while (!test() && performance.now() - t0 < ms) await sleep(100);

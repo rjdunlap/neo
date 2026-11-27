@@ -31,6 +31,10 @@ import {
   LEVEL5_PAIRS,
   LEVEL6_PAIRS,
   NEIGHBORS,
+  cartWeight,
+  turnRound,
+  LEVELS,
+  planFor,
   type Condition,
   type Gadget,
   type PartId,
@@ -295,6 +299,7 @@ describe('layout', () => {
     [4, 4, 4],
     [5, 4, 4],
     [6, 3, 4],
+    [7, 4, 5],
   ];
   for (const [name, v] of Object.entries(views)) {
     for (const [level, tiles, tray] of cases) {
@@ -1041,5 +1046,132 @@ describe('levels 5 and 6 nextMove', () => {
         expect(moves[moves.length - 2]).toBe('tryCart:true');
       }
     }
+  });
+});
+
+describe('level 7 rules (Two Friends, One Box)', () => {
+  const turns = (r: Round): Round[] => [turnRound(r, 0), turnRound(r, 1)];
+  const key = (g: Gadget) => SOCKETS.map((s) => g[s] ?? '-').join(',');
+
+  it('weighs every part by what it carries, so light and strong never both pass', () => {
+    for (const id of PART_IDS.concat(['paddles', 'rollers', 'lid', 'raft', 'glowstones'])) {
+      if (id === 'flag') continue;
+      expect(PARTS[id].weight).toBe(PARTS[id].strength);
+    }
+    expect(cartWeight({ under: 'wheels', top: 'lid' })).toBe(4);
+    expect(runPath({ under: 'rollers', top: 'umbrella' }, ['smooth', 'bump', 'rain', 'light']).ok).toBe(true);
+    expect(runPath({ under: 'wheels', top: 'lid' }, ['smooth', 'bump', 'rain', 'light'])).toMatchObject({
+      ok: false,
+      at: 'light',
+      socket: 'under',
+    });
+    expect(
+      runPath({ under: 'rollers', top: 'umbrella' }, ['smooth', 'bump', 'rain', 'strong']),
+    ).toMatchObject({
+      ok: false,
+      at: 'strong',
+    });
+    expect(runPath({ under: 'wheels', top: 'lid' }, ['smooth', 'bump', 'rain', 'strong']).ok).toBe(true);
+  });
+
+  it('either part that fixes a condition works, in its own socket', () => {
+    const p: Condition[] = ['smooth', 'bump', 'dark', 'light'];
+    expect(runPath({ under: 'rollers', top: 'glowstones' }, p).ok).toBe(true);
+    expect(runPath({ under: 'rollers', front: 'lantern' }, p).ok).toBe(true);
+    expect(runPath({ under: 'wheels', front: 'lantern' }, p)).toMatchObject({ ok: false, at: 'light' });
+  });
+
+  it('deals three rounds, the first authored, each with two disjoint turns', () => {
+    for (const seed of SEEDS) {
+      const { rounds } = briefFor(7, new Rng(seed));
+      expect(rounds).toHaveLength(3);
+      const r0 = rounds[0];
+      expect(r0.neighbor.name).toBe('Bunny');
+      expect(r0.path).toEqual(['smooth', 'bump', 'rain', 'light']);
+      expect(r0.second!.neighbor.name).toBe('Bear');
+      expect(r0.second!.path).toEqual(['smooth', 'bump', 'rain', 'strong']);
+      expect(r0.tray).toEqual(['rollers', 'wheels', 'umbrella', 'lid', 'lantern']);
+      const sigs = new Set(rounds.map((r) => [...r.tray].sort().join()));
+      expect(sigs.size).toBe(3);
+      for (const r of rounds) {
+        const [a, b] = turns(r);
+        const pa = passingDesigns(a.path, a.tray, a.open).map(key);
+        const pb = passingDesigns(b.path, b.tray, b.open).map(key);
+        const light = a.path.includes('light') ? pa : pb;
+        const strong = a.path.includes('light') ? pb : pa;
+        expect(light.length).toBeGreaterThanOrEqual(3);
+        expect(strong.length).toBeGreaterThanOrEqual(3);
+        expect(pa.filter((k) => pb.includes(k))).toEqual([]);
+        expect(a.neighbor).not.toBe(b.neighbor);
+      }
+    }
+  });
+
+  it('keeps conditions away from the same socket and never deals the paddles', () => {
+    forRounds(7, (r) => {
+      expect(r.tray).not.toContain('paddles');
+      expect(socketConflict(r.path)).toBe(false);
+    });
+  });
+
+  it('help reaches a passing cart within three steps from any one-part start, on both turns', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      for (const r of briefFor(7, new Rng(seed)).rounds) {
+        for (const t of turns(r)) {
+          const starts: Gadget[] = [{}];
+          for (const s of SOCKETS) for (const p of t.tray) starts.push({ [s]: p });
+          for (const start of starts) {
+            let g = start;
+            for (let i = 0; i < 3 && helpFor(g, t.path, t).kind !== 'done'; i++)
+              g = applyHelp(g, helpFor(g, t.path, t));
+            expect(runPath(g, t.path).ok, `${key(start)} on ${t.path.join('>')}`).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it('the ghost finger finishes both turns with Try and Give', () => {
+    for (const seed of SEEDS.slice(0, 100)) {
+      for (const r of briefFor(7, new Rng(seed)).rounds) {
+        for (const t of turns(r)) {
+          let g: Gadget = {};
+          let tried = false;
+          for (let i = 0; i < 12; i++) {
+            const m = nextMove(t, g, [tried, false], tried && runPath(g, t.path).ok, 7);
+            if ('giveCart' in m) break;
+            if ('tryCart' in m) tried = true;
+            else if ('drag' in m)
+              g = applyHelp(g, { kind: 'install', part: m.drag, socket: m.to, replaces: null, at: 'smooth' });
+            else if ('takeOut' in m)
+              g = Object.fromEntries(
+                SOCKETS.filter((s) => g[s] !== m.takeOut)
+                  .map((s) => [s, g[s]])
+                  .filter(([, v]) => v),
+              ) as Gadget;
+          }
+          expect(runPath(g, t.path).ok).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('nextTurn clears the glow and the memory but carries misses and hints', () => {
+    const t = new Tally();
+    t.miss();
+    t.miss();
+    expect(t.glowing).toBe(true);
+    const { misses, hints } = t;
+    t.nextTurn();
+    expect(t.glowing).toBe(false);
+    expect(t.counted).toBe(0);
+    expect([t.misses, t.hints]).toEqual([misses, hints]);
+    expect(t.miss()).toBe('none');
+  });
+
+  it('opens the school window to level 7 and leaves younger bands alone', () => {
+    expect(LEVELS.school).toEqual({ min: 2, max: 7 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 3 });
+    expect(planFor(7).name).toBe('Two Friends, One Box');
   });
 });

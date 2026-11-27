@@ -137,3 +137,72 @@ Current source Painted Canyon has nine games after Movie Night. Loom is tenth; a
 Version1 cloth palette indices are purple/blue/red/white. Colored yarn uses the existing swatch outline shade, white warp uses its fill. Each distinct weft/warp demonstration pair measures at least 3:1; two-tone dot/stripe/ring marks and white-warp crosses survive without color. The save contains only the 48 visible row-major palette indices, never lift history or a bitmap. The board letterboxes six-by-eight cells without stretching. Strict malformed-cloth rejection preserves valid previous pictures and tunes. Existing current/previous ownership, explicit shell Keep, profile writes and backup format remain; no migration is needed. A developer can reseed with the existing grown-up Reset progress (undo snapshot retained), or use a new isolated profile; this implementation resets no real save.
 
 Implementation title uses `loom.title` rather than the reserved `game.little-loom` so it remains on device speech with the rest of this game under the existing clip-selection policy. No recorded/generated audio or art assets were added. Lap, actual iPad speech/touch/readability, child/coplayer, later levels, wardrobe and tradition gates remain open.
+
+## Little Loom 4–5 (VA4)
+
+Defined 2026-11-24 from the [visual-art study](../deep-dives/subjects/visual-art.md#a-first-games-ladder-little-loom) levels 4–5 and the adopted window decision (pre-K 3–4, school 4–7), branch `claude/define-little-loom-4-5`. **Definition only; nothing playable, registered or saved by this packet.** VA5 (a separately admitted build) carries the gates below. Where this section is more specific than the study's table it wins: the sample is a fixed authored cloth, so every level here has exactly one accepted plan, and level 5's sample can also turn the line back.
+
+Fun action: weave a scarf that comes out like the sample on the little cloth. Learning purpose: a cloth's look comes from a plan, the warp, the weft yarn of each row and which threads lift, and a plan can be read off a picture and revised row by row. This is an island toy model of color-and-weave and twill, not evidence of real textile structure or a developmental threshold. Pattern Train owns copying a color sequence; the overlap test below keeps this level from becoming that.
+
+Same ID `little-loom`, art subject and land; ranges become toddler 1–2, preschool 2–3, **prek 3–4, school 4–5**, defaults at the range minimum (so school opens at 4 and reaches 5 after two smooth rounds). Levels 6–7, lap and grown-up stay absent. No save field, creation shape or palette change: the Keep is today's 48 visible cells, using two of the four allowed palette indices at both levels. No recorded audio, no new art assets (`Graphics`).
+
+### Cloth, yarn and samples
+
+Same loom as levels 1–3: `cols=6`, `rows=8`, the island holding rule unchanged (`rejection`), the same transaction (pedal latched, then the shuttle pad throws once). `L` and `D` below are a light and a dark yarn; the build picks the pair from the palette it already uses and records it. It must measure at least 3:1 relative luminance between L and D, and the two keep their dot and stripe marks, so the check never depends on hue.
+
+Level 4 *Checks* uses two pedals A (`101010`) and B (`010101`), a fixed two-color warp, and two yarn pots (L and D) that stay selected until another is tapped. Level 5 *Diagonal* uses a fixed dark warp (all `D`), a fixed light weft (all `L`, no pots) and three pedals that each lift every third thread: P1 threads 1 and 4 (`100100`), P2 threads 2 and 5 (`010010`), P3 threads 3 and 6 (`001001`). Every pedal leaves at least one thread down and none repeats the one before it; the island rule is the same code path as level 3.
+
+A sample is a fixed authored 6×8 grid shown beside the loom, listed here as `rows 0–7` with the visible cell colors left to right. Seeded RNG picks one sample per round and may vary only harmless scenery, never a sample, its row order or the yarn marks.
+
+| Sample | Warp | Plan (pedal, weft yarn per row) | Rows of the sample |
+| --- | --- | --- | --- |
+| 4a Steps | `LLDDLL` | A B A B A B A B, weft `LLDDLLDD` | LLDLLL · LLLDLL · LDDDLD · DLDDDL, then the same four again |
+| 4b Bands | `LDLDLD` | A B A B A B A B, weft `LLDDLLDD` | LLLLLL · LDLDLD · LDLDLD · DDDDDD, then again |
+| 4c Steps, other way | `LLDDLL` | B A B A B A B A, weft `LLDDLLDD` | LLLDLL · LLDLLL · DLDDDL · LDDDLD, then again |
+| 5a Climb right | all `D` | P1 P2 P3 P1 P2 P3 P1 P2, weft all `L` | DLLDLL · LDLLDL · LLDLLD, repeating, 8 rows |
+| 5b Climb left | all `D` | P3 P2 P1 P3 P2 P1 P3 P2 | LLDLLD · LDLLDL · DLLDLL, repeating, 8 rows |
+| 5c Turn back | all `D` | P1 P2 P3 P2 P1 P2 P3 P2 | DLLDLL · LDLLDL · LLDLLD · LDLLDL · DLLDLL · LDLLDL · LLDLLD · LDLLDL |
+
+Scripts written for this packet checked the table. Each sample has **exactly one accepted plan** over every pedal choice the island rule allows and every yarn choice (the first row's pedal and yarn are fixed by the sample, so there is no free first row), and each 5x plan passes the island rule at every row. Acceptance is the drawdown: a woven row is right if its six visible cells equal the sample row at the same index (`drawdown(warp, weft, lift)`, as in the existing logic). Rotating the pedal order does not match unless the cells match. The build's tests re-derive all six counts and fail if a sample is added with more than or fewer than one plan.
+
+**Pattern Train overlap test (decided here).** Pattern Train asks her to copy or continue a color sequence read off a line. Little Loom passes only if, for every level 4 sample, the weft yarn plan is not equal to any single column of the sample (checked on the three samples above: the weft `LLDDLLDD` against each column, no column matches), and for level 5 no weft choice exists at all, so the choice there is always structure. The sample is read as a whole cloth, the cell colors come from warp, weft and lift together, and nothing asks her to name or continue a sequence.
+
+### Rows, mistakes, Undo and help
+
+Rows are judged at throw, against the sample row at the next row index. Re-using level 3's states: no pedal selected cues the pedals, a selected pedal and the shuttle submit.
+
+- A repeated pedal, or at level 5 a row that breaks the float rule (for example P1 P2 P1 P2: the fourth row would leave thread 3 down for four rows): the ribbon slips and the shuttle returns, as at level 3. The row is not woven; one miss. The float slip gets its own line, below.
+- A row that is allowed but differs from the sample row (the wrong yarn at level 4, the wrong pedal at either level, or both): the row **is woven**, the island shows how it came out, the sample row pulses, one miss. It stays on the loom. It never cuts a scarf, never locks anything and is easy to undo.
+- **Undo row** (a pictured 120×120 button) removes the last woven row and restores the previous pedal, yarn and direction; free at any depth and any time, never a miss or a hint. Restart and replay are free as before.
+- A row matching the sample row is woven with the usual beat. The scarf is cut off only when eight rows are woven **and all match**. Rows woven above a standing mismatch are judged against their own sample row (so they cost a miss only if they differ themselves); if the eighth row is woven while any earlier row differs, nothing finishes, the earliest differing row pulses, the pet says “Look at the sample again.” and Undo pulses. No count changes for that.
+- Accounting follows level 3: one miss per judged row that slips or differs, counting by submitted row, never for pedal or yarn exploration. After two misses at the same row index, with the loom on a matching prefix, one hint glows the right control for that row (the pedal if the pedal is wrong, otherwise the yarn at level 4); it counts **once for that row index** and is kept until the row matches. Manual **Show a hint** gives the same glow with the same one-per-row cap. If a mismatch stands, help pulses Undo instead and counts no hint. A new row index gets a fresh cap; replay is free; no time-based hint. Supported completion is not independent mastery, and the sticker is the shell's, once.
+
+### Layout and touch
+
+Same transaction, `onTap` for down feedback, release for deliberate submission, native cancel, outside and blur cleanup, and scene-owned timing as in levels 1–3. Active targets stay at least 100×100 logical units after scaling with at least 16 units between controls and are never shrunk; the sample and the cloth are not touch targets. These are **design rectangles, not measured proof**, on the 1024×768 landscape and 1024×1365 portrait references with the top 120 and the bottom-left guide strip (`x 0..260, y h−270..h`) reserved; the build checks them against the real shell geometry at every phone view and checkpoints for a placement decision instead of shrinking a target.
+
+| Element | Landscape | Portrait |
+| --- | --- | --- |
+| Loom (as VA2) | x 280..740, y 160..500 | x 250..774, y 240..850 |
+| Sample cloth, noninteractive, 35-unit cells | x 40..250, y 150..430 | x 30..240, y 300..580 |
+| Shuttle pad 180×120 | center (880,220) | center (810,960) |
+| Undo row 120×120 | center (880,520) | center (950,800) |
+| Level 4 pots 120×120 | (824,360), (960,360) | (420,1190), (610,1190) |
+| Level 4 pedals 140×120 | (400,660), (640,660) | (380,1010), (620,1010) |
+| Level 5 pedals 140×120 (100 apart) | (360,660), (600,660), (840,660) | (340,1170), (580,1170), (820,1170) |
+
+Tight spots to confirm first: the landscape pots end 4 units from the right edge, and the portrait level 4 pedals sit 30 units from the shuttle pad. Pedals show their raised threads with line glyphs (level 5: every third thread) and a depressed state when latched.
+
+### Speech, how-to and ghost finger
+
+New lines for `voice.ts`, drafts to be reworded as spoken: `loom.checks` “Make a cloth like the sample! Pick a pedal and a yarn, then tap the shuttle.” (level 4); `loom.diagonal` “Make the line climb, like the sample!” (level 5); `loom.differs` “This row looks different. Look at the sample again.”; `loom.slip-float` “That row slipped. On our island loom, try a different pedal.”; `loom.help-yarn` “Try this yarn.” and `loom.help-pedal` “Try this pedal.” (glow lines); `loom.same` “Just like the sample!” before the shell finish. `loom.slip-repeat` and `loom.color` are reused; the unreachable `loom.choose-pedal` and `loom.send` cues carry over. Level-scoped how-to cards: level 4 “Look at the sample. Pick the pedal and the yarn that make each row.”; level 5 “Press the pedals in the order that makes the line climb.” Co-play: one reads the sample, the other presses. Off-screen suggestion: “Find a checked or striped cloth at home together.”
+
+`autotouch()` follows the shown sample through public input with the ghost finger: pedal, yarn (level 4), shuttle, for eight rows. Regression plays (filtered, not the demo) at each level: a wrong row, Undo, two misses at one row to earn exactly one hint, a repeated pedal slip, at level 5 the P1 P2 P1 P2 float slip, then a clean finish.
+
+### Build gates for VA5
+
+Build tier: new levels on an existing interaction, with the new school band range, so typecheck, `npm run format:check`, rule tests (re-derive the six one-plan counts and the Pattern Train assertion, row judging by index, the miss and hint accounting, Undo restoring pedal, yarn and direction, finish only when all eight match, every authored sample passes the island rule), the layout test (`layout.test.ts`) at every phone view and orientation for both levels, registry, lands and how-to tests (the school band now lists Little Loom; the land page must still fit one screen), one filtered browser play of level 5 and level 4 with a wrong row, Undo, two misses to one hint and a clean finish, one portrait screenshot at level 5 and `fingerdemo` at 4 and 5. Not run for this definition: any code, browser, layout or contrast measurement. Still open and parked: real speech, whether the sample reads at 35-unit cells on a phone, and any child or co-player observation; lap and levels 6–7 (lift cards, color order) stay unclaimed.
+
+### VA5 build claim
+
+Branch `claude/little-loom-4-5` (Claude routine A, 2026-11-24) claims the whole levels 4–5 build: `src/games/little-loom/` (logic, layout, index, voice, howto, tests), the school and prek ranges, `docs/games/little-loom.md`, a browser play case, READY and verification closeout. No save, creation or palette change.

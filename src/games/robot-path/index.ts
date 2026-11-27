@@ -38,6 +38,8 @@ import {
 } from './logic';
 import { robotLayout, type RobotLayout } from './layout';
 import { arrow } from './art';
+import { courseBoards, courseMinimum, isRobotCourse } from './course';
+import { endRoutineVisit } from './routine';
 import { RoutineRound } from './routine-scene';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
@@ -47,16 +49,24 @@ const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
 const STICK_DIRECTIONS: Direction[] = ['right', 'down', 'left', 'up'];
 
 class RobotPath implements Game {
-  readonly plan: RobotPlan;
-  readonly prediction: PredictPlan | null;
-  readonly fixPlan: RepairPlan | null;
-  readonly mode: 'steps' | 'counts' | 'loop';
+  plan!: RobotPlan;
+  prediction: PredictPlan | null = null;
+  fixPlan: RepairPlan | null = null;
+  mode!: 'steps' | 'counts' | 'loop';
   readonly program: Slot[] = [];
   /** How many times the whole program runs (loop levels). */
   loop = 1;
-  readonly solution: Slot[];
+  solution!: Slot[];
   readonly arrows: { dir: Direction; button: RoundButton }[] = [];
   readonly loopButton: RoundButton;
+  private readonly course: { boards: RobotPlan[]; minimum: number } | null = null;
+  private index = 0;
+  private doneBoards: number[] = [];
+  /** Steps already spent on the board we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private tries = 0;
+  private assisted = false;
+  private courseLine = '';
   private readonly background = new Graphics();
   private readonly grid = new Graphics();
   private readonly robot = robotArt(65);
@@ -89,23 +99,21 @@ class RobotPath implements Game {
   private clock = 0;
   private botWait = 1.5;
 
+  private get boardTries() {
+    return this.carry + this.tries;
+  }
+
   constructor(private readonly ctx: GameContext) {
     this.place = robotLayout(ctx.view, 5, 4, 'steps');
-    this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
-    this.fixPlan =
-      ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : ctx.level === 14 ? ctx.rng.pick(MEND_PLANS) : null;
-    this.plan =
-      this.prediction ??
-      this.fixPlan ??
-      (ctx.level === 13 ? ctx.rng.pick(VIA_PLANS) : boardFor(ctx.level, ctx.rng));
-    this.mode = this.plan.mode ?? 'steps';
-    this.solution =
-      this.prediction?.program ??
-      this.plan.solution?.slots ??
-      shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
-    if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
-    if (this.fixPlan) this.program.push(...this.fixPlan.broken.map((slot) => ({ ...slot })));
-    if (this.fixPlan?.mode === 'loop') this.loop = this.fixPlan.brokenLoop;
+    const run = ctx.couch?.course;
+    if (run && isRobotCourse(run.id)) {
+      this.course = { boards: courseBoards(run.id), minimum: courseMinimum(run.id) };
+      this.index = Math.min(this.course.boards.length - 1, run.resume.board);
+      this.doneBoards = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+    }
+    this.loadBoard(this.index);
     this.play = new RoundButton(playIcon(), swatch.green, 50, () => void this.run());
     this.clear = new RoundButton(againIcon(), swatch.white, 50, () => {
       if (this.running || this.done) return;
@@ -171,7 +179,48 @@ class RobotPath implements Game {
     }
   }
 
+  private loadBoard(i: number) {
+    this.index = i;
+    this.program.length = 0;
+    this.loop = 1;
+    this.selectedSlot = -1;
+    this.misses = 0;
+    this.hints = 0;
+    this.tries = 0;
+    this.hint.clear();
+    if (this.course) {
+      this.prediction = null;
+      this.fixPlan = null;
+      this.plan = this.course.boards[i];
+    } else {
+      this.prediction = this.ctx.level === 11 ? this.ctx.rng.pick(PREDICT_PLANS) : null;
+      this.fixPlan =
+        this.ctx.level === 12
+          ? this.ctx.rng.pick(FIX_PLANS)
+          : this.ctx.level === 14
+            ? this.ctx.rng.pick(MEND_PLANS)
+            : null;
+      this.plan =
+        this.prediction ??
+        this.fixPlan ??
+        (this.ctx.level === 13 ? this.ctx.rng.pick(VIA_PLANS) : boardFor(this.ctx.level, this.ctx.rng));
+    }
+    this.mode = this.plan.mode ?? 'steps';
+    this.solution =
+      this.prediction?.program ??
+      this.plan.solution?.slots ??
+      shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
+    if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
+    if (this.fixPlan) this.program.push(...this.fixPlan.broken.map((slot) => ({ ...slot })));
+    if (this.fixPlan?.mode === 'loop') this.loop = this.fixPlan.brokenLoop;
+  }
+
   start() {
+    if (this.course) {
+      this.report();
+      this.courseInstruction();
+      return;
+    }
     void this.ctx.instruct(
       this.prediction
         ? 'robot.predict'
@@ -239,6 +288,10 @@ class RobotPath implements Game {
     const steps = expand(this.program, this.loop);
     const from = slotOfStep(this.program, this.loop);
     const result = runPath(this.plan, steps);
+    if (this.course) {
+      this.tries += result.path.length - 1 + (result.stop === 'bump' ? 1 : 0);
+      this.report();
+    }
     for (let i = 1; i < result.path.length; i++) {
       // Step-through playback: the slot being carried out lights up.
       this.active = from[i - 1];
@@ -274,6 +327,20 @@ class RobotPath implements Game {
       return;
     }
     if (result.success) {
+      if (this.course) {
+        this.doneBoards.push(this.boardTries);
+        this.report(true);
+        this.carry = 0;
+        if (!this.ctx.demo) await this.boardScore();
+        if (this.index + 1 < this.course.boards.length) {
+          this.loadBoard(this.index + 1);
+          this.running = false;
+          this.resize(this.ctx.view);
+          this.report();
+          this.courseInstruction();
+          return;
+        }
+      }
       this.done = true;
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
@@ -301,6 +368,10 @@ class RobotPath implements Game {
     this.running = false;
     if (this.misses === 2) {
       this.hints++;
+      if (this.course) {
+        this.assisted = true;
+        this.report();
+      }
       const help = this.fixPlan && this.nextHelp();
       void this.ctx.say(
         !help
@@ -366,12 +437,84 @@ class RobotPath implements Game {
     this.drawHint();
   }
 
-  /** After two misses, a ring on the next useful button, from a known solution. */
+  /** After two misses or an asked hint, a ring on the next useful button, from a known solution. */
   private drawHint() {
     this.hint.clear();
-    if (this.misses < 2 || this.running || this.done) return;
+    if ((this.misses < 2 && this.hints === 0) || this.running || this.done) return;
     const target = this.nextHelp();
     this.hint.circle(target.x, target.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+  }
+
+  /** A course's boards switch from step-by-step to counted slots: speak when the rule changes. */
+  private courseInstruction() {
+    const line = this.mode === 'counts' ? 'robot.counts' : 'robot.start';
+    if (line === this.courseLine) return;
+    this.courseLine = line;
+    void this.ctx.instruct(line);
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the board just ended, so none of its steps are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.boards.length,
+      done: this.doneBoards.slice(),
+      attempts: finished ? 0 : this.boardTries,
+      par: shortestPath(this.plan).length,
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The step count for the board just finished, over the board for a moment. */
+  private async boardScore() {
+    const best = shortestPath(this.plan).length,
+      total = this.course!.boards.length,
+      n = this.doneBoards[this.doneBoards.length - 1];
+    const text =
+      n === best
+        ? `Board ${this.index + 1} of ${total}: ${n} steps, the fewest possible!`
+        : `Board ${this.index + 1} of ${total}: ${n} ${n === 1 ? 'step' : 'steps'} (fewest ${best})`;
+    const note = new Container();
+    const t = label(text, 30, ink);
+    const padX = 22,
+      padY = 14;
+    const box = new Graphics()
+      .roundRect(-t.width / 2 - padX, -t.height / 2 - padY, t.width + padX * 2, t.height + padY * 2, 16)
+      .fill(cream)
+      .stroke({ width: 3, color: swatch.green.line });
+    note.addChild(box, t);
+    note.position.set(
+      this.origin[0] + (this.plan.size * this.cell) / 2,
+      this.origin[1] + (this.plan.size * this.cell) / 2,
+    );
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.1);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy({ children: true });
+  }
+
+  restart() {
+    if (this.running || this.done) return;
+    this.program.length = 0;
+    this.loop = 1;
+    this.selectedSlot = -1;
+    this.drawQueue();
+  }
+
+  askForHint() {
+    if (this.running || this.done) return;
+    this.hints++;
+    if (this.course) {
+      this.assisted = true;
+      this.report();
+    }
+    this.drawHint();
+    void this.ctx.say('robot.hint');
   }
 
   private nextHelp(): Container | RoundButton {
@@ -571,5 +714,9 @@ export const robotPath: GameModule = {
   touchDemo: true,
   upright: true,
   sticker: () => robotArt(150),
-  create: (ctx) => (ctx.level === 15 ? new RoutineRound(ctx) : new RobotPath(ctx)),
+  create: (ctx) => {
+    if (ctx.level === 15) return new RoutineRound(ctx);
+    endRoutineVisit();
+    return new RobotPath(ctx);
+  },
 };

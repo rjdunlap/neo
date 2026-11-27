@@ -18,6 +18,7 @@ import { isSpecies, MAX_CREATURES, SPECIES, type SpeciesId } from '../creatures/
 import { isGoalId, type GoalId } from '../content/goals';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
+import { cleanForms, cleanLookForm, type FormId } from '../creatures/forms';
 
 import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
@@ -88,8 +89,8 @@ export interface Individual {
   id: string;
   species: SpeciesId;
   name: string;
-  /** Its colour, and what it wears (RW06): wearable ids, one per slot, in the order put on (`cleanWorn`). */
-  look: { color: PetColor; worn: WearableId[] };
+  /** Its colour, and what it wears (RW06): wearable ids, one per slot, in the order put on (`cleanWorn`), and the form it shows (RW11), which takes the head slot. */
+  look: { color: PetColor; worn: WearableId[]; form: FormId | null };
   metAt: string;
 }
 
@@ -97,6 +98,8 @@ export interface Individual {
 export interface CreaturesSave {
   owned: Individual[];
   companion: string | null;
+  /** The forms the profile has grown (RW11): kept like a furnishing, shown by whichever friend she chooses. */
+  forms: FormId[];
 }
 
 export { MAX_CREATURES } from '../creatures/species';
@@ -121,6 +124,10 @@ export interface SaveData {
     sessionMinutes: 0;
     coplayHints: boolean;
     howToCards: boolean;
+    /** "Short results" (D4a): a shorter result after a round in the pilot games. Off unless a grown-up turns it on. */
+    briefResults: boolean;
+    /** "Short reminders" (D4b): a shorter how-to card for a game, level and input she has just been shown this visit. Off unless a grown-up turns it on. */
+    briefIntros: boolean;
     speech: boolean;
     /** "Show the words": a `school` player sees the guide's question written out, for a phone on silent (a `grownup` always does). */
     showWords: boolean;
@@ -129,7 +136,11 @@ export interface SaveData {
   };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
-  stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
+  stories: {
+    picnic: StoryProgress<'picnic'>;
+    woodland: StoryProgress<'woodland'>;
+    melody: StoryProgress<'melody'>;
+  };
   /** The root's projects (RW07): Welcome a New Friend, its steps and what she made for it. Never the treehouse's slots. */
   projects: { welcome: WelcomeProject };
   book: { goal: GoalId | null };
@@ -158,7 +169,7 @@ export function defaults(): SaveData {
   return {
     version: 3,
     profile: { name: '', band: 'lap' },
-    creatures: { owned: [], companion: null },
+    creatures: { owned: [], companion: null, forms: [] },
     world: { band: null },
     settings: {
       placeLayout: 'path',
@@ -167,6 +178,8 @@ export function defaults(): SaveData {
       sessionMinutes: 0,
       coplayHints: true,
       howToCards: true,
+      briefResults: false,
+      briefIntros: false,
       showWords: false,
       speech: true,
       language2: 'none',
@@ -176,6 +189,7 @@ export function defaults(): SaveData {
     stories: {
       picnic: { steps: [], ended: false, keepsake: false },
       woodland: { steps: [], ended: false, keepsake: false },
+      melody: { steps: [], ended: false, keepsake: false },
     },
     projects: { welcome: emptyWelcome() },
     book: { goal: null },
@@ -209,7 +223,7 @@ function placement(raw: unknown): StickerPlacement | undefined {
   return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
 }
 
-/** A story's saved telling, keeping only its own step IDs, in story order. An older save has no woodland telling: it starts empty. */
+/** A story's saved telling, keeping only its own step IDs, in story order. An older save has no woodland or melody telling: it starts empty. */
 function story<S extends StoryId>(id: S, raw: unknown): StoryProgress<S> {
   const r = isObj(raw) ? raw : {};
   const all: readonly StoryStep<S>[] = STORY_STEPS[id];
@@ -249,6 +263,7 @@ function room(raw: unknown): RoomSave {
  */
 export function cleanCreatures(raw: unknown): CreaturesSave {
   const r = isObj(raw) ? raw : {};
+  const forms = cleanForms(r.forms);
   const owned: Individual[] = [];
   for (const c of Array.isArray(r.owned) ? r.owned.filter(isObj) : []) {
     if (owned.length >= MAX_CREATURES) break;
@@ -265,12 +280,16 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
       id: c.id,
       species: c.species,
       name: str(c.name, '').trim().slice(0, 40) || sp.names[0],
-      look: { color: isPetColor(look.color) ? look.color : sp.color, worn: cleanWorn(look.worn) },
+      look: {
+        color: isPetColor(look.color) ? look.color : sp.color,
+        worn: cleanWorn(look.worn),
+        form: cleanLookForm(look.form, c.species, forms),
+      },
       metAt: str(c.metAt, '').slice(0, 60),
     });
   }
   const companion = owned.find((o) => o.id === r.companion)?.id ?? owned[0]?.id ?? null;
-  return { owned, companion };
+  return { owned, companion, forms };
 }
 
 /**
@@ -296,7 +315,7 @@ export function meetIn(
     id,
     species,
     name: name.trim().slice(0, 40) || sp.names[0],
-    look: { color: isPetColor(color) ? color : sp.color, worn: [] },
+    look: { color: isPetColor(color) ? color : sp.color, worn: [], form: null },
     metAt: token,
   };
   c.owned.push(met);
@@ -372,6 +391,8 @@ export function migrate(raw: unknown): SaveData {
       sessionMinutes: 0,
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
+      briefResults: bool(settings.briefResults, d.settings.briefResults),
+      briefIntros: bool(settings.briefIntros, d.settings.briefIntros),
       speech: bool(settings.speech, d.settings.speech),
       showWords: bool(settings.showWords, d.settings.showWords),
       // Exactly one of the two values; `pt`, `pt-BR` or anything else is off, never a guessed variety.
@@ -379,7 +400,11 @@ export function migrate(raw: unknown): SaveData {
     },
     games,
     stickers,
-    stories: { picnic: story('picnic', stories.picnic), woodland: story('woodland', stories.woodland) },
+    stories: {
+      picnic: story('picnic', stories.picnic),
+      woodland: story('woodland', stories.woodland),
+      melody: story('melody', stories.melody),
+    },
     projects: { welcome: cleanWelcome(isObj(raw.projects) ? raw.projects.welcome : undefined) },
     book: { goal: isObj(raw.book) && isGoalId(raw.book.goal) ? raw.book.goal : null },
     room: room(raw.room),

@@ -1,0 +1,5 @@
+# 2026-11-24 — Critter scarf: third look for Critter Crossing and Critter Sort (PR #2148)
+
+**Changed:** a blue scarf is the third look on `SortCritter` (optional `scarf` flag, `scarf` rule, `scarfArt()`, rule sign icon). Critter Crossing levels 5–7 and Critter Sort levels 7–9 deal it and may use "wearing a scarf" as a rule; every other level draws no scarf and deals as before.
+**Ran:** typecheck, format check and lint; critter-crossing, critter-sort, learning, barrels, game-docs and registry vitest (125 passed), including new tests that older levels never deal a scarf and that scarf rounds stay fair across the larger pool; one in-app browser look at Critter Crossing level 7 (scarves drawn on the critters, bank shelf); `fingerdemo` for `critter-crossing` levels 5–7 and `critter-sort` levels 7–9.
+**Not run:** full `npm test` (left to PR CI), build, offline, portrait screenshot (the scarf rides on the same critter node as the hat), voice clips (the scarf word is slotted into existing lines, so none are new).

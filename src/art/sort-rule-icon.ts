@@ -7,7 +7,12 @@ import { plantRuleIcon } from './sort-plants';
 export function ruleIcon(rule: Rule): Graphics {
   if (isPlantRule(rule)) return plantRuleIcon(rule);
   const g = new Graphics();
-  const head = (color: number) => g.circle(0, 6, 26).fill(color).stroke({ width: 4, color: ink, alpha: 0.5 });
+  // A pale head with a little face, so the ears or whiskers read as an animal's and not as a blank disc.
+  const head = (color: number) => {
+    g.circle(0, 6, 26).fill(color).stroke({ width: 4, color: ink, alpha: 0.5 });
+    g.circle(-9, 2, 3.5).circle(9, 2, 3.5).fill(ink);
+    g.moveTo(-6, 14).quadraticCurveTo(0, 19, 6, 14).stroke({ width: 2.5, color: ink, cap: 'round' });
+  };
   switch (rule) {
     case 'hat':
       g.ellipse(0, 22, 40, 9)
@@ -16,6 +21,14 @@ export function ruleIcon(rule: Rule): Graphics {
         .fill(ink)
         .rect(-24, 6, 48, 8)
         .fill(swatch.red.fill);
+      break;
+    case 'scarf':
+      g.ellipse(0, 4, 38, 14)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 4, color: swatch.blue.line })
+        .roundRect(8, 8, 22, 36, 6)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 4, color: swatch.blue.line });
       break;
     case 'brown':
     case 'white':

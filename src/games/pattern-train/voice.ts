@@ -11,6 +11,8 @@ export const VOICE = {
   'pattern.colorRight': ['The color is right! Now look at the shape.'],
   'pattern.shapeRight': ['The shape is right! Now look at the color.'],
   'pattern.number': ['Count the numbered cars. What number belongs in the glowing car?'],
+  'pattern.stairs': ['Each car has one more counter, {name}. How many counters go in the glowing car?'],
+  'pattern.steps': ['Look at the stacks, {name}. How many counters go in the glowing car?'],
   'pattern.sound': [
     'Listen to the bells on the train. Which bell comes next? Tap a bell to listen, then tap the arrow.',
   ],
@@ -30,9 +32,16 @@ export const VOICE = {
     'Look at the train on top. Is this car the same as the one before it, or different?',
   ],
   'pattern.buildHint': ['These cars on top play the same part. Try a green one!'],
+  // Level 17: slotted lines stay on device speech until a clip pass renders fixed wording.
+  'pattern.make': ['Make your own pattern, {name}! Tap up to three pieces, then press the green arrow.'],
+  'pattern.made': ['{list}, again!'],
   'pattern.next': ['Yes! Now fill the next car!'],
   'pattern.why': ['Yes! The pattern goes {list}, over and over!'],
   'pattern.whyBells': ['Yes! The bells go {list}, over and over!'],
+  // Slotted lines stay on device speech until a clip pass renders fixed wording.
+  'pattern.count': ['{n}'],
+  'pattern.whyStack': ['Yes! One more each time: {list}!'],
+  'pattern.whyStep': ['Yes! {how} each time: {list}!'],
   'pattern.whyNumber': ['Yes! They count by {step}: {list}!'],
   'pattern.whyPair': ['Yes! The colors go {colors}, and the shapes go {shapes}!'],
   'pattern.oddWhy': ['The {piece} did not belong! Now it goes {list}, over and over.'],

@@ -1,42 +1,74 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
-import { RAINBOW, swatch, wood } from '../../art/palette';
+import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
-import { musicNote } from '../../art/shapes';
+import { domePath, musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
 import { PITCH_COLORS, pitchColor } from '../../audio/notes';
 import { sfx, type AnimalSound } from '../../audio/sfx';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { entryId } from '../../content/journal';
 import { Jelly } from './jelly';
 import { drawBackdrop, STAGES, type StageLook } from './stages';
-import { jellyLayout, type Layout } from './layout';
+import {
+  CHOICE_RADIUS,
+  HIT_PAD,
+  jellyLayout,
+  ORDER_HW,
+  ORDER_SLOT_RADIUS,
+  orderHalfWidth,
+  orderRowFor,
+  type Layout,
+  type Pt,
+} from './layout';
 import {
   answerOf,
   LEVELS,
   awakeJellies,
+  drawLineups,
+  drawPair,
   drawTune,
+  drawFinish,
+  drawFollow,
+  endingOf,
+  givenOf,
+  type FinishSong,
+  drawWhich,
   fanAnswering,
+  ECHO_NUDGE_AFTER,
+  echoOf,
   IdleNudge,
   JellyNamer,
   jellyToTap,
   nearestAwake,
+  orderDirection,
+  orderToDrag,
   placeAfterMiss,
   planFor,
   RESUME_FROM_LENGTH,
+  sameFlags,
   ScaleWatch,
+  JournalWatch,
   SET_STEPS,
   soundSetFor,
   tuneLength,
+  verdictOf,
+  verdictToTap,
+  whichAwake,
   STAGE_OF,
+  type OrderLineup,
   type SoundSet,
   type JellyPhase,
   type JellyPlan,
   type Tune,
+  type TunePair,
+  type Verdict,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -47,6 +79,29 @@ const BULBS = 8;
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
 /** Each fan's own voice when it answers on level 2. */
 const FAN_VOICES: AnimalSound[] = ['quack', 'hop', 'meow', 'oink'];
+
+interface OrderItem {
+  jelly: Jelly;
+  pitch: number;
+  drag: DragHandle;
+  placed: boolean;
+  slot: number;
+  rowIndex: number;
+}
+
+/** The picture on an answer button: two matching dots for "same", two unlike ones (a big round one and a small square one) for "different". */
+function dotsArt(same: boolean): Graphics {
+  const g = new Graphics();
+  if (same) {
+    g.circle(-22, 0, 17).fill(0xffffff).stroke({ width: 5, color: swatch.green.line });
+    g.circle(22, 0, 17).fill(0xffffff).stroke({ width: 5, color: swatch.green.line });
+  } else {
+    g.circle(-22, 0, 20).fill(0xffffff).stroke({ width: 5, color: swatch.orange.line });
+    g.roundRect(8, -11, 22, 22, 4).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line });
+  }
+  g.scale.set(1.35);
+  return g;
+}
 
 class JellyDrums implements Game {
   private readonly plan: JellyPlan;
@@ -78,16 +133,43 @@ class JellyDrums implements Game {
   private played: Tune[] = [];
   /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
   private readonly again: RoundButton;
+  /** Level 12: the two answer buttons, "same" (two matching dots) and "different" (two unlike dots). */
+  private readonly choices: Record<Verdict, RoundButton>;
+  /** Level 12: a ring on the right button after two misses on one pair. */
+  private readonly ring = new Graphics();
+  /** Level 12: which pairs of the round are the same, and the pair now playing. */
+  private flags: boolean[] = [];
+  private pair: TunePair | null = null;
+  /** Level 14 ("Which jelly sang?"): the jelly that sang the mystery note. */
+  private whichTarget: number | null = null;
+  /** Level 16 ("Finish the song"): the song now playing, and the round's earlier ones. */
+  private song: FinishSong | null = null;
+  private finishPlayed: FinishSong[] = [];
+  /** Level 13 ("Lowest to highest"): the shelf of four slots, the lit target pad, the sleeping fifth jelly and active row. */
+  private readonly orderShelf = new Graphics();
+  private readonly orderSlots = new Graphics();
+  private readonly sleeperG = new Graphics();
+  private readonly orderLayer = new Container();
+  private lineups: OrderLineup[] = [];
+  private orderJellies: OrderItem[] = [];
+  private placedCount = 0;
+  private slotPulse = 0;
+  private dead = false;
   /** Four- and five-note tunes: dots for the notes she has right so far (her place after a miss). */
   private readonly ticks = new Graphics();
   /** Backwards level: a rewind arrow beside the listen-again button. */
   private readonly rewind = new Graphics();
   /** Free play: a quiet jelly wiggles after a while without a touch. */
-  private readonly nudge = new IdleNudge();
+  private readonly nudge: IdleNudge;
+  /** Level 17 (Echo jellies): the ripples spreading from answered jellies, each at its centre with its age in seconds. */
+  private readonly ripples: { x: number; y: number; age: number }[] = [];
+  private readonly rippleG = new Graphics();
   /** Free play: the voice names a jelly now and then. */
   private readonly namer = new JellyNamer();
   /** Level 3: three neighbours in a row sparkle. */
   private readonly scale = new ScaleWatch();
+  /** What this round showed for the journal: low and high. */
+  private readonly journal = new JournalWatch();
   private lastJelly = 2;
   private wrongThisTune = 0;
   private misses = 0;
@@ -98,6 +180,7 @@ class JellyDrums implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.nudge = new IdleNudge(this.plan.mode === 'answer' ? ECHO_NUDGE_AFTER : undefined);
     this.sounds = soundSetFor(ctx.rng);
     this.look = STAGES[STAGE_OF[this.sounds]];
     this.sky = new Sprite(gradientTexture(...this.look.sky));
@@ -118,20 +201,51 @@ class JellyDrums implements Game {
       return c;
     });
     this.again = new RoundButton(replayArt(), swatch.yellow, 56, () => void this.listenAgain());
-    this.again.visible = this.plan.mode === 'echo' && !ctx.couch;
+    const tunes =
+      this.plan.mode === 'echo' ||
+      this.plan.mode === 'compare' ||
+      this.plan.mode === 'which' ||
+      this.plan.mode === 'finish';
+    this.again.visible = tunes && !ctx.couch;
+    this.choices = {
+      same: new RoundButton(dotsArt(true), swatch.green, CHOICE_RADIUS, () => this.answerPair('same')),
+      different: new RoundButton(dotsArt(false), swatch.orange, CHOICE_RADIUS, () =>
+        this.answerPair('different'),
+      ),
+    };
+    for (const b of Object.values(this.choices)) b.visible = this.plan.mode === 'compare';
+    const orderMode = this.plan.mode === 'order';
+    this.orderShelf.eventMode = 'none';
+    this.orderSlots.eventMode = 'none';
+    this.sleeperG.eventMode = 'none';
+    this.orderShelf.visible = orderMode;
+    this.orderSlots.visible = orderMode;
+    this.sleeperG.visible = orderMode;
+    this.orderLayer.visible = orderMode;
+    if (orderMode) this.jellies.forEach((j) => (j.visible = false));
     ctx.stage.addChild(
       this.sky,
       this.skyThings,
       this.mountains,
       this.garland,
+      this.orderShelf,
+      this.orderSlots,
       this.stageG,
       ...this.jellies,
+      this.sleeperG,
+      this.orderLayer,
       ...this.fans,
       this.again,
+      this.choices.same,
+      this.choices.different,
+      this.rippleG,
+      this.ring,
       this.ticks,
       this.rewind,
     );
     this.ticks.eventMode = 'none';
+    this.rippleG.eventMode = 'none';
+    this.ring.eventMode = 'none';
     this.rewind.eventMode = 'none';
     this.rewind.visible = !!this.plan.reverse && !ctx.couch;
     if (this.plan.mode === 'wake') {
@@ -155,8 +269,46 @@ class JellyDrums implements Game {
   }
 
   start() {
+    if (this.plan.mode === 'which') {
+      this.phase = 'listen';
+      this.applyWhichAwake(whichAwake(0), false);
+      void this.ctx.instruct('jelly.which', { name: this.ctx.childName });
+      void this.ctx.tw.wait(1.8).then(() => this.nextWhich());
+      return;
+    }
+    if (this.plan.mode === 'finish') {
+      this.phase = 'listen';
+      void this.ctx.instruct('jelly.finish', { name: this.ctx.childName });
+      void this.ctx.tw.wait(2).then(() => this.nextFinish());
+      return;
+    }
+    if (this.plan.mode === 'follow') {
+      this.phase = 'listen';
+      void this.ctx.instruct('jelly.follow', { name: this.ctx.childName });
+      void this.ctx.tw.wait(1.8).then(() => this.nextFollow());
+      return;
+    }
+    if (this.plan.mode === 'order') {
+      this.lineups = drawLineups(this.ctx.rng, this.plan.goal, this.plan.length);
+      this.setupLineup(0);
+      void this.ctx.instruct(this.orderLine(), { name: this.ctx.childName });
+      return;
+    }
+    if (this.plan.mode === 'compare') {
+      this.flags = sameFlags(this.ctx.rng, this.plan.goal);
+      void this.ctx.instruct('jelly.compare', { a: 1, b: 2 });
+      void this.ctx.tw.wait(2).then(() => this.nextPair());
+      return;
+    }
     void this.ctx.instruct(
-      this.plan.reverse ? 'jelly.echo.back' : this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free',
+      this.plan.reverse
+        ? 'jelly.echo.back'
+        : this.plan.mode === 'echo'
+          ? 'jelly.echo'
+          : this.plan.mode === 'answer'
+            ? 'jelly.answer'
+            : 'jelly.free',
+      { name: this.ctx.childName },
     );
     if (this.plan.mode === 'echo') void this.ctx.tw.wait(2).then(() => this.nextTune());
   }
@@ -185,9 +337,23 @@ class JellyDrums implements Game {
 
     this.jellies.forEach((j, i) => j.position.set(l.jellies[i].x, l.jellies[i].y));
     this.again.position.set(l.again.x, l.again.y);
+    this.choices.same.position.set(l.choices[0].x, l.choices[0].y);
+    this.choices.different.position.set(l.choices[1].x, l.choices[1].y);
     this.ticks.position.set(l.again.x, l.again.y - 85);
     this.rewind.position.set(l.again.x - 150, l.again.y);
     this.drawRewind();
+    if (this.plan.mode === 'order') {
+      this.drawOrderShelf();
+      this.drawOrderSlots();
+      this.sleeperG.position.set(l.sleeper.x, l.sleeper.y);
+      this.sleeperG.scale.set(l.scale);
+      for (const item of this.orderJellies) {
+        item.jelly.scale.set(l.scale);
+        const dest = item.placed ? l.orderSlots[item.slot] : this.rowOf(this.tunesDone)[item.rowIndex];
+        item.drag.home = { ...dest };
+        if (!item.drag.dragging) item.jelly.position.set(dest.x, dest.y);
+      }
+    }
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
@@ -197,13 +363,31 @@ class JellyDrums implements Game {
   }
 
   update(dt: number) {
+    if (this.dead) return;
     this.clock += dt;
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
+    for (const item of this.orderJellies) item.jelly.update(dt, beat);
     this.again.alpha = this.phase === 'turn' ? 1 : 0.5;
+    for (const b of Object.values(this.choices)) b.alpha = this.phase === 'turn' ? 1 : 0.5;
+    if (this.slotPulse > 0) {
+      this.slotPulse = Math.max(0, this.slotPulse - dt);
+      this.drawOrderSlots();
+    }
     if (this.twinkle > 0) {
       this.twinkle = Math.max(0, this.twinkle - dt);
       this.garland.alpha = 0.75 + 0.25 * Math.cos(this.twinkle * 24);
+    }
+    if (this.plan.mode === 'follow' && this.phase === 'turn') {
+      // The lit jelly stays lit, and wiggles if she waits. Nothing is counted.
+      const lit = this.jellies[this.tune[this.at]];
+      lit.glow(0.15);
+      if (this.nudge.tick(dt)) lit.wiggle(0.8);
+    }
+    if (this.ripples.length) this.drawRipples(dt);
+    if (this.plan.mode === 'answer' && this.phase === 'play' && this.nudge.tick(dt)) {
+      // Six quiet seconds: the last jelly wiggles to invite her back. Nothing is counted.
+      this.jellies[this.lastJelly].wiggle(0.8);
     }
     if (this.plan.mode === 'free' && this.phase === 'play' && this.nudge.tick(dt)) {
       const j = this.jellies[this.lastJelly];
@@ -214,20 +398,72 @@ class JellyDrums implements Game {
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
   autotouch(): TouchIntent | null {
-    const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes);
+    if (this.plan.mode === 'order') {
+      const lineup = this.lineups[this.tunesDone] ?? null;
+      const idx = orderToDrag(this.phase, lineup, this.placedCount, this.plan.length);
+      if (idx === null) return null;
+      const item = this.orderJellies[idx];
+      const slot = this.lay.orderSlots[this.placedCount];
+      if (!item || item.placed || item.drag.dragging || !slot) return null;
+      return {
+        drag: { on: item.jelly, y: item.jelly.belly },
+        to: { on: this.ctx.stage, x: slot.x, y: slot.y },
+        pause: 0.25,
+      };
+    }
+    if (this.plan.mode === 'compare') {
+      const v = verdictToTap(this.phase, this.pair);
+      return v ? { tap: { on: this.choices[v] }, pause: 0.4 } : null;
+    }
+    const i = jellyToTap(this.plan.mode, this.phase, this.answer, this.at, this.notes, this.whichTarget);
     // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
     if (i === null) return null;
     const tap = { on: this.jellies[i], y: this.jellies[i].belly };
     return this.plan.mode === 'wake' ? { tap, receiver: this.anywhere, pause: 0.15 } : { tap, pause: 0.15 };
   }
 
-  destroy() {}
+  destroy() {
+    this.dead = true;
+    this.clearLineup();
+  }
 
   private tapJelly(i: number) {
     if (this.phase === 'done') return;
     this.nudge.touched();
     this.lastJelly = i;
     this.sing(i);
+    this.journal.tap(i);
+    if (this.plan.mode === 'answer') void this.answerTouch(i);
+    if (this.plan.mode === 'compare') return; // the songs are for listening; a tap is only music
+    if (this.plan.mode === 'follow') {
+      // The lit jelly is the answer, and a different jelly is only music: nothing counts a miss.
+      if (this.phase !== 'turn' || i !== this.tune[this.at]) return;
+      this.at++;
+      if (this.at >= this.tune.length) void this.copied();
+      else this.jellies[this.tune[this.at]].glow(0.5);
+      return;
+    }
+    if (this.plan.mode === 'finish') {
+      if (this.phase !== 'turn') return; // while the jellies sing, taps just make music
+      if (i === this.answer[this.at]) {
+        this.at++;
+        if (this.at >= this.answer.length) void this.copied();
+        else if (this.wrongThisTune >= 2) this.jellies[this.answer[this.at]].glow(1.2);
+      } else {
+        void this.oopsFinish();
+      }
+      return;
+    }
+    if (this.plan.mode === 'which') {
+      if (this.phase !== 'turn' || this.whichTarget === null) return;
+      if (i === this.whichTarget) {
+        this.jellies[i].glow(0.8);
+        void this.copied();
+      } else {
+        void this.oopsWhich();
+      }
+      return;
+    }
     if (this.plan.mode !== 'echo') {
       const woke =
         this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
@@ -256,7 +492,10 @@ class JellyDrums implements Game {
     // No name over a fan's answer or the finale.
     const line = this.namer.tap(i, f !== null || this.notes >= this.plan.goal);
     if (line) void this.ctx.say(line);
-    if (this.plan.twist === 'scale' && this.scale.tap(i)) this.sparkle();
+    if (this.plan.twist === 'scale' && this.scale.tap(i)) {
+      this.sparkle();
+      this.journal.sparkled();
+    }
   }
 
   /** A fan sings back in its own voice, with a note in the color of the jelly she just played. */
@@ -317,9 +556,12 @@ class JellyDrums implements Game {
   }
 
   private sing(i: number, power = 1) {
-    const j = this.jellies[i];
+    this.singPitch(i, this.jellies[i], power);
+  }
+
+  private singPitch(pitch: number, j: Jelly, power = 1) {
     j.hit(power);
-    this.note(SET_STEPS[this.sounds][i]);
+    this.note(SET_STEPS[this.sounds][pitch]);
     this.ctx.particles.burst(j.x + (Math.random() - 0.5) * 30, j.y - j.height * 0.9, {
       kind: 'note',
       colors: [swatch[j.color].line],
@@ -426,6 +668,26 @@ class JellyDrums implements Game {
   private async listenAgain() {
     if (this.phase !== 'turn') return;
     this.phase = 'listen';
+    if (this.plan.mode === 'compare') {
+      await this.playPair(false, false);
+      this.phase = 'turn';
+      void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+      return;
+    }
+    if (this.plan.mode === 'finish') {
+      await this.playFinish(this.wrongThisTune >= 1);
+      if (this.dead) return;
+      this.phase = 'turn';
+      void this.ctx.instruct('jelly.finish.ask', { name: this.ctx.childName });
+      return;
+    }
+    if (this.plan.mode === 'which') {
+      await this.playWhichNote(this.wrongThisTune >= 1);
+      if (this.dead) return;
+      this.phase = 'turn';
+      void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
+      return;
+    }
     this.at = placeAfterMiss(this.tune.length, this.at);
     this.drawTicks();
     const help = this.wrongThisTune >= 2;
@@ -461,6 +723,10 @@ class JellyDrums implements Game {
     void this.ctx.say('jelly.nice');
     await this.ctx.tw.wait(1.6);
     if (this.tunesDone >= this.plan.goal) void this.finale();
+    else if (this.plan.mode === 'compare') void this.nextPair();
+    else if (this.plan.mode === 'which') void this.nextWhich();
+    else if (this.plan.mode === 'follow') void this.nextFollow();
+    else if (this.plan.mode === 'finish') void this.nextFinish();
     else void this.nextTune();
   }
 
@@ -482,16 +748,506 @@ class JellyDrums implements Game {
     if (help) this.jellies[this.answer[this.at]].glow(1.5);
   }
 
+  // ----- Same-or-different mode (level 12) -----
+
+  private async nextPair() {
+    this.phase = 'listen';
+    this.wrongThisTune = 0;
+    this.ring.clear();
+    const pair = drawPair(
+      this.ctx.rng,
+      this.plan.length,
+      this.flags[this.tunesDone],
+      this.tunesDone,
+      this.played,
+    );
+    this.played.push(pair.base);
+    this.pair = pair;
+    await this.playPair(false, false);
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+  }
+
+  /** Both songs, one after the other, each named; `show` makes the changed jelly glow hard in each (after a miss). */
+  private async playPair(slow: boolean, show: boolean) {
+    const pair = this.pair!;
+    for (const [n, notes] of [pair.first, pair.second].entries()) {
+      await this.ctx.say('jelly.song.n', { n: n + 1 });
+      await this.ctx.tw.wait(0.3);
+      for (const [k, i] of notes.entries()) {
+        this.jellies[i].glow(show && k === pair.changed ? 1.6 : slow ? 0.8 : 0.5);
+        this.sing(i);
+        await this.ctx.tw.wait(slow ? 0.85 : 0.6);
+      }
+      await this.ctx.tw.wait(0.5);
+    }
+  }
+
+  /** A tap on "same" or "different". */
+  private answerPair(v: Verdict) {
+    if (this.phase !== 'turn' || !this.pair) return;
+    if (v === verdictOf(this.pair)) void this.judged();
+    else void this.oopsPair();
+  }
+
+  private async judged() {
+    this.phase = 'listen';
+    this.ring.clear();
+    await this.copied();
+  }
+
+  private async oopsPair() {
+    const pair = this.pair!;
+    this.phase = 'listen';
+    this.misses++;
+    this.wrongThisTune++;
+    if (this.wrongThisTune === 2) this.hints++;
+    await this.ctx.tw.wait(0.5);
+    await this.ctx.say('jelly.oops');
+    await this.playPair(true, true);
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.compare.ask', { a: 1, b: 2 });
+    // After two tries, light the way: a ring on the right button.
+    if (this.wrongThisTune >= 2) {
+      const b = this.choices[verdictOf(pair)];
+      this.ring
+        .clear()
+        .circle(b.x, b.y, CHOICE_RADIUS + 12)
+        .stroke({ width: 9, color: 0xffd23f });
+    }
+  }
+
+  // ----- Finish-the-song mode (level 16) -----
+
+  private async nextFinish() {
+    if (this.dead) return;
+    this.phase = 'listen';
+    this.at = 0;
+    this.wrongThisTune = 0;
+    const song = drawFinish(this.ctx.rng, this.finishPlayed);
+    this.finishPlayed.push(song);
+    this.song = song;
+    this.tune = song.notes;
+    this.answer = endingOf(song);
+    await this.ctx.say(song.title);
+    if (this.dead) return;
+    await this.playFinish(false);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.finish.ask', { name: this.ctx.childName });
+  }
+
+  /** The whole song, then a pause, then the song again without its ending. `help` slows it and lights the ending on the first pass. */
+  private async playFinish(help: boolean) {
+    const song = this.song;
+    if (!song) return;
+    await this.ctx.instruct('jelly.listen');
+    await this.ctx.tw.wait(0.3);
+    const ending = song.notes.length - song.tail;
+    for (const [k, i] of song.notes.entries()) {
+      this.jellies[i].glow(help && k >= ending ? 1 : 0.5);
+      this.sing(i);
+      await this.ctx.tw.wait(help ? 0.85 : 0.6);
+      if (this.dead) return;
+    }
+    await this.ctx.tw.wait(0.8);
+    for (const i of givenOf(song)) {
+      this.jellies[i].glow(0.5);
+      this.sing(i);
+      await this.ctx.tw.wait(help ? 0.85 : 0.6);
+      if (this.dead) return;
+    }
+  }
+
+  /** A wrong jelly: the whole song plays again with its ending glowing, and after two misses the first ending jelly glows before it starts. */
+  private async oopsFinish() {
+    this.phase = 'listen';
+    this.misses++;
+    this.wrongThisTune++;
+    if (this.wrongThisTune === 2) this.hints++;
+    this.at = 0;
+    await this.ctx.tw.wait(0.5);
+    await this.ctx.say('jelly.oops');
+    if (this.dead) return;
+    const help = this.wrongThisTune >= 2;
+    if (help) {
+      this.jellies[this.answer[0]].glow(1.5);
+      await this.ctx.tw.wait(0.8);
+    }
+    await this.playFinish(true);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.finish.ask', { name: this.ctx.childName });
+    if (help) this.jellies[this.answer[0]].glow(1.5);
+  }
+
+  // ----- Echo-jellies mode (level 17) -----
+
+  /** The jelly answers its own touch a moment later, softer, with the same note and a ripple, and the crowd claps. No miss, no hint. */
+  private async answerTouch(i: number) {
+    const { jelly, after } = echoOf(i);
+    await this.ctx.tw.wait(after);
+    if (this.dead) return;
+    const j = this.jellies[jelly];
+    this.sing(jelly, 0.6);
+    j.glow(0.5);
+    this.ripples.push({ x: j.x, y: j.y - j.height * 0.5, age: 0 });
+    this.fans.forEach((f) => f.hop(0.6));
+    this.ctx.pet.cheer();
+  }
+
+  /** Draws and ages the answer ripples: rings that widen and fade over about a second. */
+  private drawRipples(dt: number) {
+    this.rippleG.clear();
+    for (let k = this.ripples.length - 1; k >= 0; k--) {
+      const r = this.ripples[k];
+      r.age += dt;
+      if (r.age >= 1) {
+        this.ripples.splice(k, 1);
+        continue;
+      }
+      this.rippleG
+        .circle(r.x, r.y, 40 + r.age * 100)
+        .stroke({ width: 8, color: swatch.purple.line, alpha: 1 - r.age });
+    }
+  }
+
+  // ----- Follow-the-glow mode (level 15) -----
+
+  private async nextFollow() {
+    if (this.dead) return;
+    this.phase = 'listen';
+    this.at = 0;
+    const tune = drawFollow(this.ctx.rng, this.plan, this.played);
+    this.played.push(tune);
+    this.tune = tune.notes;
+    this.answer = tune.notes;
+    this.nudge.touched();
+    if (tune.title) await this.ctx.say(tune.title);
+    if (this.dead) return;
+    this.phase = 'turn';
+    this.jellies[this.tune[0]].glow(0.5);
+  }
+
+  // ----- Which-jelly-sang mode (level 14) -----
+
+  private applyWhichAwake(awake: readonly number[], sparkleNew: boolean) {
+    const woke: number[] = [];
+    this.jellies.forEach((j, i) => {
+      const on = awake.includes(i);
+      if (on && !j.visible) woke.push(i);
+      j.visible = on;
+      j.eventMode = on ? 'static' : 'none';
+    });
+    if (sparkleNew && woke.length) {
+      sfx.sparkle();
+      for (const i of woke) this.jellies[i].glow(1);
+    }
+  }
+
+  private async nextWhich() {
+    if (this.dead) return;
+    this.phase = 'listen';
+    this.wrongThisTune = 0;
+    const prevAwake = this.jellies.filter((j) => j.visible).length;
+    const awake = whichAwake(this.tunesDone);
+    if (awake.length > prevAwake) {
+      this.applyWhichAwake(awake, true);
+      await this.ctx.tw.wait(0.6);
+      if (this.dead) return;
+    }
+    this.whichTarget = drawWhich(this.ctx.rng, awake, this.whichTarget);
+    await this.playWhichNote(false);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
+  }
+
+  private async playWhichNote(help: boolean) {
+    if (this.dead || this.whichTarget === null) return;
+    await this.ctx.tw.wait(0.3);
+    if (this.dead || this.whichTarget === null) return;
+    this.note(SET_STEPS[this.sounds][this.whichTarget]);
+    // Neutral cue above the center of the stage so she hears a jelly sang without pointing to which one.
+    this.ctx.particles.burst(this.view.w / 2, this.lay.garland.y + 75, {
+      kind: 'note',
+      colors: [0xffffff, 0xffd23f],
+      count: 2,
+      speed: [70, 120],
+      spread: 0.9,
+      gravity: -35,
+      size: [0.85, 1.1],
+      life: [0.9, 1.2],
+      spin: 1,
+    });
+    this.fans.forEach((f) => f.hop(0.35));
+    if (help) this.jellies[this.whichTarget].wiggle(0.8);
+    if (this.wrongThisTune >= 2) this.jellies[this.whichTarget].glow(1.5);
+    await this.ctx.tw.wait(0.65);
+  }
+
+  private async oopsWhich() {
+    this.phase = 'listen';
+    this.misses++;
+    this.wrongThisTune++;
+    if (this.wrongThisTune === 2) this.hints++;
+    await this.ctx.tw.wait(0.45);
+    if (this.dead) return;
+    await this.ctx.say('jelly.oops');
+    if (this.dead) return;
+    await this.playWhichNote(true);
+    if (this.dead) return;
+    this.phase = 'turn';
+    void this.ctx.instruct('jelly.which.ask', { name: this.ctx.childName });
+  }
+
+  // ----- Lowest-to-highest mode (level 13) -----
+
+  private clearLineup() {
+    for (const item of this.orderJellies) {
+      item.drag.destroy();
+      item.jelly.destroy({ children: true });
+    }
+    this.orderJellies = [];
+  }
+
+  private setupLineup(index: number) {
+    this.clearLineup();
+    this.placedCount = 0;
+    this.wrongThisTune = 0;
+    const lineup = this.lineups[index];
+    const row = this.rowOf(index);
+    this.orderJellies = lineup.jellies.map((entry, rowIndex) => {
+      const hw = orderHalfWidth(entry.pitch, !!this.plan.sized);
+      const jelly = new Jelly(entry.color, hw, hw * 1.55);
+      const pos = row[rowIndex];
+      jelly.position.set(pos.x, pos.y);
+      jelly.scale.set(this.lay.scale);
+      jelly.hitArea = new Rectangle(-hw - HIT_PAD, -hw * 1.55 - 30, hw * 2 + HIT_PAD * 2, hw * 1.55 + 50);
+      this.orderLayer.addChild(jelly);
+      const item: OrderItem = {
+        jelly,
+        pitch: entry.pitch,
+        drag: null!,
+        placed: false,
+        slot: -1,
+        rowIndex,
+      };
+      item.drag = draggable(jelly, this.ctx.tw, {
+        onPick: () => {
+          if (this.dead || this.phase !== 'turn') return;
+          this.singPitch(item.pitch, item.jelly);
+        },
+        onDrop: (x, y) => this.dropOrder(item, x, y),
+      });
+      return item;
+    });
+    this.phase = 'turn';
+    this.drawOrderShelf();
+    this.drawOrderSlots();
+    this.drawSleeper(lineup.sleeper);
+  }
+
+  /** Where line-up `index`'s waiting jellies stand (level 18's differ with their sizes). */
+  private rowOf(index: number): Pt[] {
+    const lineup = this.lineups[index];
+    return orderRowFor(this.lay, lineup ? lineup.jellies.map((j) => j.pitch) : [], !!this.plan.sized);
+  }
+
+  /** The spoken instruction for a line-up: level 18 also points at the sizes. */
+  private orderLine(): 'jelly.order' | 'jelly.order.sized' {
+    return this.plan.sized ? 'jelly.order.sized' : 'jelly.order';
+  }
+
+  private drawOrderShelf() {
+    const slots = this.lay.orderSlots;
+    if (this.plan.mode !== 'order' || !slots.length) return;
+    const s = this.lay.scale;
+    const left = slots[0].x - (ORDER_HW + 24) * s;
+    const right = slots[slots.length - 1].x + (ORDER_HW + 24) * s;
+    const y = slots[0].y;
+    this.orderShelf
+      .clear()
+      .roundRect(left, y - 8 * s, right - left, 24 * s, 12 * s)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+  }
+
+  private drawOrderSlots() {
+    const g = this.orderSlots.clear();
+    if (this.plan.mode !== 'order') return;
+    const s = this.lay.scale;
+    const r = ORDER_SLOT_RADIUS * s;
+    this.lay.orderSlots.forEach((p, k) => {
+      const lit = k === this.placedCount && this.phase === 'turn';
+      const filled = k < this.placedCount;
+      const cy = p.y - 40 * s;
+      if (lit) {
+        const ringR = r + (this.slotPulse > 0 ? 14 : 8);
+        g.circle(p.x, cy, ringR).fill({ color: 0xffd23f, alpha: 0.25 });
+      }
+      g.circle(p.x, cy, r)
+        .fill({ color: filled ? 0xfff8e6 : 0xffffff, alpha: lit ? 0.55 : filled ? 0.25 : 0.2 })
+        .stroke({
+          width: lit ? 6 : 4,
+          color: lit ? 0xffd23f : filled ? swatch.green.line : wood.line,
+        });
+    });
+  }
+
+  private drawSleeper(color: ColorName) {
+    const g = this.sleeperG.clear();
+    if (this.plan.mode !== 'order') return;
+    const hw = 52;
+    const h = 68;
+    const sw = swatch[color];
+    g.position.set(this.lay.sleeper.x, this.lay.sleeper.y);
+    g.scale.set(this.lay.scale);
+    domePath(g, hw, h)
+      .fill({ color: sw.fill, alpha: 0.85 })
+      .stroke({ width: 5, color: sw.line, join: 'round' });
+    // Closed sleepy eyes and soft cheeks.
+    for (const side of [-1, 1]) {
+      const ex = side * hw * 0.3;
+      const ey = -h * 0.45;
+      g.moveTo(ex - 9, ey)
+        .quadraticCurveTo(ex, ey + 7, ex + 9, ey)
+        .stroke({ width: 4, color: ink, cap: 'round' });
+      g.ellipse(side * hw * 0.52, -h * 0.3, hw * 0.12, h * 0.06).fill({ color: cheek, alpha: 0.45 });
+    }
+    // Little "z"s floating above the sleeping jelly.
+    for (const [zx, zy, sz] of [
+      [18, -h - 14, 10],
+      [34, -h - 32, 13],
+    ]) {
+      g.moveTo(zx, zy)
+        .lineTo(zx + sz, zy)
+        .lineTo(zx, zy + sz)
+        .lineTo(zx + sz, zy + sz)
+        .stroke({ width: 3, color: sw.line, cap: 'round', join: 'round' });
+    }
+  }
+
+  private slotAt(x: number, y: number): number | null {
+    const s = this.lay.scale;
+    let best: number | null = null;
+    let bestD = Infinity;
+    for (let k = 0; k < this.lay.orderSlots.length; k++) {
+      const p = this.lay.orderSlots[k];
+      if (Math.abs(x - p.x) > 90 * s || y < p.y - 115 * s || y > p.y + 95 * s) continue;
+      const d = Math.hypot(x - p.x, y - p.y);
+      if (d < bestD) {
+        bestD = d;
+        best = k;
+      }
+    }
+    return best;
+  }
+
+  private lockOrderJelly(item: OrderItem, slot: number, duration: number) {
+    item.placed = true;
+    item.slot = slot;
+    item.drag.destroy();
+    onTap(
+      item.jelly,
+      () => {
+        if (!this.dead && this.phase !== 'done') this.singPitch(item.pitch, item.jelly);
+      },
+      { cooldown: 90 },
+    );
+    const dest = this.lay.orderSlots[slot];
+    item.drag.home = { ...dest };
+    void this.ctx.tw.to(item.jelly, { x: dest.x, y: dest.y }, { duration });
+  }
+
+  private dropOrder(item: OrderItem, x: number, y: number): boolean {
+    if (this.dead || this.phase !== 'turn' || item.placed || item.drag.tapped) return false;
+    const hitSlot = this.slotAt(x, y);
+    if (hitSlot === null) return false;
+    if (hitSlot !== this.placedCount) {
+      sfx.tick();
+      this.slotPulse = 0.6;
+      this.drawOrderSlots();
+      return false;
+    }
+    const lineup = this.lineups[this.tunesDone];
+    const targetIndex = lineup.byPitch[this.placedCount];
+    const targetPitch = lineup.jellies[targetIndex].pitch;
+    if (item.pitch !== targetPitch) {
+      this.misses++;
+      this.wrongThisTune++;
+      if (this.wrongThisTune === 2) this.hints++;
+      const dir = orderDirection(item.pitch, targetPitch);
+      if (dir) void this.ctx.say('jelly.order.dir', { dir });
+      if (this.wrongThisTune >= 2) this.orderJellies[targetIndex].jelly.glow(1.5);
+      return false;
+    }
+    this.lockOrderJelly(item, this.placedCount, 0.16);
+    this.placedCount++;
+    this.wrongThisTune = 0;
+    this.drawOrderSlots();
+    if (this.placedCount >= this.plan.length - 1) void this.finishLineup();
+    else void this.ctx.instruct('jelly.order.next', { spot: this.placedCount + 1 });
+    return true;
+  }
+
+  private async finishLineup() {
+    this.phase = 'listen';
+    const lastSlot = this.plan.length - 1;
+    const last = this.orderJellies.find((o) => !o.placed);
+    if (last) this.lockOrderJelly(last, lastSlot, 0.28);
+    this.placedCount = this.plan.length;
+    this.drawOrderSlots();
+    await this.ctx.tw.wait(0.35);
+    if (this.dead) return;
+    const inOrder = [...this.orderJellies].sort((a, b) => a.slot - b.slot);
+    for (const o of inOrder) {
+      o.jelly.glow(0.45);
+      this.singPitch(o.pitch, o.jelly);
+      await this.ctx.tw.wait(0.32);
+      if (this.dead) return;
+    }
+    this.tunesDone++;
+    this.setLit(Math.round((this.tunesDone / this.plan.goal) * BULBS));
+    this.fans.forEach((f) => f.cheer());
+    this.ctx.pet.cheer();
+    sfx.sparkle();
+    void this.ctx.say('jelly.nice');
+    await this.ctx.tw.wait(1.3);
+    if (this.dead) return;
+    if (this.tunesDone >= this.plan.goal) void this.finale();
+    else {
+      this.setupLineup(this.tunesDone);
+      void this.ctx.instruct(this.orderLine(), { name: this.ctx.childName });
+    }
+  }
+
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
   private async finale() {
     this.phase = 'done';
+    this.drawOrderSlots();
     await this.ctx.tw.wait(0.4);
-    for (let i = 0; i < this.jellies.length; i++) {
-      this.sing(i);
-      await this.ctx.tw.wait(0.14);
+    if (this.dead) return;
+    if (this.plan.mode === 'order') {
+      const inOrder = [...this.orderJellies].sort((a, b) => a.slot - b.slot);
+      for (const o of inOrder) {
+        this.singPitch(o.pitch, o.jelly);
+        await this.ctx.tw.wait(0.14);
+        if (this.dead) return;
+      }
+      await this.ctx.tw.wait(0.2);
+      if (this.dead) return;
+      for (const o of inOrder) o.jelly.hit(1.4);
+    } else {
+      for (let i = 0; i < this.jellies.length; i++) {
+        this.sing(i);
+        await this.ctx.tw.wait(0.14);
+        if (this.dead) return;
+      }
+      await this.ctx.tw.wait(0.2);
+      if (this.dead) return;
+      this.jellies.forEach((j) => j.hit(1.4));
     }
-    await this.ctx.tw.wait(0.2);
-    this.jellies.forEach((j) => j.hit(1.4));
     // Two thirds of a full note: the marimba keeps its old chord gain of 0.3.
     [0, 2, 3, 5].forEach((s) => this.note(s, 2 / 3));
     this.fans.forEach((f) => f.cheer());
@@ -507,7 +1263,13 @@ class JellyDrums implements Game {
     });
     sfx.tada();
     await this.ctx.tw.wait(1.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    if (this.dead) return;
+    const found = this.journal.keys().map((k) => entryId('jelly-drums', k));
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      ...(found.length ? { discoveries: found } : {}),
+    });
   }
 }
 
@@ -566,11 +1328,20 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [10],
+  entryLevels: [17, 10, 14, 15, 16],
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.reverse)
       return `Copy a ${p.length}-note tune backwards, ${p.goal} tunes (the last is ${p.lastLength} notes)`;
+    if (p.mode === 'compare') return `Are two ${p.length}-note songs the same or different? ${p.goal} pairs`;
+    if (p.mode === 'order' && p.sized)
+      return `Line up ${p.length} jellies of different sizes from lowest to highest, ${p.goal} line-ups`;
+    if (p.mode === 'order') return `Line up ${p.length} jellies from lowest to highest, ${p.goal} line-ups`;
+    if (p.mode === 'finish')
+      return `Hear a known song, then tap its last one or two notes to finish it, ${p.goal} songs`;
+    if (p.mode === 'answer') return `Every touch gets an echo, ${p.goal} touches`;
+    if (p.mode === 'follow') return `Tap each jelly as it glows to play ${p.goal} short songs`;
+    if (p.mode === 'which') return `Listen to one note and tap which jelly sang, ${p.goal} sounds`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },

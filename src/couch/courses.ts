@@ -66,6 +66,18 @@ import {
   courseMinimum as codeMinimum,
   type CodeCourseId,
 } from '../games/secret-code/course';
+import {
+  COURSES as ROBOTS,
+  courseBest as robotBest,
+  courseMinimum as robotMinimum,
+  type RobotCourseId,
+} from '../games/robot-path/course';
+import {
+  COURSES as TABLES,
+  courseBest as tableBest,
+  courseMinimum as tableMinimum,
+  type MemoryCourseId,
+} from '../games/memory-match/course';
 import type { CouchId } from './party';
 
 /**
@@ -86,7 +98,9 @@ export type CourseId =
   | CongaCourseId
   | TypingCourseId
   | LightCourseId
-  | CodeCourseId;
+  | CodeCourseId
+  | RobotCourseId
+  | MemoryCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
 export const COURSE_IDS: readonly CourseId[] = [
   'practice',
@@ -107,6 +121,8 @@ export const COURSE_IDS: readonly CourseId[] = [
   'typing',
   'sunbeams',
   'codedoors',
+  'robotpath',
+  'cardtables',
 ];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
@@ -166,7 +182,7 @@ const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond starts that pond again, and the slides you made still count.',
   leaving:
     'Leaving or refreshing starts the pond you are on again, and the slides you made on it still count. Finished ponds stay saved.',
-  done: 'couch.course.done',
+  done: 'couch.course.cardtables',
   badges: {
     finish: { title: 'Finished', how: 'Finish every pond, with or without help.' },
     minimum: { title: 'Perfect route', how: 'Finish with the fewest slides possible and no hint.' },
@@ -417,6 +433,58 @@ const build: Record<CourseId, () => CourseInfo> = {
     badges: {
       finish: { title: 'Finished', how: 'Open every door, with or without help.' },
       minimum: { title: 'On par', how: 'Open every door in par or fewer tries, with no hint.' },
+    },
+  }),
+  robotpath: () => ({
+    id: 'robotpath',
+    game: 'robot-path',
+    level: 6,
+    version: ROBOTS.robotpath.version,
+    name: ROBOTS.robotpath.name,
+    blurb: ROBOTS.robotpath.blurb,
+    card: 'Robot Path, five mazes in a row. Plan the robot’s path to the star in the fewest steps, then beat your own best.',
+    part: 'board',
+    unit: 'step',
+    par: 'fewest',
+    routes: true,
+    best: robotBest('robotpath'),
+    minimum: robotMinimum('robotpath'),
+    rule: 'Reach every star in the fewest steps you can. Every step the robot walks when you press play counts (including a bump); changing arrows before play is free.',
+    note: 'Two failed runs on a board, or asking for a hint, glow the next useful button and mark the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a board clears its unplayed arrows, and the steps already walked still count.',
+    leaving:
+      'Leaving or refreshing clears any unplayed arrows on the board you are on, and the steps you already walked still count. Finished boards stay saved.',
+    done: 'couch.course.robotpath',
+    badges: {
+      finish: { title: 'Finished', how: 'Reach every star on every board, with or without help.' },
+      minimum: {
+        title: 'Fewest steps',
+        how: 'Reach every star in the fewest steps possible and no hint.',
+      },
+    },
+  }),
+  cardtables: () => ({
+    id: 'cardtables',
+    game: 'memory-match',
+    level: 5,
+    version: TABLES.cardtables.version,
+    name: TABLES.cardtables.name,
+    blurb: TABLES.cardtables.blurb,
+    card: 'Memory Match, four tables of cards in a row. Find every pair in as few flips as you can; par is a careful remembering player’s count, and you can beat it.',
+    part: 'table',
+    unit: 'flip',
+    par: 'par',
+    routes: true,
+    best: tableBest('cardtables'),
+    minimum: tableMinimum('cardtables'),
+    reference: true,
+    rule: 'Find every pair in the fewest flips you can. Each card you turn over is a flip, and so is one you turn again later; pressing the card that is already turned costs nothing. Par is how many flips a careful player takes, remembering every card turned so far.',
+    note: 'Two pairs in a row turned over that did not match, when you had already seen the partner of the first card, glow that partner: once shown, a hint marks the whole run as helped, and helped and unhelped bests are kept apart. Leaving in the middle of a table turns its cards face down again, and the flips you made on it still count.',
+    leaving:
+      'Leaving or refreshing turns the cards of the table you are on face down again, and the flips you made on it still count. Finished tables stay saved.',
+    done: 'couch.course.cardtables',
+    badges: {
+      finish: { title: 'Finished', how: 'Find every pair on every table, with or without help.' },
+      minimum: { title: 'On par', how: 'Find every pair in par or fewer flips, with no hint.' },
     },
   }),
   words: () =>

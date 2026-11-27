@@ -129,7 +129,36 @@ export function createSuite({ page, log, launch, finished, ready, screenshot }) 
       }, id),
       [2, 1, before + 1],
     );
+    // Level 13, Warm or cold?: five tiles in an upright phone, a thermometer, and one thing for the sky and one for the temperature.
+    await launch(id, 13, 'Mia', 'school');
+    await page.waitForFunction(() => neo.scene.game?.options.every(({ node }) => node.scale.x === 1));
+    assert.equal(await clearCaption(), true, 'level 13 tiles stay clear of the short-phone caption');
+    await screenshot('weather-wardrobe-13-warm-or-cold');
+    const first13 = await page.evaluate(() => neo.scene.game.outfit.temp);
+    assert.ok(['cold', 'hot'].includes(first13), 'the round shows a thermometer temperature');
+    for (let step = 0; step < 80; step++) {
+      const next = await page.evaluate(() => {
+        const g = neo.scene.game;
+        if (g.done) return null;
+        const o = g.options.find((o) => !o.used && g.outfit.needed.includes(o.item));
+        const p = o && o.node.getGlobalPosition();
+        return p ? { x: p.x, y: p.y } : 'wait';
+      });
+      if (next === null) break;
+      if (next === 'wait') await page.waitForTimeout(500);
+      else {
+        await page.mouse.click(next.x, next.y);
+        await page.waitForTimeout(450);
+      }
+    }
+    await finished(id);
+    assert.equal(
+      await page.evaluate(() => kit.store.data.stickers.length),
+      before + 2,
+      'level 13 earns one sticker',
+    );
     log('Weather Wardrobe 12: touch, alternate packing, hint, rotation, boots reuse and one sticker passed');
+    log('Weather Wardrobe 13: portrait tiles, thermometer round and one sticker passed');
   }
 
   return { wardrobe6, wardrobe12 };

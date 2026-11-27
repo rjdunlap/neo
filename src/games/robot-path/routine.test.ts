@@ -3,7 +3,9 @@ import { LEVELS } from './logic';
 import {
   applyTile,
   copyEditor,
+  endRoutineVisit,
   expandRoutine,
+  nextRoutinePlan,
   routinePress,
   ROUTINE_PLANS,
   runRoutine,
@@ -120,5 +122,21 @@ describe('Level 15 rules', () => {
     expect(LEVELS.school!.max).toBe(15);
     expect(LEVELS.prek!.max).toBe(6);
     expect(LEVELS.preschool!.max).toBe(2);
+  });
+});
+
+describe('Level 15 entry', () => {
+  it('opens on the first board whatever the seed says, then follows the seeded pick', () => {
+    endRoutineVisit();
+    expect(nextRoutinePlan(() => 1)).toBe(ROUTINE_PLANS[0]);
+    expect(nextRoutinePlan(() => 1)).toBe(ROUTINE_PLANS[1]);
+    expect(nextRoutinePlan(() => 0)).toBe(ROUTINE_PLANS[0]);
+  });
+
+  it('opens on the first board again after the visit ends', () => {
+    endRoutineVisit();
+    nextRoutinePlan(() => 1);
+    endRoutineVisit();
+    expect(nextRoutinePlan(() => 1)).toBe(ROUTINE_PLANS[0]);
   });
 });

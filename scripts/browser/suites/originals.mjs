@@ -151,8 +151,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
     }
 
-    // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-    for (let level = 1; level <= 11 && (!only || only === 'jelly'); level++) {
+    // Jelly Drums: free play notes, copying tunes, Same or different?, Lowest to highest, Which jelly sang?, Follow the glow, Echo jellies, and Finish the song (which takes the copy-the-tune bot's path on the ending).
+    const jellyLevels =
+      process.env.JELLY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 18 }, (_, i) => i + 1);
+    for (const level of jellyLevels) {
+      if (only && only !== 'jelly') break;
       await launch('jelly-drums', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -166,6 +169,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           for (let n = 0; n < g.plan.goal; n++) await hit(n % 5);
           return;
         }
+        if (g.plan.mode === 'answer') {
+          // Echo jellies: a touch is answered by the same jelly with a ripple, and eight touches finish.
+          await hit(2);
+          await kit.sleep(700);
+          if (!g.ripples.length) throw new Error('Echo jellies: no ripple after a touch');
+          for (let n = 1; n < g.plan.goal; n++) await hit(n % 5);
+          if (g.misses !== 0 || g.hints !== 0) throw new Error(`Echo jellies counted ${g.misses} ${g.hints}`);
+          return;
+        }
         if (g.plan.mode === 'wake') {
           for (let n = 0; n < g.plan.goal; n++) {
             kit.tap(300 + ((n * 97) % 400), 300);
@@ -174,6 +186,104 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return;
         }
         const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
+        if (g.plan.mode === 'follow') {
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            for (let k = 0; k < g.plan.length; k++) {
+              await turn();
+              if (t === 0 && k === 0) {
+                // A different jelly is only music: no miss, no hint.
+                await hit(g.tune[0] === 4 ? 3 : 4);
+                if (g.misses !== 0 || g.hints !== 0 || g.at !== 0)
+                  throw new Error(`Jelly follow wrong jelly counted: ${g.misses} ${g.hints} ${g.at}`);
+              }
+              await hit(g.tune[g.at]);
+            }
+            await kit.until(() => g.phase === 'turn' || g.phase === 'done', 6000);
+          }
+          if (g.misses !== 0 || g.hints !== 0)
+            throw new Error(`Jelly follow counted: ${g.misses} ${g.hints}`);
+          return;
+        }
+        if (g.plan.mode === 'which') {
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            if (t === 0) {
+              kit.tapOn(g.again);
+              await kit.until(() => g.phase === 'listen', 2000);
+              await turn();
+              if (g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Jelly which listen-again counted: ${g.misses} ${g.hints}`);
+              const wrong = g.whichTarget === 0 ? 4 : 0;
+              for (let k = 0; k < 2; k++) {
+                await turn();
+                await hit(wrong);
+              }
+              await turn();
+              if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.whichTarget].glowLeft <= 0)
+                throw new Error(`Jelly which hint: ${g.misses} ${g.hints}`);
+            }
+            await hit(g.whichTarget);
+            await kit.until(() => g.phase !== 'turn', 3000);
+          }
+          return;
+        }
+        if (g.plan.mode === 'order') {
+          const dragToSlot = async (itemIndex, slotIndex) => {
+            const item = g.orderJellies[itemIndex];
+            const slot = g.lay.orderSlots[slotIndex];
+            const to = g.ctx.stage.toGlobal({ x: slot.x, y: slot.y + 40 });
+            await kit.dragTo(item.jelly, to, 12);
+          };
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            const lineup = g.lineups[t];
+            if (t === 0) {
+              // Tapping a jelly to listen is free: no miss, no hint.
+              kit.tapOn(g.orderJellies[0].jelly, 0, -45);
+              await kit.sleep(200);
+              if (g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Jelly order listen tap counted: ${g.misses} ${g.hints}`);
+              const wrongIdx = lineup.byPitch[1];
+              for (let k = 0; k < 2; k++) {
+                await dragToSlot(wrongIdx, 0);
+                await kit.sleep(550);
+              }
+              if (g.misses !== 2 || g.hints !== 1 || g.orderJellies[lineup.byPitch[0]].jelly.glowLeft <= 0)
+                throw new Error(`Jelly order hint: ${g.misses} ${g.hints}`);
+            }
+            for (let step = 0; step < g.plan.length - 1; step++) {
+              await dragToSlot(lineup.byPitch[step], step);
+              await kit.sleep(280);
+            }
+            await kit.until(() => g.tunesDone > t || g.phase === 'done', 10000);
+          }
+          return;
+        }
+        if (g.plan.mode === 'compare') {
+          // Same or different?: listen-again is free, two wrong buttons are two misses and one hint (the right one rings), then every pair right.
+          const right = () => (g.pair.same ? 'same' : 'different');
+          const wrong = () => (g.pair.same ? 'different' : 'same');
+          for (let t = 0; t < g.plan.goal; t++) {
+            await turn();
+            if (t === 0) {
+              kit.tapOn(g.again);
+              await kit.until(() => g.phase === 'listen', 2000);
+              await turn();
+              if (g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Jelly pair listen-again counted: ${g.misses} ${g.hints}`);
+              for (let k = 0; k < 2; k++) {
+                kit.tapOn(g.choices[wrong()]);
+                await kit.until(() => g.phase === 'listen', 2000);
+                await turn();
+              }
+              if (g.misses !== 2 || g.hints !== 1) throw new Error(`Jelly pair hint: ${g.misses} ${g.hints}`);
+            }
+            kit.tapOn(g.choices[right()]);
+            await kit.until(() => g.phase !== 'turn', 3000);
+          }
+          return;
+        }
         for (let t = 0; t < g.plan.goal; t++) {
           await turn();
           if (t === 0) {
@@ -198,7 +308,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       });
       await screenshot(`jelly-drums-${level}`);
       await finished('jelly-drums');
-      assert.deepEqual(await score('jelly-drums'), mode !== 'echo' ? [0, 0] : [2, 1], `jelly ${level} score`);
+      if (level <= 3) {
+        // Free play taps all five jellies in order, so the biggest and littlest both sang.
+        const found = await page.evaluate(() => kit.store.data.journal.found);
+        assert.ok(found.includes('jelly-drums:low-high'), `jelly ${level} files low and high`);
+        // Only level 3's sparkle (three neighbours in a row) files the scale entry.
+        assert.equal(found.includes('jelly-drums:scale'), level === 3, `jelly ${level} scale entry`);
+      }
+      assert.deepEqual(
+        await score('jelly-drums'),
+        mode === 'free' || mode === 'wake' || mode === 'follow' || mode === 'answer' ? [0, 0] : [2, 1],
+        `jelly ${level} score`,
+      );
       log(
         `Jelly Drums ${level} (${mode}): notes, tunes, mistakes, slow replay, hint, saved score and sticker passed`,
       );
@@ -673,7 +794,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         ]),
       );
       assert(
-        duckTargets.every(([x, y, radius]) => x === 0 && y === -46 && radius === (mode === 'bye' ? 53 : 72)),
+        duckTargets.every(
+          ([x, y, radius]) =>
+            x === 0 &&
+            y === -46 &&
+            (mode === 'every' ? radius >= 53 && radius < 56 : radius === (mode === 'bye' ? 53 : 72)),
+        ),
         'Duck sprite preserves hit circles',
       );
       if (level === duckTop) await screenshot(`duck-pond-${level}-illustrated-portrait`);
@@ -727,6 +853,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               .then(() => page.waitForTimeout(400))
               .then(() => screenshot(`duck-pond-${level}-stop-portrait`))
           : null;
+      // Level 16: one portrait screenshot of the card row filling, with the glow on a duck, on the last total.
+      const everyShot =
+        mode === 'every'
+          ? page
+              .waitForFunction(
+                () => neo.scene.game.every?.total === 6 && neo.scene.game.every.found.size >= 3,
+                null,
+                { timeout: 120000 },
+              )
+              .then(() => page.waitForTimeout(700))
+              .then(() => screenshot(`duck-pond-${level}-every-way-portrait`))
+          : null;
       await page.evaluate(async () => {
         window.__duckLayouts = [];
         const g = neo.scene.game;
@@ -767,6 +905,77 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             throw new Error('a touch after the fifth must quack and bring no one');
           await kit.until(() => g.finished, 20000);
           if (g.misses || g.hints) throw new Error('nothing on level 13 may count');
+          return;
+        }
+        if (g.plan.mode === 'every') {
+          // Level 16: she finds every way. Total 3: an empty side is no split (no card, the pet asks her to send some), a keep
+          // makes a card, a repeat makes none, and the mirror is a new card. Total 6: two repeats in a row glow one duck (one hint).
+          const L = await import('/src/games/duck-pond/logic.ts');
+          const right = () => g.every.right.filter(Boolean).length;
+          const settle = () => kit.until(() => g.swimmers.every((d) => !d.hopping), 5000);
+          const cross = async (side) => {
+            const d = g.every[side].find((x) => x && !x.hopping);
+            kit.tapOn(d, 0, -46);
+            await kit.sleep(120);
+            await settle();
+          };
+          const setRight = async (n) => {
+            while (right() < n) await cross('left');
+            while (right() > n) await cross('right');
+          };
+          const keep = async () => {
+            kit.tapOn(g.check);
+            await kit.sleep(300);
+            await ready();
+          };
+          for (let r = 0; r < g.plan.rounds; r++) {
+            await ready();
+            const e = g.every;
+            const total = e.total;
+            if (total !== 3 + r) throw new Error(`Every way: total ${total} in round ${r}`);
+            if (g.swimmers.length !== total)
+              throw new Error(`Every way: ${g.swimmers.length} ducks for ${total}`);
+            if (g.cardRow.children.length !== 1) throw new Error('Every way: cards before the first keep');
+            if (r === 0 && right() !== 0) throw new Error('Every way: the first round starts on the left');
+            if (r === 0) {
+              await setRight(0);
+              await keep();
+              if (e.found.size !== 0 || g.cardRow.children.length !== 1)
+                throw new Error('Every way: an empty side must not make a card');
+              await setRight(1);
+              if (g.signText.text !== `${total - 1} and 1`) throw new Error(`Sign reads ${g.signText.text}`);
+              await keep();
+              if (e.found.size !== 1 || g.cardRow.children.length !== 2)
+                throw new Error('Every way: a keep must make a card');
+              await keep();
+              if (e.found.size !== 1 || e.again !== 1 || g.cardRow.children.length !== 2)
+                throw new Error('Every way: a repeat must make no card');
+              await setRight(2);
+              await keep();
+              await kit.until(() => g.round > r || g.finished, 20000);
+              if (g.hints !== 0 || g.misses !== 0)
+                throw new Error(`Every way: ${g.misses} misses, ${g.hints} hints`);
+              continue;
+            }
+            if (r === 3) {
+              await setRight(1);
+              await keep();
+              await keep();
+              await keep();
+              if (g.hints !== 1 || !g.swimmers.some((d) => d.glowing))
+                throw new Error(`Every way: two repeats must glow a duck (${g.hints} hints)`);
+            }
+            for (let guard = 0; guard < 60 && g.every && g.every.total === total; guard++) {
+              const mv = L.everyMove(total, right(), g.every.found);
+              if (mv === 'check') await keep();
+              else if (mv) await cross(mv);
+              else break;
+            }
+            await kit.until(() => g.round > r || g.finished, 20000);
+          }
+          await kit.until(() => g.finished, 30000);
+          if (g.misses !== 0 || g.hints !== 1)
+            throw new Error(`Every way: ${g.misses} misses, ${g.hints} hints`);
           return;
         }
         for (let r = 0; r < g.plan.rounds; r++) {
@@ -935,6 +1144,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       if (scatterShot) await scatterShot;
       if (mixedShot) await mixedShot;
       if (stopShot) await stopShot;
+      if (everyShot) await everyShot;
       const layoutsSeen = await page.evaluate(() => window.__duckLayouts);
       if (layoutsSeen.length) log(`Duck Pond ${level} layouts dealt: ${layoutsSeen.join(', ')}`);
       await screenshot(`duck-pond-${level}`);
@@ -943,9 +1153,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await score('duck-pond'),
         stop
           ? [1, 0]
-          : mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends'
-            ? [0, 0]
-            : [2, 1],
+          : mode === 'every'
+            ? [0, 1]
+            : mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends'
+              ? [0, 0]
+              : [2, 1],
         `ducks ${level} score`,
       );
       if (level === 5 || level === 7 || level === 9 || level === duckTop) await portrait(false);
@@ -1179,7 +1391,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
+    const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7,8,9').split(',').map(Number);
     for (const level of !only || only === 'fill' ? fillLevels : []) {
       if (level === 4) await portrait(true);
       await launch('fill-dump', level);
@@ -1251,6 +1463,64 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await portrait(false);
         log(
           'Fill and Dump 5: pour displacement, caught overflow, two wrong checks, one hint, resize, recovery, three cups and one sticker passed',
+        );
+        continue;
+      }
+      if (level === 9) {
+        // How many cups: scoop and pour by taps, free reminders while filling, two wrong picks (one hint), then the bot.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const hit = async (on) => {
+            kit.tapOn(on, 0, -60);
+            await kit.sleep(250);
+            await kit.until(() => !g.move, 3000);
+          };
+          if (!g.bowls || !g.tub) throw new Error('Level 9 is the cups game');
+          await hit(g.bowls[0]); // An empty cup: a reminder, not a miss.
+          await hit(g.tub);
+          await hit(g.tub); // Already full: nothing changes.
+          if (!g.state.scooped || g.state.misses) throw new Error('Cups: scooping is free');
+          await hit(g.bowls[0]);
+          if (g.state.poured[0] !== 1 || g.state.scooped) throw new Error('Cups: one pour, one tally');
+          while (g.state.phase === 'fill') {
+            const next = g.autotouch();
+            if (!next) {
+              await kit.sleep(100);
+              continue;
+            }
+            await hit(next.tap.on);
+          }
+          const p = g.state.pairs[0];
+          if (g.state.poured[0] !== p[0].cups || g.state.poured[1] !== p[1].cups)
+            throw new Error('Cups: the tallies match the pours');
+          const more = p[0].cups > p[1].cups ? 0 : 1;
+          await hit(g.bowls[1 - more]);
+          // Both tallies are counted aloud; the bowls wait for the recount to end.
+          await kit.until(() => g.pulse === null, 12000);
+          await hit(g.bowls[1 - more]);
+          if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped)
+            throw new Error(`Cups: wrong picks ${g.state.misses} ${g.state.hints}`);
+        });
+        await page.waitForTimeout(1500);
+        await portrait(true);
+        await screenshot('fill-dump-9-portrait');
+        await portrait(false);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let guard = 0; guard < 120 && !g.state.done; guard++) {
+            const intent = g.autotouch();
+            if (intent?.tap) {
+              kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+              await kit.sleep(250);
+              await kit.until(() => !g.move, 3000);
+            } else await kit.sleep(150);
+          }
+          if (!g.state.done || g.state.round !== 2) throw new Error('Cups: two pairs completed');
+        });
+        await finished('fill-dump');
+        assert.deepEqual(await score('fill-dump'), [2, 1]);
+        log(
+          'Fill and Dump 9: scoop and pour by taps, free reminders, tallies match pours, two wrong picks, one hint, portrait and two pairs passed',
         );
         continue;
       }
@@ -1687,7 +1957,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     );
     const want = {
       'bubble-pop': 12,
-      'jelly-drums': 11,
+      'jelly-drums': 16,
       'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,

@@ -1,5 +1,16 @@
-import { Application, Container, Graphics, Rectangle, Sprite, type Renderer, type Texture } from 'pixi.js';
-import { cream } from '../art/palette';
+import {
+  Application,
+  Container,
+  Graphics,
+  GraphicsContextSystem,
+  Rectangle,
+  Sprite,
+  TilingSprite,
+  type Renderer,
+  type Texture,
+} from 'pixi.js';
+import { PAPER_ON, paperPass } from '../art/paperize';
+import { fibreTexture, PAPER_BG } from '../art/paper';
 import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
 import { voice } from '../audio/voice';
@@ -23,7 +34,8 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
-import type { MixedColor, PicnicStep, WoodlandStep } from '../content/world';
+import type { FormId } from '../creatures/forms';
+import type { MelodyStep, MixedColor, PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
@@ -41,6 +53,7 @@ import { markTiming } from '../engine/timing';
 export type StoryRound =
   | { story?: 'picnic'; step: PicnicStep; level: number }
   | { story: 'woodland'; step: WoodlandStep; level: number }
+  | { story: 'melody'; step: MelodyStep; level: number }
   | { project: 'welcome'; step: WelcomeStep; level: number };
 
 /**
@@ -51,9 +64,10 @@ export type StoryRound =
  * The collection book; `recipe` is a colour goal's (RW10 slice 2), handed to the round as `ctx.request`, and `things`
  * marks Dress opened from a colour on the Things page, whose Back returns to that page.
  */
-export type BookOrigin = { book: true; recipe?: MixedColor; things?: true };
+export type BookOrigin = { book: true; recipe?: MixedColor; form?: FormId; things?: true };
 /** Where the book opens: a friend's page, the goal just joined, a colour goal's page, or the Things page. */
-export type BookAt = { friend: string } | { joined: true } | { colour: MixedColor } | { things: true };
+export type BookAt =
+  { friend: string } | { joined: true } | { colour: MixedColor } | { form: FormId } | { things: true };
 
 export type Origin =
   | { land: LandId; page?: number }
@@ -111,6 +125,8 @@ export interface Routes {
   picnic(from?: PicnicStep): void;
   /** The Woodland Picnic, Hazel's story in Wonder Woods. `from` is the request whose round just finished. */
   woodland(from?: WoodlandStep): void;
+  /** The Missing Melody, Wren's story on Bumpy Hills. `from` is the request whose round just finished. */
+  melody(from?: MelodyStep): void;
   /** Welcome a New Friend's page (RW07, the root only; classic sends it to the map). `from` is the step whose round just finished. */
   project(from?: WelcomeStep, origin?: BookOrigin): void;
   stickers(): void;
@@ -156,6 +172,8 @@ export class App {
   private readonly frame = new Graphics();
   /** Over everything while an upright phone is asked to turn; the scene underneath waits. */
   private readonly turn = new TurnPrompt();
+  /** The paper ground's fibre, under everything. */
+  private ground: TilingSprite | null = null;
   private turning = false;
   private layoutKey = '';
   /** Esc was pressed: the scene holds still behind the pause sheet (or the grown-ups' page opened from it). */
@@ -171,9 +189,12 @@ export class App {
   }
 
   async init(host: HTMLElement) {
+    // Paper outlines are traced as many short curves (docs/ART-STYLE.md), so each needs few segments: fewer triangles
+    // for a phone to draw, with no visible change.
+    (GraphicsContextSystem.defaultOptions as { bezierSmoothness: number }).bezierSmoothness = 0.2;
     await this.pixi.init({
       resizeTo: window,
-      background: cream,
+      background: PAPER_BG,
       antialias: true,
       autoDensity: true,
       resolution: Math.min(window.devicePixelRatio || 1, 2),
@@ -182,6 +203,13 @@ export class App {
     host.appendChild(this.pixi.canvas);
     this.pixi.stage.eventMode = 'static';
     this.blocker.eventMode = 'none';
+    // The oatmeal paper every scene sits on, with its fibre (docs/ART-STYLE.md); a scene's own backdrop covers it.
+    const fibre = fibreTexture();
+    if (fibre) {
+      this.ground = new TilingSprite({ texture: fibre, width: 1, height: 1, alpha: 0.35 });
+      this.ground.eventMode = 'none';
+      this.pixi.stage.addChild(this.ground);
+    }
     this.pixi.stage.addChild(this.root, this.frame, this.blocker, this.turn);
     initTextures(this.pixi.renderer);
     trackPointers();
@@ -197,6 +225,9 @@ export class App {
     window.addEventListener('pointerdown', () => this.input.touched(), true);
     window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
+    // The paper look (docs/ART-STYLE.md): new or redrawn flat shapes become paper cut-outs before the frame is drawn.
+    // `?nopaper` leaves every drawing flat, to compare the frame rate on a phone.
+    if (PAPER_ON) this.pixi.ticker.add(() => paperPass(this.pixi.stage));
   }
 
   /**
@@ -348,11 +379,14 @@ export class App {
     this.insets = insets;
     this.view = computeView(w, h, this.insets, upright);
     this.root.scale.set(this.view.scale);
-    // The island sits inside the cutouts; the cream behind it shows in the strips they leave.
+    // The island sits inside the cutouts; the paper behind it shows in the strips they leave.
     this.root.position.set(this.insets.left, this.insets.top);
     // Grown-up DOM screens (couch play) grow with the window so they stay readable from a couch.
     document.documentElement.style.setProperty('--u', String(Math.min(2.2, Math.max(1, this.view.scale))));
     this.blocker.hitArea = new Rectangle(0, 0, w, h);
+    this.ground?.setSize(w, h);
+    // The fibre keeps its size in logical units, like the fibre on every piece.
+    this.ground?.tileScale.set(this.view.scale);
     // A change on screen ends at once: its picture was the old size.
     this.settle();
     this.drawFrame(w, h);
@@ -361,7 +395,7 @@ export class App {
     this.scene?.resize(this.view);
   }
 
-  /** The four strips outside the insets, in cream; it swallows taps there and is absent on a screen with no cutouts. */
+  /** The four strips outside the insets, in the paper colour; it swallows taps there and is absent on a screen with no cutouts. */
   private drawFrame(w: number, h: number) {
     const { top, right, bottom, left } = this.insets;
     this.frame.clear();
@@ -374,7 +408,7 @@ export class App {
       .rect(0, h - bottom, w, bottom)
       .rect(0, top, left, mid)
       .rect(w - right, top, right, mid)
-      .fill(cream);
+      .fill(PAPER_BG);
   }
 
   private readInsets(): Insets {

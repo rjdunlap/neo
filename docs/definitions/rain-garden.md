@@ -1,6 +1,6 @@
 # Rain Garden, levels 1–3 (definition)
 
-**Built:** levels 1–7 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077, level 7 PR #2090); level 8 (evidence and hypothesis) is not defined yet, see the [build slices](../deep-dives/subjects/weather-water.md#build-slices-in-order). Level 7 departs from [its section](#level-7-one-garden-for-two-rains-definition) as the [game page](../games/rain-garden.md) records: no separate leaf button, a card pick clears settled drops, the hold-sign tick waits for a settled rain.
+**Built:** levels 1–8 (levels 1–3 PR #1303, level 4 PR #1316, level 5 PR #2069, level 6 PR #2077, level 7 PR #2090, level 8 PR #2199). Level 7 departs from [its section](#level-7-one-garden-for-two-rains-definition) as the [game page](../games/rain-garden.md) records: no separate leaf button, a card pick clears settled drops, the hold-sign tick waits for a settled rain.
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
@@ -762,3 +762,124 @@ None waits on the developer. Defaults this definition sets:
 - **Fresh ground every time:** the two cards never share storage, so the wet-ground comparison stays level 6's and "which rain is first" can never matter.
 - **No grown-up band yet:** the ladder's "grown-up 7–8" window waits for a grown-up band decision; level 7 joins the school window like levels 4–6.
 - **Light before storm:** when both cards fail, the light card is traced first because its need is the simpler one to read; the storm's cross still shows.
+
+## Level 8, *the mystery patch* (definition)
+
+**Built 2026-11-25 (PR #2199)** as defined, with the departures the [game page](../games/rain-garden.md) records (the new voice lines are spelled `rainmyst.*` so no rendered clips are required).
+
+Defined 2026-11-25 as the weather-and-water study's [slice 7](../deep-dives/subjects/weather-water.md#build-slices-in-order), second half, from the [ladder's level-8 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and its accounting paragraph. One build session, new-interaction tier ([Level 8 check tier](#level-8-check-tier)): choosing a test, reading a trace and a "both still fit" answer are new, the cloud, soil and pond are the earlier levels'.
+
+**Fun action and purpose:** a covered garden patch sits under the cloud and nobody says how it behaves. It follows one of two pretend rules, shown as two cards: **empties between rains** (the patch is emptied before each new rain) or **stays full** (water kept from one rain is still there for the next). She builds a test from two slots (each empty, a **small** rain of two drops or a **big** rain of four), taps the cloud, and watches only the pond, because the cover hides the patch. Then she marks every card that still fits the water she saw and taps the check. The learning purpose is **choosing a test that can tell two ideas apart, and saying "both still fit" when it cannot**: one rain looks the same either way, so only a second rain in a row can decide, and a first row of the pond never decides anything. Nothing is a forced guess: "both still fit" is a right answer to a one-rain test.
+
+**Overlap, rechecked:** level 6 *tells* her the carried-storage rule and shows the pockets filling; at level 8 the pockets are hidden and the rule is what she is finding out, so it needs level 6 first (the ladder's order) and does not repeat it. Level 3 changes the ground and level 7 designs for two rains; here the garden never changes, only the test does. Every test starts on a fresh patch, nothing dries, and no weather record is kept (Drop's Journey and Day by Day keep those). Forecast Detective already owns clue-by-clue deduction for older players; this is a single toy mechanism, not a case file.
+
+### The model, level 8
+
+- **The patch** is one soil bed, capacity 2 (the toy's invented number, as in every level), hidden under a cover. **The truth** is `rule: 'reset' | 'keep'`, fixed for the round and never changed by anything she does.
+- **A test plan** is `Size[]` with `Size` in `{ 2, 4 }` (small, big) and length 1 or 2. Slots compact: a plan never has an empty first slot with a filled second (clearing slot 1 moves slot 2 up).
+- **`runPlan(rule, plan)`** runs each shower with levels 1–3's `runShower` on one patch, starting each plan from `stored = 0`. Under `keep` the patch carries `stored` into the next shower; under `reset` it is emptied before each shower. It returns `{ rule, plan, rains: { units, kept, pond }[] }`. Conservation, checked after every step: `units + stored at start = stored + pond`.
+- **All outcomes**, the whole table (pond per rain, in order):
+
+  | Plan | `reset` | `keep` | Fits |
+  | --- | --- | --- | --- |
+  | small | 0 | 0 | both |
+  | big | 2 | 2 | both |
+  | small, small | 0, 0 | 0, 2 | one |
+  | small, big | 0, 2 | 0, 4 | one |
+  | big, small | 2, 0 | 2, 2 | one |
+  | big, big | 2, 2 | 2, 4 | one |
+
+  The first rain's row is the same under both rules in every plan (a fresh patch); only the second row can differ, and in every two-rain plan it does.
+- **Evidence** is the latest run only: `{ plan, ponds }`, the water in the pond tray now. `fits(evidence)` returns the rules whose `runPlan` ponds equal `ponds`: both for a one-rain plan, exactly one (the truth) for a two-rain plan. The truth is always in `fits`, so no run can contradict the hidden rule. Check judges the evidence on screen: an earlier run does not count once a newer run replaces it, and the how-to says so.
+- **Marks** are the cards she has lit: `marks: Rule[]`. Toggling a card is free at any time, including before any run (a prediction before testing is never judged), and marks stay across runs and are cleared only by Start again and a new round.
+- **Check** exists once a run has settled. `judge(marks, evidence)` returns `ok` when `marks` equals `fits(evidence)` as a set, and otherwise one cause: `over` (she lit one card but both fit), `wrong` (she lit only a card that does not fit) or `under` (she lit both but one does not fit). No marked card, no Check.
+- **Reveal:** an `ok` Check whose `fits` has one rule lifts the cover (the patch's two pockets show how full it ended, and the rule's card stays lit) and `canFinish` becomes true. An `ok` Check on a one-rain run is supported but does not finish: the pet says both still fit and suggests a test that could separate them, and the leaf stays away until a rule is named ([decision](#level-8-decisions)).
+- **Round state** (`MysteryState`): `truth`, `plan`, `evidence` (null until the first run), `runs`, `marks`, `busy` (a rain is falling), `checked` (key of the last failed `marks` plus the run number), `misses`, `hints`, `ghosts` (the cards' predicted rows are showing), `ghostsShown`, `revealed`, `pointing`, `finished`.
+  - `setSlot(s, i)`: cycles slot `i` empty → small → big → empty, then compacts. Free, ignored while `busy`; it never changes `truth`, `evidence` or `marks`, and the evidence rows stay until the next run.
+  - `run(s)`: needs a non-empty plan (an empty plan is ignored and the pet says `rain.m.pick`); runs `runPlan(truth, plan)` on a fresh patch, sets `evidence`, adds one to `runs` and hides `ghosts`.
+  - `toggleMark(s, rule)`: free; changes only `marks`.
+  - `check(s)`: `judge`; `ok` as above; a failed Check counts one miss unless the same key was already counted, and from the second miss `ghosts` turns on and counts one hint the first time it is shown (once per round).
+  - `restart(round)`: the round's starting plan and an empty evidence, same `truth`, keeping `misses`, `hints` and `runs`, as Start again does at levels 1–7.
+- **Nothing carries:** the patch is fresh at the start of every run; no state function but `run` produces water; a new round draws a new truth; nothing persists between rounds.
+- **Authored first round:** `keep`, the frog, starting plan big. **Seeded rounds:** `truth` uniform over the two rules, the pond friend from `FRIENDS`, the starting plan one small or big rain (a one-rain start, so the first move is always a test that cannot decide). Both rules are always available and every round is solvable in at most two runs.
+
+### Screen and controls, level 8
+
+- **Layout reuses level 6's measured footprints**, every new target placed where a level 6 target or bed was already measured clear, at the same two orientations: the cloud (260×140) over the covered patch (300×150, drawn as soil with a cloth and a question mark; no pockets while covered), the level-6 pond tray (320×148, two rows of four, row badges at its left end showing the rain that made the row: a cloud with two or four dashed drops), and a fixed arrow from the patch to the tray.
+- **Two plan slots** (120×120 each): the picture shows nothing, two small drops or four big ones; touch-down squashes and a tap cycles. Where level 6 had its two guess pictures: upright (470, 300) and (610, 300), landscape (660, 230) and (800, 230).
+- **Two idea cards** (120×120 each): **empties between rains** (a patch with a wipe arrow under it) and **stays full** (a patch with a water mark that stays), lit when marked. Where level 6's low bed stood: upright (470, 510) and (610, 510), landscape (740, 465) and (880, 465). A lit card shows a bright rim and a tick, so it reads without colour.
+- **The check** (120×120, top-right) appears after the first settled run; after a rule is named the **leaf** takes its place, as at levels 4–7.
+- **The cloud** shows the first dashed rain of the plan and is tapped to run it; it is inert for an empty plan and during a rain. Between the plan's two rains the cloud refills and the first pond row is complete before the second rain starts; pace as level 6 (0.45 s between drops). A rain's drops go into the covered patch and disappear; the water that comes out appears in that rain's row. No pocket is drawn while covered, so the evidence is the tray alone.
+- **Ghost rows (from the second miss):** each idea card shows a small two-row picture of what its rule would have left in the pond for the current plan, drawn as dots in the same four-slot rows with a different mark (ring for `reset`, square for `keep`), so she can lay each card's rows against the real tray. The cards stay the same size.
+- **Frame sketch** (portrait, upright; one orientation each, the builder measures):
+  - Upright 768×1024: cloud (220, 300), patch (220, 470), slots (470, 300) and (610, 300), cards (470, 510) and (610, 510), tray (548, 918), badges at tray x − 130, check or leaf in the view's top-right box.
+  - Landscape 1024×768: cloud (300, 110), patch (300, 260), slots (660, 230) and (800, 230), cards (740, 465) and (880, 465), tray (823, 662).
+  - A scratch overlap test of these boxes against each other (not yet against the view corners, Home or the guide) found none. The builder measures all eight views with level 6's layout-test rules, and a view that cannot hold the layout returns null rather than shrink.
+
+### Accounting, help and finishing, level 8
+
+- **Slot taps, runs, mark toggles and Start again are free.** A run never counts as a miss (a one-rain test is a fine experiment), and a mark before any run is a prediction, never judged.
+- **A failed Check counts one miss** (a gentle boing, then the cause line), and checking the same marks on the same run again counts nothing. A supported "both still fit" Check counts nothing. **From the second miss** the ghost rows show on both cards, counting one hint the first time (once per round).
+- **Show me** (pause sheet) does the next useful step through `mystNext`: no run yet, or the latest run is a one-rain test and she has not named a rule: fill the plan with big, big and run it (**1 hint** for the whole worked test); a two-rain run settled and the marks differ from `fits`: set the marks to `fits` (1 hint); marks correct: tap the check (1 hint); revealed: point at the leaf (counts only if newly pointed). At most **four** worked steps reach the end, so assisted completion is always available and earns the ordinary one sticker.
+- **Finish:** the leaf ends the round through `ctx.finish({ misses, hints })`, once. School's range becomes 3–8, so level 8 is its top and stepping up clamps there. A smooth round (at most one miss, no hints) means she found a deciding test and read it; the grown-ups' note says that it is not a measure of reasoning.
+
+### Speech, level 8 (`voice.ts`)
+
+Each rain's narration is the pond clip only (`rain.pond.0`, `rain.pond.2` or `rain.pond.4`, never `.6`: a rain is at most four drops), said after that rain's drops settle; the covered patch is never described. New lines (14, rendered to clips by the build; none has a slot):
+
+- `rain.instruct.8`: "This patch is hiding how it works. Pick some rain, tap the cloud, then tap the idea that fits the water you saw."
+- `rain.m.reset`: "Empties between rains: the patch is emptied before each new rain." / `rain.m.keep`: "Stays full: water left in the patch is still there for the next rain." (said once when a card is lit.)
+- `rain.plan.small`: "A small rain: two drops." / `rain.plan.big`: "A big rain: four drops." (said when a slot changes.)
+- `rain.m.pick`: "Pick a rain first, then tap the cloud."
+- `rain.m.both.ok`: "Right, both ideas still fit this water. What test could tell them apart?"
+- Failed Check: `rain.m.over` "Both ideas still fit this water. One more test could tell them apart." / `rain.m.under` "One of those ideas doesn't fit the water you saw. Compare the second row with the first." / `rain.m.wrong` "That idea doesn't fit this water. Look at the pond rows again."
+- Reveal: `rain.m.reveal.reset` "It empties between rains: the second rain acted just like the first." / `rain.m.reveal.keep` "It stays full: the second rain found a full patch, so more ran to the pond."
+- Hints: `rain.hint.test` "Try two rains in a row, then tap the cloud." / `rain.hint.mark` "Which idea fits? Tap its card."
+- Reused: `rain.hint.check`, `rain.done`, `rain.again`, `rain.pond.0/2/4`.
+
+No line says the soil "drinks", that the patch "knows", that a real garden does either, or anything about drainage, flooding or how long real ground stays wet; "empties", "stays full" and "ran to the pond" are the toy's words.
+
+### Rule tests, level 8 (`logic.test.ts`)
+
+1. **Outcome table:** the six plans under both rules give the table's ponds exactly, and each rain has `units` steps with each unit once.
+2. **Conservation:** for every plan and rule, after every step `units + stored at start = stored + pond`; every stored and pond amount is even.
+3. **Only the second row decides:** for every plan the first pond row is equal under both rules; every two-rain plan has different second rows, and every one-rain plan has equal rows.
+4. **Fits:** `fits` is both rules for each one-rain plan and exactly `[truth]` for each two-rain plan; the truth is always in `fits`; a deciding test exists for both truths (all four two-rain plans).
+5. **Judge:** over every plan, truth and `marks` subset: `ok` iff `marks` equals `fits`; `over` only on a one-rain run with one card lit; `under` only with both lit on a two-rain run; `wrong` only with the non-fitting card alone; the empty marks never reach `judge`.
+6. **Reveal and finish:** `canFinish` is true only after an `ok` Check on a two-rain run; an `ok` one-rain Check never finishes; the cover lifts exactly then.
+7. **Fresh every run:** a run's evidence equals a fresh `runPlan` whatever ran before; a second run with the same plan gives the same ponds; `setSlot` never changes evidence, marks or `truth`; slot clearing compacts as specified.
+8. **Marks and predictions:** `toggleMark` changes only `marks`, works before any run, and a Check needs a run; a mark made before a run is not counted anywhere.
+9. **Accounting:** a failed Check counts one miss, the same marks on the same run count none, a new run or new marks count again; a supported both-fit Check counts none; `ghosts` appear from the second miss and count one hint once; a bounded search over every action sequence ends with `misses` equal to the number of distinct failed Checks; from any state at most four `mystNext` steps finish.
+10. **Narration and lines:** each rain's narration is exactly one `rain.pond.*` clip matching its pond; every new line id exists in `voice.ts` and every clip id used exists.
+11. **Seeding:** the authored round is `keep`, the frog, a big rain; seeded rounds draw the truth uniformly, a friend from `FRIENDS`, and a one-rain start.
+12. **Layout:** level 8 at the eight views, as measured against the layout rules.
+
+### Code the builder must widen
+
+Level 8 is not a `RouteBoard` and has no sockets, so it gets its own `MysteryState`, `runPlan`, `fits`, `judge` and `mystNext` in `logic.ts` and its own scene in `route.ts` or a sibling file, rather than level 4's Check state. `runShower` (levels 1–3) is reused; `runRoute` is not. `routeLayout` gains a `mystery` branch (slots, cards, tray, null on other levels) and its layout test extends to level 8. The tray needs two row badges for two rain sizes (level 6's badges show first and second rain, not size). `planFor` and `LEVELS` stop at 7: `PLANS` gains "A hidden patch: pick a test and decide which idea the water fits, or that both still do", and `LEVELS` school becomes `{ min: 3, max: 8 }`. The browser fixture's upright switch (`FROM_LEVEL` 5 or more) already covers 8.
+
+### Ghost finger, how-to card and registration, level 8
+
+- **Ghost finger** on the authored round: tap slot 1 twice (a big rain), tap the cloud (pond 2), tap both cards, tap the check (the supported "both fit", no reveal), tap slot 2 twice, tap the cloud (the second row is 4), tap the `reset` card to unlight it, tap the check (the cover lifts), tap the leaf. `fingerdemo` at level 8 must end on the leaf.
+- **How-to card**, `{ from: 8, to: 8 }` steps: "Tap a slot to pick a small or big rain, then tap the cloud. The patch is covered, so watch the pond."; "Light every idea card that still fits the water you saw, then tap the check."; "One rain can look the same either way. Two rains in a row can tell the ideas apart." Finish: "Tap the leaf when the cover lifts." Note: "A pretend model: soil holds two drops, and the hidden rule is empties between rains or stays full. The check looks at the water in the pond now. Real ground drains slowly and dries over time; this is only two simple ideas. A wrong check counts one miss and Show me counts as help." The builder keeps the card under the how-to test's 840-character cap, shortening the note before any step.
+- **Bands:** school 3–8 (no grown-up band: [decision](#level-8-decisions)). Tinker Lab, unchanged; no new game, so no lands change.
+- **Co-play:** one person picks the test and says what each idea would show; the other lights the cards; then swap and check together.
+
+### Level 8 check tier
+
+New-interaction tier, one build session: typecheck and the rule tests above (plus the how-to, voice and layout tests); one scripted play of the `raingarden` browser case filtered to level 8 on an upright phone (`FROM_LEVEL=8`): a one-rain test with one card lit and the check (`over`, assert `misses` 1), the other card lit and the check (a second miss, assert the ghost rows and `hints` 1), a supported both-lit Check on the one-rain run (assert no miss added and no leaf), a two-rain test, a `wrong` or `under` Check once, then the correct card and the reveal and leaf, asserting `misses` and `hints` as counted. One upright phone screenshot after the cover lifts. `fingerdemo` at level 8. `npm run build` and the offline check, because voice lines and their clips are added. Levels 1–7's passing evidence is reused.
+
+Device and person checks stay parked: whether a school child or a grown-up reads the covered patch, the two rows and the ghost dots as "test, then compare", and whether the idea cards' names are clear in phone speech.
+
+### Level 8 decisions
+
+None waits on the developer. Defaults this definition sets:
+
+- **Two rules, one patch, thin variety on purpose:** the ladder's level 8 is two toy rules and a choice of test. A larger pool of mystery rules waits for the ladder's "observe older-family appeal before a larger pool"; the per-round variety here is the hidden truth, the friend and the starting plan.
+- **A third rule (slow drain) is left out:** it would give odd drop counts, break the "every amount is even" invariant of levels 1–7 and start modelling drying, which Drop's Journey owns.
+- **The capacity is known and fixed at two:** an unknown capacity would make the same trace fit `keep` with a bigger bed, so "both still fit" would depend on a number she cannot see. The grown-ups' note names the invented number.
+- **Evidence is the latest run, shown on screen:** judging an earlier, no longer visible run would be a hidden rule about the Check. If she runs a one-rain test after finding the answer, the Check treats it as the one-rain evidence it is.
+- **"Both fit" is right but does not finish the round:** the study allows it as a valid answer and forbids a forced guess; it does not promise a sticker for a test that cannot decide. She is never forced to guess: Show me runs the deciding test, one worked step, and a supported finish is always available. If playtest shows the missing leaf feels like a wall, the change is one line in `canFinish`.
+- **Ghost rows live on the cards:** the board has no room for four tray rows; the card face carries each rule's predicted rows in a second mark shape so the comparison does not depend on colour.
+- **No grown-up band yet:** the ladder's "grown-up 7–8" window waits for a grown-up band decision, as at level 7; level 8 joins the school window.
+- **Source:** the [USGS runoff page](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff) recorded at level 4 and the [EPA green-infrastructure guide](https://www.epa.gov/green-infrastructure/types-green-infrastructure) support only the direction that wetter ground keeps less of the next rain; neither says ground empties between rains, which is why the card says this is two simple ideas and calls "empties between rains" a pretend rule. The building session reopens them and records the check in its verification entry, as decision 2 of the study asks.

@@ -15,8 +15,10 @@ export async function createFixture(browser, suite) {
     suite === 'wardrobe12' ||
     suite === 'shadowplay' ||
     suite === 'fencethefield' ||
+    suite === 'lastpebble' ||
     suite === 'keyitout' ||
     suite === 'jarclues' ||
+    suite === 'countballots' ||
     suite === 'harbororders' ||
     suite === 'workshopdetective' ||
     suite === 'outcropdetective' ||
@@ -29,12 +31,15 @@ export async function createFixture(browser, suite) {
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
     (suite === 'woods' && process.env.WOODS_ONLY === 'shop' && process.env.FROM_LEVEL === '13') ||
+    (suite === 'woods' && process.env.WOODS_ONLY === 'grow' && Number(process.env.FROM_LEVEL) >= 12) ||
+    (suite === 'movienight' && process.env.MOVIE_PHONE === '1') ||
     (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
     (suite === 'raingarden' && Number(process.env.FROM_LEVEL) >= 5) ||
     (suite === 'bunnypatches' && process.env.BUNNY_ONLY === 'upright') ||
     (suite === 'sumcrates' && process.env.SUMCRATES_ONLY === 'upright') ||
     (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1') ||
     (suite === 'originals' && process.env.ORIGINALS_ONLY === 'jellysets') ||
+    (suite === 'sandtable' && process.env.SAND_TABLE_PHONE === '1') ||
     (suite === 'thoughtbubbles' &&
       (process.env.THOUGHT_BUBBLES_PHONE === '1' ||
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||

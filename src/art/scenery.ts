@@ -1,7 +1,9 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { Rng } from '../engine/random';
 import type { View } from '../engine/view';
-import { cheek, ink, swatch } from './palette';
+import { swatch, toward } from './palette';
+import { drawFibre } from './paper';
+import { bakePaper } from './paperize';
 
 export interface BackdropStyle {
   /** Sky gradient, top to horizon. */
@@ -15,29 +17,31 @@ export interface BackdropStyle {
   seed?: number;
 }
 
-/** A vertical gradient as a tiny canvas texture, stretched to fill. */
+const skies = new Map<string, Texture>();
+
+/**
+ * A sky or wall to stretch over a view. In the paper look (docs/ART-STYLE.md) there are no gradients: it is one flat
+ * sheet in the colour between `top` and `bottom` (a touch nearer the top), with the paper fibre over it. Drawn once per
+ * pair at the design area's size, so stretching it to a view barely changes the fibre.
+ */
 export function gradientTexture(top: number, bottom: number): Texture {
+  const key = `${top}:${bottom}`;
+  const known = skies.get(key);
+  if (known) return known;
   const c = document.createElement('canvas');
-  c.width = 2;
-  c.height = 256;
+  c.width = 1024;
+  c.height = 768;
   const ctx = c.getContext('2d')!;
-  const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, cssColor(top));
-  g.addColorStop(1, cssColor(bottom));
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 2, 256);
-  return Texture.from(c);
+  ctx.fillStyle = cssColor(toward(top, bottom, 0.4));
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.globalAlpha = 0.35;
+  if (typeof ctx.quadraticCurveTo === 'function') drawFibre(ctx, 1024, 768);
+  const t = Texture.from(c);
+  skies.set(key, t);
+  return t;
 }
 
 const cssColor = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
-
-const CLOUD_PUFFS: [number, number, number][] = [
-  [-50, 0, 34],
-  [-15, -18, 44],
-  [28, -8, 38],
-  [58, 6, 26],
-  [0, 10, 36],
-];
 
 export class Cloud extends Container {
   readonly baseScale: number;
@@ -46,9 +50,42 @@ export class Cloud extends Container {
 
   constructor(rng: Rng) {
     super();
+    // One cut silhouette (a flat underside and lumpy top), on a blue-grey piece peeking out below it, rather than a
+    // stack of circles.
     const g = new Graphics();
-    for (const [x, y, r] of CLOUD_PUFFS) g.circle(x, y + 7, r).fill(0xdcecf7);
-    for (const [x, y, r] of CLOUD_PUFFS) g.circle(x, y, r).fill(0xffffff);
+    // Lumps and the notches between them, left to right, then the flat underside.
+    const shape: [number, number][] = [
+      [-88, 26],
+      [-96, 6],
+      [-82, -22],
+      [-56, -34],
+      [-38, -26],
+      [-34, -50],
+      [-10, -66],
+      [16, -56],
+      [24, -44],
+      [46, -46],
+      [66, -30],
+      [74, -16],
+      [92, -8],
+      [96, 18],
+      [70, 32],
+      [-60, 32],
+    ];
+    // Rounded through the midpoints, so each lump is a soft scissor curve.
+    const cut = (dy: number) => {
+      const n = shape.length;
+      const mid = (i: number): [number, number] => {
+        const [ax, ay] = shape[i % n];
+        const [bx, by] = shape[(i + 1) % n];
+        return [(ax + bx) / 2, (ay + by) / 2 + dy];
+      };
+      g.moveTo(...mid(n - 1));
+      for (let i = 0; i < n; i++) g.quadraticCurveTo(shape[i][0], shape[i][1] + dy, ...mid(i));
+      return g.closePath();
+    };
+    cut(9).fill(0xc9dcea);
+    cut(0).fill(0xffffff);
     this.addChild(g);
     this.baseScale = rng.range(0.7, 1.1);
     this.scale.set(this.baseScale);
@@ -77,29 +114,29 @@ export class Sun extends Container {
 
   constructor() {
     super();
+    // A cut-paper sun: twelve snipped rays, long and short by turns and none quite alike, behind a yellow disc. No face or blush: it is a sun, not a sticker.
     const y = swatch.yellow;
-    for (let i = 0; i < 10; i++) {
-      const a = (i * Math.PI) / 5;
-      this.rays.moveTo(Math.cos(a) * 74, Math.sin(a) * 74).lineTo(Math.cos(a) * 96, Math.sin(a) * 96);
+    for (let i = 0; i < 12; i++) {
+      const a = (i * Math.PI) / 6 + (i % 3) * 0.04;
+      const long = i % 2 === 0;
+      const r0 = 38,
+        r1 = long ? 96 - (i % 4) * 3 : 82 + (i % 3) * 2;
+      const half = long ? 0.3 : 0.24;
+      this.rays
+        .poly(
+          [
+            Math.cos(a - half) * r0,
+            Math.sin(a - half) * r0,
+            Math.cos(a) * r1,
+            Math.sin(a) * r1,
+            Math.cos(a + half) * r0,
+            Math.sin(a + half) * r0,
+          ],
+          true,
+        )
+        .fill(long ? swatch.orange.fill : y.fill);
     }
-    this.rays.stroke({ width: 12, color: y.fill, cap: 'round' });
-    const line = { width: 5, color: ink, cap: 'round' as const };
-    const face = new Graphics()
-      .circle(0, 0, 58)
-      .fill(y.fill)
-      .stroke({ width: 6, color: y.line })
-      .moveTo(-27, -6)
-      .quadraticCurveTo(-18, -18, -9, -6)
-      .stroke(line)
-      .moveTo(9, -6)
-      .quadraticCurveTo(18, -18, 27, -6)
-      .stroke(line)
-      .ellipse(-34, 12, 10, 6)
-      .ellipse(34, 12, 10, 6)
-      .fill({ color: cheek, alpha: 0.6 })
-      .moveTo(-14, 14)
-      .quadraticCurveTo(0, 30, 14, 14)
-      .stroke(line);
+    const face = new Graphics().circle(0, 0, 54).fill(y.fill);
     this.addChild(this.rays, face);
   }
 
@@ -174,6 +211,7 @@ export class Backdrop extends Container {
         .closePath()
         .fill(color);
     });
+    bakePaper(this.hills, view);
   }
 
   update(dt: number) {

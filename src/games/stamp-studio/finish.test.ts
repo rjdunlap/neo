@@ -20,8 +20,10 @@ vi.mock('../../ui/buttons', async () => {
   const { Container } = await import('pixi.js');
   return {
     RoundButton: class extends Container {
-      constructor(_icon: Container, _swatch: unknown, _radius: number, callback: () => void) {
+      readonly radius: number;
+      constructor(_icon: Container, _swatch: unknown, radius: number, callback: () => void) {
         super();
+        this.radius = radius;
         this.addChild(new Container(), _icon);
         press.set(this, callback);
       }
@@ -75,6 +77,11 @@ function round(level: number) {
     grow: Container;
     bin: Container;
     play: Container;
+    setsButton: Container;
+    setButtons: Container[];
+    setsOpen: boolean;
+    activeKinds: Stamp['kind'][];
+    scene?: Stamp['kind'] extends never ? never : string;
     played: Stamp[];
     woken: Stamp[];
     stamps: { data: Stamp; node: Container; drag?: { enabled: boolean; destroy: () => void } }[];
@@ -174,7 +181,11 @@ describe('Stamp Studio finished picture', () => {
       expect(r.finish).toHaveBeenCalledExactlyOnceWith({
         misses: 0,
         hints: 0,
-        creation: { kind: 'picture', stamps: before },
+        creation: {
+          kind: 'picture',
+          ...(r.game.scene ? { scene: r.game.scene } : {}),
+          stamps: before,
+        },
       });
       r.cleanup();
     },
@@ -262,7 +273,7 @@ describe('Stamp Studio bin and early stopping', () => {
       expect(r.game.stamps).toHaveLength(0);
       expect(r.game.bin.visible).toBe(false);
       expect(r.game.finish.visible).toBe(false);
-      expect(r.game.paper.children[1].getLocalBounds().width).toBe(0);
+      expect(r.game.paper.children[4].getLocalBounds().width).toBe(0);
       r.stamp();
       expect(r.game.bin.visible).toBe(true);
       press.get(r.game.finish)!();
@@ -300,7 +311,11 @@ describe('Stamp Studio bin and early stopping', () => {
       expect(r.finish).toHaveBeenCalledExactlyOnceWith({
         misses: 0,
         hints: 0,
-        creation: { kind: 'picture', stamps: frozen },
+        creation: {
+          kind: 'picture',
+          ...(r.game.scene ? { scene: r.game.scene } : {}),
+          stamps: frozen,
+        },
       });
       r.cleanup();
     },
@@ -599,6 +614,52 @@ describe('Stamp a duck! (level 11)', () => {
     }
     expect(r.game.stamps).toHaveLength(LIMIT);
     expect(r.game.finish.visible).toBe(true);
+    r.cleanup();
+  });
+});
+
+describe('Stamp Studio sets button and Farm set (dive slice 6)', () => {
+  it('shows the sets button from level 4, mixes sets freely, and saves the last-chosen backdrop', async () => {
+    const r3 = round(3);
+    expect(r3.game.setsButton.visible).toBe(false);
+    r3.cleanup();
+
+    const r = round(4);
+    expect(r.game.setsButton.visible).toBe(true);
+    expect(r.game.setsOpen).toBe(false);
+    expect(r.game.setButtons.every((b) => !b.visible)).toBe(true);
+    // Stamp a star on plain paper first.
+    r.stamp(320, 300);
+    // Open the sets row and switch to Farm (index 2: plain, sea, farm).
+    press.get(r.game.setsButton)!();
+    expect(r.game.setsOpen).toBe(true);
+    expect(r.game.setButtons.every((b) => b.visible)).toBe(true);
+    press.get(r.game.setButtons[2])!();
+    expect(r.game.setsOpen).toBe(false);
+    expect(r.game.activeKinds).toEqual(['cat', 'cow', 'pig', 'duck', 'hen', 'barn']);
+    expect(r.game.choices).toHaveLength(6);
+    // Pick cow (index 1) and stamp it alongside the existing star.
+    press.get(r.game.choices[1])!();
+    r.stamp(520, 340);
+    expect(r.game.stamps.map((s) => s.data.kind)).toEqual(['star', 'cow']);
+    // Switch to Sea (index 1) without stamping: the kept picture remembers the last set chosen ('sea').
+    press.get(r.game.setsButton)!();
+    press.get(r.game.setButtons[1])!();
+    expect(r.game.activeKinds).toEqual(['fish', 'whale', 'crab', 'starfish', 'shell', 'boat']);
+    press.get(r.game.finish)!();
+    expect(r.game.setsButton.visible).toBe(false);
+    expect(r.game.setButtons.every((b) => !b.visible)).toBe(true);
+    r.wake();
+    await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledWith({
+      misses: 0,
+      hints: 0,
+      creation: {
+        kind: 'picture',
+        scene: 'sea',
+        stamps: r.game.stamps.map((s) => ({ ...s.data })),
+      },
+    });
     r.cleanup();
   });
 });

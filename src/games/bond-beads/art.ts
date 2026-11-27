@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { lighten, paperRect } from '../../art/paper';
 import { label } from '../../ui/text';
 import { type Pt } from './layout';
 import { HANDS, type Kind, type Link, type Shape } from './logic';
@@ -147,12 +148,16 @@ export function cardArt(w: number, h: number): Graphics {
     .stroke({ width: 5, color: wood.line });
 }
 
-/** The table the beads sit on. */
+/**
+ * The table the beads sit on: a solid pale paper board (a see-through tan sheet muddied the sky and hills under it).
+ * Drawn as paper on purpose, since a plain rectangle this big would count as a backdrop and stay flat.
+ */
 export function tableArt(w: number, h: number): Graphics {
-  return new Graphics()
-    .roundRect(-w / 2, -h / 2, w, h, 34)
-    .fill({ color: wood.light, alpha: 0.55 })
-    .stroke({ width: 5, color: wood.fill, alpha: 0.7 });
+  return paperRect(new Graphics(), -w / 2, -h / 2, w, h, 34, lighten(wood.light, 0.6), {
+    line: wood.fill,
+    amp: 3,
+    seed: 'bond-table',
+  });
 }
 
 /** Three linked beads, for the hub icon and the sticker. */

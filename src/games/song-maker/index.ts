@@ -14,6 +14,9 @@ import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  answerFrom,
+  answerReady,
+  answerTap,
   awakeSpots,
   barOf,
   beadToTap,
@@ -49,6 +52,8 @@ const recentMotifs = new WeakMap<object, string[]>();
 /** One spot on the grid. Off it is a little seed; on it is a singing jelly bead. */
 class Bead extends Container {
   lit = false;
+  /** Answer my song: a seed in the pet's question beats that is not part of the question; it is never shown or tapped. */
+  mute = false;
   ghost = false;
   given = false;
   /** Wake level: how big it stands; a lone jelly is big, then it settles to its cell as friends join. */
@@ -168,20 +173,30 @@ class SongMaker implements Game {
       recentMotifs.set(store.data, [...recent, this.song.motif].slice(-MOTIF_WINDOW));
     }
     ctx.stage.addChild(this.background, this.board, this.playhead, this.card, this.glow);
-    const target = new Set(this.song.notes.map(key));
+    const shadows = new Set(
+      (this.song.candidates ?? (this.plan.mode === 'ghost' ? this.song.notes : [])).map(key),
+    );
+    const from = answerFrom(this.plan);
     for (let col = 0; col < this.plan.cols; col++) {
       for (let row = 0; row < this.plan.rows; row++) {
         const note = { col, row };
         const bead = new Bead(note, rowColor(row, this.plan.rows));
-        bead.ghost = this.plan.mode === 'ghost' && target.has(key(note));
+        bead.ghost = shadows.has(key(note));
         if (this.song.given.some((g) => g.col === col && g.row === row)) {
           bead.lit = bead.given = true;
           this.placed.add(key(note));
         }
+        if (this.plan.mode === 'answer' && col < from) {
+          bead.eventMode = 'none';
+          bead.mute = !bead.given;
+        }
         if (this.plan.mode === 'wake') {
           bead.eventMode = 'none';
           bead.sleepy = true;
-        } else onTap(bead, () => this.tap(bead), { cooldown: 150 });
+        } else if (this.plan.choices && !bead.ghost) {
+          bead.eventMode = 'none';
+        } else if (!(this.plan.mode === 'answer' && col < from))
+          onTap(bead, () => this.tap(bead), { cooldown: 150 });
         this.beads.push(bead);
         ctx.stage.addChild(bead);
       }
@@ -192,7 +207,7 @@ class SongMaker implements Game {
       ctx.stage.addChild(this.anywhere);
       this.wakeLayout();
     }
-    if (this.plan.mode === 'compose') {
+    if (this.plan.mode === 'compose' || this.plan.mode === 'answer') {
       this.check = new RoundButton(checkArt(), swatch.green, 50, () => this.checkPressed());
       this.check.eventMode = 'none';
       this.check.alpha = 0.35;
@@ -215,6 +230,9 @@ class SongMaker implements Game {
       case 'compose':
         void this.ctx.instruct('song.compose');
         break;
+      case 'answer':
+        void this.ctx.instruct(this.plan.cols === 4 ? 'song.finish' : 'song.answer');
+        break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
         break;
@@ -227,7 +245,9 @@ class SongMaker implements Game {
       case 'listen':
         // No guessing before she has heard the tune once.
         this.listening = true;
-        void this.ctx.instruct('song.listen').then(() => this.playTune(true));
+        void this.ctx
+          .instruct(this.plan.choices ? 'song.listenTwo' : 'song.listen')
+          .then(() => this.playTune(true));
         break;
     }
   }
@@ -240,6 +260,8 @@ class SongMaker implements Game {
       const lit = this.beads.filter((b) => b.lit).length;
       if (lit >= this.plan.notes) return this.checkAwake ? { tap: { on: this.check }, pause: 0.3 } : null;
     }
+    if (this.plan.mode === 'answer' && this.check && this.answered() >= this.plan.notes)
+      return this.checkAwake ? { tap: { on: this.check }, pause: 0.3 } : null;
     const note = beadToTap(this.plan, this.song, this.placed);
     const bead = note && this.beads.find((b) => b.note.col === note.col && b.note.row === note.row);
     if (!bead) return null;
@@ -280,9 +302,46 @@ class SongMaker implements Game {
     this.tap(bead);
   }
 
+  /** Answer/Finish my song: her lit jellies, one at most in each answer beat. */
+  private answered() {
+    const from = answerFrom(this.plan);
+    return this.beads.filter((b) => b.lit && !b.given && b.note.col >= from).length;
+  }
+
+  /** Answer/Finish my song: a beat holds one jelly, so a tap there moves it, and a tap on the lit one puts it out. Nothing is ever wrong. */
+  private answerTap(bead: Bead) {
+    const from = answerFrom(this.plan);
+    const mine = this.beads.filter((b) => b.lit && !b.given && b.note.col >= from).map((b) => b.note);
+    const next = new Set(answerTap(mine, bead.note).map(key));
+    for (const b of this.beads) {
+      if (b.given || b.note.col < from) continue;
+      const lit = next.has(key(b.note));
+      if (lit === b.lit) continue;
+      b.lit = lit;
+      if (lit) this.placed.add(key(b.note));
+      else this.placed.delete(key(b.note));
+      b.draw(b.cell);
+    }
+    this.ctx.particles.burst(bead.x, bead.y, {
+      kind: 'note',
+      colors: [swatch[rowColor(bead.note.row, this.plan.rows)].fill],
+      count: 3,
+      speed: [60, 140],
+      gravity: -40,
+      size: [0.5, 0.8],
+    });
+    // Any change starts the check's wait again, so it only confirms the whole song she has just heard.
+    this.beatsSinceChange = 0;
+    this.syncCheck();
+  }
+
   private tap(bead: Bead) {
     this.sing(bead);
     if (this.done || bead.given) return;
+    if (this.plan.mode === 'answer') {
+      this.answerTap(bead);
+      return;
+    }
     if (this.plan.mode === 'free' || this.plan.mode === 'wake' || this.plan.mode === 'compose') {
       bead.lit = !bead.lit;
       if (bead.lit) this.placed.add(key(bead.note));
@@ -325,6 +384,16 @@ class SongMaker implements Game {
       bead.lit = true;
       bead.ghost = false;
       bead.draw(bead.cell);
+      if (this.plan.choices) {
+        // Clear the beat's other shadow once she finds the right note so solved beats stand apart cleanly.
+        for (const other of this.beads) {
+          if (other !== bead && other.note.col === bead.note.col && other.ghost) {
+            other.ghost = false;
+            other.eventMode = 'none';
+            other.draw(other.cell);
+          }
+        }
+      }
       this.wrong = 0;
       this.ctx.particles.burst(bead.x, bead.y, {
         kind: 'star',
@@ -359,14 +428,23 @@ class SongMaker implements Game {
   private syncCheck() {
     const check = this.check;
     if (!check || this.done) return;
-    const ready = composeReady(this.plan, this.litCount(), this.beatsSinceChange);
+    const ready =
+      this.plan.mode === 'answer'
+        ? answerReady(this.plan, this.answered(), this.beatsSinceChange)
+        : composeReady(this.plan, this.litCount(), this.beatsSinceChange);
     if (ready === this.checkAwake) return;
     this.checkAwake = ready;
     check.eventMode = ready ? 'static' : 'none';
     check.alpha = ready ? 1 : 0.35;
     if (ready) {
       sfx.sparkle();
-      void this.ctx.say('song.compose.ready');
+      const readyLine =
+        this.plan.mode === 'answer'
+          ? this.plan.cols === 4
+            ? 'song.finish.ready'
+            : 'song.answer.ready'
+          : 'song.compose.ready';
+      void this.ctx.say(readyLine);
     }
   }
 
@@ -419,7 +497,10 @@ class SongMaker implements Game {
       });
     // A song she made on the free loop is hers to keep; a copied one is not.
     const creation =
-      this.plan.mode === 'free' || this.plan.mode === 'wake' || this.plan.mode === 'compose'
+      this.plan.mode === 'free' ||
+      this.plan.mode === 'wake' ||
+      this.plan.mode === 'compose' ||
+      this.plan.mode === 'answer'
         ? {
             kind: 'tune' as const,
             cols: this.plan.cols,
@@ -485,6 +566,17 @@ class SongMaker implements Game {
             alpha: 0.45,
           });
     }
+    // Answer/Finish my song: the pet's given beats sit on a pale tint, and her answer beats on the cream.
+    const from = answerFrom(p);
+    if (p.mode === 'answer')
+      for (const bar of lay.bars) {
+        const n = Math.min(bar.from + bar.cols, from) - bar.from;
+        if (n > 0)
+          b.rect(bar.x0, bar.y0, bar.cell * n, bar.cell * p.rows).fill({
+            color: swatch.purple.fill,
+            alpha: 0.18,
+          });
+      }
     for (const bead of this.beads) {
       const bar = barOf(lay, bead.note.col);
       bead.position.set(
@@ -492,8 +584,14 @@ class SongMaker implements Game {
         bar.y0 + bar.cell * (bead.note.row + 0.5),
       );
       // A given bar shown small upright is only to look at: its seeds hide and nothing in it takes a touch.
-      bead.visible = bar.tappable || bead.given;
-      if (p.mode !== 'wake') bead.eventMode = bar.tappable ? 'static' : 'none';
+      bead.visible = (bar.tappable || bead.given) && !bead.mute;
+      if (p.mode !== 'wake')
+        bead.eventMode =
+          bar.tappable &&
+          !(p.mode === 'answer' && bead.note.col < from) &&
+          !(p.choices && !bead.ghost && !bead.lit)
+            ? 'static'
+            : 'none';
       bead.draw(bar.cell);
     }
     this.view = v;
@@ -618,7 +716,7 @@ export const songMaker: GameModule = {
   skills: ['music', 'patterns', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [8],
+  entryLevels: [8, 11, 12],
   describeLevel: (l) => songPlan(l).name,
   music: silenced(STYLES.jelly),
   coplayHint:

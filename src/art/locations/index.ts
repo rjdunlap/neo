@@ -50,8 +50,15 @@ export const FILES = locationFiles(Object.keys(urls));
 
 const loaded = new Map<string, Texture>();
 
+/**
+ * The painted pictures are off in the paper look (docs/ART-STYLE.md): every location keeps its code-drawn scenery, which
+ * the paper pass turns into paper. Set to true to bring the pictures back.
+ */
+export const PAINTED_LOCATIONS = false;
+
 /** Loads every location picture and card, at the root's boot. Never throws: a file that fails leaves its location code-drawn. */
 export async function loadLocationArt(): Promise<void> {
+  if (!PAINTED_LOCATIONS) return;
   await Promise.all(
     [...FILES.pictures.values(), ...FILES.cards.values()].map(async (path) => {
       try {

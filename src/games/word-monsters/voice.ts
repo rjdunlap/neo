@@ -29,6 +29,23 @@ export const VOICE = {
   ],
   'monster.team.half': ['That is just {sound}. Two letters make {team}.'],
   'monster.blend': ['{word}!'],
+  'monster.blendit': [
+    'Listen to the {count} monsters. Which picture do they make?',
+    'Hear the {count} sounds. Which picture is it?',
+  ],
+  'monster.blendit.not': ['{word} is {sounds}. Listen again!'],
+  'monster.magic': [
+    'This is {base}. Add the quiet e to make {word}!',
+    'Make {word}! Put the quiet e on the end of {base}.',
+  ],
+  'monster.magic.not': [
+    '{built} is a different word. Try the quiet e!',
+    'That makes {built}. Look for the quiet e!',
+  ],
+  'monster.magic.long': ['The quiet e made the vowel say its name: {vowel}!'],
+  'monster.ladder.start': ['Start with {from}. Tap the box that changes to make {word}!'],
+  'monster.ladder': ['Now make {word}! Tap the box that changes.', 'Change one sound to make {word}!'],
+  'monster.ladder.replace': ['Put the new letter in to make {word}.'],
   'monster.iam': ["I'm {letter}! I say {sound}."],
   'monster.iam.name': ["I'm {letter}!"],
   'monster.next': ['Next sound: {sound}.'],

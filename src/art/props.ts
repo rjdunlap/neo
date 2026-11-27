@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, type ColorName } from './palette';
+import { darken, ellipsePoints } from './paper';
 
 /** Things to sort, each drawn about 100 units across and centered on (0, 0). Each has one obvious color. */
 export type PropKind =
@@ -33,11 +34,33 @@ const line = (color: number, width = 6) => ({ width, color, join: 'round' as con
 const LEAF = swatch.green;
 const STEM = 0x8f6142;
 
-function leaf(x: number, y: number, angle: number) {
-  const l = new Graphics().ellipse(14, 0, 16, 8).fill(LEAF.fill).stroke(line(LEAF.line, 3));
+/** A pointed leaf with a centre vein, its stalk end at (0, 0). */
+function leaf(x: number, y: number, angle: number, len = 34) {
+  const w = len * 0.36;
+  const l = new Graphics()
+    .moveTo(0, 0)
+    .quadraticCurveTo(len * 0.45, -w, len, 0)
+    .quadraticCurveTo(len * 0.45, w, 0, 0)
+    .closePath()
+    .fill(LEAF.fill)
+    .stroke(line(LEAF.line, 3));
+  l.moveTo(3, 0)
+    .lineTo(len * 0.78, 0)
+    .stroke({ width: 2, color: LEAF.line, alpha: 0.7, cap: 'round' });
   l.position.set(x, y);
   l.rotation = angle;
   return l;
+}
+
+/** A little five-point star: an orange's navel or a blueberry's crown. */
+function star(g: Graphics, x: number, y: number, r: number, color: number) {
+  const pts: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    const a = (i * Math.PI) / 5 - Math.PI / 2;
+    const k = i % 2 ? r * 0.45 : r;
+    pts.push(x + Math.cos(a) * k, y + Math.sin(a) * k);
+  }
+  g.poly(pts).fill(color);
 }
 
 /** A strawberry, banana or plum about 64 units across, centered on (0, 0), in its own colors. */
@@ -47,28 +70,43 @@ export function smallFruit(kind: SmallFruit): Graphics {
   if (kind === 'strawberry') {
     const c = swatch.red;
     g.moveTo(0, -18)
-      .bezierCurveTo(-26, -26, -38, 0, -16, 22)
+      .bezierCurveTo(-28, -28, -40, 0, -16, 22)
       .bezierCurveTo(-8, 30, -4, 34, 0, 36)
       .bezierCurveTo(4, 34, 8, 30, 16, 22)
-      .bezierCurveTo(38, 0, 26, -26, 0, -18)
+      .bezierCurveTo(40, 0, 28, -28, 0, -18)
       .fill(c.fill)
       .stroke(line(c.line));
+    // Seeds in staggered rows, each a little teardrop pointing down.
     for (const [x, y] of [
-      [-14, -6],
-      [0, -4],
-      [14, -6],
-      [-8, 8],
-      [8, 8],
-      [-2, 20],
-      [0, 30],
+      [-16, -8],
+      [0, -6],
+      [16, -8],
+      [-8, 6],
+      [8, 6],
+      [-14, 18],
+      [14, 18],
+      [0, 20],
+      [0, 31],
     ])
-      g.ellipse(x, y, 2, 3).fill(swatch.yellow.light);
-    // A leafy cap instead of a stalk.
-    for (const a of [-1, 0, 1])
-      g.ellipse(a * 10, -20 + Math.abs(a) * 2, 8, 5)
-        .fill(swatch.green.fill)
-        .stroke({ width: 3, color: swatch.green.line });
-    g.moveTo(0, -22).lineTo(1, -32).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+      g.moveTo(x, y - 3)
+        .quadraticCurveTo(x + 2.4, y, x, y + 3)
+        .quadraticCurveTo(x - 2.4, y, x, y - 3)
+        .fill(swatch.yellow.light);
+    // Pointed green sepals fanned over the top, and a short stalk.
+    for (const [tx, ty] of [
+      [-26, -10],
+      [-13, -2],
+      [0, 0],
+      [13, -2],
+      [26, -10],
+    ]) {
+      const bx = tx * 0.3;
+      g.poly([bx - 6, -23, tx, ty, bx + 6, -23]);
+    }
+    g.fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line, join: 'round' });
+    g.moveTo(0, -22)
+      .quadraticCurveTo(0, -30, 4, -34)
+      .stroke({ width: 4, color: swatch.green.line, cap: 'round' });
     return g;
   }
   if (kind === 'banana') {
@@ -91,7 +129,6 @@ export function smallFruit(kind: SmallFruit): Graphics {
   g.moveTo(0, -20).bezierCurveTo(8, -4, 8, 14, 0, 28).stroke({ width: 3, color: c.line, alpha: 0.5 });
   g.moveTo(0, -18).lineTo(3, -32).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
   g.ellipse(13, -30, 10, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
-  g.ellipse(-10, -4, 5, 8).fill({ color: 0xffffff, alpha: 0.4 });
   return g;
 }
 
@@ -99,7 +136,6 @@ export function prop(kind: PropKind, color: ColorName): Container {
   const sw = swatch[color];
   const c = new Container();
   const g = new Graphics();
-  const shine = new Graphics();
   switch (kind) {
     case 'apple':
       g.moveTo(0, -30)
@@ -110,34 +146,45 @@ export function prop(kind: PropKind, color: ColorName): Container {
         .closePath()
         .fill(sw.fill)
         .stroke(line(sw.line));
+      g.moveTo(-6, -32).quadraticCurveTo(0, -27, 6, -32).stroke({ width: 3, color: sw.line, cap: 'round' });
       g.moveTo(0, -30).quadraticCurveTo(2, -46, 8, -54).stroke(line(STEM, 5));
       c.addChild(g, leaf(6, -46, -0.5));
-      shine.ellipse(-26, -12, 7, 12).fill({ color: 0xffffff, alpha: 0.5 });
       break;
     case 'orange':
-      g.circle(0, 0, 46).fill(sw.fill).stroke(line(sw.line));
+      g.ellipse(0, 2, 47, 44).fill(sw.fill).stroke(line(sw.line));
       for (const [x, y] of [
-        [-16, -10],
-        [12, 14],
-        [18, -18],
-        [-8, 22],
-        [-24, 8],
+        [-16, -8],
+        [12, 16],
+        [22, -14],
+        [-8, 24],
+        [-28, 10],
+        [30, 4],
+        [4, -2],
       ])
-        g.circle(x, y, 2.5).fill(sw.line);
-      c.addChild(g, leaf(0, -44, -0.8));
-      shine.ellipse(-22, -18, 7, 11).fill({ color: 0xffffff, alpha: 0.5 });
+        g.circle(x, y, 2).fill(darken(sw.fill, 0.18));
+      star(g, 0, -38, 6, sw.line);
+      c.addChild(g, leaf(2, -40, -0.6, 30));
       break;
     case 'lemon':
-      g.moveTo(-58, 0)
-        .quadraticCurveTo(-46, -40, 0, -38)
-        .quadraticCurveTo(46, -40, 58, 0)
-        .quadraticCurveTo(46, 40, 0, 38)
-        .quadraticCurveTo(-46, 40, -58, 0)
-        .closePath()
+      // An oval drawn out to a little point at each end.
+      g.poly(
+        Array.from({ length: 48 }, (_, i) => {
+          const a = (i / 48) * Math.PI * 2;
+          const cx = Math.cos(a);
+          return [cx * 46 + Math.sign(cx) * 12 * Math.abs(cx) ** 14, Math.sin(a) * 36];
+        }).flat(),
+      )
         .fill(sw.fill)
         .stroke(line(sw.line));
+      for (const [x, y] of [
+        [-20, 10],
+        [8, 18],
+        [26, 4],
+        [-4, -4],
+        [-32, -4],
+      ])
+        g.circle(x, y, 1.8).fill(darken(sw.fill, 0.14));
       c.addChild(g);
-      shine.ellipse(-20, -16, 14, 6).fill({ color: 0xffffff, alpha: 0.5 });
       break;
     case 'pear':
       g.moveTo(0, -46)
@@ -148,38 +195,59 @@ export function prop(kind: PropKind, color: ColorName): Container {
         .closePath()
         .fill(sw.fill)
         .stroke(line(sw.line));
+      for (const [x, y] of [
+        [12, 4],
+        [22, 22],
+        [-8, 30],
+        [6, 38],
+        [-20, 14],
+      ])
+        g.circle(x, y, 1.8).fill(darken(sw.fill, 0.2));
       g.moveTo(0, -46).quadraticCurveTo(2, -58, 8, -64).stroke(line(STEM, 5));
-      c.addChild(g);
-      shine.ellipse(-18, 8, 6, 14).fill({ color: 0xffffff, alpha: 0.45 });
+      c.addChild(g, leaf(5, -56, -0.25, 28));
       break;
-    case 'blueberries':
-    case 'grapes': {
-      // Grapes hang in an upside-down triangle; blueberries sit in a loose pile.
-      const spots: [number, number][] =
-        kind === 'grapes'
-          ? [
-              [-28, -22],
-              [0, -22],
-              [28, -22],
-              [-14, 4],
-              [14, 4],
-              [0, 30],
-            ]
-          : [
-              [-24, -10],
-              [10, -24],
-              [24, 12],
-              [-6, 20],
-              [-30, 26],
-            ];
-      const r = kind === 'grapes' ? 15 : 20;
-      for (const [x, y] of spots) g.circle(x, y, r).fill(sw.fill).stroke(line(sw.line, 4));
-      if (kind === 'blueberries') for (const [x, y] of spots) g.circle(x, y - r * 0.55, 3).fill(sw.line);
-      if (kind === 'grapes') g.moveTo(0, -40).quadraticCurveTo(4, -52, 12, -58).stroke(line(STEM, 5));
+    case 'blueberries': {
+      // A loose pile, the ones behind a shade darker, each with its little crown.
+      const spots: [number, number, number][] = [
+        [10, -26, 1],
+        [-26, -12, 1],
+        [26, 10, 0],
+        [-6, 20, 0],
+        [-32, 26, 0],
+        [-4, -8, 0],
+      ];
+      const r = 19;
+      for (const [x, y, back] of spots) {
+        const fill = back ? darken(sw.fill, 0.14) : sw.fill;
+        g.circle(x, y, r).fill(fill).stroke(line(sw.line, 4));
+        star(g, x + 3, y - r * 0.42, 5.5, darken(sw.fill, 0.42));
+      }
       c.addChild(g);
-      if (kind === 'grapes') c.addChild(leaf(6, -48, -0.3));
-      for (const [x, y] of spots.slice(0, 3))
-        shine.circle(x - r * 0.35, y - r * 0.35, r * 0.22).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    }
+    case 'grapes': {
+      // A tapering bunch: the back grapes a shade darker, a curly tendril by the stalk.
+      const rows: [number, number[]][] = [
+        [-26, [-33, -11, 11, 33]],
+        [-4, [-22, 0, 22]],
+        [18, [-11, 11]],
+        [40, [0]],
+      ];
+      const r = 13.5;
+      rows.forEach(([y, xs], ri) =>
+        xs.forEach((x, i) => {
+          const back = (ri + i) % 2 === 1;
+          g.circle(x, y, r)
+            .fill(back ? darken(sw.fill, 0.14) : sw.fill)
+            .stroke(line(sw.line, 4));
+        }),
+      );
+      g.moveTo(0, -38).quadraticCurveTo(2, -50, 8, -58).stroke(line(STEM, 5));
+      g.moveTo(4, -46)
+        .bezierCurveTo(-8, -50, -20, -44, -18, -36)
+        .bezierCurveTo(-16, -30, -8, -34, -12, -40)
+        .stroke({ width: 2.5, color: LEAF.line, cap: 'round' });
+      c.addChild(g, leaf(6, -50, -0.35, 36));
       break;
     }
     case 'strawberry':
@@ -204,7 +272,6 @@ export function prop(kind: PropKind, color: ColorName): Container {
       g.circle(0, 0, 46).stroke(line(swatch.white.line, 5));
       g.circle(0, 0, 10).fill(0xffffff).stroke(line(swatch.white.line, 3));
       c.addChild(g);
-      shine.ellipse(-20, -22, 7, 12).fill({ color: 0xffffff, alpha: 0.5 });
       break;
     }
     case 'shell': {
@@ -229,29 +296,53 @@ export function prop(kind: PropKind, color: ColorName): Container {
       g.ellipse(0, -6, 40, 48).fill(sw.fill).stroke(line(sw.line));
       g.poly([-7, 46, 7, 46, 0, 38]).fill(sw.line);
       c.addChild(g);
-      shine.ellipse(-16, -24, 7, 13).fill({ color: 0xffffff, alpha: 0.5 });
       break;
-    case 'flower':
+    case 'flower': {
+      // Five separate petals in two shades round a seedy middle (a darker one on a yellow flower).
+      for (let i = 0; i < 5; i++) {
+        const a = (i * Math.PI * 2) / 5 - Math.PI / 2;
+        const pts = ellipsePoints(Math.cos(a) * 27, Math.sin(a) * 27, 26, 19, a).flat();
+        g.poly(pts)
+          .fill(i % 2 ? darken(sw.fill, 0.1) : sw.fill)
+          .stroke(line(sw.line, 4));
+      }
+      const mid = color === 'yellow' ? swatch.orange : swatch.yellow;
+      g.circle(0, 0, 19).fill(mid.fill).stroke(line(mid.line, 4));
       for (let i = 0; i < 6; i++) {
         const a = (i * Math.PI) / 3;
-        g.ellipse(Math.cos(a) * 26, Math.sin(a) * 26, 20, 20);
+        g.circle(Math.cos(a) * 9, Math.sin(a) * 9, 2.2).fill(mid.line);
       }
-      g.fill(sw.fill).stroke(line(sw.line, 5));
-      g.circle(0, 0, 18).fill(0xffd54a).stroke(line(0xd9a520, 4));
       c.addChild(g);
       break;
+    }
   }
-  c.addChild(shine);
   return c;
 }
 
 /** A black top hat with a red band, in a critter's body coordinates (it sits on the head); Critter Sort's, shared. */
+/** A scarf wound round the neck with one end hanging down; it rides on the critter's body like the hat. */
+export function scarfArt(): Graphics {
+  return new Graphics()
+    .ellipse(0, -84, 92, 22)
+    .fill(swatch.blue.fill)
+    .stroke({ width: 5, color: swatch.blue.line })
+    .rect(-44, -90, 14, 14)
+    .rect(-8, -92, 14, 14)
+    .rect(28, -90, 14, 14)
+    .fill(swatch.white.light)
+    .roundRect(30, -78, 30, 78, 8)
+    .fill(swatch.blue.fill)
+    .stroke({ width: 5, color: swatch.blue.line })
+    .rect(30, -26, 30, 10)
+    .fill(swatch.white.light);
+}
+
 export function hatArt(): Graphics {
   return new Graphics()
-    .ellipse(0, -232, 74, 16)
+    .ellipse(0, -254, 74, 16)
     .fill(ink)
-    .roundRect(-44, -320, 88, 90, 10)
+    .roundRect(-44, -342, 88, 90, 10)
     .fill(ink)
-    .rect(-44, -258, 88, 16)
+    .rect(-44, -280, 88, 16)
     .fill(swatch.red.fill);
 }

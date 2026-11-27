@@ -1,0 +1,5 @@
+# 2026-11-26 — Owl Walk Home level 8 Check the helper (PR #2217)
+
+**Changed:** Owl Walk Home level 8 (school top, window `4, 7, 8`): the pet proposes an owl for a card and she checks it by agreeing (green check) or tapping an owl that hops farther (`proposalFor`, `nextProposalBest`, `judgeCheck` in `logic.ts`; bubble, check and judging in `index.ts`; voice, how-to card, ghost finger bot). The shortlist suite's owls block now runs level 8 (`FROM_LEVEL=8`).
+**Ran:** `npm run typecheck`, `npm run format:check`, lint, `npx vitest run src/games/owl-walk src/content` passed; `BROWSER_SUITE=shortlist SHORTLIST_ONLY=owls FROM_LEVEL=8` passed (proposals checked, a shorter proposal agreed to twice with a hint and glow, better owls chosen over shorter proposals, everyone home); a 768×1024 screenshot of the proposal bubble; `BROWSER_SUITE=fingerdemo FINGER_ONLY=owl-walk FINGER_LEVELS=8 FINGER_BAND=school` finished in 61.4 s of the 75 allowed.
+**Not run:** the full `npm test` (left to PR CI), build, offline, a real phone, spoken lines on device speech (every new line carries a slot, so no clip was rendered), the saved score of the browser play (not asserted).

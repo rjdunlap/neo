@@ -19,6 +19,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
     { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
+    {
+      from: 13,
+      to: 13,
+      text: 'Look at the sky and at the thermometer. Tap one thing for the sky and one thing for the temperature: something warm on a cold day, sandals on a hot day.',
+    },
     { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
     {
       from: 12,
@@ -60,6 +65,7 @@ export const HOW_TO: GameHowTo = {
       text: 'Dress both friends in each of three rounds. Each friend receives two things.',
     },
     { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
+    { from: 13, to: 13, text: 'Each of three rounds ends when both things are on the pet.' },
     {
       from: 11,
       to: 11,
@@ -87,6 +93,11 @@ export const HOW_TO: GameHowTo = {
       from: 11,
       to: 11,
       text: 'Taking off something that still fits is a miss: it stays on and the pet says why. Two in a row wiggles the thing that should come off, counting one hint.',
+    },
+    {
+      from: 13,
+      to: 13,
+      text: 'A thing for the wrong temperature goes on for a moment, shows the heat or the chill, and says which kind of day it is for. After two misses a right thing glows. The thermometer is pictures only: no numbers.',
     },
     {
       from: 9,

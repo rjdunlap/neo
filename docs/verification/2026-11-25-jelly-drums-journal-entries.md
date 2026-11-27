@@ -1,0 +1,5 @@
+# 2026-11-25 — Jelly Drums journal entries (PR #2165)
+
+**Changed:** Jelly Drums files the journal entry `jelly-drums:low-high` (the biggest and the littlest jelly both tapped in a round) through `JournalWatch` in `logic.ts` and `discoveries` on `ctx.finish`; `JournalGame` gained `jelly-drums`, the entry reuses the existing clip for `jelly.lowhigh`, and its card draws the game's own jellies. The second entry, a scale, waits for a voice-clip render (a new journal line needs a rendered clip, and the clip test fails without one).
+**Ran:** typecheck; lint; format check; `npx vitest run src/games/jelly-drums src/content` (rule tests for what each round files, journal tests that the spoken lines and card wording match the rules); `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` (levels 1 to 3 file low and high; all 13 levels passed before the scale entry was split out, and the split removed code only); `scripts/voice-clips` test.
+**Not run:** full `npm test`, build, `fingerdemo` (bot unchanged), a journal-scene screenshot of the two new cards, offline.

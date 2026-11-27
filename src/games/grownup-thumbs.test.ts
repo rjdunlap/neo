@@ -50,17 +50,23 @@ import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
 import { layout as jarLayout } from './jar-clues/layout';
-import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
+import { layout as keyLayout, END as KEY_END } from './key-it-out/layout';
+import { SPOT_SIZE as LAST_PEBBLE_SPOT } from './last-pebble/logic';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { waveLayout } from './wave-ribbon/layout';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
 import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
 import { specOf as sumSpec } from './sum-crates/logic';
+import { layout as ballotsLayout } from './count-the-ballots/layout';
+import { roomLayout as commonGroundLayout } from './common-ground/layout';
+import { marketLayout } from './market-days/layout';
+import { tabletsLayout } from './two-tablets/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
@@ -179,6 +185,7 @@ const MEASURE: Record<string, () => Size[]> = {
     ]),
     ['button', 100],
   ],
+  'last-pebble': () => [['stepping spot', LAST_PEBBLE_SPOT]],
   'log-roll': () =>
     // The log rolls by the direction buttons; the stones are not tapped.
     FLOORS.flat().flatMap((floor) => {
@@ -202,6 +209,39 @@ const MEASURE: Record<string, () => Size[]> = {
     ['hole', MARBLE_HOLE_SIZE],
     ['button', MARBLE_BUTTON_H],
   ],
+  'count-the-ballots': () => {
+    const l = ballotsLayout(v);
+    return [
+      ['ballot card', Math.min(l.card.w, l.card.h)],
+      ['pile', Math.min(l.tray.w, l.tray.h)],
+      ['button', Math.min(l.help.w, l.help.h)],
+    ];
+  },
+  'market-days': () => {
+    const l = marketLayout(v, 4);
+    return [
+      ['banner', l.banner],
+      ['button', l.button],
+      ['town', l.town],
+    ];
+  },
+  'common-ground': () => {
+    // Level 3, the grown-up band's only level: the 3 × 2 floor cells, the 110-unit pieces, the request cards and the round buttons.
+    const l = commonGroundLayout(v, 140);
+    return [
+      ['floor cell', l.floor.cell],
+      ['piece', 110],
+      ['request card', Math.min(l.bubbles[0].w, l.bubbles[0].h)],
+      ['button', 112],
+    ];
+  },
+  'two-tablets': () => {
+    const l = tabletsLayout(v, 4, 1);
+    return [
+      ['sign', l.cell],
+      ['button', l.button],
+    ];
+  },
   'number-nook': () =>
     grown(nookLevels.grownup!).map((level) => {
       const { rows, cols } = nookPlan(level);
@@ -337,6 +377,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', side(l.check)],
     ];
   },
+  'wave-ribbon': () => {
+    const l = waveLayout(v, true, true);
+    return [
+      ['button', 100],
+      ['lane toggle', side(l.laneSize)],
+      ['hypothesis card', side(l.card)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -385,10 +433,15 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
   'lantern-lights': { px: 50.8, what: 'button' },
+  'last-pebble': { px: 65, what: 'stepping spot' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 44.7, what: 'case-file clue card', slides: 44.7 },
   'marble-jump': { px: 44.7, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
+  'count-the-ballots': { px: 50.8, what: 'button' },
+  'market-days': { px: 50.8, what: 'banner' },
+  'two-tablets': { px: 50.8, what: 'sign' },
+  'common-ground': { px: 55.9, what: 'piece' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },
@@ -404,6 +457,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },
+  'wave-ribbon': { px: 50.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
   'workshop-detective': { px: 45.7, what: 'mark toggle' },

@@ -18,6 +18,7 @@ import { arrowIcon, houseIcon, libraryIcon, nestIcon } from '../../ui/icons';
 import { Scene } from '../Scene';
 import { WayOut } from '../leave';
 import { BallPlay } from './ball-play';
+import { LampPlay } from './lamp-play';
 import { TuneComparison } from './tune-comparison';
 
 /**
@@ -33,6 +34,15 @@ export class PlayScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly pet: Companion = this.track(makeCompanion());
   readonly toy = this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')));
+  /** The sun-and-moon lamp (RW11 slice 3): evening and back, and her friend's answer to it. */
+  readonly lamp = this.track(
+    new LampPlay(
+      this.pet,
+      this.toy,
+      this.tw,
+      (evening) => void voice.say(evening ? 'play.evening' : 'play.lamp'),
+    ),
+  );
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
     this.leave(this.back, () => this.app.go.hub(), 'nav.back'),
   ).means('back');
@@ -141,7 +151,15 @@ export class PlayScene extends Scene {
     this.content.sortableChildren = true;
     this.backdrop.zIndex = -1e6;
     this.toy.shadow.zIndex = -1e5;
-    this.content.addChild(this.backdrop, this.toy.shadow, this.pet, this.toy.ball);
+    this.lamp.dim.zIndex = -9e5;
+    this.content.addChild(
+      this.backdrop,
+      this.lamp.dim,
+      this.toy.shadow,
+      this.lamp.glow,
+      this.pet,
+      this.toy.ball,
+    );
     this.pet.hitArea = this.pet.touchArea(20);
     // A large friend instead of the corner guide, so a poke repeats the instruction.
     onTap(
@@ -175,7 +193,7 @@ export class PlayScene extends Scene {
     onTap(this.books, () => this.open(this.books, () => this.app.go.library(), 'play.library'), {
       cooldown: 500,
     });
-    this.ui.addChild(this.board, this.plaque, this.basket, this.books, this.back, this.home);
+    this.ui.addChild(this.board, this.plaque, this.basket, this.books, this.lamp.node, this.back, this.home);
     if (this.bed) {
       this.buildBed(this.bed);
       this.ui.addChild(this.bed);
@@ -290,9 +308,11 @@ export class PlayScene extends Scene {
       this.books,
       this.bed,
       this.toy.ball,
+      this.lamp.node,
     ];
     void this.out.take(node, choices, go, () => {
       this.toy.frozen = true;
+      this.lamp.frozen = true;
       return voice.say(line);
     });
   }
@@ -311,6 +331,7 @@ export class PlayScene extends Scene {
     if (this.toy.throws === 0 && !this.out.leaving) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     this.toy.place(l.floor, l.ball);
+    this.lamp.place(l.lamp, l.floor, v);
     this.comparison?.resize(v);
   }
 

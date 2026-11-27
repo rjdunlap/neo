@@ -175,8 +175,106 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     });
     await finishRest('maker-lane');
     assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
+
+    // Levels 4 and 5 (school) on an upright phone: the branching rules live in `game.bp`.
+    const bstate = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game,
+          p = g.bp;
+        return {
+          index: p.index,
+          form: p.form,
+          colour: p.colour,
+          held: p.held,
+          misses: p.misses,
+          hints: p.hints,
+          glowing: p.glowing,
+          bubbles: [...p.bubbles],
+          jobs: p.item.stalls.map((x) => x.job),
+        };
+      });
+    const finishBranch = async () => {
+      for (let k = 0; k < 20; k++) {
+        await ready();
+        if (await page.evaluate(() => neo.scene.finished || neo.scene.game.bp.done)) break;
+        await tapStall(await page.evaluate(() => neo.scene.game.bp.glowFor()));
+      }
+      await finished('maker-lane');
+    };
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(600);
+
+    // Level 4: a plain red scarf by the spin, weave, dye route (no misses; another route works too), then red and blue
+    // stripes: fleece and plain yarn sent to the weaver (two misses, the glow and one hint), dyed yarn held, the second
+    // bundle dyed at the fleece.
+    await launch('maker-lane', 4, 'Mia', 'school');
+    await ready();
+    s = await bstate();
+    assert.deepEqual(
+      s.jobs,
+      ['spinner', 'weaver', 'dyer'],
+      'the authored plain order: spinner, weaver, dyer',
+    );
+    await tapStall(0);
+    await tapStall(1);
+    s = await bstate();
+    assert.deepEqual([s.form, s.colour, s.misses], ['scarf', null, 0], 'spun and woven: an undyed scarf');
+    await tapStall(2);
+    await ready();
+    s = await bstate();
+    assert.deepEqual([s.index, s.misses], [1, 0], 'dyed last: the plain scarf goes to the pet, no misses');
+    assert.deepEqual(s.jobs, ['dyer', 'spinner', 'weaver'], 'the striped order: dyer, spinner, weaver');
+    await tapStall(2);
+    s = await bstate();
+    assert.deepEqual([s.misses, s.bubbles], [1, [2]], 'fleece to the weaver: one miss and a bubble');
+    await tapStall(1);
+    await tapStall(2);
+    s = await bstate();
+    assert.deepEqual(
+      [s.form, s.misses, s.hints, s.glowing],
+      ['yarn', 2, 1, true],
+      'plain yarn to the weaver in a striped order: the second miss lights the glow, one hint',
+    );
+    await tapStall(0);
+    await tapStall(2);
+    await ready();
+    s = await bstate();
+    assert.deepEqual([s.index, s.held, s.form], [2, 'red', 'cleanFleece'], 'the weaver holds the red yarn');
+    await page.waitForTimeout(1200);
+    await screenshot('maker-lane-4-held');
+    await tapStall(0);
+    await tapStall(1);
+    await tapStall(2);
+    await finishBranch();
+    assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
+
+    // Level 5: the log (the pulper first needs chips: a miss), then the old paper, which the chipper refuses and the
+    // presser cannot use yet (the glow, one hint), then the pulper and the presser.
+    await launch('maker-lane', 5, 'Mia', 'school');
+    await ready();
+    s = await bstate();
+    assert.deepEqual(s.jobs, ['pulper', 'chipper', 'presser'], 'the authored lane: pulper, chipper, presser');
+    await tapStall(0);
+    s = await bstate();
+    assert.deepEqual([s.form, s.misses], ['log', 1], 'the pulper cannot use a log');
+    await tapStall(1);
+    await tapStall(0);
+    await tapStall(2);
+    await ready();
+    s = await bstate();
+    assert.deepEqual([s.index, s.form], [1, 'oldPaper'], 'the box goes to the pet; old paper is next');
+    await tapStall(1);
+    await tapStall(2);
+    s = await bstate();
+    assert.deepEqual([s.misses, s.hints, s.glowing], [3, 1, true], 'old paper skips the chipper: the glow');
+    await tapStall(0);
+    await tapStall(2);
+    await finishBranch();
+    assert.deepEqual(await score(), [3, 1], 'level 5 saved 3 misses, 1 hint');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
     log(
-      'Maker Lane 1–3: toddler level 1 a free tap then the waving makers (0/0); portrait preschool level 2 two refused makers, bubbles and the glow then the right makers (2/1); pre-K level 3 the sheep for the sock (replay, dimmed) then the cotton plant (1/0); passed',
+      'Maker Lane 1–3: toddler level 1 a free tap then the waving makers (0/0); portrait preschool level 2 two refused makers, bubbles and the glow then the right makers (2/1); pre-K level 3 the sheep for the sock (replay, dimmed) then the cotton plant (1/0); upright school level 4 a plain scarf by spin, weave, dye then stripes with two refusals and the held yarn (2/1); level 5 a log and old paper through the pulper, chipper and presser (3/1); passed',
     );
   }
   return { makerLanePlay };

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView, NO_INSETS } from '../../engine/view';
+import { cardRowLayout } from './every';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import {
   BANK_HIT_R,
@@ -28,13 +29,15 @@ import {
   planFor,
   pondCenter,
   pondDrawRx,
+  everySeats,
+  everyTotals,
   signSpot,
   splitSeats,
   type Seating,
 } from './logic';
 
 /**
- * Duck Pond held upright (chunk 31, docs/definitions/phone-portrait.md): all fifteen levels at the upright phone views.
+ * Duck Pond held upright (chunk 31, docs/definitions/phone-portrait.md): all sixteen levels at the upright phone views.
  * The tap targets are the waiting ducks (levels 1–5), the check and the ducks sent back from the pond (levels 4–5), the five
  * ducks that wave bye-bye (level 12) and the answer pads; level 13 takes a touch anywhere. Every other duck on the pond is
  * counted, never tapped, but must stay on the water and on screen.
@@ -160,6 +163,45 @@ describe.each(Object.entries(views))('Duck Pond upright on %s', (_, v) => {
         (l, r) => {
           const seats = splitSeats(l, r);
           ripple(seats, `${l}+${r}`);
+        },
+      );
+    }
+
+    if (plan.mode === 'every') {
+      it.each(everyTotals(plan))(
+        'seats %s ducks either side of the bridge, each tap area its own',
+        (total) => {
+          const seats = everySeats(total);
+          ripple({ slots: [...seats.left, ...seats.right], scale: seats.scale }, `${total} ducks`);
+          const taps = [...seats.left, ...seats.right].map(([x, y]) => ({
+            x: c.x + x,
+            y: c.y + y - BANK_HIT_UP,
+          }));
+          const r = seats.hitR * seats.scale;
+          for (const [i, p] of taps.entries()) {
+            expect(uprightProblems(v, [{ what: `duck ${i + 1}`, ...p, w: 2 * r, h: 2 * r }])).toEqual([]);
+            for (const q of taps.slice(i + 1))
+              expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(2 * r - 1e-6);
+            // Clear of the check beside the sign.
+            const ck = checkSpot(v);
+            expect(Math.hypot(p.x - ck.x, p.y - ck.y)).toBeGreaterThanOrEqual(r + CHECK_HIT_R);
+          }
+        },
+      );
+
+      it.each(everyTotals(plan))(
+        'keeps the %s-total card row in the view, clear of the pet, the pond and the check',
+        (total) => {
+          const row = cardRowLayout(v, total - 1);
+          expect(row.xs).toHaveLength(total - 1);
+          expect(row.w).toBeGreaterThanOrEqual(80);
+          expect(row.xs[0] - row.w / 2).toBeGreaterThanOrEqual(v.upright ? 150 : 0);
+          expect(row.xs.at(-1)! + row.w / 2).toBeLessThanOrEqual(v.w);
+          // Below the pond's lower rim, above the screen's bottom edge.
+          expect(row.y - row.h / 2).toBeGreaterThanOrEqual(c.y + POND_RY);
+          expect(row.y + row.h / 2).toBeLessThanOrEqual(v.h);
+          const ck = checkSpot(v);
+          expect(ck.y + CHECK_HIT_R).toBeLessThanOrEqual(row.y - row.h / 2);
         },
       );
     }

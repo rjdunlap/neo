@@ -49,8 +49,23 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 11, to: 12, text: 'Tap the green check when the row matches.' },
     { from: 12, to: 12, text: 'Write the picture one row at a time, from the top.' },
+    {
+      from: 13,
+      to: 13,
+      text: 'A window hangs with half of its panes colored. Tap the panes of the empty window until the same amount is colored, in a shape that looks different, then tap the green check.',
+    },
+    {
+      from: 13,
+      to: 13,
+      text: 'Then tap the window that has the same amount colored; the colored panes slide across one for one.',
+    },
   ],
   finish: [
+    {
+      from: 13,
+      to: 13,
+      text: 'One round is two questions about one window. It ends after the colored panes have slid across.',
+    },
     { from: 11, to: 11, text: 'Each row is finished by a right check; the round ends after three rows.' },
     {
       from: 12,

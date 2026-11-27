@@ -175,8 +175,8 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
 5. **Level 5, Stepping stones, and the lap band.** *Built 2026-11-23 ([PR #2068](https://github.com/rjdunlap/neo/pull/2068)); see [What was built: slice 5](#what-was-built-slice-5-2026-11-23).* Decision 6 applied. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
 6. **Level 6, Color or shape.** *Built 2026-11-23 ([PR #2081](https://github.com/rjdunlap/neo/pull/2081)); see [What was built: slice 6](#what-was-built-slice-6-2026-11-23).* Decision 7 applied. *Tier: new interaction: as slice 2.*
-7. **A grown-up in the second seat.** Needs decision 5.
-8. **Levels 7 and 8.** Sketches; define first after a person has played level 4.
+7. **A grown-up in the second seat.** *Built 2026-11-26 ([PR #2213](https://github.com/rjdunlap/neo/pull/2213)); see [What was built: slice 7](#what-was-built-slice-7-2026-11-26).* Decision 5 applied, with a chosen seat button rather than a tap on the corner pet (the shell owns that tap).
+8. **Levels 7 and 8.** **Defined 2026-11-26** ([definition](../definitions/owl-walk-levels-7-8.md), docs only); **levels 7 and 8 built 2026-11-26**. The pre-K play of level 4 is a person check, not a gate.
 
 Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the `fingerdemo` bot, and records a short VERIFICATION entry.
 
@@ -219,3 +219,7 @@ Nothing: the dive session (2026-10-12) was research and ideation only. It checke
 - **Misses, hints and help.** A wrong stone names only the failed attribute (`owl.not-color` / `owl.not-shape`); two misses glow and twinkle fireflies on the right stone; a third miss gives the pet's assisted hop. How-to step `from: 6` added (and step 5 scoped `to: 5`), `autotouch()` plays level 6, and the new voice line clip was rendered with Kokoro.
 - **Incidental ownership fix:** `squash()` in `src/games/owl-walk/index.ts` now scales relative to `stoneScale(plan)` so level 5's 1.6× stones stay 1.6× after a tap.
 - **Not built:** the grown-up seat (slice 7, decision 5), levels 7–8 (slice 8).
+
+## What was built: slice 7 (2026-11-26)
+
+A grown-up in the pet's seat on levels 2–4. A round button (`drawSeat`, `twoArt`/`oneArt` from `src/art/seats.ts`) is chosen by the person, off by default. With it on, `petTurn` turns and says the pet's card, glows its owl and waits (`partnerHops`); the right stone or nest hops the pet's owl, and a wrong tap gets her own spoken reason, a glow on the second and the hop together on the third (`seatStep`). Nothing touches `misses` or `hints`, so her round and level stay her own. The shortlist browser suite plays level 2 with the seat on, a wrong grown-up tap and the right one, asserting her counts do not move. The ghost finger stays a one-finger solo demo. The two new lines carry `{pet}`, so no clip must be rendered.

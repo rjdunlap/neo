@@ -47,12 +47,14 @@ export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Pack the flag' },
   { level: 2, name: 'Make it ready' },
   { level: 3, name: 'Two useful jobs' },
+  { level: 4, name: 'The request changed' },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
+  school: { min: 3, max: 4 },
 };
 
 export function planFor(level: number): Plan {
@@ -266,11 +268,13 @@ export function botAction(s: ReadyState): Action | null {
 }
 
 export function describeReady(level: number): string {
-  return level <= 1
-    ? 'Pack the prop the card shows'
-    : level === 2
-      ? 'Get one prop ready, then pack it'
-      : 'Get two props ready and packed, in any order';
+  return level >= 4
+    ? 'Pack, then repair the bag when the request changes'
+    : level <= 1
+      ? 'Pack the prop the card shows'
+      : level === 2
+        ? 'Get one prop ready, then pack it'
+        : 'Get two props ready and packed, in any order';
 }
 
 // ---- Layout -----------------------------------------------------------------------------------------------------------

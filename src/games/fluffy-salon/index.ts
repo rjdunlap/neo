@@ -1,6 +1,7 @@
 import { Circle, Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { swatch, wood, type ColorName } from '../../art/palette';
+import { densify, paperPoints, paperRect, U } from '../../art/paper';
 import { gradientTexture } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -405,13 +406,30 @@ class FluffySalon implements Game {
     this.wall.height = v.h;
     const r = this.floor.clear();
     // A big salon mirror behind the chair and a checked floor in the room's colour.
-    r.roundRect(v.w * 0.5 - 230, 60, 460, v.h - 260, 60)
-      .fill({ color: 0xd6eefa, alpha: 0.8 })
-      .stroke({ width: 14, color: wood.fill });
-    r.rect(0, v.h - 150, v.w, 150).fill(0xf3e3c8);
+    // Paper on purpose, with a gentle edge: a wooden frame with the glass laid flat inside it, and the floor as one
+    // sheet with its checks printed flat on it (not a tray of separately cut tiles).
+    // The mirror's top sits below the grown-up tip card, so the card never lies over the frame.
+    const mt = 130,
+      mh = v.h - 200 - mt;
+    paperRect(r, v.w * 0.5 - 230, mt, 460, mh, 60, wood.fill, { amp: 0.6 * U, seed: 3 });
+    paperRect(r, v.w * 0.5 - 216, mt + 14, 432, mh - 28, 48, 0xd6eefa, { flat: true });
+    paperRect(r, v.w * 0.5 - 170, mt + 44, 26, mh - 120, 13, 0xffffff, { flat: true, alpha: 0.45 });
+    paperRect(r, -20, v.h - 150, v.w + 40, 170, 0, 0xf3e3c8, { amp: 0.6 * U, seed: 4 });
     for (let x = 0; x < v.w; x += 60)
       for (let y = v.h - 150; y < v.h; y += 60)
-        if (((x + y) / 60) % 2 < 1) r.rect(x, y, 60, 60).fill(swatch[this.room.floor].light);
+        if (((x + y) / 60) % 2 < 1) {
+          const [x1, y1] = [x + 60, Math.min(v.h, y + 60)];
+          const sq = densify(
+            [
+              [x, y],
+              [x1, y],
+              [x1, y1],
+              [x, y1],
+            ],
+            2 * U,
+          );
+          paperPoints(r, sq, swatch[this.room.floor].light, { flat: true });
+        }
     r.roundRect(v.w * 0.5 - 170, v.h - 190, 340, 60, 20)
       .fill(swatch.red.fill)
       .stroke({ width: 6, color: swatch.red.line });
@@ -543,7 +561,6 @@ class FluffySalon implements Game {
   destroy() {
     this.cancel();
     this.touch.removeAllListeners();
-    this.wall.texture.destroy(true);
   }
 
   private setHair(start: { length: number; curl: number; color: ColorName }) {

@@ -1,10 +1,47 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { lighten, paperRect, U } from '../../art/paper';
 import { prop } from '../../art/props';
 import { starPoints } from '../../art/shapes';
 import type { ClayColor, ClayShape, SmallArt, Thing } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+
+/** The tank's pale paper, its soft blue crayon edge, and the water: one flat sheet so things under it still read. */
+const TANK_PAPER = 0xf0f6f7;
+const TANK_EDGE = 0x8fb0c0;
+export const TANK_WATER = lighten(swatch.blue.fill, 0.55);
+
+/**
+ * A paper water tank (not glossy glass, so it sits with the paper scenery): the pale body with its crayon edge, the
+ * water laid flat inside and a flat pale strip for the shine go in `back`; the wavy surface line (and, with `wash`, a
+ * light wash over what sits under water) go in `front`.
+ */
+export function drawTank(
+  back: Graphics,
+  front: Graphics,
+  t: { l: number; r: number; top: number; surface: number; bottom: number },
+  wash = false,
+) {
+  const w = t.r - t.l;
+  paperRect(back, t.l, t.top, w, t.bottom - t.top, 24, TANK_PAPER, {
+    line: TANK_EDGE,
+    amp: 0.8 * U,
+    seed: t.l,
+  });
+  paperRect(back, t.l + 8, t.surface, w - 16, t.bottom - t.surface - 8, 18, TANK_WATER, { flat: true });
+  paperRect(back, t.l + 18, t.top + 20, 12, Math.min(120, (t.bottom - t.top) * 0.5), 6, 0xffffff, {
+    flat: true,
+    alpha: 0.75,
+  });
+  if (wash)
+    front
+      .rect(t.l + 8, t.surface, w - 16, t.bottom - t.surface - 8)
+      .fill({ color: swatch.blue.fill, alpha: 0.18 });
+  front.moveTo(t.l + 8, t.surface);
+  for (let x = t.l + 8; x <= t.r - 8; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
+  front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
+}
 
 /** One thing to drop in the water, about 90 units across, centered on (0, 0). */
 export function thingArt(thing: Thing): Container {
@@ -329,4 +366,108 @@ export function shakerArt(): Container {
 export function waterlineMark(g: Graphics, x: number, y: number, w: number): Graphics {
   for (let dx = -w / 2; dx < w / 2; dx += 14) g.moveTo(x + dx, y).lineTo(x + Math.min(dx + 8, w / 2), y);
   return g.stroke({ width: 3, color: swatch.blue.line, cap: 'round' });
+}
+
+/** Garden Raft: a pot of herbs (or a pumpkin) with its weight as stones in a small basket, about 100 wide, base at y = 0. */
+export function potArt(stones: 1 | 2 | 3, pumpkin = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (pumpkin) {
+    g.ellipse(0, -34, 44, 34).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+    g.ellipse(-16, -34, 12, 30).stroke(line(swatch.orange.line, 3));
+    g.ellipse(16, -34, 12, 30).stroke(line(swatch.orange.line, 3));
+    g.roundRect(-5, -76, 10, 16, 4).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+  } else {
+    g.poly([-26, -44, 26, -44, 20, 0, -20, 0]).fill(swatch.orange.light).stroke(line(swatch.orange.line));
+    g.roundRect(-30, -54, 60, 14, 6).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+    for (const [x, h] of [
+      [-14, 16],
+      [0, 22],
+      [14, 16],
+    ])
+      g.ellipse(x, -54 - h, 8, h)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 3));
+  }
+  c.addChild(g);
+  // The weight: one to three stones in a basket in front.
+  const basket = new Graphics();
+  basket.roundRect(-30, -18, 60, 18, 6).fill(wood.light).stroke(line(wood.line, 3));
+  for (let i = 0; i < stones; i++)
+    basket
+      .circle((i - (stones - 1) / 2) * 17, -23, 9)
+      .fill(swatch.white.light)
+      .stroke(line(swatch.white.line, 3));
+  c.addChild(basket);
+  return c;
+}
+
+/** Garden Raft: a float barrel, about 90 wide and 70 tall, centered on (0, 0). */
+export function barrelArt(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-44, -34, 88, 68, 24).fill(swatch.red.fill).stroke(line(swatch.red.line));
+  g.rect(-44, -12, 88, 24).fill(swatch.white.fill);
+  g.roundRect(-44, -34, 88, 68, 24).stroke(line(swatch.red.line));
+  return g;
+}
+
+/** Garden Raft: a small plumb bob on a string, hanging down from (0, 0) by `drop`, for where the weight is. */
+export function plumbArt(drop = 54): Graphics {
+  const g = new Graphics();
+  g.moveTo(0, 0).lineTo(0, drop).stroke(line(ink, 3));
+  g.poly([0, drop + 24, -10, drop, 10, drop])
+    .fill(swatch.purple.fill)
+    .stroke(line(swatch.purple.line, 3));
+  return g;
+}
+
+/** Build a Boat: a foil tray `cells` cells wide and `wall` tall, its base at y = 0 and centered on x = 0, with a seam per cell. */
+export function boatArt(cells: number, cellW: number, wall: number): Container {
+  const c = new Container();
+  const w = cells * cellW;
+  const g = new Graphics();
+  g.poly([-w / 2, -wall, w / 2, -wall, w / 2 - 16, 0, -w / 2 + 16, 0])
+    .fill(swatch.white.light)
+    .stroke(line(swatch.white.line));
+  g.moveTo(-w / 2 + 6, -wall + 10)
+    .lineTo(w / 2 - 6, -wall + 10)
+    .stroke(line(swatch.blue.light, 4));
+  for (let i = 1; i < cells; i++)
+    g.moveTo(-w / 2 + i * cellW, -wall + 4)
+      .lineTo(-w / 2 + i * cellW + (i * cellW > w / 2 ? -4 : 4), -4)
+      .stroke(line(swatch.white.line, 2));
+  c.addChild(g);
+  return c;
+}
+
+/** The marbles drawn as a row of dots (two rows past eight), centered on x and with its first row at y. */
+export function marbleDots(g: Graphics, x: number, y: number, n: number): Graphics {
+  const perRow = 8;
+  for (let i = 0; i < n; i++) {
+    const row = Math.floor(i / perRow);
+    const inRow = Math.min(perRow, n - row * perRow);
+    const col = i % perRow;
+    g.circle(x + (col - (inRow - 1) / 2) * 24, y - row * 24, 10)
+      .fill(swatch.purple.fill)
+      .stroke(line(swatch.purple.line, 2));
+  }
+  return g;
+}
+
+/** Build a Boat: the bowl on the near bank, about 170 by 150, holding up to six marbles (what is left of the pile). */
+export function marbleBowlArt(count: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-85, -75, 170, 150, 30).fill({ color: swatch.white.fill, alpha: 0.6 });
+  g.ellipse(0, 20, 64, 46).fill(wood.fill).stroke(line(wood.line));
+  for (let i = 0; i < Math.min(count, 6); i++) {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    g.circle(-34 + col * 34, -2 + row * 26 - 6, 14)
+      .fill(swatch.white.fill)
+      .stroke(line(swatch.purple.line, 3));
+    g.circle(-34 + col * 34 + 2, -2 + row * 26 - 4 - 6, 6).fill(swatch.purple.fill);
+  }
+  c.addChild(g);
+  return c;
 }

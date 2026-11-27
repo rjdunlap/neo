@@ -253,6 +253,7 @@ export const PREFIXES = [
   'lamp',
   'workshop-detective',
   'outcrop',
+  'lp',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */

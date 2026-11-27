@@ -1,0 +1,5 @@
+# 2026-11-26 — Bounce Back level 13, Follow the ball (PR #2218)
+
+**Changed:** a new lap level 13 (mode `follow`, ball 140, paddle 360, goal 3) played first in lap's order `[13, 12, 1]`; the pat level's rules now cover both lap levels through `isLapMode`; a touch within 130 units of the ball makes the pet cheer; how-to, voice lines, generated docs.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/bounce-back src/content src/games/registry` (drift reaches the ball on every view size for both lap levels, lap order, no-miss rule, watch level is the slowest ball with the largest paddle); `BROWSER_SUITE=batch BATCH_ONLY=bounce BOUNCE_FROM=12` (level 12 unchanged; level 13: a far touch does not cheer, a touch on the ball does, the paddle meets the ball untouched, 0 misses, 0 hints, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bounce-back FINGER_LEVELS=13` (finished in 14.5 s); one screenshot at 1024×768.
+**Not run:** a portrait screenshot, the full unit suite (left to PR CI), a real phone or a child; the cheer line is device speech (no clip rendered).

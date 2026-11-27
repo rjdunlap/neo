@@ -8,11 +8,11 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 13, 1 |
+| lap | 13, 1, 2 |
 | toddler | 1, 2, 8, 3 |
 | preschool | 2, 8, 3, 4 |
 | pre-K | 3, 4, 7, 5 |
-| school | 4, 5, 7, 6, 9, 10, 12 |
+| school | 4, 5, 7, 6, 9, 10, 12, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 8 | Two big clouds: land on the near one or the far one |
 | 9 | Two shown pulls fly; predict where a pull between them lands |
 | 10 | A shown pull: tap the number on a 1 to 10 line where the pet will land, then see how close |
+| 11 | Three springs (soft, medium, stiff): predict which goes farthest, then pick one to land on the star |
 | 12 | The same pull on a light or a heavy planet: past the flag or before it? |
 | 13 | Touch anywhere: the pet bounces, and each landing leaves a flower |
 
@@ -33,7 +34,7 @@
 
 **Starts as:** lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud
 
-**Grows into:** lap's own level 13 (five flowers); short/wrong-way pulls reply without a miss; pull back farther to fly farther, toddler and preschool level 8, *Near or far*, aims at one of two big clouds (a star marks it) in five shots; land on the star cloud, then a numbered cloud, farther or nearer than last time, then predict a shown pull's cloud using numbered landing flags; school level 9, *Between two flights*, shows a short and a long pull planting numbered flags, then a pull halfway between them with both as faint rings, and she predicts its cloud (unscored); school level 10, *Where on the line?*, shows a pull and a 1–10 number line, she taps her number, then the pull flies and a bar shows how far her number was from the landing (unscored); school level 12 compares the same shown pull on light/heavy toy planets, predicting before or past a home flag in three unscored pairs with requested help; pre-K and school also feed a bunny or duck standing on the grass, using the last flight's arc to correct the next pull; the last flight fades, and a compare miss shows the previous pull's radius
+**Grows into:** lap's own level 13 (five flowers); short/wrong-way pulls reply without a miss; pull back farther to fly farther, toddler and preschool level 8, *Near or far*, aims at one of two big clouds (a star marks it) in five shots; land on the star cloud, then a numbered cloud, farther or nearer than last time, then predict a shown pull's cloud using numbered landing flags; school level 9, *Between two flights*, shows a short and a long pull planting numbered flags, then a pull halfway between them with both as faint rings, and she predicts its cloud (unscored); school level 10, *Where on the line?*, shows a pull and a 1–10 number line, she taps her number, then the pull flies and a bar shows how far her number was from the landing (unscored); school level 12 compares the same shown pull on light/heavy toy planets, predicting before or past a home flag in three unscored pairs with requested help; school level 11, *Pick a spring*, predicts which of three springs (Soft, Medium, Stiff) goes farthest from the same pull, then picks a spring and pulls to hit three star clouds; pre-K and school also feed a bunny or duck standing on the grass, using the last flight's arc to correct the next pull; the last flight fades, and a compare miss shows the previous pull's radius
 
 ## Design notes
 
@@ -51,3 +52,7 @@ School-only level 12, **Planet Hop**, shows three home flights with distinct fla
 **Level 13, Flower meadow (2026-11-13, PR #1620).** Lap-only, after the ladder (levels 1–12 unchanged) and first in lap's order (13, then 1); a saved 13 carried into an older band starts that band's first level. A touch anywhere on the screen, on the pet, or a controller press bounces the pet to the next of five seeded landings, one in each fifth of the grass (no clouds shown); each landing pops up a flower (pink, yellow, purple, red, blue, each with a pentatonic marimba note) that stays. A touch while the pet flies or hops back rings free (a pop and a few sparkles) and counts nothing; the round button still repeats the instruction ("Touch anywhere, and {pet} bounces!", `launch.anywhere`). Five landings finish the round. Nothing is ever a miss; there is no hint button and no journal observation.
 
 **Notches, landing notes, footprints, skies and the cloud bag (2026-11-24, PR #2124).** On the plain pull levels 2, 3, 4, 5, 7 and 8 five white notch arcs ring the spring seat at radii 44/72/100/128/156, the pull that lands on cloud 1 to 5; each turns yellow as the pull passes it and sounds a quiet pluck (pentatonic step 5+i, gain 0.12) the first time it is crossed. Notches are free (no hint counted) and are absent on level 6 (shown pulls), couch play and the Cloud Hopper course. Every landing except planet hop, the meadow and the course plays a marimba note at the pentatonic step of the nearest cloud (the same step as its notch). Levels 2, 3, 4, 5 and 8, and 6's predictions, leave a soft white footprint puff on the grass for each landing so far (not the friend level, course or couch). Four seeded skies (`SKIES`/`skyIndex`) vary the backdrop; the course keeps the first. Level 1's five taps use `cloudBag`: each cloud once in a seeded order, with no repeat back to back across refills.
+
+**Level 11, Pick a spring (2026-11-26, PR #2211).** School-only, last in school's order (`4, 5, 7, 6, 9, 10, 12, 11`). Three springs (`soft` 0.55, `medium` 0.75, `stiff` 0.90) differ in colour and coil count/thickness (`Soft` blue 9 coils, `Medium` green 7 coils, `Stiff` red 5 coils); `reach(pull, gravity, spring)` scales by `spring` while keeping default `1` unchanged for levels 1–6 and the Cloud Hopper course. Round 1 shows a full shown pull and asks which spring goes farthest; tapping any card flies all three springs in turn and leaves labeled flags before explaining why `Stiff` went farthest (unscored, 0 misses). Round 2 sets three star targets (cloud 5 needing `Stiff`, cloud 4 needing `Medium` or `Stiff`, and a near cloud 1–3); for each star, she taps a spring card onto the launcher and pulls to land on the star. Landing off the star counts a miss (saying `launch.spring-too-soft` when the chosen spring cannot reach that cloud at full pull), and two misses glow the right spring card (`idealSpringFor`) without drawing the pull arc; pulls across different springs never file `bigger-pull`.
+
+**Lap plays the pull, and the magnet (2026-11-26, slice 8).** Lap's order is now 13, 1, 2: after the tap level she can drag the pet back and let go, with the landing preview on from the first pull and every pull right (the wrong-way and too-short replies already exist). On the star, numbered and near-or-far levels, four misses on one shot add a magnet: while she pulls, a pull within 14 units of the right notch snaps onto it, so the finger no longer needs to be exact. It counts as one more hint after the preview's, is off on the Cloud Hopper course and in couch play, and never changes where a pull lands otherwise (`magnetPull`, `MAGNET_AFTER`, `MAGNET_RANGE` in `logic.ts`).

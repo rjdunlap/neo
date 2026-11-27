@@ -8,6 +8,18 @@ export const VOICE = {
   'little-conductor.instruct-both': [
     'Hear it slow and hear it fast, then pick the one you like and tap the green check.',
   ],
+  'little-conductor.instruct-strength': [
+    'Hear the small drum and the big drum, {name}, then pick the one you like and tap the green check.',
+  ],
+  'little-conductor.instruct-dials': [
+    'Pick slow or fast, and soft or loud, {name}. Hear the ways you like, then tap the green check.',
+  ],
+  'little-conductor.instruct-friends': [
+    'Tap a friend to ask them to play, {name}. Tap again to ask them to stop. Try different friends, then tap the green check.',
+  ],
+  'little-conductor.hear-other-friends': [
+    'Now try a different group of friends, {name}. Tap a friend to ask them in or out!',
+  ],
   'little-conductor.hear-whole': [
     'Listen to the whole tune, then tap the check.',
     'Hear the whole tune first, then tap the check.',
@@ -30,5 +42,29 @@ export const VOICE = {
   'little-conductor.match': ['Just like the sign!', 'That matches!'],
   'little-conductor.hint-turtle': ['Try the glowing turtle. Slow and steady.'],
   'little-conductor.hint-rabbit': ['Try the glowing rabbit. Quick and light.'],
+  'little-conductor.instruct-change': [
+    'The listener has a sign with two ways to play, {name}. Set slow or fast and soft or loud to match it, then tap the green check.',
+  ],
+  'little-conductor.ask-turtle-gentle': ['The sign says slow and soft, {name}.'],
+  'little-conductor.ask-turtle-strong': ['The sign says slow and loud, {name}.'],
+  'little-conductor.ask-rabbit-gentle': ['The sign says fast and soft, {name}.'],
+  'little-conductor.ask-rabbit-strong': ['The sign says fast and loud, {name}.'],
+  'little-conductor.pick-both': ['Pick slow or fast, and soft or loud, first, {name}.'],
+  'little-conductor.wrong-gentle': ['Look at the drum on the sign, {name}. Small and soft!'],
+  'little-conductor.wrong-strong': ['Look at the drum on the sign, {name}. Big and loud!'],
+  'little-conductor.hint-gentle': ['Try the glowing small drum, {name}. Soft!'],
+  'little-conductor.hint-strong': ['Try the glowing big drum, {name}. Loud!'],
+  'little-conductor.instruct-revise': [
+    'Hear both prepared versions by tapping one and two, {name}. Then change a pad to revise one, hear it, and tap the green check.',
+  ],
+  'little-conductor.version-1': ['Version one, {name}.'],
+  'little-conductor.version-2': ['Version two, {name}.'],
+  'little-conductor.revise-undone': ['Back to the original, {name}.'],
+  'little-conductor.hear-versions': ['Hear both prepared versions first, {name}. Tap one and two!'],
+  'little-conductor.pick-revision': ['Change one of the pads to revise this version, {name}.'],
+  'little-conductor.hear-revision': ['Listen to your whole revision first, {name}.'],
+  'little-conductor.revise-bow': [
+    'Lovely revision, {name}! Tell someone nearby what you changed and why. The band takes a bow.',
+  ],
   'little-conductor.bow': ['What a band! They take a bow for you.', 'Lovely music! The band takes a bow.'],
 } satisfies Record<string, string[]>;

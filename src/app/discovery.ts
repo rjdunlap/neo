@@ -1,6 +1,7 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
-import { MIX_IDS, startMix, step, type MixEvent, type MixState } from '../content/mix';
+import type { PickScope } from '../content/pick';
+import { MIX_IDS, startMix, step, type DailyStop, type MixEvent, type MixState } from '../content/mix';
 
 export type DiscoveryToken = { owner: object; epoch: number };
 
@@ -31,6 +32,38 @@ export class DiscoveryMemory {
 }
 export const discoveryMemory = new DiscoveryMemory();
 
+/** The most introductions remembered; the oldest go first. */
+export const INTRO_LIMIT = 64;
+
+/**
+ * Which full how-to cards she has pressed Play on this visit (D4b): in memory only, per save object, never saved or shown.
+ * It is UI support state, not mastery. A profile switch or a replaced save forgets it; a stale scene cannot read or write it.
+ */
+export class IntroMemory {
+  private keys: string[] = [];
+  private readonly owner = new DiscoveryMemory();
+
+  clear() {
+    this.keys = [];
+    this.owner.clear();
+  }
+  token(owner: object): DiscoveryToken {
+    const before = this.owner.token(owner);
+    return before;
+  }
+  has(token: DiscoveryToken, owner: object, key: string): boolean {
+    return this.owner.current(token, owner) && this.keys.includes(key);
+  }
+  /** Play was pressed on a full card. */
+  introduced(token: DiscoveryToken, owner: object, key: string): void {
+    if (!this.owner.current(token, owner)) return;
+    this.keys = this.keys.filter((k) => k !== key);
+    this.keys.push(key);
+    if (this.keys.length > INTRO_LIMIT) this.keys.splice(0, this.keys.length - INTRO_LIMIT);
+  }
+}
+export const introMemory = new IntroMemory();
+
 /** The ordinary route resolves the current band, ordered range and pin; no cached level or Again shortcut. */
 export function launchDiscovery(go: Pick<Routes, 'game'>, id: string, band: Band, origin?: Origin) {
   go.game(id, band, undefined, false, origin);
@@ -44,13 +77,30 @@ export interface MixRound {
   /** What the stop card says before the stop's title: a hop over the stop before it (D3). */
   lead?: 'mix.skip';
 }
-interface MixSession {
+export interface MixSession {
   owner: object;
   id: number;
   place: Band;
   state: MixState;
   /** The stops, frozen when it started. */ readonly ids: readonly string[];
+  /** Today's six (D10 slice 3): each stop's band and preset level. A place session has none. */
+  readonly stops?: readonly DailyStop[];
+  /** The day those stops were dealt for: a later day ends the session. */
+  readonly day?: string;
 }
+/** Opens stop `p` exactly as its own entry would: a daily stop as its card does, a place stop on its home spot (D2b). */
+export function launchStop(go: Pick<Routes, 'game'>, s: Readonly<MixSession>, p: number, profileBand: Band) {
+  const stop = s.stops?.[p];
+  if (stop) go.game(stop.id, stop.band, undefined, false, { daily: true }, stop.level);
+  else go.game(s.ids[p], profileBand, undefined, false, { place: s.place });
+}
+
+/** Where a mix's Home, Back and ending go: Today's six for a daily session, else its home spot. */
+export function leaveMix(go: Pick<Routes, 'daily' | 'place'>, s: Readonly<MixSession>) {
+  if (s.stops) go.daily();
+  else go.place(s.place);
+}
+
 interface HeldLineup {
   owner: object;
   place: Band;
@@ -72,6 +122,14 @@ export class MixMemory {
     this.pending = undefined;
     const frozen = Object.freeze([...ids]);
     this.session = { owner, id: ++this.serial, place, state: startMix(frozen), ids: frozen };
+    return this.session.id;
+  }
+  /** Play all on Today's six: the page's six frozen with their bands and levels; played ones start played. */
+  startDaily(owner: object, stops: readonly DailyStop[], state: MixState, place: Band, day: string): number {
+    this.pending = undefined;
+    const frozen = Object.freeze(stops.map((s) => Object.freeze({ ...s })));
+    const ids = Object.freeze(frozen.map((s) => s.id));
+    this.session = { owner, id: ++this.serial, place, state, ids, stops: frozen, day };
     return this.session.id;
   }
   /** Ends the live session; the held lineup stays for the next one. */
@@ -101,7 +159,7 @@ export class MixMemory {
   /** The state of a live session for this save, at the place it started from. */
   at(owner: object, place: Band): MixState | undefined {
     const s = this.live(owner);
-    return s?.place === place ? s.state : undefined;
+    return s?.place === place && !s.stops ? s.state : undefined;
   }
   apply(owner: object, event: MixEvent): MixState | undefined {
     const s = this.own(owner);
@@ -131,3 +189,39 @@ export class MixMemory {
   }
 }
 export const mixMemory = new MixMemory();
+
+/**
+ * Pick for me (D7a), in memory only: the scope she last chose and the game she last opened from a pick, for one save object.
+ * A profile switch, reset, restore or undo replaces `store.data` (and `forget` runs), a reload loses it. Nothing is saved.
+ */
+export class PickMemory {
+  private owner?: object;
+  private chosen?: PickScope;
+  private lastPlayed?: string;
+
+  forget() {
+    this.owner = undefined;
+    this.chosen = undefined;
+    this.lastPlayed = undefined;
+  }
+  private mine(owner: object): boolean {
+    if (this.owner !== owner) {
+      this.forget();
+      this.owner = owner;
+    }
+    return true;
+  }
+  scope(owner: object): PickScope | undefined {
+    return this.owner === owner ? this.chosen : undefined;
+  }
+  last(owner: object): string | undefined {
+    return this.owner === owner ? this.lastPlayed : undefined;
+  }
+  choose(owner: object, scope: PickScope) {
+    if (this.mine(owner)) this.chosen = scope;
+  }
+  played(owner: object, id: string) {
+    if (this.mine(owner)) this.lastPlayed = id;
+  }
+}
+export const pickMemory = new PickMemory();

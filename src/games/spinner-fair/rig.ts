@@ -126,7 +126,7 @@ export class RigGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 89,
       },
       ctx.view,
@@ -531,7 +531,7 @@ export class RigGame implements Game {
     this.panel
       .clear()
       .roundRect(left, top, L.strip.w + 32, RIG_TALLY + L.strip.h + RULER + 6, 20)
-      .fill({ color: 0xffffff, alpha: 0.75 });
+      .fill(cream);
   }
 
   update(dt: number) {

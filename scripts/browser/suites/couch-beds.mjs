@@ -119,6 +119,8 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
       'typing',
       'sunbeams',
       'codedoors',
+      'robotpath',
+      'cardtables',
     ]);
     assert.equal(await page.locator('[data-course="beds"] small').innerText(), 'Not finished yet · par 124');
     assert.equal(

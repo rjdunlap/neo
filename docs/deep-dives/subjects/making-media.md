@@ -167,7 +167,7 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 
 Movie Night 1–3 (MM2) built; [closeout](../../archive/COMPLETED-2026-10-09.md#movie-night-13-mm2-2026-10-25). Remaining slices require separate admission.
 2. **MM3 · Define 4–5** done 2026-11-24 ([packet](../../definitions/movie-night.md#movie-night-45-mm3): the shot-fact model, briefs, enumerated accepted strips 6 of 24 and 30 of 120, the Story Steps overlap test).
-3. **MM4 · Build 4–5.**
+3. **MM4 · Build 4–5** done 2026-11-24 ([PR #2144](https://github.com/rjdunlap/neo/pull/2144), [verification](../../verification/2026-11-24-movie-night-levels-4-5-mm4-pr-2144.md)).
 4. **MM5 · Define 6–8**: the viewfinder grid, sizes, hiding facts, the two-audience factual briefs; Photo Safari overlap test.
 5. **MM6 · Define 9 and the 13+ cases** after the registration decision; open Media Arts grade 8 first.
 6. **MM7 · Define Pixel Flipbook** in the Pixel Pictures dive, after the storage decision.

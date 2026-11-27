@@ -8,7 +8,7 @@ import type { MixItem, MixState } from '../content/mix';
 import { nextUp } from '../content/mix';
 import { RoundButton } from './buttons';
 import { arrow, label, picture } from './discovery';
-import { againIcon, arrowIcon, houseIcon, playIcon } from './icons';
+import { againIcon, arrowIcon, checkIcon, houseIcon, playIcon } from './icons';
 
 /** A hop over a little bump: Skip, and a skipped stop. Never a cross. */
 export function hopIcon(color = ink, size = 1): Graphics {
@@ -101,10 +101,10 @@ export interface SheetActions {
 
 const TILE = 220;
 
-/** The sheet's stop tiles for one to five stops: their size and centres (before the design area's offset), centred on 512. */
+/** The sheet's stop tiles for one to six stops (six is Today's six): their size and centres (before the design area's offset), centred on 512. */
 export function sheetTiles(count: number): { size: number; xs: number[] } {
-  const size = count <= 3 ? TILE : count === 4 ? 190 : 150;
-  const gap = count <= 3 ? 60 : count === 4 ? 24 : 18;
+  const size = count <= 3 ? TILE : count === 4 ? 190 : count === 5 ? 150 : 130;
+  const gap = count <= 3 ? 60 : count === 4 ? 24 : count === 5 ? 18 : 16;
   return { size, xs: Array.from({ length: count }, (_, i) => 512 + (i - (count - 1) / 2) * (size + gap)) };
 }
 
@@ -126,7 +126,8 @@ export interface SheetPlaces {
  * its tiles, with the buttons below.
  */
 export function sheetPlaces(count: number, view: { w: number; h: number }): SheetPlaces {
-  if (view.w >= 1024) {
+  // Today's six on a tall wide-area view (a phone held upright on the island's area) also wraps, three over three.
+  if (view.w >= 1024 && !(view.h > view.w && count >= 6)) {
     const portrait = view.h > view.w;
     const ox = (view.w - 1024) / 2;
     const tileY = portrait ? 520 : 300,
@@ -144,9 +145,9 @@ export function sheetPlaces(count: number, view: { w: number; h: number }): Shee
     };
   }
   // Two to a row up to four (220 or 190 across), three of the five 150 tiles.
-  const perRow = count === 5 ? 3 : Math.min(2, count);
+  const perRow = count >= 5 ? 3 : Math.min(2, count);
   // The same sizes as the wide row, since a tile keeps its size when the phone turns.
-  const { size } = sheetTiles(count);
+  const size = view.w >= 1024 ? 170 : sheetTiles(count).size;
   const gap = 30;
   const pitch = size + SKIP_ROOM;
   const mid = view.w / 2;
@@ -231,7 +232,7 @@ export class StopTile extends Container {
 }
 
 /**
- * The preview and the ending, over the home spot: Back, one to five stop tiles, then Play and Skip while a stop is left, or
+ * The preview and the ending, over the home spot: Back, one to six stop tiles, then Play and Skip while a stop is left, or
  * Again mix and Home at the end. Pictures carry the meaning; every target is at least 100 across.
  */
 export class MixSheet extends Container {
@@ -246,14 +247,20 @@ export class MixSheet extends Container {
   readonly homeButton: RoundButton;
   private state: MixState | null = null;
 
-  constructor(private readonly actions: SheetActions) {
+  /** `daily` is Today's six: the ending is one Done button, with no Again mix. */
+  constructor(
+    private readonly actions: SheetActions,
+    private readonly daily = false,
+  ) {
     super();
     this.scrim.eventMode = 'static'; // nothing on the home spot can be touched under the sheet
     this.backButton = new RoundButton(arrowIcon(-1), swatch.white, 50, () => actions.back());
     this.playButton = new RoundButton(playIcon(), swatch.green, 70, () => actions.play());
     this.skipButton = new RoundButton(hopIcon(ink), swatch.white, 56, () => actions.skip());
     this.againButton = new RoundButton(againIcon(0xffffff), swatch.green, 70, () => actions.againMix());
-    this.homeButton = new RoundButton(houseIcon(0xffffff), swatch.blue, 70, () => actions.home());
+    this.homeButton = daily
+      ? new RoundButton(checkIcon(), swatch.green, 70, () => actions.home())
+      : new RoundButton(houseIcon(0xffffff), swatch.blue, 70, () => actions.home());
     this.addChild(
       this.scrim,
       this.panel,
@@ -295,12 +302,13 @@ export class MixSheet extends Container {
     const next = this.state ? nextUp(this.state) : null;
     const ending = next === null;
     this.playButton.visible = this.skipButton.visible = !ending;
-    this.againButton.visible = this.homeButton.visible = ending;
+    this.againButton.visible = ending && !this.daily;
+    this.homeButton.visible = ending;
     this.playButton.position.set(p.play.x, p.play.y);
     const skip = next === null ? p.play : p.skips[next];
     this.skipButton.position.set(skip.x, skip.y);
     this.againButton.position.set(p.again.x, p.again.y);
-    this.homeButton.position.set(p.home.x, p.home.y);
+    this.homeButton.position.set(this.daily ? p.play.x : p.home.x, this.daily ? p.play.y : p.home.y);
   }
 
   update(dt: number) {

@@ -25,7 +25,8 @@ import { SPECIES, type SpeciesId } from '../creatures/species';
 import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
-import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
+import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
+import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { isGoalId, type GoalId } from '../content/goals';
 import { discover, hasNew, markSeen, mixedColors } from '../content/journal';
@@ -326,6 +327,10 @@ export class Store {
 
   get woodland(): StoryProgress<'woodland'> {
     return this.data.stories.woodland;
+  }
+
+  get melody(): StoryProgress<'melody'> {
+    return this.data.stories.melody;
   }
 
   /** Marks a story's request done (the Windy Picnic's unless another story is named). Doing it again changes nothing; returns whether it was new. */
@@ -680,6 +685,41 @@ export class Store {
     const who = this.data.creatures.owned.find((o) => o.id === id);
     if (!who) return false;
     who.look.worn = changeWorn(who.look.worn ?? [], item, on);
+    // A form takes the head slot (RW11): a hat going on takes the blossom off.
+    if (on && SLOT[item] === 'head') who.look.form = null;
+    this.save();
+    this.flush();
+    return true;
+  }
+
+  /**
+   * The profile grows a form (RW11) and writes at once. Idempotent: a form already grown changes nothing and returns false,
+   * so the id is the only token a replayed round needs (nothing is counted or saved beside the list). Unknown ids and a full
+   * list change nothing.
+   */
+  growForm(id: FormId, _token = ''): boolean {
+    const forms = this.data.creatures.forms;
+    if (!isForm(id) || forms.includes(id)) return false;
+    forms.push(id);
+    this.data.creatures.forms = cleanForms(forms);
+    this.save();
+    this.flush();
+    return this.data.creatures.forms.includes(id);
+  }
+
+  /**
+   * Shows a grown form on an owned friend, or the original look (null), and writes at once. A form takes the head slot, so a
+   * worn head item comes off. False (and nothing changes) for an id she does not own, a form the profile has not grown or one
+   * another species wears.
+   */
+  setForm(id: string, form: FormId | null): boolean {
+    const who = this.data.creatures.owned.find((o) => o.id === id);
+    if (!who) return false;
+    if (form !== null) {
+      if (cleanLookForm(form, who.species, this.data.creatures.forms) === null) return false;
+      who.look.worn = (who.look.worn ?? []).filter((w) => SLOT[w] !== 'head');
+    }
+    who.look.form = form;
     this.save();
     this.flush();
     return true;

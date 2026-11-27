@@ -90,7 +90,15 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
       page.evaluate((label) => {
         const g = neo.scene.game,
           out = [],
-          pond = { x: g.board.x, y: g.board.y, w: g.pond.cols * g.cell, h: g.pond.rows * g.cell };
+          // An upright pond may be drawn a quarter turn clockwise: its drawn top-left corner is then the board's x less its width.
+          turned = g.board.rotation !== 0,
+          pw = (turned ? g.pond.rows : g.pond.cols) * g.cell,
+          pond = {
+            x: turned ? g.board.x - pw : g.board.x,
+            y: g.board.y,
+            w: pw,
+            h: (turned ? g.pond.cols : g.pond.rows) * g.cell,
+          };
         const rects = g.slots.map((s) => ({ name: s.kind, x: s.x, y: s.y, w: s.w, h: s.h }));
         if (rects.length !== 2) out.push(`${rects.length} buttons`);
         for (const r of rects) {

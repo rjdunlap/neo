@@ -1,0 +1,1 @@
+**`clock-tower`, level 9 *Half an hour from now*** (new-levels tier): destination setting with quarter snaps and an arc explanation. Level 8 is built. [Dive slice 5](../../deep-dives/clock-tower.md#build-slices-in-order).

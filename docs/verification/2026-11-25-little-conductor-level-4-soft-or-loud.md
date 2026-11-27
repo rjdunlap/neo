@@ -1,0 +1,5 @@
+# 2026-11-25 — Little Conductor level 4, soft or loud (PR #2159)
+
+**Changed:** Little Conductor level 4 for preschool and pre-K: a small drum and a big drum play the same tune at one steady 75 beats a minute, gain 0.45 against 1, heard gate as level 2, never a miss.
+**Ran:** `npm run typecheck`, `npm run lint`, `npm run format:check`; the full `npx vitest run` (CI found one voice-clip coverage failure, fixed by slotting the child's name into the new line; the voice-clip, content and game tests then re-ran green), including (new tests: identical pitch, order, bass, drum and timing on both pads for all six tunes, gain table bounds, gate follows the latest change, ghost finger finishes); `BROWSER_SUITE=conductor CONDUCTOR_LEVELS=4` (768 × 1024: early Done, a change inside a beat, the gate, the bow, one sticker with 0 misses and 0 hints) and a portrait screenshot checked by eye.
+**Not run:** the build, `fingerdemo`, the Kokoro voice clips (the new instruction line carries the child's name, so it stays on device speech and needs no clip), real phone speaker checks.

@@ -16,18 +16,14 @@ export type BookPage =
 /**
  * The book's pages in order: one page per goal (the chosen one first), her friends by species, then her things. A
  * colour goal shows whenever its path is built for her band, done or not, since a mixed colour stays hers to see as a
- * full jar; the friend goal shows while its project is open, and done only on the return from adopting (`showJoined`).
+ * full jar; a form goal shows while its blossom is not yet grown (a grown one is in Dress); the friend goal shows while its project is open, and done only on the return from adopting (`showJoined`).
  */
 
 export function bookPages(save: SaveData, showJoined = false): BookPage[] {
   const pages: BookPage[] = [];
   const band = save.profile.band;
   const goals = GOALS.filter((goal) =>
-    goal.kind === 'colour'
-      ? goal.reachable(save, band)
-      : goal.done(save)
-        ? showJoined
-        : goal.reachable(save, band),
+    goal.kind === 'friend' && goal.done(save) ? showJoined : goal.reachable(save, band),
   ).sort((a, b) => Number(b.id === save.book.goal) - Number(a.id === save.book.goal));
   for (const goal of goals) pages.push({ kind: 'goals', goal });
   for (const species of SPECIES_IDS) {

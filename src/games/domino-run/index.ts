@@ -949,9 +949,12 @@ class DominoRun implements Game {
         life: [0.4, 0.8],
       });
     }
-    await this.ctx.say(line);
     const last = this.index === this.lines.length - 1;
-    if (!last) {
+    // The ring line plays over the dominoes standing up and the slide to the next line (U7d batch 2); the next line's
+    // instruction cuts it. The last line is heard out, because the finale's own line would cut it.
+    const said = this.ctx.say(line);
+    if (last) await said;
+    else {
       await this.standUp(this.nodes.flat().filter((n): n is Container => !!n));
       const away = -this.ctx.view.w;
       await Promise.all([

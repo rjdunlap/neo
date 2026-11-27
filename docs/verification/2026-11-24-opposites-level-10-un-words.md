@@ -1,0 +1,5 @@
+# 2026-11-24 — Opposites level 10, Un- words
+
+**Changed:** `opposites` level 10 *Un- words* at school's top (school 8–10): six word/un-word picture pairs (zipped, tied, locked, wrapped, buttoned, folded), four rounds; she taps the un- one; the printed word with its "un" in its own bubble replays on tap (never a miss); the other picture is a miss, two misses glow the answer. Cards and word grow on an upright phone.
+**Ran (2026-11-24):** typecheck, format check, lint; full `npm test` (511 files passed), including a new level-10 rule test; `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=9` passed (level 10: word replay without a miss, two misses and the glow, saved [2,1], sticker; level 9 unchanged); `BROWSER_SUITE=fingerdemo FINGER_ONLY=opposites FINGER_LEVELS=9,10 FINGER_BAND=school` passed (level 10 in 7.4 s); a 390x844 portrait probe screenshot and a sheet of all twelve pictures were reviewed.
+**Not run:** `npm run build` locally (CI builds; no shared files or assets changed), offline, other suites. Kokoro clips for the new lines were not rendered (template lines use device speech).

@@ -164,6 +164,8 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
       'typing',
       'sunbeams',
       'codedoors',
+      'robotpath',
+      'cardtables',
     ]);
     await screenshot('couch-course-menu');
     await page.locator('[data-course="ponds"]').click();

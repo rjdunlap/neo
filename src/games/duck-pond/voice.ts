@@ -41,4 +41,12 @@ export const VOICE = {
   'duck.hiding': ['There are {total} ducks altogether. I can see {visible}. How many are hiding?'],
   'duck.hidingCount': ['I can see {visible}. Let’s count on to {total}.'],
   'duck.hidingFound': ['{hidden} were hiding! {visible} and {hidden} make {total}!'],
+  'duck.every': ['{n} ducks. Send some across the bridge!'],
+  'duck.everyFind': ['Find every way to share the {what}!'],
+  'duck.way': ['{a} and {b}!'],
+  'duck.wayAgain': ['We found {a} and {b} already!'],
+  'duck.waySwap': ['Same ducks, swapped sides: {a} and {b}!'],
+  'duck.wayFirst': ['Send some of the {n} across first!'],
+  'duck.wayHint': ['Try this duck. {n} in all.'],
+  'duck.wayAll': ["That's every way! {n} ducks, {ways} ways!"],
 } satisfies Record<string, string[]>;

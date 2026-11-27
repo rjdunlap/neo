@@ -435,7 +435,6 @@ class SplishSplash implements Game {
   destroy() {
     for (const m of this.muds) m.destroy();
     this.eraser.destroy();
-    this.wall.texture.destroy(true);
   }
 
   private asked(): Part[] {

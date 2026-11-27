@@ -12,7 +12,7 @@
 | toddler | 2, 9, 3, 4 |
 | preschool | 3, 9, 4, 5 |
 | pre-K | 4, 5, 10, 6, 7, 11 |
-| school | 6, 7, 11, 12 |
+| school | 6, 7, 11, 12, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,12 +28,13 @@
 | 10 | Drag four items to two friends in different weather |
 | 11 | The weather changes: keep what still fits, take off the rest, then add what is missing |
 | 12 | Pack light: fit clothes for both rain and snow in one small case |
+| 13 | Warm or cold? Read the thermometer too: one thing for the sky and one for the temperature |
 
 <!-- end generated -->
 
 **Starts as:** tap the sky to change the weather (four weathers)
 
-**Grows into:** try things on at lap (the fitting item stops the weather), dress the pet for sun, rain, snow or wind, pack for two kinds of weather and watch the trip unpack, name the sky from an outfit (Which sky?), drag clothes to two friends in different weather (pre-K 10), keep what still fits when the weather changes (pre-K 11), and share boots between rain and snow to pack a small case (school 12)
+**Grows into:** try things on at lap (the fitting item stops the weather), dress the pet for sun, rain, snow or wind, pack for two kinds of weather and watch the trip unpack, name the sky from an outfit (Which sky?), drag clothes to two friends in different weather (pre-K 10), keep what still fits when the weather changes (pre-K 11), share boots between rain and snow to pack a small case (school 12), and read a thermometer as well as the sky (school 13)
 
 ## Design notes
 
@@ -45,4 +46,4 @@ Pre-K level 10, *Two friends, two places*, shows a cat and bear beneath differen
 
 Two-weather items (`ALSO` in `logic.ts`, read through `suits()`): rain boots also suit snowy and the raincoat also suits windy. Single-answer levels (2 to 6, 8, 9, 10) never offer a two-weather item against its second weather, so each still has one right answer. Pre-K level 11, *Keep what still fits* (plan `keep: true`, order `[4, 5, 10, 6, 7, 11]`), is level 7 with a keeper: the worn outfit includes an item that still fits the new weather. Taking a keeper off is a miss with a spoken reason (`weather.keep.*`) and it stays on; two misses in a row count one hint and the removable item wiggles. After the removals she dresses for what is missing. A glider, which cannot wear boots or the raincoat, has no keeper and plays level 11 as level 7.
 
-School opens with levels `[6, 7, 11, 12]`. Level 12, *Pack light*, sends the companion through rain and snow twice, reversing the forecast order for the second trip. The three-space case takes two things for each sky by sharing the boots: tap the boots, any offered rain-only item and any offered snow-only item in any order. The glider uses a two-space case with one item per sky. Each shelf offers four viable packings. An unsuitable item or one that would leave too little room stays on the shelf with a spoken reason and counts as a miss. Two consecutive misses glow a choice that can complete the current packing and count a hint. The companion wears the selected items in each weather, keeping the boots on through the change, and the two trips earn one sticker. The shelf uses two rows on an upright phone. Suitcase flights in levels 6 and 12 land in the case when the view rotates.
+School opens with levels `[6, 7, 11, 12, 13]`. Level 12, *Pack light*, sends the companion through rain and snow twice, reversing the forecast order for the second trip. The three-space case takes two things for each sky by sharing the boots: tap the boots, any offered rain-only item and any offered snow-only item in any order. The glider uses a two-space case with one item per sky. Each shelf offers four viable packings. An unsuitable item or one that would leave too little room stays on the shelf with a spoken reason and counts as a miss. Two consecutive misses glow a choice that can complete the current packing and count a hint. The companion wears the selected items in each weather, keeping the boots on through the change, and the two trips earn one sticker. The shelf uses two rows on an upright phone. Suitcase flights in levels 6 and 12 land in the case when the view rotates. Level 13, *Warm or cold?* (plan `thermo`, upright phone ready), adds a picture thermometer in the corner beside the sky (no numbers): a blue low column and a snowflake for a cold day, a red high column and a sun for a hot day. Each of three rounds has a different sky (sunny, rainy or windy; snow is already cold) and asks for exactly two of five tiles: one thing for the sky and one for the temperature (a warm thing from `COLD_ITEMS` on a cold day, sandals on a hot day), in different slots; every other tile is wrong for both. A temperature thing on the wrong day goes on for a moment, shows the heat or the chill and says it is for the other kind of day (`weather.temp.wrong`); two misses glow a right tile and count one hint. A pet with no sandals (the glider) gets cold days only. Cool and warm steps may follow.

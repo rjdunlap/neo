@@ -1,6 +1,5 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { gradientTexture } from '../../art/scenery';
-import { swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -24,9 +23,10 @@ import {
   railTick,
   readySticker,
   ribbonPic,
-  wagonPic,
   type Look,
 } from './art';
+import { playParade } from './parade';
+import { ReviseScene } from './revise-scene';
 import {
   LEVELS,
   PART_OF,
@@ -82,7 +82,6 @@ class ReadyForAdventure implements Game {
   finished = false;
   private gone = false;
   private parading = false;
-  private skipParade = false;
   private finishedCalled = false;
 
   constructor(private readonly ctx: GameContext) {
@@ -506,95 +505,29 @@ class ReadyForAdventure implements Game {
 
   // ---- The parade -------------------------------------------------------------------------------------------------
 
-  private async parade() {
-    const { tw, view } = { tw: this.ctx.tw, view: this.view };
-    this.parading = true;
-    this.glow.clear();
-    drawBag(this.bag, true);
-    sfx.tada();
-    void this.ctx.say('ready.allpacked');
-    await tw.wait(0.9);
-    if (this.gone) return;
-    const lane = new Graphics();
-    lane.rect(0, view.h * 0.7, view.w, view.h * 0.3).fill(0xe8d9b0);
-    lane
-      .moveTo(0, view.h * 0.7)
-      .lineTo(view.w, view.h * 0.7)
-      .stroke({ width: 6, color: 0xc9b57f });
-    const bunting = new Graphics();
-    for (let i = 0; i < 8; i++) {
-      const x = (view.w / 7) * i;
-      bunting
-        .poly([x - 30, 20, x + 30, 20, x, 80])
-        .fill([swatch.red, swatch.yellow, swatch.blue, swatch.green][i % 4].fill);
-    }
-    this.ctx.stage.addChildAt(lane, 1);
-    this.ctx.stage.addChildAt(bunting, 2);
-    await tw.to(this.world, { y: view.h }, { duration: 0.5, ease: ease.inQuad });
-    if (this.gone) return;
-    this.world.visible = false;
-    this.rail.visible = false;
-    this.cardNode.visible = false;
-    // The wagon with exactly what was packed.
-    const wagon = new Container();
-    wagon.addChild(wagonPic());
-    const packed = this.state.round.request;
-    const riders: Container[] = [];
-    packed.forEach((id, i) => {
-      const p = propPic(id, true, this.look);
-      p.scale.set(0.7);
-      p.position.set((i - (packed.length - 1) / 2) * 100, -60);
-      wagon.addChild(p);
-      riders.push(p);
+  private parade(): Promise<void> {
+    return playParade({
+      ctx: this.ctx,
+      view: () => this.view,
+      rig: this.rig,
+      packed: this.state.round.request,
+      look: this.look,
+      world: this.world,
+      hide: [this.rail, this.cardNode],
+      isGone: () => this.gone,
+      markFinished: () => {
+        if (this.finishedCalled) return false;
+        this.finishedCalled = true;
+        this.finished = true;
+        return true;
+      },
+      onStart: () => {
+        this.parading = true;
+        this.glow.clear();
+      },
+      zip: () => drawBag(this.bag, true),
+      result: () => ({ misses: this.state.misses, hints: this.state.hints }),
     });
-    const y = view.h * 0.7 + 70;
-    wagon.position.set(-300, y);
-    wagon.eventMode = 'none';
-    this.ctx.stage.addChild(wagon);
-    this.rig.position.set(-100, y);
-    const skip = new Container();
-    skip.eventMode = 'static';
-    skip.hitArea = new Rectangle(0, 0, view.w, view.h);
-    skip.on('pointerdown', () => {
-      this.skipParade = true;
-    });
-    this.ctx.stage.addChild(skip);
-    void this.ctx.say('ready.parade');
-    const beat = () => {
-      packed.forEach((id, i) => {
-        if (id === 'drum') sfx.knock();
-        else if (id === 'bell') sfx.bell(4 + i);
-        else if (id === 'flag') sfx.pluck(6, 0.15);
-      });
-    };
-    const stops = 6;
-    for (let i = 0; i < stops && !this.skipParade; i++) {
-      const frac = (i + 1) / stops;
-      beat();
-      riders.forEach((r, k) => {
-        r.rotation = (i % 2 ? 1 : -1) * 0.12 * (k % 2 ? -1 : 1);
-      });
-      const wx = -100 + frac * (view.w * 0.85);
-      void tw.to(wagon, { x: wx - 200 }, { duration: 0.9, ease: ease.inOutSine });
-      await tw.to(this.rig, { x: wx }, { duration: 0.9, ease: ease.inOutSine });
-      if (this.gone) return;
-    }
-    if (this.gone || this.finishedCalled) return;
-    this.finishedCalled = true;
-    this.finished = true;
-    this.rig.cheer();
-    sfx.tada();
-    this.ctx.particles.burst(view.w / 2, view.h * 0.45, {
-      kind: 'dot',
-      colors: [0xfff3a0, 0xffffff, 0xff9ac1],
-      count: 26,
-      speed: [120, 300],
-      gravity: 200,
-      life: [0.6, 1],
-    });
-    await tw.wait(0.8);
-    if (this.gone) return;
-    this.ctx.finish({ misses: this.state.misses, hints: this.state.hints });
   }
 
   // ---- Ghost finger -----------------------------------------------------------------------------------------------
@@ -632,16 +565,17 @@ export const readyForAdventure: GameModule = {
   titleLine: 'game.ready-for-adventure',
   region: 'cozy-village',
   challenge: 'logic',
-  skills: ['planning', 'sequencing', 'prerequisites', 'everyday-life'],
-  bands: ['toddler', 'preschool', 'prek'],
+  skills: ['planning', 'sequencing', 'prerequisites', 'everyday-life', 'revision'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeReady,
   music: STYLES.paint,
   coplayHint:
-    'Point at the card and ask "What does it need first?" Let the child do it, then swap who points.',
-  offScreen: 'Which toy would you bring to a pretend parade? What would it need first?',
+    'Point at the card and ask "What does it need first?" Let the child do it, then swap who points. At the top level, ask "What if the parade wanted the bell instead of the drum?" and which one thing to change.',
+  offScreen:
+    'Which toy would you bring to a pretend parade? What would it need first? Plan three things for a pretend parade; now one changes. What is the smallest fix?',
   hubIcon: () => new ReadyIcon(),
   touchDemo: true,
   sticker: readySticker,
-  create: (ctx) => new ReadyForAdventure(ctx),
+  create: (ctx) => (ctx.level >= 4 ? new ReviseScene(ctx) : new ReadyForAdventure(ctx)),
 };

@@ -1,6 +1,7 @@
 import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types';
 // BEGIN game imports (scripts/content-barrels.mjs)
 import { HOW_TO as adventureWalkHowTo } from '../games/adventure-walk/howto.ts';
+import { HOW_TO as animalCharadesHowTo } from '../games/animal-charades/howto.ts';
 import { HOW_TO as animalSnackHowTo } from '../games/animal-snack/howto.ts';
 import { HOW_TO as atticFindsHowTo } from '../games/attic-finds/howto.ts';
 import { HOW_TO as beatBuilderHowTo } from '../games/beat-builder/howto.ts';
@@ -23,6 +24,8 @@ import { HOW_TO as circuitGardenHowTo } from '../games/circuit-garden/howto.ts';
 import { HOW_TO as clapSyllablesHowTo } from '../games/clap-syllables/howto.ts';
 import { HOW_TO as clockTowerHowTo } from '../games/clock-tower/howto.ts';
 import { HOW_TO as colorGardenHowTo } from '../games/color-garden/howto.ts';
+import { HOW_TO as commonGroundHowTo } from '../games/common-ground/howto.ts';
+import { HOW_TO as countTheBallotsHowTo } from '../games/count-the-ballots/howto.ts';
 import { HOW_TO as critterCrossingHowTo } from '../games/critter-crossing/howto.ts';
 import { HOW_TO as critterSortHowTo } from '../games/critter-sort/howto.ts';
 import { HOW_TO as crosswordHowTo } from '../games/crossword/howto.ts';
@@ -33,7 +36,9 @@ import { HOW_TO as dominoPondHowTo } from '../games/domino-pond/howto.ts';
 import { HOW_TO as dominoRunHowTo } from '../games/domino-run/howto.ts';
 import { HOW_TO as dotLinkHowTo } from '../games/dot-link/howto.ts';
 import { HOW_TO as downWeGoHowTo } from '../games/down-we-go/howto.ts';
+import { HOW_TO as drawARampHowTo } from '../games/draw-a-ramp/howto.ts';
 import { HOW_TO as drawThePatternHowTo } from '../games/draw-the-pattern/howto.ts';
+import { HOW_TO as dreamCardsHowTo } from '../games/dream-cards/howto.ts';
 import { HOW_TO as driftCardsHowTo } from '../games/drift-cards/howto.ts';
 import { HOW_TO as dropsJourneyHowTo } from '../games/drops-journey/howto.ts';
 import { HOW_TO as duckPondHowTo } from '../games/duck-pond/howto.ts';
@@ -71,6 +76,7 @@ import { HOW_TO as keepHouseHowTo } from '../games/keep-house/howto.ts';
 import { HOW_TO as keyItOutHowTo } from '../games/key-it-out/howto.ts';
 import { HOW_TO as lanternLightsHowTo } from '../games/lantern-lights/howto.ts';
 import { HOW_TO as lassoLoopsHowTo } from '../games/lasso-loops/howto.ts';
+import { HOW_TO as lastPebbleHowTo } from '../games/last-pebble/howto.ts';
 import { HOW_TO as lemonadeStandHowTo } from '../games/lemonade-stand/howto.ts';
 import { HOW_TO as letterTrailsHowTo } from '../games/letter-trails/howto.ts';
 import { HOW_TO as liftItHowTo } from '../games/lift-it/howto.ts';
@@ -85,6 +91,7 @@ import { HOW_TO as lostLayersHowTo } from '../games/lost-layers/howto.ts';
 import { HOW_TO as mailCarrierHowTo } from '../games/mail-carrier/howto.ts';
 import { HOW_TO as makerLaneHowTo } from '../games/maker-lane/howto.ts';
 import { HOW_TO as marbleJumpHowTo } from '../games/marble-jump/howto.ts';
+import { HOW_TO as marketDaysHowTo } from '../games/market-days/howto.ts';
 import { HOW_TO as marketStallHowTo } from '../games/market-stall/howto.ts';
 import { HOW_TO as meadowPensHowTo } from '../games/meadow-pens/howto.ts';
 import { HOW_TO as measuringPostHowTo } from '../games/measuring-post/howto.ts';
@@ -119,6 +126,7 @@ import { HOW_TO as pileMatchHowTo } from '../games/pile-match/howto.ts';
 import { HOW_TO as pixelPicturesHowTo } from '../games/pixel-pictures/howto.ts';
 import { HOW_TO as playdateWorkshopHowTo } from '../games/playdate-workshop/howto.ts';
 import { HOW_TO as pondCongaHowTo } from '../games/pond-conga/howto.ts';
+import { HOW_TO as pondMergeHowTo } from '../games/pond-merge/howto.ts';
 import { HOW_TO as pondTypingHowTo } from '../games/pond-typing/howto.ts';
 import { HOW_TO as puddleGobbleHowTo } from '../games/puddle-gobble/howto.ts';
 import { HOW_TO as puddleLensHowTo } from '../games/puddle-lens/howto.ts';
@@ -179,12 +187,15 @@ import { HOW_TO as tideLineHowTo } from '../games/tide-line/howto.ts';
 import { HOW_TO as tideTablesHowTo } from '../games/tide-tables/howto.ts';
 import { HOW_TO as tilePairsHowTo } from '../games/tile-pairs/howto.ts';
 import { HOW_TO as timelineTrailHowTo } from '../games/timeline-trail/howto.ts';
+import { HOW_TO as toyDrawerHowTo } from '../games/toy-drawer/howto.ts';
 import { HOW_TO as trackwayTalesHowTo } from '../games/trackway-tales/howto.ts';
 import { HOW_TO as treasureMapHowTo } from '../games/treasure-map/howto.ts';
 import { HOW_TO as truthBridgeHowTo } from '../games/truth-bridge/howto.ts';
+import { HOW_TO as twoTabletsHowTo } from '../games/two-tablets/howto.ts';
 import { HOW_TO as villageVoteHowTo } from '../games/village-vote/howto.ts';
 import { HOW_TO as vineSnipHowTo } from '../games/vine-snip/howto.ts';
 import { HOW_TO as waterRoadHowTo } from '../games/water-road/howto.ts';
+import { HOW_TO as waveRibbonHowTo } from '../games/wave-ribbon/howto.ts';
 import { HOW_TO as weatherWardrobeHowTo } from '../games/weather-wardrobe/howto.ts';
 import { HOW_TO as welcomeWaysHowTo } from '../games/welcome-ways/howto.ts';
 import { HOW_TO as whoAmIHowTo } from '../games/who-am-i/howto.ts';
@@ -211,6 +222,7 @@ import { HOW_TO as workshopDetectiveHowTo } from '../games/workshop-detective/ho
 export const HOW_TO: Record<string, GameHowTo> = {
   // BEGIN game entries (scripts/content-barrels.mjs)
   'adventure-walk': adventureWalkHowTo,
+  'animal-charades': animalCharadesHowTo,
   'animal-snack': animalSnackHowTo,
   'attic-finds': atticFindsHowTo,
   'beat-builder': beatBuilderHowTo,
@@ -233,6 +245,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'clap-syllables': clapSyllablesHowTo,
   'clock-tower': clockTowerHowTo,
   'color-garden': colorGardenHowTo,
+  'common-ground': commonGroundHowTo,
+  'count-the-ballots': countTheBallotsHowTo,
   'critter-crossing': critterCrossingHowTo,
   'critter-sort': critterSortHowTo,
   'crossword': crosswordHowTo,
@@ -243,7 +257,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'domino-run': dominoRunHowTo,
   'dot-link': dotLinkHowTo,
   'down-we-go': downWeGoHowTo,
+  'draw-a-ramp': drawARampHowTo,
   'draw-the-pattern': drawThePatternHowTo,
+  'dream-cards': dreamCardsHowTo,
   'drift-cards': driftCardsHowTo,
   'drops-journey': dropsJourneyHowTo,
   'duck-pond': duckPondHowTo,
@@ -281,6 +297,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'key-it-out': keyItOutHowTo,
   'lantern-lights': lanternLightsHowTo,
   'lasso-loops': lassoLoopsHowTo,
+  'last-pebble': lastPebbleHowTo,
   'lemonade-stand': lemonadeStandHowTo,
   'letter-trails': letterTrailsHowTo,
   'lift-it': liftItHowTo,
@@ -295,6 +312,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'mail-carrier': mailCarrierHowTo,
   'maker-lane': makerLaneHowTo,
   'marble-jump': marbleJumpHowTo,
+  'market-days': marketDaysHowTo,
   'market-stall': marketStallHowTo,
   'meadow-pens': meadowPensHowTo,
   'measuring-post': measuringPostHowTo,
@@ -329,6 +347,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pixel-pictures': pixelPicturesHowTo,
   'playdate-workshop': playdateWorkshopHowTo,
   'pond-conga': pondCongaHowTo,
+  'pond-merge': pondMergeHowTo,
   'pond-typing': pondTypingHowTo,
   'puddle-gobble': puddleGobbleHowTo,
   'puddle-lens': puddleLensHowTo,
@@ -389,12 +408,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'tide-tables': tideTablesHowTo,
   'tile-pairs': tilePairsHowTo,
   'timeline-trail': timelineTrailHowTo,
+  'toy-drawer': toyDrawerHowTo,
   'trackway-tales': trackwayTalesHowTo,
   'treasure-map': treasureMapHowTo,
   'truth-bridge': truthBridgeHowTo,
+  'two-tablets': twoTabletsHowTo,
   'village-vote': villageVoteHowTo,
   'vine-snip': vineSnipHowTo,
   'water-road': waterRoadHowTo,
+  'wave-ribbon': waveRibbonHowTo,
   'weather-wardrobe': weatherWardrobeHowTo,
   'welcome-ways': welcomeWaysHowTo,
   'who-am-i': whoAmIHowTo,
@@ -452,4 +474,33 @@ export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel' |
  */
 export function shouldExplain(opts: { enabled: boolean; id: string; story: boolean; again: boolean }): boolean {
   return opts.enabled && !opts.story && !opts.again && opts.id in HOW_TO;
+}
+
+/** What the person plays with, for the short reminder's key: a finger or a mouse. The controller route has no short card. */
+export type IntroInput = 'touch' | 'mouse';
+
+/** A round's introduction, by what the card taught: the game, the band it plays at, the level on the card, and the input in use (D4b). */
+export function introKey(k: { id: string; band: string; level: number; input: IntroInput }): string {
+  return `${k.id}|${k.band}|${k.level}|${k.input}`;
+}
+
+export interface BriefIntroCase {
+  cards: boolean;
+  /** `settings.briefIntros`. */
+  brief: boolean;
+  /** `shouldExplain` for this open (not a story, not Again, a game with a card). */
+  explained: boolean;
+  mix: boolean;
+  daily: boolean;
+  /** Null on the controller route, which keeps the full card. */
+  input: IntroInput | null;
+  /** This exact key's card had Play pressed on it earlier this visit. */
+  introduced: boolean;
+}
+
+/** The short reminder (D4b, `docs/definitions/brief-intro.md`) replaces the full card only for an exact mode and input already introduced. */
+export function briefIntro(c: BriefIntroCase): boolean {
+  return (
+    c.cards && c.brief && c.explained && !c.mix && !c.daily && c.input !== null && c.introduced
+  );
 }

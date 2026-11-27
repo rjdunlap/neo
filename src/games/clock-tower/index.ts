@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { paperCircle } from '../../art/paper';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -19,6 +20,7 @@ import {
   EVENT_WORDS,
   fiveExample,
   hourOf,
+  isShift,
   laterExample,
   makeTasks,
   minuteChoices,
@@ -209,7 +211,7 @@ class ClockTower implements Game {
     );
     const before = label('Before', 20, ink);
     before.position.set(-65, -58);
-    const after = label('+1 hour', 20, ink);
+    const after = label(this.plan.mode === 'earlier' ? '−1 hour' : '+1 hour', 20, ink);
     after.position.set(65, -58);
     this.oldClock.position.set(-65, -2);
     this.oldClock.alpha = 0.5;
@@ -243,13 +245,11 @@ class ClockTower implements Game {
   }
 
   private drawFace() {
-    const g = new Graphics()
-      .circle(0, 0, R + 18)
-      .fill(wood.line)
-      .circle(0, 0, R + 8)
-      .fill(wood.fill)
-      .circle(0, 0, R)
-      .fill(cream);
+    // Paper rings with a barely-there wobble, so the rim stays round around the ticks and numbers.
+    const g = new Graphics();
+    paperCircle(g, 0, 0, R + 18, wood.line, { amp: 0.6, seed: 1 });
+    paperCircle(g, 0, 0, R + 8, wood.fill, { amp: 0.5, seed: 2, noShadow: true });
+    paperCircle(g, 0, 0, R, cream, { amp: 0.4, seed: 3, noShadow: true });
     for (let m = 0; m < 60; m++) {
       const a = (m / 60) * Math.PI * 2;
       const inner = m % 5 ? R - 12 : R - 24;
@@ -479,7 +479,7 @@ class ClockTower implements Game {
     this.wrongs = 0;
     this.hinted = false;
     // Level 6's comparison stays up while its example line plays; `right` takes it off when the line ends.
-    if (!after || this.plan.mode !== 'later') this.comparison.visible = false;
+    if (!after || !isShift(this.plan.mode)) this.comparison.visible = false;
     this.example.arc = 0;
     if (this.index >= this.tasks.length) return void this.finale();
     const t = this.task;
@@ -487,7 +487,7 @@ class ClockTower implements Game {
       this.hour = hourOf(t.time);
       this.minute = t.time % 60;
       this.buildChoices(t.options!);
-    } else if (this.plan.mode === 'later') {
+    } else if (isShift(this.plan.mode)) {
       this.hour = hourOf(t.from!);
       this.minute = t.from! % 60;
     } else {
@@ -529,7 +529,8 @@ class ClockTower implements Game {
   private instruction() {
     const t = this.task;
     if (this.plan.mode === 'read') return this.ctx.instruct('clock.read');
-    if (this.plan.mode === 'later') return this.ctx.instruct('clock.later', { time: spoken(t.from!) });
+    if (isShift(this.plan.mode))
+      return this.ctx.instruct(`clock.${this.plan.mode}`, { time: spoken(t.from!) });
     return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', {
       time: spoken(t.time),
     });
@@ -600,20 +601,23 @@ class ClockTower implements Game {
     if (this.busy || this.finished) return;
     this.askNow();
     if (this.shown === this.task.time) return void this.right();
-    if (this.plan.mode === 'later')
-      return void this.wrong('clock.later.wrong', { now: spoken(this.shown), from: spoken(this.task.from!) });
+    if (isShift(this.plan.mode))
+      return void this.wrong(`clock.${this.plan.mode}.wrong`, {
+        now: spoken(this.shown),
+        from: spoken(this.task.from!),
+      });
     await this.wrong('clock.shows', { now: spoken(this.shown), time: spoken(this.task.time) });
   }
 
   private async wrong(
-    line: 'clock.read.wrong' | 'clock.later.wrong' | 'clock.shows',
+    line: 'clock.read.wrong' | 'clock.later.wrong' | 'clock.earlier.wrong' | 'clock.shows',
     vars: Record<string, string>,
   ) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'later') await (await this.explainLater(vars.now)).line;
+    if (isShift(this.plan.mode)) await (await this.explainLater(vars.now)).line;
     else if (!(this.plan.mode === 'five' && this.wrongs === 2)) await this.ctx.say(line, vars);
     if (this.wrongs >= 2 && !this.hinted) {
       this.hinted = true;
@@ -632,7 +636,8 @@ class ClockTower implements Game {
   /** Shows the comparison and sweeps its hour hand; resolves when the sweep ends, with the line still playing. */
   private async explainLater(now?: string): Promise<{ line: Promise<void> }> {
     this.compared++;
-    const e = laterExample(this.task);
+    const mode = this.plan.mode as 'later' | 'earlier';
+    const e = laterExample(this.task, mode);
     for (const node of this.oldClock.removeChildren()) node.destroy({ children: true });
     // Keep the animated hand alive when replacing the small static clock.
     this.exampleHand.removeFromParent();
@@ -654,7 +659,7 @@ class ClockTower implements Game {
     this.newTime.text = e.to;
     this.example.hour = e.hourStart;
     this.comparison.visible = true;
-    const line = this.ctx.say(now ? 'clock.later.wrong' : 'clock.later.example', {
+    const line = this.ctx.say(now ? `clock.${mode}.wrong` : `clock.${mode}.example`, {
       now: now ?? '',
       from: e.fromSpeech,
       time: e.toSpeech,
@@ -671,7 +676,7 @@ class ClockTower implements Game {
     // The right answer's line starts and the pulse and the next task follow at once (U7 R4); level 6's example starts
     // with its sweep and the chime rings over it. Only the last task's line is heard out.
     let line: Promise<void> = Promise.resolve();
-    if (this.plan.mode === 'later') {
+    if (isShift(this.plan.mode)) {
       line = (await this.explainLater()).line;
       const shown = this.compared;
       void line.then(() => {
@@ -699,7 +704,7 @@ class ClockTower implements Game {
     });
     this.ctx.pet.cheer();
     if (event) line = this.ctx.say('clock.itis', { time: spoken(t), event: EVENT_WORDS[event] });
-    else if (this.plan.mode !== 'later') line = this.ctx.say('clock.yay');
+    else if (!isShift(this.plan.mode)) line = this.ctx.say('clock.yay');
     if (this.index + 1 >= this.tasks.length) await line;
     await this.ctx.tw.to(this.face.scale, { x: 1.04, y: 1.04 }, { duration: 0.12, ease: ease.outQuad });
     await this.ctx.tw.to(this.face.scale, { x: 1, y: 1 }, { duration: 0.15 });

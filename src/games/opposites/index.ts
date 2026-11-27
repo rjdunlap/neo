@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
@@ -10,10 +10,13 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BIG_LEVEL,
+  ONE_PAIR_LEVEL,
+  CONCEPTS,
   LEVELS,
   STICKER_CONCEPTS,
   cardToTap,
@@ -23,9 +26,12 @@ import {
   planFor,
   word,
   type Card,
+  type Concept,
   type Gradable,
   type OppPlan,
   type OppRound,
+  type TwoWord,
+  unParts,
 } from './logic';
 
 /** Level 6's one big card, about 290 units across. */
@@ -39,6 +45,15 @@ const GUIDE_CLEAR = 210;
 
 /** Level 7's three cards, larger in the open middle of the screen: up to about 240 units across. */
 const BETWEEN_SCALE = 1.4;
+/** Level 10's two cards: larger, since there are only two (about 220 units across, 320 on an upright phone). */
+const UN_SCALE = 1.3;
+const UN_TALL_SCALE = 1.9;
+/** Level 10's printed word grows on an upright phone, where the view is tall and every unit is small on screen. */
+const UN_TALL_WORD = 1.5;
+
+/** Level 11's four cards: one row on a wide view, two by two on an upright phone (each as large as the room leaves). */
+const TWO_SCALE = 1.25;
+const TWO_TALL_SCALE = 1.5;
 
 /** Level 7's middle pictures: the same cup, mug, sky and balloon as the two sides, with the in-between amount. */
 function middle(concept: Gradable): Container {
@@ -86,10 +101,313 @@ function middle(concept: Gradable): Container {
   return c;
 }
 
+/**
+ * Level 10's un- pictures: the same thing in both, done (side 0: zipped, tied, locked, wrapped, buttoned, folded) or
+ * undone (side 1, the un- word). About 140 units square, centered on (0, 0), like every other picture.
+ */
+function unPicture(concept: Concept, side: 0 | 1): Graphics {
+  const g = new Graphics();
+  const done = side === 0;
+  switch (concept) {
+    case 'zip': {
+      // A pencil bag: zipped, the track runs shut with its pull at the right; unzipped, the top gapes open.
+      g.roundRect(-60, -24, 120, 76, 22).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line });
+      if (done) {
+        g.moveTo(-50, -12).lineTo(50, -12).stroke({ width: 6, color: ink, alpha: 0.7 });
+        for (let x = -46; x <= 46; x += 8)
+          g.moveTo(x, -17).lineTo(x, -7).stroke({ width: 3, color: 0xdddddd });
+        g.roundRect(44, -10, 12, 26, 4)
+          .fill(swatch.yellow.fill)
+          .stroke({ width: 3, color: swatch.yellow.line });
+      } else {
+        g.ellipse(0, -14, 52, 20).fill(ink).stroke({ width: 4, color: swatch.blue.line });
+        for (let x = -42; x <= 42; x += 8) {
+          const dy = 18 * Math.sqrt(1 - (x / 52) ** 2);
+          g.moveTo(x, -14 - dy - 4)
+            .lineTo(x, -14 - dy + 4)
+            .stroke({ width: 3, color: 0xdddddd });
+          g.moveTo(x, -14 + dy - 4)
+            .lineTo(x, -14 + dy + 4)
+            .stroke({ width: 3, color: 0xdddddd });
+        }
+        g.roundRect(-62, -12, 12, 26, 4)
+          .fill(swatch.yellow.fill)
+          .stroke({ width: 3, color: swatch.yellow.line });
+      }
+      break;
+    }
+    case 'tie': {
+      // A shoe: tied, a bow on top; untied, the two laces trail down to the ground.
+      g.rect(-66, 54, 132, 6).fill(swatch.green.fill);
+      g.moveTo(-58, 50)
+        .lineTo(-58, 8)
+        .quadraticCurveTo(-56, -14, -30, -16)
+        .lineTo(-6, -16)
+        .quadraticCurveTo(10, 10, 40, 14)
+        .quadraticCurveTo(62, 18, 62, 40)
+        .lineTo(62, 50)
+        .closePath()
+        .fill(swatch.red.fill)
+        .stroke({ width: 5, color: swatch.red.line, join: 'round' });
+      g.roundRect(-62, 42, 128, 12, 6).fill(0xffffff).stroke({ width: 3, color: swatch.red.line });
+      for (const [x, y] of [
+        [-18, -6],
+        [-4, 4],
+        [10, 12],
+      ])
+        g.moveTo(x - 8, y - 4)
+          .lineTo(x + 8, y + 4)
+          .stroke({ width: 4, color: 0xffffff, cap: 'round' });
+      if (done) {
+        const lace = { width: 5, color: swatch.blue.line, cap: 'round' } as const;
+        g.ellipse(-20, -30, 16, 10).stroke(lace);
+        g.ellipse(14, -30, 16, 10).stroke(lace);
+        g.moveTo(-6, -22).quadraticCurveTo(-14, -6, -22, -2).stroke(lace);
+        g.moveTo(0, -22).quadraticCurveTo(10, -8, 18, -4).stroke(lace);
+        g.circle(-3, -26, 6).fill(0xffffff).stroke({ width: 2, color: ink, alpha: 0.4 });
+      } else {
+        const lace = { width: 5, color: swatch.blue.line, cap: 'round' } as const;
+        g.moveTo(-6, -10).quadraticCurveTo(-40, 10, -48, 36).quadraticCurveTo(-52, 50, -68, 52).stroke(lace);
+        g.moveTo(6, 8).quadraticCurveTo(30, 40, 50, 56).quadraticCurveTo(60, 62, 68, 58).stroke(lace);
+      }
+      break;
+    }
+    case 'lock': {
+      // A padlock: locked, the loop goes down into the body; unlocked, it springs up and swings open.
+      if (done)
+        g.moveTo(-26, -6)
+          .lineTo(-26, -30)
+          .arc(0, -30, 26, Math.PI, 0)
+          .lineTo(26, -6)
+          .stroke({ width: 12, color: 0x9aa4ad, cap: 'round' });
+      else
+        g.moveTo(-26, -6)
+          .lineTo(-26, -50)
+          .arc(0, -50, 26, Math.PI, 0)
+          .lineTo(26, -36)
+          .stroke({ width: 12, color: 0x9aa4ad, cap: 'round' });
+      g.roundRect(-46, -8, 92, 70, 14)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 5, color: swatch.yellow.line });
+      if (!done) g.circle(26, -6, 8).fill(ink);
+      g.circle(0, 18, 9).fill(ink).rect(-4, 20, 8, 20).fill(ink);
+      break;
+    }
+    case 'wrap': {
+      // A present: wrapped, paper, ribbon and bow; unwrapped, a plain box with the torn paper beside it.
+      if (done) {
+        g.roundRect(-50, -26, 100, 84, 8)
+          .fill(swatch.purple.fill)
+          .stroke({ width: 5, color: swatch.purple.line });
+        g.rect(-8, -26, 16, 84).fill(swatch.yellow.fill).rect(-50, 8, 100, 14).fill(swatch.yellow.fill);
+        g.ellipse(-16, -36, 16, 11).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+        g.ellipse(16, -36, 16, 11).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+        g.circle(0, -32, 8).fill(swatch.yellow.line);
+      } else {
+        g.poly([-66, 58, -54, 30, -30, 40, -18, 26, -2, 46, 8, 58])
+          .fill(swatch.purple.fill)
+          .stroke({ width: 4, color: swatch.purple.line, join: 'round' });
+        g.moveTo(-56, 44).quadraticCurveTo(-40, 30, -26, 50).stroke({ width: 5, color: swatch.yellow.fill });
+        g.roundRect(-14, -20, 76, 70, 6).fill(wood.light).stroke({ width: 5, color: wood.line });
+        g.moveTo(-14, 0).lineTo(62, 0).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+        g.poly([-14, -20, -28, -42, 50, -42, 62, -20]).fill(wood.fill).stroke({ width: 4, color: wood.line });
+      }
+      break;
+    }
+    case 'button': {
+      // A coat: buttoned, its two sides meet down the middle; unbuttoned, they part, the buttons on one side only.
+      const gap = done ? 0 : 18;
+      g.poly([-56, -40, -20, -54, 0, -36, 20, -54, 56, -40, 60, 60, -60, 60])
+        .fill(done ? swatch.green.fill : swatch.yellow.light)
+        .stroke({ width: 5, color: swatch.green.line, join: 'round' });
+      g.poly([-56, -40, -20, -54, -gap, -36, -gap, 60, -60, 60]).fill(swatch.green.fill);
+      g.poly([56, -40, 20, -54, gap, -36, gap, 60, 60, 60]).fill(swatch.green.fill);
+      g.poly([-56, -40, -20, -54, 0, -36, 20, -54, 56, -40, 60, 60, -60, 60]).stroke({
+        width: 5,
+        color: swatch.green.line,
+        join: 'round',
+      });
+      if (!done)
+        g.moveTo(-gap, -36)
+          .lineTo(-gap, 60)
+          .moveTo(gap, -36)
+          .lineTo(gap, 60)
+          .stroke({ width: 4, color: swatch.green.line });
+      else g.moveTo(0, -36).lineTo(0, 60).stroke({ width: 3, color: swatch.green.line });
+      for (const y of [-14, 12, 38]) {
+        g.circle(done ? 0 : -gap - 10, y, 7)
+          .fill(wood.fill)
+          .stroke({ width: 3, color: wood.line });
+        if (!done)
+          g.moveTo(gap + 4, y)
+            .lineTo(gap + 16, y)
+            .stroke({ width: 3, color: swatch.green.line });
+      }
+      break;
+    }
+    case 'fold': {
+      // A striped towel: folded, a small neat stack; unfolded, spread out flat on the floor with its fringed ends.
+      g.rect(-66, 54, 132, 6).fill(wood.line);
+      if (done) {
+        for (let k = 0; k < 3; k++)
+          g.roundRect(-38, 32 - k * 18, 76, 22, 8)
+            .fill(swatch.orange.light)
+            .stroke({ width: 4, color: swatch.orange.line });
+        for (const x of [-26, 16]) g.rect(x, -4, 10, 58).fill({ color: swatch.orange.fill, alpha: 0.9 });
+      } else {
+        g.poly([-62, 50, 62, 50, 46, -10, -46, -10])
+          .fill(swatch.orange.light)
+          .stroke({ width: 4, color: swatch.orange.line, join: 'round' });
+        // Two stripes near each end, narrowing toward the far edge like the towel.
+        const k = 46 / 62;
+        for (const a of [-46, -32, 22, 36])
+          g.poly([a, 50, a + 10, 50, (a + 10) * k, -10, a * k, -10]).fill(swatch.orange.fill);
+        for (let x = -56; x <= 56; x += 10)
+          g.moveTo(x, 50)
+            .lineTo(x, 58)
+            .moveTo(x * 0.82, -10)
+            .lineTo(x * 0.82, -18)
+            .stroke({ width: 3, color: swatch.orange.line, cap: 'round' });
+      }
+      break;
+    }
+  }
+  return g;
+}
+
+/**
+ * Level 11's pictures, each about 140 units square and centered on (0, 0): the two opposites and the picture of the word
+ * itself for light (a rock, a dark room; a feather, a lamp), short (a tall flower, a long rope; a pencil, a short flower)
+ * and old (a new boot, a sprout; a worn boot, an old tree). The lamp, flowers and boots reuse nothing else's drawing.
+ */
+function twoPicture(w: TwoWord, kind: 'right' | 'same', i: 0 | 1): Container {
+  const c = new Container();
+  const g = new Graphics();
+  c.addChild(g);
+  const boot = (fill: typeof swatch.red, worn: boolean) => {
+    g.poly([-30, -44, 10, -44, 10, 6, 52, 22, 52, 52, -30, 52])
+      .fill(fill.fill)
+      .stroke({ width: 5, color: fill.line, join: 'round' });
+    g.rect(-30, 40, 82, 12).fill(ink);
+    if (worn) {
+      g.rect(-14, -16, 18, 18).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.brown.line });
+      g.moveTo(14, 30).lineTo(40, 32).stroke({ width: 3, color: swatch.brown.line });
+    } else {
+      g.moveTo(-18, -34).lineTo(2, -34).stroke({ width: 5, color: 0xffffff, alpha: 0.8 });
+      for (const [x, y] of [
+        [-46, -20],
+        [-52, 0],
+        [60, -30],
+      ]) {
+        g.moveTo(x - 7, y)
+          .lineTo(x + 7, y)
+          .stroke({ width: 3, color: swatch.yellow.fill });
+        g.moveTo(x, y - 7)
+          .lineTo(x, y + 7)
+          .stroke({ width: 3, color: swatch.yellow.fill });
+      }
+    }
+  };
+  const key = `${w}${kind}${i}`;
+  switch (key) {
+    case 'lightright0':
+      // A heavy rock: a big grey boulder pressing a dent into the ground.
+      g.ellipse(0, 56, 60, 8).fill({ color: ink, alpha: 0.25 });
+      g.poly([-62, 50, -48, -14, -10, -50, 36, -40, 62, 6, 56, 50])
+        .fill(0x9a9aa8)
+        .stroke({ width: 6, color: 0x6b6b7a, join: 'round' });
+      g.moveTo(-20, -20).lineTo(-6, 4).lineTo(-24, 24).stroke({ width: 4, color: 0x6b6b7a });
+      break;
+    case 'lightright1':
+      // A dark room: a night window with a small moon and a dim, shut lamp.
+      g.roundRect(-60, -60, 120, 120, 14).fill(0x2b2b4a).stroke({ width: 6, color: 0x15152a });
+      g.rect(-4, -60, 8, 120).fill(0x15152a);
+      g.rect(-60, -6, 120, 8).fill(0x15152a);
+      g.circle(-32, -34, 14).fill(0xfff3b0);
+      g.circle(-26, -38, 12).fill(0x2b2b4a);
+      for (const [x, y] of [
+        [28, -34],
+        [38, 28],
+        [-34, 30],
+      ])
+        g.circle(x, y, 3).fill(0xffffff);
+      break;
+    case 'lightsame0':
+      // A feather: soft and curved, with its quill.
+      g.ellipse(0, -6, 26, 58).fill(swatch.blue.light).stroke({ width: 5, color: swatch.blue.line });
+      g.moveTo(0, 56).lineTo(0, -52).stroke({ width: 5, color: swatch.blue.line });
+      for (let y = -36; y <= 30; y += 16) {
+        g.moveTo(0, y)
+          .lineTo(-18, y - 10)
+          .stroke({ width: 3, color: swatch.blue.line });
+        g.moveTo(0, y)
+          .lineTo(18, y - 10)
+          .stroke({ width: 3, color: swatch.blue.line });
+      }
+      c.rotation = 0.5;
+      break;
+    case 'shortright0':
+      return picture({ concept: 'stature', side: 0 });
+    case 'shortright1':
+      // A long rope, coiled in a wide wave from edge to edge.
+      g.moveTo(-64, 18);
+      g.bezierCurveTo(-40, -50, -14, 60, 8, 0).bezierCurveTo(26, -40, 46, 30, 64, -14);
+      g.stroke({ width: 12, color: swatch.brown.line, cap: 'round' });
+      g.moveTo(-64, 18);
+      g.bezierCurveTo(-40, -50, -14, 60, 8, 0).bezierCurveTo(26, -40, 46, 30, 64, -14);
+      g.stroke({ width: 7, color: swatch.brown.fill, cap: 'round' });
+      break;
+    case 'shortsame0':
+      // A pencil worn down to a stub.
+      g.roundRect(-26, -4, 52, 30, 6)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 5, color: swatch.yellow.line });
+      g.poly([-26, 26, -26, -4, -52, 11])
+        .fill(swatch.brown.light)
+        .stroke({ width: 4, color: swatch.brown.line, join: 'round' });
+      g.poly([-45, 14, -45, 8, -52, 11]).fill(ink);
+      g.roundRect(26, -4, 18, 30, 4).fill(swatch.pink.fill).stroke({ width: 4, color: swatch.pink.line });
+      break;
+    case 'shortsame1':
+      return picture({ concept: 'stature', side: 1 });
+    case 'oldright0':
+      // A new boot: shiny, with little sparkles.
+      boot(swatch.red, false);
+      break;
+    case 'oldright1':
+      // A sprout: two small leaves on a thin stem, in a mound of soil.
+      g.ellipse(0, 52, 52, 14).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
+      g.moveTo(0, 46).lineTo(0, -6).stroke({ width: 7, color: swatch.green.line });
+      g.ellipse(-22, -14, 22, 11).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+      g.ellipse(22, -22, 22, 11).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+      break;
+    case 'oldsame0':
+      // An old boot: dull, patched and scuffed.
+      boot(swatch.brown, true);
+      break;
+    case 'oldsame1':
+      // An old tree: a thick, knotted trunk and a few bare branches.
+      g.poly([
+        -22, 60, -12, -8, -40, -44, -28, -48, -8, -26, -4, -60, 8, -60, 10, -30, 36, -52, 46, -42, 14, -2, 24,
+        60,
+      ])
+        .fill(swatch.brown.fill)
+        .stroke({ width: 5, color: swatch.brown.line, join: 'round' });
+      g.ellipse(-4, 20, 6, 10).fill(swatch.brown.line);
+      break;
+    default:
+      // Light's lamp is the lit lamp of level 2's pair.
+      return picture({ concept: 'lamp', side: 0 });
+  }
+  return c;
+}
+
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {
   if (card.mid) return middle(card.concept as Gradable);
+  if (card.two && card.two.kind !== 'ask') return twoPicture(card.two.w, card.two.kind, card.two.i);
   const c = new Container();
+  if (CONCEPTS[card.concept].family === 'un') return (c.addChild(unPicture(card.concept, card.side)), c);
   const g = new Graphics();
   const side = card.side;
   switch (card.concept) {
@@ -377,6 +695,63 @@ function speakerGlyph(): Graphics {
     .stroke({ width: 4, color: ink, cap: 'round' });
 }
 
+/**
+ * Level 10's ask: the un- word in print, its "un" in a bubble of its own ("un" | "zipped"), beside a small speaker. Reading
+ * is optional: the word is always heard, and a tap on the bubble says it again. Returns the bubble.
+ */
+function unWord(concept: Concept): { node: Container } {
+  const [un, base] = unParts(concept);
+  const style = { fontFamily: FONT, fontSize: 52, fontWeight: '600', fill: ink } as const;
+  const prefix = new Text({ text: un, style: { ...style, fill: 0xffffff } });
+  const rest = new Text({ text: base, style });
+  prefix.anchor.set(0, 0.5);
+  rest.anchor.set(0, 0.5);
+  const pw = prefix.width + 24;
+  const glyph = speakerGlyph();
+  glyph.scale.set(1.1);
+  const lead = 72;
+  const w = lead + pw + 8 + rest.width;
+  const left = -w / 2;
+  glyph.position.set(left + 24, 0);
+  const pill = new Graphics()
+    .roundRect(left + lead, -36, pw, 72, 30)
+    .fill(swatch.purple.fill)
+    .stroke({ width: 4, color: swatch.purple.line });
+  prefix.position.set(left + lead + 12, -2);
+  rest.position.set(left + lead + pw + 8, -2);
+  const half = { w: w / 2 + 30, h: 66 };
+  const bubble = new Graphics()
+    .roundRect(-half.w, -half.h, 2 * half.w, 2 * half.h, 40)
+    .fill(0xffffff)
+    .stroke({ width: 6, color: swatch.purple.line });
+  const node = new Container();
+  node.addChild(bubble, glyph, pill, prefix, rest);
+  return { node };
+}
+
+/** Level 11's ask: the word in print beside a small speaker; reading is optional and a tap says the word again. */
+function twoWord(text: string): Container {
+  const label = new Text({
+    text,
+    style: { fontFamily: FONT, fontSize: 56, fontWeight: '600', fill: ink },
+  });
+  label.anchor.set(0, 0.5);
+  const glyph = speakerGlyph();
+  glyph.scale.set(1.1);
+  const lead = 72;
+  const w = lead + label.width;
+  glyph.position.set(-w / 2 + 24, 0);
+  label.position.set(-w / 2 + lead, -2);
+  const half = { w: w / 2 + 34, h: 66 };
+  const bubble = new Graphics()
+    .roundRect(-half.w, -half.h, 2 * half.w, 2 * half.h, 40)
+    .fill(0xffffff)
+    .stroke({ width: 6, color: swatch.purple.line });
+  const node = new Container();
+  node.addChild(bubble, glyph, label);
+  return node;
+}
+
 interface CardView {
   card: Card;
   node: Container;
@@ -435,8 +810,8 @@ class Opposites implements Game {
     this.glow.eventMode = 'none';
     this.shown.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.shown, this.glow);
-    if (this.plan.hidden) {
-      // Level 9: the ask bubble is a speaker button; a tap says the word again.
+    if (this.plan.hidden || this.plan.mode === 'un' || this.plan.mode === 'two') {
+      // Level 9: the ask bubble is a speaker button; level 10: the printed un- word. A tap says the word again.
       this.shown.eventMode = 'static';
       this.shown.hitArea = new Rectangle(-95, -95, 190, 190);
       onTap(this.shown, () => this.replay(), { cooldown: 400 });
@@ -490,13 +865,30 @@ class Opposites implements Game {
     } else if (mode === 'pairs') {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
+    } else if (mode === 'two') {
+      const { xs, ys, s } = this.twoLayout();
+      this.cards.forEach((c, i) => {
+        c.node.position.set(xs[i], ys[i]);
+        if (!this.busy) c.node.scale.set(s);
+      });
     } else {
       const xs = this.rowXs();
-      this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (mode === 'between' ? 0.56 : 0.64)));
-      // Level 7's cards grow only as far as the row leaves room, so their tap areas never overlap (upright: about 1.06).
-      if (mode === 'between' && !this.busy) this.cards.forEach((c) => c.node.scale.set(this.betweenScale()));
+      this.cards.forEach((c, i) =>
+        c.node.position.set(xs[i], v.h * (mode === 'between' ? 0.56 : mode === 'un' ? 0.6 : 0.64)),
+      );
+      // Level 7's and 10's cards grow only as far as the row leaves room, so their tap areas never overlap (upright: about 1.06).
+      if ((mode === 'between' || mode === 'un') && !this.busy)
+        this.cards.forEach((c) => c.node.scale.set(this.wideScale()));
     }
     this.shown.position.set(v.w / 2, Math.max(150, v.h * 0.26));
+    if ((mode === 'un' || mode === 'two') && this.shown.children[0]) {
+      // The printed word and its tap area grow together on an upright phone.
+      const word = this.shown.children[0];
+      const k = this.tall() ? UN_TALL_WORD : 1;
+      word.scale.set(k);
+      const b = word.getLocalBounds();
+      this.shown.hitArea = new Rectangle(b.x * k, b.y * k, b.width * k, b.height * k);
+    }
   }
 
   update(dt: number) {
@@ -536,16 +928,43 @@ class Opposites implements Game {
     this.destroyed = true;
   }
 
-  /** The row of cards' centers; level 7's larger cards use the whole width (they stand clear of the corner buttons). */
+  /** The row of cards' centers; level 7's and 10's larger cards use the whole width (clear of the corner buttons). */
   private rowXs(n = this.cards.length) {
     const v = this.view;
-    return this.plan.mode === 'between' ? spread(n, 80, v.w - 80, 330) : spread(n, 200, v.w - 80, 240);
+    const wide = this.plan.mode === 'between' || this.plan.mode === 'un';
+    return wide
+      ? spread(n, 80, v.w - 80, this.plan.mode === 'un' ? 420 : 330)
+      : spread(n, 200, v.w - 80, 240);
   }
 
-  /** Level 7's card scale: as large as BETWEEN_SCALE, but each 180-unit tap area keeps a gap to the next. */
-  private betweenScale() {
-    const xs = this.rowXs(3);
-    return Math.min(BETWEEN_SCALE, (xs[1] - xs[0] - 16) / 180);
+  /** Level 7's and 10's card scale: as large as their own scale, but each 180-unit tap area keeps a gap to the next. */
+  private wideScale() {
+    const un = this.plan.mode === 'un';
+    const xs = this.rowXs(un ? 2 : 3);
+    const most = un ? (this.tall() ? UN_TALL_SCALE : UN_SCALE) : BETWEEN_SCALE;
+    return Math.min(most, (xs[1] - xs[0] - 16) / 180);
+  }
+
+  /**
+   * Level 11's four cards: one row on a wide view, two by two on an upright phone. The scale is as large as the gaps leave
+   * room for, so no two 180-unit tap areas touch; the grid's low row stays above the corner guide.
+   */
+  private twoLayout() {
+    const v = this.view;
+    if (!this.tall()) {
+      const xs = spread(4, 80, v.w - 80, 330);
+      return { xs, ys: xs.map(() => v.h * 0.62), s: Math.min(TWO_SCALE, (xs[1] - xs[0] - 16) / 180) };
+    }
+    const cols = spread(2, 60, v.w - 60, 400);
+    const top = v.h * 0.46;
+    const low = v.h * 0.7;
+    const s = Math.min(TWO_TALL_SCALE, (cols[1] - cols[0] - 16) / 180, (low - top - 16) / 180);
+    return { xs: [cols[0], cols[1], cols[0], cols[1]], ys: [top, top, low, low], s };
+  }
+
+  /** An upright phone: the view is much taller than wide. */
+  private tall() {
+    return this.view.h > this.view.w * 1.3;
   }
 
   /**
@@ -749,11 +1168,13 @@ class Opposites implements Game {
             ? BIG_SCALE
             : this.plan.mode === 'switch'
               ? 1.7
-              : this.plan.mode === 'between'
-                ? this.betweenScale()
-                : this.plan.mode === 'order'
-                  ? this.orderLayout().s
-                  : 1,
+              : this.plan.mode === 'two'
+                ? this.twoLayout().s
+                : this.plan.mode === 'between' || this.plan.mode === 'un'
+                  ? this.wideScale()
+                  : this.plan.mode === 'order'
+                    ? this.orderLayout().s
+                    : 1,
         ),
       );
     if (this.plan.mode === 'opposite') {
@@ -768,6 +1189,12 @@ class Opposites implements Game {
         glyph.scale.set(2.4);
         this.shown.addChild(bubble, glyph);
       }
+    } else if (this.plan.mode === 'two') {
+      // Level 11: the asked word in print (reading is optional); the bubble replays it.
+      this.shown.addChild(twoWord(word(r.ask!)));
+    } else if (this.plan.mode === 'un') {
+      // Level 10: the un- word in print, its "un" in a bubble of its own; the whole bubble replays the word.
+      this.shown.addChild(unWord(r.ask!.concept).node);
     }
     this.resize(this.view);
     for (const c of this.cards) {
@@ -783,6 +1210,8 @@ class Opposites implements Game {
         ? this.ctx.instruct(this.plan.big ? 'opp.big' : 'opp.switch')
         : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
+    if (mode === 'un') return this.ctx.instruct('opp.un', this.unVars());
+    if (mode === 'two') return this.ctx.instruct('opp.two', { word: word(r.ask!) });
     if (mode === 'opposite')
       return this.ctx.instruct(this.plan.hidden ? 'opp.heard' : 'opp.opposite', { word: word(r.ask!) });
     if (mode === 'between') return this.ctx.instruct('opp.between', this.ends());
@@ -844,9 +1273,14 @@ class Opposites implements Game {
       return void (word(c.card) === word(r.ask!)
         ? this.right([c])
         : this.wrong('opp.notfind', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'un')
+      return void (word(c.card) === word(r.ask!)
+        ? this.right([c], () => this.ctx.say('opp.isun', this.unVars()))
+        : this.wrong('opp.notun', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'two') return void this.twoTap(c);
     if (mode === 'between')
       return void (c.card.mid
-        ? this.right([c], word(c.card))
+        ? this.right([c], () => this.ctx.say('opp.isbetween', { word: word(c.card) }))
         : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends(c.card) }));
     if (mode === 'order') {
       // In turn from the end named first; a tap out of turn asks which comes first, or which comes after the last one.
@@ -886,13 +1320,54 @@ class Opposites implements Game {
     this.wrong('opp.notpair', { a: word(a.card), b: word(c.card) });
   }
 
+  /**
+   * Level 11: an opposite lights up and is kept (the first says to find one more, the second finishes the round, so either
+   * comes first); a picture of the asked word itself is never a miss, only a gentle "that one is light too"; the unrelated
+   * one is a miss. The one hint, after two misses, glows an opposite not yet found and moves to the other once one is.
+   */
+  private async twoTap(c: CardView) {
+    const ask = word(this.round.ask!);
+    const kind = c.card.two?.kind;
+    if (!kind) return void this.wrong('opp.notopp', { what: word(c.card), word: ask });
+    if (kind === 'same') return void this.ctx.say('opp.sametoo', { word: ask });
+    if (kind !== 'right') return;
+    c.done = true;
+    this.drawCard(c, true);
+    sfx.sparkle();
+    const left = this.cards.filter((x) => !x.done && x.card.two?.kind === 'right');
+    if (left.length) {
+      if (this.glowing) this.glowing = left[0];
+      return void this.ctx.say('opp.twofirst', { what: word(c.card), word: ask });
+    }
+    this.busy = true;
+    this.glowing = null;
+    this.ctx.pet.cheer();
+    const said = this.ctx.say('opp.twodone', { what: word(c.card), word: ask });
+    if (this.index + 1 >= this.rounds.length) await said;
+    await this.ctx.tw.wait(0.5);
+    await this.next();
+  }
+
   /** Level 7's two ends: the one named first as `a`, or the end she tapped ("That one is full. Between full and…"). */
   private ends(first: Card = this.round.ask!) {
     return { a: word(first), b: word({ ...first, side: (1 - first.side) as 0 | 1 }) };
   }
 
+  /** Level 10's two words: the un- word asked for and the word it turns the other way ("unzipped", "zipped"). */
+  private unVars() {
+    const ask = this.round.ask!;
+    return { word: word(ask), base: word({ ...ask, side: 0 }) };
+  }
+
   private wrong(
-    line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair' | 'opp.notbetween' | 'opp.notfirst' | 'opp.notnext',
+    line:
+      | 'opp.notfind'
+      | 'opp.notopp'
+      | 'opp.notpair'
+      | 'opp.notbetween'
+      | 'opp.notfirst'
+      | 'opp.notnext'
+      | 'opp.notun',
     vars: Record<string, string>,
   ) {
     this.misses++;
@@ -913,17 +1388,19 @@ class Opposites implements Game {
       this.glowing =
         this.plan.mode === 'order'
           ? this.cards.find((x) => !x.done && inTurn(r, x.card, this.lined.length))!
-          : this.plan.mode === 'find'
-            ? this.cards.find((x) => word(x.card) === word(r.ask!))!
-            : this.plan.mode === 'opposite'
-              ? this.cards.find((x) => opposites(x.card, r.ask!))!
-              : this.plan.mode === 'spot'
-                ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
-                : this.cards.find((x) => !x.done)!;
+          : this.plan.mode === 'two'
+            ? this.cards.find((x) => !x.done && x.card.two?.kind === 'right')!
+            : this.plan.mode === 'find' || this.plan.mode === 'un'
+              ? this.cards.find((x) => word(x.card) === word(r.ask!))!
+              : this.plan.mode === 'opposite'
+                ? this.cards.find((x) => opposites(x.card, r.ask!))!
+                : this.plan.mode === 'spot'
+                  ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
+                  : this.cards.find((x) => !x.done)!;
     }
   }
 
-  /** Level 9: the speaker says the word again (before or after the picture shows). */
+  /** Level 9: the speaker says the word again (before or after the picture shows); level 10: the printed un- word. */
   private replay() {
     if (this.finished || !this.round?.ask) return;
     sfx.pop(3);
@@ -963,15 +1440,15 @@ class Opposites implements Game {
     this.revealing = false;
   }
 
-  /** A right answer; level 7 names the middle it found ("Yes! Warm is in between."). */
-  private async right(cs: CardView[], middle?: string) {
+  /** A right answer, praised (level 7 names the middle it found, level 10 says what un- did). */
+  private async right(cs: CardView[], praise = () => this.ctx.say('opp.yay')) {
     this.busy = true;
     this.glowing = null;
     for (const c of cs) this.drawCard(c, true);
     sfx.sparkle();
     this.ctx.pet.cheer();
     // The praise starts and the next question follows the 0.3 s beat (U7 R4); the last one is heard out.
-    const said = middle ? this.ctx.say('opp.isbetween', { word: middle }) : this.ctx.say('opp.yay');
+    const said = praise();
     if (this.index + 1 >= this.rounds.length) await said;
     await this.ctx.tw.wait(0.3);
     await this.next();
@@ -1022,7 +1499,7 @@ export const oppositesGame: GameModule = {
   skills: ['words', 'concepts', 'opposites', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [BIG_LEVEL],
+  entryLevels: [BIG_LEVEL, ONE_PAIR_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Act them out together: stretch up big, curl up small, a happy face, a sad face.',

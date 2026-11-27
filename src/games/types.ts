@@ -201,6 +201,11 @@ export interface RoundResult {
    * the new ones in her discovery journal.
    */
   discoveries?: string[];
+  /**
+   * The flower kind that bloomed for a request from the collection book (RW11 slice 2: Garden Grow level 2's `request`). The
+   * shell grows the matching form from it, never from the request alone, so the blossom is exactly what she grew.
+   */
+  grew?: string;
 }
 
 /**
@@ -265,7 +270,8 @@ export interface GameContext extends LifetimeContext {
    */
   couch?: { versus: boolean; course?: CouchCourse };
   /**
-   * What the round was asked for by the collection book's path (RW10 slice 2): Paint Mixer level 5's recipe. A game that
+   * What the round was asked for by the collection book's path: Paint Mixer level 5's recipe (RW10 slice 2) or Garden Grow
+   * level 2's first flower kind (RW11 slice 2, reported back as `RoundResult.grew`). A game that
    * cannot honour it ignores it; a round opened any other way has none.
    */
   request?: string;

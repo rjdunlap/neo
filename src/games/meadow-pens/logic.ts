@@ -298,7 +298,7 @@ export function drawnRows(f: Field, tall: boolean): Cell[][] {
 // ----- plans and rounds -----
 
 export interface Plan {
-  level: 1 | 2 | 3 | 4 | 5;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   name: string;
   count: number;
 }
@@ -321,10 +321,16 @@ export const PLANS: readonly Plan[] = [
   },
   { level: 4, name: 'More grass, or more fence? Compare two pens, including equal counts', count: 5 },
   { level: 5, name: 'Two parts: count all the grass in a bent field made of two rectangles', count: 5 },
+  {
+    level: 6,
+    name: "How long is the side? Find a strip of grass's hidden length from its area and its rows",
+    count: 5,
+  },
+  { level: 7, name: 'Fill the loft: find the bales in a hay loft from one tray and the layers', count: 5 },
 ];
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 5 },
+  school: { min: 1, max: 7 },
 };
 
 export const planFor = (level: number): Plan =>

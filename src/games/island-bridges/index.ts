@@ -5,6 +5,7 @@ import { sfx } from '../../audio/sfx';
 import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
+import { clampSlide } from '../../engine/slide';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
@@ -229,10 +230,7 @@ class IslandBridges implements Game {
       win = fit.window;
     if (win) {
       this.win = win;
-      this.slid = {
-        x: Math.min(win.maxX, Math.max(0, this.slid.x)),
-        y: Math.min(win.maxY, Math.max(0, this.slid.y)),
-      };
+      this.slid = clampSlide(this.slid.x, this.slid.y, win.maxX, win.maxY);
       this.clipMask.clear().roundRect(win.x, win.y, win.w, win.h, 22).fill(0xffffff);
       this.board.mask = this.clipMask;
       this.slideNote.text = 'Drag the sea to slide it';
@@ -285,7 +283,7 @@ class IslandBridges implements Game {
   setSlide(x: number, y: number) {
     const win = this.win;
     if (!win) return;
-    this.slid = { x: Math.min(win.maxX, Math.max(0, x)), y: Math.min(win.maxY, Math.max(0, y)) };
+    this.slid = clampSlide(x, y, win.maxX, win.maxY);
     this.placeBoard();
   }
 

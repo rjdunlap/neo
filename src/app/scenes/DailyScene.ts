@@ -5,7 +5,12 @@ import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { dayKey, levelDots, levelLine, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { dayKey, levelDots, levelLine, playedOn, type DailyPick } from '../../content/daily';
+import { dailyEndingLine, dailyStop, dailyStops, nextUp, startDaily } from '../../content/mix';
+import { SCRIPT } from '../../content/voice-script';
+import { GAMES } from '../../games/registry';
+import { MixSheet } from '../../ui/mix';
+import { launchStop, mixMemory } from '../discovery';
 import { todaysSix } from '../daily-six';
 import { makeCompanion } from '../../creatures/companion';
 import { BACK } from '../../creatures/friends-layout';
@@ -64,14 +69,13 @@ export class DailyScene extends Scene {
       () => voice.say('nav.back'),
     ),
   ).means('back');
-  /** Play all: opens the first of the six not yet played today; each round's result then offers the next one. */
-  readonly playAll = new RoundButton(playIcon(), swatch.green, CORNER_RADIUS, () => {
-    const next = nextOfSix(this.picks, null, (id) => this.played(id));
-    if (next) this.open(next, this.playAll);
-  });
+  /** Play all: the preview of the six through the mix planner (slice 3); ticked games start played. */
+  readonly playAll = new RoundButton(playIcon(), swatch.green, CORNER_RADIUS, () => this.startPlayAll());
+  /** The preview and the ending of a live Play all, over the page. */
+  sheet: MixSheet | null = null;
   /** A grown-up's playtest notes on today's six (plain HTML, `src/ui/playtest-sheet.ts`); never drawn for a child. */
   readonly notes: RoundButton | null;
-  private sheet: PlaytestSheet | null = null;
+  private notesSheet: PlaytestSheet | null = null;
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.all,
@@ -156,13 +160,13 @@ export class DailyScene extends Scene {
   }
 
   private openNotes() {
-    if (this.sheet || this.leaving) return;
+    if (this.notesSheet || this.sheet || this.leaving) return;
     voice.stop();
-    this.sheet = openPlaytestSheet({
+    this.notesSheet = openPlaytestSheet({
       day: this.day,
       picks: this.picks,
       played: (id) => this.played(id),
-      onClose: () => (this.sheet = null),
+      onClose: () => (this.notesSheet = null),
     });
   }
 
@@ -190,7 +194,6 @@ export class DailyScene extends Scene {
     // On a phone the six are the whole app: there is no All games to open.
     // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
     this.all.visible = !this.app.phoneOnly && !store.entry.guest;
-    this.playAll.visible = !this.allPlayed;
     this.buildCards();
     this.place();
   }
@@ -275,16 +278,16 @@ export class DailyScene extends Scene {
     return this.out.take(node, others, go, say);
   }
 
-  resize(_v: View) {
+  resize(v: View) {
     // A turn redraws the badges. The island trial also changes which games it draws from first.
     const upright = this.app.uprightPhone();
     if (upright !== this.uprightPhone && !this.leaving) {
       this.uprightPhone = upright;
       if (!this.app.phoneOnly) this.picks = this.pickSix();
       this.buildCards();
-      this.playAll.visible = !this.allPlayed;
     }
     this.place();
+    this.sheet?.layout(v);
   }
 
   /**
@@ -383,9 +386,145 @@ export class DailyScene extends Scene {
     });
   }
 
+  override update(dt: number) {
+    super.update(dt);
+    this.sheet?.update(dt);
+  }
+
   destroy() {
-    this.sheet?.close();
+    this.notesSheet?.close();
     super.destroy();
+  }
+
+  // Play all through the mix planner (D10 slice 3) -------------------------------------------
+
+  /** A live Play all belongs to this page and this day; a later day's page forgets it. */
+  private live() {
+    const s = mixMemory.live(store.data);
+    return s?.stops && s.day === this.day ? s : undefined;
+  }
+
+  override holdsMix(): boolean {
+    return !!this.live();
+  }
+
+  private sessionMods() {
+    const s = this.live();
+    return s ? s.ids.map((id) => GAMES.find((m) => m.id === id)).filter((m) => !!m) : [];
+  }
+
+  /** The six as the page dealt them, frozen with their bands and levels; ticked ones start played. */
+  private startPlayAll() {
+    if (this.leaving || this.sheet || this.notesSheet || this.picks.length === 0) return;
+    const stops = dailyStops(this.picks);
+    mixMemory.startDaily(
+      store.data,
+      stops,
+      startDaily(stops, (id) => this.played(id)),
+      store.data.profile.band,
+      this.day,
+    );
+    voice.stop();
+    sfx.tick();
+    this.openSheet();
+    this.sayNext();
+  }
+
+  private openSheet() {
+    const s = this.live();
+    if (!s) return;
+    if (!this.sheet) {
+      this.sheet = new MixSheet(
+        {
+          tile: (p) => this.hear(p),
+          play: () => this.playNext(),
+          skip: () => this.skipNext(),
+          back: () => this.endMix(),
+          againMix: () => undefined,
+          home: () => this.endMix(),
+        },
+        true,
+      );
+      this.ui.addChild(this.sheet);
+    }
+    this.sheet.show(s.state, this.sessionMods(), this.view);
+  }
+
+  private refresh() {
+    const s = this.live();
+    if (s && this.sheet) this.sheet.show(s.state, this.sessionMods(), this.view);
+    return s?.state;
+  }
+
+  private sayNext() {
+    const s = this.live();
+    if (!s || !this.sheet) return;
+    const p = nextUp(s.state);
+    if (p === null) return void voice.say(dailyEndingLine(s.state));
+    const mod = this.sessionMods()[p];
+    if (mod) void voice.say('mix.stop', { title: SCRIPT[mod.titleLine][0].replace(/!$/, '') });
+  }
+
+  private hear(p: number) {
+    const mod = this.sessionMods()[p];
+    if (!mod || !this.live()) return;
+    voice.stop();
+    void voice.say('mix.stop', { title: SCRIPT[mod.titleLine][0].replace(/!$/, '') });
+  }
+
+  /** The next stop, checked again now: never a different game behind its picture. */
+  private playNext() {
+    const s = this.live();
+    const p = s ? nextUp(s.state) : null;
+    if (!s || p === null || this.leaving) return;
+    if (!dailyStop(store.data.profile.band, GAMES, s.stops![p])) {
+      mixMemory.apply(store.data, { type: 'unavailable', p });
+      const state = this.refresh();
+      voice.stop();
+      void voice.say('mix.changed').then(() => {
+        if (state && nextUp(state) === null) void voice.say(dailyEndingLine(state));
+      });
+      return;
+    }
+    if (!mixMemory.launch(store.data, p)) return;
+    voice.stop();
+    const pressed = this.sheet!.playButton;
+    void this.leave(pressed, () => launchStop(this.app.go, s, p, store.data.profile.band));
+  }
+
+  private skipNext() {
+    const s = this.live();
+    const p = s ? nextUp(s.state) : null;
+    if (!s || p === null || this.leaving) return;
+    const after = mixMemory.apply(store.data, { type: 'skip', p })!;
+    this.refresh();
+    voice.stop();
+    void voice.say('mix.skip').then(() => {
+      if (!this.sheet || !this.live()) return;
+      if (nextUp(after) === null) void voice.say(dailyEndingLine(after));
+      else this.sayNext();
+    });
+  }
+
+  /** Back on the preview or Done on the ending: the session ends and the six page shows its ticks; the flourish only for six ticks. */
+  private endMix() {
+    if (this.leaving) return;
+    const ending = this.sheet?.ending;
+    mixMemory.end();
+    voice.stop();
+    this.sheet?.destroy({ children: true });
+    this.sheet = null;
+    if (ending && this.allPlayed) void this.flourish();
+  }
+
+  /** Coming back from a stop's Home: the ending (or the preview, when a stop is still to come) opens over the page. */
+  private resumeMix() {
+    if (!this.live()) {
+      if (mixMemory.live(store.data)?.stops) mixMemory.end(); // another day's session
+      return;
+    }
+    this.openSheet();
+    this.sayNext();
   }
 
   enter() {
@@ -393,6 +532,8 @@ export class DailyScene extends Scene {
     if (link) link.hidden = true;
     music.play(STYLES.hub);
     voice.stop();
+    if (this.live()) return this.resumeMix();
+    mixMemory.live(store.data)?.stops && mixMemory.end();
     if (this.allPlayed) void this.flourish();
     else void voice.say('daily.open');
   }

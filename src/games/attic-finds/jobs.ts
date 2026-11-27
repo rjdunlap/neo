@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { CRITTERS, Critter } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { lighten, paperEllipse, U } from '../../art/paper';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
@@ -53,6 +54,8 @@ import {
 const WALL = 0xecd9b8;
 const BEAM = 0x9c6b3c;
 const RUG = swatch.red.fill;
+/** The rug under the things: the rug's red, softened toward the floor. */
+const RUG_SOFT = lighten(RUG, 0.22);
 /** A thing in the cart is drawn smaller so it fits its slot (150 × 0.74 = 111 units, still a full-size target). */
 const IN_CART = 0.74;
 /** Below this many units of finger travel a touch on a thing is a tap (a try), not a drag. */
@@ -536,7 +539,8 @@ export class AtticJobs implements Game {
     const x0 = L.tools[0].x - TOOL_BOX / 2 - 30,
       x1 = L.tools[2].x + TOOL_BOX / 2 + 30,
       y = L.tools[0].y + 50;
-    this.bg.ellipse((x0 + x1) / 2, y, (x1 - x0) / 2, 44).fill({ color: RUG, alpha: 0.55 });
+    // A solid paper rug in a soft red (a see-through wash would stay flat, with no edge).
+    paperEllipse(this.bg, (x0 + x1) / 2, y, (x1 - x0) / 2, 44, RUG_SOFT, { amp: 0.8 * U, seed: 7 });
     this.bg.hitArea = new Rectangle(0, 0, v.w, v.h);
     const sx0 = L.shelf[0].x - 90,
       sx1 = L.shelf[2].x + 90;

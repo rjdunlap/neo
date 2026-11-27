@@ -45,7 +45,7 @@ export function planFor(level: number) {
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 5 },
 };
 export function unmet(level: number, strip: Strip): Match[] {
   return planFor(level).requirements.filter((r) => strip[r.slot] !== r.pad);

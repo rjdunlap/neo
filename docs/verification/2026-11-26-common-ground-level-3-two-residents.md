@@ -1,0 +1,5 @@
+# 2026-11-26 — Common Ground level 3, Two residents (PR #2249)
+
+**Changed:** `common-ground` level 3, Two residents (`school` 1–3, `grownup` 3): needs and wishes on a shared 2×3 floor, `check3`/`served`/`hintAction3`, a Round3 screen with request cards, Visit, Keep this plan and Try another, how-to card, voice lines, ghost-finger bot, and a level-3 portrait play in the `commonground` suite.
+**Ran:** `npm run typecheck`, `npm run lint`, prettier, `npx vitest run src/games/common-ground src/content` (the 30-placement counts 8/15/6/1, wish counts 3/2/3/0, hints within two moves from every state, seeded drawer and the 50-seed bot plan; lands, registry, how-to and game-docs tests), `BROWSER_SUITE=commonground` (level 3: window miss, clash not a miss, Help, accepted plan, Try another, Keep; saved score 1 miss 1 hint; portrait screenshots checked), `BROWSER_SUITE=fingerdemo FINGER_ONLY=common-ground FINGER_LEVELS=3`.
+**Not run:** full `npm test` (left to PR CI), `npm run build`, offline suite, real device speech and any child or phone play. Known limits: the level-3 sticker reuses the level-1 room picture.

@@ -1,0 +1,5 @@
+# 2026-11-27 — Pick for me D7b, Shuffle into the mix (PR #2289)
+
+**Changed:** `shuffleLineup` and `SHUFFLE_STOPS` in `src/content/pick.ts`; `MixHost.shufflePool` and `shuffleInto` in `src/app/mix.ts`; `PickHost.shuffle` and the Shuffle button on `src/ui/pick-sheet.ts` (new `shuffleIcon`); voice line `pick.shuffle`; `DISCOVERY_ONLY=pick` now plays Shuffle.
+**Ran:** `npm run typecheck`, `format:check`, `lint`; `npx vitest run` on `src/content/pick.test.ts`, `src/app/mix-flow.test.ts`, `src/ui/pick-sheet.test.ts`, `src/app/pick-memory.test.ts`, barrels and game-docs (first-three-of-the-order, no repeat, short pools, avoid-last, table shows the held lineup with nothing started); `BROWSER_SUITE=discovery DISCOVERY_ONLY=pick` at 390×844: Shuffle shown at toddler and hidden at preschool, tapping it opens the mix table with 1–3 distinct games, no session live, `store.data` unchanged.
+**Not run:** the full unit suite and build (left to PR CI), `world`, offline; no phone or child check (parked).

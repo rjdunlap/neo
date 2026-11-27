@@ -51,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'A full pond of ten splashes in at once, then a few more ducks swim into a second frame. Tap the lily pad with how many there are in all; in every other round the sign shows the whole, and she finds how many are past the ten.',
     },
+    {
+      from: 16,
+      to: 16,
+      text: 'The ducks start on one side of the bridge. Tap a duck to send it across (tap it again to bring it back), then tap the green check to keep the split. Every new way earns a card in the row below: "3 and 2", "2 and 3", and so on.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -64,6 +69,7 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
     { from: 14, to: 15, text: 'The round ends when the answer is right.' },
+    { from: 16, to: 16, text: 'The round ends when every way to share the ducks has a card.' },
   ],
   note: [
     {
@@ -105,6 +111,11 @@ export const HOW_TO: GameHowTo = {
       from: 15,
       to: 15,
       text: 'A wrong pad counts on from ten (ten, eleven, twelve…), or, when she is finding the part past ten, counts just those ducks. After a right answer the sign shows the sentence, such as 10 + 4 = 14.',
+    },
+    {
+      from: 16,
+      to: 16,
+      text: 'Nothing here is a wrong answer: a split she has already kept just lights its card, and swapped sides ("2 and 3" after "3 and 2") count as a new way to share the same ducks. After two repeats in a row a duck glows to show where to go next.',
     },
     {
       from: 11,

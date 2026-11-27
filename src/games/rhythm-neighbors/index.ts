@@ -23,6 +23,9 @@ import {
   KNOCKS,
   KNOCK_ANSWER,
   KNOCK_FINALE,
+  OWN_MAX,
+  OWN_MIN,
+  OWN_ROUNDS,
   PAIR_ROUNDS,
   PAUSE_SECONDS,
   accepts,
@@ -30,7 +33,9 @@ import {
   callEnded,
   callPhrase,
   finaleEvents,
+  gapsOf,
   idleInvites,
+  isEcho,
   knockCounts,
   makePhrases,
   nextNote,
@@ -193,6 +198,8 @@ class RhythmNeighbors implements Game {
   hints = 0;
   private botPlan: { at: number; voice: number }[] = [];
   private botSubmitAt = 0;
+  /** Level 11: her accepted answer is being sung back as the bird's new verse. */
+  private verse = false;
   get finished() {
     return this.done;
   }
@@ -240,6 +247,10 @@ class RhythmNeighbors implements Game {
     this.replay = new RoundButton(againIcon(), swatch.white, 50, () => this.demonstrate());
     this.help = new RoundButton(musicNote(new Graphics(), 40, swatch.orange.line), swatch.yellow, 50, () => {
       if (this.busy || this.done) return;
+      if (this.plan.own) {
+        this.sample();
+        return;
+      }
       if (!this.guided) {
         this.hints++;
         this.guided = true;
@@ -314,7 +325,7 @@ class RhythmNeighbors implements Game {
     const p = this.phrases[this.phrase];
     const call = schedule(p.call, this.clock + 0.3);
     this.events = call.map((at) => ({ at, voice: -1, note: -1 }));
-    if (this.plan.turn) {
+    if (this.plan.turn || this.plan.own) {
       this.busyUntil = call.at(-1)! + 0.6;
       this.drawScore();
       return;
@@ -322,6 +333,43 @@ class RhythmNeighbors implements Game {
     const response = schedule(p.gaps, call.at(-1)! + 0.9);
     this.events.push(...response.map((at, i) => ({ at, voice: p.voices[i], note: i })));
     this.busyUntil = response.at(-1)! + 0.8;
+    this.drawScore();
+  }
+  /** Level 11: the help button sings a sample answer. It is never a hint and is never counted. */
+  private sample() {
+    this.taps.length = 0;
+    this.busy = true;
+    const p = this.phrases[this.phrase],
+      times = schedule(p.gaps, this.clock + 0.3);
+    this.events = times.map((at, i) => ({ at, voice: p.voices[i], note: -1 }));
+    this.busyUntil = times.at(-1)! + 0.8;
+    void this.ctx.say('neighbors.sample');
+    this.drawScore();
+  }
+  /**
+   * Level 11: she sends her notes. Fewer than two are nudged; an echo of the call is nudged and the call plays again; any other
+   * shape is an answer, sung back (her own frogs and gaps) as the bird's new verse. Nothing here is a miss or a hint.
+   */
+  private sendOwn() {
+    if (this.taps.length < OWN_MIN) {
+      if (this.taps.length) void this.ctx.say('neighbors.more');
+      return;
+    }
+    const p = this.phrases[this.phrase],
+      times = this.taps.map((t) => t.at);
+    if (isEcho(p.call, times)) {
+      void this.ctx.say('neighbors.echo');
+      this.demonstrate();
+      return;
+    }
+    sfx.sparkle();
+    const first = times[0];
+    p.gaps = gapsOf(times);
+    p.voices = [...this.taps.map((t) => t.voice), 0];
+    this.events = this.taps.map((t) => ({ at: this.clock + 0.4 + t.at - first, voice: t.voice, note: -1 }));
+    this.taps.length = 0;
+    this.busy = this.verse = true;
+    this.busyUntil = this.events.at(-1)!.at + 0.8;
     this.drawScore();
   }
   private play(voice: number) {
@@ -348,6 +396,13 @@ class RhythmNeighbors implements Game {
       return;
     }
     if (this.busy) return; // Hearing and exploring during the demonstration is welcome.
+    if (this.plan.own) {
+      if (this.taps.length < OWN_MAX) {
+        this.taps.push({ voice, at: this.clock });
+        this.drawScore();
+      }
+      return; // A sixth tap croaks and is not recorded.
+    }
     this.pause();
     if (this.taps.length >= this.phrases[this.phrase].voices.length) return; // An extra tap croaks but is not recorded.
     this.taps.push({ voice, at: this.clock });
@@ -372,6 +427,10 @@ class RhythmNeighbors implements Game {
   }
   private check() {
     if (this.busy || this.done || this.plan.turn || this.tree || this.plan.pairs) return;
+    if (this.plan.own) {
+      this.sendOwn();
+      return;
+    }
     if (this.plan.free) {
       if (this.plays > 0) this.finish();
       return;
@@ -477,6 +536,24 @@ class RhythmNeighbors implements Game {
       }
       return;
     }
+    if (this.plan.own) {
+      // Her notes so far, one circle each; the sample answer is only ever heard, never pictured.
+      const step = Math.min(100, (this.lay.score.x1 - this.lay.score.x0) / (OWN_MAX - 1)),
+        mid = (this.lay.score.x0 + this.lay.score.x1) / 2;
+      this.taps.forEach((t, i) => {
+        const node = new Container();
+        node.addChild(
+          new Graphics()
+            .circle(0, 0, 43)
+            .fill(swatch.yellow.light)
+            .stroke({ width: 4, color: swatch[t.voice ? 'teal' : 'green'].line }),
+          frog(t.voice, 27),
+        );
+        node.position.set(mid + (i - (this.taps.length - 1) / 2) * step, 0);
+        this.score.addChild(node);
+      });
+      return;
+    }
     if (this.plan.free || this.done || this.tree) return;
     const p = this.phrases[this.phrase],
       times = schedule(p.gaps),
@@ -570,11 +647,13 @@ class RhythmNeighbors implements Game {
             ? 'neighbors.take'
             : this.plan.free
               ? 'neighbors.free'
-              : this.plan.pairs
-                ? 'neighbors.which'
-                : this.plan.timing
-                  ? 'neighbors.rhythm'
-                  : 'neighbors.turns',
+              : this.plan.own
+                ? 'neighbors.own'
+                : this.plan.pairs
+                  ? 'neighbors.which'
+                  : this.plan.timing
+                    ? 'neighbors.rhythm'
+                    : 'neighbors.turns',
     );
     if (!this.plan.free && !this.tree) this.demonstrate();
   }
@@ -661,6 +740,13 @@ class RhythmNeighbors implements Game {
       if (this.phrase >= CALL_ROUNDS) this.finish();
       else void this.ctx.say('neighbors.call-again');
     }
+    if (this.busy && this.verse && this.clock >= this.busyUntil) {
+      // Level 11: her answer was sung back; the next call, or the ending song after three.
+      this.busy = this.verse = false;
+      this.phrase++;
+      if (this.phrase >= OWN_ROUNDS) this.finish();
+      else this.demonstrate();
+    }
     if (this.busy && this.clock >= this.busyUntil) {
       this.busy = false;
       if (this.plan.turn) {
@@ -674,11 +760,13 @@ class RhythmNeighbors implements Game {
         void this.ctx.say(
           this.plan.pairs
             ? 'neighbors.choose'
-            : this.plan.turn
-              ? 'neighbors.my-turn'
-              : this.guided
-                ? 'neighbors.help'
-                : 'neighbors.your-turn',
+            : this.plan.own
+              ? 'neighbors.own-turn'
+              : this.plan.turn
+                ? 'neighbors.my-turn'
+                : this.guided
+                  ? 'neighbors.help'
+                  : 'neighbors.your-turn',
         );
     }
   }

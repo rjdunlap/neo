@@ -12,12 +12,13 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, turnIcon, undoIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { stampArt } from './art';
+import { sceneArt, stampArt } from './art';
 import { TracePrints } from './trace';
 import {
   animalAsks,
   animalWord,
   ASK_HINT_AFTER,
+  choiceButtonRadius,
   COLOR_RADIUS,
   LEVELS,
   nextSize,
@@ -29,8 +30,14 @@ import {
   playOrder,
   type PlayNote,
   roundPlan,
+  SET_CHOICES,
+  SET_RADIUS,
+  SET_REACH,
+  setChoiceInfo,
+  type SetChoice,
   STAMP_COLORS,
   STAMP_NAMES,
+  type SceneId,
   STAMP_SOUNDS,
   countAloud,
   stampStep,
@@ -61,6 +68,17 @@ class StampStudio implements Game {
   readonly paper = new Container();
   private readonly background = new Graphics();
   private readonly sheet = new Graphics();
+  /** The scene's backdrop (Sea or Farm rounds, or a chosen set from level 4), under the stamps and inside the paper's edge; empty on plain paper. */
+  private readonly backdrop = new Container();
+  private readonly backdropMask = new Graphics();
+  private scene: SceneId | undefined;
+  private activeSet: SetChoice = 'plain';
+  activeKinds: StampKind[];
+  setsOpen = false;
+  readonly setsButton: RoundButton;
+  private readonly setTray = new Graphics();
+  readonly setButtons: RoundButton[] = [];
+  private lastView: View = { w: 1024, h: 768, scale: 1 };
   private readonly selection = new Graphics();
   readonly finish: RoundButton;
   readonly undo: RoundButton;
@@ -80,7 +98,7 @@ class StampStudio implements Game {
     sounds: boolean[];
     time: number;
     marks: Mark[];
-    creation: { kind: 'picture'; stamps: Stamp[] };
+    creation: { kind: 'picture'; stamps: Stamp[]; scene?: SceneId };
   } | null = null;
   /** Presses this round, which climb a pitched stamp's sound; and the numbers already counted aloud. */
   private presses = 0;
@@ -115,8 +133,12 @@ class StampStudio implements Game {
     const round = roundPlan(ctx.level, ctx.rng);
     this.plan = round.plan;
     this.color = round.color;
-    this.kind = this.plan.kinds[0];
-    this.paper.addChild(this.sheet, this.glow, this.selection, this.bar);
+    this.scene = round.scene;
+    this.activeKinds = [...this.plan.kinds];
+    this.kind = this.activeKinds[0];
+    this.backdrop.eventMode = 'none';
+    this.backdrop.mask = this.backdropMask;
+    this.paper.addChild(this.sheet, this.backdrop, this.backdropMask, this.glow, this.selection, this.bar);
     if (this.plan.follow) {
       this.spots.push(...sparkleSpots(ctx.rng));
       const gold = swatch.yellow;
@@ -136,6 +158,10 @@ class StampStudio implements Game {
     ctx.stage.addChild(this.background, this.paper);
     const press = (e: FederatedPointerEvent) => {
       if (this.done) return;
+      if (this.setsOpen) {
+        this.setsOpen = false;
+        this.drawSelection();
+      }
       const p = this.paper.toLocal(e.global);
       if (this.stamps.length >= LIMIT) {
         if (this.currentAsk() !== null) {
@@ -168,19 +194,7 @@ class StampStudio implements Game {
     this.choiceGlow.eventMode = 'none';
     this.choiceGlow.visible = false;
     ctx.stage.addChild(this.choiceGlow);
-    this.plan.kinds.forEach((kind) => {
-      const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => {
-        if (this.done) return;
-        this.kind = kind;
-        if (!this.named.has(kind)) {
-          this.named.add(kind);
-          void ctx.say('stamp.kind', { kind: STAMP_NAMES[kind] });
-        }
-        this.drawSelection();
-      });
-      ctx.stage.addChild(b);
-      this.choices.push(b);
-    });
+    this.rebuildChoices();
     if (this.plan.color)
       for (const color of STAMP_COLORS) {
         const b = new RoundButton(
@@ -195,6 +209,8 @@ class StampStudio implements Game {
             if (this.color !== color) {
               this.color = color;
               this.redrawChoices();
+              this.redrawSetButton();
+              this.redrawSetButtons();
             }
             void ctx.say(('color.' + color) as 'color.blue');
             this.drawSelection();
@@ -249,7 +265,31 @@ class StampStudio implements Game {
       .quadraticCurveTo(26, -18, 20, 0)
       .stroke({ width: 6, color: swatch.blue.line });
     this.play = new RoundButton(note, swatch.white, 48, () => this.playBack());
-    ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow, this.bin, this.play);
+    this.setsButton = new RoundButton(stampArt(this.activeKinds[0], this.color, 30), swatch.white, 48, () => {
+      if (this.done || !this.plan.sets) return;
+      this.setsOpen = !this.setsOpen;
+      this.drawSelection();
+    });
+    this.setTray.eventMode = 'static';
+    ctx.stage.addChild(
+      this.finish,
+      this.undo,
+      this.turn,
+      this.grow,
+      this.bin,
+      this.play,
+      this.setsButton,
+      this.setTray,
+    );
+    for (const choice of SET_CHOICES) {
+      const info = setChoiceInfo(choice);
+      const b = new RoundButton(stampArt(info.kinds[0], this.color, 26), swatch.white, SET_RADIUS, () => {
+        if (this.done) return;
+        this.selectSet(choice);
+      });
+      ctx.stage.addChild(b);
+      this.setButtons.push(b);
+    }
   }
   /** Play the picture: start (or start again) the left-to-right scan. Nothing is scored. */
   private playBack() {
@@ -282,12 +322,16 @@ class StampStudio implements Game {
   private complete() {
     if (this.done || !this.stamps.length) return;
     this.done = true;
+    this.setsOpen = false;
     this.glow.visible = false;
     this.hintKind = null;
     this.choiceGlow.visible = false;
     this.finish.rotation = 0;
     this.stopScan();
     this.play.visible = false;
+    this.setsButton.visible = false;
+    this.setTray.visible = false;
+    this.setButtons.forEach((b) => (b.visible = false));
     // Freeze before the wake-up, including a stamp held by another finger.
     this.stamps.forEach((s) => {
       if (s.drag) {
@@ -298,7 +342,11 @@ class StampStudio implements Game {
       s.node.scale.set(1);
       this.layoutStamp(s);
     });
-    const creation = { kind: 'picture' as const, stamps: this.stamps.map((s) => ({ ...s.data })) };
+    const creation = {
+      kind: 'picture' as const,
+      stamps: this.stamps.map((s) => ({ ...s.data })),
+      ...(this.scene ? { scene: this.scene } : {}),
+    };
     void this.ctx.say('stamp.done');
     // The wake-up: each stamp bounces with its own sound, in the order it was placed, then the round ends (`update`).
     this.woken = [];
@@ -348,10 +396,66 @@ class StampStudio implements Game {
     if (this.selected === mark) this.selected = this.stamps.at(-1) ?? null;
     this.drawSelection();
   }
+  private choiceArtSize(radius: number) {
+    return radius <= 36 ? 25 : radius <= 40 ? 28 : 33;
+  }
+  private rebuildChoices() {
+    for (const b of this.choices) b.destroy({ children: true });
+    this.choices.length = 0;
+    const radius = choiceButtonRadius(this.activeKinds.length, this.lastView.upright);
+    const artSize = this.choiceArtSize(radius);
+    for (const kind of this.activeKinds) {
+      const b = new RoundButton(stampArt(kind, this.color, artSize), swatch.white, radius, () => {
+        if (this.done) return;
+        this.kind = kind;
+        if (!this.named.has(kind)) {
+          this.named.add(kind);
+          void this.ctx.say('stamp.kind', { kind: STAMP_NAMES[kind] });
+        }
+        this.drawSelection();
+      });
+      this.ctx.stage.addChild(b);
+      this.choices.push(b);
+    }
+    this.layoutChoices();
+  }
+  private layoutChoices() {
+    const l = stampLayout(this.lastView, this.activeKinds.length, this.plan.transform);
+    this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
+  }
+  private drawBackdrop() {
+    this.backdrop.removeChildren().forEach((c) => c.destroy());
+    if (this.scene) this.backdrop.addChild(sceneArt(this.scene, this.width, this.height));
+  }
+  /** Switch to a stamp set (or back to Plain): updates the palette and backdrop while keeping stamps already placed. */
+  selectSet(choice: SetChoice) {
+    this.activeSet = choice;
+    const info = setChoiceInfo(choice);
+    this.scene = info.scene;
+    this.activeKinds = [...info.kinds];
+    if (!this.activeKinds.includes(this.kind)) this.kind = this.activeKinds[0];
+    this.setsOpen = false;
+    this.rebuildChoices();
+    this.drawBackdrop();
+    this.redrawSetButton();
+    this.drawSelection();
+  }
   private redrawChoices() {
+    const artSize = this.choiceArtSize(this.choices[0]?.radius ?? 48);
     this.choices.forEach((button, i) => {
       button.removeChildAt(1).destroy({ children: true });
-      button.addChild(stampArt(this.plan.kinds[i], this.color, 33));
+      button.addChildAt(stampArt(this.activeKinds[i], this.color, artSize), 1);
+    });
+  }
+  private redrawSetButton() {
+    this.setsButton.removeChildAt(1).destroy({ children: true });
+    this.setsButton.addChildAt(stampArt(this.activeKinds[0], this.color, 30), 1);
+  }
+  private redrawSetButtons() {
+    this.setButtons.forEach((button, i) => {
+      const first = setChoiceInfo(SET_CHOICES[i]).kinds[0];
+      button.removeChildAt(1).destroy({ children: true });
+      button.addChildAt(stampArt(first, this.color, 26), 1);
     });
   }
   private add(x: number, y: number) {
@@ -444,18 +548,25 @@ class StampStudio implements Game {
     this.finish.visible = !bare && !asking && this.stamps.length > 0;
     this.undo.visible = !bare && this.stamps.length > 0;
     this.choices.forEach((b) => (b.visible = !bare));
-    const hintIndex = this.hintKind && !this.done ? this.plan.kinds.indexOf(this.hintKind) : -1;
+    const hintIndex = this.hintKind && !this.done ? this.activeKinds.indexOf(this.hintKind) : -1;
     this.choiceGlow.visible = hintIndex >= 0;
     if (hintIndex >= 0) this.choiceGlow.position.copyFrom(this.choices[hintIndex].position);
     this.drawGlow();
     this.bin.visible = this.plan.move && !!this.selected;
     this.play.visible = !!this.plan.play && this.stamps.length > 0 && !this.done;
+    const showSets = !!this.plan.sets && !this.done;
+    this.setsButton.visible = showSets;
+    this.setTray.visible = showSets && this.setsOpen;
+    this.setButtons.forEach((b, i) => {
+      b.visible = showSets && this.setsOpen;
+      b.alpha = SET_CHOICES[i] === this.activeSet ? 1 : 0.72;
+    });
     if (this.stamps.length < 5) {
       this.nudgeTime = 0;
       this.finish.rotation = 0;
     }
     this.turn.visible = this.grow.visible = this.plan.transform && !!this.selected;
-    this.choices.forEach((b, i) => (b.alpha = this.plan.kinds[i] === this.kind ? 1 : 0.68));
+    this.choices.forEach((b, i) => (b.alpha = this.activeKinds[i] === this.kind ? 1 : 0.68));
     this.colors.forEach((b, i) => (b.alpha = STAMP_COLORS[i] === this.color ? 1 : 0.65));
   }
   start() {
@@ -464,8 +575,14 @@ class StampStudio implements Game {
     else void this.ctx.instruct(`stamp.${this.plan.prompt}`);
   }
   resize(v: View) {
+    this.lastView = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
-    const l = stampLayout(v, this.choices.length, this.plan.transform);
+    if (
+      this.choices.length &&
+      this.choices[0].radius !== choiceButtonRadius(this.activeKinds.length, v.upright)
+    )
+      this.rebuildChoices();
+    const l = stampLayout(v, this.activeKinds.length, this.plan.transform);
     this.width = l.paper.w;
     this.height = l.paper.h;
     this.paper.position.set(l.paper.x, l.paper.y);
@@ -475,10 +592,31 @@ class StampStudio implements Game {
       .fill(cream)
       .stroke({ width: 7, color: swatch.brown.line });
     this.sheet.hitArea = new Rectangle(0, 0, this.width, this.height);
+    this.backdropMask
+      .clear()
+      .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
+      .fill(0xffffff);
+    this.drawBackdrop();
     this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
     this.colors.forEach((b, i) => b.position.set(l.colors[i].x, l.colors[i].y));
-    for (const k of ['finish', 'undo', 'bin', 'turn', 'grow', 'play'] as const)
-      this[k].position.set(l[k].x, l[k].y);
+    for (const k of ['finish', 'undo', 'bin', 'turn', 'grow', 'play', 'sets'] as const)
+      (k === 'sets' ? this.setsButton : this[k]).position.set(l[k].x, l[k].y);
+    this.setButtons.forEach((b, i) => b.position.set(l.setRow[i].x, l.setRow[i].y));
+    if (l.setRow.length) {
+      const xs = l.setRow.map((p) => p.x);
+      const ys = l.setRow.map((p) => p.y);
+      const pad = SET_REACH + 4;
+      const x0 = Math.min(...xs) - pad;
+      const y0 = Math.min(...ys) - pad;
+      const w = Math.max(...xs) + pad - x0;
+      const h = Math.max(...ys) + pad - y0;
+      this.setTray
+        .clear()
+        .roundRect(x0, y0, w, h, 24)
+        .fill({ color: 0xffffff, alpha: 0.94 })
+        .stroke({ width: 4, color: swatch.brown.line });
+      this.setTray.hitArea = new Rectangle(x0, y0, w, h);
+    }
     if (this.scan) this.stopScan();
     for (const s of this.stamps) this.layoutStamp(s);
     this.drawSelection();
@@ -533,7 +671,7 @@ class StampStudio implements Game {
     });
     switch (move.do) {
       case 'kind':
-        return { tap: { on: this.choices[(this.plan.kinds as readonly StampKind[]).indexOf(move.kind)] } };
+        return { tap: { on: this.choices[this.activeKinds.indexOf(move.kind)] } };
       case 'color':
         return { tap: { on: this.colors[STAMP_COLORS.indexOf(move.color)] } };
       case 'stamp':

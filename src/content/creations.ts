@@ -10,8 +10,50 @@ import { ROW_STEPS } from '../games/song-maker/logic';
  * expires or needs her to come back.
  */
 
-export const STAMP_KINDS = ['star', 'flower', 'fish', 'cat', 'duck'] as const;
+/** Append only: the first four are the sticker kinds (`stickerStamp` slices them), so reordering would change saved art. */
+export const STAMP_KINDS = [
+  'star',
+  'flower',
+  'fish',
+  'cat',
+  'duck',
+  'whale',
+  'crab',
+  'starfish',
+  'shell',
+  'boat',
+  'cow',
+  'pig',
+  'hen',
+  'barn',
+  'butterfly',
+  'ladybug',
+  'snail',
+  'sunflower',
+  'tree',
+  'moon',
+  'rocket',
+  'planet',
+  'comet',
+  'ufo',
+  'apple',
+  'cupcake',
+  'basket',
+  'kite',
+  'balloon',
+  'ant',
+  'house',
+  'car',
+  'bus',
+  'bike',
+  'lamp',
+  'cloud',
+] as const;
 export type StampKindId = (typeof STAMP_KINDS)[number];
+
+/** The backdrops a kept picture can remember (Stamp Studio's scenes); a picture without one is on plain paper. */
+export const SCENE_IDS = ['sea', 'farm', 'garden', 'space', 'picnic', 'town'] as const;
+export type SceneId = (typeof SCENE_IDS)[number];
 
 /** Most stamps a picture holds (Stamp Studio's own limit). */
 export const PICTURE_MAX = 24;
@@ -37,6 +79,8 @@ export interface PictureStamp {
 export interface StampPictureCreation {
   kind: 'picture';
   stamps: PictureStamp[];
+  /** The backdrop the picture was made on, if any. */
+  scene?: SceneId;
 }
 
 export interface PaintDab {
@@ -214,7 +258,9 @@ export function cleanPicture(raw: unknown): PictureCreation | null {
       .map(cleanStamp)
       .filter((s): s is PictureStamp => !!s)
       .slice(0, PICTURE_MAX);
-    return stamps.length ? { kind: 'picture', stamps } : null;
+    // An unknown or damaged scene is dropped; the picture itself is kept.
+    const scene = SCENE_IDS.find((id) => id === raw.scene);
+    return stamps.length ? { kind: 'picture', stamps, ...(scene ? { scene } : {}) } : null;
   }
   if (Array.isArray(raw.pixels)) return cleanPixelPicture(raw);
   if (!Array.isArray(raw.marks)) return null;

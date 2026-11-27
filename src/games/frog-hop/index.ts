@@ -56,6 +56,7 @@ import {
   type HopLayout,
 } from './logic';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
+import { HopsLine } from './hops-scene';
 /** The first row of dots under a pad's numeral, clear of the numeral (y 44) and inside the pad's step. */
 const DOTS_Y = 82;
 
@@ -1041,5 +1042,5 @@ export const frogHop: GameModule = {
   hubIcon: () => new HopIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new FrogHop(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'hops' ? new HopsLine(ctx) : new FrogHop(ctx)),
 };

@@ -25,10 +25,15 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Turn the hands to the time on the sign, like 3:25. The small numbers around the edge count by fives for the long hand; zero is at 12. A whole turn is 60 minutes and starts the next hour at zero. Then ring the bell.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'Turn the hands to one hour before the time on the sign, then ring the bell. After a check, compare the faint starting clock with the hour hand moving back beside it: the minutes stay the same.',
+    },
     { to: 4, text: 'Tap the time sign to hear the request again for free.' },
-    { from: 6, to: 7, text: 'Tap the time sign to hear the request again for free.' },
+    { from: 6, to: 8, text: 'Tap the time sign to hear the request again for free.' },
   ],
-  finish: [{ to: 7, text: 'Four correct answers complete the round.' }],
+  finish: [{ to: 8, text: 'Four correct answers complete the round.' }],
   note: [
     {
       to: 4,
@@ -48,6 +53,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'After two misses on a time, yellow hands show the answer to copy, with spoken counting by fives and an arc from zero to the target minute. Turning or replaying is free.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'After two misses on a time, yellow hands show the answer to copy. Turning or replaying is free.',
     },
   ],
 };
