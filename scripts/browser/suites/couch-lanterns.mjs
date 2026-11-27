@@ -97,6 +97,7 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
       'typing',
       'sunbeams',
       'codedoors',
+      'robotpath',
     ]);
     assert.equal(
       await page.locator('[data-course="lanterns"] small').innerText(),

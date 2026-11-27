@@ -296,7 +296,9 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     band: 'school',
     demoLevel: 4,
     level: (stop) => (stop < 2 ? 4 : stop < 4 ? 5 : 6),
-    lines: { 'robot.start': 'couch.robot.start' },
+    restart: 'Clear this path',
+    hint: 'Show a hint',
+    lines: { 'robot.start': 'couch.robot.start', 'robot.counts': 'couch.robot.counts' },
   },
   'frog-hop': {
     goal: 'couch.how.frog-hop',

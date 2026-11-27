@@ -66,6 +66,12 @@ import {
   courseMinimum as codeMinimum,
   type CodeCourseId,
 } from '../games/secret-code/course';
+import {
+  COURSES as ROBOTS,
+  courseBest as robotBest,
+  courseMinimum as robotMinimum,
+  type RobotCourseId,
+} from '../games/robot-path/course';
 import type { CouchId } from './party';
 
 /**
@@ -86,7 +92,8 @@ export type CourseId =
   | CongaCourseId
   | TypingCourseId
   | LightCourseId
-  | CodeCourseId;
+  | CodeCourseId
+  | RobotCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
 export const COURSE_IDS: readonly CourseId[] = [
   'practice',
@@ -107,6 +114,7 @@ export const COURSE_IDS: readonly CourseId[] = [
   'typing',
   'sunbeams',
   'codedoors',
+  'robotpath',
 ];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
@@ -417,6 +425,33 @@ const build: Record<CourseId, () => CourseInfo> = {
     badges: {
       finish: { title: 'Finished', how: 'Open every door, with or without help.' },
       minimum: { title: 'On par', how: 'Open every door in par or fewer tries, with no hint.' },
+    },
+  }),
+  robotpath: () => ({
+    id: 'robotpath',
+    game: 'robot-path',
+    level: 6,
+    version: ROBOTS.robotpath.version,
+    name: ROBOTS.robotpath.name,
+    blurb: ROBOTS.robotpath.blurb,
+    card: 'Robot Path, five mazes in a row. Plan the robot’s path to the star in the fewest steps, then beat your own best.',
+    part: 'board',
+    unit: 'step',
+    par: 'fewest',
+    routes: true,
+    best: robotBest('robotpath'),
+    minimum: robotMinimum('robotpath'),
+    rule: 'Reach every star in the fewest steps you can. Every step the robot walks when you press play counts (including a bump); changing arrows before play is free.',
+    note: 'Two failed runs on a board, or asking for a hint, glow the next useful button and mark the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a board clears its unplayed arrows, and the steps already walked still count.',
+    leaving:
+      'Leaving or refreshing clears any unplayed arrows on the board you are on, and the steps you already walked still count. Finished boards stay saved.',
+    done: 'couch.course.robotpath',
+    badges: {
+      finish: { title: 'Finished', how: 'Reach every star on every board, with or without help.' },
+      minimum: {
+        title: 'Fewest steps',
+        how: 'Reach every star in the fewest steps possible and no hint.',
+      },
     },
   }),
   words: () =>
