@@ -820,4 +820,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school–grown-up* · [Count the Ballots](games/count-the-ballots.md)
 
+### Two Tablets
+
+*grown-up* · [Two Tablets](games/two-tablets.md)
+
 <!-- end generated -->
