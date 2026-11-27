@@ -1,5 +1,7 @@
 # Playdate Workshop, levels 4–6 (definition)
 
+**Built:** levels 4–5 (PR #2281); to build level 6, read “Level 6, Ask first”.
+
 Defined 2026-11-27 as slice 6 of the [social-emotional study](../deep-dives/subjects/social-emotional.md#build-slices-in-order): the repair, revision and ask-first rounds the study proposes for `school` (about 6–8). Docs only: nothing is built. It extends the built game and its [levels 1–3 definition](playdate-workshop.md), whose model (`logic.ts` surfaces, tools, marks, allowed traces, `whyNot`, `check`, `previewOf`, `hintFor`, Undo), Plan and Make phases, screen rules, accounting rules and `workshopLayout` apply unchanged unless this page says otherwise. Fictional island friends only: nothing says how a real child should feel, and no line asks about her own friends.
 
 **Fun action and purpose:** the same craft table, now with something that has gone slightly wrong or changed: a smudge on the banner, a friend's new idea halfway through, a friend who has not said yet what they want. She still operates the materials, so the payoff is the finished banner and pages held up. The learning purpose is **listening again, comparing two workable repairs, revising a plan when a stated request changes, and asking what someone wants rather than guessing** (Head Start P-SE social problem solving and expressing needs, extended; CASEL relationship skills as an anchor only; no standard code is claimed for ages 6–8, as the study says).

@@ -42,9 +42,12 @@ import {
   stampArt,
   stickerArt,
   THEME,
+  otherIcon,
   tryIcon,
   undoIcon,
   watchIcon,
+  bellArt,
+  puddleArt,
 } from './art';
 import {
   LEVELS,
@@ -89,11 +92,18 @@ const REQUEST_LINE = {
   banner: 'playdate.request.banner',
   bannerOr: 'playdate.request.bannerOr',
   own: 'playdate.request.own',
+  start: 'playdate.request.banner',
+  spill: 'playdate.request.spill',
+  keepMade: 'playdate.request.keep',
+  flowers: 'playdate.request.new',
+  keepOurs: 'playdate.request.keepOwn',
 } as const;
 const INSTRUCT: Record<number, LineId> = {
   1: 'playdate.instruct.1',
   2: 'playdate.instruct.2',
   3: 'playdate.instruct.3',
+  4: 'playdate.instruct.4',
+  5: 'playdate.instruct.5',
 };
 /** Seconds between the pet's steps, and between steps of Watch again. */
 const PET_STEP = 0.7;
@@ -114,6 +124,12 @@ class PlaydateWorkshop implements Game {
   readonly variation: Variation;
   readonly tally = new Tally();
   readonly cards: PlanId[];
+  /** Level 5: the cards of the second Plan phase. */
+  readonly cards2: PlanId[];
+  /** Level 5: 1 until the friends' request changes, then 2. */
+  stage: 1 | 2 = 1;
+  /** Level 5: the first two stars' trace, kept under the revised plan. */
+  base: Action[] = [];
   phase: Phase;
   selected: PlanId | null = null;
   plan: Plan | null = null;
@@ -163,6 +179,7 @@ class PlaydateWorkshop implements Game {
   undoButton: RoundButton | null = null;
   finishButton: RoundButton | null = null;
   againButton: RoundButton | null = null;
+  otherButton: RoundButton | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -170,6 +187,9 @@ class PlaydateWorkshop implements Game {
     this.variation = variationFor(ctx.level, ctx.rng, first);
     this.spec = specFor(ctx.level, this.variation.own);
     this.cards = cardOrder(this.spec, ctx.rng, first);
+    this.cards2 = this.spec.plans2
+      ? cardOrder({ ...this.spec, plans: this.spec.plans2 }, ctx.rng, first)
+      : [];
     this.phase = this.spec.level === 1 ? 'make' : 'plan';
     if (this.phase === 'make') this.plan = planFor(this.spec.plans[0], this.spec.cells, this.own);
     this.backdrop = ctx.track(
@@ -196,6 +216,22 @@ class PlaydateWorkshop implements Game {
   }
   private get own(): Friend {
     return this.variation.own;
+  }
+  /** The cards on screen now. */
+  get cardList(): PlanId[] {
+    return this.stage === 2 ? this.cards2 : this.cards;
+  }
+  /** What each friend asks for now (level 5's requests change). */
+  get requests() {
+    return this.stage === 2 && this.spec.changed ? this.spec.changed : this.spec.requests;
+  }
+  /** The card's plan, carrying the first two stars under the second Plan phase. */
+  planOf(id: PlanId): Plan {
+    return planFor(id, this.spec.cells, this.own, this.stage === 2 ? this.base : []);
+  }
+  /** The banner cell the next mark lands in (level 4: the smudge). */
+  get bannerTarget(): number {
+    return this.level === 4 ? (this.variation.smudge ?? 2) : this.table.marks.banner.length;
   }
   /** The table on screen: the live trace's, or Watch again's frame. */
   get table(): Table {
@@ -238,7 +274,7 @@ class PlaydateWorkshop implements Game {
 
   private layoutFor(): WorkshopLayout | null {
     if (this.phase === 'plan')
-      return workshopLayout(this.view, { level: this.level, phase: 'plan', cards: this.cards.length });
+      return workshopLayout(this.view, { level: this.level, phase: 'plan', cards: this.cardList.length });
     return workshopLayout(this.view, {
       level: this.level,
       phase: 'make',
@@ -266,6 +302,7 @@ class PlaydateWorkshop implements Game {
       this.undoButton =
       this.finishButton =
       this.againButton =
+      this.otherButton =
         null;
     this.companion.removeFromParent();
     this.glow.removeFromParent();
@@ -299,7 +336,7 @@ class PlaydateWorkshop implements Game {
         bubble,
         () => {
           critter.hop(0.6);
-          void this.ctx.say(REQUEST_LINE[this.spec.requests[f]]);
+          void this.ctx.say(REQUEST_LINE[this.requests[f]]);
         },
         { cooldown: 400 },
       );
@@ -308,7 +345,7 @@ class PlaydateWorkshop implements Game {
     }
 
     if (this.phase === 'plan') {
-      this.cards.forEach((id, i) => {
+      this.cardList.forEach((id, i) => {
         const r = l.cards[i];
         const card = new Container();
         card.position.copyFrom(centre(r));
@@ -360,7 +397,9 @@ class PlaydateWorkshop implements Game {
         cell.position.copyFrom(centre(r));
         cell.addChild(cellArt(r.w, THEME[v.theme]), new Container());
         cell.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
-        onTap(cell, () => this.tapSurface('banner', cell), { cooldown: 250 });
+        // Level 4: only the smudged cell is worked on; the stars already made are not tools.
+        if (this.level === 4 && this.cellNodes.length !== this.variation.smudge) cell.eventMode = 'none';
+        else onTap(cell, () => this.tapSurface('banner', cell), { cooldown: 250 });
         this.board.addChild(cell);
         this.cellNodes.push(cell);
       });
@@ -406,6 +445,8 @@ class PlaydateWorkshop implements Game {
       if (l.finish && l.again) {
         this.finishButton = this.button(finishIcon(), swatch.green, l.finish, () => void this.finishRound());
         this.againButton = this.button(watchIcon(), swatch.purple, l.again, () => void this.watchAgain());
+        if (l.other)
+          this.otherButton = this.button(otherIcon(), swatch.teal, l.other, () => void this.watchOther());
       }
     }
     // The pet stands by its button, clear of the guide's corner.
@@ -432,7 +473,7 @@ class PlaydateWorkshop implements Game {
     const v = this.variation;
     for (const [id, card] of this.cardNodes) {
       for (const c of card.removeChildren()) c.destroy({ children: true });
-      const r = l.cards[this.cards.indexOf(id)];
+      const r = l.cards[this.cardList.indexOf(id)];
       const lifted = this.selected === id;
       card.addChild(cardPlate(r.w, r.h, lifted), cardPicture(id, v, this.own, r.w, r.h));
       card.scale.set(lifted ? 1.04 : 1);
@@ -445,11 +486,16 @@ class PlaydateWorkshop implements Game {
       const r = l.bubbles[f];
       const state: BubbleState =
         this.phase === 'make'
-          ? check(table, this.spec.requests[f], f, this.spec.cells)
+          ? check(table, this.requests[f], f, this.spec.cells, this.plan?.leavesOut)
             ? 'met'
             : 'none'
           : this.bubbleState[f];
-      bubble.addChild(bubbleArt(f, r.w, r.h, state), requestPicture(this.spec.requests[f], f, v, r.w, r.h));
+      bubble.addChild(bubbleArt(f, r.w, r.h, state), requestPicture(this.requests[f], f, v, r.w, r.h));
+      if (this.stage === 2 && this.requests[f] === 'flowers') {
+        const bell = bellArt(46);
+        bell.position.set(-r.w / 2 + 26, -r.h / 2 + 22);
+        bubble.addChild(bell);
+      }
       if (state === 'met') {
         const t = metTick();
         t.position.set(r.w / 2 - 18, -r.h / 2 + 18);
@@ -462,9 +508,15 @@ class PlaydateWorkshop implements Game {
       holder: Container,
       marks: readonly { by: Friend | 'both'; tool: Tool }[],
       size: number,
+      pic = v.picture,
+      kept: 'A' | 'B' | 'smudge' | null = null,
     ) => {
       const layer = holder.children[1] as Container;
       for (const c of layer.removeChildren()) c.destroy({ children: true });
+      // Level 4: the stars already made stay on their cells, and the smudge shows until it is covered.
+      if (kept === 'smudge' && !marks.length) layer.addChild(puddleArt(size * 0.8));
+      else if (kept === 'A' || kept === 'B')
+        layer.addChild(stampArt(v.picture, size * 0.55, FRIEND_SWATCH[kept].fill));
       for (const m of marks.slice(0, 1)) {
         const color = m.by === 'both' ? swatch.purple.fill : FRIEND_SWATCH[m.by].fill;
         if (m.tool === 'roller')
@@ -473,14 +525,32 @@ class PlaydateWorkshop implements Game {
               .roundRect(-size * 0.42, -size * 0.18, size * 0.84, size * 0.36, 12)
               .fill({ color, alpha: 0.25 }),
           );
-        layer.addChild(stampArt(v.picture, size * 0.55, color));
+        layer.addChild(stampArt(pic, size * 0.55, color));
       }
     };
     for (const f of FRIENDS) {
       const p = this.pageNodes[f];
       if (p) markInto(p, table.marks[pageOf(f)], l.pages!.A.w);
     }
-    this.cellNodes.forEach((c, i) => markInto(c, table.marks.banner.slice(i, i + 1), l.banner[i].w));
+    this.cellNodes.forEach((c, i) => {
+      const size = l.banner[i].w;
+      if (this.level === 4) {
+        const smudge = i === this.bannerTarget;
+        markInto(
+          c,
+          smudge ? table.marks.banner.slice(0, 1) : [],
+          size,
+          v.picture,
+          smudge ? 'smudge' : i % 2 ? 'B' : 'A',
+        );
+      } else
+        markInto(
+          c,
+          table.marks.banner.slice(i, i + 1),
+          size,
+          this.level === 5 && i >= 2 ? v.renewed : v.picture,
+        );
+    });
     // Tools.
     for (const t of this.toolNodes) {
       const at = this.toolSpot(t.tool, table);
@@ -498,7 +568,7 @@ class PlaydateWorkshop implements Game {
     if (this.stripNode && l.strip) {
       for (const c of this.stripNode.removeChildren()) c.destroy({ children: true });
       let t = blankTable();
-      const shownTrace = this.shown ? this.trace.slice(0, this.watchAt) : this.trace;
+      const shownTrace = this.shown ? (this.watchTrace ?? this.trace).slice(0, this.watchAt) : this.trace;
       shownTrace.forEach((a, i) => {
         const by =
           a.k === 'give'
@@ -526,7 +596,7 @@ class PlaydateWorkshop implements Game {
     }
     // Finish and Watch again, once every request on the plan is met.
     const ready = this.done && !this.shown;
-    for (const b of [this.finishButton, this.againButton])
+    for (const b of [this.finishButton, this.againButton, this.otherButton])
       if (b) {
         b.visible = ready && !this.finished;
         b.eventMode = ready && !this.finished ? 'static' : 'none';
@@ -541,6 +611,7 @@ class PlaydateWorkshop implements Game {
   }
 
   private watchAt = 0;
+  private watchTrace: readonly Action[] | null = null;
 
   /** Where a tool sits: its tray slot, the holder's hand, or (held together) its tray slot with both friends' colours. */
   private toolSpot(tool: Tool, table: Table) {
@@ -568,7 +639,7 @@ class PlaydateWorkshop implements Game {
       this.nudgeCards();
       return null;
     }
-    const p = previewOf(planFor(this.selected, this.spec.cells, this.own), this.spec);
+    const p = previewOf(this.planOf(this.selected), this.spec, this.requests);
     this.previewed = this.selected;
     this.bubbleState = { A: p.met.A ? 'met' : 'unmet', B: p.met.B ? 'met' : 'unmet' };
     for (const f of FRIENDS) this.critters[f === 'A' ? 0 : 1]?.hop(p.met[f] ? 0.8 : 0.3);
@@ -591,7 +662,7 @@ class PlaydateWorkshop implements Game {
       this.nudgeCards();
       return;
     }
-    if (!previewOf(planFor(this.selected, this.spec.cells, this.own), this.spec).ok) {
+    if (!previewOf(this.planOf(this.selected), this.spec, this.requests).ok) {
       this.tryIt();
       return;
     }
@@ -599,9 +670,9 @@ class PlaydateWorkshop implements Game {
   }
 
   private enterMake(id: PlanId) {
-    this.plan = planFor(id, this.spec.cells, this.own);
+    this.plan = this.planOf(id);
     this.phase = 'make';
-    this.trace = [];
+    this.trace = this.stage === 2 ? [...this.base] : [];
     this.lifted = null;
     this.hintCard = null;
     this.hintAction = null;
@@ -616,7 +687,7 @@ class PlaydateWorkshop implements Game {
     this.phase = 'plan';
     this.selected = this.plan?.id ?? this.selected;
     this.plan = null;
-    this.trace = [];
+    this.trace = this.stage === 2 ? [...this.base] : [];
     this.lifted = null;
     this.done = false;
     this.hintAction = null;
@@ -697,7 +768,7 @@ class PlaydateWorkshop implements Game {
   private dragMove(tn: ToolNode, x: number, y: number) {
     // Dragging the roller held together along the banner rolls the next cell it passes.
     if (this.busy || this.done || this.table.holder[tn.tool] !== 'both') return;
-    const next = this.table.marks.banner.length;
+    const next = this.bannerTarget;
     const r = this.layoutNow?.banner[next];
     if (r && x >= r.x && x <= r.x + r.w && y + 40 >= r.y && y - 40 <= r.y + r.h)
       this.act({ k: 'roll', surface: 'banner' }, this.cellNodes[next]);
@@ -723,7 +794,7 @@ class PlaydateWorkshop implements Game {
   act(a: Action, node: Container | null): boolean {
     if (!this.plan || this.done) return false;
     if (!accepts(this.plan, this.trace, a)) {
-      const why = whyNot(this.plan, this.trace, a, this.spec.cells);
+      const why = whyNot(this.plan, this.trace, a, this.spec.capacity);
       sfx.pluck(1, 0.18);
       if (node) this.shake(node);
       const speaker = this.speakerFor(a);
@@ -746,7 +817,9 @@ class PlaydateWorkshop implements Game {
         void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 });
       }
     } else sfx.whoosh();
-    if (complete(this.plan, this.trace)) {
+    if (complete(this.plan, this.trace) && this.level === 5 && this.stage === 1) {
+      this.changeIdea();
+    } else if (complete(this.plan, this.trace)) {
       this.done = true;
       sfx.tada();
       for (const c of this.critters) c.cheer();
@@ -754,6 +827,25 @@ class PlaydateWorkshop implements Game {
     }
     this.refresh();
     return true;
+  }
+
+  /** Level 5: the first two stars are on the banner and a friend has a new idea, so the Plan phase comes back. */
+  private changeIdea() {
+    this.stage = 2;
+    this.base = [...this.trace];
+    this.phase = 'plan';
+    this.plan = null;
+    this.selected = null;
+    this.previewed = null;
+    this.bubbleState = { A: 'none', B: 'none' };
+    this.glowRequest = null;
+    this.petPicked = false;
+    this.lifted = null;
+    this.hintAction = this.hintCard = null;
+    sfx.bell(4, 0.3);
+    this.companion.hop(0.8);
+    void this.ctx.say(REQUEST_LINE.flowers);
+    this.build();
   }
 
   /** The friend who explains a refusal: the page's owner, or the pad's holder. */
@@ -775,6 +867,19 @@ class PlaydateWorkshop implements Game {
   /** Undo one accepted action; at an empty trace, back to the cards (disabled at level 1). Free. */
   undo() {
     if (this.busy || this.finished || this.phase !== 'make') return;
+    if (this.stage === 2 && this.trace.length <= this.base.length) {
+      // Past the change: the first request and its plan are back, with nothing lost.
+      this.stage = 1;
+      this.base = [];
+      this.plan = planFor('turnsTwo', this.spec.cells, this.own);
+      this.trace.pop();
+      this.done = false;
+      this.lifted = null;
+      this.hintAction = null;
+      sfx.whoosh();
+      this.build();
+      return;
+    }
     if (this.trace.length === 0) {
       this.backToPlan();
       return;
@@ -794,9 +899,18 @@ class PlaydateWorkshop implements Game {
   /** The lightbulb: the next useful card or step glows and its line is spoken; one hint for the current decision, the first time. */
   askForHint() {
     if (this.busy || this.finished || this.done) return;
-    const h = hintFor(this.spec, this.own, this.phase, this.selected, this.plan, this.trace);
+    const h = hintFor(
+      this.spec,
+      this.own,
+      this.phase,
+      this.selected,
+      this.plan,
+      this.trace,
+      this.stage,
+      this.base,
+    );
     if (!h) return;
-    this.tally.help(decisionNow(this.level, this.phase, this.trace));
+    this.tally.help(decisionNow(this.level, this.phase, this.trace, this.stage));
     if ('card' in h) {
       this.hintCard = h.card;
       this.selected = h.card;
@@ -826,8 +940,8 @@ class PlaydateWorkshop implements Game {
         void this.petMakes();
         return;
       }
-      this.tally.help('plan');
-      const ok = acceptedPlans(this.spec, this.own);
+      this.tally.help(this.stage === 2 ? 'revise' : 'plan');
+      const ok = acceptedPlans(this.spec, this.own, this.stage, this.base);
       this.selected = ok[Math.floor(this.ctx.rng.next() * ok.length)];
       this.petPicked = true;
       this.refresh();
@@ -852,9 +966,9 @@ class PlaydateWorkshop implements Game {
     this.refresh();
     const epoch = this.epoch;
     void this.ctx.say('playdate.pet.make');
-    while (this.alive && epoch === this.epoch && !this.done) {
+    while (this.alive && epoch === this.epoch && !this.done && this.plan) {
       await this.ctx.tw.wait(PET_STEP);
-      if (!this.alive || epoch !== this.epoch) return;
+      if (!this.alive || epoch !== this.epoch || !this.plan) break;
       const a = nextStep(this.plan, this.trace);
       if (!a) break;
       this.companion.hop(0.4);
@@ -876,6 +990,8 @@ class PlaydateWorkshop implements Game {
     this.hintAction = this.hintCard = null;
     this.bubbleState = { A: 'none', B: 'none' };
     this.petPicked = false;
+    this.stage = 1;
+    this.base = [];
     if (this.level > 1) {
       this.phase = 'plan';
       this.plan = null;
@@ -905,16 +1021,17 @@ class PlaydateWorkshop implements Game {
   }
 
   /** Watch again: the trace replayed from a blank table. Free. */
-  private async watchAgain() {
+  private async watchAgain(trace: readonly Action[] = this.trace) {
     if (!this.done || this.busy || this.finished) return;
     this.busy = true;
     const epoch = this.epoch;
-    for (let i = 0; i <= this.trace.length; i++) {
+    this.watchTrace = trace;
+    for (let i = 0; i <= trace.length; i++) {
       this.watchAt = i;
-      this.shown = replay(this.trace.slice(0, i));
+      this.shown = replay(trace.slice(0, i));
       this.refresh();
       if (i > 0) {
-        const a = this.trace[i - 1];
+        const a = trace[i - 1];
         if (a.k === 'stamp') sfx.marimba(2, 0.35);
         else if (a.k === 'roll') sfx.ratchet(2);
         else sfx.whoosh();
@@ -923,9 +1040,18 @@ class PlaydateWorkshop implements Game {
       if (!this.alive || epoch !== this.epoch) return;
     }
     this.shown = null;
+    this.watchTrace = null;
     this.busy = false;
     this.refresh();
     this.takeRelayout();
+  }
+
+  /** Level 4's Try the other way: the other accepted repair run from the smudged start. Free, never required. */
+  private async watchOther() {
+    if (!this.plan) return;
+    const id: PlanId = this.plan.id === 'stampOver' ? 'rollOver' : 'stampOver';
+    void this.ctx.say('playdate.compare');
+    await this.watchAgain(this.planOf(id).traces[0]);
   }
 
   // ——— Glow and ghost finger ———
@@ -940,7 +1066,7 @@ class PlaydateWorkshop implements Game {
       return this.friendNodes[a.to === 'both' ? 'A' : a.to] ?? null;
     }
     if (a.k === 'pass') return this.toolNodes.find((n) => n.tool === a.tool)?.node ?? null;
-    if (a.surface === 'banner') return this.cellNodes[t.marks.banner.length] ?? null;
+    if (a.surface === 'banner') return this.cellNodes[this.bannerTarget] ?? null;
     return this.pageNodes[a.surface === 'pageA' ? 'A' : 'B'] ?? null;
   }
 
@@ -998,14 +1124,24 @@ class PlaydateWorkshop implements Game {
       const want: PlanId =
         this.level === 2
           ? 'turns'
-          : this.previewed === 'justBanner' || this.previewed === 'side'
-            ? 'side'
-            : 'justBanner';
+          : this.level === 4
+            ? this.previewed === 'fresh'
+              ? 'rollOver'
+              : 'fresh'
+            : this.level === 5
+              ? this.stage === 1
+                ? 'turnsTwo'
+                : this.previewed === 'keepGoing'
+                  ? 'flowersStamp'
+                  : 'keepGoing'
+              : this.previewed === 'justBanner' || this.previewed === 'side'
+                ? 'side'
+                : 'justBanner';
       if (this.selected !== want) {
         const c = this.cardNodes.get(want);
         return c ? { tap: { on: c } } : null;
       }
-      if (this.level === 3 && want === 'justBanner')
+      if ((this.level === 3 && want === 'justBanner') || want === 'fresh' || want === 'keepGoing')
         return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.6 } : null;
       if (this.level === 2 && this.previewed !== 'turns')
         return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.2 } : null;
@@ -1053,8 +1189,8 @@ export const playdateWorkshop: GameModule = {
   titleLine: 'game.playdate-workshop',
   region: 'story-grove',
   challenge: 'logic',
-  skills: ['taking turns', 'listening', 'planning', 'shared goals'],
-  bands: ['preschool', 'prek'],
+  skills: ['taking turns', 'listening', 'planning', 'shared goals', 'repair'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => specFor(level).describe,
   music: STYLES.stickers,

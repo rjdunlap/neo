@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   accepts,
+  other,
   acceptedPlans,
   apply,
   blankTable,
@@ -47,7 +48,7 @@ import {
   type Why,
 } from './logic';
 
-const LEVELS = [1, 2, 3];
+const LEVELS = [1, 2, 3, 4, 5];
 const OWNS: Friend[] = ['A', 'B'];
 const SEEDS = Array.from({ length: 40 }, (_, i) => i * 7919 + 1);
 
@@ -402,13 +403,14 @@ describe('variations', () => {
           for (const tr of planFor(id, spec.cells, v.own).traces) {
             for (const f of FRIENDS) expect(check(replay(tr), spec.requests[f], f, spec.cells)).toBe(true);
           }
+        if (level === 4) expect(v.smudge).toBeGreaterThanOrEqual(1);
         if (level === 3) {
           expect(previewOf(planFor('justBanner', spec.cells, v.own), spec).ok).toBe(false);
           expect(ok).not.toContain('justBanner');
         }
       }
     }
-    expect(LEVEL_COUNT).toBe(3);
+    expect(LEVEL_COUNT).toBe(5);
   });
 
   it('variationFor: first is index 0, seeded stays within the list and is deterministic', () => {
@@ -501,5 +503,94 @@ describe('layout', () => {
     expect(BUBBLE.w).toBeGreaterThanOrEqual(260);
     expect(BUTTON.w).toBeGreaterThanOrEqual(110);
     expect(PAGE).toBeGreaterThanOrEqual(200);
+  });
+});
+
+describe('levels 4 and 5', () => {
+  const finalTable = (tr: Trace) => replay(tr);
+
+  it('level 4: two repairs mend the banner by different traces; starting over leaves B out', () => {
+    for (const v of VARIATIONS[4]) {
+      const spec = specFor(4, v.own);
+      expect(spec.capacity).toBe(1);
+      expect(acceptedPlans(spec, v.own).sort()).toEqual(['rollOver', 'stampOver']);
+      const fresh = previewOf(planFor('fresh', spec.cells, v.own), spec);
+      expect(fresh.met).toEqual({ A: true, B: false });
+      const a = planFor('stampOver', spec.cells, v.own).traces[0];
+      const b = planFor('rollOver', spec.cells, v.own).traces[0];
+      expect(sig(a)).not.toBe(sig(b));
+      for (const tr of [a, b]) {
+        expect(finalTable(tr).marks.banner).toHaveLength(1);
+        for (const f of FRIENDS) expect(check(finalTable(tr), spec.requests[f], f, spec.cells)).toBe(true);
+      }
+    }
+  });
+
+  it('level 4: nothing is added to a mended banner, and Undo restores the smudge', () => {
+    const plan = planFor('stampOver', 4);
+    const tr = plan.traces[0];
+    expect(complete(plan, tr)).toBe(true);
+    expect(accepts(plan, tr, stamp('banner'))).toBe(false);
+    expect(whyNot(plan, tr, stamp('banner'), 1)).toBe('full');
+    expect(replay(tr.slice(0, -1)).marks.banner).toHaveLength(0);
+  });
+
+  it('level 5: first two stars; then each accepted revision keeps them and meets the changed requests', () => {
+    for (const v of VARIATIONS[5]) {
+      const spec = specFor(5, v.own);
+      const first = planFor('turnsTwo', spec.cells, v.own);
+      expect(acceptedPlans(spec, v.own)).toEqual(['turnsTwo']);
+      for (const base of first.traces) {
+        expect(complete(first, base)).toBe(true);
+        expect(replay(base).marks.banner).toHaveLength(2);
+        expect(acceptedPlans(spec, v.own, 2, base).sort()).toEqual(['flowersRoll', 'flowersStamp']);
+        const draft = previewOf(planFor('keepGoing', spec.cells, v.own, base), spec, spec.changed);
+        expect(draft.ok).toBe(false);
+        expect(draft.met[v.own]).toBe(false);
+        for (const id of acceptedPlans(spec, v.own, 2, base)) {
+          for (const tr of planFor(id, spec.cells, v.own, base).traces) {
+            const t = replay(tr);
+            expect(t.marks.banner).toHaveLength(4);
+            expect(sig(tr.slice(0, base.length))).toBe(sig(base));
+            for (const f of FRIENDS) expect(check(t, spec.changed![f], f, spec.cells)).toBe(true);
+          }
+        }
+      }
+      // The request is the first one before the change and the changed one after.
+      expect(spec.changed![v.own]).toBe('flowers');
+      expect(spec.changed![other(v.own)]).toBe('keepOurs');
+    }
+  });
+
+  it('level 5: hints lead from the Plan phase to Finish in every stage', () => {
+    for (const v of VARIATIONS[5]) {
+      const spec = specFor(5, v.own);
+      let plan = planFor('turnsTwo', spec.cells, v.own);
+      let trace: Trace = [];
+      for (let i = 0; i < 20; i++) {
+        const h = hintFor(spec, v.own, 'make', null, plan, trace);
+        if (!h || !('action' in h)) break;
+        trace = [...trace, h.action];
+      }
+      expect(complete(plan, trace)).toBe(true);
+      const card = hintFor(spec, v.own, 'plan', null, null, trace, 2, trace);
+      expect(card && 'card' in card).toBe(true);
+      plan = planFor((card as { card: 'flowersStamp' }).card, spec.cells, v.own, trace);
+      for (let i = 0; i < 20; i++) {
+        const h = hintFor(spec, v.own, 'make', null, plan, trace, 2, trace);
+        if (!h || !('action' in h)) break;
+        trace = [...trace, h.action];
+      }
+      expect(complete(plan, trace)).toBe(true);
+    }
+  });
+
+  it('level 5: the plan decision is `revise` after the change, and hints never exceed three', () => {
+    expect(decisionNow(5, 'plan', [], 1)).toBe('plan');
+    expect(decisionNow(5, 'plan', [], 2)).toBe('revise');
+    const t = new Tally();
+    for (const d of ['plan', 'revise', 'make', 'make', 'revise'] as const) t.help(d);
+    expect(t.hints).toBe(3);
+    expect(t.misses).toBe(0);
   });
 });
