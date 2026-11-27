@@ -154,7 +154,7 @@ Draft `src/games/wave-ribbon/voice.ts` lines (`wave-ribbon.*`):
 
 ## Placement audit, rule tests and build slices
 
-- **Placement (`origin/main` checked 2026-11-27):** `src/content/lands.ts` currently lists 29 games in `tinker-lab`; `landPages` automatically splits lands exceeding `LAND_SPOTS = 13` into balanced pages rather than shrinking targets. Registering `wave-ribbon` as the 30th entry in `tinker-lab` (`school` first; `grownup` appended in E7b) must pass `src/content/lands.test.ts` across every band and viewport (`VIEWS` and `WITH_UPRIGHT`).
+- **Placement (`origin/main` checked 2026-11-27):** `src/content/lands.ts` currently lists 30 games in `tinker-lab` (through `draw-a-ramp`); `landPages` automatically splits lands exceeding `LAND_SPOTS = 13` into balanced pages rather than shrinking targets. Registering `wave-ribbon` as the 31st entry in `tinker-lab` (`school` first; `grownup` appended in E7b) must pass `src/content/lands.test.ts` across every band and viewport (`VIEWS` and `WITH_UPRIGHT`).
 - **Rule tests (`src/games/wave-ribbon/logic.test.ts`):**
   - Closed-form determinism (`displacementAt`, `sampleRibbon`, `markerTrace` bit-identical, finite, zero `NaN`/`Infinity`).
   - Finite support (`displacementAt(x, t, amp) === 0` outside `0 < t - x / V_WAVE < W_PULSE`; peak at `t = 1.50` s for `X_MARKER`).
