@@ -1,0 +1,1 @@
+**`song-maker`, *Bring it home* (next free ID, currently 13)** (new-levels tier): a failed check against the spoken rule is a miss (D1, D4 settled 2026-10-23), per [dive slice 8](../../deep-dives/song-maker.md#build-slices-in-order).
