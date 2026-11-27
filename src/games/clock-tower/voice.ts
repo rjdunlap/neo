@@ -16,6 +16,11 @@ export const VOICE = {
     'That says {now}. Watch: {from} becomes {time}, one hour later. The minutes stay the same.',
   ],
   'clock.later.example': ['One hour later: {from} becomes {time}. The minutes stay the same.'],
+  'clock.earlier': ['The clock says {time}. Make it say one hour earlier, then ring the bell!'],
+  'clock.earlier.wrong': [
+    'That says {now}. Watch: {from} goes back to {time}, one hour earlier. The minutes stay the same.',
+  ],
+  'clock.earlier.example': ['One hour earlier: {from} goes back to {time}. The minutes stay the same.'],
   'clock.five.zero': [
     'At 12, the digital clock shows zero minutes. A full turn is sixty minutes: the next hour starts at zero.',
   ],

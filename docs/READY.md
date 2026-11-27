@@ -63,7 +63,6 @@ From the 2026-11-23 reconciliation of the dives' slice lists (each checked again
 Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs:
 
 - **`rhythm-neighbors`, level 12 *Longer calls*** (new-levels tier): four-note shapes and three- or four-knock calls, school top 12, how-to; after level 11. [Dive slice 7](deep-dives/rhythm-neighbors.md#build-slices-in-order).
-- **`clock-tower`, level 9 *Half an hour from now*** (new-levels tier): destination setting with quarter snaps and an arc explanation; after level 8. [Dive slice 5](deep-dives/clock-tower.md#build-slices-in-order).
 - **`clock-tower`, level 10 *How long?*** (new-interaction tier): hours/half-hours picker, interval arithmetic, worked help, bot; after level 9. [Dive slice 6](deep-dives/clock-tower.md#build-slices-in-order).
 - **`clock-tower`, level 11 *Fit a visit*** (new-interaction tier): availability and duration data, choose/set stages, bot; after level 10. [Dive slice 7](deep-dives/clock-tower.md#build-slices-in-order).
 - **`song-maker`, *Change one thing* (next free ID, currently 14)** (new-interaction tier): after *Bring it home*. [Dive slice 9](deep-dives/song-maker.md#build-slices-in-order).
