@@ -24,7 +24,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   async function playRound(level, name, wrong, want) {
     await launch('letter-trails', level, name);
     // A wanted letter (level 10's first and last, c and t): relaunch until the seed draws it.
-    for (let i = 0; want && i < 60 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
+    for (let i = 0; want && i < 200 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
       await launch('letter-trails', level, name);
     if (want)
       assert.equal(await page.evaluate(() => neo.scene.game.word), want, `level ${level} drew ${want}`);

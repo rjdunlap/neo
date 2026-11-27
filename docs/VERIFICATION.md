@@ -122,7 +122,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `lastpebble` | 2026-11-25 · [Last Pebble level 5 (PR #2161)](verification/2026-11-25-last-pebble-level-5-last-stone-loses.md), 2026-11-24 · [Last Pebble levels 3–4 (PR #2152)](verification/2026-11-24-last-pebble-levels-3-4.md), [levels 1–2 (PR #2142)](verification/2026-11-24-last-pebble-levels-1-2.md) | Levels 1–5 on `390 × 844` upright phone with captions |
 | `lens` | 2026-11-17 · [Puddle Lens plays upright on a phone](verification/2026-11-17-puddle-lens-plays-upright-on-a-phone.md) | `LENS_LEVELS=upright` |
 | `letters` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | — |
-| `letters10` | 2026-11-25 · [Letter Trails level 14 The last four](verification/2026-11-25-letter-trails-level-14-the-last-four.md) | Level 14 q and z on a phone viewport; stroke forms unchecked against HWT |
+| `letters10` | 2026-11-27 · [Letter Trails level 15 Big and little](verification/2026-11-27-letter-trails-level-15-big-and-little.md) | Level 15 k and y on a phone viewport; stroke forms unchecked against HWT |
 | `liftit` | 2026-11-20 · [Lift It level 10, One big pull (toddler entry)](verification/2026-11-20-lift-it-level-10-one-big-pull-toddler-entry.md) | `FROM_LEVEL=10` |
 | `littleloom` | 2026-11-24 · [Little Loom levels 4–5 (PR #2146)](verification/2026-11-24-little-loom-levels-4-5.md) | Levels 4–5: wrong row, Undo, hint, float slip, portrait |
 | `livekeys` | 2026-10-15 · [Lands stage C1b group 3, three games switch live](archive/VERIFICATION-2026-10-15.md#2026-10-15--lands-stage-c1b-group-3-three-games-switch-live) | `LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` |

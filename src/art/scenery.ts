@@ -43,6 +43,87 @@ export function gradientTexture(top: number, bottom: number): Texture {
 
 const cssColor = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
+const CLOUD_SHAPE: [number, number][] = [
+  [-88, 26],
+  [-96, 6],
+  [-82, -22],
+  [-56, -34],
+  [-38, -26],
+  [-34, -50],
+  [-10, -66],
+  [16, -56],
+  [24, -44],
+  [46, -46],
+  [66, -30],
+  [74, -16],
+  [92, -8],
+  [96, 18],
+  [70, 32],
+  [-60, 32],
+];
+
+/**
+ * A cut-paper cloud about 192 × 100 at scale 1, centred on (x, y): one silhouette with a flat underside and a lumpy
+ * top, on a darker piece peeking out below it, rather than a stack of circles. The sky's clouds and weather icons.
+ */
+export function cutCloud(g: Graphics, x: number, y: number, k: number, fill = 0xffffff, under = 0xc9dcea) {
+  const n = CLOUD_SHAPE.length;
+  const cut = (dy: number) => {
+    // Rounded through the midpoints, so each lump is a soft scissor curve.
+    const at = (i: number): [number, number] => [
+      x + CLOUD_SHAPE[i % n][0] * k,
+      y + (CLOUD_SHAPE[i % n][1] + dy) * k,
+    ];
+    const mid = (i: number): [number, number] => {
+      const [ax, ay] = at(i),
+        [bx, by] = at(i + 1);
+      return [(ax + bx) / 2, (ay + by) / 2];
+    };
+    g.moveTo(...mid(n - 1));
+    for (let i = 0; i < n; i++) g.quadraticCurveTo(...at(i), ...mid(i));
+    return g.closePath();
+  };
+  cut(9).fill(under);
+  cut(0).fill(fill);
+  return g;
+}
+
+/**
+ * Twelve snipped paper rays, long orange and short yellow by turns and none quite alike, round a disc of radius 54 × k
+ * at (x, y) (the disc itself is the caller's). The sky's sun and weather icons.
+ */
+export function sunRays(g: Graphics, x: number, y: number, k: number) {
+  for (let i = 0; i < 12; i++) {
+    const a = (i * Math.PI) / 6 + (i % 3) * 0.04;
+    const long = i % 2 === 0;
+    const r0 = 38 * k,
+      r1 = (long ? 96 - (i % 4) * 3 : 82 + (i % 3) * 2) * k;
+    const half = long ? 0.3 : 0.24;
+    g.poly(
+      [
+        x + Math.cos(a - half) * r0,
+        y + Math.sin(a - half) * r0,
+        x + Math.cos(a) * r1,
+        y + Math.sin(a) * r1,
+        x + Math.cos(a + half) * r0,
+        y + Math.sin(a + half) * r0,
+      ],
+      true,
+    ).fill(long ? swatch.orange.fill : swatch.yellow.fill);
+  }
+  return g;
+}
+
+/** A falling raindrop, its point up. */
+export function drop(g: Graphics, x: number, y: number, h: number, color: number) {
+  const w = h * 0.36;
+  g.moveTo(x, y - h / 2)
+    .bezierCurveTo(x + w * 0.4, y - h * 0.1, x + w, y + h * 0.1, x, y + h / 2)
+    .bezierCurveTo(x - w, y + h * 0.1, x - w * 0.4, y - h * 0.1, x, y - h / 2)
+    .closePath()
+    .fill(color);
+}
+
 export class Cloud extends Container {
   readonly baseScale: number;
   private readonly vx: number;
@@ -53,39 +134,7 @@ export class Cloud extends Container {
     // One cut silhouette (a flat underside and lumpy top), on a blue-grey piece peeking out below it, rather than a
     // stack of circles.
     const g = new Graphics();
-    // Lumps and the notches between them, left to right, then the flat underside.
-    const shape: [number, number][] = [
-      [-88, 26],
-      [-96, 6],
-      [-82, -22],
-      [-56, -34],
-      [-38, -26],
-      [-34, -50],
-      [-10, -66],
-      [16, -56],
-      [24, -44],
-      [46, -46],
-      [66, -30],
-      [74, -16],
-      [92, -8],
-      [96, 18],
-      [70, 32],
-      [-60, 32],
-    ];
-    // Rounded through the midpoints, so each lump is a soft scissor curve.
-    const cut = (dy: number) => {
-      const n = shape.length;
-      const mid = (i: number): [number, number] => {
-        const [ax, ay] = shape[i % n];
-        const [bx, by] = shape[(i + 1) % n];
-        return [(ax + bx) / 2, (ay + by) / 2 + dy];
-      };
-      g.moveTo(...mid(n - 1));
-      for (let i = 0; i < n; i++) g.quadraticCurveTo(shape[i][0], shape[i][1] + dy, ...mid(i));
-      return g.closePath();
-    };
-    cut(9).fill(0xc9dcea);
-    cut(0).fill(0xffffff);
+    cutCloud(g, 0, 0, 1);
     this.addChild(g);
     this.baseScale = rng.range(0.7, 1.1);
     this.scale.set(this.baseScale);
@@ -116,26 +165,7 @@ export class Sun extends Container {
     super();
     // A cut-paper sun: twelve snipped rays, long and short by turns and none quite alike, behind a yellow disc. No face or blush: it is a sun, not a sticker.
     const y = swatch.yellow;
-    for (let i = 0; i < 12; i++) {
-      const a = (i * Math.PI) / 6 + (i % 3) * 0.04;
-      const long = i % 2 === 0;
-      const r0 = 38,
-        r1 = long ? 96 - (i % 4) * 3 : 82 + (i % 3) * 2;
-      const half = long ? 0.3 : 0.24;
-      this.rays
-        .poly(
-          [
-            Math.cos(a - half) * r0,
-            Math.sin(a - half) * r0,
-            Math.cos(a) * r1,
-            Math.sin(a) * r1,
-            Math.cos(a + half) * r0,
-            Math.sin(a + half) * r0,
-          ],
-          true,
-        )
-        .fill(long ? swatch.orange.fill : y.fill);
-    }
+    sunRays(this.rays, 0, 0, 1);
     const face = new Graphics().circle(0, 0, 54).fill(y.fill);
     this.addChild(this.rays, face);
   }
