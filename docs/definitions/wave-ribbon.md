@@ -1,6 +1,6 @@
 # Wave Ribbon, levels 1–3 (definition)
 
-Defined 2026-11-27 (`agy/define-wave-ribbon`, PR #2277) as slice **E6** of the [energy and waves study](../deep-dives/subjects/energy-waves.md#wave-ribbon-a-distinct-second-game) and [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations). **Docs only:** no game, registry entry, voice line, art or test exists yet.
+Defined 2026-11-27 (`agy/define-wave-ribbon`, PR #2277) as slice **E6** of the [energy and waves study](../deep-dives/subjects/energy-waves.md#wave-ribbon-a-distinct-second-game) and [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations). **Levels 1–2 built 2026-11-27 (E7, PR #2284):** the game exists with its rule tests, voice, how-to card, ghost finger and `waveribbon` suite; level 3 and the grown-up band (E7b) are still a definition only.
 
 **Ready to build under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules):** S4 uses a small handwritten analytic model in `src/games/wave-ribbon/logic.ts` (no physics library); S8 settles identity `wave-ribbon`, land `tinker-lab`, `school` first (with level 3 *about 10 and up*, plus `grownup` in E7b per S2), and free exploration with Check-only misses; S1 requires the building session to check every factual line and spoken explanation against the opened sources cited below. Proposed game ID `wave-ribbon`.
 

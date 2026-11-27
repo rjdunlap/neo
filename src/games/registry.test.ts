@@ -726,6 +726,7 @@ describe('game registry', () => {
       'two-tablets',
       'village-vote',
       'water-road',
+      'wave-ribbon',
       'welcome-ways',
       'who-am-i',
       'word-code',
