@@ -1,0 +1,5 @@
+# 2026-11-27 — Rhythm Neighbors level 11, Your own answer (PR #2293)
+
+**Changed:** `rhythm-neighbors`: level 11 (`own` plan, `isEcho`, `sampleAnswer`, `makeOwn`, voice, how-to, school `order` `[5, 6, 10, 11]`); the `creative` suite's rhythm loop now covers 11.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/rhythm-neighbors src/content src/games/registry.test.ts` (34 files passed, including echo detection at three tempos, every sample answer passing, and the phone-upright target checks at level 11); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=11` (a lone note nudged and kept, the call's own rhythm asked again, the sample is not a hint, three answers sung back, no misses or hints, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=11 FINGER_BAND=school` (47 s); one 768×1024 screenshot.
+**Not run:** the full browser and couch suites, build and offline (no shared code changed). Level 10 in the `creative` rhythm loop was not re-run; it was not touched.
