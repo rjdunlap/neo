@@ -28,6 +28,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `brainbreak` | 2026-11-24 · [Brain Break level 14, Work them out (PR #2115)](verification/2026-11-24-brain-break-level-14-work-them-out.md) | Level 14 at 390×844 plus `fingerdemo` at level 14; level 13 `BRAINBREAK_ONLY=parts` ([entry](verification/2026-11-24-brain-break-level-13-parts-in-order.md)); level 12 `BRAINBREAK_ONLY=two-trails` ([entry](verification/2026-11-24-brain-break-levels-11-12-two-trails.md)) |
 | `bridgestouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | — |
 | `briefresult` | 2026-11-27 · [D4a short round result (PR #2272)](verification/2026-11-27-d4a-short-round-result.md) | Scripted play at the two pilot games; no event-sequence unit test |
+| `briefintro` | 2026-11-27 · [D4b short reminder (PR #2273)](verification/2026-11-27-d4b-short-reminder.md) | One ad-hoc headless phone play; unit tests for the rules and memory; no input-flip play |
 | `buddies` | 2026-11-05 · [Shape Buddies level 8 Your friend, my friend (shape-buddies batch 6)](archive/VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-8-your-friend-my-friend-shape-buddies-batch-6) | Level 8 |
 | `bunnypatches` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | `BUNNY_ONLY=upright` |
 | `campsite` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | — |

@@ -1,5 +1,7 @@
 # The short reminder: brief support for a game already introduced this visit (definition D4b)
 
+**Built:** 2026-11-27 (PR #2273): `settings.briefIntros`, `introKey`/`briefIntro`, `introMemory`, and the short form of `HowToPanel`. A later session may add mix stops and Today's six under "Open leans".
+
 *Defined 2026-11-27 · docs only · chunk 19, [discovery action D4b](../ROADMAP.md#discovery-actions) · decided 2026-10-23 ([record](../archive/DECISIONS-2026-10-23.md#decisions), [alternatives](../DISCOVERY.md#introductions-reduce-duplication-without-losing-support)).* This packet says what a D4b build session does. The direction is settled: **an exact mode and input already introduced this session may use brief, replayable support; a new or changed mode still gets its full introduction.** This packet fixes the details. It follows D3 (built) and is independent of the short result ([D4a](brief-result.md)) and of automatic handoff (D6).
 
 ## Why

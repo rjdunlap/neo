@@ -31,6 +31,38 @@ export class DiscoveryMemory {
 }
 export const discoveryMemory = new DiscoveryMemory();
 
+/** The most introductions remembered; the oldest go first. */
+export const INTRO_LIMIT = 64;
+
+/**
+ * Which full how-to cards she has pressed Play on this visit (D4b): in memory only, per save object, never saved or shown.
+ * It is UI support state, not mastery. A profile switch or a replaced save forgets it; a stale scene cannot read or write it.
+ */
+export class IntroMemory {
+  private keys: string[] = [];
+  private readonly owner = new DiscoveryMemory();
+
+  clear() {
+    this.keys = [];
+    this.owner.clear();
+  }
+  token(owner: object): DiscoveryToken {
+    const before = this.owner.token(owner);
+    return before;
+  }
+  has(token: DiscoveryToken, owner: object, key: string): boolean {
+    return this.owner.current(token, owner) && this.keys.includes(key);
+  }
+  /** Play was pressed on a full card. */
+  introduced(token: DiscoveryToken, owner: object, key: string): void {
+    if (!this.owner.current(token, owner)) return;
+    this.keys = this.keys.filter((k) => k !== key);
+    this.keys.push(key);
+    if (this.keys.length > INTRO_LIMIT) this.keys.splice(0, this.keys.length - INTRO_LIMIT);
+  }
+}
+export const introMemory = new IntroMemory();
+
 /** The ordinary route resolves the current band, ordered range and pin; no cached level or Again shortcut. */
 export function launchDiscovery(go: Pick<Routes, 'game'>, id: string, band: Band, origin?: Origin) {
   go.game(id, band, undefined, false, origin);

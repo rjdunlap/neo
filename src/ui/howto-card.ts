@@ -70,6 +70,12 @@ export interface HowToIntro {
     skip: () => void;
     shown: () => boolean;
   };
+  /**
+   * The short reminder (D4b): the goal line, Play, Back and a "?" Show me, with no demonstration, arrows or stops. The scene
+   * clears `brief` and shows the full card in place when Show me is pressed.
+   */
+  brief?: boolean;
+  showMe?: () => void;
   /** A bot playing a real round in a window on the card, for a game that has one. The card runs, places and destroys it. */
   demo?: Demo;
   /**
@@ -206,13 +212,14 @@ export class HowToPanel extends Container {
     ladder: boolean;
     canInline: boolean;
   } {
-    const demo = this.demo;
+    const brief = !!this.intro?.brief;
+    const demo = brief ? undefined : this.demo;
     this.holds = [];
     this.stopTiles = [];
     this.skipButton = null;
-    const stops = this.intro?.stops?.shown() ? this.intro.stops : null;
+    const stops = !brief && this.intro?.stops?.shown() ? this.intro.stops : null;
     const range =
-      this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min
+      !brief && this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min
         ? this.intro.pick.range
         : null;
     // Beside the text when the screen is wider than tall; above it when it is tall. The window shrinks a little with the text.
@@ -249,23 +256,25 @@ export class HowToPanel extends Container {
       rows.push(text(value, BODY, ink));
     };
     // The intro puts the picture beside the title; the "?" card leads with the title alone.
+    // The short reminder (D4b) is the title and the goal; Show me gives the rest.
     const head = this.intro ? this.header(wide ? width - dw - 28 : width, scale) : null;
     if (!head) {
       rows.push(text('HOW TO PLAY', 13, MUTED, '600'));
       rows.push(text(this.info.title, Math.round(34 * scale), ink, '600'));
     }
-    const mode = this.info.mode;
+    const mode = brief ? undefined : this.info.mode;
     // A named level keeps its number small after the name: the grown-ups' page and pins still speak in numbers.
-    rows.push(
-      text(
-        mode
-          ? `THIS LEVEL  ·  ${mode.name.toUpperCase()}  ·  level ${this.info.levelNumber}`
-          : `THIS LEVEL  ·  ${this.info.levelNumber}`,
-        13,
-        MUTED,
-        '600',
-      ),
-    );
+    if (!brief)
+      rows.push(
+        text(
+          mode
+            ? `THIS LEVEL  ·  ${mode.name.toUpperCase()}  ·  level ${this.info.levelNumber}`
+            : `THIS LEVEL  ·  ${this.info.levelNumber}`,
+          13,
+          MUTED,
+          '600',
+        ),
+      );
     // With arrows the pair sits to the left of the description (or of the level's picture), and is the tallest part of the row.
     const side = range ? STEP_RADIUS * 4 + STEP_GAP + 22 : 0;
     // With a picture, the arrows and the picture make a row of their own, and the description runs the full width under it.
@@ -276,7 +285,7 @@ export class HowToPanel extends Container {
       rows.push(pictureRow);
     }
     const levelText = text(this.info.level, BODY, ink, '500', inner - (pictureRow ? 0 : side));
-    rows.push(levelText);
+    if (!brief) rows.push(levelText);
     // Beside a demonstration the ladder goes under its window, where the narrow text column leaves room, packed closer since the
     // window narrows with the text; otherwise it follows the description.
     const underWindow = wide && !!demo;
@@ -289,10 +298,12 @@ export class HowToPanel extends Container {
       rows.push(ladder.row);
     }
     add('GOAL', this.info.goal);
-    rows.push(text('WHAT TO DO', 13, MUTED, '600'));
-    this.info.steps.forEach((s, i) => rows.push(text(`${i + 1}.  ${s}`, BODY, ink)));
-    add('THE ROUND ENDS', this.info.finish);
-    if (this.info.note) add('GOOD TO KNOW', this.info.note);
+    if (!brief) {
+      rows.push(text('WHAT TO DO', 13, MUTED, '600'));
+      this.info.steps.forEach((s, i) => rows.push(text(`${i + 1}.  ${s}`, BODY, ink)));
+      add('THE ROUND ENDS', this.info.finish);
+      if (this.info.note) add('GOOD TO KNOW', this.info.note);
+    }
 
     // Labels hug the line below; groups get more air. A demo above the text pushes it down; beside it, it does not.
     let y = head ? head.bottom : 30;
@@ -367,10 +378,16 @@ export class HowToPanel extends Container {
       );
       back.meaning = this.intro.backIcon ? 'back' : null;
       this.backButton = back;
-      const backX = inRow ? inlineBackX(width, stops!.count) : width / 2 - 94;
+      // The short reminder adds Show me at Play's right, and the three sit centred.
+      const backX = inRow ? inlineBackX(width, stops!.count) : width / 2 - 94 - (brief ? 78 : 0);
       go.position.set(backX + 156, y + 24 + play);
       back.position.set(backX, y + 24 + play);
       card.addChild(back, go);
+      if (brief && this.intro.showMe) {
+        const me = new RoundButton(questionIcon(), swatch.blue, 52, this.intro.showMe);
+        me.position.set(backX + 156 + 156, y + 24 + play);
+        card.addChild(me);
+      }
       if (stops) {
         this.stopTiles = stops.tiles();
         this.stopTiles.forEach((t, i) => {

@@ -4,7 +4,7 @@ import { GAMES } from '../games/registry';
 import type { LevelLine } from '../games/types';
 import { COUCH_INFO, demoFor } from '../couch/catalog';
 import { islandDemo } from './demos';
-import { HOW_TO, howToFor, shouldExplain } from './howto';
+import { HOW_TO, briefIntro, howToFor, introKey, shouldExplain, type BriefIntroCase } from './howto';
 
 /** Every level any band of a game plays. */
 function levelsOf(g: (typeof GAMES)[number]): number[] {
@@ -316,4 +316,46 @@ it('Under the hen describes lane taps and five eggs without inheriting the pair 
   expect(card.note).toContain('Two wrong taps');
   expect(JSON.stringify(card)).not.toMatch(/gates|pairs|six eggs/);
   expect(howToFor(game, 7)!.finish).toContain('three pairs');
+});
+
+describe('the short reminder (D4b)', () => {
+  const base: BriefIntroCase = {
+    cards: true,
+    brief: true,
+    explained: true,
+    mix: false,
+    daily: false,
+    input: 'touch',
+    introduced: true,
+  };
+
+  it('is short only for an introduced mode with every switch on', () => {
+    expect(briefIntro(base)).toBe(true);
+    expect(briefIntro({ ...base, input: 'mouse' })).toBe(true);
+  });
+
+  it('is the full card in every other case', () => {
+    const cases: Partial<BriefIntroCase>[] = [
+      { brief: false },
+      { cards: false },
+      { explained: false },
+      { mix: true },
+      { daily: true },
+      { input: null },
+      { introduced: false },
+    ];
+    for (const c of cases) expect(briefIntro({ ...base, ...c }), JSON.stringify(c)).toBe(false);
+  });
+
+  it('keys a level, band and input apart, so a changed mode has no key', () => {
+    const k = { id: 'bubble-pop', band: 'toddler', level: 2, input: 'touch' as const };
+    const keys = [
+      introKey(k),
+      introKey({ ...k, level: 3 }),
+      introKey({ ...k, band: 'preschool' }),
+      introKey({ ...k, input: 'mouse' }),
+      introKey({ ...k, id: 'jar-sort' }),
+    ];
+    expect(new Set(keys).size).toBe(keys.length);
+  });
 });
