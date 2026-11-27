@@ -68,6 +68,7 @@ import { createSuite as createCircuitGarden } from './suites/circuit-garden-play
 import { createSuite as createMeasuringPost } from './suites/measuring-post-play.mjs';
 import { createSuite as createSeedTravelers } from './suites/seed-travelers-play.mjs';
 import { createSuite as createKeepHouse } from './suites/keep-house-play.mjs';
+import { createSuite as createToyDrawer } from './suites/toy-drawer-play.mjs';
 import { createSuite as createSproutShuffle } from './suites/sprout-shuffle-play.mjs';
 import { createSuite as createStoryWeaver } from './suites/story-weaver-play.mjs';
 import { createSuite as createWordGlue } from './suites/word-glue-play.mjs';
@@ -422,6 +423,7 @@ export const SUITES = [
   'puppetstage',
   'puppetstory',
   'keephouse',
+  'toydrawer',
   'sproutshuffle',
   'wordglue',
   'bondbeads',
@@ -631,6 +633,7 @@ export const ALL_SUITES = [
   'puppetstage',
   'puppetstory',
   'keephouse',
+  'toydrawer',
   'sproutshuffle',
   'wordglue',
   'bondbeads',
@@ -1046,6 +1049,7 @@ export function createChecks(fixture) {
   install(createMeasuringPost(shared));
   install(createSeedTravelers(shared));
   install(createKeepHouse(shared));
+  install(createToyDrawer(shared));
   install(createSproutShuffle(shared));
   install(createStoryWeaver(shared));
   install(createWordGlue(shared));
@@ -1278,6 +1282,7 @@ export async function runSuite(suite, fixture) {
     waterRoadPlay,
     waterFlowPlay,
     keepHousePlay,
+    toyDrawerPlay,
     paintMixerPlay,
     puppetStagePlay,
     puppetStoryPlay,
@@ -1563,6 +1568,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'measuringpost') await measuringPostPlay();
   if (suite === 'all' || suite === 'seeds') await seedTravelersPlay();
   if (suite === 'all' || suite === 'keephouse') await keepHousePlay();
+  if (suite === 'all' || suite === 'toydrawer') await toyDrawerPlay();
   if (suite === 'all' || suite === 'sproutshuffle') await sproutShufflePlay();
   if (suite === 'all' || suite === 'wordglue') await wordGluePlay();
   if (suite === 'all' || (suite === 'bondbeads' && !process.env.BOND_LEVELS)) await bondBeadsPlay();

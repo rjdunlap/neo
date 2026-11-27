@@ -235,6 +235,7 @@ export const LANDS: readonly Land[] = [
       'keep-house',
       'notice-board',
       'maker-lane',
+      'toy-drawer',
     ],
   },
   {

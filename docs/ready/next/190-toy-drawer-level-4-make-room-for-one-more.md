@@ -1,0 +1,1 @@
+**`toy-drawer`, level 4, make room for one more** (existing-game tier): the arrival of a fourth toy with no legal place, the starting arrangements, take-out hinting and Start-over-to-start, with their tests, per [definition](../../definitions/toy-drawer.md#build-slices).

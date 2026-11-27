@@ -720,6 +720,7 @@ describe('game registry', () => {
       'tide-tables',
       'tile-pairs',
       'timeline-trail',
+      'toy-drawer',
       'trackway-tales',
       'truth-bridge',
       'two-tablets',

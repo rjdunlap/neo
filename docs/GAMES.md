@@ -362,6 +362,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *toddler–school* · [Maker Lane](games/maker-lane.md)
 
+### Toy Drawer
+
+*preschool–school* · [Toy Drawer](games/toy-drawer.md)
+
 ## Rainbow Meadow
 
 ### Shape Sorter
