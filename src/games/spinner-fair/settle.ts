@@ -116,7 +116,7 @@ export class SettleGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 86,
       },
       ctx.view,
@@ -498,7 +498,7 @@ export class SettleGame implements Game {
     this.panel
       .clear()
       .roundRect(left, top, L.strip.w + 32, L.strip.y + L.strip.h / 2 + 44 - top, 20)
-      .fill({ color: 0xffffff, alpha: 0.75 });
+      .fill(cream);
   }
 
   update(dt: number) {

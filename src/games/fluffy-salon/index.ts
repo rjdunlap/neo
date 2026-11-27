@@ -408,10 +408,12 @@ class FluffySalon implements Game {
     // A big salon mirror behind the chair and a checked floor in the room's colour.
     // Paper on purpose, with a gentle edge: a wooden frame with the glass laid flat inside it, and the floor as one
     // sheet with its checks printed flat on it (not a tray of separately cut tiles).
-    const mh = v.h - 260;
-    paperRect(r, v.w * 0.5 - 230, 60, 460, mh, 60, wood.fill, { amp: 0.6 * U, seed: 3 });
-    paperRect(r, v.w * 0.5 - 216, 74, 432, mh - 28, 48, 0xd6eefa, { flat: true });
-    paperRect(r, v.w * 0.5 - 170, 104, 26, mh - 120, 13, 0xffffff, { flat: true, alpha: 0.45 });
+    // The mirror's top sits below the grown-up tip card, so the card never lies over the frame.
+    const mt = 130,
+      mh = v.h - 200 - mt;
+    paperRect(r, v.w * 0.5 - 230, mt, 460, mh, 60, wood.fill, { amp: 0.6 * U, seed: 3 });
+    paperRect(r, v.w * 0.5 - 216, mt + 14, 432, mh - 28, 48, 0xd6eefa, { flat: true });
+    paperRect(r, v.w * 0.5 - 170, mt + 44, 26, mh - 120, 13, 0xffffff, { flat: true, alpha: 0.45 });
     paperRect(r, -20, v.h - 150, v.w + 40, 170, 0, 0xf3e3c8, { amp: 0.6 * U, seed: 4 });
     for (let x = 0; x < v.w; x += 60)
       for (let y = v.h - 150; y < v.h; y += 60)

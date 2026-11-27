@@ -100,7 +100,7 @@ class BondBeads implements Game {
         hills: [0xa9e0d6, 0xc5e7a8],
         horizon: 0.5,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 173,
       },
       ctx.view,
