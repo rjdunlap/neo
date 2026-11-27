@@ -1,0 +1,1 @@
+**Define D4a optional brief round acknowledgment** (docs only): define one toy and one puzzle pilot alongside the celebration under the [October 23 decision](../../archive/DECISIONS-2026-10-23.md#decisions) ([ROADMAP](../../ROADMAP.md#discovery-actions)).
